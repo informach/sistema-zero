@@ -87,7 +87,12 @@ export function LessonSceneControls({
   return (
     <>
       {m === 'once-vs-always' && (
-        <OnceVsAlwaysControls state={state} preset={oncePreset(preset)} dispatch={dispatch} />
+        <OnceVsAlwaysControls
+          state={state}
+          cast={cast}
+          preset={oncePreset(preset)}
+          dispatch={dispatch}
+        />
       )}
       {m === 'fixed-vs-read' && <FixedVsReadControls state={state} dispatch={dispatch} />}
       {m === 'collision-pair' && <CollisionPairControls state={state} dispatch={dispatch} />}

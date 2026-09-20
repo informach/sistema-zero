@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import type { InteractiveBlock } from '@sistemazero/core/learning'
 import {
+  RANDOM_PRESETS,
   SCENE_QUESTIONS,
   type SceneActivity,
   sceneSegmentAnswers,
@@ -73,11 +74,18 @@ function preparar(activity: SceneActivity) {
 }
 
 describe('BAIXO-1: o comando que não é legal nesta cena é 400 (pedido mal formado)', () => {
-  test('⚠️ o ▶ na `random` é recusado: lá o tempo mora no gesto "Passar 5 segundos"', async () => {
-    const recusado = await preparar({ type: 'experimentation', scene: 'random' }).gravar([
+  test('⚠️ o ▶ na `acceleration` é recusado: lá o tempo mora no gesto "Passar 5 segundos"', async () => {
+    const recusado = await preparar({ type: 'experimentation', scene: 'acceleration' }).gravar([
       { type: 'advance', seconds: 0.05 },
     ])
     expect(recusado.status).toBe(400)
+    // A variante da pedra em random usa o relógio para mostrar sua queda.
+    const queda = await preparar({
+      type: 'experimentation',
+      scene: 'random',
+      setup: { preset: RANDOM_PRESETS['pedra-acima'] },
+    }).gravar([{ type: 'advance', seconds: 0.05 }])
+    expect(queda.status).toBe(200)
     const legal = await preparar({ type: 'experimentation', scene: 'coordinates' }).gravar([
       { type: 'place', x: 0, y: 150 },
     ])

@@ -111,13 +111,19 @@ describe('o laboratório da cena', () => {
     expect(
       (screen.getByRole('slider', { name: 'Distância do cacto' }) as HTMLInputElement).value,
     ).toBe('25')
-    // ⚠️ Mudou de propósito (lote 5 do Raio-X): a área abre em 130% e o gesto é DIMINUIR, em
-    // porcentagem, até 80% (a Aula 10). Em 50 as áreas encostam com um vão de 10 entre os desenhos.
+    // A área abre em 100%: comparar 80% revela o primeiro contraste. Em 40%, a área fica
+    // pequena demais e deixa de marcar uma batida visível, a terceira descoberta da cena.
     fireEvent.change(screen.getByRole('slider', { name: 'Distância do cacto' }), {
       target: { value: '50' },
     })
     fireEvent.change(screen.getByRole('slider', { name: 'Tamanho da área do Dino' }), {
       target: { value: '80' },
+    })
+    fireEvent.change(screen.getByRole('slider', { name: 'Distância do cacto' }), {
+      target: { value: '40' },
+    })
+    fireEvent.change(screen.getByRole('slider', { name: 'Tamanho da área do Dino' }), {
+      target: { value: '40' },
     })
     expect(screen.getByText('Experiência guardada')).toBeTruthy()
     expect(screen.getByText(SCENE_MODELS.hitbox.success)).toBeTruthy()
@@ -139,7 +145,7 @@ describe('o laboratório da cena', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Desfazer' }))
     expect(
       (screen.getByRole('slider', { name: 'Tamanho da área do Dino' }) as HTMLInputElement).value,
-    ).not.toBe('80')
+    ).not.toBe('40')
     expect(screen.queryByRole('button', { name: 'Ver um exemplo' })).toBeNull()
     expect(screen.queryByText(SCENE_MODELS.hitbox.extra)).toBeNull()
     // ⚠️ Mudou de propósito (lote 2): o cartão "Descoberta registrada." saiu. Sem pergunta anexa no

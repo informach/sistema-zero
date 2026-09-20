@@ -52,7 +52,23 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
   const somar = (scene: SceneId, acao: unknown) => {
     if (isSceneAction(acao, scene)) porCena.get(scene)?.push(acao)
   }
+  // As cenas de experimentação novas ainda não têm roteiro de fábrica nem porta.
+  // Seus controles são ações reais e precisam atravessar a mesma borda tipada.
+  const acoesDosControles: SceneAction[] = [
+    { type: 'value-source', source: 'read' },
+    { type: 'place-in-area', card: 'paint', area: 'start' },
+    { type: 'command-target', subject: 'shot', target: 'group' },
+    { type: 'shield', frames: 15 },
+    { type: 'step-value', value: -5 },
+    { type: 'name-field', name: 'nave' },
+    { type: 'nudge', piece: 'crater', amount: 4 },
+    { type: 'birth-every', frames: 20 },
+    { type: 'export-file' },
+    { type: 'publish' },
+    { type: 'skin', theme: 'sea' },
+  ]
   for (const scene of SCENE_IDS) {
+    for (const acao of acoesDosControles) somar(scene, acao)
     for (const passo of sceneScript({ type: 'demonstration', scene }))
       for (const acao of passo.actions) somar(scene, acao)
     for (const port of SCENE_PORTS)

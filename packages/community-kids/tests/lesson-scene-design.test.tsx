@@ -19,6 +19,7 @@ import {
   scenePorts,
   sceneReadout,
   sceneSituation,
+  sceneTargets,
   stepScene,
 } from '@sistemazero/core/learning/scene'
 import { ExplorationPieces } from '@sistemazero/member-shell/components/exploration-pieces'
@@ -175,7 +176,7 @@ describe('a faixa de estado', () => {
     // E o encosto salta aos olhos na própria faixa.
     // ⚠️ Mudou de propósito (lote 5 do Raio-X): a área está em PORCENTAGEM, e é ela que acende em
     // alerta quando as áreas encostam ("se tocam" era a conclusão escrita na faixa).
-    expect(linha?.querySelector('.text-scene-alert')?.textContent).toBe('130%')
+    expect(linha?.querySelector('.text-scene-alert')?.textContent).toBe('100%')
   })
 
   test('⚠️⚠️ a faixa é LEGÍVEL por leitor de tela', async () => {
@@ -1333,6 +1334,8 @@ describe('o elenco veste a cena INTEIRA, não só o texto do catálogo', () => {
       ...base,
       world: { ...base.world, front: true },
       sound: { ...base.sound, onJump: true },
+      animation: { ...base.animation, sameFrames: true },
+      mirror: { ...base.mirror, filled: true },
       evidence: { ...base.evidence, actions: 1, discoveries: [...sceneGoalIds(scene)] },
     }
     return {
@@ -1386,7 +1389,11 @@ describe('o elenco veste a cena INTEIRA, não só o texto do catálogo', () => {
         </LessonPreviewProvider>,
       )
       // O cartão existe: sem isto a varredura leria uma tela sem ele e aprovaria em silêncio.
-      const sucesso = castText(sceneModel(scene).success, NAVE)
+      const metas = [...sceneTargets({ type: 'experimentation', scene, cast: NAVE })]
+        .sort()
+        .join('+')
+      const modelo = sceneModel(scene)
+      const sucesso = castText(modelo.successNoCaso?.[metas] ?? modelo.success, NAVE)
       const cartao = await screen.findByText(sucesso)
       const texto = cartao.parentElement?.textContent ?? ''
       for (const alvo of [/Dino/i, /cactos?/i, /floresta/i])
@@ -1547,7 +1554,10 @@ describe('⚠️⚠️ a peça que muda de caixa: TOCAR seleciona', () => {
     test(`${scene}: um toque sem arrasto marca a peça e liga o "Colocar aqui"`, async () => {
       caixasDeVerdade()
       render(<InteractiveLessonBlock block={block(scene)} previewContent={content(scene)} />)
-      const colocar = () => screen.getByRole('button', { name: /^Colocar aqui/ })
+      const colocar = () =>
+        screen.getByRole('button', {
+          name: 'Colocar aqui : Somar ponto em A cada quadro, dentro do bloco “o estado do jogo é jogando ?”',
+        })
       const botao = await screen.findByRole('button', { name: peca })
       expect(colocar()).toHaveProperty('disabled', false)
       expect(colocar().getAttribute('aria-disabled')).toBeNull()
@@ -1562,8 +1572,8 @@ describe('⚠️⚠️ a peça que muda de caixa: TOCAR seleciona', () => {
       // E o segundo toque, em "Colocar aqui", leva a peça para a outra caixa.
       fireEvent.click(colocar())
       await waitFor(() =>
-        expect(screen.getByRole('button', { name: peca }).parentElement?.textContent).toContain(
-          'Se jogando',
+        expect(screen.getByRole('button', { name: peca }).parentElement?.dataset.caixa).toBe(
+          'quadro-se',
         ),
       )
     })
@@ -1603,7 +1613,7 @@ describe('⚠️⚠️ a peça que muda de caixa: TOCAR seleciona', () => {
     // duas caixas precisam de lugares DIFERENTES (a de destino à direita).
     HTMLElement.prototype.getBoundingClientRect = function (this: HTMLElement) {
       return (
-        this.dataset?.caixa === 'se'
+        this.dataset?.caixa === 'quadro-se'
           ? { left: 300, top: 0, right: 600, bottom: 200, width: 300, height: 200, x: 300, y: 0 }
           : { left: 0, top: 0, right: 290, bottom: 200, width: 290, height: 200, x: 0, y: 0 }
       ) as DOMRect
@@ -1616,7 +1626,7 @@ describe('⚠️⚠️ a peça que muda de caixa: TOCAR seleciona', () => {
     await waitFor(() =>
       expect(
         screen.getByRole('button', { name: 'Somar ponto' }).parentElement?.textContent,
-      ).toContain('Se jogando'),
+      ).toContain('A cada quadro, dentro do bloco'),
     )
   })
 })
@@ -1685,8 +1695,11 @@ describe('⚠️⚠️ toda porta da cena tem controle na BANCADA', () => {
       if (b.disabled || fechado(b)) continue
       const antes = acoes.length
       fireEvent.click(b)
-      for (const a of acoes.slice(antes))
+      for (const a of acoes.slice(antes)) {
         if (a.type === 'connect' && !portas.has(a.port)) portas.set(a.port, nome(b))
+        if (scene === 'score' && a.type === 'score-place' && a.guarded)
+          portas.set('condition', nome(b))
+      }
     }
     unmount()
     return { fechados, foraDoTab, portas }
@@ -1794,7 +1807,7 @@ describe('⭐⭐ lote 5 do Raio-X: a PEÇA QUE MUDA DE CAIXA no lugar do fio', (
   const CASOS = [
     [
       'jump-sound',
-      '♪ Tocar som',
+      '♪ Tocar efeito',
       'Quando o Dino pular',
       'pulo',
       { type: 'connect', port: 'sound', enabled: true },
@@ -1809,7 +1822,7 @@ describe('⭐⭐ lote 5 do Raio-X: a PEÇA QUE MUDA DE CAIXA no lugar do fio', (
     [
       'game-state',
       'Criar cacto',
-      'Se jogando',
+      'Se o estado do jogo é jogando',
       'se',
       { type: 'connect', port: 'condition', enabled: true },
     ],

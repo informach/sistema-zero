@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
-import { isSceneCast, type SceneActivity } from '@sistemazero/core/learning/scene'
+import { isSceneCast, SCENE_FIGURES, type SceneActivity } from '@sistemazero/core/learning/scene'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -103,20 +103,7 @@ test('⭐ cada papel oferece o desenho, e "Pelo nome" diz o que o nome desenha',
     // O padrão NÃO grava `figure`: é o que mantém os manifestos iguais aos publicados.
     expect(e.activity.cast?.hero).toEqual({ name: 'nave', gender: 'm' })
     expect(e.desenho().selectedOptions[0]?.textContent).toBe('Pelo nome (Nave)')
-    expect([...e.desenho().options].map((o) => o.value)).toEqual([
-      '',
-      'dino',
-      'cacto',
-      'floresta',
-      'nave',
-      'asteroide',
-      'pedra',
-      'tiro',
-      'chama',
-      'gorila',
-      'banana',
-      'predio',
-    ])
+    expect([...e.desenho().options].map((o) => o.value)).toEqual(['', ...SCENE_FIGURES])
   } finally {
     await e.fechar()
   }

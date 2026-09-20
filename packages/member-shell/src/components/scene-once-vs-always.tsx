@@ -2,6 +2,7 @@
 
 import {
   actorFigure,
+  castText,
   type OnceArea,
   type OncePlacement,
   type OnceVsAlwaysPreset,
@@ -116,10 +117,12 @@ export function OnceVsAlwaysStage({
 
 export function OnceVsAlwaysControls({
   state,
+  cast,
   preset,
   dispatch,
 }: {
   state: SceneState
+  cast?: SceneCast
   preset?: OnceVsAlwaysPreset
   dispatch: (action: SceneAction) => void
 }) {
@@ -157,7 +160,7 @@ export function OnceVsAlwaysControls({
                     onDragStart={(event) => event.dataTransfer.setData('text/plain', card.id)}
                     className="cursor-grab rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-sm font-semibold text-primary active:cursor-grabbing"
                   >
-                    {card.label} · {state.once.fires[card.id]}
+                    {castText(card.label, cast)} · {state.once.fires[card.id]}
                   </span>
                 ))}
             </div>
@@ -168,7 +171,7 @@ export function OnceVsAlwaysControls({
         {prepared.cards.map((card) => (
           <Escolha<OncePlacement>
             key={card.id}
-            label={`${card.label} · disparou ${state.once.fires[card.id]} ${state.once.fires[card.id] === 1 ? 'vez' : 'vezes'}`}
+            label={`${castText(card.label, cast)} · disparou ${state.once.fires[card.id]} ${state.once.fires[card.id] === 1 ? 'vez' : 'vezes'}`}
             valor={state.once.placement[card.id]}
             opcoes={[
               { id: 'outside', label: 'Fora' },
