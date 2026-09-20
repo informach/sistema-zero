@@ -1166,7 +1166,7 @@ a.kid-pop:has(> .kids-carta):hover {
 
   .kids-trail-art {
     position: absolute;
-    top: calc(var(--trail-row) * 0.65);
+    /* A altura vem dos nós com mais espaço no course-trail.tsx. */
     z-index: 0;
     width: 9.5rem;
     pointer-events: none;

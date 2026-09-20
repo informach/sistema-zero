@@ -1,4 +1,4 @@
-import { moduleIllustration } from '@sistemazero/core/course/module-illustrations'
+import { moduleIllustrationSrc } from '@sistemazero/core/course/module-illustrations'
 import { Check, Lock, Star } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn'
 import type { CourseDetailView } from '@/lib/types'
 import { KidsMascot } from './mascot'
 import { TrailChest } from './trail-chest'
-import { balloonLabel, buildTrail, type TrailNode } from './trail-layout'
+import { balloonLabel, buildTrail, type TrailNode, type TrailUnit } from './trail-layout'
 import { UNIT_THEME_CLASS } from './unit-theme'
 
 /** Mapa LITERAL (nunca montar classe por template string). */
@@ -19,6 +19,22 @@ const NODE_STATE_CLASS: Record<TrailNode['state'], string> = {
 
 /** Posições (0..1) dos conectores entre os centros de nós consecutivos. */
 const DOT_STEPS = [0.55, 0.78] as const
+
+/** A arte atravessa duas linhas; escolhe o par de nós mais distante do seu lado. */
+function illustrationRow(unit: TrailUnit, side: 'left' | 'right'): number {
+  const offsets = [...unit.nodes.map((node) => node.offset), unit.chest.offset]
+  const direction = side === 'left' ? 1 : -1
+  let bestRow = 0
+  let bestSpace = -Infinity
+  for (let row = 0; row < offsets.length - 1; row++) {
+    const space = direction * ((offsets[row] ?? 0) + (offsets[row + 1] ?? 0))
+    if (space > bestSpace) {
+      bestSpace = space
+      bestRow = row
+    }
+  }
+  return bestRow
+}
 
 function nodeAria(node: TrailNode): string {
   const status =
@@ -88,7 +104,10 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
     <div className="mx-auto flex w-full max-w-[40rem] flex-col gap-10">
       {units.map((unit, unitIndex) => {
         const doneCount = unit.module.lessons.filter((l) => l.completed).length
-        const art = moduleIllustration(unit.module.illustration)?.src
+        const art = moduleIllustrationSrc(unit.module.illustration)
+        const artSide = unitIndex % 2 === 0 ? 'left' : 'right'
+        const artRow = illustrationRow(unit, artSide)
+        const artTop = Math.round(((artRow + 0.65) / (unit.nodes.length + 1)) * 10_000) / 100
         return (
           <section key={unit.module.id} className={UNIT_THEME_CLASS[unit.theme]}>
             <header className="kids-unit-banner px-5 py-4 md:px-6">
@@ -113,10 +132,9 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                   aria-hidden="true"
                   className={cn(
                     'kids-trail-art',
-                    (unit.nodes[0]?.offset ?? 0) < 0
-                      ? 'kids-trail-art--right'
-                      : 'kids-trail-art--left',
+                    artSide === 'left' ? 'kids-trail-art--left' : 'kids-trail-art--right',
                   )}
+                  style={{ top: `${artTop}%` }}
                 >
                   <Image src={art} alt="" width={180} height={160} unoptimized />
                 </div>

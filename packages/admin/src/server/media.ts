@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { getEnv, isProd } from '@/lib/env'
 import { safeExtension, sanitizeFilename } from '@/lib/filenames'
+import { validateModuleIllustrationSvg } from '@/lib/module-illustration-svg'
 import type { SessionUser } from '@/lib/types'
 import { pickTranscriptTrack } from '@/lib/vimeo-helpers'
 import { type ImagePreset, optimizeImage } from './image-optimizer'
@@ -24,6 +25,7 @@ import {
 // ── Limites/validações ──────────────────────────────────────────────────────
 
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024 // 5MB
+export const MAX_MODULE_ILLUSTRATION_BYTES = 2 * 1024 * 1024 // 2MB (SVG animado)
 export const MAX_FILE_BYTES = 200 * 1024 * 1024 // 200MB (anexos/e-book)
 export const MAX_AUDIO_BYTES = 50 * 1024 * 1024 // 50MB (áudio de aula)
 export const MAX_VIDEO_BYTES = 5 * 1024 * 1024 * 1024 // 5GB (Vimeo)
@@ -142,6 +144,17 @@ export async function optimizeAndStoreImage(file: File, preset: ImagePreset): Pr
     contentType: optimized.contentType,
   })
   return { url, width: optimized.width, height: optimized.height, sizeBytes: optimized.sizeBytes }
+}
+
+/** SVG de módulo permanece vetorial e animado no bucket público. */
+export async function storeModuleIllustration(file: File): Promise<{ url: string }> {
+  const source = validateModuleIllustrationSvg(await file.text())
+  const { url } = await r2PutObject({
+    key: `admin/module-illustrations/${randomUUID()}.svg`,
+    body: Buffer.from(source, 'utf8'),
+    contentType: 'image/svg+xml; charset=utf-8',
+  })
+  return { url }
 }
 
 // ── Arquivos genéricos (anexos/áudio) ───────────────────────────────────────

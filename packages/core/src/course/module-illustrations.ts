@@ -14,3 +14,16 @@ export type ModuleIllustrationKey = (typeof MODULE_ILLUSTRATIONS)[number]['key']
 export function moduleIllustration(key: string | null | undefined) {
   return MODULE_ILLUSTRATIONS.find((illustration) => illustration.key === key)
 }
+
+/** Chaves legadas continuam válidas; uploads novos são URLs públicas do R2. */
+export function moduleIllustrationSrc(value: string | null | undefined): string | null {
+  if (!value) return null
+  const preset = moduleIllustration(value)
+  if (preset) return preset.src
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null
+  } catch {
+    return null
+  }
+}

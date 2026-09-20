@@ -1021,6 +1021,8 @@ export const ModuleBody = t.Object({
       t.Literal('desafio-nave'),
       t.Literal('desafio-asteroides'),
       t.Literal('desafio-conquista'),
+      // O Admin valida e publica o SVG no R2; a árvore guarda a URL pública.
+      t.String({ minLength: 1, maxLength: 2000, pattern: HTTP_URL_PATTERN }),
       t.Null(),
     ]),
   ),

@@ -1,34 +1,16 @@
-import { BookOpen, Play } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { KidsBackButton } from '@/components/kids/back-button'
-import { CourseAccessExpiry } from '@/components/kids/course-access-expiry'
 import { CourseTrail } from '@/components/kids/course-trail'
 import { KidsBand } from '@/components/kids/kids-band'
 import { careerLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
 import { PublicationStatus } from '@/components/kids/publication-status'
 import { courseBadge } from '@/lib/course-badge'
 import { resolveCourseBack } from '@/lib/course-return'
-import type { CourseDetailView, LessonOutlineView } from '@/lib/types'
 import { getMyCourse } from '@/server/members'
 import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
-
-/**
- * Aula-alvo do "continuar de onde parei": o backend manda `continueLessonId`
- * (última acessada > 1ª não concluída > 1ª); fallback local se vier nulo.
- * Pula aulas TRAVADAS (trava sequencial) — defensivo: o herói nunca aponta para um
- * cadeado (que cairia no 423). Se só sobrarem travadas, usa a 1ª (recado amigável).
- */
-function nextLesson(course: CourseDetailView): LessonOutlineView | null {
-  const all = course.modules.flatMap((m) => m.lessons)
-  if (course.continueLessonId) {
-    const target = all.find((l) => l.id === course.continueLessonId)
-    if (target && !target.locked) return target
-  }
-  return all.find((l) => !l.completed && !l.locked) ?? all.find((l) => !l.locked) ?? all[0] ?? null
-}
 
 export default async function CoursePage({
   params,
@@ -48,7 +30,6 @@ export default async function CoursePage({
   if (status !== 200 || !body) throw new Error('Falha ao carregar o curso')
   const course = body
 
-  const next = nextLesson(course)
   const pendingPublication = courseBadge(course) === 'publicar'
   const delivery =
     pendingPublication && course.id
@@ -56,86 +37,14 @@ export default async function CoursePage({
       : null
   const deliveryState = delivery?.status === 200 ? delivery.body?.state : null
   const back = resolveCourseBack(de, course)
-  const lessonHref = (l: LessonOutlineView) =>
-    `/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(l.id)}`
-
   return (
     <>
-      <KidsBand tone="creme">
-        {/* A setinha fica colada no cabeçalho: solta, ela empurrava a capa ~76px no
-          mobile e jogava o "Continuar" abaixo da dobra. Mesmo agrupamento da trilha. */}
-        <KidsBackButton href={back.href} label={back.label} showLabel className="mb-6" />
-
-        {/* Cabeçalho do curso, na régua das telas-modelo (11/09/2026): a capa de cantos
-            redondos à esquerda, o título em Baloo na escala dos cabeçalhos, a barra verde
-            dos cartões de curso e o botão da marca. */}
-        <div className="mx-auto flex w-full max-w-[52.5rem] flex-col gap-6 md:flex-row md:items-center md:gap-8">
-          <div className="relative aspect-[5/3] w-full shrink-0 overflow-hidden rounded-[1.25rem] bg-muted md:w-[22.5rem]">
-            {course.coverImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={course.coverImageUrl}
-                alt=""
-                width={16}
-                height={9}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                <BookOpen className="size-12" strokeWidth={1.75} aria-hidden />
-              </div>
-            )}
-          </div>
-          <div className="min-w-0 flex-1 md:max-w-md">
-            <h1 className="sz-display text-[clamp(1.875rem,3vw,2.5rem)]">{course.title}</h1>
-            {course.subtitle ? (
-              <p className="mt-2 font-medium text-[1.0625rem] text-muted-foreground">
-                {course.subtitle}
-              </p>
-            ) : null}
-            {course.description ? (
-              <p className="mt-2 font-medium text-[0.9375rem] text-muted-foreground">
-                {course.description}
-              </p>
-            ) : null}
-            <CourseAccessExpiry
-              expiresAt={course.access.expiresAt}
-              className="mt-4 w-fit max-w-full"
-            />
-            <div className="mt-5">
-              <div className="flex items-center justify-between font-semibold text-muted-foreground text-xs">
-                <span>
-                  {course.progress.completedLessons} de {course.progress.totalLessons} aulas
-                  concluídas
-                </span>
-                <span
-                  className={
-                    course.progress.percent > 0
-                      ? 'font-extrabold text-(--success-foreground)'
-                      : 'font-extrabold'
-                  }
-                >
-                  {course.progress.percent}%
-                </span>
-              </div>
-              <div
-                className="sz-progress mt-2"
-                role="progressbar"
-                aria-label="Progresso do curso"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={course.progress.percent}
-              >
-                <span style={{ width: `${course.progress.percent}%` }} />
-              </div>
-            </div>
-            {next && !pendingPublication ? (
-              <Link href={lessonHref(next)} className="sz-btn-gradient mt-5 gap-2 px-6">
-                <Play className="size-4" aria-hidden />
-                {course.progress.completedLessons > 0 ? 'Continuar de onde parei' : 'Começar agora'}
-              </Link>
-            ) : null}
-          </div>
+      <KidsBand tone="creme" innerClassName="pt-6 pb-0 md:pt-8 md:pb-0">
+        <div className="mx-auto flex w-full max-w-[40rem] items-center justify-between gap-4">
+          <KidsBackButton href={back.href} label={back.label} showLabel className="shrink-0" />
+          <h1 className="sz-display min-w-0 text-right text-[clamp(1.125rem,3vw,1.75rem)] leading-tight [overflow-wrap:anywhere]">
+            {course.title}
+          </h1>
         </div>
       </KidsBand>
 
@@ -182,9 +91,8 @@ export default async function CoursePage({
         </KidsBand>
       ) : null}
 
-      {/* Trilha de aulas (estilo Duolingo) — substitui a lista de módulos. A faixa
-          azul-céu vai do começo ao fim da trilha, como no mapa da carreira. */}
-      <KidsBand tone="ceu">
+      {/* O cabeçalho e a trilha dividem a mesma régua estreita. */}
+      <KidsBand tone="ceu" innerClassName="pt-8 md:pt-10">
         <CourseTrail course={course} />
       </KidsBand>
     </>

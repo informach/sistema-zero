@@ -534,6 +534,24 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     })
     expect(invalid.status).toBe(400)
 
+    const uploadedUrl = 'https://media.example.com/admin/module-illustrations/nave.svg'
+    const uploaded = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
+      title: 'Nave renomeada',
+      summary: null,
+      illustration: uploadedUrl,
+    })
+    expect(uploaded.status).toBe(200)
+    expect((await readJson(uploaded)).illustration).toBe(uploadedUrl)
+    const uploadedTree = await readJson(await get(app, `/members/admin/courses/${course.id}`))
+    expect(uploadedTree.modules[0].illustration).toBe(uploadedUrl)
+
+    const unsafe = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
+      title: 'Nave renomeada',
+      summary: null,
+      illustration: 'javascript:alert(1)',
+    })
+    expect(unsafe.status).toBe(400)
+
     const cleared = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
       title: 'Nave renomeada',
       summary: null,

@@ -84,7 +84,7 @@ function course(modules: ModuleOutlineView[]): CourseDetailView {
 describe('CourseTrail', () => {
   test('curso sem NENHUMA aula publicada mostra recado, não uma área em branco', () => {
     // Antes de esconder os módulos vazios, os banners deles preenchiam a página.
-    // Sem o recado, a criança veria capa, barra de progresso e um vão mudo.
+    // Sem o recado, a criança veria o cabeçalho do curso e um vão mudo.
     render(<CourseTrail course={course([moduleOf('m1', []), moduleOf('m2', [])])} />)
     expect(screen.getByText(/As aulas estão sendo preparadas/)).toBeTruthy()
     expect(screen.queryByText(/Unidade 1/)).toBeNull()
@@ -137,6 +137,39 @@ describe('CourseTrail', () => {
         ),
       ),
     ).toBe(true)
+  })
+
+  test('SVG enviado ao R2 aparece na trilha sem entrar no catálogo de artes de exemplo', () => {
+    const url = 'https://media.example.com/admin/module-illustrations/nave.svg'
+    const { container } = render(
+      <CourseTrail course={course([{ ...moduleOf('m1', [lesson('a')]), illustration: url }])} />,
+    )
+    expect(container.querySelector('[data-trail-art] img')?.getAttribute('src')).toBe(url)
+  })
+
+  test('ilustrações revezam de lado e descem até o trecho mais livre da unidade', () => {
+    const desafio = course([
+      { ...moduleOf('m1', [lesson('a'), lesson('b')]), illustration: 'desafio-nave' },
+      { ...moduleOf('vazio', []), illustration: 'desafio-nave' },
+      { ...moduleOf('m2', [lesson('c'), lesson('d')]), illustration: 'desafio-asteroides' },
+      {
+        ...moduleOf('m3', [lesson('e'), lesson('f'), lesson('g')]),
+        illustration: 'desafio-conquista',
+      },
+    ])
+    const { container } = render(<CourseTrail course={desafio} />)
+    const arts = [...container.querySelectorAll<HTMLElement>('[data-trail-art]')]
+    expect(arts.map((art) => art.classList.contains('kids-trail-art--left'))).toEqual([
+      true,
+      false,
+      true,
+    ])
+    expect(arts.map((art) => art.classList.contains('kids-trail-art--right'))).toEqual([
+      false,
+      true,
+      false,
+    ])
+    expect(arts.map((art) => art.style.top)).toEqual(['55%', '55%', '66.25%'])
   })
 
   test('módulos vazios e módulos sem escolha no Admin não recebem ilustrações', () => {

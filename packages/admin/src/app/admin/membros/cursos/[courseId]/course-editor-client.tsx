@@ -9,17 +9,13 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import {
-  MODULE_ILLUSTRATIONS,
-  moduleIllustration,
-} from '@sistemazero/core/course/module-illustrations'
+import { moduleIllustration } from '@sistemazero/core/course/module-illustrations'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
-import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
 import {
@@ -37,6 +33,7 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
+import { ModuleIllustrationUploader } from '@/components/media/module-illustration-uploader'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { slugify } from '@/lib/slug'
@@ -81,6 +78,7 @@ export function CourseEditorClient({
   const [moduleOpen, setModuleOpen] = useState(false)
   const [editingModule, setEditingModule] = useState<ModuleView | null>(null)
   const [moduleForm, setModuleForm] = useState({ title: '', summary: '', illustration: '' })
+  const [moduleIllustrationUploading, setModuleIllustrationUploading] = useState(false)
 
   const [lessonOpen, setLessonOpen] = useState(false)
   const [lessonModuleId, setLessonModuleId] = useState<string>('')
@@ -391,14 +389,20 @@ export function CourseEditorClient({
 
       <Dialog
         open={moduleOpen}
-        onClose={() => setModuleOpen(false)}
+        onClose={() => {
+          if (!moduleIllustrationUploading) setModuleOpen(false)
+        }}
         title={editingModule ? 'Editar módulo' : 'Novo módulo'}
         footer={
           <>
-            <Button variant="outline" onClick={() => setModuleOpen(false)} disabled={busy}>
+            <Button
+              variant="outline"
+              onClick={() => setModuleOpen(false)}
+              disabled={busy || moduleIllustrationUploading}
+            >
               Cancelar
             </Button>
-            <Button onClick={saveModule} disabled={busy}>
+            <Button onClick={saveModule} disabled={busy || moduleIllustrationUploading}>
               {busy ? <Spinner /> : null}
               Salvar
             </Button>
@@ -423,21 +427,14 @@ export function CourseEditorClient({
           {tree?.audience === 'kids' ? (
             <Field
               label="Ilustração da trilha"
-              htmlFor="millustration"
+              htmlFor="millustration-file"
               hint="Opcional. A arte aparece ao lado das aulas deste módulo."
             >
-              <Select
-                id="millustration"
+              <ModuleIllustrationUploader
                 value={moduleForm.illustration}
-                onChange={(e) => setModuleForm((f) => ({ ...f, illustration: e.target.value }))}
-              >
-                <option value="">Sem ilustração</option>
-                {MODULE_ILLUSTRATIONS.map((illustration) => (
-                  <option key={illustration.key} value={illustration.key}>
-                    {illustration.label}
-                  </option>
-                ))}
-              </Select>
+                onChange={(illustration) => setModuleForm((f) => ({ ...f, illustration }))}
+                onUploadingChange={setModuleIllustrationUploading}
+              />
             </Field>
           ) : null}
         </div>
@@ -569,6 +566,8 @@ function SortableModuleItem({
               <div className="text-xs text-muted-foreground">
                 Ilustração: {moduleIllustration(mod.illustration)?.label}
               </div>
+            ) : mod.illustration ? (
+              <div className="text-xs text-muted-foreground">Ilustração: SVG enviado</div>
             ) : null}
             <div className="mt-0.5 text-xs text-muted-foreground">
               {published} de {mod.lessons.length}{' '}
