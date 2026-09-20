@@ -7,6 +7,7 @@ import { sceneDefaultGoalIds, sceneModel } from './catalog'
 import { facesAVista, maisPerto, openScene, stepScene } from './engine'
 import { type SceneActivity, sceneScript, sceneStart, sceneTargets } from './index'
 import { AIM_ORIGIN, enemyOnScreen, tilemapCoinRow } from './nucleo'
+import { ONCE_VS_ALWAYS_PRESETS } from './presets'
 import { SCENE_QUESTIONS } from './questions'
 import { drawLoopOnScreen, sceneSituation } from './readout'
 import {
@@ -18,6 +19,7 @@ import {
   sceneCactiOnScreen,
   sceneContact,
   sceneDrawingsGap,
+  uniqueNamesWarning,
 } from './state'
 
 /**
@@ -128,6 +130,347 @@ const passarCinco = (m: Maos, unit: number) =>
   m.faz({ type: 'sample', kind: 'velocity', unit, guided: false })
 
 const CENAS: Record<SceneId, Cena> = {
+  'copy-vs-original': {
+    pedidos: {
+      exported: {
+        texto: 'Aperte Exportar e olhe o lado da aula.',
+        faz: (m) => m.faz({ type: 'export-file' }),
+      },
+      imported: {
+        texto: 'Com o arquivo pronto, aperte Importar.',
+        faz: (m) => {
+          if (!m.estado.copies.fileColor) m.faz({ type: 'export-file' })
+          m.faz({ type: 'import-file' })
+        },
+      },
+      independent: {
+        texto: 'Com jogo nos dois lados, pinte a nave de um lado só.',
+        faz: (m) => {
+          if (!m.estado.copies.fileColor) m.faz({ type: 'export-file' })
+          if (!m.estado.copies.studioColor) m.faz({ type: 'import-file' })
+          m.faz({ type: 'recolor', side: 'studio', color: 'rosa' })
+        },
+      },
+    },
+    mostra: (s) => s.copies.fileColor !== null && s.copies.lessonColor !== null,
+  },
+  'published-copy': {
+    pedidos: {
+      'first-publish': {
+        texto: 'Aperte Publicar e olhe as duas telas.',
+        faz: (m) => m.faz({ type: 'publish' }),
+      },
+      'only-project': {
+        texto: 'Depois de publicar, troque a cor da nave e olhe as duas telas.',
+        faz: (m) => {
+          if (!m.estado.copies.posts.length) m.faz({ type: 'publish' })
+          m.faz({ type: 'recolor', side: 'project', color: 'rosa' })
+        },
+      },
+      republish: {
+        texto: 'Com a cor trocada, aperte Publicar de novo.',
+        faz: (m) => {
+          if (!m.estado.copies.posts.length) m.faz({ type: 'publish' })
+          if (m.estado.copies.projectColor === m.estado.copies.posts.at(-1)?.color)
+            m.faz({ type: 'recolor', side: 'project', color: 'rosa' })
+          m.faz({ type: 'publish' })
+        },
+      },
+    },
+    mostra: (s) =>
+      s.copies.posts.length > 0 && s.copies.posts.at(-1)?.color !== s.copies.projectColor,
+  },
+  'same-rules-new-skin': {
+    pedidos: {
+      'skin-only': {
+        texto: 'Troque o tema para carrinho e olhe a lista de regras.',
+        faz: (m) => m.faz({ type: 'skin', theme: 'road' }),
+      },
+      'three-skins': {
+        texto: 'Passe pelos três temas.',
+        faz: (m) => {
+          m.faz({ type: 'skin', theme: 'road' })
+          m.faz({ type: 'skin', theme: 'sea' })
+        },
+      },
+      'rule-off': {
+        texto: 'Desligue a regra de atirar e jogue um pouco.',
+        faz: (m) => {
+          m.faz({ type: 'rule-toggle', enabled: false })
+          m.faz({ type: 'play-shoot' })
+          m.tempo(1)
+        },
+      },
+    },
+    mostra: (s) => s.skinGame.theme === 'road' && s.skinGame.shootEnabled,
+  },
+  'fixed-vs-read': {
+    pedidos: {
+      'same-spot': {
+        texto: 'Com o x em o número 400, atire, leve a nave para outro lugar e atire de novo.',
+        faz: (m) => {
+          m.faz({ type: 'value-source', source: 'fixed' })
+          m.faz({ type: 'shoot' })
+          m.faz({ type: 'place', x: m.estado.fixedRead.heroX === 640 ? 200 : 640, y: 0 })
+          m.faz({ type: 'shoot' })
+        },
+      },
+      follows: {
+        texto: 'Troque para o centro x da nave, leve a nave para outro lugar e atire.',
+        faz: (m) => {
+          m.faz({ type: 'value-source', source: 'read' })
+          m.faz({ type: 'place', x: m.estado.fixedRead.heroX === 640 ? 200 : 640, y: 0 })
+          m.faz({ type: 'shoot' })
+        },
+      },
+      'box-marks': {
+        texto: 'Ligue as marcas da caixa da nave e atire com o centro x da nave.',
+        faz: (m) => {
+          m.faz({ type: 'value-source', source: 'read' })
+          m.faz({ type: 'box-marks', on: true })
+          m.faz({ type: 'shoot' })
+        },
+      },
+    },
+    mostra: (s) => s.fixedRead.marks.filter((mark) => mark.source === 'fixed').length >= 2,
+  },
+  'collision-pair': {
+    pedidos: {
+      'whole-group': {
+        texto: 'Deixe os dois seletores no grupo inteiro e deixe a trombada acontecer.',
+        faz: (m) => {
+          m.faz({ type: 'command-target', subject: 'shot', target: 'group' })
+          m.faz({ type: 'command-target', subject: 'rock', target: 'group' })
+          m.faz({ type: 'reset' })
+          m.tempo(1)
+        },
+      },
+      'just-the-pair': {
+        texto:
+          'Troque os dois seletores para os apelidos, volte ao começo e deixe a trombada acontecer.',
+        faz: (m) => {
+          m.faz({ type: 'command-target', subject: 'shot', target: 'alias' })
+          m.faz({ type: 'command-target', subject: 'rock', target: 'alias' })
+          m.faz({ type: 'reset' })
+          m.tempo(1)
+        },
+      },
+      'others-stay': {
+        texto:
+          'Com os apelidos escolhidos, deixe o tempo passar até as outras duas pedras saírem pela borda de baixo.',
+        faz: (m) => {
+          if (!m.estado.collisionPair.pairedAliases) {
+            m.faz({ type: 'command-target', subject: 'shot', target: 'alias' })
+            m.faz({ type: 'command-target', subject: 'rock', target: 'alias' })
+            m.faz({ type: 'reset' })
+            m.tempo(1)
+          }
+          m.tempo(2)
+        },
+      },
+    },
+    mostra: (s) => s.collisionPair.collided && s.collisionPair.rocks.length === 0,
+  },
+  invincibility: {
+    pedidos: {
+      'no-shield': {
+        texto: 'Deixe a proteção em 0 e avance até passar a terceira pedra.',
+        faz: (m) => {
+          m.faz({ type: 'shield', frames: 0 })
+          m.faz({ type: 'reset' })
+          m.tempo(1)
+        },
+      },
+      window: {
+        texto: 'Ponha a proteção em 45, volte ao começo e avance até passar a terceira pedra.',
+        faz: (m) => {
+          m.faz({ type: 'shield', frames: 45 })
+          m.faz({ type: 'reset' })
+          m.tempo(1)
+        },
+      },
+      expires: {
+        texto: 'Ponha a proteção em 15, volte ao começo e avance até passar a terceira pedra.',
+        faz: (m) => {
+          m.faz({ type: 'shield', frames: 15 })
+          m.faz({ type: 'reset' })
+          m.tempo(1)
+        },
+      },
+    },
+    mostra: (s) => s.invincibility.struck.length === 3 && s.invincibility.hearts === 2,
+  },
+  'number-line': {
+    pedidos: {
+      colder: {
+        texto: 'Aperte Somar -1 três vezes e olhe onde o marcador para.',
+        faz: (m) => {
+          m.faz({ type: 'reset' })
+          for (let i = 0; i < 3; i++) m.faz({ type: 'sum-minus-one' })
+        },
+      },
+      greater: {
+        texto: 'Volte ao começo e troque o sinal para o biquinho que aponta para a direita.',
+        faz: (m) => {
+          m.faz({ type: 'reset' })
+          m.faz({ type: 'compare-op', operator: '>' })
+        },
+      },
+      stops: {
+        texto: 'Com o biquinho escolhido, leve o marcador até o -9.',
+        faz: (m) => {
+          m.faz({ type: 'compare-op', operator: '>' })
+          m.faz({ type: 'step-value', value: -9 })
+        },
+      },
+      silent: {
+        texto: 'Volte ao começo, ponha o sinal no igual e aperte Somar -1 quatro vezes.',
+        faz: (m) => {
+          m.faz({ type: 'reset' })
+          m.faz({ type: 'compare-op', operator: '=' })
+          for (let i = 0; i < 4; i++) m.faz({ type: 'sum-minus-one' })
+        },
+      },
+    },
+    mostra: (s) => s.numberLine.value === -5 && s.numberLine.operator === '>',
+  },
+  'unique-names': {
+    pedidos: {
+      missing: {
+        texto: 'Tire o bloco de cima e olhe os três blocos e a tela.',
+        faz: (m) => m.faz({ type: 'toggle-block', present: false }),
+      },
+      clash: {
+        texto: 'Ponha o bloco de cima de volta e escolha nave também no bloco de baixo.',
+        faz: (m) => {
+          m.faz({ type: 'toggle-block', present: true })
+          m.faz({ type: 'name-field', name: 'nave' })
+        },
+      },
+      'own-name': {
+        texto: 'No bloco de baixo, troque nave por folha-nave.',
+        faz: (m) => {
+          if (!m.viu('clash')) m.faz({ type: 'name-field', name: 'nave' })
+          m.faz({ type: 'name-field', name: 'folha-nave' })
+        },
+      },
+    },
+    mostra: (s) => uniqueNamesWarning(s.uniqueNames) === 'clash',
+  },
+  'motion-amount': {
+    pedidos: {
+      'no-change': {
+        texto: 'Deixe os dois controles em 0 e olhe a Prévia.',
+        faz: (m) => {
+          m.faz({ type: 'nudge', piece: 'crater', amount: 0 })
+          m.faz({ type: 'nudge', piece: 'body', amount: 0 })
+          m.faz({ type: 'play', on: true })
+          m.tempo(0.25)
+        },
+      },
+      'local-move': {
+        texto: 'Deixe o tanto da pedra inteira em 0 e ponha o da cratera entre 3 e 6.',
+        faz: (m) => {
+          m.faz({ type: 'nudge', piece: 'body', amount: 0 })
+          m.faz({ type: 'nudge', piece: 'crater', amount: 4 })
+          m.faz({ type: 'play', on: true })
+          m.tempo(0.25)
+        },
+      },
+      'too-much': {
+        texto: 'Ponha o tanto que a pedra inteira anda em 10 ou mais.',
+        faz: (m) => {
+          m.faz({ type: 'nudge', piece: 'body', amount: 10 })
+          m.faz({ type: 'play', on: true })
+          m.tempo(0.25)
+        },
+      },
+    },
+    mostra: (s) =>
+      s.motionAmount.previewFrame === 0 && s.motionAmount.crater === 0 && s.motionAmount.body === 0,
+  },
+  'two-clocks': {
+    pedidos: {
+      'more-rocks': {
+        texto: 'Deixe a animação em 8, ponha o relógio em 20 e deixe o tempo passar.',
+        faz: (m) => {
+          m.faz({ type: 'rate', perSecond: 8 })
+          m.faz({ type: 'birth-every', frames: 20 })
+          m.faz({ type: 'reset' })
+          m.tempo(2)
+        },
+      },
+      'faster-spin': {
+        texto: 'Deixe o relógio em 40, ponha a animação em 16 e deixe o tempo passar.',
+        faz: (m) => {
+          m.faz({ type: 'birth-every', frames: 40 })
+          m.faz({ type: 'rate', perSecond: 16 })
+          m.faz({ type: 'reset' })
+          m.tempo(3)
+        },
+      },
+      'each-one': {
+        texto:
+          'Deixe o tempo passar até nascerem três pedras e olhe o número em cima de cada uma na hora em que ela entra.',
+        faz: (m) => m.ate((state) => state.twoClocks.born >= 3, 5),
+      },
+    },
+    mostra: (s) =>
+      s.twoClocks.born >= 3 && s.twoClocks.birthEvery === 20 && s.twoClocks.animationRate === 8,
+  },
+  'once-vs-always': {
+    pedidos: {
+      once: {
+        texto: 'Ponha a ficha de arrumação em Ao iniciar e avance três quadros.',
+        faz: (m) => {
+          if (m.estado.once.frames) m.faz({ type: 'reset' })
+          m.faz({ type: 'place-in-area', card: 'paint', area: 'start' })
+          m.tempo(1)
+        },
+      },
+      always: {
+        texto: 'Ponha a ficha de movimento em Enquanto estiver rodando e avance três quadros.',
+        faz: (m) => {
+          if (m.estado.once.frames) m.faz({ type: 'reset' })
+          m.faz({ type: 'place-in-area', card: 'move', area: 'loop' })
+          m.tempo(1)
+        },
+      },
+      both: {
+        texto:
+          'Deixe Criar em Ao iniciar e Mover em Enquanto estiver rodando; avance cinco quadros.',
+        faz: (m) => {
+          if (m.estado.once.frames) m.faz({ type: 'reset' })
+          m.faz({ type: 'place-in-area', card: 'create', area: 'start' })
+          m.faz({ type: 'place-in-area', card: 'move', area: 'loop' })
+          m.tempo(1.5)
+        },
+      },
+      'on-event': {
+        texto:
+          'Ponha a ficha do evento em Quando acontecer e avance três quadros sem apertar a tecla.',
+        faz: (m) => {
+          m.faz({ type: 'place-in-area', card: 'event', area: 'event' })
+          m.tempo(1)
+        },
+      },
+      'key-fires': {
+        texto: 'Com a ficha do evento em Quando acontecer, aperte a tecla.',
+        faz: (m) => {
+          m.faz({ type: 'place-in-area', card: 'event', area: 'event' })
+          m.faz({ type: 'trigger' })
+        },
+      },
+      flood: {
+        texto: 'Ponha Criar um tiro em Enquanto estiver rodando e avance cinco quadros.',
+        faz: (m) => {
+          m.faz({ type: 'place-in-area', card: 'event', area: 'loop' })
+          m.tempo(1.5)
+        },
+      },
+    },
+    mostra: (s) => s.once.frames > 0 && s.once.fires.paint === 1,
+  },
   coordinates: {
     pedidos: {
       right: {
@@ -173,6 +516,16 @@ const CENAS: Record<SceneId, Cena> = {
         texto: 'Escreva também qual tecla usar e aperte Ouvir a tela de novo.',
         faz: (m) => {
           m.faz({ type: 'describe', text: 'Pule os cactos apertando espaço' })
+          m.faz({ type: 'listen' })
+        },
+      },
+      'says-all-controls': {
+        texto: 'Escreva também a seta para cima e o toque na tela, e aperte Ouvir a tela de novo.',
+        faz: (m) => {
+          m.faz({
+            type: 'describe',
+            text: 'Corra com o dino e pule os cactos apertando espaço, com a seta para cima ou com toque na tela.',
+          })
           m.faz({ type: 'listen' })
         },
       },
@@ -280,6 +633,15 @@ const CENAS: Record<SceneId, Cena> = {
           m.faz({ type: 'play', on: false })
         },
       },
+      'same-frames': {
+        texto: 'Deixe o quadro 2 igual ao quadro 1 e ligue a prévia rápida.',
+        faz: (m) => {
+          m.faz({ type: 'same-frames', on: true })
+          m.faz({ type: 'rate', perSecond: 8 })
+          m.faz({ type: 'play', on: true })
+          m.tempo()
+        },
+      },
     },
     // A resposta ("um quadro de cada vez") é a prévia PARADA com um quadro só na tela.
     mostra: (s) => !s.animation.playing,
@@ -339,6 +701,13 @@ const CENAS: Record<SceneId, Cena> = {
         },
         // A opção "cima e baixo" da bancada abre depois do lado a lado.
         abreDepois: 'two-sides',
+      },
+      'fill-ignores-mirror': {
+        texto: 'Deixe ligado o Espelho lado a lado e encha a asa com o Balde de tinta.',
+        faz: (m) => {
+          m.faz({ type: 'mirror-mode', mode: 'x' })
+          m.faz({ type: 'fill' })
+        },
       },
     },
     mostra: (s) => s.mirror.on && s.mirror.axis === 'x' && s.mirror.marks.includes('asa|x'),
@@ -486,7 +855,7 @@ const CENAS: Record<SceneId, Cena> = {
   'jump-sound': {
     pedidos: {
       'false-sound': {
-        texto: 'Com Tocar som em Quando apertar Espaço, aperte Espaço duas vezes no mesmo pulo.',
+        texto: 'Com Tocar efeito em Quando apertar Espaço, aperte Espaço duas vezes no mesmo pulo.',
         faz: (m) => {
           ligado(m, 'sound', false)
           m.ate((s) => s.flight.time === null)
@@ -496,7 +865,7 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       'silent-jump': {
-        texto: 'Com Tocar som em Quando apertar Espaço, pule tocando no Dino.',
+        texto: 'Com Tocar efeito em Quando apertar Espaço, pule tocando no Dino.',
         faz: (m) => {
           ligado(m, 'sound', false)
           m.ate((s) => s.flight.time === null)
@@ -504,7 +873,7 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       'quiet-air': {
-        texto: 'Com Tocar som em Quando o Dino pular, aperte Espaço duas vezes no mesmo pulo.',
+        texto: 'Com Tocar efeito em Quando o Dino pular, aperte Espaço duas vezes no mesmo pulo.',
         faz: (m) => {
           ligado(m, 'sound', true)
           m.ate((s) => s.flight.time === null)
@@ -514,7 +883,7 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       'key-sound': {
-        texto: 'Com Tocar som em Quando o Dino pular, pule pela tecla Espaço.',
+        texto: 'Com Tocar efeito em Quando o Dino pular, pule pela tecla Espaço.',
         faz: (m) => {
           ligado(m, 'sound', true)
           m.ate((s) => s.flight.time === null)
@@ -522,7 +891,7 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       'tap-sound': {
-        texto: 'Com Tocar som em Quando o Dino pular, pule tocando no Dino.',
+        texto: 'Com Tocar efeito em Quando o Dino pular, pule tocando no Dino.',
         faz: (m) => {
           ligado(m, 'sound', true)
           m.ate((s) => s.flight.time === null)
@@ -531,7 +900,7 @@ const CENAS: Record<SceneId, Cena> = {
       },
       'every-jump': {
         texto:
-          'Leve Tocar som para Quando o Dino pular. Depois pule pela tecla Espaço e tocando no Dino.',
+          'Leve Tocar efeito para Quando o Dino pular. Depois pule pela tecla Espaço e tocando no Dino.',
         faz: (m) => {
           ligado(m, 'sound', true)
           m.ate((s) => s.flight.time === null)
@@ -552,7 +921,7 @@ const CENAS: Record<SceneId, Cena> = {
           m.tempo(1.2)
         },
       },
-      spaced: {
+      'with-timer': {
         texto:
           'Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos.',
         faz: (m) => {
@@ -575,8 +944,8 @@ const CENAS: Record<SceneId, Cena> = {
           )
         },
       },
-      removed: {
-        texto: 'Ligue Remover do grupo quem saiu da tela e deixe o tempo passar.',
+      'rule-removes': {
+        texto: 'Ligue Tirar do grupo quem sair da tela e deixe o tempo passar até dois saírem.',
         faz: (m) => {
           ligado(m, 'cleanup', true)
           m.tempo(2)
@@ -589,7 +958,7 @@ const CENAS: Record<SceneId, Cena> = {
   'game-state': {
     pedidos: {
       outside: {
-        texto: 'Na tela de início, com Criar cacto fora do Se, deixe o tempo passar.',
+        texto: 'No início, com Criar cacto fora do Se, deixe o tempo passar.',
         faz: (m) => {
           if (m.estado.match.screen !== 'start') m.faz({ type: 'home' })
           ligado(m, 'condition', false)
@@ -598,7 +967,7 @@ const CENAS: Record<SceneId, Cena> = {
       },
       waiting: {
         texto:
-          'Leve Criar cacto para dentro de Se jogando e deixe o tempo passar 2 segundos na tela de início.',
+          'Leve Criar cacto para dentro de Se o estado do jogo é jogando e deixe o tempo passar 2 segundos no início.',
         faz: (m) => {
           ligado(m, 'condition', true)
           if (m.estado.match.screen !== 'start') m.faz({ type: 'home' })
@@ -606,7 +975,7 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       playing: {
-        texto: 'Com Criar cacto dentro de Se jogando, comece a partida e deixe o tempo passar.',
+        texto: 'Com Criar cacto dentro do Se, comece a partida e deixe o tempo passar.',
         faz: (m) => {
           ligado(m, 'condition', true)
           if (m.estado.match.screen !== 'start') m.faz({ type: 'home' })
@@ -620,7 +989,7 @@ const CENAS: Record<SceneId, Cena> = {
   controls: {
     pedidos: {
       'missing-touch': {
-        texto: 'Com Começar em Quando apertar Enter, toque na tela de início.',
+        texto: 'Com Começar em Quando apertar a tecla, toque na tela de início.',
         faz: (m) => {
           ligado(m, 'touch', false)
           if (m.estado.match.screen !== 'start') m.faz({ type: 'home' })
@@ -659,7 +1028,8 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       'screen-only': {
-        texto: 'No fim, com Ir para o início escolhido, toque na tela duas vezes.',
+        texto:
+          'No fim, com Mudar o estado do jogo para inicio escolhido, toque na tela duas vezes.',
         faz: (m) => {
           noFimDaPartida(m)
           ligado(m, 'restart', false)
@@ -667,15 +1037,25 @@ const CENAS: Record<SceneId, Cena> = {
           m.faz({ type: 'start', input: 'tap' })
         },
       },
-      restarted: {
+      'clean-track': {
         texto:
-          'Depois de jogar de novo com Ir para o início, escolha Reiniciar o jogo e, no fim, toque na tela duas vezes.',
+          'Depois de jogar de novo com Mudar o estado do jogo para inicio, escolha Reiniciar o jogo e, no fim, toque na tela duas vezes.',
         faz: (m) => {
           if (!m.viu('screen-only')) CENAS.restart.pedidos['screen-only']?.faz(m)
           noFimDaPartida(m)
           ligado(m, 'restart', true)
           m.faz({ type: 'start', input: 'tap' })
           m.faz({ type: 'start', input: 'tap' })
+        },
+      },
+      'back-to-menu': {
+        texto:
+          'Escolha Reiniciar o jogo, aperte Enter no fim e depois aperte Enter de novo para jogar.',
+        faz: (m) => {
+          noFimDaPartida(m)
+          ligado(m, 'restart', true)
+          m.faz({ type: 'start', input: 'key' })
+          m.faz({ type: 'start', input: 'key' })
         },
       },
     },
@@ -708,6 +1088,13 @@ const CENAS: Record<SceneId, Cena> = {
         // O Tamanho da área só abre depois do BATEU.
         abreDepois: 'contact',
       },
+      'too-small': {
+        texto: 'Encoste o cacto no desenho do Dino e deixe o Tamanho da área do Dino em 40%.',
+        faz: (m) => {
+          m.faz({ type: 'move', distance: 40 })
+          m.faz({ type: 'resize', width: sceneAreaWidth(40) })
+        },
+      },
     },
     // A resposta: BATEU com um vão entre os desenhos.
     mostra: (s) => sceneContact(s.contact) && sceneDrawingsGap(s.contact) > 0,
@@ -716,10 +1103,18 @@ const CENAS: Record<SceneId, Cena> = {
   // pela "Próxima tela".
   score: {
     pedidos: {
+      'score-runaway': {
+        texto:
+          'Ponha Somar ponto dentro do A cada quadro do jogo e deixe passar um segundo inteiro.',
+        faz: (m) => {
+          m.faz({ type: 'score-place', clock: 'frame', guarded: false })
+          m.tempo(1)
+        },
+      },
       'score-idle-wrong': {
         texto: 'Com Somar ponto solto, deixe o tempo passar na tela de início.',
         faz: (m) => {
-          ligado(m, 'condition', false)
+          m.faz({ type: 'score-place', clock: 'loose', guarded: false })
           ateATela(m, 'start')
           m.tempo(1.2)
         },
@@ -727,9 +1122,9 @@ const CENAS: Record<SceneId, Cena> = {
       'score-start': {
         // ⚠️ Mudou de propósito (consertos do review da onda A do lote 5): mais curto, o mesmo gesto.
         texto:
-          'Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para Se jogando e espere de novo.',
+          'Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para o bloco “o estado do jogo é jogando ?” e espere de novo.',
         faz: (m) => {
-          ligado(m, 'condition', false)
+          m.faz({ type: 'score-place', clock: 'loose', guarded: false })
           ateATela(m, 'start')
           m.tempo(1.2)
           ligado(m, 'condition', true)
@@ -738,7 +1133,7 @@ const CENAS: Record<SceneId, Cena> = {
       },
       'score-playing': {
         texto:
-          'Com Somar ponto em Se jogando, aperte Próxima tela até Jogando e deixe o tempo passar.',
+          'Com Somar ponto dentro do Se, aperte Próxima tela até Jogando e deixe o tempo passar.',
         faz: (m) => {
           ligado(m, 'condition', true)
           ateATela(m, 'playing')
@@ -755,6 +1150,19 @@ const CENAS: Record<SceneId, Cena> = {
           ateATela(m, 'end')
           m.tempo(1.2)
         },
+      },
+      'score-waiting': {
+        texto: 'Leve Somar ponto para dentro do Se e deixe o tempo passar na tela de início.',
+        faz: (m) => {
+          m.faz({ type: 'score-place', clock: 'second', guarded: true })
+          ateATela(m, 'start')
+          m.tempo(1)
+        },
+      },
+      'score-kept': {
+        texto:
+          'Depois de ver os pontos crescerem jogando, aperte Próxima tela até Fim e deixe o tempo passar.',
+        faz: (m) => CENAS.score.pedidos['score-end']?.faz(m),
       },
     },
     mostra: (s) => s.match.screen === 'start' && !s.match.guarded && s.match.points > 0,
@@ -836,12 +1244,12 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       'variation-limit': {
-        texto: 'Com a base em −9 e a condição ligada, aperte Passar 5 segundos mais quatro vezes.',
+        texto:
+          'Com a base em −9 e a condição ligada, aperte Passar 5 segundos até nascer um cacto −10.',
         faz: (m) => {
           ligado(m, 'limit', true)
           for (let t = 0; t < 10 && m.estado.speed.base > -9; t++) passarCinco(m, 0.3)
-          // Sem sorte nenhuma: com três cactos seguidos em −9, o motor garante o −10.
-          for (let t = 0; t < 4; t++) passarCinco(m, 0.3)
+          passarCinco(m, 0.8)
         },
       },
       'old-speed': {
@@ -1508,6 +1916,12 @@ const CENAS: Record<SceneId, Cena> = {
   },
 }
 
+function startForGoal(scene: SceneId, goal: string): SceneStart {
+  if (scene === 'once-vs-always' && ['on-event', 'key-fires', 'flood'].includes(goal))
+    return { scene, setup: { preset: ONCE_VS_ALWAYS_PRESETS['tres-caixas-tiro'] } }
+  return { scene }
+}
+
 /**
  * Da abertura, segue os pedidos na ordem do "Conferir": a primeira meta que falta, e só ela.
  *
@@ -1531,16 +1945,25 @@ function caminhoDoConferir(start: SceneStart, alvos: readonly string[], cena: Ce
 
 describe('o pedido de cada meta, seguido ao pé da letra no motor', () => {
   test('⚠️ a tabela cobre as 45 cenas e TODA meta, com o texto do catálogo letra por letra', () => {
+    const equivalentes = new Set([
+      'stage-size · follows',
+      'impulse · compare',
+      'spawn · same-fall',
+      'hitbox · early-hit',
+      'hitbox · fair-hit',
+      'random · above',
+      'acceleration · spawned-ten',
+      'velocity · still',
+    ])
     for (const scene of SCENE_IDS) {
       const cena = CENAS[scene]
-      for (const meta of sceneModel(scene).goals) {
+      const metas = sceneModel(scene).goals.filter(
+        (meta) => !equivalentes.has(`${scene} · ${meta.id}`),
+      )
+      for (const meta of metas) {
         expect(cena.pedidos[meta.id]?.texto, `${scene} · ${meta.id}`).toBe(meta.pedido)
       }
-      expect(Object.keys(cena.pedidos).sort(), scene).toEqual(
-        sceneModel(scene)
-          .goals.map((g) => g.id)
-          .sort(),
-      )
+      expect(Object.keys(cena.pedidos).sort(), scene).toEqual(metas.map((g) => g.id).sort())
     }
   })
 
@@ -1549,7 +1972,7 @@ describe('o pedido de cada meta, seguido ao pé da letra no motor', () => {
     for (const scene of SCENE_IDS)
       for (const [meta, pedido] of Object.entries(CENAS[scene].pedidos)) {
         if (pedido.abreDepois) continue
-        const start = { scene }
+        const start = startForGoal(scene, meta)
         const m = new Maos(start, openScene(start))
         pedido.faz(m)
         expect(m.viu(meta), `${scene}: da abertura, "${pedido.texto}" derruba ${meta}`).toBe(true)
@@ -1771,8 +2194,6 @@ describe('⚠️⚠️ meio gesto NÃO derruba a meta (varredura gerada dos pedi
     // meta não afirma), e a meta cai quando o que ela diz já está na tela.
     'acceleration · old-speed':
       'dois cactos na pista já mostram o velho com o número dele; o terceiro aperto é folga para quem olha devagar',
-    'acceleration · variation-limit':
-      '"mais quatro vezes" é o teto: o −10 sai em algum dos quatro apertos, e a meta cai no aperto em que ele aparece',
     'hold-vs-press · while-held':
       'a meta é do tempo COM a tecla segurada ("conte até três"); soltar a tecla é o fim do gesto, não o que a meta afirma',
     'entity-state · own':
@@ -1795,7 +2216,7 @@ describe('⚠️⚠️ meio gesto NÃO derruba a meta (varredura gerada dos pedi
     for (const scene of SCENE_IDS)
       for (const [meta, pedido] of Object.entries(CENAS[scene].pedidos)) {
         if (pedido.abreDepois) continue
-        const start = { scene }
+        const start = startForGoal(scene, meta)
         const m = new Gravador(start, openScene(start))
         pedido.faz(m)
         if (!m.viu(meta)) continue

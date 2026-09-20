@@ -120,7 +120,7 @@ describe('MÉDIO-3: a meta que a cena não tem não esconde o bloco nem trava a 
   })
 
   test('o que NÃO é meta desconhecida continua recusado na leitura', () => {
-    // Uma ação que deixou de ser legal no caso (o `advance` saiu da `random`) não é tolerada aqui:
+    // Uma ação de outra cena (`interval` pertence à `spawn`) não é tolerada aqui:
     // ela é da varredura do banco e do editor.
     const aleatorio: InteractiveBlock = {
       kind: 'interactive',
@@ -131,7 +131,7 @@ describe('MÉDIO-3: a meta que a cena não tem não esconde o bloco nem trava a 
       activity: {
         type: 'experimentation',
         scene: 'random',
-        setup: { actions: [{ type: 'advance', seconds: 1 }] },
+        setup: { actions: [{ type: 'interval', seconds: 1 }] },
       },
     }
     expect(isPublicInteractiveBlock(publicInteractiveBlock(aleatorio))).toBe(false)

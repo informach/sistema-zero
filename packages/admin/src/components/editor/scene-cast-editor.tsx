@@ -45,6 +45,7 @@ const NOME_DA_FIGURA: Record<SceneFigure, string> = {
   cacto: 'Cacto',
   floresta: 'Floresta',
   nave: 'Nave',
+  estrelas: 'Fundo de estrelas',
   asteroide: 'Asteroide',
   pedra: 'Pedra',
   tiro: 'Tiro',

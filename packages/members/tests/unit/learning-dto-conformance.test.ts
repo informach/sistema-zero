@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
-import { chaveDeVoz } from '@sistemazero/core/learning/scene'
+import {
+  chaveDeVoz,
+  GAME_STATE_PRESETS,
+  RANDOM_PRESETS,
+  SPAWN_PRESETS,
+} from '@sistemazero/core/learning/scene'
 import { Elysia, getSchemaValidator, t } from 'elysia'
 import { InteractiveBlockSchema } from '../../src/interfaces/http/learning.dtos'
 
@@ -33,6 +38,155 @@ const base: InteractiveBlock = {
 /** Blocos que o DOMÍNIO aceita. Nenhum deles pode ser recusado na borda. */
 const validos: Array<[string, InteractiveBlock]> = [
   ['experimentação simples', base],
+  [
+    'arquivo exportado e importado na cena de cópias',
+    {
+      ...base,
+      activity: {
+        type: 'experimentation',
+        scene: 'copy-vs-original',
+        setup: {
+          actions: [
+            { type: 'export-file' },
+            { type: 'import-file' },
+            { type: 'recolor', side: 'studio', color: 'rosa' },
+          ],
+          goals: ['exported', 'imported', 'independent'],
+        },
+      },
+    },
+  ],
+  [
+    'publicação nova no Mural',
+    {
+      ...base,
+      activity: {
+        type: 'experimentation',
+        scene: 'published-copy',
+        setup: {
+          actions: [
+            { type: 'publish' },
+            { type: 'recolor', side: 'project', color: 'verde' },
+            { type: 'publish' },
+            { type: 'open-mural' },
+          ],
+          goals: ['first-publish', 'only-project', 'republish'],
+        },
+      },
+    },
+  ],
+  [
+    'um jogo com três temas e regra jogável',
+    {
+      ...base,
+      activity: {
+        type: 'experimentation',
+        scene: 'same-rules-new-skin',
+        setup: {
+          actions: [
+            { type: 'skin', theme: 'road' },
+            { type: 'rule-toggle', enabled: false },
+            { type: 'play-move', direction: 1 },
+            { type: 'play-shoot' },
+          ],
+          goals: ['skin-only', 'three-skins', 'rule-off'],
+        },
+      },
+    },
+  ],
+  [
+    'a figura do fundo estrelado do Desafio',
+    {
+      ...base,
+      activity: {
+        type: 'experimentation',
+        scene: 'layers',
+        cast: {
+          hero: { name: 'nave', gender: 'f', figure: 'nave' },
+          scenery: { name: 'fundo de estrelas', gender: 'm', figure: 'estrelas' },
+        },
+      },
+    },
+  ],
+  [
+    'sorteio da pedra acima da tela',
+    {
+      ...base,
+      activity: {
+        type: 'experimentation',
+        scene: 'random',
+        setup: {
+          preset: RANDOM_PRESETS['pedra-acima'],
+          goals: ['positions', 'repeat', 'above'],
+        },
+      },
+    },
+  ],
+  [
+    'nascimento da pedra em quadros',
+    {
+      ...base,
+      activity: {
+        type: 'experimentation',
+        scene: 'spawn',
+        setup: {
+          preset: SPAWN_PRESETS['pedra-quadros'],
+          goals: ['every-frame', 'with-timer', 'same-fall'],
+        },
+      },
+    },
+  ],
+  [
+    'limpeza dos tiros pelo alto',
+    {
+      ...base,
+      activity: {
+        type: 'experimentation',
+        scene: 'cleanup',
+        cast: { obstacle: { name: 'tiro', gender: 'm', figure: 'tiro' } },
+        cenario: 'nave',
+        setup: {
+          preset: { id: 'tiro-cima', exit: 'top', incoming: false },
+          goals: ['invisible-stored', 'rule-removes'],
+        },
+      },
+    },
+  ],
+  [
+    'estado do jogo com relógio de 40 quadros',
+    {
+      ...base,
+      activity: {
+        type: 'experimentation',
+        scene: 'game-state',
+        cenario: 'nave',
+        setup: {
+          preset: GAME_STATE_PRESETS['pedra-40-quadros'],
+          goals: ['outside', 'waiting', 'playing'],
+        },
+      },
+    },
+  ],
+  [
+    'cena com preset e texto da meta',
+    {
+      ...base,
+      activity: {
+        type: 'experimentation',
+        scene: 'once-vs-always',
+        setup: {
+          preset: {
+            id: 'uma-ficha-vidas',
+            areas: ['start', 'loop'],
+            cards: [{ id: 'lives', kind: 'lives', label: 'Dar três vidas à nave' }],
+            hitEveryFrames: 3,
+          },
+          goals: ['once'],
+          goalCopy: { once: { label: 'As vidas vieram uma vez' } },
+        },
+      },
+    },
+  ],
   [
     'experimentação com impulso e áudio',
     {
@@ -562,6 +716,30 @@ describe('⚠️⚠️ a pilha de camadas ATRAVESSA uma rota com o corpo tipado'
     // E o domínio aceita o mesmo bloco: borda e guarda concordam.
     expect(isInteractiveBlock(bloco)).toBe(true)
   })
+})
+
+test('os presets atravessam a rota tipada sem perder fichas nem a direção da saída', async () => {
+  const app = new Elysia().post('/', ({ body }) => body, {
+    body: t.Object({ content: InteractiveBlockSchema }),
+  })
+  for (const nome of [
+    'cena com preset e texto da meta',
+    'limpeza dos tiros pelo alto',
+    'estado do jogo com relógio de 40 quadros',
+  ]) {
+    const bloco = validos.find(([id]) => id === nome)?.[1]
+    if (!bloco) throw new Error(`Bloco de teste ausente: ${nome}`)
+    const resposta = await app.handle(
+      new Request('http://members.test/', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ content: bloco }),
+      }),
+    )
+    expect(resposta.status).toBe(200)
+    const devolvido = (await resposta.json()) as { content: InteractiveBlock }
+    expect(devolvido.content.activity).toEqual(bloco.activity)
+  }
 })
 
 describe('⚠️⚠️ "sem a pergunta do fim" ATRAVESSA uma rota com o corpo tipado', () => {

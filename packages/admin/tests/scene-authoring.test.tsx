@@ -32,7 +32,7 @@ test('o roteiro abre em campos, sem JSON, e uma edição não derruba as outras 
       />,
     )
   try {
-    for (const scene of SCENE_IDS) {
+    for (const scene of SCENE_IDS.filter((id) => SCENE_MODELS[id].script.length > 0)) {
       activity = { type: 'demonstration', scene }
       await act(async () => render())
       // O roteiro que vem com a cena tem que abrir VÁLIDO: um alerta aqui é a professora

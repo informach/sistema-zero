@@ -1,5 +1,5 @@
 import type { LearningResult } from '../index'
-import type { SceneId } from './actions'
+import type { SceneId, SceneSetup } from './actions'
 import { castText, type SceneCast } from './cast'
 import { sceneModel } from './catalog'
 import { emCamadas, LAYERS_CAMADAS, type ScenePilha } from './pilha'
@@ -31,14 +31,16 @@ export function sceneGoals(
   targets?: readonly string[],
   /** Como a pilha da `layers` se apresenta (`pilha.ts`): os pedidos falam da lista que a criança vê. */
   pilha?: ScenePilha,
+  /** Texto curto ajustado à aula, sem mudar a evidência que a meta exige. */
+  goalCopy?: SceneSetup['goalCopy'],
 ): SceneGoalProgress[] {
   return sceneModel(scene)
     .goals.filter((g) => (targets?.length ? targets.includes(g.id) : !g.soNoCaso))
     .map((g) => {
-      const pedido = pedidoDaMeta(scene, g.id, pilha) || g.pedido
+      const pedido = goalCopy?.[g.id]?.pedido || pedidoDaMeta(scene, g.id, pilha) || g.pedido
       return {
         id: g.id,
-        label: castText(g.label, cast),
+        label: castText(goalCopy?.[g.id]?.label || g.label, cast),
         ...(pedido ? { pedido: castText(pedido, cast) } : {}),
         complete: state.evidence.discoveries.includes(g.id),
       }
@@ -77,10 +79,10 @@ function settled(scene: SceneId, state: SceneState, targets?: readonly string[])
  */
 function pedidoDoArranjo(scene: SceneId, cast?: SceneCast): string {
   // ⚠️ "Leve… de volta" (consertos do review da onda A do lote 5): o "Conferir" do player responde com
-  // esta frase ("Ainda não. Tente: leve Tocar som de volta…"), e antes ele não dizia nada com as metas
+  // esta frase ("Ainda não. Tente: leve Tocar efeito de volta…"), e antes ele não dizia nada com as metas
   // feitas e a montagem desfeita.
   if (scene === 'jump-sound')
-    return castText('Leve Tocar som de volta para Quando o Dino pular, como fica no jogo.', cast)
+    return castText('Leve Tocar efeito de volta para Quando o Dino pular, como fica no jogo.', cast)
   return 'Deixe a montagem com a descoberta que você fez.'
 }
 const cobra = (targets: readonly string[] | undefined, ...goals: string[]) =>
@@ -111,8 +113,9 @@ export function evaluateExperimentation(
   targets?: readonly string[],
   /** Como a pilha da `layers` se apresenta: o "Ainda falta" diz o gesto da lista que ela vê. */
   pilha?: ScenePilha,
+  goalCopy?: SceneSetup['goalCopy'],
 ): LearningResult {
-  const cobradas = sceneGoals(scene, state, cast, targets, pilha)
+  const cobradas = sceneGoals(scene, state, cast, targets, pilha, goalCopy)
   const missing = cobradas.find((g) => !g.complete)
   const ready = settled(scene, state, targets)
   // ⚠️⚠️ Missão VAZIA reprova. O filtro por `targets` cruza a lista do caso com as metas do
@@ -280,7 +283,7 @@ function degrau(
     return t('Escolha A cada quadro e aperte Avançar 1 quadro duas vezes.', ['trail'])
   if (scene === 'draw-loop' && d.includes('trail') && !d.includes('moving'))
     return t('Ligue Limpar a tela antes e aperte Avançar 1 quadro de novo.', ['moving'])
-  if (scene === 'hitbox' && level < 3)
+  if (scene === 'hitbox' && level < 3 && !d.includes('area-contrast'))
     return d.includes('contact')
       ? // ⚠️ Lote 5 do Raio-X: o controle chama Tamanho da área do Dino (em %), e não largura.
         t('Deixe o cacto onde bateu. Mude só o Tamanho da área do Dino e compare.', [
@@ -312,9 +315,10 @@ function degrau(
   )
     return t('Agora pule tocando no Dino. Olhe se aparece um ♪.', ['silent-jump'])
   if (scene === 'jump-sound' && d.includes('silent-jump') && !d.includes('every-jump') && level < 3)
-    return t('Leve Tocar som para Quando o Dino pular. Depois pule pela tecla e tocando no Dino.', [
-      'every-jump',
-    ])
+    return t(
+      'Leve Tocar efeito para Quando o Dino pular. Depois pule pela tecla e tocando no Dino.',
+      ['every-jump'],
+    )
   if (scene === 'impulse' && d.includes('first-height') && level < 3)
     return t('A marca deste salto fica no palco. Mude só o impulso e pule de novo.', [
       'other-height',

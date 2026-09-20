@@ -35,6 +35,19 @@ const atributos = (html: string, nome: string) =>
   [...html.matchAll(new RegExp(`${nome}="([^"]*)"`, 'g'))].map((m) => m[1])
 
 describe('frames e onion-skin: o corpo fica, e só o fogo muda', () => {
+  test('com o quadro 2 copiado do 1, miniaturas e prévia mostram o fogo pequeno', () => {
+    const html = renderToStaticMarkup(
+      <FramesStage
+        state={estado('frames', [
+          { type: 'same-frames', on: true },
+          { type: 'frame', index: 2 },
+        ])}
+      />,
+    )
+    expect(atributos(html, 'data-fogo')).toEqual(['5', '5', '5'])
+    expect(html).toContain('Os dois quadros são iguais')
+  })
+
   test('⚠️⚠️ o corpo da nave é IDÊNTICO nos dois quadros; o que muda é o tamanho do fogo', () => {
     const um = renderToStaticMarkup(<FramesStage state={estado('frames')} />)
     const dois = renderToStaticMarkup(
@@ -138,6 +151,19 @@ describe('sheet-vs-sprite: o jogo mostra o RECORTE esticado, e a folha não muda
 })
 
 describe('symmetry, fill-stroke e shading', () => {
+  test('o Balde enche só a asa esquerda, mesmo com o Espelho lado a lado ligado', () => {
+    const state = estado('symmetry', [
+      { type: 'mirror-mode', mode: 'x' },
+      { type: 'trace', piece: 'asa' },
+      { type: 'fill' },
+    ])
+    const html = renderToStaticMarkup(<SymmetryStage state={state} />)
+    expect(atributos(html, 'data-meio')).toEqual(['x'])
+    expect(atributos(html, 'data-balde')).toEqual(['asa-esquerda'])
+    expect(html).toContain('O Balde encheu só a asa esquerda.')
+    expect(atributos(html, 'data-copia')).toContain('true')
+  })
+
   test('o espelho no MEIO: a cópia na coluna espelhada, com a linha do meio só com o espelho ligado', () => {
     const solto = renderToStaticMarkup(
       <SymmetryStage state={estado('symmetry', [{ type: 'trace', piece: 'asa' }])} />,

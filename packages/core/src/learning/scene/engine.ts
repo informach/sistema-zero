@@ -50,12 +50,22 @@ import {
   tilemapMark,
   tilemapMarkedRows,
 } from './nucleo'
+import { advanceOnce, onceDiscoveries, placeOnce, triggerOnce } from './once-vs-always'
+import {
+  gameStatePreset,
+  isCleanupPreset,
+  isRandomPreset,
+  isSpawnPreset,
+  type OnceVsAlwaysPreset,
+  oncePreset,
+} from './presets'
 // ⚠️ Só o TIPO: a sessão importa o motor, e um valor daqui fecharia um ciclo de módulos.
 import type { SceneCommand } from './session'
 import {
   cloneScene,
   DELTA_RACE,
   DRAW_LOOP_LANE,
+  HITBOX_DRAWINGS_TOUCH,
   HITBOX_VISIBLE_GAP,
   initialScene,
   LUGARES_NAO_SORTEADOS,
@@ -73,6 +83,7 @@ import {
   sceneCactiOnScreen,
   sceneContact,
   sceneDrawingsGap,
+  uniqueNamesWarning,
   VELOCITY_TRAIL_MAX,
 } from './state'
 
@@ -212,7 +223,7 @@ function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): v
     scene === 'random' || scene === 'acceleration'
       ? []
       : scene === 'cleanup'
-        ? aberto.crowd.cacti.filter((c) => c.x >= 0)
+        ? aberto.crowd.cacti.filter((c) => (c.y === undefined ? c.x >= 0 : c.y >= 0))
         : aberto.crowd.cacti
   aberto.crowd = {
     ...aberto.crowd,
@@ -334,6 +345,14 @@ export function stepScene(
   // também precisa manter esse limite se uma ação chegar por outra superfície.
   if (action.type === 'connect' && action.port === 'draw' && !previous.world.created)
     return previous
+  if (
+    start.scene === 'random' &&
+    isRandomPreset(start.setup?.preset) &&
+    !start.setup.preset.speedModule &&
+    action.type === 'sample' &&
+    action.kind === 'velocity'
+  )
+    return previous
   const s = cloneScene(previous)
   s.evidence.actions = previous.evidence.actions + 1
   /**
@@ -356,6 +375,194 @@ export function stepScene(
   const scene = start.scene
 
   switch (action.type) {
+    case 'value-source':
+      s.fixedRead.source = action.source
+      s.caption =
+        action.source === 'fixed'
+          ? 'O campo voltou ao número 400.'
+          : 'O campo vai ler o centro x da nave no próximo disparo.'
+      break
+    case 'box-marks':
+      s.fixedRead.boxMarks = action.on
+      break
+    case 'clear-marks':
+      s.fixedRead.marks = []
+      s.caption = 'As marcas de nascimento saíram. Os tiros que já nasceram continuam subindo.'
+      break
+    case 'command-target':
+      if (action.subject === 'shot') s.collisionPair.shotTarget = action.target
+      else s.collisionPair.rockTarget = action.target
+      break
+    case 'shield':
+      s.invincibility.protection = action.frames
+      break
+    case 'advance-to': {
+      const next = [1, 10, 30].find((frame) => frame > s.invincibility.frames)
+      if (next === undefined) return previous
+      while (s.invincibility.frames < next) umQuadro(s, start, 30)
+      s.clock.carry = 0
+      break
+    }
+    case 'step-value':
+      s.numberLine.value = action.value
+      observarMetasNumberLine(s)
+      break
+    case 'sum-minus-one':
+      if (s.numberLine.value <= -12) return previous
+      s.numberLine.value--
+      s.numberLine.presses++
+      if (s.numberLine.operator === '=') {
+        s.numberLine.equalPresses++
+        if (s.numberLine.value !== -9) s.numberLine.sawFalseEqual = true
+      }
+      observarMetasNumberLine(s)
+      break
+    case 'compare-op':
+      if (s.numberLine.operator !== action.operator) {
+        s.numberLine.equalPresses = 0
+        s.numberLine.sawFalseEqual = false
+      }
+      s.numberLine.operator = action.operator
+      observarMetasNumberLine(s)
+      break
+    case 'toggle-block':
+      s.uniqueNames.topPresent = action.present
+      if (!action.present)
+        observe(
+          s,
+          'missing',
+          'Sem o bloco que cria o nome, os outros acendem o aviso e a tela para de mudar',
+        )
+      break
+    case 'name-field':
+      s.uniqueNames.bottomName = action.name
+      if (uniqueNamesWarning(s.uniqueNames) === 'clash')
+        observe(s, 'clash', 'Dois blocos criando o mesmo nome: o Estúdio pede um nome diferente')
+      if (
+        action.name === 'folha-nave' &&
+        s.evidence.discoveries.includes('clash') &&
+        s.uniqueNames.topPresent
+      )
+        observe(s, 'own-name', 'Com um nome só dela, a folha fica junto da nave sem briga')
+      break
+    case 'nudge':
+      if (action.piece === 'crater') s.motionAmount.crater = action.amount
+      else s.motionAmount.body = action.amount
+      s.motionAmount.viewedFrames = 0
+      break
+    case 'birth-every':
+      s.twoClocks.birthEvery = action.frames
+      if (s.twoClocks.frames === 0) s.twoClocks.birthAtStart = action.frames
+      break
+    case 'export-file':
+      s.copies.fileColor = s.copies.lessonColor
+      observe(s, 'exported', 'O arquivo saiu, e o jogo continuou na aula')
+      s.caption = 'O arquivo levou uma cópia. O jogo ainda está na aula.'
+      break
+    case 'import-file':
+      if (s.copies.fileColor === null) return previous
+      s.copies.studioColor = s.copies.fileColor
+      observe(s, 'imported', 'O mesmo jogo apareceu no Estúdio')
+      if (s.copies.lessonColor !== s.copies.studioColor)
+        observe(s, 'independent', 'Mudou a cor de um lado, e o outro ficou como estava')
+      s.caption = 'O arquivo virou um projeto no Estúdio.'
+      break
+    case 'recolor': {
+      const copies = s.copies
+      const before =
+        action.side === 'lesson'
+          ? copies.lessonColor
+          : action.side === 'studio'
+            ? copies.studioColor
+            : copies.projectColor
+      if (before === null || before === action.color) return previous
+      if (action.side === 'lesson') copies.lessonColor = action.color
+      else if (action.side === 'studio') copies.studioColor = action.color
+      else copies.projectColor = action.color
+      if (
+        scene === 'copy-vs-original' &&
+        copies.studioColor !== null &&
+        copies.lessonColor !== copies.studioColor
+      )
+        observe(s, 'independent', 'Mudou a cor de um lado, e o outro ficou como estava')
+      if (
+        scene === 'published-copy' &&
+        copies.posts.length > 0 &&
+        copies.posts.at(-1)?.color !== copies.projectColor
+      )
+        observe(s, 'only-project', 'Mudando a cor no projeto, só a tela da esquerda mudou')
+      break
+    }
+    case 'publish': {
+      const copies = s.copies
+      if (copies.posts.length >= 12) return previous
+      const last = copies.posts.at(-1)
+      const post = { id: copies.posts.length + 1, color: copies.projectColor }
+      copies.posts.push(post)
+      if (!last)
+        observe(s, 'first-publish', 'Depois de publicar, as duas telas mostram a mesma nave')
+      else if (last.color !== post.color && s.evidence.discoveries.includes('only-project'))
+        observe(s, 'republish', 'O Mural ganhou uma publicação nova com a cor nova')
+      s.caption = last
+        ? `A publicação ${post.id} entrou no Mural. A anterior continua lá.`
+        : 'A primeira cópia entrou no Mural.'
+      break
+    }
+    case 'open-mural': {
+      const latest = s.copies.posts.at(-1)
+      if (!latest) return previous
+      s.copies.muralOpenedId = latest.id
+      break
+    }
+    case 'skin': {
+      const game = s.skinGame
+      game.theme = action.theme
+      if (!game.visited.includes(action.theme)) game.visited.push(action.theme)
+      if (action.theme === 'road' && game.shootEnabled)
+        observe(s, 'skin-only', 'Trocou o tema e as quatro regras continuaram acesas')
+      if (game.visited.length === 3 && game.shootEnabled)
+        observe(s, 'three-skins', 'Três histórias diferentes, o mesmo jogo')
+      s.caption = 'Os desenhos mudaram. As quatro regras do jogo continuam acesas.'
+      break
+    }
+    case 'rule-toggle':
+      s.skinGame.shootEnabled = action.enabled
+      if (action.enabled) {
+        s.skinGame.disabledTried = false
+        s.skinGame.disabledFrames = 0
+      }
+      s.caption = action.enabled
+        ? 'A tecla de tiro voltou a funcionar.'
+        : 'A regra de atirar apagou. Experimente jogar.'
+      break
+    case 'play-move':
+      s.skinGame.x = Math.max(40, Math.min(520, s.skinGame.x + 24 * action.direction))
+      break
+    case 'play-shoot':
+      if (s.skinGame.shootEnabled) {
+        if (s.skinGame.shots.length < 8)
+          s.skinGame.shots.push({ id: s.skinGame.nextShotId++, x: s.skinGame.x, y: 240 })
+        s.caption = 'A regra está ligada: saiu um tiro.'
+      } else {
+        s.skinGame.disabledTried = true
+        s.caption = 'A tecla foi apertada, mas a regra está desligada: não saiu tiro.'
+        if (s.skinGame.disabledFrames >= 10)
+          observe(s, 'rule-off', 'Desligando a regra de atirar, a lista mudou e o jogo mudou junto')
+      }
+      break
+    case 'place-in-area': {
+      const preset = oncePreset(start.setup?.preset)
+      if (!placeOnce(s.once, preset, action.card, action.area)) return previous
+      s.caption = 'A ficha mudou de área. Avance quadros para ver quando ela age.'
+      break
+    }
+    case 'trigger': {
+      const preset = oncePreset(start.setup?.preset)
+      if (!triggerOnce(s.once, preset)) return previous
+      observarMetasDaArea(s, preset)
+      s.caption = 'A tecla disparou a ficha que estava esperando.'
+      break
+    }
     case 'create':
       if (!s.world.created) {
         s.world.created = true
@@ -427,7 +634,7 @@ export function stepScene(
             if (scene === 'game-state') {
               resetTrack(s)
               s.caption = action.enabled
-                ? 'Tudo recomeçou do zero, com Criar cacto dentro de Se jogando.'
+                ? 'Tudo recomeçou do zero, com Criar cacto dentro do Se.'
                 : 'Tudo recomeçou do zero, com Criar cacto fora do Se.'
             }
             // ⚠️⚠️ Na `score` o PLACAR recomeça na troca (consertos do review da onda A do lote 5): o 5
@@ -436,9 +643,17 @@ export function stepScene(
             if (scene === 'score') {
               s.match.points = 0
               s.match.clockRemainder = 0
+              s.match.scoreFrameTicks = 0
+              s.match.scoreClock = action.enabled
+                ? s.match.scoreClock === 'frame'
+                  ? 'frame'
+                  : 'second'
+                : s.match.scoreClock === 'frame'
+                  ? 'frame'
+                  : 'loose'
               s.match.seen = [...PLACAR_NAO_VISTO]
               s.caption = action.enabled
-                ? 'O placar recomeçou do zero, com Somar ponto dentro de Se jogando.'
+                ? 'O placar recomeçou do zero, com Somar ponto dentro do Se.'
                 : 'O placar recomeçou do zero, com Somar ponto solto.'
             }
           }
@@ -585,10 +800,13 @@ export function stepScene(
       if (
         quadros > 0 &&
         !(SALTOS.includes(scene) && s.flight.time === null) &&
-        !(scene === 'restart' && s.match.screen !== 'playing')
+        !(scene === 'restart' && s.match.screen !== 'playing') &&
+        scene !== 'collision-pair' &&
+        scene !== 'invincibility' &&
+        scene !== 'two-clocks'
       )
         s.caption = ''
-      for (let q = 0; q < quadros; q++) umQuadro(s, scene, fps)
+      for (let q = 0; q < quadros; q++) umQuadro(s, start, fps)
       break
     }
 
@@ -605,7 +823,7 @@ export function stepScene(
       // ⚠️ Na `restart` o toque na tela vale em TODA tela (lote 5): no início começa, no fim faz o
       // que a criança escolheu para o toque. É o evento único do Estúdio ("qualquer tecla ou toque").
       if (scene === 'restart') {
-        tocarNaTela(s)
+        tocarNaTela(s, action.input)
         break
       }
       if (s.match.screen !== 'start') break
@@ -631,6 +849,18 @@ export function stepScene(
       else if (scene === 'controls') observe(s, 'start-tap', 'Começou tocando.')
       else s.caption = 'A partida começou.'
       if (scene === 'score') verPlacar(s)
+      break
+
+    case 'score-place':
+      s.match.scoreClock = action.clock
+      s.match.guarded = action.guarded
+      s.match.points = 0
+      s.match.clockRemainder = 0
+      s.match.scoreFrameTicks = 0
+      s.match.scoreIdle = 0
+      s.match.seen = [...PLACAR_NAO_VISTO]
+      verPlacar(s)
+      s.caption = `Somar ponto foi para ${action.clock === 'frame' ? 'A cada quadro do jogo' : action.clock === 'second' ? 'A cada 1 segundos' : 'fora dos relógios'}${action.guarded ? ', dentro do Se' : ''}. O placar voltou a zero.`
       break
 
     case 'collide':
@@ -666,14 +896,27 @@ export function stepScene(
       break
 
     case 'interval':
+      if (scene === 'spawn' && isSpawnPreset(start.setup?.preset) && start.setup.preset.falling) {
+        const frames = Math.round(action.seconds * 30)
+        if (![20, 40, 80].includes(frames)) return previous
+      }
       s.crowd.interval = action.seconds
       resetTrack(s)
-      s.caption = `Tudo recomeçou do zero, com o intervalo de ${decimal(action.seconds)} s.`
+      if (scene === 'spawn') s.crowd.fallComparison = undefined
+      s.caption =
+        scene === 'spawn' && isSpawnPreset(start.setup?.preset) && start.setup.preset.falling
+          ? `Tudo recomeçou do zero, com o intervalo de ${Math.round(action.seconds * 30)} quadros.`
+          : `Tudo recomeçou do zero, com o intervalo de ${decimal(action.seconds)} s.`
       break
 
     case 'sample':
       if (scene === 'acceleration') passarCincoSegundos(s, action.unit)
-      else if (action.kind === 'position') sortearLugar(s, action.unit)
+      else if (action.kind === 'position')
+        sortearLugar(
+          s,
+          action.unit,
+          isRandomPreset(start.setup?.preset) ? start.setup.preset.axis : 'right',
+        )
       else sortearVelocidade(s, action.unit)
       break
 
@@ -686,6 +929,10 @@ export function stepScene(
      * mexer nos dois ao mesmo tempo não diz qual deles levou o Dino para onde.
      */
     case 'place': {
+      if (scene === 'fixed-vs-read') {
+        s.fixedRead.heroX = action.x
+        break
+      }
       const { x: antesX, y: antesY } = s.place
       // ⚠️ O endereço fica preso na tela DO CASO (lote 5): a ação aceita até 800 × 480, a maior tela
       // que um caso escolhe, e o motor prende no tamanho da tela aberta agora.
@@ -860,6 +1107,8 @@ export function stepScene(
       const { goal: objetivo, control: controle } = sceneDescriptionSays(texto)
       if (objetivo) observe(s, 'says-goal', 'A frase diz o que fazer', true)
       if (controle) observe(s, 'says-control', 'A frase diz como jogar', true)
+      if (objetivo && sceneDescriptionHasAllControls(texto))
+        observe(s, 'says-all-controls', 'A frase conta os três jeitos de pular', true)
       // ⚠️ "A frase" em todas, e sem "ela" (lote 5): a última dizia "mas ela ainda não diz", e quem
       // lê não sabe quem é "ela" (a pessoa? a descrição?).
       s.caption =
@@ -918,8 +1167,13 @@ export function stepScene(
      * em que ligou não mostrou pulsação nenhuma.
      */
     case 'play': {
+      if (scene === 'motion-amount') {
+        s.motionAmount.playing = action.on
+        s.motionAmount.viewedFrames = 0
+        break
+      }
       const a = s.animation
-      if (!action.on && a.playing && a.rate >= 6 && a.swaps >= 4)
+      if (!action.on && a.playing && !a.sameFrames && a.rate >= 6 && a.swaps >= 4)
         observe(s, 'paused-one', 'Parou a prévia rápida e viu um quadro só', true)
       if (action.on !== a.playing)
         s.caption = action.on
@@ -930,7 +1184,21 @@ export function stepScene(
       break
     }
 
+    case 'same-frames':
+      s.animation.sameFrames = action.on
+      s.animation.swaps = 0
+      s.animation.elapsed = 0
+      s.caption = action.on
+        ? 'O quadro 2 ficou igual ao 1. A prévia pode trocar, mas o fogo não pulsa.'
+        : 'O quadro 2 voltou a ter o fogo maior.'
+      break
+
     case 'rate':
+      if (scene === 'two-clocks') {
+        s.twoClocks.animationRate = action.perSecond as 2 | 8 | 16
+        if (s.twoClocks.frames === 0) s.twoClocks.rateAtStart = s.twoClocks.animationRate
+        break
+      }
       s.animation.rate = action.perSecond
       s.animation.elapsed = 0
       // ⚠️ As trocas contam a partir da velocidade ESCOLHIDA: as duas descobertas são "devagar dá
@@ -1000,7 +1268,7 @@ export function stepScene(
     /**
      * O traço e a cópia do espelho, na grade 16 × 16 da nave (lote 5 do Raio-X).
      *
-     * ⚠️⚠️ As três metas são sobre QUAL espelho estava ligado no traço: desligado, lado a lado e de
+     * As primeiras três metas são sobre QUAL espelho estava ligado no traço: desligado, lado a lado e de
      * cima e de baixo, os dois espelhos do Pinta. O terceiro só conta DEPOIS do lado a lado (a bancada
      * o deixa fechado com o motivo até lá): é o caso novo, que a criança prevê com o que já viu.
      */
@@ -1040,8 +1308,17 @@ export function stepScene(
       break
     }
 
+    case 'fill':
+      s.mirror.filled = true
+      if (s.mirror.on && s.mirror.axis === 'x')
+        observe(s, 'fill-ignores-mirror', 'Com o espelho ligado, o Balde encheu um lado só', true)
+      s.caption =
+        'O Balde encheu só a asa esquerda. O espelho continua ligado, mas não copiou a tinta.'
+      break
+
     case 'clear-paper':
       s.mirror.marks = []
+      s.mirror.filled = false
       s.mirror.strokes = 0
       s.mirror.copies = 0
       s.caption = 'O papel ficou em branco.'
@@ -1238,6 +1515,31 @@ export function stepScene(
       break
     }
     case 'shoot': {
+      if (scene === 'fixed-vs-read') {
+        const { heroX, source, boxMarks } = s.fixedRead
+        const shot = {
+          id: s.fixedRead.nextId++,
+          x: source === 'fixed' ? 400 : heroX,
+          y: 390,
+          heroX,
+          source,
+        }
+        s.fixedRead.shots = [...s.fixedRead.shots.slice(-11), shot]
+        s.fixedRead.marks = [...s.fixedRead.marks.slice(-11), { ...shot }]
+        const fixed = s.fixedRead.marks.filter((mark) => mark.source === 'fixed')
+        if (
+          fixed.some((first) =>
+            fixed.some((other) => first.heroX !== other.heroX && first.x === other.x),
+          )
+        )
+          observe(s, 'same-spot', 'Com o número escrito, os dois tiros nasceram no mesmo lugar')
+        if (source === 'read' && heroX !== 400 && shot.x === heroX)
+          observe(s, 'follows', 'Com a leitura, o tiro nasceu onde a nave estava')
+        if (boxMarks && shot.x === heroX)
+          observe(s, 'box-marks', 'O tiro sai do meio da caixa e da borda de cima dela')
+        s.caption = `O tiro nasceu em x ${shot.x} e continua subindo desse lugar.`
+        break
+      }
       if (scene === 'lives') {
         acertarComOTiro(s)
         break
@@ -1490,14 +1792,29 @@ export function stepScene(
       break
     }
 
-    case 'reset':
-      // Recomeçar o mundo NUNCA apaga o que a criança já descobriu. E recomeça no CASO desta
+    case 'reset': // Recomeçar o mundo NUNCA apaga o que a criança já descobriu. E recomeça no CASO desta
       // atividade, não no mundo de fábrica: quem abriu numa tela de 480 por 270 volta para ela.
       // ⚠️ SEM `caption`: a frase embaixo do palco é a narração da CENA, e um recado de
       // persistência ali ocupava o lugar dela — a criança recomeçava e lia "suas descobertas
       // foram guardadas" onde devia ler o que está na tela agora. O aviso de que nada se perdeu
       // é do player, e mora no rodapé, junto do irmão dele ("Experiência salva na sua conta").
-      return { ...openScene(start), evidence: s.evidence, caption: '' }
+      {
+        const restarted = { ...openScene(start), evidence: s.evidence, caption: '' }
+        if (scene === 'collision-pair') {
+          restarted.collisionPair.shotTarget = s.collisionPair.shotTarget
+          restarted.collisionPair.rockTarget = s.collisionPair.rockTarget
+        }
+        if (scene === 'invincibility')
+          restarted.invincibility.protection = s.invincibility.protection
+        if (scene === 'number-line') restarted.numberLine.operator = s.numberLine.operator
+        if (scene === 'two-clocks') {
+          restarted.twoClocks.birthEvery = s.twoClocks.birthEvery
+          restarted.twoClocks.animationRate = s.twoClocks.animationRate
+          restarted.twoClocks.birthAtStart = s.twoClocks.birthEvery
+          restarted.twoClocks.rateAtStart = s.twoClocks.animationRate
+        }
+        return restarted
+      }
   }
   /**
    * ⚠️⚠️ Nas cenas de quadro LONGO o gesto RECOMEÇA o quadro (review do lote 4 do Raio-X, 16/09/2026).
@@ -1515,7 +1832,46 @@ export function stepScene(
    */
   if (action.type !== 'advance' && action.type !== 'hint' && sceneLongFrame(scene))
     s.clock.carry = 0
+  observarMetaEquivalenteDoCaso(start, s)
   return s
+}
+
+/** Nomes alternativos de metas, aplicados somente quando a aula os escolhe. */
+function observarMetaEquivalenteDoCaso(start: SceneStart, state: SceneState): void {
+  const targets = start.setup?.goals
+  if (!targets?.length) return
+  const equivalents: Partial<Record<SceneId, readonly (readonly [string, string])[]>> = {
+    'stage-size': [['follows', 'resized']],
+    impulse: [['compare', 'other-height']],
+    hitbox: [
+      ['early-hit', 'contact'],
+      ['fair-hit', 'area-contrast'],
+    ],
+    acceleration: [['spawned-ten', 'variation-limit']],
+    velocity: [['still', 'stopped']],
+  }
+  for (const [alias, original] of equivalents[start.scene] ?? []) {
+    if (!targets.includes(alias) || !state.evidence.discoveries.includes(original)) continue
+    if (alias === 'early-hit' && sceneAreaPercent(state.contact.width) !== 100) continue
+    if (alias === 'fair-hit' && sceneAreaPercent(state.contact.width) > 80) continue
+    observe(state, alias, original)
+  }
+}
+
+function observarMetasNumberLine(state: SceneState): void {
+  const { value, operator, presses, equalPresses, sawFalseEqual } = state.numberLine
+  if (presses >= 3 && value <= -8)
+    observe(
+      state,
+      'colder',
+      'Somar -1 anda uma casa para a esquerda, e para a esquerda é mais rápido',
+    )
+  if (operator === '>' && value === -5)
+    observe(state, 'greater', '-5 é maior que -9, porque mora à direita dele na régua')
+  if (operator === '>' && value === -9)
+    observe(state, 'stops', 'No -9 a pergunta diz não, e a base para ali')
+  if (operator === '=' && value === -9 && equalPresses >= 4 && sawFalseEqual)
+    observe(state, 'silent', 'Com o igual, a resposta é não em todo lugar menos num')
 }
 
 /** As cenas de salto: sem nada no ar, o relógio não apaga a frase (ver o `advance`). */
@@ -1550,7 +1906,170 @@ function quadrosDoTempo(relogio: SceneClock, fps: number, segundos: number): num
  * não multiplicado por `1 / fps`: com os ritmos inteiros da tabela a conta fica exata (a `circle-
  * collision` anda 2 por quadro e para em 60 contra 60, sem arredondar nada).
  */
-function umQuadro(s: SceneState, scene: SceneId, fps: number): void {
+function umQuadro(s: SceneState, start: SceneStart, fps: number): void {
+  const scene = start.scene
+  if (scene === 'fixed-vs-read') {
+    s.fixedRead.shots = s.fixedRead.shots
+      .map((shot) => ({ ...shot, y: Math.max(-50, shot.y - 6) }))
+      .filter((shot) => shot.y > -50)
+    return
+  }
+  if (scene === 'collision-pair') {
+    const pair = s.collisionPair
+    pair.frames++
+    if (!pair.collided && pair.frames >= 10) {
+      pair.collided = true
+      pair.pairedAliases = pair.shotTarget === 'alias' && pair.rockTarget === 'alias'
+      pair.shots = pair.shotTarget === 'group' ? [] : pair.shots.filter((id) => id !== 1)
+      pair.rocks = pair.rockTarget === 'group' ? [] : pair.rocks.filter((id) => id !== 1)
+      if (pair.shotTarget === 'group' && pair.rockTarget === 'group') {
+        observe(s, 'whole-group', 'Escolhendo o grupo, sumiu todo mundo')
+        s.caption = 'Um par bateu; os dois comandos tiraram os grupos inteiros.'
+      }
+      if (pair.shotTarget === 'alias' && pair.rockTarget === 'alias') {
+        observe(s, 'just-the-pair', 'Escolhendo os apelidos, sumiram só os dois que se bateram')
+        s.caption = 'O par que se encostou saiu. Os outros continuam no caminho.'
+      }
+    }
+    if (pair.pairedAliases && pair.rocks.includes(0) && pair.rocks.includes(2) && pair.frames >= 30)
+      observe(s, 'others-stay', 'As outras pedras continuaram o caminho delas')
+    return
+  }
+  if (scene === 'invincibility') {
+    const shield = s.invincibility
+    shield.frames++
+    if (shield.remaining > 0) shield.remaining--
+    if (shield.frames === 1 || shield.frames === 10 || shield.frames === 30) {
+      shield.struck.push(shield.frames)
+      if (shield.remaining === 0) {
+        shield.hearts = Math.max(0, shield.hearts - 1)
+        shield.damaged.push(shield.frames)
+        shield.remaining = shield.protection
+      }
+      s.caption = `A pedra do quadro ${shield.frames} bateu e saiu. Restam ${shield.hearts} vidas.`
+    }
+    if (shield.frames >= 30) {
+      if (shield.protection === 0 && shield.hearts === 0)
+        observe(s, 'no-shield', 'Sem proteção, as três batidas tiraram as três vidas')
+      if (shield.protection === 45 && shield.hearts === 2)
+        observe(s, 'window', 'Com 45 quadros, só a primeira batida tirou vida')
+      if (shield.protection === 15 && shield.hearts === 1)
+        observe(s, 'expires', 'Com 15 quadros, a proteção acabou antes da terceira pedra')
+    }
+    return
+  }
+  if (scene === 'unique-names') {
+    s.uniqueNames.frames++
+    if (!uniqueNamesWarning(s.uniqueNames))
+      s.uniqueNames.previewX = s.uniqueNames.previewX >= 320 ? 120 : s.uniqueNames.previewX + 8
+    return
+  }
+  if (scene === 'motion-amount') {
+    const motion = s.motionAmount
+    motion.frames++
+    if (motion.playing) {
+      motion.previewFrame = motion.previewFrame === 0 ? 1 : 0
+      motion.viewedFrames++
+      if (motion.viewedFrames >= 2) {
+        if (motion.crater === 0 && motion.body === 0)
+          observe(s, 'no-change', 'Os dois quadros iguais deixam a Prévia parada')
+        if (motion.crater >= 3 && motion.crater <= 6 && motion.body === 0)
+          observe(s, 'local-move', 'A cratera andando um pouco já faz a pedra parecer que rola')
+        if (motion.body >= 10)
+          observe(
+            s,
+            'too-much',
+            'Com a pedra inteira andando muito, o desenho pula em vez de rolar',
+          )
+      }
+    }
+    return
+  }
+  if (scene === 'two-clocks') {
+    const clocks = s.twoClocks
+    clocks.frames++
+    clocks.rocks = clocks.rocks.filter((rock) => clocks.frames - rock.bornAt <= 90)
+    if (clocks.frames % clocks.birthEvery === 0) {
+      clocks.born++
+      clocks.lastBornAt = clocks.frames
+      clocks.rocks.push({ id: clocks.born, bornAt: clocks.frames })
+      s.caption = `Pedra ${clocks.born} nasceu no quadro 0 do próprio giro.`
+      if (clocks.born >= 3)
+        observe(s, 'each-one', 'Cada pedra começou no quadro 0, na hora em que ela nasceu')
+    }
+    if (
+      clocks.birthEvery === 20 &&
+      clocks.animationRate === 8 &&
+      clocks.birthAtStart === 20 &&
+      clocks.rateAtStart === 8 &&
+      clocks.frames >= 60 &&
+      clocks.born > Math.floor(clocks.frames / 40)
+    )
+      observe(
+        s,
+        'more-rocks',
+        'Mudando só o relógio de nascer, veio mais pedra, e cada uma continuou girando no mesmo ritmo',
+      )
+    if (
+      clocks.birthEvery === 40 &&
+      clocks.animationRate === 16 &&
+      clocks.birthAtStart === 40 &&
+      clocks.rateAtStart === 16 &&
+      clocks.frames >= 80 &&
+      clocks.born === Math.floor(clocks.frames / 40)
+    )
+      observe(
+        s,
+        'faster-spin',
+        'Mudando só a animação, as pedras giraram mais rápido, e continuou nascendo na mesma hora',
+      )
+    return
+  }
+  if (scene === 'same-rules-new-skin') {
+    const game = s.skinGame
+    game.frames++
+    game.obstacleY += 3
+    game.shots = game.shots
+      .map((shot) => ({ ...shot, y: shot.y - 10 }))
+      .filter((shot) => shot.y >= 0)
+    const hit = game.shots.findIndex(
+      (shot) => Math.abs(shot.x - game.obstacleX) <= 28 && Math.abs(shot.y - game.obstacleY) <= 20,
+    )
+    if (hit >= 0) {
+      game.shots.splice(hit, 1)
+      game.points++
+      game.obstacleY = 0
+      game.obstacleX = 80 + ((game.frames * 47) % 400)
+    } else if (game.obstacleY >= 260) {
+      if (Math.abs(game.x - game.obstacleX) <= 38) game.lives = Math.max(0, game.lives - 1)
+      game.obstacleY = 0
+      game.obstacleX = 80 + ((game.frames * 47) % 400)
+    }
+    if (!game.shootEnabled) {
+      game.disabledFrames++
+      if (game.disabledFrames >= 10 && game.disabledTried)
+        observe(s, 'rule-off', 'Desligando a regra de atirar, a lista mudou e o jogo mudou junto')
+    }
+    return
+  }
+  if (scene === 'random') {
+    s.crowd.elapsed += 1 / fps
+    if (s.speed.fallingY !== undefined && s.speed.fallingY < 300) {
+      s.speed.fallingY = Math.min(300, s.speed.fallingY + 3)
+      if (s.speed.fallingY >= 0) {
+        observe(s, 'above', 'A pedra entrou caindo pela borda de cima.')
+        s.caption = 'A pedra atravessou a borda de cima e entrou na tela.'
+      }
+    }
+    return
+  }
+  if (scene === 'once-vs-always') {
+    const preset = oncePreset(start.setup?.preset)
+    advanceOnce(s.once, preset)
+    observarMetasDaArea(s, preset)
+    s.caption = `Quadro ${s.once.frames}: as fichas dispararam conforme a área em que estão.`
+    return
+  }
   // O núcleo do Iniciante 2D: cada uma dessas cenas mostra o que o TEMPO faz com o estado.
   if (avancarNucleo(s, scene, fps)) return
   if (scene === 'frames') {
@@ -1568,10 +2087,33 @@ function umQuadro(s: SceneState, scene: SceneId, fps: number): void {
   advanceFlight(s, scene, 1 / fps)
   s.crowd.elapsed += 1 / fps
   if (scene === 'spawn' || scene === 'cleanup' || scene === 'game-state')
-    advanceCrowd(s, scene, fps)
+    advanceCrowd(
+      s,
+      scene,
+      fps,
+      scene === 'spawn' && isSpawnPreset(start.setup?.preset) && start.setup.preset.falling,
+      scene === 'cleanup' &&
+        isCleanupPreset(start.setup?.preset) &&
+        start.setup.preset.exit === 'top',
+      scene === 'game-state' ? gameStatePreset(start.setup?.preset).waitingSeconds : 2,
+    )
   if (scene === 'score') advanceScore(s, 1 / fps)
   // ⚠️ `random` e `acceleration` não têm mais relógio geral (lote 5): o tempo delas mora no gesto.
   if (scene === 'restart') avancarAPartida(s, fps)
+}
+
+const OBSERVACOES_DAS_AREAS: Record<string, string> = {
+  once: 'A ficha em Ao iniciar disparou uma vez.',
+  always: 'A ficha no motor disparou a cada quadro.',
+  both: 'Uma ficha criou o personagem e a outra moveu o mesmo personagem.',
+  'on-event': 'A ficha esperou sem disparar durante três quadros.',
+  'key-fires': 'A tecla disparou a ficha na hora.',
+  flood: 'A ficha no motor disparou em cada um dos cinco quadros.',
+}
+
+function observarMetasDaArea(s: SceneState, preset: OnceVsAlwaysPreset): void {
+  for (const id of onceDiscoveries(s.once, preset))
+    if (!s.evidence.discoveries.includes(id)) observe(s, id, OBSERVACOES_DAS_AREAS[id] ?? id, true)
 }
 
 /** Um quadro do laço de desenho: repetir o desenho, limpar antes, ou nenhum dos dois. */
@@ -1707,8 +2249,9 @@ function avancarNucleo(s: SceneState, scene: SceneId, fps: number): boolean {
         // ⚠️⚠️ A cena NASCE com velocidade zero, então "com zero fica parado" caía no primeiro
         // toque em "Um passo", sem a criança ter mexido em nada. É uma COMPARAÇÃO: só vale depois
         // de ela ter visto o relógio mover alguma coisa.
-        if (s.evidence.discoveries.includes('moves'))
+        if (s.evidence.discoveries.includes('moves')) {
           observe(s, 'stopped', 'Com velocidade zero, o Dino fica parado', true)
+        }
         // ⚠️ Sem "a velocidade é zero" (review do lote 2): era a meta `stopped` como explicação.
         s.caption = `O relógio andou, e o Dino continua em x ${numero(Math.round(x))}, y ${numero(Math.round(y))}.`
       } else if (naBorda) s.caption = 'Chegou na borda: não dá para ir mais para lá.'
@@ -2035,6 +2578,16 @@ const CONTROLE_EXATAS = ['espaco', 'espacos', 'wasd', 'w', 's', 'd'] as const
  * Sem acento e sem diferença de maiúscula, palavra por palavra. EXPORTADA para ter teste com
  * frases reais de criança, as que devem passar e as que não devem.
  */
+/** A revisita só conta quando a descrição lida nomeia os três controles do jogo. */
+export function sceneDescriptionHasAllControls(texto: string): boolean {
+  const frase = texto.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
+  return (
+    /\bespaco\b/u.test(frase) &&
+    /\bseta\s+(?:para\s+)?cima\b/u.test(frase) &&
+    /\b(?:toque|tocar|tocando)\s+(?:na\s+)?tela\b/u.test(frase)
+  )
+}
+
 export function sceneDescriptionSays(texto: string): { goal: boolean; control: boolean } {
   const palavras = texto
     .normalize('NFD')
@@ -2076,6 +2629,7 @@ function resetTrack(s: SceneState): void {
   s.crowd.removed = 0
   s.crowd.cacti = []
   s.crowd.elapsed = 0
+  if (s.crowd.fallFrames !== undefined) s.crowd.fallFrames = 0
 }
 
 /** A gravidade do modelo didático do salto, por tique de 1/30 s. */
@@ -2331,12 +2885,30 @@ function registrarTentativa(s: SceneState, input: 'key' | 'tap', comecou: boolea
  * preserva a distância entre eles. ⚠️ "A cada quadro" (sem o relógio ligado) é um cacto por quadro
  * DA CENA: é o ritmo dela (`SCENE_FRAME_RATE`, 30 no `spawn`) que dá os 30 por segundo da parede.
  */
-function advanceCrowd(s: SceneState, scene: SceneId, fps: number): void {
+function advanceCrowd(
+  s: SceneState,
+  scene: SceneId,
+  fps: number,
+  falling = false,
+  exitTop = false,
+  waitingSeconds = 2,
+): void {
   const seconds = 1 / fps
   const bornBefore = s.crowd.born
   const active = scene !== 'game-state' || !s.match.guarded || s.match.screen === 'playing'
-  const interval = scene === 'spawn' ? (s.crowd.timer ? s.crowd.interval : 1 / fps) : 0.6
-  for (const c of s.crowd.cacti) c.x -= 100 / fps
+  const interval =
+    scene === 'spawn'
+      ? s.crowd.timer
+        ? s.crowd.interval
+        : 1 / fps
+      : scene === 'game-state'
+        ? s.crowd.interval
+        : 0.6
+  for (const c of s.crowd.cacti) {
+    if (exitTop) c.y = (c.y ?? 0) - 100 / fps
+    else if (falling) c.y = (c.y ?? -30) + 3
+    else c.x -= 100 / fps
+  }
   if (active) {
     const before = s.crowd.remainder
     // ⚠️ O `1e-9` existe para que 0,1 s dez vezes conte o cacto que a soma binária deixaria
@@ -2350,17 +2922,25 @@ function advanceCrowd(s: SceneState, scene: SceneId, fps: number): void {
       s.crowd.born++
       s.crowd.cacti.push({
         id: s.crowd.born,
-        x: 480 - (seconds - (i * interval - before)) * 100,
-        velocity: -5,
+        x: exitTop
+          ? 120 + ((s.crowd.born - 1) % 3) * 80
+          : falling
+            ? 120 + ((s.crowd.born - 1) % 5) * 85
+            : 480 - (seconds - (i * interval - before)) * 100,
+        ...(exitTop ? { y: 270 } : falling ? { y: -30 } : {}),
+        velocity: falling ? 3 : -5,
       })
     }
   }
   if (s.crowd.cleanup) {
-    const outside = s.crowd.born - s.crowd.removed - s.crowd.cacti.filter((c) => c.x >= 0).length
+    const outside =
+      s.crowd.born -
+      s.crowd.removed -
+      s.crowd.cacti.filter((c) => (exitTop ? (c.y ?? 0) >= 0 : c.x >= 0)).length
     s.crowd.removed += outside
-    s.crowd.cacti = s.crowd.cacti.filter((c) => c.x >= 0)
-    if (outside > 0 && scene === 'cleanup')
-      observe(s, 'removed', 'A regra retirou automaticamente os cactos que saíram.')
+    s.crowd.cacti = s.crowd.cacti.filter((c) => (exitTop ? (c.y ?? 0) >= 0 : c.x >= 0))
+    if (outside > 0 && scene === 'cleanup' && s.crowd.removed >= 2)
+      observe(s, 'rule-removes', 'A regra retirou automaticamente quem saiu da tela.')
   }
   // ⚠️⚠️ DOIS na prateleira dos bastidores (lote 5 do Raio-X): com um só, a meta caía no primeiro
   // quadro em que um cacto passava da borda, antes de a prateleira ter o que mostrar.
@@ -2375,9 +2955,22 @@ function advanceCrowd(s: SceneState, scene: SceneId, fps: number): void {
   // conseguia contar, e a meta caía afirmando o que ela não tinha visto (relatório g2).
   // ⚠️ Com a folga do binário (lote 4): trinta quadros de 1/30 s somam 0,9999999999999999.
   if (scene === 'spawn' && s.crowd.timer && s.crowd.elapsed + 1e-9 >= 0.1 && s.crowd.born > 1)
-    observe(s, 'spaced', 'O intervalo abriu espaço entre os cactos.')
+    observe(s, 'with-timer', 'O intervalo abriu espaço entre os cactos.')
   if (scene === 'spawn' && !s.crowd.timer && s.crowd.elapsed + 1e-9 >= 1 && s.crowd.born >= 20)
     observe(s, 'every-frame', 'Em cada quadro nasce outro cacto.')
+  if (scene === 'spawn' && falling && s.crowd.timer) {
+    s.crowd.fallFrames = Math.min(10000, (s.crowd.fallFrames ?? 0) + 1)
+    const first = s.crowd.cacti.find((c) => c.id === 1)
+    const travel = first?.y === undefined ? undefined : first.y + 30
+    const intervalFrames = Math.round(s.crowd.interval * fps)
+    if (travel !== undefined && travel >= 180) {
+      if (intervalFrames === 40 && s.crowd.fallBaseline === undefined) s.crowd.fallBaseline = travel
+      if (intervalFrames === 20 && s.crowd.fallBaseline === travel) {
+        s.crowd.fallComparison = travel
+        observe(s, 'same-fall', 'Com mais pedras nascendo, cada pedra desce na mesma velocidade.')
+      }
+    }
+  }
   if (scene === 'game-state') {
     if (!s.match.guarded && s.match.screen === 'start' && s.crowd.born > bornBefore)
       observe(s, 'outside', 'Nasceram cactos antes de começar.')
@@ -2387,23 +2980,37 @@ function advanceCrowd(s: SceneState, scene: SceneId, fps: number): void {
     // pista). O tempo parado reusa o `scoreIdle`, que a troca da peça e a volta ao início zeram.
     if (s.match.guarded && s.match.screen === 'start') {
       s.match.scoreIdle += seconds
-      if (s.match.scoreIdle + 1e-9 >= 2 && s.crowd.born === 0)
-        observe(s, 'waiting', 'No início, nada nasceu por 2 segundos.')
+      if (s.match.scoreIdle + 1e-9 >= waitingSeconds && s.crowd.born === 0)
+        observe(
+          s,
+          'waiting',
+          waitingSeconds === 4
+            ? 'O relógio tocou três vezes e nenhuma pedra nasceu.'
+            : 'No início, nada nasceu por 2 segundos.',
+        )
     }
     if (s.match.guarded && s.match.screen === 'playing' && s.crowd.born > bornBefore)
       observe(s, 'playing', 'Jogando, voltou a nascer.')
   }
   // Quem saiu de cena continua contado, não desenhado: milhares de SVGs não ensinam nada.
-  s.crowd.cacti = s.crowd.cacti.filter((c) => c.x >= -480)
+  s.crowd.cacti = s.crowd.cacti.filter((c) =>
+    exitTop ? (c.y ?? 0) >= -270 : falling ? (c.y ?? -30) <= 300 : c.x >= -480,
+  )
 }
 
 function advanceScore(s: SceneState, seconds: number): void {
   const enabled = !s.match.guarded || s.match.screen === 'playing'
   if (enabled) {
-    s.match.clockRemainder += seconds
+    const porQuadro = s.match.scoreClock === 'frame'
+    s.match.clockRemainder += seconds * (porQuadro ? 60 : 1)
     const points = Math.floor(s.match.clockRemainder + 1e-9)
     s.match.points += points
     s.match.clockRemainder -= points
+    if (porQuadro && points > 0) {
+      s.match.scoreFrameTicks = (s.match.scoreFrameTicks ?? 0) + points
+      if (s.match.scoreFrameTicks >= 60)
+        observe(s, 'score-runaway', 'No quadro, o placar disparou: 60 por segundo', true)
+    }
     verPlacar(s)
     // ⚠️ Sem "o placar cresce em qualquer tela" (review do lote 2): a regra, escrita com o placar
     // ainda em 0, e com "condição", que é jargão. Onde a peça está e o placar, a situação diz.
@@ -2412,7 +3019,12 @@ function advanceScore(s: SceneState, seconds: number): void {
     // ⚠️⚠️ O ERRO à vista (lote 5 do Raio-X): com a peça solta, o placar cresce na tela de INÍCIO.
     // É a comparação que a Aula 11 quer ("espere no menu: pontos não crescem"), e antes nenhuma meta
     // a exigia: dava para pôr a peça no lugar certo logo de cara e conferir três telas já certas.
-    if (!s.match.guarded && s.match.screen === 'start' && points > 0)
+    if (
+      !s.match.guarded &&
+      s.match.scoreClock !== 'frame' &&
+      s.match.screen === 'start' &&
+      points > 0
+    )
       observe(s, 'score-idle-wrong', 'Solto, o placar cresceu no início.')
     return
   }
@@ -2422,15 +3034,19 @@ function advanceScore(s: SceneState, seconds: number): void {
   // ⚠️⚠️ "O início esperou" é COMPARAÇÃO (lote 5): só vale depois de a criança ter visto o placar
   // solto crescer no início. Antes disso, a tela parada não diz nada sobre a peça.
   if (s.match.screen === 'start') {
-    if (s.evidence.discoveries.includes('score-idle-wrong'))
-      observe(s, 'score-start', 'Dentro de Se jogando, o início esperou.')
+    observe(s, 'score-waiting', 'Dentro do Se de jogando, o início esperou.')
+    if (s.evidence.discoveries.includes('score-idle-wrong')) {
+      observe(s, 'score-start', 'Dentro do Se, o início esperou.')
+    }
     return
   }
   // ⚠️⚠️ "Parou no valor" também é COMPARAÇÃO (consertos do review da onda A do lote 5, A6): com o botão
   // único "Próxima tela", dois toques levavam do Início ao Fim sem nenhum segundo jogando, e a meta
   // afirmava que um placar em 0 "parou". Só vale depois de ver os pontos crescerem jogando.
-  if (s.evidence.discoveries.includes('score-playing'))
+  if (s.evidence.discoveries.includes('score-playing')) {
     observe(s, 'score-end', 'No fim, o placar parou no valor.')
+    observe(s, 'score-kept', 'No fim, o placar parou no valor.')
+  }
 }
 
 /** O placar que a criança VIU nesta tela da `score`: a fileira "Início · Jogando · Fim". */
@@ -2477,9 +3093,9 @@ function nascerNaPartida(s: SceneState): void {
  * O TOQUE NA TELA da `restart`: o evento único do Estúdio ("qualquer tecla ou toque").
  *
  * No início começa a partida. No fim faz o que a criança ESCOLHEU (`match.restartConnected`):
- * "Ir para o início" só troca de tela, "Reiniciar o jogo" limpa a pista. Jogando, não faz nada.
+ * "Mudar o estado do jogo para inicio" só troca de tela, "Reiniciar o jogo" limpa a pista.
  */
-function tocarNaTela(s: SceneState): void {
+function tocarNaTela(s: SceneState, input: 'key' | 'tap'): void {
   const tela = s.match.screen
   if (tela === 'playing') return
   if (tela === 'end') {
@@ -2492,6 +3108,7 @@ function tocarNaTela(s: SceneState): void {
     return
   }
   const herdados = s.crowd.cacti.length
+  const voltouDaAbertura = input === 'key' && s.match.cleared > 0
   s.match.screen = 'playing'
   s.crowd.remainder = 0
   // ⚠️⚠️ A comparação é OBRIGATÓRIA (lote 5): "Reiniciar começou com a pista limpa" só depois de a
@@ -2514,9 +3131,15 @@ function tocarNaTela(s: SceneState): void {
     }
   } else {
     if (s.match.cleared > 0 && s.evidence.discoveries.includes('screen-only')) {
-      observe(s, 'restarted', 'Reiniciar começou com a pista limpa.')
+      observe(s, 'clean-track', 'Reiniciar começou com a pista limpa.')
       s.caption = 'A partida começou com a pista limpa.'
     } else s.caption = 'A partida começou.'
+    if (voltouDaAbertura)
+      observe(
+        s,
+        'back-to-menu',
+        'Reiniciar levou para a abertura, e foi preciso outro Enter para jogar.',
+      )
     nascerNaPartida(s)
   }
   s.match.cleared = 0
@@ -2529,7 +3152,7 @@ function reiniciarOJogo(s: SceneState): void {
   s.match.screen = 'start'
   s.match.points = 0
   s.match.cleared = tirados
-  s.caption = 'Reiniciou o jogo: a pista ficou vazia.'
+  s.caption = 'Reiniciou o jogo: a pista ficou vazia e a abertura voltou.'
 }
 
 /**
@@ -2538,7 +3161,10 @@ function reiniciarOJogo(s: SceneState): void {
  * injusta. Trazer o cacto até em cima do Dino também encosta as áreas, mas não mostra nada.
  */
 function moverNaHitbox(s: SceneState): void {
-  if (!sceneContact(s.contact)) return
+  if (!sceneContact(s.contact)) {
+    observarAreaPequena(s)
+    return
+  }
   const vao = sceneDrawingsGap(s.contact)
   if (vao >= HITBOX_VISIBLE_GAP) observe(s, 'contact', 'BATEU com os desenhos ainda longe.')
   s.caption =
@@ -2558,6 +3184,7 @@ function redimensionarNaHitbox(s: SceneState, previous: SceneState, largura: num
   const depois = sceneContact(s.contact)
   const diminuiu = largura < previous.contact.width
   s.caption = `A área do Dino ficou em ${sceneAreaPercent(largura)}%.${antes && !depois ? ' Não bateu.' : ''}`
+  observarAreaPequena(s)
   if (!(antes && !depois && diminuiu && s.evidence.discoveries.includes('contact'))) return
   // O contraste só ensina se o "antes" for o da largura ANTERIOR: o retrato é refeito com ela.
   s.evidence.observations = s.evidence.observations.filter(
@@ -2571,9 +3198,16 @@ function redimensionarNaHitbox(s: SceneState, previous: SceneState, largura: num
   observe(s, 'area-contrast', 'Área menor, mesmo lugar: a batida sumiu.')
 }
 
-/** O índice de um lugar do sorteio da `random` (500 → 0, 560 → 6). */
-const lugarDoSorteio = (unidade: number) =>
-  Math.min(RANDOM_SPOTS.count - 1, Math.max(0, Math.floor(unidade * RANDOM_SPOTS.count)))
+function observarAreaPequena(s: SceneState): void {
+  if (
+    s.contact.distance <= HITBOX_DRAWINGS_TOUCH &&
+    sceneAreaPercent(s.contact.width) <= 40 &&
+    !sceneContact(s.contact)
+  ) {
+    observe(s, 'too-small', 'Os desenhos se tocam, mas o jogo não marcou a batida.')
+    s.caption = 'Os desenhos se tocam, mas as áreas pontilhadas não. O jogo não marcou a batida.'
+  }
+}
 
 /**
  * "Sortear lugar" na `random`: um lugar de 500 a 560, de 10 em 10, com a velocidade fixa em −5.
@@ -2583,12 +3217,20 @@ const lugarDoSorteio = (unidade: number) =>
  * exemplos fixos (500 e 560, −5 e −6), e a cena que pergunta se o lugar pode repetir nunca repetia.
  * Com sete lugares, oito sorteios repetem com certeza.
  */
-function sortearLugar(s: SceneState, unidade: number): void {
-  const i = lugarDoSorteio(unidade)
-  const x = RANDOM_SPOTS.first + i * RANDOM_SPOTS.step
+function sortearLugar(s: SceneState, unidade: number, axis: 'right' | 'above'): void {
+  const i = Math.min(
+    s.speed.spots.length - 1,
+    Math.max(0, Math.floor(unidade * s.speed.spots.length)),
+  )
+  const x =
+    axis === 'above'
+      ? 90 + i * 5
+      : RANDOM_SPOTS.first + i * (s.speed.spots.length === 61 ? 1 : RANDOM_SPOTS.step)
   s.speed.spots[i] = (s.speed.spots[i] ?? 0) + 1
   s.speed.samples.x = x
-  if (!s.speed.samples.positions.includes(x)) s.speed.samples.positions.push(x)
+  if (!s.speed.samples.positions.includes(x))
+    s.speed.samples.positions = [...s.speed.samples.positions, x].slice(-12)
+  if (axis === 'above') s.speed.fallingY = -30
   const repetiu = (s.speed.spots[i] ?? 0) >= 2
   s.caption = repetiu ? `Saiu ${x} de novo.` : `Saiu ${x}.`
   if (s.speed.samples.positions.length >= 2) observe(s, 'positions', 'Saíram lugares diferentes.')
@@ -2636,19 +3278,12 @@ function passarABase(s: SceneState): { antes: number } {
 /**
  * "Passar 5 segundos" na `acceleration`: a base anda um passo e UM cacto novo nasce com ela, menos o
  * sorteio (0 ou 1). ⚠️ O sorteio é do gesto (`unit`), como na `random`, com uma garantia: com a base
- * parada em −9, depois de três cactos seguidos em −9 o quarto sai com −10, senão a criança podia
- * apertar muitas vezes sem ver a resposta da previsão.
+ * parada em −9, cada sorteio ainda pode dar 0 ou 1. O pedido não promete quando virá −10.
  */
 function passarCincoSegundos(s: SceneState, unidade: number): void {
   const { antes } = passarABase(s)
   const base = s.speed.base
-  const ultimos = s.crowd.cacti.slice(-3)
-  const tresEmMenosNove =
-    s.speed.limited &&
-    base === -9 &&
-    ultimos.length === 3 &&
-    ultimos.every((c) => c.velocity === -9)
-  const sorteio = tresEmMenosNove ? 1 : unidade < 0.5 ? 0 : 1
+  const sorteio = unidade < 0.5 ? 0 : 1
   const velocidade = base - sorteio
   s.speed.samples.velocity = velocidade
   s.crowd.born += 1
@@ -2756,14 +3391,20 @@ function advanceFrames(s: SceneState, seconds: number): void {
     a.swaps += trocas
     a.frame = ((a.frame - 1 + trocas) % 2) + 1
   }
-  if (a.rate <= 2 && a.swaps >= 2)
+  if (a.rate <= 2 && a.swaps >= 2 && !a.sameFrames)
     observe(s, 'slow-shows-two', 'Devagar, viu um quadro e depois o outro', true)
-  if (a.rate >= 6 && a.swaps >= 4) observe(s, 'movement', 'Rápido, viu o fogo pulsar', true)
+  if (a.rate >= 6 && a.swaps >= 4) {
+    if (a.sameFrames)
+      observe(s, 'same-frames', 'Com os dois quadros iguais, o fogo parou de pulsar', true)
+    else observe(s, 'movement', 'Rápido, viu o fogo pulsar', true)
+  }
   // ⚠️⚠️ O que ESTÁ na tela, em qualquer velocidade (review do lote 2). A frase dizia "o olho junta
   // os dois e vira movimento" com 4 trocas por segundo, onde a meta nem cai, e "dá para ver um
   // desenho, depois o outro" no primeiro passo, antes da segunda troca: a regra antes de ver.
   // ⚠️ "quadros por segundo" e "prévia", as palavras do Pinta (lote 5 do Raio-X).
-  s.caption = `A prévia troca ${quantos(a.rate, 'quadro', 'quadros')} por segundo: quadro ${a.frame} na tela.`
+  s.caption = a.sameFrames
+    ? `A prévia troca ${quantos(a.rate, 'quadro', 'quadros')} por segundo, mas os dois quadros são iguais.`
+    : `A prévia troca ${quantos(a.rate, 'quadro', 'quadros')} por segundo: quadro ${a.frame} na tela.`
 }
 
 /**

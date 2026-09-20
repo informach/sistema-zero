@@ -11,12 +11,14 @@ import {
   SCENE_ROLES,
   type SceneActivity,
   type SceneCast,
+  type SceneCenarioId,
   type SceneFigure,
   type SceneId,
   type SceneRole,
   type SceneStart,
   type SceneState,
   sceneCenario,
+  sceneNativeCast,
   sceneScript,
   stepScene,
 } from '@sistemazero/core/learning/scene'
@@ -163,32 +165,32 @@ const TRACO = {
  */
 const FOLHAGEM = /fill="#(?:74cf77|91dc7a|a8e88c|4f9f5c|5fb163|24a05a)"/g
 const ORDEM: readonly SceneRole[] = ['hero', 'obstacle', 'scenery']
-const PAPEL_DE_FABRICA: Partial<Record<SceneFigure, SceneRole>> = {
-  dino: 'hero',
-  cacto: 'obstacle',
-  floresta: 'scenery',
-}
-
 /** Os papéis que o desenho mostra com o elenco de fábrica, na ordem canônica. */
-const papeisDesenhados = (htmls: string[]) => {
+const papeisDesenhados = (scene: SceneId, htmls: string[]) => {
   const desenhadas = new Set(htmls.flatMap((h) => [...figuras(h)]))
-  return ORDEM.filter((p) => [...desenhadas].some((f) => PAPEL_DE_FABRICA[f] === p))
+  const native = sceneNativeCast(scene)
+  return ORDEM.filter((p) => desenhadas.has(actorFigure(native, p)))
 }
 
 /**
  * O conferente: o que está errado no desenho de UMA cena com UM elenco, em todos os estados.
  * Função à parte para o último `describe` provar que ela reprova o que deve.
  */
-function conferir(scene: SceneId, cast: SceneCast | undefined, htmls: string[]): string[] {
+function conferir(
+  scene: SceneId,
+  cast: SceneCast | undefined,
+  htmls: string[],
+  cenario?: SceneCenarioId,
+): string[] {
   const falhas: string[] = []
   const rotulo = `${scene} com ${JSON.stringify(cast ?? 'fábrica')}`
   const papeis = SCENE_ROLES[scene]
-  const doElenco = new Set(papeis.map((p) => actorFigure(cast, p)))
+  const doElenco = new Set(papeis.map((p) => actorFigure(sceneNativeCast(scene, cast), p)))
   const desenhadas = new Set(htmls.flatMap((h) => [...figuras(h)]))
   if ([...desenhadas].sort().join() !== [...doElenco].sort().join())
     falhas.push(`${rotulo}: desenhou [${[...desenhadas]}], esperava [${[...doElenco]}]`)
   // O traço cru de uma figura do Corre Dino só existe quando algum papel DESENHADO é ela.
-  const mundo = sceneCenario(cast, scene)
+  const mundo = sceneCenario(cast, scene, cenario)
   for (const figura of ['dino', 'cacto', 'floresta'] as const) {
     const tracos = contarTexto(htmls, TRACO[figura])
     // ⚠️ A árvore da PAISAGEM (a tela do jogo na `world`) não é papel: na terra ela pode.
@@ -219,7 +221,28 @@ function conferir(scene: SceneId, cast: SceneCast | undefined, htmls: string[]):
 }
 
 const estadosPorCena = new Map<SceneId, SceneState[]>(
-  SCENE_IDS.map((scene) => [scene, estados({ type: 'demonstration', scene })]),
+  SCENE_IDS.map((scene) => {
+    if (scene === 'two-clocks') {
+      const start: SceneStart = { scene }
+      const initial = openScene(start)
+      return [scene, [initial, stepScene(start, initial, { type: 'advance', seconds: 2 })]]
+    }
+    if (scene === 'fixed-vs-read') {
+      const start: SceneStart = { scene }
+      const initial = openScene(start)
+      return [scene, [initial, stepScene(start, initial, { type: 'shoot' })]]
+    }
+    if (scene !== 'once-vs-always') return [scene, estados({ type: 'demonstration', scene })]
+    const start: SceneStart = { scene }
+    const initial = openScene(start)
+    const placed = stepScene(start, initial, {
+      type: 'place-in-area',
+      card: 'create',
+      area: 'start',
+    })
+    const created = stepScene(start, placed, { type: 'advance', seconds: 0.25 })
+    return [scene, [initial, created]]
+  }),
 )
 const htmlsDe = (scene: SceneId, cast?: SceneCast) =>
   (estadosPorCena.get(scene) ?? []).map((e) =>
@@ -240,7 +263,7 @@ describe('o desenho veste o elenco', () => {
     // A `stage-size` também é abstrata: ela mostra a página e o viewport, sem personagem ou cenário.
     // As demais exceções são `entity-state` (torres), `frames`/`onion-skin`/`sheet-vs-sprite` (nave
     // do ateliê) e as cenas que desenham só instrumentos.
-    expect(SCENE_IDS.filter((s) => SCENE_ROLES[s].length > 0).length).toBe(30)
+    expect(SCENE_IDS.filter((s) => SCENE_ROLES[s].length > 0).length).toBe(39)
   })
 
   test('⚠️⚠️ a tabela SCENE_ROLES é EXATAMENTE o que cada palco desenha', () => {
@@ -248,7 +271,7 @@ describe('o desenho veste o elenco', () => {
     // desenhar o cenário sem entrar na tabela, e aí o mundo não o enxerga) reprovam aqui.
     const falhas: string[] = []
     for (const scene of SCENE_IDS) {
-      const desenhados = papeisDesenhados(htmlsDe(scene))
+      const desenhados = papeisDesenhados(scene, htmlsDe(scene))
       if (desenhados.join() !== SCENE_ROLES[scene].join())
         falhas.push(`${scene}: desenha [${desenhados}], a tabela diz [${SCENE_ROLES[scene]}]`)
     }
@@ -281,14 +304,17 @@ describe('o desenho veste o elenco', () => {
     const falhas: string[] = []
     for (const { arquivo, activity } of USOS) {
       const htmls = estados(activity).map((e) => desenhar(activity, e))
-      for (const f of conferir(activity.scene, activity.cast, htmls)) falhas.push(`${arquivo} ${f}`)
+      for (const f of conferir(activity.scene, activity.cast, htmls, activity.cenario))
+        falhas.push(`${arquivo} ${f}`)
     }
     expect(falhas).toEqual([])
     // O que a proposta viu nos cursos: a nave no espaço, e a pedra com a chama também. E, desde o
     // lote 5 do Raio-X, o cacto na terra: a `velocity` das Aulas 5 e 12 do Corre Dino veste o cacto.
     // ⚠️ A pedra com a chama é O Jogo do Meu Jeito desde o registro de cenários: os dois cursos do
     // espaço deixaram de ser o mesmo "espaco" e cada um tem o seu elenco.
-    const mundos = new Set(USOS.map((u) => sceneCenario(u.activity.cast, u.activity.scene)))
+    const mundos = new Set(
+      USOS.map((u) => sceneCenario(u.activity.cast, u.activity.scene, u.activity.cenario)),
+    )
     expect([...mundos].sort()).toEqual(['corre-dino', 'meu-jeito', 'nave'])
   })
 })
@@ -310,7 +336,7 @@ describe('o conferente REPROVA os esquecimentos que o review mostrou', () => {
 
   test('o papel que some da descoberta não passa por cena abstrata', () => {
     const semObstaculo = htmlsDe('spawn').map((h) => h.replace(/data-figure="cacto"/g, ''))
-    expect(papeisDesenhados(semObstaculo)).not.toEqual([...SCENE_ROLES.spawn])
+    expect(papeisDesenhados('spawn', semObstaculo)).not.toEqual([...SCENE_ROLES.spawn])
   })
 
   test('a moldura no espaço sem o céu, e a grama e a árvore da terra dentro dela', () => {

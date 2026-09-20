@@ -14,7 +14,6 @@ import {
   SCENE_LIMITS,
   SCREEN_READER_EMPTY,
   STAGE_TARGET,
-  sceneCenario,
   screenReaderSays,
 } from '@sistemazero/core/learning/scene'
 import { Check, Ear, Volume2, VolumeX } from 'lucide-react'
@@ -22,6 +21,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { SceneButton } from './exploration-stage'
 import { FundoDoCenario } from './scene-arte'
 import { LarguraConhecidaDaCena, SceneCanvas, Texto, useLarguraMedida } from './scene-canvas'
+import { useSceneCenario } from './scene-cenario-context'
 import { ActorFigure, pisoDoMundo } from './scene-figures'
 import { useSceneVoice } from './use-scene-voice'
 
@@ -90,7 +90,7 @@ export function CoordinatesStage({ state, cast }: { state: SceneState; cast?: Sc
   const mexeu = fromX !== x || fromY !== y
   const heroi = actorFigure(cast, 'hero')
   const caixa = caixaDe(heroi)
-  const mundo = sceneCenario(cast, 'coordinates')
+  const mundo = useSceneCenario(cast, 'coordinates')
   return (
     <SceneCanvas
       view={VIEW}
@@ -322,7 +322,7 @@ export function ScreenReaderStage({
   const { text, heard, heardEmpty, said, listens } = state.description
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneCenario(cast, 'screen-reader')
+  const mundo = useSceneCenario(cast, 'screen-reader')
   // ⚠️ A miniatura só tem a linha do chão na terra: no espaço as figuras flutuam.
   const piso = pisoDoMundo(mundo, 118)
   const diz = screenReaderSays(state)
@@ -769,7 +769,7 @@ export function DrawLoopStage({ state, cast }: { state: SceneState; cast?: Scene
   const naTela = drawLoopOnScreen(state)
   const heroi = actorFigure(cast, 'hero')
   const caixa = caixaDe(heroi)
-  const mundo = sceneCenario(cast, 'draw-loop')
+  const mundo = useSceneCenario(cast, 'draw-loop')
   // ⚠️ No espaço não há chão (review do lote 3): na mesma aula a `world` já diz isso.
   const piso = pisoDoMundo(mundo, CHAO)
   const ultimo = drawn.at(-1)

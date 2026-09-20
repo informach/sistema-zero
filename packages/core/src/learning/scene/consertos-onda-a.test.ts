@@ -92,7 +92,8 @@ describe('A1 · acceleration: a ordem invertida não tranca as metas sem dizer',
       expect(sceneHint('acceleration', c.estado, nivel)).toContain('Recomece para ver a base parar')
     // Depois de Recomeçar volta a ser possível, e a frase volta ao normal.
     c.faz({ type: 'reset' })
-    for (let i = 0; i < 9 && !c.viu('variation-limit'); i++) c.faz(cinco())
+    for (let i = 0; i < 4; i++) c.faz(cinco())
+    c.faz(cinco(0.8))
     expect(c.viu('base-limit')).toBe(true)
     expect(c.viu('variation-limit')).toBe(true)
     expect(c.estado.caption).not.toContain('Recomece')
@@ -125,7 +126,8 @@ describe('A1 · acceleration: a ordem invertida não tranca as metas sem dizer',
 
   test('com as duas metas feitas, voltar a religar não pede Recomeçar', () => {
     const c = crianca('acceleration')
-    for (let i = 0; i < 9 && !c.viu('variation-limit'); i++) c.faz(cinco())
+    for (let i = 0; i < 4; i++) c.faz(cinco())
+    c.faz(cinco(0.8))
     c.faz({ type: 'connect', port: 'limit', enabled: false })
     for (let i = 0; i < 3; i++) c.faz(cinco())
     c.faz({ type: 'connect', port: 'limit', enabled: true }, cinco())
@@ -338,9 +340,7 @@ describe('A6 · score: "parou no fim" pede ter visto os pontos crescerem jogando
     c.faz({ type: 'connect', port: 'condition', enabled: true })
     expect(c.estado.match.points).toBe(0)
     expect(c.estado.match.seen).toEqual([-1, -1, -1])
-    expect(c.estado.caption).toBe(
-      'O placar recomeçou do zero, com Somar ponto dentro de Se jogando.',
-    )
+    expect(c.estado.caption).toBe('O placar recomeçou do zero, com Somar ponto dentro do Se.')
     c.tempo(1.2)
     expect(c.estado.match.points).toBe(0)
     expect(c.viu('score-start')).toBe(true)
@@ -398,13 +398,13 @@ describe('a experiência: o que a criança vê no motor', () => {
     )
   })
 
-  test('⚠️⚠️ hitbox: de 10 em 10 a partir da abertura, o BATEU aparece com um vão de 19', () => {
+  test('⚠️⚠️ hitbox: de 10 em 10 a partir da abertura, o BATEU aparece com um vão de 9', () => {
     const c = crianca('hitbox')
     expect(c.estado.contact.distance).toBe(149)
     while (!sceneContact(c.estado.contact))
       c.faz({ type: 'move', distance: c.estado.contact.distance - 10 })
-    expect(c.estado.contact.distance).toBe(59)
-    expect(sceneDrawingsGap(c.estado.contact)).toBe(19)
+    expect(c.estado.contact.distance).toBe(49)
+    expect(sceneDrawingsGap(c.estado.contact)).toBe(9)
     expect(c.viu('contact')).toBe(true)
   })
 
@@ -448,7 +448,7 @@ describe('a experiência: o que a criança vê no motor', () => {
     expect(j.viu('every-jump')).toBe(true)
     j.faz({ type: 'connect', port: 'sound', enabled: false })
     expect(sceneSituation('jump-sound', j.estado)).toContain(
-      'Leve Tocar som de volta para Quando o Dino pular, como fica no jogo.',
+      'Leve Tocar efeito de volta para Quando o Dino pular, como fica no jogo.',
     )
   })
 

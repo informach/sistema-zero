@@ -10,6 +10,94 @@ const tempo = (segundos: number): SceneAction[] =>
 
 /** Authored success journeys, expressed as child actions rather than state/result flags. */
 export const scenePaths: Record<SceneId, SceneAction[]> = {
+  'copy-vs-original': [
+    { type: 'export-file' },
+    { type: 'import-file' },
+    { type: 'recolor', side: 'studio', color: 'rosa' },
+  ],
+  'published-copy': [
+    { type: 'publish' },
+    { type: 'open-mural' },
+    { type: 'recolor', side: 'project', color: 'rosa' },
+    { type: 'publish' },
+  ],
+  'same-rules-new-skin': [
+    { type: 'skin', theme: 'road' },
+    { type: 'skin', theme: 'sea' },
+    { type: 'rule-toggle', enabled: false },
+    { type: 'play-move', direction: 1 },
+    { type: 'play-shoot' },
+    { type: 'advance', seconds: 1 },
+  ],
+  'fixed-vs-read': [
+    { type: 'shoot' },
+    { type: 'place', x: 640, y: 0 },
+    { type: 'shoot' },
+    { type: 'value-source', source: 'read' },
+    { type: 'shoot' },
+    { type: 'box-marks', on: true },
+    { type: 'shoot' },
+  ],
+  'collision-pair': [
+    { type: 'advance', seconds: 1 },
+    { type: 'reset' },
+    { type: 'command-target', subject: 'shot', target: 'alias' },
+    { type: 'command-target', subject: 'rock', target: 'alias' },
+    { type: 'advance', seconds: 3 },
+  ],
+  invincibility: [
+    { type: 'advance', seconds: 1 },
+    { type: 'shield', frames: 45 },
+    { type: 'reset' },
+    { type: 'advance', seconds: 1 },
+    { type: 'shield', frames: 15 },
+    { type: 'reset' },
+    { type: 'advance', seconds: 1 },
+  ],
+  'number-line': [
+    { type: 'sum-minus-one' },
+    { type: 'sum-minus-one' },
+    { type: 'sum-minus-one' },
+    { type: 'reset' },
+    { type: 'compare-op', operator: '>' },
+    { type: 'step-value', value: -9 },
+    { type: 'reset' },
+    { type: 'compare-op', operator: '=' },
+    { type: 'sum-minus-one' },
+    { type: 'sum-minus-one' },
+    { type: 'sum-minus-one' },
+    { type: 'sum-minus-one' },
+  ],
+  'unique-names': [
+    { type: 'toggle-block', present: false },
+    { type: 'toggle-block', present: true },
+    { type: 'name-field', name: 'nave' },
+    { type: 'name-field', name: 'folha-nave' },
+  ],
+  'motion-amount': [
+    { type: 'advance', seconds: 0.25 },
+    { type: 'nudge', piece: 'crater', amount: 4 },
+    { type: 'advance', seconds: 0.25 },
+    { type: 'nudge', piece: 'body', amount: 10 },
+    { type: 'advance', seconds: 0.25 },
+  ],
+  'two-clocks': [
+    { type: 'birth-every', frames: 20 },
+    { type: 'advance', seconds: 1 },
+    { type: 'advance', seconds: 1 },
+    { type: 'birth-every', frames: 40 },
+    { type: 'rate', perSecond: 16 },
+    { type: 'reset' },
+    { type: 'advance', seconds: 1 },
+    { type: 'advance', seconds: 1 },
+    { type: 'advance', seconds: 1 },
+  ],
+  'once-vs-always': [
+    { type: 'place-in-area', card: 'paint', area: 'start' },
+    { type: 'place-in-area', card: 'create', area: 'start' },
+    { type: 'place-in-area', card: 'move', area: 'loop' },
+    ...tempo(2),
+  ],
   // Um eixo por vez, e o terceiro passo volta a um x já visitado numa altura nova.
   coordinates: [
     { type: 'place', x: 300, y: 150 },
@@ -51,6 +139,9 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
     { type: 'advance', seconds: 1 },
     // Lote 5 (G4): a prévia rápida PARA, e fica um quadro só na tela.
     { type: 'play', on: false },
+    { type: 'same-frames', on: true },
+    { type: 'play', on: true },
+    { type: 'advance', seconds: 1 },
   ],
   'onion-skin': [
     { type: 'frame', index: 2 },
@@ -65,6 +156,8 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
     { type: 'trace', piece: 'asa' },
     { type: 'mirror-mode', mode: 'y' },
     { type: 'trace', piece: 'ponta' },
+    { type: 'mirror-mode', mode: 'x' },
+    { type: 'fill' },
   ],
   'pixel-vector': [
     { type: 'inspect', kind: 'pixel', zoom: 6 },
@@ -158,9 +251,14 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
   hitbox: [
     { type: 'move', distance: 50 },
     { type: 'resize', width: 51.2 },
+    { type: 'move', distance: 40 },
+    { type: 'resize', width: 25.6 },
   ],
   // A peça solta soma no início ANTES de entrar em Se jogando (lote 5): é a comparação obrigatória.
   score: [
+    { type: 'score-place', clock: 'frame', guarded: false },
+    ...tempo(1),
+    { type: 'score-place', clock: 'loose', guarded: false },
     ...tempo(1),
     { type: 'connect', port: 'condition', enabled: true },
     ...tempo(1),

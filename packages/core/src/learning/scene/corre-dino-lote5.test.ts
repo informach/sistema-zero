@@ -294,7 +294,7 @@ describe('cleanup: a prateleira dos bastidores', () => {
   test('com a regra, quem estava na prateleira vai para os removidos', () => {
     const c = crianca('cleanup')
     c.tempo(1.5).faz({ type: 'connect', port: 'cleanup', enabled: true }).tempo(0.1)
-    expect(c.viu('removed')).toBe(true)
+    expect(c.viu('rule-removes')).toBe(true)
     expect(c.estado.crowd.born - c.estado.crowd.removed).toBe(sceneCactiOnScreen(c.estado.crowd))
     expect(sceneReadout('cleanup', c.estado).map((r) => r.label)).toEqual([
       'na tela',

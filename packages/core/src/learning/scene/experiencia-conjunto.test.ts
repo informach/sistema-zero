@@ -363,7 +363,7 @@ describe('M7 e textos · o que a tela diz', () => {
       'A borda só mostra esse limite. Ela não cria o limite.',
     )
     expect(SCENE_QUESTIONS['screen-reader'].explain.prompt).toBe(
-      'Por que a pessoa ouviu só "Tela do jogo. Imagem." da primeira vez?',
+      'Qual frase ajuda mais quem não está vendo a tela?',
     )
     expect(SCENE_QUESTIONS.controls.explain.explanation).not.toMatch(/escuta|promessa/)
   })

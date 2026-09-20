@@ -60,6 +60,39 @@ const ligar = (port: string, enabled = true) => ({ type: 'connect', port, enable
  * erraria.
  */
 const PLANOS: Record<CenaComRelogio, Plano> = {
+  'same-rules-new-skin': [0.37, { type: 'skin', theme: 'road' }, { type: 'play-shoot' }, 1.3],
+  random: [0.37, { type: 'sample', kind: 'position', unit: 0.3, guided: false }, 1.3],
+  'fixed-vs-read': [
+    { type: 'shoot' },
+    0.37,
+    { type: 'place', x: 600, y: 0 },
+    { type: 'shoot' },
+    1.3,
+  ],
+  'collision-pair': [0.37, { type: 'command-target', subject: 'shot', target: 'alias' }, 1.3],
+  invincibility: [0.37, { type: 'shield', frames: 45 }, 1.3],
+  'unique-names': [
+    0.37,
+    { type: 'toggle-block', present: false },
+    1.3,
+    { type: 'toggle-block', present: true },
+    0.7,
+  ],
+  'motion-amount': [0.37, { type: 'nudge', piece: 'crater', amount: 4 }, 1.3],
+  'two-clocks': [
+    0.37,
+    { type: 'birth-every', frames: 20 },
+    1.3,
+    { type: 'rate', perSecond: 16 },
+    0.7,
+  ],
+  'once-vs-always': [
+    { type: 'place-in-area', card: 'create', area: 'start' },
+    { type: 'place-in-area', card: 'move', area: 'loop' },
+    1.3,
+    { type: 'place-in-area', card: 'move', area: 'outside' },
+    0.7,
+  ],
   'draw-loop': [1.3, { type: 'loop', on: true }, 2.1, { type: 'erase', on: true }, 1.7],
   frames: [
     { type: 'rate', perSecond: 1 },
@@ -351,6 +384,21 @@ const CONTADOR: Record<
   CenaComRelogio,
   { preparo: SceneAction[]; conta: (s: SceneState) => number }
 > = {
+  'same-rules-new-skin': { preparo: [], conta: (s) => s.skinGame.frames },
+  random: { preparo: [], conta: (s) => Math.round(s.crowd.elapsed * 30) },
+  'fixed-vs-read': {
+    preparo: [{ type: 'shoot' }],
+    conta: (s) => (390 - (s.fixedRead.shots[0]?.y ?? 390)) / 6,
+  },
+  'collision-pair': { preparo: [], conta: (s) => s.collisionPair.frames },
+  invincibility: { preparo: [], conta: (s) => s.invincibility.frames },
+  'unique-names': { preparo: [], conta: (s) => s.uniqueNames.frames },
+  'motion-amount': { preparo: [], conta: (s) => s.motionAmount.frames },
+  'two-clocks': { preparo: [], conta: (s) => s.twoClocks.frames },
+  'once-vs-always': {
+    preparo: [{ type: 'place-in-area', card: 'move', area: 'loop' }],
+    conta: (s) => s.once.frames,
+  },
   'draw-loop': { preparo: [], conta: (s) => s.render.frames },
   frames: {
     // 24 trocas por segundo não cabe (máx. 12): a 12 por segundo, uma troca a cada dois quadros.
@@ -431,7 +479,14 @@ describe('⭐⭐ o passo avança QUADROS INTEIROS da cena', () => {
 
   test('o nome e o tempo do passo: "Avançar 1 quadro" onde o quadro é o assunto, "Um passo" de ~0,2 s nas outras', () => {
     const quadro = SCENE_IDS.filter((s) => sceneStepLabel(s) === 'Avançar 1 quadro')
-    expect(quadro.sort()).toEqual(['contact', 'draw-loop', 'hold-vs-press', 'spawn', 'velocity'])
+    expect(quadro.sort()).toEqual([
+      'contact',
+      'draw-loop',
+      'hold-vs-press',
+      'once-vs-always',
+      'spawn',
+      'velocity',
+    ])
     // As que chamam de quadro o DESENHO, ou os quadros de outro computador, não podem dizer isso.
     for (const s of ['frames', 'delta-time'] as const) expect(sceneStepLabel(s)).toBe('Um passo')
     // Sem relógio, sem botão.
@@ -862,10 +917,13 @@ describe('⚠️⚠️ os roteiros de demonstração continuam tocando no ritmo 
         andar(JSON.parse(readFileSync(opcionais, 'utf8')), `${pacote}/opcionais`)
     }
   for (const scene of SCENE_IDS)
-    demonstracoes.push({ onde: 'catálogo', activity: { type: 'demonstration', scene } })
+    if (SCENE_MODELS[scene].script.length)
+      demonstracoes.push({ onde: 'catálogo', activity: { type: 'demonstration', scene } })
 
   test('a varredura LEU os manifestos (laço vazio aprova tudo)', () => {
-    expect(demonstracoes.length).toBeGreaterThan(SCENE_IDS.length + 20)
+    expect(demonstracoes.filter(({ onde }) => onde !== 'catálogo').length).toBeGreaterThanOrEqual(
+      20,
+    )
   })
 
   test('⚠️⚠️ todo roteiro é válido (`playsOut`) e, tocado pelo ▶ do player, cumpre cada `waitFor`', () => {

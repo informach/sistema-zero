@@ -71,6 +71,7 @@ export const SCENE_FIGURES = [
   'gorila',
   'banana',
   'predio',
+  'estrelas',
 ] as const
 export type SceneFigure = (typeof SCENE_FIGURES)[number]
 
@@ -111,6 +112,32 @@ export const DEFAULT_CAST: Required<SceneCast> = {
   hero: { name: 'Dino', gender: 'm' },
   obstacle: { name: 'cacto', gender: 'm' },
   scenery: { name: 'floresta', gender: 'f' },
+}
+
+/** Algumas experiências nascem no jogo da nave, mesmo sem elenco preenchido no bloco. */
+export const NAVE_E_TIRO_CAST: SceneCast = {
+  hero: { name: 'nave', gender: 'f', figure: 'nave' },
+  scenery: { name: 'tiro', gender: 'm', figure: 'tiro' },
+}
+
+export const TIROS_E_PEDRAS_CAST: SceneCast = {
+  ...NAVE_E_TIRO_CAST,
+  obstacle: { name: 'asteroide', gender: 'm', figure: 'asteroide' },
+}
+
+export function sceneNativeCast(scene: SceneId, cast?: SceneCast): SceneCast | undefined {
+  if (scene === 'fixed-vs-read') return { ...NAVE_E_TIRO_CAST, ...cast }
+  if (scene === 'collision-pair') return { ...TIROS_E_PEDRAS_CAST, ...cast }
+  if (scene === 'invincibility')
+    return { hero: TIROS_E_PEDRAS_CAST.hero, obstacle: TIROS_E_PEDRAS_CAST.obstacle, ...cast }
+  if (scene === 'motion-amount')
+    return { hero: { name: 'pedra', gender: 'f', figure: 'pedra' }, ...cast }
+  if (scene === 'two-clocks')
+    return { hero: TIROS_E_PEDRAS_CAST.hero, obstacle: TIROS_E_PEDRAS_CAST.obstacle, ...cast }
+  if (scene === 'copy-vs-original' || scene === 'published-copy')
+    return { hero: TIROS_E_PEDRAS_CAST.hero, ...cast }
+  if (scene === 'same-rules-new-skin') return { ...TIROS_E_PEDRAS_CAST, ...cast }
+  return cast
 }
 
 export function isSceneActor(value: unknown): value is SceneActor {
@@ -170,6 +197,7 @@ export const SCENE_FIGURE_NAMES: Readonly<Record<SceneFigure, readonly string[]>
   gorila: ['gorila', 'macaco', 'símio'],
   banana: ['banana'],
   predio: ['prédio', 'edifício', 'torre'],
+  estrelas: ['estrelas', 'fundo estrelado', 'céu estrelado'],
 }
 
 const semAcento = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '')
@@ -254,6 +282,17 @@ export type { SceneCenarioId } from './cenario'
  * ⚠️ Cena nova entra aqui no mesmo lote do palco dela (o `Record<SceneId, …>` reprova a falta).
  */
 export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
+  'once-vs-always': ['hero', 'obstacle'],
+  'fixed-vs-read': ['hero', 'scenery'],
+  'collision-pair': ['hero', 'obstacle', 'scenery'],
+  invincibility: ['hero', 'obstacle'],
+  'number-line': [],
+  'unique-names': [],
+  'motion-amount': ['hero'],
+  'two-clocks': ['hero', 'obstacle'],
+  'copy-vs-original': ['hero'],
+  'published-copy': ['hero'],
+  'same-rules-new-skin': ['hero', 'obstacle'],
   coordinates: ['hero'],
   'screen-reader': ['hero', 'obstacle'],
   // A experiência é só a página e o viewport do jogo: nenhum personagem ou cenário disputa com a
@@ -327,6 +366,7 @@ const CENARIOS_IMEDIATOS: readonly SceneCenarioId[] = ['nave', 'gorilas']
 const CENARIOS_TARDIOS: readonly SceneCenarioId[] = ['meu-jeito']
 
 const cenarioDaFigura = (f: SceneFigure, entre: readonly SceneCenarioId[]) => {
+  if (f === 'estrelas' && entre.includes('nave')) return 'nave'
   const id = CENARIO_DA_FIGURA[f]
   return id && entre.includes(id) ? id : null
 }
@@ -352,8 +392,13 @@ export function sceneCenario(
   declarado?: SceneCenarioId,
 ): SceneCenarioId {
   if (declarado && isSceneCenario(declarado)) return declarado
+  cast = sceneNativeCast(scene, cast)
   const papeis = SCENE_ROLES[scene] ?? []
   const figuras = papeis.map((p) => actorFigure(cast, p))
+  if (scene === 'two-clocks' && figuras[0] === 'nave' && figuras[1] === 'asteroide')
+    return 'meu-jeito'
+  if (scene === 'published-copy' && figuras[0] === 'nave') return 'meu-jeito'
+  if (scene === 'same-rules-new-skin') return 'meu-jeito'
   for (const f of figuras) {
     const id = cenarioDaFigura(f, CENARIOS_IMEDIATOS)
     if (id) return id

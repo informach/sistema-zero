@@ -6,6 +6,7 @@ import type {
   ScenePredictionPreview,
   SceneState,
 } from '@sistemazero/core/learning/scene'
+import { oncePreset } from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import type { ComponentProps } from 'react'
 import { cn } from '../lib/cn'
@@ -21,6 +22,9 @@ import {
   SheetStage,
   SymmetryStage,
 } from './scene-atelie-stages'
+import { SceneCenarioProvider } from './scene-cenario-context'
+import { CollisionPairStage } from './scene-collision-pair'
+import { CopyVsOriginalStage, PublishedCopyStage } from './scene-copies'
 import { VariableStage, VelocityStage } from './scene-core-stages'
 import {
   AccelerationStage,
@@ -36,6 +40,9 @@ import {
   LayersStage,
   SpawnStage,
 } from './scene-dino-stages'
+import { FixedVsReadStage } from './scene-fixed-vs-read'
+import { InvincibilityStage } from './scene-invincibility'
+import { MotionAmountStage } from './scene-motion-amount'
 import {
   CircleCollisionStage,
   DeltaTimeStage,
@@ -53,7 +60,12 @@ import {
   HoldVsPressStage,
   TilemapStage,
 } from './scene-nucleo-stages'
+import { NumberLineStage } from './scene-number-line'
+import { OnceVsAlwaysStage } from './scene-once-vs-always'
+import { SameRulesStage } from './scene-same-rules'
 import { CoordinatesStage, DrawLoopStage, ScreenReaderStage, StageSizeStage } from './scene-stages'
+import { TwoClocksStage } from './scene-two-clocks'
+import { UniqueNamesStage } from './scene-unique-names'
 import { WorldStage } from './scene-world-stage'
 
 // ⚠️⚠️ O Dino, o cacto e a árvore moravam AQUI e eram exportados (Raio-X, lote 3, 16/09/2026):
@@ -167,23 +179,43 @@ export function SceneButton({
   )
 }
 
-export function ExplorationStage({
-  activity,
-  state,
-  dispatch,
-  preview,
-}: {
+type ExplorationStageProps = {
   activity: SceneActivity
   state: SceneState
   dispatch?: (action: SceneAction) => void
   /** A prévia só mostra o palco inicial, sem entregar controles ou a resposta do palpite. */
   preview?: ScenePredictionPreview
-}) {
+}
+
+export function ExplorationStage(props: ExplorationStageProps) {
+  return (
+    <SceneCenarioProvider cenario={props.activity.cenario}>
+      <ExplorationStageContent {...props} />
+    </SceneCenarioProvider>
+  )
+}
+
+function ExplorationStageContent({ activity, state, dispatch, preview }: ExplorationStageProps) {
   const m = activity.scene
   const cast = activity.cast
   const podeInteragir = activity.type === 'experimentation' && !preview ? dispatch : undefined
   const ocultarOrdemDasCamadas = preview?.conceal.includes('layers-order') === true
   const ocultarCoresDaCamera = preview?.conceal.includes('camera-colors') === true
+  if (m === 'once-vs-always')
+    return (
+      <OnceVsAlwaysStage state={state} cast={cast} preset={oncePreset(activity.setup?.preset)} />
+    )
+  if (m === 'fixed-vs-read') return <FixedVsReadStage state={state} cast={cast} />
+  if (m === 'collision-pair') return <CollisionPairStage state={state} cast={cast} />
+  if (m === 'invincibility') return <InvincibilityStage state={state} cast={cast} />
+  if (m === 'number-line') return <NumberLineStage state={state} />
+  if (m === 'unique-names') return <UniqueNamesStage state={state} />
+  if (m === 'motion-amount') return <MotionAmountStage state={state} cast={cast} />
+  if (m === 'two-clocks') return <TwoClocksStage state={state} cast={cast} />
+  if (m === 'copy-vs-original') return <CopyVsOriginalStage state={state} cast={cast} />
+  if (m === 'published-copy') return <PublishedCopyStage state={state} cast={cast} />
+  if (m === 'same-rules-new-skin')
+    return <SameRulesStage state={state} cast={cast} dispatch={podeInteragir} />
   // ⚠️ As duas cenas de 14/09/2026 têm palco PRÓPRIO: uma é sobre o sistema de coordenadas da
   // tela e a outra sobre o que uma pessoa que não vê a tela recebe. Nenhuma das duas cabe no
   // palco compartilhado (chão, árvores, pista), que é sobre o mundo do jogo.
@@ -250,10 +282,25 @@ export function ExplorationStage({
         onJump={podeInteragir ? (input) => podeInteragir({ type: 'jump', input }) : undefined}
       />
     )
-  if (m === 'spawn') return <SpawnStage state={state} cast={cast} />
-  if (m === 'cleanup') return <CleanupStage state={state} cast={cast} />
+  if (m === 'spawn') return <SpawnStage state={state} cast={cast} preset={activity.setup?.preset} />
+  if (m === 'cleanup')
+    return (
+      <CleanupStage
+        state={state}
+        cast={cast}
+        preset={activity.setup?.preset}
+        cenario={activity.cenario}
+      />
+    )
   if (m === 'game-state')
-    return <GameStateStage state={state} cast={cast} dispatch={podeInteragir} />
+    return (
+      <GameStateStage
+        state={state}
+        cast={cast}
+        dispatch={podeInteragir}
+        preset={activity.setup?.preset}
+      />
+    )
   if (m === 'controls') return <ControlsStage state={state} cast={cast} dispatch={podeInteragir} />
   if (m === 'draw-loop') return <DrawLoopStage state={state} cast={cast} />
   // ⭐⭐ O ateliê de O Jogo do Meu Jeito (lote 5 do Raio-X, G4): as sete cenas em
@@ -324,7 +371,8 @@ export function ExplorationStage({
         dispatch={podeInteragir}
       />
     )
-  if (m === 'random') return <RandomStage state={state} cast={cast} />
+  if (m === 'random')
+    return <RandomStage state={state} cast={cast} preset={activity.setup?.preset} />
   if (m === 'acceleration') return <AccelerationStage state={state} cast={cast} />
   return semPalco(m)
 }

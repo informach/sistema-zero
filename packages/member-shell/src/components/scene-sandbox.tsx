@@ -234,6 +234,7 @@ export function SceneSandbox({
             state={visto}
             dispatch={mexer}
             cast={experimento.cast}
+            cenario={experimento.cenario}
             goals={metas}
             tocando={tocando}
             onRunning={setTocando}

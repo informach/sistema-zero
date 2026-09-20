@@ -4,12 +4,16 @@ import {
   actorFigure,
   castText,
   cenarioTemChao,
+  cleanupPreset,
   decimal,
+  gameStatePreset,
+  isSpawnPreset,
   quantos,
   type SceneAction,
   type SceneCast,
   type SceneCenarioId,
   type ScenePilha,
+  type ScenePreset,
   type SceneState,
   sceneCactiOnScreen,
   sceneCenario,
@@ -18,6 +22,7 @@ import { type KeyboardEvent, type ReactNode, useId, useRef } from 'react'
 import { SceneButton } from './exploration-stage'
 import { FundoDoCenario } from './scene-arte'
 import { SceneCanvas, Texto, usePalco } from './scene-canvas'
+import { useSceneCenario } from './scene-cenario-context'
 import { ActorFigure, CENARIO_UNICO, pisoDoMundo } from './scene-figures'
 
 /**
@@ -162,7 +167,7 @@ export function LayersStage({
 }) {
   const heroi = actorFigure(cast, 'hero')
   const cenario = actorFigure(cast, 'scenery')
-  const mundo = sceneCenario(cast, 'layers')
+  const mundo = useSceneCenario(cast, 'layers')
   const piso = pisoDoMundo(mundo, CHAO)
   const frente = state.world.front
   const floresta =
@@ -257,7 +262,7 @@ export function JumpSoundStage({
   onJump?: (input: 'key' | 'tap') => void
 }) {
   const heroi = actorFigure(cast, 'hero')
-  const mundo = sceneCenario(cast, 'jump-sound')
+  const mundo = useSceneCenario(cast, 'jump-sound')
   const { beats, jumps, count } = state.sound
   const chaoDoDino = 120
   const subida = Math.min(70, state.flight.y * 0.4)
@@ -489,10 +494,20 @@ const naTela = (state: SceneState) => state.crowd.cacti.filter((c) => c.x >= 0 &
  * FICA (sem relógio × com relógio) mora na faixa. O personagem é desenhado DEPOIS dos cactos: o
  * cacto que o alcança passa por trás dele.
  */
-export function SpawnStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
+export function SpawnStage({
+  state,
+  cast,
+  preset,
+}: {
+  state: SceneState
+  cast?: SceneCast
+  preset?: ScenePreset
+}) {
+  const mundo = useSceneCenario(cast, 'spawn')
+  if (isSpawnPreset(preset) && preset.falling)
+    return <FallingSpawnStage state={state} cast={cast} />
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneCenario(cast, 'spawn')
   const piso = pisoDoMundo(mundo, CHAO)
   const tela = naTela(state)
   const desenho = cactosParaDesenhar(tela)
@@ -525,6 +540,47 @@ export function SpawnStage({ state, cast }: { state: SceneState; cast?: SceneCas
   )
 }
 
+function FallingSpawnStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
+  const pedra = actorFigure(cast, 'obstacle')
+  const nave = actorFigure(cast, 'hero')
+  const mundo = useSceneCenario(cast, 'spawn')
+  const visiveis = state.crowd.cacti.filter((c) => c.y !== undefined && c.y <= 270)
+  return (
+    <SceneCanvas
+      view={STAGE}
+      cast={cast}
+      mundo={mundo}
+      titulo="As pedras que caem da borda de cima"
+      descricao={`${visiveis.length} pedras na tela. Intervalo de ${Math.round(state.crowd.interval * 30)} quadros; cada pedra desce 3 por quadro.`}
+    >
+      <Pista mundo={mundo} semDetalhe={[{ x: 14, y: 8, w: 260, h: 30 }]} />
+      <Selo>{castText('As pedras que nascem', cast)}</Selo>
+      <path className="stroke-scene-ink" d="M60 82H540" strokeWidth="3" strokeDasharray="6 5" />
+      <Texto className="fill-scene-ink-soft" x="515" y="103" textAnchor="end" tamanho={13}>
+        borda de cima
+      </Texto>
+      {visiveis.map((c) => (
+        <ActorFigure key={c.id} figure={pedra} x={c.x} y={82 + (c.y ?? -30)} escala={0.65} />
+      ))}
+      <ActorFigure figure={nave} x={300} y={270} escala={0.8} />
+      <path className="stroke-scene-b" d="M554 82V262" strokeWidth="3" />
+      <Texto className="fill-scene-b-ink" x="545" y="173" textAnchor="end" tamanho={14}>
+        vy = 3
+      </Texto>
+      {state.crowd.fallBaseline !== undefined && (
+        <Texto className="fill-scene-a" x="545" y="198" textAnchor="end" tamanho={13}>
+          relógio 40: {state.crowd.fallBaseline} em 60 quadros
+        </Texto>
+      )}
+      {state.crowd.fallComparison !== undefined && (
+        <Texto className="fill-scene-b-ink" x="545" y="219" textAnchor="end" tamanho={13}>
+          relógio 20: {state.crowd.fallComparison} em 60 quadros
+        </Texto>
+      )}
+    </SceneCanvas>
+  )
+}
+
 /**
  * `game-state` — Criar cacto dentro de Se jogando.
  *
@@ -538,17 +594,20 @@ export function GameStateStage({
   state,
   cast,
   dispatch,
+  preset,
 }: {
   state: SceneState
   cast?: SceneCast
   dispatch?: (action: SceneAction) => void
+  preset?: ScenePreset
 }) {
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneCenario(cast, 'game-state')
+  const mundo = useSceneCenario(cast, 'game-state')
   const piso = pisoDoMundo(mundo, CHAO)
   const tela = naTela(state)
   const inicio = state.match.screen === 'start'
+  const momento = gameStatePreset(preset).moment
   /**
    * ⚠️⚠️ "esperando" só DEPOIS de o tempo passar (consertos do review da onda A do lote 5): a palavra
    * aparecia no instante da troca da peça, afirmando o resultado antes de o relógio andar. Até lá o
@@ -562,12 +621,15 @@ export function GameStateStage({
       view={STAGE}
       cast={cast}
       mundo={mundo}
-      titulo="A tela do jogo e os cactos criados"
-      descricao={`${inicio ? 'Tela de início' : 'Tela da partida'}, com ${quantos(tela.length, 'cacto', 'cactos')} à vista. ${
-        esperando
-          ? 'O contador de cactos criados está esperando.'
-          : `O contador marca ${quantos(state.crowd.born, 'cacto criado', 'cactos criados')}.`
-      }`}
+      titulo={castText('O jogo e os cactos criados', cast)}
+      descricao={castText(
+        `${inicio ? (momento === 'state' ? 'No início' : 'Tela de início') : 'Na partida'}, com ${quantos(tela.length, 'cacto', 'cactos')} à vista. ${
+          esperando
+            ? 'O contador de cactos criados está esperando.'
+            : `O contador marca ${quantos(state.crowd.born, 'cacto criado', 'cactos criados')}.`
+        }`,
+        cast,
+      )}
       overlay={
         inicio && dispatch ? (
           <div className="absolute left-[34%] top-[36%] -translate-x-1/2 -translate-y-1/2">
@@ -648,10 +710,24 @@ const PRATELEIRA = 16
  * que enche; com a regra ligada, quem sai cai na caixa dos removidos e a prateleira para de encher.
  * ⚠️ Sem o Dino: a cena é sobre o GRUPO de cactos (`SCENE_ROLES`).
  */
-export function CleanupStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
+export function CleanupStage({
+  state,
+  cast,
+  preset,
+  cenario,
+}: {
+  state: SceneState
+  cast?: SceneCast
+  preset?: ScenePreset
+  cenario?: SceneCenarioId
+}) {
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneCenario(cast, 'cleanup')
-  const tela = naTela(state)
+  const mundo = sceneCenario(cast, 'cleanup', cenario)
+  const caso = cleanupPreset(preset)
+  const saidaCima = caso.exit === 'top'
+  const tela = state.crowd.cacti.filter((c) =>
+    saidaCima ? c.y !== undefined && c.y >= 0 && c.y <= 270 : c.x >= 0 && c.x <= 480,
+  )
   const noGrupo = state.crowd.born - state.crowd.removed
   const fora = Math.max(0, noGrupo - sceneCactiOnScreen(state.crowd))
   const removidos = state.crowd.removed
@@ -667,11 +743,17 @@ export function CleanupStage({ state, cast }: { state: SceneState; cast?: SceneC
       cast={cast}
       mundo={mundo}
       titulo="A tela do jogo e os bastidores do grupo, lado a lado"
-      descricao={`${quantos(tela.length, 'cacto', 'cactos')} na tela e ${noGrupo} no grupo.`}
+      descricao={castText(
+        `${quantos(tela.length, 'cacto', 'cactos')} na tela e ${noGrupo} no grupo.${caso.incoming && state.crowd.elapsed < 0.6 ? ' Um cacto está chegando pela direita, fora da tela do jogo.' : ''}`,
+        cast,
+      )}
       comparacao={[
         {
           titulo: 'Tela do jogo',
-          descricao: `${quantos(tela.length, 'cacto', 'cactos')} na tela. A saída é a borda da esquerda.`,
+          descricao: castText(
+            `${quantos(tela.length, 'cacto', 'cactos')} na tela. A saída é a borda de ${saidaCima ? 'cima' : 'esquerda'}.`,
+            cast,
+          ),
           desenho: (
             <>
               <FundoDoCenario
@@ -689,19 +771,32 @@ export function CleanupStage({ state, cast }: { state: SceneState; cast?: SceneC
                   key={c.id}
                   figure={obstaculo}
                   x={c.x * escala}
-                  y={pisoDoMundo(mundo, chao)}
+                  y={saidaCima ? ((c.y ?? 0) / 270) * LADO.h : pisoDoMundo(mundo, chao)}
                   escala={0.8}
                 />
               ))}
+              {caso.incoming && state.crowd.elapsed < 0.6 && (
+                <g aria-hidden>
+                  <Texto className="fill-scene-ink-soft" x="190" y="42" tamanho={14}>
+                    chegando →
+                  </Texto>
+                  <ActorFigure
+                    figure={obstaculo}
+                    x={292}
+                    y={pisoDoMundo(mundo, chao)}
+                    escala={0.45}
+                  />
+                </g>
+              )}
               {/* ⚠️ A saída é a BORDA da tela, e não uma linha 60 unidades para dentro. */}
               <path
                 className="stroke-scene-b"
-                d={`M3 18V${LADO.h - 6}`}
+                d={saidaCima ? `M18 3H${LADO.w - 6}` : `M3 18V${LADO.h - 6}`}
                 strokeWidth="4"
                 strokeDasharray="8 6"
               />
               <Texto className="fill-scene-b-ink" x="12" y="30" tamanho={14} fontWeight="600">
-                ← saída
+                {saidaCima ? '↑ saída' : '← saída'}
               </Texto>
             </>
           ),
@@ -712,11 +807,14 @@ export function CleanupStage({ state, cast }: { state: SceneState; cast?: SceneC
           // prateleira vazia, legível embaixo do véu, era a resposta.
           titulo: jaSaiu ? 'Bastidores: o grupo' : 'Bastidores',
           descricao: jaSaiu
-            ? `${quantos(fora, 'cacto', 'cactos')} na prateleira, fora da tela.${
-                mostraRemovidos
-                  ? ` ${quantos(removidos, 'cacto removido', 'cactos removidos')}.`
-                  : ''
-              }`
+            ? castText(
+                `${quantos(fora, 'cacto', 'cactos')} na prateleira, fora da tela.${
+                  mostraRemovidos
+                    ? ` ${quantos(removidos, 'cacto removido', 'cactos removidos')}.`
+                    : ''
+                }`,
+                cast,
+              )
             : 'Uma prateleira vazia.',
           desenho: (
             <>
@@ -889,7 +987,7 @@ export function ControlsStage({
   dispatch?: (action: SceneAction) => void
 }) {
   const heroi = actorFigure(cast, 'hero')
-  const mundo = sceneCenario(cast, 'controls')
+  const mundo = useSceneCenario(cast, 'controls')
   const piso = pisoDoMundo(mundo, CHAO)
   const inicio = state.match.screen === 'start'
   const tries = state.match.tries

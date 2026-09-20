@@ -94,15 +94,27 @@ describe('restart: o toque no fim, e a pista que ele deixa', () => {
     expect(direto.estado.crowd.cacti).toEqual([])
     expect(direto.estado.match.screen).toBe('start')
     direto.faz(toque)
-    expect(direto.viu('restarted')).toBe(false)
+    expect(direto.viu('clean-track')).toBe(false)
 
     const c = crianca('restart').faz(toque).tempo(3).faz(toque, toque).tempo(3)
     expect(c.estado.match.screen).toBe('end')
     c.faz({ type: 'connect', port: 'restart', enabled: true }, toque)
     expect(c.estado.crowd.cacti).toEqual([])
-    expect(c.viu('restarted')).toBe(false)
+    expect(c.viu('clean-track')).toBe(false)
     c.faz(toque)
-    expect(c.viu('restarted')).toBe(true)
+    expect(c.viu('clean-track')).toBe(true)
+  })
+
+  test('com Enter, Reiniciar volta à abertura e exige outro Enter', () => {
+    const enter: SceneAction = { type: 'start', input: 'key' }
+    const c = crianca('restart').faz(enter).tempo(3)
+    c.faz({ type: 'connect', port: 'restart', enabled: true }, enter)
+    expect(c.estado.match.screen).toBe('start')
+    expect(c.estado.crowd.cacti).toEqual([])
+    expect(c.viu('back-to-menu')).toBe(false)
+    c.faz(enter)
+    expect(c.estado.match.screen).toBe('playing')
+    expect(c.viu('back-to-menu')).toBe(true)
   })
 
   test('tocar JOGANDO não faz nada (no jogo, é o pulo)', () => {
@@ -114,9 +126,9 @@ describe('restart: o toque no fim, e a pista que ele deixa', () => {
 })
 
 describe('hitbox: a área GRANDE bate antes dos desenhos, e diminuir para 80% conserta', () => {
-  test('a cena abre com a área em 130% e o Dino em 64', () => {
+  test('a cena abre com a área em 100% e o Dino em 64', () => {
     const c = crianca('hitbox')
-    expect(sceneAreaPercent(c.estado.contact.width)).toBe(130)
+    expect(sceneAreaPercent(c.estado.contact.width)).toBe(100)
     expect(sceneAreaWidth(80)).toBe(51.2)
   })
 
@@ -241,10 +253,10 @@ describe('acceleration: um relógio de 5 segundos e a condição Se velocidade >
     expect(c.estado.crowd.cacti.map((k) => k.velocity)).toEqual([-6, -7, -8, -9, -9])
   })
 
-  test('⚠️⚠️ parada em −9, o sorteio ainda tira 1: e o motor GARANTE o −10 depois de três em −9', () => {
+  test('⚠️⚠️ parada em −9, cada sorteio ainda pode tirar 0 ou 1', () => {
     const c = crianca('acceleration').faz(cinco(), cinco(), cinco(), cinco(), cinco(), cinco())
     expect(c.viu('variation-limit')).toBe(false)
-    c.faz(cinco())
+    c.faz(cinco(0.8))
     expect(c.estado.crowd.cacti.at(-1)?.velocity).toBe(-10)
     expect(c.viu('variation-limit')).toBe(true)
     // Os velhos guardam o número com que nasceram.

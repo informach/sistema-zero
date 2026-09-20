@@ -1,3 +1,6 @@
+import type { OnceArea, OnceCardId, ScenePreset } from './presets'
+import type { SceneCopyColor } from './state'
+
 /**
  * O que a criança (ou o roteiro de uma demonstração) pode FAZER numa cena.
  *
@@ -27,6 +30,17 @@ export const SCENE_IDS = [
   'gravity',
   'impulse',
   'jump-sound',
+  'fixed-vs-read',
+  'once-vs-always',
+  'collision-pair',
+  'invincibility',
+  'number-line',
+  'unique-names',
+  'motion-amount',
+  'two-clocks',
+  'copy-vs-original',
+  'published-copy',
+  'same-rules-new-skin',
   'spawn',
   'cleanup',
   'game-state',
@@ -115,6 +129,27 @@ export const SCENE_PORTS = [
 export type ScenePort = (typeof SCENE_PORTS)[number]
 
 export type SceneAction =
+  | { type: 'place-in-area'; card: OnceCardId; area: OnceArea | 'outside' }
+  | { type: 'trigger' }
+  | { type: 'value-source'; source: 'fixed' | 'read' }
+  | { type: 'box-marks'; on: boolean }
+  | { type: 'clear-marks' }
+  | { type: 'command-target'; subject: 'shot' | 'rock'; target: 'group' | 'alias' }
+  | { type: 'shield'; frames: 0 | 15 | 45 | 90 }
+  | { type: 'advance-to' }
+  | { type: 'step-value'; value: number }
+  | { type: 'sum-minus-one' }
+  | { type: 'compare-op'; operator: '>' | '=' | '<' }
+  | { type: 'toggle-block'; present: boolean }
+  | { type: 'name-field'; name: '' | 'nave' | 'folha-nave' | 'nave2' }
+  | { type: 'nudge'; piece: 'crater' | 'body'; amount: number }
+  | { type: 'birth-every'; frames: 20 | 40 | 80 }
+  | { type: 'export-file' | 'import-file' | 'publish' | 'open-mural' }
+  | { type: 'recolor'; side: 'lesson' | 'studio' | 'project'; color: SceneCopyColor }
+  | { type: 'skin'; theme: 'space' | 'road' | 'sea' }
+  | { type: 'rule-toggle'; enabled: boolean }
+  | { type: 'play-move'; direction: -1 | 1 }
+  | { type: 'play-shoot' }
   | { type: 'create' }
   | { type: 'connect'; port: ScenePort; enabled: boolean }
   | { type: 'layer'; front: boolean }
@@ -124,6 +159,8 @@ export type SceneAction =
   | { type: 'move'; distance: number }
   | { type: 'resize'; width: number }
   | { type: 'start'; input: 'key' | 'tap' }
+  /** Onde a peça Somar ponto mora: relógio e região Se são escolhas independentes. */
+  | { type: 'score-place'; clock: 'loose' | 'frame' | 'second'; guarded: boolean }
   | { type: 'collide' | 'home' | 'restart' | 'reset' }
   | { type: 'interval'; seconds: number }
   | { type: 'sample'; kind: 'position' | 'velocity'; unit: number; guided: boolean }
@@ -143,6 +180,8 @@ export type SceneAction =
   | { type: 'erase'; on: boolean }
   /** Qual dos dois quadros está na tela. */
   | { type: 'frame'; index: number }
+  /** Faz o quadro 2 mostrar o mesmo fogo do quadro 1, ou restaura a diferença. */
+  | { type: 'same-frames'; on: boolean }
   /** A troca automática entre os quadros, e a velocidade dela. */
   | { type: 'play'; on: boolean }
   | { type: 'rate'; perSecond: number }
@@ -162,6 +201,8 @@ export type SceneAction =
   | { type: 'mirror-mode'; mode: 'off' | 'x' | 'y' | 'xy' }
   /** Um traço pronto da nave na grade 16 × 16: a asa, a ponta ou a cabine. */
   | { type: 'trace'; piece: 'asa' | 'ponta' | 'cabine' }
+  /** O Balde enche a asa esquerda; o espelho não copia preenchimentos. */
+  | { type: 'fill' }
   /** Um quadradinho tocado direto na grade 16 × 16. */
   | { type: 'dot'; x: number; y: number }
   /** Apagar o papel, para refazer a comparação. */
@@ -251,6 +292,17 @@ export const MESH_SKIN_LABELS: Record<MeshLevel, string> = {
 
 /** Quais portas cada cena oferece. Cena sem porta não tem bancada de fios. */
 const PORTS: Record<SceneId, readonly ScenePort[]> = {
+  'once-vs-always': [],
+  'fixed-vs-read': [],
+  'collision-pair': [],
+  invincibility: [],
+  'number-line': [],
+  'unique-names': [],
+  'motion-amount': [],
+  'two-clocks': [],
+  'copy-vs-original': [],
+  'published-copy': [],
+  'same-rules-new-skin': [],
   coordinates: [],
   'screen-reader': [],
   'stage-size': [],
@@ -343,7 +395,7 @@ export const SCENE_LIMITS = {
   sprite: { min: 16, max: 96 },
   /** A grade 16 × 16 do espelho (lote 5 do Raio-X): cada quadradinho de 0 a 15 nos dois eixos. */
   paperCell: { min: 0, max: 15 },
-  interval: { min: 0.5, max: 2 },
+  interval: { min: 0.5, max: 3 },
   sample: { min: 0, max: 1 },
   hint: { min: 1, max: 3 },
   /** O núcleo do Iniciante 2D. */
@@ -452,6 +504,14 @@ const oneOf = (scenes: readonly SceneId[], scene: SceneId) => scenes.includes(sc
  * roteiros de demonstração (`playsOut`) precisam continuar valendo: rode `clock.test.ts`.
  */
 export const SCENE_FRAME_RATE = {
+  'same-rules-new-skin': 10,
+  'once-vs-always': 4,
+  'fixed-vs-read': 30,
+  'collision-pair': 10,
+  invincibility: 30,
+  'unique-names': 4,
+  'motion-amount': 8,
+  'two-clocks': 30,
   'draw-loop': 4,
   frames: 24,
   lives: 1,
@@ -459,13 +519,12 @@ export const SCENE_FRAME_RATE = {
   impulse: 30,
   'jump-sound': 30,
   spawn: 30,
+  random: 30,
   cleanup: 20,
   'game-state': 20,
   score: 1,
-  // ⚠️⚠️ `random` e `acceleration` SAÍRAM desta tabela no lote 5 do Raio-X (16/09/2026): cada uma
-  // tem o SEU relógio no gesto ("Sortear velocidade" corre 1 s só daquela raia; "Passar 5 segundos"
-  // é o relógio do Estúdio), e o ▶ geral movia os cactos sem mexer na base, dois relógios que faziam
-  // coisas diferentes na mesma bancada.
+  // No sorteio da pedra o ▶ mostra a queda. No cacto, sortear velocidade ainda é um gesto próprio.
+  // A aceleração continua sem ▶ geral: o relógio dela é o gesto "Passar 5 segundos".
   // ⚠️ A `restart` subiu de 10 para 20: o tempo passou a mover os cactos até a batida.
   restart: 20,
   // O núcleo do Iniciante 2D: todas estas mostram o que acontece COM O TEMPO.
@@ -503,6 +562,7 @@ export function sceneFrameRate(scene: SceneId): number | null {
  * "Um passo", e é o mesmo gesto: um quadro.
  */
 const QUADRO_E_O_ASSUNTO: readonly SceneId[] = [
+  'once-vs-always',
   'draw-loop',
   'spawn',
   'velocity',
@@ -570,6 +630,82 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
   if (!isRecord(value)) return false
   const L = SCENE_LIMITS
   switch (value.type) {
+    case 'place-in-area':
+      return (
+        scene === 'once-vs-always' &&
+        typeof value.card === 'string' &&
+        ['paint', 'create', 'move', 'event', 'lives'].includes(value.card) &&
+        typeof value.area === 'string' &&
+        ['outside', 'start', 'loop', 'event'].includes(value.area)
+      )
+    case 'trigger':
+      return scene === 'once-vs-always'
+    case 'value-source':
+      return scene === 'fixed-vs-read' && (value.source === 'fixed' || value.source === 'read')
+    case 'box-marks':
+      return scene === 'fixed-vs-read' && typeof value.on === 'boolean'
+    case 'clear-marks':
+      return scene === 'fixed-vs-read'
+    case 'command-target':
+      return (
+        scene === 'collision-pair' &&
+        (value.subject === 'shot' || value.subject === 'rock') &&
+        (value.target === 'group' || value.target === 'alias')
+      )
+    case 'shield':
+      return scene === 'invincibility' && [0, 15, 45, 90].includes(value.frames as number)
+    case 'advance-to':
+      return scene === 'invincibility'
+    case 'step-value':
+      return (
+        scene === 'number-line' && Number.isInteger(value.value) && between(value.value, -12, 0)
+      )
+    case 'sum-minus-one':
+      return scene === 'number-line'
+    case 'compare-op':
+      return (
+        scene === 'number-line' &&
+        (value.operator === '>' || value.operator === '=' || value.operator === '<')
+      )
+    case 'toggle-block':
+      return scene === 'unique-names' && typeof value.present === 'boolean'
+    case 'name-field':
+      return (
+        scene === 'unique-names' &&
+        ['', 'nave', 'folha-nave', 'nave2'].includes(value.name as string)
+      )
+    case 'nudge':
+      return (
+        scene === 'motion-amount' &&
+        (value.piece === 'crater' || value.piece === 'body') &&
+        Number.isInteger(value.amount) &&
+        between(value.amount, 0, 12)
+      )
+    case 'birth-every':
+      return scene === 'two-clocks' && [20, 40, 80].includes(value.frames as number)
+    case 'export-file':
+    case 'import-file':
+      return scene === 'copy-vs-original'
+    case 'publish':
+    case 'open-mural':
+      return scene === 'published-copy'
+    case 'recolor':
+      return (
+        ((scene === 'copy-vs-original' && (value.side === 'lesson' || value.side === 'studio')) ||
+          (scene === 'published-copy' && value.side === 'project')) &&
+        ['azul', 'rosa', 'verde', 'laranja'].includes(value.color as string) &&
+        (scene !== 'published-copy' || value.color !== 'laranja')
+      )
+    case 'skin':
+      return (
+        scene === 'same-rules-new-skin' && ['space', 'road', 'sea'].includes(value.theme as string)
+      )
+    case 'rule-toggle':
+      return scene === 'same-rules-new-skin' && typeof value.enabled === 'boolean'
+    case 'play-move':
+      return scene === 'same-rules-new-skin' && (value.direction === -1 || value.direction === 1)
+    case 'play-shoot':
+      return scene === 'same-rules-new-skin'
     case 'create':
       return scene === 'world'
     case 'connect':
@@ -588,6 +724,13 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'hitbox' && between(value.width, L.resize.min, L.resize.max)
     case 'start':
       return oneOf(MATCHES, scene) && (value.input === 'key' || value.input === 'tap')
+    case 'score-place':
+      return (
+        scene === 'score' &&
+        (value.clock === 'loose' || value.clock === 'frame' || value.clock === 'second') &&
+        typeof value.guarded === 'boolean' &&
+        (value.clock !== 'loose' || !value.guarded)
+      )
     case 'collide':
       return scene === 'score' || scene === 'lives'
     case 'home':
@@ -609,7 +752,7 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return between(value.level, L.hint.min, L.hint.max) && Number.isInteger(value.level)
     case 'place':
       return (
-        scene === 'coordinates' &&
+        (scene === 'coordinates' || (scene === 'fixed-vs-read' && value.y === 0)) &&
         between(value.x, L.addressX.min, L.addressX.max) &&
         between(value.y, L.addressY.min, L.addressY.max) &&
         Number.isInteger(value.x) &&
@@ -643,10 +786,15 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'draw-loop' && typeof value.on === 'boolean'
     case 'frame':
       return oneOf(ANIMATIONS, scene) && (value.index === 1 || value.index === 2)
-    case 'play':
+    case 'same-frames':
       return scene === 'frames' && typeof value.on === 'boolean'
+    case 'play':
+      return (scene === 'frames' || scene === 'motion-amount') && typeof value.on === 'boolean'
     case 'rate':
-      return scene === 'frames' && between(value.perSecond, L.rate.min, L.rate.max)
+      return (
+        (scene === 'frames' && between(value.perSecond, L.rate.min, L.rate.max)) ||
+        (scene === 'two-clocks' && [2, 8, 16].includes(value.perSecond as number))
+      )
     case 'onion':
       return scene === 'onion-skin' && typeof value.on === 'boolean'
     case 'shift':
@@ -679,6 +827,8 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'symmetry' && MIRROR_MODES.some((m) => m === value.mode)
     case 'trace':
       return scene === 'symmetry' && SYMMETRY_PIECES.some((p) => p === value.piece)
+    case 'fill':
+      return scene === 'symmetry'
     case 'dot':
       return (
         scene === 'symmetry' &&
@@ -757,7 +907,9 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       // ⚠️ Nas `lives` o tiro é o ACERTO que soma ponto (lote 5): no Desafio o ponto vem do tiro no
       // asteroide, e não do tempo jogado.
       // ⚠️ E na `aim` (lote 5, G5): o tiro sai com o GESTO "Atirar" e voa pela seta ou reto.
-      return scene === 'cooldown' || scene === 'lives' || scene === 'aim'
+      return (
+        scene === 'cooldown' || scene === 'lives' || scene === 'aim' || scene === 'fixed-vs-read'
+      )
     case 'recharge':
       return scene === 'cooldown' && between(value.seconds, L.recharge.min, L.recharge.max)
     case 'target':
@@ -878,5 +1030,9 @@ export interface SceneSetup {
   actions?: SceneAction[]
   /** Quais metas do modelo esta atividade cobra. Sem lista, são todas as do modelo. */
   goals?: string[]
+  /** O caso concreto que esta atividade usa; validado contra a cena. */
+  preset?: ScenePreset
+  /** Textos desta aula para uma meta existente; o id e o que a meta prova não mudam. */
+  goalCopy?: Record<string, { label?: string; pedido?: string }>
 }
 export const SETUP_LIMITS = { actions: 8, goals: 8 } as const

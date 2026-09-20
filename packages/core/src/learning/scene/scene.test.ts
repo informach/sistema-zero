@@ -5,6 +5,7 @@ import { SCENE_MODELS } from './catalog'
 import { openScene, stepScene } from './engine'
 import { evaluateDemonstration, evaluateExperimentation, sceneGoals } from './evaluate'
 import { isSceneActivity, isSceneScript } from './index'
+import { SCENE_QUESTIONS } from './questions'
 import { drawLoopOnScreen, sceneReadout, sceneSituation } from './readout'
 import { hydrateSceneState, initialScene, isSceneState, type SceneState } from './state'
 
@@ -17,7 +18,57 @@ import { hydrateSceneState, initialScene, isSceneState, type SceneState } from '
  */
 
 describe('cena: o catálogo', () => {
-  test('tem os 45 modelos, e cada um traz metas, três dicas e um roteiro', () => {
+  test('a sombra aparece antes de pedir para desligá-la', () => {
+    const goals = sceneGoals('shading', openScene({ scene: 'shading' }))
+    expect(goals.map((goal) => goal.id)).toEqual(['volume', 'flat', 'side'])
+  })
+
+  test('o placar espera no início antes de pedir para jogar', () => {
+    const targets = [
+      'score-runaway',
+      'score-idle-wrong',
+      'score-waiting',
+      'score-playing',
+      'score-kept',
+    ]
+    const goals = sceneGoals('score', openScene({ scene: 'score' }), undefined, targets)
+    expect(goals.map((goal) => goal.id)).toEqual(targets)
+  })
+
+  test('jump-sound usa o nome do bloco que a criança encontra no Estúdio', () => {
+    const model = SCENE_MODELS['jump-sound']
+    const copy = [
+      model.manipulates,
+      ...model.goals.flatMap((goal) => [goal.label, goal.pedido]),
+      ...model.hints,
+      SCENE_QUESTIONS['jump-sound'].explain?.prompt,
+    ].join(' ')
+    expect(copy).not.toContain('Tocar som')
+    expect(copy).toContain('Tocar efeito')
+    expect(model.extra).toContain('celular')
+  })
+
+  test('controls apresenta o toque como algo que a criança já viu no próprio jogo', () => {
+    const goal = SCENE_MODELS.controls.goals.find((item) => item.id === 'missing-touch')
+    expect(goal?.label).toBe('É o mesmo que aconteceu no seu jogo: tocou e nada aconteceu')
+    expect(goal?.pedido).toContain('Quando apertar a tecla')
+  })
+
+  test('as cenas do Se nomeiam o bloco que existe na paleta', () => {
+    for (const scene of ['game-state', 'score'] as const) {
+      const model = SCENE_MODELS[scene]
+      const copy = [
+        model.instruction,
+        model.manipulates,
+        ...model.goals.map((goal) => goal.pedido),
+        ...model.hints,
+      ].join(' ')
+      expect(copy).not.toContain('Se jogando')
+      expect(copy).toContain('o estado do jogo é jogando')
+    }
+  })
+
+  test('tem os 56 modelos, e cada um traz metas e três dicas', () => {
     // Eram 14 até 14/09/2026. Entraram as quatro que as duas primeiras aulas do Corre Dino
     // pediam e que só existiam como vídeo planejado (`coordinates`, `screen-reader`,
     // `stage-size` e `draw-loop`) e, no mesmo dia, as seis do lote 4 da proposta: as cinco de
@@ -25,13 +76,27 @@ describe('cena: o catálogo', () => {
     // `sheet-vs-sprite`) e a das vidas do Desafio (`lives`). Em 15/09/2026 vieram as onze do
     // núcleo do Iniciante 2D e as dez do motor, do 3D e do ateliê — os degraus da trilha que
     // não tinham cena nenhuma (ver `docs/aulas-interativas/proposta-experiencias-trilha.md`).
-    expect(SCENE_IDS).toHaveLength(45)
+    expect(SCENE_IDS).toHaveLength(56)
     for (const scene of SCENE_IDS) {
       const m = SCENE_MODELS[scene]
       expect(m.id).toBe(scene)
       expect(m.goals.length).toBeGreaterThan(0)
       expect(m.hints).toHaveLength(3)
-      expect(m.script.length).toBeGreaterThan(0)
+      if (
+        scene === 'once-vs-always' ||
+        scene === 'fixed-vs-read' ||
+        scene === 'collision-pair' ||
+        scene === 'invincibility' ||
+        scene === 'number-line' ||
+        scene === 'unique-names' ||
+        scene === 'motion-amount' ||
+        scene === 'two-clocks' ||
+        scene === 'copy-vs-original' ||
+        scene === 'published-copy' ||
+        scene === 'same-rules-new-skin'
+      )
+        expect(m.script).toEqual([])
+      else expect(m.script.length).toBeGreaterThan(0)
       expect(m.title.length).toBeGreaterThan(0)
       expect(m.manipulates.length).toBeGreaterThan(0)
     }
@@ -42,7 +107,8 @@ describe('cena: o catálogo', () => {
     // realmente aconteça. Se um modelo prometesse uma descoberta que não ocorre, a criança
     // ficaria presa esperando — e é isso que este teste impede de entrar no catálogo.
     for (const scene of SCENE_IDS)
-      expect(isSceneScript([...SCENE_MODELS[scene].script], scene)).toBe(true)
+      if (SCENE_MODELS[scene].script.length)
+        expect(isSceneScript([...SCENE_MODELS[scene].script], scene)).toBe(true)
   })
 })
 
@@ -350,7 +416,7 @@ describe('consertos do review do lote 1 (Raio-X)', () => {
       { type: 'connect' as const, port: 'timer' as const, enabled: true },
       { type: 'advance' as const, seconds: 2 },
     ].reduce((e, a) => stepScene(start, e, a), openScene(start))
-    expect(comRelogio.evidence.discoveries).toContain('spaced')
+    expect(comRelogio.evidence.discoveries).toContain('with-timer')
   })
 
   test('⚠️ `cooldown`: a etapa da recarga termina ESPERANDO, com vírgula no decimal', () => {

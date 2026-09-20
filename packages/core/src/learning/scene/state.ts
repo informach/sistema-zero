@@ -18,6 +18,8 @@ import {
   TILEMAP_MARK,
   TILEMAP_MARKS_MAX,
 } from './nucleo'
+import { cloneOnce, initialOnce, isSceneOnce, type SceneOnce } from './once-vs-always'
+import { cleanupPreset, gameStatePreset, isRandomPreset, oncePreset } from './presets'
 
 /**
  * O estado de uma cena, agrupado por assunto.
@@ -31,6 +33,8 @@ import {
 export interface SceneCactus {
   id: number
   x: number
+  /** Altura da pedra no caso de queda da cena spawn. */
+  y?: number
   velocity: number
   /**
    * A base de onde a velocidade saiu, na `acceleration` (lote 5 do Raio-X): é o que deixa a fileira
@@ -135,10 +139,20 @@ export interface SceneCrowd {
    */
   untimedBorn: number
   untimedSeconds: number
+  /** Quadros desde a última montagem do relógio de pedras. */
+  fallFrames?: number
+  /** Distância medida da primeira pedra em 60 quadros, com intervalo de 40. */
+  fallBaseline?: number
+  /** Distância medida da primeira pedra em 60 quadros, com intervalo de 20. */
+  fallComparison?: number
 }
 /** A partida: telas, pontos e as ligações que a fazem começar e recomeçar. */
 export interface SceneMatch {
   guarded: boolean
+  /** Onde Somar ponto está na cena do placar. Opcional nos retratos anteriores. */
+  scoreClock?: 'loose' | 'frame' | 'second'
+  /** Quantos quadros pontuaram desde a última troca de lugar. Opcional nos retratos anteriores. */
+  scoreFrameTicks?: number
   touch: boolean
   restartConnected: boolean
   screen: MatchScreen
@@ -265,6 +279,8 @@ export const DRAW_LOOP_LANE = { start: 10, step: 44, places: 10 } as const
 export interface SceneAnimation {
   /** 1 ou 2. São dois desenhos INTEIROS, não um desenho com partes. */
   frame: number
+  /** O quadro 2 é uma cópia do 1. Opcional nos retratos antigos. */
+  sameFrames?: boolean
   playing: boolean
   /** Trocas por segundo. */
   rate: number
@@ -290,6 +306,8 @@ export interface SceneMirror {
   axis: MirrorAxis
   /** As marcas no papel, na ordem em que apareceram (`MARCA_DO_PAPEL`, em `atelie.ts`). */
   marks: string[]
+  /** Balde de tinta na asa esquerda. Opcional nos retratos gravados antes desta ação existir. */
+  filled?: boolean
   /**
    * Os GESTOS de pintar desde o papel em branco, e as cópias que os espelhos fizeram (consertos do
    * review da onda B do lote 5). ⚠️ As marcas não contam gesto: pintar a asa de novo não é marca
@@ -719,6 +737,8 @@ export interface SceneSpeed {
    * lugares. É a marquinha "2×" da régua, a repetição à vista.
    */
   spots: number[]
+  /** Posição vertical da pedra do preset acima da tela; ausente nas sessões antigas. */
+  fallingY?: number
 }
 
 /**
@@ -739,8 +759,528 @@ export interface SceneClock {
   carry: number
 }
 
+/** O disparo guarda o x lido no instante em que nasceu; mover a nave não o altera. */
+export interface SceneFixedShot {
+  id: number
+  x: number
+  y: number
+  heroX: number
+  source: 'fixed' | 'read'
+}
+
+export interface SceneFixedRead {
+  nextId: number
+  heroX: number
+  source: 'fixed' | 'read'
+  boxMarks: boolean
+  shots: SceneFixedShot[]
+  /** Marcas de nascimento persistem mesmo depois que o tiro sai da tela. */
+  marks: SceneFixedShot[]
+}
+
+const FIXED_READ_PADRAO: SceneFixedRead = {
+  nextId: 1,
+  heroX: 400,
+  source: 'fixed',
+  boxMarks: false,
+  shots: [],
+  marks: [],
+}
+
+function isSceneFixedRead(value: unknown): value is SceneFixedRead {
+  if (!isRecord(value)) return false
+  if (
+    !Number.isInteger(value.nextId) ||
+    (value.nextId as number) < 1 ||
+    (value.nextId as number) > 1e7
+  )
+    return false
+  if (
+    !Number.isInteger(value.heroX) ||
+    (value.heroX as number) < 0 ||
+    (value.heroX as number) > 800
+  )
+    return false
+  if (value.source !== 'fixed' && value.source !== 'read') return false
+  if (typeof value.boxMarks !== 'boolean') return false
+  const isShot = (shot: unknown) =>
+    isRecord(shot) &&
+    Number.isInteger(shot.id) &&
+    (shot.id as number) >= 1 &&
+    (shot.id as number) < (value.nextId as number) &&
+    typeof shot.x === 'number' &&
+    Number.isFinite(shot.x) &&
+    shot.x >= 0 &&
+    shot.x <= 800 &&
+    typeof shot.y === 'number' &&
+    Number.isFinite(shot.y) &&
+    shot.y >= -50 &&
+    shot.y <= 480 &&
+    typeof shot.heroX === 'number' &&
+    Number.isInteger(shot.heroX) &&
+    shot.heroX >= 0 &&
+    shot.heroX <= 800 &&
+    (shot.source === 'fixed' || shot.source === 'read')
+  return (
+    Array.isArray(value.shots) &&
+    value.shots.length <= 12 &&
+    value.shots.every(isShot) &&
+    Array.isArray(value.marks) &&
+    value.marks.length <= 12 &&
+    value.marks.every(isShot)
+  )
+}
+
+export interface SceneCollisionPair {
+  shotTarget: 'group' | 'alias'
+  rockTarget: 'group' | 'alias'
+  frames: number
+  collided: boolean
+  pairedAliases: boolean
+  /** Os três objetos mantêm o mesmo id; os dois de fora continuam a trajetória após a batida. */
+  shots: number[]
+  rocks: number[]
+}
+
+const COLLISION_PAIR_PADRAO: SceneCollisionPair = {
+  shotTarget: 'group',
+  rockTarget: 'group',
+  frames: 0,
+  collided: false,
+  pairedAliases: false,
+  shots: [0, 1, 2],
+  rocks: [0, 1, 2],
+}
+
+function isSceneCollisionPair(value: unknown): value is SceneCollisionPair {
+  if (!isRecord(value)) return false
+  if (value.shotTarget !== 'group' && value.shotTarget !== 'alias') return false
+  if (value.rockTarget !== 'group' && value.rockTarget !== 'alias') return false
+  if (
+    !Number.isInteger(value.frames) ||
+    (value.frames as number) < 0 ||
+    (value.frames as number) > 1e7
+  )
+    return false
+  if (typeof value.collided !== 'boolean') return false
+  if (typeof value.pairedAliases !== 'boolean') return false
+  const ids = (items: unknown) =>
+    Array.isArray(items) &&
+    items.length <= 3 &&
+    items.every(
+      (id, index) =>
+        Number.isInteger(id) && id >= 0 && id <= 2 && (index === 0 || id > items[index - 1]),
+    )
+  return ids(value.shots) && ids(value.rocks)
+}
+
+export interface SceneInvincibility {
+  protection: 0 | 15 | 45 | 90
+  frames: number
+  hearts: number
+  remaining: number
+  /** Cada pedra desaparece no quadro agendado, mesmo quando não causa dano. */
+  struck: number[]
+  damaged: number[]
+}
+
+const INVINCIBILITY_PADRAO: SceneInvincibility = {
+  protection: 0,
+  frames: 0,
+  hearts: 3,
+  remaining: 0,
+  struck: [],
+  damaged: [],
+}
+
+function isSceneInvincibility(value: unknown): value is SceneInvincibility {
+  if (!isRecord(value)) return false
+  if (![0, 15, 45, 90].includes(value.protection as number)) return false
+  if (
+    !Number.isInteger(value.frames) ||
+    (value.frames as number) < 0 ||
+    (value.frames as number) > 1e7
+  )
+    return false
+  if (
+    !Number.isInteger(value.hearts) ||
+    (value.hearts as number) < 0 ||
+    (value.hearts as number) > 3
+  )
+    return false
+  if (
+    !Number.isInteger(value.remaining) ||
+    (value.remaining as number) < 0 ||
+    (value.remaining as number) > 90
+  )
+    return false
+  const hits = (items: unknown) =>
+    Array.isArray(items) &&
+    items.length <= 3 &&
+    items.every(
+      (frame, index) => [1, 10, 30].includes(frame) && (index === 0 || frame > items[index - 1]),
+    )
+  return hits(value.struck) && hits(value.damaged)
+}
+
+export interface SceneNumberLine {
+  value: number
+  operator: '>' | '=' | '<'
+  presses: number
+  equalPresses: number
+  sawFalseEqual: boolean
+}
+
+export function numberLineAnswer(line: SceneNumberLine): boolean {
+  return line.operator === '>'
+    ? line.value > -9
+    : line.operator === '<'
+      ? line.value < -9
+      : line.value === -9
+}
+
+const NUMBER_LINE_PADRAO: SceneNumberLine = {
+  value: -5,
+  operator: '=',
+  presses: 0,
+  equalPresses: 0,
+  sawFalseEqual: false,
+}
+
+function isSceneNumberLine(value: unknown): value is SceneNumberLine {
+  return (
+    isRecord(value) &&
+    Number.isInteger(value.value) &&
+    (value.value as number) >= -12 &&
+    (value.value as number) <= 0 &&
+    (value.operator === '>' || value.operator === '=' || value.operator === '<') &&
+    Number.isInteger(value.presses) &&
+    (value.presses as number) >= 0 &&
+    (value.presses as number) <= 1e7 &&
+    Number.isInteger(value.equalPresses) &&
+    (value.equalPresses as number) >= 0 &&
+    (value.equalPresses as number) <= (value.presses as number) &&
+    typeof value.sawFalseEqual === 'boolean'
+  )
+}
+
+export interface SceneUniqueNames {
+  topPresent: boolean
+  bottomName: '' | 'nave' | 'folha-nave' | 'nave2'
+  previewX: number
+  frames: number
+}
+
+const UNIQUE_NAMES_PADRAO: SceneUniqueNames = {
+  topPresent: true,
+  bottomName: '',
+  previewX: 120,
+  frames: 0,
+}
+
+export function uniqueNamesWarning(state: SceneUniqueNames): 'missing' | 'clash' | null {
+  if (!state.topPresent) return 'missing'
+  if (state.bottomName === 'nave') return 'clash'
+  return null
+}
+
+export const UNIQUE_NAME_WARNINGS = {
+  missing: 'O nome “nave” ainda não foi criado neste jogo',
+  clash: 'O nome “nave” já foi criado neste trecho; escolha um nome diferente',
+} as const
+
+function isSceneUniqueNames(value: unknown): value is SceneUniqueNames {
+  return (
+    isRecord(value) &&
+    typeof value.topPresent === 'boolean' &&
+    ['', 'nave', 'folha-nave', 'nave2'].includes(value.bottomName as string) &&
+    Number.isInteger(value.previewX) &&
+    (value.previewX as number) >= 120 &&
+    (value.previewX as number) <= 320 &&
+    Number.isInteger(value.frames) &&
+    (value.frames as number) >= 0 &&
+    (value.frames as number) <= 1e7
+  )
+}
+
+export interface SceneMotionAmount {
+  crater: number
+  body: number
+  playing: boolean
+  frames: number
+  previewFrame: 0 | 1
+  viewedFrames: number
+}
+
+const MOTION_AMOUNT_PADRAO: SceneMotionAmount = {
+  crater: 0,
+  body: 0,
+  playing: true,
+  frames: 0,
+  previewFrame: 0,
+  viewedFrames: 0,
+}
+
+function isSceneMotionAmount(value: unknown): value is SceneMotionAmount {
+  return (
+    isRecord(value) &&
+    Number.isInteger(value.crater) &&
+    (value.crater as number) >= 0 &&
+    (value.crater as number) <= 12 &&
+    Number.isInteger(value.body) &&
+    (value.body as number) >= 0 &&
+    (value.body as number) <= 12 &&
+    typeof value.playing === 'boolean' &&
+    Number.isInteger(value.frames) &&
+    (value.frames as number) >= 0 &&
+    (value.frames as number) <= 1e7 &&
+    (value.previewFrame === 0 || value.previewFrame === 1) &&
+    Number.isInteger(value.viewedFrames) &&
+    (value.viewedFrames as number) >= 0 &&
+    (value.viewedFrames as number) <= 1e7
+  )
+}
+
+export interface SceneTwoClockRock {
+  id: number
+  bornAt: number
+}
+
+export interface SceneTwoClocks {
+  birthEvery: 20 | 40 | 80
+  animationRate: 2 | 8 | 16
+  birthAtStart: 20 | 40 | 80
+  rateAtStart: 2 | 8 | 16
+  frames: number
+  born: number
+  rocks: SceneTwoClockRock[]
+  lastBornAt: number
+}
+
+const TWO_CLOCKS_PADRAO: SceneTwoClocks = {
+  birthEvery: 40,
+  animationRate: 8,
+  birthAtStart: 40,
+  rateAtStart: 8,
+  frames: 0,
+  born: 0,
+  rocks: [],
+  lastBornAt: 0,
+}
+
+export function twoClockFrame(rock: SceneTwoClockRock, frames: number, rate: number): 0 | 1 {
+  return Math.floor(((frames - rock.bornAt) * rate) / 30) % 2 === 0 ? 0 : 1
+}
+
+function isSceneTwoClocks(value: unknown): value is SceneTwoClocks {
+  if (!isRecord(value)) return false
+  if (
+    ![20, 40, 80].includes(value.birthEvery as number) ||
+    ![20, 40, 80].includes(value.birthAtStart as number)
+  )
+    return false
+  if (
+    ![2, 8, 16].includes(value.animationRate as number) ||
+    ![2, 8, 16].includes(value.rateAtStart as number)
+  )
+    return false
+  if (
+    !Number.isInteger(value.frames) ||
+    (value.frames as number) < 0 ||
+    (value.frames as number) > 1e7
+  )
+    return false
+  if (!Number.isInteger(value.born) || (value.born as number) < 0 || (value.born as number) > 1e7)
+    return false
+  if (
+    !Number.isInteger(value.lastBornAt) ||
+    (value.lastBornAt as number) < 0 ||
+    (value.lastBornAt as number) > (value.frames as number)
+  )
+    return false
+  if (!Array.isArray(value.rocks) || value.rocks.length > 12) return false
+  let previousId = 0
+  for (const rock of value.rocks) {
+    if (!isRecord(rock)) return false
+    if (
+      !Number.isInteger(rock.id) ||
+      (rock.id as number) <= previousId ||
+      (rock.id as number) > (value.born as number)
+    )
+      return false
+    if (
+      !Number.isInteger(rock.bornAt) ||
+      (rock.bornAt as number) < 0 ||
+      (rock.bornAt as number) > (value.frames as number)
+    )
+      return false
+    previousId = rock.id as number
+  }
+  return true
+}
+
+export type SceneCopyColor = 'azul' | 'rosa' | 'verde' | 'laranja'
+
+export interface ScenePublishedPost {
+  id: number
+  color: SceneCopyColor
+}
+
+export interface SceneCopies {
+  lessonColor: SceneCopyColor
+  fileColor: SceneCopyColor | null
+  studioColor: SceneCopyColor | null
+  projectColor: SceneCopyColor
+  posts: ScenePublishedPost[]
+  muralOpenedId: number | null
+}
+
+const COPIES_PADRAO: SceneCopies = {
+  lessonColor: 'azul',
+  fileColor: null,
+  studioColor: null,
+  projectColor: 'azul',
+  posts: [],
+  muralOpenedId: null,
+}
+
+function isSceneCopyColor(value: unknown): value is SceneCopyColor {
+  return value === 'azul' || value === 'rosa' || value === 'verde' || value === 'laranja'
+}
+
+function isSceneCopies(value: unknown): value is SceneCopies {
+  if (!isRecord(value)) return false
+  if (!isSceneCopyColor(value.lessonColor) || !isSceneCopyColor(value.projectColor)) return false
+  if (value.fileColor !== null && !isSceneCopyColor(value.fileColor)) return false
+  if (value.studioColor !== null && !isSceneCopyColor(value.studioColor)) return false
+  if (!Array.isArray(value.posts) || value.posts.length > 12) return false
+  for (let i = 0; i < value.posts.length; i++) {
+    const post = value.posts[i]
+    if (!isRecord(post) || post.id !== i + 1 || !isSceneCopyColor(post.color)) return false
+  }
+  return (
+    value.muralOpenedId === null ||
+    (Number.isInteger(value.muralOpenedId) &&
+      (value.muralOpenedId as number) >= 1 &&
+      (value.muralOpenedId as number) <= value.posts.length)
+  )
+}
+
+export type SceneSkin = 'space' | 'road' | 'sea'
+export interface SceneSkinGame {
+  theme: SceneSkin
+  visited: SceneSkin[]
+  shootEnabled: boolean
+  x: number
+  obstacleX: number
+  obstacleY: number
+  shots: { id: number; x: number; y: number }[]
+  nextShotId: number
+  lives: number
+  points: number
+  frames: number
+  disabledTried: boolean
+  disabledFrames: number
+}
+const SKIN_GAME_PADRAO: SceneSkinGame = {
+  theme: 'space',
+  visited: ['space'],
+  shootEnabled: true,
+  x: 280,
+  obstacleX: 280,
+  obstacleY: 40,
+  shots: [],
+  nextShotId: 1,
+  lives: 3,
+  points: 0,
+  frames: 0,
+  disabledTried: false,
+  disabledFrames: 0,
+}
+function isSceneSkinGame(value: unknown): value is SceneSkinGame {
+  if (!isRecord(value)) return false
+  const skins = ['space', 'road', 'sea']
+  if (
+    !skins.includes(value.theme as string) ||
+    !Array.isArray(value.visited) ||
+    value.visited.length < 1 ||
+    value.visited.length > 3
+  )
+    return false
+  if (!value.visited.every((skin: unknown) => skins.includes(skin as string))) return false
+  if (!Number.isInteger(value.x) || (value.x as number) < 40 || (value.x as number) > 520)
+    return false
+  if (
+    !Number.isInteger(value.obstacleX) ||
+    (value.obstacleX as number) < 40 ||
+    (value.obstacleX as number) > 520
+  )
+    return false
+  if (
+    !Number.isInteger(value.obstacleY) ||
+    (value.obstacleY as number) < 0 ||
+    (value.obstacleY as number) > 300
+  )
+    return false
+  if (
+    !Array.isArray(value.shots) ||
+    value.shots.length > 8 ||
+    !value.shots.every(
+      (shot: unknown) =>
+        isRecord(shot) &&
+        Number.isInteger(shot.id) &&
+        (shot.id as number) >= 1 &&
+        (shot.id as number) < (value.nextShotId as number) &&
+        typeof shot.x === 'number' &&
+        shot.x >= 0 &&
+        shot.x <= 560 &&
+        typeof shot.y === 'number' &&
+        shot.y >= 0 &&
+        shot.y <= 300,
+    )
+  )
+    return false
+  if (
+    !Number.isInteger(value.nextShotId) ||
+    (value.nextShotId as number) < 1 ||
+    (value.nextShotId as number) > 1e7
+  )
+    return false
+  if (!Number.isInteger(value.lives) || (value.lives as number) < 0 || (value.lives as number) > 3)
+    return false
+  if (
+    !Number.isInteger(value.points) ||
+    (value.points as number) < 0 ||
+    (value.points as number) > 1e7
+  )
+    return false
+  if (
+    !Number.isInteger(value.frames) ||
+    (value.frames as number) < 0 ||
+    (value.frames as number) > 1e7
+  )
+    return false
+  if (
+    !Number.isInteger(value.disabledFrames) ||
+    (value.disabledFrames as number) < 0 ||
+    (value.disabledFrames as number) > 1e7
+  )
+    return false
+  return typeof value.shootEnabled === 'boolean' && typeof value.disabledTried === 'boolean'
+}
+
 export interface SceneState {
   evidence: SceneEvidence
+  once: SceneOnce
+  fixedRead: SceneFixedRead
+  collisionPair: SceneCollisionPair
+  invincibility: SceneInvincibility
+  numberLine: SceneNumberLine
+  uniqueNames: SceneUniqueNames
+  motionAmount: SceneMotionAmount
+  twoClocks: SceneTwoClocks
+  copies: SceneCopies
+  skinGame: SceneSkinGame
   world: SceneWorld
   flight: SceneFlight
   sound: SceneSound
@@ -837,7 +1377,13 @@ const ANIMATION_PADRAO: SceneAnimation = {
   // e com ele vê que chutou.
   shift: 40,
 }
-const MIRROR_PADRAO: SceneMirror = { on: false, axis: 'x', marks: [], strokes: 0, copies: 0 }
+const MIRROR_PADRAO: SceneMirror = {
+  on: false,
+  axis: 'x',
+  marks: [],
+  strokes: 0,
+  copies: 0,
+}
 const PIXELS_PADRAO: ScenePixels = { kind: 'pixel', zoom: 1 }
 // ⚠️ Lote 5 do Raio-X: a nave do Meu Jeito entra no jogo em 54 × 54, e a folha abre inteira (64).
 // ⚠️ O jogo abre VAZIO (`loaded: false`): é o recorte da criança que o carrega.
@@ -1026,6 +1572,16 @@ const CLOCK_PADRAO: SceneClock = { carry: 0 }
 export function hydrateSceneState(value: unknown): unknown {
   if (!isRecord(value)) return value
   const grupos = [
+    ['once', initialOnce(undefined)],
+    ['fixedRead', FIXED_READ_PADRAO],
+    ['collisionPair', COLLISION_PAIR_PADRAO],
+    ['invincibility', INVINCIBILITY_PADRAO],
+    ['numberLine', NUMBER_LINE_PADRAO],
+    ['uniqueNames', UNIQUE_NAMES_PADRAO],
+    ['motionAmount', MOTION_AMOUNT_PADRAO],
+    ['twoClocks', TWO_CLOCKS_PADRAO],
+    ['copies', COPIES_PADRAO],
+    ['skinGame', SKIN_GAME_PADRAO],
     ['place', PLACE_PADRAO],
     ['description', DESCRIPTION_PADRAO],
     ['stage', STAGE_PADRAO],
@@ -1087,13 +1643,24 @@ function copiaProfunda(grupo: Record<string, unknown>): Record<string, unknown> 
 
 /** Onde estão os três cactos com que a `cleanup` abre (lote 5 do Raio-X). */
 export const CACTOS_DA_LIMPEZA = [30, 130, 260] as const
+export const TIROS_DA_LIMPEZA = [25, 125, 225] as const
 
-export function initialScene({ scene, initialImpulse }: SceneStart): SceneState {
+export function initialScene({ scene, initialImpulse, setup }: SceneStart): SceneState {
   // ⚠️ A `jump-sound` salta com impulso 14 (lote 5 do Raio-X): o salto de 9 dura 1 s, e apertar
   // Espaço DUAS vezes no mesmo pulo, que é a primeira descoberta, pedia pressa de adulto.
   const impulso = initialImpulse ?? (scene === 'jump-sound' ? SCENE_LIMITS.impulse.max : 9)
   return {
     evidence: { actions: 0, discoveries: [], observations: [], hints: 0 },
+    once: initialOnce(scene === 'once-vs-always' ? oncePreset(setup?.preset) : undefined),
+    fixedRead: { ...FIXED_READ_PADRAO, shots: [], marks: [] },
+    collisionPair: { ...COLLISION_PAIR_PADRAO, shots: [0, 1, 2], rocks: [0, 1, 2] },
+    invincibility: { ...INVINCIBILITY_PADRAO, struck: [], damaged: [] },
+    numberLine: { ...NUMBER_LINE_PADRAO },
+    uniqueNames: { ...UNIQUE_NAMES_PADRAO },
+    motionAmount: { ...MOTION_AMOUNT_PADRAO },
+    twoClocks: { ...TWO_CLOCKS_PADRAO, rocks: [] },
+    copies: { ...COPIES_PADRAO, posts: [] },
+    skinGame: { ...SKIN_GAME_PADRAO, visited: ['space'], shots: [] },
     // ⚠️ Duas cenas começam DESMONTADAS de propósito: em `world` a criança cria o Dino, e em
     // `gravity` ela liga a gravidade. Nas outras, isso já vem pronto para não roubar o foco.
     world: { created: scene !== 'world', drawn: scene !== 'world', front: false },
@@ -1117,7 +1684,12 @@ export function initialScene({ scene, initialImpulse }: SceneStart): SceneState 
     sound: { onJump: false, count: 0, jumps: 0, beats: [] },
     crowd: {
       timer: false,
-      interval: 1,
+      interval:
+        scene === 'game-state'
+          ? gameStatePreset(setup?.preset).clockFrames / 30
+          : scene === 'spawn' && setup?.preset?.id === 'pedra-quadros'
+            ? 40 / 30
+            : 1,
       cleanup: false,
       remainder: 0,
       // ⚠️⚠️ A `cleanup` abre com três cactos já na pista (lote 5 do Raio-X): a pista vazia pedia ~5 s
@@ -1127,11 +1699,19 @@ export function initialScene({ scene, initialImpulse }: SceneStart): SceneState 
       removed: 0,
       cacti:
         scene === 'cleanup'
-          ? CACTOS_DA_LIMPEZA.map((x, i) => ({ id: i + 1, x, velocity: -5 }))
+          ? cleanupPreset(setup?.preset).exit === 'top'
+            ? TIROS_DA_LIMPEZA.map((y, i) => ({
+                id: i + 1,
+                x: 120 + i * 80,
+                y,
+                velocity: -5,
+              }))
+            : CACTOS_DA_LIMPEZA.map((x, i) => ({ id: i + 1, x, velocity: -5 }))
           : [],
       elapsed: 0,
       untimedBorn: 0,
       untimedSeconds: 0,
+      ...(scene === 'spawn' && setup?.preset?.id === 'pedra-quadros' ? { fallFrames: 0 } : {}),
     },
     match: {
       guarded: false,
@@ -1145,15 +1725,13 @@ export function initialScene({ scene, initialImpulse }: SceneStart): SceneState 
       seen: [...PLACAR_NAO_VISTO],
       cleared: 0,
     },
-    // ⚠️⚠️ A `hitbox` abre com a área GRANDE (lote 5 do Raio-X): 130% do desenho, como no jogo da
-    // Aula 10 antes do conserto. É o que faz o BATEU aparecer com um vão entre os desenhos, a batida
-    // injusta que a aula existe para consertar diminuindo a área até 80%.
+    // A aula compara a área inteira com 80% e 40% do mesmo desenho.
     // ⚠️⚠️ E a DISTÂNCIA abre em 149 (consertos do review da onda A do lote 5): de 140, o botão − de 10 em
     // 10 fazia o BATEU aparecer em 50, com um vão de 10 (~8 px na tela) que parecia desenho encostado.
-    // De 149 ele aparece em 59, com vão de 19. As outras cenas que leem `contact` seguem em 140.
+    // De 149 ele aparece em 49, com vão de 9. As outras cenas que leem `contact` seguem em 140.
     contact: {
       distance: scene === 'hitbox' ? 149 : 140,
-      width: scene === 'hitbox' ? sceneAreaWidth(130) : 48,
+      width: scene === 'hitbox' ? sceneAreaWidth(100) : 48,
     },
     speed: {
       // ⚠️ A `acceleration` abre com a condição LIGADA (lote 5): a base para em −9 primeiro, e
@@ -1161,8 +1739,22 @@ export function initialScene({ scene, initialImpulse }: SceneStart): SceneState 
       limited: scene === 'acceleration',
       base: -5,
       ticks: 0,
-      samples: { x: 500, velocity: -5, positions: [], velocities: [] },
-      spots: [...LUGARES_NAO_SORTEADOS],
+      samples: {
+        x:
+          scene === 'random' && isRandomPreset(setup?.preset) && setup.preset.axis === 'above'
+            ? 240
+            : 500,
+        velocity: -5,
+        positions: [],
+        velocities: [],
+      },
+      spots:
+        scene === 'random' && isRandomPreset(setup?.preset)
+          ? [...LUGARES_NAO_SORTEADOS_61]
+          : [...LUGARES_NAO_SORTEADOS],
+      ...(scene === 'random' && isRandomPreset(setup?.preset) && setup.preset.axis === 'above'
+        ? { fallingY: -30 }
+        : {}),
     },
     // ⚠️ x 110 e y 150 são os MESMOS números que a Aula 1 pede no bloco "Criar dinossauro".
     // A cena abre onde o projeto dela vai ficar, para o número ter a mesma cara nos dois lugares.
@@ -1225,6 +1817,32 @@ export function cloneScene(state: SceneState): SceneState {
       // ⚠️ Cada observação também: a cópia não compartilha objeto nenhum com o estado que o Desfazer
       // guarda (`copia-do-estado.test.ts`, full review de 16/09/2026).
       observations: state.evidence.observations.map((o) => ({ ...o })),
+    },
+    once: cloneOnce(state.once),
+    fixedRead: {
+      ...state.fixedRead,
+      shots: state.fixedRead.shots.map((shot) => ({ ...shot })),
+      marks: state.fixedRead.marks.map((mark) => ({ ...mark })),
+    },
+    collisionPair: {
+      ...state.collisionPair,
+      shots: [...state.collisionPair.shots],
+      rocks: [...state.collisionPair.rocks],
+    },
+    invincibility: {
+      ...state.invincibility,
+      struck: [...state.invincibility.struck],
+      damaged: [...state.invincibility.damaged],
+    },
+    numberLine: { ...state.numberLine },
+    uniqueNames: { ...state.uniqueNames },
+    motionAmount: { ...state.motionAmount },
+    twoClocks: { ...state.twoClocks, rocks: state.twoClocks.rocks.map((rock) => ({ ...rock })) },
+    copies: { ...state.copies, posts: state.copies.posts.map((post) => ({ ...post })) },
+    skinGame: {
+      ...state.skinGame,
+      visited: [...state.skinGame.visited],
+      shots: state.skinGame.shots.map((shot) => ({ ...shot })),
     },
     world: { ...state.world },
     flight: { ...state.flight },
@@ -1307,7 +1925,9 @@ export function cloneScene(state: SceneState): SceneState {
  * que está na tela do que está guardado nos bastidores.
  */
 export function sceneCactiOnScreen(crowd: SceneCrowd): number {
-  return crowd.cacti.filter((c) => c.x >= 0 && c.x <= 480).length
+  return crowd.cacti.filter((c) =>
+    c.y === undefined ? c.x >= 0 && c.x <= 480 : c.y >= 0 && c.y <= 270,
+  ).length
 }
 
 /** A regra de contato, num lugar só. A v1 tinha esta conta escrita três vezes, em duas
@@ -1338,6 +1958,7 @@ export const sceneDrawingsGap = (contact: SceneContact) => contact.distance - HI
 export const PLACAR_NAO_VISTO: readonly number[] = [-1, -1, -1]
 /** Os sete lugares do sorteio da `random` (500 a 560, de 10 em 10), nenhum sorteado ainda. */
 export const LUGARES_NAO_SORTEADOS: readonly number[] = [0, 0, 0, 0, 0, 0, 0]
+export const LUGARES_NAO_SORTEADOS_61: readonly number[] = Array(61).fill(0)
 /** O primeiro lugar do sorteio e o passo entre dois lugares. */
 export const RANDOM_SPOTS = { first: 500, step: 10, count: 7 } as const
 /** O rastro da `velocity` guarda até tantos pontinhos (a âncora e os quadros seguintes). */
@@ -1394,6 +2015,16 @@ const numbers = (v: unknown, max: number): v is number[] =>
  */
 export function isSceneState(value: unknown): value is SceneState {
   if (!isRecord(value)) return false
+  if (!isSceneOnce(value.once)) return false
+  if (!isSceneFixedRead(value.fixedRead)) return false
+  if (!isSceneCollisionPair(value.collisionPair)) return false
+  if (!isSceneInvincibility(value.invincibility)) return false
+  if (!isSceneNumberLine(value.numberLine)) return false
+  if (!isSceneUniqueNames(value.uniqueNames)) return false
+  if (!isSceneMotionAmount(value.motionAmount)) return false
+  if (!isSceneTwoClocks(value.twoClocks)) return false
+  if (!isSceneCopies(value.copies)) return false
+  if (!isSceneSkinGame(value.skinGame)) return false
   const { evidence, world, flight, sound, crowd, match, contact, speed, place, description } = value
   const { stage, render, animation, mirror, pixels, sheet, lifeline } = value
   const { drive, input, box, hunt, blueprint, view, hit, weapon, sight, walkPad, grid } = value
@@ -1438,9 +2069,35 @@ export function isSceneState(value: unknown): value is SceneState {
   // cacto a cada 1/30 s: dois segundos de brincadeira já dão 60. O motor limpa em
   // `x >= -480`, o que limita o vivo a 288.
   if (!Array.isArray(crowd.cacti) || crowd.cacti.length > 320) return false
-  if (!crowd.cacti.every((c) => isRecord(c) && num(c.id) && num(c.x) && num(c.velocity)))
+  if (
+    !crowd.cacti.every(
+      (c) =>
+        isRecord(c) && num(c.id) && num(c.x) && num(c.velocity) && (c.y === undefined || num(c.y)),
+    )
+  )
     return false
+  if (crowd.fallFrames !== undefined && !between(crowd.fallFrames, 0, 10000)) return false
+  if (crowd.fallBaseline !== undefined && !between(crowd.fallBaseline, 0, 300)) return false
+  if (crowd.fallComparison !== undefined && !between(crowd.fallComparison, 0, 300)) return false
   if (!bool(match.guarded) || !bool(match.touch) || !bool(match.restartConnected)) return false
+  // Campos ausentes só são legados antes de estas descobertas existirem.
+  if (evidence.discoveries.includes('fill-ignores-mirror') && mirror.filled === undefined)
+    return false
+  if (evidence.discoveries.includes('same-frames') && animation.sameFrames === undefined)
+    return false
+  if (match.scoreClock === 'frame' && match.scoreFrameTicks === undefined) return false
+  if (
+    match.scoreClock !== undefined &&
+    match.scoreClock !== 'loose' &&
+    match.scoreClock !== 'frame' &&
+    match.scoreClock !== 'second'
+  )
+    return false
+  if (
+    match.scoreFrameTicks !== undefined &&
+    (!num(match.scoreFrameTicks) || match.scoreFrameTicks < 0)
+  )
+    return false
   if (match.screen !== 'start' && match.screen !== 'playing' && match.screen !== 'end') return false
   if (!num(match.points) || !num(match.clockRemainder) || !num(match.scoreIdle)) return false
   if (!num(contact.distance) || !num(contact.width)) return false
@@ -1628,7 +2285,18 @@ function isCorreDinoSegundaMetade(g: Record<string, unknown>): boolean {
   const match = g.match as Record<string, unknown>
   if (!numbers(match.seen, 3) || match.seen.length !== 3 || !num(match.cleared)) return false
   const speed = g.speed as Record<string, unknown>
-  if (!numbers(speed.spots, RANDOM_SPOTS.count) || speed.spots.length !== RANDOM_SPOTS.count)
+  if (
+    !numbers(speed.spots, 61) ||
+    (speed.spots.length !== RANDOM_SPOTS.count && speed.spots.length !== 61)
+  )
+    return false
+  if (
+    speed.fallingY !== undefined &&
+    (typeof speed.fallingY !== 'number' ||
+      !Number.isFinite(speed.fallingY) ||
+      speed.fallingY < -30 ||
+      speed.fallingY > 300)
+  )
     return false
   const crowd = g.crowd as Record<string, unknown>
   if (!Array.isArray(crowd.cacti)) return false
@@ -1750,6 +2418,7 @@ function isArtState(
   // um 7 vindo de um retrato adulterado deixaria a cena sem desenho nenhum.
   if (animation.frame !== 1 && animation.frame !== 2) return false
   if (!bool(animation.playing) || !bool(animation.onion)) return false
+  if (animation.sameFrames !== undefined && !bool(animation.sameFrames)) return false
   if (!between(animation.rate, L.rate.min, L.rate.max)) return false
   if (!between(animation.shift, L.shift.min, L.shift.max)) return false
   if (!num(animation.swaps) || !num(animation.elapsed)) return false
@@ -1776,6 +2445,7 @@ function isArtState(
  */
 function isAtelieExtra(mirror: Record<string, unknown>, sheet: Record<string, unknown>): boolean {
   if (mirror.axis !== 'x' && mirror.axis !== 'y' && mirror.axis !== 'xy') return false
+  if (mirror.filled !== undefined && !bool(mirror.filled)) return false
   if (!strings(mirror.marks, MARCAS_NO_PAPEL)) return false
   if (!mirror.marks.every((m) => MARCA_DO_PAPEL.test(m))) return false
   for (const contador of [mirror.strokes, mirror.copies])

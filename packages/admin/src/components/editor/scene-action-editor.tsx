@@ -46,6 +46,66 @@ const labelDaConexao = (port: ScenePort, enabled: boolean) =>
     : `${enabled ? 'Ligar' : 'Desligar'} ${PORTAS[port]}`
 
 const TODAS: { label: string; value: SceneAction }[] = [
+  { label: 'Usar o número 400 no tiro', value: { type: 'value-source', source: 'fixed' } },
+  { label: 'Ler o centro x da nave no tiro', value: { type: 'value-source', source: 'read' } },
+  { label: 'Mostrar as marcas da caixa', value: { type: 'box-marks', on: true } },
+  { label: 'Esconder as marcas da caixa', value: { type: 'box-marks', on: false } },
+  { label: 'Limpar marcas de disparo', value: { type: 'clear-marks' } },
+  ...(['shot', 'rock'] as const).flatMap((subject) =>
+    (['group', 'alias'] as const).map((target) => ({
+      label: `${subject === 'shot' ? 'Tiro' : 'Pedra'}: remover ${target === 'group' ? 'o grupo' : 'só o apelido'}`,
+      value: { type: 'command-target' as const, subject, target },
+    })),
+  ),
+  ...([0, 15, 45, 90] as const).map((frames) => ({
+    label: `Proteção por ${frames} quadros`,
+    value: { type: 'shield' as const, frames },
+  })),
+  { label: 'Avançar até a próxima batida', value: { type: 'advance-to' } },
+  { label: 'Levar marcador na régua', value: { type: 'step-value', value: -5 } },
+  { label: 'Somar −1 na régua', value: { type: 'sum-minus-one' } },
+  ...(['>', '=', '<'] as const).map((operator) => ({
+    label: `Comparar com ${operator}`,
+    value: { type: 'compare-op' as const, operator },
+  })),
+  { label: 'Pôr o bloco que cria nave', value: { type: 'toggle-block', present: true } },
+  { label: 'Tirar o bloco que cria nave', value: { type: 'toggle-block', present: false } },
+  ...(['', 'nave', 'folha-nave', 'nave2'] as const).map((name) => ({
+    label: `Nome da folha: ${name || 'vazio'}`,
+    value: { type: 'name-field' as const, name },
+  })),
+  { label: 'Mover só a cratera', value: { type: 'nudge', piece: 'crater', amount: 4 } },
+  { label: 'Mover a pedra inteira', value: { type: 'nudge', piece: 'body', amount: 10 } },
+  ...([20, 40, 80] as const).map((frames) => ({
+    label: `Nascer a cada ${frames} quadros`,
+    value: { type: 'birth-every' as const, frames },
+  })),
+  { label: 'Exportar um arquivo', value: { type: 'export-file' } },
+  { label: 'Importar o arquivo', value: { type: 'import-file' } },
+  { label: 'Publicar no Mural', value: { type: 'publish' } },
+  { label: 'Abrir a publicação do Mural', value: { type: 'open-mural' } },
+  ...(['lesson', 'studio', 'project'] as const).flatMap((side) =>
+    (['azul', 'rosa', 'verde', 'laranja'] as const).map((color) => ({
+      label: `Pintar ${side === 'lesson' ? 'a aula' : side === 'studio' ? 'o Estúdio' : 'o projeto'} de ${color}`,
+      value: { type: 'recolor' as const, side, color },
+    })),
+  ),
+  ...(['space', 'road', 'sea'] as const).map((theme) => ({
+    label: `Tema: ${{ space: 'nave', road: 'carrinho', sea: 'submarino' }[theme]}`,
+    value: { type: 'skin' as const, theme },
+  })),
+  { label: 'Ligar a regra de atirar', value: { type: 'rule-toggle', enabled: true } },
+  { label: 'Desligar a regra de atirar', value: { type: 'rule-toggle', enabled: false } },
+  { label: 'Mover para a esquerda', value: { type: 'play-move', direction: -1 } },
+  { label: 'Mover para a direita', value: { type: 'play-move', direction: 1 } },
+  { label: 'Atirar no jogo', value: { type: 'play-shoot' } },
+  ...(['paint', 'create', 'move', 'event', 'lives'] as const).flatMap((card) =>
+    (['outside', 'start', 'loop', 'event'] as const).map((area) => ({
+      label: `${card} → ${area === 'outside' ? 'Fora' : area === 'start' ? 'Ao iniciar' : area === 'loop' ? 'Enquanto estiver rodando' : 'Quando acontecer'}`,
+      value: { type: 'place-in-area' as const, card, area },
+    })),
+  ),
+  { label: 'Apertar a tecla do evento', value: { type: 'trigger' } },
   { label: 'Criar o Dino', value: { type: 'create' } },
   ...SCENE_PORTS.flatMap((port) =>
     [true, false].map((enabled) => ({
@@ -148,6 +208,26 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Pintar a cabine', value: { type: 'trace', piece: 'cabine' } },
   { label: 'Pintar um quadradinho', value: { type: 'dot', x: 3, y: 10 } },
   { label: 'Apagar o papel', value: { type: 'clear-paper' } },
+  {
+    label: 'Somar ponto a cada quadro',
+    value: { type: 'score-place', clock: 'frame', guarded: false },
+  },
+  { label: 'Somar ponto solto', value: { type: 'score-place', clock: 'loose', guarded: false } },
+  {
+    label: 'Somar ponto a cada segundo',
+    value: { type: 'score-place', clock: 'second', guarded: false },
+  },
+  {
+    label: 'Somar ponto a cada quadro dentro do Se',
+    value: { type: 'score-place', clock: 'frame', guarded: true },
+  },
+  {
+    label: 'Somar ponto a cada segundo dentro do Se',
+    value: { type: 'score-place', clock: 'second', guarded: true },
+  },
+  { label: 'Deixar os dois quadros iguais', value: { type: 'same-frames', on: true } },
+  { label: 'Voltar a diferenciar os quadros', value: { type: 'same-frames', on: false } },
+  { label: 'Encher a asa com Balde de tinta', value: { type: 'fill' } },
   { label: 'Aproximar as duas pedras', value: { type: 'inspect', kind: 'pixel', zoom: 4 } },
   { label: 'Mostrar a folha inteira no jogo (64)', value: { type: 'crop', width: 64 } },
   { label: 'Recortar a folha em 16', value: { type: 'crop', width: 16 } },
@@ -192,6 +272,22 @@ const TODAS: { label: string; value: SceneAction }[] = [
  * separadas na lista (`Ligar`/`Desligar`, `speed`/`life`, `ask`/`event`).
  */
 const DISTINGUE: Partial<Record<SceneAction['type'], readonly string[]>> = {
+  'value-source': ['source'],
+  'box-marks': ['on'],
+  'command-target': ['subject', 'target'],
+  shield: ['frames'],
+  'compare-op': ['operator'],
+  'toggle-block': ['present'],
+  'name-field': ['name'],
+  nudge: ['piece'],
+  'birth-every': ['frames'],
+  recolor: ['side', 'color'],
+  skin: ['theme'],
+  'rule-toggle': ['enabled'],
+  'play-move': ['direction'],
+  'place-in-area': ['card', 'area'],
+  'score-place': ['clock', 'guarded'],
+  'same-frames': ['on'],
   connect: ['port', 'enabled'],
   border: ['visible'],
   layer: ['front'],
@@ -326,6 +422,10 @@ interface CampoNumerico {
 
 export function campoNumerico(action: SceneAction, stepNumber = 1): CampoNumerico | null {
   const L = SCENE_LIMITS
+  if (action.type === 'step-value')
+    return { label: 'Lugar na régua', field: 'value', min: -12, max: 0, value: action.value }
+  if (action.type === 'nudge')
+    return { label: 'Quanto mover', field: 'amount', min: 0, max: 12, value: action.amount }
   if (action.type === 'advance')
     return {
       label: 'Tempo em segundos',
@@ -594,7 +694,10 @@ export function SceneActionEditor({
   return (
     <div className="space-y-3">
       {value.map((action, index) => {
-        const numero = campoNumerico(action, stepNumber)
+        const numero =
+          scene === 'two-clocks' && action.type === 'rate'
+            ? null
+            : campoNumerico(action, stepNumber)
         const endereco = camposDoEndereco(action, scene)
         return (
           // As ações têm identidade POSICIONAL no contrato do roteiro; todo campo é controlado.
@@ -643,6 +746,23 @@ export function SceneActionEditor({
                     } as SceneAction)
                   }
                 />
+              </label>
+            )}
+            {scene === 'two-clocks' && action.type === 'rate' && (
+              <label className="block space-y-1 text-xs">
+                Desenhos por segundo
+                <Select
+                  value={action.perSecond}
+                  onChange={(event) =>
+                    replace(index, { type: 'rate', perSecond: Number(event.target.value) })
+                  }
+                >
+                  {[2, 8, 16].map((rate) => (
+                    <option key={rate} value={rate}>
+                      {rate}
+                    </option>
+                  ))}
+                </Select>
               </label>
             )}
             {action.type === 'advance' && avisoDoTempo(scene, action.seconds, stepNumber === 0) && (

@@ -95,6 +95,15 @@ export function AtelieSceneControls({
             opcoes={[2, 4, 8, 12].map((v) => ({ id: v, label: String(v) }))}
             onChange={(perSecond) => dispatch({ type: 'rate', perSecond })}
           />
+          <div className="rounded-2xl border border-border px-2.5 py-2">
+            <Chave
+              label={nome('Quadro 2 igual ao quadro 1')}
+              ligado={Boolean(state.animation.sameFrames)}
+              ligadoTexto="igual"
+              desligadoTexto="diferente"
+              onToggle={(on) => dispatch({ type: 'same-frames', on })}
+            />
+          </div>
         </div>
       )
     }
@@ -194,6 +203,9 @@ export function AtelieSceneControls({
               </SceneButton>
               <SceneButton onClick={() => dispatch({ type: 'trace', piece: 'cabine' })}>
                 Pintar a cabine
+              </SceneButton>
+              <SceneButton onClick={() => dispatch({ type: 'fill' })}>
+                Balde de tinta: encher a asa
               </SceneButton>
               <SceneButton tom="discreta" onClick={() => dispatch({ type: 'clear-paper' })}>
                 Apagar o papel

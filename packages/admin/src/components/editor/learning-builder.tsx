@@ -389,6 +389,7 @@ export function LearningBuilder({
               próprios `<fieldset>`/`<legend>`, um por família. */}
           <ScenePicker
             value={cena.scene}
+            mode={cena.type}
             onChange={(scene) => aplicar(trocarCena(value, scene, memoria.current))}
           />
           {cena.type === 'demonstration' ? (

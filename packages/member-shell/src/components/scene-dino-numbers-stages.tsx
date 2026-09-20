@@ -4,19 +4,21 @@ import {
   actorFigure,
   castText,
   cenarioTemChao,
+  isRandomPreset,
   numero,
   quantos,
   RANDOM_SPOTS,
   type SceneAction,
   type SceneCast,
   type SceneCenarioId,
+  type ScenePreset,
   type SceneState,
-  sceneCenario,
 } from '@sistemazero/core/learning/scene'
 import { type ReactNode, useId } from 'react'
 import { SceneButton } from './exploration-stage'
 import { FundoDoCenario } from './scene-arte'
 import { SceneCanvas, Texto, usePalco } from './scene-canvas'
+import { useSceneCenario } from './scene-cenario-context'
 import { focarNaBancadaDepoisDeComecar } from './scene-dino-stages'
 import { ActorFigure, pisoDoMundo } from './scene-figures'
 import { PlacarDoJogo } from './scene-hud'
@@ -203,7 +205,8 @@ export function RestartStage({
 }) {
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneCenario(cast, 'restart')
+  const mundo = useSceneCenario(cast, 'restart')
+  const porEnter = mundo === 'nave'
   const piso = pisoDoMundo(mundo, CHAO)
   const tela = state.match.screen
   const cactos = state.crowd.cacti.filter((c) => c.x <= 480)
@@ -222,7 +225,7 @@ export function RestartStage({
             type="button"
             // ⚠️ "do jogo" (consertos do review da onda A do lote 5): o da bancada também se chama "Tocar
             // na tela", e o Tab passava por dois botões com o mesmo nome em seguida.
-            aria-label="Tocar na tela do jogo"
+            aria-label={porEnter ? 'Apertar Enter no jogo' : 'Tocar na tela do jogo'}
             // ⚠️ Fora do Tab (full review de experiência, B16): o "Tocar na tela" da bancada é o mesmo gesto,
             // e o Tab parava duas vezes nele. O toque e a ativação pelo leitor de tela continuam.
             tabIndex={-1}
@@ -230,7 +233,7 @@ export function RestartStage({
             onClick={(e) => {
               // ⚠️ Ao COMEÇAR, este botão some: o foco vai para a bancada (consertos da onda A, T3).
               if (tela === 'start') focarNaBancadaDepoisDeComecar(e.currentTarget)
-              dispatch({ type: 'start', input: 'tap' })
+              dispatch({ type: 'start', input: porEnter ? 'key' : 'tap' })
             }}
           />
         ) : undefined
@@ -270,7 +273,7 @@ export function RestartStage({
             tamanho={20}
             fontWeight="700"
           >
-            Toque para começar
+            {porEnter ? 'Enter para começar' : 'Toque para começar'}
           </Texto>
         </g>
       )}
@@ -317,7 +320,7 @@ export function ScoreStage({
 }) {
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneCenario(cast, 'score')
+  const mundo = useSceneCenario(cast, 'score')
   const piso = pisoDoMundo(mundo, CHAO)
   const tela = state.match.screen
   /** O placar parado na tela de início com a peça dentro de Se jogando (consertos da onda A). */
@@ -463,9 +466,19 @@ const LARGADA = 500
  *   −6 chega mais longe que o de −5, e a diferença vira distância, com o número colado nele.
  * ⚠️ Sem Dino (`SCENE_ROLES`): a cena é sobre onde e como os cactos nascem.
  */
-export function RandomStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
+export function RandomStage({
+  state,
+  cast,
+  preset,
+}: {
+  state: SceneState
+  cast?: SceneCast
+  preset?: ScenePreset
+}) {
+  const mundo = useSceneCenario(cast, 'random')
+  if (isRandomPreset(preset) && preset.axis === 'above')
+    return <RandomTopStage state={state} cast={cast} />
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneCenario(cast, 'random')
   const { spots, samples } = state.speed
   const sorteados = spots.some((n) => n > 0)
   /**
@@ -477,8 +490,8 @@ export function RandomStage({ state, cast }: { state: SceneState; cast?: SceneCa
     (c, i, todos) => !todos.slice(i + 1).some((depois) => depois.velocity === c.velocity),
   )
   const lugares = Array.from(
-    { length: RANDOM_SPOTS.count },
-    (_, i) => RANDOM_SPOTS.first + i * RANDOM_SPOTS.step,
+    { length: spots.length },
+    (_, i) => RANDOM_SPOTS.first + i * (spots.length === 61 ? 1 : RANDOM_SPOTS.step),
   )
   const marcas = lugares
     .map((x, i) => ({ x, vezes: spots[i] ?? 0 }))
@@ -579,7 +592,7 @@ export function RandomStage({ state, cast }: { state: SceneState; cast?: SceneCa
                   {/* ⚠️⚠️ No estreito, só 500, 530 e 560 (conserto "letra no celular"): os sete números na letra
                   de 12px se encavalavam ("500510520…"). As sete marquinhas ficam, e o lugar exato do
                   último sorteio está na faixa ("último lugar"). */}
-                  {(!palco.estreito || (x - RANDOM_SPOTS.first) % 30 === 0) && (
+                  {(x - RANDOM_SPOTS.first) % (palco.estreito ? 30 : 10) === 0 && (
                     <Texto
                       className="fill-scene-ink-soft"
                       x={naRegua(x)}
@@ -685,6 +698,53 @@ export function RandomStage({ state, cast }: { state: SceneState; cast?: SceneCa
   )
 }
 
+function RandomTopStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
+  const pedra = actorFigure(cast, 'obstacle')
+  const mundo = useSceneCenario(cast, 'random')
+  const marcas = state.speed.spots
+    .map((count, index) => ({ count, x: 90 + index * 5 }))
+    .filter((spot) => spot.count > 0)
+  return (
+    <SceneCanvas
+      view={STAGE}
+      cast={cast}
+      mundo={mundo}
+      titulo="A régua acima da tela"
+      descricao={`A pedra está em x ${state.speed.samples.x}, y ${state.speed.fallingY ?? -30}. ${marcas.length} lugares marcados na régua.`}
+    >
+      <Pista mundo={mundo} semDetalhe={[{ x: 14, y: 8, w: 250, h: 30 }]} />
+      <Selo>{castText('Onde a pedra nasce', cast)}</Selo>
+      <path className="stroke-scene-ink" d="M60 112H540" strokeWidth="3" strokeDasharray="6 5" />
+      <Texto className="fill-scene-ink" x="480" y="136" tamanho={13}>
+        borda de cima
+      </Texto>
+      <path className="stroke-scene-rule" d="M90 70H390" strokeWidth="2" />
+      <Texto className="fill-scene-ink-soft" x="90" y="59" tamanho={12}>
+        x 90
+      </Texto>
+      <Texto className="fill-scene-ink-soft" x="390" y="59" textAnchor="end" tamanho={12}>
+        x 390
+      </Texto>
+      {marcas.map(({ count, x }) => (
+        <g key={x}>
+          <path className="stroke-scene-a" d={`M${x} 72v8`} strokeWidth="2" />
+          {count > 1 && (
+            <Texto className="fill-scene-alert" x={x} y="96" textAnchor="middle" tamanho={12}>
+              {count}×
+            </Texto>
+          )}
+        </g>
+      ))}
+      <ActorFigure
+        figure={pedra}
+        x={state.speed.samples.x}
+        y={112 + (state.speed.fallingY ?? -30)}
+        escala={0.75}
+      />
+    </SceneCanvas>
+  )
+}
+
 /* ── acceleration ───────────────────────────────────────────────────────────────────────────── */
 
 /**
@@ -699,7 +759,7 @@ export function RandomStage({ state, cast }: { state: SceneState; cast?: SceneCa
  */
 export function AccelerationStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneCenario(cast, 'acceleration')
+  const mundo = useSceneCenario(cast, 'acceleration')
   const { base, limited } = state.speed
   const todos = state.crowd.cacti
   const fileira = todos.slice(-8)

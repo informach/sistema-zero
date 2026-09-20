@@ -92,6 +92,60 @@ interface SceneQuestionDefinition extends Omit<SceneQuestions, 'prediction'> {
  * criança verá na prévia, sem responder à previsão antes de ela apostar.
  */
 export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContext> = {
+  'once-vs-always': {
+    label: 'As áreas do projeto',
+    explanation:
+      'Nesta experiência, vamos pôr ações em áreas diferentes e avançar quadros para ver quando cada uma age.',
+  },
+  'fixed-vs-read': {
+    label: 'Um número escrito ou lido',
+    explanation: 'Nesta experiência, você escolhe de onde vem o x de um tiro quando ele nasce.',
+  },
+  'collision-pair': {
+    label: 'Um encontro entre dois grupos',
+    explanation:
+      'Nesta experiência, um tiro encontra uma pedra. Você escolhe quem cada comando tira depois da batida.',
+  },
+  invincibility: {
+    label: 'Uma proteção que conta para trás',
+    explanation:
+      'Nesta experiência, três pedras vão encostar na nave em quadros diferentes. Você escolhe por quantos quadros uma batida protege da próxima.',
+  },
+  'number-line': {
+    label: 'Uma régua dos valores abaixo de zero',
+    explanation:
+      'Nesta experiência, você move um marcador entre -12 e 0 e observa a resposta de uma comparação com -9.',
+  },
+  'unique-names': {
+    label: 'Um nome para cada coisa',
+    explanation:
+      'Nesta experiência, os blocos procuram o nome nave. Você muda quem o cria e escolhe o nome da folha.',
+  },
+  'motion-amount': {
+    label: 'A diferença entre dois quadros',
+    explanation:
+      'Nesta experiência, dois desenhos da pedra alternam na Prévia. Você escolhe o quanto uma cratera e o corpo mudam de lugar.',
+  },
+  'two-clocks': {
+    label: 'Nascimento e giro',
+    explanation:
+      'Nesta experiência, um relógio cria pedras e outro troca o desenho de cada pedra. Você mexe em cada ritmo separadamente.',
+  },
+  'copy-vs-original': {
+    label: 'Um arquivo entre dois jogos',
+    explanation:
+      'Nesta experiência, você exporta um jogo da aula e importa o arquivo no Estúdio. Depois pode mudar cada lado separadamente.',
+  },
+  'published-copy': {
+    label: 'O projeto e o Mural',
+    explanation:
+      'Nesta experiência, Publicar cria uma cópia do jogo no Mural. O projeto continua com você para mudar.',
+  },
+  'same-rules-new-skin': {
+    label: 'As regras e os desenhos do mesmo jogo',
+    explanation:
+      'Nesta experiência, você troca os desenhos de um jogo sem mudar suas regras. Depois desliga uma regra e joga de novo.',
+  },
   coordinates: {
     label: 'Os números x e y',
     explanation:
@@ -331,6 +385,288 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
  */
 const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
   /* ── A tela e quem a lê ──────────────────────────────────────────────────────────────────── */
+  'fixed-vs-read': {
+    prediction: {
+      prompt:
+        'O x do tiro está com o número 400 escrito. Você leva a nave para a beirada da direita e atira. De onde sai o tiro?',
+      choices: [
+        {
+          id: 'nave',
+          label: 'De perto da nave',
+          shows: 'As duas marquinhas caíram no mesmo lugar: x 400.',
+        },
+        { id: 'meio', label: 'Do meio da tela, onde está o 400' },
+      ],
+      correctChoiceId: 'meio',
+      revealOn: 'same-spot',
+    },
+    explain: {
+      prompt: 'A nave anda o tempo todo. O que faz o tiro novo nascer sempre nela?',
+      choices: [
+        { id: 'leitura', label: 'Ler o centro x da nave na hora do disparo' },
+        { id: 'escrito', label: 'Escrever o número 400 no x do tiro' },
+      ],
+      correctChoiceId: 'leitura',
+      explanation:
+        'O número escrito fica igual. O bloco de leitura pergunta onde a nave está na hora do disparo. O tiro que já saiu segue o caminho dele.',
+    },
+  },
+  'collision-pair': {
+    prediction: {
+      prompt:
+        'Três tiros e três pedras estão no jogo. Um tiro encosta numa pedra, e o comando manda tirar o grupo asteroides. O que some?',
+      choices: [
+        {
+          id: 'uma',
+          label: 'Só a pedra que foi atingida',
+          shows: 'O contador de pedras foi de 3 para 0.',
+        },
+        { id: 'todas', label: 'Todas as pedras do jogo' },
+      ],
+      correctChoiceId: 'todas',
+      revealOn: 'whole-group',
+    },
+    explain: {
+      prompt: 'Dentro dessa colisão, quem é asteroide?',
+      choices: [
+        { id: 'uma', label: 'A pedra que participou daquele encontro' },
+        { id: 'todas', label: 'Todas as pedras do grupo ao mesmo tempo' },
+      ],
+      correctChoiceId: 'uma',
+      explanation:
+        'O bloco dá um apelido para cada um dos dois que se encostaram. O apelido vale só dentro daquela trombada, e as outras pedras continuam no jogo.',
+    },
+  },
+  invincibility: {
+    prediction: {
+      prompt:
+        'Imagine a nave com três vidas e três pedras diferentes a caminho, com 45 quadros de proteção. Quantas vidas sobram?',
+      choices: [
+        {
+          id: 'nenhuma',
+          label: 'Nenhuma',
+          shows: 'As três pedras bateram. Só a primeira tirou vida; restaram dois corações.',
+        },
+        { id: 'duas', label: 'Duas' },
+      ],
+      correctChoiceId: 'duas',
+      revealOn: 'window',
+    },
+    explain: {
+      prompt: 'Por que só a primeira batida tirou vida quando a proteção estava em 45?',
+      choices: [
+        { id: 'janela', label: 'Os danos seguintes foram ignorados enquanto a proteção contava' },
+        { id: 'infinitas', label: 'A nave ficou com vidas infinitas até o fim da partida' },
+      ],
+      correctChoiceId: 'janela',
+      explanation:
+        'A proteção é uma janela de tempo. Enquanto conta, dano novo não entra. Quando chega a zero, a próxima batida volta a tirar vida.',
+    },
+  },
+  'number-line': {
+    prediction: {
+      prompt: 'Na régua, qual dos dois é o maior: -5 ou -9?',
+      choices: [
+        { id: 'menos-cinco', label: '-5, porque está mais à direita' },
+        {
+          id: 'menos-nove',
+          label: '-9, porque 9 é maior que 5',
+          shows: 'Na régua, o -9 mora à esquerda do -5. Quem está mais à direita é o maior.',
+        },
+      ],
+      correctChoiceId: 'menos-cinco',
+      revealOn: 'greater',
+    },
+    explain: {
+      prompt: 'Se o sinal ficar no igual, o que acontece com uma base que começa em -5?',
+      choices: [
+        { id: 'para', label: 'Ela para no -9, igual.' },
+        { id: 'nao-muda', label: 'Ela nunca muda, porque -5 não é igual a -9' },
+      ],
+      correctChoiceId: 'nao-muda',
+      explanation:
+        'Com o igual, a pergunta só diz sim no -9 exato. A base começa no -5, então a resposta é não já na primeira vez e ela fica parada.',
+    },
+  },
+  'unique-names': {
+    prediction: {
+      prompt: 'Os dois blocos vão criar o nome nave. O que acontece?',
+      choices: [
+        {
+          id: 'substitui',
+          label: 'O segundo substitui o primeiro',
+          shows: 'O nome “nave” já foi criado neste trecho; escolha um nome diferente.',
+        },
+        { id: 'aviso', label: 'O Estúdio pede um nome diferente' },
+      ],
+      correctChoiceId: 'aviso',
+      revealOn: 'clash',
+    },
+    explain: {
+      prompt: 'No seu jogo, o sprite já se chama nave. Que nome dar para a folha de quadros dele?',
+      choices: [
+        { id: 'folha', label: 'folha-nave, um nome só dela' },
+        { id: 'nave', label: 'nave, porque é o desenho da nave' },
+      ],
+      correctChoiceId: 'folha',
+      explanation:
+        'Quando dois blocos criam o mesmo nome no mesmo trecho, o Estúdio para e pede um nome diferente. Por isso a folha recebe o nome dela e a nave continua com o nome dela.',
+    },
+  },
+  'motion-amount': {
+    prediction: {
+      prompt: 'Os dois quadros são iguais. O que a Prévia mostra?',
+      choices: [
+        {
+          id: 'gira',
+          label: 'Uma pedra girando',
+          shows: 'Trocar depressa dois desenhos iguais não faz movimento nenhum.',
+        },
+        { id: 'parada', label: 'Uma pedra parada' },
+      ],
+      correctChoiceId: 'parada',
+      revealOn: 'no-change',
+    },
+    explain: {
+      prompt: 'Você quer que a sua pedra pareça rolando. O que muda no segundo quadro?',
+      choices: [
+        { id: 'detalhe', label: 'Uma cratera e uma ponta do fogo, um pouquinho' },
+        { id: 'corpo', label: 'A pedra inteira, para um canto bem diferente' },
+      ],
+      correctChoiceId: 'detalhe',
+      explanation:
+        'O olho lê rolagem quando o corpo fica no lugar e os detalhes andam um pouco. Quando o corpo inteiro muda de lugar, o olho lê um pulo.',
+    },
+  },
+  'two-clocks': {
+    prediction: {
+      prompt: 'Se as pedras nascerem mais juntas, o giro de cada uma fica mais rápido?',
+      choices: [
+        {
+          id: 'sim',
+          label: 'Fica, porque é o mesmo relógio',
+          shows:
+            'Nasceram mais pedras, mas o número de desenhos por segundo de cada uma ficou em 8.',
+        },
+        { id: 'nao', label: 'Não, o giro continua igual' },
+      ],
+      correctChoiceId: 'nao',
+      revealOn: 'more-rocks',
+    },
+    explain: {
+      prompt: 'Onde encaixar o bloco que manda a pedra girar?',
+      choices: [
+        { id: 'depois', label: 'Logo depois do bloco que cria a pedra, dentro do mesmo relógio' },
+        { id: 'inicio', label: 'Uma vez só, no Ao iniciar' },
+      ],
+      correctChoiceId: 'depois',
+      explanation:
+        'A pedra só existe depois de nascer. O bloco de animar precisa estar logo depois do de criar, dentro do mesmo relógio, para alcançar cada pedra nova.',
+    },
+  },
+  'copy-vs-original': {
+    prediction: {
+      prompt:
+        'Você exporta o jogo que está na aula do Desafio. O que acontece com o jogo que estava lá?',
+      choices: [
+        { id: 'continua', label: 'Ele continua na aula, inteiro' },
+        {
+          id: 'sai',
+          label: 'Ele sai da aula e vai para dentro do arquivo',
+          shows: 'O jogo continuou na aula. O arquivo levou uma cópia.',
+        },
+      ],
+      correctChoiceId: 'continua',
+      revealOn: 'exported',
+    },
+    explain: {
+      prompt: 'Você pintou a nave de outra cor no projeto do Estúdio. E a nave do jogo da aula?',
+      choices: [
+        { id: 'junto', label: 'Muda junto, porque é o mesmo jogo' },
+        { id: 'antes', label: 'Continua com a cor de antes' },
+      ],
+      correctChoiceId: 'antes',
+      explanation:
+        'O arquivo levou uma cópia. Depois de importar, são dois jogos separados: cada um guarda o que você fizer nele.',
+    },
+  },
+  'published-copy': {
+    prediction: {
+      prompt:
+        'Depois de publicar, você troca a cor da nave no seu projeto. O que acontece com a do Mural?',
+      choices: [
+        {
+          id: 'junto',
+          label: 'Ela troca de cor junto',
+          shows: 'A do Mural é uma cópia. Ela ficou como estava quando você publicou.',
+        },
+        { id: 'antes', label: 'Ela continua com a cor de antes' },
+      ],
+      correctChoiceId: 'antes',
+      revealOn: 'only-project',
+    },
+    explain: {
+      prompt:
+        'Uma semana depois de publicar, você melhora o seu jogo. Como o Mural passa a mostrar a versão nova?',
+      choices: [
+        { id: 'de-novo', label: 'Publicando de novo' },
+        { id: 'sozinho', label: 'Sozinho, assim que você salva' },
+      ],
+      correctChoiceId: 'de-novo',
+      explanation:
+        'Publicar tira uma cópia do jogo naquele momento. Para mostrar a versão nova, você publica de novo: o Mural ganha outro cartão, e a publicação anterior continua lá.',
+    },
+  },
+  'same-rules-new-skin': {
+    prediction: {
+      prompt: 'Trocando a nave por um carrinho, o que muda no jogo?',
+      choices: [
+        { id: 'desenho', label: 'O desenho, e as regras continuam' },
+        {
+          id: 'regras',
+          label: 'As regras também, porque é outro jogo',
+          shows: 'Nenhuma regra apagou. O que mudou foram os desenhos.',
+        },
+      ],
+      correctChoiceId: 'desenho',
+      revealOn: 'skin-only',
+    },
+    explain: {
+      prompt: 'Um criador trocou a nave por um carrinho e tirou o tiro. O que ele mudou?',
+      choices: [
+        { id: 'tema', label: 'Só o tema, porque ele só trocou desenho' },
+        { id: 'ambos', label: 'O tema e também a mecânica, porque uma regra saiu' },
+      ],
+      correctChoiceId: 'ambos',
+      explanation:
+        'Trocar desenho muda o tema. Tirar, pôr ou mudar uma regra muda a mecânica. Dá para fazer uma sem a outra, e dá para fazer as duas.',
+    },
+  },
+  'once-vs-always': {
+    prediction: {
+      prompt: 'Pintar o fundo em Ao iniciar dispara quantas vezes quando o jogo roda?',
+      choices: [
+        { id: 'uma', label: 'Uma vez, no começo.' },
+        {
+          id: 'sempre',
+          label: 'Uma vez em cada quadro.',
+          shows: 'Depois de três quadros, o contador de Pintar o fundo marcou 1.',
+        },
+      ],
+      correctChoiceId: 'uma',
+      revealOn: 'once',
+    },
+    explain: {
+      prompt: 'Você quer criar a nave só no começo e movê-la o tempo todo. Onde vai cada ação?',
+      choices: [
+        { id: 'juntas', label: 'As duas em Enquanto estiver rodando.' },
+        { id: 'separadas', label: 'Criar em Ao iniciar; mover em Enquanto estiver rodando.' },
+      ],
+      correctChoiceId: 'separadas',
+      explanation:
+        'Ao iniciar acontece uma vez. Enquanto estiver rodando age a cada quadro: a nave é criada uma vez e é a mesma em todos os quadros.',
+    },
+  },
   coordinates: {
     prediction: {
       prompt: 'Se você AUMENTAR o y, para onde o Dino vai?',
@@ -374,18 +710,14 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       revealOn: 'heard-empty',
     },
     explain: {
-      // ⚠️ A pergunta antiga prometia que a frase torna o jogo "jogável por quem não vê a tela",
-      // o que a própria Aula 1 decidiu não prometer.
-      // ⚠️ A frase INTEIRA que a tela mostrou (full review de experiência, B11): "só Imagem" não batia com
-      // o painel, que diz "Tela do jogo. Imagem.".
-      prompt: 'Por que a pessoa ouviu só "Tela do jogo. Imagem." da primeira vez?',
+      prompt: 'Qual frase ajuda mais quem não está vendo a tela?',
       choices: [
-        { id: 'texto', label: 'O programa lê texto, e ninguém tinha escrito nada.' },
-        { id: 'pequeno', label: 'O desenho era pequeno demais para o programa ver.' },
+        { id: 'ajuda', label: 'Corra com o Dino e pule os cactos apertando espaço.' },
+        { id: 'vaga', label: 'Um jogo muito legal com o Dino.' },
       ],
-      correctChoiceId: 'texto',
+      correctChoiceId: 'ajuda',
       explanation:
-        'O leitor de tela lê o que está escrito. A sua frase conta o que fazer no jogo e qual tecla usar.',
+        'A frase que serve diz o que fazer no jogo e como jogar. Sem ela, quem usa o leitor de tela ouve só que ali tem uma imagem.',
     },
   },
   'stage-size': {
@@ -458,14 +790,14 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       revealOn: 'paused-one',
     },
     explain: {
-      prompt: 'O que faz o fogo pulsar?',
+      prompt: 'Duplicar o quadro já basta para o fogo parecer pulsar?',
       choices: [
-        { id: 'troca', label: 'A troca rápida entre desenhos parados.' },
-        { id: 'desenho', label: 'Um desenho que se mexe sozinho.' },
+        { id: 'mudar', label: 'É preciso mudar o fogo num dos dois quadros.' },
+        { id: 'iguais', label: 'Sim, dois desenhos iguais trocando depressa já pulsam.' },
       ],
-      correctChoiceId: 'troca',
+      correctChoiceId: 'mudar',
       explanation:
-        'Cada quadro continua sendo um desenho parado. Quem inventa o movimento é a velocidade da troca, e os seus olhos.',
+        'Com dois quadros iguais, a prévia troca sem mudar a imagem. O fogo só pulsa quando os quadros mostram fogos diferentes.',
     },
   },
   'onion-skin': {
@@ -518,15 +850,14 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       revealOn: 'two-sides',
     },
     explain: {
-      // ⚠️ Lote 5: não existe mais eixo móvel. A pergunta é o que cada espelho faz com o traço.
-      prompt: 'Com o espelho de cima e de baixo, onde cai a cópia do traço?',
+      prompt: 'Com o Espelho lado a lado ligado, o que aparece dos dois lados?',
       choices: [
-        { id: 'cima-baixo', label: 'Do outro lado do meio, em cima ou embaixo.' },
-        { id: 'do-lado', label: 'Do outro lado do meio, à direita.' },
+        { id: 'tracos', label: 'O que você pinta com o Lápis, com a Linha e com a Borracha.' },
+        { id: 'tudo', label: 'Tudo, inclusive o que você enche com o Balde de tinta.' },
       ],
-      correctChoiceId: 'cima-baixo',
+      correctChoiceId: 'tracos',
       explanation:
-        'Cada espelho do Pinta copia o traço do outro lado do MEIO do desenho: o lado a lado copia para a direita ou a esquerda, e o de cima e de baixo copia para cima ou para baixo.',
+        'O espelho copia os traços enquanto você pinta. O Balde preenche uma região só, mesmo com o espelho ligado.',
     },
   },
   'pixel-vector': {
@@ -717,7 +1048,7 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
     },
     explain: {
       // ⚠️ Com o nome da caixa para onde a PEÇA foi (lote 5 do Raio-X): o fio "Som → Pulou" saiu.
-      prompt: 'Por que Tocar som foi para Quando o Dino pular?',
+      prompt: 'Por que Tocar efeito foi para Quando o Dino pular?',
       choices: [
         {
           id: 'acontece',
@@ -792,14 +1123,14 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
     prediction: {
       // ⚠️ A pergunta antiga ("já DEVERIA estar contando?") pedia opinião, com a certa ao
       // contrário do que a cena mostra primeiro. Esta é a do professor da Aula 7: um fato.
-      prompt: 'Na tela de início, antes de começar, nascem cactos?',
+      prompt: 'No início, antes de começar, nascem cactos?',
       // ⚠️⚠️ Ids NOVOS (review do lote 2): `espera` já foi a CERTA ("Não, deve esperar"), e hoje é a
       // errada. Com o id velho, um palpite guardado mudava de lado sem ninguém ver.
       choices: [
         {
           id: 'so-depois',
           label: 'Não, só depois de começar',
-          shows: 'Os cactos nasceram na tela de início, antes de começar.',
+          shows: 'Os cactos nasceram no início, antes de começar.',
         },
         { id: 'ja-nascem', label: 'Sim, já nascem' },
       ],
@@ -807,7 +1138,7 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       revealOn: 'outside',
     },
     explain: {
-      prompt: 'O que faz Criar cacto esperar na tela de início?',
+      prompt: 'O que faz Criar cacto esperar no início?',
       choices: [
         { id: 'botao', label: 'O botão de começar, que liga o relógio.' },
         { id: 'condicao', label: 'Uma condição: só criar cactos enquanto estiver jogando.' },
@@ -862,7 +1193,7 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
     },
     explain: {
       // ⚠️ Sem "placar": a cena não tem placar, e a Aula 9 vem antes de ele existir.
-      prompt: 'O que Reiniciar o jogo faz que Ir para o início não faz?',
+      prompt: 'O que Reiniciar o jogo faz que Mudar o estado do jogo para inicio não faz?',
       choices: [
         { id: 'tela', label: 'Só mostra a tela de início.' },
         { id: 'reinicia', label: 'Limpa a pista para a partida nova começar do zero.' },
@@ -920,11 +1251,15 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
     explain: {
       prompt: 'Por que o placar parou no fim?',
       choices: [
-        { id: 'condicao', label: 'Porque Somar ponto só roda dentro de Se jogando.' },
+        {
+          id: 'condicao',
+          label: 'Porque Somar ponto está dentro do bloco “o estado do jogo é jogando ?”.',
+        },
         { id: 'apaga', label: 'Porque o jogo apaga os pontos no fim.' },
       ],
       correctChoiceId: 'condicao',
-      explanation: 'O número continua guardado no fim. Se jogando só decide QUANDO somar.',
+      explanation:
+        'O número continua guardado no fim. O relógio decide de quanto em quanto tempo somar, e o Se decide em quais telas.',
     },
   },
   lives: {

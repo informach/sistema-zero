@@ -1,11 +1,20 @@
 'use client'
 
-import type { SceneAction, SceneCast, SceneId, SceneState } from '@sistemazero/core/learning/scene'
+import type {
+  SceneAction,
+  SceneCast,
+  SceneCenarioId,
+  SceneId,
+  ScenePreset,
+  SceneState,
+} from '@sistemazero/core/learning/scene'
 import {
   castText,
+  isRandomPreset,
   SCENE_LIMITS,
   sceneAreaPercent,
   sceneAreaWidth,
+  sceneCenario,
 } from '@sistemazero/core/learning/scene'
 import { SceneButton } from './exploration-stage'
 import { Chave, Escolha, Medida, type MetasDaBancada, metaAberta } from './scene-bench'
@@ -26,24 +35,30 @@ export function DinoNumbersControls({
   state,
   dispatch,
   cast,
+  cenario,
   goals,
   onRunning,
   pontoPorAcerto = false,
+  preset,
 }: {
   scene: SceneId
   state: SceneState
   dispatch: (action: SceneAction) => void
   cast?: SceneCast
+  cenario?: SceneCenarioId
   goals: MetasDaBancada
   onRunning: (ligado: boolean) => void
   /** As `lives` do Desafio: o ponto vem do ACERTO do tiro (ver `ExplorationPieces`). */
   pontoPorAcerto?: boolean
+  preset?: ScenePreset
 }) {
   const nome = (texto: string) => castText(texto, cast)
   const descobriu = metaAberta(goals, state)
   switch (scene) {
     case 'restart': {
       const tela = state.match.screen
+      const porEnter = sceneCenario(cast, 'restart', cenario) === 'nave'
+      const input = porEnter ? 'key' : 'tap'
       return (
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
@@ -58,10 +73,11 @@ export function DinoNumbersControls({
               aria-describedby={tela === 'playing' ? 'restart-toque-nota' : undefined}
               onClick={() => {
                 if (tela === 'start') onRunning(true)
-                dispatch({ type: 'start', input: 'tap' })
+                dispatch({ type: 'start', input })
               }}
             >
-              <span aria-hidden>👆</span> Tocar na tela
+              <span aria-hidden>{porEnter ? '⌨' : '👆'}</span>{' '}
+              {porEnter ? 'Apertar Enter' : 'Tocar na tela'}
             </SceneButton>
             {tela === 'playing' && (
               <span id="restart-toque-nota" className="text-sm text-muted-foreground">
@@ -70,10 +86,10 @@ export function DinoNumbersControls({
             )}
           </div>
           <Escolha
-            label="No fim, o toque faz"
+            label={porEnter ? 'No fim, o Enter faz' : 'No fim, o toque faz'}
             valor={state.match.restartConnected ? 'reiniciar' : 'inicio'}
             opcoes={[
-              { id: 'inicio', label: 'Ir para o início' },
+              { id: 'inicio', label: 'Mudar o estado do jogo para inicio' },
               { id: 'reiniciar', label: 'Reiniciar o jogo' },
             ]}
             onChange={(v) =>
@@ -110,6 +126,7 @@ export function DinoNumbersControls({
     }
     case 'random': {
       const abriu = descobriu('repeat')
+      const acima = isRandomPreset(preset) && preset.axis === 'above'
       return (
         <div className="flex flex-wrap items-start gap-3">
           <SceneButton
@@ -120,26 +137,29 @@ export function DinoNumbersControls({
               dispatch({ type: 'sample', kind: 'position', unit: Math.random(), guided: false })
             }
           >
-            <span aria-hidden>🎲</span> Sortear lugar (velocidade fica −5)
+            <span aria-hidden>🎲</span>{' '}
+            {acima ? 'Sortear lugar na régua de cima' : 'Sortear lugar (velocidade fica −5)'}
           </SceneButton>
-          <div className="space-y-2">
-            {/* ⚠️ Uma coisa por vez: a velocidade abre depois de o lugar repetir, e a nota diz o
+          {!acima && (
+            <div className="space-y-2">
+              {/* ⚠️ Uma coisa por vez: a velocidade abre depois de o lugar repetir, e a nota diz o
                 GESTO que abre, nunca o resultado. */}
-            <SceneButton
-              fechado={!abriu}
-              aria-describedby={abriu ? undefined : 'random-velocidade-nota'}
-              onClick={() =>
-                dispatch({ type: 'sample', kind: 'velocity', unit: Math.random(), guided: false })
-              }
-            >
-              <span aria-hidden>🎲</span> Sortear velocidade (lugar fica 500)
-            </SceneButton>
-            {!abriu && (
-              <p id="random-velocidade-nota" className="text-sm text-muted-foreground">
-                Abre depois de sortear o lugar mais algumas vezes.
-              </p>
-            )}
-          </div>
+              <SceneButton
+                fechado={!abriu}
+                aria-describedby={abriu ? undefined : 'random-velocidade-nota'}
+                onClick={() =>
+                  dispatch({ type: 'sample', kind: 'velocity', unit: Math.random(), guided: false })
+                }
+              >
+                <span aria-hidden>🎲</span> Sortear velocidade (lugar fica 500)
+              </SceneButton>
+              {!abriu && (
+                <p id="random-velocidade-nota" className="text-sm text-muted-foreground">
+                  Abre depois de sortear o lugar mais algumas vezes.
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )
     }
@@ -207,7 +227,7 @@ export function DinoNumbersControls({
             label={nome('Tamanho da área do Dino')}
             value={sceneAreaPercent(state.contact.width)}
             texto={`${sceneAreaPercent(state.contact.width)}%`}
-            min={50}
+            min={40}
             max={150}
             passo={10}
             tom="text-scene-b-ink"

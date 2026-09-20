@@ -117,6 +117,409 @@ export interface SceneModel {
 }
 
 const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPreview'>> = {
+  'once-vs-always': {
+    id: 'once-vs-always',
+    group: 'events',
+    title: 'Uma vez, sempre, e na hora que acontecer',
+    instruction:
+      'Ponha as fichas nas áreas do projeto e avance quadros. Compare os contadores de cada ficha. Volte ao começo para experimentar outro lugar.',
+    manipulates: 'As fichas de ação, as áreas do projeto e o avanço dos quadros',
+    success: 'Ao iniciar é uma vez. Enquanto estiver rodando é sempre. Quando acontecer é na hora.',
+    successNoCaso: {
+      'always+both+once': 'Você achou a diferença: arrumar é uma vez, o motor é sempre.',
+      'key-fires+on-event': 'Quando acontecer espera a tecla e age na hora em que ela é apertada.',
+      once: 'Em Ao iniciar, a ação acontece uma vez e a batida consegue tirar vidas.',
+    },
+    extra: 'E se você levar uma ficha para outra área e voltar ao começo?',
+    goals: [
+      {
+        id: 'once',
+        label: 'Em Ao iniciar, a ação aconteceu uma vez só',
+        pedido: 'Ponha a ficha de arrumação em Ao iniciar e avance três quadros.',
+      },
+      {
+        id: 'always',
+        label: 'Em Enquanto estiver rodando, a ação se repete a cada quadro',
+        pedido: 'Ponha a ficha de movimento em Enquanto estiver rodando e avance três quadros.',
+      },
+      {
+        id: 'both',
+        label: 'Preparar uma vez e repetir sempre, juntos',
+        pedido:
+          'Deixe Criar em Ao iniciar e Mover em Enquanto estiver rodando; avance cinco quadros.',
+      },
+      {
+        id: 'on-event',
+        label: 'Em Quando acontecer, a ação ficou esperando',
+        pedido:
+          'Ponha a ficha do evento em Quando acontecer e avance três quadros sem apertar a tecla.',
+        soNoCaso: true,
+      },
+      {
+        id: 'key-fires',
+        label: 'A tecla fez a ação acontecer na hora',
+        pedido: 'Com a ficha do evento em Quando acontecer, aperte a tecla.',
+        soNoCaso: true,
+      },
+      {
+        id: 'flood',
+        label: 'Em Enquanto estiver rodando, nasceu um tiro em cada quadro',
+        pedido: 'Ponha Criar um tiro em Enquanto estiver rodando e avance cinco quadros.',
+        soNoCaso: true,
+      },
+    ],
+    hints: [
+      'Olhe o contador de quadros e conte quantas vezes cada ação disparou.',
+      'Ponha uma ação em Ao iniciar e avance mais de um quadro. Ela dispara de novo?',
+      'Agora arraste a mesma ação para Enquanto estiver rodando e avance de novo.',
+    ],
+    script: [], // Esta relação é manipulável: os cinco usos são experimentações.
+  },
+  'fixed-vs-read': {
+    id: 'fixed-vs-read',
+    group: 'motion',
+    title: 'O número escrito e o número lido',
+    instruction:
+      'Atire com o número 400, mude a nave de lugar e atire de novo. Depois troque para a leitura do centro x e compare as marcas.',
+    manipulates: 'O x da nave, a origem do x do tiro e as marcas da caixa',
+    success: 'Número escrito é sempre o mesmo. Número lido é o de agora.',
+    extra: 'E se a nave andar depois do disparo? O tiro que já saiu muda de caminho?',
+    goals: [
+      {
+        id: 'same-spot',
+        label: 'Com o número escrito, os dois tiros nasceram no mesmo lugar',
+        pedido: 'Com o x em o número 400, atire, leve a nave para outro lugar e atire de novo.',
+      },
+      {
+        id: 'follows',
+        label: 'Com a leitura, o tiro nasceu onde a nave estava',
+        pedido: 'Troque para o centro x da nave, leve a nave para outro lugar e atire.',
+      },
+      {
+        id: 'box-marks',
+        label: 'O tiro sai do meio da caixa e da borda de cima dela',
+        pedido: 'Ligue as marcas da caixa da nave e atire com o centro x da nave.',
+      },
+    ],
+    hints: [
+      'Atire, depois arraste a nave para longe e atire de novo. Olhe as duas marquinhas.',
+      'Troque de onde vem o x do tiro e repita: atire, arraste a nave, atire.',
+      'Ligue as marcas da caixa e olhe por onde o tiro sai.',
+    ],
+    script: [],
+  },
+  'collision-pair': {
+    id: 'collision-pair',
+    group: 'collision',
+    title: 'Quem some na trombada?',
+    instruction:
+      'Deixe a trombada acontecer com os grupos escolhidos. Volte ao começo, escolha os apelidos e compare os dois contadores.',
+    manipulates: 'O alvo dos comandos para o tiro e a pedra e o avanço até a colisão',
+    success: 'O apelido aponta para um. O grupo aponta para todos.',
+    extra: 'E se só um dos dois comandos usar o apelido?',
+    goals: [
+      {
+        id: 'whole-group',
+        label: 'Escolhendo o grupo, sumiu todo mundo',
+        pedido: 'Deixe os dois seletores no grupo inteiro e deixe a trombada acontecer.',
+      },
+      {
+        id: 'just-the-pair',
+        label: 'Escolhendo os apelidos, sumiram só os dois que se bateram',
+        pedido:
+          'Troque os dois seletores para os apelidos, volte ao começo e deixe a trombada acontecer.',
+      },
+      {
+        id: 'others-stay',
+        label: 'As outras pedras continuaram o caminho delas',
+        pedido:
+          'Com os apelidos escolhidos, deixe o tempo passar até as outras duas pedras saírem pela borda de baixo.',
+      },
+    ],
+    hints: [
+      'Olhe os dois contadores antes e depois da trombada.',
+      'Só um tiro encostou numa pedra. Quantos sumiram?',
+      'Troque o alvo dos dois comandos para os apelidos, tiro e asteroide, e faça de novo.',
+    ],
+    script: [],
+  },
+  invincibility: {
+    id: 'invincibility',
+    group: 'events',
+    title: 'O respiro depois da batida',
+    instruction:
+      'Compare as três batidas com 0, 45 e 15 quadros de proteção. Volte ao começo entre os testes.',
+    manipulates: 'A duração da proteção, o avanço de quadros e o retorno ao começo',
+    success: 'A proteção não é um escudo para sempre: é um respiro com prazo.',
+    extra: 'E se a proteção durasse 90 quadros?',
+    goals: [
+      {
+        id: 'no-shield',
+        label: 'Sem proteção, as três batidas tiraram as três vidas',
+        pedido: 'Deixe a proteção em 0 e avance até passar a terceira pedra.',
+      },
+      {
+        id: 'window',
+        label: 'Com 45 quadros, só a primeira batida tirou vida',
+        pedido: 'Ponha a proteção em 45, volte ao começo e avance até passar a terceira pedra.',
+      },
+      {
+        id: 'expires',
+        label: 'Com 15 quadros, a proteção acabou antes da terceira pedra',
+        pedido: 'Ponha a proteção em 15, volte ao começo e avance até passar a terceira pedra.',
+      },
+    ],
+    hints: [
+      'Depois da primeira batida, olhe a faixa da proteção contando para trás.',
+      'Compare quantas vidas sobraram com a proteção em 0 e com a proteção em 45.',
+      'Ponha 15 e olhe em que quadro a proteção chega a zero. A pedra do quadro 30 chega antes ou depois disso?',
+    ],
+    script: [],
+  },
+  'number-line': {
+    id: 'number-line',
+    group: 'speed',
+    title: 'A régua dos números negativos',
+    instruction:
+      'Ande pela régua com Somar -1 e troque o sinal da pergunta. Veja quando a resposta muda.',
+    manipulates: 'O marcador de -12 a 0, o botão Somar -1 e o sinal da comparação',
+    success:
+      'Na régua, quem está mais à direita é o maior. E o sinal decide o que a pergunta responde.',
+    extra: 'E se a velocidade for menor que -9? O que cada sinal responderia?',
+    goals: [
+      {
+        id: 'colder',
+        label: 'Somar -1 anda uma casa para a esquerda, e para a esquerda é mais rápido',
+        pedido: 'Aperte Somar -1 três vezes e olhe onde o marcador para.',
+      },
+      {
+        id: 'greater',
+        label: '-5 é maior que -9, porque mora à direita dele na régua',
+        pedido: 'Volte ao começo e troque o sinal para o biquinho que aponta para a direita.',
+      },
+      {
+        id: 'stops',
+        label: 'No -9 a pergunta diz não, e a base para ali',
+        pedido: 'Com o biquinho escolhido, leve o marcador até o -9.',
+      },
+      {
+        id: 'silent',
+        label: 'Com o igual, a resposta é não em todo lugar menos num',
+        pedido: 'Volte ao começo, ponha o sinal no igual e aperte Somar -1 quatro vezes.',
+      },
+    ],
+    hints: [
+      'A régua é parecida com um termômetro deitado. O -9 fica mais para a esquerda que o -5.',
+      'Olhe a frase embaixo da régua. A resposta muda sozinha conforme o marcador anda.',
+      'Deixe o marcador no -5 e troque o sinal para o biquinho que aponta para a direita. Depois leve o marcador até o -9 e olhe a resposta.',
+    ],
+    script: [],
+  },
+  'unique-names': {
+    id: 'unique-names',
+    group: 'world',
+    title: 'Cada nome só pode ser de uma coisa',
+    instruction:
+      'Tire o bloco que cria nave, ponha de volta e experimente nomes para a folha. Observe os avisos e a prévia.',
+    manipulates: 'O bloco que cria nave e o nome da folha de quadros',
+    success: 'Cada nome é de uma coisa só, e é por isso que a folha ganhou nome próprio.',
+    extra: 'E se você escolher nave2 em vez de folha-nave?',
+    goals: [
+      {
+        id: 'missing',
+        label: 'Sem o bloco que cria o nome, os outros acendem o aviso e a tela para de mudar',
+        pedido: 'Tire o bloco de cima e olhe os três blocos e a tela.',
+      },
+      {
+        id: 'clash',
+        label: 'Dois blocos criando o mesmo nome: o Estúdio pede um nome diferente',
+        pedido: 'Ponha o bloco de cima de volta e escolha nave também no bloco de baixo.',
+      },
+      {
+        id: 'own-name',
+        label: 'Com um nome só dela, a folha fica junto da nave sem briga',
+        pedido: 'No bloco de baixo, troque nave por folha-nave.',
+      },
+    ],
+    hints: [
+      'Olhe os três blocos da direita. Eles procuram um nome. Quem cria esse nome?',
+      'Ponha os dois blocos criando nave e leia o aviso que aparece.',
+      'Dê um nome só dela ao bloco de baixo, com folha na frente.',
+    ],
+    script: [],
+  },
+  'motion-amount': {
+    id: 'motion-amount',
+    group: 'art',
+    title: 'O tanto que muda',
+    instruction:
+      'Veja a Prévia dos dois quadros iguais. Mova só uma cratera e depois a pedra inteira para comparar.',
+    manipulates: 'O tanto que a cratera e a pedra inteira mudam no segundo quadro',
+    success:
+      'O corpo fica parado e os detalhes andam um pouco. É esse o tanto que faz a pedra rolar.',
+    extra: 'E se a cratera andar só uma casa? Você ainda vê rolagem?',
+    goals: [
+      {
+        id: 'no-change',
+        label: 'Os dois quadros iguais deixam a Prévia parada',
+        pedido: 'Deixe os dois controles em 0 e olhe a Prévia.',
+      },
+      {
+        id: 'local-move',
+        label: 'A cratera andando um pouco já faz a pedra parecer que rola',
+        pedido: 'Deixe o tanto da pedra inteira em 0 e ponha o da cratera entre 3 e 6.',
+      },
+      {
+        id: 'too-much',
+        label: 'Com a pedra inteira andando muito, o desenho pula em vez de rolar',
+        pedido: 'Ponha o tanto que a pedra inteira anda em 10 ou mais.',
+      },
+    ],
+    hints: [
+      'Os dois quadros estão iguais. Olhe a Prévia e depois mexa em um controle só.',
+      'Deixe a pedra inteira parada e mexa só na cratera. Comece em 3.',
+      'Agora mexa no tanto que a pedra inteira anda e olhe a Prévia de novo.',
+    ],
+    script: [],
+  },
+  'two-clocks': {
+    id: 'two-clocks',
+    group: 'population',
+    title: 'Dois relógios ao mesmo tempo',
+    instruction:
+      'Mude um relógio de cada vez: quando nasce uma pedra e quantos desenhos por segundo ela troca. Observe os números em cima de cada pedra.',
+    manipulates: 'O intervalo de nascimento e a velocidade de animação de cada pedra',
+    success:
+      'São dois relógios: um faz nascer, o outro troca os desenhos. E cada pedra começa o giro dela quando nasce.',
+    extra: 'E se nascer uma pedra a cada 80 quadros e ela trocar desenhos a 16 por segundo?',
+    goals: [
+      {
+        id: 'more-rocks',
+        label:
+          'Mudando só o relógio de nascer, veio mais pedra, e cada uma continuou girando no mesmo ritmo',
+        pedido: 'Deixe a animação em 8, ponha o relógio em 20 e deixe o tempo passar.',
+      },
+      {
+        id: 'faster-spin',
+        label:
+          'Mudando só a animação, as pedras giraram mais rápido, e continuou nascendo na mesma hora',
+        pedido: 'Deixe o relógio em 40, ponha a animação em 16 e deixe o tempo passar.',
+      },
+      {
+        id: 'each-one',
+        label: 'Cada pedra começou no quadro 0, na hora em que ela nasceu',
+        pedido:
+          'Deixe o tempo passar até nascerem três pedras e olhe o número em cima de cada uma na hora em que ela entra.',
+      },
+    ],
+    hints: [
+      'São dois números que andam sozinhos: quantas pedras já nasceram e qual desenho cada pedra está mostrando agora.',
+      'Mexa num controle de cada vez. Primeiro no de nascer, depois no do giro.',
+      'Deixe nascer três pedras e olhe o número em cima de cada uma no instante em que ela aparece.',
+    ],
+    script: [],
+  },
+  'copy-vs-original': {
+    id: 'copy-vs-original',
+    group: 'world',
+    title: 'A cópia e o original',
+    instruction:
+      'Exporte o jogo da aula, importe o arquivo no Estúdio e pinte a nave de um lado só.',
+    manipulates: 'Exportar, importar e a cor da nave em cada painel',
+    success:
+      'Exportar tira uma cópia, importar transforma a cópia num projeto seu, e daí em diante cada um segue o seu caminho.',
+    extra: 'E se você pintar a nave na aula depois de exportar, antes de importar?',
+    goals: [
+      {
+        id: 'exported',
+        label: 'O arquivo saiu, e o jogo continuou na aula',
+        pedido: 'Aperte Exportar e olhe o lado da aula.',
+      },
+      {
+        id: 'imported',
+        label: 'O mesmo jogo apareceu no Estúdio',
+        pedido: 'Com o arquivo pronto, aperte Importar.',
+      },
+      {
+        id: 'independent',
+        label: 'Mudou a cor de um lado, e o outro ficou como estava',
+        pedido: 'Com jogo nos dois lados, pinte a nave de um lado só.',
+      },
+    ],
+    hints: [
+      'Aperte Exportar e olhe o lado da aula antes de olhar o arquivo.',
+      'Com o arquivo no meio, aperte Importar e compare as duas telas.',
+      'Pinte a nave do lado do Estúdio e olhe a nave do lado da aula.',
+    ],
+    script: [],
+  },
+  'published-copy': {
+    id: 'published-copy',
+    group: 'world',
+    title: 'A cópia que foi para o Mural',
+    instruction:
+      'Publique uma cópia, mude a cor no projeto e publique de novo. Compare os cartões do Mural.',
+    manipulates: 'A cor da nave no projeto, Publicar e Abrir a versão do Mural',
+    success:
+      'São cópias: o projeto continua seu para mexer; cada publicação guarda a versão daquele momento.',
+    extra: 'E se você publicar duas vezes sem mudar a cor?',
+    goals: [
+      {
+        id: 'first-publish',
+        label: 'Depois de publicar, as duas telas mostram a mesma nave',
+        pedido: 'Aperte Publicar e olhe as duas telas.',
+      },
+      {
+        id: 'only-project',
+        label: 'Mudando a cor no projeto, só a tela da esquerda mudou',
+        pedido: 'Depois de publicar, troque a cor da nave e olhe as duas telas.',
+      },
+      {
+        id: 'republish',
+        label: 'O Mural ganhou uma publicação nova com a cor nova',
+        pedido: 'Com a cor trocada, aperte Publicar de novo.',
+      },
+    ],
+    hints: [
+      'A tela da direita está vazia. Aperte Publicar.',
+      'Agora troque a cor da nave e compare as duas telas.',
+      'Aperte Publicar de novo e olhe os dois cartões do Mural.',
+    ],
+    script: [],
+  },
+  'same-rules-new-skin': {
+    id: 'same-rules-new-skin',
+    group: 'world',
+    title: 'As mesmas regras, outra história',
+    instruction:
+      'Jogue, troque o tema para carrinho e submarino e olhe as quatro regras. Depois desligue a regra de atirar e jogue de novo.',
+    manipulates: 'O tema do mesmo jogo, a regra de atirar, as setas e a tecla de tiro',
+    success: 'As regras são a mecânica. Os desenhos são o tema. Você escolhe o que troca.',
+    extra: 'E se você trocar o tema e desligar o tiro ao mesmo tempo?',
+    goals: [
+      {
+        id: 'skin-only',
+        label: 'Trocou o tema e as quatro regras continuaram acesas',
+        pedido: 'Troque o tema para carrinho e olhe a lista de regras.',
+      },
+      {
+        id: 'three-skins',
+        label: 'Três histórias diferentes, o mesmo jogo',
+        pedido: 'Passe pelos três temas.',
+      },
+      {
+        id: 'rule-off',
+        label: 'Desligando a regra de atirar, a lista mudou e o jogo mudou junto',
+        pedido: 'Desligue a regra de atirar e jogue um pouco.',
+      },
+    ],
+    hints: [
+      'Troque o tema e olhe a lista de regras do lado.',
+      'Passe pelos três temas e veja se alguma regra apagou.',
+      'Agora desligue a regra de atirar e jogue um pouco.',
+    ],
+    script: [],
+  },
   coordinates: {
     id: 'coordinates',
     group: 'stage',
@@ -193,6 +596,12 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         label: 'A frase diz como jogar',
         pedido: 'Escreva também qual tecla usar e aperte Ouvir a tela de novo.',
       },
+      {
+        id: 'says-all-controls',
+        label: 'A frase conta os três jeitos de pular',
+        pedido: 'Escreva também a seta para cima e o toque na tela, e aperte Ouvir a tela de novo.',
+        soNoCaso: true,
+      },
     ],
     hints: [
       'Aperte Ouvir a tela antes de escrever qualquer coisa.',
@@ -212,7 +621,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         caption: 'Agora a descrição conta o objetivo e o controle.',
         highlight: 'scene',
         actions: [
-          { type: 'describe', text: 'Corra com o dino e pule os cactos apertando espaço' },
+          { type: 'describe', text: 'Corra com o dino e pule os cactos apertando espaço.' },
           { type: 'listen' },
         ],
       },
@@ -243,6 +652,12 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         // ⚠️⚠️ E o MOTOR confere (lote 5): sem a borda a meta não cai, e a bancada deixa os números
         // fechados até ela aparecer.
         pedido: 'Com a borda à vista, mude a largura ou a altura.',
+      },
+      {
+        id: 'follows',
+        label: 'A borda acompanha os números',
+        pedido: 'Com a borda à vista, mude a largura ou a altura.',
+        soNoCaso: true,
       },
       {
         id: 'target',
@@ -363,7 +778,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     manipulates: 'Qual quadro aparece, a prévia tocando e a velocidade dela',
     success:
       'Cada quadro continua sendo um desenho parado. É a troca rápida que faz o fogo pulsar!',
-    extra: 'E se os dois quadros fossem iguais? O fogo ainda ia pulsar?',
+    extra: 'E se o quadro 2 voltar a ter um fogo maior? O que muda na prévia?',
     goals: [
       {
         id: 'two-drawings',
@@ -389,11 +804,16 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         label: 'Devagar, viu um quadro e depois o outro',
         pedido: 'Ponha a velocidade em 2, ligue a prévia e espere.',
       },
+      {
+        id: 'same-frames',
+        label: 'Com os dois quadros iguais, o fogo parou de pulsar',
+        pedido: 'Deixe o quadro 2 igual ao quadro 1 e ligue a prévia rápida.',
+      },
     ],
     hints: [
       'Com a prévia parada, aperte Quadro 1 e Quadro 2. Olhe o que muda de um para o outro.',
       'Ponha a velocidade em 8, espere o fogo pulsar e pare a prévia.',
-      'Agora ponha a velocidade em 2 e ligue a prévia. Conte os quadros que aparecem.',
+      'Agora ponha a velocidade em 2 e ligue a prévia. Depois deixe os dois quadros iguais e experimente a prévia rápida.',
     ],
     script: [
       {
@@ -535,7 +955,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     // ⚠️⚠️ Os dois espelhos são DUAS chaves independentes, como no Pinta (consertos do review da onda B
     // do lote 5): a cena tinha uma escolha de três, e "E se os dois estivessem ligados?" não se tentava.
     instruction:
-      'Pinte a asa com os espelhos desligados. Ligue o Espelho lado a lado e pinte de novo. Depois deixe ligado só o espelho de cima e de baixo e pinte mais uma vez.',
+      'Pinte a asa com os espelhos desligados. Ligue o Espelho lado a lado e pinte de novo. Depois experimente o espelho de cima e de baixo e o Balde de tinta.',
     manipulates: 'Os dois espelhos do Pinta e os traços da nave na grade',
     success:
       'Com o espelho ligado, cada traço aparece também do outro lado do meio. Desligado, fica só onde você pintou!',
@@ -559,11 +979,16 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         label: 'Pintou com o espelho de cima e de baixo',
         pedido: 'Deixe ligado só o espelho de cima e de baixo e pinte a asa.',
       },
+      {
+        id: 'fill-ignores-mirror',
+        label: 'Com o espelho ligado, o Balde encheu um lado só',
+        pedido: 'Deixe ligado o Espelho lado a lado e encha a asa com o Balde de tinta.',
+      },
     ],
     hints: [
       'Pinte a asa e conte quantas asas apareceram.',
       'Ligue o Espelho lado a lado e pinte a asa de novo. Olhe a grade inteira.',
-      'Desligue o Espelho lado a lado, ligue o de cima e de baixo e pinte a asa de novo.',
+      'Desligue o Espelho lado a lado, ligue o de cima e de baixo e pinte a asa. Depois experimente o Balde com o Espelho lado a lado ligado.',
     ],
     script: [
       {
@@ -934,6 +1359,12 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         // "leve até 14 e pule de novo" não servia a quem já tinha pulado com 14.
         pedido: 'Pule com impulso 9 e depois com impulso 14.',
       },
+      {
+        id: 'compare',
+        label: 'Outro impulso, marca bem diferente',
+        pedido: 'Pule com impulso 9 e depois com impulso 14.',
+        soNoCaso: true,
+      },
     ],
     hints: [
       'A marca azul é o salto de antes.',
@@ -968,9 +1399,10 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     title: 'O som acompanha o pulo',
     instruction:
       'Aperte Espaço duas vezes no mesmo pulo. Depois pule tocando no Dino. Conte os sons.',
-    manipulates: 'A peça Tocar som, o Dino e a tecla Espaço',
+    manipulates: 'A peça Tocar efeito, o Dino e a tecla Espaço',
     success: 'Em Quando o Dino pular, o som toca uma vez em cada pulo, por tecla ou por toque!',
-    extra: 'E se você apertar Espaço várias vezes no mesmo pulo, com o som em Quando o Dino pular?',
+    extra:
+      'E se alguém abrir o seu jogo no celular e pular tocando na tela? Qual dos dois eventos toca o som?',
     // ⚠️⚠️ A missão de fábrica são TRÊS metas (lote 5 do Raio-X): o som sem pulo, o pulo sem som (o
     // outro defeito que a aula conserta, e que acontecia calado) e um som em cada pulo pelos dois
     // jeitos. As três antigas de detalhe (`quiet-air`, `key-sound`, `tap-sound`) ficam para um caso
@@ -979,42 +1411,43 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       {
         id: 'false-sound',
         label: 'Som sem pulo',
-        pedido: 'Com Tocar som em Quando apertar Espaço, aperte Espaço duas vezes no mesmo pulo.',
+        pedido:
+          'Com Tocar efeito em Quando apertar Espaço, aperte Espaço duas vezes no mesmo pulo.',
       },
       {
         id: 'silent-jump',
         label: 'Pulo sem som',
-        pedido: 'Com Tocar som em Quando apertar Espaço, pule tocando no Dino.',
+        pedido: 'Com Tocar efeito em Quando apertar Espaço, pule tocando no Dino.',
       },
       {
         id: 'quiet-air',
         label: 'Sem pulo novo, o som esperou',
-        pedido: 'Com Tocar som em Quando o Dino pular, aperte Espaço duas vezes no mesmo pulo.',
+        pedido: 'Com Tocar efeito em Quando o Dino pular, aperte Espaço duas vezes no mesmo pulo.',
         soNoCaso: true,
       },
       {
         id: 'key-sound',
         label: 'Com o som no pulo, a tecla fez pulo e som',
-        pedido: 'Com Tocar som em Quando o Dino pular, pule pela tecla Espaço.',
+        pedido: 'Com Tocar efeito em Quando o Dino pular, pule pela tecla Espaço.',
         soNoCaso: true,
       },
       {
         id: 'tap-sound',
         label: 'Com o som no pulo, o toque fez pulo e som',
-        pedido: 'Com Tocar som em Quando o Dino pular, pule tocando no Dino.',
+        pedido: 'Com Tocar efeito em Quando o Dino pular, pule tocando no Dino.',
         soNoCaso: true,
       },
       {
         id: 'every-jump',
         label: 'Um som em cada pulo, por tecla e por toque',
         pedido:
-          'Leve Tocar som para Quando o Dino pular. Depois pule pela tecla Espaço e tocando no Dino.',
+          'Leve Tocar efeito para Quando o Dino pular. Depois pule pela tecla Espaço e tocando no Dino.',
       },
     ],
     hints: [
       'Aperte Espaço duas vezes no mesmo pulo. Conte os ♪.',
       'Agora pule tocando no Dino. Tocou som?',
-      'Leve Tocar som para Quando o Dino pular e teste os dois jeitos.',
+      'Leve Tocar efeito para Quando o Dino pular e teste os dois jeitos.',
     ],
     script: [
       {
@@ -1062,12 +1495,18 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         pedido: 'Com Criar cacto em A cada quadro, deixe o tempo passar um segundo inteiro.',
       },
       {
-        id: 'spaced',
-        label: 'Com o relógio, sobrou espaço',
+        id: 'with-timer',
+        label: 'Com o relógio, sobrou espaço entre os cactos',
         // ⚠️ "até nascerem dois", e não "dois segundos": com o intervalo de 2 s, dois segundos
         // davam UM nascimento, e a meta pede dois.
         pedido:
           'Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos.',
+      },
+      {
+        id: 'same-fall',
+        label: 'Com mais pedras nascendo, cada pedra desce na mesma velocidade',
+        pedido: 'Troque o relógio de 40 para 20 e compare quanto cada pedra desceu em 60 quadros.',
+        soNoCaso: true,
       },
     ],
     hints: [
@@ -1101,8 +1540,8 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     // ⚠️ O título antigo ("Cuide dos cactos invisíveis") respondia a previsão ("some do jogo?").
     title: 'Para onde vai o cacto que sai da tela?',
     instruction:
-      'Aperte ▶ Tempo e veja um cacto sair da tela. Olhe os bastidores. Depois ligue Remover do grupo quem saiu da tela e compare.',
-    manipulates: 'A regra Remover do grupo quem saiu da tela e o tempo',
+      'Aperte ▶ Tempo e veja um cacto sair da tela. Olhe os bastidores. Depois ligue Tirar do grupo quem sair da tela e compare.',
+    manipulates: 'A regra Tirar do grupo quem sair da tela e o tempo',
     success: 'Sair da tela não tira ninguém do grupo: quem tira é a regra!',
     extra: 'E se você desligar a regra e deixar outros cactos saírem?',
     goals: [
@@ -1112,19 +1551,19 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         pedido: 'Deixe o tempo passar até dois cactos saírem da tela.',
       },
       {
-        id: 'removed',
+        id: 'rule-removes',
         label: 'A regra tirou do grupo quem saiu',
         // ⚠️ O nome da CHAVE da bancada (lote 5 do Raio-X), que é o do bloco do Estúdio. Eram cinco
         // nomes para uma regra: "limpeza", "Remover do grupo → Saída da tela", "Encaixe Remover",
         // "Retirar regra" e "remoção na saída".
-        pedido: 'Ligue Remover do grupo quem saiu da tela e deixe o tempo passar.',
+        pedido: 'Ligue Tirar do grupo quem sair da tela e deixe o tempo passar até dois saírem.',
       },
     ],
     hints: [
       'Olhe a prateleira dos bastidores quando um cacto sai.',
       // ⚠️ "Sair da tela não é sair do grupo" era a conclusão (consertos do review da onda A do lote 5).
       'Conte os cactos da prateleira depois que um cacto sai.',
-      'Ligue Remover do grupo quem saiu da tela e aperte ▶ Tempo de novo.',
+      'Ligue Tirar do grupo quem sair da tela e aperte ▶ Tempo de novo.',
     ],
     script: [
       {
@@ -1148,50 +1587,50 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     id: 'game-state',
     group: 'events',
     // ⚠️ O título antigo ("O relógio espera você começar") puxava para a resposta ERRADA da previsão.
-    title: 'O relógio na tela de início',
+    title: 'O relógio no início',
     // ⚠️⚠️ A peça é Criar cacto, DENTRO do relógio (lote 5 do Raio-X): na cena o Relógio entrava no
     // Se, e no Estúdio, logo depois, é o Se que entra no relógio ("mova a criação do cacto para
     // dentro dele"). E "▶ Tempo" para o relógio da cena não ter o mesmo nome da peça.
     instruction:
-      'Aperte ▶ Tempo na tela de início. Nascem cactos? Depois leve Criar cacto para dentro de Se jogando e compare.',
-    manipulates: 'A peça Criar cacto, a caixa Se jogando e o começo da partida',
-    success: 'Dentro de Se jogando, Criar cacto espera no início e volta a criar na partida!',
+      'Aperte ▶ Tempo no início. Nascem cactos? Depois leve Criar cacto para dentro de Se o estado do jogo é jogando e compare.',
+    manipulates: 'A peça Criar cacto, a caixa Se o estado do jogo é jogando e o começo da partida',
+    success: 'Dentro do Se, Criar cacto espera no início e volta a criar na partida!',
     extra: 'E se você voltar ao início depois de jogar?',
     goals: [
       {
         id: 'outside',
         label: 'Nasceram cactos antes de começar',
-        pedido: 'Na tela de início, com Criar cacto fora do Se, deixe o tempo passar.',
+        pedido: 'No início, com Criar cacto fora do Se, deixe o tempo passar.',
       },
       {
         id: 'waiting',
         label: 'No início, nada nasceu por 2 segundos',
         pedido:
-          'Leve Criar cacto para dentro de Se jogando e deixe o tempo passar 2 segundos na tela de início.',
+          'Leve Criar cacto para dentro de Se o estado do jogo é jogando e deixe o tempo passar 2 segundos no início.',
       },
       {
         id: 'playing',
         label: 'Jogando, voltou a nascer',
-        pedido: 'Com Criar cacto dentro de Se jogando, comece a partida e deixe o tempo passar.',
+        pedido: 'Com Criar cacto dentro do Se, comece a partida e deixe o tempo passar.',
       },
     ],
     hints: [
       // ⚠️ "Por que há cactos antes de você começar?" respondia a previsão ("nascem cactos no
       // início?"), e a pista pode ser lida antes do palpite.
-      'Aperte ▶ Tempo na tela de início e conte os cactos que aparecem.',
-      'O que fica dentro de Se jogando só acontece durante a partida.',
-      'Leve Criar cacto para dentro de Se jogando. Compare o início e a partida.',
+      'Aperte ▶ Tempo no início e conte os cactos que aparecem.',
+      'O que fica dentro do Se só acontece durante a partida.',
+      'Leve Criar cacto para dentro de Se o estado do jogo é jogando. Compare o início e a partida.',
     ],
     script: [
       {
         id: 'step-1',
-        caption: 'Na tela de início, os cactos nascem.',
+        caption: 'No início, os cactos nascem.',
         highlight: 'scene',
         actions: [{ type: 'advance', seconds: 1 }],
       },
       {
         id: 'step-2',
-        caption: 'Dentro de Se jogando, Criar cacto espera a partida começar.',
+        caption: 'Dentro do Se, Criar cacto espera a partida começar.',
         highlight: 'scene',
         actions: [
           { type: 'connect', port: 'condition', enabled: true },
@@ -1211,15 +1650,16 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     instruction: 'A tela promete dois jeitos de começar. Teste os dois.',
     manipulates: 'A tela de início e a peça Começar',
     success: 'Agora os dois jeitos que o convite promete começam a partida!',
-    extra: 'E se você levar Começar de volta para Quando apertar Enter? O Enter ainda funciona?',
+    extra:
+      'E se o convite dissesse só “Toque para começar”? Quem usa Enter saberia que também pode jogar?',
     // ⚠️⚠️ Sem o fio (lote 5 do Raio-X): Começar é uma PEÇA que muda de evento, o gesto do Estúdio da
     // seção seguinte ("mova o mesmo Se para Quando apertar qualquer tecla ou tocar"). Ela fica à
     // vista desde a abertura, então nenhum pedido depende de outra meta.
     goals: [
       {
         id: 'missing-touch',
-        label: 'Tocou e nada aconteceu',
-        pedido: 'Com Começar em Quando apertar Enter, toque na tela de início.',
+        label: 'É o mesmo que aconteceu no seu jogo: tocou e nada aconteceu',
+        pedido: 'Com Começar em Quando apertar a tecla, toque na tela de início.',
       },
       {
         id: 'start-tap',
@@ -1270,7 +1710,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     manipulates: 'O toque na tela, o que o toque faz no fim e os cactos da pista',
     // ⚠️ Sem "pontos": esta cena não tem placar, e a Aula 9 vem antes de o placar existir.
     success: 'A pista começou limpa. Isso é jogar de novo de verdade!',
-    extra: 'E se você trocar para Ir para o início de novo? A pista fica como?',
+    extra: 'E se você trocar para Mudar o estado do jogo para inicio de novo? A pista fica como?',
     goals: [
       {
         id: 'ended',
@@ -1280,14 +1720,22 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       {
         id: 'screen-only',
         label: 'Só trocar de tela deixou os cactos na pista',
-        pedido: 'No fim, com Ir para o início escolhido, toque na tela duas vezes.',
+        pedido:
+          'No fim, com Mudar o estado do jogo para inicio escolhido, toque na tela duas vezes.',
       },
       {
-        id: 'restarted',
+        id: 'clean-track',
         label: 'Reiniciar começou com a pista limpa',
         // ⚠️ A comparação é obrigatória: o motor só dá esta meta depois de `screen-only`.
         pedido:
-          'Depois de jogar de novo com Ir para o início, escolha Reiniciar o jogo e, no fim, toque na tela duas vezes.',
+          'Depois de jogar de novo com Mudar o estado do jogo para inicio, escolha Reiniciar o jogo e, no fim, toque na tela duas vezes.',
+      },
+      {
+        id: 'back-to-menu',
+        label: 'Reiniciar levou para a abertura, e foi preciso outro Enter para jogar',
+        pedido:
+          'Escolha Reiniciar o jogo, aperte Enter no fim e depois aperte Enter de novo para jogar.',
+        soNoCaso: true,
       },
     ],
     hints: [
@@ -1295,7 +1743,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Troque o que o toque faz no fim e compare as duas pistas.',
       // ⚠️ A comparação na ordem (consertos do review da onda A do lote 5): a pista 3 mandava direto ao
       // Reiniciar, o atalho que não conta sem ter visto a pista herdada.
-      'Primeiro jogue com Ir para o início e olhe a pista. Depois escolha Reiniciar o jogo e compare.',
+      'Primeiro jogue com Mudar o estado do jogo para inicio e olhe a pista. Depois escolha Reiniciar o jogo e compare.',
     ],
     script: [
       {
@@ -1322,7 +1770,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       },
       {
         id: 'step-3',
-        caption: 'Com Reiniciar o jogo, o toque no fim limpa a pista. A partida nova começa vazia.',
+        caption: 'Com Reiniciar o jogo, o fim limpa a pista e o jogo volta para a abertura.',
         highlight: 'scene',
         actions: [
           { type: 'connect', port: 'restart', enabled: true },
@@ -1330,7 +1778,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
           { type: 'start', input: 'tap' },
           { type: 'advance', seconds: 0.5 },
         ],
-        waitFor: 'restarted',
+        waitFor: 'clean-track',
       },
     ],
   },
@@ -1338,16 +1786,17 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     id: 'hitbox',
     group: 'collision',
     title: 'Onde a batida acontece?',
-    // ⚠️⚠️ Redesenho do lote 5 do Raio-X: a cena abre com a área GRANDE (130%), como o jogo da Aula
+    // ⚠️⚠️ Redesenho do lote 5 do Raio-X: a cena abre com a área GRANDE (100%), como o jogo da Aula
     // 10 antes do conserto, e o gesto é DIMINUIR até 80%. A cena antiga aumentava a área, na direção
     // contrária à da aula, e em largura absoluta, enquanto o Estúdio fala em porcentagem.
     // ⚠️⚠️ Sem "olhe o espaço entre os desenhos" (consertos do review da onda A do lote 5): a instrução
     // fica logo acima da previsão ("antes ou só quando os desenhos se encostarem?") e dizia que haveria
     // espaço entre eles no BATEU. Olhar o vão fica para a pista, depois do BATEU.
     instruction:
-      'Traga o cacto um toque de cada vez até aparecer BATEU. Depois deixe o cacto no mesmo lugar e mude só a área do Dino.',
+      'Traga o cacto um toque de cada vez até aparecer BATEU. Depois deixe o cacto no lugar e mude só o tamanho da área do Dino, para baixo e para cima.',
     manipulates: 'A Distância do cacto e o Tamanho da área do Dino',
-    success: 'O Dino ficou do mesmo tamanho. Só a área mudou, e a batida ficou justa!',
+    success:
+      'O Dino ficou do mesmo tamanho o tempo todo. Quem mandou na batida foi a área, e o tamanho dela é escolha sua.',
     extra: 'Com a área em 80%, traga o cacto de novo. Quando aparece BATEU agora?',
     goals: [
       {
@@ -1358,25 +1807,42 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         pedido: 'Aproxime o cacto do Dino com a Distância do cacto, um toque de cada vez.',
       },
       {
+        id: 'early-hit',
+        label: 'BATEU com os desenhos ainda longe',
+        pedido: 'Com a área em 100%, aproxime o cacto com a Distância do cacto até aparecer BATEU.',
+        soNoCaso: true,
+      },
+      {
         id: 'area-contrast',
         label: 'Área menor, mesmo lugar: a batida sumiu',
         // ⚠️ "Sem mexer na Distância", e não "parado", que não concorda com a pedra.
         pedido: 'Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino.',
+      },
+      {
+        id: 'fair-hit',
+        label: 'Área menor, mesmo lugar: a batida sumiu',
+        pedido: 'Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino até 80%.',
+        soNoCaso: true,
+      },
+      {
+        id: 'too-small',
+        label: 'Os desenhos se tocam, e o jogo disse que não bateu',
+        pedido: 'Encoste o cacto no desenho do Dino e deixe o Tamanho da área do Dino em 40%.',
       },
     ],
     hints: [
       // ⚠️ "Olhe os dois desenhos", e não "olhe o espaço entre eles": era o que a criança ia ver.
       'Aproxime o cacto um toque de cada vez e olhe os dois desenhos quando aparecer BATEU.',
       'Deixe o cacto onde bateu. Mude só a área do Dino.',
-      'Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino até 80% e veja o BATEU sumir.',
+      'Agora encoste o cacto no desenho do Dino e leve o Tamanho da área do Dino para 40%. Olhe se aparece BATEU.',
     ],
     script: [
       {
         id: 'step-1',
         caption: 'BATEU! Mas olhe: os desenhos ainda não se tocam.',
         highlight: 'scene',
-        // ⚠️ Em 59, e não 50 (consertos do review da onda A do lote 5): o vão de 19 se vê; o de 10 não.
-        actions: [{ type: 'move', distance: 59 }],
+        // Com a área em 100%, 49 mostra a batida com um vão visível de 9.
+        actions: [{ type: 'move', distance: 49 }],
       },
       {
         id: 'step-2',
@@ -1397,11 +1863,17 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     // ⚠️ Sem "em qual o placar não devia crescer?" (consertos do review da onda A do lote 5): a
     // pergunta pressupunha que o placar cresce onde não devia, logo acima da previsão sobre isso.
     instruction:
-      'Deixe o tempo passar em cada tela (início, jogando e fim) e olhe o placar. Depois mude o Somar ponto de lugar e compare.',
-    manipulates: 'Peça de pontuação, região Se jogando e a próxima tela',
-    success: 'Os pontos crescem jogando e ficam guardados fora da partida!',
+      'Ponha Somar ponto em cada lugar e olhe o placar. Depois passe pelas três telas: início, jogando e fim.',
+    manipulates: 'Peça Somar ponto, os relógios, o estado do jogo é jogando ? e a próxima tela',
+    success: 'Onde a peça mora decide duas coisas: quantas vezes por segundo, e em quais telas.',
     extra: 'E se você voltar ao início? Veja se o placar continua parado.',
     goals: [
+      {
+        id: 'score-runaway',
+        label: 'No quadro, o placar disparou: 60 por segundo',
+        pedido:
+          'Ponha Somar ponto dentro do A cada quadro do jogo e deixe passar um segundo inteiro.',
+      },
       {
         id: 'score-idle-wrong',
         label: 'Solto, o placar cresceu no início',
@@ -1409,17 +1881,23 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       },
       {
         id: 'score-start',
-        label: 'Dentro de Se jogando, o início esperou',
+        label: 'Dentro do Se, o início esperou',
         // ⚠️ É COMPARAÇÃO: o motor só dá esta meta depois de a peça solta ter somado no início.
         // ⚠️ Mais curto (consertos do review da onda A do lote 5): o "Conferir" devolvia 25 palavras.
         pedido:
-          'Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para Se jogando e espere de novo.',
+          'Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para o bloco “o estado do jogo é jogando ?” e espere de novo.',
+      },
+      {
+        id: 'score-waiting',
+        label: 'Dentro do Se de jogando, o início esperou',
+        pedido: 'Leve Somar ponto para dentro do Se e deixe o tempo passar na tela de início.',
+        soNoCaso: true,
       },
       {
         id: 'score-playing',
         label: 'Pontos aumentam jogando',
         pedido:
-          'Com Somar ponto em Se jogando, aperte Próxima tela até Jogando e deixe o tempo passar.',
+          'Com Somar ponto dentro do Se, aperte Próxima tela até Jogando e deixe o tempo passar.',
       },
       {
         id: 'score-end',
@@ -1429,13 +1907,20 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         pedido:
           'Depois de ver os pontos crescerem jogando, aperte Próxima tela até Fim e deixe o tempo passar.',
       },
+      {
+        id: 'score-kept',
+        label: 'No fim, o placar parou no valor',
+        pedido:
+          'Depois de ver os pontos crescerem jogando, aperte Próxima tela até Fim e deixe o tempo passar.',
+        soNoCaso: true,
+      },
     ],
     hints: [
       'Com a peça solta, o placar deve crescer antes de começar?',
       'Compare o placar das três telas na fileira embaixo do palco.',
       // ⚠️ O erro primeiro (consertos do review da onda A do lote 5): a pista 3 pulava a peça solta, que
       // é a meta obrigatória que abre a cena.
-      'Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para Se jogando e passe pelas três telas.',
+      'Compare Somar ponto em A cada quadro do jogo e A cada 1 segundos. Depois leve a peça para o estado do jogo é jogando ? e passe pelas três telas.',
     ],
     script: [
       {
@@ -1447,7 +1932,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       },
       {
         id: 'step-2',
-        caption: 'Dentro de Se jogando, o início espera.',
+        caption: 'Dentro do Se, o início espera.',
         highlight: 'scene',
         actions: [
           { type: 'connect', port: 'condition', enabled: true },
@@ -1561,6 +2046,12 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         pedido: 'Aperte Sortear lugar mais oito vezes.',
       },
       {
+        id: 'above',
+        label: 'A régua fica acima da tela: a pedra nasce do lado de fora e entra caindo',
+        pedido: 'Deixe o tempo passar até a primeira pedra entrar na tela.',
+        soNoCaso: true,
+      },
+      {
         id: 'velocities',
         label: 'O cacto −6 chegou mais longe que o −5',
         pedido: 'Aperte Sortear velocidade até sair um cacto −5 e um −6.',
@@ -1615,8 +2106,16 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       {
         id: 'variation-limit',
         label: 'Mesmo parada em −9, saiu um cacto −10',
-        // ⚠️ "Mais quatro vezes": com três cactos seguidos em −9, o motor garante o sorteio de 1.
-        pedido: 'Com a base em −9 e a condição ligada, aperte Passar 5 segundos mais quatro vezes.',
+        // O sorteio pode repetir: a criança continua até aparecer o caso procurado.
+        pedido:
+          'Com a base em −9 e a condição ligada, aperte Passar 5 segundos até nascer um cacto −10.',
+      },
+      {
+        id: 'spawned-ten',
+        label: 'Mesmo com a base parada em −9, nasceu um cacto −10',
+        pedido:
+          'Com a base no −9 e a condição ligada, aperte Passar 5 segundos até nascer um cacto −10.',
+        soNoCaso: true,
       },
       {
         id: 'old-speed',
@@ -1694,6 +2193,13 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         // uma comparação com o que andou.
         pedido:
           'Depois de ver o Dino andar, ponha as duas velocidades em zero e deixe o tempo passar.',
+      },
+      {
+        id: 'still',
+        label: 'Com velocidade zero, o personagem fica no lugar',
+        pedido:
+          'Depois de ver o personagem andar, ponha as duas velocidades em zero e deixe o tempo passar.',
+        soNoCaso: true,
       },
       // ⚠️ As duas do eixo de CIMA E BAIXO nasceram para o Dia 2 do Desafio, onde o tiro sobe: o
       // caso cobrava `left`, e a instrução mandava mexer na velocidade para baixo. Cada uma só cai
@@ -2971,14 +3477,14 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     extra: 'E se você mudar o sol de lado com a sombra e a luz desligadas?',
     goals: [
       {
-        id: 'flat',
-        label: 'Tirou os tons e viu a bola chapada de novo',
-        pedido: 'Ligue a sombra e a luz e depois desligue.',
-      },
-      {
         id: 'volume',
         label: 'Ligou os tons e viu a bola redonda',
         pedido: 'Ligue a sombra e a luz.',
+      },
+      {
+        id: 'flat',
+        label: 'Tirou os tons e viu a bola chapada de novo',
+        pedido: 'Ligue a sombra e a luz e depois desligue.',
       },
       {
         id: 'side',
@@ -3032,6 +3538,17 @@ const PREVIA_INICIAL: ScenePredictionPreview = { initial: true, conceal: [] }
  * nova precisa decidir conscientemente o que mostra antes do palpite.
  */
 const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
+  'once-vs-always': PREVIA_INICIAL,
+  'fixed-vs-read': PREVIA_INICIAL,
+  'collision-pair': PREVIA_INICIAL,
+  invincibility: PREVIA_INICIAL,
+  'number-line': PREVIA_INICIAL,
+  'unique-names': PREVIA_INICIAL,
+  'motion-amount': PREVIA_INICIAL,
+  'two-clocks': PREVIA_INICIAL,
+  'copy-vs-original': PREVIA_INICIAL,
+  'published-copy': PREVIA_INICIAL,
+  'same-rules-new-skin': PREVIA_INICIAL,
   coordinates: PREVIA_INICIAL,
   'screen-reader': {
     initial: true,

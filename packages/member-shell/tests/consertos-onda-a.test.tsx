@@ -47,6 +47,41 @@ const nada = () => {}
 const CACTO: SceneCast = { hero: { name: 'cacto', gender: 'm' } }
 const PEDRA: SceneCast = { hero: { name: 'pedra', gender: 'f', plural: 'pedras' } }
 
+describe('nomes dos blocos que a criança procura no Estúdio', () => {
+  test('controles, som e estado do jogo usam os nomes da paleta', () => {
+    const controls = html(
+      <DinoSceneControls
+        activity={{ type: 'experimentation', scene: 'controls' }}
+        state={mundo({ scene: 'controls' })}
+        dispatch={nada}
+        more={false}
+      />,
+    )
+    const sound = html(
+      <DinoSceneControls
+        activity={{ type: 'experimentation', scene: 'jump-sound' }}
+        state={mundo({ scene: 'jump-sound' })}
+        dispatch={nada}
+        more={false}
+      />,
+    )
+    const gameState = html(
+      <DinoSceneControls
+        activity={{ type: 'experimentation', scene: 'game-state' }}
+        state={mundo({ scene: 'game-state' })}
+        dispatch={nada}
+        more={false}
+      />,
+    )
+    expect(controls).toContain('Quando apertar a tecla')
+    expect(controls).not.toContain('Quando apertar Enter')
+    expect(sound).toContain('Tocar efeito')
+    expect(sound).not.toContain('Tocar som')
+    expect(gameState).toContain('Se o estado do jogo é jogando')
+    expect(gameState).not.toContain('Se jogando')
+  })
+})
+
 describe('velocity: o rastro que se vê (ALTO)', () => {
   /** O caso das Aulas 5 e 12: o cacto na direita da tela, parado. */
   const AULA: Mundo = {
@@ -282,6 +317,22 @@ describe('variable, spawn, score, restart e game-state', () => {
     )
     const noSe = mundo({ scene: 'score' }, { type: 'connect', port: 'condition', enabled: true })
     expect(html(<ScoreStage state={noSe} dispatch={nada} />)).toContain('SEU PLACAR · esperando')
+  })
+
+  test('score: a peça pode morar nos dois relógios, dentro ou fora do Se', () => {
+    const state = mundo({ scene: 'score' }, { type: 'score-place', clock: 'frame', guarded: true })
+    const bancada = html(
+      <DinoSceneControls
+        activity={{ type: 'experimentation', scene: 'score' }}
+        state={state}
+        dispatch={nada}
+        more={false}
+      />,
+    )
+    expect((bancada.match(/data-caixa=/g) ?? []).length).toBe(5)
+    expect(bancada).toContain('A cada quadro do jogo')
+    expect(bancada).toContain('A cada 1 segundos')
+    expect(bancada).toContain('data-caixa="quadro-se"')
   })
 
   test('restart: o palco se chama "Tocar na tela do jogo" e convida na pista vazia', () => {

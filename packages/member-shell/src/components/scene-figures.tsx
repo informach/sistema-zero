@@ -43,7 +43,7 @@ import { ArteSvg } from './scene-arte'
  * ⚠️ A `floresta` do elenco é a ÁRVORE do catálogo: no jogo, "floresta" é o FUNDO (os morros que
  * rolam), e o papel de cenário do Corre Dino sempre foi uma árvore.
  */
-const FIGURA_DA_ARTE: Record<SceneFigure, NomeDaFigura> = {
+const FIGURA_DA_ARTE: Record<Exclude<SceneFigure, 'estrelas'>, NomeDaFigura> = {
   dino: 'dino',
   cacto: 'cacto',
   floresta: 'arvore',
@@ -70,6 +70,8 @@ export function ActorFigure({
   ghost = false,
   escala = 1,
   escuro = false,
+  cor,
+  corSecundaria,
   t,
 }: {
   figure: SceneFigure
@@ -79,6 +81,9 @@ export function ActorFigure({
   ghost?: boolean
   escala?: number
   escuro?: boolean
+  /** Cor do corpo e das asas quando a cena ensina que uma cópia pode ser repintada. */
+  cor?: string
+  corSecundaria?: string
   /**
    * O relógio da cena, em milissegundos.
    *
@@ -91,13 +96,38 @@ export function ActorFigure({
    */
   t?: number
 }) {
+  if (figure === 'estrelas')
+    return (
+      <g
+        data-figure="estrelas"
+        transform={`translate(${x} ${y})${escala === 1 ? '' : ` scale(${escala})`}`}
+        opacity={ghost ? 0.3 : 1}
+      >
+        <rect x={-61} y={-150} width={122} height={152} rx={8} fill="#101d44" />
+        <path
+          d="M-38 -128v10m-5-5h10M20 -135v10m-5-5h10M-8 -108v8m-4-4h8M39 -94v10m-5-5h10M-42 -64v8m-4-4h8M6 -49v10m-5-5h10M44 -26v8m-4-4h8"
+          stroke="#e3edff"
+          strokeWidth={2}
+          strokeLinecap="round"
+        />
+        <circle cx={-14} cy={-77} r={2} fill="#ffe596" />
+        <circle cx={31} cy={-64} r={2} fill="#ffe596" />
+        <circle cx={-31} cy={-23} r={2} fill="#ffe596" />
+      </g>
+    )
   return (
     <g
       data-figure={figure}
       transform={`translate(${x} ${y})${escala === 1 ? '' : ` scale(${escala})`}`}
       opacity={ghost ? 0.3 : 1}
     >
-      <ArteSvg nome={FIGURA_DA_ARTE[figure]} t={t} variante={escuro ? 'escura' : undefined} />
+      <ArteSvg
+        nome={FIGURA_DA_ARTE[figure]}
+        t={t}
+        cor={cor}
+        corSecundaria={corSecundaria}
+        variante={escuro ? 'escura' : undefined}
+      />
     </g>
   )
 }

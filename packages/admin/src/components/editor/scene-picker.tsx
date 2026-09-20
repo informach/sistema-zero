@@ -30,15 +30,21 @@ const GRUPOS: Record<SceneGroup, string> = {
 export function ScenePicker({
   value,
   onChange,
+  mode = 'experimentation',
 }: {
   value: SceneId
   onChange: (scene: SceneId) => void
+  mode?: 'demonstration' | 'experimentation'
 }) {
   const name = useId()
   return (
     <div className="space-y-5">
       {SCENE_GROUPS.map((group) => {
-        const cenas = SCENE_IDS.filter((id) => SCENE_MODELS[id].group === group)
+        const cenas = SCENE_IDS.filter(
+          (id) =>
+            SCENE_MODELS[id].group === group &&
+            (mode === 'experimentation' || SCENE_MODELS[id].script.length > 0),
+        )
         if (!cenas.length) return null
         return (
           <fieldset key={group} className="space-y-2">

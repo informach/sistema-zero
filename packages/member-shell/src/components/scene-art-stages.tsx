@@ -1,14 +1,10 @@
 'use client'
 
 import type { SceneCast, SceneState } from '@sistemazero/core/learning/scene'
-import {
-  actorFigure,
-  cenarioTemChao,
-  quantos,
-  sceneCenario,
-} from '@sistemazero/core/learning/scene'
+import { actorFigure, cenarioTemChao, quantos } from '@sistemazero/core/learning/scene'
 import { FundoDoCenario } from './scene-arte'
 import { SceneCanvas, Texto } from './scene-canvas'
+import { useSceneCenario } from './scene-cenario-context'
 import { ActorFigure, pisoDoMundo } from './scene-figures'
 import { PlacarDoJogo, VidaDoJogo } from './scene-hud'
 
@@ -53,7 +49,7 @@ const EXPLOSAO = 'M0 -16L5 -5L16 -7L8 1L15 11L3 7L0 18L-4 7L-15 11L-8 1L-16 -7L-
 export function LivesStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { lives, points, hits, onHit, last } = state.lifeline
   const acabou = lives === 0
-  const mundo = sceneCenario(cast, 'lives')
+  const mundo = useSceneCenario(cast, 'lives')
   const piso = pisoDoMundo(mundo, CHAO)
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')

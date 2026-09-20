@@ -4,6 +4,8 @@ import {
   actorFigure,
   castText,
   decimal,
+  gameStatePreset,
+  isSpawnPreset,
   SCENE_LIMITS,
   type SceneAction,
   type SceneActivity,
@@ -40,10 +42,10 @@ import { ActorFigure } from './scene-figures'
 const LIMIAR_DO_ARRASTE = 10
 
 /**
- * O símbolo do começo de um nome ("♪ Tocar som", "◷ No relógio, a cada 1 s", "＋ Somar ponto").
+ * O símbolo do começo de um nome ("♪ Tocar efeito", "◷ No relógio, a cada 1 s", "＋ Somar ponto").
  *
  * ⚠️ Ele fica à vista e FORA do nome acessível (consertos do review da onda A do lote 5): o leitor de
- * tela lia "nota musical Tocar som" e "triângulo branco Começar" no meio de cada rótulo.
+ * tela lia "nota musical Tocar efeito" e "triângulo branco Começar" no meio de cada rótulo.
  */
 export function separarSimbolo(texto: string): { simbolo: string; nome: string } {
   const m = /^([^\p{L}\p{N}\s]+)\s+(.+)$/u.exec(texto)
@@ -95,7 +97,7 @@ export function PecaQueMudaDeCaixa<K extends string>({
   emDestaque = true,
   onMover,
 }: {
-  /** O nome do grupo inteiro, como a criança lê ("Onde está Tocar som"). */
+  /** O nome do grupo inteiro, como a criança lê ("Onde está Tocar efeito"). */
   legenda: string
   /** O nome da peça, que é o nome do bloco no Estúdio. Um símbolo no começo fica fora da fala. */
   peca: string
@@ -103,7 +105,7 @@ export function PecaQueMudaDeCaixa<K extends string>({
    * As caixas. ⚠️ Com `aninhada`, a SEGUNDA mora dentro da primeira: é o Se jogando dentro do
    * relógio, como no Estúdio.
    */
-  caixas: readonly [Caixa<K>, Caixa<K>]
+  caixas: readonly [Caixa<K>, Caixa<K>, ...Caixa<K>[]]
   atual: K
   aninhada?: boolean
   /**
@@ -552,8 +554,8 @@ export function DinoSceneControls({
     case 'jump-sound':
       return (
         <PecaQueMudaDeCaixa
-          legenda="Onde está Tocar som"
-          peca="♪ Tocar som"
+          legenda="Onde está Tocar efeito"
+          peca="♪ Tocar efeito"
           caixas={[
             { id: 'tecla', titulo: 'Quando apertar Espaço' },
             { id: 'pulo', titulo: t('Quando o Dino pular') },
@@ -567,6 +569,9 @@ export function DinoSceneControls({
         />
       )
     case 'spawn': {
+      const quadros = isSpawnPreset(activity.setup?.preset) && activity.setup.preset.falling
+      const intervalo = quadros ? Math.round(state.crowd.interval * 30) : state.crowd.interval
+      const opcoes = quadros ? [20, 40, 80] : [0.5, 1, 1.4, 2]
       /**
        * ⚠️⚠️ O intervalo fica FECHADO com a peça fora do relógio (consertos do review da onda A do lote
        * 5): tocar "2 s" ali recomeçava a pista sem relógio nenhum, apagava a parede e o "sem relógio"
@@ -581,21 +586,25 @@ export function DinoSceneControls({
             { id: 'quadro', titulo: 'A cada quadro' },
             {
               id: 'relogio',
-              titulo: `◷ No relógio, a cada ${decimal(state.crowd.interval)} s`,
+              titulo: quadros
+                ? `◷ A cada quadros: ${intervalo}`
+                : `◷ No relógio, a cada ${decimal(state.crowd.interval)} s`,
               dentro: (
                 <Escolha
-                  label="De quanto em quanto tempo"
-                  valor={state.crowd.interval}
+                  label={quadros ? 'Intervalo em quadros' : 'De quanto em quanto tempo'}
+                  valor={intervalo}
                   // ⚠️ O 1,4 s é o do projeto da Aula 5 (lote 5 do Raio-X): a cena não o tinha.
-                  opcoes={[0.5, 1, 1.4, 2].map((seconds) => ({
-                    id: seconds,
-                    label: `${decimal(seconds)} s`,
+                  opcoes={opcoes.map((value) => ({
+                    id: value,
+                    label: quadros ? `${value} quadros` : `${decimal(value)} s`,
                     fechado: !intervaloAberto,
                   }))}
                   nota={
                     intervaloAberto ? undefined : t('Abre quando Criar cacto estiver no relógio.')
                   }
-                  onChange={(seconds) => dispatch({ type: 'interval', seconds })}
+                  onChange={(value) =>
+                    dispatch({ type: 'interval', seconds: quadros ? value / 30 : value })
+                  }
                 />
               ),
             },
@@ -617,7 +626,7 @@ export function DinoSceneControls({
       const aberta = descobriu('invisible-stored') || state.crowd.cleanup || more
       return (
         <Chave
-          label="Remover do grupo quem saiu da tela"
+          label="Tirar do grupo quem sair da tela"
           ligado={state.crowd.cleanup}
           ligadoTexto="ligado"
           desligadoTexto="desligado"
@@ -644,8 +653,14 @@ export function DinoSceneControls({
             peca={t('Criar cacto')}
             aninhada
             caixas={[
-              { id: 'relogio', titulo: '◷ No relógio, a cada 0,6 s' },
-              { id: 'se', titulo: 'Se jogando' },
+              {
+                id: 'relogio',
+                titulo:
+                  gameStatePreset(activity.setup?.preset).clockFrames === 40
+                    ? '◷ No relógio, a cada 40 quadros'
+                    : '◷ No relógio, a cada 0,6 s',
+              },
+              { id: 'se', titulo: 'Se o estado do jogo é jogando' },
             ]}
             atual={state.match.guarded ? 'se' : 'relogio'}
             travada={travada}
@@ -667,13 +682,36 @@ export function DinoSceneControls({
           legenda="Onde está Somar ponto"
           peca="＋ Somar ponto"
           caixas={[
-            { id: 'solto', titulo: 'Em qualquer tela' },
-            { id: 'se', titulo: 'Se jogando' },
+            { id: 'solto', titulo: 'Solto' },
+            { id: 'quadro', titulo: 'A cada quadro do jogo' },
+            { id: 'segundo', titulo: 'A cada 1 segundos' },
+            {
+              id: 'quadro-se',
+              titulo: 'A cada quadro, dentro do bloco “o estado do jogo é jogando ?”',
+            },
+            {
+              id: 'segundo-se',
+              titulo: 'A cada 1 segundos, dentro do bloco “o estado do jogo é jogando ?”',
+            },
           ]}
-          atual={state.match.guarded ? 'se' : 'solto'}
+          atual={
+            state.match.guarded
+              ? state.match.scoreClock === 'frame'
+                ? 'quadro-se'
+                : 'segundo-se'
+              : state.match.scoreClock === 'frame'
+                ? 'quadro'
+                : state.match.scoreClock === 'second'
+                  ? 'segundo'
+                  : 'solto'
+          }
           travada={travada}
           onMover={(caixa) =>
-            dispatch({ type: 'connect', port: 'condition', enabled: caixa === 'se' })
+            dispatch({
+              type: 'score-place',
+              clock: caixa === 'solto' ? 'loose' : caixa.startsWith('quadro') ? 'frame' : 'second',
+              guarded: caixa.endsWith('-se'),
+            })
           }
         />
       )
@@ -701,7 +739,7 @@ export function DinoSceneControls({
             legenda="Onde está Começar"
             peca="▷ Começar"
             caixas={[
-              { id: 'enter', titulo: 'Quando apertar Enter' },
+              { id: 'enter', titulo: 'Quando apertar a tecla' },
               { id: 'toque', titulo: 'Quando apertar qualquer tecla ou tocar na tela' },
             ]}
             atual={state.match.touch ? 'toque' : 'enter'}

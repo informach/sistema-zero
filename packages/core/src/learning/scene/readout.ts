@@ -22,12 +22,15 @@ import {
   DELTA_RACE,
   HITBOX_DINO_SIZE,
   MESH_POINTS,
+  numberLineAnswer,
   SCREEN_READER_EMPTY,
   type SceneState,
   sceneAreaPercent,
   sceneCactiOnScreen,
   sceneContact,
   sceneDrawingsGap,
+  UNIQUE_NAME_WARNINGS,
+  uniqueNamesWarning,
 } from './state'
 
 /**
@@ -170,6 +173,122 @@ export function sceneReadout(
 
 function leituras(scene: SceneId, state: SceneState, pilha?: ScenePilha): SceneReading[] {
   switch (scene) {
+    case 'fixed-vs-read':
+      return [
+        { label: 'centro x da nave', value: String(state.fixedRead.heroX), tone: 'a' },
+        {
+          label: 'x do tiro',
+          value: state.fixedRead.source === 'fixed' ? 'número 400' : 'ler centro x',
+          tone: 'b',
+        },
+        { label: 'marcas', value: String(state.fixedRead.marks.length), tone: 'plain' },
+      ]
+    case 'collision-pair':
+      return [
+        { label: 'pedras no grupo', value: String(state.collisionPair.rocks.length), tone: 'a' },
+        { label: 'tiros no grupo', value: String(state.collisionPair.shots.length), tone: 'b' },
+        { label: 'quadro', value: String(state.collisionPair.frames), tone: 'plain' },
+      ]
+    case 'invincibility':
+      return [
+        { label: 'vidas', value: String(state.invincibility.hearts), tone: 'a' },
+        {
+          label: 'proteção',
+          value: `${state.invincibility.remaining} quadros restando`,
+          tone: 'b',
+        },
+        { label: 'quadro', value: String(state.invincibility.frames), tone: 'plain' },
+      ]
+    case 'number-line':
+      return [
+        { label: 'velocidade', value: String(state.numberLine.value), tone: 'a' },
+        {
+          label: 'pergunta',
+          value: `${state.numberLine.value} ${state.numberLine.operator} -9`,
+          tone: 'b',
+        },
+        {
+          label: 'resposta',
+          value: numberLineAnswer(state.numberLine) ? 'sim ✓' : 'não ✕',
+          tone: numberLineAnswer(state.numberLine) ? 'a' : 'alert',
+        },
+      ]
+    case 'unique-names': {
+      const warning = uniqueNamesWarning(state.uniqueNames)
+      return [
+        {
+          label: 'criador nave',
+          value: state.uniqueNames.topPresent ? 'presente' : 'retirado',
+          tone: 'a',
+        },
+        { label: 'nome da folha', value: state.uniqueNames.bottomName || 'vazio', tone: 'b' },
+        {
+          label: 'prévia',
+          value: warning ? 'parada na última versão' : 'voando',
+          tone: warning ? 'alert' : 'plain',
+        },
+      ]
+    }
+    case 'motion-amount':
+      return [
+        { label: 'cratera anda', value: String(state.motionAmount.crater), tone: 'a' },
+        { label: 'pedra inteira anda', value: String(state.motionAmount.body), tone: 'b' },
+        {
+          label: 'Prévia',
+          value: state.motionAmount.playing ? 'tocando · 8 por segundo' : 'parada',
+          tone: 'plain',
+        },
+      ]
+    case 'two-clocks':
+      return [
+        { label: 'pedras que nasceram', value: String(state.twoClocks.born), tone: 'a' },
+        { label: 'nascimento', value: `a cada ${state.twoClocks.birthEvery} quadros`, tone: 'b' },
+        {
+          label: 'giro',
+          value: `${state.twoClocks.animationRate} desenhos por segundo`,
+          tone: 'plain',
+        },
+      ]
+    case 'copy-vs-original':
+      return [
+        { label: 'jogo da aula', value: state.copies.lessonColor, tone: 'a' },
+        { label: 'arquivo', value: state.copies.fileColor ?? 'ainda não existe', tone: 'plain' },
+        { label: 'projeto no Estúdio', value: state.copies.studioColor ?? 'vazio', tone: 'b' },
+      ]
+    case 'published-copy':
+      return [
+        { label: 'seu projeto', value: state.copies.projectColor, tone: 'a' },
+        { label: 'publicações no Mural', value: String(state.copies.posts.length), tone: 'b' },
+        {
+          label: 'última publicação',
+          value: state.copies.posts.at(-1)?.color ?? 'nenhuma',
+          tone: 'plain',
+        },
+      ]
+    case 'same-rules-new-skin':
+      return [
+        {
+          label: 'tema',
+          value: { space: 'nave', road: 'carrinho', sea: 'submarino' }[state.skinGame.theme],
+          tone: 'a',
+        },
+        {
+          label: 'regra de atirar',
+          value: state.skinGame.shootEnabled ? 'ligada' : 'desligada',
+          tone: state.skinGame.shootEnabled ? 'b' : 'alert',
+        },
+        { label: 'vidas', value: String(state.skinGame.lives), tone: 'plain' },
+      ]
+    case 'once-vs-always':
+      return [
+        { label: 'quadro', value: String(state.once.frames), tone: 'plain' },
+        { label: 'personagens', value: String(state.once.heroCount), tone: 'a' },
+        {
+          label: 'ações disparadas',
+          value: String(Object.values(state.once.fires).reduce((a, b) => a + b, 0)),
+          tone: 'b',
+        },
+      ]
     case 'coordinates':
       // A faixa que a cena inteira existe para criar: o par que ela vai digitar no bloco.
       // ⚠️ Sem "tela 480 por 270": o par nunca mudava e só repetia o que a régua já desenha.
@@ -427,12 +546,20 @@ function leituras(scene: SceneId, state: SceneState, pilha?: ScenePilha): SceneR
       ]
     case 'game-state':
       return [
-        { label: 'tela', value: TELA[state.match.screen] ?? state.match.screen, tone: 'a' },
-        // Onde a PEÇA está (lote 5 do Raio-X): "relógio dentro de Se jogando: desligada".
         {
-          label: 'Criar cacto está',
-          value: state.match.guarded ? 'dentro de Se jogando' : 'fora do Se',
-          tone: 'b',
+          label: 'toques do relógio',
+          value: String(Math.floor((state.crowd.elapsed + 1e-9) / state.crowd.interval)),
+          tone: 'a',
+        },
+        { label: 'nascimentos', value: String(state.crowd.born), tone: 'b' },
+        {
+          label: 'condição',
+          value: state.match.guarded
+            ? state.match.screen === 'playing'
+              ? 'verdadeira'
+              : 'falsa'
+            : 'sem pergunta',
+          tone: 'plain',
         },
       ]
     case 'controls':
@@ -484,7 +611,7 @@ function leituras(scene: SceneId, state: SceneState, pilha?: ScenePilha): SceneR
         // ⚠️ "solto", e não "fora de Se jogando" (lote 5): a peça fica numa caixa de "qualquer tela".
         {
           label: 'Somar ponto',
-          value: state.match.guarded ? 'dentro de Se jogando' : 'solto',
+          value: state.match.guarded ? 'dentro do Se' : 'solto',
           tone: 'plain',
         },
         { label: 'pontos', value: String(state.match.points), tone: 'b' },
@@ -839,6 +966,32 @@ function situacao(scene: SceneId, state: SceneState): string {
   if (c) return c
   const onde = ONDE[state.match.screen] ?? 'Na tela de início'
   switch (scene) {
+    case 'fixed-vs-read':
+      return `A nave está em x ${state.fixedRead.heroX}. O próximo tiro usa ${state.fixedRead.source === 'fixed' ? 'o número 400' : 'o centro x da nave'}. Há ${state.fixedRead.marks.length} marcas de nascimento.`
+    case 'collision-pair':
+      return `Há ${state.collisionPair.rocks.length} pedras e ${state.collisionPair.shots.length} tiros nos grupos. Quadro ${state.collisionPair.frames}.`
+    case 'invincibility':
+      return `Quadro ${state.invincibility.frames}. A nave tem ${state.invincibility.hearts} vidas e ${state.invincibility.remaining} quadros de proteção restando. ${state.invincibility.struck.length} pedras já bateram.`
+    case 'number-line':
+      return `O marcador está em ${state.numberLine.value}. A frase velocidade ${state.numberLine.operator} -9 responde ${numberLineAnswer(state.numberLine) ? 'sim' : 'não'}. Somar -1 foi apertado ${state.numberLine.presses} vezes.`
+    case 'unique-names': {
+      const warning = uniqueNamesWarning(state.uniqueNames)
+      return warning
+        ? `${UNIQUE_NAME_WARNINGS[warning]}. A prévia segura a última versão que funcionava.`
+        : `O bloco de cima cria nave. A folha se chama ${state.uniqueNames.bottomName || 'nenhum nome ainda'}. A prévia está voando.`
+    }
+    case 'motion-amount':
+      return `Os dois quadros alternam ${state.motionAmount.playing ? '8 vezes por segundo' : 'com a Prévia parada'}. A cratera anda ${state.motionAmount.crater} e o corpo anda ${state.motionAmount.body} no segundo quadro.`
+    case 'two-clocks':
+      return `Quadro ${state.twoClocks.frames}. Nasceram ${state.twoClocks.born} pedras; cada uma troca desenhos a ${state.twoClocks.animationRate} por segundo. A última nasceu no quadro ${state.twoClocks.lastBornAt}.`
+    case 'copy-vs-original':
+      return `O jogo da aula está ${state.copies.lessonColor}. ${state.copies.fileColor ? 'O arquivo foi exportado.' : 'Ainda não há arquivo.'} ${state.copies.studioColor ? `O projeto do Estúdio está ${state.copies.studioColor}.` : 'O Estúdio ainda não tem projeto.'}`
+    case 'published-copy':
+      return `Seu projeto está ${state.copies.projectColor}. O Mural tem ${state.copies.posts.length} ${state.copies.posts.length === 1 ? 'publicação' : 'publicações'}; ${state.copies.posts.length ? `a mais recente está ${state.copies.posts.at(-1)?.color}.` : 'a tela está vazia.'}`
+    case 'same-rules-new-skin':
+      return `Tema ${{ space: 'nave no espaço', road: 'carrinho na estrada', sea: 'submarino no mar' }[state.skinGame.theme]}. As setas movem; a tecla de tiro está ${state.skinGame.shootEnabled ? 'ligada' : 'desligada'}. O obstáculo vem de cima; encostou, perde uma vida. Vidas: ${state.skinGame.lives}.`
+    case 'once-vs-always':
+      return `Quadro ${state.once.frames}: ${state.once.heroCount} personagens, ${state.once.shots} tiros e ${state.once.hearts} vidas.`
     case 'coordinates':
       return `O Dino está em x ${state.place.x}, y ${state.place.y}.`
     case 'stage-size': {
@@ -874,7 +1027,9 @@ function situacao(scene: SceneId, state: SceneState): string {
     // inteiros", "o passo de 40 é chute", "cada traço fica só do lado em que você pintar").
     case 'frames':
       return state.animation.playing
-        ? `A prévia troca ${quantos(state.animation.rate, 'quadro', 'quadros')} por segundo.`
+        ? state.animation.sameFrames
+          ? `A prévia troca ${quantos(state.animation.rate, 'quadro', 'quadros')} por segundo, mas os dois quadros são iguais.`
+          : `A prévia troca ${quantos(state.animation.rate, 'quadro', 'quadros')} por segundo.`
         : `Na tela, com a prévia parada: o quadro ${state.animation.frame}.`
     case 'onion-skin':
       return state.animation.onion
@@ -968,7 +1123,7 @@ function situacao(scene: SceneId, state: SceneState): string {
       // ⚠️⚠️ Com as metas feitas e a peça de volta na tecla, a frase diz o que falta (consertos do review
       // da onda A do lote 5), como na `layers`: a cena não concluía e ninguém dizia por quê.
       if (!state.sound.onJump && state.evidence.discoveries.includes('every-jump'))
-        return `${quantos(state.sound.jumps, 'pulo', 'pulos')} e ${quantos(state.sound.count, 'som', 'sons')}. Leve Tocar som de volta para Quando o Dino pular, como fica no jogo.`
+        return `${quantos(state.sound.jumps, 'pulo', 'pulos')} e ${quantos(state.sound.count, 'som', 'sons')}. Leve Tocar efeito de volta para Quando o Dino pular, como fica no jogo.`
       return state.sound.jumps + state.sound.count === 0
         ? 'Nenhum pulo e nenhum som ainda.'
         : `${quantos(state.sound.jumps, 'pulo', 'pulos')} e ${quantos(state.sound.count, 'som', 'sons')}.`
@@ -1017,7 +1172,7 @@ function situacao(scene: SceneId, state: SceneState): string {
         : 'As áreas encostaram, e os desenhos também.'
     }
     case 'score':
-      return `${onde}, Somar ponto está ${state.match.guarded ? 'dentro de Se jogando' : 'solto'}, e o placar está em ${state.match.points}.`
+      return `${onde}, Somar ponto está ${state.match.guarded ? 'dentro do Se' : 'fora do Se'}, ${state.match.scoreClock === 'frame' ? 'a cada quadro' : state.match.scoreClock === 'second' ? 'a cada segundo' : 'solto'}, e o placar está em ${state.match.points}.`
     case 'random': {
       const { spots, samples } = state.speed
       const diferentes = spots.filter((n) => n > 0).length

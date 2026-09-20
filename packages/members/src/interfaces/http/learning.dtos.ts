@@ -31,6 +31,84 @@ const Choices = t.Array(t.Object({ id: t.String({ minLength: 1, maxLength: 80 })
  */
 const L = SCENE_LIMITS
 const SceneActionSchema = t.Union([
+  t.Object({
+    type: t.Literal('place-in-area'),
+    card: t.Union([
+      t.Literal('paint'),
+      t.Literal('create'),
+      t.Literal('move'),
+      t.Literal('event'),
+      t.Literal('lives'),
+    ]),
+    area: t.Union([
+      t.Literal('outside'),
+      t.Literal('start'),
+      t.Literal('loop'),
+      t.Literal('event'),
+    ]),
+  }),
+  t.Object({ type: t.Literal('trigger') }),
+  t.Object({
+    type: t.Literal('value-source'),
+    source: t.Union([t.Literal('fixed'), t.Literal('read')]),
+  }),
+  t.Object({ type: t.Literal('box-marks'), on: t.Boolean() }),
+  t.Object({ type: t.Literal('clear-marks') }),
+  t.Object({
+    type: t.Literal('command-target'),
+    subject: t.Union([t.Literal('shot'), t.Literal('rock')]),
+    target: t.Union([t.Literal('group'), t.Literal('alias')]),
+  }),
+  t.Object({
+    type: t.Literal('shield'),
+    frames: t.Union([t.Literal(0), t.Literal(15), t.Literal(45), t.Literal(90)]),
+  }),
+  t.Object({ type: t.Literal('advance-to') }),
+  t.Object({ type: t.Literal('step-value'), value: t.Integer({ minimum: -12, maximum: 0 }) }),
+  t.Object({ type: t.Literal('sum-minus-one') }),
+  t.Object({
+    type: t.Literal('compare-op'),
+    operator: t.Union([t.Literal('>'), t.Literal('='), t.Literal('<')]),
+  }),
+  t.Object({ type: t.Literal('toggle-block'), present: t.Boolean() }),
+  t.Object({
+    type: t.Literal('name-field'),
+    name: t.Union([t.Literal(''), t.Literal('nave'), t.Literal('folha-nave'), t.Literal('nave2')]),
+  }),
+  t.Object({
+    type: t.Literal('nudge'),
+    piece: t.Union([t.Literal('crater'), t.Literal('body')]),
+    amount: t.Integer({ minimum: 0, maximum: 12 }),
+  }),
+  t.Object({
+    type: t.Literal('birth-every'),
+    frames: t.Union([t.Literal(20), t.Literal(40), t.Literal(80)]),
+  }),
+  t.Object({
+    type: t.Union([
+      t.Literal('export-file'),
+      t.Literal('import-file'),
+      t.Literal('publish'),
+      t.Literal('open-mural'),
+    ]),
+  }),
+  t.Object({
+    type: t.Literal('recolor'),
+    side: t.Union([t.Literal('lesson'), t.Literal('studio'), t.Literal('project')]),
+    color: t.Union([
+      t.Literal('azul'),
+      t.Literal('rosa'),
+      t.Literal('verde'),
+      t.Literal('laranja'),
+    ]),
+  }),
+  t.Object({
+    type: t.Literal('skin'),
+    theme: t.Union([t.Literal('space'), t.Literal('road'), t.Literal('sea')]),
+  }),
+  t.Object({ type: t.Literal('rule-toggle'), enabled: t.Boolean() }),
+  t.Object({ type: t.Literal('play-move'), direction: t.Union([t.Literal(-1), t.Literal(1)]) }),
+  t.Object({ type: t.Literal('play-shoot') }),
   t.Object({ type: t.Literal('create') }),
   t.Object({
     type: t.Literal('connect'),
@@ -104,7 +182,7 @@ const SceneActionSchema = t.Union([
   t.Object({ type: t.Literal('play'), on: t.Boolean() }),
   t.Object({
     type: t.Literal('rate'),
-    perSecond: t.Number({ minimum: L.rate.min, maximum: L.rate.max }),
+    perSecond: t.Number({ minimum: L.rate.min, maximum: Math.max(L.rate.max, 16) }),
   }),
   t.Object({ type: t.Literal('onion'), on: t.Boolean() }),
   t.Object({
@@ -140,6 +218,13 @@ const SceneActionSchema = t.Union([
     y: t.Integer({ minimum: L.paperCell.min, maximum: L.paperCell.max }),
   }),
   t.Object({ type: t.Literal('clear-paper') }),
+  t.Object({
+    type: t.Literal('score-place'),
+    clock: t.Union([t.Literal('loose'), t.Literal('frame'), t.Literal('second')]),
+    guarded: t.Boolean(),
+  }),
+  t.Object({ type: t.Literal('same-frames'), on: t.Boolean() }),
+  t.Object({ type: t.Literal('fill') }),
   t.Object({
     type: t.Literal('crop'),
     width: t.Union(SHEET_CROP_WIDTHS.map((w) => t.Literal(w))),
@@ -310,6 +395,76 @@ const SceneSetupActions = t.Array(SceneActionSchema, {
 })
 const SceneSetupSchema = t.Object({
   actions: t.Optional(SceneSetupActions),
+  preset: t.Optional(
+    t.Union([
+      t.Object({
+        id: t.Union([
+          t.Literal('duas-caixas-nave'),
+          t.Literal('tres-caixas-tiro'),
+          t.Literal('uma-ficha-vidas'),
+          t.Literal('duas-caixas-dino'),
+          t.Literal('tres-caixas-som'),
+        ]),
+        areas: t.Array(t.Union([t.Literal('start'), t.Literal('loop'), t.Literal('event')]), {
+          minItems: 2,
+          maxItems: 3,
+        }),
+        cards: t.Array(
+          t.Object({
+            id: t.Union([
+              t.Literal('paint'),
+              t.Literal('create'),
+              t.Literal('move'),
+              t.Literal('event'),
+              t.Literal('lives'),
+            ]),
+            kind: t.Union([
+              t.Literal('paint'),
+              t.Literal('create'),
+              t.Literal('move'),
+              t.Literal('shot'),
+              t.Literal('sound'),
+              t.Literal('lives'),
+            ]),
+            label: t.String({ minLength: 1, maxLength: 80 }),
+          }),
+          { minItems: 1, maxItems: 4 },
+        ),
+        hitEveryFrames: t.Optional(t.Integer({ minimum: 1, maximum: 30 })),
+      }),
+      t.Object({
+        id: t.Union([t.Literal('cacto-direita'), t.Literal('pedra-acima')]),
+        axis: t.Union([t.Literal('right'), t.Literal('above')]),
+        speedModule: t.Boolean(),
+      }),
+      t.Object({
+        id: t.Union([t.Literal('cacto-segundos'), t.Literal('pedra-quadros')]),
+        unit: t.Union([t.Literal('seconds'), t.Literal('frames')]),
+        intervals: t.Array(t.Number(), { minItems: 3, maxItems: 4 }),
+        falling: t.Boolean(),
+      }),
+      t.Object({
+        id: t.Union([t.Literal('cacto-esquerda'), t.Literal('tiro-cima')]),
+        exit: t.Union([t.Literal('left'), t.Literal('top')]),
+        incoming: t.Boolean(),
+      }),
+      t.Object({
+        id: t.Union([t.Literal('cacto-18-quadros'), t.Literal('pedra-40-quadros')]),
+        clockFrames: t.Union([t.Literal(18), t.Literal(40)]),
+        waitingSeconds: t.Union([t.Literal(2), t.Literal(4)]),
+        moment: t.Union([t.Literal('state'), t.Literal('screen')]),
+      }),
+    ]),
+  ),
+  goalCopy: t.Optional(
+    t.Record(
+      t.String({ minLength: 1, maxLength: 80 }),
+      t.Object({
+        label: t.Optional(t.String({ minLength: 1, maxLength: 160 })),
+        pedido: t.Optional(t.String({ minLength: 1, maxLength: 300 })),
+      }),
+    ),
+  ),
   goals: t.Optional(
     t.Array(t.String({ minLength: 1, maxLength: 80 }), {
       minItems: 1,

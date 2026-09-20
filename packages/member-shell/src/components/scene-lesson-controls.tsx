@@ -1,15 +1,32 @@
 'use client'
 
-import type { SceneAction, SceneCast, SceneId, SceneState } from '@sistemazero/core/learning/scene'
-import { castText, SCENE_LIMITS } from '@sistemazero/core/learning/scene'
+import type {
+  SceneAction,
+  SceneCast,
+  SceneCenarioId,
+  SceneId,
+  ScenePreset,
+  SceneState,
+} from '@sistemazero/core/learning/scene'
+import { castText, oncePreset, SCENE_LIMITS } from '@sistemazero/core/learning/scene'
 import { Ear } from 'lucide-react'
 import { SceneButton } from './exploration-stage'
 import { AtelieSceneControls } from './scene-atelie-controls'
 import { Escolha, Medida } from './scene-bench'
+import { CollisionPairControls } from './scene-collision-pair'
+import { CopyVsOriginalControls, PublishedCopyControls } from './scene-copies'
 import { CoreSceneControls } from './scene-core-controls'
 import { DinoNumbersControls } from './scene-dino-numbers-controls'
+import { FixedVsReadControls } from './scene-fixed-vs-read'
+import { InvincibilityControls } from './scene-invincibility'
+import { MotionAmountControls } from './scene-motion-amount'
 import { MotorSceneControls } from './scene-motor-controls'
 import { NucleoSceneControls } from './scene-nucleo-controls'
+import { NumberLineControls } from './scene-number-line'
+import { OnceVsAlwaysControls } from './scene-once-vs-always'
+import { SameRulesControls } from './scene-same-rules'
+import { TwoClocksControls } from './scene-two-clocks'
+import { UniqueNamesControls } from './scene-unique-names'
 
 /**
  * A BANCADA das cenas de aula: os controles de cada cena, fora do player.
@@ -34,15 +51,18 @@ export function LessonSceneControls({
   state,
   dispatch,
   cast,
+  cenario,
   goals,
   tocando,
   onRunning,
   pontoPorAcerto = false,
+  preset,
 }: {
   scene: SceneId
   state: SceneState
   dispatch: (action: SceneAction) => void
   cast?: SceneCast
+  cenario?: SceneCenarioId
   /**
    * As metas desta atividade, já avaliadas. ⚠⚠ Uma variável por vez: na `hitbox` a largura da
    * área nasce FECHADA e abre com a primeira descoberta sobre distância. Fechado não é
@@ -61,10 +81,28 @@ export function LessonSceneControls({
    * "Agora é sua vez" dá o tiro na bancada. Ver `ExplorationPieces`.
    */
   pontoPorAcerto?: boolean
+  preset?: ScenePreset
 }) {
   const m = scene
   return (
     <>
+      {m === 'once-vs-always' && (
+        <OnceVsAlwaysControls state={state} preset={oncePreset(preset)} dispatch={dispatch} />
+      )}
+      {m === 'fixed-vs-read' && <FixedVsReadControls state={state} dispatch={dispatch} />}
+      {m === 'collision-pair' && <CollisionPairControls state={state} dispatch={dispatch} />}
+      {m === 'invincibility' && <InvincibilityControls state={state} dispatch={dispatch} />}
+      {m === 'number-line' && <NumberLineControls state={state} dispatch={dispatch} />}
+      {m === 'unique-names' && <UniqueNamesControls state={state} dispatch={dispatch} />}
+      {m === 'motion-amount' && (
+        <MotionAmountControls state={state} dispatch={dispatch} onRunning={onRunning} />
+      )}
+      {m === 'two-clocks' && <TwoClocksControls state={state} dispatch={dispatch} />}
+      {m === 'copy-vs-original' && <CopyVsOriginalControls state={state} dispatch={dispatch} />}
+      {m === 'published-copy' && <PublishedCopyControls state={state} dispatch={dispatch} />}
+      {m === 'same-rules-new-skin' && (
+        <SameRulesControls state={state} dispatch={dispatch} onRunning={onRunning} />
+      )}
       {/* ⚠️ O deslizante do impulso SAIU daqui (lote 5 do Raio-X): mora na bancada do Corre Dino
           (`scene-dino-controls`), com as marcas, e a `gravity` deixou de mostrá-lo travado. */}
       {/* A `velocity` e a `variable`, que ficaram no arquivo do núcleo. */}
@@ -252,8 +290,10 @@ export function LessonSceneControls({
         state={state}
         dispatch={dispatch}
         cast={cast}
+        cenario={cenario}
         goals={goals}
         onRunning={onRunning}
+        preset={preset}
         pontoPorAcerto={pontoPorAcerto}
       />
     </>

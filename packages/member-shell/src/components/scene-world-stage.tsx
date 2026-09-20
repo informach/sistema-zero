@@ -7,10 +7,10 @@ import {
   type SceneCast,
   type SceneCenarioId,
   type SceneState,
-  sceneCenario,
 } from '@sistemazero/core/learning/scene'
 import { FundoDoCenario } from './scene-arte'
 import { SceneCanvas, Texto } from './scene-canvas'
+import { useSceneCenario } from './scene-cenario-context'
 import { ActorFigure } from './scene-figures'
 
 /**
@@ -77,7 +77,7 @@ export function WorldStage({ state, cast }: { state: SceneState; cast?: SceneCas
   // O palco repete a regra do motor: só um personagem criado pode aparecer na tela do jogo.
   const naTela = created && drawn
   const heroi = actorFigure(cast, 'hero')
-  const mundo = sceneCenario(cast, 'world')
+  const mundo = useSceneCenario(cast, 'world')
   const espaco = !cenarioTemChao(mundo)
   const jogo = NO_JOGO[mundo]
   // ⚠️ O nome da ficha é o do BLOCO do Estúdio, em minúsculas ("dino", "nave").

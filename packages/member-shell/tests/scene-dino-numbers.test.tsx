@@ -80,11 +80,30 @@ describe('restart', () => {
         onRunning={nada}
       />,
     )
-    expect(bancada).toContain('Ir para o início')
+    expect(bancada).toContain('Mudar o estado do jogo para inicio')
     expect(bancada).toContain('Reiniciar o jogo')
     expect(bancada).not.toContain('aria-pressed')
     expect(bancada).toContain('aria-disabled="true"')
     expect(bancada).toContain('aria-describedby="restart-toque-nota"')
+  })
+
+  test('no cenário da nave, o gesto visível é Enter', () => {
+    const state = mundo('restart')
+    const stage = html(<RestartStage state={state} cast={NAVE} dispatch={nada} />)
+    const controls = html(
+      <DinoNumbersControls
+        scene="restart"
+        state={state}
+        cast={NAVE}
+        dispatch={nada}
+        goals={[]}
+        onRunning={nada}
+      />,
+    )
+    expect(stage).toContain('aria-label="Apertar Enter no jogo"')
+    expect(stage).toContain('Enter para começar')
+    expect(controls).toContain('Apertar Enter')
+    expect(controls).toContain('No fim, o Enter faz')
   })
 })
 
@@ -153,7 +172,7 @@ describe('hitbox e random: fechado não é escondido', () => {
       />,
     )
     expect(bancada).toContain('Tamanho da área do Dino')
-    expect(bancada).toContain('130%')
+    expect(bancada).toContain('100%')
     expect(bancada).toContain('Abre depois que você aproximar o cacto um toque de cada vez.')
     // A nota não entrega QUANDO bate (é a pergunta da previsão).
     expect(bancada).not.toMatch(/antes de os desenhos/i)
@@ -185,6 +204,15 @@ describe('velocity', () => {
 })
 
 describe('variable', () => {
+  test('o rótulo desenhado acompanha o jogo da aula', () => {
+    const changed = mundo('variable', { type: 'store', value: 3 }, { type: 'show', on: true })
+    const dino = html(<VariableStage state={changed} />)
+    expect(dino).toContain('placar')
+    expect(dino).not.toContain('Pontos:')
+    const desafio = html(<VariableStage state={changed} cast={NAVE} />)
+    expect(desafio).toContain('Pontos:')
+  })
+
   test('⚠️⚠️ os três blocos acendem conforme acontecem, e a caixa só existe depois de criada', () => {
     const antes = html(<VariableStage state={mundo('variable')} cast={NAVE} />)
     expect(antes).toContain('ainda não existe')

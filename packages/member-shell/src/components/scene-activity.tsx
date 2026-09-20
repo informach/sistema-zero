@@ -351,8 +351,23 @@ export function SceneActivityView({
   // painel Camadas do Pinta, e o "Conferir" repete o pedido.
   const result = demo
     ? evaluateDemonstration(demo.viewed)
-    : evaluateExperimentation(activity.scene, state, true, activity.cast, targets, activity.pilha)
-  const goals = sceneGoals(activity.scene, state, activity.cast, targets, activity.pilha)
+    : evaluateExperimentation(
+        activity.scene,
+        state,
+        true,
+        activity.cast,
+        targets,
+        activity.pilha,
+        activity.setup?.goalCopy,
+      )
+  const goals = sceneGoals(
+    activity.scene,
+    state,
+    activity.cast,
+    targets,
+    activity.pilha,
+    activity.setup?.goalCopy,
+  )
   const feitas = goals.filter((g) => g.complete).length
   const temPergunta = Boolean(content.checkpoint)
   /** "Ligar som" só onde há som: a régua é do core (ver `sceneEmitsSound`). */
@@ -1236,9 +1251,11 @@ export function SceneActivityView({
         )}
         <LessonSceneControls
           scene={m}
+          preset={activity.setup?.preset}
           state={visto}
           dispatch={dispatch}
           cast={activity.cast}
+          cenario={activity.cenario}
           goals={goals}
           tocando={running}
           onRunning={setRunning}
@@ -1665,7 +1682,9 @@ export function SceneActivityView({
                     }}
                   >
                     <RotateCcw size={16} aria-hidden />
-                    <span className="max-[30rem]:sr-only">Recomeçar</span>
+                    <span className={m === 'once-vs-always' ? '' : 'max-[30rem]:sr-only'}>
+                      {m === 'once-vs-always' ? 'Voltar ao começo' : 'Recomeçar'}
+                    </span>
                   </SceneButton>
                   {/* ⚠️⚠️ "Uma pista" SOME depois de concluir (a caixa da pista já sumia, e o botão
                       virava um clique mudo que ainda CONTAVA pista no relatório do professor) e fica

@@ -21,7 +21,6 @@ import {
   quantos,
   rechargeWords,
   SCENE_LIMITS,
-  sceneCenario,
   TILEMAP_DINO_COLUMN,
   tilemapLanding,
 } from '@sistemazero/core/learning/scene'
@@ -37,6 +36,7 @@ import {
   Texto,
   SCENE_VIEW as VIEW,
 } from './scene-canvas'
+import { useSceneCenario } from './scene-cenario-context'
 import { ActorFigure, ArvoreDoMundo, pisoDoMundo } from './scene-figures'
 import { CoracaoDoJogo } from './scene-hud'
 
@@ -250,7 +250,7 @@ function lugarDoCacto(id: number, distancia: number) {
 export function GroupLoopStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { distances, looked, chosen, auto, blind, measured } = state.hunt
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneCenario(cast, 'group-loop')
+  const mundo = useSceneCenario(cast, 'group-loop')
   const piso = pisoDoMundo(mundo, 0)
   const medidos = [...looked].sort((a, b) => a - b)
   // ⚠️⚠️ A régua mostra a FOTO da medida (consertos do review da onda B do lote 5): sem o laço ela fica
@@ -455,7 +455,7 @@ const RAIAS_DA_FICHA = [190, 284] as const
 export function EnemyTypeStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { speed, life, cacti, copy } = state.blueprint
   const obstaculo = actorFigure(cast, 'obstacle')
-  const mundo = sceneCenario(cast, 'enemy-type')
+  const mundo = useSceneCenario(cast, 'enemy-type')
   const clip = useId()
   const naTelaLista = cacti.filter((c) => enemyOnScreen(c.x)).sort((a, b) => a.x - b.x)
   const naTela = naTelaLista.length
@@ -683,7 +683,7 @@ export function CameraStage({ state, cast }: { state: SceneState; cast?: SceneCa
   const escalaTela = TELA.w / CAMERA_WORLD.screen
   const escalaMapa = MAPA.w / CAMERA_WORLD.width
   const dentro = heroX >= janela && heroX <= janela + CAMERA_WORLD.screen
-  const mundo = sceneCenario(cast, 'camera')
+  const mundo = useSceneCenario(cast, 'camera')
   const espaco = !cenarioTemChao(mundo)
   const clip = useId()
   const chao = TELA.y + TELA.h - 16
@@ -828,7 +828,7 @@ export function CameraStage({ state, cast }: { state: SceneState; cast?: SceneCa
 export function ContactStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { distance, top, bottom, frames } = state.hit
   const encostando = contactTouching(distance)
-  const mundo = sceneCenario(cast, 'contact')
+  const mundo = useSceneCenario(cast, 'contact')
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
   const DINO = 100
@@ -929,7 +929,7 @@ const BOCA = { x: 112, y: 150 } as const
 export function CooldownStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { seconds, ready, shots, refused, bullets, time, refusedAt } = state.weapon
   const cheio = seconds > 0 ? 1 - ready / seconds : 1
-  const mundo = sceneCenario(cast, 'cooldown')
+  const mundo = useSceneCenario(cast, 'cooldown')
   const piso = pisoDoMundo(mundo, 176)
   // ⚠️ Um segundo, e não meio (consertos do review da onda B do lote 5): sumia antes de a criança olhar.
   // A bancada mostra o mesmo aviso ao lado do botão, onde os olhos estão.
@@ -1058,7 +1058,7 @@ export function AimStage({
   dispatch?: (action: SceneAction) => void
 }) {
   const { targetX, targetY, chasing, flying, bulletX, bulletY, result, shotX, shotY } = state.sight
-  const mundo = sceneCenario(cast, 'aim')
+  const mundo = useSceneCenario(cast, 'aim')
   // A caixa com a MESMA proporção do desenho, por cima dele: é por ela que o dedo vira x e y.
   const caixaRef = useRef<HTMLDivElement>(null)
   const arrasto = useRef<{ id: number; x: number; y: number; moveu: boolean } | null>(null)
@@ -1314,7 +1314,7 @@ const NOME_DA_ANDADA = { reto: 'reto', diagonal: 'diagonal', corrigida: 'com cor
  */
 export function DiagonalStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { x, y, last, ghosts, distance, strides } = state.walkPad
-  const mundo = sceneCenario(cast, 'diagonal')
+  const mundo = useSceneCenario(cast, 'diagonal')
   const fim = naAndada(x, y)
   const pontos = Math.max(1, Math.round(distance / 10))
   const raio = DIAGONAL_REACH * ESCALA_DA_ANDADA
@@ -1519,7 +1519,7 @@ export function TilemapStage({
   dispatch?: (action: SceneAction) => void
 }) {
   const { rows, lastRow, lastCol } = state.grid
-  const mundo = sceneCenario(cast, 'tilemap')
+  const mundo = useSceneCenario(cast, 'tilemap')
   const [letra, setLetra] = useState<'.' | '#' | 'o'>('#')
   const [foco, setFoco] = useState(0)
   const casas = useRef<(HTMLButtonElement | null)[]>([])

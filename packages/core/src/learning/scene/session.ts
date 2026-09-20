@@ -474,15 +474,29 @@ export function packDemonstration(scene: SceneId, session: DemonstrationSession)
   return chunks(JSON.stringify({ ...session, scene, state: pack(session.state) }))
 }
 
+function hydrateSceneStateForScene(scene: SceneId, value: unknown): unknown {
+  const state = hydrateSceneState(value)
+  // Retratos publicados antes do preset guardavam 1 s no campo do intervalo, embora o motor
+  // criasse cactos a cada 0,6 s. Ao passar a usar o campo, a sessão antiga precisa desse ajuste.
+  if (
+    scene === 'game-state' &&
+    isRecord(state) &&
+    isRecord(state.crowd) &&
+    state.crowd.interval === 1
+  )
+    return { ...state, crowd: { ...state.crowd, interval: 0.6 } }
+  return state
+}
+
 export function readExperimentSession(scene: SceneId, parts: unknown): ExperimentSession | null {
   const raw = parseChunks(parts)
   // ⚠️ Hidrata ANTES de validar: retrato gravado antes de a cena ganhar um grupo novo de
   // estado continua válido, e recusá-lo apagaria o trabalho da criança (ver `hydrateSceneState`).
   if (!isRecord(raw) || raw.scene !== scene) return null
-  const state = hydrateSceneState(raw.state)
+  const state = hydrateSceneStateForScene(scene, raw.state)
   if (!isSceneState(state)) return null
   if (!Array.isArray(raw.past) || raw.past.length > SESSION_LIMITS.past) return null
-  const past = raw.past.map(hydrateSceneState)
+  const past = raw.past.map((snapshot: unknown) => hydrateSceneStateForScene(scene, snapshot))
   if (!past.every(isSceneState)) return null
   if (!Array.isArray(raw.trials) || raw.trials.length > SESSION_LIMITS.trials) return null
   if (!raw.trials.every(isSceneTrial)) return null
@@ -495,7 +509,7 @@ export function readDemonstrationSession(
 ): DemonstrationSession | null {
   const raw = parseChunks(parts)
   if (!isRecord(raw) || raw.scene !== scene) return null
-  const state = hydrateSceneState(raw.state)
+  const state = hydrateSceneStateForScene(scene, raw.state)
   if (!isSceneState(state)) return null
   const { step, action, elapsed, ready, viewed, before } = raw
   if (!Number.isInteger(step) || (step as number) < 0 || (step as number) >= SCRIPT_STEPS)

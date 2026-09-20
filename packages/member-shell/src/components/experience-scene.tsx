@@ -67,7 +67,7 @@ export function ExperienceScene({
   const heroi = actorFigure(activity.cast, 'hero')
   // ⚠️ Estas quatro cenas MANTÊM a linha do chão no espaço: ela é a régua da altura do salto e o
   // apoio das duas áreas da batida (review do lote 3).
-  const mundo = sceneCenario(activity.cast, activity.scene)
+  const mundo = sceneCenario(activity.cast, activity.scene, activity.cenario)
   /**
    * ⚠️⚠️ A ESCALA do salto é da cena (lote 5 do Raio-X). Na `gravity` o Dino sem gravidade sobe até
    * sair por cima do palco em `TOPO_DO_SALTO` (600), e é aí que o player para o ▶; na `impulse` a

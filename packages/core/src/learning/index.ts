@@ -807,7 +807,15 @@ function evaluateSceneBlock(a: SceneActivity, answers: LearningAnswers): Learnin
       alvo,
       a.pilha,
     )
-  return evaluateExperimentation(a.scene, session.state, true, a.cast, alvo, a.pilha)
+  return evaluateExperimentation(
+    a.scene,
+    session.state,
+    true,
+    a.cast,
+    alvo,
+    a.pilha,
+    a.setup?.goalCopy,
+  )
 }
 
 export function isLearningFrameMessage(

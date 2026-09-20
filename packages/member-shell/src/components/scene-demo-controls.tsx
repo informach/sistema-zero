@@ -176,6 +176,7 @@ export function MontagemTravada({
         state={state}
         dispatch={nada}
         cast={activity.cast}
+        cenario={activity.cenario}
         goals={goals}
         onRunning={nada}
       />

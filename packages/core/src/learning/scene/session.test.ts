@@ -180,6 +180,7 @@ describe('sessão de demonstração', () => {
     // fatias de 0,04 s a soma parava em 60,0000001 contra 60, e a batida prometida não vinha.
     for (const fatia of [0.04, 0.05, 1 / 30, 0.1])
       for (const scene of SCENE_IDS) {
+        if (!SCENE_MODELS[scene].script.length) continue
         const start = { scene }
         const roteiro = SCENE_MODELS[scene].script
         let s = stepDemonstration(start, roteiro, initialDemonstration(start), {
@@ -262,7 +263,8 @@ describe('sessão de demonstração', () => {
     ] as const)
       for (const semente of [1, 7, 42])
         for (const scene of SCENE_IDS)
-          faltas.push(...tocarComRelogio(scene, relogioDoPlayer(semente, hz, velocidade)))
+          if (SCENE_MODELS[scene].script.length)
+            faltas.push(...tocarComRelogio(scene, relogioDoPlayer(semente, hz, velocidade)))
     expect(faltas).toEqual([])
   })
 
@@ -286,6 +288,7 @@ describe('sessão de demonstração', () => {
     // O player e o servidor rodam o MESMO motor: os comandos que fecham a demonstração na tela dela
     // precisam fechá-la no rejogo, senão a criança assiste tudo e o bloco não conclui.
     for (const scene of SCENE_IDS) {
+      if (!SCENE_MODELS[scene].script.length) continue
       const start = { scene }
       const roteiro = SCENE_MODELS[scene].script
       const comandos: unknown[] = [{ type: 'start' }]

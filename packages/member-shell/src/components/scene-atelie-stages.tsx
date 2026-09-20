@@ -162,18 +162,18 @@ function PapelDoQuadro({ tamanho }: { tamanho: number }) {
  * manda desfazer.
  */
 export function FramesStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
-  const { frame, playing, rate } = state.animation
+  const { frame, playing, rate, sameFrames } = state.animation
   const miniatura = { x: 34, lado: 96, ys: [58, 172] }
   const previa = { x: 228, y: 58, escala: 7 }
   return (
     <SceneCanvas
       cast={cast}
       titulo="A faixa de quadros e a prévia da nave"
-      descricao={`Quadro ${frame} na prévia: a nave com o fogo ${frame === 2 ? 'grande' : 'pequeno'}.${
+      descricao={`Quadro ${frame} na prévia: a nave com o fogo ${frame === 2 && !sameFrames ? 'grande' : 'pequeno'}.${
         playing
           ? ` A prévia está trocando ${quantos(rate, 'quadro', 'quadros')} por segundo.`
           : ' A prévia está parada.'
-      }`}
+      }${sameFrames ? ' Os dois quadros são iguais; o fogo não pulsa.' : ''}`}
     >
       <rect className="fill-scene-sky" width={VIEW.w} height={VIEW.h} />
       {/* A faixa de quadros, com as MINIATURAS: "cada quadradinho guarda um desenho inteiro" se vê. */}
@@ -203,7 +203,7 @@ export function FramesStage({ state, cast }: { state: SceneState; cast?: SceneCa
           <g key={n} data-miniatura={n} data-atual={atual || undefined}>
             <g transform={`translate(${miniatura.x} ${y}) scale(${miniatura.lado / 32})`}>
               <PapelDoQuadro tamanho={32} />
-              <NaveDoQuadro quadro={n} />
+              <NaveDoQuadro quadro={sameFrames ? 1 : n} />
             </g>
             <rect
               className={atual ? 'fill-none stroke-scene-a' : 'fill-none stroke-scene-card-line'}
@@ -252,7 +252,7 @@ export function FramesStage({ state, cast }: { state: SceneState; cast?: SceneCa
         shapeRendering="crispEdges"
       >
         <PapelDoQuadro tamanho={32} />
-        <NaveDoQuadro quadro={frame} />
+        <NaveDoQuadro quadro={sameFrames ? 1 : frame} />
       </g>
       <rect
         className="fill-none stroke-scene-rule"
@@ -492,7 +492,7 @@ export function SymmetryStage({
   const lado = PAPEL_DO_ESPELHO * casa
   const x0 = (VIEW.w - lado) / 2
   const y0 = 36
-  const { on, axis, marks } = state.mirror
+  const { on, axis, marks, filled } = state.mirror
   const espelhos = mirrorAxes(on, axis)
   const celulas = symmetryCells(marks)
   const meio = PAPEL_DO_ESPELHO / 2
@@ -533,7 +533,7 @@ export function SymmetryStage({
               : 'Espelhos desligados.'
       } ${quantos(celulas.length, 'quadradinho pintado', 'quadradinhos pintados')}${
         copias ? `, ${quantos(copias, 'deles pintado', 'deles pintados')} pelo espelho` : ''
-      }.`}
+      }.${filled ? ' O Balde encheu só a asa esquerda.' : ''}`}
     >
       <rect className="fill-scene-sky" width={VIEW.w} height={VIEW.h} />
       <g transform={`translate(${x0} ${y0}) scale(${casa})`} shapeRendering="crispEdges">
@@ -547,6 +547,14 @@ export function SymmetryStage({
             ([y, de, ate]) => `M${de} ${y}h${ate - de + 1}v1h${-(ate - de + 1)}Z`,
           ).join('')}
         />
+        {filled && (
+          <path
+            data-balde="asa-esquerda"
+            className="fill-scene-b"
+            opacity={0.8}
+            d="M2 9H4V13H2L1 12V10Z"
+          />
+        )}
         {celulas.map((c) => (
           <rect
             key={`${c.x},${c.y}`}

@@ -19,6 +19,19 @@ import {
 import { isSceneCenario, type SceneCenarioId } from './cenario'
 import { openScene, stepScene } from './engine'
 import { LAYERS_CAMADAS, SCENE_PILHAS, type ScenePilha, scenePilhaAceita } from './pilha'
+import {
+  isCleanupPreset,
+  isGameStatePreset,
+  isOnceVsAlwaysPreset,
+  isRandomPreset,
+  isSpawnPreset,
+  ONCE_GOALS_BY_PRESET,
+  oncePreset,
+  RANDOM_GOALS_BY_PRESET,
+  randomPreset,
+  SPAWN_GOALS_BY_PRESET,
+  spawnPreset,
+} from './presets'
 import type { SceneStart } from './state'
 import {
   isSceneSpeechOverrides,
@@ -40,11 +53,13 @@ export * from './evaluate'
 // O núcleo do Iniciante 2D do lote 5 do Raio-X: as réguas da tecla, do laço, da ficha, da câmera,
 // do encosto, da recarga, da mira, da diagonal e do mapa escrito.
 export * from './nucleo'
+export * from './once-vs-always'
 // A pilha da `layers` como o painel Camadas do Pinta e a meta de cada degrau de pista (full review de
 // experiência do conjunto, 16/09/2026).
 export * from './pilha'
 export * from './pistas'
 export * from './prediction-preview'
+export * from './presets'
 export * from './questions'
 export * from './readout'
 export * from './session'
@@ -162,6 +177,7 @@ const validAudio = isSceneAudioUrl
 
 export function isDemonstrationActivity(value: unknown): value is DemonstrationActivity {
   if (!isRecord(value) || value.type !== 'demonstration' || !isScene(value.scene)) return false
+  if (sceneModel(value.scene).script.length === 0) return false
   if (!validAudio(value.instructionAudioUrl)) return false
   if (!isSceneVozes(value.vozes)) return false
   if (!isSceneSpeechOverrides(value.zappySpeech)) return false
@@ -222,7 +238,7 @@ export function isSceneSetup(
   { goals = true }: { goals?: boolean } = {},
 ): value is SceneSetup {
   if (!isRecord(value)) return false
-  const { actions, goals: alvo } = value
+  const { actions, goals: alvo, preset, goalCopy } = value
   if (actions !== undefined) {
     if (!Array.isArray(actions) || actions.length === 0 || actions.length > SETUP_LIMITS.actions)
       return false
@@ -233,15 +249,52 @@ export function isSceneSetup(
       if (isRecord(acao) && (acao.type === 'reset' || acao.type === 'hint')) return false
     }
   }
-  if (alvo === undefined) return actions !== undefined
+  if (
+    preset !== undefined &&
+    !(
+      (scene === 'once-vs-always' && isOnceVsAlwaysPreset(preset)) ||
+      (scene === 'random' && isRandomPreset(preset)) ||
+      (scene === 'spawn' && isSpawnPreset(preset)) ||
+      (scene === 'cleanup' && isCleanupPreset(preset)) ||
+      (scene === 'game-state' && isGameStatePreset(preset))
+    )
+  )
+    return false
+  if (goalCopy !== undefined) {
+    if (!goals || !isRecord(goalCopy) || Object.keys(goalCopy).length === 0) return false
+    const known = sceneGoalIds(scene)
+    for (const [id, copy] of Object.entries(goalCopy)) {
+      if (!known.includes(id) || !isRecord(copy)) return false
+      const label = copy.label
+      const pedido = copy.pedido
+      if (label === undefined && pedido === undefined) return false
+      if (label !== undefined && (typeof label !== 'string' || !label.trim() || label.length > 120))
+        return false
+      if (
+        pedido !== undefined &&
+        (typeof pedido !== 'string' || !pedido.trim() || pedido.length > 240)
+      )
+        return false
+    }
+  }
+  if (alvo === undefined)
+    return actions !== undefined || preset !== undefined || goalCopy !== undefined
   if (!goals) return false
   const disponiveis = sceneGoalIds(scene)
+  const possiveis =
+    scene === 'once-vs-always'
+      ? ONCE_GOALS_BY_PRESET[oncePreset(preset as SceneSetup['preset']).id]
+      : scene === 'random' && preset !== undefined
+        ? RANDOM_GOALS_BY_PRESET[randomPreset(preset as SceneSetup['preset']).id]
+        : scene === 'spawn' && preset !== undefined
+          ? SPAWN_GOALS_BY_PRESET[spawnPreset(preset as SceneSetup['preset']).id]
+          : disponiveis
   return (
     Array.isArray(alvo) &&
     alvo.length > 0 &&
     alvo.length <= SETUP_LIMITS.goals &&
     new Set(alvo).size === alvo.length &&
-    alvo.every((g) => typeof g === 'string' && disponiveis.includes(g))
+    alvo.every((g) => typeof g === 'string' && disponiveis.includes(g) && possiveis.includes(g))
   )
 }
 
@@ -323,7 +376,14 @@ export function sceneTargets(activity: SceneActivity): readonly string[] {
     activity.type === 'experimentation'
       ? sceneSetupGoals(activity.scene, activity.setup?.goals)
       : []
-  return alvo.length ? alvo : sceneDefaultGoalIds(activity.scene)
+  if (alvo.length) return alvo
+  if (activity.scene === 'once-vs-always')
+    return ONCE_GOALS_BY_PRESET[oncePreset(activity.setup?.preset).id]
+  if (activity.scene === 'random' && isRandomPreset(activity.setup?.preset))
+    return RANDOM_GOALS_BY_PRESET[activity.setup.preset.id]
+  if (activity.scene === 'spawn' && isSpawnPreset(activity.setup?.preset))
+    return SPAWN_GOALS_BY_PRESET[activity.setup.preset.id]
+  return sceneDefaultGoalIds(activity.scene)
 }
 
 /**

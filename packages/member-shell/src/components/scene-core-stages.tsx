@@ -1,9 +1,10 @@
 'use client'
 
 import type { SceneCast, SceneState } from '@sistemazero/core/learning/scene'
-import { actorFigure, numero, quantos, sceneCenario } from '@sistemazero/core/learning/scene'
+import { actorFigure, numero, quantos } from '@sistemazero/core/learning/scene'
 import { FundoDoCenario } from './scene-arte'
 import { SceneCanvas, Texto } from './scene-canvas'
+import { useSceneCenario } from './scene-cenario-context'
 import { ActorFigure } from './scene-figures'
 import { PlacarDoJogo } from './scene-hud'
 
@@ -58,7 +59,7 @@ function contaDoQuadro(antes: number, velocidade: number, agora: number): string
 export function VelocityStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { x, y, fromX, fromY, vx, vy, trailX, trailY, prevX, prevY, steps } = state.drive
   const heroi = actorFigure(cast, 'hero')
-  const mundo = sceneCenario(cast, 'velocity')
+  const mundo = useSceneCenario(cast, 'velocity')
   const px = velX(x)
   const py = velY(y)
   const andouX = x !== fromX
@@ -519,7 +520,8 @@ const VARIAVEL_ESTREITA = { x: 0, y: 44, w: 560, h: 196 } as const
  */
 export function VariableStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
   const { value, shown, changes, created } = state.box
-  const mundo = sceneCenario(cast, 'variable')
+  const mundo = useSceneCenario(cast, 'variable')
+  const rotuloDoPlacar = mundo === 'nave' ? 'Pontos:' : 'placar'
   const obstaculo = actorFigure(cast, 'obstacle')
   const acesos = [created, changes > 0, shown]
   const acertos = Math.min(changes, 3)
@@ -528,7 +530,7 @@ export function VariableStage({ state, cast }: { state: SceneState; cast?: Scene
       cast={cast}
       mundo={mundo}
       titulo="Os blocos, a caixa pontos e a tela do jogo"
-      descricao={`${created ? `A caixa pontos guarda ${value}.` : 'A caixa pontos ainda não existe.'} A tela ${shown ? `mostra Pontos: ${value}` : 'não mostra placar'}.`}
+      descricao={`${created ? `A caixa pontos guarda ${value}.` : 'A caixa pontos ainda não existe.'} A tela ${shown ? `mostra ${rotuloDoPlacar} ${value}` : 'não mostra placar'}.`}
       // ⚠️ SEM rodapé (lote 2 do Raio-X): "A caixa é o que o jogo GUARDA. A tela é o que ele
       // MOSTRA." era a conclusão da cena desde a abertura, com um pronome que o elenco não veste.
       // ⭐ No estreito os três blocos saem do desenho e vêm para baixo dele, acendendo do mesmo jeito
@@ -687,7 +689,7 @@ export function VariableStage({ state, cast }: { state: SceneState; cast?: Scene
                 x={332}
                 y={108}
                 tamanho={20}
-                rotulo="Pontos:"
+                rotulo={rotuloDoPlacar}
                 valor={String(value)}
                 classeDoValor="fill-scene-b-ink"
               />

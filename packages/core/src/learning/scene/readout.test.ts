@@ -29,6 +29,7 @@ const ligaTudo = (scene: SceneId): SceneState[] => {
     { type: 'erase', on: true },
     { type: 'onion', on: true },
     { type: 'mirror-mode', mode: 'x' },
+    { type: 'rule-toggle', enabled: true },
   ]
   return [acoes.reduce((e, a) => stepScene({ scene }, e, a), nasce(scene))]
 }
@@ -37,9 +38,10 @@ const ligaTudo = (scene: SceneId): SceneState[] => {
  * LIGADA, e só desligando ela a outra posição da chave aparece na faixa.
  */
 const desligaTudo = (scene: SceneId): SceneState[] => [
-  scenePorts(scene)
-    .map((port): SceneAction => ({ type: 'connect', port, enabled: false }))
-    .reduce((e, a) => stepScene({ scene }, e, a), nasce(scene)),
+  [
+    ...scenePorts(scene).map((port): SceneAction => ({ type: 'connect', port, enabled: false })),
+    { type: 'rule-toggle', enabled: false } as SceneAction,
+  ].reduce((e, a) => stepScene({ scene }, e, a), nasce(scene)),
 ]
 
 describe('a faixa de estado', () => {
@@ -172,6 +174,7 @@ describe('a faixa de estado', () => {
       // baixo), e só o "desligado" é chave. Ele fica na tabela pelo gênero, sem a posição "ligado".
       espelho: 'm',
       gravidade: 'f',
+      'regra de atirar': 'f',
       // ⚠️ Mudou de propósito (review do lote 2): "som no salto", "relógio dentro de Se jogando" e
       // "Somar ponto dentro de Se jogando" saíram da tabela porque deixaram de ser chaves ("o som
       // escuta: a tecla Espaço", "Relógio: fora de Se jogando"), com as palavras da frase.

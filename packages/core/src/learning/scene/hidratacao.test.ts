@@ -30,6 +30,14 @@ import { hydrateSceneState, isSceneState, type SceneState } from './state'
 
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T
 
+/** Campos acrescentados depois de já existirem sessões salvas. A ausência conserva o valor antigo. */
+const CAMPOS_COMPATIVEIS = new Set([
+  'mirror.filled',
+  'animation.sameFrames',
+  'match.scoreClock',
+  'match.scoreFrameTicks',
+])
+
 /** Os 31 grupos que a hidratação conhece. Fora deles, grupo ausente já recusava o retrato. */
 const GRUPOS_COM_PADRAO = [
   'place',
@@ -159,6 +167,7 @@ describe('M-1: retrato com campo faltando é RECUSADO, nos 36 grupos', () => {
         const valor = base[grupo]
         if (!valor || typeof valor !== 'object' || Array.isArray(valor)) continue
         for (const campo of Object.keys(valor as Record<string, unknown>)) {
+          if (CAMPOS_COMPATIVEIS.has(`${grupo}.${campo}`)) continue
           const truncado = clone(base)
           delete (truncado[grupo] as Record<string, unknown>)[campo]
           expect(isSceneState(hydrateSceneState(truncado)), `${scene} · ${grupo}.${campo}`).toBe(
