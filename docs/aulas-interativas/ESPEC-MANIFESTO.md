@@ -1,8 +1,8 @@
 # Especificação do manifesto importável
 
 > Contrato para gerar o `manifesto.json` de cada aula redesenhada. O formato é o mesmo dos
-> manifestos v6 do `sistema-zero`, lido direto do validador real em
-> `packages/core/src/learning/index.ts` (`isLearningManifest`) em 19/09/2026.
+> manifestos v5 do `sistema-zero`, lido direto do validador real em
+> `packages/core/src/learning/index.ts` (`isLearningManifest`) em 20/09/2026.
 >
 > Manifesto que não passa no validador não importa. Siga ao pé da letra.
 
