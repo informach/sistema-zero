@@ -177,14 +177,14 @@ describe('o tipo LessonSplit', () => {
 /**
  * Quem mora em cada coluna, e se vale dividir.
  *
- * Duas coisas que a régua de largura sozinha não decide: (1) a CENA — demonstração e
- * experimentação — também é bancada e vai para a direita, junto do Estúdio e do Pinta;
+ * Duas coisas que a régua de largura sozinha não decide: (1) a experimentação em CENA
+ * também é bancada e vai para a direita, junto do Estúdio e do Pinta;
  * (2) dividir só faz sentido com conteúdo dos DOIS lados. Antes bastava haver ferramenta,
  * e uma seção cujo único bloco era o Estúdio abria ao meio com metade da tela vazia.
  */
 const editor = { id: 'projeto', kind: 'studio', content: { kind: 'studio' } }
 const texto = { id: 'fala', kind: 'dialogue', content: { kind: 'dialogue', text: 'Oi!' } }
-function cena(type: 'experimentation' | 'demonstration', id = 'cena') {
+function cena(id = 'cena') {
   return {
     id,
     kind: 'interactive',
@@ -194,24 +194,12 @@ function cena(type: 'experimentation' | 'demonstration', id = 'cena') {
       instructions: 'Mexa no impulso.',
       hints: [],
       required: false,
-      activity: { type, scene: 'impulse' },
+      activity: { type: 'experimentation', scene: 'impulse' },
     },
   }
 }
 
 describe('a partição da seção', () => {
-  test('a cena vai para a mesma coluna do editor', () => {
-    const r = partirSecao({
-      blocks: [texto, cena('experimentation'), cena('demonstration', 'demo')],
-    })
-    expect(r.toolIds).toEqual(['cena', 'demo'])
-    expect(r.contentIds).toEqual(['fala'])
-    expect(r.podeDividir).toBe(true)
-    // ⚠️ Sem editor não há abas: "Ver exemplo"/"Criar" é o par de um EDITOR, e a cena é a
-    // própria aula. Numa coluna estreita ela empilha em vez de virar aba para o vazio.
-    expect(r.temEditor).toBe(false)
-  })
-
   test('os MATERIAIS complementares são conteúdo — ficam na coluna da esquerda', () => {
     // É metade do pedido que criou o bloco: "embaixo do vídeo, no mesmo card da coluna da
     // esquerda". Ele não é bancada; se um dia cair na direita, a lista de arquivos vai parar ao
@@ -225,16 +213,16 @@ describe('a partição da seção', () => {
         items: [{ id: 'i1', kind: 'file', attachmentId: 'a1' }],
       },
     }
-    const r = partirSecao({ blocks: [texto, materiais, cena('experimentation')] })
+    const r = partirSecao({ blocks: [texto, materiais, cena()] })
     expect(r.contentIds).toEqual(['fala', 'materiais'])
     expect(r.toolIds).toEqual(['cena'])
   })
 
-  test('pergunta curta e experiência em HTML ficam no conteúdo', () => {
-    // As três são `kind: 'interactive'`, então classificar pelo kind mandaria as duas para a
-    // bancada — e elas são de ler e responder, no meio da aula.
-    const pergunta = {
-      id: 'pergunta',
+  test('quiz e experiência em HTML ficam no conteúdo', () => {
+    // O HTML é `interactive`, mas não é uma cena de bancada. O quiz é um bloco próprio.
+    const pergunta = { id: 'pergunta', kind: 'quiz', content: { kind: 'quiz' } }
+    const html = {
+      id: 'html',
       kind: 'interactive',
       content: {
         kind: 'interactive',
@@ -242,13 +230,8 @@ describe('a partição da seção', () => {
         instructions: 'Escolha uma ideia.',
         hints: [],
         required: false,
-        activity: { type: 'question' },
+        activity: { type: 'html', html: '<p>oi</p>' },
       },
-    }
-    const html = {
-      ...pergunta,
-      id: 'html',
-      content: { ...pergunta.content, activity: { type: 'html', html: '<p>oi</p>' } },
     }
     const r = partirSecao({ blocks: [pergunta, html, editor] })
     expect(r.contentIds).toEqual(['pergunta', 'html'])
@@ -257,7 +240,7 @@ describe('a partição da seção', () => {
   })
 
   test('a ferramenta SOZINHA na seção não divide — ela ocupa a largura toda', () => {
-    for (const bloco of [editor, cena('experimentation')]) {
+    for (const bloco of [editor, cena()]) {
       const r = partirSecao({ blocks: [bloco] })
       expect(r.toolIds).toHaveLength(1)
       expect(r.contentIds).toEqual([])

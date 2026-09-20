@@ -6,7 +6,6 @@ import {
   MAP_TILES,
   SCENE_LIMITS,
   SCENE_PORTS,
-  SCRIPT_LIMITS,
   type SceneAction,
   type SceneId,
   type ScenePort,
@@ -420,7 +419,7 @@ interface CampoNumerico {
   inteiro?: boolean
 }
 
-export function campoNumerico(action: SceneAction, stepNumber = 1): CampoNumerico | null {
+export function campoNumerico(action: SceneAction): CampoNumerico | null {
   const L = SCENE_LIMITS
   if (action.type === 'step-value')
     return { label: 'Lugar na régua', field: 'value', min: -12, max: 0, value: action.value }
@@ -430,9 +429,7 @@ export function campoNumerico(action: SceneAction, stepNumber = 1): CampoNumeric
     return {
       label: 'Tempo em segundos',
       field: 'seconds' as const,
-      // ⚠️ O roteiro tem teto próprio (10s por etapa, para uma etapa não virar um filme); no
-      // CASO vale a régua da cena (30s). Passar o do roteiro nos dois restringia em silêncio.
-      ...(stepNumber > 0 ? L.scriptAdvance : L.advance),
+      ...L.advance,
       inteiro: false,
       value: action.seconds,
     }
@@ -644,17 +641,6 @@ export function camposDoEndereco(action: SceneAction, scene: SceneId) {
 }
 
 /**
- * O editor de ações serve DOIS donos: o passo do roteiro e o caso da atividade.
- *
- * ⚠️⚠️ As réguas deles são diferentes, e reusar a do roteiro no caso prendia o professor:
- * (a) um PASSO precisa de pelo menos uma ação, um CASO não — o `aplicar` do editor do caso até
- * sabe apagar o setup quando a lista esvazia, mas a UI nunca deixava chegar a zero, e quem
- * adicionasse uma ação por engano ficava com ela para sempre naquele bloco; (b) o teto do
- * roteiro é 16 e o do caso é 8, então da nona em diante o editor deixava adicionar e a
- * publicação recusava; (c) `Restaurar a cena` é legal em toda cena e por isso aparecia na lista
- * do caso, onde o domínio a recusa — com a mensagem apontando para o lugar errado.
- */
-/**
  * O número que o campo pode gravar: dentro da faixa, inteiro quando o domínio pede, e nunca o
  * zero que o `change` recusa (ele existe para SOMAR alguma coisa).
  */
@@ -673,16 +659,13 @@ export function SceneActionEditor({
   scene,
   value,
   onChange,
-  stepNumber,
-  minimo = 1,
-  maximo = SCRIPT_LIMITS.actions,
+  minimo = 0,
+  maximo = 8,
   semReset = false,
 }: {
   scene: SceneId
   value: readonly SceneAction[]
   onChange: (actions: SceneAction[]) => void
-  /** O número da etapa do roteiro, para o leitor de tela. `0` = é o caso, não uma etapa. */
-  stepNumber: number
   minimo?: number
   maximo?: number
   /** O caso não aceita `reset`: ele voltaria para o próprio caso, em laço. */
@@ -695,20 +678,14 @@ export function SceneActionEditor({
     <div className="space-y-3">
       {value.map((action, index) => {
         const numero =
-          scene === 'two-clocks' && action.type === 'rate'
-            ? null
-            : campoNumerico(action, stepNumber)
+          scene === 'two-clocks' && action.type === 'rate' ? null : campoNumerico(action)
         const endereco = camposDoEndereco(action, scene)
         return (
-          // As ações têm identidade POSICIONAL no contrato do roteiro; todo campo é controlado.
-          // biome-ignore lint/suspicious/noArrayIndexKey: o roteiro compartilhado não tem id de ação.
+          // As ações têm identidade posicional; todo campo é controlado.
+          // biome-ignore lint/suspicious/noArrayIndexKey: o caso não tem id de ação.
           <div key={index} className="space-y-2 rounded-lg bg-muted/40 p-3">
             <Select
-              aria-label={
-                stepNumber > 0
-                  ? `Ação ${index + 1} da etapa ${stepNumber}`
-                  : `Ação ${index + 1} do caso desta atividade`
-              }
+              aria-label={`Ação ${index + 1} do caso desta atividade`}
               value={identidade(action)}
               onChange={(e) => {
                 const next = choices.find((c) => identidade(c.value) === e.target.value)
@@ -765,9 +742,9 @@ export function SceneActionEditor({
                 </Select>
               </label>
             )}
-            {action.type === 'advance' && avisoDoTempo(scene, action.seconds, stepNumber === 0) && (
+            {action.type === 'advance' && avisoDoTempo(scene, action.seconds, true) && (
               <p className="text-xs text-amber-700" role="status">
-                {avisoDoTempo(scene, action.seconds, stepNumber === 0)}
+                {avisoDoTempo(scene, action.seconds, true)}
               </p>
             )}
             {endereco && (

@@ -232,7 +232,7 @@
     {
       "key": "pergunta",
       "title": "Veja o Se e sua pergunta",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Separar condição, resposta sim/não e ações do então.",
       "blockKeys": ["video-pergunta"],
       "workspaceKey": null,

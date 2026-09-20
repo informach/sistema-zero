@@ -56,7 +56,6 @@ describe('o palpite e a cena ocupam a largura útil da atividade', () => {
     const contexto = renderToStaticMarkup(
       <PalpiteContexto
         prediction={prediction}
-        demonstracao={false}
         renderDialogue={(text) => <p data-dialogue={text}>{text}</p>}
         dialogueRef={createRef<HTMLDivElement>()}
       />,
@@ -68,13 +67,7 @@ describe('o palpite e a cena ocupam a largura útil da atividade', () => {
       />,
     )
     const opcoes = renderToStaticMarkup(
-      <PalpiteOpcoes
-        prediction={prediction}
-        escolha=""
-        bloqueado={false}
-        demonstracao={false}
-        onEscolher={() => {}}
-      />,
+      <PalpiteOpcoes prediction={prediction} escolha="" bloqueado={false} onEscolher={() => {}} />,
     )
 
     expect(contexto).toContain(prediction.context.explanation)
@@ -124,7 +117,7 @@ describe('o palpite e a cena ocupam a largura útil da atividade', () => {
     // ⚠️ Desde 18/09/2026 a moldura é o CONSOLE (`scene-console.tsx`), e não mais um `div` com as
     // classes escritas no `scene-activity`. O que este teste guarda continua sendo o MESMO: a cena
     // abre na largura inteira da atividade.
-    expect(source).toContain('<SceneConsole destacado={anelDaCena}>')
+    expect(source).toContain('<SceneConsole>')
     expect(regra).toContain('width: 100%')
     expect(regra).not.toContain('max-width')
     expect(source).not.toContain('max-w-scene')

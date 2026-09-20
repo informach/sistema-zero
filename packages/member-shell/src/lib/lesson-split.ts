@@ -97,11 +97,10 @@ export function ehEditorDeSecao(block: SplitBlock): boolean {
 }
 
 /**
- * A cena de aula — demonstração e experimentação.
+ * A experimentação em cena.
  *
- * ⚠️ `interactive` NÃO basta: pergunta curta e experiência em HTML também são `interactive` e
- * ficam na coluna do CONTEÚDO. Elas se leem e se respondem no meio da aula; a cena é bancada,
- * como o editor.
+ * ⚠️ `interactive` NÃO basta: a experiência em HTML também é `interactive` e fica na
+ * coluna do CONTEÚDO. A cena é bancada, como o editor.
  */
 function ehCenaDeSecao(block: SplitBlock): boolean {
   return (

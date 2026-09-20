@@ -112,7 +112,6 @@ export function ScenePrediction({
   onTrocar,
   trocavel,
   revelado,
-  demonstracao,
 }: {
   prediction: LearningPrediction
   escolha: string
@@ -122,7 +121,6 @@ export function ScenePrediction({
   trocavel: boolean
   /** A meta que responde o palpite caiu (ou, sem `revealOn`, a cena concluiu). */
   revelado: boolean
-  demonstracao: boolean
 }) {
   const escolhida = prediction.choices.find((c) => c.id === escolha)
 
@@ -141,7 +139,6 @@ export function ScenePrediction({
           <p>
             <span className="font-semibold">Seu palpite:</span> {escolhida.label}
           </p>
-          {demonstracao && <p className="text-muted-foreground">Agora assista e confira.</p>}
           {trocavel && onTrocar && (
             <SceneButton tom="discreta" className="min-h-11 px-2" onClick={onTrocar}>
               Trocar meu palpite
@@ -192,14 +189,10 @@ export function fraseDoPalpite(prediction: LearningPrediction, escolha: string):
 }
 
 /** O que a região de anúncios fala quando ela escolhe: o palpite e o que acontece agora. */
-export function anuncioDaEscolha(
-  prediction: LearningPrediction,
-  escolha: string,
-  demonstracao: boolean,
-): string {
+export function anuncioDaEscolha(prediction: LearningPrediction, escolha: string): string {
   const escolhida = prediction.choices.find((c) => c.id === escolha)
   if (!escolhida) return ''
-  return `Seu palpite: ${semPontoFinal(escolhida.label)}. ${demonstracao ? 'Agora assista.' : 'A cena abriu.'}`
+  return `Seu palpite: ${semPontoFinal(escolhida.label)}. A cena abriu.`
 }
 
 const semPontoFinal = (texto: string) => texto.trim().replace(/[.!?…]+$/, '')
@@ -214,24 +207,17 @@ const semPontoFinal = (texto: string) => texto.trim().replace(/[.!?…]+$/, '')
  */
 export function PalpiteContexto({
   prediction,
-  demonstracao,
   renderDialogue,
   dialogueRef,
 }: {
   prediction: LearningPrediction
-  demonstracao: boolean
   renderDialogue: (text: string, speech: DialogueSpeech) => ReactNode
   dialogueRef: RefObject<HTMLDivElement | null>
 }) {
   return (
     <div ref={dialogueRef} tabIndex={-1} className="outline-none">
       {renderDialogue(prediction.context.explanation, {
-        texts: [
-          falaDoContextoDoPalpite(
-            demonstracao ? 'Antes de assistir' : 'Seu palpite',
-            prediction.context,
-          ),
-        ],
+        texts: [falaDoContextoDoPalpite('Seu palpite', prediction.context)],
         fallbackToBrowser: true,
       })}
     </div>
@@ -264,13 +250,11 @@ export function PalpiteOpcoes({
   prediction,
   escolha,
   bloqueado,
-  demonstracao,
   onEscolher,
 }: {
   prediction: LearningPrediction
   escolha: string
   bloqueado: boolean
-  demonstracao: boolean
   onEscolher: (id: string) => void
 }) {
   const id = useId()
@@ -301,9 +285,7 @@ export function PalpiteOpcoes({
         })}
       </div>
       <p className="text-sm text-muted-foreground">
-        {demonstracao
-          ? 'Escolha o que você acha. Depois assista.'
-          : 'Escolha o que você acha. Pode errar: a cena mostra depois.'}
+        Escolha o que você acha. Pode errar: a cena mostra depois.
       </p>
     </fieldset>
   )

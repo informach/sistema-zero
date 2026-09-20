@@ -79,7 +79,6 @@ export function completionBlockLabel(content: LessonBlockContent): string {
     case 'quiz':
       return `Passar no quiz (${content.passingScore ?? 0}%)`
     case 'interactive':
-      if (content.activity.type === 'demonstration') return 'Acompanhar a demonstração'
       if (content.activity.type === 'experimentation') return 'Concluir as descobertas da cena'
       return 'Responder à atividade'
     default:

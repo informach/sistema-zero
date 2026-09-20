@@ -10,20 +10,9 @@ import {
   TOPO_DO_SALTO,
 } from './engine'
 import { evaluateExperimentation, sceneHint, sceneSuccess } from './evaluate'
-import { type DemonstrationActivity, sceneScript, sceneStart } from './index'
 import { SCENE_QUESTIONS } from './questions'
 import { sceneReadout, sceneSituation } from './readout'
-import {
-  applyDemonstrationSegment,
-  initialDemonstration,
-  initialExperiment,
-  packDemonstration,
-  packExperiment,
-  readDemonstrationSession,
-  readExperimentSession,
-  stepDemonstration,
-  stepExperiment,
-} from './session'
+import { initialExperiment, packExperiment, readExperimentSession, stepExperiment } from './session'
 import {
   type SceneState,
   sceneAreaPercent,
@@ -133,92 +122,6 @@ describe('A1 · acceleration: a ordem invertida não tranca as metas sem dizer',
     c.faz({ type: 'connect', port: 'limit', enabled: true }, cinco())
     expect(c.estado.caption).not.toContain('Recomece')
     expect(sceneHint('acceleration', c.estado, 1)).not.toContain('Recomece')
-  })
-})
-
-describe('A3 · a demonstração com o roteiro que ENCOLHEU recomeça, sem lançar', () => {
-  test('⚠️⚠️ a sessão parada na 4ª etapa reabre com o roteiro de 3, no player e no servidor', () => {
-    // O roteiro do bloco pode ENCOLHER a qualquer momento: a professora tira uma etapa do roteiro
-    // autoral e as sessões em andamento apontam para uma etapa que não existe mais. Antes, o
-    // primeiro tique LANÇAVA "Etapa de demonstração inválida." no player e o members respondia 500.
-    const activity: DemonstrationActivity = {
-      type: 'demonstration',
-      scene: 'lives',
-      cast: { hero: { name: 'nave', gender: 'f' } },
-    }
-    const start = sceneStart(activity)
-    const script = sceneScript(activity)
-    expect(script.length).toBe(3)
-    // A sessão foi guardada com o roteiro ANTIGO, de 4 etapas, parada na última.
-    const maior = [...script, { ...script[0]!, id: 'etapa-4' }]
-    let antes = stepDemonstration(start, maior, initialDemonstration(start), {
-      type: 'start',
-    }).session
-    for (let i = 0; i < 600 && antes.step < maior.length - 1; i++) {
-      antes = stepDemonstration(start, maior, antes, { type: 'tick', seconds: 0.05 }).session
-      if (antes.ready && antes.step < maior.length - 1)
-        antes = stepDemonstration(start, maior, antes, { type: 'next' }).session
-    }
-    expect(antes.step).toBe(3)
-    const sessao = readDemonstrationSession('lives', packDemonstration('lives', antes))
-    expect(sessao?.step).toBe(3)
-    if (!sessao) return
-    // No player: o tique recomeça do zero, e o `viewed` fica como estava.
-    const tique = stepDemonstration(
-      start,
-      script,
-      { ...sessao, viewed: true },
-      {
-        type: 'tick',
-        seconds: 0.05,
-      },
-    )
-    expect(tique.session.step).toBe(0)
-    expect(tique.session.action).toBe(0)
-    expect(tique.session.viewed).toBe(true)
-    // E o `next` também não fica preso na etapa que sumiu.
-    expect(stepDemonstration(start, script, sessao, { type: 'next' }).session.step).toBe(0)
-    // No servidor: o segmento aplica (era o 500 do members).
-    const aplicado = applyDemonstrationSegment(
-      start,
-      script,
-      { sequence: 10, sessionId: 'x', segmentId: 'y', session: sessao },
-      {
-        sessionId: 'x',
-        segmentId: 'z',
-        baseSequence: 10,
-        commands: [{ type: 'tick', seconds: 0.05 }],
-      },
-    )
-    expect(aplicado.session.step).toBe(0)
-  })
-
-  test('uma etapa que perdeu AÇÕES também recomeça, e a sessão válida segue igual', () => {
-    const activity: DemonstrationActivity = { type: 'demonstration', scene: 'layers' }
-    const start = sceneStart(activity)
-    const script = sceneScript(activity)
-    const valida = stepDemonstration(
-      start,
-      script,
-      {
-        state: openScene(start),
-        step: 0,
-        action: 0,
-        elapsed: 0,
-        ready: false,
-        viewed: false,
-      },
-      { type: 'tick', seconds: 0.5 },
-    )
-    expect(valida.session.action).toBe(1)
-    const quebrada = stepDemonstration(
-      start,
-      script,
-      { ...valida.session, action: 5, ready: false },
-      { type: 'tick', seconds: 0.05 },
-    )
-    expect(quebrada.session.step).toBe(0)
-    expect(quebrada.session.action).toBe(0)
   })
 })
 

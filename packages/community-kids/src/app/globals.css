@@ -1513,22 +1513,10 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   background-color: var(--unit-bg);
   color: var(--unit-fg);
 }
-/* As famílias são as MESMAS dos outros chips, pelo que a criança FAZ: experimentar e brincar
-   são da família "Crie" (verde), observar é da família "Assista" (azul) e responder é a do
-   quiz (laranja). O azul de identidade não muda no tema Pink — ver "identidade × ação". */
+/* Experimentar e brincar usam a mesma família visual do tema Kids. */
 .sz-lesson-sections .sz-lesson-chip[data-chip="experimentation"],
 .sz-lesson-sections .sz-lesson-chip[data-chip="html"] {
   --unit: var(--kids-verde);
-  --unit-fg: oklch(1 0 0);
-  --unit-bg: var(--unit);
-}
-.sz-lesson-sections .sz-lesson-chip[data-chip="demonstration"] {
-  --unit: var(--kids-cyan);
-  --unit-fg: oklch(1 0 0);
-  --unit-bg: var(--unit);
-}
-.sz-lesson-sections .sz-lesson-chip[data-chip="question"] {
-  --unit: var(--kids-lime);
   --unit-fg: oklch(1 0 0);
   --unit-bg: var(--unit);
 }

@@ -1,25 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { openScene } from './engine'
 import { evaluateExperimentation, sceneGoals } from './evaluate'
-import {
-  isDemonstrationActivity,
-  isExperimentationActivity,
-  isSceneSetup,
-  sceneTargets,
-} from './index'
+import { isExperimentationActivity, isSceneSetup, sceneTargets } from './index'
 import { ONCE_VS_ALWAYS_PRESETS } from './presets'
 
 describe('casos da once-vs-always', () => {
-  test('a relação tem controle e só é publicada como experimentação', () => {
-    expect(isDemonstrationActivity({ type: 'demonstration', scene: 'once-vs-always' })).toBe(false)
-    expect(
-      isDemonstrationActivity({
-        type: 'demonstration',
-        scene: 'once-vs-always',
-        script: [{ id: 'passo', caption: 'Veja.', actions: [{ type: 'trigger' }] }],
-      }),
-    ).toBe(false)
-  })
   test('os cinco casos são atividades da mesma cena', () => {
     for (const preset of Object.values(ONCE_VS_ALWAYS_PRESETS)) {
       expect(

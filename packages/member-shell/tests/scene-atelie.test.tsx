@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import {
   initialScene,
-  SCENE_MODELS,
   type SceneAction,
   type SceneId,
   type SceneState,
@@ -18,7 +17,6 @@ import {
   SheetStage,
   SymmetryStage,
 } from '../src/components/scene-atelie-stages'
-import { tempoDeLeitura } from '../src/components/use-scene-clock'
 
 /**
  * O palco do ATELIÊ de O Jogo do Meu Jeito, redesenhado no lote 5 do Raio-X (16/09/2026, G4).
@@ -215,16 +213,6 @@ describe('symmetry, fill-stroke e shading', () => {
     )
     expect(bola).not.toContain('scene-ink')
     expect(bola).toContain('var(--color-scene-a)')
-  })
-
-  test('⚠️⚠️ a demonstração inline segura cada legenda do ateliê por 2,5 s ou mais', () => {
-    // A `fill-stroke` passava inteira em ~1,4 s e a `shading` em ~1,8 s: a legenda trocava antes de
-    // uma criança que lê devagar terminar a primeira frase (relatório g4, padrão 6).
-    for (const scene of ['fill-stroke', 'shading'] as const)
-      for (const parte of SCENE_MODELS[scene].script) {
-        expect(tempoDeLeitura(parte.caption), parte.caption).toBeGreaterThanOrEqual(2.5)
-        expect(tempoDeLeitura(parte.caption), parte.caption).toBeLessThanOrEqual(5)
-      }
   })
 })
 

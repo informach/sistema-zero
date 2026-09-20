@@ -7,13 +7,10 @@ import {
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
 import {
-  applyDemonstrationSegment,
   applyExperimentSegment,
-  type DemonstrationSession,
   type ExperimentSession,
   initialScene,
   openScene,
-  packDemonstration,
   packExperiment,
   readSceneSegment,
   SCENE_IDS,
@@ -24,7 +21,6 @@ import {
   type SceneId,
   sceneEmitsSound,
   sceneGoals,
-  sceneScript,
   sceneStart,
   stepScene,
 } from '@sistemazero/core/learning/scene'
@@ -540,22 +536,17 @@ describe('a previsão sobe junto da tentativa', () => {
 // que o player ficou meses com defeitos que nenhum teste de render via.
 // ─────────────────────────────────────────────────────────────────────────────────────────────
 
-/** O members em miniatura: aplica os segmentos das DUAS sessões e corrige a tentativa de verdade. */
+/** O members em miniatura: aplica os segmentos de experimentação e corrige a tentativa. */
 function servidorQueCorrige(bloco: InteractiveBlock) {
   const atividade = bloco.activity as SceneActivity
   const start = sceneStart(atividade)
-  const roteiro = sceneScript(atividade)
-  let checkpoint: SceneCheckpoint<ExperimentSession | DemonstrationSession> | null = null
+  let checkpoint: SceneCheckpoint<ExperimentSession> | null = null
   const enviados: { url: string; body: Record<string, unknown> }[] = []
   const answers = () => ({
     sceneSequence: checkpoint?.sequence ?? 0,
     sceneSessionId: checkpoint?.sessionId ?? '',
     sceneSegmentId: checkpoint?.segmentId ?? '',
-    sceneCheckpoint: !checkpoint
-      ? []
-      : atividade.type === 'demonstration'
-        ? packDemonstration(atividade.scene, checkpoint.session as DemonstrationSession)
-        : packExperiment(atividade.scene, checkpoint.session as ExperimentSession),
+    sceneCheckpoint: checkpoint ? packExperiment(atividade.scene, checkpoint.session) : [],
   })
   const progresso = (result: unknown = null) => ({
     blockId: 'bloco',
@@ -573,20 +564,7 @@ function servidorQueCorrige(bloco: InteractiveBlock) {
     enviados.push({ url, body })
     if (url.endsWith('/learning-progress')) {
       const segment = readSceneSegment(body.answers)
-      if (segment)
-        checkpoint =
-          atividade.type === 'demonstration'
-            ? applyDemonstrationSegment(
-                start,
-                roteiro,
-                checkpoint as SceneCheckpoint<DemonstrationSession> | null,
-                segment,
-              )
-            : applyExperimentSegment(
-                start,
-                checkpoint as SceneCheckpoint<ExperimentSession> | null,
-                segment,
-              )
+      if (segment) checkpoint = applyExperimentSegment(start, checkpoint, segment)
       return Response.json(progresso())
     }
     const enviadas = body.answers as Record<string, unknown>
@@ -980,105 +958,6 @@ describe('⭐⭐ a moldura do lote 2: o som, a voz e a demonstração', () => {
       janela.SpeechSynthesisUtterance = falaOriginal
     }
   })
-
-  test('⚠️⚠️ demonstração: a legenda entra DEPOIS da parte, e "Agora é sua vez" não grava nada', async () => {
-    const matchMediaOriginal = window.matchMedia
-    window.matchMedia = ((query: string) => ({
-      matches: query.includes('prefers-reduced-motion'),
-      media: query,
-      onchange: null,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      addListener: () => {},
-      removeListener: () => {},
-      dispatchEvent: () => false,
-    })) as unknown as typeof window.matchMedia
-    const relogio = relogioManual()
-    try {
-      const bloco: InteractiveBlock = {
-        ...content('velocity'),
-        instructions: 'A INSTRUÇÃO DO PROFESSOR.',
-        activity: { type: 'demonstration', scene: 'velocity' },
-      }
-      const { enviados } = servidorQueCorrige(bloco)
-      aluno(bloco)
-      const roteiro = sceneScript(bloco.activity as SceneActivity)
-      // A previsão da demonstração pede para ASSISTIR, não para mexer.
-      expect(await screen.findByText('Escolha o que você acha. Depois assista.')).toBeTruthy()
-      fireEvent.click(
-        screen.getByRole('button', {
-          name: SCENE_QUESTIONS.velocity.prediction.choices[0]?.label as string,
-        }),
-      )
-      await waitFor(() => expect(screen.getByText('Agora assista e confira.')).toBeTruthy())
-      // Antes de tocar: a instrução do PROFESSOR, e nunca a legenda da parte 1.
-      expect(screen.getByText('A INSTRUÇÃO DO PROFESSOR.')).toBeTruthy()
-      expect(screen.queryByText(roteiro[0]?.caption as string)).toBeNull()
-      // ⚠️ Os DOIS nomes do passo (lote 4 do Raio-X): na `velocity` o quadro é o assunto, e o botão da
-      // experimentação se chama "Avançar 1 quadro". Olhar só "Um passo" deixaria a guarda vazia.
-      for (const saiu of [
-        'Um passo',
-        'Avançar 1 quadro',
-        'Próxima etapa',
-        'Observar',
-        'Rever desde o começo',
-      ])
-        expect(screen.queryByRole('button', { name: saiu })).toBeNull()
-      const principal = () =>
-        screen.getByRole('button', { name: /^Ver a parte|^Ver tudo de novo|^Pausar/ })
-      await waitFor(() => expect(principal().getAttribute('aria-disabled')).toBeNull())
-      for (let parte = 0; parte < roteiro.length; parte++) {
-        expect(principal().textContent).toBe(`Ver a parte ${parte + 1}`)
-        await act(async () => {
-          fireEvent.click(principal())
-        })
-        // ⚠️ Mudou de propósito (consertos do review do lote 2): com menos movimento a parte TOCA
-        // em passos de 0,2 s, e a legenda só entra quando ela termina (antes, na hora do clique).
-        expect(principal().textContent).toBe('Pausar')
-        expect(screen.queryAllByText(roteiro[parte]?.caption as string)).toHaveLength(0)
-        for (let i = 0; i < 40 && principal().textContent === 'Pausar'; i++) await relogio.tocar(12)
-        await waitFor(() =>
-          expect(
-            screen.getAllByText(roteiro[parte]?.caption as string, { selector: 'p' }).length,
-          ).toBeGreaterThan(0),
-        )
-      }
-      await waitFor(() => expect(principal().textContent).toBe('Ver tudo de novo'))
-      expect(screen.getByText('Você viu tudo!', { selector: 'p' })).toBeTruthy()
-      await waitFor(
-        () => expect(enviados.some((e) => e.url.endsWith('/learning-attempts'))).toBe(true),
-        { timeout: 5000 },
-      )
-      // "Agora é sua vez": a bancada abre a partir do estado final, e NADA sobe.
-      const antes = enviados.length
-      fireEvent.click(screen.getByRole('button', { name: 'Agora é sua vez' }))
-      // ⚠️ Mudou de propósito (consertos do review do lote 2): quem diz "Sua vez!" é a instrução,
-      // e o foco vem para a bancada (o botão clicado some).
-      expect(
-        await screen.findByText('Sua vez! Mexa à vontade. Aqui é só para brincar.'),
-      ).toBeTruthy()
-      await waitFor(() =>
-        expect(document.activeElement?.getAttribute('aria-label')).toBe('Sua vez'),
-      )
-      expect(screen.queryByText('✓ Guardado')).toBeNull()
-      fireEvent.click(screen.getAllByRole('button', { name: /^Aumentar/ })[0] as HTMLElement)
-      // ⚠️ Mudou de propósito (lote 4 do Raio-X): na `velocity` o passo avança UM QUADRO e diz isso.
-      fireEvent.click(screen.getByRole('button', { name: 'Avançar 1 quadro' }))
-      // ⚠️ Mudou de propósito (full review de 16/09/2026): esperava 1,3 s REAIS contra a batida de 1 s do
-      // player (300 ms de folga), e com a máquina carregada passava sem a batida ter rodado. O `pagehide`
-      // força a MESMA gravação na hora.
-      await forcarAGravacao()
-      expect(enviados.length).toBe(antes)
-      // E "Ver tudo de novo" fecha a bancada e volta à demonstração.
-      fireEvent.click(screen.getByRole('button', { name: 'Ver tudo de novo' }))
-      await waitFor(() => expect(screen.queryByText(/Sua vez!/)).toBeNull())
-      // O foco volta ao principal, que agora PAUSA a parte que recomeçou.
-      await waitFor(() => expect(document.activeElement?.textContent).toBe('Pausar'))
-    } finally {
-      relogio.restaurar()
-      window.matchMedia = matchMediaOriginal
-    }
-  })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -1165,62 +1044,6 @@ describe('⭐⭐ consertos do review do lote 2: a resposta e a gravação', () =
       timeout: 5000,
     })
     expect(tentativas(enviados).length).toBe(antes)
-  })
-
-  test('⚠️⚠️ demonstração que o servidor NÃO registra diz a verdade, e ver de novo reenvia', async () => {
-    // "Guardando…" para sempre, sem reenvio e sem saída (janela de deploy player × servidor).
-    const bloco: InteractiveBlock = {
-      ...content('world'),
-      activity: { type: 'demonstration', scene: 'world' },
-    }
-    servidorQueCorrige(bloco)
-    const real = globalThis.fetch
-    let recusadas = 0
-    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-      if (!String(input).endsWith('/learning-attempts')) return real(input, init)
-      recusadas += 1
-      return Response.json({
-        attempt: {
-          result: { participated: true, passed: false, feedback: 'x', verifiedBy: 'server' },
-        },
-        progress: {},
-      })
-    }) as unknown as typeof fetch
-    const relogio = relogioManual()
-    try {
-      aluno(bloco)
-      await palpitar('world')
-      const principal = () =>
-        screen.getByRole('button', { name: /^Ver a parte|^Ver tudo de novo|^Pausar/ })
-      const verAteOFim = async () => {
-        for (let i = 0; i < 40 && principal().textContent !== 'Ver tudo de novo'; i++) {
-          if (principal().textContent !== 'Pausar')
-            await act(async () => {
-              fireEvent.click(principal())
-            })
-          await relogio.tocar(12)
-        }
-      }
-      await verAteOFim()
-      await waitFor(
-        () =>
-          expect(
-            screen.getByText('Ainda não ficou guardado. Veja de novo até o fim.'),
-          ).toBeTruthy(),
-        { timeout: 5000 },
-      )
-      expect(screen.queryByText('Guardando…') === null).toBe(true)
-      expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeTruthy()
-      expect(recusadas).toBe(1)
-      // Ver tudo de novo até o fim é uma assinatura nova: o registro sobe outra vez.
-      await act(async () => {
-        fireEvent.click(principal())
-      })
-      await verAteOFim()
-      await waitFor(() => expect(recusadas).toBe(2), { timeout: 5000 })
-    } finally {
-      relogio.restaurar()
-    }
   })
 
   test('⚠️ a pergunta que MUDOU oferece "Abrir de novo", e não "tente outra"', async () => {
@@ -1421,18 +1244,6 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Uma pista' }))
     expect(await screen.findByText('Pista 1 de 3.')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Trocar meu palpite' })).toBeTruthy()
-  })
-
-  test('⚠️ a demonstração inline com previsão escrita pelo professor só monta o controle depois do palpite', async () => {
-    const bloco: InteractiveBlock = {
-      ...mundoComPalpite(),
-      activity: { type: 'demonstration', scene: 'world', presentation: 'inline' },
-    }
-    servidorQueCorrige(bloco)
-    aluno(bloco)
-    expect(screen.queryByRole('button', { name: /Ver acontecer/ })).toBeNull()
-    fireEvent.click(await screen.findByRole('button', { name: 'O Dino aparece' }))
-    expect(await screen.findByRole('button', { name: /Ver acontecer/ })).toBeTruthy()
   })
 
   test('⚠️⚠️ o palpite do leitor de tela apresenta o recurso antes de perguntar', async () => {
@@ -1740,40 +1551,6 @@ describe('⭐⭐ consertos do review do lote 2: o que se vê e o que se ouve', (
     for (const dica of SCENE_MODELS.coordinates.hints) expect(caixa.textContent).not.toContain(dica)
     expect(screen.getByRole('button', { name: 'Uma pista' })).toHaveProperty('disabled', true)
   })
-
-  test('⚠️ "Agora é sua vez" da `jump-sound` tem o "Ligar som" (a única cena cujo assunto é o som)', async () => {
-    const matchMediaOriginal = window.matchMedia
-    const relogio = relogioManual()
-    try {
-      const bloco: InteractiveBlock = {
-        ...content('jump-sound'),
-        activity: { type: 'demonstration', scene: 'jump-sound' },
-      }
-      servidorQueCorrige(bloco)
-      aluno(bloco)
-      await palpitar('jump-sound')
-      const principal = () =>
-        screen.getByRole('button', { name: /^Ver a parte|^Ver tudo de novo|^Pausar/ })
-      for (let i = 0; i < 60 && principal().textContent !== 'Ver tudo de novo'; i++) {
-        if (principal().textContent !== 'Pausar')
-          await act(async () => {
-            fireEvent.click(principal())
-          })
-        await relogio.tocar(12)
-      }
-      fireEvent.click(await screen.findByRole('button', { name: 'Agora é sua vez' }))
-      const vez = await screen.findByRole('region', { name: 'Sua vez' })
-      expect(vez.querySelector('button')).toBeTruthy()
-      expect(
-        [...vez.querySelectorAll('button')].some((b) => b.textContent?.includes('Ligar som')),
-      ).toBe(true)
-    } finally {
-      relogio.restaurar()
-      window.matchMedia = matchMediaOriginal
-    }
-    // ⚠️ Prazo PRÓPRIO: ele TOCA a demonstração inteira até o fim (60 voltas de relógio) antes de
-    // abrir a vez, e já rodava colado nos 5 s de fábrica do bun. É tempo, não regra.
-  }, 30_000)
 })
 
 describe('restart: o toque que começa a partida solta o tempo (lote 5 do Raio-X, G3)', () => {
@@ -1892,71 +1669,6 @@ describe('⭐⭐ consertos do review da onda A do lote 5: o player', () => {
       expect(screen.queryByRole('button', { name: 'Ouvir' })).toBeNull()
     } finally {
       Object.assign(window, { speechSynthesis: antes.synth, SpeechSynthesisUtterance: antes.utt })
-    }
-  })
-
-  test('⚠️⚠️ lives do Dia 4 (ALTO): "Agora é sua vez" tem o TIRO, abre com vidas e sem o relógio', async () => {
-    const relogio = relogioManual()
-    try {
-      const bloco: InteractiveBlock = {
-        ...content('lives'),
-        activity: {
-          type: 'demonstration',
-          scene: 'lives',
-          cast: {
-            hero: { name: 'nave', gender: 'f' },
-            obstacle: { name: 'asteroide', gender: 'm' },
-          },
-          script: [
-            {
-              id: 'passo-1',
-              caption: 'O tiro acertou.',
-              highlight: 'scene',
-              actions: [{ type: 'shoot' }],
-            },
-            {
-              id: 'passo-2',
-              caption: 'Uma batida.',
-              highlight: 'scene',
-              actions: [{ type: 'connect', port: 'life', enabled: true }, { type: 'collide' }],
-            },
-            {
-              id: 'passo-3',
-              caption: 'Mais duas.',
-              highlight: 'scene',
-              actions: [{ type: 'collide' }, { type: 'collide' }],
-            },
-          ],
-        },
-      }
-      servidorQueCorrige(bloco)
-      aluno(bloco)
-      await palpitar('lives')
-      const principal = () =>
-        screen.getByRole('button', { name: /^Ver a parte|^Ver tudo de novo|^Pausar/ })
-      for (let i = 0; i < 60 && principal().textContent !== 'Ver tudo de novo'; i++) {
-        if (principal().textContent !== 'Pausar')
-          await act(async () => {
-            fireEvent.click(principal())
-          })
-        await relogio.tocar(12)
-      }
-      fireEvent.click(await screen.findByRole('button', { name: 'Agora é sua vez' }))
-      const vez = await screen.findByRole('region', { name: 'Sua vez' })
-      const botoes = [...vez.querySelectorAll('button')]
-      const atirar = botoes.find((b) => b.textContent?.includes('Atirar no asteroide'))
-      const bater = botoes.find((b) => b.textContent?.includes('Bater no asteroide'))
-      expect(atirar).toBeTruthy()
-      // A partida NOVA: com vidas, o "Bater" abre.
-      expect(bater?.getAttribute('aria-disabled')).toBeNull()
-      // Sem o relógio (o ponto é do acerto, e não do tempo).
-      expect(
-        botoes.some((b) =>
-          /Soltar o tempo|Um passo/.test(b.getAttribute('aria-label') ?? b.textContent ?? ''),
-        ),
-      ).toBe(false)
-    } finally {
-      relogio.restaurar()
     }
   })
 })

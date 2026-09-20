@@ -16,15 +16,12 @@ export function ExplorationPieces({
   state,
   dispatch,
   more,
-  travada = false,
   pontoPorAcerto = false,
 }: {
   activity: SceneActivity
   state: SceneState
   dispatch: (action: SceneAction) => void
   more: boolean
-  /** A montagem travada da demonstração (`MontagemTravada`): a peça não convida a arrastar. */
-  travada?: boolean
   /**
    * ⚠️⚠️ As `lives` do Desafio contam ponto pelo ACERTO do tiro (consertos do review da onda A do lote
    * 5): no "Agora é sua vez" o fio "Somar ponto → Enquanto tem vida" ensinava o ponto por TEMPO, a
@@ -103,13 +100,7 @@ export function ExplorationPieces({
           a ordem de desenhar em pilha, o fio da gravidade, as marcas do impulso e a PEÇA QUE MUDA
           DE CAIXA no lugar dos fios de som, nascimento, condição e toque. */}
       {(CENAS_DO_CORRE_DINO as readonly string[]).includes(m) && (
-        <DinoSceneControls
-          activity={activity}
-          state={state}
-          dispatch={dispatch}
-          more={more}
-          travada={travada}
-        />
+        <DinoSceneControls activity={activity} state={state} dispatch={dispatch} more={more} />
       )}
       {m === 'lives' && (
         <div className="space-y-3">
@@ -144,7 +135,6 @@ export function ExplorationPieces({
                 { id: 'vida', titulo: 'Enquanto tem vida' },
               ]}
               atual={state.lifeline.scoring ? 'vida' : 'fora'}
-              travada={travada}
               onMover={(caixa) =>
                 dispatch({ type: 'connect', port: 'condition', enabled: caixa === 'vida' })
               }
@@ -158,7 +148,6 @@ export function ExplorationPieces({
               { id: 'bater', titulo: 'Quando bater' },
             ]}
             atual={state.lifeline.onHit ? 'bater' : 'fora'}
-            travada={travada}
             onMover={(caixa) =>
               dispatch({ type: 'connect', port: 'life', enabled: caixa === 'bater' })
             }

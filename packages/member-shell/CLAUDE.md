@@ -1,5 +1,11 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+> **Contrato vigente das aulas (20/09/2026):** `scene-activity.tsx` é o único player de cena:
+> a criança experimenta, faz o palpite e pode responder à pergunta final. Não existem mais
+> `scene-sandbox.tsx`, `scene-demo-controls.tsx` ou reprodução de roteiro. A moldura usa
+> `scene-display-samples.ts` somente para reservar espaço visual. Trechos históricos abaixo
+> que descrevem demonstração ou pergunta curta não são instruções atuais.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Next.js, React, jose, Zod,
 > sharp, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender

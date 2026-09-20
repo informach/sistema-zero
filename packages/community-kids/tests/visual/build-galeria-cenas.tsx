@@ -3,8 +3,8 @@
  *
  * ⚠️⚠️ Ela existe porque a dona nunca viu 21 delas. A proposta do lote 3 promete mexer no visual
  * das cenas, e não dá para autorizar o que não se vê — nem para julgar "destoante" olhando uma.
- * Aqui saem as 45, cada uma no estado em que o próprio ROTEIRO do modelo a deixa (as ações do
- * roteiro passam pelo motor de verdade), com a faixa de estado, a frase, as descobertas que a
+ * Aqui saem as cenas em um estado alcançado por ações de exploração (as ações passam pelo
+ * motor de verdade), com a faixa de estado, a frase, as descobertas que a
  * cena cobra e o que a criança pode mexer.
  *
  * ⚠️ O desenho é o de PRODUÇÃO: os mesmos componentes que a aula monta e o CSS do app kids
@@ -30,6 +30,7 @@ import {
 import { ExplorationStage } from '@sistemazero/member-shell/components/exploration-stage'
 import tailwind from '@tailwindcss/postcss'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { scenePaths } from '../../../core/tests/fixtures/exploration-paths'
 
 const GRUPOS: Record<SceneGroup, string> = {
   stage: 'A tela e quem a lê',
@@ -45,15 +46,12 @@ const GRUPOS: Record<SceneGroup, string> = {
 /**
  * O estado em que a cena se mostra.
  *
- * ⚠️ Não é um estado escolhido a dedo: são as ações do ROTEIRO do próprio modelo, aplicadas pelo
- * motor. É o que a cena faz quando se apresenta — se ela aparecer vazia aqui, é porque o roteiro
- * dela não mostra nada, e isso também é informação.
+ * As ações são jornadas de exploração de teste, aplicadas pelo motor para capturar a cena.
  */
 function estadoDeApresentacao(scene: SceneId): SceneState {
   const start = { scene }
   let state = openScene(start)
-  for (const passo of SCENE_MODELS[scene].script)
-    for (const acao of passo.actions) state = stepScene(start, state, acao)
+  for (const acao of scenePaths[scene]) state = stepScene(start, state, acao)
   return state
 }
 

@@ -93,7 +93,6 @@ export function PecaQueMudaDeCaixa<K extends string>({
   caixas,
   atual,
   aninhada = false,
-  travada = false,
   emDestaque = true,
   onMover,
 }: {
@@ -108,11 +107,6 @@ export function PecaQueMudaDeCaixa<K extends string>({
   caixas: readonly [Caixa<K>, Caixa<K>, ...Caixa<K>[]]
   atual: K
   aninhada?: boolean
-  /**
-   * A montagem da DEMONSTRAÇÃO (`MontagemTravada`, `inert`): a ajuda de arrastar convidava a um gesto
-   * que não funciona ali (consertos do review da onda A do lote 5), e passa a dizer como mexer.
-   */
-  travada?: boolean
   /**
    * A peça é o azul cheio da bancada? ⚠️ Na `jump-sound` não (full review de experiência, B18): o gesto
    * "Tocar para pular" já é o azul cheio, e dois azuis cheios lado a lado não diziam qual era o gesto.
@@ -303,9 +297,7 @@ export function PecaQueMudaDeCaixa<K extends string>({
         <div className="sz-scene-pecas">{caixas.map((c) => caixa(c))}</div>
       )}
       <p id={ajuda} className="text-sm text-muted-foreground">
-        {travada
-          ? 'Toque em Agora é sua vez para mexer.'
-          : `Arraste ${nomeDaPeca} para a outra caixa. Ou toque em Colocar aqui.`}
+        {`Arraste ${nomeDaPeca} para a outra caixa. Ou toque em Colocar aqui.`}
       </p>
       {arrasto &&
         Math.hypot(arrasto.x - arrasto.inicioX, arrasto.y - arrasto.inicioY) > LIMIAR_DO_ARRASTE &&
@@ -480,24 +472,19 @@ function OrdemDeDesenhar({
 }
 
 /**
- * A bancada das oito cenas. Montada pelo `ExplorationPieces`, o mesmo lugar dos outros fios e peças:
- * o player, a bancada do "Agora é sua vez" e a montagem travada da demonstração a alcançam sem saber
- * que ela existe.
+ * A bancada das oito cenas, montada pelo `ExplorationPieces` junto dos outros fios e peças.
  */
 export function DinoSceneControls({
   activity,
   state,
   dispatch,
   more,
-  travada = false,
 }: {
   activity: SceneActivity
   state: SceneState
   dispatch: (action: SceneAction) => void
-  /** A demonstração mostra tudo aberto (os motivos de fechado não fazem sentido para quem assiste). */
+  /** A prévia pode mostrar tudo aberto para inspeção. */
   more: boolean
-  /** A montagem travada da demonstração: a ajuda da peça diz como mexer, e não "arraste". */
-  travada?: boolean
 }) {
   const m = activity.scene
   const cast = activity.cast
@@ -561,7 +548,6 @@ export function DinoSceneControls({
             { id: 'pulo', titulo: t('Quando o Dino pular') },
           ]}
           atual={state.sound.onJump ? 'pulo' : 'tecla'}
-          travada={travada}
           emDestaque={false}
           onMover={(caixa) =>
             dispatch({ type: 'connect', port: 'sound', enabled: caixa === 'pulo' })
@@ -610,7 +596,6 @@ export function DinoSceneControls({
             },
           ]}
           atual={state.crowd.timer ? 'relogio' : 'quadro'}
-          travada={travada}
           onMover={(caixa) =>
             dispatch({ type: 'connect', port: 'timer', enabled: caixa === 'relogio' })
           }
@@ -663,7 +648,6 @@ export function DinoSceneControls({
               { id: 'se', titulo: 'Se o estado do jogo é jogando' },
             ]}
             atual={state.match.guarded ? 'se' : 'relogio'}
-            travada={travada}
             onMover={(caixa) =>
               dispatch({ type: 'connect', port: 'condition', enabled: caixa === 'se' })
             }
@@ -705,7 +689,6 @@ export function DinoSceneControls({
                   ? 'segundo'
                   : 'solto'
           }
-          travada={travada}
           onMover={(caixa) =>
             dispatch({
               type: 'score-place',
@@ -743,7 +726,6 @@ export function DinoSceneControls({
               { id: 'toque', titulo: 'Quando apertar qualquer tecla ou tocar na tela' },
             ]}
             atual={state.match.touch ? 'toque' : 'enter'}
-            travada={travada}
             onMover={(caixa) =>
               dispatch({ type: 'connect', port: 'touch', enabled: caixa === 'toque' })
             }

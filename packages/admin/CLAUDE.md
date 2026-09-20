@@ -1,5 +1,11 @@
 # CLAUDE.md — @sistemazero/admin
 
+> **Contrato vigente das aulas (20/09/2026):** o editor de bloco interativo oferece apenas
+> **Experiência** e **HTML personalizado**. Cena pronta sempre é experimentação conduzida pela
+> criança. O palpite e a pergunta final são partes opcionais da experiência; pergunta isolada
+> pertence ao quiz. O roteiro e o editor de demonstração foram removidos. Os detalhes históricos
+> sobre quatro tipos e demonstração abaixo não devem orientar novas edições.
+
 ## Atividades interativas e cenas no editor
 
 ⭐⭐ **A atividade interativa tem QUATRO tipos, escolhidos em cartões**: **Experimentação**,

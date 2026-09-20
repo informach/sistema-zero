@@ -1,5 +1,10 @@
 # CLAUDE.md — @sistemazero/members
 
+> **Contrato vigente das aulas (20/09/2026):** rascunho e publicação aceitam somente
+> `experimentation` e `html` como atividades interativas. Perguntas isoladas usam o bloco
+> `quiz`. Sessões de cena só têm comandos e avaliação de experimentação; não há migração de
+> demonstrações antigas. Notas históricas abaixo sobre esses formatos não se aplicam.
+
 ## A cor do perfil — 17/09/2026
 
 O alternador de dois temas (`padrao` ⇄ `pink`) virou um CATÁLOGO de cores escolhido pela pessoa.

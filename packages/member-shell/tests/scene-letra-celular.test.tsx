@@ -8,12 +8,12 @@ import {
   type SceneId,
   type SceneStart,
   type SceneState,
-  sceneScript,
   sceneTrial,
   stepScene,
 } from '@sistemazero/core/learning/scene'
 import { Glob } from 'bun'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { scenePaths } from '../../core/tests/fixtures/exploration-paths'
 import { ExperienceComparison } from '../src/components/experience-scene'
 import { ExplorationStage } from '../src/components/exploration-stage'
 import {
@@ -41,9 +41,8 @@ import {
  * ⚠️ A largura de cada `<svg>` NÃO é lida do componente e aceita de olhos fechados: ela é conferida
  * contra o modelo da moldura (um desenho só ou empilhado = a moldura inteira; lado a lado = metade, com
  * a divisória de 2px no da esquerda). Sem isso um `data-largura-do-desenho` inventado aprovaria tudo.
- * ⚠️ Os estados são os de sempre das varreduras de cena: a abertura e cada parte do roteiro, do modelo
- * (nos dois tipos, porque a demonstração desenha coisas que a experimentação não desenha) e de todo
- * bloco de cena dos manifestos v6. O que se sobrepõe ou corta não se calcula sem layout: isso é o
+ * Os estados vêm da abertura e dos gestos da experimentação, além dos blocos
+ * dos manifestos. O que se sobrepõe ou corta não se calcula sem layout: isso é o
  * `tmp/storyboard/letra-celular/auditar.mjs`, no navegador.
  */
 
@@ -61,7 +60,7 @@ function usosDosManifestos(): SceneActivity[] {
       if (
         typeof registro.scene === 'string' &&
         (SCENE_IDS as readonly string[]).includes(registro.scene) &&
-        (registro.type === 'experimentation' || registro.type === 'demonstration')
+        registro.type === 'experimentation'
       )
         usos.push(registro as unknown as SceneActivity)
       for (const valor of Object.values(registro)) visitar(valor)
@@ -77,7 +76,6 @@ const USOS = usosDosManifestos()
 function atividades(cena: SceneId): SceneActivity[] {
   return [
     { type: 'experimentation', scene: cena } as SceneActivity,
-    { type: 'demonstration', scene: cena } as SceneActivity,
     ...USOS.filter((u) => u.scene === cena),
   ]
 }
@@ -85,19 +83,13 @@ function atividades(cena: SceneId): SceneActivity[] {
 function estados(activity: SceneActivity): SceneState[] {
   const start: SceneStart = {
     scene: activity.scene,
-    setup: activity.type === 'experimentation' ? activity.setup : undefined,
-    initialImpulse: activity.type === 'experimentation' ? activity.initialImpulse : undefined,
+    setup: activity.setup,
+    initialImpulse: activity.initialImpulse,
   }
   let estado = openScene(start)
   const lista = [estado]
-  for (const passo of sceneScript(activity)) {
-    for (const acao of passo.actions) {
-      try {
-        estado = stepScene(start, estado, acao)
-      } catch {
-        // Um passo que este caso recusa não é assunto desta varredura (a do core cobre).
-      }
-    }
+  for (const acao of scenePaths[activity.scene]) {
+    estado = stepScene(start, estado, acao)
     lista.push(estado)
   }
   return lista

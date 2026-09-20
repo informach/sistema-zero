@@ -184,7 +184,7 @@
     {
       "key": "senao-se",
       "title": "Veja como escolher uma tela por vez",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Entender o ramo senão se e o texto como peça de valor.",
       "blockKeys": ["video-senao-se"],
       "workspaceKey": null,

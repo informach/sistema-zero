@@ -199,38 +199,10 @@ const validos: Array<[string, InteractiveBlock]> = [
       },
     },
   ],
-  ['demonstração do modelo', { ...base, activity: { type: 'demonstration', scene: 'layers' } }],
   // ⚠️ Full review de experiência do conjunto (A1): a `layers` apresentada como o painel Camadas do Pinta.
   [
     'experimentação da layers com a pilha de camadas',
     { ...base, activity: { type: 'experimentation', scene: 'layers', pilha: 'camadas' } },
-  ],
-  [
-    'demonstração com roteiro autoral',
-    {
-      ...base,
-      activity: {
-        type: 'demonstration',
-        scene: 'world',
-        script: [{ id: 'unico', caption: 'Veja.', actions: [{ type: 'create' }] }],
-      },
-    },
-  ],
-  [
-    'pergunta curta',
-    {
-      ...base,
-      activity: { type: 'question' },
-      checkpoint: {
-        prompt: 'E agora?',
-        choices: [
-          { id: 'a', label: 'A' },
-          { id: 'b', label: 'B' },
-        ],
-        correctChoiceId: 'a',
-        explanation: 'Porque sim.',
-      },
-    },
   ],
   ['html', { ...base, activity: { type: 'html', html: '<p>oi</p>' } }],
   [
@@ -270,58 +242,6 @@ const validos: Array<[string, InteractiveBlock]> = [
         type: 'experimentation',
         scene: 'axis-z',
         setup: { actions: [{ type: 'place3d', x: 0, y: 0, z: 80 }], goals: ['up'] },
-      },
-    },
-  ],
-  [
-    'demonstração do ateliê com roteiro próprio',
-    {
-      ...base,
-      activity: {
-        type: 'demonstration',
-        scene: 'shading',
-        script: [
-          {
-            id: 'p1',
-            caption: 'Com uma cor só, ela parece um adesivo.',
-            actions: [{ type: 'shade', on: false }],
-          },
-          {
-            id: 'p2',
-            caption: 'Com a segunda cor, ela ganha volume.',
-            actions: [
-              { type: 'shade', on: true },
-              { type: 'light', side: 'right' },
-            ],
-          },
-        ],
-      },
-    },
-  ],
-  [
-    // ⚠️ Lote 5 do Raio-X (G4): as ações novas do ateliê (os espelhos do Pinta, o traço pronto, o
-    // quadradinho, apagar o papel) passam pela borda como passam pelo domínio.
-    'demonstração do espelho com as ações do lote 5',
-    {
-      ...base,
-      activity: {
-        type: 'demonstration',
-        scene: 'symmetry',
-        script: [
-          {
-            id: 'p1',
-            caption: 'O espelho lado a lado copia a asa.',
-            actions: [
-              { type: 'mirror-mode', mode: 'x' },
-              { type: 'trace', piece: 'asa' },
-              { type: 'dot', x: 3, y: 12 },
-              // Os dois espelhos ligados: duas chaves no Pinta (consertos do review da onda B do lote 5).
-              { type: 'mirror-mode', mode: 'xy' },
-              { type: 'trace', piece: 'asa' },
-              { type: 'clear-paper' },
-            ],
-          },
-        ],
       },
     },
   ],
@@ -414,17 +334,14 @@ const invalidos: Array<[string, unknown]> = [
     'pilha que não existe',
     { ...base, activity: { type: 'experimentation', scene: 'layers', pilha: 'lista' } },
   ],
-  // ⚠️⚠️ A demonstração não cobra meta nenhuma. Enquanto o schema dela declarava só `actions`,
-  // o `normalize` do Elysia APAGAVA o `goals` em vez de deixá-lo chegar — o payload passava com
-  // o campo sumido e o guard do domínio, que é quem tem a régua e a mensagem certa, nunca o via.
   [
-    'demonstração com missão',
+    'experimentação com missão',
     {
       ...base,
       activity: {
-        type: 'demonstration',
+        type: 'experimentation',
         scene: 'shading',
-        setup: { actions: [{ type: 'shade', on: true }], goals: ['volume'] },
+        setup: { actions: [{ type: 'shade', on: true }], goals: ['meta-inexistente'] },
       },
     },
   ],
@@ -444,26 +361,13 @@ const invalidos: Array<[string, unknown]> = [
     },
   ],
   [
-    'roteiro que promete uma descoberta que não acontece',
+    'ação de outra cena no caso inicial',
     {
       ...base,
       activity: {
-        type: 'demonstration',
+        type: 'experimentation',
         scene: 'world',
-        script: [
-          { id: 'x', caption: 'Veja.', actions: [{ type: 'create' }], waitFor: 'nunca-acontece' },
-        ],
-      },
-    },
-  ],
-  [
-    'roteiro com ação de outra cena',
-    {
-      ...base,
-      activity: {
-        type: 'demonstration',
-        scene: 'world',
-        script: [{ id: 'x', caption: 'Veja.', actions: [{ type: 'impulse', force: 9 }] }],
+        setup: { actions: [{ type: 'impulse', force: 9 }] },
       },
     },
   ],
@@ -498,17 +402,8 @@ const invalidos: Array<[string, unknown]> = [
       },
     },
   ],
-  // ⚠️⚠️ "Sem a pergunta do fim" só tem efeito na EXPERIMENTAÇÃO (a demonstração não herda
-  // pergunta nenhuma) e não convive com a pergunta escrita no bloco: são duas ordens contrárias.
+  // "Sem a pergunta do fim" não convive com a pergunta escrita no bloco: são duas ordens contrárias.
   // A borda só sabe a forma do campo; quem conhece as duas regras é o core.
-  [
-    'sem a pergunta do fim numa demonstração',
-    {
-      ...base,
-      activity: { type: 'demonstration', scene: 'world' },
-      semPerguntaFinal: true,
-    },
-  ],
   [
     'sem a pergunta do fim com a pergunta escrita no bloco',
     {
@@ -545,23 +440,28 @@ describe('o DTO da borda e o guarda do domínio', () => {
     // entrou por acidente.
     expect(frouxos.sort()).toEqual(
       [
-        'demonstração com missão',
+        'experimentação com missão',
         'impulso fora das cenas de salto',
         'pistas repetidas',
-        'roteiro com ação de outra cena',
-        'roteiro que promete uma descoberta que não acontece',
+        'ação de outra cena no caso inicial',
         'título só com espaço',
         'áudio sem https',
         'pilha fora da layers',
         // A meta é do CATÁLOGO da cena: só o core sabe quais existem.
         'previsão que se revela numa meta de outra cena',
-        // "Sem a pergunta do fim" tem forma fechada na borda e DUAS regras no core: só na
-        // experimentação, e nunca junto da pergunta escrita no bloco.
-        'sem a pergunta do fim numa demonstração',
+        // "Sem a pergunta do fim" não convive com a pergunta escrita no bloco.
         'sem a pergunta do fim com a pergunta escrita no bloco',
       ].sort(),
     )
     for (const [nome, bloco] of invalidos) expect(isInteractiveBlock(bloco), nome).toBe(false)
+  })
+
+  test('demonstração e pergunta isolada não são formatos de bloco', () => {
+    for (const type of ['demonstration', 'question']) {
+      const bloco = { ...base, activity: { type, scene: 'world' } }
+      expect(isInteractiveBlock(bloco), type).toBe(false)
+      expect(validador.Check(bloco), type).toBe(false)
+    }
   })
 })
 

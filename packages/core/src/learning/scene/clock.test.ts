@@ -1,6 +1,4 @@
 import { describe, expect, test } from 'bun:test'
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import {
   isSceneAction,
   SCENE_FRAME_RATE,
@@ -12,30 +10,19 @@ import {
   sceneStepLabel,
   sceneStepSeconds,
 } from './actions'
-import { SCENE_MODELS } from './catalog'
 import { openScene, stepScene } from './engine'
-import { evaluateExperimentation, sceneGoals } from './evaluate'
-import {
-  type DemonstrationActivity,
-  isDemonstrationActivity,
-  sceneScript,
-  sceneStart,
-} from './index'
 import {
   applyExperimentSegment,
   type ExperimentCommand,
   type ExperimentSession,
-  initialDemonstration,
   initialExperiment,
   isExperimentCommand,
   packExperiment,
-  readDemonstrationSession,
   readExperimentSession,
   SESSION_LIMITS,
-  stepDemonstration,
   stepExperiment,
 } from './session'
-import { hydrateSceneState, isSceneState, type SceneStart, type SceneState } from './state'
+import { isSceneState, type SceneState } from './state'
 
 /**
  * ⭐⭐ O relógio de quadro fixo (lote 4 do Raio-X, 16/09/2026).
@@ -825,159 +812,5 @@ describe('⚠️⚠️ o servidor rejoga igual ao navegador, e o que está grava
       }
       expect(guardado?.session.state, scene).toEqual(navegador.state)
     }
-  })
-
-  test('⚠️⚠️ retrato de ANTES do relógio (sem `clock`, com sobras velhas) abre, e segue no ritmo novo', () => {
-    // Uma criança que mexeu na `lives` ontem: dois pontos, 0,96 s de resto das fatias do motor
-    // antigo, as metas já descobertas. Sem hidratação o validador recusaria o retrato inteiro e a
-    // sessão voltaria ao começo.
-    const start = { scene: 'lives' } as const
-    let ontem = openScene(start)
-    for (const a of [ligar('condition'), ligar('life'), { type: 'collide' } as SceneAction])
-      ontem = stepScene(start, ontem, a)
-    const { clock: _sem, ...antigo } = {
-      ...ontem,
-      lifeline: { ...ontem.lifeline, points: 2, remainder: 0.96 },
-      evidence: { ...ontem.evidence, discoveries: [...ontem.evidence.discoveries, 'points-stay'] },
-    }
-    expect(isSceneState(antigo)).toBe(false)
-    const partes = [JSON.stringify({ scene: 'lives', state: antigo, past: [antigo], trials: [] })]
-    const lido = readExperimentSession('lives', partes)
-    expect(lido).not.toBeNull()
-    if (!lido) return
-    expect(lido.state.clock.carry).toBe(0)
-    // O que ela já tinha descoberto continua valendo, com o MESMO resultado.
-    const alvo = ['life-lost', 'points-stay']
-    const antes = evaluateExperimentation(
-      'lives',
-      antigo as unknown as SceneState,
-      true,
-      undefined,
-      alvo,
-    )
-    const depois = evaluateExperimentation('lives', lido.state, true, undefined, alvo)
-    expect(depois).toEqual(antes)
-    expect(sceneGoals('lives', lido.state, undefined, alvo)).toEqual(
-      sceneGoals('lives', antigo as unknown as SceneState, undefined, alvo),
-    )
-    // E o relógio anda no ritmo novo a partir dali: 0,5 s nada, 1 s um ponto.
-    let s: ExperimentSession = lido
-    s = stepExperiment(start, s, { type: 'advance', seconds: 0.5 }).session
-    expect(s.state.lifeline.points).toBe(2)
-    s = stepExperiment(start, s, { type: 'advance', seconds: 0.5 }).session
-    expect(s.state.lifeline.points).toBe(3)
-
-    // A velocidade no meio do caminho, com a posição quebrada das fatias antigas.
-    const v = { scene: 'velocity' } as const
-    const { clock: _c, ...meio } = {
-      ...openScene(v),
-      drive: { ...openScene(v).drive, vx: 5, x: 87.5, fromX: 85, anchorX: 60 },
-    }
-    const hidratado = hydrateSceneState(meio) as SceneState
-    expect(isSceneState(hidratado)).toBe(true)
-    expect(stepScene(v, hidratado, { type: 'advance', seconds: 0.2 }).drive.x).toBe(92.5)
-
-    // E a demonstração guardada no meio de uma etapa.
-    const d = readDemonstrationSession('velocity', [
-      JSON.stringify({
-        scene: 'velocity',
-        state: meio,
-        step: 0,
-        action: 1,
-        elapsed: 0.35,
-        ready: false,
-        viewed: false,
-      }),
-    ])
-    expect(d?.state.clock.carry).toBe(0)
-  })
-})
-
-describe('⚠️⚠️ os roteiros de demonstração continuam tocando no ritmo novo', () => {
-  const docs = resolve(import.meta.dir, '../../../../../docs/aulas-interativas')
-  const demonstracoes: { onde: string; activity: DemonstrationActivity }[] = []
-  const andar = (valor: unknown, onde: string) => {
-    if (Array.isArray(valor)) for (const v of valor) andar(v, onde)
-    else if (valor && typeof valor === 'object') {
-      const a = valor as { type?: string; scene?: string }
-      if (a.type === 'demonstration' && typeof a.scene === 'string')
-        demonstracoes.push({ onde, activity: valor as DemonstrationActivity })
-      for (const v of Object.values(valor)) andar(v, onde)
-    }
-  }
-  if (existsSync(docs))
-    for (const pacote of readdirSync(docs).filter((p) => p.endsWith('-v6'))) {
-      for (const aula of readdirSync(resolve(docs, pacote), { withFileTypes: true })) {
-        const arquivo = resolve(docs, pacote, aula.name, 'manifesto.json')
-        if (aula.isDirectory() && existsSync(arquivo))
-          andar(JSON.parse(readFileSync(arquivo, 'utf8')), `${pacote}/${aula.name}`)
-      }
-      const opcionais = resolve(docs, pacote, 'demonstracoes-opcionais.json')
-      if (existsSync(opcionais))
-        andar(JSON.parse(readFileSync(opcionais, 'utf8')), `${pacote}/opcionais`)
-    }
-  for (const scene of SCENE_IDS)
-    if (SCENE_MODELS[scene].script.length)
-      demonstracoes.push({ onde: 'catálogo', activity: { type: 'demonstration', scene } })
-
-  test('a varredura LEU os manifestos (laço vazio aprova tudo)', () => {
-    expect(demonstracoes.filter(({ onde }) => onde !== 'catálogo').length).toBeGreaterThanOrEqual(
-      20,
-    )
-  })
-
-  test('⚠️⚠️ todo roteiro é válido (`playsOut`) e, tocado pelo ▶ do player, cumpre cada `waitFor`', () => {
-    const faltas: string[] = []
-    for (const { onde, activity } of demonstracoes) {
-      const nome = `${onde} · ${activity.scene}`
-      if (!isDemonstrationActivity(activity)) faltas.push(`${nome}: roteiro inválido`)
-      const start: SceneStart = sceneStart(activity)
-      const roteiro = sceneScript(activity)
-      for (const semente of [1, 5]) {
-        const r = aleatorio(semente)
-        let s = stepDemonstration(start, roteiro, initialDemonstration(start), {
-          type: 'start',
-        }).session
-        for (let i = 0; i < 6000 && !s.viewed; i++) {
-          let junto = 0
-          while (junto < 0.04) junto += 1 / 60 + (r() - 0.5) * 0.0006
-          s = stepDemonstration(start, roteiro, s, { type: 'tick', seconds: junto }).session
-          if (!s.ready) continue
-          const espera = roteiro[s.step]?.waitFor
-          if (espera && !s.state.evidence.discoveries.includes(espera))
-            faltas.push(`${nome}, etapa ${s.step + 1}: ${espera}`)
-          if (s.step < roteiro.length - 1)
-            s = stepDemonstration(start, roteiro, s, { type: 'next' }).session
-        }
-        if (!s.viewed) faltas.push(`${nome}: não terminou`)
-        // E o mundo no fim é o do roteiro tocado de uma vez (o `playsOut`).
-        let deUmaVez = openScene(start)
-        for (const passo of roteiro)
-          for (const acao of passo.actions) deUmaVez = stepScene(start, deUmaVez, acao)
-        expect(mundo(s.state), nome).toEqual(mundo(deUmaVez))
-      }
-    }
-    expect(faltas).toEqual([])
-  })
-
-  test('⚠️ o roteiro do modelo continua dizendo a verdade no ritmo novo', () => {
-    // `draw-loop`, etapa 2: "os desenhos de antes ficam na tela" sobre 5 Dinos: os 4 novos (1 s a 4
-    // por segundo) e o do COMEÇO. ⚠️ Mudou de propósito (lote 5 do Raio-X): trocar a chave não apaga a
-    // tela, então o desenho da abertura fica junto com o rastro.
-    const dl = { scene: 'draw-loop' } as const
-    let s = openScene(dl)
-    for (const passo of SCENE_MODELS['draw-loop'].script.slice(0, 2))
-      for (const a of passo.actions) s = stepScene(dl, s, a)
-    expect(s.render.trail).toBe(5)
-    // `lives`, etapa 1: "2 s de ponto" são 2 pontos.
-    const lv = { scene: 'lives' } as const
-    s = openScene(lv)
-    for (const a of SCENE_MODELS.lives.script[0]?.actions ?? []) s = stepScene(lv, s, a)
-    expect(s.lifeline.points).toBe(2)
-    // `pool`, etapa 1: três segundos, três corpos criados.
-    const pl = { scene: 'pool' } as const
-    s = openScene(pl)
-    for (const a of SCENE_MODELS.pool.script[0]?.actions ?? []) s = stepScene(pl, s, a)
-    expect(s.nursery.created).toBe(3)
   })
 })

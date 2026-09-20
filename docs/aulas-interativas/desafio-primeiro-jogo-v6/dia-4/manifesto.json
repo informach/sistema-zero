@@ -20,25 +20,6 @@
       "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar e somar os pontos. Entrada: “Hoje tem novidade grande: pela primeira vez a gente sai da categoria Jogo 2D. Pra guardar os pontos,”. Saída: “ chama variável: uma caixinha com um nome e um número dentro, e esse número pode mudar o tempo todo.”. Reaproveitar a analogia da caixinha. Acrescentar três imagens: guardar 0, acertar e guardar 1, desenhar 1 novamente sem somar. Fala complementar: “Pontos é uma caixinha com um número. Ela começa em zero. Um acerto soma um. O placar só lê o número que está guardado e mostra na tela. Mostrar o placar muitas vezes não deve somar mais pontos.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
-      "key": "demonstracao-memoria",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Veja o número e o placar",
-        "instructions": "Veja o número mudar dentro da caixa antes de aparecer na tela.",
-        "hints": [],
-        "activity": {
-          "type": "demonstration",
-          "scene": "variable",
-          "cast": {
-            "hero": { "name": "nave", "gender": "f" },
-            "obstacle": { "name": "asteroide", "gender": "m" }
-          },
-          "cenario": "nave"
-        }
-      }
-    },
-    {
       "key": "video-pontos",
       "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia4-desafio-primeiro-jogo.md → Parte 1. Passo 1: criar e somar os pontos. Entrada: “Na categoria Programação, subcategoria Variáveis, pega o bloco Criar variável e encaixa dentro do Ao”. Saída: “sas. No nome da variável, escreve pontos. No valor, deixa 0, porque todo jogo começa com zero ponto.”. Usar o gesto; trocar “todo jogo começa” por “este jogo começa”. Variáveis podem ter outros valores iniciais em outros projetos. Fala complementar: “Em Programação, Variáveis, coloque Criar variável no final de Ao iniciar. Nome pontos, valor 0. Este jogo começa com zero ponto; durante a partida, esse número vai mudar.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
@@ -194,65 +175,6 @@
           }
         ]
       }
-    },
-    {
-      "key": "demonstracao-vidas",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Veja ponto e vida mudarem por motivos diferentes",
-        "instructions": "Veja o que o acerto muda e o que a batida muda.",
-        "hints": [],
-        "activity": {
-          "type": "demonstration",
-          "scene": "lives",
-          "cast": {
-            "hero": { "name": "nave", "gender": "f" },
-            "obstacle": { "name": "asteroide", "gender": "m" }
-          },
-          "cenario": "nave",
-          "script": [
-            {
-              "id": "passo-1",
-              "caption": "O tiro acertou um asteroide: o placar ganhou 1. Os corações não mudaram.",
-              "highlight": "scene",
-              "actions": [{ "type": "shoot" }]
-            },
-            {
-              "id": "passo-2",
-              "caption": "Um asteroide bateu na nave: saiu um coração. O placar continua 1.",
-              "highlight": "scene",
-              "actions": [
-                { "type": "connect", "port": "life", "enabled": true },
-                { "type": "collide" }
-              ]
-            },
-            {
-              "id": "passo-3",
-              "caption": "Mais duas batidas: acabaram os corações e a partida. O placar guardou o 1.",
-              "highlight": "scene",
-              "actions": [{ "type": "collide" }, { "type": "collide" }]
-            }
-          ]
-        },
-        "prediction": {
-          "context": {
-            "label": "Vidas e placar",
-            "explanation": "Nesta demonstração, vamos observar o que muda nas vidas e no placar quando a nave encosta em um asteroide."
-          },
-          "prompt": "Imagine: a nave já tem 1 ponto e bate num asteroide. O que muda?",
-          "choices": [
-            { "id": "so-coracao", "label": "Só o coração" },
-            {
-              "id": "placar-e-coracao",
-              "label": "O placar e o coração",
-              "shows": "A batida não tirou nenhum ponto do placar."
-            }
-          ],
-          "correctChoiceId": "so-coracao",
-          "revealOn": "points-stay"
-        }
-      }
     }
   ],
   "sections": [
@@ -273,15 +195,15 @@
     {
       "key": "memoria",
       "title": "Observe o número e o placar",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Separar guardar, alterar e mostrar um valor.",
-      "blockKeys": ["video-memoria", "demonstracao-memoria"],
+      "blockKeys": ["video-memoria"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["demonstracao-memoria"]
+        "blockIds": ["video-memoria"]
       }
     },
     {
@@ -586,15 +508,15 @@
     {
       "key": "teste-vidas",
       "title": "Observe ponto e vida mudarem",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Associar cada mudança à sua causa.",
-      "blockKeys": ["video-teste-vidas", "demonstracao-vidas"],
+      "blockKeys": ["video-teste-vidas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["demonstracao-vidas"]
+        "blockIds": ["video-teste-vidas"]
       }
     },
     {

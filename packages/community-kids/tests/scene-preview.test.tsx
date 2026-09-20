@@ -46,39 +46,6 @@ function montar(content: InteractiveBlock, onAttempt: LessonPreviewContextValue[
   )
 }
 
-/** O relógio do navegador na MÃO: cada `tocar(n)` roda `n` quadros a 60 Hz. */
-function relogioManual() {
-  const rafOriginal = window.requestAnimationFrame
-  const cafOriginal = window.cancelAnimationFrame
-  const fila = new Map<number, FrameRequestCallback>()
-  let proximo = 0
-  let agora = 0
-  window.requestAnimationFrame = (cb) => {
-    proximo += 1
-    fila.set(proximo, cb)
-    return proximo
-  }
-  window.cancelAnimationFrame = (id) => {
-    fila.delete(id)
-  }
-  return {
-    async tocar(quadros: number) {
-      for (let i = 0; i < quadros; i++) {
-        agora += 1000 / 60
-        const chamados = [...fila.values()]
-        fila.clear()
-        await act(async () => {
-          for (const cb of chamados) cb(agora)
-        })
-      }
-    },
-    restaurar() {
-      window.requestAnimationFrame = rafOriginal
-      window.cancelAnimationFrame = cafOriginal
-    },
-  }
-}
-
 const experimentacao: InteractiveBlock = {
   kind: 'interactive',
   title: 'Camadas',
@@ -86,26 +53,6 @@ const experimentacao: InteractiveBlock = {
   hints: [],
   required: false,
   activity: { type: 'experimentation', scene: 'layers' },
-}
-
-/**
- * ⚠️ A cena é `controls` DE PROPÓSITO, com o roteiro DO MODELO.
- *
- * O defeito que este teste guarda é o registro perguntar ao avaliador da experimentação, que
- * cobra as metas da cena. Medido: em DOZE das catorze cenas o roteiro do modelo fecha as metas
- * por coincidência do último passo, e só `jump-sound` e `controls` não fechavam. Um teste numa
- * das doze passa com o código defeituoso — é o que ele fazia com `layers`.
- * ⚠️ Mudou de propósito (lote 5 do Raio-X): o roteiro novo da `jump-sound` passa pelas três metas
- * dela (som sem pulo, pulo sem som e um som em cada pulo) e passou a fechá-las; a `controls` segue
- * sem o Enter no roteiro.
- */
-const demonstracao: InteractiveBlock = {
-  kind: 'interactive',
-  title: 'O convite para começar',
-  instructions: 'Observe.',
-  hints: [],
-  required: false,
-  activity: { type: 'demonstration', scene: 'controls' },
 }
 
 type AttemptResult = Awaited<ReturnType<LessonPreviewContextValue['onAttempt']>>
@@ -123,55 +70,6 @@ async function trocarOrdem(vezes: number) {
 }
 
 describe('a prévia de autoria', () => {
-  test('⚠️ a DEMONSTRAÇÃO também registra a tentativa', async () => {
-    // O registro perguntava ao avaliador da EXPERIMENTAÇÃO, que cobra as metas da cena. Quem
-    // só assistiu nunca as alcança, então uma seção cujo critério fosse uma demonstração não
-    // destravava no ensaio — e o professor publicaria uma aula que trava a criança.
-    const tentativas: string[] = []
-    // ⚠️ Mudou de propósito (lote 2 do Raio-X): "Um passo" saiu da demonstração. ⚠️ E desde os
-    // consertos do review do lote 2 a parte TOCA em passos de 0,2 s com menos movimento (não salta
-    // para o fim): o relógio do navegador vai na mão.
-    // ⚠️ ANTES de montar: o player lê a preferência ao montar.
-    window.matchMedia = ((query: string) => ({
-      matches: query.includes('prefers-reduced-motion'),
-      media: query,
-      onchange: null,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      addListener: () => {},
-      removeListener: () => {},
-      dispatchEvent: () => false,
-    })) as unknown as typeof window.matchMedia
-    const relogio = relogioManual()
-    try {
-      let confirm: (result: AttemptResult) => void = () => {}
-      const pending = new Promise<AttemptResult>((resolve) => {
-        confirm = resolve
-      })
-      montar(demonstracao, (blockId) => {
-        tentativas.push(blockId)
-        return pending
-      })
-      const principal = () =>
-        screen.getByRole('button', { name: /^Ver a parte|^Ver tudo de novo|^Pausar/ })
-      await screen.findByRole('button', { name: 'Ver a parte 1' })
-      for (let i = 0; i < 60 && tentativas.length === 0; i++) {
-        if (principal().textContent !== 'Pausar')
-          await act(async () => {
-            fireEvent.click(principal())
-          })
-        await relogio.tocar(12)
-      }
-      await waitFor(() => expect(tentativas).toEqual(['preview']))
-      await act(async () => {
-        confirm(confirmed)
-        await pending
-      })
-    } finally {
-      relogio.restaurar()
-    }
-  })
-
   test('⚠️ falhar e tentar de novo REGISTRA: o botão não é um clique morto', async () => {
     // A primeira ida consome os comandos pendentes. Enquanto o registro dependia de haver
     // comando novo, a segunda tentativa saía sem fazer nada e o erro ficava na tela para sempre.

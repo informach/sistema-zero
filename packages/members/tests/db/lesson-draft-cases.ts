@@ -37,7 +37,7 @@ const interactive: InteractiveBlock = {
   instructions: 'Prepare e desenhe.',
   hints: [],
   required: true,
-  activity: { type: 'question' },
+  activity: { type: 'html', html: '<p>Prepare e desenhe.</p>' },
   checkpoint: {
     prompt: 'O que vem primeiro?',
     choices: [

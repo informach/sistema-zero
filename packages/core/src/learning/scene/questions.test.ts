@@ -23,13 +23,13 @@ const CONTEXTO = {
   explanation: 'Nesta experiência, vamos observar o botão de teste antes de escolher um palpite.',
 }
 
-const bloco = (scene: SceneId, tipo: 'experimentation' | 'demonstration'): InteractiveBlock => ({
+const bloco = (scene: SceneId, _tipo: 'experimentation'): InteractiveBlock => ({
   kind: 'interactive',
   title: 'Bloco',
   instructions: 'Instruções.',
   hints: [],
   required: false,
-  activity: { type: tipo, scene },
+  activity: { type: 'experimentation', scene },
 })
 
 /**
@@ -127,48 +127,6 @@ describe('a previsão e a explicação das 45 cenas', () => {
 })
 
 describe('os resolvedores', () => {
-  test('toda cena tem previsão, e só a EXPERIMENTAÇÃO herda a pergunta', () => {
-    for (const scene of SCENE_IDS) {
-      expect(blockPrediction(bloco(scene, 'experimentation')), scene).toBeDefined()
-      expect(blockPrediction(bloco(scene, 'demonstration')), scene).toBeDefined()
-      expect(blockCheckpoint(bloco(scene, 'experimentation')), scene).toBeDefined()
-      // ⚠️⚠️ Na demonstração a criança ASSISTIU. Cobrar dela a regra depois de um roteiro que
-      // não conduziu é cobrar um gesto que a tela não ofereceu.
-      expect(blockCheckpoint(bloco(scene, 'demonstration')), scene).toBeUndefined()
-    }
-  })
-
-  test('⚠️⚠️ a demonstração INLINE não herda previsão: ela é um ▶ e nada mais', () => {
-    // A previsão TRAVA o palco até a criança escolher. A `inline` existe para caber no meio de
-    // uma explicação (o degrau entre o parágrafo e a simulação), então herdar o padrão punha uma
-    // pergunta de duas opções e um portão em frente a um botão de dois segundos. São duas cenas
-    // reais hoje (`shading` e `fill-stroke`, no Jogo do Meu Jeito), e as duas são o formato pelo
-    // qual a Aula explica um conceito ANTES de pedir qualquer coisa.
-    for (const scene of SCENE_IDS) {
-      const guiada = bloco(scene, 'demonstration')
-      const nolinha = {
-        ...guiada,
-        activity: { type: 'demonstration' as const, scene, presentation: 'inline' as const },
-      }
-      expect(blockPrediction(guiada), scene).toBeDefined()
-      expect(blockPrediction(nolinha), scene).toBeUndefined()
-      expect(publicInteractiveBlock(nolinha).prediction, scene).toBeUndefined()
-      // ⚠️ Mas o professor que ESCREVE a sua continua mandando: o que sai é o padrão, não a
-      // possibilidade.
-      expect(
-        blockPrediction({
-          ...nolinha,
-          prediction: {
-            context: CONTEXTO,
-            prompt: 'Vai subir?',
-            choices: [{ id: 'a', label: 'Vai' }],
-          },
-        })?.prompt,
-        scene,
-      ).toBe('Vai subir?')
-    }
-  })
-
   test('⚠️⚠️ cena desconhecida não derruba a aula: volta sem pergunta', () => {
     // `publicInteractiveBlock` roda sobre o conteúdo CRU do banco (está escrito no próprio
     // código, e é por isso que a poda de gabarito existe). Uma linha gravada com um id de cena
@@ -359,44 +317,6 @@ describe('a cena que entra sem a pergunta do fim', () => {
     expect(publico.semPerguntaFinal).toBeUndefined()
     expect(publico.prediction).toBeDefined()
     expect(publicInteractiveBlock(bloco('stage-size', 'experimentation')).checkpoint).toBeDefined()
-  })
-
-  test('⚠️⚠️ só `true`, e só onde o campo TEM efeito', () => {
-    expect(isInteractiveBlock(semPergunta())).toBe(true)
-    expect(isInteractiveBlock(semPergunta('screen-reader'))).toBe(true)
-    // `false` seria um segundo jeito de dizer "com pergunta", que já é a ausência do campo.
-    expect(isInteractiveBlock({ ...semPergunta(), semPerguntaFinal: false })).toBe(false)
-    expect(isInteractiveBlock({ ...semPergunta(), semPerguntaFinal: 'nao' })).toBe(false)
-    // Duas ordens contrárias: tirar a pergunta e escrever a minha.
-    expect(
-      isInteractiveBlock({
-        ...semPergunta(),
-        checkpoint: {
-          prompt: 'Por quê?',
-          choices: [
-            { id: 'a', label: 'A' },
-            { id: 'b', label: 'B' },
-          ],
-          correctChoiceId: 'a',
-          explanation: 'É isso.',
-        },
-      }),
-    ).toBe(false)
-    // A demonstração NÃO tem pergunta de fábrica: ali o campo seria decoração silenciosa.
-    expect(isInteractiveBlock({ ...bloco('world', 'demonstration'), semPerguntaFinal: true })).toBe(
-      false,
-    )
-    expect(
-      isInteractiveBlock({
-        kind: 'interactive',
-        title: 'B',
-        instructions: 'I',
-        hints: [],
-        required: false,
-        activity: { type: 'html', html: '<p>oi</p>' },
-        semPerguntaFinal: true,
-      }),
-    ).toBe(false)
   })
 })
 

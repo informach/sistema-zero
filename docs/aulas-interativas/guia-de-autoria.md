@@ -1,5 +1,7 @@
 # Como cadastrar e publicar uma aula
 
+Desde 20/09/2026, o bloco interativo oferece apenas **Experimentação** e **HTML personalizado**. Uma cena pronta é sempre manipulada pela criança. Processos que se desenrolam no tempo são explicados no vídeo; perguntas independentes usam o bloco de quiz. O palpite e a pergunta final continuam disponíveis dentro da experimentação.
+
 ## Escolher a conquista de cada seção
 
 No Kids, use vídeo curto para explicar e o balão do Zappy para a instrução direta. Texto corrido continua disponível para a comunidade adulta. O título aparece ao aluno; intenção e objetivo didático orientam a autoria.
@@ -9,7 +11,7 @@ No Kids, use vídeo curto para explicar e o balão do Zappy para a instrução d
 | Seção | Conteúdo | Critério de avanço |
 | --- | --- | --- |
 | Descoberta | Vídeo, Zappy e modelo manipulável | Realizar as comparações indicadas no modelo |
-| Criação | Demonstrações curtas junto do Estúdio | Verificar objetivos estruturais do projeto atual |
+| Criação | Vídeo demonstrativo junto do Estúdio | Verificar objetivos estruturais do projeto atual |
 | Entrega ao professor | Orientação, criação pronta e envio | Envio recebido; aprovação automática quando configurada |
 | Convite ao Mural | Prévia, título, capa e confirmação de publicar | Opcional no piloto; não substitui nem confirma a entrega ao professor |
 | Fechamento | Quiz curto sobre o que já foi explorado | Atingir a nota configurada, com feedback e novas tentativas |
@@ -42,7 +44,7 @@ No notebook, orientação e ferramenta ficam lado a lado quando há largura úti
 
 Os quizzes aceitam imagens no enunciado e nas alternativas pelo editor rico. Os fechamentos das aulas 2, 3 e 10 incluem ilustrações revisadas. Acertos permanecem na nova tentativa; as escolhas são recuperadas por perfil e conteúdo. A prévia do quiz usa o gabarito de autoria localmente, sem enviar tentativas de aluno.
 
-Não acrescente uma pergunta obrigatória sobre algo ainda não observado. Os modelos do piloto reconhecem seus objetivos de exploração sem checkpoint extra. Perguntas independentes e HTML isolado continuam disponíveis para outros usos; HTML arbitrário não declara aprovação por conta própria.
+Não acrescente uma pergunta obrigatória sobre algo ainda não observado. Os modelos do piloto reconhecem seus objetivos de exploração sem checkpoint extra. Quizzes independentes e HTML isolado continuam disponíveis para outros usos; HTML arbitrário não declara aprovação por conta própria.
 
 Cadastre **um Estúdio** na seção de entrega ao professor e selecione o mesmo bloco em **Ferramenta durante esta seção** nas etapas de construção. A entrega pode anteceder o quiz final; depois dela só podem vir seções de fechamento. O fechamento antigo que contém a própria entrega continua válido. O convite opcional ao Mural usa sua própria prévia e confirmação.
 
@@ -126,15 +128,12 @@ Abra a aula original e trabalhe no **rascunho compartilhado**. Em aula vazia, co
 
 Os manifestos v4 do Dino aposentam explicitamente cartões importados da versão anterior. Confira a lista antes de aplicar. Projetos, mídias originais, quizzes originais e histórico não são apagados; conteúdo antigo mantido fica no apoio, fora dos novos critérios. Outros cursos continuam em v3, cuja limpeza editorial permanece manual.
 
-O Dino prevê **78 clipes em 62 seções** após separar gravidade e impulso. São orientações de produção, não vídeos gravados. As 27 aulas somam 145 clipes planejados em 111 seções. Vincule cada gravação pelo uploader Vimeo do cartão. O servidor confirma o processamento antes de publicar. O formato de importação continua v4. As atividades interativas têm **quatro tipos** — `demonstration`, `experimentation`, `question` e `html` —, cada um com o avaliador dele no domínio de cenas. Os tipos anteriores (`exploration`, `simulation`, `prediction`, `sequence`, `comparison`, `experiment`) foram REMOVIDOS em 13/09/2026 e um manifesto que os use é recusado na importação.
+O Dino prevê **78 clipes em 62 seções** após separar gravidade e impulso. São orientações de produção, não vídeos gravados. As 27 aulas somam 145 clipes planejados em 111 seções. Vincule cada gravação pelo uploader Vimeo do cartão. O servidor confirma o processamento antes de publicar. O formato de importação continua v4. O contrato vigente aceita somente `experimentation` e `html` em blocos interativos; uma pergunta independente deve ser um bloco `quiz`. Manifestos com tipos anteriores são recusados na importação.
 
-⚠️ **A previsão que ficou sem casa.** O modelo `prediction` tinha DOIS momentos: o palpite sem
-nota ("Previsões") e o desfecho lido depois ("Depois de observar"). A pergunta curta que ficou no
-lugar dele tem UM espaço depois da resposta, e ele já é a explicação do gabarito. Cinco roteiros
-(`desafio-primeiro-jogo/{introducao,dia-3}` e `o-jogo-do-meu-jeito/aula-0{2,3,8}`) ainda trazem os
-dois trechos, marcados, porque o texto é bom e a decisão é editorial: cada desfecho pode virar
-parágrafo da explicação do gabarito, bloco de texto próprio antes da pergunta, ou sair. Enquanto
-não for decidido, o que está no manifesto é só a pergunta — o desfecho NÃO chega à criança.
+⚠️ **Palpite não é quiz.** O palpite fica dentro da experimentação, antes de a criança mexer na
+cena, e não reprova um erro de hipótese. O quiz é um bloco próprio e verifica uma resposta depois
+da explicação ou da atividade. A pergunta final anexada à experimentação, quando habilitada, é
+apresentada após a descoberta e usa a avaliação da própria experiência.
 
 Salvar e importar alteram apenas o rascunho. A publicação captura editores, espera a fila, valida a revisão e aplica tudo em transação; falha mantém a publicação anterior. Alterações simultâneas não sobrescrevem outra autoria silenciosamente. O indicador e a recuperação local preservam mudanças após falha de rede. O autor pode comparar/baixar alterações locais antes de carregar uma revisão conflitante.
 

@@ -1,5 +1,5 @@
 import { ValidationError } from '@sistemazero/core/errors'
-import { type LessonDraftCommand, migrateLegacyInteractiveBlock } from '@sistemazero/core/learning'
+import type { LessonDraftCommand } from '@sistemazero/core/learning'
 import { getSchemaValidator, type TSchema, t } from 'elysia'
 import type { LessonBlockContent } from '../../domain/course/lesson-block'
 import { LESSON_BLOCK_KINDS } from '../../domain/course/lesson-block'
@@ -149,19 +149,6 @@ export function draftCommand(value: typeof DraftCommandSchema.static): LessonDra
   if (value.change.type === 'block') {
     const { content } = value.change.block
     if (!draftBlockValidator.Check(content)) {
-      // ⚠️⚠️ Bloco gravado no modelo ANTERIOR das experiências: sem esta migração ele não pode
-      // mais ser salvo, e como o editor desabilita o botão do bloco inválido — e a importação de
-      // roteiro salva o bloco aberto ANTES de começar — a aula inteira trava, sem saída pela
-      // tela. Migrar aqui, na borda, devolve o bloco ao modelo de agora e a aula volta a andar.
-      const migrado = migrateLegacyInteractiveBlock(content)
-      if (migrado && draftBlockValidator.Check(migrado))
-        return {
-          ...value,
-          change: {
-            ...value.change,
-            block: { ...value.change.block, content: migrado as typeof content },
-          },
-        }
       throw new ValidationError(blockRejection(content))
     }
   }

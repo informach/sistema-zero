@@ -268,7 +268,7 @@
     {
       "key": "origem",
       "title": "Observe de onde o tiro sai",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Distinguir número fixo de leitura da posição atual.",
       "blockKeys": ["video-origem"],
       "workspaceKey": null,
@@ -491,7 +491,7 @@
     {
       "key": "testar",
       "title": "Observe o teste de dois disparos",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Conferir a origem do tiro em duas posições.",
       "blockKeys": ["video-testar"],
       "workspaceKey": null,

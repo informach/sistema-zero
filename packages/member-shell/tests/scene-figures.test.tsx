@@ -19,11 +19,11 @@ import {
   type SceneState,
   sceneCenario,
   sceneNativeCast,
-  sceneScript,
   stepScene,
 } from '@sistemazero/core/learning/scene'
 import { Glob } from 'bun'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { scenePaths } from '../../core/tests/fixtures/exploration-paths'
 import { ExplorationPieces } from '../src/components/exploration-pieces'
 import { ExplorationStage } from '../src/components/exploration-stage'
 import { ActorFigure } from '../src/components/scene-figures'
@@ -99,17 +99,17 @@ const BORDAS: SceneCast[] = [
 ]
 const ELENCOS = [...ELENCOS_REAIS, ...BORDAS]
 
-/** A abertura e o estado depois de cada parte do roteiro: é onde cada papel aparece. */
+/** A abertura e os estados depois de gestos da experimentação: é onde cada papel aparece. */
 function estados(activity: SceneActivity): SceneState[] {
   const start: SceneStart = {
     scene: activity.scene,
-    setup: activity.type === 'experimentation' ? activity.setup : undefined,
-    initialImpulse: activity.type === 'experimentation' ? activity.initialImpulse : undefined,
+    setup: activity.setup,
+    initialImpulse: activity.initialImpulse,
   }
   let estado = openScene(start)
   const lista = [estado]
-  for (const passo of sceneScript(activity)) {
-    for (const acao of passo.actions) estado = stepScene(start, estado, acao)
+  for (const acao of scenePaths[activity.scene]) {
+    estado = stepScene(start, estado, acao)
     lista.push(estado)
   }
   return lista
@@ -232,7 +232,7 @@ const estadosPorCena = new Map<SceneId, SceneState[]>(
       const initial = openScene(start)
       return [scene, [initial, stepScene(start, initial, { type: 'shoot' })]]
     }
-    if (scene !== 'once-vs-always') return [scene, estados({ type: 'demonstration', scene })]
+    if (scene !== 'once-vs-always') return [scene, estados({ type: 'experimentation', scene })]
     const start: SceneStart = { scene }
     const initial = openScene(start)
     const placed = stepScene(start, initial, {
@@ -252,8 +252,8 @@ const htmlsDe = (scene: SceneId, cast?: SceneCast) =>
 describe('o desenho veste o elenco', () => {
   test('a varredura mede alguma coisa', () => {
     // Anti-vácuo: sem manifestos lidos, ou sem nenhum palco com papel, tudo passaria calado.
-    expect(USOS.length).toBeGreaterThanOrEqual(10)
-    expect(ELENCOS_REAIS.length).toBeGreaterThanOrEqual(5)
+    expect(USOS.length).toBeGreaterThanOrEqual(6)
+    expect(ELENCOS_REAIS.length).toBeGreaterThanOrEqual(4)
     for (const u of USOS)
       expect({ arquivo: u.arquivo, ok: isSceneCast(u.activity.cast) }).toEqual({
         arquivo: u.arquivo,
@@ -300,7 +300,7 @@ describe('o desenho veste o elenco', () => {
     // rodava colada nos 5 s de fábrica do bun. É tempo, não regra.
   }, 30_000)
 
-  test('⚠️⚠️ e os usos REAIS, como estão nos manifestos (com o caso e o roteiro deles)', () => {
+  test('⚠️⚠️ e os usos REAIS, como estão nos manifestos (com o caso deles)', () => {
     const falhas: string[] = []
     for (const { arquivo, activity } of USOS) {
       const htmls = estados(activity).map((e) => desenhar(activity, e))
@@ -308,14 +308,12 @@ describe('o desenho veste o elenco', () => {
         falhas.push(`${arquivo} ${f}`)
     }
     expect(falhas).toEqual([])
-    // O que a proposta viu nos cursos: a nave no espaço, e a pedra com a chama também. E, desde o
-    // lote 5 do Raio-X, o cacto na terra: a `velocity` das Aulas 5 e 12 do Corre Dino veste o cacto.
-    // ⚠️ A pedra com a chama é O Jogo do Meu Jeito desde o registro de cenários: os dois cursos do
-    // espaço deixaram de ser o mesmo "espaco" e cada um tem o seu elenco.
+    // Os elencos customizados restantes são dos dois cursos espaciais. O Corre Dino usa o elenco
+    // padrão, conferido acima em todas as cenas.
     const mundos = new Set(
       USOS.map((u) => sceneCenario(u.activity.cast, u.activity.scene, u.activity.cenario)),
     )
-    expect([...mundos].sort()).toEqual(['corre-dino', 'meu-jeito', 'nave'])
+    expect([...mundos].sort()).toEqual(['meu-jeito', 'nave'])
   })
 })
 

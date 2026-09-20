@@ -38,7 +38,7 @@ function setup() {
     instructions: 'Prepare antes de desenhar.',
     required: false,
     hints: ['Leia a explicação.'],
-    activity: { type: 'question' },
+    activity: { type: 'html', html: '<p>Prepare antes de desenhar.</p>' },
     checkpoint: {
       prompt: 'O que vem antes?',
       choices: [
@@ -73,7 +73,7 @@ function setup() {
     request(`/lessons/${lessonId}/blocks/${ids[index]}/learning-attempts`, 'POST', {
       id,
       revision: REVISION,
-      answers: { checkpoint: answer },
+      answers: { participated: true, checkpoint: answer },
       hintsUsed: 0,
     })
   return { ...env, course, lessonId, ids, sections, structureRevision, request, read, attempt }

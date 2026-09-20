@@ -13,7 +13,6 @@ import {
   symmetryCopySeparated,
   symmetryMarkCells,
 } from './atelie'
-import { SCENE_MODELS } from './catalog'
 import { openScene, stepScene } from './engine'
 import { sceneReadout, sceneSituation } from './readout'
 import { hydrateSceneState, initialScene, isSceneState, type SceneState } from './state'
@@ -71,29 +70,6 @@ describe('frames: a prévia que para mostra UM quadro', () => {
     )
     expect(faixa('frames', initialScene({ scene: 'frames' }))).toContain('prévia parada')
     expect(rodar('frames', [{ type: 'play', on: true }]).caption).toBe('A prévia começou.')
-  })
-
-  test('⚠️⚠️ TODA parte do roteiro termina com a prévia parada: a faixa nunca diz "tocando" sobre um quadro só', () => {
-    // O relógio do player para no fim de cada parte. ⚠️ Mudou de propósito (consertos do review da onda
-    // B do lote 5, M1): a parte 4 terminava TOCANDO, e até a criança apertar "Ver a parte 5" a faixa
-    // dizia "prévia: tocando" sobre um fogo congelado. Agora ela para, e a parte 5 toca de novo e para
-    // no meio de uma troca, mudando o desenho.
-    const roteiro = SCENE_MODELS.frames.script
-    let s = openScene({ scene: 'frames' })
-    const fimDaParte: SceneState[] = []
-    for (const parte of roteiro) {
-      for (const acao of parte.actions) s = stepScene({ scene: 'frames' }, s, acao)
-      fimDaParte.push(s)
-    }
-    for (const [i, fim] of fimDaParte.entries()) {
-      expect(fim.animation.playing, `parte ${i + 1}`).toBe(false)
-      expect(faixa('frames', fim), `parte ${i + 1}`).toContain('prévia parada')
-    }
-    expect(descobertas(fimDaParte[3] as SceneState)).toContain('paused-one')
-    // A parte 5 toca: há trocas NELA, e a prévia para num quadro inteiro.
-    const quinta = roteiro[4]?.actions ?? []
-    expect(quinta.some((a) => a.type === 'play' && a.on)).toBe(true)
-    expect(quinta.filter((a) => a.type === 'advance').length).toBeGreaterThan(0)
   })
 
   test('⚠️⚠️ com a prévia tocando no motor e o relógio parado por fora, o pedido de `two-drawings` derruba a meta', () => {
@@ -314,49 +290,9 @@ describe('sheet-vs-sprite: a largura do recorte na folha da nave', () => {
     expect(naMetade.sheet.cell).toBe(2)
     expect(isSceneAction({ type: 'crop', width: 24 }, 'sheet-vs-sprite')).toBe(false)
   })
-
-  test('⚠️⚠️ a abertura é o jogo VAZIO: a resposta da previsão da Aula 6 não está na tela antes do palpite', () => {
-    // ⚠️ Mudou de propósito (consertos do review da onda B do lote 5, A4): a cena abria com o recorte
-    // de 64, e o jogo já mostrava as duas naves espremidas embaixo da pergunta "se o jogo mostrar a
-    // folha inteira, o que aparece?". A parte 1 da demonstração não mudava um pixel.
-    const abertura = openScene({ scene: 'sheet-vs-sprite' })
-    expect(abertura.sheet.loaded).toBe(false)
-    expect(sceneSituation('sheet-vs-sprite', abertura)).not.toMatch(/esprem|duas naves/)
-    expect(sceneSituation('sheet-vs-sprite', abertura)).toContain('o jogo está vazio')
-    expect(faixa('sheet-vs-sprite', abertura)).toBe('recorte nenhum · no jogo 54 por 54')
-    // A parte 1 do roteiro é a que CARREGA a folha inteira, e é ela que mostra as naves espremidas.
-    const [primeira] = SCENE_MODELS['sheet-vs-sprite'].script
-    const depois = (primeira?.actions ?? []).reduce(
-      (s, a) => stepScene({ scene: 'sheet-vs-sprite' }, s, a),
-      abertura,
-    )
-    expect(depois.sheet.loaded).toBe(true)
-    expect(descobertas(depois)).toEqual(['squeezed'])
-  })
 })
 
 describe('fill-stroke e shading: a demonstração nunca passa por um estado sem narração', () => {
-  test('⚠️⚠️ a pedra não some no meio da parte 2 (o contorno volta ANTES de o preenchimento sair)', () => {
-    let s = openScene({ scene: 'fill-stroke' })
-    for (const parte of SCENE_MODELS['fill-stroke'].script)
-      for (const acao of parte.actions) {
-        s = stepScene({ scene: 'fill-stroke' }, s, acao)
-        expect(s.ink.fill || s.ink.stroke, parte.id).toBe(true)
-      }
-  })
-
-  test('⚠️⚠️ na parte 3 o sol muda ANTES de os tons voltarem: a sombra nunca aparece do lado errado', () => {
-    let s = openScene({ scene: 'shading' })
-    const [, , terceira] = SCENE_MODELS.shading.script
-    for (const parte of SCENE_MODELS.shading.script.slice(0, 2))
-      for (const acao of parte.actions) s = stepScene({ scene: 'shading' }, s, acao)
-    for (const acao of terceira?.actions ?? []) {
-      s = stepScene({ scene: 'shading' }, s, acao)
-      if (s.light.shade) expect(s.light.side).toBe('right')
-    }
-    expect(s.evidence.discoveries).toContain('side')
-  })
-
   test('as palavras do Pinta na faixa: Preenchimento, Contorno, Sem cor; o sol e os tons de azul', () => {
     const semContorno = rodar('fill-stroke', [{ type: 'ink', part: 'stroke', on: false }])
     expect(faixa('fill-stroke', semContorno)).toBe('preenchimento azul · contorno Sem cor')
@@ -469,47 +405,6 @@ describe('⚠️⚠️ consertos do review da onda B do lote 5 (G4)', () => {
     expect([aberto.mirror.strokes, aberto.mirror.copies]).toEqual([0, 0])
     // O espelho escolhido pelo professor fica.
     expect(mirrorAxes(aberto.mirror.on, aberto.mirror.axis)).toEqual({ x: true, y: false })
-  })
-
-  test('onion-skin (A2, B3): o fantasma é TRACEJADO, e no quadro 1 o motor não repete a frase da parte 4', () => {
-    const noDois = rodar('onion-skin', [
-      { type: 'frame', index: 2 },
-      { type: 'onion', on: true },
-    ])
-    expect(noDois.caption).toBe('O fogo tracejado é o do quadro 1.')
-    expect(sceneSituation('onion-skin', { ...noDois, caption: '' })).toBe(
-      'Fantasma ligado: o quadro 2 na tela, e o fogo do quadro 1 tracejado.',
-    )
-    const volta = stepScene({ scene: 'onion-skin' }, noDois, { type: 'frame', index: 1 })
-    expect(volta.caption).toBe('')
-    const parte4 = SCENE_MODELS['onion-skin'].script[3]?.caption
-    expect(sceneSituation('onion-skin', volta)).not.toBe(parte4)
-    // Nenhum texto do modelo diz "por baixo" nem "clarinho" para um desenho que está por cima.
-    const textos = JSON.stringify(SCENE_MODELS['onion-skin'])
-    expect(textos).not.toMatch(/por baixo|clarinho|fraquinho/)
-  })
-
-  test('sheet-vs-sprite (B8, B9, B7): a nave do jogo bem maior, o fogo nomeado ao trocar o quadro, oito trocas', () => {
-    const recortado = rodar('sheet-vs-sprite', [{ type: 'crop', width: 32 }])
-    // Um toque no + (8) da bancada: 62 ainda é quase a nave de fábrica.
-    const umToque = stepScene({ scene: 'sheet-vs-sprite' }, recortado, { type: 'sprite', size: 62 })
-    expect(descobertas(umToque)).not.toContain('size-apart')
-    const grande = stepScene({ scene: 'sheet-vs-sprite' }, umToque, { type: 'sprite', size: 78 })
-    expect(descobertas(grande)).toContain('size-apart')
-    const pequena = stepScene({ scene: 'sheet-vs-sprite' }, recortado, { type: 'sprite', size: 38 })
-    expect(descobertas(pequena)).toContain('size-apart')
-    const quadro2 = stepScene({ scene: 'sheet-vs-sprite' }, recortado, { type: 'cut', cell: 2 })
-    expect(quadro2.caption).toBe('Recorte no quadro 2: no jogo, a nave com o fogo grande.')
-    const cortes = SCENE_MODELS['sheet-vs-sprite'].script[2]?.actions ?? []
-    expect(cortes.filter((a) => a.type === 'cut')).toHaveLength(8)
-  })
-
-  test('fill-stroke (B11) e shading (B14): cada parte muda UMA coisa, e a legenda não fala de dois tons', () => {
-    // A volta do contorno era a primeira ação da parte seguinte, e por meio segundo a legenda 1
-    // ("sobra o preenchimento") ficava sobre a pedra já com as duas cores.
-    for (const parte of SCENE_MODELS['fill-stroke'].script)
-      expect(parte.actions, parte.caption).toHaveLength(1)
-    expect(SCENE_MODELS.shading.script[1]?.caption).toBe('Com um tom só, a bola parece um adesivo.')
   })
 
   test('pixel-vector (M5): "perto" é 4, e a grade entra em 5', () => {

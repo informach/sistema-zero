@@ -41,7 +41,6 @@ import {
   trocarTipo,
 } from '../../lib/scene-authoring-rules'
 import { HtmlCodeEditor } from './html-code-editor'
-import { SceneAuthoring } from './scene-authoring'
 import { SceneCastEditor } from './scene-cast-editor'
 import { ScenePicker } from './scene-picker'
 import { SceneSetupEditor } from './scene-setup-editor'
@@ -129,28 +128,13 @@ function PerguntaHerdada({
 }
 
 /**
- * As quatro formas de atividade, na língua do professor.
- *
- * ⚠️ Eram OITO opções num `<select>`, e três delas nomeavam versões do mesmo motor ("Exploração
- * anterior (versão 1)"). Pior: a cena tinha um segundo seletor de MODO dentro dela, então
- * "demonstração" e "experimentação" eram o mesmo tipo com um interruptor — duas coisas
- * diferentes escondidas atrás de uma. Agora são quatro tipos irmãos, e cada um diz o que é.
+ * As duas formas de atividade interativa oferecidas ao professor.
  */
 export const ACTIVITY_KINDS = [
   {
     type: 'experimentation',
     label: 'Experimentação',
-    hint: 'A criança mexe na cena e descobre sozinha. Fecha quando ela alcança as descobertas.',
-  },
-  {
-    type: 'demonstration',
-    label: 'Demonstração',
-    hint: 'A cena se move sozinha, passo a passo, e a criança assiste. Fecha quando ela vê até o fim.',
-  },
-  {
-    type: 'question',
-    label: 'Pergunta curta',
-    hint: 'Uma pergunta de múltipla escolha, conferida no servidor.',
+    hint: 'A criança manipula a cena e observa o que muda. Fecha quando ela alcança as descobertas configuradas.',
   },
   {
     type: 'html',
@@ -161,12 +145,8 @@ export const ACTIVITY_KINDS = [
 
 export function newLearningActivity(type: LearningActivity['type']): LearningActivity {
   switch (type) {
-    case 'demonstration':
-      return { type, scene: 'world' }
     case 'experimentation':
       return { type, scene: 'world' }
-    case 'question':
-      return { type }
     case 'html':
       return {
         type,
@@ -269,7 +249,7 @@ export function LearningBuilder({
   const a = value.activity
   const activity = (next: LearningActivity) => onChange({ ...value, activity: next })
   const checkpoint = value.checkpoint
-  const cena = a.type === 'demonstration' || a.type === 'experimentation' ? a : null
+  const cena = a.type === 'experimentation' ? a : null
   const falasDoZappy = cena ? falasDaCena(value) : []
   const atualizarRoteiroDoZappy = (
     slot: SceneSpeechSlot,
@@ -308,7 +288,7 @@ export function LearningBuilder({
   /** "Esta cena entra sem a pergunta do fim" só existe onde há pergunta de fábrica para tirar. */
   const podeDispensarPergunta = a.type === 'experimentation' && Boolean(heranca.pergunta)
   const semPergunta = Boolean(value.semPerguntaFinal)
-  // ⚠️ Só o ÁUDIO. Antes era `!isSceneActivity(cena)`, que também é falso por roteiro inválido
+  // ⚠️ Só o ÁUDIO. Antes era `!isSceneActivity(cena)`, que também é falso por configuração inválida
   // e por impulso fora de faixa — então a tela acusava o endereço (um `https://` perfeito)
   // quando o defeito era outro. Apontar o culpado errado com precisão é pior que a parede.
   const audioInvalido =
@@ -389,24 +369,17 @@ export function LearningBuilder({
               próprios `<fieldset>`/`<legend>`, um por família. */}
           <ScenePicker
             value={cena.scene}
-            mode={cena.type}
             onChange={(scene) => aplicar(trocarCena(value, scene, memoria.current))}
           />
-          {cena.type === 'demonstration' ? (
-            <SceneAuthoring activity={cena} onChange={activity} />
-          ) : (
-            <p className="rounded-xl bg-muted/40 p-4 text-sm">
-              A criança usa os controles da cena. Toque, arraste e teclado levam ao mesmo lugar, e a
-              atividade fecha em:{' '}
-              {/* ⚠️ As metas da MISSÃO, não as do modelo: o mesmo editor que deixou o professor
-                  escolher o caso não pode continuar prometendo as três de fábrica. */}
-              {sceneModelFor(cena)
-                .goals.filter((g) => sceneTargets(cena).includes(g.id))
-                .map((g) => g.label)
-                .join('; ')}
-              .
-            </p>
-          )}
+          <p className="rounded-xl bg-muted/40 p-4 text-sm">
+            A criança usa os controles da cena. Toque, arraste e teclado levam ao mesmo lugar, e a
+            atividade fecha em:{' '}
+            {sceneModelFor(cena)
+              .goals.filter((g) => sceneTargets(cena).includes(g.id))
+              .map((g) => g.label)
+              .join('; ')}
+            .
+          </p>
           {/* ⚠️⚠️ FORA do `<details>` desde 15/09/2026, e a medição é a razão: o caso estava
               ligado em 3 dos 52 blocos de cena dos cursos — 5%. É a alavanca que faz uma cena
               render dezenas de exercícios (o elenco troca QUEM está no palco; o caso troca DE
@@ -473,70 +446,31 @@ export function LearningBuilder({
                   ))}
                 </fieldset>
               )}
-              {cena.type === 'demonstration' && (
-                <fieldset className="space-y-2">
-                  <legend className="text-sm font-medium">Como a demonstração aparece</legend>
-                  {(
-                    [
-                      [
-                        'guided',
-                        'Guiada',
-                        'As etapas à vista, uma fala por etapa, a criança avança quando quiser.',
-                      ],
-                      [
-                        'inline',
-                        'Animação curta',
-                        'Um ▶ e nada mais: o roteiro inteiro de uma vez, para ficar no meio da explicação.',
-                      ],
-                    ] as const
-                  ).map(([valor, titulo, ajuda]) => (
-                    <label
-                      key={valor}
-                      htmlFor={`${id}-presentation-${valor}`}
-                      className="flex min-h-11 cursor-pointer items-start gap-2 text-sm"
-                    >
-                      <input
-                        id={`${id}-presentation-${valor}`}
-                        type="radio"
-                        name={`${id}-presentation`}
-                        className="mt-1"
-                        checked={(cena.presentation ?? 'guided') === valor}
-                        onChange={() => activity({ ...cena, presentation: valor })}
-                      />
-                      <span>
-                        <span className="font-medium">{titulo}</span>
-                        <span className="block text-xs text-muted-foreground">{ajuda}</span>
-                      </span>
-                    </label>
-                  ))}
-                </fieldset>
+              {(cena.scene === 'gravity' || cena.scene === 'impulse') && (
+                <Field
+                  label="Impulso inicial do modelo"
+                  htmlFor={`${id}-initial-impulse`}
+                  hint={`Entre ${SCENE_LIMITS.impulse.min} e ${SCENE_LIMITS.impulse.max}. A gravidade permanece igual para comparar os saltos.`}
+                >
+                  <Input
+                    id={`${id}-initial-impulse`}
+                    type="number"
+                    min={SCENE_LIMITS.impulse.min}
+                    max={SCENE_LIMITS.impulse.max}
+                    step={1}
+                    value={cena.initialImpulse ?? 9}
+                    onChange={(event) => {
+                      const força = Number(event.target.value)
+                      if (
+                        Number.isInteger(força) &&
+                        força >= SCENE_LIMITS.impulse.min &&
+                        força <= SCENE_LIMITS.impulse.max
+                      )
+                        activity({ ...cena, initialImpulse: força })
+                    }}
+                  />
+                </Field>
               )}
-              {cena.type === 'experimentation' &&
-                (cena.scene === 'gravity' || cena.scene === 'impulse') && (
-                  <Field
-                    label="Impulso inicial do modelo"
-                    htmlFor={`${id}-initial-impulse`}
-                    hint={`Entre ${SCENE_LIMITS.impulse.min} e ${SCENE_LIMITS.impulse.max}. A gravidade permanece igual para comparar os saltos.`}
-                  >
-                    <Input
-                      id={`${id}-initial-impulse`}
-                      type="number"
-                      min={SCENE_LIMITS.impulse.min}
-                      max={SCENE_LIMITS.impulse.max}
-                      step={1}
-                      value={cena.initialImpulse ?? 9}
-                      onChange={(event) => {
-                        const força = Number(event.target.value)
-                        if (
-                          Number.isInteger(força) &&
-                          força >= SCENE_LIMITS.impulse.min &&
-                          força <= SCENE_LIMITS.impulse.max
-                        )
-                          activity({ ...cena, initialImpulse: força })
-                      }}
-                    />
-                  </Field>
-                )}
               {/* ⚠️ A mensagem é explícita: `http://` INVALIDA a atividade, e sem ela o
                   professor levava a parede genérica de "complete os campos" na publicação, que
                   fala de outra coisa. O `type="url"` do navegador aceita http. */}
@@ -647,16 +581,6 @@ export function LearningBuilder({
               ? 'Escrever a minha previsão (substitui a da cena)'
               : 'Perguntar o que ela acha que vai acontecer, antes de abrir a cena'}
           </label>
-          {/* ⚠️ A demonstração `inline` é a única cena SEM previsão de fábrica, e o professor
-              precisa saber por quê: ela é um ▶ e nada mais, para caber no meio de uma explicação,
-              e a previsão trava o palco até a criança escolher. Escrever a sua continua valendo:
-              é uma decisão de quem autora, e não uma porta fechada. */}
-          {!heranca.previsao && (
-            <p className="text-xs text-muted-foreground">
-              Esta demonstração é do tipo que roda direto no meio do texto, então ela não recebe a
-              previsão da cena. Escreva a sua se quiser uma aqui.
-            </p>
-          )}
           {!previsao && heranca.previsao && (
             <PerguntaHerdada
               titulo="A criança vai ver esta previsão, escrita para a cena:"
@@ -783,14 +707,13 @@ export function LearningBuilder({
           )}
         </div>
       )}
-      {/* ⚠️ A pergunta anexa vale para os QUATRO tipos desde 15/09/2026. Na cena ela é o terceiro
+      {/* A pergunta anexa vale para os dois tipos. Na cena ela é o terceiro
           tempo do ciclo (mexer, prever, enunciar a regra) e só aparece para a criança DEPOIS de a
           descoberta acontecer — antes disso, perguntar "por quê?" é pedir adivinhação. */}
       <label className="flex min-h-11 items-center gap-3">
         <input
           type="checkbox"
           checked={Boolean(checkpoint)}
-          disabled={a.type === 'question'}
           onChange={(e) =>
             onChange({
               ...value,

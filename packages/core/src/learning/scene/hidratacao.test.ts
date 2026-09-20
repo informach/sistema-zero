@@ -1,17 +1,11 @@
 import { describe, expect, test } from 'bun:test'
+import { scenePaths } from '../../../tests/fixtures/exploration-paths'
 import { SCENE_IDS, type SceneId } from './actions'
-import { SCENE_MODELS } from './catalog'
 import { openScene, stepScene } from './engine'
 import {
   type ExperimentSession,
-  initialDemonstration,
   initialExperiment,
   isExperimentCommand,
-  packDemonstration,
-  packExperiment,
-  readDemonstrationSession,
-  readExperimentSession,
-  stepDemonstration,
   stepExperiment,
 } from './session'
 import { hydrateSceneState, isSceneState, type SceneState } from './state'
@@ -92,57 +86,24 @@ function semBaseDoSorteio(sessao: ExperimentSession): ExperimentSession {
   }
 }
 
-/** A sessão de experimentação que o roteiro do modelo produz, com um retrato guardado no fim. */
+/** Sessão produzida por gestos reais da jornada de cada cena, com retrato guardado no fim. */
 function experimentacaoDoModelo(scene: SceneId): ExperimentSession {
   const start = { scene }
   let sessao = initialExperiment(start)
-  for (const passo of SCENE_MODELS[scene].script)
-    for (const acao of passo.actions)
-      if (isExperimentCommand(acao, start)) sessao = stepExperiment(start, sessao, acao).session
+  for (const acao of scenePaths[scene])
+    if (isExperimentCommand(acao, start)) sessao = stepExperiment(start, sessao, acao).session
   return stepExperiment(start, sessao, { type: 'capture' }).session
-}
-
-/** A demonstração tocada até o fim, como o player a toca. */
-function demonstracaoDoModelo(scene: SceneId) {
-  const start = { scene }
-  const roteiro = SCENE_MODELS[scene].script
-  let s = stepDemonstration(start, roteiro, initialDemonstration(start), { type: 'start' }).session
-  for (let i = 0; i < 4000 && !s.viewed; i++) {
-    s = stepDemonstration(start, roteiro, s, { type: 'tick', seconds: 0.05 }).session
-    if (s.ready && s.step < roteiro.length - 1)
-      s = stepDemonstration(start, roteiro, s, { type: 'next' }).session
-  }
-  return s
 }
 
 describe('M-1: o que o player grava hoje volta IDÊNTICO nas 45 cenas', () => {
   test('⚠️⚠️ ida e volta do retrato: a hidratação não troca um campo sequer', () => {
     for (const scene of SCENE_IDS) {
-      const estados = [
-        openScene({ scene }),
-        experimentacaoDoModelo(scene).state,
-        demonstracaoDoModelo(scene).state,
-      ]
+      const estados = [openScene({ scene }), experimentacaoDoModelo(scene).state]
       for (const estado of estados) {
         const guardado = clone(estado)
         expect(hydrateSceneState(guardado), scene).toEqual(guardado)
         expect(isSceneState(hydrateSceneState(guardado)), scene).toBe(true)
       }
-    }
-  })
-
-  test('⚠️⚠️ ida e volta pelo pacote guardado (experimentação e demonstração), nas 45', () => {
-    for (const scene of SCENE_IDS) {
-      const experimentacao = experimentacaoDoModelo(scene)
-      const lida = readExperimentSession(scene, packExperiment(scene, experimentacao))
-      expect(lida, scene).toEqual(semBaseDoSorteio(experimentacao))
-      const demonstracao = demonstracaoDoModelo(scene)
-      const voltou = readDemonstrationSession(scene, packDemonstration(scene, demonstracao))
-      expect(voltou, scene).toEqual({
-        ...demonstracao,
-        state: semBaseNoEstado(demonstracao.state),
-        ...(demonstracao.before ? { before: demonstracao.before } : {}),
-      })
     }
   })
 

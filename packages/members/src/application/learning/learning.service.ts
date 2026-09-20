@@ -16,23 +16,16 @@ import {
   validateLessonSections,
 } from '@sistemazero/core/learning'
 import {
-  applyDemonstrationSegment,
   applyExperimentSegment,
-  type DemonstrationSession,
   type ExperimentSession,
-  isDemonstrationCommand,
   isExperimentCommand,
-  packDemonstration,
   packExperiment,
-  readDemonstrationSession,
   readExperimentSession,
   readSceneSegment,
   type SceneCheckpoint,
   SceneConflictError,
   type SceneSegment,
   type SceneStart,
-  type SceneStep,
-  sceneModel,
   sceneStart,
 } from '@sistemazero/core/learning/scene'
 import { studioSectionCompletionIssues } from '@sistemazero/studio/server-project-checks'
@@ -60,24 +53,15 @@ export interface LearningProgressInput {
 }
 
 /**
- * Este bloco é o único lugar do servidor que sabe da diferença entre uma demonstração e uma
- * experimentação. O resto do pipeline — conflito, hash do segmento, versão esperada — é
- * idêntico para as duas, e é por isso que o roteamento por TIPO precisa cobrir as duas: por
- * `version === 3` elas vinham juntas de graça, e cobrir só uma agora pararia de gravar a
- * progressão da outra sem erro nenhum aparecer.
+ * A cena interativa é sempre uma experiência conduzida pela criança.
  */
 interface Cena {
   start: SceneStart
-  kind: 'demonstration' | 'experimentation'
-  /** O roteiro AUTORADO da demonstração; sem ele, o do modelo da cena. */
-  script: readonly SceneStep[]
 }
-type CenaGuardada =
-  | { kind: 'demonstration'; checkpoint: SceneCheckpoint<DemonstrationSession> }
-  | { kind: 'experimentation'; checkpoint: SceneCheckpoint<ExperimentSession> }
+type CenaGuardada = { checkpoint: SceneCheckpoint<ExperimentSession> }
 
 /**
- * O bloco é uma cena? Devolve por onde ela começa e de que tipo é, ou `null`.
+ * O bloco é uma cena? Devolve por onde ela começa, ou `null`.
  *
  * ⚠️⚠️ O começo sai de `sceneStart`, a MESMA régua do player, e não de um objeto montado aqui. A
  * versão à mão levava a cena e o impulso e esquecia o CASO do professor (`setup`): o servidor
@@ -88,14 +72,7 @@ type CenaGuardada =
 function sceneStartOf(content: Partial<InteractiveBlock> & { kind?: string }): Cena | null {
   if (content.kind !== 'interactive') return null
   const a = content.activity
-  if (a?.type === 'demonstration')
-    return {
-      start: sceneStart(a),
-      kind: 'demonstration',
-      script: a.script ?? sceneModel(a.scene).script,
-    }
-  if (a?.type === 'experimentation')
-    return { start: sceneStart(a), kind: 'experimentation', script: [] }
+  if (a?.type === 'experimentation') return { start: sceneStart(a) }
   return null
 }
 
@@ -110,12 +87,8 @@ function readSceneCheckpointOf(cena: Cena, answers: LearningAnswers): CenaGuarda
     sessionId: sceneSessionId,
     segmentId: sceneSegmentId,
   }
-  if (cena.kind === 'demonstration') {
-    const session = readDemonstrationSession(cena.start.scene, sceneCheckpoint)
-    return session ? { kind: 'demonstration', checkpoint: { ...comum, session } } : null
-  }
   const session = readExperimentSession(cena.start.scene, sceneCheckpoint)
-  return session ? { kind: 'experimentation', checkpoint: { ...comum, session } } : null
+  return session ? { checkpoint: { ...comum, session } } : null
 }
 
 /** Aplica o segmento sobre o que estava guardado e devolve as respostas prontas para gravar. */
@@ -124,27 +97,12 @@ function applySceneSegment(
   guardado: CenaGuardada | null,
   segment: SceneSegment,
 ): LearningAnswers {
-  const c =
-    cena.kind === 'demonstration'
-      ? applyDemonstrationSegment(
-          cena.start,
-          cena.script,
-          guardado?.kind === 'demonstration' ? guardado.checkpoint : null,
-          segment,
-        )
-      : applyExperimentSegment(
-          cena.start,
-          guardado?.kind === 'experimentation' ? guardado.checkpoint : null,
-          segment,
-        )
+  const c = applyExperimentSegment(cena.start, guardado?.checkpoint ?? null, segment)
   const answers: LearningAnswers = {
     sceneSequence: c.sequence,
     sceneSessionId: c.sessionId,
     sceneSegmentId: c.segmentId,
-    sceneCheckpoint:
-      cena.kind === 'demonstration'
-        ? packDemonstration(cena.start.scene, c.session as DemonstrationSession)
-        : packExperiment(cena.start.scene, c.session as ExperimentSession),
+    sceneCheckpoint: packExperiment(cena.start.scene, c.session),
   }
   // ⚠️ O que o SERVIDOR monta também tem de caber. Numa cena cheia de cactos o checkpoint
   // passa do limite, a gravação iria ao banco em silêncio e a tentativa seguinte — que ecoa
@@ -322,19 +280,13 @@ export class LearningService {
       throw new ValidationError('Quantidade de pistas inválida.')
     let answers = input.answers
     let expectedExperienceSequence: number | null | undefined
-    // ⚠️ Vale para os DOIS tipos de cena. Antes a condição era `version === 3`, que cobria
-    // demonstração e experimentação de uma vez; roteando só por um dos tipos irmãos, a
-    // progressão do outro deixaria de ser gravada em silêncio.
     const cena = block.content.kind === 'interactive' ? sceneStartOf(block.content) : null
     if (cena) {
       const segment = readSceneSegment(input.answers)
       if (!segment) throw new ValidationError('Segmento de experiência inválido.')
-      // ⚠️ Validar ANTES de aplicar. Uma demonstração não aceita gesto de criança e uma
-      // experimentação não aceita comando de roteiro: mandar o comando errado é pedido mal
-      // formado (400), não falha do servidor.
-      const aceita = cena.kind === 'demonstration' ? isDemonstrationCommand : undefined
+      // Validar antes de aplicar: um comando inválido é pedido malformado (400).
       for (const comando of segment.commands)
-        if (aceita ? !aceita(comando) : !isExperimentCommand(comando, cena.start))
+        if (!isExperimentCommand(comando, cena.start))
           throw new ValidationError('Comando de experiência inválido para esta atividade.')
       const saved = (await this.repository.getProgress(actor, lessonId)).blocks.find(
         (p) => p.blockId === blockId && p.revision === input.revision,

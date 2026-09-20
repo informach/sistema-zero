@@ -334,7 +334,7 @@
     {
       "key": "floresta-cobre",
       "title": "O que aconteceu com o Dino?",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Perceber que um desenho posterior pode cobrir outro.",
       "blockKeys": ["video-floresta-cobre"],
       "workspaceKey": null,

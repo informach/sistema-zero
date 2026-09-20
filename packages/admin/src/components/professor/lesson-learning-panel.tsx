@@ -11,7 +11,6 @@ import {
   NAVE_FOGO,
   onionFireLength,
   quantos,
-  readDemonstrationSession,
   readExperimentSession,
   type SceneId,
   type SceneState,
@@ -28,8 +27,7 @@ import { LessonEvidenceHistory } from './lesson-evidence-history'
 /**
  * A frase que a criança escolheu na pergunta anexa do bloco, quando ela respondeu.
  *
- * ⚠️⚠️ Ela vale para os QUATRO tipos, e é por isso que sai numa função. Os dois ramos de cena
- * fazem `return` com as próprias linhas, e a linha da conclusão só existia depois deles — então
+ * Ela vale para os dois tipos. O ramo da cena retorna as próprias linhas, então
  * quando a cena voltou a aceitar pergunta anexa (15/09/2026), o campo que passou a decidir o
  * `passed` ficou invisível justamente para quem precisa dele para intervir.
  */
@@ -129,23 +127,6 @@ function answerLines(
 ): string[] {
   const activity = content?.activity
   const previsao = [...predictionLines(answers, content), ...conclusaoLines(answers, content)]
-
-  if (activity?.type === 'demonstration') {
-    const session = readDemonstrationSession(activity.scene, answers.sceneCheckpoint)
-    if (!session)
-      return [
-        ...previsao,
-        answers.sceneCheckpoint === undefined
-          ? 'A criança ainda não abriu esta demonstração.'
-          : 'Registro guardado não confere com esta cena. Não foi reinterpretado.',
-      ]
-    return [
-      ...previsao,
-      `Demonstração: ${sceneModelFor(activity).title}`,
-      session.viewed ? 'Roteiro acompanhado até o fim.' : 'Roteiro ainda não concluído.',
-      'A evidência registra o acompanhamento. A experimentação, quando existe, é avaliada em outro bloco.',
-    ]
-  }
 
   if (activity?.type === 'experimentation') {
     const session = readExperimentSession(activity.scene, answers.sceneCheckpoint)

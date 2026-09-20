@@ -88,7 +88,7 @@
     {
       "key": "percurso",
       "title": "Uma seção de cada vez",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Distinguir assistir, observar, experimentar e fazer no Estúdio.",
       "blockKeys": ["video-percurso"],
       "workspaceKey": null,
@@ -102,7 +102,7 @@
     {
       "key": "tela",
       "title": "Veja o exemplo e monte com conforto",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Usar a disposição atual da aula no tamanho de tela disponível.",
       "blockKeys": ["video-tela"],
       "workspaceKey": null,
@@ -116,7 +116,7 @@
     {
       "key": "materiais",
       "title": "Seu caderno e o caminho da ajuda",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Localizar os materiais e reconhecer como pedir ajuda sem sair do foco.",
       "blockKeys": ["video-materiais"],
       "workspaceKey": null,
@@ -130,7 +130,7 @@
     {
       "key": "salvar",
       "title": "Salvar e enviar são coisas diferentes",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Esperar o salvamento antes de sair e distinguir rascunho de entrega.",
       "blockKeys": ["video-salvar"],
       "workspaceKey": null,

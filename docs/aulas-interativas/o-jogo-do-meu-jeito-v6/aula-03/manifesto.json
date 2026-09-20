@@ -43,29 +43,26 @@
     {
       "key": "conferir-fogo-base",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": ["Se a ponta já encostou na borda inferior, encurte um pouco antes de duplicar."],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "O primeiro fogo já ocupa até a última linha. O que preparar antes da cópia?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Encurtar um pouco para o segundo poder crescer dentro do quadro."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Duplicar muitas vezes para aumentar a tela."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Duplicar cria outro desenho do mesmo tamanho; não aumenta a área disponível."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O primeiro fogo já ocupa até a última linha. O que preparar antes da cópia?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Encurtar um pouco para o segundo poder crescer dentro do quadro."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Duplicar muitas vezes para aumentar a tela."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "Duplicar cria outro desenho do mesmo tamanho; não aumenta a área disponível.\n\nSe a ponta já encostou na borda inferior, encurte um pouco antes de duplicar."
+          }
+        ]
       }
     },
     {
@@ -113,31 +110,26 @@
     {
       "key": "conferir-segundo-quadro",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se a nave inteira mexeu, desfaça e selecione só a ponta. Confira o quadro ativo antes de riscar."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Mover a ponta deixou um buraco no meio do fogo. Como completar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Com o Lápis, ligando as duas partes na mesma cor."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Duplicando o quadro novamente."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Mover desloca os pixels; o Lápis preenche o espaço que ficou vazio."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Mover a ponta deixou um buraco no meio do fogo. Como completar?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Com o Lápis, ligando as duas partes na mesma cor."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Duplicando o quadro novamente."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "Mover desloca os pixels; o Lápis preenche o espaço que ficou vazio.\n\nSe a nave inteira mexeu, desfaça e selecione só a ponta. Confira o quadro ativo antes de riscar."
+          }
+        ]
       }
     },
     {
@@ -158,31 +150,26 @@
     {
       "key": "conferir-nome-voando",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "O nome da animação é diferente do nome do desenho: desenho nave, animação voando."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Qual nome vai aparecer para escolher esta animação no Estúdio?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "voando, o nome dado à animação."
-            },
-            {
-              "id": "opcao-2",
-              "label": "O nome da cor que você usou no fogo."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "O nome da animação acompanha seus quadros até o Estúdio."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Qual nome vai aparecer para escolher esta animação no Estúdio?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "voando, o nome dado à animação."
+              },
+              {
+                "id": "opcao-2",
+                "label": "O nome da cor que você usou no fogo."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "O nome da animação acompanha seus quadros até o Estúdio.\n\nO nome da animação é diferente do nome do desenho: desenho nave, animação voando."
+          }
+        ]
       }
     },
     {
@@ -243,36 +230,6 @@
           }
         ]
       }
-    },
-    {
-      "key": "demonstracao-quadros",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Veja dois desenhos virarem movimento",
-        "instructions": "Veja o quadro 1, o quadro 2 e depois a prévia trocando os dois, devagar e rápido.",
-        "hints": [],
-        "activity": {
-          "type": "demonstration",
-          "scene": "frames",
-          "cenario": "meu-jeito"
-        }
-      }
-    },
-    {
-      "key": "demonstracao-fantasma",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Veja o fantasma do quadro anterior",
-        "instructions": "Olhe o fogo do quadro 2 sozinho. Depois veja o fantasma ligado e compare os dois fogos.",
-        "hints": [],
-        "activity": {
-          "type": "demonstration",
-          "scene": "onion-skin",
-          "cenario": "meu-jeito"
-        }
-      }
     }
   ],
   "sections": [
@@ -293,15 +250,15 @@
     {
       "key": "livrinho",
       "title": "Observe: cada quadro é um desenho",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Entender quadro de animação como um desenho da sequência.",
-      "blockKeys": ["video-livrinho", "demonstracao-quadros"],
+      "blockKeys": ["video-livrinho"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["demonstracao-quadros"]
+        "blockIds": ["video-livrinho"]
       }
     },
     {
@@ -349,15 +306,15 @@
     {
       "key": "fantasma",
       "title": "Observe: comparar sem guardar de memória",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Usar o fantasma para comparar tamanho e ponto de saída dos fogos.",
-      "blockKeys": ["video-fantasma", "demonstracao-fantasma"],
+      "blockKeys": ["video-fantasma"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["demonstracao-fantasma"]
+        "blockIds": ["video-fantasma"]
       }
     },
     {

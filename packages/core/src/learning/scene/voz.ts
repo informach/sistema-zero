@@ -241,7 +241,7 @@ export interface ZappySpeech {
  * Gerando a partir do rascunho, a aula que herda o palpite do modelo sairia sem áudio para
  * justamente a pergunta que tranca o palco.
  *
- * ⚠️ O que o motor monta na hora (pista pedida, legenda "Parte N", frase de situação, o retorno do
+ * ⚠️ O que o motor monta na hora (pista pedida, frase de situação, o retorno do
  * palpite com a escolha da criança) fica DE FORA por definição: depende do estado. Nessas falas o
  * player cai inteiro na voz do navegador — ver `filaDeVoz`.
  */
@@ -253,19 +253,13 @@ export function falasDaCena(bloco: {
     prompt: string
     choices: readonly { label: string }[]
   }
-  activity?: { type?: string; zappySpeech?: SceneSpeechOverrides }
+  activity?: { type: string; zappySpeech?: SceneSpeechOverrides }
 }): readonly ZappySpeech[] {
-  const demonstracao = bloco.activity?.type === 'demonstration'
   const falas: readonly [SceneSpeechSlot, string][] = [
     ['instruction', falaDaInstrucao(bloco.instructions ?? '')],
     [
       'prediction-context',
-      bloco.prediction
-        ? falaDoContextoDoPalpite(
-            demonstracao ? 'Antes de assistir' : 'Seu palpite',
-            bloco.prediction.context,
-          )
-        : '',
+      bloco.prediction ? falaDoContextoDoPalpite('Seu palpite', bloco.prediction.context) : '',
     ],
     ['prediction-question', bloco.prediction ? falaDaEscolhaDoPalpite(bloco.prediction) : ''],
     ['checkpoint', bloco.checkpoint ? falaDaPergunta('Agora explique', bloco.checkpoint) : ''],

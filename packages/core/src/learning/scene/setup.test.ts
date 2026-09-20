@@ -160,13 +160,6 @@ describe('o caso da atividade', () => {
     ).toBe(false)
   })
 
-  test('⚠️ a demonstração não aceita missão: lá meta nenhuma é cobrada', () => {
-    expect(isSceneSetup({ goals: ['front'] }, 'layers', { goals: false })).toBe(false)
-    expect(
-      isSceneSetup({ actions: [{ type: 'layer', front: true }] }, 'layers', { goals: false }),
-    ).toBe(true)
-  })
-
   test('⚠️⚠️ um caso não abre com um salto que ainda não saiu do chão', () => {
     // A Aula 3 do Corre Dino abria com `setup: [jump]`: o salto ficava iniciado e parado, com o
     // Dino no chão, e o primeiro toque da criança respondia "O Dino já está no ar". O caso

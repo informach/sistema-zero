@@ -283,7 +283,7 @@
     {
       "key": "contraste",
       "title": "Veja como deixar o número legível",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Reconhecer contraste suficiente para ler o placar.",
       "blockKeys": ["video-contraste"],
       "workspaceKey": null,
@@ -359,7 +359,7 @@
     {
       "key": "frase-dinamica",
       "title": "Veja o número entrar na frase",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Compor uma mensagem com texto, valor e texto.",
       "blockKeys": ["video-frase-dinamica"],
       "workspaceKey": null,

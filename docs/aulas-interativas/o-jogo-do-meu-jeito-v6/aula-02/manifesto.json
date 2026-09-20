@@ -43,31 +43,26 @@
     {
       "key": "conferir-novo-desenho",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se aparecer 16 × 16, você ficou no Pequeno; confira o tamanho antes de desenhar."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Para escolher o tamanho certo, o que você deve olhar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "A cor do cartão do tamanho."
-            },
-            {
-              "id": "opcao-2",
-              "label": "O número 32 × 32 embaixo de Médio."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Os números indicam largura e altura do quadro, que usaremos depois na folha de animação."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Para escolher o tamanho certo, o que você deve olhar?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "A cor do cartão do tamanho."
+              },
+              {
+                "id": "opcao-2",
+                "label": "O número 32 × 32 embaixo de Médio."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "Os números indicam largura e altura do quadro, que usaremos depois na folha de animação.\n\nSe aparecer 16 × 16, você ficou no Pequeno; confira o tamanho antes de desenhar."
+          }
+        ]
       }
     },
     {
@@ -114,31 +109,26 @@
     {
       "key": "conferir-contorno",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se ocupou a parte inferior, ajuste agora. O fogo da próxima aula precisa caber dentro do quadro."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Por que deixamos uma faixa vazia embaixo da nave?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Porque o Pinta não consegue pintar os pixels de baixo."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Para desenhar e aumentar o fogo do motor dentro do quadro."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "O espaço é uma decisão do desenho para preparar a animação."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Por que deixamos uma faixa vazia embaixo da nave?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Porque o Pinta não consegue pintar os pixels de baixo."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Para desenhar e aumentar o fogo do motor dentro do quadro."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "O espaço é uma decisão do desenho para preparar a animação.\n\nSe ocupou a parte inferior, ajuste agora. O fogo da próxima aula precisa caber dentro do quadro."
+          }
+        ]
       }
     },
     {
@@ -155,52 +145,31 @@
     {
       "key": "conferir-cor-base",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "O balde preenche uma região conectada. Se a tinta escapar, desfaça e procure uma abertura no contorno."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "O Balde pintou só uma das asas. O que isso indica?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "A outra asa está em outra região fechada e precisa de seu próprio clique."
-            },
-            {
-              "id": "opcao-2",
-              "label": "O desenho precisa ser apagado e criado novamente."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "O balde preenche a região conectada do clique; não repete o preenchimento pelo espelho."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O Balde pintou só uma das asas. O que isso indica?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "A outra asa está em outra região fechada e precisa de seu próprio clique."
+              },
+              {
+                "id": "opcao-2",
+                "label": "O desenho precisa ser apagado e criado novamente."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "O balde preenche a região conectada do clique; não repete o preenchimento pelo espelho.\n\nO balde preenche uma região conectada. Se a tinta escapar, desfaça e procure uma abertura no contorno."
+          }
+        ]
       }
     },
     {
       "key": "video-luz-demo",
       "plannedVideo": "roteiro-aula-02-o-jogo-do-meu-jeito.md → Parte 4. Passo 4: luz e sombra. Entrada: “A sua nave está pintada, mas ela ainda parece um adesivo, uma coisa chapada. Quem resolve isso é a l”. Saída: “. O único cuidado é escolher um lado e ficar nele até o fim. Na nave do Júlio a luz vem da esquerda.”. Usar o antes/depois previsto na Parte 4 e complementar com seta da luz e close nas famílias de cor. Não mandar a criança mexer durante a demonstração. Complemento: “Olhe a mesma nave antes e depois. A luz vem deste lado; o outro recebe a sombra. Agora repare na cabine: a cor mais clara continua da família do azul. Poucos pixels já mudam o volume.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
-    },
-    {
-      "key": "demonstracao-luz",
-      "content": {
-        "kind": "interactive",
-        "title": "A luz dá volume",
-        "instructions": "Aperte Ver acontecer. Olhe de que lado fica a sombra quando o sol muda de lugar.",
-        "hints": [],
-        "required": false,
-        "activity": {
-          "type": "demonstration",
-          "scene": "shading",
-          "cenario": "meu-jeito",
-          "presentation": "inline"
-        }
-      }
     },
     {
       "key": "video-volume",
@@ -216,31 +185,26 @@
     {
       "key": "conferir-volume",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se a nave ficou muito escura, desfaça alguns traços. Um detalhe de dois pixels pode receber só luz ou só sombra."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "A cabine já está azul-escura. Como realçar o lado iluminado?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Acrescentar poucos pixels de um azul mais claro."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Cobrir a cabine inteira com a sombra roxa do corpo."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "O tom mais claro preserva a cor da cabine e dá a indicação de luz."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "A cabine já está azul-escura. Como realçar o lado iluminado?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Acrescentar poucos pixels de um azul mais claro."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Cobrir a cabine inteira com a sombra roxa do corpo."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "O tom mais claro preserva a cor da cabine e dá a indicação de luz.\n\nSe a nave ficou muito escura, desfaça alguns traços. Um detalhe de dois pixels pode receber só luz ou só sombra."
+          }
+        ]
       }
     },
     {
@@ -381,15 +345,15 @@
     {
       "key": "luz-demo",
       "title": "Observe: a luz dá volume",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Visualizar direção da luz e sombra antes de pintar.",
-      "blockKeys": ["video-luz-demo", "demonstracao-luz"],
+      "blockKeys": ["video-luz-demo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["demonstracao-luz"]
+        "blockIds": ["video-luz-demo"]
       }
     },
     {
@@ -409,7 +373,7 @@
     {
       "key": "salvamento",
       "title": "Observe: salvo e guardado na conta",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Distinguir o salvamento do editor e a confirmação na conta.",
       "blockKeys": ["video-salvamento"],
       "workspaceKey": null,

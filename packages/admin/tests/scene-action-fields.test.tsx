@@ -2,7 +2,6 @@ import { describe, expect, test } from 'bun:test'
 import {
   isSceneAction,
   SCENE_IDS,
-  SCENE_MODELS,
   type SceneAction,
   type SceneId,
 } from '@sistemazero/core/learning/scene'
@@ -10,7 +9,6 @@ import {
   avisoDoTempo,
   campoNumerico,
   camposDoEndereco,
-  rotuloDaAcaoIncompativel,
   sceneActionChoices,
 } from '../src/components/editor/scene-action-editor'
 
@@ -105,16 +103,6 @@ describe('⚠️ o editor avisa o tempo que não cai em quadro inteiro (review d
     expect(avisoDoTempo('gravity', 0.1, false)).toBeNull()
     expect(avisoDoTempo('world', 0.5, false)).toBeNull()
   })
-
-  test('anti-ruído: nenhum roteiro de modelo dispara o aviso', () => {
-    const avisos: string[] = []
-    for (const scene of SCENE_IDS)
-      for (const passo of SCENE_MODELS[scene].script)
-        for (const acao of passo.actions)
-          if (acao.type === 'advance' && avisoDoTempo(scene, acao.seconds, false))
-            avisos.push(`${scene} · ${passo.id}`)
-    expect(avisos).toEqual([])
-  })
 })
 
 describe('⚠️⚠️ os nomes por cena (consertos do review da onda A do lote 5, B7)', () => {
@@ -154,39 +142,5 @@ describe('⚠️⚠️ os nomes por cena (consertos do review da onda A do lote 
   test('hitbox: a largura diz a porcentagem da bancada', () => {
     const campo = campoNumerico({ type: 'resize', width: 64 })
     expect(campo?.label).toBe('Largura da área (100% do Dino)')
-  })
-
-  test('⚠️⚠️ a ação que NÃO vale na cena é NOMEADA no editor, nunca escondida em silêncio', () => {
-    // O motor trata ação ilegal como no-op: sem este rótulo, o passo parecia certo e não fazia nada.
-    expect(rotuloDaAcaoIncompativel({ type: 'shoot' }, 'restart')).toBe(
-      'Atirar · não vale nesta cena',
-    )
-    expect(rotuloDaAcaoIncompativel({ type: 'move', distance: 60 }, 'restart')).toBe(
-      'Mover o obstáculo · não vale nesta cena',
-    )
-    // ⚠️ E ele CONFERE com o domínio: ação LEGAL fora da lista não é acusada de não valer na cena.
-    expect(rotuloDaAcaoIncompativel({ type: 'reset' }, 'restart')).toBe(
-      'Restaurar a cena · não cabe aqui',
-    )
-    expect(rotuloDaAcaoIncompativel({ type: 'move', distance: 60 }, 'hitbox')).toBe(
-      'Mover o obstáculo · não cabe aqui',
-    )
-    // Nenhuma ação dos roteiros de fábrica cai em "Ação incompatível": toda uma tem nome na lista.
-    for (const scene of SCENE_IDS)
-      for (const passo of SCENE_MODELS[scene].script)
-        for (const acao of passo.actions) {
-          expect(isSceneAction(acao, scene), `${scene} · ${acao.type}`).toBe(true)
-          expect(rotuloDaAcaoIncompativel(acao, scene)).not.toBe('Ação incompatível · revisar')
-        }
-  })
-
-  test('⚠️ todo tipo de ação dos roteiros de fábrica é oferecido na lista da cena', () => {
-    const faltando: string[] = []
-    for (const scene of SCENE_IDS)
-      for (const passo of SCENE_MODELS[scene].script)
-        for (const acao of passo.actions)
-          if (!sceneActionChoices(scene).some((c) => c.value.type === acao.type))
-            faltando.push(`${scene} · ${acao.type}`)
-    expect(faltando).toEqual([])
   })
 })

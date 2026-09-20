@@ -37,61 +37,31 @@
     {
       "key": "conferir-folha-asteroide",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Os dois campos devem ser 64. Esse número vem do Médio do vetor escolhido no Pinta."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "O asteroide vai aparecer com 40 × 40 no jogo. Qual tamanho colocar na folha?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "40 × 40, copiando o tamanho do sprite."
-            },
-            {
-              "id": "opcao-2",
-              "label": "64 × 64, o tamanho original de cada quadro."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "O recorte da folha e o tamanho de exibição têm funções diferentes."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O asteroide vai aparecer com 40 × 40 no jogo. Qual tamanho colocar na folha?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "40 × 40, copiando o tamanho do sprite."
+              },
+              {
+                "id": "opcao-2",
+                "label": "64 × 64, o tamanho original de cada quadro."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "O recorte da folha e o tamanho de exibição têm funções diferentes.\n\nOs dois campos devem ser 64. Esse número vem do Médio do vetor escolhido no Pinta."
+          }
+        ]
       }
     },
     {
       "key": "video-tempo-demo",
       "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-07-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: trocar o bloco que cria os asteroides. Entrada: “Desce até a área Enquanto estiver rodando e acha o A cada 40 quadros, aquele que fica do lado do A c”. Saída: “o asteroides criar um asteroide. É ele que faz uma pedra nova nascer lá em cima de tempos em tempos.”. Complementar o recorte com uma linha do tempo; não converter 40 quadros em duração exata em segundos. Complemento: “Este relógio conta atualizações do jogo. Os quadros do Pinta são desenhos da animação. Veja a ordem: quando o relógio dispara durante a partida, nasce uma pedra e logo ela recebe a animação. A folha já foi preparada no início.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
-    },
-    {
-      "key": "demonstracao-nascimento",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Veja uma nave e muitos nascimentos",
-        "instructions": "Veja o que acontece com e sem o relógio. Você pode pausar e ver de novo.",
-        "hints": [],
-        "activity": {
-          "type": "demonstration",
-          "scene": "spawn",
-          "cast": {
-            "hero": {
-              "name": "nave",
-              "gender": "f"
-            },
-            "obstacle": {
-              "name": "asteroide",
-              "gender": "m"
-            }
-          },
-          "cenario": "meu-jeito"
-        }
-      }
     },
     {
       "key": "video-novo-criador",
@@ -107,31 +77,26 @@
     {
       "key": "conferir-novo-criador",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se saem pedras do kit junto, procure o criador antigo ainda ativo. Se as novas saem todas no mesmo x, confira onde ficou conectada a peça aleatória."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Estão caindo pedras suas e pedras cinzas. O que conferir primeiro?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Se a cor da nave está errada."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Se o criador antigo do kit ainda está ativo junto do novo."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Dois criadores podem gerar duas famílias de pedras. Esta substituição termina com apenas o novo."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Estão caindo pedras suas e pedras cinzas. O que conferir primeiro?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Se a cor da nave está errada."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Se o criador antigo do kit ainda está ativo junto do novo."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "Dois criadores podem gerar duas famílias de pedras. Esta substituição termina com apenas o novo.\n\nSe saem pedras do kit junto, procure o criador antigo ainda ativo. Se as novas saem todas no mesmo x, confira onde ficou conectada a peça aleatória."
+          }
+        ]
       }
     },
     {
@@ -148,31 +113,26 @@
     {
       "key": "conferir-animar-cada",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se a primeira pedra anima e as outras não, confira se Animar sprite está junto de cada criação. Não coloque esse bloco só no Ao iniciar."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Por que Animar sprite fica logo depois do criador dentro do relógio?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Para animar cada asteroide novo depois que ele existe."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Para mudar a velocidade de queda de todas as pedras."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "A sequência é criar e animar o objeto recém-criado. A queda é controlada por vx e vy."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Por que Animar sprite fica logo depois do criador dentro do relógio?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Para animar cada asteroide novo depois que ele existe."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Para mudar a velocidade de queda de todas as pedras."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "A sequência é criar e animar o objeto recém-criado. A queda é controlada por vx e vy.\n\nSe a primeira pedra anima e as outras não, confira se Animar sprite está junto de cada criação. Não coloque esse bloco só no Ao iniciar."
+          }
+        ]
       }
     },
     {
@@ -271,15 +231,15 @@
     {
       "key": "tempo-demo",
       "title": "Observe: uma nave, muitos nascimentos",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Distinguir relógio do jogo e quadros de animação; situar nascimento e animação de cada asteroide.",
-      "blockKeys": ["video-tempo-demo", "demonstracao-nascimento"],
+      "blockKeys": ["video-tempo-demo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["demonstracao-nascimento"]
+        "blockIds": ["video-tempo-demo"]
       }
     },
     {

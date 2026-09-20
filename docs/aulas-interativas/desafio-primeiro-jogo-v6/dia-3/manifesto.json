@@ -84,123 +84,6 @@
       "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 3. Passo 3: criar o asteroide surpresa. Entrada: “Agora, o asteroide. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco No grupo criar um as”. Saída: “ menos sobe, mais desce. Passo 3 pronto. Agora o quarto, que é fazer os asteroides caírem e sumirem.”. Recortar a explicação do x sorteado, y e vy. Substituir “lugar novo” por “posição sorteada”, pois resultados podem repetir. Mostrar caixa completa fora da área antes de entrar. Fala complementar: “Este menos 30 é o lugar onde a pedra nasce: acima da tela. Já o vy 3 é a velocidade: faz a pedra descer. O x é sorteado quando ela nasce; não troca de lugar a cada quadro. Um sorteio também pode cair perto de outro.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
     {
-      "key": "demonstracao-nascer-fora",
-      "content": {
-        "kind": "interactive",
-        "title": "Onde a pedra nasce e o que faz a pedra descer",
-        "instructions": "São dois números diferentes: o y diz ONDE a pedra está agora, e a velocidade diz quanto a pedra anda em cada quadro.",
-        "hints": [],
-        "required": false,
-        "activity": {
-          "type": "demonstration",
-          "scene": "velocity",
-          "cast": {
-            "hero": {
-              "name": "pedra",
-              "gender": "f",
-              "plural": "pedras"
-            }
-          },
-          "cenario": "nave",
-          "setup": {
-            "actions": [
-              {
-                "type": "velocity",
-                "vx": 10,
-                "vy": -5
-              },
-              {
-                "type": "advance",
-                "seconds": 3.6
-              },
-              {
-                "type": "velocity",
-                "vx": 0,
-                "vy": -5
-              },
-              {
-                "type": "advance",
-                "seconds": 3
-              },
-              {
-                "type": "velocity",
-                "vx": 0,
-                "vy": 0
-              }
-            ]
-          },
-          "script": [
-            {
-              "id": "passo-1",
-              "caption": "A pedra nasce em y −30, na faixa fora da tela. Quem joga ainda não vê a pedra.",
-              "highlight": "scene",
-              "actions": [
-                {
-                  "type": "velocity",
-                  "vx": 0,
-                  "vy": 0
-                }
-              ]
-            },
-            {
-              "id": "passo-2",
-              "caption": "Velocidade para baixo 3: a cada quadro o y aumenta 3, até a pedra chegar na borda da tela.",
-              "highlight": "scene",
-              "actions": [
-                {
-                  "type": "velocity",
-                  "vx": 0,
-                  "vy": 3
-                },
-                {
-                  "type": "advance",
-                  "seconds": 3
-                }
-              ],
-              "waitFor": "down"
-            },
-            {
-              "id": "passo-3",
-              "caption": "Velocidade 0: a pedra para onde chegou.",
-              "highlight": "scene",
-              "actions": [
-                {
-                  "type": "velocity",
-                  "vx": 0,
-                  "vy": 0
-                },
-                {
-                  "type": "advance",
-                  "seconds": 1
-                }
-              ],
-              "waitFor": "stopped"
-            }
-          ]
-        },
-        "prediction": {
-          "context": {
-            "label": "A velocidade para baixo",
-            "explanation": "Nesta demonstração, vamos acompanhar como a velocidade para baixo muda o número y de uma pedra."
-          },
-          "prompt": "Com a velocidade para baixo em 3, o que acontece com o y da pedra a cada quadro?",
-          "choices": [
-            {
-              "id": "aumenta",
-              "label": "O y aumenta"
-            },
-            {
-              "id": "diminui",
-              "label": "O y diminui",
-              "shows": "Com a velocidade para baixo em 3, o número do y ficou maior."
-            }
-          ],
-          "correctChoiceId": "aumenta",
-          "revealOn": "down"
-        }
-      }
-    },
-    {
       "key": "video-asteroide",
       "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-dia3-desafio-primeiro-jogo.md → Parte 3. Passo 3: criar o asteroide surpresa. Entrada: “Agora, o asteroide. Na categoria Jogo 2D, subcategoria Kit espaço, pega o bloco No grupo criar um as”. Saída: “ menos sobe, mais desce. Passo 3 pronto. Agora o quarto, que é fazer os asteroides caírem e sumirem.”. Aproveitar a montagem dos campos; encurtar a explicação já demonstrada. O tamanho 40 é a base do kit: não prometer que toda pedra tem exatamente a mesma largura. Fala complementar: “Dentro do relógio, encaixe No grupo criar um asteroide, de Jogo 2D, Kits prontos › Espaço. Grupo asteroides; no x, encaixe um x aleatório na tela, de Sorteios. Use y menos 30, tamanho 40, vx 0 e vy 3. Escolha uma cor visível.” Montagem e imagem em montagem.json. Conferir tempos na gravação."
     },
@@ -397,15 +280,15 @@
     {
       "key": "nascer-fora",
       "title": "Observe posição e velocidade",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Distinguir y negativo de vy positivo e reconhecer o sorteio de x.",
-      "blockKeys": ["video-nascer-fora", "demonstracao-nascer-fora"],
+      "blockKeys": ["video-nascer-fora"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["demonstracao-nascer-fora"]
+        "blockIds": ["video-nascer-fora"]
       }
     },
     {
@@ -518,7 +401,7 @@
     {
       "key": "encontro",
       "title": "Observe quais dois objetos se encontraram",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Distinguir o grupo inteiro dos dois objetos de uma colisão.",
       "blockKeys": ["video-encontro"],
       "workspaceKey": null,
@@ -648,7 +531,7 @@
     {
       "key": "teste-colisao",
       "title": "Observe um acerto e uma tentativa",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Conferir que a colisão remove somente objetos que se encontram.",
       "blockKeys": ["video-teste-colisao"],
       "workspaceKey": null,

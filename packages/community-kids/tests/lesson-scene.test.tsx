@@ -1,79 +1,16 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import type { InteractiveBlock } from '@sistemazero/core/learning'
-import {
-  applyDemonstrationSegment,
-  type DemonstrationSession,
-  packDemonstration,
-  readSceneSegment,
-  SCENE_MODELS,
-  type SceneCheckpoint,
-  type SceneId,
-  sceneScript,
-  sceneStart,
-} from '@sistemazero/core/learning/scene'
+import { SCENE_MODELS, type SceneId } from '@sistemazero/core/learning/scene'
 import { ExperienceConnection } from '@sistemazero/member-shell/components/experience-connection'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
-import { LessonPlayerProvider } from '@sistemazero/member-shell/components/lesson-player-context'
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
 const matchMediaOriginal = window.matchMedia
 afterEach(() => {
   cleanup()
   window.matchMedia = matchMediaOriginal
 })
-/**
- * Menos movimento. ⚠️ Mudou de propósito (consertos do review do lote 2): a parte não salta mais
- * para o fim, ela TOCA em passos de 0,2 s. Percorrer uma demonstração num teste pede o relógio na
- * mão (`relogioManual`).
- */
-function menosMovimento() {
-  window.matchMedia = ((query: string) => ({
-    matches: query.includes('prefers-reduced-motion'),
-    media: query,
-    onchange: null,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    addListener: () => {},
-    removeListener: () => {},
-    dispatchEvent: () => false,
-  })) as unknown as typeof window.matchMedia
-}
-/** O relógio do navegador na MÃO: cada `tocar(n)` roda `n` quadros a 60 Hz. */
-function relogioManual() {
-  const rafOriginal = window.requestAnimationFrame
-  const cafOriginal = window.cancelAnimationFrame
-  const fila = new Map<number, FrameRequestCallback>()
-  let proximo = 0
-  let agora = 0
-  window.requestAnimationFrame = (cb) => {
-    proximo += 1
-    fila.set(proximo, cb)
-    return proximo
-  }
-  window.cancelAnimationFrame = (id) => {
-    fila.delete(id)
-  }
-  return {
-    async tocar(quadros: number) {
-      for (let i = 0; i < quadros; i++) {
-        agora += 1000 / 60
-        const chamados = [...fila.values()]
-        fila.clear()
-        await act(async () => {
-          for (const cb of chamados) cb(agora)
-        })
-      }
-    },
-    restaurar() {
-      window.requestAnimationFrame = rafOriginal
-      window.cancelAnimationFrame = cafOriginal
-    },
-  }
-}
-function renderMission(
-  scene: SceneId,
-  type: 'experimentation' | 'demonstration' = 'experimentation',
-) {
+function renderMission(scene: SceneId) {
   const modelo = SCENE_MODELS[scene]
   const content: InteractiveBlock = {
     kind: 'interactive',
@@ -81,7 +18,7 @@ function renderMission(
     instructions: modelo.instruction,
     hints: [...modelo.hints],
     required: false,
-    activity: { type, scene },
+    activity: { type: 'experimentation', scene },
   }
   return render(
     <InteractiveLessonBlock
@@ -153,34 +90,6 @@ describe('o laboratório da cena', () => {
     expect(screen.getByText('Você descobriu!', { selector: 'p' })).toBeTruthy()
     expect(screen.getByText('Prévia: nada é guardado.')).toBeTruthy()
   })
-  test('a demonstration offers playback only and cannot turn into an experiment', async () => {
-    // ⚠️ Mudou de propósito (lote 2 do Raio-X): "Observar", "Um passo", "Próxima etapa" e "Rever
-    // desde o começo" viraram UM botão principal que muda com o estado.
-    menosMovimento()
-    const relogio = relogioManual()
-    renderMission('hitbox', 'demonstration')
-    expect(screen.queryByRole('slider')).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Eu quero experimentar' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Uma pista' })).toBeNull()
-    expect(screen.queryByText('Arraste o cacto. Ou use o controle de distância abaixo.')).toBeNull()
-    for (const saiu of ['Um passo', 'Próxima etapa', 'Rever desde o começo', 'Observar'])
-      expect(screen.queryByRole('button', { name: saiu })).toBeNull()
-    try {
-      fireEvent.click(await screen.findByRole('button', { name: 'Ver a parte 1' }))
-      // ⚠️ Mudou de propósito (consertos do review do lote 2): com menos movimento a parte TOCA
-      // (passos de 0,2 s), e o principal pausa enquanto ela toca.
-      expect(await screen.findByRole('button', { name: 'Pausar' })).toBeTruthy()
-      for (let i = 0; i < 40 && screen.queryByRole('button', { name: 'Pausar' }); i++)
-        await relogio.tocar(12)
-      await waitFor(() =>
-        expect(screen.getByRole('button', { name: 'Ver a parte 2' })).toBeTruthy(),
-      )
-      // ⚠️ E ainda não é a vez dela: "Agora é sua vez" só existe no fim.
-      expect(screen.queryByRole('button', { name: 'Agora é sua vez' })).toBeNull()
-    } finally {
-      relogio.restaurar()
-    }
-  })
   test('connection can be cancelled with Escape and completed with two activations', () => {
     let connected = false
     render(
@@ -203,95 +112,4 @@ describe('o laboratório da cena', () => {
     fireEvent.click(screen.getByRole('button', { name: '◎ Pulou' }))
     expect(connected).toBe(true)
   })
-})
-
-test('⚠️ a demonstração assistida até o fim REGISTRA a tentativa no servidor', async () => {
-  // O portão do registro perguntava ao avaliador da EXPERIMENTAÇÃO, que cobra as metas da cena.
-  // Em `jump-sound` o roteiro do modelo termina SEM fechar as metas: a criança via "Demonstração
-  // concluída", nenhuma tentativa subia, e o bloco ficava para sempre em "Guardando…".
-  const activity = { type: 'demonstration', scene: 'jump-sound' } as const
-  const start = sceneStart(activity)
-  const script = sceneScript(activity)
-  let checkpoint: SceneCheckpoint<DemonstrationSession> | null = null
-  const rotas: string[] = []
-  const originalFetch = globalThis.fetch
-  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-    const url = String(input)
-    rotas.push(url.split('/').at(-1) ?? '')
-    const body = init?.body ? (JSON.parse(String(init.body)) as Record<string, unknown>) : {}
-    const segment = readSceneSegment(body.answers)
-    if (segment) checkpoint = applyDemonstrationSegment(start, script, checkpoint, segment)
-    const answers = {
-      sceneSequence: checkpoint?.sequence ?? 0,
-      sceneSessionId: checkpoint?.sessionId ?? '',
-      sceneSegmentId: checkpoint?.segmentId ?? '',
-      sceneCheckpoint: checkpoint ? packDemonstration('jump-sound', checkpoint.session) : [],
-    }
-    const progress = {
-      blockId: 'scene',
-      revision: 'revision',
-      answers,
-      hintsUsed: 0,
-      positionSeconds: null,
-      attemptsCount: 0,
-      result: null,
-      updatedAt: new Date().toISOString(),
-    }
-    if (url.endsWith('/learning-attempts'))
-      return Response.json({
-        attempt: { result: { participated: true, passed: true, feedback: 'ok' } },
-        progress,
-      })
-    return Response.json(progress)
-  }) as unknown as typeof fetch
-  // ⚠️ Mudou de propósito (lote 2): sem "Um passo", o caminho é o botão principal. ⚠️ E desde os
-  // consertos do review do lote 2 a parte TOCA também com menos movimento: o relógio vai na mão.
-  // ANTES de montar: o player lê ao montar.
-  menosMovimento()
-  const relogio = relogioManual()
-  try {
-    render(
-      <LessonPlayerProvider
-        value={{
-          lessonId: 'lesson',
-          courseSlug: 'course',
-          viewerId: 'child',
-          viewerWatermark: null,
-          initialPositionSeconds: null,
-        }}
-      >
-        <InteractiveLessonBlock
-          block={{
-            id: 'scene',
-            blockRevision: 'revision',
-            kind: 'interactive',
-            sortOrder: 0,
-            content: {
-              kind: 'interactive',
-              title: SCENE_MODELS['jump-sound'].title,
-              instructions: SCENE_MODELS['jump-sound'].instruction,
-              hints: [],
-              required: false,
-              activity,
-            },
-          }}
-        />
-      </LessonPlayerProvider>,
-    )
-    const principal = () =>
-      screen.getByRole('button', { name: /^Ver a parte|^Ver tudo de novo|^Pausar/ })
-    await waitFor(() => expect(principal().getAttribute('aria-disabled')).toBeNull())
-    for (let i = 0; i < 60 && !rotas.some((r) => r === 'learning-attempts'); i++) {
-      if (principal().textContent !== 'Pausar')
-        await act(async () => {
-          fireEvent.click(principal())
-        })
-      await relogio.tocar(12)
-    }
-    await waitFor(() => expect(rotas).toContain('learning-attempts'), { timeout: 5000 })
-  } finally {
-    relogio.restaurar()
-    globalThis.fetch = originalFetch
-    localStorage.clear()
-  }
 })

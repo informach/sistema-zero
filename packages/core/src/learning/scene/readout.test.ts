@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { SCENE_IDS, type SceneAction, type SceneId, scenePorts } from './actions'
 import type { SceneCast } from './cast'
-import { SCENE_MODELS } from './catalog'
 import { openScene, stepScene } from './engine'
 import { sceneReadout, sceneSituation } from './readout'
 import { initialScene, type SceneState } from './state'
@@ -265,54 +264,6 @@ describe('a frase da situação', () => {
     // A frase diz onde o Dino está e se ele já apareceu na tela, sem expor uma chave técnica.
     expect(sceneSituation('world', semCaption)).toContain('O Dino está nos bastidores')
     expect(sceneSituation('world', semCaption)).toContain('ainda não apareceu na tela')
-  })
-
-  test('⚠️⚠️ um é UM: a frase concorda em número com o que conta', () => {
-    // A criança lia "1 vidas e 1 pontos", "1 saltos e 1 sons" e "1 cactos nos bastidores" —
-    // sempre no PRIMEIRO acontecimento da cena, que é quando ela está lendo com mais atenção.
-    // ⚠️ Sem o `caption`: com ele a frase é o ACONTECIMENTO ("O impulso iniciou o salto."), e o
-    // que este teste cobra é a descrição da situação, que é o que fica na tela depois.
-    // ⚠️ Mudou de propósito (review do lote 2): a frase da `jump-sound` deixou de contar saltos e
-    // sons (a faixa e o desenho já contam, e eram os mesmos números três vezes). O caso de "um é
-    // UM" passa a ser a `cooldown`, que conta apertos e tiros na frase.
-    const recarga = [{ type: 'recharge' as const, seconds: 1 }, { type: 'shoot' as const }].reduce(
-      (e, a) => stepScene({ scene: 'cooldown' }, e, a),
-      nasce('cooldown'),
-    )
-    // ⚠️ Mudou de propósito (lote 5 do Raio-X, G5): a frase conta os tiros que SAÍRAM e os apertos que
-    // NÃO viraram tiro, como a faixa e o palco ("2 apertos não viraram tiro").
-    expect(sceneSituation('cooldown', { ...recarga, caption: '' })).toContain('1 tiro saiu.')
-    const recusado = stepScene({ scene: 'cooldown' }, recarga, { type: 'shoot' })
-    expect(sceneSituation('cooldown', { ...recusado, caption: '' })).toContain(
-      '1 tiro saiu. 1 aperto não virou tiro.',
-    )
-
-    // A varredura que impede o próximo: NENHUMA frase de NENHUMA cena escreve "1 <coisa>s".
-    //
-    // ⚠️⚠️ Ela cobre as TRÊS superfícies de texto e TODO passo do roteiro, e cada uma dessas
-    // extensões nasceu de um defeito que a versão anterior deixava passar:
-    //  - a **faixa de estado**, que ficava de fora e abria `pixel-vector` com "lupa 1 vezes";
-    //  - o **`caption` do motor**, que o teste antigo APAGAVA (`caption: ''`) para isolar a
-    //    situação — e era do motor o "Desenhou de novo sem limpar: 1 Dinos na tela" do
-    //    `draw-loop`;
-    //  - **cada passo**, e não só o fim do roteiro: contador chega a UM no meio do caminho e
-    //    volta a passar de um depois, então olhar só as pontas é olhar onde o defeito não está.
-    const achados: string[] = []
-    for (const scene of SCENE_IDS) {
-      const start = { scene }
-      let s = openScene(start)
-      const ve = () => {
-        for (const l of sceneReadout(scene, s)) achados.push(`${scene}: ${l.label} ${l.value}`)
-        achados.push(`${scene}: ${sceneSituation(scene, s)}`)
-      }
-      ve()
-      for (const passo of SCENE_MODELS[scene].script)
-        for (const acao of passo.actions) {
-          s = stepScene(start, s, acao)
-          ve()
-        }
-    }
-    expect(achados.filter((f) => /(^|\s)1 \p{L}+s\b/u.test(f))).toEqual([])
   })
 
   test('sem travessão: a voz da casa vale também aqui', () => {

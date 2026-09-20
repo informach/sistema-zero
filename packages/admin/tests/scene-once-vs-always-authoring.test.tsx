@@ -9,7 +9,6 @@ import {
 } from '@sistemazero/core/learning/scene'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { SceneActionEditor, sceneActionChoices } from '../src/components/editor/scene-action-editor'
-import { ScenePicker } from '../src/components/editor/scene-picker'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -62,17 +61,6 @@ test('o professor escolhe o caso das vidas e adapta o texto sem trocar o motor',
   }
 })
 
-test('a demonstração não oferece a cena que só admite experimentação', () => {
-  const html = renderToStaticMarkup(
-    <ScenePicker value="world" mode="demonstration" onChange={() => {}} />,
-  )
-  expect(html).not.toContain('Uma vez, sempre, e na hora que acontecer')
-  const experiment = renderToStaticMarkup(
-    <ScenePicker value="world" mode="experimentation" onChange={() => {}} />,
-  )
-  expect(experiment).toContain('Uma vez, sempre, e na hora que acontecer')
-})
-
 test('o editor oferece os gestos novos para preparar cada cena', () => {
   const required: Partial<Record<SceneId, SceneAction['type'][]>> = {
     'fixed-vs-read': ['value-source', 'box-marks', 'clear-marks'],
@@ -95,7 +83,6 @@ test('o editor oferece os gestos novos para preparar cada cena', () => {
       scene="two-clocks"
       value={[{ type: 'rate', perSecond: 16 }]}
       onChange={() => {}}
-      stepNumber={0}
     />,
   )
   expect(html).toContain('value="16"')

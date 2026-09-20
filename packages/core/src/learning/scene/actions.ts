@@ -362,8 +362,6 @@ export const STAGE_TARGET = { width: 480, height: 270 } as const
 export const SCENE_LIMITS = {
   impulse: { min: 5, max: 14 },
   advance: { min: 0.001, max: 30 },
-  /** O roteiro de demonstração é mais apertado: ninguém assiste 30 s parado num passo. */
-  scriptAdvance: { min: 0.001, max: 10 },
   move: { min: 20, max: 260 },
   /** A tela do Corre Dino: 480 x 270, a mesma medida que a criança digita no bloco. */
   placeX: { min: 0, max: 480 },

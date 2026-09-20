@@ -39,50 +39,31 @@
     {
       "key": "conferir-novo-vetor",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": ["Não reutilize o tamanho Médio do pixel por memória: leia os números do cartão."],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Médio sempre significa 32 × 32?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Sim; o número vale para todos os estilos."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Não; no personagem em vetor desta aula, Médio é 64 × 64."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "A lista de tamanhos muda com o estilo. Confira largura e altura."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Médio sempre significa 32 × 32?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Sim; o número vale para todos os estilos."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Não; no personagem em vetor desta aula, Médio é 64 × 64."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "A lista de tamanhos muda com o estilo. Confira largura e altura.\n\nNão reutilize o tamanho Médio do pixel por memória: leia os números do cartão."
+          }
+        ]
       }
     },
     {
       "key": "video-cores-vetor",
       "plannedVideo": "roteiro-aula-04-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: traçar a pedra e arredondar. Entrada: “A primeira parte é a cor, e ela vem antes do traço, pra forma já nascer da cor certa. Olha lá no pé ”. Saída: “limpa. Mas isso é gosto dele: se você quiser a sua com linha em volta, deixa uma cor aí no Contorno.”. Usar os slots e exemplo de Sem cor. A janela Nova cor é um caminho opcional mostrado brevemente para escolher a cor; não criar uma tarefa extra de catálogo de cores. Complemento: “O Preenchimento muda o interior; o Contorno muda a linha da borda. Observe a mesma forma com e sem contorno. Sem cor deixa aquela parte transparente, não pinta de branco.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
-    },
-    {
-      "key": "demonstracao-cores",
-      "content": {
-        "kind": "interactive",
-        "title": "A cor de dentro e a linha de fora",
-        "instructions": "Aperte Ver acontecer e olhe a pedra. Veja o que sobra quando uma parte fica Sem cor.",
-        "hints": [],
-        "required": false,
-        "activity": {
-          "type": "demonstration",
-          "scene": "fill-stroke",
-          "cenario": "meu-jeito",
-          "presentation": "inline"
-        }
-      }
     },
     {
       "key": "video-traco",
@@ -98,31 +79,26 @@
     {
       "key": "conferir-traco",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se não fechou, localize o primeiro ponto maior e clique nele. Não confundir Caneta com Pincel."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Como fechar a forma com a Caneta?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Arrastar a tela para fora da borda."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Clicar no primeiro ponto."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "O clique no início fecha o caminho para formar a pedra."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Como fechar a forma com a Caneta?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Arrastar a tela para fora da borda."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Clicar no primeiro ponto."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "O clique no início fecha o caminho para formar a pedra.\n\nSe não fechou, localize o primeiro ponto maior e clique nele. Não confundir Caneta com Pincel."
+          }
+        ]
       }
     },
     {
@@ -139,31 +115,26 @@
     {
       "key": "conferir-curvas",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "O botão de pontos aparece quando a ferramenta e a seleção corretas estão ativas."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Só alguns cantos devem virar curvas. O que selecionar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Apenas os pontos que quer suavizar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Todas as formas da galeria."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Ponto suave modifica os pontos selecionados no desenho aberto."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Só alguns cantos devem virar curvas. O que selecionar?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Apenas os pontos que quer suavizar."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Todas as formas da galeria."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "Ponto suave modifica os pontos selecionados no desenho aberto.\n\nO botão de pontos aparece quando a ferramenta e a seleção corretas estão ativas."
+          }
+        ]
       }
     },
     {
@@ -180,31 +151,26 @@
     {
       "key": "conferir-crateras",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se a pedra inteira mudou de cor, desfaça, solte a seleção e escolha a cor novamente."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Você trocou a cor para fazer uma cratera e a pedra inteira mudou. Por quê?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "O Pinta só permite uma cor por desenho."
-            },
-            {
-              "id": "opcao-2",
-              "label": "A pedra ainda estava selecionada."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "A cor aplica-se à forma selecionada. Solte a seleção antes de preparar outra forma."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você trocou a cor para fazer uma cratera e a pedra inteira mudou. Por quê?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "O Pinta só permite uma cor por desenho."
+              },
+              {
+                "id": "opcao-2",
+                "label": "A pedra ainda estava selecionada."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "A cor aplica-se à forma selecionada. Solte a seleção antes de preparar outra forma.\n\nSe a pedra inteira mudou de cor, desfaça, solte a seleção e escolha a cor novamente."
+          }
+        ]
       }
     },
     {
@@ -349,15 +315,15 @@
     {
       "key": "cores-vetor",
       "title": "Observe: a cor de dentro e a linha de fora",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Distinguir preenchimento, contorno e Sem cor.",
-      "blockKeys": ["video-cores-vetor", "demonstracao-cores"],
+      "blockKeys": ["video-cores-vetor"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["demonstracao-cores"]
+        "blockIds": ["video-cores-vetor"]
       }
     },
     {

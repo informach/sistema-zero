@@ -36,6 +36,7 @@ import { LessonSceneControls } from '@sistemazero/member-shell/components/scene-
 import { ScenePredictionPreview } from '@sistemazero/member-shell/components/scene-prediction-preview'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { act, useState } from 'react'
+import { scenePaths } from '../../core/tests/fixtures/exploration-paths'
 
 /**
  * Os ajustes de desenho das cenas (14/09/2026).
@@ -300,31 +301,6 @@ describe('o rodapé tem uma ação principal', () => {
     await screen.findByRole('button', { name: 'Som: desligado' })
     expect(screen.getAllByRole('button', { name: /^Som: |Ligar som/ })).toHaveLength(1)
     expect(screen.getAllByRole('button', { name: 'Recomeçar' })).toHaveLength(1)
-  })
-
-  test('a demonstração não oferece pista nem desfazer, e tem som só onde a cena faz som', async () => {
-    const demo = (scene: SceneId): InteractiveBlock => ({
-      ...content(scene),
-      activity: { type: 'demonstration', scene },
-    })
-    render(
-      <InteractiveLessonBlock
-        block={{ ...block('jump-sound'), content: demo('jump-sound') }}
-        previewContent={demo('jump-sound')}
-      />,
-    )
-    expect(await screen.findByRole('button', { name: 'Ligar som' })).toBeTruthy()
-    expect(screen.queryByRole('button', { name: 'Uma pista' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Desfazer' })).toBeNull()
-    cleanup()
-    render(
-      <InteractiveLessonBlock
-        block={{ ...block('layers'), content: demo('layers') }}
-        previewContent={demo('layers')}
-      />,
-    )
-    await screen.findByRole('button', { name: /Ver a parte 1/ })
-    expect(screen.queryByRole('button', { name: 'Ligar som' })).toBeNull()
   })
 })
 
@@ -1708,9 +1684,8 @@ describe('⚠️⚠️ toda porta da cena tem controle na BANCADA', () => {
   function depoisDasDescobertas(scene: SceneId): SceneState {
     const start = { scene }
     let estado = openScene(start)
-    for (const passo of sceneModel(scene).script)
-      for (const acao of passo.actions)
-        if (acao.type !== 'connect') estado = stepScene(start, estado, acao)
+    for (const acao of scenePaths[scene])
+      if (acao.type !== 'connect') estado = stepScene(start, estado, acao)
     return {
       ...estado,
       evidence: { ...estado.evidence, discoveries: [...sceneGoalIds(scene)] },
@@ -2176,46 +2151,6 @@ describe('⚠️⚠️ consertos do review do lote 1 (Raio-X)', () => {
     const quadro = Number(/quadro (\d+)/.exec(document.body.textContent ?? '')?.[1])
     expect(quadro).toBeGreaterThanOrEqual(3)
     expect(quadro).toBeLessThanOrEqual(4)
-  })
-
-  test('⚠️⚠️ inline com MENOS MOVIMENTO: a cena TOCA em passos até o fim, e não salta para ele', async () => {
-    // ⚠️ Mudou de propósito (consertos do review do lote 2). Era "um roteiro autoral longo termina
-    // (o teto era 400 voltas)": com menos movimento o ▶ aplicava o roteiro inteiro num clique, e a
-    // criança via só o FIM (na `shading` inline, "uma cor só" e "adesivo" nunca apareciam). Hoje ele
-    // toca em passos de 0,2 s, como a experimentação, e o teto de voltas não existe mais.
-    menosMovimento()
-    const tocar = relogioManual()
-    const script = Array.from({ length: 3 }, (_, i) => ({
-      id: `etapa-${i + 1}`,
-      caption: 'O relógio anda.',
-      actions: [
-        { type: 'velocity' as const, vx: i % 2 ? 1 : -1, vy: 0 },
-        { type: 'advance' as const, seconds: 1 },
-      ],
-    }))
-    const c: InteractiveBlock = {
-      ...content('velocity'),
-      activity: { type: 'demonstration', scene: 'velocity', presentation: 'inline', script },
-    }
-    render(
-      <InteractiveLessonBlock
-        block={{ id: 'b', blockRevision: 'r', kind: 'interactive', sortOrder: 0, content: c }}
-        previewContent={c}
-      />,
-    )
-    fireEvent.click(await screen.findByRole('button', { name: /Ver acontecer/ }))
-    // Um clique não é o fim: a cena está tocando, e o botão PAUSA (não fica desabilitado).
-    const botao = await screen.findByRole('button', { name: /Pausar/ })
-    expect(botao).toHaveProperty('disabled', false)
-    expect(screen.queryByRole('button', { name: /Ver de novo/ })).toBeNull()
-    // Pausada no meio, ela CONTINUA de onde parou.
-    await tocar(30)
-    fireEvent.click(screen.getByRole('button', { name: /Pausar/ }))
-    expect(await screen.findByRole('button', { name: /Continuar/ })).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: /Continuar/ }))
-    for (let i = 0; i < 80 && !screen.queryByRole('button', { name: /Ver de novo/ }); i++)
-      await tocar(12)
-    expect(screen.getByRole('button', { name: /Ver de novo/ })).toBeTruthy()
   })
 
   test('⚠️⚠️ antes do palpite a bancada fica na CORTINA, e depois dele abre completa', async () => {

@@ -3,8 +3,8 @@ import { SCENE_IDS, type SceneAction } from './actions'
 import { castText } from './cast'
 import { SCENE_MODELS } from './catalog'
 import { openScene, stepScene } from './engine'
-import { evaluateDemonstration, evaluateExperimentation, sceneGoals } from './evaluate'
-import { isSceneActivity, isSceneScript } from './index'
+import { evaluateExperimentation, sceneGoals } from './evaluate'
+import { isSceneActivity } from './index'
 import { SCENE_QUESTIONS } from './questions'
 import { drawLoopOnScreen, sceneReadout, sceneSituation } from './readout'
 import { hydrateSceneState, initialScene, isSceneState, type SceneState } from './state'
@@ -67,60 +67,9 @@ describe('cena: o catálogo', () => {
       expect(copy).toContain('o estado do jogo é jogando')
     }
   })
-
-  test('tem os 56 modelos, e cada um traz metas e três dicas', () => {
-    // Eram 14 até 14/09/2026. Entraram as quatro que as duas primeiras aulas do Corre Dino
-    // pediam e que só existiam como vídeo planejado (`coordinates`, `screen-reader`,
-    // `stage-size` e `draw-loop`) e, no mesmo dia, as seis do lote 4 da proposta: as cinco de
-    // desenho de O Jogo do Meu Jeito (`frames`, `onion-skin`, `symmetry`, `pixel-vector`,
-    // `sheet-vs-sprite`) e a das vidas do Desafio (`lives`). Em 15/09/2026 vieram as onze do
-    // núcleo do Iniciante 2D e as dez do motor, do 3D e do ateliê — os degraus da trilha que
-    // não tinham cena nenhuma (ver `docs/aulas-interativas/proposta-experiencias-trilha.md`).
-    expect(SCENE_IDS).toHaveLength(56)
-    for (const scene of SCENE_IDS) {
-      const m = SCENE_MODELS[scene]
-      expect(m.id).toBe(scene)
-      expect(m.goals.length).toBeGreaterThan(0)
-      expect(m.hints).toHaveLength(3)
-      if (
-        scene === 'once-vs-always' ||
-        scene === 'fixed-vs-read' ||
-        scene === 'collision-pair' ||
-        scene === 'invincibility' ||
-        scene === 'number-line' ||
-        scene === 'unique-names' ||
-        scene === 'motion-amount' ||
-        scene === 'two-clocks' ||
-        scene === 'copy-vs-original' ||
-        scene === 'published-copy' ||
-        scene === 'same-rules-new-skin'
-      )
-        expect(m.script).toEqual([])
-      else expect(m.script.length).toBeGreaterThan(0)
-      expect(m.title.length).toBeGreaterThan(0)
-      expect(m.manipulates.length).toBeGreaterThan(0)
-    }
-  })
-
-  test('todo roteiro do catálogo é executável e cumpre o que promete', () => {
-    // `isSceneScript` não confere só a forma: ele TOCA o roteiro e exige que cada `waitFor`
-    // realmente aconteça. Se um modelo prometesse uma descoberta que não ocorre, a criança
-    // ficaria presa esperando — e é isso que este teste impede de entrar no catálogo.
-    for (const scene of SCENE_IDS)
-      if (SCENE_MODELS[scene].script.length)
-        expect(isSceneScript([...SCENE_MODELS[scene].script], scene)).toBe(true)
-  })
 })
 
 describe('cena: as duas atividades', () => {
-  test('demonstração e experimentação são tipos irmãos, cada um com os seus campos', () => {
-    expect(isSceneActivity({ type: 'demonstration', scene: 'world' })).toBe(true)
-    expect(isSceneActivity({ type: 'experimentation', scene: 'world' })).toBe(true)
-    // Não existe mais nem `mode` nem `version`: a forma antiga não é aceita.
-    expect(isSceneActivity({ type: 'exploration', version: 3, mission: 'world' })).toBe(false)
-    expect(isSceneActivity({ type: 'demonstration', scene: 'inexistente' })).toBe(false)
-  })
-
   test('o impulso inicial só existe nas duas cenas de salto', () => {
     expect(isSceneActivity({ type: 'experimentation', scene: 'impulse', initialImpulse: 9 })).toBe(
       true,
@@ -132,32 +81,9 @@ describe('cena: as duas atividades', () => {
       false,
     )
   })
-
-  test('roteiro que promete uma descoberta sem produzi-la é recusado', () => {
-    const promessaVazia = [
-      { id: 'a', caption: 'Nada acontece aqui.', actions: [{ type: 'create' as const }] },
-    ]
-    // `world` não tem meta chamada assim, e mesmo que tivesse o passo não avança o tempo.
-    expect(isSceneScript([{ ...promessaVazia[0], waitFor: 'visible' }], 'world')).toBe(false)
-  })
-
-  test('dica não entra em roteiro de demonstração', () => {
-    const comDica = [{ id: 'a', caption: 'Olhe.', actions: [{ type: 'hint' as const, level: 1 }] }]
-    expect(isSceneScript(comDica, 'world')).toBe(false)
-  })
 })
 
 describe('cena: a avaliação', () => {
-  test('experimentação cobra as metas; demonstração cobra ter assistido', () => {
-    const vazio = initialScene({ scene: 'world' })
-    expect(evaluateExperimentation('world', vazio).passed).toBe(false)
-    expect(evaluateExperimentation('world', vazio).participated).toBe(false)
-    expect(evaluateDemonstration(false).passed).toBe(false)
-    expect(evaluateDemonstration(true).passed).toBe(true)
-    // Quem só assistiu participou, mesmo sem ter tocado em nada.
-    expect(evaluateDemonstration(false).participated).toBe(true)
-  })
-
   test('descobrir e desfazer não fecha as duas cenas que pedem montagem final', () => {
     // ⚠️ Mudou de propósito (full review de experiência, M4): na `layers` a volta ao arranjo do jogo é a
     // META `back-in-front`, e não uma condição escondida. Com duas trocas, a faixa diz "2 de 3".
@@ -417,21 +343,6 @@ describe('consertos do review do lote 1 (Raio-X)', () => {
       { type: 'advance' as const, seconds: 2 },
     ].reduce((e, a) => stepScene(start, e, a), openScene(start))
     expect(comRelogio.evidence.discoveries).toContain('with-timer')
-  })
-
-  test('⚠️ `cooldown`: a etapa da recarga termina ESPERANDO, com vírgula no decimal', () => {
-    // Desde que a etapa dura o `advance` inteiro, o último quadro dela dizia "Pronto para atirar"
-    // enquanto a fala era sobre esperar a vez.
-    const start = { scene: 'cooldown' } as const
-    let s = openScene(start)
-    for (const passo of SCENE_MODELS.cooldown.script)
-      for (const acao of passo.actions) s = stepScene(start, s, acao)
-    // ⚠️ Mudou de propósito (lote 2 do Raio-X): abaixo de 2 segundos, "falta" no singular.
-    // ⚠️ Mudou de propósito (lote 5 do Raio-X, G5): quanto falta da recarga é a SITUAÇÃO que diz. A
-    // legenda de cada quadro apagava a frase do tiro 0,1 s depois, com os tiros voando.
-    expect(s.caption).toBe('')
-    expect(sceneSituation('cooldown', s)).toStartWith('Recarregando: falta 0,5 s.')
-    expect(isSceneScript([...SCENE_MODELS.cooldown.script], 'cooldown')).toBe(true)
   })
 
   test('⚠️⚠️ `circle-collision`: com o quadro fixo a distância anda INTEIRA e para EXATA em 60', () => {

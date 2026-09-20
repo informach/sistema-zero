@@ -16,7 +16,7 @@ const question: InteractiveBlock = {
   instructions: 'Confira a ideia.',
   hints: ['Primeiro prepare.'],
   required: true,
-  activity: { type: 'question' },
+  activity: { type: 'html', html: '<p>Prepare o desenho.</p>' },
   checkpoint: {
     prompt: 'O que vem antes do desenho?',
     choices: [
@@ -104,11 +104,15 @@ describe('section progression', () => {
     expect(isInteractiveBlock(question)).toBe(true)
     expect(isInteractiveBlock({ ...question, checkpoint: undefined })).toBe(false)
     expect(evaluateLearning(question, {}).passed).toBe(false)
-    expect(evaluateLearning(question, { checkpoint: 'finish' }).passed).toBe(false)
-    expect(evaluateLearning(question, { checkpoint: 'prepare' })).toMatchObject({
-      passed: true,
-      verifiedBy: 'server',
-    })
+    expect(evaluateLearning(question, { participated: true, checkpoint: 'finish' }).passed).toBe(
+      false,
+    )
+    expect(evaluateLearning(question, { participated: true, checkpoint: 'prepare' })).toMatchObject(
+      {
+        passed: true,
+        verifiedBy: 'server',
+      },
+    )
     expect(publicInteractiveBlock(question).checkpoint).not.toHaveProperty('correctChoiceId')
   })
   test('only completed evidence changes percent; future sections have no activity details', () => {

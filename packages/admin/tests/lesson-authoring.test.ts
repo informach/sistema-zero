@@ -253,7 +253,7 @@ describe('lesson authoring integrity', () => {
       instructions: 'Escolha',
       hints: [],
       required: false,
-      activity: { type: 'question' },
+      activity: { type: 'html', html: '<p>Escolha o que acontece.</p>' },
       checkpoint: {
         prompt: 'O que acontece?',
         choices: [

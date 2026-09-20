@@ -104,9 +104,7 @@ export function SceneSetupEditor({
 
   // O aviso genérico olha o caso SEM os objetivos que não existem: eles têm o aviso próprio acima.
   const casoConferido = desconhecidas.length ? casoLimpo(soAsQueExistem) : setup
-  const invalido =
-    casoConferido !== undefined &&
-    !isSceneSetup(casoConferido, activity.scene, { goals: activity.type === 'experimentation' })
+  const invalido = casoConferido !== undefined && !isSceneSetup(casoConferido, activity.scene)
 
   return (
     <div className="space-y-4">
@@ -308,9 +306,7 @@ export function SceneSetupEditor({
         <SceneActionEditor
           scene={activity.scene}
           value={setup?.actions ?? []}
-          stepNumber={0}
-          // ⚠️ A régua do CASO, não a do roteiro: pode ficar vazio (e aí o caso some), o teto é
-          // o do `SETUP_LIMITS`, e `Restaurar a cena` não entra na lista.
+          // O caso pode ficar vazio; `Restaurar a cena` não entra na lista.
           minimo={0}
           maximo={SETUP_LIMITS.actions}
           semReset

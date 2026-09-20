@@ -6,6 +6,11 @@
 
 Guia operacional deste package. Leia antes de editar.
 
+> **Contrato vigente das aulas (20/09/2026):** o bloco interativo aceita somente
+> `experimentation` e `html`. As 56 cenas não têm `script` nem executor de demonstração;
+> palpite, pistas e pergunta final continuam anexados à experimentação. Menções a
+> demonstração ou pergunta curta nas notas históricas abaixo não descrevem mais o contrato.
+
 ## O que é
 
 **Lib compartilhada, sem framework**: as utilidades de baixo nível que TODOS os backends do

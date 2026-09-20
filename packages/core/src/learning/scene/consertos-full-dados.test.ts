@@ -6,11 +6,9 @@ import {
   isPublicInteractiveBlock,
   publicInteractiveBlock,
 } from '../index'
-import { SCENE_MODELS, sceneDefaultGoalIds } from './catalog'
+import { sceneDefaultGoalIds } from './catalog'
 import {
-  type DemonstrationActivity,
   type ExperimentationActivity,
-  sceneActivityForReading,
   sceneSetupGoals,
   sceneTargets,
   sceneUnknownSetupGoals,
@@ -97,26 +95,6 @@ describe('MÉDIO-3: a meta que a cena não tem não esconde o bloco nem trava a 
       checkpoint: SCENE_QUESTIONS.coordinates.explain.correctChoiceId,
     })
     expect(resultado.passed).toBe(true)
-  })
-
-  test('o `waitFor` que cita meta inexistente é tirado na leitura, e o resto do roteiro fica', () => {
-    const roteiro = SCENE_MODELS['sheet-vs-sprite'].script.map((passo, i) =>
-      i === 0 ? { ...passo, waitFor: 'cut' } : passo,
-    )
-    const bloco: InteractiveBlock = {
-      kind: 'interactive',
-      title: 'Folha',
-      instructions: 'Olhe.',
-      hints: [],
-      required: true,
-      activity: { type: 'demonstration', scene: 'sheet-vs-sprite', script: roteiro },
-    }
-    expect(isInteractiveBlock(bloco)).toBe(false)
-    const lido = sceneActivityForReading(bloco.activity) as DemonstrationActivity
-    expect(lido.script?.[0]?.waitFor).toBeUndefined()
-    expect(lido.script?.[0]?.actions).toEqual(roteiro[0]?.actions)
-    expect(lido.script?.slice(1)).toEqual(roteiro.slice(1))
-    expect(isPublicInteractiveBlock(publicInteractiveBlock(bloco))).toBe(true)
   })
 
   test('o que NÃO é meta desconhecida continua recusado na leitura', () => {

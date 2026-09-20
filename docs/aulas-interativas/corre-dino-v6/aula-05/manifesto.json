@@ -169,80 +169,6 @@
       "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-05-corre-dino.md, Parte 5. Passo 5: testar. Entrada: “Clica na área do jogo e joga! Agora sim: os cactos vêm da direita, um depois do outro, e você pula p”. Saída: “to. Se não combinar, o jogo muda de velocidade sem você pedir, e é bem difícil de descobrir por quê.”. Aproveitar a comparação de velocidade gravada, com a régua como complemento. Cortar o convite a escolher livremente velocidade e intervalo; encerrar em -5 e 1,4. Ponte nova: “Veja o x diminuir: 560, 555, 550. O -5 manda andar para a esquerda. O relógio continua igual.” Três posições sobre uma régua horizontal; destacar a diferença -5 e a seta para a esquerda. Não variar intervalo, tamanho ou velocidade ao mesmo tempo. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
-      "key": "demonstracao-sentido",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Veja para que lado o número negativo leva",
-        "instructions": "Olhe o número da velocidade e para que lado o cacto anda a cada quadro.",
-        "hints": [],
-        "activity": {
-          "type": "demonstration",
-          "scene": "velocity",
-          "cast": { "hero": { "name": "cacto", "gender": "m" } },
-          "cenario": "corre-dino",
-          "setup": {
-            "actions": [
-              { "type": "velocity", "vx": 10, "vy": 5 },
-              { "type": "advance", "seconds": 3.8 },
-              { "type": "velocity", "vx": 10, "vy": 0 },
-              { "type": "advance", "seconds": 3 },
-              { "type": "velocity", "vx": 0, "vy": 0 }
-            ]
-          },
-          "script": [
-            {
-              "id": "passo-1",
-              "caption": "Velocidade −5: a cada quadro o x do cacto diminui 5. O cacto vem para a esquerda.",
-              "highlight": "scene",
-              "actions": [
-                { "type": "velocity", "vx": -5, "vy": 0 },
-                { "type": "advance", "seconds": 2 }
-              ],
-              "waitFor": "left"
-            },
-            {
-              "id": "passo-2",
-              "caption": "Velocidade 5: a cada quadro o x aumenta 5. O cacto iria embora para a direita.",
-              "highlight": "scene",
-              "actions": [
-                { "type": "velocity", "vx": 5, "vy": 0 },
-                { "type": "advance", "seconds": 2 }
-              ],
-              "waitFor": "moves"
-            },
-            {
-              "id": "passo-3",
-              "caption": "Velocidade 0: a cada quadro o x soma 0. O cacto fica no lugar.",
-              "highlight": "scene",
-              "actions": [
-                { "type": "velocity", "vx": 0, "vy": 0 },
-                { "type": "advance", "seconds": 2 }
-              ],
-              "waitFor": "stopped"
-            }
-          ]
-        },
-        "prediction": {
-          "context": {
-            "label": "A velocidade para o lado",
-            "explanation": "Nesta demonstração, vamos acompanhar como a velocidade para o lado move o cacto pela tela."
-          },
-          "prompt": "O cacto nasce na direita da tela. Para o cacto vir para a esquerda, a velocidade para o lado precisa ser…",
-          "choices": [
-            {
-              "id": "cinco",
-              "label": "5",
-              "shows": "Com −5, o x diminuiu e o cacto veio para a esquerda."
-            },
-            { "id": "menos-cinco", "label": "−5" }
-          ],
-          "correctChoiceId": "menos-cinco",
-          "revealOn": "left"
-        }
-      }
-    },
-    {
       "key": "fala-entrega-editorial",
       "content": {
         "kind": "dialogue",
@@ -301,7 +227,7 @@
     {
       "key": "avalanche",
       "title": "Veja por que nascem tantos cactos",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Distinguir criar de atualizar e desenhar a cada quadro.",
       "blockKeys": ["video-avalanche"],
       "workspaceKey": null,
@@ -435,7 +361,7 @@
     {
       "key": "fora-da-tela",
       "title": "Veja onde o cacto começa",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Relacionar x de nascimento à borda direita de 480.",
       "blockKeys": ["video-fora-da-tela"],
       "workspaceKey": null,
@@ -491,15 +417,15 @@
     {
       "key": "sentido-velocidade",
       "title": "Por que a velocidade é negativa?",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Entender que diminuir x move para a esquerda.",
-      "blockKeys": ["video-sentido-velocidade", "demonstracao-sentido"],
+      "blockKeys": ["video-sentido-velocidade"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["demonstracao-sentido"]
+        "blockIds": ["video-sentido-velocidade"]
       }
     },
     {

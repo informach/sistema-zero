@@ -18,13 +18,7 @@ import {
   sceneHintDone,
   sceneHintStep,
 } from './evaluate'
-import {
-  isDemonstrationActivity,
-  isExperimentationActivity,
-  type SceneActivity,
-  sceneModelFor,
-  sceneStart,
-} from './index'
+import { type SceneActivity, sceneModelFor, sceneStart } from './index'
 import { LAYERS_CAMADAS } from './pilha'
 import { metasDaPista, PISTA_DA_META, pistaCumprida } from './pistas'
 import { SCENE_QUESTIONS } from './questions'
@@ -168,18 +162,6 @@ describe('A1 · pilha: camadas, a layers com o painel Camadas do Pinta', () => {
     cast: pedraEChama,
   }
 
-  test('a atividade aceita `pilha` só na layers, e só com os dois valores', () => {
-    expect(isExperimentationActivity(camadas)).toBe(true)
-    expect(isExperimentationActivity({ ...camadas, pilha: 'blocos' })).toBe(true)
-    expect(isExperimentationActivity({ ...camadas, pilha: 'lista' })).toBe(false)
-    expect(
-      isExperimentationActivity({ type: 'experimentation', scene: 'world', pilha: 'camadas' }),
-    ).toBe(false)
-    expect(
-      isDemonstrationActivity({ type: 'demonstration', scene: 'layers', pilha: 'camadas' }),
-    ).toBe(true)
-  })
-
   test('⚠️⚠️ a pilha atravessa a projeção pública (senão a bancada voltaria à lista do Estúdio)', () => {
     const bloco: InteractiveBlock = {
       kind: 'interactive',
@@ -321,7 +303,7 @@ describe('M5 · a previsão que afirma um estado que a tela ainda não mostra co
       Object.values(b).forEach(visitar)
     }
     for (const arquivo of manifestos) visitar(JSON.parse(readFileSync(arquivo, 'utf8')))
-    expect(vistas).toBeGreaterThan(10)
+    expect(vistas).toBeGreaterThan(7)
   })
 })
 

@@ -136,69 +136,6 @@
       "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-12-corre-dino.md, Parte 3. Passo 3: sortear a velocidade. Entrada: “Agora uma variadinha também na velocidade, e essa é mais sutil, mas faz diferença. O vx está em meno”. Saída: “r o ritmo, nem decorar a velocidade. Passo 3 feito, com os dois sorteios prontos. O quarto é testar.”. Reaproveitar a explicação aritmética e acrescentar a régua. Evitar dizer que -6 é maior que -5. Ponte nova: “Se sair zero, -5 menos zero continua -5. Se sair um, fica -6. Em direção à esquerda, -6 percorre mais distância por quadro.” Duas contas alinhadas e duas setas à esquerda com origem igual. Não alterar o tamanho do cacto nem o intervalo. Distinguir valor numérico de rapidez. Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
     {
-      "key": "demonstracao-conta-velocidade",
-      "content": {
-        "kind": "interactive",
-        "title": "O sinal e o tamanho do passo",
-        "instructions": "Olhe o sinal e o tamanho de cada passo.",
-        "hints": [],
-        "required": false,
-        "prediction": {
-          "context": {
-            "label": "O sinal da velocidade",
-            "explanation": "Nesta demonstração, vamos comparar o tamanho dos passos do cacto quando a velocidade fica negativa."
-          },
-          "prompt": "Na parte 2 a velocidade vira −6. Comparado com o −5, o cacto…",
-          "choices": [
-            {
-              "id": "iguais",
-              "label": "Anda para a esquerda com passos iguais aos do −5",
-              "shows": "Com −6, o x diminuiu 6 a cada quadro, 1 a mais que com −5."
-            },
-            { "id": "esquerda-mais", "label": "Anda para a esquerda com passos maiores" }
-          ],
-          "correctChoiceId": "esquerda-mais"
-        },
-        "activity": {
-          "type": "demonstration",
-          "scene": "velocity",
-          "cast": { "hero": { "name": "cacto", "gender": "m" } },
-          "cenario": "corre-dino",
-          "setup": {
-            "actions": [
-              { "type": "velocity", "vx": 10, "vy": 5 },
-              { "type": "advance", "seconds": 3.8 },
-              { "type": "velocity", "vx": 10, "vy": 0 },
-              { "type": "advance", "seconds": 3 },
-              { "type": "velocity", "vx": 0, "vy": 0 }
-            ]
-          },
-          "script": [
-            {
-              "id": "passo-1",
-              "caption": "Velocidade −5: a cada quadro o x do cacto diminui 5, para a esquerda.",
-              "highlight": "scene",
-              "actions": [
-                { "type": "velocity", "vx": -5, "vy": 0 },
-                { "type": "advance", "seconds": 1.2 }
-              ],
-              "waitFor": "left"
-            },
-            {
-              "id": "passo-2",
-              "caption": "Velocidade −6: ainda para a esquerda, e cada quadro tira 6. Embaixo da tela, compare os passos de antes com os de agora.",
-              "highlight": "scene",
-              "actions": [
-                { "type": "velocity", "vx": -6, "vy": 0 },
-                { "type": "advance", "seconds": 1.2 }
-              ],
-              "waitFor": "left"
-            }
-          ]
-        }
-      }
-    },
-    {
       "key": "video-sortear-velocidade",
       "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-12-corre-dino.md, Parte 3. Passo 3: sortear a velocidade. Entrada: “Agora uma variadinha também na velocidade, e essa é mais sutil, mas faz diferença. O vx está em meno”. Saída: “r o ritmo, nem decorar a velocidade. Passo 3 feito, com os dois sorteios prontos. O quarto é testar.”. Manter A, operador − e B claramente visíveis. Retirar a conclusão que transforma todo sorteio em garantia de não repetição. Ponte nova: “No VX do cacto, use a conta: -5 menos Sorteio entre 0 e 1. Confira que o sorteio da posição continua ligado ao x.”  Conferir timecodes no vídeo original; roteiro completo em montagem.json."
     },
@@ -241,7 +178,7 @@
     {
       "key": "padrao-fixo",
       "title": "Veja por que o percurso se repete",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Relacionar valores fixos a um padrão previsível.",
       "blockKeys": ["video-padrao-fixo"],
       "workspaceKey": null,
@@ -347,15 +284,15 @@
     {
       "key": "menos-corre-mais",
       "title": "Veja a conta da velocidade",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Ler -5 menos 0 e -5 menos 1 como velocidades para a esquerda.",
-      "blockKeys": ["video-menos-corre-mais", "demonstracao-conta-velocidade"],
+      "blockKeys": ["video-menos-corre-mais"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["demonstracao-conta-velocidade"]
+        "blockIds": ["video-menos-corre-mais"]
       }
     },
     {

@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import type { SectionProgressView } from '@sistemazero/core/learning'
 import {
   type InteractiveBlock,
+  LEARNING_PROTOCOL,
   type LearningBlockProgress,
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
@@ -69,7 +70,7 @@ const pergunta: InteractiveBlock = {
   instructions: 'Escolha uma ideia.',
   required: false,
   hints: ['Pense na direção.'],
-  activity: { type: 'question' },
+  activity: { type: 'html', html: '<p>Escolha uma ideia.</p>' },
   checkpoint: {
     prompt: 'O que acontece com o Dino?',
     choices: [
@@ -529,7 +530,7 @@ describe('aula por seções', () => {
     act(() => previous({ ...update, answers: { checkpoint: 'up' } }))
     expect(screen.getByLabelText('Progresso atual').textContent).toBe('down')
   })
-  test('a prévia da sequência permite conferir os blocos completos de autoria', () => {
+  test('a prévia do HTML permite conferir o bloco completo de autoria', () => {
     render(
       <LessonSections
         lesson={{
@@ -557,6 +558,17 @@ describe('aula por seções', () => {
       content: publicInteractiveBlock(pergunta),
     }
     render(<InteractiveLessonBlock block={block} previewContent={pergunta} />)
+    const frame = screen.getByTitle('Antes de testar') as HTMLIFrameElement
+    const instance = frame.srcdoc.match(/"instance":"([^"]+)"/)?.[1]
+    if (!instance) throw new Error('Instância da experiência HTML ausente')
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: frame.contentWindow,
+          data: { protocol: LEARNING_PROTOCOL, instance, event: 'participated', state: {} },
+        }),
+      )
+    })
     fireEvent.click(screen.getByRole('radio', { name: 'Sobe' }))
     fireEvent.click(screen.getByRole('button', { name: 'Conferir minha descoberta' }))
     // ⚠️ Mudou de propósito (consertos do review do lote 2): a mesma frase da prévia da cena.

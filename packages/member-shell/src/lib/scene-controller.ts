@@ -1,18 +1,11 @@
 import { isLearningAnswers, type LearningAnswers } from '@sistemazero/core/learning'
 import {
-  applyDemonstrationSegment,
   applyExperimentSegment,
-  type DemonstrationCommand,
-  type DemonstrationSession,
   type ExperimentCommand,
   type ExperimentSession,
-  initialDemonstration,
   initialExperiment,
-  isDemonstrationCommand,
   isExperimentCommand,
-  packDemonstration,
   packExperiment,
-  readDemonstrationSession,
   readExperimentSession,
   type SceneActivity,
   type SceneCheckpoint,
@@ -21,10 +14,8 @@ import {
   type SceneSegment,
   type SceneSession,
   SESSION_LIMITS,
-  sceneScript,
   sceneSegmentAnswers,
   sceneStart,
-  stepDemonstration,
   stepExperiment,
 } from '@sistemazero/core/learning/scene'
 
@@ -45,7 +36,7 @@ export interface SceneDraft {
  * passos de tempo muda QUANDO as observações são capturadas — três cactos viram trinta no
  * recarregar — e a evidência deixaria de ser a que ela viveu.
  */
-/** O que muda entre uma demonstração e uma experimentação, e só isso. */
+/** Operações do motor da experimentação. */
 interface Motor<S, C> {
   inicial: () => S
   ler: (parts: unknown) => S | null
@@ -72,44 +63,13 @@ export class SceneController<S, C> {
     this.snapshot = this.confirmed?.session ?? motor.inicial()
   }
 
-  /** Monta o controlador certo para o tipo da atividade. */
+  /** Monta o controlador da atividade. */
   static create(
     activity: SceneActivity,
     sessionId: string,
     answers: LearningAnswers = {},
-    // ⚠️ A interface de FORA é uma só: o player guarda uma referência e distingue pelo tipo
-    // da atividade. Devolver a união crua obrigaria cada uso a estreitar de novo.
   ): SceneController<SceneSession, SceneCommand> {
     const start = sceneStart(activity)
-    if (activity.type === 'demonstration') {
-      const script = sceneScript(activity)
-      return new SceneController<SceneSession, SceneCommand>(
-        activity,
-        sessionId,
-        {
-          inicial: () => initialDemonstration(start),
-          ler: (parts) => readDemonstrationSession(activity.scene, parts),
-          passo: (session, command) =>
-            stepDemonstration(
-              start,
-              script,
-              session as DemonstrationSession,
-              command as DemonstrationCommand,
-            ),
-          aceita: (c): c is SceneCommand => isDemonstrationCommand(c),
-          empacotar: (session) =>
-            packDemonstration(activity.scene, session as DemonstrationSession),
-          aplicar: (checkpoint, segment) =>
-            applyDemonstrationSegment(
-              start,
-              script,
-              checkpoint as SceneCheckpoint<DemonstrationSession> | null,
-              segment,
-            ),
-        },
-        answers,
-      )
-    }
     return new SceneController<SceneSession, SceneCommand>(
       activity,
       sessionId,

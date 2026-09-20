@@ -40,7 +40,7 @@ const content: InteractiveBlock = {
   instructions: 'Ordene a preparação e o desenho.',
   hints: ['Prepare antes de desenhar.'],
   required: true,
-  activity: { type: 'question' },
+  activity: { type: 'html', html: '<p>Prepare antes de desenhar.</p>' },
   checkpoint: {
     prompt: 'O que vem primeiro?',
     choices: [
@@ -81,7 +81,7 @@ function setup() {
     request(`/lessons/${lessonId}/blocks/${blockId}/learning-attempts`, 'POST', {
       id,
       revision,
-      answers: { checkpoint: escolha },
+      answers: { participated: true, checkpoint: escolha },
       hintsUsed: 0,
     })
   const read = () => request(`/courses/${course.slug}/lessons/${lessonId}`)
@@ -89,58 +89,6 @@ function setup() {
 }
 
 describe('learning activities and sections', () => {
-  test('a demonstration rejects learner actions at the HTTP boundary and records only demonstration evidence', async () => {
-    const ctx = setup()
-    const block = ctx.courses.blocks.find((b) => b.id === ctx.blockId)
-    if (!block) throw new Error('Missing fixture')
-    // ⚠️ SEM a pergunta anexa do `content` base: desde 15/09/2026 a cena a aceita, e com ela o
-    // bloco só fecha quando a criança também ENUNCIA a regra. Este teste mede a evidência da
-    // demonstração, que é outra coisa.
-    const { checkpoint: _pergunta, ...semPergunta } = content
-    block.content = {
-      ...semPergunta,
-      activity: { type: 'demonstration', scene: 'world' },
-    }
-    const path = `/lessons/${ctx.lessonId}/blocks/${block.id}`
-    const save = (commands: unknown[]) =>
-      ctx.request(`${path}/learning-progress`, 'PUT', {
-        revision: REVISION,
-        hintsUsed: 0,
-        positionSeconds: null,
-        answers: sceneSegmentAnswers({
-          sessionId: 'session-demo',
-          segmentId: 'segment-demo',
-          baseSequence: 0,
-          commands,
-        }),
-      })
-    expect((await save([{ type: 'create' }])).status).toBe(400)
-    expect((await save([{ type: 'take-control' }])).status).toBe(400)
-    // ⚠️ Mudou de propósito (lote 5 do Raio-X, G1): o roteiro do `world` ganhou a terceira parte,
-    // "Desligar o desenho tira o Dino da tela, e não dos bastidores.", e assistir é ver as três.
-    const response = await save([
-      { type: 'start' },
-      { type: 'tick', seconds: 0.5 },
-      { type: 'next' },
-      { type: 'tick', seconds: 0.5 },
-      { type: 'next' },
-      { type: 'tick', seconds: 0.5 },
-    ])
-    expect(response.status).toBe(200)
-    const progress = await response.json()
-    if (!progress || typeof progress !== 'object' || !('answers' in progress))
-      throw new Error('Invalid progress response')
-    const attempt = await ctx.request(`${path}/learning-attempts`, 'POST', {
-      id: randomUUID(),
-      revision: REVISION,
-      hintsUsed: 0,
-      answers: progress.answers,
-    })
-    expect(attempt.status).toBe(200)
-    expect(await attempt.json()).toMatchObject({
-      attempt: { result: { passed: true, evidence: 'demonstration' } },
-    })
-  })
   test('v2 default hints are saved and reported with the same limits as displayed hints', async () => {
     const ctx = setup()
     const block = ctx.courses.blocks.find((b) => b.id === ctx.blockId)

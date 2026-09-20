@@ -126,7 +126,7 @@ const SceneActionSchema = t.Union([
   }),
   t.Object({
     type: t.Literal('advance'),
-    seconds: t.Number({ minimum: L.scriptAdvance.min, maximum: L.scriptAdvance.max }),
+    seconds: t.Number({ minimum: L.advance.min, maximum: L.advance.max }),
   }),
   t.Object({
     type: t.Literal('move'),
@@ -472,16 +472,6 @@ const SceneSetupSchema = t.Object({
     }),
   ),
 })
-const SceneScriptSchema = t.Array(
-  t.Object({
-    id: t.String({ minLength: 1, maxLength: 80 }),
-    caption: t.String({ minLength: 1, maxLength: 500 }),
-    highlight: t.Optional(t.Union([t.Literal('scene'), t.Literal('tools'), t.Literal('compare')])),
-    actions: t.Array(SceneActionSchema, { minItems: 1, maxItems: 16 }),
-    waitFor: t.Optional(t.String({ minLength: 1, maxLength: 80 })),
-  }),
-  { minItems: 1, maxItems: 12 },
-)
 export const InteractiveBlockSchema = t.Object({
   kind: t.Literal('interactive'),
   title: t.String({ minLength: 1, maxLength: 200 }),
@@ -489,7 +479,7 @@ export const InteractiveBlockSchema = t.Object({
   hints: t.Array(t.String({ maxLength: 10000 }), { maxItems: 10 }),
   required: t.Boolean(),
   /**
-   * As quatro atividades. ⚠️ Mexer aqui vem ANTES de mexer no admin, nunca depois: um campo
+   * As duas atividades. ⚠️ Mexer aqui vem ANTES de mexer no admin, nunca depois: um campo
    * que o editor mande sem estar declarado só é aceito por acidente.
    *
    * ⚠️ E o comportamento é diferente em cada nível, MEDIDO no fluxo real de rascunho →
@@ -503,32 +493,6 @@ export const InteractiveBlockSchema = t.Object({
    * nenhum curso usava os três primeiros, e os dois últimos foram reescritos no conteúdo.
    */
   activity: t.Union([
-    t.Object({
-      type: t.Literal('demonstration'),
-      scene: SceneId,
-      instructionAudioUrl: t.Optional(t.String({ maxLength: 4000 })),
-      /**
-       * A voz do Zappy: `texto falado → MP3`. ⚠⚠ PRECISA estar aqui: campo fora do DTO some
-       * no `normalize` do Elysia, e a publicação gravaria o bloco sem o dicionário — aceita,
-       * sem erro, e a cena muda no ar. Quem recusa um dicionário malformado é o core
-       * (`isSceneVozes`), que tem a régua e a mensagem certa.
-       */
-      vozes: t.Optional(t.Record(t.String(), t.String({ maxLength: 4000 }))),
-      /** Sem roteiro próprio, vale o do modelo da cena. */
-      script: t.Optional(SceneScriptSchema),
-      cast: t.Optional(SceneCastSchema),
-      cenario: t.Optional(SceneCenarioSchema),
-      /**
-       * ⚠️⚠️ O MESMO schema da experimentação, de propósito, mesmo que a demonstração não cobre
-       * meta nenhuma. Declarando só `actions`, o `normalize` do Elysia APAGA o `goals` que
-       * viesse junto em vez de recusá-lo: o payload era aceito com o campo sumido, e o guard do
-       * core — que é quem tem a régua e a mensagem certa — nunca chegava a vê-lo. Quem recusa é
-       * o `isSceneSetup(..., { goals: false })` na publicação.
-       */
-      setup: t.Optional(SceneSetupSchema),
-      presentation: t.Optional(t.Union([t.Literal('guided'), t.Literal('inline')])),
-      pilha: t.Optional(ScenePilhaSchema),
-    }),
     t.Object({
       type: t.Literal('experimentation'),
       scene: SceneId,
@@ -546,7 +510,6 @@ export const InteractiveBlockSchema = t.Object({
       setup: t.Optional(SceneSetupSchema),
       pilha: t.Optional(ScenePilhaSchema),
     }),
-    t.Object({ type: t.Literal('question') }),
     t.Object({ type: t.Literal('html'), html: t.String({ minLength: 1, maxLength: 500000 }) }),
   ]),
   checkpoint: t.Optional(
@@ -657,7 +620,6 @@ export const LessonSectionSchema = t.Object({
   objective: t.String({ maxLength: 2000 }),
   intent: t.Union([
     t.Literal('presentation'),
-    t.Literal('demonstration'),
     t.Literal('exploration'),
     t.Literal('explanation'),
     t.Literal('application'),

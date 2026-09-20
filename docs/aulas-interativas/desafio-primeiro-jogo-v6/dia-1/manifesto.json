@@ -401,7 +401,7 @@
     {
       "key": "endereco",
       "title": "Observe o endereço na tela",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Reconhecer x horizontal, y vertical e a origem no alto à esquerda.",
       "blockKeys": ["video-endereco"],
       "workspaceKey": null,
@@ -658,7 +658,7 @@
     {
       "key": "teste",
       "title": "Observe como conferir uma mudança",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Aprender a confirmar uma edição e testar com o foco no jogo.",
       "blockKeys": ["video-teste"],
       "workspaceKey": null,

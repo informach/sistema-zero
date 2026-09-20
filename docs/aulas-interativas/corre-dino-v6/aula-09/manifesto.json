@@ -201,7 +201,7 @@
     {
       "key": "qual-cacto",
       "title": "Qual cacto participou da batida?",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Distinguir o grupo inteiro do cacto recebido pela verificação de colisão.",
       "blockKeys": ["video-qual-cacto"],
       "workspaceKey": null,

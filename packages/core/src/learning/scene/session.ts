@@ -7,12 +7,6 @@ import {
   sceneLongFrame,
 } from './actions'
 
-/** Os mesmos tetos do validador de roteiro — um checkpoint não pode apontar para um passo
- *  que nenhum roteiro válido teria. */
-const SCRIPT_STEPS = 12
-const SCRIPT_ACTIONS = 16
-
-import type { SceneStep } from './catalog'
 import { openScene, stepScene } from './engine'
 import {
   cloneScene,
@@ -26,11 +20,7 @@ import {
 /**
  * A sessão: o estado da cena mais o que só existe enquanto a criança está nela.
  *
- * ⚠️ São DUAS sessões, uma por tipo. Antes era uma só, com um campo `demo` que ficava `null`
- * na experimentação — e o `stepExperience` virava uma sucessão de `if (!next.demo)`. Pior:
- * a sessão carregava um `demo.learner` que nunca era atualizado mas tinha PRECEDÊNCIA na
- * avaliação, e um `demo.past` que nunca recebia nada. Separando, cada sessão tem só os seus
- * campos e nenhum caminho morto sobra.
+ * A criança conduz a experiência; o checkpoint guarda apenas o mundo que ela manipulou.
  */
 
 /** Um retrato para comparar lado a lado. A criança guarda no máximo dois. */
@@ -109,7 +99,7 @@ export function sceneTrial(state: SceneState, label: string): SceneTrial {
 }
 
 export interface SceneEvent {
-  type: 'discovery' | 'jump' | 'sound' | 'landed' | 'viewed'
+  type: 'discovery' | 'jump' | 'sound' | 'landed'
   id: string
 }
 
@@ -203,7 +193,7 @@ export function stepExperiment(
     next.state.crowd.cacti.length + next.past.reduce((n, s) => n + s.crowd.cacti.length, 0)
   while (next.past.length && populacao() > SESSION_LIMITS.population) next.past.shift()
 
-  return { session: next, events: sceneEvents(before, next.state, command.type, true) }
+  return { session: next, events: sceneEvents(before, next.state, command.type) }
 }
 
 function withoutEvidence(state: SceneState): SceneState {
@@ -212,174 +202,11 @@ function withoutEvidence(state: SceneState): SceneState {
   return copia
 }
 
-// ── Demonstração ──────────────────────────────────────────────────────────────────
-
-export interface DemonstrationSession {
-  state: SceneState
-  /** Em que passo do roteiro a demonstração está. */
-  step: number
-  /** Qual ação DENTRO do passo está sendo tocada. */
-  action: number
-  elapsed: number
-  /** O passo terminou e espera a criança pedir o próximo. */
-  ready: boolean
-  viewed: boolean
-  before?: SceneTrial
-}
-export type DemonstrationCommand =
-  | { type: 'start' }
-  | { type: 'next' }
-  | { type: 'tick'; seconds: number }
-
-/** Respiro entre duas ações do roteiro, para a criança ver uma coisa de cada vez. */
-const BREATH = 0.45
-const MAX_TICK = 1
-
-export function initialDemonstration(start: SceneStart): DemonstrationSession {
-  return { state: openScene(start), step: 0, action: 0, elapsed: 0, ready: false, viewed: false }
-}
-
-export function isDemonstrationCommand(value: unknown): value is DemonstrationCommand {
-  if (!isRecord(value)) return false
-  if (value.type === 'start' || value.type === 'next') return Object.keys(value).length === 1
-  return (
-    value.type === 'tick' &&
-    typeof value.seconds === 'number' &&
-    Number.isFinite(value.seconds) &&
-    value.seconds >= 0.001 &&
-    value.seconds <= MAX_TICK
-  )
-}
-
-/**
- * Um passo da demonstração: o mesmo motor no player e no servidor, que rejoga os comandos.
- *
- * ⚠️⚠️ A etapa com `waitFor` dura o `advance` INTEIRO. Encerrá-la na primeira fatia em que a
- * descoberta acontecia fazia o roteiro "avance 1 s" durar uma fatia de 0,05 s: na `velocity` o Dino
- * andava 2,5 px e a fala dizia "a cada quadro ele anda um pouco para a direita" sobre um movimento
- * invisível. O `waitFor` é a PROMESSA que o validador (`playsOut`) confere tocando o roteiro inteiro.
- */
-export function stepDemonstration(
-  start: SceneStart,
-  script: readonly SceneStep[],
-  previous: DemonstrationSession,
-  command: DemonstrationCommand,
-): { session: DemonstrationSession; events: SceneEvent[] } {
-  if (!isDemonstrationCommand(command)) throw new Error('Comando de demonstração inválido.')
-  const before = previous.state
-  const next: DemonstrationSession = { ...previous }
-
-  /**
-   * ⚠️⚠️ O ROTEIRO pode ter ENCOLHIDO desde que a sessão foi guardada (consertos do review da onda A do
-   * lote 5, A3). O roteiro do modelo das `lives` passou de 4 para 3 etapas, e o bloco publicado do Dia 4
-   * (mesma revisão) seguia valendo: quem parou na 4ª etapa reabria com `step=3`, o primeiro tique
-   * LANÇAVA "Etapa de demonstração inválida." no player e o members respondia 500. Etapa ou ação que
-   * não existe mais não é erro de protocolo: é roteiro novo, e a demonstração recomeça do zero, sem
-   * perder o `viewed` (rever nunca desconclui). Vale para qualquer lote futuro que encurte um roteiro.
-   */
-  const passoGuardado = script[previous.step]
-  const acoesDoPasso = passoGuardado?.actions.length ?? 0
-  if (
-    command.type !== 'start' &&
-    (!passoGuardado ||
-      previous.action > acoesDoPasso ||
-      (previous.action === acoesDoPasso && !previous.ready))
-  ) {
-    const inicio = openScene(start)
-    return {
-      session: {
-        state: inicio,
-        step: 0,
-        action: 0,
-        elapsed: 0,
-        ready: false,
-        viewed: previous.viewed,
-        before: sceneTrial(inicio, 'Antes desta etapa'),
-      },
-      events: [],
-    }
-  }
-
-  if (command.type === 'start') {
-    const inicio = openScene(start)
-    return {
-      session: {
-        state: inicio,
-        step: 0,
-        action: 0,
-        elapsed: 0,
-        ready: false,
-        // ⚠️ Rever NÃO desconclui. A criança que terminou e clicou em "assistir de novo"
-        // não pode perder o bloco que já estava concluído.
-        viewed: previous.viewed,
-        before: sceneTrial(inicio, 'Antes desta etapa'),
-      },
-      events: [],
-    }
-  }
-
-  if (command.type === 'next') {
-    if (next.ready && next.step < script.length - 1) {
-      next.step += 1
-      next.action = 0
-      next.elapsed = 0
-      next.ready = false
-      next.before = sceneTrial(next.state, 'Antes desta etapa')
-    }
-    return { session: next, events: [] }
-  }
-
-  if (next.ready) return { session: next, events: [] }
-  const passo = script[next.step]
-  if (!passo) throw new Error('Etapa de demonstração inválida.')
-  const acao = passo.actions[next.action]
-  if (!acao) throw new Error('Ação de demonstração inválida.')
-
-  next.elapsed += command.seconds
-  if (acao.type === 'advance') {
-    // O tempo do roteiro é consumido em fatias do tamanho do quadro, para a criança ver o
-    // movimento acontecer em vez de receber o resultado pronto.
-    const restante = acao.seconds - (next.elapsed - command.seconds)
-    // ⚠️⚠️ A SOBRA nunca se perde. O player acumula quadros do `requestAnimationFrame` até
-    // ~0,04 s, e a soma das fatias fica ora um fio acima, ora um fio abaixo do segundo inteiro:
-    // quando ficava abaixo, a sobra (< 0,001 s) era jogada fora, e na `circle-collision` a
-    // distância parava em 60,0016 contra 60 — a batida do roteiro sumia em ~9 de cada 10 vezes.
-    // Se o que resta depois deste tique não chega a um milésimo, ele é consumido INTEIRO agora.
-    const encerra = restante - command.seconds < 0.001
-    const fatia = encerra ? restante : command.seconds
-    if (fatia >= 0.001)
-      next.state = stepScene(start, next.state, { type: 'advance', seconds: fatia })
-    // ⚠️⚠️ A etapa só termina com o `advance` INTEIRO consumido, mesmo quando ela espera uma
-    // descoberta (`waitFor`). Encerrar na primeira fatia em que a descoberta acontecia fazia o
-    // roteiro "avance 1 s" durar uma fatia de 0,05 s: na `velocity` o Dino andava 2,5 px e a
-    // fala dizia "a cada quadro ele anda um pouco para a direita" sobre um movimento invisível.
-    // O `waitFor` continua sendo a PROMESSA que o validador (`playsOut`) confere tocando o
-    // roteiro inteiro; aqui ele não encurta mais o tempo que o professor escreveu.
-    if (encerra) {
-      next.action += 1
-      next.elapsed = 0
-    }
-  } else if (next.elapsed >= BREATH) {
-    next.state = stepScene(start, next.state, acao)
-    next.action += 1
-    next.elapsed = 0
-  }
-
-  if (next.action >= passo.actions.length) {
-    next.ready = true
-    if (next.step === script.length - 1) next.viewed = true
-  }
-
-  const events = sceneEvents(before, next.state, 'tick', false)
-  if (next.viewed && !previous.viewed) events.push({ type: 'viewed', id: 'viewed' })
-  return { session: next, events }
-}
-
 /**
  * A cena FAZ som? É a pergunta que decide se o player oferece "Ligar som".
  *
- * ⚠️⚠️ O botão aparecia em TODAS as cenas e em toda demonstração (lote 2 do Raio-X, 16/09/2026),
- * mas o único gerador de evento `sound` é o salto da `jump-sound`: nas outras 44 ele era um botão
+ * ⚠️⚠️ O botão aparecia em todas as cenas, mas o único gerador de evento `sound` é o salto da
+ * `jump-sound`: nas demais ele era um botão
  * mudo, que ensina a criança que o som está quebrado. A régua é a de LEGALIDADE (a porta `sound`
  * existe nesta cena), como o relógio já faz com `advance`, e não uma lista escrita no player.
  * `session.test.ts` confere contra o MOTOR: cena que diz não nunca emite som, e a que diz sim emite.
@@ -391,15 +218,9 @@ export function sceneEmitsSound(scene: SceneId): boolean {
 /**
  * O que aconteceu no mundo entre dois estados. O player usa isto para o som e a animação.
  *
- * ⚠️ Descoberta feita DURANTE uma demonstração não conta: quem conduziu foi o roteiro, e
- * creditar a criança por assistir tiraria o sentido da experimentação que vem depois.
+ * Só um gesto da criança ou o relógio da própria experimentação produz estes eventos.
  */
-function sceneEvents(
-  before: SceneState,
-  after: SceneState,
-  command: string,
-  colheDescobertas: boolean,
-): SceneEvent[] {
+function sceneEvents(before: SceneState, after: SceneState, command: string): SceneEvent[] {
   const events: SceneEvent[] = []
   if (after.sound.jumps > before.sound.jumps)
     events.push({ type: 'jump', id: String(after.sound.jumps) })
@@ -407,9 +228,8 @@ function sceneEvents(
     events.push({ type: 'sound', id: String(after.sound.count) })
   if (before.flight.time !== null && after.flight.time === null && command !== 'reset')
     events.push({ type: 'landed', id: String(after.sound.jumps) })
-  if (colheDescobertas)
-    for (const id of after.evidence.discoveries)
-      if (!before.evidence.discoveries.includes(id)) events.push({ type: 'discovery', id })
+  for (const id of after.evidence.discoveries)
+    if (!before.evidence.discoveries.includes(id)) events.push({ type: 'discovery', id })
   return events
 }
 
@@ -470,10 +290,6 @@ export function packExperiment(scene: SceneId, session: ExperimentSession): stri
     }),
   )
 }
-export function packDemonstration(scene: SceneId, session: DemonstrationSession): string[] {
-  return chunks(JSON.stringify({ ...session, scene, state: pack(session.state) }))
-}
-
 function hydrateSceneStateForScene(scene: SceneId, value: unknown): unknown {
   const state = hydrateSceneState(value)
   // Retratos publicados antes do preset guardavam 1 s no campo do intervalo, embora o motor
@@ -501,33 +317,6 @@ export function readExperimentSession(scene: SceneId, parts: unknown): Experimen
   if (!Array.isArray(raw.trials) || raw.trials.length > SESSION_LIMITS.trials) return null
   if (!raw.trials.every(isSceneTrial)) return null
   return { state, past, trials: raw.trials }
-}
-
-export function readDemonstrationSession(
-  scene: SceneId,
-  parts: unknown,
-): DemonstrationSession | null {
-  const raw = parseChunks(parts)
-  if (!isRecord(raw) || raw.scene !== scene) return null
-  const state = hydrateSceneStateForScene(scene, raw.state)
-  if (!isSceneState(state)) return null
-  const { step, action, elapsed, ready, viewed, before } = raw
-  if (!Number.isInteger(step) || (step as number) < 0 || (step as number) >= SCRIPT_STEPS)
-    return null
-  if (!Number.isInteger(action) || (action as number) < 0 || (action as number) > SCRIPT_ACTIONS)
-    return null
-  if (typeof elapsed !== 'number' || !Number.isFinite(elapsed) || elapsed < 0) return null
-  if (typeof ready !== 'boolean' || typeof viewed !== 'boolean') return null
-  if (before !== undefined && !isSceneTrial(before)) return null
-  return {
-    state,
-    step: step as number,
-    action: action as number,
-    elapsed,
-    ready,
-    viewed,
-    ...(before === undefined ? {} : { before: before as SceneTrial }),
-  }
 }
 
 function parseChunks(parts: unknown): unknown {
@@ -637,33 +426,8 @@ export function applyExperimentSegment(
   }
 }
 
-export function applyDemonstrationSegment(
-  start: SceneStart,
-  /**
-   * ⚠️ O roteiro AUTORADO, quando existe — nunca presuma o do modelo aqui. Com um roteiro
-   * de 5 passos na atividade e 3 no modelo, o servidor marcaria "assistido" no passo errado:
-   * a criança concluiria sem ter visto, ou nunca concluiria.
-   */
-  script: readonly SceneStep[],
-  checkpoint: SceneCheckpoint<DemonstrationSession> | null,
-  segment: SceneSegment,
-): SceneCheckpoint<DemonstrationSession> {
-  if (segment.baseSequence !== (checkpoint?.sequence ?? 0)) throw new SceneConflictError()
-  let session = checkpoint?.session ?? initialDemonstration(start)
-  for (const command of segment.commands) {
-    if (!isDemonstrationCommand(command)) throw new Error('Comando de demonstração inválido.')
-    session = stepDemonstration(start, script, session, command).session
-  }
-  return {
-    sequence: segment.baseSequence + segment.commands.length,
-    sessionId: segment.sessionId,
-    segmentId: segment.segmentId,
-    session,
-  }
-}
+/** Comando da experiência enviado pelo player e conferido no servidor. */
+export type SceneCommand = ExperimentCommand
 
-/** Qualquer comando de cena — o player guarda um só tipo de referência para os dois. */
-export type SceneCommand = ExperimentCommand | DemonstrationCommand
-
-/** A sessão de qualquer cena. O player guarda uma referência só e distingue pelo tipo. */
-export type SceneSession = ExperimentSession | DemonstrationSession
+/** O estado da experiência guardado no checkpoint. */
+export type SceneSession = ExperimentSession

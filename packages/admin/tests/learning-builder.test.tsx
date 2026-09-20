@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
-import { SCENE_MODELS, SCENE_QUESTIONS, type SceneStep } from '@sistemazero/core/learning/scene'
+import { SCENE_MODELS, SCENE_QUESTIONS } from '@sistemazero/core/learning/scene'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -16,7 +16,7 @@ const { EMPTY_LEARNING, LearningBuilder } = await import(
  *
  * As regras têm teste próprio e estavam certas; o que não tinha rede era o editor CHAMAR cada
  * uma no gesto certo. Foi ali que os defeitos moraram: a pergunta que atravessava a troca de
- * tipo, o impulso que atravessava a troca de cena e o roteiro que sumia sem aviso.
+ * tipo e o impulso que atravessava a troca de cena.
  */
 async function montar(inicial: InteractiveBlock) {
   const container = document.createElement('div')
@@ -84,13 +84,21 @@ async function montar(inicial: InteractiveBlock) {
   }
 }
 
-test('⭐ a pergunta de verificação ATRAVESSA a troca para uma cena', async () => {
-  // Ela era apagada porque a cena recusava pergunta anexa. Desde 15/09/2026 a cena a aceita (é
-  // o terceiro tempo do ciclo), então apagá-la voltou a ser perda de trabalho — e a caixa de
-  // desmarcar existe nos quatro tipos, então o professor tem como tirá-la se quiser.
-  const b = await montar(EMPTY_LEARNING)
+test('pergunta em branco não fica presa ao trocar do HTML para a cena', async () => {
+  const b = await montar({
+    ...EMPTY_LEARNING,
+    activity: { type: 'html', html: '<p>Oi</p>' },
+    checkpoint: {
+      prompt: '',
+      choices: [
+        { id: 'first', label: 'Primeira possibilidade' },
+        { id: 'second', label: 'Segunda possibilidade' },
+      ],
+      correctChoiceId: 'first',
+      explanation: '',
+    },
+  })
   try {
-    await b.clicar('Pergunta curta')
     expect(b.value.checkpoint).toBeDefined()
     await b.clicar('Experimentação')
     // A pergunta em BRANCO continua não ficando presa: ela invalidaria o bloco sem dizer onde.
@@ -104,7 +112,7 @@ test('⭐ a pergunta de verificação ATRAVESSA a troca para uma cena', async ()
 test('⭐ a pergunta ESCRITA sobrevive à troca para uma cena', async () => {
   const b = await montar({
     ...EMPTY_LEARNING,
-    activity: { type: 'question' },
+    activity: { type: 'html', html: '<p>Oi</p>' },
     checkpoint: {
       prompt: 'Por que o y desceu?',
       choices: [
@@ -166,18 +174,6 @@ test('trocar de cena leva o texto do modelo junto para quem não escreveu o pró
   }
 })
 
-test('⚠️ a cena ACOMPANHA entre demonstração e experimentação', async () => {
-  const b = await montar(EMPTY_LEARNING)
-  try {
-    await b.clicar('Para onde vai o cacto que sai da tela?')
-    await b.clicar('Demonstração')
-    if (b.value.activity.type !== 'demonstration') throw new Error('tipo errado')
-    expect(b.value.activity.scene).toBe('cleanup')
-  } finally {
-    await b.fechar()
-  }
-})
-
 test('⚠️ o bloco NOVO já nasce com o texto do modelo', () => {
   // Nascia em branco, e as regras de troca só disparam numa TROCA: clicar no cartão já marcado
   // não emite evento. Quem aceitava o padrão escrevia tudo à mão e ainda levava o erro de
@@ -200,33 +196,11 @@ test('a previsão própria começa com o contexto claro da cena', async () => {
   }
 })
 
-test('⚠️ passar por outro tipo e voltar devolve o roteiro escrito à mão', async () => {
-  // Os quatro cartões são UM grupo de rádio, e a seta do teclado já seleciona ao passar: ir de
-  // Demonstração até HTML atravessa os outros dois. Cada passagem apagava o roteiro autoral.
-  const roteiro: SceneStep[] = [
-    { id: 'unico', caption: 'Veja o Dino nascer.', actions: [{ type: 'create' }] },
-  ]
-  const b = await montar({
-    ...EMPTY_LEARNING,
-    activity: { type: 'demonstration', scene: 'world', script: roteiro },
-  })
-  try {
-    await b.clicar('Pergunta curta')
-    expect(b.alerta).toContain('roteiro')
-    await b.clicar('Demonstração')
-    if (b.value.activity.type !== 'demonstration') throw new Error('tipo errado')
-    expect(b.value.activity.script).toEqual(roteiro)
-    expect(isInteractiveBlock(b.value)).toBe(true)
-  } finally {
-    await b.fechar()
-  }
-})
-
-test('⚠️ a cena escolhida sobrevive a uma passagem por Pergunta curta', async () => {
+test('a cena escolhida sobrevive a uma passagem por HTML', async () => {
   const b = await montar(EMPTY_LEARNING)
   try {
     await b.clicar('Para onde vai o cacto que sai da tela?')
-    await b.clicar('Pergunta curta')
+    await b.clicar('Experiência em HTML')
     await b.clicar('Experimentação')
     if (b.value.activity.type !== 'experimentation') throw new Error('tipo errado')
     expect(b.value.activity.scene).toBe('cleanup')
@@ -241,34 +215,11 @@ test('⚠️ sair da experimentação avisa que o impulso ajustado não vai junt
     activity: { type: 'experimentation', scene: 'impulse', initialImpulse: 14 },
   })
   try {
-    await b.clicar('Pergunta curta')
+    await b.clicar('Experiência em HTML')
     expect(b.alerta).toContain('impulso inicial')
     await b.clicar('Experimentação')
     if (b.value.activity.type !== 'experimentation') throw new Error('tipo errado')
     expect(b.value.activity.initialImpulse).toBe(14)
-  } finally {
-    await b.fechar()
-  }
-})
-
-test('⚠️ o roteiro de salto atravessa as cenas do meio e chega inteiro na cena irmã', async () => {
-  // As catorze cenas são UM grupo de rádio: ir de `gravity` a `impulse` pela seta passa por
-  // doze cenas em que o roteiro de salto não vale. A primeira delas o descartava para sempre.
-  const roteiro: SceneStep[] = [
-    { id: 'pulo', caption: 'Veja o salto.', actions: [{ type: 'impulse', force: 12 }] },
-  ]
-  const b = await montar({
-    ...EMPTY_LEARNING,
-    activity: { type: 'demonstration', scene: 'gravity', script: roteiro },
-  })
-  try {
-    await b.clicar('Quem fica na frente?')
-    expect(b.alerta).toContain('guardado')
-    await b.clicar('Escolha a altura do salto')
-    if (b.value.activity.type !== 'demonstration') throw new Error('tipo errado')
-    expect(b.value.activity.script).toEqual(roteiro)
-    expect(b.alerta).toBe('')
-    expect(isInteractiveBlock(b.value)).toBe(true)
   } finally {
     await b.fechar()
   }
@@ -338,32 +289,6 @@ test('⚠️⚠️ "Experimentar a prévia" CORRIGE de verdade: errar recebe rec
   }
 })
 
-test('⚠️⚠️ a pilha de camadas: só na layers, acompanha a cena irmã e sai ao trocar de cena', async () => {
-  // Full review de experiência do conjunto (A1): a `layers` do Meu Jeito fala com o painel Camadas do
-  // Pinta. Levada para outra cena, a pilha invalidaria o bloco sem nada na tela para consertar.
-  const b = await montar(EMPTY_LEARNING)
-  try {
-    await b.clicar('Quem fica na frente?')
-    await b.clicar('Painel Camadas do Pinta')
-    const atividade = () => b.value.activity as { type: string; pilha?: string; scene?: string }
-    expect(atividade().pilha).toBe('camadas')
-    expect(isInteractiveBlock(b.value)).toBe(true)
-    await b.clicar('Demonstração')
-    expect(atividade().type).toBe('demonstration')
-    expect(atividade().pilha).toBe('camadas')
-    expect(isInteractiveBlock(b.value)).toBe(true)
-    await b.clicar('Para onde vai o cacto que sai da tela?')
-    expect(atividade().scene).toBe('cleanup')
-    expect(atividade().pilha).toBeUndefined()
-    expect(isInteractiveBlock(b.value)).toBe(true)
-    await b.clicar('Quem fica na frente?')
-    await b.clicar('Lista de blocos do Estúdio')
-    expect(atividade().pilha).toBeUndefined()
-  } finally {
-    await b.fechar()
-  }
-})
-
 const SEM_PERGUNTA = 'sem a pergunta do fim'
 
 test('⭐⭐ a caixa "sem a pergunta do fim" tira a pergunta de fábrica da experimentação', async () => {
@@ -401,14 +326,11 @@ test('⚠️ escrever a minha pergunta DESMARCA a caixa (as duas juntas são rec
   }
 })
 
-test('⚠️ a caixa NÃO existe onde não há pergunta de fábrica para tirar', async () => {
+test('a caixa de dispensar pergunta só existe na cena que a oferece', async () => {
   const b = await montar(EMPTY_LEARNING)
   try {
     expect(b.temCaixa(SEM_PERGUNTA)).toBe(true)
-    // A demonstração não herda pergunta (a criança assistiu), e o core recusa o campo ali.
-    await b.clicar('Demonstração')
-    expect(b.temCaixa(SEM_PERGUNTA)).toBe(false)
-    await b.clicar('Pergunta curta')
+    await b.clicar('Experiência em HTML')
     expect(b.temCaixa(SEM_PERGUNTA)).toBe(false)
   } finally {
     await b.fechar()

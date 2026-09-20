@@ -74,8 +74,6 @@ const CROMO = [
   'scene-frame.tsx',
   'scene-prediction.tsx',
   'scene-conclusion.tsx',
-  'scene-demo-controls.tsx',
-  'scene-sandbox.tsx',
   'scene-dino-controls.tsx',
   'scene-dino-numbers-controls.tsx',
   'scene-motor-controls.tsx',
@@ -108,9 +106,7 @@ describe('cromo é do app, mundo é da cena', () => {
     )
     const palcosListados: readonly string[] = PALCOS
     expect(palcosListados.filter((f) => f !== 'experience-scene.tsx').sort()).toEqual(palcos.sort())
-    const bancadas = pasta.filter(
-      (f) => /^scene-.+-controls\.tsx$/.test(f) && f !== 'scene-demo-controls.tsx',
-    )
+    const bancadas = pasta.filter((f) => /^scene-.+-controls\.tsx$/.test(f))
     const bancadasListadas: readonly string[] = BANCADAS
     expect([...bancadasListadas].sort()).toEqual(bancadas.sort())
     // O cromo alcança toda bancada.

@@ -62,7 +62,7 @@ export function falasDaAula(blocos: readonly BlocoDoRascunho[]): FalasDoBloco[] 
     }
     if (content.kind !== 'interactive') continue
     const atividade = content.activity
-    if (atividade?.type !== 'demonstration' && atividade?.type !== 'experimentation') continue
+    if (atividade?.type !== 'experimentation') continue
     /**
      * ⚠⚠ O `try` não é zelo: isto roda no RENDER, sobre o RASCUNHO, e o rascunho guarda estado
      * inválido de propósito (é o que deixa a professora sair do meio de uma edição). Uma cena com id

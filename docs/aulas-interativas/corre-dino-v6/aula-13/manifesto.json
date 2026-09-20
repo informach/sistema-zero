@@ -232,7 +232,7 @@
     {
       "key": "base-e-nascimento",
       "title": "Quem lê a nova velocidade?",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Distinguir a base guardada e a velocidade recebida ao nascer.",
       "blockKeys": ["video-base-e-nascimento"],
       "workspaceKey": null,
@@ -331,7 +331,7 @@
     {
       "key": "comparar-negativos",
       "title": "Veja quando a base chega ao limite",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Interpretar velocidade > -9 e incremento -1.",
       "blockKeys": ["video-comparar-negativos"],
       "workspaceKey": null,

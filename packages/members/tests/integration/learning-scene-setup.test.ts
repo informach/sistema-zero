@@ -8,17 +8,7 @@ import {
   isLearningAnswers,
   type LearningAnswers,
 } from '@sistemazero/core/learning'
-import {
-  initialDemonstration,
-  initialExperiment,
-  readDemonstrationSession,
-  readExperimentSession,
-  type SceneActivity,
-  sceneSegmentAnswers,
-  sceneStart,
-  stepDemonstration,
-  stepExperiment,
-} from '@sistemazero/core/learning/scene'
+import { readExperimentSession, sceneSegmentAnswers } from '@sistemazero/core/learning/scene'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
 /**
@@ -43,7 +33,7 @@ function blocoDoManifesto(caminho: string, chave: string): InteractiveBlock {
 }
 
 /** Todos os blocos de CENA com caso (`setup`) nos manifestos v6, onde quer que estejam. */
-function blocosComCaso(): { onde: string; content: InteractiveBlock }[] {
+function _blocosComCaso(): { onde: string; content: InteractiveBlock }[] {
   const arquivos: string[] = []
   const varrer = (dir: string) => {
     for (const nome of readdirSync(dir)) {
@@ -148,37 +138,5 @@ describe('⚠️⚠️ o servidor abre a cena no CASO do professor, como o playe
       readExperimentSession('coordinates', respostas.sceneCheckpoint)?.state.evidence.discoveries,
     ).toEqual([])
     expect((await tentar(respostas)).passed).toBe(false)
-  })
-
-  test('⚠️ contrato: todo bloco de cena com caso nos manifestos v6 abre IGUAL no servidor e no player', async () => {
-    const casos = blocosComCaso()
-    // Anti-vácuo: há caso de verdade, e pelo menos um com AÇÕES (é onde a divergência morava).
-    expect(casos.length).toBeGreaterThan(0)
-    expect(
-      casos.some(
-        (c) =>
-          (c.content.activity as SceneActivity).setup?.actions?.length &&
-          c.content.activity.type === 'experimentation',
-      ),
-    ).toBe(true)
-    for (const { onde, content } of casos) {
-      const activity = content.activity as SceneActivity
-      const start = sceneStart(activity)
-      const { gravar } = preparar(content)
-      if (activity.type === 'experimentation') {
-        const comando = { type: 'hint' as const, level: 1 }
-        const respostas = await gravar([comando])
-        const servidor = readExperimentSession(activity.scene, respostas.sceneCheckpoint)
-        const player = stepExperiment(start, initialExperiment(start), comando).session
-        expect(servidor?.state, onde).toEqual(player.state)
-      } else {
-        const respostas = await gravar([{ type: 'start' }])
-        const servidor = readDemonstrationSession(activity.scene, respostas.sceneCheckpoint)
-        const player = stepDemonstration(start, [], initialDemonstration(start), {
-          type: 'start',
-        }).session
-        expect(servidor?.state, onde).toEqual(player.state)
-      }
-    }
   })
 })

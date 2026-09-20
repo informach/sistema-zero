@@ -14,11 +14,9 @@ export * from './video-watch'
 import { isLearningPredictionContext, type LearningPredictionContext } from './prediction-context'
 import {
   castText,
-  evaluateDemonstration,
   evaluateExperimentation,
   isSceneActivity,
   openScene,
-  readDemonstrationSession,
   readExperimentSession,
   SCENE_IDS,
   SCENE_QUESTIONS,
@@ -34,7 +32,6 @@ import {
 import { isSectionCompletion, type SectionCompletion } from './section-progression'
 export const SECTION_INTENTS = [
   'presentation',
-  'demonstration',
   'exploration',
   'explanation',
   'application',
@@ -45,7 +42,6 @@ export const SECTION_INTENTS = [
 export type SectionIntent = (typeof SECTION_INTENTS)[number]
 export const SECTION_INTENT_LABELS: Record<SectionIntent, string> = {
   presentation: 'Apresentação',
-  demonstration: 'Demonstração',
   exploration: 'Exploração',
   explanation: 'Explicação',
   application: 'Aplicação',
@@ -113,25 +109,8 @@ export interface HtmlActivity {
   html: string
 }
 
-/**
- * Uma pergunta sozinha, como atividade do bloco.
- *
- * ⚠️ Chamava-se `checkpoint` e colidia com `block.checkpoint` — a pergunta que se ANEXA a
- * qualquer atividade — e, pior, com `answers.checkpoint`, que numa era a alternativa
- * escolhida (uma string) e noutra os pedaços da sessão serializada (um array). As duas só
- * não se atropelavam por uma invariante implícita, não documentada, em outro arquivo.
- */
-export interface QuestionActivity {
-  type: 'question'
-}
-/**
- * O que uma atividade interativa pode ser. Quatro formas, nenhuma sobreposta.
- *
- * Saíram: `simulation` (a geração 1), `experiment` (modelos 2D) e `comparison`, que não
- * tinham um único uso em curso nenhum; e `prediction` e `sequence`, reescritos no conteúdo.
- * As cenas, que eram um tipo com um campo `mode`, viraram dois tipos irmãos.
- */
-export type LearningActivity = QuestionActivity | HtmlActivity | SceneActivity
+/** Uma experiência pronta ou uma interação em HTML personalizada. */
+export type LearningActivity = HtmlActivity | SceneActivity
 export interface InteractiveBlock {
   kind: 'interactive'
   title: string
@@ -201,24 +180,6 @@ const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
   // ⚠️⚠️ `setup` também é PÚBLICO, e por um motivo mais duro que o do elenco: ele é o estado
   // de PARTIDA da cena. Sem ele no navegador, a criança abriria o mundo de fábrica enquanto o
   // servidor avalia o caso do professor — duas cenas diferentes com o mesmo nome.
-  demonstration: [
-    'type',
-    'scene',
-    'script',
-    'instructionAudioUrl',
-    // ⚠⚠ PÚBLICO por definição: o dicionário da voz do Zappy é o que o "Ouvir" toca. Fora da
-    // lista, o bloco chega ao navegador sem áudio nenhum e a cena volta à voz do sistema, calada
-    // quanto ao motivo. Não é gabarito: é o MESMO texto que já está escrito na tela.
-    'vozes',
-    'cast',
-    // ⚠️ PÚBLICO como o elenco, e pelo mesmo motivo: é o que o palco DESENHA. Fora da lista, a
-    // cena chegaria ao navegador sem o cenário do curso e cairia na derivação pelo elenco — ou
-    // seja, o campo que o professor escreveu não teria efeito nenhum na tela da criança.
-    'cenario',
-    'setup',
-    'presentation',
-    'pilha',
-  ],
   // ⚠️ `pilha` é PÚBLICA (full review de experiência, A1): é como a bancada se apresenta. Sem ela no
   // navegador, a Aula 5 do Meu Jeito voltaria a mostrar a lista do Estúdio ao contrário do Pinta.
   experimentation: [
@@ -231,17 +192,16 @@ const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
     // quanto ao motivo. Não é gabarito: é o MESMO texto que já está escrito na tela.
     'vozes',
     'cast',
-    // ⚠️ Ver a nota do mesmo campo na demonstração, acima.
+    // O cenário declarado precisa chegar ao palco da criança.
     'cenario',
     'setup',
     'pilha',
   ],
-  question: ['type'],
   html: ['type', 'html'],
 }
 function publicActivity(activity: LearningActivity): LearningActivity {
   const permitidos = PUBLIC_ACTIVITY_FIELDS[activity.type]
-  if (!permitidos) return { type: 'question' }
+  if (!permitidos) throw new Error('Tipo de atividade interativa inválido.')
   const cru = activity as unknown as Record<string, unknown>
   const saida: Record<string, unknown> = {}
   for (const campo of permitidos) if (cru[campo] !== undefined) saida[campo] = cru[campo]
@@ -279,14 +239,7 @@ function publicActivity(activity: LearningActivity): LearningActivity {
 export function blockPrediction(block: InteractiveBlock): PublicLearningPrediction | undefined {
   const a = block.activity
   if (block.prediction) return block.prediction
-  if (a.type !== 'experimentation' && a.type !== 'demonstration') return undefined
-  // ⚠️⚠️ A demonstração `inline` fica de FORA do padrão, e é o contrário de um detalhe: ela existe
-  // para ser "um ▶ e nada mais, no meio de uma explicação" — o degrau entre o parágrafo e a
-  // simulação. A previsão TRAVA o palco até a criança escolher, então herdá-la aqui põe uma
-  // pergunta de duas opções e um portão em frente a um botão que devia caber numa frase. Quem
-  // escreve a previsão no bloco continua mandando: o que não pode é a plataforma pôr uma por
-  // conta própria num formato desenhado para não ter nenhuma.
-  if (a.type === 'demonstration' && a.presentation === 'inline') return undefined
+  if (a.type !== 'experimentation') return undefined
   const modelo = SCENE_QUESTIONS[a.scene]?.prediction
   if (!modelo) return undefined
   return {
@@ -308,10 +261,7 @@ export function blockPrediction(block: InteractiveBlock): PublicLearningPredicti
 }
 
 /**
- * ⚠️⚠️ A pergunta padrão vale só na EXPERIMENTAÇÃO, e é deliberado: ela dá a palavra final sobre
- * a conclusão do bloco (o terceiro tempo do ciclo — mexer, prever, enunciar). Na demonstração a
- * criança assistiu, e cobrar dela a regra depois de um roteiro que ela não conduziu seria cobrar
- * um gesto que a tela não ofereceu.
+ * A pergunta final da experiência dá a palavra final sobre a conclusão do bloco.
  */
 export function blockCheckpoint(block: InteractiveBlock): LearningCheckpoint | undefined {
   if (block.checkpoint) return block.checkpoint
@@ -428,7 +378,7 @@ export interface LearningResult {
   feedback: string
   verifiedBy: 'server' | 'client'
   /** Exploration is evidence of manipulating a model, not a claim of conceptual mastery. */
-  evidence?: 'exploration' | 'understanding' | 'demonstration'
+  evidence?: 'exploration' | 'understanding'
 }
 export interface LearningBlockProgress {
   blockId: string
@@ -540,57 +490,6 @@ export function isLearningAnswers(value: unknown): value is LearningAnswers {
     }) && new TextEncoder().encode(JSON.stringify(value)).byteLength <= MAX_LEARNING_STATE_BYTES
   )
 }
-/**
- * A atividade do modelo ANTERIOR, trazida para o de agora.
- *
- * ⚠️⚠️ Isto existe porque o plano da reescrita partiu de uma premissa que era falsa no ambiente
- * dela: "nada foi usado por ninguém". Havia aulas com blocos interativos já gravados, e ao tirar
- * os seis tipos antigos do contrato esses blocos pararam de poder ser SALVOS — o que trava a aula
- * inteira, porque o editor desabilita o botão quando o bloco é inválido e a importação de roteiro
- * tenta salvar o bloco aberto antes de começar. A professora ficava sem saída: não conseguia nem
- * consertar, nem importar por cima.
- *
- * O que dá para converter com fidelidade, converte:
- * - `exploration` (v2 e v3) era o MESMO motor de cena com outro nome. A missão vira a cena, e o
- *   modo escolhe entre as duas irmãs: `demo` vira demonstração, o resto vira experimentação.
- *
- * O que NÃO dá, vira **pergunta curta**, preservando o enunciado e o gabarito que o bloco já
- * tivesse: `prediction`, `sequence`, `simulation`, `comparison` e `experiment` não têm equivalente
- * automático (a conversão do conteúdo do repositório foi escrita à mão, texto por texto). Virar
- * pergunta é o destino que mantém o bloco ABERTO para ela decidir, em vez de prendê-lo.
- *
- * Devolve `null` quando não há o que migrar — a atividade já é atual, ou não é reconhecível.
- */
-export function migrateLegacyActivity(value: unknown): LearningActivity | null {
-  if (!record(value) || typeof value.type !== 'string') return null
-  if (isSceneActivity(value) || value.type === 'question' || value.type === 'html') return null
-  if (value.type === 'exploration') {
-    const cena = SCENE_IDS.find((id) => id === value.mission)
-    if (!cena) return { type: 'question' }
-    return value.mode === 'demo'
-      ? { type: 'demonstration', scene: cena as SceneId }
-      : { type: 'experimentation', scene: cena as SceneId }
-  }
-  if (['prediction', 'sequence', 'simulation', 'comparison', 'experiment'].includes(value.type))
-    return { type: 'question' }
-  return null
-}
-
-/**
- * O BLOCO inteiro trazido para o modelo de agora; `null` quando não havia o que migrar.
- *
- * ⚠️ NÃO garante bloco publicável, e isso é deliberado: um `prediction` sem gabarito vira uma
- * pergunta SEM pergunta, que o `isInteractiveBlock` recusa — e deve recusar mesmo, porque ele é
- * o guarda da PUBLICAÇÃO. O rascunho aceita campo vazio de propósito; o que a migração precisa
- * garantir é que o bloco volte a ser EDITÁVEL e SALVÁVEL, para a professora completar ou apagar.
- * Filtrar por validade aqui só trocaria uma parede por outra, que foi o defeito original.
- */
-export function migrateLegacyInteractiveBlock(value: unknown): InteractiveBlock | null {
-  if (!record(value) || value.kind !== 'interactive') return null
-  const activity = migrateLegacyActivity(value.activity)
-  return activity ? ({ ...value, activity } as InteractiveBlock) : null
-}
-
 export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
   if (
     !record(value) ||
@@ -646,8 +545,7 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
     if (p.revealOn !== undefined) {
       const a = value.activity
       const cena =
-        (a.type === 'experimentation' || a.type === 'demonstration') &&
-        SCENE_IDS.some((s) => s === a.scene)
+        a.type === 'experimentation' && SCENE_IDS.some((s) => s === a.scene)
           ? (a.scene as SceneId)
           : null
       if (typeof p.revealOn !== 'string' || !cena || !sceneGoalIds(cena).includes(p.revealOn))
@@ -655,17 +553,14 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
     }
   }
   const a = value.activity
-  // ⚠️⚠️ "Esta cena entra sem a pergunta do fim" só vale onde ela teria efeito: a pergunta de fábrica
-  // é da EXPERIMENTAÇÃO (na demonstração a criança não conduziu, e ali não existe pergunta a tirar), e
-  // um bloco que escreveu a PRÓPRIA pergunta estaria dando duas ordens contrárias. Nos dois casos o
-  // campo seria decoração silenciosa, que é a armadilha que o `goals` da demonstração já recusa.
+  // "Esta cena entra sem a pergunta do fim" só vale onde ela teria efeito; um bloco que escreveu
+  // a própria pergunta não pode dar duas ordens contrárias.
   if (value.semPerguntaFinal !== undefined) {
     if (value.semPerguntaFinal !== true || value.checkpoint !== undefined) return false
     if (!record(a) || a.type !== 'experimentation' || !SCENE_IDS.some((s) => s === a.scene))
       return false
   }
   switch (a.type) {
-    case 'demonstration':
     case 'experimentation':
       // ⚠️⚠️ A cena ACEITA pergunta anexa desde 15/09/2026, e isso já foi proibido: quando a
       // sessão da cena morava em `answers.checkpoint`, a mesma chave guardaria a alternativa
@@ -674,8 +569,6 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
       // mexer, prever, e então enunciar a regra com as próprias palavras. Sem ela, a regra só
       // cabia numa seção separada, com outra atividade.
       return isSceneActivity(a)
-    case 'question':
-      return value.checkpoint !== undefined
     case 'html':
       // ⚠️ HTML é código de terceiro num iframe: ele pode dizer "participei" sozinho. Se o
       // bloco é ESSENCIAL para concluir a seção, a prova tem de vir de uma pergunta que o
@@ -689,35 +582,29 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
 /**
  * O resultado de uma atividade.
  *
- * As cenas saem antes do resto: elas guardam a própria sessão e são avaliadas pelo módulo
- * delas. Para as outras duas, a pergunta anexa (quando existe) é quem dá a palavra final.
+ * A cena guarda a própria sessão e é avaliada pelo motor. No HTML, a pergunta anexa, quando
+ * existe, dá a palavra final.
  */
 export function evaluateLearning(
   block: InteractiveBlock,
   answers: LearningAnswers,
 ): LearningResult {
   const a = block.activity
-  if (a.type === 'demonstration' || a.type === 'experimentation')
+  if (a.type === 'experimentation')
     return withAttachedQuestion(evaluateSceneBlock(a, answers), block, answers)
+  if (a.type !== 'html')
+    return {
+      passed: false,
+      participated: false,
+      feedback: 'Atividade inválida.',
+      verifiedBy: 'server',
+    }
 
-  let participated = false
-  let feedback = 'Experimente a atividade antes de conferir.'
-  let verifiedBy: LearningResult['verifiedBy'] = 'server'
-  if (a.type === 'question') {
-    participated = block.checkpoint?.choices.some((c) => c.id === answers.checkpoint) ?? false
-    feedback = 'Escolha uma resposta antes de conferir.'
-  } else if (a.type === 'html') {
-    participated = answers.participated === true
-    verifiedBy = 'client'
-    feedback = participated
-      ? 'Exploração registrada.'
-      : 'Conclua a exploração para registrar sua participação.'
-  } else {
-    // ⚠️ Forma desconhecida (um bloco gravado antes desta reescrita) NÃO conclui nada. Um
-    // `else` genérico aqui aceitaria um `{participated:true}` do cliente e daria o bloco por
-    // cumprido sem ninguém ter respondido coisa alguma.
-    feedback = 'Esta atividade precisa ser reconfigurada na autoria.'
-  }
+  const participated = answers.participated === true
+  let feedback = participated
+    ? 'Exploração registrada.'
+    : 'Conclua a exploração para registrar sua participação.'
+  let verifiedBy: LearningResult['verifiedBy'] = 'client'
   let passed = participated
   if (passed && block.checkpoint) {
     passed = answers.checkpoint === block.checkpoint.correctChoiceId
@@ -786,12 +673,6 @@ function withAttachedQuestion(
 /** A cena reconstrói a sessão do checkpoint guardado e pergunta ao módulo dela. */
 function evaluateSceneBlock(a: SceneActivity, answers: LearningAnswers): LearningResult {
   const parts = answers.sceneCheckpoint
-  if (a.type === 'demonstration') {
-    const session = readDemonstrationSession(a.scene, parts)
-    // Sem nada guardado a criança ainda não abriu: não é evidência inválida, é ausência.
-    if (!session) return evaluateDemonstration(false, parts === undefined, false)
-    return evaluateDemonstration(session.viewed, true, true)
-  }
   const session = readExperimentSession(a.scene, parts)
   // ⚠️ O ELENCO entra aqui também (achado do full review de 14/09/2026): esta é a avaliação do
   // SERVIDOR, e o `feedback` que ela devolve é gravado na tentativa e lido de volta pelo cartão

@@ -143,31 +143,6 @@ export function evaluateExperimentation(
 }
 
 /**
- * A criança assistiu. Aqui as metas NÃO são cobradas: quem conduz é o roteiro, e exigir
- * descoberta de quem só observou seria cobrar por um gesto que a tela não ofereceu.
- */
-export function evaluateDemonstration(
-  viewed: boolean,
-  valid = true,
-  /** Houve sessão guardada? Quem nunca abriu não participou — é ausência, não evidência. */
-  started = true,
-): LearningResult {
-  return {
-    participated: valid && started,
-    passed: valid && viewed,
-    // ⚠️ Voz de criança (lote 2 do Raio-X): "Demonstração concluída" era texto de relatório. A
-    // mesma frase aparece no fim da demonstração e no relatório do professor.
-    feedback: !valid
-      ? 'Esta demonstração mudou. Abra de novo para ver do começo.'
-      : viewed
-        ? 'Você viu tudo!'
-        : 'Veja todas as partes até o fim.',
-    verifiedBy: 'client',
-    evidence: 'demonstration',
-  }
-}
-
-/**
  * Um degrau da escada: o texto e as metas a que ele serve (`PISTA_DA_META`). O player CONGELA o degrau
  * no clique e, quando ele fica cumprido, troca a caixa por "✓ Feito!" (full review de experiência, M1).
  * `metas` vazio = o degrau não sabe a que meta serve, e nunca vira "Feito".

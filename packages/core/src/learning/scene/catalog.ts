@@ -1,4 +1,4 @@
-import { SCENE_IDS, type SceneAction, type SceneGroup, type SceneId } from './actions'
+import { SCENE_IDS, type SceneGroup, type SceneId } from './actions'
 
 /**
  * Os 45 modelos de cena: o catálogo ÚNICO do sistema.
@@ -10,22 +10,6 @@ import { SCENE_IDS, type SceneAction, type SceneGroup, type SceneId } from './ac
  *
  * O texto é conteúdo pedagógico da dona: foi transportado literalmente, não reescrito.
  */
-
-/** Um passo do roteiro de uma demonstração. */
-export interface SceneStep {
-  id: string
-  /** O que a criança LÊ enquanto o passo acontece. */
-  caption: string
-  /**
-   * Que parte da tela merece atenção neste passo. ⚠️ `compare` só desenha nas cenas de
-   * `SCENE_COMPARISONS`; nas outras continua VÁLIDO (o roteiro escrito para outra cena abre) e não
-   * mostra nada.
-   */
-  highlight?: 'scene' | 'tools' | 'compare'
-  actions: SceneAction[]
-  /** Só avança quando esta descoberta acontecer de verdade. */
-  waitFor?: string
-}
 
 /**
  * As cenas que mostram a COMPARAÇÃO guardada ("Guardar este jeito" e o destaque `compare` da etapa).
@@ -103,8 +87,6 @@ export interface SceneModel {
   goals: readonly SceneGoal[]
   /** Escada de três degraus: observação → estratégia → passo literal. */
   hints: readonly [string, string, string]
-  /** O roteiro da demonstração desta cena. A demonstração autorada substitui; sem ela, é este. */
-  script: readonly SceneStep[]
   /** A cena que a criança vê antes de responder ao palpite. */
   predictionPreview: ScenePredictionPreview
   /**
@@ -173,7 +155,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Ponha uma ação em Ao iniciar e avance mais de um quadro. Ela dispara de novo?',
       'Agora arraste a mesma ação para Enquanto estiver rodando e avance de novo.',
     ],
-    script: [], // Esta relação é manipulável: os cinco usos são experimentações.
   },
   'fixed-vs-read': {
     id: 'fixed-vs-read',
@@ -206,7 +187,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Troque de onde vem o x do tiro e repita: atire, arraste a nave, atire.',
       'Ligue as marcas da caixa e olhe por onde o tiro sai.',
     ],
-    script: [],
   },
   'collision-pair': {
     id: 'collision-pair',
@@ -241,7 +221,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Só um tiro encostou numa pedra. Quantos sumiram?',
       'Troque o alvo dos dois comandos para os apelidos, tiro e asteroide, e faça de novo.',
     ],
-    script: [],
   },
   invincibility: {
     id: 'invincibility',
@@ -274,7 +253,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Compare quantas vidas sobraram com a proteção em 0 e com a proteção em 45.',
       'Ponha 15 e olhe em que quadro a proteção chega a zero. A pedra do quadro 30 chega antes ou depois disso?',
     ],
-    script: [],
   },
   'number-line': {
     id: 'number-line',
@@ -313,7 +291,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Olhe a frase embaixo da régua. A resposta muda sozinha conforme o marcador anda.',
       'Deixe o marcador no -5 e troque o sinal para o biquinho que aponta para a direita. Depois leve o marcador até o -9 e olhe a resposta.',
     ],
-    script: [],
   },
   'unique-names': {
     id: 'unique-names',
@@ -346,7 +323,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Ponha os dois blocos criando nave e leia o aviso que aparece.',
       'Dê um nome só dela ao bloco de baixo, com folha na frente.',
     ],
-    script: [],
   },
   'motion-amount': {
     id: 'motion-amount',
@@ -380,7 +356,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Deixe a pedra inteira parada e mexa só na cratera. Comece em 3.',
       'Agora mexa no tanto que a pedra inteira anda e olhe a Prévia de novo.',
     ],
-    script: [],
   },
   'two-clocks': {
     id: 'two-clocks',
@@ -417,7 +392,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Mexa num controle de cada vez. Primeiro no de nascer, depois no do giro.',
       'Deixe nascer três pedras e olhe o número em cima de cada uma no instante em que ela aparece.',
     ],
-    script: [],
   },
   'copy-vs-original': {
     id: 'copy-vs-original',
@@ -451,7 +425,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Com o arquivo no meio, aperte Importar e compare as duas telas.',
       'Pinte a nave do lado do Estúdio e olhe a nave do lado da aula.',
     ],
-    script: [],
   },
   'published-copy': {
     id: 'published-copy',
@@ -485,7 +458,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Agora troque a cor da nave e compare as duas telas.',
       'Aperte Publicar de novo e olhe os dois cartões do Mural.',
     ],
-    script: [],
   },
   'same-rules-new-skin': {
     id: 'same-rules-new-skin',
@@ -518,7 +490,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Passe pelos três temas e veja se alguma regra apagou.',
       'Agora desligue a regra de atirar e jogue um pouco.',
     ],
-    script: [],
   },
   coordinates: {
     id: 'coordinates',
@@ -549,27 +520,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // pronome que o elenco não flexiona.
       'Agora deixe o x parado e aumente o y. Olhe para onde o Dino vai.',
       'Diminua o x até 0. Depois diminua o y até 0.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'O x diz se o Dino fica mais para a esquerda ou mais para a direita.',
-        highlight: 'scene',
-        actions: [{ type: 'place', x: 300, y: 150 }],
-      },
-      {
-        id: 'step-2',
-        caption: 'O y cresce para BAIXO: quanto maior o y, mais embaixo na tela.',
-        highlight: 'scene',
-        actions: [{ type: 'place', x: 300, y: 240 }],
-      },
-      {
-        // ⚠️ Sem "Aqui ele volta" (lote 5): pronome que o elenco não flexiona.
-        id: 'step-3',
-        caption: 'Em x 0 e y 0, o canto de cima da caixa do Dino encosta no canto da tela.',
-        highlight: 'scene',
-        actions: [{ type: 'place', x: 0, y: 0 }],
-      },
     ],
   },
   'screen-reader': {
@@ -608,23 +558,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // ⚠️ A pista 2 era "o programa não enxerga o desenho", a resposta da previsão da cena.
       'Escreva o que se faz no jogo. Por exemplo: pule, corra, desvie.',
       'Escreva também a tecla. Por exemplo: apertando espaço.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Sem descrição, quem não vê a tela ouve só isto.',
-        highlight: 'scene',
-        actions: [{ type: 'listen' }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Agora a descrição conta o objetivo e o controle.',
-        highlight: 'scene',
-        actions: [
-          { type: 'describe', text: 'Corra com o dino e pule os cactos apertando espaço.' },
-          { type: 'listen' },
-        ],
-      },
     ],
   },
   'stage-size': {
@@ -671,26 +604,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Com a borda à vista, diminua a largura e olhe a borda.',
       'Deixe 480 de largura e 270 de altura, o tamanho do Corre Dino.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Sem a borda, a cor cobre tudo e não dá para ver onde é a tela.',
-        highlight: 'scene',
-        actions: [{ type: 'border', visible: false }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Com a borda, o retângulo aparece: é ali que o jogo acontece.',
-        highlight: 'scene',
-        actions: [{ type: 'border', visible: true }],
-      },
-      {
-        id: 'step-3',
-        caption: 'Os números mandam no formato. Esta é a tela do Corre Dino.',
-        highlight: 'scene',
-        actions: [{ type: 'stage', width: 480, height: 270 }],
-      },
-    ],
   },
   'draw-loop': {
     id: 'draw-loop',
@@ -731,35 +644,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Aperte Avançar 1 quadro e compare a tela com o x do Dino na faixa.',
       'Escolha desenhar a cada quadro e avance dois quadros.',
       'Ligue Limpar a tela antes e avance de novo.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Com o desenho só no começo, o x do Dino anda e a tela fica parada.',
-        highlight: 'scene',
-        actions: [
-          { type: 'loop', on: false },
-          { type: 'advance', seconds: 1 },
-        ],
-      },
-      {
-        id: 'step-2',
-        caption: 'Desenhando a cada quadro, sem limpar, os desenhos de antes ficam na tela.',
-        highlight: 'scene',
-        actions: [
-          { type: 'loop', on: true },
-          { type: 'advance', seconds: 1 },
-        ],
-      },
-      {
-        id: 'step-3',
-        caption: 'Limpando antes de desenhar, sobra um Dino só, que anda.',
-        highlight: 'scene',
-        actions: [
-          { type: 'erase', on: true },
-          { type: 'advance', seconds: 1 },
-        ],
-      },
     ],
   },
   /* ── O ateliê de O Jogo do Meu Jeito, redesenhado no lote 5 do Raio-X (16/09/2026) ──────────────
@@ -815,66 +699,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Ponha a velocidade em 8, espere o fogo pulsar e pare a prévia.',
       'Agora ponha a velocidade em 2 e ligue a prévia. Depois deixe os dois quadros iguais e experimente a prévia rápida.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Quadro 1: a nave com o fogo pequeno.',
-        highlight: 'scene',
-        actions: [{ type: 'frame', index: 1 }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Quadro 2: a mesma nave, com o fogo maior.',
-        highlight: 'scene',
-        actions: [{ type: 'frame', index: 2 }],
-      },
-      {
-        id: 'step-3',
-        caption: 'Devagar, 2 por segundo. Um, outro, um, outro.',
-        highlight: 'scene',
-        // ⚠️ A prévia PARA no fim da parte: entre uma parte e outra o relógio do player para, e a
-        // faixa não pode dizer "tocando" sobre um fogo congelado.
-        actions: [
-          { type: 'rate', perSecond: 2 },
-          { type: 'play', on: true },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-          { type: 'play', on: false },
-        ],
-      },
-      {
-        id: 'step-4',
-        // ⚠️⚠️ No PASSADO, e a prévia PARA no fim desta parte também (consertos do review da onda B do
-        // lote 5, M1): entre a parte 4 e a 5 a faixa dizia "prévia: tocando" e a frase "troca 8
-        // quadros por segundo" sobre um fogo congelado, até a criança apertar "Ver a parte 5".
-        caption: 'Rápido, 8 por segundo. O fogo pulsou e a nave ficou parada.',
-        highlight: 'scene',
-        actions: [
-          { type: 'rate', perSecond: 8 },
-          { type: 'play', on: true },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-          { type: 'play', on: false },
-        ],
-      },
-      {
-        id: 'step-5',
-        // ⚠️ A parte 5 TOCA de novo e para de repente: parada só com `play off`, ela só trocava a faixa
-        // para "parada", sem mudar um pixel. ⚠️ 1,5 s, que cai em quadro inteiro a 24 por segundo (o
-        // editor do admin avisa tempo que não cai, e 0,4 s eram 9,6 quadros).
-        caption: 'De novo rápido, e parou de repente. Na prévia ficou um quadro inteiro.',
-        highlight: 'scene',
-        actions: [
-          { type: 'rate', perSecond: 8 },
-          { type: 'play', on: true },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 0.5 },
-          { type: 'play', on: false },
-        ],
-      },
-    ],
   },
   'onion-skin': {
     id: 'onion-skin',
@@ -912,37 +736,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Vá para o quadro 2 e mude o tamanho do fogo com o fantasma desligado.',
       'Agora ligue o fantasma. O fogo tracejado é o do quadro 1.',
       'Deixe o fogo 2 um pouco maior que o fogo tracejado, sem passar da borda do quadro.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Quadro 2, fantasma desligado. O fogo cresceu quanto? Não dá para saber.',
-        highlight: 'scene',
-        actions: [
-          { type: 'frame', index: 2 },
-          { type: 'shift', offset: 8 },
-        ],
-      },
-      {
-        id: 'step-2',
-        caption: 'Com o fantasma ligado, o fogo do quadro 1 aparece tracejado por cima.',
-        highlight: 'scene',
-        actions: [{ type: 'onion', on: true }],
-      },
-      {
-        id: 'step-3',
-        caption: 'Com os dois à vista, o fogo cresce um pouco e sai do mesmo lugar.',
-        highlight: 'scene',
-        actions: [{ type: 'shift', offset: 20 }],
-      },
-      {
-        id: 'step-4',
-        // ⚠️ Palavras DIFERENTES da frase embaixo do palco (consertos do review da onda B do lote 5,
-        // B3): as duas diziam "No quadro 1 não há quadro anterior para mostrar.", uma em cima da outra.
-        caption: 'Voltou para o quadro 1. Com o fantasma ligado, nada tracejado aparece.',
-        highlight: 'scene',
-        actions: [{ type: 'frame', index: 1 }],
-      },
     ],
   },
   symmetry: {
@@ -990,37 +783,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Ligue o Espelho lado a lado e pinte a asa de novo. Olhe a grade inteira.',
       'Desligue o Espelho lado a lado, ligue o de cima e de baixo e pinte a asa. Depois experimente o Balde com o Espelho lado a lado ligado.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Espelhos desligados: você pinta a asa, e aparece uma asa.',
-        highlight: 'scene',
-        actions: [
-          { type: 'mirror-mode', mode: 'off' },
-          { type: 'trace', piece: 'asa' },
-        ],
-      },
-      {
-        id: 'step-2',
-        caption: 'Com o Espelho lado a lado, a outra asa aparece do outro lado do meio.',
-        highlight: 'scene',
-        actions: [
-          { type: 'clear-paper' },
-          { type: 'mirror-mode', mode: 'x' },
-          { type: 'trace', piece: 'asa' },
-        ],
-      },
-      {
-        id: 'step-3',
-        caption: 'Com o espelho de cima e de baixo, a cópia cai do outro lado do meio, em cima.',
-        highlight: 'scene',
-        actions: [
-          { type: 'clear-paper' },
-          { type: 'mirror-mode', mode: 'y' },
-          { type: 'trace', piece: 'asa' },
-        ],
-      },
-    ],
   },
   'pixel-vector': {
     id: 'pixel-vector',
@@ -1057,32 +819,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Aproxime devagar e pare quando uma borda mudar.',
       'Continue aproximando. Olhe o que aparece na borda da pedra de vetor.',
       'Volte Aproximar para 1 vez e compare as duas de longe.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Lupa em 2: as duas pedras quase do tamanho do jogo.',
-        highlight: 'scene',
-        actions: [{ type: 'inspect', kind: 'pixel', zoom: 2 }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Lupa em 4: a borda de pixel vira degraus, e a de vetor continua lisa.',
-        highlight: 'scene',
-        actions: [{ type: 'inspect', kind: 'pixel', zoom: 4 }],
-      },
-      {
-        id: 'step-3',
-        caption: 'Lupa em 8: de um lado os quadradinhos, do outro os pontos da Caneta.',
-        highlight: 'scene',
-        actions: [{ type: 'inspect', kind: 'pixel', zoom: 8 }],
-      },
-      {
-        id: 'step-4',
-        caption: 'De longe, as duas voltam a parecer a mesma pedra.',
-        highlight: 'scene',
-        actions: [{ type: 'inspect', kind: 'pixel', zoom: 1 }],
-      },
     ],
   },
   'sheet-vs-sprite': {
@@ -1128,39 +864,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Um quadro da folha tem 32 de largura. Que recorte mostra uma nave inteira?',
       'Com o recorte de 32, deixe a nave do jogo bem maior e compare a folha com antes.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        // ⚠️⚠️ O jogo ABRE vazio (consertos do review da onda B do lote 5, A4): a parte 1 é a que carrega
-        // a folha inteira, e a resposta da previsão da Aula 6 não aparece antes do palpite.
-        caption: 'O jogo mostra a folha inteira: duas naves espremidas.',
-        highlight: 'scene',
-        actions: [{ type: 'crop', width: 64 }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Recorte de 32 por 32: agora cabe uma nave só.',
-        highlight: 'scene',
-        actions: [{ type: 'crop', width: 32 }],
-      },
-      {
-        id: 'step-3',
-        // ⚠️ Oito trocas, e o fogo nomeado (consertos do review da onda B do lote 5, B7): "o fogo pulsa"
-        // com quatro trocas em ~1,8 s chegava com o fogo já parado.
-        caption: 'Trocando de quadro, o fogo muda: pequeno, grande, pequeno, grande.',
-        highlight: 'scene',
-        actions: [
-          { type: 'cut', cell: 2 },
-          { type: 'cut', cell: 1 },
-          { type: 'cut', cell: 2 },
-          { type: 'cut', cell: 1 },
-          { type: 'cut', cell: 2 },
-          { type: 'cut', cell: 1 },
-          { type: 'cut', cell: 2 },
-          { type: 'cut', cell: 1 },
-        ],
-      },
-    ],
   },
   world: {
     id: 'world',
@@ -1187,26 +890,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Olhe a ficha dos bastidores e a tela do jogo.',
       'Primeiro, crie o Dino nos bastidores.',
       'Depois, mostre o Dino na tela do jogo.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'O Dino existe nos bastidores.',
-        highlight: 'scene',
-        actions: [{ type: 'create' }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Mostrar o Dino na tela faz o mesmo Dino aparecer no jogo.',
-        highlight: 'scene',
-        actions: [{ type: 'connect', port: 'draw', enabled: true }],
-      },
-      {
-        id: 'step-3',
-        caption: 'Tirar o Dino da tela não apaga o que existe nos bastidores.',
-        highlight: 'scene',
-        actions: [{ type: 'connect', port: 'draw', enabled: false }],
-      },
     ],
   },
   layers: {
@@ -1255,27 +938,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Olhe a lista A ordem de desenhar. Quem está embaixo é desenhado por último.',
       'Leve o Dino para o fim da lista.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'O Dino foi para o fim da ordem de desenhar e apareceu na frente.',
-        highlight: 'scene',
-        actions: [{ type: 'layer', front: true }],
-      },
-      {
-        id: 'step-2',
-        caption: 'A floresta voltou para o fim e cobriu o Dino de novo. Ninguém foi apagado.',
-        highlight: 'scene',
-        actions: [{ type: 'layer', front: false }],
-      },
-      {
-        // ⚠️ A terceira missão (full review de experiência, M4): o arranjo do jogo volta no fim.
-        id: 'step-3',
-        caption: 'O Dino voltou para o fim da ordem de desenhar e ficou na frente, como no jogo.',
-        highlight: 'scene',
-        actions: [{ type: 'layer', front: true }],
-      },
-    ],
   },
   gravity: {
     id: 'gravity',
@@ -1309,29 +971,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // ⚠️ O pulo antes (consertos do review da onda A do lote 5): o fio fica fechado até o Dino passar do
       // meio da subida sem gravidade, e a pista 3 mandava ligar um fio fechado.
       'Pule e espere o número parar de crescer. Depois ligue Gravidade ao Dino com o Dino no ar.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Sem gravidade, o Dino sobe e não para.',
-        highlight: 'scene',
-        actions: [
-          { type: 'jump', input: 'tap' },
-          { type: 'advance', seconds: 1.5 },
-        ],
-      },
-      {
-        id: 'step-2',
-        // ⚠️ Sem teletransporte (lote 5 do Raio-X): a gravidade é ligada NO AR e age dali.
-        caption:
-          'Com a gravidade ligada no ar, a subida freou, virou queda e o Dino voltou ao chão.',
-        highlight: 'scene',
-        actions: [
-          { type: 'connect', port: 'gravity', enabled: true },
-          { type: 'advance', seconds: 2.5 },
-        ],
-        waitFor: 'landed',
-      },
     ],
   },
   impulse: {
@@ -1370,27 +1009,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'A marca azul é o salto de antes.',
       'Mude só o impulso. A gravidade fica igual.',
       'Leve o impulso até 14 e toque no Dino.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Esta marca fica no palco: é o salto de antes.',
-        highlight: 'scene',
-        actions: [
-          { type: 'jump', input: 'tap' },
-          { type: 'advance', seconds: 2 },
-        ],
-      },
-      {
-        id: 'step-2',
-        caption: 'Só o impulso mudou. Compare as duas marcas.',
-        highlight: 'scene',
-        actions: [
-          { type: 'impulse', force: 14 },
-          { type: 'jump', input: 'tap' },
-          { type: 'advance', seconds: 2 },
-        ],
-      },
     ],
   },
   'jump-sound': {
@@ -1449,33 +1067,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Agora pule tocando no Dino. Tocou som?',
       'Leve Tocar efeito para Quando o Dino pular e teste os dois jeitos.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'A tecla tocou o som sem outro pulo, e o toque fez o Dino pular sem som.',
-        highlight: 'scene',
-        actions: [
-          { type: 'jump', input: 'key' },
-          { type: 'advance', seconds: 0.2 },
-          { type: 'jump', input: 'key' },
-          { type: 'advance', seconds: 1.6 },
-          { type: 'jump', input: 'tap' },
-        ],
-      },
-      {
-        id: 'step-2',
-        caption: 'Em Quando o Dino pular, cada pulo toca um som.',
-        highlight: 'scene',
-        actions: [
-          { type: 'advance', seconds: 1.6 },
-          { type: 'connect', port: 'sound', enabled: true },
-          { type: 'jump', input: 'key' },
-          { type: 'advance', seconds: 1.6 },
-          { type: 'jump', input: 'tap' },
-          { type: 'advance', seconds: 1.6 },
-        ],
-      },
-    ],
   },
   spawn: {
     id: 'spawn',
@@ -1514,25 +1105,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Compare o mesmo tempo com e sem o relógio.',
       'Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Sem relógio, nasce um cacto em cada quadro. Olhe a parede.',
-        highlight: 'scene',
-        actions: [{ type: 'advance', seconds: 2 }],
-      },
-      {
-        id: 'step-2',
-        // ⚠️ `tools` (lote 5 do Raio-X): a demonstração do Meu Jeito ligava o relógio sem a bancada à
-        // vista, e a mudança acontecia invisível.
-        caption: 'Agora Criar cacto mora no relógio: um a cada segundo.',
-        highlight: 'tools',
-        actions: [
-          { type: 'connect', port: 'timer', enabled: true },
-          { type: 'advance', seconds: 2 },
-        ],
-      },
-    ],
   },
   cleanup: {
     id: 'cleanup',
@@ -1564,23 +1136,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // ⚠️ "Sair da tela não é sair do grupo" era a conclusão (consertos do review da onda A do lote 5).
       'Conte os cactos da prateleira depois que um cacto sai.',
       'Ligue Tirar do grupo quem sair da tela e aperte ▶ Tempo de novo.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Os cactos que saíram da tela continuam na prateleira dos bastidores.',
-        highlight: 'scene',
-        actions: [{ type: 'advance', seconds: 2 }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Com a regra ligada, quem sai da tela vai para os removidos.',
-        highlight: 'scene',
-        actions: [
-          { type: 'connect', port: 'cleanup', enabled: true },
-          { type: 'advance', seconds: 2 },
-        ],
-      },
     ],
   },
   'game-state': {
@@ -1621,25 +1176,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'O que fica dentro do Se só acontece durante a partida.',
       'Leve Criar cacto para dentro de Se o estado do jogo é jogando. Compare o início e a partida.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'No início, os cactos nascem.',
-        highlight: 'scene',
-        actions: [{ type: 'advance', seconds: 1 }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Dentro do Se, Criar cacto espera a partida começar.',
-        highlight: 'scene',
-        actions: [
-          { type: 'connect', port: 'condition', enabled: true },
-          { type: 'advance', seconds: 2 },
-          { type: 'start', input: 'tap' },
-          { type: 'advance', seconds: 1 },
-        ],
-      },
-    ],
   },
   controls: {
     id: 'controls',
@@ -1678,24 +1214,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Toque na tela de início e olhe se ela muda.',
       'Olhe em que caixa está a peça Começar.',
       'Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste os dois jeitos, voltando ao início.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Tocar na tela não começou a partida.',
-        highlight: 'scene',
-        actions: [{ type: 'start', input: 'tap' }],
-      },
-      {
-        id: 'step-2',
-        caption:
-          'Com Começar em Quando apertar qualquer tecla ou tocar na tela, o toque começa a partida.',
-        highlight: 'scene',
-        actions: [
-          { type: 'connect', port: 'touch', enabled: true },
-          { type: 'start', input: 'tap' },
-        ],
-      },
     ],
   },
   restart: {
@@ -1744,42 +1262,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // ⚠️ A comparação na ordem (consertos do review da onda A do lote 5): a pista 3 mandava direto ao
       // Reiniciar, o atalho que não conta sem ter visto a pista herdada.
       'Primeiro jogue com Mudar o estado do jogo para inicio e olhe a pista. Depois escolha Reiniciar o jogo e compare.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Toque na tela e o tempo passa: um cacto chega, bate, e a partida acaba.',
-        highlight: 'scene',
-        actions: [
-          { type: 'start', input: 'tap' },
-          { type: 'advance', seconds: 3 },
-        ],
-        waitFor: 'ended',
-      },
-      {
-        id: 'step-2',
-        caption:
-          'O toque no fim só voltou para o início. Tocando de novo, a partida começa com os cactos da anterior.',
-        highlight: 'scene',
-        actions: [
-          { type: 'start', input: 'tap' },
-          { type: 'start', input: 'tap' },
-          { type: 'advance', seconds: 0.5 },
-        ],
-        waitFor: 'screen-only',
-      },
-      {
-        id: 'step-3',
-        caption: 'Com Reiniciar o jogo, o fim limpa a pista e o jogo volta para a abertura.',
-        highlight: 'scene',
-        actions: [
-          { type: 'connect', port: 'restart', enabled: true },
-          { type: 'start', input: 'tap' },
-          { type: 'start', input: 'tap' },
-          { type: 'advance', seconds: 0.5 },
-        ],
-        waitFor: 'clean-track',
-      },
     ],
   },
   hitbox: {
@@ -1835,21 +1317,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Aproxime o cacto um toque de cada vez e olhe os dois desenhos quando aparecer BATEU.',
       'Deixe o cacto onde bateu. Mude só a área do Dino.',
       'Agora encoste o cacto no desenho do Dino e leve o Tamanho da área do Dino para 40%. Olhe se aparece BATEU.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'BATEU! Mas olhe: os desenhos ainda não se tocam.',
-        highlight: 'scene',
-        // Com a área em 100%, 49 mostra a batida com um vão visível de 9.
-        actions: [{ type: 'move', distance: 49 }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Mesmo lugar, área em 80%. Agora não bateu.',
-        highlight: 'scene',
-        actions: [{ type: 'resize', width: 51.2 }],
-      },
     ],
   },
   score: {
@@ -1922,37 +1389,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // é a meta obrigatória que abre a cena.
       'Compare Somar ponto em A cada quadro do jogo e A cada 1 segundos. Depois leve a peça para o estado do jogo é jogando ? e passe pelas três telas.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Com a peça solta, o placar cresce até na tela de início.',
-        highlight: 'scene',
-        actions: [{ type: 'advance', seconds: 2 }],
-        waitFor: 'score-idle-wrong',
-      },
-      {
-        id: 'step-2',
-        caption: 'Dentro do Se, o início espera.',
-        highlight: 'scene',
-        actions: [
-          { type: 'connect', port: 'condition', enabled: true },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'score-start',
-      },
-      {
-        id: 'step-3',
-        caption: 'Jogando, ele cresce. No fim, fica parado no valor.',
-        highlight: 'scene',
-        actions: [
-          { type: 'start', input: 'key' },
-          { type: 'advance', seconds: 3 },
-          { type: 'collide' },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'score-end',
-      },
-    ],
   },
   lives: {
     id: 'lives',
@@ -1995,29 +1431,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     // ⚠️⚠️ Sem "fio" nas falas (lote 5 do Raio-X): na demonstração a bancada não aparece, e as
     // quatro legendas falavam de fios que a criança nunca via. O Desafio tem roteiro PRÓPRIO, com o
     // ponto pelo acerto do tiro (dia-4).
-    script: [
-      {
-        id: 'step-1',
-        caption: 'O placar sobe com o tempo, e os corações continuam os mesmos.',
-        highlight: 'scene',
-        actions: [
-          { type: 'connect', port: 'condition', enabled: true },
-          { type: 'advance', seconds: 2 },
-        ],
-      },
-      {
-        id: 'step-2',
-        caption: 'O Dino bateu no cacto: saiu um coração, e o placar continua igual.',
-        highlight: 'scene',
-        actions: [{ type: 'connect', port: 'life', enabled: true }, { type: 'collide' }],
-      },
-      {
-        id: 'step-3',
-        caption: 'Mais duas batidas: acabaram os corações e a partida. O placar guardou os pontos.',
-        highlight: 'scene',
-        actions: [{ type: 'collide' }, { type: 'collide' }],
-      },
-    ],
   },
   random: {
     id: 'random',
@@ -2061,27 +1474,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'A régua mostra onde um cacto pode nascer, depois da borda da tela.',
       'Sorteie uma coisa por vez: primeiro o lugar, depois a velocidade.',
       'Aperte Sortear lugar muitas vezes. Depois aperte Sortear velocidade e compare as raias.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Sorteando o lugar: 520, 550 e 520 de novo. Cada um dentro da régua.',
-        highlight: 'scene',
-        actions: [
-          { type: 'sample', kind: 'position', unit: 0.3, guided: false },
-          { type: 'sample', kind: 'position', unit: 0.75, guided: false },
-          { type: 'sample', kind: 'position', unit: 0.35, guided: false },
-        ],
-      },
-      {
-        id: 'step-2',
-        caption: 'Sorteando a velocidade: o cacto de −6 anda mais em 1 segundo que o de −5.',
-        highlight: 'scene',
-        actions: [
-          { type: 'sample', kind: 'velocity', unit: 0.2, guided: false },
-          { type: 'sample', kind: 'velocity', unit: 0.8, guided: false },
-        ],
-      },
     ],
   },
   acceleration: {
@@ -2133,31 +1525,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Passe 5 segundos até a conta da base dizer não.',
       // ⚠️ Sem "até sair um −10" (consertos do review da onda A do lote 5): é a resposta da previsão.
       'Com a base parada em −9, passe mais 5 segundos algumas vezes e olhe o número de cada cacto novo.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'A cada 5 segundos a base fica 1 mais rápida, e o cacto novo nasce com ela.',
-        highlight: 'scene',
-        actions: [
-          { type: 'sample', kind: 'velocity', unit: 0, guided: false },
-          { type: 'sample', kind: 'velocity', unit: 0, guided: false },
-          { type: 'sample', kind: 'velocity', unit: 0, guided: false },
-          { type: 'sample', kind: 'velocity', unit: 0, guided: false },
-        ],
-      },
-      {
-        id: 'step-2',
-        caption: 'Em −9 a conta diz não, e a base fica. Os cactos velhos guardam os seus números.',
-        highlight: 'scene',
-        actions: [{ type: 'sample', kind: 'velocity', unit: 0, guided: false }],
-      },
-      {
-        id: 'step-3',
-        caption: 'A base continua −9, e o sorteio tirou mais 1: nasceu um cacto −10.',
-        highlight: 'scene',
-        actions: [{ type: 'sample', kind: 'velocity', unit: 1, guided: false }],
-      },
     ],
   },
   /* ── O núcleo do Iniciante 2D (15/09/2026) ─────────────────────────────────────────────── */
@@ -2228,41 +1595,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'A velocidade não move nada sozinha: quem move é o relógio, um quadro de cada vez.',
       'Ponha a velocidade para o lado em −5 e deixe o tempo passar.',
     ],
-    script: [
-      // ⚠️ Lote 5 do Raio-X: a fala diz a CONTA de um quadro (o palco a escreve junto do Dino), e
-      // não "anda um pouco", que era o que a criança via com o movimento de 2,5 px de antes.
-      {
-        id: 'step-1',
-        caption: 'Velocidade 5: a cada quadro o x do Dino soma 5, e o Dino vai para a direita.',
-        highlight: 'scene',
-        actions: [
-          { type: 'velocity', vx: 5, vy: 0 },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'moves',
-      },
-      {
-        id: 'step-2',
-        caption:
-          'Velocidade −5: a cada quadro o x diminui 5, e o mesmo relógio leva para o outro lado.',
-        highlight: 'scene',
-        actions: [
-          { type: 'velocity', vx: -5, vy: 0 },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'left',
-      },
-      {
-        id: 'step-3',
-        caption: 'Velocidade 0: a cada quadro o x soma 0, e o Dino fica no lugar.',
-        highlight: 'scene',
-        actions: [
-          { type: 'velocity', vx: 0, vy: 0 },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'stopped',
-      },
-    ],
   },
   'hold-vs-press': {
     id: 'hold-vs-press',
@@ -2299,33 +1631,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Agora segure a tecla. A de cima anda de novo?',
       'Segure a tecla e conte até três antes de soltar.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Um toque rápido: a de cima dá um passo, e a de baixo quase não sai do lugar.',
-        highlight: 'scene',
-        actions: [
-          { type: 'hold', on: true },
-          { type: 'hold', on: false },
-          { type: 'advance', seconds: 0.5 },
-        ],
-        waitFor: 'one-step',
-      },
-      {
-        id: 'step-2',
-        caption: 'Segurando a tecla, a de baixo anda em todo quadro. A de cima deu um passo só.',
-        highlight: 'scene',
-        // ⚠️ A meta cai ao SOLTAR, e o `waitFor` pede o tempo depois: a etapa termina com a tecla solta.
-        actions: [
-          { type: 'hold', on: true },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-          { type: 'hold', on: false },
-          { type: 'advance', seconds: 0.5 },
-        ],
-        waitFor: 'apart',
-      },
-    ],
   },
   variable: {
     id: 'variable',
@@ -2360,30 +1665,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     // variável pontos, valor 0", cada acerto soma 1, "Mostrar placar"), e os três blocos acendem no
     // palco. Era guardar 10 e somar 5, números sem história, com a caixa "Observe a montagem" vazia.
     // ⚠️ `scene` nas três partes: o gesto aparece no DESENHO (os blocos e os acertos), não na bancada.
-    script: [
-      {
-        id: 'step-1',
-        caption: 'O jogo cria a caixa pontos e guarda 0.',
-        highlight: 'scene',
-        actions: [{ type: 'store', value: 0 }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Três acertos: a caixa vai para 3. A tela ainda não mostra nada.',
-        highlight: 'scene',
-        actions: [
-          { type: 'change', by: 1 },
-          { type: 'change', by: 1 },
-          { type: 'change', by: 1 },
-        ],
-      },
-      {
-        id: 'step-3',
-        caption: 'Mostrar placar copia o 3 para a tela. A caixa continua 3.',
-        highlight: 'scene',
-        actions: [{ type: 'show', on: true }],
-      },
-    ],
   },
   'group-loop': {
     id: 'group-loop',
@@ -2421,36 +1702,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Nenhum cacto tem número ainda. Meça um.',
       'Só dá para saber o menor comparando os três números.',
       'Meça o 1º, o 2º e o 3º. Depois escolha o menor número.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'A torre mede um por um do grupo.',
-        highlight: 'scene',
-        actions: [
-          { type: 'look', id: 1 },
-          { type: 'look', id: 2 },
-          { type: 'look', id: 3 },
-        ],
-      },
-      {
-        id: 'step-2',
-        caption: 'Depois de medir todos, fica com o mais perto.',
-        highlight: 'scene',
-        actions: [{ type: 'choose', id: 2 }],
-      },
-      {
-        id: 'step-3',
-        caption: 'Com o laço, a escolha pula sozinha quando outro chega mais perto.',
-        highlight: 'scene',
-        // ⚠️ 2 s (consertos do review da onda B do lote 5): da fase 0 o 2º segue o mais perto por 1,6 s,
-        // e a troca só conta depois de 1 s de laço ligado (`HUNT_LOOP_SEEN_TICKS`).
-        actions: [
-          { type: 'connect', port: 'loop', enabled: true },
-          { type: 'advance', seconds: 2 },
-        ],
-        waitFor: 'auto',
-      },
     ],
   },
   'enemy-type': {
@@ -2490,41 +1741,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // ⚠️ "em cima" (consertos do review da onda B do lote 5): o número fica em cima de cada cacto.
       'Mude a velocidade na ficha e olhe o número em cima de cada cacto.',
       'Aperte Fazer nascer mais um três vezes e depois mude a velocidade para 7.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Três cactos nascem da mesma ficha e começam a andar.',
-        highlight: 'scene',
-        actions: [
-          { type: 'spawnOne' },
-          { type: 'spawnOne' },
-          { type: 'spawnOne' },
-          { type: 'advance', seconds: 1 },
-        ],
-      },
-      {
-        id: 'step-2',
-        caption: 'Um número na ficha muda os três no mesmo quadro.',
-        highlight: 'scene',
-        actions: [
-          { type: 'define', field: 'speed', value: 7 },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'all-change',
-      },
-      {
-        id: 'step-3',
-        caption: 'Copiando a ficha ao nascer, só o cacto novo anda com o número novo.',
-        highlight: 'scene',
-        actions: [
-          { type: 'connect', port: 'copy', enabled: true },
-          { type: 'define', field: 'speed', value: 3 },
-          { type: 'spawnOne' },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'copied',
-      },
     ],
   },
   camera: {
@@ -2566,26 +1782,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Com a câmera parada, leve o Dino bem para a direita e olhe a tela do jogo.',
       'Leve o Dino para depois de 480 e depois faça a câmera seguir o Dino.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Longe demais: a tela acaba e o Dino some.',
-        highlight: 'scene',
-        actions: [{ type: 'walk', x: 700 }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Com a câmera seguindo, a janela anda junto e o Dino volta a aparecer.',
-        highlight: 'scene',
-        actions: [{ type: 'connect', port: 'camera', enabled: true }],
-      },
-      {
-        id: 'step-3',
-        caption: 'Andando com a câmera, o cenário passa e o Dino fica na tela.',
-        highlight: 'scene',
-        actions: [{ type: 'walk', x: 900 }],
-      },
-    ],
   },
   contact: {
     id: 'contact',
@@ -2621,33 +1817,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Encoste o cacto no Dino, deixe o tempo passar e olhe as duas pistas.',
       'Compare quantos corações saíram em cima e embaixo.',
       'Afaste o cacto, deixe o tempo passar e encoste de novo.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption:
-          'Encostado, a pista de cima perde um coração em todo quadro. A de baixo perdeu um só.',
-        highlight: 'scene',
-        actions: [
-          { type: 'approach', distance: 0 },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'once',
-      },
-      {
-        id: 'step-2',
-        caption: 'Afastando e encostando de novo, a pista de baixo perde mais um.',
-        highlight: 'scene',
-        // ⚠️ 1 s encostado (consertos do review da onda B do lote 5): `apart` cai no terceiro quadro da
-        // encostada nova, como `drain` e `once`, para as duas pistas estarem lado a lado quando cai.
-        actions: [
-          { type: 'approach', distance: 100 },
-          { type: 'advance', seconds: 0.5 },
-          { type: 'approach', distance: 0 },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'apart',
-      },
     ],
   },
   cooldown: {
@@ -2689,33 +1858,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Ponha uma recarga e aperte Atirar várias vezes. Olhe quantos tiros saem.',
       'Ponha a recarga em 1 segundo e aperte Atirar duas vezes seguidas.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Sem recarga, cada aperto vira um tiro, e os tiros saem colados.',
-        highlight: 'scene',
-        actions: [
-          { type: 'shoot' },
-          { type: 'shoot' },
-          { type: 'shoot' },
-          { type: 'advance', seconds: 0.5 },
-        ],
-        waitFor: 'burst',
-      },
-      {
-        id: 'step-2',
-        caption: 'Com a recarga, o segundo aperto não vira tiro.',
-        highlight: 'tools',
-        // ⚠️ Meio segundo, e não a recarga inteira: a etapa termina ESPERANDO, com a barra no meio.
-        actions: [
-          { type: 'recharge', seconds: 1 },
-          { type: 'shoot' },
-          { type: 'shoot' },
-          { type: 'advance', seconds: 0.5 },
-        ],
-        waitFor: 'waiting',
-      },
-    ],
   },
   aim: {
     id: 'aim',
@@ -2752,32 +1894,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // ⚠️ A pista 2 era a resposta da previsão.
       'Atire com a mira desligada, e depois com a mira ligada. Compare o caminho do tiro.',
       'Ligue a mira e aperte Atirar.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'A seta aponta para onde o alvo está.',
-        highlight: 'scene',
-        actions: [{ type: 'target', x: 120, y: 220 }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Sem a mira, o tiro vai reto e passa longe do alvo.',
-        highlight: 'scene',
-        actions: [{ type: 'shoot' }, { type: 'advance', seconds: 1 }],
-        waitFor: 'straight-miss',
-      },
-      {
-        id: 'step-3',
-        caption: 'Com a mira ligada, o tiro vai pela seta e acerta.',
-        highlight: 'scene',
-        actions: [
-          { type: 'connect', port: 'aim', enabled: true },
-          { type: 'shoot' },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'follows',
-      },
     ],
   },
   diagonal: {
@@ -2816,26 +1932,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Agora aperte a seta para a direita e a seta para baixo. O Dino para em cima do círculo?',
       'Ligue a correção e ande de novo na diagonal.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Uma seta só: em 1 segundo o Dino chega em cima do círculo.',
-        highlight: 'scene',
-        actions: [{ type: 'direction', x: 1, y: 0 }, { type: 'stride' }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Duas setas juntas: no mesmo segundo, o Dino passa do círculo.',
-        highlight: 'scene',
-        actions: [{ type: 'direction', x: 1, y: 1 }, { type: 'stride' }],
-      },
-      {
-        id: 'step-3',
-        caption: 'Com a correção, a diagonal para em cima do círculo.',
-        highlight: 'tools',
-        actions: [{ type: 'connect', port: 'even', enabled: true }, { type: 'stride' }],
-      },
-    ],
   },
   tilemap: {
     id: 'tilemap',
@@ -2871,30 +1967,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Escolha a letra # e toque numa casa vazia do texto.',
       'Cada linha do texto é uma linha do desenho. Olhe a mesma casa nos dois.',
       'Escolha a letra o e toque em três casas seguidas da linha 3.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Uma letra trocada, uma peça nova no desenho.',
-        highlight: 'scene',
-        actions: [{ type: 'paint-tile', row: 3, col: 4, tile: '#' }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Três o seguidos viram três moedas no ar.',
-        highlight: 'scene',
-        actions: [
-          { type: 'paint-tile', row: 2, col: 3, tile: 'o' },
-          { type: 'paint-tile', row: 2, col: 4, tile: 'o' },
-          { type: 'paint-tile', row: 2, col: 5, tile: 'o' },
-        ],
-      },
-      {
-        id: 'step-3',
-        caption: 'A mesma letra em outra linha vira a mesma peça.',
-        highlight: 'scene',
-        actions: [{ type: 'paint-tile', row: 1, col: 7, tile: 'o' }],
-      },
     ],
   },
   /* ── O motor, o 3D e o ateliê (15/09/2026) ─────────────────────────────────────────────── */
@@ -2939,34 +2011,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // ⚠️ A pista 2 respondia a previsão, e pode ser lida antes do palpite.
       'Aperte ▶ e olhe o número pintado em cada cacto que entra.',
       'Deixe o tempo passar até fabricados chegar a 3. Depois ligue Reciclar quem saiu e olhe o número pintado no cacto.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        // ⚠️ "entra um cacto novo", e não "cada cacto que entra é novo": o elenco flexiona o que está
-        // colado ao nome, e "é novo" longe dele sairia "cada pedra que entra é novo".
-        caption: 'Sem reciclagem, entra um cacto novo a cada vez.',
-        highlight: 'scene',
-        actions: [
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'grows',
-      },
-      {
-        id: 'step-2',
-        caption: 'Com a reciclagem, o mesmo cacto volta e o número para.',
-        highlight: 'tools',
-        actions: [
-          { type: 'connect', port: 'recycle', enabled: true },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'steady',
-      },
     ],
   },
   'entity-state': {
@@ -3015,40 +2059,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Mude o estado de uma só e deixe o tempo passar. Olhe o que as outras duas fizeram.',
       'Deixe a 1ª mirando e a 2ª atirando, e deixe o tempo passar.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Cada torre num estado: o relógio mostra o que cada uma faz.',
-        highlight: 'scene',
-        actions: [
-          { type: 'brain', id: 1, state: 'mirar' },
-          { type: 'brain', id: 2, state: 'atirar' },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'acts',
-      },
-      {
-        id: 'step-2',
-        caption: 'Mudar uma torre não mexe nas outras duas.',
-        highlight: 'tools',
-        actions: [
-          { type: 'brain', id: 3, state: 'recarregar' },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'independent',
-      },
-      {
-        id: 'step-3',
-        caption: 'Com o estado no jogo, mudar uma torre muda as três.',
-        highlight: 'tools',
-        actions: [
-          { type: 'brain-scope', shared: true },
-          { type: 'brain', id: 1, state: 'atirar' },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'shared',
-      },
-    ],
   },
   'delta-time': {
     id: 'delta-time',
@@ -3082,30 +2092,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // ⚠️ A pista 2 era a resposta da previsão, e pode ser lida antes do palpite.
       'Aperte ▶ e compare as marcas de cada computador.',
       'Aperte ▶ com "a cada quadro". Depois troque e aperte ▶ de novo.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Andando a cada quadro, o rápido dispara na frente.',
-        highlight: 'scene',
-        actions: [
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'apart',
-      },
-      {
-        id: 'step-2',
-        caption: 'Andando a cada segundo, os dois chegam juntos.',
-        highlight: 'tools',
-        actions: [
-          { type: 'count', kind: 'seconds' },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'together',
-      },
     ],
   },
   'circle-collision': {
@@ -3147,26 +2133,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Aperte ▶ e espere aparecer "bateu". Olhe onde a fila dos raios termina.',
       'Deixe os dois só encostarem e então diminua um raio, sem mexer na distância.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'A distância diminui até a fila dos raios alcançar o outro centro.',
-        highlight: 'scene',
-        actions: [
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-          { type: 'advance', seconds: 1 },
-        ],
-        waitFor: 'touch',
-      },
-      {
-        id: 'step-2',
-        caption: 'Com um raio menor, o mesmo lugar deixa de ser uma batida.',
-        highlight: 'tools',
-        actions: [{ type: 'radius', which: 'a', value: 10 }],
-      },
-    ],
   },
   'axis-z': {
     id: 'axis-z',
@@ -3193,28 +2159,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // ⚠️ A pista 2 era a resposta da previsão ("aqui ele cresce para cima").
       'No jogo 2D, aumentar o y descia. Veja o que acontece aqui.',
       'Aumente só o y. Depois, com o cubo no ar, mexa só no x.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        // ⚠️⚠️ Decisão da dona (lote 5): z NEGATIVO é o fundo, como o kit Desvie e os blocos genéricos
-        // do Jogo 3D (o inimigo nasce em z −20 e vem para a câmera) e o three.js.
-        caption: 'O z negativo leva o cubo para o fundo: o cubo fica menor, e a sombra vai junto.',
-        highlight: 'scene',
-        actions: [{ type: 'place3d', x: 0, y: 0, z: -80 }],
-      },
-      {
-        id: 'step-2',
-        caption: 'O y levanta: aqui, mais y é mais alto.',
-        highlight: 'scene',
-        actions: [{ type: 'place3d', x: 0, y: 70, z: -80 }],
-      },
-      {
-        id: 'step-3',
-        caption: 'No ar, a sombra anda pelo chão junto com o cubo.',
-        highlight: 'scene',
-        actions: [{ type: 'place3d', x: 60, y: 70, z: -80 }],
-      },
     ],
   },
   'camera-3d': {
@@ -3266,29 +2210,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // se conta de 1 a 8 desde o lote 5: a volta 1 é bem de frente.
       'Deixe a altura no meio e ponha a volta em 1.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'De frente, uma cor só.',
-        highlight: 'scene',
-        actions: [{ type: 'orbit', yaw: 0, pitch: 1 }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Do canto, duas. Do canto e por cima, três.',
-        highlight: 'scene',
-        actions: [
-          { type: 'orbit', yaw: 1, pitch: 1 },
-          { type: 'orbit', yaw: 1, pitch: 2 },
-        ],
-      },
-      {
-        id: 'step-3',
-        caption: 'Um toque leva a câmera de volta para onde ela começou.',
-        highlight: 'tools',
-        actions: [{ type: 'recenter' }],
-      },
-    ],
   },
   mesh: {
     id: 'mesh',
@@ -3323,29 +2244,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Compare o modelo com a pele inteira e com a pele transparente.',
       'Deixe a pele transparente, olhe, e volte a pele inteira.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Com a pele transparente, aparecem os pontos e as linhas.',
-        highlight: 'scene',
-        actions: [{ type: 'see-points', level: 'metade' }],
-      },
-      {
-        id: 'step-2',
-        caption: 'Com a pele inteira de novo, os pontos continuam embaixo.',
-        highlight: 'scene',
-        actions: [{ type: 'see-points', level: 'nada' }],
-      },
-      {
-        id: 'step-3',
-        caption: 'Sem a pele, girar o modelo gira os pontos junto.',
-        highlight: 'tools',
-        actions: [
-          { type: 'see-points', level: 'tudo' },
-          { type: 'orbit', yaw: 3, pitch: 1 },
-        ],
-      },
-    ],
   },
   'pick-ray': {
     id: 'pick-ray',
@@ -3378,21 +2276,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // ⚠️ As pistas 2 e 3 eram a resposta da previsão, e podem ser lidas antes do palpite.
       'Use o botão Mirar onde uma cobre a outra e olhe a vista de lado.',
       'Aperte Mirar onde uma cobre a outra.',
-    ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Mirar numa caixa acende a caixa.',
-        highlight: 'scene',
-        actions: [{ type: 'point', x: 100, y: 125 }],
-      },
-      {
-        id: 'step-2',
-        // A faixa em que a caixa B cobre a A — é a única parte da tela com duas no caminho.
-        caption: 'Onde uma cobre a outra, a reta para na mais perto.',
-        highlight: 'scene',
-        actions: [{ type: 'point', x: 330, y: 155 }],
-      },
     ],
   },
   'fill-stroke': {
@@ -3433,36 +2316,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // da última meta, `both`.
       'Deixe o contorno em Sem cor, depois o preenchimento, e no fim volte as duas com cor.',
     ],
-    script: [
-      {
-        id: 'step-1',
-        caption: 'Contorno em Sem cor: sobra o preenchimento.',
-        highlight: 'scene',
-        actions: [{ type: 'ink', part: 'stroke', on: false }],
-      },
-      {
-        id: 'step-2',
-        // ⚠️⚠️ O contorno VOLTA antes de o preenchimento sair (lote 5): na ordem de antes a pedra
-        // sumia inteira por um instante, com a legenda dizendo que sobrava a linha. ⚠️ E a volta tem
-        // PARTE própria (consertos do review da onda B do lote 5, B11): dentro da parte seguinte, por
-        // meio segundo a legenda 1 ("sobra o preenchimento") ficava sobre a pedra com as duas cores.
-        caption: 'O contorno voltou.',
-        highlight: 'scene',
-        actions: [{ type: 'ink', part: 'stroke', on: true }],
-      },
-      {
-        id: 'step-3',
-        caption: 'Preenchimento em Sem cor: dá para ver o fundo por dentro. Sobra a linha.',
-        highlight: 'scene',
-        actions: [{ type: 'ink', part: 'fill', on: false }],
-      },
-      {
-        id: 'step-4',
-        caption: 'As duas com cor: preenchimento e contorno juntos.',
-        highlight: 'scene',
-        actions: [{ type: 'ink', part: 'fill', on: true }],
-      },
-    ],
   },
   shading: {
     id: 'shading',
@@ -3497,36 +2350,6 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // ⚠️ A pista 2 era a resposta do "Agora explique".
       'Com a sombra e a luz ligadas, mude o sol de lado. Olhe onde fica o azul mais escuro.',
       'Com a sombra e a luz ligadas, leve o sol para o outro lado.',
-    ],
-    script: [
-      // ⚠️ A cena ABRE chapada, então o primeiro passo é LIGAR os tons: começar desligando
-      // seria um passo que não muda um pixel, narrado como se mudasse.
-      {
-        id: 'step-1',
-        caption:
-          'Um azul mais escuro longe do sol e um mais claro perto dele: a bola ficou redonda.',
-        highlight: 'scene',
-        actions: [{ type: 'shade', on: true }],
-      },
-      {
-        id: 'step-2',
-        // ⚠️ "Com um tom só" (consertos do review da onda B do lote 5, B14): "sem os dois tons" vinha
-        // logo depois de "três tons de azul", embaixo do palco.
-        caption: 'Com um tom só, a bola parece um adesivo.',
-        highlight: 'scene',
-        actions: [{ type: 'shade', on: false }],
-      },
-      {
-        id: 'step-3',
-        // ⚠️⚠️ O SOL muda de lado ANTES de os tons voltarem (lote 5): na ordem de antes a sombra
-        // aparecia por um instante do lado errado, justo na parte que ensina o lado.
-        caption: 'Mudou o sol de lado. Olhe onde ficou o azul mais escuro.',
-        highlight: 'scene',
-        actions: [
-          { type: 'light', side: 'right' },
-          { type: 'shade', on: true },
-        ],
-      },
     ],
   },
 }

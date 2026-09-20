@@ -15,7 +15,6 @@ import {
   isPdfAttachment,
   LESSON_SECTION_TEMPLATES,
   type LessonDraftIssue,
-  migrateLegacyInteractiveBlock,
 } from '@sistemazero/core/learning'
 import type { SceneVozes, ZappySpeechOverride } from '@sistemazero/core/learning/scene'
 import {
@@ -651,9 +650,7 @@ function LessonEditorSession({
       const content: LessonBlockContent =
         atual.kind === 'dialogue'
           ? { ...atual, vozes }
-          : atual.kind === 'interactive' &&
-              (atual.activity?.type === 'demonstration' ||
-                atual.activity?.type === 'experimentation')
+          : atual.kind === 'interactive' && atual.activity?.type === 'experimentation'
             ? { ...atual, activity: { ...atual.activity, vozes } }
             : atual
       if (content === atual) return
@@ -825,10 +822,7 @@ function LessonEditorSession({
       galleryEnabled: (c.kind === 'studio' || c.kind === 'pinta') && !!c.gallery,
       galleryMin: c.kind === 'studio' || c.kind === 'pinta' ? (c.gallery?.minItems ?? 1) : 1,
       galleryMax: c.kind === 'studio' || c.kind === 'pinta' ? (c.gallery?.maxItems ?? 6) : 6,
-      // ⚠️ Bloco do modelo ANTERIOR abre já migrado: sem isto ele entra inválido, o botão de
-      // salvar nasce desabilitado e não há caminho pela tela para consertar nem para apagar.
-      interactive:
-        c.kind === 'interactive' ? (migrateLegacyInteractiveBlock(c) ?? c) : EMPTY_LEARNING,
+      interactive: c.kind === 'interactive' ? c : EMPTY_LEARNING,
       toolPurpose:
         c.kind === 'studio' || c.kind === 'pinta' ? (c.purpose ?? 'submission') : 'submission',
       dialoguePose: c.kind === 'dialogue' ? (c.pose ?? 'speaking') : 'speaking',
@@ -1242,14 +1236,10 @@ function LessonEditorSession({
             : {}),
         }))
       } else add(seed(options.tool, true))
-    } else if (intent === 'exploration' || intent === 'demonstration') {
-      // A intenção da seção escolhe o TIPO do bloco semeado: são tipos irmãos, não modos.
+    } else if (intent === 'exploration') {
       add({
         ...EMPTY_LEARNING,
-        activity: {
-          type: intent === 'demonstration' ? 'demonstration' : 'experimentation',
-          scene: 'world',
-        },
+        activity: { type: 'experimentation', scene: 'world' },
       })
     } else
       add(

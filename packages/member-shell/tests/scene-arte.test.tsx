@@ -66,7 +66,7 @@ describe('⚠️⚠️ quem MEXE a cena provê o relógio', () => {
   const fonte = (arquivo: string) =>
     readFileSync(join(import.meta.dir, '..', 'src', 'components', arquivo), 'utf8')
 
-  for (const arquivo of ['scene-activity.tsx', 'scene-sandbox.tsx']) {
+  for (const arquivo of ['scene-activity.tsx']) {
     test(`${arquivo} envolve o palco no RelogioDaArteProvider`, () => {
       const s = fonte(arquivo)
       expect(s).toContain('RelogioDaArteProvider')

@@ -2,13 +2,10 @@ import { describe, expect, test } from 'bun:test'
 import type { LearningAnswers } from '@sistemazero/core/learning'
 import {
   applyExperimentSegment,
-  type DemonstrationActivity,
-  type DemonstrationSession,
   type ExperimentationActivity,
   type ExperimentSession,
   packExperiment,
   readSceneSegment,
-  SCENE_MODELS,
   type SceneCheckpoint,
   type SceneCommand,
   type SceneSession,
@@ -185,24 +182,5 @@ describe('o rascunho da experimentação', () => {
     const aqui = SceneController.create(mundo, 'sessao-123')
     expect(aqui.restore(outro.draft())).toBe(false)
     expect(experimento(aqui).state.evidence.actions).toBe(0)
-  })
-})
-
-describe('o rascunho da demonstração', () => {
-  const assistir: DemonstrationActivity = { type: 'demonstration', scene: 'world' }
-
-  test('o mesmo controlador atende os dois tipos, cada um com os comandos DELE', () => {
-    const controller = SceneController.create(assistir, 'sessao-123')
-    controller.dispatch({ type: 'start' })
-    controller.dispatch({ type: 'tick', seconds: 0.5 })
-    const guardado = controller.previewConfirm()
-    const recarregado = SceneController.create(assistir, 'sessao-123', guardado)
-    const sessao = recarregado.getSnapshot() as DemonstrationSession
-    expect(sessao.step).toBe(0)
-    expect(SCENE_MODELS.world.script.length).toBeGreaterThan(0)
-    // Ação de cena não é comando de quem assiste: um rascunho com ela é recusado inteiro.
-    expect(recarregado.restore({ ...controller.draft(), pending: [{ type: 'create' }] })).toBe(
-      false,
-    )
   })
 })

@@ -1,11 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import {
-  isSceneAction,
-  SCENE_FRAME_RATE,
-  SCENE_IDS,
-  type SceneAction,
-  type SceneId,
-} from './actions'
+import { isSceneAction, SCENE_FRAME_RATE, type SceneAction, type SceneId } from './actions'
 import {
   openScene,
   sceneClockReachedStop,
@@ -15,7 +9,7 @@ import {
   sceneJumpLeftView,
   stepScene,
 } from './engine'
-import { sceneScript } from './index'
+
 import type { SceneState } from './state'
 
 /**
@@ -151,18 +145,5 @@ describe('o gesto solta ou para o ▶ (`sceneGestureRunsClock`)', () => {
     expect(depois.match.screen).toBe('playing')
     expect(sceneGestureRunsClock(cena, tocar, depois)).toBe(true)
     expect(sceneGestureRunsClock(cena, tocar, aberto)).toBeNull()
-  })
-
-  test('⚠️ nenhum outro gesto dos roteiros de fábrica mexe no ▶', () => {
-    const mexem = new Set(['jump', 'connect', 'start'])
-    for (const cena of SCENE_IDS) {
-      let estado = openScene({ scene: cena })
-      for (const passo of sceneScript({ type: 'demonstration', scene: cena })) {
-        for (const acao of passo.actions) {
-          estado = stepScene({ scene: cena }, estado, acao)
-          if (!mexem.has(acao.type)) expect(sceneGestureRunsClock(cena, acao, estado)).toBeNull()
-        }
-      }
-    }
   })
 })

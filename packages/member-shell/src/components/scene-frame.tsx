@@ -10,15 +10,14 @@ import {
   type SceneState,
   sceneLongFrame,
   sceneReadout,
-  sceneScript,
   sceneStart,
   sceneStepLabel,
   sceneStepSeconds,
-  stepScene,
 } from '@sistemazero/core/learning/scene'
 import { Pause, Play, StepForward } from 'lucide-react'
 import { type ReactElement, type ReactNode, useMemo } from 'react'
 import { SceneButton } from './exploration-stage'
+import { sceneDisplaySamples } from './scene-display-samples'
 import { LugarReservado } from './scene-lugar-reservado'
 
 /**
@@ -83,14 +82,14 @@ export function SceneReadoutBand({
    * tamanho ("desligado" é mais longo que "ligado", "vazio" que "o Dino"), a faixa passava de duas linhas
    * para uma, e o palco e a bancada pulavam 28 px embaixo do dedo: o botão da borda da `stage-size` subia
    * no próprio toque. Hoje ela mora num `LugarReservado` cujo MOLDE são as leituras que a cena atinge (a
-   * abertura, cada parte do roteiro do modelo e a de agora) empilhadas numa célula só, mais uma leitura
+   * abertura real, exemplos de apresentação e a de agora) empilhadas numa célula só, mais uma leitura
    * com o rótulo e o valor MAIS LONGOS de cada posição: a altura reservada é a maior delas.
    */
   const moldes = useMemo(
-    () =>
-      estadosDaCena(activity).map((e) =>
-        sceneReadout(activity.scene, e, activity.cast, activity.pilha),
-      ),
+    () => [
+      sceneReadout(activity.scene, openScene(sceneStart(activity)), activity.cast, activity.pilha),
+      sceneDisplaySamples(activity.scene, activity.cast).readouts,
+    ],
     [activity],
   )
   const atual = leituras(state)
@@ -193,27 +192,6 @@ export function SceneReadoutBand({
       </div>
     </LugarReservado>
   )
-}
-
-/**
- * Os estados que a cena desta atividade costuma atingir: a abertura e o fim de cada parte do roteiro
- * (o do modelo, ou o da demonstração). É o molde da altura da faixa e da frase da situação (M3).
- * ⚠️ Barato de propósito: o roteiro tem até 12 partes, e quem chama memoriza pela atividade.
- * ⚠️ Um roteiro que não toca a partir do caso não derruba a moldura: sem ele, só a abertura.
- */
-export function estadosDaCena(activity: SceneActivity): SceneState[] {
-  const start = sceneStart(activity)
-  let estado = openScene(start)
-  const lista = [estado]
-  try {
-    for (const passo of sceneScript(activity)) {
-      for (const acao of passo.actions) estado = stepScene(start, estado, acao)
-      lista.push(estado)
-    }
-  } catch {
-    return lista
-  }
-  return lista
 }
 
 /** A leitura com o rótulo e o valor MAIS LONGOS de cada posição (o pior caso da quebra de linha). */

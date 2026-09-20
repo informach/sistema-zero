@@ -9,15 +9,8 @@ import {
 } from './actions'
 import { isSceneAudioUrl } from './audio-url'
 import { castText, isSceneCast, type SceneCast } from './cast'
-import {
-  type SceneModel,
-  type SceneStep,
-  sceneDefaultGoalIds,
-  sceneGoalIds,
-  sceneModel,
-} from './catalog'
+import { type SceneModel, sceneDefaultGoalIds, sceneGoalIds, sceneModel } from './catalog'
 import { isSceneCenario, type SceneCenarioId } from './cenario'
-import { openScene, stepScene } from './engine'
 import { LAYERS_CAMADAS, SCENE_PILHAS, type ScenePilha, scenePilhaAceita } from './pilha'
 import {
   isCleanupPreset,
@@ -32,7 +25,6 @@ import {
   SPAWN_GOALS_BY_PRESET,
   spawnPreset,
 } from './presets'
-import type { SceneStart } from './state'
 import {
   isSceneSpeechOverrides,
   isSceneVozes,
@@ -68,59 +60,6 @@ export * from './state'
 // A voz do Zappy: o dicionário `texto falado → MP3` e a regra do tudo-ou-nada da fala.
 export * from './voz'
 
-/**
- * As duas atividades de cena.
- *
- * ⚠️ São TIPOS IRMÃOS, não modos de um mesmo tipo. Antes existia um `exploration` com um
- * campo `mode: 'explore' | 'demonstrate'` — e esse campo só existia quando `version` era 3,
- * de modo que os campos disponíveis mudavam conforme um número que o professor nunca
- * escolhia. Demonstrar e experimentar têm objetivo, avaliação e tela diferentes; separá-los
- * aqui é o que faz o professor escolher uma vez só.
- *
- * ⚠️ Não confundir com o `intent` de SEÇÃO, que também tem os valores `demonstration` e
- * `exploration`. Aquele eixo diz o papel da seção na aula; este diz o que a criança faz.
- */
-export interface DemonstrationActivity {
-  type: 'demonstration'
-  scene: SceneId
-  /** Sem roteiro próprio, vale o do modelo. O professor só escreve quando quer outro. */
-  script?: SceneStep[]
-  instructionAudioUrl?: string
-  /**
-   * A voz do Zappy: `texto falado → MP3`, gerado na autoria. Ver `voz.ts`.
-   *
-   * ⚠️ O `instructionAudioUrl` acima continua valendo e GANHA dele na instrução: ele é a
-   * narração escolhida à mão para esta cena, e escolha de quem autora nunca perde para o lote.
-   */
-  vozes?: SceneVozes
-  /** Ajustes de pronúncia do Zappy, presos ao texto visível de cada fala. */
-  zappySpeech?: SceneSpeechOverrides
-  /** Quem está no palco. Sem elenco, é o do Corre Dino. Ver `cast.ts`. */
-  cast?: SceneCast
-  /** De onde a cena parte. ⚠️ Sem `goals`: a demonstração não cobra meta nenhuma. */
-  setup?: SceneSetup
-  /**
-   * Como a demonstração se apresenta.
-   *
-   * `guided` (o padrão) é a de sempre: as etapas à vista, uma fala por etapa, a criança avança
-   * quando quiser. `inline` é o TERCEIRO FORMATO — a cena rodando o roteiro de uma vez, com um
-   * ▶ e nada mais, dentro do texto da explicação. É o degrau que faltava entre o parágrafo e a
-   * simulação, e é o que o Brilliant usa no meio das lições: dois segundos, sem áudio, que a
-   * criança repete quantas vezes quiser. O motor é o mesmo; muda só a apresentação.
-   */
-  presentation?: 'guided' | 'inline'
-  /**
-   * O JOGO que esta cena retrata: `corre-dino`, `nave`, `gorilas` ou `meu-jeito` (`cenario.ts`).
-   *
-   * ⚠️ OPCIONAL de propósito: sem ele o cenário é DERIVADO das figuras do elenco, que é o que
-   * mantém de pé os manifestos já publicados, sem reimportação. Declarar só é preciso quando a
-   * derivação não acerta — um curso cujo elenco não diz o jogo, ou uma cena abstrata que ainda
-   * assim deve mostrar a paisagem do curso.
-   */
-  cenario?: SceneCenarioId
-  /** Só `layers`: a pilha como a lista de blocos do Estúdio (padrão) ou o painel Camadas do Pinta. */
-  pilha?: ScenePilha
-}
 export interface ExperimentationActivity {
   type: 'experimentation'
   scene: SceneId
@@ -156,7 +95,7 @@ export interface ExperimentationActivity {
   cenario?: SceneCenarioId
   pilha?: ScenePilha
 }
-export type SceneActivity = DemonstrationActivity | ExperimentationActivity
+export type SceneActivity = ExperimentationActivity
 
 /**
  * O cenário declarado é legal: ausente, ou um dos quatro.
@@ -174,38 +113,6 @@ const pilhaValida = (value: Record<string, unknown>) =>
 
 const isScene = (v: unknown): v is SceneId => SCENE_IDS.some((s) => s === v)
 const validAudio = isSceneAudioUrl
-
-export function isDemonstrationActivity(value: unknown): value is DemonstrationActivity {
-  if (!isRecord(value) || value.type !== 'demonstration' || !isScene(value.scene)) return false
-  if (sceneModel(value.scene).script.length === 0) return false
-  if (!validAudio(value.instructionAudioUrl)) return false
-  if (!isSceneVozes(value.vozes)) return false
-  if (!isSceneSpeechOverrides(value.zappySpeech)) return false
-  if (!pilhaValida(value)) return false
-  if (!cenarioValido(value)) return false
-  if (value.cast !== undefined && !isSceneCast(value.cast)) return false
-  // ⚠️ Meta é assunto de quem experimenta. Numa demonstração a lista não teria efeito nenhum,
-  // e campo sem efeito é armadilha para quem autora: aqui ele é recusado.
-  if (value.setup !== undefined && !isSceneSetup(value.setup, value.scene, { goals: false }))
-    return false
-  if (
-    value.presentation !== undefined &&
-    value.presentation !== 'guided' &&
-    value.presentation !== 'inline'
-  )
-    return false
-  // ⚠️⚠️ Sem roteiro autoral vale o do MODELO — e ele também precisa tocar a partir do caso.
-  // O `playsOut` existe porque um roteiro que promete uma descoberta e não a produz trava a
-  // criança na tela; conferindo só o autoral, uma demonstração com `setup` escapava inteira:
-  // um caso que já liga a reciclagem faz o `waitFor: 'grows'` do `pool` nunca chegar, com a
-  // fala narrando "sem reciclagem, cada passo cria mais um corpo" sobre a tela contrária.
-  if (value.script === undefined)
-    return (
-      value.setup === undefined ||
-      playsOut([...sceneModel(value.scene).script], value.scene, value.setup as SceneSetup)
-    )
-  return isSceneScript(value.script, value.scene, value.setup as SceneSetup | undefined)
-}
 
 export function isExperimentationActivity(value: unknown): value is ExperimentationActivity {
   if (!isRecord(value) || value.type !== 'experimentation' || !isScene(value.scene)) return false
@@ -232,11 +139,7 @@ export function isExperimentationActivity(value: unknown): value is Experimentat
  * uma lista que cita uma meta inexistente é uma atividade que nunca fecha, e é exatamente o
  * tipo de erro que só aparece com a criança na tela.
  */
-export function isSceneSetup(
-  value: unknown,
-  scene: SceneId,
-  { goals = true }: { goals?: boolean } = {},
-): value is SceneSetup {
+export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetup {
   if (!isRecord(value)) return false
   const { actions, goals: alvo, preset, goalCopy } = value
   if (actions !== undefined) {
@@ -261,7 +164,7 @@ export function isSceneSetup(
   )
     return false
   if (goalCopy !== undefined) {
-    if (!goals || !isRecord(goalCopy) || Object.keys(goalCopy).length === 0) return false
+    if (!isRecord(goalCopy) || Object.keys(goalCopy).length === 0) return false
     const known = sceneGoalIds(scene)
     for (const [id, copy] of Object.entries(goalCopy)) {
       if (!known.includes(id) || !isRecord(copy)) return false
@@ -279,7 +182,6 @@ export function isSceneSetup(
   }
   if (alvo === undefined)
     return actions !== undefined || preset !== undefined || goalCopy !== undefined
-  if (!goals) return false
   const disponiveis = sceneGoalIds(scene)
   const possiveis =
     scene === 'once-vs-always'
@@ -299,68 +201,7 @@ export function isSceneSetup(
 }
 
 export function isSceneActivity(value: unknown): value is SceneActivity {
-  return isDemonstrationActivity(value) || isExperimentationActivity(value)
-}
-
-export const SCRIPT_LIMITS = { steps: 12, actions: 16, caption: 500, id: 80 } as const
-const ID = /^[a-zA-Z0-9_-]{1,80}$/
-
-/**
- * Um roteiro só é válido se ele REALMENTE acontece: além da forma, o validador executa os
- * passos no motor e confere que cada `waitFor` foi de fato alcançado. Um roteiro que promete
- * uma descoberta e não a produz é um roteiro que trava a criança na tela.
- */
-export function isSceneScript(
-  value: unknown,
-  scene: SceneId,
-  /** O caso de onde o roteiro parte: um roteiro válido no mundo de fábrica pode não valer aqui. */
-  setup?: SceneSetup,
-): value is SceneStep[] {
-  if (!Array.isArray(value) || value.length === 0 || value.length > SCRIPT_LIMITS.steps)
-    return false
-  const goals = sceneGoalIds(scene)
-  const ids = new Set<string>()
-  for (const step of value) {
-    if (!isRecord(step)) return false
-    if (typeof step.id !== 'string' || !ID.test(step.id) || ids.has(step.id)) return false
-    ids.add(step.id)
-    if (typeof step.caption !== 'string') return false
-    if (step.caption.length === 0 || step.caption.length > SCRIPT_LIMITS.caption) return false
-    if (
-      step.highlight !== undefined &&
-      step.highlight !== 'scene' &&
-      step.highlight !== 'tools' &&
-      step.highlight !== 'compare'
-    )
-      return false
-    if (step.waitFor !== undefined && !goals.includes(step.waitFor as string)) return false
-    if (!Array.isArray(step.actions)) return false
-    if (step.actions.length === 0 || step.actions.length > SCRIPT_LIMITS.actions) return false
-    for (const action of step.actions) {
-      if (!isSceneAction(action, scene)) return false
-      // Dica não é gesto de roteiro: quem demonstra já está explicando.
-      if (isRecord(action) && action.type === 'hint') return false
-      if (isRecord(action) && action.type === 'advance') {
-        const { seconds } = action
-        const { min, max } = SCENE_LIMITS.scriptAdvance
-        if (typeof seconds !== 'number' || seconds < min || seconds > max) return false
-      }
-    }
-  }
-  return playsOut(value as SceneStep[], scene, setup)
-}
-
-function playsOut(steps: SceneStep[], scene: SceneId, setup?: SceneSetup): boolean {
-  const start: SceneStart = setup ? { scene, setup } : { scene }
-  let state = openScene(start)
-  for (const step of steps) {
-    for (const action of step.actions) state = stepScene(start, state, action)
-    if (step.waitFor === undefined) continue
-    // A espera só faz sentido depois de deixar o tempo correr, e a descoberta tem de existir.
-    if (step.actions.at(-1)?.type !== 'advance') return false
-    if (!state.evidence.discoveries.includes(step.waitFor)) return false
-  }
-  return true
+  return isExperimentationActivity(value)
 }
 
 /**
@@ -372,10 +213,7 @@ function playsOut(steps: SceneStep[], scene: SceneId, setup?: SceneSetup): boole
 export function sceneTargets(activity: SceneActivity): readonly string[] {
   // ⚠️⚠️ Pela `sceneSetupGoals`: um id que a cena não tem não esvazia a missão (vazia, ela reprovaria
   // para sempre). Player e members leem daqui.
-  const alvo =
-    activity.type === 'experimentation'
-      ? sceneSetupGoals(activity.scene, activity.setup?.goals)
-      : []
+  const alvo = sceneSetupGoals(activity.scene, activity.setup?.goals)
   if (alvo.length) return alvo
   if (activity.scene === 'once-vs-always')
     return ONCE_GOALS_BY_PRESET[oncePreset(activity.setup?.preset).id]
@@ -451,37 +289,7 @@ export function sceneActivityForReading(value: unknown): unknown {
     const { zappySpeech: _roteiro, ...semRoteiro } = atividade
     atividade = semRoteiro
   }
-  if (value.type === 'demonstration' && Array.isArray(value.script)) {
-    const conhecidas = sceneGoalIds(scene)
-    const desconhecida = (passo: unknown) =>
-      isRecord(passo) && typeof passo.waitFor === 'string' && !conhecidas.includes(passo.waitFor)
-    if (value.script.some(desconhecida))
-      atividade = {
-        ...atividade,
-        script: value.script.map((passo) => {
-          if (!desconhecida(passo)) return passo
-          const { waitFor: _espera, ...semEspera } = passo as Record<string, unknown>
-          return semEspera
-        }),
-      }
-  }
   return atividade
-}
-
-/**
- * O roteiro que vale: o autorado, quando existe; senão o do modelo da cena.
- *
- * ⚠️ As falas passam pelo elenco, o roteiro do professor inclusive: ele escreve contra a cena
- * que escolheu, e um curso que veste a cena com outro personagem precisa que as duas falas
- * sigam juntas. Quem não quiser a troca não declara elenco.
- */
-export function sceneScript(activity: SceneActivity): readonly SceneStep[] {
-  const roteiro =
-    activity.type === 'demonstration' && activity.script
-      ? activity.script
-      : sceneModel(activity.scene).script
-  if (!activity.cast) return roteiro
-  return roteiro.map((passo) => ({ ...passo, caption: castText(passo.caption, activity.cast) }))
 }
 
 /**
@@ -507,7 +315,6 @@ export function sceneModelFor(activity: SceneActivity) {
     extra: castText(m.extra, c),
     goals: m.goals.map((g) => ({ ...g, label: castText(g.label, c) })),
     hints: sceneHintsFor(activity).map((h) => castText(h, c)) as unknown as SceneModel['hints'],
-    script: sceneScript(activity),
   }
 }
 

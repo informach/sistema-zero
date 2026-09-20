@@ -1,12 +1,14 @@
 # Aulas com descoberta, explicação e criação
 
-As revisões atuais baseadas nos roteiros gravados estão em [Desafio do Primeiro Jogo — introdução e 5 dias](desafio-primeiro-jogo-v6/README.md), [Corre Dino — 13 aulas](corre-dino-v6/README.md) e [O jogo do meu jeito — 8 aulas](o-jogo-do-meu-jeito-v6/README.md). Cada pacote tem seu próprio catálogo, roteiro de cada seção, manifesto importável e mapa de montagem dos vídeos. Use esses guias para a nova produção.
+Os pacotes v6 deste repositório estão em [Desafio do Primeiro Jogo — introdução e 5 dias](desafio-primeiro-jogo-v6/README.md), [Corre Dino — 13 aulas](corre-dino-v6/README.md) e [O jogo do meu jeito — 8 aulas](o-jogo-do-meu-jeito-v6/README.md). Eles são uma referência anterior ao redesenho didático em andamento, cujos 27 manifestos novos estão fora do repositório. Não regenere nem importe um pacote v6 supondo que ele seja o redesenho novo.
+
+Desde 20/09/2026, blocos interativos têm apenas experimentação e HTML. Os manifestos v6 aqui foram alinhados a esse contrato: demonstrações cobertas pelo vídeo saíram; perguntas isoladas viraram quiz. O portão de CI valida os manifestos gravados em disco, sem executar as antigas receitas de geração.
 
 O texto abaixo e o catálogo desta pasta registram o **pacote inicial**. Suas contagens e decisões anteriores não substituem as revisões acima. As pastas históricas foram preservadas para referência e migração.
 
 ⚠️ **`catalogo.json` desta pasta é o índice do pacote HISTÓRICO, não do que está em produção.** Cada revisão atual tem o catálogo dela dentro da própria pasta (`corre-dino-v6/catalogo.json` e irmãos). Quem for importar uma aula usa os de lá.
 
-⭐ **Os 54 manifestos — históricos e atuais — passam por teste** (`packages/core/tests/learning.test.ts`): formato, critérios de seção sem pendência, cada trecho a gravar numa seção só, e cada atividade interativa com um caminho de passar que é EXPRESSO COMO AÇÕES da criança, nunca como um "passou" pronto. Antes só o pacote histórico tinha rede: as atividades interativas das revisões atuais podiam quebrar num contrato novo e só aparecer na hora de importar. Hoje são **67** nos três cursos v6 (27 experimentações de cena, 11 demonstrações de cena, 3 experiências em HTML e 26 perguntas curtas), medidas em 17/09/2026.
+⭐ **Os 27 manifestos v6 do repositório passam por teste** (`packages/core/tests/learning.test.ts` e `qa/validar-manifestos-v6.ts`): formato, critérios de seção e blocos sob o contrato atual. Hoje eles contêm 26 experimentações de cena, 3 experiências em HTML e 53 quizzes. Os 27 manifestos novos do redesenho didático ficam em outra pasta e contêm 55 experimentações.
 
 ## Histórico do pacote inicial
 
@@ -20,7 +22,7 @@ Em cada pasta há um `roteiro.md` completo para produção e um `manifesto.json`
 
 ⭐ **A cena é desenhada com a arte do jogo que o curso ensina.** Cada cena declara o cenário que retrata (`cenario`: `corre-dino`, `nave`, `gorilas` ou `meu-jeito`), e o palco usa o mesmo código de desenho da extensão Jogo 2D: o Dino com barriga, espinhos e perninhas que correm, o cacto de dois braços, a floresta com sol, nuvens e morros, o céu estrelado da nave. Quem decide o cenário é o CURSO — experiência do Corre Dino mostra o corredinho, experiência do Desafio mostra a nave —, e o elenco segue escolhendo as figuras de cada papel. O guia de autoria detalha as duas escolhas.
 
-O aluno vê o título da seção e seu conteúdo, experimenta uma relação, encontra uma explicação curta e aplica no próprio projeto. As demonstrações mostram os encaixes e ações; o texto da explicação continua disponível para consulta. O índice permite revisar seções concluídas. As próximas exibem apenas título e cadeado até a seção atual ser concluída. A barra principal conta seções concluídas com pesos iguais; o progresso do curso permanece no índice do curso. Pistas não descontam pontos. Uma hipótese inicial diferente não é tratada como erro que impede continuar.
+O aluno vê o conteúdo da seção, experimenta uma relação, encontra uma explicação curta e aplica no próprio projeto. Processos que acontecem no tempo são mostrados no vídeo; a cena interativa fica para a criança mexer. O índice permite revisar seções concluídas. As próximas exibem apenas título e cadeado até a seção atual ser concluída. A barra principal conta seções concluídas com pesos iguais; o progresso do curso permanece no índice do curso. Pistas não descontam pontos. Uma hipótese inicial diferente não é tratada como erro que impede continuar.
 
 O servidor controla o avanço pelos critérios selecionados. Exploração nativa registra comparações feitas no navegador, sem afirmar domínio do conceito; criação verifica estrutura do projeto; entrega confirma recebimento; quiz verifica respostas. Assistir a 90% só é critério de uma seção que contém apenas vídeo. Acesso ao caderno e ações salvas da plataforma têm critérios próprios. A última seção também precisa cumprir seu critério.
 

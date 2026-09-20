@@ -213,7 +213,7 @@
     {
       "key": "desenho-e-area",
       "title": "O contorno e o desenho são iguais?",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Perceber espaços vazios do desenho dentro da área de colisão.",
       "blockKeys": ["video-desenho-e-area"],
       "workspaceKey": null,

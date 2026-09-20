@@ -235,7 +235,7 @@
     {
       "key": "telas-observar",
       "title": "Observe os quatro momentos do jogo",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Distinguir tela atual de desenho da tela e reconhecer a meta fixa.",
       "blockKeys": ["video-telas-observar"],
       "workspaceKey": null,
@@ -340,7 +340,7 @@
     {
       "key": "mover-cadeia",
       "title": "Observe a mudança de todos os blocos",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Ver como mover a sequência preservando sua ordem.",
       "blockKeys": ["video-mover-cadeia"],
       "workspaceKey": null,
@@ -926,7 +926,7 @@
     {
       "key": "ciclo-completo",
       "title": "Observe como testar o jogo completo",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Conferir início, derrota, reinício e vitória sem alterar a meta.",
       "blockKeys": ["video-ciclo-completo"],
       "workspaceKey": null,

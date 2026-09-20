@@ -43,29 +43,26 @@
     {
       "key": "conferir-projeto-teste",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": ["Se a categoria não apareceu, confira Instalada e feche a janela de extensões."],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Num projeto novo, os blocos de Jogo 2D não apareceram. O que conferir?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Se a extensão Jogo 2D está instalada nesse projeto."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Se o nome do projeto tem a palavra nave."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "A extensão acrescenta os blocos. Dar nome ao projeto ajuda a encontrá-lo, mas não instala uma extensão."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Num projeto novo, os blocos de Jogo 2D não apareceram. O que conferir?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Se a extensão Jogo 2D está instalada nesse projeto."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Se o nome do projeto tem a palavra nave."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "A extensão acrescenta os blocos. Dar nome ao projeto ajuda a encontrá-lo, mas não instala uma extensão.\n\nSe a categoria não apareceu, confira Instalada e feche a janela de extensões."
+          }
+        ]
       }
     },
     {
@@ -86,31 +83,26 @@
     {
       "key": "conferir-importar",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se o Dia 5 estiver vazio, confira o trabalho enviado e use Sincronizar com o enviado apenas para recuperar aquela entrega. Não importe um arquivo de imagem."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Há um cartão vazio e outro com o jogo completo. Qual usaremos nas aulas 6 e 7?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "O cartão do jogo importado, conferindo o nome e o conteúdo."
-            },
-            {
-              "id": "opcao-2",
-              "label": "O cartão vazio, porque é o mais novo."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "A continuidade está no projeto que já contém o jogo. O projeto vazio fica reservado."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Há um cartão vazio e outro com o jogo completo. Qual usaremos nas aulas 6 e 7?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "O cartão do jogo importado, conferindo o nome e o conteúdo."
+              },
+              {
+                "id": "opcao-2",
+                "label": "O cartão vazio, porque é o mais novo."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "A continuidade está no projeto que já contém o jogo. O projeto vazio fica reservado.\n\nSe o Dia 5 estiver vazio, confira o trabalho enviado e use Sincronizar com o enviado apenas para recuperar aquela entrega. Não importe um arquivo de imagem."
+          }
+        ]
       }
     },
     {
@@ -127,31 +119,26 @@
     {
       "key": "conferir-guardar",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se o salvamento estiver pendente, mantenha a ferramenta aberta e confira a conexão antes de sair."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "A ferramenta ainda está guardando seu jogo. O que fazer antes de fechar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Criar outro projeto com o mesmo nome."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Esperar o aviso de que ficou guardado na conta."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Uma cópia vazia não termina o salvamento. Confira o aviso do projeto em que trabalhou."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "A ferramenta ainda está guardando seu jogo. O que fazer antes de fechar?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Criar outro projeto com o mesmo nome."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Esperar o aviso de que ficou guardado na conta."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "Uma cópia vazia não termina o salvamento. Confira o aviso do projeto em que trabalhou.\n\nSe o salvamento estiver pendente, mantenha a ferramenta aberta e confira a conexão antes de sair."
+          }
+        ]
       }
     },
     {
@@ -232,7 +219,7 @@
     {
       "key": "lista",
       "title": "Observe: onde os projetos ficam",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Distinguir projeto da aula e projeto livre antes de procurar o jogo no lugar errado.",
       "blockKeys": ["video-lista"],
       "workspaceKey": null,
@@ -260,7 +247,7 @@
     {
       "key": "ponte",
       "title": "Observe: uma cópia faz a ponte",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Entender exportar e importar como cópia, antes de navegar até o Desafio.",
       "blockKeys": ["video-ponte"],
       "workspaceKey": null,

@@ -37,31 +37,26 @@
     {
       "key": "conferir-trazer-artes",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se as artes não apareceram, confira o perfil e o salvamento do Pinta. Não importe o mesmo desenho repetidamente para tentar atualizar."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Os desenhos estão No projeto, mas a nave continua cinza. O que falta?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Desenhar a nave novamente."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Mandar os blocos usarem a imagem e sua animação."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Trazer do Pinta disponibiliza o recurso; os blocos decidem como mostrá-lo."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Os desenhos estão No projeto, mas a nave continua cinza. O que falta?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Desenhar a nave novamente."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Mandar os blocos usarem a imagem e sua animação."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "Trazer do Pinta disponibiliza o recurso; os blocos decidem como mostrá-lo.\n\nSe as artes não apareceram, confira o perfil e o salvamento do Pinta. Não importe o mesmo desenho repetidamente para tentar atualizar."
+          }
+        ]
       }
     },
     {
@@ -78,31 +73,26 @@
     {
       "key": "conferir-trocar-nave",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Use Apagar este bloco, não a lixeira com a pilha toda. Se removeu algo junto, desfaça antes de continuar."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Por que apagamos o Criar nave do kit antes de montar o novo?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Para não criar duas coisas chamadas nave no mesmo trecho."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Porque toda troca de bloco deve sempre começar apagando."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Os dois criadores usam o mesmo nome. Na próxima aula a peça antiga tem outro contrato, então a ordem será diferente."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Por que apagamos o Criar nave do kit antes de montar o novo?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Para não criar duas coisas chamadas nave no mesmo trecho."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Porque toda troca de bloco deve sempre começar apagando."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "Os dois criadores usam o mesmo nome. Na próxima aula a peça antiga tem outro contrato, então a ordem será diferente.\n\nUse Apagar este bloco, não a lixeira com a pilha toda. Se removeu algo junto, desfaça antes de continuar."
+          }
+        ]
       }
     },
     {
@@ -160,31 +150,26 @@
     {
       "key": "conferir-carregar-folha",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "O nome da folha é digitado; a imagem vem do seletor. Não escolha asteroide nesta folha."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Carregar a folha já faz o motor pulsar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Sim, todos os sprites usam toda folha carregada automaticamente."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Ainda falta mandar animar o sprite com essa folha."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "A folha prepara os quadros. Animar sprite associa a sequência ao objeto."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Carregar a folha já faz o motor pulsar?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Sim, todos os sprites usam toda folha carregada automaticamente."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Ainda falta mandar animar o sprite com essa folha."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "A folha prepara os quadros. Animar sprite associa a sequência ao objeto.\n\nO nome da folha é digitado; a imagem vem do seletor. Não escolha asteroide nesta folha."
+          }
+        ]
       }
     },
     {
@@ -201,31 +186,26 @@
     {
       "key": "conferir-animacao-nave",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se voando não aparece, confira o nome da animação no Pinta e a importação da arte com seus metadados. Não digite um nome de folha inexistente."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "O Estúdio mostra quadros 0 e 1. Quantos desenhos isso representa?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Dois: o primeiro é 0 e o segundo é 1."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Um, porque o último número é 1."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Os índices começam em zero. Do 0 ao 1 inclui os dois quadros."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O Estúdio mostra quadros 0 e 1. Quantos desenhos isso representa?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Dois: o primeiro é 0 e o segundo é 1."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Um, porque o último número é 1."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "Os índices começam em zero. Do 0 ao 1 inclui os dois quadros.\n\nSe voando não aparece, confira o nome da animação no Pinta e a importação da arte com seus metadados. Não digite um nome de folha inexistente."
+          }
+        ]
       }
     },
     {
@@ -286,41 +266,6 @@
           }
         ]
       }
-    },
-    {
-      "key": "demonstracao-folha",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Veja duas imagens dentro de uma folha só",
-        "instructions": "Veja o jogo mostrar a folha inteira e depois um quadro de cada vez.",
-        "hints": [],
-        "activity": {
-          "type": "demonstration",
-          "scene": "sheet-vs-sprite",
-          "cenario": "meu-jeito"
-        },
-        "prediction": {
-          "context": {
-            "label": "A folha de sprites",
-            "explanation": "Nesta demonstração, vamos olhar uma folha que guarda duas naves antes de escolher o que o jogo mostra."
-          },
-          "prompt": "A folha tem as duas naves. Se o jogo mostrar a folha inteira, o que aparece?",
-          "choices": [
-            {
-              "id": "espremidas",
-              "label": "Duas naves espremidas"
-            },
-            {
-              "id": "uma",
-              "label": "Uma nave só",
-              "shows": "O jogo mostrou a folha inteira: as duas naves, espremidas."
-            }
-          ],
-          "correctChoiceId": "espremidas",
-          "revealOn": "squeezed"
-        }
-      }
     }
   ],
   "sections": [
@@ -369,15 +314,15 @@
     {
       "key": "folha-demo",
       "title": "Observe: duas imagens dentro de uma só",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Distinguir a folha inteira e um quadro que ocupa o sprite.",
-      "blockKeys": ["video-folha-demo", "demonstracao-folha"],
+      "blockKeys": ["video-folha-demo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["demonstracao-folha"]
+        "blockIds": ["video-folha-demo"]
       }
     },
     {

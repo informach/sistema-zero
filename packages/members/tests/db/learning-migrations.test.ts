@@ -76,7 +76,7 @@ const activity: InteractiveBlock = {
   instructions: 'Prepare a cena antes de desenhar.',
   hints: ['O desenho usa a preparação.'],
   required: true,
-  activity: { type: 'question' },
+  activity: { type: 'html', html: '<p>Prepare a cena antes de desenhar.</p>' },
   checkpoint: {
     prompt: 'O que vem primeiro?',
     choices: [

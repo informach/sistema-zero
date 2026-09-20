@@ -9,19 +9,17 @@ import {
   type PublicInteractiveBlock,
 } from '@sistemazero/core/learning'
 import {
-  type DemonstrationSession,
   type ExperimentSession,
-  evaluateDemonstration,
   evaluateExperimentation,
   falaDaInstrucao,
   falasDaCena,
+  openScene,
   SCENE_LIMITS,
   type SceneActivity,
   type SceneCast,
   type SceneCommand,
   type SceneEvent,
   type SceneHintStep,
-  type SceneState,
   sceneClockShouldStop,
   sceneDefaultGoalIds,
   sceneEmitsSound,
@@ -30,13 +28,12 @@ import {
   sceneHint,
   sceneHintDone,
   sceneHintStep,
-  sceneScript,
   sceneSetupGoals,
   sceneShowsComparison,
   sceneSituation,
+  sceneStart,
   sceneSuccess,
   sceneTargets,
-  sceneTrial,
   textoFalado,
 } from '@sistemazero/core/learning/scene'
 import {
@@ -47,9 +44,6 @@ import {
   Eye,
   FlaskConical,
   Lightbulb,
-  MonitorPlay,
-  Pause,
-  Play,
   RotateCcw,
   Undo2,
   Volume2,
@@ -79,9 +73,9 @@ import { tituloJaDito, useLessonSection } from './lesson-section-context'
 import { RelogioDaArteProvider } from './scene-arte'
 import { SceneConclusion, SceneRevisitBanner } from './scene-conclusion'
 import { ConsoleFala, ConsoleMundo, ConsolePrancha, SceneConsole } from './scene-console'
-import { MontagemTravada, rotuloDaDemonstracao, SceneDemoControls } from './scene-demo-controls'
 import { SomDaBancada } from './scene-dino-controls'
-import { botoesDoMundo, estadosDaCena, SceneReadoutBand } from './scene-frame'
+import { sceneDisplaySamples } from './scene-display-samples'
+import { botoesDoMundo, SceneReadoutBand } from './scene-frame'
 import { LessonSceneControls } from './scene-lesson-controls'
 import { LugarReservado } from './scene-lugar-reservado'
 import {
@@ -97,11 +91,10 @@ import {
   vereditoDoPalpite,
 } from './scene-prediction'
 import { ScenePredictionPreview } from './scene-prediction-preview'
-import { SceneSandbox } from './scene-sandbox'
 import { estadoVistoDaCena, relogioDaCena, tempoDeLeitura, useSceneClock } from './use-scene-clock'
 
 /**
- * O player das cenas de aula: experimentação e demonstração.
+ * O player das experimentações da aula.
  *
  * O palpite vem antes da descoberta: a criança recebe contexto e uma prévia segura, formula a
  * hipótese e só então a cena completa, os controles e a instrução prática são montados. A escolha
@@ -109,7 +102,7 @@ import { estadoVistoDaCena, relogioDaCena, tempoDeLeitura, useSceneClock } from 
  * Na revisita, uma faixa "✓ Você já descobriu isto." que fala DELA e nunca do palco.
  *
  * As peças moram em arquivos próprios: `scene-prediction` (o palpite), `scene-conclusion` (a faixa
- * e a pergunta), `scene-demo-controls` (a demonstração guiada), `scene-sandbox` ("Agora é sua vez"),
+ * e a pergunta),
  * `scene-frame` (a faixa de estado e os botões do mundo), `use-scene-clock` e `use-scene-voice`.
  */
 export function SceneActivityView({
@@ -138,10 +131,7 @@ export function SceneActivityView({
    * os três degraus do modelo, e um a menos aqui nunca passa desse teto.
    */
   // ⚠️ Pela leitura tolerante (`sceneSetupGoals`): a meta que saiu do catálogo não conta como missão.
-  const alvosDoProfessor =
-    activity.type === 'experimentation'
-      ? sceneSetupGoals(activity.scene, activity.setup?.goals)
-      : undefined
+  const alvosDoProfessor = sceneSetupGoals(activity.scene, activity.setup?.goals)
   const missaoRestrita =
     content.hints.length === 0 &&
     Boolean(alvosDoProfessor?.length) &&
@@ -179,8 +169,7 @@ export function SceneActivityView({
    * revisita do ensaio era diferente da do aluno, que é justamente o que ele existe para mostrar.
    */
   const [guardado] = useState(() => saved?.result ?? rehearsal?.results[block.id] ?? null)
-  const demoMode = activity.type === 'demonstration'
-  const revisita = Boolean(guardado?.passed) && !demoMode
+  const revisita = Boolean(guardado?.passed)
   const [ready, setReady] = useState(!scope)
   const [running, setRunning] = useState(false)
   const [slow, setSlow] = useState(false)
@@ -243,9 +232,7 @@ export function SceneActivityView({
    * cartão dizia "É o mesmo Dino", ao vivo e depois do F5.
    */
   // ⚠️ `sceneSuccess` (consertos do review da onda A do lote 5): a missão restrita tem a frase dela.
-  const fraseDeSucesso = demoMode
-    ? 'Você viu tudo!'
-    : sceneSuccess(activity.scene, activity.cast, sceneTargets(activity))
+  const fraseDeSucesso = sceneSuccess(activity.scene, activity.cast, sceneTargets(activity))
   /**
    * ⚠️⚠️ A conclusão é um LATCH, não um espelho de `result.passed`. Duas cenas (`layers` e
    * `jump-sound`) exigem que a montagem FIQUE no estado descoberto, então mexer depois de concluir
@@ -254,8 +241,6 @@ export function SceneActivityView({
    */
   const [conclusao, setConclusao] = useState(guardado?.passed ? fraseDeSucesso : '')
   const [reduced, setReduced] = useState(false)
-  /** "Agora é sua vez": o estado final da demonstração, quando a bancada local está aberta. */
-  const [suaVez, setSuaVez] = useState<SceneState | null>(null)
   const [avisoDescoberta, setAvisoDescoberta] = useState('')
   /**
    * O palpite retomado NO INSTANTE em que a cena responde, colado ao aviso da descoberta.
@@ -268,7 +253,7 @@ export function SceneActivityView({
    * `jump-sound` pedem a montagem assentada). ⚠️ Não é resposta errada (review do lote 2).
    */
   const [aguardaCena, setAguardaCena] = useState(false)
-  /** O servidor não registrou o que subiu sem pergunta (a demonstração, a cena sem pergunta). */
+  /** O servidor não registrou o que subiu sem pergunta. */
   const [recusado, setRecusado] = useState(false)
   /** A pergunta está à vista: o "Continuar ↓" só existe quando ela NÃO está. */
   const [perguntaVisivel, setPerguntaVisivel] = useState(false)
@@ -280,8 +265,6 @@ export function SceneActivityView({
   const faixaRef = useRef<HTMLParagraphElement>(null)
   const dialogoDoPalpiteRef = useRef<HTMLDivElement>(null)
   const dialogoDaDescobertaRef = useRef<HTMLDivElement>(null)
-  const principalRef = useRef<HTMLButtonElement>(null)
-  const focarPrincipal = useRef(false)
   /** Só os gestos de escolher ou trocar movem foco. Hidratação e revisita não interferem. */
   const focarDialogoDoPalpite = useRef(false)
   const focarDialogoDaDescoberta = useRef(false)
@@ -292,8 +275,6 @@ export function SceneActivityView({
    */
   const gesto = useRef(false)
   const concluiuAntes = useRef(Boolean(guardado?.passed))
-  /** O tempo que a legenda de uma parte da demonstração inline já ficou na tela. */
-  const espera = useRef(0)
   const fila = useRef<string[]>([])
   const saving = useRef(false)
   const attemptId = useRef(crypto.randomUUID())
@@ -309,8 +290,6 @@ export function SceneActivityView({
   const enviado = useRef('')
   /** A mesma assinatura SEM o estado da montagem: uma resposta nova, ou só a montagem que mexeu. */
   const enviadoChave = useRef('')
-  /** Quantas vezes a demonstração chegou ao FIM nesta tela: cada volta pode reenviar. */
-  const vezesAteOFim = useRef(0)
   /** A escolha da pergunta que vale AGORA: a resposta de uma escolha anterior não pinta a nova. */
   const respostaAtual = useRef('')
   // ⚠️ O flush recebe a escolha da pergunta anexa por PARÂMETRO. Ele é reatribuído a cada
@@ -323,16 +302,7 @@ export function SceneActivityView({
   const base = player
     ? `/api/members/lessons/${encodeURIComponent(player.lessonId)}/blocks/${encodeURIComponent(block.id)}`
     : null
-  /**
-   * ⭐ O TERCEIRO formato: a cena rodando o roteiro dela inteiro, com um ▶ e nada mais.
-   *
-   * Entre o parágrafo de texto e a bancada manipulável faltava um degrau — os dois segundos de
-   * animação, sem áudio e sem etapas, que a criança dispara e repete quantas vezes quiser. O
-   * motor é o mesmo da demonstração guiada; muda só o que aparece em volta.
-   */
-  const inline = activity.type === 'demonstration' && activity.presentation === 'inline'
-  const demo = demoMode ? (session as DemonstrationSession) : null
-  const lab = demoMode ? null : (session as ExperimentSession)
+  const lab = session as ExperimentSession
 
   const state = session.state
   const m = activity.scene
@@ -342,24 +312,20 @@ export function SceneActivityView({
   // (full review de 16/09/2026): duas cópias já tinham divergido DUAS vezes. Hoje só a `hitbox`: a
   // `impulse` guarda as duas marcas no próprio palco, e na `gravity` a comparação é o pulo pontilhado.
   const reference = sceneShowsComparison(m)
-  const roteiro = sceneScript(activity)
-  const demoStep = demo ? roteiro[demo.step] : null
   // ⚠️ As metas que ESTA atividade cobra: o `setup.goals` do professor, quando há. Sem isto o
   // player mostraria as três descobertas do modelo numa missão que só pede uma.
   const targets = sceneTargets(activity)
   // ⚠️ Com a `pilha` (full review de experiência, A1): na `layers` do Meu Jeito os pedidos falam do
   // painel Camadas do Pinta, e o "Conferir" repete o pedido.
-  const result = demo
-    ? evaluateDemonstration(demo.viewed)
-    : evaluateExperimentation(
-        activity.scene,
-        state,
-        true,
-        activity.cast,
-        targets,
-        activity.pilha,
-        activity.setup?.goalCopy,
-      )
+  const result = evaluateExperimentation(
+    activity.scene,
+    state,
+    true,
+    activity.cast,
+    targets,
+    activity.pilha,
+    activity.setup?.goalCopy,
+  )
   const goals = sceneGoals(
     activity.scene,
     state,
@@ -403,40 +369,14 @@ export function SceneActivityView({
    */
   /** As frases de situação que a cena costuma atingir: o molde do lugar da frase (M3). */
   const situacoesDaCena = useMemo(
-    () => estadosDaCena(activity).map((e) => sceneSituation(activity.scene, e, activity.cast)),
+    () => [
+      sceneSituation(activity.scene, openScene(sceneStart(activity)), activity.cast),
+      ...sceneDisplaySamples(activity.scene, activity.cast).situations,
+    ],
     [activity],
   )
 
-  /**
-   * A legenda da demonstração DEPOIS de ver, nunca antes (lote 2).
-   *
-   * ⚠️⚠️ Ela descreve o RESULTADO da parte, e aparecia desde a abertura: na `velocity` a legenda
-   * dizia "Velocidade 5: a cada quadro ele anda" com a faixa marcando velocidade 0. Antes de tocar,
-   * a parte 1 mostra a instrução do professor (que nunca aparecia) e as outras, um convite neutro.
-   */
-  const legendaDaDemonstracao = () => {
-    if (!demo || !demoStep) return content.instructions
-    if (demo.ready) return demoStep.caption
-    if (demo.step === 0) return content.instructions
-    // Na inline as partes emendam sozinhas: fica a legenda da parte que acabou de ser vista.
-    if (inline) return roteiro[demo.step - 1]?.caption ?? content.instructions
-    // ⚠️ O convite diz o NOME do botão (review do lote 2): "aperte ▶ e olhe" chegava à voz como
-    // "aperte e olhe", sem o que apertar.
-    // ⚠️ Com a bancada em destaque a parte mostra a MONTAGEM também (consertos do review da onda A do
-    // lote 5): "olhe a cena" era o convite mesmo quando o que mudava era a peça.
-    return running
-      ? demoStep.highlight === 'tools'
-        ? `Parte ${demo.step + 1}: olhe a montagem e a cena.`
-        : `Parte ${demo.step + 1}: olhe a cena.`
-      : `Parte ${demo.step + 1}: é só apertar ${rotuloDaDemonstracao(demo, roteiro.length, false).texto}.`
-  }
-  // ⚠️ Na bancada do "Agora é sua vez" a instrução é a DELA: a legenda da última parte ficava
-  // sobre a bancada que ela estava mexendo (review do lote 2).
-  const instruction = suaVez
-    ? 'Sua vez! Mexa à vontade. Aqui é só para brincar.'
-    : demoMode
-      ? legendaDaDemonstracao()
-      : content.instructions
+  const instruction = content.instructions
   /**
    * Cada etapa recebe seu próprio balão e sua própria fila de voz. O app Kids acrescenta o
    * mascote; fora dele o mesmo diálogo continua legível e falável sem duplicar a semântica.
@@ -622,7 +562,7 @@ export function SceneActivityView({
       setConferiu('')
       setAviso('')
     }
-    // ⚠️⚠️ O que o gesto faz com o ▶ é régua do CORE, a mesma do "Agora é sua vez"
+    // O que o gesto faz com o ▶ é régua do core
     // (`sceneGestureRunsClock`): pular solta o tempo também com menos movimento (sem isso a Aula 3
     // deixava o Dino parado no chão), ligar um fio com o Dino no ar solta, desligar a gravidade acima
     // do topo para, e o toque que começa a partida da `restart` e da `score` solta.
@@ -633,16 +573,6 @@ export function SceneActivityView({
   useEffect(() => {
     if (running) gesto.current = true
   }, [running])
-  useEffect(() => {
-    if (
-      ready &&
-      demoMode &&
-      !(controller.getSnapshot() as DemonstrationSession).viewed &&
-      controller.getSnapshot().state.evidence.actions === 0
-    )
-      controller.dispatch({ type: 'start' })
-  }, [ready, demoMode, controller])
-
   // ── Os acontecimentos, na ordem em que são anunciados ─────────────────────────────────
   // ⚠️ A ordem dos efeitos É a ordem da fala: o palpite retomado, a descoberta, a conclusão.
   const reveladoAntes = useRef(revelado)
@@ -660,7 +590,7 @@ export function SceneActivityView({
     feitasAntes.current = feitas
     // ⚠️ "✓ Descoberta N de M" só DEPOIS do gesto e nunca antes: é a meta caindo agora. A que
     // fecha a cena fica com o anúncio da conclusão, que diz mais.
-    if (demoMode || feitas <= antes || !gesto.current || result.passed) return
+    if (feitas <= antes || !gesto.current || result.passed) return
     const texto = `Descoberta ${feitas} de ${goals.length}`
     // A resposta do "Conferir" era sobre a meta que ACABOU de cair: ela sai, e o aviso entra.
     setConferiu('')
@@ -694,12 +624,6 @@ export function SceneActivityView({
     tocavaAntes.current = running
     if (antes && !running) anunciar(sceneSituation(activity.scene, visto, activity.cast))
   })
-  const fimAntes = useRef(false)
-  useEffect(() => {
-    const fim = Boolean(demo?.ready && demo.step >= roteiro.length - 1)
-    if (fim && !fimAntes.current) vezesAteOFim.current += 1
-    fimAntes.current = fim
-  })
   // ⚠️ A legenda de uma parte NÃO passa pela região de anúncios: a caixa da instrução já é
   // `aria-live` e troca para a legenda quando a parte termina. Anunciar pelas duas falaria duas vezes.
   // biome-ignore lint/correctness/useExhaustiveDependencies: roda na CONCLUSÃO, e não a cada anúncio ou render
@@ -720,20 +644,15 @@ export function SceneActivityView({
      * justamente o que esta moldura aprendeu a não escrever.
      */
     if (primeira && gesto.current) {
-      if (demoMode) anunciar('Você viu tudo!')
-      else {
-        // ⚠️⚠️ O foco vai para a pergunta depois do gesto que conclui (nunca num F5). Antes ele
-        // ficava no fio que ela tinha acabado de ligar, e a pergunta nascia ~600px abaixo, sem aviso.
-        anunciar(
-          content.checkpoint ? 'Você descobriu! Agora responda a pergunta.' : 'Você descobriu!',
-        )
-        setFocar(content.checkpoint ? 'pergunta' : 'faixa')
-      }
+      anunciar(
+        content.checkpoint ? 'Você descobriu! Agora responda a pergunta.' : 'Você descobriu!',
+      )
+      setFocar(content.checkpoint ? 'pergunta' : 'faixa')
     }
     // ⚠️ Fechar a atividade grava NA HORA, sem esperar a batida de um segundo: um segundo de
     // "guardando" depois de ver "concluído" é tempo em que ela fecha a aba e perde o registro.
     void flush.current()
-  }, [demoMode, result.passed, fraseDeSucesso])
+  }, [result.passed, fraseDeSucesso])
   useEffect(() => {
     if (!focar) return
     const alvo = focar === 'pergunta' ? perguntaRef.current : faixaRef.current
@@ -762,12 +681,6 @@ export function SceneActivityView({
     observador.observe(alvo)
     return () => observador.disconnect()
   }, [Boolean(conclusao), registered])
-  useEffect(() => {
-    if (!focarPrincipal.current || !principalRef.current) return
-    focarPrincipal.current = false
-    principalRef.current.focus({ preventScroll: true })
-  })
-
   /**
    * ⚠️⚠️ O servidor RECUSOU o que este player produz (full review final de dados e deploy, MÉDIO-1).
    *
@@ -779,7 +692,7 @@ export function SceneActivityView({
   const servidorRecusou = () => {
     setConflict(true)
     setRunning(false)
-    if (!demoMode) setConclusao('')
+    setConclusao('')
     setError(ATIVIDADE_MUDOU)
   }
 
@@ -843,8 +756,6 @@ export function SceneActivityView({
             Math.min(controller.getSnapshot().state.evidence.hints, hints.length),
           )
         }
-        // ⚠️ E o avaliador é o DO TIPO: cobrar as metas da cena de quem só assistiu nunca
-        // registraria uma demonstração no ensaio.
         if (!registered && descobriu && previewContent && (!content.checkpoint || escolhida)) {
           // ⚠️⚠️ As MESMAS respostas do caminho com servidor, com a escolha da pergunta junto.
           const respostas = {
@@ -879,18 +790,12 @@ export function SceneActivityView({
         controller.acknowledge(progress.answers)
         player.onLearningProgress?.(progress)
       }
-      // ⚠️ Quem decide é o avaliador DO TIPO (`result`), não o da experimentação: em `jump-sound` e
-      // `controls` o roteiro do modelo termina SEM fechar as metas.
       // ⚠️⚠️ A assinatura leva também o ESTADO DA MONTAGEM (review do lote 2): em `layers` e
       // `jump-sound`, a resposta certa dada depois de "Recomeçar" subia com a cena desfeita e o
       // servidor a recusava. Remontar não mudava "escolha|descobertas", e nada era reenviado. ⚠️ E
       // com a montagem desfeita só uma RESPOSTA NOVA sobe: mexer de novo não repete a tentativa.
-      // ⚠️ Na demonstração, cada volta até o fim é uma assinatura nova: o servidor que recusou uma
-      // vez (janela de deploy) ganha outra chance quando ela vê tudo de novo.
       const assentada = result.passed
-      const chave = demoMode
-        ? String(vezesAteOFim.current)
-        : `${escolhida}|${state.evidence.discoveries.join(',')}`
+      const chave = `${escolhida}|${state.evidence.discoveries.join(',')}`
       const assinatura = `${chave}|${assentada ? 1 : 0}`
       if (
         !registered &&
@@ -966,30 +871,6 @@ export function SceneActivityView({
     }
   }
 
-  /**
-   * O botão principal da demonstração guiada: "Ver a parte N", "Pausar", "Ver tudo de novo".
-   *
-   * ⚠️⚠️ Menos movimento COERENTE (lote 2): antes "Observar" animava mesmo com
-   * `prefers-reduced-motion`, e "Próxima etapa" e "Rever desde o começo" não tocavam nada. Hoje
-   * nenhum botão deixa de tocar.
-   * ⚠️⚠️ E com menos movimento a parte TOCA, em passos de 0,2 s (`relogioDaCena`), em vez de saltar
-   * para o fim (review do lote 2). Aplicada de uma vez, a parte 3 da `frames` dizia "trocando
-   * devagar, dá para ver que são dois" sobre UM quadro parado, e o palpite "conferia" uma troca que
-   * nunca aconteceu na frente dela. Trocar um quadro por segundo não é o movimento que a preferência
-   * evita; o que some é a suavidade.
-   */
-  const principalDaDemonstracao = () => {
-    gesto.current = true
-    if (running) {
-      setRunning(false)
-      return
-    }
-    const atual = controller.getSnapshot() as DemonstrationSession
-    if (atual.ready && atual.step >= roteiro.length - 1) action.current({ type: 'start' })
-    else if (atual.ready) action.current({ type: 'next' })
-    espera.current = 0
-    setRunning(true)
-  }
   const botoesDaCena = [
     ...botoesDoMundo({
       scene: m,
@@ -1071,30 +952,13 @@ export function SceneActivityView({
     exato: relogio.exato,
     lento: slow,
     onTick: (elapsed) => {
-      const current = controller.getSnapshot()
-      // Numa demonstração o relógio serve ao roteiro; numa experimentação, ao mundo.
-      if (demoMode && (current as DemonstrationSession).ready) {
-        const parte = current as DemonstrationSession
-        // ⭐ Na INLINE não há "Ver a parte N": o ▶ emenda as partes. ⚠️ Cada uma SEGURA pelo tempo
-        // de leitura da legenda antes de a próxima tocar (lote 2).
-        if (!inline || parte.step >= roteiro.length - 1) {
-          setRunning(false)
-          return false
-        }
-        espera.current += elapsed
-        if (espera.current < tempoDeLeitura(roteiro[parte.step]?.caption ?? '')) return true
-        espera.current = 0
-        action.current({ type: 'next' })
-      }
       setTempoDaArte((v) => v + elapsed * 1000)
       const antesDoTique = controller.getSnapshot().state
-      action.current(
-        demoMode ? { type: 'tick', seconds: elapsed } : { type: 'advance', seconds: elapsed },
-      )
+      action.current({ type: 'advance', seconds: elapsed })
       // ⚠️⚠️ Parar o ▶ em vez de rodar à toa é régua do CORE, a mesma do "Agora é sua vez"
       // (`sceneClockShouldStop`): o salto acabou (ou nem começou), o Dino sem gravidade passou do alto do
       // palco (parado ali, a criança liga a gravidade e vê o Dino voltar), ou a `circle-collision` bateu.
-      if (!demoMode && sceneClockShouldStop(m, antesDoTique, controller.getSnapshot().state)) {
+      if (sceneClockShouldStop(m, antesDoTique, controller.getSnapshot().state)) {
         setRunning(false)
         return false
       }
@@ -1119,37 +983,27 @@ export function SceneActivityView({
     return `Ainda não. ${sceneHint(m, state, 1, activity.cast, activity.pilha)}`
   }
   const podeContinuar = Boolean(conclusao) && !revisita && temPergunta && !registered
-  const fimDaDemonstracao = Boolean(demo?.ready && demo.step >= roteiro.length - 1)
-  /** A inline parou NO MEIO do roteiro (pausada): o botão continua dali. */
-  const inlineNoMeio = Boolean(
-    demo && !fimDaDemonstracao && (demo.step > 0 || demo.action > 0 || demo.elapsed > 0),
-  )
   const rodape = !scope
     ? 'Prévia: nada é guardado.'
     : !ready
       ? 'Abrindo…'
-      : // ⚠️ Na bancada do "Agora é sua vez" nada é guardado, e "✓ Guardado" embaixo dela mentia.
-        conflict || error || suaVez
+      : conflict || error
         ? ''
         : aviso ||
           (conclusao && registered
             ? '✓ Guardado'
             : conclusao && recusado
-              ? // ⚠️ "Guardando…" para sempre mentia quando o servidor recusou (review do lote 2).
-                demoMode
-                ? 'Ainda não ficou guardado. Veja de novo até o fim.'
-                : 'Ainda não ficou guardado.'
+              ? 'Ainda não ficou guardado.'
               : conclusao && !aguardaCena && (!temPergunta || (resposta && respostaCerta === null))
                 ? 'Guardando…'
                 : '')
-  const anelDaCena = running && demoStep?.highlight === 'scene'
   /**
    * ⚠️⚠️ "Ligar som" só nas cenas que FAZEM som (a régua do core), e fora de qualquer `fieldset`:
    * num conflito de gravação ele morria junto com a cena. Sem `aria-pressed` (lote 2): o rótulo já
    * diz a próxima ação, e as duas camadas diziam coisas diferentes ("Silenciar, botão, pressionado").
    */
-  /** Na experimentação da cena do som, ele é uma chave da bancada (`SomDaBancada`). */
-  const somNaBancada = somDaCena && !demoMode
+  /** Na cena do som, ele é uma chave da bancada (`SomDaBancada`). */
+  const somNaBancada = somDaCena
   const botaoDeSom = somDaCena ? (
     <SceneButton tom="discreta" onClick={() => void enableSound()}>
       {muted ? <VolumeX size={16} aria-hidden /> : <Volume2 size={16} aria-hidden />}
@@ -1160,10 +1014,7 @@ export function SceneActivityView({
   /**
    * A fala do Zappy com a instrução.
    *
-   * ⚠️⚠️ É uma const porque ela aparece em DOIS lugares mutuamente exclusivos: dentro do console
-   * (a experimentação e a demonstração) e acima do "Agora é sua vez", que NÃO tem instrução
-   * própria de propósito (`scene-sandbox.tsx`: "quem diz 'Sua vez!' é a caixa da INSTRUÇÃO").
-   * Duplicar o JSX duplicaria o `dialogoDaDescobertaRef`, que é alvo de foco.
+   * A fala fica dentro do console da experimentação.
    */
   const blocoDaInstrucao = (
     <div ref={dialogoDaDescobertaRef} tabIndex={-1} className="outline-none">
@@ -1194,11 +1045,11 @@ export function SceneActivityView({
               `sr-only`), é a ÚNICA vez que o nome da cena aparece na tela. A primeira implantação a
               deixou só no palpite, e foi uma das diferenças que ela viu. */
         <span className={`sz-scene-placa${previsaoPendente ? ' sz-scene-placa--palpite' : ''}`}>
-          {previsaoPendente ? (demoMode ? 'Antes de assistir' : 'Seu palpite') : content.title}
+          {previsaoPendente ? 'Seu palpite' : content.title}
         </span>
       }
     >
-      {!demoMode && !previsaoPendente && (
+      {!previsaoPendente && (
         /* ⚠️ UM medidor, não uma insígnia por meta. ⚠️ Sem `title` nas bolinhas
              (lote 2): no mouse o tooltip mostrava o rótulo da meta, que é a conclusão,
              antes do gesto. ⚠️ E nada de medidor no PALPITE: a contagem de descobertas
@@ -1266,93 +1117,6 @@ export function SceneActivityView({
     </ConsolePrancha>
   )
 
-  /**
-   * Os controles da DEMONSTRAÇÃO moram na prancha do console, como a bancada da experimentação:
-   * são o que a criança toca nesse momento. Antes ficavam soltos abaixo da moldura.
-   */
-  const blocoDaDemonstracao =
-    demoMode && demo ? (
-      inline ? (
-        /* A apresentação inline tem UM botão: a animação curta que a criança repete. */
-        <div className="flex items-center justify-center gap-2">
-          {/* ⚠️⚠️ O botão NÃO desliga enquanto toca (review do lote 2): desabilitado, ele
-      tirava o foco de quem tinha acabado de apertar. Tocando, ele PAUSA; pausada no
-      meio, CONTINUA; no começo ou no fim, toca do começo. ⚠️ E fica fechado com o
-      palpite pendente: a previsão escrita pelo professor vale aqui também. ⚠️ Com
-      menos movimento ele toca em passos de 0,2 s, como a guiada. */}
-          <SceneButton
-            tom="gesto"
-            className="min-w-11"
-            disabled={bloqueado}
-            onClick={() => {
-              if (running) {
-                setRunning(false)
-                return
-              }
-              if (inlineNoMeio) gesto.current = true
-              else {
-                dispatch({ type: 'start' })
-                espera.current = 0
-              }
-              setRunning(true)
-            }}
-          >
-            {running ? <Pause size={16} aria-hidden /> : <Play size={16} aria-hidden />}
-            {running
-              ? 'Pausar'
-              : inlineNoMeio
-                ? 'Continuar'
-                : demo.viewed
-                  ? 'Ver de novo'
-                  : 'Ver acontecer'}
-          </SceneButton>
-          {demo.viewed && (
-            /* Sem cartão no fim da inline: um ✓ pequeno, com o nome para quem ouve. */
-            <span className="flex items-center text-success-foreground">
-              <Check size={18} aria-hidden />
-              <span className="sr-only">Você viu tudo.</span>
-            </span>
-          )}
-        </div>
-      ) : (
-        <>
-          <SceneDemoControls
-            principalRef={principalRef}
-            demo={demo}
-            total={roteiro.length}
-            tocando={running}
-            lento={slow}
-            bloqueado={bloqueado}
-            onPrincipal={principalDaDemonstracao}
-            onLento={() => setSlow((v) => !v)}
-            ferramentas={botaoDeSom}
-            onSuaVez={
-              fimDaDemonstracao && demo.viewed
-                ? () => {
-                    setRunning(false)
-                    setSuaVez(state)
-                  }
-                : undefined
-            }
-          />
-          {demoStep?.highlight === 'tools' && (
-            <MontagemTravada activity={activity} state={state} goals={goals} acesa={running} />
-          )}
-          {reference && demoStep?.highlight === 'compare' && (
-            <div
-              className={`rounded-2xl bg-background p-3 ${running ? 'ring-2 ring-primary' : ''}`}
-            >
-              <ExperienceComparison
-                activity={activity}
-                trials={[demo.before ?? sceneTrial(demo.state, 'Antes desta etapa')]}
-                current={state}
-              />
-            </div>
-          )}
-        </>
-      )
-    ) : null
-
   return (
     /* ⚠️ A cena NÃO desenha cartão. Quem desenha é o app, pelo gancho `sz-lesson-scene`: no kids
        todo bloco já é um cartão, e a cena fazia o segundo dentro dele. */
@@ -1363,14 +1127,10 @@ export function SceneActivityView({
               VERBO, como os demais chips da aula. */}
           <p
             className="sz-lesson-chip mb-1 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[.16em] text-primary"
-            data-chip={demoMode ? 'demonstration' : 'experimentation'}
+            data-chip="experimentation"
           >
-            {demoMode ? (
-              <MonitorPlay size={14} aria-hidden />
-            ) : (
-              <FlaskConical size={14} aria-hidden />
-            )}
-            {demoMode ? 'Observe' : 'Experimente'}
+            <FlaskConical size={14} aria-hidden />
+            Experimente
           </p>
           {/* ⚠️ O título CONTINUA existindo (é o nome acessível da `<section>`); quando o
               cabeçalho da seção já disse a mesma frase, ele vira `sr-only`. */}
@@ -1401,7 +1161,6 @@ export function SceneActivityView({
             <ConsoleFala>
               <PalpiteContexto
                 prediction={palpite}
-                demonstracao={demoMode}
                 renderDialogue={renderDialogue}
                 dialogueRef={dialogoDoPalpiteRef}
               />
@@ -1417,38 +1176,16 @@ export function SceneActivityView({
                 prediction={palpite}
                 escolha={prediction}
                 bloqueado={bloqueado}
-                demonstracao={demoMode}
                 onEscolher={(escolha) => {
                   focarDialogoDaDescoberta.current = true
                   setPrediction(escolha)
                   guardarPalpite(scope, palpite, escolha)
-                  anunciar(anuncioDaEscolha(palpite, escolha, demoMode))
+                  anunciar(anuncioDaEscolha(palpite, escolha))
                 }}
               />
             </div>
-            {!demoMode && pranchaDaCena(true)}
+            {pranchaDaCena(true)}
           </SceneConsole>
-        ) : suaVez ? (
-          <SceneSandbox
-            activity={activity}
-            inicial={suaVez}
-            reduzido={reduced}
-            onEventos={tocarSom}
-            onAnunciar={anunciar}
-            ferramentas={botaoDeSom}
-            /* ⚠️ A fala vai DENTRO do console da vez, como na experimentação: ela ficava
-                   solta acima dele, a última sobra do desenho de antes do console. */
-            fala={blocoDaInstrucao}
-            onSair={() => {
-              setSuaVez(null)
-              gesto.current = true
-              action.current({ type: 'start' })
-              espera.current = 0
-              // ⚠️ O foco vai para o principal ("Pausar"): a bancada some com o botão clicado.
-              focarPrincipal.current = true
-              setRunning(true)
-            }}
-          />
         ) : (
           <>
             {/* ⚠️ `<fieldset disabled>` desabilita TODO `<button>` descendente por HTML nativo, e
@@ -1456,10 +1193,8 @@ export function SceneActivityView({
                 desfazer, sem recomeçar e sem pista, inclusive ao reabrir a aula. */}
             <fieldset disabled={bloqueado} className="min-w-0 space-y-4">
               <fieldset className="min-w-0 space-y-4">
-                {/* ⭐⭐ O CONSOLE: HUD, fala do Zappy, mundo, frase e prancha numa moldura Só
-                    (18/09/2026, a "Proposta B" que ela aprovou na maquete). O anel de destaque da
-                    demonstração vai na moldura inteira, como ia na antiga. */}
-                <SceneConsole destacado={anelDaCena}>
+                {/* O console reúne HUD, fala do Zappy, mundo, frase e prancha. */}
+                <SceneConsole>
                   {hudDaCena}
                   <ConsoleFala>{blocoDaInstrucao}</ConsoleFala>
                   {/* ⭐⭐ A PISTA mora colada na fala do Zappy, e não no pé do bloco.
@@ -1503,17 +1238,10 @@ export function SceneActivityView({
                       </p>
                     </div>
                   )}
-                  {/* ⚠️ O anel de destaque só enquanto a parte TOCA (lote 2): 96 dos 107 passos com
-                      destaque usam `scene`, e o anel sempre aceso virava moldura e parava de
-                      apontar. */}
                   <ConsoleMundo>
-                    {/* ⚠️⚠️ UM caminho para as 45: quem sabe qual é o palco de cada cena é o palco.
-                        O `fieldset` é a trava do BLOCO: na demonstração a criança assiste. */}
-                    <fieldset disabled={demoMode}>
-                      <RelogioDaArteProvider value={tempoDaArte}>
-                        <ExplorationStage activity={activity} state={visto} dispatch={dispatch} />
-                      </RelogioDaArteProvider>
-                    </fieldset>
+                    <RelogioDaArteProvider value={tempoDaArte}>
+                      <ExplorationStage activity={activity} state={visto} dispatch={dispatch} />
+                    </RelogioDaArteProvider>
                     {/* ⚠️⚠️ Os avisos SOBREPOSTOS ao pé do palco (full review de experiência, M2), sem
                         lugar reservado no fluxo: ver `AvisosDaCena`. */}
                     {(avisoDescoberta || palpiteNaHora) && (
@@ -1537,7 +1265,6 @@ export function SceneActivityView({
                       <ScenePrediction
                         prediction={palpite}
                         escolha={prediction}
-                        demonstracao={demoMode}
                         trocavel={trocavel}
                         revelado={revelado}
                         onTrocar={() => {
@@ -1560,7 +1287,7 @@ export function SceneActivityView({
                   )}
                   {/* ⚠️ A caixa só existe COM conclusão: vazia, as margens dela colapsavam em
                     12px de vão morto entre a frase e a prancha, em toda cena e o tempo todo. */}
-                  {!demoMode && !revisita && conclusao && (
+                  {!revisita && conclusao && (
                     <div className="sz-scene-console-conversa">
                       <SceneConclusion
                         pergunta={content.checkpoint}
@@ -1619,13 +1346,11 @@ export function SceneActivityView({
                     ali embaixo se fala sobre ela. Antes ela nascia DEPOIS do rodapé, fora da
                     moldura: a mesma distância que fez a pista passar despercebida.
                     ⚠️ A cena NÃO acaba: o mundo segue vivo e a prancha segue aberta. */}
-                  {demoMode
-                    ? blocoDaDemonstracao && <ConsolePrancha>{blocoDaDemonstracao}</ConsolePrancha>
-                    : pranchaDaCena(false)}
+                  {pranchaDaCena(false)}
                 </SceneConsole>
                 {/* A comparação abre logo abaixo do botão que a pediu, não no pé do cartão.
                     ⚠️ FORA do console: é uma gaveta da AULA, e dentro dele viraria uma quinta faixa. */}
-                {!demoMode && reference && (lab?.trials ?? []).length > 0 && (
+                {reference && lab.trials.length > 0 && (
                   <details
                     open={compared}
                     onToggle={(e) => setCompared(e.currentTarget.open)}
@@ -1637,7 +1362,7 @@ export function SceneActivityView({
                     <div className="mt-4">
                       <ExperienceComparison
                         activity={activity}
-                        trials={lab?.trials ?? []}
+                        trials={lab.trials}
                         current={state}
                       />
                     </div>
@@ -1645,7 +1370,7 @@ export function SceneActivityView({
                 )}
               </fieldset>
             </fieldset>
-            {!demoMode && (
+            {
               /* ⭐ A linha de ações: ferramentas à esquerda, o caminho para a frente à direita.
                    ⚠️ Os NOMES acessíveis das ferramentas são o contrato dos testes e de quem navega
                    por leitor de tela; abaixo de 480px elas ficam só com o ícone. */
@@ -1665,7 +1390,7 @@ export function SceneActivityView({
                       setRunning(false)
                       dispatch({ type: 'undo' })
                     }}
-                    disabled={bloqueado || !(lab?.past ?? []).length}
+                    disabled={bloqueado || !lab.past.length}
                   >
                     <Undo2 size={16} aria-hidden />
                     <span className="max-[30rem]:sr-only">Desfazer</span>
@@ -1756,17 +1481,15 @@ export function SceneActivityView({
                     </SceneButton>
                   ))}
               </div>
-            )}
+            }
             {/* ⚠️ A região existe SEMPRE: `aria-live` montada junto do texto não é anunciada. */}
             <p
               className={
-                conferiu && !conclusao && !demoMode
-                  ? 'rounded-2xl bg-primary/5 px-4 py-3 text-sm'
-                  : 'sr-only'
+                conferiu && !conclusao ? 'rounded-2xl bg-primary/5 px-4 py-3 text-sm' : 'sr-only'
               }
               aria-live="polite"
             >
-              {conferiu && !conclusao && !demoMode ? conferiu : ''}
+              {conferiu && !conclusao ? conferiu : ''}
             </p>
           </>
         )}
@@ -1782,7 +1505,7 @@ export function SceneActivityView({
               Tentar salvar
             </button>
           )}
-          {!error && !conflict && !suaVez && conclusao && recusado && !registered && (
+          {!error && !conflict && conclusao && recusado && !registered && (
             <button
               type="button"
               onClick={() => {

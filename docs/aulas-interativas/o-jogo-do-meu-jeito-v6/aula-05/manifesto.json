@@ -97,31 +97,26 @@
     {
       "key": "conferir-chama-externa",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se os botões de ordem sumiram, use Selecionar e clique na chama. Se só um pedaço da pedra apareceu, continue um passo por vez."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Quantas vezes usar Uma camada para trás?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Até a pedra aparecer inteira na frente da chama."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Sempre exatamente duas vezes."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "O número depende de quantas formas estão na pilha. O resultado visual é o critério de parada."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Quantas vezes usar Uma camada para trás?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Até a pedra aparecer inteira na frente da chama."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Sempre exatamente duas vezes."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "O número depende de quantas formas estão na pilha. O resultado visual é o critério de parada.\n\nSe os botões de ordem sumiram, use Selecionar e clique na chama. Se só um pedaço da pedra apareceu, continue um passo por vez."
+          }
+        ]
       }
     },
     {
@@ -138,31 +133,26 @@
     {
       "key": "conferir-chama-interna",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se a chama interna sumiu, ela pode ter ido para trás da externa. Desfaça o último passo e confira a pilha."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Ao duplicar, a nova chama cobriu a pedra. Por quê?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "O Pinta apagou a pedra ao copiar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "A cópia nasceu na frente das outras formas."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "A cópia é outra forma no topo da pilha. Ajustar sua ordem recupera a composição."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Ao duplicar, a nova chama cobriu a pedra. Por quê?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "O Pinta apagou a pedra ao copiar."
+              },
+              {
+                "id": "opcao-2",
+                "label": "A cópia nasceu na frente das outras formas."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "A cópia é outra forma no topo da pilha. Ajustar sua ordem recupera a composição.\n\nSe a chama interna sumiu, ela pode ter ido para trás da externa. Desfaça o último passo e confira a pilha."
+          }
+        ]
       }
     },
     {
@@ -183,31 +173,26 @@
     {
       "key": "conferir-animar-pedra",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se ficou agitado demais, desfaça uma mudança e compare. O primeiro quadro continua guardando a base."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "Você moveu uma cratera no segundo quadro. O primeiro também precisa mudar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Sim; editar um quadro sempre modifica todos."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Não; cada quadro guarda suas próprias formas."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "A duplicação cria uma cópia para editar separadamente."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você moveu uma cratera no segundo quadro. O primeiro também precisa mudar?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Sim; editar um quadro sempre modifica todos."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Não; cada quadro guarda suas próprias formas."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "A duplicação cria uma cópia para editar separadamente.\n\nSe ficou agitado demais, desfaça uma mudança e compare. O primeiro quadro continua guardando a base."
+          }
+        ]
       }
     },
     {
@@ -224,31 +209,26 @@
     {
       "key": "conferir-nome-girando",
       "content": {
-        "kind": "interactive",
-        "title": "Confira esta ideia",
-        "instructions": "Depois de fazer e conferir seu trabalho na ferramenta, responda esta pergunta sobre o que acabou de usar.",
-        "hints": [
-          "Se o cartão parece parado, abra o desenho e olhe a Prévia. O cartão não toca a animação."
-        ],
-        "required": false,
-        "activity": {
-          "type": "question"
-        },
-        "checkpoint": {
-          "prompt": "A miniatura do asteroide na galeria está parada. Onde conferir se a animação funciona?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Na Prévia, abrindo o desenho."
-            },
-            {
-              "id": "opcao-2",
-              "label": "No campo do nome do projeto do Estúdio."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "A miniatura mostra um quadro; a Prévia mostra a sequência."
-        }
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "A miniatura do asteroide na galeria está parada. Onde conferir se a animação funciona?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Na Prévia, abrindo o desenho."
+              },
+              {
+                "id": "opcao-2",
+                "label": "No campo do nome do projeto do Estúdio."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "A miniatura mostra um quadro; a Prévia mostra a sequência.\n\nSe o cartão parece parado, abra o desenho e olhe a Prévia. O cartão não toca a animação."
+          }
+        ]
       }
     },
     {
@@ -371,7 +351,7 @@
     {
       "key": "mudanca-demo",
       "title": "Observe: uma mudança pequena já anima",
-      "intent": "demonstration",
+      "intent": "presentation",
       "objective": "Separar mudança dos detalhes e deslocamento do desenho inteiro.",
       "blockKeys": ["video-mudanca-demo"],
       "workspaceKey": null,

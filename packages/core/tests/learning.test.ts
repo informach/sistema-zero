@@ -3,7 +3,6 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   blockCheckpoint,
-  blockPrediction,
   evaluateLearning,
   type InteractiveBlock,
   isInteractiveBlock,
@@ -12,23 +11,17 @@ import {
   isLearningManifest,
   LEARNING_PROTOCOL,
   type LearningAnswers,
-  migrateLegacyActivity,
-  migrateLegacyInteractiveBlock,
   publicInteractiveBlock,
   sectionCompletionIssues,
   validateLessonSections,
 } from '../src/learning'
 import {
   evaluateExperimentation,
-  initialDemonstration,
   initialExperiment,
   initialScene,
   isSceneActivity,
-  packDemonstration,
   packExperiment,
-  sceneModel,
   sceneStart,
-  stepDemonstration,
   stepExperiment,
 } from '../src/learning/scene'
 import { scenePaths } from './fixtures/exploration-paths'
@@ -58,18 +51,6 @@ function sessaoCompleta() {
   s = stepExperiment(start, s, { type: 'create' }).session
   s = stepExperiment(start, s, { type: 'connect', port: 'draw', enabled: true }).session
   return packExperiment('world', s)
-}
-/** O que o servidor guardaria de quem assistiu ao roteiro de `world` até o fim. */
-function demonstracaoVista() {
-  const start = { scene: 'world' } as const
-  const script = sceneModel('world').script
-  let s = stepDemonstration(start, script, initialDemonstration(start), { type: 'start' }).session
-  for (let i = 0; i < 600 && !s.viewed; i++) {
-    s = stepDemonstration(start, script, s, { type: 'tick', seconds: 0.1 }).session
-    if (s.ready && s.step < script.length - 1)
-      s = stepDemonstration(start, script, s, { type: 'next' }).session
-  }
-  return packDemonstration('world', s)
 }
 describe('learning contracts', () => {
   test('⚠️ a cena aceita pergunta anexa, e as duas respostas viajam em chaves DIFERENTES', () => {
@@ -151,16 +132,6 @@ describe('learning contracts', () => {
     expect(evaluateLearning(experimento, { sceneCheckpoint: ['{lixo'] }).passed).toBe(false)
   })
 
-  test('⚠️ a DEMONSTRAÇÃO não herda pergunta: ela assistiu, não conduziu', () => {
-    // Cobrar a regra de quem seguiu um roteiro é cobrar um gesto que a tela não ofereceu.
-    const demo: InteractiveBlock = {
-      ...experimento,
-      activity: { type: 'demonstration', scene: 'world' },
-    }
-    expect(blockCheckpoint(demo)).toBeUndefined()
-    // Mas a PREVISÃO vale para as duas: apostar antes de ver é o primeiro tempo do ciclo.
-    expect(blockPrediction(demo)?.prompt.length).toBeGreaterThan(0)
-  })
   test('an essential HTML claim requires its independent native checkpoint', () => {
     const block: InteractiveBlock = {
       ...experimento,
@@ -201,15 +172,6 @@ describe('learning contracts', () => {
     const publico = publicInteractiveBlock(comGabarito)
     expect(publico.activity).not.toHaveProperty('solution')
     expect(publico.activity).toMatchObject({ type: 'experimentation', scene: 'world' })
-  })
-
-  test('quem nunca abriu a demonstração não consta como participante', () => {
-    const demo = {
-      ...experimento,
-      activity: { type: 'demonstration', scene: 'world' },
-    } as InteractiveBlock
-    expect(evaluateLearning(demo, {}).participated).toBe(false)
-    expect(evaluateLearning(demo, {}).passed).toBe(false)
   })
 
   test('untrusted frames cannot use another instance, oversized or invalid state', () => {
@@ -258,105 +220,6 @@ describe('learning contracts', () => {
 })
 
 const directory = resolve(import.meta.dir, '../../../docs/aulas-interativas')
-const catalog: Array<{ course: string; path: string; clips: number }> = JSON.parse(
-  readFileSync(resolve(directory, 'catalogo.json'), 'utf8'),
-)
-describe('the 27 adapted lessons', () => {
-  test('covers the complete curriculum once', () => {
-    expect(catalog).toHaveLength(27)
-    expect(new Set(catalog.map((lesson) => lesson.path)).size).toBe(27)
-    expect(catalog.filter((lesson) => lesson.course === 'corre-dino')).toHaveLength(13)
-    expect(catalog.filter((lesson) => lesson.course === 'o-jogo-do-meu-jeito')).toHaveLength(8)
-  })
-  for (const entry of catalog)
-    test(entry.path, () => {
-      const manifest: unknown = JSON.parse(
-        readFileSync(resolve(directory, entry.path, 'manifesto.json'), 'utf8'),
-      )
-      expect(isLearningManifest(manifest)).toBe(true)
-      if (!isLearningManifest(manifest)) throw new Error('Invalid authored manifest')
-      expect(manifest.version).toBe(entry.course === 'corre-dino' ? 4 : 3)
-      expect(
-        sectionCompletionIssues(
-          manifest.sections.map((s) => ({
-            ...s,
-            id: s.key,
-            blockIds: s.blockKeys,
-            workspaceBlockId: s.workspaceKey,
-          })),
-          manifest.blocks.map((b) => ({
-            id: b.key,
-            content:
-              'content' in b
-                ? b.content
-                : 'existing' in b
-                  ? { kind: b.existing.kind }
-                  : { kind: 'video' },
-          })),
-        ),
-      ).toEqual([])
-      expect(manifest.sections.flatMap((section) => section.pendingMedia)).toHaveLength(0)
-      const videos = manifest.blocks.filter((block) => 'plannedVideo' in block)
-      expect(videos).toHaveLength(entry.clips)
-      for (const video of videos)
-        expect(
-          manifest.sections.filter((section) => section.blockKeys.includes(video.key)),
-        ).toHaveLength(1)
-      expect(readFileSync(resolve(directory, entry.path, 'roteiro.md'), 'utf8')).toContain(
-        'Narração revisada',
-      )
-      if (entry.course === 'o-jogo-do-meu-jeito') {
-        expect(manifest.sections.every((section) => section.workspaceKey === null)).toBe(true)
-        expect(manifest.sections.some((section) => section.externalTool !== null)).toBe(true)
-        expect(
-          manifest.blocks.some(
-            (block) => 'existing' in block && ['studio', 'pinta'].includes(block.existing.kind),
-          ),
-        ).toBe(false)
-      }
-      for (const entryBlock of manifest.blocks) {
-        if (!('content' in entryBlock) || entryBlock.content.kind !== 'interactive') continue
-        const block = entryBlock.content
-        expect(evaluateLearning(block, {}).passed).toBe(false)
-        const answers: LearningAnswers = {}
-        const activity = block.activity
-        // ⚠️ O caminho de sucesso é expresso como AÇÕES da criança, nunca como um "passou"
-        // que o cliente manda pronto. É o que separa evidência de autodeclaração.
-        if (activity.type === 'experimentation') {
-          const start = { scene: activity.scene, initialImpulse: activity.initialImpulse }
-          let sessao = initialExperiment(start)
-          for (const action of scenePaths[activity.scene])
-            sessao = stepExperiment(start, sessao, action).session
-          answers.sceneCheckpoint = packExperiment(activity.scene, sessao)
-        }
-        if (activity.type === 'demonstration') {
-          const start = { scene: activity.scene }
-          const script = activity.script ?? sceneModel(activity.scene).script
-          let sessao = stepDemonstration(start, script, initialDemonstration(start), {
-            type: 'start',
-          }).session
-          for (let i = 0; i < 600 && !sessao.viewed; i++) {
-            sessao = stepDemonstration(start, script, sessao, {
-              type: 'tick',
-              seconds: 0.1,
-            }).session
-            if (sessao.ready && sessao.step < script.length - 1)
-              sessao = stepDemonstration(start, script, sessao, { type: 'next' }).session
-          }
-          answers.sceneCheckpoint = packDemonstration(activity.scene, sessao)
-        }
-        if (activity.type === 'html') answers.participated = true
-        // ⚠️ Pelo RESOLVEDOR, não pelo campo cru: desde 15/09/2026 a experimentação que não
-        // escreve pergunta herda a do MODELO da cena, e é ela que o servidor cobra. Lendo o
-        // campo, a varredura pararia de conferir o caminho completo justamente nos 44 blocos
-        // que não escrevem a própria — que são a maioria.
-        const pergunta = blockCheckpoint(block)
-        if (pergunta) answers.checkpoint = pergunta.correctChoiceId
-        expect(evaluateLearning(block, answers).passed).toBe(true)
-      }
-    })
-})
-
 /**
  * Os pacotes ATUAIS — os que a professora importa hoje.
  *
@@ -440,46 +303,6 @@ describe('os pacotes atuais das aulas', () => {
   }
 })
 
-/**
- * As 14 demonstrações.
- *
- * ⚠️ Elas não moram em manifesto nem em catálogo — vivem soltas num arquivo à parte, para a
- * professora escolher quais quer na aula. O resultado é que eram os únicos blocos do
- * repositório sem teste algum, e o ramo de demonstração do caminho de sucesso era código morto.
- * Foi ali que se escondeu um estado que o próprio motor produzia e o próprio validador recusava.
- */
-describe('as demonstrações da cena', () => {
-  const arquivo: unknown = JSON.parse(
-    readFileSync(resolve(directory, 'corre-dino-v6/demonstracoes-opcionais.json'), 'utf8'),
-  )
-  const blocos: InteractiveBlock[] = []
-  const varrer = (v: unknown) => {
-    if (!v || typeof v !== 'object') return
-    if (isInteractiveBlock(v) && v.activity.type === 'demonstration') blocos.push(v)
-    for (const filho of Object.values(v)) varrer(filho)
-  }
-  varrer(arquivo)
-
-  test('são catorze, e todas são blocos válidos', () => {
-    expect(blocos).toHaveLength(14)
-    expect(
-      new Set(blocos.map((b) => b.activity.type === 'demonstration' && b.activity.scene)).size,
-    ).toBe(14)
-  })
-
-  for (const bloco of blocos) {
-    const cena = bloco.activity.type === 'demonstration' ? bloco.activity.scene : 'world'
-    test(`${cena}: quem assiste até o fim CONCLUI`, () => {
-      expect(evaluateLearning(bloco, {}).passed).toBe(false)
-      const resultado = evaluateLearning(bloco, caminhoDeSucesso(bloco))
-      // ⚠️ A mensagem importa tanto quanto o booleano: "esta demonstração mudou, abra de novo"
-      // é o que a criança lia depois de assistir tudo, e recomeçar reproduzia o mesmo estado.
-      expect(resultado.feedback, cena).not.toContain('mudou')
-      expect(resultado.passed, cena).toBe(true)
-    })
-  }
-})
-
 /** As respostas que a criança teria depois de cumprir o bloco, cada tipo do seu jeito. */
 function caminhoDeSucesso(block: InteractiveBlock): LearningAnswers {
   const answers: LearningAnswers = {}
@@ -494,19 +317,6 @@ function caminhoDeSucesso(block: InteractiveBlock): LearningAnswers {
       sessao = stepExperiment(start, sessao, action).session
     answers.sceneCheckpoint = packExperiment(activity.scene, sessao)
   }
-  if (activity.type === 'demonstration') {
-    const start = sceneStart(activity)
-    const script = activity.script ?? sceneModel(activity.scene).script
-    let sessao = stepDemonstration(start, script, initialDemonstration(start), {
-      type: 'start',
-    }).session
-    for (let i = 0; i < 600 && !sessao.viewed; i++) {
-      sessao = stepDemonstration(start, script, sessao, { type: 'tick', seconds: 0.1 }).session
-      if (sessao.ready && sessao.step < script.length - 1)
-        sessao = stepDemonstration(start, script, sessao, { type: 'next' }).session
-    }
-    answers.sceneCheckpoint = packDemonstration(activity.scene, sessao)
-  }
   if (activity.type === 'html') answers.participated = true
   // ⚠️ Pelo RESOLVEDOR: a experimentação que não escreve pergunta herda a do MODELO da cena, e
   // é ela que o servidor cobra. O caminho de sucesso é o da criança, e ela responde a pergunta
@@ -515,196 +325,6 @@ function caminhoDeSucesso(block: InteractiveBlock): LearningAnswers {
   if (pergunta) answers.checkpoint = pergunta.correctChoiceId
   return answers
 }
-
-/**
- * ⚠️⚠️ Os blocos que JÁ ESTAVAM gravados quando a reescrita tirou os seis tipos antigos.
- *
- * O plano dizia "nada foi usado por ninguém" e isso não valia para o ambiente dela: a aula 1 do
- * Corre Dino tinha blocos do modelo anterior. Sem migração eles param de poder ser SALVOS, e aí
- * a aula trava inteira — o editor desabilita o botão com o bloco inválido, e importar um roteiro
- * novo por cima também não funciona, porque a importação salva o bloco aberto antes de começar.
- */
-describe('os blocos do modelo anterior', () => {
-  const base = {
-    kind: 'interactive' as const,
-    title: 'Faça o Dino aparecer',
-    instructions: 'Crie o Dino e ligue o desenho.',
-    hints: ['Olhe os bastidores.'],
-    required: true,
-  }
-
-  test('⚠️ o contrato de HOJE recusa todos eles — é por isso que a migração existe', () => {
-    for (const activity of [
-      { type: 'exploration', version: 3, mission: 'world', mode: 'explore' },
-      { type: 'exploration', version: 2, mission: 'layers' },
-      { type: 'prediction', options: ['a'] },
-      { type: 'sequence', steps: ['a', 'b'] },
-      { type: 'simulation', scenario: 'x' },
-      { type: 'comparison', left: 'a', right: 'b' },
-      { type: 'experiment', variable: 'x' },
-    ])
-      expect(isInteractiveBlock({ ...base, activity }), activity.type).toBe(false)
-  })
-
-  test('⚠️⚠️ a PREVISÃO nunca muda o veredito, em nenhum dos quatro tipos', () => {
-    // É a razão de ela ser campo PRÓPRIO e não a pergunta de verificação: o palpite de antes não
-    // vale nota. Se um dia o avaliador olhar para `answers.prediction`, errar o palpite passa a
-    // reprovar a atividade — e a cena estaria ensinando a criança a não arriscar.
-    const previsao = {
-      context: {
-        label: 'O teste',
-        explanation: 'Nesta experiência, vamos observar o teste antes de escolher um palpite.',
-      },
-      prompt: 'O que você acha que vai acontecer?',
-      choices: [
-        { id: 'certa', label: 'Uma coisa' },
-        { id: 'errada', label: 'Outra coisa' },
-      ],
-      correctChoiceId: 'certa',
-    }
-    const casos: Array<{ bloco: InteractiveBlock; respostas: LearningAnswers }> = [
-      {
-        bloco: { ...experimento, prediction: previsao },
-        // ⚠️ A experimentação herda a pergunta do MODELO da cena, e ela dá a palavra final:
-        // o caminho de sucesso inclui respondê-la. O que este teste cobra é outra coisa — que
-        // o PALPITE não mexe no veredito, certo ou errado.
-        respostas: {
-          sceneCheckpoint: sessaoCompleta(),
-          checkpoint: blockCheckpoint(experimento)?.correctChoiceId ?? '',
-        },
-      },
-      {
-        bloco: {
-          ...experimento,
-          activity: { type: 'demonstration', scene: 'world' },
-          prediction: previsao,
-        },
-        respostas: { sceneCheckpoint: demonstracaoVista() },
-      },
-      {
-        bloco: {
-          ...experimento,
-          activity: { type: 'question' },
-          prediction: previsao,
-          checkpoint: {
-            prompt: 'E agora?',
-            choices: [
-              { id: 'a', label: 'Uma' },
-              { id: 'b', label: 'Outra' },
-            ],
-            correctChoiceId: 'a',
-            explanation: 'Porque sim.',
-          },
-        },
-        respostas: { checkpoint: 'a' },
-      },
-      {
-        bloco: {
-          ...experimento,
-          // ⚠️ `required: false` aqui não é detalhe: experiência em HTML essencial EXIGE pergunta
-          // de verificação (a participação é autodeclarada pelo iframe), e o guard recusa sem ela.
-          required: false,
-          activity: { type: 'html', html: '<p>oi</p>' },
-          prediction: previsao,
-        },
-        respostas: { participated: true },
-      },
-    ]
-    for (const { bloco, respostas } of casos) {
-      expect(isInteractiveBlock(bloco), bloco.activity.type).toBe(true)
-      const semPalpite = evaluateLearning(bloco, respostas)
-      expect(semPalpite.passed, bloco.activity.type).toBe(true)
-      for (const palpite of ['certa', 'errada', 'inventado']) {
-        const r = evaluateLearning(bloco, { ...respostas, prediction: palpite })
-        expect(r, `${bloco.activity.type} com palpite ${palpite}`).toEqual(semPalpite)
-      }
-    }
-  })
-
-  test('exploração vira a cena de mesmo nome, e o modo escolhe entre as duas irmãs', () => {
-    expect(migrateLegacyActivity({ type: 'exploration', version: 3, mission: 'spawn' })).toEqual({
-      type: 'experimentation',
-      scene: 'spawn',
-    })
-    expect(
-      migrateLegacyActivity({ type: 'exploration', version: 3, mission: 'spawn', mode: 'demo' }),
-    ).toEqual({ type: 'demonstration', scene: 'spawn' })
-  })
-
-  test('⚠️ missão que não é cena não inventa uma: vira pergunta, que a professora resolve', () => {
-    expect(migrateLegacyActivity({ type: 'exploration', mission: 'inexistente' })).toEqual({
-      type: 'question',
-    })
-  })
-
-  test('os cinco sem equivalente viram pergunta, preservando enunciado e gabarito', () => {
-    const checkpoint = {
-      prompt: 'O que vem primeiro?',
-      choices: [
-        { id: 'a', label: 'Preparar' },
-        { id: 'b', label: 'Desenhar' },
-      ],
-      correctChoiceId: 'a',
-      explanation: 'Preparar vem antes.',
-    }
-    const migrado = migrateLegacyInteractiveBlock({
-      ...base,
-      activity: { type: 'sequence', steps: ['a', 'b'] },
-      checkpoint,
-    })
-    expect(migrado?.activity).toEqual({ type: 'question' })
-    expect(migrado?.checkpoint).toEqual(checkpoint)
-    expect(migrado?.title).toBe(base.title)
-  })
-
-  test('⚠️ todo bloco migrado sai no modelo de AGORA — nenhum fica no antigo', () => {
-    const atuais = ['demonstration', 'experimentation', 'question', 'html']
-    for (const activity of [
-      { type: 'exploration', version: 3, mission: 'world', mode: 'explore' },
-      { type: 'exploration', version: 3, mission: 'gravity', mode: 'demo' },
-      { type: 'prediction', options: ['a'] },
-      { type: 'sequence', steps: ['a', 'b'] },
-      { type: 'simulation', scenario: 'x' },
-      { type: 'comparison', left: 'a', right: 'b' },
-      { type: 'experiment', variable: 'x' },
-    ]) {
-      const migrado = migrateLegacyInteractiveBlock({ ...base, activity })
-      expect(migrado, activity.type).not.toBeNull()
-      expect(atuais.includes(migrado?.activity.type ?? ''), activity.type).toBe(true)
-    }
-  })
-
-  test('a exploração migrada já é PUBLICÁVEL — é a conversão fiel, não sobra nada a preencher', () => {
-    for (const mission of ['world', 'gravity', 'spawn']) {
-      const migrado = migrateLegacyInteractiveBlock({
-        ...base,
-        activity: { type: 'exploration', version: 3, mission },
-      })
-      expect(isInteractiveBlock(migrado), mission).toBe(true)
-    }
-  })
-
-  test('⚠️ os cinco sem gabarito saem INCOMPLETOS de propósito: rascunho aceita, publicar não', () => {
-    // O guarda estrito é da publicação. Migrar para "válido" exigiria INVENTAR a pergunta que a
-    // professora não escreveu — e é ela quem decide se completa ou apaga o bloco.
-    const migrado = migrateLegacyInteractiveBlock({
-      ...base,
-      activity: { type: 'prediction', options: ['a'] },
-    })
-    expect(migrado?.activity).toEqual({ type: 'question' })
-    expect(isInteractiveBlock(migrado)).toBe(false)
-  })
-
-  test('bloco que já é do modelo de agora não é tocado', () => {
-    for (const activity of [
-      { type: 'experimentation', scene: 'world' },
-      { type: 'demonstration', scene: 'layers' },
-      { type: 'question' },
-      { type: 'html', html: '<p>oi</p>' },
-    ])
-      expect(migrateLegacyActivity(activity), activity.type).toBeNull()
-  })
-})
 
 /**
  * O CENÁRIO declarado nos manifestos (18/09/2026).
@@ -751,7 +371,7 @@ describe('o cenário das cenas dos cursos', () => {
 
   test('a varredura ENCONTRA as cenas (anti-vácuo)', () => {
     // Sem isto, um filtro que parasse de casar deixaria os dois testes abaixo verdes e vazios.
-    expect(cenasDosCursos().length).toBeGreaterThan(30)
+    expect(cenasDosCursos().length).toBeGreaterThan(20)
   })
 
   test('⭐⭐ toda cena DECLARA o cenário: nenhuma depende de adivinhação', () => {

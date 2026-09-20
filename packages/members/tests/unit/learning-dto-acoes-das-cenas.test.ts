@@ -8,9 +8,9 @@ import {
   SCENE_PORTS,
   type SceneAction,
   type SceneId,
-  sceneScript,
 } from '@sistemazero/core/learning/scene'
 import { Elysia, getSchemaValidator, t } from 'elysia'
+import { scenePaths } from '../../../core/tests/fixtures/exploration-paths'
 import { InteractiveBlockSchema } from '../../src/interfaces/http/learning.dtos'
 
 /**
@@ -20,7 +20,7 @@ import { InteractiveBlockSchema } from '../../src/interfaces/http/learning.dtos'
  * O `learning-dto-conformance.test.ts` confere ~16 blocos escritos à mão, e ação nova do core precisa
  * entrar no TypeBox (`learning.dtos.ts`) no mesmo commit. A lista à mão não cobra isso: uma ação nova
  * que ninguém lembrou de pôr num bloco de exemplo passava. Aqui a lista é GERADA: o roteiro de fábrica
- * das 45 cenas, cada porta ligada e desligada, e as ações dos casos e roteiros dos manifestos v6. Cada
+ * das jornadas de exploração, cada porta ligada e desligada, e as ações dos casos dos manifestos v6. Cada
  * uma precisa passar no validador da borda e VOLTAR IGUAL de uma rota com o corpo tipado (o `normalize`
  * do Elysia apaga campo não declarado em silêncio).
  */
@@ -30,7 +30,7 @@ const app = new Elysia().post('/', ({ body }) => body, {
   body: t.Object({ content: InteractiveBlockSchema }),
 })
 
-/** Um bloco de demonstração que carrega as ações como roteiro autoral de uma etapa só. */
+/** Um bloco de experimentação que carrega as ações na configuração inicial da cena. */
 function blocoCom(scene: SceneId, actions: SceneAction[]): InteractiveBlock {
   return {
     kind: 'interactive',
@@ -39,21 +39,20 @@ function blocoCom(scene: SceneId, actions: SceneAction[]): InteractiveBlock {
     hints: [],
     required: false,
     activity: {
-      type: 'demonstration',
+      type: 'experimentation',
       scene,
-      script: [{ id: 'etapa', caption: 'A cena mexe.', actions }],
+      setup: { actions },
     },
   }
 }
 
-/** As ações conhecidas de cada cena: o roteiro de fábrica, as portas e os manifestos v6. */
+/** As ações conhecidas de cada cena: as jornadas, as portas e os manifestos v6. */
 function acoesConhecidas(): Map<SceneId, SceneAction[]> {
   const porCena = new Map<SceneId, SceneAction[]>(SCENE_IDS.map((scene) => [scene, []]))
   const somar = (scene: SceneId, acao: unknown) => {
     if (isSceneAction(acao, scene)) porCena.get(scene)?.push(acao)
   }
-  // As cenas de experimentação novas ainda não têm roteiro de fábrica nem porta.
-  // Seus controles são ações reais e precisam atravessar a mesma borda tipada.
+  // Os controles são ações reais e precisam atravessar a mesma borda tipada.
   const acoesDosControles: SceneAction[] = [
     { type: 'value-source', source: 'read' },
     { type: 'place-in-area', card: 'paint', area: 'start' },
@@ -69,8 +68,7 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
   ]
   for (const scene of SCENE_IDS) {
     for (const acao of acoesDosControles) somar(scene, acao)
-    for (const passo of sceneScript({ type: 'demonstration', scene }))
-      for (const acao of passo.actions) somar(scene, acao)
+    for (const acao of scenePaths[scene]) somar(scene, acao)
     for (const port of SCENE_PORTS)
       for (const enabled of [true, false]) somar(scene, { type: 'connect', port, enabled })
   }
@@ -99,9 +97,6 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
           const scene = atividade.scene as SceneId
           const setup = atividade.setup as { actions?: unknown[] } | undefined
           for (const acao of setup?.actions ?? []) somar(scene, acao)
-          const roteiro = atividade.script as { actions?: unknown[] }[] | undefined
-          for (const passo of roteiro ?? [])
-            for (const acao of passo.actions ?? []) somar(scene, acao)
         }
         for (const filho of Object.values(registro)) visitar(filho)
       }
@@ -123,12 +118,10 @@ describe('toda ação de cena conhecida atravessa a borda do members', () => {
   for (const scene of SCENE_IDS)
     test(`${scene}: o validador aceita e a rota tipada devolve cada ação igual`, async () => {
       const acoes = porCena.get(scene) ?? []
-      // Uma etapa tem no máximo 16 ações: em lotes, cada bloco válido também no domínio.
-      for (let i = 0; i < acoes.length; i += 16) {
-        const bloco = blocoCom(scene, acoes.slice(i, i + 16))
-        expect(validador.Check(bloco), `${scene}: ${JSON.stringify(acoes.slice(i, i + 16))}`).toBe(
-          true,
-        )
+      // O caso inicial aceita até oito ações. Uma por bloco isola o contrato de cada comando.
+      for (const acao of acoes) {
+        const bloco = blocoCom(scene, [acao])
+        expect(validador.Check(bloco), `${scene}: ${JSON.stringify(acao)}`).toBe(true)
         const resposta = await app.handle(
           new Request('http://members.test/', {
             method: 'POST',

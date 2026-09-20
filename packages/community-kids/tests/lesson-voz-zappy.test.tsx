@@ -87,7 +87,7 @@ const URL_DA_FALA = (i: number) => `https://cdn.test/aulas/voz/${i}.mp3`
  * O bloco como o admin o grava: o dicionário sai de `textosFalaveisDaCena` sobre a PROJEÇÃO
  * PÚBLICA — exatamente o que o `voz-zappy-button.tsx` faz.
  */
-function blocoComVoz(scene: SceneId, tipo: 'experimentation' | 'demonstration') {
+function blocoComVoz(scene: SceneId) {
   const modelo = SCENE_MODELS[scene]
   const cru = {
     kind: 'interactive' as const,
@@ -95,7 +95,7 @@ function blocoComVoz(scene: SceneId, tipo: 'experimentation' | 'demonstration') 
     instructions: modelo.instruction,
     hints: [],
     required: false,
-    activity: { type: tipo, scene },
+    activity: { type: 'experimentation' as const, scene },
   }
   const publico = publicInteractiveBlock(cru)
   const textos = textosFalaveisDaCena(publico)
@@ -118,7 +118,7 @@ describe('a voz do Zappy chega ao player', () => {
     const audio = audioFalso()
     const sintese = sinteseFalsa()
     try {
-      const { bloco, textos } = blocoComVoz('world', 'experimentation')
+      const { bloco, textos } = blocoComVoz('world')
       expect(textos.length).toBeGreaterThan(0)
       render(
         <InteractiveLessonBlock block={bloco as never} previewContent={bloco.content as never} />,
@@ -158,30 +158,6 @@ describe('a voz do Zappy chega ao player', () => {
    * porque descreve o resultado). É exatamente o momento em que a criança aperta "Ouvir" para saber
    * o que vai acontecer.
    */
-  test('⭐ demonstração: depois do palpite, a instrução da parte 1 fala na voz do Zappy', async () => {
-    const audio = audioFalso()
-    const sintese = sinteseFalsa()
-    try {
-      const { bloco } = blocoComVoz('world', 'demonstration')
-      render(
-        <InteractiveLessonBlock block={bloco as never} previewContent={bloco.content as never} />,
-      )
-      fireEvent.click(
-        await screen.findByRole('button', {
-          name: SCENE_QUESTIONS.world.prediction.choices[0]?.label as string,
-        }),
-      )
-      fireEvent.click(await screen.findByRole('button', { name: 'Ouvir' }))
-      await waitFor(() => expect(audio.tocados.length).toBeGreaterThan(0))
-      expect(audio.tocados[0]).toBe(URL_DA_FALA(0))
-      expect(sintese.falas).toEqual([])
-    } finally {
-      audio.restaurar()
-      sintese.restaurar()
-      cleanup()
-    }
-  })
-
   /**
    * A pista não entra na fala da instrução. Assim, pedir ajuda não troca a voz do Zappy pela voz do
    * navegador nem faz o botão repetir texto de outra etapa.
@@ -190,7 +166,7 @@ describe('a voz do Zappy chega ao player', () => {
     const audio = audioFalso()
     const sintese = sinteseFalsa()
     try {
-      const { bloco } = blocoComVoz('world', 'experimentation')
+      const { bloco } = blocoComVoz('world')
       render(
         <InteractiveLessonBlock block={bloco as never} previewContent={bloco.content as never} />,
       )

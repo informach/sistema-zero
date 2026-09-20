@@ -5,7 +5,7 @@ import { blockPrediction, type InteractiveBlock } from '../index'
 import { SCENE_IDS, SCENE_LIMITS, type SceneAction, type SceneId, sceneFrameRate } from './actions'
 import { sceneDefaultGoalIds, sceneModel } from './catalog'
 import { facesAVista, maisPerto, openScene, stepScene } from './engine'
-import { type SceneActivity, sceneScript, sceneStart, sceneTargets } from './index'
+import { type SceneActivity, sceneStart, sceneTargets } from './index'
 import { AIM_ORIGIN, enemyOnScreen, tilemapCoinRow } from './nucleo'
 import { ONCE_VS_ALWAYS_PRESETS } from './presets'
 import { SCENE_QUESTIONS } from './questions'
@@ -2109,10 +2109,7 @@ describe('as previsões das aulas v6, no motor', () => {
     if (Array.isArray(valor)) for (const v of valor) andar(v, onde)
     else if (valor && typeof valor === 'object') {
       const b = valor as { kind?: string; activity?: { type?: string } }
-      if (
-        b.kind === 'interactive' &&
-        (b.activity?.type === 'experimentation' || b.activity?.type === 'demonstration')
-      )
+      if (b.kind === 'interactive' && b.activity?.type === 'experimentation')
         blocos.push({ onde, bloco: valor as InteractiveBlock & { activity: SceneActivity } })
       for (const v of Object.values(valor)) andar(v, onde)
     }
@@ -2128,7 +2125,7 @@ describe('as previsões das aulas v6, no motor', () => {
   }
 
   test('a varredura LEU os blocos (laço vazio aprova tudo)', () => {
-    expect(blocos.length).toBeGreaterThan(30)
+    expect(blocos.length).toBeGreaterThan(25)
   })
 
   test('⚠️⚠️ experimentação: o palpite volta antes da conclusão, seguindo os pedidos na ordem do caso', () => {
@@ -2153,31 +2150,6 @@ describe('as previsões das aulas v6, no motor', () => {
       conferidas++
     }
     expect(conferidas).toBeGreaterThanOrEqual(10)
-  })
-
-  test('⚠️⚠️ demonstração: a meta do palpite cai em alguma parte do roteiro, e não só no fim', () => {
-    let conferidas = 0
-    for (const { onde, bloco } of blocos) {
-      const { activity } = bloco
-      if (activity.type !== 'demonstration') continue
-      const previsao = blockPrediction(bloco)
-      if (!previsao?.revealOn) continue
-      const start = sceneStart(activity)
-      const partes = sceneScript(activity)
-      let estado = openScene(start)
-      let parteDaRevelacao = -1
-      partes.forEach((parte, i) => {
-        for (const acao of parte.actions) estado = stepScene(start, estado, acao)
-        if (parteDaRevelacao < 0 && estado.evidence.discoveries.includes(previsao.revealOn ?? ''))
-          parteDaRevelacao = i
-      })
-      expect(
-        parteDaRevelacao,
-        `${onde} · ${activity.scene}: ${previsao.revealOn} cai`,
-      ).toBeGreaterThanOrEqual(0)
-      conferidas++
-    }
-    expect(conferidas).toBeGreaterThanOrEqual(6)
   })
 })
 

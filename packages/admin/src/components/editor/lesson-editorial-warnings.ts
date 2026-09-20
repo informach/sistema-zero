@@ -29,20 +29,9 @@ export function lessonEditorialWarnings(
   for (const section of document.sections) {
     const blocks = document.blocks.filter((block) => section.blockIds.includes(block.id))
     for (const block of blocks) {
-      // ⚠️ `intent` é da SEÇÃO e `type` é da ATIVIDADE: dois eixos com dois nomes parecidos.
-      // A seção diz o que ela quer daquele trecho da aula; a atividade diz o que o bloco é.
-      // Enquanto "demonstração" era um MODO dentro de `exploration`, cruzar os dois pedia três
-      // condições aninhadas; agora é a comparação direta que ela sempre quis ser.
       if (block.content.kind !== 'interactive') continue
       const type = block.content.activity.type
-      if (type !== 'demonstration' && type !== 'experimentation') continue
-      if (
-        (section.intent === 'demonstration' && type !== 'demonstration') ||
-        (section.intent === 'exploration' && type !== 'experimentation')
-      )
-        warnings.push(
-          `${section.title}: confira a intenção da seção e o tipo da cena. Demonstração é para observar; experimentação é para agir sobre a cena.`,
-        )
+      if (type !== 'experimentation') continue
       /**
        * ⚠️⚠️ O caso recortou a missão, e a pergunta continua sendo a de fábrica.
        *
@@ -53,7 +42,6 @@ export function lessonEditorialWarnings(
        * ao recorte, e só quem escreveu o caso sabe dizer se sobreviveu nesta.
        */
       if (
-        type === 'experimentation' &&
         !block.content.checkpoint &&
         // ⚠️ Quem dispensou a pergunta do fim não precisa conferir se ela ainda fala do recorte:
         // não há pergunta nenhuma naquele bloco, e o aviso mandaria olhar um texto que sumiu.
@@ -71,7 +59,7 @@ export function lessonEditorialWarnings(
       section.intent === 'exploration' &&
       !blocks.some(
         (block) =>
-          block.content.kind === 'interactive' && block.content.activity.type !== 'question',
+          block.content.kind === 'interactive' && block.content.activity.type === 'experimentation',
       )
     )
       warnings.push(`${section.title}: inclua uma experiência que permita agir sobre o conceito.`)

@@ -149,20 +149,6 @@ describe('os textos faláveis de uma cena', () => {
     ])
   })
 
-  /**
-   * ⚠️ O rótulo muda com o TIPO da atividade, e o player monta a fala com ele. Gerar sempre "Antes
-   * de assistir" deixaria toda demonstração sem áudio no palpite — sem erro nenhum, só calada.
-   */
-  it('na demonstração o palpite é "Antes de assistir"', () => {
-    const [, contexto, pergunta] = textosFalaveisDaCena({
-      instructions: 'Olhe a cena.',
-      prediction: palpite,
-      activity: { type: 'demonstration' },
-    })
-    expect(contexto).toBe(falaDoContextoDoPalpite('Antes de assistir', palpite.context))
-    expect(pergunta).toBe(falaDaEscolhaDoPalpite(palpite))
-  })
-
   it('cena sem palpite nem pergunta fala só a instrução', () => {
     expect(
       textosFalaveisDaCena({
