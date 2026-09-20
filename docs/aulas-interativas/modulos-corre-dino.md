@@ -4,11 +4,11 @@
 
 **Descrição curta:** Construa um jogo de corrida com Dino, cactos, pontos e desafios que mudam.
 
-**Descrição:** Em 13 aulas, a criança cria o Corre, Dino! desde a primeira tela: faz o personagem correr e pular, acrescenta obstáculos, som, colisões e telas de começo e fim. Depois cria o placar e varia os obstáculos e a dificuldade para deixar cada partida mais interessante.
+**Descrição:** Em 13 aulas, você cria o Corre, Dino! desde a primeira tela: faz o Dino correr e pular, coloca cactos e sons, faz as batidas funcionarem e monta as telas de começo e fim. Depois, cria o placar e muda os obstáculos e a dificuldade para deixar cada partida diferente.
 
 ## Módulo 1 — O Dino ganha vida
 
-**Resumo:** A criança prepara a tela, faz a floresta passar e dá movimento e som ao Dino.
+**Resumo:** Prepare a tela, faça a floresta passar e dê movimento e som ao Dino.
 
 - **Aula 1:** [A telinha do jogo e o Dino que ainda não aparece](aulas/corre-dino-aula-01.md)
 - **Aula 2:** [O Dino aparece e a floresta passa](aulas/corre-dino-aula-02.md)
@@ -17,7 +17,7 @@
 
 ## Módulo 2 — Da corrida ao jogo inteiro
 
-**Resumo:** Cactos entram na pista; a criança mede e controla a partida até criar menu, batida e recomeço.
+**Resumo:** Coloque cactos na pista, acompanhe o que acontece no jogo e crie o menu, a batida e o recomeço.
 
 - **Aula 5:** [O cacto vem vindo](aulas/corre-dino-aula-05.md)
 - **Aula 6:** [O medidor mostra o que ninguém vê](aulas/corre-dino-aula-06.md)
@@ -27,7 +27,7 @@
 
 ## Módulo 3 — A corrida fica mais interessante
 
-**Resumo:** A criança ajusta a colisão, cria o placar e varia a posição e a velocidade dos obstáculos.
+**Resumo:** Ajuste como o Dino bate nos cactos, crie o placar e mude a posição e a velocidade dos obstáculos.
 
 - **Aula 10:** [A caixa que decide a batida](aulas/corre-dino-aula-10.md)
 - **Aula 11:** [A caixinha que conta a sua partida](aulas/corre-dino-aula-11.md)

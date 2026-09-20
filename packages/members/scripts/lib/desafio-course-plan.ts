@@ -24,21 +24,20 @@ const MODULES: {
 }[] = [
   {
     title: 'A nave ganha vida',
-    summary:
-      'A criança conhece o Estúdio e monta uma nave que aparece, se move e permanece na tela.',
+    summary: 'Conheça o Estúdio e faça uma nave aparecer, se mover e ficar na tela.',
     illustration: 'desafio-nave',
     lessonKeys: ['welcome', 'day1'],
   },
   {
     title: 'Tiros e asteroides',
-    summary: 'A nave começa a atirar, e os asteroides surgem, caem e reagem aos acertos.',
+    summary: 'Faça a nave atirar e crie asteroides que caem e reagem quando levam um tiro.',
     illustration: 'desafio-asteroides',
     lessonKeys: ['day2', 'day3'],
   },
   {
     title: 'O jogo completo e a conquista',
     summary:
-      'Placar, vidas e telas de começo e fim completam o jogo. A criança emite o certificado e conhece os próximos passos com um responsável.',
+      'Coloque pontos, vidas e telas de começo e fim no seu jogo. Depois, pegue seu certificado e descubra os próximos passos com quem cuida de você.',
     illustration: 'desafio-conquista',
     lessonKeys: ['day4', 'day5', 'certificate'],
   },

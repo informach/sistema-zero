@@ -40,6 +40,10 @@ certificado configurado no admin e só pode ser publicado depois de vincular a g
 | `aulas/` | O **trio de cada aula**: a proposta (`{slug}.md`), o manifesto importável (`{slug}.manifesto.json`) e o roteiro de gravação (`{slug}.roteiro.md`). Os três arquivos estão completos nas 28 aulas |
 | `cenas/` | **O material para corrigir as cenas antes de mexer nas aulas.** As 11 cenas novas com especificação completa, e os ajustes das 28 cenas existentes, tudo organizado por cena e não por aula. Comece pelo `RELATORIO-CENAS.md` |
 
+As descrições de curso e os resumos de módulo em `modulos-*.md` são textos para a área Kids. Ao
+configurá-los no admin, fale diretamente com quem faz o curso: use “você” e “seu jogo”, sem se
+referir à pessoa como “a criança” ou “o aluno”.
+
 ## Como ler uma análise de aula
 
 Cada arquivo em `aulas/` segue a mesma estrutura:
