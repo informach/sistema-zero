@@ -243,6 +243,76 @@ export function alignShapes(
   })
 }
 
+export type DistributionAxis = 'horizontal' | 'vertical'
+
+interface DistributionCluster {
+  key: string
+  index: number
+  bounds: Bounds
+}
+
+function distributionKey(shape: VectorShape): string {
+  return shape.groupId ? `g:${shape.groupId}` : `s:${shape.id}`
+}
+
+/** Grupos entram inteiros: selecionar só parte ou travar um membro exclui o grupo. */
+function selectedMovableClusters(shapes: VectorShape[], ids: string[]): DistributionCluster[] {
+  const selected = new Set(ids)
+  const all = new Map<string, { key: string; index: number; members: VectorShape[] }>()
+  shapes.forEach((shape, index) => {
+    const key = distributionKey(shape)
+    const cluster = all.get(key)
+    if (cluster) cluster.members.push(shape)
+    else all.set(key, { key, index, members: [shape] })
+  })
+  return [...all.values()]
+    .filter(({ members }) => members.every((shape) => selected.has(shape.id) && !shape.locked))
+    .map(({ key, index, members }) => ({
+      key,
+      index,
+      bounds: boundsUnion(members.map(shapeBounds)),
+    }))
+}
+
+export function canDistributeShapes(shapes: VectorShape[], ids: string[]): boolean {
+  return selectedMovableClusters(shapes, ids).length >= 3
+}
+
+/** Mantém as pontas e distribui os centros intermediários num único eixo. */
+export function distributeShapes(
+  shapes: VectorShape[],
+  ids: string[],
+  axis: DistributionAxis,
+): VectorShape[] {
+  const clusters = selectedMovableClusters(shapes, ids)
+  if (clusters.length < 3) return shapes
+  const center = (bounds: Bounds) =>
+    axis === 'horizontal' ? bounds.x + bounds.width / 2 : bounds.y + bounds.height / 2
+  const ordered = clusters
+    .map((cluster) => ({ ...cluster, center: center(cluster.bounds) }))
+    .sort((a, b) => a.center - b.center || a.index - b.index)
+  const firstCluster = ordered[0]
+  const lastCluster = ordered[ordered.length - 1]
+  if (!firstCluster || !lastCluster) return shapes
+  const first = firstCluster.center
+  const last = lastCluster.center
+  const step = (last - first) / (ordered.length - 1)
+  const deltas = new Map<string, number>()
+  for (let i = 1; i < ordered.length - 1; i++) {
+    const cluster = ordered[i]
+    if (!cluster) continue
+    const delta = first + step * i - cluster.center
+    if (Math.abs(delta) >= 1e-9) deltas.set(cluster.key, delta)
+  }
+  if (deltas.size === 0) return shapes
+  return shapes.map((shape) => {
+    const delta = deltas.get(distributionKey(shape))
+    return delta === undefined
+      ? shape
+      : translateShape(shape, axis === 'horizontal' ? delta : 0, axis === 'vertical' ? delta : 0)
+  })
+}
+
 // ── Manipulação ─────────────────────────────────────────────────────────────
 
 export function translateShape(shape: VectorShape, dx: number, dy: number): VectorShape {

@@ -4,6 +4,8 @@ import {
   boundsCenter,
   boundsIntersect,
   boundsUnion,
+  canDistributeShapes,
+  distributeShapes,
   parsePathD,
   rotatePoint,
   rotateShapesAround,
@@ -292,6 +294,90 @@ describe('alignShapes (alinhar seleção)', () => {
     const c: VectorShape = { ...base, id: 'c', type: 'rect', x: 70, y: 0, w: 10, h: 10, rx: 0 }
     const result = alignShapes([a, c], ['a'], 'left', target)
     expect(result[1]).toMatchObject({ x: 70 })
+  })
+})
+
+describe('distributeShapes (distribuir centros)', () => {
+  const box = (id: string, x: number, y: number, w = 10, h = 10): VectorShape => ({
+    ...base,
+    id,
+    type: 'rect',
+    x,
+    y,
+    w,
+    h,
+    rx: 0,
+  })
+
+  it('espaça os centros na horizontal, mantém as pontas e não mexe na altura', () => {
+    const shapes = [box('a', 0, 20), box('b', 35, 40, 20), box('c', 100, 60)]
+    expect(canDistributeShapes(shapes, ['c', 'a', 'b'])).toBe(true)
+    const result = distributeShapes(shapes, ['c', 'a', 'b'], 'horizontal')
+    expect(result.map((shape) => boundsCenter(shapeBounds(shape)).x)).toEqual([5, 55, 105])
+    expect(result.map((shape) => boundsCenter(shapeBounds(shape)).y)).toEqual([25, 45, 65])
+    expect(result[0]).toBe(shapes[0])
+    expect(result[2]).toBe(shapes[2])
+    expect(distributeShapes(result, ['a', 'b', 'c'], 'horizontal')).toBe(result)
+  })
+
+  it('espaça os centros na vertical sem mover a largura', () => {
+    const shapes = [box('a', 20, 0), box('b', 40, 35, 10, 20), box('c', 60, 100)]
+    const result = distributeShapes(shapes, ['a', 'b', 'c'], 'vertical')
+    expect(result.map((shape) => boundsCenter(shapeBounds(shape)).y)).toEqual([5, 55, 105])
+    expect(result.map((shape) => boundsCenter(shapeBounds(shape)).x)).toEqual([25, 45, 65])
+    expect(result[0]).toBe(shapes[0])
+    expect(result[2]).toBe(shapes[2])
+  })
+
+  it('conta o grupo como um objeto e translada seus membros juntos', () => {
+    const groupA = { ...box('ga', 30, 0), groupId: 'g' }
+    const groupB = { ...box('gb', 50, 0), groupId: 'g' }
+    const shapes = [box('left', 0, 0), groupA, groupB, box('right', 100, 0)]
+    const result = distributeShapes(
+      shapes,
+      shapes.map((shape) => shape.id),
+      'horizontal',
+    )
+    expect(result[1]).toMatchObject({ x: 40 })
+    expect(result[2]).toMatchObject({ x: 60 })
+    expect(result[0]).toBe(shapes[0])
+    expect(result[3]).toBe(shapes[3])
+  })
+
+  it('ignora grupo travado e formas não selecionadas ao medir e mover', () => {
+    const lockedA = { ...box('la', 70, 0), groupId: 'locked', locked: true }
+    const lockedB = { ...box('lb', 80, 0), groupId: 'locked' }
+    const shapes = [
+      box('a', 0, 0),
+      box('b', 40, 0),
+      lockedA,
+      lockedB,
+      box('c', 100, 0),
+      box('other', 150, 0),
+    ]
+    const result = distributeShapes(shapes, ['a', 'b', 'la', 'lb', 'c'], 'horizontal')
+    expect(result[1]).toMatchObject({ x: 50 })
+    expect(result[2]).toBe(lockedA)
+    expect(result[3]).toBe(lockedB)
+    expect(result[5]).toBe(shapes[5])
+  })
+
+  it('não distribui com menos de três objetos livres ou grupo selecionado parcialmente', () => {
+    const groupA = { ...box('ga', 40, 0), groupId: 'g' }
+    const groupB = { ...box('gb', 50, 0), groupId: 'g' }
+    const shapes = [box('a', 0, 0), groupA, groupB, box('c', 100, 0)]
+    expect(canDistributeShapes(shapes, ['a', 'ga', 'c'])).toBe(false)
+    expect(distributeShapes(shapes, ['a', 'ga', 'c'], 'horizontal')).toBe(shapes)
+    expect(canDistributeShapes(shapes, ['a', 'c'])).toBe(false)
+    expect(distributeShapes(shapes, ['a', 'c'], 'vertical')).toBe(shapes)
+  })
+
+  it('desempata centros iguais pela ordem do documento', () => {
+    const shapes = [box('a', 0, 0), box('b', 40, 0), box('c', 40, 20), box('d', 100, 0)]
+    const result = distributeShapes(shapes, ['d', 'c', 'b', 'a'], 'horizontal')
+    const middleCenters = result.slice(1, 3).map((shape) => boundsCenter(shapeBounds(shape)).x)
+    expect(middleCenters[0]).toBeCloseTo(5 + 100 / 3)
+    expect(middleCenters[1]).toBeCloseTo(5 + 200 / 3)
   })
 })
 
