@@ -916,7 +916,7 @@ describe.skipIf(!url)(
               initialProject: {
                 formatVersion: 2,
                 name: 'Jogo',
-                files: {},
+                files: { 'index.html': '', 'style.css': '', 'script.js': '' },
                 installedExtensions: [],
               },
             },
