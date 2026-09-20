@@ -816,7 +816,14 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     const sortOrder = this.modules
       .filter((m) => m.courseId === courseId)
       .reduce((mx, m) => Math.max(mx, m.sortOrder + 1), 0)
-    const mod: Module = { id: randomUUID(), courseId, ...fields, sortOrder }
+    const mod: Module = {
+      id: randomUUID(),
+      courseId,
+      title: fields.title,
+      summary: fields.summary,
+      illustration: fields.illustration ?? null,
+      sortOrder,
+    }
     this.modules.push(mod)
     return mod
   }
@@ -826,6 +833,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     if (!m) return null
     m.title = fields.title
     m.summary = fields.summary
+    if (fields.illustration !== undefined) m.illustration = fields.illustration
     return m
   }
 

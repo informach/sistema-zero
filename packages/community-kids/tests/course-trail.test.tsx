@@ -1,5 +1,8 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { render, screen } from '@testing-library/react'
+import { createElement } from 'react'
 import type { CourseDetailView, LessonOutlineView, ModuleOutlineView } from '../src/lib/types'
 
 // O baú virou ilha `'use client'` com `useRouter` (ele abre com um clique e
@@ -13,6 +16,15 @@ const nav = await import('next/navigation')
 mock.module('next/navigation', () => ({
   ...nav,
   useRouter: () => ({ refresh: () => {}, push: () => {} }),
+}))
+mock.module('next/image', () => ({
+  default: (props: { src: string; alt: string; width: number; height: number }) =>
+    createElement('img', {
+      src: props.src,
+      alt: props.alt,
+      width: props.width,
+      height: props.height,
+    }),
 }))
 
 const { CourseTrail } = await import('../src/components/kids/course-trail')
@@ -101,5 +113,39 @@ describe('CourseTrail', () => {
     expect(screen.getByText(/Unidade 2/)).toBeTruthy()
     expect(screen.queryByText(/Unidade 3/)).toBeNull()
     expect(screen.queryByText(/Modulo em-preparo/)).toBeNull()
+  })
+
+  test('a escolha feita no Admin ilustra cada módulo, mesmo após renomeá-lo', () => {
+    const desafio = course([
+      { ...moduleOf('m1', [lesson('a')]), title: 'Módulo renomeado', illustration: 'desafio-nave' },
+      { ...moduleOf('m2', [lesson('b')]), illustration: 'desafio-asteroides' },
+      { ...moduleOf('m3', [lesson('c')]), illustration: 'desafio-conquista' },
+    ])
+    desafio.slug = 'desafio-primeiro-jogo'
+    const { container } = render(<CourseTrail course={desafio} />)
+    const illustrations = [...container.querySelectorAll('[data-trail-art] img')]
+    expect(illustrations.map((element) => element.getAttribute('src'))).toEqual([
+      '/trilha/desafio-nave.svg',
+      '/trilha/desafio-asteroides.svg',
+      '/trilha/desafio-conquista.svg',
+    ])
+    expect(illustrations.every((element) => element.getAttribute('alt') === '')).toBe(true)
+    expect(
+      illustrations.every((element) =>
+        existsSync(
+          resolve(import.meta.dir, '../public', element.getAttribute('src')?.slice(1) ?? ''),
+        ),
+      ),
+    ).toBe(true)
+  })
+
+  test('módulos vazios e módulos sem escolha no Admin não recebem ilustrações', () => {
+    const desafio = course([
+      { ...moduleOf('vazio', []), illustration: 'desafio-nave' },
+      { ...moduleOf('antigo', [lesson('a')]), title: 'A nave ganha vida' },
+    ])
+    desafio.slug = 'desafio-primeiro-jogo'
+    const { container } = render(<CourseTrail course={desafio} />)
+    expect(container.querySelector('[data-trail-art]')).toBeNull()
   })
 })

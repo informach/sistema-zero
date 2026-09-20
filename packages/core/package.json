@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./ai-credits": "./src/ai-credits/index.ts",
     "./career": "./src/career/index.ts",
+    "./course/module-illustrations": "./src/course/module-illustrations.ts",
     "./creations": "./src/creations/index.ts",
     "./security": "./src/security/index.ts",
     "./logging": "./src/logging/index.ts",

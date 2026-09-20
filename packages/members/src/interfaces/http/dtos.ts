@@ -1012,7 +1012,19 @@ export const ListCoursesQuery = t.Object({
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })
 
-export const ModuleBody = t.Object({ title: TITLE, summary: NULLABLE_TEXT })
+export const ModuleBody = t.Object({
+  title: TITLE,
+  summary: NULLABLE_TEXT,
+  // Ausente preserva a escolha ao editar com um Admin antigo; null remove.
+  illustration: t.Optional(
+    t.Union([
+      t.Literal('desafio-nave'),
+      t.Literal('desafio-asteroides'),
+      t.Literal('desafio-conquista'),
+      t.Null(),
+    ]),
+  ),
+})
 
 export const LessonBody = t.Object({
   slug: SLUG,

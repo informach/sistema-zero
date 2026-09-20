@@ -1,4 +1,6 @@
+import { moduleIllustration } from '@sistemazero/core/course/module-illustrations'
 import { Check, Lock, Star } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { CourseDetailView } from '@/lib/types'
@@ -83,9 +85,10 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
   }
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="mx-auto flex w-full max-w-[40rem] flex-col gap-10">
       {units.map((unit, unitIndex) => {
         const doneCount = unit.module.lessons.filter((l) => l.completed).length
+        const art = moduleIllustration(unit.module.illustration)?.src
         return (
           <section key={unit.module.id} className={UNIT_THEME_CLASS[unit.theme]}>
             <header className="kids-unit-banner px-5 py-4 md:px-6">
@@ -103,88 +106,108 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
               {unit.module.summary ? <p className="mt-1 text-sm">{unit.module.summary}</p> : null}
             </header>
 
-            <ol className="relative mt-10">
-              {unit.nodes.map((node, nodeIndex) => {
-                const next = unit.nodes[nodeIndex + 1]
-                // Último nó da unidade conecta no BAÚ (mesma diagonal).
-                const nextOffset = next?.offset ?? unit.chest.offset
-                return (
-                  <li
-                    key={node.lesson.id}
-                    className="relative"
-                    style={{ height: 'var(--trail-row)' }}
-                  >
-                    {nextOffset !== undefined ? (
-                      <TrailDots from={node.offset} to={nextOffset} done={node.state === 'done'} />
-                    ) : null}
-                    {(() => {
-                      const inner = (
-                        <>
-                          {node.state === 'current' ? (
-                            <span className="kids-balloon">{label}</span>
-                          ) : null}
-                          <span className={cn('kids-node', NODE_STATE_CLASS[node.state])}>
-                            {node.state === 'done' ? (
-                              <Check className="size-7" strokeWidth={3.5} />
-                            ) : node.state === 'locked' ? (
-                              <Lock className="size-6" strokeWidth={2.5} />
-                            ) : (
-                              <Star className="size-7 fill-current" />
-                            )}
-                          </span>
-                          <span
-                            className={cn(
-                              'line-clamp-2 max-w-24 text-center font-semibold text-xs leading-tight',
-                              node.state === 'done' || node.state === 'current'
-                                ? 'text-foreground'
-                                : 'text-muted-foreground',
-                            )}
+            <div className="relative mt-10">
+              {art ? (
+                <div
+                  data-trail-art
+                  aria-hidden="true"
+                  className={cn(
+                    'kids-trail-art',
+                    (unit.nodes[0]?.offset ?? 0) < 0
+                      ? 'kids-trail-art--right'
+                      : 'kids-trail-art--left',
+                  )}
+                >
+                  <Image src={art} alt="" width={180} height={160} unoptimized />
+                </div>
+              ) : null}
+              <ol className="relative z-10">
+                {unit.nodes.map((node, nodeIndex) => {
+                  const next = unit.nodes[nodeIndex + 1]
+                  // Último nó da unidade conecta no BAÚ (mesma diagonal).
+                  const nextOffset = next?.offset ?? unit.chest.offset
+                  return (
+                    <li
+                      key={node.lesson.id}
+                      className="relative"
+                      style={{ height: 'var(--trail-row)' }}
+                    >
+                      {nextOffset !== undefined ? (
+                        <TrailDots
+                          from={node.offset}
+                          to={nextOffset}
+                          done={node.state === 'done'}
+                        />
+                      ) : null}
+                      {(() => {
+                        const inner = (
+                          <>
+                            {node.state === 'current' ? (
+                              <span className="kids-balloon">{label}</span>
+                            ) : null}
+                            <span className={cn('kids-node', NODE_STATE_CLASS[node.state])}>
+                              {node.state === 'done' ? (
+                                <Check className="size-7" strokeWidth={3.5} />
+                              ) : node.state === 'locked' ? (
+                                <Lock className="size-6" strokeWidth={2.5} />
+                              ) : (
+                                <Star className="size-7 fill-current" />
+                              )}
+                            </span>
+                            <span
+                              className={cn(
+                                'line-clamp-2 max-w-24 text-center font-semibold text-xs leading-tight',
+                                node.state === 'done' || node.state === 'current'
+                                  ? 'text-foreground'
+                                  : 'text-muted-foreground',
+                              )}
+                            >
+                              {node.lesson.title}
+                            </span>
+                          </>
+                        )
+                        const className =
+                          'kids-node-link -ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5'
+                        const style = { left: `calc(50% + ${node.offset} * var(--trail-step))` }
+                        // Aula travada: nó NÃO clicável (a regra de acesso é do backend).
+                        return node.state === 'locked' ? (
+                          <div
+                            role="img"
+                            aria-label={nodeAria(node)}
+                            className={cn(className, 'cursor-not-allowed')}
+                            style={style}
                           >
-                            {node.lesson.title}
-                          </span>
-                        </>
-                      )
-                      const className =
-                        'kids-node-link -ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5'
-                      const style = { left: `calc(50% + ${node.offset} * var(--trail-step))` }
-                      // Aula travada: nó NÃO clicável (a regra de acesso é do backend).
-                      return node.state === 'locked' ? (
-                        <div
-                          role="img"
-                          aria-label={nodeAria(node)}
-                          className={cn(className, 'cursor-not-allowed')}
-                          style={style}
-                        >
-                          {inner}
-                        </div>
-                      ) : (
-                        <Link
-                          href={lessonHref(node.lesson.id)}
-                          aria-label={nodeAria(node)}
-                          className={className}
-                          style={style}
-                        >
-                          {inner}
-                        </Link>
-                      )
-                    })()}
-                  </li>
-                )
-              })}
+                            {inner}
+                          </div>
+                        ) : (
+                          <Link
+                            href={lessonHref(node.lesson.id)}
+                            aria-label={nodeAria(node)}
+                            className={className}
+                            style={style}
+                          >
+                            {inner}
+                          </Link>
+                        )
+                      })()}
+                    </li>
+                  )
+                })}
 
-              <li className="relative" style={{ height: 'var(--trail-row)' }}>
-                <TrailChest
-                  courseSlug={course.slug}
-                  moduleId={unit.module.id}
-                  unitNumber={unitIndex + 1}
-                  // Sem `chest` do servidor (curso adulto, ou resposta de um
-                  // deploy anterior) o baú fica DECORATIVO: prometer "ganhe 0 XP"
-                  // num botão seria pior que não ter botão.
-                  chest={unit.module.chest}
-                  offset={unit.chest.offset}
-                />
-              </li>
-            </ol>
+                <li className="relative" style={{ height: 'var(--trail-row)' }}>
+                  <TrailChest
+                    courseSlug={course.slug}
+                    moduleId={unit.module.id}
+                    unitNumber={unitIndex + 1}
+                    // Sem `chest` do servidor (curso adulto, ou resposta de um
+                    // deploy anterior) o baú fica DECORATIVO: prometer "ganhe 0 XP"
+                    // num botão seria pior que não ter botão.
+                    chest={unit.module.chest}
+                    offset={unit.chest.offset}
+                  />
+                </li>
+              </ol>
+            </div>
           </section>
         )
       })}

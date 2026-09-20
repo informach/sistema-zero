@@ -505,6 +505,44 @@ describe('Members HTTP — autoria: cursos (validações de borda)', () => {
 })
 
 describe('Members HTTP — autoria: árvore de conteúdo', () => {
+  test('a ilustração escolhida no módulo é salva, preservada e pode ser removida', async () => {
+    const { app } = buildApp()
+    const course = await createCourse(app, { audience: 'kids' })
+    const created = await send(app, `/members/admin/courses/${course.id}/modules`, 'POST', {
+      title: 'Nave',
+      summary: null,
+      illustration: 'desafio-nave',
+    })
+    expect(created.status).toBe(201)
+    const mod = await readJson(created)
+    expect(mod.illustration).toBe('desafio-nave')
+
+    const renamed = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
+      title: 'Nave renomeada',
+      summary: null,
+    })
+    expect(renamed.status).toBe(200)
+    expect((await readJson(renamed)).illustration).toBe('desafio-nave')
+
+    const tree = await readJson(await get(app, `/members/admin/courses/${course.id}`))
+    expect(tree.modules[0].illustration).toBe('desafio-nave')
+
+    const invalid = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
+      title: 'Nave renomeada',
+      summary: null,
+      illustration: '/fora-do-catalogo.svg',
+    })
+    expect(invalid.status).toBe(400)
+
+    const cleared = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
+      title: 'Nave renomeada',
+      summary: null,
+      illustration: null,
+    })
+    expect(cleared.status).toBe(200)
+    expect((await readJson(cleared)).illustration).toBeNull()
+  })
+
   async function seedTree(app: App) {
     const course = await createCourse(app)
     const mod = await readJson(

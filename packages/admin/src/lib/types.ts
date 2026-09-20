@@ -430,6 +430,8 @@ export interface ModuleView {
   courseId: string
   title: string
   summary: string | null
+  /** Arte da trilha Kids selecionada no módulo. */
+  illustration?: string | null
   sortOrder: number
 }
 

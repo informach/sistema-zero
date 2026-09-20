@@ -69,7 +69,7 @@ export default async function CoursePage({
         {/* Cabeçalho do curso, na régua das telas-modelo (11/09/2026): a capa de cantos
             redondos à esquerda, o título em Baloo na escala dos cabeçalhos, a barra verde
             dos cartões de curso e o botão da marca. */}
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:gap-8">
+        <div className="mx-auto flex w-full max-w-[52.5rem] flex-col gap-6 md:flex-row md:items-center md:gap-8">
           <div className="relative aspect-[5/3] w-full shrink-0 overflow-hidden rounded-[1.25rem] bg-muted md:w-[22.5rem]">
             {course.coverImageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -86,7 +86,7 @@ export default async function CoursePage({
               </div>
             )}
           </div>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 md:max-w-md">
             <h1 className="sz-display text-[clamp(1.875rem,3vw,2.5rem)]">{course.title}</h1>
             {course.subtitle ? (
               <p className="mt-2 font-medium text-[1.0625rem] text-muted-foreground">
@@ -94,7 +94,7 @@ export default async function CoursePage({
               </p>
             ) : null}
             {course.description ? (
-              <p className="mt-2 max-w-2xl font-medium text-[0.9375rem] text-muted-foreground">
+              <p className="mt-2 font-medium text-[0.9375rem] text-muted-foreground">
                 {course.description}
               </p>
             ) : null}
@@ -102,7 +102,7 @@ export default async function CoursePage({
               expiresAt={course.access.expiresAt}
               className="mt-4 w-fit max-w-full"
             />
-            <div className="mt-5 max-w-md">
+            <div className="mt-5">
               <div className="flex items-center justify-between font-semibold text-muted-foreground text-xs">
                 <span>
                   {course.progress.completedLessons} de {course.progress.totalLessons} aulas

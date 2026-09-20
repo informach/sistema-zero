@@ -73,6 +73,7 @@ const toModule = (r: ModuleRow): Module => ({
   courseId: r.courseId,
   title: r.title,
   summary: r.summary,
+  illustration: r.illustration,
   sortOrder: r.sortOrder,
 })
 const toLesson = (r: LessonRow): Lesson => ({
@@ -434,6 +435,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
             courseId: row.id,
             title: m.title,
             summary: m.summary,
+            illustration: m.illustration,
             sortOrder: m.sortOrder,
             createdAt: now,
             updatedAt: now,
@@ -621,6 +623,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           courseId,
           title: fields.title,
           summary: fields.summary,
+          illustration: fields.illustration ?? null,
           sortOrder: sql`coalesce((select max(${modules.sortOrder}) + 1 from ${modules} where ${modules.courseId} = ${courseId}), 0)`,
           createdAt: now,
           updatedAt: now,
@@ -634,7 +637,12 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
   async updateModule(id: string, fields: ModuleFields): Promise<Module | null> {
     const [row] = await this.db
       .update(modules)
-      .set({ title: fields.title, summary: fields.summary, updatedAt: new Date() })
+      .set({
+        title: fields.title,
+        summary: fields.summary,
+        illustration: fields.illustration,
+        updatedAt: new Date(),
+      })
       .where(eq(modules.id, id))
       .returning()
     return row ? toModule(row) : null

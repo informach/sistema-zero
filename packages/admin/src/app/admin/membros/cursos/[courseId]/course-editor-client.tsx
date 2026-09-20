@@ -9,12 +9,17 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import {
+  MODULE_ILLUSTRATIONS,
+  moduleIllustration,
+} from '@sistemazero/core/course/module-illustrations'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
+import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
 import {
@@ -75,7 +80,7 @@ export function CourseEditorClient({
 
   const [moduleOpen, setModuleOpen] = useState(false)
   const [editingModule, setEditingModule] = useState<ModuleView | null>(null)
-  const [moduleForm, setModuleForm] = useState({ title: '', summary: '' })
+  const [moduleForm, setModuleForm] = useState({ title: '', summary: '', illustration: '' })
 
   const [lessonOpen, setLessonOpen] = useState(false)
   const [lessonModuleId, setLessonModuleId] = useState<string>('')
@@ -171,12 +176,12 @@ export function CourseEditorClient({
   // ── Módulos ──
   function openCreateModule() {
     setEditingModule(null)
-    setModuleForm({ title: '', summary: '' })
+    setModuleForm({ title: '', summary: '', illustration: '' })
     setModuleOpen(true)
   }
   function openEditModule(m: ModuleView) {
     setEditingModule(m)
-    setModuleForm({ title: m.title, summary: m.summary ?? '' })
+    setModuleForm({ title: m.title, summary: m.summary ?? '', illustration: m.illustration ?? '' })
     setModuleOpen(true)
   }
   async function saveModule() {
@@ -184,7 +189,11 @@ export function CourseEditorClient({
       toast.error('Informe o título do módulo.')
       return
     }
-    const payload = { title: moduleForm.title.trim(), summary: moduleForm.summary.trim() || null }
+    const payload = {
+      title: moduleForm.title.trim(),
+      summary: moduleForm.summary.trim() || null,
+      illustration: moduleForm.illustration || null,
+    }
     await run(async () => {
       if (editingModule) await apiSend(`/api/members/modules/${editingModule.id}`, 'PATCH', payload)
       else await apiSend(`/api/members/courses/${courseId}/modules`, 'POST', payload)
@@ -411,6 +420,26 @@ export function CourseEditorClient({
               onChange={(e) => setModuleForm((f) => ({ ...f, summary: e.target.value }))}
             />
           </Field>
+          {tree?.audience === 'kids' ? (
+            <Field
+              label="Ilustração da trilha"
+              htmlFor="millustration"
+              hint="Opcional. A arte aparece ao lado das aulas deste módulo."
+            >
+              <Select
+                id="millustration"
+                value={moduleForm.illustration}
+                onChange={(e) => setModuleForm((f) => ({ ...f, illustration: e.target.value }))}
+              >
+                <option value="">Sem ilustração</option>
+                {MODULE_ILLUSTRATIONS.map((illustration) => (
+                  <option key={illustration.key} value={illustration.key}>
+                    {illustration.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          ) : null}
         </div>
       </Dialog>
 
@@ -535,6 +564,11 @@ function SortableModuleItem({
             <div className="font-semibold">{mod.title}</div>
             {mod.summary ? (
               <div className="text-sm text-muted-foreground">{mod.summary}</div>
+            ) : null}
+            {moduleIllustration(mod.illustration) ? (
+              <div className="text-xs text-muted-foreground">
+                Ilustração: {moduleIllustration(mod.illustration)?.label}
+              </div>
             ) : null}
             <div className="mt-0.5 text-xs text-muted-foreground">
               {published} de {mod.lessons.length}{' '}

@@ -631,6 +631,7 @@ export interface ModuleOutlineView {
   id: string
   title: string
   summary: string | null
+  illustration: string | null
   sortOrder: number
   lessons: LessonOutlineView[]
   chest: ModuleChestView | null
@@ -699,6 +700,7 @@ export function toCourseDetailView(
       id: m.id,
       title: m.title,
       summary: m.summary,
+      illustration: m.illustration ?? null,
       sortOrder: m.sortOrder,
       chest: claimedUnitIds
         ? {

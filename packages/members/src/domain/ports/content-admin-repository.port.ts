@@ -61,6 +61,8 @@ export interface CourseFields {
 export interface ModuleFields {
   title: string
   summary: string | null
+  /** Ausente no PATCH preserva a arte atual; null remove. */
+  illustration?: string | null
 }
 
 export interface LessonFields {

@@ -84,6 +84,7 @@ export interface ModuleView {
   courseId: string
   title: string
   summary: string | null
+  illustration: string | null
   sortOrder: number
 }
 
@@ -93,6 +94,7 @@ export function toModuleView(m: Module): ModuleView {
     courseId: m.courseId,
     title: m.title,
     summary: m.summary,
+    illustration: m.illustration ?? null,
     sortOrder: m.sortOrder,
   }
 }

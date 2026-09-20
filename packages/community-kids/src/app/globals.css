@@ -1164,6 +1164,31 @@ a.kid-pop:has(> .kids-carta):hover {
     color: var(--unit-fg);
   }
 
+  .kids-trail-art {
+    position: absolute;
+    top: calc(var(--trail-row) * 0.65);
+    z-index: 0;
+    width: 9.5rem;
+    pointer-events: none;
+    user-select: none;
+  }
+  .kids-trail-art--left {
+    left: 0;
+  }
+  .kids-trail-art--right {
+    right: 0;
+  }
+  .kids-trail-art img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  @media (max-width: 640px) {
+    .kids-trail-art {
+      width: 5.75rem;
+    }
+  }
+
   .kids-node {
     width: var(--trail-node);
     height: var(--trail-node);

@@ -307,6 +307,8 @@ export interface ModuleOutlineView {
   id: string
   title: string
   summary: string | null
+  /** Arte selecionada no Admin; APIs antigas podem omitir o campo. */
+  illustration?: string | null
   sortOrder: number
   lessons: LessonOutlineView[]
   chest: ModuleChestView | null
