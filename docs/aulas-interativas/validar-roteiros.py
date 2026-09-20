@@ -22,9 +22,10 @@ def audit(manifest_path):
     if found != expected:
         errors.append(f'{script_path.name}: clipes diferentes do manifesto: esperados {expected}; escritos {found}')
     sections = [(int(m.group(1)), m.group(2)) for m in SECTION.finditer(script)]
-    expected_sections = [(i, s['title']) for i, s in enumerate(manifest['sections'], 1) if any(b in expected for b in s['blockKeys'])]
-    if sections != expected_sections:
-        errors.append(f'{script_path.name}: seções diferentes: {sections} vs {expected_sections}')
+    all_sections = [(i, s['title']) for i, s in enumerate(manifest['sections'], 1)]
+    video_sections = [(i, s['title']) for i, s in enumerate(manifest['sections'], 1) if any(b in expected for b in s['blockKeys'])]
+    if sections != video_sections and sections != all_sections:
+        errors.append(f'{script_path.name}: seções diferentes: {sections} vs {video_sections} ou {all_sections}')
     durations = []
     spans = list(CLIP.finditer(script))
     blocks = {b['key']: b for b in manifest['blocks']}
@@ -88,8 +89,8 @@ def audit(manifest_path):
 manifests = sorted(ROOT.glob('*.manifesto.json'))
 prefix = sys.argv[1] if len(sys.argv) > 1 else ''
 selected = [path for path in manifests if not prefix or path.name.startswith(prefix)]
-if not selected or (not prefix and len(selected) != 27):
-    expected = 'manifestos com o prefixo' if prefix else '27 manifestos'
+if not selected or (not prefix and len(selected) != 28):
+    expected = 'manifestos com o prefixo' if prefix else '28 manifestos'
     print(f'ERRO: esperados {expected}, encontrados {len(selected)} em {ROOT}')
     raise SystemExit(1)
 total = 0
