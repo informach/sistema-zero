@@ -133,14 +133,9 @@ describe.skipIf(!url)(
         createdAt: now,
         updatedAt: now,
       })
-      await db.insert(modules).values({
-        id: moduleId,
-        courseId,
-        title: 'Unidade',
-        sortOrder: 0,
-        createdAt: now,
-        updatedAt: now,
-      })
+      // A fixture ainda está no schema 0077; o modelo Drizzle atual inclui colunas posteriores.
+      await sql`insert into members.modules (id,course_id,title,sort_order,created_at,updated_at)
+        values (${moduleId},${courseId},'Unidade',0,${now.toISOString()},${now.toISOString()})`
       await db.insert(lessons).values({
         id: lessonId,
         moduleId,
@@ -359,10 +354,9 @@ describe.skipIf(!url)(
         import.meta.dir,
         '../../src/infrastructure/persistence/drizzle/migrations',
       )
-      const migration = readMigrationFiles({ migrationsFolder: folder }).at(-1)
-      const createFunction = migration?.sql.find((statement) =>
-        statement.includes('CREATE FUNCTION members.migrate_ebook_document'),
-      )
+      const createFunction = readMigrationFiles({ migrationsFolder: folder })
+        .flatMap((migration) => migration.sql)
+        .find((statement) => statement.includes('CREATE FUNCTION members.migrate_ebook_document'))
       if (!createFunction) throw new Error('Função da migração de livros não encontrada')
       await sql.unsafe(createFunction)
       try {
