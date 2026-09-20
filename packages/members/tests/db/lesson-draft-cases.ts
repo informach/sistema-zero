@@ -784,9 +784,12 @@ export function lessonDraftCases(getDb: () => Database) {
         let draft = await f.repo.read(f.lessonId)
         plannedCount += draft.document.plannedVideos.length
         expect(draft.document.blocks.some((b) => b.id === studio.id)).toBe(true)
-        // ⚠️ O vídeo que o manifesto preserva sem exigir fica no FIM da última seção: não existe
-        // mais lugar fora delas, e um bloco órfão faria a gravação recusar a aula inteira.
-        expect(draft.document.sections.at(-1)?.blockIds).toContain(video.id)
+        // O vídeo preservado precisa pertencer a uma seção. O importador usa a última
+        // seção de fechamento quando existe; caso contrário, usa a última seção.
+        const destination =
+          draft.document.sections.findLast((section) => section.intent === 'closing') ??
+          draft.document.sections.at(-1)
+        expect(destination?.blockIds).toContain(video.id)
         const planned = draft.document.plannedVideos[0]
         if (planned) {
           draft = await f.change(draft, {
