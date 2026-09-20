@@ -1,5 +1,11 @@
 # Módulos do curso O Jogo do Meu Jeito
 
+**Título do curso:** O Jogo do Meu Jeito
+
+**Descrição curta:** Crie suas próprias artes, coloque-as no jogo e compartilhe o resultado.
+
+**Descrição:** A criança parte de uma cópia do jogo de nave, desenha e anima uma nave e asteroides no Pinta e leva essas criações para o Estúdio Completo. Ao terminar, publica a sua versão no Mural dos Criadores para outras pessoas jogarem.
+
 ## Módulo 1 — Seu jogo e sua nave
 
 **Resumo:** A criança cria uma cópia do jogo e desenha no Pinta uma nave com animação própria.

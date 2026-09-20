@@ -1,5 +1,11 @@
 # Módulos do Corre, Dino!
 
+**Título do curso:** Corre, Dino!
+
+**Descrição curta:** Construa um jogo de corrida com Dino, cactos, pontos e desafios que mudam.
+
+**Descrição:** Em 13 aulas, a criança cria o Corre, Dino! desde a primeira tela: faz o personagem correr e pular, acrescenta obstáculos, som, colisões e telas de começo e fim. Depois cria o placar e varia os obstáculos e a dificuldade para deixar cada partida mais interessante.
+
 ## Módulo 1 — O Dino ganha vida
 
 **Resumo:** A criança prepara a tela, faz a floresta passar e dá movimento e som ao Dino.

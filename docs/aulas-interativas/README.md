@@ -1,26 +1,28 @@
-# Redesenho didático das 27 aulas
+# Redesenho didático das aulas interativas
 
-Redesenho didático completo das aulas dos três cursos de jogos (Desafio do Primeiro Jogo, Corre
-Dino e O Jogo do Meu Jeito) para o formato de seções da plataforma.
+Redesenho didático dos três cursos de jogos (Desafio do Primeiro Jogo, Corre Dino e O Jogo do Meu
+Jeito) para o formato de seções da plataforma. São 27 aulas de programação e criação, mais uma aula
+final de certificado e próximos passos no Desafio.
 
 **Relatório consolidado (documento para ler e comentar):**
 https://claude.ai/code/artifact/2a29a025-3a65-4c66-858b-afefacaa34df
 
 ## O resultado
 
-Contado nos manifestos em 20/09/2026, não na proposta original.
+Contado nos 28 manifestos desta pasta. As colunas de conteúdo anterior cobrem apenas as 27 aulas
+levantadas antes da inclusão do encerramento do Desafio.
 
-| Curso | Aulas | Seções hoje | Propostas | Clipes hoje | Propostos |
+| Curso | Aulas | Seções anteriores | Propostas | Clipes anteriores | Propostos |
 |---|---:|---:|---:|---:|---:|
-| Desafio do Primeiro Jogo | 6 | 78 | 56 | 61 | 46 |
+| Desafio do Primeiro Jogo | 7 | 78 | 58 | 61 | 47 |
 | Corre, Dino! | 13 | 127 | 91 | 86 | 72 |
 | O Jogo do Meu Jeito | 8 | 76 | 56 | 55 | 48 |
-| **Total** | **27** | **281** | **203** | **202** | **166** |
+| **Total** | **28** | **281** | **205** | **202** | **167** |
 
 As 11 cenas novas foram construídas e os defeitos do catálogo, corrigidos: o catálogo foi de 45
-para **56 cenas**. Os 27 manifestos usam 53 experimentações e passam no validador, sem nenhuma aula
-esperando cena. As contagens da tabela vêm dos arquivos importáveis; foram conferidas novamente na
-revisão didática de 20/09/2026.
+para **56 cenas**. Os 28 manifestos usam 53 experimentações e passam no validador, sem nenhuma aula
+esperando cena. A aula nova tem duas seções e um vídeo planejado. O manifesto reutiliza o bloco de
+certificado configurado no admin e só pode ser publicado depois de vincular a gravação do pitch.
 
 ## O que tem nesta pasta
 
@@ -33,7 +35,9 @@ revisão didática de 20/09/2026.
 | `ESPEC-ROTEIRO.md` | O contrato do roteiro de gravação: o par de nota de produção e fala em parágrafos separados, a regra do caminho completo, o que não existe mais (botão de play, exercício de pausa) e o vocabulário travado |
 | `ACHADOS-TRANSVERSAIS.md` | Os defeitos encontrados durante a análise que **não** são redesenho: critérios que reprovam quem faz certo, passo perdido, rótulos vencidos, seções duplicadas, documentação desatualizada |
 | `ESPEC-MANIFESTO.md` | O contrato do `manifesto.json`: schema real do importador, a regra das duas colunas do player, a convenção do título de vídeo e a fila de dependência entre cena e aula |
-| `aulas/` | O **trio de cada aula**: a proposta (`{slug}.md`), o manifesto importável (`{slug}.manifesto.json`) e o roteiro de gravação (`{slug}.roteiro.md`). Os três arquivos estão completos nas 27 aulas |
+| `blocos-*.json` | Identificadores dos blocos de programação usados em cada curso, no formato `{ "blocks": [...] }` |
+| `modulos-*.md` | Título e descrições de cada curso, com o resumo dos módulos e as aulas na ordem |
+| `aulas/` | O **trio de cada aula**: a proposta (`{slug}.md`), o manifesto importável (`{slug}.manifesto.json`) e o roteiro de gravação (`{slug}.roteiro.md`). Os três arquivos estão completos nas 28 aulas |
 | `cenas/` | **O material para corrigir as cenas antes de mexer nas aulas.** As 11 cenas novas com especificação completa, e os ajustes das 28 cenas existentes, tudo organizado por cena e não por aula. Comece pelo `RELATORIO-CENAS.md` |
 
 ## Como ler uma análise de aula
@@ -48,13 +52,15 @@ Cada arquivo em `aulas/` segue a mesma estrutura:
 6. **Vídeos.** Tabela com chave, o que mostra, origem, duração alvo e se reaproveita gravação.
 7. **Continuidade.** O que a aula assume da anterior, o que entrega para a seguinte e os valores canônicos.
 
-A aula de referência é `aulas/desafio-dia-1.md`, escrita primeiro como padrão para as outras 26.
+A aula de referência para programação é `aulas/desafio-dia-1.md`. A aula final de certificado tem
+um fluxo próprio de conclusão, descrito em `aulas/desafio-certificado.md`.
 
 ## Os manifestos
 
 Cada aula tem, ao lado do relatório, um `aulas/{slug}.manifesto.json` pronto para importar no admin
-pela função "Importar roteiro com seções". Eles seguem o mesmo formato dos manifestos v6, na versão
-4, com as seções novas do redesenho.
+pela função "Importar roteiro com seções". Os manifestos usam a versão 5, com as seções novas e o
+conteúdo dos blocos de autoria no próprio arquivo. Os vídeos continuam planejados até serem
+vinculados no admin.
 
 Três coisas que o formato impôs ao desenho, e estão explicadas no `ESPEC-MANIFESTO.md`:
 
@@ -78,16 +84,19 @@ resultados: `OK`, `FALHA` (com a causa apontada campo a campo) e `AGUARDA`, que 
 uma cena ainda não construída. A lista de `AGUARDA` é a fila de dependência entre a implementação
 das cenas e a importação das aulas.
 
+Para implantar a aula final do Desafio sem perder a configuração do certificado, seguir
+`IMPLANTACAO-DESAFIO-ENCERRAMENTO.md`.
+
 ## Ordem de execução recomendada
 
 Tudo em staging. A promoção para produção fica para depois de as aulas estarem redondas.
 
 1. ~~Corrigir os defeitos do catálogo de cenas~~ feito
 2. ~~Construir as duas ações novas do motor e as 11 cenas novas~~ feito, catálogo em 56
-3. ~~Escrever os 27 manifestos~~ feito, os 27 passam no validador
-4. ~~Escrever os roteiros de gravação~~ feito, 27 roteiros e 166 clipes
+3. ~~Escrever os 28 manifestos~~ feito, os 28 passam no validador
+4. ~~Escrever os roteiros de gravação~~ feito, 28 roteiros e 167 clipes planejados
 5. Consertar o que quebra hoje, e o que a plataforma aposentou (ver `ACHADOS-TRANSVERSAIS.md`)
-6. Gravar os 166 clipes
+6. Gravar os 167 clipes, incluindo o pitch da aula final do Desafio
 
 Por curso: Desafio primeiro (tem aluno pagando), depois Meu Jeito (mais barato e o que mais
 melhora), depois Corre Dino (o maior).
@@ -103,7 +112,6 @@ A lista do que obriga varredura nos três está na seção 9 do `ESPEC-MANIFESTO
 
 ## Cópia versionada
 
-Este material também está em `sistema-zero/docs/aulas-interativas/`, sob controle de versão. Os
-arquivos de `aulas/` nas duas pastas devem continuar iguais. O validador de manifestos do repositório
-lê apenas a cópia versionada; o validador de roteiros (`python -X utf8 validar-roteiros.py`) funciona
-em ambas as pastas.
+O redesenho original também tem uma cópia em `fluxo-criativo`. A aula final do Desafio foi criada
+nesta pasta versionada do `sistema-zero`; as contagens e o validador acima se referem a ela. Antes
+de sincronizar materiais entre as duas pastas, comparar as mudanças para preservar esta aula.

@@ -1,0 +1,68 @@
+{
+  "version": 5,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "certificado",
+  "title": "Seu certificado e próximos passos",
+  "blocks": [
+    {
+      "key": "fala-certificado",
+      "content": {
+        "kind": "dialogue",
+        "pose": "celebrating",
+        "text": "Você terminou seu jogo! Toque em Pegar meu certificado. O PDF vai baixar, e você pode guardar ou imprimir com a ajuda de um responsável."
+      }
+    },
+    {
+      "key": "certificado",
+      "content": {
+        "kind": "certificate",
+        "introLine": "Certificamos que",
+        "coursePhrase": "concluiu o Desafio do Primeiro Jogo",
+        "bodyText": "Criou um jogo de nave com movimento, tiros, asteroides, placar e telas de início e fim."
+      }
+    },
+    {
+      "key": "fala-pitch",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Assista a este vídeo com um responsável. Ele mostra o que você pode criar depois do Desafio e como conhecer a Comunidade dos Criadores."
+      }
+    },
+    {
+      "key": "video-pitch",
+      "plannedVideo": "Título: O que vem depois do seu jogo\n\nMostrar o jogo de nave concluído e o certificado já emitido. Em seguida, mostrar uma prévia identificada da Comunidade dos Criadores: Carreira do Criador, cursos, ferramentas, Mural, Clube e Recados. Fechar com a página pública da oferta, sem fixar preço ou prazo no vídeo.\n\nFala de referência: a criança construiu uma nave que se move, atira, enfrenta asteroides, conta pontos e vidas e tem começo e fim. O certificado registra a conquista. A assinatura da Comunidade reúne os cursos e as ferramentas da plataforma, liberadas conforme o avanço na Carreira, além do Mural, do Clube e do acompanhamento pelas atividades enviadas. Convidar o responsável a ler os planos e as condições na página de oferta. Dizer que a assinatura é escolha da família. Orientar a tocar em Concluir aula depois do vídeo.\n\nOrigem: novo. Gravar depois que a página de oferta e a prévia estiverem conferidas em staging. Duração alvo: 75 a 90 segundos."
+    },
+    {
+      "key": "link-comunidade",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "[Conhecer a Comunidade dos Criadores](https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta)"
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "certificado",
+      "title": "Seu certificado",
+      "intent": "delivery",
+      "objective": "Emitir e baixar o certificado após concluir a introdução e os cinco dias do Desafio.",
+      "blockKeys": ["fala-certificado", "certificado"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["certificado"] }
+    },
+    {
+      "key": "proximos-passos",
+      "title": "Próximos passos",
+      "intent": "closing",
+      "objective": "Conhecer, com um responsável, a assinatura da Comunidade dos Criadores e assistir a pelo menos 90% do vídeo antes de concluir a aula.",
+      "blockKeys": ["fala-pitch", "video-pitch", "link-comunidade"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": { "version": 1, "blockIds": ["video-pitch"] }
+    }
+  ]
+}
