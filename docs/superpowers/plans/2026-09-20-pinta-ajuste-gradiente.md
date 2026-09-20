@@ -144,4 +144,4 @@ fireEvent.pointerUp(stage, { pointerId: 11, pointerType: 'touch', clientX: 120, 
 ## Final review and publication
 
 - [ ] Check every design requirement against tests and code; inspect `git status --short --branch` and other linked worktrees before publication.
-- [ ] Push `staging`, await all GitHub CI/E2E jobs and verify the Railway deploy log confirms `members`, `admin`, `community`, `community-kids` at the pushed SHA.
+- [ ] Keep the implementation committed on local `staging`; push and deploy only if the user explicitly asks to publish this new feature.
