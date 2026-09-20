@@ -8,7 +8,7 @@ O texto abaixo e o catálogo desta pasta registram o **pacote inicial**. Suas co
 
 ⚠️ **`catalogo.json` desta pasta é o índice do pacote HISTÓRICO, não do que está em produção.** Cada revisão atual tem o catálogo dela dentro da própria pasta (`corre-dino-v6/catalogo.json` e irmãos). Quem for importar uma aula usa os de lá.
 
-⭐ **Os 27 manifestos v6 do repositório passam por teste** (`packages/core/tests/learning.test.ts` e `qa/validar-manifestos-v6.ts`): formato, critérios de seção e blocos sob o contrato atual. Hoje eles contêm 26 experimentações de cena, 3 experiências em HTML e 53 quizzes. Os 27 manifestos novos do redesenho didático ficam em outra pasta e contêm 55 experimentações.
+⭐ **Os 27 manifestos v6 do repositório passam por teste** (`packages/core/tests/learning.test.ts` e `qa/validar-manifestos-v6.ts`): formato, critérios de seção e blocos sob o contrato atual. Hoje eles contêm 26 experimentações de cena, 3 experiências em HTML e 53 quizzes. Os 27 manifestos novos do redesenho didático ficam em outra pasta e contêm 53 experimentações.
 
 ## Histórico do pacote inicial
 
