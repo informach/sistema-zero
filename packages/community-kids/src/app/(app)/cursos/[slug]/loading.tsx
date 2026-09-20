@@ -11,8 +11,8 @@ export default function CourseLoading() {
       <span role="status" className="sr-only">
         Carregando…
       </span>
-      <KidsBand tone="creme" innerClassName="pt-6 pb-0 md:pt-8 md:pb-0">
-        <div className="mx-auto flex w-full max-w-[40rem] items-center justify-between gap-4">
+      <KidsBand tone="creme" innerClassName="pt-6 pb-2 md:pt-8 md:pb-2">
+        <div className="mx-auto flex w-full max-w-[40rem] items-center justify-start gap-4">
           <Skeleton className="h-13 w-40 shrink-0 rounded-full" />
           <Skeleton className="h-8 w-44 max-w-[45%] rounded-lg" />
         </div>

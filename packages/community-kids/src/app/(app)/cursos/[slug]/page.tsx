@@ -39,10 +39,10 @@ export default async function CoursePage({
   const back = resolveCourseBack(de, course)
   return (
     <>
-      <KidsBand tone="creme" innerClassName="pt-6 pb-0 md:pt-8 md:pb-0">
-        <div className="mx-auto flex w-full max-w-[40rem] items-center justify-between gap-4">
+      <KidsBand tone="creme" innerClassName="pt-6 pb-2 md:pt-8 md:pb-2">
+        <div className="mx-auto flex w-full max-w-[40rem] items-center justify-start gap-4">
           <KidsBackButton href={back.href} label={back.label} showLabel className="shrink-0" />
-          <h1 className="sz-display min-w-0 text-right text-[clamp(1.125rem,3vw,1.75rem)] leading-tight [overflow-wrap:anywhere]">
+          <h1 className="sz-display min-w-0 text-left text-[clamp(1.125rem,3vw,1.75rem)] leading-tight [overflow-wrap:anywhere]">
             {course.title}
           </h1>
         </div>
