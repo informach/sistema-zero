@@ -107,10 +107,8 @@ describe('PintaApp — galeria', () => {
 
     fireEvent.change(input, { target: { files: [file] } })
 
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Abrir ceu-restaurado/ })).toBeTruthy()
-    })
-    expect(screen.getByText(COPY.gallery.restoredOne)).toBeTruthy()
+    await screen.findByText(COPY.gallery.restoredOne)
+    expect(screen.getByRole('button', { name: /Abrir ceu-restaurado/ })).toBeTruthy()
   })
 
   it('explica quando a foto passa do limite de 20 MB', async () => {
