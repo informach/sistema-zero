@@ -11,8 +11,8 @@
  */
 import { normalizeHex } from '../core/color'
 import { type Bounds, boundsCenter, rotatePoint, shapeBounds } from './geometry'
+import { gradientGeometry } from './gradient'
 import { isVectorGradient, type Vec2, type VectorGradient, type VectorShape } from './model'
-import { linearGradientVector } from './svg'
 
 /** Ponto dentro do retângulo (hit-test grosso do conta-gotas). */
 export function boundsContains(b: Bounds, p: Vec2): boolean {
@@ -107,19 +107,21 @@ function unit(value: number, start: number, size: number): number {
 /**
  * A ponta do degradê mais perto do ponto (já no espaço local da forma), em
  * unidades da caixa, exatamente como o SVG avalia `objectBoundingBox`. Radial:
- * `cx=cy=r=0,5` por default, então o meio do degradê fica a 0,25 do centro.
+ * `cx=cy=r=0,5` por default, então o meio do degradê antigo fica a 0,25 do centro.
  */
 function nearestGradientStop(gradient: VectorGradient, bounds: Bounds, point: Vec2): string {
   const u = unit(point.x, bounds.x, bounds.width)
   const v = unit(point.y, bounds.y, bounds.height)
-  if (gradient.type === 'radial') {
-    return Math.hypot(u - 0.5, v - 0.5) < 0.25 ? gradient.from : gradient.to
+  const geometry = gradientGeometry(gradient)
+  if (geometry.type === 'radial') {
+    return Math.hypot(u - geometry.center.x, v - geometry.center.y) < geometry.radius / 2
+      ? gradient.from
+      : gradient.to
   }
-  const axis = linearGradientVector(gradient.angle)
-  const dx = axis.x2 - axis.x1
-  const dy = axis.y2 - axis.y1
+  const dx = geometry.end.x - geometry.start.x
+  const dy = geometry.end.y - geometry.start.y
   const length = dx * dx + dy * dy
-  const t = length > 0 ? ((u - axis.x1) * dx + (v - axis.y1) * dy) / length : 0
+  const t = length > 0 ? ((u - geometry.start.x) * dx + (v - geometry.start.y) * dy) / length : 0
   return t < 0.5 ? gradient.from : gradient.to
 }
 

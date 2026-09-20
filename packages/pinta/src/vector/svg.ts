@@ -4,6 +4,7 @@
  * snapshot-testável e abre em qualquer navegador/editor de SVG.
  */
 import { boundsCenter, shapeBounds } from './geometry'
+import { gradientGeometry } from './gradient'
 import {
   fontFamilyCss,
   fontFamilyOf,
@@ -36,28 +37,6 @@ function escapeXml(value: string): string {
 const round2 = (value: number) => Math.round(value * 100) / 100
 
 /**
- * Vetor do degradê LINEAR em coords de objectBoundingBox (0–1): o ângulo (0 = →,
- * 90 = ↓) vira uma reta que atravessa o centro. Usado no export string e no
- * render React (mesmos números).
- */
-export function linearGradientVector(angle: number): {
-  x1: number
-  y1: number
-  x2: number
-  y2: number
-} {
-  const rad = (angle * Math.PI) / 180
-  const dx = Math.cos(rad) / 2
-  const dy = Math.sin(rad) / 2
-  return {
-    x1: round2(0.5 - dx),
-    y1: round2(0.5 - dy),
-    x2: round2(0.5 + dx),
-    y2: round2(0.5 + dy),
-  }
-}
-
-/**
  * `<defs>` com um gradiente por shape de preenchimento degradê (`''` se
  * nenhum). Formas ESCONDIDAS ficam fora (paridade com o markup dos shapes).
  */
@@ -68,9 +47,15 @@ export function gradientDefsMarkup(shapes: VectorShape[], idPrefix = ''): string
       const g = s.fill as VectorGradient
       const id = escapeXml(gradientId(s.id, idPrefix))
       const stops = `<stop offset="0" stop-color="${g.from}"/><stop offset="1" stop-color="${g.to}"/>`
-      if (g.type === 'radial') return `  <radialGradient id="${id}">${stops}</radialGradient>`
-      const v = linearGradientVector(g.angle)
-      return `  <linearGradient id="${id}" x1="${v.x1}" y1="${v.y1}" x2="${v.x2}" y2="${v.y2}">${stops}</linearGradient>`
+      const geometry = gradientGeometry(g)
+      if (geometry.type === 'radial') {
+        const attrs =
+          g.center || g.radius !== undefined
+            ? ` cx="${geometry.center.x}" cy="${geometry.center.y}" r="${geometry.radius}"`
+            : ''
+        return `  <radialGradient id="${id}"${attrs}>${stops}</radialGradient>`
+      }
+      return `  <linearGradient id="${id}" x1="${geometry.start.x}" y1="${geometry.start.y}" x2="${geometry.end.x}" y2="${geometry.end.y}">${stops}</linearGradient>`
     })
   return defs.length > 0 ? `<defs>\n${defs.join('\n')}\n</defs>` : ''
 }

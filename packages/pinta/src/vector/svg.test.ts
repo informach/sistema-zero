@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'bun:test'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { createVectorBackgroundAsset } from '../core/project'
 import { fontFamilyLabel, VECTOR_FONT_FAMILIES, type VectorShape } from './model'
 import { vectorToPortableSvg } from './portableSvg'
 import { gradientDefsMarkup, shapeToMarkup, textLines, vectorToSvg } from './svg'
+import { GradientDefs } from './VectorFrameSvg'
 
 const base = { fill: '#78dc52', stroke: null, opacity: 1, rotation: 0 }
 
@@ -112,6 +115,48 @@ describe('degradê (gradient)', () => {
       fill: { type: 'radial', from: '#ffffff', to: '#000000', angle: 90 },
     }
     expect(gradientDefsMarkup([radial])).toContain('<radialGradient id="pin-grad-g2">')
+  })
+
+  it('degradês ajustados têm a mesma geometria no editor e no SVG exportado', () => {
+    const linear: VectorShape = {
+      ...gradShape,
+      fill: {
+        type: 'linear',
+        from: '#ff2121',
+        to: '#003fad',
+        angle: 0,
+        start: { x: 0.2, y: 0.1 },
+        end: { x: 0.9, y: 0.8 },
+      },
+    }
+    const radial: VectorShape = {
+      ...gradShape,
+      id: 'g2',
+      fill: {
+        type: 'radial',
+        from: '#ffffff',
+        to: '#000000',
+        angle: 0,
+        center: { x: 0.25, y: 0.2 },
+        radius: 0.8,
+      },
+    }
+    const exported = gradientDefsMarkup([linear, radial])
+    const rendered = renderToStaticMarkup(
+      createElement('svg', null, createElement(GradientDefs, { shapes: [linear, radial] })),
+    )
+    for (const attribute of [
+      'x1="0.2"',
+      'y1="0.1"',
+      'x2="0.9"',
+      'y2="0.8"',
+      'cx="0.25"',
+      'cy="0.2"',
+      'r="0.8"',
+    ]) {
+      expect(exported).toContain(attribute)
+      expect(rendered).toContain(attribute)
+    }
   })
 
   it('sem degradê o markup fica idêntico (defs vazio)', () => {

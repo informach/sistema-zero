@@ -7,6 +7,7 @@
 import type { JSX, MouseEvent, PointerEvent } from 'react'
 import { memo, useEffect } from 'react'
 import { ensureVectorFontsForShapes } from './fonts'
+import { gradientGeometry } from './gradient'
 import {
   gradientId,
   isVectorGradient,
@@ -14,7 +15,7 @@ import {
   type VectorShape,
   visibleShapes,
 } from './model'
-import { linearGradientVector, shapeCommonAttrs, shapeGeometryAttrs } from './svg'
+import { shapeCommonAttrs, shapeGeometryAttrs } from './svg'
 
 /**
  * `<defs>` React com um gradiente por shape de preenchimento degradê — os
@@ -35,16 +36,29 @@ export function GradientDefs({ shapes }: { shapes: VectorShape[] }): JSX.Element
             <stop offset="1" stopColor={g.to} />
           </>
         )
-        if (g.type === 'radial') {
+        const geometry = gradientGeometry(g)
+        if (geometry.type === 'radial') {
           return (
-            <radialGradient key={id} id={id}>
+            <radialGradient
+              key={id}
+              id={id}
+              cx={g.center || g.radius !== undefined ? geometry.center.x : undefined}
+              cy={g.center || g.radius !== undefined ? geometry.center.y : undefined}
+              r={g.center || g.radius !== undefined ? geometry.radius : undefined}
+            >
               {stops}
             </radialGradient>
           )
         }
-        const v = linearGradientVector(g.angle)
         return (
-          <linearGradient key={id} id={id} x1={v.x1} y1={v.y1} x2={v.x2} y2={v.y2}>
+          <linearGradient
+            key={id}
+            id={id}
+            x1={geometry.start.x}
+            y1={geometry.start.y}
+            x2={geometry.end.x}
+            y2={geometry.end.y}
+          >
             {stops}
           </linearGradient>
         )

@@ -25,6 +25,11 @@ export interface VectorGradient {
   to: string
   /** Graus (só `linear`): 0 = →, 90 = ↓. Ignorado no radial. */
   angle: number
+  /** Coordenadas proporcionais à caixa da forma; ausentes preservam o degradê antigo. */
+  start?: Vec2
+  end?: Vec2
+  center?: Vec2
+  radius?: number
 }
 
 /** Preenchimento: cor sólida (hex ou `'none'`) OU degradê. */
@@ -209,11 +214,19 @@ export function isVectorGradient(value: unknown): value is VectorGradient {
 /** Normaliza um preenchimento vindo de fonte não confiável; `null` = inválido. */
 function sanitizeFill(raw: unknown): VectorFill | null {
   if (isVectorGradient(raw)) {
+    const validPoint = (point: unknown): point is Vec2 =>
+      isVec2(point) && point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1
+    const radius =
+      isFiniteNumber(raw.radius) && raw.radius >= 0.05 && raw.radius <= 1.5 ? raw.radius : undefined
     return {
       type: raw.type,
       from: raw.from,
       to: raw.to,
       angle: isFiniteNumber(raw.angle) ? ((raw.angle % 360) + 360) % 360 : 90,
+      ...(raw.type === 'linear' && validPoint(raw.start) ? { start: raw.start } : {}),
+      ...(raw.type === 'linear' && validPoint(raw.end) ? { end: raw.end } : {}),
+      ...(raw.type === 'radial' && validPoint(raw.center) ? { center: raw.center } : {}),
+      ...(raw.type === 'radial' && radius !== undefined ? { radius } : {}),
     }
   }
   return isVectorColor(raw) ? raw : null

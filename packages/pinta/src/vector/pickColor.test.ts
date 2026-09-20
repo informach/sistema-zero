@@ -209,6 +209,22 @@ describe('colorAtPoint (qual cor sai da forma)', () => {
     expect(colorAtPoint(forma, { x: 5, y: 5 })).toBe('#eeeeee')
   })
 
+  it('conta-gotas acompanha o brilho redondo deslocado e o novo alcance', () => {
+    const forma = rect('offset', [0, 0, 100, 100], {
+      fill: { ...radial, center: { x: 0.2, y: 0.2 }, radius: 0.3 },
+    })
+    expect(colorAtPoint(forma, { x: 20, y: 20 })).toBe('#111111')
+    expect(colorAtPoint(forma, { x: 50, y: 50 })).toBe('#eeeeee')
+  })
+
+  it('conta-gotas acompanha as pontas reposicionadas do linear', () => {
+    const forma = rect('endpoints', [0, 0, 100, 100], {
+      fill: { ...linear(0), start: { x: 0.5, y: 0 }, end: { x: 0.5, y: 1 } },
+    })
+    expect(colorAtPoint(forma, { x: 50, y: 10 })).toBe('#111111')
+    expect(colorAtPoint(forma, { x: 50, y: 90 })).toBe('#eeeeee')
+  })
+
   it('degradê numa forma GIRADA segue o que a criança vê', () => {
     // Deitado (0°) num retângulo girado 90°: na tela o começo fica EM CIMA e o
     // fim EMBAIXO. Sem desfazer a rotação, o ponto de cima cairia no meio (0,5)

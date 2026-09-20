@@ -60,6 +60,31 @@ describe('sanitizeVectorShape — preenchimento degradê', () => {
     })
     expect(shape).toBeNull()
   })
+
+  it('preserva pontos válidos e descarta geometria inválida', () => {
+    const shape = sanitizeVectorShape({
+      ...base,
+      type: 'rect',
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 10,
+      rx: 0,
+      fill: {
+        type: 'radial',
+        from: '#ffffff',
+        to: '#000000',
+        angle: 0,
+        center: { x: 0.2, y: 0.3 },
+        radius: 0.8,
+        start: { x: Number.NaN, y: 0.2 },
+      },
+    })
+    if (!shape || !isVectorGradient(shape.fill)) throw new Error('degradê esperado')
+    expect(shape.fill.center).toEqual({ x: 0.2, y: 0.3 })
+    expect(shape.fill.radius).toBe(0.8)
+    expect(shape.fill.start).toBeUndefined()
+  })
 })
 
 describe('sanitizeVectorShape — grupo', () => {
