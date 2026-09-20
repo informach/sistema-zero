@@ -7,13 +7,13 @@
   projetos pode estar vazia ou já ter outros cartões.
 - **Vitória do dia:** o jogo dela rodando fora da aula, num projeto com o nome que ela escolheu, e
   um segundo projeto vazio guardado ao lado.
-- **Seções hoje:** 9 · **Seções propostas:** 6
-- **Clipes hoje:** 7 · **Clipes propostos:** 5
+- **Seções hoje:** 9 · **Seções propostas:** 7
+- **Clipes hoje:** 7 · **Clipes propostos:** 6
 - **Cenas:** 1 (`copy-vs-original`, já construída no catálogo)
 - **Testes de múltipla escolha hoje:** 3 no meio da aula, mais 2 no quiz final ·
   **Propostos:** 0 no meio da aula, 2 no quiz final (um deles trocado)
 - **Textos corridos:** 0. Os 3 que existiam saíram em 20/09/2026 (ver a nota de decisão abaixo)
-- **Manifesto:** `aulas/meu-jeito-aula-01.manifesto.json`, 18 blocos e 6 seções
+- **Manifesto:** `aulas/meu-jeito-aula-01.manifesto.json`, 20 blocos e 7 seções
 
 > **Nota de decisão de produto, 20/09/2026.** Nos cursos infantis não existe texto corrido. Os 3
 > blocos de texto desta aula saíram do manifesto, e as três seções que os tinham já tinham clipe.
@@ -66,7 +66,8 @@
 | O botão Mostrar menu | Operação de interface | Não | | Dentro do gesto, nas duas vezes em que a aula precisa dele | Dentro da aula e da ferramenta o menu começa recolhido, então esse botão é a única porta para a Carreira e para o Estúdio. Ele deixou de ser assunto ("dá para ganhar espaço") e virou passo do caminho |
 
 Oito coisas, duas concretizações, e só uma delas é cena. A dor da extensão acontece no Estúdio de
-quem faz a aula, e é essa triagem que tira a aula de 9 para 6 seções.
+quem faz a aula. Os movimentos do jogo ficam em 6 seções; a seção do caderno, logo após a
+apresentação, leva a proposta a 7.
 
 ## Diagnóstico do desenho atual
 
@@ -103,15 +104,15 @@ lista vazia é a abertura natural do gesto de criar o primeiro projeto, não uma
 
 > **Nota de arquitetura.** A regra das duas colunas do player manda só uma coisa para a direita por
 > seção: ou a cena, ou o Estúdio embarcado. **Nenhuma seção desta aula precisou ser dividida**, e o
-> motivo é a forma do dia: a aula tem uma cena só, na seção 4, e o trabalho no Estúdio acontece na
+> motivo é a forma do dia: a aula tem uma cena só, na seção 5, e o trabalho no Estúdio acontece na
 > ferramenta externa (`externalTool: "estudio"`), não num Estúdio embarcado. Sem `workspaceKey` em
 > nenhuma seção, a coluna da direita nunca fica disputada. A conferência antes de voltar à aba da
 > aula deixou de ser bloco em 20/09/2026: ela agora acontece dentro do clipe, na tela, e o que
 > sobra do lado esquerdo são clipes e falas, que ficam à esquerda do mesmo jeito.
 >
 > **Duas consequências no texto das falas.** Primeira: a fala do Zappy tem limite de 400 caracteres,
-> então as instruções longas das seções 3 e 5 viraram duas e três falas seguidas. Elas ficam na mesma
-> coluna e na mesma ordem, e são lidas como uma fala só. Segunda: a abertura da seção 4 não pode
+> então as instruções longas das seções 4 e 6 viraram duas e três falas seguidas. Elas ficam na mesma
+> coluna e na mesma ordem, e são lidas como uma fala só. Segunda: a abertura da seção 5 não pode
 > dizer "olha as duas telas aí embaixo", porque acima de 1080 px de coluna a cena fica ao lado, e não
 > embaixo. A fala passa a dizer "na bancada desta seção".
 
@@ -128,7 +129,20 @@ lista vazia é a abertura natural do gesto de criar o primeiro projeto, não uma
      do seu jogo para o Estúdio Completo. No fim você vai saber qual cartão abrir para continuar."
      Duração alvo: 25 a 35 segundos.
 
-### Seção 2. Um projeto do zero, e um bloco que não está lá
+### Seção 2. Seu caderno para criar do seu jeito
+
+- **Intenção:** material
+- **Por que existe:** este caderno acompanha a cópia do jogo e as criações no Pinta. Quem faz a
+  aula precisa encontrá-lo antes do primeiro passo no Estúdio Completo.
+- **Conclui quando:** 90% do `video-caderno` é assistido. Baixar o PDF não é obrigatório.
+- **Blocos:**
+  1. `video` (`video-caderno`, "Seu caderno para criar do seu jeito"). Vídeo de 20 a 30 segundos
+     que mostra o botão Baixar, a confirmação Baixado e uma página real do PDF. Gravar depois de
+     anexar o arquivo e conferir a página escolhida.
+  2. `materials` (`materiais-caderno`, "Caderno do Jogo do Meu Jeito"). O PDF fica abaixo do vídeo
+     e continua disponível nesta aula. O arquivo é vinculado no admin, não no manifesto.
+
+### Seção 3. Um projeto do zero, e um bloco que não está lá
 
 - **Intenção:** dor
 - **Por que existe:** é a melhor dor do curso. Ela reproduz sempre, o conserto é rápido, e é ela que
@@ -163,7 +177,7 @@ propósito, virou o balão acima. O atalho **Abrir meu Estúdio** continua onde 
 
 **Autoconferência no fim do clipe `video-lista-e-projeto`:** "No seu projeto de teste, você vê o cartão em Meus Jogos e percebe que Jogo 2D ainda não aparece entre os blocos? Deixe essa falta visível; vamos resolvê-la na próxima seção."
 
-### Seção 3. Os bloquinhos vêm de um pacote que você instala
+### Seção 4. Os bloquinhos vêm de um pacote que você instala
 
 - **Intenção:** construção
 - **Por que existe:** é a resposta da seção anterior, e o gesto que quem faz a aula vai repetir em todo
@@ -184,7 +198,7 @@ propósito, virou o balão acima. O atalho **Abrir meu Estúdio** continua onde 
      aparecendo aqui." **Retirar "com uns cartões" e "procura o cartão"**, porque a janela tem um
      item só. Duração alvo: 50 a 60 segundos.
 
-**Junta com a seção 2 o que hoje é uma seção só, e separa o que hoje está grudado.** A conta fecha:
+**Junta com a seção 3 o que hoje é uma seção só, e separa o que hoje está grudado.** A conta fecha:
 duas seções continuam sendo duas, mas o corte passou a ser no lugar certo, entre a falta e o
 conserto.
 
@@ -192,7 +206,7 @@ conserto.
 
 **Autoconferência no fim do clipe `video-extensao`:** "No projeto de teste, a categoria Jogo 2D apareceu na coluna dos blocos? Compare com a falta que você acabou de ver."
 
-### Seção 4. Uma cópia vai, e o original fica
+### Seção 5. Uma cópia vai, e o original fica
 
 - **Intenção:** conceito
 - **Por que existe:** é o único conceito da aula que a tela não prova sozinha. Para ver as duas
@@ -210,7 +224,7 @@ conserto.
 o mesmo trabalho com quem faz a aula mexendo, e ainda cobre a parte que o diagrama não cobria: o que
 acontece com o outro lado depois que existem dois jogos.
 
-### Seção 5. Traga o jogo do Dia 5 para o seu Estúdio
+### Seção 6. Traga o jogo do Dia 5 para o seu Estúdio
 
 - **Intenção:** construção
 - **Por que existe:** é a vitória do dia, e é um percurso de navegação contínuo que não pode ser
@@ -236,7 +250,7 @@ acontece com o outro lado depois que existem dois jogos.
      duas vezes, no mesmo lugar: uma para ir à Carreira e outra para voltar a Criar › Estúdio. É
      a aplicação da nota de decisão de plataforma do topo deste relatório.
   4. `video` (`video-importar`, "Do Dia 5 até o seu Estúdio"). O clipe do import, com o caminho inteiro preservado. **Encurtar as
-     definições de exportar e importar**, que a cena da seção 4 já entregou, e ficar no gesto.
+     definições de exportar e importar**, que a cena da seção 5 já entregou, e ficar no gesto.
      **Manter** o contraste das duas colunas da esquerda (o projeto importado já tem Jogo 2D e ela
      não instalou nada) e o renomear pela barra. **Mostrar o Mostrar menu nos dois momentos em que
      ele é usado**, sempre colado na beirada esquerda da tela. **Manter como ajuda condicional**,
@@ -262,7 +276,7 @@ outra aula:** ganhar espaço deixou de ser uma coisa que alguém precisa fazer.
 
 **Autoconferência no fim do clipe `video-importar`:** "No cartão com o nome que você escolheu, a nave responde às setas e o jogo ainda tem tiros, pedras e placar? Confira que esse cartão é o jogo completo, diferente do projeto de teste."
 
-### Seção 6. Teste, envie e fecha
+### Seção 7. Teste, envie e fecha
 
 - **Intenção:** entrega e fechamento
 - **Por que existe:** fecha o ciclo com o jogo rodando e guarda as duas ideias do dia.
@@ -315,7 +329,7 @@ sendo a entrega da galeria revisada pelo professor**, que já existe e já está
 
 | Pergunta | Destino | Por quê |
 |---|---|---|
-| "Depois de exportar o jogo, o que aconteceu com o original da aula?" | **Trocada** | Vira o palpite e a primeira meta da cena `copy-vs-original`, dentro da seção 4. Repetir no fim é eco |
+| "Depois de exportar o jogo, o que aconteceu com o original da aula?" | **Trocada** | Vira o palpite e a primeira meta da cena `copy-vs-original`, dentro da seção 5. Repetir no fim é eco |
 | "Você recebeu o arquivo .szproject.json e quer abri-lo no Estúdio. Qual ação usa?" | **Fica** | Aplica duas ideias diferentes da aula numa situação nova, que é a função declarada do quiz |
 
 **Pergunta nova no lugar da primeira:** "O seu projeto de teste abriu sem a categoria Jogo 2D, e o
@@ -406,13 +420,14 @@ esquerda.
 | Chave | Título do vídeo | O que mostra | Origem (chave v6) | Duração alvo | Reaproveita gravação? |
 |---|---|---|---|---|---|
 | `video-abertura` | O seu jogo rodando fora da aula | o jogo do Dia 5 rodando dentro do Estúdio Completo | `video-abertura-v6` | 25 a 35 s | fala sim, com a lista de passos substituída pela fala nova |
+| `video-caderno` | Seu caderno para criar do seu jeito | onde baixar o PDF e como consultar uma página real | novo | 20 a 30 s | gravação nova, após vincular o PDF |
 | `video-lista-e-projeto` | Onde o Jogo 2D não está | Meus Jogos, os dois botões, criar o projeto de teste passo a passo na tela, a pausa para ir fazer, a conferência ao retomar e a falta do Jogo 2D | `video-lista` mais a primeira metade de `video-projeto-teste`, mais o texto de orientação | 55 a 70 s | funde dois clipes, e termina na falta |
 | `video-extensao` | Instalar os bloquinhos do Jogo 2D | três pontinhos, O meu jogo, Extensões, Instalar, Fechar e a volta pela marca | segunda metade de `video-projeto-teste` | 50 a 60 s | fala sim, com o corte de "procura o cartão" |
 | `video-importar` | Do Dia 5 até o seu Estúdio | o caminho inteiro até o jogo rodando, o Mostrar menu nas duas vezes, o renomear, a pausa para ir fazer e a conferência ao retomar | `video-importar` mais o texto de orientação | 90 a 110 s | fala sim, com as definições encurtadas |
 | `video-fecho` | Dois cartões na sua lista | o gesto de entregar na tela com a conferência dos critérios, o jogo fora da aula e o anúncio do Pinta | `video-fecho-v6` mais o texto de entrega | 50 a 65 s | fala sim |
 
 **Saem dois clipes:** o `video-ponte`, cujo diagrama a cena substitui com vantagem, e o
-`video-guardar`, que ensinava a esperar um selo. **Saldo:** de 7 para 5 clipes, e o corte de
+`video-guardar`, que ensinava a esperar um selo. Entra o `video-caderno`. **Saldo:** de 7 para 6 clipes, e o corte de
 minutagem é maior que o de contagem, porque a definição de exportar e importar saiu da narração do
 clipe longo. **Nenhum clipe novo entrou com a saída do texto corrido:** as três seções que tinham
 texto já tinham clipe, e o que era lista escrita virou gesto e conferência dentro do clipe que já

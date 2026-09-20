@@ -113,6 +113,19 @@ Não são molde, são pisos de qualidade:
   raio-X), ou a vitória é explicada com todas as letras.
 - **O estado do projeto ao fim da aula é exatamente o que a aula seguinte assume.**
 
+### Caderno do curso: regra para os próximos cursos
+
+Todo curso infantil tem um caderno para consulta. Na **primeira aula**, a seção 1 apresenta o curso
+e a **seção 2 apresenta o caderno**, antes da primeira atividade. Não é preciso criar uma aula de
+boas-vindas só para o PDF. O Desafio do Primeiro Jogo já tem uma apresentação própria do caderno;
+nos cursos seguintes, aplicar esta regra na Aula 1.
+
+A seção tem intenção `material`, um vídeo curto que mostra onde o caderno fica e como usá-lo, e um
+bloco `materials` com o PDF logo abaixo. A conclusão depende de assistir a 90% do vídeo. O
+download fica disponível, mas não é obrigatório para avançar. O arquivo real é vinculado no admin;
+o manifesto declara o bloco com `items: []`. Gravar o vídeo depois de anexar o PDF, mostrando uma
+página verdadeira do caderno. Registrar a seção no relatório, no manifesto e no roteiro da aula.
+
 ## 6. Regras de língua e de execução (herdadas, obrigatórias)
 
 - Português brasileiro com acentuação correta.

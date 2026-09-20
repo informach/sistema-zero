@@ -9,13 +9,11 @@
 - **Vitória do dia:** a telinha de 480 por 270 aparece dentro da área do jogo, com a borda e a cor
   que ela escolheu. O Dino termina criado e invisível, de propósito, com a pergunta "cadê o Dino"
   aberta para a Aula 2.
-- **Seções hoje:** 10 · **Seções propostas:** 8 no manifesto, a partir dos 7 movimentos desta
-  proposta. Um movimento abre em duas seções, porque a regra das duas colunas admite uma única
-  coisa na direita por seção: a cena da tela e a montagem da borda viram *Descubra onde a telinha
-  começa e termina* mais *Mostre o limite no seu jogo*. A ordem e o conteúdo são os mesmos.
-- **Clipes hoje:** 6 · **Clipes propostos:** 6 (dois são fusão e dois encolhem bastante). A
-  contagem não muda com o redesenho da entrega: nenhum clipe entrou nem saiu, o `video-fecho` é que
-  cresceu.
+- **Seções hoje:** 10 · **Seções propostas:** 9 no manifesto. Os 7 movimentos do jogo viram 8
+  seções porque a cena da tela e a montagem da borda ficam separadas. Entre a apresentação e o
+  primeiro movimento, entra a seção do caderno do curso.
+- **Clipes hoje:** 6 · **Clipes propostos:** 7. Os 6 clipes do jogo permanecem, com fusões e cortes,
+  e entra um vídeo curto para apresentar o caderno.
 - **Fecho da entrega:** a conferência e a recapitulação saíram do balão e foram para o roteiro do
   `video-fecho`. Balão depois da ferramenta não existe para quem faz a aula, porque o Estúdio fica
   sozinho na coluna da direita e todo o resto na esquerda.
@@ -39,7 +37,8 @@
 | Confirmar um campo e olhar a área do jogo | Não é conceito, é operação de interface | Não | | Instrução dentro da seção de teste | Hoje isso está espalhado pelas orientações. É instrução, não conteúdo |
 
 Dez coisas, três concretizações. Sete conceitos não ganham cena nenhuma, e é essa triagem que
-deixa a aula caber em 7 movimentos, que viram 8 seções no manifesto.
+deixa o jogo caber em 7 movimentos, que viram 8 seções no manifesto. A seção do caderno vem antes
+do primeiro movimento e leva o total a 9.
 
 ## Decisão de produto de 20/09/2026. A acessibilidade sai deste curso
 
@@ -124,7 +123,20 @@ Dino`), e a referência do curso ainda guarda a nomenclatura antiga (`Jogo 2D �
      enumeração dos passos da gravação antiga, que diz três e volta a bater com a aula. Tom de
      boas-vindas de primeira vez, nunca de reencontro. Duração alvo: 45 a 60 segundos.
 
-### Seção 2. Abra o lugar onde o jogo se arruma
+### Seção 2. Seu caderno do Corre, Dino!
+
+- **Intenção:** material
+- **Por que existe:** o caderno acompanha todo o curso e precisa ser encontrado logo depois da
+  apresentação, antes de começar a montar o jogo.
+- **Conclui quando:** 90% do `video-caderno` é assistido. Baixar o PDF não é obrigatório.
+- **Blocos:**
+  1. `video` (`video-caderno`, "Seu caderno do Corre, Dino!"). Vídeo de 20 a 30 segundos que mostra
+     o botão Baixar, a confirmação Baixado e uma página real do PDF ligada à aula. Explica que o
+     caderno serve para consultar os passos do jogo durante o curso. Gravar depois de anexar o PDF.
+  2. `materials` (`materiais-caderno`, "Caderno do Corre, Dino!"). O PDF fica abaixo do vídeo e
+     continua disponível nesta aula. O arquivo é vinculado no admin, não no manifesto.
+
+### Seção 3. Abra o lugar onde o jogo se arruma
 
 - **Intenção:** construção
 - **Por que existe:** dois gestos que formam um movimento só, o de abrir o palco. E o segundo deles
@@ -150,7 +162,7 @@ Dino`), e a referência do curso ainda guarda a nomenclatura antiga (`Jogo 2D �
 **Junta as duas primeiras seções de hoje.** *Um lugar para começar* sozinha é um encaixe com vídeo
 próprio, e a confirmação cedo continua existindo: ela vem no bloco de Estúdio desta mesma seção.
 
-### Seção 3. Descubra onde a telinha começa e termina
+### Seção 4. Descubra onde a telinha começa e termina
 
 - **Intenção:** conceito
 - **Por que existe:** a pergunta da seção anterior ficou aberta, e a cena entrega o que o projeto
@@ -162,7 +174,7 @@ próprio, e a confirmação cedo continua existindo: ela vem no bloco de Estúdi
      personagem do elenco. O palco abre em 800 por 480 com a borda escondida, que é exatamente o
      estado em que ela acabou de deixar o jogo dela.
 
-### Seção 4. Mostre o limite no seu jogo
+### Seção 5. Mostre o limite no seu jogo
 
 - **Intenção:** construção
 - **Por que existe:** a cena mostrou o instrumento, e agora ele entra no projeto dela.
@@ -187,7 +199,7 @@ não tem: hoje a cena roda antes de a criança ter qualquer motivo para querer u
 direita por seção, e a cena e o Estúdio brigariam pelo mesmo espaço. Separadas, a cena abre inteira
 e a montagem fica ao lado do projeto dela.
 
-### Seção 5. Onde o Dino vai ficar na tela
+### Seção 6. Onde o Dino vai ficar na tela
 
 - **Intenção:** conceito
 - **Por que existe:** no bloco seguinte ela vai escrever 110 e 150 em dois campos. Sem sentir a
@@ -203,7 +215,7 @@ e a montagem fica ao lado do projeto dela.
   2. `interactive`: cena `coordinates`, "O endereço na tela". Elenco: Dino. Cenário: `corre-dino`.
      O palco abre em x 110, y 150, os mesmos números do bloco que vem a seguir.
 
-### Seção 6. Crie o seu dinossauro
+### Seção 7. Crie o seu dinossauro
 
 - **Intenção:** construção
 - **Por que existe:** é o primeiro personagem do jogo dela, e a seção termina numa surpresa de
@@ -224,7 +236,7 @@ e a montagem fica ao lado do projeto dela.
   3. `studio`: conferência dos quatro campos e da posição na pilha.
   4. `dialogue`: "Olha a área do jogo. O Dino não apareceu."
 
-### Seção 7. Criar e mostrar são duas coisas diferentes
+### Seção 8. Criar e mostrar são duas coisas diferentes
 
 - **Intenção:** conceito
 - **Por que existe:** a tela continua vazia e, nesse instante, a criança acha que errou. O conceito
@@ -240,7 +252,7 @@ e a montagem fica ao lado do projeto dela.
 **Sem mudança de estrutura.** O par dor mais conceito desta seção já está certo no v6 e serve de
 modelo para as outras.
 
-### Seção 8. Teste, envie e fecha
+### Seção 9. Teste, envie e fecha
 
 - **Intenção:** entrega e fechamento
 - **Por que existe:** fecha o dia com o projeto conferido e guarda as ideias, deixando a pergunta
@@ -333,15 +345,16 @@ contraste. Ela entra na **Aula 2**, na seção em que a criança passa a ter uma
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 |---|---|---|---|---|
 | `video-abertura` | o jogo pronto rodando e o resultado de hoje | `video-abertura-v7` | 45 a 60 s | fala quase toda, tela não (regravar no Estúdio atual). Manter a enumeração dos três passos |
+| `video-caderno` | onde baixar o caderno e como consultar uma página real | novo | 20 a 30 s | gravação nova, após vincular o PDF |
 | `video-area-e-tela` | a área `Ao iniciar`, o tabuleiro, a tela 480 × 270 e a cor pintando tudo | `video-iniciar-v7` mais a primeira metade de `video-tela-v7` | 70 a 85 s | funde dois clipes, tela regravada. Termina na confusão, sem resolver |
 | `video-borda` | o encaixe da borda e o retângulo aparecendo | segunda metade de `video-tela-v7` | 55 a 65 s | fala sim, tela não |
 | `video-coordenadas` | ponte curta sobre x e y, sem marcador animado | `video-coordenadas-demo-v7` | 20 a 30 s | fala parcial. Cortar tudo o que descreve a demonstração antiga |
 | `video-criar-dino` | pegar, configurar e pintar o Dino, e ele não aparecer | `video-dino-v7` | 50 a 60 s | fala sim, com dois cortes (coordenadas e a frase da grama) |
 | `video-fecho` | o teste e o envio, e então a recapitulação dos três passos e o gancho da Aula 2 | `video-fecho-v7` mais o teste e o envio regravados | 50 a 65 s | fala sim, com a substituição do escopo absoluto. Absorve o balão de conferência da entrega |
 
-**Saldo:** de 6 clipes para 6. Em minutagem a conta cai, porque o clipe das coordenadas perde o
-marcador animado (a cena faz melhor), o clipe do Dino perde o trecho dos eixos, e dois clipes viram
-um só.
+**Saldo:** de 6 clipes para 7. O vídeo do caderno é novo. Os clipes do jogo continuam mais curtos:
+o das coordenadas perde o marcador animado (a cena faz melhor), o do Dino perde o trecho dos eixos,
+e dois clipes viram um só.
 
 ## Continuidade
 

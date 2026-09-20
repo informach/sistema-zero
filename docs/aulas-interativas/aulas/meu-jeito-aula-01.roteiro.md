@@ -3,7 +3,7 @@
 ## Especificações
 
 - **Formato:** gravação de tela com narração, no Estúdio Completo.
-- **Duração:** 270 a 340 segundos de clipes; 798 palavras de narração, cerca de 5.8 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
+- **Duração:** 290 a 370 segundos de clipes; cerca de 855 palavras de narração, 6.2 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
 - **Calibração:** o Nave contra Asteroides terminado no Dia 5 do Desafio e publicado no Mural, morando dentro da aula. É o primeiro uso guiado do Estúdio Completo e do Pinta neste curso. A lista de projetos pode estar vazia ou já ter outros cartões.
 - **Conceitos nomeados:** projeto, extensão Jogo 2D, cópia, exportar e importar.
 - **Dor desta aula:** O projeto de teste novo abre sem a categoria Jogo 2D; isso acontece na ferramenta real e se resolve com a extensão.
@@ -31,7 +31,21 @@
 > "No fim da aula, você saberá qual cartão abrir para continuar criando. Olha: a nave, os tiros
 > e o placar continuam juntos na cópia."
 
-## Seção 2. Um projeto do zero, e um bloco que não está lá
+## Seção 2. Seu caderno para criar do seu jeito
+
+### Clipe `video-caderno` · Seu caderno para criar do seu jeito
+**Duração alvo:** 20 a 30 segundos · **Palavras:** cerca de 55
+
+**Na tela:** Mostrar o bloco de materiais logo abaixo deste vídeo, tocar em **Baixar** e mostrar **Baixado**. Abrir uma página real do PDF e apontar um passo que ela ajuda a conferir neste curso. Conferir a página escolhida antes de gravar.
+
+**Narração:**
+> "Este é o seu caderno para criar do seu jeito. Ele ajuda você a acompanhar a cópia do jogo e,
+> nas próximas aulas, suas criações no Pinta. O botão **Baixar** está logo abaixo. Você pode ler o
+> PDF na tela ou guardá-lo para consultar depois. Agora vamos começar pelo Estúdio Completo."
+
+**Abaixo do clipe:** bloco `materiais-caderno`, com o PDF enviado pelo admin. O download não é exigido para avançar; assistir a 90% do clipe conclui esta seção. O caderno continua acessível aqui na Aula 1.
+
+## Seção 3. Um projeto do zero, e um bloco que não está lá
 
 ### Clipe `video-lista-e-projeto` · Onde o Jogo 2D não está
 **Duração alvo:** 55 a 70 segundos · **Palavras:** 186
@@ -69,7 +83,7 @@
 > Jogos e percebe que Jogo 2D ainda não aparece entre os blocos? Deixe essa falta visível; vamos
 > resolvê-la na próxima seção."
 
-## Seção 3. Os bloquinhos vêm de um pacote que você instala
+## Seção 4. Os bloquinhos vêm de um pacote que você instala
 
 ### Clipe `video-extensao` · Instalar os bloquinhos do Jogo 2D
 **Duração alvo:** 50 a 60 segundos · **Palavras:** 163
@@ -102,7 +116,7 @@
 > lá e volte a esta aula para comparar. No projeto de teste, a categoria Jogo 2D apareceu na
 > coluna dos blocos? Compare com a falta que você acabou de ver."
 
-## Seção 5. Traga o jogo do Dia 5 para o seu Estúdio
+## Seção 6. Traga o jogo do Dia 5 para o seu Estúdio
 
 ### Clipe `video-importar` · Do Dia 5 até o seu Estúdio
 **Duração alvo:** 90 a 110 segundos · **Palavras:** 261
@@ -150,7 +164,7 @@
 > às setas e o jogo ainda tem tiros, pedras e placar? Confira que esse cartão é o jogo completo,
 > diferente do projeto de teste."
 
-## Seção 6. Teste, envie e fecha
+## Seção 7. Teste, envie e fecha
 
 ### Clipe `video-fecho` · Dois cartões na sua lista
 **Duração alvo:** 50 a 65 segundos · **Palavras:** 119

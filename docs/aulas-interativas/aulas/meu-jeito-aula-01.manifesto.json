@@ -22,6 +22,18 @@
       "plannedVideo": "Título: O seu jogo rodando fora da aula\n\nOrigem: video-abertura-v6, com fala nova. Duração alvo: 25 a 35 segundos.\n\nO que passa na tela: o jogo da nave do Dia 5 rodando dentro do Estúdio Completo, num cartão que já tem nome escolhido. Nada de passeio pela interface, só o resultado do dia.\n\nFala: \"O seu jogo da nave já está pronto, e hoje ele sai da aula. A gente vai preparar um projeto do zero, descobrir uma coisa importante sobre ele, e trazer uma cópia do seu jogo para o Estúdio Completo. No fim você vai saber qual cartão abrir para continuar.\"\n\nCortes obrigatórios: sai a contagem antiga de quatro passos. Não prometer desbloqueio, selo nem tarefa extra. Não mostrar a lista vazia como comportamento esperado depois de salvar na conta."
     },
     {
+      "key": "video-caderno",
+      "plannedVideo": "Título: Seu caderno para criar do seu jeito\n\nGravar depois que o PDF estiver vinculado no bloco de materiais. Mostrar o bloco logo abaixo do vídeo, tocar em Baixar, mostrar Baixado e abrir uma página real do caderno. Apontar a página usada como referência para uma ação deste curso, sem inventar conteúdo que o arquivo não tenha.\n\nFala: \"Este é o seu caderno para criar do seu jeito. Ele ajuda você a acompanhar a cópia do jogo e, nas próximas aulas, suas criações no Pinta. O botão Baixar está logo abaixo. Você pode ler o PDF na tela ou guardá-lo para consultar depois. Agora vamos começar pelo Estúdio Completo.\"\n\nNão exigir o download para avançar: esta seção termina depois de 90% deste vídeo. O arquivo continua disponível aqui na primeira aula. Duração alvo: 20 a 30 segundos."
+    },
+    {
+      "key": "materiais-caderno",
+      "content": {
+        "kind": "materials",
+        "title": "Caderno do Jogo do Meu Jeito",
+        "items": []
+      }
+    },
+    {
       "key": "fala-projeto-teste",
       "content": {
         "kind": "dialogue",
@@ -276,6 +288,20 @@
       "completion": {
         "version": 1,
         "blockIds": ["video-abertura"]
+      }
+    },
+    {
+      "key": "caderno",
+      "title": "Seu caderno para criar do seu jeito",
+      "intent": "material",
+      "objective": "Encontrar o caderno do curso e saber quando consultá-lo ao copiar e personalizar o jogo.",
+      "blockKeys": ["video-caderno", "materiais-caderno"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-caderno"]
       }
     },
     {

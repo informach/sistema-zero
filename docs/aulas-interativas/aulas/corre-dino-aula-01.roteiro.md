@@ -3,7 +3,7 @@
 ## Especificações
 
 - **Formato:** gravação de tela com narração, no Estúdio embutido.
-- **Duração:** 290 a 365 segundos de clipes; 765 palavras de narração, cerca de 5.6 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
+- **Duração:** 310 a 395 segundos de clipes; cerca de 825 palavras de narração, 6 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
 - **Calibração:** projeto vazio, com a extensão Jogo 2D preparada pelo professor. É o primeiro curso da trilha Iniciante 2D e não tem pré-requisito de programação: a criança pode nunca ter programado na vida. O curso pressupõe apenas que ela sabe se virar no Estúdio (achar um bloco na coluna da esquerda, arrastar, encaixar, trocar um número). A Aula 0, de tour, saiu do curso.
 - **Conceitos nomeados:** Ao iniciar, tela do jogo, borda, coordenadas x e y, sprite, criar e mostrar.
 - **Dor desta aula:** Depois de preparar 480 por 270, a cor ocupa a área inteira; depois de criar o Dino, ele ainda não aparece. Os dois sintomas aparecem no projeto real.
@@ -36,7 +36,22 @@
 > "Hoje são três passos: abrir o lugar que prepara o jogo, montar a telinha com a cor que você
 > escolher e criar o seu Dino. No fim ele ainda não aparece. A gente vai entender por quê."
 
-## Seção 2. Abra o lugar onde o jogo se arruma
+## Seção 2. Seu caderno do Corre, Dino!
+
+### Clipe `video-caderno` · Seu caderno do Corre, Dino!
+**Duração alvo:** 20 a 30 segundos · **Palavras:** cerca de 60
+
+**Na tela:** Mostrar o bloco de materiais logo abaixo deste vídeo, tocar em **Baixar** e mostrar o botão virar **Baixado**. Abrir uma página real do PDF ligada a esta aula, sem inventar uma página antes de o caderno estar pronto.
+
+**Narração:**
+> "Este é o seu caderno do Corre, Dino! Ele reúne os passos do jogo para você consultar quando
+> quiser. Se alguma parte ficar diferente da que aparece no vídeo, abra a página daquela aula e
+> compare. O botão **Baixar** está logo abaixo. Você pode ler o PDF na tela ou guardá-lo para depois.
+> Agora vamos montar a telinha do jogo."
+
+**Abaixo do clipe:** bloco `materiais-caderno`, com o PDF enviado pelo admin. O download não é exigido para avançar; assistir a 90% do clipe conclui esta seção. O caderno continua acessível aqui na Aula 1.
+
+## Seção 3. Abra o lugar onde o jogo se arruma
 
 ### Clipe `video-area-e-tela` · A área que arruma o jogo, e a tela do Dino
 **Duração alvo:** 70 a 85 segundos · **Palavras:** 181
@@ -76,7 +91,7 @@
 > Ainda não dá para ver onde ela começa e termina. Guarda essa pergunta para a experiência que
 > vem agora."
 
-## Seção 4. Mostre o limite no seu jogo
+## Seção 5. Mostre o limite no seu jogo
 
 ### Clipe `video-borda` · A borda que mostra o limite
 **Duração alvo:** 55 a 65 segundos · **Palavras:** 135
@@ -108,7 +123,7 @@
 > "A borda é um instrumento para enxergar o limite hoje. Na próxima aula a floresta vai marcar
 > esse limite sozinha, e a borda poderá sair."
 
-## Seção 5. Onde o Dino vai ficar na tela
+## Seção 6. Onde o Dino vai ficar na tela
 
 ### Clipe `video-coordenadas` · O x, o y, e o y que cresce para baixo
 **Duração alvo:** 20 a 30 segundos · **Palavras:** 81
@@ -127,7 +142,7 @@
 > y, mais perto da parte de baixo da tela. Na bancada de agora, você muda um número de cada vez
 > e vê o Dino acompanhar."
 
-## Seção 6. Crie o seu dinossauro
+## Seção 7. Crie o seu dinossauro
 
 ### Clipe `video-criar-dino` · O seu dinossauro nasce
 **Duração alvo:** 50 a 60 segundos · **Palavras:** 144
@@ -159,7 +174,7 @@
 > tentar achá-lo. Criar e mostrar são duas coisas diferentes. A próxima experiência vai deixar
 > isso visível."
 
-## Seção 8. Teste, envie e fecha
+## Seção 9. Teste, envie e fecha
 
 ### Clipe `video-fecho` · Os três passos de hoje
 **Duração alvo:** 50 a 65 segundos · **Palavras:** 130

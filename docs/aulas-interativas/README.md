@@ -15,9 +15,9 @@ levantadas antes da inclusão do encerramento do Desafio.
 | Curso | Aulas | Seções anteriores | Propostas | Clipes anteriores | Propostos |
 |---|---:|---:|---:|---:|---:|
 | Desafio do Primeiro Jogo | 7 | 78 | 58 | 61 | 47 |
-| Corre, Dino! | 13 | 127 | 91 | 86 | 72 |
-| O Jogo do Meu Jeito | 8 | 76 | 56 | 55 | 48 |
-| **Total** | **28** | **281** | **205** | **202** | **167** |
+| Corre, Dino! | 13 | 127 | 92 | 86 | 73 |
+| O Jogo do Meu Jeito | 8 | 76 | 57 | 55 | 49 |
+| **Total** | **28** | **281** | **207** | **202** | **169** |
 
 As 11 cenas novas foram construídas e os defeitos do catálogo, corrigidos: o catálogo foi de 45
 para **56 cenas**. Os 28 manifestos usam 53 experimentações e passam no validador, sem nenhuma aula
@@ -43,6 +43,11 @@ certificado configurado no admin e só pode ser publicado depois de vincular a g
 As descrições de curso e os resumos de módulo em `modulos-*.md` são textos para a área Kids. Ao
 configurá-los no admin, fale diretamente com quem faz o curso: use “você” e “seu jogo”, sem se
 referir à pessoa como “a criança” ou “o aluno”.
+
+**Caderno em cada curso:** a primeira aula apresenta o PDF na seção 2, depois do vídeo de abertura
+e antes da primeira atividade. A seção usa um vídeo curto e um bloco de materiais; 90% do vídeo
+conclui a seção, sem exigir download. O PDF é anexado no admin antes de gravar o vídeo. A regra para
+os próximos cursos está no `BRIEFING.md`, em “Regras de seção”.
 
 ## Como ler uma análise de aula
 
@@ -98,9 +103,9 @@ Tudo em staging. A promoção para produção fica para depois de as aulas estar
 1. ~~Corrigir os defeitos do catálogo de cenas~~ feito
 2. ~~Construir as duas ações novas do motor e as 11 cenas novas~~ feito, catálogo em 56
 3. ~~Escrever os 28 manifestos~~ feito, os 28 passam no validador
-4. ~~Escrever os roteiros de gravação~~ feito, 28 roteiros e 167 clipes planejados
+4. ~~Escrever os roteiros de gravação~~ feito, 28 roteiros e 169 clipes planejados
 5. Consertar o que quebra hoje, e o que a plataforma aposentou (ver `ACHADOS-TRANSVERSAIS.md`)
-6. Gravar os 167 clipes, incluindo o pitch da aula final do Desafio
+6. Gravar os 169 clipes, incluindo o pitch da aula final do Desafio
 
 Por curso: Desafio primeiro (tem aluno pagando), depois Meu Jeito (mais barato e o que mais
 melhora), depois Corre Dino (o maior).

@@ -47,6 +47,18 @@
       "plannedVideo": "Título: O jogo que você vai fazer\n\nRegravar a tela no Estúdio atual. Mostrar o Corre, Dino! pronto rodando: a tela de início com o nome do jogo, o Dino saindo na corrida, os cactos chegando, o pulo, o placar subindo e a batida. Fechar dizendo o que fica pronto hoje, que é a telinha do jogo com a cor dela e o Dino criado.\n\nManter a enumeração dos passos que está na gravação antiga. Ela diz três, e a aula voltou a ter três.\n\nTom de boas-vindas de primeira vez, nunca de reencontro. Não existe Aula 0 e este é o primeiro contato com o curso. Não supor nenhuma experiência anterior de programação.\n\nOrigem: video-abertura-v7, fala quase toda aproveitável. Duração alvo: 45 a 60 segundos."
     },
     {
+      "key": "video-caderno",
+      "plannedVideo": "Título: Seu caderno do Corre, Dino!\n\nGravar depois que o PDF estiver vinculado no bloco de materiais. Mostrar o bloco logo abaixo do vídeo, tocar em Baixar, mostrar Baixado e abrir uma página real do caderno referente a esta aula. O PDF pode ser lido na tela ou guardado para consultar nas próximas aulas.\n\nFala: \"Este é o seu caderno do Corre, Dino! Ele reúne os passos do jogo para você consultar quando quiser. Se alguma parte ficar diferente da que aparece no vídeo, abra a página daquela aula e compare. O botão Baixar está logo abaixo. Você pode ler o PDF na tela ou guardá-lo para depois. Agora vamos montar a telinha do jogo.\"\n\nNão exigir o download para avançar: esta seção termina depois de 90% deste vídeo. O arquivo continua disponível aqui na primeira aula. Duração alvo: 20 a 30 segundos."
+    },
+    {
+      "key": "materiais-caderno",
+      "content": {
+        "kind": "materials",
+        "title": "Caderno do Corre, Dino!",
+        "items": []
+      }
+    },
+    {
       "key": "fala-area",
       "content": {
         "kind": "dialogue",
@@ -308,6 +320,20 @@
       "completion": {
         "version": 1,
         "blockIds": ["video-abertura"]
+      }
+    },
+    {
+      "key": "caderno",
+      "title": "Seu caderno do Corre, Dino!",
+      "intent": "material",
+      "objective": "Encontrar o caderno do curso e saber quando consultá-lo durante a criação do jogo.",
+      "blockKeys": ["video-caderno", "materiais-caderno"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-caderno"]
       }
     },
     {
