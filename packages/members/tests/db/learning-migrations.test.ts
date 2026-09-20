@@ -790,11 +790,9 @@ describe.skipIf(!url)(
       const repo = new DrizzleLearningRepository(db)
       const block = await content.createBlock(lessonId, 'interactive', activity)
       if (!block.contentRevision) throw new Error('Missing revision')
-      // ⚠️ Era `{ order: [...] }`, a forma de resposta do modelo `sequence`, que saiu na
-      // reescrita das experiências. O bloco já tinha sido convertido para pergunta, mas a
-      // RESPOSTA ficou para trás: o avaliador devolvia "Escolha uma resposta antes de
-      // conferir" e o teste só falhava no CI, porque `tests/db` se auto-pula sem Postgres.
-      const answers = { checkpoint: 'prepare' }
+      // A resposta correta só vale depois da participação na atividade; sem ela, o
+      // avaliador não marca o bloco como concluído.
+      const answers = { participated: true, checkpoint: 'prepare' }
       const attempt = {
         id: randomUUID(),
         blockId: block.id,
