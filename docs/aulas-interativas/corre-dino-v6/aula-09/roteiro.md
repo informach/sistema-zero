@@ -145,8 +145,8 @@ O palpite volta à tela quando ela descobre: “Só trocar de tela deixou os cac
 **O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
 1. Pedido: “Toque na tela e deixe o tempo passar.” Ao descobrir: “A batida levou para o fim”.
-2. Pedido: “No fim, com Ir para o início escolhido, toque na tela duas vezes.” Ao descobrir: “Só trocar de tela deixou os cactos na pista”.
-3. Pedido: “Depois de jogar de novo com Ir para o início, escolha Reiniciar o jogo e, no fim, toque na tela duas vezes.” Ao descobrir: “Reiniciar começou com a pista limpa”.
+2. Pedido: “No fim, com Mudar o estado do jogo para inicio escolhido, toque na tela duas vezes.” Ao descobrir: “Só trocar de tela deixou os cactos na pista”.
+3. Pedido: “Depois de jogar de novo com Mudar o estado do jogo para inicio, escolha Reiniciar o jogo e, no fim, toque na tela duas vezes.” Ao descobrir: “Reiniciar começou com a pista limpa”.
 
 **Frase de sucesso:** “A pista começou limpa. Isso é jogar de novo de verdade!”
 
@@ -154,9 +154,9 @@ O palpite volta à tela quando ela descobre: “Só trocar de tela deixou os cac
 
 1. “Olhe a pista depois de voltar para o início. Quantos cactos ficaram?”
 2. “Troque o que o toque faz no fim e compare as duas pistas.”
-3. “Primeiro jogue com Ir para o início e olhe a pista. Depois escolha Reiniciar o jogo e compare.”
+3. “Primeiro jogue com Mudar o estado do jogo para inicio e olhe a pista. Depois escolha Reiniciar o jogo e compare.”
 
-**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “O que Reiniciar o jogo faz que Ir para o início não faz?”
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “O que Reiniciar o jogo faz que Mudar o estado do jogo para inicio não faz?”
 
 - Só mostra a tela de início.
 - Limpa a pista para a partida nova começar do zero. ✓ (correta)

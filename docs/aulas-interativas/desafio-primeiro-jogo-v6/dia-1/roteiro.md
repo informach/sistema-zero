@@ -200,14 +200,16 @@ O palpite volta à tela quando ela descobre: “y maior leva para baixo”.
 
 **Como o palco começa:** Os bastidores estão vazios e a tela do jogo também.
 
-**Antes de escolher, no contexto “Bastidores e tela do jogo”:** “Nesta experiência, vamos comparar o que existe nos bastidores com o que já aparece na tela do jogo.”
+**Antes de escolher:** “Nesta experiência, vamos comparar o que existe nos bastidores com o que já aparece na tela do jogo.”
+
+**Hoje vamos usar:** Bastidores e tela do jogo.
 
 **Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Imagine: a nave já está nos bastidores, mas ainda não apareceu na tela do jogo. Onde está a nave?”
 
 - Nos bastidores, sem aparecer na tela. ✓ (o que acontece de verdade)
 - Em lugar nenhum. A nave só existe quando aparece na tela. (se ela escolher esta, a tela conta depois: “A ficha da nave ficou nos bastidores, com a tela vazia.”)
 
-O palpite volta à tela quando ela descobre: “A nave existe nos bastidores e ainda não apareceu na tela do jogo.”
+O palpite volta à tela quando ela descobre: “A nave existe nos bastidores”.
 
 **O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
@@ -216,7 +218,7 @@ O palpite volta à tela quando ela descobre: “A nave existe nos bastidores e a
 
 **Frase de sucesso:** “Quando aparece na tela do jogo, é a mesma nave que já existia nos bastidores.”
 
-**Pistas (uma por vez, no botão Uma pista; as de fábrica da cena):**
+**Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
 
 1. “Olhe a ficha dos bastidores e a tela do jogo.”
 2. “Primeiro, crie a nave nos bastidores.”

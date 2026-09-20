@@ -197,7 +197,7 @@ export const earlyRecipes: Record<number, Recipe> = {
             required: true,
             title: 'O que o espelho faz com o seu traço?',
             instructions:
-              'Pinte a asa com os espelhos desligados. Ligue o Espelho lado a lado e pinte de novo. Depois deixe ligado só o espelho de cima e de baixo e pinte mais uma vez.',
+              'Pinte a asa com os espelhos desligados. Teste o Espelho lado a lado e o de cima e de baixo, um de cada vez. Depois encha a asa com o Balde de tinta e veja se ele também pinta o outro lado.',
             hints: [],
             activity: {
               type: 'experimentation',

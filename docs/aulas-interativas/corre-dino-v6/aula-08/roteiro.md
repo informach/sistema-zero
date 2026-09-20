@@ -113,11 +113,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 - A partida começa (se ela escolher esta, a tela conta depois: “A tela continuou no INÍCIO.”)
 - Nada acontece ✓ (o que acontece de verdade)
 
-O palpite volta à tela quando ela descobre: “Tocou e nada aconteceu”.
+O palpite volta à tela quando ela descobre: “É o mesmo que aconteceu no seu jogo: tocou e nada aconteceu”.
 
 **O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
-1. Pedido: “Com Começar em Quando apertar Enter, toque na tela de início.” Ao descobrir: “Tocou e nada aconteceu”.
+1. Pedido: “Com Começar em Quando apertar a tecla, toque na tela de início.” Ao descobrir: “É o mesmo que aconteceu no seu jogo: tocou e nada aconteceu”.
 2. Pedido: “Leve Começar para Quando apertar qualquer tecla ou tocar na tela, e toque na tela de início.” Ao descobrir: “Começou tocando”.
 3. Pedido: “Na tela de início, aperte Enter.” Ao descobrir: “Começou com Enter”.
 

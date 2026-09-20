@@ -226,7 +226,7 @@ export const lateRecipes: Record<number, Recipe> = {
           bloco: {
             title: 'Ajuste só a área de colisão',
             instructions:
-              'Traga o cacto um toque de cada vez até aparecer BATEU. Depois deixe o cacto no mesmo lugar e mude só a área do Dino.',
+              'Traga o cacto um toque de cada vez até aparecer BATEU. Sem mover o cacto, diminua a área do Dino para 80%. Depois encoste os desenhos e experimente 40%.',
             hints: PISTAS_DE_FABRICA,
             required: false,
             activity: {
@@ -364,7 +364,7 @@ export const lateRecipes: Record<number, Recipe> = {
           bloco: {
             title: 'Em quais momentos os pontos crescem?',
             instructions:
-              'Deixe o tempo passar em cada tela (início, jogando e fim) e olhe o placar. Depois mude o Somar ponto de lugar e compare.',
+              'Ponha Somar ponto em cada lugar e olhe o placar. Depois passe pelas três telas: início, jogando e fim.',
             hints: PISTAS_DE_FABRICA,
             required: false,
             activity: {

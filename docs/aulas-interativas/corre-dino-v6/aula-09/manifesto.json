@@ -152,7 +152,7 @@
         "hints": [
           "Olhe a pista depois de voltar para o início. Quantos cactos ficaram?",
           "Troque o que o toque faz no fim e compare as duas pistas.",
-          "Primeiro jogue com Ir para o início e olhe a pista. Depois escolha Reiniciar o jogo e compare."
+          "Primeiro jogue com Mudar o estado do jogo para inicio e olhe a pista. Depois escolha Reiniciar o jogo e compare."
         ],
         "required": false,
         "activity": { "type": "experimentation", "scene": "restart", "cenario": "corre-dino" }

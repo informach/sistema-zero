@@ -127,11 +127,11 @@
       "content": {
         "kind": "interactive",
         "title": "Quem ainda está trabalhando no início?",
-        "instructions": "Aperte ▶ Tempo na tela de início e veja se nascem cactos. Depois leve Criar cacto para dentro de Se jogando. Compare o início e a partida.",
+        "instructions": "Aperte ▶ Tempo na tela de início e veja se nascem cactos. Depois leve Criar cacto para dentro de Se o estado do jogo é jogando. Compare o início e a partida.",
         "hints": [
           "Aperte ▶ na tela de início e conte os cactos que aparecem.",
-          "O que fica dentro de Se jogando só acontece durante a partida.",
-          "Leve Criar cacto para dentro de Se jogando. Espere no início e depois comece a partida."
+          "O que fica dentro de Se o estado do jogo é jogando só acontece durante a partida.",
+          "Leve Criar cacto para dentro de Se o estado do jogo é jogando. Espere no início e depois comece a partida."
         ],
         "required": false,
         "activity": {

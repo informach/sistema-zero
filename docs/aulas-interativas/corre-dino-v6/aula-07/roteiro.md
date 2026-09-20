@@ -103,11 +103,11 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Foco:** Observar e impedir atividade fora do estado jogando.
 
-**Cena:** `game-state`, “O relógio na tela de início”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
+**Cena:** `game-state`, “O relógio no início”. Formato: experimentação (a criança mexe e descobre). Fica separada da criação da criança: nada do que ela faz aqui muda o projeto ou o desenho.
 
 **Elenco:** personagem: Dino (o de fábrica) e obstáculo: cacto (o de fábrica).
 
-**O que a criança lê ao abrir:** “Aperte ▶ Tempo na tela de início e veja se nascem cactos. Depois leve Criar cacto para dentro de Se jogando. Compare o início e a partida.”
+**O que a criança lê ao abrir:** “Aperte ▶ Tempo na tela de início e veja se nascem cactos. Depois leve Criar cacto para dentro de Se o estado do jogo é jogando. Compare o início e a partida.”
 
 **Como o palco começa:** Na tela de início. 0 cactos criados até agora.
 
@@ -124,19 +124,19 @@ O palpite volta à tela quando ela descobre: “Nasceram cactos antes de começa
 
 **O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
-1. Pedido: “Na tela de início, com Criar cacto fora do Se, deixe o tempo passar.” Ao descobrir: “Nasceram cactos antes de começar”.
-2. Pedido: “Leve Criar cacto para dentro de Se jogando e deixe o tempo passar 2 segundos na tela de início.” Ao descobrir: “No início, nada nasceu por 2 segundos”.
-3. Pedido: “Com Criar cacto dentro de Se jogando, comece a partida e deixe o tempo passar.” Ao descobrir: “Jogando, voltou a nascer”.
+1. Pedido: “No início, com Criar cacto fora do Se, deixe o tempo passar.” Ao descobrir: “Nasceram cactos antes de começar”.
+2. Pedido: “Leve Criar cacto para dentro de Se o estado do jogo é jogando e deixe o tempo passar 2 segundos no início.” Ao descobrir: “No início, nada nasceu por 2 segundos”.
+3. Pedido: “Com Criar cacto dentro do Se, comece a partida e deixe o tempo passar.” Ao descobrir: “Jogando, voltou a nascer”.
 
-**Frase de sucesso:** “Dentro de Se jogando, Criar cacto espera no início e volta a criar na partida!”
+**Frase de sucesso:** “Dentro do Se, Criar cacto espera no início e volta a criar na partida!”
 
 **Pistas (uma por vez, no botão Uma pista; escritas na aula):**
 
 1. “Aperte ▶ na tela de início e conte os cactos que aparecem.”
-2. “O que fica dentro de Se jogando só acontece durante a partida.”
-3. “Leve Criar cacto para dentro de Se jogando. Espere no início e depois comece a partida.”
+2. “O que fica dentro de Se o estado do jogo é jogando só acontece durante a partida.”
+3. “Leve Criar cacto para dentro de Se o estado do jogo é jogando. Espere no início e depois comece a partida.”
 
-**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “O que faz Criar cacto esperar na tela de início?”
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “O que faz Criar cacto esperar no início?”
 
 - O botão de começar, que liga o relógio.
 - Uma condição: só criar cactos enquanto estiver jogando. ✓ (correta)

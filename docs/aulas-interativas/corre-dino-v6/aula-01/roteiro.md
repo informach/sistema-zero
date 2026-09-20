@@ -194,14 +194,16 @@ Se faltar algo, mostrar o objetivo pendente, permitir rever o gesto e conferir d
 
 **Como o palco começa:** Os bastidores estão vazios e a tela do jogo também.
 
-**Antes de escolher, no contexto “Bastidores e tela do jogo”:** “Nesta experiência, vamos comparar o que existe nos bastidores com o que já aparece na tela do jogo.”
+**Antes de escolher:** “Nesta experiência, vamos comparar o que existe nos bastidores com o que já aparece na tela do jogo.”
+
+**Hoje vamos usar:** Bastidores e tela do jogo.
 
 **Seu palpite, antes de abrir a cena (o de fábrica da cena; não vale nota):** “Imagine: o Dino já está nos bastidores, mas ainda não apareceu na tela do jogo. Onde está o Dino?”
 
 - Nos bastidores, sem aparecer na tela. ✓ (o que acontece de verdade)
 - Em lugar nenhum. O Dino só existe quando aparece na tela. (se ela escolher esta, a tela conta depois: “A ficha do Dino ficou nos bastidores, com a tela vazia.”)
 
-O palpite volta à tela quando ela descobre: “O Dino existe nos bastidores e ainda não apareceu na tela do jogo.”
+O palpite volta à tela quando ela descobre: “O Dino existe nos bastidores”.
 
 **O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 

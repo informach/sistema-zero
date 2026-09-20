@@ -119,11 +119,11 @@
       "content": {
         "kind": "interactive",
         "title": "Ajuste só a área de colisão",
-        "instructions": "Traga o cacto um toque de cada vez até aparecer BATEU. Depois deixe o cacto no mesmo lugar e mude só a área do Dino.",
+        "instructions": "Traga o cacto um toque de cada vez até aparecer BATEU. Sem mover o cacto, diminua a área do Dino para 80%. Depois encoste os desenhos e experimente 40%.",
         "hints": [
           "Aproxime o cacto um toque de cada vez e olhe os dois desenhos quando aparecer BATEU.",
           "Deixe o cacto onde bateu. Mude só a área do Dino.",
-          "Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino até 80% e veja o BATEU sumir."
+          "Agora encoste o cacto no desenho do Dino e leve o Tamanho da área do Dino para 40%. Olhe se aparece BATEU."
         ],
         "required": false,
         "activity": { "type": "experimentation", "scene": "hitbox", "cenario": "corre-dino" }

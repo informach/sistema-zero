@@ -210,11 +210,11 @@ export const middleRecipes: Record<number, Recipe> = {
           bloco: {
             title: 'Sair da tela é ser apagado?',
             instructions:
-              'Aperte ▶ Tempo e veja os cactos saírem da tela. Olhe os bastidores. Depois ligue Remover do grupo quem saiu da tela e compare de novo.',
+              'Aperte ▶ Tempo e veja os cactos saírem da tela. Olhe os bastidores. Depois ligue Tirar do grupo quem sair da tela e compare de novo.',
             hints: [
               'Compare os cactos na tela com a prateleira dos bastidores.',
               'Conte os cactos da prateleira depois que um cacto sai.',
-              'Ligue Remover do grupo quem saiu da tela. Aperte ▶ Tempo de novo.',
+              'Ligue Tirar do grupo quem sair da tela. Aperte ▶ Tempo de novo.',
             ],
             required: false,
             activity: {
@@ -355,11 +355,11 @@ export const middleRecipes: Record<number, Recipe> = {
           bloco: {
             title: 'Quem ainda está trabalhando no início?',
             instructions:
-              'Aperte ▶ Tempo na tela de início e veja se nascem cactos. Depois leve Criar cacto para dentro de Se jogando. Compare o início e a partida.',
+              'Aperte ▶ Tempo na tela de início e veja se nascem cactos. Depois leve Criar cacto para dentro de Se o estado do jogo é jogando. Compare o início e a partida.',
             hints: [
               'Aperte ▶ na tela de início e conte os cactos que aparecem.',
-              'O que fica dentro de Se jogando só acontece durante a partida.',
-              'Leve Criar cacto para dentro de Se jogando. Espere no início e depois comece a partida.',
+              'O que fica dentro de Se o estado do jogo é jogando só acontece durante a partida.',
+              'Leve Criar cacto para dentro de Se o estado do jogo é jogando. Espere no início e depois comece a partida.',
             ],
             required: false,
             activity: {

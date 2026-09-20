@@ -140,7 +140,7 @@ O palpite volta à tela quando ela descobre: “Mesmo parada em −9, saiu um ca
 **O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
 1. Pedido: “Com a condição ligada, aperte Passar 5 segundos cinco vezes.” Ao descobrir: “A base parou em −9”.
-2. Pedido: “Com a base em −9 e a condição ligada, aperte Passar 5 segundos mais quatro vezes.” Ao descobrir: “Mesmo parada em −9, saiu um cacto −10”.
+2. Pedido: “Com a base em −9 e a condição ligada, aperte Passar 5 segundos até nascer um cacto −10.” Ao descobrir: “Mesmo parada em −9, saiu um cacto −10”.
 3. Pedido: “Aperte Passar 5 segundos três vezes e olhe o número embaixo de cada cacto.” Ao descobrir: “Os cactos velhos não mudaram de número”.
 4. Pedido: “Desligue a condição e aperte Passar 5 segundos cinco vezes.” Ao descobrir: “Sem a condição, a base passou de −9”.
 

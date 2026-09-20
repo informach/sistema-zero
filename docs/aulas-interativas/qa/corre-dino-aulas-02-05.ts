@@ -473,11 +473,11 @@ export const earlyRecipes: Record<number, Recipe> = {
           bloco: {
             title: 'O dedo e o Dino fazem a mesma coisa?',
             instructions:
-              'Aperte Espaço duas vezes no mesmo pulo e depois pule tocando no Dino. Conte os sons. Depois leve Tocar som para Quando o Dino pular e teste de novo.',
+              'Aperte Espaço duas vezes no mesmo pulo e depois pule tocando no Dino. Conte os sons. Depois leve Tocar efeito para Quando o Dino pular e teste de novo.',
             hints: [
               'Aperte Espaço duas vezes no mesmo pulo. Conte os ♪.',
               'Agora pule tocando no Dino. Tocou som?',
-              'Leve Tocar som para Quando o Dino pular. Teste a tecla Espaço e o toque no Dino.',
+              'Leve Tocar efeito para Quando o Dino pular. Teste a tecla Espaço e o toque no Dino.',
             ],
             required: false,
             activity: {

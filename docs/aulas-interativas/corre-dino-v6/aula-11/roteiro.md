@@ -102,9 +102,9 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Elenco:** personagem: Dino (o de fábrica) e obstáculo: cacto (o de fábrica).
 
-**O que a criança lê ao abrir:** “Deixe o tempo passar em cada tela (início, jogando e fim) e olhe o placar. Depois mude o Somar ponto de lugar e compare.”
+**O que a criança lê ao abrir:** “Ponha Somar ponto em cada lugar e olhe o placar. Depois passe pelas três telas: início, jogando e fim.”
 
-**Como o palco começa:** Na tela de início, Somar ponto está solto, e o placar está em 0.
+**Como o palco começa:** Na tela de início, Somar ponto está fora do Se, solto, e o placar está em 0.
 
 **Antes de escolher:** “Nesta experiência, vamos observar quando o placar do jogo muda.”
 
@@ -119,25 +119,26 @@ O palpite volta à tela quando ela descobre: “Solto, o placar cresceu no iníc
 
 **O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
-1. Pedido: “Com Somar ponto solto, deixe o tempo passar na tela de início.” Ao descobrir: “Solto, o placar cresceu no início”.
-2. Pedido: “Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para Se jogando e espere de novo.” Ao descobrir: “Dentro de Se jogando, o início esperou”.
-3. Pedido: “Com Somar ponto em Se jogando, aperte Próxima tela até Jogando e deixe o tempo passar.” Ao descobrir: “Pontos aumentam jogando”.
-4. Pedido: “Depois de ver os pontos crescerem jogando, aperte Próxima tela até Fim e deixe o tempo passar.” Ao descobrir: “No fim, o placar parou no valor”.
+1. Pedido: “Ponha Somar ponto dentro do A cada quadro do jogo e deixe passar um segundo inteiro.” Ao descobrir: “No quadro, o placar disparou: 60 por segundo”.
+2. Pedido: “Com Somar ponto solto, deixe o tempo passar na tela de início.” Ao descobrir: “Solto, o placar cresceu no início”.
+3. Pedido: “Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para o bloco “o estado do jogo é jogando ?” e espere de novo.” Ao descobrir: “Dentro do Se, o início esperou”.
+4. Pedido: “Com Somar ponto dentro do Se, aperte Próxima tela até Jogando e deixe o tempo passar.” Ao descobrir: “Pontos aumentam jogando”.
+5. Pedido: “Depois de ver os pontos crescerem jogando, aperte Próxima tela até Fim e deixe o tempo passar.” Ao descobrir: “No fim, o placar parou no valor”.
 
-**Frase de sucesso:** “Os pontos crescem jogando e ficam guardados fora da partida!”
+**Frase de sucesso:** “Onde a peça mora decide duas coisas: quantas vezes por segundo, e em quais telas.”
 
 **Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
 
 1. “Com a peça solta, o placar deve crescer antes de começar?”
 2. “Compare o placar das três telas na fileira embaixo do palco.”
-3. “Com a peça solta, deixe o tempo passar no início. Depois leve Somar ponto para Se jogando e passe pelas três telas.”
+3. “Compare Somar ponto em A cada quadro do jogo e A cada 1 segundos. Depois leve a peça para o estado do jogo é jogando ? e passe pelas três telas.”
 
 **Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que o placar parou no fim?”
 
-- Porque Somar ponto só roda dentro de Se jogando. ✓ (correta)
+- Porque Somar ponto está dentro do bloco “o estado do jogo é jogando ?”. ✓ (correta)
 - Porque o jogo apaga os pontos no fim.
 
-**Explicação que ela lê ao acertar:** “O número continua guardado no fim. Se jogando só decide QUANDO somar.”
+**Explicação que ela lê ao acertar:** “O número continua guardado no fim. O relógio decide de quanto em quanto tempo somar, e o Se decide em quais telas.”
 
 **Na tela da cena:** Conferir responde com o pedido da descoberta que falta. Quando tudo cai, aparece “✓ Você descobriu!” e a pergunta. Na revisita, a faixa mostra “✓ Você já descobriu isto.”, sem pedir a pergunta de novo.
 

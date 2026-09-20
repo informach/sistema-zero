@@ -83,7 +83,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Elenco:** obstáculo: cacto (o de fábrica).
 
-**O que a criança lê ao abrir:** “Aperte ▶ Tempo e veja os cactos saírem da tela. Olhe os bastidores. Depois ligue Remover do grupo quem saiu da tela e compare de novo.”
+**O que a criança lê ao abrir:** “Aperte ▶ Tempo e veja os cactos saírem da tela. Olhe os bastidores. Depois ligue Tirar do grupo quem sair da tela e compare de novo.”
 
 **Como o palco começa:** 3 cactos na tela e 3 no grupo.
 
@@ -101,7 +101,7 @@ O palpite volta à tela quando ela descobre: “Saiu da tela e ficou no grupo”
 **O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
 1. Pedido: “Deixe o tempo passar até dois cactos saírem da tela.” Ao descobrir: “Saiu da tela e ficou no grupo”.
-2. Pedido: “Ligue Remover do grupo quem saiu da tela e deixe o tempo passar.” Ao descobrir: “A regra tirou do grupo quem saiu”.
+2. Pedido: “Ligue Tirar do grupo quem sair da tela e deixe o tempo passar até dois saírem.” Ao descobrir: “A regra tirou do grupo quem saiu”.
 
 **Frase de sucesso:** “Sair da tela não tira ninguém do grupo: quem tira é a regra!”
 
@@ -109,7 +109,7 @@ O palpite volta à tela quando ela descobre: “Saiu da tela e ficou no grupo”
 
 1. “Compare os cactos na tela com a prateleira dos bastidores.”
 2. “Conte os cactos da prateleira depois que um cacto sai.”
-3. “Ligue Remover do grupo quem saiu da tela. Aperte ▶ Tempo de novo.”
+3. “Ligue Tirar do grupo quem sair da tela. Aperte ▶ Tempo de novo.”
 
 **Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que é preciso uma regra para retirar os cactos que saem?”
 

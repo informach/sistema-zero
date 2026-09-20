@@ -26,7 +26,14 @@ import {
 import { sceneUnknownSetupGoals } from '../../../packages/core/src/learning/scene'
 import { parsePublishedLessonBlock } from '../../../packages/members/src/interfaces/http/lesson-draft.dtos'
 import { studioSectionCompletionIssues } from '../../../packages/studio/src/blockly/projectCheckAuthoring'
-import { type CenaAnterior, conferirCenasNoRoteiro, eCena } from './cenas-editorial'
+import {
+  CENARIO_DO_CURSO,
+  type CenaAnterior,
+  cenaMarkdown,
+  conferirCenasNoRoteiro,
+  conteudoDaCena,
+  eCena,
+} from './cenas-editorial'
 import { correDinoRecipes } from './gerar-candidatos-v6'
 import { desafioRecipes } from './gerar-desafio-v6'
 import { meuJeitoRecipes } from './gerar-meu-jeito-v6'
@@ -49,6 +56,26 @@ function marcasDaReceita(aula: string): Record<string, CenaAnterior> | undefined
   if (curso === 'desafio-primeiro-jogo-v6')
     return desafioRecipes[slug === 'introducao' ? 0 : numero]?.cenasAnteriores
   return meuJeitoRecipes[numero]?.cenasAnteriores
+}
+
+/** A Aula 1 do Corre Dino tem revisão própria; as outras 26 aulas nascem destas receitas. */
+function cenasDaReceita(aula: string) {
+  const [curso = '', slug = ''] = aula.split('/')
+  const numero = Number(slug.replace(/^\D+/, ''))
+  if (curso === 'corre-dino-v6') {
+    if (numero === 1) return []
+    const receita = correDinoRecipes[numero]
+    assert(receita, `${aula}: receita ausente`)
+    return receita.steps.flatMap((step) => (step.cena ? [step.cena] : []))
+  }
+  if (curso === 'desafio-primeiro-jogo-v6') {
+    const receita = desafioRecipes[slug === 'introducao' ? 0 : numero]
+    assert(receita, `${aula}: receita ausente`)
+    return receita.steps.flatMap((step) => (step.cena ? [step.cena] : []))
+  }
+  const receita = meuJeitoRecipes[numero]
+  assert(receita, `${aula}: receita ausente`)
+  return receita.steps.flatMap((step) => (step.cena ? [step.cena] : []))
 }
 
 const root = resolve(import.meta.dir, '..')
@@ -80,12 +107,45 @@ for (const aula of AULAS) {
     )
   }
 
-  for (const block of manifest.blocks.filter(eCena)) {
+  const cenasDoManifesto = manifest.blocks.filter(eCena)
+  for (const block of cenasDoManifesto) {
     contas.cenas++
     const atividade = block.content.activity
     const mortas = sceneUnknownSetupGoals(atividade.scene, atividade.setup?.goals)
     if (mortas.length)
       problemas.push(`${aula}/${block.key}: objetivo que a cena não tem (${mortas.join(', ')})`)
+    // O roteiro é gerado da cena. Conferir o trecho completo também protege sucesso, pistas e
+    // pergunta final: a checagem de frases obrigatórias só alcança instrução, previsão e metas.
+    const linhas = cenaMarkdown(block.content)
+    const descricao = linhas.join('\n')
+    if (!roteiro.includes(descricao)) {
+      const linhaAusente = linhas.find((linha) => linha && !roteiro.includes(linha))
+      problemas.push(
+        `${aula}/${block.key}: descrição da cena no roteiro desatualizada${linhaAusente ? `; falta “${linhaAusente}”` : ' (ordem ou espaçamento)'}`,
+      )
+    }
+  }
+
+  // Manifesto e roteiro são entregas da receita. Divergir só em um deles deixaria a próxima
+  // geração apagar a correção sem nenhum erro de formato ou de cena.
+  const [cursoV6 = ''] = aula.split('/')
+  const cenario = CENARIO_DO_CURSO[cursoV6.replace(/-v6$/, '')]
+  assert(cenario, `${aula}: cenário do curso ausente`)
+  const cenasEsperadas = cenasDaReceita(aula)
+  const chavesEsperadas = new Set(cenasEsperadas.map((cena) => cena.chave))
+  if (aula !== 'corre-dino-v6/aula-01')
+    for (const cena of cenasDoManifesto)
+      if (!chavesEsperadas.has(cena.key))
+        problemas.push(`${aula}/${cena.key}: cena do manifesto não está na receita`)
+  for (const cena of cenasEsperadas) {
+    const atual = manifest.blocks.find((block) => block.key === cena.chave)
+    const esperado = conteudoDaCena(cena, cenario)
+    if (
+      !atual ||
+      !('content' in atual) ||
+      JSON.stringify(atual.content) !== JSON.stringify(esperado)
+    )
+      problemas.push(`${aula}/${cena.chave}: manifesto diverge da receita da cena`)
   }
 
   // As cenas aparecem no roteiro com os textos de HOJE, e toda marca de cena anterior é legal.

@@ -128,11 +128,11 @@
       "content": {
         "kind": "interactive",
         "title": "Sair da tela é ser apagado?",
-        "instructions": "Aperte ▶ Tempo e veja os cactos saírem da tela. Olhe os bastidores. Depois ligue Remover do grupo quem saiu da tela e compare de novo.",
+        "instructions": "Aperte ▶ Tempo e veja os cactos saírem da tela. Olhe os bastidores. Depois ligue Tirar do grupo quem sair da tela e compare de novo.",
         "hints": [
           "Compare os cactos na tela com a prateleira dos bastidores.",
           "Conte os cactos da prateleira depois que um cacto sai.",
-          "Ligue Remover do grupo quem saiu da tela. Aperte ▶ Tempo de novo."
+          "Ligue Tirar do grupo quem sair da tela. Aperte ▶ Tempo de novo."
         ],
         "required": false,
         "activity": {

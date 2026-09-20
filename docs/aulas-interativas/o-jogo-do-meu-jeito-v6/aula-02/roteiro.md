@@ -76,7 +76,7 @@ Reutilizar o resultado mostrado na abertura original; substituir sua lista de pa
 
 **Elenco:** esta cena não desenha personagem do elenco.
 
-**O que a criança lê ao abrir:** “Pinte a asa com os espelhos desligados. Ligue o Espelho lado a lado e pinte de novo. Depois deixe ligado só o espelho de cima e de baixo e pinte mais uma vez.”
+**O que a criança lê ao abrir:** “Pinte a asa com os espelhos desligados. Teste o Espelho lado a lado e o de cima e de baixo, um de cada vez. Depois encha a asa com o Balde de tinta e veja se ele também pinta o outro lado.”
 
 **Como o palco começa:** Espelhos desligados, na grade da nave.
 
@@ -96,6 +96,7 @@ O palpite volta à tela quando ela descobre: “Pintou com o Espelho lado a lado
 1. Pedido: “Com os dois espelhos desligados, pinte a asa.” Ao descobrir: “Pintou com o espelho desligado”.
 2. Pedido: “Deixe ligado só o Espelho lado a lado e pinte a asa.” Ao descobrir: “Pintou com o Espelho lado a lado”.
 3. Pedido: “Deixe ligado só o espelho de cima e de baixo e pinte a asa.” Ao descobrir: “Pintou com o espelho de cima e de baixo”.
+4. Pedido: “Deixe ligado o Espelho lado a lado e encha a asa com o Balde de tinta.” Ao descobrir: “Com o espelho ligado, o Balde encheu um lado só”.
 
 **Frase de sucesso:** “Com o espelho ligado, cada traço aparece também do outro lado do meio. Desligado, fica só onde você pintou!”
 
@@ -103,7 +104,7 @@ O palpite volta à tela quando ela descobre: “Pintou com o Espelho lado a lado
 
 1. “Pinte a asa e conte quantas asas apareceram.”
 2. “Ligue o Espelho lado a lado e pinte a asa de novo. Olhe a grade inteira.”
-3. “Desligue o Espelho lado a lado, ligue o de cima e de baixo e pinte a asa de novo.”
+3. “Desligue o Espelho lado a lado, ligue o de cima e de baixo e pinte a asa. Depois experimente o Balde com o Espelho lado a lado ligado.”
 
 **Pergunta depois de descobrir (escrita na aula; conta para concluir):** “O que os dois espelhos fazem com o traço que você pinta?”
 

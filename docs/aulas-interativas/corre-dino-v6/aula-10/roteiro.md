@@ -76,7 +76,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Elenco:** personagem: Dino (o de fábrica) e obstáculo: cacto (o de fábrica).
 
-**O que a criança lê ao abrir:** “Traga o cacto um toque de cada vez até aparecer BATEU. Depois deixe o cacto no mesmo lugar e mude só a área do Dino.”
+**O que a criança lê ao abrir:** “Traga o cacto um toque de cada vez até aparecer BATEU. Sem mover o cacto, diminua a área do Dino para 80%. Depois encoste os desenhos e experimente 40%.”
 
 **Como o palco começa:** O cacto está a 149 do Dino. As áreas pontilhadas ainda não se encostam.
 
@@ -95,14 +95,15 @@ O palpite volta à tela quando ela descobre: “BATEU com os desenhos ainda long
 
 1. Pedido: “Aproxime o cacto do Dino com a Distância do cacto, um toque de cada vez.” Ao descobrir: “BATEU com os desenhos ainda longe”.
 2. Pedido: “Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino.” Ao descobrir: “Área menor, mesmo lugar: a batida sumiu”.
+3. Pedido: “Encoste o cacto no desenho do Dino e deixe o Tamanho da área do Dino em 40%.” Ao descobrir: “Os desenhos se tocam, e o jogo disse que não bateu”.
 
-**Frase de sucesso:** “O Dino ficou do mesmo tamanho. Só a área mudou, e a batida ficou justa!”
+**Frase de sucesso:** “O Dino ficou do mesmo tamanho o tempo todo. Quem mandou na batida foi a área, e o tamanho dela é escolha sua.”
 
 **Pistas (uma por vez, no botão Uma pista; guardadas no bloco, iguais às de fábrica):**
 
 1. “Aproxime o cacto um toque de cada vez e olhe os dois desenhos quando aparecer BATEU.”
 2. “Deixe o cacto onde bateu. Mude só a área do Dino.”
-3. “Sem mexer na Distância do cacto, diminua o Tamanho da área do Dino até 80% e veja o BATEU sumir.”
+3. “Agora encoste o cacto no desenho do Dino e leve o Tamanho da área do Dino para 40%. Olhe se aparece BATEU.”
 
 **Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “O que o jogo usa para saber que houve batida?”
 

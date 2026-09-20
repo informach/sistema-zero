@@ -96,7 +96,7 @@ O palpite volta à tela quando ela descobre: “Viu a parede de cactos”.
 **O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
 1. Pedido: “Com Criar cacto em A cada quadro, deixe o tempo passar um segundo inteiro.” Ao descobrir: “Viu a parede de cactos”.
-2. Pedido: “Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos.” Ao descobrir: “Com o relógio, sobrou espaço”.
+2. Pedido: “Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos.” Ao descobrir: “Com o relógio, sobrou espaço entre os cactos”.
 
 **Frase de sucesso:** “Com o relógio, nasce um cacto de cada vez e sobra espaço entre um cacto e outro!”
 

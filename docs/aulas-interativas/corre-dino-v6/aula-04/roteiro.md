@@ -81,7 +81,7 @@ Revisão baseada no roteiro original gravado. Demonstração é observação: o 
 
 **Elenco:** personagem: Dino (o de fábrica).
 
-**O que a criança lê ao abrir:** “Aperte Espaço duas vezes no mesmo pulo e depois pule tocando no Dino. Conte os sons. Depois leve Tocar som para Quando o Dino pular e teste de novo.”
+**O que a criança lê ao abrir:** “Aperte Espaço duas vezes no mesmo pulo e depois pule tocando no Dino. Conte os sons. Depois leve Tocar efeito para Quando o Dino pular e teste de novo.”
 
 **Como o palco começa:** Nenhum pulo e nenhum som ainda.
 
@@ -98,9 +98,9 @@ O palpite volta à tela quando ela descobre: “Som sem pulo”.
 
 **O que ela precisa descobrir** (a faixa e o botão Conferir mostram o pedido; o rótulo só aparece quando a descoberta acontece):
 
-1. Pedido: “Com Tocar som em Quando apertar Espaço, aperte Espaço duas vezes no mesmo pulo.” Ao descobrir: “Som sem pulo”.
-2. Pedido: “Com Tocar som em Quando apertar Espaço, pule tocando no Dino.” Ao descobrir: “Pulo sem som”.
-3. Pedido: “Leve Tocar som para Quando o Dino pular. Depois pule pela tecla Espaço e tocando no Dino.” Ao descobrir: “Um som em cada pulo, por tecla e por toque”.
+1. Pedido: “Com Tocar efeito em Quando apertar Espaço, aperte Espaço duas vezes no mesmo pulo.” Ao descobrir: “Som sem pulo”.
+2. Pedido: “Com Tocar efeito em Quando apertar Espaço, pule tocando no Dino.” Ao descobrir: “Pulo sem som”.
+3. Pedido: “Leve Tocar efeito para Quando o Dino pular. Depois pule pela tecla Espaço e tocando no Dino.” Ao descobrir: “Um som em cada pulo, por tecla e por toque”.
 
 **Frase de sucesso:** “Em Quando o Dino pular, o som toca uma vez em cada pulo, por tecla ou por toque!”
 
@@ -108,9 +108,9 @@ O palpite volta à tela quando ela descobre: “Som sem pulo”.
 
 1. “Aperte Espaço duas vezes no mesmo pulo. Conte os ♪.”
 2. “Agora pule tocando no Dino. Tocou som?”
-3. “Leve Tocar som para Quando o Dino pular. Teste a tecla Espaço e o toque no Dino.”
+3. “Leve Tocar efeito para Quando o Dino pular. Teste a tecla Espaço e o toque no Dino.”
 
-**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que Tocar som foi para Quando o Dino pular?”
+**Pergunta depois de descobrir (a de fábrica da cena; conta para concluir):** “Por que Tocar efeito foi para Quando o Dino pular?”
 
 - Assim o som toca uma vez por pulo, venha da tecla ou do toque. ✓ (correta)
 - Tanto faz: a tecla e o pulo tocam nas mesmas horas.
