@@ -1,1740 +1,1694 @@
 {
- "version": 4,
- "courseSlug": "desafio-primeiro-jogo",
- "lessonSlug": "dia-5",
- "title": "O jogo ganha começo e fim",
- "blocks": [
-  {
-   "key": "projeto",
-   "existing": {
-    "kind": "studio",
-    "index": 0
-   }
-  },
-  {
-   "key": "video-abertura",
-   "plannedVideo": "Título: O jogo ganha começo e fim\n\nOrigem: video-abertura-v6, com fala parcial e tela regravada. Duração alvo: 30 a 40 segundos.\n\nMostrar o jogo pronto: a tela de abertura com o nome, um Enter começando a partida, um trecho curto de jogo, a tela de derrota e a de vitória.\n\nFala: \"Hoje o seu jogo ganha começo e fim. A gente vai guardar a partida inteira atrás de uma pergunta, montar as telas, e ensinar o Enter a comandar tudo. É a aula mais longa das cinco, e o seu projeto fica guardado se você precisar parar no meio.\"\n\nCorte obrigatório: sai a enumeração dos sete passos."
-  },
-  {
-   "key": "video-telas",
-   "plannedVideo": "Título: Os quatro momentos do jogo\n\nOrigem: video-telas-observar, com a fala aproveitada e imagem nova. Duração alvo: 40 a 50 segundos.\n\nQuatro cartões na tela, um por momento: inicio, jogando, vitoria e fim. As setas entram uma de cada vez, nunca duas ao mesmo tempo. De inicio para jogando, pelo Enter. De jogando para vitoria, quando os pontos chegam a 26. De jogando para fim, quando as vidas acabam.\n\nFala: \"O seu jogo vai ter quatro momentos, e ele guarda um de cada vez. O momento que está guardado é que decide o que o jogo faz agora.\"\n\nVocabulário travado: o bloco se chama Mudar o estado do jogo para. Não usar o rótulo antigo Ir para a tela, nem a subcategoria antiga Telas e cenas."
-  },
-  {
-   "key": "fala-constante",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Para saber quando alguém ganhou, o jogo precisa de uma meta: 26 pedras destruídas. A caixa dos pontos muda o tempo todo durante a partida. Essa aqui não muda nunca, e caixa que não muda tem nome próprio: constante."
-   }
-  },
-  {
-   "key": "fala-alvo",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Em Programação, 🏷️ Variáveis, pegue Criar constante com valor e encaixe em Ao iniciar, logo abaixo do Dar ao sprite de vida. No nome, escreva alvo, e no valor, 26. Depois, em Jogo 2D, Jogo e telas › Telas e partida, pegue Mudar o estado do jogo para e encaixe como último bloco de Ao iniciar. Ele já vem com inicio escolhido, é só deixar."
-   }
-  },
-  {
-   "key": "video-alvo",
-   "plannedVideo": "Título: A meta e o primeiro momento\n\nOrigem: video-alvo do v6, com a fala aproveitada e troca de rótulos. Duração alvo: 45 a 55 segundos.\n\nMostrar o gesto dos dois blocos: Criar constante com valor encaixado em Ao iniciar, com alvo e 26, e Mudar o estado do jogo para como último bloco de Ao iniciar, com inicio.\n\nManter a comparação da caixinha lacrada, que é boa: a constante é uma caixa que ninguém abre depois de fechar.\n\nTroca obrigatória de rótulos: onde a gravação diz Ir para a tela, passa a dizer Mudar o estado do jogo para. Onde diz Telas e cenas, passa a dizer Jogo e telas › Telas e partida."
-  },
-  {
-   "key": "fala-guardar-nao-desenha",
-   "content": {
-    "kind": "dialogue",
-    "pose": "thinking",
-    "text": "Olha o seu jogo: continua tudo igual, com as pedras caindo. Guardar o momento não muda nada sozinho, e é por isso que a próxima peça é uma pergunta."
-   }
-  },
-  {
-   "key": "fala-tudo-roda",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Hoje tudo o que está no motor acontece o tempo todo, desde o segundo em que a página abre. A nave anda, as pedras nascem e os tiros saem antes de alguém mandar começar. Olha o que acontece quando uma pergunta entra na frente de uma ação."
-   }
-  },
-  {
-   "key": "experiencia-estado",
-   "content": {
-    "kind": "interactive",
-    "required": true,
-    "title": "O relógio pode agir agora?",
-    "instructions": "Deixe o relógio de 40 quadros tocar três vezes com a peça Criar pedra solta, fora da caixa. Depois leve a peça para dentro da caixa Se o estado do jogo é jogando e deixe tocar de novo, olhando os contadores. Por último, comece a partida e deixe tocar mais três vezes.",
-    "hints": [],
-    "activity": {
-     "type": "experimentation",
-     "scene": "game-state",
-     "cast": {
-      "hero": {
-       "name": "nave",
-       "gender": "f"
-      },
-      "obstacle": {
-       "name": "asteroide",
-       "gender": "m"
+  "version": 4,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "dia-5",
+  "title": "O jogo ganha começo e fim",
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
       }
-     },
-     "cenario": "nave",
-     "setup": {
-      "goals": [
-       "outside",
-       "waiting",
-       "playing"
-      ],
-      "goalCopy": {
-       "outside": {
-        "label": "Sem a pergunta, as pedras nasceram antes de começar"
-       },
-       "waiting": {
-        "label": "Com a pergunta, o relógio tocou três vezes e nenhuma pedra nasceu"
-       },
-       "playing": {
-        "label": "Começando a partida, as pedras voltaram a nascer"
-       }
-      }
-     }
     },
-    "checkpoint": {
-     "prompt": "O relógio tocou no momento inicio, mas tem a pergunta antes de criar. O que acontece?",
-     "choices": [
-      {
-       "id": "cria",
-       "label": "Cria uma pedra porque o relógio tocou."
-      },
-      {
-       "id": "nenhuma",
-       "label": "Nenhuma pedra é criada."
-      }
-     ],
-     "correctChoiceId": "nenhuma",
-     "explanation": "A chamada do relógio acontece do mesmo jeito. É a resposta da pergunta que decide se o bloco de dentro age."
-    }
-   }
-  },
-  {
-   "key": "fala-embrulhar",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Isso que a gente vai fazer agora tem nome: embrulhar no Se. São sempre quatro etapas. Um, pegar o Condição se, senão se e senão, em Programação, ❓ Lógica & Se, e encaixar no topo do A cada quadro do jogo, antes de tudo. Dois, tirar a comparação que já vem de fábrica na pergunta e apagar."
-   }
-  },
-  {
-   "key": "fala-embrulhar-cadeia",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Três, encaixar no lugar dela o o estado do jogo é ?, de Jogo 2D, Jogo e telas › Telas e partida, escolhendo jogando. Quatro, pegar a sequência que já existia pelo primeiro bloco dela, o Limpar a tela, e soltar dentro do então. Quando você arrasta o primeiro, todos os que estão encaixados embaixo vêm junto."
-   }
-  },
-  {
-   "key": "video-embrulhar",
-   "plannedVideo": "Título: Embrulhar no Se, do começo ao fim\n\nOrigem: fusão de video-pergunta, video-mover-cadeia e video-guardar-jogo, com troca de rótulos. Duração alvo: 95 a 115 segundos.\n\nMostrar as quatro etapas seguidas, sem cortar entre elas, porque é a única vez em que a manobra aparece inteira.\n\n1. Pegar o Condição se, senão se e senão e encaixar no topo do A cada quadro do jogo.\n2. Tirar a comparação de fábrica e apagar.\n3. Encaixar o o estado do jogo é ? no lugar dela, com jogando.\n4. Pegar a cadeia pelo Limpar a tela e soltar dentro do então.\n\nGravar zoom e pausa no contorno do então, e conferir o começo e o fim da cadeia: Limpar a tela lá em cima e Desenhar as vidas do sprite como em x y tamanho cor lá embaixo, os dois dentro.\n\nTroca obrigatória de rótulo: onde a gravação diz a tela atual é, passa a dizer o estado do jogo é ?.\n\nNão incluir o relógio neste clipe: ele é a seção seguinte."
-  },
-  {
-   "key": "fala-tela-preta",
-   "content": {
-    "kind": "dialogue",
-    "pose": "thinking",
-    "text": "Agora olha o seu jogo: ficou tudo preto. Calma, isso é sinal de que funcionou. O jogo está guardando o momento inicio, a partida está trancada dentro da pergunta, e ninguém desenhou a tela de abertura ainda. Guardar um momento não desenha nada, e é a gente que vai desenhar daqui a pouco."
-   }
-  },
-  {
-   "key": "fala-relogio-e-tiro",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Agora é embrulhar no Se outra vez, em dois lugares, com as mesmas quatro etapas. Primeiro no relógio: dentro do A cada quadros de 40, embrulhe o No grupo criar um asteroide."
-   }
-  },
-  {
-   "key": "fala-embrulhar-tiro",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Depois no evento: dentro do Quando apertar a tecla da barra de espaço, embrulhe os dois blocos que estão lá, o Criar tiro no grupo e o Tocar efeito. Nos dois lugares a pergunta é a mesma: o estado do jogo é ? em jogando."
-   }
-  },
-  {
-   "key": "video-relogio-e-tiro",
-   "plannedVideo": "Título: A mesma manobra em mais dois lugares\n\nOrigem: fusão de video-guardar-relogio com video-guardar-tiro. Duração alvo: 95 a 110 segundos.\n\nO segundo clipe é gravação nova: a proteção do evento da barra de espaço não existe no roteiro original, e precisa ser gravada sobre o evento que já existe.\n\nMostrar as quatro etapas rápido nos dois lugares, já que a manobra foi vista inteira na seção anterior. Primeiro dentro do A cada quadros de 40, depois dentro do Quando apertar a tecla da barra de espaço.\n\nTerminar com o teste do menu: a barra de espaço apertada várias vezes sem sair tiro, e o relógio batendo sem nascer pedra. Depois mostrar a etiqueta Salvo do Estúdio embutido e apontar esta como pausa possível: após concluir a seção, a criança pode fechar e retomar na próxima seção pelo mesmo aparelho. Não mostrar Guardado na sua conta neste Estúdio.\n\nTroca obrigatória de rótulos: o estado do jogo é ? e Jogo e telas › Telas e partida."
-  },
-  {
-   "key": "fala-teste-menu",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Clica na área do jogo e aperta a barra de espaço várias vezes. Nada sai, e nenhuma pedra nasce. O relógio continua batendo, como você viu na cena, mas a resposta da pergunta é não, e ninguém age."
-   }
-  },
-  {
-   "key": "fala-vitoria",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "As duas perguntas moram no finalzinho do então de jogando, logo depois do Desenhar as vidas do sprite. A primeira é a vitória. Pegue um Condição se, senão se e senão e encaixe ali. A comparação de fábrica serve: à esquerda, valor da variável com pontos; no meio, maior ou igual; à direita, outro valor da variável, com alvo. Dentro dela, Mudar o estado do jogo para com vitoria."
-   }
-  },
-  {
-   "key": "fala-derrota",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "A segunda é a derrota. Outro Condição se, senão se e senão, encaixado logo abaixo do primeiro. Nessa, tire a comparação de fábrica e encaixe no lugar as vidas do sprite acabaram?, de Jogo 2D, Vida e placar › Vida, escolhendo a nave. Dentro, Mudar o estado do jogo para com fim."
-   }
-  },
-  {
-   "key": "video-finais",
-   "plannedVideo": "Título: A vitória pergunta primeiro\n\nOrigem: fusão de video-vitoria com video-derrota, com troca de rótulos. Duração alvo: 95 a 110 segundos.\n\nAbrir com uma retomada curta que funciona também para quem continuou sem pausa: o motor, o relógio e o tiro só agem em jogando; agora vêm as perguntas do fim. Em seguida, as duas perguntas montadas em sequência, no finalzinho do então de jogando, logo depois do Desenhar as vidas do sprite.\n\nPrimeira: Condição se, senão se e senão com a comparação de fábrica, lendo pontos à esquerda, maior ou igual no meio e alvo à direita, com Mudar o estado do jogo para vitoria dentro.\n\nSegunda: outro Condição se, senão se e senão, com as vidas do sprite acabaram? na pergunta e Mudar o estado do jogo para fim dentro.\n\nFechar com uma volta mostrando as duas encostadas e a ordem entre elas. Não prometer prioridade da vitória: se os dois acontecerem no mesmo quadro, o jogo termina em fim."
-  },
-  {
-   "key": "fala-ordem-dos-finais",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Repara na ordem: a vitória pergunta primeiro e a derrota pergunta depois. Se acontecer de você chegar nos 26 pontos no mesmo quadro em que perde a última vida, a pergunta de baixo é a última a ser respondida, e o jogo vai para o fim. É raro, e agora você sabe por quê."
-   }
-  },
-  {
-   "key": "fala-tres-telas",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "O seu Se grande pode ganhar irmãos. Embaixo dele tem um botãozinho escrito mais senão se. Clica nele três vezes, uma para cada momento que falta. No primeiro senão se, tire a comparação de fábrica e encaixe o estado do jogo é ? com inicio. Dentro, Mostrar tela com título subtítulo dica fundo, de Jogo e telas › Telas e partida."
-   }
-  },
-  {
-   "key": "fala-telas-finais",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Na abertura, no título escreva o nome do seu jogo, Nave contra Asteroides; no subtítulo, Destrua os asteroides; e na dica, Aperte Enter para começar. No segundo senão se, a pergunta é vitoria, o título é Você Ganhou e a dica é Aperte Enter para voltar ao início. No terceiro, a pergunta é fim, o título é Você Perdeu, e a dica é a mesma."
-   }
-  },
-  {
-   "key": "video-mostrar-telas",
-   "plannedVideo": "Título: As três telas ganham texto\n\nOrigem: video-mostrar-telas do v6, com a fala aproveitada e correção das duas dicas. Duração alvo: 85 a 100 segundos.\n\nMostrar o primeiro ramo inteiro, campo por campo: o botão mais senão se, a pergunta com inicio, o Mostrar tela com título subtítulo dica fundo, e os quatro campos preenchidos. Depois, só o que muda nos outros dois ramos, com pausa em cada um.\n\nCorreção obrigatória das duas dicas: onde a gravação diz \"para jogar novamente\" e \"para tentar novamente\", passa a dizer \"Aperte Enter para voltar ao início\". O Enter ali volta para a abertura, e é preciso apertar de novo para jogar.\n\nLembrar que título, subtítulo e cor de fundo são escolha de quem faz a aula. Pedir só contraste suficiente para as letras aparecerem."
-  },
-  {
-   "key": "fala-abertura-apareceu",
-   "content": {
-    "kind": "dialogue",
-    "pose": "celebrating",
-    "text": "Olha o seu jogo agora: a tela de abertura apareceu, com o nome que você escolheu. Ele ainda não começa quando você aperta Enter, porque o Enter ainda não faz nada. É a última peça."
-   }
-  },
-  {
-   "key": "fala-enter",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Em Áreas do projeto, dentro de Quando acontecer, coloque outro Quando apertar a tecla, logo abaixo do da barra de espaço, e escolha Enter no menu de teclas. Dentro dele, um Condição se, senão se e senão com três ramos. Na pergunta de cima, o estado do jogo é ? com inicio, e dentro dela Mudar o estado do jogo para com jogando."
-   }
-  },
-  {
-   "key": "fala-enter-ramos",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "No primeiro senão se, a pergunta é fim, e dentro vai um bloco novo: Reiniciar o jogo, de Jogo e telas › Telas e partida. No segundo senão se, a pergunta é vitoria, e dentro vai outro Reiniciar o jogo."
-   }
-  },
-  {
-   "key": "video-enter",
-   "plannedVideo": "Título: A mesma tecla, três respostas\n\nOrigem: video-enter do v6, com a montagem aproveitada e dois cortes. Duração alvo: 80 a 95 segundos.\n\nMostrar o evento Quando apertar a tecla com Enter entrando em Quando acontecer, e o Condição se, senão se e senão com três ramos dentro: inicio muda o estado para jogando, fim reinicia, vitoria reinicia.\n\nTroca obrigatória de rótulos: o estado do jogo é ?, Mudar o estado do jogo para e Jogo e telas › Telas e partida.\n\nCorte obrigatório: sai a frase que diz que o Enter recomeça a partida zeradinha, porque ele volta para a abertura e é preciso apertar de novo."
-  },
-  {
-   "key": "experiencia-reiniciar",
-   "content": {
-    "kind": "interactive",
-    "required": true,
-    "title": "Jogue outra vez",
-    "instructions": "Escolha qual bloco fica no ramo do fim. Primeiro Mudar o estado do jogo para inicio: aperte Enter e olhe a partida seguinte, as pedras que sobraram, o placar e as vidas. Depois troque para Reiniciar o jogo, faça de novo e olhe em que momento o jogo ficou.",
-    "hints": [],
-    "activity": {
-     "type": "experimentation",
-     "scene": "restart",
-     "cast": {
-      "hero": {
-       "name": "nave",
-       "gender": "f"
-      },
-      "obstacle": {
-       "name": "asteroide",
-       "gender": "m"
-      }
-     },
-     "cenario": "nave",
-     "setup": {
-      "goals": [
-       "screen-only",
-       "back-to-menu"
-      ],
-      "goalCopy": {
-       "screen-only": {
-        "label": "Mudando só o momento, as pedras da partida anterior continuaram caindo",
-        "pedido": "Escolha Mudar o estado do jogo para inicio, aperte Enter no fim e comece outra partida."
-       },
-       "back-to-menu": {
-        "label": "Reiniciar levou para a abertura, e foi preciso outro Enter para jogar",
-        "pedido": "Escolha Reiniciar o jogo, aperte Enter no fim e olhe em que momento o jogo ficou."
-       }
-      }
-     }
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: O jogo ganha começo e fim\n\nOrigem: video-abertura-v6, com fala parcial e tela regravada. Duração alvo: 30 a 40 segundos.\n\nMostrar o jogo pronto: a tela de abertura com o nome, um Enter começando a partida, um trecho curto de jogo, a tela de derrota e a de vitória.\n\nFala: \"Hoje o seu jogo ganha começo e fim. A gente vai guardar a partida inteira atrás de uma pergunta, montar as telas, e ensinar o Enter a comandar tudo. É a aula mais longa das cinco, e o seu projeto fica guardado se você precisar parar no meio.\"\n\nCorte obrigatório: sai a enumeração dos sete passos."
     },
-    "checkpoint": {
-     "prompt": "Depois da derrota você aperta Enter e o jogo reinicia. Para onde ele vai?",
-     "choices": [
-      {
-       "id": "abertura",
-       "label": "Para a abertura, e outro Enter começa a partida."
-      },
-      {
-       "id": "partida",
-       "label": "Direto para uma partida nova."
+    {
+      "key": "video-telas",
+      "plannedVideo": "Título: Os quatro momentos do jogo\n\nOrigem: video-telas-observar, com a fala aproveitada e imagem nova. Duração alvo: 40 a 50 segundos.\n\nQuatro cartões na tela, um por momento: inicio, jogando, vitoria e fim. As setas entram uma de cada vez, nunca duas ao mesmo tempo. De inicio para jogando, pelo Enter. De jogando para vitoria, quando os pontos chegam a 26. De jogando para fim, quando as vidas acabam.\n\nFala: \"O seu jogo vai ter quatro momentos, e ele guarda um de cada vez. O momento que está guardado é que decide o que o jogo faz agora.\"\n\nVocabulário travado: o bloco se chama Mudar o estado do jogo para. Não usar o rótulo antigo Ir para a tela, nem a subcategoria antiga Telas e cenas."
+    },
+    {
+      "key": "fala-constante",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Para saber quando alguém ganhou, o jogo precisa de uma meta: 26 pedras destruídas. A caixa dos pontos muda o tempo todo durante a partida. Essa aqui não muda nunca, e caixa que não muda tem nome próprio: constante."
       }
-     ],
-     "correctChoiceId": "abertura",
-     "explanation": "Reiniciar roda o Ao iniciar inteiro de novo, e o último bloco de lá guarda o momento inicio."
+    },
+    {
+      "key": "fala-alvo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Programação, 🏷️ Variáveis, pegue Criar constante com valor e encaixe em Ao iniciar, logo abaixo do Dar ao sprite de vida. No nome, escreva alvo, e no valor, 26. Depois, em Jogo 2D, Jogo e telas › Telas e partida, pegue Mudar o estado do jogo para e encaixe como último bloco de Ao iniciar. Ele já vem com inicio escolhido, é só deixar."
+      }
+    },
+    {
+      "key": "video-alvo",
+      "plannedVideo": "Título: A meta e o primeiro momento\n\nOrigem: video-alvo do v6, com a fala aproveitada e troca de rótulos. Duração alvo: 45 a 55 segundos.\n\nMostrar o gesto dos dois blocos: Criar constante com valor encaixado em Ao iniciar, com alvo e 26, e Mudar o estado do jogo para como último bloco de Ao iniciar, com inicio.\n\nManter a comparação da caixinha lacrada, que é boa: a constante é uma caixa que ninguém abre depois de fechar.\n\nTroca obrigatória de rótulos: onde a gravação diz Ir para a tela, passa a dizer Mudar o estado do jogo para. Onde diz Telas e cenas, passa a dizer Jogo e telas › Telas e partida."
+    },
+    {
+      "key": "fala-guardar-nao-desenha",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Olha o seu jogo: continua tudo igual, com as pedras caindo. Guardar o momento não muda nada sozinho, e é por isso que a próxima peça é uma pergunta."
+      }
+    },
+    {
+      "key": "fala-tudo-roda",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Hoje tudo o que está no motor acontece o tempo todo, desde o segundo em que a página abre. A nave anda, as pedras nascem e os tiros saem antes de alguém mandar começar. Olha o que acontece quando uma pergunta entra na frente de uma ação."
+      }
+    },
+    {
+      "key": "experiencia-estado",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "O relógio pode agir agora?",
+        "instructions": "Deixe o relógio de 40 quadros tocar três vezes com a peça Criar pedra solta, fora da caixa. Depois leve a peça para dentro da caixa Se o estado do jogo é jogando e deixe tocar de novo, olhando os contadores. Por último, comece a partida e deixe tocar mais três vezes.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "game-state",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "goals": ["outside", "waiting", "playing"],
+            "goalCopy": {
+              "outside": {
+                "label": "Sem a pergunta, as pedras nasceram antes de começar"
+              },
+              "waiting": {
+                "label": "Com a pergunta, o relógio tocou três vezes e nenhuma pedra nasceu"
+              },
+              "playing": {
+                "label": "Começando a partida, as pedras voltaram a nascer"
+              }
+            }
+          }
+        },
+        "checkpoint": {
+          "prompt": "O relógio tocou no momento inicio, mas tem a pergunta antes de criar. O que acontece?",
+          "choices": [
+            {
+              "id": "cria",
+              "label": "Cria uma pedra porque o relógio tocou."
+            },
+            {
+              "id": "nenhuma",
+              "label": "Nenhuma pedra é criada."
+            }
+          ],
+          "correctChoiceId": "nenhuma",
+          "explanation": "A chamada do relógio acontece do mesmo jeito. É a resposta da pergunta que decide se o bloco de dentro age."
+        }
+      }
+    },
+    {
+      "key": "fala-embrulhar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Isso que a gente vai fazer agora tem nome: embrulhar no Se. São sempre quatro etapas. Um, pegar o Condição se, senão se e senão, em Programação, ❓ Lógica & Se, e encaixar no topo do A cada quadro do jogo, antes de tudo. Dois, tirar a comparação que já vem de fábrica na pergunta e apagar."
+      }
+    },
+    {
+      "key": "fala-embrulhar-cadeia",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Três, encaixar no lugar dela o o estado do jogo é ?, de Jogo 2D, Jogo e telas › Telas e partida, escolhendo jogando. Quatro, pegar a sequência que já existia pelo primeiro bloco dela, o Limpar a tela, e soltar dentro do então. Quando você arrasta o primeiro, todos os que estão encaixados embaixo vêm junto."
+      }
+    },
+    {
+      "key": "video-embrulhar",
+      "plannedVideo": "Título: Embrulhar no Se, do começo ao fim\n\nOrigem: fusão de video-pergunta, video-mover-cadeia e video-guardar-jogo, com troca de rótulos. Duração alvo: 95 a 115 segundos.\n\nMostrar as quatro etapas seguidas, sem cortar entre elas, porque é a única vez em que a manobra aparece inteira.\n\n1. Pegar o Condição se, senão se e senão e encaixar no topo do A cada quadro do jogo.\n2. Tirar a comparação de fábrica e apagar.\n3. Encaixar o o estado do jogo é ? no lugar dela, com jogando.\n4. Pegar a cadeia pelo Limpar a tela e soltar dentro do então.\n\nGravar zoom e pausa no contorno do então, e conferir o começo e o fim da cadeia: Limpar a tela lá em cima e Desenhar as vidas do sprite como em x y tamanho cor lá embaixo, os dois dentro.\n\nTroca obrigatória de rótulo: onde a gravação diz a tela atual é, passa a dizer o estado do jogo é ?.\n\nNão incluir o relógio neste clipe: ele é a seção seguinte."
+    },
+    {
+      "key": "fala-tela-preta",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Agora olha o seu jogo: ficou tudo preto. Calma, isso é sinal de que funcionou. O jogo está guardando o momento inicio, a partida está trancada dentro da pergunta, e ninguém desenhou a tela de abertura ainda. Guardar um momento não desenha nada, e é a gente que vai desenhar daqui a pouco."
+      }
+    },
+    {
+      "key": "fala-relogio-e-tiro",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora é embrulhar no Se outra vez, em dois lugares, com as mesmas quatro etapas. Primeiro no relógio: dentro do A cada quadros de 40, embrulhe o No grupo criar um asteroide."
+      }
+    },
+    {
+      "key": "fala-embrulhar-tiro",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Depois no evento: dentro do Quando apertar a tecla da barra de espaço, embrulhe os dois blocos que estão lá, o Criar tiro no grupo e o Tocar efeito. Nos dois lugares a pergunta é a mesma: o estado do jogo é ? em jogando."
+      }
+    },
+    {
+      "key": "video-relogio-e-tiro",
+      "plannedVideo": "Título: A mesma manobra em mais dois lugares\n\nOrigem: fusão de video-guardar-relogio com video-guardar-tiro. Duração alvo: 95 a 110 segundos.\n\nO segundo clipe é gravação nova: a proteção do evento da barra de espaço não existe no roteiro original, e precisa ser gravada sobre o evento que já existe.\n\nMostrar as quatro etapas rápido nos dois lugares, já que a manobra foi vista inteira na seção anterior. Primeiro dentro do A cada quadros de 40, depois dentro do Quando apertar a tecla da barra de espaço.\n\nTerminar com o teste do menu: a barra de espaço apertada várias vezes sem sair tiro, e o relógio batendo sem nascer pedra. Depois mostrar a etiqueta Salvo do Estúdio embutido e apontar esta como pausa possível: após concluir a seção, a criança pode fechar e retomar na próxima seção pelo mesmo aparelho. Não mostrar Guardado na sua conta neste Estúdio.\n\nTroca obrigatória de rótulos: o estado do jogo é ? e Jogo e telas › Telas e partida."
+    },
+    {
+      "key": "fala-teste-menu",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Clica na área do jogo e aperta a barra de espaço várias vezes. Nada sai, e nenhuma pedra nasce. O relógio continua batendo, como você viu na cena, mas a resposta da pergunta é não, e ninguém age."
+      }
+    },
+    {
+      "key": "fala-vitoria",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "As duas perguntas moram no finalzinho do então de jogando, logo depois do Desenhar as vidas do sprite. A primeira é a vitória. Pegue um Condição se, senão se e senão e encaixe ali. A comparação de fábrica serve: à esquerda, valor da variável com pontos; no meio, maior ou igual; à direita, outro valor da variável, com alvo. Dentro dela, Mudar o estado do jogo para com vitoria."
+      }
+    },
+    {
+      "key": "fala-derrota",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "A segunda é a derrota. Outro Condição se, senão se e senão, encaixado logo abaixo do primeiro. Nessa, tire a comparação de fábrica e encaixe no lugar as vidas do sprite acabaram?, de Jogo 2D, Vida e placar › Vida, escolhendo a nave. Dentro, Mudar o estado do jogo para com fim."
+      }
+    },
+    {
+      "key": "video-finais",
+      "plannedVideo": "Título: A vitória pergunta primeiro\n\nOrigem: fusão de video-vitoria com video-derrota, com troca de rótulos. Duração alvo: 95 a 110 segundos.\n\nAbrir com uma retomada curta que funciona também para quem continuou sem pausa: o motor, o relógio e o tiro só agem em jogando; agora vêm as perguntas do fim. Em seguida, as duas perguntas montadas em sequência, no finalzinho do então de jogando, logo depois do Desenhar as vidas do sprite.\n\nPrimeira: Condição se, senão se e senão com a comparação de fábrica, lendo pontos à esquerda, maior ou igual no meio e alvo à direita, com Mudar o estado do jogo para vitoria dentro.\n\nSegunda: outro Condição se, senão se e senão, com as vidas do sprite acabaram? na pergunta e Mudar o estado do jogo para fim dentro.\n\nFechar com uma volta mostrando as duas encostadas e a ordem entre elas. Não prometer prioridade da vitória: se os dois acontecerem no mesmo quadro, o jogo termina em fim."
+    },
+    {
+      "key": "fala-ordem-dos-finais",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Repara na ordem: a vitória pergunta primeiro e a derrota pergunta depois. Se acontecer de você chegar nos 26 pontos no mesmo quadro em que perde a última vida, a pergunta de baixo é a última a ser respondida, e o jogo vai para o fim. É raro, e agora você sabe por quê."
+      }
+    },
+    {
+      "key": "fala-tres-telas",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "O seu Se grande pode ganhar irmãos. Embaixo dele tem um botãozinho escrito mais senão se. Clica nele três vezes, uma para cada momento que falta. No primeiro senão se, tire a comparação de fábrica e encaixe o estado do jogo é ? com inicio. Dentro, Mostrar tela com título subtítulo dica fundo, de Jogo e telas › Telas e partida."
+      }
+    },
+    {
+      "key": "fala-telas-finais",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Na abertura, no título escreva o nome do seu jogo, Nave contra Asteroides; no subtítulo, Destrua os asteroides; e na dica, Aperte Enter para começar. No segundo senão se, a pergunta é vitoria, o título é Você Ganhou e a dica é Aperte Enter para voltar ao início. No terceiro, a pergunta é fim, o título é Você Perdeu, e a dica é a mesma."
+      }
+    },
+    {
+      "key": "video-mostrar-telas",
+      "plannedVideo": "Título: As três telas ganham texto\n\nOrigem: video-mostrar-telas do v6, com a fala aproveitada e correção das duas dicas. Duração alvo: 85 a 100 segundos.\n\nMostrar o primeiro ramo inteiro, campo por campo: o botão mais senão se, a pergunta com inicio, o Mostrar tela com título subtítulo dica fundo, e os quatro campos preenchidos. Depois, só o que muda nos outros dois ramos, com pausa em cada um.\n\nCorreção obrigatória das duas dicas: onde a gravação diz \"para jogar novamente\" e \"para tentar novamente\", passa a dizer \"Aperte Enter para voltar ao início\". O Enter ali volta para a abertura, e é preciso apertar de novo para jogar.\n\nLembrar que título, subtítulo e cor de fundo são escolha de quem faz a aula. Pedir só contraste suficiente para as letras aparecerem."
+    },
+    {
+      "key": "fala-abertura-apareceu",
+      "content": {
+        "kind": "dialogue",
+        "pose": "celebrating",
+        "text": "Olha o seu jogo agora: a tela de abertura apareceu, com o nome que você escolheu. Ele ainda não começa quando você aperta Enter, porque o Enter ainda não faz nada. É a última peça."
+      }
+    },
+    {
+      "key": "fala-enter",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Áreas do projeto, dentro de Quando acontecer, coloque outro Quando apertar a tecla, logo abaixo do da barra de espaço, e escolha Enter no menu de teclas. Dentro dele, um Condição se, senão se e senão com três ramos. Na pergunta de cima, o estado do jogo é ? com inicio, e dentro dela Mudar o estado do jogo para com jogando."
+      }
+    },
+    {
+      "key": "fala-enter-ramos",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No primeiro senão se, a pergunta é fim, e dentro vai um bloco novo: Reiniciar o jogo, de Jogo e telas › Telas e partida. No segundo senão se, a pergunta é vitoria, e dentro vai outro Reiniciar o jogo."
+      }
+    },
+    {
+      "key": "video-enter",
+      "plannedVideo": "Título: A mesma tecla, três respostas\n\nOrigem: video-enter do v6, com a montagem aproveitada e dois cortes. Duração alvo: 80 a 95 segundos.\n\nMostrar o evento Quando apertar a tecla com Enter entrando em Quando acontecer, e o Condição se, senão se e senão com três ramos dentro: inicio muda o estado para jogando, fim reinicia, vitoria reinicia.\n\nTroca obrigatória de rótulos: o estado do jogo é ?, Mudar o estado do jogo para e Jogo e telas › Telas e partida.\n\nCorte obrigatório: sai a frase que diz que o Enter recomeça a partida zeradinha, porque ele volta para a abertura e é preciso apertar de novo."
+    },
+    {
+      "key": "experiencia-reiniciar",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Jogue outra vez",
+        "instructions": "Escolha qual bloco fica no ramo do fim. Primeiro Mudar o estado do jogo para inicio: aperte Enter e olhe a partida seguinte, as pedras que sobraram, o placar e as vidas. Depois troque para Reiniciar o jogo, faça de novo e olhe em que momento o jogo ficou.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "restart",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "goals": ["screen-only", "back-to-menu"],
+            "goalCopy": {
+              "screen-only": {
+                "label": "Mudando só o momento, as pedras da partida anterior continuaram caindo",
+                "pedido": "Escolha Mudar o estado do jogo para inicio, aperte Enter no fim e comece outra partida."
+              },
+              "back-to-menu": {
+                "label": "Reiniciar levou para a abertura, e foi preciso outro Enter para jogar",
+                "pedido": "Escolha Reiniciar o jogo, aperte Enter no fim e olhe em que momento o jogo ficou."
+              }
+            }
+          }
+        },
+        "checkpoint": {
+          "prompt": "Depois da derrota você aperta Enter e o jogo reinicia. Para onde ele vai?",
+          "choices": [
+            {
+              "id": "abertura",
+              "label": "Para a abertura, e outro Enter começa a partida."
+            },
+            {
+              "id": "partida",
+              "label": "Direto para uma partida nova."
+            }
+          ],
+          "correctChoiceId": "abertura",
+          "explanation": "Reiniciar roda o Ao iniciar inteiro de novo, e o último bloco de lá guarda o momento inicio."
+        }
+      }
+    },
+    {
+      "key": "fala-reiniciar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "O Reiniciar o jogo não muda só o momento guardado: ele roda o seu Ao iniciar de novo, inteiro. Os pontos voltam para zero, a nave ganha as três vidas, os grupos ficam vazios, e o último bloco de lá guarda o momento inicio. Por isso você cai na tela de abertura, e aperta Enter mais uma vez para começar de verdade."
+      }
+    },
+    {
+      "key": "video-ciclo-completo",
+      "plannedVideo": "Título: Do menu ao recomeço\n\nOrigem: video-ciclo-completo do v6, com fala parcial e correção do ciclo dos dois Enter. Agora com o roteiro de teste, o envio e o Compartilhar dentro do clipe. Duração alvo: 100 a 120 segundos.\n\nGravação de tela no jogo do fim do Dia 5, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e vitrine.\n\nO roteiro de teste em cinco passos e o passo a passo do Compartilhar eram dois balões do Zappy nesta seção e passaram para cá. Os dois são sequência de gesto, e o Compartilhar depende de o envio já ter acontecido, o que só dá para mostrar num clipe, na ordem real. Na seção o Estúdio ocupa a coluna da direita sozinho, então tudo o que fosse escrito seria lido antes do envio.\n\nO percurso completo, acelerado, cortando o tempo repetido de jogo. O que passa na tela, nesta ordem:\n\n1. O clique dentro da área do jogo.\n2. No menu, a barra de espaço apertada algumas vezes. O enquadramento precisa mostrar a tela inteira o bastante para dar para ver que nenhum tiro sai e nenhuma pedra nasce.\n3. Enter, e a partida começa.\n4. As três vidas deixadas acabar, até a tela de Você Perdeu.\n5. Enter. Correção obrigatória: este primeiro Enter volta para a abertura, ele não começa a partida. Enquadrar o placar em zero e os três corações inteiros na volta.\n6. Enter de novo, e a partida seguinte, acelerada até os 26 pontos e a tela de vitória.\n7. O gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n8. Só depois do envio, o botão Compartilhar liberando. O clipe mostra o clique nele e a janela abrindo.\n\nSobre o Compartilhar, que é o momento mais delicado do curso. A publicação é uma escolha, não um passo obrigatório da entrega, e a narração precisa deixar isso claro. O que a narração pode dizer: que o jogo ganha um link só dele, que quem abrir o link consegue jogar, e que não é preciso deixar o perfil público para isso. O que a narração não pode fazer: descrever, prometer ou antecipar qualquer campo da janela, porque o que ela pede é configuração do professor e pode mudar. A fala fica em \"confira o que a janela pedir e publique quando você quiser mostrar\". Não prometer geração de capa. Não afirmar que a publicação já aconteceu."
+    },
+    {
+      "key": "video-fecho",
+      "plannedVideo": "Título: O seu primeiro jogo está pronto\n\nOrigem: video-fecho-v6, com fala parcial. Duração alvo: 35 a 45 segundos.\n\nReaproveitar a conquista da gravação, que é sincera e boa. Mostrar o jogo completo rodando por alguns segundos.\n\nSubstituir o resumo numerado dos sete passos por uma frase sobre o que a pessoa sabe fazer agora: guardar um valor, responder a um encontro, decidir com uma pergunta e dar começo e fim a um jogo.\n\nNão afirmar que a publicação já aconteceu: ela é uma escolha, e acontece depois do envio.\n\nOnde o clipe fica: é o último bloco da coluna da esquerda, depois do quiz. Ele fecha o Desafio inteiro, então a gravação começa já com o jogo completo rodando."
+    },
+    {
+      "key": "quiz",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você protegeu o desenho, mas os tiros nascem no menu. Onde falta a pergunta jogando?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Dentro do evento da barra de espaço, antes de criar o tiro."
+              },
+              {
+                "id": "b",
+                "label": "Na cor do título da tela de início."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O evento é independente do motor. A ação dele também precisa da própria pergunta."
+          },
+          {
+            "id": "q2",
+            "prompt": "Depois da derrota, Reiniciar roda o Ao iniciar, que guarda o momento inicio. Para onde o jogo volta?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Direto para uma partida com os pontos antigos."
+              },
+              {
+                "id": "a",
+                "label": "Para a abertura, e o Enter começa uma nova partida."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Reiniciar refaz a preparação: zero ponto, três vidas, grupos novos e o momento inicio."
+          }
+        ]
+      }
     }
-   }
-  },
-  {
-   "key": "fala-reiniciar",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "O Reiniciar o jogo não muda só o momento guardado: ele roda o seu Ao iniciar de novo, inteiro. Os pontos voltam para zero, a nave ganha as três vidas, os grupos ficam vazios, e o último bloco de lá guarda o momento inicio. Por isso você cai na tela de abertura, e aperta Enter mais uma vez para começar de verdade."
-   }
-  },
-  {
-   "key": "video-ciclo-completo",
-   "plannedVideo": "Título: Do menu ao recomeço\n\nOrigem: video-ciclo-completo do v6, com fala parcial e correção do ciclo dos dois Enter. Agora com o roteiro de teste, o envio e o Compartilhar dentro do clipe. Duração alvo: 100 a 120 segundos.\n\nGravação de tela no jogo do fim do Dia 5, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e vitrine.\n\nO roteiro de teste em cinco passos e o passo a passo do Compartilhar eram dois balões do Zappy nesta seção e passaram para cá. Os dois são sequência de gesto, e o Compartilhar depende de o envio já ter acontecido, o que só dá para mostrar num clipe, na ordem real. Na seção o Estúdio ocupa a coluna da direita sozinho, então tudo o que fosse escrito seria lido antes do envio.\n\nO percurso completo, acelerado, cortando o tempo repetido de jogo. O que passa na tela, nesta ordem:\n\n1. O clique dentro da área do jogo.\n2. No menu, a barra de espaço apertada algumas vezes. O enquadramento precisa mostrar a tela inteira o bastante para dar para ver que nenhum tiro sai e nenhuma pedra nasce.\n3. Enter, e a partida começa.\n4. As três vidas deixadas acabar, até a tela de Você Perdeu.\n5. Enter. Correção obrigatória: este primeiro Enter volta para a abertura, ele não começa a partida. Enquadrar o placar em zero e os três corações inteiros na volta.\n6. Enter de novo, e a partida seguinte, acelerada até os 26 pontos e a tela de vitória.\n7. O gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n8. Só depois do envio, o botão Compartilhar liberando. O clipe mostra o clique nele e a janela abrindo.\n\nSobre o Compartilhar, que é o momento mais delicado do curso. A publicação é uma escolha, não um passo obrigatório da entrega, e a narração precisa deixar isso claro. O que a narração pode dizer: que o jogo ganha um link só dele, que quem abrir o link consegue jogar, e que não é preciso deixar o perfil público para isso. O que a narração não pode fazer: descrever, prometer ou antecipar qualquer campo da janela, porque o que ela pede é configuração do professor e pode mudar. A fala fica em \"confira o que a janela pedir e publique quando você quiser mostrar\". Não prometer geração de capa. Não afirmar que a publicação já aconteceu."
-  },
-  {
-   "key": "video-fecho",
-   "plannedVideo": "Título: O seu primeiro jogo está pronto\n\nOrigem: video-fecho-v6, com fala parcial. Duração alvo: 35 a 45 segundos.\n\nReaproveitar a conquista da gravação, que é sincera e boa. Mostrar o jogo completo rodando por alguns segundos.\n\nSubstituir o resumo numerado dos sete passos por uma frase sobre o que a pessoa sabe fazer agora: guardar um valor, responder a um encontro, decidir com uma pergunta e dar começo e fim a um jogo.\n\nNão afirmar que a publicação já aconteceu: ela é uma escolha, e acontece depois do envio.\n\nOnde o clipe fica: é o último bloco da coluna da esquerda, depois do quiz. Ele fecha o Desafio inteiro, então a gravação começa já com o jogo completo rodando."
-  },
-  {
-   "key": "quiz",
-   "content": {
-    "kind": "quiz",
-    "passingScore": 100,
-    "questions": [
-     {
-      "id": "q1",
-      "prompt": "Você protegeu o desenho, mas os tiros nascem no menu. Onde falta a pergunta jogando?",
-      "choices": [
-       {
-        "id": "a",
-        "label": "Dentro do evento da barra de espaço, antes de criar o tiro."
-       },
-       {
-        "id": "b",
-        "label": "Na cor do título da tela de início."
-       }
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "O que a gente vai fazer hoje",
+      "intent": "presentation",
+      "objective": "Ver o jogo completo, com abertura e os dois finais, antes de reorganizar o que já foi construído.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
+      }
+    },
+    {
+      "key": "momentos",
+      "title": "Os quatro momentos do jogo",
+      "intent": "application",
+      "objective": "Conhecer os quatro momentos, criar a meta fixa e guardar o momento inicial.",
+      "blockKeys": [
+        "video-telas",
+        "fala-constante",
+        "fala-alvo",
+        "video-alvo",
+        "fala-guardar-nao-desenha"
       ],
-      "correctChoiceIds": [
-       "a"
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-telas"],
+        "projectChecks": [
+          {
+            "id": "alvo",
+            "label": "Crie a constante alvo = 26 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_const_create",
+              "area": "start",
+              "fields": {
+                "NAME": "alvo"
+              },
+              "inputs": {
+                "VALUE": 26
+              }
+            }
+          },
+          {
+            "id": "tela-inicial",
+            "label": "Vá para inicio em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "start",
+              "fields": {
+                "SCENE": "inicio"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "estado-do-jogo",
+      "title": "O relógio pode agir agora?",
+      "intent": "exploration",
+      "objective": "Ver que a pergunta decide se a ação acontece, e que o relógio continua tocando mesmo quando a resposta é não.",
+      "blockKeys": ["fala-tudo-roda", "experiencia-estado"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-estado"]
+      }
+    },
+    {
+      "key": "embrulhar",
+      "title": "Embrulhe a partida numa pergunta",
+      "intent": "application",
+      "objective": "Fazer a manobra inteira uma vez: a partida do motor passa a acontecer só no momento jogando.",
+      "blockKeys": [
+        "fala-embrulhar",
+        "fala-embrulhar-cadeia",
+        "video-embrulhar",
+        "fala-tela-preta"
       ],
-      "explanation": "O evento é independente do motor. A ação dele também precisa da própria pergunta."
-     },
-     {
-      "id": "q2",
-      "prompt": "Depois da derrota, Reiniciar roda o Ao iniciar, que guarda o momento inicio. Para onde o jogo volta?",
-      "choices": [
-       {
-        "id": "b",
-        "label": "Direto para uma partida com os pontos antigos."
-       },
-       {
-        "id": "a",
-        "label": "Para a abertura, e o Enter começa uma nova partida."
-       }
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "pergunta-jogando",
+            "label": "No motor, use Se com a pergunta o estado do jogo é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "guardar-fundo",
+            "label": "Leve a sequência para o então de Se jogando, começando por Limpar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_clear",
+                  "beforeBlock": "sz_g2d_starfield"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "guardar-nave",
+            "label": "O movimento da nave fica dentro de Se jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_arrows_x",
+                  "fields": {
+                    "SPRITE": "nave"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "guardar-vidas",
+            "label": "Os corações também ficam dentro de Se jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_sprite_health",
+                  "fields": {
+                    "SPRITE": "nave",
+                    "STYLE": "hearts"
+                  },
+                  "inputs": {
+                    "X": 12,
+                    "Y": 48,
+                    "SIZE": 22
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "relogio-e-tiro",
+      "title": "O relógio e a barra de espaço também perguntam",
+      "intent": "application",
+      "objective": "Repetir a manobra nos dois lugares que têm vida própria: o relógio das pedras e o evento do disparo.",
+      "blockKeys": [
+        "fala-relogio-e-tiro",
+        "fala-embrulhar-tiro",
+        "video-relogio-e-tiro",
+        "fala-teste-menu"
       ],
-      "correctChoiceIds": [
-       "a"
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "guardar-relogio",
+            "label": "Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_frames",
+              "inputs": {
+                "N": 40
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_asteroid",
+                      "fields": {
+                        "GROUP": "asteroides"
+                      },
+                      "inputs": {
+                        "Y": -30,
+                        "SIZE": 40,
+                        "VX": 0,
+                        "VY": 3
+                      },
+                      "inputBlocks": {
+                        "X": {
+                          "blockType": "sz_g2d_random_x"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops"
+            }
+          },
+          {
+            "id": "um-asteroide",
+            "label": "Não deixe outro criador de asteroides fora da condição.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_asteroid",
+              "count": 1
+            }
+          },
+          {
+            "id": "guardar-tiro",
+            "label": "Dentro de Espaço, coloque criar tiro e som no então de Se jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_bullet",
+                      "fields": {
+                        "GROUP": "tiros"
+                      },
+                      "inputs": {
+                        "R": 5,
+                        "VX": 0,
+                        "VY": -9
+                      },
+                      "inputBlocks": {
+                        "X": {
+                          "blockType": "sz_g2d_center_x",
+                          "fields": {
+                            "SPRITE": "nave"
+                          }
+                        },
+                        "Y": {
+                          "blockType": "sz_g2d_sprite_y",
+                          "fields": {
+                            "SPRITE": "nave"
+                          }
+                        }
+                      },
+                      "beforeBlock": "sz_g2d_play_fx"
+                    }
+                  }
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "um-tiro",
+            "label": "Não deixe outro criador de tiro fora da condição.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_bullet",
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "finais",
+      "title": "O jogo decide quando acaba",
+      "intent": "application",
+      "objective": "Montar as duas perguntas gêmeas do fim da partida e ver a ordem entre elas.",
+      "blockKeys": ["fala-vitoria", "fala-derrota", "video-finais", "fala-ordem-dos-finais"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "vitoria",
+            "label": "No final da partida, se pontos ≥ alvo, vá para vitoria.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_compare",
+                      "fields": {
+                        "OP": ">="
+                      },
+                      "inputBlocks": {
+                        "LEFT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "pontos"
+                          }
+                        },
+                        "RIGHT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "alvo"
+                          }
+                        }
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "vitoria"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "ordem-dos-finais",
+            "label": "Na partida, coloque a pergunta de vitória antes da pergunta de derrota.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_js_if_else",
+                  "beforeBlock": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_compare",
+                      "fields": {
+                        "OP": ">="
+                      },
+                      "inputBlocks": {
+                        "LEFT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "pontos"
+                          }
+                        },
+                        "RIGHT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "alvo"
+                          }
+                        }
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "vitoria"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "derrota",
+            "label": "Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_health_depleted",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "fim"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "telas",
+      "title": "Desenhe as três telas",
+      "intent": "application",
+      "objective": "Dar um ramo e uma imagem a cada momento, e transformar a tela preta na abertura do jogo.",
+      "blockKeys": [
+        "fala-tres-telas",
+        "fala-telas-finais",
+        "video-mostrar-telas",
+        "fala-abertura-apareceu"
       ],
-      "explanation": "Reiniciar refaz a preparação: zero ponto, três vidas, grupos novos e o momento inicio."
-     }
-    ]
-   }
-  }
- ],
- "sections": [
-  {
-   "key": "abertura",
-   "title": "O que a gente vai fazer hoje",
-   "intent": "presentation",
-   "objective": "Ver o jogo completo, com abertura e os dois finais, antes de reorganizar o que já foi construído.",
-   "blockKeys": [
-    "video-abertura"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-abertura"
-    ]
-   }
-  },
-  {
-   "key": "momentos",
-   "title": "Os quatro momentos do jogo",
-   "intent": "application",
-   "objective": "Conhecer os quatro momentos, criar a meta fixa e guardar o momento inicial.",
-   "blockKeys": [
-    "video-telas",
-    "fala-constante",
-    "fala-alvo",
-    "video-alvo",
-    "fala-guardar-nao-desenha"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-telas"
-    ],
-    "projectChecks": [
-     {
-      "id": "alvo",
-      "label": "Crie a constante alvo = 26 em Ao iniciar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_const_create",
-       "area": "start",
-       "fields": {
-        "NAME": "alvo"
-       },
-       "inputs": {
-        "VALUE": 26
-       }
-      }
-     },
-     {
-      "id": "tela-inicial",
-      "label": "Vá para inicio em Ao iniciar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_set_scene",
-       "area": "start",
-       "fields": {
-        "SCENE": "inicio"
-       }
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "estado-do-jogo",
-   "title": "O relógio pode agir agora?",
-   "intent": "exploration",
-   "objective": "Ver que a pergunta decide se a ação acontece, e que o relógio continua tocando mesmo quando a resposta é não.",
-   "blockKeys": [
-    "fala-tudo-roda",
-    "experiencia-estado"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experiencia-estado"
-    ]
-   }
-  },
-  {
-   "key": "embrulhar",
-   "title": "Embrulhe a partida numa pergunta",
-   "intent": "application",
-   "objective": "Fazer a manobra inteira uma vez: a partida do motor passa a acontecer só no momento jogando.",
-   "blockKeys": [
-    "fala-embrulhar",
-    "fala-embrulhar-cadeia",
-    "video-embrulhar",
-    "fala-tela-preta"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "pergunta-jogando",
-      "label": "No motor, use Se com a pergunta o estado do jogo é jogando.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "guardar-fundo",
-      "label": "Leve a sequência para o então de Se jogando, começando por Limpar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_clear",
-         "beforeBlock": "sz_g2d_starfield"
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "guardar-nave",
-      "label": "O movimento da nave fica dentro de Se jogando.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_arrows_x",
-         "fields": {
-          "SPRITE": "nave"
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "guardar-vidas",
-      "label": "Os corações também ficam dentro de Se jogando.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_draw_sprite_health",
-         "fields": {
-          "SPRITE": "nave",
-          "STYLE": "hearts"
-         },
-         "inputs": {
-          "X": 12,
-          "Y": 48,
-          "SIZE": 22
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "relogio-e-tiro",
-   "title": "O relógio e a barra de espaço também perguntam",
-   "intent": "application",
-   "objective": "Repetir a manobra nos dois lugares que têm vida própria: o relógio das pedras e o evento do disparo.",
-   "blockKeys": [
-    "fala-relogio-e-tiro",
-    "fala-embrulhar-tiro",
-    "video-relogio-e-tiro",
-    "fala-teste-menu"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "guardar-relogio",
-      "label": "Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_every_frames",
-       "inputs": {
-        "N": 40
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "jogando"
-           }
-          },
-          "THEN": {
-           "blockType": "sz_g2d_spawn_asteroid",
-           "fields": {
-            "GROUP": "asteroides"
-           },
-           "inputs": {
-            "Y": -30,
-            "SIZE": 40,
-            "VX": 0,
-            "VY": 3
-           },
-           "inputBlocks": {
-            "X": {
-             "blockType": "sz_g2d_random_x"
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "tela-inicio",
+            "label": "No senão se inicio, encaixe Mostrar tela com a dica de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND0": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "inicio"
+                  }
+                },
+                "ELSEIF_THEN0": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte Enter para começar"
+                  }
+                }
+              }
             }
-           }
-          }
-         }
-        }
-       },
-       "area": "loops"
-      }
-     },
-     {
-      "id": "um-asteroide",
-      "label": "Não deixe outro criador de asteroides fora da condição.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_asteroid",
-       "count": 1
-      }
-     },
-     {
-      "id": "guardar-tiro",
-      "label": "Dentro de Espaço, coloque criar tiro e som no então de Se jogando.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_key",
-       "fields": {
-        "KEY": "Space"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "jogando"
-           }
           },
-          "THEN": {
-           "blockType": "sz_g2d_spawn_bullet",
-           "fields": {
-            "GROUP": "tiros"
-           },
-           "inputs": {
-            "R": 5,
-            "VX": 0,
-            "VY": -9
-           },
-           "inputBlocks": {
-            "X": {
-             "blockType": "sz_g2d_center_x",
-             "fields": {
-              "SPRITE": "nave"
-             }
-            },
-            "Y": {
-             "blockType": "sz_g2d_sprite_y",
-             "fields": {
-              "SPRITE": "nave"
-             }
+          {
+            "id": "tela-vitoria",
+            "label": "No senão se vitoria, encaixe Mostrar tela com a dica de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND1": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "vitoria"
+                  }
+                },
+                "ELSEIF_THEN1": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte Enter para voltar ao início"
+                  }
+                }
+              }
             }
-           },
-           "beforeBlock": "sz_g2d_play_fx"
-          }
-         }
-        }
-       },
-       "area": "events"
-      }
-     },
-     {
-      "id": "um-tiro",
-      "label": "Não deixe outro criador de tiro fora da condição.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_bullet",
-       "count": 1
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "finais",
-   "title": "O jogo decide quando acaba",
-   "intent": "application",
-   "objective": "Montar as duas perguntas gêmeas do fim da partida e ver a ordem entre elas.",
-   "blockKeys": [
-    "fala-vitoria",
-    "fala-derrota",
-    "video-finais",
-    "fala-ordem-dos-finais"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "vitoria",
-      "label": "No final da partida, se pontos ≥ alvo, vá para vitoria.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_val_compare",
-           "fields": {
-            "OP": ">="
-           },
-           "inputBlocks": {
-            "LEFT": {
-             "blockType": "sz_val_variable",
-             "fields": {
-              "NAME": "pontos"
-             }
-            },
-            "RIGHT": {
-             "blockType": "sz_val_variable",
-             "fields": {
-              "NAME": "alvo"
-             }
+          },
+          {
+            "id": "tela-fim",
+            "label": "No senão se fim, encaixe Mostrar tela com a dica de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND2": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "fim"
+                  }
+                },
+                "ELSEIF_THEN2": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte Enter para voltar ao início"
+                  }
+                }
+              }
             }
-           }
-          },
-          "THEN": {
-           "blockType": "sz_g2d_set_scene",
-           "fields": {
-            "SCENE": "vitoria"
-           }
           }
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
+        ]
       }
-     },
-     {
-      "id": "ordem-dos-finais",
-      "label": "Na partida, coloque a pergunta de vitória antes da pergunta de derrota.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_js_if_else",
-         "beforeBlock": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_val_compare",
-           "fields": {
-            "OP": ">="
-           },
-           "inputBlocks": {
-            "LEFT": {
-             "blockType": "sz_val_variable",
-             "fields": {
-              "NAME": "pontos"
-             }
-            },
-            "RIGHT": {
-             "blockType": "sz_val_variable",
-             "fields": {
-              "NAME": "alvo"
-             }
+    },
+    {
+      "key": "enter",
+      "title": "O Enter comanda o jogo",
+      "intent": "application",
+      "objective": "Fazer a mesma tecla responder de três jeitos, conforme o momento guardado.",
+      "blockKeys": ["fala-enter", "fala-enter-ramos", "video-enter"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "enter",
+            "label": "Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Enter"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "inicio"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "ELSEIF_COND0": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "fim"
+                      }
+                    },
+                    "ELSEIF_THEN0": {
+                      "blockType": "sz_g2d_restart"
+                    },
+                    "ELSEIF_COND1": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "vitoria"
+                      }
+                    },
+                    "ELSEIF_THEN1": {
+                      "blockType": "sz_g2d_restart"
+                    }
+                  }
+                }
+              },
+              "area": "events"
             }
-           }
-          },
-          "THEN": {
-           "blockType": "sz_g2d_set_scene",
-           "fields": {
-            "SCENE": "vitoria"
-           }
           }
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
+        ]
       }
-     },
-     {
-      "id": "derrota",
-      "label": "Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_g2d_health_depleted",
-           "fields": {
-            "SPRITE": "nave"
-           }
-          },
-          "THEN": {
-           "blockType": "sz_g2d_set_scene",
-           "fields": {
-            "SCENE": "fim"
-           }
-          }
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
+    },
+    {
+      "key": "reiniciar",
+      "title": "Jogue outra vez",
+      "intent": "exploration",
+      "objective": "Ver que reiniciar volta ao estado inicial e cai na abertura, e que é preciso outro Enter para jogar.",
+      "blockKeys": ["experiencia-reiniciar", "fala-reiniciar"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-reiniciar"]
       }
-     }
-    ]
-   }
-  },
-  {
-   "key": "telas",
-   "title": "Desenhe as três telas",
-   "intent": "application",
-   "objective": "Dar um ramo e uma imagem a cada momento, e transformar a tela preta na abertura do jogo.",
-   "blockKeys": [
-    "fala-tres-telas",
-    "fala-telas-finais",
-    "video-mostrar-telas",
-    "fala-abertura-apareceu"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "tela-inicio",
-      "label": "No senão se inicio, encaixe Mostrar tela com a dica de Enter.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "ELSEIF_COND0": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "inicio"
-         }
-        },
-        "ELSEIF_THEN0": {
-         "blockType": "sz_g2d_show_screen",
-         "inputs": {
-          "HINT": "Aperte Enter para começar"
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "tela-vitoria",
-      "label": "No senão se vitoria, encaixe Mostrar tela com a dica de Enter.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "ELSEIF_COND1": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "vitoria"
-         }
-        },
-        "ELSEIF_THEN1": {
-         "blockType": "sz_g2d_show_screen",
-         "inputs": {
-          "HINT": "Aperte Enter para voltar ao início"
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "tela-fim",
-      "label": "No senão se fim, encaixe Mostrar tela com a dica de Enter.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "ELSEIF_COND2": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "fim"
-         }
-        },
-        "ELSEIF_THEN2": {
-         "blockType": "sz_g2d_show_screen",
-         "inputs": {
-          "HINT": "Aperte Enter para voltar ao início"
-         }
-        }
-       }
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "enter",
-   "title": "O Enter comanda o jogo",
-   "intent": "application",
-   "objective": "Fazer a mesma tecla responder de três jeitos, conforme o momento guardado.",
-   "blockKeys": [
-    "fala-enter",
-    "fala-enter-ramos",
-    "video-enter"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "enter",
-      "label": "Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_key",
-       "fields": {
-        "KEY": "Enter"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "inicio"
-           }
-          },
-          "THEN": {
-           "blockType": "sz_g2d_set_scene",
-           "fields": {
-            "SCENE": "jogando"
-           }
-          },
-          "ELSEIF_COND0": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "fim"
-           }
-          },
-          "ELSEIF_THEN0": {
-           "blockType": "sz_g2d_restart"
-          },
-          "ELSEIF_COND1": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "vitoria"
-           }
-          },
-          "ELSEIF_THEN1": {
-           "blockType": "sz_g2d_restart"
-          }
-         }
-        }
-       },
-       "area": "events"
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "reiniciar",
-   "title": "Jogue outra vez",
-   "intent": "exploration",
-   "objective": "Ver que reiniciar volta ao estado inicial e cai na abertura, e que é preciso outro Enter para jogar.",
-   "blockKeys": [
-    "experiencia-reiniciar",
-    "fala-reiniciar"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experiencia-reiniciar"
-    ]
-   }
-  },
-  {
-   "key": "entrega",
-   "title": "Teste, entregue e mostre para o mundo",
-   "intent": "delivery",
-   "objective": "Jogo completo com quatro momentos, ações limitadas à partida, reinício, entrega enviada e link de compartilhamento.",
-   "blockKeys": [
-    "video-ciclo-completo",
-    "quiz",
-    "video-fecho",
-    "projeto"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-ciclo-completo",
-     "video-fecho",
-     "projeto",
-     "quiz"
-    ],
-    "projectChecks": [
-     {
-      "id": "alvo",
-      "label": "Crie a constante alvo = 26 em Ao iniciar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_const_create",
-       "area": "start",
-       "fields": {
-        "NAME": "alvo"
-       },
-       "inputs": {
-        "VALUE": 26
-       }
-      }
-     },
-     {
-      "id": "tela-inicial",
-      "label": "Vá para inicio em Ao iniciar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_set_scene",
-       "area": "start",
-       "fields": {
-        "SCENE": "inicio"
-       }
-      }
-     },
-     {
-      "id": "guardar-fundo",
-      "label": "Leve a sequência para o então de Se jogando, começando por Limpar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_clear",
-         "beforeBlock": "sz_g2d_starfield"
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "guardar-nave",
-      "label": "O movimento da nave fica dentro de Se jogando.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_arrows_x",
-         "fields": {
-          "SPRITE": "nave"
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "guardar-vidas",
-      "label": "Os corações também ficam dentro de Se jogando.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_draw_sprite_health",
-         "fields": {
-          "SPRITE": "nave",
-          "STYLE": "hearts"
-         },
-         "inputs": {
-          "X": 12,
-          "Y": 48,
-          "SIZE": 22
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "guardar-relogio",
-      "label": "Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_every_frames",
-       "inputs": {
-        "N": 40
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "jogando"
-           }
-          },
-          "THEN": {
-           "blockType": "sz_g2d_spawn_asteroid",
-           "fields": {
-            "GROUP": "asteroides"
-           },
-           "inputs": {
-            "Y": -30,
-            "SIZE": 40,
-            "VX": 0,
-            "VY": 3
-           },
-           "inputBlocks": {
-            "X": {
-             "blockType": "sz_g2d_random_x"
+    },
+    {
+      "key": "entrega",
+      "title": "Teste, entregue e mostre para o mundo",
+      "intent": "delivery",
+      "objective": "Jogo completo com quatro momentos, ações limitadas à partida, reinício, entrega enviada e link de compartilhamento.",
+      "blockKeys": ["video-ciclo-completo", "quiz", "video-fecho", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-ciclo-completo", "video-fecho", "projeto", "quiz"],
+        "projectChecks": [
+          {
+            "id": "alvo",
+            "label": "Crie a constante alvo = 26 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_const_create",
+              "area": "start",
+              "fields": {
+                "NAME": "alvo"
+              },
+              "inputs": {
+                "VALUE": 26
+              }
             }
-           }
-          }
-         }
-        }
-       },
-       "area": "loops"
-      }
-     },
-     {
-      "id": "um-asteroide",
-      "label": "Não deixe outro criador de asteroides fora da condição.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_asteroid",
-       "count": 1
-      }
-     },
-     {
-      "id": "guardar-tiro",
-      "label": "Dentro de Espaço, coloque criar tiro e som no então de Se jogando.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_key",
-       "fields": {
-        "KEY": "Space"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "jogando"
-           }
           },
-          "THEN": {
-           "blockType": "sz_g2d_spawn_bullet",
-           "fields": {
-            "GROUP": "tiros"
-           },
-           "inputs": {
-            "R": 5,
-            "VX": 0,
-            "VY": -9
-           },
-           "inputBlocks": {
-            "X": {
-             "blockType": "sz_g2d_center_x",
-             "fields": {
-              "SPRITE": "nave"
-             }
-            },
-            "Y": {
-             "blockType": "sz_g2d_sprite_y",
-             "fields": {
-              "SPRITE": "nave"
-             }
+          {
+            "id": "tela-inicial",
+            "label": "Vá para inicio em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "start",
+              "fields": {
+                "SCENE": "inicio"
+              }
             }
-           },
-           "beforeBlock": "sz_g2d_play_fx"
-          }
-         }
-        }
-       },
-       "area": "events"
-      }
-     },
-     {
-      "id": "um-tiro",
-      "label": "Não deixe outro criador de tiro fora da condição.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_bullet",
-       "count": 1
-      }
-     },
-     {
-      "id": "vitoria",
-      "label": "No final da partida, se pontos ≥ alvo, vá para vitoria.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_val_compare",
-           "fields": {
-            "OP": ">="
-           },
-           "inputBlocks": {
-            "LEFT": {
-             "blockType": "sz_val_variable",
-             "fields": {
-              "NAME": "pontos"
-             }
-            },
-            "RIGHT": {
-             "blockType": "sz_val_variable",
-             "fields": {
-              "NAME": "alvo"
-             }
+          },
+          {
+            "id": "guardar-fundo",
+            "label": "Leve a sequência para o então de Se jogando, começando por Limpar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_clear",
+                  "beforeBlock": "sz_g2d_starfield"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
             }
-           }
           },
-          "THEN": {
-           "blockType": "sz_g2d_set_scene",
-           "fields": {
-            "SCENE": "vitoria"
-           }
-          }
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "ordem-dos-finais",
-      "label": "Na partida, coloque a pergunta de vitória antes da pergunta de derrota.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_js_if_else",
-         "beforeBlock": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_val_compare",
-           "fields": {
-            "OP": ">="
-           },
-           "inputBlocks": {
-            "LEFT": {
-             "blockType": "sz_val_variable",
-             "fields": {
-              "NAME": "pontos"
-             }
-            },
-            "RIGHT": {
-             "blockType": "sz_val_variable",
-             "fields": {
-              "NAME": "alvo"
-             }
+          {
+            "id": "guardar-nave",
+            "label": "O movimento da nave fica dentro de Se jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_arrows_x",
+                  "fields": {
+                    "SPRITE": "nave"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
             }
-           }
           },
-          "THEN": {
-           "blockType": "sz_g2d_set_scene",
-           "fields": {
-            "SCENE": "vitoria"
-           }
+          {
+            "id": "guardar-vidas",
+            "label": "Os corações também ficam dentro de Se jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_sprite_health",
+                  "fields": {
+                    "SPRITE": "nave",
+                    "STYLE": "hearts"
+                  },
+                  "inputs": {
+                    "X": 12,
+                    "Y": 48,
+                    "SIZE": 22
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "guardar-relogio",
+            "label": "Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_frames",
+              "inputs": {
+                "N": 40
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_asteroid",
+                      "fields": {
+                        "GROUP": "asteroides"
+                      },
+                      "inputs": {
+                        "Y": -30,
+                        "SIZE": 40,
+                        "VX": 0,
+                        "VY": 3
+                      },
+                      "inputBlocks": {
+                        "X": {
+                          "blockType": "sz_g2d_random_x"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops"
+            }
+          },
+          {
+            "id": "um-asteroide",
+            "label": "Não deixe outro criador de asteroides fora da condição.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_asteroid",
+              "count": 1
+            }
+          },
+          {
+            "id": "guardar-tiro",
+            "label": "Dentro de Espaço, coloque criar tiro e som no então de Se jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_bullet",
+                      "fields": {
+                        "GROUP": "tiros"
+                      },
+                      "inputs": {
+                        "R": 5,
+                        "VX": 0,
+                        "VY": -9
+                      },
+                      "inputBlocks": {
+                        "X": {
+                          "blockType": "sz_g2d_center_x",
+                          "fields": {
+                            "SPRITE": "nave"
+                          }
+                        },
+                        "Y": {
+                          "blockType": "sz_g2d_sprite_y",
+                          "fields": {
+                            "SPRITE": "nave"
+                          }
+                        }
+                      },
+                      "beforeBlock": "sz_g2d_play_fx"
+                    }
+                  }
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "um-tiro",
+            "label": "Não deixe outro criador de tiro fora da condição.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_bullet",
+              "count": 1
+            }
+          },
+          {
+            "id": "vitoria",
+            "label": "No final da partida, se pontos ≥ alvo, vá para vitoria.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_compare",
+                      "fields": {
+                        "OP": ">="
+                      },
+                      "inputBlocks": {
+                        "LEFT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "pontos"
+                          }
+                        },
+                        "RIGHT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "alvo"
+                          }
+                        }
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "vitoria"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "ordem-dos-finais",
+            "label": "Na partida, coloque a pergunta de vitória antes da pergunta de derrota.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_js_if_else",
+                  "beforeBlock": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_compare",
+                      "fields": {
+                        "OP": ">="
+                      },
+                      "inputBlocks": {
+                        "LEFT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "pontos"
+                          }
+                        },
+                        "RIGHT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "alvo"
+                          }
+                        }
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "vitoria"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "derrota",
+            "label": "Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_health_depleted",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "fim"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "tela-inicio",
+            "label": "No senão se inicio, encaixe Mostrar tela com a dica de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND0": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "inicio"
+                  }
+                },
+                "ELSEIF_THEN0": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte Enter para começar"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "tela-vitoria",
+            "label": "No senão se vitoria, encaixe Mostrar tela com a dica de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND1": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "vitoria"
+                  }
+                },
+                "ELSEIF_THEN1": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte Enter para voltar ao início"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "tela-fim",
+            "label": "No senão se fim, encaixe Mostrar tela com a dica de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND2": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "fim"
+                  }
+                },
+                "ELSEIF_THEN2": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte Enter para voltar ao início"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "enter",
+            "label": "Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Enter"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "inicio"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "ELSEIF_COND0": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "fim"
+                      }
+                    },
+                    "ELSEIF_THEN0": {
+                      "blockType": "sz_g2d_restart"
+                    },
+                    "ELSEIF_COND1": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "vitoria"
+                      }
+                    },
+                    "ELSEIF_THEN1": {
+                      "blockType": "sz_g2d_restart"
+                    }
+                  }
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "placar-jogando",
+            "label": "O placar da variável fica na partida.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_score",
+                  "fields": {
+                    "LABEL": "Pontos:"
+                  },
+                  "inputs": {
+                    "X": 12,
+                    "Y": 30,
+                    "SIZE": 24
+                  },
+                  "inputBlocks": {
+                    "VALUE": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "pontos"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "ponto-jogando",
+            "label": "A colisão que soma pontos fica na partida.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_on_group_overlap",
+                  "fields": {
+                    "A": "tiros",
+                    "B": "asteroides",
+                    "ANAME": "tiro",
+                    "BNAME": "asteroide"
+                  },
+                  "inputBlocks": {
+                    "BODY": {
+                      "blockType": "sz_js_var_increment",
+                      "fields": {
+                        "NAME": "pontos",
+                        "DELTA": 1
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "dano-jogando",
+            "label": "A colisão que tira vida fica na partida.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_on_sprite_group_overlap",
+                  "fields": {
+                    "GROUP": "asteroides",
+                    "SPRITE": "nave",
+                    "ANAME": "inimigo"
+                  },
+                  "inputBlocks": {
+                    "BODY": {
+                      "blockType": "sz_g2d_damage_sprite",
+                      "fields": {
+                        "SPRITE": "nave"
+                      },
+                      "inputs": {
+                        "AMOUNT": 1,
+                        "FRAMES": 45
+                      },
+                      "beforeBlock": "sz_g2d_shake"
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "vida",
+            "label": "Dê 3 vidas à nave em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_health",
+              "area": "start",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "inputs": {
+                "AMOUNT": 3
+              }
+            }
           }
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
+        ]
       }
-     },
-     {
-      "id": "derrota",
-      "label": "Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_g2d_health_depleted",
-           "fields": {
-            "SPRITE": "nave"
-           }
-          },
-          "THEN": {
-           "blockType": "sz_g2d_set_scene",
-           "fields": {
-            "SCENE": "fim"
-           }
-          }
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "tela-inicio",
-      "label": "No senão se inicio, encaixe Mostrar tela com a dica de Enter.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "ELSEIF_COND0": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "inicio"
-         }
-        },
-        "ELSEIF_THEN0": {
-         "blockType": "sz_g2d_show_screen",
-         "inputs": {
-          "HINT": "Aperte Enter para começar"
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "tela-vitoria",
-      "label": "No senão se vitoria, encaixe Mostrar tela com a dica de Enter.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "ELSEIF_COND1": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "vitoria"
-         }
-        },
-        "ELSEIF_THEN1": {
-         "blockType": "sz_g2d_show_screen",
-         "inputs": {
-          "HINT": "Aperte Enter para voltar ao início"
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "tela-fim",
-      "label": "No senão se fim, encaixe Mostrar tela com a dica de Enter.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "ELSEIF_COND2": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "fim"
-         }
-        },
-        "ELSEIF_THEN2": {
-         "blockType": "sz_g2d_show_screen",
-         "inputs": {
-          "HINT": "Aperte Enter para voltar ao início"
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "enter",
-      "label": "Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_key",
-       "fields": {
-        "KEY": "Enter"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "inicio"
-           }
-          },
-          "THEN": {
-           "blockType": "sz_g2d_set_scene",
-           "fields": {
-            "SCENE": "jogando"
-           }
-          },
-          "ELSEIF_COND0": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "fim"
-           }
-          },
-          "ELSEIF_THEN0": {
-           "blockType": "sz_g2d_restart"
-          },
-          "ELSEIF_COND1": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "vitoria"
-           }
-          },
-          "ELSEIF_THEN1": {
-           "blockType": "sz_g2d_restart"
-          }
-         }
-        }
-       },
-       "area": "events"
-      }
-     },
-     {
-      "id": "placar-jogando",
-      "label": "O placar da variável fica na partida.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_draw_score",
-         "fields": {
-          "LABEL": "Pontos:"
-         },
-         "inputs": {
-          "X": 12,
-          "Y": 30,
-          "SIZE": 24
-         },
-         "inputBlocks": {
-          "VALUE": {
-           "blockType": "sz_val_variable",
-           "fields": {
-            "NAME": "pontos"
-           }
-          }
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "ponto-jogando",
-      "label": "A colisão que soma pontos fica na partida.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_on_group_overlap",
-         "fields": {
-          "A": "tiros",
-          "B": "asteroides",
-          "ANAME": "tiro",
-          "BNAME": "asteroide"
-         },
-         "inputBlocks": {
-          "BODY": {
-           "blockType": "sz_js_var_increment",
-           "fields": {
-            "NAME": "pontos",
-            "DELTA": 1
-           }
-          }
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "dano-jogando",
-      "label": "A colisão que tira vida fica na partida.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_on_sprite_group_overlap",
-         "fields": {
-          "GROUP": "asteroides",
-          "SPRITE": "nave",
-          "ANAME": "inimigo"
-         },
-         "inputBlocks": {
-          "BODY": {
-           "blockType": "sz_g2d_damage_sprite",
-           "fields": {
-            "SPRITE": "nave"
-           },
-           "inputs": {
-            "AMOUNT": 1,
-            "FRAMES": 45
-           },
-           "beforeBlock": "sz_g2d_shake"
-          }
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "vida",
-      "label": "Dê 3 vidas à nave em Ao iniciar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_set_health",
-       "area": "start",
-       "fields": {
-        "SPRITE": "nave"
-       },
-       "inputs": {
-        "AMOUNT": 3
-       }
-      }
-     }
-    ]
-   }
-  }
- ],
- "retireBlockKeys": [
-  "abertura",
-  "descoberta",
-  "explicacao",
-  "construir-1",
-  "video-construir-1-1",
-  "construir-2",
-  "video-construir-2-1",
-  "construir-3",
-  "video-construir-3-1",
-  "convite-construir-1",
-  "checar-construir-3",
-  "construir-4",
-  "video-construir-4-1",
-  "construir-5",
-  "video-construir-5-1",
-  "convite-construir-4",
-  "checar-construir-4",
-  "construir-6",
-  "video-construir-6-1",
-  "convite-construir-6",
-  "construir-7",
-  "video-construir-7-1",
-  "fechamento",
-  "video-abertura-v6",
-  "video-telas-observar",
-  "experiencia-telas",
-  "video-pergunta",
-  "fala-pergunta",
-  "video-mover-cadeia",
-  "video-guardar-jogo",
-  "fala-guardar-jogo",
-  "video-guardar-relogio",
-  "fala-guardar-relogio",
-  "video-guardar-tiro",
-  "fala-guardar-tiro",
-  "video-vitoria",
-  "video-derrota",
-  "fala-mostrar-telas",
-  "entrega-fala-v6",
-  "video-fecho-v6",
-  "quiz-v6"
- ]
+    }
+  ],
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "construir-3",
+    "video-construir-3-1",
+    "convite-construir-1",
+    "checar-construir-3",
+    "construir-4",
+    "video-construir-4-1",
+    "construir-5",
+    "video-construir-5-1",
+    "convite-construir-4",
+    "checar-construir-4",
+    "construir-6",
+    "video-construir-6-1",
+    "convite-construir-6",
+    "construir-7",
+    "video-construir-7-1",
+    "fechamento",
+    "video-abertura-v6",
+    "video-telas-observar",
+    "experiencia-telas",
+    "video-pergunta",
+    "fala-pergunta",
+    "video-mover-cadeia",
+    "video-guardar-jogo",
+    "fala-guardar-jogo",
+    "video-guardar-relogio",
+    "fala-guardar-relogio",
+    "video-guardar-tiro",
+    "fala-guardar-tiro",
+    "video-vitoria",
+    "video-derrota",
+    "fala-mostrar-telas",
+    "entrega-fala-v6",
+    "video-fecho-v6",
+    "quiz-v6"
+  ]
 }

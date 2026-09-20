@@ -1,782 +1,747 @@
 {
- "version": 4,
- "courseSlug": "corre-dino",
- "lessonSlug": "aula-05",
- "title": "O cacto vem vindo",
- "retireBlockKeys": [
-  "abertura",
-  "explicacao",
-  "construir-1",
-  "construir-2",
-  "convite-construir-1",
-  "construir-3",
-  "construir-4",
-  "convite-construir-3",
-  "construir-5",
-  "fechamento",
-  "video-missao",
-  "descoberta",
-  "video-construir-1-1",
-  "zappy-construir-1",
-  "video-construir-2-1",
-  "zappy-construir-2",
-  "zappy-convite-construir-1",
-  "video-construir-3-1",
-  "zappy-construir-3",
-  "video-construir-4-1",
-  "zappy-construir-4",
-  "video-construir-5-1",
-  "zappy-construir-5",
-  "zappy-convite-construir-3",
-  "video-entrega",
-  "zappy-entrega",
-  "zappy-revisao",
-  "video-abertura-editorial",
-  "video-grupo-cactos",
-  "fala-grupo-cactos",
-  "video-avalanche",
-  "video-relogio-cacto",
-  "fala-relogio-cacto",
-  "video-entrada-suave",
-  "fala-entrada-suave",
-  "video-sentido-velocidade",
-  "demonstracao-sentido",
-  "fala-entrega-editorial",
-  "video-fecho-editorial"
- ],
- "blocks": [
-  {
-   "key": "video-abertura",
-   "plannedVideo": "Título: O motivo do pulo chega pela direita\n\nTela regravada. Origem: video-abertura-editorial.\n\nO jogo do fim da aula rodando: cactos entrando pela direita, um de cada vez, com espaço entre eles, e o Dino pulando por cima.\n\nFala: repara no seu Dino pulando aí. Ele está pulando à toa, porque não tem nada para desviar. Hoje isso acaba. Você vai fazer os cactos nascerem, andarem e virem na direção dele.\n\nNão antecipar o relógio nem a avalanche. O clipe mostra o resultado, e a aula constrói o caminho.\n\nDuração alvo: 25 a 35 segundos."
-  },
-  {
-   "key": "fala-grupo",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Quantos cactos o seu jogo vai ter? Não é um, nem dois. É um monte, um atrás do outro. Em Jogo 2D, Grupos, Criar e percorrer, pega o Criar grupo de sprites e encaixa dentro do Ao iniciar, logo abaixo do Criar dinossauro. Ele tem um campo só, o nome do grupo, e ali você escreve cactos, tudo junto e sem acento."
-   }
-  },
-  {
-   "key": "fala-o-que-e-um-grupo",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Isso é um grupo, e ele funciona que nem um time: em vez de falar com cada cacto, você fala com o time inteiro de uma vez."
-   }
-  },
-  {
-   "key": "fala-criar-obstaculo",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Agora três blocos, e os três vão dentro do A cada quadro do jogo. Em Jogo 2D, Kits prontos, Dino, pega o No grupo criar obstáculo e encaixa logo abaixo do Desenhar o sprite dino. Ele tem cinco campos. No primeiro, o grupo, escolhe cactos. O segundo é a forma, e já nasce em cacto."
-   }
-  },
-  {
-   "key": "fala-numeros-de-fabrica",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Os três últimos campos são números, o x, o tamanho e o vx. Hoje nenhum deles muda: deixa os três como vieram."
-   }
-  },
-  {
-   "key": "fala-mover-e-desenhar",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Em Jogo 2D, Grupos, Movimento, pega o Mover os sprites do grupo usando suas velocidades e encaixa logo abaixo do No grupo cactos criar obstáculo, com o grupo cactos. Em Jogo 2D, Grupos, Desenho e ordem, pega o Desenhar o grupo e encaixa logo abaixo dele, também com cactos. Agora olha a área do jogo."
-   }
-  },
-  {
-   "key": "video-grupo-e-avalanche",
-   "plannedVideo": "Título: Duzentos cactos em três segundos\n\nTela regravada, com a criança montando junto. Origem: video-grupo-cactos e video-avalanche, fundidos num clipe só.\n\nO gesto dos quatro blocos, na ordem das falas, e a avalanche acontecendo na área do jogo.\n\nFecha na conta, sem prometer conserto: a tela virou uma parede de cacto, e não dá nem para ver o Dino. Isso era para acontecer mesmo. Onde a gente encaixou o bloco de criar o cacto? Dentro do A cada quadro do jogo, que roda 60 vezes por segundo. Então a gente pediu 60 cactos por segundo. Em três segundos são quase duzentos. O computador fez exatamente o que você mandou. Ele é obediente demais.\n\nMudança em relação ao material atual: sai a instrução de não copiar a pilha. A criança monta a avalanche com as próprias mãos, que é a regra do curso.\n\nDuração alvo: 75 a 90 segundos."
-  },
-  {
-   "key": "fala-espaco-e-tempo",
-   "content": {
-    "kind": "dialogue",
-    "pose": "thinking",
-    "text": "O bloco de criar o cacto está certo. O problema é onde ele está. Nesta bancada dá para experimentar os dois jeitos sem mexer no seu jogo."
-   }
-  },
-  {
-   "key": "experiencia-ritmo",
-   "content": {
-    "kind": "interactive",
-    "required": true,
-    "title": "Abra espaço entre os cactos",
-    "instructions": "Aperta o Tempo e vê os cactos nascerem a cada quadro. Depois leva o Criar cacto para dentro do relógio, que é o bloco A cada __ segundos fazer, e compara o mesmo tempo com e sem ele.",
-    "hints": [
-     "Veja quantos cactos nascem enquanto o tempo passa.",
-     "Compare o mesmo tempo com e sem o relógio.",
-     "Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos."
-    ],
-    "activity": {
-     "type": "experimentation",
-     "scene": "spawn",
-     "cenario": "corre-dino"
-    }
-   }
-  },
-  {
-   "key": "fala-relogio",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Em Jogo 2D, Tempo, Quadros e intervalos, pega o A cada __ segundos fazer e solta dentro do Enquanto estiver rodando, ao lado do A cada quadro do jogo, com um espaço. Repara bem: ao lado, não dentro. Os dois são vizinhos, cada um com o seu ritmo."
-   }
-  },
-  {
-   "key": "fala-por-que-o-ctrl",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Agora o bloco de criar o cacto muda de lugar, e ele está no meio da pilha. Se você arrastar do jeito normal, o Mover os sprites do grupo e o Desenhar o grupo vêm junto, e aí o grupo passa a andar e a ser desenhado uma vez a cada 1.4 segundo, o que faz o cacto andar aos trancos sem você entender por quê."
-   }
-  },
-  {
-   "key": "fala-gesto-do-ctrl",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Então segura a tecla Ctrl enquanto clica e arrasta: com o Ctrl segurado, sai só o bloco que você clicou. Segura o Ctrl, pega o No grupo cactos criar obstáculo, arrasta para fora e solta dentro do bloco novo. Se vier tudo junto sem querer, aperta Ctrl+Z e tenta de novo."
-   }
-  },
-  {
-   "key": "fala-numero-do-relogio",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "O bloco novo tem um campo só, o número de segundos, e vem com 2. Troca por 1.4, e no Estúdio número quebrado se escreve com ponto, não com vírgula."
-   }
-  },
-  {
-   "key": "video-relogio",
-   "plannedVideo": "Título: O relógio mora ao lado do motor\n\nTela regravada. Origem: video-relogio-cacto.\n\nO gesto do relógio solto ao lado do A cada quadro do jogo, com o espaço entre os dois bem visível, e depois o Ctrl com arrastar tirando só um bloco do meio da pilha. Mostrar também o erro: arrastar sem o Ctrl e ver os dois blocos de grupo virem junto, depois desfazer com Ctrl+Z.\n\nO antes e o depois na área do jogo, lado a lado.\n\nNomeia a peça: esse bloco tem nome, e é relógio. Ele serve para uma coisa acontecer no ritmo certo, em vez de acontecer sempre. E não é só para cacto: relógio serve para um inimigo aparecer, para um item nascer, para o veneno tirar uma vida de tempo em tempo. Você vai usar essa peça em muito jogo daqui para frente.\n\nNesta altura o x ainda é 400 e o vx ainda é menos 3. Não mexer em nenhum dos dois neste clipe.\n\nDuração alvo: 60 a 70 segundos."
-  },
-  {
-   "key": "video-fora-da-tela",
-   "plannedVideo": "Título: Nascer do lado de fora\n\nTela regravada. Origem: video-fora-da-tela e video-entrada-suave, que hoje partem do mesmo trecho e viram um clipe só.\n\nUma régua horizontal com 400, 480 e 560 marcados na mesma escala, e o retângulo de 480 por 270 com uma faixa externa à direita. Um cacto por vez.\n\nA fala aponta o defeito primeiro e o conserto depois: repara onde os cactos estão aparecendo. Eles não entram vindo de fora, eles simplesmente aparecem, pertinho da beirada da direita. Isso é porque o bloco veio com o x em 400, e a nossa tela tem 480 de largura. O 400 é dentro da tela. Nos jogos, os obstáculos nascem fora da tela e entram andando, para o jogador ver eles chegando e ter tempo de reagir. Lembra disso: nascer fora da tela é uma regra que quem cria jogo segue quase sempre. Então troca o x de 400 para 560. Como a tela vai até 480, o 560 fica bem depois da beirada direita, do lado de fora.\n\nO vx continua em menos 3 neste clipe. O sinal é assunto da bancada seguinte.\n\nDuração alvo: 40 a 50 segundos."
-  },
-  {
-   "key": "fala-tamanho-44",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "O tamanho já vem 44, que é um tamanho bom para o cacto. Deixa assim. O vx a gente mexe na próxima."
-   }
-  },
-  {
-   "key": "fala-antes-da-velocidade",
-   "content": {
-    "kind": "dialogue",
-    "pose": "thinking",
-    "text": "O cacto já vem para a esquerda, e o número dele é menos 3. Por que menos? Vamos ver o número mandando no cacto, um quadro de cada vez."
-   }
-  },
-  {
-   "key": "experiencia-velocidade",
-   "content": {
-    "kind": "interactive",
-    "required": true,
-    "title": "O que move o cacto a cada quadro",
-    "instructions": "Escolhe uma velocidade para o lado e deixa o tempo passar. Depois põe um número negativo e olha o x do cacto mudando quadro a quadro. Por último, põe as duas velocidades em zero e deixa o tempo passar de novo.",
-    "hints": [
-     "Escolha um número e deixe o tempo passar. Olhe o x do cacto a cada quadro.",
-     "Agora ponha um número negativo na velocidade para o lado.",
-     "Depois de ver o cacto andar, ponha as duas velocidades em zero e deixe o tempo passar."
-    ],
-    "activity": {
-     "type": "experimentation",
-     "scene": "velocity",
-     "cast": {
-      "hero": {
-       "name": "cacto",
-       "gender": "m"
-      }
-     },
-     "cenario": "corre-dino"
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-05",
+  "title": "O cacto vem vindo",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "construir-3",
+    "construir-4",
+    "convite-construir-3",
+    "construir-5",
+    "fechamento",
+    "video-missao",
+    "descoberta",
+    "video-construir-1-1",
+    "zappy-construir-1",
+    "video-construir-2-1",
+    "zappy-construir-2",
+    "zappy-convite-construir-1",
+    "video-construir-3-1",
+    "zappy-construir-3",
+    "video-construir-4-1",
+    "zappy-construir-4",
+    "video-construir-5-1",
+    "zappy-construir-5",
+    "zappy-convite-construir-3",
+    "video-entrega",
+    "zappy-entrega",
+    "zappy-revisao",
+    "video-abertura-editorial",
+    "video-grupo-cactos",
+    "fala-grupo-cactos",
+    "video-avalanche",
+    "video-relogio-cacto",
+    "fala-relogio-cacto",
+    "video-entrada-suave",
+    "fala-entrada-suave",
+    "video-sentido-velocidade",
+    "demonstracao-sentido",
+    "fala-entrega-editorial",
+    "video-fecho-editorial"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: O motivo do pulo chega pela direita\n\nTela regravada. Origem: video-abertura-editorial.\n\nO jogo do fim da aula rodando: cactos entrando pela direita, um de cada vez, com espaço entre eles, e o Dino pulando por cima.\n\nFala: repara no seu Dino pulando aí. Ele está pulando à toa, porque não tem nada para desviar. Hoje isso acaba. Você vai fazer os cactos nascerem, andarem e virem na direção dele.\n\nNão antecipar o relógio nem a avalanche. O clipe mostra o resultado, e a aula constrói o caminho.\n\nDuração alvo: 25 a 35 segundos."
     },
-    "prediction": {
-     "context": {
-      "label": "A velocidade para o lado",
-      "explanation": "Nesta experiência, vamos acompanhar como a velocidade para o lado move o cacto pela tela."
-     },
-     "prompt": "O cacto nasce na direita da tela. Para o cacto vir para a esquerda, a velocidade para o lado precisa ser…",
-     "choices": [
-      {
-       "id": "cinco",
-       "label": "5",
-       "shows": "Com −5, o x diminuiu e o cacto veio para a esquerda."
-      },
-      {
-       "id": "menos-cinco",
-       "label": "−5"
+    {
+      "key": "fala-grupo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Quantos cactos o seu jogo vai ter? Não é um, nem dois. É um monte, um atrás do outro. Em Jogo 2D, Grupos, Criar e percorrer, pega o Criar grupo de sprites e encaixa dentro do Ao iniciar, logo abaixo do Criar dinossauro. Ele tem um campo só, o nome do grupo, e ali você escreve cactos, tudo junto e sem acento."
       }
-     ],
-     "correctChoiceId": "menos-cinco",
-     "revealOn": "left"
+    },
+    {
+      "key": "fala-o-que-e-um-grupo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Isso é um grupo, e ele funciona que nem um time: em vez de falar com cada cacto, você fala com o time inteiro de uma vez."
+      }
+    },
+    {
+      "key": "fala-criar-obstaculo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora três blocos, e os três vão dentro do A cada quadro do jogo. Em Jogo 2D, Kits prontos, Dino, pega o No grupo criar obstáculo e encaixa logo abaixo do Desenhar o sprite dino. Ele tem cinco campos. No primeiro, o grupo, escolhe cactos. O segundo é a forma, e já nasce em cacto."
+      }
+    },
+    {
+      "key": "fala-numeros-de-fabrica",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Os três últimos campos são números, o x, o tamanho e o vx. Hoje nenhum deles muda: deixa os três como vieram."
+      }
+    },
+    {
+      "key": "fala-mover-e-desenhar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Grupos, Movimento, pega o Mover os sprites do grupo usando suas velocidades e encaixa logo abaixo do No grupo cactos criar obstáculo, com o grupo cactos. Em Jogo 2D, Grupos, Desenho e ordem, pega o Desenhar o grupo e encaixa logo abaixo dele, também com cactos. Agora olha a área do jogo."
+      }
+    },
+    {
+      "key": "video-grupo-e-avalanche",
+      "plannedVideo": "Título: Duzentos cactos em três segundos\n\nTela regravada, com a criança montando junto. Origem: video-grupo-cactos e video-avalanche, fundidos num clipe só.\n\nO gesto dos quatro blocos, na ordem das falas, e a avalanche acontecendo na área do jogo.\n\nFecha na conta, sem prometer conserto: a tela virou uma parede de cacto, e não dá nem para ver o Dino. Isso era para acontecer mesmo. Onde a gente encaixou o bloco de criar o cacto? Dentro do A cada quadro do jogo, que roda 60 vezes por segundo. Então a gente pediu 60 cactos por segundo. Em três segundos são quase duzentos. O computador fez exatamente o que você mandou. Ele é obediente demais.\n\nMudança em relação ao material atual: sai a instrução de não copiar a pilha. A criança monta a avalanche com as próprias mãos, que é a regra do curso.\n\nDuração alvo: 75 a 90 segundos."
+    },
+    {
+      "key": "fala-espaco-e-tempo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "O bloco de criar o cacto está certo. O problema é onde ele está. Nesta bancada dá para experimentar os dois jeitos sem mexer no seu jogo."
+      }
+    },
+    {
+      "key": "experiencia-ritmo",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Abra espaço entre os cactos",
+        "instructions": "Aperta o Tempo e vê os cactos nascerem a cada quadro. Depois leva o Criar cacto para dentro do relógio, que é o bloco A cada __ segundos fazer, e compara o mesmo tempo com e sem ele.",
+        "hints": [
+          "Veja quantos cactos nascem enquanto o tempo passa.",
+          "Compare o mesmo tempo com e sem o relógio.",
+          "Leve Criar cacto para dentro do relógio e deixe o tempo passar até nascerem dois cactos."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "spawn",
+          "cenario": "corre-dino"
+        }
+      }
+    },
+    {
+      "key": "fala-relogio",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Tempo, Quadros e intervalos, pega o A cada __ segundos fazer e solta dentro do Enquanto estiver rodando, ao lado do A cada quadro do jogo, com um espaço. Repara bem: ao lado, não dentro. Os dois são vizinhos, cada um com o seu ritmo."
+      }
+    },
+    {
+      "key": "fala-por-que-o-ctrl",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora o bloco de criar o cacto muda de lugar, e ele está no meio da pilha. Se você arrastar do jeito normal, o Mover os sprites do grupo e o Desenhar o grupo vêm junto, e aí o grupo passa a andar e a ser desenhado uma vez a cada 1.4 segundo, o que faz o cacto andar aos trancos sem você entender por quê."
+      }
+    },
+    {
+      "key": "fala-gesto-do-ctrl",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Então segura a tecla Ctrl enquanto clica e arrasta: com o Ctrl segurado, sai só o bloco que você clicou. Segura o Ctrl, pega o No grupo cactos criar obstáculo, arrasta para fora e solta dentro do bloco novo. Se vier tudo junto sem querer, aperta Ctrl+Z e tenta de novo."
+      }
+    },
+    {
+      "key": "fala-numero-do-relogio",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "O bloco novo tem um campo só, o número de segundos, e vem com 2. Troca por 1.4, e no Estúdio número quebrado se escreve com ponto, não com vírgula."
+      }
+    },
+    {
+      "key": "video-relogio",
+      "plannedVideo": "Título: O relógio mora ao lado do motor\n\nTela regravada. Origem: video-relogio-cacto.\n\nO gesto do relógio solto ao lado do A cada quadro do jogo, com o espaço entre os dois bem visível, e depois o Ctrl com arrastar tirando só um bloco do meio da pilha. Mostrar também o erro: arrastar sem o Ctrl e ver os dois blocos de grupo virem junto, depois desfazer com Ctrl+Z.\n\nO antes e o depois na área do jogo, lado a lado.\n\nNomeia a peça: esse bloco tem nome, e é relógio. Ele serve para uma coisa acontecer no ritmo certo, em vez de acontecer sempre. E não é só para cacto: relógio serve para um inimigo aparecer, para um item nascer, para o veneno tirar uma vida de tempo em tempo. Você vai usar essa peça em muito jogo daqui para frente.\n\nNesta altura o x ainda é 400 e o vx ainda é menos 3. Não mexer em nenhum dos dois neste clipe.\n\nDuração alvo: 60 a 70 segundos."
+    },
+    {
+      "key": "video-fora-da-tela",
+      "plannedVideo": "Título: Nascer do lado de fora\n\nTela regravada. Origem: video-fora-da-tela e video-entrada-suave, que hoje partem do mesmo trecho e viram um clipe só.\n\nUma régua horizontal com 400, 480 e 560 marcados na mesma escala, e o retângulo de 480 por 270 com uma faixa externa à direita. Um cacto por vez.\n\nA fala aponta o defeito primeiro e o conserto depois: repara onde os cactos estão aparecendo. Eles não entram vindo de fora, eles simplesmente aparecem, pertinho da beirada da direita. Isso é porque o bloco veio com o x em 400, e a nossa tela tem 480 de largura. O 400 é dentro da tela. Nos jogos, os obstáculos nascem fora da tela e entram andando, para o jogador ver eles chegando e ter tempo de reagir. Lembra disso: nascer fora da tela é uma regra que quem cria jogo segue quase sempre. Então troca o x de 400 para 560. Como a tela vai até 480, o 560 fica bem depois da beirada direita, do lado de fora.\n\nO vx continua em menos 3 neste clipe. O sinal é assunto da bancada seguinte.\n\nDuração alvo: 40 a 50 segundos."
+    },
+    {
+      "key": "fala-tamanho-44",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "O tamanho já vem 44, que é um tamanho bom para o cacto. Deixa assim. O vx a gente mexe na próxima."
+      }
+    },
+    {
+      "key": "fala-antes-da-velocidade",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "O cacto já vem para a esquerda, e o número dele é menos 3. Por que menos? Vamos ver o número mandando no cacto, um quadro de cada vez."
+      }
+    },
+    {
+      "key": "experiencia-velocidade",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "O que move o cacto a cada quadro",
+        "instructions": "Escolhe uma velocidade para o lado e deixa o tempo passar. Depois põe um número negativo e olha o x do cacto mudando quadro a quadro. Por último, põe as duas velocidades em zero e deixa o tempo passar de novo.",
+        "hints": [
+          "Escolha um número e deixe o tempo passar. Olhe o x do cacto a cada quadro.",
+          "Agora ponha um número negativo na velocidade para o lado.",
+          "Depois de ver o cacto andar, ponha as duas velocidades em zero e deixe o tempo passar."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "velocity",
+          "cast": {
+            "hero": {
+              "name": "cacto",
+              "gender": "m"
+            }
+          },
+          "cenario": "corre-dino"
+        },
+        "prediction": {
+          "context": {
+            "label": "A velocidade para o lado",
+            "explanation": "Nesta experiência, vamos acompanhar como a velocidade para o lado move o cacto pela tela."
+          },
+          "prompt": "O cacto nasce na direita da tela. Para o cacto vir para a esquerda, a velocidade para o lado precisa ser…",
+          "choices": [
+            {
+              "id": "cinco",
+              "label": "5",
+              "shows": "Com −5, o x diminuiu e o cacto veio para a esquerda."
+            },
+            {
+              "id": "menos-cinco",
+              "label": "−5"
+            }
+          ],
+          "correctChoiceId": "menos-cinco",
+          "revealOn": "left"
+        }
+      }
+    },
+    {
+      "key": "fala-menos-cinco",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora o último campo do bloco. O vx é a velocidade, e é quantos pixels o cacto anda a cada quadro. Pixel é aquele quadradinho miúdo da tela. Ele veio com menos 3. Troca por menos 5: quanto mais negativo, mais rápido ele vem na sua direção."
+      }
+    },
+    {
+      "key": "video-teste-e-valores",
+      "plannedVideo": "Título: Joga de verdade\n\nTela regravada. Origem: video-sentido-velocidade.\n\nA troca do vx de menos 3 para menos 5 no bloco dela, e depois o teste de verdade: clica na área do jogo e joga. Os cactos vêm da direita, um depois do outro, e você pula para escapar.\n\nA dívida dita na cara: e se o Dino encostar num cacto, ainda não acontece nada, ele atravessa. É de propósito, e é a Aula 9 que resolve.\n\nFecha devolvendo os dois valores do jogo: antes de fechar, confere os dois números do nosso jogo, o vx em menos 5 e o relógio em 1.4. Esses dois são os valores de que as próximas aulas partem.\n\nCortar do material atual o passeio livre por menos 3, menos 9, 0.8 e 2.5. Essa comparação por extremos volta na Aula 12, onde ela tem função.\n\nDuração alvo: 45 a 55 segundos."
+    },
+    {
+      "key": "video-teste-e-envio",
+      "plannedVideo": "Título: Esperar dois cactos e enviar\n\nOrigem: novo. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 50 a 60 segundos.\n\nGravação de tela no jogo do fim desta aula, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho do dia. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, nesta ordem:\n\n1. O clique dentro da área do jogo.\n2. A espera pelo primeiro cacto. Ele entra inteiro pela direita, já andando. Deixar a borda direita enquadrada, porque é ali que ele aparece.\n3. A espera pelo segundo cacto, com o espaço entre os dois contado em voz alta.\n4. Um pulo por cima de cada um dos dois.\n\nConferir junto, olhando a tela: os cactos entram um de cada vez, nenhum deles nasce dentro do quadro, e sempre sobra espaço para pular entre um e outro.\n\nSe vierem dois cactos colados ou uma fileira inteira de uma vez, o bloco que cria o cacto voltou para dentro do A cada quadro do jogo, e é isso que a gravação deve deixar reconhecível.\n\nDepois a lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFechar com a recapitulação do dia, que era balão e virou fim de clipe: hoje o seu jogo ganhou duas ideias com nome. A primeira é o grupo, que é falar com o time inteiro de uma vez. A segunda é o relógio, que é escolher o ritmo de uma coisa em vez de deixar ela acontecer sempre. E tem uma terceira, que é regra de ofício: obstáculo nasce fora da tela e entra andando.\n\nO gancho da Aula 6 continua em balão, logo abaixo, porque ele não depende de ter acabado de jogar."
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "fala-proxima-aula",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Na Aula 6 você vai descobrir uma coisa que está acontecendo no seu jogo agora e que não dá para ver."
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O que deve acontecer a cada quadro?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Atualizar e desenhar os cactos."
+              },
+              {
+                "id": "b",
+                "label": "Criar um novo cacto sempre."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O relógio decide quando nasce; o quadro cuida dos que já existem."
+          },
+          {
+            "id": "q2",
+            "prompt": "Se a tela termina em x 480, onde começa um cacto em x 560?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "No meio da tela."
+              },
+              {
+                "id": "a",
+                "label": "Fora da tela, à direita."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "560 fica além da borda direita."
+          },
+          {
+            "id": "q3",
+            "prompt": "Por que usar velocidade -5?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Para diminuir x e andar para a esquerda."
+              },
+              {
+                "id": "b",
+                "label": "Para fazer o cacto nascer a cada cinco segundos."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Velocidade e intervalo são propriedades diferentes."
+          }
+        ]
+      }
     }
-   }
-  },
-  {
-   "key": "fala-menos-cinco",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Agora o último campo do bloco. O vx é a velocidade, e é quantos pixels o cacto anda a cada quadro. Pixel é aquele quadradinho miúdo da tela. Ele veio com menos 3. Troca por menos 5: quanto mais negativo, mais rápido ele vem na sua direção."
-   }
-  },
-  {
-   "key": "video-teste-e-valores",
-   "plannedVideo": "Título: Joga de verdade\n\nTela regravada. Origem: video-sentido-velocidade.\n\nA troca do vx de menos 3 para menos 5 no bloco dela, e depois o teste de verdade: clica na área do jogo e joga. Os cactos vêm da direita, um depois do outro, e você pula para escapar.\n\nA dívida dita na cara: e se o Dino encostar num cacto, ainda não acontece nada, ele atravessa. É de propósito, e é a Aula 9 que resolve.\n\nFecha devolvendo os dois valores do jogo: antes de fechar, confere os dois números do nosso jogo, o vx em menos 5 e o relógio em 1.4. Esses dois são os valores de que as próximas aulas partem.\n\nCortar do material atual o passeio livre por menos 3, menos 9, 0.8 e 2.5. Essa comparação por extremos volta na Aula 12, onde ela tem função.\n\nDuração alvo: 45 a 55 segundos."
-  },
-  {
-   "key": "video-teste-e-envio",
-   "plannedVideo": "Título: Esperar dois cactos e enviar\n\nOrigem: novo. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 50 a 60 segundos.\n\nGravação de tela no jogo do fim desta aula, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho do dia. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, nesta ordem:\n\n1. O clique dentro da área do jogo.\n2. A espera pelo primeiro cacto. Ele entra inteiro pela direita, já andando. Deixar a borda direita enquadrada, porque é ali que ele aparece.\n3. A espera pelo segundo cacto, com o espaço entre os dois contado em voz alta.\n4. Um pulo por cima de cada um dos dois.\n\nConferir junto, olhando a tela: os cactos entram um de cada vez, nenhum deles nasce dentro do quadro, e sempre sobra espaço para pular entre um e outro.\n\nSe vierem dois cactos colados ou uma fileira inteira de uma vez, o bloco que cria o cacto voltou para dentro do A cada quadro do jogo, e é isso que a gravação deve deixar reconhecível.\n\nDepois a lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFechar com a recapitulação do dia, que era balão e virou fim de clipe: hoje o seu jogo ganhou duas ideias com nome. A primeira é o grupo, que é falar com o time inteiro de uma vez. A segunda é o relógio, que é escolher o ritmo de uma coisa em vez de deixar ela acontecer sempre. E tem uma terceira, que é regra de ofício: obstáculo nasce fora da tela e entra andando.\n\nO gancho da Aula 6 continua em balão, logo abaixo, porque ele não depende de ter acabado de jogar."
-  },
-  {
-   "key": "projeto",
-   "existing": {
-    "kind": "studio",
-    "index": 0
-   }
-  },
-  {
-   "key": "fala-proxima-aula",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Na Aula 6 você vai descobrir uma coisa que está acontecendo no seu jogo agora e que não dá para ver."
-   }
-  },
-  {
-   "key": "quiz-final",
-   "content": {
-    "kind": "quiz",
-    "passingScore": 100,
-    "questions": [
-     {
-      "id": "q1",
-      "prompt": "O que deve acontecer a cada quadro?",
-      "choices": [
-       {
-        "id": "a",
-        "label": "Atualizar e desenhar os cactos."
-       },
-       {
-        "id": "b",
-        "label": "Criar um novo cacto sempre."
-       }
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "O que a gente vai fazer hoje",
+      "intent": "presentation",
+      "objective": "Ver o motivo do pulo chegando pela direita antes de montar a primeira peça.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
+      }
+    },
+    {
+      "key": "avalanche",
+      "title": "Um time de cactos, e a avalanche",
+      "intent": "application",
+      "objective": "Criar o grupo e encher o grupo num movimento só, com os valores de fábrica, e ver a tela virar uma parede de cacto. O grupo fica concreto no instante em que dois blocos mandam numa multidão.",
+      "blockKeys": [
+        "fala-grupo",
+        "fala-o-que-e-um-grupo",
+        "fala-criar-obstaculo",
+        "fala-numeros-de-fabrica",
+        "fala-mover-e-desenhar",
+        "video-grupo-e-avalanche"
       ],
-      "correctChoiceIds": [
-       "a"
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "grupo",
+            "label": "Crie o grupo cactos em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "cactos"
+              }
+            }
+          },
+          {
+            "id": "criar-no-laco",
+            "label": "Encaixe o No grupo cactos criar obstáculo dentro de A cada quadro do jogo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "cactos",
+                "SHAPE": "cactus"
+              }
+            }
+          },
+          {
+            "id": "mover-grupo",
+            "label": "Atualize o grupo cactos a cada quadro, antes de desenhá-lo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "beforeBlock": "sz_g2d_draw_group"
+            }
+          },
+          {
+            "id": "desenhar-grupo",
+            "label": "Desenhe o grupo cactos a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "cactos"
+              }
+            }
+          },
+          {
+            "id": "grupo-apos-dino",
+            "label": "Desenhe o Dino antes de atualizar e desenhar os cactos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "beforeBlock": "sz_g2d_update_group"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "espaco-e-tempo",
+      "title": "O que abre espaço é o tempo",
+      "intent": "exploration",
+      "objective": "Descobrir que o que separa um cacto do outro é o tempo entre dois nascimentos, e não a velocidade deles.",
+      "blockKeys": ["fala-espaco-e-tempo", "experiencia-ritmo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-ritmo"]
+      }
+    },
+    {
+      "key": "dois-ritmos",
+      "title": "Dois ritmos, um do lado do outro",
+      "intent": "application",
+      "objective": "Soltar o relógio ao lado do A cada quadro do jogo e tirar o bloco de criar o cacto do meio da pilha com o Ctrl, deixando os dois blocos de grupo onde estavam. Os números do obstáculo continuam como vieram de fábrica.",
+      "blockKeys": [
+        "fala-relogio",
+        "fala-por-que-o-ctrl",
+        "fala-gesto-do-ctrl",
+        "fala-numero-do-relogio",
+        "video-relogio"
       ],
-      "explanation": "O relógio decide quando nasce; o quadro cuida dos que já existem."
-     },
-     {
-      "id": "q2",
-      "prompt": "Se a tela termina em x 480, onde começa um cacto em x 560?",
-      "choices": [
-       {
-        "id": "b",
-        "label": "No meio da tela."
-       },
-       {
-        "id": "a",
-        "label": "Fora da tela, à direita."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "560 fica além da borda direita."
-     },
-     {
-      "id": "q3",
-      "prompt": "Por que usar velocidade -5?",
-      "choices": [
-       {
-        "id": "a",
-        "label": "Para diminuir x e andar para a esquerda."
-       },
-       {
-        "id": "b",
-        "label": "Para fazer o cacto nascer a cada cinco segundos."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "Velocidade e intervalo são propriedades diferentes."
-     }
-    ]
-   }
-  }
- ],
- "sections": [
-  {
-   "key": "abertura",
-   "title": "O que a gente vai fazer hoje",
-   "intent": "presentation",
-   "objective": "Ver o motivo do pulo chegando pela direita antes de montar a primeira peça.",
-   "blockKeys": [
-    "video-abertura"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-abertura"
-    ]
-   }
-  },
-  {
-   "key": "avalanche",
-   "title": "Um time de cactos, e a avalanche",
-   "intent": "application",
-   "objective": "Criar o grupo e encher o grupo num movimento só, com os valores de fábrica, e ver a tela virar uma parede de cacto. O grupo fica concreto no instante em que dois blocos mandam numa multidão.",
-   "blockKeys": [
-    "fala-grupo",
-    "fala-o-que-e-um-grupo",
-    "fala-criar-obstaculo",
-    "fala-numeros-de-fabrica",
-    "fala-mover-e-desenhar",
-    "video-grupo-e-avalanche"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "grupo",
-      "label": "Crie o grupo cactos em Ao iniciar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_create_group",
-       "area": "start",
-       "fields": {
-        "NAME": "cactos"
-       }
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "relogio",
+            "label": "Deixe o No grupo cactos criar obstáculo dentro de um A cada 1.4 segundos fazer.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_obstacle",
+                  "fields": {
+                    "GROUP": "cactos",
+                    "SHAPE": "cactus"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "fora-do-quadro",
+            "label": "Deixe a criação fora de A cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "count": 0
+            }
+          },
+          {
+            "id": "criar-uma-vez",
+            "label": "Mantenha apenas um bloco de criação de cacto.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "count": 1
+            }
+          },
+          {
+            "id": "mover-grupo",
+            "label": "Atualize o grupo cactos a cada quadro, antes de desenhá-lo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "beforeBlock": "sz_g2d_draw_group"
+            }
+          },
+          {
+            "id": "desenhar-grupo",
+            "label": "Desenhe o grupo cactos a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "cactos"
+              }
+            }
+          }
+        ]
       }
-     },
-     {
-      "id": "criar-no-laco",
-      "label": "Encaixe o No grupo cactos criar obstáculo dentro de A cada quadro do jogo.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "fields": {
-        "GROUP": "cactos",
-        "SHAPE": "cactus"
-       }
+    },
+    {
+      "key": "fora-da-tela",
+      "title": "Nascer fora da tela",
+      "intent": "application",
+      "objective": "Trocar o x de 400 para 560, com a régua na mesma escala, e guardar a regra de ofício: obstáculo nasce fora da tela e entra andando. O tamanho continua 44.",
+      "blockKeys": ["video-fora-da-tela", "fala-tamanho-44"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "relogio",
+            "label": "Crie o cacto em x 560, tamanho 44, a cada 1,4 s.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_obstacle",
+                  "fields": {
+                    "GROUP": "cactos",
+                    "SHAPE": "cactus"
+                  },
+                  "inputs": {
+                    "X": 560,
+                    "SIZE": 44
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
-     },
-     {
-      "id": "mover-grupo",
-      "label": "Atualize o grupo cactos a cada quadro, antes de desenhá-lo.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_update_group",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "fields": {
-        "GROUP": "cactos"
-       },
-       "beforeBlock": "sz_g2d_draw_group"
+    },
+    {
+      "key": "numero-negativo",
+      "title": "Por que o número é negativo",
+      "intent": "exploration",
+      "objective": "Sentir o sinal antes de escrever o número: ver o x do cacto mudando quadro a quadro com velocidade positiva, negativa e zero.",
+      "blockKeys": ["fala-antes-da-velocidade", "experiencia-velocidade"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-velocidade"]
       }
-     },
-     {
-      "id": "desenhar-grupo",
-      "label": "Desenhe o grupo cactos a cada quadro.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_group",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "fields": {
-        "GROUP": "cactos"
-       }
+    },
+    {
+      "key": "menos-cinco",
+      "title": "Ponha o menos 5 no seu jogo",
+      "intent": "application",
+      "objective": "Trocar o vx de menos 3 para menos 5 sabendo o que o sinal quer dizer, jogar de verdade e fechar nos dois valores de que as próximas aulas partem.",
+      "blockKeys": ["fala-menos-cinco", "video-teste-e-valores"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "relogio",
+            "label": "Crie um cacto em x 560, tamanho 44 e velocidade -5 a cada 1,4 s.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_obstacle",
+                  "fields": {
+                    "GROUP": "cactos",
+                    "SHAPE": "cactus"
+                  },
+                  "inputs": {
+                    "X": 560,
+                    "VX": -5,
+                    "SIZE": 44
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
-     },
-     {
-      "id": "grupo-apos-dino",
-      "label": "Desenhe o Dino antes de atualizar e desenhar os cactos.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_sprite",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "fields": {
-        "SPRITE": "dino"
-       },
-       "beforeBlock": "sz_g2d_update_group"
+    },
+    {
+      "key": "entrega",
+      "title": "Teste, envie e fecha",
+      "intent": "delivery",
+      "objective": "A pista povoada: cactos entram pela direita, um de cada vez, com espaço entre eles. Enviar e guardar os dois nomes do dia, grupo e relógio.",
+      "blockKeys": ["video-teste-e-envio", "fala-proxima-aula", "quiz-final", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-teste-e-envio", "projeto", "quiz-final"],
+        "projectChecks": [
+          {
+            "id": "grupo",
+            "label": "Crie o grupo cactos em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "cactos"
+              }
+            }
+          },
+          {
+            "id": "relogio",
+            "label": "Crie um cacto em x 560, tamanho 44 e velocidade -5 a cada 1,4 s.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_obstacle",
+                  "fields": {
+                    "GROUP": "cactos",
+                    "SHAPE": "cactus"
+                  },
+                  "inputs": {
+                    "X": 560,
+                    "VX": -5,
+                    "SIZE": 44
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "mover-grupo",
+            "label": "Atualize o grupo cactos a cada quadro, antes de desenhá-lo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "beforeBlock": "sz_g2d_draw_group"
+            }
+          },
+          {
+            "id": "desenhar-grupo",
+            "label": "Desenhe o grupo cactos a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "cactos"
+              }
+            }
+          },
+          {
+            "id": "criar-uma-vez",
+            "label": "Mantenha apenas um bloco de criação de cacto.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "count": 1
+            }
+          },
+          {
+            "id": "floresta",
+            "label": "Desenhe a floresta com velocidade 5 antes do Dino.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_forest",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputs": {
+                "SPEED": 5
+              },
+              "beforeBlock": "sz_g2d_draw_sprite"
+            }
+          },
+          {
+            "id": "grupo-apos-dino",
+            "label": "Desenhe o Dino antes de atualizar e desenhar os cactos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "beforeBlock": "sz_g2d_update_group"
+            }
+          },
+          {
+            "id": "fora-do-quadro",
+            "label": "Deixe a criação fora de A cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "count": 0
+            }
+          }
+        ]
       }
-     }
-    ]
-   }
-  },
-  {
-   "key": "espaco-e-tempo",
-   "title": "O que abre espaço é o tempo",
-   "intent": "exploration",
-   "objective": "Descobrir que o que separa um cacto do outro é o tempo entre dois nascimentos, e não a velocidade deles.",
-   "blockKeys": [
-    "fala-espaco-e-tempo",
-    "experiencia-ritmo"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experiencia-ritmo"
-    ]
-   }
-  },
-  {
-   "key": "dois-ritmos",
-   "title": "Dois ritmos, um do lado do outro",
-   "intent": "application",
-   "objective": "Soltar o relógio ao lado do A cada quadro do jogo e tirar o bloco de criar o cacto do meio da pilha com o Ctrl, deixando os dois blocos de grupo onde estavam. Os números do obstáculo continuam como vieram de fábrica.",
-   "blockKeys": [
-    "fala-relogio",
-    "fala-por-que-o-ctrl",
-    "fala-gesto-do-ctrl",
-    "fala-numero-do-relogio",
-    "video-relogio"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "relogio",
-      "label": "Deixe o No grupo cactos criar obstáculo dentro de um A cada 1.4 segundos fazer.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_every_seconds",
-       "area": "loops",
-       "inputs": {
-        "SECS": 1.4
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_spawn_obstacle",
-         "fields": {
-          "GROUP": "cactos",
-          "SHAPE": "cactus"
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "fora-do-quadro",
-      "label": "Deixe a criação fora de A cada quadro.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "count": 0
-      }
-     },
-     {
-      "id": "criar-uma-vez",
-      "label": "Mantenha apenas um bloco de criação de cacto.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "count": 1
-      }
-     },
-     {
-      "id": "mover-grupo",
-      "label": "Atualize o grupo cactos a cada quadro, antes de desenhá-lo.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_update_group",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "fields": {
-        "GROUP": "cactos"
-       },
-       "beforeBlock": "sz_g2d_draw_group"
-      }
-     },
-     {
-      "id": "desenhar-grupo",
-      "label": "Desenhe o grupo cactos a cada quadro.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_group",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "fields": {
-        "GROUP": "cactos"
-       }
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "fora-da-tela",
-   "title": "Nascer fora da tela",
-   "intent": "application",
-   "objective": "Trocar o x de 400 para 560, com a régua na mesma escala, e guardar a regra de ofício: obstáculo nasce fora da tela e entra andando. O tamanho continua 44.",
-   "blockKeys": [
-    "video-fora-da-tela",
-    "fala-tamanho-44"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "relogio",
-      "label": "Crie o cacto em x 560, tamanho 44, a cada 1,4 s.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_every_seconds",
-       "area": "loops",
-       "inputs": {
-        "SECS": 1.4
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_spawn_obstacle",
-         "fields": {
-          "GROUP": "cactos",
-          "SHAPE": "cactus"
-         },
-         "inputs": {
-          "X": 560,
-          "SIZE": 44
-         }
-        }
-       }
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "numero-negativo",
-   "title": "Por que o número é negativo",
-   "intent": "exploration",
-   "objective": "Sentir o sinal antes de escrever o número: ver o x do cacto mudando quadro a quadro com velocidade positiva, negativa e zero.",
-   "blockKeys": [
-    "fala-antes-da-velocidade",
-    "experiencia-velocidade"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experiencia-velocidade"
-    ]
-   }
-  },
-  {
-   "key": "menos-cinco",
-   "title": "Ponha o menos 5 no seu jogo",
-   "intent": "application",
-   "objective": "Trocar o vx de menos 3 para menos 5 sabendo o que o sinal quer dizer, jogar de verdade e fechar nos dois valores de que as próximas aulas partem.",
-   "blockKeys": [
-    "fala-menos-cinco",
-    "video-teste-e-valores"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "relogio",
-      "label": "Crie um cacto em x 560, tamanho 44 e velocidade -5 a cada 1,4 s.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_every_seconds",
-       "area": "loops",
-       "inputs": {
-        "SECS": 1.4
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_spawn_obstacle",
-         "fields": {
-          "GROUP": "cactos",
-          "SHAPE": "cactus"
-         },
-         "inputs": {
-          "X": 560,
-          "VX": -5,
-          "SIZE": 44
-         }
-        }
-       }
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "entrega",
-   "title": "Teste, envie e fecha",
-   "intent": "delivery",
-   "objective": "A pista povoada: cactos entram pela direita, um de cada vez, com espaço entre eles. Enviar e guardar os dois nomes do dia, grupo e relógio.",
-   "blockKeys": [
-    "video-teste-e-envio",
-    "fala-proxima-aula",
-    "quiz-final",
-    "projeto"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-teste-e-envio",
-     "projeto",
-     "quiz-final"
-    ],
-    "projectChecks": [
-     {
-      "id": "grupo",
-      "label": "Crie o grupo cactos em Ao iniciar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_create_group",
-       "area": "start",
-       "fields": {
-        "NAME": "cactos"
-       }
-      }
-     },
-     {
-      "id": "relogio",
-      "label": "Crie um cacto em x 560, tamanho 44 e velocidade -5 a cada 1,4 s.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_every_seconds",
-       "area": "loops",
-       "inputs": {
-        "SECS": 1.4
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_spawn_obstacle",
-         "fields": {
-          "GROUP": "cactos",
-          "SHAPE": "cactus"
-         },
-         "inputs": {
-          "X": 560,
-          "VX": -5,
-          "SIZE": 44
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "mover-grupo",
-      "label": "Atualize o grupo cactos a cada quadro, antes de desenhá-lo.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_update_group",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "fields": {
-        "GROUP": "cactos"
-       },
-       "beforeBlock": "sz_g2d_draw_group"
-      }
-     },
-     {
-      "id": "desenhar-grupo",
-      "label": "Desenhe o grupo cactos a cada quadro.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_group",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "fields": {
-        "GROUP": "cactos"
-       }
-      }
-     },
-     {
-      "id": "criar-uma-vez",
-      "label": "Mantenha apenas um bloco de criação de cacto.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "count": 1
-      }
-     },
-     {
-      "id": "floresta",
-      "label": "Desenhe a floresta com velocidade 5 antes do Dino.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_forest",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputs": {
-        "SPEED": 5
-       },
-       "beforeBlock": "sz_g2d_draw_sprite"
-      }
-     },
-     {
-      "id": "grupo-apos-dino",
-      "label": "Desenhe o Dino antes de atualizar e desenhar os cactos.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_sprite",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "fields": {
-        "SPRITE": "dino"
-       },
-       "beforeBlock": "sz_g2d_update_group"
-      }
-     },
-     {
-      "id": "fora-do-quadro",
-      "label": "Deixe a criação fora de A cada quadro.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "count": 0
-      }
-     }
-    ]
-   }
-  }
- ]
+    }
+  ]
 }

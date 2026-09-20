@@ -1,1000 +1,958 @@
 {
- "version": 4,
- "courseSlug": "desafio-primeiro-jogo",
- "lessonSlug": "dia-4",
- "title": "O jogo passa a contar",
- "blocks": [
-  {
-   "key": "projeto",
-   "existing": {
-    "kind": "studio",
-    "index": 0
-   }
-  },
-  {
-   "key": "video-abertura",
-   "plannedVideo": "Título: O jogo começa a contar\n\nOrigem: video-abertura-v6, com fala parcial e tela regravada. Duração alvo: 25 a 35 segundos.\n\nMostrar o jogo do fim do Dia 4 rodando: o placar no canto de cima, os três corações logo abaixo dele, um tiro acertando uma pedra e somando ponto, e uma pedra encostando na nave e apagando um coração, com a tela tremendo.\n\nFala: \"Hoje o seu jogo começa a contar. Cada pedra que você explodir vale um ponto, a nave ganha três vidas, e você vai descobrir por que ela precisa de um respiro depois de levar uma batida.\"\n\nCorte obrigatório: sai a enumeração dos seis passos."
-  },
-  {
-   "key": "fala-caixa",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Para guardar os seus pontos, o jogo precisa de um lugar onde caiba um número. Isso se chama variável: é como uma caixinha com um nome escrito na tampa e um número dentro, e esse número pode mudar a qualquer hora. Olha essa caixa por dentro antes da gente montar a sua."
-   }
-  },
-  {
-   "key": "experiencia-variavel",
-   "content": {
-    "kind": "interactive",
-    "required": true,
-    "title": "Guardar, mudar e mostrar",
-    "instructions": "Guarde um número na caixa. Depois aperte Somar 1 em pontos com o Mostrar placar desligado e olhe o que acontece dentro da caixa. Por último, ligue o Mostrar placar e veja o número aparecer na tela.",
-    "hints": [],
-    "activity": {
-     "type": "experimentation",
-     "scene": "variable",
-     "cast": {
-      "hero": {
-       "name": "nave",
-       "gender": "f"
-      },
-      "obstacle": {
-       "name": "asteroide",
-       "gender": "m"
+  "version": 4,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "dia-4",
+  "title": "O jogo passa a contar",
+  "blocks": [
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
       }
-     },
-     "cenario": "nave",
-     "setup": {
-      "goals": [
-       "stored",
-       "changed-hidden",
-       "shown"
-      ]
-     }
     },
-    "checkpoint": {
-     "prompt": "O placar foi desenhado três vezes sem nenhum acerto novo. O que o número na tela mostra?",
-     "choices": [
-      {
-       "id": "mesmo",
-       "label": "O mesmo número de antes."
-      },
-      {
-       "id": "mais-tres",
-       "label": "Três pontos a mais, um por desenho."
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: O jogo começa a contar\n\nOrigem: video-abertura-v6, com fala parcial e tela regravada. Duração alvo: 25 a 35 segundos.\n\nMostrar o jogo do fim do Dia 4 rodando: o placar no canto de cima, os três corações logo abaixo dele, um tiro acertando uma pedra e somando ponto, e uma pedra encostando na nave e apagando um coração, com a tela tremendo.\n\nFala: \"Hoje o seu jogo começa a contar. Cada pedra que você explodir vale um ponto, a nave ganha três vidas, e você vai descobrir por que ela precisa de um respiro depois de levar uma batida.\"\n\nCorte obrigatório: sai a enumeração dos seis passos."
+    },
+    {
+      "key": "fala-caixa",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Para guardar os seus pontos, o jogo precisa de um lugar onde caiba um número. Isso se chama variável: é como uma caixinha com um nome escrito na tampa e um número dentro, e esse número pode mudar a qualquer hora. Olha essa caixa por dentro antes da gente montar a sua."
       }
-     ],
-     "correctChoiceId": "mesmo",
-     "explanation": "Desenhar só lê o número que está guardado na caixa. Quem muda o número é a soma, e ela acontece no acerto."
+    },
+    {
+      "key": "experiencia-variavel",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Guardar, mudar e mostrar",
+        "instructions": "Guarde um número na caixa. Depois aperte Somar 1 em pontos com o Mostrar placar desligado e olhe o que acontece dentro da caixa. Por último, ligue o Mostrar placar e veja o número aparecer na tela.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "variable",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "goals": ["stored", "changed-hidden", "shown"]
+          }
+        },
+        "checkpoint": {
+          "prompt": "O placar foi desenhado três vezes sem nenhum acerto novo. O que o número na tela mostra?",
+          "choices": [
+            {
+              "id": "mesmo",
+              "label": "O mesmo número de antes."
+            },
+            {
+              "id": "mais-tres",
+              "label": "Três pontos a mais, um por desenho."
+            }
+          ],
+          "correctChoiceId": "mesmo",
+          "explanation": "Desenhar só lê o número que está guardado na caixa. Quem muda o número é a soma, e ela acontece no acerto."
+        }
+      }
+    },
+    {
+      "key": "fala-criar-pontos",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Primeiro a caixa. Em Programação, 🏷️ Variáveis, pegue Criar variável com valor e encaixe em Ao iniciar, logo abaixo do Criar grupo de sprites dos asteroides. No nome, escreva pontos. No valor, deixe 0, porque este jogo começa do zero."
+      }
+    },
+    {
+      "key": "fala-somar-ponto",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora a soma. Em Programação, 🏷️ Variáveis, pegue Somar em variável e encaixe dentro do Para cada colisão entre os grupos e, no finalzinho, logo depois do Tocar efeito. Escolha pontos e deixe 1. A soma mora dentro da colisão, não solta no motor."
+      }
+    },
+    {
+      "key": "fala-placar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "E agora o placar. Em Jogo 2D, Vida e placar › Indicadores e texto na tela, pegue Mostrar placar valor em x y cor tamanho e encaixe dentro do A cada quadro do jogo, logo abaixo do bloco da colisão. No rótulo, escreva Pontos:. Em cima do número do valor, encaixe valor da variável, de Programação, 🔣 Valores, e escolha pontos. Use x 12, y 30, tamanho 24 e uma cor clara."
+      }
+    },
+    {
+      "key": "video-pontos-e-placar",
+      "plannedVideo": "Título: A caixa, a soma e o placar\n\nOrigem: fusão de video-pontos, video-somar e video-placar, com uma substituição de fala. Duração alvo: 80 a 95 segundos.\n\nParte 1: pegar Criar variável com valor em Programação, Variáveis, encaixar em Ao iniciar, escrever pontos e deixar 0. Manter a fala do laranja das Variáveis contra o rosa do Jogo 2D, que ajuda a se localizar na paleta.\n\nParte 2: pegar Somar em variável e encaixar dentro da colisão tiros × asteroides, depois do Tocar efeito, com pontos e 1.\n\nParte 3: pegar Mostrar placar valor em x y cor tamanho em Vida e placar › Indicadores e texto na tela, encaixar no motor abaixo da colisão, escrever Pontos:, encaixar valor da variável no campo do valor e preencher x 12, y 30, tamanho 24. Manter a nomeação do HUD, que é curta e é conteúdo.\n\nSubstituição obrigatória: onde a gravação diz \"todo jogo começa com zero ponto\", passa a dizer \"este jogo começa com zero ponto\".\n\nCorte obrigatório: sai a contagem de passos."
+    },
+    {
+      "key": "fala-respiro",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Quando uma pedra encosta na nave, ela tira uma vida. O problema é que as pedras chegam em bando, e uma batida costuma vir logo atrás da outra. Por isso existe um respiro: logo depois de levar dano, a nave fica um tempinho piscando, e nesse tempinho nenhum dano novo entra. Isso tem nome de criador de jogo: são os quadros de invencibilidade."
+      }
+    },
+    {
+      "key": "experiencia-protecao",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "O respiro depois da batida",
+        "instructions": "Três pedras vão encostar na nave, nos quadros 1, 10 e 30. Deixe a proteção em 0 e avance até passar a terceira. Depois ponha 45, volte ao começo e faça de novo. Por último, ponha 15 e repita. As três pedras somem nos três testes: o que muda é quantas vidas sobram.",
+        "hints": [
+          "Depois da primeira batida, olhe a faixa da proteção contando para trás.",
+          "Compare quantas vidas sobraram com a proteção em 0 e com a proteção em 45.",
+          "Ponha 15 e olhe em que quadro a proteção chega a zero. A pedra do quadro 30 chega antes ou depois disso?"
+        ],
+        "prediction": {
+          "context": {
+            "label": "A janela de proteção",
+            "explanation": "Nesta experiência, você escolhe quantos quadros a proteção dura e avança o tempo até as três pedras encostarem na nave."
+          },
+          "prompt": "Imagine: a nave tem três vidas e três pedras diferentes vão encostar nela, uma logo atrás da outra, com 45 quadros de proteção ligados. Quantas vidas sobram?",
+          "choices": [
+            {
+              "id": "nenhuma",
+              "label": "Nenhuma",
+              "shows": "As três pedras bateram. Só a primeira tirou vida, porque as outras duas chegaram dentro dos 45 quadros."
+            },
+            {
+              "id": "duas",
+              "label": "Duas"
+            }
+          ],
+          "correctChoiceId": "duas",
+          "revealOn": "window"
+        },
+        "activity": {
+          "type": "experimentation",
+          "scene": "invincibility",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "goals": ["no-shield", "window", "expires"]
+          }
+        },
+        "checkpoint": {
+          "prompt": "Por que só a primeira batida tirou vida quando a proteção estava em 45?",
+          "choices": [
+            {
+              "id": "ignorados",
+              "label": "Porque os danos seguintes foram ignorados enquanto a proteção contava."
+            },
+            {
+              "id": "infinitas",
+              "label": "Porque a nave ficou com vidas infinitas até o fim da partida."
+            }
+          ],
+          "correctChoiceId": "ignorados",
+          "explanation": "A proteção é uma janela de tempo. Enquanto ela está contando, dano novo não entra. Quando ela chega a zero, a próxima batida volta a tirar vida."
+        }
+      }
+    },
+    {
+      "key": "fala-vida",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Primeiro as vidas. Em Jogo 2D, Vida e placar › Vida, pegue Dar ao sprite de vida e encaixe em Ao iniciar, logo abaixo do Criar variável com valor dos pontos. Confira que o sprite é a nave e deixe o número em 3. Esse bloco fica em Ao iniciar, e não no motor, e daqui a pouco você vai ver o que aconteceria no lugar errado."
+      }
+    },
+    {
+      "key": "fala-batida",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora a batida. Em Jogo 2D, Colisões › Encostar e bloquear, pegue Para cada sprite do grupo que colidir com o sprite e encaixe dentro do A cada quadro do jogo, logo abaixo do Mostrar placar. O grupo é asteroides, o sprite é a nave, e o apelido dele já vem escrito inimigo."
+      }
+    },
+    {
+      "key": "fala-dano",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Dentro dele, quatro blocos nessa ordem. Tirar o sprite do grupo, com o sprite inimigo e o grupo asteroides. Soltar explosão no sprite cor, de Desenho e efeitos › Partículas, no sprite inimigo. Machucar o sprite em e deixá-lo invencível por quadros, de Vida e placar › Vida, na nave, tirando 1 e protegendo por 45. E Tremer a tela com intensidade, com 8."
+      }
+    },
+    {
+      "key": "fala-coracoes",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Para fechar, um bloco fora da colisão. Pegue Desenhar as vidas do sprite como em x y tamanho cor, de Vida e placar › Vida, e encaixe no fim do A cada quadro do jogo. Escolha a nave, o jeito corações, x 12, y 48 e tamanho 22, com uma cor que apareça no fundo escuro."
+      }
+    },
+    {
+      "key": "video-batida-e-coracoes",
+      "plannedVideo": "Título: A batida custa um coração\n\nOrigem: fusão de video-vida, video-batida e video-coracoes, com uma correção obrigatória. Duração alvo: 140 a 155 segundos.\n\nParte 1: pegar Dar ao sprite de vida em Vida e placar › Vida e encaixar em Ao iniciar, abaixo da variável pontos, com a nave e 3.\n\nParte 2: o gesto inteiro da colisão. Pegar Para cada sprite do grupo que colidir com o sprite, encaixar no motor abaixo do placar, escolher asteroides e nave, e montar os quatro blocos dentro, na ordem. Manter a tremida da gravação, sem repetição automática.\n\nParte 3: encaixar Desenhar as vidas do sprite no fim do motor, com corações, x 12, y 48 e tamanho 22.\n\nCorreção obrigatória: onde a gravação diz que sem a invencibilidade \"uma batida só podia tirar as 3 vidas de uma vez, porque a colisão acontece em vários quadros seguidos\", passa a dizer \"a pedra que bateu já saiu do grupo na linha de cima, então o respiro serve para as outras pedras que estão chegando logo atrás\"."
+    },
+    {
+      "key": "experiencia-uma-vez",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "As vidas são dadas uma vez",
+        "instructions": "A pedra já está encostando na nave a cada poucos quadros. Deixe a ficha Dar três vidas à nave em Ao iniciar e avance até a pedra encostar duas vezes, olhando os corações. Depois leve a mesma ficha para Enquanto estiver rodando e avance de novo, contando quantos corações sobram.",
+        "hints": [
+          "Deixe a ficha em Ao iniciar e avance até a pedra encostar. Olhe os corações.",
+          "Agora leve a mesma ficha para Enquanto estiver rodando e avance de novo. Conte quantos corações sobram depois de três batidas."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "once-vs-always",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "preset": {
+              "id": "uma-ficha-vidas",
+              "areas": ["start", "loop"],
+              "cards": [
+                {
+                  "id": "lives",
+                  "kind": "lives",
+                  "label": "Dar três vidas à nave"
+                }
+              ],
+              "hitEveryFrames": 3
+            },
+            "goalCopy": {
+              "once": {
+                "label": "Em Ao iniciar, as vidas foram dadas uma vez, e a batida conseguiu tirar",
+                "pedido": "Ponha Dar três vidas à nave em Ao iniciar e avance até a pedra encostar duas vezes."
+              }
+            }
+          }
+        },
+        "checkpoint": {
+          "prompt": "Onde vai o bloco que dá três vidas à nave?",
+          "choices": [
+            {
+              "id": "ao-iniciar",
+              "label": "Em Ao iniciar, para ela receber as vidas uma vez."
+            },
+            {
+              "id": "no-motor",
+              "label": "No motor, para ela receber as vidas o tempo todo."
+            }
+          ],
+          "correctChoiceId": "ao-iniciar",
+          "explanation": "As vidas são arrumação: elas são dadas uma vez, no começo. No motor, as três voltariam a encher em todo quadro, e a batida nunca conseguiria tirar nada."
+        }
+      }
+    },
+    {
+      "key": "fala-retorno",
+      "content": {
+        "kind": "dialogue",
+        "pose": "happy",
+        "text": "Barulho, explosão e tremida no mesmo instante: isso é o retorno pro jogador. Nenhum desses três muda a regra do jogo, e os três juntos fazem a batida parecer uma batida."
+      }
+    },
+    {
+      "key": "video-fecho",
+      "plannedVideo": "Título: Duas contagens, cada uma com o seu motivo\n\nOrigem: video-fecho-v6, com fala parcial, agora com o teste e o envio dentro do clipe. Duração alvo: 55 a 70 segundos.\n\nGravação de tela no jogo do fim do Dia 4, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho. Não existe botão de play, e o clipe não procura nenhum.\n\nO teste dirigido era um balão do Zappy no começo da seção e passou para cá, porque passo a passo de gesto se mostra na tela. O fecho fica no fim do clipe pelo mesmo motivo: na seção o Estúdio ocupa a coluna da direita sozinho, e um fecho escrito seria lido antes do envio.\n\nO que passa na tela, nesta ordem, com o placar e os corações sempre dentro do enquadramento:\n\n1. O clique dentro da área do jogo.\n2. Duas pedras explodidas, uma de cada vez. O placar sai de 0, passa por 1 e para em 2.\n3. Uma pedra deixada encostar na nave de propósito. É o único momento do curso em que se pede para apanhar, então a narração avisa antes que isso é de propósito. Um coração apaga, sobram dois, e o placar continua em 2, porque apanhar não tira ponto.\n4. A nave piscando, e a espera até ela parar de piscar.\n5. A segunda batida, de propósito de novo: sobra um coração, e o placar continua em 2.\n6. O gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nConferir junto, olhando a tela: o placar só mudou nos dois acertos, e os corações só mudaram nas duas batidas. As duas contagens nunca se misturaram.\n\nFecho, depois do envio, reaproveitando a conquista da gravação. Mostrar o jogo rodando com o placar subindo e um coração apagando, e a fala: \"Agora os seus acertos ficam guardados nos pontos, e as batidas mudam as vidas. São duas contagens separadas, cada uma mudando pelo seu próprio motivo. Só falta uma coisa: quando os corações acabam, nada acontece ainda. Amanhã o seu jogo ganha começo, vitória e derrota.\"\n\nCorte obrigatório: sai o resumo numerado dos seis passos. Não afirmar que a publicação já aconteceu."
+    },
+    {
+      "key": "quiz",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O placar foi redesenhado três vezes sem nenhum novo acerto. O que deve acontecer?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Continuar mostrando o mesmo número de pontos."
+              },
+              {
+                "id": "b",
+                "label": "Somar três pontos por ter sido desenhado três vezes."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Desenhar lê a variável. Quem soma é a colisão."
+          },
+          {
+            "id": "q2",
+            "prompt": "Onde dar as três vidas iniciais à nave?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "No motor, a cada quadro."
+              },
+              {
+                "id": "a",
+                "label": "Em Ao iniciar."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Preparar uma vez permite que as vidas diminuam durante a partida."
+          }
+        ]
+      }
     }
-   }
-  },
-  {
-   "key": "fala-criar-pontos",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Primeiro a caixa. Em Programação, 🏷️ Variáveis, pegue Criar variável com valor e encaixe em Ao iniciar, logo abaixo do Criar grupo de sprites dos asteroides. No nome, escreva pontos. No valor, deixe 0, porque este jogo começa do zero."
-   }
-  },
-  {
-   "key": "fala-somar-ponto",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Agora a soma. Em Programação, 🏷️ Variáveis, pegue Somar em variável e encaixe dentro do Para cada colisão entre os grupos e, no finalzinho, logo depois do Tocar efeito. Escolha pontos e deixe 1. A soma mora dentro da colisão, não solta no motor."
-   }
-  },
-  {
-   "key": "fala-placar",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "E agora o placar. Em Jogo 2D, Vida e placar › Indicadores e texto na tela, pegue Mostrar placar valor em x y cor tamanho e encaixe dentro do A cada quadro do jogo, logo abaixo do bloco da colisão. No rótulo, escreva Pontos:. Em cima do número do valor, encaixe valor da variável, de Programação, 🔣 Valores, e escolha pontos. Use x 12, y 30, tamanho 24 e uma cor clara."
-   }
-  },
-  {
-   "key": "video-pontos-e-placar",
-   "plannedVideo": "Título: A caixa, a soma e o placar\n\nOrigem: fusão de video-pontos, video-somar e video-placar, com uma substituição de fala. Duração alvo: 80 a 95 segundos.\n\nParte 1: pegar Criar variável com valor em Programação, Variáveis, encaixar em Ao iniciar, escrever pontos e deixar 0. Manter a fala do laranja das Variáveis contra o rosa do Jogo 2D, que ajuda a se localizar na paleta.\n\nParte 2: pegar Somar em variável e encaixar dentro da colisão tiros × asteroides, depois do Tocar efeito, com pontos e 1.\n\nParte 3: pegar Mostrar placar valor em x y cor tamanho em Vida e placar › Indicadores e texto na tela, encaixar no motor abaixo da colisão, escrever Pontos:, encaixar valor da variável no campo do valor e preencher x 12, y 30, tamanho 24. Manter a nomeação do HUD, que é curta e é conteúdo.\n\nSubstituição obrigatória: onde a gravação diz \"todo jogo começa com zero ponto\", passa a dizer \"este jogo começa com zero ponto\".\n\nCorte obrigatório: sai a contagem de passos."
-  },
-  {
-   "key": "fala-respiro",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Quando uma pedra encosta na nave, ela tira uma vida. O problema é que as pedras chegam em bando, e uma batida costuma vir logo atrás da outra. Por isso existe um respiro: logo depois de levar dano, a nave fica um tempinho piscando, e nesse tempinho nenhum dano novo entra. Isso tem nome de criador de jogo: são os quadros de invencibilidade."
-   }
-  },
-  {
-   "key": "experiencia-protecao",
-   "content": {
-    "kind": "interactive",
-    "required": true,
-    "title": "O respiro depois da batida",
-    "instructions": "Três pedras vão encostar na nave, nos quadros 1, 10 e 30. Deixe a proteção em 0 e avance até passar a terceira. Depois ponha 45, volte ao começo e faça de novo. Por último, ponha 15 e repita. As três pedras somem nos três testes: o que muda é quantas vidas sobram.",
-    "hints": [
-     "Depois da primeira batida, olhe a faixa da proteção contando para trás.",
-     "Compare quantas vidas sobraram com a proteção em 0 e com a proteção em 45.",
-     "Ponha 15 e olhe em que quadro a proteção chega a zero. A pedra do quadro 30 chega antes ou depois disso?"
-    ],
-    "prediction": {
-     "context": {
-      "label": "A janela de proteção",
-      "explanation": "Nesta experiência, você escolhe quantos quadros a proteção dura e avança o tempo até as três pedras encostarem na nave."
-     },
-     "prompt": "Imagine: a nave tem três vidas e três pedras diferentes vão encostar nela, uma logo atrás da outra, com 45 quadros de proteção ligados. Quantas vidas sobram?",
-     "choices": [
-      {
-       "id": "nenhuma",
-       "label": "Nenhuma",
-       "shows": "As três pedras bateram. Só a primeira tirou vida, porque as outras duas chegaram dentro dos 45 quadros."
-      },
-      {
-       "id": "duas",
-       "label": "Duas"
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "O que a gente vai fazer hoje",
+      "intent": "presentation",
+      "objective": "Ver o placar subindo e um coração apagando antes de mexer em qualquer bloco.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
       }
-     ],
-     "correctChoiceId": "duas",
-     "revealOn": "window"
     },
-    "activity": {
-     "type": "experimentation",
-     "scene": "invincibility",
-     "cast": {
-      "hero": {
-       "name": "nave",
-       "gender": "f"
-      },
-      "obstacle": {
-       "name": "asteroide",
-       "gender": "m"
+    {
+      "key": "caixa-de-pontos",
+      "title": "A caixa que guarda o seu placar",
+      "intent": "exploration",
+      "objective": "Separar guardar um número, mudar esse número e mostrar esse número na tela.",
+      "blockKeys": ["fala-caixa", "experiencia-variavel"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-variavel"]
       }
-     },
-     "cenario": "nave",
-     "setup": {
-      "goals": [
-       "no-shield",
-       "window",
-       "expires"
-      ]
-     }
     },
-    "checkpoint": {
-     "prompt": "Por que só a primeira batida tirou vida quando a proteção estava em 45?",
-     "choices": [
-      {
-       "id": "ignorados",
-       "label": "Porque os danos seguintes foram ignorados enquanto a proteção contava."
-      },
-      {
-       "id": "infinitas",
-       "label": "Porque a nave ficou com vidas infinitas até o fim da partida."
+    {
+      "key": "placar",
+      "title": "O acerto vira número na tela",
+      "intent": "application",
+      "objective": "Criar a variável pontos, somar dentro da colisão certa e desenhar o placar no HUD.",
+      "blockKeys": [
+        "fala-criar-pontos",
+        "fala-somar-ponto",
+        "fala-placar",
+        "video-pontos-e-placar"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "pontos",
+            "label": "Crie a variável pontos com 0 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "inputs": {
+                "VALUE": 0
+              }
+            }
+          },
+          {
+            "id": "somar-no-acerto",
+            "label": "Some 1 em pontos dentro da colisão tiros × asteroides.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_increment",
+                  "fields": {
+                    "NAME": "pontos",
+                    "DELTA": 1
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "soma-unica",
+            "label": "Mantenha um único Somar 1 em pontos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_increment",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "placar",
+            "label": "Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_score",
+              "fields": {
+                "LABEL": "Pontos:"
+              },
+              "inputs": {
+                "X": 12,
+                "Y": 30,
+                "SIZE": 24
+              },
+              "inputBlocks": {
+                "VALUE": {
+                  "blockType": "sz_val_variable",
+                  "fields": {
+                    "NAME": "pontos"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
       }
-     ],
-     "correctChoiceId": "ignorados",
-     "explanation": "A proteção é uma janela de tempo. Enquanto ela está contando, dano novo não entra. Quando ela chega a zero, a próxima batida volta a tirar vida."
+    },
+    {
+      "key": "respiro",
+      "title": "O respiro depois da batida",
+      "intent": "exploration",
+      "objective": "Sentir que a proteção é uma janela de tempo que conta para trás, e não um escudo para sempre.",
+      "blockKeys": ["fala-respiro", "experiencia-protecao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-protecao"]
+      }
+    },
+    {
+      "key": "batida",
+      "title": "A batida machuca",
+      "intent": "application",
+      "objective": "Dar três vidas à nave, responder à colisão com a pedra e mostrar os corações na tela.",
+      "blockKeys": [
+        "fala-vida",
+        "fala-batida",
+        "fala-dano",
+        "fala-coracoes",
+        "video-batida-e-coracoes"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "vida",
+            "label": "Dê 3 vidas à nave em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_health",
+              "area": "start",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "inputs": {
+                "AMOUNT": 3
+              }
+            }
+          },
+          {
+            "id": "remover-inimigo",
+            "label": "Na colisão nave × asteroides, remova inimigo antes da explosão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "GROUP": "asteroides",
+                "SPRITE": "nave",
+                "ANAME": "inimigo"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_remove_from_group",
+                  "fields": {
+                    "SPRITE": "inimigo",
+                    "GROUP": "asteroides"
+                  },
+                  "beforeBlock": "sz_g2d_explode"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "explodir-inimigo",
+            "label": "A explosão da batida usa inimigo, antes de machucar a nave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "GROUP": "asteroides",
+                "SPRITE": "nave",
+                "ANAME": "inimigo"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_explode",
+                  "fields": {
+                    "SPRITE": "inimigo"
+                  },
+                  "beforeBlock": "sz_g2d_damage_sprite"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "dano-protegido",
+            "label": "Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "GROUP": "asteroides",
+                "SPRITE": "nave",
+                "ANAME": "inimigo"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_damage_sprite",
+                  "fields": {
+                    "SPRITE": "nave"
+                  },
+                  "inputs": {
+                    "AMOUNT": 1,
+                    "FRAMES": 45
+                  },
+                  "beforeBlock": "sz_g2d_shake"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "coracoes",
+            "label": "Desenhe corações da nave em x 12, y 48, tamanho 22.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite_health",
+              "fields": {
+                "SPRITE": "nave",
+                "STYLE": "hearts"
+              },
+              "inputs": {
+                "X": 12,
+                "Y": 48,
+                "SIZE": 22
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "vidas-uma-vez",
+      "title": "As vidas são dadas uma vez",
+      "intent": "exploration",
+      "objective": "Ver o contrafactual: com as vidas no motor, elas voltariam a encher em todo quadro e a batida nunca tiraria nada.",
+      "blockKeys": ["experiencia-uma-vez", "fala-retorno"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-uma-vez"]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Teste, envie e fecha",
+      "intent": "delivery",
+      "objective": "Cada acerto soma um ponto. A nave tem três vidas, perde vida ao bater e ganha proteção temporária.",
+      "blockKeys": ["video-fecho", "quiz", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho", "projeto", "quiz"],
+        "projectChecks": [
+          {
+            "id": "pontos",
+            "label": "Crie a variável pontos com 0 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "inputs": {
+                "VALUE": 0
+              }
+            }
+          },
+          {
+            "id": "somar-no-acerto",
+            "label": "Some 1 em pontos dentro da colisão tiros × asteroides.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_increment",
+                  "fields": {
+                    "NAME": "pontos",
+                    "DELTA": 1
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "soma-unica",
+            "label": "Mantenha um único Somar 1 em pontos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_increment",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "placar",
+            "label": "Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_score",
+              "fields": {
+                "LABEL": "Pontos:"
+              },
+              "inputs": {
+                "X": 12,
+                "Y": 30,
+                "SIZE": 24
+              },
+              "inputBlocks": {
+                "VALUE": {
+                  "blockType": "sz_val_variable",
+                  "fields": {
+                    "NAME": "pontos"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "vida",
+            "label": "Dê 3 vidas à nave em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_health",
+              "area": "start",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "inputs": {
+                "AMOUNT": 3
+              }
+            }
+          },
+          {
+            "id": "remover-inimigo",
+            "label": "Na colisão nave × asteroides, remova inimigo antes da explosão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "GROUP": "asteroides",
+                "SPRITE": "nave",
+                "ANAME": "inimigo"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_remove_from_group",
+                  "fields": {
+                    "SPRITE": "inimigo",
+                    "GROUP": "asteroides"
+                  },
+                  "beforeBlock": "sz_g2d_explode"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "dano-protegido",
+            "label": "Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "GROUP": "asteroides",
+                "SPRITE": "nave",
+                "ANAME": "inimigo"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_damage_sprite",
+                  "fields": {
+                    "SPRITE": "nave"
+                  },
+                  "inputs": {
+                    "AMOUNT": 1,
+                    "FRAMES": 45
+                  },
+                  "beforeBlock": "sz_g2d_shake"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "explodir-inimigo",
+            "label": "A explosão da batida usa inimigo, antes de machucar a nave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "GROUP": "asteroides",
+                "SPRITE": "nave",
+                "ANAME": "inimigo"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_explode",
+                  "fields": {
+                    "SPRITE": "inimigo"
+                  },
+                  "beforeBlock": "sz_g2d_damage_sprite"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "coracoes",
+            "label": "Desenhe corações da nave em x 12, y 48, tamanho 22.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite_health",
+              "fields": {
+                "SPRITE": "nave",
+                "STYLE": "hearts"
+              },
+              "inputs": {
+                "X": 12,
+                "Y": 48,
+                "SIZE": 22
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "efeito-explosao",
+            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "explosion"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "remover-tiro",
+            "label": "Na colisão tiros × asteroides, remova o tiro do grupo tiros.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_remove_from_group",
+                  "fields": {
+                    "SPRITE": "tiro",
+                    "GROUP": "tiros"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "remover-pedra",
+            "label": "Na mesma colisão, remova o asteroide e então solte a explosão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_remove_from_group",
+                  "fields": {
+                    "SPRITE": "asteroide",
+                    "GROUP": "asteroides"
+                  },
+                  "beforeBlock": "sz_g2d_explode"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "explosao",
+            "label": "Exploda o asteroide atingido e toque o som de explosão dentro da colisão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_explode",
+                  "fields": {
+                    "SPRITE": "asteroide"
+                  },
+                  "beforeBlock": "sz_g2d_play_fx"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
     }
-   }
-  },
-  {
-   "key": "fala-vida",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Primeiro as vidas. Em Jogo 2D, Vida e placar › Vida, pegue Dar ao sprite de vida e encaixe em Ao iniciar, logo abaixo do Criar variável com valor dos pontos. Confira que o sprite é a nave e deixe o número em 3. Esse bloco fica em Ao iniciar, e não no motor, e daqui a pouco você vai ver o que aconteceria no lugar errado."
-   }
-  },
-  {
-   "key": "fala-batida",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Agora a batida. Em Jogo 2D, Colisões › Encostar e bloquear, pegue Para cada sprite do grupo que colidir com o sprite e encaixe dentro do A cada quadro do jogo, logo abaixo do Mostrar placar. O grupo é asteroides, o sprite é a nave, e o apelido dele já vem escrito inimigo."
-   }
-  },
-  {
-   "key": "fala-dano",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Dentro dele, quatro blocos nessa ordem. Tirar o sprite do grupo, com o sprite inimigo e o grupo asteroides. Soltar explosão no sprite cor, de Desenho e efeitos › Partículas, no sprite inimigo. Machucar o sprite em e deixá-lo invencível por quadros, de Vida e placar › Vida, na nave, tirando 1 e protegendo por 45. E Tremer a tela com intensidade, com 8."
-   }
-  },
-  {
-   "key": "fala-coracoes",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Para fechar, um bloco fora da colisão. Pegue Desenhar as vidas do sprite como em x y tamanho cor, de Vida e placar › Vida, e encaixe no fim do A cada quadro do jogo. Escolha a nave, o jeito corações, x 12, y 48 e tamanho 22, com uma cor que apareça no fundo escuro."
-   }
-  },
-  {
-   "key": "video-batida-e-coracoes",
-   "plannedVideo": "Título: A batida custa um coração\n\nOrigem: fusão de video-vida, video-batida e video-coracoes, com uma correção obrigatória. Duração alvo: 140 a 155 segundos.\n\nParte 1: pegar Dar ao sprite de vida em Vida e placar › Vida e encaixar em Ao iniciar, abaixo da variável pontos, com a nave e 3.\n\nParte 2: o gesto inteiro da colisão. Pegar Para cada sprite do grupo que colidir com o sprite, encaixar no motor abaixo do placar, escolher asteroides e nave, e montar os quatro blocos dentro, na ordem. Manter a tremida da gravação, sem repetição automática.\n\nParte 3: encaixar Desenhar as vidas do sprite no fim do motor, com corações, x 12, y 48 e tamanho 22.\n\nCorreção obrigatória: onde a gravação diz que sem a invencibilidade \"uma batida só podia tirar as 3 vidas de uma vez, porque a colisão acontece em vários quadros seguidos\", passa a dizer \"a pedra que bateu já saiu do grupo na linha de cima, então o respiro serve para as outras pedras que estão chegando logo atrás\"."
-  },
-  {
-   "key": "experiencia-uma-vez",
-   "content": {
-    "kind": "interactive",
-    "required": true,
-    "title": "As vidas são dadas uma vez",
-    "instructions": "A pedra já está encostando na nave a cada poucos quadros. Deixe a ficha Dar três vidas à nave em Ao iniciar e avance até a pedra encostar duas vezes, olhando os corações. Depois leve a mesma ficha para Enquanto estiver rodando e avance de novo, contando quantos corações sobram.",
-    "hints": [
-     "Deixe a ficha em Ao iniciar e avance até a pedra encostar. Olhe os corações.",
-     "Agora leve a mesma ficha para Enquanto estiver rodando e avance de novo. Conte quantos corações sobram depois de três batidas."
-    ],
-    "activity": {
-     "type": "experimentation",
-     "scene": "once-vs-always",
-     "cast": {
-      "hero": {
-       "name": "nave",
-       "gender": "f"
-      },
-      "obstacle": {
-       "name": "asteroide",
-       "gender": "m"
-      }
-     },
-     "cenario": "nave",
-     "setup": {
-      "preset": {
-       "id": "uma-ficha-vidas",
-       "areas": [
-        "start",
-        "loop"
-       ],
-       "cards": [
-        {
-         "id": "lives",
-         "kind": "lives",
-         "label": "Dar três vidas à nave"
-        }
-       ],
-       "hitEveryFrames": 3
-      },
-      "goalCopy": {
-       "once": {
-        "label": "Em Ao iniciar, as vidas foram dadas uma vez, e a batida conseguiu tirar",
-        "pedido": "Ponha Dar três vidas à nave em Ao iniciar e avance até a pedra encostar duas vezes."
-       }
-      }
-     }
-    },
-    "checkpoint": {
-     "prompt": "Onde vai o bloco que dá três vidas à nave?",
-     "choices": [
-      {
-       "id": "ao-iniciar",
-       "label": "Em Ao iniciar, para ela receber as vidas uma vez."
-      },
-      {
-       "id": "no-motor",
-       "label": "No motor, para ela receber as vidas o tempo todo."
-      }
-     ],
-     "correctChoiceId": "ao-iniciar",
-     "explanation": "As vidas são arrumação: elas são dadas uma vez, no começo. No motor, as três voltariam a encher em todo quadro, e a batida nunca conseguiria tirar nada."
-    }
-   }
-  },
-  {
-   "key": "fala-retorno",
-   "content": {
-    "kind": "dialogue",
-    "pose": "happy",
-    "text": "Barulho, explosão e tremida no mesmo instante: isso é o retorno pro jogador. Nenhum desses três muda a regra do jogo, e os três juntos fazem a batida parecer uma batida."
-   }
-  },
-  {
-   "key": "video-fecho",
-   "plannedVideo": "Título: Duas contagens, cada uma com o seu motivo\n\nOrigem: video-fecho-v6, com fala parcial, agora com o teste e o envio dentro do clipe. Duração alvo: 55 a 70 segundos.\n\nGravação de tela no jogo do fim do Dia 4, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho. Não existe botão de play, e o clipe não procura nenhum.\n\nO teste dirigido era um balão do Zappy no começo da seção e passou para cá, porque passo a passo de gesto se mostra na tela. O fecho fica no fim do clipe pelo mesmo motivo: na seção o Estúdio ocupa a coluna da direita sozinho, e um fecho escrito seria lido antes do envio.\n\nO que passa na tela, nesta ordem, com o placar e os corações sempre dentro do enquadramento:\n\n1. O clique dentro da área do jogo.\n2. Duas pedras explodidas, uma de cada vez. O placar sai de 0, passa por 1 e para em 2.\n3. Uma pedra deixada encostar na nave de propósito. É o único momento do curso em que se pede para apanhar, então a narração avisa antes que isso é de propósito. Um coração apaga, sobram dois, e o placar continua em 2, porque apanhar não tira ponto.\n4. A nave piscando, e a espera até ela parar de piscar.\n5. A segunda batida, de propósito de novo: sobra um coração, e o placar continua em 2.\n6. O gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nConferir junto, olhando a tela: o placar só mudou nos dois acertos, e os corações só mudaram nas duas batidas. As duas contagens nunca se misturaram.\n\nFecho, depois do envio, reaproveitando a conquista da gravação. Mostrar o jogo rodando com o placar subindo e um coração apagando, e a fala: \"Agora os seus acertos ficam guardados nos pontos, e as batidas mudam as vidas. São duas contagens separadas, cada uma mudando pelo seu próprio motivo. Só falta uma coisa: quando os corações acabam, nada acontece ainda. Amanhã o seu jogo ganha começo, vitória e derrota.\"\n\nCorte obrigatório: sai o resumo numerado dos seis passos. Não afirmar que a publicação já aconteceu."
-  },
-  {
-   "key": "quiz",
-   "content": {
-    "kind": "quiz",
-    "passingScore": 100,
-    "questions": [
-     {
-      "id": "q1",
-      "prompt": "O placar foi redesenhado três vezes sem nenhum novo acerto. O que deve acontecer?",
-      "choices": [
-       {
-        "id": "a",
-        "label": "Continuar mostrando o mesmo número de pontos."
-       },
-       {
-        "id": "b",
-        "label": "Somar três pontos por ter sido desenhado três vezes."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "Desenhar lê a variável. Quem soma é a colisão."
-     },
-     {
-      "id": "q2",
-      "prompt": "Onde dar as três vidas iniciais à nave?",
-      "choices": [
-       {
-        "id": "b",
-        "label": "No motor, a cada quadro."
-       },
-       {
-        "id": "a",
-        "label": "Em Ao iniciar."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "Preparar uma vez permite que as vidas diminuam durante a partida."
-     }
-    ]
-   }
-  }
- ],
- "sections": [
-  {
-   "key": "abertura",
-   "title": "O que a gente vai fazer hoje",
-   "intent": "presentation",
-   "objective": "Ver o placar subindo e um coração apagando antes de mexer em qualquer bloco.",
-   "blockKeys": [
-    "video-abertura"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-abertura"
-    ]
-   }
-  },
-  {
-   "key": "caixa-de-pontos",
-   "title": "A caixa que guarda o seu placar",
-   "intent": "exploration",
-   "objective": "Separar guardar um número, mudar esse número e mostrar esse número na tela.",
-   "blockKeys": [
-    "fala-caixa",
-    "experiencia-variavel"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experiencia-variavel"
-    ]
-   }
-  },
-  {
-   "key": "placar",
-   "title": "O acerto vira número na tela",
-   "intent": "application",
-   "objective": "Criar a variável pontos, somar dentro da colisão certa e desenhar o placar no HUD.",
-   "blockKeys": [
-    "fala-criar-pontos",
-    "fala-somar-ponto",
-    "fala-placar",
-    "video-pontos-e-placar"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "pontos",
-      "label": "Crie a variável pontos com 0 em Ao iniciar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_var_create",
-       "area": "start",
-       "fields": {
-        "NAME": "pontos"
-       },
-       "inputs": {
-        "VALUE": 0
-       }
-      }
-     },
-     {
-      "id": "somar-no-acerto",
-      "label": "Some 1 em pontos dentro da colisão tiros × asteroides.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_group_overlap",
-       "fields": {
-        "A": "tiros",
-        "B": "asteroides",
-        "ANAME": "tiro",
-        "BNAME": "asteroide"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_js_var_increment",
-         "fields": {
-          "NAME": "pontos",
-          "DELTA": 1
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "soma-unica",
-      "label": "Mantenha um único Somar 1 em pontos.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_var_increment",
-       "fields": {
-        "NAME": "pontos"
-       },
-       "count": 1
-      }
-     },
-     {
-      "id": "placar",
-      "label": "Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_score",
-       "fields": {
-        "LABEL": "Pontos:"
-       },
-       "inputs": {
-        "X": 12,
-        "Y": 30,
-        "SIZE": 24
-       },
-       "inputBlocks": {
-        "VALUE": {
-         "blockType": "sz_val_variable",
-         "fields": {
-          "NAME": "pontos"
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "respiro",
-   "title": "O respiro depois da batida",
-   "intent": "exploration",
-   "objective": "Sentir que a proteção é uma janela de tempo que conta para trás, e não um escudo para sempre.",
-   "blockKeys": [
-    "fala-respiro",
-    "experiencia-protecao"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experiencia-protecao"
-    ]
-   }
-  },
-  {
-   "key": "batida",
-   "title": "A batida machuca",
-   "intent": "application",
-   "objective": "Dar três vidas à nave, responder à colisão com a pedra e mostrar os corações na tela.",
-   "blockKeys": [
-    "fala-vida",
-    "fala-batida",
-    "fala-dano",
-    "fala-coracoes",
-    "video-batida-e-coracoes"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "vida",
-      "label": "Dê 3 vidas à nave em Ao iniciar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_set_health",
-       "area": "start",
-       "fields": {
-        "SPRITE": "nave"
-       },
-       "inputs": {
-        "AMOUNT": 3
-       }
-      }
-     },
-     {
-      "id": "remover-inimigo",
-      "label": "Na colisão nave × asteroides, remova inimigo antes da explosão.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_sprite_group_overlap",
-       "fields": {
-        "GROUP": "asteroides",
-        "SPRITE": "nave",
-        "ANAME": "inimigo"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_remove_from_group",
-         "fields": {
-          "SPRITE": "inimigo",
-          "GROUP": "asteroides"
-         },
-         "beforeBlock": "sz_g2d_explode"
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "explodir-inimigo",
-      "label": "A explosão da batida usa inimigo, antes de machucar a nave.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_sprite_group_overlap",
-       "fields": {
-        "GROUP": "asteroides",
-        "SPRITE": "nave",
-        "ANAME": "inimigo"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_explode",
-         "fields": {
-          "SPRITE": "inimigo"
-         },
-         "beforeBlock": "sz_g2d_damage_sprite"
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "dano-protegido",
-      "label": "Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_sprite_group_overlap",
-       "fields": {
-        "GROUP": "asteroides",
-        "SPRITE": "nave",
-        "ANAME": "inimigo"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_damage_sprite",
-         "fields": {
-          "SPRITE": "nave"
-         },
-         "inputs": {
-          "AMOUNT": 1,
-          "FRAMES": 45
-         },
-         "beforeBlock": "sz_g2d_shake"
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "coracoes",
-      "label": "Desenhe corações da nave em x 12, y 48, tamanho 22.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_sprite_health",
-       "fields": {
-        "SPRITE": "nave",
-        "STYLE": "hearts"
-       },
-       "inputs": {
-        "X": 12,
-        "Y": 48,
-        "SIZE": 22
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "vidas-uma-vez",
-   "title": "As vidas são dadas uma vez",
-   "intent": "exploration",
-   "objective": "Ver o contrafactual: com as vidas no motor, elas voltariam a encher em todo quadro e a batida nunca tiraria nada.",
-   "blockKeys": [
-    "experiencia-uma-vez",
-    "fala-retorno"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experiencia-uma-vez"
-    ]
-   }
-  },
-  {
-   "key": "entrega",
-   "title": "Teste, envie e fecha",
-   "intent": "delivery",
-   "objective": "Cada acerto soma um ponto. A nave tem três vidas, perde vida ao bater e ganha proteção temporária.",
-   "blockKeys": [
-    "video-fecho",
-    "quiz",
-    "projeto"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-fecho",
-     "projeto",
-     "quiz"
-    ],
-    "projectChecks": [
-     {
-      "id": "pontos",
-      "label": "Crie a variável pontos com 0 em Ao iniciar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_var_create",
-       "area": "start",
-       "fields": {
-        "NAME": "pontos"
-       },
-       "inputs": {
-        "VALUE": 0
-       }
-      }
-     },
-     {
-      "id": "somar-no-acerto",
-      "label": "Some 1 em pontos dentro da colisão tiros × asteroides.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_group_overlap",
-       "fields": {
-        "A": "tiros",
-        "B": "asteroides",
-        "ANAME": "tiro",
-        "BNAME": "asteroide"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_js_var_increment",
-         "fields": {
-          "NAME": "pontos",
-          "DELTA": 1
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "soma-unica",
-      "label": "Mantenha um único Somar 1 em pontos.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_var_increment",
-       "fields": {
-        "NAME": "pontos"
-       },
-       "count": 1
-      }
-     },
-     {
-      "id": "placar",
-      "label": "Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_score",
-       "fields": {
-        "LABEL": "Pontos:"
-       },
-       "inputs": {
-        "X": 12,
-        "Y": 30,
-        "SIZE": 24
-       },
-       "inputBlocks": {
-        "VALUE": {
-         "blockType": "sz_val_variable",
-         "fields": {
-          "NAME": "pontos"
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "vida",
-      "label": "Dê 3 vidas à nave em Ao iniciar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_set_health",
-       "area": "start",
-       "fields": {
-        "SPRITE": "nave"
-       },
-       "inputs": {
-        "AMOUNT": 3
-       }
-      }
-     },
-     {
-      "id": "remover-inimigo",
-      "label": "Na colisão nave × asteroides, remova inimigo antes da explosão.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_sprite_group_overlap",
-       "fields": {
-        "GROUP": "asteroides",
-        "SPRITE": "nave",
-        "ANAME": "inimigo"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_remove_from_group",
-         "fields": {
-          "SPRITE": "inimigo",
-          "GROUP": "asteroides"
-         },
-         "beforeBlock": "sz_g2d_explode"
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "dano-protegido",
-      "label": "Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_sprite_group_overlap",
-       "fields": {
-        "GROUP": "asteroides",
-        "SPRITE": "nave",
-        "ANAME": "inimigo"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_damage_sprite",
-         "fields": {
-          "SPRITE": "nave"
-         },
-         "inputs": {
-          "AMOUNT": 1,
-          "FRAMES": 45
-         },
-         "beforeBlock": "sz_g2d_shake"
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "explodir-inimigo",
-      "label": "A explosão da batida usa inimigo, antes de machucar a nave.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_sprite_group_overlap",
-       "fields": {
-        "GROUP": "asteroides",
-        "SPRITE": "nave",
-        "ANAME": "inimigo"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_explode",
-         "fields": {
-          "SPRITE": "inimigo"
-         },
-         "beforeBlock": "sz_g2d_damage_sprite"
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "coracoes",
-      "label": "Desenhe corações da nave em x 12, y 48, tamanho 22.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_sprite_health",
-       "fields": {
-        "SPRITE": "nave",
-        "STYLE": "hearts"
-       },
-       "inputs": {
-        "X": 12,
-        "Y": 48,
-        "SIZE": 22
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "efeito-explosao",
-      "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_group_overlap",
-       "fields": {
-        "A": "tiros",
-        "B": "asteroides",
-        "ANAME": "tiro",
-        "BNAME": "asteroide"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_play_fx",
-         "fields": {
-          "FX": "explosion"
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "remover-tiro",
-      "label": "Na colisão tiros × asteroides, remova o tiro do grupo tiros.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_group_overlap",
-       "fields": {
-        "A": "tiros",
-        "B": "asteroides",
-        "ANAME": "tiro",
-        "BNAME": "asteroide"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_remove_from_group",
-         "fields": {
-          "SPRITE": "tiro",
-          "GROUP": "tiros"
-         }
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "remover-pedra",
-      "label": "Na mesma colisão, remova o asteroide e então solte a explosão.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_group_overlap",
-       "fields": {
-        "A": "tiros",
-        "B": "asteroides",
-        "ANAME": "tiro",
-        "BNAME": "asteroide"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_remove_from_group",
-         "fields": {
-          "SPRITE": "asteroide",
-          "GROUP": "asteroides"
-         },
-         "beforeBlock": "sz_g2d_explode"
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     },
-     {
-      "id": "explosao",
-      "label": "Exploda o asteroide atingido e toque o som de explosão dentro da colisão.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_on_group_overlap",
-       "fields": {
-        "A": "tiros",
-        "B": "asteroides",
-        "ANAME": "tiro",
-        "BNAME": "asteroide"
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_explode",
-         "fields": {
-          "SPRITE": "asteroide"
-         },
-         "beforeBlock": "sz_g2d_play_fx"
-        }
-       },
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame"
-      }
-     }
-    ]
-   }
-  }
- ],
- "retireBlockKeys": [
-  "abertura",
-  "descoberta",
-  "explicacao",
-  "construir-1",
-  "video-construir-1-1",
-  "construir-2",
-  "video-construir-2-1",
-  "convite-construir-1",
-  "checar-construir-1",
-  "construir-3",
-  "video-construir-3-1",
-  "construir-4",
-  "video-construir-4-1",
-  "construir-5",
-  "video-construir-5-1",
-  "convite-construir-3",
-  "checar-construir-4",
-  "construir-6",
-  "video-construir-6-1",
-  "fechamento",
-  "video-abertura-v6",
-  "video-memoria",
-  "demonstracao-memoria",
-  "video-pontos",
-  "fala-pontos",
-  "video-somar",
-  "fala-somar",
-  "video-placar",
-  "video-vida",
-  "video-batida",
-  "video-coracoes",
-  "video-teste-vidas",
-  "demonstracao-vidas",
-  "entrega-fala-v6",
-  "video-fecho-v6",
-  "quiz-v6"
- ]
+  ],
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "convite-construir-1",
+    "checar-construir-1",
+    "construir-3",
+    "video-construir-3-1",
+    "construir-4",
+    "video-construir-4-1",
+    "construir-5",
+    "video-construir-5-1",
+    "convite-construir-3",
+    "checar-construir-4",
+    "construir-6",
+    "video-construir-6-1",
+    "fechamento",
+    "video-abertura-v6",
+    "video-memoria",
+    "demonstracao-memoria",
+    "video-pontos",
+    "fala-pontos",
+    "video-somar",
+    "fala-somar",
+    "video-placar",
+    "video-vida",
+    "video-batida",
+    "video-coracoes",
+    "video-teste-vidas",
+    "demonstracao-vidas",
+    "entrega-fala-v6",
+    "video-fecho-v6",
+    "quiz-v6"
+  ]
 }

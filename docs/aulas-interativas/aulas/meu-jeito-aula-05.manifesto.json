@@ -1,450 +1,401 @@
 {
- "version": 4,
- "courseSlug": "o-jogo-do-meu-jeito",
- "lessonSlug": "aula-05",
- "title": "A pedra pega fogo e começa a rolar",
- "retireBlockKeys": [
-  "video-abertura-v6",
-  "experimento-ordem",
-  "conferir-chama-externa",
-  "conferir-chama-interna",
-  "video-mudanca-demo",
-  "video-animar-pedra",
-  "conferir-animar-pedra",
-  "orientacao-nome-girando",
-  "conferir-nome-girando"
- ],
- "blocks": [
-  {
-   "key": "video-abertura",
-   "plannedVideo": "Título: O meteoro do Júlio pegando fogo\n\nOrigem: video-abertura-v6, com fala nova. Duração alvo: 25 a 35 segundos.\n\nO que passa na tela: a Prévia do asteroide do Júlio rodando, com as chamas atrás da pedra e a pedra rolando. Nada de passeio pela interface, só o resultado.\n\nFala: \"No fim da aula você vai ter um meteoro parecido com esse aqui. Esse é o do Júlio. O seu vai ter as cores que você escolher e as pontas de fogo do jeito que você fizer. Hoje o fogo entra atrás da pedra e a pedra começa a rolar.\"\n\nCortes obrigatórios: sai a contagem antiga de quatro passos. Não prometer desbloqueio, selo nem tarefa extra."
-  },
-  {
-   "key": "video-chama-externa",
-   "plannedVideo": "Título: A primeira chama, e a surpresa\n\nOrigem: video-chama-externa do v6, cortado antes da fileira de botões. Duração alvo: 80 a 95 segundos.\n\nO que passa na tela: abrir o asteroide na galeria do Pinta, soltar a seleção, escolher a cor no **Preenchimento**, pôr o **Contorno** em **Sem cor**, traçar a chama com a **Caneta** em cima da pedra, e arredondar só a base com **Editar os pontos** e **Ponto suave**, com as pontas ficando retas.\n\nPasso a passo executado na tela, gesto a gesto, nada lido em lista:\n\n1. Abrir o Pinta pelo **Abrir meu Pinta** desta seção, que abre a ferramenta em outra aba, e clicar no cartão do asteroide.\n2. Clicar num lugar vazio com a ferramenta **Selecionar**, para soltar a seleção.\n3. No pé da caixa de ferramentas, clicar no **Preenchimento** e escolher a cor de fora do fogo.\n4. Clicar no **Contorno** e pegar a primeira casinha do painel de cores, a quadriculada, que é o **Sem cor**.\n5. Clicar na **Caneta** e traçar uma forma fechada em cima da pedra, sem passar da borda do quadro, dizendo por que o fogo fica em cima: a pedra está caindo, então o fogo fica do lado de onde ela veio.\n6. Mostrar as pontas do Júlio desiguais, umas mais compridas e outras mais curtas, como convite e não como modelo para copiar.\n\nO clipe termina na chama cobrindo a pedra, sem conserto nenhum, e é em cima dessa imagem que entram os dois últimos momentos.\n\nConferir junto, com o professor olhando o desenho na tela e dizendo \"olha comigo se ficou assim\": a chama é uma forma fechada, acima da pedra, dentro do quadro de 64 por 64. O **Contorno** ficou em **Sem cor**, então não sobrou risco em volta. Só a base foi arredondada, e as pontas continuam retas.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nCortes obrigatórios:\n\n1. Cortar fora todo o trecho da fileira de botões e do **Uma camada para trás**. Esse material passa para o clipe da seção seguinte.\n2. Retirar a explicação de meteoro pegando fogo por causa da velocidade no espaço. Apresentar como desenho estilizado do jogo.\n\nAcrescentar: a desseleção antes de escolher a cor, e o aviso de não passar da borda do quadro.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"A primeira chama cabe inteira acima da pedra e está na frente dela neste momento? Essa sobreposição é a surpresa que vamos resolver em seguida.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
-  },
-  {
-   "key": "fala-chama-cobriu",
-   "content": {
-    "kind": "dialogue",
-    "pose": "thinking",
-    "text": "Olhe o seu desenho. A chama ficou na frente da pedra e tapou boa parte dela. Isso acontece com todo mundo, e não é erro seu. Na próxima seção você descobre por quê."
-   }
-  },
-  {
-   "key": "experimento-camadas",
-   "content": {
-    "kind": "interactive",
-    "required": true,
-    "title": "Quem fica na frente?",
-    "instructions": "A chama está cobrindo a pedra. Mude as camadas e descubra quando a pedra aparece inteira.",
-    "hints": [],
-    "prediction": {
-     "context": {
-      "label": "A ordem das camadas",
-      "explanation": "Nesta experiência, vamos mudar a ordem da pedra e da chama para descobrir o que fica na frente."
-     },
-     "prompt": "Se a chama for uma camada para trás, onde a pedra aparece?",
-     "choices": [
-      {
-       "id": "atras",
-       "label": "Atrás da chama",
-       "shows": "A pedra ficou na frente da chama."
-      },
-      {
-       "id": "frente",
-       "label": "Na frente da chama"
-      }
-     ],
-     "correctChoiceId": "frente",
-     "revealOn": "front"
+  "version": 4,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-05",
+  "title": "A pedra pega fogo e começa a rolar",
+  "retireBlockKeys": [
+    "video-abertura-v6",
+    "experimento-ordem",
+    "conferir-chama-externa",
+    "conferir-chama-interna",
+    "video-mudanca-demo",
+    "video-animar-pedra",
+    "conferir-animar-pedra",
+    "orientacao-nome-girando",
+    "conferir-nome-girando"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: O meteoro do Júlio pegando fogo\n\nOrigem: video-abertura-v6, com fala nova. Duração alvo: 25 a 35 segundos.\n\nO que passa na tela: a Prévia do asteroide do Júlio rodando, com as chamas atrás da pedra e a pedra rolando. Nada de passeio pela interface, só o resultado.\n\nFala: \"No fim da aula você vai ter um meteoro parecido com esse aqui. Esse é o do Júlio. O seu vai ter as cores que você escolher e as pontas de fogo do jeito que você fizer. Hoje o fogo entra atrás da pedra e a pedra começa a rolar.\"\n\nCortes obrigatórios: sai a contagem antiga de quatro passos. Não prometer desbloqueio, selo nem tarefa extra."
     },
-    "activity": {
-     "type": "experimentation",
-     "scene": "layers",
-     "pilha": "camadas",
-     "cast": {
-      "hero": {
-       "name": "pedra",
-       "gender": "f"
-      },
-      "scenery": {
-       "name": "chama",
-       "gender": "f"
-      }
-     },
-     "cenario": "meu-jeito",
-     "setup": {
-      "goals": [
-       "front",
-       "covered",
-       "back-in-front"
-      ],
-      "goalCopy": {
-       "back-in-front": {
-        "label": "A de cima na lista Camadas é a que aparece na frente"
-       }
-      }
-     }
+    {
+      "key": "video-chama-externa",
+      "plannedVideo": "Título: A primeira chama, e a surpresa\n\nOrigem: video-chama-externa do v6, cortado antes da fileira de botões. Duração alvo: 80 a 95 segundos.\n\nO que passa na tela: abrir o asteroide na galeria do Pinta, soltar a seleção, escolher a cor no **Preenchimento**, pôr o **Contorno** em **Sem cor**, traçar a chama com a **Caneta** em cima da pedra, e arredondar só a base com **Editar os pontos** e **Ponto suave**, com as pontas ficando retas.\n\nPasso a passo executado na tela, gesto a gesto, nada lido em lista:\n\n1. Abrir o Pinta pelo **Abrir meu Pinta** desta seção, que abre a ferramenta em outra aba, e clicar no cartão do asteroide.\n2. Clicar num lugar vazio com a ferramenta **Selecionar**, para soltar a seleção.\n3. No pé da caixa de ferramentas, clicar no **Preenchimento** e escolher a cor de fora do fogo.\n4. Clicar no **Contorno** e pegar a primeira casinha do painel de cores, a quadriculada, que é o **Sem cor**.\n5. Clicar na **Caneta** e traçar uma forma fechada em cima da pedra, sem passar da borda do quadro, dizendo por que o fogo fica em cima: a pedra está caindo, então o fogo fica do lado de onde ela veio.\n6. Mostrar as pontas do Júlio desiguais, umas mais compridas e outras mais curtas, como convite e não como modelo para copiar.\n\nO clipe termina na chama cobrindo a pedra, sem conserto nenhum, e é em cima dessa imagem que entram os dois últimos momentos.\n\nConferir junto, com o professor olhando o desenho na tela e dizendo \"olha comigo se ficou assim\": a chama é uma forma fechada, acima da pedra, dentro do quadro de 64 por 64. O **Contorno** ficou em **Sem cor**, então não sobrou risco em volta. Só a base foi arredondada, e as pontas continuam retas.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nCortes obrigatórios:\n\n1. Cortar fora todo o trecho da fileira de botões e do **Uma camada para trás**. Esse material passa para o clipe da seção seguinte.\n2. Retirar a explicação de meteoro pegando fogo por causa da velocidade no espaço. Apresentar como desenho estilizado do jogo.\n\nAcrescentar: a desseleção antes de escolher a cor, e o aviso de não passar da borda do quadro.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"A primeira chama cabe inteira acima da pedra e está na frente dela neste momento? Essa sobreposição é a surpresa que vamos resolver em seguida.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
     },
-    "checkpoint": {
-     "prompt": "A pedra reapareceu quando a chama foi para trás. O que mudou?",
-     "choices": [
-      {
-       "id": "b",
-       "label": "A pedra foi desenhada de novo."
-      },
-      {
-       "id": "a",
-       "label": "A ordem das formas."
+    {
+      "key": "fala-chama-cobriu",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Olhe o seu desenho. A chama ficou na frente da pedra e tapou boa parte dela. Isso acontece com todo mundo, e não é erro seu. Na próxima seção você descobre por quê."
       }
-     ],
-     "correctChoiceId": "a",
-     "explanation": "As formas eram as mesmas. A que fica por cima pode esconder parte da outra."
+    },
+    {
+      "key": "experimento-camadas",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Quem fica na frente?",
+        "instructions": "A chama está cobrindo a pedra. Mude as camadas e descubra quando a pedra aparece inteira.",
+        "hints": [],
+        "prediction": {
+          "context": {
+            "label": "A ordem das camadas",
+            "explanation": "Nesta experiência, vamos mudar a ordem da pedra e da chama para descobrir o que fica na frente."
+          },
+          "prompt": "Se a chama for uma camada para trás, onde a pedra aparece?",
+          "choices": [
+            {
+              "id": "atras",
+              "label": "Atrás da chama",
+              "shows": "A pedra ficou na frente da chama."
+            },
+            {
+              "id": "frente",
+              "label": "Na frente da chama"
+            }
+          ],
+          "correctChoiceId": "frente",
+          "revealOn": "front"
+        },
+        "activity": {
+          "type": "experimentation",
+          "scene": "layers",
+          "pilha": "camadas",
+          "cast": {
+            "hero": {
+              "name": "pedra",
+              "gender": "f"
+            },
+            "scenery": {
+              "name": "chama",
+              "gender": "f"
+            }
+          },
+          "cenario": "meu-jeito",
+          "setup": {
+            "goals": ["front", "covered", "back-in-front"],
+            "goalCopy": {
+              "back-in-front": {
+                "label": "A de cima na lista Camadas é a que aparece na frente"
+              }
+            }
+          }
+        },
+        "checkpoint": {
+          "prompt": "A pedra reapareceu quando a chama foi para trás. O que mudou?",
+          "choices": [
+            {
+              "id": "b",
+              "label": "A pedra foi desenhada de novo."
+            },
+            {
+              "id": "a",
+              "label": "A ordem das formas."
+            }
+          ],
+          "correctChoiceId": "a",
+          "explanation": "As formas eram as mesmas. A que fica por cima pode esconder parte da outra."
+        }
+      }
+    },
+    {
+      "key": "video-uma-camada-para-tras",
+      "plannedVideo": "Título: Uma camada para trás, até a pedra aparecer\n\nOrigem: cauda do video-chama-externa do v6, extraída como clipe próprio. Duração alvo: 70 a 85 segundos.\n\nO que passa na tela: a fileira de botões que aparece embaixo da barra com o nome do desenho quando há uma forma escolhida, e o terceiro botão dela, o **Uma camada para trás**. Cada clique, com a pedra reaparecendo aos poucos.\n\nSubstituição obrigatória de fala: sai a contagem de cliques, entra o critério visual. \"Clique e olhe a pedra. Continue clicando até ela aparecer inteira na frente. O número de cliques depende de quantas formas você já tem no desenho, então quem manda parar é a pedra, não a conta.\"\n\nAcrescentar: se a fileira sumir, clicar na chama com a ferramenta **Selecionar** traz ela de volta.\n\nPausa falada antes da autoconferência: \"Pause aqui e clique em Abrir meu Pinta. Faça esta parte na aba da ferramenta e volte a esta aula para conferir.\"\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"Agora a pedra aparece inteira na frente da chama, e a chama continua visível atrás? Pare de clicar quando a imagem ficar assim.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "video-chama-interna",
+      "plannedVideo": "Título: A segunda chama, mais clara por dentro\n\nOrigem: video-chama-interna do v6, encurtado. Duração alvo: 75 a 90 segundos.\n\nO que passa na tela: o gesto inteiro do Júlio. Selecionar a chama, duplicar, clarear no **Preenchimento**, encolher pelo quadradinho do canto, encaixar em cima da primeira e mandar para trás até a pedra reaparecer.\n\nPasso a passo executado na tela, gesto a gesto:\n\n1. Clicar na chama com a ferramenta **Selecionar**.\n2. Apertar Control e C e depois Control e V, mostrando que o **Duplicar a seleção**, na mesma fileira de botões de cima, faz a mesma coisa.\n3. Mostrar a cópia nascendo um pouco para baixo e para a direita, já escolhida.\n4. Com ela ainda escolhida, ir no **Preenchimento** e pegar uma cor mais clara que a de fora.\n5. Puxar um quadradinho do canto da caixa para dentro, para deixar a cópia menor.\n6. Arrastar a cópia para cima da primeira chama, encostada na pedra, com a cor de fora aparecendo em volta.\n\nConferir junto, com o professor olhando o desenho na tela: a chama de dentro é menor e mais clara, e a borda da de fora aparece em volta dela. A pedra está na frente de todas as chamas. Não sobrou buraco entre as partes do fogo.\n\nSocorro, mostrado na tela: se a chama de dentro sumiu, ela pode ter ido para trás da de fora. Desfazer o último passo com Control e Z e conferir a ordem.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nCorte obrigatório: sai a explicação de por que a cópia nasce no topo da pilha. A seção anterior já resolveu isso. Fica só a frase de reconhecimento: \"e ela nasceu na frente de tudo, igual à primeira. Você já sabe o que fazer.\"\n\nA terceira chama do Júlio entra como variação de 5 segundos, sem virar tarefa.\n\nTratar a cor clara por dentro como linguagem visual escolhida para o jogo, não como lei física da temperatura.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"A chama de dentro é menor e mais clara, a borda da de fora aparece e a pedra continua na frente das duas?\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-duas-chamas",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Duas chamas já deixam o fogo bonito. O Júlio fez três no dele, e o seu pode ter duas ou três. O que não muda é a ordem das cores: a mais escura por fora, a mais clara por dentro. Antes de seguir, confira se a pedra está na frente de todas as chamas e se elas estão encostadas umas nas outras, sem buraco no meio."
+      }
+    },
+    {
+      "key": "fala-duplicar-quadro",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Olhe a faixa no rodapé do editor, onde aparece o seu meteoro e, embaixo do nome, o **1 quadro**. Na ponta direita dessa linha tem a fileira de botõezinhos, a mesma da Aula 3. Clique no **Duplicar quadro**. Nasceu o segundo, igualzinho, com a pedra, as crateras e as chamas, e o Pinta já levou você para ele: o quadradinho aceso é o da direita."
+      }
+    },
+    {
+      "key": "experimento-tanto-que-muda",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "O tanto que muda",
+        "instructions": "Os dois quadros estão iguais e a Prévia parece parada. Mexa nos dois controles e descubra o tanto que faz a pedra rolar.",
+        "hints": [],
+        "prediction": {
+          "context": {
+            "label": "O tanto que muda entre dois quadros",
+            "explanation": "Nesta experiência, os dois quadros começam iguais. Você escolhe o quanto a cratera anda e o quanto a pedra inteira anda, e olha a Prévia ao lado."
+          },
+          "prompt": "Os dois quadros são iguais. O que a Prévia mostra?",
+          "choices": [
+            {
+              "id": "parada",
+              "label": "Uma pedra parada"
+            },
+            {
+              "id": "girando",
+              "label": "Uma pedra girando",
+              "shows": "Trocar depressa dois desenhos iguais não faz movimento nenhum. O movimento está na diferença entre eles."
+            }
+          ],
+          "correctChoiceId": "parada",
+          "revealOn": "no-change"
+        },
+        "activity": {
+          "type": "experimentation",
+          "scene": "motion-amount",
+          "cast": {
+            "hero": {
+              "name": "pedra",
+              "gender": "f"
+            }
+          },
+          "cenario": "meu-jeito",
+          "setup": {
+            "goals": ["no-change", "local-move", "too-much"]
+          }
+        },
+        "checkpoint": {
+          "prompt": "Você quer que a sua pedra pareça rolando. O que muda no segundo quadro?",
+          "choices": [
+            {
+              "id": "detalhes",
+              "label": "Uma cratera e uma ponta do fogo, um pouquinho"
+            },
+            {
+              "id": "tudo",
+              "label": "A pedra inteira, para um canto bem diferente"
+            }
+          ],
+          "correctChoiceId": "detalhes",
+          "explanation": "O olho lê rolagem quando o corpo fica no lugar e os detalhes andam um pouco. Quando o corpo inteiro muda de lugar, o olho lê um pulo."
+        }
+      }
+    },
+    {
+      "key": "video-quadro-2",
+      "plannedVideo": "Título: O segundo quadro, e a pedra começa a rolar\n\nOrigem: funde o video-animar-pedra com a parte de gesto do video-mudanca-demo, os dois do v6. Duração alvo: 85 a 100 segundos.\n\nO que passa na tela: **Duplicar quadro**, mover uma cratera, apagar uma cratera e editar duas pontas do fogo, com a Prévia rodando ao lado o tempo todo.\n\nAs três mudanças possíveis, executadas na tela uma a uma, com a fala deixando claro que duas já bastam e que quem escolhe é ela:\n\n1. **Mover uma cratera.** Clicar no **Selecionar**, clicar numa cratera e arrastar um pouquinho.\n2. **Apagar uma cratera.** Clicar nela e, na fileira de botões de cima, usar o **Apagar a seleção**. Dizer a razão enquanto faz: quando a pedra rola de verdade, tem cratera que passa para trás e sai da nossa vista, e é isso que o olho lê como giro.\n3. **Mexer no fogo.** Clicar no **Editar os pontos**, clicar numa das chamas para ela mostrar os pontos, pegar uma ponta e arrastar um pouco. Duas ou três pontas já bastam.\n\nConferir junto, com o professor olhando os dois quadros na tela: o desenho tem dois quadros, e o segundo tem as mudanças que ela quis fazer. O corpo da pedra continua no mesmo lugar nos dois. Nenhuma forma saiu do quadro e nenhuma chama ficou na frente da pedra.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nCorte obrigatório: sai a fala do critério de parada (\"se ficou doido demais, volta e mexe menos\"). A cena da seção anterior já resolveu isso com a mão de quem faz a aula.\n\nAcrescentar, porque é efeito real da ferramenta: trocar de quadro solta a seleção, então escolher a cratera ou a chama de novo faz parte do gesto.\n\nNão vender dois quadros como rotação geométrica contínua.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"Na Prévia, a pedra e o fogo mudam entre dois quadros sem o corpo da pedra saltar de lugar ou sair da borda?\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-conferir-quadros",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Clique no primeiro quadradinho e depois no segundo, olhando os dois com calma. A cratera que você apagou continua lá no primeiro, inteirinha, porque cada quadro guarda as formas dele. O que tem que estar diferente é só o que você quis mudar. Arrume o que mudou sem querer com o **Desfazer**, Control e Z."
+      }
+    },
+    {
+      "key": "fala-renomear",
+      "content": {
+        "kind": "dialogue",
+        "pose": "happy",
+        "text": "Na mesma fileira de botõezinhos, depois de um risquinho, tem o **Renomear animação**. Clique nele, apague o `parado`, escreva `girando`, tudo em letra minúscula, e clique no botão **Renomear**. O nome novo aparece na linha da faixa e embaixo da Prévia."
+      }
+    },
+    {
+      "key": "video-nome-girando",
+      "plannedVideo": "Título: O nome girando, e a volta para a galeria\n\nOrigem: video-nome-girando do v6. Duração alvo: 30 a 40 segundos.\n\nO que passa na tela: o **Renomear animação**, a troca de `parado` por `girando`, o nome novo aparecendo na faixa e embaixo da Prévia, e a volta para a galeria pela seta apontando para a esquerda, na ponta esquerda da barra de cima.\n\nManter a amarração com o Estúdio, que é o melhor momento do curso: \"Guarde este nome. Daqui a duas aulas, quando o seu asteroide entrar no jogo, vai aparecer uma listinha no Estúdio com o nome das suas animações. Uma vai estar escrita `voando`, que é a da nave. A outra vai estar escrita `girando`, que é a desta pedra.\"\n\nNão prometer miniatura animada na galeria. Não confundir duas animações num desenho com uma animação em cada desenho."
+    },
+    {
+      "key": "fala-conferir-galeria",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Na galeria estão os seus dois cartões, a nave e o asteroide. O cartão mostra um quadro parado. Para ver a animação, abra o desenho e olhe a **Prévia**, na coluna da direita: ela já está rodando. Confira os dois: a nave com a animação `voando`, dois quadros, e o asteroide com a animação `girando`, dois quadros."
+      }
+    },
+    {
+      "key": "fala-enviar-as-duas-artes",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Escolha a nave e o asteroide na galeria do Pinta e envie os dois juntos. Espere aparecer **Guardado na sua conta**, escolha a criação na lista e envie ao professor. Se ela ainda não estiver na lista, confira o salvamento e carregue a lista de novo."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "existing": {
+        "kind": "pinta",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-fecho-v6",
+      "plannedVideo": "Título: Duas artes animadas na sua galeria\n\nOrigem: video-fecho-v6, com fala nova e um trecho de entrega novo na frente. Duração alvo: 60 a 75 segundos.\n\nO clipe tem duas partes. Primeiro a conferência e o envio, depois o fecho da aula.\n\nParte 1, conferir junto na galeria do Pinta, cartão por cartão, com o professor dizendo \"olha comigo se ficou assim\":\n\n- `nave`, pixel art de 32 por 32, animação `voando`, dois quadros, 8 fps.\n- `asteroide`, vetor de 64 por 64, animação `girando`, dois quadros, 8 fps.\n- Pedra e crateras na frente das chamas, nos dois quadros.\n- A chama cabe no quadro, e as mudanças do segundo quadro são locais, sem o desenho inteiro mudar de lugar.\n\nParte 2, o envio executado na tela: escolher a nave e o asteroide na galeria e enviar os dois juntos, porque é assim que dá para conferir se a dupla está pronta para entrar no jogo. Esperar o **Guardado na sua conta**, escolher a criação e enviar ao professor. Se a criação ainda não estiver na lista, conferir o salvamento e carregar a lista de novo. Dizer que o envio guarda uma cópia daquele momento, e que ela continua criando na ferramenta depois.\n\nParte 3, o fecho. O que passa na tela: a galeria do Pinta com os dois cartões, e um corte curto de cada Prévia rodando.\n\nFala: \"Agora você tem duas artes animadas: a nave em pixel art e o asteroide em vetor. No vetor você mexeu em formas e em pontos. Na nave você mexeu em quadradinhos. A pedra ficou na frente das chamas porque você cuidou da ordem, e ela rola porque você mexeu pouco, no lugar certo. Na próxima aula as duas artes saem do Pinta e entram no jogo.\"\n\nNão acrescentar tarefa extra para passar. Não exigir apagar cratera nem criar outra animação."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "No segundo quadro, uma chama cobriu a pedra. Onde procurar a correção?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Na ordem das formas desse quadro."
+              },
+              {
+                "id": "b",
+                "label": "No tamanho da nave em outro desenho."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A ordem pode ser revisada no quadro em que a composição ficou diferente."
+          },
+          {
+            "id": "q2",
+            "prompt": "No vetor, o que acontece ao mover uma ponta com Editar os pontos?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Surge obrigatoriamente um buraco de pixels para pintar."
+              },
+              {
+                "id": "a",
+                "label": "A forma é refeita a partir da nova posição do ponto."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O Pinta redesenha a forma vetorial. É diferente de mover um recorte de pixels."
+          }
+        ]
+      }
     }
-   }
-  },
-  {
-   "key": "video-uma-camada-para-tras",
-   "plannedVideo": "Título: Uma camada para trás, até a pedra aparecer\n\nOrigem: cauda do video-chama-externa do v6, extraída como clipe próprio. Duração alvo: 70 a 85 segundos.\n\nO que passa na tela: a fileira de botões que aparece embaixo da barra com o nome do desenho quando há uma forma escolhida, e o terceiro botão dela, o **Uma camada para trás**. Cada clique, com a pedra reaparecendo aos poucos.\n\nSubstituição obrigatória de fala: sai a contagem de cliques, entra o critério visual. \"Clique e olhe a pedra. Continue clicando até ela aparecer inteira na frente. O número de cliques depende de quantas formas você já tem no desenho, então quem manda parar é a pedra, não a conta.\"\n\nAcrescentar: se a fileira sumir, clicar na chama com a ferramenta **Selecionar** traz ela de volta.\n\nPausa falada antes da autoconferência: \"Pause aqui e clique em Abrir meu Pinta. Faça esta parte na aba da ferramenta e volte a esta aula para conferir.\"\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"Agora a pedra aparece inteira na frente da chama, e a chama continua visível atrás? Pare de clicar quando a imagem ficar assim.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
-  },
-  {
-   "key": "video-chama-interna",
-   "plannedVideo": "Título: A segunda chama, mais clara por dentro\n\nOrigem: video-chama-interna do v6, encurtado. Duração alvo: 75 a 90 segundos.\n\nO que passa na tela: o gesto inteiro do Júlio. Selecionar a chama, duplicar, clarear no **Preenchimento**, encolher pelo quadradinho do canto, encaixar em cima da primeira e mandar para trás até a pedra reaparecer.\n\nPasso a passo executado na tela, gesto a gesto:\n\n1. Clicar na chama com a ferramenta **Selecionar**.\n2. Apertar Control e C e depois Control e V, mostrando que o **Duplicar a seleção**, na mesma fileira de botões de cima, faz a mesma coisa.\n3. Mostrar a cópia nascendo um pouco para baixo e para a direita, já escolhida.\n4. Com ela ainda escolhida, ir no **Preenchimento** e pegar uma cor mais clara que a de fora.\n5. Puxar um quadradinho do canto da caixa para dentro, para deixar a cópia menor.\n6. Arrastar a cópia para cima da primeira chama, encostada na pedra, com a cor de fora aparecendo em volta.\n\nConferir junto, com o professor olhando o desenho na tela: a chama de dentro é menor e mais clara, e a borda da de fora aparece em volta dela. A pedra está na frente de todas as chamas. Não sobrou buraco entre as partes do fogo.\n\nSocorro, mostrado na tela: se a chama de dentro sumiu, ela pode ter ido para trás da de fora. Desfazer o último passo com Control e Z e conferir a ordem.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nCorte obrigatório: sai a explicação de por que a cópia nasce no topo da pilha. A seção anterior já resolveu isso. Fica só a frase de reconhecimento: \"e ela nasceu na frente de tudo, igual à primeira. Você já sabe o que fazer.\"\n\nA terceira chama do Júlio entra como variação de 5 segundos, sem virar tarefa.\n\nTratar a cor clara por dentro como linguagem visual escolhida para o jogo, não como lei física da temperatura.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"A chama de dentro é menor e mais clara, a borda da de fora aparece e a pedra continua na frente das duas?\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
-  },
-  {
-   "key": "fala-duas-chamas",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Duas chamas já deixam o fogo bonito. O Júlio fez três no dele, e o seu pode ter duas ou três. O que não muda é a ordem das cores: a mais escura por fora, a mais clara por dentro. Antes de seguir, confira se a pedra está na frente de todas as chamas e se elas estão encostadas umas nas outras, sem buraco no meio."
-   }
-  },
-  {
-   "key": "fala-duplicar-quadro",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Olhe a faixa no rodapé do editor, onde aparece o seu meteoro e, embaixo do nome, o **1 quadro**. Na ponta direita dessa linha tem a fileira de botõezinhos, a mesma da Aula 3. Clique no **Duplicar quadro**. Nasceu o segundo, igualzinho, com a pedra, as crateras e as chamas, e o Pinta já levou você para ele: o quadradinho aceso é o da direita."
-   }
-  },
-  {
-   "key": "experimento-tanto-que-muda",
-   "content": {
-    "kind": "interactive",
-    "required": true,
-    "title": "O tanto que muda",
-    "instructions": "Os dois quadros estão iguais e a Prévia parece parada. Mexa nos dois controles e descubra o tanto que faz a pedra rolar.",
-    "hints": [],
-    "prediction": {
-     "context": {
-      "label": "O tanto que muda entre dois quadros",
-      "explanation": "Nesta experiência, os dois quadros começam iguais. Você escolhe o quanto a cratera anda e o quanto a pedra inteira anda, e olha a Prévia ao lado."
-     },
-     "prompt": "Os dois quadros são iguais. O que a Prévia mostra?",
-     "choices": [
-      {
-       "id": "parada",
-       "label": "Uma pedra parada"
-      },
-      {
-       "id": "girando",
-       "label": "Uma pedra girando",
-       "shows": "Trocar depressa dois desenhos iguais não faz movimento nenhum. O movimento está na diferença entre eles."
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "O que a gente vai fazer hoje",
+      "intent": "presentation",
+      "objective": "Ver o meteoro pronto, pegando fogo e rolando, antes de traçar a primeira linha.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
       }
-     ],
-     "correctChoiceId": "parada",
-     "revealOn": "no-change"
     },
-    "activity": {
-     "type": "experimentation",
-     "scene": "motion-amount",
-     "cast": {
-      "hero": {
-       "name": "pedra",
-       "gender": "f"
+    {
+      "key": "chama-externa",
+      "title": "Desenhe a chama do lado de onde a pedra veio",
+      "intent": "application",
+      "objective": "Traçar a forma nova do dia, uma chama fechada em cima da pedra, dentro do quadro de 64 por 64, e terminar na surpresa de ela nascer por cima.",
+      "blockKeys": ["video-chama-externa", "fala-chama-cobriu"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-chama-externa"]
       }
-     },
-     "cenario": "meu-jeito",
-     "setup": {
-      "goals": [
-       "no-change",
-       "local-move",
-       "too-much"
-      ]
-     }
     },
-    "checkpoint": {
-     "prompt": "Você quer que a sua pedra pareça rolando. O que muda no segundo quadro?",
-     "choices": [
-      {
-       "id": "detalhes",
-       "label": "Uma cratera e uma ponta do fogo, um pouquinho"
-      },
-      {
-       "id": "tudo",
-       "label": "A pedra inteira, para um canto bem diferente"
+    {
+      "key": "camadas",
+      "title": "Quem é desenhada depois fica por cima",
+      "intent": "exploration",
+      "objective": "Descobrir que nada foi apagado, só reordenado, e que a forma traçada por último é a que aparece na frente.",
+      "blockKeys": ["experimento-camadas"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experimento-camadas"]
       }
-     ],
-     "correctChoiceId": "detalhes",
-     "explanation": "O olho lê rolagem quando o corpo fica no lugar e os detalhes andam um pouco. Quando o corpo inteiro muda de lugar, o olho lê um pulo."
+    },
+    {
+      "key": "uma-camada-para-tras",
+      "title": "Traga a pedra de volta para a frente",
+      "intent": "application",
+      "objective": "Usar o Uma camada para trás no próprio desenho até a pedra aparecer inteira na frente da chama, com a pedra mandando parar, e não a conta de cliques.",
+      "blockKeys": ["video-uma-camada-para-tras"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-uma-camada-para-tras"]
+      }
+    },
+    {
+      "key": "chama-interna",
+      "title": "Faça o fogo em camadas de cor",
+      "intent": "application",
+      "objective": "Duplicar a chama, clarear, encolher e encaixar por dentro, aplicando a regra da ordem que acabou de entender.",
+      "blockKeys": ["video-chama-interna", "fala-duas-chamas"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-chama-interna"]
+      }
+    },
+    {
+      "key": "tanto-que-muda",
+      "title": "Dois quadros, e o tanto que muda",
+      "intent": "exploration",
+      "objective": "Descobrir quanto um detalhe precisa andar entre dois quadros para o olho ler rolagem, e por que o corpo fica no lugar.",
+      "blockKeys": ["experimento-tanto-que-muda"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experimento-tanto-que-muda"]
+      }
+    },
+    {
+      "key": "quadro-2",
+      "title": "Duplique o quadro e mude as crateras e as pontas do fogo",
+      "intent": "application",
+      "objective": "Criar o segundo quadro pelo Duplicar quadro, fazer nele as mudanças locais e ver a pedra rolando na Prévia.",
+      "blockKeys": ["fala-duplicar-quadro", "video-quadro-2", "fala-conferir-quadros"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-quadro-2"]
+      }
+    },
+    {
+      "key": "nome-e-entrega",
+      "title": "Batize a animação, confira as duas artes e envie",
+      "intent": "delivery",
+      "objective": "Renomear a animação para girando, conferir os dois cartões da galeria e enviar as duas artes prontas para entrar no jogo.",
+      "blockKeys": [
+        "fala-renomear",
+        "video-nome-girando",
+        "fala-conferir-galeria",
+        "fala-enviar-as-duas-artes",
+        "entrega-galeria-v6",
+        "video-fecho-v6",
+        "quiz-v6"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-nome-girando", "video-fecho-v6", "entrega-galeria-v6", "quiz-v6"]
+      }
     }
-   }
-  },
-  {
-   "key": "video-quadro-2",
-   "plannedVideo": "Título: O segundo quadro, e a pedra começa a rolar\n\nOrigem: funde o video-animar-pedra com a parte de gesto do video-mudanca-demo, os dois do v6. Duração alvo: 85 a 100 segundos.\n\nO que passa na tela: **Duplicar quadro**, mover uma cratera, apagar uma cratera e editar duas pontas do fogo, com a Prévia rodando ao lado o tempo todo.\n\nAs três mudanças possíveis, executadas na tela uma a uma, com a fala deixando claro que duas já bastam e que quem escolhe é ela:\n\n1. **Mover uma cratera.** Clicar no **Selecionar**, clicar numa cratera e arrastar um pouquinho.\n2. **Apagar uma cratera.** Clicar nela e, na fileira de botões de cima, usar o **Apagar a seleção**. Dizer a razão enquanto faz: quando a pedra rola de verdade, tem cratera que passa para trás e sai da nossa vista, e é isso que o olho lê como giro.\n3. **Mexer no fogo.** Clicar no **Editar os pontos**, clicar numa das chamas para ela mostrar os pontos, pegar uma ponta e arrastar um pouco. Duas ou três pontas já bastam.\n\nConferir junto, com o professor olhando os dois quadros na tela: o desenho tem dois quadros, e o segundo tem as mudanças que ela quis fazer. O corpo da pedra continua no mesmo lugar nos dois. Nenhuma forma saiu do quadro e nenhuma chama ficou na frente da pedra.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nCorte obrigatório: sai a fala do critério de parada (\"se ficou doido demais, volta e mexe menos\"). A cena da seção anterior já resolveu isso com a mão de quem faz a aula.\n\nAcrescentar, porque é efeito real da ferramenta: trocar de quadro solta a seleção, então escolher a cratera ou a chama de novo faz parte do gesto.\n\nNão vender dois quadros como rotação geométrica contínua.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"Na Prévia, a pedra e o fogo mudam entre dois quadros sem o corpo da pedra saltar de lugar ou sair da borda?\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
-  },
-  {
-   "key": "fala-conferir-quadros",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Clique no primeiro quadradinho e depois no segundo, olhando os dois com calma. A cratera que você apagou continua lá no primeiro, inteirinha, porque cada quadro guarda as formas dele. O que tem que estar diferente é só o que você quis mudar. Arrume o que mudou sem querer com o **Desfazer**, Control e Z."
-   }
-  },
-  {
-   "key": "fala-renomear",
-   "content": {
-    "kind": "dialogue",
-    "pose": "happy",
-    "text": "Na mesma fileira de botõezinhos, depois de um risquinho, tem o **Renomear animação**. Clique nele, apague o `parado`, escreva `girando`, tudo em letra minúscula, e clique no botão **Renomear**. O nome novo aparece na linha da faixa e embaixo da Prévia."
-   }
-  },
-  {
-   "key": "video-nome-girando",
-   "plannedVideo": "Título: O nome girando, e a volta para a galeria\n\nOrigem: video-nome-girando do v6. Duração alvo: 30 a 40 segundos.\n\nO que passa na tela: o **Renomear animação**, a troca de `parado` por `girando`, o nome novo aparecendo na faixa e embaixo da Prévia, e a volta para a galeria pela seta apontando para a esquerda, na ponta esquerda da barra de cima.\n\nManter a amarração com o Estúdio, que é o melhor momento do curso: \"Guarde este nome. Daqui a duas aulas, quando o seu asteroide entrar no jogo, vai aparecer uma listinha no Estúdio com o nome das suas animações. Uma vai estar escrita `voando`, que é a da nave. A outra vai estar escrita `girando`, que é a desta pedra.\"\n\nNão prometer miniatura animada na galeria. Não confundir duas animações num desenho com uma animação em cada desenho."
-  },
-  {
-   "key": "fala-conferir-galeria",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Na galeria estão os seus dois cartões, a nave e o asteroide. O cartão mostra um quadro parado. Para ver a animação, abra o desenho e olhe a **Prévia**, na coluna da direita: ela já está rodando. Confira os dois: a nave com a animação `voando`, dois quadros, e o asteroide com a animação `girando`, dois quadros."
-   }
-  },
-  {
-   "key": "fala-enviar-as-duas-artes",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Escolha a nave e o asteroide na galeria do Pinta e envie os dois juntos. Espere aparecer **Guardado na sua conta**, escolha a criação na lista e envie ao professor. Se ela ainda não estiver na lista, confira o salvamento e carregue a lista de novo."
-   }
-  },
-  {
-   "key": "entrega-galeria-v6",
-   "existing": {
-    "kind": "pinta",
-    "index": 0
-   }
-  },
-  {
-   "key": "video-fecho-v6",
-   "plannedVideo": "Título: Duas artes animadas na sua galeria\n\nOrigem: video-fecho-v6, com fala nova e um trecho de entrega novo na frente. Duração alvo: 60 a 75 segundos.\n\nO clipe tem duas partes. Primeiro a conferência e o envio, depois o fecho da aula.\n\nParte 1, conferir junto na galeria do Pinta, cartão por cartão, com o professor dizendo \"olha comigo se ficou assim\":\n\n- `nave`, pixel art de 32 por 32, animação `voando`, dois quadros, 8 fps.\n- `asteroide`, vetor de 64 por 64, animação `girando`, dois quadros, 8 fps.\n- Pedra e crateras na frente das chamas, nos dois quadros.\n- A chama cabe no quadro, e as mudanças do segundo quadro são locais, sem o desenho inteiro mudar de lugar.\n\nParte 2, o envio executado na tela: escolher a nave e o asteroide na galeria e enviar os dois juntos, porque é assim que dá para conferir se a dupla está pronta para entrar no jogo. Esperar o **Guardado na sua conta**, escolher a criação e enviar ao professor. Se a criação ainda não estiver na lista, conferir o salvamento e carregar a lista de novo. Dizer que o envio guarda uma cópia daquele momento, e que ela continua criando na ferramenta depois.\n\nParte 3, o fecho. O que passa na tela: a galeria do Pinta com os dois cartões, e um corte curto de cada Prévia rodando.\n\nFala: \"Agora você tem duas artes animadas: a nave em pixel art e o asteroide em vetor. No vetor você mexeu em formas e em pontos. Na nave você mexeu em quadradinhos. A pedra ficou na frente das chamas porque você cuidou da ordem, e ela rola porque você mexeu pouco, no lugar certo. Na próxima aula as duas artes saem do Pinta e entram no jogo.\"\n\nNão acrescentar tarefa extra para passar. Não exigir apagar cratera nem criar outra animação."
-  },
-  {
-   "key": "quiz-v6",
-   "content": {
-    "kind": "quiz",
-    "passingScore": 100,
-    "questions": [
-     {
-      "id": "q1",
-      "prompt": "No segundo quadro, uma chama cobriu a pedra. Onde procurar a correção?",
-      "choices": [
-       {
-        "id": "a",
-        "label": "Na ordem das formas desse quadro."
-       },
-       {
-        "id": "b",
-        "label": "No tamanho da nave em outro desenho."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "A ordem pode ser revisada no quadro em que a composição ficou diferente."
-     },
-     {
-      "id": "q2",
-      "prompt": "No vetor, o que acontece ao mover uma ponta com Editar os pontos?",
-      "choices": [
-       {
-        "id": "b",
-        "label": "Surge obrigatoriamente um buraco de pixels para pintar."
-       },
-       {
-        "id": "a",
-        "label": "A forma é refeita a partir da nova posição do ponto."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "O Pinta redesenha a forma vetorial. É diferente de mover um recorte de pixels."
-     }
-    ]
-   }
-  }
- ],
- "sections": [
-  {
-   "key": "abertura",
-   "title": "O que a gente vai fazer hoje",
-   "intent": "presentation",
-   "objective": "Ver o meteoro pronto, pegando fogo e rolando, antes de traçar a primeira linha.",
-   "blockKeys": [
-    "video-abertura"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-abertura"
-    ]
-   }
-  },
-  {
-   "key": "chama-externa",
-   "title": "Desenhe a chama do lado de onde a pedra veio",
-   "intent": "application",
-   "objective": "Traçar a forma nova do dia, uma chama fechada em cima da pedra, dentro do quadro de 64 por 64, e terminar na surpresa de ela nascer por cima.",
-   "blockKeys": [
-    "video-chama-externa",
-    "fala-chama-cobriu"
-   ],
-   "workspaceKey": null,
-   "externalTool": "pinta",
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-chama-externa"
-    ]
-   }
-  },
-  {
-   "key": "camadas",
-   "title": "Quem é desenhada depois fica por cima",
-   "intent": "exploration",
-   "objective": "Descobrir que nada foi apagado, só reordenado, e que a forma traçada por último é a que aparece na frente.",
-   "blockKeys": [
-    "experimento-camadas"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experimento-camadas"
-    ]
-   }
-  },
-  {
-   "key": "uma-camada-para-tras",
-   "title": "Traga a pedra de volta para a frente",
-   "intent": "application",
-   "objective": "Usar o Uma camada para trás no próprio desenho até a pedra aparecer inteira na frente da chama, com a pedra mandando parar, e não a conta de cliques.",
-   "blockKeys": [
-    "video-uma-camada-para-tras"
-   ],
-   "workspaceKey": null,
-   "externalTool": "pinta",
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-uma-camada-para-tras"
-    ]
-   }
-  },
-  {
-   "key": "chama-interna",
-   "title": "Faça o fogo em camadas de cor",
-   "intent": "application",
-   "objective": "Duplicar a chama, clarear, encolher e encaixar por dentro, aplicando a regra da ordem que acabou de entender.",
-   "blockKeys": [
-    "video-chama-interna",
-    "fala-duas-chamas"
-   ],
-   "workspaceKey": null,
-   "externalTool": "pinta",
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-chama-interna"
-    ]
-   }
-  },
-  {
-   "key": "tanto-que-muda",
-   "title": "Dois quadros, e o tanto que muda",
-   "intent": "exploration",
-   "objective": "Descobrir quanto um detalhe precisa andar entre dois quadros para o olho ler rolagem, e por que o corpo fica no lugar.",
-   "blockKeys": [
-    "experimento-tanto-que-muda"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experimento-tanto-que-muda"
-    ]
-   }
-  },
-  {
-   "key": "quadro-2",
-   "title": "Duplique o quadro e mude as crateras e as pontas do fogo",
-   "intent": "application",
-   "objective": "Criar o segundo quadro pelo Duplicar quadro, fazer nele as mudanças locais e ver a pedra rolando na Prévia.",
-   "blockKeys": [
-    "fala-duplicar-quadro",
-    "video-quadro-2",
-    "fala-conferir-quadros"
-   ],
-   "workspaceKey": null,
-   "externalTool": "pinta",
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-quadro-2"
-    ]
-   }
-  },
-  {
-   "key": "nome-e-entrega",
-   "title": "Batize a animação, confira as duas artes e envie",
-   "intent": "delivery",
-   "objective": "Renomear a animação para girando, conferir os dois cartões da galeria e enviar as duas artes prontas para entrar no jogo.",
-   "blockKeys": [
-    "fala-renomear",
-    "video-nome-girando",
-    "fala-conferir-galeria",
-    "fala-enviar-as-duas-artes",
-    "entrega-galeria-v6",
-    "video-fecho-v6",
-    "quiz-v6"
-   ],
-   "workspaceKey": null,
-   "externalTool": "pinta",
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-nome-girando",
-     "video-fecho-v6",
-     "entrega-galeria-v6",
-     "quiz-v6"
-    ]
-   }
-  }
- ]
+  ]
 }

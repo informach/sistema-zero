@@ -126,9 +126,7 @@
                 "label": "Aperta Enviar para o professor toda vez que encaixa um bloco."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O rascunho fica neste navegador quando aparece Salvo. A aula avisa quando enviar uma cópia ao professor."
           },
           {
@@ -144,9 +142,7 @@
                 "label": "Não deu, sem contar o que tentou."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Descrever a ação e o resultado ajuda o professor a localizar a dificuldade."
           }
         ]
@@ -159,17 +155,13 @@
       "title": "O seu primeiro jogo começa aqui",
       "objective": "Ver o jogo que você vai construir e saber o que esta aula ensina.",
       "intent": "presentation",
-      "blockKeys": [
-        "video-abertura"
-      ],
+      "blockKeys": ["video-abertura"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura"
-        ]
+        "blockIds": ["video-abertura"]
       }
     },
     {
@@ -177,11 +169,7 @@
       "title": "O jogo já está rodando. As três coisas que você faz para testar",
       "objective": "Testar um jogo que já está montado com as três ações, e confirmar um número saindo do campo.",
       "intent": "application",
-      "blockKeys": [
-        "fala-sem-play",
-        "video-testar",
-        "treino"
-      ],
+      "blockKeys": ["fala-sem-play", "video-testar", "treino"],
       "workspaceKey": "treino",
       "externalTool": null,
       "pendingMedia": [],
@@ -210,20 +198,13 @@
       "title": "Do Início até a sua aula",
       "objective": "Chegar sozinho na aula do dia pelo menu, e saber como uma aula funciona por dentro.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-achar-a-aula",
-        "video-por-dentro-da-aula",
-        "fala-caminho"
-      ],
+      "blockKeys": ["video-achar-a-aula", "video-por-dentro-da-aula", "fala-caminho"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-achar-a-aula",
-          "video-por-dentro-da-aula"
-        ]
+        "blockIds": ["video-achar-a-aula", "video-por-dentro-da-aula"]
       }
     },
     {
@@ -231,18 +212,13 @@
       "title": "Salvar e enviar são coisas diferentes",
       "objective": "Separar o que fica guardado sozinho do que é enviado ao professor.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-guardar-e-entregar",
-        "fala-tres-destinos"
-      ],
+      "blockKeys": ["video-guardar-e-entregar", "fala-tres-destinos"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-guardar-e-entregar"
-        ]
+        "blockIds": ["video-guardar-e-entregar"]
       }
     },
     {
@@ -250,19 +226,13 @@
       "title": "O seu caderno, e o mapa para quem cuida de você",
       "objective": "Baixar os dois materiais do curso e saber para que serve cada um.",
       "intent": "material",
-      "blockKeys": [
-        "video-caderno",
-        "materiais",
-        "fala-responsavel"
-      ],
+      "blockKeys": ["video-caderno", "materiais", "fala-responsavel"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-caderno"
-        ]
+        "blockIds": ["video-caderno"]
       }
     },
     {
@@ -270,18 +240,13 @@
       "title": "Travou. O que fazer",
       "objective": "Achar os materiais do curso e escrever um pedido de ajuda que o professor consiga usar.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-ajuda",
-        "fala-pedido-bom"
-      ],
+      "blockKeys": ["video-ajuda", "fala-pedido-bom"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-ajuda"
-        ]
+        "blockIds": ["video-ajuda"]
       }
     },
     {
@@ -289,19 +254,13 @@
       "title": "Você já sabe se virar aqui",
       "objective": "Fechar o percurso, conhecer o resto do menu e responder duas perguntas.",
       "intent": "closing",
-      "blockKeys": [
-        "fala-fecho",
-        "video-menu",
-        "quiz"
-      ],
+      "blockKeys": ["fala-fecho", "video-menu", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     }
   ]

@@ -1,368 +1,337 @@
 {
- "version": 4,
- "courseSlug": "o-jogo-do-meu-jeito",
- "lessonSlug": "aula-07",
- "title": "As suas pedras entram no jogo",
- "retireBlockKeys": [
-  "video-abertura-v6",
-  "conferir-folha-asteroide",
-  "video-tempo-demo",
-  "demonstracao-nascimento",
-  "conferir-novo-criador",
-  "conferir-animar-cada"
- ],
- "blocks": [
-  {
-   "key": "video-abertura",
-   "plannedVideo": "Título: A sua nave já está lá, agora entram as suas pedras\n\nOrigem: video-abertura-v6, com fala nova e tela regravada. Duração alvo: 25 a 35 segundos.\n\nO que passa na tela: o jogo rodando com a nave desenhada por ela voando, e as pedras dela caindo e girando em volta, com o tiro, o placar e as vidas funcionando.\n\nFala: \"A sua nave já está no jogo. Hoje entram as suas pedras. A nave foi criada uma vez, no começo, e as pedras vão nascendo durante a partida inteira, uma atrás da outra. Por isso hoje tem um jeito diferente de fazer, e ele começa por entender dois relógios que rodam ao mesmo tempo.\"\n\nCortes obrigatórios: sai a contagem antiga de três passos. Não prometer desbloqueio, selo nem tarefa extra."
-  },
-  {
-   "key": "video-folha-asteroide",
-   "plannedVideo": "Título: A segunda folha, e o número que muda\n\nOrigem: video-folha-asteroide do v6, com o caminho de paleta regravado. Duração alvo: 95 a 110 segundos.\n\nComeço, executado na tela: abrir o Estúdio pelo **Abrir meu Estúdio** desta seção, que abre a ferramenta em outra aba, e clicar no cartão do mesmo jogo. Na coluna da esquerda, ir em **Jogo 2D › Sprites › Animação** e pegar de novo o `Carregar folha de quadros da imagem com quadros de x px`, o mesmo bloco da aula passada. Arrastar e encaixar no **Ao iniciar**, entre o `Animar sprite` da nave e o `Criar grupo de sprites tiros`.\n\nO que passa na tela: o encaixe no **Ao iniciar** e os quatro campos preenchidos um a um, com as duas folhas aparecendo na lista, uma de 32 e outra de 64.\n\nOs quatro valores, digitados na ordem: Nome `folha-asteroide`, Imagem `asteroide`, Largura do quadro 64, Altura do quadro 64. Na hora do nome, a razão dele: é `folha-asteroide` pela mesma regra da aula passada, porque o nome `asteroide` vai ser de outra coisa daqui a pouco. E mostrar que os dois campos de tamanho vêm com 32, então é clicar em cada um e escrever 64.\n\nA razão do número, na hora do tamanho: \"na nave era 32 e aqui é 64, porque no Pinta você desenhou o asteroide num quadro maior, no Médio do vetor. Cada folha tem o tamanho que ela tem, e o bloco precisa saber o tamanho certo de cada uma.\"\n\nNão usar o 40 do tamanho visível como se fosse tamanho de quadro.\n\nConferir junto, com o professor olhando a tela e dizendo \"olha comigo se ficou assim\": o `Carregar folha de quadros folha-asteroide da imagem asteroide com quadros de 64 x 64 px` está no **Ao iniciar**, entre o `Animar sprite` da nave e o `Criar grupo de sprites tiros`. A folha da nave continua com 32 por 32, intacta.\n\nO clipe termina na área do jogo sem mudar nada, com as pedras cinzas ainda caindo.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nCaminho travado, medido no código em 20/09/2026: o `Carregar folha de quadros` fica em **Jogo 2D › Sprites › Animação**. O roteiro gravado antigo diz só \"Jogo 2D, Animação\", como se Animação fosse uma parte de primeiro nível, e o trecho precisa ser regravado com os quatro degraus.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"No Ao iniciar há uma folha nova de 64 por 64 para o asteroide, enquanto a folha de 32 por 32 da nave continua? As pedras ainda cinzas são esperadas por enquanto.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
-  },
-  {
-   "key": "fala-folha-pronta",
-   "content": {
-    "kind": "dialogue",
-    "pose": "thinking",
-    "text": "Olhe a área do jogo. Não mudou nada, e é isso mesmo. Esse bloco só deixou a folha do asteroide pronta para ser usada, e quem vai usar ela é um bloco do fim da aula. As pedras que estão caindo aí continuam sendo as cinzas."
-   }
-  },
-  {
-   "key": "fala-relogio-das-pedras",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Desça até a área **Enquanto estiver rodando** e ache o `A cada 40 quadros`, aquele que fica do lado do `A cada quadro do jogo`. Dentro dele tem um `Se` com a pergunta `o estado do jogo é jogando ?`, e dentro desse tem um bloco só, o que começa com `No grupo asteroides criar um asteroide`. É ele que faz uma pedra nova nascer lá em cima de tempos em tempos."
-   }
-  },
-  {
-   "key": "fala-dois-sentidos-de-quadro",
-   "content": {
-    "kind": "dialogue",
-    "pose": "thinking",
-    "text": "Repare no nome desse relógio. O quadro desse nome conta o tempo do jogo, ele não é o desenho da sua animação: são duas coisas diferentes com o mesmo nome. Essa é a parte mais difícil do dia, e nesta bancada dá para ver os dois relógios rodando ao mesmo tempo."
-   }
-  },
-  {
-   "key": "experimento-dois-relogios",
-   "content": {
-    "kind": "interactive",
-    "required": true,
-    "title": "Dois relógios ao mesmo tempo",
-    "instructions": "Mexa num controle de cada vez e deixe o tempo passar. Olhe quantas pedras nasceram e o número que aparece em cima de cada uma.",
-    "hints": [],
-    "prediction": {
-     "context": {
-      "label": "Os dois relógios da tela",
-      "explanation": "Nesta experiência, um relógio faz nascer uma pedra de tempos em tempos e o outro troca os desenhos de cada pedra. Você mexe num de cada vez e olha o que acontece com o outro."
-     },
-     "prompt": "Se as pedras nascerem mais juntas, o giro de cada uma fica mais rápido?",
-     "choices": [
-      {
-       "id": "continua-igual",
-       "label": "Não, o giro continua igual"
-      },
-      {
-       "id": "fica-mais-rapido",
-       "label": "Fica, porque é o mesmo relógio",
-       "shows": "O giro de cada pedra continuou no mesmo ritmo. O que mudou foi só quantas nasceram."
-      }
-     ],
-     "correctChoiceId": "continua-igual",
-     "revealOn": "more-rocks"
+  "version": 4,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-07",
+  "title": "As suas pedras entram no jogo",
+  "retireBlockKeys": [
+    "video-abertura-v6",
+    "conferir-folha-asteroide",
+    "video-tempo-demo",
+    "demonstracao-nascimento",
+    "conferir-novo-criador",
+    "conferir-animar-cada"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: A sua nave já está lá, agora entram as suas pedras\n\nOrigem: video-abertura-v6, com fala nova e tela regravada. Duração alvo: 25 a 35 segundos.\n\nO que passa na tela: o jogo rodando com a nave desenhada por ela voando, e as pedras dela caindo e girando em volta, com o tiro, o placar e as vidas funcionando.\n\nFala: \"A sua nave já está no jogo. Hoje entram as suas pedras. A nave foi criada uma vez, no começo, e as pedras vão nascendo durante a partida inteira, uma atrás da outra. Por isso hoje tem um jeito diferente de fazer, e ele começa por entender dois relógios que rodam ao mesmo tempo.\"\n\nCortes obrigatórios: sai a contagem antiga de três passos. Não prometer desbloqueio, selo nem tarefa extra."
     },
-    "activity": {
-     "type": "experimentation",
-     "scene": "two-clocks",
-     "cast": {
-      "hero": {
-       "name": "nave",
-       "gender": "f"
-      },
-      "obstacle": {
-       "name": "asteroide",
-       "gender": "m"
-      }
-     },
-     "cenario": "meu-jeito",
-     "setup": {
-      "goals": [
-       "more-rocks",
-       "faster-spin",
-       "each-one"
-      ]
-     }
+    {
+      "key": "video-folha-asteroide",
+      "plannedVideo": "Título: A segunda folha, e o número que muda\n\nOrigem: video-folha-asteroide do v6, com o caminho de paleta regravado. Duração alvo: 95 a 110 segundos.\n\nComeço, executado na tela: abrir o Estúdio pelo **Abrir meu Estúdio** desta seção, que abre a ferramenta em outra aba, e clicar no cartão do mesmo jogo. Na coluna da esquerda, ir em **Jogo 2D › Sprites › Animação** e pegar de novo o `Carregar folha de quadros da imagem com quadros de x px`, o mesmo bloco da aula passada. Arrastar e encaixar no **Ao iniciar**, entre o `Animar sprite` da nave e o `Criar grupo de sprites tiros`.\n\nO que passa na tela: o encaixe no **Ao iniciar** e os quatro campos preenchidos um a um, com as duas folhas aparecendo na lista, uma de 32 e outra de 64.\n\nOs quatro valores, digitados na ordem: Nome `folha-asteroide`, Imagem `asteroide`, Largura do quadro 64, Altura do quadro 64. Na hora do nome, a razão dele: é `folha-asteroide` pela mesma regra da aula passada, porque o nome `asteroide` vai ser de outra coisa daqui a pouco. E mostrar que os dois campos de tamanho vêm com 32, então é clicar em cada um e escrever 64.\n\nA razão do número, na hora do tamanho: \"na nave era 32 e aqui é 64, porque no Pinta você desenhou o asteroide num quadro maior, no Médio do vetor. Cada folha tem o tamanho que ela tem, e o bloco precisa saber o tamanho certo de cada uma.\"\n\nNão usar o 40 do tamanho visível como se fosse tamanho de quadro.\n\nConferir junto, com o professor olhando a tela e dizendo \"olha comigo se ficou assim\": o `Carregar folha de quadros folha-asteroide da imagem asteroide com quadros de 64 x 64 px` está no **Ao iniciar**, entre o `Animar sprite` da nave e o `Criar grupo de sprites tiros`. A folha da nave continua com 32 por 32, intacta.\n\nO clipe termina na área do jogo sem mudar nada, com as pedras cinzas ainda caindo.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nCaminho travado, medido no código em 20/09/2026: o `Carregar folha de quadros` fica em **Jogo 2D › Sprites › Animação**. O roteiro gravado antigo diz só \"Jogo 2D, Animação\", como se Animação fosse uma parte de primeiro nível, e o trecho precisa ser regravado com os quatro degraus.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"No Ao iniciar há uma folha nova de 64 por 64 para o asteroide, enquanto a folha de 32 por 32 da nave continua? As pedras ainda cinzas são esperadas por enquanto.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
     },
-    "checkpoint": {
-     "prompt": "Onde encaixar o bloco que manda a pedra girar?",
-     "choices": [
-      {
-       "id": "depois-de-criar",
-       "label": "Logo depois do bloco que cria a pedra, dentro do mesmo relógio"
-      },
-      {
-       "id": "ao-iniciar",
-       "label": "Uma vez só, no `Ao iniciar`"
+    {
+      "key": "fala-folha-pronta",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Olhe a área do jogo. Não mudou nada, e é isso mesmo. Esse bloco só deixou a folha do asteroide pronta para ser usada, e quem vai usar ela é um bloco do fim da aula. As pedras que estão caindo aí continuam sendo as cinzas."
       }
-     ],
-     "correctChoiceId": "depois-de-criar",
-     "explanation": "A pedra só existe depois de nascer. O bloco de animar precisa estar logo depois do de criar, dentro do mesmo relógio, para alcançar cada pedra nova. No `Ao iniciar` ele rodaria uma vez, quando ainda não existe pedra nenhuma."
+    },
+    {
+      "key": "fala-relogio-das-pedras",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Desça até a área **Enquanto estiver rodando** e ache o `A cada 40 quadros`, aquele que fica do lado do `A cada quadro do jogo`. Dentro dele tem um `Se` com a pergunta `o estado do jogo é jogando ?`, e dentro desse tem um bloco só, o que começa com `No grupo asteroides criar um asteroide`. É ele que faz uma pedra nova nascer lá em cima de tempos em tempos."
+      }
+    },
+    {
+      "key": "fala-dois-sentidos-de-quadro",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Repare no nome desse relógio. O quadro desse nome conta o tempo do jogo, ele não é o desenho da sua animação: são duas coisas diferentes com o mesmo nome. Essa é a parte mais difícil do dia, e nesta bancada dá para ver os dois relógios rodando ao mesmo tempo."
+      }
+    },
+    {
+      "key": "experimento-dois-relogios",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Dois relógios ao mesmo tempo",
+        "instructions": "Mexa num controle de cada vez e deixe o tempo passar. Olhe quantas pedras nasceram e o número que aparece em cima de cada uma.",
+        "hints": [],
+        "prediction": {
+          "context": {
+            "label": "Os dois relógios da tela",
+            "explanation": "Nesta experiência, um relógio faz nascer uma pedra de tempos em tempos e o outro troca os desenhos de cada pedra. Você mexe num de cada vez e olha o que acontece com o outro."
+          },
+          "prompt": "Se as pedras nascerem mais juntas, o giro de cada uma fica mais rápido?",
+          "choices": [
+            {
+              "id": "continua-igual",
+              "label": "Não, o giro continua igual"
+            },
+            {
+              "id": "fica-mais-rapido",
+              "label": "Fica, porque é o mesmo relógio",
+              "shows": "O giro de cada pedra continuou no mesmo ritmo. O que mudou foi só quantas nasceram."
+            }
+          ],
+          "correctChoiceId": "continua-igual",
+          "revealOn": "more-rocks"
+        },
+        "activity": {
+          "type": "experimentation",
+          "scene": "two-clocks",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "meu-jeito",
+          "setup": {
+            "goals": ["more-rocks", "faster-spin", "each-one"]
+          }
+        },
+        "checkpoint": {
+          "prompt": "Onde encaixar o bloco que manda a pedra girar?",
+          "choices": [
+            {
+              "id": "depois-de-criar",
+              "label": "Logo depois do bloco que cria a pedra, dentro do mesmo relógio"
+            },
+            {
+              "id": "ao-iniciar",
+              "label": "Uma vez só, no `Ao iniciar`"
+            }
+          ],
+          "correctChoiceId": "depois-de-criar",
+          "explanation": "A pedra só existe depois de nascer. O bloco de animar precisa estar logo depois do de criar, dentro do mesmo relógio, para alcançar cada pedra nova. No `Ao iniciar` ele rodaria uma vez, quando ainda não existe pedra nenhuma."
+        }
+      }
+    },
+    {
+      "key": "fala-sem-campo-de-imagem",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Olhe os campos do bloco que cria as pedras hoje: grupo, x, y, tamanho, cor, vx e vy. Não tem campo de imagem. Nenhum. Ele veio do Kit espaço, o mesmo kit de onde veio a nave que você apagou, e ele desenha a pedra cinza dele sozinho. Ele nunca teve onde pôr um desenho."
+      }
+    },
+    {
+      "key": "fala-monta-antes-de-apagar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Então a gente troca ele por outro, igual você fez com a nave. Só que aqui a ordem é ao contrário: primeiro monta o novo, depois apaga o velho. O bloco velho da nave criava o nome `nave`, e por isso os dois não podiam ficar juntos. Este aqui não cria nome nenhum, então os dois convivem um pouquinho."
+      }
+    },
+    {
+      "key": "video-novo-criador",
+      "plannedVideo": "Título: Nove campos, e uma pecinha que muda de lugar\n\nOrigem: video-novo-criador do v6, com o caminho de paleta corrigido e o critério do rótulo no lugar de \"o mais comprido\". Duração alvo: 150 a 175 segundos.\n\nO que passa na tela: a gaveta **Jogo 2D › Grupos › Criar e percorrer**, descendo até o `No grupo criar um sprite chamado em x y largura altura com imagem vx vy`, que é o quarto da gaveta, o bloco reconhecido pelo fim do rótulo, **com imagem**. E, na mesma gaveta, duas acima dele, o segundo da lista, o irmão que termina em **cor**, apontado com o aviso de que ele é quase igual e não tem onde pôr o desenho.\n\nO encaixe: arrastar para dentro do `Se`, logo abaixo do bloco velho, dizendo que os dois vão ficar juntos ali por um tempinho e que isso é de propósito.\n\nDepois os nove campos, um a um: grupo `asteroides`, nome `asteroide`, o x, o y menos 30, largura 40, altura 40, imagem `asteroide`, vx 0 e vy 3. Na hora do y, a razão dele: menos 30 faz a pedra nascer um pouco acima da tela e entrar caindo.\n\nO gesto do meio: arrastar a pecinha `um x aleatório na tela` de dentro do bloco velho para dentro do novo. Arrastar, nunca copiar, e o clipe mostra a peça saindo de um e entrando no outro.\n\nO aviso do efeito colateral, que é obrigação de honestidade e precisa aparecer na gravação, não só na fala: o x do bloco velho ficou sem a pecinha, e soquete vazio vale zero, então as pedras cinzas passam a nascer todas no mesmo ponto, empilhadas num canto. Fica assim mesmo, porque o bloco velho já vai embora.\n\nMostrar a coexistência como etapa de passagem, nunca como resultado a entregar.\n\nPausa falada depois dos nove campos: \"Pause aqui e clique em **Abrir meu Estúdio** para montar o seu. Continue na mesma aba da ferramenta, e quando voltar o resto do clipe mostra o que fazer com o bloco velho.\"\n\nFecho do clipe, executado na tela: o botão direito no bloco velho, o texto do menu lido antes de clicar, do mesmo jeito que na aula passada, o **Apagar este bloco**, e a área do jogo passando a mostrar só as pedras dela.\n\nConferir junto, com o professor olhando a tela e dizendo \"olha comigo se ficou assim\": dentro do `Se`, no `A cada 40 quadros`, existe um criador de asteroides só, o `No grupo asteroides criar um sprite chamado asteroide em x (um x aleatório na tela) y menos 30 largura 40 altura 40 com imagem asteroide vx 0 vy 3`. A pecinha `um x aleatório na tela` está encaixada no x desse bloco novo. O criador que veio do Kit espaço não está mais lá. E na área do jogo caem só as pedras dela, espalhadas pela largura da tela.\n\nSocorro, dito na hora da conferência: se ainda caem pedras cinzas, o criador velho continua ativo. Se as dela nascem todas no mesmo ponto, a pecinha do sorteio ficou no bloco errado.\n\nDois rótulos travados, medidos no código em 20/09/2026. Primeiro, o caminho do bloco central: a narração antiga manda abrir a subcategoria **Muitos**, que **não existe mais**, e o endereço de hoje é **Jogo 2D › Grupos › Criar e percorrer**. Segundo, o bloco de pergunta dentro do `Se`: os roteiros chamam de \"Se a tela atual é jogando\" e o rótulo de hoje é `o estado do jogo é __ ?`. Os dois trechos precisam ser regravados, e a fala não pode ser só relegendada.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"Ao jogar, caem só as suas pedras em posições diferentes pela largura da tela? Se ainda cair a pedra cinza, confira o criador antigo.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-duas-familias",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Olhe a área do jogo. Estão caindo pedras suas, espalhadas, e pedras cinzas, todas amontoadas no mesmo ponto. É assim mesmo por enquanto: são dois criadores montados ao mesmo tempo, cada um criando o dele. E se você reparou que as suas ainda não giram, é isso mesmo: girar é o último passo."
+      }
+    },
+    {
+      "key": "fala-apagar-o-velho",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora clique no bloco velho com o botão direito e escolha **Apagar este bloco**, lendo o texto antes de clicar, do mesmo jeito que você fez na aula passada. Olhe a área do jogo de novo: só as suas."
+      }
+    },
+    {
+      "key": "fala-por-que-logo-abaixo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "O bloco de animar fica logo embaixo do que cria a pedra, porque cada vez que uma pedra nova nasce ele manda ela girar. É para isso que serve o nome que você escreveu no segundo campo do bloco de cima: o bloco de animar precisa de um nome para saber em quem mandar."
+      }
+    },
+    {
+      "key": "video-animar-cada",
+      "plannedVideo": "Título: A pedra rolando e pegando fogo\n\nOrigem: video-animar-cada do v6, mantendo o pico da fala. Duração alvo: 85 a 100 segundos.\n\nComeço, executado na tela: na coluna da esquerda, voltar em **Jogo 2D › Sprites › Animação** e pegar de novo o `Animar sprite com a folha na animação`.\n\nO que passa na tela: o encaixe dentro do mesmo `Se`, logo abaixo do criador novo, os três seletores escolhidos um a um, `asteroide`, `folha-asteroide` e `girando`, e os três números se preenchendo sozinhos, do quadro 0 ao 1 a 8 fps, que são os dois desenhos da pedra rolando e pegando fogo.\n\nSão seis campos e ela mexe em três, todos de escolher. No sprite, `asteroide`. Na folha, mostrar que hoje tem duas na listinha e que a certa é a `folha-asteroide`. Na animação, o botão **Escolher** e a `girando`.\n\nDepois o teste: \"Clique na área do jogo, aperte Enter e jogue um pouco.\"\n\nConferir junto, com o professor olhando a tela e dizendo \"olha comigo se ficou assim\": o `Animar sprite asteroide com a folha folha-asteroide na animação girando, do quadro 0 ao 1 a 8 fps` está logo abaixo do criador novo, dentro do mesmo `Se` e do mesmo relógio. E pelo menos três pedras seguidas nascem já girando.\n\nSocorro, dito na hora da conferência: se a primeira pedra gira e as outras não, o caminho é conferir se o bloco de animar está junto do de criar, dentro do relógio, e não sozinho no **Ao iniciar**.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nManter o pico da fala, que é o melhor momento do curso: essa é a sua nave, com o seu motor, e essas são as suas pedras, girando.\n\nNão abrir aqui tarefa nova de melhorar as artes.\n\nPonto a conferir antes de gravar: a animação `girando` precisa estar com 8 fps na conta de gravação, e a listinha precisa abrir com os dois nomes, `voando` e `girando`.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"Ao jogar, pelo menos três pedras seguidas já nascem girando, enquanto nave, tiros e placar continuam?\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
+    },
+    {
+      "key": "fala-teste-completo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "celebrating",
+        "text": "Jogue uma partida inteira. Confira três coisas: que pelo menos três pedras seguidas nascem girando, que o tiro acerta e o placar sobe, e que quando as vidas acabam a partida termina e dá para começar de novo. O jogo é o mesmo do Desafio, com os mesmos blocos, e agora ele é seu de verdade."
+      }
+    },
+    {
+      "key": "fala-enviar-o-projeto",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Jogue uma partida inteira, perca ou vença, reinicie e confira a partida nova. Só então envie. Espere aparecer **Guardado na sua conta**, escolha a criação na lista e envie ao professor. O envio guarda uma cópia deste momento, e você continua criando no Estúdio."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "fala-editar-desenho",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Se você quiser melhorar um desenho depois, o caminho é o mesmo de sempre: **Mais opções**, **Materiais**, **Imagens**, e no cartão do desenho o **✏️ Editar**, que abre o Pinta naquele desenho. Quando você mexer lá e voltar, o jogo acompanha."
+      }
+    },
+    {
+      "key": "video-fecho-v6",
+      "plannedVideo": "Título: O jogo inteiro com a sua cara\n\nOrigem: video-fecho-v6, com fala nova e um trecho de entrega novo na frente. Duração alvo: 60 a 75 segundos.\n\nO clipe tem duas partes. Primeiro a conferência e o envio, depois o fecho da aula.\n\nParte 1, conferir junto no projeto aberto, com o professor dizendo \"olha comigo se ficou assim\":\n\n- `folha-asteroide` com quadro de 64 por 64, preparada no **Ao iniciar**, com nome diferente do sprite.\n- O criador do Kit espaço saiu, e existe um criador de asteroides só, com o x sorteado, y menos 30, 40 por 40, vx 0 e vy 3, dentro do relógio de 40 quadros e da condição de estar jogando.\n- O bloco de animar logo depois do de criar, no mesmo ramo, com `girando`, do quadro 0 ao 1, a 8 fps.\n- Movimento, tiros, estados, placar, vidas, explosão e reinício continuam funcionando com a arte nova.\n- A colisão real conferida com a arte enviada: o contorno irregular do desenho não quer dizer colisão pixel a pixel.\n\nParte 2, o envio executado na tela: jogar uma partida, perder ou vencer, reiniciar e conferir a partida nova. Só então esperar o **Guardado na sua conta**, escolher a criação e enviar ao professor. Se a criação ainda não estiver na lista, conferir o salvamento e carregar a lista de novo. Dizer que o envio guarda uma cópia daquele momento, e que ela continua criando na ferramenta depois.\n\nParte 3, o fecho. O que passa na tela: o jogo rodando com a nave dela e as pedras dela caindo e girando, e um corte curto nos dois blocos novos dentro do relógio.\n\nFala: \"Tem uma coisa que melhorou hoje sem você pedir. Antes, a pedra cinza e a nave cinza eram atingidas dentro de um retângulo inteiro, com espaço vazio e tudo. Agora que o desenho é seu, o jogo mede pelo que está pintado, então o vazio em volta da sua nave não conta mais como batida. Isso não é perfeito e não segue cada pontinha do desenho, mas ficou bem mais justo do que era. E o que você fez hoje é o que fecha o curso: o jogo é inteiro seu. Na próxima aula ele vai para o Mural.\"\n\nA caixa automática segue os limites do conteúdo opaco. Não prometer precisão pixel a pixel em todos os vazios.\n\nNão abrir tarefa nova no fecho: o caminho de editar desenho já foi dito na aula, como ajuda.\n\nAtualizar a ordem da Aula 8 na fala gravada: publicar vem antes de apresentar outras versões."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O seu asteroide aparece com 40 por 40 no jogo. Que tamanho você escreve nos dois campos da folha?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "64 por 64, o tamanho de cada quadro na folha."
+              },
+              {
+                "id": "b",
+                "label": "40 por 40, copiando o tamanho que ele tem no jogo."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O recorte da folha e o tamanho de exibição são duas escolhas com funções diferentes."
+          },
+          {
+            "id": "q2",
+            "prompt": "Mudar a arte exige remontar o placar?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Sim, a imagem sempre apaga os blocos de pontos."
+              },
+              {
+                "id": "a",
+                "label": "Não, se mantivermos os grupos, nomes e conexões que a lógica usa."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A aparência pode mudar conservando o comportamento. Ainda assim, testar confirma que a troca preservou as referências."
+          }
+        ]
+      }
     }
-   }
-  },
-  {
-   "key": "fala-sem-campo-de-imagem",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Olhe os campos do bloco que cria as pedras hoje: grupo, x, y, tamanho, cor, vx e vy. Não tem campo de imagem. Nenhum. Ele veio do Kit espaço, o mesmo kit de onde veio a nave que você apagou, e ele desenha a pedra cinza dele sozinho. Ele nunca teve onde pôr um desenho."
-   }
-  },
-  {
-   "key": "fala-monta-antes-de-apagar",
-   "content": {
-    "kind": "dialogue",
-    "pose": "thinking",
-    "text": "Então a gente troca ele por outro, igual você fez com a nave. Só que aqui a ordem é ao contrário: primeiro monta o novo, depois apaga o velho. O bloco velho da nave criava o nome `nave`, e por isso os dois não podiam ficar juntos. Este aqui não cria nome nenhum, então os dois convivem um pouquinho."
-   }
-  },
-  {
-   "key": "video-novo-criador",
-   "plannedVideo": "Título: Nove campos, e uma pecinha que muda de lugar\n\nOrigem: video-novo-criador do v6, com o caminho de paleta corrigido e o critério do rótulo no lugar de \"o mais comprido\". Duração alvo: 150 a 175 segundos.\n\nO que passa na tela: a gaveta **Jogo 2D › Grupos › Criar e percorrer**, descendo até o `No grupo criar um sprite chamado em x y largura altura com imagem vx vy`, que é o quarto da gaveta, o bloco reconhecido pelo fim do rótulo, **com imagem**. E, na mesma gaveta, duas acima dele, o segundo da lista, o irmão que termina em **cor**, apontado com o aviso de que ele é quase igual e não tem onde pôr o desenho.\n\nO encaixe: arrastar para dentro do `Se`, logo abaixo do bloco velho, dizendo que os dois vão ficar juntos ali por um tempinho e que isso é de propósito.\n\nDepois os nove campos, um a um: grupo `asteroides`, nome `asteroide`, o x, o y menos 30, largura 40, altura 40, imagem `asteroide`, vx 0 e vy 3. Na hora do y, a razão dele: menos 30 faz a pedra nascer um pouco acima da tela e entrar caindo.\n\nO gesto do meio: arrastar a pecinha `um x aleatório na tela` de dentro do bloco velho para dentro do novo. Arrastar, nunca copiar, e o clipe mostra a peça saindo de um e entrando no outro.\n\nO aviso do efeito colateral, que é obrigação de honestidade e precisa aparecer na gravação, não só na fala: o x do bloco velho ficou sem a pecinha, e soquete vazio vale zero, então as pedras cinzas passam a nascer todas no mesmo ponto, empilhadas num canto. Fica assim mesmo, porque o bloco velho já vai embora.\n\nMostrar a coexistência como etapa de passagem, nunca como resultado a entregar.\n\nPausa falada depois dos nove campos: \"Pause aqui e clique em **Abrir meu Estúdio** para montar o seu. Continue na mesma aba da ferramenta, e quando voltar o resto do clipe mostra o que fazer com o bloco velho.\"\n\nFecho do clipe, executado na tela: o botão direito no bloco velho, o texto do menu lido antes de clicar, do mesmo jeito que na aula passada, o **Apagar este bloco**, e a área do jogo passando a mostrar só as pedras dela.\n\nConferir junto, com o professor olhando a tela e dizendo \"olha comigo se ficou assim\": dentro do `Se`, no `A cada 40 quadros`, existe um criador de asteroides só, o `No grupo asteroides criar um sprite chamado asteroide em x (um x aleatório na tela) y menos 30 largura 40 altura 40 com imagem asteroide vx 0 vy 3`. A pecinha `um x aleatório na tela` está encaixada no x desse bloco novo. O criador que veio do Kit espaço não está mais lá. E na área do jogo caem só as pedras dela, espalhadas pela largura da tela.\n\nSocorro, dito na hora da conferência: se ainda caem pedras cinzas, o criador velho continua ativo. Se as dela nascem todas no mesmo ponto, a pecinha do sorteio ficou no bloco errado.\n\nDois rótulos travados, medidos no código em 20/09/2026. Primeiro, o caminho do bloco central: a narração antiga manda abrir a subcategoria **Muitos**, que **não existe mais**, e o endereço de hoje é **Jogo 2D › Grupos › Criar e percorrer**. Segundo, o bloco de pergunta dentro do `Se`: os roteiros chamam de \"Se a tela atual é jogando\" e o rótulo de hoje é `o estado do jogo é __ ?`. Os dois trechos precisam ser regravados, e a fala não pode ser só relegendada.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"Ao jogar, caem só as suas pedras em posições diferentes pela largura da tela? Se ainda cair a pedra cinza, confira o criador antigo.\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
-  },
-  {
-   "key": "fala-duas-familias",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Olhe a área do jogo. Estão caindo pedras suas, espalhadas, e pedras cinzas, todas amontoadas no mesmo ponto. É assim mesmo por enquanto: são dois criadores montados ao mesmo tempo, cada um criando o dele. E se você reparou que as suas ainda não giram, é isso mesmo: girar é o último passo."
-   }
-  },
-  {
-   "key": "fala-apagar-o-velho",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Agora clique no bloco velho com o botão direito e escolha **Apagar este bloco**, lendo o texto antes de clicar, do mesmo jeito que você fez na aula passada. Olhe a área do jogo de novo: só as suas."
-   }
-  },
-  {
-   "key": "fala-por-que-logo-abaixo",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "O bloco de animar fica logo embaixo do que cria a pedra, porque cada vez que uma pedra nova nasce ele manda ela girar. É para isso que serve o nome que você escreveu no segundo campo do bloco de cima: o bloco de animar precisa de um nome para saber em quem mandar."
-   }
-  },
-  {
-   "key": "video-animar-cada",
-   "plannedVideo": "Título: A pedra rolando e pegando fogo\n\nOrigem: video-animar-cada do v6, mantendo o pico da fala. Duração alvo: 85 a 100 segundos.\n\nComeço, executado na tela: na coluna da esquerda, voltar em **Jogo 2D › Sprites › Animação** e pegar de novo o `Animar sprite com a folha na animação`.\n\nO que passa na tela: o encaixe dentro do mesmo `Se`, logo abaixo do criador novo, os três seletores escolhidos um a um, `asteroide`, `folha-asteroide` e `girando`, e os três números se preenchendo sozinhos, do quadro 0 ao 1 a 8 fps, que são os dois desenhos da pedra rolando e pegando fogo.\n\nSão seis campos e ela mexe em três, todos de escolher. No sprite, `asteroide`. Na folha, mostrar que hoje tem duas na listinha e que a certa é a `folha-asteroide`. Na animação, o botão **Escolher** e a `girando`.\n\nDepois o teste: \"Clique na área do jogo, aperte Enter e jogue um pouco.\"\n\nConferir junto, com o professor olhando a tela e dizendo \"olha comigo se ficou assim\": o `Animar sprite asteroide com a folha folha-asteroide na animação girando, do quadro 0 ao 1 a 8 fps` está logo abaixo do criador novo, dentro do mesmo `Se` e do mesmo relógio. E pelo menos três pedras seguidas nascem já girando.\n\nSocorro, dito na hora da conferência: se a primeira pedra gira e as outras não, o caminho é conferir se o bloco de animar está junto do de criar, dentro do relógio, e não sozinho no **Ao iniciar**.\n\nFecho falado: \"Pause aqui e clique em **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte para esta aba quando terminar.\"\n\nManter o pico da fala, que é o melhor momento do curso: essa é a sua nave, com o seu motor, e essas são as suas pedras, girando.\n\nNão abrir aqui tarefa nova de melhorar as artes.\n\nPonto a conferir antes de gravar: a animação `girando` precisa estar com 8 fps na conta de gravação, e a listinha precisa abrir com os dois nomes, `voando` e `girando`.\n\nFecho de autoconsulta, depois da pausa e do retorno ao vídeo: narrar olhando um resultado comparável na ferramenta: \"Ao jogar, pelo menos três pedras seguidas já nascem girando, enquanto nave, tiros e placar continuam?\" A criança compara no próprio trabalho; assistir ao clipe não aprova automaticamente o desenho ou o jogo."
-  },
-  {
-   "key": "fala-teste-completo",
-   "content": {
-    "kind": "dialogue",
-    "pose": "celebrating",
-    "text": "Jogue uma partida inteira. Confira três coisas: que pelo menos três pedras seguidas nascem girando, que o tiro acerta e o placar sobe, e que quando as vidas acabam a partida termina e dá para começar de novo. O jogo é o mesmo do Desafio, com os mesmos blocos, e agora ele é seu de verdade."
-   }
-  },
-  {
-   "key": "fala-enviar-o-projeto",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Jogue uma partida inteira, perca ou vença, reinicie e confira a partida nova. Só então envie. Espere aparecer **Guardado na sua conta**, escolha a criação na lista e envie ao professor. O envio guarda uma cópia deste momento, e você continua criando no Estúdio."
-   }
-  },
-  {
-   "key": "entrega-galeria-v6",
-   "existing": {
-    "kind": "studio",
-    "index": 0
-   }
-  },
-  {
-   "key": "fala-editar-desenho",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Se você quiser melhorar um desenho depois, o caminho é o mesmo de sempre: **Mais opções**, **Materiais**, **Imagens**, e no cartão do desenho o **✏️ Editar**, que abre o Pinta naquele desenho. Quando você mexer lá e voltar, o jogo acompanha."
-   }
-  },
-  {
-   "key": "video-fecho-v6",
-   "plannedVideo": "Título: O jogo inteiro com a sua cara\n\nOrigem: video-fecho-v6, com fala nova e um trecho de entrega novo na frente. Duração alvo: 60 a 75 segundos.\n\nO clipe tem duas partes. Primeiro a conferência e o envio, depois o fecho da aula.\n\nParte 1, conferir junto no projeto aberto, com o professor dizendo \"olha comigo se ficou assim\":\n\n- `folha-asteroide` com quadro de 64 por 64, preparada no **Ao iniciar**, com nome diferente do sprite.\n- O criador do Kit espaço saiu, e existe um criador de asteroides só, com o x sorteado, y menos 30, 40 por 40, vx 0 e vy 3, dentro do relógio de 40 quadros e da condição de estar jogando.\n- O bloco de animar logo depois do de criar, no mesmo ramo, com `girando`, do quadro 0 ao 1, a 8 fps.\n- Movimento, tiros, estados, placar, vidas, explosão e reinício continuam funcionando com a arte nova.\n- A colisão real conferida com a arte enviada: o contorno irregular do desenho não quer dizer colisão pixel a pixel.\n\nParte 2, o envio executado na tela: jogar uma partida, perder ou vencer, reiniciar e conferir a partida nova. Só então esperar o **Guardado na sua conta**, escolher a criação e enviar ao professor. Se a criação ainda não estiver na lista, conferir o salvamento e carregar a lista de novo. Dizer que o envio guarda uma cópia daquele momento, e que ela continua criando na ferramenta depois.\n\nParte 3, o fecho. O que passa na tela: o jogo rodando com a nave dela e as pedras dela caindo e girando, e um corte curto nos dois blocos novos dentro do relógio.\n\nFala: \"Tem uma coisa que melhorou hoje sem você pedir. Antes, a pedra cinza e a nave cinza eram atingidas dentro de um retângulo inteiro, com espaço vazio e tudo. Agora que o desenho é seu, o jogo mede pelo que está pintado, então o vazio em volta da sua nave não conta mais como batida. Isso não é perfeito e não segue cada pontinha do desenho, mas ficou bem mais justo do que era. E o que você fez hoje é o que fecha o curso: o jogo é inteiro seu. Na próxima aula ele vai para o Mural.\"\n\nA caixa automática segue os limites do conteúdo opaco. Não prometer precisão pixel a pixel em todos os vazios.\n\nNão abrir tarefa nova no fecho: o caminho de editar desenho já foi dito na aula, como ajuda.\n\nAtualizar a ordem da Aula 8 na fala gravada: publicar vem antes de apresentar outras versões."
-  },
-  {
-   "key": "quiz-v6",
-   "content": {
-    "kind": "quiz",
-    "passingScore": 100,
-    "questions": [
-     {
-      "id": "q1",
-      "prompt": "O seu asteroide aparece com 40 por 40 no jogo. Que tamanho você escreve nos dois campos da folha?",
-      "choices": [
-       {
-        "id": "a",
-        "label": "64 por 64, o tamanho de cada quadro na folha."
-       },
-       {
-        "id": "b",
-        "label": "40 por 40, copiando o tamanho que ele tem no jogo."
-       }
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "O que a gente vai fazer hoje",
+      "intent": "presentation",
+      "objective": "Ver o jogo inteiro com as duas artes dela, a nave voando e as pedras caindo e girando, e saber que o dia começa por entender dois relógios.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
+      }
+    },
+    {
+      "key": "folha-asteroide",
+      "title": "Prepare a folha das pedras",
+      "intent": "application",
+      "objective": "Encaixar a segunda folha de quadros no Ao iniciar, com nome próprio e quadro de 64 por 64, e ver as duas folhas convivendo sem a tela mudar.",
+      "blockKeys": ["video-folha-asteroide", "fala-folha-pronta"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-folha-asteroide"]
+      }
+    },
+    {
+      "key": "dois-relogios",
+      "title": "Dois relógios ao mesmo tempo",
+      "intent": "exploration",
+      "objective": "Separar o relógio que faz a pedra nascer do relógio que troca os desenhos dela, e descobrir que cada pedra começa o giro no instante em que nasce.",
+      "blockKeys": [
+        "fala-relogio-das-pedras",
+        "fala-dois-sentidos-de-quadro",
+        "experimento-dois-relogios"
       ],
-      "correctChoiceIds": [
-       "a"
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experimento-dois-relogios"]
+      }
+    },
+    {
+      "key": "novo-criador",
+      "title": "Troque a peça que cria as pedras",
+      "intent": "application",
+      "objective": "Montar o criador que aceita imagem, aproveitar a pecinha do sorteio e só então apagar o do Kit espaço, sabendo por que aqui a ordem é oposta à da aula passada.",
+      "blockKeys": [
+        "fala-sem-campo-de-imagem",
+        "fala-monta-antes-de-apagar",
+        "video-novo-criador",
+        "fala-duas-familias",
+        "fala-apagar-o-velho"
       ],
-      "explanation": "O recorte da folha e o tamanho de exibição são duas escolhas com funções diferentes."
-     },
-     {
-      "id": "q2",
-      "prompt": "Mudar a arte exige remontar o placar?",
-      "choices": [
-       {
-        "id": "b",
-        "label": "Sim, a imagem sempre apaga os blocos de pontos."
-       },
-       {
-        "id": "a",
-        "label": "Não, se mantivermos os grupos, nomes e conexões que a lógica usa."
-       }
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-novo-criador"]
+      }
+    },
+    {
+      "key": "animar-cada",
+      "title": "Faça cada pedra nova já girar",
+      "intent": "application",
+      "objective": "Encaixar o bloco de animar logo depois do de criar, no mesmo ramo, e rodar uma partida inteira com o jogo do Desafio intacto e as duas artes dela.",
+      "blockKeys": ["fala-por-que-logo-abaixo", "video-animar-cada", "fala-teste-completo"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-animar-cada"]
+      }
+    },
+    {
+      "key": "entrega-e-fecho",
+      "title": "Envie, e o que mudou sem você pedir",
+      "intent": "delivery",
+      "objective": "Guardar o marco do curso, saber o caminho de editar um desenho depois e conhecer o ganho de colisão que veio junto, com a ressalva honesta.",
+      "blockKeys": [
+        "fala-enviar-o-projeto",
+        "entrega-galeria-v6",
+        "fala-editar-desenho",
+        "video-fecho-v6",
+        "quiz-v6"
       ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "A aparência pode mudar conservando o comportamento. Ainda assim, testar confirma que a troca preservou as referências."
-     }
-    ]
-   }
-  }
- ],
- "sections": [
-  {
-   "key": "abertura",
-   "title": "O que a gente vai fazer hoje",
-   "intent": "presentation",
-   "objective": "Ver o jogo inteiro com as duas artes dela, a nave voando e as pedras caindo e girando, e saber que o dia começa por entender dois relógios.",
-   "blockKeys": [
-    "video-abertura"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-abertura"
-    ]
-   }
-  },
-  {
-   "key": "folha-asteroide",
-   "title": "Prepare a folha das pedras",
-   "intent": "application",
-   "objective": "Encaixar a segunda folha de quadros no Ao iniciar, com nome próprio e quadro de 64 por 64, e ver as duas folhas convivendo sem a tela mudar.",
-   "blockKeys": [
-    "video-folha-asteroide",
-    "fala-folha-pronta"
-   ],
-   "workspaceKey": null,
-   "externalTool": "estudio",
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-folha-asteroide"
-    ]
-   }
-  },
-  {
-   "key": "dois-relogios",
-   "title": "Dois relógios ao mesmo tempo",
-   "intent": "exploration",
-   "objective": "Separar o relógio que faz a pedra nascer do relógio que troca os desenhos dela, e descobrir que cada pedra começa o giro no instante em que nasce.",
-   "blockKeys": [
-    "fala-relogio-das-pedras",
-    "fala-dois-sentidos-de-quadro",
-    "experimento-dois-relogios"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experimento-dois-relogios"
-    ]
-   }
-  },
-  {
-   "key": "novo-criador",
-   "title": "Troque a peça que cria as pedras",
-   "intent": "application",
-   "objective": "Montar o criador que aceita imagem, aproveitar a pecinha do sorteio e só então apagar o do Kit espaço, sabendo por que aqui a ordem é oposta à da aula passada.",
-   "blockKeys": [
-    "fala-sem-campo-de-imagem",
-    "fala-monta-antes-de-apagar",
-    "video-novo-criador",
-    "fala-duas-familias",
-    "fala-apagar-o-velho"
-   ],
-   "workspaceKey": null,
-   "externalTool": "estudio",
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-novo-criador"
-    ]
-   }
-  },
-  {
-   "key": "animar-cada",
-   "title": "Faça cada pedra nova já girar",
-   "intent": "application",
-   "objective": "Encaixar o bloco de animar logo depois do de criar, no mesmo ramo, e rodar uma partida inteira com o jogo do Desafio intacto e as duas artes dela.",
-   "blockKeys": [
-    "fala-por-que-logo-abaixo",
-    "video-animar-cada",
-    "fala-teste-completo"
-   ],
-   "workspaceKey": null,
-   "externalTool": "estudio",
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-animar-cada"
-    ]
-   }
-  },
-  {
-   "key": "entrega-e-fecho",
-   "title": "Envie, e o que mudou sem você pedir",
-   "intent": "delivery",
-   "objective": "Guardar o marco do curso, saber o caminho de editar um desenho depois e conhecer o ganho de colisão que veio junto, com a ressalva honesta.",
-   "blockKeys": [
-    "fala-enviar-o-projeto",
-    "entrega-galeria-v6",
-    "fala-editar-desenho",
-    "video-fecho-v6",
-    "quiz-v6"
-   ],
-   "workspaceKey": null,
-   "externalTool": "estudio",
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-fecho-v6",
-     "entrega-galeria-v6",
-     "quiz-v6"
-    ]
-   }
-  }
- ]
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-v6", "entrega-galeria-v6", "quiz-v6"]
+      }
+    }
+  ]
 }

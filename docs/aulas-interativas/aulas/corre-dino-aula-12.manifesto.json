@@ -1,518 +1,486 @@
 {
- "version": 4,
- "courseSlug": "corre-dino",
- "lessonSlug": "aula-12",
- "title": "Duas partidas nunca mais iguais",
- "retireBlockKeys": [
-  "video-abertura-editorial",
-  "experiencia-sorteio-controlado",
-  "video-sortear-posicao",
-  "fala-sortear-posicao",
-  "video-menos-corre-mais",
-  "demonstracao-conta-velocidade",
-  "fala-sortear-velocidade",
-  "fala-entrega-editorial",
-  "video-fecho-editorial"
- ],
- "blocks": [
-  {
-   "key": "video-teste-e-envio",
-   "plannedVideo": "Título: Dois sorteios em partidas diferentes\n\nOrigem: novo. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 55 a 70 segundos.\n\nGravação de tela no jogo do fim desta aula, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho do dia. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, nesta ordem:\n\n1. O clique dentro da área do jogo, e uma partida jogada até o fim.\n2. Uma segunda partida e uma terceira, as duas curtas. O relógio não é tocado em nenhum momento.\n3. A borda direita enquadrada nas três partidas, porque é ali que dá para ver que cada cacto entra de um lugar diferente e anda numa velocidade própria.\n4. Um lugar repetido deixado no clipe de propósito, com a fala dizendo que repetir não é erro.\n\nConferir junto, olhando a tela: todo cacto continua nascendo fora do quadro, todo cacto continua andando para a esquerda, e duas partidas seguidas não ficam iguais.\n\nDepois a lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFechar com a recapitulação do dia, que era balão e virou fim de clipe: o seu jogo tem duas coisas sorteadas agora, o lugar onde cada cacto nasce e a velocidade que ele recebe. Você deu uma faixa em vez de um número, e o jogo tira o número na hora.\n\nO gancho da Aula 13 continua em balão, logo abaixo, porque ele não depende de ter acabado de jogar."
-  },
-  {
-   "key": "projeto",
-   "existing": {
-    "kind": "studio",
-    "index": 0
-   }
-  },
-  {
-   "key": "video-padrao-fixo",
-   "plannedVideo": "Título: Dá para decorar o seu jogo\n\nCinco ou seis partidas seguidas, uma atrás da outra, e o percurso é sempre o mesmo. Os cactos vêm nas mesmas distâncias, na mesma ordem, e dá para ver a repetição sem ninguém apontar.\n\nDepois o clipe abre o bloco No grupo criar obstáculo em x tamanho com vx, que mora dentro do A cada 1,4 segundos, e aponta um número de cada vez. O x em 560, sempre 560. O vx em -5, sempre -5. O relógio em 1,4, sempre 1,4.\n\nA fala fecha a conta: mesmo lugar, mesma velocidade, mesmo tempo, e aí é impossível ficar diferente. O jogo está fazendo certinho o que foi mandado, e o que foi mandado é sempre a mesma coisa.\n\nDentro deste mesmo clipe entra a conferência dos dois números canônicos, com fala de conferir e não de afirmar: “olha o vx do seu bloco de criar cacto. Se estiver em menos 5, está certo. Se estiver em outro número, põe menos 5 agora. E olha o relógio: ele tem que estar em 1,4.”\n\nA conferência mora aqui de propósito. A aula 13 parte desses dois números, e a dor é o único momento em que olhar para eles é natural, porque eles são a causa do problema.\n\nTermina com a virada do dia, em afirmação e não em pergunta: o computador faz exatamente o que a gente manda, então a gente vai mandar ele sortear.\n\nFunde video-abertura-editorial e video-padrao-fixo, que hoje contam a mesma história em duas seções: uma promete, a outra mostra. A fala se aproveita, a tela é regravada na edição jogo-2d-1.0-documento-2.\n\nDuração alvo: 60 a 75 segundos."
-  },
-  {
-   "key": "fala-sorteio",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Em vez de dar um número pronto pro jogo, a gente dá uma faixa e deixa ele tirar um número de dentro dela, na hora. É parecido com um saquinho de papelzinho: você escreve os números, põe todos lá dentro e tira um sem olhar. Isso tem nome: sorteio."
-   }
-  },
-  {
-   "key": "experiencia-random",
-   "content": {
-    "kind": "interactive",
-    "title": "Cada cacto pode nascer diferente",
-    "instructions": "Aperte Sortear lugar várias vezes e olhe onde as marquinhas caem na régua. Depois compare as duas raias de velocidade e leia a conta embaixo de cada uma.",
-    "hints": [
-     "A régua mostra onde um cacto pode nascer, depois da borda da tela, que está marcada em 480.",
-     "Aperte Sortear lugar até sair um lugar diferente do primeiro.",
-     "Aperte Sortear lugar mais oito vezes e olhe se alguma marquinha ganha um 2 vezes.",
-     "Nas raias, veja quanto cada cacto andou em 1 segundo e leia a conta embaixo: -5 - 0 e -5 - 1."
-    ],
-    "required": true,
-    "prediction": {
-     "context": {
-      "label": "O sorteio do lugar",
-      "explanation": "A faixa vai de 500 a 560, e cada aperto tira um número de dentro dela. As marquinhas ficam na régua, uma por sorteio."
-     },
-     "prompt": "Sorteando o lugar, dois cactos podem nascer no mesmo ponto?",
-     "choices": [
-      {
-       "id": "podem",
-       "label": "Podem sim"
-      },
-      {
-       "id": "nunca",
-       "label": "Nunca, o sorteio evita repetir",
-       "shows": "Continue apertando e olhe as marquinhas: uma delas vai sair de novo e ganhar um 2 vezes."
-      }
-     ],
-     "correctChoiceId": "podem",
-     "revealOn": "repeat"
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-12",
+  "title": "Duas partidas nunca mais iguais",
+  "retireBlockKeys": [
+    "video-abertura-editorial",
+    "experiencia-sorteio-controlado",
+    "video-sortear-posicao",
+    "fala-sortear-posicao",
+    "video-menos-corre-mais",
+    "demonstracao-conta-velocidade",
+    "fala-sortear-velocidade",
+    "fala-entrega-editorial",
+    "video-fecho-editorial"
+  ],
+  "blocks": [
+    {
+      "key": "video-teste-e-envio",
+      "plannedVideo": "Título: Dois sorteios em partidas diferentes\n\nOrigem: novo. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 55 a 70 segundos.\n\nGravação de tela no jogo do fim desta aula, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho do dia. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, nesta ordem:\n\n1. O clique dentro da área do jogo, e uma partida jogada até o fim.\n2. Uma segunda partida e uma terceira, as duas curtas. O relógio não é tocado em nenhum momento.\n3. A borda direita enquadrada nas três partidas, porque é ali que dá para ver que cada cacto entra de um lugar diferente e anda numa velocidade própria.\n4. Um lugar repetido deixado no clipe de propósito, com a fala dizendo que repetir não é erro.\n\nConferir junto, olhando a tela: todo cacto continua nascendo fora do quadro, todo cacto continua andando para a esquerda, e duas partidas seguidas não ficam iguais.\n\nDepois a lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFechar com a recapitulação do dia, que era balão e virou fim de clipe: o seu jogo tem duas coisas sorteadas agora, o lugar onde cada cacto nasce e a velocidade que ele recebe. Você deu uma faixa em vez de um número, e o jogo tira o número na hora.\n\nO gancho da Aula 13 continua em balão, logo abaixo, porque ele não depende de ter acabado de jogar."
     },
-    "activity": {
-     "type": "experimentation",
-     "scene": "random",
-     "cenario": "corre-dino",
-     "cast": {
-      "obstacle": {
-       "name": "cacto",
-       "gender": "m"
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
       }
-     }
+    },
+    {
+      "key": "video-padrao-fixo",
+      "plannedVideo": "Título: Dá para decorar o seu jogo\n\nCinco ou seis partidas seguidas, uma atrás da outra, e o percurso é sempre o mesmo. Os cactos vêm nas mesmas distâncias, na mesma ordem, e dá para ver a repetição sem ninguém apontar.\n\nDepois o clipe abre o bloco No grupo criar obstáculo em x tamanho com vx, que mora dentro do A cada 1,4 segundos, e aponta um número de cada vez. O x em 560, sempre 560. O vx em -5, sempre -5. O relógio em 1,4, sempre 1,4.\n\nA fala fecha a conta: mesmo lugar, mesma velocidade, mesmo tempo, e aí é impossível ficar diferente. O jogo está fazendo certinho o que foi mandado, e o que foi mandado é sempre a mesma coisa.\n\nDentro deste mesmo clipe entra a conferência dos dois números canônicos, com fala de conferir e não de afirmar: “olha o vx do seu bloco de criar cacto. Se estiver em menos 5, está certo. Se estiver em outro número, põe menos 5 agora. E olha o relógio: ele tem que estar em 1,4.”\n\nA conferência mora aqui de propósito. A aula 13 parte desses dois números, e a dor é o único momento em que olhar para eles é natural, porque eles são a causa do problema.\n\nTermina com a virada do dia, em afirmação e não em pergunta: o computador faz exatamente o que a gente manda, então a gente vai mandar ele sortear.\n\nFunde video-abertura-editorial e video-padrao-fixo, que hoje contam a mesma história em duas seções: uma promete, a outra mostra. A fala se aproveita, a tela é regravada na edição jogo-2d-1.0-documento-2.\n\nDuração alvo: 60 a 75 segundos."
+    },
+    {
+      "key": "fala-sorteio",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em vez de dar um número pronto pro jogo, a gente dá uma faixa e deixa ele tirar um número de dentro dela, na hora. É parecido com um saquinho de papelzinho: você escreve os números, põe todos lá dentro e tira um sem olhar. Isso tem nome: sorteio."
+      }
+    },
+    {
+      "key": "experiencia-random",
+      "content": {
+        "kind": "interactive",
+        "title": "Cada cacto pode nascer diferente",
+        "instructions": "Aperte Sortear lugar várias vezes e olhe onde as marquinhas caem na régua. Depois compare as duas raias de velocidade e leia a conta embaixo de cada uma.",
+        "hints": [
+          "A régua mostra onde um cacto pode nascer, depois da borda da tela, que está marcada em 480.",
+          "Aperte Sortear lugar até sair um lugar diferente do primeiro.",
+          "Aperte Sortear lugar mais oito vezes e olhe se alguma marquinha ganha um 2 vezes.",
+          "Nas raias, veja quanto cada cacto andou em 1 segundo e leia a conta embaixo: -5 - 0 e -5 - 1."
+        ],
+        "required": true,
+        "prediction": {
+          "context": {
+            "label": "O sorteio do lugar",
+            "explanation": "A faixa vai de 500 a 560, e cada aperto tira um número de dentro dela. As marquinhas ficam na régua, uma por sorteio."
+          },
+          "prompt": "Sorteando o lugar, dois cactos podem nascer no mesmo ponto?",
+          "choices": [
+            {
+              "id": "podem",
+              "label": "Podem sim"
+            },
+            {
+              "id": "nunca",
+              "label": "Nunca, o sorteio evita repetir",
+              "shows": "Continue apertando e olhe as marquinhas: uma delas vai sair de novo e ganhar um 2 vezes."
+            }
+          ],
+          "correctChoiceId": "podem",
+          "revealOn": "repeat"
+        },
+        "activity": {
+          "type": "experimentation",
+          "scene": "random",
+          "cenario": "corre-dino",
+          "cast": {
+            "obstacle": {
+              "name": "cacto",
+              "gender": "m"
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "fala-arrastar-por-cima",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Sorteios, Números e posições, pega o bloco um número de a. Ele é um bloco de valor, então você arrasta ele por cima do número que já está lá, igual você fez com o valor da variável na Aula 11."
+      }
+    },
+    {
+      "key": "fala-faixa-do-x",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Arrasta por cima do 560, que é o campo x do bloco No grupo criar obstáculo em x tamanho com vx, lá dentro do relógio de 1,4. Ele tem dois campos, e vêm com 1 e 6, que é a faixa de um dado. Troca por 500 e 560. Os dois são maiores que 480, que é onde a tela acaba. O relógio fica em 1,4, sem tocar nele."
+      }
+    },
+    {
+      "key": "video-sortear-lugar",
+      "plannedVideo": "Título: Um número sorteado, e o ritmo inteiro muda\n\nO gesto de arrastar o um número de a por cima do 560, e a troca dos dois campos de 1 e 6 para 500 e 560. Zoom no bloco montado, com o sorteio encaixado no campo x.\n\nDepois a partida rodando, sem cortes, com os espaços entre os cactos variando de um nascimento para o outro.\n\nA fala guarda a observação boa do trecho gravado, e ela é o conteúdo desta seção: o relógio continua batendo no mesmo compasso, sempre 1,4, mas como o cacto nasce mais longe ou mais perto, ele demora mais ou menos para chegar no dino. Um número sorteado, e o ritmo inteiro do jogo mudou.\n\nUma linha só sobre nascer fora da tela, sem virar assunto: 500 e 560 ficam depois de 480, então todo cacto continua nascendo fora da tela, como desde a aula 5.\n\nVem de video-sortear-posicao. A fala se aproveita, com a correção do endereço da paleta.\n\nCorreção de endereço obrigatória: o bloco se chama um número de a e mora em Jogo 2D, Sorteios, Números e posições. A fala gravada manda ir em Mira e contas, que não existe mais.\n\nDuração alvo: 55 a 65 segundos."
+    },
+    {
+      "key": "fala-conta-matematica",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora a velocidade. Em Programação, Matemática, pega o bloco Conta matemática. Ele é novo. Arrasta ele por cima do -5, que é o campo vx do mesmo bloco de criar cacto."
+      }
+    },
+    {
+      "key": "fala-campos-da-conta",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Esse bloco tem três pedaços: o espaço da esquerda, o sinal do meio e o espaço da direita. O sinal vem no mais, e hoje não é o mais: abre a listinha e escolhe o menos. No espaço da esquerda escreve -5 por cima do número que já está lá. No espaço da direita arrasta outro um número de a, e nele põe 0 e 1."
+      }
+    },
+    {
+      "key": "video-sortear-velocidade",
+      "plannedVideo": "Título: Menos 5, menos um pouquinho\n\nO gesto das três peças: a Conta matemática arrastada por cima do -5, o sinal trocado de mais para menos na listinha, o -5 escrito no espaço da esquerda, e o segundo um número de a encaixado no espaço da direita com 0 e 1.\n\nDepois a leitura da conta em voz alta, com zoom no bloco, que é o que precisa ser levado daqui: menos 5, menos um número sorteado entre 0 e 1. Se sair 0, o cacto anda a -5. Se sair 1, ele anda a -6.\n\nA única remissão da seção, e ela é para trás e para dentro da própria aula: “o de -6 é aquele que chegou mais longe na experiência de hoje.”\n\nTermina com a partida rodando: agora nem o ritmo nem a velocidade dão para decorar.\n\nFunde video-sortear-velocidade e video-menos-corre-mais.\n\nCorte obrigatório: sai da gravação a explicação dos números negativos, o trecho que ensina que tirar 1 de menos 5 dá menos 6 e que menos 6 é mais rápido. Essa explicação passou a ser conteúdo da cena da seção 2, onde as duas raias mostram a distância percorrida e a conta aparece escrita embaixo de cada uma. Narrar de novo aqui seria descrever o que já foi visto acontecendo.\n\nDuração alvo: 60 a 75 segundos."
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Um sorteio pode produzir o mesmo resultado de novo?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Sim, repetir é possível."
+              },
+              {
+                "id": "b",
+                "label": "Não, sorteio nunca repete."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A faixa limita os resultados, e ela não exige que sejam sempre diferentes."
+          },
+          {
+            "id": "q2",
+            "prompt": "Por que os limites do x ficam acima de 480?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Para o cacto virar um ponto no placar."
+              },
+              {
+                "id": "a",
+                "label": "Para o cacto começar fora da tela."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A borda direita do palco está em x 480, então tudo acima disso nasce fora da vista."
+          },
+          {
+            "id": "q3",
+            "prompt": "Quanto dá -5 menos 1?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "-6, que anda mais rápido para a esquerda que -5."
+              },
+              {
+                "id": "b",
+                "label": "-4, que anda mais rápido para a direita."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Tirar 1 deixa a velocidade mais negativa, e mais negativo é mais rápido para a esquerda."
+          }
+        ]
+      }
+    },
+    {
+      "key": "fala-proxima-aula",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Na Aula 13, a última, essa velocidade vai virar um número que muda sozinho enquanto você joga."
+      }
     }
-   }
-  },
-  {
-   "key": "fala-arrastar-por-cima",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Em Jogo 2D, Sorteios, Números e posições, pega o bloco um número de a. Ele é um bloco de valor, então você arrasta ele por cima do número que já está lá, igual você fez com o valor da variável na Aula 11."
-   }
-  },
-  {
-   "key": "fala-faixa-do-x",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Arrasta por cima do 560, que é o campo x do bloco No grupo criar obstáculo em x tamanho com vx, lá dentro do relógio de 1,4. Ele tem dois campos, e vêm com 1 e 6, que é a faixa de um dado. Troca por 500 e 560. Os dois são maiores que 480, que é onde a tela acaba. O relógio fica em 1,4, sem tocar nele."
-   }
-  },
-  {
-   "key": "video-sortear-lugar",
-   "plannedVideo": "Título: Um número sorteado, e o ritmo inteiro muda\n\nO gesto de arrastar o um número de a por cima do 560, e a troca dos dois campos de 1 e 6 para 500 e 560. Zoom no bloco montado, com o sorteio encaixado no campo x.\n\nDepois a partida rodando, sem cortes, com os espaços entre os cactos variando de um nascimento para o outro.\n\nA fala guarda a observação boa do trecho gravado, e ela é o conteúdo desta seção: o relógio continua batendo no mesmo compasso, sempre 1,4, mas como o cacto nasce mais longe ou mais perto, ele demora mais ou menos para chegar no dino. Um número sorteado, e o ritmo inteiro do jogo mudou.\n\nUma linha só sobre nascer fora da tela, sem virar assunto: 500 e 560 ficam depois de 480, então todo cacto continua nascendo fora da tela, como desde a aula 5.\n\nVem de video-sortear-posicao. A fala se aproveita, com a correção do endereço da paleta.\n\nCorreção de endereço obrigatória: o bloco se chama um número de a e mora em Jogo 2D, Sorteios, Números e posições. A fala gravada manda ir em Mira e contas, que não existe mais.\n\nDuração alvo: 55 a 65 segundos."
-  },
-  {
-   "key": "fala-conta-matematica",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Agora a velocidade. Em Programação, Matemática, pega o bloco Conta matemática. Ele é novo. Arrasta ele por cima do -5, que é o campo vx do mesmo bloco de criar cacto."
-   }
-  },
-  {
-   "key": "fala-campos-da-conta",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Esse bloco tem três pedaços: o espaço da esquerda, o sinal do meio e o espaço da direita. O sinal vem no mais, e hoje não é o mais: abre a listinha e escolhe o menos. No espaço da esquerda escreve -5 por cima do número que já está lá. No espaço da direita arrasta outro um número de a, e nele põe 0 e 1."
-   }
-  },
-  {
-   "key": "video-sortear-velocidade",
-   "plannedVideo": "Título: Menos 5, menos um pouquinho\n\nO gesto das três peças: a Conta matemática arrastada por cima do -5, o sinal trocado de mais para menos na listinha, o -5 escrito no espaço da esquerda, e o segundo um número de a encaixado no espaço da direita com 0 e 1.\n\nDepois a leitura da conta em voz alta, com zoom no bloco, que é o que precisa ser levado daqui: menos 5, menos um número sorteado entre 0 e 1. Se sair 0, o cacto anda a -5. Se sair 1, ele anda a -6.\n\nA única remissão da seção, e ela é para trás e para dentro da própria aula: “o de -6 é aquele que chegou mais longe na experiência de hoje.”\n\nTermina com a partida rodando: agora nem o ritmo nem a velocidade dão para decorar.\n\nFunde video-sortear-velocidade e video-menos-corre-mais.\n\nCorte obrigatório: sai da gravação a explicação dos números negativos, o trecho que ensina que tirar 1 de menos 5 dá menos 6 e que menos 6 é mais rápido. Essa explicação passou a ser conteúdo da cena da seção 2, onde as duas raias mostram a distância percorrida e a conta aparece escrita embaixo de cada uma. Narrar de novo aqui seria descrever o que já foi visto acontecendo.\n\nDuração alvo: 60 a 75 segundos."
-  },
-  {
-   "key": "quiz-final",
-   "content": {
-    "kind": "quiz",
-    "passingScore": 100,
-    "questions": [
-     {
-      "id": "q1",
-      "prompt": "Um sorteio pode produzir o mesmo resultado de novo?",
-      "choices": [
-       {
-        "id": "a",
-        "label": "Sim, repetir é possível."
-       },
-       {
-        "id": "b",
-        "label": "Não, sorteio nunca repete."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "A faixa limita os resultados, e ela não exige que sejam sempre diferentes."
-     },
-     {
-      "id": "q2",
-      "prompt": "Por que os limites do x ficam acima de 480?",
-      "choices": [
-       {
-        "id": "b",
-        "label": "Para o cacto virar um ponto no placar."
-       },
-       {
-        "id": "a",
-        "label": "Para o cacto começar fora da tela."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "A borda direita do palco está em x 480, então tudo acima disso nasce fora da vista."
-     },
-     {
-      "id": "q3",
-      "prompt": "Quanto dá -5 menos 1?",
-      "choices": [
-       {
-        "id": "a",
-        "label": "-6, que anda mais rápido para a esquerda que -5."
-       },
-       {
-        "id": "b",
-        "label": "-4, que anda mais rápido para a direita."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "Tirar 1 deixa a velocidade mais negativa, e mais negativo é mais rápido para a esquerda."
-     }
-    ]
-   }
-  },
-  {
-   "key": "fala-proxima-aula",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Na Aula 13, a última, essa velocidade vai virar um número que muda sozinho enquanto você joga."
-   }
-  }
- ],
- "sections": [
-  {
-   "key": "padrao-fixo",
-   "title": "Dá para decorar o seu jogo",
-   "intent": "presentation",
-   "objective": "Ver o percurso se repetir partida após partida, encontrar os três números fixos que causam isso, e conferir o vx em -5 e o relógio em 1,4.",
-   "blockKeys": [
-    "video-padrao-fixo"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-padrao-fixo"
-    ]
-   }
-  },
-  {
-   "key": "sorteio-tira-na-hora",
-   "title": "O sorteio tira o número na hora",
-   "intent": "exploration",
-   "objective": "Sentir o que sai de uma faixa, descobrir que o sorteio pode repetir, e ver que o cacto de -6 chega mais longe que o de -5.",
-   "blockKeys": [
-    "fala-sorteio",
-    "experiencia-random"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experiencia-random"
-    ]
-   }
-  },
-  {
-   "key": "lugar-diferente",
-   "title": "Cada cacto nasce num lugar diferente",
-   "intent": "application",
-   "objective": "Encaixar o sorteio no campo x do nascimento e ver o espaço entre os cactos mudar sem o relógio mudar.",
-   "blockKeys": [
-    "fala-arrastar-por-cima",
-    "fala-faixa-do-x",
-    "video-sortear-lugar"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "sortear-x",
-      "label": "No x do cacto, encaixe um número de 500 a 560.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "area": "loops",
-       "withinBlock": "sz_g2d_every_seconds",
-       "fields": {
-        "GROUP": "cactos"
-       },
-       "inputBlocks": {
-        "X": {
-         "blockType": "sz_g2d_random_between",
-         "inputs": {
-          "MIN": 500,
-          "MAX": 560
-         }
-        }
-       }
+  ],
+  "sections": [
+    {
+      "key": "padrao-fixo",
+      "title": "Dá para decorar o seu jogo",
+      "intent": "presentation",
+      "objective": "Ver o percurso se repetir partida após partida, encontrar os três números fixos que causam isso, e conferir o vx em -5 e o relógio em 1,4.",
+      "blockKeys": ["video-padrao-fixo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-padrao-fixo"]
       }
-     },
-     {
-      "id": "relogio-nascimento",
-      "label": "Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_every_seconds",
-       "area": "loops",
-       "inputs": {
-        "SECS": 1.4
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "jogando"
-           }
+    },
+    {
+      "key": "sorteio-tira-na-hora",
+      "title": "O sorteio tira o número na hora",
+      "intent": "exploration",
+      "objective": "Sentir o que sai de uma faixa, descobrir que o sorteio pode repetir, e ver que o cacto de -6 chega mais longe que o de -5.",
+      "blockKeys": ["fala-sorteio", "experiencia-random"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-random"]
+      }
+    },
+    {
+      "key": "lugar-diferente",
+      "title": "Cada cacto nasce num lugar diferente",
+      "intent": "application",
+      "objective": "Encaixar o sorteio no campo x do nascimento e ver o espaço entre os cactos mudar sem o relógio mudar.",
+      "blockKeys": ["fala-arrastar-por-cima", "fala-faixa-do-x", "video-sortear-lugar"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "sortear-x",
+            "label": "No x do cacto, encaixe um número de 500 a 560.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_between",
+                  "inputs": {
+                    "MIN": 500,
+                    "MAX": 560
+                  }
+                }
+              }
+            }
           },
-          "THEN": {
-           "blockType": "sz_g2d_spawn_obstacle",
-           "fields": {
-            "GROUP": "cactos"
-           }
-          }
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "cacto-unico",
-      "label": "Use um único bloco de criar cacto no projeto inteiro.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "count": 1
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "velocidade-propria",
-   "title": "Cada cacto ganha a sua velocidade",
-   "intent": "application",
-   "objective": "Montar a Conta matemática no campo vx, com -5 de um lado e um sorteio de 0 a 1 do outro, e ler a conta em voz alta.",
-   "blockKeys": [
-    "fala-conta-matematica",
-    "fala-campos-da-conta",
-    "video-sortear-velocidade"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "sortear-x",
-      "label": "No x do cacto, encaixe um número de 500 a 560.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "area": "loops",
-       "withinBlock": "sz_g2d_every_seconds",
-       "fields": {
-        "GROUP": "cactos"
-       },
-       "inputBlocks": {
-        "X": {
-         "blockType": "sz_g2d_random_between",
-         "inputs": {
-          "MIN": 500,
-          "MAX": 560
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "sortear-v",
-      "label": "Na velocidade do cacto, use -5 menos um número de 0 a 1.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "area": "loops",
-       "withinBlock": "sz_g2d_every_seconds",
-       "inputBlocks": {
-        "VX": {
-         "blockType": "sz_math_arithmetic",
-         "fields": {
-          "OP": "-"
-         },
-         "inputs": {
-          "A": -5
-         },
-         "inputBlocks": {
-          "B": {
-           "blockType": "sz_g2d_random_between",
-           "inputs": {
-            "MIN": 0,
-            "MAX": 1
-           }
-          }
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "cacto-unico",
-      "label": "Use um único bloco de criar cacto no projeto inteiro.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "count": 1
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "teste-e-duas-ideias",
-   "title": "Teste, entregue e guarde as duas ideias",
-   "intent": "delivery",
-   "objective": "Jogar algumas partidas e conferir os dois sorteios, entregar o projeto, e guardar o que a Aula 13 vai usar.",
-   "blockKeys": [
-    "video-teste-e-envio",
-    "fala-proxima-aula",
-    "quiz-final",
-    "projeto"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-teste-e-envio",
-     "projeto",
-     "quiz-final"
-    ],
-    "projectChecks": [
-     {
-      "id": "sortear-x",
-      "label": "No x do cacto, encaixe um número de 500 a 560.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "area": "loops",
-       "withinBlock": "sz_g2d_every_seconds",
-       "fields": {
-        "GROUP": "cactos"
-       },
-       "inputBlocks": {
-        "X": {
-         "blockType": "sz_g2d_random_between",
-         "inputs": {
-          "MIN": 500,
-          "MAX": 560
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "sortear-v",
-      "label": "Na velocidade do cacto, use -5 menos um número de 0 a 1.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "area": "loops",
-       "withinBlock": "sz_g2d_every_seconds",
-       "inputBlocks": {
-        "VX": {
-         "blockType": "sz_math_arithmetic",
-         "fields": {
-          "OP": "-"
-         },
-         "inputs": {
-          "A": -5
-         },
-         "inputBlocks": {
-          "B": {
-           "blockType": "sz_g2d_random_between",
-           "inputs": {
-            "MIN": 0,
-            "MAX": 1
-           }
-          }
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "relogio-nascimento",
-      "label": "Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_every_seconds",
-       "area": "loops",
-       "inputs": {
-        "SECS": 1.4
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "jogando"
-           }
+          {
+            "id": "relogio-nascimento",
+            "label": "Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_obstacle",
+                      "fields": {
+                        "GROUP": "cactos"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
-          "THEN": {
-           "blockType": "sz_g2d_spawn_obstacle",
-           "fields": {
-            "GROUP": "cactos"
-           }
+          {
+            "id": "cacto-unico",
+            "label": "Use um único bloco de criar cacto no projeto inteiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "count": 1
+            }
           }
-         }
-        }
-       }
+        ]
       }
-     },
-     {
-      "id": "cacto-unico",
-      "label": "Use um único bloco de criar cacto no projeto inteiro.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "count": 1
+    },
+    {
+      "key": "velocidade-propria",
+      "title": "Cada cacto ganha a sua velocidade",
+      "intent": "application",
+      "objective": "Montar a Conta matemática no campo vx, com -5 de um lado e um sorteio de 0 a 1 do outro, e ler a conta em voz alta.",
+      "blockKeys": ["fala-conta-matematica", "fala-campos-da-conta", "video-sortear-velocidade"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "sortear-x",
+            "label": "No x do cacto, encaixe um número de 500 a 560.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_between",
+                  "inputs": {
+                    "MIN": 500,
+                    "MAX": 560
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sortear-v",
+            "label": "Na velocidade do cacto, use -5 menos um número de 0 a 1.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "inputBlocks": {
+                "VX": {
+                  "blockType": "sz_math_arithmetic",
+                  "fields": {
+                    "OP": "-"
+                  },
+                  "inputs": {
+                    "A": -5
+                  },
+                  "inputBlocks": {
+                    "B": {
+                      "blockType": "sz_g2d_random_between",
+                      "inputs": {
+                        "MIN": 0,
+                        "MAX": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "cacto-unico",
+            "label": "Use um único bloco de criar cacto no projeto inteiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "count": 1
+            }
+          }
+        ]
       }
-     }
-    ]
-   }
-  }
- ]
+    },
+    {
+      "key": "teste-e-duas-ideias",
+      "title": "Teste, entregue e guarde as duas ideias",
+      "intent": "delivery",
+      "objective": "Jogar algumas partidas e conferir os dois sorteios, entregar o projeto, e guardar o que a Aula 13 vai usar.",
+      "blockKeys": ["video-teste-e-envio", "fala-proxima-aula", "quiz-final", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-teste-e-envio", "projeto", "quiz-final"],
+        "projectChecks": [
+          {
+            "id": "sortear-x",
+            "label": "No x do cacto, encaixe um número de 500 a 560.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_between",
+                  "inputs": {
+                    "MIN": 500,
+                    "MAX": 560
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sortear-v",
+            "label": "Na velocidade do cacto, use -5 menos um número de 0 a 1.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "inputBlocks": {
+                "VX": {
+                  "blockType": "sz_math_arithmetic",
+                  "fields": {
+                    "OP": "-"
+                  },
+                  "inputs": {
+                    "A": -5
+                  },
+                  "inputBlocks": {
+                    "B": {
+                      "blockType": "sz_g2d_random_between",
+                      "inputs": {
+                        "MIN": 0,
+                        "MAX": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "relogio-nascimento",
+            "label": "Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_obstacle",
+                      "fields": {
+                        "GROUP": "cactos"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "cacto-unico",
+            "label": "Use um único bloco de criar cacto no projeto inteiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "count": 1
+            }
+          }
+        ]
+      }
+    }
+  ]
 }

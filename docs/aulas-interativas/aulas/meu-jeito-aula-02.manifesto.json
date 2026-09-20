@@ -259,11 +259,7 @@
       "title": "Abra o Pinta e prepare a tela da sua nave",
       "intent": "application",
       "objective": "Responder as quatro perguntas do assistente e abrir o desenho nave em pixel art, Personagem, 32 × 32.",
-      "blockKeys": [
-        "fala-novo-desenho",
-        "fala-tamanho-e-nome",
-        "video-novo-desenho"
-      ],
+      "blockKeys": ["fala-novo-desenho", "fala-tamanho-e-nome", "video-novo-desenho"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
@@ -291,11 +287,7 @@
       "title": "O contorno da sua nave, e o espaço do motor",
       "intent": "application",
       "objective": "Fechar a silhueta da nave com a Linha e o espelho, e reservar cerca de quatro fileiras livres embaixo para o motor da próxima aula.",
-      "blockKeys": [
-        "fala-contorno",
-        "fala-espaco-do-motor",
-        "video-contorno"
-      ],
+      "blockKeys": ["fala-contorno", "fala-espaco-do-motor", "video-contorno"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
@@ -309,11 +301,7 @@
       "title": "Pinte o corpo, a cabine e os detalhes",
       "intent": "application",
       "objective": "Preencher as áreas fechadas com o Balde, distinguir a cabine e acrescentar um ou dois detalhes pequenos com o Lápis.",
-      "blockKeys": [
-        "fala-cor-base",
-        "fala-cabine-e-detalhes",
-        "video-cor-base"
-      ],
+      "blockKeys": ["fala-cor-base", "fala-cabine-e-detalhes", "video-cor-base"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],

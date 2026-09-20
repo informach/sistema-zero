@@ -1,650 +1,605 @@
 {
- "version": 4,
- "courseSlug": "corre-dino",
- "lessonSlug": "aula-02",
- "title": "O Dino aparece e a floresta passa",
- "retireBlockKeys": [
-  "abertura",
-  "explicacao",
-  "construir-1",
-  "construir-2",
-  "construir-3",
-  "convite-construir-1",
-  "fechamento",
-  "video-missao",
-  "descoberta",
-  "video-construir-1-1",
-  "video-construir-2-1",
-  "video-construir-3-1",
-  "zappy-construir-1",
-  "zappy-construir-2",
-  "zappy-construir-3",
-  "zappy-convite-construir-1",
-  "video-entrega",
-  "zappy-entrega",
-  "zappy-revisao",
-  "video-abertura-editorial",
-  "video-quadros",
-  "video-motor",
-  "video-primeiro-desenho",
-  "fala-primeiro-desenho",
-  "video-limpeza",
-  "fala-limpeza",
-  "fala-entrega-editorial",
-  "video-fecho-editorial"
- ],
- "blocks": [
-  {
-   "key": "video-abertura",
-   "plannedVideo": "Título: Hoje o seu dino aparece\n\nPonte nova, tela regravada. Abrir no projeto dela como ficou ontem: a telinha com a cor dela, a borda em volta e nada na tela.\n\nFala: ontem o seu dinossauro foi criado e não apareceu. Hoje ele aparece, começa a correr, e ganha uma floresta passando atrás dele.\n\nRetomar a pergunta que ficou aberta no fim da Aula 1, com as mesmas palavras, para a criança reconhecer.\n\nOrigem: video-abertura-editorial. Duração alvo: 20 a 30 segundos."
-  },
-  {
-   "key": "video-livrinho",
-   "plannedVideo": "Título: Cada página é um desenho\n\nA analogia do livrinho de folhear, que já está gravada e é excelente. Cada página é um desenho um tiquinho diferente da anterior. Um jogo é um filme que vai sendo desenhado na hora, uma página de cada vez. E cada uma dessas páginas tem um nome: quadro.\n\nEncurtar o final, que hoje repete o mesmo conceito em três frases. A bancada da mesma seção continua dali, então o clipe entrega a palavra quadro e para.\n\nOrigem: video-quadros. Duração alvo: 35 a 45 segundos."
-  },
-  {
-   "key": "experiencia-laco",
-   "content": {
-    "kind": "interactive",
-    "required": true,
-    "title": "Por que o desenho se repete",
-    "instructions": "Com o Dino na tela, desenha só no começo, sem limpar, e aperta Avançar 1 quadro. Depois desenha o Dino a cada quadro e olha o rastro. Por último, liga o Limpar a tela antes.",
-    "hints": [],
-    "activity": {
-     "type": "experimentation",
-     "scene": "draw-loop",
-     "cenario": "corre-dino"
-    }
-   }
-  },
-  {
-   "key": "fala-motor",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Em Áreas do projeto, pega o Enquanto estiver rodando e solta ao lado do Ao iniciar, com um espacinho entre os dois. Elas ficam lado a lado, nunca uma dentro da outra. Depois, em Jogo 2D, Tempo, Quadros e intervalos, pega o A cada quadro do jogo e arrasta para dentro do Enquanto estiver rodando, que está vazio."
-   }
-  },
-  {
-   "key": "fala-desenhar",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Agora, em Jogo 2D, Sprites, Criar e trocar aparência, pega o Desenhar o sprite __ e encaixa dentro do A cada quadro do jogo, que está vazio. O campo nasce escrito jogador: clica nele, abre a listinha com os sprites que existem no seu jogo, e escolhe o dino."
-   }
-  },
-  {
-   "key": "video-motor-e-dino",
-   "plannedVideo": "Título: O motor liga e o Dino aparece\n\nFusão de dois clipes de hoje. Tela regravada no Estúdio atual.\n\nPrimeira metade: o gesto de soltar o Enquanto estiver rodando ao lado do Ao iniciar, com o espacinho entre as duas, e o encaixe do A cada quadro do jogo dentro dela. Dizer o nome o loop ali, na hora em que o contêiner fica pronto.\n\nSegunda metade: o Desenhar o sprite, o seletor aberto mostrando a listinha de sprites do jogo, a escolha do dino, e o Dino aparecendo na área do jogo.\n\nRetomar a pergunta do fim da Aula 1 no instante em que ele aparece: cadê o Dino. Está aí.\n\nCortar o parágrafo sobre nomes diferentes de sprite. A trilha guiada usa dino.\n\nOrigem: video-motor mais video-primeiro-desenho. Duração alvo: 75 a 90 segundos."
-  },
-  {
-   "key": "fala-limpar",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Chega perto da área do jogo e olha as perninhas dele correndo. Sobra um rastrinho, como se ficasse um restinho da perna de antes. É porque ninguém está apagando o desenho do quadro anterior. Em Jogo 2D, Desenho e efeitos, Efeitos, pega o Limpar a tela e encaixa dentro do A cada quadro do jogo, logo acima do Desenhar o sprite dino."
-   }
-  },
-  {
-   "key": "video-limpar-a-tela",
-   "plannedVideo": "Título: Limpar antes de desenhar\n\nZoom nas perninhas antes e depois do Limpar a tela. Manter o rastro sutil e não fabricar um borrão enorme, porque neste jogo o borrão clássico não acontece.\n\nManter a explicação honesta que já está gravada: daqui a pouco a floresta entra e pinta a tela inteira a cada quadro, então o Limpar a tela quase não vai fazer diferença neste jogo. Ele fica mesmo assim, porque nem todo jogo tem um fundo que pinta a tela toda, e o hábito é limpar primeiro.\n\nOrigem: video-limpeza, fala encurtada. Duração alvo: 45 a 55 segundos."
-  },
-  {
-   "key": "fala-um-dino-so",
-   "content": {
-    "kind": "dialogue",
-    "pose": "thinking",
-    "text": "Olha o seu projeto inteiro agora. O Criar dinossauro está no Ao iniciar, e o Desenhar o sprite dino está no motor. Quer dizer que o jogo está fazendo um dinossauro novo sessenta vezes por segundo? Vem ver."
-   }
-  },
-  {
-   "key": "experiencia-uma-vez-e-sempre",
-   "content": {
-    "kind": "interactive",
-    "required": true,
-    "title": "Uma vez e sempre",
-    "instructions": "Põe Criar o Dino em Ao iniciar e avança três quadros. Depois põe Mover o Dino um pouquinho em Enquanto estiver rodando e avança três quadros. Por último, deixa uma ficha em cada caixa e avança cinco quadros, olhando o contador de cada ficha.",
-    "hints": [],
-    "activity": {
-     "type": "experimentation",
-     "scene": "once-vs-always",
-     "cenario": "corre-dino",
-     "setup": {
-      "preset": {
-       "id": "duas-caixas-dino",
-       "areas": [
-        "start",
-        "loop"
-       ],
-       "cards": [
-        {
-         "id": "paint",
-         "kind": "paint",
-         "label": "Pintar o fundo"
-        },
-        {
-         "id": "create",
-         "kind": "create",
-         "label": "Criar o Dino"
-        },
-        {
-         "id": "move",
-         "kind": "move",
-         "label": "Mover o Dino um pouquinho"
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-02",
+  "title": "O Dino aparece e a floresta passa",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "construir-3",
+    "convite-construir-1",
+    "fechamento",
+    "video-missao",
+    "descoberta",
+    "video-construir-1-1",
+    "video-construir-2-1",
+    "video-construir-3-1",
+    "zappy-construir-1",
+    "zappy-construir-2",
+    "zappy-construir-3",
+    "zappy-convite-construir-1",
+    "video-entrega",
+    "zappy-entrega",
+    "zappy-revisao",
+    "video-abertura-editorial",
+    "video-quadros",
+    "video-motor",
+    "video-primeiro-desenho",
+    "fala-primeiro-desenho",
+    "video-limpeza",
+    "fala-limpeza",
+    "fala-entrega-editorial",
+    "video-fecho-editorial"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: Hoje o seu dino aparece\n\nPonte nova, tela regravada. Abrir no projeto dela como ficou ontem: a telinha com a cor dela, a borda em volta e nada na tela.\n\nFala: ontem o seu dinossauro foi criado e não apareceu. Hoje ele aparece, começa a correr, e ganha uma floresta passando atrás dele.\n\nRetomar a pergunta que ficou aberta no fim da Aula 1, com as mesmas palavras, para a criança reconhecer.\n\nOrigem: video-abertura-editorial. Duração alvo: 20 a 30 segundos."
+    },
+    {
+      "key": "video-livrinho",
+      "plannedVideo": "Título: Cada página é um desenho\n\nA analogia do livrinho de folhear, que já está gravada e é excelente. Cada página é um desenho um tiquinho diferente da anterior. Um jogo é um filme que vai sendo desenhado na hora, uma página de cada vez. E cada uma dessas páginas tem um nome: quadro.\n\nEncurtar o final, que hoje repete o mesmo conceito em três frases. A bancada da mesma seção continua dali, então o clipe entrega a palavra quadro e para.\n\nOrigem: video-quadros. Duração alvo: 35 a 45 segundos."
+    },
+    {
+      "key": "experiencia-laco",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Por que o desenho se repete",
+        "instructions": "Com o Dino na tela, desenha só no começo, sem limpar, e aperta Avançar 1 quadro. Depois desenha o Dino a cada quadro e olha o rastro. Por último, liga o Limpar a tela antes.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "draw-loop",
+          "cenario": "corre-dino"
         }
-       ]
       }
-     }
+    },
+    {
+      "key": "fala-motor",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Áreas do projeto, pega o Enquanto estiver rodando e solta ao lado do Ao iniciar, com um espacinho entre os dois. Elas ficam lado a lado, nunca uma dentro da outra. Depois, em Jogo 2D, Tempo, Quadros e intervalos, pega o A cada quadro do jogo e arrasta para dentro do Enquanto estiver rodando, que está vazio."
+      }
+    },
+    {
+      "key": "fala-desenhar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora, em Jogo 2D, Sprites, Criar e trocar aparência, pega o Desenhar o sprite __ e encaixa dentro do A cada quadro do jogo, que está vazio. O campo nasce escrito jogador: clica nele, abre a listinha com os sprites que existem no seu jogo, e escolhe o dino."
+      }
+    },
+    {
+      "key": "video-motor-e-dino",
+      "plannedVideo": "Título: O motor liga e o Dino aparece\n\nFusão de dois clipes de hoje. Tela regravada no Estúdio atual.\n\nPrimeira metade: o gesto de soltar o Enquanto estiver rodando ao lado do Ao iniciar, com o espacinho entre as duas, e o encaixe do A cada quadro do jogo dentro dela. Dizer o nome o loop ali, na hora em que o contêiner fica pronto.\n\nSegunda metade: o Desenhar o sprite, o seletor aberto mostrando a listinha de sprites do jogo, a escolha do dino, e o Dino aparecendo na área do jogo.\n\nRetomar a pergunta do fim da Aula 1 no instante em que ele aparece: cadê o Dino. Está aí.\n\nCortar o parágrafo sobre nomes diferentes de sprite. A trilha guiada usa dino.\n\nOrigem: video-motor mais video-primeiro-desenho. Duração alvo: 75 a 90 segundos."
+    },
+    {
+      "key": "fala-limpar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Chega perto da área do jogo e olha as perninhas dele correndo. Sobra um rastrinho, como se ficasse um restinho da perna de antes. É porque ninguém está apagando o desenho do quadro anterior. Em Jogo 2D, Desenho e efeitos, Efeitos, pega o Limpar a tela e encaixa dentro do A cada quadro do jogo, logo acima do Desenhar o sprite dino."
+      }
+    },
+    {
+      "key": "video-limpar-a-tela",
+      "plannedVideo": "Título: Limpar antes de desenhar\n\nZoom nas perninhas antes e depois do Limpar a tela. Manter o rastro sutil e não fabricar um borrão enorme, porque neste jogo o borrão clássico não acontece.\n\nManter a explicação honesta que já está gravada: daqui a pouco a floresta entra e pinta a tela inteira a cada quadro, então o Limpar a tela quase não vai fazer diferença neste jogo. Ele fica mesmo assim, porque nem todo jogo tem um fundo que pinta a tela toda, e o hábito é limpar primeiro.\n\nOrigem: video-limpeza, fala encurtada. Duração alvo: 45 a 55 segundos."
+    },
+    {
+      "key": "fala-um-dino-so",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Olha o seu projeto inteiro agora. O Criar dinossauro está no Ao iniciar, e o Desenhar o sprite dino está no motor. Quer dizer que o jogo está fazendo um dinossauro novo sessenta vezes por segundo? Vem ver."
+      }
+    },
+    {
+      "key": "experiencia-uma-vez-e-sempre",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Uma vez e sempre",
+        "instructions": "Põe Criar o Dino em Ao iniciar e avança três quadros. Depois põe Mover o Dino um pouquinho em Enquanto estiver rodando e avança três quadros. Por último, deixa uma ficha em cada caixa e avança cinco quadros, olhando o contador de cada ficha.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "once-vs-always",
+          "cenario": "corre-dino",
+          "setup": {
+            "preset": {
+              "id": "duas-caixas-dino",
+              "areas": ["start", "loop"],
+              "cards": [
+                {
+                  "id": "paint",
+                  "kind": "paint",
+                  "label": "Pintar o fundo"
+                },
+                {
+                  "id": "create",
+                  "kind": "create",
+                  "label": "Criar o Dino"
+                },
+                {
+                  "id": "move",
+                  "kind": "move",
+                  "label": "Mover o Dino um pouquinho"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "key": "fala-floresta",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Falta a floresta. Em Jogo 2D, Cenários, Fundos, pega o Desenhar fundo de floresta (velocidade __) e encaixa dentro do A cada quadro do jogo, logo abaixo do Desenhar o sprite dino. Eu vou te pedir para encaixar bem aí, de propósito. A velocidade nasce 4, troca por 5. Agora olha a área do jogo."
+      }
+    },
+    {
+      "key": "video-floresta-cobre",
+      "plannedVideo": "Título: Cadê o dino?\n\nO encaixe da floresta por último, a troca da velocidade de 4 para 5, e o Dino sumindo da tela.\n\nParar antes da explicação e antes do conserto, como a orientação de hoje já manda. Terminar na pergunta: cadê o dino, ele estava aí agorinha.\n\nA criança monta a ordem errada no projeto dela, de propósito, porque encaixar por último é o que ela faria sozinha. Não substituir por exemplo assistido.\n\nOrigem: video-floresta-cobre. Duração alvo: 30 a 40 segundos."
+    },
+    {
+      "key": "fala-quem-fica-na-frente",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "O Dino não sumiu. Ele ficou atrás. Nesta bancada dá para testar a causa sem mexer no seu jogo: muda a ordem de desenhar e vê quem fica na frente."
+      }
+    },
+    {
+      "key": "experiencia-camadas",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Quem fica na frente?",
+        "instructions": "O Dino está escondido atrás da floresta. Muda a ordem de desenhar e descobre quem fica na frente. Só a ordem muda.",
+        "hints": [
+          "O Dino está atrás da floresta. Onde fica a floresta na lista?",
+          "Leve o Dino para o fim da lista. Depois esconda o Dino de novo, só mudando a ordem.",
+          "No fim, deixe o Dino no fim da lista, como fica no jogo."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "layers",
+          "cenario": "corre-dino"
+        }
+      }
+    },
+    {
+      "key": "fala-ordem-certa",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora arruma a ordem no seu jogo. Arrasta a floresta para o meio, entre o Limpar a tela e o Desenhar o sprite dino. Arrasta mesmo, não copia: copiar deixa duas florestas rodando ao mesmo tempo. E isso que você acabou de arrumar tem um nome que quem faz jogo usa: camadas. Quem é desenhado depois fica por cima."
+      }
+    },
+    {
+      "key": "video-ordem-certa",
+      "plannedVideo": "Título: Quem é desenhado depois fica por cima\n\nO gesto do arraste da floresta para o meio da pilha, entre o Limpar a tela e o Desenhar o sprite dino, e a ordem final à vista.\n\nMostrar que é arraste e não cópia, porque cópia deixa duas florestas rodando.\n\nManter a observação de que a floresta pinta só o que está dentro da borda e para certinho onde a telinha termina. É ela que prepara a seção seguinte.\n\nOrigem: video-ordem-certa. Duração alvo: 30 a 40 segundos."
+    },
+    {
+      "key": "fala-retirar-borda",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "A borda já fez o trabalho dela: agora é a própria floresta que mostra onde a telinha começa e termina. Vamos tirar ela, e no caminho você aprende duas coisas do Estúdio que valem o curso inteiro."
+      }
+    },
+    {
+      "key": "video-retirar-borda",
+      "plannedVideo": "Título: Tirar uma peça sem derrubar as outras\n\nTela regravada com o rótulo atual do menu.\n\nPrimeiro, arrastar a borda para a lixeira do jeito normal e mostrar os dois blocos indo junto, porque quando você arrasta um bloco todos os que estão embaixo dele vêm junto. São dois porque a Aula 1 deixa a borda no meio da pilha, com a criação do Dino abaixo dela.\n\nDepois Ctrl+Z, e os dois voltam.\n\nDepois o botão direito no Mostrar a borda da tela, o menu aberto, e Apagar este bloco: só ele sai e a pilha se fecha sozinha. O rótulo do menu é exatamente Apagar este bloco, e neste curso é sempre esse texto.\n\nComplementar com a forma de abrir o menu em tela de toque, usando o gesto do Estúdio atual.\n\nOrigem: video-retirar-borda. Duração alvo: 55 a 65 segundos."
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-fecho",
+      "plannedVideo": "Título: O motor e as camadas\n\nEste clipe passou a abrir com o teste e o envio, e a recapitulação ficou para o fim dele. Absorve o balão de conferência que vivia na entrega, porque balão depois da ferramenta não existe para quem está com o Estúdio aberto do lado.\n\nO que passa na tela, nesta ordem:\n\n1. A área do jogo enquadrada, com o jogo rodando: o Dino na frente da floresta, com as perninhas correndo.\n2. A conferência dita em voz alta: o Dino fica no mesmo lugar, e quem passa é a floresta.\n3. A lista de objetivos conferida, um por um.\n4. O gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nSó então a recapitulação do dia: você ligou o motor do jogo, encheu ele de desenho e descobriu que quem é desenhado depois fica por cima.\n\nAproveitar a ilusão de movimento no fechamento, com o Dino correndo na frente da floresta.\n\nRetirar o convite a brincar com as velocidades 2 e 9 e manter o 5, como a orientação de edição já pede.\n\nGancho da Aula 3: na próxima aula o seu dino ganha um poder novo, o pulo. Terminar indicando o quiz, sem abrir desafio extra.\n\nOrigem: video-fecho-editorial, mais o teste e o envio regravados. Duração alvo: 45 a 60 segundos."
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Quem aparece por cima quando dois desenhos ocupam o mesmo lugar?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "O que é desenhado por último."
+              },
+              {
+                "id": "b",
+                "label": "O que foi criado primeiro."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A ordem do desenho determina as camadas."
+          },
+          {
+            "id": "q2",
+            "prompt": "Por que repetir o desenho a cada quadro?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Para criar outro Dino a cada quadro."
+              },
+              {
+                "id": "a",
+                "label": "Para atualizar a imagem que vemos."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A criação ocorreu em Ao iniciar; o mesmo personagem é redesenhado."
+          },
+          {
+            "id": "q3",
+            "prompt": "Como retirar a borda sem apagar o Dino?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Usar Apagar este bloco na borda."
+              },
+              {
+                "id": "b",
+                "label": "Arrastar a borda e toda a pilha para a lixeira."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Apagar apenas a peça preserva as que estão abaixo."
+          }
+        ]
+      }
     }
-   }
-  },
-  {
-   "key": "fala-floresta",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Falta a floresta. Em Jogo 2D, Cenários, Fundos, pega o Desenhar fundo de floresta (velocidade __) e encaixa dentro do A cada quadro do jogo, logo abaixo do Desenhar o sprite dino. Eu vou te pedir para encaixar bem aí, de propósito. A velocidade nasce 4, troca por 5. Agora olha a área do jogo."
-   }
-  },
-  {
-   "key": "video-floresta-cobre",
-   "plannedVideo": "Título: Cadê o dino?\n\nO encaixe da floresta por último, a troca da velocidade de 4 para 5, e o Dino sumindo da tela.\n\nParar antes da explicação e antes do conserto, como a orientação de hoje já manda. Terminar na pergunta: cadê o dino, ele estava aí agorinha.\n\nA criança monta a ordem errada no projeto dela, de propósito, porque encaixar por último é o que ela faria sozinha. Não substituir por exemplo assistido.\n\nOrigem: video-floresta-cobre. Duração alvo: 30 a 40 segundos."
-  },
-  {
-   "key": "fala-quem-fica-na-frente",
-   "content": {
-    "kind": "dialogue",
-    "pose": "thinking",
-    "text": "O Dino não sumiu. Ele ficou atrás. Nesta bancada dá para testar a causa sem mexer no seu jogo: muda a ordem de desenhar e vê quem fica na frente."
-   }
-  },
-  {
-   "key": "experiencia-camadas",
-   "content": {
-    "kind": "interactive",
-    "required": true,
-    "title": "Quem fica na frente?",
-    "instructions": "O Dino está escondido atrás da floresta. Muda a ordem de desenhar e descobre quem fica na frente. Só a ordem muda.",
-    "hints": [
-     "O Dino está atrás da floresta. Onde fica a floresta na lista?",
-     "Leve o Dino para o fim da lista. Depois esconda o Dino de novo, só mudando a ordem.",
-     "No fim, deixe o Dino no fim da lista, como fica no jogo."
-    ],
-    "activity": {
-     "type": "experimentation",
-     "scene": "layers",
-     "cenario": "corre-dino"
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "O que a gente vai fazer hoje",
+      "intent": "presentation",
+      "objective": "Retomar a pergunta que ficou de ontem, com o Dino criado e invisível, e ver onde a aula chega: ele aparece, corre, e a floresta passa atrás dele.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
+      }
+    },
+    {
+      "key": "quadros",
+      "title": "O jogo é um filme desenhado na hora",
+      "intent": "exploration",
+      "objective": "Separar desenhar de desenhar de novo, ver o rastro de quem não limpa e entender o que é um quadro antes de montar o bloco que faz o ciclo acontecer.",
+      "blockKeys": ["video-livrinho", "experiencia-laco"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-laco"]
+      }
+    },
+    {
+      "key": "motor-e-dino",
+      "title": "Ligue o motor e faça o Dino aparecer",
+      "intent": "application",
+      "objective": "Montar a área Enquanto estiver rodando com o A cada quadro do jogo dentro, e encher o quadro com Limpar a tela e Desenhar o sprite dino, nessa ordem. É aqui que o Dino aparece.",
+      "blockKeys": [
+        "fala-motor",
+        "fala-desenhar",
+        "video-motor-e-dino",
+        "fala-limpar",
+        "video-limpar-a-tela"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "motor",
+            "label": "Encaixe A cada quadro dentro de Enquanto estiver rodando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops"
+            }
+          },
+          {
+            "id": "desenhar",
+            "label": "Desenhe o sprite dino dentro de A cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              }
+            }
+          },
+          {
+            "id": "limpar",
+            "label": "Limpe a tela antes de desenhar o Dino.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clear",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "beforeBlock": "sz_g2d_draw_sprite"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "uma-vez-e-sempre",
+      "title": "Criar foi uma vez. Desenhar é sempre.",
+      "intent": "exploration",
+      "objective": "Descobrir que o lugar da ação decide quando ela acontece, e que o Dino desenhado a cada quadro continua sendo o mesmo Dino criado uma vez só.",
+      "blockKeys": ["fala-um-dino-so", "experiencia-uma-vez-e-sempre"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-uma-vez-e-sempre"]
+      }
+    },
+    {
+      "key": "floresta-cobre",
+      "title": "O Dino sumiu",
+      "intent": "application",
+      "objective": "Encaixar a floresta por último, de propósito, e ver o Dino desaparecer atrás dela no seu próprio jogo.",
+      "blockKeys": ["fala-floresta", "video-floresta-cobre"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "floresta-no-quadro",
+            "label": "Encaixe a floresta com velocidade 5 dentro de A cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_forest",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputs": {
+                "SPEED": 5
+              }
+            }
+          },
+          {
+            "id": "uma-floresta",
+            "label": "Use uma única floresta.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_forest",
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "camadas",
+      "title": "Quem fica na frente?",
+      "intent": "exploration",
+      "objective": "Trocar só a ordem de dois desenhos, ver a sobreposição virar, e esconder o Dino de novo sem mexer em mais nada.",
+      "blockKeys": ["fala-quem-fica-na-frente", "experiencia-camadas"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-camadas"]
+      }
+    },
+    {
+      "key": "ordem-certa",
+      "title": "Quem é desenhado depois fica por cima",
+      "intent": "application",
+      "objective": "Levar a descoberta para a pilha real: Limpar a tela, depois a floresta, depois o Dino. E ficar com o nome camadas.",
+      "blockKeys": ["fala-ordem-certa", "video-ordem-certa"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "limpar-primeiro",
+            "label": "Limpe a tela antes de desenhar a floresta.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clear",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "beforeBlock": "sz_g2d_forest"
+            }
+          },
+          {
+            "id": "floresta",
+            "label": "Desenhe a floresta com velocidade 5 antes do Dino.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_forest",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputs": {
+                "SPEED": 5
+              },
+              "beforeBlock": "sz_g2d_draw_sprite"
+            }
+          },
+          {
+            "id": "desenhar",
+            "label": "Desenhe o sprite dino dentro de A cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              }
+            }
+          },
+          {
+            "id": "uma-floresta",
+            "label": "Use uma única floresta.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_forest",
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "retirar-borda",
+      "title": "Tire a borda sem derrubar o resto",
+      "intent": "application",
+      "objective": "Apagar só a peça provisória, com o menu do bloco, preservando a criação do Dino que está abaixo dela no Ao iniciar.",
+      "blockKeys": ["fala-retirar-borda", "video-retirar-borda"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "sem-borda",
+            "label": "Retire a borda provisória da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_stage_border",
+              "count": 0
+            }
+          },
+          {
+            "id": "preservar-dino",
+            "label": "Mantenha o dinossauro criado em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_dino",
+              "area": "start",
+              "fields": {
+                "NAME": "dino"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Teste, envie e fecha",
+      "intent": "delivery",
+      "objective": "O Dino corre no lugar diante da floresta, a criação continua no Ao iniciar, e a borda provisória saiu. Enviar e guardar as duas ideias de hoje no quiz.",
+      "blockKeys": ["video-fecho", "quiz-final", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho", "projeto", "quiz-final"],
+        "projectChecks": [
+          {
+            "id": "desenhar",
+            "label": "Desenhe o sprite dino dentro de A cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "dino"
+              }
+            }
+          },
+          {
+            "id": "limpar-primeiro",
+            "label": "Limpe a tela antes de desenhar a floresta.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clear",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "beforeBlock": "sz_g2d_forest"
+            }
+          },
+          {
+            "id": "floresta",
+            "label": "Desenhe a floresta com velocidade 5 antes do Dino.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_forest",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputs": {
+                "SPEED": 5
+              },
+              "beforeBlock": "sz_g2d_draw_sprite"
+            }
+          },
+          {
+            "id": "uma-floresta",
+            "label": "Use uma única floresta.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_forest",
+              "count": 1
+            }
+          },
+          {
+            "id": "sem-borda",
+            "label": "Retire a borda provisória da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_stage_border",
+              "count": 0
+            }
+          },
+          {
+            "id": "preservar-dino",
+            "label": "Mantenha o dinossauro criado em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_dino",
+              "area": "start",
+              "fields": {
+                "NAME": "dino"
+              }
+            }
+          }
+        ]
+      }
     }
-   }
-  },
-  {
-   "key": "fala-ordem-certa",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Agora arruma a ordem no seu jogo. Arrasta a floresta para o meio, entre o Limpar a tela e o Desenhar o sprite dino. Arrasta mesmo, não copia: copiar deixa duas florestas rodando ao mesmo tempo. E isso que você acabou de arrumar tem um nome que quem faz jogo usa: camadas. Quem é desenhado depois fica por cima."
-   }
-  },
-  {
-   "key": "video-ordem-certa",
-   "plannedVideo": "Título: Quem é desenhado depois fica por cima\n\nO gesto do arraste da floresta para o meio da pilha, entre o Limpar a tela e o Desenhar o sprite dino, e a ordem final à vista.\n\nMostrar que é arraste e não cópia, porque cópia deixa duas florestas rodando.\n\nManter a observação de que a floresta pinta só o que está dentro da borda e para certinho onde a telinha termina. É ela que prepara a seção seguinte.\n\nOrigem: video-ordem-certa. Duração alvo: 30 a 40 segundos."
-  },
-  {
-   "key": "fala-retirar-borda",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "A borda já fez o trabalho dela: agora é a própria floresta que mostra onde a telinha começa e termina. Vamos tirar ela, e no caminho você aprende duas coisas do Estúdio que valem o curso inteiro."
-   }
-  },
-  {
-   "key": "video-retirar-borda",
-   "plannedVideo": "Título: Tirar uma peça sem derrubar as outras\n\nTela regravada com o rótulo atual do menu.\n\nPrimeiro, arrastar a borda para a lixeira do jeito normal e mostrar os dois blocos indo junto, porque quando você arrasta um bloco todos os que estão embaixo dele vêm junto. São dois porque a Aula 1 deixa a borda no meio da pilha, com a criação do Dino abaixo dela.\n\nDepois Ctrl+Z, e os dois voltam.\n\nDepois o botão direito no Mostrar a borda da tela, o menu aberto, e Apagar este bloco: só ele sai e a pilha se fecha sozinha. O rótulo do menu é exatamente Apagar este bloco, e neste curso é sempre esse texto.\n\nComplementar com a forma de abrir o menu em tela de toque, usando o gesto do Estúdio atual.\n\nOrigem: video-retirar-borda. Duração alvo: 55 a 65 segundos."
-  },
-  {
-   "key": "projeto",
-   "existing": {
-    "kind": "studio",
-    "index": 0
-   }
-  },
-  {
-   "key": "video-fecho",
-   "plannedVideo": "Título: O motor e as camadas\n\nEste clipe passou a abrir com o teste e o envio, e a recapitulação ficou para o fim dele. Absorve o balão de conferência que vivia na entrega, porque balão depois da ferramenta não existe para quem está com o Estúdio aberto do lado.\n\nO que passa na tela, nesta ordem:\n\n1. A área do jogo enquadrada, com o jogo rodando: o Dino na frente da floresta, com as perninhas correndo.\n2. A conferência dita em voz alta: o Dino fica no mesmo lugar, e quem passa é a floresta.\n3. A lista de objetivos conferida, um por um.\n4. O gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nSó então a recapitulação do dia: você ligou o motor do jogo, encheu ele de desenho e descobriu que quem é desenhado depois fica por cima.\n\nAproveitar a ilusão de movimento no fechamento, com o Dino correndo na frente da floresta.\n\nRetirar o convite a brincar com as velocidades 2 e 9 e manter o 5, como a orientação de edição já pede.\n\nGancho da Aula 3: na próxima aula o seu dino ganha um poder novo, o pulo. Terminar indicando o quiz, sem abrir desafio extra.\n\nOrigem: video-fecho-editorial, mais o teste e o envio regravados. Duração alvo: 45 a 60 segundos."
-  },
-  {
-   "key": "quiz-final",
-   "content": {
-    "kind": "quiz",
-    "passingScore": 100,
-    "questions": [
-     {
-      "id": "q1",
-      "prompt": "Quem aparece por cima quando dois desenhos ocupam o mesmo lugar?",
-      "choices": [
-       {
-        "id": "a",
-        "label": "O que é desenhado por último."
-       },
-       {
-        "id": "b",
-        "label": "O que foi criado primeiro."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "A ordem do desenho determina as camadas."
-     },
-     {
-      "id": "q2",
-      "prompt": "Por que repetir o desenho a cada quadro?",
-      "choices": [
-       {
-        "id": "b",
-        "label": "Para criar outro Dino a cada quadro."
-       },
-       {
-        "id": "a",
-        "label": "Para atualizar a imagem que vemos."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "A criação ocorreu em Ao iniciar; o mesmo personagem é redesenhado."
-     },
-     {
-      "id": "q3",
-      "prompt": "Como retirar a borda sem apagar o Dino?",
-      "choices": [
-       {
-        "id": "a",
-        "label": "Usar Apagar este bloco na borda."
-       },
-       {
-        "id": "b",
-        "label": "Arrastar a borda e toda a pilha para a lixeira."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "Apagar apenas a peça preserva as que estão abaixo."
-     }
-    ]
-   }
-  }
- ],
- "sections": [
-  {
-   "key": "abertura",
-   "title": "O que a gente vai fazer hoje",
-   "intent": "presentation",
-   "objective": "Retomar a pergunta que ficou de ontem, com o Dino criado e invisível, e ver onde a aula chega: ele aparece, corre, e a floresta passa atrás dele.",
-   "blockKeys": [
-    "video-abertura"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-abertura"
-    ]
-   }
-  },
-  {
-   "key": "quadros",
-   "title": "O jogo é um filme desenhado na hora",
-   "intent": "exploration",
-   "objective": "Separar desenhar de desenhar de novo, ver o rastro de quem não limpa e entender o que é um quadro antes de montar o bloco que faz o ciclo acontecer.",
-   "blockKeys": [
-    "video-livrinho",
-    "experiencia-laco"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experiencia-laco"
-    ]
-   }
-  },
-  {
-   "key": "motor-e-dino",
-   "title": "Ligue o motor e faça o Dino aparecer",
-   "intent": "application",
-   "objective": "Montar a área Enquanto estiver rodando com o A cada quadro do jogo dentro, e encher o quadro com Limpar a tela e Desenhar o sprite dino, nessa ordem. É aqui que o Dino aparece.",
-   "blockKeys": [
-    "fala-motor",
-    "fala-desenhar",
-    "video-motor-e-dino",
-    "fala-limpar",
-    "video-limpar-a-tela"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "motor",
-      "label": "Encaixe A cada quadro dentro de Enquanto estiver rodando.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_update_each_frame",
-       "area": "loops"
-      }
-     },
-     {
-      "id": "desenhar",
-      "label": "Desenhe o sprite dino dentro de A cada quadro.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_sprite",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "fields": {
-        "SPRITE": "dino"
-       }
-      }
-     },
-     {
-      "id": "limpar",
-      "label": "Limpe a tela antes de desenhar o Dino.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_clear",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "beforeBlock": "sz_g2d_draw_sprite"
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "uma-vez-e-sempre",
-   "title": "Criar foi uma vez. Desenhar é sempre.",
-   "intent": "exploration",
-   "objective": "Descobrir que o lugar da ação decide quando ela acontece, e que o Dino desenhado a cada quadro continua sendo o mesmo Dino criado uma vez só.",
-   "blockKeys": [
-    "fala-um-dino-so",
-    "experiencia-uma-vez-e-sempre"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experiencia-uma-vez-e-sempre"
-    ]
-   }
-  },
-  {
-   "key": "floresta-cobre",
-   "title": "O Dino sumiu",
-   "intent": "application",
-   "objective": "Encaixar a floresta por último, de propósito, e ver o Dino desaparecer atrás dela no seu próprio jogo.",
-   "blockKeys": [
-    "fala-floresta",
-    "video-floresta-cobre"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "floresta-no-quadro",
-      "label": "Encaixe a floresta com velocidade 5 dentro de A cada quadro.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_forest",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputs": {
-        "SPEED": 5
-       }
-      }
-     },
-     {
-      "id": "uma-floresta",
-      "label": "Use uma única floresta.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_forest",
-       "count": 1
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "camadas",
-   "title": "Quem fica na frente?",
-   "intent": "exploration",
-   "objective": "Trocar só a ordem de dois desenhos, ver a sobreposição virar, e esconder o Dino de novo sem mexer em mais nada.",
-   "blockKeys": [
-    "fala-quem-fica-na-frente",
-    "experiencia-camadas"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experiencia-camadas"
-    ]
-   }
-  },
-  {
-   "key": "ordem-certa",
-   "title": "Quem é desenhado depois fica por cima",
-   "intent": "application",
-   "objective": "Levar a descoberta para a pilha real: Limpar a tela, depois a floresta, depois o Dino. E ficar com o nome camadas.",
-   "blockKeys": [
-    "fala-ordem-certa",
-    "video-ordem-certa"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "limpar-primeiro",
-      "label": "Limpe a tela antes de desenhar a floresta.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_clear",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "beforeBlock": "sz_g2d_forest"
-      }
-     },
-     {
-      "id": "floresta",
-      "label": "Desenhe a floresta com velocidade 5 antes do Dino.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_forest",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputs": {
-        "SPEED": 5
-       },
-       "beforeBlock": "sz_g2d_draw_sprite"
-      }
-     },
-     {
-      "id": "desenhar",
-      "label": "Desenhe o sprite dino dentro de A cada quadro.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_sprite",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "fields": {
-        "SPRITE": "dino"
-       }
-      }
-     },
-     {
-      "id": "uma-floresta",
-      "label": "Use uma única floresta.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_forest",
-       "count": 1
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "retirar-borda",
-   "title": "Tire a borda sem derrubar o resto",
-   "intent": "application",
-   "objective": "Apagar só a peça provisória, com o menu do bloco, preservando a criação do Dino que está abaixo dela no Ao iniciar.",
-   "blockKeys": [
-    "fala-retirar-borda",
-    "video-retirar-borda"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "sem-borda",
-      "label": "Retire a borda provisória da tela.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_stage_border",
-       "count": 0
-      }
-     },
-     {
-      "id": "preservar-dino",
-      "label": "Mantenha o dinossauro criado em Ao iniciar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_create_dino",
-       "area": "start",
-       "fields": {
-        "NAME": "dino"
-       }
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "entrega",
-   "title": "Teste, envie e fecha",
-   "intent": "delivery",
-   "objective": "O Dino corre no lugar diante da floresta, a criação continua no Ao iniciar, e a borda provisória saiu. Enviar e guardar as duas ideias de hoje no quiz.",
-   "blockKeys": [
-    "video-fecho",
-    "quiz-final",
-    "projeto"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-fecho",
-     "projeto",
-     "quiz-final"
-    ],
-    "projectChecks": [
-     {
-      "id": "desenhar",
-      "label": "Desenhe o sprite dino dentro de A cada quadro.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_sprite",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "fields": {
-        "SPRITE": "dino"
-       }
-      }
-     },
-     {
-      "id": "limpar-primeiro",
-      "label": "Limpe a tela antes de desenhar a floresta.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_clear",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "beforeBlock": "sz_g2d_forest"
-      }
-     },
-     {
-      "id": "floresta",
-      "label": "Desenhe a floresta com velocidade 5 antes do Dino.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_forest",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputs": {
-        "SPEED": 5
-       },
-       "beforeBlock": "sz_g2d_draw_sprite"
-      }
-     },
-     {
-      "id": "uma-floresta",
-      "label": "Use uma única floresta.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_forest",
-       "count": 1
-      }
-     },
-     {
-      "id": "sem-borda",
-      "label": "Retire a borda provisória da tela.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_stage_border",
-       "count": 0
-      }
-     },
-     {
-      "id": "preservar-dino",
-      "label": "Mantenha o dinossauro criado em Ao iniciar.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_create_dino",
-       "area": "start",
-       "fields": {
-        "NAME": "dino"
-       }
-      }
-     }
-    ]
-   }
-  }
- ]
+  ]
 }

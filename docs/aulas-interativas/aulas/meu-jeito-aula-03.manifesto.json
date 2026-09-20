@@ -235,11 +235,7 @@
       "title": "Desenhe o fogo no primeiro quadro",
       "intent": "application",
       "objective": "Fazer o fogo do quadro 1 dentro do espaço reservado, com folga embaixo para ele crescer depois.",
-      "blockKeys": [
-        "fala-fogo-base",
-        "fala-espaco-para-crescer",
-        "video-fogo-base"
-      ],
+      "blockKeys": ["fala-fogo-base", "fala-espaco-para-crescer", "video-fogo-base"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
@@ -253,11 +249,7 @@
       "title": "Duplique e alongue só a ponta",
       "intent": "application",
       "objective": "Duplicar o quadro, descer a ponta do fogo, preencher o vão e ver o motor pulsando sozinho na Prévia.",
-      "blockKeys": [
-        "fala-duplicar-quadro",
-        "fala-mover-a-ponta",
-        "video-segundo-quadro"
-      ],
+      "blockKeys": ["fala-duplicar-quadro", "fala-mover-a-ponta", "video-segundo-quadro"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],
@@ -285,11 +277,7 @@
       "title": "O nome que viaja com a sua animação",
       "intent": "application",
       "objective": "Renomear a animação para voando e conferir a nave inteira com o fantasma ligado antes de fechar.",
-      "blockKeys": [
-        "fala-nome-voando",
-        "fala-conferencia-final",
-        "video-nome-voando"
-      ],
+      "blockKeys": ["fala-nome-voando", "fala-conferencia-final", "video-nome-voando"],
       "workspaceKey": null,
       "externalTool": "pinta",
       "pendingMedia": [],

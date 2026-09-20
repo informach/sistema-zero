@@ -1,861 +1,829 @@
 {
- "version": 4,
- "courseSlug": "corre-dino",
- "lessonSlug": "aula-07",
- "title": "O jogo aprende a esperar",
- "retireBlockKeys": [
-  "video-abertura-editorial",
-  "video-estado-inicial",
-  "fala-estado-inicial",
-  "video-pergunta",
-  "experiencia-estado-modelo",
-  "video-relogio-protegido",
-  "fala-relogio-protegido",
-  "fala-entrega-editorial",
-  "video-fecho-editorial"
- ],
- "blocks": [
-  {
-   "key": "video-teste-e-envio",
-   "plannedVideo": "Título: O teste do silêncio e o envio\n\nOrigem: novo. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 65 a 80 segundos.\n\nGravação de tela no jogo do fim desta aula, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho do dia. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, nesta ordem:\n\n1. A página recarregando, que é o que devolve o jogo ao começo.\n2. O clique dentro da área do jogo.\n3. A barra de espaço apertada umas cinco vezes, sem nada acontecer. Nenhum som, e o Dino parado no chão.\n4. Dez segundos de tela parada, cronometrados na gravação, sem ninguém encostar no teclado. A floresta passa, e nenhum cacto entra pela direita.\n\nEste clipe é difícil de gravar, porque o acerto é uma tela em que nada acontece. Segurar o enquadramento os dez segundos inteiros, sem corte e sem acelerar, com a borda direita à vista o tempo todo.\n\nConferir junto, olhando a tela: silêncio quando a barra de espaço é apertada, nenhum cacto entrando, e só a floresta andando.\n\nE reparar no som, com os blocos à vista: a barra de espaço foi apertada cinco vezes e não tocou nada, e ninguém mexeu no som hoje. Quem toca o som é o Quando o sprite dino pular, e para ele disparar o dino tem que pular de verdade. Quem faz o dino pular é o Controlar o dinossauro, que acabou de entrar para dentro do Se. Fora do estado jogando, o Controlar o dinossauro nem roda. O dino não pula, e o som não toca. O som se protege sozinho, porque ele escuta o dino. Esse trabalho a mais você economizou lá na Aula 4.\n\nDepois a lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFechar com a recapitulação do dia, que era balão e virou fim de clipe: hoje o seu jogo não ganhou nada novo na tela, e mesmo assim ele mudou bastante. Ele passou a saber onde está, e as coisas passaram a perguntar antes de acontecer. Às vezes o sinal de que você acertou não é uma coisa aparecendo, é uma coisa parando de acontecer na hora errada.\n\nO gancho da Aula 8 continua em balão, logo abaixo, porque ele não depende de ter acabado de jogar."
-  },
-  {
-   "key": "projeto",
-   "existing": {
-    "kind": "studio",
-    "index": 0
-   }
-  },
-  {
-   "key": "video-abertura",
-   "plannedVideo": "Título: O jogo já começou sem você\n\nTela: abrir o projeto do fim da Aula 6 e recarregar a página. Segurar uns cinco segundos no jogo já acontecendo, com o dino correndo e um cacto chegando, sem nenhum aviso e sem ninguém ter apertado nada.\n\nFala: \"Recarrega a página e olha o que acontece. O jogo já começou. Ninguém falou nada, ninguém apertou nada, e você já está no meio da correria. Todo jogo que você joga tem um antes disso. Hoje o seu vai ter também: o jogo vai aprender a esperar.\"\n\nDuração alvo: 25 a 35 segundos.\n\nOrigem: reaproveita parte da fala do video-abertura-editorial da v6. A tela é regravada.\n\nNão prometer o estado fim. Hoje o jogo ganha dois estados, inicio e jogando. O fim entra na Aula 9, como peça nova."
-  },
-  {
-   "key": "fala-pegar-estado",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Em Jogo 2D, Jogo e telas, Telas e partida, pega o bloco Mudar o estado do jogo para. Arrasta pra dentro do Ao iniciar e encaixa como o último bloco de lá, logo abaixo do Criar grupo de sprites. Ele tem um campo só, uma listinha com vários estados prontos. O que a gente quer hoje é o inicio."
-   }
-  },
-  {
-   "key": "video-estado-inicio",
-   "plannedVideo": "Título: O bloco que não muda nada\n\nTela: pegar o Mudar o estado do jogo para em Jogo 2D, Jogo e telas, Telas e partida. Arrastar até o fim do Ao iniciar e encaixar logo abaixo do Criar grupo de sprites. Abrir a listinha do campo, mostrar os estados prontos e escolher inicio. Depois manter a área do jogo em quadro, sem cortar, por pelo menos três segundos.\n\nFala: \"Olha a área do jogo. O dino continua correndo. Os cactos continuam chegando. Não mudou nada, e está certo. O jogo guardou uma palavra, e essa palavra é o estado do jogo. Agora ele sabe onde está. Só que ninguém perguntou nada pra ele ainda, então ninguém mudou de comportamento.\"\n\nO silêncio depois do encaixe é o conteúdo da tomada. Não cortar para a paleta enquanto a fala segura a área do jogo.\n\nDuração alvo: 35 a 45 segundos.\n\nRótulos: dizer e mostrar Mudar o estado do jogo para. A edição jogo-2d-1.0-documento-2 não tem mais Ir para a tela, e não existe mais a subcategoria Telas e cenas.\n\nOrigem: a fala do video-estado-inicial da v6 serve com a troca de rótulo. A tela é regravada."
-  },
-  {
-   "key": "fala-dois-estados",
-   "content": {
-    "kind": "dialogue",
-    "pose": "happy",
-    "text": "Esse é o primeiro dos estados do jogo. Hoje o seu jogo vai ter dois, o inicio e o jogando, e ele fica num estado de cada vez, sempre. Nunca nos dois ao mesmo tempo."
-   }
-  },
-  {
-   "key": "fala-condicao",
-   "content": {
-    "kind": "dialogue",
-    "pose": "thinking",
-    "text": "Existe um bloco que faz uma pergunta e guarda coisas dentro dele. Se a resposta for sim, o que está guardado acontece. Se for não, ele não faz nada e o jogo segue em frente. Antes de você montar um, vamos ver um funcionando."
-   }
-  },
-  {
-   "key": "experiencia-condicao",
-   "content": {
-    "kind": "interactive",
-    "title": "O relógio antes de a partida começar",
-    "instructions": "Aperte ▶ Tempo no início e veja se nascem cactos. Depois leve Criar cacto para dentro de Se o estado do jogo é jogando. Compare o início e a partida.",
-    "hints": [
-     "Aperte ▶ Tempo no início e conte os cactos que aparecem.",
-     "O que fica dentro de Se o estado do jogo é jogando só acontece durante a partida.",
-     "Leve Criar cacto para dentro de Se o estado do jogo é jogando. Espere no início e depois comece a partida."
-    ],
-    "required": true,
-    "activity": {
-     "type": "experimentation",
-     "scene": "game-state",
-     "cenario": "corre-dino"
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-07",
+  "title": "O jogo aprende a esperar",
+  "retireBlockKeys": [
+    "video-abertura-editorial",
+    "video-estado-inicial",
+    "fala-estado-inicial",
+    "video-pergunta",
+    "experiencia-estado-modelo",
+    "video-relogio-protegido",
+    "fala-relogio-protegido",
+    "fala-entrega-editorial",
+    "video-fecho-editorial"
+  ],
+  "blocks": [
+    {
+      "key": "video-teste-e-envio",
+      "plannedVideo": "Título: O teste do silêncio e o envio\n\nOrigem: novo. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 65 a 80 segundos.\n\nGravação de tela no jogo do fim desta aula, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho do dia. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, nesta ordem:\n\n1. A página recarregando, que é o que devolve o jogo ao começo.\n2. O clique dentro da área do jogo.\n3. A barra de espaço apertada umas cinco vezes, sem nada acontecer. Nenhum som, e o Dino parado no chão.\n4. Dez segundos de tela parada, cronometrados na gravação, sem ninguém encostar no teclado. A floresta passa, e nenhum cacto entra pela direita.\n\nEste clipe é difícil de gravar, porque o acerto é uma tela em que nada acontece. Segurar o enquadramento os dez segundos inteiros, sem corte e sem acelerar, com a borda direita à vista o tempo todo.\n\nConferir junto, olhando a tela: silêncio quando a barra de espaço é apertada, nenhum cacto entrando, e só a floresta andando.\n\nE reparar no som, com os blocos à vista: a barra de espaço foi apertada cinco vezes e não tocou nada, e ninguém mexeu no som hoje. Quem toca o som é o Quando o sprite dino pular, e para ele disparar o dino tem que pular de verdade. Quem faz o dino pular é o Controlar o dinossauro, que acabou de entrar para dentro do Se. Fora do estado jogando, o Controlar o dinossauro nem roda. O dino não pula, e o som não toca. O som se protege sozinho, porque ele escuta o dino. Esse trabalho a mais você economizou lá na Aula 4.\n\nDepois a lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFechar com a recapitulação do dia, que era balão e virou fim de clipe: hoje o seu jogo não ganhou nada novo na tela, e mesmo assim ele mudou bastante. Ele passou a saber onde está, e as coisas passaram a perguntar antes de acontecer. Às vezes o sinal de que você acertou não é uma coisa aparecendo, é uma coisa parando de acontecer na hora errada.\n\nO gancho da Aula 8 continua em balão, logo abaixo, porque ele não depende de ter acabado de jogar."
     },
-    "prediction": {
-     "context": {
-      "label": "O estado do jogo",
-      "explanation": "Nesta experiência, vamos observar o que o jogo deixa acontecer antes e depois de a partida começar."
-     },
-     "prompt": "No início, antes de a partida começar, nascem cactos?",
-     "choices": [
-      {
-       "id": "ja-nascem",
-       "label": "Sim, já nascem"
-      },
-      {
-       "id": "so-depois",
-       "label": "Não, só depois de começar",
-       "shows": "Os cactos nasceram no início, antes de a partida começar."
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
       }
-     ],
-     "correctChoiceId": "ja-nascem",
-     "revealOn": "outside"
+    },
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: O jogo já começou sem você\n\nTela: abrir o projeto do fim da Aula 6 e recarregar a página. Segurar uns cinco segundos no jogo já acontecendo, com o dino correndo e um cacto chegando, sem nenhum aviso e sem ninguém ter apertado nada.\n\nFala: \"Recarrega a página e olha o que acontece. O jogo já começou. Ninguém falou nada, ninguém apertou nada, e você já está no meio da correria. Todo jogo que você joga tem um antes disso. Hoje o seu vai ter também: o jogo vai aprender a esperar.\"\n\nDuração alvo: 25 a 35 segundos.\n\nOrigem: reaproveita parte da fala do video-abertura-editorial da v6. A tela é regravada.\n\nNão prometer o estado fim. Hoje o jogo ganha dois estados, inicio e jogando. O fim entra na Aula 9, como peça nova."
+    },
+    {
+      "key": "fala-pegar-estado",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Jogo e telas, Telas e partida, pega o bloco Mudar o estado do jogo para. Arrasta pra dentro do Ao iniciar e encaixa como o último bloco de lá, logo abaixo do Criar grupo de sprites. Ele tem um campo só, uma listinha com vários estados prontos. O que a gente quer hoje é o inicio."
+      }
+    },
+    {
+      "key": "video-estado-inicio",
+      "plannedVideo": "Título: O bloco que não muda nada\n\nTela: pegar o Mudar o estado do jogo para em Jogo 2D, Jogo e telas, Telas e partida. Arrastar até o fim do Ao iniciar e encaixar logo abaixo do Criar grupo de sprites. Abrir a listinha do campo, mostrar os estados prontos e escolher inicio. Depois manter a área do jogo em quadro, sem cortar, por pelo menos três segundos.\n\nFala: \"Olha a área do jogo. O dino continua correndo. Os cactos continuam chegando. Não mudou nada, e está certo. O jogo guardou uma palavra, e essa palavra é o estado do jogo. Agora ele sabe onde está. Só que ninguém perguntou nada pra ele ainda, então ninguém mudou de comportamento.\"\n\nO silêncio depois do encaixe é o conteúdo da tomada. Não cortar para a paleta enquanto a fala segura a área do jogo.\n\nDuração alvo: 35 a 45 segundos.\n\nRótulos: dizer e mostrar Mudar o estado do jogo para. A edição jogo-2d-1.0-documento-2 não tem mais Ir para a tela, e não existe mais a subcategoria Telas e cenas.\n\nOrigem: a fala do video-estado-inicial da v6 serve com a troca de rótulo. A tela é regravada."
+    },
+    {
+      "key": "fala-dois-estados",
+      "content": {
+        "kind": "dialogue",
+        "pose": "happy",
+        "text": "Esse é o primeiro dos estados do jogo. Hoje o seu jogo vai ter dois, o inicio e o jogando, e ele fica num estado de cada vez, sempre. Nunca nos dois ao mesmo tempo."
+      }
+    },
+    {
+      "key": "fala-condicao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Existe um bloco que faz uma pergunta e guarda coisas dentro dele. Se a resposta for sim, o que está guardado acontece. Se for não, ele não faz nada e o jogo segue em frente. Antes de você montar um, vamos ver um funcionando."
+      }
+    },
+    {
+      "key": "experiencia-condicao",
+      "content": {
+        "kind": "interactive",
+        "title": "O relógio antes de a partida começar",
+        "instructions": "Aperte ▶ Tempo no início e veja se nascem cactos. Depois leve Criar cacto para dentro de Se o estado do jogo é jogando. Compare o início e a partida.",
+        "hints": [
+          "Aperte ▶ Tempo no início e conte os cactos que aparecem.",
+          "O que fica dentro de Se o estado do jogo é jogando só acontece durante a partida.",
+          "Leve Criar cacto para dentro de Se o estado do jogo é jogando. Espere no início e depois comece a partida."
+        ],
+        "required": true,
+        "activity": {
+          "type": "experimentation",
+          "scene": "game-state",
+          "cenario": "corre-dino"
+        },
+        "prediction": {
+          "context": {
+            "label": "O estado do jogo",
+            "explanation": "Nesta experiência, vamos observar o que o jogo deixa acontecer antes e depois de a partida começar."
+          },
+          "prompt": "No início, antes de a partida começar, nascem cactos?",
+          "choices": [
+            {
+              "id": "ja-nascem",
+              "label": "Sim, já nascem"
+            },
+            {
+              "id": "so-depois",
+              "label": "Não, só depois de começar",
+              "shows": "Os cactos nasceram no início, antes de a partida começar."
+            }
+          ],
+          "correctChoiceId": "ja-nascem",
+          "revealOn": "outside"
+        }
+      }
+    },
+    {
+      "key": "fala-embrulhar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Deixa o Limpar a tela e o Desenhar fundo de floresta onde eles estão, no topo do A cada quadro do jogo. O fundo aparece em todos os estados. Os seis blocos de baixo vão pra dentro do Se: a gravidade, o Controlar o dinossauro, o Desenhar o sprite, o Mover os sprites do grupo, o Desenhar o grupo e a faxina."
+      }
+    },
+    {
+      "key": "video-embrulhar",
+      "plannedVideo": "Título: A manobra de embrulhar no Se\n\nA manobra mais trabalhosa do curso, inteira, em um movimento só. Pausa visual em cada etapa, com o número da etapa na tela.\n\nEtapa 1: em Programação, Lógica e Se, pegar o Condição se, senão se e senão. Encaixar dentro do A cada quadro do jogo, logo abaixo do Desenhar fundo de floresta.\n\nEtapa 2: tirar a comparação de fábrica de dentro dele e jogar fora.\n\nEtapa 3: encaixar no lugar dela o bloco o estado do jogo é, de Jogo 2D, Jogo e telas, Telas e partida, e escolher jogando na listinha. Mostrar o formato pontudo do encaixe da pergunta.\n\nEtapa 4: arrastar os seis blocos para dentro do então, do Aplicar a gravidade do mundo ao sprite para baixo, na ordem em que já estão.\n\nTrês coisas da gravação atual ficam, porque estão certas: o formato pontudo da pergunta, o aviso de arrastar e nunca copiar com o sintoma dito por extenso (dois jogos rodando ao mesmo tempo), e a frase \"nada de Ctrl aqui, porque hoje levar os de baixo junto é exatamente o que a gente quer\".\n\nNo fim, cartela com o nome da manobra e as quatro etapas numeradas.\n\nDuração alvo: 100 a 120 segundos.\n\nOrigem: funde o video-pergunta e o video-embrulhar da v6, que hoje narram as mesmas três primeiras etapas. A tela é regravada.\n\nRótulos: o estado do jogo é __ ? e Mudar o estado do jogo para, em Jogo 2D, Jogo e telas, Telas e partida.\n\nNota de montagem, fora da narração: se o projeto de quem está fazendo a aula tiver sete blocos no A cada quadro do jogo, o medidor da Aula 6 ainda está lá e precisa sair antes."
+    },
+    {
+      "key": "fala-batismo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "celebrating",
+        "text": "Isso que você acabou de fazer tem nome: embrulhar no Se. São sempre as mesmas quatro etapas. Agora olha a área do jogo. Sobrou a floresta passando, e mais nada. O dino sumiu. Nada quebrou: está tudo guardado, esperando o estado virar jogando."
+      }
+    },
+    {
+      "key": "fala-onde-esta-o-relogio",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Falta um lugar, e ele é fácil de esquecer. É o A cada 1,4 segundos, que mora ao lado do A cada quadro do jogo, não dentro dele. Como ele está do lado, o Se que você acabou de montar não alcança ele."
+      }
+    },
+    {
+      "key": "fala-embrulhar-o-relogio",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Embrulha no Se o que tem dentro dele, do mesmo jeito que você fez agora há pouco: pega um Se novo, tira a comparação de fábrica, põe no lugar a pergunta o estado do jogo é com jogando, e envolve com ele o No grupo criar obstáculo. Aqui também é arrastar, nunca copiar."
+      }
+    },
+    {
+      "key": "video-relogio",
+      "plannedVideo": "Título: O relógio ficou de fora\n\nSó a segunda manobra, sem repetir o tutorial. As quatro etapas aparecem na cartela, em silêncio, enquanto o gesto acontece.\n\nTela: mostrar que o A cada 1,4 segundos está ao lado do A cada quadro do jogo, não dentro dele. Pegar um Se novo, tirar a comparação de fábrica, encaixar a pergunta o estado do jogo é com jogando, e envolver com ele o No grupo criar obstáculo. Fechar conferindo que está escrito jogando nos dois Se do projeto.\n\nDuração alvo: 55 a 65 segundos.\n\nOrigem: recorta só o trecho final da Parte 3 do roteiro da v6, o do relógio. A tela é regravada por causa dos rótulos.\n\nNão prometer sintoma na tela. Sem esse Se nada muda na área do jogo hoje, e a fala seguinte explica por quê."
+    },
+    {
+      "key": "fala-invisivel-1",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Essa parte você não vai conseguir conferir com o olho, e eu prefiro te contar do que te deixar procurando. Sem esse Se, o cacto continua nascendo no início. Só que o desenhar e o mover estão dentro do outro Se, então esse cacto não é desenhado e não anda."
+      }
+    },
+    {
+      "key": "fala-invisivel-2",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Ele fica parado do lado de fora da tela, e a tela não mostra nada de diferente. Na experiência de agora há pouco você viu o contador de cactos criados subindo enquanto a tela ficava parada. É exatamente isso. Por isso este passo tem um critério só dele no Conferir, e é o Conferir que enxerga por você."
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Mudar o estado do jogo para inicio já faz todas as ações pararem?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Não, cada ação precisa perguntar o estado antes de rodar."
+              },
+              {
+                "id": "b",
+                "label": "Sim, guardar o estado desliga os outros blocos."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O estado é uma informação que as condições consultam."
+          },
+          {
+            "id": "q2",
+            "prompt": "Por que o relógio precisa de outro Se?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Porque a floresta precisa nascer duas vezes."
+              },
+              {
+                "id": "a",
+                "label": "Porque ele roda numa rotina separada do quadro."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Uma condição só alcança o que está dentro dela."
+          },
+          {
+            "id": "q3",
+            "prompt": "O que fica fora do Se o estado do jogo é jogando?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Limpar a tela e Desenhar fundo de floresta."
+              },
+              {
+                "id": "b",
+                "label": "O bloco que cria cactos sem parar."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O fundo continua aparecendo enquanto o jogo espera."
+          }
+        ]
+      }
+    },
+    {
+      "key": "fala-proxima-aula",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Na próxima aula o estado inicio ganha o nome do seu jogo escrito grande."
+      }
     }
-   }
-  },
-  {
-   "key": "fala-embrulhar",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Deixa o Limpar a tela e o Desenhar fundo de floresta onde eles estão, no topo do A cada quadro do jogo. O fundo aparece em todos os estados. Os seis blocos de baixo vão pra dentro do Se: a gravidade, o Controlar o dinossauro, o Desenhar o sprite, o Mover os sprites do grupo, o Desenhar o grupo e a faxina."
-   }
-  },
-  {
-   "key": "video-embrulhar",
-   "plannedVideo": "Título: A manobra de embrulhar no Se\n\nA manobra mais trabalhosa do curso, inteira, em um movimento só. Pausa visual em cada etapa, com o número da etapa na tela.\n\nEtapa 1: em Programação, Lógica e Se, pegar o Condição se, senão se e senão. Encaixar dentro do A cada quadro do jogo, logo abaixo do Desenhar fundo de floresta.\n\nEtapa 2: tirar a comparação de fábrica de dentro dele e jogar fora.\n\nEtapa 3: encaixar no lugar dela o bloco o estado do jogo é, de Jogo 2D, Jogo e telas, Telas e partida, e escolher jogando na listinha. Mostrar o formato pontudo do encaixe da pergunta.\n\nEtapa 4: arrastar os seis blocos para dentro do então, do Aplicar a gravidade do mundo ao sprite para baixo, na ordem em que já estão.\n\nTrês coisas da gravação atual ficam, porque estão certas: o formato pontudo da pergunta, o aviso de arrastar e nunca copiar com o sintoma dito por extenso (dois jogos rodando ao mesmo tempo), e a frase \"nada de Ctrl aqui, porque hoje levar os de baixo junto é exatamente o que a gente quer\".\n\nNo fim, cartela com o nome da manobra e as quatro etapas numeradas.\n\nDuração alvo: 100 a 120 segundos.\n\nOrigem: funde o video-pergunta e o video-embrulhar da v6, que hoje narram as mesmas três primeiras etapas. A tela é regravada.\n\nRótulos: o estado do jogo é __ ? e Mudar o estado do jogo para, em Jogo 2D, Jogo e telas, Telas e partida.\n\nNota de montagem, fora da narração: se o projeto de quem está fazendo a aula tiver sete blocos no A cada quadro do jogo, o medidor da Aula 6 ainda está lá e precisa sair antes."
-  },
-  {
-   "key": "fala-batismo",
-   "content": {
-    "kind": "dialogue",
-    "pose": "celebrating",
-    "text": "Isso que você acabou de fazer tem nome: embrulhar no Se. São sempre as mesmas quatro etapas. Agora olha a área do jogo. Sobrou a floresta passando, e mais nada. O dino sumiu. Nada quebrou: está tudo guardado, esperando o estado virar jogando."
-   }
-  },
-  {
-   "key": "fala-onde-esta-o-relogio",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Falta um lugar, e ele é fácil de esquecer. É o A cada 1,4 segundos, que mora ao lado do A cada quadro do jogo, não dentro dele. Como ele está do lado, o Se que você acabou de montar não alcança ele."
-   }
-  },
-  {
-   "key": "fala-embrulhar-o-relogio",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Embrulha no Se o que tem dentro dele, do mesmo jeito que você fez agora há pouco: pega um Se novo, tira a comparação de fábrica, põe no lugar a pergunta o estado do jogo é com jogando, e envolve com ele o No grupo criar obstáculo. Aqui também é arrastar, nunca copiar."
-   }
-  },
-  {
-   "key": "video-relogio",
-   "plannedVideo": "Título: O relógio ficou de fora\n\nSó a segunda manobra, sem repetir o tutorial. As quatro etapas aparecem na cartela, em silêncio, enquanto o gesto acontece.\n\nTela: mostrar que o A cada 1,4 segundos está ao lado do A cada quadro do jogo, não dentro dele. Pegar um Se novo, tirar a comparação de fábrica, encaixar a pergunta o estado do jogo é com jogando, e envolver com ele o No grupo criar obstáculo. Fechar conferindo que está escrito jogando nos dois Se do projeto.\n\nDuração alvo: 55 a 65 segundos.\n\nOrigem: recorta só o trecho final da Parte 3 do roteiro da v6, o do relógio. A tela é regravada por causa dos rótulos.\n\nNão prometer sintoma na tela. Sem esse Se nada muda na área do jogo hoje, e a fala seguinte explica por quê."
-  },
-  {
-   "key": "fala-invisivel-1",
-   "content": {
-    "kind": "dialogue",
-    "pose": "thinking",
-    "text": "Essa parte você não vai conseguir conferir com o olho, e eu prefiro te contar do que te deixar procurando. Sem esse Se, o cacto continua nascendo no início. Só que o desenhar e o mover estão dentro do outro Se, então esse cacto não é desenhado e não anda."
-   }
-  },
-  {
-   "key": "fala-invisivel-2",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Ele fica parado do lado de fora da tela, e a tela não mostra nada de diferente. Na experiência de agora há pouco você viu o contador de cactos criados subindo enquanto a tela ficava parada. É exatamente isso. Por isso este passo tem um critério só dele no Conferir, e é o Conferir que enxerga por você."
-   }
-  },
-  {
-   "key": "quiz-final",
-   "content": {
-    "kind": "quiz",
-    "passingScore": 100,
-    "questions": [
-     {
-      "id": "q1",
-      "prompt": "Mudar o estado do jogo para inicio já faz todas as ações pararem?",
-      "choices": [
-       {
-        "id": "a",
-        "label": "Não, cada ação precisa perguntar o estado antes de rodar."
-       },
-       {
-        "id": "b",
-        "label": "Sim, guardar o estado desliga os outros blocos."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "O estado é uma informação que as condições consultam."
-     },
-     {
-      "id": "q2",
-      "prompt": "Por que o relógio precisa de outro Se?",
-      "choices": [
-       {
-        "id": "b",
-        "label": "Porque a floresta precisa nascer duas vezes."
-       },
-       {
-        "id": "a",
-        "label": "Porque ele roda numa rotina separada do quadro."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "Uma condição só alcança o que está dentro dela."
-     },
-     {
-      "id": "q3",
-      "prompt": "O que fica fora do Se o estado do jogo é jogando?",
-      "choices": [
-       {
-        "id": "a",
-        "label": "Limpar a tela e Desenhar fundo de floresta."
-       },
-       {
-        "id": "b",
-        "label": "O bloco que cria cactos sem parar."
-       }
-      ],
-      "correctChoiceIds": [
-       "a"
-      ],
-      "explanation": "O fundo continua aparecendo enquanto o jogo espera."
-     }
-    ]
-   }
-  },
-  {
-   "key": "fala-proxima-aula",
-   "content": {
-    "kind": "dialogue",
-    "pose": "speaking",
-    "text": "Na próxima aula o estado inicio ganha o nome do seu jogo escrito grande."
-   }
-  }
- ],
- "sections": [
-  {
-   "key": "abertura",
-   "title": "Hoje o seu jogo aprende a esperar",
-   "intent": "presentation",
-   "objective": "Ver em poucos segundos que o jogo de hoje não tem começo, e que é isso que a aula resolve.",
-   "blockKeys": [
-    "video-abertura"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-abertura"
-    ]
-   }
-  },
-  {
-   "key": "estado-inicio",
-   "title": "O jogo passa a saber onde está",
-   "intent": "application",
-   "objective": "Guardar o primeiro estado do jogo e perceber que guardar, sozinho, não muda nada na tela.",
-   "blockKeys": [
-    "fala-pegar-estado",
-    "video-estado-inicio",
-    "fala-dois-estados"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "cena-inicial",
-      "label": "No Ao iniciar, coloque Mudar o estado do jogo para inicio.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_set_scene",
-       "area": "start",
-       "fields": {
-        "SCENE": "inicio"
-       }
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "Hoje o seu jogo aprende a esperar",
+      "intent": "presentation",
+      "objective": "Ver em poucos segundos que o jogo de hoje não tem começo, e que é isso que a aula resolve.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
       }
-     }
-    ]
-   }
-  },
-  {
-   "key": "condicao",
-   "title": "Uma pergunta que decide o que roda",
-   "intent": "exploration",
-   "objective": "Sentir que uma condição segura o que está dentro dela, e que ela não alcança o que está fora.",
-   "blockKeys": [
-    "fala-condicao",
-    "experiencia-condicao"
-   ],
-   "workspaceKey": null,
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "experiencia-condicao"
-    ]
-   }
-  },
-  {
-   "key": "embrulhar",
-   "title": "Embrulhe o jogo no Se",
-   "intent": "application",
-   "objective": "Levar os seis comandos do quadro para dentro de Se o estado do jogo é jogando, e deixar o fundo de fora.",
-   "blockKeys": [
-    "fala-embrulhar",
-    "video-embrulhar",
-    "fala-batismo"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "proteger-gravidade",
-      "label": "Aplicar a gravidade fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_apply_gravity",
-         "fields": {
-          "SPRITE": "dino"
-         },
-         "beforeBlock": "sz_g2d_control_dino"
-        }
-       }
-      }
-     },
-     {
-      "id": "proteger-controle",
-      "label": "Controlar o dinossauro fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_control_dino",
-         "fields": {
-          "SPRITE": "dino"
-         },
-         "beforeBlock": "sz_g2d_draw_sprite"
-        }
-       }
-      }
-     },
-     {
-      "id": "proteger-desenho",
-      "label": "Desenhar o sprite do dino fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_draw_sprite",
-         "fields": {
-          "SPRITE": "dino"
-         },
-         "beforeBlock": "sz_g2d_update_group"
-        }
-       }
-      }
-     },
-     {
-      "id": "proteger-mover",
-      "label": "Mover os sprites do grupo fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_update_group",
-         "fields": {
-          "GROUP": "cactos"
-         },
-         "beforeBlock": "sz_g2d_draw_group"
-        }
-       }
-      }
-     },
-     {
-      "id": "proteger-desenhar",
-      "label": "Desenhar o grupo fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_draw_group",
-         "fields": {
-          "GROUP": "cactos"
-         },
-         "beforeBlock": "sz_g2d_prune_offscreen"
-        }
-       }
-      }
-     },
-     {
-      "id": "proteger-limpeza",
-      "label": "A faxina, que tira do grupo quem saiu da tela, fica por último dentro do então.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_prune_offscreen",
-         "fields": {
-          "GROUP": "cactos"
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "fundo-0",
-      "label": "Limpar a tela continua fora do Se, direto no A cada quadro do jogo.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_update_each_frame",
-       "area": "loops",
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_clear",
-         "beforeBlock": "sz_g2d_forest"
-        }
-       }
-      }
-     },
-     {
-      "id": "fundo-1",
-      "label": "Desenhar fundo de floresta continua fora do Se, logo acima dele.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_update_each_frame",
-       "area": "loops",
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_forest",
-         "beforeBlock": "sz_js_if_else"
-        }
-       }
-      }
-     }
-    ]
-   }
-  },
-  {
-   "key": "relogio",
-   "title": "O relógio não foi junto",
-   "intent": "application",
-   "objective": "Embrulhar no Se também o que está dentro do A cada 1,4 segundos, que é raiz irmã do quadro.",
-   "blockKeys": [
-    "fala-onde-esta-o-relogio",
-    "fala-embrulhar-o-relogio",
-    "video-relogio",
-    "fala-invisivel-1",
-    "fala-invisivel-2"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [],
-    "projectChecks": [
-     {
-      "id": "proteger-relogio",
-      "label": "No A cada 1,4 segundos, o No grupo criar obstáculo fica dentro de um Se o estado do jogo é jogando. Este passo não aparece na tela, e é este critério que confere por você.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_every_seconds",
-       "area": "loops",
-       "inputs": {
-        "SECS": 1.4
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "jogando"
-           }
-          },
-          "THEN": {
-           "blockType": "sz_g2d_spawn_obstacle",
-           "fields": {
-            "GROUP": "cactos"
-           }
+    },
+    {
+      "key": "estado-inicio",
+      "title": "O jogo passa a saber onde está",
+      "intent": "application",
+      "objective": "Guardar o primeiro estado do jogo e perceber que guardar, sozinho, não muda nada na tela.",
+      "blockKeys": ["fala-pegar-estado", "video-estado-inicio", "fala-dois-estados"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "cena-inicial",
+            "label": "No Ao iniciar, coloque Mudar o estado do jogo para inicio.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "start",
+              "fields": {
+                "SCENE": "inicio"
+              }
+            }
           }
-         }
-        }
-       }
+        ]
       }
-     }
-    ]
-   }
-  },
-  {
-   "key": "entrega",
-   "title": "Teste, envie e fecha",
-   "intent": "delivery",
-   "objective": "Fazer o teste do silêncio, entender por que o som se protegeu sozinho e enviar o projeto.",
-   "blockKeys": [
-    "video-teste-e-envio",
-    "fala-proxima-aula",
-    "quiz-final",
-    "projeto"
-   ],
-   "workspaceKey": "projeto",
-   "externalTool": null,
-   "pendingMedia": [],
-   "completion": {
-    "version": 1,
-    "blockIds": [
-     "video-teste-e-envio",
-     "projeto",
-     "quiz-final"
-    ],
-    "projectChecks": [
-     {
-      "id": "cena-inicial",
-      "label": "No Ao iniciar, coloque Mudar o estado do jogo para inicio.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_set_scene",
-       "area": "start",
-       "fields": {
-        "SCENE": "inicio"
-       }
+    },
+    {
+      "key": "condicao",
+      "title": "Uma pergunta que decide o que roda",
+      "intent": "exploration",
+      "objective": "Sentir que uma condição segura o que está dentro dela, e que ela não alcança o que está fora.",
+      "blockKeys": ["fala-condicao", "experiencia-condicao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-condicao"]
       }
-     },
-     {
-      "id": "proteger-gravidade",
-      "label": "Aplicar a gravidade fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_apply_gravity",
-         "fields": {
-          "SPRITE": "dino"
-         },
-         "beforeBlock": "sz_g2d_control_dino"
-        }
-       }
-      }
-     },
-     {
-      "id": "proteger-controle",
-      "label": "Controlar o dinossauro fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_control_dino",
-         "fields": {
-          "SPRITE": "dino"
-         },
-         "beforeBlock": "sz_g2d_draw_sprite"
-        }
-       }
-      }
-     },
-     {
-      "id": "proteger-desenho",
-      "label": "Desenhar o sprite do dino fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_draw_sprite",
-         "fields": {
-          "SPRITE": "dino"
-         },
-         "beforeBlock": "sz_g2d_update_group"
-        }
-       }
-      }
-     },
-     {
-      "id": "proteger-mover",
-      "label": "Mover os sprites do grupo fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_update_group",
-         "fields": {
-          "GROUP": "cactos"
-         },
-         "beforeBlock": "sz_g2d_draw_group"
-        }
-       }
-      }
-     },
-     {
-      "id": "proteger-desenhar",
-      "label": "Desenhar o grupo fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_draw_group",
-         "fields": {
-          "GROUP": "cactos"
-         },
-         "beforeBlock": "sz_g2d_prune_offscreen"
-        }
-       }
-      }
-     },
-     {
-      "id": "proteger-limpeza",
-      "label": "A faxina, que tira do grupo quem saiu da tela, fica por último dentro do então.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_js_if_else",
-       "area": "loops",
-       "withinBlock": "sz_g2d_update_each_frame",
-       "inputBlocks": {
-        "COND": {
-         "blockType": "sz_g2d_scene_is",
-         "fields": {
-          "SCENE": "jogando"
-         }
-        },
-        "THEN": {
-         "blockType": "sz_g2d_prune_offscreen",
-         "fields": {
-          "GROUP": "cactos"
-         }
-        }
-       }
-      }
-     },
-     {
-      "id": "unico-gravidade",
-      "label": "Mantenha uma única ação Aplicar a gravidade.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_apply_gravity",
-       "count": 1
-      }
-     },
-     {
-      "id": "unico-controle",
-      "label": "Mantenha uma única ação Controlar o dinossauro.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_control_dino",
-       "count": 1
-      }
-     },
-     {
-      "id": "unico-desenho",
-      "label": "Mantenha um único Desenhar o sprite do dino.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_sprite",
-       "count": 1
-      }
-     },
-     {
-      "id": "unico-mover",
-      "label": "Mantenha um único Mover os sprites do grupo.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_update_group",
-       "count": 1
-      }
-     },
-     {
-      "id": "unico-desenhar",
-      "label": "Mantenha um único Desenhar o grupo.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_draw_group",
-       "count": 1
-      }
-     },
-     {
-      "id": "unico-limpeza",
-      "label": "Mantenha uma única faxina do grupo.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_prune_offscreen",
-       "count": 1
-      }
-     },
-     {
-      "id": "fundo-0",
-      "label": "Limpar a tela continua fora do Se, direto no A cada quadro do jogo.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_update_each_frame",
-       "area": "loops",
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_clear",
-         "beforeBlock": "sz_g2d_forest"
-        }
-       }
-      }
-     },
-     {
-      "id": "fundo-1",
-      "label": "Desenhar fundo de floresta continua fora do Se, logo acima dele.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_update_each_frame",
-       "area": "loops",
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_g2d_forest",
-         "beforeBlock": "sz_js_if_else"
-        }
-       }
-      }
-     },
-     {
-      "id": "proteger-relogio",
-      "label": "No A cada 1,4 segundos, o No grupo criar obstáculo fica dentro de um Se o estado do jogo é jogando. Este passo não aparece na tela, e é este critério que confere por você.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_every_seconds",
-       "area": "loops",
-       "inputs": {
-        "SECS": 1.4
-       },
-       "inputBlocks": {
-        "BODY": {
-         "blockType": "sz_js_if_else",
-         "inputBlocks": {
-          "COND": {
-           "blockType": "sz_g2d_scene_is",
-           "fields": {
-            "SCENE": "jogando"
-           }
+    },
+    {
+      "key": "embrulhar",
+      "title": "Embrulhe o jogo no Se",
+      "intent": "application",
+      "objective": "Levar os seis comandos do quadro para dentro de Se o estado do jogo é jogando, e deixar o fundo de fora.",
+      "blockKeys": ["fala-embrulhar", "video-embrulhar", "fala-batismo"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "proteger-gravidade",
+            "label": "Aplicar a gravidade fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_apply_gravity",
+                  "fields": {
+                    "SPRITE": "dino"
+                  },
+                  "beforeBlock": "sz_g2d_control_dino"
+                }
+              }
+            }
           },
-          "THEN": {
-           "blockType": "sz_g2d_spawn_obstacle",
-           "fields": {
-            "GROUP": "cactos"
-           }
+          {
+            "id": "proteger-controle",
+            "label": "Controlar o dinossauro fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_control_dino",
+                  "fields": {
+                    "SPRITE": "dino"
+                  },
+                  "beforeBlock": "sz_g2d_draw_sprite"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-desenho",
+            "label": "Desenhar o sprite do dino fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_sprite",
+                  "fields": {
+                    "SPRITE": "dino"
+                  },
+                  "beforeBlock": "sz_g2d_update_group"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-mover",
+            "label": "Mover os sprites do grupo fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_update_group",
+                  "fields": {
+                    "GROUP": "cactos"
+                  },
+                  "beforeBlock": "sz_g2d_draw_group"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-desenhar",
+            "label": "Desenhar o grupo fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_group",
+                  "fields": {
+                    "GROUP": "cactos"
+                  },
+                  "beforeBlock": "sz_g2d_prune_offscreen"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-limpeza",
+            "label": "A faxina, que tira do grupo quem saiu da tela, fica por último dentro do então.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_prune_offscreen",
+                  "fields": {
+                    "GROUP": "cactos"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "fundo-0",
+            "label": "Limpar a tela continua fora do Se, direto no A cada quadro do jogo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clear",
+                  "beforeBlock": "sz_g2d_forest"
+                }
+              }
+            }
+          },
+          {
+            "id": "fundo-1",
+            "label": "Desenhar fundo de floresta continua fora do Se, logo acima dele.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_forest",
+                  "beforeBlock": "sz_js_if_else"
+                }
+              }
+            }
           }
-         }
-        }
-       }
+        ]
       }
-     },
-     {
-      "id": "um-criador",
-      "label": "Mantenha um único No grupo criar obstáculo.",
-      "rule": {
-       "type": "usesBlock",
-       "blockType": "sz_g2d_spawn_obstacle",
-       "count": 1
+    },
+    {
+      "key": "relogio",
+      "title": "O relógio não foi junto",
+      "intent": "application",
+      "objective": "Embrulhar no Se também o que está dentro do A cada 1,4 segundos, que é raiz irmã do quadro.",
+      "blockKeys": [
+        "fala-onde-esta-o-relogio",
+        "fala-embrulhar-o-relogio",
+        "video-relogio",
+        "fala-invisivel-1",
+        "fala-invisivel-2"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "proteger-relogio",
+            "label": "No A cada 1,4 segundos, o No grupo criar obstáculo fica dentro de um Se o estado do jogo é jogando. Este passo não aparece na tela, e é este critério que confere por você.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_obstacle",
+                      "fields": {
+                        "GROUP": "cactos"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
-     }
-    ]
-   }
-  }
- ]
+    },
+    {
+      "key": "entrega",
+      "title": "Teste, envie e fecha",
+      "intent": "delivery",
+      "objective": "Fazer o teste do silêncio, entender por que o som se protegeu sozinho e enviar o projeto.",
+      "blockKeys": ["video-teste-e-envio", "fala-proxima-aula", "quiz-final", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-teste-e-envio", "projeto", "quiz-final"],
+        "projectChecks": [
+          {
+            "id": "cena-inicial",
+            "label": "No Ao iniciar, coloque Mudar o estado do jogo para inicio.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "start",
+              "fields": {
+                "SCENE": "inicio"
+              }
+            }
+          },
+          {
+            "id": "proteger-gravidade",
+            "label": "Aplicar a gravidade fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_apply_gravity",
+                  "fields": {
+                    "SPRITE": "dino"
+                  },
+                  "beforeBlock": "sz_g2d_control_dino"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-controle",
+            "label": "Controlar o dinossauro fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_control_dino",
+                  "fields": {
+                    "SPRITE": "dino"
+                  },
+                  "beforeBlock": "sz_g2d_draw_sprite"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-desenho",
+            "label": "Desenhar o sprite do dino fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_sprite",
+                  "fields": {
+                    "SPRITE": "dino"
+                  },
+                  "beforeBlock": "sz_g2d_update_group"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-mover",
+            "label": "Mover os sprites do grupo fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_update_group",
+                  "fields": {
+                    "GROUP": "cactos"
+                  },
+                  "beforeBlock": "sz_g2d_draw_group"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-desenhar",
+            "label": "Desenhar o grupo fica no então de Se o estado do jogo é jogando, na ordem da montagem.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_group",
+                  "fields": {
+                    "GROUP": "cactos"
+                  },
+                  "beforeBlock": "sz_g2d_prune_offscreen"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-limpeza",
+            "label": "A faxina, que tira do grupo quem saiu da tela, fica por último dentro do então.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_prune_offscreen",
+                  "fields": {
+                    "GROUP": "cactos"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "unico-gravidade",
+            "label": "Mantenha uma única ação Aplicar a gravidade.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_apply_gravity",
+              "count": 1
+            }
+          },
+          {
+            "id": "unico-controle",
+            "label": "Mantenha uma única ação Controlar o dinossauro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_control_dino",
+              "count": 1
+            }
+          },
+          {
+            "id": "unico-desenho",
+            "label": "Mantenha um único Desenhar o sprite do dino.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "count": 1
+            }
+          },
+          {
+            "id": "unico-mover",
+            "label": "Mantenha um único Mover os sprites do grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "count": 1
+            }
+          },
+          {
+            "id": "unico-desenhar",
+            "label": "Mantenha um único Desenhar o grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "count": 1
+            }
+          },
+          {
+            "id": "unico-limpeza",
+            "label": "Mantenha uma única faxina do grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_prune_offscreen",
+              "count": 1
+            }
+          },
+          {
+            "id": "fundo-0",
+            "label": "Limpar a tela continua fora do Se, direto no A cada quadro do jogo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clear",
+                  "beforeBlock": "sz_g2d_forest"
+                }
+              }
+            }
+          },
+          {
+            "id": "fundo-1",
+            "label": "Desenhar fundo de floresta continua fora do Se, logo acima dele.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_forest",
+                  "beforeBlock": "sz_js_if_else"
+                }
+              }
+            }
+          },
+          {
+            "id": "proteger-relogio",
+            "label": "No A cada 1,4 segundos, o No grupo criar obstáculo fica dentro de um Se o estado do jogo é jogando. Este passo não aparece na tela, e é este critério que confere por você.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_obstacle",
+                      "fields": {
+                        "GROUP": "cactos"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "um-criador",
+            "label": "Mantenha um único No grupo criar obstáculo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_obstacle",
+              "count": 1
+            }
+          }
+        ]
+      }
+    }
+  ]
 }
