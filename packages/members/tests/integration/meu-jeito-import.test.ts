@@ -6,8 +6,52 @@ import { changeDraft, readDraft } from '../draft-authoring-helpers'
 import { buildApp, seedSampleCourse } from '../helpers'
 
 describe('Meu Jeito authored manifests through the HTTP import boundary', () => {
+  test('creates a Pinta gallery delivery in an empty lesson', async () => {
+    const env = buildApp({ requireAdmin: true })
+    const course = seedSampleCourse(env.courses, 'o-jogo-do-meu-jeito', 'published', 'kids')
+    const lessonId = course.lessonIds[0]!
+    env.courses.lessons.find((lesson) => lesson.id === lessonId)!.slug = 'aula-02'
+    const document: unknown = await Bun.file(
+      resolve(
+        import.meta.dir,
+        '../../../../docs/aulas-interativas/aulas/meu-jeito-aula-02.manifesto.json',
+      ),
+    ).json()
+    if (!isLearningManifest(document)) throw new Error('Manifesto inválido')
+    const request = (action: string, body: unknown) =>
+      env.app.handle(
+        new Request(`http://localhost/members/admin/lessons/${lessonId}/${action}`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-auth-user-id': '11111111-1111-1111-1111-111111111111',
+            'x-auth-user-role': 'admin',
+            'x-auth-user-status': 'active',
+          },
+          body: JSON.stringify(body),
+        }),
+      )
+    const preview = await request('import-preview', { document })
+    expect(preview.status).toBe(200)
+    const { fingerprint } = (await preview.json()) as { fingerprint: string }
+    const result = await request('import-learning', {
+      document,
+      expectedFingerprint: fingerprint,
+      operationId: randomUUID(),
+    })
+    expect(result.status).toBe(200)
+    const draft = await readDraft(env.app, lessonId)
+    expect(draft.document.blocks.filter((block) => block.content.kind === 'pinta')).toHaveLength(1)
+    expect(
+      draft.document.blocks.find((block) => block.content.kind === 'pinta')?.content,
+    ).toMatchObject({
+      initialAsset: null,
+      gallery: { minItems: 1, maxItems: 1 },
+    })
+  })
+
   for (let number = 1; number <= 8; number++)
-    test(`lesson ${number}: requires the gallery, preserves it and reimports idempotently`, async () => {
+    test(`lesson ${number}: creates the gallery and reimports idempotently`, async () => {
       const env = buildApp({ requireAdmin: true })
       const course = seedSampleCourse(env.courses, 'o-jogo-do-meu-jeito', 'published', 'kids')
       const lessonId = course.lessonIds[0]!
@@ -33,7 +77,7 @@ describe('Meu Jeito authored manifests through the HTTP import boundary', () => 
             body: JSON.stringify(body),
           }),
         )
-      expect((await request('import-preview', { document })).status).toBe(400)
+      expect((await request('import-preview', { document })).status).toBe(200)
       const pinta = number >= 2 && number <= 5
       const count = number === 5 ? 2 : 1
       const id = randomUUID()
@@ -67,9 +111,23 @@ describe('Meu Jeito authored manifests through the HTTP import boundary', () => 
         return readDraft(env.app, lessonId)
       }
       const first = await apply()
+      const authored = document.blocks.find(
+        (b) => 'content' in b && b.content.kind === (pinta ? 'pinta' : 'studio'),
+      )
+      if (!authored || !('content' in authored)) throw new Error('Entrega ausente')
       expect(
         first.document.blocks.filter((b) => b.content.kind === (pinta ? 'pinta' : 'studio')),
-      ).toEqual([{ id, content }])
+      ).toEqual([
+        {
+          id,
+          content: {
+            ...authored.content,
+            ...(pinta
+              ? { initialAsset: content.initialAsset }
+              : { initialProject: content.initialProject }),
+          },
+        },
+      ])
       expect(first.document.sections.every((s) => s.workspaceBlockId === null)).toBe(true)
       const delivery = first.document.sections.find((s) => s.intent === 'delivery')!
       expect(delivery.completion?.blockIds).toContain(id)

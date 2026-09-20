@@ -903,12 +903,24 @@ describe.skipIf(!url)(
         reader,
       )
       const document: LearningManifest = {
-        version: 1,
+        version: 5,
         courseSlug: 'learning-qa',
         lessonSlug: 'aula-qa',
         title: 'Nova organização',
         blocks: [
-          { key: 'jogo', existing: { kind: 'studio', index: 0 } },
+          {
+            key: 'jogo',
+            content: {
+              kind: 'studio',
+              chain: 'projeto-continuo',
+              initialProject: {
+                formatVersion: 2,
+                name: 'Jogo',
+                files: {},
+                installedExtensions: [],
+              },
+            },
+          },
           { key: 'descoberta', content: activity },
         ],
         sections: [
@@ -920,7 +932,8 @@ describe.skipIf(!url)(
             blockKeys: ['descoberta', 'jogo'],
             workspaceKey: 'jogo',
             externalTool: null,
-            pendingMedia: ['Gravar demonstração curta'],
+            pendingMedia: ['Gravar exemplo curto'],
+            completion: { version: 1, blockIds: ['descoberta'] },
           },
         ],
       }

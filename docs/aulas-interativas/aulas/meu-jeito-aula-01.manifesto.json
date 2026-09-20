@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-01",
   "title": "Uma cópia do seu jogo no Estúdio Completo",
@@ -84,7 +84,10 @@
           },
           "prompt": "Você exporta o jogo que está na aula do Desafio. O que acontece com o jogo que estava lá?",
           "choices": [
-            { "id": "fica", "label": "Ele continua na aula, inteiro." },
+            {
+              "id": "fica",
+              "label": "Ele continua na aula, inteiro."
+            },
             {
               "id": "sai",
               "label": "Ele sai da aula e vai para dentro do arquivo.",
@@ -105,8 +108,14 @@
         "checkpoint": {
           "prompt": "Você pintou a nave de outra cor no projeto do Estúdio. E a nave do jogo que está na aula do Desafio?",
           "choices": [
-            { "id": "b", "label": "Muda junto, porque é o mesmo jogo." },
-            { "id": "a", "label": "Continua com a cor de antes." }
+            {
+              "id": "b",
+              "label": "Muda junto, porque é o mesmo jogo."
+            },
+            {
+              "id": "a",
+              "label": "Continua com a cor de antes."
+            }
           ],
           "correctChoiceId": "a",
           "explanation": "O arquivo levou uma cópia. Depois de importar, são dois jogos separados: cada um guarda o que você fizer nele."
@@ -159,9 +168,53 @@
     },
     {
       "key": "entrega-galeria-v6",
-      "existing": {
+      "content": {
         "kind": "studio",
-        "index": 0
+        "purpose": "submission",
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-meu-jeito-1",
+          "name": "Minha criação",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Minha criação</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": ""
+          },
+          "extraFiles": [],
+          "assets": [],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [],
+              "events": [],
+              "loops": []
+            },
+            "extensions": []
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": []
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        },
+        "gallery": {
+          "minItems": 1,
+          "maxItems": 1
+        }
       }
     },
     {
@@ -178,8 +231,14 @@
             "id": "q1",
             "prompt": "O seu projeto de teste abriu sem a categoria Jogo 2D, e o jogo que veio do Desafio abriu com ela. Por quê?",
             "choices": [
-              { "id": "a", "label": "A extensão foi junto, dentro do arquivo exportado." },
-              { "id": "b", "label": "Jogo importado não precisa de extensão nenhuma." }
+              {
+                "id": "a",
+                "label": "A extensão foi junto, dentro do arquivo exportado."
+              },
+              {
+                "id": "b",
+                "label": "Jogo importado não precisa de extensão nenhuma."
+              }
             ],
             "correctChoiceIds": ["a"],
             "explanation": "Quando você exporta, as ferramentas do jogo vão dentro do arquivo. Num projeto que você começa do zero, quem instala é você."
@@ -188,8 +247,14 @@
             "id": "q2",
             "prompt": "Você recebeu o arquivo .szproject.json e quer abri-lo no Estúdio. Qual ação usa?",
             "choices": [
-              { "id": "b", "label": "Instalar extensão." },
-              { "id": "a", "label": "Importar." }
+              {
+                "id": "b",
+                "label": "Instalar extensão."
+              },
+              {
+                "id": "a",
+                "label": "Importar."
+              }
             ],
             "correctChoiceIds": ["a"],
             "explanation": "Importar traz o projeto. Instalar extensão disponibiliza os blocos usados para construí-lo."

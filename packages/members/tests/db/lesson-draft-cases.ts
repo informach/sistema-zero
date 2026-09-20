@@ -13,6 +13,7 @@ import {
 import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import { eq, sql } from 'drizzle-orm'
 import { LearningImportService } from '../../src/application/learning/learning-import.service'
+import { importedLearningId } from '../../src/domain/learning/learning-import'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
 import type { Database } from '../../src/infrastructure/persistence/drizzle/db'
@@ -712,10 +713,10 @@ export function lessonDraftCases(getDb: () => Database) {
     })
     test('every current manifest imports into drafts; retry and reimport retain linked videos and required work', async () => {
       const root = resolve(import.meta.dir, '../../../../docs/aulas-interativas/aulas')
-      // A importação exercita os 27 manifestos atuais, copiados do fluxo criativo.
+      // A importação exercita todos os manifestos atuais, copiados do fluxo criativo.
       const paths = [...new Bun.Glob('*.manifesto.json').scanSync(root)]
       // Piso anti-vácuo: um glob que deixasse de achar as aulas reprovaria.
-      expect(paths).toHaveLength(27)
+      expect(paths).toHaveLength(28)
       let plannedCount = 0
       // ⚠️ O esperado sai dos PRÓPRIOS manifestos, não de um número cravado. O 144 de
       // antes quebrava o CI toda vez que a autora acrescentava um vídeo a uma aula — e
@@ -729,7 +730,7 @@ export function lessonDraftCases(getDb: () => Database) {
         plannedEsperado += manifest.blocks.filter(
           (block) => typeof (block as { plannedVideo?: unknown }).plannedVideo === 'string',
         ).length
-        expect(manifest.version).toBe(4)
+        expect(manifest.version).toBe(5)
         const f = await fixture()
         await f.db
           .update(courses)
@@ -740,30 +741,11 @@ export function lessonDraftCases(getDb: () => Database) {
           courseSlug: `${manifest.courseSlug}-${f.courseId}`,
           lessonSlug: 'aula',
         }
-        const studio = await f.content.createBlock(f.lessonId, 'studio', {
-          kind: 'studio',
-          initialProject: { formatVersion: 2, name: 'Jogo existente', files: {} },
-        })
         const video = await f.content.createBlock(f.lessonId, 'video', {
           kind: 'video',
           provider: 'vimeo',
           src: 'https://player.vimeo.com/video/987654321',
         })
-        // O rascunho precisa ter cada tipo de bloco reutilizado por `existing` nos
-        // manifestos. A régua abaixo aponta qualquer tipo novo ainda sem fixture.
-        await f.content.createBlock(f.lessonId, 'pinta', {
-          kind: 'pinta',
-          initialAsset: pintaAssetToWire(createLessonAsset('pixel-sprite', 32, 'Nave')),
-        })
-        await f.content.createBlock(f.lessonId, 'materials', {
-          kind: 'materials',
-          title: 'Materiais existentes',
-          items: [],
-        })
-        const SEMEADOS = ['studio', 'video', 'pinta', 'materials']
-        for (const entry of manifest.blocks)
-          if ('existing' in entry)
-            expect(SEMEADOS).toContain((entry as { existing: { kind: string } }).existing.kind)
         const before = await f.reader.findLessonWithContent(f.lessonId)
         const service = new LearningImportService(f.repo, f.reader)
         const plan = await service.preview(f.lessonId, linkedManifest),
@@ -785,7 +767,16 @@ export function lessonDraftCases(getDb: () => Database) {
         expect(retry.revision).toBe(result.revision)
         let draft = await f.repo.read(f.lessonId)
         plannedCount += draft.document.plannedVideos.length
-        expect(draft.document.blocks.some((b) => b.id === studio.id)).toBe(true)
+        for (const entry of manifest.blocks)
+          if (
+            'content' in entry &&
+            ['studio', 'pinta', 'materials', 'certificate'].includes(entry.content.kind)
+          ) {
+            const actual: unknown = draft.document.blocks.find(
+              (block) => block.id === importedLearningId(f.lessonId, 'block', entry.key),
+            )?.content
+            expect(actual).toEqual(entry.content)
+          }
         // O vídeo preservado precisa pertencer a uma seção. O importador usa a última
         // seção de fechamento quando existe; caso contrário, usa a última seção.
         const destination =

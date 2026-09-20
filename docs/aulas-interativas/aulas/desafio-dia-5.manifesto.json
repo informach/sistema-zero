@@ -1,14 +1,720 @@
 {
-  "version": 4,
+  "version": 5,
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "dia-5",
   "title": "O jogo ganha começo e fim",
   "blocks": [
     {
       "key": "projeto",
-      "existing": {
+      "content": {
         "kind": "studio",
-        "index": 0
+        "purpose": "submission",
+        "chain": "desafio-primeiro-jogo",
+        "level": "iniciante-2d",
+        "allowedModes": ["blocks"],
+        "allowLevelReveal": false,
+        "allowBlocks": [
+          "sz_frame_events",
+          "sz_frame_loops",
+          "sz_frame_start",
+          "sz_g2d_arrows_x",
+          "sz_g2d_center_x",
+          "sz_g2d_clamp_to_screen",
+          "sz_g2d_clear",
+          "sz_g2d_create_group",
+          "sz_g2d_create_ship",
+          "sz_g2d_damage_sprite",
+          "sz_g2d_draw_group",
+          "sz_g2d_draw_score",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_draw_sprite_health",
+          "sz_g2d_every_frames",
+          "sz_g2d_explode",
+          "sz_g2d_health_depleted",
+          "sz_g2d_on_group_overlap",
+          "sz_g2d_on_key",
+          "sz_g2d_on_sprite_group_overlap",
+          "sz_g2d_play_fx",
+          "sz_g2d_prune_offscreen",
+          "sz_g2d_random_x",
+          "sz_g2d_remove_from_group",
+          "sz_g2d_restart",
+          "sz_g2d_scene_is",
+          "sz_g2d_set_health",
+          "sz_g2d_set_scene",
+          "sz_g2d_setup_stage",
+          "sz_g2d_shake",
+          "sz_g2d_show_screen",
+          "sz_g2d_spawn_asteroid",
+          "sz_g2d_spawn_bullet",
+          "sz_g2d_sprite_y",
+          "sz_g2d_starfield",
+          "sz_g2d_update_each_frame",
+          "sz_g2d_update_group",
+          "sz_js_const_create",
+          "sz_js_if_else",
+          "sz_js_var_create",
+          "sz_js_var_increment",
+          "sz_val_compare",
+          "sz_val_number",
+          "sz_val_text",
+          "sz_val_variable"
+        ],
+        "showcase": {
+          "enabled": true,
+          "title": "Nave contra Asteroides",
+          "summary": "Um jogo de nave, tiros e asteroides criado no Desafio do Primeiro Jogo."
+        },
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-desafio-5",
+          "name": "Nave contra Asteroides",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Nave contra Asteroides</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": ""
+          },
+          "extraFiles": [],
+          "assets": [],
+          "ir": null,
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#07162e"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 800
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_create_ship",
+                            "fields": {
+                              "NAME": "nave",
+                              "BODY": "#35e8ff",
+                              "WINGS": "#2568ff"
+                            },
+                            "inputs": {
+                              "X": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 400
+                                  }
+                                }
+                              },
+                              "Y": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 410
+                                  }
+                                }
+                              },
+                              "W": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 54
+                                  }
+                                }
+                              },
+                              "H": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 62
+                                  }
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_group",
+                                "fields": {
+                                  "NAME": "tiros"
+                                },
+                                "inputs": {},
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_create_group",
+                                    "fields": {
+                                      "NAME": "asteroides"
+                                    },
+                                    "inputs": {},
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_js_var_create",
+                                        "fields": {
+                                          "NAME": "pontos"
+                                        },
+                                        "inputs": {
+                                          "VALUE": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 0
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "next": {
+                                          "block": {
+                                            "type": "sz_g2d_set_health",
+                                            "fields": {
+                                              "SPRITE": "nave"
+                                            },
+                                            "inputs": {
+                                              "AMOUNT": {
+                                                "shadow": {
+                                                  "type": "sz_val_number",
+                                                  "fields": {
+                                                    "NUM": 3
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "fields": {},
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "fields": {},
+                              "inputs": {},
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_starfield",
+                                  "fields": {},
+                                  "inputs": {
+                                    "SPEED": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 1
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_arrows_x",
+                                      "fields": {
+                                        "SPRITE": "nave"
+                                      },
+                                      "inputs": {
+                                        "SPEED": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 7
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_clamp_to_screen",
+                                          "fields": {
+                                            "SPRITE": "nave"
+                                          },
+                                          "inputs": {},
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_g2d_draw_sprite",
+                                              "fields": {
+                                                "SPRITE": "nave"
+                                              },
+                                              "inputs": {},
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_update_group",
+                                                  "fields": {
+                                                    "GROUP": "tiros"
+                                                  },
+                                                  "inputs": {},
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g2d_prune_offscreen",
+                                                      "fields": {
+                                                        "GROUP": "tiros",
+                                                        "ITEM": "sprite"
+                                                      },
+                                                      "inputs": {},
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_g2d_draw_group",
+                                                          "fields": {
+                                                            "GROUP": "tiros"
+                                                          },
+                                                          "inputs": {},
+                                                          "next": {
+                                                            "block": {
+                                                              "type": "sz_g2d_update_group",
+                                                              "fields": {
+                                                                "GROUP": "asteroides"
+                                                              },
+                                                              "inputs": {},
+                                                              "next": {
+                                                                "block": {
+                                                                  "type": "sz_g2d_prune_offscreen",
+                                                                  "fields": {
+                                                                    "GROUP": "asteroides",
+                                                                    "ITEM": "sprite"
+                                                                  },
+                                                                  "inputs": {},
+                                                                  "next": {
+                                                                    "block": {
+                                                                      "type": "sz_g2d_draw_group",
+                                                                      "fields": {
+                                                                        "GROUP": "asteroides"
+                                                                      },
+                                                                      "inputs": {},
+                                                                      "next": {
+                                                                        "block": {
+                                                                          "type": "sz_g2d_on_group_overlap",
+                                                                          "fields": {
+                                                                            "A": "tiros",
+                                                                            "B": "asteroides",
+                                                                            "ANAME": "tiro",
+                                                                            "BNAME": "asteroide"
+                                                                          },
+                                                                          "inputs": {
+                                                                            "BODY": {
+                                                                              "block": {
+                                                                                "type": "sz_g2d_remove_from_group",
+                                                                                "fields": {
+                                                                                  "SPRITE": "tiro",
+                                                                                  "GROUP": "tiros"
+                                                                                },
+                                                                                "inputs": {},
+                                                                                "next": {
+                                                                                  "block": {
+                                                                                    "type": "sz_g2d_remove_from_group",
+                                                                                    "fields": {
+                                                                                      "SPRITE": "asteroide",
+                                                                                      "GROUP": "asteroides"
+                                                                                    },
+                                                                                    "inputs": {},
+                                                                                    "next": {
+                                                                                      "block": {
+                                                                                        "type": "sz_g2d_explode",
+                                                                                        "fields": {
+                                                                                          "SPRITE": "asteroide",
+                                                                                          "COLOR": "#ffb13b"
+                                                                                        },
+                                                                                        "inputs": {},
+                                                                                        "next": {
+                                                                                          "block": {
+                                                                                            "type": "sz_g2d_play_fx",
+                                                                                            "fields": {
+                                                                                              "FX": "explosion"
+                                                                                            },
+                                                                                            "inputs": {},
+                                                                                            "next": {
+                                                                                              "block": {
+                                                                                                "type": "sz_js_var_increment",
+                                                                                                "fields": {
+                                                                                                  "NAME": "pontos",
+                                                                                                  "DELTA": 1
+                                                                                                },
+                                                                                                "inputs": {}
+                                                                                              }
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          },
+                                                                          "next": {
+                                                                            "block": {
+                                                                              "type": "sz_g2d_draw_score",
+                                                                              "fields": {
+                                                                                "LABEL": "Pontos:",
+                                                                                "COLOR": "#ffffff"
+                                                                              },
+                                                                              "inputs": {
+                                                                                "VALUE": {
+                                                                                  "block": {
+                                                                                    "type": "sz_val_variable",
+                                                                                    "fields": {
+                                                                                      "NAME": "pontos"
+                                                                                    },
+                                                                                    "inputs": {}
+                                                                                  }
+                                                                                },
+                                                                                "X": {
+                                                                                  "shadow": {
+                                                                                    "type": "sz_val_number",
+                                                                                    "fields": {
+                                                                                      "NUM": 12
+                                                                                    }
+                                                                                  }
+                                                                                },
+                                                                                "Y": {
+                                                                                  "shadow": {
+                                                                                    "type": "sz_val_number",
+                                                                                    "fields": {
+                                                                                      "NUM": 30
+                                                                                    }
+                                                                                  }
+                                                                                },
+                                                                                "SIZE": {
+                                                                                  "shadow": {
+                                                                                    "type": "sz_val_number",
+                                                                                    "fields": {
+                                                                                      "NUM": 24
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              },
+                                                                              "next": {
+                                                                                "block": {
+                                                                                  "type": "sz_g2d_on_sprite_group_overlap",
+                                                                                  "fields": {
+                                                                                    "GROUP": "asteroides",
+                                                                                    "SPRITE": "nave",
+                                                                                    "ANAME": "inimigo"
+                                                                                  },
+                                                                                  "inputs": {
+                                                                                    "BODY": {
+                                                                                      "block": {
+                                                                                        "type": "sz_g2d_remove_from_group",
+                                                                                        "fields": {
+                                                                                          "SPRITE": "inimigo",
+                                                                                          "GROUP": "asteroides"
+                                                                                        },
+                                                                                        "inputs": {},
+                                                                                        "next": {
+                                                                                          "block": {
+                                                                                            "type": "sz_g2d_explode",
+                                                                                            "fields": {
+                                                                                              "SPRITE": "inimigo",
+                                                                                              "COLOR": "#ffb13b"
+                                                                                            },
+                                                                                            "inputs": {},
+                                                                                            "next": {
+                                                                                              "block": {
+                                                                                                "type": "sz_g2d_damage_sprite",
+                                                                                                "fields": {
+                                                                                                  "SPRITE": "nave"
+                                                                                                },
+                                                                                                "inputs": {
+                                                                                                  "AMOUNT": {
+                                                                                                    "shadow": {
+                                                                                                      "type": "sz_val_number",
+                                                                                                      "fields": {
+                                                                                                        "NUM": 1
+                                                                                                      }
+                                                                                                    }
+                                                                                                  },
+                                                                                                  "FRAMES": {
+                                                                                                    "shadow": {
+                                                                                                      "type": "sz_val_number",
+                                                                                                      "fields": {
+                                                                                                        "NUM": 45
+                                                                                                      }
+                                                                                                    }
+                                                                                                  }
+                                                                                                },
+                                                                                                "next": {
+                                                                                                  "block": {
+                                                                                                    "type": "sz_g2d_shake",
+                                                                                                    "fields": {},
+                                                                                                    "inputs": {
+                                                                                                      "INTENSITY": {
+                                                                                                        "shadow": {
+                                                                                                          "type": "sz_val_number",
+                                                                                                          "fields": {
+                                                                                                            "NUM": 8
+                                                                                                          }
+                                                                                                        }
+                                                                                                      }
+                                                                                                    }
+                                                                                                  }
+                                                                                                }
+                                                                                              }
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  },
+                                                                                  "next": {
+                                                                                    "block": {
+                                                                                      "type": "sz_g2d_draw_sprite_health",
+                                                                                      "fields": {
+                                                                                        "SPRITE": "nave",
+                                                                                        "STYLE": "hearts",
+                                                                                        "COLOR": "#ff5d5d"
+                                                                                      },
+                                                                                      "inputs": {
+                                                                                        "X": {
+                                                                                          "shadow": {
+                                                                                            "type": "sz_val_number",
+                                                                                            "fields": {
+                                                                                              "NUM": 12
+                                                                                            }
+                                                                                          }
+                                                                                        },
+                                                                                        "Y": {
+                                                                                          "shadow": {
+                                                                                            "type": "sz_val_number",
+                                                                                            "fields": {
+                                                                                              "NUM": 48
+                                                                                            }
+                                                                                          }
+                                                                                        },
+                                                                                        "SIZE": {
+                                                                                          "shadow": {
+                                                                                            "type": "sz_val_number",
+                                                                                            "fields": {
+                                                                                              "NUM": 22
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_every_frames",
+                            "fields": {},
+                            "inputs": {
+                              "N": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 40
+                                  }
+                                }
+                              },
+                              "BODY": {
+                                "block": {
+                                  "type": "sz_g2d_spawn_asteroid",
+                                  "fields": {
+                                    "GROUP": "asteroides",
+                                    "COLOR": "#8d8f9b"
+                                  },
+                                  "inputs": {
+                                    "X": {
+                                      "block": {
+                                        "type": "sz_g2d_random_x",
+                                        "fields": {},
+                                        "inputs": {}
+                                      }
+                                    },
+                                    "Y": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": -30
+                                        }
+                                      }
+                                    },
+                                    "SIZE": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 40
+                                        }
+                                      }
+                                    },
+                                    "VX": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 0
+                                        }
+                                      }
+                                    },
+                                    "VY": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 3
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_events",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_on_key",
+                        "fields": {
+                          "KEY": "Space"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_spawn_bullet",
+                              "fields": {
+                                "GROUP": "tiros",
+                                "COLOR": "#9cff57"
+                              },
+                              "inputs": {
+                                "X": {
+                                  "block": {
+                                    "type": "sz_g2d_center_x",
+                                    "fields": {
+                                      "SPRITE": "nave"
+                                    },
+                                    "inputs": {}
+                                  }
+                                },
+                                "Y": {
+                                  "block": {
+                                    "type": "sz_g2d_sprite_y",
+                                    "fields": {
+                                      "SPRITE": "nave"
+                                    },
+                                    "inputs": {}
+                                  }
+                                },
+                                "R": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 5
+                                    }
+                                  }
+                                },
+                                "VX": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 0
+                                    }
+                                  }
+                                },
+                                "VY": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": -9
+                                    }
+                                  }
+                                }
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_play_fx",
+                                  "fields": {
+                                    "FX": "shoot"
+                                  },
+                                  "inputs": {}
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        }
       }
     },
     {

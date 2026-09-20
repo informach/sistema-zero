@@ -11,35 +11,18 @@ import { LESSON_BLOCK_KIND_LABELS, type LessonBlockContent, type LessonBlockKind
  * aula pode receber em OUTRO ambiente (o caso real: montar no staging e levar para produção sem
  * remontar tudo à mão).
  *
- * ⚠️⚠️ **O formato não carrega a aula inteira, e isso é do formato, não desta função.** O
- * `LearningManifest` do core transporta a ORGANIZAÇÃO (seções, ordem, critérios) e o conteúdo
- * AUTORAL que cabe em texto: cenas interativas, quiz, textos e as falas do Zappy. Mídia, e-book,
- * Estúdio/Pinta, certificado e materiais são REFERÊNCIAS (`{existing:{kind,index}}`) — o serviço
- * de importação resolve cada uma pelo n-ésimo bloco daquele tipo no destino e RECUSA a importação
- * inteira quando ele não existe. Por isso `paraCadastrar` não é enfeite: é a lista exata do que
- * precisa ser criado no destino ANTES de importar, na ordem em que o serviço vai contar.
+ * O manifesto leva Estúdio, Pinta, certificado e materiais como conteúdo. Arquivos privados
+ * associados aos materiais continuam precisando de upload no destino.
  *
  * ⚠️ A função é PURA e roda no navegador: o editor já tem o `draft.document` em memória, então
  * exportar não custa uma ida ao gateway.
  */
-
-/** Um bloco que o manifesto não carrega: vai como referência e precisa existir no destino. */
-export interface ManifestPendencia {
-  kind: LessonBlockKind
-  /** O rótulo na língua da autora ("Imagem", "Estúdio"). */
-  label: string
-  /** A posição entre as REFERÊNCIAS do mesmo tipo, contada como o destino vai contar. */
-  index: number
-  /** A seção em que ele está hoje, para a autora achar o lugar no destino. */
-  secao: string
-}
 
 export interface ManifestExport {
   manifest: LearningManifest
   filename: string
   /** O que muda de um ambiente para o outro e a autora precisa saber ANTES de importar. */
   avisos: string[]
-  paraCadastrar: ManifestPendencia[]
   /** Quantos blocos viajam com o conteúdo dentro. */
   levados: number
   /** Quantos vídeos viajam só como INSTRUÇÃO de produção (chegam vazios no destino). */
@@ -111,10 +94,7 @@ type ManifestSection = LearningManifest['sections'][number]
 type ManifestContent = Extract<ManifestBlock, { content: unknown }>['content']
 
 /** O que cada bloco do rascunho vira no manifesto, decidido ANTES de montar. */
-type Destino =
-  | { tipo: 'conteudo'; content: ManifestContent }
-  | { tipo: 'video'; texto: string }
-  | { tipo: 'referencia'; motivo?: string }
+type Destino = { tipo: 'conteudo'; content: ManifestContent } | { tipo: 'video'; texto: string }
 
 /**
  * O texto do vídeo planejado. O manifesto não leva o arquivo nem o embed: leva a INSTRUÇÃO de
@@ -191,13 +171,10 @@ export function buildLessonManifest(
     )
 
   const instrucoes = new Map(document.plannedVideos.map((v) => [v.blockId, v.instructions]))
-  const semCriterio = document.sections.some((s) => !s.completion)
-  // v4 é o formato completo (quiz por conteúdo + `retireBlockKeys`), mas ele EXIGE `completion`
-  // em toda seção. Com uma seção sem critérios, o manifesto cai para v2 — e lá o quiz não cabe.
-  const version: LearningManifest['version'] = semCriterio ? 2 : 4
-  if (semCriterio)
-    avisar(
-      'Há seção sem critérios de conclusão, então o manifesto sai na versão 2. Nessa versão o quiz não viaja: ele entra na lista de blocos para cadastrar no destino.',
+  const withoutCompletion = document.sections.find((s) => !s.completion)
+  if (withoutCompletion)
+    throw new ManifestExportError(
+      `A seção "${withoutCompletion.title}" precisa de critérios de conclusão antes de exportar.`,
     )
 
   const nomeDoBloco = (kind: LessonBlockKind, posicao: number) => {
@@ -218,13 +195,10 @@ export function buildLessonManifest(
         }
       case 'rich_text': {
         const markdown = block.content.markdown ?? ''
-        // Bloco legado guarda só `html`; o formato só conhece markdown.
         if (!markdown.trim())
-          return {
-            tipo: 'referencia',
-            motivo:
-              'Um texto antigo está guardado em HTML, e o manifesto só leva texto em markdown. Reabra e salve esse bloco no editor para ele viajar junto.',
-          }
+          throw new ManifestExportError(
+            `O ${nomeDoBloco(kind, posicao)} precisa de markdown para exportar. Reabra e salve o texto no editor.`,
+          )
         if (markdown.length > TETO.markdown)
           throw new ManifestExportError(
             `O ${nomeDoBloco(kind, posicao)} tem ${markdown.length} caracteres e o manifesto aceita ${TETO.markdown}. Divida esse texto em dois blocos antes de exportar.`,
@@ -251,19 +225,18 @@ export function buildLessonManifest(
       }
       case 'quiz': {
         const { passingScore, questions } = block.content
-        if (version !== 4) return { tipo: 'referencia' }
         // ⚠️ `passingScore` 0 é salvável no editor (o campo tem `min={0}`) e o manifesto exige
         // MAIOR que zero. Sem esta guarda o quiz ia como conteúdo e só o validador final
         // reclamava, com a frase genérica — e "Revisar para publicar" não acusa nada, porque 0
         // publica.
         if (typeof passingScore !== 'number' || passingScore <= 0)
-          return {
-            tipo: 'referencia',
-            motivo:
-              'Um quiz sem nota de corte não cabe no manifesto. Defina a nota de corte para ele viajar junto.',
-          }
+          throw new ManifestExportError(
+            `O ${nomeDoBloco(kind, posicao)} precisa de nota de corte maior que zero para exportar.`,
+          )
         if (!Array.isArray(questions) || questions.length === 0)
-          return { tipo: 'referencia', motivo: 'Um quiz sem perguntas não cabe no manifesto.' }
+          throw new ManifestExportError(
+            `O ${nomeDoBloco(kind, posicao)} precisa de perguntas para exportar.`,
+          )
         if (questions.length > TETO.perguntas)
           throw new ManifestExportError(
             `O ${nomeDoBloco(kind, posicao)} tem ${questions.length} perguntas e o manifesto aceita ${TETO.perguntas}.`,
@@ -280,37 +253,34 @@ export function buildLessonManifest(
           tipo: 'video',
           texto: plannedVideoText(block.content, instrucoes.get(block.id), avisar),
         }
+      case 'studio':
+      case 'pinta':
+      case 'certificate':
+        return { tipo: 'conteudo', content: block.content }
+      case 'materials': {
+        const files = block.content.items.filter((item) => item.kind === 'file')
+        if (files.length)
+          avisar(
+            `${files.length} arquivo(s) dos materiais precisam ser enviados novamente no destino e vinculados ao bloco importado.`,
+          )
+        return {
+          tipo: 'conteudo',
+          content: {
+            ...block.content,
+            items: block.content.items.filter((item) => item.kind !== 'file'),
+          },
+        }
+      }
       default:
-        return { tipo: 'referencia' }
+        throw new ManifestExportError(
+          `O ${nomeDoBloco(kind, posicao)} usa um tipo de mídia que precisa ser cadastrado no destino. Exporte depois de substituir esse bloco por conteúdo portátil.`,
+        )
     }
   })
 
-  // ⚠️⚠️ **Um tipo não pode ficar PARTIDO entre conteúdo e referência.** O serviço resolve
-  // `{existing:{kind,index}}` contando os blocos daquele tipo no rascunho do DESTINO, onde os que
-  // viajam por conteúdo ainda NÃO existem (é o import que os cria). Com um quiz por conteúdo e
-  // outro por referência, a referência sai com índice 1 e o destino, que tem um quiz só, recusa a
-  // importação inteira — ou, pior, numa reimportação resolve para o quiz ERRADO e a aula de
-  // produção troca de conteúdo em silêncio. Melhor falhar aqui, dizendo o que consertar.
-  for (const kind of new Set(document.blocks.map((b) => b.content.kind as LessonBlockKind))) {
-    const daFamilia = destinos.filter((_, i) => document.blocks[i]?.content.kind === kind)
-    const referencias = daFamilia.filter((d) => d.tipo === 'referencia')
-    if (daFamilia.some((d) => d.tipo === 'conteudo') && referencias.length)
-      throw new ManifestExportError(
-        `Os blocos do tipo "${LESSON_BLOCK_KIND_LABELS[kind] ?? kind}" ficaram divididos: parte viaja dentro do manifesto e parte viraria referência, e o destino não tem como distinguir as duas. ${
-          referencias.find((d) => d.motivo)?.motivo ??
-          'Acerte o bloco que ficou de fora e exporte de novo.'
-        }`,
-      )
-  }
-
-  // ── Passada 2: montar, numerando as referências SÓ entre elas. ───────────────────────────
-  const paraCadastrar: ManifestPendencia[] = []
+  // ── Passada 2: montar as chaves estáveis dos blocos. ───────────────────────────────────────
   const keyByBlockId = new Map<string, string>()
   const usadas = new Set<string>()
-  const referenciasPorKind = new Map<string, number>()
-  const secaoDoBloco = new Map<string, string>()
-  for (const section of document.sections)
-    for (const blockId of section.blockIds) secaoDoBloco.set(blockId, section.title)
 
   const blocks: ManifestBlock[] = []
   let levados = 0
@@ -320,7 +290,7 @@ export function buildLessonManifest(
     const key = keyFor(PREFIXO[kind] ?? 'bloco', block.id)
     if (usadas.has(key))
       throw new ManifestExportError(
-        'Dois blocos desta aula geraram a mesma referência. Avise no chamado: o manifesto não pode sair com referência repetida.',
+        'Dois blocos desta aula geraram a mesma chave. Avise no chamado: o manifesto não pode sair com chave repetida.',
       )
     usadas.add(key)
     keyByBlockId.set(block.id, key)
@@ -335,16 +305,6 @@ export function buildLessonManifest(
       videos += 1
       return
     }
-    const index = referenciasPorKind.get(kind) ?? 0
-    referenciasPorKind.set(kind, index + 1)
-    if (destino.motivo) avisar(destino.motivo)
-    paraCadastrar.push({
-      kind,
-      label: LESSON_BLOCK_KIND_LABELS[kind] ?? kind,
-      index,
-      secao: secaoDoBloco.get(block.id) ?? 'Fora de seção',
-    })
-    blocks.push({ key, existing: { kind, index } })
   })
 
   const mapped = (blockId: string): string => {
@@ -360,7 +320,7 @@ export function buildLessonManifest(
     const key = keyFor('secao', section.id)
     if (keysDeSecao.has(key))
       throw new ManifestExportError(
-        'Duas seções desta aula geraram a mesma referência. Avise no chamado: o manifesto não pode sair com seção repetida.',
+        'Duas seções desta aula geraram a mesma chave. Avise no chamado: o manifesto não pode sair com seção repetida.',
       )
     keysDeSecao.add(key)
     if (section.title.length > TETO.titulo || section.objective.length > TETO.objetivo)
@@ -389,10 +349,6 @@ export function buildLessonManifest(
     }
   })
 
-  if (paraCadastrar.length)
-    avisar(
-      'Os arquivos (imagens, áudios, PDFs e anexos) não viajam no manifesto: os buckets de staging e de produção são diferentes, então eles precisam ser reenviados no destino.',
-    )
   if (videos)
     avisar(
       `${videos === 1 ? 'Um vídeo viaja' : `${videos} vídeos viajam`} só como orientação de produção: no destino o bloco chega VAZIO e o vídeo precisa ser enviado lá antes de publicar.`,
@@ -417,14 +373,14 @@ export function buildLessonManifest(
       'Algum balão do Zappy tem ajuste de pronúncia. O manifesto não carrega esse campo: refaça o ajuste no destino.',
     )
 
-  const manifest = {
-    version,
+  const manifest: LearningManifest = {
+    version: 5,
     courseSlug,
     lessonSlug: document.slug,
     title: document.title,
     blocks,
     sections,
-  } as LearningManifest
+  }
   // A última rede: o mesmo validador que o import roda. Um manifesto que não passa aqui só
   // falharia lá, depois de a autora baixar o arquivo e abrir a outra aula. Os tetos conhecidos já
   // foram conferidos acima, um a um, com o nome do bloco — esta mensagem é para o que sobrar.
@@ -436,7 +392,6 @@ export function buildLessonManifest(
     manifest,
     filename: `${courseSlug}-${document.slug}-manifesto.json`,
     avisos,
-    paraCadastrar,
     levados,
     videos,
   }

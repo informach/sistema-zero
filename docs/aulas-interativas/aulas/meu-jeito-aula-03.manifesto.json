@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-03",
   "title": "O motor da sua nave acende",
@@ -42,8 +42,14 @@
         "checkpoint": {
           "prompt": "Duplicar o quadro já basta para o fogo parecer pulsar?",
           "choices": [
-            { "id": "b", "label": "Sim, dois desenhos iguais trocando depressa já pulsam." },
-            { "id": "a", "label": "É preciso mudar o fogo num dos dois quadros." }
+            {
+              "id": "b",
+              "label": "Sim, dois desenhos iguais trocando depressa já pulsam."
+            },
+            {
+              "id": "a",
+              "label": "É preciso mudar o fogo num dos dois quadros."
+            }
           ],
           "correctChoiceId": "a",
           "explanation": "Duplicar guarda a base igualzinha. O que o olho lê como pulsação é a diferença entre um quadro e o outro."
@@ -113,8 +119,14 @@
         "checkpoint": {
           "prompt": "Com o fantasma ligado no quadro 2, o que é o desenho tracejado?",
           "choices": [
-            { "id": "a", "label": "O fogo do quadro 1, só para você comparar." },
-            { "id": "b", "label": "Um terceiro fogo, que vai entrar na animação." }
+            {
+              "id": "a",
+              "label": "O fogo do quadro 1, só para você comparar."
+            },
+            {
+              "id": "b",
+              "label": "Um terceiro fogo, que vai entrar na animação."
+            }
           ],
           "correctChoiceId": "a",
           "explanation": "O fantasma é uma ajuda de tela e não entra na animação. Ele mostra o desenho do quadro de antes para você medir o quanto o seu fogo cresceu."
@@ -159,9 +171,14 @@
     },
     {
       "key": "entrega-galeria-v6",
-      "existing": {
+      "content": {
         "kind": "pinta",
-        "index": 0
+        "purpose": "submission",
+        "initialAsset": null,
+        "gallery": {
+          "minItems": 1,
+          "maxItems": 1
+        }
       }
     },
     {
@@ -178,8 +195,14 @@
             "id": "q1",
             "prompt": "No primeiro quadro, o fantasma não aparece. É defeito?",
             "choices": [
-              { "id": "a", "label": "Não: ainda não existe um quadro anterior." },
-              { "id": "b", "label": "Sim: é preciso duplicar até aparecer no primeiro." }
+              {
+                "id": "a",
+                "label": "Não: ainda não existe um quadro anterior."
+              },
+              {
+                "id": "b",
+                "label": "Sim: é preciso duplicar até aparecer no primeiro."
+              }
             ],
             "correctChoiceIds": ["a"],
             "explanation": "O fantasma mostra o quadro de antes. No primeiro quadro não há nenhum antes dele."
@@ -192,7 +215,10 @@
                 "id": "a",
                 "label": "Mover leva os pixels de um lugar para outro, e o lugar de antes fica vazio."
               },
-              { "id": "b", "label": "O segundo quadro nasce sem a parte de baixo do desenho." }
+              {
+                "id": "b",
+                "label": "O segundo quadro nasce sem a parte de baixo do desenho."
+              }
             ],
             "correctChoiceIds": ["a"],
             "explanation": "Mover desloca os pixels. O Lápis preenche o espaço que ficou."

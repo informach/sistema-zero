@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-02",
   "title": "Desenhe a sua nave",
@@ -75,8 +75,14 @@
         "checkpoint": {
           "prompt": "Com o Espelho lado a lado ligado, o que aparece dos dois lados?",
           "choices": [
-            { "id": "a", "label": "O que você pinta com o Lápis, com a Linha e com a Borracha." },
-            { "id": "b", "label": "Tudo, inclusive o que você enche com o Balde de tinta." }
+            {
+              "id": "a",
+              "label": "O que você pinta com o Lápis, com a Linha e com a Borracha."
+            },
+            {
+              "id": "b",
+              "label": "Tudo, inclusive o que você enche com o Balde de tinta."
+            }
           ],
           "correctChoiceId": "a",
           "explanation": "O espelho copia o ponto que você marca, então ele pega o Lápis, a Linha, a Borracha, o Retângulo e o Círculo. O Balde de tinta enche a região onde você clicou, e a linha tracejada do meio continua na tela sem fazer o outro lado encher."
@@ -146,8 +152,14 @@
         "checkpoint": {
           "prompt": "Uma parte do seu desenho já está numa cor escura. Como mostrar que a luz bate nela?",
           "choices": [
-            { "id": "b", "label": "Cobrindo a parte inteira com a cor da sombra do corpo." },
-            { "id": "a", "label": "Pondo poucos pixels de um tom mais claro da mesma família." }
+            {
+              "id": "b",
+              "label": "Cobrindo a parte inteira com a cor da sombra do corpo."
+            },
+            {
+              "id": "a",
+              "label": "Pondo poucos pixels de um tom mais claro da mesma família."
+            }
           ],
           "correctChoiceId": "a",
           "explanation": "O tom mais claro da mesma família preserva a cor da parte e mostra de que lado a luz bate. A cor da sombra do corpo apagaria a cor dela."
@@ -200,9 +212,14 @@
     },
     {
       "key": "entrega-galeria-v6",
-      "existing": {
+      "content": {
         "kind": "pinta",
-        "index": 0
+        "purpose": "submission",
+        "initialAsset": null,
+        "gallery": {
+          "minItems": 1,
+          "maxItems": 1
+        }
       }
     },
     {
@@ -219,8 +236,14 @@
             "id": "q1",
             "prompt": "Você quer mudar apenas um detalhe pequeno na asa. Qual ferramenta cabe melhor?",
             "choices": [
-              { "id": "a", "label": "Lápis." },
-              { "id": "b", "label": "Balde em todo o fundo." }
+              {
+                "id": "a",
+                "label": "Lápis."
+              },
+              {
+                "id": "b",
+                "label": "Balde em todo o fundo."
+              }
             ],
             "correctChoiceIds": ["a"],
             "explanation": "O Lápis atua pixel a pixel e permite uma alteração pequena."
@@ -229,8 +252,14 @@
             "id": "q2",
             "prompt": "Você terminou o contorno e a nave ocupou o quadro inteiro, até a última fileira de baixo. O que isso custa na próxima aula?",
             "choices": [
-              { "id": "a", "label": "O fogo do motor não vai ter onde caber dentro do quadro." },
-              { "id": "b", "label": "A nave vai ficar com menos cores disponíveis." }
+              {
+                "id": "a",
+                "label": "O fogo do motor não vai ter onde caber dentro do quadro."
+              },
+              {
+                "id": "b",
+                "label": "A nave vai ficar com menos cores disponíveis."
+              }
             ],
             "correctChoiceIds": ["a"],
             "explanation": "O espaço embaixo é uma decisão de desenho para preparar a animação. Se ele sumir, o fogo não tem para onde crescer."

@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-04",
   "title": "A sua pedra, feita de pontos",
@@ -70,8 +70,14 @@
         "checkpoint": {
           "prompt": "Deixar o Contorno em Sem cor faz o quê?",
           "choices": [
-            { "id": "a", "label": "Tira a linha de fora e mantém o preenchimento." },
-            { "id": "b", "label": "Apaga todas as formas do desenho." }
+            {
+              "id": "a",
+              "label": "Tira a linha de fora e mantém o preenchimento."
+            },
+            {
+              "id": "b",
+              "label": "Apaga todas as formas do desenho."
+            }
           ],
           "correctChoiceId": "a",
           "explanation": "Preenchimento e contorno são duas partes com cor própria. Tirar a cor de uma não apaga a outra, e o fundo quadriculado aparece onde não tem tinta nenhuma."
@@ -185,7 +191,10 @@
           },
           "prompt": "Se você aproximar muito, o que acontece com as bordas?",
           "choices": [
-            { "id": "so-pixel", "label": "Só a de pixel vira degraus" },
+            {
+              "id": "so-pixel",
+              "label": "Só a de pixel vira degraus"
+            },
             {
               "id": "as-duas",
               "label": "As duas viram degraus",
@@ -206,8 +215,14 @@
         "checkpoint": {
           "prompt": "Com a lupa bem perto, por que a pedra de vetor continua lisa?",
           "choices": [
-            { "id": "b", "label": "Ela é feita de quadradinhos bem menores." },
-            { "id": "a", "label": "Ela é refeita a partir dos pontos e das curvas." }
+            {
+              "id": "b",
+              "label": "Ela é feita de quadradinhos bem menores."
+            },
+            {
+              "id": "a",
+              "label": "Ela é refeita a partir dos pontos e das curvas."
+            }
           ],
           "correctChoiceId": "a",
           "explanation": "O vetor guarda a forma, então refaz a curva em qualquer tamanho. O pixel guarda quadradinhos, e de perto eles aparecem."
@@ -232,9 +247,14 @@
     },
     {
       "key": "entrega-galeria-v6",
-      "existing": {
+      "content": {
         "kind": "pinta",
-        "index": 0
+        "purpose": "submission",
+        "initialAsset": null,
+        "gallery": {
+          "minItems": 1,
+          "maxItems": 1
+        }
       }
     },
     {
@@ -251,8 +271,14 @@
             "id": "q1",
             "prompt": "Você vai fazer a cratera numa cor mais escura, e a sua pedra ainda está com a caixa tracejada em volta. O que acontece se você escolher a cor agora?",
             "choices": [
-              { "id": "a", "label": "A pedra inteira muda de cor." },
-              { "id": "b", "label": "Nasce uma cratera escura em cima da pedra." }
+              {
+                "id": "a",
+                "label": "A pedra inteira muda de cor."
+              },
+              {
+                "id": "b",
+                "label": "Nasce uma cratera escura em cima da pedra."
+              }
             ],
             "correctChoiceIds": ["a"],
             "explanation": "A caixa tracejada quer dizer que a forma está escolhida, e a cor vai para ela. Solte a seleção antes de preparar a cor da próxima forma."
@@ -261,8 +287,14 @@
             "id": "q2",
             "prompt": "Uma ponta da sua pedra passou da borda de cima do quadro. O que acontece com ela quando o desenho for para o jogo?",
             "choices": [
-              { "id": "a", "label": "O pedaço que passou da borda é cortado." },
-              { "id": "b", "label": "O quadro cresce sozinho para a pedra caber inteira." }
+              {
+                "id": "a",
+                "label": "O pedaço que passou da borda é cortado."
+              },
+              {
+                "id": "b",
+                "label": "O quadro cresce sozinho para a pedra caber inteira."
+              }
             ],
             "correctChoiceIds": ["a"],
             "explanation": "O quadro é o tamanho que você escolheu no começo. É por isso que o espaço de cima precisa ficar livre, para o fogo da próxima aula caber nele."

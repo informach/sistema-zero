@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-05",
   "title": "A pedra pega fogo e começa a rolar",
@@ -225,9 +225,14 @@
     },
     {
       "key": "entrega-galeria-v6",
-      "existing": {
+      "content": {
         "kind": "pinta",
-        "index": 0
+        "purpose": "submission",
+        "initialAsset": null,
+        "gallery": {
+          "minItems": 2,
+          "maxItems": 2
+        }
       }
     },
     {

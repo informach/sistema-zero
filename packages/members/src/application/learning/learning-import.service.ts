@@ -3,7 +3,6 @@ import {
   type DraftBlock,
   isLearningManifest,
   type LessonDraftDocument,
-  lessonCompletionRequirements,
   validateLessonSections,
 } from '@sistemazero/core/learning'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
@@ -11,6 +10,45 @@ import { importedLearningId } from '../../domain/learning/learning-import'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { LessonDraftRepository } from '../../domain/ports/lesson-draft-repository.port'
 import { stableJson } from '../../domain/shared/stable-json'
+
+function importedContent(
+  authored: DraftBlock['content'],
+  previous: DraftBlock['content'] | undefined,
+): DraftBlock['content'] {
+  if (!previous || previous.kind !== authored.kind) return authored
+  if (authored.kind === 'studio') return { ...authored, initialProject: previous.initialProject }
+  if (authored.kind === 'pinta') return { ...authored, initialAsset: previous.initialAsset }
+  if (authored.kind === 'materials' && Array.isArray(authored.items)) {
+    if (!Array.isArray(previous.items) || authored.items.length === 0)
+      return { ...authored, items: Array.isArray(previous.items) ? previous.items : authored.items }
+    const ids = new Set(
+      authored.items.flatMap((item) =>
+        item && typeof item === 'object' && 'id' in item && typeof item.id === 'string'
+          ? [item.id]
+          : [],
+      ),
+    )
+    const uploaded = previous.items.filter(
+      (item) =>
+        item &&
+        typeof item === 'object' &&
+        'kind' in item &&
+        item.kind === 'file' &&
+        'id' in item &&
+        typeof item.id === 'string' &&
+        !ids.has(item.id),
+    )
+    return { ...authored, items: [...uploaded, ...authored.items] }
+  }
+  if (authored.kind === 'certificate')
+    return {
+      ...authored,
+      ...(previous.baseImageUrl !== undefined ? { baseImageUrl: previous.baseImageUrl } : {}),
+      ...(previous.signatures !== undefined ? { signatures: previous.signatures } : {}),
+      ...(previous.accentColor !== undefined ? { accentColor: previous.accentColor } : {}),
+    }
+  return authored
+}
 
 export class LearningImportService {
   constructor(
@@ -95,34 +133,29 @@ export class LearningImportService {
     for (const entry of manifest.blocks) {
       if ('plannedVideo' in entry) {
         mapping.set(entry.key, plannedVideo(entry.key, entry.plannedVideo))
-      } else if ('existing' in entry) {
-        const block = draft.document.blocks.filter((b) => b.content.kind === entry.existing.kind)[
-          entry.existing.index
-        ]
-        if (!block) {
-          const kind =
-            entry.existing.kind === 'studio'
-              ? 'Estúdio'
-              : entry.existing.kind === 'pinta'
-                ? 'Pinta'
-                : entry.existing.kind
-          throw new ValidationError(
-            `Este manifesto reutiliza o bloco de ${kind} nº ${entry.existing.index + 1} da aula (referência "${entry.key}"), mas ele ainda não existe no rascunho. ` +
-              `Em Percurso da aula, use "Adicionar conteúdo aqui", adicione e configure esse bloco e confira a importação novamente. ` +
-              'O manifesto contém a organização e as atividades; o conteúdo do bloco referenciado precisa estar cadastrado na aula.',
-          )
-        }
-        mapping.set(entry.key, block.id)
-        add(block)
       } else {
-        const id = importedLearningId(lessonId, 'block', entry.key)
+        const generatedId = importedLearningId(lessonId, 'block', entry.key)
+        const creative = ['studio', 'pinta', 'materials', 'certificate'].includes(
+          entry.content.kind,
+        )
+        const candidates =
+          creative && !draft.document.blocks.some((b) => b.id === generatedId)
+            ? draft.document.blocks.filter(
+                (b) => b.content.kind === entry.content.kind && !used.has(b.id),
+              )
+            : []
+        if (candidates.length > 1)
+          throw new ValidationError(
+            `Há mais de um bloco de ${entry.content.kind} na aula. A importação não pode escolher qual ID preservar para "${entry.key}".`,
+          )
+        const id = candidates[0]?.id ?? generatedId
         const previous = draft.document.blocks.find((b) => b.id === id)
         if (previous && previous.content.kind !== entry.content.kind)
           throw new ValidationError(
             `O bloco ${entry.key} mudou de tipo na autoria. Revise o manifesto.`,
           )
         mapping.set(entry.key, id)
-        add({ id, content: { ...entry.content } })
+        add({ id, content: importedContent({ ...entry.content }, previous?.content) })
       }
     }
     const mapped = (key: string) => {
@@ -163,29 +196,10 @@ export class LearningImportService {
     }
     const retained = draft.document.blocks.filter((b) => !used.has(b.id) && !retireIds.has(b.id))
     for (const block of retained) add(block)
-    const requiredIds = new Set(
-      retained
-        .filter(
-          (block) =>
-            manifest.version !== 4 &&
-            lessonCompletionRequirements({
-              completed: false,
-              blocks: [{ ...block, kind: block.content.kind }],
-            }).length,
-        )
-        .map((b) => b.id),
-    )
-    // ⚠️ TODO bloco preservado precisa pousar numa seção: não existe mais lugar fora delas. As
-    // atividades obrigatórias vêm primeiro, e o material opcional logo depois — no fechamento,
-    // que é onde a autora vai reencontrá-lo para mover.
+    // Blocos avulsos existentes continuam visíveis até a autora decidir onde colocá-los.
     const closing =
       document.sections.findLast((s) => s.intent === 'closing') ?? document.sections.at(-1)
-    const opcionais = retained.filter((b) => !requiredIds.has(b.id))
-    if (closing)
-      closing.blockIds.push(
-        ...retained.filter((b) => requiredIds.has(b.id)).map((b) => b.id),
-        ...opcionais.map((b) => b.id),
-      )
+    if (closing) closing.blockIds.push(...retained.map((b) => b.id))
     for (const video of draft.document.plannedVideos)
       if (
         !document.plannedVideos.some((v) => v.blockId === video.blockId) &&
@@ -213,10 +227,7 @@ export class LearningImportService {
         ...(draft.isPublished
           ? ['A aula publicada permanece disponível. Esta importação altera somente o rascunho.']
           : []),
-        ...(requiredIds.size
-          ? ['As atividades obrigatórias existentes foram mantidas no fechamento.']
-          : []),
-        ...(opcionais.length
+        ...(retained.length
           ? ['Os materiais opcionais existentes ficam no fim da última seção.']
           : []),
         ...(document.plannedVideos.length

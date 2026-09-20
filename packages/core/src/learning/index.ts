@@ -11,6 +11,8 @@ export * from './section-progression'
 export * from './section-templates'
 export * from './video-watch'
 
+import { STUDIO_PROJECT_FORMAT_VERSION } from '../studio/project-format'
+import { type GalleryDeliveryConfig, isGalleryDeliveryConfig } from './gallery-delivery'
 import { isLearningPredictionContext, type LearningPredictionContext } from './prediction-context'
 import {
   castText,
@@ -768,9 +770,9 @@ export function validateLessonSections(
   return null
 }
 
-/** Portable authoring format. Existing projects/media are references, never invented snapshots. */
+/** Portable authoring format. Every non-video block contains its own content. */
 export interface LearningManifest {
-  version: 1 | 2 | 3 | 4
+  version: 5
   /** Explicit retirement of earlier imported instructional blocks, reviewed in the import preview. */
   retireBlockKeys?: string[]
   courseSlug: string
@@ -784,8 +786,44 @@ export interface LearningManifest {
           | ManifestQuiz
           | { kind: 'rich_text'; markdown: string }
           | { kind: 'dialogue'; pose?: string; text: string; vozes?: SceneVozes }
+          | {
+              kind: 'studio'
+              initialProject: unknown
+              gallery?: GalleryDeliveryConfig
+              purpose?: 'experiment' | 'submission'
+              level?: string
+              allowBlocks?: string[]
+              allowCategories?: string[]
+              allowedModes?: Array<'blocks' | 'bridge' | 'code'>
+              allowLevelReveal?: boolean
+              activity?: unknown
+              chain?: string
+              showcase?: {
+                enabled: boolean
+                title?: string
+                summary?: string
+                defaultCoverUrl?: string
+              }
+            }
+          | {
+              kind: 'pinta'
+              initialAsset: unknown
+              gallery?: GalleryDeliveryConfig
+              purpose?: 'experiment' | 'submission'
+              allowTools?: string[]
+              chain?: string
+            }
+          | { kind: 'materials'; title?: string; items: unknown[] }
+          | {
+              kind: 'certificate'
+              baseImageUrl?: string
+              introLine?: string
+              coursePhrase?: string
+              bodyText?: string
+              signatures?: Array<{ imageUrl?: string; name?: string }>
+              accentColor?: string
+            }
       }
-    | { key: string; existing: { kind: string; index: number } }
     | { key: string; plannedVideo: string }
   >
   sections: Array<
@@ -796,10 +834,88 @@ export interface LearningManifest {
     }
   >
 }
+
+function isManifestContent(content: unknown): boolean {
+  if (isInteractiveBlock(content) || isManifestQuiz(content)) return true
+  if (!record(content)) return false
+  if (content.kind === 'rich_text') return text(content.markdown, 50000)
+  if (content.kind === 'dialogue')
+    return (
+      text(content.text, 400) &&
+      (content.pose === undefined ||
+        (typeof content.pose === 'string' &&
+          ['speaking', 'happy', 'thinking', 'celebrating'].includes(content.pose)))
+    )
+  if (content.kind === 'studio') {
+    const project = content.initialProject
+    if (!record(project) || !record(project.files)) return false
+    const files = project.files
+    return (
+      project.formatVersion === STUDIO_PROJECT_FORMAT_VERSION &&
+      text(project.name, 200) &&
+      ['index.html', 'style.css', 'script.js'].every((name) => typeof files[name] === 'string') &&
+      Array.isArray(project.installedExtensions) &&
+      project.installedExtensions.every(
+        (extension: unknown) =>
+          record(extension) &&
+          text(extension.id, 80) &&
+          text(extension.version, 40) &&
+          typeof extension.installedAt === 'number',
+      ) &&
+      (content.gallery === undefined || isGalleryDeliveryConfig(content.gallery, 'studio'))
+    )
+  }
+  if (content.kind === 'pinta')
+    return (
+      (content.initialAsset === null && isGalleryDeliveryConfig(content.gallery, 'pinta')) ||
+      (record(content.initialAsset) &&
+        text(content.initialAsset.id, 100) &&
+        text(content.initialAsset.name, 100) &&
+        typeof content.initialAsset.kind === 'string' &&
+        [
+          'pixel-sprite',
+          'pixel-background',
+          'tileset',
+          'tilemap',
+          'vector-sprite',
+          'vector-background',
+          'vector-tileset',
+        ].includes(content.initialAsset.kind) &&
+        (content.gallery === undefined || isGalleryDeliveryConfig(content.gallery, 'pinta')))
+    )
+  if (content.kind === 'materials')
+    return (
+      (content.title === undefined || text(content.title, 120)) &&
+      Array.isArray(content.items) &&
+      content.items.length <= 20 &&
+      content.items.every(
+        (item: unknown) =>
+          record(item) &&
+          text(item.id, 64) &&
+          (item.kind === 'file'
+            ? text(item.attachmentId, 64)
+            : item.kind === 'text'
+              ? text(item.markdown, 50000)
+              : item.kind === 'link'
+                ? text(item.url, 2000) && text(item.label, 200)
+                : item.kind === 'image'
+                  ? text(item.url, 2000)
+                  : item.kind === 'video' && text(item.url, 2000)),
+      )
+    )
+  if (content.kind === 'certificate')
+    return (
+      (content.introLine === undefined || text(content.introLine, 200)) &&
+      (content.coursePhrase === undefined || text(content.coursePhrase, 300)) &&
+      (content.bodyText === undefined || text(content.bodyText, 2000))
+    )
+  return false
+}
+
 export function isLearningManifest(value: unknown): value is LearningManifest {
   if (
     !record(value) ||
-    (value.version !== 1 && value.version !== 2 && value.version !== 3 && value.version !== 4) ||
+    value.version !== 5 ||
     !text(value.courseSlug, 200) ||
     !text(value.lessonSlug, 200) ||
     !text(value.title, 200) ||
@@ -813,8 +929,7 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
   const key = (v: unknown) => typeof v === 'string' && /^[a-z][a-z0-9-]{0,79}$/.test(v)
   if (
     value.retireBlockKeys !== undefined &&
-    (value.version !== 4 ||
-      !Array.isArray(value.retireBlockKeys) ||
+    (!Array.isArray(value.retireBlockKeys) ||
       value.retireBlockKeys.length > 200 ||
       !value.retireBlockKeys.every(key) ||
       new Set(value.retireBlockKeys).size !== value.retireBlockKeys.length)
@@ -825,38 +940,9 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
       (b) =>
         record(b) &&
         key(b.key) &&
-        (((value.version === 2 || value.version === 3 || value.version === 4) &&
-          'plannedVideo' in b &&
-          !('content' in b) &&
-          !('existing' in b) &&
-          text(b.plannedVideo, 5000)) ||
-          ('content' in b &&
-            !('plannedVideo' in b) &&
-            !('existing' in b) &&
-            (isInteractiveBlock(b.content) ||
-              (value.version === 4 && isManifestQuiz(b.content)) ||
-              (record(b.content) &&
-                b.content.kind === 'rich_text' &&
-                text(b.content.markdown, 50000)) ||
-              // Balão de fala do mascote: variante ADITIVA, sem bump de `version`
-              // (manifesto antigo nunca a emite, e o novo é lido pelos dois).
-              (record(b.content) &&
-                b.content.kind === 'dialogue' &&
-                text(b.content.text, 400) &&
-                (b.content.pose === undefined ||
-                  (typeof b.content.pose === 'string' &&
-                    ['speaking', 'happy', 'thinking', 'celebrating'].includes(
-                      b.content.pose,
-                    )))))) ||
-          ('existing' in b &&
-            !('plannedVideo' in b) &&
-            !('content' in b) &&
-            record(b.existing) &&
-            text(b.existing.kind, 40) &&
-            Number.isInteger(b.existing.index) &&
-            typeof b.existing.index === 'number' &&
-            b.existing.index >= 0 &&
-            b.existing.index < 200)),
+        'plannedVideo' in b !== 'content' in b &&
+        !('existing' in b) &&
+        ('plannedVideo' in b ? text(b.plannedVideo, 5000) : isManifestContent(b.content)),
     )
   )
     return false
@@ -874,9 +960,8 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
         (s.externalTool === null || s.externalTool === 'estudio' || s.externalTool === 'pinta') &&
         strings(s.pendingMedia, 20) &&
         !(s.workspaceKey && s.externalTool) &&
-        (s.completion === undefined
-          ? value.version !== 3 && value.version !== 4
-          : isSectionCompletion(s.completion)),
+        s.completion !== undefined &&
+        isSectionCompletion(s.completion),
     )
   )
     return false

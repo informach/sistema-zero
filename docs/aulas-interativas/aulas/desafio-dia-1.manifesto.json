@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "dia-1",
   "title": "A nave ganha vida",
@@ -35,9 +35,71 @@
     },
     {
       "key": "projeto",
-      "existing": {
+      "content": {
         "kind": "studio",
-        "index": 0
+        "purpose": "submission",
+        "chain": "desafio-primeiro-jogo",
+        "level": "iniciante-2d",
+        "allowedModes": ["blocks"],
+        "allowLevelReveal": false,
+        "allowBlocks": [
+          "sz_frame_loops",
+          "sz_frame_start",
+          "sz_g2d_arrows_x",
+          "sz_g2d_clamp_to_screen",
+          "sz_g2d_clear",
+          "sz_g2d_create_ship",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_setup_stage",
+          "sz_g2d_starfield",
+          "sz_g2d_update_each_frame",
+          "sz_val_number"
+        ],
+        "showcase": {
+          "enabled": false,
+          "title": "Nave contra Asteroides",
+          "summary": "Um jogo de nave, tiros e asteroides criado no Desafio do Primeiro Jogo."
+        },
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-desafio-1",
+          "name": "Nave contra Asteroides",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Nave contra Asteroides</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": ""
+          },
+          "extraFiles": [],
+          "assets": [],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [],
+              "events": [],
+              "loops": []
+            },
+            "extensions": []
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": []
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        }
       }
     },
     {

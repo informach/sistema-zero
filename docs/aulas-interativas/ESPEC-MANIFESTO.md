@@ -72,7 +72,7 @@ atualizada lá também**.
 
 ```json
 {
-  "version": 4,
+  "version": 5,
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "dia-1",
   "title": "A nave ganha vida",
@@ -82,8 +82,8 @@ atualizada lá também**.
 }
 ```
 
-- `version` sempre **4**.
-- `retireBlockKeys` é opcional e só existe na versão 4. Lista as chaves de blocos importados antes
+- `version` sempre **5**.
+- `retireBlockKeys` é opcional. Lista as chaves de blocos importados antes
   que devem sair do rascunho. Nenhuma delas pode estar em `blocks`.
 - `title` é o título da aula, até 200 caracteres.
 
@@ -94,7 +94,7 @@ minúsculas, números e hífen, até 80 caracteres. Sem acento, sem underline, s
 
 ## 4. Blocos
 
-Um bloco tem `key` e **exatamente uma** das três formas.
+Um bloco tem `key` e **exatamente uma** de duas formas: `plannedVideo` ou `content`.
 
 ### 4.1 Vídeo planejado
 
@@ -111,18 +111,32 @@ instruções de produção. Esse título é o que vira a capa do vídeo.
 O título é curto, fala com quem assiste e não repete o título da seção quando puder ser mais
 específico.
 
-### 4.2 Bloco existente na aula
+### 4.2 Bloco com conteúdo
 
-```json
-{ "key": "projeto", "existing": { "kind": "studio", "index": 0 } }
-```
+O manifesto inclui a configuração completa. Uma aula vazia cria os blocos declarados. Ao reimportar,
+a chave mantém o mesmo ID; se houver um único bloco anterior do mesmo tipo, ele conserva o ID e
+recebe a nova configuração. O projeto inicial do Estúdio, o desenho do Pinta, os itens anexados a
+materiais e a arte do certificado que já foram configurados manualmente são preservados.
+Dois blocos candidatos tornam a prévia ambígua e impedem a importação.
 
-Serve para apontar o Estúdio ou o Pinta que já está cadastrado no rascunho. `index` começa em zero
-dentro dos blocos daquele tipo.
+**Estúdio:** `initialProject` é um snapshot do formato atual com nome, arquivos, blocos de partida
+e `installedExtensions`. Use a versão do manifesto da extensão oficial. `chain`, `level`,
+`allowedModes`, `allowBlocks`, `allowLevelReveal`, `purpose`, `gallery` e `showcase` ficam no mesmo
+`content`. O mesmo `key` pode ser `workspaceKey` nas seções de construção e aparecer em `blockKeys`
+na seção de entrega.
 
-### 4.3 Bloco com conteúdo
+**Pinta:** `initialAsset` é o desenho inicial completo. Em entregas pela galeria, `initialAsset` é
+`null` e `gallery` informa `minItems` e `maxItems`; a criança escolhe criações da própria galeria.
 
-Quatro conteúdos possíveis:
+**Materiais:** `content` inclui `kind: "materials"`, `title` e `items`. Um item `file` precisa do
+`attachmentId` de um arquivo realmente anexado à aula. O manifesto não contém bytes nem URL privada.
+Na introdução do Desafio, o bloco já é criado, mas os PDFs do Caderno e do Mapa dos Pais ainda
+precisam ser enviados e vinculados no admin; eles não existem neste repositório.
+
+**Certificado:** `content` inclui `kind: "certificate"` e o texto que aparece no PDF. Uma imagem
+base e assinaturas podem ser configuradas depois, quando houver arquivos públicos reais.
+
+Demais conteúdos:
 
 **Diálogo do Zappy** (o balão de fala). Texto até **400 caracteres**.
 
@@ -165,7 +179,7 @@ o conteúdo pertence ao vídeo**, não de que o texto deve ficar maior.
 `required` deve ser **true** sempre que a cena for o critério de conclusão da seção. Este é um
 defeito conhecido do material atual: quatro cenas estão como opcionais sendo o único critério.
 
-**Quiz** (só na versão 4). Use o mesmo formato dos manifestos v6 existentes.
+**Quiz.** Use o formato dos manifestos atuais.
 
 ## 5. Seções
 
@@ -192,12 +206,12 @@ Entre 1 e 59 seções. Cada uma:
 
   ⚠️ **`demonstration` deixou de existir em 20/09/2026.** A plataforma removeu o formato de
   demonstração e ficou só a experimentação, porque todo processo no tempo já é coberto pelo vídeo
-  da aula. Nenhum dos 27 manifestos usava demonstração como atividade; as três seções que ainda
+  da aula. Nenhuma das 27 aulas anteriores usava demonstração como atividade; as três seções que ainda
   tinham esse `intent` passaram para `explanation`.
 - `workspaceKey` aponta a chave do bloco de Estúdio ou Pinta embarcado, ou `null`.
 - `externalTool` é `estudio`, `pinta` ou `null`. **Nunca junto com `workspaceKey`.**
 - `pendingMedia` é lista de textos, no máximo 20. Deixe `[]`.
-- `completion` é obrigatório na versão 4.
+- `completion` é obrigatório na versão 5.
 
 ### Como declarar o Estúdio da aula
 

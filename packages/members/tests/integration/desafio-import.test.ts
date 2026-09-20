@@ -46,10 +46,16 @@ test.each([
       installedExtensions: [{ id: 'game-2d', version: '1.0.0', installedAt: 0 }],
     },
   }
-  expect((await request('import-preview', { document })).status).toBe(400)
+  expect((await request('import-preview', { document })).status).toBe(200)
   expect(
     (await changeDraft(env.app, lessonId, { type: 'block', block: { id, content } })).status,
   ).toBe(200)
+  const notebook = {
+    id: 'caderno',
+    kind: 'file' as const,
+    attachmentId: randomUUID(),
+    label: 'Caderno',
+  }
   if (day === 0)
     expect(
       (
@@ -57,7 +63,7 @@ test.each([
           type: 'block',
           block: {
             id: randomUUID(),
-            content: { kind: 'materials', title: 'Materiais do curso', items: [] },
+            content: { kind: 'materials', title: 'Materiais do curso', items: [notebook] },
           },
         })
       ).status,
@@ -83,7 +89,19 @@ test.each([
   expect(first.document.plannedVideos).toHaveLength(
     document.blocks.filter((b) => 'plannedVideo' in b).length,
   )
-  expect(first.document.blocks.find((b) => b.id === id)?.content).toEqual(content)
+  const authored = document.blocks.find((b) => 'content' in b && b.content.kind === 'studio')
+  if (!authored || !('content' in authored)) throw new Error('Estúdio ausente')
+  expect(first.document.blocks.find((b) => b.id === id)?.content).toEqual({
+    ...authored.content,
+    initialProject: content.initialProject,
+  })
+  if (day === 0)
+    expect(
+      first.document.blocks.find((b) => b.content.kind === 'materials')?.content,
+    ).toMatchObject({
+      title: 'Caderno do aluno e Mapa dos Pais',
+      items: [notebook],
+    })
   expect(
     new Set(
       first.document.sections.filter((s) => s.workspaceBlockId).map((s) => s.workspaceBlockId),

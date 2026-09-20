@@ -33,9 +33,9 @@ const arquivos = readdirSync(DIR)
   .filter((f) => f.endsWith('.manifesto.json') && f.includes(filtro))
   .sort()
 
-if (arquivos.length === 0 || (!filtro && arquivos.length !== 27)) {
+if (arquivos.length === 0 || (!filtro && arquivos.length !== 28)) {
   console.error(
-    `Esperados ${filtro ? 'manifestos com o filtro' : '27 manifestos'}, encontrados ${arquivos.length} em ${DIR}`,
+    `Esperados ${filtro ? 'manifestos com o filtro' : '28 manifestos'}, encontrados ${arquivos.length} em ${DIR}`,
   )
   process.exit(1)
 }
@@ -46,7 +46,7 @@ const texto = (v: unknown, max: number) => typeof v === 'string' && v.length > 0
 /** Diz POR QUE o manifesto foi reprovado, campo a campo. */
 function diagnosticar(m: Record<string, unknown>): string[] {
   const p: string[] = []
-  if (m.version !== 4) p.push(`version=${String(m.version)} (esperado 4)`)
+  if (m.version !== 5) p.push(`version=${String(m.version)} (esperado 5)`)
   if (!texto(m.courseSlug, 200)) p.push('courseSlug ausente ou longo demais')
   if (!texto(m.lessonSlug, 200)) p.push('lessonSlug ausente ou longo demais')
   if (!texto(m.title, 200)) p.push('title da aula ausente ou longo demais')
@@ -62,18 +62,14 @@ function diagnosticar(m: Record<string, unknown>): string[] {
   for (const b of blocks) {
     const k = String(b.key)
     if (!CHAVE.test(k)) p.push(`chave de bloco inválida: "${k}"`)
-    const formas = ['plannedVideo', 'content', 'existing'].filter((f) => f in b)
+    const formas = ['plannedVideo', 'content'].filter((f) => f in b)
     if (formas.length !== 1)
       p.push(
         `bloco "${k}": precisa de exatamente uma forma, tem ${formas.length} (${formas.join(', ') || 'nenhuma'})`,
       )
     if ('plannedVideo' in b && !texto(b.plannedVideo, 5000))
       p.push(`bloco "${k}": plannedVideo vazio ou acima de 5000 caracteres`)
-    if ('existing' in b) {
-      const e = b.existing as Record<string, unknown>
-      if (!e || !texto(e.kind, 40) || !Number.isInteger(e.index) || (e.index as number) < 0)
-        p.push(`bloco "${k}": existing inválido`)
-    }
+    if ('existing' in b) p.push(`bloco "${k}": referência existing não é aceita`)
     if ('content' in b) {
       const c = b.content as Record<string, unknown>
       const kind = String(c?.kind)
@@ -95,7 +91,20 @@ function diagnosticar(m: Record<string, unknown>): string[] {
           p.push(
             `bloco "${k}": bloco interativo inválido (confira title, instructions, hints, activity, required)`,
           )
-      } else if (kind !== 'quiz') {
+      } else if (kind === 'studio') {
+        const project = c.initialProject as Record<string, unknown> | undefined
+        if (
+          !project ||
+          !texto(project.name, 200) ||
+          !project.files ||
+          !Array.isArray(project.installedExtensions)
+        )
+          p.push(`bloco "${k}": projeto inicial do Estúdio inválido`)
+      } else if (kind === 'pinta') {
+        if (c.initialAsset === undefined) p.push(`bloco "${k}": desenho inicial do Pinta ausente`)
+      } else if (kind === 'materials') {
+        if (!Array.isArray(c.items)) p.push(`bloco "${k}": materials.items não é lista`)
+      } else if (kind !== 'quiz' && kind !== 'certificate') {
         p.push(`bloco "${k}": content.kind desconhecido "${kind}"`)
       }
     }
@@ -116,7 +125,7 @@ function diagnosticar(m: Record<string, unknown>): string[] {
       p.push(`seção "${k}": externalTool inválido "${String(s.externalTool)}"`)
     if (s.workspaceKey && s.externalTool) p.push(`seção "${k}": workspaceKey e externalTool juntos`)
     if (!Array.isArray(s.pendingMedia)) p.push(`seção "${k}": pendingMedia não é lista`)
-    if (s.completion === undefined) p.push(`seção "${k}": sem completion (obrigatório na versão 4)`)
+    if (s.completion === undefined) p.push(`seção "${k}": sem completion (obrigatório na versão 5)`)
     else if (!isSectionCompletion(s.completion)) p.push(`seção "${k}": completion inválido`)
   }
 

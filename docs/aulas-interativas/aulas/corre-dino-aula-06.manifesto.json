@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-06",
   "title": "O medidor mostra o que ninguém vê",
@@ -162,9 +162,321 @@
     },
     {
       "key": "projeto",
-      "existing": {
+      "content": {
         "kind": "studio",
-        "index": 0
+        "purpose": "submission",
+        "chain": "corre-dino",
+        "level": "iniciante-2d",
+        "allowedModes": ["blocks"],
+        "allowLevelReveal": false,
+        "allowBlocks": [
+          "sz_frame_events",
+          "sz_frame_loops",
+          "sz_frame_start",
+          "sz_g2d_apply_gravity",
+          "sz_g2d_clear",
+          "sz_g2d_control_dino",
+          "sz_g2d_count_group",
+          "sz_g2d_create_dino",
+          "sz_g2d_create_group",
+          "sz_g2d_draw_group",
+          "sz_g2d_draw_score",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_every_seconds",
+          "sz_g2d_forest",
+          "sz_g2d_on_jump",
+          "sz_g2d_play_fx",
+          "sz_g2d_prune_offscreen",
+          "sz_g2d_set_stage_description",
+          "sz_g2d_setup_stage",
+          "sz_g2d_spawn_obstacle",
+          "sz_g2d_update_each_frame",
+          "sz_g2d_update_group",
+          "sz_val_number"
+        ],
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-corre-dino-6",
+          "name": "Corre, Dino!",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": ""
+          },
+          "extraFiles": [],
+          "assets": [],
+          "ir": null,
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#81d4fa"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 270
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_set_stage_description",
+                            "fields": {
+                              "DESCRIPTION": "Corra com o dino e pule os cactos apertando espaço"
+                            },
+                            "inputs": {},
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_dino",
+                                "fields": {
+                                  "NAME": "dino",
+                                  "COLOR": "#8b5cf6"
+                                },
+                                "inputs": {
+                                  "X": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 110
+                                      }
+                                    }
+                                  },
+                                  "Y": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 150
+                                      }
+                                    }
+                                  },
+                                  "SIZE": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 64
+                                      }
+                                    }
+                                  }
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_create_group",
+                                    "fields": {
+                                      "NAME": "cactos"
+                                    },
+                                    "inputs": {}
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "fields": {},
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "fields": {},
+                              "inputs": {},
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_forest",
+                                  "fields": {},
+                                  "inputs": {
+                                    "SPEED": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 5
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_apply_gravity",
+                                      "fields": {
+                                        "SPRITE": "dino"
+                                      },
+                                      "inputs": {},
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_control_dino",
+                                          "fields": {
+                                            "SPRITE": "dino"
+                                          },
+                                          "inputs": {
+                                            "JUMP": {
+                                              "shadow": {
+                                                "type": "sz_val_number",
+                                                "fields": {
+                                                  "NUM": 14
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_g2d_draw_sprite",
+                                              "fields": {
+                                                "SPRITE": "dino"
+                                              },
+                                              "inputs": {},
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_update_group",
+                                                  "fields": {
+                                                    "GROUP": "cactos"
+                                                  },
+                                                  "inputs": {},
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g2d_draw_group",
+                                                      "fields": {
+                                                        "GROUP": "cactos"
+                                                      },
+                                                      "inputs": {}
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_every_seconds",
+                            "fields": {},
+                            "inputs": {
+                              "SECS": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 1.4
+                                  }
+                                }
+                              },
+                              "BODY": {
+                                "block": {
+                                  "type": "sz_g2d_spawn_obstacle",
+                                  "fields": {
+                                    "GROUP": "cactos",
+                                    "SHAPE": "cactus"
+                                  },
+                                  "inputs": {
+                                    "X": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 560
+                                        }
+                                      }
+                                    },
+                                    "VX": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": -5
+                                        }
+                                      }
+                                    },
+                                    "SIZE": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 44
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_events",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_on_jump",
+                        "fields": {
+                          "SPRITE": "dino"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_play_fx",
+                              "fields": {
+                                "FX": "jump"
+                              },
+                              "inputs": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        }
       }
     },
     {

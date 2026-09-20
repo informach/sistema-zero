@@ -9,7 +9,7 @@ function blockTypes(value: unknown): string[] {
     ...Object.values(node).flatMap(blockTypes),
   ]
 }
-/** Fields to review on the existing Studio block, not a replacement project or import payload. */
+/** Configuração de aprendizado do bloco Estúdio declarado no manifesto. */
 export function studioSettings(day: number) {
   return {
     kind: 'studio' as const,

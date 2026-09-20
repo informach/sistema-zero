@@ -16,10 +16,8 @@ import type { LessonBlockContent } from '@/lib/types'
  * A metade que faltava do `LessonManifestImport`: baixa o roteiro desta aula no formato que a
  * importação entende, para a mesma aula ser montada em outro ambiente (staging → produção).
  *
- * ⚠️ A lista "cadastre no destino" é o ponto da tela. O manifesto referencia mídia, Estúdio/Pinta,
- * e-book, certificado e materiais pelo n-ésimo bloco daquele tipo, e o serviço RECUSA a
- * importação inteira quando a referência não existe lá. Sem a lista, a autora só descobriria
- * isso na mensagem de erro do outro ambiente, um bloco por vez.
+ * Projetos do Estúdio, desenhos do Pinta e a configuração dos materiais viajam no arquivo.
+ * Arquivos privados dos materiais precisam de novo upload no destino.
  */
 export function LessonManifestExport({
   document,
@@ -60,8 +58,8 @@ export function LessonManifestExport({
           <strong>
             {courseSlug} / {document.slug}
           </strong>
-          . O arquivo leva a organização das seções e o conteúdo escrito aqui. No destino, abra a
-          aula, use <strong>Vincular ao destino aberto</strong> e confira a importação.
+          . O arquivo leva a organização das seções e os blocos configurados aqui. No destino, abra
+          a aula, use <strong>Vincular ao destino aberto</strong> e confira a importação.
         </p>
         {resultado === null ? null : 'erro' in resultado ? (
           <p role="alert" className="text-sm text-destructive">
@@ -72,30 +70,8 @@ export function LessonManifestExport({
             <p className="text-sm">
               {contagem(resultado.ok.levados, 'bloco viaja', 'blocos viajam')} com o conteúdo ·{' '}
               {contagem(resultado.ok.videos, 'vídeo viaja', 'vídeos viajam')} só como orientação ·{' '}
-              {contagem(resultado.ok.paraCadastrar.length, 'bloco vai', 'blocos vão')} como
-              referência · {contagem(resultado.ok.manifest.sections.length, 'seção', 'seções')}
+              {contagem(resultado.ok.manifest.sections.length, 'seção', 'seções')}
             </p>
-            {resultado.ok.paraCadastrar.length > 0 && (
-              <div className="space-y-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
-                <h3 className="font-semibold text-sm">
-                  Cadastre estes blocos no destino antes de importar
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  O manifesto aponta para eles pela posição entre os blocos do mesmo tipo. Faltando
-                  um, a importação é recusada inteira.
-                </p>
-                <ul className="list-disc space-y-1 pl-5 text-sm">
-                  {resultado.ok.paraCadastrar.map((item) => (
-                    <li key={`${item.kind}-${item.index}`}>
-                      <strong>
-                        {item.label} nº {item.index + 1}
-                      </strong>{' '}
-                      — hoje na seção “{item.secao}”
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
             {resultado.ok.avisos.map((aviso) => (
               <p key={aviso} className="text-sm text-muted-foreground">
                 {aviso}

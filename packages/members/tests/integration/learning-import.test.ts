@@ -53,7 +53,7 @@ async function revision(response: Response) {
 }
 
 describe('manifest import through the authoring HTTP boundary', () => {
-  test('Corre Dino 1 accepts the revision returned by preview and preserves the existing Studio', async () => {
+  test('Corre Dino 1 preserves the Studio ID while applying the manifest configuration', async () => {
     const f = await setup(1)
     const id = randomUUID()
     const content = {
@@ -73,8 +73,12 @@ describe('manifest import through the authoring HTTP boundary', () => {
     const response = await f.apply(expectedRevision)
     expect(response.status).toBe(200)
     const draft = await readDraft(f.app, f.lessonId)
+    const configured = f.document.blocks.find(
+      (block) => 'content' in block && block.content.kind === 'studio',
+    )
+    if (!configured || !('content' in configured)) throw new Error('Estúdio ausente')
     expect(draft.document.blocks.filter((b) => b.content.kind === 'studio')).toEqual([
-      { id, content },
+      { id, content: { ...configured.content, initialProject: content.initialProject } },
     ])
     expect(draft.document.sections.filter((s) => s.workspaceBlockId)).toHaveLength(
       f.document.sections.filter((s) => s.workspaceKey).length,
@@ -95,45 +99,49 @@ describe('manifest import through the authoring HTTP boundary', () => {
     expect((await f.apply('not-a-revision')).status).toBe(400)
   })
 
-  test('an empty lesson explains which Studio to prepare and imports after it is configured in the draft', async () => {
+  test('an empty lesson creates its configured Studio and reimports without changing the ID', async () => {
     const f = await setup(2)
     const before = await readDraft(f.app, f.lessonId)
-    const missing = await f.preview()
-    expect(missing.status).toBe(400)
-    const error = (await missing.json()) as { error: { code: string; message: string } }
-    expect(error.error.code).toBe('VALIDATION_ERROR')
-    expect(error.error.message).toContain('Estúdio')
-    expect(error.error.message).toContain('Adicionar conteúdo aqui')
-    expect((await readDraft(f.app, f.lessonId)).document).toEqual(before.document)
-    const id = randomUUID()
-    expect(
-      (
-        await changeDraft(f.app, f.lessonId, {
-          type: 'block',
-          block: {
-            id,
-            content: {
-              kind: 'studio',
-              chain: 'corre-dino',
-              initialProject: { formatVersion: 2, name: 'Dino', files: {} },
-            },
-          },
-        })
-      ).status,
-    ).toBe(200)
     const preview = await f.preview()
     expect(preview.status).toBe(200)
+    expect((await readDraft(f.app, f.lessonId)).document).toEqual(before.document)
     expect((await f.apply(await revision(preview))).status).toBe(200)
     const draft = await readDraft(f.app, f.lessonId)
-    expect(draft.document.blocks.filter((b) => b.content.kind === 'studio')).toHaveLength(1)
+    const studio = draft.document.blocks.find((b) => b.content.kind === 'studio')
+    const authored = f.document.blocks.find((b) => 'content' in b && b.content.kind === 'studio')
+    if (!authored || !('content' in authored)) throw new Error('Estúdio ausente')
+    const actual: unknown = studio?.content
+    expect(actual).toEqual(authored.content)
     expect(draft.document.sections.filter((s) => s.workspaceBlockId)).toHaveLength(
       f.document.sections.filter((s) => s.workspaceKey).length,
     )
     expect(
       draft.document.sections
         .filter((s) => s.workspaceBlockId)
-        .every((s) => s.workspaceBlockId === id),
+        .every((s) => s.workspaceBlockId === studio?.id),
     ).toBe(true)
+    const next = await f.preview()
+    expect((await f.apply(await revision(next))).status).toBe(200)
+    expect((await readDraft(f.app, f.lessonId)).document).toEqual(draft.document)
     expect((await f.courses.findLessonWithContent(f.lessonId))?.blocks).toHaveLength(0)
+  })
+
+  test('refuses to guess which existing Studio block should keep student evidence', async () => {
+    const f = await setup(2)
+    for (const name of ['Primeiro', 'Segundo'])
+      expect(
+        (
+          await changeDraft(f.app, f.lessonId, {
+            type: 'block',
+            block: {
+              id: randomUUID(),
+              content: { kind: 'studio', initialProject: { formatVersion: 2, name, files: {} } },
+            },
+          })
+        ).status,
+      ).toBe(200)
+    const response = await f.preview()
+    expect(response.status).toBe(400)
+    expect(JSON.stringify(await response.json())).toContain('mais de um bloco de studio')
   })
 })

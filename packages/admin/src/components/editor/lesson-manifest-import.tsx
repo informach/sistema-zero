@@ -98,8 +98,8 @@ export function LessonManifestImport({
           <strong>
             {courseSlug} / {lessonSlug}
           </strong>
-          . A prévia mostra o que será criado ou atualizado. Projetos, quizzes e mídias existentes
-          são preservados.
+          . A prévia mostra os blocos que serão criados ou atualizados. Projetos e materiais já
+          configurados conservam o trabalho e os arquivos anexados.
         </p>
         <label className="block space-y-2 text-sm" htmlFor={`${id}-file`}>
           Arquivo do manifesto

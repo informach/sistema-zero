@@ -224,11 +224,11 @@ const directory = resolve(import.meta.dir, '../../../docs/aulas-interativas/aula
 const MANIFESTOS = readdirSync(directory)
   .filter((name) => name.endsWith('.manifesto.json'))
   .sort()
-describe('os 27 manifestos atuais das aulas', () => {
+describe('os manifestos atuais das aulas', () => {
   test('o inventário cobre os três cursos', () => {
-    expect(MANIFESTOS).toHaveLength(27)
+    expect(MANIFESTOS).toHaveLength(28)
     expect(MANIFESTOS.filter((name) => name.startsWith('corre-dino-'))).toHaveLength(13)
-    expect(MANIFESTOS.filter((name) => name.startsWith('desafio-'))).toHaveLength(6)
+    expect(MANIFESTOS.filter((name) => name.startsWith('desafio-'))).toHaveLength(7)
     expect(MANIFESTOS.filter((name) => name.startsWith('meu-jeito-'))).toHaveLength(8)
   })
   for (const arquivo of MANIFESTOS)
@@ -244,21 +244,9 @@ describe('os 27 manifestos atuais das aulas', () => {
         workspaceBlockId: s.workspaceKey,
       }))
       for (const section of manifest.sections) {
-        // O mesmo bloco existing pode ser espaço de trabalho durante a construção e entrega
-        // no fim. A finalidade pertence ao uso na seção, ausente do arquivo de importação.
         const blocks = manifest.blocks.map((b) => ({
           id: b.key,
-          content:
-            'content' in b
-              ? b.content
-              : 'existing' in b
-                ? {
-                    kind: b.existing.kind,
-                    ...(section.workspaceKey === b.key && section.intent === 'application'
-                      ? { purpose: 'experiment' }
-                      : {}),
-                  }
-                : { kind: 'video' },
+          content: 'content' in b ? b.content : { kind: 'video' },
         }))
         expect(
           sectionCompletionIssues(sections, blocks).filter(
