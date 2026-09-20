@@ -65,12 +65,17 @@ export function distributeShapes(
     : bounds.y + bounds.height / 2
   const ordered = clusters.map((cluster) => ({ ...cluster, center: center(cluster.bounds) }))
     .sort((a, b) => a.center - b.center || a.index - b.index)
-  const first = ordered[0].center
-  const step = (ordered.at(-1)!.center - first) / (ordered.length - 1)
+  const firstCluster = ordered[0]
+  const lastCluster = ordered[ordered.length - 1]
+  if (!firstCluster || !lastCluster) return shapes
+  const first = firstCluster.center
+  const step = (lastCluster.center - first) / (ordered.length - 1)
   const deltas = new Map<string, number>()
   for (let i = 1; i < ordered.length - 1; i++) {
-    const delta = first + step * i - ordered[i].center
-    if (Math.abs(delta) >= 1e-9) deltas.set(ordered[i].key, delta)
+    const cluster = ordered[i]
+    if (!cluster) continue
+    const delta = first + step * i - cluster.center
+    if (Math.abs(delta) >= 1e-9) deltas.set(cluster.key, delta)
   }
   if (deltas.size === 0) return shapes
   return shapes.map((shape) => {
@@ -136,12 +141,15 @@ await waitFor(() => {
 
 - [ ] **Step 2: Verify red.** Run `bun test src/components/editor/vectorUi.test.tsx -t "distribuir"` from `packages/pinta`; expect missing copy/action or unavailable buttons.
 
-- [ ] **Step 3: Wire the scope.** Import the Task 1 interfaces into `VectorEditorScope.tsx`. Derive `canDistributeSelected` from `canDistributeShapes(currentShapes(), selectedIds)` and expose it in the context. Implement `distributeSelected` with `commitShapes(distributeShapes(currentShapes(), selectedIds, axis))`; the pure no-op return prevents an empty undo entry.
+- [ ] **Step 3: Wire the scope.** Import the Task 1 interfaces into `VectorEditorScope.tsx`. Derive `canDistributeSelected` from `canDistributeShapes(currentShapes(), selectedIds)` and expose it in the context. Compare the pure operation's returned array with the current array before calling `commitShapes`: `withActiveShapes` always creates a new asset, so returning the original array alone would still add an empty undo entry.
 
 ```ts
 function distributeSelected(axis: DistributionAxis): void {
   if (!doc) return
-  commitShapes(distributeShapes(currentShapes(), selectedIds, axis))
+  const current = currentShapes()
+  const next = distributeShapes(current, selectedIds, axis)
+  if (next === current) return
+  commitShapes(next)
 }
 ```
 
