@@ -67,13 +67,76 @@ function hasAnyCurve(ep: EditablePath): boolean {
 
 // ── Modelo → nós ────────────────────────────────────────────────────────────
 
+/** Aproxima um quarto de círculo com uma cúbica, como no traçado SVG usual. */
+const QUARTER_CIRCLE_CONTROL = (4 * (Math.SQRT2 - 1)) / 3
+
 /**
- * `null` quando a forma não se edita por pontos (rect/ellipse/text) ou quando o
+ * `null` quando a forma não se edita por pontos (texto/figura) ou quando o
  * `d` sai do nosso dialeto. ⚠️ Vários sub-caminhos (mais de um `M`) também dão
  * `null`: nada que a gente gera produz isso, e adivinhar mancharia o desenho.
  */
 export function toEditablePath(shape: VectorShape): EditablePath | null {
   switch (shape.type) {
+    case 'rect': {
+      const { x, y, w, h } = shape
+      if (w <= 0 || h <= 0) return null
+      const radius = Math.max(0, Math.min(shape.rx, w / 2, h / 2))
+      if (radius === 0)
+        return {
+          closed: true,
+          nodes: [
+            { p: { x, y } },
+            { p: { x: x + w, y } },
+            { p: { x: x + w, y: y + h } },
+            { p: { x, y: y + h } },
+          ],
+        }
+      const control = radius * QUARTER_CIRCLE_CONTROL
+      return {
+        closed: true,
+        nodes: [
+          { p: { x: x + radius, y }, in: { x: x + radius - control, y } },
+          { p: { x: x + w - radius, y }, out: { x: x + w - radius + control, y } },
+          { p: { x: x + w, y: y + radius }, in: { x: x + w, y: y + radius - control } },
+          { p: { x: x + w, y: y + h - radius }, out: { x: x + w, y: y + h - radius + control } },
+          { p: { x: x + w - radius, y: y + h }, in: { x: x + w - radius + control, y: y + h } },
+          { p: { x: x + radius, y: y + h }, out: { x: x + radius - control, y: y + h } },
+          { p: { x, y: y + h - radius }, in: { x, y: y + h - radius + control } },
+          { p: { x, y: y + radius }, out: { x, y: y + radius - control } },
+        ],
+      }
+    }
+    case 'ellipse': {
+      const { cx, cy, rx, ry } = shape
+      if (rx <= 0 || ry <= 0) return null
+      const horizontal = rx * QUARTER_CIRCLE_CONTROL
+      const vertical = ry * QUARTER_CIRCLE_CONTROL
+      return {
+        closed: true,
+        nodes: [
+          {
+            p: { x: cx, y: cy - ry },
+            in: { x: cx - horizontal, y: cy - ry },
+            out: { x: cx + horizontal, y: cy - ry },
+          },
+          {
+            p: { x: cx + rx, y: cy },
+            in: { x: cx + rx, y: cy - vertical },
+            out: { x: cx + rx, y: cy + vertical },
+          },
+          {
+            p: { x: cx, y: cy + ry },
+            in: { x: cx + horizontal, y: cy + ry },
+            out: { x: cx - horizontal, y: cy + ry },
+          },
+          {
+            p: { x: cx - rx, y: cy },
+            in: { x: cx - rx, y: cy + vertical },
+            out: { x: cx - rx, y: cy - vertical },
+          },
+        ],
+      }
+    }
     case 'polygon':
       return { nodes: shape.points.map((p) => ({ p: copy(p) })), closed: true }
     case 'line':
@@ -182,6 +245,10 @@ export function editablePathToD(ep: EditablePath): string {
  */
 export function fromEditablePath(shape: VectorShape, ep: EditablePath): VectorShape {
   if (ep.nodes.length === 0) return shape
+  if (shape.type === 'rect' || shape.type === 'ellipse') {
+    const original = toEditablePath(shape)
+    if (original && editablePathToD(original) === editablePathToD(ep)) return shape
+  }
   const curved = hasAnyCurve(ep)
 
   if (
@@ -227,7 +294,9 @@ export function fromEditablePath(shape: VectorShape, ep: EditablePath): VectorSh
 
 /** Quantos nós esta forma pode perder sem sumir do desenho no próximo load. */
 export function minNodesFor(shape: VectorShape): number {
-  return shape.type === 'polygon' ? MIN_POLYGON_POINTS : MIN_PATH_NODES
+  return shape.type === 'polygon' || shape.type === 'rect' || shape.type === 'ellipse'
+    ? MIN_POLYGON_POINTS
+    : MIN_PATH_NODES
 }
 
 /** Move âncora E alças do nó (a alça pertence ao nó, viaja com ele). */

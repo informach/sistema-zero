@@ -1446,6 +1446,27 @@ describe('editar os pontos do vetor', () => {
   const chosenNodes = (stage: HTMLElement): SVGCircleElement[] =>
     nodeCircles(stage).filter((c) => c.getAttribute('fill') === '#00a0c8')
 
+  it('edita os pontos de um círculo pronto e desfaz para a forma original', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.ellipse }))
+    drawRect(stage, [50, 50], [150, 150])
+    startNodeEditing()
+    await waitFor(() => expect(nodeCircles(stage)).toHaveLength(4))
+    expect(stage.querySelector('ellipse')).toBeTruthy()
+
+    const top = nodeCircles(stage)[0]
+    if (!top) throw new Error('círculo sem ponto superior')
+    fireEvent.pointerDown(top, { isPrimary: true, pointerId: 44, clientX: 100, clientY: 50 })
+    fireEvent.pointerMove(stage, { pointerId: 44, clientX: 100, clientY: 35 })
+    fireEvent.pointerUp(stage, { pointerId: 44 })
+    await waitFor(() => expect(stage.querySelector('path[d]')).toBeTruthy())
+    expect(stage.querySelector('ellipse')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => expect(stage.querySelector('ellipse')).toBeTruthy())
+  })
+
   it('mostra um no por ponto e a caixa de selecao escolhe VARIOS', async () => {
     await openVectorEditor()
     const stage = measureStage()
@@ -2028,13 +2049,15 @@ describe('Misturar formas (pathfinder)', () => {
     expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
   })
 
-  it('⭐ a faixa dos pontos EXPLICA em vez de sumir', async () => {
+  it('⭐ a faixa dos pontos explica por que texto não tem nós', async () => {
     await openVectorEditor()
     const stage = measureStage()
-    // Um retângulo já não se edita por pontos: antes deste lote a faixa inteira
-    // sumia em silêncio, o que lia como "quebrou".
-    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
-    drawRect(stage, [16, 16], [80, 80])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    fireEvent.pointerDown(stage, { isPrimary: true, clientX: 40, clientY: 40 })
+    fireEvent.change(await screen.findByPlaceholderText(COPY.vector.textPlaceholder), {
+      target: { value: 'Olá!' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.reshape }))
     await waitFor(() => {
       expect(screen.getByRole('toolbar', { name: COPY.vector.nodeBar })).toBeTruthy()
@@ -3793,7 +3816,7 @@ describe('a faixa da seleção: uma moldura só (06/09/2026)', () => {
     expectSameFrame()
   })
 
-  it('com seleção: a toolbar, na mesma moldura (e a forma sem pontos editáveis idem)', async () => {
+  it('com seleção: a toolbar, na mesma moldura, com pontos no retângulo', async () => {
     await openVectorEditor()
     const stage = measureStage()
     fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
@@ -3802,12 +3825,13 @@ describe('a faixa da seleção: uma moldura só (06/09/2026)', () => {
       expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
     })
     expectSameFrame()
-    // Ferramenta de pontos com um retângulo escolhido: a faixa explica, na mesma altura.
+    // Ferramenta de pontos com um retângulo escolhido: a faixa e os nós aparecem.
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.reshape }))
     await waitFor(() => {
       expect(screen.getByRole('toolbar', { name: COPY.vector.nodeBar })).toBeTruthy()
     })
-    expect(screen.getByText(COPY.vector.nodeUneditable)).toBeTruthy()
+    expect(stage.querySelectorAll('circle[data-node]')).toHaveLength(4)
+    expect(screen.queryByText(COPY.vector.nodeUneditable)).toBeNull()
     expectSameFrame()
   })
 })

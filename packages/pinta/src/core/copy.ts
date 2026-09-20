@@ -699,10 +699,11 @@ export const COPY = {
     nodeCutTooBig: 'Este desenho está grande demais para cortar aqui.',
     nodeHint: 'Toque no traço para acrescentar um ponto',
     /**
-     * Forma sem pontos editáveis: retângulo, círculo, texto, figura, ou uma
-     * mistura que virou mais de um pedaço. A faixa DIZ isso em vez de sumir.
+     * Texto, figura ou mistura com vários pedaços não expõem pontos para o
+     * editor. A faixa DIZ isso em vez de sumir.
      */
-    nodeUneditable: 'Esta forma não se edita por pontos. Dá para mudar a cor, o tamanho e o lugar.',
+    nodeUneditable:
+      'Não dá para editar os pontos desta forma. Use Selecionar para mover, girar ou mudar o tamanho.',
     nodeToCurve: 'Transformar em curva',
     nodeToLine: 'Transformar em reta',
     nodeSmooth: 'Ponto suave',

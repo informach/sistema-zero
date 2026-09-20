@@ -1356,6 +1356,13 @@ A ferramenta "Editar os pontos" (`reshape`, atalho `A`) só arrastava UM nó de 
 escolhe vários, acrescenta, apaga, fecha/abre o caminho (Fase 1) e mexe na curvatura: alças de
 bézier, curva↔reta, ponto suave/canto e "suavizar o traço" (Fase 2).
 
+**20/09/2026 — formas prontas:** retângulos e círculos agora mostram pontos na mesma ferramenta.
+O retângulo simples oferece quatro cantos, o arredondado oferece oito pontos com curvas, e a
+elipse oferece quatro pontos com alças. Entrar no modo não altera a forma guardada; a primeira
+edição dos pontos a transforma em traço livre com o mesmo id, estilo e rotação. Desfazer recupera
+a forma original. Estrelas já eram polígonos e continuam editáveis. Texto, figura e traços com
+vários subcaminhos continuam sem edição por pontos.
+
 ### ⭐⭐ A decisão que evitou uma migração: nada é guardado por ponto
 
 O modelo não tem onde pôr metadado por ponto — `path` é uma **string `d`** e `polygon` é um
@@ -1702,8 +1709,8 @@ traço aberto e o meu laço o pegou junto.)
 Resultado com furo tem dois `M`, e `toEditablePath` recusa vários sub-caminhos de propósito
 (`pathNodes.ts:102`). Antes a `VectorSelectionBar` inteira devolvia `null` no modo reshape, o que lê
 como "quebrou". Agora mostra `COPY.vector.nodeUneditable`, com `min-h-11` nos dois ramos para o
-palco não pular. Conserta de quebra um buraco que já existia: retângulo/círculo/texto/figura também
-apagavam a faixa em silêncio.
+palco não pular. Texto, figura e traço com vários subcaminhos recebem a explicação em vez de
+apagar a faixa em silêncio; retângulo e círculo agora oferecem pontos editáveis.
 
 **Fora deste lote, nomeadamente:** ensinar sub-caminhos ao `toEditablePath`.
 

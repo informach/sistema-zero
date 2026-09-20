@@ -119,8 +119,8 @@ export function VectorSelectionBar(): JSX.Element | null {
     if (!nodeTarget) return <SelectionBarPlaceholder hint={COPY.vector.nodeBarEmpty} />
     return (
       <SelectionBarFrame toolbar={COPY.vector.nodeBar}>
-        {/* ⚠️ Sem pontos editáveis (retângulo, círculo, texto, figura, ou uma
-            mistura que virou mais de um pedaço) a faixa DIZ isso. Sumir sem
+        {/* ⚠️ Sem pontos editáveis (texto, figura ou uma mistura que virou
+            mais de um pedaço) a faixa DIZ isso. Sumir sem
             explicação lia como "quebrou", e depois do Misturar isso deixou de
             ser raro: um resultado com furo tem dois sub-caminhos, e o
             `toEditablePath` recusa vários `M` de propósito. A altura da frase é
