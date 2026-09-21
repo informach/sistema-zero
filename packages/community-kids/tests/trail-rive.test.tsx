@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import { act, cleanup, render } from '@testing-library/react'
+import { renderToString } from 'react-dom/server'
 import { TrailRive } from '../src/components/kids/trail-rive'
 
 const RIV = 'https://media.example.com/admin/module-rive/nave.riv'
@@ -65,14 +66,13 @@ const assenta = () => act(async () => {})
 const canvas = () => document.querySelector('[data-src]')
 
 describe('TrailRive', () => {
-  test('a primeira pintura NUNCA tem canvas', async () => {
+  test('o HTML do servidor NUNCA tem canvas', () => {
     // Nem o canvas nem o WASM existem no servidor: montar de saída faria a
-    // hidratação encontrar uma árvore diferente da que veio pronta.
+    // hidratação encontrar uma árvore diferente da que veio pronta. `render()`
+    // não mede isto: ele já descarrega efeitos antes de devolver e, com o módulo
+    // dinâmico aquecido por outro teste, pode legitimamente mostrar o canvas.
     matchMedia(false)
-    observador(true)
-    render(<TrailRive src={RIV} />)
-    expect(canvas()).toBeNull()
-    await assenta()
+    expect(renderToString(<TrailRive src={RIV} />)).not.toContain('data-src')
   })
 
   test('na viewport, monta o canvas com o arquivo do módulo, tocando', async () => {
