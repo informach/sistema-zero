@@ -56,7 +56,7 @@ function course(modules: ModuleOutlineView[]): CourseDetailView {
 }
 
 describe('buildTrail', () => {
-  test('offsets seguem o padrão cíclico com índice GLOBAL (aulas E baús na sequência)', () => {
+  test('offsets formam uma senoide contínua com índice GLOBAL (aulas E baús)', () => {
     const c = course([
       moduleOf('m1', [lesson('a', true), lesson('b', true), lesson('c', false)]),
       moduleOf('m2', [
@@ -66,15 +66,14 @@ describe('buildTrail', () => {
         lesson('g', false),
         lesson('h', false),
         lesson('i', false),
+        lesson('j', false),
+        lesson('k', false),
       ]),
     ])
     // O baú de fim de unidade TAMBÉM avança o índice do serpenteado.
     const offsets = buildTrail(c).flatMap((u) => [...u.nodes.map((n) => n.offset), u.chest.offset])
-    expect(offsets).toEqual([0, 1, 2, 1, 0, -1, -2, -1, 0, 1, 2])
-    // Colunas consecutivas sempre diferem de 1 (conectores diagonais).
-    for (let i = 1; i < offsets.length; i++) {
-      expect(Math.abs((offsets[i] as number) - (offsets[i - 1] as number))).toBe(1)
-    }
+    expect(offsets).toEqual([0, 1, 1.73, 2, 1.73, 1, 0, -1, -1.73, -2, -1.73, -1, 0])
+    expect(offsets.every((offset) => Math.abs(offset) <= 2)).toBe(true)
   })
 
   test('o baú tem POSIÇÃO no serpenteado; abrir ou não é assunto do servidor', () => {
@@ -112,9 +111,9 @@ describe('buildTrail', () => {
     const units = buildTrail(c)
     // Tema pelo índice do que APARECE: a 2ª unidade visível é a 2ª cor, não a 3ª.
     expect(units.map((u) => u.theme)).toEqual(['cyan', 'lime'])
-    // E as colunas seguem contíguas: aulas + baú de m1, depois m3.
+    // E a curva segue contínua: aulas + baú de m1, depois m3.
     const offsets = units.flatMap((u) => [...u.nodes.map((n) => n.offset), u.chest.offset])
-    expect(offsets).toEqual([0, 1, 2, 1, 0])
+    expect(offsets).toEqual([0, 1, 1.73, 2, 1.73])
   })
 
   test('curso inteiro sem aula publicada não desenha trilha nenhuma', () => {

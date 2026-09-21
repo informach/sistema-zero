@@ -67,6 +67,7 @@ describe('baú da trilha', () => {
     // moedas" num dia em que a criança já bateu o teto seria promessa falsa.
     montar(bau())
     const botao = screen.getByRole('button')
+    expect(botao.classList.contains('kids-node-link')).toBe(true)
     expect(botao.getAttribute('aria-label')).toContain('25 XP')
     expect(botao.getAttribute('aria-label')).not.toContain('moedas')
   })

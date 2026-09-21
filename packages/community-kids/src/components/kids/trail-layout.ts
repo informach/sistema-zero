@@ -10,7 +10,7 @@ export interface TrailNode {
    * travada pela trava sequencial (estilo Duolingo) — nó não clicável.
    */
   state: TrailNodeState
-  /** Coluna do serpenteado (−2..2) — multiplicada por --trail-step no render. */
+  /** Posição lateral do serpenteado (−2..2) — multiplicada por --trail-step no render. */
   offset: number
 }
 
@@ -32,12 +32,19 @@ export interface TrailUnit {
 }
 
 /**
- * Padrão de colunas do serpenteado. O índice é GLOBAL (contínuo entre
- * unidades — e avança TAMBÉM no baú) e colunas consecutivas SEMPRE diferem
- * de 1 — os conectores ficam diagonais e nunca atravessam a legenda do nó
- * de cima.
+ * Curva do serpenteado. O índice é GLOBAL (contínuo entre unidades — e avança
+ * TAMBÉM no baú). A senoide desacelera perto das pontas e acelera ao cruzar o
+ * centro, então os nós formam uma curva em vez de vários trechos retos.
  */
-const OFFSETS = [0, 1, 2, 1, 0, -1, -2, -1] as const
+const TRAIL_AMPLITUDE = 2
+const TRAIL_PERIOD = 12
+
+function trailOffsetAt(index: number): number {
+  const radians = (index / TRAIL_PERIOD) * Math.PI * 2
+  const rounded = Math.round(Math.sin(radians) * TRAIL_AMPLITUDE * 100) / 100
+  // `Math.sin(2π)` pode arredondar para -0; normalizar deixa o CSS e o JSON estáveis.
+  return rounded === 0 ? 0 : rounded
+}
 
 /**
  * Módulos que VIRAM unidade na trilha: os que têm alguma aula para mostrar.
@@ -73,7 +80,7 @@ export function buildTrail(course: CourseDetailView): TrailUnit[] {
 
   let globalIndex = 0
   const nextOffset = () => {
-    const offset = OFFSETS[globalIndex % OFFSETS.length] as number
+    const offset = trailOffsetAt(globalIndex)
     globalIndex += 1
     return offset
   }

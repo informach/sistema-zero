@@ -119,6 +119,13 @@ describe('CourseTrail', () => {
     expect(screen.queryByText(/As aulas estão sendo preparadas/)).toBeNull()
   })
 
+  test('não desenha bolinhas entre aulas nem antes do baú', () => {
+    const { container } = render(
+      <CourseTrail course={course([moduleOf('m1', [lesson('a'), lesson('b')])])} />,
+    )
+    expect(container.querySelector('.kids-trail-dot')).toBeNull()
+  })
+
   test('módulo vazio no meio some, e a numeração das unidades continua seguida', () => {
     render(
       <CourseTrail
@@ -168,7 +175,7 @@ describe('CourseTrail', () => {
     }
   })
 
-  test('ilustrações revezam de lado e descem até o trecho mais livre da unidade', () => {
+  test('ilustrações revezam de lado e vão até o trecho mais livre da unidade', () => {
     const desafio = course([
       { ...moduleOf('m1', [lesson('a'), lesson('b')]), riveUrl: riv('nave') },
       { ...moduleOf('vazio', []), riveUrl: riv('nave') },
@@ -190,7 +197,7 @@ describe('CourseTrail', () => {
       true,
       false,
     ])
-    expect(arts.map((art) => art.style.top)).toEqual(['55%', '55%', '66.25%'])
+    expect(arts.map((art) => art.style.top)).toEqual(['55%', '55%', '16.25%'])
   })
 
   test('módulos vazios e módulos sem animação no Admin não recebem arte', () => {

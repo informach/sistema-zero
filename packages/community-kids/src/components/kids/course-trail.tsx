@@ -17,9 +17,6 @@ const NODE_STATE_CLASS: Record<TrailNode['state'], string> = {
   locked: 'kids-node--locked',
 }
 
-/** Posições (0..1) dos conectores entre os centros de nós consecutivos. */
-const DOT_STEPS = [0.55, 0.78] as const
-
 /** A arte atravessa duas linhas; escolhe o par de nós mais distante do seu lado. */
 function trailArtRow(unit: TrailUnit, side: 'left' | 'right'): number {
   const offsets = [...unit.nodes.map((node) => node.offset), unit.chest.offset]
@@ -50,20 +47,6 @@ function nodeAria(node: TrailNode): string {
           : 'disponível'
   const minutes = node.lesson.estimatedMinutes ? `, ${node.lesson.estimatedMinutes} min` : ''
   return `${node.lesson.title} (${status})${minutes}`
-}
-
-/** Conectores pontilhados entre dois centros consecutivos do serpenteado. */
-function TrailDots({ from, to, done }: { from: number; to: number; done: boolean }) {
-  return DOT_STEPS.map((t) => (
-    <span
-      key={t}
-      className={cn('kids-trail-dot', done && 'kids-trail-dot--done')}
-      style={{
-        left: `calc(50% + ${from + (to - from) * t} * var(--trail-step) - 0.25rem)`,
-        top: `calc(var(--trail-node) / 2 + ${t} * var(--trail-row))`,
-      }}
-    />
-  ))
 }
 
 /**
@@ -140,23 +123,13 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                 </div>
               ) : null}
               <ol className="relative z-10">
-                {unit.nodes.map((node, nodeIndex) => {
-                  const next = unit.nodes[nodeIndex + 1]
-                  // Último nó da unidade conecta no BAÚ (mesma diagonal).
-                  const nextOffset = next?.offset ?? unit.chest.offset
+                {unit.nodes.map((node) => {
                   return (
                     <li
                       key={node.lesson.id}
                       className="relative"
                       style={{ height: 'var(--trail-row)' }}
                     >
-                      {nextOffset !== undefined ? (
-                        <TrailDots
-                          from={node.offset}
-                          to={nextOffset}
-                          done={node.state === 'done'}
-                        />
-                      ) : null}
                       {(() => {
                         const inner = (
                           <>

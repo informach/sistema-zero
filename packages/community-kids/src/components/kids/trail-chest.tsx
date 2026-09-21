@@ -149,7 +149,7 @@ export function TrailChest({
       onClick={() => void abrir()}
       disabled={estado === 'abrindo'}
       aria-label={`Abrir o baú da unidade ${unitNumber} e ganhar ${chest?.xp ?? 0} XP`}
-      className="-ml-14 absolute top-0 flex min-h-11 w-28 flex-col items-center gap-1.5"
+      className="kids-node-link -ml-14 absolute top-0 flex min-h-11 w-28 flex-col items-center gap-1.5"
       style={posicao}
     >
       <span

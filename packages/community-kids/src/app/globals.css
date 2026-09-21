@@ -1271,12 +1271,12 @@ a.kid-pop:has(> .kids-carta):hover {
   }
 
   /* O 3D do Brilliant (11/09/2026) nos nós que ABREM aula (feita, atual, a fazer) e no
-     baú liberado: a borda de baixo no degrau da cor da unidade, por sombra. O alvo de
-     clique é o link (ou o botão do baú) em volta, e o nó afunda junto. O nó TRAVADO e o
-     baú fechado ou já aberto ficam planos: não são clicáveis e não podem parecer. O
-     travado também leva `.kids-node-link` (é o mesmo molde, sem o link), daí o `:not`. */
-  .kids-node-link .kids-node:not(.kids-node--locked),
-  button > .kids-node--chest-ready {
+     baú liberado: a borda de baixo no degrau da cor da unidade, por sombra. Tanto os
+     links de aula quanto o botão do baú compartilham `.kids-node-link`, e o nó afunda
+     junto. O nó TRAVADO e o baú fechado ou já aberto ficam planos: não são clicáveis e
+     não podem parecer. O travado também leva a classe (é o mesmo molde, sem o link),
+     daí o `:not`. */
+  .kids-node-link .kids-node:not(.kids-node--locked) {
     --k3d-altura: 5px;
     --k3d-degrau: color-mix(in oklab, var(--unit) 70%, var(--pen-tinta));
     box-shadow: 0 var(--k3d-altura) 0 var(--k3d-degrau);
@@ -1287,13 +1287,11 @@ a.kid-pop:has(> .kids-carta):hover {
   .kids-node-link .kids-node--todo {
     --k3d-degrau: var(--pen-degrau-cartao);
   }
-  a.kids-node-link:hover .kids-node:not(.kids-node--locked),
-  button:hover > .kids-node--chest-ready {
+  .kids-node-link:hover .kids-node:not(.kids-node--locked) {
     --k3d-altura: 6px;
     translate: 0 -1px;
   }
-  a.kids-node-link:active .kids-node:not(.kids-node--locked),
-  button:active > .kids-node--chest-ready {
+  .kids-node-link:active .kids-node:not(.kids-node--locked) {
     --k3d-altura: 1px;
     translate: 0 4px;
   }
@@ -1349,18 +1347,6 @@ a.kid-pop:has(> .kids-carta):hover {
     50% {
       transform: translate(-50%, -6px);
     }
-  }
-
-  /* Conectores pontilhados entre nós consecutivos (posição inline). */
-  .kids-trail-dot {
-    position: absolute;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 9999px;
-    background: var(--border);
-  }
-  .kids-trail-dot--done {
-    background: color-mix(in oklch, var(--unit) 55%, transparent);
   }
 }
 
