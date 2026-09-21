@@ -1,48 +1,50 @@
-// Gerencia o CORS do bucket R2 PÚBLICO (animação Rive da trilha Kids).
+// Garante e prova o CORS do bucket R2 PÚBLICO usado pelas animações Rive.
 //
-// POR QUE existe:
-//   Até 09/2026 nada precisava de CORS aqui: tudo que o bucket público serve era
-//   consumido por `<img src>`/`<video src>`, e elemento de mídia NÃO passa por CORS.
-//   A arte da trilha era um SVG animado num `<img>` — dispensava.
+// O runtime do Rive lê o `.riv` por `fetch(url).arrayBuffer()`. O Admin usa uma
+// rota-proxy de mesma origem para a prévia, então só uma prova no endereço
+// público detecta o defeito que faria a animação sumir no navegador da criança.
 //
-//   O Rive mudou isso. O runtime lê o `.riv` por `fetch(url).arrayBuffer()`, que é
-//   requisição cross-origin de verdade (o app está em `kids.sistemazero.com.br`, o
-//   arquivo em `cdn.sistemazero.com.br`). Sem `Access-Control-Allow-Origin` o
-//   navegador bloqueia, o `onLoadError` dispara e o `TrailRive` some da tela —
-//   indistinguível de "ninguém subiu animação nenhuma". É um defeito CALADO, e é
-//   por isso que este script existe e que o componente loga um aviso.
+// USO (Bun carrega o .env do cwd — rode de dentro de packages/admin):
+//   bun scripts/r2-cors-public.ts          # garante a regra e prova o CDN
+//   bun scripts/r2-cors-public.ts --check  # não altera a regra; ainda prova o CDN
 //
-//   ⚠️ Rode ANTES de subir o community-kids com a trilha em Rive.
-//
-//   `PutBucketCors` SUBSTITUI a config inteira → faz GET, MESCLA e PUTa. IDEMPOTENTE.
-//
-// USO (bun carrega o .env do cwd — rode de dentro de packages/admin):
-//   bun scripts/r2-cors-public.ts            # DRY-RUN: mostra o atual e o proposto
-//   bun scripts/r2-cors-public.ts --apply    # aplica a config mesclada e re-lê p/ confirmar
-//
-// Aponta p/ o bucket de `R2_BUCKET` do .env (dev/staging = testes; prod =
-// comunidade-sistema-zero — rode com as credenciais do host de prod).
+// `PutBucketCors` substitui a configuração inteira. Este comando sempre lê,
+// mescla e preserva as regras que não gerencia. A escrita é idempotente.
 import {
   type CORSRule,
+  DeleteObjectCommand,
   GetBucketCorsCommand,
   PutBucketCorsCommand,
+  PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
-import { STUDENT_APP_ORIGINS } from './student-app-origins'
+import {
+  KIDS_STAGING_ORIGIN,
+  mergePublicReadRule,
+  PUBLIC_READ_RULE_ID,
+  publicReadRuleMatches,
+  validatePublicCorsProbe,
+} from './r2-cors-public-lib'
 
-const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET } = process.env
-// O MESMO token S3 acessa os 4 buckets — `--bucket=<nome>` mira outro (ex.: o
-// público de PROD) sem trocar o .env.
-const bucketArg = process.argv.find((a) => a.startsWith('--bucket='))?.slice('--bucket='.length)
+const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_PUBLIC_URL } =
+  process.env
+const bucketArg = process.argv.find((argument) => argument.startsWith('--bucket='))?.slice(9)
 const bucket = bucketArg || R2_BUCKET
-if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !bucket) {
-  console.error(
-    'faltam envs R2_* (R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY) ou bucket (R2_BUCKET / --bucket=)',
-  )
-  process.exit(1)
-}
+const probeOriginArg = process.argv
+  .find((argument) => argument.startsWith('--probe-origin='))
+  ?.slice('--probe-origin='.length)
+const probeOrigin = probeOriginArg || KIDS_STAGING_ORIGIN
+const checkOnly = process.argv.includes('--check')
 
-const apply = process.argv.includes('--apply')
+if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !bucket || !R2_PUBLIC_URL) {
+  throw new Error(
+    'faltam R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET ou R2_PUBLIC_URL',
+  )
+}
+const publicBaseUrl = R2_PUBLIC_URL
+const PROBE_DEADLINE_MS = 30_000
+const PROBE_REQUEST_TIMEOUT_MS = 5_000
+const PROBE_RETRY_INTERVAL_MS = 1_000
 
 const client = new S3Client({
   region: 'auto',
@@ -50,61 +52,136 @@ const client = new S3Client({
   credentials: { accessKeyId: R2_ACCESS_KEY_ID, secretAccessKey: R2_SECRET_ACCESS_KEY },
 })
 
-const READ_RULE_ID = 'public-direct-read'
-
-/**
- * Leitura por `fetch()` das origens dos apps de aluno. Só GET/HEAD: o bucket
- * público NUNCA recebe escrita do navegador (o upload passa pelo Admin).
- */
-const READ_RULE: CORSRule = {
-  ID: READ_RULE_ID,
-  AllowedOrigins: STUDENT_APP_ORIGINS,
-  AllowedMethods: ['GET', 'HEAD'],
-  AllowedHeaders: ['range', 'content-type'],
-  ExposeHeaders: ['ETag', 'Content-Length', 'Content-Type', 'Content-Range', 'Accept-Ranges'],
-  MaxAgeSeconds: 3600,
-}
-
-/** Só a NOSSA regra de leitura é substituída; qualquer outra é preservada intacta. */
-const isOurRule = (rule: CORSRule): boolean => rule.ID === READ_RULE_ID
-
 async function readCurrentRules(): Promise<CORSRule[]> {
   try {
-    const res = await client.send(new GetBucketCorsCommand({ Bucket: bucket }))
-    return res.CORSRules ?? []
+    const response = await client.send(new GetBucketCorsCommand({ Bucket: bucket }))
+    return response.CORSRules ?? []
   } catch (error) {
     const name = (error as { name?: string }).name
-    // Bucket sem nenhuma config de CORS ainda — que é o estado esperado aqui.
     if (name === 'NoSuchCORSConfiguration' || name === '404' || name === 'NotFound') return []
     throw error
   }
 }
 
-const current = await readCurrentRules()
-console.log(`bucket: ${bucket}`)
-console.log(`\n── CORS ATUAL (${current.length} regra(s)) ──`)
-console.log(JSON.stringify(current, null, 2))
-
-const preserved = current.filter((r) => !isOurRule(r))
-const merged = [...preserved, READ_RULE]
-console.log(
-  `\n── CORS PROPOSTO (${merged.length} regra(s): ${preserved.length} preservada(s) + 1 leitura dos apps de aluno) ──`,
-)
-console.log(JSON.stringify(merged, null, 2))
-
-if (!apply) {
-  console.log('\nDRY-RUN — nada foi alterado. Rode com --apply p/ gravar.')
-  process.exit(0)
+function hasExactManagedRule(rules: CORSRule[]): boolean {
+  const managedRules = rules.filter((rule) => rule.ID === PUBLIC_READ_RULE_ID)
+  return managedRules.length === 1 && publicReadRuleMatches(managedRules[0])
 }
 
-await client.send(
-  new PutBucketCorsCommand({ Bucket: bucket, CORSConfiguration: { CORSRules: merged } }),
-)
-console.log('\nPUT ok — relendo p/ confirmar…')
-const after = await readCurrentRules()
-const ok = after.some(isOurRule)
-console.log(JSON.stringify(after, null, 2))
-console.log(
-  ok ? '\n✅ regra de leitura presente no bucket público' : '\n⚠️ regra NÃO encontrada após o PUT',
-)
-process.exit(ok ? 0 : 1)
+function publicObjectUrl(key: string): string {
+  const base = publicBaseUrl.endsWith('/') ? publicBaseUrl : `${publicBaseUrl}/`
+  return new URL(key, base).toString()
+}
+
+const delay = (milliseconds: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, milliseconds))
+
+async function provePublicCors(): Promise<void> {
+  const key = `admin/module-rive/cors-probes/${crypto.randomUUID()}.riv`
+  const body = `sistema-zero-cors-probe:${crypto.randomUUID()}`
+  const url = publicObjectUrl(key)
+  let operationError: unknown
+  let cleanupError: unknown
+
+  await client.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: body,
+      ContentType: 'application/octet-stream',
+      CacheControl: 'no-store, max-age=0',
+    }),
+  )
+
+  try {
+    let lastFailure = 'a consulta pública ainda não foi executada'
+    let passed = false
+    let attempts = 0
+    const deadline = Date.now() + PROBE_DEADLINE_MS
+    while (!passed && Date.now() < deadline) {
+      attempts += 1
+      try {
+        const timeout = Math.min(PROBE_REQUEST_TIMEOUT_MS, Math.max(1, deadline - Date.now()))
+        const response = await fetch(url, {
+          headers: { Origin: probeOrigin, 'Cache-Control': 'no-cache' },
+          cache: 'no-store',
+          signal: AbortSignal.timeout(timeout),
+        })
+        const responseBody = await response.text()
+        const failure = validatePublicCorsProbe(
+          {
+            status: response.status,
+            allowOrigin: response.headers.get('access-control-allow-origin'),
+            body: responseBody,
+          },
+          { origin: probeOrigin, body },
+        )
+        if (!failure) {
+          console.log(`✅ prova pública passou na tentativa ${attempts}: ${probeOrigin}`)
+          passed = true
+        } else {
+          lastFailure = failure
+        }
+      } catch (error) {
+        lastFailure = error instanceof Error ? error.message : String(error)
+      }
+
+      const remaining = deadline - Date.now()
+      if (!passed && remaining > 0) await delay(Math.min(PROBE_RETRY_INTERVAL_MS, remaining))
+    }
+    if (!passed) {
+      throw new Error(
+        `CORS não propagou no endpoint público em ${PROBE_DEADLINE_MS / 1_000}s (${attempts} tentativa(s)): ${lastFailure}`,
+      )
+    }
+  } catch (error) {
+    operationError = error
+  }
+
+  try {
+    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
+    console.log('objeto temporário da prova removido')
+  } catch (error) {
+    cleanupError = error
+  }
+
+  if (operationError) {
+    if (cleanupError) console.error('falha adicional ao remover o objeto temporário', cleanupError)
+    throw operationError
+  }
+  if (cleanupError) throw cleanupError
+}
+
+async function main(): Promise<void> {
+  const current = await readCurrentRules()
+  console.log(`bucket: ${bucket} · ${current.length} regra(s) atual(is)`)
+
+  if (checkOnly) {
+    if (!hasExactManagedRule(current)) {
+      throw new Error(`regra ${PUBLIC_READ_RULE_ID} ausente ou divergente`)
+    }
+    console.log(`regra ${PUBLIC_READ_RULE_ID} confere; modo --check não alterou a configuração`)
+  } else if (hasExactManagedRule(current)) {
+    console.log(`regra ${PUBLIC_READ_RULE_ID} já está correta; nenhuma escrita necessária`)
+  } else {
+    const merged = mergePublicReadRule(current)
+    await client.send(
+      new PutBucketCorsCommand({
+        Bucket: bucket,
+        CORSConfiguration: { CORSRules: merged },
+      }),
+    )
+    console.log(
+      `regra ${PUBLIC_READ_RULE_ID} aplicada; ${merged.length - 1} regra(s) preservada(s)`,
+    )
+  }
+
+  const after = await readCurrentRules()
+  if (!hasExactManagedRule(after)) {
+    throw new Error(`regra ${PUBLIC_READ_RULE_ID} não confere após a operação`)
+  }
+  console.log('✅ configuração de controle confirmada')
+  await provePublicCors()
+}
+
+await main()

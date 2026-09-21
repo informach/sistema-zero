@@ -9,6 +9,7 @@
     "start": "next start -p 3005",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
+    "r2:cors:public:ensure": "bun scripts/r2-cors-public.ts",
     "check": "biome check .",
     "check:fix": "biome check --write ."
   },

@@ -1454,8 +1454,13 @@ o teste dele, a rota `/api/media/module-illustrations` e a dependência
   `https:` nem `'unsafe-inline'` cobrem, e cuja recusa no Chrome é SILENCIOSA.
   `tests/csp-wasm.test.ts` trava isso. O WASM é servido da nossa origem
   (`scripts/sync-rive-wasm.ts` no `dev` e no `build`, `public/rive/` no gitignore).
-- ⚠️ **`scripts/r2-cors-public.ts` precisa rodar antes do deploy do kids.** O
-  `<img>` de antes não fazia CORS; o runtime do Rive faz.
+- ⚠️ **O CORS público do Rive é uma BARREIRA automática do `deploy-staging`.** O job executa
+  `r2:cors:public:ensure` via Railway CLI com as envs do Admin ANTES de disparar qualquer serviço.
+  `scripts/r2-cors-public.ts` faz GET→MESCLA→PUT apenas quando necessário, relê a regra inteira e
+  prova o data plane: cria um objeto temporário, faz GET no `R2_PUBLIC_URL` com o `Origin` do Kids e
+  exige `Access-Control-Allow-Origin` correto; remove o objeto em seguida. Falha nessa prova deixa o
+  deploy vermelho. `--check` não altera a configuração, mas repete a prova pública. O `<img>` de antes
+  não fazia CORS; o runtime do Rive faz.
 - ⚠️ **Testes:** os mocks parciais de `@/server/media`/`@/server/r2` em
   `zappy-backfill` e `hub-route-handlers` passaram a ESPALHAR o módulo real. O
   `mock.module` do bun é global ao run, e manter à mão "a superfície que as outras
