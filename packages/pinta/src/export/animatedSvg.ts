@@ -1,9 +1,11 @@
 import { frameDurationsMs } from '../animation/player'
 import type { PintaVectorAnimation, VectorSpriteAsset } from '../core/project'
-import { boundsCenter, shapeBounds } from '../vector/geometry'
-import { type VectorShape, visibleShapes } from '../vector/model'
+import { rotationPivotOf } from '../vector/geometry'
+import { resolveMaskScene } from '../vector/mask'
+import type { VectorShape } from '../vector/model'
 import {
   gradientDefsMarkup,
+  sceneDefsMarkup,
   shapeGeometryAttrs,
   shapesToMarkup,
   shapeToMarkup,
@@ -35,7 +37,11 @@ export interface AnimatedVectorSvgOptions {
 }
 
 interface Pose {
+  /** Formas pintadas, na ordem-Z, para as trilhas sem máscara. */
   shapes: VectorShape[]
+  /** Quadro completo: conserva a fonte escondida necessária ao `clipPath`. */
+  sceneShapes: VectorShape[]
+  hasMask: boolean
   durationMs: number
 }
 
@@ -60,7 +66,11 @@ function visualSignature(shape: VectorShape): string {
 }
 
 function frameSignature(shapes: VectorShape[]): string {
-  return JSON.stringify(shapes.map(visualSignature))
+  const scene = resolveMaskScene(shapes)
+  return JSON.stringify({
+    painted: scene.painted.map(visualSignature),
+    sources: [...scene.sources.values()].map(visualSignature),
+  })
 }
 
 function smoothStyleSignature(shape: VectorShape): string {
@@ -77,15 +87,20 @@ function compactPoses(animation: PintaVectorAnimation): Pose[] {
   let previousSignature: string | null = null
 
   animation.frames.forEach((frame, index) => {
-    const shapes = visibleShapes(frame)
-    const signature = frameSignature(shapes)
+    const resolved = resolveMaskScene(frame)
+    const signature = frameSignature(frame)
     const durationMs = durations[index] ?? 0
     const previous = poses.at(-1)
     if (previous && signature === previousSignature) {
       previous.durationMs += durationMs
       return
     }
-    poses.push({ shapes, durationMs })
+    poses.push({
+      shapes: resolved.painted,
+      sceneShapes: frame,
+      hasMask: resolved.sources.size > 0,
+      durationMs,
+    })
     previousSignature = signature
   })
 
@@ -185,8 +200,8 @@ function smoothMarkup(
   }
 
   const rotations = shapes.map((shape) => {
-    const center = boundsCenter(shapeBounds(shape))
-    return `${number(shape.rotation)} ${number(center.x)} ${number(center.y)}`
+    const pivot = rotationPivotOf(shape)
+    return `${number(shape.rotation)} ${number(pivot.x)} ${number(pivot.y)}`
   })
   if (new Set(rotations).size > 1 && shapes.some((shape) => shape.rotation !== 0)) {
     children.push(
@@ -198,6 +213,23 @@ function smoothMarkup(
   }
 
   return shapeToMarkup(first, prefix, children.join(''))
+}
+
+/**
+ * Máscara é uma relação entre slots; por isso a pose inteira troca de uma vez.
+ * Cada grupo leva suas próprias definições prefixadas e sua pintura composta.
+ */
+function maskedPosesMarkup(poses: Pose[], keyTimes: string, dur: string, loop: boolean): string {
+  return poses
+    .map((pose, poseIndex) => {
+      const prefix = `pin-p${poseIndex}-`
+      const states = poses.map((_, index) => (index === poseIndex ? 'visible' : 'hidden'))
+      const visibility = animate('visibility', states, keyTimes, dur, loop, 'discrete')
+      const defs = sceneDefsMarkup(pose.sceneShapes, prefix)
+      const paint = shapesToMarkup(pose.sceneShapes, '', prefix)
+      return `<g visibility="${states[0] ?? 'hidden'}">${visibility}${defs}${paint}</g>`
+    })
+    .join('')
 }
 
 function discreteMarkup(
@@ -242,63 +274,67 @@ export function buildAnimatedVectorSvg(
 ): AnimatedVectorSvgResult {
   if (animation.frames.length === 0) return { ok: false, reason: 'empty' }
 
-  const visible = animation.frames.flatMap((frame) => visibleShapes(frame))
+  const visible = animation.frames.flatMap((frame) => resolveMaskScene(frame).painted)
   if (visible.some((shape) => shape.type === 'text')) return { ok: false, reason: 'text' }
   if (visible.some((shape) => shape.type === 'image')) return { ok: false, reason: 'image' }
   if (visible.length === 0) return { ok: false, reason: 'empty' }
 
   const poses = compactPoses(animation)
   const { dur, keyTimes } = timeline(poses)
-  const maxSlots = Math.max(...poses.map((pose) => pose.shapes.length))
   const defs: string[] = []
   const scene: string[] = []
   let staticTracks = 0
   let smoothedTracks = 0
   let discreteTracks = 0
 
-  for (let slot = 0; slot < maxSlots; slot += 1) {
-    const shapes = poses.map((pose) => pose.shapes[slot])
-    const first = shapes[0]
-    const signatures = shapes.map((shape) => (shape ? visualSignature(shape) : null))
-    if (first && signatures.every((signature) => signature === signatures[0])) {
-      const prefix = `pin-s${slot}-`
-      const slotDefs = gradientDefsMarkup([first], prefix)
-      if (slotDefs) defs.push(slotDefs)
-      scene.push(shapeToMarkup(first, prefix))
-      staticTracks += 1
-      continue
-    }
+  if (poses.some((pose) => pose.hasMask)) {
+    scene.push(maskedPosesMarkup(poses, keyTimes, dur, animation.loop))
+    discreteTracks = 1
+  } else {
+    const maxSlots = Math.max(...poses.map((pose) => pose.shapes.length))
+    for (let slot = 0; slot < maxSlots; slot += 1) {
+      const shapes = poses.map((pose) => pose.shapes[slot])
+      const first = shapes[0]
+      const signatures = shapes.map((shape) => (shape ? visualSignature(shape) : null))
+      if (first && signatures.every((signature) => signature === signatures[0])) {
+        const prefix = `pin-s${slot}-`
+        const slotDefs = gradientDefsMarkup([first], prefix)
+        if (slotDefs) defs.push(slotDefs)
+        scene.push(shapeToMarkup(first, prefix))
+        staticTracks += 1
+        continue
+      }
 
-    if (options.smooth !== false && canSmooth(shapes, poses)) {
-      const prefix = `pin-m${slot}-`
-      const slotDefs = gradientDefsMarkup([shapes[0] as VectorShape], prefix)
-      if (slotDefs) defs.push(slotDefs)
-      scene.push(smoothMarkup(shapes, prefix, keyTimes, dur, animation.loop))
-      smoothedTracks += 1
-      continue
-    }
+      if (options.smooth !== false && canSmooth(shapes, poses)) {
+        const prefix = `pin-m${slot}-`
+        const slotDefs = gradientDefsMarkup([shapes[0] as VectorShape], prefix)
+        if (slotDefs) defs.push(slotDefs)
+        scene.push(smoothMarkup(shapes, prefix, keyTimes, dur, animation.loop))
+        smoothedTracks += 1
+        continue
+      }
 
-    const discrete = discreteMarkup(shapes, slot, keyTimes, dur, animation.loop)
-    defs.push(...discrete.defs)
-    scene.push(discrete.markup)
-    discreteTracks += 1
+      const discrete = discreteMarkup(shapes, slot, keyTimes, dur, animation.loop)
+      defs.push(...discrete.defs)
+      scene.push(discrete.markup)
+      discreteTracks += 1
+    }
   }
 
   const reducedPrefix = 'pin-reduced-'
-  const reducedShapes = poses[0]?.shapes ?? []
-  const reducedDefs = gradientDefsMarkup(reducedShapes, reducedPrefix)
-  if (reducedDefs) defs.push(reducedDefs)
+  const reducedShapes = poses[0]?.sceneShapes ?? []
+  const reducedScene = `${sceneDefsMarkup(reducedShapes, reducedPrefix)}\n${shapesToMarkup(
+    reducedShapes,
+    '',
+    reducedPrefix,
+  )}`
 
   const svg = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${asset.frameWidth}" height="${asset.frameHeight}" viewBox="0 0 ${asset.frameWidth} ${asset.frameHeight}" role="img" aria-label="Animação vetorial criada no Pinta" preserveAspectRatio="xMidYMid meet">`,
     '<style>.pin-reduced{display:none}@media(prefers-reduced-motion:reduce){.pin-motion{display:none}.pin-reduced{display:inline}}</style>',
     ...defs,
     `<g class="pin-motion">${scene.join('')}</g>`,
-    `<g class="pin-reduced" aria-label="Primeiro quadro estático">${shapesToMarkup(
-      reducedShapes,
-      '',
-      reducedPrefix,
-    )}</g>`,
+    `<g class="pin-reduced" aria-label="Primeiro quadro estático">${reducedScene}</g>`,
     '</svg>',
   ].join('\n')
   const bytes = new TextEncoder().encode(svg).byteLength

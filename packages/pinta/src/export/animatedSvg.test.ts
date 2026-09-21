@@ -5,6 +5,7 @@ import {
   type VectorSpriteAsset,
 } from '../core/project'
 import type { VectorShape } from '../vector/model'
+import { sceneDefsMarkup, shapesToMarkup } from '../vector/svg'
 import {
   type AnimatedVectorSvgSuccess,
   buildAnimatedVectorSvg,
@@ -31,6 +32,19 @@ function rect(
     rx: 1,
     ...overrides,
   } as VectorShape
+}
+
+function ellipse(id: string, motionId: string | undefined, cx: number): VectorShape {
+  return {
+    ...base,
+    id,
+    ...(motionId ? { motionId } : {}),
+    type: 'ellipse',
+    cx,
+    cy: 18,
+    rx: 8,
+    ry: 7,
+  }
 }
 
 function setup(
@@ -75,6 +89,50 @@ describe('buildAnimatedVectorSvg — animação e suavização', () => {
     )
     expect(result.svg).toContain('attributeName="opacity" values="1;0.5;1"')
     expect(result.svg).toContain('<animateTransform attributeName="transform" type="rotate"')
+  })
+
+  it('usa a âncora personalizada nos valores da rotação suave', () => {
+    const result = success([
+      [rect('a', 'corpo', 0, { rotationPivot: { x: -12, y: 30 } })],
+      [
+        rect('b', 'corpo', 20, {
+          rotation: 45,
+          rotationPivot: { x: 48, y: -6 },
+        }),
+      ],
+    ])
+
+    expect(result.smoothedTracks).toBe(1)
+    expect(result.svg).toContain('values="0 -12 30;45 48 -6;0 -12 30"')
+  })
+
+  it('exporta cada pose mascarada como uma cena discreta completa e sem colisão de ids', () => {
+    const first = [
+      { ...rect('rosto-a', 'rosto', 2), maskId: 'janela-a' },
+      ellipse('janela-a', 'janela', 14),
+    ]
+    const second = [
+      { ...rect('rosto-b', 'rosto', 20), maskId: 'janela-b' },
+      ellipse('janela-b', 'janela', 30),
+    ]
+    const result = success([first, second])
+
+    expect(result.staticTracks).toBe(0)
+    expect(result.smoothedTracks).toBe(0)
+    expect(result.discreteTracks).toBe(1)
+    expect(result.svg).toContain('id="pin-p0-pin-mask-janela-a"')
+    expect(result.svg).toContain('clip-path="url(#pin-p0-pin-mask-janela-a)"')
+    expect(result.svg).toContain('id="pin-p1-pin-mask-janela-b"')
+    expect(result.svg).toContain('clip-path="url(#pin-p1-pin-mask-janela-b)"')
+    expect(result.svg.match(/attributeName="visibility"/g)).toHaveLength(2)
+
+    const reducedPrefix = 'pin-reduced-'
+    const exactReduced = `${sceneDefsMarkup(first, reducedPrefix)}\n${shapesToMarkup(
+      first,
+      '',
+      reducedPrefix,
+    )}`
+    expect(result.svg).toContain(exactReduced)
   })
 
   it('mantém a ordem z e extrai uma forma estática uma única vez', () => {

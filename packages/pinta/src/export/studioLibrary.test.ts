@@ -7,7 +7,7 @@ import {
   createVectorTilesetAsset,
 } from '../core/project'
 import { clearIdbMock } from '../testing/idbMock'
-import { makeRect } from '../vector/shapes'
+import { makeEllipse, makeRect } from '../vector/shapes'
 import type { StudioPayload } from './studioBridge'
 import { validateStudioPayloadSize } from './studioBridge'
 
@@ -76,6 +76,21 @@ describe('listGalleryForStudio', () => {
     // Caminhos de canvas devolvem null gracioso no happy-dom (a UI usa o emoji);
     // a miniatura raster real é QA de browser (contrato pngOrNull existente).
     expect(byName.get('heroi')?.thumbDataUrl).toBeNull()
+  })
+
+  it('a miniatura enviada ao Studio conserva a máscara geométrica', async () => {
+    const vetor = createVectorBackgroundAsset({ name: 'nave', width: 32, height: 32 })
+    const source = makeEllipse(
+      { x: 8, y: 8 },
+      { x: 24, y: 24 },
+      { fill: '#ffffff', stroke: null, opacity: 1 },
+    )
+    vetor.shapes = [{ ...redRect(), maskId: source.id }, source]
+    await persistAsset(vetor)
+
+    const thumb = (await listGalleryForStudio())[0]?.thumbDataUrl ?? ''
+    expect(thumb).toContain(encodeURIComponent(`pin-mask-${source.id}`))
+    expect(thumb).toContain(encodeURIComponent(`clip-path="url(#pin-mask-${source.id})"`))
   })
 
   it('cacheia a miniatura por updatedAt (mesmo carimbo = mesma thumb, novo = recomputa)', async () => {
