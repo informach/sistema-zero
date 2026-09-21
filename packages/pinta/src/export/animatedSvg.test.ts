@@ -135,6 +135,21 @@ describe('buildAnimatedVectorSvg — animação e suavização', () => {
     expect(result.svg).toContain(exactReduced)
   })
 
+  it('compacta poses mascaradas visualmente iguais mesmo quando os ids foram remapeados', () => {
+    const first = [
+      { ...rect('rosto-a', 'rosto', 2), maskId: 'janela-a' },
+      ellipse('janela-a', 'janela', 14),
+    ]
+    const second = [
+      { ...rect('rosto-b', 'rosto', 2), maskId: 'janela-b' },
+      ellipse('janela-b', 'janela', 14),
+    ]
+    const result = success([first, second])
+
+    expect(result.poseCount).toBe(1)
+    expect(result.svg.match(/attributeName="visibility"/g)).toHaveLength(1)
+  })
+
   it('mantém a ordem z e extrai uma forma estática uma única vez', () => {
     const background = rect('fundo-a', undefined, 0, { fill: '#003fad', w: 64, h: 64 })
     const result = success([

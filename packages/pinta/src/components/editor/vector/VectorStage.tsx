@@ -23,6 +23,7 @@ import {
   boundsCenter,
   boundsOverlap,
   boundsUnion,
+  rotatePoint,
   rotateShapesAround,
   rotationPivotOf,
   scaleShape,
@@ -46,14 +47,19 @@ import {
   primeImageSources,
   sampleImageColorAt,
 } from '../../../vector/imageSampler'
-import { clipPathId, maskSourceIds, resolveMaskScene } from '../../../vector/mask'
+import {
+  clipPathId,
+  maskedShapeBounds,
+  maskSourceIds,
+  resolveMaskScene,
+  selectionHasLockedMaskMember,
+} from '../../../vector/mask'
 import {
   isVectorGradient,
   MAX_TEXT_CHARS,
   normalizeTextContent,
   type Vec2,
   type VectorShape,
-  visibleShapes,
 } from '../../../vector/model'
 import {
   type EditablePath,
@@ -431,8 +437,8 @@ export function VectorStage(): JSX.Element {
   // A captura também liga o `picker`, então os dois caminhos ficam cobertos.
   useEffect(() => {
     if (tool !== 'picker') return
-    const sources = visibleShapes(doc.shapes)
-      .filter((shape) => shape.type === 'image')
+    const sources = resolveMaskScene(doc.shapes)
+      .painted.filter((shape) => shape.type === 'image')
       .map((shape) => (shape.type === 'image' ? shape.src : ''))
     if (sources.length === 0) return
     void primeImageSources(sources)
@@ -683,6 +689,10 @@ export function VectorStage(): JSX.Element {
       : selectedIds.includes(shape.id)
         ? selectedIds
         : clicked
+    if (!editedMask && selectionHasLockedMaskMember(shapes, ids)) {
+      showToast(COPY.layers.lockedShapeWarning)
+      return
+    }
     if (!editedMask) setSelectedIds(ids)
     beginGesture({
       kind: 'move',
@@ -825,7 +835,7 @@ export function VectorStage(): JSX.Element {
       // traço, de um círculo sem cor ou de uma polilinha abre o laço, e a
       // trancada nunca bloqueia a forma livre embaixo dela. Folga pequena (4px):
       // grande demais e o laço que começa PERTO de uma forma viraria mover.
-      const hit = hitMovableShapeAt(visibleShapes(currentShapes()), at, 4 / zoom)
+      const hit = hitMovableShapeAt(currentShapes(), at, 4 / zoom)
       if (hit) {
         startMoveGesture(hit, event, at)
         return
@@ -860,7 +870,7 @@ export function VectorStage(): JSX.Element {
         // foco para o body (o svg não é focável). ⚠️ É por isso que a leitura do
         // pixel é SÍNCRONA (as figuras já vêm abertas pelo efeito abaixo).
         event.preventDefault()
-        const picked = pickColorAt(visibleShapes(currentShapes()), at, slack)
+        const picked = pickColorAt(currentShapes(), at, slack)
         // Tocar no vazio não sai do modo — ela tenta de novo, e agora sabe por quê.
         if (!picked) {
           showToast(COPY.vector.pickColorMiss)
@@ -884,7 +894,7 @@ export function VectorStage(): JSX.Element {
       // folga do toque — o clique de forma borbulha até aqui porque não é a
       // ferramenta de seleção). `adoptStyle` muda SÓ o estilo vigente (não
       // re-estiliza a seleção).
-      const hit = hitShapeAt(visibleShapes(currentShapes()), at, slack)
+      const hit = hitShapeAt(currentShapes(), at, slack)
       if (!hit) {
         showToast(COPY.vector.pickColorMiss)
         return
@@ -1420,9 +1430,14 @@ export function VectorStage(): JSX.Element {
       // O laço só pega formas VISÍVEIS (apagar algo invisível assustaria) e
       // DESTRANCADAS (o laço existe para mover/apagar — trancada fica de fora;
       // quem quer mexer nela usa o painel Camadas).
-      const hit = visibleShapes(shapes)
-        .filter((s) => s.locked !== true && boundsOverlap(shapeBounds(s), box))
-        .map((s) => s.id)
+      const scene = resolveMaskScene(shapes)
+      const hit = scene.painted
+        .filter((shape) => {
+          if (shape.locked === true) return false
+          const bounds = maskedShapeBounds(scene, shape)
+          return bounds ? boundsOverlap(bounds, box) : false
+        })
+        .map((shape) => shape.id)
       const expanded = expandToSelectionUnits(shapes, hit)
       setSelectedIds((current) =>
         gesture.additive ? [...new Set([...current, ...expanded])] : expanded,
@@ -1490,12 +1505,20 @@ export function VectorStage(): JSX.Element {
   const transformSingleBounds = transformSingle ? shapeBounds(transformSingle) : null
   const transformPivot = transformShapes.length > 0 ? selectionRotationPivot(transformShapes) : null
   const transformCenter =
-    transformShapes.length > 0 ? boundsCenter(boundsUnion(transformShapes.map(shapeBounds))) : null
+    transformSingle && transformSingleBounds
+      ? rotatePoint(
+          boundsCenter(transformSingleBounds),
+          rotationPivotOf(transformSingle),
+          transformSingle.rotation,
+        )
+      : transformShapes.length > 0
+        ? boundsCenter(boundsUnion(transformShapes.map(shapeBounds)))
+        : null
   const pivotVisible =
     handlesActive &&
+    tool === 'select' &&
     transformShapes.length > 0 &&
-    !transformShapes.some((shape) => shape.locked === true) &&
-    tool !== 'reshape'
+    !transformShapes.some((shape) => shape.locked === true)
   const maskGuideShape: VectorShape | null = maskEditShape
     ? {
         ...maskEditShape,

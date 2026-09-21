@@ -22,8 +22,8 @@ import type {
 } from 'react'
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
+import { maskMembers, maskSourceIds } from '../../../vector/mask'
 import type { VectorShape } from '../../../vector/model'
-import { maskSourceIds } from '../../../vector/mask'
 import { dropShapesOrder } from '../../../vector/order'
 import { GradientDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
 import { ToolButton } from '../../ui/Button'
@@ -256,9 +256,7 @@ export function VectorLayerPanel({
   const sourceIds = maskSourceIds(doc.shapes)
   /** Grupo da linha em arrasto: o bloco inteiro se acende, mesmo no movimento fino. */
   const draggingGroup = dragging ? doc.shapes.find((s) => s.id === dragging)?.groupId : undefined
-  const draggingUnit = new Set(
-    dragging ? expandToSelectionUnits(doc.shapes, [dragging]) : [],
-  )
+  const draggingUnit = new Set(dragging ? expandToSelectionUnits(doc.shapes, [dragging]) : [])
 
   function selectShape(shape: VectorShape): void {
     setSelectedIds(expandToSelectionUnits(currentShapes(), [shape.id]))
@@ -311,11 +309,10 @@ export function VectorLayerPanel({
     if (index === -1) return
     const over = shapes[index + delta]
     if (!over) return
-    const next = dropShapesOrder(
-      shapes,
-      expandToSelectionUnits(shapes, [shape.id]),
-      over.id,
-    )
+    // A alça é fina dentro de um grupo, mas uma composição mascarada não pode
+    // ser separada. `dropShapesOrder` expande os grupos por conta própria.
+    const ids = maskMembers(shapes, shape.id).map((member) => member.id)
+    const next = dropShapesOrder(shapes, ids, over.id)
     if (next) commitShapes(next)
   }
 
@@ -345,11 +342,8 @@ export function VectorLayerPanel({
       // Irmão = movimento fino; linha externa = grupo inteiro. A mesma operação
       // pura atende o ponteiro e as setas da alça.
       const shapes = currentShapes()
-      const next = dropShapesOrder(
-        shapes,
-        expandToSelectionUnits(shapes, [shape.id]),
-        overId,
-      )
+      const ids = maskMembers(shapes, shape.id).map((member) => member.id)
+      const next = dropShapesOrder(shapes, ids, overId)
       if (next) commitShapes(next, false)
     }
     const onUp = (): void => {

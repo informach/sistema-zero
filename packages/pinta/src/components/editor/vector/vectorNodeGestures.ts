@@ -5,7 +5,7 @@
  * ponte entre os dois, e ficam fora do `VectorStage` para ele não crescer mais.
  */
 import type { Bounds } from '../../../vector/geometry'
-import { boundsCenter, rotatePoint, shapeBounds } from '../../../vector/geometry'
+import { rotatePoint, rotationPivotOf } from '../../../vector/geometry'
 import type { Vec2, VectorShape } from '../../../vector/model'
 import type { EditablePath } from '../../../vector/pathNodes'
 
@@ -16,7 +16,7 @@ export interface NodeFrame {
 }
 
 export function nodeFrameOf(shape: VectorShape): NodeFrame {
-  return { center: boundsCenter(shapeBounds(shape)), rotation: shape.rotation }
+  return { center: rotationPivotOf(shape), rotation: shape.rotation }
 }
 
 /** Ponteiro (documento) → espaço local dos nós. */

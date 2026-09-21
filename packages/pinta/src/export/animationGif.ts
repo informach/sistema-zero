@@ -35,7 +35,8 @@ import { resolveAssetPalette } from '../core/project'
 import { quantizeFrames, type Rgb } from '../core/quantizeFrames'
 import { flattenCelsOrBlank } from '../pixel/layers'
 import { hexToRgb } from '../pixel/render'
-import { visibleShapes } from '../vector/model'
+import { maskedShapeBounds, resolveMaskScene } from '../vector/mask'
+import type { VectorShape } from '../vector/model'
 import { svgToCanvas } from '../vector/rasterize'
 import { encodeGif, msToDelayCs } from './gif'
 import { vectorStripPortableSvg } from './vectorSheet'
@@ -241,11 +242,24 @@ export async function vectorAnimationGif(
  * **em vez de lançar**. Sem esta pergunta, o caso sairia como um GIF em branco
  * com toast de SUCESSO. Paleta com só o slot transparente = nenhum pixel opaco.
  *
- * Conta só as formas VISÍVEIS: animação com tudo escondido é legitimamente
- * vazia, e recusar ali seria dizer "não consegui" para algo que funcionou.
+ * Conta só as formas que de fato PINTAM: animação com tudo escondido (inclusive
+ * uma fonte de máscara cujo conteúdo está escondido) é legitimamente vazia.
  */
 export function rasterCameOutBlank(frames: readonly VectorFrame[], paletteSize: number): boolean {
-  return paletteSize <= 1 && frames.some((frame) => visibleShapes(frame).length > 0)
+  if (paletteSize > 1) return false
+  return frames.some((frame) => {
+    const scene = resolveMaskScene(frame)
+    return scene.painted.some(
+      (shape) => shapeCanPaint(shape) && maskedShapeBounds(scene, shape) !== null,
+    )
+  })
+}
+
+function shapeCanPaint(shape: VectorShape): boolean {
+  if (shape.opacity <= 0) return false
+  if (shape.type === 'image') return true
+  if (shape.type === 'line') return shape.stroke !== null
+  return shape.fill !== 'none' || shape.stroke !== null
 }
 
 /** Os bytes do GIF como Blob, pronto para `triggerDownload` ou upload. */

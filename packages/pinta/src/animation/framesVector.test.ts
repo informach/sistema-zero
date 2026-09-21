@@ -140,14 +140,8 @@ describe('animações vetoriais', () => {
         {
           ...animation,
           frames: [
-            [
-              { ...rect('c1', 'mov-conteudo'), maskId: 'm1' },
-              rect('m1', 'mov-mascara'),
-            ],
-            [
-              { ...rect('c2', 'mov-conteudo'), maskId: 'm2' },
-              rect('m2', 'mov-mascara'),
-            ],
+            [{ ...rect('c1', 'mov-conteudo'), maskId: 'm1' }, rect('m1', 'mov-mascara')],
+            [{ ...rect('c2', 'mov-conteudo'), maskId: 'm2' }, rect('m2', 'mov-mascara')],
           ],
         },
       ],

@@ -58,6 +58,7 @@ function visualSignature(shape: VectorShape): string {
     id: _id,
     motionId: _motionId,
     groupId: _groupId,
+    maskId: _maskId,
     hidden: _hidden,
     locked: _locked,
     ...visual
@@ -67,8 +68,12 @@ function visualSignature(shape: VectorShape): string {
 
 function frameSignature(shapes: VectorShape[]): string {
   const scene = resolveMaskScene(shapes)
+  const sourceSlots = new Map([...scene.sources.keys()].map((id, index) => [id, index]))
   return JSON.stringify({
-    painted: scene.painted.map(visualSignature),
+    painted: scene.painted.map((shape) => ({
+      shape: visualSignature(shape),
+      mask: shape.maskId ? (sourceSlots.get(shape.maskId) ?? null) : null,
+    })),
     sources: [...scene.sources.values()].map(visualSignature),
   })
 }

@@ -20,8 +20,7 @@
 import type { PintaBitmap, PintaPixelFrame, PintaPixelLayer, VectorFrame } from '../core/project'
 import type { PintaSpriteHitbox } from '../core/types'
 import { flattenCels } from '../pixel/layers'
-import { type Bounds, shapeBounds } from '../vector/geometry'
-import { visibleShapes } from '../vector/model'
+import { maskedShapeBounds, resolveMaskScene } from '../vector/mask'
 
 interface Caixa {
   minX: number
@@ -91,24 +90,6 @@ export function pixelSpriteHitbox(
   return fracao(caixa, frameWidth, frameHeight)
 }
 
-/**
- * ⚠️ `shapeBounds` IGNORA a rotação, e o `svg.ts` a RENDERIZA (`rotate()` ao redor
- * do centro). Para o editor a aproximação serve (a alça fica perto da forma), mas
- * colisão é outra coisa: uma espada girada 45 graus ficaria com caixa ~30% menor
- * que o desenho e o golpe passaria por dentro do inimigo. Aqui a caixa cresce
- * para caber o retângulo girado. O centro não se move, só a extensão.
- */
-function giradaAoRedorDoCentro(b: Bounds, rotation: number): Bounds {
-  const graus = ((rotation % 360) + 360) % 360
-  if (graus === 0) return b
-  const rad = (graus * Math.PI) / 180
-  const cos = Math.abs(Math.cos(rad))
-  const sen = Math.abs(Math.sin(rad))
-  const width = b.width * cos + b.height * sen
-  const height = b.width * sen + b.height * cos
-  return { x: b.x + (b.width - width) / 2, y: b.y + (b.height - height) / 2, width, height }
-}
-
 /** A união das formas VISÍVEIS de todos os quadros vetoriais. */
 export function vectorSpriteHitbox(
   frames: readonly VectorFrame[],
@@ -117,8 +98,10 @@ export function vectorSpriteHitbox(
 ): PintaSpriteHitbox | null {
   let caixa = VAZIA
   for (const frame of frames) {
-    for (const shape of visibleShapes([...frame])) {
-      const b = giradaAoRedorDoCentro(shapeBounds(shape), shape.rotation)
+    const scene = resolveMaskScene(frame)
+    for (const shape of scene.painted) {
+      const b = maskedShapeBounds(scene, shape)
+      if (!b) continue
       if (b.width <= 0 || b.height <= 0) continue
       caixa = juntar(caixa, { minX: b.x, minY: b.y, maxX: b.x + b.width, maxY: b.y + b.height })
     }

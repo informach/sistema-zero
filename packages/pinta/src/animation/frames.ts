@@ -52,10 +52,7 @@ function cloneFrameOf<A extends AnimatedSpriteAsset>(
   return clone as FrameOf<A>
 }
 
-function cloneVectorFrame(
-  frame: VectorFrame,
-  motionIds: Map<string, string>,
-): VectorFrame {
+function cloneVectorFrame(frame: VectorFrame, motionIds: Map<string, string>): VectorFrame {
   const shapeIds = new Map(frame.map((shape) => [shape.id, newId()]))
   const copy = frame.map((shape) => {
     const sourceMotionId = shape.motionId

@@ -8,8 +8,8 @@
  * operações puras testáveis sem canvas.
  */
 
-import { sanitizeVectorShape, type VectorShape } from '../vector/model'
 import { sanitizeMaskReferences } from '../vector/mask'
+import { sanitizeVectorShape, type VectorShape } from '../vector/model'
 import { normalizeHex } from './color'
 import { COPY } from './copy'
 import { newId } from './id'

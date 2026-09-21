@@ -1,14 +1,16 @@
 import { describe, expect, it } from 'bun:test'
-import type { VectorShape } from './model'
 import {
   applyMask,
   isMaskCapable,
+  maskedShapeBounds,
   maskMembers,
   maskSourceIds,
   releaseMasks,
   resolveMaskScene,
   sanitizeMaskReferences,
+  selectionHasLockedMaskMember,
 } from './mask'
+import type { VectorShape } from './model'
 
 function rect(id: string, over: Partial<VectorShape> = {}): VectorShape {
   return {
@@ -89,14 +91,22 @@ describe('máscara vetorial — aplicar e soltar', () => {
 
     expect(applied).toMatchObject({ ok: true, maskId: 'janela' })
     if (!applied.ok) throw new Error('máscara esperada')
-    expect(applied.shapes[0]).toMatchObject({ id: 'vagalume', groupId: 'personagem', maskId: 'janela' })
+    expect(applied.shapes[0]).toMatchObject({
+      id: 'vagalume',
+      groupId: 'personagem',
+      maskId: 'janela',
+    })
     expect(applied.shapes[1]).toMatchObject({ id: 'janela', groupId: 'nave' })
     expect(applied.shapes[1]).not.toHaveProperty('maskId')
     expect(applied.shapes[2]).toBe(shine)
   })
 
   it('solta a máscara ao selecionar tanto a fonte quanto um conteúdo', () => {
-    const shapes = [rect('rosto', { maskId: 'janela' }), rect('olhos', { maskId: 'janela' }), rect('janela')]
+    const shapes = [
+      rect('rosto', { maskId: 'janela' }),
+      rect('olhos', { maskId: 'janela' }),
+      rect('janela'),
+    ]
     const fromMember = releaseMasks(shapes, ['rosto'])
     expect(fromMember?.every((shape) => shape.maskId === undefined)).toBe(true)
     const fromSource = releaseMasks(shapes, ['janela'])
@@ -136,6 +146,17 @@ describe('máscara vetorial — aplicar e soltar', () => {
     expect(maskMembers(shapes, 'm').map((shape) => shape.id)).toEqual(['a', 'b', 'm'])
     expect(maskMembers(shapes, 'a').map((shape) => shape.id)).toEqual(['a', 'b', 'm'])
     expect(maskMembers(shapes, 'fora').map((shape) => shape.id)).toEqual(['fora'])
+  })
+
+  it('detecta cadeado em qualquer membro da composição tocada', () => {
+    const shapes = [
+      rect('rosto', { maskId: 'janela' }),
+      rect('janela', { locked: true }),
+      rect('fora'),
+    ]
+    expect(selectionHasLockedMaskMember(shapes, ['rosto'])).toBe(true)
+    expect(selectionHasLockedMaskMember(shapes, ['janela'])).toBe(true)
+    expect(selectionHasLockedMaskMember(shapes, ['fora'])).toBe(false)
   })
 })
 
@@ -181,12 +202,7 @@ describe('máscara vetorial — recuperação de documento malformado', () => {
 describe('máscara vetorial — resolução da cena', () => {
   it('separa fontes de máscara da pintura e preserva a ordem-Z do restante', () => {
     const source = rect('janela')
-    const shapes = [
-      rect('fundo'),
-      rect('rosto', { maskId: 'janela' }),
-      source,
-      rect('brilho'),
-    ]
+    const shapes = [rect('fundo'), rect('rosto', { maskId: 'janela' }), source, rect('brilho')]
     const scene = resolveMaskScene(shapes)
 
     expect(scene.painted.map((shape) => shape.id)).toEqual(['fundo', 'rosto', 'brilho'])
@@ -205,5 +221,18 @@ describe('máscara vetorial — resolução da cena', () => {
     ])
     expect(hidden.painted).toEqual([])
     expect(hidden.sources.size).toBe(0)
+  })
+
+  it('mede somente a interseção renderizada entre conteúdo e fonte', () => {
+    const content = rect('rosto', { x: -30, y: 5, w: 80, h: 10, maskId: 'janela' })
+    const source = rect('janela', { x: 10, y: 0, w: 20, h: 20 })
+    const scene = resolveMaskScene([content, source])
+
+    expect(maskedShapeBounds(scene, scene.painted[0] as VectorShape)).toEqual({
+      x: 10,
+      y: 5,
+      width: 20,
+      height: 10,
+    })
   })
 })

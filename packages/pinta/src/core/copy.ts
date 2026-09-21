@@ -683,9 +683,11 @@ export const COPY = {
     maskLocked: 'Destranque todas as formas antes de criar a máscara.',
     maskUnsupportedSource:
       'A forma da frente precisa ser fechada, como um círculo, quadrado ou polígono.',
-    maskAlreadyMasked: 'Uma destas formas já usa uma máscara. Solte a máscara antes de criar outra.',
+    maskAlreadyMasked:
+      'Uma destas formas já usa uma máscara. Solte a máscara antes de criar outra.',
     maskNestedMask: 'Uma máscara não pode ficar dentro de outra. Solte a máscara primeiro.',
-    maskReleaseBeforeGeometry: 'Solte a máscara antes de misturar ou editar os pontos destas formas.',
+    maskReleaseBeforeGeometry:
+      'Solte a máscara antes de misturar ou editar os pontos destas formas.',
     /** Recusas da mistura: cada uma diz o que houve E o que fazer a seguir. */
     pathfinderNeedsTwo: 'Escolha duas formas fechadas, como um quadrado ou um círculo.',
     pathfinderSkips: 'Linhas, textos e figuras não entram na mistura. Escolha só formas fechadas.',

@@ -163,6 +163,22 @@ export function rotationPivotOf(shape: VectorShape): Vec2 {
   return shape.rotationPivot ?? boundsCenter(shapeBounds(shape))
 }
 
+/** Caixa alinhada aos eixos da forma como ela é renderizada, já com a rotação aplicada. */
+export function renderedShapeBounds(shape: VectorShape): Bounds {
+  const bounds = shapeBounds(shape)
+  const rotation = ((shape.rotation % 360) + 360) % 360
+  if (rotation === 0) return bounds
+  const pivot = rotationPivotOf(shape)
+  return fromPoints(
+    [
+      { x: bounds.x, y: bounds.y },
+      { x: bounds.x + bounds.width, y: bounds.y },
+      { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
+      { x: bounds.x, y: bounds.y + bounds.height },
+    ].map((point) => rotatePoint(point, pivot, rotation)),
+  )
+}
+
 /** Uma forma usa seu pivô; uma seleção múltipla gira pelo centro da união. */
 export function selectionRotationPivot(shapes: readonly VectorShape[]): Vec2 {
   const only = shapes[0]
@@ -209,6 +225,16 @@ export function boundsIntersect(a: Bounds, b: Bounds): boolean {
  */
 export function boundsOverlap(a: Bounds, b: Bounds): boolean {
   return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
+}
+
+/** Interseção com área entre duas caixas; `null` quando só encostam ou não se encontram. */
+export function boundsIntersection(a: Bounds, b: Bounds): Bounds | null {
+  const x = Math.max(a.x, b.x)
+  const y = Math.max(a.y, b.y)
+  const right = Math.min(a.x + a.width, b.x + b.width)
+  const bottom = Math.min(a.y + a.height, b.y + b.height)
+  if (right <= x || bottom <= y) return null
+  return { x, y, width: right - x, height: bottom - y }
 }
 
 /** Borda/centro alvo do alinhamento. */

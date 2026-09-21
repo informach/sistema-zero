@@ -56,6 +56,7 @@ import {
   maskMembers,
   maskSourceIds,
   releaseMasks,
+  selectionHasLockedMaskMember,
 } from '../../../vector/mask'
 import {
   DEFAULT_VECTOR_FONT_FAMILY,
@@ -98,12 +99,16 @@ import { useEditor, useEditorStores, useSession } from '../editorContext'
 import { isPintaModalOpen, useActionShortcuts } from '../useActionShortcuts'
 import { useToolShortcuts } from '../useToolShortcuts'
 import {
+  alignSelectedUnits,
+  canDistributeSelectedUnits,
   cloneShapesWithNewIds,
+  distributeSelectedUnits,
   expandToSelectionUnits,
   fitPastedShapes,
   MAX_CUSTOM_COLORS,
   occupiedBoundsOf,
   offsetInsideDoc,
+  selectedShapeUnits,
   TOOL_SHORTCUTS,
   type VectorPaletteChoice,
   type VectorTool,
@@ -590,7 +595,17 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
       setGradientAdjustShapeId(null)
     }
   }, [gradientAdjustShapeId, canAdjustGradient, adjustableShape?.id, tool, gradientOpen])
-  const canDistributeSelected = doc ? canDistributeShapes(doc.shapes, selectedIds) : false
+  const selectedSourceIds = doc ? maskSourceIds(doc.shapes) : new Set<string>()
+  const selectionHasMask = selected.some(
+    (shape) => shape.maskId !== undefined || selectedSourceIds.has(shape.id),
+  )
+  const selectedUnits = doc && selectionHasMask ? selectedShapeUnits(doc.shapes, selectedIds) : []
+  const canDistributeSelected = doc
+    ? selectionHasMask
+      ? selected.every((shape) => shape.locked !== true) &&
+        canDistributeSelectedUnits(selectedUnits)
+      : canDistributeShapes(doc.shapes, selectedIds)
+    : false
   const single = selected.length === 1 ? (selected[0] ?? null) : null
   // A forma que a janela do Degradê INSPECIONA (e da qual o estilo sincroniza
   // numa seleção com várias): a primeira LIVRE com preenchimento, na ordem do
@@ -688,11 +703,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   function freeSelectedIds(): string[] | null {
     const shapes = currentShapes()
     const locked = lockedIdsOf(shapes)
-    const selectedMaskedUnitHasLock = selectedIds.some((id) => {
-      const unit = maskMembers(shapes, id)
-      return unit.length > 1 && unit.some((shape) => locked.has(shape.id))
-    })
-    if (selectedMaskedUnitHasLock) {
+    if (selectionHasLockedMaskMember(shapes, selectedIds)) {
       showToast(COPY.layers.lockedShapeWarning)
       return null
     }
@@ -744,7 +755,9 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   }
 
   function releaseMaskSelected(): void {
-    const next = releaseMasks(currentShapes(), selectedIds)
+    const free = freeSelectedIds()
+    if (!free) return
+    const next = releaseMasks(currentShapes(), free)
     if (!next) return
     commitShapes(next)
     setMaskEditId(null)
@@ -1261,21 +1274,34 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     // Só as visíveis e DESTRANCADAS: o Ctrl+A existe para agir em cima do que
     // vier (mover/apagar), e a trancada não entra nisso — quem quer mexer nela
     // clica a linha dela no painel de propósito.
-    setSelectedIds(
-      currentShapes()
-        .filter((s) => s.hidden !== true && s.locked !== true)
-        .map((s) => s.id),
-    )
+    const shapes = currentShapes()
+    const seeds = shapes
+      .filter((shape) => shape.hidden !== true && shape.locked !== true)
+      .map((shape) => shape.id)
+    setSelectedIds(expandToSelectionUnits(shapes, seeds))
   }
 
-  /** Espelha cada shape selecionado em torno do PRÓPRIO centro. */
+  /** Espelha formas soltas pelo próprio centro e cada composição mascarada como uma unidade. */
   function flipSelected(axis: 'h' | 'v'): void {
     if (selected.length === 0) return
     const free = freeSelectedIds()
     if (!free) return
+    const current = currentShapes()
+    const centers = new Map<string, { x: number; y: number }>()
+    if (selectionHasMask) {
+      for (const unit of selectedShapeUnits(current, free)) {
+        const ids = new Set(unit)
+        const center = boundsCenter(
+          boundsUnion(current.filter((shape) => ids.has(shape.id)).map(shapeBounds)),
+        )
+        for (const id of unit) centers.set(id, center)
+      }
+    }
     commitShapes(
-      currentShapes().map((s) =>
-        free.includes(s.id) ? flipShape(s, axis, boundsCenter(shapeBounds(s))) : s,
+      current.map((shape) =>
+        free.includes(shape.id)
+          ? flipShape(shape, axis, centers.get(shape.id) ?? boundsCenter(shapeBounds(shape)))
+          : shape,
       ),
     )
   }
@@ -1292,13 +1318,21 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
       selected.length >= 2
         ? boundsUnion(selected.map(shapeBounds))
         : { x: 0, y: 0, width: doc.width, height: doc.height }
-    commitShapes(alignShapes(currentShapes(), free, edge, target))
+    const current = currentShapes()
+    const next = selectionHasMask
+      ? alignSelectedUnits(current, selectedShapeUnits(current, free), edge, target)
+      : alignShapes(current, free, edge, target)
+    if (next !== current) commitShapes(next)
   }
 
   function distributeSelected(axis: DistributionAxis): void {
     if (!doc) return
+    const free = freeSelectedIds()
+    if (!free) return
     const current = currentShapes()
-    const next = distributeShapes(current, selectedIds, axis)
+    const next = selectionHasMask
+      ? distributeSelectedUnits(current, selectedShapeUnits(current, free), axis)
+      : distributeShapes(current, free, axis)
     if (next === current) return
     commitShapes(next)
   }

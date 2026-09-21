@@ -20,8 +20,9 @@ import { thumbnailBitmap, thumbnailShapes } from '../core/assetThumb'
 import { newId } from '../core/id'
 import { type PintaAsset, type PintaBitmap, resolveAssetPalette } from '../core/project'
 import { bitmapToPngDataUrl } from '../export/png'
-import { boundsUnion, scaleShape, shapeBounds, translateShape } from './geometry'
-import { MAX_IMAGE_SRC_CHARS, type VectorShape, visibleShapes } from './model'
+import { boundsUnion, scaleShape, translateShape } from './geometry'
+import { maskedShapeBounds, remapMaskIds, resolveMaskScene } from './mask'
+import { MAX_IMAGE_SRC_CHARS, type VectorShape } from './model'
 
 /** O que a galeria oferece, ainda sem rasterizar nada. */
 export type InsertPlan =
@@ -120,20 +121,35 @@ export function shapesForInsert(
   source: Extract<InsertSource, { kind: 'shapes' }>,
   target: { width: number; height: number },
 ): VectorShape[] {
-  const visible = visibleShapes(source.shapes)
+  const scene = resolveMaskScene(source.shapes)
+  const included = new Set([...scene.painted.map((shape) => shape.id), ...scene.sources.keys()])
+  const visible = source.shapes.filter((shape) => included.has(shape.id))
   if (visible.length === 0) return []
   const scale = fitScale(source, target)
   const groupId = newId()
-  const scaled = visible.map((shape) => ({
-    ...scaleShape(
-      { ...structuredClone(shape), id: newId(), motionId: newId() },
-      { x: 0, y: 0 },
-      scale,
-      scale,
-    ),
-    groupId,
-  }))
-  const bounds = boundsUnion(scaled.map(shapeBounds))
+  const shapeIds = new Map(visible.map((shape) => [shape.id, newId()]))
+  const scaled = remapMaskIds(
+    visible.map((shape) => ({
+      ...scaleShape(
+        {
+          ...structuredClone(shape),
+          id: shapeIds.get(shape.id) as string,
+          motionId: newId(),
+        },
+        { x: 0, y: 0 },
+        scale,
+        scale,
+      ),
+      groupId,
+    })),
+    shapeIds,
+  )
+  const scaledScene = resolveMaskScene(scaled)
+  const visibleBounds = scaledScene.painted.flatMap((shape) => {
+    const bounds = maskedShapeBounds(scaledScene, shape)
+    return bounds ? [bounds] : []
+  })
+  const bounds = boundsUnion(visibleBounds)
   const dx = target.width / 2 - (bounds.x + bounds.width / 2)
   const dy = target.height / 2 - (bounds.y + bounds.height / 2)
   return scaled.map((shape) => translateShape(shape, dx, dy))

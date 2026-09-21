@@ -7,8 +7,16 @@
  * destes dois em teste PURO, sem React.
  */
 import { flattenCels } from '../pixel/layers'
-import { type VectorShape, visibleShapes } from '../vector/model'
+import { resolveMaskScene } from '../vector/mask'
+import type { VectorShape } from '../vector/model'
 import type { PintaAsset, PintaBitmap } from './project'
+
+/** Visíveis + fontes escondidas ainda necessárias ao recorte, na ordem original. */
+function thumbnailVectorScene(shapes: VectorShape[]): VectorShape[] {
+  const scene = resolveMaskScene(shapes)
+  const included = new Set([...scene.painted.map((shape) => shape.id), ...scene.sources.keys()])
+  return shapes.filter((shape) => included.has(shape.id))
+}
 
 /** Bitmap "cara" do asset para a miniatura (null = sem prévia raster). */
 export function thumbnailBitmap(asset: PintaAsset): PintaBitmap | null {
@@ -33,16 +41,24 @@ export function thumbnailShapes(
 ): { width: number; height: number; shapes: VectorShape[] } | null {
   switch (asset.kind) {
     case 'vector-background':
-      return { width: asset.width, height: asset.height, shapes: visibleShapes(asset.shapes) }
+      return {
+        width: asset.width,
+        height: asset.height,
+        shapes: thumbnailVectorScene(asset.shapes),
+      }
     case 'vector-sprite': {
       const frame = asset.animations[0]?.frames[0]
       if (!frame) return null
-      return { width: asset.frameWidth, height: asset.frameHeight, shapes: visibleShapes(frame) }
+      return {
+        width: asset.frameWidth,
+        height: asset.frameHeight,
+        shapes: thumbnailVectorScene(frame),
+      }
     }
     case 'vector-tileset': {
       const tile = asset.tiles[0]
       if (!tile) return null
-      return { width: asset.tileSize, height: asset.tileSize, shapes: visibleShapes(tile) }
+      return { width: asset.tileSize, height: asset.tileSize, shapes: thumbnailVectorScene(tile) }
     }
     default:
       return null

@@ -286,4 +286,17 @@ describe('rasterCameOutBlank (o raster falhou EM BRANCO?)', () => {
     // Recusar aqui seria dizer "não consegui" para algo que funcionou.
     expect(rasterCameOutBlank([[{ ...forma(), hidden: true }]], 1)).toBe(false)
   })
+
+  it('fonte de máscara sem conteúdo visível também é vazio legítimo', () => {
+    const source = { ...forma(), id: 'janela' }
+    const hiddenContent = { ...forma(), id: 'rosto', maskId: source.id, hidden: true as const }
+    expect(rasterCameOutBlank([[hiddenContent, source]], 1)).toBe(false)
+  })
+
+  it('conteúdo totalmente fora da máscara e forma transparente são vazios legítimos', () => {
+    const source = { ...forma(), id: 'janela', x: 40, y: 40 }
+    const outside = { ...forma(), id: 'rosto', maskId: source.id }
+    expect(rasterCameOutBlank([[outside, source]], 1)).toBe(false)
+    expect(rasterCameOutBlank([[{ ...forma(), opacity: 0 }]], 1)).toBe(false)
+  })
 })

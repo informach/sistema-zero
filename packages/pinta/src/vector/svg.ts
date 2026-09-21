@@ -246,15 +246,14 @@ export function shapeToMarkup(
 export function shapesToMarkup(shapes: VectorShape[], indent = '  ', idPrefix = ''): string {
   const scene = resolveMaskScene(shapes)
   return scene.painted
-    .map((shape) =>
-      `${indent}${shapeToMarkup(
-        shape,
-        idPrefix,
-        '',
-        shape.maskId
-          ? { 'clip-path': `url(#${clipPathId(shape.maskId, idPrefix)})` }
-          : {},
-      )}`,
+    .map(
+      (shape) =>
+        `${indent}${shapeToMarkup(
+          shape,
+          idPrefix,
+          '',
+          shape.maskId ? { 'clip-path': `url(#${clipPathId(shape.maskId, idPrefix)})` } : {},
+        )}`,
     )
     .join('\n')
 }

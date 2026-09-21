@@ -1040,6 +1040,28 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   palco e de TODO export/prévia num funil único (`shapesToMarkup`+`gradientDefsMarkup` no string,
   `VectorFrameSvg` no React) — paridade com a camada escondida do pixel. Laço/Ctrl+A/conta-gotas
   pulam escondidas; esconder desseleciona.
+- **Máscara geométrica NÃO destrutiva + âncora de giro livre (21/09/2026)**:
+  `VectorShape.maskId?` liga o conteúdo a uma forma fechada do mesmo quadro, e
+  `rotationPivot?: {x,y}` guarda o pivô absoluto. Ausentes, os dois preservam a semântica dos
+  desenhos antigos. Retângulo, elipse, polígono e path inteiramente fechado podem ser fonte;
+  texto, figura, linha, path aberto e máscara aninhada não podem. O sanitizer pós-IDs elimina
+  referência órfã, inválida, própria ou cíclica sem descartar o quadro.
+  - Fonte + conteúdos formam uma **unidade de seleção** (`expandToSelectionUnits` alterna o fecho
+    de grupo e de máscara até estabilizar). Clicar, laçar, camada, olho, cadeado, ordem, copiar,
+    colar e duplicar respeitam a unidade; clones remapeiam `maskId` para o novo id. Se qualquer
+    membro estiver trancado, nenhuma transformação parcial acontece.
+  - **Criar máscara** usa a forma selecionada mais à frente como fonte; **Editar máscara** troca
+    temporariamente as alças para a fonte, desenha o guia ciano tracejado e deixa os conteúdos
+    parados; Concluir/Esc sai do modo. **Soltar máscara** remove só a relação. Misturar e editar
+    pontos substituem geometria, portanto exigem soltar a máscara primeiro.
+  - O render resolve a cena uma vez: fonte sai da pintura normal e vira `clipPath`; conteúdo
+    recebe `clip-path`. `SceneDefs`/`sceneDefsMarkup` alimentam palco, onion skin, miniaturas, SVG,
+    PNG, GIF, spritesheet, ZIP e Studio com prefixos por cena/célula. Hit-test e conta-gotas também
+    recusam a área fora do recorte. Uma fonte escondida continua disponível ao conteúdo visível.
+  - A âncora ciana pode ser arrastada até a ponta ou para fora do objeto e movida por setas
+    (`Shift` = 10). Trocar o pivô preserva a pose visível; mover, redimensionar e espelhar levam o
+    pivô junto; **Centralizar âncora** remove o campo sem salto. Um gesto = um undo; cancelamento
+    restaura a base; alvo bloqueado não aparece.
 - **Caneta** (`pen`, atalho P, ícone PenLine — o PenTool é do editar pontos): clique a clique,
   fecha com clique perto do 1º ponto (raio 10/zoom), Enter ou duplo clique; Esc descarta; vira
   POLÍGONO comum (≤64 pontos; teto de formas checado no 1º clique). Prévia elástica tracejada.
@@ -1123,7 +1145,7 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   - Ficou por decidir com ela (não é defeito): varrer a figura com o conta-gotas enche as 6 vagas
     de cores recentes (`MAX_CUSTOM_COLORS`), porque cada toque chama `rememberColor`.
 - **Fora de escopo (futuro)**: degradê multi-stop/ângulo livre,
-  importar SVG, máscaras/filtros/blend, campos numéricos X/Y/W/H, snap dos nós do editar pontos,
+  importar SVG, filtros/blend/máscara de alfa suave, campos numéricos X/Y/W/H, snap dos nós do editar pontos,
   negrito/itálico do texto. ⚠️ **Operações booleanas (pathfinder) SAIU desta lista** (14/08/2026):
   ver "Misturar formas" abaixo. ⚠️ **Fonte SAIU desta lista** (12/08/2026): há cinco famílias
   portáteis; ver abaixo. ⚠️ **Alças de bézier SAIU desta lista** (08/2026): a Fase 2 da
@@ -2555,9 +2577,13 @@ quadros repetidos compactados.
 - `export/animatedSvg.ts` é PURO. Compacta poses consecutivas idênticas, extrai formas estáticas e
   só interpola `rect`/`ellipse`/`line` quando tipo, estilo, índice-Z e um `motionId` único batem em
   todas as poses. Geometria, rotação e opacidade usam SMIL; qualquer dúvida, path/polygon alterado,
-  aparecimento ou mudança de estilo usa `visibility` discreta. Desligar a opção força esse fallback.
+  aparecimento ou mudança de estilo usa `visibility` discreta. A rotação suave usa
+  `rotationPivotOf`, não o centro presumido. Se qualquer pose contém máscara, a relação entre
+  slots impede interpolação segura: o arquivo emite uma cena composta completa e prefixada por
+  pose (`clipPath` incluído), alternada discretamente. Desligar a opção força o fallback normal.
 - Os tempos vêm de `frameDurationsMs` (inclusive `easing`), `loop=false` congela a última pose e
-  uma cópia integral do primeiro quadro aparece sob `prefers-reduced-motion: reduce`.
+  uma cópia integral do primeiro quadro, com defs de máscara/degradê próprios, aparece sob
+  `prefers-reduced-motion: reduce`.
 - Perfil "SÓ VETOR": texto visível e `image` embutida bloqueiam o botão; conteúdo escondido não
   conta; saída acima de 2 MiB também bloqueia. Não entram script, evento, fonte/data URL ou recurso
   externo.
@@ -2568,10 +2594,11 @@ quadros repetidos compactados.
   SVG, o validador e aquele teste foram DELETADOS. O exportador segue valendo para download e
   compartilhamento, mas o Pinta **não** alimenta mais os módulos — a cópia do diálogo foi reescrita
   para não prometer isso, e o teto de 2 MiB agora é limite do próprio Pinta, não espelho do Admin.
-- Regressões: `export/animatedSvg.test.ts` (classificação/tempo/teto),
+- Regressões: `export/animatedSvg.test.ts` (classificação/tempo/teto/máscara/pivô),
   `components/export/AnimatedSvgExport.test.tsx` (Blob/download/bloqueios),
-  `animation/framesVector.test.ts` (identidade) e `components/editor/vectorSpriteUi.test.tsx`
-  (fluxo completo do diálogo).
+  `animation/framesVector.test.ts` (identidade/relações), `export/animationGif.test.ts` e
+  `export/studioLibrary.test.ts` (funis herdados), além de
+  `components/editor/vectorSpriteUi.test.tsx` (fluxo completo do diálogo).
 
 ## Pack por seleção + paletas personalizadas (25/08/2026)
 

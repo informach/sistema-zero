@@ -4,13 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { createVectorBackgroundAsset } from '../core/project'
 import { fontFamilyLabel, VECTOR_FONT_FAMILIES, type VectorShape } from './model'
 import { vectorToPortableSvg } from './portableSvg'
-import {
-  gradientDefsMarkup,
-  sceneDefsMarkup,
-  shapeToMarkup,
-  textLines,
-  vectorToSvg,
-} from './svg'
+import { gradientDefsMarkup, sceneDefsMarkup, shapeToMarkup, textLines, vectorToSvg } from './svg'
 import { GradientDefs, VectorFrameSvg } from './VectorFrameSvg'
 
 const base = { fill: '#78dc52', stroke: null, opacity: 1, rotation: 0 }

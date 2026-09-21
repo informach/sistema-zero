@@ -9,13 +9,7 @@ import { memo, useEffect } from 'react'
 import { ensureVectorFontsForShapes } from './fonts'
 import { gradientGeometry } from './gradient'
 import { clipPathId, resolveMaskScene } from './mask'
-import {
-  gradientId,
-  isVectorGradient,
-  type VectorGradient,
-  type VectorShape,
-  visibleShapes,
-} from './model'
+import { gradientId, isVectorGradient, type VectorGradient, type VectorShape } from './model'
 import { shapeCommonAttrs, shapeGeometryAttrs } from './svg'
 
 function reactSvgProps(attrs: Record<string, unknown>): Record<string, unknown> {

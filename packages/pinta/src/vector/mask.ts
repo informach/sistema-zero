@@ -1,5 +1,6 @@
 /** Relações puras de máscara geométrica do editor vetorial. */
 import { flattenPathD, shapeToPoly } from './flatten'
+import { type Bounds, boundsIntersection, renderedShapeBounds } from './geometry'
 import type { Vec2, VectorShape } from './model'
 import { pointInPoly } from './polygonClip'
 
@@ -50,11 +51,19 @@ export function maskMembers(shapes: readonly VectorShape[], shapeId: string): Ve
   return shapes.filter((shape) => shape.id === sourceId || shape.maskId === sourceId)
 }
 
-/** Aplica uma máscara usando como fonte a forma selecionada mais à frente no documento. */
-export function applyMask(
+/** Uma seleção que toca composição mascarada com algum membro trancado não pode ser parcial. */
+export function selectionHasLockedMaskMember(
   shapes: readonly VectorShape[],
   ids: readonly string[],
-): ApplyMaskResult {
+): boolean {
+  return ids.some((id) => {
+    const unit = maskMembers(shapes, id)
+    return unit.length > 1 && unit.some((shape) => shape.locked === true)
+  })
+}
+
+/** Aplica uma máscara usando como fonte a forma selecionada mais à frente no documento. */
+export function applyMask(shapes: readonly VectorShape[], ids: readonly string[]): ApplyMaskResult {
   const selectedIds = new Set(ids)
   const selected = shapes.filter((shape) => selectedIds.has(shape.id))
   if (selected.length < 2) return { ok: false, reason: 'needs-two' }
@@ -75,9 +84,7 @@ export function applyMask(
     ok: true,
     maskId: source.id,
     shapes: shapes.map((shape) =>
-      selectedIds.has(shape.id) && shape.id !== source.id
-        ? { ...shape, maskId: source.id }
-        : shape,
+      selectedIds.has(shape.id) && shape.id !== source.id ? { ...shape, maskId: source.id } : shape,
     ),
   }
 }
@@ -101,7 +108,9 @@ export function releaseMasks(
     if (sources.has(shape.id)) release.add(shape.id)
   }
   if (release.size === 0) return null
-  return shapes.map((shape) => (shape.maskId && release.has(shape.maskId) ? withoutMaskId(shape) : shape))
+  return shapes.map((shape) =>
+    shape.maskId && release.has(shape.maskId) ? withoutMaskId(shape) : shape,
+  )
 }
 
 /**
@@ -156,6 +165,14 @@ export function resolveMaskScene(shapes: readonly VectorShape[]): MaskScene {
     painted: visibleContent.filter((shape) => !allSourceIds.has(shape.id)),
     sources,
   }
+}
+
+/** Caixa visível aproximada de uma forma, limitada pela caixa renderizada da máscara. */
+export function maskedShapeBounds(scene: MaskScene, shape: VectorShape): Bounds | null {
+  const bounds = renderedShapeBounds(shape)
+  if (!shape.maskId) return bounds
+  const source = scene.sources.get(shape.maskId)
+  return source ? boundsIntersection(bounds, renderedShapeBounds(source)) : bounds
 }
 
 /** O ponto visível de um conteúdo também cai dentro da geometria de sua máscara? */

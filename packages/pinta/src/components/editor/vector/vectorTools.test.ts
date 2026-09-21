@@ -3,12 +3,16 @@ import { boundsUnion, shapeBounds } from '../../../vector/geometry'
 import type { VectorShape } from '../../../vector/model'
 import { DEFAULT_STYLE } from '../../../vector/shapes'
 import {
+  alignSelectedUnits,
+  canDistributeSelectedUnits,
   cloneShapesWithNewIds,
+  distributeSelectedUnits,
   expandToSelectionUnits,
   formatStrokeWidth,
   occupiedBoundsOf,
   offsetInsideDoc,
   STROKE_WIDTHS,
+  selectedShapeUnits,
   strokeDotSize,
   strokeWidthIndex,
 } from './vectorTools'
@@ -109,6 +113,37 @@ describe('expandToSelectionUnits', () => {
     expect(new Set(expandToSelectionUnits(shapes, ['corpo']))).toEqual(
       new Set(['rosto', 'corpo', 'janela', 'nave']),
     )
+  })
+
+  it('forma componentes e alinha/distribui sem separar máscara e conteúdo', () => {
+    const shapes = [
+      box('esquerda', { x: 0 }),
+      box('rosto', { x: 20, maskId: 'janela' }),
+      box('janela', { x: 30 }),
+      box('direita', { x: 100 }),
+    ]
+    const units = selectedShapeUnits(
+      shapes,
+      shapes.map((shape) => shape.id),
+    )
+    expect(units).toEqual([['esquerda'], ['rosto', 'janela'], ['direita']])
+    expect(canDistributeSelectedUnits(units)).toBe(true)
+
+    const aligned = alignSelectedUnits(shapes, [units[1] ?? []], 'left', {
+      x: 50,
+      y: 0,
+      width: 100,
+      height: 100,
+    })
+    expect(aligned.find((shape) => shape.id === 'rosto')).toMatchObject({ x: 50 })
+    expect(aligned.find((shape) => shape.id === 'janela')).toMatchObject({ x: 60 })
+
+    const distributed = distributeSelectedUnits(shapes, units, 'horizontal')
+    const rosto = distributed.find((shape) => shape.id === 'rosto')
+    const janela = distributed.find((shape) => shape.id === 'janela')
+    if (rosto?.type !== 'rect' || janela?.type !== 'rect') throw new Error('retângulos esperados')
+    expect(janela.x - rosto.x).toBe(10)
+    expect((rosto.x + janela.x) / 2).toBe(50)
   })
 })
 
