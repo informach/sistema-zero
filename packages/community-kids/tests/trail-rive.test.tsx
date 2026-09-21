@@ -127,6 +127,24 @@ describe('TrailRive', () => {
     expect(container.textContent).toBe('')
   })
 
+  test('⚠️ uma arte que falhou NÃO condena a próxima', async () => {
+    // O `TrailRive` não tem `key`: sem resetar a falha na troca de `src`, o módulo
+    // que recebesse arte nova seguiria vazio para sempre.
+    matchMedia(false)
+    observador(true)
+    const { rerender } = render(<TrailRive src={RIV} />)
+    await assenta()
+    await act(async () => {
+      ;(
+        globalThis as Record<string, unknown> & { trilhaRiveFalhou?: () => void }
+      ).trilhaRiveFalhou?.()
+    })
+    expect(canvas()).toBeNull()
+    rerender(<TrailRive src={OUTRO} />)
+    await assenta()
+    expect(canvas()?.getAttribute('data-src')).toBe(OUTRO)
+  })
+
   test('⚠️ trocar o .riv troca a animação (a `key` do canvas)', async () => {
     // O `useRive` lê os parâmetros UMA vez na montagem: sem a `key`, um módulo que
     // recebe arte nova seguiria rodando a antiga, sem erro nenhum.

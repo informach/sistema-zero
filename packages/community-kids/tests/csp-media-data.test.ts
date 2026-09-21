@@ -80,6 +80,9 @@ describe('CSP: o mascote animado precisa poder compilar WASM', () => {
   it('kids: TODA diretiva connect-src emitida alcança o R2 público', async () => {
     const diretivas = await directives(await import('../next.config'), 'connect-src')
     expect(diretivas.length).toBeGreaterThan(1)
-    for (const d of diretivas) expect(d).toContain('https:')
+    // ⚠️ O token EXATO `https:`, não `toContain('https:')`: a versão ingênua
+    // passaria com um `https://algum-host` qualquer e deixaria o CDN de fora —
+    // guardaria a aparência da diretiva, não o alcance dela.
+    for (const d of diretivas) expect(d.split(/\s+/).slice(1)).toContain('https:')
   })
 })

@@ -30,12 +30,30 @@ describe('CSP do painel', () => {
     for (const d of emitidas) expect(d).toContain("'wasm-unsafe-eval'")
   })
 
-  it('o connect-src NÃO precisa do CDN: a prévia passa pela rota-proxy do painel', async () => {
-    // Se alguém trocar a prévia para buscar o R2 direto, este teste cai junto — e
-    // é para cair: seria preciso afrouxar o `connect-src` (hoje `'self'` + três
-    // hosts nomeados, sem `https:`) e criar regra de CORS no bucket público.
+  /**
+   * ⚠️ Asserção de CONJUNTO EXATO, de propósito. A versão óbvia
+   * (`expect(d).toContain("'self'")`) não guarda nada: acrescentar o host do CDN
+   * passaria, que é justamente o afrouxamento que se quer barrar. Aqui qualquer
+   * fonte nova reprova e força uma decisão consciente — com o custo, aceito, de
+   * atualizar esta lista quando o afrouxamento for mesmo desejado.
+   *
+   * O painel NÃO precisa do CDN aqui: a prévia do `.riv` lê os bytes pela rota
+   * `/api/media/module-rive/preview`, coberta por `'self'`. Buscar o R2 direto
+   * exigiria esta lista maior E uma regra de CORS no bucket público.
+   */
+  it('o connect-src continua estreito — nenhuma fonte além das declaradas', async () => {
+    const ESPERADAS = [
+      "'self'",
+      'https://*.vimeo.com',
+      'https://*.cloud.vimeo.com',
+      'https://*.r2.cloudflarestorage.com',
+      'https://cloudflareinsights.com',
+    ]
     const emitidas = await directives(await import('../next.config'), 'connect-src')
     expect(emitidas.length).toBeGreaterThan(0)
-    for (const d of emitidas) expect(d).toContain("'self'")
+    for (const d of emitidas) {
+      const fontes = d.split(/\s+/).slice(1)
+      expect(fontes).toEqual(ESPERADAS)
+    }
   })
 })

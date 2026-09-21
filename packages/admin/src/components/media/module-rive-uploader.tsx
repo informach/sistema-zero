@@ -39,23 +39,26 @@ export function ModuleRiveUploader({
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
-  const [buffer, setBuffer] = useState<ArrayBuffer | null>(null)
+  // ⚠️⚠️ Os bytes andam JUNTO da URL que os produziu, num objeto só. Soltos, o
+  // `buffer` da animação ANTERIOR sobreviveria ao instante entre trocar o arquivo
+  // e o novo fetch responder — e, com a `key={value}` lá embaixo, a prévia
+  // remontaria com a identidade nova e a ANIMAÇÃO VELHA. Quem trocasse o arquivo
+  // veria algo se mexendo e concluiria que o novo está bom. Numa prévia cuja
+  // única razão de existir é VERIFICAR, isso é o pior defeito possível.
+  const [carga, setCarga] = useState<{ src: string; bytes: ArrayBuffer } | null>(null)
   const [erro, setErro] = useState<string | null>(null)
+  const bytes = carga?.src === value ? carga.bytes : null
 
   // Reabrindo um módulo já salvo não há arquivo local: os bytes vêm pela
   // rota-proxy do painel (`connect-src 'self'`), nunca do CDN direto.
   useEffect(() => {
-    if (!value) {
-      setBuffer(null)
-      setErro(null)
-      return
-    }
-    let vivo = true
     setErro(null)
+    if (!value) return
+    let vivo = true
     fetch(`/api/media/module-rive/preview?src=${encodeURIComponent(value)}`)
       .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
-      .then((bytes) => {
-        if (vivo) setBuffer(bytes)
+      .then((baixados) => {
+        if (vivo) setCarga({ src: value, bytes: baixados })
       })
       .catch(() => {
         if (vivo) setErro('Não foi possível carregar a prévia desta animação.')
@@ -115,12 +118,12 @@ export function ModuleRiveUploader({
               <TriangleAlert className="size-4 shrink-0" />
               {erro}
             </p>
-          ) : buffer ? (
+          ) : bytes ? (
             <div className="size-40">
               {/* ⚠️ A `key` é obrigatória: o `useRive` lê os parâmetros UMA vez na
                   montagem, então trocar o arquivo sem ela manteria a prévia antiga
                   rodando — e falharia sem erro nenhum. */}
-              <ModuleRivePreview key={value} buffer={buffer} onFalhou={falhou} />
+              <ModuleRivePreview key={value} buffer={bytes} onFalhou={falhou} />
             </div>
           ) : (
             <Loader2 className="size-5 animate-spin text-muted-foreground" />

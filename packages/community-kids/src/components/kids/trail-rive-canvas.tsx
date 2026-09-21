@@ -60,20 +60,30 @@ export function TrailRiveCanvas({
   })
 
   useEffect(() => {
-    if (!rive || stateMachine) return
+    if (!rive) return
     if (!tocar || pausado) {
       rive.pause()
       return
     }
     // "A primeira animação, em laço": o nome sai do ARQUIVO, nunca de constante
     // nossa — é o que torna a timeline escolhível sem combinar nomes com quem desenha.
-    const nome = rive.animationNames[0]
+    // ⚠️ Com `stateMachine` nomeada o `play` recebe ELA (a API aceita os dois tipos
+    // de nome). Sem essa linha o gancho de "state machine depois" seria uma
+    // ARMADILHA: `autoplay` é `false`, então não tocar aqui significa canvas parado
+    // — exatamente o defeito que este arquivo inteiro existe para evitar.
+    const nome = stateMachine ?? rive.animationNames[0]
     if (!nome) {
       // Só máquina de estados, nenhuma timeline linear: o quadro 0 já está pintado,
       // então a arte aparece — parada. Avisa, porque "parado" e "não carregou" são
       // indistinguíveis na tela, e nenhum teste daqui pega isto (o happy-dom não
       // tem WebGL).
       console.warn('[trilha-rive] arquivo sem animação linear, ficará estático:', src)
+      return
+    }
+    // A rede de religar é só para TIMELINE: uma state machine não termina, e o
+    // `Stop` dela não significa "a animação acabou".
+    if (stateMachine) {
+      rive.play(nome)
       return
     }
     let religadas = 0

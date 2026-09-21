@@ -1,5 +1,12 @@
 # Trilha ilustrada do Desafio — plano de implementação
 
+> ⚠️ **Substituído em 21/09/2026.** A arte da trilha passou a ser um **Rive
+> (`.riv`)** enviado por módulo (`members.modules.rive_url`, migração 0095). Saíram
+> os três SVGs de `public/trilha/`, o catálogo de artes de exemplo, a coluna
+> `illustration`, o upload de SVG no Admin e o validador de allowlist. Este
+> documento fica como registro do piloto.
+
+
 **Objetivo:** centralizar a trilha do curso em uma coluna compacta, reduzir a largura do cabeçalho e mostrar uma cena SVG animada para cada um dos três módulos do Desafio do Primeiro Jogo.
 
 **Arquitetura:** manter a faixa de fundo da página, limitar `CourseTrail` a 40 rem e o cabeçalho a 52,5 rem (capa de 22,5 rem, intervalo de 2 rem e texto de até 28 rem). Usar três SVGs locais, com animação interna e alternativa estática para movimento reduzido. O Admin escolhe uma chave de ilustração por módulo, persistida em `members.modules`; a página Kids resolve essa chave no catálogo de artes.

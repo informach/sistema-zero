@@ -45,7 +45,11 @@ export function TrailRive({ src }: { src: string }) {
   const [pode, setPode] = useState(false)
   const [jaApareceu, setJaApareceu] = useState(false)
   const [visivel, setVisivel] = useState(true)
-  const [falhou, setFalhou] = useState(false)
+  // ⚠️ A falha anda JUNTO com o `src`, num objeto só. Este componente não tem
+  // `key` (quem a tem é o canvas lá dentro), então um `falhou` solto sobreviveria
+  // à troca de arquivo e condenaria a animação NOVA sem nunca tentar. Padrão de
+  // ajuste-durante-o-render do React, igual ao do `mascot-rive.tsx`.
+  const [carga, setCarga] = useState({ src, falhou: false })
 
   // ⚠️ A decisão NASCE `false` e só muda num efeito: o servidor nunca manda canvas,
   // e montar já no primeiro passe do cliente hidrataria uma árvore diferente da que
@@ -75,14 +79,18 @@ export function TrailRive({ src }: { src: string }) {
     return () => obs.disconnect()
   }, [])
 
-  if (falhou) return null
+  if (carga.src !== src) setCarga({ src, falhou: false })
 
   return (
+    // ⚠️ O `<span>` do observador fica SEMPRE montado, inclusive depois de falhar:
+    // o efeito que observa tem deps `[]`, então desmontá-lo desconectaria o
+    // observador sem nada para reconectá-lo. Vazio ele é invisível — o pai é
+    // `position: absolute` e `pointer-events: none`.
     <span ref={alvo} className="block size-full">
       {/* ⚠️ Monta na PRIMEIRA aparição e nunca desmonta: desmontar ao rolar para
           longe reiniciaria do quadro 0 a cada passada e recriaria o artboard.
           Pausar é barato e preserva a posição. */}
-      {pode && jaApareceu ? (
+      {pode && jaApareceu && !carga.falhou ? (
         // ⚠️⚠️ A `key` é obrigatória: o `useRive` lê os parâmetros UMA vez na
         // montagem (as deps dele não incluem `src`), então trocar o `.riv` de um
         // módulo não trocaria a animação — e falharia sem erro nenhum.
@@ -93,7 +101,7 @@ export function TrailRive({ src }: { src: string }) {
           pausado={!visivel}
           onFalhou={() => {
             console.warn('[trilha-rive] não carregou:', src)
-            setFalhou(true)
+            setCarga({ src, falhou: true })
           }}
         />
       ) : null}

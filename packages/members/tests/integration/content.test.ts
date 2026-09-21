@@ -530,9 +530,16 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     const tree = await readJson(await get(app, `/members/admin/courses/${course.id}`))
     expect(tree.modules[0].riveUrl).toBe(riveUrl)
 
-    // Caminho relativo e esquema executável não passam da borda, mesmo que o
-    // Admin já valide: defesa em profundidade no serviço.
-    for (const recusado of ['/fora-do-catalogo.riv', 'javascript:alert(1)']) {
+    // Caminho relativo, esquema executável e URL que não é `.riv` não passam da
+    // borda, mesmo que o Admin já valide: defesa em profundidade no serviço.
+    // ⚠️ O `.svg` importa — é a sobra da era anterior, e guardá-lo daria um módulo
+    // sem arte indistinguível de "ninguém subiu nada" (o render o descarta).
+    for (const recusado of [
+      '/fora-do-catalogo.riv',
+      'javascript:alert(1)',
+      'https://media.example.com/admin/module-illustrations/nave.svg',
+      'https://media.example.com/admin/module-rive/nave.riv.png',
+    ]) {
       const invalid = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
         title: 'Nave renomeada',
         summary: null,
