@@ -121,6 +121,22 @@ export function sanitizeMaskReferences(shapes: VectorShape[]): VectorShape[] {
   })
 }
 
+/**
+ * Remapeia relações depois de os novos ids já terem sido alocados. Se a fonte
+ * não participou da cópia, a relação é solta em vez de apontar para o original.
+ */
+export function remapMaskIds(
+  shapes: readonly VectorShape[],
+  ids: ReadonlyMap<string, string>,
+): VectorShape[] {
+  return shapes.map((shape) => {
+    if (!shape.maskId) return shape
+    const mapped = ids.get(shape.maskId)
+    const without = withoutMaskId(shape)
+    return mapped ? { ...without, maskId: mapped } : without
+  })
+}
+
 /** Cena resolvida uma vez para palco, miniaturas e todos os exportadores. */
 export function resolveMaskScene(shapes: readonly VectorShape[]): MaskScene {
   const normalized = sanitizeMaskReferences([...shapes])

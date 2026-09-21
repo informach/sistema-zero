@@ -14,6 +14,7 @@ import {
   translateShape,
 } from '../../../vector/geometry'
 import type { Vec2, VectorGradient, VectorShape } from '../../../vector/model'
+import { maskMembers, remapMaskIds } from '../../../vector/mask'
 import {
   Brush,
   Circle,
@@ -231,16 +232,41 @@ export function occupiedBoundsOf(shapes: readonly VectorShape[]): Bounds[] {
 }
 
 /** Expande ids para incluir TODOS os shapes dos mesmos grupos (seleção junta). */
-export function expandToGroups(shapes: VectorShape[], ids: string[]): string[] {
+export function expandToGroups(
+  shapes: readonly VectorShape[],
+  ids: readonly string[],
+): string[] {
   const groups = new Set<string>()
   for (const s of shapes) if (ids.includes(s.id) && s.groupId) groups.add(s.groupId)
-  if (groups.size === 0) return ids
+  if (groups.size === 0) return [...ids]
   const result = new Set(ids)
   // A EXPANSÃO pula membros trancados (mover o grupo não arrasta a trancada
   // junto); id EXPLÍCITO permanece — o painel seleciona trancada de propósito,
   // para destrancar.
   for (const s of shapes) {
     if (s.groupId && groups.has(s.groupId) && s.locked !== true) result.add(s.id)
+  }
+  return [...result]
+}
+
+/**
+ * Fecha a seleção por todas as relações estruturais. Grupo implícito continua
+ * pulando membros trancados; máscara inclui a unidade inteira para que o guard
+ * central possa recusar uma transformação parcial.
+ */
+export function expandToSelectionUnits(
+  shapes: readonly VectorShape[],
+  ids: readonly string[],
+): string[] {
+  const result = new Set(ids)
+  let changed = true
+  while (changed) {
+    const before = result.size
+    for (const id of expandToGroups(shapes, [...result])) result.add(id)
+    for (const id of [...result]) {
+      for (const member of maskMembers(shapes, id)) result.add(member.id)
+    }
+    changed = result.size !== before
   }
   return [...result]
 }
@@ -255,17 +281,23 @@ export function cloneShapesWithNewIds(
   dx: number,
   dy: number,
 ): VectorShape[] {
+  const shapeIds = new Map(shapes.map((shape) => [shape.id, newId()]))
   const groupIds = new Map<string, string>()
-  return shapes.map((shape) => {
+  const copies = shapes.map((shape) => {
     // A cópia nasce DESTRANCADA (é material novo — duplicar uma trancada é
     // justamente o jeito de mexer numa variação sem tocar no original).
     const { locked: _locked, ...clone } = structuredClone(shape)
-    const moved = translateShape({ ...clone, id: newId(), motionId: newId() }, dx, dy)
+    const moved = translateShape(
+      { ...clone, id: shapeIds.get(shape.id) as string, motionId: newId() } as VectorShape,
+      dx,
+      dy,
+    )
     if (!shape.groupId) return moved
     const groupId = groupIds.get(shape.groupId) ?? newId()
     groupIds.set(shape.groupId, groupId)
     return { ...moved, groupId }
   })
+  return remapMaskIds(copies, shapeIds)
 }
 
 /**

@@ -64,6 +64,21 @@ describe('quadros vetoriais', () => {
     expect(copy?.motionId).toBe(original?.motionId)
   })
 
+  it('duplicateFrame remapeia a máscara para os ids do quadro copiado', () => {
+    const original = sprite()
+    const animation = original.animations[0]
+    if (!animation) throw new Error('animação esperada')
+    const content = { ...rect('conteudo', 'mov-conteudo'), maskId: 'fonte' }
+    const source = rect('fonte', 'mov-fonte')
+    const base = { ...original, animations: [{ ...animation, frames: [[content, source]] }] }
+    const out = duplicateFrame(base, animId(base), 0)
+    const copy = out.animations[0]?.frames[1]
+    const copiedContent = copy?.[0]
+    expect(copiedContent?.maskId).not.toBe('fonte')
+    expect(copy?.some((shape) => shape.id === copiedContent?.maskId)).toBe(true)
+    expect(copiedContent?.motionId).toBe('mov-conteudo')
+  })
+
   it('removeFrame nunca esvazia; moveFrame troca posições', () => {
     const base = sprite()
     expect(removeFrame(base, animId(base), 0)).toBe(base)
@@ -113,5 +128,38 @@ describe('animações vetoriais', () => {
     expect(first?.motionId).toBeTruthy()
     expect(first?.motionId).toBe(second?.motionId)
     expect(first?.motionId).not.toBe('mov-original')
+  })
+
+  it('duplicateAnimation remapeia máscaras por quadro e movimentos entre quadros', () => {
+    const original = sprite()
+    const animation = original.animations[0]
+    if (!animation) throw new Error('animação esperada')
+    const base = {
+      ...original,
+      animations: [
+        {
+          ...animation,
+          frames: [
+            [
+              { ...rect('c1', 'mov-conteudo'), maskId: 'm1' },
+              rect('m1', 'mov-mascara'),
+            ],
+            [
+              { ...rect('c2', 'mov-conteudo'), maskId: 'm2' },
+              rect('m2', 'mov-mascara'),
+            ],
+          ],
+        },
+      ],
+    }
+    const { asset } = duplicateAnimation(base, animId(base))
+    const copiedFrames = asset.animations[1]?.frames
+    const firstContent = copiedFrames?.[0]?.[0]
+    const secondContent = copiedFrames?.[1]?.[0]
+    expect(firstContent?.motionId).toBe(secondContent?.motionId)
+    expect(firstContent?.motionId).not.toBe('mov-conteudo')
+    for (const frame of copiedFrames ?? []) {
+      expect(frame.some((shape) => shape.id === frame[0]?.maskId)).toBe(true)
+    }
   })
 })

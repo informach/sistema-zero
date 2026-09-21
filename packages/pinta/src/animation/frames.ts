@@ -19,6 +19,8 @@ import type {
 } from '../core/project'
 import { createBitmap, PINTA_LIMITS, uniqueAnimationName } from '../core/project'
 import { cloneBitmap } from '../pixel/bitmap'
+import { remapMaskIds } from '../vector/mask'
+import type { VectorShape } from '../vector/model'
 
 /** O tipo do quadro de um sprite: `PintaBitmap` (pixel) ou `VectorFrame` (vetor). */
 export type FrameOf<A extends AnimatedSpriteAsset> = A['animations'][number]['frames'][number]
@@ -46,13 +48,22 @@ function cloneFrameOf<A extends AnimatedSpriteAsset>(
   const clone: PintaPixelFrame | VectorFrame =
     asset.kind === 'pixel-sprite'
       ? (frame as PintaPixelFrame).map(cloneBitmap)
-      : (frame as VectorFrame).map((shape) => {
-          const sourceMotionId = shape.motionId
-          const motionId = sourceMotionId ? (motionIds.get(sourceMotionId) ?? newId()) : newId()
-          if (sourceMotionId) motionIds.set(sourceMotionId, motionId)
-          return { ...shape, id: newId(), motionId }
-        })
+      : cloneVectorFrame(frame as VectorFrame, motionIds)
   return clone as FrameOf<A>
+}
+
+function cloneVectorFrame(
+  frame: VectorFrame,
+  motionIds: Map<string, string>,
+): VectorFrame {
+  const shapeIds = new Map(frame.map((shape) => [shape.id, newId()]))
+  const copy = frame.map((shape) => {
+    const sourceMotionId = shape.motionId
+    const motionId = sourceMotionId ? (motionIds.get(sourceMotionId) ?? newId()) : newId()
+    if (sourceMotionId) motionIds.set(sourceMotionId, motionId)
+    return { ...shape, id: shapeIds.get(shape.id) as string, motionId } as VectorShape
+  })
+  return remapMaskIds(copy, shapeIds)
 }
 
 function withAnimation<A extends AnimatedSpriteAsset>(
@@ -104,7 +115,13 @@ export function duplicateFrame<A extends AnimatedSpriteAsset>(
       const prepared = (source as VectorFrame).map((shape) =>
         shape.motionId ? shape : { ...shape, motionId: newId() },
       )
-      const copy = prepared.map((shape) => ({ ...shape, id: newId() }))
+      const shapeIds = new Map(prepared.map((shape) => [shape.id, newId()]))
+      const copy = remapMaskIds(
+        prepared.map(
+          (shape) => ({ ...shape, id: shapeIds.get(shape.id) as string }) as VectorShape,
+        ),
+        shapeIds,
+      )
       frames[index] = prepared as FrameOf<A>
       frames.splice(index + 1, 0, copy as FrameOf<A>)
     } else {

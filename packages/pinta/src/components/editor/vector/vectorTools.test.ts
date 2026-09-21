@@ -4,6 +4,7 @@ import type { VectorShape } from '../../../vector/model'
 import { DEFAULT_STYLE } from '../../../vector/shapes'
 import {
   cloneShapesWithNewIds,
+  expandToSelectionUnits,
   formatStrokeWidth,
   occupiedBoundsOf,
   offsetInsideDoc,
@@ -33,6 +34,81 @@ describe('cloneShapesWithNewIds', () => {
     expect(copy?.id).not.toBe(shape.id)
     expect(copy?.motionId).toBeTruthy()
     expect(copy?.motionId).not.toBe(shape.motionId)
+  })
+
+  it('remapeia a máscara em duas passagens, leva o pivô junto e solta órfãos', () => {
+    const content: VectorShape = {
+      id: 'rosto',
+      maskId: 'janela',
+      rotationPivot: { x: -5, y: 8 },
+      type: 'rect',
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 10,
+      rx: 0,
+      fill: '#000000',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    }
+    const source = { ...content, id: 'janela', maskId: undefined, rotationPivot: undefined }
+    const copies = cloneShapesWithNewIds([content, source], 12, 8)
+    const copiedContent = copies[0]
+    const copiedSource = copies.find((shape) => shape.id === copiedContent?.maskId)
+    expect(copiedSource).toBeTruthy()
+    expect(copiedContent?.maskId).not.toBe('janela')
+    expect(copiedContent?.rotationPivot).toEqual({ x: 7, y: 16 })
+
+    const [orphan] = cloneShapesWithNewIds([content], 0, 0)
+    expect(orphan?.maskId).toBeUndefined()
+  })
+})
+
+describe('expandToSelectionUnits', () => {
+  const box = (
+    id: string,
+    over: Partial<Extract<VectorShape, { type: 'rect' }>> = {},
+  ): VectorShape => ({
+    id,
+    type: 'rect',
+    x: 0,
+    y: 0,
+    w: 10,
+    h: 10,
+    rx: 0,
+    fill: '#000000',
+    stroke: null,
+    opacity: 1,
+    rotation: 0,
+    ...over,
+  })
+
+  it('selecionar fonte ou conteúdo fecha a unidade inteira, inclusive membro trancado', () => {
+    const shapes = [
+      box('rosto', { maskId: 'janela' }),
+      box('olhos', { maskId: 'janela', locked: true }),
+      box('janela'),
+    ]
+    expect(new Set(expandToSelectionUnits(shapes, ['rosto']))).toEqual(
+      new Set(['rosto', 'olhos', 'janela']),
+    )
+    expect(new Set(expandToSelectionUnits(shapes, ['janela']))).toEqual(
+      new Set(['rosto', 'olhos', 'janela']),
+    )
+  })
+
+  it('alcança o fecho transitivo de grupos e máscaras sem puxar trancada só pelo grupo', () => {
+    const shapes = [
+      box('rosto', { maskId: 'janela', groupId: 'vagalume' }),
+      box('corpo', { groupId: 'vagalume' }),
+      box('janela', { groupId: 'nave' }),
+      box('nave', { groupId: 'nave' }),
+      box('nave-trancada', { groupId: 'nave', locked: true }),
+    ]
+    expect(new Set(expandToSelectionUnits(shapes, ['corpo']))).toEqual(
+      new Set(['rosto', 'corpo', 'janela', 'nave']),
+    )
   })
 })
 
