@@ -96,6 +96,7 @@ function blocoComVoz(scene: SceneId) {
     hints: [],
     required: false,
     activity: { type: 'experimentation' as const, scene },
+    prediction: SCENE_QUESTIONS[scene].prediction,
   }
   const publico = publicInteractiveBlock(cru)
   const textos = textosFalaveisDaCena(publico)

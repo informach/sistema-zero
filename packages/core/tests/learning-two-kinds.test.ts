@@ -4,6 +4,7 @@ import {
   blockPrediction,
   type InteractiveBlock,
   isInteractiveBlock,
+  scenePredictionTemplate,
 } from '../src/learning'
 import { SCENE_MODELS } from '../src/learning/scene'
 import { LESSON_SECTION_TEMPLATES } from '../src/learning/section-templates'
@@ -33,8 +34,9 @@ describe('contrato do bloco interativo', () => {
     expect(isInteractiveBlock({ ...experiment, activity: { type: 'question' } })).toBe(false)
   })
 
-  test('mantém palpite e pergunta final anexados à experimentação', () => {
-    expect(blockPrediction(experiment)?.choices.length).toBeGreaterThan(0)
+  test('mantém o palpite opcional e oferece o modelo somente para a autoria', () => {
+    expect(blockPrediction(experiment)).toBeUndefined()
+    expect(scenePredictionTemplate(experiment)?.choices.length).toBeGreaterThan(0)
     expect(blockCheckpoint(experiment)?.choices.length).toBeGreaterThan(0)
   })
 

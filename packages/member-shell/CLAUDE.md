@@ -1177,29 +1177,11 @@ mudou foi só onde cada peça mora. Quem veste o jogo é o que está DENTRO do p
   (contorno). Relato dela: *"quando eu olho parece que são três textos, e quando passo o mouse também nada
   muda"* — o kids mantém o fantasma PLANO de propósito, e o contorno já ganha o relevo e o levantar do app.
 
-**O PALPITE mora no MESMO console**, e a cena fica NO MEIO dos dois balões: contexto → mundo → pergunta →
-opções. Juntar os dois balões faria a criança responder antes de olhar — foi o primeiro desenho da maquete,
-e ela reparou na hora (*"no palpite não eram dois balões: um para o contexto e, depois embaixo da cena, a
-pergunta"*). Quatro mudanças de comportamento saíram daí, e as quatro são load-bearing:
-
-- ⭐ **A prancha fica À VISTA e FECHADA**, em vez de sumir (*"o palpite também tem ali o balão de fala do
-  Zappy, a cena do jogo e alguns controles desativados"*): a criança vê o que vai poder mexer, e o bloco não
-  muda de altura quando ela responde. ⚠️⚠️ `ConsolePrancha fechada` é a CORTINA, e por isso é **`inert` +
-  desfoque** — não o `fechado` de um controle solto (aquele continua no Tab e continua dizendo por que não
-  responde). Os dois motivos são antigos: o gesto não pode chegar ao motor antes do palpite, e **os motivos
-  dos controles fechados SOPRAM a resposta** (a nota de uma chave que diz "abre depois que 3 cactos
-  passarem" é a previsão inteira). O `inert` tira a prancha do Tab e do leitor; o desfoque apaga o texto
-  miúdo e deixa as FORMAS à vista. A trava do MOTOR não depende de nenhum dos dois: `dispatch` e
-  `action.current` recusam enquanto o palpite está pendente.
-- ⚠️⚠️ **A faixa aparece com os VALORES escondidos** (`valoresEscondidos`, um "?" por valor): os rótulos
-  dizem o que a cena mede — que é o que a criança vai olhar mudar —, e o valor responderia a pergunta antes
-  dela (na `layers` a ordem dos desenhos É a previsão). Antes a faixa simplesmente não existia ali.
-- **A PLACA "Seu palpite"** (`.sz-scene-placa--palpite`, no começo da faixa) é o que diz em que momento da
-  atividade ela está. Ela existia como legenda do cartão de palpite que o console substituiu e se perdeu no
-  caminho — achado do review deste lote. Na demonstração a placa diz "Antes de assistir".
-- **Sem medidor de descobertas no palpite**: a contagem começa no primeiro gesto, e ali não houve nenhum.
-- ⚠️ Na cena com controle na PRÉVIA (só a `screen-reader`) há dois "Ouvir a tela" na tela: o da prévia, que
-  é o único ALCANÇÁVEL e o que apresenta o recurso a quem não enxerga, e o da prancha, dentro da cortina.
+**O PALPITE mora no MESMO console**, na ordem contexto → cena parada → pergunta → opções. Desde
+21/09/2026 ele não monta a prancha, a faixa, o medidor, o rodapé nem controle algum, mesmo
+desativado. `ScenePredictionPreview` desenha somente o retrato inicial sem gesto. Depois da escolha,
+a experiência completa é montada. A trava do motor em `dispatch` e `action.current` permanece como
+defesa, mas não é usada para justificar controles confusos na tela do palpite.
 
 #### A conferência contra a MAQUETE (18/09/2026) — 7 diferenças
 
@@ -1334,33 +1316,24 @@ contar a atividade em relógios que não conversam (o palco no presente, um cart
   quadro do que a criança devia olhar (o anel da `group-loop`, os tiros da `cooldown`). O que para o ▶ está em
   "O relógio".
 
-**O palpite (`scene-prediction.tsx`).** `content.prediction` chega resolvido pelo core (do modelo da cena ou do
-professor).
+**O palpite (`scene-prediction.tsx`).** `content.prediction` só chega quando foi autorado no bloco; o core não
+acrescenta mais o modelo da cena automaticamente.
 - ⚠️ Não é o `checkpoint`: não vale nota, não entra na sessão da cena e sobe em `answers.prediction` junto da
-  tentativa, para o relatório do professor. "Não era isso." é âmbar e sem punição.
+  tentativa, para o relatório do professor. A retomada é neutra: "Seu palpite: … Ao testar: …", sem acerto,
+  erro, verde ou âmbar avaliativo.
 - ⚠️⚠️ **Opções são BOTÕES** (`aria-current` na escolhida, `aria-disabled`), nunca rádios: num grupo de
   rádios a SETA escolhia, congelava o palpite e mandava uma tentativa por seta. A pergunta mora no `legend`.
-- ⚠️⚠️ **O palpite pendente trava a cena pelo ponto único dos gestos**: `dispatch` e `action.current`
-  recusam. O que a criança vê no lugar do palco vivo é o RETRATO (`ScenePredictionPreview`), que não recebe
-  gesto nenhum; a bancada fica sob a cortina (`ConsolePrancha fechada`: `inert` + desfoque, porque os motivos
-  dos controles fechados sopram a resposta); a faixa mostra "?" no lugar de cada valor
-  (`valoresEscondidos`); e o rodapé inteiro — **Desfazer, Recomeçar, Uma pista e Conferir** — não existe ali,
-  como não existem o principal da demonstração guiada e o "Ver acontecer" da inline. **"Ouvir" fica aberto**
-  (fora de todo `fieldset`: quem ainda não lê não pode ficar sem saída diante de uma pergunta escrita), e o
-  "Ligar som" da demonstração também.
-  Substituído (16/09/2026): "o palpite trava o PALCO, nunca o rodapé" → fecha também as ferramentas do
-  rodapé, porque "Recomeçar" antes do palpite contava como gesto e apagava o "trocar".
-  Substituído (18/09/2026, o console): o véu "Primeiro, seu palpite ↑" sobre o palco vivo e o "?" só na
-  `layers` → o retrato no lugar do palco e o "?" em TODA cena (ver "O CONSOLE").
+- ⚠️⚠️ **O palpite pendente não monta a experiência**: só contexto, retrato, pergunta e opções. Por isso não
+  há bancada `inert`, valores `?`, controle estático ou botão "Ouvir a tela" duplicado. O ponto único dos
+  gestos ainda recusa qualquer despacho prematuro como proteção de estado.
 - **Guardado no `localStorage`** (`sz:scene-prediction:<scope>`, scope = perfil, aula, bloco e revisão) com a
   IMPRESSÃO da pergunta (enunciado e opções): pergunta diferente descarta o palpite, porque o deploy troca a
   previsão do modelo sem mudar o `scope`.
 - Congela no primeiro gesto: o "trocar" (44px) só existe sem gesto, sem ação além de pistas e sem meta caída
   (`trocavel`). É revelado quando a meta `revealOn` cai (sem ela, na conclusão). Não tranca a REVISITA.
-- ⚠️⚠️ **O retomado tem dois tempos:** a frase "Você achou: X. Olhe…" (`fraseDoPalpite`) aparece junto do
-  aviso da descoberta e some no gesto seguinte (`palpiteNaHora`); lá em cima fica a linha no PASSADO ("Seu
-  palpite: X. Acertou!" / "Não era isso."), verdadeira com o palco em qualquer estado. Na revisita sem palpite
-  guardado, nada.
+- ⚠️⚠️ **O retomado tem dois tempos:** a comparação neutra (`fraseDoPalpite`) aparece junto do aviso da
+  descoberta e some no gesto seguinte (`palpiteNaHora`); a linha permanente repete "Seu palpite: … Ao
+  testar: …". Na revisita sem palpite guardado, nada.
 
 **Conferir, pista e missão restrita.**
 - **"Conferir"** (contorno: enquanto a cena espera um gesto, o azul cheio é o do gesto) responde com o `pedido`

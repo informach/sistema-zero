@@ -75,26 +75,7 @@ export function ConsoleMundo({ children }: { children: ReactNode }) {
   return <div className="sz-scene-console-mundo">{children}</div>
 }
 
-/**
- * A prancha: a bandeja que segura o gesto e a bancada.
- *
- * ⭐ Ela fica À VISTA mesmo no PALPITE, em vez de sumir: a criança vê o que vai poder mexer, e o
- * bloco não muda de altura quando ela responde. Foi o que ela pediu na maquete — *"o palpite também
- * tem ali o balão de fala do Zappy, a cena do jogo e alguns controles desativados"*.
- *
- * ⚠️⚠️ `fechada` é a CORTINA do palpite, e por isso é `inert` + desfoque — não o `fechado` de um
- * controle solto (aquele continua no Tab e continua dizendo por que não responde). Os dois motivos
- * são antigos e continuam valendo: o gesto não pode chegar ao motor antes do palpite, e **os
- * motivos dos controles fechados SOPRAM a resposta** (a nota de uma chave que diz "abre depois que
- * 3 cactos passarem" é a previsão inteira). O `inert` tira a prancha do Tab e do leitor de tela; o
- * desfoque tira a leitura do texto miúdo e deixa as FORMAS à vista, que é o que a promessa acima
- * precisa. A trava do MOTOR não depende de nenhum dos dois: `dispatch` e `action.current` recusam
- * enquanto o palpite está pendente (`scene-activity.tsx`).
- */
-export function ConsolePrancha({ fechada, children }: { fechada?: boolean; children: ReactNode }) {
-  return (
-    <div className={cn('sz-scene-prancha', fechada && 'sz-scene-prancha--fechada')} inert={fechada}>
-      {children}
-    </div>
-  )
+/** A prancha só existe quando a experiência já está aberta para interação. */
+export function ConsolePrancha({ children }: { children: ReactNode }) {
+  return <div className="sz-scene-prancha">{children}</div>
 }

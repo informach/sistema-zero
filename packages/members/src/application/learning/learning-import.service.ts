@@ -11,6 +11,29 @@ import type { CourseRepository } from '../../domain/ports/course-repository.port
 import type { LessonDraftRepository } from '../../domain/ports/lesson-draft-repository.port'
 import { stableJson } from '../../domain/shared/stable-json'
 
+export type LearningImportMode = 'preserve' | 'replace'
+
+const BLOCK_KIND_LABELS: Readonly<Record<string, string>> = {
+  certificate: 'Certificado',
+  dialogue: 'Fala do Zappy',
+  gallery: 'Galeria',
+  interactive: 'Experiência',
+  materials: 'Materiais',
+  pinta: 'Pinta',
+  project: 'Projeto',
+  quiz: 'Quiz',
+  rich_text: 'Texto',
+  studio: 'Estúdio',
+  submission: 'Entrega',
+  video: 'Vídeo',
+}
+
+function removalLabel(document: LessonDraftDocument, block: DraftBlock): string {
+  const section = document.sections.find((candidate) => candidate.blockIds.includes(block.id))
+  const kind = BLOCK_KIND_LABELS[block.content.kind] ?? block.content.kind
+  return section ? `${kind} · ${section.title}` : kind
+}
+
 function importedContent(
   authored: DraftBlock['content'],
   previous: DraftBlock['content'] | undefined,
@@ -56,7 +79,7 @@ export class LearningImportService {
     private readonly courses: CourseRepository,
   ) {}
 
-  async preview(lessonId: string, manifest: unknown) {
+  async preview(lessonId: string, manifest: unknown, mode: LearningImportMode = 'preserve') {
     if (!isLearningManifest(manifest))
       throw new ValidationError(
         'Manifesto de aula inválido. Confira os blocos, seções e referências.',
@@ -83,7 +106,7 @@ export class LearningImportService {
     const actions: Array<{
       id: string
       label?: string
-      action: 'create' | 'update' | 'preserve' | 'retire'
+      action: 'create' | 'update' | 'preserve' | 'retire' | 'remove'
     }> = []
     const add = (block: DraftBlock) => {
       if (used.has(block.id)) throw new ValidationError('Bloco duplicado no manifesto.')
@@ -184,22 +207,33 @@ export class LearningImportService {
     const retireIds = new Set(
       (manifest.retireBlockKeys ?? []).map((key) => importedLearningId(lessonId, 'block', key)),
     )
-    for (const block of draft.document.blocks.filter((b) => retireIds.has(b.id))) {
-      if (!['rich_text', 'dialogue', 'interactive'].includes(block.content.kind))
-        throw new ValidationError(
-          'Só instruções e descobertas importadas podem ser aposentadas pelo manifesto. Projetos, mídias e quizzes são preservados.',
+    const omitted = draft.document.blocks.filter((block) => !used.has(block.id))
+    const retained: DraftBlock[] = []
+    if (mode === 'replace') {
+      for (const block of omitted)
+        actions.push({
+          id: block.id,
+          label: removalLabel(draft.document, block),
+          action: 'remove',
+        })
+    } else {
+      for (const block of draft.document.blocks.filter((b) => retireIds.has(b.id))) {
+        if (!['rich_text', 'dialogue', 'interactive'].includes(block.content.kind))
+          throw new ValidationError(
+            'Só instruções e descobertas importadas podem ser aposentadas pelo manifesto. Projetos, mídias e quizzes são preservados.',
+          )
+        const key = manifest.retireBlockKeys?.find(
+          (key) => importedLearningId(lessonId, 'block', key) === block.id,
         )
-      const key = manifest.retireBlockKeys?.find(
-        (key) => importedLearningId(lessonId, 'block', key) === block.id,
-      )
-      actions.push({ id: block.id, label: key ?? block.content.kind, action: 'retire' })
+        actions.push({ id: block.id, label: key ?? block.content.kind, action: 'retire' })
+      }
+      retained.push(...omitted.filter((block) => !retireIds.has(block.id)))
+      for (const block of retained) add(block)
+      // Blocos avulsos existentes continuam visíveis até a autora decidir onde colocá-los.
+      const closing =
+        document.sections.findLast((s) => s.intent === 'closing') ?? document.sections.at(-1)
+      if (closing) closing.blockIds.push(...retained.map((b) => b.id))
     }
-    const retained = draft.document.blocks.filter((b) => !used.has(b.id) && !retireIds.has(b.id))
-    for (const block of retained) add(block)
-    // Blocos avulsos existentes continuam visíveis até a autora decidir onde colocá-los.
-    const closing =
-      document.sections.findLast((s) => s.intent === 'closing') ?? document.sections.at(-1)
-    if (closing) closing.blockIds.push(...retained.map((b) => b.id))
     for (const video of draft.document.plannedVideos)
       if (
         !document.plannedVideos.some((v) => v.blockId === video.blockId) &&
@@ -211,14 +245,29 @@ export class LearningImportService {
       document.blocks.map((b) => ({ id: b.id, kind: b.content.kind })),
     )
     if (invalid) throw new ValidationError(invalid)
+    const sectionIds = new Set(document.sections.map((section) => section.id))
+    const removedSections =
+      mode === 'replace'
+        ? draft.document.sections
+            .filter((section) => !sectionIds.has(section.id))
+            .map((section) => ({ id: section.id, title: section.title }))
+        : []
     return {
       lessonId,
       fingerprint: draft.revision,
       title: document.title,
       sections: document.sections,
       blocks: actions,
+      removedSections,
       document,
       warnings: [
+        ...(mode === 'replace'
+          ? [
+              omitted.length || removedSections.length
+                ? `A substituição removerá ${omitted.length} bloco(s) e ${removedSections.length} seção(ões) ausentes no manifesto.`
+                : 'O manifesto já representa todo o rascunho; não há conteúdo adicional para remover.',
+            ]
+          : []),
         ...(actions.some((action) => action.action === 'retire')
           ? [
               'As instruções importadas listadas como aposentadas sairão do rascunho. Projetos, vídeos originais e histórico de evidências são preservados.',
@@ -245,8 +294,9 @@ export class LearningImportService {
     expectedFingerprint: string,
     authorId: string,
     operationId: string,
+    mode: LearningImportMode = 'preserve',
   ) {
-    const plan = await this.preview(lessonId, manifest)
+    const plan = await this.preview(lessonId, manifest, mode)
     const draft = await this.repository.replace(
       lessonId,
       authorId,

@@ -2,7 +2,7 @@
 
 import type { LearningPrediction } from '@sistemazero/core/learning'
 import { falaDaEscolhaDoPalpite, falaDoContextoDoPalpite } from '@sistemazero/core/learning/scene'
-import { Check, Eye } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import { type ReactNode, type RefObject, useId } from 'react'
 import type { DialogueSpeech } from './dialogue-block'
 import { SceneButton } from './exploration-stage'
@@ -11,20 +11,18 @@ import { LugarReservado } from './scene-lugar-reservado'
 /**
  * O PALPITE, nos tempos em que ele aparece: aberto, congelado e retomado.
  *
- * ⭐⭐ Lote 2 do Raio-X (16/09/2026), o ciclo do Brilliant fechado: apostar ANTES de ver, mexer, e
- * então saber se acertou. Até aqui o palpite nunca era retomado (o gabarito era podado da projeção
+ * ⭐⭐ Lote 2 do Raio-X (16/09/2026), o ciclo de hipótese fechado: apostar ANTES de ver, mexer, e
+ * então comparar com o que aconteceu. Até aqui o palpite nunca era retomado (o gabarito era podado da projeção
  * pública), os rádios continuavam editáveis depois de ela ver o resultado, e a frase "Agora mexa na
  * cena e veja se foi isso mesmo" ficava na tela para sempre, sem nunca fechar.
  *
  * ⚠️⚠️ O palpite retomado tem DOIS tempos (consertos do review do lote 2). No instante em que a
- * cena responde, a frase completa ("Você achou: X. Olhe a tela…") mora JUNTO do aviso da
+ * cena responde, a frase completa ("Seu palpite: X. Ao testar: Y.") mora JUNTO do aviso da
  * descoberta, embaixo do palco (quem desenha é o player). Aqui em cima fica só a linha no PASSADO
- * ("Seu palpite: X. Não era isso."): a frase que manda OLHAR só é verdade naquele instante, e
- * minutos depois, com o palco em outro estado, ela mentia ("o Dino está só nos bastidores" com o
- * Dino desenhado na tela).
+ * ("Seu palpite: X. Ao testar: Y.").
  *
- * ⚠️ A previsão NÃO vale nota: retomar é mostrar, nunca punir. O "errou" é âmbar e diz para onde
- * olhar; o palpite continua subindo junto da tentativa, para o relatório do professor.
+ * ⚠️ A previsão NÃO vale nota: retomar é mostrar, nunca punir. Não há acerto, erro ou cor de
+ * veredito; o palpite continua subindo junto da tentativa, para o relatório do professor.
  */
 
 /** Onde o palpite mora: por PERFIL, aula, bloco e revisão (o `scope` do player). */
@@ -97,13 +95,13 @@ export function apagarPalpite(scope: string | null) {
   }
 }
 
-/** Acertou, errou, ou não há o que conferir (previsão sem gabarito). */
-export function vereditoDoPalpite(
-  prediction: LearningPrediction,
-  escolha: string,
-): 'acertou' | 'errou' | null {
-  if (typeof prediction.correctChoiceId !== 'string') return null
-  return prediction.correctChoiceId === escolha ? 'acertou' : 'errou'
+/** O que a experiência mostrou, sem transformar a hipótese em nota. */
+export function observacaoDoPalpite(prediction: LearningPrediction, escolha: string): string {
+  const escolhida = prediction.choices.find((choice) => choice.id === escolha)
+  if (!escolhida) return ''
+  if (escolhida.shows) return semPontoFinal(escolhida.shows)
+  const observada = prediction.choices.find((choice) => choice.id === prediction.correctChoiceId)
+  return observada ? semPontoFinal(observada.shows ?? observada.label) : ''
 }
 
 export function ScenePrediction({
@@ -131,7 +129,7 @@ export function ScenePrediction({
   // vem DEPOIS da escolha: a linha congelada e a revelação.
   if (!escolhida) return null
 
-  const veredito = vereditoDoPalpite(prediction, escolha)
+  const observacao = observacaoDoPalpite(prediction, escolha)
   return (
     <LugarReservado marca="palpite">
       {!revelado ? (
@@ -152,16 +150,12 @@ export function ScenePrediction({
           <span>
             <span className="font-semibold">Seu palpite:</span> {semPontoFinal(escolhida.label)}.
           </span>
-          {veredito === 'acertou' && (
-            <span className="inline-flex items-center gap-1 font-semibold text-success-foreground">
-              <Check size={16} aria-hidden />
-              Acertou!
-            </span>
-          )}
-          {veredito === 'errou' && (
-            <span className="inline-flex items-center gap-1 font-semibold text-amber-800">
+          {observacao && (
+            <span className="inline-flex items-center gap-1">
               <Eye size={16} aria-hidden />
-              Não era isso.
+              <span>
+                <span className="font-semibold">Ao testar:</span> {observacao}.
+              </span>
             </span>
           )}
         </p>
@@ -181,11 +175,9 @@ export function ScenePrediction({
 export function fraseDoPalpite(prediction: LearningPrediction, escolha: string): string {
   const escolhida = prediction.choices.find((c) => c.id === escolha)
   if (!escolhida) return ''
-  const achou = `Você achou: ${semPontoFinal(escolhida.label)}.`
-  const veredito = vereditoDoPalpite(prediction, escolha)
-  if (veredito === null) return achou
-  if (veredito === 'acertou') return `${achou} E foi isso mesmo!`
-  return `${achou} ${escolhida.shows ?? 'Olhe a cena de novo.'}`
+  const achou = `Seu palpite: ${semPontoFinal(escolhida.label)}.`
+  const observacao = observacaoDoPalpite(prediction, escolha)
+  return observacao ? `${achou} Ao testar: ${observacao}.` : achou
 }
 
 /** O que a região de anúncios fala quando ela escolhe: o palpite e o que acontece agora. */

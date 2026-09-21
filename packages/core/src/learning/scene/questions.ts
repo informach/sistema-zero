@@ -62,8 +62,8 @@ export interface ScenePrediction {
   /** O que acontece de verdade. Não reprova ninguém: serve ao relatório do professor. */
   correctChoiceId: string
   /**
-   * A meta cuja queda RESPONDE o palpite. O player retoma o palpite nesse instante ("Você achou:
-   * Nada. E foi isso mesmo!"). Sem ela, o palpite é retomado quando a cena conclui.
+   * A meta cuja queda RESPONDE o palpite. O player compara hipótese e observação nesse instante
+   * ("Seu palpite: Nada. Ao testar: …"). Sem ela, o palpite é retomado quando a cena conclui.
    */
   revealOn?: string
 }

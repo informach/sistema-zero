@@ -11,8 +11,14 @@ interface Preview {
   fingerprint: string
   warnings: string[]
   sections: LessonSection[]
-  blocks: Array<{ id: string; label?: string; action: 'create' | 'update' | 'preserve' | 'retire' }>
+  blocks: Array<{
+    id: string
+    label?: string
+    action: 'create' | 'update' | 'preserve' | 'retire' | 'remove'
+  }>
+  removedSections: Array<{ id: string; title: string }>
 }
+type ImportMode = 'preserve' | 'replace'
 export function LessonManifestImport({
   lessonId,
   lessonSlug,
@@ -31,7 +37,9 @@ export function LessonManifestImport({
   const id = useId()
   const [source, setSource] = useState('')
   const operationId = useRef(crypto.randomUUID())
+  const [mode, setMode] = useState<ImportMode>('preserve')
   const [preview, setPreview] = useState<Preview | null>(null)
+  const [replacementConfirmed, setReplacementConfirmed] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
@@ -39,6 +47,15 @@ export function LessonManifestImport({
     operationId.current = crypto.randomUUID()
     setSource(text)
     setPreview(null)
+    setReplacementConfirmed(false)
+    setError('')
+    setNotice('')
+  }
+  const changeMode = (next: ImportMode) => {
+    operationId.current = crypto.randomUUID()
+    setMode(next)
+    setPreview(null)
+    setReplacementConfirmed(false)
     setError('')
     setNotice('')
   }
@@ -58,6 +75,7 @@ export function LessonManifestImport({
       setPreview(
         await apiSend<Preview>(`/api/members/lessons/${lessonId}/import-preview`, 'POST', {
           document,
+          mode,
         }),
       )
     } catch (e) {
@@ -73,13 +91,19 @@ export function LessonManifestImport({
     try {
       await apiSend(`/api/members/lessons/${lessonId}/import-learning`, 'POST', {
         document: parse(),
+        mode,
         expectedFingerprint: preview.fingerprint,
         operationId: operationId.current,
       })
       setPreview(null)
       setSource('')
+      setReplacementConfirmed(false)
       await onImported()
-      setNotice('Roteiro importado no rascunho. Confira a prévia antes de publicar.')
+      setNotice(
+        mode === 'replace'
+          ? 'Rascunho substituído pelo manifesto. Confira a prévia antes de publicar.'
+          : 'Roteiro importado no rascunho. Confira a prévia antes de publicar.',
+      )
     } catch (e) {
       setError((e as ApiError).message || 'Não foi possível importar.')
     } finally {
@@ -101,6 +125,36 @@ export function LessonManifestImport({
           . A prévia mostra os blocos que serão criados ou atualizados. Projetos e materiais já
           configurados conservam o trabalho e os arquivos anexados.
         </p>
+        <fieldset className="space-y-2 rounded-xl border border-border p-4">
+          <legend className="px-1 text-sm font-semibold">Como importar</legend>
+          <label className="flex min-h-11 items-start gap-3 text-sm">
+            <input
+              type="radio"
+              name={`${id}-mode`}
+              value="preserve"
+              checked={mode === 'preserve'}
+              onChange={() => changeMode('preserve')}
+            />
+            <span>
+              <strong className="block">Atualizar e preservar</strong>
+              Mantém no fim da aula os conteúdos que o manifesto não menciona.
+            </span>
+          </label>
+          <label className="flex min-h-11 items-start gap-3 text-sm">
+            <input
+              type="radio"
+              name={`${id}-mode`}
+              value="replace"
+              checked={mode === 'replace'}
+              onChange={() => changeMode('replace')}
+            />
+            <span>
+              <strong className="block">Substituir o rascunho pelo manifesto</strong>
+              Remove do rascunho todas as seções e os blocos que não estão no arquivo. A versão
+              publicada não muda.
+            </span>
+          </label>
+        </fieldset>
         <label className="block space-y-2 text-sm" htmlFor={`${id}-file`}>
           Arquivo do manifesto
           <input
@@ -157,7 +211,7 @@ export function LessonManifestImport({
               {preview.blocks.filter((b) => b.action === 'update').length} atualizados ·{' '}
               {preview.blocks.filter((b) => b.action === 'preserve').length} preservados ·{' '}
               {preview.blocks.filter((b) => b.action === 'retire').length} instruções antigas
-              aposentadas
+              aposentadas · {preview.blocks.filter((b) => b.action === 'remove').length} removidos
             </p>
             {preview.blocks.some((b) => b.action === 'retire') && (
               <details className="text-sm">
@@ -167,6 +221,28 @@ export function LessonManifestImport({
                 <ul className="mt-2 list-disc pl-5">
                   {preview.blocks
                     .filter((b) => b.action === 'retire')
+                    .map((block) => (
+                      <li key={block.id}>{block.label ?? block.id}</li>
+                    ))}
+                </ul>
+              </details>
+            )}
+            {preview.removedSections.length > 0 && (
+              <details open className="text-sm">
+                <summary className="cursor-pointer font-medium">Seções que sairão</summary>
+                <ul className="mt-2 list-disc pl-5">
+                  {preview.removedSections.map((section) => (
+                    <li key={section.id}>{section.title}</li>
+                  ))}
+                </ul>
+              </details>
+            )}
+            {preview.blocks.some((b) => b.action === 'remove') && (
+              <details open className="text-sm">
+                <summary className="cursor-pointer font-medium">Blocos que sairão</summary>
+                <ul className="mt-2 list-disc pl-5">
+                  {preview.blocks
+                    .filter((b) => b.action === 'remove')
                     .map((block) => (
                       <li key={block.id}>{block.label ?? block.id}</li>
                     ))}
@@ -191,8 +267,21 @@ export function LessonManifestImport({
                 {warning}
               </p>
             ))}
-            <Button disabled={busy} onClick={() => void apply()}>
-              Aplicar ao rascunho desta aula
+            {mode === 'replace' && (
+              <label className="flex min-h-11 items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={replacementConfirmed}
+                  onChange={(event) => setReplacementConfirmed(event.target.checked)}
+                />
+                Entendo que tudo que não está no manifesto será removido deste rascunho.
+              </label>
+            )}
+            <Button
+              disabled={busy || (mode === 'replace' && !replacementConfirmed)}
+              onClick={() => void apply()}
+            >
+              {mode === 'replace' ? 'Substituir rascunho' : 'Aplicar ao rascunho desta aula'}
             </Button>
           </div>
         )}

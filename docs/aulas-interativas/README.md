@@ -1,5 +1,10 @@
 # Redesenho didático das aulas interativas
 
+> **Migração pedagógica em andamento (21/09/2026).** O trio `desafio-dia-1` é o piloto da direção
+> vigente: uma ideia por seção, um vídeo no máximo, vídeo e atividade disponíveis juntos e ambos
+> obrigatórios, Zappy pontual, palpite seletivo e quiz isolado. Os outros 27 trios continuam como
+> inventário pré-migração e não devem ser copiados como modelo até passarem pela mesma revisão.
+
 Redesenho didático dos três cursos de jogos (Desafio do Primeiro Jogo, Corre Dino e O Jogo do Meu
 Jeito) para o formato de seções da plataforma. São 27 aulas de programação e criação, mais uma aula
 final de certificado e próximos passos no Desafio.
@@ -80,7 +85,8 @@ Três coisas que o formato impôs ao desenho, e estão explicadas no `ESPEC-MANI
 2. **O formato não tem campo de título de vídeo.** A convenção travada é que a primeira linha do
    bloco de vídeo planejado é `Título: <nome>`, seguida de linha em branco e das instruções de
    produção.
-3. **A fala do Zappy tem teto de 400 caracteres.** Falas mais longas viraram duas.
+3. **A fala do Zappy tem teto de 400 caracteres e limite de uma por seção.** Se ficou longa demais,
+   reescreva ou leve o conteúdo ao vídeo; não divida em dois balões.
 
 ### Conferir os manifestos
 

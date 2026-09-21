@@ -6,6 +6,19 @@
 >
 > Manifesto que não passa no validador não importa. Siga ao pé da letra.
 
+## Direção didática vigente (21/09/2026)
+
+- **Seção de conceito:** um vídeo, no máximo uma fala-ponte do Zappy e uma experimentação. Vídeo e
+  experiência ficam disponíveis juntos; `completion.blockIds` inclui os dois.
+- **Seção de construção:** um vídeo, no máximo uma fala-resumo do Zappy e uma ferramenta. Vídeo e
+  ferramenta ficam disponíveis juntos; a conclusão inclui o vídeo e a evidência da ferramenta.
+- **Seção de quiz:** somente uma fala curta do Zappy e um quiz. Não misture vídeo, ferramenta,
+  experiência ou texto. Coloque-a antes da entrega ou do teste final.
+- **Palpite:** opcional e autorado no bloco. Só entra quando uma hipótese melhora a compreensão de
+  uma concepção comum ou de um efeito contraintuitivo; nunca pergunta sobre controles.
+- Cada seção tem no máximo **um vídeo** e **um diálogo**. Zappy é exceção pontual, não substituto de
+  texto ou vídeo.
+
 ## 1. A regra das duas colunas
 
 Esta regra **não está no manifesto**. Ela é do player, mora em
@@ -148,6 +161,16 @@ Demais conteúdos:
 
 `pose` é opcional e aceita `speaking`, `happy`, `thinking` ou `celebrating`.
 
+Use no máximo um diálogo por seção e somente em três funções:
+
+- ponte de conceito: convite geral como "Agora é hora de ver essa ideia funcionando", sem repetir
+  os controles e objetivos já escritos na experiência;
+- ponte prática: resumo curto do que o vídeo mostrou e convite para montar no projeto;
+- introdução de quiz: diz que é hora de conferir o que ficou claro, sem ensinar a resposta.
+
+Se a fala precisa continuar em outro balão, ela não é mais uma intervenção pontual: reescreva ou
+leve o conteúdo para o vídeo.
+
 **Texto** até 50.000 caracteres.
 
 ```json
@@ -181,7 +204,8 @@ o conteúdo pertence ao vídeo**, não de que o texto deve ficar maior.
 `required` deve ser **true** sempre que a cena for o critério de conclusão da seção. Este é um
 defeito conhecido do material atual: quatro cenas estão como opcionais sendo o único critério.
 
-**Quiz.** Use o formato dos manifestos atuais.
+**Quiz.** Use o formato dos manifestos atuais. Ele sempre ocupa uma seção própria, acompanhado no
+máximo por um diálogo introdutório do Zappy. O quiz não divide seção com vídeo, cena ou ferramenta.
 
 ## 5. Seções
 
@@ -238,6 +262,15 @@ trabalham nele.
 
 `blockIds` lista as chaves dos blocos que precisam ser concluídos (vídeo assistido a 90%, cena com
 as metas caídas, quiz respondido). `projectChecks` verifica a estrutura do projeto no Estúdio.
+
+Na direção vigente, uma seção com vídeo e atividade nunca conclui por apenas um deles:
+
+- vídeo + experimentação: os dois aparecem em `blockIds`;
+- vídeo + Estúdio/Pinta: o vídeo aparece em `blockIds` e a ferramenta entra por seu bloco concluído
+  e/ou pelos `projectChecks` que comprovam a etapa;
+- vídeo + ferramenta externa: o vídeo entra em `blockIds` e a ação verificável disponível entra no
+  critério. Se a plataforma ainda não consegue observar a ação, registre explicitamente a limitação
+  na proposta e não finja que houve validação.
 
 Regras de `usesBlock`: `blockType` é o tipo real do bloco do Estúdio, `area` aceita `structure`,
 `appearance`, `molds`, `start`, `events` ou `loops`, `count` exige número exato de blocos ativos

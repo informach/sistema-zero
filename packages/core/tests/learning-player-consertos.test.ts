@@ -7,7 +7,12 @@ import {
   PERGUNTA_MUDOU,
   publicInteractiveBlock,
 } from '../src/learning'
-import { initialExperiment, packExperiment, stepExperiment } from '../src/learning/scene'
+import {
+  initialExperiment,
+  packExperiment,
+  SCENE_QUESTIONS,
+  stepExperiment,
+} from '../src/learning/scene'
 
 /**
  * Os consertos do PLAYER depois do review do lote 2 do Raio-X (16/09/2026), no lado do core.
@@ -21,6 +26,7 @@ const mundo: InteractiveBlock = {
   required: true,
   hints: [],
   activity: { type: 'experimentation', scene: 'world' },
+  prediction: SCENE_QUESTIONS.world.prediction,
 }
 
 function sessaoCompleta() {

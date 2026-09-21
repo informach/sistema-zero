@@ -9,7 +9,7 @@ import { ScenePredictionPreview } from '../src/components/scene-prediction-previ
 
 /**
  * O PALPITE PREPARA O OLHAR, mostra a cena e só então pergunta. A pergunta e as escolhas ficam
- * juntas, e um controle citado aparece como representação estática, nunca como ação antecipada.
+ * juntas. Nenhum controle aparece antes da escolha.
  */
 
 const prediction: LearningPrediction = {
@@ -47,9 +47,10 @@ describe('o palpite e a cena ocupam a largura útil da atividade', () => {
     expect(contexto).toBeLessThan(previa)
     expect(previa).toBeLessThan(pergunta)
     expect(pergunta).toBeLessThan(escolha)
-    // A prévia é o MUNDO do console, e a prancha fica à vista porém fechada.
+    // A prévia é o MUNDO do console; a prancha ainda não existe.
     expect(ramo).toContain('<ConsoleMundo>')
-    expect(ramo).toContain('pranchaDaCena(true)')
+    expect(ramo).not.toContain('pranchaDaCena')
+    expect(ramo).not.toContain('hudDaCena')
   })
 
   test('as peças do palpite continuam dizendo o que precisam dizer', () => {
@@ -81,7 +82,7 @@ describe('o palpite e a cena ocupam a largura útil da atividade', () => {
     expect(opcoes).toContain(prediction.choices[0]!.label)
   })
 
-  test('mostra o controle citado como botão desativado, mas sem teto ou centralização', () => {
+  test('mostra somente a cena parada, sem controle estático, teto ou centralização', () => {
     const html = renderToStaticMarkup(
       <ScenePredictionPreview
         activity={{ type: 'experimentation', scene: 'screen-reader' }}
@@ -93,14 +94,12 @@ describe('o palpite e a cena ocupam a largura útil da atividade', () => {
     expect(moldura).toBeDefined()
     expect(moldura).toContain('w-full')
     expect(moldura).toContain('Ouvir a tela')
-    expect(moldura).toContain('Você vai usar este botão depois do seu palpite.')
     expect(moldura).not.toContain('max-w-scene')
     expect(moldura).not.toContain('mx-auto')
     expect(html).toContain('[&amp;_button]:hidden')
-    expect(html).toContain('data-preview-control')
-    expect(html).toContain('<button')
-    expect(html).toContain('disabled=""')
-    expect(html).toContain('aria-describedby')
+    expect(html).not.toContain('data-preview-control')
+    expect(html).not.toContain('<button')
+    expect(html).not.toContain('disabled=""')
   })
 
   test('abre a mesma cena sem teto de largura na moldura do palco', () => {

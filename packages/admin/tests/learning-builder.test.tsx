@@ -184,10 +184,11 @@ test('⚠️ o bloco NOVO já nasce com o texto do modelo', () => {
   expect(isInteractiveBlock(EMPTY_LEARNING)).toBe(true)
 })
 
-test('a previsão própria começa com o contexto claro da cena', async () => {
+test('o palpite só nasce quando a autora o inclui e começa com o modelo da cena', async () => {
   const b = await montar(EMPTY_LEARNING)
   try {
-    await b.marcar('Escrever a minha previsão')
+    expect(b.value.prediction).toBeUndefined()
+    await b.marcar('Incluir um palpite antes da experiência')
     expect(b.value.prediction?.context).toEqual(SCENE_QUESTIONS.world.prediction.context)
     expect(b.texto).toContain('O que vamos usar')
     expect(b.texto).toContain('Como apresentar antes do palpite')

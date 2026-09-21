@@ -34,9 +34,13 @@ async function setup(number: 1 | 2) {
         body: JSON.stringify(body),
       }),
     )
-  const preview = () => request('import-preview', { document })
-  const apply = (expectedFingerprint: string) =>
-    request('import-learning', { document, expectedFingerprint, operationId: randomUUID() })
+  const preview = (mode: 'preserve' | 'replace' = 'preserve') =>
+    request('import-preview', { document, mode })
+  const apply = (
+    expectedFingerprint: string,
+    mode: 'preserve' | 'replace' = 'preserve',
+    operationId = randomUUID(),
+  ) => request('import-learning', { document, mode, expectedFingerprint, operationId })
   return { ...env, lessonId, document, preview, apply }
 }
 
@@ -143,5 +147,106 @@ describe('manifest import through the authoring HTTP boundary', () => {
     const response = await f.preview()
     expect(response.status).toBe(400)
     expect(JSON.stringify(await response.json())).toContain('mais de um bloco de studio')
+  })
+
+  test('replace removes omissions, keeps the configured Studio and leaves published content unchanged', async () => {
+    const f = await setup(2)
+    const existing = await readDraft(f.app, f.lessonId)
+    const studioBlockId = randomUUID()
+    const initialProject = {
+      formatVersion: 2 as const,
+      name: 'Projeto que já estava configurado',
+      files: { 'index.html': '<p>Configuração preservada</p>' },
+    }
+    const omittedBlockId = randomUUID()
+    const omittedSectionId = randomUUID()
+    expect(
+      (
+        await changeDraft(f.app, f.lessonId, {
+          type: 'block',
+          block: {
+            id: studioBlockId,
+            content: {
+              kind: 'studio',
+              chain: 'configuracao-anterior',
+              initialProject,
+            },
+          },
+          sectionId: existing.document.sections[0]?.id,
+        })
+      ).status,
+    ).toBe(200)
+    const withStudio = await readDraft(f.app, f.lessonId)
+    expect(
+      (
+        await changeDraft(f.app, f.lessonId, {
+          type: 'block',
+          block: {
+            id: omittedBlockId,
+            content: { kind: 'rich_text', markdown: 'Texto que não existe no novo manifesto.' },
+          },
+          sectionId: withStudio.document.sections[0]?.id,
+        })
+      ).status,
+    ).toBe(200)
+    const withBlock = await readDraft(f.app, f.lessonId)
+    expect(
+      (
+        await changeDraft(f.app, f.lessonId, {
+          type: 'structure',
+          sections: [
+            ...withBlock.document.sections.map((section) => ({
+              ...section,
+              blockIds: section.blockIds.filter((id) => id !== omittedBlockId),
+            })),
+            {
+              id: omittedSectionId,
+              title: 'Seção antiga',
+              objective: 'Será substituída pelo manifesto.',
+              intent: 'closing',
+              blockIds: [omittedBlockId],
+              workspaceBlockId: null,
+              externalTool: null,
+              pendingMedia: [],
+              completion: { version: 1, blockIds: [] },
+            },
+          ],
+        })
+      ).status,
+    ).toBe(200)
+    const published = await f.courses.findLessonWithContent(f.lessonId)
+
+    const response = await f.preview('replace')
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as {
+      fingerprint: string
+      blocks: Array<{ id: string; label?: string; action: string }>
+      removedSections: Array<{ id: string; title: string }>
+    }
+    expect(body.blocks).toContainEqual({
+      id: omittedBlockId,
+      label: 'Texto · Seção antiga',
+      action: 'remove',
+    })
+    expect(body.blocks).not.toContainEqual(
+      expect.objectContaining({ id: studioBlockId, action: 'remove' }),
+    )
+    expect(body.removedSections).toContainEqual({ id: omittedSectionId, title: 'Seção antiga' })
+
+    const operationId = randomUUID()
+    const applied = await f.apply(body.fingerprint, 'replace', operationId)
+    expect(applied.status).toBe(200)
+    const draft = await readDraft(f.app, f.lessonId)
+    expect(draft.document.blocks.some((block) => block.id === omittedBlockId)).toBe(false)
+    expect(draft.document.sections.some((section) => section.id === omittedSectionId)).toBe(false)
+    expect(draft.document.blocks.find((block) => block.id === studioBlockId)?.content).toEqual(
+      expect.objectContaining({ kind: 'studio', initialProject }),
+    )
+    expect(
+      draft.document.sections
+        .filter((section) => section.workspaceBlockId)
+        .every((section) => section.workspaceBlockId === studioBlockId),
+    ).toBe(true)
+    expect(await f.courses.findLessonWithContent(f.lessonId)).toEqual(published)
   })
 })

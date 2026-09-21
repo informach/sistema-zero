@@ -5,6 +5,10 @@
 > criança. O palpite e a pergunta final são partes opcionais da experiência; pergunta isolada
 > pertence ao quiz. O roteiro e o editor de demonstração foram removidos. Os detalhes históricos
 > sobre quatro tipos e demonstração abaixo não devem orientar novas edições.
+>
+> **Palpite seletivo (21/09/2026):** uma cena nova começa sem palpite. O catálogo oferece um modelo
+> que o autor pode incluir explicitamente quando a hipótese combate uma concepção comum ou prepara
+> um resultado contraintuitivo. A pergunta trata do conceito, nunca do botão ou controle.
 
 ## Atividades interativas e cenas no editor
 
@@ -153,21 +157,18 @@ descobertas que ESTA atividade cobra (sem marcar nenhuma, valem as do modelo).
 
 ### A previsão e a pergunta
 
-- ⭐⭐ **O editor MOSTRA a pergunta que a cena dá.** Toda cena tem previsão e toda experimentação tem
-  pergunta, herdadas do modelo (`SCENE_QUESTIONS`). Desmarcada, a caixa mostra o texto herdado como a
-  criança vai recebê-lo (`PerguntaHerdada`, já vestido pelo elenco), e as caixas dizem "Escrever a minha
-  previsão/pergunta (substitui a da cena)". ⚠️⚠️ Ao LIGAR, o campo nasce com a da cena dentro, nunca em
-  branco: marcar a caixa não pode PIORAR a tela da criança. ⚠️ A herança é calculada SEM os campos
-  próprios do bloco, senão devolveria o que o professor acabou de escrever.
-- ⭐ **A previsão** ("Perguntar o que ela acha que vai acontecer, antes de abrir a cena") só nos dois
-  tipos de cena, com gabarito OPCIONAL ("O que acontece de verdade"). ⚠️ Não vale nota e NÃO reusa a
-  pergunta de verificação, que alimenta o `passed`: reprovar um palpite ensinaria a não arriscar. A
-  criança vê o palpite dela de volta quando a cena mostra a resposta ("Você achou: X.", no
-  `scene-prediction.tsx` do member-shell); sem o gabarito, ele volta sem dizer se ela acertou. O campo
-  da pergunta mostra o erro NELE quando fica vazio (o recado lá de cima é genérico).
+- ⭐⭐ **A pergunta final pode vir da cena; o palpite, não.** Toda experimentação pode usar a pergunta
+  final de `SCENE_QUESTIONS`, salvo `semPerguntaFinal`. Já a experiência nova começa sem palpite.
+  "Incluir um palpite antes da experiência" copia o modelo do catálogo para o bloco, para então ser
+  editado. Desmarcar remove o palpite da experiência que a criança recebe.
+- ⭐ **A previsão** só entra quando a hipótese ajuda a confrontar uma concepção comum ou um efeito
+  contraintuitivo. Não vale nota e NÃO reusa a pergunta de verificação, que alimenta o `passed`.
+  A retomada compara de modo neutro "Seu palpite: X. Ao testar: Y.", sem acerto ou erro. O campo da
+  pergunta mostra o erro nele quando fica vazio.
 - ⚠️ A demonstração `inline` não herda previsão (ela trava o palco até a escolha), e o editor diz por
   quê; escrever a sua continua valendo.
-- ⚠️ `revealOn` e `shows` não têm campo no editor: chegam pelo manifesto ou pela previsão herdada.
+- ⚠️ `revealOn` e `shows` não têm campo no editor: chegam pelo manifesto ou pelo modelo copiado ao
+  incluir explicitamente o palpite.
 - ⚠️⚠️ **Aviso editorial** (`lesson-editorial-warnings.ts`): experimentação cuja missão cobra parte
   das descobertas da cena e usa a pergunta de FÁBRICA, escrita contra a história inteira. Avisa e não
   bloqueia: só quem escreveu o caso sabe se a ideia central sobreviveu ao recorte.
@@ -205,9 +206,9 @@ síntese. Guia operacional (custo, licença, diagnóstico): **`docs/voz-do-zappy
   frase editada tem key nova. O rótulo diz o ESTADO ("Gerar a voz do Zappy (3)" × "Voz do Zappy: em
   dia"), que é o que responde "preciso clicar de novo?".
 - ⚠⚠ **Os textos saem da PROJEÇÃO PÚBLICA do bloco** (`publicInteractiveBlock`), que é o que o
-  navegador da criança recebe: é ela que resolve a previsão e a pergunta do MODELO da cena quando o
-  professor não escreveu as suas. Gerando do rascunho cru, a cena que herda o palpite do modelo
-  ficaria muda justamente na pergunta que TRANCA o palco.
+  navegador da criança recebe: é ela que resolve o palpite explicitamente gravado e a pergunta
+  final do MODELO da cena. Gerar do rascunho cru ignoraria essa resolução e as trocas de elenco,
+  deixando mudas falas que realmente chegam à criança.
 - **Rota** `POST /api/media/voz-zappy` (`server/voz-zappy.ts` + `app/api/media/voz-zappy/route.ts`):
   recebe TEXTOS e devolve `{vozes, geradas, reaproveitadas, caracteres}`. Como as outras rotas de
   mídia, NÃO passa pelo gateway → `requireMediaSession()` obrigatório (é uma rota que gasta crédito
@@ -222,6 +223,19 @@ síntese. Guia operacional (custo, licença, diagnóstico): **`docs/voz-do-zappy
   community/kids: a criança recebe URL de MP3 público, como qualquer mídia de aula.
 - ⚠ **Reimportar um manifesto apaga o dicionário daquela aula** (o manifesto não o carrega). Basta
   clicar no botão de novo: o áudio continua no R2 e é reaproveitado sem custo.
+
+## Importar e substituir o rascunho (21/09/2026)
+
+`LessonManifestImport` oferece dois modos explícitos. **Atualizar e preservar** é o padrão e mantém
+o comportamento seguro anterior. **Substituir o rascunho pelo manifesto** trata o arquivo como a
+aula completa: a prévia lista todas as seções e todos os blocos omitidos, a autora confirma a
+remoção e só então o Admin envia `mode: replace` na aplicação. Trocar o modo ou o JSON invalida a
+prévia e gera outro `operationId`.
+
+A substituição continua sendo uma única escrita concorrente no rascunho. Blocos que reaparecem com
+a mesma chave preservam ID, vídeo vinculado e configurações operacionais; blocos omitidos saem
+independentemente do tipo. A versão publicada não é alterada. Não existe botão separado para
+“apagar tudo”, porque criaria um rascunho vazio entre duas operações e perderia a prévia do que sai.
 
 ## Exportar o manifesto da aula (19/09/2026)
 

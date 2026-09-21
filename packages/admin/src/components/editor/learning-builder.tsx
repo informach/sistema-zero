@@ -2,13 +2,13 @@
 
 import {
   blockCheckpoint,
-  blockPrediction,
   evaluateLearning,
   type InteractiveBlock,
   type LearningActivity,
   type LearningChoice,
   type LearningPrediction,
   publicInteractiveBlock,
+  scenePredictionTemplate,
 } from '@sistemazero/core/learning'
 import {
   falasDaCena,
@@ -268,19 +268,9 @@ export function LearningBuilder({
   // ⚠️ Em const: dentro dos callbacks o TS perde o estreitamento de `value.prediction` (é
   // propriedade mutável) e o espalhamento volta a ter `prompt` opcional, que não é o tipo.
   const previsao = value.prediction
-  /**
-   * ⚠️⚠️ O que a cena dá a este bloco quando o professor não escreve nada.
-   *
-   * Desde 15/09/2026 toda cena tem previsão e toda experimentação tem pergunta, herdadas do
-   * modelo (`SCENE_QUESTIONS`). O editor PRECISA mostrar isso: uma caixa desmarcada ao lado de
-   * "incluir pergunta de verificação" fazia o professor ler "não há pergunta" — e ele estava
-   * olhando para o bloco que hoje faz a criança responder uma.
-   *
-   * ⚠️ Calculada SEM os campos próprios do bloco, senão ela devolveria o que o professor
-   * acabou de escrever em vez do que a cena oferece.
-   */
+  /** Modelos do catálogo ajudam a autora, mas nunca entram implicitamente na aula da criança. */
   const heranca = {
-    previsao: blockPrediction({ ...value, prediction: undefined }),
+    previsao: scenePredictionTemplate({ ...value, prediction: undefined }),
     // ⚠️ Sem o `semPerguntaFinal` também: o editor precisa MOSTRAR o que a cena oferece mesmo com a
     // caixa "sem a pergunta do fim" marcada, senão desmarcar viraria um salto no escuro.
     pergunta: blockCheckpoint({ ...value, checkpoint: undefined, semPerguntaFinal: undefined }),
@@ -555,10 +545,8 @@ export function LearningBuilder({
         </p>
       )}
       {cena && (
-        /* ⭐ A previsão é o padrão mais forte do Brilliant: a criança arrisca um palpite antes
-           de a cena abrir, mexe e descobre sozinha se acertou. ⚠️ Ela NÃO avalia nada — errar
-           faz parte, e reprovar por isso ensinaria a não arriscar. Por isso tem campo próprio
-           e não reusa a pergunta de verificação. */
+        /* O palpite é seletivo: só entra quando uma hipótese plausível torna a observação mais
+           significativa. Não avalia e não pergunta qual controle usar. */
         <div className="space-y-3 rounded-xl border border-border p-4">
           <label className="flex min-h-11 items-center gap-3">
             <input
@@ -567,27 +555,20 @@ export function LearningBuilder({
               onChange={(e) =>
                 onChange({
                   ...value,
-                  // ⚠️⚠️ Ao ligar, o campo nasce com a previsão DA CENA dentro, e não em
-                  // branco: marcar a caixa não pode PIORAR a tela da criança. Começando vazio,
-                  // o professor que clicasse para "dar uma olhada" trocava uma pergunta pronta
-                  // por uma incompleta — e a aula parava de publicar por causa disso.
+                  // O modelo é só um ponto de partida explícito para a autora.
                   prediction: e.target.checked
                     ? (heranca.previsao ?? initialPrediction())
                     : undefined,
                 })
               }
             />
-            {heranca.previsao
-              ? 'Escrever a minha previsão (substitui a da cena)'
-              : 'Perguntar o que ela acha que vai acontecer, antes de abrir a cena'}
+            Incluir um palpite antes da experiência
           </label>
-          {!previsao && heranca.previsao && (
-            <PerguntaHerdada
-              titulo="A criança vai ver esta previsão, escrita para a cena:"
-              prompt={heranca.previsao.prompt}
-              choices={heranca.previsao.choices}
-              correctChoiceId={heranca.previsao.correctChoiceId}
-            />
+          {!previsao && (
+            <p className="text-sm text-muted-foreground">
+              Use somente quando houver duas interpretações plausíveis e o primeiro teste mostrar
+              rapidamente uma ideia importante. Pergunte sobre o conceito, nunca sobre o botão.
+            </p>
           )}
           {previsao && (
             <>
@@ -694,14 +675,10 @@ export function LearningBuilder({
                   ))}
                 </Select>
               </Field>
-              {/* ⚠️ Mudou no review do lote 2 do Raio-X: desde o lote 2 a criança VÊ o palpite de
-                  volta ("Você achou: X. E foi isso mesmo!"), e o texto antigo dizia que não. O
-                  momento da retomada (`revealOn`) e o "para onde olhar" de cada opção (`shows`) não
-                  têm campo aqui: chegam pelo manifesto ou pela previsão herdada da cena. */}
               <p className="text-sm text-muted-foreground">
-                Sem nota: errar aqui não reprova nada. A criança vê o palpite dela de volta quando a
-                cena mostrar a resposta. Sem a opção certa marcada, o palpite volta sem dizer se ela
-                acertou.
+                Sem nota: a escolha volta ao lado do que a cena mostrou, sem “acertou” ou “errou”. O
+                momento da comparação (`revealOn`) e o texto observado (`shows`) podem vir do
+                manifesto.
               </p>
             </>
           )}

@@ -6,6 +6,7 @@ import {
   evaluateLearning,
   isInteractiveBlock,
   publicInteractiveBlock,
+  scenePredictionTemplate,
 } from '../index'
 import { SCENE_IDS, type SceneId } from './actions'
 import type { SceneCast } from './cast'
@@ -108,7 +109,7 @@ describe('a previsão e a explicação das 45 cenas', () => {
         ...bloco(scene, 'experimentation'),
         activity: { type: 'experimentation', scene, cast: NAVE },
       })
-      const palpite = blockPrediction({
+      const palpite = scenePredictionTemplate({
         ...bloco(scene, 'experimentation'),
         activity: { type: 'experimentation', scene, cast: NAVE },
       })
@@ -160,14 +161,11 @@ describe('os resolvedores', () => {
     expect(blockPrediction(b)?.prompt).toBe('O meu palpite')
   })
 
-  test('⚠️⚠️ o gabarito herdado NÃO sai para o navegador', () => {
+  test('⚠️⚠️ a pergunta herdada não vaza gabarito e o palpite não nasce sozinho', () => {
     // A projeção pública é a única porta para a criança, e a pergunta agora chega por ela em
     // TODA experimentação: um vazamento aqui entregaria a resposta das 45 cenas de uma vez.
     for (const scene of SCENE_IDS) {
       const publico = publicInteractiveBlock(bloco(scene, 'experimentation'))
-      // ⚠️ Mudou de propósito (lote 2 do Raio-X): a PREVISÃO saiu pública inteira, porque ela
-      // não vale nota e o player precisa do gabarito dela para retomar o palpite. O que não pode
-      // atravessar continua sendo o da PERGUNTA, que decide o `passed`.
       const pergunta = JSON.stringify(publico.checkpoint)
       expect(pergunta, scene).not.toContain('correctChoiceId')
       expect(pergunta, scene).not.toContain('explanation')
@@ -175,16 +173,20 @@ describe('os resolvedores', () => {
         SCENE_QUESTIONS[scene].explain.explanation,
       )
       expect(publico.checkpoint?.choices.length, scene).toBeGreaterThanOrEqual(2)
-      expect(publico.prediction?.choices.length, scene).toBeGreaterThanOrEqual(2)
+      expect(publico.prediction, scene).toBeUndefined()
     }
   })
 
   test('⭐ a previsão chega ao navegador com o que o player precisa para retomá-la', () => {
     for (const scene of SCENE_IDS) {
       const modelo = SCENE_QUESTIONS[scene].prediction
-      const publico = publicInteractiveBlock({
+      const base = {
         ...bloco(scene, 'experimentation'),
         activity: { type: 'experimentation', scene, cast: NAVE },
+      } as InteractiveBlock
+      const publico = publicInteractiveBlock({
+        ...base,
+        prediction: scenePredictionTemplate(base),
       }).prediction
       expect(publico?.correctChoiceId, scene).toBe(modelo.correctChoiceId)
       expect(publico?.revealOn, scene).toBe(modelo.revealOn)
@@ -283,12 +285,11 @@ describe('a cena que entra sem a pergunta do fim', () => {
     semPerguntaFinal: true,
   })
 
-  test('a pergunta de fábrica não chega ao bloco, e a previsão continua chegando', () => {
+  test('a pergunta de fábrica não chega ao bloco, e nenhum palpite nasce implicitamente', () => {
     const b = semPergunta()
     expect(blockCheckpoint(b)).toBeUndefined()
-    // ⚠️ A previsão NÃO vai junto: ela é o palpite de ANTES, não vale nota, e a decisão foi manter
-    // as quatro. Tirar as duas com um campo só apagaria metade do ciclo sem ninguém pedir.
-    expect(blockPrediction(b)?.prompt).toBe(SCENE_QUESTIONS['stage-size'].prediction.prompt)
+    expect(blockPrediction(b)).toBeUndefined()
+    expect(scenePredictionTemplate(b)?.prompt).toBe(SCENE_QUESTIONS['stage-size'].prediction.prompt)
     // E a mesma cena sem o campo segue recebendo a pergunta do modelo.
     expect(blockCheckpoint(bloco('stage-size', 'experimentation'))?.prompt).toBe(
       SCENE_QUESTIONS['stage-size'].explain.prompt,
@@ -315,7 +316,7 @@ describe('a cena que entra sem a pergunta do fim', () => {
     const publico = publicInteractiveBlock(semPergunta()) as unknown as Record<string, unknown>
     expect(publico.checkpoint).toBeUndefined()
     expect(publico.semPerguntaFinal).toBeUndefined()
-    expect(publico.prediction).toBeDefined()
+    expect(publico.prediction).toBeUndefined()
     expect(publicInteractiveBlock(bloco('stage-size', 'experimentation')).checkpoint).toBeDefined()
   })
 })

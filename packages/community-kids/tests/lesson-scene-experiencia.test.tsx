@@ -38,7 +38,7 @@ function bloco(activity: SceneActivity, extra: Partial<InteractiveBlock> = {}): 
     ...extra,
   }
 }
-/** O caminho da CRIANÇA (a projeção pública: previsão e pergunta do modelo), na prévia sem servidor. */
+/** O caminho da CRIANÇA (a projeção pública e a pergunta final do modelo), na prévia sem servidor. */
 function abrir(conteudo: InteractiveBlock) {
   return render(
     <InteractiveLessonBlock
@@ -53,13 +53,13 @@ function abrir(conteudo: InteractiveBlock) {
     />,
   )
 }
-/** Escolhe a primeira opção da previsão (a do bloco, ou a do modelo). */
+/** Escolhe a previsão quando o bloco a declarou; sem ela, a experiência já está aberta. */
 async function palpitar(scene: SceneId, rotulo?: string) {
-  fireEvent.click(
-    await screen.findByRole('button', {
-      name: rotulo ?? (SCENE_QUESTIONS[scene].prediction.choices[0]?.label as string),
-    }),
-  )
+  const botao = screen.queryByRole('button', {
+    name: rotulo ?? (SCENE_QUESTIONS[scene].prediction.choices[0]?.label as string),
+  })
+  if (!botao) return
+  fireEvent.click(botao)
   await waitFor(() => expect(screen.getByText('Seu palpite:')).toBeTruthy())
 }
 const naFaixa = (nome: string) =>
@@ -157,7 +157,7 @@ describe('M2 · os avisos da descoberta ficam SOBRE o palco, sem vão reservado 
     await palpitar('world', 'O Dino aparece')
     expect(container.querySelector('[data-lugar-reservado="avisos"]')).toBeNull()
     fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
-    const retomado = 'Você achou: O Dino aparece. Olhe a tela: ela ficou vazia.'
+    const retomado = 'Seu palpite: O Dino aparece. Ao testar: Olhe a tela: ela ficou vazia.'
     await waitFor(() => expect(screen.getByText(retomado)).toBeTruthy())
     const avisos = container.querySelector<HTMLElement>('[data-avisos-sobre-o-palco]')
     expect(avisos).not.toBeNull()

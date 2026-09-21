@@ -69,8 +69,6 @@ export type ScenePredictionPreviewConceal = 'layers-order' | 'camera-colors'
 export interface ScenePredictionPreview {
   initial: true
   conceal: readonly ScenePredictionPreviewConceal[]
-  /** Um controle citado pelo palpite, desenhado na prévia sem ficar utilizável. */
-  control?: { label: string; note: string }
 }
 
 export interface SceneModel {
@@ -2373,14 +2371,7 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   'published-copy': PREVIA_INICIAL,
   'same-rules-new-skin': PREVIA_INICIAL,
   coordinates: PREVIA_INICIAL,
-  'screen-reader': {
-    initial: true,
-    conceal: [],
-    control: {
-      label: 'Ouvir a tela',
-      note: 'Você vai usar este botão depois do seu palpite.',
-    },
-  },
+  'screen-reader': PREVIA_INICIAL,
   'stage-size': PREVIA_INICIAL,
   'draw-loop': PREVIA_INICIAL,
   frames: PREVIA_INICIAL,

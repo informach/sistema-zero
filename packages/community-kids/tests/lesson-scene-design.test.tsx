@@ -76,7 +76,7 @@ function block(scene: SceneId, hints: string[] = []) {
 }
 
 describe('a prévia antes do palpite', () => {
-  test('mostra o palco inicial e apresenta o botão do leitor de tela sem liberá-lo', () => {
+  test('mostra somente o palco inicial, sem antecipar os controles', () => {
     render(
       <ScenePredictionPreview
         activity={{ type: 'experimentation', scene: 'screen-reader' }}
@@ -89,10 +89,8 @@ describe('a prévia antes do palpite', () => {
     expect(previa.querySelector('[data-preview-stage]')?.getAttribute('role')).toBe('img')
     expect(previa.querySelector('[data-preview-stage]')?.className).toContain('[&_button]:hidden')
     expect(screen.queryByRole('textbox')).toBeNull()
-    const botao = screen.getByRole('button', { name: 'Ouvir a tela' }) as HTMLButtonElement
-    expect(botao.disabled).toBe(true)
-    expect(botao.getAttribute('aria-describedby')).toBeTruthy()
-    expect(previa.textContent).toContain('Você vai usar este botão depois do seu palpite.')
+    expect(screen.queryByRole('button', { name: 'Ouvir a tela' })).toBeNull()
+    expect(previa.querySelector('[data-preview-control]')).toBeNull()
     expect(screen.queryByRole('meter')).toBeNull()
   })
 
@@ -740,12 +738,8 @@ describe('a previsão antes de mexer', () => {
     for (const nome of ['Recomeçar', 'Uma pista']) {
       expect(screen.queryByRole('button', { name: nome })).toBeNull()
     }
-    // ⚠️⚠️ A bancada, essa, fica À VISTA e FECHADA (o console de 18/09/2026, a "Proposta B"): a
-    // criança vê o que vai poder mexer. O que não pode é MEXER — a prancha é `inert`, e o gesto
-    // não chega ao motor.
-    expect(
-      screen.getByRole('slider', { name: 'Distância do cacto' }).closest('[inert]'),
-    ).not.toBeNull()
+    // A bancada e os controles não aparecem durante o palpite.
+    expect(screen.queryByRole('slider', { name: 'Distância do cacto' })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: PREVISAO.choices[0]?.label as string }))
     const distancia = await screen.findByRole('slider', { name: 'Distância do cacto' })
     // E a cena responde de verdade depois de aberta.
@@ -779,14 +773,12 @@ describe('a previsão antes de mexer', () => {
     expect(screen.queryByText(/Você achou/)).toBeNull()
   })
 
-  test('⚠️⚠️ sem previsão declarada, a criança recebe a DA CENA — pela projeção pública', async () => {
+  test('⚠️⚠️ sem previsão declarada, a projeção pública abre a experiência diretamente', async () => {
     /**
      * ⚠️⚠️ Este é o único teste da suíte que monta o bloco como a CRIANÇA o recebe. Todos os
-     * outros desenham o conteúdo de AUTORIA (é o que a prévia do admin faz), e desde 15/09/2026
-     * a previsão e a pergunta não vêm mais dos campos crus do bloco: vêm dos RESOLVEDORES do
-     * core, aplicados pelo `publicInteractiveBlock`. A versão anterior deste teste afirmava que
-     * "a cena abre como sempre abriu" — verdade só no caminho que a criança não usa, e falsa em
-     * produção desde que toda cena passou a ter previsão.
+     * outros desenham o conteúdo de AUTORIA (é o que a prévia do admin faz). Desde 21/09/2026,
+     * o catálogo oferece modelos ao autor, mas a projeção pública não acrescenta um palpite que
+     * não foi escolhido para aquele conceito.
      */
     const publico = publicInteractiveBlock(content('hitbox'))
     render(
@@ -795,22 +787,11 @@ describe('a previsão antes de mexer', () => {
       />,
     )
     const modelo = SCENE_QUESTIONS.hitbox
-    expect(
-      await screen.findAllByText(
-        (_, node) => node?.textContent?.includes(modelo.prediction.prompt) === true,
-      ),
-    ).not.toHaveLength(0)
-    // ⚠️⚠️ A bancada fica À VISTA e FECHADA no palpite (o console de 18/09/2026), dentro da
-    // cortina `inert`: a criança vê o que vai poder mexer e não alcança nada.
-    expect(
-      screen.getByRole('slider', { name: 'Distância do cacto' }).closest('[inert]'),
-    ).not.toBeNull()
-    // ⚠️ E o que é do servidor NÃO atravessa: a explicação só chega quando ela acerta.
+    expect(publico.prediction).toBeUndefined()
+    expect(screen.queryByText(modelo.prediction.prompt)).toBeNull()
+    // O que é do servidor continua sem atravessar: a explicação só chega quando a cena é concluída.
     expect(document.body.innerHTML).not.toContain(modelo.explain.explanation)
-    // O palpite abre a cena, e a cena responde de verdade.
-    fireEvent.click(
-      screen.getByRole('button', { name: modelo.prediction.choices[0]?.label as string }),
-    )
+    // Sem palpite autorado, a cena já responde de verdade.
     const distancia = await screen.findByRole('slider', { name: 'Distância do cacto' })
     fireEvent.change(distancia, { target: { value: '100' } })
     // ⚠️ Mudou de propósito (review do lote 2): sem a legenda "As áreas encostaram: batida!".
@@ -2153,12 +2134,12 @@ describe('⚠️⚠️ consertos do review do lote 1 (Raio-X)', () => {
     expect(quadro).toBeLessThanOrEqual(4)
   })
 
-  test('⚠️⚠️ antes do palpite a bancada fica na CORTINA, e depois dele abre completa', async () => {
-    // ⚠️⚠️ Mudou de propósito (o console de 18/09/2026, a "Proposta B" que ela aprovou): a bancada
-    // não some mais no palpite — ela fica À VISTA e FECHADA ("a cena do jogo e alguns controles
-    // desativados"), dentro da cortina `inert`, que a tira do Tab e do leitor e desfoca as notas
-    // (elas sopram a resposta). O que o teste guarda é que ela NÃO é alcançável ali.
-    const publico = publicInteractiveBlock(content('hitbox'))
+  test('⚠️⚠️ antes do palpite a bancada não existe, e depois dele abre completa', async () => {
+    const autorado: InteractiveBlock = {
+      ...content('hitbox'),
+      prediction: SCENE_QUESTIONS.hitbox.prediction,
+    }
+    const publico = publicInteractiveBlock(autorado)
     render(
       <InteractiveLessonBlock
         block={{ id: 'b', blockRevision: 'r', kind: 'interactive', sortOrder: 0, content: publico }}
@@ -2166,17 +2147,11 @@ describe('⚠️⚠️ consertos do review do lote 1 (Raio-X)', () => {
     )
     const modelo = SCENE_QUESTIONS.hitbox
     await screen.findByRole('button', { name: modelo.prediction.choices[0]?.label as string })
-    expect(
-      screen.getByRole('slider', { name: 'Distância do cacto' }).closest('[inert]'),
-    ).not.toBeNull()
+    expect(screen.queryByRole('slider', { name: 'Distância do cacto' })).toBeNull()
     fireEvent.click(
       screen.getByRole('button', { name: modelo.prediction.choices[0]?.label as string }),
     )
-    await waitFor(() =>
-      expect(
-        screen.getByRole('slider', { name: 'Distância do cacto' }).closest('[inert]'),
-      ).toBeNull(),
-    )
+    expect(await screen.findByRole('slider', { name: 'Distância do cacto' })).toBeTruthy()
   })
 
   test('⚠️ a peça escolhida MUDA de cara, e escolher de novo desescolhe', async () => {

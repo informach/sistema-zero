@@ -4,8 +4,9 @@
 
 - **Formato:** gravação da tela do Estúdio com narração por cima. Os clipes de gesto mostram a
   paleta abrindo gaveta por gaveta, e os de conceito não têm gesto nenhum.
-- **Duração:** 10 clipes, de 7min00s a 8min40s somados, narração pura de **1.110 palavras** a
-  **137 palavras por minuto**, que é o ritmo real medido em gravação, o que dá **8min06s** de fala.
+- **Duração:** 12 clipes, de 8min05s a 10min05s somados. Com as experiências, montagens, quiz e
+  envio, a aula completa deve ficar entre **15 e 25 minutos**. A narração final deve ser conferida
+  a **137 palavras por minuto**, que é o ritmo real medido em gravação.
 - **Calibração:** esta é a primeira aula de Estúdio da vida de quem assiste, e nada pode ser
   pressuposto. Ela já traz da introdução, e só isso: o caminho até a aula, as três ações de testar,
   o gesto de confirmar um campo saindo dele, as etiquetas de salvamento e o jeito de pedir ajuda.
@@ -45,11 +46,11 @@
     a largura, e posição dentro do Estúdio pode ser dita ("na coluna da esquerda, onde ficam os
     bloquinhos"), posição da ferramenta na página não.
 - **O que NÃO entra, e por quê:**
-  - **A enumeração dos seis passos**, que abria a gravação de 2026. O redesenho tem doze seções e a
+  - **A enumeração dos seis passos**, que abria a gravação de 2026. O redesenho tem treze seções e a
     lista viraria um cartório. A abertura diz o que vai estar na tela no fim do dia, e emenda.
-  - **As explicações conceituais que agora são das experiências:** o que acontece uma vez contra o
-    que acontece sempre, para onde o y cresce, criar contra mostrar, e o que sobra na tela sem
-    limpar. Os clipes de gesto não repetem nada disso.
+  - **Explicação conceitual dentro de clipe de gesto.** Uma vez contra sempre, para onde o y cresce,
+    criar contra mostrar, quadros e camadas têm clipes conceituais próprios. Os clipes de montagem
+    não repetem essas ideias.
   - **"as estrelas iam tampar ela"**, do fecho do quinto passo. No lugar entra "o que é desenhado
     depois pode cobrir o que veio antes", que é a regra e serve para o resto do curso.
   - **O convite a brincar com a velocidade 7 e trocar por 12.** A velocidade 7 é canônica e o Dia 2
@@ -237,6 +238,37 @@ alguns segundos.
 
 ## Seção 6. Criar e mostrar são duas coisas diferentes
 
+### Clipe `video-criar-e-mostrar` · Criar não é mostrar
+**Duração alvo:** 35 a 45 segundos · **Palavras:** 83
+
+**Na tela:** dividir o enquadramento entre **Bastidores** e **Tela do jogo**, ambos vazios. Criar a
+nave apenas nos bastidores, com a tela ainda vazia.
+
+**Narração:**
+> "O bloco Criar nave preparou um objeto nos bastidores. A nave já tem nome, posição, tamanho e
+> cores. Ela existe no jogo, mesmo sem aparecer na tela."
+
+**Na tela:** destacar a ficha da nave guardada nos bastidores e manter a tela vazia ao lado.
+
+**Narração:**
+> "É como preparar uma peça antes de colocá-la no palco. Preparar a peça e mostrar a peça são duas
+> ações diferentes."
+
+**Na tela:** acrescentar a ação de desenhar. A mesma nave aparece na tela do jogo.
+
+**Narração:**
+> "A tela só mostra o que o jogo manda desenhar. Quando chega a ordem de desenhar a nave, ela sai
+> dos bastidores e aparece para o jogador."
+
+**Na tela:** congelar com a nave visível nos dois lados: ficha nos bastidores e desenho na tela.
+
+**Narração:**
+> "Então guarda esta diferença: criar prepara o objeto; desenhar mostra esse objeto na tela."
+
+---
+
+## Seção 7. O que é um quadro
+
 ### Clipe `video-livrinho` · O livrinho de folhear
 **Duração alvo:** 35 a 45 segundos · **Palavras:** 95
 
@@ -407,7 +439,37 @@ de estrelas, Mover o sprite com as setas, Manter o sprite dentro da tela, Desenh
 
 ---
 
-## Seção 12. Teste, envie e fecha
+## Seção 11. Quem é desenhado depois fica por cima
+
+### Clipe `video-camadas` · Quem é desenhado depois fica na frente
+**Duração alvo:** 30 a 40 segundos · **Palavras:** 75
+
+**Na tela:** duas folhas coloridas sobre a mesa. Colocar a folha azul e depois a amarela por cima.
+
+**Narração:**
+> "Quando dois desenhos ocupam o mesmo lugar, a ordem decide quem fica na frente. A folha que chega
+> depois cobre uma parte da que já estava ali."
+
+**Na tela:** inverter as folhas, sem retirar nenhuma delas.
+
+**Narração:**
+> "Se eu troco a ordem, a outra aparece na frente. Nenhuma folha sumiu; só a pilha mudou."
+
+**Na tela:** mostrar a nave e o fundo de estrelas em duas ordens, primeiro com a nave coberta e
+depois com a nave visível.
+
+**Narração:**
+> "A tela do jogo funciona do mesmo jeito. O que é desenhado depois fica por cima e pode cobrir o
+> que veio antes."
+
+**Na tela:** congelar na ordem correta, fundo primeiro e nave depois.
+
+**Narração:**
+> "Por isso o fundo entra antes e a nave é desenhada depois dele."
+
+---
+
+## Seção 13. Teste, envie e feche
 
 ### Clipe `video-teste-e-envio` · A nave nas duas bordas e o envio
 **Duração alvo:** 45 a 55 segundos · **Palavras:** 122

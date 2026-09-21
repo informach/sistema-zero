@@ -33,16 +33,13 @@ describe('a prévia segura da cena', () => {
     expect(preview.conceal).toEqual(['layers-order'])
   })
 
-  test('leitor de tela começa sem texto escrito ou escutado', () => {
+  test('leitor de tela começa sem texto escrito, escutado ou controle antecipado', () => {
     const { preview, state } = scenePredictionPreview({
       type: 'experimentation',
       scene: 'screen-reader',
     })
     expect(state.description.text).toBe('')
     expect(state.description.heard).toBe('')
-    expect(preview.control).toEqual({
-      label: 'Ouvir a tela',
-      note: 'Você vai usar este botão depois do seu palpite.',
-    })
+    expect('control' in preview).toBe(false)
   })
 })

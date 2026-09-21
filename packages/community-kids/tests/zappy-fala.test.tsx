@@ -193,6 +193,7 @@ describe('a instrução da cena rege a boca pelo renderInstruction', () => {
       hints: [],
       required: false,
       activity: { type: 'experimentation' as const, scene: 'world' as const },
+      prediction: SCENE_QUESTIONS.world.prediction,
     })
     const vozes = Object.fromEntries(
       textosFalaveisDaCena(publico).map((t, i) => [chaveDeVoz(t), `https://cdn.test/voz/${i}.mp3`]),

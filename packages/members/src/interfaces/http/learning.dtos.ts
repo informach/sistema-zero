@@ -668,10 +668,15 @@ export const LearningProgressBody = t.Object({
 })
 export const LearningAttemptBody = t.Object({ ...ProgressFields, id: Id })
 export const LearningReportQuery = t.Object({ userId: Id, accountId: Id })
-export const LearningImportPreviewBody = t.Object({ document: t.Unknown() })
+const LearningImportModeSchema = t.Optional(t.Union([t.Literal('preserve'), t.Literal('replace')]))
+export const LearningImportPreviewBody = t.Object({
+  document: t.Unknown(),
+  mode: LearningImportModeSchema,
+})
 export const LearningImportApplyBody = t.Object({
   operationId: Id,
   document: t.Unknown(),
+  mode: LearningImportModeSchema,
   // Import preview returns the same UUID revision used by draft writes/publication.
   expectedFingerprint: Id,
 })

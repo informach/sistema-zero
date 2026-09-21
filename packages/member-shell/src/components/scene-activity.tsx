@@ -88,7 +88,6 @@ import {
   PalpiteOpcoes,
   PalpitePergunta,
   ScenePrediction,
-  vereditoDoPalpite,
 } from './scene-prediction'
 import { ScenePredictionPreview } from './scene-prediction-preview'
 import { estadoVistoDaCena, relogioDaCena, tempoDeLeitura, useSceneClock } from './use-scene-clock'
@@ -1081,8 +1080,8 @@ export function SceneActivityView({
       )}
     </SceneReadoutBand>
   )
-  const pranchaDaCena = (fechada: boolean) => (
-    <ConsolePrancha fechada={fechada}>
+  const pranchaDaCena = (
+    <ConsolePrancha>
       {/* ⚠️⚠️ A caixa pergunta aos FILHOS se há o que mostrar (`botoesDaCena` é uma
             LISTA): um booleano à parte esconderia um botão acrescentado aqui. */}
       {botoesDaCena.length > 0 && (
@@ -1152,12 +1151,8 @@ export function SceneActivityView({
       </header>
       <div className="space-y-4">
         {previsaoPendente && palpite ? (
-          /* ⭐⭐ O PALPITE mora no MESMO console (18/09/2026, a "Proposta B"): a ordem é contexto →
-          mundo → pergunta → opções, e a cena fica NO MEIO dos dois balões de propósito — juntar
-          os dois faria a criança responder antes de olhar. A prancha fica À VISTA e fechada, em
-          vez de sumir: ela vê o que vai poder mexer, e o bloco não muda de altura ao responder. */
+          /* O palpite mostra somente contexto, cena parada, pergunta e alternativas. */
           <SceneConsole palpite>
-            {hudDaCena}
             <ConsoleFala>
               <PalpiteContexto
                 prediction={palpite}
@@ -1184,7 +1179,6 @@ export function SceneActivityView({
                 }}
               />
             </div>
-            {pranchaDaCena(true)}
           </SceneConsole>
         ) : (
           <>
@@ -1248,7 +1242,6 @@ export function SceneActivityView({
                       <AvisosDaCena
                         selo={avisoDescoberta}
                         achou={palpite ? palpiteNaHora : ''}
-                        veredito={palpite ? vereditoDoPalpite(palpite, prediction) : null}
                         onFechar={() => {
                           setAvisoDescoberta('')
                           setPalpiteNaHora('')
@@ -1346,7 +1339,7 @@ export function SceneActivityView({
                     ali embaixo se fala sobre ela. Antes ela nascia DEPOIS do rodapé, fora da
                     moldura: a mesma distância que fez a pista passar despercebida.
                     ⚠️ A cena NÃO acaba: o mundo segue vivo e a prancha segue aberta. */}
-                  {pranchaDaCena(false)}
+                  {pranchaDaCena}
                 </SceneConsole>
                 {/* A comparação abre logo abaixo do botão que a pediu, não no pé do cartão.
                     ⚠️ FORA do console: é uma gaveta da AULA, e dentro dele viraria uma quinta faixa. */}
@@ -1552,7 +1545,7 @@ const CLASSE_DA_SITUACAO = 'min-h-6 text-center text-sm font-medium text-muted-f
  * - **não escondem o que a criança está olhando**: são `pointer-events-none` (o toque no Dino, o arrasto
  *   do cacto e da alça atravessam), ficam numa faixa estreita da borda de baixo, e o selo SAI sozinho em
  *   `SELO_MS`; a frase do palpite sai no tempo de leitura dela (`tempoDoPalpite`), no gesto seguinte ou
- *   no ✕. A linha "Seu palpite: X. Não era isso." lá em cima continua dizendo o veredito;
+ *   no ✕. A linha "Seu palpite: X. Ao testar: Y." lá em cima preserva a comparação neutra;
  * - ⚠️ o selo é visual só: quem ouve recebe o mesmo acontecimento pela região de anúncios, e duas regiões
  *   falando a mesma frase a diriam duas vezes. O conjunto é `aria-hidden`, menos o ✕ (que tem nome).
  * ⚠️⚠️ O palpite retomado mora AQUI, junto do gesto que o respondeu (review do lote 2): lá em cima ele
@@ -1561,12 +1554,10 @@ const CLASSE_DA_SITUACAO = 'min-h-6 text-center text-sm font-medium text-muted-f
 function AvisosDaCena({
   selo,
   achou,
-  veredito,
   onFechar,
 }: {
   selo: string
   achou: string
-  veredito: 'acertou' | 'errou' | null
   onFechar: () => void
 }) {
   if (!selo && !achou) return null
@@ -1585,20 +1576,8 @@ function AvisosDaCena({
         </p>
       )}
       {achou && (
-        <div
-          className={`flex w-fit max-w-full items-start gap-2 rounded-2xl px-3 py-2 text-sm font-semibold shadow-sm ${
-            veredito === 'errou'
-              ? 'bg-amber-100/95 text-amber-950'
-              : veredito === 'acertou'
-                ? 'bg-card/95 text-success-foreground ring-1 ring-success/40'
-                : 'bg-card/95'
-          }`}
-        >
-          {veredito === 'acertou' ? (
-            <Check size={16} className="mt-0.5 shrink-0" aria-hidden />
-          ) : (
-            <Eye size={16} className="mt-0.5 shrink-0" aria-hidden />
-          )}
+        <div className="flex w-fit max-w-full items-start gap-2 rounded-2xl bg-card/95 px-3 py-2 text-sm shadow-sm ring-1 ring-border">
+          <Eye size={16} className="mt-0.5 shrink-0" aria-hidden />
           <p aria-hidden className="min-w-0">
             {achou}
           </p>
@@ -1622,7 +1601,7 @@ const SELO_MS = 2000
 
 /**
  * Quanto a frase do palpite retomado fica sobre o palco: o dobro do tempo de leitura da demonstração
- * inline, entre 5 e 10 s (é a criança de 8 anos lendo "Você achou: … Olhe a tela: …" e olhando o desenho).
+ * inline, entre 5 e 10 s (é a criança de 8 anos lendo "Seu palpite: … Ao testar: …" e olhando o desenho).
  */
 function tempoDoPalpite(frase: string): number {
   return Math.min(10000, Math.max(5000, tempoDeLeitura(frase) * 2000))

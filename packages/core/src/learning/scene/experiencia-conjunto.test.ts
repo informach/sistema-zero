@@ -6,6 +6,7 @@ import {
   isInteractiveBlock,
   learningHints,
   publicInteractiveBlock,
+  scenePredictionTemplate,
 } from '../index'
 import { SCENE_IDS, type SceneId } from './actions'
 import { castText } from './cast'
@@ -269,7 +270,7 @@ describe('M5 · a previsão que afirma um estado que a tela ainda não mostra co
       required: false,
       activity: { type: 'experimentation', scene: 'world', cast: nave },
     }
-    expect(publicInteractiveBlock(bloco).prediction?.prompt).toBe(
+    expect(scenePredictionTemplate(bloco)?.prompt).toBe(
       'Imagine: a nave já está nos bastidores, mas ainda não apareceu na tela do jogo. Onde está a nave?',
     )
   })

@@ -177,7 +177,7 @@ describe('T2 · o lugar que só cresce (a peça da moldura)', () => {
     const medidaOriginal = HTMLElement.prototype.getBoundingClientRect
     HTMLElement.prototype.getBoundingClientRect = function (this: HTMLElement) {
       // O molde (e só ele) tem 96px: o selo e a frase do palpite juntos.
-      const altura = this.textContent?.includes('Você achou') ? 96 : 0
+      const altura = this.textContent?.includes('Seu palpite') ? 96 : 0
       return {
         x: 0,
         y: 0,
@@ -192,14 +192,14 @@ describe('T2 · o lugar que só cresce (a peça da moldura)', () => {
     }
     try {
       const { container } = render(
-        <LugarReservado marca="avisos" molde={<p>Você achou: a resposta.</p>} chave="1">
+        <LugarReservado marca="avisos" molde={<p>Seu palpite: uma ideia.</p>} chave="1">
           {null}
         </LugarReservado>,
       )
       const fora = container.querySelector<HTMLElement>('[data-lugar-reservado="avisos"]')
       expect(fora?.style.minHeight).toBe('96px')
       // A resposta do palpite não fica escondida no DOM (a busca por texto a acharia).
-      expect(screen.queryByText(/Você achou/)).toBeNull()
+      expect(screen.queryByText(/Seu palpite: uma ideia/)).toBeNull()
       // O aviso de verdade vem e vai: o lugar não encolhe.
       ro.medir(fora?.firstElementChild as HTMLElement, 600, 0)
       expect(fora?.style.minHeight).toBe('96px')
@@ -247,7 +247,7 @@ describe('T2 · no player, nada acima da bancada entra ou sai do fluxo no meio d
 
     // O gesto que responde o palpite: o selo e a frase entram SOBRE o palco.
     fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
-    const retomado = 'Você achou: O Dino aparece. Olhe a tela: ela ficou vazia.'
+    const retomado = 'Seu palpite: O Dino aparece. Ao testar: Olhe a tela: ela ficou vazia.'
     await waitFor(() => expect(screen.getByText(retomado)).toBeTruthy())
     expect(lugar()).toBeNull()
     expect(sobre()?.contains(screen.getByText('Descoberta 1 de 2'))).toBe(true)
@@ -270,7 +270,6 @@ describe('T4 · o anel de foco do "Agora explique" tem respiro', () => {
         bloco({ type: 'experimentation', scene: 'spawn', setup: { goals: ['every-frame'] } }),
         true,
       )
-      fireEvent.click(await screen.findByRole('button', { name: 'Uma parede de cactos' }))
       fireEvent.click(await screen.findByRole('button', { name: 'Soltar o tempo' }))
       await relogio.tocar(80)
       const legenda = (await screen.findByText('Agora explique')).closest('legend')

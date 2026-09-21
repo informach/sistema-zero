@@ -213,6 +213,7 @@ export function learningRoutes(deps: LearningRoutesDeps) {
               const { document: _document, ...preview } = await deps.imports.preview(
                 params.id,
                 body.document,
+                body.mode,
               )
               return preview
             },
@@ -227,6 +228,7 @@ export function learningRoutes(deps: LearningRoutesDeps) {
                 body.expectedFingerprint,
                 resolveUserId(headers),
                 body.operationId,
+                body.mode,
               ),
             { params: IdParams, body: LearningImportApplyBody },
           )

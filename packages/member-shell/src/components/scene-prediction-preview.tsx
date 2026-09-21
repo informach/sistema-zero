@@ -1,9 +1,7 @@
 'use client'
 
 import { type SceneActivity, scenePredictionPreview } from '@sistemazero/core/learning/scene'
-import { Ear } from 'lucide-react'
-import { useId } from 'react'
-import { ExplorationStage, SceneButton } from './exploration-stage'
+import { ExplorationStage } from './exploration-stage'
 
 export interface ScenePredictionPreviewProps {
   activity: SceneActivity
@@ -19,15 +17,10 @@ export interface ScenePredictionPreviewProps {
  */
 export function ScenePredictionPreview({ activity, contextLabel }: ScenePredictionPreviewProps) {
   const { preview, state } = scenePredictionPreview(activity)
-  const control = preview.control
-  const noteId = useId()
-  const ariaLabel = control
-    ? `Prévia da experiência: ${contextLabel}. Controle mostrado: ${control.label}. ${control.note}`
-    : `Prévia da experiência: ${contextLabel}`
   return (
     <div
       role="group"
-      aria-label={ariaLabel}
+      aria-label={`Prévia da experiência: ${contextLabel}`}
       data-slot="scene-prediction-preview"
       data-scene-prediction-preview
       data-testid="scene-prediction-preview"
@@ -41,20 +34,6 @@ export function ScenePredictionPreview({ activity, contextLabel }: ScenePredicti
       >
         <ExplorationStage activity={activity} state={state} preview={preview} />
       </div>
-      {control && (
-        <div
-          data-preview-control
-          className="m-3 flex flex-col items-start gap-2 rounded-2xl border border-border p-4"
-        >
-          <SceneButton tom="gesto" disabled aria-describedby={noteId}>
-            <Ear size={16} />
-            {control.label}
-          </SceneButton>
-          <p id={noteId} className="text-xs text-muted-foreground">
-            {control.note}
-          </p>
-        </div>
-      )}
     </div>
   )
 }

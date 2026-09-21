@@ -34,6 +34,7 @@ const mundo: InteractiveBlock = {
   hints: [],
   required: true,
   activity: { type: 'experimentation', scene: 'world' },
+  prediction: SCENE_QUESTIONS.world.prediction,
 }
 
 /**

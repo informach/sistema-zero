@@ -34,14 +34,14 @@ function blocosDaAula() {
 describe('a Aula 1 atual do Corre Dino chega ao player', () => {
   const cenas = blocosDaAula()
 
-  test('as três cenas continuam lá, e as três PREVISÕES também', () => {
+  test('as três cenas continuam lá e nenhuma ganha palpite sem declaração', () => {
     expect([...cenas.keys()].sort()).toEqual([
       'descoberta',
       'experiencia-coordenadas',
       'experiencia-tela',
     ])
     for (const [chave, bloco] of cenas)
-      expect(publicInteractiveBlock(bloco).prediction, chave).toBeDefined()
+      expect(publicInteractiveBlock(bloco).prediction, chave).toBeUndefined()
   })
 
   test('as três cenas mandam a pergunta herdada do modelo', () => {

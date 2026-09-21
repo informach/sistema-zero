@@ -111,6 +111,14 @@
       "plannedVideo": "Título: O ventilador que não para\n\nMostrar as duas áreas do projeto vazias, lado a lado. Nenhum gesto de montagem neste clipe: a tela fica nas duas caixas enquanto a comparação é falada.\n\nFala: \"Tudo o que estiver dentro dela fica se repetindo sem parar, enquanto o jogo estiver ligado. Pensa num ventilador: enquanto está ligado, ele gira, gira, gira, sem parar.\"\n\nDuração alvo: 40 a 50 segundos.\n\nOrigem: video-areas, a parte conceitual. A fala se aproveita. Cortar a enumeração antiga de passos e a chamada para a parte seguinte. A tela é nova."
     },
     {
+      "key": "fala-uma-vez-e-sempre",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Agora é hora de ver essa diferença funcionando. Faça a experiência e observe o que acontece uma vez e o que continua acontecendo."
+      }
+    },
+    {
       "key": "experiencia-areas",
       "content": {
         "kind": "interactive",
@@ -152,26 +160,6 @@
             }
           }
         },
-        "prediction": {
-          "context": {
-            "label": "As áreas do projeto",
-            "explanation": "Nesta experiência, vamos colocar as ações dentro das áreas do projeto e contar quantas vezes cada uma acontece."
-          },
-          "prompt": "Se você põe Mover a nave em Ao iniciar, o que acontece quando o jogo roda?",
-          "choices": [
-            {
-              "id": "uma-vez",
-              "label": "Ela se mexe uma vez e para"
-            },
-            {
-              "id": "sem-parar",
-              "label": "Ela se mexe sem parar",
-              "shows": "Em Ao iniciar, a ação aconteceu uma vez só e parou."
-            }
-          ],
-          "correctChoiceId": "uma-vez",
-          "revealOn": "once"
-        },
         "checkpoint": {
           "prompt": "Você quer que a nave seja criada só no começo e se mexa o tempo todo. Onde vai cada ação?",
           "choices": [
@@ -194,7 +182,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Áreas do projeto, coloque Ao iniciar e Enquanto estiver rodando, com um espaço entre eles. Depois, em Jogo 2D, Jogo e telas, encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Deixe largura 800 e altura 480, e escolha um fundo escuro para enxergar a nave e as estrelas."
+        "text": "Você viu como preparar as duas áreas e a tela do jogo. Agora é sua vez de montar essa base no projeto."
       }
     },
     {
@@ -204,6 +192,14 @@
     {
       "key": "video-coordenadas",
       "plannedVideo": "Título: O endereço da nave na tela\n\nMostrar a tela do jogo com a marca do x e do y na caixa da nave, e o zero dos dois no canto de cima, à esquerda.\n\nFala: \"O x e o y são o endereço da nave na tela, é como dizer onde ela mora. O x cresce para a direita. O y cresce para baixo. E o zero dos dois fica no canto de cima, à esquerda. A marca mostra o canto de cima à esquerda da caixa da nave.\"\n\nDuração alvo: 30 a 40 segundos.\n\nOrigem: video-endereco. A fala se aproveita em parte. Retirar a afirmação de que x 400 centraliza a nave: 400 é o canto esquerdo de uma caixa de largura 54, e o centro dela fica em 427. Acrescentar a origem no alto à esquerda."
+    },
+    {
+      "key": "fala-coordenadas",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Agora é hora de transformar esse endereço em movimento. Faça a experiência e acompanhe a nave na tela."
+      }
     },
     {
       "key": "experiencia-coordenadas",
@@ -281,7 +277,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Kits prontos, Espaço, encaixe Criar nave logo abaixo de Preparar o jogo, dentro de Ao iniciar. Use nome nave, x 400, y 410, largura 54 e altura 62. As cores do corpo e das asas são suas."
+        "text": "A tela já está pronta. Agora é sua vez de criar a nave no projeto e escolher as cores dela."
       }
     },
     {
@@ -291,6 +287,18 @@
     {
       "key": "video-livrinho",
       "plannedVideo": "Título: O livrinho de folhear\n\nMostrar um livrinho de folhear, com cada página um pouco diferente da anterior, e o movimento aparecendo quando as páginas passam rápido.\n\nFala: \"Cada página é um desenho um pouquinho diferente, e passando rápido o seu olho enxerga movimento. Cada página dessas tem um nome: quadro.\"\n\nDuração alvo: 35 a 45 segundos.\n\nOrigem: video-criar-desenhar. A fala se aproveita. A imagem é nova."
+    },
+    {
+      "key": "video-criar-e-mostrar",
+      "plannedVideo": "Título: Criar não é mostrar\n\nMostrar, lado a lado, os bastidores do jogo e a tela. Criar uma nave nos bastidores sem desenhá-la e deixar claro que o objeto existe, embora a tela continue vazia. Depois mostrar o comando de desenhar e a nave aparecendo.\n\nFala de referência: \"Criar prepara a nave nos bastidores: ela já tem nome, posição, tamanho e cores. Mas a tela só mostra o que o jogo manda desenhar. Por isso criar e mostrar são duas ações diferentes.\"\n\nDuração alvo: 35 a 45 segundos.\n\nOrigem: novo, aproveitando a conclusão de video-criar-nave e a explicação conceitual de video-criar-desenhar."
+    },
+    {
+      "key": "fala-criar-mostrar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Agora é hora de ver a diferença entre existir nos bastidores e aparecer na tela."
+      }
     },
     {
       "key": "experiencia-criar-mostrar",
@@ -310,6 +318,26 @@
             }
           },
           "cenario": "nave"
+        },
+        "prediction": {
+          "context": {
+            "label": "Bastidores e tela do jogo",
+            "explanation": "Nesta experiência, vamos comparar o que existe nos bastidores com o que aparece na tela do jogo."
+          },
+          "prompt": "Você cria a nave, mas ainda não manda desenhar. O que aparece na tela?",
+          "choices": [
+            {
+              "id": "aparece",
+              "label": "A nave aparece",
+              "shows": "A tela continuou vazia até a nave ser desenhada."
+            },
+            {
+              "id": "vazia",
+              "label": "A tela fica vazia"
+            }
+          ],
+          "correctChoiceId": "vazia",
+          "revealOn": "hidden"
         }
       }
     },
@@ -318,7 +346,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "O jogo desenha um quadro, apaga e desenha outro, muito rápido. Vamos ver isso acontecendo devagar, um quadro por vez."
+        "text": "Agora é hora de ver o livrinho do jogo funcionando. Faça a experiência e acompanhe os quadros passando."
       }
     },
     {
@@ -343,26 +371,6 @@
             "goals": ["frozen", "trail", "moving"]
           }
         },
-        "prediction": {
-          "context": {
-            "label": "O desenho que se repete",
-            "explanation": "Nesta experiência, vamos observar o que acontece quando o jogo desenha a nave de novo em cada quadro."
-          },
-          "prompt": "Sem limpar antes de desenhar, o que fica na tela?",
-          "choices": [
-            {
-              "id": "rastro",
-              "label": "Um rastro de naves"
-            },
-            {
-              "id": "uma",
-              "label": "Uma nave só",
-              "shows": "Sem limpar, as naves de antes continuaram na tela."
-            }
-          ],
-          "correctChoiceId": "rastro",
-          "revealOn": "trail"
-        },
         "checkpoint": {
           "prompt": "O que o jogo faz em cada quadro para a nave andar sem deixar rastro?",
           "choices": [
@@ -385,7 +393,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Tempo, Quadros e intervalos, pegue A cada quadro do jogo e encaixe em Enquanto estiver rodando. Dentro dele, encaixe Limpar a tela, em Desenho e efeitos. Logo abaixo, Desenhar fundo de estrelas, em Cenários, Fundos, com velocidade 1. A borracha vem antes do desenho novo."
+        "text": "Você viu a ordem do motor: limpar primeiro e desenhar o espaço depois. Agora é sua vez de montar essa parte no projeto."
       }
     },
     {
@@ -397,7 +405,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Movimento, coloque Mover o sprite nave com as setas, velocidade 7, logo abaixo das estrelas. Depois coloque Manter o sprite dentro da tela. Os dois vêm escritos com outro nome de fábrica: clique no nome e troque para nave."
+        "text": "Agora é sua vez de dar o controle ao jogador e manter a nave dentro da tela."
       }
     },
     {
@@ -409,12 +417,24 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Sprites, coloque Desenhar o sprite no fim de tudo, e escolha nave. A ordem do motor fica assim: limpar, estrelas, mover, manter dentro da tela, desenhar a nave."
+        "text": "Falta mostrar a nave. Agora é sua vez de completar o motor e colocar o desenho na ordem certa."
       }
     },
     {
       "key": "video-desenhar-por-ultimo",
       "plannedVideo": "Título: A nave no fim do motor\n\nMostrar o bloco Desenhar o sprite entrando no fim do motor, com nave escolhida, e a ordem inteira à vista: limpar, estrelas, mover, manter dentro da tela, desenhar a nave. Terminar com a nave aparecendo na tela do jogo.\n\nFala: \"Esse é o bloco que finalmente mostra a nave. Ele entra no fim do motor, depois de tudo. O que é desenhado depois pode cobrir o que veio antes, e por isso a nave vem no fim.\"\n\nDuração alvo: 35 a 45 segundos.\n\nOrigem: video-desenhar. A fala se aproveita com uma substituição: onde a gravação diz \"as estrelas iam tampar ela\", a fala nova diz \"o que é desenhado depois pode cobrir o que veio antes\". O rótulo da peça é Desenhar o sprite, e \"por último\" é a posição no motor, não o nome dela."
+    },
+    {
+      "key": "video-camadas",
+      "plannedVideo": "Título: Quem é desenhado depois fica na frente\n\nMostrar duas folhas ou cartões sobrepostos e trocar a ordem deles. Em seguida, mostrar a nave e o fundo de estrelas sendo desenhados em ordens diferentes, sem montar blocos no projeto.\n\nFala de referência: \"A tela funciona como uma pilha de desenhos. O que é desenhado depois fica por cima e pode cobrir o que veio antes. Ninguém foi apagado: só a ordem mudou.\"\n\nDuração alvo: 30 a 40 segundos.\n\nOrigem: novo, a partir da explicação conceitual de video-desenhar-por-ultimo."
+    },
+    {
+      "key": "fala-camadas",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Agora é hora de ver essa pilha de desenhos funcionando e observar quem fica na frente."
+      }
     },
     {
       "key": "experiencia-camadas",
@@ -443,26 +463,6 @@
             "goals": ["front", "covered", "back-in-front"]
           }
         },
-        "prediction": {
-          "context": {
-            "label": "A ordem de desenhar",
-            "explanation": "Nesta experiência, vamos mudar a ordem de desenhar da nave e do fundo de estrelas para descobrir quem fica na frente."
-          },
-          "prompt": "Se o fundo de estrelas for desenhado depois da nave, o que aparece na tela?",
-          "choices": [
-            {
-              "id": "nave",
-              "label": "A nave na frente",
-              "shows": "O fundo de estrelas foi desenhado depois e cobriu a nave."
-            },
-            {
-              "id": "fundo",
-              "label": "O fundo cobrindo a nave"
-            }
-          ],
-          "correctChoiceId": "fundo",
-          "revealOn": "covered"
-        },
         "checkpoint": {
           "prompt": "A nave sumiu quando o fundo de estrelas foi para o fim da ordem. O que mudou?",
           "choices": [
@@ -478,6 +478,14 @@
           "correctChoiceId": "a",
           "explanation": "As duas peças continuaram no jogo. Quem é desenhado depois fica por cima e pode cobrir o que veio antes."
         }
+      }
+    },
+    {
+      "key": "fala-quiz",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Antes do teste final, vamos conferir duas ideias importantes que fizeram a nave ganhar vida."
       }
     },
     {
@@ -542,13 +550,13 @@
       "title": "O que acontece uma vez e o que acontece sempre",
       "intent": "exploration",
       "objective": "Separar o que acontece uma vez, no começo, do que se repete a cada quadro.",
-      "blockKeys": ["video-duas-areas", "experiencia-areas"],
+      "blockKeys": ["video-duas-areas", "fala-uma-vez-e-sempre", "experiencia-areas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-areas"]
+        "blockIds": ["video-duas-areas", "experiencia-areas"]
       }
     },
     {
@@ -556,13 +564,13 @@
       "title": "Monte as áreas e prepare a tela",
       "intent": "application",
       "objective": "Montar as duas áreas do projeto e preparar a tela de 800 por 480 em Ao iniciar.",
-      "blockKeys": ["fala-montar-areas-tela", "video-montar-areas-tela"],
+      "blockKeys": ["video-montar-areas-tela", "fala-montar-areas-tela"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-montar-areas-tela"],
         "projectChecks": [
           {
             "id": "inicio",
@@ -603,13 +611,13 @@
       "title": "Onde a nave fica na tela",
       "intent": "exploration",
       "objective": "Sentir para que lado o x e o y levam a nave, e onde fica o zero dos dois.",
-      "blockKeys": ["video-coordenadas", "experiencia-coordenadas"],
+      "blockKeys": ["video-coordenadas", "fala-coordenadas", "experiencia-coordenadas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-coordenadas"]
+        "blockIds": ["video-coordenadas", "experiencia-coordenadas"]
       }
     },
     {
@@ -617,13 +625,13 @@
       "title": "Crie a sua nave",
       "intent": "application",
       "objective": "Criar o sprite da nave uma vez, com posição e tamanho definidos. As cores são escolha sua.",
-      "blockKeys": ["fala-criar-nave", "video-criar-nave"],
+      "blockKeys": ["video-criar-nave", "fala-criar-nave"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-criar-nave"],
         "projectChecks": [
           {
             "id": "nave",
@@ -652,13 +660,13 @@
       "title": "Criar e mostrar são duas coisas diferentes",
       "intent": "exploration",
       "objective": "Separar criar a nave nos bastidores de mostrar a mesma nave na tela do jogo.",
-      "blockKeys": ["video-livrinho", "experiencia-criar-mostrar"],
+      "blockKeys": ["video-criar-e-mostrar", "fala-criar-mostrar", "experiencia-criar-mostrar"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-criar-mostrar"]
+        "blockIds": ["video-criar-e-mostrar", "experiencia-criar-mostrar"]
       }
     },
     {
@@ -666,13 +674,13 @@
       "title": "O que é um quadro",
       "intent": "exploration",
       "objective": "Ver o ciclo de um quadro por vez: sem redesenhar a tela não muda, sem limpar fica rastro, limpando e desenhando a nave anda.",
-      "blockKeys": ["fala-o-quadro", "experiencia-quadro"],
+      "blockKeys": ["video-livrinho", "fala-o-quadro", "experiencia-quadro"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-quadro"]
+        "blockIds": ["video-livrinho", "experiencia-quadro"]
       }
     },
     {
@@ -680,13 +688,13 @@
       "title": "Ligue o motor e desenhe o espaço",
       "intent": "application",
       "objective": "Encaixar o motor de quadros e desenhar o espaço dentro dele, com a borracha antes do desenho novo.",
-      "blockKeys": ["fala-motor-e-fundo", "video-motor-e-fundo"],
+      "blockKeys": ["video-motor-e-fundo", "fala-motor-e-fundo"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-motor-e-fundo"],
         "projectChecks": [
           {
             "id": "quadro",
@@ -730,13 +738,13 @@
       "title": "A nave obedece a você",
       "intent": "application",
       "objective": "Mover a nave com as setas, sem deixar que ela saia da tela.",
-      "blockKeys": ["fala-setas-e-borda", "video-setas-e-borda"],
+      "blockKeys": ["video-setas-e-borda", "fala-setas-e-borda"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-setas-e-borda"],
         "projectChecks": [
           {
             "id": "setas",
@@ -776,13 +784,13 @@
       "title": "Desenhe a nave no fim do motor",
       "intent": "application",
       "objective": "Colocar Desenhar o sprite no fim do motor, depois do fundo e do movimento.",
-      "blockKeys": ["fala-desenhar-nave", "video-desenhar-por-ultimo"],
+      "blockKeys": ["video-desenhar-por-ultimo", "fala-desenhar-nave"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-desenhar-por-ultimo"],
         "projectChecks": [
           {
             "id": "nave-visivel",
@@ -829,28 +837,42 @@
       "key": "camadas",
       "title": "Quem é desenhado depois fica por cima",
       "intent": "exploration",
-      "objective": "Descobrir que só a ordem muda quem aparece na frente, e que ninguém é apagado.",
-      "blockKeys": ["experiencia-camadas"],
+      "objective": "Comprovar que só a ordem muda quem aparece na frente, e que ninguém é apagado.",
+      "blockKeys": ["video-camadas", "fala-camadas", "experiencia-camadas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-camadas"]
+        "blockIds": ["video-camadas", "experiencia-camadas"]
+      }
+    },
+    {
+      "key": "quiz-final",
+      "title": "O que fez a nave ganhar vida",
+      "intent": "closing",
+      "objective": "Conferir a diferença entre preparar e desenhar, e entre começo e repetição.",
+      "blockKeys": ["fala-quiz", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
       }
     },
     {
       "key": "entrega",
-      "title": "Teste, envie e fecha",
+      "title": "Teste, envie e feche",
       "intent": "delivery",
       "objective": "Tela 800 por 480, nave visível e controlada pelas setas, sem sair das bordas e sem deixar rastro.",
-      "blockKeys": ["video-teste-e-envio", "quiz", "projeto"],
+      "blockKeys": ["video-teste-e-envio", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-teste-e-envio", "projeto", "quiz"],
+        "blockIds": ["video-teste-e-envio", "projeto"],
         "projectChecks": [
           {
             "id": "tela",

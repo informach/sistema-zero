@@ -3,6 +3,12 @@
 > Documento de governança. Toda análise de aula deste projeto segue exatamente o que está aqui.
 > Quem analisar uma aula sem ter lido este arquivo inteiro produz material que será descartado.
 
+> **Direção vigente desde 21/09/2026.** A unidade didática é a seção. Em uma seção de conceito,
+> vídeo e experiência ficam disponíveis ao mesmo tempo e os dois precisam ser concluídos. Em uma
+> seção prática, vídeo e ferramenta também ficam disponíveis juntos e os dois compõem a conclusão.
+> Há no máximo um vídeo e um diálogo do Zappy por seção. Quiz fica sozinho em uma seção própria,
+> precedido apenas por uma fala curta do Zappy. Palpite é seletivo, nunca automático.
+
 ## 1. O que estamos fazendo e por quê
 
 Os três cursos de jogos do Sistema Zero (Desafio do Primeiro Jogo, Corre Dino, O Jogo do Meu Jeito)
@@ -35,9 +41,11 @@ Onde fica o bloco, em que categoria e subcategoria, onde encaixa, o que escrever
 Aqui a narração conduz do primeiro ao último gesto. A criança **nunca** é mandada descobrir sozinha
 onde está uma peça nem montar sozinha uma mecânica.
 
-Decisão registrada em 01/08/2026: o curso não tem exercício. Estão banidas as fórmulas "descubra
-sozinho", "monte você mesmo", "é a sua vez", "pausa o vídeo e faz", e o bloco de exercício no fim
-da aula.
+Decisão registrada em 01/08/2026 e refinada em 21/09/2026: o curso não manda descobrir interface
+nem mecânica sem ensino prévio. Estão banidas as fórmulas "descubra sozinho" e "pausa o vídeo e
+resolve". Depois do passo a passo, porém, cabe uma ponte curta como **"Agora é sua vez de montar"**:
+ela encaminha para a ferramenta já aberta na seção, sem repetir a lista de blocos nem substituir a
+instrução específica da atividade.
 
 ### Eixo do conceito: explicar e concretizar
 
@@ -64,24 +72,28 @@ confiança da aula. Quando a dor não reproduz, as saídas em ordem de preferên
 uma dor real do mesmo jogo; provocar o sintoma de propósito e dizer que está provocando; ou
 ensinar honestamente explicando por que a peça fica mesmo sem sintoma visível.
 
-## 3. Experimentação contra demonstração
+## 3. Vídeo e experimentação: abstrato e concreto na mesma seção
 
-A diferença **não é didática, é de controle**. As duas existem para tornar concreto algo abstrato.
+A plataforma tem dois tipos de atividade interativa: `experimentation` e `html`. O formato antigo
+de demonstração guiada foi removido; processo no tempo é ensinado pelo vídeo.
 
-| | Experimentação | Demonstração |
-|---|---|---|
-| Quem comanda | a criança mexe nos controles (números, sinais, estados, ordem) | o roteiro já está programado, ela aperta play |
-| O que ela faz | muda valores e vê o efeito em tempo real | observa, pausa, avança passo a passo, revê |
-| Como conclui | as metas da cena caem, mais a pergunta final corrigida no servidor | ver a demonstração até o fim |
+Na seção de conceito, o vídeo explica a ideia abstrata com exemplos e analogias do universo de quem
+aprende. A experiência, na coluna ao lado, deixa a criança alterar algo e observar o efeito. Nenhum
+dos dois bloqueia o outro: ambos estão disponíveis desde a abertura. A seção só conclui quando o
+vídeo chega a 90% **e** a experiência é completada.
 
-**Critério de escolha, a aplicar conceito por conceito:**
+Uma experiência só existe quando materializa a relação central do conceito. Operação de interface,
+vocabulário simples ou algo que já fica concreto no próprio projeto não ganha uma cena artificial.
+Quando o conceito é apenas um processo a observar, o vídeo resolve.
 
-- **Experimentação quando a relação tem um botão.** Dá para escrever "quando eu aumento X,
-  acontece Y". Coordenada, gravidade, impulso, intervalo de nascimento, área de colisão, sinal da
-  velocidade, ordem de desenho.
-- **Demonstração quando o conceito é um processo no tempo.** Dá para escrever "primeiro isso,
-  depois aquilo, depois aquilo outro". Uma sequência que não tem o que ajustar, só o que acompanhar
-  acontecendo em ordem.
+### Palpite antes da experiência
+
+Palpite não é pedágio. Use somente quando registrar uma hipótese ajuda a confrontar uma concepção
+comum ou um resultado contraintuitivo. Não use em toda cena, nem para perguntar qual botão apertar.
+
+Quando existir, a tela do palpite contém apenas contexto, cena parada, pergunta e alternativas. Os
+controles não aparecem, nem desativados. A escolha não vale nota e a retomada compara de modo
+neutro: **"Seu palpite: … Ao testar: …"**, sem "acertou" ou "errou".
 
 ## 4. As seis perguntas, uma vez por conceito
 
@@ -89,8 +101,8 @@ Não existe molde. As respostas variam de aula para aula e de conceito para conc
 conceito** que a aula ensina, responda e justifique:
 
 1. Esse conceito é abstrato a ponto de precisar virar concreto, ou a explicação já basta?
-2. Se precisa, a relação tem botão (experimentação) ou é processo no tempo (demonstração)?
-3. Precisa de vídeo, ou a fala do Zappy e a própria cena dão conta?
+2. Se precisa, existe uma relação que a criança consegue manipular numa experimentação?
+3. O que o vídeo precisa explicar antes ou enquanto a experiência torna concreto?
 4. A concretização vem antes ou depois da explicação?
 5. Ela vem antes ou depois de a criança montar aquilo no Estúdio?
 6. Isso é uma seção ou mais de uma?
@@ -107,6 +119,16 @@ Não são molde, são pisos de qualidade:
 - **Encaixe não é seção.** Uma sequência de gestos sem conceito novo agrupa na vitória que produz.
 - **Conceito e sua concretização ficam juntos.** São uma ideia, e partir ao meio obriga a criança a
   atravessar uma divisória no meio de um pensamento.
+- **Um vídeo por seção, no máximo.** Se há dois assuntos que pedem vídeos independentes, a seção
+  está misturando ideias e precisa ser redesenhada.
+- **Vídeo não bloqueia atividade.** Vídeo e experiência ou ferramenta aparecem juntos. A conclusão
+  exige 90% do vídeo e a conclusão da atividade.
+- **Zappy é intervenção pontual.** Normalmente não há fala; quando houver, é no máximo uma. Em
+  conceito, faz a ponte genérica para experimentar sem repetir a instrução da cena. Em construção,
+  resume o que o vídeo mostrou e convida a montar, sem recontar o passo a passo.
+- **Quiz tem seção própria.** Ela contém somente uma fala curta do Zappy apresentando o que será
+  feito e o quiz. Não leva vídeo, experiência, ferramenta ou texto, e vem antes da entrega ou teste
+  final da aula.
 - **Dor e ferramenta ficam separadas, nessa ordem.** A dor precisa fechar sozinha.
 - **Uma vitória visível por aula, no mínimo.** A criança termina com algo novo acontecendo na tela
   dela. Se a aula é de mecânica invisível, ou ela ganha um instrumento que se vê (um medidor, um

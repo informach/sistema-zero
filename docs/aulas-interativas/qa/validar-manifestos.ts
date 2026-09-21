@@ -11,6 +11,7 @@ import {
 } from '../../../packages/core/src/learning'
 import { SCENE_IDS } from '../../../packages/core/src/learning/scene'
 import { isSectionCompletion } from '../../../packages/core/src/learning/section-progression'
+import { MANIFESTOS_NOVO_MODELO } from './novo-modelo'
 
 /** Cena citada por um manifesto que o catálogo ainda não tem: dependência, não erro de formato. */
 function cenasAusentes(m: Record<string, unknown>): string[] {
@@ -163,6 +164,116 @@ function diagnosticar(m: Record<string, unknown>): string[] {
   return p
 }
 
+/** Regras editoriais que só podem ser cobradas depois de cada aula passar pela migração humana. */
+function diagnosticarNovoModelo(
+  nome: string,
+  m: { blocks: Array<Record<string, unknown>>; sections: Array<Record<string, unknown>> },
+): string[] {
+  if (!MANIFESTOS_NOVO_MODELO.has(nome)) return []
+  const problemas: string[] = []
+  const porChave = new Map(m.blocks.map((block) => [String(block.key), block]))
+
+  for (const [indice, section] of m.sections.entries()) {
+    const chave = String(section.key)
+    const blockKeys = section.blockKeys as string[]
+    const blocos = blockKeys.map((key) => porChave.get(key)).filter(Boolean) as Array<
+      Record<string, unknown>
+    >
+    const conteudos = blocos.map((block) => ({
+      key: String(block.key),
+      plannedVideo: typeof block.plannedVideo === 'string',
+      content: block.content as Record<string, unknown> | undefined,
+    }))
+    const videos = conteudos.filter((block) => block.plannedVideo)
+    const dialogos = conteudos.filter((block) => block.content?.kind === 'dialogue')
+    const quizzes = conteudos.filter((block) => block.content?.kind === 'quiz')
+    const experiencias = conteudos.filter((block) => {
+      const activity = block.content?.activity as Record<string, unknown> | undefined
+      return block.content?.kind === 'interactive' && activity?.type === 'experimentation'
+    })
+    const completion = section.completion as {
+      blockIds?: string[]
+      projectChecks?: unknown[]
+      platformAction?: unknown
+    }
+    const conclui = new Set(completion.blockIds ?? [])
+    const posicao = (block: { key: string } | undefined) =>
+      block ? blockKeys.indexOf(block.key) : -1
+
+    if (videos.length > 1)
+      problemas.push(`seção "${chave}": tem ${videos.length} vídeos; o máximo é um`)
+    if (dialogos.length > 1)
+      problemas.push(`seção "${chave}": tem ${dialogos.length} falas do Zappy; o máximo é uma`)
+
+    if (quizzes.length) {
+      if (
+        quizzes.length !== 1 ||
+        dialogos.length !== 1 ||
+        conteudos.length !== 2 ||
+        section.workspaceKey ||
+        section.externalTool
+      )
+        problemas.push(
+          `seção "${chave}": quiz deve ficar sozinho com uma fala introdutória do Zappy`,
+        )
+      if (!conclui.has(quizzes[0]?.key ?? ''))
+        problemas.push(`seção "${chave}": o quiz não participa da conclusão`)
+      const existeEntregaDepois = m.sections
+        .slice(indice + 1)
+        .some((seguinte) => seguinte.intent === 'delivery')
+      if (!existeEntregaDepois)
+        problemas.push(`seção "${chave}": o quiz deve vir antes da entrega final`)
+    }
+
+    if (experiencias.length) {
+      if (videos.length !== 1)
+        problemas.push(`seção "${chave}": conceito com experiência precisa de um vídeo`)
+      if (dialogos.length !== 1)
+        problemas.push(
+          `seção "${chave}": conceito com experiência precisa de uma fala-ponte do Zappy`,
+        )
+      if (
+        videos.length === 1 &&
+        dialogos.length === 1 &&
+        (posicao(videos[0]) > posicao(dialogos[0]) ||
+          posicao(dialogos[0]) > posicao(experiencias[0]))
+      )
+        problemas.push(`seção "${chave}": a ordem deve ser vídeo, fala-ponte e experiência`)
+      for (const bloco of [...videos, ...experiencias])
+        if (!conclui.has(bloco.key))
+          problemas.push(`seção "${chave}": conclusão não inclui "${bloco.key}"`)
+    }
+
+    if (section.workspaceKey || section.externalTool) {
+      if (videos.length !== 1)
+        problemas.push(`seção "${chave}": prática com ferramenta precisa de um vídeo`)
+      if (section.intent === 'application') {
+        if (dialogos.length !== 1)
+          problemas.push(`seção "${chave}": prática guiada precisa de uma fala-tarefa do Zappy`)
+        if (
+          videos.length === 1 &&
+          dialogos.length === 1 &&
+          posicao(videos[0]) > posicao(dialogos[0])
+        )
+          problemas.push(`seção "${chave}": a fala-tarefa deve vir depois do vídeo`)
+      }
+      for (const video of videos)
+        if (!conclui.has(video.key))
+          problemas.push(`seção "${chave}": conclusão não inclui o vídeo "${video.key}"`)
+      if (
+        section.workspaceKey &&
+        !conclui.has(String(section.workspaceKey)) &&
+        !completion.projectChecks?.length
+      )
+        problemas.push(`seção "${chave}": conclusão não comprova a prática no projeto`)
+      if (section.externalTool && !completion.platformAction)
+        problemas.push(`seção "${chave}": conclusão não comprova a prática na ferramenta externa`)
+    }
+  }
+
+  return problemas
+}
+
 let ok = 0
 const falhas: string[] = []
 const bloqueados: string[] = []
@@ -199,6 +310,7 @@ for (const nome of arquivos) {
     sections: Array<Record<string, unknown>>
   }
   const avisos: string[] = []
+  avisos.push(...diagnosticarNovoModelo(nome, m))
   for (const b of m.blocks)
     if (typeof b.plannedVideo === 'string' && !b.plannedVideo.startsWith('Título: '))
       avisos.push(`vídeo sem "Título: " na primeira linha: ${String(b.key)}`)

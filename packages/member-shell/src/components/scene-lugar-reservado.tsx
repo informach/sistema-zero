@@ -20,7 +20,7 @@ import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
  *   passada de layout (antes de a tela pintar), e a altura dele entra na conta. Assim o primeiro aviso
  *   não empurra nada.
  *
- * ⚠️⚠️ O molde NÃO fica no documento, e é de propósito: o "Você achou: … Olhe a tela: ela ficou vazia."
+ * ⚠️⚠️ O molde NÃO fica no documento, e é de propósito: o "Seu palpite: … Ao testar: …"
  * é a resposta do palpite, e escondido com `invisible` ele seguiria no DOM (a busca por texto dos testes
  * o acharia, e qualquer leitura que ignore o CSS também). Medir e tirar deixa só o número.
  *

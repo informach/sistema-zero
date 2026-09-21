@@ -241,16 +241,15 @@ ONDE ele parte (`actions`) e O QUE conta como descoberta (`goals`).
   `compare` em qualquer cena: o roteiro antigo abre, o destaque não desenha nada e o admin avisa.
 - Descoberta feita durante a demonstração não credita a criança (`sceneEvents`).
 
-### A previsão e a pergunta são da CENA
+### A previsão é seletiva; a pergunta final continua sendo da cena
 
-⭐⭐ `SCENE_QUESTIONS` escreve a previsão e a explicação das 45 uma vez. Medido antes: de 52 blocos de cena
-nos cursos, 7 tinham previsão e 8 pergunta. O que depende de alguém lembrar não acontece.
-- `blockPrediction(block)` e `blockCheckpoint(block)` são a ÚNICA porta: o campo do bloco vence, senão vale o
-  do modelo, vestido pelo elenco. `publicInteractiveBlock` e `withAttachedQuestion` passam por eles.
-  ⚠️ Ler `block.checkpoint` cru para uma cena é voltar aos 15%.
-- ⚠️ A pergunta padrão vale só na EXPERIMENTAÇÃO (na demonstração a criança não conduziu). A previsão padrão
-  vale nas duas, menos na demonstração `inline`, que existe para não ter portão. Quem escreve a sua no bloco
-  continua mandando.
+⭐⭐ `SCENE_QUESTIONS` mantém modelos de previsão e a explicação das cenas num só lugar. Desde
+21/09/2026, porém, o modelo de previsão é material de **autoria**, não conteúdo herdado pela criança.
+- `scenePredictionTemplate(block)` devolve o modelo que o admin pode copiar para o bloco.
+- `blockPrediction(block)` devolve somente `block.prediction`. Sem escolha explícita do autor, a experiência
+  abre direto e `publicInteractiveBlock` não inventa um palpite.
+- `blockCheckpoint(block)` continua sendo a porta da pergunta final: o campo do bloco vence e, quando não foi
+  dispensada por `semPerguntaFinal`, vale a pergunta do modelo vestida pelo elenco.
 - A previsão não vale nota e é PÚBLICA inteira (`correctChoiceId`, `revealOn`, `shows`, copiados campo a
   campo): o player precisa deles para retomar o palpite. O gabarito da PERGUNTA segue podado.
 - Toda previsão do modelo tem `revealOn` (a meta que a bancada de hoje faz cair e que MOSTRA a resposta) e

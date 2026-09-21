@@ -490,19 +490,15 @@ describe('a previsão sobe junto da tentativa', () => {
         <InteractiveLessonBlock block={{ ...block('layers'), content: comPrevisao }} />
       </LessonPlayerProvider>,
     )
-    // ⚠️⚠️ Mudou de propósito (o CONSOLE de 18/09/2026, a "Proposta B" que ela aprovou): antes do
-    // palpite a prancha some não — ela fica À VISTA e FECHADA ("a cena do jogo e alguns controles
-    // desativados", nas palavras dela). O que não pode é MEXER: a prancha é `inert` (fora do Tab e
-    // do leitor, com as notas desfocadas para não soprarem a resposta) e o gesto não chega ao motor.
-    expect(screen.getByRole('button', { name: /^Descer / }).closest('[inert]')).not.toBeNull()
+    // O palpite mostra apenas contexto, cena parada, pergunta e alternativas. A bancada só é
+    // montada depois da escolha, para não misturar controles indisponíveis com a reflexão.
+    expect(screen.queryByRole('button', { name: /^Descer / })).toBeNull()
     // ⚠️ Mudou de propósito (consertos do review do lote 2): as opções são BOTÕES, não rádios.
     const escolha = await screen.findByRole('button', { name: 'Quem foi desenhado antes' })
     await waitFor(() => expect(escolha.getAttribute('aria-disabled')).toBeNull())
     fireEvent.click(escolha)
-    // E aí a prancha ABRE: o mesmo botão sai de dentro da cortina.
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: /^Descer / }).closest('[inert]')).toBeNull(),
-    )
+    // E aí a prancha é montada e pode ser usada.
+    expect(await screen.findByRole('button', { name: /^Descer / })).toBeTruthy()
     await trocarOrdem(3)
     await waitFor(() => expect(screen.getByText('✓ Guardado')).toBeTruthy(), {
       timeout: 5000,
@@ -582,6 +578,14 @@ function aluno(
   salvo?: Partial<LearningBlockProgress>,
   viewerId = 'crianca-moldura',
 ) {
+  // Estes testes exercitam deliberadamente o percurso com palpite. Desde 21/09/2026 o catálogo
+  // oferece apenas um modelo de autoria: o palpite precisa ser declarado no bloco para chegar à
+  // criança, em vez de ser acrescentado implicitamente pela projeção pública.
+  const atividade = bloco.activity as SceneActivity
+  const autorado =
+    !bloco.prediction && atividade.type === 'experimentation'
+      ? { ...bloco, prediction: SCENE_QUESTIONS[atividade.scene].prediction }
+      : bloco
   return render(
     <LessonPlayerProvider
       value={{
@@ -618,7 +622,7 @@ function aluno(
           blockRevision: 'rev',
           kind: 'interactive',
           sortOrder: 0,
-          content: publicInteractiveBlock(bloco),
+          content: publicInteractiveBlock(autorado),
         }}
       />
     </LessonPlayerProvider>,
@@ -691,7 +695,7 @@ describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
   test('⚠️⚠️ o palpite apresenta o assunto antes de montar a descoberta, e trocar fecha tudo de novo', async () => {
     servidorQueCorrige(mundoComPalpite('hidden'))
     aluno(mundoComPalpite('hidden'))
-    expect(await screen.findByText('Seu palpite')).toBeTruthy()
+    expect(await screen.findByTestId('scene-prediction-preview')).toBeTruthy()
     expect(
       screen.getByText(
         (_, node) =>
@@ -706,10 +710,8 @@ describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
       'Prévia da experiência: Bastidores e tela do jogo',
     )
     expect(screen.queryByText('Hoje vamos usar:')).toBeNull()
-    // ⚠️⚠️ A bancada fica À VISTA e FECHADA (o console de 18/09/2026, a "Proposta B"): a criança vê
-    // o que vai poder mexer, e o bloco não muda de altura ao responder. O que não pode é MEXER —
-    // a prancha é `inert`, com as notas desfocadas para não soprarem a resposta.
-    expect(screen.getByRole('button', { name: 'Criar o Dino' }).closest('[inert]')).not.toBeNull()
+    // A bancada e seus controles ainda não existem durante o palpite.
+    expect(screen.queryByRole('button', { name: 'Criar o Dino' })).toBeNull()
     // O rodapé, esse, não existe no momento do palpite.
     expect(screen.queryByRole('button', { name: 'Conferir' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Recomeçar' })).toBeNull()
@@ -725,14 +727,14 @@ describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Trocar meu palpite' }))
     await waitFor(() => expect(screen.getByTestId('scene-prediction-preview')).toBeTruthy())
-    expect(screen.getByRole('button', { name: 'Criar o Dino' }).closest('[inert]')).not.toBeNull()
+    expect(screen.queryByRole('button', { name: 'Criar o Dino' })).toBeNull()
     expect(document.activeElement?.textContent).toContain(
       'Nesta experiência, vamos comparar o que existe nos bastidores',
     )
     expect(localStorage.getItem('sz:scene-prediction:crianca-moldura:aula:bloco:rev')).toBeNull()
   })
 
-  test('⚠️ sem `revealOn`, o palpite só volta quando a cena CONCLUI, e o acerto é verde', async () => {
+  test('⚠️ sem `revealOn`, o palpite só volta quando a cena CONCLUI, sem avaliar a criança', async () => {
     servidorQueCorrige(mundoComPalpite())
     aluno(mundoComPalpite())
     fireEvent.click(await screen.findByRole('button', { name: 'A tela fica vazia' }))
@@ -740,20 +742,18 @@ describe('⭐⭐ a moldura do lote 2: o palpite congelado e retomado', () => {
     await waitFor(() => expect(screen.getByText('Descoberta 1 de 2')).toBeTruthy())
     expect(screen.queryByText(/Você achou/)).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Mostrar o Dino na tela' }))
-    const acerto = await screen.findByText('Você achou: A tela fica vazia. E foi isso mesmo!', {
-      selector: 'p',
-    })
-    // ⚠️ Mudou de propósito (full review de experiência, M2): o aviso é SOBREPOSTO ao palco, num cartão
-    // opaco com a tinta e o contorno verdes (o fundo verde translúcido não se lia sobre o desenho).
-    expect(acerto.parentElement?.className).toContain('text-success-foreground')
+    const acerto = await screen.findByText(
+      'Seu palpite: A tela fica vazia. Ao testar: A tela fica vazia.',
+      {
+        selector: 'p',
+      },
+    )
+    expect(acerto.parentElement?.className).not.toContain('text-success-foreground')
   })
 
-  test('⚠️⚠️ a previsão do MODELO chega pela projeção pública com o que é preciso para retomar', () => {
-    // O gabarito da PREVISÃO atravessa (não vale nota); o da PERGUNTA, não.
+  test('⚠️⚠️ a projeção pública não inventa um palpite ausente no bloco', () => {
     const publico = publicInteractiveBlock(content('world'))
-    const modelo = SCENE_QUESTIONS.world
-    expect(publico.prediction?.correctChoiceId).toBe(modelo.prediction.correctChoiceId)
-    expect(publico.prediction?.revealOn).toBe(modelo.prediction.revealOn)
+    expect(publico.prediction).toBeUndefined()
     expect(JSON.stringify(publico.checkpoint)).not.toContain('correctChoiceId')
   })
 })
@@ -1138,7 +1138,7 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
       JSON.stringify({ escolha: 'id-velho', pergunta: 'outra pergunta' }),
     )
     aluno(bloco)
-    expect(await screen.findByText('Seu palpite')).toBeTruthy()
+    expect(await screen.findByTestId('scene-prediction-preview')).toBeTruthy()
     cleanup()
     // O mesmo id de hoje, mas guardado para OUTRA pergunta (a `game-state` manteve os ids e mudou o
     // sentido): também reabre.
@@ -1150,7 +1150,7 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
       }),
     )
     aluno(bloco)
-    expect(await screen.findByText('Seu palpite')).toBeTruthy()
+    expect(await screen.findByTestId('scene-prediction-preview')).toBeTruthy()
     cleanup()
     // E o palpite da pergunta de HOJE volta com a criança.
     localStorage.clear()
@@ -1190,7 +1190,7 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     aluno(mundoComPalpite('hidden'))
     fireEvent.click(await screen.findByRole('button', { name: 'O Dino aparece' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
-    const retomado = 'Você achou: O Dino aparece. Olhe a tela: ela ficou vazia.'
+    const retomado = 'Seu palpite: O Dino aparece. Ao testar: Olhe a tela: ela ficou vazia.'
     expect(await screen.findByText(retomado)).toBeTruthy()
     // Colado ao aviso da descoberta, SOBRE o pé do palco (e não lá em cima, fora da janela).
     // ⚠️ Mudou de propósito (full review de experiência, M2): o cartão da frase tem o ✕ ao lado.
@@ -1200,9 +1200,10 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Mostrar o Dino na tela' }))
     await waitFor(() => expect(screen.queryByText(retomado) === null).toBe(true))
     // Lá em cima, a linha no passado, sem mandar olhar nada.
-    expect(screen.getByText('Não era isso.')).toBeTruthy()
-    expect(screen.getByText('Seu palpite:').parentElement?.parentElement?.textContent).not.toMatch(
-      /Olhe/,
+    expect(screen.getByText('Ao testar:')).toBeTruthy()
+    expect(screen.queryByText('Não era isso.')).toBeNull()
+    expect(screen.getByText('Seu palpite:').parentElement?.parentElement?.textContent).toContain(
+      'Ao testar: Olhe',
     )
   })
 
@@ -1223,18 +1224,18 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     expect(screen.queryByText(SCENE_QUESTIONS.world.prediction.prompt) === null).toBe(true)
     cleanup()
     // Com o palpite guardado neste aparelho, a linha curta no passado.
-    const previsao = publicInteractiveBlock(bloco).prediction
-    if (!previsao) throw new Error('sem previsão')
+    const previsao = SCENE_QUESTIONS.world.prediction
     guardarPalpite('crianca-moldura:aula:bloco:rev', previsao, previsao.correctChoiceId as string)
     aluno(bloco, aprovado)
-    expect(await screen.findByText('Acertou!')).toBeTruthy()
+    expect(await screen.findByText('Ao testar:')).toBeTruthy()
+    expect(screen.queryByText('Acertou!')).toBeNull()
   })
 
   test('⚠️ antes do palpite não há ferramentas, e uma pista depois dele não apaga o trocar', async () => {
     const bloco = content('world')
     servidorQueCorrige(bloco)
     aluno(bloco)
-    await screen.findByText('Seu palpite')
+    await screen.findByTestId('scene-prediction-preview')
     // Antes do palpite, nenhuma ferramenta da descoberta é montada.
     for (const nome of ['Recomeçar', 'Uma pista']) {
       expect(screen.queryByRole('button', { name: nome })).toBeNull()
@@ -1265,31 +1266,9 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
     ).toBeTruthy()
     expect(screen.queryByText('Hoje vamos usar:')).toBeNull()
     const previa = screen.getByTestId('scene-prediction-preview')
-    expect(previa.getAttribute('aria-label')).toBe(
-      'Prévia da experiência: Ouvir a tela. Controle mostrado: Ouvir a tela. Você vai usar este botão depois do seu palpite.',
-    )
-    expect(previa.querySelector('[data-preview-control]')?.textContent).toContain('Ouvir a tela')
-    expect(previa.querySelector('[data-preview-control]')?.textContent).toContain(
-      'Você vai usar este botão depois do seu palpite.',
-    )
-    const botaoDaPrevia = previa.querySelector('button') as HTMLButtonElement
-    expect(botaoDaPrevia.textContent).toContain('Ouvir a tela')
-    expect(botaoDaPrevia.disabled).toBe(true)
-    const avisoId = botaoDaPrevia.getAttribute('aria-describedby')
-    expect(avisoId).toBeTruthy()
-    expect(document.getElementById(avisoId!)?.textContent).toContain(
-      'Você vai usar este botão depois do seu palpite.',
-    )
-    // ⚠️⚠️ O único "Ouvir a tela" ALCANÇÁVEL é o da prévia. Desde o console de 18/09/2026 a bancada
-    // de verdade também está na tela durante o palpite, mas dentro da cortina (`inert`): fora do
-    // Tab e do leitor de tela, com as notas desfocadas. Quem apresenta o recurso a quem não enxerga
-    // continua sendo a prévia.
-    expect(
-      screen
-        .getAllByRole('button', { name: 'Ouvir a tela' })
-        .filter((b) => b.closest('[inert]') === null),
-    ).toEqual([botaoDaPrevia])
-    fireEvent.click(botaoDaPrevia)
+    expect(previa.getAttribute('aria-label')).toBe('Prévia da experiência: Ouvir a tela')
+    expect(previa.querySelector('[data-preview-control]')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Ouvir a tela' })).toBeNull()
     expect(screen.queryByLabelText('Descrição do jogo')).toBeNull()
 
     await palpitar('screen-reader')
@@ -1601,12 +1580,8 @@ describe('⭐⭐ consertos do review da onda A do lote 5: o player', () => {
     await screen.findByRole('button', {
       name: SCENE_QUESTIONS.layers.prediction.choices[0]?.label as string,
     })
-    // ⚠️⚠️ A faixa de estado APARECE no palpite (o console de 18/09/2026), mas com os valores
-    // escondidos: os rótulos dizem o que a cena mede e o "?" no lugar do valor impede que ela
-    // responda a pergunta antes da criança — na `layers` a ordem dos desenhos É a previsão.
-    const faixa = document.querySelector('dl') as HTMLElement
-    expect(faixa).toBeTruthy()
-    expect([...faixa.querySelectorAll('dd')].every((d) => d.textContent === '?')).toBe(true)
+    // A faixa e a bancada não são montadas no palpite; só a cena inicial parada permanece.
+    expect(document.querySelector('dl')).toBeNull()
     const previa = screen.getByTestId('scene-prediction-preview')
     expect(previa.querySelector('desc')?.textContent).toContain('aparecem separados')
     expect(previa.textContent).not.toContain('A floresta fica na frente')

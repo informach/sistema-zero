@@ -170,8 +170,8 @@ export interface PublicInteractiveBlock
   /**
    * ⚠️⚠️ A previsão é PÚBLICA inteira, com o `correctChoiceId`, o `revealOn` e os `shows` (lote 2
    * do Raio-X, 16/09/2026). Ela não vale nota, então não é gabarito: é o que o player precisa para
-   * RETOMAR o palpite na tela ("Você achou: Nada. E foi isso mesmo!"). Podada como o checkpoint, a
-   * criança apostava antes de mexer e nunca ficava sabendo se acertou, que é metade do ciclo.
+   * RETOMAR o palpite na tela e comparar hipótese e observação sem nota. Podada como o checkpoint,
+   * a criança formulava uma hipótese antes de mexer e nunca via o que a cena mostrou.
    * ⚠️ O checkpoint continua podado: aquele entra no `passed`.
    */
   prediction?: PublicLearningPrediction
@@ -215,32 +215,27 @@ function publicActivity(activity: LearningActivity): LearningActivity {
 
 /** Answer keys stay on the server, including for custom HTML activities. */
 /**
- * A PREVISÃO e a PERGUNTA desta atividade: as do bloco, quando o professor escreveu; as do
- * MODELO da cena, quando não.
+ * O MODELO de palpite oferecido à autoria. O palpite da atividade só existe quando a autora o
+ * grava no bloco; a pergunta final ainda pode vir do modelo da cena.
  *
- * ⚠️⚠️ É o conserto de raiz do padrão mais caro que construímos e menos usamos. Os dois campos
- * nasceram OPCIONAIS no bloco, e a medição foi dura: de 52 blocos de cena nos cursos, 7 tinham
- * previsão e 8 tinham pergunta — 13% e 15%. A pergunta certa para uma cena é propriedade DA
- * CENA, não do bloco: "o que acontece com a velocidade em zero" é a mesma em toda aula que usa
- * `velocity`. Escrita uma vez no catálogo, ela chega a todo bloco de toda aula sem tocar em
- * manifesto nenhum.
- *
- * ⚠️ O bloco continua vencendo: quem escreve a sua, usa a sua. O que mudou é o PADRÃO.
+ * O catálogo mantém um bom ponto de partida para a AUTORIA. O admin pode copiar esta previsão ao
+ * bloco quando a hipótese for pedagogicamente útil; a projeção pública nunca faz essa escolha pela
+ * autora. A pergunta final, ao contrário, continua podendo ser herdada da cena por
+ * `blockCheckpoint`.
  *
  * ⚠️ O texto passa pelo ELENCO, como tudo o que a plataforma gera — sem isso uma turma de nave
  * leria a pergunta falando do Dino.
  *
  * ⚠️⚠️ **A busca é opcional (`?.`) de propósito, e o `Record<SceneId, …>` não dispensa isso.**
- * Estes dois resolvedores são chamados pelo `publicInteractiveBlock`, que roda sobre o conteúdo
- * CRU do banco, sem passar pelo guard — está escrito lá embaixo, e é por isso que a poda de
- * gabarito existe. Uma linha gravada com um id de cena que não existe mais faria
+ * Este modelo de autoria e o resolvedor da pergunta podem rodar sobre conteúdo cru do banco, sem
+ * passar pelo guard. Uma linha gravada com um id de cena que não existe mais faria
  * `SCENE_QUESTIONS[a.scene].prediction` LANÇAR, e a exceção derrubaria o GET da aula inteira,
- * não só aquele bloco. Sem modelo, a cena volta a não ter pergunta — que é exatamente o que ela
- * era antes deste lote.
+ * não só aquele bloco. Sem modelo, o Admin simplesmente não oferece um palpite inicial.
  */
-export function blockPrediction(block: InteractiveBlock): PublicLearningPrediction | undefined {
+export function scenePredictionTemplate(
+  block: InteractiveBlock,
+): PublicLearningPrediction | undefined {
   const a = block.activity
-  if (block.prediction) return block.prediction
   if (a.type !== 'experimentation') return undefined
   const modelo = SCENE_QUESTIONS[a.scene]?.prediction
   if (!modelo) return undefined
@@ -260,6 +255,11 @@ export function blockPrediction(block: InteractiveBlock): PublicLearningPredicti
     correctChoiceId: modelo.correctChoiceId,
     ...(modelo.revealOn ? { revealOn: modelo.revealOn } : {}),
   }
+}
+
+/** Palpite é opt-in: somente um campo declarado pela autoria chega à criança. */
+export function blockPrediction(block: InteractiveBlock): PublicLearningPrediction | undefined {
+  return block.prediction
 }
 
 /**
@@ -297,8 +297,8 @@ export function publicInteractiveBlock(block: InteractiveBlock): PublicInteracti
     hints: block.hints,
     required: block.required,
     activity,
-    // ⚠️ Pelos RESOLVEDORES, não pelos campos crus: é aqui que a previsão e a pergunta do
-    // modelo chegam à criança. A poda do gabarito da PERGUNTA continua a mesma: o
+    // ⚠️ Pelos RESOLVEDORES, não pelos campos crus: é aqui que o palpite explicitamente autorado e
+    // a pergunta do modelo chegam à criança. A poda do gabarito da PERGUNTA continua a mesma: o
     // `correctChoiceId` e a `explanation` dela não saem daqui em nenhum dos dois caminhos.
     ...(pergunta
       ? {

@@ -7,6 +7,11 @@
 > decisões de produto de 19 e 20/09/2026. Onde o molde antigo diverge, esta especificação vence, e
 > as divergências estão marcadas.
 
+> **Direção vigente desde 21/09/2026:** cada seção tem no máximo um clipe. Em conceito, o clipe
+> explica no abstrato com exemplos próximos e a experiência ao lado concretiza; em construção, o
+> clipe mostra o passo a passo e a ferramenta ao lado recebe a execução. A atividade não espera o
+> vídeo acabar para ser liberada, mas a seção exige os dois para concluir.
+
 ## 1. O que é, e o que não é
 
 O manifesto guarda um **briefing** de cada clipe: título, o que mostrar, uma fala de referência e a
@@ -189,10 +194,10 @@ Só as seções que têm clipe entram. Seção sem vídeo não vira trecho de ro
 
 **O fecho recapitula os passos vencidos, nomeia as palavras novas e engancha a aula seguinte.**
 
-⚠️ **Não existe mais exercício de "pausa e tenta".** Decisão de 01/08/2026: nenhuma aula manda
-descobrir sozinho, montar sozinho ou pausar para resolver. Sumiram "descubra sozinho", "monte você
-mesmo", "é a sua vez" e a linha de reticências separando desafio de gabarito. Quem exercita são os
-desafios da Comunidade.
+⚠️ **Não existe exercício de "pausa e tenta".** Nenhuma aula manda descobrir interface ou solução
+sem ensino prévio. Sumiram "descubra sozinho" e a linha que esconde um gabarito. Depois de mostrar
+o processo, uma ponte como "Agora é sua vez de montar" é válida: a criança executa na ferramenta
+disponível na mesma seção. A fala não repete a receita do vídeo nem a instrução da atividade.
 
 O que continua, porque é conteúdo e não cobrança: **demonstração por extremos**, levando o número
 para os dois lados com a narração observando logo depois de cada troca ("põe 2 e olha a tela… agora

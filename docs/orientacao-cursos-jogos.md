@@ -319,8 +319,10 @@ naturalmente a cada passo** para acompanhar a montagem.
 Quem exercita são os **desafios da Comunidade**, onde a criança cria o próprio jogo com o que
 aprendeu no curso.
 
-Some, então: "descubra sozinho", "monte você mesmo", "é a sua vez", "pausa o vídeo e faz", o
-bloco de exercício no fim da aula e a linha `...` separando desafio de gabarito.
+Somem "descubra sozinho", "pausa o vídeo e resolve", o bloco de exercício sem ensino no fim da
+aula e a linha `...` separando desafio de gabarito. Depois do vídeo que ensina, **"Agora é sua vez
+de montar"** pode ser uma ponte legítima para a ferramenta da mesma seção; não é descoberta quando
+o passo a passo acabou de ser mostrado. A ponte não repete os blocos nem a instrução específica.
 
 Continua, porque é conteúdo e não cobrança:
 

@@ -281,18 +281,6 @@
   display: grid;
   gap: 0.5rem;
 }
-/* A cortina do palpite: ver o comentário do `ConsolePrancha`.
- * ⚠️ SEM desfoque, e é decisão dela: a maquete que ela aprovou mostra os controles apagados e
- * tracejados, legíveis. Eu tinha somado um `blur` para as notas dos controles fechados não
- * soprarem a resposta, e isso mudava o que ela viu. O risco fica anotado ali; o que trava o gesto
- * é o `inert` mais a recusa do `dispatch`. */
-.sz-scene-prancha--fechada {
-  opacity: 0.55;
-}
-.sz-scene-prancha--fechada .sz-scene-peca {
-  border-style: dashed;
-}
-
 /* ⭐ O HUD, no molde do `drawScore` do Jogo 2D (`game-2d/runtime/arcadeKitsHud.ts`): rótulo
  * pequeno em versalete, número GORDO em Baloo, sem caixa branca por cima do mundo. Era a queixa
  * dela: "o placar você fez de um jeito que não tem nada a ver com o estilo do jogo". */
