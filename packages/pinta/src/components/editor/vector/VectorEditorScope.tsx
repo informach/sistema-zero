@@ -38,6 +38,7 @@ import {
   type DistributionAxis,
   distributeShapes,
   flipShape,
+  resetRotationPivotPreservingAppearance,
   setTextAlign as setTextAlignGeometry,
   shapeBounds,
   translateShape,
@@ -49,6 +50,13 @@ import {
   shapesForInsert,
 } from '../../../vector/insertAsset'
 import { lockedIdsOf, lockedShapesViolation } from '../../../vector/lock'
+import {
+  applyMask,
+  type MaskRefusal,
+  maskMembers,
+  maskSourceIds,
+  releaseMasks,
+} from '../../../vector/mask'
 import {
   DEFAULT_VECTOR_FONT_FAMILY,
   isVectorGradient,
@@ -91,6 +99,7 @@ import { isPintaModalOpen, useActionShortcuts } from '../useActionShortcuts'
 import { useToolShortcuts } from '../useToolShortcuts'
 import {
   cloneShapesWithNewIds,
+  expandToSelectionUnits,
   fitPastedShapes,
   MAX_CUSTOM_COLORS,
   occupiedBoundsOf,
@@ -234,6 +243,12 @@ export interface VectorEditorContextValue {
   endGradientAdjust: () => void
   /** O botão "Degradê" do painel: a janela reaberta sozinha devolve o foco a ele. */
   gradientButtonRef: RefObject<HTMLButtonElement | null>
+  maskEditId: string | null
+  createMaskSelected: () => void
+  beginMaskEdit: () => void
+  endMaskEdit: () => void
+  releaseMaskSelected: () => void
+  centerSelectionPivot: () => void
   moveOrder: (to: 1 | -1 | 'front' | 'back') => void
   duplicateSelected: () => void
   removeSelected: () => void
@@ -262,6 +277,14 @@ const PATHFINDER_REFUSALS: Record<PathfinderRefusal, string> = {
   empty: COPY.vector.pathfinderEmpty,
   'too-big': COPY.vector.pathfinderTooBig,
   'geometry-failed': COPY.vector.pathfinderFailed,
+}
+
+const MASK_REFUSALS: Record<MaskRefusal, string> = {
+  'needs-two': COPY.vector.maskNeedsTwo,
+  locked: COPY.vector.maskLocked,
+  'unsupported-source': COPY.vector.maskUnsupportedSource,
+  'already-masked': COPY.vector.maskAlreadyMasked,
+  'nested-mask': COPY.vector.maskNestedMask,
 }
 
 /** Tem preenchimento que se vê: linha não tem miolo e a figura desenha a própria imagem. */
@@ -349,6 +372,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   const colorPickRef = useRef<(ColorPickRequest & ColorPickSession) | null>(null)
   const [gradientOpen, setGradientOpen] = useState(false)
   const [gradientAdjustShapeId, setGradientAdjustShapeId] = useState<string | null>(null)
+  const [maskEditId, setMaskEditId] = useState<string | null>(null)
   const gradientButtonRef = useRef<HTMLButtonElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
@@ -364,6 +388,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   // biome-ignore lint/correctness/useExhaustiveDependencies: as deps são o GATILHO (mudou o quadro/tile ativo), não leituras
   useEffect(() => {
     setSelectedIds([])
+    setMaskEditId(null)
   }, [animationId, frameIndex])
 
   // Trocar de forma ou de ferramenta larga os nós escolhidos. ⚠️ A chave é o
@@ -530,6 +555,12 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     if (doc) void ensureVectorFontsForShapes(doc.shapes)
   }, [doc, fontFamily])
   const selected = doc?.shapes.filter((s) => selectedIds.includes(s.id)) ?? []
+  useEffect(() => {
+    if (!maskEditId || !doc) return
+    const sourceExists = doc.shapes.some((shape) => shape.id === maskEditId)
+    const memberExists = doc.shapes.some((shape) => shape.maskId === maskEditId)
+    if (!sourceExists || !memberExists || !selectedIds.includes(maskEditId)) setMaskEditId(null)
+  }, [doc, maskEditId, selectedIds])
   const adjustableShape = selected.length === 1 ? selected[0] : null
   const canAdjustGradient = Boolean(
     adjustableShape &&
@@ -655,13 +686,69 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
    * está trancada: aí não há o que fazer, e o silêncio leria como "quebrou".
    */
   function freeSelectedIds(): string[] | null {
-    const locked = lockedIdsOf(currentShapes())
+    const shapes = currentShapes()
+    const locked = lockedIdsOf(shapes)
+    const selectedMaskedUnitHasLock = selectedIds.some((id) => {
+      const unit = maskMembers(shapes, id)
+      return unit.length > 1 && unit.some((shape) => locked.has(shape.id))
+    })
+    if (selectedMaskedUnitHasLock) {
+      showToast(COPY.layers.lockedShapeWarning)
+      return null
+    }
     const free = selectedIds.filter((id) => !locked.has(id))
     if (free.length === 0 && selectedIds.length > 0) {
       showToast(COPY.layers.lockedShapeWarning)
       return null
     }
     return free
+  }
+
+  function selectedMaskIds(shapes = currentShapes()): Set<string> {
+    const sources = maskSourceIds(shapes)
+    const ids = new Set<string>()
+    for (const shape of shapes) {
+      if (!selectedIds.includes(shape.id)) continue
+      if (shape.maskId) ids.add(shape.maskId)
+      if (sources.has(shape.id)) ids.add(shape.id)
+    }
+    return ids
+  }
+
+  function createMaskSelected(): void {
+    const result = applyMask(currentShapes(), selectedIds)
+    if (!result.ok) {
+      showToast(MASK_REFUSALS[result.reason])
+      return
+    }
+    commitShapes(result.shapes)
+    setSelectedIds(expandToSelectionUnits(result.shapes, selectedIds))
+  }
+
+  function beginMaskEdit(): void {
+    const ids = selectedMaskIds()
+    if (ids.size !== 1) return
+    const id = [...ids][0]
+    if (!id) return
+    setTool('select')
+    setMaskEditId(id)
+  }
+
+  function endMaskEdit(): void {
+    setMaskEditId(null)
+  }
+
+  function releaseMaskSelected(): void {
+    const next = releaseMasks(currentShapes(), selectedIds)
+    if (!next) return
+    commitShapes(next)
+    setMaskEditId(null)
+  }
+
+  function centerSelectionPivot(): void {
+    const free = freeSelectedIds()
+    if (!free) return
+    updateFree(free, resetRotationPivotPreservingAppearance)
   }
 
   /**
@@ -1073,6 +1160,10 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
    * seguir ensina, e um botão apagado não ensina nada.
    */
   function pathfinderSelected(op: PathfinderOp): void {
+    if (selectedMaskIds().size > 0) {
+      showToast(COPY.vector.maskReleaseBeforeGeometry)
+      return
+    }
     // Misturar REESCREVE a geometria dos participantes: trancada fica de fora
     // (e não some) — com menos de 2 livres o próprio pathfinder recusa.
     const free = freeSelectedIds()
@@ -1456,6 +1547,12 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     beginGradientAdjust,
     endGradientAdjust,
     gradientButtonRef,
+    maskEditId,
+    createMaskSelected,
+    beginMaskEdit,
+    endMaskEdit,
+    releaseMaskSelected,
+    centerSelectionPivot,
     moveOrder,
     duplicateSelected,
     removeSelected,

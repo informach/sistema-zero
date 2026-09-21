@@ -15,6 +15,7 @@
  */
 import type { JSX, ReactNode } from 'react'
 import { COPY } from '../../../core/copy'
+import { maskSourceIds } from '../../../vector/mask'
 import { ToolButton } from '../../ui/Button'
 import {
   AlignCenterHorizontal,
@@ -28,17 +29,21 @@ import {
   BringToFront,
   ChevronsDown,
   ChevronsUp,
+  CircleDot,
   Copy,
   FlipHorizontal2,
   FlipVertical2,
   Group,
   SendToBack,
+  SquareDashed,
+  SquarePen,
   SquaresExclude,
   SquaresIntersect,
   SquaresSubtract,
   SquaresUnite,
   Trash2,
   Ungroup,
+  Unlink2,
 } from '../../ui/icons'
 import { useVectorEditor } from './VectorEditorScope'
 import { VectorNodeActions } from './VectorNodeActions'
@@ -97,6 +102,7 @@ export function VectorSelectionBar(): JSX.Element | null {
     nodeTarget,
     nodePath,
     selected,
+    doc,
     gradientAdjustShapeId,
     alignSelected,
     canDistributeSelected,
@@ -108,6 +114,10 @@ export function VectorSelectionBar(): JSX.Element | null {
     pathfinderSelected,
     duplicateSelected,
     removeSelected,
+    createMaskSelected,
+    beginMaskEdit,
+    releaseMaskSelected,
+    centerSelectionPivot,
   } = useVectorEditor()
 
   if (gradientAdjustShapeId) return null
@@ -135,6 +145,10 @@ export function VectorSelectionBar(): JSX.Element | null {
   }
 
   if (selected.length === 0) return <SelectionBarPlaceholder hint={COPY.vector.selectionBarEmpty} />
+
+  const sourceIds = maskSourceIds(doc.shapes)
+  const hasMask = selected.some((shape) => shape.maskId || sourceIds.has(shape.id))
+  const hasCustomPivot = selected.some((shape) => shape.rotationPivot !== undefined)
 
   return (
     <SelectionBarFrame toolbar={COPY.vector.selectionBar}>
@@ -211,6 +225,33 @@ export function VectorSelectionBar(): JSX.Element | null {
       <ToolButton icon={ChevronsUp} label={COPY.vector.forward} onClick={() => moveOrder(1)} />
       <ToolButton icon={ChevronsDown} label={COPY.vector.backward} onClick={() => moveOrder(-1)} />
       <ToolButton icon={SendToBack} label={COPY.vector.toBack} onClick={() => moveOrder('back')} />
+
+      <Divider />
+
+      {selected.length >= 2 ? (
+        <ToolButton
+          icon={SquareDashed}
+          label={COPY.vector.selCreateMask}
+          onClick={createMaskSelected}
+        />
+      ) : null}
+      {hasMask ? (
+        <>
+          <ToolButton icon={SquarePen} label={COPY.vector.selEditMask} onClick={beginMaskEdit} />
+          <ToolButton
+            icon={Unlink2}
+            label={COPY.vector.selReleaseMask}
+            onClick={releaseMaskSelected}
+          />
+        </>
+      ) : null}
+      {hasCustomPivot ? (
+        <ToolButton
+          icon={CircleDot}
+          label={COPY.vector.selCenterPivot}
+          onClick={centerSelectionPivot}
+        />
+      ) : null}
 
       {/* MISTURAR (o pathfinder). O bloco INTEIRO é gated pelo mesmo gatilho do
           Agrupar logo abaixo, e não cada botão: um gatilho só significa UMA

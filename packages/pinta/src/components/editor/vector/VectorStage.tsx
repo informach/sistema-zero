@@ -71,19 +71,23 @@ import {
 } from '../../../vector/shapes'
 import { smoothStrokeToPathCapped } from '../../../vector/smoothing'
 import { GradientDefs, SceneDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
-import { clipPathId, resolveMaskScene } from '../../../vector/mask'
+import { clipPathId, maskSourceIds, resolveMaskScene } from '../../../vector/mask'
 import { Button, ToolButton } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
 import {
   AlignHorizontalDistributeCenter,
   AlignVerticalDistributeCenter,
+  CircleDot,
   Copy,
   FlipHorizontal2,
   FlipVertical2,
   Group,
+  SquareDashed,
+  SquarePen,
   SquaresUnite,
   Trash2,
   Ungroup,
+  Unlink2,
   X,
 } from '../../ui/icons'
 import { useToast } from '../../ui/Toast'
@@ -103,7 +107,7 @@ import {
   nodesInBox,
   toLocalPoint,
 } from './vectorNodeGestures'
-import { constrainPoint, expandToGroups } from './vectorTools'
+import { constrainPoint, expandToSelectionUnits } from './vectorTools'
 
 // Todo gesto guarda o pointerId: pointer capture é POR ponteiro, então um
 // segundo dedo/palma no palco dispararia move/up do gesto do primeiro dedo.
@@ -279,6 +283,10 @@ export function VectorStage(): JSX.Element {
     distributeSelected,
     gradientAdjustShapeId,
     endGradientAdjust,
+    createMaskSelected,
+    beginMaskEdit,
+    releaseMaskSelected,
+    centerSelectionPivot,
   } = useVectorEditor()
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
@@ -626,8 +634,7 @@ export function VectorStage(): JSX.Element {
 
   /** Começa a MOVER a forma tocada (com o grupo dela e a seleção, como sempre). */
   function startMoveGesture(shape: VectorShape, event: PointerEvent<Element>, at: Vec2): void {
-    // Clicar num shape agrupado seleciona o grupo inteiro (move junto).
-    const clicked = expandToGroups(currentShapes(), [shape.id])
+    const clicked = expandToSelectionUnits(currentShapes(), [shape.id])
     const ids = event.shiftKey
       ? [...new Set([...selectedIds, ...clicked])]
       : selectedIds.includes(shape.id)
@@ -1294,7 +1301,7 @@ export function VectorStage(): JSX.Element {
       const hit = visibleShapes(shapes)
         .filter((s) => s.locked !== true && boundsOverlap(shapeBounds(s), box))
         .map((s) => s.id)
-      const expanded = expandToGroups(shapes, hit)
+      const expanded = expandToSelectionUnits(shapes, hit)
       setSelectedIds((current) =>
         gesture.additive ? [...new Set([...current, ...expanded])] : expanded,
       )
@@ -1405,6 +1412,9 @@ export function VectorStage(): JSX.Element {
 
   const documentScene = resolveMaskScene(doc.shapes)
   const onionScene = resolveMaskScene(onionShapes ?? [])
+  const sourceIds = maskSourceIds(doc.shapes)
+  const selectionHasMask = selected.some((shape) => shape.maskId || sourceIds.has(shape.id))
+  const selectionHasCustomPivot = selected.some((shape) => shape.rotationPivot !== undefined)
 
   return (
     <div className="pin-stage relative flex min-h-0 min-w-0 flex-1">
@@ -1505,6 +1515,11 @@ export function VectorStage(): JSX.Element {
           {selected.length >= 2 ? (
             <>
               <ToolButton icon={Group} label={COPY.vector.selGroup} onClick={groupSelected} />
+              <ToolButton
+                icon={SquareDashed}
+                label={COPY.vector.selCreateMask}
+                onClick={createMaskSelected}
+              />
               {/* Só UNIR no toque (decisão dela). As outras três pedem enxergar
                   quem está na frente e um alvo por operação, e em 375px a barra
                   já chega a 6 alvos. O caminho de crescimento, se ela pedir, é o
@@ -1515,6 +1530,27 @@ export function VectorStage(): JSX.Element {
                 onClick={() => pathfinderSelected('unir')}
               />
             </>
+          ) : null}
+          {selectionHasMask ? (
+            <>
+              <ToolButton
+                icon={SquarePen}
+                label={COPY.vector.selEditMask}
+                onClick={beginMaskEdit}
+              />
+              <ToolButton
+                icon={Unlink2}
+                label={COPY.vector.selReleaseMask}
+                onClick={releaseMaskSelected}
+              />
+            </>
+          ) : null}
+          {selectionHasCustomPivot ? (
+            <ToolButton
+              icon={CircleDot}
+              label={COPY.vector.selCenterPivot}
+              onClick={centerSelectionPivot}
+            />
           ) : null}
           {selected.some((s) => s.groupId) ? (
             <ToolButton icon={Ungroup} label={COPY.vector.selUngroup} onClick={ungroupSelected} />

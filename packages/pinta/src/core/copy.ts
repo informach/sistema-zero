@@ -669,6 +669,23 @@ export const COPY = {
     selMinusFront: 'Tirar a forma da frente',
     selIntersect: 'Ficar só com o pedaço em comum',
     selExclude: 'Tirar o pedaço em comum',
+    selCreateMask: 'Criar máscara',
+    selEditMask: 'Editar máscara',
+    selReleaseMask: 'Soltar máscara',
+    selCenterPivot: 'Centralizar âncora',
+    maskEditMode: 'Editando a máscara',
+    maskEditDone: 'Concluir',
+    rotationPivot: 'Âncora de rotação',
+    rotationPivotKeyboard:
+      'Arraste para mudar o ponto de giro. Use as setas para mover e Shift para andar dez passos.',
+    maskLayer: 'Máscara',
+    maskNeedsTwo: 'Escolha pelo menos duas formas para criar uma máscara.',
+    maskLocked: 'Destranque todas as formas antes de criar a máscara.',
+    maskUnsupportedSource:
+      'A forma da frente precisa ser fechada, como um círculo, quadrado ou polígono.',
+    maskAlreadyMasked: 'Uma destas formas já usa uma máscara. Solte a máscara antes de criar outra.',
+    maskNestedMask: 'Uma máscara não pode ficar dentro de outra. Solte a máscara primeiro.',
+    maskReleaseBeforeGeometry: 'Solte a máscara antes de misturar ou editar os pontos destas formas.',
     /** Recusas da mistura: cada uma diz o que houve E o que fazer a seguir. */
     pathfinderNeedsTwo: 'Escolha duas formas fechadas, como um quadrado ou um círculo.',
     pathfinderSkips: 'Linhas, textos e figuras não entram na mistura. Escolha só formas fechadas.',

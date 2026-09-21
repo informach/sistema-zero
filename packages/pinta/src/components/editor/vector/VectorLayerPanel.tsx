@@ -23,6 +23,7 @@ import type {
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { VectorShape } from '../../../vector/model'
+import { maskSourceIds } from '../../../vector/mask'
 import { dropShapesOrder } from '../../../vector/order'
 import { GradientDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
 import { ToolButton } from '../../ui/Button'
@@ -31,7 +32,7 @@ import { Panel, type PanelDisclosure } from '../../ui/Panel'
 import { useEditorStores } from '../editorContext'
 import { addPointerDragListeners } from '../pointerDrag'
 import { useVectorEditor } from './VectorEditorScope'
-import { expandToGroups } from './vectorTools'
+import { expandToSelectionUnits } from './vectorTools'
 
 /**
  * Miniatura da forma no enquadramento do documento (mostra até as escondidas).
@@ -70,9 +71,12 @@ const ShapeThumb = memo(function ShapeThumb({
  * Nome amigável da forma. Texto mostra "Texto: <conteúdo>" (o conteúdo cru
  * colidiria com o próprio <text> do palco nos leitores/nos testes).
  */
-function shapeLabel(shape: VectorShape): string {
-  if (shape.type === 'text') return `${COPY.vector.shapeNames.text}: ${shape.text}`
-  return COPY.vector.shapeNames[shape.type] ?? shape.type
+function shapeLabel(shape: VectorShape, maskSource = false): string {
+  const base =
+    shape.type === 'text'
+      ? `${COPY.vector.shapeNames.text}: ${shape.text}`
+      : (COPY.vector.shapeNames[shape.type] ?? shape.type)
+  return maskSource ? `${base} — ${COPY.vector.maskLayer}` : base
 }
 
 /** As ações de uma linha, na versão mais recente do painel (lidas por ref, ver abaixo). */
@@ -95,6 +99,7 @@ const LayerRow = memo(function LayerRow({
   shape,
   active,
   moving,
+  maskSource,
   docWidth,
   docHeight,
   onSelect,
@@ -106,6 +111,7 @@ const LayerRow = memo(function LayerRow({
   shape: VectorShape
   active: boolean
   moving: boolean
+  maskSource: boolean
   docWidth: number
   docHeight: number
   onSelect: RowActions['select']
@@ -115,7 +121,7 @@ const LayerRow = memo(function LayerRow({
   onDragStart: RowActions['dragStart']
 }): JSX.Element {
   const visible = shape.hidden !== true
-  const label = shapeLabel(shape)
+  const label = shapeLabel(shape, maskSource)
   const grouped = shape.groupId !== undefined
   return (
     <li
@@ -130,6 +136,12 @@ const LayerRow = memo(function LayerRow({
         <span
           aria-hidden="true"
           className="my-1.5 ml-0.5 w-1 shrink-0 self-stretch rounded-full bg-pin-accent/50"
+        />
+      ) : null}
+      {maskSource ? (
+        <span
+          aria-hidden="true"
+          className="my-1.5 ml-0.5 w-1 shrink-0 self-stretch rounded-full bg-cyan-500"
         />
       ) : null}
       <ToolButton
@@ -241,26 +253,30 @@ export function VectorLayerPanel({
 
   // De cima para baixo, como a criança vê o desenho (fim do array = topo).
   const rows = [...doc.shapes].reverse()
+  const sourceIds = maskSourceIds(doc.shapes)
   /** Grupo da linha em arrasto: o bloco inteiro se acende, mesmo no movimento fino. */
   const draggingGroup = dragging ? doc.shapes.find((s) => s.id === dragging)?.groupId : undefined
+  const draggingUnit = new Set(
+    dragging ? expandToSelectionUnits(doc.shapes, [dragging]) : [],
+  )
 
   function selectShape(shape: VectorShape): void {
-    // Grupo inteiro, consistente com o clique no palco.
-    setSelectedIds(expandToGroups(currentShapes(), [shape.id]))
+    setSelectedIds(expandToSelectionUnits(currentShapes(), [shape.id]))
   }
 
   function toggleHidden(shape: VectorShape): void {
     const nowHidden = shape.hidden !== true
+    const unit = new Set(expandToSelectionUnits(currentShapes(), [shape.id]))
     commitShapes(
       currentShapes().map((s) => {
-        if (s.id !== shape.id) return s
+        if (!unit.has(s.id)) return s
         if (nowHidden) return { ...s, hidden: true }
         const { hidden: _drop, ...rest } = s
         return rest as VectorShape
       }),
     )
     // Esconder tira da seleção (mexer no invisível assustaria).
-    if (nowHidden) setSelectedIds((current) => current.filter((id) => id !== shape.id))
+    if (nowHidden) setSelectedIds((current) => current.filter((id) => !unit.has(id)))
   }
 
   /**
@@ -270,9 +286,10 @@ export function VectorLayerPanel({
    */
   function toggleLocked(shape: VectorShape): void {
     const nowLocked = shape.locked !== true
+    const unit = new Set(expandToSelectionUnits(currentShapes(), [shape.id]))
     commitShapes(
       currentShapes().map((s) => {
-        if (s.id !== shape.id) return s
+        if (!unit.has(s.id)) return s
         if (nowLocked) return { ...s, locked: true }
         const { locked: _drop, ...rest } = s
         return rest as VectorShape
@@ -280,7 +297,7 @@ export function VectorLayerPanel({
     )
     // Trancar tira da seleção de AÇÃO (mover/apagar não a alcançam mais); a
     // linha do painel segue selecionável para destrancar.
-    if (nowLocked) setSelectedIds((current) => current.filter((id) => id !== shape.id))
+    if (nowLocked) setSelectedIds((current) => current.filter((id) => !unit.has(id)))
   }
 
   /**
@@ -294,7 +311,11 @@ export function VectorLayerPanel({
     if (index === -1) return
     const over = shapes[index + delta]
     if (!over) return
-    const next = dropShapesOrder(shapes, [shape.id], over.id)
+    const next = dropShapesOrder(
+      shapes,
+      expandToSelectionUnits(shapes, [shape.id]),
+      over.id,
+    )
     if (next) commitShapes(next)
   }
 
@@ -323,7 +344,12 @@ export function VectorLayerPanel({
       if (!overId) return
       // Irmão = movimento fino; linha externa = grupo inteiro. A mesma operação
       // pura atende o ponteiro e as setas da alça.
-      const next = dropShapesOrder(currentShapes(), [shape.id], overId)
+      const shapes = currentShapes()
+      const next = dropShapesOrder(
+        shapes,
+        expandToSelectionUnits(shapes, [shape.id]),
+        overId,
+      )
       if (next) commitShapes(next, false)
     }
     const onUp = (): void => {
@@ -346,11 +372,12 @@ export function VectorLayerPanel({
           <LayerRow
             key={shape.id}
             shape={shape}
+            maskSource={sourceIds.has(shape.id)}
             active={selectedIds.includes(shape.id)}
             // O grupo inteiro se acende para antecipar o movimento ao cruzar para fora.
             moving={
               dragging !== null &&
-              (shape.id === dragging ||
+              (draggingUnit.has(shape.id) ||
                 (shape.groupId !== undefined && shape.groupId === draggingGroup))
             }
             docWidth={doc.width}

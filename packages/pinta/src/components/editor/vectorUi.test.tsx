@@ -370,6 +370,130 @@ async function openWithShapes(shapes: VectorShape[]): Promise<HTMLElement> {
   return measureStage()
 }
 
+function maskFixture(over: { locked?: boolean } = {}): VectorShape[] {
+  return [
+    {
+      id: 'vagalume',
+      type: 'rect',
+      x: 20,
+      y: 20,
+      w: 100,
+      h: 100,
+      rx: 0,
+      fill: '#78dc52',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+      ...(over.locked ? { locked: true } : {}),
+    },
+    {
+      id: 'janela',
+      type: 'ellipse',
+      cx: 70,
+      cy: 70,
+      rx: 28,
+      ry: 28,
+      fill: '#00a0c8',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    },
+  ]
+}
+
+function marqueeAll(stage: HTMLElement): void {
+  fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 5, clientY: 5 })
+  fireEvent.pointerMove(stage, { pointerId: 1, clientX: 140, clientY: 140 })
+  fireEvent.pointerUp(stage, { pointerId: 1, clientX: 140, clientY: 140 })
+}
+
+describe('máscara vetorial no editor', () => {
+  it('cria em um commit, desfaz, refaz e solta sem perder as formas', async () => {
+    const stage = await openWithShapes(maskFixture())
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    marqueeAll(stage)
+    const create = await screen.findByRole('button', { name: COPY.vector.selCreateMask })
+    fireEvent.click(create)
+
+    await waitFor(() => {
+      expect(stage.querySelector('clipPath#pin-mask-janela')).toBeTruthy()
+      expect(stage.querySelector('rect[clip-path="url(#pin-mask-janela)"]')).toBeTruthy()
+    })
+    expect(screen.getByRole('button', { name: COPY.vector.selReleaseMask })).toBeTruthy()
+    expect(
+      screen.getByRole('button', {
+        name: `Selecionar: ${COPY.vector.shapeNames.ellipse} — ${COPY.vector.maskLayer}`,
+      }),
+    ).toBeTruthy()
+
+    fireEvent.click(screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLElement)
+    await waitFor(() => expect(stage.querySelector('clipPath')).toBeNull())
+    expect(stage.querySelectorAll('rect[fill="#78dc52"]')).toHaveLength(1)
+    expect(stage.querySelectorAll('ellipse[fill="#00a0c8"]')).toHaveLength(1)
+
+    fireEvent.click(screen.getAllByRole('button', { name: /^Refazer/ })[0] as HTMLElement)
+    await waitFor(() => expect(stage.querySelector('clipPath#pin-mask-janela')).toBeTruthy())
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selReleaseMask }))
+    await waitFor(() => expect(stage.querySelector('clipPath')).toBeNull())
+    expect(stage.querySelectorAll('rect[fill="#78dc52"]')).toHaveLength(1)
+    expect(stage.querySelectorAll('ellipse[fill="#00a0c8"]')).toHaveLength(1)
+  })
+
+  it('recusa misturar e apagar uma unidade mascarada com membro trancado', async () => {
+    const [content, source] = maskFixture()
+    if (!content || !source) throw new Error('formas esperadas')
+    const stage = await openWithShapes([
+      { ...content, maskId: 'janela', locked: true },
+      source,
+    ])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: `Selecionar: ${COPY.vector.shapeNames.ellipse} — ${COPY.vector.maskLayer}`,
+      }),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selUnite }))
+    await waitFor(() => expect(screen.getByText(COPY.vector.maskReleaseBeforeGeometry)).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selRemove }))
+    await waitFor(() => expect(screen.getByText(COPY.layers.lockedShapeWarning)).toBeTruthy())
+    expect(stage.querySelector('clipPath#pin-mask-janela')).toBeTruthy()
+  })
+
+  it('oferece criar e soltar também na barra estreita', async () => {
+    const originalMatchMedia = window.matchMedia
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        dispatchEvent: () => true,
+      }),
+    })
+    try {
+      const stage = await openWithShapes(maskFixture())
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+      marqueeAll(stage)
+      fireEvent.click(await screen.findByRole('button', { name: COPY.vector.selCreateMask }))
+      await waitFor(() => expect(stage.querySelector('clipPath#pin-mask-janela')).toBeTruthy())
+      expect(screen.getByRole('button', { name: COPY.vector.selEditMask })).toBeTruthy()
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.selReleaseMask }))
+      await waitFor(() => expect(stage.querySelector('clipPath')).toBeNull())
+    } finally {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        value: originalMatchMedia,
+      })
+    }
+  })
+})
+
 /** Desenha um retângulo pelo gesto (a ferramenta Retângulo precisa estar ativa). */
 function drawRect(stage: HTMLElement, from: [number, number], to: [number, number]): void {
   fireEvent.pointerDown(stage, {
