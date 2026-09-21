@@ -472,7 +472,7 @@ depois com a nave visível.
 ## Seção 13. Teste, envie e feche
 
 ### Clipe `video-teste-e-envio` · A nave nas duas bordas e o envio
-**Duração alvo:** 45 a 55 segundos · **Palavras:** 122
+**Duração alvo:** 45 a 55 segundos · **Palavras:** 103
 
 **Na tela:** aproximar no campo de velocidade do Mover o sprite com as setas. Digitar o número e
 segurar o enquadramento no clique num espaço vazio da área dos bloquinhos, fora do bloco.
@@ -509,12 +509,12 @@ o professor** sendo apertado, com a confirmação.
 **Narração:**
 > "Espera aparecer **Salvo** e aperta o **Enviar para o professor**."
 
-**Na tela:** o jogo do Dia 1 rodando ao fundo, depois de o envio já ter acontecido na tela.
+**Na tela:** manter a confirmação do envio visível por um instante.
 
 **Narração:**
-> "Sua nave apareceu e já responde a você! O Criar nave preparou o objeto, e o motor passou a
-> desenhar e mover. No Dia 2, ela vai aprender a atirar."
+> "Pronto. Esse é o caminho do teste final até a entrega."
 
-> **Nota de produção.** Nenhuma montagem de bloco neste clipe: ele é teste, envio e fecho. Se ficar
+> **Nota de produção.** Nenhuma montagem de bloco neste clipe: ele é teste e envio. Se ficar
 > um rastro de naves na tela, o **Limpar a tela** não está antes do **Desenhar fundo de estrelas**,
-> e a gravação deve deixar esse sintoma reconhecível.
+> e a gravação deve deixar esse sintoma reconhecível. A fala do Zappy abaixo do vídeo convida a
+> criança a fazer a conferência no próprio projeto; o clipe não celebra antes dessa ação real.

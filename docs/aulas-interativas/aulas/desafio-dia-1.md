@@ -13,7 +13,7 @@
 - **Tempo estimado:** 15 a 25 minutos para a aula completa; os vídeos somam de 8min05s a 10min05s
   e o restante acontece nas experiências, montagens, quiz e envio
 - **Cenas:** 5, todas construídas (4 que já existiam e a `once-vs-always`, feita para este dia)
-- **Manifesto:** `aulas/desafio-dia-1.manifesto.json`, 30 blocos e 13 seções. Estado no validador:
+- **Manifesto:** `aulas/desafio-dia-1.manifesto.json`, 31 blocos e 13 seções. Estado no validador:
   **OK**, sem nenhum aviso de convenção
 - **Revisão pedagógica, 21/09/2026:** vídeo e atividade ficam disponíveis juntos e os dois concluem
   a seção; o Zappy virou ponte curta; só `coordinates` e `world` mantêm palpite; o quiz ganhou uma
@@ -283,25 +283,24 @@ teste e da entrega finais.
 - **Blocos:**
   1. `video` (`video-teste-e-envio`): o gesto de confirmar um campo, o clique na área do jogo, a
      nave levada até as duas bordas pelas setas, a conferência de que ela fica na frente do espaço e
-     não deixa rastro, o gesto de enviar na tela e, depois do envio, o fecho do dia. **Entrou pela
+     não deixa rastro, o gesto de enviar e a confirmação na tela. **Entrou pela
      regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz.** Duração
      alvo: 45 a 55 segundos.
-  2. `studio`. Entrega, com os nove critérios de estrutura já definidos no manifesto atual.
+  2. `dialogue` (`fala-entrega`): "Agora é sua vez. Faça a conferência final no Estúdio e termine a
+     aula com o seu jogo funcionando."
+  3. `studio`. Entrega, com os nove critérios de estrutura já definidos no manifesto atual.
 
-**A entrega fica sem balão do Zappy e sem quiz.** O clipe mostra teste, envio e fechamento na ordem
-em que acontecem; a ferramenta permanece disponível desde que a seção abre.
+**A entrega fica sem quiz e ganha uma única ponte do Zappy.** O clipe mostra como testar e enviar;
+o balão apenas devolve a ação para a criança, e a ferramenta permanece disponível desde que a
+seção abre.
 
-**Por que nenhum balão sobrou aqui.** O Estúdio ocupa a coluna da direita sozinho, e tudo o que não
-é ferramenta cai na esquerda, de cima para baixo. Então "depois do Estúdio" não existe como lugar:
-qualquer coisa escrita nesta seção é lida antes do envio. Os dois balões que viviam aqui foram para
-o clipe, cada um pelo seu motivo:
+**Por que esse balão existe.** A criança assiste à demonstração, mas ainda precisa repetir o percurso
+no próprio projeto. A fala faz somente essa ponte; os gestos e os critérios específicos continuam no
+vídeo e no Estúdio, sem repetição.
 
-- A instrução de teste (`fala-teste`) era passo a passo de gesto, que se mostra na tela e não se
-  descreve. Ela já estava inteira no roteiro do clipe, nos dois primeiros itens.
-- O fecho (`fala-fecho`) era a recapitulação do dia com a ponte para o Dia 2. Ele virou a fala final
-  do clipe, depois do envio já ter acontecido na tela, que é o único ponto do material em que o
-  "depois" é verdadeiro. A ponte para o Dia 2 foi junto: sozinha, num balão antes do vídeo, ela
-  anunciaria o dia seguinte antes de o dia de hoje estar fechado.
+O antigo passo a passo do `fala-teste` continua absorvido pelo vídeo. O antigo `fala-fecho` não vai
+para o clipe: o vídeo não celebra como se a criança já tivesse concluído. É a entrega feita por ela,
+e não a demonstração gravada, que fecha a conquista.
 
 ## Experiências desta aula
 
@@ -408,13 +407,13 @@ o clipe, cada um pelo seu motivo:
 | `video-setas-e-borda` | As setas e a borda da tela | setas, cerquinha e o alerta | `video-mover` | 55 a 65 s | fala sim, tela regravada |
 | `video-desenhar-por-ultimo` | A nave no fim do motor | o bloco Desenhar o sprite e a ordem final | `video-desenhar` | 35 a 45 s | fala sim, com substituição |
 | `video-camadas` | Quem é desenhado depois fica na frente | folhas sobrepostas e a ordem na tela | novo, a partir de `video-desenhar` | 30 a 40 s | não, gravação nova |
-| `video-teste-e-envio` | A nave nas duas bordas e o envio | confirmar um campo, a nave até as duas bordas, a conferência do rastro, o gesto de enviar, e o fecho do dia depois do envio | novo, com `video-teste` do v6 como referência de tela | 45 a 55 s | não, gravação nova |
+| `video-teste-e-envio` | A nave nas duas bordas e o envio | confirmar um campo, a nave até as duas bordas, a conferência do rastro, o gesto de enviar e a confirmação na tela | novo, com `video-teste` do v6 como referência de tela | 45 a 55 s | não, gravação nova |
 
 **Saldo:** 12 blocos de vídeo, um por seção quando a seção tem mídia. Os pares `video-areas` com
 `video-tela` e `video-quadro` com `video-fundo` continuam fundidos nas construções. Entram dois
 clipes conceituais focados (`video-criar-e-mostrar` e `video-camadas`) para que nenhuma experiência
-fique tentando substituir a explicação abstrata. Sai `video-fecho-v6` como clipe próprio: a
-recapitulação vira a fala final do `video-teste-e-envio`, depois do envio.
+fique tentando substituir a explicação abstrata. Sai `video-fecho-v6` como clipe próprio; o
+`video-teste-e-envio` termina de modo neutro, e a conclusão pertence à entrega real da criança.
 
 > A primeira linha de cada `plannedVideo` no manifesto é `Título: <nome do vídeo>`, e é a coluna
 > "Título do vídeo" desta tabela que manda nela.

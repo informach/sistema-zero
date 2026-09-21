@@ -31,7 +31,15 @@
   "blocks": [
     {
       "key": "video-teste-e-envio",
-      "plannedVideo": "Título: A nave nas duas bordas e o envio\n\nOrigem: novo, com o video-teste do v6 como referência de tela. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 45 a 55 segundos.\n\nGravação de tela no jogo do fim do Dia 1, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, nesta ordem:\n\n1. O gesto de confirmar um campo, bem enquadrado: o número digitado e o clique num espaço vazio fora do bloco. É esse clique fora que confirma, e é o mesmo gesto da introdução.\n2. O clique dentro da área do jogo, que é o que avisa o jogo que o teclado agora é dele.\n3. A seta para a esquerda segurada até a nave encostar na borda e parar ali.\n4. A seta para a direita segurada até a outra borda, com a nave parando de novo.\n\nConferir junto, olhando a tela: a nave anda para os dois lados, ela não passa das bordas, ela aparece na frente do espaço com estrelas, e não fica rastro nenhum atrás dela.\n\nSe ficar um rastro de naves na tela, o bloco que limpa a tela não está antes do fundo de estrelas, e é isso que a gravação deve deixar reconhecível.\n\nDepois o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFecho do clipe, com o jogo ainda rodando ao fundo, depois de o envio já ter acontecido na tela: \"Sua nave apareceu e já responde a você. Criar preparou o objeto, e o motor passou a desenhar e mover. No Dia 2, ela vai aprender a atirar.\"\n\nDe onde veio este fecho: ele era um balão do Zappy no fim da seção. Na seção de entrega o Estúdio fica sozinho na coluna da direita e todo o resto se lê na esquerda, de cima para baixo, então qualquer fecho escrito seria lido antes do envio. Aqui ele cai no lugar certo, depois do envio.\n\nA instrução de gesto que abria a seção também era um balão e veio para cá. Ela já está nos itens 1 e 2 desta lista: confirmar o campo saindo dele, e clicar na área do jogo antes de usar as setas."
+      "plannedVideo": "Título: A nave nas duas bordas e o envio\n\nOrigem: novo, com o video-teste do v6 como referência de tela. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 45 a 55 segundos.\n\nGravação de tela no jogo do fim do Dia 1, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe mostra o teste final e o envio. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, nesta ordem:\n\n1. O gesto de confirmar um campo, bem enquadrado: o número digitado e o clique num espaço vazio fora do bloco. É esse clique fora que confirma, e é o mesmo gesto da introdução.\n2. O clique dentro da área do jogo, que é o que avisa o jogo que o teclado agora é dele.\n3. A seta para a esquerda segurada até a nave encostar na borda e parar ali.\n4. A seta para a direita segurada até a outra borda, com a nave parando de novo.\n\nConferir junto, olhando a tela: a nave anda para os dois lados, ela não passa das bordas, ela aparece na frente do espaço com estrelas, e não fica rastro nenhum atrás dela.\n\nSe ficar um rastro de naves na tela, o bloco que limpa a tela não está antes do fundo de estrelas, e é isso que a gravação deve deixar reconhecível.\n\nDepois, mostrar o gesto de enviar: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFecho neutro do clipe, mantendo a confirmação do envio na tela: \"Pronto. Esse é o caminho do teste final até a entrega.\"\n\nA instrução detalhada dos gestos fica no vídeo, onde a criança consegue vê-los. O convite para ela repetir esse percurso fica no balão curto do Zappy abaixo do vídeo, sem repetir os passos."
+    },
+    {
+      "key": "fala-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora é sua vez. Faça a conferência final no Estúdio e termine a aula com o seu jogo funcionando."
+      }
     },
     {
       "key": "projeto",
@@ -866,7 +874,7 @@
       "title": "Teste, envie e feche",
       "intent": "delivery",
       "objective": "Tela 800 por 480, nave visível e controlada pelas setas, sem sair das bordas e sem deixar rastro.",
-      "blockKeys": ["video-teste-e-envio", "projeto"],
+      "blockKeys": ["video-teste-e-envio", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
