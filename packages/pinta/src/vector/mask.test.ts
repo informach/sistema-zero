@@ -6,6 +6,7 @@ import {
   maskMembers,
   maskSourceIds,
   releaseMasks,
+  resolveMaskScene,
   sanitizeMaskReferences,
 } from './mask'
 
@@ -174,5 +175,35 @@ describe('máscara vetorial — recuperação de documento malformado', () => {
   it('preserva uma fonte válida compartilhada por vários conteúdos', () => {
     const shapes = [rect('a', { maskId: 'm' }), rect('b', { maskId: 'm' }), rect('m')]
     expect(sanitizeMaskReferences(shapes)).toEqual(shapes)
+  })
+})
+
+describe('máscara vetorial — resolução da cena', () => {
+  it('separa fontes de máscara da pintura e preserva a ordem-Z do restante', () => {
+    const source = rect('janela')
+    const shapes = [
+      rect('fundo'),
+      rect('rosto', { maskId: 'janela' }),
+      source,
+      rect('brilho'),
+    ]
+    const scene = resolveMaskScene(shapes)
+
+    expect(scene.painted.map((shape) => shape.id)).toEqual(['fundo', 'rosto', 'brilho'])
+    expect([...scene.sources]).toEqual([['janela', source]])
+  })
+
+  it('usa uma fonte escondida para conteúdo visível, mas não cria definição sem membro visível', () => {
+    const source = rect('janela', { hidden: true })
+    const visible = resolveMaskScene([rect('rosto', { maskId: 'janela' }), source])
+    expect(visible.painted.map((shape) => shape.id)).toEqual(['rosto'])
+    expect(visible.sources.get('janela')).toBe(source)
+
+    const hidden = resolveMaskScene([
+      rect('rosto', { maskId: 'janela', hidden: true }),
+      rect('janela'),
+    ])
+    expect(hidden.painted).toEqual([])
+    expect(hidden.sources.size).toBe(0)
   })
 })

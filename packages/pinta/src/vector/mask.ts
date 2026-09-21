@@ -1,6 +1,7 @@
 /** Relações puras de máscara geométrica do editor vetorial. */
-import { flattenPathD } from './flatten'
-import type { VectorShape } from './model'
+import { flattenPathD, shapeToPoly } from './flatten'
+import type { Vec2, VectorShape } from './model'
+import { pointInPoly } from './polygonClip'
 
 export type MaskRefusal =
   | 'needs-two'
@@ -141,6 +142,7 @@ export function remapMaskIds(
 export function resolveMaskScene(shapes: readonly VectorShape[]): MaskScene {
   const normalized = sanitizeMaskReferences([...shapes])
   const byId = new Map(normalized.map((shape) => [shape.id, shape]))
+  const allSourceIds = maskSourceIds(normalized)
   const visibleContent = normalized.filter((shape) => shape.hidden !== true)
   const neededSourceIds = new Set(
     visibleContent.flatMap((shape) => (shape.maskId ? [shape.maskId] : [])),
@@ -151,9 +153,18 @@ export function resolveMaskScene(shapes: readonly VectorShape[]): MaskScene {
     if (source) sources.set(id, source)
   }
   return {
-    painted: visibleContent.filter((shape) => !neededSourceIds.has(shape.id)),
+    painted: visibleContent.filter((shape) => !allSourceIds.has(shape.id)),
     sources,
   }
+}
+
+/** O ponto visível de um conteúdo também cai dentro da geometria de sua máscara? */
+export function pointPassesMask(scene: MaskScene, shape: VectorShape, point: Vec2): boolean {
+  if (!shape.maskId) return true
+  const source = scene.sources.get(shape.maskId)
+  if (!source) return true
+  const flattened = shapeToPoly(source)
+  return flattened.ok ? pointInPoly(point, flattened.poly) : true
 }
 
 /** Id seguro e prefixável do `<clipPath>` correspondente a uma fonte. */

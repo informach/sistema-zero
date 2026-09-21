@@ -12,6 +12,7 @@
 import { normalizeHex } from '../core/color'
 import { type Bounds, rotatePoint, rotationPivotOf, shapeBounds } from './geometry'
 import { gradientGeometry } from './gradient'
+import { pointPassesMask, resolveMaskScene } from './mask'
 import { isVectorGradient, type Vec2, type VectorGradient, type VectorShape } from './model'
 
 /** Ponto dentro do retângulo (hit-test grosso do conta-gotas). */
@@ -89,12 +90,18 @@ export function hitShapeAt(
   point: Vec2,
   slack = 0,
 ): VectorShape | null {
-  for (let i = shapes.length - 1; i >= 0; i -= 1) {
-    const shape = shapes[i]
+  const scene = resolveMaskScene(shapes)
+  for (let i = scene.painted.length - 1; i >= 0; i -= 1) {
+    const shape = scene.painted[i]
     if (!shape || shape.hidden === true || !paintsSomething(shape)) continue
     const bounds = shapeBounds(shape)
     const hit = inflate(bounds, slack + (shape.stroke?.width ?? 0) / 2)
-    if (boundsContains(hit, localPoint(shape, bounds, point))) return shape
+    if (
+      pointPassesMask(scene, shape, point) &&
+      boundsContains(hit, localPoint(shape, bounds, point))
+    ) {
+      return shape
+    }
   }
   return null
 }

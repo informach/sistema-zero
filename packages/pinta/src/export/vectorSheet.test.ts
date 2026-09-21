@@ -145,6 +145,29 @@ describe('vectorSheetSvg — documento puro', () => {
     expect(svg).toContain('data:font/woff2;base64,')
     expect(svg).not.toContain("font-family:'Fredoka One'")
   })
+
+  it('isola ids de máscara repetidos em células diferentes', () => {
+    const asset = makeSprite()
+    const first = asset.animations[0]
+    if (!first) throw new Error('animação esperada')
+    const masked = [
+      rect('rosto'),
+      { ...rect('janela'), type: 'ellipse', cx: 6, cy: 6, rx: 4, ry: 4 },
+    ] as VectorShape[]
+    masked[0] = { ...masked[0], maskId: 'janela' } as VectorShape
+    const frames = first.frames.map(() => masked.map((shape) => ({ ...shape })))
+    const svg = vectorSheetSvg(
+      packVectorSpritesheet({
+        ...asset,
+        animations: [{ ...first, frames }],
+      }),
+    )
+
+    expect(svg).toContain('id="cell-0-0-pin-mask-janela"')
+    expect(svg).toContain('clip-path="url(#cell-0-0-pin-mask-janela)"')
+    expect(svg).toContain('id="cell-0-1-pin-mask-janela"')
+    expect(svg).toContain('clip-path="url(#cell-0-1-pin-mask-janela)"')
+  })
 })
 
 describe('rasterização (happy-dom)', () => {

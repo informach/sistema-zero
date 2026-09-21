@@ -70,7 +70,8 @@ import {
   makeText,
 } from '../../../vector/shapes'
 import { smoothStrokeToPathCapped } from '../../../vector/smoothing'
-import { GradientDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
+import { GradientDefs, SceneDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
+import { clipPathId, resolveMaskScene } from '../../../vector/mask'
 import { Button, ToolButton } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
 import {
@@ -1402,6 +1403,9 @@ export function VectorStage(): JSX.Element {
   const stageWidth = Math.max(Math.round(doc.width * zoom), 1)
   const stageHeight = Math.max(Math.round(doc.height * zoom), 1)
 
+  const documentScene = resolveMaskScene(doc.shapes)
+  const onionScene = resolveMaskScene(onionShapes ?? [])
+
   return (
     <div className="pin-stage relative flex min-h-0 min-w-0 flex-1">
       {/* Barra FLUTUANTE da seleção (espelho da do pixel): absoluta sobre o
@@ -1556,27 +1560,29 @@ export function VectorStage(): JSX.Element {
             onLostPointerCapture={(event) => endGesture(event)}
             onDoubleClick={handleStageDoubleClick}
           >
-            {/* Degradês de TODOS os shapes visíveis (doc + onion + prévia) — o
-                olhinho do painel Camadas tira a forma do palco inteiro. */}
-            <GradientDefs
-              shapes={[
-                ...visibleShapes(doc.shapes),
-                ...visibleShapes(onionShapes ?? []),
-                ...(preview ? [preview] : []),
-              ]}
-            />
+            <SceneDefs shapes={doc.shapes} />
+            {onionShapes ? <SceneDefs shapes={onionShapes} idPrefix="onion-" /> : null}
+            {preview ? <GradientDefs shapes={[preview]} /> : null}
             {/* Onion skin: o quadro ANTERIOR, apagadinho e sem eventos. */}
             {onionShapes ? (
               <g opacity={0.3} pointerEvents="none">
-                {visibleShapes(onionShapes).map((shape) => (
-                  <ShapeElement key={`onion-${shape.id}`} shape={shape} />
+                {onionScene.painted.map((shape) => (
+                  <ShapeElement
+                    key={`onion-${shape.id}`}
+                    shape={shape}
+                    idPrefix="onion-"
+                    clipPath={
+                      shape.maskId ? `url(#${clipPathId(shape.maskId, 'onion-')})` : undefined
+                    }
+                  />
                 ))}
               </g>
             ) : null}
-            {visibleShapes(doc.shapes).map((shape) => (
+            {documentScene.painted.map((shape) => (
               <ShapeElement
                 key={shape.id}
                 shape={shape}
+                clipPath={shape.maskId ? `url(#${clipPathId(shape.maskId)})` : undefined}
                 onPointerDown={(event) => handleShapePointerDown(shape, event)}
                 onDoubleClick={() => handleShapeDoubleClick(shape)}
               />

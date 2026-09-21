@@ -106,6 +106,24 @@ describe('hitShapeAt (a forma sob o toque)', () => {
     expect(hitShapeAt([girado], { x: -5, y: 15 })?.id).toBe('g-pivo')
     expect(hitShapeAt([girado], { x: 15, y: 5 })).toBeNull()
   })
+
+  it('ignora a fonte da máscara e respeita o recorte ao pegar cor', () => {
+    const rosto = rect('rosto', [0, 0, 100, 100], { maskId: 'janela' })
+    const janela: VectorShape = {
+      id: 'janela',
+      type: 'ellipse',
+      cx: 50,
+      cy: 50,
+      rx: 10,
+      ry: 10,
+      fill: '#00a0c8',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    }
+    expect(pickColorAt([rosto, janela], { x: 50, y: 50 })?.shape.id).toBe('rosto')
+    expect(pickColorAt([rosto, janela], { x: 10, y: 10 })).toBeNull()
+  })
 })
 
 describe('colorAtPoint (qual cor sai da forma)', () => {

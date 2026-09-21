@@ -23,6 +23,7 @@
  */
 import { CHORD_TOLERANCE, flattenPathD } from './flatten'
 import { shapeBounds } from './geometry'
+import { pointPassesMask, resolveMaskScene } from './mask'
 import type { Vec2, VectorShape } from './model'
 import { boundsContains, inflate, localPoint, paintsSomething } from './pickColor'
 
@@ -153,10 +154,11 @@ export function hitMovableShapeAt(
   point: Vec2,
   slack = 0,
 ): VectorShape | null {
-  for (let i = shapes.length - 1; i >= 0; i -= 1) {
-    const shape = shapes[i]
+  const scene = resolveMaskScene(shapes)
+  for (let i = scene.painted.length - 1; i >= 0; i -= 1) {
+    const shape = scene.painted[i]
     if (!shape || shape.hidden === true || shape.locked === true) continue
-    if (shapeHitAt(shape, point, slack)) return shape
+    if (pointPassesMask(scene, shape, point) && shapeHitAt(shape, point, slack)) return shape
   }
   return null
 }

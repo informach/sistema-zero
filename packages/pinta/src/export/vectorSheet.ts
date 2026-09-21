@@ -12,7 +12,7 @@ import type { PintaVectorAnimation, VectorSpriteAsset } from '../core/project'
 import type { VectorShape } from '../vector/model'
 import { embedVectorFonts } from '../vector/portableSvg'
 import { svgToPngDataUrl } from '../vector/rasterize'
-import { gradientDefsMarkup, shapesToMarkup } from '../vector/svg'
+import { sceneDefsMarkup, shapesToMarkup } from '../vector/svg'
 import { packAnimationsGeometry, type SheetGeometry } from './spritesheet'
 
 export interface VectorSheetCell {
@@ -60,16 +60,19 @@ export function cellsToSheetSvg(options: {
   const { cells, cellWidth, cellHeight, columns, rows } = options
   const width = columns * cellWidth
   const height = rows * cellHeight
-  const parts = cells.map(
-    (cell) =>
-      `  <svg x="${cell.col * cellWidth}" y="${cell.row * cellHeight}" width="${cellWidth}" height="${cellHeight}" viewBox="0 0 ${cellWidth} ${cellHeight}">\n${shapesToMarkup(cell.shapes, '    ')}\n  </svg>`,
-  )
-  // Um `<defs>` no topo da folha serve TODAS as células (ids de shape únicos).
-  const defs = gradientDefsMarkup(cells.flatMap((cell) => cell.shapes))
+  const parts = cells.map((cell) => {
+    const idPrefix = `cell-${cell.row}-${cell.col}-`
+    const defs = sceneDefsMarkup(cell.shapes, idPrefix)
+    const lines = [
+      `  <svg x="${cell.col * cellWidth}" y="${cell.row * cellHeight}" width="${cellWidth}" height="${cellHeight}" viewBox="0 0 ${cellWidth} ${cellHeight}">`,
+    ]
+    if (defs) lines.push(defs.replaceAll('\n', '\n  '))
+    lines.push(shapesToMarkup(cell.shapes, '    ', idPrefix), '  </svg>')
+    return lines.join('\n')
+  })
   const lines = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
   ]
-  if (defs) lines.push(defs)
   lines.push(...parts, '</svg>')
   return lines.join('\n')
 }

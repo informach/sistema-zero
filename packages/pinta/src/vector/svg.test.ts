@@ -4,8 +4,14 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { createVectorBackgroundAsset } from '../core/project'
 import { fontFamilyLabel, VECTOR_FONT_FAMILIES, type VectorShape } from './model'
 import { vectorToPortableSvg } from './portableSvg'
-import { gradientDefsMarkup, shapeToMarkup, textLines, vectorToSvg } from './svg'
-import { GradientDefs } from './VectorFrameSvg'
+import {
+  gradientDefsMarkup,
+  sceneDefsMarkup,
+  shapeToMarkup,
+  textLines,
+  vectorToSvg,
+} from './svg'
+import { GradientDefs, VectorFrameSvg } from './VectorFrameSvg'
 
 const base = { fill: '#78dc52', stroke: null, opacity: 1, rotation: 0 }
 
@@ -232,6 +238,97 @@ describe('vectorToSvg (snapshot do documento)', () => {
         '</svg>',
       ].join('\n'),
     )
+  })
+})
+
+describe('máscaras no SVG', () => {
+  const maskedShapes: VectorShape[] = [
+    {
+      ...base,
+      id: 'fundo',
+      type: 'rect',
+      x: 0,
+      y: 0,
+      w: 100,
+      h: 100,
+      rx: 0,
+    },
+    {
+      ...base,
+      id: 'rosto',
+      type: 'rect',
+      x: 10,
+      y: 10,
+      w: 80,
+      h: 80,
+      rx: 0,
+      fill: '#ff2121',
+      maskId: 'janela',
+    },
+    {
+      ...base,
+      id: 'janela',
+      type: 'ellipse',
+      cx: 50,
+      cy: 50,
+      rx: 18,
+      ry: 18,
+      fill: { type: 'linear', from: '#000000', to: '#ffffff', angle: 0 },
+      opacity: 0.2,
+      rotation: 30,
+      rotationPivot: { x: -10, y: 120 },
+      hidden: true,
+    },
+    {
+      ...base,
+      id: 'brilho',
+      type: 'rect',
+      x: 45,
+      y: 45,
+      w: 10,
+      h: 10,
+      rx: 0,
+      fill: '#ffffff',
+    },
+  ]
+
+  it('emite uma definição sólida, omite a fonte e mantém o conteúdo na ordem-Z', () => {
+    const svg = vectorToSvg({ width: 100, height: 100, shapes: maskedShapes })
+    expect(svg.match(/<clipPath/g)).toHaveLength(1)
+    expect(svg).toContain('<clipPath id="pin-mask-janela">')
+    expect(svg).toContain(
+      '<ellipse cx="50" cy="50" rx="18" ry="18" fill="#000000" transform="rotate(30 -10 120)"/>',
+    )
+    expect(svg).toContain('clip-path="url(#pin-mask-janela)"')
+    expect(svg).not.toContain('pin-grad-janela')
+    expect(svg.indexOf('id="pin-mask-janela"')).toBeLessThan(svg.indexOf('fill="#78dc52"'))
+    expect(svg.indexOf('fill="#ff2121"')).toBeLessThan(svg.indexOf('fill="#ffffff"'))
+  })
+
+  it('prefixa ids e referências e não cria defs quando todo conteúdo está escondido', () => {
+    const prefixed = sceneDefsMarkup(maskedShapes, 'quadro-2-')
+    expect(prefixed).toContain('id="quadro-2-pin-mask-janela"')
+    expect(prefixed).not.toContain('pin-grad-janela')
+    const hidden = maskedShapes.map((shape) =>
+      shape.id === 'rosto' ? { ...shape, hidden: true } : shape,
+    )
+    expect(sceneDefsMarkup(hidden)).toBe('')
+  })
+
+  it('mantém paridade entre a cena React e a serialização string', () => {
+    const rendered = renderToStaticMarkup(
+      createElement(VectorFrameSvg, { width: 100, height: 100, shapes: maskedShapes }),
+    )
+    const exported = vectorToSvg({ width: 100, height: 100, shapes: maskedShapes })
+    for (const attribute of [
+      'id="pin-mask-janela"',
+      'transform="rotate(30 -10 120)"',
+      'clip-path="url(#pin-mask-janela)"',
+    ]) {
+      expect(rendered).toContain(attribute)
+      expect(exported).toContain(attribute)
+    }
+    expect(rendered.match(/<ellipse/g)).toHaveLength(1)
   })
 })
 

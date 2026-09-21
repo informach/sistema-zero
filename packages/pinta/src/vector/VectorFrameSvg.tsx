@@ -8,6 +8,7 @@ import type { JSX, MouseEvent, PointerEvent } from 'react'
 import { memo, useEffect } from 'react'
 import { ensureVectorFontsForShapes } from './fonts'
 import { gradientGeometry } from './gradient'
+import { clipPathId, resolveMaskScene } from './mask'
 import {
   gradientId,
   isVectorGradient,
@@ -17,19 +18,39 @@ import {
 } from './model'
 import { shapeCommonAttrs, shapeGeometryAttrs } from './svg'
 
-/**
- * `<defs>` React com um gradiente por shape de preenchimento degradê — os
- * MESMOS números do export string (`gradientDefsMarkup`). Renderizar dentro do
- * `<svg>` que usa os shapes (o `url(#id)` resolve no mesmo documento).
- */
-export function GradientDefs({ shapes }: { shapes: VectorShape[] }): JSX.Element | null {
+function reactSvgProps(attrs: Record<string, unknown>): Record<string, unknown> {
+  const props = { ...attrs }
+  const camelCase = {
+    'stroke-width': 'strokeWidth',
+    'stroke-linecap': 'strokeLinecap',
+    'stroke-linejoin': 'strokeLinejoin',
+    'font-size': 'fontSize',
+    'font-family': 'fontFamily',
+    'text-anchor': 'textAnchor',
+    'image-rendering': 'imageRendering',
+    'clip-path': 'clipPath',
+  } as const
+  for (const [from, to] of Object.entries(camelCase)) {
+    if (!(from in props)) continue
+    props[to] = props[from]
+    delete props[from]
+  }
+  return props
+}
+
+function GradientElements({
+  shapes,
+  idPrefix = '',
+}: {
+  shapes: readonly VectorShape[]
+  idPrefix?: string
+}): JSX.Element {
   const grads = shapes.filter((s) => isVectorGradient(s.fill))
-  if (grads.length === 0) return null
   return (
-    <defs>
+    <>
       {grads.map((s) => {
         const g = s.fill as VectorGradient
-        const id = gradientId(s.id)
+        const id = gradientId(s.id, idPrefix)
         const stops = (
           <>
             <stop offset="0" stopColor={g.from} />
@@ -63,6 +84,56 @@ export function GradientDefs({ shapes }: { shapes: VectorShape[] }): JSX.Element
           </linearGradient>
         )
       })}
+    </>
+  )
+}
+
+/**
+ * `<defs>` React com um gradiente por shape de preenchimento degradê — os
+ * MESMOS números do export string (`gradientDefsMarkup`). Renderizar dentro do
+ * `<svg>` que usa os shapes (o `url(#id)` resolve no mesmo documento).
+ */
+export function GradientDefs({ shapes }: { shapes: VectorShape[] }): JSX.Element | null {
+  const grads = shapes.filter((s) => isVectorGradient(s.fill))
+  if (grads.length === 0) return null
+  return (
+    <defs>
+      <GradientElements shapes={grads} />
+    </defs>
+  )
+}
+
+function ClipSourceElement({ source }: { source: VectorShape }): JSX.Element {
+  const geometry = shapeGeometryAttrs(source)
+  const transform = shapeCommonAttrs(source).transform
+  const props = reactSvgProps({
+    ...geometry.attrs,
+    fill: '#000000',
+    ...(transform ? { transform } : {}),
+  })
+  const Tag = geometry.tag as 'rect'
+  return <Tag {...(props as JSX.IntrinsicElements['rect'])} />
+}
+
+/** `<defs>` React da cena composta, em paridade com `sceneDefsMarkup`. */
+export function SceneDefs({
+  shapes,
+  idPrefix = '',
+}: {
+  shapes: VectorShape[]
+  idPrefix?: string
+}): JSX.Element | null {
+  const scene = resolveMaskScene(shapes)
+  const hasGradients = scene.painted.some((shape) => isVectorGradient(shape.fill))
+  if (!hasGradients && scene.sources.size === 0) return null
+  return (
+    <defs>
+      <GradientElements shapes={scene.painted} idPrefix={idPrefix} />
+      {[...scene.sources.values()].map((source) => (
+        <clipPath key={source.id} id={clipPathId(source.id, idPrefix)}>
+          <ClipSourceElement source={source} />
+        </clipPath>
+      ))}
     </defs>
   )
 }
@@ -70,46 +141,21 @@ export function GradientDefs({ shapes }: { shapes: VectorShape[] }): JSX.Element
 /** Um shape do modelo → elemento SVG de React (mesmos atributos do export). */
 export function ShapeElement({
   shape,
+  idPrefix = '',
+  clipPath,
   onPointerDown,
   onDoubleClick,
 }: {
   shape: VectorShape
+  idPrefix?: string
+  clipPath?: string
   onPointerDown?: (event: PointerEvent<SVGElement>) => void
   /** Duplo clique (ex.: reeditar um texto no palco). Só render — o export string não muda. */
   onDoubleClick?: (event: MouseEvent<SVGElement>) => void
 }): JSX.Element {
   const { tag, attrs, content, lines } = shapeGeometryAttrs(shape)
-  const common = shapeCommonAttrs(shape)
-  const props: Record<string, unknown> = { ...attrs, ...common, onPointerDown, onDoubleClick }
-  // React usa camelCase p/ estes atributos.
-  if ('stroke-width' in props) {
-    props.strokeWidth = props['stroke-width']
-    delete props['stroke-width']
-  }
-  if ('stroke-linecap' in props) {
-    props.strokeLinecap = props['stroke-linecap']
-    delete props['stroke-linecap']
-  }
-  if ('stroke-linejoin' in props) {
-    props.strokeLinejoin = props['stroke-linejoin']
-    delete props['stroke-linejoin']
-  }
-  if ('font-size' in props) {
-    props.fontSize = props['font-size']
-    delete props['font-size']
-  }
-  if ('font-family' in props) {
-    props.fontFamily = props['font-family']
-    delete props['font-family']
-  }
-  if ('text-anchor' in props) {
-    props.textAnchor = props['text-anchor']
-    delete props['text-anchor']
-  }
-  if ('image-rendering' in props) {
-    props.imageRendering = props['image-rendering']
-    delete props['image-rendering']
-  }
+  const common = shapeCommonAttrs(shape, idPrefix)
+  const props = reactSvgProps({ ...attrs, ...common, clipPath, onPointerDown, onDoubleClick })
   const Tag = tag as 'rect'
   return (
     <Tag {...(props as JSX.IntrinsicElements['rect'])}>
@@ -147,7 +193,7 @@ export const VectorFrameSvg = memo(function VectorFrameSvg({
     void ensureVectorFontsForShapes(shapes)
   }, [shapes])
   // O olhinho do painel Camadas vale em TODA prévia/miniatura (WYSIWYG).
-  const visible = visibleShapes(shapes)
+  const scene = resolveMaskScene(shapes)
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
@@ -155,9 +201,13 @@ export const VectorFrameSvg = memo(function VectorFrameSvg({
       aria-hidden="true"
       focusable="false"
     >
-      <GradientDefs shapes={visible} />
-      {visible.map((shape) => (
-        <ShapeElement key={shape.id} shape={shape} />
+      <SceneDefs shapes={shapes} />
+      {scene.painted.map((shape) => (
+        <ShapeElement
+          key={shape.id}
+          shape={shape}
+          clipPath={shape.maskId ? `url(#${clipPathId(shape.maskId)})` : undefined}
+        />
       ))}
     </svg>
   )

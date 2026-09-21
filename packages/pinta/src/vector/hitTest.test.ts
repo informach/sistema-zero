@@ -229,3 +229,21 @@ describe('hitMovableShapeAt: quem entra na varredura', () => {
     expect(shapeHitAt({ ...texto, rotation: 0 }, pontaDaCaixa)).toBe(true)
   })
 })
+
+describe('hitMovableShapeAt: máscara geométrica', () => {
+  it('não seleciona a fonte e só acerta o conteúdo dentro do recorte', () => {
+    const content = rect('rosto', [0, 0, 100, 100], { maskId: 'janela' })
+    const source: VectorShape = {
+      ...BASE,
+      id: 'janela',
+      type: 'ellipse',
+      cx: 50,
+      cy: 50,
+      rx: 10,
+      ry: 10,
+    }
+    expect(hitMovableShapeAt([content, source], { x: 50, y: 50 })?.id).toBe('rosto')
+    expect(hitMovableShapeAt([content, source], { x: 10, y: 10 })).toBeNull()
+    expect(hitMovableShapeAt([source], { x: 50, y: 50 })).toBe(source)
+  })
+})
