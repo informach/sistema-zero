@@ -97,6 +97,15 @@ describe('hitShapeAt (a forma sob o toque)', () => {
     expect(hitShapeAt([girado], { x: 50, y: -30 })?.id).toBe('g')
     expect(hitShapeAt([girado], { x: 90, y: 10 })).toBeNull()
   })
+
+  it('forma com âncora livre é tocada onde gira em torno dela', () => {
+    const girado = rect('g-pivo', [10, 0, 10, 10], {
+      rotation: 90,
+      rotationPivot: { x: 0, y: 0 },
+    })
+    expect(hitShapeAt([girado], { x: -5, y: 15 })?.id).toBe('g-pivo')
+    expect(hitShapeAt([girado], { x: 15, y: 5 })).toBeNull()
+  })
 })
 
 describe('colorAtPoint (qual cor sai da forma)', () => {

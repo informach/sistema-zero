@@ -104,4 +104,27 @@ describe('geometria do degradê', () => {
     expect(returned.x).toBeCloseTo(80)
     expect(returned.y).toBeCloseTo(25)
   })
+
+  it('converte ida e volta usando uma âncora fora da forma', () => {
+    const shape: VectorShape = {
+      id: 'rect-pivo',
+      type: 'rect',
+      x: 10,
+      y: 0,
+      w: 20,
+      h: 10,
+      rx: 0,
+      fill: radial,
+      stroke: null,
+      opacity: 1,
+      rotation: 90,
+      rotationPivot: { x: 0, y: 0 },
+    }
+    const point = gradientPointForShape(shape, { x: -5, y: 15 })
+    expect(point.x).toBeCloseTo(0.25)
+    expect(point.y).toBeCloseTo(0.5)
+    const returned = gradientDocumentPointForShape(shape, point)
+    expect(returned.x).toBeCloseTo(-5)
+    expect(returned.y).toBeCloseTo(15)
+  })
 })

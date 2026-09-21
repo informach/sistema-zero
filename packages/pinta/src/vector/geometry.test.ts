@@ -7,10 +7,14 @@ import {
   canDistributeShapes,
   distributeShapes,
   parsePathD,
+  resetRotationPivotPreservingAppearance,
   rotatePoint,
+  rotationPivotOf,
   rotateShapesAround,
   rotateShapeTo,
   scaleShape,
+  selectionRotationPivot,
+  setRotationPivotPreservingAppearance,
   setTextAlign,
   shapeBounds,
   translateShape,
@@ -106,6 +110,87 @@ describe('rotatePoint', () => {
   })
 })
 
+describe('âncora de rotação livre', () => {
+  const box = (rotation = 0): Extract<VectorShape, { type: 'rect' }> => ({
+    ...base,
+    type: 'rect',
+    x: 20,
+    y: 10,
+    w: 20,
+    h: 10,
+    rx: 0,
+    rotation,
+  })
+  const renderedPoint = (shape: VectorShape, point: { x: number; y: number }) =>
+    rotatePoint(point, rotationPivotOf(shape), shape.rotation)
+
+  it('desenho antigo continua girando pelo centro e a âncora pode ficar fora da forma', () => {
+    expect(rotationPivotOf(box())).toEqual({ x: 30, y: 15 })
+    const anchored = { ...box(), rotationPivot: { x: -20, y: 80 } }
+    expect(rotationPivotOf(anchored)).toEqual({ x: -20, y: 80 })
+  })
+
+  it('mover a âncora não provoca salto visual em 0°, 45° ou 90°', () => {
+    const point = { x: 25, y: 12 }
+    for (const angle of [0, 45, 90]) {
+      const original = box(angle)
+      const anchored = setRotationPivotPreservingAppearance(original, { x: 20, y: 10 })
+      const before = renderedPoint(original, point)
+      const delta = geometryDelta(original, anchored)
+      const localMoved = translateShape(pointShape(point), delta.x, delta.y)
+      if (localMoved.type !== 'ellipse') throw new Error('fixture')
+      const after = renderedPoint(anchored, { x: localMoved.cx, y: localMoved.cy })
+      expect(after.x).toBeCloseTo(before.x, 6)
+      expect(after.y).toBeCloseTo(before.y, 6)
+      expect(rotationPivotOf(anchored)).toEqual({ x: 20, y: 10 })
+    }
+  })
+
+  it('recentralizar remove a chave sem alterar a pose visível', () => {
+    const original = box(90)
+    const anchored = setRotationPivotPreservingAppearance(original, { x: 5, y: 50 })
+    const reset = resetRotationPivotPreservingAppearance(anchored)
+    expect('rotationPivot' in reset).toBe(false)
+    const cornerBefore = renderedPoint(anchored, geometryPoint(anchored))
+    const cornerAfter = renderedPoint(reset, geometryPoint(reset))
+    expect(cornerAfter.x).toBeCloseTo(cornerBefore.x, 6)
+    expect(cornerAfter.y).toBeCloseTo(cornerBefore.y, 6)
+  })
+
+  it('a seleção usa a âncora da forma única e o centro comum quando há várias', () => {
+    const anchored = { ...box(), rotationPivot: { x: 2, y: 3 } }
+    expect(selectionRotationPivot([anchored])).toEqual({ x: 2, y: 3 })
+    expect(
+      selectionRotationPivot([
+        { ...box(), x: 0, y: 0, w: 10, h: 10 },
+        { ...box(), x: 30, y: 20, w: 10, h: 10 },
+      ]),
+    ).toEqual({ x: 20, y: 15 })
+  })
+
+  it('mover, redimensionar e espelhar levam a âncora junto', async () => {
+    const { flipShape } = await import('./geometry')
+    const anchored = { ...box(), rotationPivot: { x: 10, y: 40 } }
+    expect(translateShape(anchored, 5, -3).rotationPivot).toEqual({ x: 15, y: 37 })
+    expect(scaleShape(anchored, { x: 0, y: 0 }, 2, 0.5).rotationPivot).toEqual({ x: 20, y: 20 })
+    expect(flipShape(anchored, 'h', { x: 50, y: 0 }).rotationPivot).toEqual({ x: 90, y: 40 })
+  })
+
+  function pointShape(point: { x: number; y: number }): VectorShape {
+    return { ...base, type: 'ellipse', cx: point.x, cy: point.y, rx: 0, ry: 0 }
+  }
+
+  function geometryPoint(shape: VectorShape): { x: number; y: number } {
+    if (shape.type !== 'rect') throw new Error('fixture')
+    return { x: shape.x, y: shape.y }
+  }
+
+  function geometryDelta(before: VectorShape, after: VectorShape): { x: number; y: number } {
+    if (before.type !== 'rect' || after.type !== 'rect') throw new Error('fixture')
+    return { x: after.x - before.x, y: after.y - before.y }
+  }
+})
+
 describe('rotateShapesAround (girar a seleção inteira)', () => {
   /** Dois quadrados lado a lado: A em (0..20), B em (40..60), mesma altura. */
   const a: VectorShape = { ...base, id: 'a', type: 'rect', x: 0, y: 0, w: 20, h: 20, rx: 0 }
@@ -170,6 +255,14 @@ describe('rotateShapesAround (girar a seleção inteira)', () => {
     const [out] = rotateShapesAround([p], ['p'], { x: 100, y: 100 }, 90) as [VectorShape]
     if (out.type !== 'path') throw new Error('tipo')
     expect(parsePathD(out.d)).not.toBeNull()
+    expect(out.rotation).toBe(90)
+  })
+
+  it('orbita a âncora explícita de cada forma em torno do pivô comum', () => {
+    const anchored: VectorShape = { ...a, rotationPivot: { x: -10, y: 10 } }
+    const [out] = rotateShapesAround([anchored], ['a'], { x: 10, y: 10 }, 90) as [VectorShape]
+    expect(rotationPivotOf(out).x).toBeCloseTo(10, 6)
+    expect(rotationPivotOf(out).y).toBeCloseTo(-10, 6)
     expect(out.rotation).toBe(90)
   })
 })

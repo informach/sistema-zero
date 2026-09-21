@@ -10,7 +10,7 @@
  * (unidades da caixa), então o que ela vê é o que ela pega.
  */
 import { normalizeHex } from '../core/color'
-import { type Bounds, boundsCenter, rotatePoint, shapeBounds } from './geometry'
+import { type Bounds, rotatePoint, rotationPivotOf, shapeBounds } from './geometry'
 import { gradientGeometry } from './gradient'
 import { isVectorGradient, type Vec2, type VectorGradient, type VectorShape } from './model'
 
@@ -26,8 +26,8 @@ export function inflate(b: Bounds, by: number): Bounds {
 }
 
 /** O ponto no espaço LOCAL da forma (desfaz a rotação em torno do centro da caixa). Exportado: o `hitTest.ts` usa. */
-export function localPoint(shape: VectorShape, bounds: Bounds, point: Vec2): Vec2 {
-  return shape.rotation === 0 ? point : rotatePoint(point, boundsCenter(bounds), -shape.rotation)
+export function localPoint(shape: VectorShape, _bounds: Bounds, point: Vec2): Vec2 {
+  return shape.rotation === 0 ? point : rotatePoint(point, rotationPivotOf(shape), -shape.rotation)
 }
 
 /**

@@ -3,7 +3,7 @@
  * editor renderiza (atributos idênticos) — o export é o editor serializado,
  * snapshot-testável e abre em qualquer navegador/editor de SVG.
  */
-import { boundsCenter, shapeBounds } from './geometry'
+import { rotationPivotOf } from './geometry'
 import { gradientGeometry } from './gradient'
 import {
   fontFamilyCss,
@@ -72,8 +72,8 @@ export function shapeCommonAttrs(shape: VectorShape, idPrefix = ''): Record<stri
   }
   if (shape.opacity < 1) attrs.opacity = String(shape.opacity)
   if (shape.rotation !== 0) {
-    const center = boundsCenter(shapeBounds(shape))
-    attrs.transform = `rotate(${round2(shape.rotation)} ${round2(center.x)} ${round2(center.y)})`
+    const pivot = rotationPivotOf(shape)
+    attrs.transform = `rotate(${round2(shape.rotation)} ${round2(pivot.x)} ${round2(pivot.y)})`
   }
   return attrs
 }

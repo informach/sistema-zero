@@ -198,7 +198,7 @@ describe('a conversão polígono → traço (decisão de produto)', () => {
     expect(next.type === 'polygon' && next.points[1]).toEqual({ x: 13, y: -2 })
   })
 
-  it('ganhar curva converte em traço preservando estilo, grupo e olhinho', () => {
+  it('ganhar curva converte em traço preservando estilo, relações, pivô e cadeado', () => {
     const shape: VectorShape = {
       ...polygonOf([
         { x: 0, y: 0 },
@@ -207,6 +207,9 @@ describe('a conversão polígono → traço (decisão de produto)', () => {
       ]),
       groupId: 'g7',
       hidden: true,
+      locked: true,
+      maskId: 'janela',
+      rotationPivot: { x: -4, y: 30 },
       opacity: 0.5,
       rotation: 30,
     }
@@ -225,6 +228,9 @@ describe('a conversão polígono → traço (decisão de produto)', () => {
     expect(next.rotation).toBe(30)
     expect(next.groupId).toBe('g7')
     expect(next.hidden).toBe(true)
+    expect(next.locked).toBe(true)
+    expect(next.maskId).toBe('janela')
+    expect(next.rotationPivot).toEqual({ x: -4, y: 30 })
     // fechado, então o d termina em Z
     expect(next.type === 'path' && next.d.endsWith('Z')).toBe(true)
     expect(sanitizeVectorShape(next)).not.toBeNull()

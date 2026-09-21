@@ -276,7 +276,19 @@ export function fromEditablePath(shape: VectorShape, ep: EditablePath): VectorSh
 
   const d = editablePathToD(ep)
   if (!d || d.length > MAX_PATH_CHARS) return shape
-  const { id, motionId, fill, stroke, opacity, rotation, groupId, hidden } = shape
+  const {
+    id,
+    motionId,
+    fill,
+    stroke,
+    opacity,
+    rotation,
+    rotationPivot,
+    maskId,
+    groupId,
+    hidden,
+    locked,
+  } = shape
   return {
     id,
     ...(motionId ? { motionId } : {}),
@@ -284,8 +296,11 @@ export function fromEditablePath(shape: VectorShape, ep: EditablePath): VectorSh
     stroke,
     opacity,
     rotation,
+    ...(rotationPivot ? { rotationPivot } : {}),
+    ...(maskId ? { maskId } : {}),
     ...(groupId ? { groupId } : {}),
     ...(hidden === true ? { hidden: true } : {}),
+    ...(locked === true ? { locked: true } : {}),
     type: 'path',
     d,
   }

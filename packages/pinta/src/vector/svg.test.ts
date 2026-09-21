@@ -42,6 +42,22 @@ describe('shapeToMarkup', () => {
     expect(shapeToMarkup(shape)).toContain('transform="rotate(45 5 5)"')
   })
 
+  it('rotação usa a âncora explícita, inclusive fora da forma', () => {
+    const shape: VectorShape = {
+      ...base,
+      id: 'r-pivo',
+      type: 'rect',
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 10,
+      rx: 0,
+      rotation: 45,
+      rotationPivot: { x: -20, y: 30 },
+    }
+    expect(shapeToMarkup(shape)).toContain('transform="rotate(45 -20 30)"')
+  })
+
   it('texto escapa XML (anti-injeção no SVG exportado)', () => {
     const shape: VectorShape = {
       ...base,

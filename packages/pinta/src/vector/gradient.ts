@@ -1,5 +1,5 @@
 /** Geometria compartilhada entre palco, exportação e conta-gotas do degradê. */
-import { shapeBounds } from './geometry'
+import { rotatePoint, rotationPivotOf, shapeBounds } from './geometry'
 import type { Vec2, VectorGradient, VectorShape } from './model'
 
 export type GradientHandle = 'start' | 'end' | 'center' | 'radius'
@@ -120,31 +120,16 @@ export function moveGradientHandle(
 /** Um ponto da página vira coordenada 0–1 na caixa não girada da forma. */
 export function gradientPointForShape(shape: VectorShape, documentPoint: Vec2): Vec2 {
   const bounds = shapeBounds(shape)
-  const centerX = bounds.x + bounds.width / 2
-  const centerY = bounds.y + bounds.height / 2
-  const radians = (-shape.rotation * Math.PI) / 180
-  const dx = documentPoint.x - centerX
-  const dy = documentPoint.y - centerY
-  const x = centerX + dx * Math.cos(radians) - dy * Math.sin(radians)
-  const y = centerY + dx * Math.sin(radians) + dy * Math.cos(radians)
+  const local = rotatePoint(documentPoint, rotationPivotOf(shape), -shape.rotation)
   return {
-    x: bounds.width === 0 ? 0.5 : (x - bounds.x) / bounds.width,
-    y: bounds.height === 0 ? 0.5 : (y - bounds.y) / bounds.height,
+    x: bounds.width === 0 ? 0.5 : (local.x - bounds.x) / bounds.width,
+    y: bounds.height === 0 ? 0.5 : (local.y - bounds.y) / bounds.height,
   }
 }
 
 /** Posição de uma alça na página, inclusive quando a forma está girada. */
 export function gradientDocumentPointForShape(shape: VectorShape, point: Vec2): Vec2 {
   const bounds = shapeBounds(shape)
-  const centerX = bounds.x + bounds.width / 2
-  const centerY = bounds.y + bounds.height / 2
-  const x = bounds.x + point.x * bounds.width
-  const y = bounds.y + point.y * bounds.height
-  const radians = (shape.rotation * Math.PI) / 180
-  const dx = x - centerX
-  const dy = y - centerY
-  return {
-    x: centerX + dx * Math.cos(radians) - dy * Math.sin(radians),
-    y: centerY + dx * Math.sin(radians) + dy * Math.cos(radians),
-  }
+  const local = { x: bounds.x + point.x * bounds.width, y: bounds.y + point.y * bounds.height }
+  return rotatePoint(local, rotationPivotOf(shape), shape.rotation)
 }
