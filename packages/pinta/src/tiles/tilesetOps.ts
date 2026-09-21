@@ -25,7 +25,7 @@ function cloneTileOf<A extends AnyTilesetAsset>(asset: A, tile: TileOf<A>): Tile
   const clone: PintaBitmap | VectorFrame =
     asset.kind === 'tileset'
       ? cloneBitmap(tile as PintaBitmap)
-      : (tile as VectorFrame).map((shape) => ({ ...shape, id: newId() }))
+      : (tile as VectorFrame).map((shape) => ({ ...shape, id: newId(), motionId: newId() }))
   return clone as TileOf<A>
 }
 

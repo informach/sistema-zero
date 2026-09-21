@@ -2540,6 +2540,34 @@ Chrome, importando o módulo de produção pelo `/@fs/` do Vite:
 
 ⚠️ **Pende o QA dela desenhando** (o olho dela na borda, e o fluxo pelo botão de verdade).
 
+## Baixar animação vetorial em SVG (21/09/2026)
+
+O `ExportDialog` do `vector-sprite` baixa a animação SELECIONADA como
+`<desenho>-<animação>.svg`. A criança continua desenhando quadro a quadro; “Movimento mais
+suave” apenas melhora o arquivo final e vem ligado por padrão. `AnimatedSvgExport` mostra o SVG
+final em `<img>` por Blob URL (revogada ao trocar o modo/fechar), tamanho, movimentos suavizados e
+quadros repetidos compactados.
+
+- `VectorShape.motionId?` é a identidade da mesma peça entre poses; `id` continua único por
+  instância/quadro. Forma nova ganha os dois. Duplicar QUADRO conserva `motionId` e troca `id`
+  (legado sem o campo recebe o mesmo novo valor nos dois quadros). Copiar/inserir forma ou duplicar
+  a animação remapeia `motionId`, para movimentos independentes não se ligarem.
+- `export/animatedSvg.ts` é PURO. Compacta poses consecutivas idênticas, extrai formas estáticas e
+  só interpola `rect`/`ellipse`/`line` quando tipo, estilo, índice-Z e um `motionId` único batem em
+  todas as poses. Geometria, rotação e opacidade usam SMIL; qualquer dúvida, path/polygon alterado,
+  aparecimento ou mudança de estilo usa `visibility` discreta. Desligar a opção força esse fallback.
+- Os tempos vêm de `frameDurationsMs` (inclusive `easing`), `loop=false` congela a última pose e
+  uma cópia integral do primeiro quadro aparece sob `prefers-reduced-motion: reduce`.
+- Perfil de MÓDULO: texto visível e `image` embutida bloqueiam o botão; conteúdo escondido não
+  conta; saída acima de 2 MiB também bloqueia. Não entram script, evento, fonte/data URL ou recurso
+  externo. O teste integrado em `packages/admin/tests/module-illustration-svg.test.ts` gera o SVG
+  real e o passa por `validateModuleIllustrationSvg`; a allowlist cobre somente `visibility` e os
+  quatro atributos geométricos de linha necessários ao SMIL.
+- Regressões: `export/animatedSvg.test.ts` (classificação/tempo/teto),
+  `components/export/AnimatedSvgExport.test.tsx` (Blob/download/bloqueios),
+  `animation/framesVector.test.ts` (identidade) e `components/editor/vectorSpriteUi.test.tsx`
+  (fluxo completo do diálogo).
+
 ## Pack por seleção + paletas personalizadas (25/08/2026)
 
 Dois pedidos da artista no mesmo dia; design travado em plano com review adversarial.

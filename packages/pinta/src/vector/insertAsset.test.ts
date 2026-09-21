@@ -83,11 +83,18 @@ describe('shapesForInsert (vetor vira formas)', () => {
     shapes: [quadrado('a', 0, 0), quadrado('b', 160, 160)],
   }
 
-  it('ids NOVOS e um grupo ÚNICO (a inserção anda junta)', () => {
-    const out = shapesForInsert(origem, { width: 400, height: 400 })
+  it('ids de forma/movimento NOVOS e um grupo ÚNICO (a inserção anda junta)', () => {
+    const withMotion = {
+      ...origem,
+      shapes: origem.shapes.map((shape, index) => ({ ...shape, motionId: `mov-${index}` })),
+    }
+    const out = shapesForInsert(withMotion, { width: 400, height: 400 })
     expect(out).toHaveLength(2)
     expect(out.map((s) => s.id)).not.toContain('a')
     expect(out.map((s) => s.id)).not.toContain('b')
+    expect(out.map((s) => s.motionId)).not.toContain('mov-0')
+    expect(out.map((s) => s.motionId)).not.toContain('mov-1')
+    expect(out.every((shape) => Boolean(shape.motionId))).toBe(true)
     expect(new Set(out.map((s) => s.groupId)).size).toBe(1)
     expect(out[0]?.groupId).toBeTruthy()
   })
@@ -138,6 +145,7 @@ describe('imageShapeForInsert (pixel vira figura)', () => {
     const shape = imageShapeForInsert(origem, alvo)
     if (shape.type !== 'image') throw new Error('tipo')
     expect(shape.pixelated).toBe(true)
+    expect(shape.motionId).toBeTruthy()
     expect(shape.src).toBe(src)
     const caixa = shapeBounds(shape)
     // Folga de 1px: a figura assenta em pixel INTEIRO de propósito (meio pixel

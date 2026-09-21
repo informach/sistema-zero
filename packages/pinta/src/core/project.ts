@@ -155,7 +155,7 @@ export interface PintaAnimation<TFrame = PintaBitmap> {
   /** Quadros por segundo (1–30) — o MESMO valor que sai no metadado do export. */
   fps: number
   loop: boolean
-  /** Suavização da prévia (opcional; ausente = `linear`). Não sai no export. */
+  /** Suavização da prévia (opcional; ausente = `linear`). GIF/SVG preservam os tempos. */
   easing?: PintaEasing
   frames: TFrame[]
 }

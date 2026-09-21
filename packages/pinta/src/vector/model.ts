@@ -37,6 +37,12 @@ export type VectorFill = string | VectorGradient
 
 interface VectorShapeBase {
   id: string
+  /**
+   * Identidade estável da forma entre quadros de uma animação. Diferente de
+   * `id` (único por shape/quadro), ela permite ao exportador reconhecer a
+   * mesma peça em poses diferentes. Ausente em documentos antigos.
+   */
+  motionId?: string
   /** Cor sólida (`#rrggbb`/`'none'`) ou degradê. */
   fill: VectorFill
   /** `null` = sem contorno. */
@@ -292,8 +298,10 @@ export function sanitizeVectorShape(raw: unknown): VectorShape | null {
   const opacity = isFiniteNumber(s.opacity) ? Math.min(Math.max(s.opacity, 0), 1) : 1
   const rotation = isFiniteNumber(s.rotation) ? s.rotation % 360 : 0
   const groupId = isSafeVectorId(s.groupId) ? s.groupId : undefined
+  const motionId = isSafeVectorId(s.motionId) ? s.motionId : undefined
   const base = {
     id: s.id,
+    ...(motionId ? { motionId } : {}),
     fill,
     stroke,
     opacity,

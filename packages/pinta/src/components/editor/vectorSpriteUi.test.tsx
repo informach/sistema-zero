@@ -13,7 +13,7 @@ import { withRightColumnPrototypeStub } from '../../testing/rightColumnStub'
 const { PintaApp } = await import('../PintaApp')
 const { persistAsset, setPintaStorageNamespace } = await import('../../state/persistence')
 const { createGalleryStore } = await import('../../state/galleryStore')
-const { makeText } = await import('../../vector/shapes')
+const { DEFAULT_STYLE, makeRect, makeText } = await import('../../vector/shapes')
 
 beforeEach(() => {
   clearIdbMock()
@@ -210,6 +210,71 @@ describe('personagem vetorial — paridade com o pixel', () => {
     expect(screen.getByText(COPY.exportDialog.recipeTitle)).toBeTruthy()
     expect(screen.getByText(COPY.exportDialog.scaleVectorHint)).toBeTruthy()
     expect(screen.getByText(/do quadro 0 ao 0/)).toBeTruthy()
+  })
+
+  it('pré-visualiza e baixa o SVG animado com suavização opcional', async () => {
+    const seed = createGalleryStore()
+    const asset = await seed
+      .getState()
+      .create({ kind: 'vector-sprite', name: 'heroi-animado', frameSize: 64 })
+    if (asset?.kind !== 'vector-sprite') throw new Error('personagem vetorial esperado')
+    const animation = asset.animations[0]
+    if (!animation) throw new Error('animação esperada')
+    const first = makeRect({ x: 2, y: 4 }, { x: 14, y: 20 }, DEFAULT_STYLE)
+    if (first.type !== 'rect') throw new Error('retângulo esperado')
+    animation.frames = [[first], [{ ...first, id: 'forma-no-quadro-2', x: 30 }]]
+    await persistAsset(asset)
+
+    const createDescriptor = Object.getOwnPropertyDescriptor(URL, 'createObjectURL')
+    const revokeDescriptor = Object.getOwnPropertyDescriptor(URL, 'revokeObjectURL')
+    const clickDescriptor = Object.getOwnPropertyDescriptor(HTMLAnchorElement.prototype, 'click')
+    const blobs: Blob[] = []
+    const names: string[] = []
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: (blob: Blob) => {
+        blobs.push(blob)
+        return `blob:pinta-animated-svg-${blobs.length}`
+      },
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: () => undefined,
+    })
+    Object.defineProperty(HTMLAnchorElement.prototype, 'click', {
+      configurable: true,
+      value(this: HTMLAnchorElement) {
+        names.push(this.download)
+      },
+    })
+
+    try {
+      await openAsset('heroi-animado')
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.download }))
+
+      const smooth = await screen.findByRole('checkbox', { name: /Movimento mais suave/ })
+      expect((smooth as HTMLInputElement).checked).toBe(true)
+      expect(screen.getByRole('img', { name: COPY.exportDialog.animatedSvgPreview })).toBeTruthy()
+      expect(screen.getByText(/1 movimento suavizado/)).toBeTruthy()
+
+      fireEvent.click(screen.getByRole('button', { name: COPY.exportDialog.animatedSvgDownload }))
+      await waitFor(() => expect(blobs.length).toBeGreaterThanOrEqual(2))
+      expect(await blobs.at(-1)?.text()).toContain('attributeName="x"')
+      expect(names.at(-1)).toBe('heroi-animado-parado.svg')
+
+      fireEvent.click(smooth)
+      await waitFor(() => expect(screen.getByText(/0 movimentos suavizados/)).toBeTruthy())
+      fireEvent.click(screen.getByRole('button', { name: COPY.exportDialog.animatedSvgDownload }))
+      expect(await blobs.at(-1)?.text()).toContain('calcMode="discrete"')
+    } finally {
+      if (createDescriptor) Object.defineProperty(URL, 'createObjectURL', createDescriptor)
+      else Reflect.deleteProperty(URL, 'createObjectURL')
+      if (revokeDescriptor) Object.defineProperty(URL, 'revokeObjectURL', revokeDescriptor)
+      else Reflect.deleteProperty(URL, 'revokeObjectURL')
+      if (clickDescriptor)
+        Object.defineProperty(HTMLAnchorElement.prototype, 'click', clickDescriptor)
+      else Reflect.deleteProperty(HTMLAnchorElement.prototype, 'click')
+    }
   })
 
   it('download SVG do diálogo incorpora a fonte usada no personagem', async () => {

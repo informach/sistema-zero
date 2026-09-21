@@ -276,9 +276,10 @@ export function fromEditablePath(shape: VectorShape, ep: EditablePath): VectorSh
 
   const d = editablePathToD(ep)
   if (!d || d.length > MAX_PATH_CHARS) return shape
-  const { id, fill, stroke, opacity, rotation, groupId, hidden } = shape
+  const { id, motionId, fill, stroke, opacity, rotation, groupId, hidden } = shape
   return {
     id,
+    ...(motionId ? { motionId } : {}),
     fill,
     stroke,
     opacity,

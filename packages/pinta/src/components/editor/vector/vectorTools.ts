@@ -260,7 +260,7 @@ export function cloneShapesWithNewIds(
     // A cópia nasce DESTRANCADA (é material novo — duplicar uma trancada é
     // justamente o jeito de mexer numa variação sem tocar no original).
     const { locked: _locked, ...clone } = structuredClone(shape)
-    const moved = translateShape({ ...clone, id: newId() }, dx, dy)
+    const moved = translateShape({ ...clone, id: newId(), motionId: newId() }, dx, dy)
     if (!shape.groupId) return moved
     const groupId = groupIds.get(shape.groupId) ?? newId()
     groupIds.set(shape.groupId, groupId)

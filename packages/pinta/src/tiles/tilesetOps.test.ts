@@ -2,9 +2,11 @@ import { describe, expect, it } from 'bun:test'
 import {
   createTilemapAsset,
   createTilesetAsset,
+  createVectorTilesetAsset,
   PINTA_LIMITS,
   type TilemapAsset,
 } from '../core/project'
+import type { VectorShape } from '../vector/model'
 import { setCell } from './tilemapOps'
 import {
   addTile,
@@ -48,6 +50,30 @@ describe('tilesetOps', () => {
     expect(out.tiles[1]).not.toBe(tile as never)
     expect(out.solid).toEqual([true, true])
     expect(out.platform).toEqual([false, false])
+  })
+
+  it('duplicateTile vetorial cria identidades independentes para a nova peça', () => {
+    const original = createVectorTilesetAsset({ name: 'pecas-v', tileSize: 16 })
+    const shape: VectorShape = {
+      id: 'forma-original',
+      motionId: 'movimento-original',
+      type: 'rect',
+      x: 0,
+      y: 0,
+      w: 8,
+      h: 8,
+      rx: 0,
+      fill: '#ff2121',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    }
+    const base = { ...original, tiles: [[shape]] }
+    const out = duplicateTile(base, 0)
+    const copy = out.tiles[1]?.[0]
+    expect(copy?.id).not.toBe(shape.id)
+    expect(copy?.motionId).toBeTruthy()
+    expect(copy?.motionId).not.toBe(shape.motionId)
   })
 
   it('cycleCollision cicla livre → sólido → plataforma → livre (exclusivo)', () => {

@@ -12,6 +12,7 @@ import {
   VECTOR_FONT_FAMILIES,
   visibleShapes,
 } from './model'
+import { DEFAULT_STYLE, makeRect } from './shapes'
 
 const base = { id: 's1', stroke: null, opacity: 1, rotation: 0 }
 
@@ -105,6 +106,29 @@ describe('sanitizeVectorShape — grupo', () => {
     expect(
       sanitizeVectorShape({ ...rectRaw, groupId: 'grupo com espaço' })?.groupId,
     ).toBeUndefined()
+  })
+})
+
+describe('sanitizeVectorShape — identidade de movimento', () => {
+  const rectRaw = { ...base, type: 'rect', x: 0, y: 0, w: 10, h: 10, rx: 0, fill: '#78dc52' }
+
+  it('preserva um motionId seguro para ligar a forma entre quadros', () => {
+    expect(sanitizeVectorShape({ ...rectRaw, motionId: 'movimento-1' })?.motionId).toBe(
+      'movimento-1',
+    )
+  })
+
+  it('mantém desenhos antigos sem motionId e descarta valores inseguros', () => {
+    expect(sanitizeVectorShape(rectRaw)?.motionId).toBeUndefined()
+    expect(
+      sanitizeVectorShape({ ...rectRaw, motionId: 'x"><script>alert(1)</script>' })?.motionId,
+    ).toBeUndefined()
+  })
+
+  it('uma forma nova nasce com identidades de instância e movimento distintas', () => {
+    const shape = makeRect({ x: 0, y: 0 }, { x: 10, y: 10 }, DEFAULT_STYLE)
+    expect(shape.motionId).toBeTruthy()
+    expect(shape.motionId).not.toBe(shape.id)
   })
 })
 

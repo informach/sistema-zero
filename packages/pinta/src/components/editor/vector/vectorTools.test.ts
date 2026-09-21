@@ -3,6 +3,7 @@ import { boundsUnion, shapeBounds } from '../../../vector/geometry'
 import type { VectorShape } from '../../../vector/model'
 import { DEFAULT_STYLE } from '../../../vector/shapes'
 import {
+  cloneShapesWithNewIds,
   formatStrokeWidth,
   occupiedBoundsOf,
   offsetInsideDoc,
@@ -10,6 +11,30 @@ import {
   strokeDotSize,
   strokeWidthIndex,
 } from './vectorTools'
+
+describe('cloneShapesWithNewIds', () => {
+  it('uma cópia independente recebe ids de forma e movimento novos', () => {
+    const shape: VectorShape = {
+      id: 'forma-original',
+      motionId: 'movimento-original',
+      type: 'rect',
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 10,
+      rx: 0,
+      fill: '#000000',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    }
+
+    const [copy] = cloneShapesWithNewIds([shape], 12, 12)
+    expect(copy?.id).not.toBe(shape.id)
+    expect(copy?.motionId).toBeTruthy()
+    expect(copy?.motionId).not.toBe(shape.motionId)
+  })
+})
 
 describe('espessuras do contorno (vetor)', () => {
   it('são seis degraus crescentes de meio em meio, e o default está entre eles', () => {

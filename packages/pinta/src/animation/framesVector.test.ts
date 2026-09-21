@@ -14,9 +14,10 @@ import {
   removeFrame,
 } from './frames'
 
-function rect(id: string): VectorShape {
+function rect(id: string, motionId?: string): VectorShape {
   return {
     id,
+    ...(motionId ? { motionId } : {}),
     type: 'rect',
     x: 0,
     y: 0,
@@ -52,13 +53,15 @@ describe('quadros vetoriais', () => {
     expect(out.animations[0]?.frames[0]).toBe(base.animations[0]?.frames[0] as never)
   })
 
-  it('duplicateFrame clona os shapes com ids NOVOS (sem colisão de keys no onion)', () => {
+  it('duplicateFrame clona ids e preserva a identidade de movimento entre os quadros', () => {
     const base = sprite()
     const out = duplicateFrame(base, animId(base), 0)
     const original = out.animations[0]?.frames[0]?.[0]
     const copy = out.animations[0]?.frames[1]?.[0]
     expect(copy?.type).toBe('rect')
     expect(copy?.id).not.toBe(original?.id)
+    expect(original?.motionId).toBeTruthy()
+    expect(copy?.motionId).toBe(original?.motionId)
   })
 
   it('removeFrame nunca esvazia; moveFrame troca posições', () => {
@@ -89,10 +92,26 @@ describe('animações vetoriais', () => {
     expect(asset.animations[1]?.frames).toEqual([[]])
   })
 
-  it('duplicateAnimation clona quadros com shapes de ids novos', () => {
-    const base = sprite()
+  it('duplicateAnimation cria uma trilha nova, consistente dentro da cópia', () => {
+    const original = sprite()
+    const animation = original.animations[0]
+    if (!animation) throw new Error('animação esperada')
+    const base = {
+      ...original,
+      animations: [
+        {
+          ...animation,
+          frames: [[rect('a', 'mov-original')], [rect('b', 'mov-original')]],
+        },
+      ],
+    }
     const { asset, animationId } = duplicateAnimation(base, animId(base))
     expect(animationId).not.toBeNull()
     expect(asset.animations[1]?.frames[0]?.[0]?.id).not.toBe('a')
+    const first = asset.animations[1]?.frames[0]?.[0]
+    const second = asset.animations[1]?.frames[1]?.[0]
+    expect(first?.motionId).toBeTruthy()
+    expect(first?.motionId).toBe(second?.motionId)
+    expect(first?.motionId).not.toBe('mov-original')
   })
 })

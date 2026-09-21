@@ -102,7 +102,16 @@ describe('toEditablePath / fromEditablePath', () => {
   })
 
   it('mantém o retângulo arredondado até mudar um ponto e conserva os cantos curvos', () => {
-    const shape: VectorShape = { ...base, type: 'rect', x: 10, y: 20, w: 80, h: 40, rx: 10 }
+    const shape: VectorShape = {
+      ...base,
+      motionId: 'mov-retangulo',
+      type: 'rect',
+      x: 10,
+      y: 20,
+      w: 80,
+      h: 40,
+      rx: 10,
+    }
     const editable = toEditablePath(shape)
     if (!editable) throw new Error('retângulo arredondado sem pontos')
     expect(editable.nodes).toHaveLength(8)
@@ -111,7 +120,12 @@ describe('toEditablePath / fromEditablePath', () => {
     expect(editablePathToD(editable).match(/C /g)).toHaveLength(4)
     expect(fromEditablePath(shape, editable)).toBe(shape)
     const changed = fromEditablePath(shape, moveNodes(editable, [0], { x: 0, y: -5 }))
-    expect(changed).toMatchObject({ id: shape.id, type: 'path', fill: shape.fill })
+    expect(changed).toMatchObject({
+      id: shape.id,
+      motionId: shape.motionId,
+      type: 'path',
+      fill: shape.fill,
+    })
     expect(toEditablePath(changed)?.nodes[0]?.p).toEqual({ x: 20, y: 15 })
   })
 

@@ -26,6 +26,7 @@ export const DEFAULT_STYLE: ShapeStyle = {
 
 const base = (style: ShapeStyle) => ({
   id: newId(),
+  motionId: newId(),
   fill: style.fill,
   stroke: style.stroke,
   opacity: style.opacity,

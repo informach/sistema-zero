@@ -876,6 +876,29 @@ export const COPY = {
     gifHint:
       'O GIF leva todos os quadros da animação e roda sozinho: dá para mandar para alguém, anexar numa publicação da comunidade ou usar onde quiser.',
     gifEmpty: 'Esta animação ainda não tem quadros. Desenhe um quadro para poder baixar o GIF.',
+    animatedSvgTitle: (name: string) => `Animação “${name}” em SVG`,
+    animatedSvgDownload: 'Baixar animação em SVG',
+    animatedSvgPreview: 'Prévia da animação em SVG',
+    animatedSvgHint:
+      'Arquivo vetorial otimizado, pronto para os módulos da Comunidade Kids e com um quadro estático para quem reduz movimento.',
+    smoothMotion: 'Movimento mais suave',
+    smoothMotionHint:
+      'O Pinta suaviza posição, tamanho, giro e transparência quando reconhece a mesma forma nos quadros. O restante continua quadro a quadro.',
+    animatedSvgStats: (size: string, smooth: number, compacted: number) =>
+      `${size} · ${smooth} movimento${smooth === 1 ? '' : 's'} suavizado${smooth === 1 ? '' : 's'}${
+        compacted > 0
+          ? ` · ${compacted} quadro${compacted === 1 ? '' : 's'} repetido${
+              compacted === 1 ? '' : 's'
+            } compactado${compacted === 1 ? '' : 's'}`
+          : ''
+      }`,
+    animatedSvgEmpty: 'Desenhe pelo menos uma forma visível para baixar esta animação.',
+    animatedSvgText:
+      'Esta animação tem texto. Para usar nos módulos, transforme o texto em formas ou remova-o.',
+    animatedSvgImage:
+      'Esta animação tem uma figura de pixel inserida. Remova-a para criar um SVG seguro para os módulos.',
+    animatedSvgTooLarge:
+      'O SVG passou de 2 MB. Simplifique alguns traços ou reduza a quantidade de quadros.',
     tilesetSheet: 'Folha de peças (PNG)',
     tilesetSheetSvg: 'Folha de peças (SVG)',
     tilemapImage: 'Imagem do mapa (PNG)',

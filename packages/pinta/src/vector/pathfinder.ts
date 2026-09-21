@@ -337,6 +337,7 @@ export function pathfinderShapes(
    */
   const resultado: VectorShape = {
     id: base.id,
+    ...(base.motionId ? { motionId: base.motionId } : {}),
     fill: base.fill,
     stroke: base.stroke,
     opacity: base.opacity,

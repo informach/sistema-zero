@@ -1311,7 +1311,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     // ficaria órfão por um render, `single` viraria null e a faixa de pontos
     // inteira sumiria da tela — leria como "quebrou".
     const first = fromEditablePath(before, halves[0])
-    const second = fromEditablePath({ ...before, id: newId() }, halves[1])
+    const second = fromEditablePath({ ...before, id: newId(), motionId: newId() }, halves[1])
     // ⚠️ `fromEditablePath` devolve a forma ORIGINAL quando o `d` estoura o
     // teto: sem esta guarda o corte duplicaria o traço inteiro.
     if (first === before || first.type !== 'path' || second.type !== 'path') {

@@ -143,6 +143,10 @@ const ANIMATED_ATTRIBUTES = new Set([
   'transform',
   'x',
   'y',
+  'x1',
+  'x2',
+  'y1',
+  'y2',
   'cx',
   'cy',
   'r',
@@ -154,6 +158,7 @@ const ANIMATED_ATTRIBUTES = new Set([
   'offset',
   'stop-color',
   'stop-opacity',
+  'visibility',
 ])
 
 export class InvalidModuleIllustrationSvgError extends Error {}

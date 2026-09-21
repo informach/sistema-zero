@@ -73,6 +73,23 @@ describe('shapeToMarkup', () => {
     expect(markup).toContain('points="0,0 10,0 5,9.13"')
     expect(markup).toContain('opacity="0.5"')
   })
+
+  it('aceita filhos de animação sem alterar o markup estático padrão', () => {
+    const shape: VectorShape = {
+      ...base,
+      id: 'r3',
+      type: 'rect',
+      x: 1,
+      y: 2,
+      w: 3,
+      h: 4,
+      rx: 0,
+    }
+    expect(shapeToMarkup(shape)).toEndWith('/>')
+    expect(shapeToMarkup(shape, '', '<animate attributeName="x" values="1;2"/>')).toBe(
+      '<rect x="1" y="2" width="3" height="4" fill="#78dc52"><animate attributeName="x" values="1;2"/></rect>',
+    )
+  })
 })
 
 describe('degradê (gradient)', () => {

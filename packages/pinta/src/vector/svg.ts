@@ -186,7 +186,7 @@ export function shapeGeometryAttrs(shape: VectorShape): {
   }
 }
 
-export function shapeToMarkup(shape: VectorShape, idPrefix = ''): string {
+export function shapeToMarkup(shape: VectorShape, idPrefix = '', children = ''): string {
   const { tag, attrs, content, lines } = shapeGeometryAttrs(shape)
   const all = { ...attrs, ...shapeCommonAttrs(shape, idPrefix) }
   const attrText = Object.entries(all)
@@ -199,6 +199,7 @@ export function shapeToMarkup(shape: VectorShape, idPrefix = ''): string {
     return `<${tag} ${attrText}>${spans}</${tag}>`
   }
   if (content !== undefined) return `<${tag} ${attrText}>${escapeXml(content)}</${tag}>`
+  if (children) return `<${tag} ${attrText}>${children}</${tag}>`
   return `<${tag} ${attrText}/>`
 }
 

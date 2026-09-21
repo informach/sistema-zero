@@ -63,6 +63,7 @@ import {
   Puzzle,
 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
+import { AnimatedSvgExport } from './AnimatedSvgExport'
 
 /**
  * Deixa o navegador PINTAR o "Preparando..." antes de a thread travar no
@@ -486,14 +487,23 @@ export function ExportDialog({
               {COPY.exportDialog.spritesheetJson}
             </Button>
             {vectorAnimation ? (
-              <GifButton
-                busy={busy}
-                ready={gifReady}
-                name={vectorAnimation.name}
-                onDownload={() =>
-                  downloadGif(() => vectorAnimationGif(vectorSprite, vectorAnimation, scale))
-                }
-              />
+              <>
+                <GifButton
+                  busy={busy}
+                  ready={gifReady}
+                  name={vectorAnimation.name}
+                  onDownload={() =>
+                    downloadGif(() => vectorAnimationGif(vectorSprite, vectorAnimation, scale))
+                  }
+                />
+                <AnimatedSvgExport
+                  asset={vectorSprite}
+                  animation={vectorAnimation}
+                  onDownload={(svg) =>
+                    downloadText(svg, `${asset.name}-${animationName}.svg`, 'image/svg+xml')
+                  }
+                />
+              </>
             ) : null}
             {activeDoc ? (
               <>

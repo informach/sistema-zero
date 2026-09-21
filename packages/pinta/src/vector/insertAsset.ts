@@ -125,7 +125,12 @@ export function shapesForInsert(
   const scale = fitScale(source, target)
   const groupId = newId()
   const scaled = visible.map((shape) => ({
-    ...scaleShape({ ...structuredClone(shape), id: newId() }, { x: 0, y: 0 }, scale, scale),
+    ...scaleShape(
+      { ...structuredClone(shape), id: newId(), motionId: newId() },
+      { x: 0, y: 0 },
+      scale,
+      scale,
+    ),
     groupId,
   }))
   const bounds = boundsUnion(scaled.map(shapeBounds))
@@ -144,6 +149,7 @@ export function imageShapeForInsert(
   const h = source.height * scale
   return {
     id: newId(),
+    motionId: newId(),
     // A figura já tem cor própria: preenchimento e contorno saem do caminho.
     fill: 'none',
     stroke: null,
