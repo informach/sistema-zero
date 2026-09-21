@@ -239,7 +239,7 @@ alguns segundos.
 ## Seção 6. Criar e mostrar são duas coisas diferentes
 
 ### Clipe `video-criar-e-mostrar` · Criar não é mostrar
-**Duração alvo:** 35 a 45 segundos · **Palavras:** 83
+**Duração alvo:** 35 a 45 segundos · **Palavras:** 90
 
 **Na tela:** dividir o enquadramento entre **Bastidores** e **Tela do jogo**, ambos vazios. Criar a
 nave apenas nos bastidores, com a tela ainda vazia.
@@ -442,7 +442,7 @@ de estrelas, Mover o sprite com as setas, Manter o sprite dentro da tela, Desenh
 ## Seção 11. Quem é desenhado depois fica por cima
 
 ### Clipe `video-camadas` · Quem é desenhado depois fica na frente
-**Duração alvo:** 30 a 40 segundos · **Palavras:** 75
+**Duração alvo:** 30 a 40 segundos · **Palavras:** 80
 
 **Na tela:** duas folhas coloridas sobre a mesa. Colocar a folha azul e depois a amarela por cima.
 
