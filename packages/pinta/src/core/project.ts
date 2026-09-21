@@ -9,6 +9,7 @@
  */
 
 import { sanitizeVectorShape, type VectorShape } from '../vector/model'
+import { sanitizeMaskReferences } from '../vector/mask'
 import { normalizeHex } from './color'
 import { COPY } from './copy'
 import { newId } from './id'
@@ -695,7 +696,7 @@ function sanitizeVectorFrame(raw: unknown): VectorFrame | null {
     .slice(0, PINTA_LIMITS.maxShapes)
     .map((s) => sanitizeVectorShape(s))
     .filter((s): s is VectorShape => s !== null)
-  return ensureUniqueIds(shapes)
+  return sanitizeMaskReferences(ensureUniqueIds(shapes))
 }
 
 function sanitizeTilemapCells(raw: unknown, cellCount: number): Int16Array | null {

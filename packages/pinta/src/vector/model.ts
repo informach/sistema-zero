@@ -49,8 +49,12 @@ interface VectorShapeBase {
   stroke: VectorStroke | null
   /** 0–1. */
   opacity: number
-  /** Graus, em torno do centro do bounding box. */
+  /** Graus, em torno de `rotationPivot` ou, quando ausente, do centro da caixa. */
   rotation: number
+  /** Pivô absoluto de rotação. Ausente = centro da caixa, como nos desenhos antigos. */
+  rotationPivot?: Vec2
+  /** Id da forma fechada que recorta esta forma. Ausente = conteúdo sem máscara. */
+  maskId?: string
   /** Grupo: shapes com o MESMO id se movem/selecionam juntos. Ausente = solto. */
   groupId?: string
   /**
@@ -299,6 +303,8 @@ export function sanitizeVectorShape(raw: unknown): VectorShape | null {
   const rotation = isFiniteNumber(s.rotation) ? s.rotation % 360 : 0
   const groupId = isSafeVectorId(s.groupId) ? s.groupId : undefined
   const motionId = isSafeVectorId(s.motionId) ? s.motionId : undefined
+  const rotationPivot = isVec2(s.rotationPivot) ? s.rotationPivot : undefined
+  const maskId = isSafeVectorId(s.maskId) ? s.maskId : undefined
   const base = {
     id: s.id,
     ...(motionId ? { motionId } : {}),
@@ -306,6 +312,8 @@ export function sanitizeVectorShape(raw: unknown): VectorShape | null {
     stroke,
     opacity,
     rotation,
+    ...(rotationPivot ? { rotationPivot } : {}),
+    ...(maskId ? { maskId } : {}),
     ...(groupId ? { groupId } : {}),
     ...(s.hidden === true ? { hidden: true } : {}),
     ...(s.locked === true ? { locked: true } : {}),

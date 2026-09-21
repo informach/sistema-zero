@@ -132,6 +132,33 @@ describe('sanitizeVectorShape — identidade de movimento', () => {
   })
 })
 
+describe('sanitizeVectorShape — relações e âncora de rotação', () => {
+  const rectRaw = { ...base, type: 'rect', x: 0, y: 0, w: 10, h: 10, rx: 0, fill: '#78dc52' }
+
+  it('preserva uma âncora finita e um maskId seguro', () => {
+    expect(
+      sanitizeVectorShape({
+        ...rectRaw,
+        rotationPivot: { x: 12, y: -4 },
+        maskId: 'janela-1',
+      }),
+    ).toMatchObject({ rotationPivot: { x: 12, y: -4 }, maskId: 'janela-1' })
+  })
+
+  it('omite âncora e máscara ausentes ou inválidas sem derrubar a forma', () => {
+    for (const rotationPivot of [undefined, null, { x: Number.NaN, y: 2 }, { x: 1 }, 'centro']) {
+      const shape = sanitizeVectorShape({ ...rectRaw, rotationPivot })
+      expect(shape).not.toBeNull()
+      expect(shape && 'rotationPivot' in shape).toBe(false)
+    }
+    for (const maskId of [undefined, null, '', 'com espaço', '<script>', 42]) {
+      const shape = sanitizeVectorShape({ ...rectRaw, maskId })
+      expect(shape).not.toBeNull()
+      expect(shape && 'maskId' in shape).toBe(false)
+    }
+  })
+})
+
 describe('sanitizeVectorShape — campo hidden (olhinho das Camadas)', () => {
   const rect = { ...base, type: 'rect', x: 0, y: 0, w: 10, h: 10, rx: 0, fill: '#78dc52' }
 

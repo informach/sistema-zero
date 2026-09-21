@@ -237,6 +237,25 @@ describe('sanitizePintaAsset (dados do disco/import — nunca lança)', () => {
     expect(new Set(sanitizedMap.layers.map((item) => item.id)).size).toBe(2)
   })
 
+  it('saneia relações de máscara depois de tornar os ids únicos', () => {
+    const vector = createVectorBackgroundAsset({ name: 'livre', width: 32, height: 32 })
+    const out = sanitizePintaAsset({
+      ...vector,
+      shapes: [
+        { ...rectShape('conteudo'), maskId: 'janela' },
+        rectShape('janela'),
+        { ...rectShape('orfao'), maskId: 'sumiu' },
+        { ...rectShape('ciclo-a'), maskId: 'ciclo-b' },
+        { ...rectShape('ciclo-b'), maskId: 'ciclo-a' },
+      ],
+    })
+    if (out?.kind !== 'vector-background') throw new Error('vetor esperado')
+    expect(out.shapes.find((shape) => shape.id === 'conteudo')?.maskId).toBe('janela')
+    expect(out.shapes.find((shape) => shape.id === 'orfao')?.maskId).toBeUndefined()
+    expect(out.shapes.find((shape) => shape.id === 'ciclo-a')?.maskId).toBeUndefined()
+    expect(out.shapes.find((shape) => shape.id === 'ciclo-b')?.maskId).toBeUndefined()
+  })
+
   it('projectRef (Pensa) sobrevive ao round-trip: hex minúsculo, teto de cores', () => {
     const sprite = {
       ...createPixelSpriteAsset({ name: 'heroi', frameSize: 16 }),
