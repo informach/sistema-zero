@@ -1,5 +1,13 @@
 # Exportação de animação vetorial em SVG — desenho técnico
 
+> ⚠️ **Consumidor removido em 21/09/2026.** A trilha Kids passou a usar **Rive
+> (`.riv`)** por módulo, e o `validateModuleIllustrationSvg` do Admin — junto com o
+> upload de SVG e o teste integrado citado abaixo — deixou de existir. O exportador
+> de SVG animado do Pinta **continua valendo** para download e compartilhamento; o
+> que caiu foi a promessa de que o arquivo vira arte de módulo. Este documento fica
+> como registro do desenho original.
+
+
 ## Objetivo
 
 O Pinta deve baixar a animação selecionada de um personagem vetorial como um SVG autônomo. O arquivo deve preservar as poses, o tempo, o `loop` e a preferência por movimento reduzido. Quando houver uma correspondência segura entre formas de quadros diferentes, o exportador deve interpolar posição, rotação, tamanho e opacidade. Quando não houver, deve manter a troca discreta de quadros.

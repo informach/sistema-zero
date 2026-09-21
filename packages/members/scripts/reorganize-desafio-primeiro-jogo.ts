@@ -6,7 +6,7 @@
  *   bun scripts/reorganize-desafio-primeiro-jogo.ts --target staging --apply --expect-course-id <id-do-dry-run> --expect-database <banco-do-dry-run>
  *
  * O mesmo script pode ser executado depois em production, com dry-run e ID próprios.
- * A migração 0094 (coluna modules.illustration) precisa estar aplicada antes.
+ * A migração 0095 (coluna modules.rive_url) precisa estar aplicada antes.
  */
 import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm'
 import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
@@ -72,7 +72,6 @@ try {
         id: modules.id,
         title: modules.title,
         summary: modules.summary,
-        illustration: modules.illustration,
         sortOrder: modules.sortOrder,
       })
       .from(modules)

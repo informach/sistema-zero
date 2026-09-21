@@ -69,4 +69,17 @@ describe('CSP: o mascote animado precisa poder compilar WASM', () => {
     expect(diretivas.length).toBeGreaterThan(1)
     for (const d of diretivas) expect(d).toContain("'wasm-unsafe-eval'")
   })
+
+  /**
+   * ⚠️ Desde 09/2026 a ARTE DA TRILHA também é Rive, e ela mora no R2 público
+   * (outra origem). O `<img>` que ela substituiu dispensava `connect-src`; o
+   * runtime lê o `.riv` por `fetch().arrayBuffer()`, que NÃO dispensa. Apertar
+   * esta diretiva apagaria a arte de toda trilha — e, como o `TrailRive` não tem
+   * fallback, o sintoma seria "a arte sumiu", sem erro na UI.
+   */
+  it('kids: TODA diretiva connect-src emitida alcança o R2 público', async () => {
+    const diretivas = await directives(await import('../next.config'), 'connect-src')
+    expect(diretivas.length).toBeGreaterThan(1)
+    for (const d of diretivas) expect(d).toContain('https:')
+  })
 })

@@ -1,10 +1,7 @@
-import type { ModuleIllustrationKey } from '@sistemazero/core/course/module-illustrations'
-
 export interface CurrentModule {
   id: string
   title: string
   summary: string | null
-  illustration: string | null
   sortOrder: number
 }
 
@@ -19,26 +16,22 @@ export interface CurrentLesson {
 const MODULES: {
   title: string
   summary: string
-  illustration: ModuleIllustrationKey
   lessonKeys: readonly string[]
 }[] = [
   {
     title: 'A nave ganha vida',
     summary: 'Conheça o Estúdio e faça uma nave aparecer, se mover e ficar na tela.',
-    illustration: 'desafio-nave',
     lessonKeys: ['welcome', 'day1'],
   },
   {
     title: 'Tiros e asteroides',
     summary: 'Faça a nave atirar e crie asteroides que caem e reagem quando levam um tiro.',
-    illustration: 'desafio-asteroides',
     lessonKeys: ['day2', 'day3'],
   },
   {
     title: 'O jogo completo e a conquista',
     summary:
       'Coloque pontos, vidas e telas de começo e fim no seu jogo. Depois, pegue seu certificado e descubra os próximos passos com quem cuida de você.',
-    illustration: 'desafio-conquista',
     lessonKeys: ['day4', 'day5', 'certificate'],
   },
 ]
@@ -145,12 +138,9 @@ export function planDesafioCourse(modules: CurrentModule[], lessons: CurrentLess
     const desired = MODULES[index]!
     return {
       id: current.id,
-      from: { title: current.title, summary: current.summary, illustration: current.illustration },
-      to: { title: desired.title, summary: desired.summary, illustration: desired.illustration },
-      changed:
-        current.title !== desired.title ||
-        current.summary !== desired.summary ||
-        current.illustration !== desired.illustration,
+      from: { title: current.title, summary: current.summary },
+      to: { title: desired.title, summary: desired.summary },
+      changed: current.title !== desired.title || current.summary !== desired.summary,
     }
   })
   const lessonChanges = targetModules.flatMap((module, index) =>

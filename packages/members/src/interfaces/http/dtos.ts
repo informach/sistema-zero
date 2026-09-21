@@ -1015,17 +1015,11 @@ export const ListCoursesQuery = t.Object({
 export const ModuleBody = t.Object({
   title: TITLE,
   summary: NULLABLE_TEXT,
-  // Ausente preserva a escolha ao editar com um Admin antigo; null remove.
-  illustration: t.Optional(
-    t.Union([
-      t.Literal('desafio-nave'),
-      t.Literal('desafio-asteroides'),
-      t.Literal('desafio-conquista'),
-      // O Admin valida e publica o SVG no R2; a árvore guarda a URL pública.
-      t.String({ minLength: 1, maxLength: 2000, pattern: HTTP_URL_PATTERN }),
-      t.Null(),
-    ]),
-  ),
+  // Animação Rive (.riv) da unidade na trilha Kids. Ausente preserva a escolha ao
+  // editar com um Admin antigo; null remove. Quem confere os BYTES (assinatura
+  // `RIVE`), a extensão e o teto é o Admin, antes de publicar no R2 público —
+  // aqui o contrato é o mesmo dos outros campos de mídia: http(s) ou null.
+  riveUrl: NULLABLE_URL,
 })
 
 export const LessonBody = t.Object({

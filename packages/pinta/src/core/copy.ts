@@ -880,7 +880,7 @@ export const COPY = {
     animatedSvgDownload: 'Baixar animação em SVG',
     animatedSvgPreview: 'Prévia da animação em SVG',
     animatedSvgHint:
-      'Arquivo vetorial otimizado, pronto para os módulos da Comunidade Kids e com um quadro estático para quem reduz movimento.',
+      'Arquivo vetorial otimizado, com um quadro estático para quem reduz movimento.',
     smoothMotion: 'Movimento mais suave',
     smoothMotionHint:
       'O Pinta suaviza posição, tamanho, giro e transparência quando reconhece a mesma forma nos quadros. O restante continua quadro a quadro.',
@@ -894,9 +894,13 @@ export const COPY = {
       }`,
     animatedSvgEmpty: 'Desenhe pelo menos uma forma visível para baixar esta animação.',
     animatedSvgText:
-      'Esta animação tem texto. Para usar nos módulos, transforme o texto em formas ou remova-o.',
+      'Esta animação tem texto. Transforme o texto em formas ou remova-o para baixar o SVG.',
     animatedSvgImage:
-      'Esta animação tem uma figura de pixel inserida. Remova-a para criar um SVG seguro para os módulos.',
+      'Esta animação tem uma figura de pixel inserida. Remova-a para criar um SVG só de vetores.',
+    // ⚠️ 2 MB era o teto do Admin, quando a trilha Kids era alimentada por este
+    // exportador. Desde 09/2026 a trilha usa Rive (.riv) e o SVG não vai mais para
+    // os módulos — o teto continua, agora como limite do próprio Pinta (arquivo
+    // gigante trava o navegador da criança), e não espelha mais nada.
     animatedSvgTooLarge:
       'O SVG passou de 2 MB. Simplifique alguns traços ou reduza a quantidade de quadros.',
     tilesetSheet: 'Folha de peças (PNG)',

@@ -51,7 +51,13 @@ const csp = [
   // `allow-same-origin` + a meta-CSP tight do próprio srcdoc (sem connect/worker —
   // `studio/preview/csp.ts`); o painel não tem sink de HTML cru. Espelha o community-kids (mesmo
   // código de aluno, mesma fronteira). `https:` também cobre o beacon do Cloudflare Insights.
-  `script-src 'self' 'unsafe-inline' data: https:${isDev ? " 'unsafe-eval'" : ''}`,
+  // ⚠️ `'wasm-unsafe-eval'` é KEYWORD à parte: nem `https:` nem `'unsafe-inline'`
+  // liberam a compilação de um módulo WASM, e a recusa do Chrome é SILENCIOSA. Ela
+  // existe aqui pela prévia da animação Rive da trilha, no editor de curso — sem
+  // ela a prévia fica em branco sem erro na UI. Espelha o community-kids, que
+  // pagou esse preço antes pelo mascote animado. O WASM vem da NOSSA origem
+  // (`/rive/rive.wasm`, sincronizado no build), então `'self'` cobre o download.
+  `script-src 'self' 'unsafe-inline' data: https: 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ''}`,
   "connect-src 'self' https://*.vimeo.com https://*.cloud.vimeo.com https://*.r2.cloudflarestorage.com https://cloudflareinsights.com",
   "worker-src 'self' blob:",
   ...(isDev ? [] : ['upgrade-insecure-requests']),
@@ -106,7 +112,18 @@ const nextConfig: NextConfig = {
   // Security headers em TODAS as respostas (inclui `/api/media/*`, que fica fora
   // do matcher do `proxy.ts`). Fonte única — não duplicar no proxy.
   async headers() {
-    return [{ source: '/:path*', headers: securityHeaders }]
+    return [
+      { source: '/:path*', headers: securityHeaders },
+      {
+        // ⚠️ O WASM do Rive tem 1,8 MB e nome estável (não hashado). Sem esta
+        // linha o Next serve `public/` sem cache útil e quem autora rebaixa tudo a
+        // cada abertura do diálogo de módulo. Mesmo TTL do community-kids e pelo
+        // mesmo motivo: um bump do pacote reescreve o arquivo no lugar, e um ano
+        // de cache prenderia a versão velha.
+        source: '/rive/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
+      },
+    ]
   },
 }
 

@@ -1,5 +1,13 @@
 # Pinta Animated SVG Export Implementation Plan
 
+> ⚠️ **Consumidor removido em 21/09/2026.** A trilha Kids passou a usar **Rive
+> (`.riv`)** por módulo, e o `validateModuleIllustrationSvg` do Admin — junto com o
+> upload de SVG e o teste integrado citado abaixo — deixou de existir. O exportador
+> de SVG animado do Pinta **continua valendo** para download e compartilhamento; o
+> que caiu foi a promessa de que o arquivo vira arte de módulo. Este documento fica
+> como registro do desenho original.
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Export the selected vector animation as a module-compatible SVG that safely combines static shapes, smooth motion, and frame-by-frame fallbacks.

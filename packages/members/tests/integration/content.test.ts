@@ -505,60 +505,49 @@ describe('Members HTTP — autoria: cursos (validações de borda)', () => {
 })
 
 describe('Members HTTP — autoria: árvore de conteúdo', () => {
-  test('a ilustração escolhida no módulo é salva, preservada e pode ser removida', async () => {
+  test('a animação Rive do módulo é salva, preservada e pode ser removida', async () => {
     const { app } = buildApp()
     const course = await createCourse(app, { audience: 'kids' })
+    const riveUrl = 'https://media.example.com/admin/module-rive/nave.riv'
     const created = await send(app, `/members/admin/courses/${course.id}/modules`, 'POST', {
       title: 'Nave',
       summary: null,
-      illustration: 'desafio-nave',
+      riveUrl,
     })
     expect(created.status).toBe(201)
     const mod = await readJson(created)
-    expect(mod.illustration).toBe('desafio-nave')
+    expect(mod.riveUrl).toBe(riveUrl)
 
+    // ⚠️ O PATCH SEM a chave preserva: é este caso que guarda o `Object.hasOwn` do
+    // `moduleFields` — sem ele o campo é validado e DESCARTADO em silêncio.
     const renamed = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
       title: 'Nave renomeada',
       summary: null,
     })
     expect(renamed.status).toBe(200)
-    expect((await readJson(renamed)).illustration).toBe('desafio-nave')
+    expect((await readJson(renamed)).riveUrl).toBe(riveUrl)
 
     const tree = await readJson(await get(app, `/members/admin/courses/${course.id}`))
-    expect(tree.modules[0].illustration).toBe('desafio-nave')
+    expect(tree.modules[0].riveUrl).toBe(riveUrl)
 
-    const invalid = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
-      title: 'Nave renomeada',
-      summary: null,
-      illustration: '/fora-do-catalogo.svg',
-    })
-    expect(invalid.status).toBe(400)
-
-    const uploadedUrl = 'https://media.example.com/admin/module-illustrations/nave.svg'
-    const uploaded = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
-      title: 'Nave renomeada',
-      summary: null,
-      illustration: uploadedUrl,
-    })
-    expect(uploaded.status).toBe(200)
-    expect((await readJson(uploaded)).illustration).toBe(uploadedUrl)
-    const uploadedTree = await readJson(await get(app, `/members/admin/courses/${course.id}`))
-    expect(uploadedTree.modules[0].illustration).toBe(uploadedUrl)
-
-    const unsafe = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
-      title: 'Nave renomeada',
-      summary: null,
-      illustration: 'javascript:alert(1)',
-    })
-    expect(unsafe.status).toBe(400)
+    // Caminho relativo e esquema executável não passam da borda, mesmo que o
+    // Admin já valide: defesa em profundidade no serviço.
+    for (const recusado of ['/fora-do-catalogo.riv', 'javascript:alert(1)']) {
+      const invalid = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
+        title: 'Nave renomeada',
+        summary: null,
+        riveUrl: recusado,
+      })
+      expect(invalid.status).toBe(400)
+    }
 
     const cleared = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
       title: 'Nave renomeada',
       summary: null,
-      illustration: null,
+      riveUrl: null,
     })
     expect(cleared.status).toBe(200)
-    expect((await readJson(cleared)).illustration).toBeNull()
+    expect((await readJson(cleared)).riveUrl).toBeNull()
   })
 
   async function seedTree(app: App) {

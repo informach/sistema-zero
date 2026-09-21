@@ -1166,9 +1166,14 @@ a.kid-pop:has(> .kids-carta):hover {
 
   .kids-trail-art {
     position: absolute;
-    /* A altura vem dos nós com mais espaço no course-trail.tsx. */
+    /* O `top` vem do trecho de nós mais livre, calculado no course-trail.tsx. */
     z-index: 0;
     width: 9.5rem;
+    /* ⚠️ O <canvas> do Rive NÃO tem proporção intrínseca: com `height: auto` o
+       navegador cai nos 150px de fábrica dos elementos substituíveis. Quem manda
+       na altura agora é a caixa, e 9/8 é exatamente o 180x160 do <Image> que o
+       Rive substituiu — a trilha não se mexe um pixel. */
+    aspect-ratio: 9 / 8;
     pointer-events: none;
     user-select: none;
   }
@@ -1177,11 +1182,6 @@ a.kid-pop:has(> .kids-carta):hover {
   }
   .kids-trail-art--right {
     right: 0;
-  }
-  .kids-trail-art img {
-    display: block;
-    width: 100%;
-    height: auto;
   }
   @media (max-width: 640px) {
     .kids-trail-art {

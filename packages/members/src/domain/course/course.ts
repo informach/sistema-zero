@@ -104,8 +104,8 @@ export interface Module {
   courseId: string
   title: string
   summary: string | null
-  /** Arte da trilha Kids escolhida no Admin; módulos antigos podem não ter escolha. */
-  illustration?: string | null
+  /** Animação Rive (.riv) da trilha Kids, publicada pelo Admin no R2 público. */
+  riveUrl?: string | null
   sortOrder: number
 }
 

@@ -2823,6 +2823,51 @@ infraestrutura de LIP SYNC. Nada disso é consumido ainda, e é o que torna o Ri
 aqui em vez de um WebM com alpha (que faria as poses por um décimo do peso, mas nunca o Zappy
 falando o texto do balão com a boca sincronizada).
 
+## A arte da trilha virou Rive — 21/09/2026
+
+O SVG animado por módulo (`illustration`, de 20/09) durou um dia. Saiu inteiro:
+upload, as 3 artes de exemplo, o `<img>` e o validador de 249 linhas do Admin. No
+lugar entrou um **`.riv` por módulo** (`ModuleOutlineView.riveUrl`), tocando em laço
+no mesmo lugar da trilha. O runtime já estava aqui por causa do Zappy — o que esta
+entrega acrescentou foi o caminho do arquivo ENVIADO, que é outro problema.
+
+**O que muda quando o arquivo não é nosso.** Para o Zappy dá para cravar
+`animations: 'Timeline 1'`; para um `.riv` que alguém sobe, não. O
+`trail-rive-canvas.tsx` descobre em runtime: `autoplay: false` (um decisor só, o
+nosso) e depois `rive.play(rive.animationNames[0])` — **a primeira timeline linear,
+nunca a state machine**, pela razão medida na seção do Zappy acima. E, diferente de
+lá, existe **rede de religar** no `EventType.Stop`: a timeline do Zappy repete
+sozinha, mas um arquivo exportado como "one shot" para no fim. A rede tem teto (60
+religadas/s) porque uma animação de duração zero viraria ventoinha ligada no tablet.
+
+⚠️⚠️ **CORS no bucket PÚBLICO — o furo que quase passou.** `<img src>` não faz CORS;
+o runtime do Rive lê por `fetch().arrayBuffer()`, que faz. Os buckets públicos nunca
+tiveram regra de CORS porque nada nunca os buscou cross-origin. Sem a regra, o
+`onLoadError` dispara, o `TrailRive` não renderiza nada e fica **indistinguível de
+"ninguém subiu animação"**. Nasceram daí o `packages/admin/scripts/r2-cors-public.ts`
+(rode ANTES de subir este app) e o `console.warn('[trilha-rive] não carregou')` — é o
+que troca uma tarde de investigação por cinco segundos.
+
+⚠️ O `.kids-trail-art` ganhou `aspect-ratio: 9 / 8` e perdeu a regra de `img`: o
+`<canvas>` **não tem proporção intrínseca** e cairia nos 150px de fábrica. O 9/8 é o
+`180x160` do `<Image>` que saiu, então a trilha não se mexeu um pixel.
+
+Os quatro desvios calados (SSR/primeiro quadro, `saveData`, fora da viewport, falha
+do Rive) não deixam buraco porque a arte é `position: absolute` — fora do fluxo.
+`prefers-reduced-motion` é o único que NÃO some: monta com `autoplay: false`, que
+pinta o primeiro quadro. O canvas monta na primeira interseção e depois só pausa,
+nunca desmonta (desmontar reiniciaria do quadro 0 a cada rolagem).
+
+⚠️ `RuntimeLoader.setWasmUrl` + `setWasmFallbackUrl(null)` saíram do
+`mascot-rive-canvas.tsx` para o `rive-runtime.ts`, e o `saveData` para
+`lib/economia-de-dados.ts`: são dois consumidores agora, e duas cópias de uma decisão
+de segurança é como uma delas apodrece.
+
+⚠️ **Teste:** o `IntersectionObserver` do happy-dom EXISTE mas nunca chama o callback
+(medido) — sem o falso, o canvas nunca monta e o teste mediria o contrário do que a
+criança vê. E, como sempre com Rive aqui, **nenhum teste prova que anima**: quem
+verifica é a prévia no Admin.
+
 ## Comandos
 
 `bun run dev` (:3008) · `build`/`start` · `typecheck` · `bun test` · `check[:fix]` ·

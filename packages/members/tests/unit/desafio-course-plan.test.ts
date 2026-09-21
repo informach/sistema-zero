@@ -6,9 +6,9 @@ import {
 } from '../../scripts/lib/desafio-course-plan'
 
 const modules: CurrentModule[] = [
-  { id: 'm1', title: 'Módulo 1', summary: null, illustration: null, sortOrder: 0 },
-  { id: 'm2', title: 'Módulo 2', summary: null, illustration: null, sortOrder: 1 },
-  { id: 'm3', title: 'Módulo 3', summary: null, illustration: null, sortOrder: 2 },
+  { id: 'm1', title: 'Módulo 1', summary: null, sortOrder: 0 },
+  { id: 'm2', title: 'Módulo 2', summary: null, sortOrder: 1 },
+  { id: 'm3', title: 'Módulo 3', summary: null, sortOrder: 2 },
 ]
 
 const lessons: CurrentLesson[] = [
@@ -42,10 +42,10 @@ describe('plano de reorganização do Desafio', () => {
       ['day5', 'm3', 1],
       ['certificate', 'm3', 2],
     ])
-    expect(plan.modules.map((module) => module.to.illustration)).toEqual([
-      'desafio-nave',
-      'desafio-asteroides',
-      'desafio-conquista',
+    expect(plan.modules.map((module) => module.to.title)).toEqual([
+      'A nave ganha vida',
+      'Tiros e asteroides',
+      'O jogo completo e a conquista',
     ])
   })
 
@@ -89,7 +89,6 @@ describe('plano de reorganização do Desafio', () => {
       id: 'm4',
       title: 'Encerramento antigo',
       summary: null,
-      illustration: null,
       sortOrder: 3,
     }
     const oldLessons = lessons.map((lesson) =>

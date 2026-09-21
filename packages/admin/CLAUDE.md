@@ -1420,6 +1420,48 @@ adapter `listConversions`/`markConversionPaid`/`matureConversionNow`; shims
 `app/api/admin/referrals/conversions/{route,[id]/mark-paid/route,[id]/mature-now/route}.ts`
 (cabem nos wildcards `referrals-admin-*` do gateway — nenhuma rota nova lá).
 
+## Animação Rive por módulo (trilha Kids) — 21/09/2026
+
+Substituiu o upload de SVG animado de 20/09, e a troca ENCOLHEU o problema de
+segurança em vez de mover: um SVG público EXECUTA se aberto direto pela URL, e o que
+segurava isso era o `module-illustration-svg.ts` — 249 linhas de allowlist XML à mão,
+exposto a divergência entre o parser do `@xmldom/xmldom` e o do navegador. Um `.riv`
+é binário opaco servido como `application/octet-stream`. Foram deletados o validador,
+o teste dele, a rota `/api/media/module-illustrations` e a dependência
+`@xmldom/xmldom` (o `packages/fiscal` ainda usa — removida SÓ daqui).
+
+- **Validação** (`lib/riv-file.ts`, puro): extensão `.riv` + assinatura `RIVE` nos 4
+  primeiros bytes + major de formato. ⚠️ **Não olhamos `file.type`**: não há MIME
+  registrado para `.riv`, então o navegador manda `application/octet-stream` ou string
+  vazia, e checar o tipo só recusaria arquivo bom. ⚠️ O **MINOR** não pode ser preso
+  (os `.riv` do Zappy são `07 03` e `07 04`, mesmo editor, datas diferentes); o
+  **MAJOR** é preso de propósito — major diferente é formato que o runtime não lê, e o
+  sintoma seria canvas vazio no navegador da criança, sem erro nenhum.
+- **Armazenamento**: bucket PÚBLICO, `admin/module-rive/<uuid>.riv`, 5 MB.
+  UUID novo por upload é o que torna seguro o `immutable` do `r2PutObject`.
+- **Prévia RODANDO no diálogo de módulo, e ela não é enfeite.** Nenhum teste prova que
+  um `.riv` anima (happy-dom não tem WebGL; o guarda de bytes só vê nomes). Ver a
+  animação aqui, antes de salvar, é a ÚNICA verificação de que ela não vai chegar
+  congelada na tela da criança — por isso a prévia escolhe a timeline pela mesma regra
+  do app do aluno.
+- ⚠️ A prévia recebe `buffer`, e os bytes vêm da rota-proxy
+  `/api/media/module-rive/preview` — nunca do CDN direto. Isso mantém o `connect-src`
+  estreito (`'self'` + três hosts nomeados, sem `https:`) e dispensa CORS. Derivar o
+  host de `R2_PUBLIC_URL` no `next.config.ts` NÃO serviria: o `headers()` é serializado
+  no `routes-manifest.json` em BUILD TIME. O guarda anti-SSRF da rota é o prefixo
+  exato contra `R2_PUBLIC_URL`.
+- ⚠️ A CSP ganhou `'wasm-unsafe-eval'` no `script-src` — KEYWORD à parte, que nem
+  `https:` nem `'unsafe-inline'` cobrem, e cuja recusa no Chrome é SILENCIOSA.
+  `tests/csp-wasm.test.ts` trava isso. O WASM é servido da nossa origem
+  (`scripts/sync-rive-wasm.ts` no `dev` e no `build`, `public/rive/` no gitignore).
+- ⚠️ **`scripts/r2-cors-public.ts` precisa rodar antes do deploy do kids.** O
+  `<img>` de antes não fazia CORS; o runtime do Rive faz.
+- ⚠️ **Testes:** os mocks parciais de `@/server/media`/`@/server/r2` em
+  `zappy-backfill` e `hub-route-handlers` passaram a ESPALHAR o módulo real. O
+  `mock.module` do bun é global ao run, e manter à mão "a superfície que as outras
+  suítes importam" não escala — foi assim que este trabalho quebrou o
+  `user-deletion.test.ts`, num arquivo distante e só na suíte completa.
+
 ## Checklist antes de finalizar
 
 - [ ] `bun test` verde · `bun run typecheck` limpo · `bun run check` (Biome) limpo · `bun run build` passa.

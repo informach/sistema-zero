@@ -202,7 +202,7 @@ export const modules = members.table(
       .references(() => courses.id, { onDelete: 'cascade' }),
     title: text('title').notNull(),
     summary: text('summary'),
-    illustration: text('illustration'),
+    riveUrl: text('rive_url'),
     sortOrder: integer('sort_order').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),

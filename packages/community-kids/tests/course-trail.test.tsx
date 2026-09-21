@@ -1,8 +1,5 @@
-import { describe, expect, mock, test } from 'bun:test'
-import { existsSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { render, screen } from '@testing-library/react'
-import { createElement } from 'react'
+import { beforeEach, describe, expect, mock, test } from 'bun:test'
+import { act, render, screen } from '@testing-library/react'
 import type { CourseDetailView, LessonOutlineView, ModuleOutlineView } from '../src/lib/types'
 
 // O baú virou ilha `'use client'` com `useRouter` (ele abre com um clique e
@@ -17,17 +14,40 @@ mock.module('next/navigation', () => ({
   ...nav,
   useRouter: () => ({ refresh: () => {}, push: () => {} }),
 }))
-mock.module('next/image', () => ({
-  default: (props: { src: string; alt: string; width: number; height: number }) =>
-    createElement('img', {
-      src: props.src,
-      alt: props.alt,
-      width: props.width,
-      height: props.height,
-    }),
-}))
-
 const { CourseTrail } = await import('../src/components/kids/course-trail')
+
+const riv = (nome: string) => `https://media.example.com/admin/module-rive/${nome}.riv`
+
+/**
+ * ⚠️ O `IntersectionObserver` do happy-dom EXISTE mas NUNCA chama o callback
+ * (medido). O `TrailRive` só monta o canvas na primeira aparição, então sem este
+ * falso a arte nunca entra e os testes mediriam o contrário do que a criança vê.
+ * Mesma receita do `lesson-experimentation.test.tsx`; o `test-setup.ts` restaura o
+ * global depois de cada teste, por isso o falso é rearmado no `beforeEach`.
+ */
+function observadorQueSempreVe(): void {
+  globalThis.IntersectionObserver = class {
+    constructor(private readonly avisar: IntersectionObserverCallback) {}
+    observe() {
+      this.avisar(
+        [{ isIntersecting: true } as IntersectionObserverEntry],
+        this as unknown as IntersectionObserver,
+      )
+    }
+    disconnect() {}
+    unobserve() {}
+    takeRecords() {
+      return []
+    }
+  } as unknown as typeof IntersectionObserver
+}
+beforeEach(observadorQueSempreVe)
+
+/**
+ * Deixa o `next/dynamic` do canvas resolver dentro do `act`. Sem isso o React
+ * avisa que um `LoadableComponent` atualizou estado fora dele.
+ */
+const assenta = () => act(async () => {})
 
 function lesson(id: string): LessonOutlineView {
   return {
@@ -115,46 +135,47 @@ describe('CourseTrail', () => {
     expect(screen.queryByText(/Modulo em-preparo/)).toBeNull()
   })
 
-  test('a escolha feita no Admin ilustra cada módulo, mesmo após renomeá-lo', () => {
+  test('a animação enviada no Admin aparece em cada módulo, mesmo após renomeá-lo', async () => {
     const desafio = course([
-      { ...moduleOf('m1', [lesson('a')]), title: 'Módulo renomeado', illustration: 'desafio-nave' },
-      { ...moduleOf('m2', [lesson('b')]), illustration: 'desafio-asteroides' },
-      { ...moduleOf('m3', [lesson('c')]), illustration: 'desafio-conquista' },
+      { ...moduleOf('m1', [lesson('a')]), title: 'Módulo renomeado', riveUrl: riv('nave') },
+      { ...moduleOf('m2', [lesson('b')]), riveUrl: riv('asteroides') },
+      { ...moduleOf('m3', [lesson('c')]), riveUrl: riv('conquista') },
     ])
     desafio.slug = 'desafio-primeiro-jogo'
     const { container } = render(<CourseTrail course={desafio} />)
-    const illustrations = [...container.querySelectorAll('[data-trail-art] img')]
-    expect(illustrations.map((element) => element.getAttribute('src'))).toEqual([
-      '/trilha/desafio-nave.svg',
-      '/trilha/desafio-asteroides.svg',
-      '/trilha/desafio-conquista.svg',
-    ])
-    expect(illustrations.every((element) => element.getAttribute('alt') === '')).toBe(true)
+    await assenta()
     expect(
-      illustrations.every((element) =>
-        existsSync(
-          resolve(import.meta.dir, '../public', element.getAttribute('src')?.slice(1) ?? ''),
-        ),
+      [...container.querySelectorAll('[data-trail-art] [data-src]')].map((el) =>
+        el.getAttribute('data-src'),
       ),
-    ).toBe(true)
+    ).toEqual([riv('nave'), riv('asteroides'), riv('conquista')])
   })
 
-  test('SVG enviado ao R2 aparece na trilha sem entrar no catálogo de artes de exemplo', () => {
-    const url = 'https://media.example.com/admin/module-illustrations/nave.svg'
-    const { container } = render(
-      <CourseTrail course={course([{ ...moduleOf('m1', [lesson('a')]), illustration: url }])} />,
-    )
-    expect(container.querySelector('[data-trail-art] img')?.getAttribute('src')).toBe(url)
+  test('valor que não é .riv não vira arte (guarda do moduleRiveSrc)', async () => {
+    // Sobra da era do SVG animado, ou qualquer coisa estranha no banco: o runtime
+    // do Rive só produziria um canvas vazio, indistinguível de "ninguém subiu nada".
+    for (const valor of [
+      'https://media.example.com/admin/module-illustrations/nave.svg',
+      'desafio-nave',
+      'javascript:alert(1)',
+    ]) {
+      const { container, unmount } = render(
+        <CourseTrail course={course([{ ...moduleOf('m1', [lesson('a')]), riveUrl: valor }])} />,
+      )
+      await assenta()
+      expect(container.querySelector('[data-trail-art]')).toBeNull()
+      unmount()
+    }
   })
 
   test('ilustrações revezam de lado e descem até o trecho mais livre da unidade', () => {
     const desafio = course([
-      { ...moduleOf('m1', [lesson('a'), lesson('b')]), illustration: 'desafio-nave' },
-      { ...moduleOf('vazio', []), illustration: 'desafio-nave' },
-      { ...moduleOf('m2', [lesson('c'), lesson('d')]), illustration: 'desafio-asteroides' },
+      { ...moduleOf('m1', [lesson('a'), lesson('b')]), riveUrl: riv('nave') },
+      { ...moduleOf('vazio', []), riveUrl: riv('nave') },
+      { ...moduleOf('m2', [lesson('c'), lesson('d')]), riveUrl: riv('asteroides') },
       {
         ...moduleOf('m3', [lesson('e'), lesson('f'), lesson('g')]),
-        illustration: 'desafio-conquista',
+        riveUrl: riv('conquista'),
       },
     ])
     const { container } = render(<CourseTrail course={desafio} />)
@@ -172,9 +193,9 @@ describe('CourseTrail', () => {
     expect(arts.map((art) => art.style.top)).toEqual(['55%', '55%', '66.25%'])
   })
 
-  test('módulos vazios e módulos sem escolha no Admin não recebem ilustrações', () => {
+  test('módulos vazios e módulos sem animação no Admin não recebem arte', () => {
     const desafio = course([
-      { ...moduleOf('vazio', []), illustration: 'desafio-nave' },
+      { ...moduleOf('vazio', []), riveUrl: riv('nave') },
       { ...moduleOf('antigo', [lesson('a')]), title: 'A nave ganha vida' },
     ])
     desafio.slug = 'desafio-primeiro-jogo'

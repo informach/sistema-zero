@@ -27,7 +27,7 @@ export async function prepareContentReadinessTables(conn: DbConnection): Promise
       'course_id uuid',
       "title text not null default ''",
       'summary text',
-      'illustration text',
+      'rive_url text',
       'sort_order integer not null default 0',
       'created_at timestamptz not null default now()',
       'updated_at timestamptz not null default now()',

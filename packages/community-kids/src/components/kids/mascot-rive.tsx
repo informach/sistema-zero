@@ -4,6 +4,7 @@ import { useZappyFala } from '@sistemazero/member-shell/components/zappy-fala-co
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/cn'
+import { economiaDeDados } from '@/lib/economia-de-dados'
 import {
   KidsMascot,
   type MascotExpression,
@@ -47,17 +48,6 @@ export function prefetchZappyRive(): void {
   const ocioso = window.requestIdleCallback
   if (typeof ocioso === 'function') ocioso(puxa, { timeout: 4000 })
   else window.setTimeout(puxa, 1500)
-}
-
-/**
- * O aparelho pediu para economizar dados (plano no limite, "Economia de dados" do
- * Android). São 676 KB para ver um vagalume se mexer — quem ligou essa chave não
- * está pedindo isso. Só o Chromium/Android implementa, então a ausência da API
- * significa "não sei", e "não sei" anima normalmente.
- */
-function economiaDeDados(): boolean {
-  const conexao = (navigator as { connection?: { saveData?: boolean } }).connection
-  return conexao?.saveData === true
 }
 
 /**

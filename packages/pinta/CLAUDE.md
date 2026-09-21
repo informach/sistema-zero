@@ -2558,11 +2558,16 @@ quadros repetidos compactados.
   aparecimento ou mudança de estilo usa `visibility` discreta. Desligar a opção força esse fallback.
 - Os tempos vêm de `frameDurationsMs` (inclusive `easing`), `loop=false` congela a última pose e
   uma cópia integral do primeiro quadro aparece sob `prefers-reduced-motion: reduce`.
-- Perfil de MÓDULO: texto visível e `image` embutida bloqueiam o botão; conteúdo escondido não
+- Perfil "SÓ VETOR": texto visível e `image` embutida bloqueiam o botão; conteúdo escondido não
   conta; saída acima de 2 MiB também bloqueia. Não entram script, evento, fonte/data URL ou recurso
-  externo. O teste integrado em `packages/admin/tests/module-illustration-svg.test.ts` gera o SVG
-  real e o passa por `validateModuleIllustrationSvg`; a allowlist cobre somente `visibility` e os
-  quatro atributos geométricos de linha necessários ao SMIL.
+  externo.
+  ⚠️ **21/09/2026 — o consumidor sumiu, o exportador ficou.** Este perfil nasceu para o slot de
+  ilustração de módulo da trilha Kids, e havia um teste integrado
+  (`packages/admin/tests/module-illustration-svg.test.ts`) que passava o SVG real pelo
+  `validateModuleIllustrationSvg` do Admin. A trilha migrou para **Rive (`.riv`)**, e o upload de
+  SVG, o validador e aquele teste foram DELETADOS. O exportador segue valendo para download e
+  compartilhamento, mas o Pinta **não** alimenta mais os módulos — a cópia do diálogo foi reescrita
+  para não prometer isso, e o teto de 2 MiB agora é limite do próprio Pinta, não espelho do Admin.
 - Regressões: `export/animatedSvg.test.ts` (classificação/tempo/teto),
   `components/export/AnimatedSvgExport.test.tsx` (Blob/download/bloqueios),
   `animation/framesVector.test.ts` (identidade) e `components/editor/vectorSpriteUi.test.tsx`

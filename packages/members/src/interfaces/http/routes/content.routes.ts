@@ -84,7 +84,7 @@ const courseFields = (b: CourseInput | CourseUpdateInput): CourseFields => ({
 const moduleFields = (b: ModuleInput): ModuleFields => ({
   title: b.title,
   summary: b.summary ?? null,
-  illustration: Object.hasOwn(b, 'illustration') ? b.illustration : undefined,
+  riveUrl: Object.hasOwn(b, 'riveUrl') ? b.riveUrl : undefined,
 })
 const lessonFields = (b: LessonInput): LessonFields => ({
   slug: b.slug,

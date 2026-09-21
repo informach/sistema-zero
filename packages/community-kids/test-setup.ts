@@ -88,3 +88,36 @@ mock.module('./src/components/kids/mascot-rive-canvas', () => ({
   },
   aquecerRuntimeRive: () => {},
 }))
+
+/**
+ * ⚠️ Mesma razão do falso acima, para a arte da trilha: sem isto TODA suíte que
+ * renderiza uma trilha com `.riv` tenta buscar o WASM e morre em
+ * `Aborted(both async and sync fetching of the wasm failed)` — o happy-dom não tem
+ * WebGL.
+ *
+ * O falso EMITE `data-src`, `data-tocar` e `data-pausado`: é como o teste enxerga o
+ * arquivo e o regime que o canvas recebeu. Guarda o `onFalhou` em
+ * `trilhaRiveFalhou` pelo mesmo motivo do `zappyRiveDesenhou` — quem quiser provar
+ * o caminho de falha chama de fora, e nenhuma outra suíte paga por isso.
+ */
+mock.module('./src/components/kids/trail-rive-canvas', () => ({
+  TrailRiveCanvas: ({
+    src,
+    tocar,
+    pausado,
+    onFalhou,
+  }: {
+    src: string
+    tocar: boolean
+    pausado: boolean
+    onFalhou: () => void
+  }) => {
+    ;(globalThis as Record<string, unknown>).trilhaRiveFalhou = onFalhou
+    return createElement('span', {
+      'data-src': src,
+      'data-tocar': String(tocar),
+      'data-pausado': String(pausado),
+      'aria-hidden': 'true',
+    })
+  },
+}))

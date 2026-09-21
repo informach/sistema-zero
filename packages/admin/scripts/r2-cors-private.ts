@@ -29,6 +29,7 @@ import {
   PutBucketCorsCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
+import { STUDENT_APP_ORIGINS } from './student-app-origins'
 
 const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_PRIVATE_BUCKET } = process.env
 // O MESMO token S3 acessa os 4 buckets — `--bucket=<nome>` mira outro (ex.: o privado de
@@ -54,18 +55,7 @@ const client = new S3Client({
 const DOWNLOAD_RULE_ID = 'community-direct-download'
 
 // Origens dos apps de ALUNO que LEEM o bucket privado via fetch (livro 3D do e-book +
-// download de anexo). Os DOIS apps (community adulto + community-kids) × dev/staging/prod
-// + domínios definitivos. Origem que nunca bate neste bucket é inócua (só não casa).
-const STUDENT_APP_ORIGINS = [
-  'http://localhost:3007', // community (dev)
-  'http://localhost:3008', // community-kids (dev)
-  'https://community-staging-66f2.up.railway.app', // community (staging)
-  'https://community-kids-staging.up.railway.app', // community-kids (staging)
-  'https://community-production-4149.up.railway.app', // community (prod, fallback railway)
-  'https://community-kids-production.up.railway.app', // community-kids (prod, fallback railway)
-  'https://comunidade.sistemazero.com.br', // community (prod, domínio definitivo)
-  'https://kids.sistemazero.com.br', // community-kids (prod, domínio definitivo)
-]
+// download de anexo). A lista é compartilhada com o `r2-cors-public.ts`.
 
 // Regra canônica de download: GET/HEAD nas origens dos apps de aluno. ExposeHeaders =
 // SUPERCONJUNTO do que a regra adulta já expunha (Content-Disposition p/ o filename do

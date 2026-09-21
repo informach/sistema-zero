@@ -8,19 +8,9 @@ import {
   ZAPPY_RIVE_SRC,
   ZAPPY_RIVE_TIMELINE,
 } from './mascot'
-
-/**
- * ⚠️⚠️ O WASM vem da NOSSA origem, e o CDN fica DESLIGADO. Sem estas três linhas o
- * runtime busca `https://unpkg.com/@rive-app/canvas@<versão>/rive.wasm` (fallback no
- * jsdelivr) e a criança baixa código executável de host de terceiro, no caminho de
- * render. `scripts/sync-rive-wasm.ts` põe o binário em `public/rive/` no `dev` e no
- * `build`; `enableRiveAssetCDN: false` abaixo fecha a mesma porta para os ASSETS
- * (imagem/fonte/áudio) — os nossos são todos embutidos no `.riv`, então não há o que
- * buscar fora. Roda no import porque o módulo inteiro é `ssr:false`: só existe no
- * navegador, e sempre antes da primeira instância.
- */
-RuntimeLoader.setWasmUrl('/rive/rive.wasm')
-RuntimeLoader.setWasmFallbackUrl(null)
+// Origem do WASM + CDN desligado. Mora em `rive-runtime` porque a arte da trilha
+// (`trail-rive-canvas`) depende da MESMA decisão — ver o comentário lá.
+import './rive-runtime'
 
 /**
  * Baixa e compila o WASM SEM montar canvas nenhum. ⚠️ Importar este módulo puxa só

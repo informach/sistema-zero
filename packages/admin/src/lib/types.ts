@@ -430,8 +430,8 @@ export interface ModuleView {
   courseId: string
   title: string
   summary: string | null
-  /** Arte da trilha Kids selecionada no módulo. */
-  illustration?: string | null
+  /** Animação Rive (.riv) da trilha Kids enviada no módulo. */
+  riveUrl?: string | null
   sortOrder: number
 }
 

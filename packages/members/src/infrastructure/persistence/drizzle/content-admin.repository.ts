@@ -73,7 +73,7 @@ const toModule = (r: ModuleRow): Module => ({
   courseId: r.courseId,
   title: r.title,
   summary: r.summary,
-  illustration: r.illustration,
+  riveUrl: r.riveUrl,
   sortOrder: r.sortOrder,
 })
 const toLesson = (r: LessonRow): Lesson => ({
@@ -435,7 +435,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
             courseId: row.id,
             title: m.title,
             summary: m.summary,
-            illustration: m.illustration,
+            riveUrl: m.riveUrl,
             sortOrder: m.sortOrder,
             createdAt: now,
             updatedAt: now,
@@ -623,7 +623,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           courseId,
           title: fields.title,
           summary: fields.summary,
-          illustration: fields.illustration ?? null,
+          riveUrl: fields.riveUrl ?? null,
           sortOrder: sql`coalesce((select max(${modules.sortOrder}) + 1 from ${modules} where ${modules.courseId} = ${courseId}), 0)`,
           createdAt: now,
           updatedAt: now,
@@ -640,7 +640,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       .set({
         title: fields.title,
         summary: fields.summary,
-        illustration: fields.illustration,
+        riveUrl: fields.riveUrl,
         updatedAt: new Date(),
       })
       .where(eq(modules.id, id))

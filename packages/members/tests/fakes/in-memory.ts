@@ -821,7 +821,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       courseId,
       title: fields.title,
       summary: fields.summary,
-      illustration: fields.illustration ?? null,
+      riveUrl: fields.riveUrl ?? null,
       sortOrder,
     }
     this.modules.push(mod)
@@ -833,7 +833,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     if (!m) return null
     m.title = fields.title
     m.summary = fields.summary
-    if (fields.illustration !== undefined) m.illustration = fields.illustration
+    if (fields.riveUrl !== undefined) m.riveUrl = fields.riveUrl
     return m
   }
 

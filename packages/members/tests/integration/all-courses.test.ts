@@ -108,13 +108,13 @@ describe('Audiência (kids) — vitrines e chave-mestra', () => {
   test('detalhe do aluno inclui a ilustração configurada no módulo', async () => {
     const { app, courses, entitlements } = buildApp()
     seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
-    courses.modules[0]!.illustration = 'desafio-nave'
+    courses.modules[0]!.riveUrl = 'https://media.example.com/admin/module-rive/nave.riv'
     grantLifetime(entitlements, { userId: USER, courseRef: 'curso-kids' })
 
     const response = await get(app, '/members/courses/curso-kids', authHeaders())
     expect(response.status).toBe(200)
     const detail = await readJson(response)
-    expect(detail.modules[0].illustration).toBe('desafio-nave')
+    expect(detail.modules[0].riveUrl).toBe('https://media.example.com/admin/module-rive/nave.riv')
   })
 
   test('chave-mestra NÃO abre curso kids (403 no detalhe); matrícula específica abre', async () => {
