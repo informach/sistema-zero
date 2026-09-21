@@ -443,10 +443,7 @@ describe('máscara vetorial no editor', () => {
   it('recusa misturar e apagar uma unidade mascarada com membro trancado', async () => {
     const [content, source] = maskFixture()
     if (!content || !source) throw new Error('formas esperadas')
-    const stage = await openWithShapes([
-      { ...content, maskId: 'janela', locked: true },
-      source,
-    ])
+    const stage = await openWithShapes([{ ...content, maskId: 'janela', locked: true }, source])
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
     fireEvent.click(
       screen.getByRole('button', {
@@ -454,8 +451,13 @@ describe('máscara vetorial no editor', () => {
       }),
     )
 
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selEditMask }))
+    await waitFor(() => expect(screen.getByText(COPY.layers.lockedShapeWarning)).toBeTruthy())
+    expect(screen.queryByRole('toolbar', { name: COPY.vector.maskEditMode })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.selUnite }))
-    await waitFor(() => expect(screen.getByText(COPY.vector.maskReleaseBeforeGeometry)).toBeTruthy())
+    await waitFor(() =>
+      expect(screen.getByText(COPY.vector.maskReleaseBeforeGeometry)).toBeTruthy(),
+    )
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.selRemove }))
     await waitFor(() => expect(screen.getByText(COPY.layers.lockedShapeWarning)).toBeTruthy())
     expect(stage.querySelector('clipPath#pin-mask-janela')).toBeTruthy()
@@ -491,6 +493,146 @@ describe('máscara vetorial no editor', () => {
         value: originalMatchMedia,
       })
     }
+  })
+})
+
+describe('editar máscara e âncora de rotação', () => {
+  it('move somente a fonte no modo de máscara, conclui e desfaz em uma entrada', async () => {
+    const [content, source] = maskFixture()
+    if (!content || !source) throw new Error('formas esperadas')
+    const stage = await openWithShapes([{ ...content, maskId: 'janela' }, source])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: `Selecionar: ${COPY.vector.shapeNames.ellipse} — ${COPY.vector.maskLayer}`,
+      }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selEditMask }))
+
+    expect(screen.getByRole('toolbar', { name: COPY.vector.maskEditMode })).toBeTruthy()
+    expect(stage.querySelector('[data-mask-guide="janela"]')).toBeTruthy()
+    const contentBefore = stage
+      .querySelector('rect[clip-path="url(#pin-mask-janela)"]')
+      ?.getAttribute('x')
+
+    fireEvent.pointerDown(stage, {
+      isPrimary: true,
+      pointerId: 12,
+      clientX: 70,
+      clientY: 70,
+    })
+    fireEvent.pointerMove(stage, { pointerId: 12, clientX: 100, clientY: 80 })
+    fireEvent.pointerUp(stage, { pointerId: 12, clientX: 100, clientY: 80 })
+    await waitFor(() => {
+      expect(stage.querySelector('clipPath ellipse')?.getAttribute('cx')).toBe('100')
+    })
+    expect(stage.querySelector('rect[clip-path="url(#pin-mask-janela)"]')?.getAttribute('x')).toBe(
+      contentBefore,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.maskEditDone }))
+    expect(screen.queryByRole('toolbar', { name: COPY.vector.maskEditMode })).toBeNull()
+    fireEvent.click(screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLElement)
+    await waitFor(() => {
+      expect(stage.querySelector('clipPath ellipse')?.getAttribute('cx')).toBe('70')
+    })
+  })
+
+  it('Esc sai da edição da máscara sem soltar a relação', async () => {
+    const [content, source] = maskFixture()
+    if (!content || !source) throw new Error('formas esperadas')
+    const stage = await openWithShapes([{ ...content, maskId: 'janela' }, source])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: `Selecionar: ${COPY.vector.shapeNames.ellipse} — ${COPY.vector.maskLayer}`,
+      }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selEditMask }))
+    fireEvent.keyDown(window, { key: 'Escape' })
+    await waitFor(() => {
+      expect(screen.queryByRole('toolbar', { name: COPY.vector.maskEditMode })).toBeNull()
+    })
+    expect(stage.querySelector('clipPath#pin-mask-janela')).toBeTruthy()
+  })
+
+  it('arrasta a âncora para fora, cancela sem gravar e aceita teclado', async () => {
+    const shape = maskFixture()[0]
+    if (!shape) throw new Error('forma esperada')
+    const stage = await openWithShapes([shape])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage.querySelector('rect[fill="#78dc52"]') as Element, {
+      isPrimary: true,
+      pointerId: 1,
+      clientX: 70,
+      clientY: 70,
+    })
+    fireEvent.pointerUp(stage, { pointerId: 1, clientX: 70, clientY: 70 })
+    const pivot = await screen.findByRole('button', { name: COPY.vector.rotationPivot })
+
+    fireEvent.pointerDown(pivot, {
+      isPrimary: true,
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 70,
+      clientY: 70,
+    })
+    fireEvent.pointerMove(stage, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 150,
+      clientY: 10,
+    })
+    fireEvent.pointerCancel(stage, { pointerId: 7, pointerType: 'touch' })
+    await waitFor(() => expect(pivot.getAttribute('cx')).toBe('70'))
+    expect(
+      (screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLButtonElement).disabled,
+    ).toBe(true)
+
+    fireEvent.pointerDown(pivot, {
+      isPrimary: true,
+      pointerId: 6,
+      clientX: 70,
+      clientY: 70,
+    })
+    fireEvent.pointerUp(stage, { pointerId: 6 })
+    expect(
+      (screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLButtonElement).disabled,
+    ).toBe(true)
+
+    fireEvent.pointerDown(pivot, {
+      isPrimary: true,
+      pointerId: 8,
+      clientX: 70,
+      clientY: 70,
+    })
+    fireEvent.pointerMove(stage, { pointerId: 99, clientX: 190, clientY: 190 })
+    expect(pivot.getAttribute('cx')).toBe('70')
+    fireEvent.pointerMove(stage, { pointerId: 8, clientX: 150, clientY: 10 })
+    fireEvent.pointerUp(stage, { pointerId: 8 })
+    await waitFor(() => {
+      expect(pivot.getAttribute('cx')).toBe('150')
+      expect(pivot.getAttribute('cy')).toBe('10')
+    })
+
+    fireEvent.click(screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLElement)
+    await waitFor(() => expect(pivot.getAttribute('cx')).toBe('70'))
+    fireEvent.click(screen.getAllByRole('button', { name: /^Refazer/ })[0] as HTMLElement)
+    await waitFor(() => expect(pivot.getAttribute('cx')).toBe('150'))
+
+    fireEvent.keyDown(pivot, { key: 'ArrowRight', shiftKey: true })
+    await waitFor(() => expect(pivot.getAttribute('cx')).toBe('160'))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selCenterPivot }))
+    await waitFor(() => expect(pivot.getAttribute('cx')).toBe('70'))
+  })
+
+  it('não expõe a âncora para uma seleção trancada', async () => {
+    const shape = { ...maskFixture({ locked: true })[0], locked: true } as VectorShape
+    await openWithShapes([shape])
+    fireEvent.click(
+      screen.getByRole('button', { name: `Selecionar: ${COPY.vector.shapeNames.rect}` }),
+    )
+    expect(screen.queryByRole('button', { name: COPY.vector.rotationPivot })).toBeNull()
   })
 })
 

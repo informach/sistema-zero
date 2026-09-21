@@ -9,9 +9,9 @@ import {
   parsePathD,
   resetRotationPivotPreservingAppearance,
   rotatePoint,
-  rotationPivotOf,
   rotateShapesAround,
   rotateShapeTo,
+  rotationPivotOf,
   scaleShape,
   selectionRotationPivot,
   setRotationPivotPreservingAppearance,
@@ -166,6 +166,13 @@ describe('âncora de rotação livre', () => {
         { ...box(), x: 30, y: 20, w: 10, h: 10 },
       ]),
     ).toEqual({ x: 20, y: 15 })
+  })
+
+  it('uma seleção múltipla preserva uma âncora comum explícita', () => {
+    const pivot = { x: -30, y: 75 }
+    const first = { ...box(), id: 'a', rotationPivot: pivot }
+    const second = { ...box(), id: 'b', x: 50, rotationPivot: pivot }
+    expect(selectionRotationPivot([first, second])).toEqual(pivot)
   })
 
   it('mover, redimensionar e espelhar levam a âncora junto', async () => {

@@ -726,10 +726,15 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   }
 
   function beginMaskEdit(): void {
-    const ids = selectedMaskIds()
+    const shapes = currentShapes()
+    const ids = selectedMaskIds(shapes)
     if (ids.size !== 1) return
     const id = [...ids][0]
     if (!id) return
+    if (maskMembers(shapes, id).some((shape) => shape.locked === true)) {
+      showToast(COPY.layers.lockedShapeWarning)
+      return
+    }
     setTool('select')
     setMaskEditId(id)
   }

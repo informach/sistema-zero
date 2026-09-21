@@ -166,9 +166,17 @@ export function rotationPivotOf(shape: VectorShape): Vec2 {
 /** Uma forma usa seu pivô; uma seleção múltipla gira pelo centro da união. */
 export function selectionRotationPivot(shapes: readonly VectorShape[]): Vec2 {
   const only = shapes[0]
-  return shapes.length === 1 && only
-    ? rotationPivotOf(only)
-    : boundsCenter(boundsUnion(shapes.map(shapeBounds)))
+  if (shapes.length === 1 && only) return rotationPivotOf(only)
+  const common = only?.rotationPivot
+  if (
+    common &&
+    shapes.every(
+      (shape) => shape.rotationPivot?.x === common.x && shape.rotationPivot.y === common.y,
+    )
+  ) {
+    return common
+  }
+  return boundsCenter(boundsUnion(shapes.map(shapeBounds)))
 }
 
 /** Caixa que envolve TODAS as caixas (bbox da seleção múltipla). */
@@ -465,10 +473,7 @@ export function rotateShapeTo(shape: VectorShape, degrees: number): VectorShape 
  * Troca o pivô persistido sem mover um único ponto renderizado. A geometria
  * recebe `(I - R(-r)) · (novo - antigo)` antes de o novo pivô ser gravado.
  */
-export function setRotationPivotPreservingAppearance(
-  shape: VectorShape,
-  pivot: Vec2,
-): VectorShape {
+export function setRotationPivotPreservingAppearance(shape: VectorShape, pivot: Vec2): VectorShape {
   const old = rotationPivotOf(shape)
   if (old.x === pivot.x && old.y === pivot.y && shape.rotationPivot) return shape
   const delta = { x: pivot.x - old.x, y: pivot.y - old.y }
