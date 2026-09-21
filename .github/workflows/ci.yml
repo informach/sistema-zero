@@ -302,6 +302,12 @@ jobs:
       # idempotente e só libera o deploy após um GET real no endpoint público do R2.
       - name: Garantir e provar CORS do R2 público
         working-directory: packages/admin
+        # O segredo histórico é um token de conta/workspace. O GraphQL usa o
+        # nome legado acima, mas o CLI distingue o escopo pelo nome da env e
+        # exige que somente UMA das duas variáveis de autenticação exista.
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_TOKEN: ''
         run: >-
           bunx @railway/cli@5.58.0 run
           --project "$RAILWAY_PROJECT_ID"
