@@ -275,6 +275,32 @@ continuam atualizando o trio:
 - manifesto `.manifesto.json`;
 - roteiro `.roteiro.md`.
 
+### Troca rápida do rascunho no Admin
+
+Durante a validação pedagógica, o manifesto muda muitas vezes. A autora não deve apagar blocos e
+seções um por um antes de testar uma nova versão. A importação passa a oferecer dois modos
+explícitos:
+
+- **Atualizar e preservar**, selecionado por padrão, mantém os conteúdos existentes que o manifesto
+  não menciona;
+- **Substituir o rascunho pelo manifesto** trata o arquivo como a descrição completa da aula e
+  remove do rascunho todas as seções e todos os blocos omitidos.
+
+No modo de substituição, a prévia identifica separadamente o que será criado, atualizado,
+preservado e removido. A aplicação exige uma confirmação específica de que conteúdos ausentes no
+manifesto sairão do rascunho. A operação continua atômica e protegida pela revisão conferida na
+prévia: ou todo o novo documento substitui o rascunho esperado, ou nada muda.
+
+“Substituir” não significa descartar configurações válidas de um bloco que continua no manifesto.
+Quando a mesma chave lógica reaparece, a importação mantém o identificador e os dados operacionais
+que já não pertencem à autoria textual, como vídeo vinculado, projeto inicial, arquivos enviados e
+configuração do certificado. Um bloco ou uma seção que não reaparece é removido, qualquer que seja
+seu tipo.
+
+A versão publicada e o histórico das atividades das crianças não são alterados. Como a troca
+completa resolve o fluxo de validação sem criar um estado vazio intermediário, não será adicionado
+um segundo comando para “apagar tudo”.
+
 ## Aula-piloto
 
 O piloto será o **Desafio do Primeiro Jogo, Dia 1**. Ele cobre as quatro situações necessárias para
@@ -302,6 +328,10 @@ com certificado recebe revisão própria por não ter a mesma estrutura didátic
 - retorno do palpite não usa veredito de acerto ou erro;
 - proposta, manifesto e roteiro permanecem em paridade;
 - validadores, testes do core, Admin, player e jornada Kids passam.
+- a importação preservadora continua sendo o padrão;
+- a prévia da substituição enumera tudo que será removido;
+- substituir o rascunho remove conteúdos omitidos, conserva configurações de chaves mantidas e não
+  altera a versão publicada.
 
 ### Ensaio
 
@@ -331,4 +361,3 @@ Referências:
   executive function skills”: <https://doi.org/10.1111/desc.12916>
 - “Prequestioning with feedback fosters learning in young children”:
   <https://doi.org/10.1016/j.learninstruc.2025.102187>
-
