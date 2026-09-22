@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'bun:test'
 import type { CORSRule } from '@aws-sdk/client-s3'
 import {
+  buildPublicObjectUrl,
   KIDS_STAGING_ORIGIN,
   mergePublicReadRule,
+  PUBLIC_CORS_PROBE_BODY,
+  PUBLIC_CORS_PROBE_KEY,
   PUBLIC_READ_RULE,
+  provePublicCorsWithRetry,
   publicReadRuleMatches,
   validatePublicCorsProbe,
 } from '../scripts/r2-cors-public-lib'
@@ -11,6 +15,14 @@ import {
 describe('CORS do bucket R2 público', () => {
   it('inclui na regra a mesma origem usada pela prova do staging', () => {
     expect(PUBLIC_READ_RULE.AllowedOrigins).toContain(KIDS_STAGING_ORIGIN)
+  })
+
+  it('mantém um objeto-prova público estável para o gate sem credenciais', () => {
+    expect(PUBLIC_CORS_PROBE_KEY).toBe('admin/module-rive/cors-probes/public-read-v1.riv')
+    expect(PUBLIC_CORS_PROBE_BODY).toBe('sistema-zero-public-cors-probe:v1')
+    expect(buildPublicObjectUrl('https://pub.example.r2.dev', PUBLIC_CORS_PROBE_KEY)).toBe(
+      'https://pub.example.r2.dev/admin/module-rive/cors-probes/public-read-v1.riv',
+    )
   })
 
   it('preserva regras alheias e substitui todas as cópias da regra gerenciada', () => {
@@ -78,5 +90,29 @@ describe('CORS do bucket R2 público', () => {
         expected,
       ),
     ).toContain('corpo inesperado')
+  })
+
+  it('repete falha transitória, mas preserva a falha real do gate', async () => {
+    const expected = { origin: KIDS_STAGING_ORIGIN, body: PUBLIC_CORS_PROBE_BODY }
+    let calls = 0
+    const attempt = await provePublicCorsWithRetry(
+      async () => {
+        calls += 1
+        return calls === 1
+          ? { status: 503, allowOrigin: null, body: '' }
+          : { status: 200, allowOrigin: expected.origin, body: expected.body }
+      },
+      expected,
+      { attempts: 3, retryDelayMs: 0 },
+    )
+    expect(attempt).toBe(2)
+
+    expect(
+      provePublicCorsWithRetry(
+        async () => ({ status: 200, allowOrigin: null, body: expected.body }),
+        expected,
+        { attempts: 2, retryDelayMs: 0 },
+      ),
+    ).rejects.toThrow('2 tentativa(s)')
   })
 })

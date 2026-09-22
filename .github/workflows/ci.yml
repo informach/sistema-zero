@@ -298,23 +298,14 @@ jobs:
         run: bun install --frozen-lockfile
 
       # O Admin usa proxy e não enxerga a falta de CORS que derruba o fetch do Rive no Kids.
-      # Este gate usa as envs do serviço Admin sem copiá-las p/ o GitHub, configura de forma
-      # idempotente e só libera o deploy após um GET real no endpoint público do R2.
-      - name: Garantir e provar CORS do R2 público
+      # O objeto-prova permanente é instalado pela CLI com as envs do Admin. O deploy faz
+      # somente o mesmo GET público que o navegador da criança, sem depender de credenciais
+      # do Railway/R2 e sem misturar manutenção de infraestrutura com entrega de código.
+      - name: Provar CORS do R2 público
         working-directory: packages/admin
-        # O segredo histórico é um token de conta/workspace. O GraphQL usa o
-        # nome legado acima, mas o CLI distingue o escopo pelo nome da env e
-        # exige que somente UMA das duas variáveis de autenticação exista.
         env:
-          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_TOKEN: ''
-        run: >-
-          bunx @railway/cli@5.58.0 run
-          --project "$RAILWAY_PROJECT_ID"
-          --environment staging
-          --service admin
-          --no-local
-          -- bun run r2:cors:public:ensure
+          R2_PUBLIC_URL: ${{ vars.R2_PUBLIC_URL }}
+        run: bun run r2:cors:public:check
 
       - name: Calcular serviços afetados e deployar
         env:

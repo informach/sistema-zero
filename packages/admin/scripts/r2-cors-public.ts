@@ -7,6 +7,7 @@
 // USO (Bun carrega o .env do cwd — rode de dentro de packages/admin):
 //   bun scripts/r2-cors-public.ts          # garante a regra e prova o CDN
 //   bun scripts/r2-cors-public.ts --check  # não altera a regra; ainda prova o CDN
+//   bun scripts/r2-cors-public.ts --install-probe # mantém o objeto usado pelo CI
 //
 // `PutBucketCors` substitui a configuração inteira. Este comando sempre lê,
 // mescla e preserva as regras que não gerencia. A escrita é idempotente.
@@ -19,8 +20,11 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3'
 import {
+  buildPublicObjectUrl,
   KIDS_STAGING_ORIGIN,
   mergePublicReadRule,
+  PUBLIC_CORS_PROBE_BODY,
+  PUBLIC_CORS_PROBE_KEY,
   PUBLIC_READ_RULE_ID,
   publicReadRuleMatches,
   validatePublicCorsProbe,
@@ -35,6 +39,7 @@ const probeOriginArg = process.argv
   ?.slice('--probe-origin='.length)
 const probeOrigin = probeOriginArg || KIDS_STAGING_ORIGIN
 const checkOnly = process.argv.includes('--check')
+const installProbe = process.argv.includes('--install-probe')
 
 if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !bucket || !R2_PUBLIC_URL) {
   throw new Error(
@@ -68,18 +73,17 @@ function hasExactManagedRule(rules: CORSRule[]): boolean {
   return managedRules.length === 1 && publicReadRuleMatches(managedRules[0])
 }
 
-function publicObjectUrl(key: string): string {
-  const base = publicBaseUrl.endsWith('/') ? publicBaseUrl : `${publicBaseUrl}/`
-  return new URL(key, base).toString()
-}
-
 const delay = (milliseconds: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, milliseconds))
 
 async function provePublicCors(): Promise<void> {
-  const key = `admin/module-rive/cors-probes/${crypto.randomUUID()}.riv`
-  const body = `sistema-zero-cors-probe:${crypto.randomUUID()}`
-  const url = publicObjectUrl(key)
+  const key = installProbe
+    ? PUBLIC_CORS_PROBE_KEY
+    : `admin/module-rive/cors-probes/${crypto.randomUUID()}.riv`
+  const body = installProbe
+    ? PUBLIC_CORS_PROBE_BODY
+    : `sistema-zero-cors-probe:${crypto.randomUUID()}`
+  const url = buildPublicObjectUrl(publicBaseUrl, key)
   let operationError: unknown
   let cleanupError: unknown
 
@@ -138,11 +142,15 @@ async function provePublicCors(): Promise<void> {
     operationError = error
   }
 
-  try {
-    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
-    console.log('objeto temporário da prova removido')
-  } catch (error) {
-    cleanupError = error
+  if (installProbe) {
+    console.log(`objeto-prova permanente instalado: ${key}`)
+  } else {
+    try {
+      await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
+      console.log('objeto temporário da prova removido')
+    } catch (error) {
+      cleanupError = error
+    }
   }
 
   if (operationError) {

@@ -3,6 +3,8 @@ import { STUDENT_APP_ORIGINS } from './student-app-origins'
 
 export const PUBLIC_READ_RULE_ID = 'public-direct-read'
 export const KIDS_STAGING_ORIGIN = 'https://community-kids-staging.up.railway.app'
+export const PUBLIC_CORS_PROBE_KEY = 'admin/module-rive/cors-probes/public-read-v1.riv'
+export const PUBLIC_CORS_PROBE_BODY = 'sistema-zero-public-cors-probe:v1'
 
 /**
  * Leitura por `fetch()` das origens dos apps de aluno. O bucket público nunca
@@ -64,6 +66,11 @@ export interface PublicCorsProbeExpectation {
   body: string
 }
 
+export function buildPublicObjectUrl(baseUrl: string, key: string): string {
+  const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
+  return new URL(key, base).toString()
+}
+
 /** Retorna uma explicação acionável ou `null` quando a prova pública passou. */
 export function validatePublicCorsProbe(
   response: PublicCorsProbeResponse,
@@ -76,4 +83,29 @@ export function validatePublicCorsProbe(
   }
   if (response.body !== expected.body) return 'corpo inesperado no objeto de prova'
   return null
+}
+
+export async function provePublicCorsWithRetry(
+  probe: () => Promise<PublicCorsProbeResponse>,
+  expected: PublicCorsProbeExpectation,
+  options: { attempts?: number; retryDelayMs?: number } = {},
+): Promise<number> {
+  const attempts = Math.max(1, Math.floor(options.attempts ?? 3))
+  const retryDelayMs = Math.max(0, options.retryDelayMs ?? 1_000)
+  let lastFailure = 'a consulta pública ainda não foi executada'
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      lastFailure = validatePublicCorsProbe(await probe(), expected) ?? ''
+      if (!lastFailure) return attempt
+    } catch (error) {
+      lastFailure = error instanceof Error ? error.message : String(error)
+    }
+
+    if (attempt < attempts && retryDelayMs > 0) {
+      await new Promise<void>((resolve) => setTimeout(resolve, retryDelayMs))
+    }
+  }
+
+  throw new Error(`prova pública de CORS falhou após ${attempts} tentativa(s): ${lastFailure}`)
 }
