@@ -128,7 +128,7 @@ introdução atual não ensina nenhuma. O Dia 1 e o Dia 2 usam "clique na área 
 se ela já soubesse, e ninguém nunca disse a ela que não existe botão de play.
 
 **Não existe caminho até a aula.** A introdução começa já dentro de uma aula. Ela não mostra o
-menu, nem a Carreira, nem a página do curso, nem como voltar no dia seguinte. A primeira
+menu, nem a Jornada, nem a página do curso, nem como voltar no dia seguinte. A primeira
 dificuldade real de quem entra num curso é achar o curso outra vez.
 
 **O fecho ocupa duas seções.** *Veja o que você construiu* é um clipe de despedida, e *Hora do
@@ -202,7 +202,7 @@ ensinaria gestos que não valem no lugar de verdade.
 - **Blocos:**
   1. `video` (`video-achar-a-aula`). Do Início até a aula aberta, com o menu à vista. Fala:
      "Este é o seu menu. **Início** é a sua página de todo dia, e é de lá que você continua de
-     onde parou. **Carreira** é o mapa dos cursos: você clica nele, acha o Desafio do Primeiro
+     onde parou. **Jornada** é o mapa dos cursos: você clica nele, acha o Desafio do Primeiro
      Jogo, e dentro do curso as aulas aparecem numa trilha, uma depois da outra. Clica na aula que
      você estava fazendo e ela abre. Quando terminar esta introdução, o Dia 1 será o próximo.
      Amanhã, o Início também te leva direto para onde você parou."
@@ -213,7 +213,7 @@ ensinaria gestos que não valem no lugar de verdade.
      uma tarefa, a Próxima seção só libera depois que a tarefa fica pronta. Na última seção o
      botão vira **Concluir aula**, e aí aparece a comemoração com o que você ganhou. Do lado fica
      a lista de aulas, e dá para esconder ela quando você quiser mais espaço." Duração alvo: 65 a 80 segundos.
-  3. `dialogue`. O caminho escrito, para reler: "Início, Carreira, Desafio do Primeiro Jogo, e a
+  3. `dialogue`. O caminho escrito, para reler: "Início, Jornada, Desafio do Primeiro Jogo, e a
      aula do dia. Dentro da aula: uma seção de cada vez, e Próxima seção libera quando a tarefa
      fica pronta."
 
@@ -379,7 +379,7 @@ confirmar um campo, e a prova de que nada se perde.
 |---|---|---|---|---|
 | `video-abertura` | **A nave que você vai construir.** O jogo pronto e a promessa da aula | `video-abertura-v6` | 30 a 40 s | fala parcial, tela nova |
 | `video-testar` | **As três coisas que você faz para testar.** As três ações executadas na tela, o confirmar do campo e a conferência do 6, no Estúdio de treino | novo | 70 a 85 s | não |
-| `video-achar-a-aula` | **Achando a sua aula.** Do Início até a aula, pelo menu e pela Carreira | novo | 65 a 80 s | não |
+| `video-achar-a-aula` | **Achando a sua aula.** Do Início até a aula, pelo menu e pela Jornada | novo | 65 a 80 s | não |
 | `video-por-dentro-da-aula` | **Por dentro de uma aula.** As seções, o avanço, a lista de aulas e os dois lados | `video-percurso` + `video-tela` | 65 a 80 s | a ideia sim, a tela não |
 | `video-guardar-e-entregar` | **Salvar e enviar são coisas diferentes.** A etiqueta local, o botão de entrega e a prova do 6 após recarregar | `video-salvar` | 35 a 45 s | fala parcial, cortar a garantia absoluta |
 | `video-caderno` | **O seu caderno, e o mapa para quem cuida de você.** O bloco de materiais, o Baixar virando Baixado e o caderno aberto | `video-materiais`, primeiro terço | 40 a 50 s | fala parcial, tela nova |
@@ -405,7 +405,7 @@ ser link direto, sem lista. Quem assiste esta aula está no primeiro posto, o **
 
 | Item | O que ela vê |
 |---|---|
-| **Início**, **Carreira** | link direto, sempre |
+| **Início**, **Jornada** | link direto, sempre |
 | **Criar** | **link só, sem lista.** O Estúdio e o Pinta pedem o posto **Construtor(a)**, o Pensa pede **Inventor(a)** e o Molda pede **Explorador(a) de Mundos**. Sobra Meus trabalhos, e um filho só não abre lista |
 | **Comunidade** | lista com Nossa turma, Mural dos Criadores, Clube dos Criadores e Ranking. Não depende de ferramenta |
 | **Meu espaço** | lista com Meu perfil, Meu avatar e Meu quarto. Não depende de ferramenta |

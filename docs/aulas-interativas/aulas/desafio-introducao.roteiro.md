@@ -12,7 +12,7 @@
   o caminho até a aula, as três ações de testar, o gesto de confirmar um campo, as etiquetas de
   salvamento e o jeito de pedir ajuda.
 - **Conceitos nomeados:** **quadro** não entra aqui, é do Dia 1. Esta aula batiza apenas o que é
-  da plataforma: **Início**, **Carreira**, **Seção X de Y**, **Próxima seção**, **Concluir aula**,
+  da plataforma: **Início**, **Jornada**, **Seção X de Y**, **Próxima seção**, **Concluir aula**,
   **Salvo**, **Enviar para o professor**, **Preciso de ajuda** e
   **Recados do professor**.
 - **Dor desta aula:** ela abre o computador no dia seguinte e não acha o curso. Essa dor reproduz
@@ -141,11 +141,11 @@ mais uma vez, voltar ao campo e mostrar o 6 ainda escrito lá.
 > "Este é o seu menu, e ele fica com você em todas as telas. **Início** é a sua página de todo dia. É
 > de lá que você continua de onde parou."
 
-**Na tela:** clicar em **Carreira** no menu. A página da Carreira abrindo, com o cartão do Desafio
+**Na tela:** clicar em **Jornada** no menu. A página da Jornada abrindo, com o cartão do Desafio
 do Primeiro Jogo à vista.
 
 **Narração:**
-> "**Carreira** é o mapa dos cursos. Clica nele e procura o **Desafio do Primeiro Jogo**, que é este
+> "**Jornada** é o mapa dos cursos. Clica nele e procura o **Desafio do Primeiro Jogo**, que é este
 > curso aqui."
 
 **Na tela:** clicar no cartão do curso. A trilha de aulas abrindo, com a introdução em andamento e o
@@ -159,7 +159,7 @@ Dia 1 como próximo passo.
 
 **Narração:**
 > "Clica na aula em que você estava e ela abre no ponto onde você parou. Esse é o caminho inteiro:
-> **Início**, **Carreira**, **Desafio do Primeiro Jogo** e a sua aula."
+> **Início**, **Jornada**, **Desafio do Primeiro Jogo** e a sua aula."
 
 **Na tela:** voltar ao Início, enquadrando o cartão que leva de volta ao ponto onde ela parou.
 
@@ -168,7 +168,7 @@ Dia 1 como próximo passo.
 > parou."
 
 > **Conferir antes de gravar:** o que o tutorial guiado do Início já conta. Se ele já apresenta o
-> menu, este clipe corta a primeira frase e começa direto no Carreira.
+> menu, este clipe corta a primeira frase e começa direto no Jornada.
 
 ### Clipe `video-por-dentro-da-aula` · Por dentro de uma aula
 **Duração alvo:** 65 a 80 segundos · **Palavras:** 125
@@ -352,7 +352,7 @@ pela escolha da cor.
 
 **Narração:**
 > "Tem lugar que já está aberto e tem lugar que abre mais para a frente, conforme você sobe na
-> Carreira. Passeia por lá quando quiser, que hoje nada disso é tarefa."
+> Jornada. Passeia por lá quando quiser, que hoje nada disso é tarefa."
 
 > **Nota de produção.** Tom de passeio, não de tarefa. O clipe não pede nenhuma ação.
 > **Nota de produção, medida no código.** O menu **esconde** o filho trancado, não o mostra

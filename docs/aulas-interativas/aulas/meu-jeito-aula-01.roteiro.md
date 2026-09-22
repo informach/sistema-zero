@@ -10,7 +10,7 @@
 - **Vitória do dia:** o jogo dela rodando fora da aula, num projeto com o nome que ela escolheu, e um segundo projeto vazio guardado ao lado.
 - **Valores:** Um projeto de teste separado e uma cópia nomeada do jogo do Dia 5; nenhum bloco do jogo é refeito.
 - **Campos livres:** Nome do projeto de teste e nome da cópia do jogo.
-- **Nota de produção:** Começar cada ida pelo botão Abrir meu Estúdio da seção, que abre outra aba. Mostrar o menu recolhido e o botão Mostrar menu nas idas à Carreira.
+- **Nota de produção:** Começar cada ida pelo botão Abrir meu Estúdio da seção, que abre outra aba. Mostrar o menu recolhido e o botão Mostrar menu nas idas à Jornada.
 - **O que NÃO entra, e por quê:** Não criar terceiro projeto, não apagar o projeto de teste e não tratar a lista vazia como estado obrigatório de toda conta.
 
 ## Seção 1. O que a gente vai fazer hoje
@@ -100,7 +100,7 @@
 **Narração:**
 > "Hoje aparece o cartão **Jogo 2D**. Clica em **Instalar**. Surgiu **Instalada**, e o botão
 > virou **Remover**. Esse pacote acrescenta os blocos de sprites, movimento, som e o resto do
-> jogo. Outros cartões podem aparecer conforme você avançar na Carreira."
+> jogo. Outros cartões podem aparecer conforme você avançar na Jornada."
 
 **Na tela:** Clicar Fechar; mostrar categoria Jogo 2D; clicar marca Sistema Zero Studio para voltar a Meus Jogos.
 
@@ -121,11 +121,11 @@
 ### Clipe `video-importar` · Do Dia 5 até o seu Estúdio
 **Duração alvo:** 90 a 110 segundos · **Palavras:** 261
 
-**Na tela:** Na aula, apontar Abrir meu Estúdio; mostrar outra aba, botão Mostrar menu na beirada esquerda; abrir Carreira > Faísca > Desafio do Primeiro Jogo > Acessar curso > Dia 5.
+**Na tela:** Na aula, apontar Abrir meu Estúdio; mostrar outra aba, botão Mostrar menu na beirada esquerda; abrir Jornada > Faísca > Desafio do Primeiro Jogo > Acessar curso > Dia 5.
 
 **Narração:**
 > "Agora vamos buscar o jogo completo. Clica em **Abrir meu Estúdio** nesta seção. Na aba que
-> abriu, clica em **Mostrar menu**, junto à beirada esquerda. Vai em **Carreira**, no nível
+> abriu, clica em **Mostrar menu**, junto à beirada esquerda. Vai em **Jornada**, no nível
 > **Faísca**, abre o **Desafio do Primeiro Jogo** em **Acessar curso** e entra no **Dia 5**."
 
 **Na tela:** No Estúdio da aula, abrir Mais opções > Levar o jogo > Baixar o projeto; mostrar arquivo .szproject.json em Downloads.

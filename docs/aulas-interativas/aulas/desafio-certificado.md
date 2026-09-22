@@ -30,7 +30,7 @@ O redesenho anterior cobriu a introdução e os cinco dias, mas não mapeou o en
 - **Intenção:** fechamento.
 - **Na tela:** um balão pede para assistir com um responsável. O vídeo apresenta a Comunidade dos Criadores e aponta para a página pública da oferta. Um link curto para essa página fica sob o vídeo.
 - **Critério:** assistir a pelo menos **90% do vídeo**. Depois disso, o botão **Concluir aula** fica disponível. Abrir a oferta ou assinar não é critério.
-- **Relação comercial:** a família vê os planos e condições na página de oferta; o vídeo não congela preço, prazo ou promessa de acesso imediato a ferramentas que dependem da Carreira do Criador.
+- **Relação comercial:** a família vê os planos e condições na página de oferta; o vídeo não congela preço, prazo ou promessa de acesso imediato a ferramentas que dependem da Jornada do Criador.
 
 ## Experiências e demonstrações desta aula
 

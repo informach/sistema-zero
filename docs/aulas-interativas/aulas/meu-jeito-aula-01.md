@@ -36,7 +36,7 @@
 >    `Abrir meu Pinta`, que o player desenha quando a seção declara `externalTool`
 >    (`lesson-sections.tsx`). Ele abre em **outra aba**, e a fala diz isso, porque a aula fica na
 >    aba de trás e é para lá que se volta.
-> 2. **Quando o destino não é ferramenta e não tem botão**, que nesta aula é só a ida à Carreira
+> 2. **Quando o destino não é ferramenta e não tem botão**, que nesta aula é só a ida à Jornada
 >    para achar o Dia 5, a fala manda antes clicar no **Mostrar menu**, o botão pequeno colado na
 >    beirada esquerda da tela, e só então nomeia o item.
 >
@@ -45,7 +45,7 @@
 > da seção resolve a maioria dos casos sem menu nenhum, e o `Mostrar menu` cobre o que sobra com
 > um gesto só, repetido no mesmo lugar.
 >
-> **Três rótulos corrigidos junto, medidos no código:** o item do menu chama **Carreira** e não
+> **Três rótulos corrigidos junto, medidos no código:** o item do menu chama **Jornada** e não
 > Cursos (`nav.ts`); o **Estúdio** e o **Pinta** são filhos de **Criar**, e não itens de primeiro
 > nível; e as Extensões moram na parte **O meu jogo** do menu ⋯, não numa parte Exibição, que não
 > existe (`menuLayout.ts`). O antigo `Exportar para o Estúdio` hoje é **Baixar o projeto**, na
@@ -63,7 +63,7 @@
 | O projeto importado chega com a extensão dentro | Sim, e se prova por contraste imediato | Não | | Dito na hora, com os dois projetos já criados | Ela tem dois cartões e duas colunas da esquerda para comparar. O contraste é a prova, e ele está na tela |
 | Guardado na sua conta | Não é conceito, é confirmação de tela | Não | | Uma frase dentro do teste final | Hoje ocupa uma seção inteira, com clipe próprio e pergunta própria, para ensinar a esperar um selo aparecer |
 | Renomear o projeto pela barra de cima | Operação de interface | Não | | Dentro da seção do import | O nome que chega é "Projeto da aula" e não diz nada. Trocar é um gesto, não uma ideia |
-| O botão Mostrar menu | Operação de interface | Não | | Dentro do gesto, nas duas vezes em que a aula precisa dele | Dentro da aula e da ferramenta o menu começa recolhido, então esse botão é a única porta para a Carreira e para o Estúdio. Ele deixou de ser assunto ("dá para ganhar espaço") e virou passo do caminho |
+| O botão Mostrar menu | Operação de interface | Não | | Dentro do gesto, nas duas vezes em que a aula precisa dele | Dentro da aula e da ferramenta o menu começa recolhido, então esse botão é a única porta para a Jornada e para o Estúdio. Ele deixou de ser assunto ("dá para ganhar espaço") e virou passo do caminho |
 
 Oito coisas, duas concretizações, e só uma delas é cena. A dor da extensão acontece no Estúdio de
 quem faz a aula. Os movimentos do jogo ficam em 6 seções; a seção do caderno, logo após a
@@ -193,7 +193,7 @@ propósito, virou o balão acima. O atalho **Abrir meu Estúdio** continua onde 
      lá embaixo. Olha a coluna da esquerda de novo: a categoria Jogo 2D está lá. Para voltar para a
      lista, clica no Sistema Zero Studio, no canto esquerdo da barra de cima."
   3. `video` (`video-extensao`, "Instalar os bloquinhos do Jogo 2D"). Segunda metade do clipe do projeto de teste. Mantém o caminho
-     completo e a frase da Carreira que já está gravada e é boa: "hoje você tem um só porque é o que
+     completo e a frase da Jornada que já está gravada e é boa: "hoje você tem um só porque é o que
      você conquistou até agora, e conforme você for terminando os próximos cursos, mais cartões vão
      aparecendo aqui." **Retirar "com uns cartões" e "procura o cartão"**, porque a janela tem um
      item só. Duração alvo: 50 a 60 segundos.
@@ -233,7 +233,7 @@ acontece com o outro lado depois que existem dois jogos.
 - **Blocos:**
   1. `dialogue` (`fala-achar-dia-5`). "Clica no botão Abrir meu Estúdio desta seção: ele abre em
      outra aba, e é nela que você faz tudo agora. Na beirada esquerda da tela tem um botão pequeno,
-     o Mostrar menu. Clica nele e o menu aparece. Clica em Carreira, depois no nível Faísca, acha o
+     o Mostrar menu. Clica nele e o menu aparece. Clica em Jornada, depois no nível Faísca, acha o
      cartão do Desafio do Primeiro Jogo e clica em Acessar curso. Procura a aula do Dia 5 e abre
      ela."
   2. `dialogue` (`fala-exportar-importar`). "Na barra do Estúdio da aula do Dia 5, clica nos três
@@ -247,7 +247,7 @@ acontece com o outro lado depois que existem dois jogos.
      As três falas são o percurso contínuo de hoje, partido só pelo limite de 400 caracteres do
      balão. Elas ficam na mesma coluna, na mesma ordem, e são lidas como uma fala só.
      **O percurso inteiro acontece na aba que o botão da seção abriu**, e o `Mostrar menu` aparece
-     duas vezes, no mesmo lugar: uma para ir à Carreira e outra para voltar a Criar › Estúdio. É
+     duas vezes, no mesmo lugar: uma para ir à Jornada e outra para voltar a Criar › Estúdio. É
      a aplicação da nota de decisão de plataforma do topo deste relatório.
   4. `video` (`video-importar`, "Do Dia 5 até o seu Estúdio"). O clipe do import, com o caminho inteiro preservado. **Encurtar as
      definições de exportar e importar**, que a cena da seção 5 já entregou, e ficar no gesto.

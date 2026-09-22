@@ -19,6 +19,7 @@
 | Aula imersiva: menu esquerdo e lista de aulas recolhem sozinhos, título e índice saem do corpo, rodapé fixo com Anterior, Preciso de ajuda e Próxima seção | 19/09 | todo print da página de aula |
 | A coluna da esquerda do Estúdio ganhou **Blocos deste jogo** | antes de 20/09 | prints do Estúdio com a coluna à vista |
 | Cenas interativas passam a ser só experimentação; o modo "Agora é sua vez" saiu | 20/09 | prints de experiência |
+| **Carreira do Criador virou Jornada do Criador**: o item do menu chama **Jornada**, o título de `/cursos` é **Cursos da Jornada do Criador** e o `/perfil` diz **Minha jornada** | 22/09 | todo print com o menu da esquerda à vista, e os de `/cursos`, `/perfil` e mapa |
 
 ## Aproveitáveis: já existem prints novos no `sistema-zero`
 
@@ -32,7 +33,7 @@ packages/funnel/public/img/desafio-primeiro-jogo/plataforma-experimento.webp
 packages/funnel/public/img/desafio-primeiro-jogo/plataforma-materiais.webp
 packages/funnel/public/img/desafio-primeiro-jogo/plataforma-trilha.webp
 packages/funnel/public/img/comunidade-dos-criadores/print-aula.webp
-packages/funnel/public/img/comunidade-dos-criadores/print-carreira.webp
+packages/funnel/public/img/comunidade-dos-criadores/print-jornada.webp
 packages/funnel/public/img/comunidade-dos-criadores/print-clube.webp
 packages/funnel/public/img/comunidade-dos-criadores/print-espaco.webp
 packages/funnel/public/img/comunidade-dos-criadores/print-mural.webp
@@ -63,7 +64,7 @@ uma cena no formato de demonstração, que a decisão de 20/09 removeu.
 | `enviar.png` | O botão **Enviar para o professor** na barra do Estúdio da aula | média |
 | `mural.png` | O Mural dos Criadores atual | baixa |
 | `copiar-blocos.png` | O menu de clique direito num bloco, com **Copiar blocos** | baixa |
-| `carreira.png` | A tela de Carreira com os **oito** postos, de Faísca a Lenda | alta |
+| `jornada.png` | A tela de Jornada com os **oito** postos, de Faísca a Lenda | alta |
 
 **Novo, que o caderno passou a precisar:** um print da **página de aula** mostrando a barra de
 cima com `Seção X de Y`, e o rodapé com **Anterior**, **Preciso de ajuda** e **Próxima seção**.

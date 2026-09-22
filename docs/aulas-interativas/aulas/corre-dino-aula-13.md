@@ -30,7 +30,7 @@
 | Um `Se` dentro de outro `Se`, e a comparação de fábrica que desta vez fica | Não. É montagem, e as peças estão à vista | Não | | Na fala de montagem, citando a Aula 7 | É a única vez do curso em que a comparação de fábrica é aproveitada em vez de descartada. Isso merece uma fala explícita, não uma cena |
 | Balanceamento | Não. Ela troca o número e joga | Não | | Demonstração por extremos conduzida pela narração | O efeito aparece na partida dela, e os dois campos ficam sendo dela |
 | A Ponte: os blocos viram código de verdade | Sim, e é o fecho do curso | **Sim, e não por cena** | Painel real do Estúdio, aberto no projeto dela, com vídeo do caminho | No fechamento | Uma simulação seria mais fraca do que a coisa real. É o código dela, com o nome do sprite que ela escolheu |
-| Carreira de Criador, troféus e Mural | Não. É informação da plataforma | Não | | No fechamento | E sem certificado, porque o curso não tem |
+| Jornada do Criador, troféus e Mural | Não. É informação da plataforma | Não | | No fechamento | E sem certificado, porque o curso não tem |
 | Publicar e compartilhar | Não | Não | | No fechamento, como convite | Não é requisito de conclusão, e não pode ser escrito como se fosse |
 
 Treze coisas, cinco concretizações em duas cenas. Oito não ganham nada, e as duas maiores (a Ponte e
@@ -338,7 +338,7 @@ dela.
      - **O que a Comunidade faz com isso.** O projeto entregue já conta. Publicar é uma escolha dela,
        para depois, e não é o que fecha o curso: se ela quiser, o Compartilhar libera depois do
        envio, ela escreve um resumo, gera a capa e publica, e o jogo ganha um link e aparece no Mural
-       junto com os jogos dos outros criadores. O curso fica marcado na **Carreira de Criador**, com
+       junto com os jogos dos outros criadores. O curso fica marcado na **Jornada do Criador**, com
        os troféus, e é ali que ela vê tudo o que já construiu. **Não existe certificado neste curso, e
        o fecho não pode prometer um.** Nenhum número de XP é citado.
      - **A despedida**, sem promessa de futuro que não se pode cumprir: quando bater a vontade de
@@ -544,7 +544,7 @@ velocidade recebida, deixaram de ser narração.
   passa a falar em "o limite que você escolheu". O conceito cobrado é o mesmo: o sorteio entra depois
   da base, e o sinal de igual travaria a base logo na primeira volta.
 - **O que fica para a Comunidade, e não para outra aula:** publicar e compartilhar, que são escolha
-  dela e não fecham o curso; a Carreira de Criador e os troféus, onde o curso aparece concluído; e o
+  dela e não fecham o curso; a Jornada do Criador e os troféus, onde o curso aparece concluído; e o
   Mural. Não existe certificado neste curso.
 - **Dívidas que este curso deixa para a trilha, e que o fecho não pode prometer:** a distinção entre
   evento e estado de tecla (curso 2), vida do sprite e quadros de invencibilidade (cursos 3 e 6), o

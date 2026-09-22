@@ -12,14 +12,14 @@ Fonte: `packages/community-kids/src/components/kids/nav.ts`
 | Item | Rota | Filhos |
 |---|---|---|
 | **Início** | `/` | — |
-| **Carreira** | `/cursos` | — |
+| **Jornada** | `/cursos` | — |
 | **Criar** | `/criar` | Meus trabalhos `/criar` · **Estúdio** `/estudio` · **Pinta** `/pinta` · Pensa `/pensa` · Molda `/molda` |
 | **Comunidade** | `/comunidade` | Nossa turma · Mural dos Criadores · Clube dos Criadores · Ranking |
 | **Meu espaço** | `/perfil` | **Meu perfil** `/perfil` · **Meu avatar** `/meu-avatar` · **Meu quarto** `/quarto` |
 
 Três armadilhas de fala:
 
-1. **O item chama Carreira, não Cursos.** A rota é `/cursos`, mas ninguém lê rota.
+1. **O item chama Jornada, não Cursos.** A rota é `/cursos`, mas ninguém lê rota.
 2. **Estúdio e Pinta são filhos de Criar.** "No menu da esquerda, clica no Pinta" pula um passo:
    primeiro **Criar**, depois **Pinta**.
 3. **Dentro de uma aula ou de uma ferramenta, esse menu começa escondido.**
@@ -51,7 +51,7 @@ preferência:
    link leva `target="_blank"`: **abre em outra aba**, e a fala precisa dizer isso.
 2. **O botão do bloco de ação de plataforma**, quando o destino é o avatar, o quarto ou o perfil
    (seção 4 abaixo). Também abre em outra aba.
-3. **Mostrar menu**, quando não é nenhum dos dois, que hoje é só a ida à Carreira. A fala manda
+3. **Mostrar menu**, quando não é nenhum dos dois, que hoje é só a ida à Jornada. A fala manda
    clicar nele antes de nomear o caminho.
 
 ## 3. A cor do perfil, que substituiu o tema

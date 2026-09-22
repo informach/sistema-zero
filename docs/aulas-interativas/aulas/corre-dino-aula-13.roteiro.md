@@ -218,9 +218,9 @@
 > você enviou já conta como sua entrega. Se quiser publicar depois, o **Compartilhar** leva o
 > jogo ao Mural dos Criadores, com um link para outras pessoas abrirem."
 
-**Na tela:** Mostrar Carreira de Criador e Mural como caminhos opcionais; terminar no jogo.
+**Na tela:** Mostrar Jornada do Criador e Mural como caminhos opcionais; terminar no jogo.
 
 **Narração:**
-> "Na **Carreira de Criador** você vê os cursos e troféus que conquistou. No Mural, se decidir
+> "Na **Jornada do Criador** você vê os cursos e troféus que conquistou. No Mural, se decidir
 > compartilhar, seu jogo fica junto dos jogos de outros criadores. Quando der vontade de criar
 > outro, há mais cursos esperando na Comunidade. Por agora, aproveita o seu jogo inteiro!"
