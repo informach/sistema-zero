@@ -911,7 +911,8 @@ button[data-slot="button"]:is(.bg-background, .bg-secondary, .text-destructive):
    borda cresce, no aperto ela afunda até a borda quase sumir. A base da borda fica
    sempre no mesmo lugar (-1 + 5 = 3 + 1 = 4), então nada embaixo é coberto a mais.
    Planos de propósito: o menu da esquerda, as abas e os chips de filtro (decisão dela),
-   e o nó travado da trilha e o baú fechado (não são clicáveis e não podem parecer).
+   e o nó travado da trilha. O baú mantém o volume nos três estados porque é um marco
+   físico da trilha; somente o estado liberado recebe movimento de botão.
    Onde mora cada um: os botões (`button.bg-primary…`, `.sz-btn-*`) trazem o 3D na
    própria regra; os nós da trilha, na seção da trilha; os CARTÕES clicáveis, por
    seletor, aqui; e o resto usa `.kids-3d` na peça que aparece, com o movimento vindo do
@@ -1221,17 +1222,26 @@ a.kid-pop:has(> .kids-carta):hover {
     border: 2px dashed var(--border);
     opacity: 0.85;
   }
-  /* Baú de fim de unidade (gamificação): fechado = tracejado neutro;
-     aberto = veste o tema da unidade (mesmos tokens dos nós done). */
+  /* Baú de fim de unidade (gamificação): os três estados compartilham o mesmo
+     molde volumétrico. Fechado e aberto ficam estáticos; apenas o liberado afunda. */
+  .kids-node--chest {
+    box-shadow:
+      inset 0 3px 0 color-mix(in oklab, white 34%, transparent),
+      0 var(--k3d-altura) 0 var(--k3d-degrau);
+  }
   .kids-node--chest-closed {
     background-color: var(--card);
     color: var(--muted-foreground);
     border: 2px dashed var(--border);
+    --k3d-altura: 6px;
+    --k3d-degrau: color-mix(in oklab, var(--pen-degrau-cartao) 72%, var(--pen-tinta));
   }
   .kids-node--chest-open {
     background-color: var(--unit-bg);
     background-image: var(--unit-bg-image);
     color: var(--unit-fg);
+    --k3d-altura: 8px;
+    --k3d-degrau: color-mix(in oklab, var(--kids-ouro) 58%, var(--pen-tinta));
   }
   /* Baú LIBERADO: chama a criança sem gritar. Mesmo anel de atenção do nó atual. */
   .kids-node--chest-ready {
@@ -1273,10 +1283,9 @@ a.kid-pop:has(> .kids-carta):hover {
   /* O 3D do Brilliant (11/09/2026) nos nós que ABREM aula (feita, atual, a fazer) e no
      baú liberado: a borda de baixo no degrau da cor da unidade, por sombra. Tanto os
      links de aula quanto o botão do baú compartilham `.kids-node-link`, e o nó afunda
-     junto. O nó TRAVADO e o baú fechado ou já aberto ficam planos: não são clicáveis e
-     não podem parecer. O travado também leva a classe (é o mesmo molde, sem o link),
-     daí o `:not`. */
-  .kids-node-link .kids-node:not(.kids-node--locked) {
+     junto. O nó TRAVADO fica plano; o baú fechado e o aberto usam o molde estático
+     acima. O travado também leva a classe (é o mesmo molde, sem o link), daí o `:not`. */
+  .kids-node-link .kids-node:not(.kids-node--locked):not(.kids-node--chest) {
     --k3d-altura: 5px;
     --k3d-degrau: color-mix(in oklab, var(--unit) 70%, var(--pen-tinta));
     box-shadow: 0 var(--k3d-altura) 0 var(--k3d-degrau);
@@ -1287,22 +1296,19 @@ a.kid-pop:has(> .kids-carta):hover {
   .kids-node-link .kids-node--todo {
     --k3d-degrau: var(--pen-degrau-cartao);
   }
-  .kids-node-link:hover .kids-node:not(.kids-node--locked) {
+  .kids-node-link:hover .kids-node:not(.kids-node--locked):not(.kids-node--chest) {
     --k3d-altura: 6px;
     translate: 0 -1px;
   }
-  .kids-node-link:active .kids-node:not(.kids-node--locked) {
+  .kids-node-link:active .kids-node:not(.kids-node--locked):not(.kids-node--chest) {
     --k3d-altura: 1px;
     translate: 0 4px;
   }
   /* O ouro do baú escondia o degrau genérico dos nós. A base mais alta e marrom
-     continua visível em repouso; o brilho interno separa a face dourada da base. */
+     continua visível em repouso; a classe-base do baú fornece o brilho interno. */
   .kids-node-link .kids-node.kids-node--chest-ready {
     --k3d-altura: 8px;
     --k3d-degrau: color-mix(in oklab, var(--kids-ouro) 58%, var(--pen-tinta));
-    box-shadow:
-      inset 0 3px 0 color-mix(in oklab, white 34%, transparent),
-      0 var(--k3d-altura) 0 var(--k3d-degrau);
     transition: translate 0.12s ease;
   }
   .kids-node-link:hover .kids-node.kids-node--chest-ready {

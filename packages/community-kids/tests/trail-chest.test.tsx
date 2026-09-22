@@ -57,21 +57,58 @@ function montar(chest: ModuleChestView | null) {
 }
 
 describe('baú da trilha', () => {
-  test('liberado tem base 3D contrastante e curso de pressão próprio', () => {
+  test('fechado, liberado e aberto compartilham uma base 3D visível', () => {
     const css = readFileSync(new URL('../src/app/globals.css', import.meta.url), 'utf8')
     const rule = (selector: string) =>
       css.match(new RegExp(`${selector}\\s*\\{([^}]*)\\}`, 's'))?.[1] ?? ''
+    const base = rule('\\.kids-node--chest')
+    const closed = rule('\\.kids-node--chest-closed')
+    const open = rule('\\.kids-node--chest-open')
     const ready = rule('\\.kids-node-link \\.kids-node\\.kids-node--chest-ready')
     const hover = rule('\\.kids-node-link:hover \\.kids-node\\.kids-node--chest-ready')
     const active = rule('\\.kids-node-link:active \\.kids-node\\.kids-node--chest-ready')
 
+    expect(base).toContain('box-shadow:')
+    expect(base).toContain('inset 0 3px 0')
+    expect(base).toContain('0 var(--k3d-altura) 0 var(--k3d-degrau)')
+    expect(css).toContain(
+      '.kids-node-link .kids-node:not(.kids-node--locked):not(.kids-node--chest)',
+    )
+    expect(closed).toContain('--k3d-altura: 6px')
+    expect(closed).toContain('var(--pen-degrau-cartao)')
+    expect(open).toContain('--k3d-altura: 8px')
+    expect(open).toContain('var(--kids-ouro) 58%')
     expect(ready).toContain('--k3d-altura: 8px')
-    expect(ready).toContain('var(--kids-ouro) 58%')
-    expect(ready).toContain('inset 0 3px 0')
-    expect(ready).toContain('transition: translate 0.12s ease')
     expect(hover).toContain('--k3d-altura: 9px')
     expect(active).toContain('--k3d-altura: 2px')
     expect(active).toContain('translate: 0 6px')
+  })
+
+  test('todos os estados renderizam o mesmo molde de baú 3D', () => {
+    const { container, rerender } = montar(bau({ unlocked: false }))
+    expect(
+      container.querySelector('.kids-node--chest-closed')?.classList.contains('kids-node--chest'),
+    ).toBe(true)
+
+    rerender(
+      <TrailChest courseSlug="meu-curso" moduleId="m1" unitNumber={2} chest={bau()} offset={0} />,
+    )
+    expect(
+      container.querySelector('.kids-node--chest-ready')?.classList.contains('kids-node--chest'),
+    ).toBe(true)
+
+    rerender(
+      <TrailChest
+        courseSlug="meu-curso"
+        moduleId="m1"
+        unitNumber={2}
+        chest={bau({ claimed: true })}
+        offset={0}
+      />,
+    )
+    expect(
+      container.querySelector('.kids-node--chest-open')?.classList.contains('kids-node--chest'),
+    ).toBe(true)
   })
 
   test('fechado não é botão (seria uma parada de foco que não faz nada)', () => {

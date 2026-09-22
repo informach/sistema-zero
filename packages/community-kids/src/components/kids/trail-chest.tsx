@@ -103,7 +103,7 @@ export function TrailChest({
         className="-ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5 outline-none"
         style={posicao}
       >
-        <span className="kids-node kids-node--chest-closed">
+        <span className="kids-node kids-node--chest kids-node--chest-closed">
           <ChestIcon />
         </span>
         <span className="text-center font-semibold text-muted-foreground text-xs leading-tight">
@@ -124,7 +124,7 @@ export function TrailChest({
           className="-ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5 outline-none"
           style={posicao}
         >
-          <span className="kids-node kids-node--chest-open kids-unit-tesouro">
+          <span className="kids-node kids-node--chest kids-node--chest-open kids-unit-tesouro">
             <ChestIcon open className="kid-float" />
           </span>
           <span className="sz-display-grad text-center font-semibold text-xs leading-tight">
@@ -154,7 +154,7 @@ export function TrailChest({
     >
       <span
         className={cn(
-          'kids-node kids-node--chest-ready kids-unit-tesouro',
+          'kids-node kids-node--chest kids-node--chest-ready kids-unit-tesouro',
           estado === 'abrindo' && 'kids-chest-opening',
         )}
       >
