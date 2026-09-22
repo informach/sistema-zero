@@ -3,10 +3,10 @@ import Link from 'next/link'
 import { KidsRecado } from './kids-recado'
 import { KidsMascot } from './mascot'
 
-export type CareerLockReason = 'future-tier' | 'foundation-first' | 'tier-reward'
+export type JourneyLockReason = 'future-tier' | 'foundation-first' | 'tier-reward'
 
 /** Extrai o motivo do 423 do curso (`careerLock.reason` no envelope do members). */
-export function careerLockReason(body: unknown): CareerLockReason | undefined {
+export function journeyLockReason(body: unknown): JourneyLockReason | undefined {
   const reason = (body as { careerLock?: { reason?: string } } | null)?.careerLock?.reason
   return reason === 'foundation-first' || reason === 'future-tier' || reason === 'tier-reward'
     ? reason
@@ -14,7 +14,7 @@ export function careerLockReason(body: unknown): CareerLockReason | undefined {
 }
 
 /** Recado amigável para um curso travado pela carreira (etapa/curso-base/recompensa). */
-export function KidsLockedCourse({ reason }: { reason?: CareerLockReason }) {
+export function KidsLockedCourse({ reason }: { reason?: JourneyLockReason }) {
   const foundationFirst = reason === 'foundation-first'
   const tierReward = reason === 'tier-reward'
   return (

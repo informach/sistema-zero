@@ -10,11 +10,11 @@ import type {
   Module,
 } from '../../../domain/course/course'
 import {
-  CareerSlotConflictError,
   CloneSameAudienceError,
   CourseConflictError,
   DuplicateSlugError,
   InvalidContentCommandError,
+  JourneySlotConflictError,
   NoShowcaseBlockError,
 } from '../../../domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../../domain/course/lesson-block'
@@ -161,7 +161,7 @@ function isSlugUniqueViolation(error: unknown): boolean {
   return constraint === '' || (constraint !== null && SLUG_UNIQUE_CONSTRAINTS.has(constraint))
 }
 
-function isCareerSlotUniqueViolation(error: unknown): boolean {
+function isJourneySlotUniqueViolation(error: unknown): boolean {
   return uniqueViolationConstraint(error) === CAREER_SLOT_UNIQUE_CONSTRAINT
 }
 
@@ -337,7 +337,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     try {
       await this.db.insert(courses).values(row)
     } catch (error) {
-      if (isCareerSlotUniqueViolation(error)) throw new CareerSlotConflictError()
+      if (isJourneySlotUniqueViolation(error)) throw new JourneySlotConflictError()
       if (isSlugUniqueViolation(error))
         throw new DuplicateSlugError('Já existe um curso com esse slug')
       throw error
@@ -573,7 +573,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         return updated.length > 0
       })
     } catch (error) {
-      if (isCareerSlotUniqueViolation(error)) throw new CareerSlotConflictError()
+      if (isJourneySlotUniqueViolation(error)) throw new JourneySlotConflictError()
       if (isSlugUniqueViolation(error))
         throw new DuplicateSlugError('Já existe um curso com esse slug')
       throw error

@@ -1,4 +1,4 @@
-import { type CreativeToolId, creativeToolAvailability } from '@sistemazero/core/career'
+import { type CreativeToolId, creativeToolAvailability } from '@sistemazero/core/journey'
 import { Elysia } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'

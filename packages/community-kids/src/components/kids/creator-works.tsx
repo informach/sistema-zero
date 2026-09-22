@@ -1,4 +1,4 @@
-import type { CreativeToolId } from '@sistemazero/core/career'
+import type { CreativeToolId } from '@sistemazero/core/journey'
 import type { CreationToolView } from '@sistemazero/member-shell/lib/types'
 import { ArrowUpRight, ChevronRight, Gamepad2, type LucideIcon } from 'lucide-react'
 import Link from 'next/link'

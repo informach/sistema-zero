@@ -177,7 +177,7 @@ function PageTitle({
   )
 }
 
-function CareerScreen() {
+function JourneyScreen() {
   return (
     <CaptureShell screen="career">
       <PageFrame>
@@ -800,7 +800,7 @@ function App() {
   if (screen === 'club') return <ClubScreen />
   if (screen === 'messages') return <MessagesScreen />
   if (screen === 'space') return <SpaceScreen />
-  return <CareerScreen />
+  return <JourneyScreen />
 }
 
 createRoot(document.getElementById('root')!).render(<App />)

@@ -155,7 +155,7 @@ export interface CatalogCourseView {
   /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
   careerSlot?: number | null
   /** Trava pedagógica da carreira, separada da posse comercial. */
-  careerLock?: CareerCourseLockView
+  careerLock?: JourneyCourseLockView
   /** Marcos do aluno neste curso; ausente = members antigo (trate como nenhum). */
   milestones?: CourseMilestonesView
   /** URL da página de vendas (funil); `null` → fallback FUNNEL_URL no server. */
@@ -258,7 +258,7 @@ export interface MyCourseView {
   /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
   careerSlot?: number | null
   /** Trava pedagógica da carreira, separada da posse comercial. */
-  careerLock?: CareerCourseLockView
+  careerLock?: JourneyCourseLockView
   /** Marcos do aluno neste curso; ausente = members antigo (trate como nenhum). */
   milestones?: CourseMilestonesView
   access: AccessView
@@ -267,7 +267,7 @@ export interface MyCourseView {
   continueLessonId: string | null
 }
 
-export interface CareerCourseLockView {
+export interface JourneyCourseLockView {
   locked: boolean
   reason?: 'future-tier' | 'foundation-first' | 'tier-reward'
   requiredLevel?: StudentLevelSlug
@@ -1164,7 +1164,7 @@ export interface ChildWeekGameView {
 /** Resumo de progresso de UM filho (perfil) — espelha a view do members. */
 export interface ChildStatsView {
   learningTopics?: import('@sistemazero/core/learning').LearningTopicSummary[]
-  career?: import('@sistemazero/core/career').ParentCareerView
+  career?: import('@sistemazero/core/journey').ParentJourneyView
   profileId: string
   xp: number
   streak: { current: number; best: number }

@@ -167,7 +167,7 @@ function initialDocument(
   return document
 }
 
-/** Course first, then lesson: same lock order as the career/showcase guards. */
+/** Course first, then lesson: same lock order as the journey/showcase guards. */
 async function lockDraft(tx: Transaction, lessonId: string) {
   const [lesson] = await tx
     .select({ courseId: lessons.courseId })

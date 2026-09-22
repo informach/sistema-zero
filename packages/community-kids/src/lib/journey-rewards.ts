@@ -1,0 +1,67 @@
+import { moldaFeatureList } from './molda-level-gain'
+import type { StudentLevelSlug } from './types'
+
+export interface JourneyRewardInfo {
+  title: string
+  description: string
+}
+
+/**
+ * O que cada POSTO da carreira abre, do jeito que a criança lê.
+ *
+ * ⚠️ **Desde a reforma do currículo (08/2026), o posto NÃO libera mais blocos.** Quem põe
+ * ferramenta na caixa é o CURSO (`studioUnlockBlocks`): bônus entrega ao concluir; curso com
+ * posição entrega ao concluir e publicar. O posto decide só o MODO do editor
+ * (livre → Ponte → Pro) e quais PRODUTOS abrem. Anunciar kit por nível aqui
+ * ("Jogo 2D Essencial", "Jogo 3D Iniciante") virou promessa falsa: a criança sobe de posto e a
+ * caixa não muda.
+ *
+ * Por isso o Mestre dos Jogos não anuncia ferramenta nenhuma — porque não abre nenhuma. O que
+ * ele dá de verdade é o posto e a trilha nova, e é isso que a copy diz. O Explorador(a) anuncia
+ * o Molda (a oficina 3D abre onde o kit Jogo 3D, consumidor do modelo, é recompensa — decisão
+ * dela, 05/09/2026), e o Arquiteto(a) e a Lenda anunciam as ferramentas do Molda que abrem neles
+ * (`MOLDA_TOOL_BAND_LEVELS`, decisão dela de 11/09/2026), com o texto da fonte única
+ * `MOLDA_BAND_PROMISES` (`molda-level-gain.ts`). `tests/journey-rewards-conformance.test.ts`
+ * trava as promessas contra o core e contra as constantes dos portões.
+ */
+export const JOURNEY_REWARD_INFO: Record<StudentLevelSlug, JourneyRewardInfo> = {
+  noob: {
+    title: 'O Estúdio nas aulas',
+    description: 'Você já cria dentro das aulas, com as peças que o curso ensina.',
+  },
+  coder: {
+    title: 'Estúdio livre + Pinta',
+    description:
+      'Você cria os seus jogos quando quiser, com as ferramentas dos cursos que terminou, e desenha os seus personagens no Pinta.',
+  },
+  hacker: {
+    title: 'Pensa + Zappy',
+    description:
+      'O Pensa te ajuda a planejar a ideia do jogo e o Zappy fica do seu lado dentro do Estúdio.',
+  },
+  explorer: {
+    title: 'Molda, a sua oficina 3D',
+    description:
+      'Uma trilha nova se abre, e com ela o Molda: modele peças, pinte texturas e crie céus 360° para os seus jogos 3D.',
+  },
+  elite: {
+    title: 'Um posto novo no mapa',
+    description: 'Uma trilha nova, com jogos bem mais caprichados.',
+  },
+  architect: {
+    title: 'Um posto novo no mapa',
+    description: `Uma trilha nova, para construir cenários inteiros. E no Molda chegam ${moldaFeatureList('intermediate')}.`,
+  },
+  champion: {
+    title: 'Modo Ponte',
+    description: 'Veja os blocos e o código lado a lado, trabalhando juntos.',
+  },
+  god: {
+    title: 'Modo Pro',
+    description: `Escreva o jogo direto no código, como os criadores profissionais fazem. E no Molda chegam ${moldaFeatureList('professional')}.`,
+  },
+}
+
+export function journeyRewardInfo(slug: string | undefined): JourneyRewardInfo {
+  return JOURNEY_REWARD_INFO[slug as StudentLevelSlug] ?? JOURNEY_REWARD_INFO.noob
+}

@@ -1,18 +1,18 @@
 import {
-  type CareerLevelSlug,
-  type CareerStudioBlockProfileId,
-  type CareerStudioRewardId,
-  CREATOR_CAREER_LEVELS,
-  creatorCareerLevel,
-} from '@sistemazero/core/career'
+  CREATOR_JOURNEY_LEVELS,
+  creatorJourneyLevel,
+  type JourneyLevelSlug,
+  type JourneyStudioBlockProfileId,
+  type JourneyStudioRewardId,
+} from '@sistemazero/core/journey'
 import type { BlockLevel, IDEMode } from '@sistemazero/studio'
-import { ESSENTIAL_2D_ALLOW_BLOCKS } from '@sistemazero/studio/career'
+import { ESSENTIAL_2D_ALLOW_BLOCKS } from '@sistemazero/studio/journey'
 
 /** Capacidades do Estúdio Completo já conquistadas pelo aluno. */
 export interface StudioTier {
   freeStudio: boolean
-  rewardId: CareerStudioRewardId
-  blockProfileId: CareerStudioBlockProfileId
+  rewardId: JourneyStudioRewardId
+  blockProfileId: JourneyStudioBlockProfileId
   level: BlockLevel
   allowBlocks?: readonly string[]
   allowedExtensions: readonly string[]
@@ -55,7 +55,7 @@ export {
   AI_APPS_MIN_LEVEL,
   FREE_CREATION_MIN_LEVEL,
   THREE_D_CREATION_MIN_LEVEL,
-} from '@sistemazero/core/career'
+} from '@sistemazero/core/journey'
 
 const PRIVILEGED_ROLES = new Set(['superadmin', 'admin', 'staff'])
 
@@ -63,7 +63,7 @@ export function isPrivilegedRole(role: string | undefined): boolean {
   return !!role && PRIVILEGED_ROLES.has(role)
 }
 
-const EXTENSIONS_BY_PROFILE: Record<CareerStudioBlockProfileId, readonly string[]> = {
+const EXTENSIONS_BY_PROFILE: Record<JourneyStudioBlockProfileId, readonly string[]> = {
   'lesson-only': [],
   '2d-essential': ['game-2d'],
   'iniciante-2d': ['game-2d'],
@@ -134,8 +134,8 @@ export function remixRequirementFromSnapshot(snapshot: unknown): StudioRemixRequ
  * `null` = nenhum nível cobre (extensão desconhecida/forjada no metadado) — a UI
  * cai num recado genérico; fail-closed cosmético, nunca destrava nada.
  */
-export function minCareerLevelForRemix(req: StudioRemixRequirement): CareerLevelSlug | null {
-  for (const level of CREATOR_CAREER_LEVELS) {
+export function minJourneyLevelForRemix(req: StudioRemixRequirement): JourneyLevelSlug | null {
+  for (const level of CREATOR_JOURNEY_LEVELS) {
     const reward = level.reward
     if (!reward.freeStudio) continue
     if (req.pro && !reward.pro) continue
@@ -169,8 +169,8 @@ export function resolveStudioTier(
   unlocks?: StudioCurriculumUnlocks,
 ): StudioTier {
   const privileged = isPrivilegedRole(role)
-  const effectiveSlug: CareerLevelSlug = privileged ? 'god' : creatorCareerLevel(levelSlug).slug
-  const reward = creatorCareerLevel(effectiveSlug).reward
+  const effectiveSlug: JourneyLevelSlug = privileged ? 'god' : creatorJourneyLevel(levelSlug).slug
+  const reward = creatorJourneyLevel(effectiveSlug).reward
   const pro = reward.pro
   // ⚠️ A EQUIPE ignora o currículo: o passe livre existe p/ testar o Estúdio inteiro, e
   // restringir staff ao que ela "concluiu" esconderia justamente o que ela vai conferir.

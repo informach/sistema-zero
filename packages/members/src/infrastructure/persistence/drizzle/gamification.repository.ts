@@ -53,7 +53,6 @@ import {
   type AwardResult,
   type BuyStreakFreezeInput,
   type BuyStreakFreezeResult,
-  type CareerCourseState,
   type ClaimMissionInput,
   type ClaimMissionResult,
   type CourseMilestones,
@@ -62,6 +61,7 @@ import {
   type GamificationRankingEntry,
   type GamificationRankingPage,
   type GamificationRepository,
+  type JourneyCourseState,
   type LeagueMembershipRecord,
   type ListGamificationRankingInput,
   MAX_STREAK_FREEZES,
@@ -846,7 +846,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     return rows
   }
 
-  async listQualifyingCareerSlots(
+  async listQualifyingJourneySlots(
     userId: string,
     audience: CourseAudience,
   ): Promise<QualifyingByTier> {
@@ -902,10 +902,10 @@ export class DrizzleGamificationRepository implements GamificationRepository {
   }
 
   /** Uma consulta, um snapshot: a trava e os selos nunca observam versões diferentes do ledger. */
-  async listCareerCourseState(
+  async listJourneyCourseState(
     userId: string,
     audience: CourseAudience,
-  ): Promise<CareerCourseState> {
+  ): Promise<JourneyCourseState> {
     const rows = await this.db
       .select({
         sourceId: xpEvents.sourceId,
@@ -915,7 +915,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         sourceCareerSlot: xpEvents.sourceCareerSlot,
         courseLevel: courses.level,
         courseTrack: courses.track,
-        courseCareerSlot: courses.careerSlot,
+        courseJourneySlot: courses.careerSlot,
       })
       .from(xpEvents)
       .leftJoin(courses, eq(courses.id, xpEvents.sourceId))
@@ -927,13 +927,13 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         ),
       )
 
-    type CareerEventRow = (typeof rows)[number]
+    type JourneyEventRow = (typeof rows)[number]
     const byCourse = new Map<
       string,
       {
         milestones: CourseMilestones
-        complete?: CareerEventRow
-        showcased?: CareerEventRow
+        complete?: JourneyEventRow
+        showcased?: JourneyEventRow
       }
     >()
     for (const row of rows) {
@@ -959,7 +959,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       const level = showcased.sourceLevel ?? complete.sourceLevel ?? complete.courseLevel
       const track = showcased.sourceTrack ?? complete.sourceTrack ?? complete.courseTrack ?? '2d'
       const careerSlot =
-        showcased.sourceCareerSlot ?? complete.sourceCareerSlot ?? complete.courseCareerSlot
+        showcased.sourceCareerSlot ?? complete.sourceCareerSlot ?? complete.courseJourneySlot
       if (!level || level === 'lenda' || careerSlot === null) continue
       const tier = courseTier(level, track)
       if (!tier) continue
@@ -974,7 +974,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
    * Blocos liberados pelos cursos ELEGÍVEIS: bônus Kids precisa só de
    * `course_complete`; curso Kids com posição e curso Adult precisam também de
    * `course_showcased`. Lê `courses.metadata.studioUnlockBlocks`.
-   * ⚠️ `courses` entra por INNER join (≠ do `listQualifyingCareerSlots`, que usa LEFT):
+   * ⚠️ `courses` entra por INNER join (≠ do `listQualifyingJourneySlots`, que usa LEFT):
    * aqui o dado vem do curso VIVO, então curso apagado simplesmente não contribui —
    * quem impede a perda é o snapshot em `studio_block_grants`. Bônus e `lenda` CONTAM
    * (todo curso pode ensinar ferramenta; só a CARREIRA os ignora).
@@ -1034,14 +1034,14 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     )
   }
 
-  async listQualifyingCareerSlotsForProfiles(
+  async listQualifyingJourneySlotsForProfiles(
     profileIds: string[],
     audience: CourseAudience,
   ): Promise<Map<string, QualifyingByTier>> {
     // MESMA interseção `course_complete` ∩ `course_showcased` do single-profile, só que
     // agrupada TAMBÉM por `user_id` (um GROUP BY a mais) e filtrada por `IN (ids)` — 1
     // query serve a página inteira do fórum. Degrau vem do SNAPSHOT do ledger
-    // (fallback curso ao vivo p/ legado), como no `listQualifyingCareerSlots`.
+    // (fallback curso ao vivo p/ legado), como no `listQualifyingJourneySlots`.
     const result = new Map<string, QualifyingByTier>()
     if (profileIds.length === 0) return result
     const showcased = alias(xpEvents, 'sc')

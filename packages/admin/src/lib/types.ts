@@ -357,7 +357,7 @@ export type CourseTrack = (typeof COURSE_TRACKS)[number]
  * Os 7 degraus do select "Nível do curso" — a ordem é a escada da carreira do aluno
  * (entrada primeiro; 2D antes de 3D em cada dificuldade). Duplicação INTENCIONAL do
  * member-shell/members (o admin não importa dos apps de aluno) — manter em lockstep com
- * `COURSE_TIERS` de lá, o que o `career-tier-conformance.test.ts` trava.
+ * `COURSE_TIERS` de lá, o que o `journey-tier-conformance.test.ts` trava.
  *
  * ⚠️ **Primeiros Passos** (14/08) é o degrau de ENTRADA: uma posição só, o curso que a
  * Faísca faz, mais os bônus dela. Ele existe porque antes o curso-base morava no Iniciante

@@ -1,11 +1,11 @@
 import { Sparkles } from 'lucide-react'
-import { CareerMap } from '@/components/kids/career-map'
 import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
+import { JourneyMap } from '@/components/kids/journey-map'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsSectionHeader } from '@/components/kids/kids-section-header'
 import { KidsMascot } from '@/components/kids/mascot'
-import { careerProgress } from '@/lib/career-horizon'
-import { coursesForLevel, tierCompletionByLevel } from '@/lib/career-map'
+import { journeyProgress } from '@/lib/journey-horizon'
+import { coursesForLevel, tierCompletionByLevel } from '@/lib/journey-map'
 import { levelInfo } from '@/lib/level-info'
 import { canOpenFreeStudio } from '@/lib/studio-cta'
 import type { StudentLevelSlug } from '@/lib/types'
@@ -20,12 +20,12 @@ import { getSession } from '@/server/session'
 export const dynamic = 'force-dynamic'
 
 /**
- * Mapa da Carreira (24/07): a página de cursos É o mapa — serpentina com os
+ * Mapa da Jornada (24/07): a página de cursos É o mapa — serpentina com os
  * níveis (Faísca→Lenda); clicar num nível liberado abre `/cursos/trilha/[level]`
  * com a listagem daquela trilha. Sem busca/filtros aqui (decisão da usuária).
  * Gamificação fora (`level` nulo) → cai na grade clássica simples (o mapa
  * precisa do nível p/ pintar os nós). O mapa desenha até o HORIZONTE do catálogo
- * (ver `lib/career-horizon.ts`), por isso o `courses` vai junto.
+ * (ver `lib/journey-horizon.ts`), por isso o `courses` vai junto.
  *
  * Desenho das telas-modelo (11/09/2026): o cabeçalho centralizado leva o chip amarelo
  * "Você é <posto>" e a frase do próximo marco (moravam dentro do mapa), e a página fecha
@@ -67,7 +67,7 @@ export default async function CatalogPage() {
   if (level) {
     const current = levelInfo(level.slug)
     const CurrentIcon = current.icon
-    const progress = careerProgress(level, courses)
+    const progress = journeyProgress(level, courses)
     const aventuras = coursesForLevel(level.slug, courses)
     const trilha = completionByLevel[level.slug as StudentLevelSlug]
     const mine = new Map(
@@ -100,7 +100,7 @@ export default async function CatalogPage() {
         <KidsBand tone={aventuras.length > 0 ? 'ceu' : 'lilas'}>
           {/* Recorte de 3 campos: o mapa é CLIENTE e a view inteira mandaria título,
               capa e URL de vendas de todos os cursos no payload para calcular o horizonte. */}
-          <CareerMap
+          <JourneyMap
             level={level}
             courses={courses.map((c) => ({
               level: c.level,

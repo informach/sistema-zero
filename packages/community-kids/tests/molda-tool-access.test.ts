@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test'
-import { MOLDA_TOOL_BAND_LEVELS } from '../../core/src/career/journey'
+import { MOLDA_TOOL_BAND_LEVELS } from '../../core/src/journey/state'
 import {
   MOLDA_TOOL_BANDS,
   MOLDA_TOOL_FAMILIES,
   moldaToolFamilyIds,
 } from '../../molda/src/core/toolFamilies'
-import { CAREER_REWARD_INFO } from '../src/lib/career-rewards'
+import { JOURNEY_REWARD_INFO } from '../src/lib/journey-rewards'
 import { LEVEL_ORDER } from '../src/lib/level-info'
 import { MOLDA_BAND_PROMISES, moldaFeatureList, moldaLevelGain } from '../src/lib/molda-level-gain'
 import {
@@ -149,7 +149,7 @@ describe('a promessa do Molda é uma só e é verdade', () => {
       expect(moldaLevelGain(level), band).toContain(moldaFeatureList(band))
       if (band === 'basic') continue
       expect(
-        CAREER_REWARD_INFO[level as keyof typeof CAREER_REWARD_INFO].description,
+        JOURNEY_REWARD_INFO[level as keyof typeof JOURNEY_REWARD_INFO].description,
         band,
       ).toContain(moldaFeatureList(band))
     }

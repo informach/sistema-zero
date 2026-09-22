@@ -1,4 +1,4 @@
-import type { CreativeToolId } from '@sistemazero/core/career'
+import type { CreativeToolId } from '@sistemazero/core/journey'
 import { ArrowRight, LockKeyhole, Palette, Wrench } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'

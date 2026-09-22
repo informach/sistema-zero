@@ -8,7 +8,7 @@ import { DrizzleGamificationRepository } from '../../src/infrastructure/persiste
 import { prepareTestDatabase } from './test-database'
 
 /**
- * Prova o SQL de `listCareerCourseState` contra Postgres real. O fake in-memory
+ * Prova o SQL de `listJourneyCourseState` contra Postgres real. O fake in-memory
  * reimplementa a consulta em JS, então NENHUM teste de serviço/integração toca
  * este `where` — se ele esquecer o filtro de audiência ou o de perfil, só aqui
  * reprova. Mesma régua do `gating-block-sql`/`studio-unlock-eligibility`.
@@ -44,7 +44,7 @@ describe.skipIf(!testDatabaseUrl)('marcos de curso por curso (SQL real)', () => 
   }
 
   async function marcos(profileId: string, audience: 'kids' | 'adult' = 'kids') {
-    return (await repo.listCareerCourseState(profileId, audience)).milestones
+    return (await repo.listJourneyCourseState(profileId, audience)).milestones
   }
 
   beforeAll(async () => {
@@ -108,7 +108,7 @@ describe.skipIf(!testDatabaseUrl)('marcos de curso por curso (SQL real)', () => 
   })
 
   test('lê qualificação e marcos no mesmo snapshot SQL', async () => {
-    const estado = await repo.listCareerCourseState(userId, 'kids')
+    const estado = await repo.listJourneyCourseState(userId, 'kids')
 
     expect(estado.qualified['iniciante-2d']).toEqual([1])
     expect(estado.milestones.get(soConcluido)).toEqual({ completed: true, showcased: false })

@@ -30,7 +30,7 @@ export interface CreateThreadInput {
 
 /** Criação de um post de VITRINE (Mural) — auto-publicado pela criança (idempotente). */
 export interface CreateShowcaseThreadInput {
-  /** Persisted atomically with the thread for durable career notification. Absent on standalone games. */
+  /** Persisted atomically with the thread for durable journey notification. Absent on standalone games. */
   coursePublication?: ShowcasePublishedArgs
   id: string
   channelId: string

@@ -1,6 +1,6 @@
-import { ESSENTIAL_2D_BLOCK_TYPES } from '../career/blockProfiles'
 import type { BlockLevel } from '../core/levels'
 import { HTML_ADVANCED_BLOCK_TYPES, HTML_INTERMEDIATE_BLOCK_TYPES } from '../html/catalog'
+import { ESSENTIAL_2D_BLOCK_TYPES } from '../journey/blockProfiles'
 import { resolveProgrammingBlockLevel } from './programmingContract'
 
 /**

@@ -13,7 +13,7 @@
     "./project-migrations": "./src/project-migrations/index.ts",
     "./local-persistence": "./src/persistence/local.ts",
     "./project-list": "./src/projects/ProjectList.tsx",
-    "./career": "./src/career/index.ts",
+    "./journey": "./src/journey/index.ts",
     "./arte": "./src/arte/index.ts",
     "./controls": "./src/controls/projectControls.ts",
     "./server-project-checks": "./src/blockly/projectCheckAuthoring.ts",

@@ -1,4 +1,4 @@
-import type { CreativeToolId } from '@sistemazero/core/career'
+import type { CreativeToolId } from '@sistemazero/core/journey'
 import { ImpersonationBanner } from '@sistemazero/member-shell/components/impersonation-banner'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'

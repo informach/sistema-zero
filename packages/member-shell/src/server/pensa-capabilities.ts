@@ -1,5 +1,5 @@
 import 'server-only'
-import { creativeToolAvailability } from '@sistemazero/core/career'
+import { creativeToolAvailability } from '@sistemazero/core/journey'
 import { isPrivilegedRole, resolveStudioTier } from '../lib/studio-tier'
 import type { MembersClient } from './clients'
 import { extensionsForBlocks } from './studio-unlocks'

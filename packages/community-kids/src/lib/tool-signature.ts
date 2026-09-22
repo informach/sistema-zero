@@ -1,4 +1,4 @@
-import type { CreativeToolId } from '@sistemazero/core/career'
+import type { CreativeToolId } from '@sistemazero/core/journey'
 import { Blocks, Box, Lightbulb, type LucideIcon, Palette } from 'lucide-react'
 
 /**

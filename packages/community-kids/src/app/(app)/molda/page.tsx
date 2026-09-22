@@ -1,11 +1,11 @@
 import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import { meetsThreeDCreationLevel } from '@sistemazero/member-shell/server/creative-apps-access'
-import { KidsCareerLockedMolda } from '@/components/kids/kids-career-locked-molda'
+import { KidsJourneyLockedMolda } from '@/components/kids/kids-journey-locked-molda'
 import { KidsLockedMolda } from '@/components/kids/kids-locked-molda'
 import { KidsMoldaUnavailable } from '@/components/kids/kids-molda-unavailable'
 import { MoldaClient } from '@/components/kids/molda-client'
 import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
-import { careerHorizon } from '@/lib/career-horizon'
+import { journeyHorizon } from '@/lib/journey-horizon'
 import {
   moldaPreviewLevel,
   moldaToolAccessFor,
@@ -78,7 +78,7 @@ export default async function MoldaPage({
   if (!hasAccess) return <ToolRouteRecado screen={KidsLockedMolda} />
   if (gam?.status !== 200) return <ToolRouteRecado screen={KidsMoldaUnavailable} />
   if (!meetsThreeDCreationLevel(gam.body?.level?.slug, session?.role)) {
-    return <ToolRouteRecado screen={KidsCareerLockedMolda} />
+    return <ToolRouteRecado screen={KidsJourneyLockedMolda} />
   }
   const studioAvailable = canOpenPensaStudioTask({
     studioProductOwned: res.body?.access?.['estudio-completo'] === true,
@@ -95,7 +95,7 @@ export default async function MoldaPage({
   const toolAccess = moldaToolAccessFor({
     levelSlug,
     role,
-    horizon: courses ? careerHorizon(courses) : null,
+    horizon: courses ? journeyHorizon(courses) : null,
   })
   return (
     <MoldaClient

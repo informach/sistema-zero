@@ -1,15 +1,15 @@
 import {
-  careerLevelAtLeast,
+  journeyLevelAtLeast,
   MOLDA_TOOL_BAND_LEVELS,
   THREE_D_CREATION_MIN_LEVEL,
-} from '@sistemazero/core/career'
+} from '@sistemazero/core/journey'
 import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import {
   MOLDA_TOOL_BANDS,
   type MoldaToolAccess,
   moldaToolFamilyIds,
 } from '@sistemazero/molda/tools'
-import { BEYOND_HORIZON_PHRASE } from '@/lib/career-horizon'
+import { BEYOND_HORIZON_PHRASE } from '@/lib/journey-horizon'
 import { LEVEL_ORDER, levelInfo } from '@/lib/level-info'
 import type { StudentLevelSlug } from '@/lib/types'
 
@@ -23,7 +23,7 @@ export const MOLDA_BEYOND_HORIZON = BEYOND_HORIZON_PHRASE
 function openBands(levelSlug: string | null | undefined, role: string | undefined) {
   if (isPrivilegedRole(role)) return MOLDA_TOOL_BANDS
   return MOLDA_TOOL_BANDS.filter((band) =>
-    careerLevelAtLeast(levelSlug, MOLDA_TOOL_BAND_LEVELS[band]),
+    journeyLevelAtLeast(levelSlug, MOLDA_TOOL_BAND_LEVELS[band]),
   )
 }
 
@@ -53,7 +53,7 @@ export function moldaToolAccessRestricted({
  * staff), como nos outros portões, e a Lenda. É portão pedagógico, não de segurança: o Molda não
  * tem servidor e nenhuma dessas ferramentas tem custo por uso.
  *
- * `horizon` é o posto mais alto que o catálogo de hoje entrega (`careerHorizon`). O que abre além
+ * `horizon` é o posto mais alto que o catálogo de hoje entrega (`journeyHorizon`). O que abre além
  * dele vira `MOLDA_BEYOND_HORIZON`, e grupos seguidos com a mesma frase se juntam. `null` = o
  * horizonte é DESCONHECIDO (a busca do catálogo falhou ou demorou): aí nenhum posto é prometido,
  * porque nomear um posto que o mapa esconde é pior do que não nomear nenhum.
@@ -96,7 +96,7 @@ export function moldaPreviewLevel(
   role: string | undefined,
 ): StudentLevelSlug | null {
   if (!isPrivilegedRole(role) || typeof requested !== 'string') return null
-  return careerLevelAtLeast(requested, THREE_D_CREATION_MIN_LEVEL)
+  return journeyLevelAtLeast(requested, THREE_D_CREATION_MIN_LEVEL)
     ? (requested as StudentLevelSlug)
     : null
 }

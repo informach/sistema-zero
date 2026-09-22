@@ -62,8 +62,8 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(true)
-  const [careerItems, setCareerItems] = useState<CourseView[]>([])
-  const [careerLoading, setCareerLoading] = useState(true)
+  const [journeyItems, setJourneyItems] = useState<CourseView[]>([])
+  const [journeyLoading, setJourneyLoading] = useState(true)
 
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CourseView | null>(null)
@@ -71,7 +71,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const [prefill, setPrefill] = useState<CoursePrefill | undefined>(undefined)
   const { confirm, confirmDialog } = useConfirm()
   const loadAuthority = useRef(createForegroundPriority()).current
-  const careerAuthority = useRef(createForegroundPriority()).current
+  const journeyAuthority = useRef(createForegroundPriority()).current
   const mutationScope = useRef(createScopeAuthority(platform)).current
   mutationScope.update(platform)
   const renderScope = mutationScope.capture()
@@ -109,19 +109,19 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
     )
   }, [offset, q, status, platform, loadAuthority])
 
-  const loadCareer = useCallback(async () => {
+  const loadJourney = useCallback(async () => {
     // O painel da Carreira só existe no modo Kids — no Adultos nem busca (a
     // varredura pagina TODOS os cursos kids; os call-sites pós-save chamam
     // sempre e viram no-op aqui). Voltar para Kids re-dispara pelo effect.
     if (platform !== 'kids') {
-      careerAuthority.invalidate()
-      setCareerItems([])
-      setCareerLoading(false)
+      journeyAuthority.invalidate()
+      setJourneyItems([])
+      setJourneyLoading(false)
       return
     }
-    setCareerLoading(true)
+    setJourneyLoading(true)
     await runLatestForeground(
-      careerAuthority,
+      journeyAuthority,
       () =>
         loadAllPages((pageOffset, limit) =>
           apiGet<Paginated<CourseView>>(
@@ -129,14 +129,14 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
           ),
         ),
       {
-        onSuccess: setCareerItems,
+        onSuccess: setJourneyItems,
         onError: (error) => {
           toast.error((error as ApiError).message ?? 'Falha ao conferir a Jornada do Criador.')
         },
-        onSettled: () => setCareerLoading(false),
+        onSettled: () => setJourneyLoading(false),
       },
     )
-  }, [platform, careerAuthority])
+  }, [platform, journeyAuthority])
 
   useEffect(() => {
     const timer = setTimeout(() => void load(), 250)
@@ -147,9 +147,9 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   }, [load, loadAuthority])
 
   useEffect(() => {
-    void loadCareer()
-    return () => careerAuthority.invalidate()
-  }, [loadCareer, careerAuthority])
+    void loadJourney()
+    return () => journeyAuthority.invalidate()
+  }, [loadJourney, journeyAuthority])
 
   function openCreate() {
     setEditing(null)
@@ -195,7 +195,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         try {
           await apiSend(`/api/members/courses/${c.id}`, 'DELETE')
           toast.success('Curso excluído.')
-          if (mutationScope.isCurrent(scope)) await Promise.all([load(), loadCareer()])
+          if (mutationScope.isCurrent(scope)) await Promise.all([load(), loadJourney()])
         } catch (err) {
           toast.error((err as ApiError).message ?? 'Não foi possível excluir.')
         }
@@ -220,9 +220,9 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
 
       {/* Carreira do Criador é conceito KIDS — no modo Adultos o painel some. */}
       {platform === 'kids' ? (
-        <CareerReadiness
-          courses={careerItems}
-          loading={careerLoading}
+        <JourneyReadiness
+          courses={journeyItems}
+          loading={journeyLoading}
           canWrite={canWrite}
           onPickSlot={(level, track, slot, course) =>
             course ? openEdit(course) : openCreateAtSlot(level, track, slot)
@@ -377,10 +377,10 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         onClose={() => setOpen(false)}
         editing={editing}
         prefill={prefill}
-        careerCourses={careerItems}
+        journeyCourses={journeyItems}
         onSaved={async () => {
           if (!mutationScope.isCurrent(renderScope)) return
-          await Promise.all([load(), loadCareer()])
+          await Promise.all([load(), loadJourney()])
         }}
       />
 
@@ -389,14 +389,14 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         onClose={() => setCloning(null)}
         onCloned={async () => {
           if (!mutationScope.isCurrent(renderScope)) return
-          await Promise.all([load(), loadCareer()])
+          await Promise.all([load(), loadJourney()])
         }}
       />
     </div>
   )
 }
 
-function CareerReadiness({
+function JourneyReadiness({
   courses,
   loading,
   canWrite,

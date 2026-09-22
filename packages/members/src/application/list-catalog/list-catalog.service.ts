@@ -3,7 +3,7 @@ import { emptyQualifyingByTier } from '../../domain/gamification/levels'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
-import { careerLocksForCourses } from '../career-course-locking/career-course-locking'
+import { journeyLocksForCourses } from '../journey-course-locking/journey-course-locking'
 import { type CatalogCourseView, toCatalogCourseView } from '../mappers/views'
 
 /**
@@ -30,15 +30,15 @@ export class ListCatalogService {
     // ⚠️ Os MARCOS não seguem o `!privileged` do `qualified`: aquele é uma TRAVA
     // (equipe passa por cima), estes são o histórico do próprio ator — esconder
     // deles só apagaria o selo de quem testa a vitrine. Kids porque o Mural é kids.
-    const [published, active, careerState] = await Promise.all([
+    const [published, active, journeyState] = await Promise.all([
       this.courses.listPublishedCourses(audience),
       this.entitlements.listActiveByUser(accountId ?? userId, this.clock()),
       audience === 'kids'
-        ? this.gamification.listCareerCourseState(userId, audience)
+        ? this.gamification.listJourneyCourseState(userId, audience)
         : Promise.resolve(null),
     ])
-    const qualified = careerState && !privileged ? careerState.qualified : emptyQualifyingByTier()
-    const milestones = careerState?.milestones ?? new Map()
+    const qualified = journeyState && !privileged ? journeyState.qualified : emptyQualifyingByTier()
+    const milestones = journeyState?.milestones ?? new Map()
 
     // Chave-mestra POR AUDIÊNCIA destrava a vitrine inteira (atuais e futuros):
     // `all_courses` na adulta, `all_kids_courses` na kids (cada uma só na sua).
@@ -50,7 +50,7 @@ export class ListCatalogService {
       if (e.accessType === 'course' && e.courseRef) owned.add(e.courseRef)
     }
 
-    const careerLocks = careerLocksForCourses(
+    const journeyLocks = journeyLocksForCourses(
       published,
       qualified,
       audience === 'kids' && !privileged,
@@ -59,7 +59,7 @@ export class ListCatalogService {
       toCatalogCourseView(
         course,
         hasMaster || owned.has(course.slug),
-        careerLocks.get(course.id),
+        journeyLocks.get(course.id),
         milestones.get(course.id),
       ),
     )

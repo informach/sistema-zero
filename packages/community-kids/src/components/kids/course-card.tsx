@@ -1,4 +1,4 @@
-import { courseJourneyState } from '@sistemazero/core/career'
+import { courseJourneyState } from '@sistemazero/core/journey'
 import { BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'

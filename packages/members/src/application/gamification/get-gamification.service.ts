@@ -37,7 +37,7 @@ export class GetGamificationService {
       this.repo.getProfile(userId, opts.audience),
       this.repo.listBadges(userId, opts.audience),
       wantsRanking ? this.repo.getRanking(userId, accountId, opts.audience, now) : null,
-      this.repo.listQualifyingCareerSlots(userId, opts.audience),
+      this.repo.listQualifyingJourneySlots(userId, opts.audience),
       opts.audience === 'kids'
         ? this.repo.getStudioUnlockRevision(userId, opts.audience).catch(() => null)
         : Promise.resolve(null),

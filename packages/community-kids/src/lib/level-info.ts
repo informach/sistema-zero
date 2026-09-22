@@ -107,7 +107,7 @@ export function isLevelUp(prev: string | null | undefined, next: string | undefi
 }
 
 /**
- * ⚠️ A frase "falta N curso…" vive em **`lib/career-horizon.ts`** (`nextLevelHintWithin`),
+ * ⚠️ A frase "falta N curso…" vive em **`lib/journey-horizon.ts`** (`nextLevelHintWithin`),
  * porque ela precisa do CATÁLOGO para não prometer curso que ninguém gravou. O
  * `nextLevelHint` que morava aqui era a mesma frase sem esse limite e virou duplicata
  * assim que todas as telas migraram — `nextLevelHintWithin(level, null)` devolve

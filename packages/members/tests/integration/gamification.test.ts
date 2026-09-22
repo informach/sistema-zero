@@ -15,7 +15,7 @@ const readJson = (res: Response): Promise<any> => res.json()
  * O curso de ENTRADA da carreira: degrau `primeiros-passos-2d`, posição 1. Concluí-lo e
  * publicá-lo é a régua do Construtor(a) desde 14/08 (antes era o slot 1 do Iniciante 2D).
  */
-function seedCareerCourse(courses: InMemoryCourseRepository) {
+function seedJourneyCourse(courses: InMemoryCourseRepository) {
   const sample = seedSampleCourse(
     courses,
     'curso-demo',
@@ -1190,7 +1190,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('concluir + publicar no Mural → curso qualificado → sobe p/ Coder', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedCareerCourse(courses) // curso-base Iniciante 2D
+    const course = seedJourneyCourse(courses) // curso-base Iniciante 2D
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
 
@@ -1303,7 +1303,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('rank NÃO regride quando o curso é re-nivelado depois de qualificado', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedCareerCourse(courses) // curso-base Iniciante 2D
+    const course = seedJourneyCourse(courses) // curso-base Iniciante 2D
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
     await postShowcase(app, {
@@ -1334,7 +1334,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('re-taggear o TRACK depois de qualificado também não move o balde (snapshot)', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedCareerCourse(courses) // curso-base Iniciante 2D
+    const course = seedJourneyCourse(courses) // curso-base Iniciante 2D
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
     await postShowcase(app, {
@@ -1356,7 +1356,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('marco LEGADO sem snapshot de track segue o courses.track VIVO (re-tag corrige)', async () => {
     const { app, courses, entitlements, gamification } = buildApp()
-    const course = seedCareerCourse(courses) // curso-base Iniciante 2D
+    const course = seedJourneyCourse(courses) // curso-base Iniciante 2D
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
     await postShowcase(app, {
@@ -1383,7 +1383,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('webhook é idempotente por x-delivery-id (replay = no-op)', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedCareerCourse(courses)
+    const course = seedJourneyCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
 
@@ -1396,7 +1396,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('falha ao registrar marco não deduplica a entrega', async () => {
     const { app, courses, entitlements, gamification, processed } = buildApp()
-    const course = seedCareerCourse(courses)
+    const course = seedJourneyCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
 
@@ -1420,7 +1420,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('publicar SEM concluir não qualifica (continua Noob)', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedCareerCourse(courses)
+    const course = seedJourneyCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
 
     await postShowcase(app, {

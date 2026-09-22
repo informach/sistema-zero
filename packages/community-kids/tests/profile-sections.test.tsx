@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { render, screen } from '@testing-library/react'
 import { BadgeShowcase } from '../src/components/kids/badge-showcase'
 import { BADGE_INFO, badgeTone } from '../src/components/kids/badges'
-import { CareerTimeline } from '../src/components/kids/career-timeline'
+import { JourneyTimeline } from '../src/components/kids/journey-timeline'
 import type { GamificationMeView } from '../src/lib/types'
 
 /**
@@ -45,7 +45,7 @@ function gamificacao(): GamificationMeView {
 describe('Minha jornada', () => {
   test('marca o posto atual e só o seguinte como "Próximo nível"', () => {
     // Catálogo desconhecido (`null`) desenha a escada inteira.
-    render(<CareerTimeline gamification={gamificacao()} courses={null} />)
+    render(<JourneyTimeline gamification={gamificacao()} courses={null} />)
     expect(screen.getAllByText('Você está aqui')).toHaveLength(1)
     expect(screen.getAllByText('Próximo nível')).toHaveLength(1)
     // O nome do posto sai do LEVEL_INFO, nunca da tela-modelo.
@@ -54,7 +54,7 @@ describe('Minha jornada', () => {
   })
 
   test('feitos universais e bônus dos apps em grupos separados', () => {
-    render(<CareerTimeline gamification={gamificacao()} courses={null} />)
+    render(<JourneyTimeline gamification={gamificacao()} courses={null} />)
     expect(screen.getByText('Meus feitos')).toBeTruthy()
     expect(screen.getByText('Bônus dos apps criativos')).toBeTruthy()
     expect(screen.getByText('Semana em chamas')).toBeTruthy()

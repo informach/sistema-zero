@@ -4,7 +4,7 @@ import {
   type CreativeToolId,
   creativeToolAvailability,
   type ToolAvailability,
-} from '@sistemazero/core/career'
+} from '@sistemazero/core/journey'
 import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import { cache } from 'react'
 import { checkCreativeToolsAccessReadonly, getGamificationReadonly, listMyCourses } from './members'

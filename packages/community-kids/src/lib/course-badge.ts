@@ -1,4 +1,4 @@
-import { careerCourseQualified } from '@sistemazero/core/career'
+import { journeyCourseQualified } from '@sistemazero/core/journey'
 import type { CourseMilestonesView } from '@/lib/types'
 
 /**
@@ -40,7 +40,7 @@ function isSlotCourse(course: CourseBadgeInput): boolean {
 
 /** A aventura conta como PRONTA? É a régua mista, num curso só. */
 export function courseIsDone(course: CourseBadgeInput): boolean {
-  return careerCourseQualified(course)
+  return journeyCourseQualified(course)
 }
 
 /** O selo do card: pronta, falta publicar, ou nada. */

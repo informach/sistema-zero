@@ -8,7 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./ai-credits": "./src/ai-credits/index.ts",
-    "./career": "./src/career/index.ts",
+    "./journey": "./src/journey/index.ts",
     "./course/module-rive": "./src/course/module-rive.ts",
     "./creations": "./src/creations/index.ts",
     "./security": "./src/security/index.ts",

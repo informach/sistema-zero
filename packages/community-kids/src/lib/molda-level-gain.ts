@@ -1,9 +1,9 @@
-import { MOLDA_TOOL_BAND_LEVELS, type MoldaToolBand } from '@sistemazero/core/career'
+import { MOLDA_TOOL_BAND_LEVELS, type MoldaToolBand } from '@sistemazero/core/journey'
 
 /**
  * O que cada faixa de ferramentas do Molda traz, dito para a criança, e as FAMÍLIAS que a frase
  * promete. É a fonte única da promessa: a comemoração de subir de nível ("No Molda: …") e as
- * recompensas da carreira (`career-rewards.ts`) montam o texto daqui, e
+ * recompensas da carreira (`journey-rewards.ts`) montam o texto daqui, e
  * `tests/molda-tool-access.test.ts` exige que cada família prometida esteja de fato naquela faixa
  * do pacote (`MOLDA_TOOL_FAMILIES`). Mover uma família de faixa sem mexer aqui reprova o teste.
  *

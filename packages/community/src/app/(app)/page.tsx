@@ -1,4 +1,4 @@
-import { nextCareerCourse } from '@sistemazero/core/career'
+import { nextJourneyCourse } from '@sistemazero/core/journey'
 import { BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { CourseCard } from '@/components/community/course-card'
@@ -12,7 +12,7 @@ export default async function HomePage() {
   const { status, body } = await listMyCourses()
   if (status !== 200) throw new Error('Não foi possível consultar seus cursos. Tente novamente.')
   const courses = status === 200 ? (body?.courses ?? []) : []
-  const next = nextCareerCourse(courses)
+  const next = nextJourneyCourse(courses)
 
   return (
     <div className="flex flex-col gap-8">

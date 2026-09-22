@@ -41,7 +41,7 @@ describe('cadastro de curso', () => {
           open
           editing={null}
           prefill={{ audience }}
-          careerCourses={[]}
+          journeyCourses={[]}
           onClose={() => {}}
           onSaved={() => {}}
         />,

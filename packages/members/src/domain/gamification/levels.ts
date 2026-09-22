@@ -3,22 +3,22 @@
  * que têm os dois marcos: curso concluído + projeto publicado no Mural.
  */
 import {
-  CAREER_COURSE_TIERS,
-  type CareerCourseTier,
-  type CareerLevelSlug,
-  CREATOR_CAREER_LEVELS,
-  computeCareerLevelSlug,
-  creatorCareerLevel,
-  isCareerCourseTier,
-  missingCareerSlots,
-} from '@sistemazero/core/career'
-import type { CareerCourseLevel, CourseTrack } from '../course/course'
+  CREATOR_JOURNEY_LEVELS,
+  computeJourneyLevelSlug,
+  creatorJourneyLevel,
+  isJourneyCourseTier,
+  JOURNEY_COURSE_TIERS,
+  type JourneyCourseTier,
+  type JourneyLevelSlug,
+  missingJourneySlots,
+} from '@sistemazero/core/journey'
+import type { CourseTrack, JourneyCourseLevel } from '../course/course'
 
-export const STUDENT_LEVEL_SLUGS = CREATOR_CAREER_LEVELS.map((level) => level.slug)
-export type StudentLevelSlug = CareerLevelSlug
+export const STUDENT_LEVEL_SLUGS = CREATOR_JOURNEY_LEVELS.map((level) => level.slug)
+export type StudentLevelSlug = JourneyLevelSlug
 
-export const COURSE_TIERS = CAREER_COURSE_TIERS
-export type CourseTier = CareerCourseTier
+export const COURSE_TIERS = JOURNEY_COURSE_TIERS
+export type CourseTier = JourneyCourseTier
 
 /**
  * O DEGRAU de um curso, ou `null` quando o par não é um degrau da carreira.
@@ -28,9 +28,9 @@ export type CourseTier = CareerCourseTier
  * `lenda` já ficava de fora por tipo. Quem chama trata `null` do mesmo jeito que trata
  * `lenda`: fora da carreira, sem trava.
  */
-export function courseTier(level: CareerCourseLevel, track: CourseTrack): CourseTier | null {
+export function courseTier(level: JourneyCourseLevel, track: CourseTrack): CourseTier | null {
   const tier = `${level}-${track}`
-  return isCareerCourseTier(tier) ? tier : null
+  return isJourneyCourseTier(tier) ? tier : null
 }
 
 /** Slots qualificados por etapa. Arrays são tratados como conjuntos. */
@@ -44,7 +44,7 @@ export function emptyQualifyingByTier(): QualifyingByTier {
 }
 
 /** Alias de compatibilidade para testes e auditorias do catálogo. */
-export const STUDENT_LEVELS = CREATOR_CAREER_LEVELS.map((level) => ({
+export const STUDENT_LEVELS = CREATOR_JOURNEY_LEVELS.map((level) => ({
   slug: level.slug,
   tiers: level.requiredSlots,
 }))
@@ -58,7 +58,7 @@ export interface StudentLevel {
 }
 
 function remainingFor(q: QualifyingByTier, nextSlug: StudentLevelSlug): LevelRemaining {
-  const missing = missingCareerSlots(q, creatorCareerLevel(nextSlug))
+  const missing = missingJourneySlots(q, creatorJourneyLevel(nextSlug))
   const byTier = Object.fromEntries(
     COURSE_TIERS.map((tier) => [tier, missing[tier]?.length ?? 0]),
   ) as unknown as Record<CourseTier, number>
@@ -66,8 +66,8 @@ function remainingFor(q: QualifyingByTier, nextSlug: StudentLevelSlug): LevelRem
 }
 
 export function computeStudentLevel(q: QualifyingByTier): StudentLevel {
-  const slug = computeCareerLevelSlug(q)
-  const index = CREATOR_CAREER_LEVELS.findIndex((level) => level.slug === slug)
-  const next = CREATOR_CAREER_LEVELS[index + 1]?.slug ?? null
+  const slug = computeJourneyLevelSlug(q)
+  const index = CREATOR_JOURNEY_LEVELS.findIndex((level) => level.slug === slug)
+  const next = CREATOR_JOURNEY_LEVELS[index + 1]?.slug ?? null
   return { slug, next, remaining: next ? remainingFor(q, next) : null }
 }

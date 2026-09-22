@@ -243,7 +243,7 @@ export interface CourseMilestones {
 }
 
 /** Estado de carreira derivado de uma única leitura consistente do ledger. */
-export interface CareerCourseState {
+export interface JourneyCourseState {
   qualified: QualifyingByTier
   milestones: Map<string, CourseMilestones>
 }
@@ -305,7 +305,7 @@ export interface GamificationRepository {
    * snapshot; track legado sem curso → `'2d'`). Curso sem ambos os marcos não
    * conta; degrau ausente do resultado = 0.
    */
-  listQualifyingCareerSlots(userId: string, audience: CourseAudience): Promise<QualifyingByTier>
+  listQualifyingJourneySlots(userId: string, audience: CourseAudience): Promise<QualifyingByTier>
   /**
    * Qualificação e marcos por curso calculados sobre o MESMO snapshot do ledger.
    * Os marcos vêm separados (`completed`/`showcased`) para o selo e o contador;
@@ -317,7 +317,7 @@ export interface GamificationRepository {
    * já tem em mãos. Um único contrato impede duas implementações da mesma
    * derivação e evita misturar eventos de snapshots diferentes.
    */
-  listCareerCourseState(userId: string, audience: CourseAudience): Promise<CareerCourseState>
+  listJourneyCourseState(userId: string, audience: CourseAudience): Promise<JourneyCourseState>
   /**
    * Blocos do Estúdio que os cursos ELEGÍVEIS do aluno liberam AGORA, POR CURSO.
    * Curso Kids bônus exige `course_complete`; curso Kids com posição e curso Adult
@@ -338,12 +338,12 @@ export interface GamificationRepository {
    */
   getStudioUnlockRevision(userId: string, audience: CourseAudience): Promise<string>
   /**
-   * Versão em LOTE do `listQualifyingCareerSlots` — slots qualificados por
+   * Versão em LOTE do `listQualifyingJourneySlots` — slots qualificados por
    * degrau de VÁRIOS perfis numa query só (para o BFF derivar o nível/aura de
    * cada autor do fórum kids sem N+1). Mapa id→qualificados; perfil sem marco algum
    * some do mapa (o serviço trata como zero → nível Faísca/noob).
    */
-  listQualifyingCareerSlotsForProfiles(
+  listQualifyingJourneySlotsForProfiles(
     profileIds: string[],
     audience: CourseAudience,
   ): Promise<Map<string, QualifyingByTier>>

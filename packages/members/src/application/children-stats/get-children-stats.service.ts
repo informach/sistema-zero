@@ -2,8 +2,8 @@ import {
   CREATIVE_TOOL_LEVELS,
   type CreativeToolId,
   creativeToolAvailability,
-  type ParentCareerView,
-} from '@sistemazero/core/career'
+  type ParentJourneyView,
+} from '@sistemazero/core/journey'
 import type { LearningTopicSummary } from '@sistemazero/core/learning'
 import type { CourseAudience } from '../../domain/course/course'
 import { effectiveStreak, localDateSaoPaulo } from '../../domain/gamification/gamification'
@@ -41,7 +41,7 @@ export interface ChildWeekGameView {
 /** Resumo de progresso de UM filho (perfil) para a área dos pais. */
 export interface ChildStatsView {
   learningTopics: LearningTopicSummary[]
-  career?: ParentCareerView
+  career?: ParentJourneyView
   profileId: string
   xp: number
   streak: { current: number; best: number }
@@ -158,7 +158,7 @@ export class GetChildrenStatsService {
           weekQuizzes,
           weekBadges,
           weekSubmissions,
-          careerState,
+          journeyState,
           learningTopics,
         ] = await Promise.all([
           this.gamification.listBadges(profileId, audience),
@@ -182,7 +182,7 @@ export class GetChildrenStatsService {
           ),
           this.gamification.countBadgesUnlockedInPeriod(profileId, audience, weekFrom, now),
           this.studio.countSubmittedInPeriodByAudience(profileId, audience, weekFrom, now),
-          this.gamification.listCareerCourseState(profileId, audience),
+          this.gamification.listJourneyCourseState(profileId, audience),
           this.learning.weeklyTopics(accountId, profileId, audience, weekFrom, now),
         ])
 
@@ -196,14 +196,14 @@ export class GetChildrenStatsService {
           else if (done > 0) coursesInProgress++
         }
 
-        const level = computeStudentLevel(careerState.qualified)
+        const level = computeStudentLevel(journeyState.qualified)
         return {
           career: {
             level: level.slug,
             nextLevel: level.next,
             pendingPublications: published
               .filter((course) => {
-                const milestones = careerState.milestones.get(course.id)
+                const milestones = journeyState.milestones.get(course.id)
                 return course.careerSlot !== null && milestones?.completed && !milestones.showcased
               })
               .map((course) => ({ courseSlug: course.slug, title: course.title })),

@@ -1,7 +1,7 @@
-import { creativeToolAvailability } from '@sistemazero/core/career'
+import { creativeToolAvailability } from '@sistemazero/core/journey'
 import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import { meetsAiAppsLevel } from '@sistemazero/member-shell/server/creative-apps-access'
-import { KidsCareerLockedPensa } from '@/components/kids/kids-career-locked-pensa'
+import { KidsJourneyLockedPensa } from '@/components/kids/kids-journey-locked-pensa'
 import { KidsLockedPensa } from '@/components/kids/kids-locked-pensa'
 import { KidsPensaUnavailable } from '@/components/kids/kids-pensa-unavailable'
 import { PensaClient } from '@/components/kids/pensa-client'
@@ -47,7 +47,7 @@ export default async function PensaPage({
   if (!hasAccess) return <ToolRouteRecado screen={KidsLockedPensa} />
   if (gam?.status !== 200) return <ToolRouteRecado screen={KidsPensaUnavailable} />
   if (!meetsAiAppsLevel(gam.body?.level?.slug, session?.role)) {
-    return <ToolRouteRecado screen={KidsCareerLockedPensa} />
+    return <ToolRouteRecado screen={KidsJourneyLockedPensa} />
   }
   const pintaOwned = toolsRes?.status === 200 && toolsRes.body?.access?.pinta === true
   const studioAvailable = canOpenPensaStudioTask({

@@ -1,5 +1,5 @@
 import { meetsFreeCreationLevel } from '@sistemazero/member-shell/server/creative-apps-access'
-import { KidsCareerLockedPinta } from '@/components/kids/kids-career-locked-pinta'
+import { KidsJourneyLockedPinta } from '@/components/kids/kids-journey-locked-pinta'
 import { KidsLockedPinta } from '@/components/kids/kids-locked-pinta'
 import { KidsPintaUnavailable } from '@/components/kids/kids-pinta-unavailable'
 import { PintaClient } from '@/components/kids/pinta-client'
@@ -36,7 +36,7 @@ export default async function PintaPage() {
   if (!hasAccess) return <ToolRouteRecado screen={KidsLockedPinta} />
   if (gam?.status !== 200) return <ToolRouteRecado screen={KidsPintaUnavailable} />
   if (!meetsFreeCreationLevel(gam.body?.level?.slug, session?.role)) {
-    return <ToolRouteRecado screen={KidsCareerLockedPinta} />
+    return <ToolRouteRecado screen={KidsJourneyLockedPinta} />
   }
   const studioAvailable = canOpenPensaStudioTask({
     studioProductOwned: res.body?.access?.['estudio-completo'] === true,

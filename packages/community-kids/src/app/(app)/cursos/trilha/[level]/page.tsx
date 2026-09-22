@@ -5,10 +5,10 @@ import { KidsBackButton } from '@/components/kids/back-button'
 import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsMascot } from '@/components/kids/mascot'
-import { careerHorizon, nextLevelHintWithin, promisedNextLevel } from '@/lib/career-horizon'
-import { coursesForLevel, LEVEL_TIER, tierCompletionByLevel, trilhaLocked } from '@/lib/career-map'
-import { CAREER_REWARD_INFO } from '@/lib/career-rewards'
 import { cn } from '@/lib/cn'
+import { journeyHorizon, nextLevelHintWithin, promisedNextLevel } from '@/lib/journey-horizon'
+import { coursesForLevel, LEVEL_TIER, tierCompletionByLevel, trilhaLocked } from '@/lib/journey-map'
+import { JOURNEY_REWARD_INFO } from '@/lib/journey-rewards'
 import { LEVEL_ORDER, levelInfo } from '@/lib/level-info'
 import { canOpenFreeStudio } from '@/lib/studio-cta'
 import type { StudentLevelSlug } from '@/lib/types'
@@ -65,7 +65,7 @@ function Medalhao({
 }
 
 /**
- * Listagem da trilha de um NÍVEL do Mapa da Carreira (`/cursos/trilha/coder`): os
+ * Listagem da trilha de um NÍVEL do Mapa da Jornada (`/cursos/trilha/coder`): os
  * cursos daquele nível — cada posto é dono de um degrau inteiro, bônus incluso
  * (`coursesForLevel`). Destino do clique num nível liberado
  * do mapa. Deep-link numa trilha ainda bloqueada mostra o recado gentil (a régua REAL
@@ -103,7 +103,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   )
   // Posto acima do HORIZONTE do catálogo = os cursos dele ainda não foram gravados.
   // Não é a criança que está devendo, e a copy tem que dizer isso.
-  const beyondHorizon = LEVEL_ORDER.indexOf(levelSlug) > LEVEL_ORDER.indexOf(careerHorizon(all))
+  const beyondHorizon = LEVEL_ORDER.indexOf(levelSlug) > LEVEL_ORDER.indexOf(journeyHorizon(all))
 
   if (trilhaLocked(level, levelSlug, all)) {
     return (
@@ -231,7 +231,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
               <p className="sz-display mt-1 text-2xl md:text-[1.625rem]">{levelInfo(next).label}</p>
               <p className="mt-1.5 text-[0.9375rem]">
                 <span className="font-bold">Ao chegar aqui: </span>
-                <span className="text-muted-foreground">{CAREER_REWARD_INFO[next].title}</span>
+                <span className="text-muted-foreground">{JOURNEY_REWARD_INFO[next].title}</span>
               </p>
             </div>
             {trilha && trilha.total > 0 ? (

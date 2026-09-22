@@ -1,4 +1,4 @@
-import { courseJourneyState } from '@sistemazero/core/career'
+import { courseJourneyState } from '@sistemazero/core/journey'
 import { ArrowRight, BookOpen, CircleCheck, Gift, Lock, Play } from 'lucide-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
@@ -48,11 +48,11 @@ export function CatalogCourseCard({
   layout = 'grade',
   mine = null,
 }: CatalogCourseCardProps) {
-  const careerLocked = course.hasAccess && course.careerLock?.locked === true
-  const available = course.hasAccess && !careerLocked
-  const foundationFirst = careerLocked && course.careerLock?.reason === 'foundation-first'
+  const journeyLocked = course.hasAccess && course.careerLock?.locked === true
+  const available = course.hasAccess && !journeyLocked
+  const foundationFirst = journeyLocked && course.careerLock?.reason === 'foundation-first'
   // Bônus = recompensa da etapa: abre sozinho quando os obrigatórios completam.
-  const tierReward = careerLocked && course.careerLock?.reason === 'tier-reward'
+  const tierReward = journeyLocked && course.careerLock?.reason === 'tier-reward'
   const linha = layout === 'linha'
   // ⚠️ Sem "etapa" e sem nome de degrau: é vocabulário de quem MONTA o curso. Para a
   // criança basta saber que é prêmio e o que destrava.
@@ -146,7 +146,7 @@ export function CatalogCourseCard({
     </div>
   )
 
-  const footer = careerLocked ? (
+  const footer = journeyLocked ? (
     // Bloqueado pela carreira: um CTA único de largura total (sem status duplicado do
     // lado). Curso-base → CTA clicável que NOMEIA o curso a fazer; etapa futura → rótulo
     // apagado não-tocável (o card é um <div>, não pode parecer botão).
@@ -295,7 +295,7 @@ function CardShell({
   /** Âncora do destino (`#publicar` quando o que falta é publicar no Mural). */
   hash?: string
 }) {
-  const careerLocked = course.hasAccess && course.careerLock?.locked === true
+  const journeyLocked = course.hasAccess && course.careerLock?.locked === true
   if (available) {
     return (
       <Link
@@ -306,7 +306,7 @@ function CardShell({
       </Link>
     )
   }
-  if (careerLocked && course.careerLock?.foundationCourseSlug) {
+  if (journeyLocked && course.careerLock?.foundationCourseSlug) {
     return (
       <Link
         href={`/cursos/${encodeURIComponent(course.careerLock.foundationCourseSlug)}`}
@@ -316,7 +316,7 @@ function CardShell({
       </Link>
     )
   }
-  if (careerLocked) return <div className="group block h-full">{body}</div>
+  if (journeyLocked) return <div className="group block h-full">{body}</div>
   if (salesUrl) {
     // Página de vendas é EXTERNA (funil) → <a> em NOVA aba (aluno não sai da plataforma).
     return (

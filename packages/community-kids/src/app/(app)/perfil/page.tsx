@@ -7,15 +7,15 @@ import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { BadgeShowcase } from '@/components/kids/badge-showcase'
-import { CareerTimeline } from '@/components/kids/career-timeline'
 import { FocusRefresh } from '@/components/kids/focus-refresh'
+import { JourneyTimeline } from '@/components/kids/journey-timeline'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsPageHeader } from '@/components/kids/kids-page-header'
 import { KidsSectionHeader } from '@/components/kids/kids-section-header'
 import { MyTools } from '@/components/kids/my-tools'
 import { StreakProtection } from '@/components/kids/streak-protection'
-import { nextLevelHintWithin } from '@/lib/career-horizon'
 import { PALETTE_COOKIE } from '@/lib/cookies'
+import { nextLevelHintWithin } from '@/lib/journey-horizon'
 import { canOpenFreeStudio } from '@/lib/studio-cta'
 import {
   checkStudioAccessReadonly,
@@ -119,7 +119,7 @@ export default async function ProfilePage() {
       {gamification || showTools ? (
         <KidsBand tone="menta">
           {gamification ? (
-            <CareerTimeline
+            <JourneyTimeline
               gamification={gamification}
               courses={courses}
               showcaseStats={showcaseStats}

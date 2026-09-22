@@ -1,6 +1,6 @@
-import { resolveCareerCourseLock } from '@sistemazero/core/career'
+import { resolveJourneyCourseLock } from '@sistemazero/core/journey'
 import { type Course, isCourseAccessible } from '../../domain/course/course'
-import { CourseCareerLockedError, CourseNotFoundError } from '../../domain/course/course.errors'
+import { CourseJourneyLockedError, CourseNotFoundError } from '../../domain/course/course.errors'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import { courseTier } from '../../domain/gamification/levels'
@@ -80,7 +80,7 @@ export class CheckAccessService {
     // Curso `lenda` é FORA da carreira → sem gate pedagógico (acesso = matrícula; o
     // portão de "ver" é o nó da Lenda no mapa).
     if (course.audience === 'kids' && course.level !== 'lenda') {
-      const qualified = await this.gamification.listQualifyingCareerSlots(
+      const qualified = await this.gamification.listQualifyingJourneySlots(
         learnerId ?? userId,
         course.audience,
       )
@@ -97,10 +97,10 @@ export class CheckAccessService {
       // Par que não é degrau da carreira (ex.: `primeiros-passos` + `3d`) não trava.
       const tier = courseTier(course.level, course.track)
       const lock = tier
-        ? resolveCareerCourseLock(qualified, tier, course.careerSlot, foundationAvailable)
+        ? resolveJourneyCourseLock(qualified, tier, course.careerSlot, foundationAvailable)
         : { locked: false as const }
       if (lock.locked && lock.reason) {
-        throw new CourseCareerLockedError(lock.reason, lock.requiredLevel)
+        throw new CourseJourneyLockedError(lock.reason, lock.requiredLevel)
       }
     }
     return { course, entitlement }

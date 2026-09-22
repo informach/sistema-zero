@@ -26,20 +26,20 @@ export class LessonLockedError extends DomainError {
   }
 }
 
-const CAREER_LOCK_MESSAGES = {
+const JOURNEY_LOCK_MESSAGES = {
   'foundation-first': 'Conclua e publique o curso-base desta etapa para liberar este curso',
   'tier-reward': 'Este curso é uma recompensa: complete os cursos da etapa para liberar',
   'future-tier': 'Continue sua jornada para liberar este curso',
 } as const
 
 /** Curso futuro na carreira, aguardando o curso-base, ou bônus-recompensa da etapa. → 423. */
-export class CourseCareerLockedError extends DomainError {
+export class CourseJourneyLockedError extends DomainError {
   readonly code = 'COURSE_CAREER_LOCKED'
   constructor(
-    readonly reason: keyof typeof CAREER_LOCK_MESSAGES,
+    readonly reason: keyof typeof JOURNEY_LOCK_MESSAGES,
     readonly requiredLevel?: string,
   ) {
-    super(CAREER_LOCK_MESSAGES[reason])
+    super(JOURNEY_LOCK_MESSAGES[reason])
   }
 }
 
@@ -84,7 +84,7 @@ export class CloneSameAudienceError extends DomainError {
 }
 
 /** Já existe outro curso no mesmo slot da etapa da carreira. → 409. */
-export class CareerSlotConflictError extends DomainError {
+export class JourneySlotConflictError extends DomainError {
   readonly code = 'CAREER_SLOT_CONFLICT'
   constructor(message = 'Já existe um curso nesta posição da jornada') {
     super(message)

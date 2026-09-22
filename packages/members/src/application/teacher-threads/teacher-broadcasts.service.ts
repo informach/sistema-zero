@@ -1,4 +1,4 @@
-import { CourseCareerLockedError, CourseNotFoundError } from '../../domain/course/course.errors'
+import { CourseJourneyLockedError, CourseNotFoundError } from '../../domain/course/course.errors'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
@@ -80,7 +80,7 @@ export class TeacherBroadcastsService {
                 if (
                   !(
                     error instanceof AccessDeniedError ||
-                    error instanceof CourseCareerLockedError ||
+                    error instanceof CourseJourneyLockedError ||
                     error instanceof CourseNotFoundError
                   )
                 )

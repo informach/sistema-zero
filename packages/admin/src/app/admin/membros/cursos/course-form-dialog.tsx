@@ -74,7 +74,7 @@ const EMPTY: FormState = {
 /**
  * Nº de posições da etapa: **8 em todo degrau, exceto o de ENTRADA**, que tem 1 (o curso
  * que a Faísca faz). Espelha o CHECK do banco e o catálogo do core. Exportada SÓ p/ a
- * trava de conformance admin×core (`career-tier-conformance`).
+ * trava de conformance admin×core (`journey-tier-conformance`).
  */
 // ⚠️ `_track` fica na assinatura de propósito: o degrau do core é o PAR (nível, trilha), e a
 // conformance chama esta função com os dois. Hoje só o nível decide; se um degrau 3D voltar a
@@ -83,7 +83,7 @@ export function slotsForTier(level: string, _track: string): number {
   // ⚠️ O Iniciante 2D teve 7 por um dia (14/08 a 15/08): quando o curso-base saiu dele para
   // o degrau de entrada, encolheram o degrau para o total da carreira continuar 48. A
   // usuária desfez — o total é 49 e todo degrau que não é a entrada tem 8. O número vem do
-  // core, e o `career-tier-conformance.test.ts` compara esta função com ele.
+  // core, e o `journey-tier-conformance.test.ts` compara esta função com ele.
   if (level === 'primeiros-passos') return 1
   return 8
 }
@@ -128,7 +128,7 @@ export function CourseFormDialog({
   onClose,
   editing,
   prefill,
-  careerCourses,
+  journeyCourses,
   onSaved,
 }: {
   open: boolean
@@ -138,14 +138,14 @@ export function CourseFormDialog({
   /** Só na criação: mira uma etapa/posição da carreira (painel de prontidão). */
   prefill?: CoursePrefill
   /** Lista de cursos Kids p/ mostrar a OCUPAÇÃO das posições; buscada sozinha se ausente. */
-  careerCourses?: CourseView[]
+  journeyCourses?: CourseView[]
   onSaved: () => void | Promise<void>
 }) {
   const [form, setForm] = useState<FormState>(EMPTY)
   const [saving, setSaving] = useState(false)
   // Slug auto do título só na CRIAÇÃO; para quando o autor edita o slug à mão.
   const [slugDirty, setSlugDirty] = useState(false)
-  const [kidsCourses, setKidsCourses] = useState<CourseView[]>(careerCourses ?? [])
+  const [kidsCourses, setKidsCourses] = useState<CourseView[]>(journeyCourses ?? [])
   const router = useRouter()
   const { confirm, confirmDialog } = useConfirm()
 
@@ -163,7 +163,7 @@ export function CourseFormDialog({
 
   /**
    * Re-busca a ocupação das posições da API e SOBRESCREVE o estado — a prop
-   * `careerCourses` é só o seed inicial (num 409 de posição a lista da prop já
+   * `journeyCourses` é só o seed inicial (num 409 de posição a lista da prop já
    * está velha; sem o fetch o Select seguiria mentindo).
    */
   const refreshOccupancy = useCallback(async () => {
@@ -182,12 +182,12 @@ export function CourseFormDialog({
   // Ocupação das posições: usa a lista recebida (seed) ou busca os cursos Kids ao abrir.
   useEffect(() => {
     if (!open) return
-    if (careerCourses) {
-      setKidsCourses(careerCourses)
+    if (journeyCourses) {
+      setKidsCourses(journeyCourses)
       return
     }
     void refreshOccupancy()
-  }, [open, careerCourses, refreshOccupancy])
+  }, [open, journeyCourses, refreshOccupancy])
 
   const isKids = form.audience === 'kids'
   const studioUnlockRule =
@@ -469,7 +469,7 @@ export function CourseFormDialog({
         ) : (
           <Field
             label="Posição na Jornada do Criador"
-            htmlFor="career-slot"
+            htmlFor="journey-slot"
             tooltip="Ordena os cursos Kids dentro da etapa. A posição 1 é o CURSO-BASE: o aluno precisa concluí-lo e publicar no Mural para as demais posições da etapa liberarem. 'Bônus' é a RECOMPENSA da etapa: abre quando o aluno completa todos os cursos com posição (etapa sem curso-base publicado não trava o bônus)."
             hint={
               isKids
@@ -478,7 +478,7 @@ export function CourseFormDialog({
             }
           >
             <Select
-              id="career-slot"
+              id="journey-slot"
               value={form.careerSlot}
               disabled={!isKids}
               onChange={(e) => setForm((f) => ({ ...f, careerSlot: e.target.value }))}

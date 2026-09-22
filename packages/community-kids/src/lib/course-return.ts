@@ -1,5 +1,5 @@
 import { courseTierOf } from '@sistemazero/member-shell/lib/course-tier'
-import { levelForTier } from '@/lib/career-map'
+import { levelForTier } from '@/lib/journey-map'
 import type { CourseLevelSlug, CourseTrack } from '@/lib/types'
 
 /**

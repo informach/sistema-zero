@@ -1,6 +1,6 @@
 'use client'
 
-import type { CreativeToolId } from '@sistemazero/core/career'
+import type { CreativeToolId } from '@sistemazero/core/journey'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'

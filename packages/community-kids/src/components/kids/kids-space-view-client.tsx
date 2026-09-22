@@ -2,7 +2,7 @@
 
 import type { UploadedAttachment } from '@sistemazero/member-shell/components/attachment-uploader'
 import {
-  minCareerLevelForRemix,
+  minJourneyLevelForRemix,
   remixRequirementFromSnapshot,
   type StudioRemixCapability,
   type StudioRemixRequirement,
@@ -164,7 +164,7 @@ export function KidsSpaceViewClient({
   // nível que destrava (a mesma régua do selo do card). Sem nível resolvível
   // (metadado desconhecido) → copy genérica; nunca destrava nada.
   const remixBlockedMessage = useCallback((req: StudioRemixRequirement): string => {
-    const slug = minCareerLevelForRemix(req)
+    const slug = minJourneyLevelForRemix(req)
     const label = slug ? levelInfo(slug).label : null
     return label
       ? `Esse jogo usa ferramentas do nível ${label}. Continue a sua jornada de criador para fazer a sua versão! 🚀`
@@ -178,7 +178,7 @@ export function KidsSpaceViewClient({
     (t: HubThreadView): { levelLabel: string | null } | null => {
       if (!remixTier || !t.studioMeta) return null
       if (studioRemixCovered(remixTier, t.studioMeta)) return null
-      const slug = minCareerLevelForRemix(t.studioMeta)
+      const slug = minJourneyLevelForRemix(t.studioMeta)
       return { levelLabel: slug ? levelInfo(slug).label : null }
     },
     [remixTier],

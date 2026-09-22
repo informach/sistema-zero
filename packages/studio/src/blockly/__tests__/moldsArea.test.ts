@@ -13,7 +13,7 @@ import {
   SZIRV2Schema,
 } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
-import { ESSENTIAL_2D_ALLOW_BLOCKS } from '../../career'
+import { ESSENTIAL_2D_ALLOW_BLOCKS } from '../../journey'
 import { gameTwoDBlocks } from '../../official-extensions/game-2d/blocks'
 import { migrateBlocksState as normalizeBlocksStateToFrames } from '../../testing/migrateBlocksState'
 import { SERVER_BLOCK_CATALOG, type ServerBlockCatalogEntry } from '../blockCatalog'

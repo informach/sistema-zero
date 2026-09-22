@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import type { ParentCareerView } from '@sistemazero/core/career'
+import type { ParentJourneyView } from '@sistemazero/core/journey'
 import { buildApp, grantAllKidsCourses, grantLifetime, seedSampleCourse } from '../helpers'
 
 const TOKEN = 'internal-token-16-chars!!'
@@ -15,7 +15,7 @@ type ChildStats = {
   projectsCount: number
   submissionsCount: number
   rankingPosition: number | null
-  career?: ParentCareerView
+  career?: ParentJourneyView
 }
 
 // A CONTA vem do header confiável `x-auth-user-id` (o gateway o injeta após o JWT) —
@@ -34,7 +34,7 @@ const today = '2026-06-18'
 const now = new Date('2026-06-18T12:00:00.000Z')
 
 describe('GET /members/internal/children-stats', () => {
-  test('shared ownership keeps career, tools and pending publications separate between siblings', async () => {
+  test('shared ownership keeps journey, tools and pending publications separate between siblings', async () => {
     const ctx = buildApp({ internalToken: TOKEN })
     const account = randomUUID()
     const first = randomUUID()

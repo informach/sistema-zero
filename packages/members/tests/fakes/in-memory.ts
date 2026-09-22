@@ -16,10 +16,10 @@ import {
   type ModuleWithLessons,
 } from '../../src/domain/course/course'
 import {
-  CareerSlotConflictError,
   CloneSameAudienceError,
   CourseConflictError,
   DuplicateSlugError,
+  JourneySlotConflictError,
   NoShowcaseBlockError,
 } from '../../src/domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../src/domain/course/lesson-block'
@@ -100,7 +100,6 @@ import {
   type AwardXpEventInput,
   type BuyStreakFreezeInput,
   type BuyStreakFreezeResult,
-  type CareerCourseState,
   type ClaimMissionInput,
   type ClaimMissionResult,
   type CourseMilestones,
@@ -109,6 +108,7 @@ import {
   type GamificationRankingEntry,
   type GamificationRankingPage,
   type GamificationRepository,
+  type JourneyCourseState,
   type LeagueMembershipRecord,
   type ListGamificationRankingInput,
   MAX_STREAK_FREEZES,
@@ -729,7 +729,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
           course.careerSlot === fields.careerSlot,
       )
     ) {
-      throw new CareerSlotConflictError()
+      throw new JourneySlotConflictError()
     }
     const now = new Date()
     // Mirror do SQL: `salesPageUrl` vira a chave do metadata (jsonb), não coluna;
@@ -791,7 +791,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
           other.careerSlot === course.careerSlot,
       )
     ) {
-      throw new CareerSlotConflictError()
+      throw new JourneySlotConflictError()
     }
     this.courses[idx] = { ...course, version: course.version + 1, updatedAt: new Date() }
     return true
@@ -2281,8 +2281,8 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   readonly privilegedUsers = new Set<string>()
   /** Simula indisponibilidade (testa o fail-open dos services). */
   failAlways = false
-  careerCourseStateReads = 0
-  qualifyingCareerSlotReads = 0
+  journeyCourseStateReads = 0
+  qualifyingJourneySlotReads = 0
 
   /** Fontes p/ a coorte do ranking (mirror do join entitlements×courses). */
   constructor(
@@ -2720,23 +2720,23 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   }
 
   /** Mirror do SQL: cursos com AMBOS os marcos (complete ∩ showcased) por DEGRAU (nível×eixo). */
-  async listQualifyingCareerSlots(
+  async listQualifyingJourneySlots(
     userId: string,
     audience: CourseAudience,
   ): Promise<QualifyingByTier> {
-    this.qualifyingCareerSlotReads += 1
-    return this.computeCareerCourseState(userId, audience).qualified
+    this.qualifyingJourneySlotReads += 1
+    return this.computeJourneyCourseState(userId, audience).qualified
   }
 
-  async listCareerCourseState(
+  async listJourneyCourseState(
     userId: string,
     audience: CourseAudience,
-  ): Promise<CareerCourseState> {
-    this.careerCourseStateReads += 1
-    return this.computeCareerCourseState(userId, audience)
+  ): Promise<JourneyCourseState> {
+    this.journeyCourseStateReads += 1
+    return this.computeJourneyCourseState(userId, audience)
   }
 
-  private computeCareerCourseState(userId: string, audience: CourseAudience): CareerCourseState {
+  private computeJourneyCourseState(userId: string, audience: CourseAudience): JourneyCourseState {
     const mine = this.events.filter(
       (event) => event.userId === userId && event.audience === audience,
     )
@@ -2843,13 +2843,13 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     )
   }
 
-  async listQualifyingCareerSlotsForProfiles(
+  async listQualifyingJourneySlotsForProfiles(
     profileIds: string[],
     audience: CourseAudience,
   ): Promise<Map<string, QualifyingByTier>> {
     const map = new Map<string, QualifyingByTier>()
     for (const id of new Set(profileIds)) {
-      const q = await this.listQualifyingCareerSlots(id, audience)
+      const q = await this.listQualifyingJourneySlots(id, audience)
       if (Object.values(q).some((slots) => slots.length > 0)) map.set(id, q)
     }
     return map

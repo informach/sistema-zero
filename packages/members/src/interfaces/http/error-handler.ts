@@ -9,7 +9,7 @@ import {
   UnauthorizedError,
 } from '@sistemazero/core/http'
 import { type Logger, serializeError } from '@sistemazero/core/logging'
-import { CourseCareerLockedError, QuizCooldownError } from '../../domain/course/course.errors'
+import { CourseJourneyLockedError, QuizCooldownError } from '../../domain/course/course.errors'
 import {
   CreationClientOutdatedError,
   CreationPartMissingError,
@@ -125,7 +125,7 @@ export function buildErrorResponse(input: {
 } {
   const { error, code } = input
 
-  if (error instanceof CourseCareerLockedError) {
+  if (error instanceof CourseJourneyLockedError) {
     return {
       status: 423,
       body: {

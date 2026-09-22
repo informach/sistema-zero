@@ -7,7 +7,7 @@
  * trazer React, Three ou IndexedDB junto (`src/assets/purity.test.ts` cobra isso).
  *
  * ⚠️ Os nomes das faixas (`MOLDA_TOOL_BANDS`) são o contrato com o core
- * (`MOLDA_TOOL_BAND_LEVELS`, em `packages/core/src/career/journey.ts`). O kids tem um teste que
+ * (`MOLDA_TOOL_BAND_LEVELS`, em `packages/core/src/journey/state.ts`). O kids tem um teste que
  * confere os dois lados. Família nova entra aqui com a faixa dela, e só.
  *
  * ⚠️ Trancar tira a AUTORIA, nunca a leitura: uma criação que já usa uma família trancada abre,

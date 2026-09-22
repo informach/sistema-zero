@@ -1,5 +1,5 @@
-import { careerSlotsForTier } from '@sistemazero/core/career'
 import { ValidationError } from '@sistemazero/core/errors'
+import { journeySlotsForTier } from '@sistemazero/core/journey'
 import { isInteractiveBlock, isPdfAttachment } from '@sistemazero/core/learning'
 import {
   isSceneVozes,
@@ -152,7 +152,7 @@ export class CourseAdminService {
       track: fields.track ?? '2d',
       careerSlot: fields.careerSlot ?? null,
     }
-    assertCareerSlot(normalized)
+    assertJourneySlot(normalized)
     return toCourseView(await this.content.createCourse(normalized))
   }
 
@@ -201,7 +201,7 @@ export class CourseAdminService {
       careerSlot: careerSlot === undefined ? existing.careerSlot : careerSlot,
       metadata: withCourseMetadata(existing.metadata, { salesPageUrl, studioUnlockBlocks }),
     }
-    assertCareerSlot(merged)
+    assertJourneySlot(merged)
     // Curso-base kids (slot 1) publicado exige uma aula PUBLICADA com bloco de Estúdio
     // de vitrine — sem ela o aluno nunca qualifica o slot e a etapa trava (armadilha do
     // fail-open). Guard SÓ NA TRANSIÇÃO para o estado-armadilha: um curso que JÁ está
@@ -230,7 +230,7 @@ export class CourseAdminService {
   }
 }
 
-function assertCareerSlot(course: {
+function assertJourneySlot(course: {
   audience: string
   level: string
   track: string
@@ -255,9 +255,9 @@ function assertCareerSlot(course: {
   }
   // O teto é POR DEGRAU e vem do catálogo CANÔNICO do core (1 em Primeiros Passos, 7 no
   // Iniciante 2D, 8 nos demais); o CHECK da migration `0063` e o admin (via conformance)
-  // espelham a mesma fonte. O `CAREER_SLOT_MAX` continua como limite externo do DTO.
+  // espelham a mesma fonte. O `JOURNEY_SLOT_MAX` continua como limite externo do DTO.
   const tier = `${course.level}-${course.track}`
-  const maximum = careerSlotsForTier(tier)
+  const maximum = journeySlotsForTier(tier)
   if (maximum === 0) {
     throw new InvalidContentCommandError(
       'Esta combinação de nível e eixo não é um degrau da jornada',

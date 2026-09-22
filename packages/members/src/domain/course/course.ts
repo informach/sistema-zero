@@ -26,7 +26,7 @@ export type CourseAudience = (typeof COURSE_AUDIENCES)[number]
  * `lenda` é uma categoria À PARTE, FORA da carreira: cursos bônus "de formatura"
  * que aparecem só na trilha da Lenda (kids). NÃO vira degrau (level×track), NÃO
  * conta para o nível, NÃO recebe trava de curso-base — cursos `lenda` têm sempre
- * `careerSlot = null`. Por isso não entra em `CareerCourseLevel`/`courseTier`.
+ * `careerSlot = null`. Por isso não entra em `JourneyCourseLevel`/`courseTier`.
  */
 export const COURSE_LEVELS = [
   // Degrau de ENTRADA da carreira (14/08): 1 posicao so, o curso que a Faisca faz.
@@ -40,8 +40,8 @@ export const COURSE_LEVELS = [
 export type CourseLevel = (typeof COURSE_LEVELS)[number]
 
 /** Níveis que MAPEIAM para um degrau da carreira (as 3 dificuldades; exclui `lenda`). */
-export type CareerCourseLevel = Exclude<CourseLevel, 'lenda'>
-export const CAREER_COURSE_LEVELS = [
+export type JourneyCourseLevel = Exclude<CourseLevel, 'lenda'>
+export const JOURNEY_COURSE_LEVELS = [
   'primeiros-passos',
   'iniciante',
   'intermediario',

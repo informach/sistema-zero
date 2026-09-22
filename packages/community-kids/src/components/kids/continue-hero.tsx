@@ -1,4 +1,4 @@
-import { courseJourneyState, nextCareerCourse } from '@sistemazero/core/career'
+import { courseJourneyState, nextJourneyCourse } from '@sistemazero/core/journey'
 import { ContinueHeroLink } from '@/components/kids/continue-hero-link'
 import { KidsHero } from '@/components/kids/kids-hero'
 import type { MyCourseView } from '@/lib/types'
@@ -19,7 +19,7 @@ export function hasAnyCourseActivity(courses: readonly CourseActivityView[]): bo
 
 /** Mesma prioridade pedagógica usada pelo restante da jornada. */
 export function pickContinueCourse(courses: MyCourseView[]): MyCourseView | null {
-  return nextCareerCourse(courses)
+  return nextJourneyCourse(courses)
 }
 
 /**

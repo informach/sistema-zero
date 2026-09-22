@@ -440,7 +440,7 @@ export interface MyCourseView {
   /** Posição na etapa da carreira; `null` = curso bônus. */
   careerSlot: number | null
   /** Trava pedagógica da carreira; independente da matrícula comercial. */
-  careerLock: CareerCourseLockView
+  careerLock: JourneyCourseLockView
   access: AccessView
   progress: CourseProgress
   /** Marcos do aluno neste curso (ledger) — o selo do card. Kids; adulto vem zerado. */
@@ -454,7 +454,7 @@ export function toMyCourseView(
   entitlement: EntitlementAggregate,
   progress: CourseProgress,
   continueLessonId: string | null,
-  careerLock: CareerCourseLockView = { locked: false },
+  careerLock: JourneyCourseLockView = { locked: false },
   milestones: CourseMilestonesView = { completed: false, showcased: false },
 ): MyCourseView {
   return {
@@ -492,7 +492,7 @@ export interface CatalogCourseView {
   /** Posição na etapa da carreira; `null` = curso bônus. */
   careerSlot: number | null
   /** Trava pedagógica da carreira; `hasAccess` continua representando só a matrícula. */
-  careerLock: CareerCourseLockView
+  careerLock: JourneyCourseLockView
   hasAccess: boolean
   /** Marcos do aluno neste curso (ledger) — o selo do card. Kids; adulto vem zerado. */
   milestones: CourseMilestonesView
@@ -505,7 +505,7 @@ export interface CatalogCourseView {
 export function toCatalogCourseView(
   course: Course,
   hasAccess: boolean,
-  careerLock: CareerCourseLockView = { locked: false },
+  careerLock: JourneyCourseLockView = { locked: false },
   milestones: CourseMilestonesView = { completed: false, showcased: false },
 ): CatalogCourseView {
   return {
@@ -544,7 +544,7 @@ export interface CourseMilestonesView {
   showcased: boolean
 }
 
-export interface CareerCourseLockView {
+export interface JourneyCourseLockView {
   locked: boolean
   reason?: 'future-tier' | 'foundation-first' | 'tier-reward'
   requiredLevel?: StudentLevelSlug

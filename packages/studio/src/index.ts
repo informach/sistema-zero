@@ -48,7 +48,6 @@ export {
   SERVER_BLOCK_CATALOG,
   type ServerBlockCatalogEntry,
 } from './blockly/blockCatalog'
-export { ESSENTIAL_2D_ALLOW_BLOCKS, ESSENTIAL_2D_BLOCK_TYPES } from './career/blockProfiles'
 export {
   createProProject,
   listProTemplates,
@@ -71,6 +70,7 @@ export {
   type CaptureCoverOptions,
   captureCoverFromProject,
 } from './cover/coverCapture'
+export { ESSENTIAL_2D_ALLOW_BLOCKS, ESSENTIAL_2D_BLOCK_TYPES } from './journey/blockProfiles'
 export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/types'
 export type { PreviewSecurityProfile } from './preview/csp'
 export {

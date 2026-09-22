@@ -181,7 +181,7 @@ export const courses = members.table(
       .on(t.audience, t.level, t.track, t.careerSlot)
       .where(sql`${t.careerSlot} is not null`),
     check(
-      // Espelha `assertCareerSlot`: Primeiros Passos existe só em 2D; Lenda nunca ocupa
+      // Espelha `assertJourneySlot`: Primeiros Passos existe só em 2D; Lenda nunca ocupa
       // posição; o teto é 1 no degrau de ENTRADA e 8 em todos os demais.
       // ⚠️ Compara `level::text`, não o literal do enum: a `0063` é quem o adiciona.
       // ⚠️ O Iniciante 2D teve teto 7 entre 14/08 e 15/08 (a `0063` apertou, a `0064`

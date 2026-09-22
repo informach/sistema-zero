@@ -15,7 +15,7 @@ import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 const today = '2026-06-02'
 const now = new Date(`${today}T12:00:00Z`)
 
-test('free-creation missions wait for the career without reshuffling or hiding completed legacy work', async () => {
+test('free-creation missions wait for the journey without reshuffling or hiding completed legacy work', async () => {
   const ctx = buildApp()
   const ownsStudio = (ref: string) => ref === 'estudio-completo'
   const assigned = (id: string) => [

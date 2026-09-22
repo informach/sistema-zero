@@ -1,4 +1,4 @@
-import { courseJourneyState, creativeToolAvailability } from '@sistemazero/core/career'
+import { courseJourneyState, creativeToolAvailability } from '@sistemazero/core/journey'
 import { ArrowRight, BookOpen, Map as MapIcon, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { ChallengeCard } from '@/components/kids/challenge-card'
@@ -9,14 +9,14 @@ import {
   pickContinueCourse,
 } from '@/components/kids/continue-hero'
 import { CourseCard } from '@/components/kids/course-card'
-import { CreatorCareerCard } from '@/components/kids/creator-career-card'
+import { CreatorJourneyCard } from '@/components/kids/creator-journey-card'
 import { FocusRefresh } from '@/components/kids/focus-refresh'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsEmptyState } from '@/components/kids/kids-empty-state'
 import { KidsSectionHeader } from '@/components/kids/kids-section-header'
 import { KidsMascotAnimated } from '@/components/kids/mascot-rive'
 import { MissionsPanel } from '@/components/kids/missions-panel'
-import { nextLevelHintWithin } from '@/lib/career-horizon'
+import { nextLevelHintWithin } from '@/lib/journey-horizon'
 import {
   checkChallengeAccessReadonly,
   getAvatarReadonly,
@@ -61,7 +61,7 @@ export default async function HomePage() {
   if (status !== 200) throw new Error('Falha ao carregar os cursos')
   const courses = body?.courses ?? []
   // Home = superfície de AÇÃO: só cursos LIBERADOS pela carreira (os travados —
-  // futuro/recompensa — vivem no Mapa da Carreira em /cursos). Ordenação
+  // futuro/recompensa — vivem no Mapa da Jornada em /cursos). Ordenação
   // ação-primeiro: em andamento → não começados → concluídos (revisão) por último.
   const courseRank = (c: (typeof courses)[number]) => {
     const order = {
@@ -175,7 +175,7 @@ export default async function HomePage() {
 
       {courses.length > 0 ? (
         <KidsBand tone="menta">
-          <CreatorCareerCard
+          <CreatorJourneyCard
             gamification={gamification}
             levelHint={levelHint}
             avatarPhotoUrl={avatarPhotoUrl}

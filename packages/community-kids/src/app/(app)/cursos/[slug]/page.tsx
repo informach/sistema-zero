@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { KidsBackButton } from '@/components/kids/back-button'
 import { CourseTrail } from '@/components/kids/course-trail'
 import { KidsBand } from '@/components/kids/kids-band'
-import { careerLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
+import { journeyLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
 import { PublicationStatus } from '@/components/kids/publication-status'
 import { courseBadge } from '@/lib/course-badge'
 import { resolveCourseBack } from '@/lib/course-return'
@@ -26,7 +26,7 @@ export default async function CoursePage({
   // um dono e o destino sai só do curso. (O layout segue buscando o que precisa.)
   const { status, body } = await getMyCourse(slug)
   if (status === 404 || status === 403) notFound()
-  if (status === 423) return <KidsLockedCourse reason={careerLockReason(body)} />
+  if (status === 423) return <KidsLockedCourse reason={journeyLockReason(body)} />
   if (status !== 200 || !body) throw new Error('Falha ao carregar o curso')
   const course = body
 

@@ -39,7 +39,7 @@ export class GetMyCourseService {
       last,
       lastAccessed,
       myRating,
-      careerState,
+      journeyState,
       showcaseLessonIds,
       materialLessonIds,
     ] = await Promise.all([
@@ -48,7 +48,7 @@ export class GetMyCourseService {
       this.progress.lastCompletedAt(userId, course.id),
       this.positions.lastAccessedLessonId(userId, course.id),
       this.ratings.find(userId, course.id),
-      course.audience === 'kids' ? this.gamification.listCareerCourseState(userId, 'kids') : null,
+      course.audience === 'kids' ? this.gamification.listJourneyCourseState(userId, 'kids') : null,
       course.audience === 'kids' ? this.courses.listShowcaseLessonIds(course.id) : [],
       this.courses.listMaterialLessonIds(course.id),
     ])
@@ -90,8 +90,8 @@ export class GetMyCourseService {
     )
     return {
       ...view,
-      milestones: careerState
-        ? (careerState.milestones.get(course.id) ?? { completed: false, showcased: false })
+      milestones: journeyState
+        ? (journeyState.milestones.get(course.id) ?? { completed: false, showcased: false })
         : undefined,
       materialLessonIds: materialLessonIds.filter((id) => !lockedSet.has(id)),
       showcaseLessonId: showcaseLessonIds.find((id) => !lockedSet.has(id)) ?? null,

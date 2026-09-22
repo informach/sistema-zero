@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { createEmptyProject } from '@sistemazero/studio'
 // Fonte da verdade (members) por caminho RELATIVO de módulo puro — o admin NÃO depende
 // do members no package.json e não deve passar a depender por causa de teste (mesmo
-// precedente do `career-tier-conformance` aqui e do `badge-conformance` do kids).
+// precedente do `journey-tier-conformance` aqui e do `badge-conformance` do kids).
 import { LESSON_BLOCK_KINDS as MEMBERS_KINDS } from '../../members/src/domain/course/lesson-block'
 import {
   buildContent,

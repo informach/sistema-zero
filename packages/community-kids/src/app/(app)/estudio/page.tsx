@@ -1,7 +1,7 @@
 import { isPrivilegedRole, resolveStudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { extensionsForBlocks } from '@sistemazero/member-shell/server/studio-unlocks'
 import { isStudioZappyAllowed } from '@sistemazero/member-shell/server/zappy-access'
-import { KidsCareerLockedStudio } from '@/components/kids/kids-career-locked-studio'
+import { KidsJourneyLockedStudio } from '@/components/kids/kids-journey-locked-studio'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
@@ -82,7 +82,7 @@ export default async function EstudioPage({
   })
   // O produto pode estar comprado pela conta, mas a criação livre só começa após
   // concluir+publicar o primeiro curso. Dentro das aulas, o Estúdio segue disponível.
-  if (!tier.freeStudio) return <ToolRouteRecado screen={KidsCareerLockedStudio} />
+  if (!tier.freeStudio) return <ToolRouteRecado screen={KidsJourneyLockedStudio} />
   const challengeEligible =
     challengeAccess?.status === 200 &&
     challengeAccess.body?.access?.['clube-dos-criadores'] === true &&

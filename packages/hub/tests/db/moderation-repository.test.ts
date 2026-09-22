@@ -172,7 +172,7 @@ describe.skipIf(!testDatabaseUrl)('moderação no Postgres real', () => {
     ).toBe('none')
   })
 
-  test('failure to persist the career delivery rolls back the publication too', async () => {
+  test('failure to persist the journey delivery rolls back the publication too', async () => {
     const input = await publicationInput()
     if (!input.coursePublication) throw new Error('Missing publication fixture')
     input.coursePublication.courseId = 'invalid-uuid'

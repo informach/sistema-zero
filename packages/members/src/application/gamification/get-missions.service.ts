@@ -1,4 +1,4 @@
-import { creativeToolAvailability } from '@sistemazero/core/career'
+import { creativeToolAvailability } from '@sistemazero/core/journey'
 import type { CourseAudience } from '../../domain/course/course'
 import { localDateSaoPaulo } from '../../domain/gamification/gamification'
 import { computeStudentLevel } from '../../domain/gamification/levels'
@@ -45,7 +45,7 @@ export class GetMissionsService {
     const weekKey = weeklyPeriodKey(today)
     const monthKey = monthlyPeriodKey(today)
     const hasAccess = await this.resolveAccess(accountId, privileged)
-    const level = computeStudentLevel(await this.repo.listQualifyingCareerSlots(userId, audience))
+    const level = computeStudentLevel(await this.repo.listQualifyingJourneySlots(userId, audience))
     const freeCreation =
       creativeToolAvailability({
         tool: 'estudio-completo',
