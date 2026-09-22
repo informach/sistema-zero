@@ -175,7 +175,7 @@ describe('CourseTrail', () => {
     }
   })
 
-  test('ilustrações revezam de lado e vão até o trecho mais livre da unidade', () => {
+  test('ilustrações escolhem lado e altura pelo trecho mais livre da unidade', () => {
     const desafio = course([
       { ...moduleOf('m1', [lesson('a'), lesson('b')]), riveUrl: riv('nave') },
       { ...moduleOf('vazio', []), riveUrl: riv('nave') },
@@ -189,15 +189,15 @@ describe('CourseTrail', () => {
     const arts = [...container.querySelectorAll<HTMLElement>('[data-trail-art]')]
     expect(arts.map((art) => art.classList.contains('kids-trail-art--left'))).toEqual([
       true,
-      false,
       true,
+      false,
     ])
     expect(arts.map((art) => art.classList.contains('kids-trail-art--right'))).toEqual([
       false,
-      true,
       false,
+      true,
     ])
-    expect(arts.map((art) => art.style.top)).toEqual(['55%', '55%', '16.25%'])
+    expect(arts.map((art) => art.style.top)).toEqual(['55%', '21.67%', '66.25%'])
   })
 
   test('módulos vazios e módulos sem animação no Admin não recebem arte', () => {

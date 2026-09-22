@@ -31,6 +31,38 @@ export interface TrailUnit {
   chest: TrailChest
 }
 
+export type TrailArtSide = 'left' | 'right'
+
+export interface TrailArtPlacement {
+  side: TrailArtSide
+  row: number
+}
+
+/**
+ * Escolhe lado e altura da arte ao mesmo tempo. Para pôr a arte à esquerda,
+ * nós positivos (à direita) abrem espaço; para pôr à direita, nós negativos
+ * abrem espaço. A ordem de `sides` faz a preferência decidir somente empates.
+ */
+export function trailArtPlacement(unit: TrailUnit, preferredSide: TrailArtSide): TrailArtPlacement {
+  const offsets = [...unit.nodes.map((node) => node.offset), unit.chest.offset]
+  const sides: TrailArtSide[] = preferredSide === 'left' ? ['left', 'right'] : ['right', 'left']
+  let best: TrailArtPlacement & { score: number } = {
+    side: preferredSide,
+    row: 0,
+    score: Number.NEGATIVE_INFINITY,
+  }
+
+  for (const side of sides) {
+    const direction = side === 'left' ? 1 : -1
+    for (let row = 0; row < offsets.length - 1; row += 1) {
+      const score = direction * ((offsets[row] ?? 0) + (offsets[row + 1] ?? 0))
+      if (score > best.score) best = { side, row, score }
+    }
+  }
+
+  return { side: best.side, row: best.row }
+}
+
 /**
  * Curva do serpenteado. O índice é GLOBAL (contínuo entre unidades — e avança
  * TAMBÉM no baú). A senoide desacelera perto das pontas e acelera ao cruzar o

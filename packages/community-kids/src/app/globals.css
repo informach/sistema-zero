@@ -1295,6 +1295,23 @@ a.kid-pop:has(> .kids-carta):hover {
     --k3d-altura: 1px;
     translate: 0 4px;
   }
+  /* O ouro do baú escondia o degrau genérico dos nós. A base mais alta e marrom
+     continua visível em repouso; o brilho interno separa a face dourada da base. */
+  .kids-node-link .kids-node.kids-node--chest-ready {
+    --k3d-altura: 8px;
+    --k3d-degrau: color-mix(in oklab, var(--kids-ouro) 58%, var(--pen-tinta));
+    box-shadow:
+      inset 0 3px 0 color-mix(in oklab, white 34%, transparent),
+      0 var(--k3d-altura) 0 var(--k3d-degrau);
+    transition: translate 0.12s ease;
+  }
+  .kids-node-link:hover .kids-node.kids-node--chest-ready {
+    --k3d-altura: 9px;
+  }
+  .kids-node-link:active .kids-node.kids-node--chest-ready {
+    --k3d-altura: 2px;
+    translate: 0 6px;
+  }
   @keyframes kids-ring {
     0% {
       outline: 4px solid color-mix(in oklch, var(--unit) 45%, transparent);

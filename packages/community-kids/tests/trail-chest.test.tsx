@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
 import type { ModuleChestView } from '@sistemazero/member-shell/lib/types'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
@@ -56,6 +57,23 @@ function montar(chest: ModuleChestView | null) {
 }
 
 describe('baú da trilha', () => {
+  test('liberado tem base 3D contrastante e curso de pressão próprio', () => {
+    const css = readFileSync(new URL('../src/app/globals.css', import.meta.url), 'utf8')
+    const rule = (selector: string) =>
+      css.match(new RegExp(`${selector}\\s*\\{([^}]*)\\}`, 's'))?.[1] ?? ''
+    const ready = rule('\\.kids-node-link \\.kids-node\\.kids-node--chest-ready')
+    const hover = rule('\\.kids-node-link:hover \\.kids-node\\.kids-node--chest-ready')
+    const active = rule('\\.kids-node-link:active \\.kids-node\\.kids-node--chest-ready')
+
+    expect(ready).toContain('--k3d-altura: 8px')
+    expect(ready).toContain('var(--kids-ouro) 58%')
+    expect(ready).toContain('inset 0 3px 0')
+    expect(ready).toContain('transition: translate 0.12s ease')
+    expect(hover).toContain('--k3d-altura: 9px')
+    expect(active).toContain('--k3d-altura: 2px')
+    expect(active).toContain('translate: 0 6px')
+  })
+
   test('fechado não é botão (seria uma parada de foco que não faz nada)', () => {
     montar(bau({ unlocked: false }))
     expect(screen.queryByRole('button')).toBeNull()

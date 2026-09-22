@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { balloonLabel, buildTrail } from '../src/components/kids/trail-layout'
+import { balloonLabel, buildTrail, trailArtPlacement } from '../src/components/kids/trail-layout'
 import type { CourseDetailView, LessonOutlineView, ModuleOutlineView } from '../src/lib/types'
 
 function lesson(id: string, completed: boolean, locked = false): LessonOutlineView {
@@ -56,6 +56,29 @@ function course(modules: ModuleOutlineView[]): CourseDetailView {
 }
 
 describe('buildTrail', () => {
+  test('arte escolhe lado E linha com mais espaço; alternância só desempata', () => {
+    const units = buildTrail(
+      course([
+        moduleOf('m1', [lesson('a', false), lesson('b', false)]),
+        moduleOf('m2', [lesson('c', false), lesson('d', false)]),
+        moduleOf('m3', [lesson('e', false), lesson('f', false), lesson('g', false)]),
+      ]),
+    )
+
+    expect(trailArtPlacement(units[0]!, 'left')).toEqual({ side: 'left', row: 1 })
+    // Mesmo preferindo a direita, esta unidade tem os nós todos à direita: a
+    // arte deve repetir o lado esquerdo, não obedecer a uma alternância cega.
+    expect(trailArtPlacement(units[1]!, 'right')).toEqual({ side: 'left', row: 0 })
+    expect(trailArtPlacement(units[2]!, 'left')).toEqual({ side: 'right', row: 2 })
+
+    const symmetric = {
+      ...units[0]!,
+      nodes: [{ ...units[0]!.nodes[0]!, offset: 1 }],
+      chest: { offset: -1 },
+    }
+    expect(trailArtPlacement(symmetric, 'right')).toEqual({ side: 'right', row: 0 })
+  })
+
   test('offsets formam uma senoide contínua com índice GLOBAL (aulas E baús)', () => {
     const c = course([
       moduleOf('m1', [lesson('a', true), lesson('b', true), lesson('c', false)]),
