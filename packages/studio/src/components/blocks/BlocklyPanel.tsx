@@ -28,7 +28,7 @@ import { generateProjectFilesWithMap } from '#generators'
 import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import { SERVER_BLOCK_CATALOG } from '../../blockly/blockCatalog'
-import { isPureWorkspaceLayoutMove } from '../../blockly/changeSemantics'
+import { isProgramStructureChange, isPureWorkspaceLayoutMove } from '../../blockly/changeSemantics'
 import {
   attachAnimationNameWatcher,
   refreshAnimationNames,
@@ -658,15 +658,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       queueMicrotask(refresh)
     }
     const listener = (event: Blockly.Events.Abstract) => {
-      if (
-        event.type === Blockly.Events.FINISHED_LOADING ||
-        event.type === Blockly.Events.BLOCK_CREATE ||
-        event.type === Blockly.Events.BLOCK_DELETE ||
-        (event.type === Blockly.Events.BLOCK_MOVE &&
-          !isPureWorkspaceLayoutMove(event as Blockly.Events.BlockMove))
-      ) {
-        scheduleRefresh()
-      }
+      if (isProgramStructureChange(event as Blockly.Events.BlockMove)) scheduleRefresh()
     }
     refresh()
     workspace.addChangeListener(listener)
