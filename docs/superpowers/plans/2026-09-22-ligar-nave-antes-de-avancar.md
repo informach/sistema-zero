@@ -130,7 +130,7 @@
 
   Ler o design, o plano, os componentes e os testes do baú Rive; conferir as regras de `packages/community-kids/CLAUDE.md`; corrigir somente problemas concretos e executar as suítes direcionadas do baú e da trilha.
 
-- [ ] **Step 2: Executar a verificação completa com evidência fresca**
+- [x] **Step 2: Executar a verificação completa com evidência fresca**
 
   Run:
 
@@ -144,7 +144,7 @@
 
   Expected: checks, testes e builds terminam com código 0.
 
-- [ ] **Step 3: Commitar tudo que o usuário autorizou**
+- [x] **Step 3: Commitar tudo que o usuário autorizou**
 
   Conferir `git diff --check`, revisar `git diff --stat` e criar commits temáticos contendo todas as mudanças restantes, inclusive o trabalho da outra sessão. Confirmar `git status --short` vazio.
 
