@@ -1187,9 +1187,27 @@ export function SceneActivityView({
                 desfazer, sem recomeçar e sem pista, inclusive ao reabrir a aula. */}
             <fieldset disabled={bloqueado} className="min-w-0 space-y-4">
               <fieldset className="min-w-0 space-y-4">
-                {/* O console reúne HUD, fala do Zappy, mundo, frase e prancha. */}
+                {/* A criança reconhece o mundo antes de receber a ação. A fala e a prancha ficam
+                    juntas na ordem real do documento, inclusive no celular e na leitura assistiva. */}
                 <SceneConsole>
                   {hudDaCena}
+                  <ConsoleMundo>
+                    <RelogioDaArteProvider value={tempoDaArte}>
+                      <ExplorationStage activity={activity} state={visto} dispatch={dispatch} />
+                    </RelogioDaArteProvider>
+                    {/* ⚠️⚠️ Os avisos SOBREPOSTOS ao pé do palco (full review de experiência, M2), sem
+                        lugar reservado no fluxo: ver `AvisosDaCena`. */}
+                    {(avisoDescoberta || palpiteNaHora) && (
+                      <AvisosDaCena
+                        selo={avisoDescoberta}
+                        achou={palpite ? palpiteNaHora : ''}
+                        onFechar={() => {
+                          setAvisoDescoberta('')
+                          setPalpiteNaHora('')
+                        }}
+                      />
+                    )}
+                  </ConsoleMundo>
                   <ConsoleFala>{blocoDaInstrucao}</ConsoleFala>
                   {/* ⭐⭐ A PISTA mora colada na fala do Zappy, e não no pé do bloco.
                       Relato dela na maquete: "não consegui ver onde apareceu a pista". Ela
@@ -1232,27 +1250,9 @@ export function SceneActivityView({
                       </p>
                     </div>
                   )}
-                  <ConsoleMundo>
-                    <RelogioDaArteProvider value={tempoDaArte}>
-                      <ExplorationStage activity={activity} state={visto} dispatch={dispatch} />
-                    </RelogioDaArteProvider>
-                    {/* ⚠️⚠️ Os avisos SOBREPOSTOS ao pé do palco (full review de experiência, M2), sem
-                        lugar reservado no fluxo: ver `AvisosDaCena`. */}
-                    {(avisoDescoberta || palpiteNaHora) && (
-                      <AvisosDaCena
-                        selo={avisoDescoberta}
-                        achou={palpite ? palpiteNaHora : ''}
-                        onFechar={() => {
-                          setAvisoDescoberta('')
-                          setPalpiteNaHora('')
-                        }}
-                      />
-                    )}
-                  </ConsoleMundo>
-                  {/* ⚠️⚠️ O palpite CONGELADO mora DENTRO do console, logo abaixo do mundo:
-                      ele fala da cena, e solto acima da moldura era a primeira coisa que quebrava a
-                      unidade que ela pediu (foi o que ela viu na tela). Fica na área da conversa,
-                      no mesmo lugar em que o palpite perguntou e em que a conclusão vai responder. */}
+                  {pranchaDaCena}
+                  {/* ⚠️⚠️ O palpite CONGELADO mora DENTRO do console, depois da área de ação:
+                      ele retoma o que a criança pensou sem separar a instrução dos controles. */}
                   {palpite && !(revisita && !prediction) && (
                     <div className="sz-scene-console-conversa">
                       <ScenePrediction
@@ -1278,8 +1278,8 @@ export function SceneActivityView({
                       />
                     </div>
                   )}
-                  {/* ⚠️ A caixa só existe COM conclusão: vazia, as margens dela colapsavam em
-                    12px de vão morto entre a frase e a prancha, em toda cena e o tempo todo. */}
+                  {/* ⚠️ A caixa só existe COM conclusão: vazia, criaria um vão morto depois da
+                      prancha em toda cena e o tempo todo. */}
                   {!revisita && conclusao && (
                     <div className="sz-scene-console-conversa">
                       <SceneConclusion
@@ -1307,11 +1307,10 @@ export function SceneActivityView({
                     </div>
                   )}
                   {/* ⚠️ A frase da SITUAÇÃO é o narrador do mundo: descreve o que está na tela agora.
-                    ⚠️ Num lugar que só cresce (consertos do review da onda B do lote 5, T2): ela passa
-                    de uma para duas linhas e volta no meio dos gestos, e a bancada ia junto. */}
+                      Num lugar reservado, ela pode passar de uma para duas linhas sem saltar. */}
                   {/* ⚠️⚠️ E o MOLDE são as frases que a cena atinge (full review de experiência, M3):
                     só crescer não bastava, porque a PRIMEIRA vez que a frase passava a duas linhas a
-                    bancada descia 16 px no toque (o "Avançar 1 quadro" da `draw-loop` no celular). */}
+                    continuação descia 16 px no toque (o "Avançar 1 quadro" da `draw-loop` no celular). */}
                   <LugarReservado
                     marca="situacao"
                     molde={
@@ -1334,12 +1333,7 @@ export function SceneActivityView({
                       {sceneSituation(activity.scene, visto, activity.cast)}
                     </p>
                   </LugarReservado>
-                  {/* ⭐⭐ A conclusão cai no MESMO lugar das opções do palpite: logo abaixo do
-                    mundo, dentro do console. É o lugar da conversa — a cena mostra em cima, e
-                    ali embaixo se fala sobre ela. Antes ela nascia DEPOIS do rodapé, fora da
-                    moldura: a mesma distância que fez a pista passar despercebida.
-                    ⚠️ A cena NÃO acaba: o mundo segue vivo e a prancha segue aberta. */}
-                  {pranchaDaCena}
+                  {/* A cena NÃO acaba: o mundo segue vivo e a prancha segue aberta. */}
                 </SceneConsole>
                 {/* A comparação abre logo abaixo do botão que a pediu, não no pé do cartão.
                     ⚠️ FORA do console: é uma gaveta da AULA, e dentro dele viraria uma quinta faixa. */}
