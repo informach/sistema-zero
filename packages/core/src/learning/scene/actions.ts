@@ -560,7 +560,6 @@ export function sceneFrameRate(scene: SceneId): number | null {
  * "Um passo", e é o mesmo gesto: um quadro.
  */
 const QUADRO_E_O_ASSUNTO: readonly SceneId[] = [
-  'once-vs-always',
   'draw-loop',
   'spawn',
   'velocity',
@@ -570,14 +569,23 @@ const QUADRO_E_O_ASSUNTO: readonly SceneId[] = [
 
 /**
  * O nome do botão de passo desta cena, ou `null` para a cena sem relógio. "Avançar 1 quadro" anda UM
- * quadro; "Um passo" anda os quadros inteiros de ~0,2 s (`sceneStepSeconds`).
+ * quadro; a `once-vs-always` usa "Avançar 1 passo" antes de apresentar esse vocabulário; "Um passo"
+ * anda os quadros inteiros de ~0,2 s (`sceneStepSeconds`).
  */
-export function sceneStepLabel(scene: SceneId): 'Avançar 1 quadro' | 'Um passo' | null {
+export function sceneStepLabel(
+  scene: SceneId,
+): 'Avançar 1 quadro' | 'Avançar 1 passo' | 'Um passo' | null {
   if (sceneFrameRate(scene) === null) return null
+  if (scene === 'once-vs-always') return 'Avançar 1 passo'
   return QUADRO_E_O_ASSUNTO.includes(scene) ? 'Avançar 1 quadro' : 'Um passo'
 }
 
-/** Quanto tempo o "Um passo" mostra: perto disto, sempre em quadros INTEIROS da cena. */
+/** A cena compara passos contáveis; um relógio contínuo esconderia justamente essa contagem. */
+export function sceneHasContinuousTimeControl(scene: SceneId): boolean {
+  return sceneFrameRate(scene) !== null && scene !== 'once-vs-always'
+}
+
+/** Quanto tempo o "Um passo" genérico mostra: perto disto, sempre em quadros INTEIROS da cena. */
 const PASSO_VISIVEL = 0.2
 
 /**
@@ -594,6 +602,8 @@ const PASSO_VISIVEL = 0.2
 export function sceneStepSeconds(scene: SceneId): number | null {
   const fps = sceneFrameRate(scene)
   if (fps === null) return null
+  // Aqui cada clique é um passo contável, sem antecipar a palavra "quadro" da seção 7 do piloto.
+  if (scene === 'once-vs-always') return 1 / fps
   if (QUADRO_E_O_ASSUNTO.includes(scene)) return 1 / fps
   return Math.max(1, Math.round(PASSO_VISIVEL * fps)) / fps
 }
@@ -632,7 +642,7 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return (
         scene === 'once-vs-always' &&
         typeof value.card === 'string' &&
-        ['paint', 'create', 'move', 'event', 'lives'].includes(value.card) &&
+        ['paint', 'create', 'move', 'event', 'lives', 'panel'].includes(value.card) &&
         typeof value.area === 'string' &&
         ['outside', 'start', 'loop', 'event'].includes(value.area)
       )

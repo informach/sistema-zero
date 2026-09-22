@@ -2,8 +2,8 @@ import { isRecord } from './actions'
 
 /** A área em que uma ficha da once-vs-always pode ficar. */
 export type OnceArea = 'start' | 'loop' | 'event'
-export type OnceCardId = 'paint' | 'create' | 'move' | 'event' | 'lives'
-export type OnceCardKind = 'paint' | 'create' | 'move' | 'shot' | 'sound' | 'lives'
+export type OnceCardId = 'paint' | 'create' | 'move' | 'event' | 'lives' | 'panel'
+export type OnceCardKind = 'paint' | 'create' | 'move' | 'shot' | 'sound' | 'lives' | 'panel'
 
 export interface OnceCard {
   id: OnceCardId
@@ -23,6 +23,13 @@ export interface OnceVsAlwaysPreset {
   cards: OnceCard[]
   /** Só o contrafactual das vidas: a pedra bate a cada N quadros. */
   hitEveryFrames?: number
+}
+
+export interface OnceGoalCards {
+  once?: OnceCardId
+  always?: OnceCardId
+  both?: { start: OnceCardId; loop: OnceCardId }
+  event?: OnceCardId
 }
 
 export interface RandomPreset {
@@ -165,8 +172,7 @@ export const ONCE_VS_ALWAYS_PRESETS = {
     id: 'duas-caixas-nave',
     areas: ['start', 'loop'],
     cards: [
-      { id: 'paint', kind: 'paint', label: 'Pintar o fundo' },
-      { id: 'create', kind: 'create', label: 'Criar a nave' },
+      { id: 'panel', kind: 'panel', label: 'Acender o painel da nave' },
       { id: 'move', kind: 'move', label: 'Mover a nave um pouquinho' },
     ],
   },
@@ -206,6 +212,27 @@ export const ONCE_VS_ALWAYS_PRESETS = {
     ],
   },
 } as const satisfies Record<OnceVsAlwaysPreset['id'], OnceVsAlwaysPreset>
+
+/** As fichas que tornam cada descoberta observável em cada caso da cena. */
+export const ONCE_GOAL_CARDS_BY_PRESET = {
+  'duas-caixas-nave': {
+    once: 'panel',
+    always: 'move',
+    both: { start: 'panel', loop: 'move' },
+  },
+  'tres-caixas-tiro': { event: 'event' },
+  'uma-ficha-vidas': { once: 'lives' },
+  'duas-caixas-dino': {
+    once: 'paint',
+    always: 'move',
+    both: { start: 'create', loop: 'move' },
+  },
+  'tres-caixas-som': { event: 'event' },
+} as const satisfies Record<OnceVsAlwaysPreset['id'], OnceGoalCards>
+
+export function onceGoalCards(preset: OnceVsAlwaysPreset): OnceGoalCards {
+  return ONCE_GOAL_CARDS_BY_PRESET[preset.id]
+}
 
 export const ONCE_GOALS_BY_PRESET: Record<OnceVsAlwaysPreset['id'], readonly string[]> = {
   'duas-caixas-nave': ['once', 'always', 'both'],

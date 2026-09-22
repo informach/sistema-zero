@@ -28,6 +28,13 @@ describe('casos da once-vs-always', () => {
     ).toBe(false)
   })
 
+  test('o piloto declara só painel e movimento', () => {
+    expect(ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave'].cards).toEqual([
+      { id: 'panel', kind: 'panel', label: 'Acender o painel da nave' },
+      { id: 'move', kind: 'move', label: 'Mover a nave um pouquinho' },
+    ])
+  })
+
   test('texto de meta só pode vestir um id existente', () => {
     const preset = ONCE_VS_ALWAYS_PRESETS['uma-ficha-vidas']
     expect(

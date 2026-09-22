@@ -281,10 +281,10 @@ function leituras(scene: SceneId, state: SceneState, pilha?: ScenePilha): SceneR
       ]
     case 'once-vs-always':
       return [
-        { label: 'quadro', value: String(state.once.frames), tone: 'plain' },
+        { label: 'passo', value: String(state.once.frames), tone: 'plain' },
         { label: 'personagens', value: String(state.once.heroCount), tone: 'a' },
         {
-          label: 'ações disparadas',
+          label: 'ações feitas',
           value: String(Object.values(state.once.fires).reduce((a, b) => a + b, 0)),
           tone: 'b',
         },
@@ -991,7 +991,7 @@ function situacao(scene: SceneId, state: SceneState): string {
     case 'same-rules-new-skin':
       return `Tema ${{ space: 'nave no espaço', road: 'carrinho na estrada', sea: 'submarino no mar' }[state.skinGame.theme]}. As setas movem; a tecla de tiro está ${state.skinGame.shootEnabled ? 'ligada' : 'desligada'}. O obstáculo vem de cima; encostou, perde uma vida. Vidas: ${state.skinGame.lives}.`
     case 'once-vs-always':
-      return `Quadro ${state.once.frames}: ${state.once.heroCount} personagens, ${state.once.shots} tiros e ${state.once.hearts} vidas.`
+      return `Passo ${state.once.frames}: ${state.once.heroCount} personagens, ${state.once.shots} tiros e ${state.once.hearts} vidas.`
     case 'coordinates':
       return `O Dino está em x ${state.place.x}, y ${state.place.y}.`
     case 'stage-size': {

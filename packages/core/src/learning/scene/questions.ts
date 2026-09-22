@@ -644,27 +644,27 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
   },
   'once-vs-always': {
     prediction: {
-      prompt: 'Pintar o fundo em Ao iniciar dispara quantas vezes quando o jogo roda?',
+      prompt: 'Uma ficha em Ao iniciar age quantas vezes quando o jogo começa?',
       choices: [
         { id: 'uma', label: 'Uma vez, no começo.' },
         {
           id: 'sempre',
-          label: 'Uma vez em cada quadro.',
-          shows: 'Depois de três quadros, o contador de Pintar o fundo marcou 1.',
+          label: 'Uma vez em cada passo.',
+          shows: 'Depois de três passos, o contador da ficha em Ao iniciar marcou 1.',
         },
       ],
       correctChoiceId: 'uma',
       revealOn: 'once',
     },
     explain: {
-      prompt: 'Você quer criar a nave só no começo e movê-la o tempo todo. Onde vai cada ação?',
+      prompt: 'Uma ação prepara o jogo; outra continua enquanto ele funciona. Onde vai cada uma?',
       choices: [
         { id: 'juntas', label: 'As duas em Enquanto estiver rodando.' },
-        { id: 'separadas', label: 'Criar em Ao iniciar; mover em Enquanto estiver rodando.' },
+        { id: 'separadas', label: 'Preparar em Ao iniciar; repetir no motor.' },
       ],
       correctChoiceId: 'separadas',
       explanation:
-        'Ao iniciar acontece uma vez. Enquanto estiver rodando age a cada quadro: a nave é criada uma vez e é a mesma em todos os quadros.',
+        'Ao iniciar acontece uma vez. Enquanto estiver rodando continua agindo a cada passo do jogo.',
     },
   },
   coordinates: {

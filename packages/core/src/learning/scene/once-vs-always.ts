@@ -4,6 +4,7 @@ import {
   type OnceCard,
   type OnceCardId,
   type OnceVsAlwaysPreset,
+  onceGoalCards,
   oncePreset,
 } from './presets'
 
@@ -26,13 +27,21 @@ export interface SceneOnce {
   hits: number
 }
 
-const zeroCards = (): CardNumbers => ({ paint: 0, create: 0, move: 0, event: 0, lives: 0 })
+const zeroCards = (): CardNumbers => ({
+  paint: 0,
+  create: 0,
+  move: 0,
+  event: 0,
+  lives: 0,
+  panel: 0,
+})
 const outsideCards = (): CardPlaces => ({
   paint: 'outside',
   create: 'outside',
   move: 'outside',
   event: 'outside',
   lives: 'outside',
+  panel: 'outside',
 })
 
 export function initialOnce(preset: OnceVsAlwaysPreset | undefined): SceneOnce {
@@ -43,7 +52,7 @@ export function initialOnce(preset: OnceVsAlwaysPreset | undefined): SceneOnce {
     placedAtFrame: zeroCards(),
     firedAtPlacement: zeroCards(),
     fires: zeroCards(),
-    heroCount: prepared.id === 'uma-ficha-vidas' ? 1 : 0,
+    heroCount: prepared.id === 'uma-ficha-vidas' || prepared.id === 'duas-caixas-nave' ? 1 : 0,
     heroX: 44,
     background: false,
     shots: 0,
@@ -99,6 +108,8 @@ function fire(state: SceneOnce, card: OnceCard): void {
     case 'lives':
       state.hearts = 3
       break
+    case 'panel':
+      break
   }
 }
 
@@ -116,8 +127,9 @@ export function advanceOnce(state: SceneOnce, preset: OnceVsAlwaysPreset): void 
 }
 
 export function triggerOnce(state: SceneOnce, preset: OnceVsAlwaysPreset): boolean {
-  const card = preset.cards.find((item) => item.id === 'event')
-  if (!card || state.placement.event !== 'event') return false
+  const eventCardId = onceGoalCards(preset).event
+  const card = eventCardId ? preset.cards.find((item) => item.id === eventCardId) : undefined
+  if (!card || state.placement[card.id] !== 'event') return false
   fire(state, card)
   return true
 }
@@ -136,46 +148,62 @@ export function onceDiscoveries(state: SceneOnce, preset: OnceVsAlwaysPreset): s
       found.push('once')
     return found
   }
+  const cards = onceGoalCards(preset)
+  const once = cards.once
+  const always = cards.always
+  const both = cards.both
+  const event = cards.event
   if (
-    state.placement.paint === 'start' &&
-    state.placedAtFrame.paint === 0 &&
+    once !== undefined &&
+    state.placement[once] === 'start' &&
+    state.placedAtFrame[once] === 0 &&
     state.frames >= 3 &&
-    state.fires.paint - state.firedAtPlacement.paint === 1
+    state.fires[once] - state.firedAtPlacement[once] === 1
   )
     found.push('once')
   if (
-    state.placement.move === 'loop' &&
-    state.frames - state.placedAtFrame.move >= 3 &&
-    state.fires.move - state.firedAtPlacement.move >= 3
+    always !== undefined &&
+    state.placement[always] === 'loop' &&
+    state.frames - state.placedAtFrame[always] >= 3 &&
+    state.fires[always] - state.firedAtPlacement[always] >= 3
   )
     found.push('always')
   if (
-    state.placement.create === 'start' &&
-    state.placement.move === 'loop' &&
-    state.placedAtFrame.create === 0 &&
-    state.placedAtFrame.move === 0 &&
+    both !== undefined &&
+    state.placement[both.start] === 'start' &&
+    state.placement[both.loop] === 'loop' &&
+    state.placedAtFrame[both.start] === 0 &&
+    state.placedAtFrame[both.loop] === 0 &&
     state.frames >= 5 &&
-    state.fires.create - state.firedAtPlacement.create === 1 &&
-    state.fires.move - state.firedAtPlacement.move >= 5 &&
-    state.heroCount === 1
+    state.fires[both.start] - state.firedAtPlacement[both.start] === 1 &&
+    state.fires[both.loop] - state.firedAtPlacement[both.loop] >= 5
   )
     found.push('both')
   if (
-    state.placement.event === 'event' &&
-    state.frames - state.placedAtFrame.event >= 3 &&
-    state.fires.event === state.firedAtPlacement.event
+    event !== undefined &&
+    state.placement[event] === 'event' &&
+    state.frames - state.placedAtFrame[event] >= 3 &&
+    state.fires[event] === state.firedAtPlacement[event]
   )
     found.push('on-event')
-  if (state.placement.event === 'event' && state.fires.event > state.firedAtPlacement.event)
+  if (
+    event !== undefined &&
+    state.placement[event] === 'event' &&
+    state.fires[event] > state.firedAtPlacement[event]
+  )
     found.push('key-fires')
-  if (state.placement.event === 'loop' && state.fires.event - state.firedAtPlacement.event >= 5)
+  if (
+    event !== undefined &&
+    state.placement[event] === 'loop' &&
+    state.fires[event] - state.firedAtPlacement[event] >= 5
+  )
     found.push('flood')
   return found
 }
 
 const nonnegativeInt = (value: unknown) =>
   typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
-const cardIds: OnceCardId[] = ['paint', 'create', 'move', 'event', 'lives']
+const cardIds: OnceCardId[] = ['paint', 'create', 'move', 'event', 'lives', 'panel']
 const areas: OncePlacement[] = ['outside', 'start', 'loop', 'event']
 
 export function isSceneOnce(value: unknown): value is SceneOnce {
@@ -192,7 +220,8 @@ export function isSceneOnce(value: unknown): value is SceneOnce {
       return typeof area === 'string' && areas.some((known) => known === area)
     })
   )
-    if (!cardIds.every((id) => nonnegativeInt(placedAtFrame[id]))) return false
+    return false
+  if (!cardIds.every((id) => nonnegativeInt(placedAtFrame[id]))) return false
   if (!cardIds.every((id) => nonnegativeInt(firedAtPlacement[id]))) return false
   if (!cardIds.every((id) => nonnegativeInt(fires[id]))) return false
   return (

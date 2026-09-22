@@ -357,7 +357,7 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
   'once-vs-always': {
     readouts: [
       {
-        label: 'quadro',
+        label: 'passo',
         value: '0',
         tone: 'plain',
       },
@@ -367,12 +367,12 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
         tone: 'a',
       },
       {
-        label: 'ações disparadas',
+        label: 'ações feitas',
         value: '0',
         tone: 'b',
       },
     ],
-    situations: ['Quadro 0: 0 personagens, 0 tiros e 0 vidas.'],
+    situations: ['Passo 0: 0 personagens, 0 tiros e 0 vidas.'],
   },
   'collision-pair': {
     readouts: [

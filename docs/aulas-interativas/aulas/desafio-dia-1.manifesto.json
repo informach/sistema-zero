@@ -116,7 +116,7 @@
     },
     {
       "key": "video-duas-areas",
-      "plannedVideo": "Título: O ventilador que não para\n\nMostrar as duas áreas do projeto vazias, lado a lado. Nenhum gesto de montagem neste clipe: a tela fica nas duas caixas enquanto a comparação é falada.\n\nFala: \"Tudo o que estiver dentro dela fica se repetindo sem parar, enquanto o jogo estiver ligado. Pensa num ventilador: enquanto está ligado, ele gira, gira, gira, sem parar.\"\n\nDuração alvo: 40 a 50 segundos.\n\nOrigem: video-areas, a parte conceitual. A fala se aproveita. Cortar a enumeração antiga de passos e a chamada para a parte seguinte. A tela é nova."
+      "plannedVideo": "Título: Uma arruma, a outra é o motor\n\nMostrar as duas áreas do projeto vazias, lado a lado. Nenhum gesto de montagem neste clipe: a tela fica nas duas caixas enquanto a comparação é falada.\n\nPrimeiro, aproximar no Ao iniciar e explicar: \"Tudo o que estiver aqui acontece uma vez só, no comecinho, quando o jogo liga. É como preparar o papel e os lápis antes de desenhar.\"\n\nDepois, aproximar no Enquanto estiver rodando e explicar: \"Tudo o que estiver aqui continua acontecendo enquanto o jogo funciona. Pensa num ventilador: enquanto está ligado, ele gira, gira, gira.\"\n\nFechar com as duas áreas lado a lado: \"Uma arruma o jogo. A outra é o motor.\"\n\nDuração alvo: 40 a 50 segundos.\n\nOrigem: video-areas, a parte conceitual. Aproveitar a analogia do ventilador, mas regravar a comparação inteira para dar o mesmo peso às duas áreas. Cortar a enumeração antiga de passos e a chamada para a parte seguinte."
     },
     {
       "key": "fala-uma-vez-e-sempre",
@@ -132,8 +132,9 @@
         "kind": "interactive",
         "required": true,
         "title": "Uma vez e sempre",
-        "instructions": "Arraste as fichas para dentro das caixas e aperte Avançar 1 quadro. Olhe o contador de cada ficha e conte quantas vezes ela aconteceu.",
+        "instructions": "Coloque Acender o painel em Ao iniciar e Mover a nave em Enquanto estiver rodando. Avance cinco passos e compare os contadores. Para testar outro lugar, use Voltar ao começo primeiro.",
         "hints": [],
+        "semPerguntaFinal": true,
         "activity": {
           "type": "experimentation",
           "scene": "once-vs-always",
@@ -141,6 +142,10 @@
             "hero": {
               "name": "nave",
               "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
             }
           },
           "cenario": "nave",
@@ -150,14 +155,9 @@
               "areas": ["start", "loop"],
               "cards": [
                 {
-                  "id": "paint",
-                  "kind": "paint",
-                  "label": "Pintar o fundo"
-                },
-                {
-                  "id": "create",
-                  "kind": "create",
-                  "label": "Criar a nave"
+                  "id": "panel",
+                  "kind": "panel",
+                  "label": "Acender o painel da nave"
                 },
                 {
                   "id": "move",
@@ -167,21 +167,6 @@
               ]
             }
           }
-        },
-        "checkpoint": {
-          "prompt": "Você quer que a nave seja criada só no começo e se mexa o tempo todo. Onde vai cada ação?",
-          "choices": [
-            {
-              "id": "b",
-              "label": "As duas em Enquanto estiver rodando."
-            },
-            {
-              "id": "a",
-              "label": "Criar em Ao iniciar, mover em Enquanto estiver rodando."
-            }
-          ],
-          "correctChoiceId": "a",
-          "explanation": "Ao iniciar é a arrumação: acontece uma vez, no começo. Enquanto estiver rodando é o motor: acontece de novo a cada quadro, sem parar."
         }
       }
     },
@@ -195,7 +180,7 @@
     },
     {
       "key": "video-montar-areas-tela",
-      "plannedVideo": "Título: As áreas do projeto e a tela do jogo\n\nMostrar o gesto das três peças de uma vez: arrastar Ao iniciar e Enquanto estiver rodando para as Áreas do projeto, com um espaço entre os dois, e encaixar Preparar o jogo em tela cheia dentro de Ao iniciar. Aproximar nos campos de largura e altura no momento de digitar.\n\nFala: \"Pega Ao iniciar e solta aqui. Agora Enquanto estiver rodando, com um espacinho entre os dois. Dentro do Ao iniciar entra o Preparar o jogo em tela cheia, que está em Jogo 2D, Jogo e telas. Largura 800, altura 480, e um fundo escuro, para enxergar a nave e as estrelas.\"\n\nDuração alvo: 50 a 60 segundos.\n\nOrigem: fusão de video-areas (o gesto) com video-tela. Dois clipes viram um. A tela é nova."
+      "plannedVideo": "Título: As áreas do projeto e a tela do jogo\n\nMostrar o gesto das três peças de uma vez: arrastar Ao iniciar e Enquanto estiver rodando para as Áreas do projeto, com um espaço entre os dois, e encaixar Preparar o jogo em tela cheia dentro de Ao iniciar.\n\nAproximar nos dois campos do bloco, que já chegam preenchidos. Não apagar nem redigitar. Apontar primeiro na horizontal da área do jogo e dizer: \"A largura já vem em 800: é a medida de um lado ao outro.\" Apontar de cima para baixo e dizer: \"A altura já vem em 480: é a medida de cima até embaixo. Hoje é só conferir os dois.\"\n\nEscolher um fundo escuro, para enxergar a nave e as estrelas.\n\nDuração alvo: 50 a 60 segundos.\n\nOrigem: fusão de video-areas (o gesto) com video-tela. Dois clipes viram um. A tela é nova."
     },
     {
       "key": "video-coordenadas",
@@ -571,7 +556,7 @@
       "key": "montar-areas-e-tela",
       "title": "Monte as áreas e prepare a tela",
       "intent": "application",
-      "objective": "Montar as duas áreas do projeto e preparar a tela de 800 por 480 em Ao iniciar.",
+      "objective": "Montar as duas áreas do projeto, conferir a tela padrão de 800 por 480 e escolher o fundo.",
       "blockKeys": ["video-montar-areas-tela", "fala-montar-areas-tela"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -600,7 +585,7 @@
           },
           {
             "id": "tela",
-            "label": "Prepare a tela de 800 × 480 em Ao iniciar.",
+            "label": "Deixe a tela de 800 × 480 em Ao iniciar.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",
@@ -884,7 +869,7 @@
         "projectChecks": [
           {
             "id": "tela",
-            "label": "Prepare a tela de 800 × 480 em Ao iniciar.",
+            "label": "Deixe a tela de 800 × 480 em Ao iniciar.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_setup_stage",

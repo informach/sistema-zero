@@ -421,7 +421,7 @@ const CENAS: Record<SceneId, Cena> = {
   'once-vs-always': {
     pedidos: {
       once: {
-        texto: 'Ponha a ficha de arrumação em Ao iniciar e avance três quadros.',
+        texto: 'Ponha a ficha de arrumação em Ao iniciar e avance três passos.',
         faz: (m) => {
           if (m.estado.once.frames) m.faz({ type: 'reset' })
           m.faz({ type: 'place-in-area', card: 'paint', area: 'start' })
@@ -429,7 +429,7 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       always: {
-        texto: 'Ponha a ficha de movimento em Enquanto estiver rodando e avance três quadros.',
+        texto: 'Ponha a ficha de movimento em Enquanto estiver rodando e avance três passos.',
         faz: (m) => {
           if (m.estado.once.frames) m.faz({ type: 'reset' })
           m.faz({ type: 'place-in-area', card: 'move', area: 'loop' })
@@ -438,7 +438,7 @@ const CENAS: Record<SceneId, Cena> = {
       },
       both: {
         texto:
-          'Deixe Criar em Ao iniciar e Mover em Enquanto estiver rodando; avance cinco quadros.',
+          'Deixe a preparação em Ao iniciar e o movimento em Enquanto estiver rodando; avance cinco passos.',
         faz: (m) => {
           if (m.estado.once.frames) m.faz({ type: 'reset' })
           m.faz({ type: 'place-in-area', card: 'create', area: 'start' })
@@ -448,7 +448,7 @@ const CENAS: Record<SceneId, Cena> = {
       },
       'on-event': {
         texto:
-          'Ponha a ficha do evento em Quando acontecer e avance três quadros sem apertar a tecla.',
+          'Ponha a ficha do evento em Quando acontecer e avance três passos sem apertar a tecla.',
         faz: (m) => {
           m.faz({ type: 'place-in-area', card: 'event', area: 'event' })
           m.tempo(1)
@@ -462,7 +462,7 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       flood: {
-        texto: 'Ponha Criar um tiro em Enquanto estiver rodando e avance cinco quadros.',
+        texto: 'Ponha Criar um tiro em Enquanto estiver rodando e avance cinco passos.',
         faz: (m) => {
           m.faz({ type: 'place-in-area', card: 'event', area: 'loop' })
           m.tempo(1.5)

@@ -98,7 +98,7 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Mover para a esquerda', value: { type: 'play-move', direction: -1 } },
   { label: 'Mover para a direita', value: { type: 'play-move', direction: 1 } },
   { label: 'Atirar no jogo', value: { type: 'play-shoot' } },
-  ...(['paint', 'create', 'move', 'event', 'lives'] as const).flatMap((card) =>
+  ...(['paint', 'create', 'move', 'event', 'lives', 'panel'] as const).flatMap((card) =>
     (['outside', 'start', 'loop', 'event'] as const).map((area) => ({
       label: `${card} → ${area === 'outside' ? 'Fora' : area === 'start' ? 'Ao iniciar' : area === 'loop' ? 'Enquanto estiver rodando' : 'Quando acontecer'}`,
       value: { type: 'place-in-area' as const, card, area },

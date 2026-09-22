@@ -55,7 +55,7 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
   // Os controles são ações reais e precisam atravessar a mesma borda tipada.
   const acoesDosControles: SceneAction[] = [
     { type: 'value-source', source: 'read' },
-    { type: 'place-in-area', card: 'paint', area: 'start' },
+    { type: 'place-in-area', card: 'panel', area: 'start' },
     { type: 'command-target', subject: 'shot', target: 'group' },
     { type: 'shield', frames: 15 },
     { type: 'step-value', value: -5 },

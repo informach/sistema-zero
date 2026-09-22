@@ -39,6 +39,7 @@ const SceneActionSchema = t.Union([
       t.Literal('move'),
       t.Literal('event'),
       t.Literal('lives'),
+      t.Literal('panel'),
     ]),
     area: t.Union([
       t.Literal('outside'),
@@ -417,6 +418,7 @@ const SceneSetupSchema = t.Object({
               t.Literal('move'),
               t.Literal('event'),
               t.Literal('lives'),
+              t.Literal('panel'),
             ]),
             kind: t.Union([
               t.Literal('paint'),
@@ -425,6 +427,7 @@ const SceneSetupSchema = t.Object({
               t.Literal('shot'),
               t.Literal('sound'),
               t.Literal('lives'),
+              t.Literal('panel'),
             ]),
             label: t.String({ minLength: 1, maxLength: 80 }),
           }),

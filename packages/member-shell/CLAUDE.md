@@ -1498,8 +1498,9 @@ acrescenta mais o modelo da cena automaticamente.
   palco, frase e bancada leem esse estado, e os comandos vão ao motor de verdade. ⚠️ Não mande `play off`
   nessas horas: derrubaria `paused-one` sem a criança ter parado nada.
 - **O botão de passo** manda `sceneStepSeconds(cena)` com o nome de `sceneStepLabel(cena)`: "Avançar 1 quadro"
-  onde o quadro é o assunto, "Um passo" (quadros inteiros de ~0,2 s) nas outras. ⚠️ Teste que procura o botão ou
-  conta cliques usa o nome e o passo DA CENA.
+  onde o quadro é o assunto, "Avançar 1 passo" na `once-vs-always` e "Um passo" (quadros inteiros de ~0,2 s)
+  nas outras. A `once-vs-always` não mostra ▶ nem "Mais devagar": a criança conduz e conta cada passo antes
+  de aprender a palavra quadro. ⚠️ Teste que procura o botão ou conta cliques usa o nome e o passo DA CENA.
 - **Quem tem relógio e salto é a régua de legalidade do core** (`isSceneAction` com `advance` e `jump`), nunca
   uma lista aqui: a lista à mão deu à `stage-size` um "Um passo" que não fazia nada.
 - **O ▶ para** pelo botão; por `sceneClockShouldStop(cena, antes, depois)` do core (o salto que pousa nas três
@@ -1817,6 +1818,7 @@ régua com perspectiva, porque cada palco inventava a própria ilusão e as quat
 
 | Cenas | Palco | Bancada |
 |---|---|---|
+| `once-vs-always` | `scene-once-vs-always.tsx` | `OnceVsAlwaysControls`, no mesmo arquivo |
 | `coordinates`, `stage-size`, `draw-loop`, `screen-reader` | `scene-stages.tsx` | `LessonSceneControls` |
 | `world` | `scene-world-stage.tsx` | `ExplorationPieces` |
 | `gravity`, `impulse`, `hitbox` | `experience-scene.tsx` (`ExperienceScene`, o laboratório) | `DinoSceneControls`; a `hitbox` em `DinoNumbersControls` |
@@ -1839,6 +1841,11 @@ Testes por família em `tests/` (`scene-dino-numbers`, `scene-nucleo`, `conserto
 `lesson-scene-nucleo` e `lesson-scene-motor-3d`.
 
 **Armadilhas por cena** (o motor de cada uma está no CLAUDE.md do core):
+- `once-vs-always`: no cenário de nave há céu estrelado e não há chão. Os manifestos do Desafio declaram
+  nave **e** asteroide; não complete um elenco parcial dentro do palco, porque um papel inventado pode mudar
+  também o cenário derivado. O preset do piloto abre com a nave pronta e usa `panel` + `move`, sem fingir
+  que criar também desenha. Cada ficha aparece uma vez: clique seleciona e o botão contextual da área
+  coloca; arrastar é só um segundo caminho no computador.
 - `coordinates`: escala e máximo das `Medida`s vêm da tela DO CASO (`state.place`), com passo 40 na tela de 800 e
   20 na de 480; o endereço é a marca no CANTO DE CIMA da caixa do sprite e o "0, 0" fica na margem.
 - `stage-size`: escala FIXA sobre 800 × 480 (diminuir os números não pode crescer o desenho); a borda vem PRIMEIRO e

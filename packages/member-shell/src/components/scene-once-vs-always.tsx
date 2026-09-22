@@ -3,7 +3,9 @@
 import {
   actorFigure,
   castText,
+  cenarioTemChao,
   type OnceArea,
+  type OnceCardId,
   type OncePlacement,
   type OnceVsAlwaysPreset,
   oncePreset,
@@ -11,12 +13,12 @@ import {
   type SceneCast,
   type SceneState,
 } from '@sistemazero/core/learning/scene'
+import { useState } from 'react'
 import { SceneButton } from './exploration-stage'
 import { FundoDoCenario } from './scene-arte'
-import { Escolha } from './scene-bench'
 import { SceneCanvas, Texto } from './scene-canvas'
 import { useSceneCenario } from './scene-cenario-context'
-import { ActorFigure } from './scene-figures'
+import { ActorFigure, pisoDoMundo } from './scene-figures'
 
 const AREA_LABEL: Record<OnceArea, string> = {
   start: 'Ao iniciar',
@@ -53,28 +55,48 @@ export function OnceVsAlwaysStage({
   const obstacle = actorFigure(chosenCast, 'obstacle')
   const { frames, heroCount, heroX, background, shots, sounds, hearts, hits } = state.once
   const isLives = prepared.id === 'uma-ficha-vidas'
+  const temChao = cenarioTemChao(mundo)
+  const piso = pisoDoMundo(mundo, 248)
+  const temFichaDeFundo = prepared.cards.some((card) => card.kind === 'paint')
+  const painelAceso = state.once.fires.panel > 0
   return (
     <SceneCanvas
       cast={chosenCast}
       mundo={mundo}
       titulo="O jogo reagindo às fichas do projeto"
-      descricao={`Quadro ${frames}. ${heroCount} personagens, ${shots} tiros, ${sounds} sons, ${hearts} vidas e ${hits} batidas.`}
+      descricao={`Passo ${frames}. ${heroCount} personagens, ${shots} tiros, ${sounds} sons, ${hearts} vidas e ${hits} batidas.`}
     >
       {(palco) => (
         <>
-          <FundoDoCenario cenario={mundo} w={560} h={300} chao={248} detalhe="calmo" />
-          {!background && <rect x={0} y={0} width={560} height={300} className="fill-scene-card" />}
-          <path d="M0 248H560" className="stroke-scene-line" strokeWidth={2} />
+          <FundoDoCenario
+            cenario={mundo}
+            w={560}
+            h={300}
+            chao={temChao ? 248 : undefined}
+            detalhe="calmo"
+          />
+          {temFichaDeFundo && !background && (
+            <rect x={0} y={0} width={560} height={300} className="fill-scene-card" />
+          )}
+          {temChao && <path d="M0 248H560" className="stroke-scene-line" strokeWidth={2} />}
           <Texto x={24} y={35} tamanho={15} className="fill-scene-ink" fontWeight="700">
-            {`Quadro ${frames}`}
+            {`Passo ${frames}`}
           </Texto>
           {HERO_SLOTS.slice(0, heroCount).map((slot, index) => (
-            <ActorFigure key={slot} figure={hero} x={Math.min(490, heroX + index * 76)} y={248} />
+            <ActorFigure key={slot} figure={hero} x={Math.min(490, heroX + index * 76)} y={piso} />
           ))}
+          {painelAceso && (
+            <>
+              <circle cx={heroX} cy={piso - 31} r={6} className="fill-scene-b" />
+              <Texto x={24} y={67} tamanho={14} className="fill-scene-b-ink" fontWeight="700">
+                Painel aceso
+              </Texto>
+            </>
+          )}
           <ActorFigure
             figure={obstacle}
             x={isLives ? (frames > 0 && frames % 3 === 0 ? 95 : 315 - (frames % 3) * 75) : 465}
-            y={248}
+            y={piso}
           />
           {shots > 0 && (
             <>
@@ -127,11 +149,18 @@ export function OnceVsAlwaysControls({
   dispatch: (action: SceneAction) => void
 }) {
   const prepared = oncePreset(preset)
+  const [selectedId, setSelectedId] = useState<OnceCardId | null>(null)
+  const selected = prepared.cards.find((card) => card.id === selectedId) ?? null
+  const place = (area: OncePlacement) => {
+    if (!selected) return
+    dispatch({ type: 'place-in-area', card: selected.id, area })
+    setSelectedId(null)
+  }
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
-        Arraste as fichas entre as áreas ou escolha a área pelos botões. Depois avance quadros para
-        ver o que acontece.
+        Escolha uma ficha e depois a área onde quer colocá-la. No computador, você também pode
+        arrastar. Depois avance os passos e compare os contadores.
       </p>
       <div className="grid gap-2 sm:grid-cols-3">
         {(['outside', ...prepared.areas] as OncePlacement[]).map((area) => (
@@ -144,43 +173,52 @@ export function OnceVsAlwaysControls({
               const card = prepared.cards.find(
                 (item) => item.id === event.dataTransfer.getData('text/plain'),
               )
-              if (card) dispatch({ type: 'place-in-area', card: card.id, area })
+              if (card) {
+                dispatch({ type: 'place-in-area', card: card.id, area })
+                setSelectedId(null)
+              }
             }}
           >
-            <p className="mb-2 text-sm font-semibold">
-              {area === 'outside' ? 'Fichas de fora' : AREA_LABEL[area]}
-            </p>
+            <div className="mb-2 flex min-h-11 flex-wrap items-center justify-between gap-2">
+              <p className="text-sm font-semibold">
+                {area === 'outside' ? 'Fichas disponíveis' : AREA_LABEL[area]}
+              </p>
+              {selected && state.once.placement[selected.id] !== area && (
+                <SceneButton
+                  className="px-2"
+                  aria-label={`${area === 'outside' ? 'Devolver para Fichas disponíveis' : `Colocar em ${AREA_LABEL[area]}`}: ${castText(selected.label, cast)}`}
+                  onClick={() => place(area)}
+                >
+                  {area === 'outside' ? 'Devolver aqui' : 'Colocar aqui'}
+                </SceneButton>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2">
               {prepared.cards
                 .filter((card) => state.once.placement[card.id] === area)
                 .map((card) => (
-                  <span
+                  <SceneButton
                     key={card.id}
                     draggable
                     onDragStart={(event) => event.dataTransfer.setData('text/plain', card.id)}
-                    className="cursor-grab rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-sm font-semibold text-primary active:cursor-grabbing"
+                    aria-pressed={selected?.id === card.id}
+                    tom={selected?.id === card.id ? 'ligado' : 'ferramenta'}
+                    className="cursor-grab active:cursor-grabbing"
+                    onClick={() => setSelectedId(selected?.id === card.id ? null : card.id)}
                   >
-                    {castText(card.label, cast)} · {state.once.fires[card.id]}
-                  </span>
+                    {castText(card.label, cast)} · {state.once.fires[card.id]}{' '}
+                    {state.once.fires[card.id] === 1 ? 'vez' : 'vezes'}
+                  </SceneButton>
                 ))}
             </div>
           </div>
         ))}
       </div>
-      <div className="grid gap-3">
-        {prepared.cards.map((card) => (
-          <Escolha<OncePlacement>
-            key={card.id}
-            label={`${castText(card.label, cast)} · disparou ${state.once.fires[card.id]} ${state.once.fires[card.id] === 1 ? 'vez' : 'vezes'}`}
-            valor={state.once.placement[card.id]}
-            opcoes={[
-              { id: 'outside', label: 'Fora' },
-              ...prepared.areas.map((area) => ({ id: area, label: AREA_LABEL[area] })),
-            ]}
-            onChange={(area) => dispatch({ type: 'place-in-area', card: card.id, area })}
-          />
-        ))}
-      </div>
+      {selected && (
+        <p role="status" className="text-sm font-medium text-primary">
+          {castText(selected.label, cast)} escolhida. Agora escolha uma área.
+        </p>
+      )}
       {prepared.areas.includes('event') && (
         <div className="flex flex-wrap items-center gap-3">
           <SceneButton

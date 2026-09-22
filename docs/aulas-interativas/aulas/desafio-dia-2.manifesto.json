@@ -255,11 +255,11 @@
         "kind": "interactive",
         "required": true,
         "title": "Uma vez, sempre, e na hora que acontecer",
-        "instructions": "Arraste as fichas para dentro das três caixas e aperte Avançar 1 quadro. Use o botão Apertar a tecla e olhe o contador de cada ficha.",
+        "instructions": "Arraste as fichas para dentro das três caixas e aperte Avançar 1 passo. Use o botão Apertar a tecla e olhe o contador de cada ficha.",
         "hints": [
-          "Ponha Criar um tiro em Quando acontecer e avance os quadros sem encostar na tecla.",
-          "Agora aperte a tecla e olhe o contador de quadros: em qual deles o tiro nasceu?",
-          "Arraste a mesma ficha para Enquanto estiver rodando e avance cinco quadros."
+          "Ponha Criar um tiro em Quando acontecer e avance os passos sem encostar na tecla.",
+          "Agora aperte a tecla e olhe o contador de passos: em qual deles o tiro nasceu?",
+          "Arraste a mesma ficha para Enquanto estiver rodando e avance cinco passos."
         ],
         "activity": {
           "type": "experimentation",
@@ -268,6 +268,10 @@
             "hero": {
               "name": "nave",
               "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
             }
           },
           "cenario": "nave",

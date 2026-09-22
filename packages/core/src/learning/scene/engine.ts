@@ -2067,7 +2067,7 @@ function umQuadro(s: SceneState, start: SceneStart, fps: number): void {
     const preset = oncePreset(start.setup?.preset)
     advanceOnce(s.once, preset)
     observarMetasDaArea(s, preset)
-    s.caption = `Quadro ${s.once.frames}: as fichas dispararam conforme a área em que estão.`
+    s.caption = `Passo ${s.once.frames}: as fichas agiram conforme a área em que estão.`
     return
   }
   // O núcleo do Iniciante 2D: cada uma dessas cenas mostra o que o TEMPO faz com o estado.
@@ -2103,12 +2103,12 @@ function umQuadro(s: SceneState, start: SceneStart, fps: number): void {
 }
 
 const OBSERVACOES_DAS_AREAS: Record<string, string> = {
-  once: 'A ficha em Ao iniciar disparou uma vez.',
-  always: 'A ficha no motor disparou a cada quadro.',
-  both: 'Uma ficha criou o personagem e a outra moveu o mesmo personagem.',
-  'on-event': 'A ficha esperou sem disparar durante três quadros.',
+  once: 'A ficha em Ao iniciar agiu uma vez.',
+  always: 'A ficha no motor agiu a cada passo.',
+  both: 'Uma ficha preparou o jogo e a outra continuou agindo.',
+  'on-event': 'A ficha esperou sem agir durante três passos.',
   'key-fires': 'A tecla disparou a ficha na hora.',
-  flood: 'A ficha no motor disparou em cada um dos cinco quadros.',
+  flood: 'A ficha no motor agiu em cada um dos cinco passos.',
 }
 
 function observarMetasDaArea(s: SceneState, preset: OnceVsAlwaysPreset): void {

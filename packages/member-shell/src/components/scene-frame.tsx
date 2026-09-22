@@ -8,6 +8,7 @@ import {
   type SceneId,
   type SceneReading,
   type SceneState,
+  sceneHasContinuousTimeControl,
   sceneLongFrame,
   sceneReadout,
   sceneStart,
@@ -223,8 +224,9 @@ function maisLongas(candidatos: readonly (readonly SceneReading[])[]): SceneRead
  *
  * ⚠️⚠️ O botão de passo avança QUADROS INTEIROS da cena (lote 4 do Raio-X): o tempo e o nome vêm do
  * core (`sceneStepSeconds`, `sceneStepLabel`). "Avançar 1 quadro" anda UM quadro onde o quadro é o
- * assunto; "Um passo" anda os quadros inteiros de ~0,2 s (review do lote 4: um quadro de 1/30 s era um
- * tique invisível, e o pulo pedia 30 cliques). Era 0,2 s em toda cena, e o motor contava UM quadro
+ * assunto; `once-vs-always` diz "Avançar 1 passo" para não antecipar o termo; "Um passo" anda os
+ * quadros inteiros de ~0,2 s (review do lote 4: um quadro de 1/30 s era um tique invisível, e o pulo
+ * pedia 30 cliques). Era 0,2 s em toda cena, e o motor contava UM quadro
  * por clique qualquer que fosse o tempo: o mesmo gesto dava números diferentes no ▶ e no passo.
  */
 export function botoesDoMundo({
@@ -259,6 +261,7 @@ export function botoesDoMundo({
   // para a mesma coisa, e com a prévia parada não mudavam nada na tela.
   const relogio =
     !semRelogio && scene !== 'frames' && isSceneAction({ type: 'advance', seconds: 0.2 }, scene)
+  const tempoContinuo = relogio && sceneHasContinuousTimeControl(scene)
   const tempoDoPasso = sceneStepSeconds(scene)
   const nomeDoPasso = sceneStepLabel(scene)
   return [
@@ -304,7 +307,7 @@ export function botoesDoMundo({
         <span aria-hidden>⌨</span> Apertar Espaço
       </SceneButton>
     ),
-    relogio && (
+    tempoContinuo && (
       <SceneButton
         key="tocar"
         // ⚠️ `min-w-11`: só com ícone ele media 42 × 44, abaixo dos 44px da casa (lote 2).
@@ -330,7 +333,7 @@ export function botoesDoMundo({
         {nomeDoPasso}
       </SceneButton>
     ),
-    relogio && (
+    tempoContinuo && (
       <SceneButton key="devagar" aria-pressed={lento} onClick={onLento}>
         <span aria-hidden>🐢</span> Mais devagar
       </SceneButton>

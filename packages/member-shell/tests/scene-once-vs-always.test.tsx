@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 import { ONCE_VS_ALWAYS_PRESETS, openScene, stepScene } from '@sistemazero/core/learning/scene'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { botoesDoMundo } from '../src/components/scene-frame'
 import { OnceVsAlwaysControls, OnceVsAlwaysStage } from '../src/components/scene-once-vs-always'
 
 describe('uma vez, sempre e na hora no palco', () => {
   test.each([
-    ['duas-caixas-nave', 'nave'],
     ['duas-caixas-dino', 'dino'],
-  ] as const)('%s desenha o personagem do curso', (id, figure) => {
+  ] as const)('%s desenha o personagem do curso depois da criação', (id, figure) => {
     const preset = ONCE_VS_ALWAYS_PRESETS[id]
     const start = { scene: 'once-vs-always' as const, setup: { preset } }
     let state = openScene(start)
@@ -15,6 +15,54 @@ describe('uma vez, sempre e na hora no palco', () => {
     state = stepScene(start, state, { type: 'advance', seconds: 0.25 })
     const html = renderToStaticMarkup(<OnceVsAlwaysStage state={state} preset={preset} />)
     expect(html).toContain(`data-figure="${figure}"`)
+  })
+
+  test('o piloto abre no espaço com nave e asteroide, sem cacto nem chão', () => {
+    const preset = ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave']
+    const start = { scene: 'once-vs-always' as const, setup: { preset } }
+    const cast = {
+      hero: { name: 'nave', gender: 'f' as const },
+      obstacle: { name: 'asteroide', gender: 'm' as const },
+    }
+    let state = openScene(start)
+    let html = renderToStaticMarkup(<OnceVsAlwaysStage state={state} cast={cast} preset={preset} />)
+    expect(html).toContain('data-fundo="nave"')
+    expect(html).toContain('data-figure="nave"')
+    expect(html).toContain('data-figure="asteroide"')
+    expect(html).not.toContain('data-figure="cacto"')
+    expect(html).not.toContain('M0 248H560')
+
+    state = stepScene(start, state, { type: 'place-in-area', card: 'panel', area: 'start' })
+    state = stepScene(start, state, { type: 'advance', seconds: 0.25 })
+    html = renderToStaticMarkup(<OnceVsAlwaysStage state={state} cast={cast} preset={preset} />)
+    expect(html).toContain('Painel aceso')
+  })
+
+  test('a bancada não repete uma segunda grade de controles', () => {
+    const preset = ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave']
+    const state = openScene({ scene: 'once-vs-always', setup: { preset } })
+    const html = renderToStaticMarkup(
+      <OnceVsAlwaysControls state={state} preset={preset} dispatch={() => {}} />,
+    )
+    expect((html.match(/Acender o painel da nave/g) ?? []).length).toBe(1)
+    expect((html.match(/Mover a nave um pouquinho/g) ?? []).length).toBe(1)
+    expect(html).toContain('Escolha uma ficha')
+  })
+
+  test('a cena oferece um passo manual, sem tempo contínuo nem velocidade', () => {
+    const html = renderToStaticMarkup(
+      botoesDoMundo({
+        scene: 'once-vs-always',
+        tocando: false,
+        lento: false,
+        onTocar: () => {},
+        onLento: () => {},
+        dispatch: () => {},
+      }),
+    )
+    expect(html).toContain('Avançar 1 passo')
+    expect(html).not.toContain('Tempo')
+    expect(html).not.toContain('Mais devagar')
   })
 
   test('o caso da tecla mostra a terceira área e mantém um caminho de teclado', () => {
@@ -25,6 +73,6 @@ describe('uma vez, sempre e na hora no palco', () => {
     )
     expect(html).toContain('Quando acontecer')
     expect(html).toContain('Apertar a tecla')
-    expect((html.match(/<button\b/g) ?? []).length).toBeGreaterThan(12)
+    expect((html.match(/<button\b/g) ?? []).length).toBeGreaterThanOrEqual(5)
   })
 })

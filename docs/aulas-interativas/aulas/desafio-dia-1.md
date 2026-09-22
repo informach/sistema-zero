@@ -24,7 +24,7 @@
 | O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |
 |---|---|---|---|---|---|
 | Uma vez contra sempre (as duas áreas do projeto) | Sim. Tempo é invisível, e "roda uma vez" contra "repete para sempre" não tem representação na tela | **Sim** | Experimentação (cena nova `once-vs-always`) | Antes de montar | É a ideia que sustenta o dia inteiro e todos os 48 cursos. Hoje é só um gesto de arrastar dois blocos |
-| Tamanho da tela (800 × 480) | Não. É um retângulo que ela vê | Não | | | A tela aparece com o tamanho que ela escreveu. O próprio Estúdio já concretiza |
+| Tamanho da tela (800 × 480) | Não. É um retângulo que ela vê | Não | | Dentro do vídeo prático | O bloco já traz os dois valores. O vídeo aponta que 800 mede de um lado ao outro e 480 de cima até embaixo; a criança confere em vez de redigitar |
 | x e y, e o zero lá no alto | Sim, e contraria a intuição: y cresce para baixo | **Sim** | Experimentação (`coordinates`) | Depois da explicação, antes de montar | Ela vai preencher x e y no bloco seguinte. Se não sentir a direção antes, escreve número sem significado |
 | A palavra sprite | Não. É vocabulário | Não | | Dito na hora do bloco | Nomear uma coisa que já está na tela não precisa de simulação |
 | Criar contra mostrar | Sim. Invisível por definição: o objeto existe sem aparecer | **Sim** | Experimentação (`world`) | Antes de montar o desenho | É o momento em que a nave "não apareceu" e a criança acha que errou. O conceito resolve a frustração |
@@ -96,14 +96,19 @@ campo e clicar na área do jogo. Isso é instrução dentro do teste, não seç�
   os cursos. Hoje ela é montada sem ser ensinada.
 - **Conclui quando:** 90% do vídeo foi assistido e a experiência foi concluída
 - **Blocos:**
-  1. `video` (`video-duas-areas`, "O ventilador que não para"). A analogia do ventilador, já gravada
-     e boa. Duração alvo: 40 a 50 segundos.
+  1. `video` (`video-duas-areas`, "Uma arruma, a outra é o motor"). Apresenta as duas áreas com o
+     mesmo peso: preparar uma vez e repetir enquanto o jogo funciona. Mantém a analogia do
+     ventilador para a segunda. Duração alvo: 40 a 50 segundos.
   2. `dialogue` (`fala-uma-vez-e-sempre`). Convite curto para observar uma vez contra repetição.
   3. `interactive`. Cena `once-vs-always`, preset `duas-caixas-nave` (especificada abaixo). Elenco:
-     nave. Cenário: nave. Metas cobradas: `once`, `always`, `both`.
+     nave e asteroide. Cenário: nave. Metas cobradas: `once`, `always`, `both`.
 
 **Sem palpite.** A experiência concretiza uma relação que o vídeo acabou de explicar; uma hipótese
 antes dela acrescentaria uma etapa sem enfrentar uma concepção relevante.
+
+**Sem pergunta final.** As três descobertas já exigem a organização certa e a comparação dos
+contadores. Repetir a mesma organização numa pergunta aumentaria o percurso; a avaliação fica no
+quiz dedicado da seção 12.
 
 ### Seção 3. Monte as áreas e prepare a tela
 
@@ -111,10 +116,11 @@ antes dela acrescentaria uma etapa sem enfrentar uma concepção relevante.
 - **Por que existe:** é o gesto que dá corpo ao conceito da seção anterior, e arrastar duas áreas e
   preparar a tela é um movimento só, o de montar o palco.
 - **Conclui quando:** 90% do vídeo foi assistido, Ao iniciar e Enquanto estiver rodando estão no
-  projeto, e a tela está preparada em 800 por 480 dentro de Ao iniciar
+  projeto, e a tela padrão de 800 por 480 está conferida dentro de Ao iniciar
 - **Blocos:**
   1. `video` (`video-montar-areas-tela`, "As áreas do projeto e a tela do jogo"). O gesto das três
-     peças de uma vez. Junta os dois clipes de hoje. Duração alvo: 50 a 60 segundos.
+     peças de uma vez. Os campos já vêm em 800 × 480: o clipe explica largura e altura, sem mandar
+     redigitar os padrões. Junta os dois clipes de hoje. Duração alvo: 50 a 60 segundos.
   2. `dialogue` (`fala-montar-areas-tela`). Resume que a base foi mostrada e diz "Agora é sua vez
      de montar", sem repetir blocos ou valores.
   3. `studio`. Conferência das duas áreas e da tela.
@@ -307,43 +313,34 @@ e não a demonstração gravada, que fecha a conquista.
 ### 1. `once-vs-always` · Uma vez e sempre · **JÁ CONSTRUÍDA, PRESET `duas-caixas-nave`**
 
 - **Conceito:** o que está em Ao iniciar acontece uma vez, no começo. O que está em Enquanto estiver
-  rodando acontece de novo a cada quadro, sem parar.
+  rodando continua acontecendo enquanto o jogo funciona.
 - **Tipo:** experimentação. A relação tem botão, porque a criança escolhe **onde** colocar a ação, e
   o "onde" é a variável.
-- **O que a criança manipula:** três fichas de ação (Pintar o fundo, Criar a nave, Mover a nave um
-  pouquinho) que ela arrasta para uma de duas caixas: **Ao iniciar** e **Enquanto estiver rodando**.
-  Mais o botão **Avançar 1 quadro** e um botão **Voltar ao começo**.
-- **Como o palco começa:** as duas caixas vazias, as três fichas de lado, o contador de quadros em
-  0, e a tela do jogo vazia.
+- **O que a criança manipula:** duas fichas de ação (Acender o painel da nave e Mover a nave um
+  pouquinho), que ela seleciona e coloca em **Ao iniciar** ou **Enquanto estiver rodando**. No
+  computador, também pode arrastar. Mais os botões **Avançar 1 passo** e **Voltar ao começo**.
+- **Como o palco começa:** as duas caixas vazias, as duas fichas de lado, o passo em 0 e a nave já
+  presente no céu estrelado, diante de um asteroide. A nave pertence ao simulador; nenhuma ficha
+  afirma que criar também desenha.
 - **Metas:**
   | id | rótulo ao cair | pedido na faixa |
   |---|---|---|
-  | `once` | "Em Ao iniciar, a ação aconteceu uma vez só" | "Ponha Pintar o fundo em Ao iniciar e avance três quadros." |
-  | `always` | "Em Enquanto estiver rodando, a ação se repete a cada quadro" | "Ponha Mover a nave em Enquanto estiver rodando e avance três quadros." |
-  | `both` | "Preparar uma vez e repetir sempre, juntos" | "Deixe Criar a nave em Ao iniciar e Mover a nave em Enquanto estiver rodando, e avance cinco quadros." |
+  | `once` | "Em Ao iniciar, a ação aconteceu uma vez só" | "Ponha a ficha de arrumação em Ao iniciar e avance três passos." |
+  | `always` | "Em Enquanto estiver rodando, a ação se repete a cada passo" | "Ponha a ficha de movimento em Enquanto estiver rodando e avance três passos." |
+  | `both` | "Preparar uma vez e repetir sempre, juntos" | "Deixe a preparação em Ao iniciar e o movimento em Enquanto estiver rodando; avance cinco passos." |
 - **Pistas:**
-  1. "Olhe o contador de quadros e conte quantas vezes cada ação disparou."
-  2. "Ponha uma ação em Ao iniciar e avance mais de um quadro. Ela dispara de novo?"
+  1. "Olhe o número do passo e conte quantas vezes cada ação aconteceu."
+  2. "Ponha uma ação em Ao iniciar e avance mais de um passo. Ela acontece de novo?"
   3. "Agora arraste a mesma ação para Enquanto estiver rodando e avance de novo."
-- **Palpite antes de abrir:** "Se você põe Mover a nave em Ao iniciar, o que acontece quando o jogo
-  roda?"
-  - Ela se mexe uma vez e para ✓
-  - Ela se mexe sem parar
-- **Pergunta depois de descobrir:** "Você quer que a nave seja criada só no começo e se mexa o tempo
-  todo. Onde vai cada ação?"
-  - Criar em Ao iniciar, mover em Enquanto estiver rodando ✓
-  - As duas em Enquanto estiver rodando
-- **Explicação ao acertar:** "Ao iniciar é a arrumação: acontece uma vez, no começo. Enquanto
-  estiver rodando é o motor: acontece de novo a cada quadro, sem parar."
+- **Sem palpite e sem pergunta final:** a criança passa direto do vídeo para a manipulação e conclui
+  ao comprovar as três metas. O quiz da seção 12 avalia o conceito sem repetir a tarefa.
 - **Frase de sucesso:** "Você achou a diferença: arrumar é uma vez, o motor é sempre."
 - **Onde mais serve:** é a primeira seção de conceito de todo curso base de nível novo da grade dos
   48. As análises de curso fixaram os usos: Corre, Dino! Aula 2, Corre, Dino! Aula 4, Desafio Dia 2
   e Desafio Dia 4. É a cena com maior reuso do catálogo.
-- **Estado em 19/09/2026:** a cena **já foi construída**, com suporte a preset. O manifesto desta
-  aula usa o preset `duas-caixas-nave`, que é o de duas caixas e três fichas, e cobra as três metas.
-  A divergência entre "duas metas" e "três metas" está resolvida em `cenas/CENAS-NOVAS.md`, e ficam
-  as três: `both` é a que desmonta o engano de que desenhar a cada quadro estaria criando um objeto
-  novo a cada quadro, que é o que o quiz deste dia cobra.
+- **Estado em 22/09/2026:** a cena usa o preset `duas-caixas-nave`, com duas caixas, duas fichas e
+  três metas. O preset declara quais fichas comprovam cada meta; o piloto não depende dos ids
+  históricos `paint` e `create`.
 
 ### 2. `coordinates` · O endereço na tela · **EXISTE E JÁ AJUSTADA**
 
@@ -397,7 +394,7 @@ e não a demonstração gravada, que fecha a conquista.
 | Chave | Título do vídeo | O que mostra | Origem (chave v6) | Duração alvo | Reaproveita gravação? |
 |---|---|---|---|---|---|
 | `video-abertura` | A sua nave no espaço | o jogo do fim do dia rodando | `video-abertura-v6` | 25 a 35 s | fala sim, tela não (regravar no Estúdio atual) |
-| `video-duas-areas` | O ventilador que não para | a analogia do ventilador | `video-areas`, parte conceitual | 40 a 50 s | fala sim, tela não |
+| `video-duas-areas` | Uma arruma, a outra é o motor | as duas áreas e a analogia do ventilador | `video-areas`, parte conceitual | 40 a 50 s | fala parcial, tela não |
 | `video-montar-areas-tela` | As áreas do projeto e a tela do jogo | o gesto das três peças | `video-areas` (gesto) + `video-tela` | 50 a 60 s | funde dois clipes, tela regravada |
 | `video-coordenadas` | O endereço da nave na tela | o endereço, com a correção do 400 | `video-endereco` | 30 a 40 s | fala parcial, precisa da correção |
 | `video-criar-nave` | A nave com as suas cores | pegar, configurar e pintar a nave | `video-nave` | 45 a 55 s | fala sim, tela não |

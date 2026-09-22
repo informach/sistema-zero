@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { openScene, stepScene } from './engine'
 import { evaluateExperimentation } from './evaluate'
 import { type ExperimentationActivity, sceneTargets } from './index'
+import { initialOnce, isSceneOnce } from './once-vs-always'
 import { ONCE_VS_ALWAYS_PRESETS } from './presets'
 import type { SceneStart, SceneState } from './state'
 
@@ -13,7 +14,7 @@ function lab(
   targets: readonly string[]
   get: () => SceneState
   place: (
-    card: 'paint' | 'create' | 'move' | 'event' | 'lives',
+    card: 'paint' | 'create' | 'move' | 'event' | 'lives' | 'panel',
     area: 'start' | 'loop' | 'event',
   ) => void
   frames: (count: number) => void
@@ -44,19 +45,34 @@ function lab(
 }
 
 describe('uma vez, sempre e na hora', () => {
-  test.each([
-    'duas-caixas-nave',
-    'duas-caixas-dino',
-  ] as const)('%s: um disparo no início e um por quadro no motor', (id) => {
-    const c = lab(id, ['once', 'always', 'both'])
+  test('o piloto usa uma preparação visível sem ensinar que criar também desenha', () => {
+    const c = lab('duas-caixas-nave', ['once', 'always', 'both'])
+    expect(ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave'].cards).toEqual([
+      { id: 'panel', kind: 'panel', label: 'Acender o painel da nave' },
+      { id: 'move', kind: 'move', label: 'Mover a nave um pouquinho' },
+    ])
+    expect(c.get().once.heroCount).toBe(1)
     expect(c.get().evidence.discoveries).toEqual([])
+    c.place('panel', 'start')
+    c.place('move', 'loop')
+    c.frames(5)
+    expect(c.get().once.fires.panel).toBe(1)
+    expect(c.get().once.fires.move).toBe(5)
+    expect(c.get().evidence.discoveries).toContain('once')
+    expect(c.get().evidence.discoveries).toContain('always')
+    expect(c.get().evidence.discoveries).toContain('both')
+    expect(
+      evaluateExperimentation('once-vs-always', c.get(), true, undefined, c.targets).passed,
+    ).toBe(true)
+  })
+
+  test('o caso do Dino mantém as fichas próprias e um disparo por quadro no motor', () => {
+    const c = lab('duas-caixas-dino', ['once', 'always', 'both'])
     c.place('paint', 'start')
     c.place('move', 'loop')
     c.frames(3)
     expect(c.get().once.fires.paint).toBe(1)
     expect(c.get().once.fires.move).toBe(3)
-    expect(c.get().evidence.discoveries).toContain('once')
-    expect(c.get().evidence.discoveries).toContain('always')
     c.reset()
     c.place('create', 'start')
     c.place('move', 'loop')
@@ -120,20 +136,36 @@ describe('uma vez, sempre e na hora', () => {
 
   test('mudar a ficha depois de o jogo começar não inventa um começo que não houve', () => {
     const c = lab('duas-caixas-nave', ['once', 'both'])
-    c.place('paint', 'loop')
+    c.place('panel', 'loop')
     c.frames(1)
-    c.place('paint', 'start')
-    c.place('create', 'start')
+    c.place('panel', 'start')
     c.place('move', 'loop')
     c.frames(5)
     expect(c.get().evidence.discoveries).not.toContain('once')
     expect(c.get().evidence.discoveries).not.toContain('both')
     c.reset()
-    c.place('paint', 'start')
-    c.place('create', 'start')
+    c.place('panel', 'start')
     c.place('move', 'loop')
     c.frames(5)
     expect(c.get().evidence.discoveries).toContain('once')
     expect(c.get().evidence.discoveries).toContain('both')
+  })
+
+  test('o retrato recusa área desconhecida e números negativos', () => {
+    const valid = initialOnce(ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave'])
+    expect(isSceneOnce(valid)).toBe(true)
+    expect(
+      isSceneOnce({
+        ...valid,
+        placement: { ...valid.placement, panel: 'inventada' },
+      }),
+    ).toBe(false)
+    expect(isSceneOnce({ ...valid, frames: -1 })).toBe(false)
+    expect(
+      isSceneOnce({
+        ...valid,
+        placedAtFrame: { ...valid.placedAtFrame, panel: -1 },
+      }),
+    ).toBe(false)
   })
 })

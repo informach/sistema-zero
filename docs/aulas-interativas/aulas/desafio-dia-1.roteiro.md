@@ -83,7 +83,7 @@ setas.
 
 ## Seção 2. O que acontece uma vez e o que acontece sempre
 
-### Clipe `video-duas-areas` · O ventilador que não para
+### Clipe `video-duas-areas` · Uma arruma, a outra é o motor
 **Duração alvo:** 40 a 50 segundos · **Palavras:** 114
 
 **Na tela:** as duas áreas do projeto vazias, lado a lado, **Ao iniciar** e **Enquanto estiver
@@ -117,37 +117,35 @@ rodando**. Nenhum gesto de montagem neste clipe: a tela fica nas duas caixas o t
 ## Seção 3. Monte as áreas e prepare a tela
 
 ### Clipe `video-montar-areas-tela` · As áreas do projeto e a tela do jogo
-**Duração alvo:** 50 a 60 segundos · **Palavras:** 134
+**Duração alvo:** 50 a 60 segundos · **Palavras:** 130
 
 **Na tela:** a categoria **Áreas do projeto** aberta na coluna dos bloquinhos. Arrastar **Ao
 iniciar** para a área do meio e soltar.
 
 **Narração:**
-> "Na categoria **Áreas do projeto**, pega o bloco **Ao iniciar**. Clica, segura, arrasta para a área
-> do meio e solta."
+> "Na categoria **Áreas do projeto**, pega o bloco **Ao iniciar**. Arrasta para o meio e solta."
 
 **Na tela:** voltar à mesma categoria e arrastar **Enquanto estiver rodando**, soltando ao lado do
 Ao iniciar, com um espaço visível entre os dois.
 
 **Narração:**
-> "Na mesma categoria, **Áreas do projeto**, pega o **Enquanto estiver rodando** e solta ao lado do
-> Ao iniciar, com um espacinho."
+> "Na mesma categoria, pega **Enquanto estiver rodando** e solta ao lado, com um espacinho."
 
 **Na tela:** abrir a categoria **Jogo 2D**, a subcategoria **Jogo e telas**, e dentro dela a seção
 **Preparar a área do jogo**. Arrastar **Preparar o jogo em tela cheia** para dentro do Ao iniciar,
 com o clique de encaixe à vista.
 
 **Narração:**
-> "Agora, na categoria **Jogo 2D**, abre **Jogo e telas**, e dentro dela **Preparar a área do jogo**.
-> Pega o bloco **Preparar o jogo em tela cheia**. Encaixa dentro do **Ao iniciar**, que ainda está
-> vazio, no primeiro lugar."
+> "Agora abre **Jogo 2D**, **Jogo e telas** e **Preparar a área do jogo**. Pega **Preparar o jogo em
+> tela cheia** e encaixa no **Ao iniciar**."
 
-**Na tela:** aproximar nos campos de largura e altura do bloco. Digitar 800 na largura, clicar num
-espaço vazio fora do bloco, digitar 480 na altura, clicar fora de novo.
+**Na tela:** aproximar nos campos de largura e altura do bloco. Os campos já mostram 800 e 480.
+Não apagar nem redigitar. Marcar com uma seta horizontal a largura e com uma seta vertical a altura.
 
 **Narração:**
-> "Esse bloco tem dois números. O primeiro é a largura: escreve 800. O segundo é a altura: escreve
-> 480. E clica fora depois de cada um, para confirmar."
+> "Esse bloco já vem com os dois números de que a gente precisa. A largura é 800: ela mede a área
+> do jogo de um lado ao outro. A altura é 480: ela mede de cima até embaixo. Hoje é só conferir os
+> dois e deixar como estão."
 
 **Na tela:** clicar no quadradinho de cor do fim do bloco e escolher um tom escuro. A área do jogo
 aparecendo com o fundo escolhido.

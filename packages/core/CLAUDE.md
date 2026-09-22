@@ -291,8 +291,11 @@ constante (`sceneFrameRate`, `sceneLongFrame`), não copie os números.
   0,05 s somam 0,9999999999999999). Número por segundo entra dividido pelo ritmo, e com ritmos inteiros a
   conta fica exata.
 - `sceneStepLabel`/`sceneStepSeconds`: "Avançar 1 quadro" anda um quadro onde o quadro é o assunto; "Um
-  passo" anda os quadros inteiros mais perto de 0,2 s. ⚠️ `frames` e `delta-time` ficam "Um passo" de
-  propósito (lá "quadro" é o desenho da animação, ou o quadro de outro computador).
+  passo" anda os quadros inteiros mais perto de 0,2 s. A `once-vs-always` é a exceção didática: usa
+  **"Avançar 1 passo"**, anda um quadro por clique e não oferece ▶ nem velocidade, porque o piloto ainda
+  não apresentou a palavra "quadro" e a contagem precisa ficar sob o controle da criança. ⚠️ `frames` e
+  `delta-time` ficam "Um passo" de propósito (lá "quadro" é o desenho da animação, ou o quadro de outro
+  computador).
 - ⚠️⚠️ Nas cenas de `sceneLongFrame` o GESTO recomeça o quadro (fim do `stepScene`, e o `undo` do
   `stepExperiment`); a mesma régua liga a barra do quadro em andamento no player.
 - A legenda de um `advance` que não fecha quadro FICA (zerada, piscaria a cada fatia do ▶). Nas cenas de
@@ -376,6 +379,11 @@ constante (`sceneFrameRate`, `sceneLongFrame`), não copie os números.
 A regra de cada meta está no motor, comentada. Aqui fica o que costuma pegar quem mexe.
 
 **A tela e o mundo**
+- `once-vs-always`: `ONCE_GOAL_CARDS_BY_PRESET` declara qual ficha comprova cada meta; não deduza a
+  missão pelos ids históricos `paint`/`create`. No preset do piloto, a nave já existe e as fichas são
+  `panel` (preparação observável, uma vez) e `move` (ação contínua). Assim a cena não ensina que criar
+  também desenha antes da `world`. O validador rejeita qualquer área desconhecida antes de ler os demais
+  campos do retrato.
 - `coordinates`: a tela é a do CASO (`place.width`/`height`; a ação `stage` só num caso). O endereço usa
   `SCENE_LIMITS.addressX`/`addressY`: ⚠️ `placeX`/`placeY` medem a tela do Corre Dino para `draw-loop` e
   `hold-vs-press`, e alargá-los mudaria essas cenas. O fantasma fica onde a sequência no mesmo eixo e sentido

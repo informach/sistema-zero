@@ -3,6 +3,7 @@ import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/lea
 import {
   chaveDeVoz,
   GAME_STATE_PRESETS,
+  ONCE_VS_ALWAYS_PRESETS,
   RANDOM_PRESETS,
   SPAWN_PRESETS,
 } from '@sistemazero/core/learning/scene'
@@ -184,6 +185,22 @@ const validos: Array<[string, InteractiveBlock]> = [
           goals: ['once'],
           goalCopy: { once: { label: 'As vidas vieram uma vez' } },
         },
+      },
+    },
+  ],
+  [
+    'piloto de uma vez e sempre com painel',
+    {
+      ...base,
+      activity: {
+        type: 'experimentation',
+        scene: 'once-vs-always',
+        cast: {
+          hero: { name: 'nave', gender: 'f' },
+          obstacle: { name: 'asteroide', gender: 'm' },
+        },
+        cenario: 'nave',
+        setup: { preset: ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave'] },
       },
     },
   ],

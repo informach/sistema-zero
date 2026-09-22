@@ -2176,9 +2176,11 @@ listado ali.
   `SCENE_IDS`, `MAP_TILES`, `MIRROR_MODES`, `SYMMETRY_PIECES`, `SHEET_CROP_WIDTHS`, `MESH_LEVELS`,
   `SCENE_FIGURES`. Já houve três cópias da mesma regra (motor, editor e DTO) e elas divergiram. O
   `place` usa `addressX`/`addressY` (a maior tela de um caso, 800 × 480), e não `placeX`/`placeY`.
-- ⚠️ **Ação que entra ou SAI do core mexe no `SceneActionSchema` no mesmo commit.** Porta nova entra
-  sozinha (`SCENE_PORTS`); tipo novo não. Sem ele o members recusa a gravação do player novo, e é por
-  isso que o members sobe antes do kids (ordem no `raio-x-implantacao.md`).
+- ⚠️ **Ação que entra ou SAI do core mexe no `SceneActionSchema` no mesmo commit.** A ficha `panel` da
+  `once-vs-always`, por exemplo, precisa atravessar tanto a ação quanto as uniões `id`/`kind` do preset no
+  `SceneSetupSchema`. Porta nova entra sozinha (`SCENE_PORTS`); tipo ou ficha nova não. Sem isso o members
+  recusa a gravação do player ou a importação do manifesto novo, e é por isso que o members sobe antes do
+  kids (ordem no `raio-x-implantacao.md`).
 - ⚠️⚠️ **Campo que o `normalize` do Elysia apagaria fica DECLARADO**, porque numa rota de corpo tipado o
   campo não declarado some em silêncio (o bloco salva e o campo nunca mais existe): `figure` do elenco
   (`SceneActorSchema`); `revealOn` e o `shows` de cada escolha da previsão (schema PRÓPRIO, não o

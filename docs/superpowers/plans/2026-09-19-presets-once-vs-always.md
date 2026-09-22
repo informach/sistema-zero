@@ -1,5 +1,11 @@
 # Presets e once-vs-always Implementation Plan
 
+> **Direção atualizada em 22/09/2026:** o desenho original continua válido para os outros quatro
+> casos, mas o piloto `duas-caixas-nave` foi substituído pelo contrato de
+> `2026-09-22-experiencia-uma-vez-sempre.md`. Ele usa `panel` + `move`, nave já presente, “passo” no
+> lugar de “quadro”, somente avanço manual e a interação selecionar ficha → escolher área. As etapas
+> históricas abaixo que falam em tipos sem `panel` ou numa grade permanente não regem mais o piloto.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Criar o contrato de preset por atividade e a cena `once-vs-always` com os cinco casos do redesenho.

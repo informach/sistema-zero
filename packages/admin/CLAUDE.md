@@ -86,7 +86,9 @@ descobertas que ESTA atividade cobra (sem marcar nenhuma, valem as do modelo).
 - **`TODAS`** é a lista de todas as ações com o nome da BANCADA (o professor lê no roteiro o que a
   criança lê no botão; os fios em `PORTAS`). `sceneActionChoices(cena)` filtra pelo `isSceneAction` do
   core: a legalidade é do domínio, nunca de uma lista daqui. É assim que `stage` aparece no caso da
-  `coordinates` e `stride` ("Andar 1 segundo") só na `diagonal`.
+  `coordinates` e `stride` ("Andar 1 segundo") só na `diagonal`. A ficha `panel` da
+  `once-vs-always` também pertence a esta lista e ao `SceneActionSchema` do members; ela torna uma ação
+  inicial visível sem misturar os conceitos de criar e desenhar.
 - ⚠️⚠️ **A identidade de uma opção é uma TABELA** (`identidade` = o tipo + os campos de `DISTINGUE`),
   não uma escada de ternários. Duas opções com a mesma identidade é defeito silencioso: o `value` do
   `<select>` deixa de escolher uma delas (clicar em "Desligar a sombra" selecionava "Ligar a sombra") e

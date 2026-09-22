@@ -102,8 +102,8 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     group: 'events',
     title: 'Uma vez, sempre, e na hora que acontecer',
     instruction:
-      'Ponha as fichas nas áreas do projeto e avance quadros. Compare os contadores de cada ficha. Volte ao começo para experimentar outro lugar.',
-    manipulates: 'As fichas de ação, as áreas do projeto e o avanço dos quadros',
+      'Ponha as fichas nas áreas do projeto e avance passos. Compare os contadores de cada ficha. Volte ao começo antes de experimentar outro lugar.',
+    manipulates: 'As fichas de ação, as áreas do projeto e o avanço dos passos',
     success: 'Ao iniciar é uma vez. Enquanto estiver rodando é sempre. Quando acontecer é na hora.',
     successNoCaso: {
       'always+both+once': 'Você achou a diferença: arrumar é uma vez, o motor é sempre.',
@@ -115,24 +115,24 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       {
         id: 'once',
         label: 'Em Ao iniciar, a ação aconteceu uma vez só',
-        pedido: 'Ponha a ficha de arrumação em Ao iniciar e avance três quadros.',
+        pedido: 'Ponha a ficha de arrumação em Ao iniciar e avance três passos.',
       },
       {
         id: 'always',
-        label: 'Em Enquanto estiver rodando, a ação se repete a cada quadro',
-        pedido: 'Ponha a ficha de movimento em Enquanto estiver rodando e avance três quadros.',
+        label: 'Em Enquanto estiver rodando, a ação se repete a cada passo',
+        pedido: 'Ponha a ficha de movimento em Enquanto estiver rodando e avance três passos.',
       },
       {
         id: 'both',
         label: 'Preparar uma vez e repetir sempre, juntos',
         pedido:
-          'Deixe Criar em Ao iniciar e Mover em Enquanto estiver rodando; avance cinco quadros.',
+          'Deixe a preparação em Ao iniciar e o movimento em Enquanto estiver rodando; avance cinco passos.',
       },
       {
         id: 'on-event',
         label: 'Em Quando acontecer, a ação ficou esperando',
         pedido:
-          'Ponha a ficha do evento em Quando acontecer e avance três quadros sem apertar a tecla.',
+          'Ponha a ficha do evento em Quando acontecer e avance três passos sem apertar a tecla.',
         soNoCaso: true,
       },
       {
@@ -143,14 +143,14 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       },
       {
         id: 'flood',
-        label: 'Em Enquanto estiver rodando, nasceu um tiro em cada quadro',
-        pedido: 'Ponha Criar um tiro em Enquanto estiver rodando e avance cinco quadros.',
+        label: 'Em Enquanto estiver rodando, nasceu um tiro em cada passo',
+        pedido: 'Ponha Criar um tiro em Enquanto estiver rodando e avance cinco passos.',
         soNoCaso: true,
       },
     ],
     hints: [
-      'Olhe o contador de quadros e conte quantas vezes cada ação disparou.',
-      'Ponha uma ação em Ao iniciar e avance mais de um quadro. Ela dispara de novo?',
+      'Olhe o número do passo e conte quantas vezes cada ação aconteceu.',
+      'Ponha uma ação em Ao iniciar e avance mais de um passo. Ela acontece de novo?',
       'Agora arraste a mesma ação para Enquanto estiver rodando e avance de novo.',
     ],
   },

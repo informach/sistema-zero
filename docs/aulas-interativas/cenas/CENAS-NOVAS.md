@@ -54,12 +54,12 @@ nenhuma das cenas.
 **Grupo:** `events`
 
 **Conceito abstrato que ela torna concreto:** onde a ação é colocada decide quando ela acontece:
-uma vez no começo, de novo a cada quadro, ou só no instante em que alguma coisa acontece.
+uma vez no começo, de novo a cada passo do jogo, ou só no instante em que alguma coisa acontece.
 
 **Tipo:** experimentação. A relação tem botão, e o botão é o **onde**. Dá para escrever a frase do
 critério duas vezes: "quando eu levo a ficha para Enquanto estiver rodando, o contador dela para de
-marcar um e passa a marcar um por quadro" e "quando eu levo a ficha para Quando acontecer, o contador
-dela só sobe quando eu aperto a tecla". Não é processo no tempo: o avanço de quadros é o instrumento
+marcar um e passa a marcar um por passo" e "quando eu levo a ficha para Quando acontecer, o contador
+dela só sobe quando eu aperto a tecla". O avanço de passos é o instrumento
 de leitura, não o conteúdo.
 
 **Prioridade:** alta. Cinco aulas de dois cursos dependem dela, e ela é a cena com maior reuso
@@ -70,7 +70,7 @@ dos 48.
 
 | Curso | Aula | Preset / caso preparado | Metas cobradas |
 |---|---|---|---|
-| Desafio do Primeiro Jogo | Dia 1, Seção 2 "O que acontece uma vez e o que acontece sempre". **Antes** da montagem | `duas-caixas-nave`: duas caixas (`Ao iniciar`, `Enquanto estiver rodando`) e três fichas (Pintar o fundo, Criar a nave, Mover a nave um pouquinho) | `once`, `always`, `both` |
+| Desafio do Primeiro Jogo | Dia 1, Seção 2 "O que acontece uma vez e o que acontece sempre". **Antes** da montagem | `duas-caixas-nave`: duas caixas (`Ao iniciar`, `Enquanto estiver rodando`) e duas fichas (Acender o painel da nave, Mover a nave um pouquinho) | `once`, `always`, `both` |
 | Desafio do Primeiro Jogo | Dia 2, Seção 2 "A área que fica esperando você". **Antes** da montagem | `tres-caixas-tiro`: acrescenta a caixa `Quando acontecer`, a ficha Criar um tiro e o botão Apertar a tecla. Revisita: `once`, `always` e `both` chegam com "✓ Você já descobriu isto" | `on-event`, `key-fires`, `flood` |
 | Desafio do Primeiro Jogo | Dia 4, Seção 4 "A batida machuca". **Depois** da montagem, como contrafactual | `uma-ficha-vidas`: duas caixas, uma ficha só (Dar três vidas à nave) e uma pedra encostando na nave a cada poucos quadros, já rodando no palco | `once`, com rótulo adaptado |
 | Corre, Dino! | Aula 2, Seção 4 "Criar foi uma vez. Desenhar é sempre." **Depois** da montagem, como contrafactual | `duas-caixas-dino`: duas caixas e três fichas (Pintar o fundo, Criar o Dino, Mover o Dino um pouquinho) | `once`, `always`, `both` |
@@ -91,15 +91,17 @@ uma área só.
   fichas existem e o que cada uma diz é declarado pelo preset da aula.
 - **As caixas do projeto**, duas ou três conforme o preset: `Ao iniciar`, `Enquanto estiver rodando`
   e `Quando acontecer`.
-- **Avançar 1 quadro**, que anda o tempo do palco em um quadro e atualiza todos os contadores.
-- **Voltar ao começo**, que zera o contador de quadros, os contadores de disparo e a tela do jogo, e
+- **Avançar 1 passo**, que anda o palco uma vez e atualiza todos os contadores. O nome `quadro` só
+  entra depois, na aula que o apresenta.
+- **Voltar ao começo**, que zera o número do passo, os contadores de cada ficha e a tela do jogo, e
   devolve as fichas para o lado de fora.
 - **Apertar a tecla**, só nos presets de três caixas. É o botão que dispara o evento.
 
 ### Como o palco começa
 
-As caixas do preset, vazias e lado a lado. As fichas de lado, fora delas. O contador de quadros em 0.
-Um contador de disparos ao lado de cada ficha, todos em 0. A tela do jogo vazia.
+As caixas do preset, vazias e lado a lado. As fichas de lado, fora delas. O passo começa em 0, e cada
+ficha mostra quantas vezes agiu. No `duas-caixas-nave`, a nave já pertence ao simulador e aparece no
+céu estrelado diante de um asteroide; nenhuma ficha mistura criar com desenhar.
 
 No preset `uma-ficha-vidas` do Dia 4 o palco é diferente em um ponto e o ponto é o conteúdo: a nave já
 está na tela e uma pedra encosta nela a cada poucos quadros, desde o primeiro. A ficha única fica de
@@ -109,28 +111,28 @@ lado, e a criança escolhe em qual caixa ela cai:
 - Em `Enquanto estiver rodando`: os três corações voltam a encher em todo quadro, e a nave nunca perde
   nada, por mais que apanhe.
 
-**Instrumento de leitura obrigatório:** o contador de disparos por ficha. É ele que responde sozinho
-ao engano clássico ("então o jogo cria um Dino novo a cada quadro?"). Com cinco quadros passados, a
-ficha de criar marca 1 e a de mover marca 5, e a criança vê que existe um Dino só.
+**Instrumento de leitura obrigatório:** o contador por ficha. No piloto, depois de cinco passos,
+Acender o painel marca 1 e Mover a nave marca 5. Nos presets posteriores, o mesmo instrumento
+compara as ações próprias de cada aula.
 
 ### Elenco e cenário
 
 | Preset | Elenco | Cenário |
 |---|---|---|
-| `duas-caixas-nave`, `tres-caixas-tiro` | nave (`hero`) | `nave` |
+| `duas-caixas-nave`, `tres-caixas-tiro` | nave (`hero`) e asteroide (`obstacle`) | `nave` |
 | `uma-ficha-vidas` | nave (`hero`) e asteroide (`obstacle`) | `nave` |
-| `duas-caixas-dino`, `tres-caixas-som` | Dino (`hero`) | `corre-dino` |
+| `duas-caixas-dino`, `tres-caixas-som` | Dino (`hero`) e cacto (`obstacle`) | `corre-dino` |
 
 ### Metas
 
 | id | rótulo quando cai | pedido que a faixa mostra |
 |---|---|---|
-| `once` | "Em `Ao iniciar`, a ação aconteceu uma vez só" | "Ponha {ficha de arrumação} em `Ao iniciar` e avance três quadros." |
-| `always` | "Em `Enquanto estiver rodando`, a ação se repete a cada quadro" | "Ponha {ficha de movimento} em `Enquanto estiver rodando` e avance três quadros." |
-| `both` | "Preparar uma vez e repetir sempre, juntos" | "Deixe {ficha de criar} em `Ao iniciar` e {ficha de mover} em `Enquanto estiver rodando`, e avance cinco quadros." |
-| `on-event` | "Em `Quando acontecer`, a ação ficou esperando" | "Ponha {ficha do evento} em `Quando acontecer` e avance três quadros sem apertar a tecla." |
+| `once` | "Em `Ao iniciar`, a ação aconteceu uma vez só" | "Ponha {ficha de arrumação} em `Ao iniciar` e avance três passos." |
+| `always` | "Em `Enquanto estiver rodando`, a ação se repete a cada passo" | "Ponha {ficha de movimento} em `Enquanto estiver rodando` e avance três passos." |
+| `both` | "Preparar uma vez e repetir sempre, juntos" | "Deixe {ficha de preparação} em `Ao iniciar` e {ficha de movimento} em `Enquanto estiver rodando`, e avance cinco passos." |
+| `on-event` | "Em `Quando acontecer`, a ação ficou esperando" | "Ponha {ficha do evento} em `Quando acontecer` e avance três passos sem apertar a tecla." |
 | `key-fires` | "A tecla fez a ação acontecer na hora" | "Com {ficha do evento} em `Quando acontecer`, aperte a tecla." |
-| `flood` | "Em `Enquanto estiver rodando`, nasceu um {objeto} em cada quadro" | "Ponha {ficha do evento} em `Enquanto estiver rodando` e avance cinco quadros." |
+| `flood` | "Em `Enquanto estiver rodando`, nasceu um {objeto} em cada passo" | "Ponha {ficha do evento} em `Enquanto estiver rodando` e avance cinco passos." |
 
 **Rótulos adaptados por preset:**
 
@@ -140,7 +142,7 @@ ficha de criar marca 1 e a de mover marca 5, e a criança vê que existe um Dino
 - `tres-caixas-som` (Corre, Dino! Aula 4), meta `key-fires`: o objeto é o som, e o contador de
   disparos da ficha é acompanhado pela marca ♪.
 - `tres-caixas-tiro` (Dia 2), meta `flood`: "Em `Enquanto estiver rodando`, nasceu um tiro em cada
-  quadro".
+  passo".
 
 **Divergência resolvida, e é a principal desta cena.** A análise do Corre, Dino! Aula 4 escreveu uma
 meta `on-event` única, com o rótulo "Em `Quando acontecer`, a ação só acontece quando você aperta" e o
@@ -153,9 +155,9 @@ daquela seção, hoje escrito como "a meta `on-event` da cena cai", passa a ser 
 `key-fires` caem".
 
 **Segunda divergência resolvida.** A Seção 2 do Dia 1 tem o critério "as duas metas da cena caem", e a
-especificação da mesma aula lista três. **Ficam as três.** A meta `both` é a que desmonta o engano de
-que desenhar a cada quadro estaria criando um objeto novo a cada quadro, que é justamente o que o quiz
-daquele dia cobra.
+especificação da mesma aula lista três. **Ficam as três.** A meta `both` comprova, no mesmo teste,
+que a preparação age uma vez e o movimento continua. A diferença entre criar e desenhar fica na
+cena `world`, onde pode ser ensinada sem contradição.
 
 **Terceira divergência resolvida.** A especificação do Dia 1 registrou, no campo de reuso, "Corre Dino
 aula 1, Meu Jeito aula 6". As análises daqueles dois cursos decidiram o contrário: no Corre, Dino! a
@@ -170,10 +172,10 @@ esquerda cinco minutos depois.
 
 ### Pistas
 
-1. "Olhe o contador de quadros e conte quantas vezes cada ação disparou."
-2. "Ponha uma ação em `Ao iniciar` e avance mais de um quadro. Ela dispara de novo?"
+1. "Olhe o número do passo e conte quantas vezes cada ação aconteceu."
+2. "Ponha uma ação em `Ao iniciar` e avance mais de um passo. Ela acontece de novo?"
 3. "Agora arraste a mesma ação para `Enquanto estiver rodando` e avance de novo."
-4. Só nos presets de três caixas: "Ponha a mesma ação em `Quando acontecer` e avance quadros sem
+4. Só nos presets de três caixas: "Ponha a mesma ação em `Quando acontecer` e avance passos sem
    tocar no botão. O contador dela sobe?"
 
 No preset `uma-ficha-vidas` do Dia 4 as pistas são outras duas, porque a ficha é uma só:
@@ -182,13 +184,10 @@ No preset `uma-ficha-vidas` do Dia 4 as pistas são outras duas, porque a ficha 
 2. "Agora leve a mesma ficha para `Enquanto estiver rodando` e avance de novo. Conte quantos corações
    sobram depois de três batidas."
 
-### Palpite antes de abrir
+### Palpite seletivo
 
-**Presets de duas caixas, Desafio Dia 1:** "Se você põe Mover a nave em `Ao iniciar`, o que acontece
-quando o jogo roda?"
-
-- Ela se mexe uma vez e para ✓
-- Ela se mexe sem parar
+**Preset `duas-caixas-nave`, Desafio Dia 1:** sem palpite e sem pergunta final. O vídeo já apresenta
+a relação, as três metas exigem comprová-la, e o quiz dedicado faz a avaliação depois.
 
 **Presets de duas caixas, Corre, Dino! Aula 2:** "Se você põe Mover o Dino em `Ao iniciar`, o que
 acontece quando o jogo roda?"

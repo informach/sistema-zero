@@ -743,33 +743,33 @@
     "id": "once-vs-always",
     "grupo": "events",
     "titulo": "Uma vez, sempre, e na hora que acontecer",
-    "instrucao": "Ponha as fichas nas áreas do projeto e avance quadros. Compare os contadores de cada ficha. Volte ao começo para experimentar outro lugar.",
-    "manipula": "As fichas de ação, as áreas do projeto e o avanço dos quadros",
+    "instrucao": "Ponha as fichas nas áreas do projeto e avance passos. Compare os contadores de cada ficha. Volte ao começo antes de experimentar outro lugar.",
+    "manipula": "As fichas de ação, as áreas do projeto e o avanço dos passos",
     "frase_sucesso": "Ao iniciar é uma vez. Enquanto estiver rodando é sempre. Quando acontecer é na hora.",
     "pergunta_extra": "E se você levar uma ficha para outra área e voltar ao começo?",
     "metas": [
       {
         "id": "once",
         "rotulo": "Em Ao iniciar, a ação aconteceu uma vez só",
-        "pedido": "Ponha a ficha de arrumação em Ao iniciar e avance três quadros.",
+        "pedido": "Ponha a ficha de arrumação em Ao iniciar e avance três passos.",
         "soNoCaso": false
       },
       {
         "id": "always",
-        "rotulo": "Em Enquanto estiver rodando, a ação se repete a cada quadro",
-        "pedido": "Ponha a ficha de movimento em Enquanto estiver rodando e avance três quadros.",
+        "rotulo": "Em Enquanto estiver rodando, a ação se repete a cada passo",
+        "pedido": "Ponha a ficha de movimento em Enquanto estiver rodando e avance três passos.",
         "soNoCaso": false
       },
       {
         "id": "both",
         "rotulo": "Preparar uma vez e repetir sempre, juntos",
-        "pedido": "Deixe Criar em Ao iniciar e Mover em Enquanto estiver rodando; avance cinco quadros.",
+        "pedido": "Deixe a preparação em Ao iniciar e o movimento em Enquanto estiver rodando; avance cinco passos.",
         "soNoCaso": false
       },
       {
         "id": "on-event",
         "rotulo": "Em Quando acontecer, a ação ficou esperando",
-        "pedido": "Ponha a ficha do evento em Quando acontecer e avance três quadros sem apertar a tecla.",
+        "pedido": "Ponha a ficha do evento em Quando acontecer e avance três passos sem apertar a tecla.",
         "soNoCaso": true
       },
       {
@@ -780,14 +780,14 @@
       },
       {
         "id": "flood",
-        "rotulo": "Em Enquanto estiver rodando, nasceu um tiro em cada quadro",
-        "pedido": "Ponha Criar um tiro em Enquanto estiver rodando e avance cinco quadros.",
+        "rotulo": "Em Enquanto estiver rodando, nasceu um tiro em cada passo",
+        "pedido": "Ponha Criar um tiro em Enquanto estiver rodando e avance cinco passos.",
         "soNoCaso": true
       }
     ],
     "pistas": [
-      "Olhe o contador de quadros e conte quantas vezes cada ação disparou.",
-      "Ponha uma ação em Ao iniciar e avance mais de um quadro. Ela dispara de novo?",
+      "Olhe o número do passo e conte quantas vezes cada ação aconteceu.",
+      "Ponha uma ação em Ao iniciar e avance mais de um passo. Ela acontece de novo?",
       "Agora arraste a mesma ação para Enquanto estiver rodando e avance de novo."
     ],
     "roteiro_demonstracao": [],
