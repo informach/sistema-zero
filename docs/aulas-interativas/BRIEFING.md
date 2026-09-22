@@ -95,6 +95,10 @@ Quando existir, a tela do palpite contém apenas contexto, cena parada, pergunta
 controles não aparecem, nem desativados. A escolha não vale nota e a retomada compara de modo
 neutro: **"Seu palpite: … Ao testar: …"**, sem "acertou" ou "errou".
 
+Na experimentação, o topo reúne HUD, nome e cena. Logo abaixo da cena, uma única fala curta do
+Zappy apresenta a ação; a pista solicitada e os controles vêm em seguida. Palpite retomado,
+conclusão e situação alcançada aparecem depois da área de ação. A ordem é a mesma no celular.
+
 ## 4. As seis perguntas, uma vez por conceito
 
 Não existe molde. As respostas variam de aula para aula e de conceito para conceito. Para **cada

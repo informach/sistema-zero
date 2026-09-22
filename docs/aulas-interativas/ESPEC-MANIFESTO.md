@@ -201,6 +201,10 @@ o conteúdo pertence ao vídeo**, não de que o texto deve ficar maior.
 } }
 ```
 
+O player organiza toda experimentação nesta ordem: HUD e nome, cena, instrução curta do Zappy,
+pista solicitada, controles e retorno. Portanto, `instructions` deve orientar a ação sem repetir os
+controles nem o vídeo. A instrução fica abaixo da cena e imediatamente antes dos controles.
+
 `required` deve ser **true** sempre que a cena for o critério de conclusão da seção. Este é um
 defeito conhecido do material atual: quatro cenas estão como opcionais sendo o único critério.
 
