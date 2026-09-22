@@ -316,12 +316,12 @@ e não a demonstração gravada, que fecha a conquista.
   rodando continua acontecendo enquanto o jogo funciona.
 - **Tipo:** experimentação. A relação tem botão, porque a criança escolhe **onde** colocar a ação, e
   o "onde" é a variável.
-- **O que a criança manipula:** duas fichas de ação (Acender o painel da nave e Mover a nave um
+- **O que a criança manipula:** duas fichas de ação (Ligar a nave e Mover a nave um
   pouquinho), que ela seleciona e coloca em **Ao iniciar** ou **Enquanto estiver rodando**. No
   computador, também pode arrastar. Mais os botões **Avançar 1 passo** e **Voltar ao começo**.
 - **Como o palco começa:** as duas caixas vazias, as duas fichas de lado, o passo em 0 e a nave já
-  presente no céu estrelado, diante de um asteroide. A nave pertence ao simulador; nenhuma ficha
-  afirma que criar também desenha.
+  presente e desligada no céu estrelado, diante de um asteroide. A nave pertence ao simulador;
+  nenhuma ficha afirma que criar também desenha. Ao executar a ficha de início, o motor liga.
 - **Metas:**
   | id | rótulo ao cair | pedido na faixa |
   |---|---|---|

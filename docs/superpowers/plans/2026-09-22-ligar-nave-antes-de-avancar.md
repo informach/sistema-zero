@@ -32,7 +32,7 @@
 - Consumes: `ONCE_VS_ALWAYS_PRESETS`, `OnceVsAlwaysStage` e a composição de `scene-activity.tsx`.
 - Produces: regressões que exigem a ficha `Ligar a nave`, o estado visível `Nave ligada` e o comando de avanço depois de `LessonSceneControls` para `once-vs-always`.
 
-- [ ] **Step 1: Atualizar as expectativas de linguagem**
+- [x] **Step 1: Atualizar as expectativas de linguagem**
 
   Nos testes do core, esperar exatamente:
 
@@ -42,11 +42,11 @@
 
   No teste do palco, exigir `Nave ligada`, uma única ocorrência de `Ligar a nave` na bancada e ausência de `Painel aceso`.
 
-- [ ] **Step 2: Adicionar a regressão de ordem sem API de teste**
+- [x] **Step 2: Adicionar a regressão de ordem sem API de teste**
 
   Em `scene-experience-layout.test.tsx`, ler o fonte real e provar que o ramo especial de `once-vs-always` renderiza os botões da cena depois de `LessonSceneControls`, enquanto a composição geral continua contendo uma única expressão reutilizável para os botões.
 
-- [ ] **Step 3: Executar os testes e confirmar a falha correta**
+- [x] **Step 3: Executar os testes e confirmar a falha correta**
 
   Run:
 
@@ -60,6 +60,8 @@
 
 **Files:**
 - Modify: `packages/core/src/learning/scene/presets.ts`
+- Modify: `packages/studio/src/arte/figuras/espaco.ts`
+- Modify: `packages/member-shell/src/components/scene-figures.tsx`
 - Modify: `packages/member-shell/src/components/scene-once-vs-always.tsx`
 - Modify: `packages/member-shell/src/components/scene-activity.tsx`
 - Modify: `docs/aulas-interativas/aulas/desafio-dia-1.manifesto.json`
@@ -72,15 +74,15 @@
 - Consumes: `OnceCard` existente com `id` e `kind` iguais a `panel`; `botoesDaCena: ReactNode[]`; `LessonSceneControls`.
 - Produces: linguagem infantil coerente e composição visual configuração → execução, sem alteração no estado serializado.
 
-- [ ] **Step 1: Trocar a linguagem mantendo o contrato**
+- [x] **Step 1: Trocar a linguagem mantendo o contrato**
 
-  Alterar o rótulo do preset para `Ligar a nave`. No palco, derivar `naveLigada` de `state.once.fires.panel > 0` e mostrar `Nave ligada` com um sinal visual de motor ativo, sem sugerir criação da nave.
+  Alterar o rótulo do preset para `Ligar a nave`. No palco, derivar `naveLigada` de `state.once.fires.panel > 0`, usar a variante `desligada` da arte antes do primeiro disparo e mostrar `Nave ligada` com o motor ativo, sem sugerir criação da nave. A arte padrão da nave continua ligada para não mudar o jogo nem as demais cenas.
 
-- [ ] **Step 2: Mover o comando de execução para depois da bancada**
+- [x] **Step 2: Mover o comando de execução para depois da bancada**
 
   Extrair a renderização compartilhada de `botoesDaCena` em uma constante React. Em `ConsolePrancha`, renderizá-la antes dos controles nas demais cenas e depois do bloco que contém `LessonSceneControls` quando `m === 'once-vs-always'`.
 
-- [ ] **Step 3: Reescrever a instrução e as referências pedagógicas**
+- [x] **Step 3: Reescrever a instrução e as referências pedagógicas**
 
   Usar no manifesto:
 
@@ -90,7 +92,7 @@
 
   Substituir as referências contraditórias a “acender painel” nos documentos atuais e registrar no guia do shell que o passo vem depois da montagem nessa cena.
 
-- [ ] **Step 4: Executar as regressões afetadas**
+- [x] **Step 4: Executar as regressões afetadas**
 
   Run:
 
@@ -100,7 +102,7 @@
 
   Expected: PASS.
 
-- [ ] **Step 5: Verificar formatação e tipos dos pacotes afetados**
+- [x] **Step 5: Verificar formatação e tipos dos pacotes afetados**
 
   Run:
 

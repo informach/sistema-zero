@@ -172,7 +172,7 @@ export const ONCE_VS_ALWAYS_PRESETS = {
     id: 'duas-caixas-nave',
     areas: ['start', 'loop'],
     cards: [
-      { id: 'panel', kind: 'panel', label: 'Acender o painel da nave' },
+      { id: 'panel', kind: 'panel', label: 'Ligar a nave' },
       { id: 'move', kind: 'move', label: 'Mover a nave um pouquinho' },
     ],
   },

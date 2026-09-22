@@ -881,6 +881,11 @@ export function SceneActivityView({
       gestoEmDestaque: !(conclusao && temPergunta && !registered && !revisita),
     }),
   ]
+  const controlesDaExecucao =
+    botoesDaCena.length > 0 ? (
+      /* Sem caixa própria: o comando executa o que foi montado na bancada. */
+      <div className="flex flex-wrap items-center justify-center gap-3">{botoesDaCena}</div>
+    ) : null
   /**
    * "Guardar este jeito" DEPOIS das medidas (full review de experiência, B14): na `hitbox` ele era o
    * primeiro controle da bancada, e o Tab e o olho chegavam nele antes da Distância e da área, que são a
@@ -1082,13 +1087,8 @@ export function SceneActivityView({
   )
   const pranchaDaCena = (
     <ConsolePrancha>
-      {/* ⚠️⚠️ A caixa pergunta aos FILHOS se há o que mostrar (`botoesDaCena` é uma
-            LISTA): um booleano à parte esconderia um botão acrescentado aqui. */}
-      {botoesDaCena.length > 0 && (
-        /* ⚠️ Sem caixa própria (review do lote 2): era mais uma superfície entre o palco e
-             a bancada, numa tela que já passava de quatro. */
-        <div className="flex flex-wrap items-center justify-center gap-3">{botoesDaCena}</div>
-      )}
+      {/* Em `once-vs-always`, primeiro se configura a montagem e só depois se executa um passo. */}
+      {m !== 'once-vs-always' && controlesDaExecucao}
 
       <div className="space-y-3">
         {somNaBancada && (
@@ -1113,6 +1113,7 @@ export function SceneActivityView({
         <ExplorationPieces activity={activity} state={state} dispatch={dispatch} more={false} />
         {guardarEsteJeito && <div className="flex justify-start">{guardarEsteJeito}</div>}
       </div>
+      {m === 'once-vs-always' && controlesDaExecucao}
     </ConsolePrancha>
   )
 

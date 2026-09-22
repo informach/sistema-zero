@@ -37,4 +37,19 @@ describe('a experiência aproxima a instrução dos controles', () => {
     expect(controles).toBeLessThan(conclusao)
     expect(controles).toBeLessThan(situacao)
   })
+
+  test('em uma vez e sempre, configura as ações antes de avançar o passo', () => {
+    const fonte = readFileSync(ARQUIVO_DA_CENA, 'utf8')
+    const inicio = fonte.indexOf('const pranchaDaCena = (')
+    const ramo = fonte.slice(inicio, fonte.indexOf('\n\n  return (', inicio))
+
+    const execucaoAntes = ramo.indexOf("{m !== 'once-vs-always' && controlesDaExecucao}")
+    const configuracao = ramo.indexOf('<LessonSceneControls')
+    const execucaoDepois = ramo.indexOf("{m === 'once-vs-always' && controlesDaExecucao}")
+
+    expect(inicio).toBeGreaterThan(-1)
+    expect(execucaoAntes).toBeGreaterThan(-1)
+    expect(execucaoAntes).toBeLessThan(configuracao)
+    expect(configuracao).toBeLessThan(execucaoDepois)
+  })
 })

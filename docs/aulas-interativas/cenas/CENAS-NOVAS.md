@@ -70,7 +70,7 @@ dos 48.
 
 | Curso | Aula | Preset / caso preparado | Metas cobradas |
 |---|---|---|---|
-| Desafio do Primeiro Jogo | Dia 1, Seção 2 "O que acontece uma vez e o que acontece sempre". **Antes** da montagem | `duas-caixas-nave`: duas caixas (`Ao iniciar`, `Enquanto estiver rodando`) e duas fichas (Acender o painel da nave, Mover a nave um pouquinho) | `once`, `always`, `both` |
+| Desafio do Primeiro Jogo | Dia 1, Seção 2 "O que acontece uma vez e o que acontece sempre". **Antes** da montagem | `duas-caixas-nave`: duas caixas (`Ao iniciar`, `Enquanto estiver rodando`) e duas fichas (Ligar a nave, Mover a nave um pouquinho) | `once`, `always`, `both` |
 | Desafio do Primeiro Jogo | Dia 2, Seção 2 "A área que fica esperando você". **Antes** da montagem | `tres-caixas-tiro`: acrescenta a caixa `Quando acontecer`, a ficha Criar um tiro e o botão Apertar a tecla. Revisita: `once`, `always` e `both` chegam com "✓ Você já descobriu isto" | `on-event`, `key-fires`, `flood` |
 | Desafio do Primeiro Jogo | Dia 4, Seção 4 "A batida machuca". **Depois** da montagem, como contrafactual | `uma-ficha-vidas`: duas caixas, uma ficha só (Dar três vidas à nave) e uma pedra encostando na nave a cada poucos quadros, já rodando no palco | `once`, com rótulo adaptado |
 | Corre, Dino! | Aula 2, Seção 4 "Criar foi uma vez. Desenhar é sempre." **Depois** da montagem, como contrafactual | `duas-caixas-dino`: duas caixas e três fichas (Pintar o fundo, Criar o Dino, Mover o Dino um pouquinho) | `once`, `always`, `both` |
@@ -100,8 +100,9 @@ uma área só.
 ### Como o palco começa
 
 As caixas do preset, vazias e lado a lado. As fichas de lado, fora delas. O passo começa em 0, e cada
-ficha mostra quantas vezes agiu. No `duas-caixas-nave`, a nave já pertence ao simulador e aparece no
-céu estrelado diante de um asteroide; nenhuma ficha mistura criar com desenhar.
+ficha mostra quantas vezes agiu. No `duas-caixas-nave`, a nave já pertence ao simulador e aparece
+desligada no céu estrelado diante de um asteroide; nenhuma ficha mistura criar com desenhar. A ficha
+`Ligar a nave` ativa o motor quando o começo é executado.
 
 No preset `uma-ficha-vidas` do Dia 4 o palco é diferente em um ponto e o ponto é o conteúdo: a nave já
 está na tela e uma pedra encosta nela a cada poucos quadros, desde o primeiro. A ficha única fica de
@@ -112,7 +113,7 @@ lado, e a criança escolhe em qual caixa ela cai:
   nada, por mais que apanhe.
 
 **Instrumento de leitura obrigatório:** o contador por ficha. No piloto, depois de cinco passos,
-Acender o painel marca 1 e Mover a nave marca 5. Nos presets posteriores, o mesmo instrumento
+Ligar a nave marca 1 e Mover a nave marca 5. Nos presets posteriores, o mesmo instrumento
 compara as ações próprias de cada aula.
 
 ### Elenco e cenário

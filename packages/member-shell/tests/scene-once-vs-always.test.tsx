@@ -31,11 +31,14 @@ describe('uma vez, sempre e na hora no palco', () => {
     expect(html).toContain('data-figure="asteroide"')
     expect(html).not.toContain('data-figure="cacto"')
     expect(html).not.toContain('M0 248H560')
+    expect(html).not.toContain('#ffb13b')
 
     state = stepScene(start, state, { type: 'place-in-area', card: 'panel', area: 'start' })
     state = stepScene(start, state, { type: 'advance', seconds: 0.25 })
     html = renderToStaticMarkup(<OnceVsAlwaysStage state={state} cast={cast} preset={preset} />)
-    expect(html).toContain('Painel aceso')
+    expect(html).toContain('Nave ligada')
+    expect(html).not.toContain('Painel aceso')
+    expect(html).toContain('#ffb13b')
   })
 
   test('a bancada não repete uma segunda grade de controles', () => {
@@ -44,7 +47,7 @@ describe('uma vez, sempre e na hora no palco', () => {
     const html = renderToStaticMarkup(
       <OnceVsAlwaysControls state={state} preset={preset} dispatch={() => {}} />,
     )
-    expect((html.match(/Acender o painel da nave/g) ?? []).length).toBe(1)
+    expect((html.match(/Ligar a nave/g) ?? []).length).toBe(1)
     expect((html.match(/Mover a nave um pouquinho/g) ?? []).length).toBe(1)
     expect(html).toContain('Escolha uma ficha')
   })
@@ -63,6 +66,15 @@ describe('uma vez, sempre e na hora no palco', () => {
     expect(html).toContain('Avançar 1 passo')
     expect(html).not.toContain('Tempo')
     expect(html).not.toContain('Mais devagar')
+  })
+
+  test('a nave continua ligada nos presets que não ensinam a ação de ligar', () => {
+    const preset = ONCE_VS_ALWAYS_PRESETS['uma-ficha-vidas']
+    const state = openScene({ scene: 'once-vs-always', setup: { preset } })
+    const html = renderToStaticMarkup(<OnceVsAlwaysStage state={state} preset={preset} />)
+
+    expect(html).toContain('#ffb13b')
+    expect(html).not.toContain('Nave ligada')
   })
 
   test('o caso da tecla mostra a terceira área e mantém um caminho de teclado', () => {

@@ -58,7 +58,9 @@ export function OnceVsAlwaysStage({
   const temChao = cenarioTemChao(mundo)
   const piso = pisoDoMundo(mundo, 248)
   const temFichaDeFundo = prepared.cards.some((card) => card.kind === 'paint')
-  const painelAceso = state.once.fires.panel > 0
+  const ensinaLigarNave = prepared.cards.some((card) => card.kind === 'panel')
+  const ligouNaveNestaExperiencia = ensinaLigarNave && state.once.fires.panel > 0
+  const naveLigada = !ensinaLigarNave || ligouNaveNestaExperiencia
   return (
     <SceneCanvas
       cast={chosenCast}
@@ -83,15 +85,18 @@ export function OnceVsAlwaysStage({
             {`Passo ${frames}`}
           </Texto>
           {HERO_SLOTS.slice(0, heroCount).map((slot, index) => (
-            <ActorFigure key={slot} figure={hero} x={Math.min(490, heroX + index * 76)} y={piso} />
+            <ActorFigure
+              key={slot}
+              figure={hero}
+              x={Math.min(490, heroX + index * 76)}
+              y={piso}
+              variante={hero === 'nave' && !naveLigada ? 'desligada' : undefined}
+            />
           ))}
-          {painelAceso && (
-            <>
-              <circle cx={heroX} cy={piso - 31} r={6} className="fill-scene-b" />
-              <Texto x={24} y={67} tamanho={14} className="fill-scene-b-ink" fontWeight="700">
-                Painel aceso
-              </Texto>
-            </>
+          {ligouNaveNestaExperiencia && hero === 'nave' && (
+            <Texto x={24} y={67} tamanho={14} className="fill-scene-b-ink" fontWeight="700">
+              Nave ligada
+            </Texto>
           )}
           <ActorFigure
             figure={obstacle}

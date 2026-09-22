@@ -31,22 +31,26 @@ export const desenharNave: DesenhoDeFigura = (ctx, f, amb) => {
   ctx.save()
   ctx.translate(cx, cy)
   ctx.scale(s, s)
-  // foguinho (laranja)
-  ctx.fillStyle = '#ffb13b'
-  ctx.beginPath()
-  ctx.moveTo(0, oy + 42)
-  ctx.lineTo(-11, oy + 66)
-  ctx.lineTo(11, oy + 66)
-  ctx.closePath()
-  ctx.fill()
-  // foguinho (vermelho, pulsando)
-  ctx.fillStyle = '#ff5d3d'
-  ctx.beginPath()
-  ctx.moveTo(0, oy + 45)
-  ctx.lineTo(-7, oy + flame + 58)
-  ctx.lineTo(7, oy + flame + 58)
-  ctx.closePath()
-  ctx.fill()
+  // A cena introdutória precisa mostrar a nave realmente desligada antes de executar `Ao iniciar`.
+  // No jogo e nas demais cenas a variante não é enviada, então o foguinho continua igual.
+  if (f.variante !== 'desligada') {
+    // foguinho (laranja)
+    ctx.fillStyle = '#ffb13b'
+    ctx.beginPath()
+    ctx.moveTo(0, oy + 42)
+    ctx.lineTo(-11, oy + 66)
+    ctx.lineTo(11, oy + 66)
+    ctx.closePath()
+    ctx.fill()
+    // foguinho (vermelho, pulsando)
+    ctx.fillStyle = '#ff5d3d'
+    ctx.beginPath()
+    ctx.moveTo(0, oy + 45)
+    ctx.lineTo(-7, oy + flame + 58)
+    ctx.lineTo(7, oy + flame + 58)
+    ctx.closePath()
+    ctx.fill()
+  }
   // corpo (cor customizada)
   ctx.fillStyle = f.cor || '#35e8ff'
   ctx.beginPath()

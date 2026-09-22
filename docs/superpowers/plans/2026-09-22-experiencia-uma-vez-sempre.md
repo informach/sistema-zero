@@ -59,10 +59,10 @@ acompanhada pelo pipeline do repositório.
 - Consumes: preset com `panel`, estado `fires`, `cenarioTemChao` e `pisoDoMundo`.
 - Produces: palco temático correto e fluxo selecionar ficha → escolher área.
 
-- [x] Escrever testes para ausência de cacto/chão, presença de nave/asteroide/estrelas e painel aceso.
+- [x] Escrever testes para ausência de cacto/chão, presença de nave/asteroide/estrelas e nave ligada.
 - [x] Escrever teste para uma única bancada acessível e para apenas o avanço manual no rodapé.
 - [x] Rodar os testes e confirmar as falhas.
-- [x] Declarar nave e asteroide no manifesto, respeitar o chão do cenário e derivar o painel de
+- [x] Declarar nave e asteroide no manifesto, respeitar o chão do cenário e derivar o motor ligado de
   `fires.panel` sem inventar papéis dentro do palco.
 - [x] Substituir a grade duplicada por seleção local da ficha e botões contextuais de destino.
 - [x] Rodar os testes do member-shell até passarem.

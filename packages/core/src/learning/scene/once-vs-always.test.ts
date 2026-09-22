@@ -48,7 +48,7 @@ describe('uma vez, sempre e na hora', () => {
   test('o piloto usa uma preparação visível sem ensinar que criar também desenha', () => {
     const c = lab('duas-caixas-nave', ['once', 'always', 'both'])
     expect(ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave'].cards).toEqual([
-      { id: 'panel', kind: 'panel', label: 'Acender o painel da nave' },
+      { id: 'panel', kind: 'panel', label: 'Ligar a nave' },
       { id: 'move', kind: 'move', label: 'Mover a nave um pouquinho' },
     ])
     expect(c.get().once.heroCount).toBe(1)

@@ -72,6 +72,7 @@ export function ActorFigure({
   escuro = false,
   cor,
   corSecundaria,
+  variante,
   t,
 }: {
   figure: SceneFigure
@@ -84,6 +85,8 @@ export function ActorFigure({
   /** Cor do corpo e das asas quando a cena ensina que uma cópia pode ser repintada. */
   cor?: string
   corSecundaria?: string
+  /** Variação semântica que a própria arte conhece, como a nave `desligada`. */
+  variante?: string
   /**
    * O relógio da cena, em milissegundos.
    *
@@ -126,7 +129,7 @@ export function ActorFigure({
         t={t}
         cor={cor}
         corSecundaria={corSecundaria}
-        variante={escuro ? 'escura' : undefined}
+        variante={variante ?? (escuro ? 'escura' : undefined)}
       />
     </g>
   )

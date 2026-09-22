@@ -132,7 +132,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Uma vez e sempre",
-        "instructions": "Coloque Acender o painel em Ao iniciar e Mover a nave em Enquanto estiver rodando. Avance cinco passos e compare os contadores. Para testar outro lugar, use Voltar ao começo primeiro.",
+        "instructions": "Ligue a nave em Ao iniciar. Mova a nave em Enquanto estiver rodando. Depois, avance cinco passos e compare os contadores. Para testar outro lugar, use Voltar ao começo primeiro.",
         "hints": [],
         "semPerguntaFinal": true,
         "activity": {
@@ -157,7 +157,7 @@
                 {
                   "id": "panel",
                   "kind": "panel",
-                  "label": "Acender o painel da nave"
+                  "label": "Ligar a nave"
                 },
                 {
                   "id": "move",
