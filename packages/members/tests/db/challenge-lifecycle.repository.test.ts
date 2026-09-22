@@ -74,7 +74,19 @@ describe.skipIf(!testDatabaseUrl)('DrizzleChallengeLifecycleRepository no Postgr
     }
 
     const repo = new DrizzleChallengeLifecycleRepository(conn.db)
-    const before = await repo.listCandidates(new Date('2026-09-20T12:00:00Z'), 10)
+    // ⚠️⚠️ O banco de `tests/db` é COMPARTILHADO entre os arquivos e o
+    // `listCandidates` é uma varredura GLOBAL: o `renewal-reminder` insere
+    // matrículas com o MESMO `course_ref` e só as limpa no `beforeEach` dele,
+    // dentro de uma janela de datas — o que sobra vira um segundo candidato aqui.
+    // Asserir a contagem global fazia o arquivo passar sozinho e reprovar no CI,
+    // dependendo da ORDEM dos arquivos. A régua é a MATRÍCULA DESTE teste, que é
+    // o sujeito dele; a presença de outras não diz nada sobre o repositório.
+    const meusCandidatos = async () => {
+      const todos = await repo.listCandidates(new Date('2026-09-20T12:00:00Z'), 10)
+      return todos.filter((candidato) => candidato.entitlementId === entitlementId)
+    }
+
+    const before = await meusCandidatos()
     expect(before).toHaveLength(1)
     expect(before[0]).toMatchObject({ started: false, dayOneComplete: false, completed: false })
 
@@ -89,7 +101,8 @@ describe.skipIf(!testDatabaseUrl)('DrizzleChallengeLifecycleRepository no Postgr
       values (${randomUUID()}, ${correctProfileId}, ${firstLessonId}, ${courseId}, now())
       on conflict do nothing
     `
-    const attributed = await repo.listCandidates(new Date('2026-09-20T12:00:00Z'), 10)
+    const attributed = await meusCandidatos()
+    expect(attributed).toHaveLength(1)
     expect(attributed[0]).toMatchObject({ started: true, dayOneComplete: true, completed: false })
 
     // Uma segunda relação conflitante torna a posse ambígua; o repositório não
@@ -99,7 +112,8 @@ describe.skipIf(!testDatabaseUrl)('DrizzleChallengeLifecycleRepository no Postgr
       values (${correctProfileId}, ${otherAccountId}, null, now())
       on conflict (user_id) do update set account_id = excluded.account_id
     `
-    const ambiguous = await repo.listCandidates(new Date('2026-09-20T12:00:00Z'), 10)
+    const ambiguous = await meusCandidatos()
+    expect(ambiguous).toHaveLength(1)
     expect(ambiguous[0]).toMatchObject({
       started: false,
       dayOneComplete: false,
