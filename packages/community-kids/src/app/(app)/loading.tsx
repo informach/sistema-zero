@@ -6,7 +6,7 @@ const CARD_KEYS = ['s1', 's2', 's3', 's4']
 
 /**
  * Esqueleto das páginas do app kids que não têm um próprio (Início, Criar, Comunidade,
- * Carreira, Trilha, Recados...): fallback de Suspense do Next enquanto o Server Component
+ * Jornada, Trilha, Recados...): fallback de Suspense do Next enquanto o Server Component
  * busca os dados, no lugar de um "Carregando…" solto.
  *
  * Imita a régua das telas-modelo (11/09/2026), que todas elas seguem: o cabeçalho (chip,

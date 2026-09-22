@@ -7,7 +7,7 @@ export interface JourneyRewardInfo {
 }
 
 /**
- * O que cada POSTO da carreira abre, do jeito que a criança lê.
+ * O que cada POSTO da jornada abre, do jeito que a criança lê.
  *
  * ⚠️ **Desde a reforma do currículo (08/2026), o posto NÃO libera mais blocos.** Quem põe
  * ferramenta na caixa é o CURSO (`studioUnlockBlocks`): bônus entrega ao concluir; curso com

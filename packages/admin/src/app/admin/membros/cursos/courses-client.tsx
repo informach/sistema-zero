@@ -110,7 +110,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   }, [offset, q, status, platform, loadAuthority])
 
   const loadJourney = useCallback(async () => {
-    // O painel da Carreira só existe no modo Kids — no Adultos nem busca (a
+    // O painel da Jornada só existe no modo Kids — no Adultos nem busca (a
     // varredura pagina TODOS os cursos kids; os call-sites pós-save chamam
     // sempre e viram no-op aqui). Voltar para Kids re-dispara pelo effect.
     if (platform !== 'kids') {
@@ -218,7 +218,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         }
       />
 
-      {/* Carreira do Criador é conceito KIDS — no modo Adultos o painel some. */}
+      {/* Jornada do Criador é conceito KIDS — no modo Adultos o painel some. */}
       {platform === 'kids' ? (
         <JourneyReadiness
           courses={journeyItems}
@@ -410,7 +410,7 @@ function JourneyReadiness({
   const tiers = COURSE_TIER_OPTIONS.map((tier) => {
     // ⚠️ POR DEGRAU, não um 8 fixo: a entrada tem 1 e o Iniciante 2D tem 7 (14/08). Este
     // número ficava solto aqui e não era coberto pela conformance — com o 8 fixo, o painel
-    // pediria 8 cursos numa trilha de 1 e nunca marcaria a carreira como pronta.
+    // pediria 8 cursos numa trilha de 1 e nunca marcaria a jornada como pronta.
     const required = slotsForTier(tier.level, tier.track)
     const slots = Array.from({ length: required }, (_, slotIndex) => {
       const slot = slotIndex + 1
@@ -553,7 +553,7 @@ function JourneyReadiness({
 /**
  * Clonar o curso para a OUTRA plataforma (o substituto da "audiência Ambas",
  * decisão de produto de 24/08): o clone é um curso INDEPENDENTE na plataforma
- * destino — entra na carreira/chave-mestra/XP de lá sem regra nova. É um FORK:
+ * destino — entra na jornada/chave-mestra/XP de lá sem regra nova. É um FORK:
  * edições depois do clone NÃO sincronizam (avisado aqui).
  */
 function CloneCourseDialog({

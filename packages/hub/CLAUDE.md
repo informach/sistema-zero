@@ -128,7 +128,7 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    autor do header de perfil, capa https-only). Idempotência = `autor:studio-standalone:clientKey`
    (sem curso/cadeia; republicar = post novo). Gateway `hub-showcase-create-studio-standalone` (segmento
    literal distinto de `showcase-thread-studio` — sem colisão de prefixo).
-12. **Plays + carreira + Desafio do mês (Fase 5, 07/2026):**
+12. **Plays + jornada + Desafio do mês (Fase 5, 07/2026):**
    - **Contador de jogadas:** `threads.plays_count` (vaidade, best-effort). O incremento é
      FUNDIDO no resolve do link público: `GET /hub/internal/studio-play/:playId?count=1` vira
      `UPDATE ... SET plays_count = plays_count + 1 WHERE play_id AND is_showcase AND
@@ -148,7 +148,7 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
      (`internal.routes.ts`, HMAC — members→hub): `{playId}` → `{visible, authorId}` — validação
      anti-farm do marco de REMIX do members (SELECT puro, validar não é jogar; `authorId` NUNCA sai
      na rota pública do /jogar, que segue projetando só visible+1º nome).
-   - **Carreira:** `GET /hub/my-showcase-stats` (rota de ALUNO, JWT no gateway) →
+   - **Jornada:** `GET /hub/my-showcase-stats` (rota de ALUNO, JWT no gateway) →
      `{published, plays}` agregado NO banco (`showcaseStatsByAuthor`, usa o
      `threads_author_status_idx`) — "seus jogos já foram jogados N vezes" do kids.
    - **Limpeza de R2 na moderação (07/2026):** ocultar/apagar um post do Mural já revoga o

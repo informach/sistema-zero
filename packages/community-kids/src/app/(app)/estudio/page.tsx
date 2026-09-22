@@ -58,7 +58,7 @@ export default async function EstudioPage({
     // Rank do aluno → modos+perfil do editor. `withRanking:true` casa a chave do
     // React.cache com a da (app)/layout (dedup, sem ida extra). Best-effort.
     getGamificationReadonly({ withRanking: true }).catch(() => null),
-    // Paleta pelo CURRÍCULO: bônus concluídos + cursos da carreira concluídos e publicados.
+    // Paleta pelo CURRÍCULO: bônus concluídos + cursos da jornada concluídos e publicados.
     // Best-effort — falhar aqui NÃO pode esvaziar a caixa de ferramentas: o
     // `resolveStudioTier` cai no perfil do NÍVEL quando a lista vem vazia.
     getStudioUnlocksReadonly().catch(() => null),
@@ -112,7 +112,7 @@ export default async function EstudioPage({
       tier={tier}
       showExamples={showExamples}
       // O tutor abre por MÉRITO: equipe sempre, aluno a partir do degrau mínimo
-      // da carreira (Inventor). O rank já veio na gamificação acima.
+      // da jornada (Inventor). O rank já veio na gamificação acima.
       zappyEnabled={zappyEnabled}
       aiCredits={creditsRes?.status === 200 ? (creditsRes.body ?? null) : null}
       taskId={tarefa ?? null}

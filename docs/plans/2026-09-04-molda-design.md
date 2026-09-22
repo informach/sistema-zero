@@ -31,7 +31,7 @@ fez; produto próprio `molda` no catálogo, dentro do combo Comunidade dos Criad
 
 > **Adendo 05/09/2026:** o portão mudou para o **Explorador(a) de Mundos**
 > (`THREE_D_CREATION_MIN_LEVEL = 'explorer'`), decisão dela: o kit Jogo 3D, consumidor do que a
-> oficina produz, é recompensa desse posto. Motivo e copy em `docs/carreira-do-criador.md`.
+> oficina produz, é recompensa desse posto. Motivo e copy em `docs/jornada-do-criador.md`.
 
 ## O que o estudo concluiu
 
@@ -303,7 +303,7 @@ commit só; é bake (apagar a textura depois não afeta o modelo).
 
 ### Portão de carreira e acesso (`packages/member-shell`)
 - `src/lib/studio-tier.ts` (após a l.45): `THREE_D_CREATION_MIN_LEVEL: CareerLevelSlug = 'hacker'`
-  (o degrau estudado pelo Inventor(a) é o Iniciante 3D, `docs/carreira-do-criador.md:214-215`:
+  (o degrau estudado pelo Inventor(a) é o Iniciante 3D, `docs/jornada-do-criador.md:214-215`:
   a oficina 3D abre onde a trilha 3D começa); terceira constante ao lado de
   `FREE_CREATION_MIN_LEVEL` e `AI_APPS_MIN_LEVEL`.
 - `src/server/creative-apps-access.ts`: `meetsThreeDCreationLevel` (cópia de
@@ -463,7 +463,7 @@ Gateway e shims `api/creations/[tool]` são genéricos por `:tool`: zero mudanç
 - **L8 — modelos prontos + backup + docs**: `templates/` (personagem, carro, árvore, casa, nave)
   como o Pinta; "Baixar tudo"/"Trazer de volta" (`galeria.molda.json` + `.glb/.png/.hdr`);
   CLAUDE.md dos pacotes tocados (molda, kids, members, member-shell, studio);
-  `docs/carreira-do-criador.md` (Inventor(a) ganha o Molda); QA integrado.
+  `docs/jornada-do-criador.md` (Inventor(a) ganha o Molda); QA integrado.
 
 ## Riscos e gotchas (todos vistos no código)
 

@@ -67,7 +67,7 @@ export function PensaClient({
       mode: 'kids',
       theme,
       // O pacote chama a capability de `studioOwned`, mas o host fornece a
-      // disponibilidade efetiva: produto comprado + carreira liberada.
+      // disponibilidade efetiva: produto comprado + jornada liberada.
       capabilities: { pintaOwned, studioOwned: studioAvailable, moldaOwned: moldaAvailable },
       mascotImages: {
         happy: '/zappy/happy.webp',

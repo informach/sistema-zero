@@ -51,7 +51,7 @@ elegibilidade (S2S members) + autoria (header de perfil). **Fase 5 (07/2026):**
 `hub-studio-play-visible` (`GET /hub/internal/studio-play/:playId`, pública, 600/min/IP) aceita
 `?count=1` — o BFF (que deduplica por ip:playId) funde o CONTADOR de jogadas no resolve; e
 `hub-my-showcase-stats` (`GET /hub/my-showcase-stats`, JWT + conta ativa, 120/min/principal) devolve o
-agregado da carreira do aluno (jogos publicados + soma das jogadas). **Full review do Clube dos
+agregado da jornada do aluno (jogos publicados + soma das jogadas). **Full review do Clube dos
 Criadores (07/2026, EM PRODUÇÃO):** `hub-my-threads` (`GET /hub/my-threads`, JWT + conta ativa +
 `hubInternalTransforms`, 120/min/principal) devolve os tópicos do PRÓPRIO aluno (só os dele → sem
 vazamento de autor de terceiro) — alimenta o sino "novas respostas nas suas conversas" do kids;
@@ -149,7 +149,7 @@ Adicionar/expor um serviço = **editar `gateway.config.ts`**, não código.
 `/members/practice/{topics,sessions}` e `sessions/:id[/answers]`.
 JWT ativo + `membersInternalTransforms`; GET 60–120/min, POST 30/min com teto de corpo.
 Members revalida o acesso ao curso e o conteúdo estudado antes de iniciar uma sessão.
-Histórico por perfil/conta, separado dos quizzes de aula e dos prêmios da carreira.
+Histórico por perfil/conta, separado dos quizzes de aula e dos prêmios da jornada.
 
 ---
 

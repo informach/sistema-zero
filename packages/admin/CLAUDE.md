@@ -473,7 +473,7 @@ snapshot [mismatch = stale] e re-busca via `subscribePlatform` — assinatura m�
 acoplar React); o BFF `professor-overview` repassa `audience` a entregas/recados/unread-count
 (members ganhou `?audience=` no `GET /members/admin/teacher-threads/unread-count`) e o hub filtra
 fila/denúncias por audiência **antes** de paginar; Cursos filtra a listagem por
-`audience=<plataforma>` (a rota admin do members já aceitava) e o painel Carreira do Criador só
+`audience=<plataforma>` (a rota admin do members já aceitava) e o painel Jornada do Criador só
 renderiza no modo Kids; Análises e Moderação reiniciam seleção, paginação e requests em voo ao
 trocar de plataforma, sem publicar resposta obsoleta; Desafio do mês mostra um banner informativo
 no modo Adultos (conteúdo visível). Rotas fixas do editor de curso são globais: exibem a audiência
@@ -1176,7 +1176,7 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   (`2d`|`3d`, reforma 2D/3D 07/2026 — o PAR é o DEGRAU pedagógico): o select "Nível do curso" no
   dialog virou UM select de **6 opções** ("Iniciante 2D"…"Avançado 3D", value composto
   `level:track` que escreve os DOIS campos), **sempre enviados** (members PRESERVA quando ausentes;
-  defaults `iniciante`/`2d`); `CourseView.level`/`track` devolvidos. Alimenta a CARREIRA DE 8 do
+  defaults `iniciante`/`2d`); `CourseView.level`/`track` devolvidos. Alimenta a JORNADA DE 8 do
   aluno no community-kids (concluir + publicar no Mural cursos de cada degrau, na ordem da escada →
   Faísca→…→Lenda; `STUDENT_RANK_LABELS` do member-detail tem os 8, incl. Explorador(a) de
   Mundos/Arquiteto(a) de Mundos/Gênio da Criação). `COURSE_TIER_OPTIONS`/`courseTierLabel` em
@@ -1184,7 +1184,7 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   bloco Estúdio no editor de aula usa `BLOCK_LEVEL_OPTIONS` do `@sistemazero/studio` (6 degraus de
   BLOCOS; aula legada normaliza no load via `normalizeBlockLevel`, e o clipboard de config normaliza
   no paste — localStorage guarda legado p/ sempre).
-  **Posição na carreira (curso-base):** `careerSlot` é opcional. Só curso Kids pode ocupá-la;
+  **Posição na jornada (curso-base):** `careerSlot` é opcional. Só curso Kids pode ocupá-la;
   O número de posições é POR ETAPA (**Primeiros Passos** = 1, todas as demais = 8 — `slotsForTier`; o Iniciante 2D teve 7 entre 14/08 e 15/08 e a usuária desfez); **posição 1 = curso-base** (destrava as demais
   da etapa); **sem posição = bônus-RECOMPENSA da etapa (24/07)** — abre quando o aluno completa os
   cursos com posição da etapa do bônus (a listagem rotula "Bônus — recompensa da etapa X"; etapa
@@ -1195,9 +1195,9 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   só criar"). O campo posição é um **`Select` com rótulos** ("Nenhuma — bônus (recompensa…)", "1 —
   Curso-base…", 2…) que mostra a OCUPAÇÃO da etapa selecionada e desabilita posição ocupada por
   OUTRO curso (evita o 409 `CAREER_SLOT_CONFLICT` do members); trocar de etapa (6→5) faz clamp.
-  O `CourseFormDialog` busca os cursos Kids sozinho (`careerCourses` opcional) p/ a ocupação e
+  O `CourseFormDialog` busca os cursos Kids sozinho (`journeyCourses` opcional) p/ a ocupação e
   **envia o payload COMPLETO sempre** (o members preserva ausentes no PATCH, mas `salesPageUrl`
-  ausente LIMPA a chave — mandar tudo é o contrato seguro). O card de prontidão `CareerReadiness`
+  ausente LIMPA a chave — mandar tudo é o contrato seguro). O card de prontidão `JourneyReadiness`
   é **CLICÁVEL** (`canWrite`): posição vazia → cria já mirando etapa+posição (`prefill`); ocupada →
   edita o curso. Ele carrega TODAS as páginas Kids com `loadAllPages` (as 49 posições, sem cortar
   nos primeiros 100). **Aviso "Sem vitrine" (24/07):** curso-base PUBLICADO sem aula publicada com
@@ -1205,13 +1205,13 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   members) aparece ⚠️ "Sem vitrine" no painel (NÃO conta como pronto) e o `CourseFormDialog` mostra
   um alerta ao editar — sem isso o slot 1 nunca qualifica e a etapa não destrava (Armadilha do
   Mural). A matriz operacional, o fail-open (etapa sem base publicada não trava) e as
-  migrations `0048`/`0049` estão em `docs/carreira-do-criador.md`.
+  migrations `0048`/`0049` estão em `docs/jornada-do-criador.md`.
   **Hardening da autoria (full review 24/07):**
   - O members agora **BLOQUEIA** a transição p/ o estado-armadilha: PATCH que publica (ou dá
     slot 1 a curso já publicado) curso kids slot-1 SEM vitrine → **409 `NO_SHOWCASE_BLOCK`**
     (transição-only: curso JÁ preso segue editável). O dialog mapeia via
     **`lib/course-errors.ts`** (`courseSaveError`, puro/testado): `CAREER_SLOT_CONFLICT` →
-    mensagem + **refetch da ocupação** (`refreshOccupancy` — a prop `careerCourses` virou só
+    mensagem + **refetch da ocupação** (`refreshOccupancy` — a prop `journeyCourses` virou só
     SEED); `CONCURRENCY_CONFLICT` → "feche e reabra" (NUNCA rebasear silencioso);
     `NO_SHOWCASE_BLOCK` → toast com action "Abrir conteúdo do curso". O alerta ⚠️ preventivo
     também dispara quando o status VAI virar published.
@@ -1232,10 +1232,10 @@ Dockerfile: valida e só então importa o `server.js` standalone).
     (rascunho → 404 na visão do aluno — o filtro roda ANTES do bypass de equipe); tooltip
     avisa que travas/gamificação de aluno real não são simuladas. O editor busca a árvore do
     curso no load (slug/audience/status + isPublished da aula).
-  - **Conformance admin×core**: `tests/career-tier-conformance.test.ts` trava
-    `COURSE_TIER_OPTIONS` ≡ `CAREER_COURSE_TIERS` (conjunto E ORDEM) e `slotsForTier`
+  - **Conformance admin×core**: `tests/journey-tier-conformance.test.ts` trava
+    `COURSE_TIER_OPTIONS` ≡ `JOURNEY_COURSE_TIERS` (conjunto E ORDEM) e `slotsForTier`
     (exportada do course-form-dialog, que deriva o nº de posições POR degrau) ≡
-    `CREATOR_CAREER_LEVELS.at(-1).requiredSlots` — import RELATIVO do core (precedente
+    `CREATOR_JOURNEY_LEVELS.at(-1).requiredSlots` — import RELATIVO do core (precedente
     badge-conformance do kids; sem dependência nova).
   **Convite multi-plataforma**: `POST /auth/admin/users` aceita
   `platform: 'main'|'kids'` (select "Plataforma do convite" no dialog — decide a base do link do
@@ -1423,7 +1423,7 @@ deriva de `AmbassadorRedemptionView.conversion`). ⚠️ **Apresentação por st
 EXAUSTIVOS** (`CONVERSION_STATUS_LABEL`/`CONVERSION_STATUS_BADGE`/`JOURNEY_LABEL` — status novo
 no referrals reprova a compilação em vez de cair num rótulo errado sobre dinheiro), travados
 contra a fonte por `tests/conversion-status-conformance.test.ts` (import RELATIVO do port puro do
-referrals, precedente do career-tier-conformance). O badge "Pago" carrega no title quem/quando
+referrals, precedente do journey-tier-conformance). O badge "Pago" carrega no title quem/quando
 marcou + a `note` quando houver, e as DATAS (libera em / pago em + operador) saem também em texto
 VISÍVEL — tooltip não existe no toque nem por teclado, e é justamente o que se usa para programar
 os Pix da semana e auditar quem pagou. O `load` da BonusSection tem guarda última-vence (trocar o

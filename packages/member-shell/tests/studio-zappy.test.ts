@@ -42,7 +42,7 @@ describe('Acesso ao Zappy', () => {
     expect(isStudioZappyAllowed(STAFF, undefined, { enabled: false })).toBe(true)
   })
 
-  test('flag desligada barra o aluno mesmo no topo da carreira', () => {
+  test('flag desligada barra o aluno mesmo no topo da jornada', () => {
     expect(isStudioZappyAllowed(KID, 'god', { ...OPEN, enabled: false })).toBe(false)
   })
 
@@ -329,7 +329,7 @@ describe('Zappy do Studio — limites determinísticos', () => {
     expect(deterministicZappyReply('Como fazer um jogo de futebol?')).toBeNull()
   })
 
-  test('o catálogo do tutor respeita a allowlist estrita da carreira', () => {
+  test('o catálogo do tutor respeita a allowlist estrita da jornada', () => {
     const tier = resolveStudioTier('coder', 'student')
     expect(tier.allowBlocks?.length).toBeGreaterThan(0)
     const prompt = buildStudioZappyPrompt({

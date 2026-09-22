@@ -201,7 +201,7 @@ export function ChannelsPanel({
 
 /**
  * Fechamento do Mural. O botão "Publicar um jogo" só aparece para quem pode abrir o
- * Estúdio livre (a mesma régua do remix: posse do produto e o nível da carreira), para
+ * Estúdio livre (a mesma régua do remix: posse do produto e o nível da jornada), para
  * nunca levar a criança a uma tela trancada. Sem ele, a frase explica de onde vêm os
  * jogos sem prometer nada.
  */

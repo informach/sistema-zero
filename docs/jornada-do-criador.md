@@ -1,12 +1,12 @@
-# Carreira do Criador e Estúdio
+# Jornada do Criador e Estúdio
 
-Este documento é a referência de produto e operação para a Carreira do Criador. A fonte técnica da matriz fica em `packages/core/src/career/catalog.ts`. Os textos infantis ficam no Community Kids e nunca devem redefinir a regra.
+Este documento é a referência de produto e operação para a Jornada do Criador. A fonte técnica da matriz fica em `packages/core/src/journey/catalog.ts`. Os textos infantis ficam no Community Kids e nunca devem redefinir a regra.
 
 ## Princípio pedagógico
 
 A criança aprende uma ferramenta dentro de um curso e só depois recebe essa ferramenta no Estúdio livre. As atividades de aula continuam disponíveis com a configuração definida pelo professor, mesmo quando o Estúdio livre ainda está bloqueado.
 
-Um curso obrigatório conta para a carreira quando os dois marcos existem para o mesmo curso e para a mesma criança:
+Um curso obrigatório conta para a jornada quando os dois marcos existem para o mesmo curso e para a mesma criança:
 
 1. curso concluído;
 2. projeto publicado no Mural.
@@ -15,7 +15,7 @@ XP, quantidade total de cursos e cursos bônus não substituem esses marcos. Alt
 
 ## Organização dos cursos
 
-A carreira possui sete etapas:
+A jornada possui sete etapas:
 
 | Etapa | Posições obrigatórias | Quem estuda |
 |---|---:|---|
@@ -33,17 +33,17 @@ São **49 posições obrigatórias** (1 na entrada + 8 em cada uma das outras se
 
 **O Iniciante 2D voltou a ter 8 posições (15/08/2026).** Quando o curso base saiu para a etapa nova, ele havia sido encolhido para 7, de modo que o total continuasse 48. A decisão foi desfeita: **toda etapa que não é a de entrada tem 8 posições**, sem exceção. O total passou de 48 para 49 e são **9 cursos da Faísca até Inventor(a)** (1 + 8). A regra uniforme vale mais que o total redondo.
 
-A posição 1 é o curso base de cada etapa. Ao entrar em uma etapa, a criança abre primeiro esse curso. Os demais cursos da mesma etapa só abrem depois que o curso base for concluído e publicado. Cursos de etapas futuras mostram uma mensagem de continuação da carreira e não criam um link para um curso que ainda está bloqueado.
+A posição 1 é o curso base de cada etapa. Ao entrar em uma etapa, a criança abre primeiro esse curso. Os demais cursos da mesma etapa só abrem depois que o curso base for concluído e publicado. Cursos de etapas futuras mostram uma mensagem de continuação da jornada e não criam um link para um curso que ainda está bloqueado.
 
 ### Curso bônus é RECOMPENSA da etapa (`tier-reward`, 24/07)
 
-O bônus **não abre de cara**: ele é o prêmio da etapa em que está tagueado (`level` + `track`). Abre quando a criança completa **todos os cursos com posição** daquela etapa (concluídos **e** publicados no Mural — a mesma régua da carreira), o que é exatamente o momento do level-up. Etapa já completada = recompensa ganha para sempre; etapa atual ou futura = o card mostra 🎁 "Recompensa: complete a etapa X" (motivo `tier-reward` no 423). O bônus continua **fora da contagem** de nível (não qualifica slot) e a tag de etapa do bônus agora importa de verdade — confira o degrau dos bônus ao montar cada etapa.
+O bônus **não abre de cara**: ele é o prêmio da etapa em que está tagueado (`level` + `track`). Abre quando a criança completa **todos os cursos com posição** daquela etapa (concluídos **e** publicados no Mural — a mesma régua da jornada), o que é exatamente o momento do level-up. Etapa já completada = recompensa ganha para sempre; etapa atual ou futura = o card mostra 🎁 "Recompensa: complete a etapa X" (motivo `tier-reward` no 423). O bônus continua **fora da contagem** de nível (não qualifica slot) e a tag de etapa do bônus agora importa de verdade — confira o degrau dos bônus ao montar cada etapa.
 
 **Regressão aceita ao montar uma etapa:** quando você publica o curso-base de uma etapa, os bônus dela passam a valer a trava — uma criança que estava no MEIO de um bônus perde o acesso a ele até completar a etapa (decisão de produto de 24/07; só acontece em etapa com base publicada, pelo fail-open). O que **não** é afetado: jogo já publicado continua no Mural e no link público de jogar (o post é um snapshot independente do curso), e todo XP/marco já ganho fica.
 
 ### Sem curso base publicado, a etapa não trava (fail-open)
 
-A trava da posição 1 só faz sentido quando existe um curso base **publicado** para destravar. Se a etapa tiver cursos nas posições 2 ou seguintes mas nenhum curso base publicado (ainda não cadastrado, em rascunho ou removido), a trava `foundation-first` é ignorada e esses cursos ficam acessíveis. **O mesmo vale para o bônus-recompensa**: etapa sem curso base publicado não tem o que completar, então o `tier-reward` também falha aberto — é o que garante que, no deploy em produção (onde todo curso kids nasce bônus antes de as etapas serem montadas), nada tranca. Sem isso a etapa inteira — e, no caso do Iniciante 2D, a carreira toda — congelaria: não haveria nada a concluir para liberar. A regra vive em `resolveCareerCourseLock` (parâmetro `foundationAvailable`) e vale tanto na listagem quanto no acesso direto por URL.
+A trava da posição 1 só faz sentido quando existe um curso base **publicado** para destravar. Se a etapa tiver cursos nas posições 2 ou seguintes mas nenhum curso base publicado (ainda não cadastrado, em rascunho ou removido), a trava `foundation-first` é ignorada e esses cursos ficam acessíveis. **O mesmo vale para o bônus-recompensa**: etapa sem curso base publicado não tem o que completar, então o `tier-reward` também falha aberto — é o que garante que, no deploy em produção (onde todo curso kids nasce bônus antes de as etapas serem montadas), nada tranca. Sem isso a etapa inteira — e, no caso do Iniciante 2D, a jornada toda — congelaria: não haveria nada a concluir para liberar. A regra vive em `resolveJourneyCourseLock` (parâmetro `foundationAvailable`) e vale tanto na listagem quanto no acesso direto por URL.
 
 Isso é uma rede de segurança, não o estado desejado: o painel de prontidão continua marcando a posição 1 vazia como "Falta curso". Cadastre e publique o curso base para que a progressão pedagógica volte a valer.
 
@@ -51,13 +51,13 @@ Isso é uma rede de segurança, não o estado desejado: o painel de prontidão c
 
 O Admin agora **avisa sozinho** (full review 24/07): a listagem admin do members marca cada curso-base kids com `hasShowcaseBlock` (existe aula **publicada** com bloco de Estúdio `showcase.enabled`?). Curso-base publicado sem vitrine aparece com ⚠️ **"Sem vitrine"** no painel de prontidão (e **não conta como pronto**) e com um alerta no formulário de edição. O aviso não bloqueia salvar — é sinalização para o operador adicionar o bloco de vitrine.
 
-## Mapa da Carreira na página de cursos (kids, 24/07)
+## Mapa da Jornada na página de cursos (kids, 24/07)
 
-No Community Kids, a página **/cursos** é o **Mapa da Carreira**: uma fita curva SVG com os 8 níveis ilustrados pelos personagens Dedé e Debinha (`public/carreira/<slug>.webp`; sem a arte, cai no ícone do nível). Nível não atingido fica **preto-e-branco com cadeado e não navega** (balança + recado); nível atingido abre **`/cursos/trilha/<slug do nível>`** (rota por NÍVEL, ex.: `/cursos/trilha/coder`). Cada posto é dono de uma etapa inteira: Faísca mostra Primeiros Passos, Construtor mostra Iniciante 2D e assim por diante. A Lenda mostra somente os cursos de nível `lenda`, que são bônus de formatura e ficam fora da contagem da carreira. O nó atual mostra "Você está aqui" e o progresso honesto sobre os cursos já publicados. Deep-link numa trilha bloqueada mostra recado gentil; a equipe nunca é murada. Sem gamificação disponível, a página cai na grade clássica. A régua REAL de acesso continua no members — o mapa é apresentação.
+No Community Kids, a página **/cursos** é o **Mapa da Jornada**: uma fita curva SVG com os 8 níveis ilustrados pelos personagens Dedé e Debinha (`public/jornada/<slug>.webp`; sem a arte, cai no ícone do nível). Nível não atingido fica **preto-e-branco com cadeado e não navega** (balança + recado); nível atingido abre **`/cursos/trilha/<slug do nível>`** (rota por NÍVEL, ex.: `/cursos/trilha/coder`). Cada posto é dono de uma etapa inteira: Faísca mostra Primeiros Passos, Construtor mostra Iniciante 2D e assim por diante. A Lenda mostra somente os cursos de nível `lenda`, que são bônus de formatura e ficam fora da contagem da jornada. O nó atual mostra "Você está aqui" e o progresso honesto sobre os cursos já publicados. Deep-link numa trilha bloqueada mostra recado gentil; a equipe nunca é murada. Sem gamificação disponível, a página cai na grade clássica. A régua REAL de acesso continua no members — o mapa é apresentação.
 
 ### O mapa acompanha o catálogo (horizonte, 08/2026)
 
-A carreira exige **49 cursos** (1 nos Primeiros Passos + 8 em cada um dos outros seis degraus). Enquanto eles não existem, o mapa **não
+A jornada exige **49 cursos** (1 nos Primeiros Passos + 8 em cada um dos outros seis degraus). Enquanto eles não existem, o mapa **não
 mostra a escada inteira**: ele desenha até o **horizonte do catálogo**, que é o nível mais alto que
 os cursos publicados hoje conseguem entregar de fato, e fecha com um nó **"E tem muito mais pela
 frente"** (toque balança o nó e mostra um recado de que essa parte está em construção). Sem isso a criança lê
@@ -73,7 +73,7 @@ Duas consequências para quem opera:
   avançando. Quando os 49 estiverem publicados, o horizonte chega na Lenda e a tela volta sozinha à
   escada completa de 8 medalhões — não há nada para desligar.
 
-A régua da carreira **não muda nada disso**: nível, travas e o que o Estúdio libera continuam sendo
+A régua da jornada **não muda nada disso**: nível, travas e o que o Estúdio libera continuam sendo
 calculados pelo members exatamente como antes. O horizonte é só o que a tela DESENHA.
 
 ### O contador do medalhão conta a trilha inteira (15/08/2026)
@@ -98,15 +98,15 @@ crianças voltar a "8 de 9" e perder o ✓. É o comportamento pretendido — é
 Curso publicado que a criança ainda não pode abrir **conta no total e não no feito**, então ele
 aparece como pendência mesmo antes de ela ter acesso.
 
-⚠️⚠️ **A régua da carreira continua intacta.** Subir de posto ainda exige as posições OBRIGATÓRIAS
+⚠️⚠️ **A régua da jornada continua intacta.** Subir de posto ainda exige as posições OBRIGATÓRIAS
 com os dois marcos (concluir + publicar no Mural), e o **bônus segue fora da contagem de nível**.
 São duas contas separadas: uma decide o POSTO (members/core), a outra o que o medalhão MOSTRA.
 
-⚠️ **O `/perfil` não mudou:** a escada de lá é a carreira (os postos conquistados), não o conteúdo
+⚠️ **O `/perfil` não mudou:** a escada de lá é a jornada (os postos conquistados), não o conteúdo
 dos degraus — o ✓ dela continua seguindo só o nível.
 
 ⚠️ **O lado duro da régua, e é intencional:** quem concluiu os 8 cursos e não publicou nenhum lê
-**"0 de 8 aventuras prontas"**. É a carreira sendo fiel — sem o Mural aqueles cursos realmente não
+**"0 de 8 aventuras prontas"**. É a jornada sendo fiel — sem o Mural aqueles cursos realmente não
 contam para subir —, e agora isso aparece também nos degraus já vencidos.
 
 ### O selo no card diz qual aventura falta (15/08/2026)
@@ -131,18 +131,18 @@ quem concluiu 8 sem publicar lê "0 de 8" e, ao entrar, encontra oito cards dize
 
 ## A paleta do Estúdio vem do CURRÍCULO (08/2026)
 
-Até aqui o conjunto de blocos do **Estúdio livre** era fixo por NÍVEL da carreira. Agora **cada
+Até aqui o conjunto de blocos do **Estúdio livre** era fixo por NÍVEL da jornada. Agora **cada
 curso declara o que libera** e a criança recebe a união dos cursos elegíveis. O critério depende
 do papel do curso:
 
-- **curso Kids com posição:** concluído **e** publicado no Mural, a mesma régua da carreira;
+- **curso Kids com posição:** concluído **e** publicado no Mural, a mesma régua da jornada;
 - **curso Kids bônus (`careerSlot = null`):** concluído, mesmo sem projeto ou vitrine;
 - **curso Adult:** mantém a exigência de conclusão e publicação.
 
 O bônus entrega ferramentas, mas continua fora da contagem de nível. Se ele tiver uma vitrine, a
 publicação no Mural permanece disponível; ela apenas não condiciona a ferramenta.
 
-> **O posto da carreira decide o MODO** (Estúdio livre, Ponte, Pro). **O currículo decide a PALETA.**
+> **O posto da jornada decide o MODO** (Estúdio livre, Ponte, Pro). **O currículo decide a PALETA.**
 
 **Como cadastrar:** na modal de criar/editar curso (Kids), o campo **"Ferramentas que este curso
 libera no Estúdio"** usa o MESMO picker da lista de blocos da aula, com busca, grupos e
@@ -217,7 +217,7 @@ do editor e quais **produtos** abrem. Os perfis de bloco por nível continuam ex
 | Mestre dos Jogos (`elite`) | mais 8 posições do Intermediário 2D | Intermediário 3D | O posto e a trilha nova (nenhuma ferramenta nova) |
 | Arquiteto(a) de Mundos (`architect`) | mais 8 posições do Intermediário 3D | Avançado 2D | O posto e a trilha nova (nenhuma ferramenta nova) |
 | Gênio da Criação (`champion`) | mais 8 posições do Avançado 2D | Avançado 3D | **modo Ponte** |
-| Lenda (`god`) | mais 8 posições do Avançado 3D | Carreira concluída | **modo Pro** |
+| Lenda (`god`) | mais 8 posições do Avançado 3D | Jornada concluída | **modo Pro** |
 
 As barras dos produtos vendidos à parte vivem em `packages/member-shell/src/lib/studio-tier.ts`
 e são **distintas de propósito** (14/08/2026): `FREE_CREATION_MIN_LEVEL = 'coder'` para o que é
@@ -230,14 +230,14 @@ A terceira barra chegou com o **Molda** (04/09/2026) e mudou de posto em **05/09
 `.hdr` para os jogos 3D do Estúdio) não chama IA e abre no **Explorador(a) de Mundos**: é o posto
 cuja recompensa no Estúdio inclui o kit **Jogo 3D** (perfil `iniciante-3d`), o consumidor do que o
 Molda produz — abri-la um degrau antes, no Inventor(a) (como foi de 04 a 05/09), dava um modelo sem
-lugar para ser usado. Por isso a recompensa anunciada no Mapa da Carreira ao chegar ao Explorador(a)
+lugar para ser usado. Por isso a recompensa anunciada no Mapa da Jornada ao chegar ao Explorador(a)
 é "Molda, a sua oficina 3D", e o Inventor(a) anuncia "Pensa + Zappy"
-(`community-kids/src/lib/career-rewards.ts`, travada pelo `career-rewards-conformance`). O Molda é
+(`community-kids/src/lib/journey-rewards.ts`, travada pelo `journey-rewards-conformance`). O Molda é
 produto próprio no catálogo (`molda`, componente do combo Comunidade dos Criadores) e a régua de
 acesso é `checkMoldaAccessReadonly()` no member-shell (posse do produto E o nível).
 
 O perfil **Jogo 2D Essencial** do Construtor (fonte:
-`packages/studio/src/career/blockProfiles.ts`) traz os blocos da referência do Desafio
+`packages/studio/src/journey/blockProfiles.ts`) traz os blocos da referência do Desafio
 do Primeiro Jogo mais o **🚀 Kit espaço completo** — inclusive "soltar um asteroide de
 uma borda" e "atirar do sprite para a frente", que não aparecem no jogo-base (decisão
 de 26/07/2026): com o kit inteiro a criança cria variações do jogo de nave ensinado no
@@ -277,7 +277,7 @@ Nas aulas, o professor pode criar um projeto Pro antes de a criança chegar à L
 
 ### Cadastrar o curso base e as posições da etapa
 
-No painel **Cursos** (`/admin/membros/cursos`), o formulário de curso (tanto ao criar quanto ao editar — o botão **"Editar curso"** também aparece dentro do editor de conteúdo de cada curso) tem o campo **Posição na Carreira do Criador**. Ele só fica habilitado quando a Audiência é **Kids**.
+No painel **Cursos** (`/admin/membros/cursos`), o formulário de curso (tanto ao criar quanto ao editar — o botão **"Editar curso"** também aparece dentro do editor de conteúdo de cada curso) tem o campo **Posição na Jornada do Criador**. Ele só fica habilitado quando a Audiência é **Kids**.
 
 * **Nenhuma — bônus:** recompensa da etapa (abre quando a criança completa os cursos com posição da etapa do bônus; não conta para subir de nível).
 * **1 — Curso-base da etapa:** o curso que destrava as demais posições.
@@ -285,7 +285,7 @@ No painel **Cursos** (`/admin/membros/cursos`), o formulário de curso (tanto ao
 
 O select mostra qual curso já ocupa cada posição da etapa selecionada e desabilita posições ocupadas por outro curso (o banco recusa duplicata na mesma etapa). O número de posições é **por etapa**: Primeiros Passos aceita só a posição 1 e todas as demais aceitam de 1 a 8.
 
-O painel **Carreira do Criador** no topo da página é clicável: uma posição vazia abre o cadastro já mirando a etapa e a posição corretas; uma posição ocupada abre a edição daquele curso. Use-o para preencher a etapa Iniciante 2D primeiro, começando pela posição 1. A posição 1 publicada sem aula publicada com bloco de Estúdio de vitrine aparece como ⚠️ **"Sem vitrine"** (ver a Armadilha do Mural) — resolva antes do lançamento da etapa.
+O painel **Jornada do Criador** no topo da página é clicável: uma posição vazia abre o cadastro já mirando a etapa e a posição corretas; uma posição ocupada abre a edição daquele curso. Use-o para preencher a etapa Iniciante 2D primeiro, começando pela posição 1. A posição 1 publicada sem aula publicada com bloco de Estúdio de vitrine aparece como ⚠️ **"Sem vitrine"** (ver a Armadilha do Mural) — resolva antes do lançamento da etapa.
 
 ### Autoria do bloco Estúdio (blocos ou Pro)
 
@@ -302,7 +302,7 @@ O token nunca é enviado ao navegador. Os BFFs validam sessão, tamanho real do 
 
 ## Operação e prontidão
 
-O painel de cursos carrega todas as páginas de cursos Kids antes de calcular a prontidão. A carreira está completa para lançamento quando as 49 posições existem e os cursos necessários estão publicados e autorados.
+O painel de cursos carrega todas as páginas de cursos Kids antes de calcular a prontidão. A jornada está completa para lançamento quando as 49 posições existem e os cursos necessários estão publicados e autorados.
 
 O banco aplica a mesma regra do domínio:
 
@@ -329,8 +329,8 @@ Em caso de necessidade, prefira uma nova migração de correção em vez de edit
 
 ## Pontos principais no código
 
-* matriz e regras de trava (incl. `foundationAvailable` = fail-open sem curso base): `packages/core/src/career/catalog.ts`;
-* projeção da trava na listagem: `packages/members/src/application/career-course-locking/career-course-locking.ts`;
+* matriz e regras de trava (incl. `foundationAvailable` = fail-open sem curso base): `packages/core/src/journey/catalog.ts`;
+* projeção da trava na listagem: `packages/members/src/application/journey-course-locking/journey-course-locking.ts`;
 * gate de acesso direto (423) + checagem de curso base publicado: `packages/members/src/application/access/check-access.service.ts` e `hasPublishedFoundationCourse` no repositório de cursos;
 * cálculo dos marcos: `packages/members/src/infrastructure/persistence/drizzle/gamification.repository.ts`;
 * regra de autoria e posições: `packages/members/src/application/content-admin/content-admin.service.ts`;
@@ -338,4 +338,4 @@ Em caso de necessidade, prefira uma nova migração de correção em vez de edit
 * bloqueio de projetos com extensão futura: `packages/studio/src/studio/project-access.ts`;
 * autoria Pro: `packages/admin/src/components/studio/studio-embed.tsx`;
 * executor remoto: `packages/studio-runtime`;
-* apresentação infantil: `packages/community-kids/src/lib/level-info.ts` e `career-rewards.ts`.
+* apresentação infantil: `packages/community-kids/src/lib/level-info.ts` e `journey-rewards.ts`.

@@ -71,7 +71,7 @@ const courseFields = (b: CourseInput | CourseUpdateInput): CourseFields => ({
   // `null` = não informado (create → 2d; update → preserva).
   track: b.track ?? null,
   // Aqui `undefined` e `null` são diferentes: ausente preserva no PATCH;
-  // null explícito remove o curso da carreira.
+  // null explícito remove o curso da jornada.
   careerSlot: Object.hasOwn(b, 'careerSlot') ? b.careerSlot : undefined,
   // Currículo do Estúdio — MESMA distinção do `careerSlot`: ausente PRESERVA (build antigo
   // do admin não apaga o que a professora liberou), `null`/`[]` limpam de propósito.
@@ -257,7 +257,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
         { params: IdParams },
       )
       // CLONE p/ a outra plataforma (fork — edições não sincronizam): árvore
-      // inteira numa transação; nasce draft, fora da carreira, com clonedFrom.
+      // inteira numa transação; nasce draft, fora da jornada, com clonedFrom.
       // ⚠️ `:courseId` (não `:id`): o Elysia exige o MESMO nome de param quando o
       // segmento tem FILHOS (`/courses/:courseId/modules` já existe).
       .post(

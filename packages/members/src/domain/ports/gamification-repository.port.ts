@@ -233,7 +233,7 @@ export interface ListGamificationRankingInput {
 }
 
 /**
- * Os dois marcos de curso do aluno, POR CURSO. É o mesmo par que a carreira
+ * Os dois marcos de curso do aluno, POR CURSO. É o mesmo par que a jornada
  * cruza (`course_complete` ∩ `course_showcased`) — só que aqui vem separado,
  * porque a vitrine precisa distinguir "concluiu" de "concluiu e publicou".
  */
@@ -242,7 +242,7 @@ export interface CourseMilestones {
   showcased: boolean
 }
 
-/** Estado de carreira derivado de uma única leitura consistente do ledger. */
+/** Estado de jornada derivado de uma única leitura consistente do ledger. */
 export interface JourneyCourseState {
   qualified: QualifyingByTier
   milestones: Map<string, CourseMilestones>
@@ -309,7 +309,7 @@ export interface GamificationRepository {
   /**
    * Qualificação e marcos por curso calculados sobre o MESMO snapshot do ledger.
    * Os marcos vêm separados (`completed`/`showcased`) para o selo e o contador;
-   * a qualificação cruza ambos para a trava da carreira.
+   * a qualificação cruza ambos para a trava da jornada.
    *
    * ⚠️ A fonte é o LEDGER, não `progress`: progresso ao vivo pode regredir quando
    * uma aula nova é publicada, mas o marco é congelado. Curso sem marco não entra

@@ -23,7 +23,7 @@ if (!testDatabaseUrl) {
   console.warn('[tests/db] Postgres indisponível (porta 5433?) — teste do CHECK PULADO.')
 }
 
-describe.skipIf(!testDatabaseUrl)('CHECK real das posições da carreira', () => {
+describe.skipIf(!testDatabaseUrl)('CHECK real das posições da jornada', () => {
   const sql = postgres(testDatabaseUrl as string, {
     max: 1,
     connect_timeout: 2,

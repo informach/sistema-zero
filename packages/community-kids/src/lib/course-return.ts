@@ -38,7 +38,7 @@ const MAPA: CourseBackTarget = { href: '/cursos', label: 'Voltar ao mapa' }
  * criança para a trilha errada a faria procurar o curso numa lista que não o contém.
  * Com o degrau de entrada próprio, **cada degrau tem UM dono**, e o dono é o destino.
  *
- * `lenda` fica FORA da carreira (bônus da formatura) e vive na trilha da Lenda.
+ * `lenda` fica FORA da jornada (bônus da formatura) e vive na trilha da Lenda.
  * Curso sem `level` (members antigo) → `null`, e a volta cai no mapa.
  */
 export function trilhaHrefForCourse(course: CourseBackInput): string | null {

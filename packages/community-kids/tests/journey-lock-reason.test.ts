@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { journeyLockReason } from '../src/components/kids/kids-locked-course'
 
-describe('journeyLockReason (motivo do 423 de curso travado pela carreira)', () => {
+describe('journeyLockReason (motivo do 423 de curso travado pela jornada)', () => {
   test('extrai os três motivos conhecidos do envelope do members', () => {
     expect(journeyLockReason({ careerLock: { reason: 'foundation-first' } })).toBe(
       'foundation-first',

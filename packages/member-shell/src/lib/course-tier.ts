@@ -2,7 +2,7 @@ import type { CourseLevelSlug, CourseTrack } from './types'
 
 /**
  * DEGRAU pedagógico do curso = dificuldade × eixo 2D/3D (reforma 07/2026).
- * A ordem do array é a escada que a carreira sobe (2D antes de 3D em cada
+ * A ordem do array é a escada que a jornada sobe (2D antes de 3D em cada
  * dificuldade) — a MESMA do `BlockLevel` do studio e dos `COURSE_TIERS` do
  * members. Helper compartilhado dos apps de aluno (kids/community); o admin
  * NÃO importa daqui (duplicação intencional, como os rank labels).
@@ -39,7 +39,7 @@ export function courseTierOf(
   level?: CourseLevelSlug,
   track?: CourseTrack,
 ): CourseTierSlug | undefined {
-  // `lenda` é FORA da carreira → não é degrau (sem chip/filtro de degrau; o kids
+  // `lenda` é FORA da jornada → não é degrau (sem chip/filtro de degrau; o kids
   // renderiza o rótulo "Lenda" à parte).
   if (!level || level === 'lenda') return undefined
   const tier = `${level}-${track ?? '2d'}`

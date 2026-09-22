@@ -114,7 +114,7 @@ export const fundoDoCenario = (id: SceneCenarioId) => SCENE_CENARIOS[id].fundo
  * ⚠️ Era um par de listas soltas (`FIGURAS_DO_ESPACO` e `FIGURAS_DA_TERRA`) que precisavam ser
  * mantidas em sincronia à mão com o resto. Derivar mata a classe: figura nova entra num cenário e
  * a tabela acompanha sozinha. Figura que aparece em mais de um cenário fica com o PRIMEIRO, que é
- * a ordem em que os cursos aparecem na carreira.
+ * a ordem em que os cursos aparecem na jornada.
  */
 export const CENARIO_DA_FIGURA: Readonly<Partial<Record<SceneFigure, SceneCenarioId>>> =
   Object.freeze(

@@ -48,7 +48,7 @@ describe('o que o menu oferece', () => {
     ])
   })
 
-  it('Início e Carreira continuam links simples', () => {
+  it('Início e Jornada continuam links simples', () => {
     expect(visibleChildren(item('/'), null)).toEqual([])
     expect(visibleChildren(item('/cursos'), null)).toEqual([])
   })
@@ -73,7 +73,7 @@ describe('qual grupo fica aberto', () => {
     expect(openGroupFor('/recados', null)).toBeNull()
   })
 
-  it('na Carreira e no Início não há grupo a abrir', () => {
+  it('na Jornada e no Início não há grupo a abrir', () => {
     expect(openGroupFor('/', null)).toBe('/')
     expect(openGroupFor('/cursos', null)).toBe('/cursos')
   })

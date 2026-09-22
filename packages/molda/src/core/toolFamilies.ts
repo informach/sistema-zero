@@ -1,7 +1,7 @@
 /**
  * As FAMÍLIAS de ferramentas da oficina e as faixas em que elas se liberam.
  *
- * O Molda não conhece carreira. O host (o kids) traduz o posto da criança numa lista de famílias
+ * O Molda não conhece jornada. O host (o kids) traduz o posto da criança numa lista de famílias
  * liberadas e passa em `MoldaHostAdapter.toolAccess`; aqui mora só o vocabulário, como dado
  * puro, sem nenhum import, para o host poder ler pelo subpath `@sistemazero/molda/tools` sem
  * trazer React, Three ou IndexedDB junto (`src/assets/purity.test.ts` cobra isso).

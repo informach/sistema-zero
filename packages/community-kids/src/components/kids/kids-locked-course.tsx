@@ -13,7 +13,7 @@ export function journeyLockReason(body: unknown): JourneyLockReason | undefined 
     : undefined
 }
 
-/** Recado amigável para um curso travado pela carreira (etapa/curso-base/recompensa). */
+/** Recado amigável para um curso travado pela jornada (etapa/curso-base/recompensa). */
 export function KidsLockedCourse({ reason }: { reason?: JourneyLockReason }) {
   const foundationFirst = reason === 'foundation-first'
   const tierReward = reason === 'tier-reward'

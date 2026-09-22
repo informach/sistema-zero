@@ -437,9 +437,9 @@ export interface MyCourseView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
-  /** Posição na etapa da carreira; `null` = curso bônus. */
+  /** Posição na etapa da jornada; `null` = curso bônus. */
   careerSlot: number | null
-  /** Trava pedagógica da carreira; independente da matrícula comercial. */
+  /** Trava pedagógica da jornada; independente da matrícula comercial. */
   careerLock: JourneyCourseLockView
   access: AccessView
   progress: CourseProgress
@@ -489,9 +489,9 @@ export interface CatalogCourseView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
-  /** Posição na etapa da carreira; `null` = curso bônus. */
+  /** Posição na etapa da jornada; `null` = curso bônus. */
   careerSlot: number | null
-  /** Trava pedagógica da carreira; `hasAccess` continua representando só a matrícula. */
+  /** Trava pedagógica da jornada; `hasAccess` continua representando só a matrícula. */
   careerLock: JourneyCourseLockView
   hasAccess: boolean
   /** Marcos do aluno neste curso (ledger) — o selo do card. Kids; adulto vem zerado. */
@@ -528,7 +528,7 @@ export function toCatalogCourseView(
 /**
  * Os marcos do aluno NESTE curso, como o card precisa deles: separados.
  *
- * A carreira cruza os dois (`course_complete` ∩ `course_showcased`) e devolve um
+ * A jornada cruza os dois (`course_complete` ∩ `course_showcased`) e devolve um
  * veredito; a vitrine precisa da diferença, porque é ela que responde a pergunta
  * "por que este curso ainda não conta?" — concluir e publicar no Mural são passos
  * distintos e só o segundo costuma ficar para trás.
@@ -653,7 +653,7 @@ export interface CourseDetailView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
-  /** Posição na etapa da carreira; `null` = curso bônus. */
+  /** Posição na etapa da jornada; `null` = curso bônus. */
   careerSlot: number | null
   access: AccessView
   progress: CourseProgressView

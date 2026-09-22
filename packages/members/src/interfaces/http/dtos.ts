@@ -929,7 +929,7 @@ export const ManageEntitlementBody = t.Object({
 
 const COURSE_STATUS = t.Union([t.Literal('draft'), t.Literal('published'), t.Literal('archived')])
 // Nível (dificuldade) do curso — espelha o enum `course_level` do schema.
-// `lenda` = categoria fora da carreira (bônus da formatura, sempre careerSlot null).
+// `lenda` = categoria fora da jornada (bônus da formatura, sempre careerSlot null).
 const COURSE_LEVEL = t.Union([
   t.Literal('primeiros-passos'),
   t.Literal('iniciante'),
@@ -975,7 +975,7 @@ const CourseBodyProperties = {
   level: t.Optional(t.Union([COURSE_LEVEL, t.Null()])),
   // Eixo 2D/3D. AUSENTE: create → `2d`; update → PRESERVA o atual (mesma régua).
   track: t.Optional(t.Union([COURSE_TRACK, t.Null()])),
-  // Slot da Carreira do Criador: 1 = curso-base; null = bônus/fora da carreira.
+  // Slot da Jornada do Criador: 1 = curso-base; null = bônus/fora da jornada.
   // Máx 8 por degrau (reforma 07/2026); a faixa fina por etapa é validada no domínio.
   careerSlot: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 8 }), t.Null()])),
   // Blocos que este curso LIBERA no Estúdio livre ao satisfazer o critério atual:

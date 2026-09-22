@@ -181,7 +181,7 @@ describe('Pensa planejador — HTTP', () => {
       blockedReason: 'O Pinta ainda não foi liberado pelo seu nível na jornada.',
     })
 
-    // O Estúdio do Pensa exige produto E o primeiro desbloqueio da carreira.
+    // O Estúdio do Pensa exige produto E o primeiro desbloqueio da jornada.
     grantLifetime(ctx.entitlements, { userId: USER, courseRef: 'estudio-completo' })
     const studioLocked = await json(
       await req(ctx.app, 'GET', `/members/pensa/tasks/${tasks[1].id}/handoff?audience=kids`),

@@ -237,7 +237,7 @@ describe('GetStudioUnlocksService', () => {
     expect(await service.execute(userId, 'kids')).toEqual({ blocks: ['sz_g2d_create_ship'] })
   })
 
-  test('bônus reclassificado para carreira preserva ferramenta já servida', async () => {
+  test('bônus reclassificado para jornada preserva ferramenta já servida', async () => {
     const { courses, service, userId, mark } = setup()
     const course = makeCourse(['sz_g2d_create_ship'], { careerSlot: null })
     courses.courses.push(course)
@@ -258,7 +258,7 @@ describe('GetStudioUnlocksService', () => {
     expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
   })
 
-  test('curso da carreira reclassificado como bônus reconhece a conclusão anterior', async () => {
+  test('curso da jornada reclassificado como bônus reconhece a conclusão anterior', async () => {
     const { courses, service, userId, mark } = setup()
     const course = makeCourse(['sz_g2d_create_ship'])
     courses.courses.push(course)

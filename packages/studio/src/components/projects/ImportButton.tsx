@@ -15,7 +15,7 @@ export interface ImportButtonHandle {
 
 export interface ImportButtonProps {
   onImported: (id: string) => void
-  /** IDs conquistados na carreira; projeto não é destruído, mas incompatibilidades são avisadas. */
+  /** IDs conquistados na jornada; projeto não é destruído, mas incompatibilidades são avisadas. */
   allowedExtensions?: readonly string[]
   ref?: Ref<ImportButtonHandle>
 }

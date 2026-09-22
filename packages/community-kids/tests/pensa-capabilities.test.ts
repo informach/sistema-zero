@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { canOpenPensaStudioTask } from '../src/lib/pensa-capabilities'
 
 describe('capability Pensa → Estúdio', () => {
-  it('exige simultaneamente produto e liberação do Estúdio pela carreira', () => {
+  it('exige simultaneamente produto e liberação do Estúdio pela jornada', () => {
     expect(
       canOpenPensaStudioTask({ studioProductOwned: true, levelSlug: 'noob', role: 'student' }),
     ).toBe(false)

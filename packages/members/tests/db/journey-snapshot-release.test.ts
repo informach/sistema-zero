@@ -10,7 +10,7 @@ import { DrizzleGamificationRepository } from '../../src/infrastructure/persiste
 import { prepareTestDatabase } from './test-database'
 
 /**
- * O `coalesce` que decide de QUAL degrau um marco de carreira conta — e que a migration
+ * O `coalesce` que decide de QUAL degrau um marco de jornada conta — e que a migration
  * `0063` usa para não rebaixar ninguém.
  *
  * Os marcos guardam um RETRATO congelado (`source_level`/`source_track`/`source_career_slot`)

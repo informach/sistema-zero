@@ -4,7 +4,7 @@ import { levelInfo } from '@/lib/level-info'
 import { KidsRecado } from './kids-recado'
 import { KidsMascot } from './mascot'
 
-/** Produto comprado que ainda depende de um degrau da carreira. */
+/** Produto comprado que ainda depende de um degrau da jornada. */
 export function KidsJourneyLockedProduct({
   title,
   intro,
@@ -18,7 +18,7 @@ export function KidsJourneyLockedProduct({
   return (
     <KidsRecado
       art={<KidsMascot expression="sleeping" className="kid-float size-24" />}
-      // O ícone e o nome do posto saem do LEVEL_INFO, como em toda a carreira.
+      // O ícone e o nome do posto saem do LEVEL_INFO, como em toda a jornada.
       chip={`Abre no ${level.label}`}
       chipIcon={level.icon}
       title={`${title} faz parte da sua jornada`}

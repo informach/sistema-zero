@@ -27,7 +27,7 @@ import {
   type Paginated,
 } from '@/lib/types'
 
-/** Pré-preenchimento ao criar um curso já mirando uma posição da carreira. */
+/** Pré-preenchimento ao criar um curso já mirando uma posição da jornada. */
 export interface CoursePrefill {
   audience?: string
   level?: string
@@ -81,7 +81,7 @@ const EMPTY: FormState = {
 // ter regra própria, o parâmetro já está aqui.
 export function slotsForTier(level: string, _track: string): number {
   // ⚠️ O Iniciante 2D teve 7 por um dia (14/08 a 15/08): quando o curso-base saiu dele para
-  // o degrau de entrada, encolheram o degrau para o total da carreira continuar 48. A
+  // o degrau de entrada, encolheram o degrau para o total da jornada continuar 48. A
   // usuária desfez — o total é 49 e todo degrau que não é a entrada tem 8. O número vem do
   // core, e o `journey-tier-conformance.test.ts` compara esta função com ele.
   if (level === 'primeiros-passos') return 1
@@ -135,7 +135,7 @@ export function CourseFormDialog({
   onClose: () => void
   /** Curso em edição; `null` = criação. */
   editing: CourseView | null
-  /** Só na criação: mira uma etapa/posição da carreira (painel de prontidão). */
+  /** Só na criação: mira uma etapa/posição da jornada (painel de prontidão). */
   prefill?: CoursePrefill
   /** Lista de cursos Kids p/ mostrar a OCUPAÇÃO das posições; buscada sozinha se ausente. */
   journeyCourses?: CourseView[]
@@ -411,7 +411,7 @@ export function CourseFormDialog({
               setForm((f) => ({
                 ...f,
                 audience: e.target.value,
-                // Posição na carreira só existe p/ Kids; limpa ao virar adulto.
+                // Posição na jornada só existe p/ Kids; limpa ao virar adulto.
                 careerSlot: e.target.value === 'kids' ? f.careerSlot : '',
               }))
             }
@@ -444,7 +444,7 @@ export function CourseFormDialog({
                   level: nextLevel,
                   track: nextTrack,
                   // Trocar de etapa pode reduzir 6→5 posições: limpa se sobrar. Lenda
-                  // é FORA da carreira → nunca tem posição.
+                  // é FORA da jornada → nunca tem posição.
                   careerSlot: nextLevel === 'lenda' || slotNum > max ? '' : f.careerSlot,
                 }
               })
@@ -455,7 +455,7 @@ export function CourseFormDialog({
                 {o.label}
               </option>
             ))}
-            {/* Lenda = categoria FORA da carreira (não é degrau; não entra em
+            {/* Lenda = categoria FORA da jornada (não é degrau; não entra em
                 COURSE_TIER_OPTIONS): cursos bônus que aparecem só na trilha da Lenda. */}
             <option value="lenda:2d">👑 Lenda (curso bônus da formatura)</option>
           </Select>

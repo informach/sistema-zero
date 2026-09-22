@@ -148,7 +148,7 @@ barra do navegador) e salve com estes nomes:
 |---|---|
 | `print-estudio.webp` | Estúdio aberto num projeto colorido: blocos à esquerda + jogo rodando à direita. |
 | `print-mural.webp` | Mural com a grade de jogos publicados (capas + contador de jogadas; um card mostrando o QR). |
-| `print-carreira.webp` | Tela da Carreira com os níveis Faísca→Lenda e conquistas. |
+| `print-jornada.webp` | Tela da Jornada com os níveis Faísca→Lenda e conquistas. |
 | `print-mundo.webp` | Quarto 3D do Mundo do Criador com troféus expostos e o avatar. |
 | `print-clube.webp` | Fórum do Clube com alguns tópicos (nomes fictícios). |
 | `print-recados.webp` | Conversa dos Recados com o professor respondendo um envio. |

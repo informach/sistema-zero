@@ -91,7 +91,7 @@ async function unlockExplorer(ctx: Awaited<ReturnType<typeof setup>>) {
   }
 }
 describe('Pensa → Molda', () => {
-  test('posse sem carreira bloqueia handoff e progresso; irmãos não veem o plano', async () => {
+  test('posse sem jornada bloqueia handoff e progresso; irmãos não veem o plano', async () => {
     const ctx = await setup()
     expect(await (await ctx.request(`/tasks/${ctx.taskId}/handoff`)).json()).toMatchObject({
       task: { destination: 'molda' },

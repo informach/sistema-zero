@@ -12,8 +12,8 @@ interface CourseCardProps {
 
 /**
  * Card de curso da home ("Meus cursos"): capa + progresso + CTA. A home só lista cursos
- * LIBERADOS pela carreira (24/07) — os travados (futuro/recompensa) vivem no Mapa da
- * Carreira, então o card não tem estados de cadeado.
+ * LIBERADOS pela jornada (24/07) — os travados (futuro/recompensa) vivem no Mapa da
+ * Jornada, então o card não tem estados de cadeado.
  *
  * Desenho das telas-modelo (11/09/2026): cartão branco de cantos de 24px, a capa em cima
  * (sem capa, a caixa clara com o livro), o sobretítulo, o título em Baloo, a frase, o

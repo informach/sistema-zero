@@ -6,7 +6,7 @@ import { levelInfo } from '@/lib/level-info'
  * `LEVEL_INFO` (as telas-modelo erram os nomes; vale o do sistema). Duas roupas:
  *  - `lista` (padrão): na cor do nível, para listas e cabeçalhos;
  *  - `destaque`: a pílula AMARELA das telas-modelo (11/09/2026), para heróis e
- *    cartões de carreira. O amarelo é cor de fundo e não segue o tema; a tinta
+ *    cartões de jornada. O amarelo é cor de fundo e não segue o tema; a tinta
  *    escura dá 8,73:1 nele.
  * `size="lg"` para o destaque do perfil; `sm` para chips em listas/cabeçalhos.
  */

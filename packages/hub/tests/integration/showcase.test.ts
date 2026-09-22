@@ -629,7 +629,7 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(res.status).toBe(401)
   })
 
-  // ── Contador de jogadas + agregado da carreira (Fase 5, 07/2026) ──
+  // ── Contador de jogadas + agregado da jornada (Fase 5, 07/2026) ──
 
   test('studio-play com count=1 conta a jogada; sem count só valida', async () => {
     const accountId = randomUUID()

@@ -11,7 +11,7 @@
  * Controle: o professor (host) FIXA o nível; o aluno pode REVELAR o avançado
  * (toggle opcional, desligável pelo professor). Modelo (reforma 2D/3D 07/2026) =
  * ESCADA TOTAL de 6 degraus — dificuldade × eixo, 2D antes de 3D em cada
- * dificuldade, na MESMA ordem da carreira do aluno — + allowlist custom por aula.
+ * dificuldade, na MESMA ordem da jornada do aluno — + allowlist custom por aula.
  */
 
 export type BlockLevel =

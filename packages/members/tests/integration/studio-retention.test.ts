@@ -146,7 +146,7 @@ describe('marcos de plays recebidos — webhook /plays-milestone', () => {
 })
 
 describe('missões gated por estudio-completo', () => {
-  test('com posse e carreira liberada: semanal E mensal têm missões do estúdio; publicar/remixar andam o progresso', async () => {
+  test('com posse e jornada liberada: semanal E mensal têm missões do estúdio; publicar/remixar andam o progresso', async () => {
     const { app, courses, entitlements, hubPlays, gamification } = buildApp()
     grantCommunity(entitlements, { userId: USER, communityKey: ESTUDIO_ACCESS_REF })
     const foundation = seedSampleCourse(

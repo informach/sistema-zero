@@ -30,7 +30,7 @@ import { useWiggle } from './use-wiggle'
 /**
  * Mapa da Jornada (/cursos): uma FITA curva contínua serpenteia ligando os níveis; a parte já
  * conquistada acende no degradê das cores dos níveis, a parte à frente fica apagada. Cada nó é um
- * MEDALHÃO grande com a ilustração do nível (Dedé/Debinha em `/carreira/<slug>.webp`; sem arquivo →
+ * MEDALHÃO grande com a ilustração do nível (Dedé/Debinha em `/jornada/<slug>.webp`; sem arquivo →
  * fallback no ícone do LEVEL_INFO) e, liberado, navega p/ a trilha do nível
  * (`/cursos/trilha/[level]`). Nó travado NÃO navega: balança + recado gentil (decisão da usuária
  * 24/07). Fita e medalhões dividem o espaço normalizado da geometria pura (`lib/journey-path.ts`) →
@@ -64,7 +64,7 @@ export function JourneyMap({
 }) {
   const progress = journeyProgress(level, courses)
   /**
-   * ⚠️ "Em dia" precisa olhar a TRILHA, não só a régua da carreira. O `journeyProgress` só
+   * ⚠️ "Em dia" precisa olhar a TRILHA, não só a régua da jornada. O `journeyProgress` só
    * conhece as posições obrigatórias: com um bônus novo por fazer ele diz `up-to-date`
    * enquanto o contador do medalhão mostra "8 de 9". O card afirmaria "você já fez tudo
    * que está pronto por aqui" — exatamente a mentira que este contador existe para matar.

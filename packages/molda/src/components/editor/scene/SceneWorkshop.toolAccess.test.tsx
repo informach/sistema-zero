@@ -2,7 +2,7 @@
  * A oficina no NÍVEL DE ENTRADA (Explorador(a) de Mundos): o que a criança de 9 anos encontra.
  *
  * O `SceneWorkshop.contract.test.tsx` mede o PADRÃO, tudo liberado. Este mede a tela que a
- * criança vê de fato, com o portão por nível de carreira ligado, e prova a regra de ouro do
+ * criança vê de fato, com o portão por nível de jornada ligado, e prova a regra de ouro do
  * portão: trancar tira a AUTORIA, nunca a leitura.
  *
  * ⚠️ O portão é pedagógico, não de segurança: um controle trancado não é renderizado (nunca

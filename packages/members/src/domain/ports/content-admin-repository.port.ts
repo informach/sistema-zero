@@ -54,7 +54,7 @@ export interface CourseFields {
    * no CREATE vira `2d`; no UPDATE **preserva o atual** (régua do `audience`).
    */
   track: CourseTrack | null
-  /** Ausente no PATCH preserva; `null` remove da carreira; número define o slot. */
+  /** Ausente no PATCH preserva; `null` remove da jornada; número define o slot. */
   careerSlot?: number | null
 }
 
@@ -136,7 +136,7 @@ export interface ContentAdminRepository {
   /**
    * Dos cursos pedidos, quais têm ≥1 aula PUBLICADA com bloco de Estúdio de
    * vitrine (`showcase.enabled`)? Sem ela o aluno nunca publica no Mural — um
-   * curso obrigatório assim nunca qualifica sua posição na carreira (o painel
+   * curso obrigatório assim nunca qualifica sua posição na jornada (o painel
    * usa isso para avisar o operador).
    */
   listCourseIdsWithShowcaseBlock(courseIds: string[]): Promise<string[]>

@@ -1579,7 +1579,7 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
         `/hub/internal/studio-play/${enc(playId)}${countHit ? '?count=1' : ''}`,
       )
     },
-    /** Carreira (RSC, sem refresh): jogos publicados no Mural + soma das jogadas. */
+    /** Jornada (RSC, sem refresh): jogos publicados no Mural + soma das jogadas. */
     myShowcaseStatsReadonly(): Promise<GatewayResponse<{ published: number; plays: number }>> {
       return gw.gatewayFetchReadonly('/hub/my-showcase-stats')
     },

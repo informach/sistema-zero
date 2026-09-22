@@ -3234,7 +3234,7 @@ const config: GatewayConfigInput = {
       transforms: hubInternalTransforms,
       rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
     },
-    // Carreira do aluno: agregado dos próprios jogos no Mural (publicados + jogadas).
+    // Jornada do aluno: agregado dos próprios jogos no Mural (publicados + jogadas).
     {
       id: 'hub-my-showcase-stats',
       methods: ['GET'],

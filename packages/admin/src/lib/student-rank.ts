@@ -1,5 +1,5 @@
 /**
- * Rótulos dos 8 postos da Carreira do Criador (slugs do members) — duplicação
+ * Rótulos dos 8 postos da Jornada do Criador (slugs do members) — duplicação
  * INTENCIONAL da apresentação do community-kids (manter em lockstep; a fonte da
  * régua é o `@sistemazero/core/journey`).
  */

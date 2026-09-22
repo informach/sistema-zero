@@ -376,7 +376,7 @@
   --snes-x: var(--kids-cyan);
   --snes-y: var(--kids-verde);
 
-  /* Níveis do aluno (carreira de 8, reforma 2D/3D) — cor da AURA + insígnia.
+  /* Níveis do aluno (jornada de 8, reforma 2D/3D) — cor da AURA + insígnia.
      Versões AA p/ texto branco. Cada nível tem sua cor, na ordem da escada, e ela é
      identidade: não muda no Pink. */
   --level-noob: oklch(0.55 0.02 255); /* cinza neutro (começo) */
@@ -619,7 +619,7 @@ button[data-slot="button"]:is(.bg-background, .bg-secondary, .text-destructive):
 /* Variante em BLOCO do CTA: largura total, altura AUTOMÁTICA e duas linhas
    (legenda + destino). O `.sz-btn-gradient` é pílula de linha única e altura fixa
    — enfiar duas linhas nela deixa um vão no meio e o texto colado nas bordas.
-   Usada no CTA "Comece por este: <nome>" dos cards bloqueados pela carreira.
+   Usada no CTA "Comece por este: <nome>" dos cards bloqueados pela jornada.
    Chapada, como o botão da marca. */
 .sz-btn-gradient-block {
   display: flex;
@@ -677,7 +677,7 @@ button[data-slot="button"]:is(.bg-background, .bg-secondary, .text-destructive):
 }
 
 /* ============================================================
-   MAPA DA CARREIRA (/cursos) — serpentina de 8 níveis: fita
+   MAPA DA JORNADA (/cursos) — serpentina de 8 níveis: fita
    curva CONTÍNUA (SVG) atrás de medalhões grandes. A fita e os
    nós compartilham o espaço normalizado (ver lib/journey-path.ts):
    nós em top/left %, <svg> com preserveAspectRatio=none e traço

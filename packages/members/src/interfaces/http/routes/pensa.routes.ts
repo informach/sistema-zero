@@ -68,7 +68,7 @@ export interface PensaRoutesDeps {
   updateTaskProgress: UpdatePensaTaskProgressService
   /** Gate de PRODUTO na criação de projeto (mesma régua da rota `/members/access`). */
   accessCheck: AccessCheckService
-  /** Rank autoritativo do perfil; tarefas do Estúdio respeitam a carreira. */
+  /** Rank autoritativo do perfil; tarefas do Estúdio respeitam a jornada. */
   getGamification: GetGamificationService
   /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
   internalToken?: string

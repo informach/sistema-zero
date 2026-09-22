@@ -24,13 +24,13 @@ export function journeyLocksForCourses(
 
   const locks = new Map<string, JourneyCourseLockView>()
   for (const course of courses) {
-    // Curso `lenda` é FORA da carreira → nunca tem trava pedagógica (a régua de ver é o
+    // Curso `lenda` é FORA da jornada → nunca tem trava pedagógica (a régua de ver é o
     // nó da Lenda no mapa, não o careerLock).
     if (course.level === 'lenda') {
       locks.set(course.id, { locked: false })
       continue
     }
-    // Par (level, track) que não é degrau da carreira (ex.: `primeiros-passos` + `3d`)
+    // Par (level, track) que não é degrau da jornada (ex.: `primeiros-passos` + `3d`)
     // fica FORA dela, como o `lenda`: não trava nada.
     const tier = courseTier(course.level, course.track)
     if (!tier) {

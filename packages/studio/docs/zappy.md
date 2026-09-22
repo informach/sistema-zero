@@ -29,7 +29,7 @@ lease de dois minutos e recupera reservas abandonadas quando ele vence.
 O BFF remove dados pessoais antes de persistir ou enviar a pergunta. Regras locais recusam temas
 impróprios e rejeitam respostas do modelo que contenham conteúdo inseguro, solicitação de dados
 pessoais ou PII. O contexto, o bloco selecionado e os manuais usam o mesmo catálogo permitido pela
-carreira.
+jornada.
 
 ## Deploy das migrations 0056–0059
 

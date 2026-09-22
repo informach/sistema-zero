@@ -7,7 +7,7 @@ const CONQUISTAS = ['c1', 'c2', 'c3', 'c4', 'c5']
 
 /**
  * Esqueleto da página "Meu perfil" (fallback de Suspense do Next). Imita a página que vem
- * (telas-modelo de 11/09/2026): o cabeçalho e o herói azul no creme, a carreira no menta
+ * (telas-modelo de 11/09/2026): o cabeçalho e o herói azul no creme, a jornada no menta
  * e as conquistas no lilás, com as faixas já na cor certa para a tela não "pular".
  */
 export default function ProfileLoading() {

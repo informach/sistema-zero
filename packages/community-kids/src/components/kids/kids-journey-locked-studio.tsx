@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { KidsRecado } from './kids-recado'
 import { KidsMascot } from './mascot'
 
-/** Produto comprado, mas criação livre ainda não conquistada pela carreira. */
+/** Produto comprado, mas criação livre ainda não conquistada pela jornada. */
 export function KidsJourneyLockedStudio() {
   return (
     <KidsRecado

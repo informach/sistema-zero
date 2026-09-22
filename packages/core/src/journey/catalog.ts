@@ -1,5 +1,5 @@
 /**
- * Contrato técnico central da Carreira do Criador.
+ * Contrato técnico central da Jornada do Criador.
  *
  * Este módulo é deliberadamente puro: não conhece banco, React, Estúdio ou textos
  * de apresentação. Os consumidores traduzem os ids de recompensa para a UI.
@@ -17,7 +17,7 @@ export const JOURNEY_LEVEL_SLUGS = [
 export type JourneyLevelSlug = (typeof JOURNEY_LEVEL_SLUGS)[number]
 
 /**
- * Degraus da carreira, EM ORDEM (a ordem é load-bearing: `courseIndex < learningIndex` decide
+ * Degraus da jornada, EM ORDEM (a ordem é load-bearing: `courseIndex < learningIndex` decide
  * o que é degrau passado).
  *
  * ⚠️ `primeiros-passos-2d` é o degrau de ENTRADA, criado em 14/08 a pedido da usuária. Antes o
@@ -95,7 +95,7 @@ const SLOTS_1 = [1] as const
 // curso que a Faísca faz).
 //
 // ⚠️ O Iniciante 2D chegou a ter 7 entre 14/08 e 15/08: quando o curso-base saiu dele p/ o
-// degrau novo, tirou-se uma posição de lá p/ o total da carreira continuar 48. A usuária
+// degrau novo, tirou-se uma posição de lá p/ o total da jornada continuar 48. A usuária
 // REJEITOU essa compensação — todo degrau que não é a entrada tem 8, ponto. O total passou
 // a ser 49 (1 + 8 + 8×5) e são 9 cursos de Faísca até Inventor(a). Não "restaurar" o 7
 // achando que é drift: foi decisão explícita.
@@ -266,7 +266,7 @@ export function journeySlotsForTier(tier: string): number {
   return SLOTS_BY_TIER.get(tier as JourneyCourseTier) ?? 0
 }
 
-/** O degrau é um degrau de carreira conhecido? (`lenda` e lixo caem fora.) */
+/** O degrau é um degrau de jornada conhecido? (`lenda` e lixo caem fora.) */
 export function isJourneyCourseTier(tier: string): tier is JourneyCourseTier {
   return SLOTS_BY_TIER.has(tier as JourneyCourseTier)
 }
@@ -321,7 +321,7 @@ export interface JourneyCourseLock {
 }
 
 /**
- * Política de acesso aos cursos da carreira.
+ * Política de acesso aos cursos da jornada.
  *
  * Cursos com POSIÇÃO seguem a trilha: etapa futura trava (`future-tier`) e, na
  * etapa atual, o curso-base (posição 1) destrava os demais (`foundation-first`).
@@ -332,7 +332,7 @@ export interface JourneyCourseLock {
  * `foundationAvailable` diz se existe um curso-base (`careerSlot=1`) PUBLICADO na
  * etapa. Sem ele NÃO há como destravar (concluir+publicar os obrigatórios é a
  * única chave), então tanto `foundation-first` quanto `tier-reward` falhariam a
- * etapa — e a carreira — para sempre. Nesse caso a política falha ABERTA: a trava
+ * etapa — e a jornada — para sempre. Nesse caso a política falha ABERTA: a trava
  * pedagógica só vale quando existe base alcançável. (No bônus isso também protege
  * o ROLLOUT: um catálogo sem etapas montadas nasce todo-bônus e nada trava.)
  * Default `true` para compatibilidade.

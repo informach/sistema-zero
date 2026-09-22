@@ -143,7 +143,7 @@ describe('a promessa do Molda é uma só e é verdade', () => {
     }
   })
 
-  test('a comemoração e as recompensas da carreira dizem a mesma lista', () => {
+  test('a comemoração e as recompensas da jornada dizem a mesma lista', () => {
     for (const band of MOLDA_TOOL_BANDS) {
       const level = MOLDA_TOOL_BAND_LEVELS[band]
       expect(moldaLevelGain(level), band).toContain(moldaFeatureList(band))

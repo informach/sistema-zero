@@ -1,5 +1,5 @@
 /**
- * A família de cada comando do registro: é por aqui que o portão por nível de carreira chega
+ * A família de cada comando do registro: é por aqui que o portão por nível de jornada chega
  * ao trilho, aos atalhos e à tela de ajuda de uma vez.
  *
  * Mapa IRMÃO do registro, e não um campo nele, de propósito: `tier` responde "onde e quanto se

@@ -2,7 +2,7 @@ import { resolveStudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 
 /**
  * A posse do produto é necessária, mas não suficiente: qualquer entrada vinda
- * do Pensa/Pinta precisa respeitar o mesmo gate de carreira usado por `/estudio`.
+ * do Pensa/Pinta precisa respeitar o mesmo gate de jornada usado por `/estudio`.
  */
 export function canOpenPensaStudioTask({
   studioProductOwned,

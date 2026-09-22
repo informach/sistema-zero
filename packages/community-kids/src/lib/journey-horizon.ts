@@ -4,9 +4,9 @@ import { LEVEL_ORDER, levelInfo } from '@/lib/level-info'
 import type { CourseLevelSlug, CourseTrack, StudentLevelSlug, StudentLevelView } from '@/lib/types'
 
 /**
- * HORIZONTE DO CATÁLOGO — a régua PROVISÓRIA da carreira enquanto os 49 cursos não existem.
+ * HORIZONTE DO CATÁLOGO — a régua PROVISÓRIA da jornada enquanto os 49 cursos não existem.
  *
- * A carreira exige 8 posições por degrau, com uma exceção: o degrau de ENTRADA tem 1. São 49 no
+ * A jornada exige 8 posições por degrau, com uma exceção: o degrau de ENTRADA tem 1. São 49 no
  * total, e o catálogo real tem punhados.
  * Sem isto a criança lê "faltam 8 cursos" de cursos que ninguém gravou e vê medalhões com
  * CADEADO, que para ela significa "você não fez o suficiente". Aqui derivamos duas coisas
@@ -47,7 +47,7 @@ export interface JourneyCatalogEntry {
  */
 export const BEYOND_HORIZON_PHRASE = 'E tem muito mais pela frente'
 
-/** Degraus na ordem da carreira, derivados da escada (sem espelho novo). */
+/** Degraus na ordem da jornada, derivados da escada (sem espelho novo). */
 export const TIER_ORDER: readonly CourseTierSlug[] = [
   ...new Set(
     LEVEL_ORDER.map((slug) => LEVEL_TIER[slug]).filter((tier): tier is CourseTierSlug => !!tier),

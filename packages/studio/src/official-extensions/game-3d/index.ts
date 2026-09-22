@@ -21,7 +21,7 @@ export const gameThreeDExtension: ExtensionDefinition = {
   ),
   conflictsWith: fullscreenConflictsFor('game-3d'),
   // Kit facilitador de jogo 3D → é a PORTA DE ENTRADA do 3D (iniciante-3d, o
-  // degrau logo após o Inventor na carreira); o "na unha"/manual fica avançado-3d.
+  // degrau logo após o Inventor na jornada); o "na unha"/manual fica avançado-3d.
   minLevel: 'iniciante-3d',
   blockly: {
     blocks: gameThreeDBlocks,

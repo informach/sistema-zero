@@ -32,7 +32,7 @@ const JOURNEY_LOCK_MESSAGES = {
   'future-tier': 'Continue sua jornada para liberar este curso',
 } as const
 
-/** Curso futuro na carreira, aguardando o curso-base, ou bônus-recompensa da etapa. → 423. */
+/** Curso futuro na jornada, aguardando o curso-base, ou bônus-recompensa da etapa. → 423. */
 export class CourseJourneyLockedError extends DomainError {
   readonly code = 'COURSE_CAREER_LOCKED'
   constructor(
@@ -83,7 +83,7 @@ export class CloneSameAudienceError extends DomainError {
   }
 }
 
-/** Já existe outro curso no mesmo slot da etapa da carreira. → 409. */
+/** Já existe outro curso no mesmo slot da etapa da jornada. → 409. */
 export class JourneySlotConflictError extends DomainError {
   readonly code = 'CAREER_SLOT_CONFLICT'
   constructor(message = 'Já existe um curso nesta posição da jornada') {

@@ -154,7 +154,7 @@ export interface ThreadRepository {
     authorAccountId: string | null
     playsCount: number
   }>
-  /** Agregado da carreira: posts de vitrine visíveis do autor + soma das jogadas. */
+  /** Agregado da jornada: posts de vitrine visíveis do autor + soma das jogadas. */
   showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }>
   /**
    * Participação Clube × Mural por autor, agregada EM LOTE no banco (GROUP BY —

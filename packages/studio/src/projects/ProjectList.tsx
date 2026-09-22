@@ -67,7 +67,7 @@ export interface ProjectListProps {
   professional?: boolean
   /** Extensões instaladas automaticamente num projeto básico novo. */
   initialExtensions?: readonly string[]
-  /** Extensões que a carreira permite; usadas também pelo aviso de importação. */
+  /** Extensões que a jornada permite; usadas também pelo aviso de importação. */
   allowedExtensions?: readonly string[]
   /**
    * Tema FIXADO pelo host (ex.: a comunidade controla claro/escuro). Quando

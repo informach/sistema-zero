@@ -58,7 +58,7 @@ async function comEntradaConcluida(
   return entrada
 }
 
-describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
+describe('Jornada do Criador — acesso pedagógico aos cursos', () => {
   test('curso-base abre; demais aguardam concluir e publicar o curso-base', async () => {
     const { app, courses, entitlements, gamification } = buildApp()
     await comEntradaConcluida(courses, gamification)

@@ -27,7 +27,7 @@ describe('courseTier', () => {
     expect(courseTier('primeiros-passos', '2d')).toBe('primeiros-passos-2d')
   })
 
-  test('par que não é degrau da carreira devolve null, não uma etapa inventada', () => {
+  test('par que não é degrau da jornada devolve null, não uma etapa inventada', () => {
     // Só existe `primeiros-passos-2d`. Sem o guard, `primeiros-passos-3d` viraria chave
     // fantasma no mapa de slots e o marco sumiria em silêncio.
     expect(courseTier('primeiros-passos', '3d')).toBeNull()

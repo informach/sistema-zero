@@ -18,7 +18,7 @@ export function KidsSectionHeader({
   id?: string
   title: ReactNode
   subtitle?: ReactNode
-  /** Controles à direita do título no desktop ("Ver o mapa da carreira →"). */
+  /** Controles à direita do título no desktop ("Ver o mapa da jornada →"). */
   actions?: ReactNode
   className?: string
 }) {

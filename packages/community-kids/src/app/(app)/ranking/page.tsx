@@ -24,7 +24,7 @@ export default async function RankingPage() {
     getRankingReadonly({ limit: 20 }).catch(() => null),
     getLeagueReadonly().catch(() => null),
     // O jogo publicado no Mural só aparece como fonte de XP para quem abre o Estúdio
-    // livre (posse do produto e o nível da carreira): produto vendido à parte não vira
+    // livre (posse do produto e o nível da jornada): produto vendido à parte não vira
     // caminho para quem não o tem. As duas buscas são as mesmas do layout (deduplicadas
     // por request) e, num soluço, o cartão só some.
     checkStudioAccessReadonly().catch(() => null),

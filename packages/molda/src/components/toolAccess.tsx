@@ -1,5 +1,5 @@
 /**
- * O portão por nível de carreira, do lado da interface: um contexto só, lido por quem desenha
+ * O portão por nível de jornada, do lado da interface: um contexto só, lido por quem desenha
  * um controle que CRIA ou MUDA algo de uma família trancável.
  *
  * O valor vem de `MoldaHostAdapter.toolAccess` e atravessa a árvore por contexto, então a

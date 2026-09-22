@@ -55,9 +55,9 @@ export default async function ProfilePage() {
       listReadonly(),
       getGamificationReadonly({ withRanking: true }),
       getAvatarReadonly(),
-      // Jogos publicados + jogadas (linha da carreira) — best-effort, some no erro.
+      // Jogos publicados + jogadas (linha da jornada) — best-effort, some no erro.
       shell.hub.myShowcaseStatsReadonly().catch(() => null),
-      // Catálogo: define até onde a escada da carreira é desenhada e limita o contador
+      // Catálogo: define até onde a escada da jornada é desenhada e limita o contador
       // ao que EXISTE (horizonte). Best-effort — sem ele a escada cai no comportamento
       // antigo (os 8 postos), que é o estado final de qualquer forma.
       listCatalog().catch(() => null),
@@ -89,7 +89,7 @@ export default async function ProfilePage() {
   const studioFree = canOpenFreeStudio(ownsStudio, gamification?.level?.slug, session.role)
 
   // "Minhas ferramentas" some sem gaveta nenhuma (ver `MyTools`), então a faixa menta só
-  // existe quando há carreira OU ferramenta de verdade para mostrar.
+  // existe quando há jornada OU ferramenta de verdade para mostrar.
   const showTools = ownsStudio && drawers.length > 0
 
   return (
@@ -114,7 +114,7 @@ export default async function ProfilePage() {
         </div>
       </KidsBand>
 
-      {/* A ordem das telas-modelo (11/09/2026): carreira no menta, o cantinho no azul-claro
+      {/* A ordem das telas-modelo (11/09/2026): jornada no menta, o cantinho no azul-claro
           e as conquistas fechando no lilás. */}
       {gamification || showTools ? (
         <KidsBand tone="menta">

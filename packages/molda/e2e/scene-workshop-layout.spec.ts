@@ -166,7 +166,7 @@ test('na aba Animar, os movimentos, a vista e a pose cabem sem cobrir nada', asy
 })
 
 /**
- * O nível de entrada (`?nivel=explorer`, o portão por carreira): o que a criança de fato encara.
+ * O nível de entrada (`?nivel=explorer`, o portão por jornada): o que a criança de fato encara.
  * Somem a malha, o laço, o ponto de giro, os ossos e o "Trazer arquivo 3D", e entra a linha
  * "Ferramentas que vêm por aí". Nada coberto, em nenhum tamanho, nas duas abas.
  */

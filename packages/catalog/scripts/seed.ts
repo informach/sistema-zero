@@ -72,7 +72,7 @@ const DESAFIO_30_DIAS_OFFER_SLUG = 'desafio-primeiro-jogo-30-dias'
 // (`kind: 'bundle'`) cujos componentes espalham o acesso: chave-mestra dos cursos kids
 // (produto-folha `todos-os-cursos-kids`, abaixo) + Clube + Mural + Estúdio Completo +
 // Pensa + Pinta. O Desafio do Mês destrava sozinho (exige clube+estúdio); Quarto 3D,
-// Carreira, missões-núcleo e Recados são núcleo GRÁTIS (nenhum grant além destes).
+// Jornada, missões-núcleo e Recados são núcleo GRÁTIS (nenhum grant além destes).
 const TODOS_CURSOS_KIDS_SKU = 'todos-os-cursos-kids'
 const COMUNIDADE_SKU = 'comunidade-dos-criadores'
 const COMUNIDADE_OFFER_MENSAL_SLUG = 'comunidade-dos-criadores-mensal'

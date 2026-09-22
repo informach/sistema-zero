@@ -12,7 +12,7 @@ type App = ReturnType<typeof buildApp>['app']
 const readJson = (res: Response): Promise<any> => res.json()
 
 /**
- * O curso de ENTRADA da carreira: degrau `primeiros-passos-2d`, posição 1. Concluí-lo e
+ * O curso de ENTRADA da jornada: degrau `primeiros-passos-2d`, posição 1. Concluí-lo e
  * publicá-lo é a régua do Construtor(a) desde 14/08 (antes era o slot 1 do Iniciante 2D).
  */
 function seedJourneyCourse(courses: InMemoryCourseRepository) {
@@ -1209,7 +1209,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     expect(me.level.slug).toBe('coder')
   })
 
-  test('kids expõe revisão curta que muda ao qualificar ou editar curso da carreira', async () => {
+  test('kids expõe revisão curta que muda ao qualificar ou editar curso da jornada', async () => {
     const { app, courses, entitlements } = buildApp()
     // Curso de ENTRADA: é o único que uma Faísca kids consegue abrir (o Iniciante 2D é
     // degrau futuro para ela desde 14/08, e a trava responderia 423 no complete).
@@ -1372,7 +1372,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     }
     // Sem snapshot, o coalesce cai no curso ao vivo: re-taggear p/ 3D MOVE o balde (é
     // exatamente o mecanismo de correção retroativa da reforma). Aqui o par vira
-    // `primeiros-passos` + `3d`, que NÃO é degrau da carreira, então o marco simplesmente
+    // `primeiros-passos` + `3d`, que NÃO é degrau da jornada, então o marco simplesmente
     // sai da contagem e o perfil volta a Faísca neste cenário histórico sem snapshot.
     const row = courses.courses.find((c) => c.id === course.courseId)
     if (row) row.track = '3d'

@@ -1,7 +1,7 @@
-# Evolução do Sistema Zero pela Carreira do Criador
+# Evolução do Sistema Zero pela Jornada do Criador
 
 Implementação solicitada em 07/09/2026, na branch `staging`. A entrega mantém a
-carreira como eixo da plataforma. Direção visual: oficina de criação com os tokens
+jornada como eixo da plataforma. Direção visual: oficina de criação com os tokens
 atuais de azul, céu/navy, laranja e amarelo, sem trocar o tema de adulto/admin.
 
 **Estado:** alterações de produto das fases 1–6 implementadas e verificadas por
@@ -11,7 +11,7 @@ proposta editorial de matemática, ainda sem implementação de interface e rota
 
 As fases são etapas consecutivas de construção do código. A entrega completa é
 validada em staging; a promoção para produção depende da aprovação do responsável
-pelo produto. Os recursos seguem as permissões de acesso e a Carreira do Criador.
+pelo produto. Os recursos seguem as permissões de acesso e a Jornada do Criador.
 
 **Revisão posterior:** o [relatório de revisão](2026-09-07-creator-journey-review.md)
 registra seis problemas corrigidos e a nova verificação de 2.742 testes, TypeScript,
@@ -43,7 +43,7 @@ Biome e build. As contagens da seção Verificação abaixo são da implementaç
 | 1 — Consistência | Próxima ação; ferramentas por posse/rank; missões por conteúdo possível; outbox de publicação e estado de propagação; concessões persistentes; prontidão da autoria | Conferir propagação entre serviços no ambiente de implantação e conciliar casos históricos conhecidos |
 | 2 — Kids | Cinco grupos de navegação; início e curso orientados à próxima ação; marcos distintos no mapa/cartão; celebração com progresso confirmado; visual de oficina | Revisão visual e percurso completo com teclado/celular; avaliação com alunos |
 | 3 — Criação | Trabalhos da nuvem e planos no hub; retomada pelo ID com preferência local; Pensa → Molda; contexto da IA pelos blocos conquistados; retorno ao plano com salvamento protegido | Validar troca entre ferramentas e casos de conflito/offline em staging |
-| 4 — Acompanhamento | Área dedicada de responsáveis; carreira e pendências no dashboard/relatório; comunidade e recados; abertura da entrega pela conversa do professor | Conferir relatório com dados reais e avaliar clareza com responsáveis |
+| 4 — Acompanhamento | Área dedicada de responsáveis; jornada e pendências no dashboard/relatório; comunidade e recados; abertura da entrega pela conversa do professor | Conferir relatório com dados reais e avaliar clareza com responsáveis |
 | 5 — Prática | Sessões de até cinco perguntas já estudadas; feedback, revisão da aula, rascunho e histórico próprios; isolamento e idempotência; sem XP/moedas/rank | Revisão pedagógica do conteúdo e validação dos fluxos em staging |
 | 6 — Adulto/admin | Retomada do curso e acesso a devolutivas no adulto; prontidão na tabela de cursos; contexto da entrega e erro recuperável no admin; componentes/temas próprios mantidos | Revisão visual dos fluxos afetados |
 | 7 — Outros conhecimentos | Oito atividades de matemática aplicada especificadas no guia de implantação | Implementação/liberação dependem da avaliação da prática; finanças ficam para depois |
@@ -52,7 +52,7 @@ Biome e build. As contagens da seção Verificação abaixo são da implementaç
 
 ### Jornada, aulas e publicação
 
-`@sistemazero/core/career` concentra qualificação, próxima ação, disponibilidade de
+`@sistemazero/core/journey` concentra qualificação, próxima ação, disponibilidade de
 ferramentas. Início, mapa, cartões e detalhe de curso distinguem aulas
 concluídas de publicação. `GetMyCourse` resolve uma aula publicada e alcançável para
 publicar; falta de conteúdo apresenta ajuda, sem apagar a conclusão.
@@ -80,13 +80,13 @@ cosméticos conservam as regras atuais; não foi criado um incentivo novo de gas
 
 ### Oficina e Pensa → Molda
 
-A nova navegação agrupa Início, Carreira, Criar, Comunidade e Meu espaço, mantendo as
+A nova navegação agrupa Início, Jornada, Criar, Comunidade e Meu espaço, mantendo as
 URLs das ferramentas. O hub mostra disponibilidade e próximas conquistas; a área de
 trabalhos lista metadados da nuvem e planos. Ela informa que trabalhos somente locais
 continuam nas galerias. A retomada do Estúdio conserva o ID e prefere o rascunho local.
 
 Pensa usa os blocos conquistados ao gerar/revisar tarefas. Molda é destino para modelos,
-texturas e céus de planos 3D quando está disponível. Backend revalida posse e carreira
+texturas e céus de planos 3D quando está disponível. Backend revalida posse e jornada
 no handoff e no progresso. O guia permite vincular uma criação salva existente, preserva
 IDs de passos/critérios e usa controle de versão do plano. Antes de sair ou concluir,
 o aluno guarda e fecha a criação pelo Voltar do próprio Molda.
@@ -94,7 +94,7 @@ o aluno guarda e fecha a criação pelo Voltar do próprio Molda.
 ### Pais, professores, adulto e prática
 
 `/responsavel` exige sessão da conta e verificação de responsável. Reusa o dashboard
-com carreira, ferramentas incluídas, pendências e próxima conquista, além de perguntas
+com jornada, ferramentas incluídas, pendências e próxima conquista, além de perguntas
 para conversar sobre as criações. `/perfis` continua gerenciando a família. O relatório
 semanal usa a mesma noção de publicação pendente; nenhum relatório real foi enviado.
 
@@ -108,7 +108,7 @@ quiz aprovado, congela até cinco perguntas e oculta respostas corretas até o e
 A primeira resposta confirmada é imutável; retentativas não duplicam a sessão.
 Histórico é isolado por perfil+conta, sobrevive a edições do curso
 e é removido na exclusão da conta. Rascunho local usa perfil+sessão. Não há escrita em
-XP, moedas, progresso das aulas ou marcos da carreira.
+XP, moedas, progresso das aulas ou marcos da jornada.
 
 ## Verificação
 

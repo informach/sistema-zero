@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 const WIGGLE_MS = 700
 
 /**
- * O gesto de "aqui não dá para entrar" do mapa da carreira: o nó sacode e um recado sobe.
+ * O gesto de "aqui não dá para entrar" do mapa da jornada: o nó sacode e um recado sobe.
  *
  * Mora num arquivo próprio porque DOIS nós usam o mesmo gesto — o nó de posto travado
  * (`journey-map.tsx`) e o nó de aviso do horizonte (`journey-horizon-node.tsx`) —, e o

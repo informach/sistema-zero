@@ -80,7 +80,7 @@ function FeatCard({ slug, unlockedAt }: { slug: string; unlockedAt: string }) {
 }
 
 /**
- * Linha do tempo da CARREIRA no /perfil: a escada universal Faísca→Lenda (posto atual +
+ * Linha do tempo da JORNADA no /perfil: a escada universal Faísca→Lenda (posto atual +
  * o que falta) e os FEITOS conquistados — universais primeiro, bônus dos apps criativos
  * agrupados depois. Só apresentação; os dados vêm do `getGamificationReadonly` da página.
  *

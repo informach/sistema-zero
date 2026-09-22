@@ -42,7 +42,7 @@ export interface StudioTier {
  */
 /**
  * A oficina 3D (Molda: modelos low poly, texturas e céus HDR) abre no **Explorador(a) de
- * Mundos** (`docs/carreira-do-criador.md`). Decisão da usuária (05/09/2026; de 04 a 05/09 era
+ * Mundos** (`docs/jornada-do-criador.md`). Decisão da usuária (05/09/2026; de 04 a 05/09 era
  * o Inventor(a)): o consumidor do que o Molda produz é o kit Jogo 3D, que no perfil do Estúdio
  * é recompensa do Explorador(a) (`iniciante-3d`) — abrir a oficina um degrau antes dava um
  * modelo sem lugar para ser usado.
@@ -129,7 +129,7 @@ export function remixRequirementFromSnapshot(snapshot: unknown): StudioRemixRequ
 }
 
 /**
- * PRIMEIRO nível da carreira cuja recompensa cobre as ferramentas do jogo (e já
+ * PRIMEIRO nível da jornada cuja recompensa cobre as ferramentas do jogo (e já
  * libera o Estúdio livre) — o selo "remix a partir do nível X" do card do Mural.
  * `null` = nenhum nível cobre (extensão desconhecida/forjada no metadado) — a UI
  * cai num recado genérico; fail-closed cosmético, nunca destrava nada.
@@ -189,7 +189,7 @@ export function resolveStudioTier(
       ? curriculum.extensions
       : (EXTENSIONS_BY_PROFILE[reward.blockProfileId] ?? []),
     // ⚠️ NENHUMA extensão vem instalada. A criança abre o painel de Extensões e
-    // instala a que quiser, entre as que a carreira dela já liberou
+    // instala a que quiser, entre as que a jornada dela já liberou
     // (`allowedExtensions`); os blocos continuam filtrados pelo `level`, então
     // instalar não adianta a paleta de um degrau acima. Decisão dela, 08/08:
     // instalar é parte do aprendizado, e o projeto novo nasce limpo.

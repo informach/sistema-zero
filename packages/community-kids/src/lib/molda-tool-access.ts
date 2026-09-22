@@ -14,7 +14,7 @@ import { LEVEL_ORDER, levelInfo } from '@/lib/level-info'
 import type { StudentLevelSlug } from '@/lib/types'
 
 /**
- * A frase do nó do mapa da carreira para o que o catálogo de hoje ainda não alcança. A oficina
+ * A frase do nó do mapa da jornada para o que o catálogo de hoje ainda não alcança. A oficina
  * não promete posto que o mapa esconde: o que passa do horizonte aparece com ela.
  */
 export const MOLDA_BEYOND_HORIZON = BEYOND_HORIZON_PHRASE
@@ -42,9 +42,9 @@ export function moldaToolAccessRestricted({
 }
 
 /**
- * As ferramentas do Molda que a criança pode USAR, pelo posto da carreira.
+ * As ferramentas do Molda que a criança pode USAR, pelo posto da jornada.
  *
- * O Molda não conhece carreira: recebe as famílias liberadas (`toolAccess` do adapter), como o
+ * O Molda não conhece jornada: recebe as famílias liberadas (`toolAccess` do adapter), como o
  * Estúdio recebe os modos e o Pinta as ferramentas. As faixas abrem nos postos que fecham os três
  * cursos 3D (`MOLDA_TOOL_BAND_LEVELS`, no core): básico no Explorador(a), intermediário no
  * Arquiteto(a) de Mundos e profissional na Lenda.

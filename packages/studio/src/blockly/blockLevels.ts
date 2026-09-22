@@ -7,7 +7,7 @@ import { resolveProgrammingBlockLevel } from './programmingContract'
  * Nível de dificuldade POR BLOCO (curadoria da paleta do Estúdio) — a fonte da
  * verdade da progressão. Reforma 2D/3D (07/2026): a escada virou 6 degraus
  * (dificuldade × eixo, na ordem ini-2d < ini-3d < int-2d < int-3d < av-2d <
- * av-3d — a MESMA da carreira do aluno). **Filosofia "kit primeiro, na unha por
+ * av-3d — a MESMA da jornada do aluno). **Filosofia "kit primeiro, na unha por
  * último" (decisão da usuária 26/07):** iniciante/intermediário criam com os KITS
  * (extensões facilitadoras) + um mínimo de web; o AVANÇADO faz tudo na unha, sem
  * kit (Canvas/HTML/CSS crus).
@@ -258,7 +258,7 @@ export function resolveBlockLevel(type: string): BlockLevel {
   // internas de motor já foram separadas no AVANCADO_2D acima.
   if (type.startsWith('sz_gk_')) return 'intermediario-2d'
   // Jogo 3D Avançado: TODOS intermediário-3d (reclassificado 26/07 — abre no
-  // Arquiteto de Mundos, junto do Mundo 3D; a carreira é o gate real). Espelha o
+  // Arquiteto de Mundos, junto do Mundo 3D; a jornada é o gate real). Espelha o
   // `minLevel` da extensão em official-extensions/game-3d-advanced/index.ts.
   if (type.startsWith('sz_g3k_')) return 'intermediario-3d'
   // Canvas 3D (three.js cru, núcleo): a categoria INTEIRA é avançado-3d — do

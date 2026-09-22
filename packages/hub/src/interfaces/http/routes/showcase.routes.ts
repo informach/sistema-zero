@@ -100,7 +100,7 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
     )
     .get('/hub/my-showcase-stats', async ({ headers }) => {
       // Rota de ALUNO (JWT no gateway; aqui o token interno + ator dos headers):
-      // agregado da carreira — "seus jogos já foram jogados N vezes".
+      // agregado da jornada — "seus jogos já foram jogados N vezes".
       return deps.showcase.myShowcaseStats(resolveActor(headers))
     })
     .get(

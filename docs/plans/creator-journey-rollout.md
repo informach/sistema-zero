@@ -1,10 +1,10 @@
-# Implantação e avaliação da Carreira do Criador
+# Implantação e avaliação da Jornada do Criador
 
 Esta é a sequência operacional da implementação em
 [2026-09-07-creator-journey-evolution.md](2026-09-07-creator-journey-evolution.md).
 As fases organizam a construção do código em etapas consecutivas. O conjunto completo
 é validado em staging e promovido para produção somente após aprovação do responsável
-pelo produto. Navegação, trabalhos e prática seguem as regras normais de acesso e carreira.
+pelo produto. Navegação, trabalhos e prática seguem as regras normais de acesso e jornada.
 
 ## Dependências e ordem
 
@@ -21,7 +21,7 @@ pelo produto. Navegação, trabalhos e prática seguem as regras normais de aces
    Members precisa aceitar `molda` antes de qualquer host gerar esses cartões.
 3. Conferir uma publicação de teste: thread e pendência na mesma transação,
    confirmação em Members, avanço somente com os dois marcos. Interromper e reiniciar
-   o worker; a mesma entrega deve ser recuperada sem duplicar XP, carreira ou thread.
+   o worker; a mesma entrega deve ser recuperada sem duplicar XP, jornada ou thread.
 4. Validar a oficina completa em staging com contas e perfis de teste.
    Validar desktop, celular, teclado, redução de movimento e troca entre irmãos.
    Repetir a troca de perfil com duas abas de prática abertas: a aba antiga deve
@@ -34,7 +34,7 @@ pelo produto. Navegação, trabalhos e prática seguem as regras normais de aces
 ## Validação e promoção
 
 O deploy disponibiliza a navegação em cinco grupos e a prática. Os trabalhos aparecem
-conforme as ferramentas liberadas pela conta e pela carreira. Novas sessões de prática
+conforme as ferramentas liberadas pela conta e pela jornada. Novas sessões de prática
 exigem acesso ao curso, aula concluída e quiz aprovado. Os dados continuam isolados por perfil.
 
 Staging é o ambiente de validação do conjunto. A promoção para produção é uma decisão
@@ -48,7 +48,7 @@ enum não é parte deste plano.
 
 ## Inventário e medição
 
-Mapa de implementação: `core/career` concentra os contratos; Members é autoridade
+Mapa de implementação: `core/journey` concentra os contratos; Members é autoridade
 de acesso, marcos, concessões, planos e prática; Hub publica e entrega o marco;
 member-shell autentica os BFFs e resolve as capacidades da IA; Kids apresenta a
 jornada; admin preserva a possibilidade de publicar e abre entregas contextualizadas.
@@ -59,7 +59,7 @@ Executar com a conexão do serviço correto e `ON_ERROR_STOP=1`, guardando resul
 com data e ambiente. O inventário de posições aponta ausência/duplicação e existência
 de atividade de publicação; a navegação até essa atividade ainda exige o cenário
 de aceitação abaixo. A contagem de marcos inclui bônus/legado: não é a contagem de
-níveis qualificados, calculada pela política de carreira.
+níveis qualificados, calculada pela política de jornada.
 
 Durante a validação em staging, registrar:
 
@@ -79,7 +79,7 @@ crianças, enviada mensagem real ou gerada nota de aprendizagem a partir destes 
 
 | Cenário | Resultado obrigatório |
 | --- | --- |
-| Faísca com posse de todas as ferramentas | Criação nas aulas; Estúdio livre/Pinta ainda dependem da carreira |
+| Faísca com posse de todas as ferramentas | Criação nas aulas; Estúdio livre/Pinta ainda dependem da jornada |
 | Conclusão sem publicação / publicação antes da conclusão | Nenhuma promoção prematura; próxima ação explica o marco que falta |
 | Curso-base e demais posições | Base primeiro; posições restantes sem nova ordem artificial |
 | Bônus e curso sem blocos inéditos | Sem promoção por bônus; nenhum bloco antigo removido; sem falsa celebração de ganho |
@@ -105,7 +105,7 @@ de concessões exigem correção antes da promoção para produção.
 ## Laboratório de matemática: proposta editorial
 
 Proposta editorial para oito atividades, ainda sem rota nem liberação. Elas usam
-contextos de criação, mantêm histórico separado e não contam para a carreira.
+contextos de criação, mantêm histórico separado e não contam para a jornada.
 Cada atividade precisa de exemplos resolvidos, feedback por alternativa e revisão
 pedagógica antes de virar conteúdo do produto.
 
@@ -121,6 +121,6 @@ pedagógica antes de virar conteúdo do produto.
 | Área e orçamento de peças | Cobrir um cenário sem exceder o inventário | Grade 8×6 usa 48 peças unitárias |
 
 Critério de decisão: os alunos entendem a prática, conseguem usar o feedback e
-continuam distinguindo estudo, criação e carreira; a equipe consegue manter o
+continuam distinguindo estudo, criação e jornada; a equipe consegue manter o
 conteúdo. Só então decidir incluir conhecimentos extras. Educação financeira fica
 para uma proposta posterior, apropriada à idade e revisada pela equipe pedagógica.

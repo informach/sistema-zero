@@ -29,7 +29,7 @@ fontes **Baloo 2** (display) + **Nunito** (corpo) + Geist Mono (código), microi
 bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`).
 
 ⭐⭐ **Nav: cinco seções, e as três com destinos por dentro ABREM em vez de navegar (09/2026).**
-`NAV_ITEMS` (= `MOBILE_NAV_ITEMS`) tem Início, Carreira, Criar, Comunidade e Meu espaço. As três
+`NAV_ITEMS` (= `MOBILE_NAV_ITEMS`) tem Início, Jornada, Criar, Comunidade e Meu espaço. As três
 últimas têm **`children`**, e é isso que o menu desenha: no computador um `<details>` controlado
 (o padrão nativo do "Minhas ferramentas"), no celular uma **gaveta** sobre a barra de abas
 (`useModalA11y`, o mesmo das celebrações). O agrupamento de 07/09 tinha deixado as ferramentas a
@@ -60,12 +60,12 @@ dois cliques e uma página no meio, e as crianças reclamaram do caminho no vaiv
 - Os Recados ficam FORA dos filhos da Comunidade (já têm o sino no rodapé do menu) e seguem no
   `inner`. O `/ranking` entrou em `protectedPrefixes`: era a única rota da criança que se defendia
   só no RSC, e agora o menu a oferece direto. **Home (lote UX 07/2026):** o StreakCard MORREU — virou
-**`creator-career-card.tsx`** ("Carreira de Criador": aura + insígnia do rank + `nextLevelHint` +
+**`creator-journey-card.tsx`** ("Jornada do Criador": aura + insígnia do rank + `nextLevelHint` +
 fogo/XP secundários; placeholder gentil quando a gamificação está fora; a home soma
 `getAvatarReadonly()` ao Promise.all p/ a foto da aura). **"Meus cursos" = SÓ LIBERADOS (24/07):**
 o grid da home filtra `careerLock?.locked !== true` (superfície de AÇÃO — travados vivem no Mapa
-da Carreira) com ordenação ação-primeiro (em andamento → não começados → concluídos) + link "Ver
-o mapa da carreira" no título; empty-state defensivo aponta o mapa quando tudo está travado. O
+da Jornada) com ordenação ação-primeiro (em andamento → não começados → concluídos) + link "Ver
+o mapa da jornada" no título; empty-state defensivo aponta o mapa quando tudo está travado. O
 `course-card.tsx` PERDEU os estados de cadeado (foundation/reward/future — só a trilha/catálogo
 renderizam trava agora). **Festa no fim do vídeo:** a
 auto-conclusão a 90% ARMA a celebração (`deferredCelebrationRef` no lesson-player-client) e o
@@ -74,7 +74,7 @@ overlay completo abre no **`onVideoEnded`** (fio novo do member-shell); manual s
 CSP-safe): botão QrCode no `PlayLinkActions` dos cards do Mural → cartão imprimível (capa +
 título + QR do `/jogar/<id>`; imprimir usa `body[data-print='game-card']` + regra `@media print`
 no globals.css). **`/estudio` gated pelo RANK:** `studio-full-client` passa
-`level`/`allowedModes` derivados da carreira via `resolveStudioTier` (member-shell) ao
+`level`/`allowedModes` derivados da jornada via `resolveStudioTier` (member-shell) ao
 `StudioEditor` — o nível decide o MODO do editor; os BLOCOS vêm do currículo (ver a seção
 abaixo).
 Home com mascote + card-herói "Continuar" (`continue-hero.tsx`), **trilha serpenteante** no detalhe do curso
@@ -294,7 +294,7 @@ foi APAGADO por isso.
 ⚠️ **Nunca dizer quanto falta para o próximo posto enquanto o degrau não tem todos os cursos
 publicados** (1 em Primeiros Passos e 8 em todos os demais). Com o
 degrau pela metade, "faltam 2 para virar Inventor(a)" é mentira: a criança fecha os 2 e não sobe.
-`careerProgress` devolve `hint: null` nesse caso e as telas silenciam; quando o degrau enche, o
+`journeyProgress` devolve `hint: null` nesse caso e as telas silenciam; quando o degrau enche, o
 `remaining` do members vira verdade e a frase volta sozinha. O retorno por curso nesse meio-tempo é
 a GAVETA nova no Estúdio. As bolinhas do nó ficam, mas falam do que EXISTE ("1 de 3 aventuras
 prontas"), nunca do que falta para subir — e desde 15/08 elas contam a TRILHA INTEIRA, bônus
@@ -305,7 +305,7 @@ ferramenta é o CURSO; o posto entrega MODO (livre → Ponte → Pro) e PRODUTO 
 Construtor(a), Pensa+Zappy no Inventor(a), Molda no Explorador(a) de Mundos desde 05/09). O Mestre
 anuncia só "um posto novo no mapa", porque é o que ele dá de verdade. Desde 11/09 o Arquiteto(a) e a
 Lenda também citam as ferramentas do Molda que abrem neles (ver "Ferramentas do Molda por posto").
-`CAREER_REWARD_INFO` (`lib/career-rewards.ts`) é a copy e `tests/career-rewards-conformance.test.ts`
+`JOURNEY_REWARD_INFO` (`lib/journey-rewards.ts`) é a copy e `tests/journey-rewards-conformance.test.ts`
 trava as promessas contra o core E contra as constantes dos portões (inclusive proibindo nome de kit).
 
 ⚠️ **Copy sem travessão (—)**: é marca de texto de IA e a voz da casa é humana. Travado por
@@ -380,7 +380,7 @@ Resolver puro `resolveChildGuideStep` em `lib/guide.ts` (avatar PRIMEIRO — ord
 passos somem SOZINHOS quando a coisa acontece: montou avatar/abriu aula). O modal usa
 `childWelcomeSteps`: as AÇÕES que ainda faltam (não promete "primeira aula" para quem já estudou
 nem aponta "Começar" sem curso liberado) **seguidas da explicação FIXA do app** (aulas, XP/foguinho,
-Estúdio, Mural, carreira).
+Estúdio, Mural, jornada).
 ⚠️ **A explicação fixa é o conserto de 14/08:** antes só existiam os passos condicionais, então quem
 já tinha avatar e já tinha estudado abria "Como funciona?", lia UMA linha sobre XP e o "Vamos lá"
 fechava sem nada acontecer — o botão prometia o que o app não tinha. Duas regras nasceram daí:
@@ -957,7 +957,7 @@ em 26/07) e o Pro e "Promover para Pro" abrem somente na Lenda/equipe. As duas b
 `AI_APPS_MIN_LEVEL` e `FREE_CREATION_MIN_LEVEL` (member-shell `lib/studio-tier.ts`) — eram uma só até
 14/08, e por isso o Pinta ficava preso junto com a IA. Os BLOCOS não dependem mais do rank. Projeto importado com
 extensão futura é preservado, mas não abre antes da conquista. A matriz exata está em
-`docs/carreira-do-criador.md`. O modo Pro livre usa WebContainer local na rota dedicada; atividades Pro
+`docs/jornada-do-criador.md`. O modo Pro livre usa WebContainer local na rota dedicada; atividades Pro
 de aula usam `proRuntime` remoto via `/api/studio/pro-runtime/build`, com autorização do curso e template
 autoral, sem exigir COOP/COEP no player. O botão **"Compartilhar"** usa um `share` adapter
 próprio → `/api/studio/describe` + **`/api/studio/publish-standalone`** (shim sobre
@@ -1098,14 +1098,14 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
 
 ### Meu perfil no desenho das telas-modelo (11/09/2026)
 
-- **Faixas:** creme (cabeçalho + herói azul) → menta (carreira, feitos e "Minhas ferramentas") →
+- **Faixas:** creme (cabeçalho + herói azul) → menta (jornada, feitos e "Minhas ferramentas") →
   azul-claro ("Meu cantinho" + "Proteja sua sequência") → lilás ("Minhas conquistas"). Sem
   gamificação as conquistas somem e o cantinho vira a faixa lilás (a última é sempre lilás).
 - **Herói:** o avatar num quadrado de vidro (`.kids-marca-vidro`: a tinta da marca a 10% e um fio de
   35%). ⚠️ Não usar o `.kids-marca-tile` (20%) atrás de TEXTO: o branco caía para 3,7:1; o vidro dá
   4,58:1 no claro e 5,87:1 no escuro. O hover das pílulas de vidro engrossa o FIO em vez de clarear o
   fundo, pelo mesmo motivo.
-- **Carreira:** linhas-cartão (o posto atual com contorno azul e "Você está aqui", o seguinte com
+- **Jornada:** linhas-cartão (o posto atual com contorno azul e "Você está aqui", o seguinte com
   "Próximo nível", os que o catálogo não alcança numa linha "Em construção"). O ladrilho dos outros
   postos é a cor do nível com a tinta `var(--card)`: branca no claro, navy no escuro (onde as cores
   de nível clareiam), sem par novo.
@@ -1115,15 +1115,15 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
 - **Cantinho:** o cartão inteiro é o link; a pílula creme só vai para a direita quando o PRÓPRIO
   cartão tem 28rem (`@container` + `@md:`), porque a largura dele vem da grade de duas colunas.
 
-### Início, Carreira, Trilha e curso no desenho das telas-modelo (11/09/2026)
+### Início, Jornada, Trilha e curso no desenho das telas-modelo (11/09/2026)
 
 - **Início:** o "Como funciona?" sobe para o canto do cabeçalho pelo `header` do `ChildGuide` (os
   balões seguem entre o cabeçalho e o herói). Missões por grupo (`kids-unit-cyan|rosa|verde`) no fio,
   no ladrilho e no "Resgatar"; ⚠️ o fundo do Resgatar é a cor do grupo puxada 14% para a tinta, porque
   a rosa pura dava 4,37:1 com o branco. ⚠️ Item de grade com texto `truncate` precisa de `min-w-0`:
   sem ele o cartão da missão vazava a tela no celular.
-- **Carreira:** o chip amarelo "Você é <posto>" e a frase do próximo marco moram no CABEÇALHO (o
-  `CareerMap` não os desenha mais). A página fecha com as "Aventuras da trilha" em
+- **Jornada:** o chip amarelo "Você é <posto>" e a frase do próximo marco moram no CABEÇALHO (o
+  `JourneyMap` não os desenha mais). A página fecha com as "Aventuras da trilha" em
   `CatalogCourseCard layout="linha"`, com o progresso vindo de `listMyCourses` (o catálogo não sabe as
   aulas feitas). No mapa: o posto atual com o anel azul da marca, o travado claro sem borda e com o
   selo branco, e o travado também diz quantas aventuras a trilha dele tem.
@@ -1308,7 +1308,7 @@ Essas telas não têm imagem-modelo, então seguem a régua das que têm. Todas 
 **`kids-recado.tsx`** (`KidsRecado`): faixa creme, cartão branco no meio com a arte, a pílula amarela
 do motivo (`chip`), o h1, as frases, os botões em pílula chapada e a letrinha miúda (`footnote`);
 `closing` abre a faixa lilás com um `KidsClosingCard` (a Comunidade dos Criadores no produto
-bloqueado). Usam o molde: `KidsLockedProduct`, `KidsCareerLockedProduct`, `KidsCareerLockedStudio`,
+bloqueado). Usam o molde: `KidsLockedProduct`, `KidsJourneyLockedProduct`, `KidsJourneyLockedStudio`,
 `KidsLockedCourse`, `KidsLockedLesson`, `KidsLockedSpace` e `KidsAccessUnavailable` (e, por ele, as
 cascas `kids-*-unavailable`). Antes cada uma escrevia a coluna à mão, e quatro já tinham drifado
 (duas sem faixa, três tamanhos de título, dois botões). ⚠️ O `KidsAccessUnavailable` fica SEM a
@@ -1368,7 +1368,7 @@ o `kids-space-content.tsx` só compõe e o `kids-space-view-client.tsx` (teto de
   (`tests/mural-sort-race.test.tsx`, que monta o Mural com respostas adiadas).
 - **Faixas:** cabeçalho no creme, Mural no menta e Clube no azul-claro, fechamento no lilás. O
   "Publicar um jogo" do fechamento do Mural usa a MESMA régua do remix (`onRemix` presente = posse do
-  Estúdio + Estúdio livre na carreira), para nunca levar a criança a uma tela trancada.
+  Estúdio + Estúdio livre na jornada), para nunca levar a criança a uma tela trancada.
 - **Clube:** o nome do espaço mora DENTRO do herói azul (`KidsHero titleAs="h1"`), com o sino e os
   Combinados em pílula branca (`ClubeCombinados variant="heroi"`). O estado vazio do canal usa
   `emptyTitle`/`emptyText` (`channel-presentation.ts`): as MESMAS palavras do `emptyState`, partidas
@@ -1733,7 +1733,7 @@ e **O** (auditoria e aprovação). Item "Pensa" no `nav.ts` → rota
 de Inventor(a), liberado):
 `app/(app)/pensa/page.tsx` chama `checkPensaAccessReadonly()` (`GET /members/access?refs=pensa`;
 ref = `PENSA_ACCESS_REF` do member-shell) → 200 sem produto = `KidsLockedPensa`; status ≠ 200 =
-`KidsPensaUnavailable` (retry); produto + carreira ≥ `hacker` = `pensa-client.tsx` (`'use client'`, import dinâmico
+`KidsPensaUnavailable` (retry); produto + jornada ≥ `hacker` = `pensa-client.tsx` (`'use client'`, import dinâmico
 do pacote no effect, tema claro fixo e sprites do Zappy). A persistência do plano é
 BACKEND (members, tabelas `pensa_*`) — o client injeta um **transport** que prefixa `/api/pensa`
 (shims de 1–3 linhas sobre `shell.routes.pensa*`; o chat SSE `/api/pensa/chat` E o
@@ -1764,7 +1764,7 @@ terceiro irmão do fluxo criativo (**Pensa planeja → Pinta desenha → Estúdi
 Inventor(a), liberado):
 `app/(app)/pinta/page.tsx` chama `checkPintaAccessReadonly()` (refs `pinta,estudio-completo` numa
 ida — a 2ª vira `studioOwned`, copy da ponte) → 200 sem produto = `KidsLockedPinta`; status ≠ 200
-= `KidsPintaUnavailable` (retry); produto + carreira ≥ `hacker` = `pinta-client.tsx` (`'use client'`, import
+= `KidsPintaUnavailable` (retry); produto + jornada ≥ `hacker` = `pinta-client.tsx` (`'use client'`, import
 dinâmico no effect, tema claro fixo). **Sem backend próprio**: a galeria vive no IndexedDB
 POR PERFIL (`setPintaStorageNamespace(viewerId)` ANTES de montar — mesmo contrato do /estudio) e
 a ponte **"Usar no Estúdio"** grava na biblioteca pessoal do Studio
@@ -1811,7 +1811,7 @@ Estúdio; o `/criar` ganhou o card 3 e o Estúdio virou o 4) → rota `/molda` (
 `EMBEDDED_APP_PREFIXES`), gate em 4 ESTADOS: `app/(app)/molda/page.tsx` chama
 `checkMoldaAccessReadonly()` (refs `molda,estudio-completo` numa ida — a 2ª vira `studioOwned`,
 atalho e dica do "Trazer do Molda") → 200 sem produto = `KidsLockedMolda`; status ≠ 200 =
-`KidsMoldaUnavailable` (retry); produto + carreira ≥ **`THREE_D_CREATION_MIN_LEVEL`**
+`KidsMoldaUnavailable` (retry); produto + jornada ≥ **`THREE_D_CREATION_MIN_LEVEL`**
 (`explorer`, o Explorador(a) de Mundos desde 05/09 — antes `hacker`: ⚠️ a oficina abre no posto
 que ganha o kit Jogo 3D, consumidor do modelo; `meetsThreeDCreationLevel` no member-shell) = `molda-client.tsx` (`'use client'`, import
 dinâmico no effect, tema claro fixo, `setMoldaStorageNamespace(viewerId)` ANTES de montar,
@@ -1867,7 +1867,7 @@ origin: 'molda'})` ANTES de devolver, com o nome salvo). No Estúdio o botão "�
 traz modelo/textura/céu, e o kit Jogo 3D ganhou "Criar o objeto … com o modelo" e "Usar o céu
 360°" (ver `packages/studio/CLAUDE.md`). A
 recompensa do Explorador(a) de Mundos anuncia "Molda, a sua oficina 3D" e a do Inventor(a) voltou a
-"Pensa + Zappy" (`career-rewards.ts`; o `career-rewards-conformance` trava a promessa em
+"Pensa + Zappy" (`journey-rewards.ts`; o `journey-rewards-conformance` trava a promessa em
 `THREE_D_CREATION_MIN_LEVEL`). Requisitos de build: `transpilePackages` + `@import`
 do `molda.css` no globals.css. O stylesheet do Molda registra suas fontes de UI e exclui
 testes; não registrar todo `molda/src` no host. Sem importar seus tokens, as `mld-*`
@@ -1886,14 +1886,14 @@ jogo que desceu da nuvem. Teste: `tests/molda-client.test.tsx` (guarda do `resyn
 
 ### Ferramentas do Molda por posto (11/09/2026)
 
-Dentro da oficina, as ferramentas de profissional abrem pela carreira, em três faixas
+Dentro da oficina, as ferramentas de profissional abrem pela jornada, em três faixas
 (`MOLDA_TOOL_BAND_LEVELS`, no core): básico no Explorador(a), intermediário no Arquiteto(a) de
-Mundos e profissional na Lenda. O Molda não conhece carreira: recebe `toolAccess` no adapter
+Mundos e profissional na Lenda. O Molda não conhece jornada: recebe `toolAccess` no adapter
 (`{allow, upcoming}` com as famílias de `@sistemazero/molda/tools`), e ausência = tudo liberado.
 - **`lib/molda-tool-access.ts`** é a régua pura: `moldaToolAccessFor({levelSlug, role, horizon})`
   (equipe e Lenda = `undefined`) e `moldaToolAccessRestricted`. O `when` de cada grupo sai do
   `LEVEL_INFO` ("Abrem no nível Arquiteto(a) de Mundos"); o que passa do horizonte do catálogo vira
-  `BEYOND_HORIZON_PHRASE` (a mesma frase do nó do mapa, fonte única em `career-horizon.ts`).
+  `BEYOND_HORIZON_PHRASE` (a mesma frase do nó do mapa, fonte única em `journey-horizon.ts`).
   ⚠️ `horizon: null` = catálogo DESCONHECIDO: aí nenhuma faixa ganha nome de posto.
 - **A página só espera o catálogo quando há o que trancar**, e no máximo 1,5 s
   (`CATALOG_WAIT_MS`): a equipe fora da prévia nem pergunta, e um catálogo lento não segura a
@@ -1904,13 +1904,13 @@ Mundos e profissional na Lenda. O Molda não conhece carreira: recebe `toolAcces
   servidor não trocar o adapter.
 - **A promessa tem uma fonte só:** `MOLDA_BAND_PROMISES` (`lib/molda-level-gain.ts`) diz o que cada
   faixa traz e quais famílias isso é. A comemoração de subir de posto ("🧊 No Molda: …") e as
-  recompensas do Arquiteto(a) e da Lenda (`career-rewards.ts`) montam o texto daqui, e
+  recompensas do Arquiteto(a) e da Lenda (`journey-rewards.ts`) montam o texto daqui, e
   `tests/molda-tool-access.test.ts` exige que cada família prometida esteja de fato na faixa do
   pacote (lendo `packages/molda/src/core/toolFamilies.ts` pelo caminho).
 - **A linha "No Molda" só vai para quem tem o produto:** o layout pergunta a posse só nos três
   postos das faixas (a ida é deduplicada com a da página /molda) e passa ao `CelebrationWatcher` a
   frase pronta (`moldaGain`), ou `null`.
-- ⚠️ O mapa da carreira (`career-timeline`) cita o Molda nas recompensas mesmo para quem não tem o
+- ⚠️ O mapa da jornada (`journey-timeline`) cita o Molda nas recompensas mesmo para quem não tem o
   produto: é a copy do posto, igual à do Estúdio e do Pensa.
 
 ## Gamificação estilo Duolingo (Fase 2 + expansão Zappy/avatar — 6 fases)
@@ -1971,7 +1971,7 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `room-builder.tsx` (quarto), que também leem `balanceUnlimited`. Compras da equipe voltam grátis
   (`unlimited:true`). Ver `docs/gamificacao.md` §4.
 - `streak-card.tsx` — card da home (só com cursos liberados E gamificação disponível).
-- **Carreira do aluno (rank, 06/2026; ESCADA DE 8 na reforma 2D/3D 17/07/2026: Faísca→Construtor(a)→Inventor(a)→Explorador(a) de Mundos→Mestre dos Jogos→Arquiteto(a) de Mundos→Gênio da Criação→Lenda — slugs internos noob/coder/hacker/explorer/elite/architect/champion/god)** — `lib/level-info.ts` (`LEVEL_INFO` rótulo/cor/ícone +
+- **Jornada do aluno (rank, 06/2026; ESCADA DE 8 na reforma 2D/3D 17/07/2026: Faísca→Construtor(a)→Inventor(a)→Explorador(a) de Mundos→Mestre dos Jogos→Arquiteto(a) de Mundos→Gênio da Criação→Lenda — slugs internos noob/coder/hacker/explorer/elite/architect/champion/god)** — `lib/level-info.ts` (`LEVEL_INFO` rótulo/cor/ícone +
   `levelInfo()`/`nextLevelHint()`; cor = CSS var `--level-<slug>` em `globals.css` `:root`+`.dark`),
   `components/kids/avatar-with-aura.tsx` (`AvatarWithAura` — anel/brilho na cor do nível ao redor do
   `KidsAvatar`, estático p/ reduced-motion) e `level-badge.tsx` (`LevelBadge` — insígnia ícone+nome).
@@ -2008,25 +2008,25 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
     âncora — virar atalho para publicar exigiria refazer a raiz do card.
   - ⚠️ Sem `milestones` (members antigo, vitrine adulta) não há selo. Silêncio > selo errado.
 
-  **Trava da carreira nos cards (24/07):** os dois cards tratam o `careerLock.reason` —
+  **Trava da jornada nos cards (24/07):** os dois cards tratam o `careerLock.reason` —
   `foundation-first` (CTA que NOMEIA o curso-base), **`tier-reward`** (🎁 "Recompensa: complete a
   etapa X" — bônus `careerSlot=null` virou recompensa, abre quando a etapa completa) e
-  `future-tier` ("Em breve na sua carreira"); deep-link em curso travado cai no 423 →
+  `future-tier` ("Em breve na sua jornada"); deep-link em curso travado cai no 423 →
   `KidsLockedCourse` com copy por motivo (`careerLockReason`, testado em
-  `tests/career-lock-reason.test.ts`).
-  **MAPA DA CARREIRA em /cursos (24/07; FITA + medalhões grandes):** a
+  `tests/journey-lock-reason.test.ts`).
+  **MAPA DA JORNADA em /cursos (24/07; FITA + medalhões grandes):** a
   página de cursos é o MAPA — os 8 níveis ligados por uma **FITA curva CONTÍNUA** (SVG) que
   serpenteia entre eles; a parte conquistada acende no **degradê das cores dos níveis**
   (`--level-<slug>`) e a parte à frente fica apagada com cadeado (≠ a antiga linha reta tracejada,
-  que lia como "timeline genérica"). Geometria PURA em `lib/career-path.ts` (centros dos nós + `d`
+  que lia como "timeline genérica"). Geometria PURA em `lib/journey-path.ts` (centros dos nós + `d`
   da fita completa/percorrida + paradas do degradê, num espaço de viewBox NORMALIZADO; o `<svg>`
   usa `preserveAspectRatio=none` + `vector-effect: non-scaling-stroke` e os nós ficam em `top/left %`
-  → fita e medalhões alinham em qualquer largura; vars `--career-node`/`--career-row` no globals).
-  Regras PURAS em `lib/career-map.ts` (`LEVEL_TIER` espelha o learningTier do core, `LEVEL_STUDY`,
-  `coursesForLevel`, `careerNodeState`, `trilhaLocked`; testes `career-map`/`career-path`/
-  `career-conformance`). Nó = **MEDALHÃO GRANDE** (`--career-node`) com a ilustração Dedé/Debinha em
-  **`public/carreira/<slug>.webp`** (**as 8 COMMITADAS 24/07**; fallback `onError` → ícone do
-  LEVEL_INFO; pipeline = `fluxo-criativo/scripts/preparar-poses-carreira.py` — lê
+  → fita e medalhões alinham em qualquer largura; vars `--journey-node`/`--journey-row` no globals).
+  Regras PURAS em `lib/journey-map.ts` (`LEVEL_TIER` espelha o learningTier do core, `LEVEL_STUDY`,
+  `coursesForLevel`, `journeyNodeState`, `trilhaLocked`; testes `journey-map`/`journey-path`/
+  `journey-conformance`). Nó = **MEDALHÃO GRANDE** (`--journey-node`) com a ilustração Dedé/Debinha em
+  **`public/jornada/<slug>.webp`** (**as 8 COMMITADAS 24/07**; fallback `onError` → ícone do
+  LEVEL_INFO; pipeline = `fluxo-criativo/scripts/preparar-poses-jornada.py` — lê
   `~/Downloads/<slug>.png` do ChatGPT, recorta o chroma `#00B140` e escreve os WebP aqui; trata os
   casos especiais do 1º lote: fundo em DEGRADÊ no `god` [corte por cor de fundo POR LINHA] e brilhos
   VERDES pintados pela IA em `god`/`elite`/`noob` [hue girado p/ o acento do nível]); nível não
@@ -2034,21 +2034,21 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `/cursos/trilha/[level]`** (por SLUG DO NÍVEL, não por degrau; o segmento estático `trilha` NÃO
   colide com `/cursos/[slug]`). **Cada trilha mostra o degrau inteiro do seu posto**, bônus incluso:
   Faísca → Primeiros Passos, Construtor(a) → Iniciante 2D e assim por diante. O `LEVEL_STUDY` do kids é ESPELHO da escada do core
-  (`CREATOR_CAREER_LEVELS`), travado por `tests/career-conformance.test.ts`. Deep-link em trilha
+  (`CREATOR_JOURNEY_LEVELS`), travado por `tests/journey-conformance.test.ts`. Deep-link em trilha
   bloqueada → recado gentil (`trilhaLocked` por nível, escape p/ EQUIPE: algum curso liberado →
   nunca mura). Gamificação fora → grade clássica.
-  ⭐ **HORIZONTE DO CATÁLOGO (08/2026) — `lib/career-horizon.ts` (puro) + `tests/career-horizon.test.ts`:**
-  a carreira exige 49 cursos (1 + 8×6, em 7 degraus) e o catálogo real tem punhados, então o mapa dizia
+  ⭐ **HORIZONTE DO CATÁLOGO (08/2026) — `lib/journey-horizon.ts` (puro) + `tests/journey-horizon.test.ts`:**
+  a jornada exige 49 cursos (1 + 8×6, em 7 degraus) e o catálogo real tem punhados, então o mapa dizia
   "faltam 7 cursos" de cursos que ninguém gravou e mostrava 6 medalhões com CADEADO — que para
   criança significa "você não fez o suficiente". Agora o mapa desenha **só até onde o catálogo
-  consegue levar** (`careerHorizon` = último nível cujos `requiredSlots` estão todos publicados) e
-  fecha com o **nó "E tem muito mais pela frente"** (`career-horizon-node.tsx`: arte da Lenda,
+  consegue levar** (`journeyHorizon` = último nível cujos `requiredSlots` estão todos publicados) e
+  fecha com o **nó "E tem muito mais pela frente"** (`journey-horizon-node.tsx`: arte da Lenda,
   martelinho no lugar do cadeado; tocar balança o nó e mostra um toast dizendo que essa parte está
   em construção). O contador do nó conta **só o que existe**; nada pronto a fazer → "Você está em
   dia!" + atalho p/ `/estudio` (só com posse — produto à parte).
 
   ⭐⭐ **O CONTADOR DO MEDALHÃO conta a TRILHA INTEIRA (15/08/2026)** — `tierCompletion` /
-  `tierCompletionByLevel` / `nodeShowsCheck` em `lib/career-map.ts`. O problema: quando a usuária
+  `tierCompletionByLevel` / `nodeShowsCheck` em `lib/journey-map.ts`. O problema: quando a usuária
   publica um curso num degrau que a criança JÁ PASSOU, ela nunca fica sabendo — subiu de posto, o
   medalhão está com ✓, e a aventura nova morre sem público. Três mudanças, todas de APRESENTAÇÃO:
   - **Denominador = `coursesForLevel`**, a mesma função que a página da trilha usa: TODOS os cursos
@@ -2067,28 +2067,28 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
     e a página deixou de buscar o `listMyCourses` só para contar.
     ⚠️ Selo do card e contador leem o MESMO campo, logo não podem divergir. Curso re-etiquetado
     depois de qualificado conta no degrau em que está AGORA (é o que a criança vê na trilha),
-    enquanto a carreira segue o retrato congelado do marco — divergência aceita e rara.
+    enquanto a jornada segue o retrato congelado do marco — divergência aceita e rara.
   - **O contador aparece nos postos JÁ VENCIDOS** (antes só no atual) e o **✓ regride** enquanto
     faltar curso ali (`nodeShowsCheck`). Sem as duas, mudar o denominador não resolveria nada: o
     degrau passado não tinha contador algum para virar "8 de 9".
 
-  ⚠️⚠️ **A régua da CARREIRA não mudou, e não pode mudar.** Subir de posto continua exigindo as
+  ⚠️⚠️ **A régua da JORNADA não mudou, e não pode mudar.** Subir de posto continua exigindo as
   posições OBRIGATÓRIAS com os dois marcos (concluir + publicar no Mural), no members/core. São duas
-  contas separadas de propósito: `careerProgress` (career-horizon.ts) alimenta a frase "Faltam N para
+  contas separadas de propósito: `journeyProgress` (journey-horizon.ts) alimenta a frase "Faltam N para
   virar X" e ficou INTOCADO; `tierCompletion` alimenta bolinhas, contador e ✓. Mexer no primeiro
   quebraria a frase, porque ele calcula `remaining = min(missing, ready − done)`.
 
-  ⚠️ **O `/perfil` NÃO mudou** (decisão da usuária, 15/08): aquela escada é a CARREIRA — os postos
+  ⚠️ **O `/perfil` NÃO mudou** (decisão da usuária, 15/08): aquela escada é a JORNADA — os postos
   conquistados —, não o conteúdo do degrau. O ✓ de lá segue posicional.
 
   ⚠️ **Dois defeitos achados no full review do próprio lote, os dois de "o que fazer quando a fonte
   falha ou quando as duas contas discordam":**
-  1. O card **"Você está em dia!"** é regido pelo `careerProgress` (só obrigatórias). Com um bônus
+  1. O card **"Você está em dia!"** é regido pelo `journeyProgress` (só obrigatórias). Com um bônus
      novo por fazer, o medalhão dizia "8 de 9" e o card logo abaixo afirmava "você já fez tudo que
      está pronto por aqui" — a mentira que este contador existe para matar. Agora ele exige TAMBÉM
-     a trilha completa (`trilhaComplete`). Regressão em `tests/career-map-counter.test.tsx`.
+     a trilha completa (`trilhaComplete`). Regressão em `tests/journey-map-counter.test.tsx`.
   2. **Progresso DESCONHECIDO ≠ nada feito.** `listMyCourses` falhando fazia `done = 0` em todo
-     degrau: um veterano perderia TODOS os ✓ e veria "0 de 8" na carreira inteira por um soluço de
+     degrau: um veterano perderia TODOS os ✓ e veria "0 de 8" na jornada inteira por um soluço de
      rede. Era a mesma régua do `catálogo null ≠ vazio`. ⭐ **O caso deixou de existir** quando os
      marcos passaram a vir no próprio catálogo (15/08): ou ele carregou, e o contador é confiável,
      ou a página já falhou antes. `completionByLevel` segue OPCIONAL só para o ✓ ter um caminho
@@ -2101,16 +2101,16 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
      Antes isso era impossível por construção — o defeito nasceu ao remover essa garantia.
 
   ⚠️ **O lado duro da régua mista, e é intencional:** quem concluiu os 8 e não publicou nenhum lê
-  "0 de 8 aventuras prontas", agora também em degrau já vencido. É a carreira sendo fiel — e é
+  "0 de 8 aventuras prontas", agora também em degrau já vencido. É a jornada sendo fiel — e é
   justamente o que o SELO do card tornou legível: ao entrar na trilha, os oito cards dizem o motivo. ⚠️ **Nenhum espelho novo do core:** `requiredSlots[nível_i] = ∪ LEVEL_STUDY[j].slots
-  p/ j < i`, então `LEVEL_TIER`+`LEVEL_STUDY` bastam e a garantia do `career-conformance` é herdada.
+  p/ j < i`, então `LEVEL_TIER`+`LEVEL_STUDY` bastam e a garantia do `journey-conformance` é herdada.
   ⚠️ **Catálogo `null` (a busca FALHOU) ≠ catálogo vazio:** `null` não restringe nada (cai na visão
   definitiva), senão um soluço de rede tiraria postos conquistados da tela; vazio é informação real
   e encolhe. **A visão provisória se dissolve SOZINHA:** catálogo completo → horizonte `god` → os 8
   medalhões de sempre e o nó de fechamento some (travado no teste "catálogo COMPLETO"). Consomem o
-  horizonte: `/cursos`, `/cursos/trilha/[level]`, `/perfil` (`career-timeline`, que colapsa os postos
-  além do horizonte em UMA linha) e a home (`creator-career-card`). ⚠️ A frase "falta N curso…" tem
-  UMA fonte só — `nextLevelHintWithin` no `career-horizon.ts`; o antigo `nextLevelHint` do
+  horizonte: `/cursos`, `/cursos/trilha/[level]`, `/perfil` (`journey-timeline`, que colapsa os postos
+  além do horizonte em UMA linha) e a home (`creator-journey-card`). ⚠️ A frase "falta N curso…" tem
+  UMA fonte só — `nextLevelHintWithin` no `journey-horizon.ts`; o antigo `nextLevelHint` do
   `level-info.ts` foi REMOVIDO (era a mesma frase sem o limite do catálogo, e duplicata de frase já
   drifou 2× neste arquivo). ⚠️ O `<ol>` do mapa leva `mb-10`: a legenda do ÚLTIMO nó é absoluta e cai
   ~42px ABAIXO da caixa, e sem a margem o bloco "em dia" entra por cima dela (medido, 10px).
@@ -2283,7 +2283,7 @@ A `<Canvas>` precisa de
 adulto (campos já chegam — decisão de produto). *(Ligas, lojinha/Zappy, avatar, quarto, missões e
 proteção de sequência saíram do backlog — entregues na expansão de 6 fases.)*
 
-## Fase 5 — Carreira/Projeto transversal/Troféus/Plays/Remix/Desafio (07/2026, não commitado)
+## Fase 5 — Jornada/Projeto transversal/Troféus/Plays/Remix/Desafio (07/2026, não commitado)
 
 > ⚠️ **Restrição central**: Pensa/Pinta/Estúdio/Clube/Mural são produtos VENDIDOS À PARTE — nada
 > da jornada/gamificação nuclear DEPENDE deles; integrações cross-app só aparecem com a POSSE
@@ -2294,10 +2294,10 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   6 modelos low-poly em `furniture-models.tsx` (+ material `gold`). Badge nova `first-showcase` em
   `badges.ts`; a `lesson-celebration` mostra "🏆 Um troféu novo apareceu no seu quarto!" quando a
   badge destravada está em `TROPHY_BADGE_SLUGS`. Conformance kids×members cobre os itens.
-- **Carreira (B):** `career-timeline.tsx` no `/perfil` — escada universal Faísca→Lenda (rung atual +
+- **Jornada (B):** `journey-timeline.tsx` no `/perfil` — escada universal Faísca→Lenda (rung atual +
   `nextLevelHint`) + FEITOS como cartões (universais primeiro; badges `studio-*`/`pensa-*` agrupadas
   em "Bônus dos apps criativos"; troféu → link "veja no seu quarto") + linha de jogos/jogadas. O
-  `CreatorCareerCard` (home) ganhou "seus jogos já foram jogados N vezes" + "Ver minha carreira"
+  `CreatorJourneyCard` (home) ganhou "seus jogos já foram jogados N vezes" + "Ver minha jornada"
   (dados de `shell.hub.myShowcaseStatsReadonly()`, best-effort).
 - **Plays (B):** cards/detalhe do Mural mostram "🎮 N jogadas" (`thread.playsCount`; contado no
   resolve público do /jogar com dedupe ip:playId no BFF).
@@ -2309,7 +2309,7 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   salvo equipe = Lenda) → fetch `/api/studio/play/:id` → **checagem de FERRAMENTAS**
   (`remixRequirementFromSnapshot` × `studioRemixCovered` do member-shell — jogo Pro sem ser
   Lenda ou extensão fora da allowlist do degrau → `toast.info` gentil nomeando o nível via
-  `minCareerLevelForRemix`+`levelInfo`, SEM importar) → `setStudioStorageNamespace(viewerId)` →
+  `minJourneyLevelForRemix`+`levelInfo`, SEM importar) → `setStudioStorageNamespace(viewerId)` →
   `importProjectSnapshot(snapshot, {name: 'Remix de <título>'})` → toast + push `/estudio`.
   **Selo no card:** `thread.studioMeta` ({pro, extensions[]}, snapshot no publish — hub migr
   `0007`) fora do degrau → botão vira cadeado tracejado "Fazer a minha versão · no nível X"
@@ -2689,7 +2689,7 @@ auditados e **de pé**. Achados corrigidos; verde no typecheck+test+check (membe
   (XP 50, ledger `challenge_entry`) mas o union `BadgeSlug` do **member-shell** estava 1 slug atrás
   (21 vs 22 do members) → `BADGE_INFO` (kids) omitia a entrada e COMPILAVA (o `Record<BadgeSlug,…>`
   é sobre o union defasado); `badgeInfo()` caía em `null` e a badge sumia de TODA superfície
-  (showcase/carreira/celebração). Fix: `+'challenge-first'` no union (`member-shell/src/lib/types.ts`)
+  (showcase/jornada/celebração). Fix: `+'challenge-first'` no union (`member-shell/src/lib/types.ts`)
   + entrada em `BADGE_INFO` (`badges.ts`, ícone `Swords`). **Guard novo:**
   `packages/community-kids/tests/badge-conformance.test.ts` assere `BADGE_SLUGS` (members, módulo
   PURO por caminho relativo) == chaves de `BADGE_INFO` (kids) — o teste vive no KIDS (não no members)
@@ -2933,13 +2933,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-## Oficina e Carreira do Criador — 07/09/2026
+## Oficina e Jornada do Criador — 07/09/2026
 
 Atualização das superfícies descritas acima: `../../docs/plans/2026-09-07-creator-journey-evolution.md`.
 A validação em staging e a promoção para produção estão em `../../docs/plans/creator-journey-rollout.md`.
 
 - A navegação tem cinco grupos para todos os alunos. O Criar reúne os links das ferramentas
-  e os trabalhos disponíveis conforme a posse da conta e a Carreira do Criador.
+  e os trabalhos disponíveis conforme a posse da conta e a Jornada do Criador.
 - Início, cartões, mapa e curso usam a política comum: aulas concluídas e publicação são marcos
   distintos; aulas novas não apagam conquistas. Celebração usa progresso da resposta do servidor.
 - `creator-works.tsx` lista metadados da nuvem e planos; criações somente locais ficam nas galerias.
@@ -2949,7 +2949,7 @@ A validação em staging e a promoção para produção estão em `../../docs/pl
   Cada abertura pelo guia tem revisão própria (o `initialAssetId` do editor só é consumido na
   montagem). Marcações do guia têm rascunho por perfil+tarefa, validado pela revisão e pelo
   timestamp do progresso; uma atualização do servidor invalida um rascunho antigo.
-- `/responsavel` exige sessão da conta e verificação de responsável. Reusa o dashboard com carreira,
+- `/responsavel` exige sessão da conta e verificação de responsável. Reusa o dashboard com jornada,
   ferramentas e publicações pendentes; o fluxo de gerenciamento antigo continua em `/perfis`.
 - Curso com entrega recebida pelo Hub mostra propagação em andamento; refresh automático é
   limitado e existe atualização manual. Falha de consulta não deve pedir recompra ou apagar marcos.

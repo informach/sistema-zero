@@ -339,5 +339,5 @@ Execute `bun run typecheck`, `bun test src` e `bun run check`. Os testes devem c
 Cartões também aceitam `destination: molda`. Contexto: `assetId` do inventário visual,
 `artKind` model/texture/sky, aparência, uso e paleta. Saída `molda_asset` referencia o ID da
 criação real, sem substituir o ID do inventário. O adapter recebe `moldaOwned` opcional;
-false/ausente preserva o plano e desabilita o envio. O host resolve posse + carreira.
+false/ausente preserva o plano e desabilita o envio. O host resolve posse + jornada.
 Pensa continua apenas planejador: não incorpora editor, IndexedDB ou navegação do Molda.

@@ -81,19 +81,19 @@ export const courseAudienceEnum = members.enum('course_audience', ['adult', 'kid
 // (domain/gamification/levels.ts): um curso "qualificado" (concluído + publicado no
 // Mural) conta para o nível conforme a sua dificuldade.
 export const courseLevelEnum = members.enum('course_level', [
-  // Degrau de ENTRADA da carreira (14/08, migration `0063`): 1 posição só, o curso que a
+  // Degrau de ENTRADA da jornada (14/08, migration `0063`): 1 posição só, o curso que a
   // Faísca faz. Antes o curso-base morava no `iniciante` e a divisão Faísca × Construtor(a)
   // era só apresentação — por isso a Faísca não podia ter curso bônus próprio.
   'primeiros-passos',
   'iniciante',
   'intermediario',
   'avancado',
-  // `lenda` = categoria de curso FORA da carreira (bônus da formatura; não é degrau,
+  // `lenda` = categoria de curso FORA da jornada (bônus da formatura; não é degrau,
   // não conta p/ nível, não trava). Renderizado só na trilha da Lenda no kids.
   'lenda',
 ])
 // Eixo 2D/3D do curso (ortogonal à dificuldade). Par (level, track) = o DEGRAU
-// pedagógico ("Iniciante 2D" … "Avançado 3D") que alimenta a carreira de 8 níveis.
+// pedagógico ("Iniciante 2D" … "Avançado 3D") que alimenta a jornada de 8 níveis.
 // Default `2d` (backfill dos existentes; a usuária re-tagueia os cursos 3D no admin).
 export const courseTrackEnum = members.enum('course_track', ['2d', '3d'])
 export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
@@ -163,8 +163,8 @@ export const courses = members.table(
     // Eixo 2D/3D (par com `level` = degrau pedagógico). Mesma régua de autoria do
     // `audience`/`level`: UPDATE sem o campo PRESERVA o atual.
     track: courseTrackEnum('track').notNull().default('2d'),
-    // Posição do curso na etapa da Carreira do Criador. NULL = curso bônus;
-    // 1 = curso-base. O domínio e o banco garantem que só Kids ocupa a carreira
+    // Posição do curso na etapa da Jornada do Criador. NULL = curso bônus;
+    // 1 = curso-base. O domínio e o banco garantem que só Kids ocupa a jornada
     // e aplicam o teto específico de cada etapa.
     careerSlot: smallint('career_slot'),
     // Trava sequencial estilo Duolingo: a próxima aula só libera quando a anterior
@@ -760,7 +760,7 @@ export const xpEvents = members.table(
     // `coalesce(source_track, courses.track, '2d')` — re-taggear um curso 3D no
     // admin corrige os marcos legados sozinho; congelar '2d' aqui impediria isso.
     sourceTrack: courseTrackEnum('source_track'),
-    // Snapshot do slot da carreira nos marcos de curso. Linhas anteriores ficam
+    // Snapshot do slot da jornada nos marcos de curso. Linhas anteriores ficam
     // NULL e usam `courses.career_slot` como fallback até o primeiro snapshot.
     sourceCareerSlot: smallint('source_career_slot'),
     // XID 64-bit da transação que criou o evento. Diferente de `created_at`,

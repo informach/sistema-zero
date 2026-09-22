@@ -74,7 +74,7 @@ const EnvSchema = z
     OPENROUTER_PENSA_SYNTHESIS_MODEL: z.string().optional(),
     OPENROUTER_ZAPPY_MODEL: z.string().optional(),
     OPENROUTER_REFERER: z.string().url().optional(),
-    // Interruptor de emergência. A carreira decide o acesso; equipe sempre entra.
+    // Interruptor de emergência. A jornada decide o acesso; equipe sempre entra.
     ZAPPY_ENABLED: z
       .enum(['true', 'false'])
       .default('true')

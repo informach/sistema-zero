@@ -5,7 +5,7 @@ export const FREE_CREATION_MIN_LEVEL: JourneyLevelSlug = 'coder'
 export const THREE_D_CREATION_MIN_LEVEL: JourneyLevelSlug = 'explorer'
 
 /**
- * As faixas de ferramentas do Molda por posto da carreira. O Molda não conhece carreira: o host
+ * As faixas de ferramentas do Molda por posto da jornada. O Molda não conhece jornada: o host
  * traduz o posto da criança numa lista de famílias liberadas e passa ao pacote.
  *
  * A régua é a mesma que pôs o Molda no Explorador(a): a oficina libera o que o Estúdio consegue

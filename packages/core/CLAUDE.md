@@ -56,6 +56,7 @@ por conveniência, mas prefira o subpath. Os subpaths são declarados no campo `
 | `/time` | calendário civil compartilhado, sem converter data de negócio em instante UTC | `sao-paulo` |
 | `/learning/scene` | as **45** cenas de aula: ações, catálogo, motor, avaliação, **elenco** (`cast`: nomes E figura, `actorFigure`), **cenário** (`cenario`: qual JOGO a cena retrata — o fundo, o chão e o elenco de fábrica), **caso e missão** (`setup`) e o que a cena diz de si (`readout`). ⚠️ Cena nova: checklist em "Cenas de aula" abaixo (o TS reprova o que faltar, o palco do member-shell incluído) | `actions` · `state` · `engine` · `nucleo` · `atelie` · `pistas` · `pilha` · `catalog` · `evaluate` · `readout` · `cast` · `cenario` · `questions` · `session` · `index` |
 | `/creations` | contratos puros de identidade/armazenamento compartilhados por apps e serviços | `object-deletion` · `pinta-palette-library` · `storage-keys` |
+| `/journey` | a **Jornada do Criador** (antes "Carreira", renomeada em 22/09/2026): catálogo dos 8 postos, os 7 degraus e as **49 posições** (1 na entrada + 8 × 6), a política de trava pedagógica (`resolveJourneyCourseLock`) e o estado de um curso na jornada. ⚠️ Os nomes internos dizem `journey`; os CAMPOS de rede seguem `careerSlot`/`careerLock` e as colunas seguem `career_slot` — contrato antigo, mantido de propósito (ver `docs/jornada-do-criador.md`) | `catalog` · `state` · `index` |
 
 ## Cenas de aula (`src/learning/scene/`)
 

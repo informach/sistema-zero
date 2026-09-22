@@ -30,7 +30,7 @@ export const dynamic = 'force-dynamic'
  * Desenho das telas-modelo (11/09/2026): o cabeçalho centralizado leva o chip amarelo
  * "Você é <posto>" e a frase do próximo marco (moravam dentro do mapa), e a página fecha
  * no lilás com as AVENTURAS da trilha atual em cartões deitados, com o progresso de cada
- * uma. O mapa continua com os medalhões de verdade (`public/carreira/*.webp`).
+ * uma. O mapa continua com os medalhões de verdade (`public/jornada/*.webp`).
  */
 export default async function CatalogPage() {
   const [{ status, body }, gamification, studioRes, session, mineRes] = await Promise.all([
@@ -57,7 +57,7 @@ export default async function CatalogPage() {
   const completionByLevel = tierCompletionByLevel(courses)
   // ⚠️ POSSE não basta: o Estúdio LIVRE só abre no Construtor (`freeStudio`). Uma Faísca
   // com o produto comprado e o catálogo vazio cairia em "em dia" → "Criar um jogo meu" →
-  // tela de Estúdio bloqueado pela carreira. Clique morto — por isso o atalho exige as duas.
+  // tela de Estúdio bloqueado pela jornada. Clique morto — por isso o atalho exige as duas.
   const studioOwned = canOpenFreeStudio(
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true,
     level?.slug,

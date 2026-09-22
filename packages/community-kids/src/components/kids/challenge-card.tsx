@@ -8,7 +8,7 @@ import type { ChallengeMeView } from '@/lib/types'
  * numa ida; produtos vendidos à parte). O tema é determinístico e global (vem
  * do members); o gate REAL da tag é o do hub no publish.
  *
- * Não aparece nas telas-modelo de 11/09/2026: veste a mesma roupa do cartão da carreira
+ * Não aparece nas telas-modelo de 11/09/2026: veste a mesma roupa do cartão da jornada
  * (cartão branco, o emoji do tema num ladrilho creme, sobretítulo em caixa alta, título
  * em Baloo e as pílulas da casa).
  */

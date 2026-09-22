@@ -27,7 +27,7 @@ async function errorCode(response: Response) {
   return ((await response.json()) as { error?: { code?: string } }).error?.code
 }
 
-describe('portão de carreira do BFF do Pensa', () => {
+describe('portão de jornada do BFF do Pensa', () => {
   test('bloqueia escrita abaixo de Inventor antes de tocar a mutação', async () => {
     let mutated = false
     const routes = createPensaRoutes(

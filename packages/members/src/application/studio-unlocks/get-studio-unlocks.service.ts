@@ -14,7 +14,7 @@ export interface StudioUnlocksView {
 /**
  * A paleta do Estúdio livre, montada pelo CURRÍCULO (08/2026).
  *
- * Antes o conjunto de blocos era fixo por NÍVEL da carreira. Agora cada curso declara
+ * Antes o conjunto de blocos era fixo por NÍVEL da jornada. Agora cada curso declara
  * o que libera (`metadata.studioUnlockBlocks`) e o aluno tem a UNIÃO dos cursos
  * elegíveis: bônus Kids exige conclusão; curso Kids com posição e curso Adult exigem
  * também publicação no Mural.

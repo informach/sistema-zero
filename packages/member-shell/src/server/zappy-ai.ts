@@ -495,7 +495,7 @@ interface ExampleRecipe {
 
 /**
  * Exemplos oficiais viram RECEITAS internas de mecânica, filtradas pelo NÍVEL
- * da carreira (não pelo instalado — o tutor pode ensinar a instalar a
+ * da jornada (não pelo instalado — o tutor pode ensinar a instalar a
  * extensão), ranqueadas pela mesma busca com sinônimos. Só entram com match
  * textual real (textScore > 0). Exportada p/ teste do filtro de tier.
  */

@@ -169,7 +169,7 @@ describe('resolveChildGuideStep — fase 2, a criança na home', () => {
   })
 
   /** A explicação FIXA do app, na ordem em que a criança a lê. */
-  const EXPLICACAO: GuideWelcomeStepId[] = ['aulas', 'xp', 'criar', 'mural', 'carreira']
+  const EXPLICACAO: GuideWelcomeStepId[] = ['aulas', 'xp', 'criar', 'mural', 'jornada']
 
   it('boas-vindas de quem já estudou não promete uma primeira aula', () => {
     const steps = childWelcomeSteps({
@@ -246,15 +246,15 @@ describe('resolveChildGuideStep — fase 2, a criança na home', () => {
     expect(emojis).not.toContain('⭐')
   })
 
-  it('a carreira fala de progresso sem prometer um posto por curso', () => {
-    const carreira = childWelcomeSteps({
+  it('a jornada fala de progresso sem prometer um posto por curso', () => {
+    const jornada = childWelcomeSteps({
       hasAvatar: true,
       hasCourseActivity: true,
       startAvailable: true,
-    }).find((step) => step.id === 'carreira')
+    }).find((step) => step.id === 'jornada')
 
-    expect(carreira?.text).toContain('progresso')
-    expect(carreira?.text).not.toContain('um posto')
+    expect(jornada?.text).toContain('progresso')
+    expect(jornada?.text).not.toContain('um posto')
   })
 
   it('as chaves da criança são por PERFIL e independentes entre si', () => {

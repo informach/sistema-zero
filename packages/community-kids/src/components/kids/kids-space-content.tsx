@@ -214,7 +214,7 @@ export function KidsSpaceContent(props: KidsSpaceContentProps) {
       </KidsBand>
 
       <KidsBand tone="lilas">
-        {/* O remix e o "Publicar" pedem a MESMA coisa (Estúdio livre na carreira), então
+        {/* O remix e o "Publicar" pedem a MESMA coisa (Estúdio livre na jornada), então
             a presença do `onRemix` é a régua do botão de publicar. */}
         {isWall ? <MuralClosing canPublish={discussion.onRemix !== null} /> : <ClubeClosing />}
       </KidsBand>

@@ -42,7 +42,7 @@ export interface LevelStudy {
  * faltava. A conformidade com o core é travada em `tests/journey-conformance.test.ts`.
  *
  * ⚠️ O Construtor(a) estudou 7 posições por um dia (14/08 a 15/08), quando o Iniciante 2D
- * foi encolhido para o total da carreira continuar 48. A usuária desfez: todo degrau que
+ * foi encolhido para o total da jornada continuar 48. A usuária desfez: todo degrau que
  * não é a entrada tem 8.
  */
 export const LEVEL_STUDY: Record<StudentLevelSlug, LevelStudy | null> = {
@@ -81,7 +81,7 @@ export function levelForTier(tier: CourseTierSlug): StudentLevelSlug {
 
 /**
  * Cursos da trilha da LENDA (`god`): os cursos de NÍVEL `lenda` — bônus "de formatura"
- * FORA da carreira (não são degrau, não contam, não travam). Aparecem só ao clicar na
+ * FORA da jornada (não são degrau, não contam, não travam). Aparecem só ao clicar na
  * Lenda no mapa (nó liberado só p/ quem chegou à Lenda).
  */
 export function lendaCourses(courses: readonly CatalogCourseView[]): CatalogCourseView[] {
@@ -93,7 +93,7 @@ export function coursesForLevel(
   courses: readonly CatalogCourseView[],
 ): CatalogCourseView[] {
   const slug = asLevelSlug(levelSlug)
-  // A Lenda (topo) não estuda um degrau da carreira: a trilha dela são os cursos
+  // A Lenda (topo) não estuda um degrau da jornada: a trilha dela são os cursos
   // de nível `lenda` (bônus da formatura). `LEVEL_TIER.god` segue `null`.
   if (slug === 'god') return lendaCourses(courses)
   const tier = LEVEL_TIER[slug]
@@ -139,9 +139,9 @@ export interface TierCompletion {
  * cada posto ser dono de um degrau inteiro. Nada disso é mais necessário: o selo do card e
  * este contador leem o MESMO campo, logo não têm como divergir.
  *
- * ⚠️ Isto NÃO é a régua da carreira, é a leitura dela: quem decide o posto é o members.
+ * ⚠️ Isto NÃO é a régua da jornada, é a leitura dela: quem decide o posto é o members.
  * Curso re-etiquetado depois de qualificado conta no degrau em que está AGORA (é o que a
- * criança vê na trilha), enquanto a carreira segue o retrato congelado do marco.
+ * criança vê na trilha), enquanto a jornada segue o retrato congelado do marco.
  *
  * ⚠️ O denominador vem do CATÁLOGO (tudo que está publicado). Curso publicado que a
  * criança ainda não pode abrir conta no total e não no done — de propósito: é justamente

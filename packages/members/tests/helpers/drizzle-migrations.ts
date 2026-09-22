@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 /**
  * Acesso às migrations do drizzle SEM fixar número, para os guardas não apodrecerem em silêncio.
  *
- * ⚠️⚠️ O PORQUÊ: os testes do CHECK das posições da carreira importavam
+ * ⚠️⚠️ O PORQUÊ: os testes do CHECK das posições da jornada importavam
  * `meta/0063_snapshot.json` por caminho LITERAL. Quando a `0064` alargou a restrição, os dois
  * continuariam validando a regra ANTIGA — e **passando**, porque a regra velha segue coerente
  * consigo mesma. Um guarda que para de guardar sem ficar vermelho é pior que nenhum guarda: ele

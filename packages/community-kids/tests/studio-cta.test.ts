@@ -5,7 +5,7 @@ import { canOpenFreeStudio } from '../src/lib/studio-cta'
  * Regressão de um clique morto REAL introduzido no lote do horizonte: o estado "Você está
  * em dia!" oferecia "Criar um jogo meu" checando só a POSSE do produto. Uma Faísca com o
  * Estúdio comprado e o catálogo vazio entra nesse estado — e o botão a mandava para a tela
- * de Estúdio bloqueado pela carreira.
+ * de Estúdio bloqueado pela jornada.
  */
 describe('canOpenFreeStudio', () => {
   test('sem o produto, nunca', () => {
@@ -27,7 +27,7 @@ describe('canOpenFreeStudio', () => {
     expect(canOpenFreeStudio(true, 'inexistente', undefined)).toBe(false)
   })
 
-  test('a EQUIPE abre mesmo sem carreira (passe livre de QA)', () => {
+  test('a EQUIPE abre mesmo sem jornada (passe livre de QA)', () => {
     expect(canOpenFreeStudio(true, 'noob', 'staff')).toBe(true)
   })
 })

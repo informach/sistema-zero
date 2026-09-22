@@ -15,7 +15,7 @@
  * - `group`: a `<legend>` visível do trilho. Cinco glifos sob "Criar" são cinco jeitos de
  *   criar; sem a legenda são cinco desenhos soltos.
  *
- * A FAMÍLIA de cada comando (o portão por nível de carreira) não é campo daqui: mora no mapa
+ * A FAMÍLIA de cada comando (o portão por nível de jornada) não é campo daqui: mora no mapa
  * irmão `sceneCommandAccess.ts`, e o `can` opcional das funções abaixo a aplica.
  *
  * ⚠️ Este arquivo nasce como CARACTERIZAÇÃO: `tier` descreve onde cada comando está HOJE, não

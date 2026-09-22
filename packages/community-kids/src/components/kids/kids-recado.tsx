@@ -6,7 +6,7 @@ import { KidsEyebrow } from './kids-eyebrow'
 
 /**
  * A tela de RECADO da área da criança: o produto que ainda não foi liberado, o posto da
- * carreira que falta, o curso ou a aula que abre depois, o acesso que não deu para conferir.
+ * jornada que falta, o curso ou a aula que abre depois, o acesso que não deu para conferir.
  * Não existe imagem-modelo dessas telas, então elas seguem a régua das que existem (11/09/2026):
  * a faixa creme, um cartão branco no meio com a arte, a pílula amarela do motivo, o título e a
  * frase, e os botões em pílula chapada. `closing` abre uma faixa lilás embaixo com o cartão de

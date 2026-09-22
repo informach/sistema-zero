@@ -87,7 +87,7 @@ export class CourseAdminService {
     filter: ListCoursesAdminFilter,
   ): Promise<{ items: CourseView[]; total: number; limit: number; offset: number }> {
     const { items, total } = await this.content.listCoursesAdmin(filter)
-    // Toda posição obrigatória exige publicação para qualificar na carreira.
+    // Toda posição obrigatória exige publicação para qualificar na jornada.
     const mandatoryIds = items
       .filter((course) => course.audience === 'kids' && course.careerSlot !== null)
       .map((course) => course.id)
@@ -113,9 +113,9 @@ export class CourseAdminService {
 
   /**
    * CLONA o curso para a plataforma destino (o substituto da "audiência Ambas"):
-   * o clone é um curso INDEPENDENTE — entra na carreira/chave-mestra/XP da
+   * o clone é um curso INDEPENDENTE — entra na jornada/chave-mestra/XP da
    * plataforma dele sem nenhuma regra nova — e edições NÃO sincronizam (fork,
-   * avisado na UI). Nasce `draft` e fora da carreira; `metadata.clonedFrom`
+   * avisado na UI). Nasce `draft` e fora da jornada; `metadata.clonedFrom`
    * guarda a proveniência.
    */
   async clone(
@@ -239,7 +239,7 @@ function assertJourneySlot(course: {
   // O degrau de ENTRADA só existe no eixo 2D. Vale ANTES do desvio do bônus: um curso
   // `primeiros-passos` + `3d` não gera degrau nenhum (`courseTier` devolve `null`), então
   // ficaria SEMPRE aberto e não apareceria em trilha alguma — invisível no mapa e fora da
-  // carreira, sem ninguém notar. O select do admin nunca oferece esse par; isto barra o
+  // jornada, sem ninguém notar. O select do admin nunca oferece esse par; isto barra o
   // PATCH feito à mão.
   if (course.level === 'primeiros-passos' && course.track !== '2d') {
     throw new InvalidContentCommandError('Primeiros Passos existe somente no eixo 2D')

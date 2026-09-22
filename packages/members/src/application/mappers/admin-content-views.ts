@@ -31,7 +31,7 @@ export interface CourseView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
-  /** Posição na etapa da carreira; `null` = curso bônus. */
+  /** Posição na etapa da jornada; `null` = curso bônus. */
   careerSlot: number | null
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean

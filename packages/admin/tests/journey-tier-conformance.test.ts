@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-// Catálogo CANÔNICO da carreira (core) por caminho RELATIVO de módulo puro — o admin
+// Catálogo CANÔNICO da jornada (core) por caminho RELATIVO de módulo puro — o admin
 // NÃO depende do core no package.json e não deve passar a depender por causa de teste
 // (mesmo precedente do badge-conformance do community-kids). A casa aceita a duplicação
 // dos enums de degrau, TRAVADA por conformance; este é o elo admin×core que faltava.
@@ -11,9 +11,9 @@ import {
 import { slotsForTier } from '../src/app/admin/membros/cursos/course-form-dialog'
 import { COURSE_TIER_OPTIONS } from '../src/lib/types'
 
-describe('conformance admin×core — degraus e posições da Carreira do Criador', () => {
+describe('conformance admin×core — degraus e posições da Jornada do Criador', () => {
   test('COURSE_TIER_OPTIONS ≡ JOURNEY_COURSE_TIERS (conjunto E ORDEM)', () => {
-    // A ORDEM é load-bearing: os degraus da carreira aparecem no seletor do form e no
+    // A ORDEM é load-bearing: os degraus da jornada aparecem no seletor do form e no
     // painel de prontidão na mesma sequência (1ª opção = o degrau de ENTRADA).
     expect(COURSE_TIER_OPTIONS.map((o) => `${o.level}-${o.track}`)).toEqual([
       ...JOURNEY_COURSE_TIERS,
@@ -47,7 +47,7 @@ describe('conformance admin×core — degraus e posições da Carreira do Criado
     }
   })
 
-  test('a carreira inteira soma 49 posições', () => {
+  test('a jornada inteira soma 49 posições', () => {
     // 1 + 8×6. Era 48 enquanto o Iniciante 2D tinha 7 — a usuária trocou o total redondo
     // pela regra uniforme, de propósito (15/08).
     const total = COURSE_TIER_OPTIONS.reduce(

@@ -1,5 +1,5 @@
 /**
- * O portão por nível de carreira, do lado da criança: a linha que conta o que abre depois e os
+ * O portão por nível de jornada, do lado da criança: a linha que conta o que abre depois e os
  * rótulos que mudam quando parte de um controle está trancada. A frase de QUANDO abre ("Abrem no
  * nível Arquiteto(a) de Mundos") vem pronta do host; aqui mora só o que é da oficina.
  */

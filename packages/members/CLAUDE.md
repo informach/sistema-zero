@@ -162,7 +162,7 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > à vista, ver §Fluxo de integração) **APLICADA — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)** e
 > **`0043`** (`0043_bouncy_the_renegades`: `challenge_custom_themes` + `challenge_month_overrides`
 > — Desafio do mês gerenciável pelo admin, ver §Desafio do mês GERENCIÁVEL) e **`0044`**
-> (`0044_huge_ezekiel`: **eixo 2D/3D — reforma da carreira 07/2026** — enum `course_track`
+> (`0044_huge_ezekiel`: **eixo 2D/3D — reforma da jornada 07/2026** — enum `course_track`
 > [`2d`|`3d`] + `courses.track` NOT NULL DEFAULT `2d` + `xp_events.source_track` NULLABLE
 > **SEM backfill DE PROPÓSITO** — a contagem usa `coalesce(source_track, courses.track, '2d')`,
 > então re-taggear um curso 3D no admin corrige os marcos legados sozinho; congelar '2d' no
@@ -589,17 +589,17 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    opcional — ausente no CREATE → `true`; no UPDATE **PRESERVA a atual** (régua do `audience`).
    `false` é mantido. Os fronts (community + community-kids) leem `locked` por aula e renderizam
    o nó/linha travado (cadeado, não clicável) + página de "aula bloqueada" no 423.
-11. **DEGRAU do CURSO + carreira do ALUNO (rank; posições na migration `0047`, normalização
+11. **DEGRAU do CURSO + jornada do ALUNO (rank; posições na migration `0047`, normalização
    `0048` e restrição final `0049`):** o curso tem `courses.level`
    (`primeiros-passos`|`iniciante`|`intermediario`|`avancado`|`lenda`, default
    `iniciante`) **+ `courses.track`** (`2d`|`3d`, default `2d`) — o PAR é o DEGRAU pedagógico
    ("Iniciante 2D" … "Avançado 3D"). Colunas dedicadas, autoradas no admin (régua do
    `audience`/`sequentialLock`: ausentes no CREATE → defaults, no UPDATE **PRESERVAM** as atuais).
    Expostas em `CourseView` (admin) + `Catalog/My/Detail` (aluno). Com isso o ALUNO tem uma
-   **carreira de 8 níveis** (`noob`→`coder`→`hacker`→`explorer`→`elite`→`architect`→`champion`→`god`
+   **jornada de 8 níveis** (`noob`→`coder`→`hacker`→`explorer`→`elite`→`architect`→`champion`→`god`
    = Faísca→Construtor(a)→Inventor(a)→Explorador(a) de Mundos→Mestre dos Jogos→Arquiteto(a) de
    Mundos→Gênio da Criação→Lenda) **DERIVADA na leitura** (sem coluna/backfill, como o
-   ranking/missões): catálogo central em `@sistemazero/core/career`, espelhado por
+   ranking/missões): catálogo central em `@sistemazero/core/journey`, espelhado por
    `domain/gamification/levels.ts`. A régua usa POSIÇÕES ESPECÍFICAS: slot 1 de **Primeiros Passos** →
    + slots 1..8 ini-2d → + slots 1..8 ini-3d → +1..8 int-2d → +1..8 int-3d → +1..8 av-2d →
    +1..8 av-3d (**49 obrigatórios**; eram 48 enquanto o ini-2d teve 7, entre 14/08 e 15/08).
@@ -609,7 +609,7 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    O número de posições tem UMA exceção: use `careerSlotsForTier(tier)` do core (1 na entrada, 8 nos
    demais), nunca um 8 solto — o degrau de entrada tem 1. `courseTier(level, track)` passou a devolver `CourseTier | null` — nem todo par
    é degrau (só existe `primeiros-passos-2d`, nunca o `-3d`), e quem chama trata `null` como fora da
-   carreira, igual ao `lenda`.
+   jornada, igual ao `lenda`.
    🚨 **O rollout exige MANUTENÇÃO.** Os marcos guardam um retrato congelado do degrau, e o
    retrato de quem já concluiu o curso-base aponta `iniciante-2d` slot 1 — a régua nova exige
    `primeiros-passos-2d`, então a criança CAIRIA para Faísca. A `0063` solta esse retrato (os três
@@ -622,8 +622,8 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    <slug> --confirm`. O comando move o curso e RECONGELA os dois marcos na mesma transação; não use o
    admin para separar as duas operações. Sem a finalização, o curso-base vira etapa futura e pode dar
    423, portanto a janela não é cosmética. Provado contra Postgres em
-   `tests/db/career-snapshot-release.test.ts`; runbook completo em `docs/carreira-do-criador.md`.
-   Não é contagem genérica: um slot repetido ou fora da carreira não substitui outro.
+   `tests/db/journey-snapshot-release.test.ts`; runbook completo em `docs/jornada-do-criador.md`.
+   Não é contagem genérica: um slot repetido ou fora da jornada não substitui outro.
    🚨 **RETRATO LEGADO É PARCIAL — não teste o trio, teste campo a campo (14/08, achado no banco
    de staging).** Os três campos nasceram em migrations diferentes (`source_level` na `0030`,
    `source_track` na `0044` — que deliberadamente NÃO fez backfill — e `source_career_slot` na
@@ -638,8 +638,8 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    escrever SQL contra colunas de snapshot adicionadas em épocas distintas, assuma a combinação
    parcial — o `is not distinct from` sobre um trio é um filtro bem mais estreito do que parece.
    ⭐ **Os mesmos dois marcos SEM cruzar, por curso (15/08):**
-   `GamificationRepository.listCareerCourseState(userId, audience)` devolve, numa ÚNICA consulta ao
-   ledger, a qualificação da carreira e um `Map<courseId, {completed, showcased}>` no mesmo
+   `GamificationRepository.listJourneyCourseState(userId, audience)` devolve, numa ÚNICA consulta ao
+   ledger, a qualificação da jornada e um `Map<courseId, {completed, showcased}>` no mesmo
    snapshot. O mapa alimenta `CatalogCourseView.milestones`/`MyCourseView.milestones` (kids-only —
    não há Mural no adulto), e com isso o kids monta o SELO do card ("Publique no Mural" × pronta) e
    o contador da trilha. Não existe uma segunda API para os marcos: duas implementações da mesma
@@ -653,9 +653,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    "publicou sem concluir").
    Um curso "qualificado" = tem AMBOS os
    marcos no ledger `xp_events` — `course_complete` ∩ `course_showcased` (gravado pelo webhook
-   abaixo) — agrupado pelo DEGRAU e pela posição (`listQualifyingCareerSlots`, INTERSEÇÃO via
+   abaixo) — agrupado pelo DEGRAU e pela posição (`listQualifyingJourneySlots`, INTERSEÇÃO via
    self-join no ledger, GROUP BY level+track+careerSlot). A versão em lote é
-   `listQualifyingCareerSlotsForProfiles`. ⚠️ **RANK NUNCA REGRIDE POR RE-NIVELAMENTO (migrations
+   `listQualifyingJourneySlotsForProfiles`. ⚠️ **RANK NUNCA REGRIDE POR RE-NIVELAMENTO (migrations
    `0030`/`0044`):** o degrau contado vem do **SNAPSHOT congelado** `xp_events.source_level` +
    `source_track` + `source_career_slot` (gravados nos marcos de curso no momento do award),
    NÃO do curso ao vivo. O `courses` entra só como **LEFT join** p/
@@ -682,18 +682,18 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    de cara: destrava quando a etapa do bônus COMPLETA (todos os slots dela qualificados = o momento
    do level-up; reason `tier-reward`, com `requiredLevel` = o nível que completa a etapa). Bônus
    segue FORA da contagem de nível. A política PURA é
-   `resolveCareerCourseLock(qualified, tier, slot, foundationAvailable)` (core `@sistemazero/core/career`):
+   `resolveJourneyCourseLock(qualified, tier, slot, foundationAvailable)` (core `@sistemazero/core/journey`):
    curso de etapa FUTURA → `future-tier`; na etapa atual, se não é o slot 1 e o slot 1 ainda não
    qualificou → `foundation-first`. ⚠️ **Fail-open (fix 23/07; estendido ao bônus 24/07):** sem um
    curso-base PUBLICADO na etapa não há como destravar (concluir+publicar os obrigatórios é a única
    chave), então tanto `foundation-first` quanto `tier-reward` são IGNORADOS — senão a etapa inteira
-   (e, no Iniciante 2D, a carreira toda) congelaria; no bônus isso também protege o ROLLOUT em prod
+   (e, no Iniciante 2D, a jornada toda) congelaria; no bônus isso também protege o ROLLOUT em prod
    (catálogo nasce todo-bônus antes de as etapas serem montadas → nada tranca no deploy). `foundationAvailable` = `foundationByTier.has(tier)` na projeção da listagem
    (`careerLocksForCourses`) e `CourseRepository.hasPublishedFoundationCourse(audience, level, track)`
-   no gate em profundidade (`CheckAccessService`, que lança `CourseCareerLockedError` → **423
+   no gate em profundidade (`CheckAccessService`, que lança `CourseJourneyLockedError` → **423
    `COURSE_CAREER_LOCKED`**). LISTA e gate usam a MESMA política (mesmo `qualified` do PERFIL). Flag
    liga só p/ `audience==='kids' && !privileged` (equipe ignora). Autoria admin valida o slot em
-   `assertCareerSlot` (kids-only, máximo POR DEGRAU via `careerSlotsForTier` — CHECK da migration
+   `assertJourneySlot` (kids-only, máximo POR DEGRAU via `careerSlotsForTier` — CHECK da migration
    `0063`; conflito → 409 `CAREER_SLOT_CONFLICT`).
    ⚠️ **Armadilha:** curso-base sem bloco de Estúdio com vitrine (`showcase.enabled`) conclui mas
    nunca publica → slot 1 nunca qualifica → demais da etapa presos. **Aviso automático (24/07):** a
@@ -701,7 +701,7 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    (`ContentAdminRepository.listCourseIdsWithShowcaseBlock` — EXISTS de aula PUBLICADA com bloco
    `studio` `showcase.enabled`) e o painel do admin mostra ⚠️ "Sem vitrine". O 423 `foundation-first`
    NÃO carrega `requiredLevel` (a chave é o curso-base, não um nível — só `future-tier` o traz).
-   Doc: `docs/carreira-do-criador.md`.
+   Doc: `docs/jornada-do-criador.md`.
 
 ## Arquitetura (DDD + Hexagonal — espelha auth/catalog)
 
@@ -889,8 +889,8 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   marcos → nível `noob`). Serve o BFF do **Clube/Mural kids** para pintar rosto+aura de cada
   autor de tópico/comentário numa ida (sem N+1). `GetAvatarsByProfilesService` (avatar +
   gamification) roda 2 queries em `Promise.all`: `AvatarRepository.listPhotoUrlsByProfileIds
-  (profileIds, audience)` + `GamificationRepository.listQualifyingCareerSlotsForProfiles
-  (profileIds, audience)` (versão em LOTE do `listQualifyingCareerSlots`, com o mesmo self-join
+  (profileIds, audience)` + `GamificationRepository.listQualifyingJourneySlotsForProfiles
+  (profileIds, audience)` (versão em LOTE do `listQualifyingJourneySlots`, com o mesmo self-join
   de marcos e posições) → `computeStudentLevel` por perfil. DTO `AvatarsBatchQuery`
   (`ids` csv, cap **50** via `parseProfileIds` — uuid validado na borda; `audience` ausente →
   **`kids`**, único consumidor é a vitrine kids). **SEM migração** (`avatar_configs.photo_url`
@@ -1455,7 +1455,7 @@ declara `metadata.studioUnlockBlocks` (jsonb, **sem migração** — mesma régu
 **AUSENTE PRESERVA** como `audience`/`level`, para um PATCH de build antigo não apagar currículo) e o
 aluno recebe a UNIÃO dos cursos ELEGÍVEIS. O critério usa o `careerSlot` VIVO: bônus Kids (`null`)
 exige só `course_complete`; curso Kids com posição e curso Adult exigem também `course_showcased`.
-O NÍVEL segue decidindo o MODO (livre/Ponte/Pro), e a carreira continua usando exclusivamente a
+O NÍVEL segue decidindo o MODO (livre/Ponte/Pro), e a jornada continua usando exclusivamente a
 interseção dos dois marcos.
 
 - **A lista é dos blocos que o curso USA** (fluxo da autora), então repetir fundamentos de cursos
@@ -1469,7 +1469,7 @@ interseção dos dois marcos.
 - **Ao vivo** = `GamificationRepository.listStudioUnlocksByCourse` (`course_complete` como origem +
   LEFT join do Mural + `courses.metadata`, com INNER join no curso vivo **da mesma audiência**).
   Bônus e `lenda` Kids entram só pela conclusão; cursos com posição e Adult entram pela
-  interseção. Só a CARREIRA ignora bônus e `lenda`.
+  interseção. Só a JORNADA ignora bônus e `lenda`.
 - ⭐⭐ **`studio_block_grants` (migration `0062`) = o "não revoga".** Regra da usuária: bloco liberado
   nunca é retirado. A união ao vivo sozinha NÃO garante isso (editar o JSON, despublicar ou apagar o
   curso tiraria a ferramenta de quem já a tinha, inclusive de projetos que a usam). O snapshot é
@@ -1853,7 +1853,7 @@ implementa as DUAS sobre os mesmos arrays. 5 serviços (`content-admin/content-a
   Clonar p/ **adult** remove `metadata.studioUnlockBlocks` (currículo do Estúdio é conceito
   kids); p/ kids preserva. Decisão da usuária (24/08): clone em vez de audiência "ambas" — o
   enum `course_audience` é compartilhado por ~15 colunas (NUNCA adicionar 'both') e um curso
-  fora da carreira "não vale a pena pro Kids". ⚠️ A rota usa `:courseId` (não `:id`): o Elysia
+  fora da jornada "não vale a pena pro Kids". ⚠️ A rota usa `:courseId` (não `:id`): o Elysia
   exige o MESMO nome de param quando o segmento tem filhos (`/courses/:courseId/modules`).
   A transação revalida versão e audiência da origem antes de copiar; mudança concorrente devolve
   `409 CONCURRENCY_CONFLICT`, impedindo clone de snapshot diferente do que o serviço validou.
@@ -2111,11 +2111,11 @@ A busca da base didática (`zappy-knowledge.repository.ts`) passou a juntar os t
 antes do `websearch_to_tsquery` — o `ts_rank` vira rank-merge natural em vez do AND implícito,
 que devolvia zero aula sempre que a criança escrevia uma frase inteira.
 
-## Evolução da Carreira do Criador — 07/09/2026
+## Evolução da Jornada do Criador — 07/09/2026
 
 Contrato e implantação: `../../docs/plans/2026-09-07-creator-journey-evolution.md` e
 `../../docs/plans/creator-journey-rollout.md`. A política de ferramentas/próxima ação
-vive em `@sistemazero/core/career`; os oito ranks e 49 posições permanecem.
+vive em `@sistemazero/core/journey`; os oito ranks e 49 posições permanecem.
 
 - `GetMyCourse` inclui ID, marcos permanentes e `showcaseLessonId` alcançável.
 - Autoria impede perder a última atividade publicada de vitrine nos cursos obrigatórios;
@@ -2192,7 +2192,7 @@ listado ali.
 
 ## Aulas por seções (09/2026)
 
-`lesson_structures` organiza os blocos existentes da aula. Progresso e tentativas são por perfil, conta, bloco e revisão; gabaritos nunca entram na view do aluno. Conclusão exige atividades essenciais e entregas, mantendo carreira e quizzes. Experimentos não produzem entregas. Importação é transacional em rascunhos, com prévia e controle de concorrência. `mode: preserve` continua sendo o padrão e recoloca no fechamento os blocos omitidos; `mode: replace` trata o manifesto como o documento completo, enumera blocos e seções removidos na prévia e não conserva conteúdo omitido. Nos dois modos, chaves mantidas preservam IDs e configuração operacional, e a versão publicada não muda. Mídias pendentes impedem publicação. As migrations 0078–0080 acrescentam o modelo, removem a antiga prática e agrupam aulas legadas em uma seção sem mudar IDs. A migration histórica 0076 permanece aplicada.
+`lesson_structures` organiza os blocos existentes da aula. Progresso e tentativas são por perfil, conta, bloco e revisão; gabaritos nunca entram na view do aluno. Conclusão exige atividades essenciais e entregas, mantendo jornada e quizzes. Experimentos não produzem entregas. Importação é transacional em rascunhos, com prévia e controle de concorrência. `mode: preserve` continua sendo o padrão e recoloca no fechamento os blocos omitidos; `mode: replace` trata o manifesto como o documento completo, enumera blocos e seções removidos na prévia e não conserva conteúdo omitido. Nos dois modos, chaves mantidas preservam IDs e configuração operacional, e a versão publicada não muda. Mídias pendentes impedem publicação. As migrations 0078–0080 acrescentam o modelo, removem a antiga prática e agrupam aulas legadas em uma seção sem mudar IDs. A migration histórica 0076 permanece aplicada.
 
 ## Materiais complementares (19/09/2026, migrations `0090` e `0091`)
 

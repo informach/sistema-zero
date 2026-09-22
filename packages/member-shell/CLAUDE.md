@@ -285,7 +285,7 @@ no FIM da geração: `completePensaJson` aceita `bodyTimeoutMs` (task_plan 180s,
 (`PensaLlmError.retryable=false`) e **ABORTA o socket do fetch** ao estourar (senão a conexão
 seguia pendurada); a rota loga o erro técnico e devolve frase gentil à criança.
 **O `pensaGenerateArtifact.POST` responde `text/event-stream` (08/2026):** o PRÉ-VOO
-(sessão/impersonação/carreira/validação/projeto/quota) segue JSON com os envelopes de sempre;
+(sessão/impersonação/jornada/validação/projeto/quota) segue JSON com os envelopes de sempre;
 dali em diante o stream manda `: ok` imediato (TTFB antes do LLM), `: ping` a cada 15s e um único
 evento terminal — `done` com o corpo antigo (`{artifact}`) ou `error` `{status, code, message?}`.
 Sem isso a borda (Railway; Cloudflare em prod ~100s) derrubava com **502** o POST mudo de minutos
@@ -338,26 +338,26 @@ projeto JÁ saneado (`kind === 'pro'` + ids de `installedExtensions`) e enviá-l
 (`createShowcaseThreadStudio[Standalone].studioMeta`). É COSMÉTICO (selo "remix a partir do nível X"
 no card do Mural do kids) — o gate real é a checagem no clique. Helpers PUROS novos em
 `lib/studio-tier.ts`: `StudioRemixRequirement`/`StudioRemixCapability`, `studioRemixCovered(cap, req)`,
-`studioTierCoversRemix(tier, req)` (= freeStudio + covered), `minCareerLevelForRemix(req)` (1º nível
-da carreira com Estúdio livre que cobre extensões+pro — alimenta o selo; extensão desconhecida →
+`studioTierCoversRemix(tier, req)` (= freeStudio + covered), `minJourneyLevelForRemix(req)` (1º nível
+da jornada com Estúdio livre que cobre extensões+pro — alimenta o selo; extensão desconhecida →
 `null`, fail-closed cosmético) e `remixRequirementFromSnapshot(snapshot)` (extrai kind+extensões do
 snapshot jogável cru — a checagem AUTORITATIVA do clique no kids). Testes em `tests/studio-tier.test.ts`.
 
 ⚠️ **`initialExtensions` é SEMPRE `[]` (08/08).** Nenhuma extensão vem instalada
 no projeto novo do Estúdio Completo: a criança abre o painel de Extensões e
-instala o que quiser entre as de `allowedExtensions` (o que a carreira liberou).
+instala o que quiser entre as de `allowedExtensions` (o que a jornada liberou).
 Os blocos seguem filtrados pelo `level`, então instalar não adianta a paleta de
 um degrau acima. ⚠️ O Jogo 2D vinha instalado e isso MASCARAVA um defeito: a
 paleta do Construtor parecia completa ao criar o projeto e perdia as áreas
 ⚡/🔁 ao reabrir. A curadoria de áreas do studio hoje deriva do NÍVEL e não do que
 está instalado, então o campo deixou de influenciar a paleta.
 
-**Fase 5 (07/2026) — plays/carreira/desafio/arte no shell:**
+**Fase 5 (07/2026) — plays/jornada/desafio/arte no shell:**
 - **Contador de jogadas:** o `studioPlay.GET` (público) deduplica por **`ip:playId`** (TTL 30min,
   in-process `globalThis`/`Symbol.for`, teto anti-OOM 50k entradas) e só o 1º hit da janela chama o
   hub com `resolveStudioPlay(id, countHit=true)` → `?count=1` (o hub funde o UPDATE no resolve).
   Contador de VAIDADE: best-effort é suficiente; F5/refetch não infla.
-- **Carreira:** `hub.myShowcaseStatsReadonly()` (RSC, sem refresh) → `{published, plays}` — a home
+- **Jornada:** `hub.myShowcaseStatsReadonly()` (RSC, sem refresh) → `{published, plays}` — a home
   e o /perfil do kids exibem "seus jogos já foram jogados N vezes".
 - **Desafio do mês:** `members.getChallengeReadonly()` (React.cache) → `ChallengeMeView`
   (tema global + `entered`); `members.checkChallengeAccessReadonly()` pede as DUAS refs
@@ -413,13 +413,13 @@ mostrar a própria tela de sucesso (no Estúdio Completo, sem `onShared`, a teli
 summary` (admin) — com resumo, o `ShareDialog` abre preenchido e NÃO chama a IA (a criança edita se
 quiser); em branco (ou no Estúdio Completo, que não passa) → a IA gera o rascunho.
 
-**Carreira do aluno + degrau do curso (06/2026; reforma 2D/3D 07/2026):** `lib/types.ts` tem
+**Jornada do aluno + degrau do curso (06/2026; reforma 2D/3D 07/2026):** `lib/types.ts` tem
 `StudentLevelSlug` (**8 slugs**: `noob`→`coder`→`hacker`→`explorer`→`elite`→`architect`→
 `champion`→`god`) + `StudentLevelView` (com `remaining` por DEGRAU — `StudentLevelRemaining`, 6
 chaves `iniciante-2d`…`avancado-3d` + `any`, mirror do members) — `GamificationMeView.level?` e
 `PublicProfileGameView.level?` (OPCIONAIS). E `CourseLevelSlug` + **`CourseTrack`** (`2d`|`3d`) em
 `CatalogCourseView`/`MyCourseView`/`CourseDetailView` (`level?`/`track?`).
-`CareerCourseLockView.reason` = `future-tier` | `foundation-first` | **`tier-reward`** (24/07 —
+`JourneyCourseLockView.reason` = `future-tier` | `foundation-first` | **`tier-reward`** (24/07 —
 bônus `careerSlot=null` é RECOMPENSA da etapa; regra no core/members, apresentação no kids).
 **`CourseMilestonesView {completed, showcased}`** (15/08) em `CatalogCourseView.milestones?` e
 `MyCourseView.milestones?` — os dois marcos do ledger SEM cruzar (opcionais, tolerando members
@@ -434,7 +434,7 @@ ranks → degrau de blocos do Estúdio Completo (cada nível libera somente ferr
 remodelo 26/07 — Mestre/Arquiteto ficaram só-Blocos). `resolveStudioTier` também devolve a allowlist
 acumulada de extensões (o kit `game-3d-advanced` entra já no `architect`/Arquiteto, reclassificado p/
 `intermediario-3d` no studio) e bloqueia projetos antigos ou importados que dependam de uma extensão futura. A matriz completa e o runtime remoto das aulas
-estão em `docs/carreira-do-criador.md`. Tudo
+estão em `docs/jornada-do-criador.md`. Tudo
 passthrough (os clients não mapeiam) — a APRESENTAÇÃO (aura/insígnia/chip) vive no community-kids;
 aqui é só o tipo.
 
@@ -1989,18 +1989,18 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
 
 - `createShell` publica os handlers BFF `/api/studio/zappy` (histórico/exclusão),
   `/messages` e `/feedback`; o adapter de UI vive em `lib/studio-zappy-adapter.ts`.
-- Cada pergunta revalida sessão, posse do Estúdio, carreira/modo/extensões e cursos liberados;
+- Cada pergunta revalida sessão, posse do Estúdio, jornada/modo/extensões e cursos liberados;
   impersonação não conversa. Reserva idempotente precede a resposta determinística; somente chamadas
   reais ao modelo consomem o crédito `studio-zappy`.
 - **Rollout por MÉRITO (08/2026 — substituiu o piloto fechado):** `ZAPPY_ENABLED=true` +
-  carreira **≥ `hacker`** (Inventor(a), o 3º degrau). A equipe ignora o interruptor e o nível
+  jornada **≥ `hacker`** (Inventor(a), o 3º degrau). A equipe ignora o interruptor e o nível
   para QA. Não existe allowlist de contas nem degrau configurável: a barra vive em
   **`AI_APPS_MIN_LEVEL`**, compartilhada com o Pensa — os dois CHAMAM a IA, e o custo por uso é o
   motivo de adiar. ⚠️ **O Pinta NÃO usa mais essa barra** (14/08): desenhar não custa por uso,
   então ele abre junto com o Estúdio livre em `FREE_CREATION_MIN_LEVEL` (`coder`/Construtor(a)),
   via `meetsFreeCreationLevel`. `isStudioZappyAllowed` decide quando
   o rank já foi carregado; `isStudioZappyAllowedForRequest` consulta o members nos handlers.
-  Slug ausente/desconhecido reprova (fail-closed via `careerLevelAtLeast` do core). A rota da
+  Slug ausente/desconhecido reprova (fail-closed via `journeyLevelAtLeast` do core). A rota da
   pergunta reutiliza a gamificação que já precisa para montar o tier, sem uma segunda consulta.
   O mesmo gate server-side decide se o host injeta a UI. O nome real não vai ao
   OpenRouter e o contexto do projeto não é persistido.

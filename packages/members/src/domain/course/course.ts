@@ -23,13 +23,13 @@ export type CourseAudience = (typeof COURSE_AUDIENCES)[number]
  * (domain/gamification/levels.ts): um curso concluído E publicado no Mural conta
  * para o nível conforme esta dificuldade.
  *
- * `lenda` é uma categoria À PARTE, FORA da carreira: cursos bônus "de formatura"
+ * `lenda` é uma categoria À PARTE, FORA da jornada: cursos bônus "de formatura"
  * que aparecem só na trilha da Lenda (kids). NÃO vira degrau (level×track), NÃO
  * conta para o nível, NÃO recebe trava de curso-base — cursos `lenda` têm sempre
  * `careerSlot = null`. Por isso não entra em `JourneyCourseLevel`/`courseTier`.
  */
 export const COURSE_LEVELS = [
-  // Degrau de ENTRADA da carreira (14/08): 1 posicao so, o curso que a Faisca faz.
+  // Degrau de ENTRADA da jornada (14/08): 1 posicao so, o curso que a Faisca faz.
   // Sempre com track `2d` (o unico degrau valido e `primeiros-passos-2d`).
   'primeiros-passos',
   'iniciante',
@@ -39,7 +39,7 @@ export const COURSE_LEVELS = [
 ] as const
 export type CourseLevel = (typeof COURSE_LEVELS)[number]
 
-/** Níveis que MAPEIAM para um degrau da carreira (as 3 dificuldades; exclui `lenda`). */
+/** Níveis que MAPEIAM para um degrau da jornada (as 3 dificuldades; exclui `lenda`). */
 export type JourneyCourseLevel = Exclude<CourseLevel, 'lenda'>
 export const JOURNEY_COURSE_LEVELS = [
   'primeiros-passos',
@@ -50,7 +50,7 @@ export const JOURNEY_COURSE_LEVELS = [
 
 /**
  * Eixo 2D/3D do curso (ortogonal à dificuldade). O par (level, track) é o DEGRAU
- * pedagógico ("Iniciante 2D" … "Avançado 3D") que alimenta a carreira de 8 níveis.
+ * pedagógico ("Iniciante 2D" … "Avançado 3D") que alimenta a jornada de 8 níveis.
  * Default `2d` (cursos existentes; o professor re-tagueia os 3D no admin).
  */
 export const COURSE_TRACKS = ['2d', '3d'] as const
@@ -83,8 +83,8 @@ export interface Course {
   /** Eixo 2D/3D (par com `level` = degrau pedagógico). Default `2d`. */
   track: CourseTrack
   /**
-   * Posição obrigatória na etapa da Carreira do Criador. `1` é o curso-base;
-   * `null` identifica curso bônus/fora da carreira.
+   * Posição obrigatória na etapa da Jornada do Criador. `1` é o curso-base;
+   * `null` identifica curso bônus/fora da jornada.
    */
   careerSlot: number | null
   /**

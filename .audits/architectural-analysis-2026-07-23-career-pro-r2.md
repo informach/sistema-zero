@@ -32,7 +32,7 @@
 
 Arquivos: `packages/core/src/career/catalog.ts`, `packages/members/src/application/career-course-locking/career-course-locking.ts`, `packages/members/src/application/access/check-access.service.ts`, `packages/members/src/domain/ports/course-repository.port.ts` + impl drizzle + fake.
 
-⚠️ **Risco irmão (registrado, não-código):** curso-base sem bloco de Estúdio com vitrine (`showcase.enabled`) conclui mas nunca publica no Mural → slot 1 nunca qualifica → mesma paralisia (a base ESTÁ publicada, então o fail-open não dispara; a base linka mas nunca destrava). Documentado como armadilha operacional em `docs/carreira-do-criador.md`.
+⚠️ **Risco irmão (registrado, não-código):** curso-base sem bloco de Estúdio com vitrine (`showcase.enabled`) conclui mas nunca publica no Mural → slot 1 nunca qualifica → mesma paralisia (a base ESTÁ publicada, então o fail-open não dispara; a base linka mas nunca destrava). Documentado como armadilha operacional em `docs/jornada-do-criador.md`.
 
 ### Studio Pro — gate SÓLIDO, sem bypass (R2b)
 
@@ -58,7 +58,7 @@ A usuária não achava como cadastrar o curso-base. O mecanismo EXISTIA (é `car
 - Campo posição virou **`Select` com rótulos** ("Nenhuma — curso bônus", "1 — Curso-base…", 2…), mostrando a ocupação da etapa e desabilitando posição ocupada por outro curso; clamp ao trocar de etapa.
 - Painel **Carreira do Criador** clicável: posição vazia → cria mirando etapa+posição; ocupada → edita.
 - **"Editar curso"** no header do editor `[courseId]` (atende "editar tb, não só criar").
-- Badge "Curso-base" na listagem/painel. Docs: `admin/CLAUDE.md`, `members/CLAUDE.md` (Conceito 12), `docs/carreira-do-criador.md`.
+- Badge "Curso-base" na listagem/painel. Docs: `admin/CLAUDE.md`, `members/CLAUDE.md` (Conceito 12), `docs/jornada-do-criador.md`.
 
 Sem mudança de schema/contrato — o members já validava tudo.
 

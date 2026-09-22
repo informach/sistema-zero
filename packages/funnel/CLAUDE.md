@@ -274,6 +274,17 @@ automática). Os marcadores são comentários HTML e SAEM no HTML servido (inofe
 Títulos de página usam **`Página | Sistema Zero`** (barra vertical; nada de travessão nem `·` em
 `<title>`/`seoTitle` — o byline visual "Helena e Júlio · Sistema Zero" mantém o `·`).
 
+### "Jornada" é NOME PRÓPRIO (22/09/2026)
+
+A **Carreira do Criador** virou **Jornada do Criador** (a dona achou "carreira" pesado demais para
+criança; e o app kids já dizia "jornada" em oito lugares). A regra da copy: **"jornada" pertence ao
+conceito**. Onde a frase precisar da palavra comum, use outra — *caminho*, *percurso*, *escada*.
+Sem isso o nome se dissolve e o texto produz coisas como "uma jornada: a Jornada do Criador" ou
+"a Jornada organiza a jornada", que foi exatamente o que a troca mecânica gerou aqui.
+⚠️ **Exceção deliberada:** `src/content/legal-kids.ts` mantém "não promete renda, emprego ou
+**carreira**" — ali a palavra está no sentido adulto/profissional, que é justamente o que a
+cláusula nega. O nome do produto não pode entrar naquela frase.
+
 ## Arquitetura (o padrão central — preserve-o)
 
 Lógica fica em **handlers puros** `(@/server/*.ts)` com a forma `(request: Request, deps) => Response`

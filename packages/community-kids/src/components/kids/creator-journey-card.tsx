@@ -12,7 +12,7 @@ const PILULA =
   'inline-flex h-9 items-center justify-center gap-2 rounded-full px-4 font-extrabold text-sm tabular-nums'
 
 /**
- * O avatar da carreira: sem foto, a inicial em AZUL sobre o azul bem clarinho (o
+ * O avatar da jornada: sem foto, a inicial em AZUL sobre o azul bem clarinho (o
  * desenho das telas-modelo), e não o círculo azul cheio do menu, que aqui brigaria com
  * o selo amarelo do nível logo ao lado.
  */
@@ -39,7 +39,7 @@ export function CreatorJourneyCard({
 }: {
   gamification: GamificationMeView | null
   /** Frase do próximo marco, JÁ limitada ao catálogo (`nextLevelHintWithin`, montada no
-   *  servidor). `null` = topo da carreira OU em dia; nos dois casos cai no `blurb`. */
+   *  servidor). `null` = topo da jornada OU em dia; nos dois casos cai no `blurb`. */
   levelHint?: string | null
   avatarPhotoUrl?: string | null
   /** Nome da criança: a inicial vira o avatar enquanto não há foto. */

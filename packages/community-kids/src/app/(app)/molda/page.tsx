@@ -42,7 +42,7 @@ async function catalogWithin<T>(catalog: Promise<T>, ms: number): Promise<T | nu
  * O gate é resolvido no SERVIDOR (sem acesso → o app nem carrega); os DADOS são
  * locais ao navegador (IndexedDB por perfil) — zero backend próprio.
  *
- * São 4 estados: indisponível, sem o produto, produto comprado mas carreira abaixo
+ * São 4 estados: indisponível, sem o produto, produto comprado mas jornada abaixo
  * do Explorador(a) de Mundos, e acesso completo. A mesma ida também resolve o Estúdio
  * (`studioOwned` do adapter: atalho e dica do "Trazer do Molda").
  *

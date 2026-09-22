@@ -286,7 +286,7 @@ export class ShowcaseService {
     }
   }
 
-  /** Carreira do aluno: quantos jogos publicados (visíveis) + soma das jogadas. */
+  /** Jornada do aluno: quantos jogos publicados (visíveis) + soma das jogadas. */
   async myShowcaseStats(actor: Actor): Promise<{ published: number; plays: number }> {
     // `authorId` das threads de vitrine é o PERFIL (actor.userId) — mesma identidade
     // usada na criação; a agregação nunca vaza dados de outros autores.

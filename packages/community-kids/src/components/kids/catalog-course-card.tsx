@@ -15,7 +15,7 @@ interface CatalogCourseCardProps {
   foundationTitle?: string | null
   /**
    * `grade` = o cartão grande da trilha (capa em cima, duas colunas); `linha` = o cartão
-   * deitado das "Aventuras da trilha" na Carreira (capa à esquerda, progresso à direita).
+   * deitado das "Aventuras da trilha" na Jornada (capa à esquerda, progresso à direita).
    */
   layout?: 'grade' | 'linha'
   /**
@@ -31,13 +31,13 @@ const PILULA_APAGADA =
   'flex w-full items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-2.5 font-bold text-muted-foreground text-xs'
 
 /**
- * Card de curso do catálogo (a trilha de um nível, as aventuras na Carreira e a grade sem
- * gamificação): desbloqueado → entra no curso; bloqueado pela carreira → recado sem
+ * Card de curso do catálogo (a trilha de um nível, as aventuras na Jornada e a grade sem
+ * gamificação): desbloqueado → entra no curso; bloqueado pela jornada → recado sem
  * cadeado agressivo (curso-base → CTA clicável que NOMEIA o curso a fazer; bônus → prêmio;
  * etapa futura → "Em breve"); sem matrícula → página de vendas em nova aba (sem
  * `salesPageUrl` fica não-clicável — kids não tem funil).
  *
- * Desenho das telas-modelo (11/09/2026, Trilha e Carreira): cartão branco de cantos de
+ * Desenho das telas-modelo (11/09/2026, Trilha e Jornada): cartão branco de cantos de
  * 24px, sem borda nem cor de unidade; na trilha, a capa larga em cima, título em Baloo,
  * a frase, e embaixo o selo menta "Liberado" com a pílula azul "Acessar curso".
  */
@@ -147,7 +147,7 @@ export function CatalogCourseCard({
   )
 
   const footer = journeyLocked ? (
-    // Bloqueado pela carreira: um CTA único de largura total (sem status duplicado do
+    // Bloqueado pela jornada: um CTA único de largura total (sem status duplicado do
     // lado). Curso-base → CTA clicável que NOMEIA o curso a fazer; etapa futura → rótulo
     // apagado não-tocável (o card é um <div>, não pode parecer botão).
     foundationFirst ? (

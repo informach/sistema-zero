@@ -329,7 +329,7 @@ export const AUDIENCE_LABELS: Record<CourseAudience, string> = {
 
 /**
  * Dificuldade do curso. As 3 primeiras alimentam o nível do ALUNO (degraus da
- * carreira). `lenda` é uma categoria À PARTE, FORA da carreira: cursos bônus "de
+ * jornada). `lenda` é uma categoria À PARTE, FORA da jornada: cursos bônus "de
  * formatura" que aparecem só na trilha da Lenda (kids) — NÃO é degrau, por isso NÃO
  * entra em `COURSE_TIER_OPTIONS` (travado por conformance com o core).
  */
@@ -354,7 +354,7 @@ export const COURSE_TRACKS = ['2d', '3d'] as const
 export type CourseTrack = (typeof COURSE_TRACKS)[number]
 
 /**
- * Os 7 degraus do select "Nível do curso" — a ordem é a escada da carreira do aluno
+ * Os 7 degraus do select "Nível do curso" — a ordem é a escada da jornada do aluno
  * (entrada primeiro; 2D antes de 3D em cada dificuldade). Duplicação INTENCIONAL do
  * member-shell/members (o admin não importa dos apps de aluno) — manter em lockstep com
  * `COURSE_TIERS` de lá, o que o `journey-tier-conformance.test.ts` trava.
@@ -401,7 +401,7 @@ export interface CourseView {
   level: CourseLevel
   /** Eixo 2D/3D (par com `level` = degrau). Opcional p/ tolerar members antigo. */
   track?: CourseTrack
-  /** Posição na etapa da carreira; `null` = curso bônus. */
+  /** Posição na etapa da jornada; `null` = curso bônus. */
   careerSlot: number | null
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean

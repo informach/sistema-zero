@@ -80,7 +80,7 @@ describe('host kids', () => {
 })
 
 describe('member-shell e catálogo', () => {
-  test('portão de carreira e refs de acesso', () => {
+  test('portão de jornada e refs de acesso', () => {
     expect(read('packages/member-shell/src/lib/studio-tier.ts')).toContain(
       'THREE_D_CREATION_MIN_LEVEL',
     )

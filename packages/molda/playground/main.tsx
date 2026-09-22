@@ -36,7 +36,7 @@ if (!root) throw new Error('#root não encontrado')
 
 const params = new URLSearchParams(window.location.search)
 const initialAssetId = params.get('criacao')
-// `?nivel=explorer|architect|god`: o portão por nível de carreira, como o kids calcula.
+// `?nivel=explorer|architect|god`: o portão por nível de jornada, como o kids calcula.
 const toolAccess = playgroundToolAccess(params.get('nivel'))
 const ScenePlayground = lazy(() => import('./ScenePlayground'))
 

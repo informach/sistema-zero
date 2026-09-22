@@ -355,7 +355,7 @@ Todo jogo-modelo dos cursos existe em três degraus, com o MESMO nome-base:
 
 A criança pode jogar os três e VER que é o mesmo jogo — o que muda é o quanto do motor
 ela mesma constrói. (Vitrine de 2026-07-28: **29 famílias com tríade completa**, 17 em 2D e
-12 em 3D. As 16 que formam a carreira estão na grade do `trilha-cursos-jogos.md`; as 13
+12 em 3D. As 16 que formam a jornada estão na grade do `trilha-cursos-jogos.md`; as 13
 restantes são o banco do desafio mensal.)
 
 **Regra de manutenção:** revarrer a vitrine antes de mexer na grade. Em um único dia o acervo

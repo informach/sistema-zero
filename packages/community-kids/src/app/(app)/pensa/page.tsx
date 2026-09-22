@@ -22,7 +22,7 @@ export const dynamic = 'force-dynamic'
  * (sem acesso → o app nem é carregado). `pensa` = ref do produto (ver
  * `PENSA_ACCESS_REF` no member-shell). Acesso resolve pela CONTA (o responsável compra).
  *
- * São 4 estados: indisponível, sem o produto, produto comprado mas carreira abaixo
+ * São 4 estados: indisponível, sem o produto, produto comprado mas jornada abaixo
  * de Inventor(a), e acesso completo. O gate também é reaplicado no BFF.
  */
 export default async function PensaPage({

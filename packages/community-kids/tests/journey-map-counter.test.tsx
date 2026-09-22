@@ -83,7 +83,7 @@ describe('JourneyMap — contador e o card "em dia"', () => {
 
   test('⚠️ sem o contador, o ✓ volta a ser posicional em vez de virar "0 de N"', () => {
     // A página SEMPRE calcula hoje (os marcos vêm no catálogo), mas o caminho defensivo
-    // continua: prop ausente não pode inventar "nada feito" e apagar a carreira inteira.
+    // continua: prop ausente não pode inventar "nada feito" e apagar a jornada inteira.
     render(<JourneyMap level={level} courses={catalogo} />)
 
     expect(screen.queryByText(/de 6/)).toBeNull()

@@ -42,8 +42,8 @@ export interface MoldaHostAdapter {
    */
   sceneWorkshop?: boolean
   /**
-   * As famílias de ferramentas que a criança pode USAR: o portão por nível de carreira, que o
-   * host calcula (o Molda não conhece carreira). Ausente = tudo liberado. Trancar tira a
+   * As famílias de ferramentas que a criança pode USAR: o portão por nível de jornada, que o
+   * host calcula (o Molda não conhece jornada). Ausente = tudo liberado. Trancar tira a
    * autoria, nunca a leitura: ver `core/toolFamilies.ts`.
    */
   toolAccess?: MoldaToolAccess

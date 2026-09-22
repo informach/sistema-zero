@@ -46,7 +46,7 @@ export default async function HomePage() {
       listMyCourses(),
       getGamificationReadonly({ withRanking: true }),
       getMissionsReadonly(),
-      // Foto do avatar p/ a aura da Carreira de Criador (React.cache deduplica
+      // Foto do avatar p/ a aura da Jornada do Criador (React.cache deduplica
       // com a busca do layout — segue 1 ida ao gateway por render).
       getAvatarReadonly(),
       // "Seus jogos já foram jogados N vezes" (Mural) — best-effort, linha some no erro.
@@ -60,7 +60,7 @@ export default async function HomePage() {
     ])
   if (status !== 200) throw new Error('Falha ao carregar os cursos')
   const courses = body?.courses ?? []
-  // Home = superfície de AÇÃO: só cursos LIBERADOS pela carreira (os travados —
+  // Home = superfície de AÇÃO: só cursos LIBERADOS pela jornada (os travados —
   // futuro/recompensa — vivem no Mapa da Jornada em /cursos). Ordenação
   // ação-primeiro: em andamento → não começados → concluídos (revisão) por último.
   const courseRank = (c: (typeof courses)[number]) => {
@@ -219,7 +219,7 @@ export default async function HomePage() {
               description="Assim que sua compra for confirmada, seu acesso aparece aqui."
             />
           ) : unlocked.length === 0 ? (
-            // Defensivo (tudo travado pela carreira): aponta o mapa em vez de sumir.
+            // Defensivo (tudo travado pela jornada): aponta o mapa em vez de sumir.
             <KidsEmptyState
               icon={MapIcon}
               title="Seus próximos cursos estão no mapa!"

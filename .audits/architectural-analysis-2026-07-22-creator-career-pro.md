@@ -11,7 +11,7 @@
 > bloqueados; o 423 tem tela amigável; o corpo do BFF é limitado pelo stream; a
 > imagem usa lockfile e `npm ci`; o banco recebeu normalização e constraint; a
 > prontidão pagina até o fim; contratos residuais foram removidos; e o manual
-> `docs/carreira-do-criador.md` passou a ser a referência operacional. O texto
+> `docs/jornada-do-criador.md` passou a ser a referência operacional. O texto
 > abaixo permanece como registro histórico do estado encontrado na revisão.
 
 ## Resumo executivo

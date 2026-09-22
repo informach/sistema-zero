@@ -122,7 +122,7 @@ describe('coursesForLevel (cada nível é dono de um degrau inteiro)', () => {
     expect(coursesForLevel('noob', mixed).map((c) => c.courseSlug)).toEqual(['entrada'])
   })
 
-  test('Lenda (god) mostra só os cursos de NÍVEL lenda (bônus da formatura, fora da carreira)', () => {
+  test('Lenda (god) mostra só os cursos de NÍVEL lenda (bônus da formatura, fora da jornada)', () => {
     const mix = [
       course({ courseSlug: 'lenda1', level: 'lenda', track: '2d', careerSlot: null }),
       course({ courseSlug: 'av3d', level: 'avancado', track: '3d', careerSlot: 3 }),
@@ -178,7 +178,7 @@ describe('tierCompletion (régua MISTA: obrigatória exige o Mural, bônus só c
   })
 
   test('🚨 obrigatória CONCLUÍDA mas não publicada no Mural NÃO conta', () => {
-    // É a régua da carreira sendo fiel: só as aulas acabarem não qualifica a posição,
+    // É a régua da jornada sendo fiel: só as aulas acabarem não qualifica a posição,
     // então o contador não pode dizer que está pronta.
     const feitasSemPublicar = [1, 2, 3].map((n) => slot(n, SO_CONCLUIDO))
     expect(tierCompletion('coder', feitasSemPublicar)).toEqual({ done: 0, total: 3 })

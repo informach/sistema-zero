@@ -389,7 +389,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         sequentialLock: src.sequentialLock,
         level: src.level,
         track: src.track,
-        // Fora da carreira até a operadora etiquetar (evita conflito de posição
+        // Fora da jornada até a operadora etiquetar (evita conflito de posição
         // e a armadilha de um clone virar curso-base sem querer).
         careerSlot: null,
         metadata,

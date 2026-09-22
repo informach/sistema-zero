@@ -89,7 +89,7 @@ export function ChildGuide({
     setAvatarDismissed(readSessionGuideFlag(childGuideAvatarDismissedKey(profileKey)))
     setStartDismissed(readGuideFlag(childGuideStartDismissedKey(profileKey)))
     // Boas-vindas 1× por perfil neste navegador — e só se houver AÇÃO a guiar.
-    // ⚠️ A explicação fixa do app (aulas/XP/Estúdio/Mural/carreira) NÃO conta aqui: ela
+    // ⚠️ A explicação fixa do app (aulas/XP/Estúdio/Mural/jornada) NÃO conta aqui: ela
     // existe sempre, e abrir a modal por causa dela poria o tutorial na cara de quem já
     // sabe tudo, a cada perfil novo. Quem já fez tudo vê a explicação quando PEDIR, pelo
     // "Como funciona?". Falha na API do avatar é "desconhecido", não evidência de que

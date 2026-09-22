@@ -7,7 +7,7 @@ import {
 
 const CONSTRAINT = 'courses_career_slot_check'
 
-describe('contrato do CHECK das posições da carreira', () => {
+describe('contrato do CHECK das posições da jornada', () => {
   test('a última migration que o escreveu carrega exatamente o CHECK do snapshot atual', () => {
     // ⚠️ Nada de número fixo aqui. Este teste já apontou para a `0063` por caminho literal e,
     // quando a `0064` alargou a restrição, teria continuado validando a regra ANTIGA — passando,

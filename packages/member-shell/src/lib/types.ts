@@ -103,7 +103,7 @@ export interface AccessView {
 
 /**
  * Dificuldade do curso (espelha o enum `course_level` do members). `lenda` é uma
- * categoria FORA da carreira (bônus da formatura, só na trilha da Lenda no kids) —
+ * categoria FORA da jornada (bônus da formatura, só na trilha da Lenda no kids) —
  * NÃO é degrau: `courseTierOf` devolve `undefined` p/ ela.
  */
 export type CourseLevelSlug =
@@ -130,7 +130,7 @@ export interface CourseProgressView extends CourseProgress {
  * Os marcos do aluno num curso (mirror do members) — concluir e publicar no Mural
  * são passos DISTINTOS, e é a diferença entre eles que o selo do card mostra.
  * ⚠️ NÃO é o `progress`: este regride quando a autora publica uma aula nova; o marco
- * é congelado no ledger e é dele que a carreira e o contador da trilha vivem.
+ * é congelado no ledger e é dele que a jornada e o contador da trilha vivem.
  * Vitrine adulta vem sempre zerado (não há Mural lá).
  */
 export interface CourseMilestonesView {
@@ -152,9 +152,9 @@ export interface CatalogCourseView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
-  /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
+  /** Posição na etapa da jornada; `null`/ausente = curso bônus. */
   careerSlot?: number | null
-  /** Trava pedagógica da carreira, separada da posse comercial. */
+  /** Trava pedagógica da jornada, separada da posse comercial. */
   careerLock?: JourneyCourseLockView
   /** Marcos do aluno neste curso; ausente = members antigo (trate como nenhum). */
   milestones?: CourseMilestonesView
@@ -255,9 +255,9 @@ export interface MyCourseView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
-  /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
+  /** Posição na etapa da jornada; `null`/ausente = curso bônus. */
   careerSlot?: number | null
-  /** Trava pedagógica da carreira, separada da posse comercial. */
+  /** Trava pedagógica da jornada, separada da posse comercial. */
   careerLock?: JourneyCourseLockView
   /** Marcos do aluno neste curso; ausente = members antigo (trate como nenhum). */
   milestones?: CourseMilestonesView
@@ -356,7 +356,7 @@ export interface CourseDetailView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
-  /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
+  /** Posição na etapa da jornada; `null`/ausente = curso bônus. */
   careerSlot?: number | null
   access: AccessView
   progress: CourseProgressView

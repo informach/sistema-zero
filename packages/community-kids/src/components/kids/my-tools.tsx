@@ -36,7 +36,7 @@ import { familyLabel } from '@/lib/studio-family'
  * já faz.
  *
  * Não aparece nas telas-modelo de 11/09/2026, mas é conteúdo: fica, na mesma roupa dos
- * cartões da carreira (cartão branco, ladrilho azul, linhas claras sem borda).
+ * cartões da jornada (cartão branco, ladrilho azul, linhas claras sem borda).
  */
 export function MyTools({
   drawers,

@@ -53,7 +53,7 @@ export default async function EstudioProPage({ params }: { params: Promise<{ id:
       viewerId={session?.id ?? null}
       projectId={id}
       // Mesma política do /estudio: equipe sempre, aluno a partir do degrau
-      // mínimo da carreira (Inventor). Aqui o rank já foi buscado p/ o gate Pro.
+      // mínimo da jornada (Inventor). Aqui o rank já foi buscado p/ o gate Pro.
       zappyEnabled={isStudioZappyAllowed(session, levelSlug)}
     />
   )

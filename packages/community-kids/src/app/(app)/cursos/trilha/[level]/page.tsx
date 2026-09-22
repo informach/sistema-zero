@@ -18,7 +18,7 @@ import { getSession } from '@/server/session'
 export const dynamic = 'force-dynamic'
 
 /**
- * O MEDALHÃO do nível (a mesma arte do mapa da carreira, `/carreira/<slug>.webp`), e não um
+ * O MEDALHÃO do nível (a mesma arte do mapa da jornada, `/jornada/<slug>.webp`), e não um
  * ícone genérico: é assim que a criança reconhece a trilha. O ícone fica POR BAIXO e a arte
  * por cima; o mapa faz o mesmo com um `onError` em estado de cliente, aqui a página é de
  * SERVIDOR e empilhar resolve sem JS: se o .webp não existir no deploy, a imagem com
@@ -95,7 +95,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   const all = body?.courses ?? []
   const level = gamification.status === 200 ? (gamification.body?.level ?? null) : null
   // ⚠️ Posse + `freeStudio`: o Estúdio livre só abre no Construtor, então uma Faísca com o
-  // produto veria um atalho que cai na tela de bloqueio da carreira (clique morto).
+  // produto veria um atalho que cai na tela de bloqueio da jornada (clique morto).
   const studioOwned = canOpenFreeStudio(
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true,
     level?.slug,

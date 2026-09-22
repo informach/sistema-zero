@@ -15,7 +15,7 @@ import {
 } from '../src/journey'
 
 describe('journeyLevelAtLeast', () => {
-  test('compara pela posição na carreira e falha fechado para slugs inválidos', () => {
+  test('compara pela posição na jornada e falha fechado para slugs inválidos', () => {
     expect(journeyLevelAtLeast('coder', 'hacker')).toBe(false)
     expect(journeyLevelAtLeast('hacker', 'hacker')).toBe(true)
     expect(journeyLevelAtLeast('god', 'hacker')).toBe(true)
@@ -32,7 +32,7 @@ describe('journeyLevelAtLeast', () => {
   })
 })
 
-describe('catálogo da Carreira do Criador', () => {
+describe('catálogo da Jornada do Criador', () => {
   test('cada degrau tem o seu número de posições, derivado da Lenda', () => {
     // UMA exceção ao 8: o degrau de ENTRADA tem 1 (o curso que a Faísca faz). O Iniciante 2D
     // chegou a ter 7 entre 14/08 e 15/08 e a usuária desfez — todo degrau que não é a entrada
@@ -57,7 +57,7 @@ describe('catálogo da Carreira do Criador', () => {
     expect(total).toBe(49)
   })
 
-  test('degrau desconhecido não tem posição e não passa por degrau de carreira', () => {
+  test('degrau desconhecido não tem posição e não passa por degrau de jornada', () => {
     for (const tier of ['lenda-2d', 'iniciante-4d', '']) {
       expect(journeySlotsForTier(tier)).toBe(0)
       expect(isJourneyCourseTier(tier)).toBe(false)
@@ -81,7 +81,7 @@ describe('catálogo da Carreira do Criador', () => {
       }),
     ).toBe('hacker')
     // Buraco no meio nao promove, por mais que a CONTAGEM pareca suficiente: a regua e por
-    // POSICAO, nao por quantidade. Aqui faltam a 7 (e o 99 e bonus, fora da carreira).
+    // POSICAO, nao por quantidade. Aqui faltam a 7 (e o 99 e bonus, fora da jornada).
     expect(
       computeJourneyLevelSlug({
         'primeiros-passos-2d': [1],

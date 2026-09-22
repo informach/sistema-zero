@@ -81,7 +81,7 @@ export type GuideWelcomeStepId =
   | 'start'
   | 'aulas'
   | 'xp'
-  | 'carreira'
+  | 'jornada'
   | 'criar'
   | 'mural'
   | `parent-${number}`
@@ -155,7 +155,7 @@ export function childWelcomeSteps(input: ChildWelcomeInput): readonly GuideWelco
       text: 'Publique o seu jogo no Mural e a turma inteira pode jogar.',
     },
     {
-      id: 'carreira',
+      id: 'jornada',
       emoji: '🗺️',
       text: 'Terminou um curso e publicou o jogo? O mapa mostra o seu progresso na jornada.',
     },

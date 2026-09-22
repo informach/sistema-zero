@@ -227,7 +227,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       if (!studioAccess) return error('FORBIDDEN', 403)
       const safeQuestion = redactZappySensitiveText(parsed.data.question)
 
-      // Rank/modos/extensões vêm do members + catálogo da carreira, nunca do cliente.
+      // Rank/modos/extensões vêm do members + catálogo da jornada, nunca do cliente.
       if (gamification.status !== 200) return error('ZAPPY_UNAVAILABLE', 503)
       const levelSlug = gamification.body?.level?.slug
       // Reusa o rank desta rota para não consultar o members duas vezes.

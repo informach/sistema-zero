@@ -1,5 +1,5 @@
 /**
- * Nível de longo prazo da criança, derivado dos slots obrigatórios da carreira
+ * Nível de longo prazo da criança, derivado dos slots obrigatórios da jornada
  * que têm os dois marcos: curso concluído + projeto publicado no Mural.
  */
 import {
@@ -21,12 +21,12 @@ export const COURSE_TIERS = JOURNEY_COURSE_TIERS
 export type CourseTier = JourneyCourseTier
 
 /**
- * O DEGRAU de um curso, ou `null` quando o par não é um degrau da carreira.
+ * O DEGRAU de um curso, ou `null` quando o par não é um degrau da jornada.
  *
  * ⚠️ Passou a devolver `null` em 14/08, com a chegada do `primeiros-passos`: nem toda
  * combinação (level, track) é degrau — só existe `primeiros-passos-2d`, nunca o `-3d`. O
  * `lenda` já ficava de fora por tipo. Quem chama trata `null` do mesmo jeito que trata
- * `lenda`: fora da carreira, sem trava.
+ * `lenda`: fora da jornada, sem trava.
  */
 export function courseTier(level: JourneyCourseLevel, track: CourseTrack): CourseTier | null {
   const tier = `${level}-${track}`

@@ -56,7 +56,7 @@ function fullTier(level: Level, track: Track): CatalogCourseView[] {
 /** O curso de ENTRADA sozinho: a régua do Construtor(a). */
 const entrada = () => course('primeiros-passos', '2d', 1)
 
-/** O catálogo COMPLETO da carreira: 1 + 8×6 = 49 posições. */
+/** O catálogo COMPLETO da jornada: 1 + 8×6 = 49 posições. */
 function fullCatalog(): CatalogCourseView[] {
   return [
     ...fullTier('primeiros-passos', '2d'),
@@ -246,7 +246,7 @@ describe('journeyProgress', () => {
     expect(journeyProgress(level, courses)).toEqual({ kind: 'up-to-date' })
   })
 
-  test('pega o PRIMEIRO degrau pendente na ordem da carreira', () => {
+  test('pega o PRIMEIRO degrau pendente na ordem da jornada', () => {
     const level = studentLevel('hacker', 'explorer', { 'iniciante-3d': 8 })
     const courses = [entrada(), ...fullTier('iniciante', '2d'), ...fullTier('iniciante', '3d')]
     expect(journeyProgress(level, courses)).toMatchObject({
@@ -333,7 +333,7 @@ describe('promisedNextLevel (o cartão "Próximo nível" da trilha)', () => {
 })
 
 describe('TIER_ORDER', () => {
-  test('são os 7 degraus na ordem da carreira, sem repetir', () => {
+  test('são os 7 degraus na ordem da jornada, sem repetir', () => {
     expect(TIER_ORDER).toEqual([
       'primeiros-passos-2d',
       'iniciante-2d',

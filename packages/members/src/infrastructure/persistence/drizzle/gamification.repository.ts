@@ -889,10 +889,10 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     // `level` nunca é null na prática (todo marco pós-deploy tem snapshot); o guard
     // descarta uma linha residual sem dificuldade (curso apagado + snapshot legado null).
     for (const row of rows) {
-      // `lenda` é FORA da carreira (também teria careerSlot null) → nunca conta.
+      // `lenda` é FORA da jornada (também teria careerSlot null) → nunca conta.
       if (!row.level || row.level === 'lenda' || !row.track || row.careerSlot === null) continue
       const tier = courseTier(row.level, row.track)
-      // Par que não é degrau da carreira (só existe `primeiros-passos-2d`) não conta.
+      // Par que não é degrau da jornada (só existe `primeiros-passos-2d`) não conta.
       if (!tier) continue
       const slots = result[tier]
       const slot = Number(row.careerSlot)
@@ -977,7 +977,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
    * ⚠️ `courses` entra por INNER join (≠ do `listQualifyingJourneySlots`, que usa LEFT):
    * aqui o dado vem do curso VIVO, então curso apagado simplesmente não contribui —
    * quem impede a perda é o snapshot em `studio_block_grants`. Bônus e `lenda` CONTAM
-   * (todo curso pode ensinar ferramenta; só a CARREIRA os ignora).
+   * (todo curso pode ensinar ferramenta; só a JORNADA os ignora).
    */
   async listStudioUnlocksByCourse(
     userId: string,
@@ -1077,7 +1077,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       )
       .groupBy(xpEvents.userId, level, track, careerSlot)
     for (const row of rows) {
-      // `lenda` é FORA da carreira (também teria careerSlot null) → nunca conta.
+      // `lenda` é FORA da jornada (também teria careerSlot null) → nunca conta.
       if (!row.level || row.level === 'lenda' || !row.track || row.careerSlot === null) continue
       let q = result.get(row.userId)
       if (!q) {
@@ -1085,7 +1085,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         result.set(row.userId, q)
       }
       const tier = courseTier(row.level, row.track)
-      // Par que não é degrau da carreira (só existe `primeiros-passos-2d`) não conta.
+      // Par que não é degrau da jornada (só existe `primeiros-passos-2d`) não conta.
       if (!tier) continue
       const slots = q[tier]
       const slot = Number(row.careerSlot)

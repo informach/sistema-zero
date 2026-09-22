@@ -312,7 +312,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
 
   async showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }> {
     // Agregado NO banco (usa o threads_author_status_idx): "seus jogos já foram
-    // jogados N vezes" do card de carreira — nunca lista threads p/ somar no app.
+    // jogados N vezes" do card de jornada — nunca lista threads p/ somar no app.
     const [row] = await this.db
       .select({
         published: sql<number>`count(*)::int`,

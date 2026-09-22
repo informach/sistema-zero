@@ -2217,7 +2217,7 @@ interface XpEventRow extends XpEventInput {
   sourceLevel?: CourseLevel | null
   /** Snapshot do eixo 2D/3D (mirror de `xp_events.source_track` — par do sourceLevel). */
   sourceTrack?: CourseTrack | null
-  /** Snapshot do slot da carreira (mirror de `xp_events.source_career_slot`). */
+  /** Snapshot do slot da jornada (mirror de `xp_events.source_career_slot`). */
   sourceCareerSlot?: number | null
   createdAt: Date
 }
