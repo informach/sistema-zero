@@ -27,7 +27,7 @@ export default async function ResponsavelPage() {
           Acompanhe as descobertas
         </h1>
         <p className="mt-2.5 font-medium text-[1.0625rem] text-muted-foreground">
-          Veja o que cada criança está criando, as conquistas da carreira e o próximo passo. Uma boa
+          Veja o que cada criança está criando, as conquistas da jornada e o próximo passo. Uma boa
           conversa começa pedindo que ela mostre como fez o jogo.
         </p>
         <nav aria-label="Área dos responsáveis" className="mt-5 flex flex-wrap gap-2">

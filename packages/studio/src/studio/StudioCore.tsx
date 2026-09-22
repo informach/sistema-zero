@@ -460,7 +460,7 @@ function StudioCoreBody({
                                       Este projeto usa ferramentas que você ainda vai conquistar
                                     </p>
                                     <p className="max-w-md text-sm">
-                                      Continue avançando na Carreira do Criador. O projeto ficou
+                                      Continue avançando na Jornada do Criador. O projeto ficou
                                       guardado e abrirá normalmente quando essas ferramentas forem
                                       liberadas.
                                     </p>

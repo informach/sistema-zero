@@ -157,7 +157,7 @@ export function childWelcomeSteps(input: ChildWelcomeInput): readonly GuideWelco
     {
       id: 'carreira',
       emoji: '🗺️',
-      text: 'Terminou um curso e publicou o jogo? O mapa mostra o seu progresso na carreira.',
+      text: 'Terminou um curso e publicou o jogo? O mapa mostra o seu progresso na jornada.',
     },
   )
   return steps

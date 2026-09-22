@@ -76,7 +76,7 @@ export function CareerMap({
   return (
     // O chip "Você é <posto>" e a frase do próximo marco moram no CABEÇALHO da página
     // (telas-modelo de 11/09/2026); aqui fica só o mapa.
-    <section aria-label="Mapa da carreira" className="flex flex-col gap-8">
+    <section aria-label="Mapa da jornada" className="flex flex-col gap-8">
       {/* `mb-10` reserva o espaço da legenda do ÚLTIMO nó, que é absoluta e cai ~42px
           ABAIXO da caixa da lista. Sem isso o bloco "Você está em dia" (irmão seguinte)
           entra por cima dela — medido em 10px de sobreposição. Margem, não padding: os
@@ -296,7 +296,7 @@ function CareerNode({
           // deploy: onError cai no ícone do nível (o mapa nunca quebra sem arte).
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={`/carreira/${slug}.webp`}
+            src={`/jornada/${slug}.webp`}
             alt=""
             width={112}
             height={112}
@@ -339,7 +339,7 @@ function CareerNode({
         {/* ⚠️ NADA de nome de degrau ("Iniciante 2D") aqui: é vocabulário de quem MONTA o
             curso, não de quem faz. Para a criança o nó já se chama Faísca, Construtor(a)… */}
         {!tier && state !== 'locked' ? (
-          <span className="text-[11px] text-muted-foreground">O topo da carreira!</span>
+          <span className="text-[11px] text-muted-foreground">O topo da jornada!</span>
         ) : null}
         {/* Marcos do degrau: a criança vê o passo a passo se mexer a cada curso publicado,
             em vez de esperar 8 cursos pelo próximo posto. O contador conta só o que EXISTE.
@@ -394,7 +394,7 @@ function CareerNode({
           className="relative block cursor-not-allowed"
           onClick={() => {
             wiggle()
-            toast('Continue sua carreira para abrir esta parte do mapa! 🔒')
+            toast('Continue sua jornada para abrir esta parte do mapa! 🔒')
           }}
         >
           {inner}

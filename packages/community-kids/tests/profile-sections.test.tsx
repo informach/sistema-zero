@@ -42,7 +42,7 @@ function gamificacao(): GamificationMeView {
   }
 }
 
-describe('Minha carreira', () => {
+describe('Minha jornada', () => {
   test('marca o posto atual e só o seguinte como "Próximo nível"', () => {
     // Catálogo desconhecido (`null`) desenha a escada inteira.
     render(<CareerTimeline gamification={gamificacao()} courses={null} />)
@@ -55,7 +55,7 @@ describe('Minha carreira', () => {
 
   test('feitos universais e bônus dos apps em grupos separados', () => {
     render(<CareerTimeline gamification={gamificacao()} courses={null} />)
-    expect(screen.getByText('Feitos da jornada')).toBeTruthy()
+    expect(screen.getByText('Meus feitos')).toBeTruthy()
     expect(screen.getByText('Bônus dos apps criativos')).toBeTruthy()
     expect(screen.getByText('Semana em chamas')).toBeTruthy()
     expect(screen.getByText('Ideia brilhante')).toBeTruthy()

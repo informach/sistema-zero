@@ -54,7 +54,7 @@ function Medalhao({
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={`/carreira/${slug}.webp`}
+        src={`/jornada/${slug}.webp`}
         alt=""
         width={72}
         height={72}
@@ -122,7 +122,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
           <p className="mt-4 font-medium text-[1.0625rem] text-muted-foreground">
             {beyondHorizon
               ? `Os cursos da trilha de ${levelInfo(levelSlug).label} ainda estão sendo criados. Volte daqui a pouquinho!`
-              : `Complete as trilhas anteriores da sua carreira e a trilha de ${levelInfo(levelSlug).label} vai abrir sozinha, com direito a recompensas!`}
+              : `Complete as trilhas anteriores da sua jornada e a trilha de ${levelInfo(levelSlug).label} vai abrir sozinha, com direito a recompensas!`}
           </p>
           <Link href="/cursos" className="sz-btn-gradient mt-6 gap-2 px-6">
             <MapIcon className="size-4" aria-hidden /> Voltar ao mapa
@@ -164,7 +164,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
         </div>
         {tier ? null : (
           <p className="mt-4 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground">
-            A formatura! Cursos extras que abriram por você ter chegado ao topo da carreira.
+            A formatura! Cursos extras que abriram por você ter chegado ao topo da jornada.
           </p>
         )}
         {hint ? (

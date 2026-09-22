@@ -53,7 +53,7 @@ export function CareerHorizonNode({
     >
       <button
         type="button"
-        aria-label="Mais postos da carreira, ainda sendo construídos"
+        aria-label="Mais postos da jornada, ainda sendo construídos"
         className="relative block cursor-not-allowed"
         onClick={() => {
           wiggle()
@@ -71,7 +71,7 @@ export function CareerHorizonNode({
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={`/carreira/${last}.webp`}
+                  src={`/jornada/${last}.webp`}
                   alt=""
                   width={112}
                   height={112}

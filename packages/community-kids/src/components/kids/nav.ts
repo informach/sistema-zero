@@ -52,7 +52,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Início', icon: Home, backLabel: 'Voltar ao início' },
   // A página da Carreira É o mapa, e é assim que a trilha já chamava a volta.
-  { href: '/cursos', label: 'Carreira', icon: GraduationCap, backLabel: 'Voltar ao mapa' },
+  { href: '/cursos', label: 'Jornada', icon: GraduationCap, backLabel: 'Voltar ao mapa' },
   {
     href: '/criar',
     label: 'Criar',

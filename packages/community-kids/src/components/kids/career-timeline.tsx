@@ -121,11 +121,11 @@ export function CareerTimeline({
   const product = unlocked.filter((b) => isProductBadge(b.slug))
 
   return (
-    <section aria-labelledby="minha-carreira">
+    <section aria-labelledby="minha-jornada">
       <KidsSectionHeader
-        id="minha-carreira"
-        title="Minha carreira"
-        subtitle="Sua jornada de criador: cada projeto concluído e publicado sobe a escada."
+        id="minha-jornada"
+        title="Minha jornada"
+        subtitle="Cada projeto concluído e publicado sobe um degrau da escada."
       />
 
       <div className="kids-carta p-4 md:p-6">
@@ -244,7 +244,7 @@ export function CareerTimeline({
       {universal.length > 0 ? (
         <div className="mt-8">
           <h3 className="font-extrabold text-muted-foreground text-xs uppercase tracking-[0.12em]">
-            Feitos da jornada
+            Meus feitos
           </h3>
           <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             {universal.map((b) => (

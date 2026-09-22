@@ -16,7 +16,7 @@ export function courseSaveError(code: string, fallbackMessage: string): CourseSa
     case 'CAREER_SLOT_CONFLICT':
       return {
         message:
-          'Esta posição da carreira acabou de ser ocupada por outro curso. A ocupação foi recarregada — escolha outra posição.',
+          'Esta posição da jornada acabou de ser ocupada por outro curso. A ocupação foi recarregada — escolha outra posição.',
         hint: 'occupancy',
       }
     case 'CONCURRENCY_CONFLICT':

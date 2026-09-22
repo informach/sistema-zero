@@ -29,7 +29,7 @@ export class LessonLockedError extends DomainError {
 const CAREER_LOCK_MESSAGES = {
   'foundation-first': 'Conclua e publique o curso-base desta etapa para liberar este curso',
   'tier-reward': 'Este curso é uma recompensa: complete os cursos da etapa para liberar',
-  'future-tier': 'Continue sua carreira para liberar este curso',
+  'future-tier': 'Continue sua jornada para liberar este curso',
 } as const
 
 /** Curso futuro na carreira, aguardando o curso-base, ou bônus-recompensa da etapa. → 423. */
@@ -86,7 +86,7 @@ export class CloneSameAudienceError extends DomainError {
 /** Já existe outro curso no mesmo slot da etapa da carreira. → 409. */
 export class CareerSlotConflictError extends DomainError {
   readonly code = 'CAREER_SLOT_CONFLICT'
-  constructor(message = 'Já existe um curso nesta posição da carreira') {
+  constructor(message = 'Já existe um curso nesta posição da jornada') {
     super(message)
   }
 }
@@ -120,7 +120,7 @@ export class CourseConflictError extends DomainError {
 export class NoShowcaseBlockError extends DomainError {
   readonly code = 'NO_SHOWCASE_BLOCK'
   constructor(
-    message = 'Publique uma aula com bloco de Estúdio com vitrine (Publicar no Mural) antes de publicar um curso obrigatório da carreira',
+    message = 'Publique uma aula com bloco de Estúdio com vitrine (Publicar no Mural) antes de publicar um curso obrigatório da jornada',
   ) {
     super(message)
   }

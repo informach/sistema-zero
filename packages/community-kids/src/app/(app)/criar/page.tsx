@@ -44,7 +44,7 @@ export default async function CriarPage() {
           subtitle={
             available.length
               ? 'Retome seus projetos nas ferramentas abaixo. Tudo o que você aprende amplia sua oficina.'
-              : 'Comece criando dentro das aulas. Sua oficina cresce junto com a Carreira do Criador.'
+              : 'Comece criando dentro das aulas. Sua oficina cresce junto com a Jornada do Criador.'
           }
         />
         <div className="mt-6">
@@ -162,7 +162,7 @@ export default async function CriarPage() {
                           prefetch={false}
                           className="mt-3 inline-flex min-h-11 items-center gap-1 font-bold text-primary text-sm hover:underline"
                         >
-                          Ver o caminho na carreira
+                          Ver o caminho na jornada
                           <ArrowRight className="size-4" aria-hidden />
                         </Link>
                       ) : null}

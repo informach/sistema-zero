@@ -247,11 +247,11 @@ function assertCareerSlot(course: {
   if (course.careerSlot === null) return
   if (course.level === 'lenda') {
     throw new InvalidContentCommandError(
-      'Curso Lenda é bônus da formatura — não ocupa posição na carreira',
+      'Curso Lenda é bônus da formatura — não ocupa posição na jornada',
     )
   }
   if (course.audience !== 'kids') {
-    throw new InvalidContentCommandError('Somente cursos Kids podem ocupar a carreira')
+    throw new InvalidContentCommandError('Somente cursos Kids podem ocupar a jornada')
   }
   // O teto é POR DEGRAU e vem do catálogo CANÔNICO do core (1 em Primeiros Passos, 7 no
   // Iniciante 2D, 8 nos demais); o CHECK da migration `0063` e o admin (via conformance)
@@ -260,7 +260,7 @@ function assertCareerSlot(course: {
   const maximum = careerSlotsForTier(tier)
   if (maximum === 0) {
     throw new InvalidContentCommandError(
-      'Esta combinação de nível e eixo não é um degrau da carreira',
+      'Esta combinação de nível e eixo não é um degrau da jornada',
     )
   }
   if (
@@ -270,8 +270,8 @@ function assertCareerSlot(course: {
   ) {
     throw new InvalidContentCommandError(
       maximum === 1
-        ? 'Esta etapa aceita somente a posição 1 na carreira'
-        : `Esta etapa aceita posições de 1 a ${maximum} na carreira`,
+        ? 'Esta etapa aceita somente a posição 1 na jornada'
+        : `Esta etapa aceita posições de 1 a ${maximum} na jornada`,
     )
   }
 }

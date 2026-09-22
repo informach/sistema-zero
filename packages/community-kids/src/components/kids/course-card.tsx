@@ -71,7 +71,7 @@ export function CourseCard({ course }: CourseCardProps) {
           {course.careerSlot === 1
             ? 'Primeiro da trilha'
             : typeof course.careerSlot === 'number'
-              ? 'Curso da carreira'
+              ? 'Curso da jornada'
               : 'Curso bônus'}
         </p>
         <h3 className="sz-display mt-1.5 text-lg md:text-xl">{course.title}</h3>

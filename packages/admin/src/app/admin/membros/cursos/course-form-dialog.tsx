@@ -193,7 +193,7 @@ export function CourseFormDialog({
   const studioUnlockRule =
     form.careerSlot === ''
       ? 'Curso bônus: a criança recebe as ferramentas quando conclui todas as aulas.'
-      : 'Curso da carreira: a criança recebe as ferramentas quando conclui o curso e publica no Mural.'
+      : 'Curso da jornada: a criança recebe as ferramentas quando conclui o curso e publica no Mural.'
   const maxSlot = slotsForTier(form.level, form.track)
   const occupantBySlot = new Map<number, CourseView>()
   for (const c of kidsCourses) {
@@ -426,7 +426,7 @@ export function CourseFormDialog({
         <Field
           label="Nível do curso"
           htmlFor="clevel"
-          tooltip="Degrau do curso: dificuldade (Iniciante/Intermediário/Avançado) × eixo (2D/3D). Conta para a CARREIRA do aluno: concluir e publicar no Mural cursos de cada degrau, na ordem da escada (2D antes do 3D em cada dificuldade), faz o aluno subir de Faísca até Lenda."
+          tooltip="Degrau do curso: dificuldade (Iniciante/Intermediário/Avançado) × eixo (2D/3D). Conta para a JORNADA do aluno: concluir e publicar no Mural cursos de cada degrau, na ordem da escada (2D antes do 3D em cada dificuldade), faz o aluno subir de Faísca até Lenda."
         >
           {/* UM select de 6 opções que escreve os DOIS campos (level + track). */}
           <Select
@@ -462,13 +462,13 @@ export function CourseFormDialog({
         </Field>
         {form.level === 'lenda' ? (
           <p className="rounded-lg bg-muted/50 px-3 py-2 text-muted-foreground text-xs">
-            👑 Curso bônus da <strong>Lenda</strong> (formatura): FORA da carreira — sem posição,
-            não conta pontos e não trava. Aparece só na trilha da Lenda em <code>/cursos</code>,
-            para quem já chegou ao topo.
+            👑 Curso bônus da <strong>Lenda</strong> (formatura): FORA da jornada — sem posição, não
+            conta pontos e não trava. Aparece só na trilha da Lenda em <code>/cursos</code>, para
+            quem já chegou ao topo.
           </p>
         ) : (
           <Field
-            label="Posição na Carreira do Criador"
+            label="Posição na Jornada do Criador"
             htmlFor="career-slot"
             tooltip="Ordena os cursos Kids dentro da etapa. A posição 1 é o CURSO-BASE: o aluno precisa concluí-lo e publicar no Mural para as demais posições da etapa liberarem. 'Bônus' é a RECOMPENSA da etapa: abre quando o aluno completa todos os cursos com posição (etapa sem curso-base publicado não trava o bônus)."
             hint={

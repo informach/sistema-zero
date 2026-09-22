@@ -449,7 +449,7 @@ function HowToClimb({ canPublish }: { canPublish: boolean }) {
             // 44px, o alvo de toque da casa (estava em 40).
             className="sz-btn-gradient sz-btn-inverso h-11 gap-1.5 px-5 text-sm"
           >
-            Ver a minha carreira
+            Ver a minha jornada
             <ArrowRight className="size-4" aria-hidden />
           </Link>
         }

@@ -178,7 +178,7 @@ describe('Pensa planejador — HTTP', () => {
     )
     expect(allowed.capability).toEqual({
       owned: false,
-      blockedReason: 'O Pinta ainda não foi liberado pelo seu nível na carreira.',
+      blockedReason: 'O Pinta ainda não foi liberado pelo seu nível na jornada.',
     })
 
     // O Estúdio do Pensa exige produto E o primeiro desbloqueio da carreira.
@@ -188,7 +188,7 @@ describe('Pensa planejador — HTTP', () => {
     )
     expect(studioLocked.capability).toEqual({
       owned: false,
-      blockedReason: 'O Estúdio ainda não foi liberado pelo seu nível na carreira.',
+      blockedReason: 'O Estúdio ainda não foi liberado pelo seu nível na jornada.',
     })
 
     // O curso de ENTRADA (degrau `primeiros-passos-2d`) é o que promove a Construtor(a),

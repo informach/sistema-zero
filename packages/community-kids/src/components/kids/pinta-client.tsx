@@ -180,7 +180,7 @@ export function PintaClient({
           brief: handoff.task.context,
           guide: handoff.task.guide,
           ...(handoff.task.context.requiresStudioUse && !studioAvailable
-            ? { studioUseBlockedReason: 'O Estúdio ainda não foi liberado pela sua carreira.' }
+            ? { studioUseBlockedReason: 'O Estúdio ainda não foi liberado pela sua jornada.' }
             : {}),
           progress: handoff.task.progress,
           onProgress: async (input) => {

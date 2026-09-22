@@ -157,7 +157,7 @@ export default async function ProfilePage() {
                 icon={Sofa}
                 tone={{ fundo: 'var(--tool-molda)', tinta: 'var(--tool-molda-fg)' }}
                 title="Meu quarto"
-                description="Decore seu cantinho com as conquistas da carreira."
+                description="Decore seu cantinho com as conquistas da jornada."
                 action="Arrumar o quarto"
               />
             </li>

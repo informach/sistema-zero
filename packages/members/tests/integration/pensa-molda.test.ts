@@ -97,7 +97,7 @@ describe('Pensa → Molda', () => {
       task: { destination: 'molda' },
       capability: {
         owned: false,
-        blockedReason: 'O Molda ainda não foi liberado pelo seu nível na carreira.',
+        blockedReason: 'O Molda ainda não foi liberado pelo seu nível na jornada.',
       },
     })
     expect(

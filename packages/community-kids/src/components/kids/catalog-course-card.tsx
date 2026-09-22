@@ -121,7 +121,7 @@ export function CatalogCourseCard({
           {course.careerSlot === 1
             ? 'Primeiro da trilha'
             : typeof course.careerSlot === 'number'
-              ? 'Curso da carreira'
+              ? 'Curso da jornada'
               : 'Curso bônus'}
         </p>
       ) : null}
@@ -168,7 +168,7 @@ export function CatalogCourseCard({
     ) : (
       <span className={PILULA_APAGADA}>
         <Lock className="size-3.5" aria-hidden />
-        Em breve na sua carreira
+        Em breve na sua jornada
       </span>
     )
   ) : available && linha && mine ? (

@@ -80,7 +80,7 @@ export function LessonCelebration({
         <h2 className="sz-display mt-3 text-2xl">Aula concluída!</h2>
         <p className="mt-1 text-muted-foreground text-sm">
           {publicationPending
-            ? 'As aulas deste curso estão concluídas. Confira a publicação do projeto para registrar a conquista na carreira.'
+            ? 'As aulas deste curso estão concluídas. Confira a publicação do projeto para registrar a conquista na jornada.'
             : 'Seu progresso está guardado. Você pode continuar ou fazer uma pausa.'}
         </p>
 

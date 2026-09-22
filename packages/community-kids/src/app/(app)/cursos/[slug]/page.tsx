@@ -70,7 +70,7 @@ export default async function CoursePage({
             ) : null}
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
               Abra a aula do projeto, confira a versão que você criou e use Compartilhar no Estúdio.
-              Depois que a publicação for confirmada, este curso contará na sua carreira.
+              Depois que a publicação for confirmada, este curso contará na sua jornada.
             </p>
             {course.showcaseLessonId ? (
               <Link

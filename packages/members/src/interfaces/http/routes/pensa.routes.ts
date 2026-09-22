@@ -121,7 +121,7 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
       'available'
     return {
       owned,
-      blockedReason: owned ? null : `O ${name} ainda não foi liberado pelo seu nível na carreira.`,
+      blockedReason: owned ? null : `O ${name} ainda não foi liberado pelo seu nível na jornada.`,
     }
   }
   return (

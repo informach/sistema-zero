@@ -19,7 +19,7 @@ const PILULA =
 const AVATAR_CLARO = 'bg-[color-mix(in_oklab,var(--primary)_14%,var(--card))] text-primary'
 
 /**
- * Card "Carreira de Criador" da home (07/2026): UMA narrativa de progressão em
+ * Card "Jornada do Criador" da home (07/2026): UMA narrativa de progressão em
  * vez de números soltos — o selo do posto (o marco central: publicar jogos no Mural), a
  * frase do PRÓXIMO marco (`nextLevelHintWithin`, montada na página) e, como secundários,
  * o fogo do streak e o XP. Substituiu o StreakCard (a mensagem do fogo do dia vive aqui
@@ -50,7 +50,7 @@ export function CreatorCareerCard({
   if (!gamification) {
     return (
       <section
-        aria-label="Minha carreira de criador"
+        aria-label="Minha jornada de criador"
         className="kids-carta flex items-center gap-4 p-5 md:gap-6 md:px-7 md:py-6"
       >
         <AvatarWithAura
@@ -61,7 +61,7 @@ export function CreatorCareerCard({
           label="Seu avatar"
         />
         <div className="min-w-0 flex-1">
-          <p className="sz-display text-xl md:text-2xl">Sua carreira está guardada!</p>
+          <p className="sz-display text-xl md:text-2xl">Sua jornada está guardada!</p>
           <p className="mt-1 font-medium text-[0.9375rem] text-muted-foreground">
             Não consegui ver o seu progresso agora, mas nada se perdeu. Pode continuar criando!
           </p>
@@ -87,7 +87,7 @@ export function CreatorCareerCard({
 
   return (
     <section
-      aria-label="Minha carreira de criador"
+      aria-label="Minha jornada de criador"
       className="kids-carta flex flex-col gap-4 p-5 md:flex-row md:items-start md:gap-6 md:px-7 md:py-6"
     >
       <AvatarWithAura
@@ -99,7 +99,7 @@ export function CreatorCareerCard({
       />
       <div className="min-w-0 flex-1">
         <p className="font-extrabold text-muted-foreground text-xs uppercase tracking-[0.12em]">
-          Carreira de Criador
+          Jornada do Criador
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-2.5">
           <LevelBadge levelSlug={level?.slug} size="sm" variant="destaque" />
@@ -132,7 +132,7 @@ export function CreatorCareerCard({
               prefetch={false}
               className="inline-flex min-h-8 items-center font-extrabold text-primary underline-offset-2 hover:underline any-pointer-coarse:min-h-11"
             >
-              Ver minha carreira
+              Ver minha jornada
             </Link>
           </p>
         ) : null}

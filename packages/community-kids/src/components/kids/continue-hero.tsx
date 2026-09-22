@@ -63,7 +63,7 @@ export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
       title={course.title}
       description={
         publishing
-          ? 'Você concluiu este curso. Publique o projeto no Mural para registrar essa conquista na carreira.'
+          ? 'Você concluiu este curso. Publique o projeto no Mural para registrar essa conquista na jornada.'
           : undefined
       }
       footer={

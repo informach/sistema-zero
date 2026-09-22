@@ -131,7 +131,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
       {
         onSuccess: setCareerItems,
         onError: (error) => {
-          toast.error((error as ApiError).message ?? 'Falha ao conferir a Carreira do Criador.')
+          toast.error((error as ApiError).message ?? 'Falha ao conferir a Jornada do Criador.')
         },
         onSettled: () => setCareerLoading(false),
       },
@@ -305,7 +305,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                     {c.audience === 'kids' ? (
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                         {c.level === 'lenda' ? (
-                          '👑 Lenda — curso bônus da formatura (aparece na trilha da Lenda; fora da carreira)'
+                          '👑 Lenda — curso bônus da formatura (aparece na trilha da Lenda; fora da jornada)'
                         ) : c.careerSlot == null ? (
                           `Bônus — recompensa da etapa ${
                             COURSE_TIER_OPTIONS.find(
@@ -315,7 +315,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                         ) : (
                           <>
                             <span>
-                              {`Carreira: ${
+                              {`Jornada: ${
                                 COURSE_TIER_OPTIONS.find(
                                   (option) => option.level === c.level && option.track === c.track,
                                 )?.label ?? `${c.level} ${c.track}`
@@ -449,7 +449,7 @@ function CareerReadiness({
     <Card className="p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="font-semibold text-base">Carreira do Criador</h2>
+          <h2 className="font-semibold text-base">Jornada do Criador</h2>
           <p className="mt-1 text-muted-foreground text-sm">
             Confira se todos os cursos obrigatórios estão posicionados e publicados antes do
             lançamento. A <strong className="text-foreground">posição 1</strong> é o curso-base da
@@ -502,7 +502,7 @@ function CareerReadiness({
                       missingShowcase ? (
                         <span
                           className="inline-flex items-center gap-1 text-destructive"
-                          title="Nenhuma aula publicada tem bloco de Estúdio com vitrine (Publicar no Mural). Sem isso este curso não qualifica para a carreira."
+                          title="Nenhuma aula publicada tem bloco de Estúdio com vitrine (Publicar no Mural). Sem isso este curso não qualifica para a jornada."
                         >
                           <TriangleAlert className="size-3.5" /> Sem vitrine
                         </span>
@@ -604,7 +604,7 @@ function CloneCourseDialog({
       open={course !== null}
       onClose={onClose}
       title={`Clonar para a plataforma ${targetLabel}`}
-      description="O conteúdo inteiro (módulos, aulas, blocos e anexos) é copiado. O clone nasce como rascunho, fora da Carreira do Criador — e edições depois do clone NÃO sincronizam entre os dois cursos."
+      description="O conteúdo inteiro (módulos, aulas, blocos e anexos) é copiado. O clone nasce como rascunho, fora da Jornada do Criador — e edições depois do clone NÃO sincronizam entre os dois cursos."
       footer={
         <>
           <Button variant="outline" onClick={onClose} disabled={busy}>

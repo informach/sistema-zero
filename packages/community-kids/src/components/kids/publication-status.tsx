@@ -24,7 +24,7 @@ export function PublicationStatus({ state }: { state: 'pending' | 'delivered' })
       <p role="status" className="font-bold text-primary">
         Seu jogo já foi recebido
       </p>
-      <h2 className="sz-display mt-2 text-xl">Estamos atualizando sua carreira</h2>
+      <h2 className="sz-display mt-2 text-xl">Estamos atualizando sua jornada</h2>
       <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
         {state === 'pending'
           ? 'A confirmação da publicação está a caminho. Seu jogo está guardado; você pode continuar navegando.'
@@ -37,7 +37,7 @@ export function PublicationStatus({ state }: { state: 'pending' | 'delivered' })
           onClick={() => startTransition(() => router.refresh())}
           className="min-h-11 rounded-xl bg-primary px-4 py-2 font-bold text-primary-foreground disabled:opacity-50"
         >
-          {refreshing ? 'Atualizando…' : 'Atualizar carreira'}
+          {refreshing ? 'Atualizando…' : 'Atualizar jornada'}
         </button>
         <Link
           href="/mural-dos-criadores"

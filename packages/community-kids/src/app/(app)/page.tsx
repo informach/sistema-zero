@@ -208,7 +208,7 @@ export default async function HomePage() {
                 prefetch={false}
                 className="sz-btn-gradient sz-btn-inverso h-10 gap-1.5 px-5 text-sm"
               >
-                Ver o mapa da carreira <ArrowRight className="size-4" aria-hidden />
+                Ver o mapa da jornada <ArrowRight className="size-4" aria-hidden />
               </Link>
             }
           />
@@ -223,7 +223,7 @@ export default async function HomePage() {
             <KidsEmptyState
               icon={MapIcon}
               title="Seus próximos cursos estão no mapa!"
-              description="Abra o Mapa da Carreira para ver o que vem pela frente."
+              description="Abra o Mapa da Jornada para ver o que vem pela frente."
               action={
                 <Link href="/cursos" prefetch={false} className="sz-btn-gradient px-6">
                   <Sparkles className="size-4" aria-hidden /> Abrir o mapa

@@ -21,10 +21,10 @@ export function KidsCareerLockedProduct({
       // O ícone e o nome do posto saem do LEVEL_INFO, como em toda a carreira.
       chip={`Abre no ${level.label}`}
       chipIcon={level.icon}
-      title={`${title} faz parte da sua carreira`}
+      title={`${title} faz parte da sua jornada`}
       actions={
         <Link href="/cursos" className="sz-btn-gradient">
-          <BookOpen className="size-4" aria-hidden /> Ver a minha carreira
+          <BookOpen className="size-4" aria-hidden /> Ver a minha jornada
         </Link>
       }
     >

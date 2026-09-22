@@ -253,7 +253,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       )
     ) {
       throw new NoShowcaseBlockError(
-        'Esta é a última atividade de publicação deste curso da carreira. Adicione outra atividade publicada ou despublique o curso antes de removê-la.',
+        'Esta é a última atividade de publicação deste curso da jornada. Adicione outra atividade publicada ou despublique o curso antes de removê-la.',
       )
     }
   }

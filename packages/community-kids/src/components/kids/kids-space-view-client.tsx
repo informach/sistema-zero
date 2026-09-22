@@ -168,7 +168,7 @@ export function KidsSpaceViewClient({
     const label = slug ? levelInfo(slug).label : null
     return label
       ? `Esse jogo usa ferramentas do nível ${label}. Continue a sua jornada de criador para fazer a sua versão! 🚀`
-      : 'Esse jogo usa ferramentas que você ainda vai conquistar na sua carreira. 🚀'
+      : 'Esse jogo usa ferramentas que você ainda vai conquistar na sua jornada. 🚀'
   }, [])
 
   // Selo do card: o `studioMeta` do post (snapshot no publish) diz as ferramentas do

@@ -287,7 +287,7 @@ function ChildStatsCard({
       </div>
       {child.career ? (
         <section className="rounded-xl bg-primary/5 p-4 text-sm">
-          <h3 className="font-bold">Carreira do Criador · {levelInfo(child.career.level).label}</h3>
+          <h3 className="font-bold">Jornada do Criador · {levelInfo(child.career.level).label}</h3>
           {child.career.nextLevel ? (
             <p className="mt-1 text-muted-foreground">
               Próxima conquista: {levelInfo(child.career.nextLevel).label}. A evolução considera os

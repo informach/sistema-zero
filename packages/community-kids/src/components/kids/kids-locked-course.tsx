@@ -20,7 +20,7 @@ export function KidsLockedCourse({ reason }: { reason?: CareerLockReason }) {
   return (
     <KidsRecado
       art={<KidsMascot expression="sleeping" className="kid-float size-24" />}
-      chip="Continue sua carreira"
+      chip="Continue sua jornada"
       chipIcon={tierReward ? Gift : Lock}
       title={
         tierReward
@@ -42,7 +42,7 @@ export function KidsLockedCourse({ reason }: { reason?: CareerLockReason }) {
           ? 'Termine os cursos desta trilha e publique os seus jogos no Mural. Quando você fechar a trilha, este abre sozinho. É o seu prêmio!'
           : foundationFirst
             ? 'Tem um curso que vem antes deste. Termine ele e publique o seu jogo no Mural, e aí este aqui abre. Na lista de cursos, o cartão mostra qual é.'
-            : 'Continue a sua jornada! Este curso abre quando você chegar nesta parte do mapa.'}
+            : 'Este curso abre quando você chegar nesta parte do mapa.'}
       </p>
     </KidsRecado>
   )
