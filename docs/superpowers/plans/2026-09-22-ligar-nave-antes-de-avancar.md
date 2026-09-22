@@ -126,7 +126,7 @@
 - Consumes: scripts raiz do monorepo, workflow real de `staging` e mudanças do baú Rive.
 - Produces: commits reproduzíveis em `staging`, branch remota atualizada e deploy confirmado pelo provedor do projeto.
 
-- [ ] **Step 1: Revisar o trabalho do baú antes de incluí-lo**
+- [x] **Step 1: Revisar o trabalho do baú antes de incluí-lo**
 
   Ler o design, o plano, os componentes e os testes do baú Rive; conferir as regras de `packages/community-kids/CLAUDE.md`; corrigir somente problemas concretos e executar as suítes direcionadas do baú e da trilha.
 

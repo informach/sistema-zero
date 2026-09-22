@@ -34,6 +34,7 @@ const bau = (over: Partial<ModuleChestView> = {}): ModuleChestView => ({
 })
 
 const originalFetch = globalThis.fetch
+const originalChestRiveUrl = process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL
 let pedidos: string[] = []
 
 beforeEach(() => {
@@ -43,17 +44,34 @@ beforeEach(() => {
     pedidos.push(String(input))
     return Response.json({ xpAwarded: 25, coinsAwarded: 15 })
   }) as unknown as typeof fetch
+  if (originalChestRiveUrl === undefined) delete process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL
+  else process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL = originalChestRiveUrl
 })
 
 afterEach(() => {
   cleanup()
   globalThis.fetch = originalFetch
+  if (originalChestRiveUrl === undefined) delete process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL
+  else process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL = originalChestRiveUrl
 })
 
 function montar(chest: ModuleChestView | null) {
   return render(
     <TrailChest courseSlug="meu-curso" moduleId="m1" unitNumber={2} chest={chest} offset={0} />,
   )
+}
+
+function movimentoReduzido(ligado: boolean) {
+  window.matchMedia = ((query: string) => ({
+    matches: ligado && query.includes('prefers-reduced-motion'),
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia
 }
 
 describe('baú da trilha', () => {
@@ -67,6 +85,7 @@ describe('baú da trilha', () => {
     const ready = rule('\\.kids-node-link \\.kids-node\\.kids-node--chest-ready')
     const hover = rule('\\.kids-node-link:hover \\.kids-node\\.kids-node--chest-ready')
     const active = rule('\\.kids-node-link:active \\.kids-node\\.kids-node--chest-ready')
+    const label = rule('\\.kids-chest-label')
 
     expect(base).toContain('box-shadow:')
     expect(base).toContain('inset 0 3px 0')
@@ -82,6 +101,7 @@ describe('baú da trilha', () => {
     expect(hover).toContain('--k3d-altura: 9px')
     expect(active).toContain('--k3d-altura: 2px')
     expect(active).toContain('translate: 0 6px')
+    expect(label).toContain('margin-top: 2px')
   })
 
   test('todos os estados renderizam o mesmo molde de baú 3D', () => {
@@ -136,6 +156,8 @@ describe('baú da trilha', () => {
   test('abrir chama o servidor, mostra a festa e re-sincroniza o topo', async () => {
     montar(bau())
     fireEvent.click(screen.getByRole('button'))
+    await waitFor(() => expect(document.querySelector('.kids-chest-opening')).toBeTruthy())
+    fireEvent.animationEnd(document.querySelector('.kids-chest-opening') as Element)
     await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy())
     expect(pedidos).toEqual(['/api/members/courses/meu-curso/units/m1/chest/claim'])
     expect(screen.getByText(/\+25 XP/)).toBeTruthy()
@@ -150,6 +172,7 @@ describe('baú da trilha', () => {
     fireEvent.click(botao)
     await waitFor(() => expect(pedidos.length).toBeGreaterThan(0))
     expect(pedidos).toHaveLength(1)
+    fireEvent.animationEnd(document.querySelector('.kids-chest-opening') as Element)
   })
 
   test('outra aba já abriu: fica aberto, sem festa (nada foi ganho AGORA)', async () => {
@@ -157,6 +180,8 @@ describe('baú da trilha', () => {
       Response.json({ xpAwarded: 0, coinsAwarded: 0 })) as unknown as typeof fetch
     montar(bau())
     fireEvent.click(screen.getByRole('button'))
+    await waitFor(() => expect(document.querySelector('.kids-chest-opening')).toBeTruthy())
+    fireEvent.animationEnd(document.querySelector('.kids-chest-opening') as Element)
     await waitFor(() => expect(screen.getByRole('img')).toBeTruthy())
     expect(screen.getByRole('img').getAttribute('aria-label')).toContain('aberto')
     expect(screen.queryByRole('dialog')).toBeNull()
@@ -170,13 +195,67 @@ describe('baú da trilha', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button'))
     })
-    expect(screen.getByRole('button')).toBeTruthy()
+    await waitFor(() => expect(screen.getByRole('button').hasAttribute('disabled')).toBe(false))
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   test('já resgatado nasce aberto e sem botão', () => {
     montar(bau({ claimed: true }))
     expect(screen.queryByRole('button')).toBeNull()
+    expect(screen.getByRole('img').getAttribute('aria-label')).toContain('aberto')
+  })
+
+  test('movimento reduzido conclui no SVG aberto, sem esperar animationend', async () => {
+    movimentoReduzido(true)
+    montar(bau())
+    fireEvent.click(screen.getByRole('button'))
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy())
+    expect(document.querySelector('.kids-chest-opening')).toBeNull()
+    expect(refreshes).toBe(1)
+  })
+
+  test('com Rive pronto, o prêmio espera a chegada ao estado terminal Open', async () => {
+    process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL = 'https://media.example.com/kids/chest.riv'
+    montar(bau())
+    await act(async () => {})
+    const globals = globalThis as Record<string, unknown>
+    await act(async () => (globals.chestRivePronto as (() => void) | undefined)?.())
+
+    fireEvent.click(screen.getByRole('button'))
+    await waitFor(() =>
+      expect(
+        document
+          .querySelector('[data-chest-rive-opening]')
+          ?.getAttribute('data-chest-rive-opening'),
+      ).toBe('true'),
+    )
+    expect(screen.queryByRole('dialog')).toBeNull()
+
+    await act(async () => (globals.chestRiveAbriu as (() => void) | undefined)?.())
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy())
+    expect(refreshes).toBe(1)
+  })
+
+  test('falha do Rive depois do claim espera a animação SVG antes de mostrar o prêmio', async () => {
+    process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL = 'https://media.example.com/kids/chest.riv'
+    montar(bau())
+    await act(async () => {})
+    const globals = globalThis as Record<string, unknown>
+    await act(async () => (globals.chestRivePronto as (() => void) | undefined)?.())
+
+    fireEvent.click(screen.getByRole('button'))
+    await waitFor(() =>
+      expect(
+        document
+          .querySelector('[data-chest-rive-opening]')
+          ?.getAttribute('data-chest-rive-opening'),
+      ).toBe('true'),
+    )
+    await act(async () => (globals.chestRiveFalhou as (() => void) | undefined)?.())
+    expect(screen.queryByRole('dialog')).toBeNull()
+    await waitFor(() => expect(document.querySelector('.kids-chest-opening')).toBeTruthy())
+    fireEvent.animationEnd(document.querySelector('.kids-chest-opening') as Element)
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy())
     expect(screen.getByRole('img').getAttribute('aria-label')).toContain('aberto')
   })
 })

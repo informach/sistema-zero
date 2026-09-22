@@ -1964,6 +1964,13 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   unidade continua caindo no complete. ⚠️ Fechado, o baú **não é `<button>`** (seria parada de
   foco que não faz nada) — o estado vive no `aria-label`, como sempre foi. Fechado = tracejado
   neutro; liberado/aberto = OURO (`kids-unit-tesouro`, o `--sz-kids-amarelo` da marca).
+  ⭐ **Rive opcional do baú (22/09/2026):** `NEXT_PUBLIC_KIDS_CHEST_RIVE_URL` aponta para um único
+  `.riv` com artboard `Chest`, máquina `ChestState`, trigger `open` e estado terminal `Open`.
+  O `POST .../chest/claim` continua vindo primeiro; só o sucesso dispara a máquina, e só a entrada
+  em `Open` mostra o prêmio. Sem URL, economia de dados, movimento reduzido ou falha do runtime, o
+  SVG existente permanece visível e conclui pelo próprio `animationend` — nunca por `setTimeout`.
+  O canvas só esconde o SVG depois de validar a entrada; `StateChange.data` pode ser `string` ou
+  `string[]`. A falha depois do claim devolve a transição ao SVG, sem pular a reação da criança.
 - `streak-widget.tsx` — sidebar (cheio) + `MobileTopbar` (compact): fogo aceso (vermelho
   `--sz-hot`) quando `activeToday` + XP total. O layout busca via `Promise.all` com o avatar.
   **Equipe (passe livre):** quando `coins.unlimited` (members marca p/ superadmin/admin/staff), o
@@ -2891,6 +2898,9 @@ CLAUDE.md de lá): `GATEWAY_URL`, `JWT_JWKS_URL` (prod EXIGE; HS256 RECUSADO),
 `SENTRY_DSN` opcional, **`OPENROUTER_API_KEY` + `OPENROUTER_MODEL`** (opcionais — descrição IA do
 "Compartilhar"; ausentes → fallback, a criança escreve). **SEM FUNNEL_URL.** Porta 3008; réplica ÚNICA (globalThis no shell);
 healthcheck `/api/healthz`.
+
+`NEXT_PUBLIC_KIDS_CHEST_RIVE_URL` também é opcional e entra no bundle no build: vazia mantém o SVG
+do baú sem solicitar arquivo; preenchida precisa ser HTTPS público com CORS para a origem do Kids.
 
 **Pendências de infra (não bloqueiam):** domínio definitivo `kids.sistemazero.com.br`
 (dashboard + CNAME Cloudflare; depois apontar o `KIDS_COMMUNITY_URL` de prod p/ ele) e projeto

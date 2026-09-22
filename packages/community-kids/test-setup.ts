@@ -121,3 +121,35 @@ mock.module('./src/components/kids/trail-rive-canvas', () => ({
     })
   },
 }))
+
+/**
+ * O baú usa o mesmo WASM, mas sua máquina de estados também precisa devolver
+ * três sinais à UI: ficou pronta, falhou e chegou ao estado terminal `Open`.
+ * O falso só guarda os callbacks; os testes de comportamento os disparam dentro
+ * de `act`, sem fingir que o happy-dom sabe desenhar canvas ou avançar Rive.
+ */
+mock.module('./src/components/kids/chest-rive-canvas', () => ({
+  ChestRiveCanvas: ({
+    src,
+    opening,
+    onReady,
+    onFailed,
+    onOpened,
+  }: {
+    src: string
+    opening: boolean
+    onReady: () => void
+    onFailed: () => void
+    onOpened: () => void
+  }) => {
+    const globals = globalThis as Record<string, unknown>
+    globals.chestRivePronto = onReady
+    globals.chestRiveFalhou = onFailed
+    globals.chestRiveAbriu = onOpened
+    return createElement('span', {
+      'data-chest-rive-src': src,
+      'data-chest-rive-opening': String(opening),
+      'aria-hidden': 'true',
+    })
+  },
+}))

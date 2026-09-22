@@ -1229,6 +1229,9 @@ a.kid-pop:has(> .kids-carta):hover {
       inset 0 3px 0 color-mix(in oklab, white 34%, transparent),
       0 var(--k3d-altura) 0 var(--k3d-degrau);
   }
+  .kids-chest-label {
+    margin-top: 2px;
+  }
   .kids-node--chest-closed {
     background-color: var(--card);
     color: var(--muted-foreground);
