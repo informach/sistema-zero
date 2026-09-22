@@ -26,7 +26,7 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   byline: 'Helena e Júlio · Sistema Zero',
   seoTitle: 'Comunidade dos Criadores | Tecnologia para criar jogos',
   seoDescription:
-    'Uma assinatura para crianças de 9 a 14 anos criarem e publicarem jogos, com projetos guiados, professor e Carreira do Criador. Comunicação dirigida aos pais.',
+    'Uma assinatura para crianças de 9 a 14 anos criarem e publicarem jogos, com projetos guiados, professor e Jornada do Criador. Comunicação dirigida aos pais.',
   theme: 'kids',
   // Assinatura: sem o disclaimer de acesso vitalício no rodapé.
   lifetimeAccess: false,

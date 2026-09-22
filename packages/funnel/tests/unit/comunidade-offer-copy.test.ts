@@ -33,14 +33,14 @@ describe('copy comercial da Comunidade dos Criadores', () => {
 
   test('vende continuidade depois do primeiro jogo', () => {
     expect(offer).toContain('O primeiro jogo é só o começo')
-    expect(offer).toContain('A Comunidade organiza uma jornada')
-    expect(offer).toContain('A Carreira organiza a jornada')
+    expect(offer).toContain('A Comunidade organiza um percurso')
+    expect(offer).toContain('A Jornada organiza o caminho inteiro')
     expect(offer).toContain('O Desafio do Primeiro Jogo')
   })
 
-  test('explica que tudo está incluído e a carreira organiza as liberações', () => {
+  test('explica que tudo está incluído e a jornada organiza as liberações', () => {
     expect(offer).toContain('Toda a plataforma está incluída na assinatura')
-    expect(offer).toContain('A liberação acontece conforme a Carreira do Criador')
+    expect(offer).toContain('A liberação acontece conforme a Jornada do Criador')
     expect(offer).toContain('sem nenhuma compra extra por dentro')
     expect(offer).not.toContain('A assinatura libera a plataforma inteira')
   })
@@ -86,7 +86,7 @@ describe('copy comercial da Comunidade dos Criadores', () => {
 
   test('usa capturas atuais para todos os pilares da experiência', () => {
     for (const filename of [
-      'print-carreira.webp',
+      'print-jornada.webp',
       'print-aula.webp',
       'print-oficina.webp',
       'print-mural.webp',

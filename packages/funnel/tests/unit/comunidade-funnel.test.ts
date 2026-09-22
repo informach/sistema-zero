@@ -47,7 +47,7 @@ describe('registro do funil Comunidade dos Criadores', () => {
     expect(o.entrega.join(' ')).toContain('Desafio do Primeiro Jogo')
     expect(o.entrega.join(' ')).toContain('Estúdio, Pinta, Pensa e Molda')
     expect(o.entrega.join(' ')).toContain('Até 2 perfis de criança')
-    expect(o.passos.map((p) => p.titulo)).toContain('Mostre a Carreira do Criador')
+    expect(o.passos.map((p) => p.titulo)).toContain('Mostre a Jornada do Criador')
   })
 
   test('metadados apresentam tecnologia como contexto e criação como possibilidade', () => {

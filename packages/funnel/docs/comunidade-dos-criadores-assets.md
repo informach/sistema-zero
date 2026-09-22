@@ -11,7 +11,7 @@ asas creme e abdômen amarelo brilhante em todas as novas peças.
 `zappy-fala.webp`, `dede-fala.webp`, `debinha-fala.webp` E os três avatares de depoimento
 `depo-rafael.webp`, `depo-debora.webp`, `depo-andre.webp` (as mesmas crianças do Desafio).
 **A PÁGINA ESTÁ VISUALMENTE COMPLETA (13/07).** As 4 ilustrações (hero, ilustra-dor,
-ilustra-virada, ilustra-vitoria) e os 6 prints (print-estudio/mural/carreira/mundo/clube/recados)
+ilustra-virada, ilustra-vitoria) e os 6 prints (print-estudio/mural/jornada/mundo/clube/recados)
 estão no ar. A foto da família (`autoridade-familia`) fica com o placeholder do Desafio
 (`familia-helena-julio-kids.webp`) por decisão da Helena. Pra TROCAR qualquer imagem depois, salve
 o arquivo novo **com o MESMO nome** em `packages/funnel/public/img/comunidade-dos-criadores/`.

@@ -18,7 +18,7 @@ export const COMUNIDADE_PRODUTO: FunnelCopy = {
 export const COMUNIDADE_LANDING: FunnelLanding = {
   h1: 'Seu filho está crescendo em um mundo tecnológico. Na Comunidade, ele aprende a transformar ideias em jogos e projetos próprios.',
   subtitulo:
-    'Uma jornada online com projetos guiados, ferramentas próprias, acompanhamento de professor e uma Carreira do Criador que mostra o próximo passo.',
+    'Um caminho online com projetos guiados, ferramentas próprias, acompanhamento de professor e a Jornada do Criador, que mostra o próximo passo.',
   tempo: '',
 }
 
@@ -35,10 +35,10 @@ export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
   intro: 'A Comunidade já está pronta para receber o primeiro perfil da sua família.',
   entrega: [
     'Desafio do Primeiro Jogo e todos os cursos da plataforma',
-    'Estúdio, Pinta, Pensa e Molda, liberados conforme a Carreira do Criador',
+    'Estúdio, Pinta, Pensa e Molda, liberados conforme a Jornada do Criador',
     'Clube dos Criadores e Mural para publicar e compartilhar os jogos',
     'Acompanhamento do professor pelas atividades e pelos Recados',
-    'Carreira do Criador, desafios, conquistas e Mundo do Criador',
+    'Jornada do Criador, desafios, conquistas e Mundo do Criador',
     'Até 2 perfis de criança, cada um com seu próprio progresso',
   ],
   passos: [
@@ -53,9 +53,9 @@ export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
         'Já dentro da plataforma, crie o perfil do seu filho. A assinatura permite até 2 perfis de criança na mesma conta, cada um com seu próprio progresso.',
     },
     {
-      titulo: 'Mostre a Carreira do Criador',
+      titulo: 'Mostre a Jornada do Criador',
       texto:
-        'Abra a plataforma junto com seu filho, veja o posto inicial e entre no primeiro curso liberado. A carreira vai mostrar o que vem depois.',
+        'Abra a plataforma junto com seu filho, veja o posto inicial e entre no primeiro curso liberado. A jornada vai mostrar o que vem depois.',
     },
     {
       titulo: 'Acompanhe pela área do responsável',

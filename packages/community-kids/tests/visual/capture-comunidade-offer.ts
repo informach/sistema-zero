@@ -59,7 +59,7 @@ try {
   page.on('pageerror', (error) => pageErrors.push(error.message))
 
   const captures = [
-    ['career', 'print-carreira.webp'],
+    ['career', 'print-jornada.webp'],
     ['lesson', 'print-aula.webp'],
     ['workshop', 'print-oficina.webp'],
     ['mural', 'print-mural.webp'],

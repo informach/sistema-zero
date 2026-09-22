@@ -72,14 +72,14 @@ function getScreen(): Screen {
 
 const NAV = [
   { label: 'Início', icon: Home },
-  { label: 'Carreira', icon: GraduationCap },
+  { label: 'Jornada', icon: GraduationCap },
   { label: 'Criar', icon: Sparkles },
   { label: 'Comunidade', icon: MessagesSquare },
   { label: 'Meu espaço', icon: CircleUserRound },
 ] as const
 
 function activeSection(screen: Screen): (typeof NAV)[number]['label'] {
-  if (screen === 'career' || screen === 'lesson') return 'Carreira'
+  if (screen === 'career' || screen === 'lesson') return 'Jornada'
   if (screen === 'workshop') return 'Criar'
   if (screen === 'mural' || screen === 'club' || screen === 'messages') return 'Comunidade'
   return 'Meu espaço'
@@ -182,9 +182,9 @@ function CareerScreen() {
     <CaptureShell screen="career">
       <PageFrame>
         <div className="text-center">
-          <h1 className="sz-display text-[2.35rem]">Cursos da Carreira de Criador</h1>
+          <h1 className="sz-display text-[2.35rem]">Cursos da Jornada do Criador</h1>
           <p className="mt-2 font-medium text-muted-foreground">
-            Sua jornada de Faísca a Lenda. Cada aventura concluída abre um novo passo.
+            De Faísca a Lenda. Cada aventura concluída abre um novo passo.
           </p>
           <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-(--sz-kids-amarelo) px-4 py-2 font-extrabold text-sm text-(--sz-kids-tinta)">
             <Blocks className="size-4" /> Você é Construtora
@@ -206,7 +206,7 @@ function CareerScreen() {
                   }`}
                 >
                   <img
-                    src={`/carreira/${level.slug}.webp`}
+                    src={`/jornada/${level.slug}.webp`}
                     alt=""
                     className={`h-[70px] w-[70px] object-contain ${level.state === 'locked' ? 'grayscale opacity-65' : ''}`}
                   />
@@ -351,7 +351,7 @@ function WorkshopScreen() {
           eyebrow="Sua oficina de criação"
           icon={Palette}
           title="Uma ideia. Muitas formas de criar."
-          subtitle="As quatro ferramentas estão incluídas. Bia abre cada oficina quando conquista o posto correspondente na Carreira do Criador."
+          subtitle="As quatro ferramentas estão incluídas. Bia abre cada oficina quando conquista o posto correspondente na Jornada do Criador."
         />
         <div className="mt-5 rounded-2xl bg-(--band-menta) px-5 py-4 font-bold text-sm">
           <span className="inline-flex items-center gap-2">
@@ -711,7 +711,7 @@ function SpaceScreen() {
           className="mt-5"
           actions={
             <span className="rounded-full bg-white px-4 py-2 font-bold text-primary text-sm">
-              Ver carreira
+              Ver jornada
             </span>
           }
           footer={
@@ -778,7 +778,7 @@ function SpaceScreen() {
               <div>
                 <strong className="block">Meu quarto</strong>
                 <small className="text-muted-foreground">
-                  Troféus, móveis e lembranças da carreira.
+                  Troféus, móveis e lembranças da jornada.
                 </small>
               </div>
               <ChevronRight className="ml-auto size-5 text-muted-foreground" />
