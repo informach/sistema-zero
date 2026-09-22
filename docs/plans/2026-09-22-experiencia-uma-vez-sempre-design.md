@@ -9,9 +9,9 @@ criar e desenhar ensinada mais tarde.
 ## Decisões
 
 - A nave já faz parte do simulador. A experiência não oferece “Criar a nave”.
-- As duas fichas são “Acender o painel da nave” e “Mover a nave um pouquinho”. A primeira torna a
-  preparação visível sem afirmar que criar também desenha; a segunda mostra a repetição pelo
-  deslocamento e pelo contador.
+- As duas fichas são “Ligar a nave” e “Mover a nave um pouquinho”. A primeira mostra a nave saindo
+  do estado desligado e o motor ficando ativo uma única vez, sem afirmar que criar também desenha;
+  a segunda mostra a repetição pelo deslocamento e pelo contador.
 - O preset declara quais fichas comprovam cada meta. O motor deixa de supor que `paint`, `create` e
   `move` são sempre as fichas pedagógicas. Essa configuração mantém os outros usos da cena sem
   duplicar o motor.
@@ -20,6 +20,10 @@ criar e desenhar ensinada mais tarde.
   em cenários que realmente têm chão.
 - A cena oferece somente avanço manual. O controle chama cada avanço de “passo”, pois a criança
   aprende o termo “quadro” apenas na seção 7. “Tempo” e “Mais devagar” saem desta cena.
+- A atividade apresenta e executa a mesma sequência: ligar a nave em `Ao iniciar`, mover a nave em
+  `Enquanto estiver rodando` e, somente depois de configurar as duas áreas, avançar cinco passos
+  para comparar os contadores. O botão “Avançar 1 passo” fica abaixo das caixas de configuração,
+  porque ele executa a montagem em vez de fazer parte dela.
 - A criança toca ou focaliza uma ficha e escolhe a área de destino na própria bancada. O arrasto no
   computador continua como atalho, mas não há uma segunda grade permanente com os mesmos controles.
 - A instrução manda usar “Voltar ao começo” antes de testar outra organização. Assim, uma ficha
@@ -47,7 +51,8 @@ final no piloto são substituídas pelo novo desenho.
 
 - Testes do motor provam um disparo no começo, um disparo por passo no motor, reinício obrigatório e
   rejeição de estado inválido.
-- Testes do palco provam céu estrelado, nave e asteroide, ausência de cacto e linha de chão, painel
-  visível, interação única e ausência dos controles de tempo contínuo.
+- Testes do palco provam céu estrelado, nave e asteroide, ausência de cacto e linha de chão, nave
+  ligada visível, interação única, botão de passo depois das caixas e ausência dos controles de
+  tempo contínuo.
 - A validação dos manifestos e os testes de deriva conferem o preset e os textos da aula.
 - Typecheck, Biome e as suítes afetadas fecham o lote antes do commit em `staging`.
