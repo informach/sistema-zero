@@ -46,7 +46,9 @@ describe('copy do kids — a palavra é jornada, não carreira', () => {
   // Anti-vácuo: um walker quebrado deixaria a guarda verde lendo zero arquivo.
   test('a guarda está de fato lendo o app', () => {
     expect(todos.length).toBeGreaterThan(100)
-    const nav = todos.find((c) => c.endsWith('components/kids/nav.ts'))
+    const nav = todos.find(
+      (caminho) => relative(SRC, caminho).replaceAll('\\', '/') === 'components/kids/nav.ts',
+    )
     expect(nav).toBeTruthy()
     expect(readFileSync(nav as string, 'utf8')).toContain("label: 'Jornada'")
   })

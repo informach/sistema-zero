@@ -52,7 +52,9 @@ describe('copy do funil — a palavra é jornada, não carreira', () => {
   // guarda passar para sempre lendo zero arquivo.
   test('a guarda está de fato lendo o funil', () => {
     expect(todos.length).toBeGreaterThan(50)
-    const legal = todos.find((c) => c.endsWith('content/legal-kids.ts'))
+    const legal = todos.find(
+      (caminho) => relative(SRC, caminho).replaceAll('\\', '/') === 'content/legal-kids.ts',
+    )
     expect(legal).toBeTruthy()
     expect(/carreira/i.test(readFileSync(legal as string, 'utf8'))).toBe(true)
   })
