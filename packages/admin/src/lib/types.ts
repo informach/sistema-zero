@@ -1363,7 +1363,7 @@ export interface AmbassadorRedemptionView {
   attemptCount?: number
   createdAt: string
   completedAt: string | null
-  /** Jornada do bolsista: `null` = ficou só no Desafio; presente = assinou a Comunidade. */
+  /** Etapa do bolsista: `null` = ficou só no Desafio; presente = assinou a Comunidade. */
   conversion?: {
     status: ConversionStatus
     bonusCents: number

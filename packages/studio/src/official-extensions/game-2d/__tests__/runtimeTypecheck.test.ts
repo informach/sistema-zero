@@ -304,7 +304,7 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // toque alcançá-los e herdaram junto o mapa de TECLAS dela: a tecla z e o ESPAÇO
   // viraram pulo em todo jogo de plataforma que já existia.
   // 1122 → 1135: +2 da receita vetorial compacta, +9 do carregador preguiçoso
-  // de campanha (inclui elenco e jornada) e +2 da leitura de dados da fase. Eles substituem
+  // de campanha (inclui elenco e voltada) e +2 da leitura de dados da fase. Eles substituem
   // milhares de blocos/objetos vivos no editor e no preview.
   // 1135 → 1141: +5 da caixa de colisão medida no desenho (_artHitboxOf,
   // _applyArtHitbox, _artBoxOf) e +1 do `_spriteFlipped`, que virou o DONO ÚNICO

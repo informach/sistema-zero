@@ -194,7 +194,7 @@ export const conversions = referralsSchema.table(
     uniqueIndex('conversions_payment_uq').on(t.paymentId),
     index('conversions_status_matures_idx').on(t.status, t.maturesAt),
     index('conversions_ambassador_status_idx').on(t.ambassadorId, t.status),
-    /** Jornada no detalhe do embaixador lista por código (FK não indexa sozinha). */
+    /** Etapas no detalhe do embaixador lista por código (FK não indexa sozinha). */
     index('conversions_code_idx').on(t.codeId),
   ],
 )

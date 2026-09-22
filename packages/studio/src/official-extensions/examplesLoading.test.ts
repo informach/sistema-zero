@@ -59,7 +59,10 @@ const goldenCatalogs = {
     // (440/300 cravados → "a largura/altura da tela"). A IR do exemplo encolheu
     // de 1036 para 733 linhas.
     // 13/09: sons consolidados e temporizadores com contexto de quadro explícito.
-    sha256: '4438f90c2d5dc68a7f439e82f2f515a63209bbfed67faf2d29c29f14ce7040a1',
+    // 22/09: no Reino Zero, "jornada" virou "volta" — a palavra passou a ser
+    // do conceito de produto (Jornada do Criador), e duas coisas com o mesmo
+    // nome na mesma tela do Estúdio confundem a criança.
+    sha256: 'b3ac17345c5a934fbad33bf441bf3705c2e57b6e81d2da998297b415795fb271',
   },
   'game-2d-advanced': {
     count: 37,

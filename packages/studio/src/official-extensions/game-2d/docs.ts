@@ -194,7 +194,7 @@ quadros (o **tileset**). Escolha um na aba **Imagens** (ex.: \`tileset\`).
 - **Carregar fase de campanha vetorial** é a versão compacta para campanhas grandes. Ela
   guarda as grades e os metadados em uma receita JSON, mas cria somente o Mapa, o Mundo e a
   Fase escolhidos naquele momento. Também pode guardar um elenco autoral por fase e reforços
-  próprios da segunda jornada, usando a lista de tipos indicada no bloco. Use **valor da fase
+  próprios da segunda volta, usando a lista de tipos indicada no bloco. Use **valor da fase
   atual** para ler mundo, etapa, pontos de nascimento e outras propriedades numéricas da
   receita. Isso evita que dezenas de mapas e inimigos inativos virem milhares de blocos SVG.
 - **atravessa e avisa** (só no mapa VETORIAL) é a peça que o herói ATRAVESSA e que mesmo assim

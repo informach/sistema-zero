@@ -291,7 +291,7 @@ export interface ReferralRepository {
   markConversionPaid(id: string, by: string, note: string | null): Promise<boolean>
   /** Staging/e2e: antecipa a maturação (`pending` → matures_at = now). */
   setConversionMaturesNow(id: string): Promise<boolean>
-  /** Conversões dos resgates de um código (estágio da jornada no admin). */
+  /** Conversões dos resgates de um código (estágio no admin). */
   listConversionsByCode(codeId: string, limit: number): Promise<ConversionRecord[]>
 
   // ── Métricas ──────────────────────────────────────────────────────────────

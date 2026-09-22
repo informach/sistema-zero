@@ -202,7 +202,7 @@ export class AmbassadorAdminService {
   async detail(id: string): Promise<{
     ambassador: AmbassadorView
     redemptions: RedemptionRecord[]
-    /** Jornada: resgate → assinou a Comunidade (conversão) — chave = redemptionId. */
+    /** Etapa: resgate → assinou a Comunidade (conversão) — chave = redemptionId. */
     conversionByRedemption: Map<string, ConversionRecord>
   } | null> {
     const ambassador = await this.repo.findAmbassadorById(id)

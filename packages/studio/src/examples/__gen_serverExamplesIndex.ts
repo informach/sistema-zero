@@ -4005,14 +4005,14 @@ export const SERVER_EXAMPLES_INDEX: readonly ServerExampleIndexEntry[] = [
     extension: 'game-2d',
     name: 'Reino Zero',
     description:
-      'Aventura de plataforma autoral com 8 mundos e 32 fases, 1 ou 2 jogadores alternados, segredos, inimigos, chefes e segunda jornada difícil. Setas/WASD movem, Z/Espaço pula, X corre, Backspace seleciona 1 ou 2 jogadores, Enter inicia e Esc pausa.',
+      'Aventura de plataforma autoral com 8 mundos e 32 fases, 1 ou 2 jogadores alternados, segredos, inimigos, chefes e segunda volta difícil. Setas/WASD movem, Z/Espaço pula, X corre, Backspace seleciona 1 ou 2 jogadores, Enter inicia e Esc pausa.',
     difficulty: 'advanced',
     concepts: ['plataformas', 'campanha', 'tilemap vetorial', 'dois jogadores', 'chefes'],
     genre: 'plataforma',
     promise:
-      'Atravessar uma campanha vetorial de 8 mundos e 32 fases, com segredos e segunda jornada.',
+      'Atravessar uma campanha vetorial de 8 mundos e 32 fases, com segredos e segunda volta.',
     scenario:
-      'Escolher um ou dois jogadores, correr e pular, ativar blocos, usar atalhos, vencer chefes, continuar e concluir as duas jornadas.',
+      'Escolher um ou dois jogadores, correr e pular, ativar blocos, usar atalhos, vencer chefes, continuar e concluir as duas voltas.',
     blockTypes: [
       'sz_css_align',
       'sz_css_body_background',

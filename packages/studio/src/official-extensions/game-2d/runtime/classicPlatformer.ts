@@ -484,7 +484,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
       // contato do chute dura, ele NÃO cobra vida: o casco anda 5 px/quadro e o herói
       // corre quase isso, então a sobreposição do próprio chute seguia por vários
       // quadros e o gesto que este modo existe para criar virava castigo (medido na
-      // segunda jornada do Reino Zero: fuga de 0,08 px por quadro).
+      // segunda volta do Reino Zero: fuga de 0,08 px por quadro).
       if (shell._kickedBy && !isColliding(shell, shell._kickedBy)) shell._kickedBy = null;
       var andando = !!shell._shellMoving;
       _recordPreviousPosition(shell);

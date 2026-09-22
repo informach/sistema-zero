@@ -135,7 +135,7 @@ Mapa → Mundo → Fase — são conceitos separados; escolha somente os que o j
   apenas desenha o layout preparado e nunca o reposiciona. Não gere a forma legada ambígua de
   drawTileMap com x/y/tamanho: ela existe somente para abrir projetos antigos.
 - Campanhas grandes podem usar loadVectorCampaignLevel(indice, receitaJson, tileSize, spawnX,
-  spawnY, callback, tilesets, tiposDeInimigo?, jornada?): o runtime valida a receita, cria somente
+  spawnY, callback, tilesets, tiposDeInimigo?, volta?): o runtime valida a receita, cria somente
   a fase escolhida e entrega mapa/mundo/fase ao callback. Cada fase pode trazer "enemies" e
   "journey2Enemies" como triplas [índice do tipo, x, y]. campaignValue('chave', fallback) lê um
   metadado numérico da fase ativa. Prefira esses blocos quando expandir tudo criaria centenas.

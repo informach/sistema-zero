@@ -103,7 +103,7 @@ export class RecordConversionService {
     if (!this.config.conversionOfferSlugs.includes(offer.slug)) return { kind: 'ok' }
 
     // Anti-autoindicação: o dono do código assinando com o MESMO e-mail do
-    // resgate não premia a si mesmo — registra a jornada, sem bônus.
+    // resgate não premia a si mesmo — registra a etapa, sem bônus.
     const selfBlocked =
       match.code.ownerEmail !== null && normalizeEmail(match.code.ownerEmail) === email
 

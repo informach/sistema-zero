@@ -1326,9 +1326,9 @@ export const EXAMPLE_QA_CONTRACTS = [
     name: 'Reino Zero',
     experience: 'game',
     promise:
-      'Atravessar uma campanha vetorial de 8 mundos e 32 fases, com segredos e segunda jornada.',
+      'Atravessar uma campanha vetorial de 8 mundos e 32 fases, com segredos e segunda volta.',
     scenario:
-      'Escolher um ou dois jogadores, correr e pular, ativar blocos, usar atalhos, vencer chefes, continuar e concluir as duas jornadas.',
+      'Escolher um ou dois jogadores, correr e pular, ativar blocos, usar atalhos, vencer chefes, continuar e concluir as duas voltas.',
     interactions: ['start', 'arrows'],
   },
   {

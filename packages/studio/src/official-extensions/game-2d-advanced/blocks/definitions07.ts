@@ -23,7 +23,7 @@ const CAMPAIGN_EVENT_FIELD_LABELS: Record<GameKitCampaignEventField, string> = {
   target: 'alvo',
   value: 'valor',
   complete: 'completou?',
-  journey: 'jornada',
+  journey: 'volta',
   column: 'coluna',
   row: 'linha',
 }

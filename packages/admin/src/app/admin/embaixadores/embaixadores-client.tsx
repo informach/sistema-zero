@@ -714,7 +714,7 @@ function AmbassadorDetailDialog({
                   <TableRow>
                     <TableHead>Responsável</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Jornada</TableHead>
+                    <TableHead>Etapa</TableHead>
                     <TableHead>Quando</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -746,7 +746,7 @@ function AmbassadorDetailDialog({
                         )}
                       </TableCell>
                       <TableCell>
-                        <JourneyBadge r={r} />
+                        <StageBadge r={r} />
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {formatDate(r.completedAt ?? r.createdAt)}
@@ -769,8 +769,8 @@ function AmbassadorDetailDialog({
   )
 }
 
-/** Rótulos da JORNADA (fraseado próprio; Record EXAUSTIVO como o do badge). */
-const JOURNEY_LABEL: Record<ConversionStatus, string> = {
+/** Rótulos da ETAPA (fraseado próprio; Record EXAUSTIVO como o do badge). */
+const STAGE_LABEL: Record<ConversionStatus, string> = {
   pending: 'Assinou, na garantia',
   eligible: 'Bônus liberado',
   paid: 'Bônus pago',
@@ -779,11 +779,11 @@ const JOURNEY_LABEL: Record<ConversionStatus, string> = {
 }
 
 /**
- * Jornada do bolsista dentro do detalhe: ficou só no Desafio ou virou
+ * Etapa do bolsista dentro do detalhe: ficou só no Desafio ou virou
  * assinatura (e em que pé o bônus está). Deriva de `redemption.conversion`;
  * variante/tooltip vêm da MESMA tabela do badge da lista (uma fonte só).
  */
-function JourneyBadge({ r }: { r: AmbassadorRedemptionView }) {
+function StageBadge({ r }: { r: AmbassadorRedemptionView }) {
   if (r.status !== 'completed') return <span className="text-xs text-muted-foreground">—</span>
   const c = r.conversion
   if (!c) return <Badge variant="outline">Só no Desafio</Badge>
@@ -796,7 +796,7 @@ function JourneyBadge({ r }: { r: AmbassadorRedemptionView }) {
         : undefined
   return (
     <Badge variant={p.variant} className={p.className} title={title}>
-      {JOURNEY_LABEL[c.status]}
+      {STAGE_LABEL[c.status]}
     </Badge>
   )
 }
