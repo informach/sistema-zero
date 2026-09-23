@@ -84,21 +84,24 @@ setas.
 ## Seção 2. O que acontece uma vez e o que acontece sempre
 
 ### Clipe `video-duas-areas` · A mesma ação em dois momentos
-**Duração alvo:** 40 a 50 segundos · **Palavras:** 76
+**Duração alvo:** 40 a 50 segundos · **Palavras:** 86
 
 **Na tela:** uma linha do tempo curta com o começo do jogo e três passos. A ficha **Mover a nave um
 pouquinho** está em **Ao iniciar**. No começo, a nave anda uma casa; nos passos 1, 2 e 3, ela fica
 parada. O HUD mostra Passo e Movimentos.
 
 **Narração:**
-> "Ao iniciar é o comecinho do jogo. O que estiver aqui acontece uma vez e pronto."
+> "Ao iniciar é o comecinho do jogo. O que estiver aqui acontece uma vez e pronto. Veja: a nave
+> ganha um empurrão no começo. Depois, os passos passam, mas ela não ganha outro. É como dar o
+> primeiro empurrão para a brincadeira começar."
 
 **Na tela:** voltar a linha do tempo ao começo. A mesma ficha passa para **Enquanto estiver rodando**.
 Nos passos 1, 2 e 3, a nave anda outra casa a cada passo; o HUD acompanha os movimentos.
 
 **Narração:**
-> "Enquanto estiver rodando continua trabalhando a cada passo. A mesma ação muda porque está em
-> outro lugar."
+> "Enquanto estiver rodando continua trabalhando a cada passo. Agora a nave ganha outro empurrão
+> em cada passo. Por isso ela vai cada vez mais longe de onde começou. A mesma ação muda porque
+> está em outro lugar."
 
 **Na tela:** os dois testes lado a lado: uma casa no começo e uma casa em cada passo.
 

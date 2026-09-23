@@ -392,7 +392,7 @@ e não a demonstração gravada, que fecha a conquista.
 | Chave | Título do vídeo | O que mostra | Origem (chave v6) | Duração alvo | Reaproveita gravação? |
 |---|---|---|---|---|---|
 | `video-abertura` | A sua nave no espaço | o jogo do fim do dia rodando | `video-abertura-v6` | 25 a 35 s | fala sim, tela não (regravar no Estúdio atual) |
-| `video-duas-areas` | Uma arruma, a outra é o motor | as duas áreas e a analogia do ventilador | `video-areas`, parte conceitual | 40 a 50 s | fala parcial, tela não |
+| `video-duas-areas` | A mesma ação em dois momentos | a mesma nave se move uma vez em Ao iniciar e a cada passo em Enquanto estiver rodando | `video-areas`, parte conceitual | 40 a 50 s | fala nova, tela nova |
 | `video-montar-areas-tela` | As áreas do projeto e a tela do jogo | o gesto das três peças | `video-areas` (gesto) + `video-tela` | 50 a 60 s | funde dois clipes, tela regravada |
 | `video-coordenadas` | O endereço da nave na tela | o endereço, com a correção do 400 | `video-endereco` | 30 a 40 s | fala parcial, precisa da correção |
 | `video-criar-nave` | A nave com as suas cores | pegar, configurar e pintar a nave | `video-nave` | 45 a 55 s | fala sim, tela não |
