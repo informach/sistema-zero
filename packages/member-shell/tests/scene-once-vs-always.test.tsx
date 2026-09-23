@@ -31,13 +31,15 @@ describe('uma vez, sempre e na hora no palco', () => {
     expect(html).toContain('data-figure="asteroide"')
     expect(html).not.toContain('data-figure="cacto"')
     expect(html).not.toContain('M0 248H560')
-    expect(html).not.toContain('#ffb13b')
+    expect(html).toContain('#ffb13b')
+    expect(html).toContain('Movimentos: 0')
+    expect(html).not.toContain('Nave ligada')
 
-    state = stepScene(start, state, { type: 'place-in-area', card: 'panel', area: 'start' })
+    state = stepScene(start, state, { type: 'place-in-area', card: 'move', area: 'start' })
     state = stepScene(start, state, { type: 'advance', seconds: 0.25 })
     html = renderToStaticMarkup(<OnceVsAlwaysStage state={state} cast={cast} preset={preset} />)
-    expect(html).toContain('Nave ligada')
-    expect(html).not.toContain('Painel aceso')
+    expect(html).toContain('Movimentos: 1')
+    expect(html).not.toContain('Nave ligada')
     expect(html).toContain('#ffb13b')
   })
 
@@ -47,8 +49,8 @@ describe('uma vez, sempre e na hora no palco', () => {
     const html = renderToStaticMarkup(
       <OnceVsAlwaysControls state={state} preset={preset} dispatch={() => {}} />,
     )
-    expect((html.match(/Ligar a nave/g) ?? []).length).toBe(1)
     expect((html.match(/Mover a nave um pouquinho/g) ?? []).length).toBe(1)
+    expect(html).not.toContain('Ligar a nave')
     expect(html).toContain('Escolha uma ficha')
   })
 

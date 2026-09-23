@@ -1843,10 +1843,11 @@ Testes por família em `tests/` (`scene-dino-numbers`, `scene-nucleo`, `conserto
 **Armadilhas por cena** (o motor de cada uma está no CLAUDE.md do core):
 - `once-vs-always`: no cenário de nave há céu estrelado e não há chão. Os manifestos do Desafio declaram
   nave **e** asteroide; não complete um elenco parcial dentro do palco, porque um papel inventado pode mudar
-  também o cenário derivado. O preset do piloto abre com a nave pronta, mas desligada, e usa internamente
-  `panel` + `move`; a linguagem visível é **Ligar a nave**, sem fingir que criar também desenha. Cada ficha
-  aparece uma vez: clique seleciona e o botão contextual da área coloca; arrastar é só um segundo caminho
-  no computador. Como o passo executa a montagem, **Avançar 1 passo** vem depois das caixas nesta cena.
+  também o cenário derivado. O preset do piloto abre com a nave pronta e com a chama acesa. Ele oferece só
+  `move`: primeiro em `Ao iniciar`, depois de recomeçar em `Enquanto estiver rodando`. O HUD mostra o passo
+  e os movimentos; o deslocamento da nave prova a diferença. Cada ficha aparece uma vez: clique seleciona e
+  o botão contextual da área coloca; arrastar é só um segundo caminho no computador. Como o passo executa a
+  montagem, **Avançar 1 passo** vem depois das caixas nesta cena.
 - `coordinates`: escala e máximo das `Medida`s vêm da tela DO CASO (`state.place`), com passo 40 na tela de 800 e
   20 na de 480; o endereço é a marca no CANTO DE CIMA da caixa do sprite e o "0, 0" fica na margem.
 - `stage-size`: escala FIXA sobre 800 × 480 (diminuir os números não pode crescer o desenho); a borda vem PRIMEIRO e
