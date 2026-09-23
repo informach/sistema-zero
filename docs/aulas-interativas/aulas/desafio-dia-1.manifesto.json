@@ -190,7 +190,7 @@
       "key": "fala-coordenadas",
       "content": {
         "kind": "dialogue",
-        "pose": "thinking",
+        "pose": "speaking",
         "text": "Agora é hora de transformar esse endereço em movimento. Faça a experiência e acompanhe a nave na tela."
       }
     },
