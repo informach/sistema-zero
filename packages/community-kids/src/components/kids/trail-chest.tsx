@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
-import { ChestIcon } from './chest-icon'
+import { ChestClosedFallback, ChestIcon } from './chest-icon'
 import { ChestReward } from './chest-reward'
 import { ChestRive } from './chest-rive'
 import { chestRiveSrc } from './chest-rive-contract'
@@ -142,7 +142,7 @@ export function TrailChest({
         style={posicao}
       >
         <span className="kids-node kids-node--chest kids-node--chest-closed">
-          <ChestIcon />
+          <ChestClosedFallback />
         </span>
         <span className="kids-chest-label text-center font-semibold text-muted-foreground text-xs leading-tight">
           {legenda}
@@ -197,7 +197,7 @@ export function TrailChest({
         )}
         onAnimationEnd={svgAbrindo ? terminouSvg : undefined}
       >
-        <ChestIcon
+        <ChestClosedFallback
           className={cn(estado === 'parado' && !riveReady && 'kid-float', riveReady && 'opacity-0')}
         />
         <ChestRive

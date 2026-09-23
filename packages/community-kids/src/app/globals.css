@@ -1253,8 +1253,8 @@ a.kid-pop:has(> .kids-carta):hover {
     border: 2px solid var(--unit);
     animation: kids-ring 2.4s ease-out infinite;
   }
-  /* Abrir: uma sacudida curta e a tampa girando na dobradiça de trás. O bloco global
-     de `prefers-reduced-motion` no fim do arquivo doma as duas. */
+  /* Queda segura sem Rive: uma sacudida curta antes de revelar o estado aberto.
+     O SVG ilustrado é um único arquivo, então a tampa não é animada isoladamente. */
   @keyframes kids-chest-shake {
     0%,
     100% {
@@ -1270,17 +1270,8 @@ a.kid-pop:has(> .kids-carta):hover {
       transform: rotate(-3deg) scale(1.12);
     }
   }
-  @keyframes kids-chest-lid {
-    to {
-      transform: rotate(-58deg) translateY(-2px);
-    }
-  }
   .kids-chest-opening {
     animation: kids-chest-shake 0.52s ease-in-out;
-  }
-  .kids-chest-opening .chest-lid {
-    transform-origin: 20% 100%;
-    animation: kids-chest-lid 0.32s 0.2s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
   }
 
   /* O 3D do Brilliant (11/09/2026) nos nós que ABREM aula (feita, atual, a fazer) e no
