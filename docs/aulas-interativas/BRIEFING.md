@@ -99,6 +99,22 @@ Na experimentação, o topo reúne HUD, nome e cena. Logo abaixo da cena, uma ú
 Zappy apresenta a ação; a pista solicitada e os controles vêm em seguida. Palpite retomado,
 conclusão e situação alcançada aparecem depois da área de ação. A ordem é a mesma no celular.
 
+### Ampliar a experiência
+
+A experiência oferece **Ampliar experiência**, como o Estúdio. É uma opção de concentração, não
+um requisito para concluir a atividade. Em tela larga, HUD e cena ficam à esquerda; instrução,
+controles e retorno ficam à direita. Se a bancada for longa, ela rola sem levar a cena junto.
+O botão **Voltar à aula** permanece acessível; Escape também sai. Ampliar e voltar não reiniciam
+fichas, contadores, seleção, execução ou descobertas.
+
+Em tela estreita ou com zoom alto, as regiões continuam empilhadas. Não reduzir fonte nem cortar
+conteúdo para prometer ausência de rolagem. Palcos simples se ajustam à altura disponível sem
+distorção; comparações com legendas preservam o espaço necessário à leitura.
+
+Fichas se adaptam à largura da bancada, não à largura da janela. Rótulos compridos quebram linha,
+o contador fica separado e a bandeja de fichas disponíveis não disputa uma coluna de mesmo
+tamanho com as áreas de execução. Clicar ou usar teclado continua sendo alternativa ao arrasto.
+
 ## 4. As seis perguntas, uma vez por conceito
 
 Não existe molde. As respostas variam de aula para aula e de conceito para conceito. Para **cada

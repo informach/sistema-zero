@@ -17,13 +17,13 @@ import { cn } from '../lib/cn'
  *
  *     ┌─ console ─────────────────────────────────┐
  *     │  [placa]   x 300   y 150        ●●○       │  ← o HUD, no molde do `drawScore` do jogo
- *     │  🐲 a fala do Zappy, largura cheia        │
  *     │ ┌──────────── o mundo ──────────────────┐ │
  *     │ └───────────────────────────────────────┘ │
- *     │  a frase da situação                      │
+ *     │  🐲 a fala do Zappy, perto da ação        │
  *     │ ╭─ prancha ────────────────────────────╮  │
  *     │ │ [gesto]  [medida]  [chave]           │  │
  *     │ ╰──────────────────────────────────────╯  │
+ *     │  retorno e frase da situação              │
  *     └───────────────────────────────────────────┘
  *
  * ⚠️⚠️ **O MATERIAL continua sendo o do APLICATIVO.** Ela escolheu o meio-termo: a ARRUMAÇÃO é
@@ -78,4 +78,13 @@ export function ConsoleMundo({ children }: { children: ReactNode }) {
 /** A prancha só existe quando a experiência já está aberta para interação. */
 export function ConsolePrancha({ children }: { children: ReactNode }) {
   return <div className="sz-scene-prancha">{children}</div>
+}
+
+/** Duas regiões estáveis: empilhadas na aula, lado a lado ao ampliar em tela larga. */
+export function ConsoleVisual({ children }: { children: ReactNode }) {
+  return <div className="sz-scene-console-visual">{children}</div>
+}
+
+export function ConsoleActions({ children }: { children: ReactNode }) {
+  return <div className="sz-scene-console-actions">{children}</div>
 }

@@ -153,16 +153,16 @@ export function OnceVsAlwaysControls({
     setSelectedId(null)
   }
   return (
-    <div className="space-y-3">
+    <div className="sz-once-controls space-y-2">
       <p className="text-sm text-muted-foreground">
-        Escolha uma ficha e depois a área onde quer colocá-la. No computador, você também pode
-        arrastar. Depois avance os passos e compare os contadores.
+        Escolha uma ficha e depois onde colocá-la. Você também pode arrastar.
       </p>
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="sz-once-areas">
         {(['outside', ...prepared.areas] as OncePlacement[]).map((area) => (
           <div
             key={area}
-            className="min-h-28 rounded-2xl border-2 border-dashed border-border bg-card p-3"
+            className={`sz-once-area${area === 'outside' ? ' sz-once-area--available' : ''}`}
+            data-once-area={area}
             onDragOver={(event) => event.preventDefault()}
             onDrop={(event) => {
               event.preventDefault()
@@ -175,13 +175,13 @@ export function OnceVsAlwaysControls({
               }
             }}
           >
-            <div className="mb-2 flex min-h-11 flex-wrap items-center justify-between gap-2">
+            <div className="sz-once-area-heading">
               <p className="text-sm font-semibold">
                 {area === 'outside' ? 'Fichas disponíveis' : AREA_LABEL[area]}
               </p>
               {selected && state.once.placement[selected.id] !== area && (
                 <SceneButton
-                  className="px-2"
+                  className="h-auto max-w-full whitespace-normal px-2"
                   aria-label={`${area === 'outside' ? 'Devolver para Fichas disponíveis' : `Colocar em ${AREA_LABEL[area]}`}: ${castText(selected.label, cast)}`}
                   onClick={() => place(area)}
                 >
@@ -189,7 +189,7 @@ export function OnceVsAlwaysControls({
                 </SceneButton>
               )}
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex min-w-0 flex-wrap gap-2">
               {prepared.cards
                 .filter((card) => state.once.placement[card.id] === area)
                 .map((card) => (
@@ -199,11 +199,14 @@ export function OnceVsAlwaysControls({
                     onDragStart={(event) => event.dataTransfer.setData('text/plain', card.id)}
                     aria-pressed={selected?.id === card.id}
                     tom={selected?.id === card.id ? 'ligado' : 'ferramenta'}
-                    className="cursor-grab active:cursor-grabbing"
+                    className="sz-once-card cursor-grab active:cursor-grabbing"
                     onClick={() => setSelectedId(selected?.id === card.id ? null : card.id)}
                   >
-                    {castText(card.label, cast)} · {state.once.fires[card.id]}{' '}
-                    {state.once.fires[card.id] === 1 ? 'vez' : 'vezes'}
+                    <span className="sz-once-card-label">{castText(card.label, cast)}</span>
+                    <span className="sz-once-card-count">
+                      {state.once.fires[card.id]}{' '}
+                      {state.once.fires[card.id] === 1 ? 'vez' : 'vezes'}
+                    </span>
                   </SceneButton>
                 ))}
             </div>

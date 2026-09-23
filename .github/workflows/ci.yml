@@ -161,12 +161,18 @@ jobs:
         working-directory: packages/community-kids
         run: bun run e2e:smoke
 
+      - name: Experiências ampliadas e responsivas
+        working-directory: packages/community-kids
+        run: bun run e2e:scenes
+
       - name: Publicar diagnóstico Playwright
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: community-kids-playwright
-          path: packages/community-kids/.cache/playwright-results
+          path: |
+            packages/community-kids/.cache/playwright-results
+            packages/community-kids/.cache/scene-results
           retention-days: 7
 
   studio-e2e-chromium:

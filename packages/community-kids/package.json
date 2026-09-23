@@ -13,6 +13,7 @@
     "test:reachability": "bun scripts/report-test-reachability.ts",
     "e2e": "playwright test",
     "e2e:smoke": "playwright test --project=chromium",
+    "e2e:scenes": "playwright test --config playwright.scenes.config.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "gen:avatar-thumbs": "bun scripts/gen-avatar-thumbs.ts",

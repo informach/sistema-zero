@@ -6,6 +6,13 @@
 > `scene-display-samples.ts` somente para reservar espaço visual. Trechos históricos abaixo
 > que descrevem demonstração ou pergunta curta não são instruções atuais.
 
+> **Experiências ampliadas (23/09/2026):** `scene-workspace.tsx` amplia o mesmo player, sem portal,
+> remount ou Fullscreen API. `ConsoleVisual` e `ConsoleActions` mantêm HUD/cena antes de
+> instrução/controles no DOM; em janela larga viram duas colunas. Reutiliza `useModalA11y` para
+> Escape, foco e trava de rolagem. `scene.css` dimensiona a bancada pela largura disponível.
+> Palcos simples expõem a proporção real para caber também pela altura; legendas e comparações
+> nunca são cortadas. QA interativo: `bun run --filter @sistemazero/community-kids e2e:scenes`.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Next.js, React, jose, Zod,
 > sharp, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender

@@ -231,11 +231,11 @@
   padding: 0.625rem 0.875rem;
 }
 /* A faixa do alto: o respiro da maquete (0,625 × 0,875rem), não o `px-3 py-2` das utilitárias. */
-.sz-scene-console > [data-lugar-reservado="faixa"] > div {
+.sz-scene-console-visual > [data-lugar-reservado="faixa"] > div {
   padding: 0.625rem 0.875rem;
 }
 /* ⚠️ O segundo balão do palpite (a pergunta) vem logo DEPOIS do mundo e encostava nele. */
-.sz-scene-console-mundo + .sz-scene-console-fala {
+.sz-scene-console-actions > .sz-scene-console-fala:first-child {
   padding-top: 0.75rem;
 }
 
@@ -243,9 +243,8 @@
   position: relative;
 }
 
-/* A frase da SITUAÇÃO mora entre o mundo e a prancha, e é filha direta do console. Sem respiro ela
- * encostava nas bordas (ela passa a duas linhas num celular) e na prancha logo abaixo. */
-.sz-scene-console > [data-lugar-reservado="situacao"] {
+/* A situação vem depois da ação. O respiro preserva a leitura mesmo quando passa a duas linhas. */
+.sz-scene-console-actions > [data-lugar-reservado="situacao"] {
   padding: 0.5rem 0.875rem 0.375rem;
 }
 
@@ -262,14 +261,165 @@
 .sz-scene-pecas {
   display: grid;
   gap: 0.75rem;
-  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
 }
 
 /* ⚠️ As TRÊS torres da `entity-state` são estreitas de propósito (cada uma é uma escolha de
  * quatro palavras): o piso delas é 11rem, senão as três nunca caberiam lado a lado e a cena
  * perderia a comparação, que é o assunto dela. */
 .sz-scene-pecas--tres {
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+
+/* A largura da bancada, não a janela, decide quantas áreas cabem. A bandeja é uma linha. */
+.sz-once-controls {
+  container-type: inline-size;
+}
+.sz-once-areas {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+}
+.sz-once-area {
+  min-width: 0;
+  padding: 0.625rem;
+  border: 2px dashed var(--color-border);
+  border-radius: 0.875rem;
+  background: var(--color-card);
+}
+.sz-once-area--available {
+  grid-column: 1 / -1;
+}
+.sz-once-area-heading {
+  display: flex;
+  min-height: 2.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.375rem;
+}
+.sz-once-card {
+  height: auto;
+  min-width: 0;
+  max-width: 100%;
+  flex-shrink: 1;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  white-space: normal;
+  text-align: left;
+}
+.sz-once-card-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sz-once-card-count {
+  border-radius: 999px;
+  padding: 0.125rem 0.375rem;
+  background: color-mix(in oklab, currentColor 10%, transparent);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Uma árvore, dois layouts. Sem portal nem fullscreen nativo: a cena não reinicia. */
+.sz-scene-workspace-slot,
+.sz-scene-workspace,
+.sz-scene-workspace-body,
+.sz-scene-console-visual,
+.sz-scene-console-actions {
+  min-width: 0;
+}
+.sz-scene-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.sz-scene-workspace-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.sz-scene-workspace-heading {
+  flex: 1 1 14rem;
+  min-width: min(100%, 14rem);
+}
+.sz-scene-workspace--expanded {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  height: 100dvh;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right))
+    max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+  background: var(--color-background);
+  color: var(--color-foreground);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.sz-scene-workspace--expanded > .sz-scene-workspace-header {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 2;
+  background: var(--color-background);
+  padding-block: 0.25rem;
+}
+
+/* Duas colunas só quando há espaço para cena legível e bancada de pelo menos 26rem.
+ * Em celular, zoom alto ou janela muito baixa, um fluxo vertical acessível, sem corte. */
+@media (min-width: 60rem) and (min-height: 34rem) {
+  .sz-scene-workspace--expanded {
+    overflow: hidden;
+    gap: 0.75rem;
+  }
+  .sz-scene-workspace--expanded .sz-scene-workspace-body,
+  .sz-scene-workspace--expanded .sz-scene-workspace-body > fieldset,
+  .sz-scene-workspace--expanded .sz-scene-workspace-body > fieldset > fieldset {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    gap: 0.75rem;
+  }
+  .sz-scene-workspace--expanded .sz-scene-workspace-body > *,
+  .sz-scene-workspace--expanded .sz-scene-workspace-body > fieldset > fieldset {
+    margin-block: 0;
+  }
+  .sz-scene-workspace--expanded .sz-scene-console {
+    display: grid;
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(26rem, 0.9fr);
+  }
+  .sz-scene-workspace--expanded .sz-scene-console-visual,
+  .sz-scene-workspace--expanded .sz-scene-console-actions {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+  .sz-scene-workspace--expanded .sz-scene-console-actions {
+    border-left: 2px solid var(--color-border);
+  }
+  .sz-scene-workspace--expanded .sz-scene-console-visual {
+    display: flex;
+    flex-direction: column;
+  }
+  .sz-scene-workspace--expanded .sz-scene-console-visual > :not(.sz-scene-console-mundo) {
+    flex-shrink: 0;
+  }
+  .sz-scene-workspace--expanded .sz-scene-console-visual > .sz-scene-console-mundo {
+    flex: 1;
+    min-height: 0;
+    container-type: size;
+    overflow: auto;
+  }
+  /* A proporção vem do viewBox real, sem distorcer ou recortar o desenho. O ResizeObserver
+   * do palco vê a nova largura e mantém o piso de legibilidade dos rótulos. Comparações com
+   * legendas mantêm sua altura natural e podem rolar, sem esconder conteúdo. */
+  .sz-scene-workspace--expanded .sz-scene-console-mundo > .sz-scene-frame--fit {
+    width: min(100%, calc(100cqh * var(--sz-scene-aspect)));
+    margin-inline: auto;
+  }
 }
 
 /* A prancha: a bandeja rebaixada que segura o gesto e a bancada. */

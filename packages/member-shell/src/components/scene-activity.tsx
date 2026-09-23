@@ -72,7 +72,14 @@ import { useLessonPreview } from './lesson-preview-context'
 import { tituloJaDito, useLessonSection } from './lesson-section-context'
 import { RelogioDaArteProvider } from './scene-arte'
 import { SceneConclusion, SceneRevisitBanner } from './scene-conclusion'
-import { ConsoleFala, ConsoleMundo, ConsolePrancha, SceneConsole } from './scene-console'
+import {
+  ConsoleActions,
+  ConsoleFala,
+  ConsoleMundo,
+  ConsolePrancha,
+  ConsoleVisual,
+  SceneConsole,
+} from './scene-console'
 import { SomDaBancada } from './scene-dino-controls'
 import { sceneDisplaySamples } from './scene-display-samples'
 import { botoesDoMundo, SceneReadoutBand } from './scene-frame'
@@ -90,6 +97,7 @@ import {
   ScenePrediction,
 } from './scene-prediction'
 import { ScenePredictionPreview } from './scene-prediction-preview'
+import { SceneWorkspace } from './scene-workspace'
 import { estadoVistoDaCena, relogioDaCena, tempoDeLeitura, useSceneClock } from './use-scene-clock'
 
 /**
@@ -1120,66 +1128,74 @@ export function SceneActivityView({
   return (
     /* ⚠️ A cena NÃO desenha cartão. Quem desenha é o app, pelo gancho `sz-lesson-scene`: no kids
        todo bloco já é um cartão, e a cena fazia o segundo dentro dele. */
-    <section aria-labelledby={`${id}-title`} className="sz-lesson-scene space-y-4">
-      <header className="space-y-3">
-        <div>
-          {/* `sz-lesson-chip` + `data-chip`: gancho ESTÁVEL do tema (invariante 8). O rótulo é
+    <SceneWorkspace
+      labelledBy={`${id}-title`}
+      header={
+        <>
+          <div>
+            {/* `sz-lesson-chip` + `data-chip`: gancho ESTÁVEL do tema (invariante 8). O rótulo é
               VERBO, como os demais chips da aula. */}
-          <p
-            className="sz-lesson-chip mb-1 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[.16em] text-primary"
-            data-chip="experimentation"
-          >
-            <FlaskConical size={14} aria-hidden />
-            Experimente
-          </p>
-          {/* ⚠️ O título CONTINUA existindo (é o nome acessível da `<section>`); quando o
+            <p
+              className="sz-lesson-chip mb-1 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[.16em] text-primary"
+              data-chip="experimentation"
+            >
+              <FlaskConical size={14} aria-hidden />
+              Experimente
+            </p>
+            {/* ⚠️ O título CONTINUA existindo (é o nome acessível da `<section>`); quando o
               cabeçalho da seção já disse a mesma frase, ele vira `sr-only`. */}
-          <h3
-            id={`${id}-title`}
-            className={
-              tituloJaDito(content.title, secao) ? 'sr-only' : 'text-xl font-bold sm:text-2xl'
-            }
-          >
-            {content.title}
-          </h3>
-        </div>
-        {revisita && (
-          <SceneRevisitBanner
-            regra={fraseDeSucesso}
-            explicacao={guardado?.verifiedBy === 'server' ? guardado.feedback : undefined}
-          />
-        )}
-      </header>
-      <div className="space-y-4">
+            <h3
+              id={`${id}-title`}
+              className={
+                tituloJaDito(content.title, secao) ? 'sr-only' : 'text-xl font-bold sm:text-2xl'
+              }
+            >
+              {content.title}
+            </h3>
+          </div>
+          {revisita && (
+            <SceneRevisitBanner
+              regra={fraseDeSucesso}
+              explicacao={guardado?.verifiedBy === 'server' ? guardado.feedback : undefined}
+            />
+          )}
+        </>
+      }
+    >
+      <div className="sz-scene-workspace-body space-y-4">
         {previsaoPendente && palpite ? (
           /* O palpite mostra somente contexto, cena parada, pergunta e alternativas. */
           <SceneConsole palpite>
-            <ConsoleFala>
-              <PalpiteContexto
-                prediction={palpite}
-                renderDialogue={renderDialogue}
-                dialogueRef={dialogoDoPalpiteRef}
-              />
-            </ConsoleFala>
-            <ConsoleMundo>
-              <ScenePredictionPreview activity={activity} contextLabel={palpite.context.label} />
-            </ConsoleMundo>
-            <ConsoleFala>
-              <PalpitePergunta prediction={palpite} renderDialogue={renderDialogue} />
-            </ConsoleFala>
-            <div className="px-3.5 pb-3">
-              <PalpiteOpcoes
-                prediction={palpite}
-                escolha={prediction}
-                bloqueado={bloqueado}
-                onEscolher={(escolha) => {
-                  focarDialogoDaDescoberta.current = true
-                  setPrediction(escolha)
-                  guardarPalpite(scope, palpite, escolha)
-                  anunciar(anuncioDaEscolha(palpite, escolha))
-                }}
-              />
-            </div>
+            <ConsoleVisual>
+              <ConsoleFala>
+                <PalpiteContexto
+                  prediction={palpite}
+                  renderDialogue={renderDialogue}
+                  dialogueRef={dialogoDoPalpiteRef}
+                />
+              </ConsoleFala>
+              <ConsoleMundo>
+                <ScenePredictionPreview activity={activity} contextLabel={palpite.context.label} />
+              </ConsoleMundo>
+            </ConsoleVisual>
+            <ConsoleActions>
+              <ConsoleFala>
+                <PalpitePergunta prediction={palpite} renderDialogue={renderDialogue} />
+              </ConsoleFala>
+              <div className="px-3.5 pb-3">
+                <PalpiteOpcoes
+                  prediction={palpite}
+                  escolha={prediction}
+                  bloqueado={bloqueado}
+                  onEscolher={(escolha) => {
+                    focarDialogoDaDescoberta.current = true
+                    setPrediction(escolha)
+                    guardarPalpite(scope, palpite, escolha)
+                    anunciar(anuncioDaEscolha(palpite, escolha))
+                  }}
+                />
+              </div>
+            </ConsoleActions>
           </SceneConsole>
         ) : (
           <>
@@ -1191,171 +1207,174 @@ export function SceneActivityView({
                 {/* A criança reconhece o mundo antes de receber a ação. A fala e a prancha ficam
                     juntas na ordem real do documento, inclusive no celular e na leitura assistiva. */}
                 <SceneConsole>
-                  {hudDaCena}
-                  <ConsoleMundo>
-                    <RelogioDaArteProvider value={tempoDaArte}>
-                      <ExplorationStage activity={activity} state={visto} dispatch={dispatch} />
-                    </RelogioDaArteProvider>
-                    {/* ⚠️⚠️ Os avisos SOBREPOSTOS ao pé do palco (full review de experiência, M2), sem
+                  <ConsoleVisual>
+                    {hudDaCena}
+                    <ConsoleMundo>
+                      <RelogioDaArteProvider value={tempoDaArte}>
+                        <ExplorationStage activity={activity} state={visto} dispatch={dispatch} />
+                      </RelogioDaArteProvider>
+                      {/* ⚠️⚠️ Os avisos SOBREPOSTOS ao pé do palco (full review de experiência, M2), sem
                         lugar reservado no fluxo: ver `AvisosDaCena`. */}
-                    {(avisoDescoberta || palpiteNaHora) && (
-                      <AvisosDaCena
-                        selo={avisoDescoberta}
-                        achou={palpite ? palpiteNaHora : ''}
-                        onFechar={() => {
-                          setAvisoDescoberta('')
-                          setPalpiteNaHora('')
-                        }}
-                      />
-                    )}
-                  </ConsoleMundo>
-                  <ConsoleFala>{blocoDaInstrucao}</ConsoleFala>
-                  {/* ⭐⭐ A PISTA mora colada na fala do Zappy, e não no pé do bloco.
+                      {(avisoDescoberta || palpiteNaHora) && (
+                        <AvisosDaCena
+                          selo={avisoDescoberta}
+                          achou={palpite ? palpiteNaHora : ''}
+                          onFechar={() => {
+                            setAvisoDescoberta('')
+                            setPalpiteNaHora('')
+                          }}
+                        />
+                      )}
+                    </ConsoleMundo>
+                  </ConsoleVisual>
+                  <ConsoleActions>
+                    <ConsoleFala>{blocoDaInstrucao}</ConsoleFala>
+                    {/* ⭐⭐ A PISTA mora colada na fala do Zappy, e não no pé do bloco.
                       Relato dela na maquete: "não consegui ver onde apareceu a pista". Ela
                       nascia depois do rodapé, longe da instrução que a criança acabou de ler e
                       fora do console — quem pede ajuda é justamente quem vai reler a instrução.
                       Aqui ela cai onde os olhos já estão. */}
-                  {hintText && !conclusao && (
-                    /* A escada de três degraus aparece COMO escada, logo abaixo do botão que a pediu e
+                    {hintText && !conclusao && (
+                      /* A escada de três degraus aparece COMO escada, logo abaixo do botão que a pediu e
                          sem empurrar o palco. A caixa some quando a cena conclui. ⚠️ Sem `role="status"`:
                          o texto é recalculado com a cena (o nível 1 cita a situação), e a cada "+100" o
                          leitor ouvia a situação duas vezes. Quem anuncia a pista é o clique. */
-                    <div
-                      data-pista={pistaFeita ? 'feita' : 'aberta'}
-                      /* ⚠️ `mx`/`mb`: dentro do console ela é irmã da fala, e sem o respiro
+                      <div
+                        data-pista={pistaFeita ? 'feita' : 'aberta'}
+                        /* ⚠️ `mx`/`mb`: dentro do console ela é irmã da fala, e sem o respiro
                              encostava nas duas bordas e no mundo logo abaixo. */
-                      className="mx-3.5 mb-2.5 flex gap-3 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3"
-                    >
-                      {pistaFeita ? (
-                        <Check
-                          size={18}
-                          className="mt-0.5 shrink-0 text-success-foreground"
-                          aria-hidden
-                        />
-                      ) : (
-                        <Lightbulb
-                          size={18}
-                          className="mt-0.5 shrink-0 text-amber-700"
-                          aria-hidden
-                        />
-                      )}
-                      <p className="text-sm leading-relaxed">
-                        {!pistaFeita && (
-                          <>
-                            <span className="font-semibold">
-                              Pista {Math.min(hint, hints.length)} de {hints.length}.
-                            </span>{' '}
-                          </>
+                        className="mx-3.5 mb-2.5 flex gap-3 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3"
+                      >
+                        {pistaFeita ? (
+                          <Check
+                            size={18}
+                            className="mt-0.5 shrink-0 text-success-foreground"
+                            aria-hidden
+                          />
+                        ) : (
+                          <Lightbulb
+                            size={18}
+                            className="mt-0.5 shrink-0 text-amber-700"
+                            aria-hidden
+                          />
                         )}
-                        {hintText}
-                      </p>
-                    </div>
-                  )}
-                  {pranchaDaCena}
-                  {/* ⚠️⚠️ O palpite CONGELADO mora DENTRO do console, depois da área de ação:
+                        <p className="text-sm leading-relaxed">
+                          {!pistaFeita && (
+                            <>
+                              <span className="font-semibold">
+                                Pista {Math.min(hint, hints.length)} de {hints.length}.
+                              </span>{' '}
+                            </>
+                          )}
+                          {hintText}
+                        </p>
+                      </div>
+                    )}
+                    {pranchaDaCena}
+                    {/* ⚠️⚠️ O palpite CONGELADO mora DENTRO do console, depois da área de ação:
                       ele retoma o que a criança pensou sem separar a instrução dos controles. */}
-                  {palpite && !(revisita && !prediction) && (
-                    <div className="sz-scene-console-conversa">
-                      <ScenePrediction
-                        prediction={palpite}
-                        escolha={prediction}
-                        trocavel={trocavel}
-                        revelado={revelado}
-                        onTrocar={() => {
-                          focarDialogoDoPalpite.current = true
-                          focarDialogoDaDescoberta.current = false
-                          gesto.current = false
-                          setRunning(false)
-                          action.current({ type: 'reset' })
-                          apagarPalpite(scope)
-                          setPrediction('')
-                          setHint(0)
-                          setPistaCongelada(null)
-                          setConferiu('')
-                          setPalpiteNaHora('')
-                          setAvisoDescoberta('')
-                          setAviso('')
-                        }}
-                      />
-                    </div>
-                  )}
-                  {/* ⚠️ A caixa só existe COM conclusão: vazia, criaria um vão morto depois da
+                    {palpite && !(revisita && !prediction) && (
+                      <div className="sz-scene-console-conversa">
+                        <ScenePrediction
+                          prediction={palpite}
+                          escolha={prediction}
+                          trocavel={trocavel}
+                          revelado={revelado}
+                          onTrocar={() => {
+                            focarDialogoDoPalpite.current = true
+                            focarDialogoDaDescoberta.current = false
+                            gesto.current = false
+                            setRunning(false)
+                            action.current({ type: 'reset' })
+                            apagarPalpite(scope)
+                            setPrediction('')
+                            setHint(0)
+                            setPistaCongelada(null)
+                            setConferiu('')
+                            setPalpiteNaHora('')
+                            setAvisoDescoberta('')
+                            setAviso('')
+                          }}
+                        />
+                      </div>
+                    )}
+                    {/* ⚠️ A caixa só existe COM conclusão: vazia, criaria um vão morto depois da
                       prancha em toda cena e o tempo todo. */}
-                  {!revisita && conclusao && (
-                    <div className="sz-scene-console-conversa">
-                      <SceneConclusion
-                        pergunta={content.checkpoint}
-                        regra={fraseDeSucesso}
-                        resposta={resposta}
-                        certa={respostaCerta}
-                        feedback={respostaFeedback}
-                        aguardaCena={aguardaCena}
-                        bloqueada={registered || conflict || !ready}
-                        faixaRef={faixaRef}
-                        perguntaRef={perguntaRef}
-                        onResponder={(escolha) => {
-                          respostaAtual.current = escolha
-                          setResposta(escolha)
-                          setRespostaFeedback('')
-                          setRespostaCerta(null)
-                          setAguardaCena(false)
-                          // ⚠️ Id novo por RESPOSTA: o servidor reavalia a tentativa pelo checkpoint dele, e
-                          // com o id fixo a primeira resposta errada seria devolvida para sempre.
-                          if (!registered) attemptId.current = crypto.randomUUID()
-                          void flush.current(escolha)
-                        }}
-                      />
-                    </div>
-                  )}
-                  {/* ⚠️ A frase da SITUAÇÃO é o narrador do mundo: descreve o que está na tela agora.
+                    {!revisita && conclusao && (
+                      <div className="sz-scene-console-conversa">
+                        <SceneConclusion
+                          pergunta={content.checkpoint}
+                          regra={fraseDeSucesso}
+                          resposta={resposta}
+                          certa={respostaCerta}
+                          feedback={respostaFeedback}
+                          aguardaCena={aguardaCena}
+                          bloqueada={registered || conflict || !ready}
+                          faixaRef={faixaRef}
+                          perguntaRef={perguntaRef}
+                          onResponder={(escolha) => {
+                            respostaAtual.current = escolha
+                            setResposta(escolha)
+                            setRespostaFeedback('')
+                            setRespostaCerta(null)
+                            setAguardaCena(false)
+                            // ⚠️ Id novo por RESPOSTA: o servidor reavalia a tentativa pelo checkpoint dele, e
+                            // com o id fixo a primeira resposta errada seria devolvida para sempre.
+                            if (!registered) attemptId.current = crypto.randomUUID()
+                            void flush.current(escolha)
+                          }}
+                        />
+                      </div>
+                    )}
+                    {/* ⚠️ A frase da SITUAÇÃO é o narrador do mundo: descreve o que está na tela agora.
                       Num lugar reservado, ela pode passar de uma para duas linhas sem saltar. */}
-                  {/* ⚠️⚠️ E o MOLDE são as frases que a cena atinge (full review de experiência, M3):
+                    {/* ⚠️⚠️ E o MOLDE são as frases que a cena atinge (full review de experiência, M3):
                     só crescer não bastava, porque a PRIMEIRA vez que a frase passava a duas linhas a
                     continuação descia 16 px no toque (o "Avançar 1 quadro" da `draw-loop` no celular). */}
-                  <LugarReservado
-                    marca="situacao"
-                    molde={
-                      <div className="grid" aria-hidden>
-                        {situacoesDaCena.map((frase, i) => (
-                          // biome-ignore lint/suspicious/noArrayIndexKey: cada frase é um lugar fixo do molde
-                          <p key={i} className={`${CLASSE_DA_SITUACAO} [grid-area:1/1]`}>
-                            {frase}
-                          </p>
-                        ))}
-                      </div>
-                    }
-                    chave={situacoesDaCena.join('|')}
-                  >
-                    <p
-                      role={running ? undefined : 'status'}
-                      aria-live={running ? 'off' : undefined}
-                      className={CLASSE_DA_SITUACAO}
+                    <LugarReservado
+                      marca="situacao"
+                      molde={
+                        <div className="grid" aria-hidden>
+                          {situacoesDaCena.map((frase, i) => (
+                            // biome-ignore lint/suspicious/noArrayIndexKey: cada frase é um lugar fixo do molde
+                            <p key={i} className={`${CLASSE_DA_SITUACAO} [grid-area:1/1]`}>
+                              {frase}
+                            </p>
+                          ))}
+                        </div>
+                      }
+                      chave={situacoesDaCena.join('|')}
                     >
-                      {sceneSituation(activity.scene, visto, activity.cast)}
-                    </p>
-                  </LugarReservado>
-                  {/* A cena NÃO acaba: o mundo segue vivo e a prancha segue aberta. */}
+                      <p
+                        role={running ? undefined : 'status'}
+                        aria-live={running ? 'off' : undefined}
+                        className={CLASSE_DA_SITUACAO}
+                      >
+                        {sceneSituation(activity.scene, visto, activity.cast)}
+                      </p>
+                    </LugarReservado>
+                    {/* A cena NÃO acaba: o mundo segue vivo e a prancha segue aberta. */}
+                    {/* A comparação acompanha a bancada; ao ampliar, a cena continua visível. */}
+                    {reference && lab.trials.length > 0 && (
+                      <details
+                        open={compared}
+                        onToggle={(e) => setCompared(e.currentTarget.open)}
+                        className="rounded-2xl bg-background p-4"
+                      >
+                        <summary className="min-h-11 cursor-pointer text-sm font-semibold">
+                          Compare: o que você guardou × agora
+                        </summary>
+                        <div className="mt-4">
+                          <ExperienceComparison
+                            activity={activity}
+                            trials={lab.trials}
+                            current={state}
+                          />
+                        </div>
+                      </details>
+                    )}
+                  </ConsoleActions>
                 </SceneConsole>
-                {/* A comparação abre logo abaixo do botão que a pediu, não no pé do cartão.
-                    ⚠️ FORA do console: é uma gaveta da AULA, e dentro dele viraria uma quinta faixa. */}
-                {reference && lab.trials.length > 0 && (
-                  <details
-                    open={compared}
-                    onToggle={(e) => setCompared(e.currentTarget.open)}
-                    className="rounded-2xl bg-background p-4"
-                  >
-                    <summary className="min-h-11 cursor-pointer text-sm font-semibold">
-                      Compare: o que você guardou × agora
-                    </summary>
-                    <div className="mt-4">
-                      <ExperienceComparison
-                        activity={activity}
-                        trials={lab.trials}
-                        current={state}
-                      />
-                    </div>
-                  </details>
-                )}
               </fieldset>
             </fieldset>
             {
@@ -1524,7 +1543,7 @@ export function SceneActivityView({
           <span key={anuncio.vez}>{anuncio.texto}</span>
         </p>
       </div>
-    </section>
+    </SceneWorkspace>
   )
 }
 
