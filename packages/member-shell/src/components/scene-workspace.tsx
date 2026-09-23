@@ -37,9 +37,12 @@ export function SceneWorkspace({
             variant="outline"
             className="min-h-11 gap-2 whitespace-normal"
             aria-expanded={expanded}
-            onClick={() =>
+            onClick={(event) => {
+              // WebKit não foca botões ao clicar. O modal deve guardar ESTE gatilho
+              // para o retorno, não o último elemento focado em outro lugar da aula.
+              if (!expanded) event.currentTarget.focus({ preventScroll: true })
               setInlineHeight(expanded ? null : (workspaceRef.current?.offsetHeight ?? 0))
-            }
+            }}
           >
             {expanded ? <Minimize2 size={16} aria-hidden /> : <Maximize2 size={16} aria-hidden />}
             {expanded ? 'Voltar à aula' : 'Ampliar experiência'}

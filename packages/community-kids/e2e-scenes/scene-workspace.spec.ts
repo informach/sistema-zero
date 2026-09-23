@@ -1,4 +1,4 @@
-import { expect, type Page, test } from '@playwright/test'
+import { expect, type Locator, type Page, test } from '@playwright/test'
 
 const chip = (page: Page) =>
   page
@@ -6,6 +6,57 @@ const chip = (page: Page) =>
     .filter({ has: page.locator('.sz-once-card-label') })
 const expand = (page: Page) => page.getByRole('button', { name: 'Ampliar experiência' })
 const close = (page: Page) => page.getByRole('button', { name: 'Voltar à aula' })
+
+test('retorno foca o gatilho mesmo com foco anterior fora da experiência', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Antes da experiência', exact: true }).focus()
+  await expand(page).click()
+  await page.keyboard.press('Escape')
+  await expect(expand(page)).toBeFocused()
+})
+
+/** WebKit trunca dimensões da interseção para pixels inteiros (ex.: 318.515625 → 318).
+ * Tolerar menos de 1px por borda, sem aceitar recorte proporcional em palcos grandes. */
+async function expectFullyVisible(locator: Locator) {
+  await expect
+    .poll(() =>
+      locator.evaluate(
+        (el) =>
+          new Promise<boolean>((resolve) => {
+            const observer = new IntersectionObserver(([entry]) => {
+              if (!entry) return
+              observer.disconnect()
+              const box = entry.boundingClientRect
+              const visible = entry.intersectionRect
+              resolve(
+                entry.isIntersecting &&
+                  box.width > 0 &&
+                  box.height > 0 &&
+                  visible.left - box.left < 1 &&
+                  visible.top - box.top < 1 &&
+                  box.right - visible.right < 1 &&
+                  box.bottom - visible.bottom < 1,
+              )
+            })
+            observer.observe(el)
+          }),
+      ),
+    )
+    .toBe(true)
+}
+
+async function expectLayout(page: Page, sideBySide: boolean) {
+  await expect
+    .poll(() =>
+      page.locator('.sz-scene-console').evaluate((el) => {
+        const visual = el.querySelector('.sz-scene-console-visual')?.getBoundingClientRect()
+        const actions = el.querySelector('.sz-scene-console-actions')?.getBoundingClientRect()
+        if (!visual || !actions) throw new Error('Regiões da experiência ausentes')
+        return visual.right <= actions.left + 1 && Math.abs(visual.top - actions.top) < 1
+      }),
+    )
+    .toBe(sideBySide)
+}
 
 async function fits(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -36,6 +87,110 @@ async function fits(page: Page) {
   }
 }
 
+test('a divisória adapta o painel sem ampliar nem perder seleção e progresso', async ({
+  page,
+}, info) => {
+  await page.setViewportSize({ width: 1366, height: 768 })
+  await page.goto('/?split')
+  await expectLayout(page, false)
+  await chip(page).click()
+  await page.evaluate(() => window.scrollTo(0, 0))
+  const divider = page.getByRole('separator', { name: 'Mudar o tamanho dos dois lados' })
+  const box = await divider.boundingBox()
+  if (!box) throw new Error('Divisória ausente')
+  await page.mouse.move(box.x + box.width / 2, box.y + 24)
+  await page.mouse.down()
+  await page.mouse.move(360, box.y + 24, { steps: 20 })
+  await page.mouse.up()
+  await expectLayout(page, true)
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(page.getByText('Vídeo da aula', { exact: true })).toBeInViewport({ ratio: 1 })
+  await expect(chip(page)).toHaveAttribute('aria-pressed', 'true')
+  await page
+    .getByRole('button', { name: 'Colocar em Ao iniciar: Mover a nave um pouquinho', exact: true })
+    .click()
+  const step = page.getByRole('button', { name: 'Avançar 1 passo', exact: true })
+  for (let n = 0; n < 3; n++) await step.click()
+  await expect(chip(page)).toContainText('1 vez')
+  await expect(page.getByRole('meter')).toHaveAttribute('aria-valuenow', '1')
+  await expectFullyVisible(page.locator('.sz-scene-console-mundo svg').first())
+  await expect(step).toBeInViewport({ ratio: 1 })
+  await fits(page)
+  await page.screenshot({ path: info.outputPath('inline-wide.png') })
+
+  await divider.focus()
+  await divider.press('End')
+  await expectLayout(page, false)
+  await expect(chip(page)).toContainText('1 vez')
+  await expect(page.getByRole('meter')).toHaveAttribute('aria-valuenow', '1')
+  await fits(page)
+  await expand(page).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toHaveCSS('position', 'fixed')
+  expect(await dialog.boundingBox()).toEqual({ x: 0, y: 0, width: 1366, height: 768 })
+  await expectLayout(page, true)
+  await page.keyboard.press('Escape')
+  await expect(expand(page)).toBeFocused()
+  await expectLayout(page, false)
+  await expect(chip(page)).toContainText('1 vez')
+  await divider.focus()
+  await divider.press('Home')
+  await expectLayout(page, true)
+  await expect(chip(page)).toContainText('1 vez')
+  await expect(page.getByRole('meter')).toHaveAttribute('aria-valuenow', '1')
+})
+
+test('o palpite também adapta pela largura do painel e preserva a resposta', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 })
+  await page.goto('/?split&block=experiencia-coordenadas')
+  const divider = page.getByRole('separator', { name: 'Mudar o tamanho dos dois lados' })
+  await expectLayout(page, false)
+  await divider.focus()
+  await divider.press('Home')
+  await expectLayout(page, true)
+  await expect(page.locator('.sz-scene-prancha')).toHaveCount(0)
+  await expect(page.locator('.sz-scene-console-actions')).toContainText('Se o y AUMENTAR')
+  await page.getByRole('button', { name: 'Para baixo', exact: true }).click()
+  await expect(page.locator('.sz-scene-prancha')).toBeVisible()
+  await expectLayout(page, true)
+  await divider.focus()
+  await divider.press('End')
+  await expectLayout(page, false)
+  await expect(page.locator('.sz-scene-prancha')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Para baixo', exact: true })).toHaveCount(0)
+})
+
+test('fontes maiores empilham sem cortar os controles no modo ampliado', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 })
+  await page.goto('/?width=1000')
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = '32px'
+  })
+  await expectLayout(page, false)
+  await expand(page).click()
+  await expectLayout(page, false)
+  const step = page.getByRole('button', { name: 'Avançar 1 passo', exact: true })
+  await step.click()
+  await expect(step).toBeInViewport({ ratio: 1 })
+  await expect(close(page)).toBeInViewport({ ratio: 1 })
+  await close(page).click()
+  await expect(expand(page)).toBeFocused()
+})
+
+for (const size of [
+  { panel: 860, height: 768, sideBySide: false },
+  { panel: 900, height: 768, sideBySide: true },
+  { panel: 1000, height: 480, sideBySide: false },
+]) {
+  test(`layout inline: painel ${size.panel}, altura ${size.height}`, async ({ page }, info) => {
+    await page.setViewportSize({ width: 1366, height: size.height })
+    await page.goto(`/?width=${size.panel}`)
+    await expectLayout(page, size.sideBySide)
+    await fits(page)
+    await page.screenshot({ path: info.outputPath('inline-adaptive.png'), fullPage: true })
+  })
+}
+
 test('ampliar/recolher preserva seleção, montagem, passos e descobertas', async ({
   page,
 }, info) => {
@@ -52,7 +207,7 @@ test('ampliar/recolher preserva seleção, montagem, passos e descobertas', asyn
   for (let n = 0; n < 3; n++) await step.click()
   await expect(chip(page)).toContainText('1 vez')
   await expect(page.getByRole('meter')).toHaveAttribute('aria-valuenow', '1')
-  await expect(page.locator('.sz-scene-console-visual')).toBeInViewport({ ratio: 1 })
+  await expectFullyVisible(page.locator('.sz-scene-console-visual'))
   await expect(step).toBeInViewport({ ratio: 1 })
   const visual = await page.locator('.sz-scene-console-visual').boundingBox()
   const actions = await page.locator('.sz-scene-console-actions').boundingBox()
@@ -118,12 +273,19 @@ test('o palpite mantém pergunta e alternativas juntas, sem controles, ao amplia
 
 for (const block of ['experiencia-criar-mostrar', 'experiencia-quadro', 'experiencia-camadas']) {
   test(`outra experiência do piloto: ${block}`, async ({ page }) => {
-    await page.goto(`/?block=${block}`)
+    await page.goto(`/?block=${block}&width=900`)
+    await expectLayout(page, true)
+    for (const region of await page
+      .locator('.sz-scene-console-visual, .sz-scene-console-actions')
+      .all()) {
+      expect(await region.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true)
+    }
     await expand(page).click()
-    await expect(page.locator('.sz-scene-console-visual')).toBeInViewport({ ratio: 1 })
+    await expectFullyVisible(page.locator('.sz-scene-console-visual'))
     await expect(page.locator('.sz-scene-console-actions')).toBeVisible()
     await close(page).click()
     await expect(expand(page)).toBeFocused()
+    await expectLayout(page, true)
   })
 }
 
@@ -153,7 +315,7 @@ for (const size of [
     await expand(page).click()
     await fits(page)
     if (size.width >= 960) {
-      await expect(page.locator('.sz-scene-console-mundo svg').first()).toBeInViewport({ ratio: 1 })
+      await expectFullyVisible(page.locator('.sz-scene-console-mundo svg').first())
     }
     await expect(close(page)).toBeInViewport({ ratio: 1 })
     await page.getByRole('button', { name: 'Avançar 1 passo', exact: true }).click()

@@ -8,8 +8,12 @@
 
 > **Experiências ampliadas (23/09/2026):** `scene-workspace.tsx` amplia o mesmo player, sem portal,
 > remount ou Fullscreen API. `ConsoleVisual` e `ConsoleActions` mantêm HUD/cena antes de
-> instrução/controles no DOM; em janela larga viram duas colunas. Reutiliza `useModalA11y` para
-> Escape, foco e trava de rolagem. `scene.css` dimensiona a bancada pela largura disponível.
+> instrução/controles no DOM. `scene.css` consulta a largura do PRÓPRIO workspace (`52rem`),
+> tanto inline quanto ampliado: arrastar a divisória pode ativar duas colunas sem ampliar.
+> Com altura de janela abaixo de `34rem`, mantém o fluxo vertical. O console inline limita sua
+> altura pela janela e a bancada rola sem levar o palco junto. A contenção fica na seção, NÃO
+> no slot ancestral, para não limitar o posicionamento fixo da ampliação. Nenhuma troca remonta
+> o player. Reutiliza `useModalA11y` para Escape, foco e trava de rolagem ao ampliar.
 > Palcos simples expõem a proporção real para caber também pela altura; legendas e comparações
 > nunca são cortadas. QA interativo: `bun run --filter @sistemazero/community-kids e2e:scenes`.
 

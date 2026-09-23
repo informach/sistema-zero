@@ -95,21 +95,28 @@ Quando existir, a tela do palpite contém apenas contexto, cena parada, pergunta
 controles não aparecem, nem desativados. A escolha não vale nota e a retomada compara de modo
 neutro: **"Seu palpite: … Ao testar: …"**, sem "acertou" ou "errou".
 
-Na experimentação, o topo reúne HUD, nome e cena. Logo abaixo da cena, uma única fala curta do
-Zappy apresenta a ação; a pista solicitada e os controles vêm em seguida. Palpite retomado,
-conclusão e situação alcançada aparecem depois da área de ação. A ordem é a mesma no celular.
+Na experimentação, a região visual reúne HUD, nome e cena. No painel estreito, logo abaixo da
+cena, uma única fala curta do Zappy apresenta a ação; a pista solicitada e os controles vêm em
+seguida. Palpite retomado, conclusão e situação alcançada aparecem depois da área de ação.
+A ordem de leitura é a mesma no celular e no layout lado a lado.
 
-### Ampliar a experiência
+### Layout adaptativo e ampliação da experiência
 
-A experiência oferece **Ampliar experiência**, como o Estúdio. É uma opção de concentração, não
-um requisito para concluir a atividade. Em tela larga, HUD e cena ficam à esquerda; instrução,
-controles e retorno ficam à direita. Se a bancada for longa, ela rola sem levar a cena junto.
+Ao aumentar a área da experiência pela divisória da aula, o layout se adapta automaticamente:
+havendo espaço confortável, HUD e cena ficam à esquerda; instrução, controles e retorno ficam à
+direita. A decisão considera a largura do **painel**, não apenas a da janela. Ao diminuir o
+painel, as regiões voltam a ficar empilhadas. Vale tanto para o palpite quanto para a exploração.
+Se a bancada for longa, ela rola sem levar a cena junto.
+
+A experiência também oferece **Ampliar experiência**, como o Estúdio. É uma opção de
+concentração, não um requisito para concluir a atividade ou conseguir o layout lado a lado.
 O botão **Voltar à aula** permanece acessível; Escape também sai. Ampliar e voltar não reiniciam
-fichas, contadores, seleção, execução ou descobertas.
+fichas, contadores, seleção, execução ou descobertas. Redimensionar o painel também não.
 
-Em tela estreita ou com zoom alto, as regiões continuam empilhadas. Não reduzir fonte nem cortar
-conteúdo para prometer ausência de rolagem. Palcos simples se ajustam à altura disponível sem
-distorção; comparações com legendas preservam o espaço necessário à leitura.
+Em painel estreito, janela muito baixa ou com zoom alto, as regiões continuam empilhadas.
+Não reduzir fonte nem cortar conteúdo para prometer ausência de rolagem. Palcos simples se
+ajustam à altura disponível sem distorção; comparações com legendas preservam o espaço necessário
+à leitura.
 
 Fichas se adaptam à largura da bancada, não à largura da janela. Rótulos compridos quebram linha,
 o contador fica separado e a bandeja de fichas disponíveis não disputa uma coluna de mesmo
