@@ -45,3 +45,11 @@ Escopo limitado ao layout e sua cobertura. Não há migração nem alteração d
 - Member-shell: 924 testes; Kids: 1076; Community: 5. Todos passaram. Typecheck de member-shell, Kids, Community e Admin passou.
 - Biome global: sem erros, com 11 avisos e 89 informações preexistentes. Arquivos de código alterados: sem diagnósticos. `git diff --check` passou.
 - Nenhuma alteração em manifesto, avaliação, narração, API, banco ou persistência da divisória. Não é necessário reimportar a aula.
+
+## Instalação limpa do CI
+
+A primeira execução remota (`35918075076`) passou lint, testes e bancos, mas recusou o typecheck
+do Kids: a fixture importava `react-resizable-panels` sem declará-lo naquele pacote. A instalação
+local tinha um vínculo disponível e não reproduziu a ausência. A biblioteca agora é uma
+`devDependency` explícita do Kids, na mesma versão 2.1.9 já usada pelo member-shell; o lockfile
+muda apenas essa declaração, sem atualizar bibliotecas. A validação remota precisa ser repetida.

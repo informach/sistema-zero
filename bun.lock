@@ -206,6 +206,7 @@
         "@types/react": "^19",
         "@types/react-dom": "^19",
         "@types/three": "^0.184.1",
+        "react-resizable-panels": "^2.1.9",
         "tailwindcss": "^4.1.0",
         "typescript": "^5.7.0",
       },
