@@ -28,9 +28,8 @@ describe('casos da once-vs-always', () => {
     ).toBe(false)
   })
 
-  test('o piloto declara só ligar a nave e movimento', () => {
+  test('o piloto declara só o movimento que será comparado', () => {
     expect(ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave'].cards).toEqual([
-      { id: 'panel', kind: 'panel', label: 'Ligar a nave' },
       { id: 'move', kind: 'move', label: 'Mover a nave um pouquinho' },
     ])
   })

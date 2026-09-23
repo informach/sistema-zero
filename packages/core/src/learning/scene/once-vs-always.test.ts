@@ -45,22 +45,27 @@ function lab(
 }
 
 describe('uma vez, sempre e na hora', () => {
-  test('o piloto usa uma preparação visível sem ensinar que criar também desenha', () => {
-    const c = lab('duas-caixas-nave', ['once', 'always', 'both'])
+  test('o piloto compara o mesmo movimento ao iniciar e enquanto está rodando', () => {
+    const c = lab('duas-caixas-nave', ['once', 'always'])
     expect(ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave'].cards).toEqual([
-      { id: 'panel', kind: 'panel', label: 'Ligar a nave' },
       { id: 'move', kind: 'move', label: 'Mover a nave um pouquinho' },
     ])
     expect(c.get().once.heroCount).toBe(1)
     expect(c.get().evidence.discoveries).toEqual([])
-    c.place('panel', 'start')
-    c.place('move', 'loop')
-    c.frames(5)
-    expect(c.get().once.fires.panel).toBe(1)
-    expect(c.get().once.fires.move).toBe(5)
+    c.place('move', 'start')
+    c.frames(3)
+    expect(c.get().once.heroX).toBe(56)
+    expect(c.get().once.fires.move).toBe(1)
     expect(c.get().evidence.discoveries).toContain('once')
+    expect(c.get().evidence.discoveries).not.toContain('always')
+    c.reset()
+    expect(c.get().once.heroX).toBe(44)
+    expect(c.get().evidence.discoveries).toContain('once')
+    c.place('move', 'loop')
+    c.frames(3)
+    expect(c.get().once.heroX).toBe(80)
+    expect(c.get().once.fires.move).toBe(3)
     expect(c.get().evidence.discoveries).toContain('always')
-    expect(c.get().evidence.discoveries).toContain('both')
     expect(
       evaluateExperimentation('once-vs-always', c.get(), true, undefined, c.targets).passed,
     ).toBe(true)
@@ -134,21 +139,16 @@ describe('uma vez, sempre e na hora', () => {
     expect(c.get().once.hearts).toBe(2)
   })
 
-  test('mudar a ficha depois de o jogo começar não inventa um começo que não houve', () => {
-    const c = lab('duas-caixas-nave', ['once', 'both'])
-    c.place('panel', 'loop')
+  test('colocar o movimento depois de começar não inventa o começo que não houve', () => {
+    const c = lab('duas-caixas-nave', ['once', 'always'])
     c.frames(1)
-    c.place('panel', 'start')
-    c.place('move', 'loop')
-    c.frames(5)
+    c.place('move', 'start')
+    c.frames(3)
     expect(c.get().evidence.discoveries).not.toContain('once')
-    expect(c.get().evidence.discoveries).not.toContain('both')
     c.reset()
-    c.place('panel', 'start')
-    c.place('move', 'loop')
-    c.frames(5)
+    c.place('move', 'start')
+    c.frames(3)
     expect(c.get().evidence.discoveries).toContain('once')
-    expect(c.get().evidence.discoveries).toContain('both')
   })
 
   test('o retrato recusa área desconhecida e números negativos', () => {

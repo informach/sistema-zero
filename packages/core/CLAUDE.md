@@ -381,10 +381,10 @@ A regra de cada meta está no motor, comentada. Aqui fica o que costuma pegar qu
 
 **A tela e o mundo**
 - `once-vs-always`: `ONCE_GOAL_CARDS_BY_PRESET` declara qual ficha comprova cada meta; não deduza a
-  missão pelos ids históricos `paint`/`create`. No preset do piloto, a nave já existe e as fichas são
-  `panel` (preparação observável, uma vez) e `move` (ação contínua). Assim a cena não ensina que criar
-  também desenha antes da `world`. O validador rejeita qualquer área desconhecida antes de ler os demais
-  campos do retrato.
+  missão pelos ids históricos `paint`/`create`. No piloto, a nave já existe e a única ficha é `move`:
+  a criança testa em `Ao iniciar`, recomeça e testa a mesma ficha em `Enquanto estiver rodando`; as metas
+  `once` e `always` guardam essa comparação. O validador rejeita qualquer área desconhecida antes de ler
+  os demais campos do retrato.
 - `coordinates`: a tela é a do CASO (`place.width`/`height`; a ação `stage` só num caso). O endereço usa
   `SCENE_LIMITS.addressX`/`addressY`: ⚠️ `placeX`/`placeY` medem a tela do Corre Dino para `draw-loop` e
   `hold-vs-press`, e alargá-los mudaria essas cenas. O fantasma fica onde a sequência no mesmo eixo e sentido

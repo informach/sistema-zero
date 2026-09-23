@@ -171,10 +171,7 @@ export const ONCE_VS_ALWAYS_PRESETS = {
   'duas-caixas-nave': {
     id: 'duas-caixas-nave',
     areas: ['start', 'loop'],
-    cards: [
-      { id: 'panel', kind: 'panel', label: 'Ligar a nave' },
-      { id: 'move', kind: 'move', label: 'Mover a nave um pouquinho' },
-    ],
+    cards: [{ id: 'move', kind: 'move', label: 'Mover a nave um pouquinho' }],
   },
   'tres-caixas-tiro': {
     id: 'tres-caixas-tiro',
@@ -216,9 +213,8 @@ export const ONCE_VS_ALWAYS_PRESETS = {
 /** As fichas que tornam cada descoberta observável em cada caso da cena. */
 export const ONCE_GOAL_CARDS_BY_PRESET = {
   'duas-caixas-nave': {
-    once: 'panel',
+    once: 'move',
     always: 'move',
-    both: { start: 'panel', loop: 'move' },
   },
   'tres-caixas-tiro': { event: 'event' },
   'uma-ficha-vidas': { once: 'lives' },
@@ -235,7 +231,7 @@ export function onceGoalCards(preset: OnceVsAlwaysPreset): OnceGoalCards {
 }
 
 export const ONCE_GOALS_BY_PRESET: Record<OnceVsAlwaysPreset['id'], readonly string[]> = {
-  'duas-caixas-nave': ['once', 'always', 'both'],
+  'duas-caixas-nave': ['once', 'always'],
   'tres-caixas-tiro': ['on-event', 'key-fires', 'flood'],
   'uma-ficha-vidas': ['once'],
   'duas-caixas-dino': ['once', 'always', 'both'],
