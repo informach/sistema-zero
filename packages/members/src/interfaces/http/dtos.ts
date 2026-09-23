@@ -1076,6 +1076,14 @@ const DialogueBlockSchema = t.Object({
   // A voz do Zappy. ⚠⚠ Campo fora do DTO some no `normalize` do Elysia: sem esta linha a
   // publicação gravaria o balão mudo, sem erro nenhum.
   vozes: t.Optional(t.Record(t.String(), t.String({ maxLength: 4000 }))),
+  // A grafia fica em `text`; este roteiro só corrige a pronúncia. Sem declará-lo, o normalize
+  // apagaria a chave do MP3 que o player deve procurar.
+  zappySpeech: t.Optional(
+    t.Object({
+      sourceText: t.String({ minLength: 1, maxLength: 6000 }),
+      speechText: t.String({ minLength: 1, maxLength: 6000 }),
+    }),
+  ),
 })
 const VideoBlockSchema = t.Object({
   kind: t.Literal('video'),

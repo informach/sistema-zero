@@ -116,14 +116,14 @@
     },
     {
       "key": "video-duas-areas",
-      "plannedVideo": "Título: Uma arruma, a outra é o motor\n\nMostrar as duas áreas do projeto vazias, lado a lado. Nenhum gesto de montagem neste clipe: a tela fica nas duas caixas enquanto a comparação é falada.\n\nPrimeiro, aproximar no Ao iniciar e explicar: \"Tudo o que estiver aqui acontece uma vez só, no comecinho, quando o jogo liga. É como preparar o papel e os lápis antes de desenhar.\"\n\nDepois, aproximar no Enquanto estiver rodando e explicar: \"Tudo o que estiver aqui continua acontecendo enquanto o jogo funciona. Pensa num ventilador: enquanto está ligado, ele gira, gira, gira.\"\n\nFechar com as duas áreas lado a lado: \"Uma arruma o jogo. A outra é o motor.\"\n\nDuração alvo: 40 a 50 segundos.\n\nOrigem: video-areas, a parte conceitual. Aproveitar a analogia do ventilador, mas regravar a comparação inteira para dar o mesmo peso às duas áreas. Cortar a enumeração antiga de passos e a chamada para a parte seguinte."
+      "plannedVideo": "Título: A mesma ação em dois momentos\n\nMostrar uma linha do tempo curta: o começo do jogo e três passos depois dele. A ficha Mover a nave um pouquinho está em Ao iniciar. No começo, a nave anda uma casa; nos três passos seguintes, ela fica parada.\n\nFala: \"Ao iniciar é o comecinho do jogo. O que está aqui acontece uma vez e pronto.\"\n\nVoltar a linha do tempo ao começo. Mostrar a mesma ficha em Enquanto estiver rodando. Em cada um dos três passos, a nave anda outra casa.\n\nFala: \"Enquanto estiver rodando continua trabalhando a cada passo. A mesma ação muda porque está em outro lugar.\"\n\nFechar com os dois caminhos lado a lado: uma vez no começo e uma vez em cada passo.\n\nDuração alvo: 40 a 50 segundos.\n\nOrigem: video-areas. Regravar a comparação inteira com o mesmo movimento nos dois lugares. Não ensinar gesto de montagem neste clipe nem chamar a ação de ligar a nave."
     },
     {
       "key": "fala-uma-vez-e-sempre",
       "content": {
         "kind": "dialogue",
         "pose": "thinking",
-        "text": "Agora é hora de ver essa diferença funcionando. Faça a experiência e observe o que acontece uma vez e o que continua acontecendo."
+        "text": "Agora veja a mesma ação nos dois lugares."
       }
     },
     {
@@ -132,7 +132,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Uma vez e sempre",
-        "instructions": "Ligue a nave em Ao iniciar. Mova a nave em Enquanto estiver rodando. Depois, avance cinco passos e compare os contadores. Para testar outro lugar, use Voltar ao começo primeiro.",
+        "instructions": "Primeiro, coloque Mover a nave um pouquinho em Ao iniciar e avance três passos. Veja a nave se mover uma vez e parar. Use Voltar ao começo. Depois, coloque a mesma ficha em Enquanto estiver rodando e avance três passos.",
         "hints": [],
         "semPerguntaFinal": true,
         "activity": {
@@ -150,15 +150,21 @@
           },
           "cenario": "nave",
           "setup": {
+            "goals": ["once", "always"],
+            "goalCopy": {
+              "once": {
+                "label": "Em Ao iniciar, a nave se moveu uma vez e parou",
+                "pedido": "Ponha Mover a nave um pouquinho em Ao iniciar e avance três passos."
+              },
+              "always": {
+                "label": "Enquanto estiver rodando, a nave se moveu a cada passo",
+                "pedido": "Volte ao começo, ponha Mover a nave um pouquinho em Enquanto estiver rodando e avance três passos."
+              }
+            },
             "preset": {
               "id": "duas-caixas-nave",
               "areas": ["start", "loop"],
               "cards": [
-                {
-                  "id": "panel",
-                  "kind": "panel",
-                  "label": "Ligar a nave"
-                },
                 {
                   "id": "move",
                   "kind": "move",

@@ -193,6 +193,9 @@ const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
     // lista, o bloco chega ao navegador sem áudio nenhum e a cena volta à voz do sistema, calada
     // quanto ao motivo. Não é gabarito: é o MESMO texto que já está escrito na tela.
     'vozes',
+    // O roteiro corrige só a pronúncia, mas é ele que escolhe a chave do MP3. Sem atravessar a
+    // projeção pública, o gerador e o player procurariam a fala padrão e ignorariam a correção.
+    'zappySpeech',
     'cast',
     // O cenário declarado precisa chegar ao palco da criança.
     'cenario',

@@ -16,7 +16,12 @@ import {
   LESSON_SECTION_TEMPLATES,
   type LessonDraftIssue,
 } from '@sistemazero/core/learning'
-import type { SceneVozes, ZappySpeechOverride } from '@sistemazero/core/learning/scene'
+import {
+  reconciliarVozesDoZappy,
+  roteiroDoZappy,
+  type SceneVozes,
+  type ZappySpeechOverride,
+} from '@sistemazero/core/learning/scene'
 import {
   createLessonAsset,
   PINTA_LESSON_ASSET_OPTIONS,
@@ -145,6 +150,7 @@ export interface BlockForm {
   dialoguePose: DialoguePose
   dialogueText: string
   dialogueZappySpeech?: ZappySpeechOverride
+  dialogueVozes?: SceneVozes
   markdown: string
   html: string
   /** Embed URL do vídeo (preenchida pelo uploader Vimeo — sem campo manual). */
@@ -370,6 +376,7 @@ export function buildContent(
         pose: f.dialoguePose,
         text: f.dialogueText.trim(),
         ...(f.dialogueZappySpeech ? { zappySpeech: f.dialogueZappySpeech } : {}),
+        ...(f.dialogueVozes ? { vozes: f.dialogueVozes } : {}),
       }
     case 'rich_text':
       return {
@@ -828,6 +835,7 @@ function LessonEditorSession({
       dialoguePose: c.kind === 'dialogue' ? (c.pose ?? 'speaking') : 'speaking',
       dialogueText: c.kind === 'dialogue' ? c.text : '',
       dialogueZappySpeech: c.kind === 'dialogue' ? c.zappySpeech : undefined,
+      dialogueVozes: c.kind === 'dialogue' ? c.vozes : undefined,
       markdown: c.kind === 'rich_text' ? (c.markdown ?? '') : '',
       html: c.kind === 'rich_text' ? (c.html ?? '') : c.kind === 'embed' ? (c.html ?? '') : '',
       src: c.kind === 'video' ? c.src : '',
@@ -2014,6 +2022,7 @@ function LessonEditorSession({
                             // A exceção pertence ao texto exibido. Ao reescrever a fala, ela não
                             // pode sobreviver escondida e trocar a voz de uma frase nova.
                             dialogueZappySpeech: undefined,
+                            dialogueVozes: undefined,
                           }))
                         }
                       />
@@ -2032,7 +2041,34 @@ function LessonEditorSession({
                           },
                         ]}
                         onChange={(_id, dialogueZappySpeech) =>
-                          setBlockForm((f) => ({ ...f, dialogueZappySpeech }))
+                          setBlockForm((f) => {
+                            const roteiro = roteiroDoZappy(
+                              f.dialogueText.trim(),
+                              dialogueZappySpeech,
+                            )
+                            return {
+                              ...f,
+                              dialogueZappySpeech,
+                              dialogueVozes: reconciliarVozesDoZappy([roteiro], f.dialogueVozes),
+                            }
+                          })
+                        }
+                        onPreviewVoice={(_id, dialogueZappySpeech, novasVozes) =>
+                          setBlockForm((f) => {
+                            const roteiro = roteiroDoZappy(
+                              f.dialogueText.trim(),
+                              dialogueZappySpeech,
+                            )
+                            return {
+                              ...f,
+                              dialogueZappySpeech,
+                              dialogueVozes: reconciliarVozesDoZappy(
+                                [roteiro],
+                                f.dialogueVozes,
+                                novasVozes,
+                              ),
+                            }
+                          })
                         }
                       />
                     ) : null}

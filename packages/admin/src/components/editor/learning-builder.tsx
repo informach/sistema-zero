@@ -11,11 +11,14 @@ import {
   scenePredictionTemplate,
 } from '@sistemazero/core/learning'
 import {
+  type ExperimentationActivity,
   falasDaCena,
   isSceneAudioUrl,
+  reconciliarVozesDoZappy,
   SCENE_LIMITS,
   SCENE_SPEECH_SLOTS,
   type SceneSpeechSlot,
+  type SceneVozes,
   sceneModelFor,
   sceneTargets,
   type ZappySpeechOverride,
@@ -251,19 +254,52 @@ export function LearningBuilder({
   const checkpoint = value.checkpoint
   const cena = a.type === 'experimentation' ? a : null
   const falasDoZappy = cena ? falasDaCena(value) : []
-  const atualizarRoteiroDoZappy = (
+  const cenaComRoteiroDoZappy = (
     slot: SceneSpeechSlot,
     ajuste: ZappySpeechOverride | undefined,
-  ) => {
-    if (!cena) return
+  ): ExperimentationActivity | null => {
+    if (!cena) return null
     const proximo = { ...(cena.zappySpeech ?? {}) }
     if (ajuste) proximo[slot] = ajuste
     else delete proximo[slot]
     const { zappySpeech: _anterior, ...semAjustes } = cena
-    activity({
+    return {
       ...semAjustes,
       ...(Object.keys(proximo).length ? { zappySpeech: proximo } : {}),
-    })
+    }
+  }
+  const atualizarRoteiroDoZappy = (
+    slot: SceneSpeechSlot,
+    ajuste: ZappySpeechOverride | undefined,
+  ) => {
+    const proxima = cenaComRoteiroDoZappy(slot, ajuste)
+    if (!proxima || !cena) return
+    const vozes = reconciliarVozesDoZappy(
+      falasDaCena(publicInteractiveBlock({ ...value, activity: proxima })).map(
+        (fala) => fala.speechText,
+      ),
+      cena.vozes,
+    )
+    const { vozes: _anteriores, ...semVozes } = proxima
+    activity({ ...semVozes, ...(vozes ? { vozes } : {}) })
+  }
+  const aplicarPreviaDoZappy = (
+    idDaFala: string,
+    ajuste: ZappySpeechOverride | undefined,
+    novasVozes: SceneVozes,
+  ) => {
+    if (!(SCENE_SPEECH_SLOTS as readonly string[]).includes(idDaFala)) return
+    const proxima = cenaComRoteiroDoZappy(idDaFala as SceneSpeechSlot, ajuste)
+    if (!proxima || !cena) return
+    const vozes = reconciliarVozesDoZappy(
+      falasDaCena(publicInteractiveBlock({ ...value, activity: proxima })).map(
+        (fala) => fala.speechText,
+      ),
+      cena.vozes,
+      novasVozes,
+    )
+    const { vozes: _anteriores, ...semVozes } = proxima
+    activity({ ...semVozes, ...(vozes ? { vozes } : {}) })
   }
   // ⚠️ Em const: dentro dos callbacks o TS perde o estreitamento de `value.prediction` (é
   // propriedade mutável) e o espalhamento volta a ter `prompt` opcional, que não é o tipo.
@@ -495,6 +531,7 @@ export function LearningBuilder({
               if (!(SCENE_SPEECH_SLOTS as readonly string[]).includes(idDaFala)) return
               atualizarRoteiroDoZappy(idDaFala as SceneSpeechSlot, ajuste)
             }}
+            onPreviewVoice={aplicarPreviaDoZappy}
           />
         </div>
       )}

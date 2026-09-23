@@ -5,6 +5,7 @@ import {
   isZappySpeechText,
   normalizarRoteiroDoZappy,
   roteiroDoZappy,
+  type SceneVozes,
   textoFalado,
   type ZappySpeechOverride,
 } from '@sistemazero/core/learning/scene'
@@ -29,9 +30,16 @@ export interface ZappySpeechRow {
 export function ZappySpeechEditor({
   rows,
   onChange,
+  onPreviewVoice,
 }: {
   rows: readonly ZappySpeechRow[]
   onChange: (id: string, override: ZappySpeechOverride | undefined) => void
+  /** A fala aprovada na prévia também precisa viajar no bloco publicado. */
+  onPreviewVoice?: (
+    id: string,
+    override: ZappySpeechOverride | undefined,
+    vozes: SceneVozes,
+  ) => void
 }) {
   const [rascunhos, setRascunhos] = useState<Record<string, string>>({})
   const [gerando, setGerando] = useState<string | null>(null)
@@ -65,7 +73,9 @@ export function ZappySpeechEditor({
     return rascunhos[row.id] ?? roteiroDoZappy(row.visibleText, row.override)
   }
 
-  function salvar(row: ZappySpeechRow): string | null {
+  function salvar(
+    row: ZappySpeechRow,
+  ): { roteiro: string; override: ZappySpeechOverride | undefined } | null {
     const roteiro = valorDoRascunho(row)
     if (!isZappySpeechText(roteiro)) {
       toast.error('Escreva um roteiro válido. Só pausas como <break time="0.5s" /> são aceitas.')
@@ -73,30 +83,32 @@ export function ZappySpeechEditor({
     }
     const normalizado = normalizarRoteiroDoZappy(roteiro)
     const origem = textoFalado(row.visibleText)
-    onChange(
-      row.id,
+    const override =
       normalizado === roteiroPadrao(row)
         ? undefined
-        : { sourceText: origem, speechText: normalizado },
-    )
+        : { sourceText: origem, speechText: normalizado }
+    onChange(row.id, override)
     setRascunhos((atual) => ({ ...atual, [row.id]: normalizado }))
-    return normalizado
+    return { roteiro: normalizado, override }
   }
 
   async function gerarEOuvir(row: ZappySpeechRow) {
-    const roteiro = salvar(row)
-    if (!roteiro) return
+    const salvo = salvar(row)
+    if (!salvo) return
     setGerando(row.id)
     try {
       const resultado = await apiSend<{ vozes: Record<string, string> }>(
         '/api/media/voz-zappy',
         'POST',
         {
-          falas: [{ visibleText: textoFalado(row.visibleText), speechText: roteiro }],
+          falas: [{ visibleText: textoFalado(row.visibleText), speechText: salvo.roteiro }],
         },
       )
-      const url = resultado.vozes[chaveDeVoz(roteiro)]
+      const url = resultado.vozes[chaveDeVoz(salvo.roteiro)]
       if (!url) throw new Error('A voz não ficou pronta. Tente gerar novamente.')
+      // A rota, o cache e o player usam este mesmo roteiro. Descartar a URL aqui fazia a prévia
+      // prometer uma pronúncia aprovada, mas publicava o bloco sem o MP3 correspondente.
+      onPreviewVoice?.(row.id, salvo.override, resultado.vozes)
       previa.current?.pause()
       const audio = new Audio(url)
       previa.current = audio
@@ -116,7 +128,8 @@ export function ZappySpeechEditor({
       <legend className="px-1 text-sm font-semibold">Como o Zappy fala</legend>
       <p className="text-sm text-muted-foreground">
         A criança continua lendo o texto da esquerda. Ajuste a fala só quando precisar acertar uma
-        pronúncia ou dar uma pausa. Depois de conferir, gere a voz da aula para gravá-la no bloco.
+        pronúncia ou dar uma pausa. Ao gerar e ouvir, esta fala já fica pronta para publicar; o
+        botão da aula continua útil para gerar as outras falas que faltarem.
       </p>
       {rows.map((row) => {
         const roteiro = valorDoRascunho(row)

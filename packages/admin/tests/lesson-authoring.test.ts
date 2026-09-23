@@ -4,6 +4,7 @@ import {
   defaultLessonSection,
   type LessonDraftDocument,
 } from '@sistemazero/core/learning'
+import { chaveDeVoz } from '@sistemazero/core/learning/scene'
 import { createEmptyProject } from '@sistemazero/studio'
 import {
   buildContent,
@@ -244,6 +245,10 @@ describe('lesson authoring integrity', () => {
         sourceText: 'Agora aperte a tecla X.',
         speechText: 'Agora aperte a tecla xis.<break time="0.5s" />',
       },
+      dialogueVozes: {
+        [chaveDeVoz('Agora aperte a tecla xis.<break time="0.5s" />')]:
+          'https://cdn.test/aulas/voz/xis.mp3',
+      },
     })
     expect(content).toMatchObject({
       kind: 'dialogue',
@@ -251,6 +256,10 @@ describe('lesson authoring integrity', () => {
       zappySpeech: {
         sourceText: 'Agora aperte a tecla X.',
         speechText: 'Agora aperte a tecla xis.<break time="0.5s" />',
+      },
+      vozes: {
+        [chaveDeVoz('Agora aperte a tecla xis.<break time="0.5s" />')]:
+          'https://cdn.test/aulas/voz/xis.mp3',
       },
     })
   })

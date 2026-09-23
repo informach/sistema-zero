@@ -69,8 +69,9 @@ Em cada cena e balão há o painel **Como o Zappy fala**. Ele mostra duas coluna
   uma pronúncia ruim, uma letra isolada ou quando a frase pedir uma pausa.
 
 Use **Gerar e ouvir** para conferir a voz real. Essa prévia chama a mesma rota e o mesmo cache do
-botão da aula, portanto não há uma voz de teste diferente da voz final. Quando o texto estiver bom,
-clique em **Gerar a voz do Zappy** para gravar o dicionário completo no bloco e publique a aula.
+botão da aula, portanto não há uma voz de teste diferente da voz final. Quando a prévia fica boa,
+ela já entra no dicionário daquele bloco e pode ser publicada. Clique em **Gerar a voz do Zappy**
+quando quiser completar, de uma vez, as outras falas que ainda não foram geradas.
 
 O campo aceita texto normal e apenas pausas curtas neste formato:
 
@@ -142,9 +143,10 @@ procedimento estão em `aulas-interativas/raio-x-implantacao.md`.)
    depois da mudança de roteiro. Se foi, aquela fala provavelmente inclui um trecho dinâmico (pista
    pedida, legenda de parte) — é o comportamento esperado, descrito acima.
 4. **A pronúncia saiu errada**: abra **Como o Zappy fala**, escreva a pronúncia como ela deve soar,
-   use pontuação ou uma pausa curta se ajudar, clique **Gerar e ouvir** e depois gere a aula inteira.
-5. **A prévia toca, mas a aula ainda usa a voz do navegador**: a prévia não publica o dicionário;
-   clique **Gerar a voz do Zappy** e publique a aula.
+   use pontuação ou uma pausa curta se ajudar, clique **Gerar e ouvir**, salve o bloco e publique a
+   aula.
+5. **A prévia toca, mas a aula ainda usa a voz do navegador**: confira se o bloco foi salvo antes
+   de publicar. Se outras falas também estiverem pendentes, clique em **Gerar a voz do Zappy**.
 6. **Algumas frases não saíram**: o toast diz quantas. Uma frase que falha não derruba as outras;
    clique de novo e só as que faltam são tentadas.
 7. **A voz parou no meio**: tente **Ouvir** outra vez. Se continuar, confira o MP3 no R2/rede; a

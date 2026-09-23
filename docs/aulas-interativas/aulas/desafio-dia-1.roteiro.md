@@ -83,34 +83,27 @@ setas.
 
 ## Seção 2. O que acontece uma vez e o que acontece sempre
 
-### Clipe `video-duas-areas` · Uma arruma, a outra é o motor
-**Duração alvo:** 40 a 50 segundos · **Palavras:** 114
+### Clipe `video-duas-areas` · A mesma ação em dois momentos
+**Duração alvo:** 40 a 50 segundos · **Palavras:** 76
 
-**Na tela:** as duas áreas do projeto vazias, lado a lado, **Ao iniciar** e **Enquanto estiver
-rodando**. Nenhum gesto de montagem neste clipe: a tela fica nas duas caixas o tempo todo.
-
-**Narração:**
-> "Todo jogo precisa de um lugar para guardar os passos dele, e aqui eles se chamam áreas do projeto.
-> Hoje a gente vai usar duas."
-
-**Na tela:** enquadrar só a caixa do **Ao iniciar**, vazia.
+**Na tela:** uma linha do tempo curta com o começo do jogo e três passos. A ficha **Mover a nave um
+pouquinho** está em **Ao iniciar**. No começo, a nave anda uma casa; nos passos 1, 2 e 3, ela fica
+parada. O HUD mostra Passo e Movimentos.
 
 **Narração:**
-> "A primeira se chama **Ao iniciar**. Tudo o que estiver dentro dela acontece uma vez só, bem no
-> comecinho, quando o jogo liga. É como quando você vai desenhar: primeiro pega o papel e os lápis, e
-> isso você faz uma vez."
+> "Ao iniciar é o comecinho do jogo. O que estiver aqui acontece uma vez e pronto."
 
-**Na tela:** enquadrar só a caixa do **Enquanto estiver rodando**, vazia.
-
-**Narração:**
-> "A segunda se chama **Enquanto estiver rodando**, e é diferente. Tudo o que estiver dentro dela
-> fica se repetindo sem parar, enquanto o jogo estiver ligado. Pensa num ventilador: enquanto está
-> ligado, ele gira, gira, gira, sem parar."
-
-**Na tela:** as duas caixas de novo, lado a lado.
+**Na tela:** voltar a linha do tempo ao começo. A mesma ficha passa para **Enquanto estiver rodando**.
+Nos passos 1, 2 e 3, a nave anda outra casa a cada passo; o HUD acompanha os movimentos.
 
 **Narração:**
-> "Uma arruma o jogo. A outra é o motor."
+> "Enquanto estiver rodando continua trabalhando a cada passo. A mesma ação muda porque está em
+> outro lugar."
+
+**Na tela:** os dois testes lado a lado: uma casa no começo e uma casa em cada passo.
+
+**Narração:**
+> "Agora você vai testar essa diferença."
 
 ---
 

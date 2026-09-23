@@ -70,7 +70,7 @@ dos 48.
 
 | Curso | Aula | Preset / caso preparado | Metas cobradas |
 |---|---|---|---|
-| Desafio do Primeiro Jogo | Dia 1, Seção 2 "O que acontece uma vez e o que acontece sempre". **Antes** da montagem | `duas-caixas-nave`: duas caixas (`Ao iniciar`, `Enquanto estiver rodando`) e duas fichas (Ligar a nave, Mover a nave um pouquinho) | `once`, `always`, `both` |
+| Desafio do Primeiro Jogo | Dia 1, Seção 2 "O que acontece uma vez e o que acontece sempre". **Antes** da montagem | `duas-caixas-nave`: duas caixas (`Ao iniciar`, `Enquanto estiver rodando`) e uma ficha (Mover a nave um pouquinho), testada nos dois lugares | `once`, `always` |
 | Desafio do Primeiro Jogo | Dia 2, Seção 2 "A área que fica esperando você". **Antes** da montagem | `tres-caixas-tiro`: acrescenta a caixa `Quando acontecer`, a ficha Criar um tiro e o botão Apertar a tecla. Revisita: `once`, `always` e `both` chegam com "✓ Você já descobriu isto" | `on-event`, `key-fires`, `flood` |
 | Desafio do Primeiro Jogo | Dia 4, Seção 4 "A batida machuca". **Depois** da montagem, como contrafactual | `uma-ficha-vidas`: duas caixas, uma ficha só (Dar três vidas à nave) e uma pedra encostando na nave a cada poucos quadros, já rodando no palco | `once`, com rótulo adaptado |
 | Corre, Dino! | Aula 2, Seção 4 "Criar foi uma vez. Desenhar é sempre." **Depois** da montagem, como contrafactual | `duas-caixas-dino`: duas caixas e três fichas (Pintar o fundo, Criar o Dino, Mover o Dino um pouquinho) | `once`, `always`, `both` |
@@ -99,10 +99,10 @@ uma área só.
 
 ### Como o palco começa
 
-As caixas do preset, vazias e lado a lado. As fichas de lado, fora delas. O passo começa em 0, e cada
-ficha mostra quantas vezes agiu. No `duas-caixas-nave`, a nave já pertence ao simulador e aparece
-desligada no céu estrelado diante de um asteroide; nenhuma ficha mistura criar com desenhar. A ficha
-`Ligar a nave` ativa o motor quando o começo é executado.
+As caixas do preset, vazias e lado a lado. As fichas ficam de lado, fora delas. O passo começa em 0,
+e cada ficha mostra quantas vezes agiu. No `duas-caixas-nave`, a nave já pertence ao simulador e
+aparece com a chama acesa no céu estrelado diante de um asteroide; nenhuma ficha mistura criar com
+desenhar. A única ficha é `Mover a nave um pouquinho`.
 
 No preset `uma-ficha-vidas` do Dia 4 o palco é diferente em um ponto e o ponto é o conteúdo: a nave já
 está na tela e uma pedra encosta nela a cada poucos quadros, desde o primeiro. A ficha única fica de
@@ -112,9 +112,10 @@ lado, e a criança escolhe em qual caixa ela cai:
 - Em `Enquanto estiver rodando`: os três corações voltam a encher em todo quadro, e a nave nunca perde
   nada, por mais que apanhe.
 
-**Instrumento de leitura obrigatório:** o contador por ficha. No piloto, depois de cinco passos,
-Ligar a nave marca 1 e Mover a nave marca 5. Nos presets posteriores, o mesmo instrumento
-compara as ações próprias de cada aula.
+**Instrumento de leitura obrigatório:** o movimento visível da nave é a prova principal. No piloto,
+o HUD de passo e movimentos confirma dois testes: a ficha em `Ao iniciar` move uma vez em três
+passos; depois de voltar ao começo, a mesma ficha em `Enquanto estiver rodando` move nos três passos.
+Nos presets posteriores, o contador por ficha compara as ações próprias de cada aula.
 
 ### Elenco e cenário
 
@@ -155,10 +156,10 @@ que a criança consegue seguir. **Consequência para a Aula 4 do Corre, Dino!:**
 daquela seção, hoje escrito como "a meta `on-event` da cena cai", passa a ser "as metas `on-event` e
 `key-fires` caem".
 
-**Segunda divergência resolvida.** A Seção 2 do Dia 1 tem o critério "as duas metas da cena caem", e a
-especificação da mesma aula lista três. **Ficam as três.** A meta `both` comprova, no mesmo teste,
-que a preparação age uma vez e o movimento continua. A diferença entre criar e desenhar fica na
-cena `world`, onde pode ser ensinada sem contradição.
+**Segunda divergência resolvida.** O primeiro piloto usava uma preparação que não mudava o cenário e
+por isso não provava a diferença. Ele agora cobra duas metas, `once` e `always`, em testes separados:
+move a nave uma vez em `Ao iniciar`, volta ao começo e move a mesma nave em cada passo de `Enquanto
+estiver rodando`. A meta `both` continua nos presets que têm duas ações diferentes, como o do Dino.
 
 **Terceira divergência resolvida.** A especificação do Dia 1 registrou, no campo de reuso, "Corre Dino
 aula 1, Meu Jeito aula 6". As análises daqueles dois cursos decidiram o contrário: no Corre, Dino! a
@@ -188,7 +189,7 @@ No preset `uma-ficha-vidas` do Dia 4 as pistas são outras duas, porque a ficha 
 ### Palpite seletivo
 
 **Preset `duas-caixas-nave`, Desafio Dia 1:** sem palpite e sem pergunta final. O vídeo já apresenta
-a relação, as três metas exigem comprová-la, e o quiz dedicado faz a avaliação depois.
+a relação, as duas metas exigem os dois testes visíveis, e o quiz dedicado faz a avaliação depois.
 
 **Presets de duas caixas, Corre, Dino! Aula 2:** "Se você põe Mover o Dino em `Ao iniciar`, o que
 acontece quando o jogo roda?"
@@ -215,15 +216,6 @@ contrafactual, e a criança já fez o palpite de duas caixas no Dia 1. A faixa a
 volta à tela com a alternativa certa destacada.
 
 ### Pergunta depois de descobrir
-
-**Presets de duas caixas, Desafio Dia 1:** "Você quer que a nave seja criada só no começo e se mexa o
-tempo todo. Onde vai cada ação?"
-
-- Criar em `Ao iniciar`, mover em `Enquanto estiver rodando` ✓
-- As duas em `Enquanto estiver rodando`
-
-Explicação ao acertar: "`Ao iniciar` é a arrumação: acontece uma vez, no começo. `Enquanto estiver
-rodando` é o motor: acontece de novo a cada quadro, sem parar."
 
 **Presets de duas caixas, Corre, Dino! Aula 2:** "Você quer que o Dino seja criado só no começo e ande
 o tempo todo. Onde vai cada ação?"

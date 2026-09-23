@@ -2127,6 +2127,18 @@ describe('as previsões das aulas atuais, no motor', () => {
     expect(blocos.length).toBeGreaterThan(25)
   })
 
+  test('o piloto compara a mesma ficha em Ao iniciar e Enquanto estiver rodando', () => {
+    const piloto = blocos.find(
+      ({ onde, bloco }) =>
+        onde === 'desafio-dia-1.manifesto.json' && bloco.activity.scene === 'once-vs-always',
+    )
+    const setup = piloto?.bloco.activity.setup
+    expect(setup?.goals).toEqual(['once', 'always'])
+    expect(setup?.preset).toEqual(ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave'])
+    expect(setup?.goalCopy?.once?.pedido).toContain('Ao iniciar')
+    expect(setup?.goalCopy?.always?.pedido).toContain('Enquanto estiver rodando')
+  })
+
   test('⚠️⚠️ experimentação: o palpite volta antes da conclusão, seguindo os pedidos na ordem do caso', () => {
     let conferidas = 0
     for (const { onde, bloco } of blocos) {

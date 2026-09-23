@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { publicInteractiveBlock } from '../index'
 import { sceneActivityForReading } from './index'
 import {
   chaveDeVoz,
@@ -11,6 +12,7 @@ import {
   isSceneSpeechOverrides,
   isSceneVozes,
   isZappySpeechText,
+  reconciliarVozesDoZappy,
   roteiroDoZappy,
   textoFalado,
   textosFalaveisDaCena,
@@ -99,6 +101,18 @@ describe('a fila da fala', () => {
   it('sem dicionário nenhum, não há fila', () => {
     expect(filaDeVoz(['Qualquer coisa.'], undefined)).toBeNull()
   })
+
+  it('troca a voz antiga pela prévia do roteiro corrigido', () => {
+    const antigo = 'Aperte ípsilon.'
+    const corrigido = 'Aperte i grego.'
+    expect(
+      reconciliarVozesDoZappy(
+        [corrigido],
+        { [chaveDeVoz(antigo)]: url('antiga') },
+        { [chaveDeVoz(corrigido)]: url('corrigida') },
+      ),
+    ).toEqual({ [chaveDeVoz(corrigido)]: url('corrigida') })
+  })
 })
 
 describe('o dicionário é validado', () => {
@@ -159,15 +173,25 @@ describe('os textos faláveis de uma cena', () => {
   })
 
   it('resolve a fala efetiva de cada trecho sem mudar o texto que a criança vê', () => {
-    const [instruction] = falasDaCena({
-      instructions: 'Aperte X.',
-      activity: {
-        type: 'experimentation',
-        zappySpeech: {
-          instruction: { sourceText: 'Aperte X.', speechText: 'Aperte xis.<break time="0.3s" />' },
+    const [instruction] = falasDaCena(
+      publicInteractiveBlock({
+        kind: 'interactive',
+        title: 'Pronúncia',
+        instructions: 'Aperte X.',
+        hints: [],
+        required: false,
+        activity: {
+          type: 'experimentation',
+          scene: 'world',
+          zappySpeech: {
+            instruction: {
+              sourceText: 'Aperte X.',
+              speechText: 'Aperte xis.<break time="0.3s" />',
+            },
+          },
         },
-      },
-    })
+      }),
+    )
     expect(instruction).toMatchObject({
       slot: 'instruction',
       visibleText: 'Aperte X.',

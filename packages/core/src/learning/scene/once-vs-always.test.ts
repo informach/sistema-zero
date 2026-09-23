@@ -66,9 +66,11 @@ describe('uma vez, sempre e na hora', () => {
     expect(c.get().once.heroX).toBe(80)
     expect(c.get().once.fires.move).toBe(3)
     expect(c.get().evidence.discoveries).toContain('always')
-    expect(
-      evaluateExperimentation('once-vs-always', c.get(), true, undefined, c.targets).passed,
-    ).toBe(true)
+    const result = evaluateExperimentation('once-vs-always', c.get(), true, undefined, c.targets)
+    expect(result.passed).toBe(true)
+    expect(result.feedback).toBe(
+      'Você viu a mesma ação uma vez no começo e repetida em cada passo.',
+    )
   })
 
   test('o caso do Dino mantém as fichas próprias e um disparo por quadro no motor', () => {

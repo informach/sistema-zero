@@ -606,18 +606,24 @@ describe('⚠️⚠️ a pilha de camadas ATRAVESSA uma rota com o corpo tipado'
    * podar. Sem esta prova, a publicação gravaria o bloco sem o dicionário — aceita, sem erro nenhum
    * — e a cena voltaria à voz do navegador sem ninguém saber por quê.
    */
-  test('o `normalize` do Elysia não apaga `vozes` (chaves arbitrárias sobrevivem)', async () => {
+  test('o `normalize` do Elysia não apaga a voz nem o roteiro que a localiza', async () => {
     const app = new Elysia().post('/', ({ body }) => body, {
       body: t.Object({ content: InteractiveBlockSchema }),
     })
     const vozes = {
-      [chaveDeVoz('Crie o Dino e ligue o desenho.')]: 'https://cdn.test/aulas/voz/abc.mp3',
+      [chaveDeVoz('Crie o Daino e ligue o desenho.')]: 'https://cdn.test/aulas/voz/abc.mp3',
       [chaveDeVoz('Antes de mexer. Onde fica o Dino? Pode ser: Nos bastidores.')]:
         '/aulas/voz/def.mp3',
     }
+    const zappySpeech = {
+      instruction: {
+        sourceText: 'Crie o Dino e ligue o desenho.',
+        speechText: 'Crie o Daino e ligue o desenho.',
+      },
+    }
     const bloco: InteractiveBlock = {
       ...base,
-      activity: { type: 'experimentation', scene: 'world', vozes },
+      activity: { type: 'experimentation', scene: 'world', vozes, zappySpeech },
     }
     const resposta = await app.handle(
       new Request('http://members.test/', {
@@ -630,6 +636,7 @@ describe('⚠️⚠️ a pilha de camadas ATRAVESSA uma rota com o corpo tipado'
     const devolvido = (await resposta.json()) as { content: InteractiveBlock }
     const atividade = devolvido.content.activity
     expect(atividade.type === 'experimentation' ? atividade.vozes : null).toEqual(vozes)
+    expect(atividade.type === 'experimentation' ? atividade.zappySpeech : null).toEqual(zappySpeech)
     // E o domínio aceita o mesmo bloco: borda e guarda concordam.
     expect(isInteractiveBlock(bloco)).toBe(true)
   })

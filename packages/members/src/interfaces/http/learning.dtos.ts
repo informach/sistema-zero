@@ -507,6 +507,20 @@ export const InteractiveBlockSchema = t.Object({
        * (`isSceneVozes`), que tem a régua e a mensagem certa.
        */
       vozes: t.Optional(t.Record(t.String(), t.String({ maxLength: 4000 }))),
+      /**
+       * Pronúncia particular de uma fala estática. Declaração frouxa de propósito: o core valida
+       * slots, texto de origem e roteiro; aqui ela impede que o normalize apague a correção antes
+       * de o bloco chegar a essa régua.
+       */
+      zappySpeech: t.Optional(
+        t.Record(
+          t.String({ maxLength: 80 }),
+          t.Object({
+            sourceText: t.String({ minLength: 1, maxLength: 6000 }),
+            speechText: t.String({ minLength: 1, maxLength: 6000 }),
+          }),
+        ),
+      ),
       initialImpulse: t.Optional(t.Integer({ minimum: L.impulse.min, maximum: L.impulse.max })),
       cast: t.Optional(SceneCastSchema),
       cenario: t.Optional(SceneCenarioSchema),

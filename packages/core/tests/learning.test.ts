@@ -302,9 +302,11 @@ const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
     { type: 'trigger' },
   ],
   'desafio-dia-1.manifesto.json/experiencia-areas': [
-    { type: 'place-in-area', card: 'panel', area: 'start' },
+    { type: 'place-in-area', card: 'move', area: 'start' },
+    ...quadros(3),
+    { type: 'reset' },
     { type: 'place-in-area', card: 'move', area: 'loop' },
-    ...quadros(5),
+    ...quadros(3),
   ],
   'desafio-dia-1.manifesto.json/experiencia-coordenadas': [
     { type: 'place', x: 500, y: 40 },

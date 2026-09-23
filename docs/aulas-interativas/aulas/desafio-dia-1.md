@@ -96,19 +96,18 @@ campo e clicar na área do jogo. Isso é instrução dentro do teste, não seç�
   os cursos. Hoje ela é montada sem ser ensinada.
 - **Conclui quando:** 90% do vídeo foi assistido e a experiência foi concluída
 - **Blocos:**
-  1. `video` (`video-duas-areas`, "Uma arruma, a outra é o motor"). Apresenta as duas áreas com o
-     mesmo peso: preparar uma vez e repetir enquanto o jogo funciona. Mantém a analogia do
-     ventilador para a segunda. Duração alvo: 40 a 50 segundos.
-  2. `dialogue` (`fala-uma-vez-e-sempre`). Convite curto para observar uma vez contra repetição.
+  1. `video` (`video-duas-areas`, "A mesma ação em dois momentos"). Mostra a mesma nave mover uma
+     vez no começo e depois mover em cada um de três passos. Duração alvo: 40 a 50 segundos.
+  2. `dialogue` (`fala-uma-vez-e-sempre`). Ponte curta para experimentar a mesma ação nos dois
+     lugares, sem repetir a instrução dos controles.
   3. `interactive`. Cena `once-vs-always`, preset `duas-caixas-nave` (especificada abaixo). Elenco:
-     nave e asteroide. Cenário: nave. Metas cobradas: `once`, `always`, `both`.
+     nave e asteroide. Cenário: nave. Metas cobradas: `once`, `always`.
 
 **Sem palpite.** A experiência concretiza uma relação que o vídeo acabou de explicar; uma hipótese
 antes dela acrescentaria uma etapa sem enfrentar uma concepção relevante.
 
-**Sem pergunta final.** As três descobertas já exigem a organização certa e a comparação dos
-contadores. Repetir a mesma organização numa pergunta aumentaria o percurso; a avaliação fica no
-quiz dedicado da seção 12.
+**Sem pergunta final.** As duas descobertas já exigem a comparação do mesmo movimento. Repetir a
+mesma tarefa numa pergunta aumentaria o percurso; a avaliação fica no quiz dedicado da seção 12.
 
 ### Seção 3. Monte as áreas e prepare a tela
 
@@ -316,31 +315,30 @@ e não a demonstração gravada, que fecha a conquista.
   rodando continua acontecendo enquanto o jogo funciona.
 - **Tipo:** experimentação. A relação tem botão, porque a criança escolhe **onde** colocar a ação, e
   o "onde" é a variável.
-- **O que a criança manipula:** duas fichas de ação (Ligar a nave e Mover a nave um
-  pouquinho), que ela seleciona e coloca em **Ao iniciar** ou **Enquanto estiver rodando**. No
-  computador, também pode arrastar. Mais os botões **Avançar 1 passo** e **Voltar ao começo**.
-- **Como o palco começa:** as duas caixas vazias, as duas fichas de lado, o passo em 0 e a nave já
-  presente e desligada no céu estrelado, diante de um asteroide. A nave pertence ao simulador;
-  nenhuma ficha afirma que criar também desenha. Ao executar a ficha de início, o motor liga.
+- **O que a criança manipula:** uma ficha, **Mover a nave um pouquinho**, que ela seleciona e coloca
+  em **Ao iniciar** ou **Enquanto estiver rodando**. No computador, também pode arrastar. Mais os
+  botões **Avançar 1 passo** e **Voltar ao começo**.
+- **Como o palco começa:** as duas caixas vazias, a ficha de lado, o passo em 0 e a nave já presente
+  com a chama acesa no céu estrelado, diante de um asteroide. O HUD mostra **Passo** e
+  **Movimentos**. A nave pertence ao simulador; nenhuma ficha afirma que criar também desenha.
 - **Metas:**
   | id | rótulo ao cair | pedido na faixa |
   |---|---|---|
-  | `once` | "Em Ao iniciar, a ação aconteceu uma vez só" | "Ponha a ficha de arrumação em Ao iniciar e avance três passos." |
-  | `always` | "Em Enquanto estiver rodando, a ação se repete a cada passo" | "Ponha a ficha de movimento em Enquanto estiver rodando e avance três passos." |
-  | `both` | "Preparar uma vez e repetir sempre, juntos" | "Deixe a preparação em Ao iniciar e o movimento em Enquanto estiver rodando; avance cinco passos." |
+  | `once` | "Em Ao iniciar, a nave se moveu uma vez e parou" | "Ponha Mover a nave um pouquinho em Ao iniciar e avance três passos." |
+  | `always` | "Enquanto estiver rodando, a nave se moveu a cada passo" | "Volte ao começo, ponha Mover a nave um pouquinho em Enquanto estiver rodando e avance três passos." |
 - **Pistas:**
-  1. "Olhe o número do passo e conte quantas vezes cada ação aconteceu."
-  2. "Ponha uma ação em Ao iniciar e avance mais de um passo. Ela acontece de novo?"
-  3. "Agora arraste a mesma ação para Enquanto estiver rodando e avance de novo."
+  1. "Olhe a nave depois de cada passo. Ela continua andando?"
+  2. "Ponha Mover a nave um pouquinho em Ao iniciar e avance três passos."
+  3. "Volte ao começo e teste a mesma ficha em Enquanto estiver rodando."
 - **Sem palpite e sem pergunta final:** a criança passa direto do vídeo para a manipulação e conclui
-  ao comprovar as três metas. O quiz da seção 12 avalia o conceito sem repetir a tarefa.
-- **Frase de sucesso:** "Você achou a diferença: arrumar é uma vez, o motor é sempre."
+  ao comprovar as duas metas. O quiz da seção 12 avalia o conceito sem repetir a tarefa.
+- **Frase de sucesso:** "Você viu a mesma ação uma vez no começo e repetida em cada passo."
 - **Onde mais serve:** é a primeira seção de conceito de todo curso base de nível novo da grade dos
   48. As análises de curso fixaram os usos: Corre, Dino! Aula 2, Corre, Dino! Aula 4, Desafio Dia 2
   e Desafio Dia 4. É a cena com maior reuso do catálogo.
-- **Estado em 22/09/2026:** a cena usa o preset `duas-caixas-nave`, com duas caixas, duas fichas e
-  três metas. O preset declara quais fichas comprovam cada meta; o piloto não depende dos ids
-  históricos `paint` e `create`.
+- **Estado em 23/09/2026:** a cena usa o preset `duas-caixas-nave`, com duas caixas, uma ficha e
+  duas metas. O mesmo `move` comprova os dois testes; o piloto não depende dos ids históricos
+  `paint` e `create`.
 
 ### 2. `coordinates` · O endereço na tela · **EXISTE E JÁ AJUSTADA**
 

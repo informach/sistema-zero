@@ -164,6 +164,26 @@ export function filaDeVoz(
   return fila.length ? fila : null
 }
 
+/**
+ * Mantém somente os MP3s que ainda correspondem aos roteiros atuais e acrescenta os recém-gerados.
+ *
+ * Uma correção de pronúncia troca a chave da voz, sem trocar o texto que a criança lê. A entrada
+ * antiga não pode permanecer no bloco, e a prévia aprovada já deve poder seguir para publicação.
+ */
+export function reconciliarVozesDoZappy(
+  roteiros: readonly string[],
+  ...fontes: readonly (SceneVozes | undefined)[]
+): SceneVozes | undefined {
+  const candidatas = Object.assign({}, ...fontes)
+  const vozes: Record<string, string> = {}
+  for (const roteiro of roteiros) {
+    const chave = chaveDeVoz(roteiro)
+    const url = candidatas[chave]
+    if (url) vozes[chave] = url
+  }
+  return Object.keys(vozes).length ? vozes : undefined
+}
+
 const semPontoFinal = (texto: string) => texto.trim().replace(/[.!?…]+$/, '')
 
 /**

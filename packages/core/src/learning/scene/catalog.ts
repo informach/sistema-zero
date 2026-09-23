@@ -106,6 +106,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     manipulates: 'As fichas de ação, as áreas do projeto e o avanço dos passos',
     success: 'Ao iniciar é uma vez. Enquanto estiver rodando é sempre. Quando acontecer é na hora.',
     successNoCaso: {
+      'always+once': 'Você viu a mesma ação uma vez no começo e repetida em cada passo.',
       'always+both+once': 'Você achou a diferença: arrumar é uma vez, o motor é sempre.',
       'key-fires+on-event': 'Quando acontecer espera a tecla e age na hora em que ela é apertada.',
       once: 'Em Ao iniciar, a ação acontece uma vez e a batida consegue tirar vidas.',

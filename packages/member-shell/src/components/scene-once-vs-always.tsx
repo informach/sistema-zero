@@ -87,12 +87,7 @@ export function OnceVsAlwaysStage({
             </Texto>
           )}
           {HERO_SLOTS.slice(0, heroCount).map((slot, index) => (
-            <ActorFigure
-              key={slot}
-              figure={hero}
-              x={Math.min(490, heroX + index * 76)}
-              y={piso}
-            />
+            <ActorFigure key={slot} figure={hero} x={Math.min(490, heroX + index * 76)} y={piso} />
           ))}
           <ActorFigure
             figure={obstacle}
