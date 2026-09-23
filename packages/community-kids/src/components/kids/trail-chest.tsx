@@ -45,9 +45,8 @@ export function TrailChest({
   const [abertoAgora, setAbertoAgora] = useState(false)
   const [riveReady, setRiveReady] = useState(false)
   const pendingClaim = useRef<ChestClaim | null>(null)
-  // O botão DESMONTA ao abrir, então o `useModalA11y` do prêmio guarda o `<body>`
-  // como "foco anterior" e devolve o foco para lugar nenhum. Este contêiner é o
-  // destino: ele sobrevive à troca de estado e aceita foco programático.
+  // O botão de acionar o baú some ao abrir. Este contêiner sobrevive à troca de
+  // estado e recebe o foco de volta quando a criança fecha o prêmio.
   const raiz = useRef<HTMLDivElement>(null)
   const aberto = Boolean(chest?.claimed) || abertoAgora
   const riveSrc = chestRiveSrc()
@@ -122,6 +121,18 @@ export function TrailChest({
   const legenda = aberto ? 'Baú aberto!' : chest?.unlocked ? 'Abrir baú' : 'Baú da unidade'
   const abrindo = estado === 'abrindo'
   const svgAbrindo = abrindo && !riveReady
+  const bloqueado = !chest?.unlocked && !aberto
+  const podeAbrir = Boolean(chest?.unlocked) && !aberto
+  const deveMontarRive = chest !== null
+  const semanticaDoBaú =
+    bloqueado || aberto
+      ? {
+          role: 'img' as const,
+          'aria-label': bloqueado
+            ? `Baú da unidade ${unitNumber}, fechado. Ele abre quando você concluir todas as aulas desta unidade.`
+            : `Baú da unidade ${unitNumber}, aberto`,
+        }
+      : { role: 'group' as const }
 
   function terminouSvg(event: React.AnimationEvent<HTMLSpanElement>) {
     // A tampa também anima. Seu evento borbulha, mas a abertura termina no shake
@@ -129,88 +140,75 @@ export function TrailChest({
     if (event.target === event.currentTarget) concluirAbertura()
   }
 
-  // Fechado e sem poder abrir NÃO é botão: seria uma parada de foco que não faz
-  // nada. O estado inteiro vive no aria-label, como já era antes do lote.
-  if (!chest?.unlocked && !aberto) {
-    return (
+  return (
+    <>
       <div
         ref={raiz}
         tabIndex={-1}
-        role="img"
-        aria-label={`Baú da unidade ${unitNumber}, fechado. Ele abre quando você concluir todas as aulas desta unidade.`}
-        className="-ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5 outline-none"
+        {...semanticaDoBaú}
+        className={cn(
+          '-ml-14 absolute top-0 flex min-h-11 w-28 flex-col items-center gap-1.5 outline-none',
+          podeAbrir && 'kids-node-link',
+        )}
         style={posicao}
       >
-        <span className="kids-node kids-node--chest kids-node--chest-closed">
-          <ChestClosedFallback />
+        {podeAbrir ? (
+          <button
+            type="button"
+            onClick={() => void abrir()}
+            disabled={estado !== 'parado'}
+            aria-label={`Abrir o baú da unidade ${unitNumber} e ganhar ${chest?.xp ?? 0} XP`}
+            className="kids-chest-hit-area absolute top-0 left-1/2 z-10 size-(--trail-node) -translate-x-1/2 cursor-pointer rounded-full border-0 bg-transparent p-0 disabled:cursor-wait"
+          />
+        ) : null}
+        <span
+          className={cn(
+            'kids-node kids-node--chest kids-unit-tesouro relative',
+            bloqueado
+              ? 'kids-node--chest-closed'
+              : aberto
+                ? 'kids-node--chest-open'
+                : 'kids-node--chest-ready',
+            svgAbrindo && 'kids-chest-opening',
+          )}
+          onAnimationEnd={svgAbrindo ? terminouSvg : undefined}
+        >
+          {aberto ? (
+            <ChestIcon open className={cn('kid-float', riveReady && 'opacity-0')} />
+          ) : (
+            <ChestClosedFallback
+              className={cn(
+                estado === 'parado' && !riveReady && 'kid-float',
+                riveReady && 'opacity-0',
+              )}
+            />
+          )}
+          <ChestRive
+            src={deveMontarRive ? riveSrc : null}
+            opening={abrindo && riveReady}
+            opened={aberto}
+            onReady={() => setRiveReady(true)}
+            onFailed={riveFailed}
+            onOpened={concluirAbertura}
+          />
         </span>
-        <span className="kids-chest-label text-center font-semibold text-muted-foreground text-xs leading-tight">
+        <span
+          className={cn(
+            'kids-chest-label text-center font-semibold text-xs leading-tight',
+            bloqueado ? 'text-muted-foreground' : 'sz-display-grad',
+          )}
+        >
           {legenda}
         </span>
       </div>
-    )
-  }
-
-  if (aberto) {
-    return (
-      <>
-        <div
-          ref={raiz}
-          tabIndex={-1}
-          role="img"
-          aria-label={`Baú da unidade ${unitNumber}, aberto`}
-          className="-ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5 outline-none"
-          style={posicao}
-        >
-          <span className="kids-node kids-node--chest kids-node--chest-open kids-unit-tesouro">
-            <ChestIcon open className="kid-float" />
-          </span>
-          <span className="kids-chest-label sz-display-grad text-center font-semibold text-xs leading-tight">
-            {legenda}
-          </span>
-        </div>
-        {premio ? (
-          <ChestReward
-            unitNumber={unitNumber}
-            xp={premio.xp}
-            coins={premio.coins}
-            onClose={devolverFoco}
-          />
-        ) : null}
-      </>
-    )
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={() => void abrir()}
-      disabled={estado !== 'parado'}
-      aria-label={`Abrir o baú da unidade ${unitNumber} e ganhar ${chest?.xp ?? 0} XP`}
-      className="kids-node-link -ml-14 absolute top-0 flex min-h-11 w-28 flex-col items-center gap-1.5"
-      style={posicao}
-    >
-      <span
-        className={cn(
-          'kids-node kids-node--chest kids-node--chest-ready kids-unit-tesouro relative',
-          svgAbrindo && 'kids-chest-opening',
-        )}
-        onAnimationEnd={svgAbrindo ? terminouSvg : undefined}
-      >
-        <ChestClosedFallback
-          className={cn(estado === 'parado' && !riveReady && 'kid-float', riveReady && 'opacity-0')}
+      {premio ? (
+        <ChestReward
+          unitNumber={unitNumber}
+          xp={premio.xp}
+          coins={premio.coins}
+          onClose={devolverFoco}
         />
-        <ChestRive
-          src={riveSrc}
-          opening={abrindo && riveReady}
-          onReady={() => setRiveReady(true)}
-          onFailed={riveFailed}
-          onOpened={concluirAbertura}
-        />
-      </span>
-      <span className="kids-chest-label sz-display-grad text-center font-semibold text-xs leading-tight">
-        {legenda}
-      </span>
-    </button>
+      ) : null}
+    </>
   )
 }

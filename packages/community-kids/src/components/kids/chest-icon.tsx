@@ -13,9 +13,9 @@ export function ChestClosedFallback({ className }: { className?: string }) {
       src={CHEST_CLOSED_FALLBACK_SRC}
       alt=""
       aria-hidden="true"
-      width={28}
-      height={28}
-      className={cn('size-7 object-contain', className)}
+      width={32}
+      height={32}
+      className={cn('size-8 object-contain', className)}
     />
   )
 }

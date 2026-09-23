@@ -1312,6 +1312,10 @@ a.kid-pop:has(> .kids-carta):hover {
     --k3d-altura: 2px;
     translate: 0 6px;
   }
+  .kids-node-link:has(.kids-chest-hit-area:active) .kids-node.kids-node--chest-ready {
+    --k3d-altura: 2px;
+    translate: 0 6px;
+  }
   @keyframes kids-ring {
     0% {
       outline: 4px solid color-mix(in oklch, var(--unit) 45%, transparent);

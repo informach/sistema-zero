@@ -132,12 +132,14 @@ mock.module('./src/components/kids/chest-rive-canvas', () => ({
   ChestRiveCanvas: ({
     src,
     opening,
+    opened,
     onReady,
     onFailed,
     onOpened,
   }: {
     src: string
     opening: boolean
+    opened: boolean
     onReady: () => void
     onFailed: () => void
     onOpened: () => void
@@ -149,6 +151,7 @@ mock.module('./src/components/kids/chest-rive-canvas', () => ({
     return createElement('span', {
       'data-chest-rive-src': src,
       'data-chest-rive-opening': String(opening),
+      'data-chest-rive-opened': String(opened),
       'aria-hidden': 'true',
     })
   },

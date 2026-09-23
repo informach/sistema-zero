@@ -25,6 +25,8 @@ O arquivo precisa conter:
 - artboard `Chest`;
 - máquina de estados `ChestState`, iniciando em `Closed`;
 - trigger `open`, que leva de `Closed` para a animação one-shot `Opening`;
+- booleano `opened`, iniciando em `false`, que leva diretamente de `Closed` a
+  `Open` quando o servidor já informa um resgate anterior;
 - estado terminal `Open`, sem repetir a abertura;
 - a transição de `Opening` para `Open` sem condição adicional.
 
@@ -32,8 +34,10 @@ O arquivo precisa conter:
 ficar parado ou ter um idle calmo, mas nunca pode recomeçar `Opening` sozinho.
 
 O runtime dispara `open` somente depois que o `POST .../chest/claim` responde
-com sucesso. Ele escuta a entrada no estado `Open`; esse evento, e não uma
-duração escrita no frontend, troca a UI para o baú aberto e mostra a recompensa.
+com sucesso. Em uma página carregada com o baú já resgatado, ele atribui
+`opened = true` antes de revelar o canvas. Ele escuta a entrada no estado `Open`;
+esse evento, e não uma duração escrita no frontend, troca a UI para o baú aberto
+e mostra a recompensa.
 
 ## Fluxo e falhas
 

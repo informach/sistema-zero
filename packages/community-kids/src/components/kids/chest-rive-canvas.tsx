@@ -1,11 +1,19 @@
 'use client'
 
-import { Alignment, EventType, Fit, Layout, useRive } from '@rive-app/react-canvas'
-import { useEffect, useRef } from 'react'
+import {
+  Alignment,
+  EventType,
+  Fit,
+  Layout,
+  StateMachineInputType,
+  useRive,
+} from '@rive-app/react-canvas'
+import { useEffect, useRef, useState } from 'react'
 import {
   CHEST_RIVE_ARTBOARD,
   CHEST_RIVE_OPEN_STATE,
   CHEST_RIVE_OPEN_TRIGGER,
+  CHEST_RIVE_OPENED_INPUT,
   CHEST_RIVE_STATE_MACHINE,
   riveEntrouNoEstado,
 } from './chest-rive-contract'
@@ -23,18 +31,21 @@ const LAYOUT = new Layout({ fit: Fit.Contain, alignment: Alignment.Center })
 export function ChestRiveCanvas({
   src,
   opening,
+  opened,
   onReady,
   onFailed,
   onOpened,
 }: {
   src: string
   opening: boolean
+  opened: boolean
   onReady: () => void
   onFailed: () => void
   onOpened: () => void
 }) {
-  const opened = useRef(false)
+  const openingTriggered = useRef(false)
   const validated = useRef(false)
+  const [visible, setVisible] = useState(false)
   const { RiveComponent, rive } = useRive({
     src,
     artboard: CHEST_RIVE_ARTBOARD,
@@ -52,20 +63,41 @@ export function ChestRiveCanvas({
    */
   useEffect(() => {
     if (!rive || validated.current) return
-    const trigger = rive
-      .stateMachineInputs(CHEST_RIVE_STATE_MACHINE)
-      ?.find((input) => input.name === CHEST_RIVE_OPEN_TRIGGER)
-    if (!trigger) {
+    const inputs = rive.stateMachineInputs(CHEST_RIVE_STATE_MACHINE)
+    const trigger = inputs?.find((input) => input.name === CHEST_RIVE_OPEN_TRIGGER)
+    const openedInput = inputs?.find((input) => input.name === CHEST_RIVE_OPENED_INPUT)
+    if (
+      !trigger ||
+      trigger.type !== StateMachineInputType.Trigger ||
+      !openedInput ||
+      openedInput.type !== StateMachineInputType.Boolean
+    ) {
       validated.current = true
       onFailed()
       return
     }
+    openedInput.value = opened
     validated.current = true
+    // O canvas nasce invisível. Assim uma página já resgatada só o revela depois
+    // de o booleano levar a máquina ao quadro Open — sem lampejo do Closed.
+    setVisible(true)
     onReady()
-  }, [rive, onFailed, onReady])
+  }, [opened, rive, onFailed, onReady])
 
   useEffect(() => {
-    if (!rive || !opening || opened.current) return
+    if (!rive || !validated.current) return
+    const openedInput = rive
+      .stateMachineInputs(CHEST_RIVE_STATE_MACHINE)
+      ?.find((input) => input.name === CHEST_RIVE_OPENED_INPUT)
+    if (!openedInput || openedInput.type !== StateMachineInputType.Boolean) {
+      onFailed()
+      return
+    }
+    openedInput.value = opened
+  }, [opened, rive, onFailed])
+
+  useEffect(() => {
+    if (!rive || !opening || opened || openingTriggered.current) return
     const trigger = rive
       .stateMachineInputs(CHEST_RIVE_STATE_MACHINE)
       ?.find((input) => input.name === CHEST_RIVE_OPEN_TRIGGER)
@@ -73,9 +105,9 @@ export function ChestRiveCanvas({
       onFailed()
       return
     }
-    opened.current = true
+    openingTriggered.current = true
     trigger.fire()
-  }, [opening, rive, onFailed])
+  }, [opened, opening, rive, onFailed])
 
   useEffect(() => {
     if (!rive) return
@@ -89,5 +121,7 @@ export function ChestRiveCanvas({
     return () => rive.off(EventType.StateChange, finished)
   }, [rive, onOpened])
 
-  return <RiveComponent aria-hidden="true" className="size-full" />
+  return (
+    <RiveComponent aria-hidden="true" className={visible ? 'size-full' : 'size-full opacity-0'} />
+  )
 }

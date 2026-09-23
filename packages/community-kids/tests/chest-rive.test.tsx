@@ -6,6 +6,7 @@ import {
   CHEST_RIVE_ARTBOARD,
   CHEST_RIVE_OPEN_STATE,
   CHEST_RIVE_OPEN_TRIGGER,
+  CHEST_RIVE_OPENED_INPUT,
   CHEST_RIVE_STATE_MACHINE,
   riveEntrouNoEstado,
 } from '../src/components/kids/chest-rive-contract'
@@ -53,6 +54,7 @@ describe('ChestRive', () => {
     expect(CHEST_RIVE_ARTBOARD).toBe('Chest')
     expect(CHEST_RIVE_STATE_MACHINE).toBe('ChestState')
     expect(CHEST_RIVE_OPEN_TRIGGER).toBe('open')
+    expect(CHEST_RIVE_OPENED_INPUT).toBe('opened')
     expect(CHEST_RIVE_OPEN_STATE).toBe('Open')
   })
 
@@ -68,6 +70,7 @@ describe('ChestRive', () => {
         <ChestRive
           src={RIV}
           opening={false}
+          opened={false}
           onReady={() => {}}
           onFailed={() => {}}
           onOpened={() => {}}
@@ -82,6 +85,7 @@ describe('ChestRive', () => {
       <ChestRive
         src={null}
         opening={false}
+        opened={false}
         onReady={() => {}}
         onFailed={() => {}}
         onOpened={() => {}}
@@ -100,6 +104,7 @@ describe('ChestRive', () => {
       <ChestRive
         src={RIV}
         opening={false}
+        opened={false}
         onReady={() => {
           ready += 1
         }}
@@ -114,6 +119,7 @@ describe('ChestRive', () => {
     await settle()
     expect(canvas()?.getAttribute('data-chest-rive-src')).toBe(RIV)
     expect(canvas()?.getAttribute('data-chest-rive-opening')).toBe('false')
+    expect(canvas()?.getAttribute('data-chest-rive-opened')).toBe('false')
 
     await act(async () => callbacks().ready?.())
     expect(ready).toBe(1)
@@ -122,6 +128,7 @@ describe('ChestRive', () => {
       <ChestRive
         src={RIV}
         opening
+        opened
         onReady={() => {
           ready += 1
         }}
@@ -134,6 +141,7 @@ describe('ChestRive', () => {
       />,
     )
     expect(canvas()?.getAttribute('data-chest-rive-opening')).toBe('true')
+    expect(canvas()?.getAttribute('data-chest-rive-opened')).toBe('true')
     await act(async () => callbacks().opened?.())
     expect(opened).toBe(1)
 
@@ -148,6 +156,7 @@ describe('ChestRive', () => {
       <ChestRive
         src={RIV}
         opening={false}
+        opened={false}
         onReady={() => {}}
         onFailed={() => {}}
         onOpened={() => {}}

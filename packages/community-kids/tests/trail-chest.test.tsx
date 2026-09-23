@@ -137,12 +137,22 @@ describe('baú da trilha', () => {
     expect(screen.getByRole('img').getAttribute('aria-label')).toContain('fechado')
   })
 
+  test('bloqueado mostra o Rive fechado, sem disparar a abertura', async () => {
+    process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL = 'https://media.example.com/kids/chest.riv'
+    montar(bau({ unlocked: false }))
+    await act(async () => {})
+
+    const rive = document.querySelector('[data-chest-rive-src]')
+    expect(rive?.getAttribute('data-chest-rive-opening')).toBe('false')
+    expect(rive?.getAttribute('data-chest-rive-opened')).toBe('false')
+  })
+
   test('liberado é botão e diz o XP antes de abrir, sem prometer moeda', () => {
     // O XP é fixo; a MOEDA passa pelo teto diário e pode sair zero. Anunciar "15
     // moedas" num dia em que a criança já bateu o teto seria promessa falsa.
     montar(bau())
     const botao = screen.getByRole('button')
-    expect(botao.classList.contains('kids-node-link')).toBe(true)
+    expect(botao.closest('.kids-node-link')).toBeTruthy()
     expect(botao.getAttribute('aria-label')).toContain('25 XP')
     expect(botao.getAttribute('aria-label')).not.toContain('moedas')
   })
@@ -200,9 +210,13 @@ describe('baú da trilha', () => {
   })
 
   test('já resgatado nasce aberto e sem botão', () => {
+    process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL = 'https://media.example.com/kids/chest.riv'
     montar(bau({ claimed: true }))
     expect(screen.queryByRole('button')).toBeNull()
     expect(screen.getByRole('img').getAttribute('aria-label')).toContain('aberto')
+    expect(
+      document.querySelector('[data-chest-rive-opened]')?.getAttribute('data-chest-rive-opened'),
+    ).toBe('true')
   })
 
   test('movimento reduzido conclui no SVG aberto, sem esperar animationend', async () => {
@@ -233,6 +247,9 @@ describe('baú da trilha', () => {
 
     await act(async () => (globals.chestRiveAbriu as (() => void) | undefined)?.())
     await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy())
+    expect(
+      document.querySelector('[data-chest-rive-opened]')?.getAttribute('data-chest-rive-opened'),
+    ).toBe('true')
     expect(refreshes).toBe(1)
   })
 

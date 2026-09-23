@@ -14,6 +14,7 @@ export {
   CHEST_RIVE_ARTBOARD,
   CHEST_RIVE_OPEN_STATE,
   CHEST_RIVE_OPEN_TRIGGER,
+  CHEST_RIVE_OPENED_INPUT,
   CHEST_RIVE_STATE_MACHINE,
   chestRiveSrc,
 } from './chest-rive-contract'
@@ -26,12 +27,15 @@ export {
 export function ChestRive({
   src,
   opening,
+  opened,
   onReady,
   onFailed,
   onOpened,
 }: {
   src: string | null
   opening: boolean
+  /** Espelha `chest.claimed`: leva direto ao estado terminal após um F5. */
+  opened: boolean
   onReady: () => void
   onFailed: () => void
   onOpened: () => void
@@ -56,6 +60,7 @@ export function ChestRive({
         key={src}
         src={src}
         opening={opening}
+        opened={opened}
         onReady={onReady}
         onFailed={() => {
           setLoad({ src, failed: true })
