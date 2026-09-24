@@ -102,7 +102,7 @@ describe('baú da trilha', () => {
     expect(base).toContain('inset 0 3px 0')
     expect(base).toContain('0 var(--k3d-altura) 0 var(--k3d-degrau)')
     expect(css).toContain(
-      '.kids-node-link .kids-node:not(.kids-node--locked):not(.kids-node--chest)',
+      '.kids-node-link .kids-node:where(:not(.kids-node--locked):not(.kids-node--chest))',
     )
     expect(closed).toContain('--k3d-altura: 6px')
     expect(closed).toContain('var(--pen-degrau-cartao)')

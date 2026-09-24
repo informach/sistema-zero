@@ -1253,11 +1253,12 @@ a.kid-pop:has(> .kids-carta):hover {
     --k3d-altura: 8px;
     --k3d-degrau: color-mix(in oklab, var(--kids-ouro) 58%, var(--pen-tinta));
   }
-  /* Baú LIBERADO: chama a criança sem gritar. Mesmo anel de atenção do nó atual. */
+  /* O branco preserva o contraste da arte amarela do Rive em qualquer unidade.
+     Borda sólida e anel dourados distinguem o liberado do bloqueado tracejado. */
   .kids-node--chest-ready {
-    background-color: var(--unit-bg);
-    color: var(--unit-fg);
-    border: 2px solid var(--unit);
+    background-color: var(--card);
+    color: var(--kids-ouro-fg);
+    border: 2px solid var(--kids-ouro-texto);
     animation: kids-ring 2.4s ease-out infinite;
   }
   /* Queda segura sem Rive: uma sacudida curta antes de revelar o estado aberto.
@@ -1282,11 +1283,11 @@ a.kid-pop:has(> .kids-carta):hover {
   }
 
   /* O 3D do Brilliant (11/09/2026) nos nós que ABREM aula (feita, atual, a fazer) e no
-     baú liberado: a borda de baixo no degrau da cor da unidade, por sombra. Tanto os
+     baú liberado: a borda de baixo acompanha a cor da superfície, por sombra. Tanto os
      links de aula quanto o botão do baú compartilham `.kids-node-link`, e o nó afunda
      junto. O nó TRAVADO fica plano; o baú fechado e o aberto usam o molde estático
      acima. O travado também leva a classe (é o mesmo molde, sem o link), daí o `:not`. */
-  .kids-node-link .kids-node:not(.kids-node--locked):not(.kids-node--chest) {
+  .kids-node-link .kids-node:where(:not(.kids-node--locked):not(.kids-node--chest)) {
     --k3d-altura: 5px;
     --k3d-degrau: color-mix(in oklab, var(--unit) 70%, var(--pen-tinta));
     box-shadow: 0 var(--k3d-altura) 0 var(--k3d-degrau);
@@ -1305,8 +1306,8 @@ a.kid-pop:has(> .kids-carta):hover {
     --k3d-altura: 1px;
     translate: 0 4px;
   }
-  /* O ouro do baú escondia o degrau genérico dos nós. A base mais alta e marrom
-     continua visível em repouso; a classe-base do baú fornece o brilho interno. */
+  /* Degrau âmbar no baú liberado: contrasta com o disco branco e distingue
+     o botão da sombra cinza do baú bloqueado. */
   .kids-node-link .kids-node.kids-node--chest-ready {
     --k3d-altura: 8px;
     --k3d-degrau: color-mix(in oklab, var(--kids-ouro) 58%, var(--pen-tinta));
