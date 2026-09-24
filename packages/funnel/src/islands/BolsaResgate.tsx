@@ -3,8 +3,8 @@ import { useId, useState } from 'react'
 import { ApiError, apiPost } from '../lib/api-fetch'
 
 /**
- * Form de resgate da Bolsa do Primeiro Jogo (landing /bolsa/<codigo>). Dados do
- * RESPONSÁVEL (a bolsa é kids — mesmo aviso do pré-checkout); telefone opcional.
+ * Form de resgate do curso Cadê Todo Mundo? (landing /bolsa/<codigo>). Dados do
+ * RESPONSÁVEL (a indicação é kids — mesmo aviso do pré-checkout); telefone opcional.
  * O resgate é retomável no servidor: repetir o envio após uma falha CONTINUA de
  * onde parou (mesmo e-mail), então o botão de tentar de novo é sempre seguro.
  */
@@ -55,7 +55,9 @@ export default function BolsaResgate({ code, referrerName }: BolsaResgateProps) 
             'Esse e-mail já resgatou a bolsa. Procure o e-mail de boas-vindas na sua caixa de entrada (vale olhar o spam) ou use "Esqueci minha senha" na plataforma.',
           )
         } else if (err.code === 'CODE_NOT_FOUND') {
-          setErroGeral('Este link de bolsa não está mais ativo.')
+          setErroGeral('Este link de indicação não está mais ativo.')
+        } else if (err.code === 'GIFT_UNAVAILABLE') {
+          setErroGeral('Este presente está sendo preparado. Guarde seu link e volte em breve.')
         } else if (err.code === 'SCHOLARSHIP_FAILED') {
           setErroGeral(
             'Não conseguimos concluir o resgate para esse e-mail. Fale com a gente em contato@sistemazero.com.br que resolvemos rapidinho.',
@@ -80,11 +82,11 @@ export default function BolsaResgate({ code, referrerName }: BolsaResgateProps) 
         <p className="text-4xl" aria-hidden="true">
           🎉
         </p>
-        <h2 className="mt-2 text-xl font-bold text-ink">Bolsa ativada!</h2>
+        <h2 className="mt-2 text-xl font-bold text-ink">Curso liberado!</h2>
         <p className="mt-3 text-sm text-muted">
-          Enviamos um e-mail para <strong className="text-ink">{email.trim()}</strong> com o link
-          para criar a sua senha (vale olhar o spam). Depois é só entrar, criar o perfil da criança
-          e começar o primeiro jogo.
+          Enviamos orientações para <strong className="text-ink">{email.trim()}</strong> (vale olhar
+          o spam). Se você já tem conta, entre com sua senha. Depois, crie o perfil da criança e
+          comece o curso Cadê Todo Mundo?.
         </p>
       </div>
     )
@@ -185,11 +187,11 @@ export default function BolsaResgate({ code, referrerName }: BolsaResgateProps) 
       {erroGeral && <p className="text-sm text-red-400">{erroGeral}</p>}
 
       <button type="submit" disabled={submitting} className="btn btn-primary disabled:opacity-50">
-        {submitting ? 'Ativando a bolsa…' : 'Resgatar minha bolsa gratuita'}
+        {submitting ? 'Liberando o curso…' : 'Liberar o curso para minha família'}
       </button>
       <p className="text-center text-xs text-muted">
-        Presente de {referrerName}: acesso completo e vitalício, sem pagar nada. Uma bolsa por
-        família.
+        Presente de {referrerName}: acesso ao curso Cadê Todo Mundo? sem custo e sem cartão. Os
+        demais cursos não estão incluídos.
       </p>
     </form>
   )

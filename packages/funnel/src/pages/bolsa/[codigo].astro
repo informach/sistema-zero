@@ -2,76 +2,93 @@
 import BolsaResgate from '../../islands/BolsaResgate'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { getDeps } from '../../server/deps'
+import { resolveReferralGiftPage } from '../../server/referral-gift-page'
 
-// Landing de RESGATE da Bolsa do Primeiro Jogo (/bolsa/<codigo>). Página flat
-// fora do registry de funis (molde /renovar): o código pode ser de um
-// EMBAIXADOR ou (fase 2) de um MEMBRO — o referrals resolve os dois na mesma
-// rota. Código inválido/desativado → 404 amigável (envelope uniforme lá).
 export const prerender = false
 
 Astro.response.headers.set('cache-control', 'private, no-store')
 
-const { gateway } = getDeps()
 const codigo = (Astro.params.codigo ?? '').trim().toLowerCase()
-
-let referrerName: string | null = null
-let gatewayDown = false
-if (/^[a-z0-9-]{4,32}$/.test(codigo)) {
-  const res = await gateway.resolveReferralCode(codigo)
-  if (res.status === 200) {
-    const body = res.body as { displayName?: unknown }
-    if (typeof body?.displayName === 'string' && body.displayName.length > 0) {
-      referrerName = body.displayName
-    }
-  } else if (res.status !== 404) {
-    // Gateway/referrals fora: não afirmar que o código não existe.
-    gatewayDown = true
-  }
-}
-if (!referrerName && !gatewayDown) Astro.response.status = 404
+const page = await resolveReferralGiftPage(getDeps().gateway, codigo)
+if (page.kind === 'not_found') Astro.response.status = 404
+if (page.kind === 'unavailable') Astro.response.status = 503
+const hasGift = page.kind === 'ready' || page.kind === 'preparing'
 ---
 
 <BaseLayout
-  title="Bolsa do Primeiro Jogo | Sistema Zero"
-  description="Resgate a bolsa 100% do Desafio do Primeiro Jogo: a criança cria o próprio jogo em 5 dias."
+  title="Seu presente: Cadê Todo Mundo? | Sistema Zero"
+  description="Um curso para seu filho criar um jogo de procurar personagens, recebido por indicação no Sistema Zero."
   noindex
   htmlClass="theme-kids"
 >
-  <main class="mx-auto flex min-h-screen w-full max-w-lg flex-col justify-center px-4 py-10">
-    {
-      referrerName ? (
-        <>
-          <header class="mb-6 text-center">
-            <p class="text-sm font-semibold uppercase tracking-wide text-cyan">
-              Bolsa 100% · presente de {referrerName}
-            </p>
-            <h1 class="mt-2 text-3xl font-bold text-ink">Desafio do Primeiro Jogo</h1>
-            <p class="mt-3 text-sm text-muted">
-              A criança (a partir de 9 anos) cria um jogo de verdade em 5 dias, passo a passo. Com
-              a bolsa, o acesso é completo, vitalício e sem pagar nada.
-            </p>
-          </header>
-          <BolsaResgate client:load code={codigo} referrerName={referrerName} />
-        </>
-      ) : gatewayDown ? (
-        <div class="card rounded-2xl border-line/80 bg-card p-8 text-center">
-          <h1 class="text-2xl font-bold text-ink">Um instantinho…</h1>
-          <p class="mt-3 text-sm text-muted">
-            Não conseguimos carregar a sua bolsa agora. Recarregue a página em alguns segundos, o
-            seu link continua valendo.
-          </p>
+  {hasGift ? (
+    <main class="min-h-screen overflow-hidden">
+      <div class="mx-auto max-w-6xl px-5 pb-20 pt-6 sm:px-8 sm:pt-10">
+        <a href="/" class="inline-flex items-center gap-2 text-sm font-bold text-ink" aria-label="Sistema Zero, página inicial">
+          <span class="flex size-9 items-center justify-center rounded-xl bg-lime font-extrabold text-white" aria-hidden="true">0</span>
+          SISTEMA ZERO
+        </a>
+
+        <div class="mt-12 grid items-center gap-10 lg:grid-cols-[1.12fr_.88fr] lg:gap-16">
+          <div>
+            <p class="inline-flex rounded-full border border-line bg-card px-4 py-2 text-sm font-bold text-ink">Um convite especial de {page.referrerName}</p>
+            <h1 class="mt-6 max-w-2xl text-4xl font-bold leading-[1.08] text-ink sm:text-5xl lg:text-6xl">Seu filho pode criar um jogo de procurar personagens.</h1>
+            <p class="mt-5 max-w-xl text-lg leading-relaxed text-muted">{page.referrerName} indicou sua família para receber acesso ao curso <strong class="text-ink">Cadê Todo Mundo?</strong> no Sistema Zero. Uma aventura guiada para crianças de 8 a 15 anos descobrirem que também podem criar — não só jogar.</p>
+            {page.kind === 'ready' ? (
+              <a href="#resgatar" class="btn btn-primary mt-7 inline-flex items-center justify-center px-6 py-3.5">Liberar o curso para minha família</a>
+            ) : (
+              <div role="status" class="mt-7 max-w-lg rounded-2xl border border-line bg-card p-5 text-sm leading-relaxed text-ink"><strong>Este presente está sendo preparado.</strong> Guarde seu link e volte em breve. O cadastro será liberado quando o curso estiver pronto.</div>
+            )}
+            <p class="mt-5 text-sm text-muted">Sem pagamento e sem pedir cartão para receber este curso.</p>
+          </div>
+
+          <div class="rounded-[2rem] border-2 border-line bg-card p-5 shadow-[0_8px_0_var(--kids-card-step)] sm:p-8" aria-label="O caminho da criança no curso">
+            <div class="rounded-[1.5rem] bg-[var(--kids-ground-alt)] p-6 sm:p-8">
+              <span class="text-xs font-extrabold uppercase tracking-[.16em] text-cyan">O que ela vai criar</span>
+              <div class="mt-8 flex flex-col gap-4">
+                <div class="flex items-center gap-4 rounded-2xl bg-card p-4 shadow-sm"><span class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--kids-warning)]/20 text-2xl" aria-hidden="true">🌿</span><p class="font-bold text-ink">Um cenário onde personagens se escondem</p></div>
+                <div class="ml-5 flex items-center gap-4 rounded-2xl bg-card p-4 shadow-sm"><span class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-cyan/15 text-2xl" aria-hidden="true">👆</span><p class="font-bold text-ink">Toques que encontram e contam cada descoberta</p></div>
+                <div class="flex items-center gap-4 rounded-2xl bg-card p-4 shadow-sm"><span class="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--kids-success)]/15 text-2xl" aria-hidden="true">🏅</span><p class="font-bold text-ink">Um jogo para mostrar com orgulho</p></div>
+              </div>
+            </div>
+            <p class="mt-5 text-center text-sm font-semibold text-muted">Passo a passo, no ritmo da criança.</p>
+          </div>
         </div>
+
+        <section class="mt-20 grid gap-10 border-t border-line pt-12 md:grid-cols-[.8fr_1.2fr]" aria-labelledby="plataforma-title">
+          <div><p class="text-sm font-extrabold uppercase tracking-wider text-cyan">Mais que assistir a uma aula</p><h2 id="plataforma-title" class="mt-3 text-3xl font-bold leading-tight text-ink">O que é o Sistema Zero?</h2></div>
+          <div class="space-y-4 text-base leading-relaxed text-muted">
+            <p>É uma plataforma de aprendizado criativo em que crianças aprendem fazendo projetos. Em vez de só consumir jogos e vídeos, elas seguem orientações, experimentam ideias e veem suas próprias escolhas ganharem vida na tela.</p>
+            <p>No <strong class="text-ink">Cadê Todo Mundo?</strong>, a jornada é curta e concreta: a criança começa a procurar personagens, constrói a brincadeira de encontrar todos e conclui o percurso com um certificado.</p>
+          </div>
+        </section>
+
+        <section class="mt-16" aria-labelledby="passos-title">
+          <h2 id="passos-title" class="text-3xl font-bold text-ink">Como seu filho começa</h2>
+          <div class="mt-6 grid gap-4 md:grid-cols-3">
+            <div class="card rounded-2xl bg-card p-6"><span class="text-sm font-extrabold text-cyan">01 / ACESSO</span><h3 class="mt-3 text-xl font-bold text-ink">Você cria sua conta</h3><p class="mt-2 text-sm leading-relaxed text-muted">Use seus dados de responsável. Depois, dentro da plataforma, crie o perfil da criança.</p></div>
+            <div class="card rounded-2xl bg-card p-6"><span class="text-sm font-extrabold text-cyan">02 / CRIAÇÃO</span><h3 class="mt-3 text-xl font-bold text-ink">Ela entra na aventura</h3><p class="mt-2 text-sm leading-relaxed text-muted">Segue as atividades guiadas e faz o jogo responder quando encontra os personagens.</p></div>
+            <div class="card rounded-2xl bg-card p-6"><span class="text-sm font-extrabold text-cyan">03 / CONQUISTA</span><h3 class="mt-3 text-xl font-bold text-ink">Mostra o que criou</h3><p class="mt-2 text-sm leading-relaxed text-muted">Termina o jogo de procurar e recebe um certificado de conclusão do curso.</p></div>
+          </div>
+        </section>
+
+        <section id="resgatar" class="mx-auto mt-20 max-w-2xl scroll-mt-8" aria-labelledby="resgatar-title">
+          <div class="mb-6 text-center"><p class="text-sm font-extrabold uppercase tracking-wider text-cyan">Presente por indicação</p><h2 id="resgatar-title" class="mt-2 text-3xl font-bold text-ink">Pronto para começar?</h2><p class="mt-3 text-sm leading-relaxed text-muted">Seu convite libera <strong class="text-ink">apenas este curso</strong>, sem custo para sua família. Os demais cursos e recursos da Comunidade dos Criadores não fazem parte deste presente.</p></div>
+          {page.kind === 'ready' ? (
+            <BolsaResgate client:load code={codigo} referrerName={page.referrerName} />
+          ) : (
+            <div role="status" class="card rounded-2xl bg-card p-7 text-center text-ink">Este presente está sendo preparado. Guarde seu link e volte em breve.</div>
+          )}
+        </section>
+      </div>
+    </main>
+  ) : (
+    <main class="mx-auto flex min-h-screen w-full max-w-lg flex-col justify-center px-4 py-10">
+      {page.kind === 'unavailable' ? (
+        <div class="card rounded-2xl bg-card p-8 text-center"><h1 class="text-2xl font-bold text-ink">Um instantinho…</h1><p class="mt-3 text-sm text-muted">Não conseguimos carregar o seu presente agora. Recarregue a página em alguns segundos; o seu link continua valendo.</p></div>
       ) : (
-        <div class="card rounded-2xl border-line/80 bg-card p-8 text-center">
-          <h1 class="text-2xl font-bold text-ink">Link de bolsa não encontrado</h1>
-          <p class="mt-3 text-sm text-muted">
-            Confira se o endereço foi copiado por inteiro ou peça um link novo para quem indicou
-            você. Se quiser conhecer o Sistema Zero mesmo assim, é só visitar a nossa página
-            inicial.
-          </p>
-          <a href="/" class="btn btn-primary mt-6 inline-block">Conhecer o Sistema Zero</a>
-        </div>
-      )
-    }
-  </main>
+        <div class="card rounded-2xl bg-card p-8 text-center"><h1 class="text-2xl font-bold text-ink">Link de indicação não encontrado</h1><p class="mt-3 text-sm text-muted">Confira se o endereço foi copiado por inteiro ou peça um link novo para quem indicou você.</p><a href="/" class="btn btn-primary mt-6 inline-block">Conhecer o Sistema Zero</a></div>
+      )}
+    </main>
+  )}
 </BaseLayout>

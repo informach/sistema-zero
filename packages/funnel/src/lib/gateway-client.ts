@@ -87,6 +87,7 @@ export interface ReferralCodeView {
   code: string
   ownerKind: 'ambassador' | 'account'
   displayName: string
+  giftAvailable: boolean
 }
 
 /** Resposta de `GET /referrals/internal/ambassadors/by-token/:token` (página do embaixador). */

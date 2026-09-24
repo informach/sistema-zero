@@ -136,7 +136,7 @@ export function createFakeGateway(): FakeGatewayState {
   let sendMessageStatus = 202
   let referralCodeResult: { status: number; body: unknown } = {
     status: 200,
-    body: { code: 'vo-x7k2', ownerKind: 'ambassador', displayName: 'Vó Cida' },
+    body: { code: 'vo-x7k2', ownerKind: 'ambassador', displayName: 'Vó Cida', giftAvailable: true },
   }
   let ambassadorResult: { status: number; body: unknown } = {
     status: 200,

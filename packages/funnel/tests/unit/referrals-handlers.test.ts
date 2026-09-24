@@ -45,7 +45,7 @@ describe('postRedeemScholarship (/api/bolsa/resgatar)', () => {
     expect(fake.calls.redemptions[0]?.input.phone).toBe('(11) 99999-9999')
   })
 
-  test('202 processing repassa; 404/409 repassam o envelope do referrals', async () => {
+  test('202 processing repassa; 404/409/503 repassam o envelope do referrals', async () => {
     const fake = createFakeGateway()
     fake.setRedeemResult(202, { status: 'processing' })
     const processing = await postRedeemScholarship(post('/api/bolsa/resgatar', valid), {
@@ -74,6 +74,15 @@ describe('postRedeemScholarship (/api/bolsa/resgatar)', () => {
     })
     expect(throttled.status).toBe(429)
     expect((await readJson(throttled)).error.code).toBe('RATE_LIMITED')
+
+    fake.setRedeemResult(503, {
+      error: { code: 'GIFT_UNAVAILABLE', message: 'Curso em preparação' },
+    })
+    const preparing = await postRedeemScholarship(post('/api/bolsa/resgatar', valid), {
+      gateway: fake.gateway,
+    })
+    expect(preparing.status).toBe(503)
+    expect((await readJson(preparing)).error.code).toBe('GIFT_UNAVAILABLE')
   })
 
   test('gateway fora (502/504) vira 502 GATEWAY_ERROR legível', async () => {

@@ -227,13 +227,17 @@ o estado (códigos, embaixadores, resgates, convites) vive no **@sistemazero/ref
 via gateway com o HMAC de borda de sempre (`gateway-client.ts`: `resolveReferralCode`,
 `getAmbassadorByToken`, `createAmbassadorInvite`, `redeemScholarship`). SSR resolve o código/token
 (404 amigável UNIFORME p/ inexistente/desativado; gateway fora → tela "recarregue", NUNCA afirmar
-que o código não existe) e passa tudo por prop às ilhas `BolsaResgate` (form do RESPONSÁVEL —
+que o código não existe). Em `/bolsa`, `resolveReferralGiftPage` exige `giftAvailable:boolean`
+na resposta do referrals: `false` mantém o link, mas mostra "em preparação" sem formulário;
+resposta incompleta/erro do gateway falha fechada. A página apresenta somente o curso
+**Cadê Todo Mundo?** (8–15 anos), não o Desafio ou a assinatura. Quando disponível, passa
+os dados por prop às ilhas `BolsaResgate` (form do RESPONSÁVEL —
 mesmo aviso kids do pré-checkout; telefone OPCIONAL, não reusar `ContactSchema`; estados
 completed/processing/409s por `ApiError.code`; o resgate é RETOMÁVEL no servidor — re-enviar após
 falha continua de onde parou) e `EmbaixadorPainel` (copiar link/mensagem pronta pro WhatsApp DELE
 — a plataforma NUNCA dispara WhatsApp; convite por e-mail único). Handlers puros em
 `server/referrals.ts` (`postRedeemScholarship`/`postAmbassadorInvite` — repassam envelopes
-conhecidos [404/409/429], 5xx/timeout viram 502 `GATEWAY_ERROR`), rotas finas
+conhecidos [404/409/429 e 503 `GIFT_UNAVAILABLE` no resgate], demais 5xx/timeout viram 502 `GATEWAY_ERROR`), rotas finas
 `/api/bolsa/resgatar` e `/api/embaixador/convites`. ⚠️ Rate limit: as escritas entraram no
 `RATE_LIMITED_WRITE` da middleware e os GETs SSR no `rate-limit-paths.ts` (cada hit = 1 chamada
 assinada ao gateway) — landing nova DEVE entrar nos dois regex. Testes:

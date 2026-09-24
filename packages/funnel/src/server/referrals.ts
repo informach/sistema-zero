@@ -60,7 +60,7 @@ function passthrough(
   )
 }
 
-/** POST /api/bolsa/resgatar — resgate da Bolsa do Primeiro Jogo. */
+/** POST /api/bolsa/resgatar — resgate do curso recebido por indicação. */
 export async function postRedeemScholarship(
   request: Request,
   deps: ReferralsDeps,
@@ -76,8 +76,8 @@ export async function postRedeemScholarship(
     ...(telefone ? { phone: telefone } : {}),
   })
   // 201 completed · 202 processing · 404 código · 409 já-resgatada/terminal ·
-  // 429 teto do gateway. Sucesso e erro conhecido passam pelo MESMO cano.
-  return passthrough(res, [201, 202, 404, 409, 429], deps.log, 'redeem')
+  // 429 teto do gateway · 503 curso ainda não publicado.
+  return passthrough(res, [201, 202, 404, 409, 429, 503], deps.log, 'redeem')
 }
 
 /** POST /api/embaixador/convites — convite de bolsa enviado pela plataforma. */
