@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import type {
   EnsureBuyerInput,
   GatewayResult,
-  GrantManualOfferInput,
+  GrantManualCourseInput,
   ReferralsGateway,
   SendEmailInput,
 } from '../../src/domain/ports/gateway.port'
@@ -555,7 +555,12 @@ export class InMemoryReferralRepository implements ReferralRepository {
 }
 
 export interface RecordedCall {
-  kind: 'ensureBuyer' | 'createPasswordToken' | 'grantManualOffer' | 'sendEmail'
+  kind:
+    | 'getGiftAvailability'
+    | 'ensureBuyer'
+    | 'createPasswordToken'
+    | 'grantManualCourse'
+    | 'sendEmail'
   input: unknown
   idempotencyKey?: string
 }
@@ -563,13 +568,19 @@ export interface RecordedCall {
 /** Gateway fake: respostas configuráveis por chamada + gravação p/ asserts. */
 export class FakeReferralsGateway implements ReferralsGateway {
   calls: RecordedCall[] = []
+  availabilityResult: GatewayResult = { status: 200, body: { available: true } }
   ensureBuyerResult: GatewayResult = { status: 201, body: { userId: randomUUID(), created: true } }
   passwordTokenResult: GatewayResult = {
     status: 201,
     body: { token: 'tok-abc', expiresAt: new Date(Date.now() + 14 * 86_400_000).toISOString() },
   }
-  grantResult: GatewayResult = { status: 200, body: { ok: true, granted: 2 } }
+  grantResult: GatewayResult = { status: 200, body: { ok: true, granted: 1 } }
   sendEmailResult: GatewayResult = { status: 202, body: {} }
+
+  async getGiftAvailability(courseRef: string): Promise<GatewayResult> {
+    this.calls.push({ kind: 'getGiftAvailability', input: { courseRef } })
+    return this.availabilityResult
+  }
 
   async ensureBuyer(input: EnsureBuyerInput): Promise<GatewayResult> {
     this.calls.push({ kind: 'ensureBuyer', input })
@@ -581,8 +592,8 @@ export class FakeReferralsGateway implements ReferralsGateway {
     return this.passwordTokenResult
   }
 
-  async grantManualOffer(input: GrantManualOfferInput): Promise<GatewayResult> {
-    this.calls.push({ kind: 'grantManualOffer', input })
+  async grantManualCourse(input: GrantManualCourseInput): Promise<GatewayResult> {
+    this.calls.push({ kind: 'grantManualCourse', input })
     return this.grantResult
   }
 

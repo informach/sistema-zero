@@ -20,12 +20,12 @@ export interface EnsureBuyerInput {
 }
 
 /** Corpo de `POST /members/webhooks/grant-manual` (gateway → members, resign). */
-export interface GrantManualOfferInput {
+export interface GrantManualCourseInput {
   userId: string
-  offerRef: string
+  courseRef: string
   /** Procedência auditável (ex.: `scholarship:<redemptionId>`). */
   sourceId: string
-  /** `null` = vitalício (a bolsa é vitalícia como a compra). */
+  /** `null` = acesso sem prazo de expiração. */
   expiresAt: string | null
   /** Dedupe do members (`x-delivery-id`) — ESTÁVEL por operação. */
   deliveryId: string
@@ -39,10 +39,12 @@ export interface SendEmailInput {
 }
 
 export interface ReferralsGateway {
+  /** `GET /members/webhooks/gift-course/:slug` — curso kids publicado? */
+  getGiftAvailability(courseRef: string): Promise<GatewayResult>
   ensureBuyer(input: EnsureBuyerInput): Promise<GatewayResult>
   /** `POST /auth/internal/password-tokens` — token de definir senha (TTL 14d). */
   createPasswordToken(email: string): Promise<GatewayResult>
-  grantManualOffer(input: GrantManualOfferInput): Promise<GatewayResult>
+  grantManualCourse(input: GrantManualCourseInput): Promise<GatewayResult>
   /** Enfileira e-mail transacional (202). Idempotente por consumer+chave. */
   sendEmail(input: SendEmailInput, idempotencyKey: string): Promise<GatewayResult>
 }

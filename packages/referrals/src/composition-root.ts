@@ -47,7 +47,7 @@ export function createApplication(env: Env): Application {
     repo,
     gateway,
     {
-      offerSlug: env.SCHOLARSHIP_OFFER_SLUG,
+      courseSlug: env.SCHOLARSHIP_COURSE_SLUG,
       kidsCommunityUrl: env.KIDS_COMMUNITY_URL,
       leaseMs: env.REDEMPTION_LEASE_MS,
     },

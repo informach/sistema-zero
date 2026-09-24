@@ -14,16 +14,17 @@ Plano completo do projeto: `~/.claude/plans/ent-o-vamos-implementar-esses-atomic
 consenso de produto: memória `sistema-indicacao-moeda-premium.md` + artifact
 https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
 
-> Estado: **FASE 1 (Bolsa do Primeiro Jogo)** implementada + **EXTENSÃO (09/2026): auto-cadastro
+> Estado: **FASE 1 (indicação de curso Kids)** implementada + **EXTENSÃO (09/2026): auto-cadastro
 > do responsável, rastreio de conversão e bônus Pix manual** (ver §Conversões abaixo). O Programa 1
 > (moeda da família, ledger 20%, gasto no checkout) segue NA GAVETA por decisão da usuária.
 
 ## Conceito central (decisões travadas com a usuária)
 
-1. **Bolsa = a MESMA oferta do comprador** (`SCHOLARSHIP_OFFER_SLUG`, default
-   `desafio-primeiro-jogo`): curso vitalício + bônus (Mural), via grant manual `mode:'offer'` no
-   members com `expiresAt: null`. **1 bolsa por E-MAIL, global** (UNIQUE em
-   `scholarship_redemptions.email`).
+1. **Indicação = somente o curso Kids Cadê Todo Mundo?** (`SCHOLARSHIP_COURSE_SLUG`, default
+   `cade-todo-mundo`), via grant manual `mode:'course'` com `expiresAt: null`.
+   O curso segue bloqueado para quem apenas cria conta. Antes de registrar o resgate,
+   o serviço verifica se ele está publicado; falha/rascunho fecha o fluxo sem criar conta.
+   **1 resgate por E-MAIL, global** (UNIQUE em `scholarship_redemptions.email`).
 2. **Embaixador não precisa de conta** — a página dele é uma capability-URL
    (`/embaixador/<page_token>`, 32 bytes base64url). Sem ganho financeiro ao embaixador.
 3. **`codes` é GENÉRICA desde a F1**: `owner_kind ∈ {ambassador, account}` com UNIQUEs parciais e
@@ -32,7 +33,7 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
    `owner_email` (lower) já nasce aqui — base do anti-autoindicação da F3, sem backfill.
 4. **Sem WhatsApp automático** (decisão de produto): disparo da plataforma é E-MAIL único;
    o embaixador compartilha o link no próprio WhatsApp.
-5. **Ordem do resgate: CONTA → GRANT → E-MAIL** — se o e-mail falhar, o acesso já existe; se o
+5. **Ordem do resgate: DISPONIBILIDADE → CONTA → GRANT → E-MAIL** — se o e-mail falhar, o acesso já existe; se o
    grant falhar, nenhum e-mail mentiroso saiu. O e-mail é best-effort (fallback do usuário =
    "esqueci minha senha").
 
@@ -40,7 +41,9 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
 
 1. Código ativo? (404 **UNIFORME** p/ inexistente OU desativado — não vazar qual.)
 2. Normaliza e-mail (lower/trim) **ANTES** do UNIQUE e de qualquer S2S.
-3. Claim da bolsa: `INSERT … ON CONFLICT (email) DO NOTHING`; conflito → `completed` = 409 —
+3. Consulta o members: curso kids publicado? Indisponível → 503 sem claim nem conta;
+   upstream fora → 502 sem claim nem conta. Resgate já concluído pula essa checagem para
+   manter o 409 e a retomada do e-mail antigo. Claim da bolsa: `INSERT … ON CONFLICT (email) DO NOTHING`; conflito → `completed` = 409 —
    mas se `welcome_sent_at` for NULL, **RETOMA só o e-mail antes do 409** (crash entre o grant e
    o welcome; o claim atômico do welcome é o mutex — dispensa lease, que exclui completed);
    `pending/failed` = **RETOMADA por etapas** (colunas `user_id`/`granted_at`/`welcome_sent_at`
@@ -49,16 +52,18 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
    segunda submissão → 202 `processing`; crash no meio expira sozinho.
 5. `POST /auth/internal/ensure-buyer` (via gateway, consumer `referrals`) com senha descartável e
    `source: 'scholarship'` → `{userId, created}`.
-6. `POST /members/webhooks/grant-manual` — o CLIENTE injeta `mode: 'offer'` no corpo (detalhe do
+6. `POST /members/webhooks/grant-manual` — o CLIENTE injeta `mode: 'course'` no corpo (detalhe do
    WIRE, obrigatório no DTO do members; travado por `tests/unit/gateway-client.test.ts` contra o
-   cliente REAL — os fakes não pegariam) — com `x-delivery-id: scholarship:<id>` **ESTÁVEL** +
+   cliente REAL — os fakes não pegariam) — com
+   `x-delivery-id: scholarship:course:cade-todo-mundo:<id>` **ESTÁVEL E VERSIONADO PELO
+   PRESENTE** (uma entrega antiga da oferta não pode deduplicar o novo curso) +
    `sourceId: 'scholarship:<id>'` (a idempotência do members vira
    `manual:userId:productId:scholarship:<id>` — cortesia admin do mesmo produto NUNCA colide com
    a bolsa). 409 = **terminal** (`failed_reason: grant_conflict`, aflora no admin — nunca retry
    infinito; o members NÃO marca a entrega, então destravar lá + re-submeter aqui conclui);
-   5xx = grava `last_error` (`grant:<status>[:código]`, some no sucesso) + solta lease + 502
-   (o usuário re-tenta; tudo idempotente). `OFFER_UNRESOLVED`/`OFFER_EMPTY` = MISCONFIG
-   (slug errado) → log **ERROR** alertável, não warn.
+   `503 COURSE_UNAVAILABLE` = curso despublicado entre consulta e grant, sem e-mail e com
+   retomada posterior; outros 5xx gravam `last_error` (`grant:<status>[:código]`, some no
+   sucesso) + soltam lease + devolvem 502 (o usuário re-tenta; tudo idempotente).
 7. Welcome com **claim atômico** (`welcome_sent_at`, molde `welcome-email.ts` do funil):
    conta NOVA → password-token (falha na emissão → release do claim; **emitido → NUNCA liberar**,
    reemitir mataria o link entregue — o auth consome tokens pendentes) → template
@@ -167,7 +172,7 @@ O serviço NUNCA guarda saldo: só sinaliza elegibilidade e controla pago/não-p
   POST `…/invites` (202 | 409 INVITE_ALREADY_SENT | 409 EMAIL_ALREADY_REDEEMED — SÓ bolsa
   `completed` barra; pending/failed NÃO (o e-mail com o link é o empurrão da retomada) |
   429 cap diário 50/24h móvel), POST `redemptions` (201 completed | 202 processing | 404 |
-  409 SCHOLARSHIP_ALREADY_REDEEMED | 409 SCHOLARSHIP_FAILED | 502).
+  409 SCHOLARSHIP_ALREADY_REDEEMED | 409 SCHOLARSHIP_FAILED | 503 GIFT_UNAVAILABLE | 502).
 - `/webhooks/payments` — DIRETO na rede privada (consumer do fan-out; ver §Conversões).
 - `/healthz` · `/readyz` (probe select 1 — healthcheck do Railway) · `/metrics`
   ({redemptionsByStatus}, token obrigatório em prod).
@@ -181,8 +186,9 @@ cliente `infrastructure/gateways/gateway.client.ts` (porte fiel do gateway-clien
 canônico `canonicalHmacMessage`, timeout NUNCA lança — vira 502/504 por status):
 - **auth**: `POST /auth/internal/ensure-buyer` → `{userId, created}`;
   `POST /auth/internal/password-tokens` → `{token}` (TTL convite 14d).
-- **members**: `POST /members/webhooks/grant-manual` (rota criada junto com este serviço;
-  `upstreamAuth: 'resign'` no gateway — o members verifica o HMAC do gateway).
+- **members**: `GET /members/webhooks/gift-course/:slug` para disponibilidade e
+  `POST /members/webhooks/grant-manual` com `mode:'course'` para matrícula específica;
+  ambas com `upstreamAuth: 'resign'` no gateway — o members verifica o HMAC do gateway.
 - **messaging**: `POST /messaging/send` (202; Idempotency-Key por consumer). Templates novos no
   seed do messaging: `referrals-ambassador-link` {nome, link} ·
   `referrals-scholarship-invite` {nome, indicador, link} · `referrals-scholarship-welcome`
@@ -232,7 +238,8 @@ Envs de prod (fail-fast): `NODE_ENV=production`, `APP_ENV`, `PORT=3012`, `HOST=:
 `DATABASE_URL=${{Postgres.DATABASE_URL}}`, `GATEWAY_URL=http://api-gateway.railway.internal:3000`,
 `REFERRALS_HMAC_SECRET` (= o do consumer no gateway), `INTERNAL_API_TOKEN`
 (= `REFERRALS_INTERNAL_TOKEN` do gateway), `METRICS_TOKEN`, `FUNNEL_PUBLIC_URL`,
-`KIDS_COMMUNITY_URL`, `SENTRY_DSN` (só prod). No GATEWAY: `REFERRALS_URL`,
+`KIDS_COMMUNITY_URL`, `SCHOLARSHIP_COURSE_SLUG=cade-todo-mundo` (default),
+`SENTRY_DSN` (só prod). No GATEWAY: `REFERRALS_URL`,
 `REFERRALS_INTERNAL_TOKEN`, `REFERRALS_HMAC_SECRET`, `REFERRALS_ALLOWED_CIDRS` —
 ⚠️ **prod não sobe sem elas** (PROD_REQUIRED_SECRETS).
 **Extensão 09/2026** (opcionais em dev; com `PAYMENTS_WEBHOOK_HMAC_SECRET` presente em prod, o

@@ -42,7 +42,17 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           set.status = 404
           return envelope('CODE_NOT_FOUND', 'Código não encontrado')
         }
-        return { code: record.code, ownerKind: record.ownerKind, displayName: record.displayName }
+        const availability = await deps.redeem.giftAvailability()
+        if (availability === 'upstream_error') {
+          set.status = 502
+          return envelope('UPSTREAM_ERROR', 'Não foi possível consultar o presente agora')
+        }
+        return {
+          code: record.code,
+          ownerKind: record.ownerKind,
+          displayName: record.displayName,
+          giftAvailable: availability === 'available',
+        }
       },
       { params: t.Object({ code: t.String({ minLength: 1, maxLength: 64 }) }) },
     )
@@ -159,6 +169,9 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           case 'already_redeemed':
             set.status = 409
             return envelope('SCHOLARSHIP_ALREADY_REDEEMED', 'Esse e-mail já resgatou a bolsa')
+          case 'gift_unavailable':
+            set.status = 503
+            return envelope('GIFT_UNAVAILABLE', 'O curso indicado ainda está em preparação')
           case 'failed':
             // Terminal (ex.: matrícula conflitante) — retry não resolve; suporte.
             set.status = 409

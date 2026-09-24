@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
 import { RedeemScholarshipService } from '../../src/application/redeem-scholarship/redeem-scholarship.service'
-import type { GrantManualOfferInput, SendEmailInput } from '../../src/domain/ports/gateway.port'
+import type { GrantManualCourseInput, SendEmailInput } from '../../src/domain/ports/gateway.port'
 import { FakeReferralsGateway, InMemoryReferralRepository, silentLogger } from '../fakes/in-memory'
 
 const OPTS = {
-  offerSlug: 'desafio-primeiro-jogo',
+  courseSlug: 'cade-todo-mundo',
   kidsCommunityUrl: 'https://kids.sistemazero.com.br',
   leaseMs: 90_000,
 }
@@ -46,12 +46,12 @@ describe('RedeemScholarshipService', () => {
     expect(r.status).toBe('completed')
     expect(r.welcomeSentAt).not.toBeNull()
 
-    // Grant com delivery-id/sourceId ESTÁVEIS + oferta completa vitalícia.
-    const grant = gateway.callsOf('grantManualOffer')[0]!.input as GrantManualOfferInput
-    expect(grant.offerRef).toBe('desafio-primeiro-jogo')
+    // Grant com delivery-id/sourceId ESTÁVEIS + somente o curso indicado.
+    const grant = gateway.callsOf('grantManualCourse')[0]!.input as GrantManualCourseInput
+    expect(grant.courseRef).toBe('cade-todo-mundo')
     expect(grant.expiresAt).toBeNull()
     expect(grant.sourceId).toBe(`scholarship:${r.id}`)
-    expect(grant.deliveryId).toBe(`scholarship:${r.id}`)
+    expect(grant.deliveryId).toBe(`scholarship:course:cade-todo-mundo:${r.id}`)
 
     // Welcome do comprador NOVO: token + template da bolsa com link de senha.
     expect(gateway.callsOf('createPasswordToken')).toHaveLength(1)
@@ -99,7 +99,7 @@ describe('RedeemScholarshipService', () => {
     const second = await service.execute(input)
     expect(second.kind).toBe('completed')
     expect(gateway.callsOf('ensureBuyer')).toHaveLength(1) // não repetiu
-    expect(gateway.callsOf('grantManualOffer')).toHaveLength(2)
+    expect(gateway.callsOf('grantManualCourse')).toHaveLength(2)
   })
 
   test('grant 409 → failed grant_conflict (terminal, sem e-mail)', async () => {
@@ -143,16 +143,39 @@ describe('RedeemScholarshipService', () => {
     const r = repo.redemptions[0]!
     expect(r.welcomeSentAt).not.toBeNull() // ...mas o welcome saiu agora
     expect(gateway.callsOf('sendEmail')).toHaveLength(1)
-    expect(gateway.callsOf('grantManualOffer')).toHaveLength(1) // grant NÃO repetiu
+    expect(gateway.callsOf('grantManualCourse')).toHaveLength(1) // grant NÃO repetiu
   })
 
-  test('grant com OFFER_UNRESOLVED → lastError gravado (diagnóstico no admin)', async () => {
-    gateway.grantResult = { status: 502, body: { ok: false, error: 'OFFER_UNRESOLVED' } }
+  test('curso despublicado entre consulta e grant → sem e-mail, lastError gravado', async () => {
+    gateway.grantResult = { status: 503, body: { ok: false, error: 'COURSE_UNAVAILABLE' } }
     const result = await service.execute(input)
-    expect(result.kind).toBe('upstream_error')
+    expect(result.kind).toBe('gift_unavailable')
     const r = repo.redemptions[0]!
     expect(r.status).toBe('pending') // segue retryável
-    expect(r.lastError).toBe('grant:502:OFFER_UNRESOLVED')
+    expect(r.lastError).toBe('grant:503:COURSE_UNAVAILABLE')
+    expect(gateway.callsOf('sendEmail')).toHaveLength(0)
+  })
+
+  test('curso não publicado bloqueia antes de criar conta ou claim', async () => {
+    gateway.availabilityResult = { status: 200, body: { available: false } }
+    expect((await service.execute(input)).kind).toBe('gift_unavailable')
+    expect(repo.redemptions).toHaveLength(0)
+    expect(gateway.callsOf('ensureBuyer')).toHaveLength(0)
+    expect(gateway.callsOf('grantManualCourse')).toHaveLength(0)
+  })
+
+  test('falha ao consultar disponibilidade também bloqueia sem criar conta', async () => {
+    gateway.availabilityResult = { status: 502, body: { error: 'UPSTREAM' } }
+    expect((await service.execute(input)).kind).toBe('upstream_error')
+    expect(repo.redemptions).toHaveLength(0)
+    expect(gateway.callsOf('ensureBuyer')).toHaveLength(0)
+  })
+
+  test('resgate concluído continua reconhecido mesmo se o curso for despublicado depois', async () => {
+    expect((await service.execute(input)).kind).toBe('completed')
+    gateway.availabilityResult = { status: 200, body: { available: false } }
+    expect((await service.execute(input)).kind).toBe('already_redeemed')
+    expect(repo.redemptions).toHaveLength(1)
   })
 
   test('lease em posse de outra execução → processing (202)', async () => {

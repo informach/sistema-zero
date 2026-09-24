@@ -20,22 +20,24 @@ export type RedeemResult =
   | { kind: 'processing' }
   | { kind: 'code_not_found' }
   | { kind: 'already_redeemed' }
+  | { kind: 'gift_unavailable' }
   | { kind: 'failed'; reason: string }
   | { kind: 'upstream_error' }
 
 export interface RedeemOptions {
-  /** Oferta (catálogo) concedida — a MESMA do comprador (curso + bônus). */
-  offerSlug: string
+  /** Curso kids concedido pela indicação, sem a assinatura da Comunidade. */
+  courseSlug: string
   /** Base do app kids (a bolsa v1 é kids) p/ o link de senha/cursos. */
   kidsCommunityUrl: string
   leaseMs: number
 }
 
 /**
- * Resgate da Bolsa do Primeiro Jogo — ordem deliberada CONTA → GRANT → E-MAIL:
+ * Resgate do curso-presente — disponibilidade → CONTA → GRANT → E-MAIL:
  * se o e-mail falhar, o acesso já existe; se o grant falhar, nenhum e-mail
  * mentiroso saiu. Retomável por etapas (colunas user_id/granted_at/
- * welcome_sent_at): toda falha transitória devolve 502 e a PRÓXIMA submissão do
+ * welcome_sent_at): falha transitória devolve 502, curso indisponível devolve 503,
+ * e a PRÓXIMA submissão do
  * mesmo e-mail continua de onde parou. Anti-execução dupla = lease em coluna
  * (`processing_until`) — crash no meio expira sozinho.
  */
@@ -50,6 +52,20 @@ export class RedeemScholarshipService {
     private readonly genPassword: () => string = () => randomBytes(32).toString('base64url'),
   ) {}
 
+  async giftAvailability(): Promise<'available' | 'unavailable' | 'upstream_error'> {
+    const res = await this.gateway.getGiftAvailability(this.opts.courseSlug)
+    if (res.status !== 200) {
+      this.logger.warn('referrals.gift_availability_failed', { status: res.status })
+      return 'upstream_error'
+    }
+    const available = readBoolean(res.body, 'available')
+    if (available === null) {
+      this.logger.error('referrals.gift_availability_invalid_response', { status: res.status })
+      return 'upstream_error'
+    }
+    return available ? 'available' : 'unavailable'
+  }
+
   async execute(input: RedeemInput): Promise<RedeemResult> {
     const code = normalizeCode(input.code)
     if (!isValidCode(code)) return { kind: 'code_not_found' }
@@ -60,6 +76,15 @@ export class RedeemScholarshipService {
     const email = normalizeEmail(input.email)
     const name = input.name.trim().slice(0, 120)
     const phone = normalizePhone(input.phone)
+
+    // Resgate novo só começa quando o curso está publicado. O 409 de um resgate
+    // concluído continua reconhecível mesmo se o curso sair do catálogo depois.
+    const existing = await this.repo.findRedemptionByEmail(email)
+    if (existing?.status !== 'completed') {
+      const availability = await this.giftAvailability()
+      if (availability === 'unavailable') return { kind: 'gift_unavailable' }
+      if (availability === 'upstream_error') return { kind: 'upstream_error' }
+    }
 
     // Claim da bolsa: 1 por e-mail, GLOBAL. Conflito devolve a linha existente —
     // completed = 409; pending/failed = RETOMADA (o 1º claim vence o code_id).
@@ -130,15 +155,17 @@ export class RedeemScholarshipService {
       await this.repo.setRedemptionBuyer(redemption.id, userId, buyerCreated)
     }
 
-    // 2) Grant da oferta completa (dedupe do members por x-delivery-id ESTÁVEL +
+    // 2) Grant do curso indicado (dedupe do members por x-delivery-id ESTÁVEL +
     //    idempotência manual:userId:productId — replay é seguro).
     if (!redemption.grantedAt) {
-      const res = await this.gateway.grantManualOffer({
+      const res = await this.gateway.grantManualCourse({
         userId,
-        offerRef: this.opts.offerSlug,
+        courseRef: this.opts.courseSlug,
         sourceId: `scholarship:${redemption.id}`,
         expiresAt: null,
-        deliveryId: `scholarship:${redemption.id}`,
+        // A versão do presente integra a chave: uma entrega antiga da OFERTA
+        // não pode deduplicar o novo grant do CURSO no members.
+        deliveryId: `scholarship:course:${this.opts.courseSlug}:${redemption.id}`,
       })
       if (res.status === 409) {
         // Terminal: matrícula manual revogada/expirada do mesmo produto exige
@@ -147,28 +174,25 @@ export class RedeemScholarshipService {
         this.logger.warn('referrals.redeem_grant_conflict', { redemptionId: redemption.id })
         return { kind: 'failed', reason: 'grant_conflict' }
       }
-      if (res.status < 200 || res.status >= 300) {
-        // O pending fica retryável, mas o motivo aflora no admin (lastError) —
-        // sem isso um SCHOLARSHIP_OFFER_SLUG errado seria invisível até alguém
-        // ler os logs. Oferta não resolvida/vazia é MISCONFIG (retry nunca cura)
-        // → ERROR (alertável via espelho do Sentry).
+      if (res.status === 503 && readErrorCode(res.body) === 'COURSE_UNAVAILABLE') {
+        // Publicação mudou entre o preflight e o grant. A linha fica pendente
+        // para retomar quando o curso voltar; jamais enviamos boas-vindas falsas.
         await this.repo
           .recordRedemptionError(redemption.id, upstreamErrorSummary('grant', res))
           .catch(() => {})
-        const errorCode = readErrorCode(res.body)
-        const misconfigured = errorCode === 'OFFER_UNRESOLVED' || errorCode === 'OFFER_EMPTY'
-        if (misconfigured) {
-          this.logger.error('referrals.redeem_grant_misconfigured', {
-            redemptionId: redemption.id,
-            status: res.status,
-            errorCode,
-          })
-        } else {
-          this.logger.warn('referrals.redeem_grant_failed', {
-            redemptionId: redemption.id,
-            status: res.status,
-          })
-        }
+        return { kind: 'gift_unavailable' }
+      }
+      if (res.status < 200 || res.status >= 300) {
+        // O pending fica retryável, mas o motivo aflora no admin (lastError) —
+        // sem isso um contrato ou slug errado seria invisível até ler os logs.
+        await this.repo
+          .recordRedemptionError(redemption.id, upstreamErrorSummary('grant', res))
+          .catch(() => {})
+        this.logger.warn('referrals.redeem_grant_failed', {
+          redemptionId: redemption.id,
+          status: res.status,
+          errorCode: readErrorCode(res.body),
+        })
         return { kind: 'upstream_error' }
       }
       await this.repo.markRedemptionGranted(redemption.id, this.now())
@@ -258,6 +282,12 @@ function readBool(body: unknown, key: string): boolean {
   return Boolean(
     body && typeof body === 'object' && (body as Record<string, unknown>)[key] === true,
   )
+}
+
+function readBoolean(body: unknown, key: string): boolean | null {
+  if (!body || typeof body !== 'object' || !(key in body)) return null
+  const value = (body as Record<string, unknown>)[key]
+  return typeof value === 'boolean' ? value : null
 }
 
 /** Código de erro do envelope `{error: {code}}` (gateway/serviços) ou `{error: '<code>'}` (members). */

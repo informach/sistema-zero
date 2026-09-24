@@ -28,7 +28,7 @@ describe('env do referrals', () => {
     const env = loadEnv(prodEnv())
     expect(env.PORT).toBe(3012)
     expect(env.HOST).toBe('::')
-    expect(env.SCHOLARSHIP_OFFER_SLUG).toBe('desafio-primeiro-jogo')
+    expect(env.SCHOLARSHIP_COURSE_SLUG).toBe('cade-todo-mundo')
   })
 
   test('dev mínimo passa (só DATABASE_URL)', () => {
