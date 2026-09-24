@@ -55,9 +55,19 @@ afterEach(() => {
   else process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL = originalChestRiveUrl
 })
 
-function montar(chest: ModuleChestView | null) {
+function montar(
+  chest: ModuleChestView | null,
+  riveSrc = process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL?.trim() || null,
+) {
   return render(
-    <TrailChest courseSlug="meu-curso" moduleId="m1" unitNumber={2} chest={chest} offset={0} />,
+    <TrailChest
+      courseSlug="meu-curso"
+      moduleId="m1"
+      unitNumber={2}
+      chest={chest}
+      offset={0}
+      riveSrc={riveSrc}
+    />,
   )
 }
 
@@ -111,7 +121,14 @@ describe('baú da trilha', () => {
     ).toBe(true)
 
     rerender(
-      <TrailChest courseSlug="meu-curso" moduleId="m1" unitNumber={2} chest={bau()} offset={0} />,
+      <TrailChest
+        courseSlug="meu-curso"
+        moduleId="m1"
+        unitNumber={2}
+        chest={bau()}
+        offset={0}
+        riveSrc={null}
+      />,
     )
     expect(
       container.querySelector('.kids-node--chest-ready')?.classList.contains('kids-node--chest'),
@@ -124,6 +141,7 @@ describe('baú da trilha', () => {
         unitNumber={2}
         chest={bau({ claimed: true })}
         offset={0}
+        riveSrc={null}
       />,
     )
     expect(
@@ -145,6 +163,16 @@ describe('baú da trilha', () => {
     const rive = document.querySelector('[data-chest-rive-src]')
     expect(rive?.getAttribute('data-chest-rive-opening')).toBe('false')
     expect(rive?.getAttribute('data-chest-rive-opened')).toBe('false')
+  })
+
+  test('usa o URL recebido do servidor, sem depender de env pública no navegador', async () => {
+    delete process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL
+    montar(bau({ unlocked: false }), 'https://media.example.com/kids/chest-do-servidor.riv')
+    await act(async () => {})
+
+    expect(
+      document.querySelector('[data-chest-rive-src]')?.getAttribute('data-chest-rive-src'),
+    ).toBe('https://media.example.com/kids/chest-do-servidor.riv')
   })
 
   test('liberado é botão e diz o XP antes de abrir, sem prometer moeda', () => {

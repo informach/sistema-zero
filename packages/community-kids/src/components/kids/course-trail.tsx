@@ -3,6 +3,7 @@ import { Check, Lock, Star } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { CourseDetailView } from '@/lib/types'
+import { chestRiveSrc } from './chest-rive-src'
 import { KidsMascot } from './mascot'
 import { TrailChest } from './trail-chest'
 import {
@@ -53,6 +54,7 @@ function nodeAria(node: TrailNode): string {
 export function CourseTrail({ course }: { course: CourseDetailView }) {
   const units = buildTrail(course)
   const label = balloonLabel(course)
+  const chestRive = chestRiveSrc()
   const lessonHref = (id: string) =>
     `/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(id)}`
 
@@ -185,6 +187,7 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                     // num botão seria pior que não ter botão.
                     chest={unit.module.chest}
                     offset={unit.chest.offset}
+                    riveSrc={chestRive}
                   />
                 </li>
               </ol>

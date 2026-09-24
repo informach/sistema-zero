@@ -16,7 +16,6 @@ export {
   CHEST_RIVE_OPEN_TRIGGER,
   CHEST_RIVE_OPENED_INPUT,
   CHEST_RIVE_STATE_MACHINE,
-  chestRiveSrc,
 } from './chest-rive-contract'
 
 /**

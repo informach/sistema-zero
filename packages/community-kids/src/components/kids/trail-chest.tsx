@@ -8,7 +8,6 @@ import { cn } from '@/lib/cn'
 import { ChestClosedFallback, ChestIcon } from './chest-icon'
 import { ChestReward } from './chest-reward'
 import { ChestRive } from './chest-rive'
-import { chestRiveSrc } from './chest-rive-contract'
 import { useReducedMotion } from './room/use-reduced-motion'
 
 type ChestClaim = { xpAwarded?: number; coinsAwarded?: number }
@@ -30,6 +29,7 @@ export function TrailChest({
   unitNumber,
   chest,
   offset,
+  riveSrc,
 }: {
   courseSlug: string
   moduleId: string
@@ -37,6 +37,8 @@ export function TrailChest({
   /** `null` = o servidor não mandou estado (curso adulto): baú decorativo. */
   chest: ModuleChestView | null
   offset: number
+  /** URL já lida pelo Server Component; nunca depende da env do navegador. */
+  riveSrc: string | null
 }) {
   const router = useRouter()
   const reducedMotion = useReducedMotion()
@@ -49,7 +51,6 @@ export function TrailChest({
   // estado e recebe o foco de volta quando a criança fecha o prêmio.
   const raiz = useRef<HTMLDivElement>(null)
   const aberto = Boolean(chest?.claimed) || abertoAgora
-  const riveSrc = chestRiveSrc()
 
   /** Conclusão idempotente, compartilhada pelo Rive e pelo SVG de queda. */
   const concluirAbertura = useCallback(() => {

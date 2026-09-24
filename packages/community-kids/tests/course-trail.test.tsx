@@ -14,6 +14,9 @@ mock.module('next/navigation', () => ({
   ...nav,
   useRouter: () => ({ refresh: () => {}, push: () => {} }),
 }))
+// CourseTrail é Server Component; no browser real o Next respeita a fronteira.
+// O happy-dom o renderiza como cliente, então neutralizamos só o marcador aqui.
+mock.module('server-only', () => ({}))
 const { CourseTrail } = await import('../src/components/kids/course-trail')
 
 const riv = (nome: string) => `https://media.example.com/admin/module-rive/${nome}.riv`
