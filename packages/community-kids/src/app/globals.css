@@ -1247,9 +1247,9 @@ a.kid-pop:has(> .kids-carta):hover {
     --k3d-degrau: color-mix(in oklab, var(--pen-degrau-cartao) 72%, var(--pen-tinta));
   }
   .kids-node--chest-open {
-    background-color: var(--unit-bg);
-    background-image: var(--unit-bg-image);
-    color: var(--unit-fg);
+    background-color: var(--card);
+    color: var(--kids-ouro-fg);
+    border: 2px solid var(--kids-ouro-texto);
     --k3d-altura: 8px;
     --k3d-degrau: color-mix(in oklab, var(--kids-ouro) 58%, var(--pen-tinta));
   }

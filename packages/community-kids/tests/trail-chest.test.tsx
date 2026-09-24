@@ -107,6 +107,7 @@ describe('baú da trilha', () => {
     expect(closed).toContain('--k3d-altura: 6px')
     expect(closed).toContain('var(--pen-degrau-cartao)')
     expect(open).toContain('--k3d-altura: 8px')
+    expect(open).toContain('background-color: var(--card)')
     expect(open).toContain('var(--kids-ouro) 58%')
     expect(ready).toContain('--k3d-altura: 8px')
     expect(hover).toContain('--k3d-altura: 9px')
