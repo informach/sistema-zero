@@ -343,7 +343,8 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // com o `onerror` ainda pendurado, a própria limpeza do "jogar de novo"
   // acusava TODOS os sons carregados. Soltar de verdade (tirar o atributo,
   // remandar carregar, desligar o aviso) não cabe numa linha inline.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1240)
+  // 1240 → 1241: +1 rótulo acessível do botão de direção no modo sem ações.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1241)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

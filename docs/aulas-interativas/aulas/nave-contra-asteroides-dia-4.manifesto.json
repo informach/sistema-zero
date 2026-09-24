@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "courseSlug": "desafio-primeiro-jogo",
+  "courseSlug": "nave-contra-asteroides",
   "lessonSlug": "dia-4",
   "title": "O jogo passa a contar",
   "blocks": [
@@ -9,7 +9,7 @@
       "content": {
         "kind": "studio",
         "purpose": "submission",
-        "chain": "desafio-primeiro-jogo",
+        "chain": "nave-contra-asteroides",
         "level": "iniciante-2d",
         "allowedModes": ["blocks"],
         "allowLevelReveal": false,
@@ -54,12 +54,12 @@
         "showcase": {
           "enabled": false,
           "title": "Nave contra Asteroides",
-          "summary": "Um jogo de nave, tiros e asteroides criado no Desafio do Primeiro Jogo."
+          "summary": "Um jogo de nave, tiros e asteroides criado em Nave Contra Asteroides."
         },
         "initialProject": {
           "formatVersion": 2,
           "projectTools": [],
-          "id": "manifest-desafio-4",
+          "id": "manifest-nave-contra-asteroides-4",
           "name": "Nave contra Asteroides",
           "createdAt": 0,
           "updatedAt": 0,

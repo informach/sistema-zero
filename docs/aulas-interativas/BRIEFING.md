@@ -12,8 +12,9 @@
 
 ## 1. O que estamos fazendo e por quê
 
-Os três cursos de jogos do Sistema Zero (Desafio do Primeiro Jogo, Corre Dino, O Jogo do Meu Jeito)
-foram gravados num formato antigo: um vídeo único por aula mostrando tudo. A plataforma mudou de
+Os jogos já gravados do Sistema Zero (Nave Contra Asteroides, Corre Dino e O Jogo do Meu Jeito)
+foram concebidos num formato antigo: um vídeo único por aula mostrando tudo. O novo Desafio do
+Primeiro Jogo foi redesenhado em três dias como **A Chave do Farol**, separado do jogo de nave. A plataforma mudou de
 forma estrutural, e o formato das aulas mudou junto: agora cada aula é uma sequência de **seções**,
 e cada seção tem **blocos** de conteúdo.
 
@@ -264,15 +265,16 @@ página verdadeira do caderno. Registrar a seção no relatório, no manifesto e
   primeira menção.
 - Âncora em todo encaixe. Nunca "dentro do Ao iniciar"; sempre "dentro do Ao iniciar, logo acima do
   Ir para a tela".
-- **Não existe botão de play.** As três ações reais: "olha o seu jogo aí embaixo", "clica na área do
-  jogo e aperta X", "recarrega a página". "Roda o jogo" é instrução proibida.
+- **Nomear a ação real da interface.** Na prévia do Estúdio existem **Reproduzir** e **Atualizar**;
+  para reiniciar um teste, apontar **Atualizar**, não mandar recarregar a página inteira. Não inventar
+  um Play em outra tela nem dizer apenas "roda o jogo" sem mostrar onde agir.
 - Sem vocabulário de outro jogo (nada de nave e asteroide num curso de dino).
 - Usar o vocabulário canônico: relógio (timer), faxina (culling), medidor, camadas, estados do
   jogo, sorteio, apelido, embrulhar no Se, quadros de invencibilidade, HUD, área de colisão.
 
 ## 7. Fontes a ler para cada aula
 
-Para os Dias 1 a 5 do **Desafio do Primeiro Jogo**, ler primeiro os roteiros originais em
+Para os Dias 1 a 5 de **Nave Contra Asteroides** (antigo Desafio), ler primeiro os roteiros originais em
 `C:\Users\tocha\Documents\fluxo-criativo\meus-produtos\desafio-primeiro-jogo\entregas\videos\roteiro-aula-diaN-desafio-primeiro-jogo.md`.
 Eles são a fonte da sequência de raciocínio, dos exemplos e das analogias. Não são referência
 para os nomes atuais da paleta, os valores corrigidos, o comportamento do jogo nem a estrutura
@@ -281,11 +283,11 @@ nova de seções. Introdução e certificado têm percurso próprio e não entra
 Por aula, na referência histórica `C:\Users\tocha\projects\sistema-zero\docs\aulas-interativas-legado\{curso}-v6\{aula}\`:
 
 - `roteiro.md` — o percurso v6, a fala revisada daquela versão, o trecho gravado e as instruções
-  de montagem. Leia inteiro; no Desafio, confronte-o com o roteiro original acima antes de
+  de montagem. Leia inteiro; em Nave Contra Asteroides, confronte-o com o roteiro original acima antes de
   aproveitar qualquer explicação ou analogia.
 - `manifesto.json` — a estrutura importável: seções, intenções, blocos, critérios de conclusão.
 - `montagem.json` — o mapa dos clipes: arquivo de origem, primeira e última fala, o que editar.
-- `configuracao-estudio.json` — só nos dias do Desafio: blocos liberados, chain, vitrine.
+- `configuracao-estudio.json` — só nos antigos dias do Desafio, hoje Nave Contra Asteroides: blocos liberados, chain, vitrine.
 
 No nível do curso:
 

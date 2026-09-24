@@ -46,7 +46,7 @@ test('confirma todas as remoções antes de substituir o rascunho', async () => 
   const source = await Bun.file(
     resolve(
       import.meta.dir,
-      '../../../../docs/aulas-interativas/aulas/desafio-dia-1.manifesto.json',
+      '../../../../docs/aulas-interativas/aulas/nave-contra-asteroides-dia-1.manifesto.json',
     ),
   ).text()
   const container = document.createElement('div')
@@ -68,7 +68,7 @@ test('confirma todas as remoções antes de substituir o rascunho', async () => 
         <LessonManifestImport
           lessonId="lesson"
           lessonSlug="dia-1"
-          courseSlug="desafio-primeiro-jogo"
+          courseSlug="nave-contra-asteroides"
           disabled={false}
           beforeImport={async () => {}}
           onImported={async () => {

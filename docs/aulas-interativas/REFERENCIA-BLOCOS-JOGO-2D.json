@@ -1786,7 +1786,12 @@
       }
     ],
     "opcoes": {
-      "MODE": ["automáticos no celular", "sempre visíveis", "sem botões na tela"]
+      "MODE": [
+        "automáticos no celular",
+        "sempre visíveis",
+        "só as quatro direções",
+        "sem botões na tela"
+      ]
     },
     "familia": "Controles",
     "secao": "Teclado, ações e toque",

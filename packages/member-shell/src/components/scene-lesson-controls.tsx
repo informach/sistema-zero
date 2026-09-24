@@ -19,6 +19,7 @@ import { CoreSceneControls } from './scene-core-controls'
 import { DinoNumbersControls } from './scene-dino-numbers-controls'
 import { FixedVsReadControls } from './scene-fixed-vs-read'
 import { InvincibilityControls } from './scene-invincibility'
+import { LighthouseKeyControls } from './scene-lighthouse-key'
 import { MotionAmountControls } from './scene-motion-amount'
 import { MotorSceneControls } from './scene-motor-controls'
 import { NucleoSceneControls } from './scene-nucleo-controls'
@@ -94,6 +95,25 @@ export function LessonSceneControls({
           dispatch={dispatch}
         />
       )}
+      {m === 'touch-response' && (
+        <div className="flex flex-wrap gap-2">
+          <SceneButton
+            tom={state.match.touch ? 'ligado' : 'ferramenta'}
+            aria-pressed={state.match.touch}
+            onClick={() =>
+              dispatch({ type: 'connect', port: 'touch', enabled: !state.match.touch })
+            }
+          >
+            {state.match.touch ? 'Desligar a reação ao toque' : 'Ligar a reação ao toque'}
+          </SceneButton>
+          {state.match.screen === 'playing' && (
+            <SceneButton tom="discreta" onClick={() => dispatch({ type: 'home' })}>
+              Voltar ao começo
+            </SceneButton>
+          )}
+        </div>
+      )}
+      {m === 'lighthouse-key' && <LighthouseKeyControls state={state} dispatch={dispatch} />}
       {m === 'fixed-vs-read' && <FixedVsReadControls state={state} dispatch={dispatch} />}
       {m === 'collision-pair' && <CollisionPairControls state={state} dispatch={dispatch} />}
       {m === 'invincibility' && <InvincibilityControls state={state} dispatch={dispatch} />}

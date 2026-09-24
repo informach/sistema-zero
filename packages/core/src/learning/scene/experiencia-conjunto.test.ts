@@ -280,7 +280,7 @@ describe('M5 · a previsão que afirma um estado que a tela ainda não mostra co
     const manifestos = readdirSync(raiz)
       .filter((nome) => nome.endsWith('.manifesto.json'))
       .map((nome) => resolve(raiz, nome))
-    expect(manifestos).toHaveLength(28)
+    expect(manifestos).toHaveLength(34)
     let vistas = 0
     const premissasAntecipadas: string[] = []
     const visitar = (o: unknown) => {

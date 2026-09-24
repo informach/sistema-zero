@@ -1,34 +1,31 @@
-# Roteiro de gravação · Desafio do Primeiro Jogo · Seu certificado e próximos passos
+# Roteiro de gravação · Desafio do Primeiro Jogo · Certificado
 
-## Especificações
-
-- **Formato:** um vídeo de apresentação, narrado sobre o jogo concluído, o certificado já emitido, uma prévia identificada da Comunidade e a página pública da oferta.
-- **Duração alvo:** 75 a 90 segundos.
-- **Critério:** 90% do vídeo assistido concluem a segunda seção. O botão **Concluir aula** fica disponível depois disso; clicar na oferta ou assinar não é requisito.
-- **Direção:** gravar com a página e os recursos atuais em staging. Não mostrar ferramentas da assinatura como se estivessem liberadas pela compra isolada do Desafio. Não citar preço, prazo promocional ou promessa de resultado.
-- **Seção sem vídeo:** a primeira seção usa o balão e o bloco de certificado. Depois de tocar em **Pegar meu certificado**, o PDF baixa e a seção de próximos passos é liberada.
-
----
+Duas seções. A primeira não tem vídeo: o bloco do certificado emite o arquivo depois de **Pegar meu certificado**. A segunda tem um vídeo voltado ao responsável; começa pedindo que a criança o chame. Não pedir à criança que venda a assinatura. A página pública da oferta é opcional e não conclui a aula. Conferir a interface e o endereço da página em staging antes da gravação.
 
 ## Seção 1. Seu certificado
 
-Não há clipe nesta seção. O balão do manifesto orienta a emitir o certificado e guardar ou imprimir o PDF com um responsável.
+Não há gravação. O Zappy diz, em uma frase curta, o que a criança realizou e onde pegar o certificado. O bloco **certificado** mantém a emissão existente, com o nome do Desafio e a conquista do farol. O arquivo pode ser guardado ou impresso com um responsável.
 
-## Seção 2. Próximos passos
+## Seção 2. Uma conversa com a família
 
-### Clipe `video-pitch` · O que vem depois do seu jogo
+### Vídeo `video-pitch-farol` · Para a família: próximos caminhos de criação
 
-**Na tela:** abrir o jogo pronto. Mostrar a nave se movendo, um disparo, um asteroide, o placar, as vidas e as telas de começo e fim. Cortar para o certificado já emitido, sem nome real de aluno.
-
-**Narração:**
-> "Olha o que você fez. A nave se move, atira, enfrenta asteroides, conta pontos e vidas e tem começo e fim. Você montou essas partes uma por uma. O certificado que acabou de pegar registra essa conquista. Mostre o jogo a alguém da sua casa e convide essa pessoa para jogar!"
-
-**Na tela:** mostrar uma prévia marcada como **Comunidade dos Criadores**. Passar pela Jornada do Criador, cartões de cursos, Estúdio, Pinta, Pensa, Molda, Mural, Clube e Recados. As ferramentas ainda bloqueadas no perfil do Desafio aparecem apenas como prévia, nunca como acesso já liberado.
+**Na tela:** o farol aceso e o barco chegando no jogo completo. Depois o certificado emitido, sem dados reais. Abrir a prévia claramente identificada da Comunidade dos Criadores, sem apresentar cursos bloqueados como liberados.
 
 **Narração:**
-> "Se quiser continuar criando, há outros cursos e outras ferramentas na **Comunidade dos Criadores**. A assinatura reúne os cursos da plataforma e o Estúdio, o Pinta, o Pensa e o Molda. Cada ferramenta chega conforme o seu avanço na **Jornada do Criador**. Tem também o Mural para mostrar jogos, o Clube para trocar ideias e os Recados para receber orientação do professor nas atividades enviadas."
+> "Antes de continuar, chama um responsável para assistir esta parte com você. Vou falar agora com quem cuida de você."
 
-**Na tela:** abrir a página pública da oferta sem enquadrar um preço como parte fixa do vídeo. Mostrar o link **Conhecer a Comunidade dos Criadores** abaixo do player. Voltar à aula e apontar o botão **Concluir aula**, sem clicar antes de a seção ficar concluída.
+**Na tela:** breve pausa para a pessoa chegar. Retomar com o jogo e o certificado visíveis.
 
 **Narração:**
-> "Agora chama um responsável para olhar essa parte com você. A página abaixo mostra o que a assinatura inclui e as condições dos planos antes de qualquer compra. Vocês podem ler com calma e decidir juntos. A assinatura é uma escolha da família. Depois de assistir ao vídeo, toque em **Concluir aula** para registrar o fim do Desafio. O jogo que você construiu e o certificado mostram o que você já conseguiu fazer."
+> "Oi! Ao longo de três dias, a criança construiu as regras de A Chave do Farol. Ela fez o personagem andar, programou a coleta da chave e ensinou o jogo a decidir quando a porta podia abrir. O cenário e os desenhos estavam preparados; a lógica que liga esses momentos foi feita por ela. O certificado registra essa primeira conquista, e o jogo pode ser mostrado e jogado em casa."
+
+**Na tela:** apresentar a prévia da Jornada, dos outros cursos e das ferramentas da Comunidade, marcando o que ainda depende da assinatura e do avanço. Mostrar Mural, Clube e Recados sem prometer acesso imediato a todos.
+
+**Narração:**
+> "Se ela gostou de criar e quiser continuar, a Comunidade dos Criadores oferece outros jogos para construir e ferramentas que vão sendo liberadas conforme o avanço na Jornada. Há espaço para mostrar criações no Mural, trocar ideias no Clube e receber orientação sobre atividades enviadas. Cada curso acrescenta uma habilidade nova; a ideia é que ela avance no próprio ritmo, com desafios cada vez mais ricos."
+
+**Na tela:** apontar **Conhecer a Comunidade dos Criadores**, que abre a página pública da oferta fora do ambiente infantil. Não exibir um preço, bônus, condição ou prazo como parte fixa do vídeo. Voltar ao botão **Concluir aula**.
+
+**Narração:**
+> "O link abaixo leva à página da oferta, fora da plataforma da criança. Lá você pode ver o que está incluído, os planos e as condições atuais antes de decidir. Não precisa abrir a página nem comprar nada para ela concluir este Desafio. Depois deste vídeo, basta concluir a aula. E, se ela quiser, pode voltar ao jogo e mostrar como fez o farol acender."

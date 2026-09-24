@@ -235,6 +235,15 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
     explanation:
       'Nesta experiência, vamos ligar um controle do jogo e observar o que ele permite fazer.',
   },
+  'touch-response': {
+    label: 'O esconderijo e o toque',
+    explanation:
+      'Nesta experiência, um personagem está atrás do esconderijo. Você vai testar o que acontece ao tocá-lo.',
+  },
+  'lighthouse-key': {
+    label: 'A porta do farol',
+    explanation: 'Nesta experiência, você vai testar a mesma porta em duas situações.',
+  },
   restart: {
     label: 'O botão de recomeçar',
     explanation:
@@ -1171,6 +1180,50 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       explanation:
         // ⚠️ Sem "o evento escuta" e "a promessa virou verdade" (full review de experiência, B11).
         'Escrever toque na tela não liga nada. O jogo só começa quando o toque está na caixa que chama Começar. Agora o convite e o jogo dizem a mesma coisa.',
+    },
+  },
+  'touch-response': {
+    prediction: {
+      prompt: 'O que muda quando um toque ganha uma ação?',
+      choices: [
+        { id: 'responde', label: 'O jogo pode responder ao toque.' },
+        {
+          id: 'nada',
+          label: 'O jogo continua igual.',
+          shows: 'Com a reação ligada, o personagem apareceu depois do toque.',
+        },
+      ],
+      correctChoiceId: 'responde',
+      revealOn: 'responds',
+    },
+    explain: {
+      prompt: 'O que fez o personagem aparecer?',
+      choices: [
+        { id: 'toque', label: 'O toque ligado à ação de revelar.' },
+        { id: 'tempo', label: 'Esperar o tempo passar.' },
+      ],
+      correctChoiceId: 'toque',
+      explanation: 'O toque foi o acontecimento. A ação ligada a ele revelou o personagem.',
+    },
+  },
+  'lighthouse-key': {
+    prediction: {
+      prompt: 'O personagem chega à porta sem a chave. O que você acha que acontece?',
+      choices: [
+        { id: 'abre', label: 'A porta abre.', shows: 'A porta continuou fechada.' },
+        { id: 'fecha', label: 'A porta continua fechada.' },
+      ],
+      correctChoiceId: 'fecha',
+      revealOn: 'locked-without-key',
+    },
+    explain: {
+      prompt: 'Por que a mesma porta abriu na segunda tentativa?',
+      choices: [
+        { id: 'tempo', label: 'Porque passou mais tempo.' },
+        { id: 'chave', label: 'Porque o personagem estava com a chave.' },
+      ],
+      correctChoiceId: 'chave',
+      explanation: 'O jogo conferiu se o personagem tinha a chave antes de abrir a porta.',
     },
   },
   restart: {

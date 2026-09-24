@@ -45,6 +45,8 @@ export const SCENE_IDS = [
   'cleanup',
   'game-state',
   'controls',
+  'touch-response',
+  'lighthouse-key',
   'restart',
   'hitbox',
   'score',
@@ -131,6 +133,8 @@ export type ScenePort = (typeof SCENE_PORTS)[number]
 export type SceneAction =
   | { type: 'place-in-area'; card: OnceCardId; area: OnceArea | 'outside' }
   | { type: 'trigger' }
+  | { type: 'key-state'; hasKey: boolean }
+  | { type: 'try-lighthouse-door' }
   | { type: 'value-source'; source: 'fixed' | 'read' }
   | { type: 'box-marks'; on: boolean }
   | { type: 'clear-marks' }
@@ -321,6 +325,8 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   cleanup: ['cleanup'],
   'game-state': ['condition'],
   controls: ['touch'],
+  'touch-response': ['touch'],
+  'lighthouse-key': [],
   restart: ['restart'],
   hitbox: [],
   score: ['condition'],
@@ -624,7 +630,7 @@ export function sceneLongFrame(scene: SceneId): boolean {
 }
 
 const JUMPS: readonly SceneId[] = ['gravity', 'impulse', 'jump-sound']
-const MATCHES: readonly SceneId[] = ['controls', 'restart', 'game-state', 'score']
+const MATCHES: readonly SceneId[] = ['controls', 'touch-response', 'restart', 'game-state', 'score']
 /** As duas cenas que mostram os mesmos dois quadros: a troca e o fantasma. */
 const ANIMATIONS: readonly SceneId[] = ['frames', 'onion-skin']
 
@@ -646,6 +652,10 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       )
     case 'trigger':
       return scene === 'once-vs-always'
+    case 'key-state':
+      return scene === 'lighthouse-key' && typeof value.hasKey === 'boolean'
+    case 'try-lighthouse-door':
+      return scene === 'lighthouse-key'
     case 'value-source':
       return scene === 'fixed-vs-read' && (value.source === 'fixed' || value.source === 'read')
     case 'box-marks':

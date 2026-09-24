@@ -1,5 +1,10 @@
 # Implantação da aula final do Desafio
 
+> **Plano histórico; não executar.** Esta sequência pressupõe o antigo Desafio com cinco dias de
+> nave e pitch dentro da aula de certificado. Os cinco dias agora pertencem a Nave Contra
+> Asteroides; a introdução e o certificado foram reservados para o novo Desafio de três dias e
+> ainda não tiveram o conteúdo adaptado. Replanejar a implantação antes de usar o script abaixo.
+
 Esta mudança prepara o redesenho em código e arquivos de autoria. Ela não altera o curso publicado por si só. A aula nova reúne o certificado e o pitch da Comunidade dos Criadores no módulo 3.
 
 ## Preparação em staging

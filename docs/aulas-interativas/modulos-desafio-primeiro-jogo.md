@@ -1,29 +1,29 @@
 # Módulos do Desafio do Primeiro Jogo
 
-**Título do curso:** Desafio do Primeiro Jogo
+**Título do curso:** Desafio do Primeiro Jogo — A Chave do Farol
 
-**Descrição curta:** Crie seu primeiro jogo de nave, do movimento à partida completa.
+**Descrição curta:** Crie sua primeira aventura: encontre a chave e acenda o farol para guiar um barco.
 
-**Descrição:** Na primeira aula, você conhece o Estúdio. Depois, cria seu jogo de nave em cinco dias: faz a nave se mover e atirar, coloca asteroides, conta pontos e vidas e monta as telas de começo e fim. No final, pega seu certificado e descobre como continuar criando.
+**Descrição:** Em três dias, você transforma um cenário preparado num jogo que responde às suas ideias. Primeiro, faz o personagem andar pelo mapa com setas no teclado ou controles de toque. Depois, ensina o jogo a recolher a chave e a lembrar que ela foi encontrada. Por fim, cria uma regra para a porta do farol: a luz só acende quando o personagem está com a chave, e o barco encontra o caminho. A arte já vem pronta para você se concentrar nas regras que dão vida à aventura. O Estúdio aparece dentro das aulas; não é preciso usar o Pinta nem o Estúdio completo.
 
-## Módulo 1 — A nave ganha vida
+## Módulo 1 — Sua aventura no farol
 
-**Resumo:** Conheça o Estúdio e faça uma nave aparecer, se mover e ficar na tela.
+**Resumo:** Conheça a plataforma, construa três regras do jogo e comemore sua primeira aventura completa.
 
-- **Boas-vindas:** [Onde fica cada coisa](aulas/desafio-introducao.md)
-- **Dia 1:** [A nave ganha vida](aulas/desafio-dia-1.md)
+- **Introdução:** [A aventura começa aqui](aulas/desafio-introducao.md)
+- **Dia 1:** [O personagem ganha movimento](aulas/desafio-dia-1.md)
+- **Dia 2:** [A chave muda a aventura](aulas/desafio-dia-2.md)
+- **Dia 3:** [A luz do farol](aulas/desafio-dia-3.md)
+- **Encerramento:** [Seu certificado e próximos passos](aulas/desafio-certificado.md)
 
-## Módulo 2 — Tiros e asteroides
+## Importação e produção
 
-**Resumo:** Faça a nave atirar e crie asteroides que caem e reagem quando levam um tiro.
+Identificador interno e cadeia do projeto: `desafio-primeiro-jogo`. Destinos das aulas: `boas-vindas`, `dia-1`, `dia-2`, `dia-3`, `certificado`. Importar os cinco `.manifesto.json` correspondentes, depois de criar as aulas no admin. A cadeia prioriza o projeto enviado pela criança; os snapshots embutidos dos Dias 2 e 3 são retomadas para quando não houver trabalho anterior. O jogo usa só a extensão Jogo 2D e blocos básicos de variável e condição. O direcional tem quatro botões de toque e também aceita teclado.
 
-- **Dia 2:** [A nave atira](aulas/desafio-dia-2.md)
-- **Dia 3:** [A chuva de pedras](aulas/desafio-dia-3.md)
+Todos os vídeos estão em `plannedVideo`. Gravar a partir dos roteiros falados, um vídeo por seção, vincular no admin e testar reprodução/conclusão antes de publicar. O caderno e o mapa familiar são materiais opcionais: anexar os PDFs ao bloco `materiais-farol` e conferir os nomes exibidos antes de gravar a introdução. O certificado preserva a emissão; o vídeo de continuidade é voltado ao responsável e leva à oferta externa sem exigir acesso, clique ou compra para concluir.
 
-## Módulo 3 — O jogo completo e a conquista
+O curso antigo de nave agora se chama [Nave Contra Asteroides](modulos-nave-contra-asteroides.md) e tem seus cinco dias em outro `courseSlug`. A introdução e o certificado pertencem apenas a este Desafio. Não alterar preço, prazo de acesso, catálogo ou funil durante esta importação editorial.
 
-**Resumo:** Coloque pontos, vidas e telas de começo e fim no seu jogo. Depois, pegue seu certificado e descubra os próximos passos com quem cuida de você.
+## Verificações antes de liberar
 
-- **Dia 4:** [O jogo passa a contar](aulas/desafio-dia-4.md)
-- **Dia 5:** [O jogo ganha começo e fim](aulas/desafio-dia-5.md)
-- **Aula final:** [Seu certificado e próximos passos](aulas/desafio-certificado.md)
+Rodar `bun docs/aulas-interativas/qa/validar-manifestos.ts desafio-` e os testes de projeto/manifesto. Em navegador real, testar o jogo do começo ao fim por toque e teclado, inclusive tela estreita e Estúdio ampliado; confirmar que o direcional não cobre elementos essenciais. Repetir sem chave e com chave, confirmar coleta única, reinício por **Atualizar**, a luz acendendo e o barco chegando. Confirmar continuidade entre dias, entrega, certificado e materiais. Como os vídeos ainda não foram gravados, o curso não está pronto para publicação.

@@ -5,7 +5,13 @@ import {
   type SceneCenarioId,
   type SceneFigure,
 } from '@sistemazero/core/learning/scene'
-import type { NomeDaFigura } from '@sistemazero/studio/arte'
+import {
+  FAROL_ASSETS,
+  farolSvgUrl,
+  JARDIM_ASSETS,
+  jardimSvgUrl,
+  type NomeDaFigura,
+} from '@sistemazero/studio/arte'
 import { ArteSvg } from './scene-arte'
 
 /**
@@ -43,7 +49,13 @@ import { ArteSvg } from './scene-arte'
  * ⚠️ A `floresta` do elenco é a ÁRVORE do catálogo: no jogo, "floresta" é o FUNDO (os morros que
  * rolam), e o papel de cenário do Corre Dino sempre foi uma árvore.
  */
-const FIGURA_DA_ARTE: Record<Exclude<SceneFigure, 'estrelas'>, NomeDaFigura> = {
+const FIGURA_DA_ARTE: Record<
+  Exclude<
+    SceneFigure,
+    'estrelas' | 'coelho' | 'arbusto' | 'flores' | 'personagem-farol' | 'chave-farol' | 'farol'
+  >,
+  NomeDaFigura
+> = {
   dino: 'dino',
   cacto: 'cacto',
   floresta: 'arvore',
@@ -99,6 +111,41 @@ export function ActorFigure({
    */
   t?: number
 }) {
+  if (figure === 'personagem-farol' || figure === 'chave-farol' || figure === 'farol') {
+    const name =
+      figure === 'personagem-farol'
+        ? 'personagem'
+        : figure === 'chave-farol'
+          ? 'chave'
+          : 'farol-apagado'
+    const asset = FAROL_ASSETS[name]
+    const size = figure === 'farol' ? escala * 0.45 : escala
+    return (
+      <image
+        data-figure={figure}
+        href={farolSvgUrl(name)}
+        x={x - (asset.width * size) / 2}
+        y={y - asset.height * size}
+        width={asset.width * size}
+        height={asset.height * size}
+        opacity={ghost ? 0.3 : 1}
+      />
+    )
+  }
+  if (figure === 'coelho' || figure === 'arbusto' || figure === 'flores') {
+    const asset = JARDIM_ASSETS[figure]
+    return (
+      <image
+        data-figure={figure}
+        href={jardimSvgUrl(figure)}
+        x={x - (asset.width * escala) / 2}
+        y={y - asset.height * escala}
+        width={asset.width * escala}
+        height={asset.height * escala}
+        opacity={ghost ? 0.3 : 1}
+      />
+    )
+  }
   if (figure === 'estrelas')
     return (
       <g

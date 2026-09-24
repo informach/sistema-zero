@@ -79,6 +79,11 @@ export interface SceneWorld {
   drawn: boolean
   front: boolean
 }
+/** O que a criança escolheu levar e a resposta da porta no último teste. */
+export interface SceneLighthouseKey {
+  hasKey: boolean
+  door: 'closed' | 'open'
+}
 /** O salto. `atForce`/`atGravity` congelam as condições do voo em curso, para que mexer nos
  *  controles no meio do ar não reescreva a trajetória que já começou. */
 export interface SceneFlight {
@@ -1271,6 +1276,7 @@ function isSceneSkinGame(value: unknown): value is SceneSkinGame {
 
 export interface SceneState {
   evidence: SceneEvidence
+  lighthouse: SceneLighthouseKey
   once: SceneOnce
   fixedRead: SceneFixedRead
   collisionPair: SceneCollisionPair
@@ -1550,6 +1556,7 @@ const MODEL_PADRAO: SceneModelView = { yaw: 1, see: 'nada', sawHalf: false }
 const RAY_PADRAO: SceneRay = { x: 240, y: 235, hit: 0, hits: [] }
 const INK_PADRAO: SceneInk = { fill: true, stroke: true, seen: [] }
 const LIGHT_PADRAO: SceneLight = { side: 'left', shade: false, sides: [] }
+const LIGHTHOUSE_PADRAO: SceneLighthouseKey = { hasKey: false, door: 'closed' }
 const CLOCK_PADRAO: SceneClock = { carry: 0 }
 
 /**
@@ -1572,6 +1579,7 @@ const CLOCK_PADRAO: SceneClock = { carry: 0 }
 export function hydrateSceneState(value: unknown): unknown {
   if (!isRecord(value)) return value
   const grupos = [
+    ['lighthouse', LIGHTHOUSE_PADRAO],
     ['once', initialOnce(undefined)],
     ['fixedRead', FIXED_READ_PADRAO],
     ['collisionPair', COLLISION_PAIR_PADRAO],
@@ -1651,6 +1659,7 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
   const impulso = initialImpulse ?? (scene === 'jump-sound' ? SCENE_LIMITS.impulse.max : 9)
   return {
     evidence: { actions: 0, discoveries: [], observations: [], hints: 0 },
+    lighthouse: { ...LIGHTHOUSE_PADRAO },
     once: initialOnce(scene === 'once-vs-always' ? oncePreset(setup?.preset) : undefined),
     fixedRead: { ...FIXED_READ_PADRAO, shots: [], marks: [] },
     collisionPair: { ...COLLISION_PAIR_PADRAO, shots: [0, 1, 2], rocks: [0, 1, 2] },
@@ -1818,6 +1827,7 @@ export function cloneScene(state: SceneState): SceneState {
       // guarda (`copia-do-estado.test.ts`, full review de 16/09/2026).
       observations: state.evidence.observations.map((o) => ({ ...o })),
     },
+    lighthouse: { ...state.lighthouse },
     once: cloneOnce(state.once),
     fixedRead: {
       ...state.fixedRead,
@@ -2015,6 +2025,12 @@ const numbers = (v: unknown, max: number): v is number[] =>
  */
 export function isSceneState(value: unknown): value is SceneState {
   if (!isRecord(value)) return false
+  if (
+    !isRecord(value.lighthouse) ||
+    typeof value.lighthouse.hasKey !== 'boolean' ||
+    (value.lighthouse.door !== 'closed' && value.lighthouse.door !== 'open')
+  )
+    return false
   if (!isSceneOnce(value.once)) return false
   if (!isSceneFixedRead(value.fixedRead)) return false
   if (!isSceneCollisionPair(value.collisionPair)) return false

@@ -62,7 +62,7 @@ describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)'
     const files = readdirSync(aulas).filter(
       (name) => name.startsWith(prefix) && name.endsWith('.manifesto.json'),
     )
-    expect(files).toHaveLength(course === 'corre-dino' ? 13 : 7)
+    expect(files).toHaveLength(course === 'corre-dino' ? 13 : 5)
     const blocks = [
       ...new Set(
         files.flatMap((name) => {

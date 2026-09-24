@@ -89,8 +89,8 @@ def audit(manifest_path):
 manifests = sorted(ROOT.glob('*.manifesto.json'))
 prefix = sys.argv[1] if len(sys.argv) > 1 else ''
 selected = [path for path in manifests if not prefix or path.name.startswith(prefix)]
-if not selected or (not prefix and len(selected) != 28):
-    expected = 'manifestos com o prefixo' if prefix else '28 manifestos'
+if not selected or (not prefix and len(selected) != 34):
+    expected = 'manifestos com o prefixo' if prefix else '34 manifestos'
     print(f'ERRO: esperados {expected}, encontrados {len(selected)} em {ROOT}')
     raise SystemExit(1)
 total = 0

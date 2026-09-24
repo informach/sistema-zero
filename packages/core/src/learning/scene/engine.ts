@@ -382,6 +382,24 @@ export function stepScene(
   const scene = start.scene
 
   switch (action.type) {
+    case 'key-state':
+      s.lighthouse.hasKey = action.hasKey
+      s.lighthouse.door = 'closed'
+      s.caption = action.hasKey
+        ? 'A chave está com o personagem. O que a porta fará?'
+        : 'O personagem está sem a chave. O que a porta fará?'
+      break
+    case 'try-lighthouse-door':
+      if (s.lighthouse.hasKey) {
+        s.lighthouse.door = 'open'
+        s.caption = 'A porta abriu. A luz do farol acendeu!'
+        observe(s, 'opened-with-key', 'A porta abriu com a chave')
+      } else {
+        s.lighthouse.door = 'closed'
+        s.caption = 'A porta continua fechada.'
+        observe(s, 'locked-without-key', 'A porta ficou fechada sem a chave')
+      }
+      break
     case 'value-source':
       s.fixedRead.source = action.source
       s.caption =
@@ -834,9 +852,18 @@ export function stepScene(
         break
       }
       if (s.match.screen !== 'start') break
-      if (scene === 'controls' && action.input === 'tap' && !s.match.touch) {
+      if (scene === 'touch-response' && action.input !== 'tap') break
+      if (
+        (scene === 'controls' || scene === 'touch-response') &&
+        action.input === 'tap' &&
+        !s.match.touch
+      ) {
         registrarTentativa(s, 'tap', false)
-        observe(s, 'missing-touch', 'Tocou e nada aconteceu.')
+        observe(
+          s,
+          scene === 'controls' ? 'missing-touch' : 'no-response',
+          'Tocou e nada aconteceu.',
+        )
         // ⚠️ O que ACONTECEU, e não o que falta: "falta conectar esse controle" era o conserto,
         // escrito no instante em que a previsão ("o que acontece?") é revelada. A tela não muda,
         // então sem esta frase o toque pareceria não ter sido registrado (o selo do palco também).
@@ -850,10 +877,12 @@ export function stepScene(
       // só com o toque ligado, quem seguia a instrução via a partida começar pelo Enter e depois
       // lia "Ainda falta: Partida iniciada por Enter". A meta continua pedindo o que a criança
       // VÊ: a tela saindo do Início por aquele gesto (fora do Início o `start` nem chega aqui).
-      if (scene === 'controls') registrarTentativa(s, action.input, true)
+      if (scene === 'controls' || scene === 'touch-response')
+        registrarTentativa(s, action.input, true)
       if (scene === 'controls' && action.input === 'key')
         observe(s, 'start-key', 'Começou com Enter.')
       else if (scene === 'controls') observe(s, 'start-tap', 'Começou tocando.')
+      else if (scene === 'touch-response') observe(s, 'responds', 'O toque revelou o personagem.')
       else s.caption = 'A partida começou.'
       if (scene === 'score') verPlacar(s)
       break

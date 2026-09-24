@@ -58,6 +58,12 @@ export const PISTA_DA_META: Record<SceneId, readonly [PistaMeta, PistaMeta, Pist
   cleanup: [['invisible-stored'], ['invisible-stored'], ['rule-removes']],
   'game-state': [['outside'], ['waiting', 'playing'], ['waiting', 'playing']],
   controls: [['missing-touch'], ['start-tap'], ['start-tap', 'start-key']],
+  'touch-response': [['no-response'], ['responds'], ['no-response', 'responds']],
+  'lighthouse-key': [
+    ['locked-without-key'],
+    ['opened-with-key'],
+    ['locked-without-key', 'opened-with-key'],
+  ],
   restart: [
     ['ended', 'screen-only'],
     ['clean-track'],

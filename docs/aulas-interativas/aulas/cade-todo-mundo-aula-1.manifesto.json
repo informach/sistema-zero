@@ -1,0 +1,1103 @@
+{
+  "version": 5,
+  "courseSlug": "cade-todo-mundo",
+  "lessonSlug": "aula-1",
+  "title": "O primeiro achado",
+  "blocks": [
+    {
+      "key": "video-a1-abertura",
+      "plannedVideo": "Título: Vamos procurar!\n\nApresentar o nome Cadê Todo Mundo?, os três personagens escondidos e o primeiro toque que a criança programará. Depois, em uma única gravação guiada de 2–3 minutos, demonstrar na página real: pausa e retorno no vídeo, Próxima seção/Anterior, uma seção futura com vídeo e experiência sem revelar o resultado, divisória e Ampliar experiência/Voltar à aula, e o Estúdio incorporado com divisória e Expandir/Reduzir. Explicar que o Estúdio é a ferramenta onde se encaixam blocos para montar o jogo, sem antecipar o passo a passo dos blocos. Em tela pequena, mostrar a atividade abaixo do vídeo. Não abrir ferramentas fora da aula.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "video-a1-caderno",
+      "plannedVideo": "Título: Um mapa para voltar quando quiser\n\nMostrar a folha visual de uma página, explicar que ela é opcional e serve para lembrar o caminho em casa. Não fazer o download virar requisito. Gravar depois de anexar o PDF no admin. Alvo: 20–30 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "caderno",
+      "content": {
+        "kind": "materials",
+        "title": "Mapa do jogo Cadê Todo Mundo?",
+        "items": []
+      }
+    },
+    {
+      "key": "video-a1-toque",
+      "plannedVideo": "Título: Um toque pode chamar uma ação\n\nExplicar toque e ação com a analogia da campainha e dar contexto do jogo. Encerrar antes de mostrar os resultados da bancada. A criança descobre a diferença ali. Alvo: 45–60 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "ponte-a1-toque",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora é sua vez de descobrir o que faz o esconderijo responder ao toque."
+      }
+    },
+    {
+      "key": "experiencia-toque",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "O toque faz o jogo responder",
+        "instructions": "Toque no esconderijo. Depois ligue a reação ao toque e experimente de novo.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "touch-response",
+          "cenario": "jardim"
+        }
+      }
+    },
+    {
+      "key": "video-a1-programar",
+      "plannedVideo": "Título: Faça o primeiro personagem aparecer\n\nMostrar a paleta, a área Quando acontecer já preparada, o bloco Deixar o sprite com 0% de visibilidade, o nome escolhido e o teste. Repetir cada passo na narração; não presumir familiaridade com blocos. Alvo: 2–3 minutos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "ponte-a1-programar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "O jardim já está montado. Agora você vai criar a reação que faz aparecer o primeiro personagem."
+      }
+    },
+    {
+      "key": "projeto",
+      "content": {
+        "kind": "studio",
+        "purpose": "submission",
+        "chain": "cade-todo-mundo",
+        "level": "iniciante-2d",
+        "allowedModes": ["blocks"],
+        "allowLevelReveal": false,
+        "allowBlocks": [
+          "sz_frame_start",
+          "sz_frame_events",
+          "sz_frame_loops",
+          "sz_g2d_setup_stage",
+          "sz_g2d_create_image_sprite",
+          "sz_g2d_create_group",
+          "sz_g2d_add_to_group",
+          "sz_g2d_on_group_click",
+          "sz_g2d_update_each_frame",
+          "sz_g2d_clear",
+          "sz_g2d_draw_backdrop",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_draw_group",
+          "sz_g2d_draw_score",
+          "sz_g2d_draw_label",
+          "sz_g2d_set_opacity",
+          "sz_js_var_create",
+          "sz_js_var_increment",
+          "sz_js_if",
+          "sz_val_number",
+          "sz_val_variable"
+        ],
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-cade-todo-mundo",
+          "name": "Cadê Todo Mundo?",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Cadê Todo Mundo?</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <canvas id=\"tela\" width=\"640\" height=\"360\"></canvas>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "body {\n  margin: 0;\n  background: #c7effb;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 100vh;\n}\n",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#c7effb\");\n  let achados = 0;\n  const esconderijos = SZGame2D.createGroup();\n  const coelho = SZGame2D.createSprite({ x: 97, y: 142, w: 96, h: 112, image: \"coelho\" });\n  const arbusto = SZGame2D.createSprite({ x: 72, y: 160, w: 150, h: 122, image: \"arbusto\" });\n  SZGame2D.addToGroup(esconderijos, arbusto);\n  const raposa = SZGame2D.createSprite({ x: 270, y: 142, w: 96, h: 112, image: \"raposa\" });\n  const pedras = SZGame2D.createSprite({ x: 245, y: 160, w: 150, h: 122, image: \"pedras\" });\n  SZGame2D.addToGroup(esconderijos, pedras);\n  const coruja = SZGame2D.createSprite({ x: 443, y: 142, w: 96, h: 112, image: \"coruja\" });\n  const flores = SZGame2D.createSprite({ x: 418, y: 160, w: 150, h: 122, image: \"flores\" });\n  SZGame2D.addToGroup(esconderijos, flores);\n  // Quando acontecer\n  SZGame2D.onGroupClick(esconderijos, function (escolhido) {\n\n  }, \"cliqueSprite\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawSprite(ctx, coelho);\n    SZGame2D.drawSprite(ctx, raposa);\n    SZGame2D.drawSprite(ctx, coruja);\n    SZGame2D.drawGroup(ctx, esconderijos);\n    SZGame2D.drawScore(ctx, \"Achados:\", achados, 18, 34, \"#173844\", 24);\n    if (achados >= 3) {\n      SZGame2D.drawLabel(ctx, \"Você achou todo mundo!\", 174, 72, \"#173844\", 27, \"left\");\n    }\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
+          },
+          "extraFiles": [],
+          "assets": [
+            {
+              "id": "cade-todo-mundo-jardim",
+              "name": "jardim",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjQwIDM2MCI+PHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzNjAiIGZpbGw9IiNjN2VmZmIiLz48Y2lyY2xlIGN4PSI1NTkiIGN5PSI2NyIgcj0iMzYiIGZpbGw9IiNmZmVjOWIiLz48cGF0aCBkPSJNMCAyNTBRMTI0IDIwOSAyNDYgMjQ0VDQ3OCAyNDRUNjQwIDI0NFYzNjBIMCIgZmlsbD0iI2E5ZGI4ZCIvPjxwYXRoIGQ9Ik0wIDI4NlExMzAgMjU3IDI1NiAyODRUNTEyIDI4MlQ2NDAgMjc0VjM2MEgwIiBmaWxsPSIjNzBiYjc1Ii8+PHBhdGggZD0iTTAgMzIzUTk4IDMwMiAxODQgMzI0VDM3NiAzMjBUNjQwIDMxOVYzNjBIMCIgZmlsbD0iIzU0YTk2YyIvPjxnIGZpbGw9IiNmN2Y0Y2YiPjxjaXJjbGUgY3g9Ijg2IiBjeT0iMjczIiByPSI0Ii8+PGNpcmNsZSBjeD0iMzYxIiBjeT0iMjczIiByPSI0Ii8+PGNpcmNsZSBjeD0iNTQ0IiBjeT0iMzAwIiByPSI0Ii8+PC9nPjwvc3ZnPg==",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "id": "cade-todo-mundo-coelho",
+              "name": "coelho",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMTIiIHZpZXdCb3g9IjAgMCA5NiAxMTIiPjxlbGxpcHNlIGN4PSI0OCIgY3k9Ijg2IiByeD0iMzYiIHJ5PSIyNCIgZmlsbD0iI2ZmZjRlNiIgc3Ryb2tlPSIjNTk0ODYzIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMjMgNjBROSA0IDI3IDdRNDEgMTEgMzkgNTZNNTYgNTZRNjEgMyA3NiA4UTg5IDE1IDY4IDYyIiBmaWxsPSIjZmZmNGU2IiBzdHJva2U9IiM1OTQ4NjMiIHN0cm9rZS13aWR0aD0iMyIvPjxlbGxpcHNlIGN4PSI0OCIgY3k9IjYyIiByeD0iMzUiIHJ5PSIzMSIgZmlsbD0iI2ZmZjRlNiIgc3Ryb2tlPSIjNTk0ODYzIiBzdHJva2Utd2lkdGg9IjMiLz48Y2lyY2xlIGN4PSIzNSIgY3k9IjU4IiByPSI0IiBmaWxsPSIjMzgyZTQyIi8+PGNpcmNsZSBjeD0iNjEiIGN5PSI1OCIgcj0iNCIgZmlsbD0iIzM4MmU0MiIvPjxwYXRoIGQ9Ik00MyA3MEw0OCA3NEw1MyA3MCIgZmlsbD0iI2Y3OWU5ZiIgc3Ryb2tlPSIjNTk0ODYzIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=",
+              "width": 96,
+              "height": 112
+            },
+            {
+              "id": "cade-todo-mundo-raposa",
+              "name": "raposa",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMTIiIHZpZXdCb3g9IjAgMCA5NiAxMTIiPjxwYXRoIGQ9Ik02IDI0TDI0IDRMMzcgMjdRNDggMjEgNTkgMjdMNzMgNEw5MSAyNEw4NCA3OVE3NCAxMDMgNDggMTA1UTIyIDEwMyAxMiA3OVoiIGZpbGw9IiNmNmEzNWMiIHN0cm9rZT0iIzc3NDQ0YSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0IDcyUTI2IDkxIDQ4IDg2UTcwIDkxIDgyIDcyUTcwIDEwMSA0OCAxMDVRMjYgMTAxIDE0IDcyIiBmaWxsPSIjZmZmM2RmIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSI2MiIgcj0iNCIgZmlsbD0iIzNlMzQ0MyIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjIiIHI9IjQiIGZpbGw9IiMzZTM0NDMiLz48Y2lyY2xlIGN4PSI0OCIgY3k9Ijc5IiByPSI1IiBmaWxsPSIjM2UzNDQzIi8+PC9zdmc+",
+              "width": 96,
+              "height": 112
+            },
+            {
+              "id": "cade-todo-mundo-coruja",
+              "name": "coruja",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMTIiIHZpZXdCb3g9IjAgMCA5NiAxMTIiPjxwYXRoIGQ9Ik0xMyAyOEwxMCA1TDI5IDE4UTQ4IDcgNjcgMThMODYgNUw4MyAyOFE5MSA1MCA4NCA4MFE3MiAxMDUgNDggMTA2UTI0IDEwNSAxMiA4MFE1IDUwIDEzIDI4IiBmaWxsPSIjOWU4MGMyIiBzdHJva2U9IiM1YjQ5N2QiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjMzIiBjeT0iNTYiIHI9IjE3IiBmaWxsPSIjZmZmNmRmIi8+PGNpcmNsZSBjeD0iNjMiIGN5PSI1NiIgcj0iMTciIGZpbGw9IiNmZmY2ZGYiLz48Y2lyY2xlIGN4PSIzMyIgY3k9IjU2IiByPSI2IiBmaWxsPSIjMzUzMDQ3Ii8+PGNpcmNsZSBjeD0iNjMiIGN5PSI1NiIgcj0iNiIgZmlsbD0iIzM1MzA0NyIvPjxwYXRoIGQ9Ik00MiA3M0w0OCA4Mkw1NCA3M1oiIGZpbGw9IiNmNmFkNjAiLz48L3N2Zz4=",
+              "width": 96,
+              "height": 112
+            },
+            {
+              "id": "cade-todo-mundo-arbusto",
+              "name": "arbusto",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTIyIiB2aWV3Qm94PSIwIDAgMTUwIDEyMiI+PHJlY3QgeD0iNjkiIHk9IjYxIiB3aWR0aD0iMTIiIGhlaWdodD0iNjEiIHJ4PSI1IiBmaWxsPSIjOGU2YTUzIi8+PGVsbGlwc2UgY3g9Ijc1IiBjeT0iNzYiIHJ4PSI3MCIgcnk9IjQ1IiBmaWxsPSIjNDA4YzViIiBzdHJva2U9IiMyZTcwNTEiIHN0cm9rZS13aWR0aD0iMyIvPjxlbGxpcHNlIGN4PSIzOSIgY3k9IjY0IiByeD0iMzMiIHJ5PSIzNCIgZmlsbD0iIzYwYWQ2OCIvPjxlbGxpcHNlIGN4PSIxMDYiIGN5PSI2MCIgcng9IjM3IiByeT0iMzciIGZpbGw9IiM2MGFkNjgiLz48ZWxsaXBzZSBjeD0iNzMiIGN5PSIzOSIgcng9IjM5IiByeT0iMzYiIGZpbGw9IiM3NGJmNzUiLz48Y2lyY2xlIGN4PSIyNSIgY3k9Ijg3IiByPSI2IiBmaWxsPSIjZjVhZDljIi8+PGNpcmNsZSBjeD0iMTE5IiBjeT0iODQiIHI9IjYiIGZpbGw9IiNmNWFkOWMiLz48L3N2Zz4=",
+              "width": 150,
+              "height": 122
+            },
+            {
+              "id": "cade-todo-mundo-pedras",
+              "name": "pedras",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTIyIiB2aWV3Qm94PSIwIDAgMTUwIDEyMiI+PHBhdGggZD0iTTYgMTE1TDE0IDU3TDM5IDMzTDY0IDUyTDg1IDI0TDEyNSAzOUwxNDUgNzlMMTQ0IDExNVoiIGZpbGw9IiM4ZmExYjMiIHN0cm9rZT0iIzY1Nzg4ZCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0IDU3TDM5IDMzTDY0IDUyTDQzIDkxWiIgZmlsbD0iI2I5YzhjZSIvPjxwYXRoIGQ9Ik04NSAyNEwxMjUgMzlMMTQ1IDc5TDkyIDcyWiIgZmlsbD0iI2I5YzhjZSIvPjxwYXRoIGQ9Ik0zNCAxMDFRNzUgNzggMTE5IDEwMSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZGFlMWQ5IiBzdHJva2Utd2lkdGg9IjUiLz48L3N2Zz4=",
+              "width": 150,
+              "height": 122
+            },
+            {
+              "id": "cade-todo-mundo-flores",
+              "name": "flores",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTIyIiB2aWV3Qm94PSIwIDAgMTUwIDEyMiI+PHBhdGggZD0iTTE1IDExOVEyNiA3NCAzOCA4NU03MCAxMTlRNzEgNjQgNzQgNzJNMTMxIDExOVExMjIgNzEgMTEzIDgzIiBmaWxsPSJub25lIiBzdHJva2U9IiM1MTk1NjciIHN0cm9rZS13aWR0aD0iNyIvPjxnIGZpbGw9IiNmNWE1YmQiPjxjaXJjbGUgY3g9IjM4IiBjeT0iNjkiIHI9IjE4Ii8+PGNpcmNsZSBjeD0iNzQiIGN5PSI1NSIgcj0iMTkiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI3MCIgcj0iMTgiLz48L2c+PGcgZmlsbD0iI2ZmZTc5ZiI+PGNpcmNsZSBjeD0iMzgiIGN5PSI2OSIgcj0iOCIvPjxjaXJjbGUgY3g9Ijc0IiBjeT0iNTUiIHI9IjgiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI3MCIgcj0iOCIvPjwvZz48cGF0aCBkPSJNNCAxMThRNzUgOTYgMTQ2IDExOFoiIGZpbGw9IiM2M2FlNmMiLz48L3N2Zz4=",
+              "width": 150,
+              "height": 122
+            }
+          ],
+          "ir": {
+            "version": 2,
+            "html": [
+              {
+                "type": "canvas",
+                "id": "tela",
+                "width": 640,
+                "height": 360
+              }
+            ],
+            "css": [
+              {
+                "selector": "body",
+                "declarations": {
+                  "margin": "0",
+                  "background": "#c7effb",
+                  "display": "flex",
+                  "align-items": "center",
+                  "justify-content": "center",
+                  "min-height": "100vh"
+                }
+              }
+            ],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": 640,
+                  "height": 360,
+                  "bg": "#c7effb"
+                },
+                {
+                  "type": "var",
+                  "name": "achados",
+                  "value": {
+                    "type": "num",
+                    "value": 0
+                  }
+                },
+                {
+                  "type": "g2d:createGroup",
+                  "varName": "esconderijos"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "coelho",
+                  "x": 97,
+                  "y": 142,
+                  "w": 96,
+                  "h": 112,
+                  "image": "coelho"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "arbusto",
+                  "x": 72,
+                  "y": 160,
+                  "w": 150,
+                  "h": 122,
+                  "image": "arbusto"
+                },
+                {
+                  "type": "g2d:addToGroup",
+                  "spriteVar": "arbusto",
+                  "groupVar": "esconderijos"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "raposa",
+                  "x": 270,
+                  "y": 142,
+                  "w": 96,
+                  "h": 112,
+                  "image": "raposa"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "pedras",
+                  "x": 245,
+                  "y": 160,
+                  "w": 150,
+                  "h": 122,
+                  "image": "pedras"
+                },
+                {
+                  "type": "g2d:addToGroup",
+                  "spriteVar": "pedras",
+                  "groupVar": "esconderijos"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "coruja",
+                  "x": 443,
+                  "y": 142,
+                  "w": 96,
+                  "h": 112,
+                  "image": "coruja"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "flores",
+                  "x": 418,
+                  "y": 160,
+                  "w": 150,
+                  "h": 122,
+                  "image": "flores"
+                },
+                {
+                  "type": "g2d:addToGroup",
+                  "spriteVar": "flores",
+                  "groupVar": "esconderijos"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onGroupClick",
+                  "groupVar": "esconderijos",
+                  "itemName": "escolhido",
+                  "body": []
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear"
+                    },
+                    {
+                      "type": "g2d:drawBackdrop",
+                      "ctxVar": "ctx",
+                      "image": "jardim"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "coelho",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "raposa",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "coruja",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawGroup",
+                      "groupVar": "esconderijos",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawScore",
+                      "ctxVar": "ctx",
+                      "label": "Achados:",
+                      "value": {
+                        "type": "var",
+                        "name": "achados"
+                      },
+                      "x": 18,
+                      "y": 34,
+                      "color": "#173844",
+                      "size": 24
+                    },
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "binop",
+                        "op": ">=",
+                        "left": {
+                          "type": "var",
+                          "name": "achados"
+                        },
+                        "right": {
+                          "type": "num",
+                          "value": 3
+                        }
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:drawLabel",
+                          "ctxVar": "ctx",
+                          "text": {
+                            "type": "str",
+                            "value": "Você achou todo mundo!"
+                          },
+                          "x": 174,
+                          "y": 72,
+                          "color": "#173844",
+                          "size": 27,
+                          "align": "left"
+                        }
+                      ],
+                      "else": []
+                    }
+                  ]
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_structure",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_html_canvas",
+                        "fields": {
+                          "ID": "tela",
+                          "CLASS": "",
+                          "DESCRIPTION": ""
+                        },
+                        "data": "{\"width\":640,\"height\":360}"
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 32
+                },
+                {
+                  "type": "sz_frame_appearance",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_css_body_background",
+                        "fields": {
+                          "COLOR": "#c7effb"
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_css_justify",
+                            "fields": {
+                              "SELECTOR": "body",
+                              "VALUE": "center"
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_css_align",
+                                "fields": {
+                                  "SELECTOR": "body",
+                                  "VALUE": "center"
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_css_rule",
+                                    "fields": {
+                                      "SELECTOR": "body"
+                                    },
+                                    "inputs": {
+                                      "CHILDREN": {
+                                        "block": {
+                                          "type": "sz_css_decl",
+                                          "fields": {
+                                            "PROP": "margin",
+                                            "VALUE": "0"
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_css_decl",
+                                              "fields": {
+                                                "PROP": "display",
+                                                "VALUE": "flex"
+                                              },
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_css_decl",
+                                                  "fields": {
+                                                    "PROP": "min-height",
+                                                    "VALUE": "100vh"
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 452,
+                  "y": 32
+                },
+                {
+                  "type": "sz_frame_start",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#c7effb"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 640
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 360
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_js_var_create",
+                            "fields": {
+                              "NAME": "achados"
+                            },
+                            "inputs": {
+                              "VALUE": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 0
+                                  }
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_group",
+                                "fields": {
+                                  "NAME": "esconderijos"
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_create_image_sprite",
+                                    "fields": {
+                                      "NAME": "coelho",
+                                      "IMAGE": "coelho"
+                                    },
+                                    "inputs": {
+                                      "X": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 97
+                                          }
+                                        }
+                                      },
+                                      "Y": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 142
+                                          }
+                                        }
+                                      },
+                                      "W": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 96
+                                          }
+                                        }
+                                      },
+                                      "H": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 112
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_g2d_create_image_sprite",
+                                        "fields": {
+                                          "NAME": "arbusto",
+                                          "IMAGE": "arbusto"
+                                        },
+                                        "inputs": {
+                                          "X": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 72
+                                              }
+                                            }
+                                          },
+                                          "Y": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 160
+                                              }
+                                            }
+                                          },
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 150
+                                              }
+                                            }
+                                          },
+                                          "H": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 122
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "next": {
+                                          "block": {
+                                            "type": "sz_g2d_add_to_group",
+                                            "fields": {
+                                              "SPRITE": "arbusto",
+                                              "GROUP": "esconderijos"
+                                            },
+                                            "next": {
+                                              "block": {
+                                                "type": "sz_g2d_create_image_sprite",
+                                                "fields": {
+                                                  "NAME": "raposa",
+                                                  "IMAGE": "raposa"
+                                                },
+                                                "inputs": {
+                                                  "X": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 270
+                                                      }
+                                                    }
+                                                  },
+                                                  "Y": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 142
+                                                      }
+                                                    }
+                                                  },
+                                                  "W": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 96
+                                                      }
+                                                    }
+                                                  },
+                                                  "H": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 112
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "next": {
+                                                  "block": {
+                                                    "type": "sz_g2d_create_image_sprite",
+                                                    "fields": {
+                                                      "NAME": "pedras",
+                                                      "IMAGE": "pedras"
+                                                    },
+                                                    "inputs": {
+                                                      "X": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": 245
+                                                          }
+                                                        }
+                                                      },
+                                                      "Y": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": 160
+                                                          }
+                                                        }
+                                                      },
+                                                      "W": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": 150
+                                                          }
+                                                        }
+                                                      },
+                                                      "H": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": 122
+                                                          }
+                                                        }
+                                                      }
+                                                    },
+                                                    "next": {
+                                                      "block": {
+                                                        "type": "sz_g2d_add_to_group",
+                                                        "fields": {
+                                                          "SPRITE": "pedras",
+                                                          "GROUP": "esconderijos"
+                                                        },
+                                                        "next": {
+                                                          "block": {
+                                                            "type": "sz_g2d_create_image_sprite",
+                                                            "fields": {
+                                                              "NAME": "coruja",
+                                                              "IMAGE": "coruja"
+                                                            },
+                                                            "inputs": {
+                                                              "X": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_number",
+                                                                  "fields": {
+                                                                    "NUM": 443
+                                                                  }
+                                                                }
+                                                              },
+                                                              "Y": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_number",
+                                                                  "fields": {
+                                                                    "NUM": 142
+                                                                  }
+                                                                }
+                                                              },
+                                                              "W": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_number",
+                                                                  "fields": {
+                                                                    "NUM": 96
+                                                                  }
+                                                                }
+                                                              },
+                                                              "H": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_number",
+                                                                  "fields": {
+                                                                    "NUM": 112
+                                                                  }
+                                                                }
+                                                              }
+                                                            },
+                                                            "next": {
+                                                              "block": {
+                                                                "type": "sz_g2d_create_image_sprite",
+                                                                "fields": {
+                                                                  "NAME": "flores",
+                                                                  "IMAGE": "flores"
+                                                                },
+                                                                "inputs": {
+                                                                  "X": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 418
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "Y": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 160
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "W": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 150
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "H": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 122
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                },
+                                                                "next": {
+                                                                  "block": {
+                                                                    "type": "sz_g2d_add_to_group",
+                                                                    "fields": {
+                                                                      "SPRITE": "flores",
+                                                                      "GROUP": "esconderijos"
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_events",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_on_group_click",
+                        "fields": {
+                          "GROUP": "esconderijos",
+                          "ITEM": "escolhido"
+                        }
+                      }
+                    }
+                  },
+                  "x": 452,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_draw_backdrop",
+                                  "fields": {
+                                    "IMAGE": "jardim"
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_draw_sprite",
+                                      "fields": {
+                                        "SPRITE": "coelho"
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_draw_sprite",
+                                          "fields": {
+                                            "SPRITE": "raposa"
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_g2d_draw_sprite",
+                                              "fields": {
+                                                "SPRITE": "coruja"
+                                              },
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_draw_group",
+                                                  "fields": {
+                                                    "GROUP": "esconderijos"
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g2d_draw_score",
+                                                      "fields": {
+                                                        "LABEL": "Achados:",
+                                                        "COLOR": "#173844"
+                                                      },
+                                                      "inputs": {
+                                                        "VALUE": {
+                                                          "block": {
+                                                            "type": "sz_val_variable",
+                                                            "fields": {
+                                                              "NAME": "achados"
+                                                            }
+                                                          }
+                                                        },
+                                                        "X": {
+                                                          "shadow": {
+                                                            "type": "sz_val_number",
+                                                            "fields": {
+                                                              "NUM": 18
+                                                            }
+                                                          }
+                                                        },
+                                                        "Y": {
+                                                          "shadow": {
+                                                            "type": "sz_val_number",
+                                                            "fields": {
+                                                              "NUM": 34
+                                                            }
+                                                          }
+                                                        },
+                                                        "SIZE": {
+                                                          "shadow": {
+                                                            "type": "sz_val_number",
+                                                            "fields": {
+                                                              "NUM": 24
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_js_if_else",
+                                                          "inputs": {
+                                                            "THEN": {
+                                                              "block": {
+                                                                "type": "sz_g2d_draw_label",
+                                                                "fields": {
+                                                                  "COLOR": "#173844",
+                                                                  "ALIGN": "left"
+                                                                },
+                                                                "inputs": {
+                                                                  "TEXT": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_text",
+                                                                      "fields": {
+                                                                        "TEXT": "Você achou todo mundo!"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "X": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 174
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "Y": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 72
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "SIZE": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 27
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            },
+                                                            "COND": {
+                                                              "block": {
+                                                                "type": "sz_val_compare",
+                                                                "fields": {
+                                                                  "OP": ">="
+                                                                },
+                                                                "inputs": {
+                                                                  "LEFT": {
+                                                                    "block": {
+                                                                      "type": "sz_val_variable",
+                                                                      "fields": {
+                                                                        "NAME": "achados"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "RIGHT": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 3
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          "extraState": {
+                                                            "hasElse": true
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 872,
+                  "y": 392
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "apresentacao",
+      "title": "Bem-vindo ao jardim",
+      "intent": "presentation",
+      "objective": "Ver o jogo terminado, conhecer só os controles da aula necessários para começar e saber que hoje fará o primeiro personagem aparecer com um toque.",
+      "blockKeys": ["video-a1-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a1-abertura"]
+      }
+    },
+    {
+      "key": "caderno",
+      "title": "Seu mapa do jogo",
+      "intent": "material",
+      "objective": "Saber que a folha opcional ajuda a lembrar o caminho e pode ser consultada em casa.",
+      "blockKeys": ["video-a1-caderno", "caderno"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a1-caderno"]
+      }
+    },
+    {
+      "key": "toque-e-resposta",
+      "title": "O que um toque faz?",
+      "intent": "exploration",
+      "objective": "Comparar o mesmo toque antes e depois de ligar uma ação, sem palpite obrigatório.",
+      "blockKeys": ["video-a1-toque", "ponte-a1-toque", "experiencia-toque"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a1-toque", "experiencia-toque"]
+      }
+    },
+    {
+      "key": "primeiro-achado",
+      "title": "Faça alguém aparecer",
+      "intent": "delivery",
+      "objective": "Encaixar a reação no evento preparado e tocar num esconderijo do próprio jogo.",
+      "blockKeys": ["video-a1-programar", "ponte-a1-programar", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a1-programar", "projeto"],
+        "projectChecks": [
+          {
+            "id": "revelar-ao-toque",
+            "label": "Revele o personagem tocado deixando o esconderijo escolhido invisível.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_opacity",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_group_click",
+              "fields": {
+                "SPRITE": "escolhido"
+              },
+              "inputs": {
+                "PERCENT": 0
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

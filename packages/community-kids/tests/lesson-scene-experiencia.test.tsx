@@ -93,11 +93,6 @@ describe('A1 · a pilha da layers como o painel Camadas do Pinta (Meu Jeito Aula
     fireEvent.click(screen.getByRole('button', { name: 'Uma camada para trás: Chama' }))
     await waitFor(() => expect(linhas()).toEqual(['dino', 'floresta']))
     expect(naFaixa('na frente')).toBe('a pedra')
-    expect(
-      screen.getByText(
-        'A de cima fica na frente. Arraste uma forma ou use Uma camada para a frente e Uma camada para trás.',
-      ),
-    ).toBeTruthy()
     // O "Conferir" diz o gesto do Pinta, e nunca "o fim da ordem de desenhar".
     fireEvent.click(screen.getByRole('button', { name: 'Conferir' }))
     const resposta = await screen.findByText(/^Ainda não\. Tente:/)

@@ -3,7 +3,9 @@ import * as espaco from './figuras/espaco'
 import * as gorilas from './figuras/gorilas'
 import { desenharCidade } from './fundos/cidade'
 import { desenharEstrelas } from './fundos/estrelas'
+import { desenharFarol } from './fundos/farol'
 import { desenharFloresta } from './fundos/floresta'
+import { desenharJardim } from './fundos/jardim'
 import type { CaixaDaFigura, DesenhoDeFigura, DesenhoDeFundo } from './pincel'
 
 /**
@@ -41,6 +43,8 @@ export const FUNDOS = {
   floresta: desenharFloresta,
   estrelas: desenharEstrelas,
   cidade: desenharCidade,
+  jardim: desenharJardim,
+  farol: desenharFarol,
 } as const satisfies Record<string, DesenhoDeFundo>
 
 export type NomeDoFundo = keyof typeof FUNDOS

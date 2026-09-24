@@ -146,7 +146,8 @@ pronta. Se o nome não existir ou a carga falhar, o sprite usa um retângulo da 
 - **Ativar controles clássicos** prepara ações semânticas para teclado e botões de toque
   acessíveis. As perguntas **a ação está sendo segurada?** e **acabou de ser apertada?**
   combinam setas/WASD, Z/Espaço, X, Backspace (selecionar), Enter, Escape e multitoque sem
-  duplicar lógica. Coloque
+  duplicar lógica. A opção **só as quatro direções** oculta os outros botões na tela;
+  o teclado não muda. Coloque
   este bloco uma vez em **⚙️ Ao iniciar**.
 - **Quando a ação for apertada** fica em **⚡ Quando acontecer** e reúne teclado, botões de
   toque, botão focado pelo teclado e tecnologia assistiva. Use a ação **pausar** para alternar

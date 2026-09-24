@@ -7,7 +7,7 @@ import { isLearningManifest } from '@sistemazero/core/learning'
 import {
   type Block,
   courseProjects,
-} from '../../../../../docs/aulas-interativas/qa/desafio-projetos-qa'
+} from '../../../../../docs/aulas-interativas/qa/nave-contra-asteroides-projetos-qa'
 import {
   type ExampleHarness,
   exampleHarness,
@@ -29,7 +29,7 @@ function manifest(day: number) {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../../../../docs/aulas-interativas/aulas/desafio-dia-${day}.manifesto.json`,
+        `../../../../../docs/aulas-interativas/aulas/nave-contra-asteroides-dia-${day}.manifesto.json`,
       ),
       'utf8',
     ),

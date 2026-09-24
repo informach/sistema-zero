@@ -2,43 +2,26 @@
   "version": 5,
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "dia-1",
-  "title": "A nave ganha vida",
-  "retireBlockKeys": [
-    "video-abertura-v6",
-    "video-areas",
-    "fala-areas",
-    "video-tela",
-    "fala-tela",
-    "video-endereco",
-    "video-nave",
-    "fala-nave",
-    "video-criar-desenhar",
-    "experiencia-criar-desenhar",
-    "video-quadro",
-    "fala-quadro",
-    "experiencia-limpeza",
-    "video-fundo",
-    "fala-fundo",
-    "video-mover",
-    "fala-mover",
-    "video-desenhar",
-    "fala-desenhar",
-    "video-teste",
-    "entrega-fala-v6",
-    "video-fecho-v6",
-    "quiz-v6"
-  ],
+  "title": "O personagem ganha movimento",
   "blocks": [
     {
-      "key": "video-teste-e-envio",
-      "plannedVideo": "Título: A nave nas duas bordas e o envio\n\nOrigem: novo, com o video-teste do v6 como referência de tela. Duração alvo: 80 a 95 segundos; recalibrar após gravar.\n\nAbrir recapitulando o que será conferido e só depois clicar. Gravação de tela no jogo do fim do Dia 1, com o Estúdio aberto. Nenhuma montagem de bloco nem botão de play aqui. Mostrar, na ordem: clicar dentro da área do jogo; segurar a seta para a esquerda até a borda; segurar a seta para a direita até a outra borda; conferir movimento, limite e a nave na frente do céu; enquadrar a pilha do motor e conferir a ordem limpar, estrelas, mover, manter e desenhar; esperar Salvo e apertar Enviar para o professor. Não redigitar um valor que já foi confirmado nas seções anteriores. Fechar com uma fala natural sobre a nave que não escapa e o tiro que virá no Dia 2, sem linguagem de produção nem afirmar que a criança já fez o próprio teste.\n\nO teste que prova por que Limpar a tela é necessário aconteceu antes das estrelas, sobre o fundo liso. O céu estrelado cobre o canvas inteiro e pode mascarar a falta de limpeza. No teste final, conferir a ordem dos blocos no Estúdio; não dizer que a ausência visual de rastro prova sozinha que Limpar a tela está correto. Narração completa no roteiro correspondente."
+      "key": "video-d1-chegada",
+      "plannedVideo": "Título: Uma luz precisa acender\n\nMostrar o jogo concluído, o personagem, a chave, o farol apagado e o barco. Não atribuir à criança a arte já preparada.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
-      "key": "fala-entrega",
+      "key": "video-d1-movimento",
+      "plannedVideo": "Título: Como o personagem vai andar?\n\nExplicar movimento em quatro direções e o cuidado com as bordas usando o mapa pronto, sem mostrar ainda os blocos.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "video-d1-borda",
+      "plannedVideo": "Título: Faça o personagem andar dentro do mapa\n\nMostrar o caminho exato dos três blocos: controles só direções, mover em quatro direções e manter dentro da tela. Testar toque e teclado. Ensinar Salvo e Enviar para o professor no primeiro uso.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "ponte-d1-borda",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora é sua vez. Faça a conferência final no Estúdio e termine a aula com o seu jogo funcionando."
+        "text": "Você já viu para onde o personagem pode ir. Agora faça o jogo ouvir suas direções."
       }
     },
     {
@@ -51,53 +34,882 @@
         "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
-          "sz_frame_loops",
           "sz_frame_start",
-          "sz_g2d_arrows_x",
-          "sz_g2d_clamp_to_screen",
-          "sz_g2d_clear",
-          "sz_g2d_create_ship",
-          "sz_g2d_draw_sprite",
+          "sz_frame_events",
+          "sz_frame_loops",
+          "sz_frame_structure",
+          "sz_frame_appearance",
+          "sz_html_canvas",
+          "sz_css_rule",
+          "sz_css_decl",
+          "sz_css_body_background",
+          "sz_css_align",
+          "sz_css_justify",
           "sz_g2d_setup_stage",
-          "sz_g2d_starfield",
+          "sz_g2d_create_image_sprite",
+          "sz_g2d_clear",
+          "sz_g2d_draw_backdrop",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_draw_label",
           "sz_g2d_update_each_frame",
-          "sz_val_number"
+          "sz_g2d_enable_classic_controls",
+          "sz_g2d_top_down",
+          "sz_g2d_clamp_to_screen",
+          "sz_g2d_on_overlap",
+          "sz_g2d_destroy_sprite",
+          "sz_g2d_set_image",
+          "sz_js_var_create",
+          "sz_js_var_assign",
+          "sz_js_if_else",
+          "sz_js_member_set",
+          "sz_math_arithmetic",
+          "sz_val_bool",
+          "sz_val_compare",
+          "sz_val_member_get",
+          "sz_val_number",
+          "sz_val_text",
+          "sz_val_variable"
         ],
-        "showcase": {
-          "enabled": false,
-          "title": "Nave contra Asteroides",
-          "summary": "Um jogo de nave, tiros e asteroides criado no Desafio do Primeiro Jogo."
-        },
         "initialProject": {
           "formatVersion": 2,
           "projectTools": [],
-          "id": "manifest-desafio-1",
-          "name": "Nave contra Asteroides",
+          "id": "manifest-desafio-farol",
+          "name": "A Chave do Farol",
           "createdAt": 0,
           "updatedAt": 0,
           "mode": "blocks",
           "files": {
-            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Nave contra Asteroides</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
-            "style.css": "",
-            "script.js": ""
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Chave do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <canvas id=\"tela\" width=\"640\" height=\"360\"></canvas>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "body {\n  margin: 0;\n  background: #b9dfd0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 100vh;\n  padding-bottom: 108px;\n  box-sizing: border-box;\n}\n",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#b9dfd0\");\n  const personagem = SZGame2D.createSprite({ x: 170, y: 130, w: 40, h: 48, image: \"personagem\" });\n  const chave = SZGame2D.createSprite({ x: 328, y: 171, w: 40, h: 40, image: \"chave\" });\n  const farol = SZGame2D.createSprite({ x: 485, y: 72, w: 100, h: 154, image: \"farol-apagado\" });\n  const barco = SZGame2D.createSprite({ x: 655, y: 267, w: 72, h: 50, image: \"barco\" });\n  let aviso = \"Encontre a chave e vá ao farol.\";\n  let ganhou = false;\n  // Quando acontecer\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"cenario\");\n    if (ganhou) {\n      if (barco.x > 530) {\n        barco.x = barco.x - 1.5;\n      }\n    }\n    SZGame2D.drawSprite(ctx, chave);\n    SZGame2D.drawSprite(ctx, farol);\n    SZGame2D.drawSprite(ctx, barco);\n    SZGame2D.drawSprite(ctx, personagem);\n    SZGame2D.drawLabel(ctx, aviso, 20, 32, \"#263a45\", 19, \"left\");\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
-          "assets": [],
+          "assets": [
+            {
+              "id": "desafio-farol-cenario",
+              "name": "cenario",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjQwIDM2MCI+PHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzNjAiIGZpbGw9IiNiOWRmZDAiLz48cGF0aCBkPSJNMCAwSDY0MFY5M1E1NTAgODMgNDc1IDEwNFEzOTMgMTE2IDMxNiA5NFEyMDkgNzYgMTIwIDEwMFE0NCAxMTIgMCA5M1oiIGZpbGw9IiNhNmQ1ZWEiLz48cGF0aCBkPSJNMCAyNzBRMTIwIDI1OCAyNDggMjc3UTM1NCAyOTIgNDQyIDI3M1E1MzAgMjU0IDY0MCAyNzJWMzYwSDBaIiBmaWxsPSIjOTZjOThkIi8+PHBhdGggZD0iTTQ5NyAwSDY0MFYzNjBINTIzUTUzNyAzMDQgNTExIDI0NlE0ODQgMTk3IDUwNiAxNDVRNTI1IDk0IDQ5NyAwWiIgZmlsbD0iIzViYTljMSIvPjxwYXRoIGQ9Ik0wIDE2NVE4NiAxNTUgMTc4IDE3NVEyNTUgMTgxIDMxOCAxNTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2U4ZDdhOCIgc3Ryb2tlLXdpZHRoPSIyMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTMxOCAxNTdRNDA0IDE0MSA0NTYgMTc3IiBmaWxsPSJub25lIiBzdHJva2U9IiNlOGQ3YTgiIHN0cm9rZS13aWR0aD0iMjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxnIGZpbGw9IiNmZmY1Y2EiPjxjaXJjbGUgY3g9IjkyIiBjeT0iMTI4IiByPSI1Ii8+PGNpcmNsZSBjeD0iMjE0IiBjeT0iMjI5IiByPSI0Ii8+PGNpcmNsZSBjeD0iMzc3IiBjeT0iOTYiIHI9IjUiLz48L2c+PC9zdmc+",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "id": "desafio-farol-personagem",
+              "name": "personagem",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQwIDQ4Ij48ZWxsaXBzZSBjeD0iMjAiIGN5PSI0MyIgcng9IjE1IiByeT0iNCIgZmlsbD0iIzU1NzU2NCIgb3BhY2l0eT0iLjQiLz48cmVjdCB4PSI3IiB5PSIxOSIgd2lkdGg9IjI2IiBoZWlnaHQ9IjI1IiByeD0iOCIgZmlsbD0iIzZhNjhiMCIgc3Ryb2tlPSIjM2I0MjZjIiBzdHJva2Utd2lkdGg9IjIiLz48Y2lyY2xlIGN4PSIyMCIgY3k9IjE0IiByPSIxMiIgZmlsbD0iI2YyYmY5MSIgc3Ryb2tlPSIjNzE0ZjUwIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNOCAxM1E4IC0xIDIxIDFRMzMgMyAzMiAxNFoiIGZpbGw9IiM0NDNiNjEiLz48Y2lyY2xlIGN4PSIxNiIgY3k9IjE1IiByPSIxLjUiLz48Y2lyY2xlIGN4PSIyNCIgY3k9IjE1IiByPSIxLjUiLz48L3N2Zz4=",
+              "width": 40,
+              "height": 48
+            },
+            {
+              "id": "desafio-farol-chave",
+              "name": "chave",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MiIgaGVpZ2h0PSI0MiIgdmlld0JveD0iMCAwIDQyIDQyIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI4IiBmaWxsPSJub25lIiBzdHJva2U9IiNkOTkzMzUiIHN0cm9rZS13aWR0aD0iNSIvPjxwYXRoIGQ9Ik0xOCAxOEwzNiAzNk0yOSAyOUwzMyAyNU0zMyAzM0wzNyAyOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDk5MzM1IiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==",
+              "width": 42,
+              "height": 42
+            },
+            {
+              "id": "desafio-farol-farol-apagado",
+              "name": "farol-apagado",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTE5IDE1MUwzMSA0NUg2OUw4MSAxNTFaIiBmaWxsPSIjZjllZWUxIiBzdHJva2U9IiM4MTY0NzQiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yNiA4NEg3NEw3MCAxMDFIMzBaIiBmaWxsPSIjZGY2OTYyIi8+PHJlY3QgeD0iNDAiIHk9IjExMyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjM4IiByeD0iMyIgZmlsbD0iIzY3NGY2MyIvPjxwYXRoIGQ9Ik0zMCA0NVYyMEg3MFY0NVoiIGZpbGw9IiM2YzgxOTYiIHN0cm9rZT0iIzU0NjI3MyIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIzIDIwTDUwIDVMNzcgMjBaIiBmaWxsPSIjZGM2ODY0IiBzdHJva2U9IiM5ODUyNWEiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==",
+              "width": 100,
+              "height": 154
+            },
+            {
+              "id": "desafio-farol-farol-aceso",
+              "name": "farol-aceso",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTUwIDMwTDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik01MCAzMEwxMDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik0xOSAxNTFMMzEgNDVINjlMODEgMTUxWiIgZmlsbD0iI2Y5ZWVlMSIgc3Ryb2tlPSIjODE2NDc0IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjYgODRINzRMNzAgMTAxSDMwWiIgZmlsbD0iI2RmNjk2MiIvPjxyZWN0IHg9IjQwIiB5PSIxMTMiIHdpZHRoPSIyMCIgaGVpZ2h0PSIzOCIgcng9IjMiIGZpbGw9IiM2NzRmNjMiLz48cGF0aCBkPSJNMzAgNDVWMjBINzBWNDVaIiBmaWxsPSIjZmZkZTczIiBzdHJva2U9IiM5ZTc4NDYiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yMyAyMEw1MCA1TDc3IDIwWiIgZmlsbD0iI2RjNjg2NCIgc3Ryb2tlPSIjOTg1MjVhIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+              "width": 100,
+              "height": 154
+            },
+            {
+              "id": "desafio-farol-barco",
+              "name": "barco",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI1MCIgdmlld0JveD0iMCAwIDcyIDUwIj48cGF0aCBkPSJNNCAyOEg2OEw1NyA0NEgxNloiIGZpbGw9IiM5MzU5NjkiIHN0cm9rZT0iIzY1NGY2NSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTM1IDNWMjdINjFaIiBmaWxsPSIjZjllZmQ3IiBzdHJva2U9IiM4YTc4ODAiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik0zNSAzTDE2IDI2SDM1WiIgZmlsbD0iI2ZmZjdlNSIgc3Ryb2tlPSIjOGE3ODgwIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=",
+              "width": 72,
+              "height": 50
+            }
+          ],
           "ir": {
             "version": 2,
-            "html": [],
-            "css": [],
+            "html": [
+              {
+                "type": "canvas",
+                "id": "tela",
+                "width": 640,
+                "height": 360
+              }
+            ],
+            "css": [
+              {
+                "selector": "body",
+                "declarations": {
+                  "margin": "0",
+                  "background": "#b9dfd0",
+                  "display": "flex",
+                  "align-items": "center",
+                  "justify-content": "center",
+                  "min-height": "100vh",
+                  "padding-bottom": "108px",
+                  "box-sizing": "border-box"
+                }
+              }
+            ],
             "behavior": {
-              "start": [],
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": 640,
+                  "height": 360,
+                  "bg": "#b9dfd0"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "personagem",
+                  "x": 170,
+                  "y": 130,
+                  "w": 40,
+                  "h": 48,
+                  "image": "personagem"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "chave",
+                  "x": 328,
+                  "y": 171,
+                  "w": 40,
+                  "h": 40,
+                  "image": "chave"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "farol",
+                  "x": 485,
+                  "y": 72,
+                  "w": 100,
+                  "h": 154,
+                  "image": "farol-apagado"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "barco",
+                  "x": 655,
+                  "y": 267,
+                  "w": 72,
+                  "h": 50,
+                  "image": "barco"
+                },
+                {
+                  "type": "var",
+                  "name": "aviso",
+                  "value": {
+                    "type": "str",
+                    "value": "Encontre a chave e vá ao farol."
+                  }
+                },
+                {
+                  "type": "var",
+                  "name": "ganhou",
+                  "value": {
+                    "type": "bool",
+                    "value": false
+                  }
+                }
+              ],
               "events": [],
-              "loops": []
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear"
+                    },
+                    {
+                      "type": "g2d:drawBackdrop",
+                      "ctxVar": "ctx",
+                      "image": "cenario"
+                    },
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "var",
+                        "name": "ganhou"
+                      },
+                      "then": [
+                        {
+                          "type": "if",
+                          "cond": {
+                            "type": "binop",
+                            "op": ">",
+                            "left": {
+                              "type": "memberGet",
+                              "object": {
+                                "type": "var",
+                                "name": "barco"
+                              },
+                              "name": "x"
+                            },
+                            "right": {
+                              "type": "num",
+                              "value": 530
+                            }
+                          },
+                          "then": [
+                            {
+                              "type": "memberSet",
+                              "object": {
+                                "type": "var",
+                                "name": "barco"
+                              },
+                              "name": "x",
+                              "value": {
+                                "type": "binop",
+                                "op": "-",
+                                "left": {
+                                  "type": "memberGet",
+                                  "object": {
+                                    "type": "var",
+                                    "name": "barco"
+                                  },
+                                  "name": "x"
+                                },
+                                "right": {
+                                  "type": "num",
+                                  "value": 1.5
+                                }
+                              }
+                            }
+                          ],
+                          "else": []
+                        }
+                      ],
+                      "else": []
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "chave",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "farol",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "barco",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "personagem",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawLabel",
+                      "ctxVar": "ctx",
+                      "text": {
+                        "type": "var",
+                        "name": "aviso"
+                      },
+                      "x": 20,
+                      "y": 32,
+                      "color": "#263a45",
+                      "size": 19,
+                      "align": "left"
+                    }
+                  ]
+                }
+              ]
             },
-            "extensions": []
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
           },
           "blocksState": {
             "blocks": {
               "languageVersion": 0,
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "sz_frame_structure",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_html_canvas",
+                        "fields": {
+                          "ID": "tela",
+                          "CLASS": "",
+                          "DESCRIPTION": ""
+                        },
+                        "data": "{\"width\":640,\"height\":360}"
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 32
+                },
+                {
+                  "type": "sz_frame_appearance",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_css_body_background",
+                        "fields": {
+                          "COLOR": "#b9dfd0"
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_css_justify",
+                            "fields": {
+                              "SELECTOR": "body",
+                              "VALUE": "center"
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_css_align",
+                                "fields": {
+                                  "SELECTOR": "body",
+                                  "VALUE": "center"
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_css_rule",
+                                    "fields": {
+                                      "SELECTOR": "body"
+                                    },
+                                    "inputs": {
+                                      "CHILDREN": {
+                                        "block": {
+                                          "type": "sz_css_decl",
+                                          "fields": {
+                                            "PROP": "margin",
+                                            "VALUE": "0"
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_css_decl",
+                                              "fields": {
+                                                "PROP": "display",
+                                                "VALUE": "flex"
+                                              },
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_css_decl",
+                                                  "fields": {
+                                                    "PROP": "min-height",
+                                                    "VALUE": "100vh"
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_css_decl",
+                                                      "fields": {
+                                                        "PROP": "padding-bottom",
+                                                        "VALUE": "108px"
+                                                      },
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_css_decl",
+                                                          "fields": {
+                                                            "PROP": "box-sizing",
+                                                            "VALUE": "border-box"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 452,
+                  "y": 32
+                },
+                {
+                  "type": "sz_frame_start",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#b9dfd0"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 640
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 360
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_create_image_sprite",
+                            "fields": {
+                              "NAME": "personagem",
+                              "IMAGE": "personagem"
+                            },
+                            "inputs": {
+                              "X": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 170
+                                  }
+                                }
+                              },
+                              "Y": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 130
+                                  }
+                                }
+                              },
+                              "W": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 40
+                                  }
+                                }
+                              },
+                              "H": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 48
+                                  }
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_image_sprite",
+                                "fields": {
+                                  "NAME": "chave",
+                                  "IMAGE": "chave"
+                                },
+                                "inputs": {
+                                  "X": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 328
+                                      }
+                                    }
+                                  },
+                                  "Y": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 171
+                                      }
+                                    }
+                                  },
+                                  "W": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 40
+                                      }
+                                    }
+                                  },
+                                  "H": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 40
+                                      }
+                                    }
+                                  }
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_create_image_sprite",
+                                    "fields": {
+                                      "NAME": "farol",
+                                      "IMAGE": "farol-apagado"
+                                    },
+                                    "inputs": {
+                                      "X": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 485
+                                          }
+                                        }
+                                      },
+                                      "Y": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 72
+                                          }
+                                        }
+                                      },
+                                      "W": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 100
+                                          }
+                                        }
+                                      },
+                                      "H": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 154
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_g2d_create_image_sprite",
+                                        "fields": {
+                                          "NAME": "barco",
+                                          "IMAGE": "barco"
+                                        },
+                                        "inputs": {
+                                          "X": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 655
+                                              }
+                                            }
+                                          },
+                                          "Y": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 267
+                                              }
+                                            }
+                                          },
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 72
+                                              }
+                                            }
+                                          },
+                                          "H": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 50
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "next": {
+                                          "block": {
+                                            "type": "sz_js_var_create",
+                                            "fields": {
+                                              "NAME": "aviso"
+                                            },
+                                            "inputs": {
+                                              "VALUE": {
+                                                "block": {
+                                                  "type": "sz_val_text",
+                                                  "fields": {
+                                                    "TEXT": "Encontre a chave e vá ao farol."
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "next": {
+                                              "block": {
+                                                "type": "sz_js_var_create",
+                                                "fields": {
+                                                  "NAME": "ganhou"
+                                                },
+                                                "inputs": {
+                                                  "VALUE": {
+                                                    "block": {
+                                                      "type": "sz_val_bool",
+                                                      "fields": {
+                                                        "VALUE": "false"
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_draw_backdrop",
+                                  "fields": {
+                                    "IMAGE": "cenario"
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_js_if_else",
+                                      "inputs": {
+                                        "THEN": {
+                                          "block": {
+                                            "type": "sz_js_if_else",
+                                            "inputs": {
+                                              "THEN": {
+                                                "block": {
+                                                  "type": "sz_js_member_set",
+                                                  "fields": {
+                                                    "NAME": "x"
+                                                  },
+                                                  "inputs": {
+                                                    "OBJ": {
+                                                      "block": {
+                                                        "type": "sz_val_variable",
+                                                        "fields": {
+                                                          "NAME": "barco"
+                                                        }
+                                                      }
+                                                    },
+                                                    "VALUE": {
+                                                      "block": {
+                                                        "type": "sz_math_arithmetic",
+                                                        "fields": {
+                                                          "OP": "-"
+                                                        },
+                                                        "inputs": {
+                                                          "A": {
+                                                            "block": {
+                                                              "type": "sz_val_member_get",
+                                                              "fields": {
+                                                                "NAME": "x"
+                                                              },
+                                                              "inputs": {
+                                                                "OBJ": {
+                                                                  "block": {
+                                                                    "type": "sz_val_variable",
+                                                                    "fields": {
+                                                                      "NAME": "barco"
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          "B": {
+                                                            "shadow": {
+                                                              "type": "sz_val_number",
+                                                              "fields": {
+                                                                "NUM": 1.5
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              "COND": {
+                                                "block": {
+                                                  "type": "sz_val_compare",
+                                                  "fields": {
+                                                    "OP": ">"
+                                                  },
+                                                  "inputs": {
+                                                    "LEFT": {
+                                                      "block": {
+                                                        "type": "sz_val_member_get",
+                                                        "fields": {
+                                                          "NAME": "x"
+                                                        },
+                                                        "inputs": {
+                                                          "OBJ": {
+                                                            "block": {
+                                                              "type": "sz_val_variable",
+                                                              "fields": {
+                                                                "NAME": "barco"
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    },
+                                                    "RIGHT": {
+                                                      "shadow": {
+                                                        "type": "sz_val_number",
+                                                        "fields": {
+                                                          "NUM": 530
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "extraState": {
+                                              "hasElse": true
+                                            }
+                                          }
+                                        },
+                                        "COND": {
+                                          "block": {
+                                            "type": "sz_val_variable",
+                                            "fields": {
+                                              "NAME": "ganhou"
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "extraState": {
+                                        "hasElse": true
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_draw_sprite",
+                                          "fields": {
+                                            "SPRITE": "chave"
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_g2d_draw_sprite",
+                                              "fields": {
+                                                "SPRITE": "farol"
+                                              },
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_draw_sprite",
+                                                  "fields": {
+                                                    "SPRITE": "barco"
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g2d_draw_sprite",
+                                                      "fields": {
+                                                        "SPRITE": "personagem"
+                                                      },
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_g2d_draw_label",
+                                                          "fields": {
+                                                            "COLOR": "#263a45",
+                                                            "ALIGN": "left"
+                                                          },
+                                                          "inputs": {
+                                                            "TEXT": {
+                                                              "block": {
+                                                                "type": "sz_val_variable",
+                                                                "fields": {
+                                                                  "NAME": "aviso"
+                                                                }
+                                                              }
+                                                            },
+                                                            "X": {
+                                                              "shadow": {
+                                                                "type": "sz_val_number",
+                                                                "fields": {
+                                                                  "NUM": 20
+                                                                }
+                                                              }
+                                                            },
+                                                            "Y": {
+                                                              "shadow": {
+                                                                "type": "sz_val_number",
+                                                                "fields": {
+                                                                  "NUM": 32
+                                                                }
+                                                              }
+                                                            },
+                                                            "SIZE": {
+                                                              "shadow": {
+                                                                "type": "sz_val_number",
+                                                                "fields": {
+                                                                  "NUM": 19
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 872,
+                  "y": 392
+                }
+              ]
             }
           },
           "installedExtensions": [
@@ -109,930 +921,88 @@
           ]
         }
       }
-    },
-    {
-      "key": "video-abertura",
-      "plannedVideo": "Título: A sua nave no espaço\n\nMostrar o jogo do fim do Dia 1 rodando: a nave num espaço cheio de estrelas, indo para os dois lados com as setas. Só o jogo na tela, sem a interface do Estúdio à vista.\n\nFala: \"Hoje sua nave vai aparecer num espaço cheio de estrelas e obedecer às setas. Vamos preparar o jogo, descobrir onde a nave fica e montar um pedacinho de cada vez.\"\n\nDuração alvo: 25 a 35 segundos.\n\nOrigem: video-abertura-v6. A fala se aproveita. A tela é nova, gravada no Estúdio atual. Sai a enumeração antiga de seis passos."
-    },
-    {
-      "key": "video-duas-areas",
-      "plannedVideo": "Título: A mesma ação em dois momentos\n\nDuração alvo: 65 a 80 segundos; recalibrar após gravar.\n\nAbrir dizendo por que vamos conversar sobre ações do começo e ações que se repetem antes de montar o jogo. Só depois mostrar papel e lápis separados uma vez e a mão que continua desenhando. Ligar essa comparação ao jogo: preparar a tela acontece no começo, mover a nave pode continuar enquanto se joga. Apresentar as Áreas do projeto como os espaços onde encaixamos os blocos, destacar Ao iniciar e Enquanto estiver rodando sem arrastar. Ilustrar a repetição com um ventilador ligado que gira e desligado que para.\n\nEncerrar com as duas áreas vazias. A ação Mover a nave um pouquinho, o jogo em movimento e os contadores pertencem à experiência: não mostrar nem narrar os resultados dos testes.\n\nDuração alvo: recalibrar após gravar a narração completa do roteiro. Origem: roteiro original do Dia 1, Parte 1, para o contexto e as analogias; paleta e comportamento atuais."
-    },
-    {
-      "key": "fala-uma-vez-e-sempre",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "Você conheceu Ao iniciar e Enquanto estiver rodando. Agora teste a mesma ação nas duas áreas do projeto."
-      }
-    },
-    {
-      "key": "experiencia-areas",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Uma vez e sempre",
-        "instructions": "Teste Mover a nave um pouquinho nas duas áreas, uma de cada vez. Comece o jogo, observe a nave e compare Ações feitas nas duas partidas.",
-        "hints": [
-          "Ponha Mover a nave um pouquinho em Ao iniciar e aperte Começar o jogo. Espere o teste parar.",
-          "Leve a mesma ação para Enquanto estiver rodando. A mudança já prepara uma nova partida.",
-          "Aperte Começar o jogo de novo e observe até a nave sair da cena. Compare Ações feitas."
-        ],
-        "semPerguntaFinal": true,
-        "activity": {
-          "type": "experimentation",
-          "scene": "once-vs-always",
-          "cast": {
-            "hero": {
-              "name": "nave",
-              "gender": "f"
-            },
-            "obstacle": {
-              "name": "asteroide",
-              "gender": "m"
-            }
-          },
-          "cenario": "nave",
-          "setup": {
-            "goals": ["once", "always"],
-            "goalCopy": {
-              "once": {
-                "label": "Em Ao iniciar, a nave se moveu uma vez e parou",
-                "pedido": "Ponha Mover a nave um pouquinho em Ao iniciar e comece o jogo."
-              },
-              "always": {
-                "label": "Enquanto estiver rodando, a nave continuou se movendo",
-                "pedido": "Ponha Mover a nave um pouquinho em Enquanto estiver rodando e comece o jogo."
-              }
-            },
-            "preset": {
-              "id": "duas-caixas-nave",
-              "areas": ["start", "loop"],
-              "cards": [
-                {
-                  "id": "move",
-                  "kind": "move",
-                  "label": "Mover a nave um pouquinho"
-                }
-              ]
-            }
-          }
-        }
-      }
-    },
-    {
-      "key": "fala-montar-areas-tela",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Você viu como preparar as duas áreas e a tela do jogo. Agora é sua vez de montar essa base no projeto."
-      }
-    },
-    {
-      "key": "video-montar-areas-tela",
-      "plannedVideo": "Título: As áreas do projeto e a tela do jogo\n\nAbrir mostrando o que a criança vai montar: as duas áreas do projeto e a tela onde a nave aparecerá. Guiar a montagem um gesto de cada vez, sem saltar caminhos. Abrir a categoria Áreas do projeto, pegar Ao iniciar e soltar na área de montagem, no meio do Estúdio. Dizer novamente o nome da categoria: ainda em Áreas do projeto, pegar Enquanto estiver rodando e soltar ao lado do Ao iniciar, com espaço entre as duas áreas.\n\nAbrir a categoria Jogo 2D, depois Jogo e telas e a seção Preparar a área do jogo. Pegar Preparar o jogo em tela cheia e encaixar dentro do Ao iniciar. Aproximar nos campos que já chegam preenchidos: 800 é a largura, de um lado ao outro; 480 é a altura, de cima até embaixo. Conferir sem apagar nem redigitar. Clicar no quadradinho de cor do próprio bloco e escolher um fundo escuro. Esse fundo liso permanece até a criança ver e limpar o rastro; as estrelas entram depois.\n\nNarração falada e completa no roteiro correspondente. Duração alvo: 100 a 115 segundos.\n\nOrigem: fusão de video-areas (o gesto) com video-tela. Dois clipes viram um. A tela é nova."
-    },
-    {
-      "key": "video-coordenadas",
-      "plannedVideo": "Título: O endereço da nave na tela\n\nAbrir com a tela já preparada e com a pergunta concreta: onde a nave vai aparecer? Só depois apresentar x e y como os dois números desse endereço. Marcar x 0 e y 0 no canto de cima, à esquerda; mostrar a direção horizontal de x e a vertical de y, sem mover a nave nem reproduzir o teste da experiência. Por fim, mostrar que a marca fica no canto superior esquerdo da caixa da nave, não no meio.\n\nNarração falada e completa no roteiro correspondente. Duração alvo: 40 a 50 segundos.\n\nConferência para a gravação: não reaproveitar da versão anterior a frase de que x 400 centraliza a nave. Com largura 54, o centro da caixa fica em 427."
-    },
-    {
-      "key": "fala-coordenadas",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora é hora de transformar esse endereço em movimento. Faça a experiência e acompanhe a nave na tela."
-      }
-    },
-    {
-      "key": "experiencia-coordenadas",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "O endereço na tela",
-        "instructions": "Experimente mudar x e y separadamente. Para onde a nave vai em cada caso? E quando os dois valem zero?",
-        "hints": [],
-        "semPerguntaFinal": true,
-        "activity": {
-          "type": "experimentation",
-          "scene": "coordinates",
-          "cast": {
-            "hero": {
-              "name": "nave",
-              "gender": "f"
-            }
-          },
-          "cenario": "nave",
-          "setup": {
-            "actions": [
-              {
-                "type": "stage",
-                "width": 800,
-                "height": 480
-              },
-              {
-                "type": "place",
-                "x": 400,
-                "y": 40
-              }
-            ],
-            "goals": ["right", "down", "origin"]
-          }
-        },
-        "prediction": {
-          "context": {
-            "label": "Os números x e y",
-            "explanation": "Nesta experiência, vamos usar os números x e y para escolher onde a nave aparece na tela do jogo."
-          },
-          "prompt": "Se o y AUMENTAR, para onde a nave vai?",
-          "choices": [
-            {
-              "id": "cima",
-              "label": "Para cima",
-              "shows": "Aumentando o y, a nave desceu."
-            },
-            {
-              "id": "baixo",
-              "label": "Para baixo"
-            }
-          ],
-          "correctChoiceId": "baixo",
-          "revealOn": "down"
-        }
-      }
-    },
-    {
-      "key": "fala-criar-nave",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "A tela já está pronta. Agora é sua vez de criar a nave no projeto e escolher as cores dela."
-      }
-    },
-    {
-      "key": "video-criar-nave",
-      "plannedVideo": "Título: A nave com as suas cores\n\nDuração alvo: 65 a 75 segundos; recalibrar após gravar.\n\nAbrir retomando que a criança acabou de conhecer o endereço da nave; agora vai criá-la nesse lugar. Narrar o caminho completo: Jogo 2D › Kits prontos › Espaço, pegar Criar nave e encaixar dentro do Ao iniciar abaixo de Preparar o jogo em tela cheia. Conferir sem redigitar o nome nave e os tamanhos padrão largura 54 e altura 62, explicando o que medem; mudar só x para 400 e y para 410, confirmando cada campo. Escolher livremente as cores do corpo e das asas. Terminar com a tela ainda sem nave e guardar a pergunta para a seção seguinte, sem dizer que houve erro.\n\nDuração alvo: recalibrar após gravar a narração completa do roteiro. Origem: video-nave, adaptado ao Estúdio atual."
-    },
-    {
-      "key": "video-livrinho",
-      "plannedVideo": "Título: O livrinho de folhear\n\nDuração alvo: 50 a 60 segundos; recalibrar após gravar.\n\nAbrir ligando o conceito ao jogo: a nave já foi criada e, para aparecer se mexendo, a tela será desenhada muitas vezes. Mostrar um livrinho de folhear, com cada página um pouco diferente da anterior, e o movimento aparecendo quando as páginas passam rápido. Só depois nomear cada imagem como quadro. Não mostrar o procedimento de montagem.\n\nDuração alvo: recalibrar após gravar a narração completa do roteiro. Origem: video-criar-desenhar; a imagem é nova."
-    },
-    {
-      "key": "video-criar-e-mostrar",
-      "plannedVideo": "Título: Criar não é mostrar\n\nMostrar a analogia de uma peça de teatro: os atores se preparam atrás da cortina antes de aparecer ao público. Ligar essa distinção ao jogo: Criar nave prepara o objeto nos bastidores; desenhar o mostra na tela. Não mostrar a cena, os controles nem o resultado da experiência.\n\nDuração alvo: 25 a 35 segundos, recalibrar após gravar.\n\nOrigem: explicação conceitual de video-criar-desenhar, com a experiência concreta reservada para a criança."
-    },
-    {
-      "key": "fala-criar-mostrar",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "No teatro, preparar e aparecer são duas ações. Agora veja como isso funciona com a nave."
-      }
-    },
-    {
-      "key": "experiencia-criar-mostrar",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "semPerguntaFinal": true,
-        "title": "Criar e mostrar são duas coisas diferentes",
-        "instructions": "Experimente criar e mostrar a nave. O que aparece nos bastidores? E na tela do jogo?",
-        "hints": [],
-        "activity": {
-          "type": "experimentation",
-          "scene": "world",
-          "cast": {
-            "hero": {
-              "name": "nave",
-              "gender": "f"
-            }
-          },
-          "cenario": "nave"
-        },
-        "prediction": {
-          "context": {
-            "label": "Bastidores e tela do jogo",
-            "explanation": "Nesta experiência, vamos comparar o que existe nos bastidores com o que aparece na tela do jogo."
-          },
-          "prompt": "Você cria a nave, mas ainda não manda desenhar. O que aparece na tela?",
-          "choices": [
-            {
-              "id": "aparece",
-              "label": "A nave aparece",
-              "shows": "A tela continuou vazia até a nave ser desenhada."
-            },
-            {
-              "id": "vazia",
-              "label": "A tela fica vazia"
-            }
-          ],
-          "correctChoiceId": "vazia",
-          "revealOn": "hidden"
-        }
-      }
-    },
-    {
-      "key": "fala-o-quadro",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora é hora de ver o livrinho do jogo funcionando. Faça a experiência e acompanhe os quadros passando."
-      }
-    },
-    {
-      "key": "experiencia-quadro",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Por que o desenho se repete",
-        "instructions": "Teste desenhar a nave só no começo e a cada quadro. Depois experimente limpar a tela. O que muda enquanto os quadros passam?",
-        "hints": [],
-        "activity": {
-          "type": "experimentation",
-          "scene": "draw-loop",
-          "cast": {
-            "hero": {
-              "name": "nave",
-              "gender": "f"
-            }
-          },
-          "cenario": "nave",
-          "setup": {
-            "goals": ["frozen", "trail", "moving"]
-          }
-        },
-        "checkpoint": {
-          "prompt": "O que o jogo faz em cada quadro para a nave andar sem deixar rastro?",
-          "choices": [
-            {
-              "id": "b",
-              "label": "Desenha a nave de novo, sem limpar."
-            },
-            {
-              "id": "a",
-              "label": "Limpa a tela e desenha a nave de novo."
-            }
-          ],
-          "correctChoiceId": "a",
-          "explanation": "A cada quadro o jogo apaga o desenho anterior e desenha a nave no lugar novo. A limpeza apaga a imagem, e não a nave, que continua guardada no jogo."
-        }
-      }
-    },
-    {
-      "key": "fala-motor-e-nave",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora é sua vez de fazer a nave aparecer no seu jogo."
-      }
-    },
-    {
-      "key": "video-motor-e-nave",
-      "plannedVideo": "Título: O motor mostra a nave\n\nRetomar o conceito de quadro e dizer a meta: fazer a nave aparecer no jogo da criança. Manter a cor lisa escolhida para o fundo; não colocar limpeza ou estrelas ainda. Guiar Jogo 2D › Tempo › Quadros e intervalos, pegar A cada quadro do jogo e encaixar dentro de Enquanto estiver rodando. Antes de abrir a gaveta Sprites, explicar que sprite é o nome de um personagem ou objeto do jogo, como a nave que a criança criou. Depois guiar Jogo 2D › Sprites › Criar e trocar aparência e pegar Desenhar o sprite. O campo que escolhe qual sprite será desenhado inicia em jogador: abrir o aviso enquanto está errado, só depois escolher nave no seletor e mostrar o aviso sumindo e a nave aparecendo.\n\nDuração alvo: 85 a 100 segundos; recalibrar após gravar. Narração completa no roteiro correspondente."
-    },
-    {
-      "key": "fala-setas-e-rastro",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora é sua vez de colocar as setas no jogo e testar o movimento da nave."
-      }
-    },
-    {
-      "key": "video-setas-e-rastro",
-      "plannedVideo": "Título: As setas põem a nave em movimento\n\nAbrir com o estado do jogo: a nave já aparece, mas ainda não responde às teclas. Narrar o caminho de Mover o sprite com as setas e encaixar acima de Desenhar o sprite. Esse bloco já vem com nave selecionada; conferir sem simular aviso. Explicar que velocidade controla quanto a nave anda quando a seta é segurada e que um número maior a faz andar mais depressa; só depois escrever 7 e confirmar. Testar o movimento sem chegar à borda e deixar visível o rastro dos desenhos antigos. Não adicionar limpeza, limite nem estrelas neste clipe.\n\nDuração alvo: 65 a 80 segundos; recalibrar após gravar. Narração completa no roteiro correspondente."
-    },
-    {
-      "key": "fala-limpar-rastro",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora veja o rastro sumir no seu jogo: coloque a limpeza antes dos blocos que movem e desenham a nave."
-      }
-    },
-    {
-      "key": "video-limpar-rastro",
-      "plannedVideo": "Título: A borracha antes do desenho\n\nComeçar mostrando o rastro que a nave deixou sobre o fundo liso. Explicar a causa: o jogo desenhou a nave em outro lugar e manteve o desenho anterior. Dizer por que precisamos apagar esses desenhos para ver só a nave atual; só então usar a analogia da lousa mágica. Guiar Jogo 2D › Desenho e efeitos › Efeitos, pegar Limpar a tela e encaixar no primeiro lugar dentro de A cada quadro do jogo, antes de mover e desenhar a nave. Explicar que o bloco apaga o desenho velho, não a nave criada. Repetir o mesmo teste de movimento e mostrar o rastro desaparecer sem usar o céu estrelado para cobri-lo.\n\nDuração alvo: 65 a 80 segundos; recalibrar após gravar. Narração completa no roteiro correspondente."
-    },
-    {
-      "key": "fala-limite-da-nave",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora é sua vez de testar a borda e manter a nave dentro do jogo."
-      }
-    },
-    {
-      "key": "video-limite-da-nave",
-      "plannedVideo": "Título: A borda segura a nave\n\nAbrir com a nave andando sem rastro e testar primeiro sem o bloco de borda, até ela sair visivelmente da tela. Só depois apresentar a solução: guiar Jogo 2D › Movimento › Bordas e rebatidas, pegar Manter o sprite dentro da tela e encaixar entre Mover o sprite com as setas e Desenhar o sprite. O campo que escolhe qual sprite esse bloco mantém na tela inicia em heroi: abrir e ler o aviso antes de selecionar nave; mostrar o aviso sumindo. Repetir o teste nas duas bordas e mostrar a nave parando e permanecendo visível. Não adicionar estrelas ainda.\n\nDuração alvo: 85 a 105 segundos; recalibrar após gravar. Narração completa no roteiro correspondente."
-    },
-    {
-      "key": "fala-fundo-estrelado",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "A nave já se move sem rastro. Agora é sua vez de dar ao jogo um céu de estrelas."
-      }
-    },
-    {
-      "key": "video-fundo-estrelado",
-      "plannedVideo": "Título: As estrelas entram no jogo\n\nAbrir mostrando a nave já com movimento, parando nas beiradas e sem rastro. Apresentar as estrelas como acabamento para dar ao jogo cara de aventura no espaço, sem enfatizar para a criança que o fundo anterior era liso. Guiar Jogo 2D › Cenários › Fundos e encaixar Desenhar fundo de estrelas primeiro depois de Desenhar o sprite, no fim do motor. Deixar a nave sumir por um instante: o céu cobre toda a tela, mas o bloco da nave continua no projeto. Sem narrar a experiência da seção seguinte, arrastar as estrelas para logo depois de Limpar a tela, antes do movimento e desenho da nave. Mostrar a nave reaparecer, conferir a velocidade padrão 1 sem redigitar e enquadrar a pilha correta inteira.\n\nDuração alvo: 65 a 80 segundos; recalibrar após gravar. Narração completa no roteiro correspondente."
-    },
-    {
-      "key": "video-camadas",
-      "plannedVideo": "Título: Quem é desenhado depois fica na frente\n\nAbrir com a pergunta deixada pelo clipe anterior: por que a nave sumiu e voltou quando o bloco das estrelas mudou de lugar? Mostrar duas folhas sobrepostas e trocar a ordem delas. Explicar que a tela funciona da mesma forma: o que é desenhado depois fica por cima. Não reproduzir os controles da experiência nem pedir que a criança os mova durante o vídeo.\n\nDuração alvo: 40 a 50 segundos; recalibrar após gravar. Origem: conceito de ordem de desenho do roteiro original."
-    },
-    {
-      "key": "fala-camadas",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "Você viu a pilha de folhas. Agora veja o que a ordem dos desenhos muda na tela da nave."
-      }
-    },
-    {
-      "key": "experiencia-camadas",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "semPerguntaFinal": true,
-        "title": "Quem fica na frente?",
-        "instructions": "Troque a ordem dos desenhos algumas vezes. Observe quando a nave fica na frente e quando o fundo a cobre.",
-        "hints": [],
-        "activity": {
-          "type": "experimentation",
-          "scene": "layers",
-          "cast": {
-            "hero": {
-              "name": "nave",
-              "gender": "f"
-            },
-            "scenery": {
-              "name": "fundo de estrelas",
-              "gender": "m",
-              "figure": "estrelas"
-            }
-          },
-          "cenario": "nave",
-          "setup": {
-            "goals": ["front", "covered", "back-in-front"]
-          }
-        }
-      }
-    },
-    {
-      "key": "fala-quiz",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "Antes do teste final, vamos conferir duas ideias importantes que fizeram a nave ganhar vida."
-      }
-    },
-    {
-      "key": "quiz",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 100,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "A nave foi criada, mas não aparece. Qual ação está faltando?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Desenhar o sprite nave no motor de quadros."
-              },
-              {
-                "id": "b",
-                "label": "Criar várias naves iguais."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "O objeto pode estar preparado sem ter sido desenhado."
-          },
-          {
-            "id": "q2",
-            "prompt": "Onde preparar a tela e criar a nave?",
-            "choices": [
-              {
-                "id": "b",
-                "label": "Dentro de cada quadro, repetindo a criação."
-              },
-              {
-                "id": "a",
-                "label": "Em Ao iniciar."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "A preparação ocorre uma vez; o motor atualiza e desenha depois."
-          }
-        ]
-      }
     }
   ],
   "sections": [
     {
-      "key": "abertura",
-      "title": "O que a gente vai fazer hoje",
+      "key": "chegada",
+      "title": "A aventura começa no farol",
       "intent": "presentation",
-      "objective": "Ver o jogo do fim do dia rodando antes de montar a primeira peça.",
-      "blockKeys": ["video-abertura"],
+      "objective": "Conhecer o jogo e distinguir o cenário preparado da primeira regra que a criança construirá.",
+      "blockKeys": ["video-d1-chegada"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura"]
+        "blockIds": ["video-d1-chegada"]
       }
     },
     {
-      "key": "uma-vez-e-sempre",
-      "title": "O que acontece uma vez e o que acontece sempre",
-      "intent": "exploration",
-      "objective": "Separar o que acontece uma vez, no começo, do que se repete a cada quadro.",
-      "blockKeys": ["video-duas-areas", "fala-uma-vez-e-sempre", "experiencia-areas"],
+      "key": "movimento",
+      "title": "Quatro caminhos para seguir",
+      "intent": "explanation",
+      "objective": "Entender as quatro direções do mapa e por que o personagem deve ficar dentro da cena.",
+      "blockKeys": ["video-d1-movimento"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-duas-areas", "experiencia-areas"]
-      }
-    },
-    {
-      "key": "montar-areas-e-tela",
-      "title": "Monte as áreas e prepare a tela",
-      "intent": "application",
-      "objective": "Montar as duas áreas do projeto, conferir a tela padrão de 800 por 480 e escolher o fundo.",
-      "blockKeys": ["video-montar-areas-tela", "fala-montar-areas-tela"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-montar-areas-tela"],
-        "projectChecks": [
-          {
-            "id": "inicio",
-            "label": "Coloque Ao iniciar.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_frame_start",
-              "count": 1
-            }
-          },
-          {
-            "id": "motor",
-            "label": "Coloque Enquanto estiver rodando.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_frame_loops",
-              "count": 1
-            }
-          },
-          {
-            "id": "tela",
-            "label": "Deixe a tela de 800 × 480 em Ao iniciar.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_setup_stage",
-              "area": "start",
-              "inputs": {
-                "W": 800,
-                "H": 480
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "coordenadas",
-      "title": "Onde a nave fica na tela",
-      "intent": "exploration",
-      "objective": "Sentir para que lado o x e o y levam a nave, e onde fica o zero dos dois.",
-      "blockKeys": ["video-coordenadas", "fala-coordenadas", "experiencia-coordenadas"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-coordenadas", "experiencia-coordenadas"]
-      }
-    },
-    {
-      "key": "criar-nave",
-      "title": "Crie a sua nave",
-      "intent": "application",
-      "objective": "Criar a nave uma vez, com posição e tamanho definidos. As cores são escolha sua.",
-      "blockKeys": ["video-criar-nave", "fala-criar-nave"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-criar-nave"],
-        "projectChecks": [
-          {
-            "id": "nave",
-            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_create_ship",
-              "fields": {
-                "NAME": "nave"
-              },
-              "inputs": {
-                "X": 400,
-                "Y": 410,
-                "W": 54,
-                "H": 62
-              },
-              "area": "start",
-              "count": 1
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "criar-e-mostrar",
-      "title": "Criar e mostrar são duas coisas diferentes",
-      "intent": "exploration",
-      "objective": "Separar criar a nave nos bastidores de mostrar a mesma nave na tela do jogo.",
-      "blockKeys": ["video-criar-e-mostrar", "fala-criar-mostrar", "experiencia-criar-mostrar"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-criar-e-mostrar", "experiencia-criar-mostrar"]
-      }
-    },
-    {
-      "key": "o-quadro",
-      "title": "O que é um quadro",
-      "intent": "exploration",
-      "objective": "Ver o ciclo de um quadro por vez: sem redesenhar a tela não muda, sem limpar fica rastro, limpando e desenhando a nave anda.",
-      "blockKeys": ["video-livrinho", "fala-o-quadro", "experiencia-quadro"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-livrinho", "experiencia-quadro"]
-      }
-    },
-    {
-      "key": "motor-e-nave",
-      "title": "Faça a nave aparecer",
-      "intent": "application",
-      "objective": "Encaixar o motor de quadros e desenhar a nave dentro dele.",
-      "blockKeys": ["video-motor-e-nave", "fala-motor-e-nave"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-motor-e-nave"],
-        "projectChecks": [
-          {
-            "id": "quadro",
-            "label": "Coloque A cada quadro do jogo em Enquanto estiver rodando.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_update_each_frame",
-              "area": "loops",
-              "count": 1
-            }
-          },
-          {
-            "id": "sprite-certo",
-            "label": "Desenhe o sprite nave dentro de A cada quadro do jogo.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_draw_sprite",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "SPRITE": "nave"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "setas",
-      "title": "Faça a nave andar com as setas",
-      "intent": "application",
-      "objective": "Mover a nave com as setas e observar o que acontece na tela.",
-      "blockKeys": ["video-setas-e-rastro", "fala-setas-e-rastro"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-setas-e-rastro"],
-        "projectChecks": [
-          {
-            "id": "setas",
-            "label": "Mova nave com as setas, velocidade 7, antes de desenhá-la.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_arrows_x",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "SPRITE": "nave"
-              },
-              "inputs": {
-                "SPEED": 7
-              },
-              "beforeBlock": "sz_g2d_draw_sprite"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "limpar-rastro",
-      "title": "Apague o rastro da nave",
-      "intent": "application",
-      "objective": "Comparar o movimento antes e depois de colocar Limpar a tela no motor.",
-      "blockKeys": ["video-limpar-rastro", "fala-limpar-rastro"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-limpar-rastro"],
-        "projectChecks": [
-          {
-            "id": "borracha",
-            "label": "Limpe a tela antes de mover e desenhar a nave.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_clear",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "beforeBlock": "sz_g2d_arrows_x"
-            }
-          }
-        ]
+        "blockIds": ["video-d1-movimento"]
       }
     },
     {
       "key": "borda",
-      "title": "Não deixe a nave escapar",
-      "intent": "application",
-      "objective": "Ver a nave sair pela borda e depois mantê-la dentro da tela.",
-      "blockKeys": ["video-limite-da-nave", "fala-limite-da-nave"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-limite-da-nave"],
-        "projectChecks": [
-          {
-            "id": "setas-antes-do-limite",
-            "label": "Mova nave antes de prendê-la à tela.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_arrows_x",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "SPRITE": "nave"
-              },
-              "inputs": {
-                "SPEED": 7
-              },
-              "beforeBlock": "sz_g2d_clamp_to_screen"
-            }
-          },
-          {
-            "id": "limite",
-            "label": "Mantenha nave dentro da tela antes de desenhá-la.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_clamp_to_screen",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "SPRITE": "nave"
-              },
-              "beforeBlock": "sz_g2d_draw_sprite"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "fundo-estrelado",
-      "title": "Coloque o céu estrelado",
-      "intent": "application",
-      "objective": "Desenhar um céu de estrelas atrás da nave, depois de Limpar a tela.",
-      "blockKeys": ["video-fundo-estrelado", "fala-fundo-estrelado"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-fundo-estrelado"],
-        "projectChecks": [
-          {
-            "id": "borracha-primeiro",
-            "label": "Limpe antes de desenhar o céu estrelado.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_clear",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "beforeBlock": "sz_g2d_starfield"
-            }
-          },
-          {
-            "id": "estrelas",
-            "label": "Desenhe as estrelas com velocidade 1 antes da nave.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_starfield",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "inputs": {
-                "SPEED": 1
-              },
-              "beforeBlock": "sz_g2d_arrows_x"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "camadas",
-      "title": "Quem é desenhado depois fica por cima",
-      "intent": "exploration",
-      "objective": "Comprovar que só a ordem muda quem aparece na frente, e que ninguém é apagado.",
-      "blockKeys": ["video-camadas", "fala-camadas", "experiencia-camadas"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-camadas", "experiencia-camadas"]
-      }
-    },
-    {
-      "key": "quiz-final",
-      "title": "O que fez a nave ganhar vida",
-      "intent": "closing",
-      "objective": "Conferir a diferença entre preparar e desenhar, e entre começo e repetição.",
-      "blockKeys": ["fala-quiz", "quiz"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["quiz"]
-      }
-    },
-    {
-      "key": "entrega",
-      "title": "Teste, envie e feche",
+      "title": "O mapa tem uma borda",
       "intent": "delivery",
-      "objective": "Tela 800 por 480, nave visível e controlada pelas setas, sem sair das bordas e sem deixar rastro.",
-      "blockKeys": ["video-teste-e-envio", "fala-entrega", "projeto"],
+      "objective": "Perceber o problema de sair da cena, manter o personagem dentro dela e enviar a atividade.",
+      "blockKeys": ["video-d1-borda", "ponte-d1-borda", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-teste-e-envio", "projeto"],
+        "blockIds": ["video-d1-borda", "projeto"],
         "projectChecks": [
           {
-            "id": "tela",
-            "label": "Deixe a tela de 800 × 480 em Ao iniciar.",
+            "id": "direcional",
+            "label": "Mostre somente as quatro direções.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_setup_stage",
+              "blockType": "sz_g2d_enable_classic_controls",
               "area": "start",
-              "inputs": {
-                "W": 800,
-                "H": 480
+              "fields": {
+                "MODE": "directions"
               }
             }
           },
           {
-            "id": "nave",
-            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
+            "id": "andar",
+            "label": "Faça o personagem andar antes de conferir a borda.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_create_ship",
+              "blockType": "sz_g2d_top_down",
+              "area": "loops",
               "fields": {
-                "NAME": "nave"
+                "SPRITE": "personagem"
               },
               "inputs": {
-                "X": 400,
-                "Y": 410,
-                "W": 54,
-                "H": 62
-              },
-              "area": "start",
-              "count": 1
-            }
-          },
-          {
-            "id": "borracha",
-            "label": "Limpe antes de desenhar o fundo de estrelas.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_clear",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "beforeBlock": "sz_g2d_starfield"
-            }
-          },
-          {
-            "id": "estrelas",
-            "label": "Desenhe as estrelas com velocidade 1 a cada quadro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_starfield",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "inputs": {
-                "SPEED": 1
-              }
-            }
-          },
-          {
-            "id": "setas",
-            "label": "Mova nave com as setas, velocidade 7, antes de prender à tela.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_arrows_x",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "SPRITE": "nave"
-              },
-              "inputs": {
-                "SPEED": 7
+                "SPEED": 3
               },
               "beforeBlock": "sz_g2d_clamp_to_screen"
             }
           },
           {
-            "id": "limite",
-            "label": "Mantenha nave dentro da tela, no motor.",
+            "id": "borda",
+            "label": "Mantenha o personagem dentro da tela.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_clamp_to_screen",
               "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
               "fields": {
-                "SPRITE": "nave"
+                "SPRITE": "personagem"
               }
-            }
-          },
-          {
-            "id": "nave-visivel",
-            "label": "Desenhe nave depois de manter dentro da tela.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_clamp_to_screen",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "SPRITE": "nave"
-              },
-              "beforeBlock": "sz_g2d_draw_sprite"
-            }
-          },
-          {
-            "id": "sprite-certo",
-            "label": "Desenhe o sprite nave a cada quadro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_draw_sprite",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "SPRITE": "nave"
-              }
-            }
-          },
-          {
-            "id": "fundo-atras",
-            "label": "As estrelas vêm antes do movimento da nave.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_starfield",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "beforeBlock": "sz_g2d_arrows_x"
             }
           }
         ]

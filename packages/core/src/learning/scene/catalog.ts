@@ -1223,6 +1223,59 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste os dois jeitos, voltando ao início.',
     ],
   },
+  'touch-response': {
+    id: 'touch-response',
+    group: 'events',
+    title: 'O toque faz o jogo responder',
+    instruction: 'Toque no esconderijo. Depois ligue a reação ao toque e experimente de novo.',
+    manipulates: 'A ligação da reação e o toque no esconderijo',
+    success: 'O toque só revelou o personagem quando havia uma ação ligada a ele.',
+    extra: 'O que aconteceria se você ligasse outra ação ao mesmo toque?',
+    goals: [
+      {
+        id: 'no-response',
+        label: 'O toque sozinho não revelou ninguém',
+        pedido: 'Toque no esconderijo antes de ligar a reação.',
+      },
+      {
+        id: 'responds',
+        label: 'O toque revelou o personagem',
+        pedido: 'Ligue a reação ao toque e toque no esconderijo de novo.',
+      },
+    ],
+    hints: [
+      'Toque no esconderijo e observe se a figura muda.',
+      'Escolha se o toque tem uma ação ligada a ele.',
+      'Primeiro toque sem reação. Depois ligue a reação e toque outra vez.',
+    ],
+  },
+  'lighthouse-key': {
+    id: 'lighthouse-key',
+    group: 'events',
+    title: 'O que a porta precisa?',
+    instruction:
+      'Teste a porta sem a chave. Depois leve a chave e teste a porta outra vez. O que mudou?',
+    manipulates: 'A chave e a tentativa de abrir a porta do farol',
+    success: 'A mesma porta respondeu de outro jeito quando a chave estava com o personagem.',
+    extra: 'Se você deixar a chave para trás, a porta abriria?',
+    goals: [
+      {
+        id: 'locked-without-key',
+        label: 'A porta ficou fechada sem a chave',
+        pedido: 'Teste a porta sem levar a chave.',
+      },
+      {
+        id: 'opened-with-key',
+        label: 'A porta abriu com a chave',
+        pedido: 'Leve a chave e teste a porta outra vez.',
+      },
+    ],
+    hints: [
+      'O que o personagem leva na primeira tentativa?',
+      'Experimente mudar o que ele carrega e volte à porta.',
+      'Teste sem a chave. Depois escolha Levar a chave e aperte Testar a porta.',
+    ],
+  },
   restart: {
     id: 'restart',
     group: 'events',
@@ -2397,6 +2450,8 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   cleanup: PREVIA_INICIAL,
   'game-state': PREVIA_INICIAL,
   controls: PREVIA_INICIAL,
+  'touch-response': PREVIA_INICIAL,
+  'lighthouse-key': PREVIA_INICIAL,
   restart: PREVIA_INICIAL,
   hitbox: PREVIA_INICIAL,
   score: PREVIA_INICIAL,

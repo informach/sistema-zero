@@ -2,21 +2,26 @@ import { expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { isLearningManifest } from '@sistemazero/core/learning'
-import { studioSettings } from '../../../../docs/aulas-interativas/qa/desafio-configuracao'
+import { studioSettings } from '../../../../docs/aulas-interativas/qa/nave-contra-asteroides-configuracao'
 import { changeDraft, readDraft } from '../draft-authoring-helpers'
 import { buildApp, seedSampleCourse } from '../helpers'
 
 test.each([
   0, 1, 2, 3, 4, 5,
-])('Desafio day %i imports and reimports while preserving the continuous project', async (day) => {
+])('Day %i imports and reimports in its course while preserving the continuous project', async (day) => {
   const env = buildApp({ requireAdmin: true })
-  const course = seedSampleCourse(env.courses, 'desafio-primeiro-jogo', 'published', 'kids')
+  const course = seedSampleCourse(
+    env.courses,
+    day === 0 ? 'desafio-primeiro-jogo' : 'nave-contra-asteroides',
+    'published',
+    'kids',
+  )
   const lessonId = course.lessonIds[0]!,
     path = day ? `dia-${day}` : 'introducao'
   const document: unknown = await Bun.file(
     resolve(
       import.meta.dir,
-      `../../../../docs/aulas-interativas/aulas/desafio-${path}.manifesto.json`,
+      `../../../../docs/aulas-interativas/aulas/${day ? 'nave-contra-asteroides' : 'desafio'}-${path}.manifesto.json`,
     ),
   ).json()
   if (!isLearningManifest(document)) throw new Error('Invalid manifest')
@@ -47,9 +52,10 @@ test.each([
     },
   }
   expect((await request('import-preview', { document })).status).toBe(200)
-  expect(
-    (await changeDraft(env.app, lessonId, { type: 'block', block: { id, content } })).status,
-  ).toBe(200)
+  if (day)
+    expect(
+      (await changeDraft(env.app, lessonId, { type: 'block', block: { id, content } })).status,
+    ).toBe(200)
   const notebook = {
     id: 'caderno',
     kind: 'file' as const,
@@ -89,24 +95,28 @@ test.each([
   expect(first.document.plannedVideos).toHaveLength(
     document.blocks.filter((b) => 'plannedVideo' in b).length,
   )
-  const authored = document.blocks.find((b) => 'content' in b && b.content.kind === 'studio')
-  if (!authored || !('content' in authored)) throw new Error('Estúdio ausente')
-  expect(first.document.blocks.find((b) => b.id === id)?.content).toEqual({
-    ...authored.content,
-    initialProject: content.initialProject,
-  })
+  if (day) {
+    const authored = document.blocks.find((b) => 'content' in b && b.content.kind === 'studio')
+    if (!authored || !('content' in authored)) throw new Error('Estúdio ausente')
+    expect(first.document.blocks.find((b) => b.id === id)?.content).toEqual({
+      ...authored.content,
+      initialProject: content.initialProject,
+    })
+  } else {
+    expect(first.document.blocks.some((b) => b.content.kind === 'studio')).toBe(false)
+  }
   if (day === 0)
     expect(
       first.document.blocks.find((b) => b.content.kind === 'materials')?.content,
     ).toMatchObject({
-      title: 'Caderno do aluno e Mapa dos Pais',
+      title: 'Caderno e mapa da aventura',
       items: [notebook],
     })
   expect(
     new Set(
       first.document.sections.filter((s) => s.workspaceBlockId).map((s) => s.workspaceBlockId),
     ),
-  ).toEqual(new Set([id]))
+  ).toEqual(new Set(day ? [id] : []))
   if (day) {
     const delivery = first.document.sections.find((s) => s.intent === 'delivery')!
     expect(delivery.completion?.blockIds).toContain(id)

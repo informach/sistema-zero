@@ -7,6 +7,7 @@ import {
   DEFAULT_CAST,
   isSceneCast,
   openScene,
+  SCENE_FIXED_CENARIOS,
   SCENE_IDS,
   SCENE_ROLES,
   type SceneActivity,
@@ -215,6 +216,11 @@ function conferir(
     const folhas = contar(htmls, FOLHAGEM)
     if (!cenarioTemChao(mundo) && folhas > 0 && !doElenco.has('cacto') && !doElenco.has('floresta'))
       falhas.push(`${rotulo}: a folhagem da terra apareceu no espaço ${folhas}×`)
+  } else if (SCENE_FIXED_CENARIOS[scene]) {
+    if (!htmls.every((h) => h.includes(`data-mundo="${mundo}"`)))
+      falhas.push(`${rotulo}: a cena de mundo fixo perdeu a moldura ${mundo}`)
+    if (!htmls.every((h) => h.includes(`data-fundo="${mundo}"`)))
+      falhas.push(`${rotulo}: a cena de mundo fixo perdeu o fundo ${mundo}`)
   } else if (htmls.some((h) => h.includes('data-mundo=') || h.includes('data-fundo=')))
     falhas.push(`${rotulo}: palco sem papel do elenco mudou de mundo`)
   return falhas
@@ -278,7 +284,7 @@ describe('o desenho veste o elenco', () => {
     expect(falhas).toEqual([])
   })
 
-  test('⚠️ sem elenco (e com o de fábrica) só o Corre Dino aparece, na terra', () => {
+  test('⚠️ sem elenco, cenas genéricas ficam na terra e cenas de mundo fixo guardam seu cenário', () => {
     const falhas: string[] = []
     for (const scene of SCENE_IDS)
       for (const cast of [undefined, DEFAULT_CAST])

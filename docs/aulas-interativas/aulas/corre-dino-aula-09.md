@@ -1,6 +1,6 @@
 # Corre, Dino! · Aula 9 · O jogo inteiro
 
-> Análise de redesenho didático. Formato herdado de `desafio-dia-1.md`.
+> Análise de redesenho didático. Formato herdado de `nave-contra-asteroides-dia-1.md`.
 > Esta é a aula em que o jogo fica completo. O desenho dela foi feito para isso aparecer.
 
 ## Resumo

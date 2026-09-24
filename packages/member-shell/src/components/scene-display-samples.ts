@@ -649,6 +649,24 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
       'A partida está acontecendo.',
     ],
   },
+  'touch-response': {
+    readouts: [
+      { label: 'esconderijo', value: 'aberto', tone: 'a' },
+      { label: 'reação ao toque', value: 'ligada', tone: 'b' },
+    ],
+    situations: [
+      'O esconderijo está fechado.',
+      'Você tocou, e nada aconteceu.',
+      'O esconderijo abriu e revelou o personagem.',
+    ],
+  },
+  'lighthouse-key': {
+    readouts: [
+      { label: 'chave', value: 'com o personagem', tone: 'a' },
+      { label: 'porta', value: 'fechada', tone: 'b' },
+    ],
+    situations: ['A porta do farol está fechada.', 'A porta abriu e a luz do farol acendeu.'],
+  },
   restart: {
     readouts: [
       {

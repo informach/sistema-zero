@@ -1,4 +1,4 @@
-# Roteiro de gravação · Desafio do Primeiro Jogo · Dia 4 · O jogo passa a contar
+# Roteiro de gravação · Nave Contra Asteroides · Dia 4 · O jogo passa a contar
 
 **Como ler este roteiro:** só o texto entre aspas em **Narração** é falado no vídeo. **Na tela**
 orienta a gravação; as **Notas de produção** são lembretes para a equipe, não falas para a criança.

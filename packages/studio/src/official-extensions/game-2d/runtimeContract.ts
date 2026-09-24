@@ -534,7 +534,7 @@ export interface GameTwoDInputAndMotionApi {
   platformer(sprite: GameTwoDSprite, ctx: GameTwoDContext, speed: number, jump: number): void
   /** Plataforma sobre terreno real; colida com o Mundo depois de mover. */
   platformerWithTerrain(sprite: GameTwoDSprite, speed: number, jump: number): void
-  enableClassicControls(mode: 'auto' | 'always' | 'off'): void
+  enableClassicControls(mode: 'auto' | 'always' | 'off' | 'directions'): void
   actionDown(action: GameTwoDAction): boolean
   actionPressed(action: GameTwoDAction): boolean
   classicPlatformer(sprite: GameTwoDSprite, speed: number, jump: number): void

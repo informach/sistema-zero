@@ -2,29 +2,24 @@
   "version": 5,
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "dia-2",
-  "title": "A nave atira",
-  "retireBlockKeys": [
-    "video-abertura-v6",
-    "video-grupo-tiros",
-    "fala-grupo-tiros",
-    "video-espaco",
-    "fala-espaco",
-    "video-origem",
-    "video-ciclo-tiros",
-    "fala-ciclo-tiros",
-    "video-testar",
-    "entrega-fala-v6",
-    "video-fecho-v6",
-    "quiz-v6",
-    "fala-evento",
-    "fala-raio-e-cor",
-    "fala-desenhar-grupo",
-    "fala-camadas"
-  ],
+  "title": "A chave muda a aventura",
+  "retireBlockKeys": ["video-d2-teste"],
   "blocks": [
     {
-      "key": "video-teste-e-envio",
-      "plannedVideo": "Título: Dois tiros de dois lugares e o envio\n\nOrigem: novo, com o video-testar do v6 como referência de tela. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 70 a 85 segundos.\n\nGravação de tela no jogo do fim do Dia 2, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, um gesto de cada vez, com uma marquinha visual a cada som que toca:\n\n1. O clique dentro da área do jogo.\n2. A nave levada até a esquerda pela seta, e a barra de espaço. O tiro sai de onde ela está, sobe e some na borda de cima.\n3. A nave levada até a direita, e a barra de espaço de novo. O segundo tiro sai do lugar novo, e não do lugar do primeiro.\n4. A conferência dos três números antes do envio, cada campo enquadrado: raio 5, vx 0 e vy menos 9.\n\nConferir junto, olhando a tela: os dois tiros nascem em lugares diferentes, os dois sobem, os dois somem lá em cima, e cada disparo tem som.\n\nO vy menos 9 continua assim para o Dia 3, então o clipe mostra o campo e não convida a mudar o número.\n\nQuem estiver sem som precisa conseguir contar os disparos com os olhos, então a marquinha visual é obrigatória.\n\nDepois o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFecho do clipe, com o jogo ainda rodando ao fundo, depois de o envio já ter acontecido na tela: \"Agora cada disparo nasce na sua nave, onde quer que ela esteja. A área Quando acontecer cria o tiro, e o motor faz o resto: move o grupo, tira quem saiu e desenha. No Dia 3 chegam os asteroides para você acertar.\"\n\nDe onde veio este fecho: ele era um balão do Zappy no fim da seção. Na seção de entrega o Estúdio fica sozinho na coluna da direita e todo o resto se lê na esquerda, de cima para baixo, então qualquer fecho escrito seria lido antes do envio. Aqui ele cai no lugar certo, depois do envio.\n\nA instrução de gesto que abria a seção também era um balão e veio para cá. Ela já está nos itens 1 a 4 desta lista, inclusive a conferência dos três números."
+      "key": "video-d2-contexto",
+      "plannedVideo": "Título: A chave precisa fazer diferença\n\nRetomar o mesmo jogo. Mostrar que encostar na chave ainda não a recolhe; explicar acontecimento e memória com analogia cotidiana, sem antecipar o teste.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "video-d2-programar",
+      "plannedVideo": "Título: Faça o jogo guardar a chave\n\nGuiar, sem pular gesto, Criar variável temChave com falso em Ao iniciar e o evento Quando o sprite personagem começar a encostar no sprite chave; destruir chave e alterar temChave para verdadeiro.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "ponte-d2-programar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "O personagem já anda. Agora você vai fazer o encontro com a chave mudar o jogo."
+      }
     },
     {
       "key": "projeto",
@@ -36,119 +31,422 @@
         "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
+          "sz_frame_start",
           "sz_frame_events",
           "sz_frame_loops",
-          "sz_frame_start",
-          "sz_g2d_arrows_x",
-          "sz_g2d_center_x",
-          "sz_g2d_clamp_to_screen",
-          "sz_g2d_clear",
-          "sz_g2d_create_group",
-          "sz_g2d_create_ship",
-          "sz_g2d_draw_group",
-          "sz_g2d_draw_sprite",
-          "sz_g2d_on_key",
-          "sz_g2d_play_fx",
-          "sz_g2d_prune_offscreen",
+          "sz_frame_structure",
+          "sz_frame_appearance",
+          "sz_html_canvas",
+          "sz_css_rule",
+          "sz_css_decl",
+          "sz_css_body_background",
+          "sz_css_align",
+          "sz_css_justify",
           "sz_g2d_setup_stage",
-          "sz_g2d_spawn_bullet",
-          "sz_g2d_sprite_y",
-          "sz_g2d_starfield",
+          "sz_g2d_create_image_sprite",
+          "sz_g2d_clear",
+          "sz_g2d_draw_backdrop",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_draw_label",
           "sz_g2d_update_each_frame",
-          "sz_g2d_update_group",
-          "sz_val_number"
+          "sz_g2d_enable_classic_controls",
+          "sz_g2d_top_down",
+          "sz_g2d_clamp_to_screen",
+          "sz_g2d_on_overlap",
+          "sz_g2d_destroy_sprite",
+          "sz_g2d_set_image",
+          "sz_js_var_create",
+          "sz_js_var_assign",
+          "sz_js_if_else",
+          "sz_js_member_set",
+          "sz_math_arithmetic",
+          "sz_val_bool",
+          "sz_val_compare",
+          "sz_val_member_get",
+          "sz_val_number",
+          "sz_val_text",
+          "sz_val_variable"
         ],
-        "showcase": {
-          "enabled": false,
-          "title": "Nave contra Asteroides",
-          "summary": "Um jogo de nave, tiros e asteroides criado no Desafio do Primeiro Jogo."
-        },
         "initialProject": {
           "formatVersion": 2,
           "projectTools": [],
-          "id": "manifest-desafio-2",
-          "name": "Nave contra Asteroides",
+          "id": "manifest-desafio-farol",
+          "name": "A Chave do Farol",
           "createdAt": 0,
           "updatedAt": 0,
           "mode": "blocks",
           "files": {
-            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Nave contra Asteroides</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
-            "style.css": "",
-            "script.js": ""
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Chave do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <canvas id=\"tela\" width=\"640\" height=\"360\"></canvas>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "body {\n  margin: 0;\n  background: #b9dfd0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 100vh;\n  padding-bottom: 108px;\n  box-sizing: border-box;\n}\n",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#b9dfd0\");\n  const personagem = SZGame2D.createSprite({ x: 170, y: 130, w: 40, h: 48, image: \"personagem\" });\n  const chave = SZGame2D.createSprite({ x: 328, y: 171, w: 40, h: 40, image: \"chave\" });\n  const farol = SZGame2D.createSprite({ x: 485, y: 72, w: 100, h: 154, image: \"farol-apagado\" });\n  const barco = SZGame2D.createSprite({ x: 655, y: 267, w: 72, h: 50, image: \"barco\" });\n  let aviso = \"Encontre a chave e vá ao farol.\";\n  let ganhou = false;\n  SZGame2D.enableClassicControls(\"directions\");\n  // Quando acontecer\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"cenario\");\n    SZGame2D.topDown(personagem, 3);\n    SZGame2D.clampToScreen(personagem, ctx);\n    if (ganhou) {\n      if (barco.x > 530) {\n        barco.x = barco.x - 1.5;\n      }\n    }\n    SZGame2D.drawSprite(ctx, chave);\n    SZGame2D.drawSprite(ctx, farol);\n    SZGame2D.drawSprite(ctx, barco);\n    SZGame2D.drawSprite(ctx, personagem);\n    SZGame2D.drawLabel(ctx, aviso, 20, 32, \"#263a45\", 19, \"left\");\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
-          "assets": [],
-          "ir": null,
+          "assets": [
+            {
+              "id": "desafio-farol-cenario",
+              "name": "cenario",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjQwIDM2MCI+PHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzNjAiIGZpbGw9IiNiOWRmZDAiLz48cGF0aCBkPSJNMCAwSDY0MFY5M1E1NTAgODMgNDc1IDEwNFEzOTMgMTE2IDMxNiA5NFEyMDkgNzYgMTIwIDEwMFE0NCAxMTIgMCA5M1oiIGZpbGw9IiNhNmQ1ZWEiLz48cGF0aCBkPSJNMCAyNzBRMTIwIDI1OCAyNDggMjc3UTM1NCAyOTIgNDQyIDI3M1E1MzAgMjU0IDY0MCAyNzJWMzYwSDBaIiBmaWxsPSIjOTZjOThkIi8+PHBhdGggZD0iTTQ5NyAwSDY0MFYzNjBINTIzUTUzNyAzMDQgNTExIDI0NlE0ODQgMTk3IDUwNiAxNDVRNTI1IDk0IDQ5NyAwWiIgZmlsbD0iIzViYTljMSIvPjxwYXRoIGQ9Ik0wIDE2NVE4NiAxNTUgMTc4IDE3NVEyNTUgMTgxIDMxOCAxNTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2U4ZDdhOCIgc3Ryb2tlLXdpZHRoPSIyMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTMxOCAxNTdRNDA0IDE0MSA0NTYgMTc3IiBmaWxsPSJub25lIiBzdHJva2U9IiNlOGQ3YTgiIHN0cm9rZS13aWR0aD0iMjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxnIGZpbGw9IiNmZmY1Y2EiPjxjaXJjbGUgY3g9IjkyIiBjeT0iMTI4IiByPSI1Ii8+PGNpcmNsZSBjeD0iMjE0IiBjeT0iMjI5IiByPSI0Ii8+PGNpcmNsZSBjeD0iMzc3IiBjeT0iOTYiIHI9IjUiLz48L2c+PC9zdmc+",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "id": "desafio-farol-personagem",
+              "name": "personagem",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQwIDQ4Ij48ZWxsaXBzZSBjeD0iMjAiIGN5PSI0MyIgcng9IjE1IiByeT0iNCIgZmlsbD0iIzU1NzU2NCIgb3BhY2l0eT0iLjQiLz48cmVjdCB4PSI3IiB5PSIxOSIgd2lkdGg9IjI2IiBoZWlnaHQ9IjI1IiByeD0iOCIgZmlsbD0iIzZhNjhiMCIgc3Ryb2tlPSIjM2I0MjZjIiBzdHJva2Utd2lkdGg9IjIiLz48Y2lyY2xlIGN4PSIyMCIgY3k9IjE0IiByPSIxMiIgZmlsbD0iI2YyYmY5MSIgc3Ryb2tlPSIjNzE0ZjUwIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNOCAxM1E4IC0xIDIxIDFRMzMgMyAzMiAxNFoiIGZpbGw9IiM0NDNiNjEiLz48Y2lyY2xlIGN4PSIxNiIgY3k9IjE1IiByPSIxLjUiLz48Y2lyY2xlIGN4PSIyNCIgY3k9IjE1IiByPSIxLjUiLz48L3N2Zz4=",
+              "width": 40,
+              "height": 48
+            },
+            {
+              "id": "desafio-farol-chave",
+              "name": "chave",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MiIgaGVpZ2h0PSI0MiIgdmlld0JveD0iMCAwIDQyIDQyIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI4IiBmaWxsPSJub25lIiBzdHJva2U9IiNkOTkzMzUiIHN0cm9rZS13aWR0aD0iNSIvPjxwYXRoIGQ9Ik0xOCAxOEwzNiAzNk0yOSAyOUwzMyAyNU0zMyAzM0wzNyAyOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDk5MzM1IiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==",
+              "width": 42,
+              "height": 42
+            },
+            {
+              "id": "desafio-farol-farol-apagado",
+              "name": "farol-apagado",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTE5IDE1MUwzMSA0NUg2OUw4MSAxNTFaIiBmaWxsPSIjZjllZWUxIiBzdHJva2U9IiM4MTY0NzQiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yNiA4NEg3NEw3MCAxMDFIMzBaIiBmaWxsPSIjZGY2OTYyIi8+PHJlY3QgeD0iNDAiIHk9IjExMyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjM4IiByeD0iMyIgZmlsbD0iIzY3NGY2MyIvPjxwYXRoIGQ9Ik0zMCA0NVYyMEg3MFY0NVoiIGZpbGw9IiM2YzgxOTYiIHN0cm9rZT0iIzU0NjI3MyIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIzIDIwTDUwIDVMNzcgMjBaIiBmaWxsPSIjZGM2ODY0IiBzdHJva2U9IiM5ODUyNWEiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==",
+              "width": 100,
+              "height": 154
+            },
+            {
+              "id": "desafio-farol-farol-aceso",
+              "name": "farol-aceso",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTUwIDMwTDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik01MCAzMEwxMDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik0xOSAxNTFMMzEgNDVINjlMODEgMTUxWiIgZmlsbD0iI2Y5ZWVlMSIgc3Ryb2tlPSIjODE2NDc0IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjYgODRINzRMNzAgMTAxSDMwWiIgZmlsbD0iI2RmNjk2MiIvPjxyZWN0IHg9IjQwIiB5PSIxMTMiIHdpZHRoPSIyMCIgaGVpZ2h0PSIzOCIgcng9IjMiIGZpbGw9IiM2NzRmNjMiLz48cGF0aCBkPSJNMzAgNDVWMjBINzBWNDVaIiBmaWxsPSIjZmZkZTczIiBzdHJva2U9IiM5ZTc4NDYiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yMyAyMEw1MCA1TDc3IDIwWiIgZmlsbD0iI2RjNjg2NCIgc3Ryb2tlPSIjOTg1MjVhIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+              "width": 100,
+              "height": 154
+            },
+            {
+              "id": "desafio-farol-barco",
+              "name": "barco",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI1MCIgdmlld0JveD0iMCAwIDcyIDUwIj48cGF0aCBkPSJNNCAyOEg2OEw1NyA0NEgxNloiIGZpbGw9IiM5MzU5NjkiIHN0cm9rZT0iIzY1NGY2NSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTM1IDNWMjdINjFaIiBmaWxsPSIjZjllZmQ3IiBzdHJva2U9IiM4YTc4ODAiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik0zNSAzTDE2IDI2SDM1WiIgZmlsbD0iI2ZmZjdlNSIgc3Ryb2tlPSIjOGE3ODgwIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=",
+              "width": 72,
+              "height": 50
+            }
+          ],
+          "ir": {
+            "version": 2,
+            "html": [
+              {
+                "type": "canvas",
+                "id": "tela",
+                "width": 640,
+                "height": 360
+              }
+            ],
+            "css": [
+              {
+                "selector": "body",
+                "declarations": {
+                  "margin": "0",
+                  "background": "#b9dfd0",
+                  "display": "flex",
+                  "align-items": "center",
+                  "justify-content": "center",
+                  "min-height": "100vh",
+                  "padding-bottom": "108px",
+                  "box-sizing": "border-box"
+                }
+              }
+            ],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": 640,
+                  "height": 360,
+                  "bg": "#b9dfd0"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "personagem",
+                  "x": 170,
+                  "y": 130,
+                  "w": 40,
+                  "h": 48,
+                  "image": "personagem"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "chave",
+                  "x": 328,
+                  "y": 171,
+                  "w": 40,
+                  "h": 40,
+                  "image": "chave"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "farol",
+                  "x": 485,
+                  "y": 72,
+                  "w": 100,
+                  "h": 154,
+                  "image": "farol-apagado"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "barco",
+                  "x": 655,
+                  "y": 267,
+                  "w": 72,
+                  "h": 50,
+                  "image": "barco"
+                },
+                {
+                  "type": "var",
+                  "name": "aviso",
+                  "value": {
+                    "type": "str",
+                    "value": "Encontre a chave e vá ao farol."
+                  }
+                },
+                {
+                  "type": "var",
+                  "name": "ganhou",
+                  "value": {
+                    "type": "bool",
+                    "value": false
+                  }
+                },
+                {
+                  "type": "g2d:enableClassicControls",
+                  "mode": "directions"
+                }
+              ],
+              "events": [],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear"
+                    },
+                    {
+                      "type": "g2d:drawBackdrop",
+                      "ctxVar": "ctx",
+                      "image": "cenario"
+                    },
+                    {
+                      "type": "g2d:topDown",
+                      "spriteVar": "personagem",
+                      "speed": 3
+                    },
+                    {
+                      "type": "g2d:clampToScreen",
+                      "spriteVar": "personagem",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "var",
+                        "name": "ganhou"
+                      },
+                      "then": [
+                        {
+                          "type": "if",
+                          "cond": {
+                            "type": "binop",
+                            "op": ">",
+                            "left": {
+                              "type": "memberGet",
+                              "object": {
+                                "type": "var",
+                                "name": "barco"
+                              },
+                              "name": "x"
+                            },
+                            "right": {
+                              "type": "num",
+                              "value": 530
+                            }
+                          },
+                          "then": [
+                            {
+                              "type": "memberSet",
+                              "object": {
+                                "type": "var",
+                                "name": "barco"
+                              },
+                              "name": "x",
+                              "value": {
+                                "type": "binop",
+                                "op": "-",
+                                "left": {
+                                  "type": "memberGet",
+                                  "object": {
+                                    "type": "var",
+                                    "name": "barco"
+                                  },
+                                  "name": "x"
+                                },
+                                "right": {
+                                  "type": "num",
+                                  "value": 1.5
+                                }
+                              }
+                            }
+                          ],
+                          "else": []
+                        }
+                      ],
+                      "else": []
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "chave",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "farol",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "barco",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "personagem",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawLabel",
+                      "ctxVar": "ctx",
+                      "text": {
+                        "type": "var",
+                        "name": "aviso"
+                      },
+                      "x": 20,
+                      "y": 32,
+                      "color": "#263a45",
+                      "size": 19,
+                      "align": "left"
+                    }
+                  ]
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
           "blocksState": {
             "blocks": {
               "languageVersion": 0,
               "blocks": [
                 {
-                  "type": "sz_frame_start",
-                  "fields": {},
+                  "type": "sz_frame_structure",
                   "inputs": {
                     "CHILDREN": {
                       "block": {
-                        "type": "sz_g2d_setup_stage",
+                        "type": "sz_html_canvas",
                         "fields": {
-                          "BG": "#07162e"
+                          "ID": "tela",
+                          "CLASS": "",
+                          "DESCRIPTION": ""
                         },
-                        "inputs": {
-                          "W": {
-                            "shadow": {
-                              "type": "sz_val_number",
-                              "fields": {
-                                "NUM": 800
-                              }
-                            }
-                          },
-                          "H": {
-                            "shadow": {
-                              "type": "sz_val_number",
-                              "fields": {
-                                "NUM": 480
-                              }
-                            }
-                          }
+                        "data": "{\"width\":640,\"height\":360}"
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 32
+                },
+                {
+                  "type": "sz_frame_appearance",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_css_body_background",
+                        "fields": {
+                          "COLOR": "#b9dfd0"
                         },
                         "next": {
                           "block": {
-                            "type": "sz_g2d_create_ship",
+                            "type": "sz_css_justify",
                             "fields": {
-                              "NAME": "nave",
-                              "BODY": "#35e8ff",
-                              "WINGS": "#2568ff"
+                              "SELECTOR": "body",
+                              "VALUE": "center"
                             },
-                            "inputs": {
-                              "X": {
-                                "shadow": {
-                                  "type": "sz_val_number",
-                                  "fields": {
-                                    "NUM": 400
-                                  }
-                                }
-                              },
-                              "Y": {
-                                "shadow": {
-                                  "type": "sz_val_number",
-                                  "fields": {
-                                    "NUM": 410
-                                  }
-                                }
-                              },
-                              "W": {
-                                "shadow": {
-                                  "type": "sz_val_number",
-                                  "fields": {
-                                    "NUM": 54
-                                  }
-                                }
-                              },
-                              "H": {
-                                "shadow": {
-                                  "type": "sz_val_number",
-                                  "fields": {
-                                    "NUM": 62
+                            "next": {
+                              "block": {
+                                "type": "sz_css_align",
+                                "fields": {
+                                  "SELECTOR": "body",
+                                  "VALUE": "center"
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_css_rule",
+                                    "fields": {
+                                      "SELECTOR": "body"
+                                    },
+                                    "inputs": {
+                                      "CHILDREN": {
+                                        "block": {
+                                          "type": "sz_css_decl",
+                                          "fields": {
+                                            "PROP": "margin",
+                                            "VALUE": "0"
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_css_decl",
+                                              "fields": {
+                                                "PROP": "display",
+                                                "VALUE": "flex"
+                                              },
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_css_decl",
+                                                  "fields": {
+                                                    "PROP": "min-height",
+                                                    "VALUE": "100vh"
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_css_decl",
+                                                      "fields": {
+                                                        "PROP": "padding-bottom",
+                                                        "VALUE": "108px"
+                                                      },
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_css_decl",
+                                                          "fields": {
+                                                            "PROP": "box-sizing",
+                                                            "VALUE": "border-box"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
                                   }
                                 }
                               }
@@ -157,48 +455,287 @@
                         }
                       }
                     }
-                  }
+                  },
+                  "x": 452,
+                  "y": 32
+                },
+                {
+                  "type": "sz_frame_start",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#b9dfd0"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 640
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 360
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_create_image_sprite",
+                            "fields": {
+                              "NAME": "personagem",
+                              "IMAGE": "personagem"
+                            },
+                            "inputs": {
+                              "X": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 170
+                                  }
+                                }
+                              },
+                              "Y": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 130
+                                  }
+                                }
+                              },
+                              "W": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 40
+                                  }
+                                }
+                              },
+                              "H": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 48
+                                  }
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_image_sprite",
+                                "fields": {
+                                  "NAME": "chave",
+                                  "IMAGE": "chave"
+                                },
+                                "inputs": {
+                                  "X": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 328
+                                      }
+                                    }
+                                  },
+                                  "Y": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 171
+                                      }
+                                    }
+                                  },
+                                  "W": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 40
+                                      }
+                                    }
+                                  },
+                                  "H": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 40
+                                      }
+                                    }
+                                  }
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_create_image_sprite",
+                                    "fields": {
+                                      "NAME": "farol",
+                                      "IMAGE": "farol-apagado"
+                                    },
+                                    "inputs": {
+                                      "X": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 485
+                                          }
+                                        }
+                                      },
+                                      "Y": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 72
+                                          }
+                                        }
+                                      },
+                                      "W": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 100
+                                          }
+                                        }
+                                      },
+                                      "H": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 154
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_g2d_create_image_sprite",
+                                        "fields": {
+                                          "NAME": "barco",
+                                          "IMAGE": "barco"
+                                        },
+                                        "inputs": {
+                                          "X": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 655
+                                              }
+                                            }
+                                          },
+                                          "Y": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 267
+                                              }
+                                            }
+                                          },
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 72
+                                              }
+                                            }
+                                          },
+                                          "H": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 50
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "next": {
+                                          "block": {
+                                            "type": "sz_js_var_create",
+                                            "fields": {
+                                              "NAME": "aviso"
+                                            },
+                                            "inputs": {
+                                              "VALUE": {
+                                                "block": {
+                                                  "type": "sz_val_text",
+                                                  "fields": {
+                                                    "TEXT": "Encontre a chave e vá ao farol."
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "next": {
+                                              "block": {
+                                                "type": "sz_js_var_create",
+                                                "fields": {
+                                                  "NAME": "ganhou"
+                                                },
+                                                "inputs": {
+                                                  "VALUE": {
+                                                    "block": {
+                                                      "type": "sz_val_bool",
+                                                      "fields": {
+                                                        "VALUE": "false"
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "next": {
+                                                  "block": {
+                                                    "type": "sz_g2d_enable_classic_controls",
+                                                    "fields": {
+                                                      "MODE": "directions"
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 392
                 },
                 {
                   "type": "sz_frame_loops",
-                  "fields": {},
                   "inputs": {
                     "CHILDREN": {
                       "block": {
                         "type": "sz_g2d_update_each_frame",
-                        "fields": {},
                         "inputs": {
                           "BODY": {
                             "block": {
                               "type": "sz_g2d_clear",
-                              "fields": {},
-                              "inputs": {},
                               "next": {
                                 "block": {
-                                  "type": "sz_g2d_starfield",
-                                  "fields": {},
-                                  "inputs": {
-                                    "SPEED": {
-                                      "shadow": {
-                                        "type": "sz_val_number",
-                                        "fields": {
-                                          "NUM": 1
-                                        }
-                                      }
-                                    }
+                                  "type": "sz_g2d_draw_backdrop",
+                                  "fields": {
+                                    "IMAGE": "cenario"
                                   },
                                   "next": {
                                     "block": {
-                                      "type": "sz_g2d_arrows_x",
+                                      "type": "sz_g2d_top_down",
                                       "fields": {
-                                        "SPRITE": "nave"
+                                        "SPRITE": "personagem"
                                       },
                                       "inputs": {
                                         "SPEED": {
                                           "shadow": {
                                             "type": "sz_val_number",
                                             "fields": {
-                                              "NUM": 7
+                                              "NUM": 3
                                             }
                                           }
                                         }
@@ -207,16 +744,199 @@
                                         "block": {
                                           "type": "sz_g2d_clamp_to_screen",
                                           "fields": {
-                                            "SPRITE": "nave"
+                                            "SPRITE": "personagem"
                                           },
-                                          "inputs": {},
                                           "next": {
                                             "block": {
-                                              "type": "sz_g2d_draw_sprite",
-                                              "fields": {
-                                                "SPRITE": "nave"
+                                              "type": "sz_js_if_else",
+                                              "inputs": {
+                                                "THEN": {
+                                                  "block": {
+                                                    "type": "sz_js_if_else",
+                                                    "inputs": {
+                                                      "THEN": {
+                                                        "block": {
+                                                          "type": "sz_js_member_set",
+                                                          "fields": {
+                                                            "NAME": "x"
+                                                          },
+                                                          "inputs": {
+                                                            "OBJ": {
+                                                              "block": {
+                                                                "type": "sz_val_variable",
+                                                                "fields": {
+                                                                  "NAME": "barco"
+                                                                }
+                                                              }
+                                                            },
+                                                            "VALUE": {
+                                                              "block": {
+                                                                "type": "sz_math_arithmetic",
+                                                                "fields": {
+                                                                  "OP": "-"
+                                                                },
+                                                                "inputs": {
+                                                                  "A": {
+                                                                    "block": {
+                                                                      "type": "sz_val_member_get",
+                                                                      "fields": {
+                                                                        "NAME": "x"
+                                                                      },
+                                                                      "inputs": {
+                                                                        "OBJ": {
+                                                                          "block": {
+                                                                            "type": "sz_val_variable",
+                                                                            "fields": {
+                                                                              "NAME": "barco"
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "B": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 1.5
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      "COND": {
+                                                        "block": {
+                                                          "type": "sz_val_compare",
+                                                          "fields": {
+                                                            "OP": ">"
+                                                          },
+                                                          "inputs": {
+                                                            "LEFT": {
+                                                              "block": {
+                                                                "type": "sz_val_member_get",
+                                                                "fields": {
+                                                                  "NAME": "x"
+                                                                },
+                                                                "inputs": {
+                                                                  "OBJ": {
+                                                                    "block": {
+                                                                      "type": "sz_val_variable",
+                                                                      "fields": {
+                                                                        "NAME": "barco"
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            },
+                                                            "RIGHT": {
+                                                              "shadow": {
+                                                                "type": "sz_val_number",
+                                                                "fields": {
+                                                                  "NUM": 530
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    },
+                                                    "extraState": {
+                                                      "hasElse": true
+                                                    }
+                                                  }
+                                                },
+                                                "COND": {
+                                                  "block": {
+                                                    "type": "sz_val_variable",
+                                                    "fields": {
+                                                      "NAME": "ganhou"
+                                                    }
+                                                  }
+                                                }
                                               },
-                                              "inputs": {}
+                                              "extraState": {
+                                                "hasElse": true
+                                              },
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_draw_sprite",
+                                                  "fields": {
+                                                    "SPRITE": "chave"
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g2d_draw_sprite",
+                                                      "fields": {
+                                                        "SPRITE": "farol"
+                                                      },
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_g2d_draw_sprite",
+                                                          "fields": {
+                                                            "SPRITE": "barco"
+                                                          },
+                                                          "next": {
+                                                            "block": {
+                                                              "type": "sz_g2d_draw_sprite",
+                                                              "fields": {
+                                                                "SPRITE": "personagem"
+                                                              },
+                                                              "next": {
+                                                                "block": {
+                                                                  "type": "sz_g2d_draw_label",
+                                                                  "fields": {
+                                                                    "COLOR": "#263a45",
+                                                                    "ALIGN": "left"
+                                                                  },
+                                                                  "inputs": {
+                                                                    "TEXT": {
+                                                                      "block": {
+                                                                        "type": "sz_val_variable",
+                                                                        "fields": {
+                                                                          "NAME": "aviso"
+                                                                        }
+                                                                      }
+                                                                    },
+                                                                    "X": {
+                                                                      "shadow": {
+                                                                        "type": "sz_val_number",
+                                                                        "fields": {
+                                                                          "NUM": 20
+                                                                        }
+                                                                      }
+                                                                    },
+                                                                    "Y": {
+                                                                      "shadow": {
+                                                                        "type": "sz_val_number",
+                                                                        "fields": {
+                                                                          "NUM": 32
+                                                                        }
+                                                                      }
+                                                                    },
+                                                                    "SIZE": {
+                                                                      "shadow": {
+                                                                        "type": "sz_val_number",
+                                                                        "fields": {
+                                                                          "NUM": 19
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
                                             }
                                           }
                                         }
@@ -230,7 +950,9 @@
                         }
                       }
                     }
-                  }
+                  },
+                  "x": 872,
+                  "y": 392
                 }
               ]
             }
@@ -244,905 +966,99 @@
           ]
         }
       }
-    },
-    {
-      "key": "video-abertura",
-      "plannedVideo": "Título: O primeiro disparo da sua nave\n\nMostrar o jogo do fim do Dia 2 rodando: a nave andando para os dois lados e atirando, com o som do tiro. Só o jogo na tela, sem a interface do Estúdio à vista.\n\nFala: \"A sua nave já voa. Hoje você vai apertar a barra de espaço e ver um tiro sair dela, de onde ela estiver na tela. A gente vai ensinar o jogo a criar o tiro, a fazer ele subir e a mostrar ele na tela.\"\n\nDuração alvo: 25 a 35 segundos.\n\nOrigem: video-abertura-v6. A fala se aproveita em parte. A tela é nova, gravada no Estúdio atual. Sai a enumeração antiga de seis passos."
-    },
-    {
-      "key": "video-terceira-area",
-      "plannedVideo": "Título: A campainha do jogo\n\nComeçar com a nave do Dia 1: apertar espaço ainda não dispara. Explicar que o jogo precisa esperar o comando. Relembrar Ao iniciar, que prepara, e Enquanto estiver rodando, que repete; nenhuma das duas espera uma tecla. Mostrar então a terceira área, Quando acontecer, ainda vazia e sem gesto de montagem. Comparar sua espera com uma campainha que toca quando alguém aperta. Nomear evento só depois de mostrar ação e resposta.\n\nDuração alvo: 40 a 50 segundos, recalibrar após gravar.\n\nOrigem: roteiro original do Dia 2, Parte 2, para o propósito da terceira área; video-espaco para a estrutura conceitual. A analogia da campainha substitui o antigo \"de ouvido em pé\"."
-    },
-    {
-      "key": "experiencia-tres-areas",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Uma vez, sempre, e na hora que acontecer",
-        "instructions": "Teste Criar um tiro em Quando acontecer e Enquanto estiver rodando. Comece o jogo, experimente a tecla e compare os disparos.",
-        "hints": [
-          "Ponha Criar um tiro em Quando acontecer e aperte Começar o jogo. Espere o teste parar sem apertar a tecla.",
-          "Agora aperte a tecla. Surgiu algum tiro?",
-          "Arraste a mesma ação para Enquanto estiver rodando e comece o jogo de novo. Compare quantos tiros nasceram."
-        ],
-        "activity": {
-          "type": "experimentation",
-          "scene": "once-vs-always",
-          "cast": {
-            "hero": {
-              "name": "nave",
-              "gender": "f"
-            },
-            "obstacle": {
-              "name": "asteroide",
-              "gender": "m"
-            }
-          },
-          "cenario": "nave",
-          "setup": {
-            "preset": {
-              "id": "tres-caixas-tiro",
-              "areas": ["start", "loop", "event"],
-              "cards": [
-                {
-                  "id": "paint",
-                  "kind": "paint",
-                  "label": "Pintar o fundo"
-                },
-                {
-                  "id": "create",
-                  "kind": "create",
-                  "label": "Criar a nave"
-                },
-                {
-                  "id": "move",
-                  "kind": "move",
-                  "label": "Mover a nave um pouquinho"
-                },
-                {
-                  "id": "event",
-                  "kind": "shot",
-                  "label": "Criar um tiro"
-                }
-              ]
-            }
-          }
-        },
-        "semPerguntaFinal": true
-      }
-    },
-    {
-      "key": "fala-terceira-area",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "A campainha só toca quando alguém aperta. Agora veja como a área Quando acontecer responde à tecla no jogo."
-      }
-    },
-    {
-      "key": "fala-grupo",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Você já viu como preparar o grupo e a tecla. Agora monte esse começo do disparo no seu jogo."
-      }
-    },
-    {
-      "key": "video-montar-grupo-e-evento",
-      "plannedVideo": "Título: O grupo dos tiros e a tecla que o jogo escuta\n\nAntes do gesto, mostrar uma nave e vários tiros possíveis: o grupo é como um saquinho que começa vazio e recebe cada disparo. Recuperar a explicação do roteiro original do Dia 2, Parte 1: uma nave, muitos tiros; uma ordem para o grupo inteiro. Depois mostrar Criar grupo de sprites entrando no fim do Ao iniciar com o nome trocado de asteroides para tiros, a área Quando acontecer ao lado das outras e Quando apertar a tecla dentro dela. Aproximar no menu e escolher barra de espaço, quinta opção, depois das quatro setas. A fala nomeia as gavetas atuais.\n\nDuração alvo: 70 a 85 segundos, recalibrar após gravar.\n\nOrigem: roteiro original do Dia 2, Parte 1, mais fusão dos gestos de video-grupo-tiros e video-espaco. Não repetir a analogia depois de pegar o bloco."
-    },
-    {
-      "key": "fala-escrito-e-lido",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "O papel guarda um número; uma pergunta ao jogo busca a posição de agora. Veja essa diferença nos disparos."
-      }
-    },
-    {
-      "key": "video-escrito-e-lido",
-      "plannedVideo": "Título: O endereço que acompanha a nave\n\nDuração alvo: 35 a 45 segundos; recalibrar após gravar.\n\nAbrir com a necessidade do jogo: a nave se move e o tiro deve nascer onde ela estiver na hora do disparo. Só depois usar a analogia de um endereço escrito num papel, que permanece igual se a peça mudar de lugar, e contrastar com perguntar a posição naquele momento. Ligar isso ao x do tiro sem mostrar dois disparos, marcas de nascimento nem controles da experiência.\n\nDuração alvo: recalibrar após gravar a narração completa do roteiro. Origem: conceito do roteiro original do Dia 2, Parte 3."
-    },
-    {
-      "key": "experiencia-escrito-e-lido",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "O número escrito e o número lido",
-        "instructions": "Dispare de lugares diferentes com O número 400 e depois com O centro x da nave. Compare as marcas de nascimento dos tiros.",
-        "hints": [
-          "Atire, depois arraste a nave para longe e atire de novo. Olhe as duas marquinhas.",
-          "Troque de onde vem o x do tiro e repita: atire, arraste a nave, atire.",
-          "Ligue as marcas da caixa e olhe por onde o tiro sai."
-        ],
-        "activity": {
-          "type": "experimentation",
-          "scene": "fixed-vs-read",
-          "cenario": "nave",
-          "setup": {
-            "goals": ["same-spot", "follows", "box-marks"]
-          }
-        },
-        "prediction": {
-          "context": {
-            "label": "De onde vem o x do tiro",
-            "explanation": "Nesta experiência, vamos comparar um número escrito no campo do tiro com a leitura da posição da nave na hora do disparo."
-          },
-          "prompt": "O x do tiro está com o número 400 escrito. Você leva a nave para a beirada da direita e atira. De onde sai o tiro?",
-          "choices": [
-            {
-              "id": "perto",
-              "label": "De perto da nave",
-              "shows": "As duas marquinhas caíram no mesmo lugar: o 400 estava escrito, e escrito não muda."
-            },
-            {
-              "id": "meio",
-              "label": "Do meio da tela, onde está o 400"
-            }
-          ],
-          "correctChoiceId": "meio",
-          "revealOn": "same-spot"
-        },
-        "semPerguntaFinal": true
-      }
-    },
-    {
-      "key": "fala-criar-tiro",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "O vídeo mostrou como o tiro lê a posição da nave. Agora monte esse disparo no seu jogo."
-      }
-    },
-    {
-      "key": "video-criar-tiro",
-      "plannedVideo": "Título: O tiro nasce na nave\n\nMostrar o gesto de encaixar Criar tiro no grupo dentro do Quando apertar a tecla, e depois arrastar os dois blocos de leitura por cima dos números do x e do y. Aproximar no momento em que o bloco cobre o número e dá o clique de encaixe, que é o gesto mais delicado da aula. Na narração, dizer o caminho completo de cada bloco: Jogo 2D › Movimento › Posição e tamanho. Ao pegar o segundo, dizer novamente que continua nessa categoria, subcategoria e seção; apontar o campo y do Criar tiro no grupo e selecionar nave no bloco de leitura. Usar marcas didáticas para mostrar o centro x e a borda de cima da caixa, sem simular tiro visível antes de o grupo ser movido e desenhado na seção 8. O raio já vem em 5: explicar que mede do meio até a beirada da bolinha e conferir sem redigitar.\n\nDuração alvo: 90 a 105 segundos; recalibrar após gravar.\n\nOrigem: video-criar-tiro. A posição y é a borda de cima da caixa da nave, e não a ponta do desenho do kit. Narração completa no roteiro correspondente."
-    },
-    {
-      "key": "fala-sinal",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "Agora experimente como o sinal muda o caminho do tiro. Observe também o número do y."
-      }
-    },
-    {
-      "key": "video-sinal-da-velocidade",
-      "plannedVideo": "Título: O sinal muda a direção\n\nMostrar um eixo y abstrato, com o zero em cima, valores crescentes para baixo e setas para os sentidos positivo e negativo. Explicar que o sinal da velocidade em y indica direção e o tamanho do número indica quanto anda por quadro. Não animar o mesmo tiro com menos 9 e 9 nem antecipar a sequência de controles: esse contraste concreto pertence à experiência.\n\nDuração alvo: 45 a 55 segundos; recalibrar após gravar. Origem: explicação do antigo video-velocidade-som, separada do gesto."
-    },
-    {
-      "key": "experiencia-direcao",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Compare o sinal da velocidade",
-        "instructions": "Experimente uma velocidade negativa e outra positiva em y. Para onde o tiro vai em cada caso?",
-        "hints": [
-          "Olhe o número do y na faixa enquanto o tiro sobe ou desce.",
-          "Mexa só na velocidade para baixo. A velocidade para o lado fica em 0.",
-          "Ponha a velocidade para baixo em −9 e deixe o tempo passar. Depois ponha em 9 e deixe o tempo passar de novo."
-        ],
-        "activity": {
-          "type": "experimentation",
-          "scene": "velocity",
-          "cast": {
-            "hero": {
-              "name": "tiro",
-              "gender": "m"
-            }
-          },
-          "cenario": "nave",
-          "setup": {
-            "actions": [
-              {
-                "type": "velocity",
-                "vx": 5,
-                "vy": 0
-              },
-              {
-                "type": "advance",
-                "seconds": 1.5
-              },
-              {
-                "type": "velocity",
-                "vx": 0,
-                "vy": 0
-              }
-            ],
-            "goals": ["up", "down"]
-          }
-        },
-        "prediction": {
-          "context": {
-            "label": "A velocidade para baixo",
-            "explanation": "Nesta experiência, vamos usar a velocidade para baixo para observar o caminho de um tiro na tela."
-          },
-          "prompt": "Com a velocidade para baixo em −9, para onde o tiro vai?",
-          "choices": [
-            {
-              "id": "baixo",
-              "label": "Para baixo",
-              "shows": "Com o número negativo, o y diminuiu e o tiro subiu."
-            },
-            {
-              "id": "cima",
-              "label": "Para cima"
-            }
-          ],
-          "correctChoiceId": "cima",
-          "revealOn": "up"
-        },
-        "semPerguntaFinal": true
-      }
-    },
-    {
-      "key": "fala-velocidade-som",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Você já viu a direção do tiro e onde o som entra. Agora é sua vez de completar o disparo no jogo."
-      }
-    },
-    {
-      "key": "video-velocidade-som",
-      "plannedVideo": "Título: A velocidade e o som do tiro\n\nAbrir retomando que o sinal da velocidade foi explicado. Conferir vx 0, que já vem no Criar tiro no grupo, sem redigitar. Trocar apenas o vy padrão por menos 9 e clicar fora para confirmar. Depois narrar Jogo 2D › Som › Efeitos prontos, pegar Tocar efeito, encaixar logo abaixo do Criar tiro no grupo dentro do evento e escolher tiro no menu. Explicar por que o som toca por disparo.\n\nDuração alvo: 55 a 65 segundos; recalibrar após gravar. Origem: video-velocidade-som; não convidar a trocar vy por menos 15."
-    },
-    {
-      "key": "fala-mover-grupo",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Você viu o motor mover e desenhar os tiros. Agora faça o primeiro disparo aparecer no seu jogo."
-      }
-    },
-    {
-      "key": "video-tiros-voam",
-      "plannedVideo": "Título: Mover e desenhar o grupo\n\nDuração alvo: 70 a 85 segundos; recalibrar após gravar.\n\nAbrir com o estado atual: a barra de espaço já cria o tiro e toca o som, mas o motor ainda precisa movê-lo e desenhá-lo. Mostrar os dois blocos entrando no motor abaixo de Desenhar o sprite da nave, narrando o caminho de paleta e o destino de cada um. Escolher tiros nos dois menus. Terminar com o primeiro disparo visível, acompanhado de som.\n\nDuração alvo: recalibrar após gravar a narração completa do roteiro. Origem: video-ciclo-tiros, com o rótulo atual Mover os sprites do grupo usando suas velocidades."
-    },
-    {
-      "key": "fala-pergunta-faxina",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "O brinquedo atrás da porta continuava guardado. Agora veja o que acontece com um tiro que sai da tela."
-      }
-    },
-    {
-      "key": "video-tiro-fora-da-tela",
-      "plannedVideo": "Título: Invisível não quer dizer removido\n\nUsar a analogia de um brinquedo atrás da porta: não aparece aos olhos, mas continua guardado. Ligar essa diferença ao tiro que passa da borda e ao grupo que ainda precisa de uma regra para retirar quem saiu. Não simular o disparo nem revelar os números da prateleira da experiência.\n\nDuração alvo: 35 a 45 segundos. Origem: explicação nova; não repetir a promessa antiga de que poucos tiros deixam este jogo lento."
-    },
-    {
-      "key": "experiencia-faxina",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Para onde vai o tiro que sai da tela?",
-        "instructions": "Deixe tiros saírem da tela com a regra de limpeza desligada e depois ligada. Compare a cena com os bastidores.",
-        "hints": [
-          "Olhe a prateleira dos bastidores quando um tiro sai da tela.",
-          "Conte os tiros da prateleira depois que um tiro sai.",
-          "Ligue Tirar do grupo quem sair da tela e deixe o tempo passar de novo."
-        ],
-        "activity": {
-          "type": "experimentation",
-          "scene": "cleanup",
-          "cast": {
-            "obstacle": {
-              "name": "tiro",
-              "gender": "m"
-            }
-          },
-          "cenario": "nave",
-          "setup": {
-            "preset": {
-              "id": "tiro-cima",
-              "exit": "top",
-              "incoming": false
-            },
-            "goals": ["invisible-stored", "rule-removes"]
-          }
-        },
-        "prediction": {
-          "context": {
-            "label": "O grupo dos tiros",
-            "explanation": "Nesta experiência, vamos olhar os bastidores para ver o que acontece com o tiro depois que ele some da tela."
-          },
-          "prompt": "O tiro sumiu lá em cima. Ele saiu do grupo?",
-          "choices": [
-            {
-              "id": "saiu",
-              "label": "Saiu do grupo junto",
-              "shows": "O tiro saiu da tela e continuou guardado no grupo."
-            },
-            {
-              "id": "ficou",
-              "label": "Continua no grupo"
-            }
-          ],
-          "correctChoiceId": "ficou",
-          "revealOn": "invisible-stored"
-        },
-        "semPerguntaFinal": true
-      }
-    },
-    {
-      "key": "fala-faxina",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Você viu a regra tirar os tiros que saíram. Agora coloque essa faxina no motor do seu jogo."
-      }
-    },
-    {
-      "key": "video-faxina",
-      "plannedVideo": "Título: A peça que entra no meio\n\nDuração alvo: 50 a 65 segundos; recalibrar após gravar.\n\nAbrir retomando o que a experiência mostrou: o tiro pode sair da tela e continuar no grupo. Agora vamos retirá-lo. Mostrar Tirar do grupo quem sair da tela, para cada um, entrando entre os blocos que movem e desenham os tiros. Narrar o caminho Jogo 2D › Grupos › Participação e limpeza e o encaixe exato. Aproximar na peça abrindo espaço no meio; o fazer fica vazio neste dia.\n\nDuração alvo: recalibrar após gravar a narração completa do roteiro. Origem: video-ciclo-tiros, último terço. Não prometer que sem a faxina o jogo ficará visivelmente lento."
-    },
-    {
-      "key": "quiz",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 100,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "A nave mudou de lugar. O que mantém o tiro novo alinhado com ela?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Ler o centro x da nave na hora do disparo."
-              },
-              {
-                "id": "b",
-                "label": "Usar sempre o número 400 no x do tiro."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Ler o sprite acompanha sua posição atual; um número fixo continua igual."
-          },
-          {
-            "id": "q2",
-            "prompt": "O tiro saiu por cima. Por que retirá-lo do grupo?",
-            "choices": [
-              {
-                "id": "b",
-                "label": "Para apagar a nave também."
-              },
-              {
-                "id": "a",
-                "label": "Para não continuar atualizando um objeto que já foi embora."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "A limpeza cuida dos tiros que saíram, sem apagar a nave nem os tiros que ainda estão visíveis."
-          }
-        ]
-      }
-    },
-    {
-      "key": "fala-quiz",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "Antes de enviar, duas perguntas rápidas sobre o disparo e a faxina. Vamos ver o que ficou."
-      }
     }
   ],
   "sections": [
     {
-      "key": "abertura",
-      "title": "O que a gente vai fazer hoje",
-      "intent": "presentation",
-      "objective": "Ver o disparo acontecendo antes de montar a primeira peça.",
-      "blockKeys": ["video-abertura"],
+      "key": "contexto",
+      "title": "Encostar ainda não é pegar",
+      "intent": "explanation",
+      "objective": "Perceber que o encontro com a chave precisa chamar uma ação e que o jogo deve se lembrar dela.",
+      "blockKeys": ["video-d2-contexto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura"]
+        "blockIds": ["video-d2-contexto"]
       }
     },
     {
-      "key": "terceira-area",
-      "title": "A área que fica esperando você",
-      "intent": "exploration",
-      "objective": "Descobrir a terceira área do projeto: o que está dentro dela não acontece sozinho nem acontece sempre, acontece na hora em que a coisa acontece.",
-      "blockKeys": ["video-terceira-area", "fala-terceira-area", "experiencia-tres-areas"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-terceira-area", "experiencia-tres-areas"]
-      }
-    },
-    {
-      "key": "montar-grupo-e-evento",
-      "title": "Monte o grupo dos tiros e a área que espera a tecla",
-      "intent": "application",
-      "objective": "Preparar o lugar onde o disparo vai nascer: o grupo tiros no fim de Ao iniciar e a barra de espaço dentro de Quando acontecer.",
-      "blockKeys": ["video-montar-grupo-e-evento", "fala-grupo"],
+      "key": "programar-chave",
+      "title": "Guarde que a chave foi encontrada",
+      "intent": "delivery",
+      "objective": "Criar a variável e programar o encontro com a chave no jogo real.",
+      "blockKeys": ["video-d2-programar", "ponte-d2-programar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-montar-grupo-e-evento"],
+        "blockIds": ["video-d2-programar", "projeto"],
         "projectChecks": [
           {
-            "id": "grupo-tiros",
-            "label": "Crie o grupo tiros em Ao iniciar.",
+            "id": "memoria",
+            "label": "Crie temChave começando em falso.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_create_group",
+              "blockType": "sz_js_var_create",
               "area": "start",
               "fields": {
-                "NAME": "tiros"
-              },
-              "count": 1
-            }
-          },
-          {
-            "id": "evento-espaco",
-            "label": "Em Quando acontecer, coloque Quando apertar a tecla: barra de espaço.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_key",
-              "area": "events",
-              "fields": {
-                "KEY": "Space"
-              },
-              "count": 1
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "escrito-e-lido",
-      "title": "O número escrito e o número lido",
-      "intent": "exploration",
-      "objective": "Separar um número escrito no campo, que continua o mesmo para sempre, de uma leitura da posição da nave feita na hora do disparo.",
-      "blockKeys": ["video-escrito-e-lido", "fala-escrito-e-lido", "experiencia-escrito-e-lido"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-escrito-e-lido", "experiencia-escrito-e-lido"]
-      }
-    },
-    {
-      "key": "criar-tiro",
-      "title": "Faça o tiro nascer na nave",
-      "intent": "application",
-      "objective": "Encaixar os dois blocos de leitura por cima dos números do x e do y do tiro, com raio 5. A cor é escolha sua.",
-      "blockKeys": ["video-criar-tiro", "fala-criar-tiro"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-criar-tiro"],
-        "projectChecks": [
-          {
-            "id": "tiro-origem",
-            "label": "Dentro de Espaço, crie o tiro usando centro x e posição y da nave.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_key",
-              "fields": {
-                "KEY": "Space"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_spawn_bullet",
-                  "fields": {
-                    "GROUP": "tiros"
-                  },
-                  "inputBlocks": {
-                    "X": {
-                      "blockType": "sz_g2d_center_x",
-                      "fields": {
-                        "SPRITE": "nave"
-                      }
-                    },
-                    "Y": {
-                      "blockType": "sz_g2d_sprite_y",
-                      "fields": {
-                        "SPRITE": "nave"
-                      }
-                    }
-                  },
-                  "inputs": {
-                    "R": 5
-                  }
-                }
-              },
-              "area": "events"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "sinal-da-velocidade",
-      "title": "O menos que manda para cima",
-      "intent": "exploration",
-      "objective": "Descobrir que o sinal da velocidade para baixo decide o lado, e que o número negativo leva para cima.",
-      "blockKeys": ["video-sinal-da-velocidade", "fala-sinal", "experiencia-direcao"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-sinal-da-velocidade", "experiencia-direcao"]
-      }
-    },
-    {
-      "key": "velocidade-e-som",
-      "title": "Escreva a velocidade e ponha o som",
-      "intent": "application",
-      "objective": "Conferir vx 0, escrever vy menos 9 no Criar tiro e encaixar o som logo abaixo, dentro do mesmo evento.",
-      "blockKeys": ["video-velocidade-som", "fala-velocidade-som"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-velocidade-som"],
-        "projectChecks": [
-          {
-            "id": "efeito-tiro",
-            "label": "No evento Espaço, use Tocar efeito e escolha tiro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_key",
-              "fields": {
-                "KEY": "Space"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "shoot"
-                  }
-                }
-              },
-              "area": "events"
-            }
-          },
-          {
-            "id": "disparo",
-            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_key",
-              "fields": {
-                "KEY": "Space"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_spawn_bullet",
-                  "fields": {
-                    "GROUP": "tiros"
-                  },
-                  "inputs": {
-                    "R": 5,
-                    "VX": 0,
-                    "VY": -9
-                  },
-                  "inputBlocks": {
-                    "X": {
-                      "blockType": "sz_g2d_center_x",
-                      "fields": {
-                        "SPRITE": "nave"
-                      }
-                    },
-                    "Y": {
-                      "blockType": "sz_g2d_sprite_y",
-                      "fields": {
-                        "SPRITE": "nave"
-                      }
-                    }
-                  },
-                  "beforeBlock": "sz_g2d_play_fx"
-                }
-              },
-              "area": "events"
-            }
-          },
-          {
-            "id": "tiro-unico",
-            "label": "Mantenha apenas um comando de criar tiro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_spawn_bullet",
-              "count": 1
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "tiros-voam",
-      "title": "Os tiros voam",
-      "intent": "application",
-      "objective": "Mover e desenhar o grupo tiros dentro do motor, abaixo do desenho da nave. A barra de espaço passa a valer.",
-      "blockKeys": ["video-tiros-voam", "fala-mover-grupo"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-tiros-voam"],
-        "projectChecks": [
-          {
-            "id": "mover-tiros",
-            "label": "Mova o grupo tiros a cada quadro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_update_group",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "tiros"
-              }
-            }
-          },
-          {
-            "id": "desenhar-tiros",
-            "label": "Desenhe o grupo tiros a cada quadro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_draw_group",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "tiros"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "tiro-que-sai-da-tela",
-      "title": "Para onde vai o tiro que sai da tela",
-      "intent": "exploration",
-      "objective": "Ver por dentro que o tiro que some da tela continua guardado no grupo, e que quem tira é a regra.",
-      "blockKeys": ["video-tiro-fora-da-tela", "fala-pergunta-faxina", "experiencia-faxina"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-tiro-fora-da-tela", "experiencia-faxina"]
-      }
-    },
-    {
-      "key": "faxina",
-      "title": "Ponha a faxina entre os dois blocos",
-      "intent": "application",
-      "objective": "Encaixar Tirar do grupo quem sair da tela entre o que move o grupo e o que desenha o grupo.",
-      "blockKeys": ["video-faxina", "fala-faxina"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-faxina"],
-        "projectChecks": [
-          {
-            "id": "mover-tiros",
-            "label": "Mova tiros antes de limpar o grupo.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_update_group",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "tiros"
-              },
-              "beforeBlock": "sz_g2d_prune_offscreen"
-            }
-          },
-          {
-            "id": "limpar-tiros",
-            "label": "Retire os tiros que saem e depois desenhe esse grupo.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_prune_offscreen",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "tiros"
-              },
-              "beforeBlock": "sz_g2d_draw_group"
-            }
-          },
-          {
-            "id": "desenhar-tiros",
-            "label": "Desenhe o grupo tiros a cada quadro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_draw_group",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "tiros"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "quiz-final",
-      "title": "Hora do desafio",
-      "intent": "closing",
-      "objective": "Responder a duas perguntas que aplicam a leitura da posição e a faxina do grupo dos tiros.",
-      "blockKeys": ["fala-quiz", "quiz"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["quiz"]
-      }
-    },
-    {
-      "key": "entrega",
-      "title": "Teste, envie e fecha",
-      "intent": "delivery",
-      "objective": "Tiros saem da posição atual da nave, sobem com som e são retirados do grupo ao sair da tela.",
-      "blockKeys": ["video-teste-e-envio", "projeto"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-teste-e-envio", "projeto"],
-        "projectChecks": [
-          {
-            "id": "nave",
-            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_create_ship",
-              "fields": {
-                "NAME": "nave"
+                "NAME": "temChave"
               },
               "inputs": {
-                "X": 400,
-                "Y": 410,
-                "W": 54,
-                "H": 62
-              },
-              "area": "start",
-              "count": 1
+                "VALUE": false
+              }
             }
           },
           {
-            "id": "grupo-tiros",
-            "label": "Crie o grupo tiros em Ao iniciar.",
+            "id": "encontro-chave",
+            "label": "Recolha a chave no encontro certo.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_create_group",
-              "area": "start",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
               "fields": {
-                "NAME": "tiros"
-              },
-              "count": 1
-            }
-          },
-          {
-            "id": "efeito-tiro",
-            "label": "No evento Espaço, use Tocar efeito e escolha tiro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_key",
-              "fields": {
-                "KEY": "Space"
+                "A": "personagem",
+                "B": "chave"
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
+                  "blockType": "sz_g2d_destroy_sprite",
                   "fields": {
-                    "FX": "shoot"
-                  }
+                    "SPRITE": "chave"
+                  },
+                  "beforeBlock": "sz_js_var_assign"
                 }
-              },
-              "area": "events"
+              }
             }
           },
           {
-            "id": "disparo",
-            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
+            "id": "recolher",
+            "label": "Retire a chave depois do encontro.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_on_key",
+              "blockType": "sz_g2d_destroy_sprite",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_overlap",
               "fields": {
-                "KEY": "Space"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_spawn_bullet",
-                  "fields": {
-                    "GROUP": "tiros"
-                  },
-                  "inputs": {
-                    "R": 5,
-                    "VX": 0,
-                    "VY": -9
-                  },
-                  "inputBlocks": {
-                    "X": {
-                      "blockType": "sz_g2d_center_x",
-                      "fields": {
-                        "SPRITE": "nave"
-                      }
-                    },
-                    "Y": {
-                      "blockType": "sz_g2d_sprite_y",
-                      "fields": {
-                        "SPRITE": "nave"
-                      }
-                    }
-                  },
-                  "beforeBlock": "sz_g2d_play_fx"
-                }
-              },
-              "area": "events"
+                "SPRITE": "chave"
+              }
             }
           },
           {
-            "id": "tiro-unico",
-            "label": "Mantenha apenas um comando de criar tiro.",
+            "id": "lembrar",
+            "label": "Guarde que agora tem a chave.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_spawn_bullet",
-              "count": 1
-            }
-          },
-          {
-            "id": "mover-tiros",
-            "label": "Mova tiros antes de limpar o grupo.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_update_group",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
+              "blockType": "sz_js_var_assign",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_overlap",
               "fields": {
-                "GROUP": "tiros"
+                "NAME": "temChave"
               },
-              "beforeBlock": "sz_g2d_prune_offscreen"
-            }
-          },
-          {
-            "id": "limpar-tiros",
-            "label": "Retire os tiros que saem e depois desenhe esse grupo.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_prune_offscreen",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "tiros"
-              },
-              "beforeBlock": "sz_g2d_draw_group"
-            }
-          },
-          {
-            "id": "desenhar-tiros",
-            "label": "Desenhe o grupo tiros a cada quadro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_draw_group",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "tiros"
+              "inputs": {
+                "VALUE": true
               }
             }
           }

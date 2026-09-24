@@ -49,6 +49,8 @@ const SceneActionSchema = t.Union([
     ]),
   }),
   t.Object({ type: t.Literal('trigger') }),
+  t.Object({ type: t.Literal('key-state'), hasKey: t.Boolean() }),
+  t.Object({ type: t.Literal('try-lighthouse-door') }),
   t.Object({
     type: t.Literal('value-source'),
     source: t.Union([t.Literal('fixed'), t.Literal('read')]),

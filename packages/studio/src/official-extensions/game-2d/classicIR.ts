@@ -167,7 +167,7 @@ export function classicGameTwoDStatementSchemas(
     }),
     z.object({
       type: z.literal('g2d:enableClassicControls'),
-      mode: z.enum(['auto', 'always', 'off']),
+      mode: z.enum(['auto', 'always', 'off', 'directions']),
       ...id,
     }),
     z.object({

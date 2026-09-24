@@ -59,7 +59,7 @@ interface Api {
   ): void
   tileContactIs(contact: TileContact, index: number): boolean
   setTileAtContact(contact: TileContact, index: number): void
-  enableClassicControls(mode: 'auto' | 'always' | 'off'): void
+  enableClassicControls(mode: 'auto' | 'always' | 'off' | 'directions'): void
   actionDown(action: string): boolean
   actionPressed(action: string): boolean
   onActionPressed(action: string, fn: () => void, id?: string): void
@@ -155,6 +155,28 @@ describe('primitivas de plataforma clássica', () => {
     left?.dispatchEvent(new Event('pointerup'))
     expect(api.actionDown('left')).toBe(false)
     expect(api.actionDown('jump')).toBe(true)
+  })
+
+  it('mostra somente quatro direções no modo de exploração e preserva o teclado', () => {
+    const { api, document, listeners } = load()
+    api.enableClassicControls('directions')
+    expect(
+      [...document.querySelectorAll('[data-sz-g2d-action]')].map((button) =>
+        button.getAttribute('data-sz-g2d-action'),
+      ),
+    ).toEqual(['left', 'up', 'down', 'right'])
+    const left = document.querySelector<HTMLButtonElement>('[data-sz-g2d-action="left"]')
+    const down = document.querySelector<HTMLButtonElement>('[data-sz-g2d-action="down"]')
+    expect(down?.getAttribute('aria-label')).toBe('Mover para baixo')
+    left?.dispatchEvent(new Event('pointerdown'))
+    expect(api.actionDown('left')).toBe(true)
+    left?.dispatchEvent(new Event('pointerup'))
+    expect(api.actionDown('left')).toBe(false)
+    fire(listeners, 'keydown', { key: 'ArrowUp', code: 'ArrowUp', repeat: false })
+    expect(api.actionDown('up')).toBe(true)
+    fire(listeners, 'keyup', { key: 'ArrowUp', code: 'ArrowUp' })
+    api.enableClassicControls('always')
+    expect(document.querySelector('[data-sz-g2d-action="jump"]')).not.toBeNull()
   })
 
   it('oferece a ação cima e ativa botões por teclado e tecnologia assistiva', () => {

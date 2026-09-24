@@ -276,6 +276,16 @@
       }
     },
     {
+      "includes": ["docs/aulas-interativas/qa/*-projeto.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noThenProperty": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["packages/funnel/**/*.astro"],
       "linter": {
         "rules": {

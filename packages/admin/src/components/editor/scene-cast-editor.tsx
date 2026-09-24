@@ -53,12 +53,20 @@ const NOME_DA_FIGURA: Record<SceneFigure, string> = {
   gorila: 'Gorila',
   banana: 'Banana',
   predio: 'Prédio',
+  coelho: 'Coelho',
+  arbusto: 'Arbusto',
+  flores: 'Flores',
+  'personagem-farol': 'Personagem do farol',
+  'chave-farol': 'Chave do farol',
+  farol: 'Farol',
 }
 
 /** Como o professor lê cada cenário. O `Record` reprova cenário novo sem rótulo. */
 const NOME_DO_CENARIO: Record<SceneCenarioId, string> = {
   'corre-dino': 'Corre Dino (floresta)',
   nave: 'Desafio do Primeiro Jogo (espaço)',
+  jardim: 'Cadê Todo Mundo? (jardim)',
+  farol: 'Desafio do Primeiro Jogo (farol)',
   gorilas: 'Batalha de Gorilas (cidade)',
   'meu-jeito': 'O Jogo do Meu Jeito (espaço)',
 }

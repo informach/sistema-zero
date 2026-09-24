@@ -112,9 +112,10 @@ function preparar(content: InteractiveBlock) {
 }
 
 describe('⚠️⚠️ o servidor abre a cena no CASO do professor, como o player', () => {
-  const dia1 = () => blocoDoManifesto('desafio-dia-1.manifesto.json', 'experiencia-coordenadas')
+  const dia1 = () =>
+    blocoDoManifesto('nave-contra-asteroides-dia-1.manifesto.json', 'experiencia-coordenadas')
 
-  test('Dia 1 do Desafio: o percurso dos três objetivos conclui no caso do professor', async () => {
+  test('Dia 1 de Nave Contra Asteroides: o percurso dos três objetivos conclui no caso do professor', async () => {
     const content = dia1()
     expect(content.activity.type).toBe('experimentation')
     const { gravar, tentar } = preparar(content)
@@ -134,7 +135,7 @@ describe('⚠️⚠️ o servidor abre a cena no CASO do professor, como o playe
     expect((await tentar(respostas)).passed).toBe(true)
   })
 
-  test('Dia 1 do Desafio: um toque só, calculado no mundo de FÁBRICA, não conclui', async () => {
+  test('Dia 1 de Nave Contra Asteroides: um toque só, calculado no mundo de FÁBRICA, não conclui', async () => {
     // Era o que o servidor antigo aceitava: a nave em 110, 150 e o "+" do y indo a 170. Do caso
     // (400, 40) esse mesmo comando muda os DOIS eixos, e mexer nos dois não diz qual fez o quê.
     const { gravar, tentar } = preparar(dia1())

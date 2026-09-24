@@ -186,13 +186,15 @@ export function CatalogCourseCard({
           Bloqueado
         </span>
       )}
-      <span className="sz-btn-gradient gap-2 px-5">
+      <span className={cn(salesUrl || available ? 'sz-btn-gradient gap-2 px-5' : PILULA_APAGADA)}>
         {available ? (
           <>
             <Play className="size-4" aria-hidden /> Acessar curso
           </>
+        ) : salesUrl ? (
+          'Mostrar ao responsável'
         ) : (
-          'Quero acesso'
+          'Ainda não disponível'
         )}
       </span>
     </div>
@@ -320,7 +322,13 @@ function CardShell({
   if (salesUrl) {
     // Página de vendas é EXTERNA (funil) → <a> em NOVA aba (aluno não sai da plataforma).
     return (
-      <a href={salesUrl} target="_blank" rel="noopener noreferrer" className="group block h-full">
+      <a
+        href={salesUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`${course.title}. Mostrar ao responsável. Abre página externa em nova aba.`}
+        className="group block h-full"
+      >
         {body}
       </a>
     )

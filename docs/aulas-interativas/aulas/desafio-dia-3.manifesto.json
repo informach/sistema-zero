@@ -2,8 +2,51 @@
   "version": 5,
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "dia-3",
-  "title": "A chuva de pedras",
+  "title": "A luz do farol",
   "blocks": [
+    {
+      "key": "video-d3-condicao",
+      "plannedVideo": "Título: Quando a porta pode abrir?\n\nExplicar uma condição com exemplo próximo da criança e o objetivo do jogo. Não narrar a sequência de botões ou o resultado da experiência.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "ponte-d3-condicao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No vídeo, você ouviu falar de uma condição. Agora veja o que a chave muda na porta do farol."
+      }
+    },
+    {
+      "key": "experiencia-porta",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "A porta precisa da chave",
+        "instructions": "Teste a porta com e sem a chave. O que muda?",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "lighthouse-key",
+          "cenario": "farol"
+        }
+      }
+    },
+    {
+      "key": "video-d3-decisao",
+      "plannedVideo": "Título: Faça a porta decidir\n\nGuiar o evento de contato personagem/farol, Se temChave, ganhou verdadeiro e trocar imagem do farol. Testar sem chave e com chave; ver barco chegar, salvar e enviar.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "ponte-d3-decisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você testou duas situações na porta. Agora vai montar a pergunta que o jogo faz."
+      }
+    },
+    {
+      "key": "video-d3-fecho",
+      "plannedVideo": "Título: O barco encontrou o caminho\n\nCelebrar as três regras que a criança montou sem atribuir a ela cenário ou barco preparados. Apontar o certificado.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
     {
       "key": "projeto",
       "content": {
@@ -14,224 +57,447 @@
         "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
+          "sz_frame_start",
           "sz_frame_events",
           "sz_frame_loops",
-          "sz_frame_start",
-          "sz_g2d_arrows_x",
-          "sz_g2d_center_x",
-          "sz_g2d_clamp_to_screen",
-          "sz_g2d_clear",
-          "sz_g2d_create_group",
-          "sz_g2d_create_ship",
-          "sz_g2d_draw_group",
-          "sz_g2d_draw_sprite",
-          "sz_g2d_every_frames",
-          "sz_g2d_explode",
-          "sz_g2d_on_group_overlap",
-          "sz_g2d_on_key",
-          "sz_g2d_play_fx",
-          "sz_g2d_prune_offscreen",
-          "sz_g2d_random_x",
-          "sz_g2d_remove_from_group",
+          "sz_frame_structure",
+          "sz_frame_appearance",
+          "sz_html_canvas",
+          "sz_css_rule",
+          "sz_css_decl",
+          "sz_css_body_background",
+          "sz_css_align",
+          "sz_css_justify",
           "sz_g2d_setup_stage",
-          "sz_g2d_spawn_asteroid",
-          "sz_g2d_spawn_bullet",
-          "sz_g2d_sprite_y",
-          "sz_g2d_starfield",
+          "sz_g2d_create_image_sprite",
+          "sz_g2d_clear",
+          "sz_g2d_draw_backdrop",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_draw_label",
           "sz_g2d_update_each_frame",
-          "sz_g2d_update_group",
-          "sz_val_number"
+          "sz_g2d_enable_classic_controls",
+          "sz_g2d_top_down",
+          "sz_g2d_clamp_to_screen",
+          "sz_g2d_on_overlap",
+          "sz_g2d_destroy_sprite",
+          "sz_g2d_set_image",
+          "sz_js_var_create",
+          "sz_js_var_assign",
+          "sz_js_if_else",
+          "sz_js_member_set",
+          "sz_math_arithmetic",
+          "sz_val_bool",
+          "sz_val_compare",
+          "sz_val_member_get",
+          "sz_val_number",
+          "sz_val_text",
+          "sz_val_variable"
         ],
-        "showcase": {
-          "enabled": false,
-          "title": "Nave contra Asteroides",
-          "summary": "Um jogo de nave, tiros e asteroides criado no Desafio do Primeiro Jogo."
-        },
         "initialProject": {
           "formatVersion": 2,
           "projectTools": [],
-          "id": "manifest-desafio-3",
-          "name": "Nave contra Asteroides",
+          "id": "manifest-desafio-farol",
+          "name": "A Chave do Farol",
           "createdAt": 0,
           "updatedAt": 0,
           "mode": "blocks",
           "files": {
-            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Nave contra Asteroides</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
-            "style.css": "",
-            "script.js": ""
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Chave do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <canvas id=\"tela\" width=\"640\" height=\"360\"></canvas>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "body {\n  margin: 0;\n  background: #b9dfd0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 100vh;\n  padding-bottom: 108px;\n  box-sizing: border-box;\n}\n",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#b9dfd0\");\n  const personagem = SZGame2D.createSprite({ x: 170, y: 130, w: 40, h: 48, image: \"personagem\" });\n  const chave = SZGame2D.createSprite({ x: 328, y: 171, w: 40, h: 40, image: \"chave\" });\n  const farol = SZGame2D.createSprite({ x: 485, y: 72, w: 100, h: 154, image: \"farol-apagado\" });\n  const barco = SZGame2D.createSprite({ x: 655, y: 267, w: 72, h: 50, image: \"barco\" });\n  let aviso = \"Encontre a chave e vá ao farol.\";\n  let ganhou = false;\n  SZGame2D.enableClassicControls(\"directions\");\n  let temChave = false;\n  // Quando acontecer\n  SZGame2D.onOverlap(() => personagem, () => chave, () => {\n    SZGame2D.destroySprite(chave);\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  }, \"eventoDeContato\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"cenario\");\n    SZGame2D.topDown(personagem, 3);\n    SZGame2D.clampToScreen(personagem, ctx);\n    if (ganhou) {\n      if (barco.x > 530) {\n        barco.x = barco.x - 1.5;\n      }\n    }\n    SZGame2D.drawSprite(ctx, chave);\n    SZGame2D.drawSprite(ctx, farol);\n    SZGame2D.drawSprite(ctx, barco);\n    SZGame2D.drawSprite(ctx, personagem);\n    SZGame2D.drawLabel(ctx, aviso, 20, 32, \"#263a45\", 19, \"left\");\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
-          "assets": [],
-          "ir": null,
+          "assets": [
+            {
+              "id": "desafio-farol-cenario",
+              "name": "cenario",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjQwIDM2MCI+PHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzNjAiIGZpbGw9IiNiOWRmZDAiLz48cGF0aCBkPSJNMCAwSDY0MFY5M1E1NTAgODMgNDc1IDEwNFEzOTMgMTE2IDMxNiA5NFEyMDkgNzYgMTIwIDEwMFE0NCAxMTIgMCA5M1oiIGZpbGw9IiNhNmQ1ZWEiLz48cGF0aCBkPSJNMCAyNzBRMTIwIDI1OCAyNDggMjc3UTM1NCAyOTIgNDQyIDI3M1E1MzAgMjU0IDY0MCAyNzJWMzYwSDBaIiBmaWxsPSIjOTZjOThkIi8+PHBhdGggZD0iTTQ5NyAwSDY0MFYzNjBINTIzUTUzNyAzMDQgNTExIDI0NlE0ODQgMTk3IDUwNiAxNDVRNTI1IDk0IDQ5NyAwWiIgZmlsbD0iIzViYTljMSIvPjxwYXRoIGQ9Ik0wIDE2NVE4NiAxNTUgMTc4IDE3NVEyNTUgMTgxIDMxOCAxNTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2U4ZDdhOCIgc3Ryb2tlLXdpZHRoPSIyMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTMxOCAxNTdRNDA0IDE0MSA0NTYgMTc3IiBmaWxsPSJub25lIiBzdHJva2U9IiNlOGQ3YTgiIHN0cm9rZS13aWR0aD0iMjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxnIGZpbGw9IiNmZmY1Y2EiPjxjaXJjbGUgY3g9IjkyIiBjeT0iMTI4IiByPSI1Ii8+PGNpcmNsZSBjeD0iMjE0IiBjeT0iMjI5IiByPSI0Ii8+PGNpcmNsZSBjeD0iMzc3IiBjeT0iOTYiIHI9IjUiLz48L2c+PC9zdmc+",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "id": "desafio-farol-personagem",
+              "name": "personagem",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQwIDQ4Ij48ZWxsaXBzZSBjeD0iMjAiIGN5PSI0MyIgcng9IjE1IiByeT0iNCIgZmlsbD0iIzU1NzU2NCIgb3BhY2l0eT0iLjQiLz48cmVjdCB4PSI3IiB5PSIxOSIgd2lkdGg9IjI2IiBoZWlnaHQ9IjI1IiByeD0iOCIgZmlsbD0iIzZhNjhiMCIgc3Ryb2tlPSIjM2I0MjZjIiBzdHJva2Utd2lkdGg9IjIiLz48Y2lyY2xlIGN4PSIyMCIgY3k9IjE0IiByPSIxMiIgZmlsbD0iI2YyYmY5MSIgc3Ryb2tlPSIjNzE0ZjUwIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNOCAxM1E4IC0xIDIxIDFRMzMgMyAzMiAxNFoiIGZpbGw9IiM0NDNiNjEiLz48Y2lyY2xlIGN4PSIxNiIgY3k9IjE1IiByPSIxLjUiLz48Y2lyY2xlIGN4PSIyNCIgY3k9IjE1IiByPSIxLjUiLz48L3N2Zz4=",
+              "width": 40,
+              "height": 48
+            },
+            {
+              "id": "desafio-farol-chave",
+              "name": "chave",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MiIgaGVpZ2h0PSI0MiIgdmlld0JveD0iMCAwIDQyIDQyIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI4IiBmaWxsPSJub25lIiBzdHJva2U9IiNkOTkzMzUiIHN0cm9rZS13aWR0aD0iNSIvPjxwYXRoIGQ9Ik0xOCAxOEwzNiAzNk0yOSAyOUwzMyAyNU0zMyAzM0wzNyAyOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDk5MzM1IiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==",
+              "width": 42,
+              "height": 42
+            },
+            {
+              "id": "desafio-farol-farol-apagado",
+              "name": "farol-apagado",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTE5IDE1MUwzMSA0NUg2OUw4MSAxNTFaIiBmaWxsPSIjZjllZWUxIiBzdHJva2U9IiM4MTY0NzQiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yNiA4NEg3NEw3MCAxMDFIMzBaIiBmaWxsPSIjZGY2OTYyIi8+PHJlY3QgeD0iNDAiIHk9IjExMyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjM4IiByeD0iMyIgZmlsbD0iIzY3NGY2MyIvPjxwYXRoIGQ9Ik0zMCA0NVYyMEg3MFY0NVoiIGZpbGw9IiM2YzgxOTYiIHN0cm9rZT0iIzU0NjI3MyIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIzIDIwTDUwIDVMNzcgMjBaIiBmaWxsPSIjZGM2ODY0IiBzdHJva2U9IiM5ODUyNWEiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==",
+              "width": 100,
+              "height": 154
+            },
+            {
+              "id": "desafio-farol-farol-aceso",
+              "name": "farol-aceso",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTUwIDMwTDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik01MCAzMEwxMDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik0xOSAxNTFMMzEgNDVINjlMODEgMTUxWiIgZmlsbD0iI2Y5ZWVlMSIgc3Ryb2tlPSIjODE2NDc0IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjYgODRINzRMNzAgMTAxSDMwWiIgZmlsbD0iI2RmNjk2MiIvPjxyZWN0IHg9IjQwIiB5PSIxMTMiIHdpZHRoPSIyMCIgaGVpZ2h0PSIzOCIgcng9IjMiIGZpbGw9IiM2NzRmNjMiLz48cGF0aCBkPSJNMzAgNDVWMjBINzBWNDVaIiBmaWxsPSIjZmZkZTczIiBzdHJva2U9IiM5ZTc4NDYiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yMyAyMEw1MCA1TDc3IDIwWiIgZmlsbD0iI2RjNjg2NCIgc3Ryb2tlPSIjOTg1MjVhIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+              "width": 100,
+              "height": 154
+            },
+            {
+              "id": "desafio-farol-barco",
+              "name": "barco",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI1MCIgdmlld0JveD0iMCAwIDcyIDUwIj48cGF0aCBkPSJNNCAyOEg2OEw1NyA0NEgxNloiIGZpbGw9IiM5MzU5NjkiIHN0cm9rZT0iIzY1NGY2NSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTM1IDNWMjdINjFaIiBmaWxsPSIjZjllZmQ3IiBzdHJva2U9IiM4YTc4ODAiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik0zNSAzTDE2IDI2SDM1WiIgZmlsbD0iI2ZmZjdlNSIgc3Ryb2tlPSIjOGE3ODgwIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=",
+              "width": 72,
+              "height": 50
+            }
+          ],
+          "ir": {
+            "version": 2,
+            "html": [
+              {
+                "type": "canvas",
+                "id": "tela",
+                "width": 640,
+                "height": 360
+              }
+            ],
+            "css": [
+              {
+                "selector": "body",
+                "declarations": {
+                  "margin": "0",
+                  "background": "#b9dfd0",
+                  "display": "flex",
+                  "align-items": "center",
+                  "justify-content": "center",
+                  "min-height": "100vh",
+                  "padding-bottom": "108px",
+                  "box-sizing": "border-box"
+                }
+              }
+            ],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": 640,
+                  "height": 360,
+                  "bg": "#b9dfd0"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "personagem",
+                  "x": 170,
+                  "y": 130,
+                  "w": 40,
+                  "h": 48,
+                  "image": "personagem"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "chave",
+                  "x": 328,
+                  "y": 171,
+                  "w": 40,
+                  "h": 40,
+                  "image": "chave"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "farol",
+                  "x": 485,
+                  "y": 72,
+                  "w": 100,
+                  "h": 154,
+                  "image": "farol-apagado"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "barco",
+                  "x": 655,
+                  "y": 267,
+                  "w": 72,
+                  "h": 50,
+                  "image": "barco"
+                },
+                {
+                  "type": "var",
+                  "name": "aviso",
+                  "value": {
+                    "type": "str",
+                    "value": "Encontre a chave e vá ao farol."
+                  }
+                },
+                {
+                  "type": "var",
+                  "name": "ganhou",
+                  "value": {
+                    "type": "bool",
+                    "value": false
+                  }
+                },
+                {
+                  "type": "g2d:enableClassicControls",
+                  "mode": "directions"
+                },
+                {
+                  "type": "var",
+                  "name": "temChave",
+                  "value": {
+                    "type": "bool",
+                    "value": false
+                  }
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onOverlap",
+                  "aVar": "personagem",
+                  "bVar": "chave",
+                  "body": [
+                    {
+                      "type": "g2d:destroySprite",
+                      "spriteVar": "chave"
+                    },
+                    {
+                      "type": "assign",
+                      "name": "temChave",
+                      "value": {
+                        "type": "bool",
+                        "value": true
+                      }
+                    },
+                    {
+                      "type": "assign",
+                      "name": "aviso",
+                      "value": {
+                        "type": "str",
+                        "value": "Você pegou a chave! Agora vá ao farol."
+                      }
+                    }
+                  ]
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear"
+                    },
+                    {
+                      "type": "g2d:drawBackdrop",
+                      "ctxVar": "ctx",
+                      "image": "cenario"
+                    },
+                    {
+                      "type": "g2d:topDown",
+                      "spriteVar": "personagem",
+                      "speed": 3
+                    },
+                    {
+                      "type": "g2d:clampToScreen",
+                      "spriteVar": "personagem",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "var",
+                        "name": "ganhou"
+                      },
+                      "then": [
+                        {
+                          "type": "if",
+                          "cond": {
+                            "type": "binop",
+                            "op": ">",
+                            "left": {
+                              "type": "memberGet",
+                              "object": {
+                                "type": "var",
+                                "name": "barco"
+                              },
+                              "name": "x"
+                            },
+                            "right": {
+                              "type": "num",
+                              "value": 530
+                            }
+                          },
+                          "then": [
+                            {
+                              "type": "memberSet",
+                              "object": {
+                                "type": "var",
+                                "name": "barco"
+                              },
+                              "name": "x",
+                              "value": {
+                                "type": "binop",
+                                "op": "-",
+                                "left": {
+                                  "type": "memberGet",
+                                  "object": {
+                                    "type": "var",
+                                    "name": "barco"
+                                  },
+                                  "name": "x"
+                                },
+                                "right": {
+                                  "type": "num",
+                                  "value": 1.5
+                                }
+                              }
+                            }
+                          ],
+                          "else": []
+                        }
+                      ],
+                      "else": []
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "chave",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "farol",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "barco",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "personagem",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawLabel",
+                      "ctxVar": "ctx",
+                      "text": {
+                        "type": "var",
+                        "name": "aviso"
+                      },
+                      "x": 20,
+                      "y": 32,
+                      "color": "#263a45",
+                      "size": 19,
+                      "align": "left"
+                    }
+                  ]
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
           "blocksState": {
             "blocks": {
               "languageVersion": 0,
               "blocks": [
                 {
-                  "type": "sz_frame_start",
-                  "fields": {},
+                  "type": "sz_frame_structure",
                   "inputs": {
                     "CHILDREN": {
                       "block": {
-                        "type": "sz_g2d_setup_stage",
+                        "type": "sz_html_canvas",
                         "fields": {
-                          "BG": "#07162e"
+                          "ID": "tela",
+                          "CLASS": "",
+                          "DESCRIPTION": ""
                         },
-                        "inputs": {
-                          "W": {
-                            "shadow": {
-                              "type": "sz_val_number",
-                              "fields": {
-                                "NUM": 800
-                              }
-                            }
-                          },
-                          "H": {
-                            "shadow": {
-                              "type": "sz_val_number",
-                              "fields": {
-                                "NUM": 480
-                              }
-                            }
-                          }
+                        "data": "{\"width\":640,\"height\":360}"
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 32
+                },
+                {
+                  "type": "sz_frame_appearance",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_css_body_background",
+                        "fields": {
+                          "COLOR": "#b9dfd0"
                         },
                         "next": {
                           "block": {
-                            "type": "sz_g2d_create_ship",
+                            "type": "sz_css_justify",
                             "fields": {
-                              "NAME": "nave",
-                              "BODY": "#35e8ff",
-                              "WINGS": "#2568ff"
-                            },
-                            "inputs": {
-                              "X": {
-                                "shadow": {
-                                  "type": "sz_val_number",
-                                  "fields": {
-                                    "NUM": 400
-                                  }
-                                }
-                              },
-                              "Y": {
-                                "shadow": {
-                                  "type": "sz_val_number",
-                                  "fields": {
-                                    "NUM": 410
-                                  }
-                                }
-                              },
-                              "W": {
-                                "shadow": {
-                                  "type": "sz_val_number",
-                                  "fields": {
-                                    "NUM": 54
-                                  }
-                                }
-                              },
-                              "H": {
-                                "shadow": {
-                                  "type": "sz_val_number",
-                                  "fields": {
-                                    "NUM": 62
-                                  }
-                                }
-                              }
+                              "SELECTOR": "body",
+                              "VALUE": "center"
                             },
                             "next": {
                               "block": {
-                                "type": "sz_g2d_create_group",
+                                "type": "sz_css_align",
                                 "fields": {
-                                  "NAME": "tiros"
+                                  "SELECTOR": "body",
+                                  "VALUE": "center"
                                 },
-                                "inputs": {}
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                {
-                  "type": "sz_frame_loops",
-                  "fields": {},
-                  "inputs": {
-                    "CHILDREN": {
-                      "block": {
-                        "type": "sz_g2d_update_each_frame",
-                        "fields": {},
-                        "inputs": {
-                          "BODY": {
-                            "block": {
-                              "type": "sz_g2d_clear",
-                              "fields": {},
-                              "inputs": {},
-                              "next": {
-                                "block": {
-                                  "type": "sz_g2d_starfield",
-                                  "fields": {},
-                                  "inputs": {
-                                    "SPEED": {
-                                      "shadow": {
-                                        "type": "sz_val_number",
-                                        "fields": {
-                                          "NUM": 1
-                                        }
-                                      }
-                                    }
-                                  },
-                                  "next": {
-                                    "block": {
-                                      "type": "sz_g2d_arrows_x",
-                                      "fields": {
-                                        "SPRITE": "nave"
-                                      },
-                                      "inputs": {
-                                        "SPEED": {
-                                          "shadow": {
-                                            "type": "sz_val_number",
-                                            "fields": {
-                                              "NUM": 7
-                                            }
-                                          }
-                                        }
-                                      },
-                                      "next": {
+                                "next": {
+                                  "block": {
+                                    "type": "sz_css_rule",
+                                    "fields": {
+                                      "SELECTOR": "body"
+                                    },
+                                    "inputs": {
+                                      "CHILDREN": {
                                         "block": {
-                                          "type": "sz_g2d_clamp_to_screen",
+                                          "type": "sz_css_decl",
                                           "fields": {
-                                            "SPRITE": "nave"
+                                            "PROP": "margin",
+                                            "VALUE": "0"
                                           },
-                                          "inputs": {},
                                           "next": {
                                             "block": {
-                                              "type": "sz_g2d_draw_sprite",
+                                              "type": "sz_css_decl",
                                               "fields": {
-                                                "SPRITE": "nave"
+                                                "PROP": "display",
+                                                "VALUE": "flex"
                                               },
-                                              "inputs": {},
                                               "next": {
                                                 "block": {
-                                                  "type": "sz_g2d_update_group",
+                                                  "type": "sz_css_decl",
                                                   "fields": {
-                                                    "GROUP": "tiros"
+                                                    "PROP": "min-height",
+                                                    "VALUE": "100vh"
                                                   },
-                                                  "inputs": {},
                                                   "next": {
                                                     "block": {
-                                                      "type": "sz_g2d_prune_offscreen",
+                                                      "type": "sz_css_decl",
                                                       "fields": {
-                                                        "GROUP": "tiros",
-                                                        "ITEM": "sprite"
+                                                        "PROP": "padding-bottom",
+                                                        "VALUE": "108px"
                                                       },
-                                                      "inputs": {},
                                                       "next": {
                                                         "block": {
-                                                          "type": "sz_g2d_draw_group",
+                                                          "type": "sz_css_decl",
                                                           "fields": {
-                                                            "GROUP": "tiros"
-                                                          },
-                                                          "inputs": {}
+                                                            "PROP": "box-sizing",
+                                                            "VALUE": "border-box"
+                                                          }
                                                         }
                                                       }
                                                     }
@@ -251,77 +517,266 @@
                         }
                       }
                     }
-                  }
+                  },
+                  "x": 452,
+                  "y": 32
                 },
                 {
-                  "type": "sz_frame_events",
-                  "fields": {},
+                  "type": "sz_frame_start",
                   "inputs": {
                     "CHILDREN": {
                       "block": {
-                        "type": "sz_g2d_on_key",
+                        "type": "sz_g2d_setup_stage",
                         "fields": {
-                          "KEY": "Space"
+                          "BG": "#b9dfd0"
                         },
                         "inputs": {
-                          "BODY": {
-                            "block": {
-                              "type": "sz_g2d_spawn_bullet",
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
                               "fields": {
-                                "GROUP": "tiros",
-                                "COLOR": "#9cff57"
-                              },
-                              "inputs": {
-                                "X": {
-                                  "block": {
-                                    "type": "sz_g2d_center_x",
-                                    "fields": {
-                                      "SPRITE": "nave"
-                                    },
-                                    "inputs": {}
-                                  }
-                                },
-                                "Y": {
-                                  "block": {
-                                    "type": "sz_g2d_sprite_y",
-                                    "fields": {
-                                      "SPRITE": "nave"
-                                    },
-                                    "inputs": {}
-                                  }
-                                },
-                                "R": {
-                                  "shadow": {
-                                    "type": "sz_val_number",
-                                    "fields": {
-                                      "NUM": 5
-                                    }
-                                  }
-                                },
-                                "VX": {
-                                  "shadow": {
-                                    "type": "sz_val_number",
-                                    "fields": {
-                                      "NUM": 0
-                                    }
-                                  }
-                                },
-                                "VY": {
-                                  "shadow": {
-                                    "type": "sz_val_number",
-                                    "fields": {
-                                      "NUM": -9
-                                    }
+                                "NUM": 640
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 360
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_create_image_sprite",
+                            "fields": {
+                              "NAME": "personagem",
+                              "IMAGE": "personagem"
+                            },
+                            "inputs": {
+                              "X": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 170
                                   }
                                 }
                               },
-                              "next": {
-                                "block": {
-                                  "type": "sz_g2d_play_fx",
+                              "Y": {
+                                "shadow": {
+                                  "type": "sz_val_number",
                                   "fields": {
-                                    "FX": "shoot"
+                                    "NUM": 130
+                                  }
+                                }
+                              },
+                              "W": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 40
+                                  }
+                                }
+                              },
+                              "H": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 48
+                                  }
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_image_sprite",
+                                "fields": {
+                                  "NAME": "chave",
+                                  "IMAGE": "chave"
+                                },
+                                "inputs": {
+                                  "X": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 328
+                                      }
+                                    }
                                   },
-                                  "inputs": {}
+                                  "Y": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 171
+                                      }
+                                    }
+                                  },
+                                  "W": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 40
+                                      }
+                                    }
+                                  },
+                                  "H": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 40
+                                      }
+                                    }
+                                  }
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_create_image_sprite",
+                                    "fields": {
+                                      "NAME": "farol",
+                                      "IMAGE": "farol-apagado"
+                                    },
+                                    "inputs": {
+                                      "X": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 485
+                                          }
+                                        }
+                                      },
+                                      "Y": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 72
+                                          }
+                                        }
+                                      },
+                                      "W": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 100
+                                          }
+                                        }
+                                      },
+                                      "H": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 154
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_g2d_create_image_sprite",
+                                        "fields": {
+                                          "NAME": "barco",
+                                          "IMAGE": "barco"
+                                        },
+                                        "inputs": {
+                                          "X": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 655
+                                              }
+                                            }
+                                          },
+                                          "Y": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 267
+                                              }
+                                            }
+                                          },
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 72
+                                              }
+                                            }
+                                          },
+                                          "H": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 50
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "next": {
+                                          "block": {
+                                            "type": "sz_js_var_create",
+                                            "fields": {
+                                              "NAME": "aviso"
+                                            },
+                                            "inputs": {
+                                              "VALUE": {
+                                                "block": {
+                                                  "type": "sz_val_text",
+                                                  "fields": {
+                                                    "TEXT": "Encontre a chave e vá ao farol."
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "next": {
+                                              "block": {
+                                                "type": "sz_js_var_create",
+                                                "fields": {
+                                                  "NAME": "ganhou"
+                                                },
+                                                "inputs": {
+                                                  "VALUE": {
+                                                    "block": {
+                                                      "type": "sz_val_bool",
+                                                      "fields": {
+                                                        "VALUE": "false"
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "next": {
+                                                  "block": {
+                                                    "type": "sz_g2d_enable_classic_controls",
+                                                    "fields": {
+                                                      "MODE": "directions"
+                                                    },
+                                                    "next": {
+                                                      "block": {
+                                                        "type": "sz_js_var_create",
+                                                        "fields": {
+                                                          "NAME": "temChave"
+                                                        },
+                                                        "inputs": {
+                                                          "VALUE": {
+                                                            "block": {
+                                                              "type": "sz_val_bool",
+                                                              "fields": {
+                                                                "VALUE": "false"
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
                                 }
                               }
                             }
@@ -329,7 +784,317 @@
                         }
                       }
                     }
-                  }
+                  },
+                  "x": 32,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_events",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_on_overlap",
+                        "fields": {
+                          "A": "personagem",
+                          "B": "chave"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_destroy_sprite",
+                              "fields": {
+                                "SPRITE": "chave"
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "sz_js_var_assign",
+                                  "fields": {
+                                    "NAME": "temChave"
+                                  },
+                                  "inputs": {
+                                    "VALUE": {
+                                      "block": {
+                                        "type": "sz_val_bool",
+                                        "fields": {
+                                          "VALUE": "true"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_js_var_assign",
+                                      "fields": {
+                                        "NAME": "aviso"
+                                      },
+                                      "inputs": {
+                                        "VALUE": {
+                                          "block": {
+                                            "type": "sz_val_text",
+                                            "fields": {
+                                              "TEXT": "Você pegou a chave! Agora vá ao farol."
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 452,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_draw_backdrop",
+                                  "fields": {
+                                    "IMAGE": "cenario"
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_top_down",
+                                      "fields": {
+                                        "SPRITE": "personagem"
+                                      },
+                                      "inputs": {
+                                        "SPEED": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 3
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_clamp_to_screen",
+                                          "fields": {
+                                            "SPRITE": "personagem"
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_js_if_else",
+                                              "inputs": {
+                                                "THEN": {
+                                                  "block": {
+                                                    "type": "sz_js_if_else",
+                                                    "inputs": {
+                                                      "THEN": {
+                                                        "block": {
+                                                          "type": "sz_js_member_set",
+                                                          "fields": {
+                                                            "NAME": "x"
+                                                          },
+                                                          "inputs": {
+                                                            "OBJ": {
+                                                              "block": {
+                                                                "type": "sz_val_variable",
+                                                                "fields": {
+                                                                  "NAME": "barco"
+                                                                }
+                                                              }
+                                                            },
+                                                            "VALUE": {
+                                                              "block": {
+                                                                "type": "sz_math_arithmetic",
+                                                                "fields": {
+                                                                  "OP": "-"
+                                                                },
+                                                                "inputs": {
+                                                                  "A": {
+                                                                    "block": {
+                                                                      "type": "sz_val_member_get",
+                                                                      "fields": {
+                                                                        "NAME": "x"
+                                                                      },
+                                                                      "inputs": {
+                                                                        "OBJ": {
+                                                                          "block": {
+                                                                            "type": "sz_val_variable",
+                                                                            "fields": {
+                                                                              "NAME": "barco"
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "B": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 1.5
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      "COND": {
+                                                        "block": {
+                                                          "type": "sz_val_compare",
+                                                          "fields": {
+                                                            "OP": ">"
+                                                          },
+                                                          "inputs": {
+                                                            "LEFT": {
+                                                              "block": {
+                                                                "type": "sz_val_member_get",
+                                                                "fields": {
+                                                                  "NAME": "x"
+                                                                },
+                                                                "inputs": {
+                                                                  "OBJ": {
+                                                                    "block": {
+                                                                      "type": "sz_val_variable",
+                                                                      "fields": {
+                                                                        "NAME": "barco"
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            },
+                                                            "RIGHT": {
+                                                              "shadow": {
+                                                                "type": "sz_val_number",
+                                                                "fields": {
+                                                                  "NUM": 530
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    },
+                                                    "extraState": {
+                                                      "hasElse": true
+                                                    }
+                                                  }
+                                                },
+                                                "COND": {
+                                                  "block": {
+                                                    "type": "sz_val_variable",
+                                                    "fields": {
+                                                      "NAME": "ganhou"
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              "extraState": {
+                                                "hasElse": true
+                                              },
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_draw_sprite",
+                                                  "fields": {
+                                                    "SPRITE": "chave"
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g2d_draw_sprite",
+                                                      "fields": {
+                                                        "SPRITE": "farol"
+                                                      },
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_g2d_draw_sprite",
+                                                          "fields": {
+                                                            "SPRITE": "barco"
+                                                          },
+                                                          "next": {
+                                                            "block": {
+                                                              "type": "sz_g2d_draw_sprite",
+                                                              "fields": {
+                                                                "SPRITE": "personagem"
+                                                              },
+                                                              "next": {
+                                                                "block": {
+                                                                  "type": "sz_g2d_draw_label",
+                                                                  "fields": {
+                                                                    "COLOR": "#263a45",
+                                                                    "ALIGN": "left"
+                                                                  },
+                                                                  "inputs": {
+                                                                    "TEXT": {
+                                                                      "block": {
+                                                                        "type": "sz_val_variable",
+                                                                        "fields": {
+                                                                          "NAME": "aviso"
+                                                                        }
+                                                                      }
+                                                                    },
+                                                                    "X": {
+                                                                      "shadow": {
+                                                                        "type": "sz_val_number",
+                                                                        "fields": {
+                                                                          "NUM": 20
+                                                                        }
+                                                                      }
+                                                                    },
+                                                                    "Y": {
+                                                                      "shadow": {
+                                                                        "type": "sz_val_number",
+                                                                        "fields": {
+                                                                          "NUM": 32
+                                                                        }
+                                                                      }
+                                                                    },
+                                                                    "SIZE": {
+                                                                      "shadow": {
+                                                                        "type": "sz_val_number",
+                                                                        "fields": {
+                                                                          "NUM": 19
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 872,
+                  "y": 392
                 }
               ]
             }
@@ -343,951 +1108,136 @@
           ]
         }
       }
-    },
-    {
-      "key": "video-abertura",
-      "plannedVideo": "Título: A chuva de pedras chega\n\nOrigem: video-abertura-v6, com fala parcial e tela regravada. Duração alvo: 25 a 35 segundos.\n\nMostrar o jogo do fim do Dia 3 rodando: pedras caindo do alto em lugares diferentes, a nave se movendo embaixo e um tiro explodindo uma das pedras, com o som. Nada de menu, nada de placar: hoje o jogo ainda não conta ponto.\n\nFala: \"Hoje seus tiros vão ter o que acertar. As pedras vão começar a chegar do alto, uma de cada vez, e o jogo vai aprender a perceber quando um tiro encontra uma pedra.\"\n\nCortes obrigatórios: sai a enumeração dos seis passos e sai a promessa de mexer no número do relógio depois."
-    },
-    {
-      "key": "fala-avalanche",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora é sua vez de descobrir como dar espaço entre as pedras. Observe a cena e compare o que acontece quando o tempo de nascimento muda."
-      }
-    },
-    {
-      "key": "experiencia-relogio",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Abra espaço entre as pedras",
-        "instructions": "Compare o nascimento e a queda das pedras sem relógio e com dois intervalos diferentes. O que muda em cada teste?",
-        "hints": [
-          "Com Criar asteroide fora do relógio, solte o Tempo por cerca de 1 segundo e observe quantas nasceram.",
-          "Leve Criar asteroide para o relógio de 40 quadros. Solte o Tempo por cerca de 4 segundos e observe duas pedras caindo.",
-          "Troque o intervalo para 20 quadros e solte o Tempo por mais 3 segundos. Compare quantas nasceram e quanto cada pedra desceu."
-        ],
-        "activity": {
-          "type": "experimentation",
-          "scene": "spawn",
-          "cast": {
-            "hero": {
-              "name": "nave",
-              "gender": "f"
-            },
-            "obstacle": {
-              "name": "asteroide",
-              "gender": "m"
-            }
-          },
-          "cenario": "nave",
-          "setup": {
-            "preset": {
-              "id": "pedra-quadros",
-              "unit": "frames",
-              "intervals": [20, 40, 80],
-              "falling": true
-            }
-          }
-        },
-        "semPerguntaFinal": true
-      }
-    },
-    {
-      "key": "fala-grupo-asteroides",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora leve esse ritmo para o seu jogo: crie o grupo das pedras e o relógio de 40 quadros no Estúdio."
-      }
-    },
-    {
-      "key": "video-grupo-e-relogio",
-      "plannedVideo": "Título: O saquinho das pedras e o relógio vizinho\n\nOrigem: fusão de video-grupo-asteroides com video-relogio, tela regravada. Duração alvo: 55 a 65 segundos.\n\nPrimeira metade: o gesto de pegar Criar grupo de sprites e encaixar em Ao iniciar, abaixo do grupo dos tiros, deixando o nome asteroides. Manter a fala do saquinho, que já está gravada e é boa.\n\nSegunda metade: o gesto de soltar A cada quadros em Enquanto estiver rodando, encostado por baixo do A cada quadro do jogo, com zoom no ponto de encaixe para mostrar que um relógio fica do lado de fora do outro. Escrever 40 no campo. Manter a fala do relógio mais lento.\n\nCortes obrigatórios: sai a contagem de passos, sai a chamada para a parte seguinte e sai a promessa de que o número será trocado depois."
-    },
-    {
-      "key": "fala-sorteio",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Você viu como funciona um sorteio. Agora observe onde as pedras aparecem quando o jogo sorteia seus lugares."
-      }
-    },
-    {
-      "key": "experiencia-sorteio",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "De onde vem a próxima pedra",
-        "instructions": "Sorteie alguns lugares e observe as marcas da régua. Depois acompanhe uma pedra entrando na tela.",
-        "hints": [],
-        "activity": {
-          "type": "experimentation",
-          "scene": "random",
-          "cast": {
-            "obstacle": {
-              "name": "asteroide",
-              "gender": "m"
-            }
-          },
-          "cenario": "nave",
-          "setup": {
-            "preset": {
-              "id": "pedra-acima",
-              "axis": "above",
-              "speedModule": false
-            }
-          }
-        },
-        "semPerguntaFinal": true
-      }
-    },
-    {
-      "key": "fala-asteroide",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora monte no seu jogo a pedra que nasce acima da tela e cai de um lugar sorteado."
-      }
-    },
-    {
-      "key": "video-asteroide",
-      "plannedVideo": "Título: A pedra que nasce fora da tela\n\nOrigem: video-asteroide do roteiro original, com fala parcial e dois cortes obrigatórios. Duração alvo: 75 a 90 segundos; recalibrar após gravar.\n\nMostrar o gesto de pegar o bloco em Jogo 2D, Kits prontos › Espaço, encaixar dentro do relógio de 40 quadros e encaixar o sorteio em cima do número do x. Trocar y por menos 30 e vy por 3, confirmando cada campo fora do bloco. Conferir tamanho 40 e vx 0, que já vêm escritos, sem redigitar. Ao terminar, enquadrar a tela ainda sem pedras: o nascimento foi programado, mas o motor ainda não move nem desenha o grupo. Essa falta motiva a próxima seção; não encenar pedras visíveis antes dos blocos de mover e desenhar.\n\nCorte obrigatório 1: a explicação do sorteio e a do menos de y já aconteceram no vídeo conceitual e na experiência da seção anterior.\n\nCorte obrigatório 2: o sorteio não garante um lugar novo a cada vez.\n\nO tamanho 40 é a medida de base do kit. Não prometer largura igual para todas as pedras."
-    },
-    {
-      "key": "fala-ciclo-asteroides",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Use com os asteroides o padrão de mover, retirar e desenhar que você já conhece dos tiros."
-      }
-    },
-    {
-      "key": "video-ciclo-asteroides",
-      "plannedVideo": "Título: O mesmo padrão, agora com as pedras\n\nDuração alvo: 100 a 120 segundos; recalibrar após gravar.\n\nOrigem: Parte 4 do roteiro original e video-ciclo-asteroides, sem contagem de passos. Duração alvo: recalibrar após gravar.\n\nMostrar os três blocos entrando dentro do A cada quadro do jogo, abaixo do Desenhar o grupo dos tiros, e escolher asteroides nos três. Deixar o fazer da limpeza vazio. Preservar a fala breve sobre reconhecer e repetir o padrão. Depois clicar no jogo: agora as pedras aparecem e caem. Mirar e atirar numa delas; o tiro a atravessa sem explosão. Segurar esse resultado para motivar o conceito de colisão da seção seguinte, sem consertar ainda."
-    },
-    {
-      "key": "fala-trombada",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora compare o que acontece quando a ordem fala com o grupo inteiro ou só com os participantes da trombada."
-      }
-    },
-    {
-      "key": "experiencia-trombada",
-      "content": {
-        "kind": "interactive",
-        "required": true,
-        "title": "Quem some na trombada?",
-        "instructions": "Compare uma batida com os comandos apontando para os grupos inteiros e depois só para o tiro e a pedra envolvidos. Quem desaparece?",
-        "hints": [
-          "Olhe os dois contadores antes e depois da trombada.",
-          "Só um tiro encostou numa pedra. Quantos sumiram?",
-          "Troque o alvo dos dois comandos para os apelidos, tiro e asteroide. Volte ao começo e faça a trombada de novo.",
-          "Depois da segunda trombada, deixe o tempo passar até as outras duas pedras saírem pela borda de baixo."
-        ],
-        "prediction": {
-          "context": {
-            "label": "O alvo de cada comando",
-            "explanation": "Nesta experiência, você escolhe se cada comando fala com o apelido de um participante ou com o grupo inteiro, e vê quantos objetos somem na trombada."
-          },
-          "prompt": "Três tiros e três pedras estão no jogo. Um tiro encosta numa pedra, e o comando manda tirar o grupo asteroides. O que some?",
-          "choices": [
-            {
-              "id": "so-a-atingida",
-              "label": "Só a pedra que foi atingida",
-              "shows": "O comando falou com o grupo, e o grupo é todo mundo."
-            },
-            {
-              "id": "todas",
-              "label": "Todas as pedras do jogo"
-            }
-          ],
-          "correctChoiceId": "todas",
-          "revealOn": "whole-group"
-        },
-        "activity": {
-          "type": "experimentation",
-          "scene": "collision-pair",
-          "cast": {
-            "hero": {
-              "name": "nave",
-              "gender": "f"
-            },
-            "obstacle": {
-              "name": "asteroide",
-              "gender": "m"
-            }
-          },
-          "cenario": "nave",
-          "setup": {
-            "goals": ["whole-group", "just-the-pair", "others-stay"]
-          }
-        },
-        "semPerguntaFinal": true
-      }
-    },
-    {
-      "key": "fala-colisao",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Faça o jogo responder ao encontro entre tiro e asteroide. Use os apelidos para agir só nos dois que se tocaram."
-      }
-    },
-    {
-      "key": "video-colisao",
-      "plannedVideo": "Título: Os dois que se bateram\n\nOrigem: fusão de video-encontro com video-colisao, tela regravada. Duração alvo: 85 a 105 segundos.\n\nA explicação abstrata dos apelidos já está no vídeo conceitual da seção anterior. Neste clipe, retomar em uma frase e focar a montagem. Os dois grupos e os apelidos do bloco de colisão já vêm em tiros, asteroides, tiro e asteroide: conferir sem escolher novamente. Dizer para cada um dos quatro comandos a categoria, a seção, o bloco, o lugar exato do encaixe e os menus que de fato precisem ser configurados; não resumir a cadeia como uma lista de nomes.\n\nConferência para a gravação: o congelamento de três pares fica só na experiência anterior. Soltar explosão no sprite cor está em Jogo 2D › Desenho e efeitos › Partículas, não em Kit espaço. Narração completa no roteiro correspondente."
-    },
-    {
-      "key": "video-fecho",
-      "plannedVideo": "Título: A sua chuva de pedras está pronta\n\nOrigem: video-fecho-v6, com fala parcial, agora com o teste e o envio dentro do clipe. Duração alvo: 75 a 90 segundos.\n\nGravação de tela no jogo do fim do Dia 3, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho. Não existe botão de play, e o clipe não procura nenhum.\n\nO teste era um balão do Zappy no começo da seção e passou para cá, porque passo a passo de gesto se mostra na tela. O fecho fica no fim do clipe pelo mesmo motivo: na seção o Estúdio ocupa a coluna da direita sozinho, e um fecho escrito seria lido antes do envio.\n\nO que passa na tela, nesta ordem:\n\n1. O clique dentro da área do jogo, que é o que avisa o jogo que o teclado agora é dele.\n2. A barra de espaço apertada mirando numa pedra. O tiro acerta, os dois somem juntos e a explosão aparece, com o som.\n3. A barra de espaço apertada de novo, agora mirando no vazio. Esse tiro continua subindo até sair pela borda de cima.\n4. Alguns segundos parados olhando o resto da tela: as outras pedras continuam caindo e saem por baixo, sem sumir junto com a que explodiu.\n5. A conferência dos dois números antes do envio, cada campo enquadrado: o intervalo do relógio em 40 e o vy da pedra em 3. O clipe mostra os campos e não convida a mudar nenhum dos dois, porque os dois continuam assim no Dia 4.\n6. O gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFecho, depois do envio, reaproveitando a conquista da gravação, que é sincera. Mostrar o jogo rodando por alguns segundos, com uma pedra explodindo, e a fala: \"A chuva de pedras já funciona e os tiros conseguem destruir. Você usou um relógio para decidir quando uma pedra nasce e uma colisão para responder ao encontro de dois objetos. Amanhã cada acerto vai valer ponto, e a sua nave vai ganhar vidas.\"\n\nCorte obrigatório: sai o resumo numerado dos seis passos. Não afirmar que a publicação já aconteceu."
-    },
-    {
-      "key": "quiz",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 100,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "O seu relógio espera 40 quadros entre uma pedra e outra. Você troca para 20. O que muda?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Nascem mais pedras no mesmo tempo."
-              },
-              {
-                "id": "b",
-                "label": "Cada pedra passa a cair mais rápido."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "O relógio só decide de quanto em quanto tempo nasce uma pedra: esperando menos, nascem mais no mesmo tempo. Quem faz cada uma descer é o vy."
-          },
-          {
-            "id": "q2",
-            "prompt": "Três pedras estão na tela. Um tiro acerta uma delas. O que deve desaparecer?",
-            "choices": [
-              {
-                "id": "b",
-                "label": "Todas as pedras do grupo."
-              },
-              {
-                "id": "a",
-                "label": "O tiro e só a pedra que ele acertou."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Os apelidos da colisão apontam para os dois participantes daquele encontro. As outras pedras continuam no jogo."
-          }
-        ]
-      }
-    },
-    {
-      "key": "video-intervalo",
-      "plannedVideo": "Título: Um relógio para as pedras\n\nDuração alvo: 40 a 50 segundos, recalibrar após gravar. Retomar o motor do Dia 2 que move os tiros a cada quadro. Usar dois relógios esquemáticos para contrastar instantes muito próximos com intervalos mais espaçados. Explicar que o relógio lento decide quando nasce uma pedra, não como se move uma que já nasceu. Não mostrar a chuva de pedras nem os contadores das três comparações da experiência. Origem: roteiro original do Dia 3, Parte 2."
-    },
-    {
-      "key": "video-sorteio",
-      "plannedVideo": "Título: Um lugar surpresa, dentro dos limites\n\nDuração alvo: 40 a 50 segundos, recalibrar após gravar. Usar cartões de lugares possíveis e um saquinho para explicar o sorteio de x; lembrar que o mesmo lugar pode sair outra vez. Indicar y −30 acima da borda como posição inicial, não velocidade. Não mostrar a sequência de nascimentos nem as marcas que a criança vai produzir na experiência. Origem: roteiro original do Dia 3, Parte 3, corrigido para não prometer um lugar novo em cada sorteio."
-    },
-    {
-      "key": "video-apelidos",
-      "plannedVideo": "Título: Só os dois desta colisão\n\nDuração alvo: 40 a 50 segundos, recalibrar após gravar. Depois do tiro que atravessou a pedra na seção anterior, apresentar colisão como o encontro entre objetos. Mostrar três tiros e três pedras; destacar o par que se toca sem removê-lo. Retomar a formulação concreta do roteiro original: nesta trombada foi este tiro e esta pedra, embora existam outros nos grupos. Explicar que os apelidos deixam a ordem agir só nesses participantes. A experiência compara os alvos."
-    },
-    {
-      "key": "fala-quiz",
-      "content": {
-        "kind": "dialogue",
-        "pose": "happy",
-        "text": "Hora de conferir o que você descobriu sobre o relógio e as colisões. Pense no que viu nas experiências antes de escolher."
-      }
     }
   ],
   "sections": [
     {
-      "key": "abertura",
-      "title": "O que a gente vai fazer hoje",
-      "intent": "presentation",
-      "objective": "Ver a chuva de pedras e a primeira explosão antes de encaixar qualquer coisa.",
-      "blockKeys": ["video-abertura"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-abertura"]
-      }
-    },
-    {
-      "key": "avalanche",
-      "title": "Uma pedra de cada vez",
+      "key": "condicao",
+      "title": "O que a porta precisa?",
       "intent": "exploration",
-      "objective": "Separar nascer em cada quadro de nascer no ritmo de um relógio, e ver que a frequência não muda a velocidade de queda.",
-      "blockKeys": ["video-intervalo", "fala-avalanche", "experiencia-relogio"],
+      "objective": "Experimentar a mesma porta sem e com chave antes de programar a condição.",
+      "blockKeys": ["video-d3-condicao", "ponte-d3-condicao", "experiencia-porta"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-intervalo", "experiencia-relogio"]
+        "blockIds": ["video-d3-condicao", "experiencia-porta"]
       }
     },
     {
-      "key": "relogio",
-      "title": "O grupo e o relógio da chuva",
-      "intent": "application",
-      "objective": "Criar o segundo grupo e pendurar o relógio como vizinho do motor, não como filho dele.",
-      "blockKeys": ["video-grupo-e-relogio", "fala-grupo-asteroides"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-grupo-e-relogio"],
-        "projectChecks": [
-          {
-            "id": "grupo-asteroides",
-            "label": "Crie o grupo asteroides em Ao iniciar.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_create_group",
-              "area": "start",
-              "fields": {
-                "NAME": "asteroides"
-              },
-              "count": 1
-            }
-          },
-          {
-            "id": "relogio",
-            "label": "Use A cada 40 quadros como vizinho de A cada quadro do jogo.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_every_frames",
-              "area": "loops",
-              "inputs": {
-                "N": 40
-              },
-              "count": 1
-            }
-          },
-          {
-            "id": "relogios-vizinhos",
-            "label": "Os dois relógios são vizinhos em Enquanto estiver rodando.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_update_each_frame",
-              "area": "loops",
-              "beforeBlock": "sz_g2d_every_frames"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "sorteio",
-      "title": "De onde vem a próxima pedra",
-      "intent": "exploration",
-      "objective": "Ver que o sorteio pode repetir e que a régua do nascimento fica acima da borda de cima da tela.",
-      "blockKeys": ["video-sorteio", "fala-sorteio", "experiencia-sorteio"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-sorteio", "experiencia-sorteio"]
-      }
-    },
-    {
-      "key": "asteroide",
-      "title": "A pedra que nasce fora da tela",
-      "intent": "application",
-      "objective": "Configurar o nascimento sorteado e a queda da pedra dentro do relógio.",
-      "blockKeys": ["video-asteroide", "fala-asteroide"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-asteroide"],
-        "projectChecks": [
-          {
-            "id": "asteroide",
-            "label": "No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_spawn_asteroid",
-              "fields": {
-                "GROUP": "asteroides"
-              },
-              "inputs": {
-                "Y": -30,
-                "SIZE": 40,
-                "VX": 0,
-                "VY": 3
-              },
-              "inputBlocks": {
-                "X": {
-                  "blockType": "sz_g2d_random_x"
-                }
-              },
-              "area": "loops",
-              "withinBlock": "sz_g2d_every_frames",
-              "count": 1
-            }
-          },
-          {
-            "id": "criador-unico",
-            "label": "Mantenha um único comando de criar asteroide.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_spawn_asteroid",
-              "count": 1
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "ciclo-asteroides",
-      "title": "As pedras caem, e o tiro passa reto",
-      "intent": "application",
-      "objective": "Transferir o ciclo mover, faxina e desenhar para o grupo novo, e sentir a falta da colisão.",
-      "blockKeys": ["video-ciclo-asteroides", "fala-ciclo-asteroides"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-ciclo-asteroides"],
-        "projectChecks": [
-          {
-            "id": "mover-asteroides",
-            "label": "Mova asteroides antes de limpar o grupo.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_update_group",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "asteroides"
-              },
-              "beforeBlock": "sz_g2d_prune_offscreen"
-            }
-          },
-          {
-            "id": "limpar-asteroides",
-            "label": "Retire os asteroides que saem e depois desenhe esse grupo.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_prune_offscreen",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "asteroides"
-              },
-              "beforeBlock": "sz_g2d_draw_group"
-            }
-          },
-          {
-            "id": "desenhar-asteroides",
-            "label": "Desenhe o grupo asteroides a cada quadro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_draw_group",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "asteroides"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "trombada",
-      "title": "Quem some na trombada",
-      "intent": "exploration",
-      "objective": "Descobrir que o apelido aponta para um participante do encontro, e o grupo aponta para todos.",
-      "blockKeys": ["video-apelidos", "fala-trombada", "experiencia-trombada"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-apelidos", "experiencia-trombada"]
-      }
-    },
-    {
-      "key": "colisao",
-      "title": "Faça o acerto acontecer",
-      "intent": "application",
-      "objective": "Responder ao encontro de um tiro com uma pedra: tirar os dois, explodir e tocar o som.",
-      "blockKeys": ["video-colisao", "fala-colisao"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-colisao"],
-        "projectChecks": [
-          {
-            "id": "efeito-explosao",
-            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_group_overlap",
-              "fields": {
-                "A": "tiros",
-                "B": "asteroides",
-                "ANAME": "tiro",
-                "BNAME": "asteroide"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "explosion"
-                  }
-                }
-              },
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
-            }
-          },
-          {
-            "id": "remover-tiro",
-            "label": "Na colisão tiros × asteroides, remova o tiro do grupo tiros.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_group_overlap",
-              "fields": {
-                "A": "tiros",
-                "B": "asteroides",
-                "ANAME": "tiro",
-                "BNAME": "asteroide"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_remove_from_group",
-                  "fields": {
-                    "SPRITE": "tiro",
-                    "GROUP": "tiros"
-                  }
-                }
-              },
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
-            }
-          },
-          {
-            "id": "remover-pedra",
-            "label": "Na mesma colisão, remova o asteroide e então solte a explosão.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_group_overlap",
-              "fields": {
-                "A": "tiros",
-                "B": "asteroides",
-                "ANAME": "tiro",
-                "BNAME": "asteroide"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_remove_from_group",
-                  "fields": {
-                    "SPRITE": "asteroide",
-                    "GROUP": "asteroides"
-                  },
-                  "beforeBlock": "sz_g2d_explode"
-                }
-              },
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
-            }
-          },
-          {
-            "id": "explosao",
-            "label": "Exploda o asteroide atingido e toque o som de explosão dentro da colisão.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_group_overlap",
-              "fields": {
-                "A": "tiros",
-                "B": "asteroides",
-                "ANAME": "tiro",
-                "BNAME": "asteroide"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_explode",
-                  "fields": {
-                    "SPRITE": "asteroide"
-                  },
-                  "beforeBlock": "sz_g2d_play_fx"
-                }
-              },
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "quiz-final",
-      "title": "Hora do desafio",
-      "intent": "closing",
-      "objective": "Conferir o ritmo de nascimento e a escolha dos participantes da colisão.",
-      "blockKeys": ["fala-quiz", "quiz"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["quiz"]
-      }
-    },
-    {
-      "key": "entrega",
-      "title": "Teste, envie e fecha",
+      "key": "decisao",
+      "title": "Faça a porta conferir a chave",
       "intent": "delivery",
-      "objective": "As pedras nascem em lugares sorteados, caem e podem ser destruídas pelos tiros.",
-      "blockKeys": ["video-fecho", "projeto"],
+      "objective": "Criar o encontro com o farol, conferir temChave, acender a luz e concluir o jogo.",
+      "blockKeys": ["video-d3-decisao", "ponte-d3-decisao", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho", "projeto"],
+        "blockIds": ["video-d3-decisao", "projeto"],
         "projectChecks": [
           {
-            "id": "efeito-tiro",
-            "label": "No evento Espaço, use Tocar efeito e escolha tiro.",
+            "id": "encontro-farol",
+            "label": "Reaja ao encontro com o farol.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_on_key",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
               "fields": {
-                "KEY": "Space"
+                "A": "personagem",
+                "B": "farol"
               },
               "inputBlocks": {
                 "BODY": {
-                  "blockType": "sz_g2d_play_fx",
-                  "fields": {
-                    "FX": "shoot"
-                  }
-                }
-              },
-              "area": "events"
-            }
-          },
-          {
-            "id": "disparo",
-            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_key",
-              "fields": {
-                "KEY": "Space"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_spawn_bullet",
-                  "fields": {
-                    "GROUP": "tiros"
-                  },
-                  "inputs": {
-                    "R": 5,
-                    "VX": 0,
-                    "VY": -9
-                  },
+                  "blockType": "sz_js_if_else",
                   "inputBlocks": {
-                    "X": {
-                      "blockType": "sz_g2d_center_x",
+                    "COND": {
+                      "blockType": "sz_val_variable",
                       "fields": {
-                        "SPRITE": "nave"
+                        "NAME": "temChave"
                       }
                     },
-                    "Y": {
-                      "blockType": "sz_g2d_sprite_y",
+                    "THEN": {
+                      "blockType": "sz_js_var_assign",
                       "fields": {
-                        "SPRITE": "nave"
-                      }
+                        "NAME": "ganhou"
+                      },
+                      "inputs": {
+                        "VALUE": true
+                      },
+                      "beforeBlock": "sz_g2d_set_image"
                     }
-                  },
-                  "beforeBlock": "sz_g2d_play_fx"
+                  }
                 }
-              },
-              "area": "events"
-            }
-          },
-          {
-            "id": "tiro-unico",
-            "label": "Mantenha apenas um comando de criar tiro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_spawn_bullet",
-              "count": 1
-            }
-          },
-          {
-            "id": "grupo-asteroides",
-            "label": "Crie o grupo asteroides em Ao iniciar.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_create_group",
-              "area": "start",
-              "fields": {
-                "NAME": "asteroides"
-              },
-              "count": 1
-            }
-          },
-          {
-            "id": "relogio",
-            "label": "Use A cada 40 quadros como vizinho de A cada quadro do jogo.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_every_frames",
-              "area": "loops",
-              "inputs": {
-                "N": 40
-              },
-              "count": 1
-            }
-          },
-          {
-            "id": "relogios-vizinhos",
-            "label": "Os dois relógios são vizinhos em Enquanto estiver rodando.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_update_each_frame",
-              "area": "loops",
-              "beforeBlock": "sz_g2d_every_frames"
-            }
-          },
-          {
-            "id": "asteroide",
-            "label": "No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_spawn_asteroid",
-              "fields": {
-                "GROUP": "asteroides"
-              },
-              "inputs": {
-                "Y": -30,
-                "SIZE": 40,
-                "VX": 0,
-                "VY": 3
-              },
-              "inputBlocks": {
-                "X": {
-                  "blockType": "sz_g2d_random_x"
-                }
-              },
-              "area": "loops",
-              "withinBlock": "sz_g2d_every_frames",
-              "count": 1
-            }
-          },
-          {
-            "id": "criador-unico",
-            "label": "Mantenha um único comando de criar asteroide.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_spawn_asteroid",
-              "count": 1
-            }
-          },
-          {
-            "id": "mover-asteroides",
-            "label": "Mova asteroides antes de limpar o grupo.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_update_group",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "asteroides"
-              },
-              "beforeBlock": "sz_g2d_prune_offscreen"
-            }
-          },
-          {
-            "id": "limpar-asteroides",
-            "label": "Retire os asteroides que saem e depois desenhe esse grupo.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_prune_offscreen",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "asteroides"
-              },
-              "beforeBlock": "sz_g2d_draw_group"
-            }
-          },
-          {
-            "id": "desenhar-asteroides",
-            "label": "Desenhe o grupo asteroides a cada quadro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_draw_group",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "asteroides"
               }
             }
           },
           {
-            "id": "efeito-explosao",
-            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+            "id": "condicao",
+            "label": "Faça o Se consultar temChave no encontro com o farol.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_on_group_overlap",
-              "fields": {
-                "A": "tiros",
-                "B": "asteroides",
-                "ANAME": "tiro",
-                "BNAME": "asteroide"
-              },
+              "blockType": "sz_js_if_else",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_overlap",
               "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_play_fx",
+                "COND": {
+                  "blockType": "sz_val_variable",
                   "fields": {
-                    "FX": "explosion"
+                    "NAME": "temChave"
                   }
                 }
-              },
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
+              }
             }
           },
           {
-            "id": "remover-tiro",
-            "label": "Na colisão tiros × asteroides, remova o tiro do grupo tiros.",
+            "id": "acender",
+            "label": "Troque a imagem do farol quando a condição for verdadeira.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_on_group_overlap",
+              "blockType": "sz_g2d_set_image",
+              "area": "events",
+              "withinBlock": "sz_js_if_else",
               "fields": {
-                "A": "tiros",
-                "B": "asteroides",
-                "ANAME": "tiro",
-                "BNAME": "asteroide"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_remove_from_group",
-                  "fields": {
-                    "SPRITE": "tiro",
-                    "GROUP": "tiros"
-                  }
-                }
-              },
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
+                "SPRITE": "farol",
+                "IMAGE": "farol-aceso"
+              }
             }
           },
           {
-            "id": "remover-pedra",
-            "label": "Na mesma colisão, remova o asteroide e então solte a explosão.",
+            "id": "vitoria",
+            "label": "Guarde que o farol acendeu para o barco chegar.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_on_group_overlap",
+              "blockType": "sz_js_var_assign",
+              "area": "events",
+              "withinBlock": "sz_js_if_else",
               "fields": {
-                "A": "tiros",
-                "B": "asteroides",
-                "ANAME": "tiro",
-                "BNAME": "asteroide"
+                "NAME": "ganhou"
               },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_remove_from_group",
-                  "fields": {
-                    "SPRITE": "asteroide",
-                    "GROUP": "asteroides"
-                  },
-                  "beforeBlock": "sz_g2d_explode"
-                }
-              },
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
-            }
-          },
-          {
-            "id": "explosao",
-            "label": "Exploda o asteroide atingido e toque o som de explosão dentro da colisão.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_group_overlap",
-              "fields": {
-                "A": "tiros",
-                "B": "asteroides",
-                "ANAME": "tiro",
-                "BNAME": "asteroide"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_explode",
-                  "fields": {
-                    "SPRITE": "asteroide"
-                  },
-                  "beforeBlock": "sz_g2d_play_fx"
-                }
-              },
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame"
+              "inputs": {
+                "VALUE": true
+              }
             }
           }
         ]
       }
+    },
+    {
+      "key": "fecho",
+      "title": "Você guiou o barco",
+      "intent": "closing",
+      "objective": "Reconhecer as regras que construiu e seguir ao certificado.",
+      "blockKeys": ["video-d3-fecho"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d3-fecho"]
+      }
     }
-  ],
-  "retireBlockKeys": [
-    "abertura",
-    "descoberta",
-    "explicacao",
-    "construir-1",
-    "video-construir-1-1",
-    "construir-2",
-    "video-construir-2-1",
-    "construir-3",
-    "video-construir-3-1",
-    "convite-construir-1",
-    "construir-4",
-    "video-construir-4-1",
-    "construir-5",
-    "video-construir-5-1",
-    "convite-construir-4",
-    "checar-construir-5",
-    "construir-6",
-    "video-construir-6-1",
-    "fechamento",
-    "video-abertura-v6",
-    "video-grupo-asteroides",
-    "experiencia-intervalo",
-    "video-relogio",
-    "video-nascer-fora",
-    "demonstracao-nascer-fora",
-    "video-encontro",
-    "video-teste-colisao",
-    "entrega-fala-v6",
-    "video-fecho-v6",
-    "quiz-v6",
-    "fala-relogio",
-    "fala-relogio-vazio",
-    "fala-campos-da-pedra",
-    "fala-kit",
-    "fala-ciclo-limpeza",
-    "fala-tiro-fantasma",
-    "fala-quatro-comandos",
-    "fala-retorno"
   ]
 }

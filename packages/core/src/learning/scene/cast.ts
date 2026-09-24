@@ -72,6 +72,12 @@ export const SCENE_FIGURES = [
   'banana',
   'predio',
   'estrelas',
+  'coelho',
+  'arbusto',
+  'flores',
+  'personagem-farol',
+  'chave-farol',
+  'farol',
 ] as const
 export type SceneFigure = (typeof SCENE_FIGURES)[number]
 
@@ -198,6 +204,12 @@ export const SCENE_FIGURE_NAMES: Readonly<Record<SceneFigure, readonly string[]>
   banana: ['banana'],
   predio: ['prédio', 'edifício', 'torre'],
   estrelas: ['estrelas', 'fundo estrelado', 'céu estrelado'],
+  coelho: ['coelho', 'coelhinho'],
+  arbusto: ['arbusto', 'moita'],
+  flores: ['flores', 'canteiro de flores'],
+  'personagem-farol': ['personagem do farol'],
+  'chave-farol': ['chave do farol'],
+  farol: ['farol'],
 }
 
 const semAcento = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '')
@@ -262,7 +274,7 @@ export function actorFigure(cast: SceneCast | undefined, papel: SceneRole): Scen
  *
  * ⚠️⚠️ Era `'terra' | 'espaco'`, e isso bastava enquanto o mundo era um retângulo de cor: o eixo
  * dizia só se havia chão. Com o mundo desenhado pela arte do Jogo 2D, a cena precisa saber QUAL
- * jogo ela retrata, e são quatro. Quem pergunta por chão usa `cenarioTemChao`, nunca uma
+ * jogo ela retrata. Quem pergunta por chão usa `cenarioTemChao`, nunca uma
  * comparação com um valor literal.
  */
 export type { SceneCenarioId } from './cenario'
@@ -317,6 +329,8 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
   cleanup: ['obstacle'],
   'game-state': ['hero', 'obstacle'],
   controls: ['hero'],
+  'touch-response': [],
+  'lighthouse-key': [],
   restart: ['hero', 'obstacle'],
   hitbox: ['hero', 'obstacle'],
   // ⚠️ Lote 5 do Raio-X: a `score` ganhou o cacto que vem na partida; `random` e `acceleration`
@@ -352,6 +366,12 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
   shading: [],
 }
 
+/** Cenas que representam um jogo específico, sem papéis intercambiáveis do elenco. */
+export const SCENE_FIXED_CENARIOS: Readonly<Partial<Record<SceneId, SceneCenarioId>>> = {
+  'touch-response': 'jardim',
+  'lighthouse-key': 'farol',
+}
+
 /**
  * Os cenários que UMA figura desenhada já decide sozinha.
  *
@@ -361,7 +381,7 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
  * lado, a cena é o Corre Dino com uma pedra no caminho. Pôr `meu-jeito` aqui devolveria o defeito
  * que a régua conserta: `{hero: Dino, obstacle: pedra}` punha o Dino no céu de estrelas.
  */
-const CENARIOS_IMEDIATOS: readonly SceneCenarioId[] = ['nave', 'gorilas']
+const CENARIOS_IMEDIATOS: readonly SceneCenarioId[] = ['nave', 'gorilas', 'jardim']
 /** Os que só decidem quando mais nada decidiu (o terceiro passo). */
 const CENARIOS_TARDIOS: readonly SceneCenarioId[] = ['meu-jeito']
 
@@ -391,6 +411,8 @@ export function sceneCenario(
   scene: SceneId,
   declarado?: SceneCenarioId,
 ): SceneCenarioId {
+  const fixo = SCENE_FIXED_CENARIOS[scene]
+  if (fixo) return fixo
   if (declarado && isSceneCenario(declarado)) return declarado
   cast = sceneNativeCast(scene, cast)
   const papeis = SCENE_ROLES[scene] ?? []

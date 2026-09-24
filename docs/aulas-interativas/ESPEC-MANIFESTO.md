@@ -86,7 +86,7 @@ atualizada lá também**.
 ```json
 {
   "version": 5,
-  "courseSlug": "desafio-primeiro-jogo",
+  "courseSlug": "nave-contra-asteroides",
   "lessonSlug": "dia-1",
   "title": "A nave ganha vida",
   "retireBlockKeys": ["chave-antiga-1"],
@@ -321,7 +321,7 @@ Um arquivo por aula, ao lado do relatório dela:
 aulas/{slug-da-aula}.manifesto.json
 ```
 
-Exemplo: `aulas/desafio-dia-1.manifesto.json`, ao lado de `aulas/desafio-dia-1.md`.
+Exemplo: `aulas/nave-contra-asteroides-dia-1.manifesto.json`, ao lado de `aulas/nave-contra-asteroides-dia-1.md`.
 
 ## 9. O trio da aula anda junto
 

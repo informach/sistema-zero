@@ -9,6 +9,7 @@ import {
   type DetalheDoFundo,
   FIGURAS,
   FUNDOS,
+  farolSvgUrl,
   type NomeDaFigura,
   type NoSvg,
   PincelSvg,
@@ -209,6 +210,17 @@ export function FundoDoCenario({
 }) {
   const id = useId().replace(/[^a-zA-Z0-9-]/g, '')
   const relogio = useRelogioDaArte()
+  if (cenario === 'farol')
+    return (
+      <g data-fundo="farol" transform={x === 0 && y === 0 ? undefined : `translate(${x} ${y})`}>
+        <image
+          href={farolSvgUrl('cenario')}
+          width={w}
+          height={h}
+          preserveAspectRatio="xMidYMid slice"
+        />
+      </g>
+    )
   const quando = t ?? relogio
   const pincel = new PincelSvg(`b${id}`)
   const linha = chao ?? (cenarioTemChao(cenario) ? h * 0.82 : h)

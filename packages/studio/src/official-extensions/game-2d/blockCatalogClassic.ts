@@ -28,6 +28,7 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
         options: [
           ['automáticos no celular', 'auto'],
           ['sempre visíveis', 'always'],
+          ['só as quatro direções', 'directions'],
           ['sem botões na tela', 'off'],
         ],
       },

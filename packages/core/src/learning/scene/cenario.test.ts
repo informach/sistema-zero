@@ -11,8 +11,15 @@ import {
 } from './cenario'
 
 describe('o registro de cenários', () => {
-  test('os quatro jogos que os cursos ensinam estão lá', () => {
-    expect([...SCENE_CENARIO_IDS].sort()).toEqual(['corre-dino', 'gorilas', 'meu-jeito', 'nave'])
+  test('os seis mundos que os cursos ensinam estão lá', () => {
+    expect([...SCENE_CENARIO_IDS].sort()).toEqual([
+      'corre-dino',
+      'farol',
+      'gorilas',
+      'jardim',
+      'meu-jeito',
+      'nave',
+    ])
   })
 
   test('toda figura de todo cenário existe em SCENE_FIGURES', () => {
@@ -42,6 +49,8 @@ describe('o registro de cenários', () => {
     // no teste logo abaixo.
     expect(cenarioTemChao('corre-dino')).toBe(true)
     expect(cenarioTemChao('gorilas')).toBe(true)
+    expect(cenarioTemChao('jardim')).toBe(true)
+    expect(cenarioTemChao('farol')).toBe(true)
     expect(cenarioTemChao('nave')).toBe(false)
     expect(cenarioTemChao('meu-jeito')).toBe(false)
   })
@@ -81,10 +90,12 @@ describe('o registro de cenários', () => {
       })
   })
 
-  test('cada cenário aponta um fundo, e os fundos são três', () => {
+  test('cada cenário aponta um fundo do seu jogo', () => {
     expect(fundoDoCenario('corre-dino')).toBe('floresta')
     expect(fundoDoCenario('nave')).toBe('estrelas')
     expect(fundoDoCenario('gorilas')).toBe('cidade')
+    expect(fundoDoCenario('jardim')).toBe('jardim')
+    expect(fundoDoCenario('farol')).toBe('farol')
     // ⚠️ `meu-jeito` divide o céu com o Desafio de propósito: nos cursos a pedra e a chama SÃO o
     // asteroide e o fogo dele. O que separa os dois cursos é o elenco, não o fundo.
     expect(fundoDoCenario('meu-jeito')).toBe('estrelas')
@@ -112,6 +123,8 @@ describe('o registro de cenários', () => {
     expect(CENARIO_DA_FIGURA.nave).toBe('nave')
     expect(CENARIO_DA_FIGURA.gorila).toBe('gorilas')
     expect(CENARIO_DA_FIGURA.pedra).toBe('meu-jeito')
+    expect(CENARIO_DA_FIGURA.coelho).toBe('jardim')
+    expect(CENARIO_DA_FIGURA['personagem-farol']).toBe('farol')
   })
 
   test('⚠️⚠️ o cenário declarado precisa de um palco possível para TODA cena', () => {
@@ -121,5 +134,19 @@ describe('o registro de cenários', () => {
       expect(sceneCenario(undefined, 'coordinates', id)).toBe(id)
       expect(sceneCenario(undefined, 'shading', id)).toBe(id)
     }
+  })
+
+  test('a experiência própria do jardim não vira outro jogo por troca de elenco', () => {
+    expect(sceneCenario(undefined, 'touch-response')).toBe('jardim')
+    expect(sceneCenario({ hero: { name: 'nave', gender: 'f' } }, 'touch-response', 'nave')).toBe(
+      'jardim',
+    )
+  })
+
+  test('a experiência da porta mantém o mundo do farol', () => {
+    expect(sceneCenario(undefined, 'lighthouse-key')).toBe('farol')
+    expect(sceneCenario({ hero: { name: 'nave', gender: 'f' } }, 'lighthouse-key', 'nave')).toBe(
+      'farol',
+    )
   })
 })

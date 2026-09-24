@@ -235,6 +235,16 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
     { type: 'home' },
     { type: 'start', input: 'key' },
   ],
+  'touch-response': [
+    { type: 'start', input: 'tap' },
+    { type: 'connect', port: 'touch', enabled: true },
+    { type: 'start', input: 'tap' },
+  ],
+  'lighthouse-key': [
+    { type: 'try-lighthouse-door' },
+    { type: 'key-state', hasKey: true },
+    { type: 'try-lighthouse-door' },
+  ],
   // Lote 5 do Raio-X: a partida até a batida, a volta ao início com os cactos na pista, e o Reiniciar
   // que limpa a pista (o toque na tela faz as três coisas, conforme a tela e a escolha).
   restart: [

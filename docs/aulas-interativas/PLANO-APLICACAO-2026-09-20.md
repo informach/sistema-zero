@@ -16,7 +16,7 @@
 - [x] Marcar no briefing do `video-relogio-e-tiro` que, depois de concluir a seção, a criança pode parar e retomar na seção seguinte.
 - [x] Colocar a fala correspondente no roteiro de gravação, com indicação honesta de esperar o projeto ficar guardado.
 - [x] Abrir o vídeo seguinte com uma retomada de uma frase, sem repetir toda a montagem anterior.
-- [x] Registrar a decisão na proposta `desafio-dia-5.md`.
+- [x] Registrar a decisão na proposta `nave-contra-asteroides-dia-5.md` (renomeada posteriormente).
 
 ## 3. Trabalho externo de O Jogo do Meu Jeito
 

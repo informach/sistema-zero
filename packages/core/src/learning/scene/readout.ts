@@ -577,6 +577,28 @@ function leituras(scene: SceneId, state: SceneState, pilha?: ScenePilha): SceneR
             ]
           : []),
       ]
+    case 'touch-response':
+      return [
+        {
+          label: 'esconderijo',
+          value: state.match.screen === 'start' ? 'fechado' : 'aberto',
+          tone: 'a',
+        },
+        { label: 'reação ao toque', value: state.match.touch ? 'ligada' : 'desligada', tone: 'b' },
+      ]
+    case 'lighthouse-key':
+      return [
+        {
+          label: 'chave',
+          value: state.lighthouse.hasKey ? 'com o personagem' : 'não encontrada',
+          tone: 'a',
+        },
+        {
+          label: 'porta',
+          value: state.lighthouse.door === 'open' ? 'aberta' : 'fechada',
+          tone: 'b',
+        },
+      ]
     case 'restart':
       // ⚠️ Lote 5 do Raio-X: os cactos da pista são o assunto (quem só troca de tela começa a partida
       // com eles), e o fio virou a escolha do que o toque faz no fim.
@@ -1150,6 +1172,14 @@ function situacao(scene: SceneId, state: SceneState): string {
         : state.match.screen === 'playing'
           ? 'A partida está acontecendo.'
           : 'A partida terminou.'
+    case 'touch-response':
+      return state.match.screen === 'start'
+        ? 'O esconderijo está fechado.'
+        : 'O esconderijo abriu e revelou o personagem.'
+    case 'lighthouse-key':
+      return state.lighthouse.door === 'open'
+        ? 'A porta abriu e a luz do farol acendeu.'
+        : 'A porta do farol está fechada.'
     case 'restart': {
       const n = quantos(state.crowd.cacti.length, 'cacto', 'cactos')
       if (state.match.screen === 'start')

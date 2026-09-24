@@ -225,15 +225,45 @@ const MANIFESTOS = readdirSync(directory)
   .filter((name) => name.endsWith('.manifesto.json'))
   .sort()
 describe('os manifestos atuais das aulas', () => {
-  test('o inventário cobre os três cursos', () => {
-    expect(MANIFESTOS).toHaveLength(28)
+  test('o inventário distingue os cursos, incluindo o novo Desafio e Cadê Todo Mundo?', () => {
+    expect(MANIFESTOS).toHaveLength(34)
+    expect(MANIFESTOS.filter((name) => name.startsWith('cade-todo-mundo-'))).toHaveLength(3)
     expect(MANIFESTOS.filter((name) => name.startsWith('corre-dino-'))).toHaveLength(13)
-    expect(MANIFESTOS.filter((name) => name.startsWith('desafio-'))).toHaveLength(7)
+    expect(MANIFESTOS.filter((name) => name.startsWith('desafio-'))).toHaveLength(5)
+    expect(MANIFESTOS.filter((name) => name.startsWith('nave-contra-asteroides-'))).toHaveLength(5)
     expect(MANIFESTOS.filter((name) => name.startsWith('meu-jeito-'))).toHaveLength(8)
   })
-  test('o Desafio dos dias 2 a 5 não herda uma pergunta final redundante após experimentar', () => {
+  test('os cinco dias usam a nova identidade, mas introdução e certificado ficam no Desafio', () => {
+    for (const day of [1, 2, 3, 4, 5]) {
+      const name = `nave-contra-asteroides-dia-${day}.manifesto.json`
+      const manifest: unknown = JSON.parse(readFileSync(resolve(directory, name), 'utf8'))
+      expect(isLearningManifest(manifest), name).toBe(true)
+      if (!isLearningManifest(manifest)) continue
+      expect(manifest.courseSlug, name).toBe('nave-contra-asteroides')
+      expect(manifest.lessonSlug, name).toBe(`dia-${day}`)
+      const studio = manifest.blocks.find(
+        (block) => 'content' in block && block.content.kind === 'studio',
+      )
+      expect(
+        studio && 'content' in studio && studio.content.kind === 'studio'
+          ? studio.content.chain
+          : undefined,
+        name,
+      ).toBe('nave-contra-asteroides')
+    }
+    for (const name of [
+      'desafio-introducao.manifesto.json',
+      'desafio-certificado.manifesto.json',
+    ]) {
+      const manifest: unknown = JSON.parse(readFileSync(resolve(directory, name), 'utf8'))
+      expect(isLearningManifest(manifest), name).toBe(true)
+      if (isLearningManifest(manifest))
+        expect(manifest.courseSlug, name).toBe('desafio-primeiro-jogo')
+    }
+  })
+  test('Nave Contra Asteroides dos dias 2 a 5 não herda uma pergunta final redundante após experimentar', () => {
     for (const dia of [2, 3, 4, 5]) {
-      const arquivo = `desafio-dia-${dia}.manifesto.json`
+      const arquivo = `nave-contra-asteroides-dia-${dia}.manifesto.json`
       const manifest = JSON.parse(readFileSync(resolve(directory, arquivo), 'utf8')) as {
         blocks: Array<{ key: string; content?: InteractiveBlock }>
       }
@@ -245,7 +275,7 @@ describe('os manifestos atuais das aulas', () => {
     }
   })
   test('o Dia 1 só pede uma síntese nova ao fim da experiência dos quadros', () => {
-    const arquivo = 'desafio-dia-1.manifesto.json'
+    const arquivo = 'nave-contra-asteroides-dia-1.manifesto.json'
     const manifest = JSON.parse(readFileSync(resolve(directory, arquivo), 'utf8')) as {
       blocks: Array<{ key: string; content?: InteractiveBlock }>
     }
@@ -322,12 +352,12 @@ const quadros = (count: number): SceneAction[] =>
 const segundos = (count: number): SceneAction[] =>
   Array.from({ length: count }, () => ({ type: 'advance', seconds: 1 }))
 
-describe('experiências do Dia 1 do Desafio', () => {
+describe('experiências do Dia 1 de Nave Contra Asteroides', () => {
   const piloto = JSON.parse(
     readFileSync(
       resolve(
         import.meta.dir,
-        '../../../docs/aulas-interativas/aulas/desafio-dia-1.manifesto.json',
+        '../../../docs/aulas-interativas/aulas/nave-contra-asteroides-dia-1.manifesto.json',
       ),
       'utf8',
     ),
@@ -423,7 +453,7 @@ test('no Dia 5, a comparação entre trocar a tela e reiniciar vem antes de prog
     readFileSync(
       resolve(
         import.meta.dir,
-        '../../../docs/aulas-interativas/aulas/desafio-dia-5.manifesto.json',
+        '../../../docs/aulas-interativas/aulas/nave-contra-asteroides-dia-5.manifesto.json',
       ),
       'utf8',
     ),
@@ -445,19 +475,19 @@ const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
     ...quadros(3),
     { type: 'trigger' },
   ],
-  'desafio-dia-1.manifesto.json/experiencia-areas': [
+  'nave-contra-asteroides-dia-1.manifesto.json/experiencia-areas': [
     { type: 'place-in-area', card: 'move', area: 'start' },
     ...quadros(3),
     { type: 'reset' },
     { type: 'place-in-area', card: 'move', area: 'loop' },
     ...quadros(24),
   ],
-  'desafio-dia-1.manifesto.json/experiencia-coordenadas': [
+  'nave-contra-asteroides-dia-1.manifesto.json/experiencia-coordenadas': [
     { type: 'place', x: 500, y: 40 },
     { type: 'place', x: 500, y: 100 },
     { type: 'place', x: 0, y: 0 },
   ],
-  'desafio-dia-2.manifesto.json/experiencia-tres-areas': [
+  'nave-contra-asteroides-dia-2.manifesto.json/experiencia-tres-areas': [
     { type: 'place-in-area', card: 'event', area: 'event' },
     ...quadros(3),
     { type: 'trigger' },
@@ -465,14 +495,14 @@ const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
     { type: 'place-in-area', card: 'event', area: 'loop' },
     ...quadros(5),
   ],
-  'desafio-dia-3.manifesto.json/experiencia-relogio': [
+  'nave-contra-asteroides-dia-3.manifesto.json/experiencia-relogio': [
     ...segundos(1),
     { type: 'connect', port: 'timer', enabled: true },
     ...segundos(4),
     { type: 'interval', seconds: 20 / 30 },
     ...segundos(3),
   ],
-  'desafio-dia-3.manifesto.json/experiencia-sorteio': [
+  'nave-contra-asteroides-dia-3.manifesto.json/experiencia-sorteio': [
     ...Array.from({ length: 8 }, (_, index) => ({
       type: 'sample' as const,
       kind: 'position' as const,
@@ -482,14 +512,14 @@ const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
     { type: 'advance', seconds: 10 / 30 },
     { type: 'sample', kind: 'position', unit: 0.1 / 61, guided: false },
   ],
-  'desafio-dia-4.manifesto.json/experiencia-uma-vez': [
+  'nave-contra-asteroides-dia-4.manifesto.json/experiencia-uma-vez': [
     { type: 'place-in-area', card: 'lives', area: 'start' },
     ...quadros(6),
     { type: 'reset' },
     { type: 'place-in-area', card: 'lives', area: 'loop' },
     ...quadros(9),
   ],
-  'desafio-dia-5.manifesto.json/experiencia-reiniciar': [
+  'nave-contra-asteroides-dia-5.manifesto.json/experiencia-reiniciar': [
     ...scenePaths.restart,
     ...segundos(3),
     { type: 'start', input: 'key' },
@@ -547,8 +577,10 @@ function caminhoDeSucesso(block: InteractiveBlock, onde: string): LearningAnswer
 describe('o cenário das cenas dos cursos', () => {
   /** O cenário esperado de cada curso nos manifestos atuais. */
   const CENARIO_DO_CURSO: Record<string, string> = {
+    'cade-todo-mundo': 'jardim',
     'corre-dino': 'corre-dino',
-    'desafio-primeiro-jogo': 'nave',
+    'desafio-primeiro-jogo': 'farol',
+    'nave-contra-asteroides': 'nave',
     'o-jogo-do-meu-jeito': 'meu-jeito',
   }
 
@@ -601,7 +633,7 @@ describe('o cenário das cenas dos cursos', () => {
     // A `velocity` do Desafio tem uma "pedra" no elenco, e a pedra pertence ao Jogo do Meu Jeito.
     // Sem o campo declarado ela mostraria o mundo do outro curso — era o estado antes deste lote.
     const comPedraNoDesafio = cenasDosCursos().filter(
-      (c) => c.curso === 'desafio-primeiro-jogo' && c.cenario === 'nave',
+      (c) => c.curso === 'nave-contra-asteroides' && c.cenario === 'nave',
     )
     expect(comPedraNoDesafio.length).toBeGreaterThan(0)
   })

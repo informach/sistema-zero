@@ -1,4 +1,4 @@
-# Roteiro de gravação · Desafio do Primeiro Jogo · Dia 5 · O jogo ganha começo e fim
+# Roteiro de gravação · Nave Contra Asteroides · Dia 5 · O jogo ganha começo e fim
 
 **Como ler este roteiro:** só o texto entre aspas em **Narração** é falado no vídeo. **Na tela**
 orienta a gravação; as **Notas de produção** são lembretes para a equipe, não falas para a criança.
@@ -57,7 +57,7 @@ orienta a gravação; as **Notas de produção** são lembretes para a equipe, n
 curto de partida.
 
 **Narração:**
-> "Oi! Chegou o último dia do desafio. Hoje o seu jogo ganha começo e fim! Ele vai abrir numa
+> "Oi! Chegou o último dia de Nave Contra Asteroides. Hoje o seu jogo ganha começo e fim! Ele vai abrir numa
 > tela com o nome que você escolher, e a partida só começa quando alguém apertar o Enter."
 
 **Na tela:** deixar as vidas acabarem até a tela de derrota, depois cortar para uma partida que
@@ -620,7 +620,7 @@ clipe nesta seção. Cortar repetições de jogo para preservar a atenção.
 partida.
 
 **Narração:**
-> "Você terminou o Desafio do Primeiro Jogo! O que está rodando na sua tela foi você que
+> "Você terminou o curso Nave Contra Asteroides! O que está rodando na sua tela foi você que
 > montou, bloquinho por bloquinho, em cinco dias."
 
 **Na tela:** cortes curtos das peças do projeto: o Ao iniciar, a colisão, o Se grande com os quatro

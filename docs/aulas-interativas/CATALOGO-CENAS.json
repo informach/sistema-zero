@@ -1294,6 +1294,45 @@
     "acoes_usadas": ["connect", "start"]
   },
   {
+    "id": "touch-response",
+    "grupo": "events",
+    "titulo": "O toque faz o jogo responder",
+    "instrucao": "Toque no esconderijo. Depois ligue a reação ao toque e experimente de novo.",
+    "manipula": "A ligação da reação e o toque no esconderijo",
+    "frase_sucesso": "O toque só revelou o personagem quando havia uma ação ligada a ele.",
+    "pergunta_extra": "O que aconteceria se você ligasse outra ação ao mesmo toque?",
+    "metas": [
+      {
+        "id": "no-response",
+        "rotulo": "O toque sozinho não revelou ninguém",
+        "pedido": "Toque no esconderijo antes de ligar a reação.",
+        "soNoCaso": false
+      },
+      {
+        "id": "responds",
+        "rotulo": "O toque revelou o personagem",
+        "pedido": "Ligue a reação ao toque e toque no esconderijo de novo.",
+        "soNoCaso": false
+      }
+    ],
+    "pistas": [
+      "Toque no esconderijo e observe se a figura muda.",
+      "Escolha se o toque tem uma ação ligada a ele.",
+      "Primeiro toque sem reação. Depois ligue a reação e toque outra vez."
+    ],
+    "roteiro_demonstracao": [
+      {
+        "passo": "step-1",
+        "fala": "O primeiro toque não revelou ninguém."
+      },
+      {
+        "passo": "step-2",
+        "fala": "Depois de ligar a reação, o toque revelou o personagem."
+      }
+    ],
+    "acoes_usadas": ["connect", "start"]
+  },
+  {
     "id": "restart",
     "grupo": "events",
     "titulo": "Jogue outra vez",
@@ -2625,5 +2664,35 @@
       }
     ],
     "acoes_usadas": ["light", "shade"]
+  },
+  {
+    "id": "lighthouse-key",
+    "grupo": "events",
+    "titulo": "O que a porta precisa?",
+    "instrucao": "Teste a porta sem a chave. Depois leve a chave e teste a porta outra vez. O que mudou?",
+    "manipula": "A chave e a tentativa de abrir a porta do farol",
+    "frase_sucesso": "A mesma porta respondeu de outro jeito quando a chave estava com o personagem.",
+    "pergunta_extra": "Se você deixar a chave para trás, a porta abriria?",
+    "metas": [
+      {
+        "id": "locked-without-key",
+        "rotulo": "A porta ficou fechada sem a chave",
+        "pedido": "Teste a porta sem levar a chave.",
+        "soNoCaso": false
+      },
+      {
+        "id": "opened-with-key",
+        "rotulo": "A porta abriu com a chave",
+        "pedido": "Leve a chave e teste a porta outra vez.",
+        "soNoCaso": false
+      }
+    ],
+    "pistas": [
+      "O que o personagem leva na primeira tentativa?",
+      "Experimente mudar o que ele carrega e volte à porta.",
+      "Teste sem a chave. Depois escolha Levar a chave e aperte Testar a porta."
+    ],
+    "roteiro_demonstracao": [],
+    "acoes_usadas": ["key-state", "try-lighthouse-door"]
   }
 ]

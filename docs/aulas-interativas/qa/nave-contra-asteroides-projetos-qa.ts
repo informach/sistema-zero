@@ -1,4 +1,4 @@
-// Independent programs authored from the recorded steps, not generated from criteria.
+// Programas de Nave Contra Asteroides, montados dos passos gravados e não dos critérios.
 import type { Block } from './corre-dino-projetos-qa'
 
 export type { Block }

@@ -1025,6 +1025,49 @@ const CENAS: Record<SceneId, Cena> = {
     },
     mostra: (s) => s.match.screen === 'start',
   },
+  'touch-response': {
+    pedidos: {
+      'no-response': {
+        texto: 'Toque no esconderijo antes de ligar a reação.',
+        faz: (m) => {
+          ligado(m, 'touch', false)
+          if (m.estado.match.screen !== 'start') m.faz({ type: 'home' })
+          m.faz({ type: 'start', input: 'tap' })
+        },
+      },
+      responds: {
+        texto: 'Ligue a reação ao toque e toque no esconderijo de novo.',
+        faz: (m) => {
+          ligado(m, 'touch', true)
+          if (m.estado.match.screen !== 'start') m.faz({ type: 'home' })
+          m.faz({ type: 'start', input: 'tap' })
+        },
+      },
+    },
+    mostra: (s) => s.match.screen === 'playing',
+    revelaNaConclusao:
+      'A resposta sobre a reação ao toque só aparece quando a criança liga a ação e toca novamente.',
+  },
+  'lighthouse-key': {
+    pedidos: {
+      'locked-without-key': {
+        texto: 'Teste a porta sem levar a chave.',
+        faz: (m) => {
+          m.faz({ type: 'key-state', hasKey: false })
+          m.faz({ type: 'try-lighthouse-door' })
+        },
+      },
+      'opened-with-key': {
+        texto: 'Leve a chave e teste a porta outra vez.',
+        faz: (m) => {
+          m.faz({ type: 'key-state', hasKey: true })
+          m.faz({ type: 'try-lighthouse-door' })
+        },
+      },
+    },
+    mostra: (s) =>
+      s.lighthouse.door === 'closed' && s.evidence.discoveries.includes('locked-without-key'),
+  },
   // ⚠️ Mudou de propósito (lote 5 do Raio-X): o toque na tela é o gesto em todas as telas, e o
   // "Reiniciar" só vale depois de a criança ver a partida começar com os cactos da anterior.
   restart: {
@@ -2120,7 +2163,7 @@ describe('as previsões das aulas atuais, no motor', () => {
   // Revelá-las antes responderia sem a criança ter feito o gesto perguntado.
   const REVELA_AO_FINAL = new Set([
     'corre-dino-aula-08.manifesto.json · controls',
-    'desafio-dia-2.manifesto.json · once-vs-always',
+    'nave-contra-asteroides-dia-2.manifesto.json · once-vs-always',
   ])
   const blocos: { onde: string; bloco: InteractiveBlock & { activity: SceneActivity } }[] = []
   const andar = (valor: unknown, onde: string) => {
@@ -2142,7 +2185,8 @@ describe('as previsões das aulas atuais, no motor', () => {
   test('o piloto compara a mesma ficha em Ao iniciar e Enquanto estiver rodando', () => {
     const piloto = blocos.find(
       ({ onde, bloco }) =>
-        onde === 'desafio-dia-1.manifesto.json' && bloco.activity.scene === 'once-vs-always',
+        onde === 'nave-contra-asteroides-dia-1.manifesto.json' &&
+        bloco.activity.scene === 'once-vs-always',
     )
     const setup = piloto?.bloco.activity.setup
     expect(setup?.goals).toEqual(['once', 'always'])

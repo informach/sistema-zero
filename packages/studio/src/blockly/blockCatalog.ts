@@ -329,6 +329,7 @@ export const SERVER_BLOCK_CATALOG: readonly ServerBlockCatalogEntry[] = GROUPS.f
                 'field_colour_sz',
                 'field_name_picker',
                 'field_sprite_picker',
+                'field_asset_picker',
               ].includes(String(data.type))
             )
               return []

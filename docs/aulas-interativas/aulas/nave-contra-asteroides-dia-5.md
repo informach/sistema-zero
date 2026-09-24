@@ -1,4 +1,4 @@
-# Desafio do Primeiro Jogo · Dia 5 · O jogo ganha começo e fim
+# Nave Contra Asteroides · Dia 5 · O jogo ganha começo e fim
 
 ## Resultado pedagógico
 
@@ -80,12 +80,12 @@ iniciar e volta ao menu porque o último bloco inicial guarda `inicio`. Se vitó
 e derrota ocorrerem no mesmo quadro, a pergunta de derrota vem por último e pode
 prevalecer; não prometer prioridade à vitória.
 
-O [roteiro de gravação](desafio-dia-5.roteiro.md) especifica os 11 clipes, com os dois
+O [roteiro de gravação](nave-contra-asteroides-dia-5.roteiro.md) especifica os 11 clipes, com os dois
 novos vídeos conceituais. Não há duas gravações na mesma seção. Conferir rótulos
 atuais: `o estado do jogo é ?`, `Mudar o estado do jogo para` e Jogo 2D › Jogo e
 telas › Telas e partida. O teste final precisa mostrar menu, partida, um fim,
 retorno ao menu e outro Enter. Após o envio, Compartilhar fica disponível; o link só vem após a
 escolha de publicar. A janela de publicação e seus campos podem mudar e não são parte obrigatória
 da aula. O fecho
-celebra o que foi aprendido sem afirmar que a criança já publicou. Introdução e
-certificado ficam intactos.
+celebra o que foi aprendido sem afirmar que a criança já publicou. Este curso termina no Dia 5;
+a introdução e o certificado ficam no Desafio do Primeiro Jogo.

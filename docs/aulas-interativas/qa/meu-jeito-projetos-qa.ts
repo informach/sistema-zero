@@ -1,5 +1,5 @@
 import type { Block } from './corre-dino-projetos-qa'
-import { courseProjects as desafioProjects } from './desafio-projetos-qa'
+import { courseProjects as naveProjects } from './nave-contra-asteroides-projetos-qa'
 
 const number = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
 const sheet = (name: string, image: string, size: number): Block => ({
@@ -14,8 +14,8 @@ const animate = (sprite: string, sheet: string, animation: string): Block => ({
 })
 
 /** Continuação real do Dia 5: troca de arte mantém controles, colisões, placar e reinício. */
-export function courseProjects(): ReturnType<typeof desafioProjects> {
-  const inherited = desafioProjects()[5]!
+export function courseProjects(): ReturnType<typeof naveProjects> {
+  const inherited = naveProjects()[5]!
   const project = structuredClone(inherited)
   function visit(fn: (block: Block) => void) {
     const pending = [...project.blocksState.blocks.blocks]

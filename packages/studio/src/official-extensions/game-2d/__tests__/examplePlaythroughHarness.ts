@@ -219,11 +219,24 @@ export function exampleHarness(
     createElement(tag: string) {
       if (tag !== 'canvas') {
         const attributes = new Map<string, string>()
+        const elementListeners = new Map<string, Listener[]>()
         return {
           tagName: tag.toUpperCase(),
           id: '',
           style: {},
           textContent: '',
+          appendChild() {},
+          remove() {},
+          addEventListener(name: string, listener: Listener) {
+            const group = elementListeners.get(name) ?? []
+            group.push(listener)
+            elementListeners.set(name, group)
+          },
+          removeEventListener(name: string, listener: Listener) {
+            const group = elementListeners.get(name) ?? []
+            const index = group.indexOf(listener)
+            if (index >= 0) group.splice(index, 1)
+          },
           setAttribute(name: string, value: string) {
             attributes.set(name, value)
           },

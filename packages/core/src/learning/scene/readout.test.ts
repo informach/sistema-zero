@@ -183,6 +183,7 @@ describe('a faixa de estado', () => {
       // ⚠️ Mudou de propósito (lote 5): a `restart` virou a escolha do toque ("no fim, o toque: vai para
       // o início") e a placa de limite da `acceleration` virou a condição do Estúdio.
       'a condição': 'f',
+      'reação ao toque': 'f',
       laço: 'm',
       mira: 'f',
       correção: 'f',

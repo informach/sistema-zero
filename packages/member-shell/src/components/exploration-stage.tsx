@@ -42,6 +42,7 @@ import {
 } from './scene-dino-stages'
 import { FixedVsReadStage } from './scene-fixed-vs-read'
 import { InvincibilityStage } from './scene-invincibility'
+import { LighthouseKeyStage } from './scene-lighthouse-key'
 import { MotionAmountStage } from './scene-motion-amount'
 import {
   CircleCollisionStage,
@@ -64,6 +65,7 @@ import { NumberLineStage } from './scene-number-line'
 import { OnceVsAlwaysStage } from './scene-once-vs-always'
 import { SameRulesStage } from './scene-same-rules'
 import { CoordinatesStage, DrawLoopStage, ScreenReaderStage, StageSizeStage } from './scene-stages'
+import { TouchResponseStage } from './scene-touch-response'
 import { TwoClocksStage } from './scene-two-clocks'
 import { UniqueNamesStage } from './scene-unique-names'
 import { WorldStage } from './scene-world-stage'
@@ -302,6 +304,8 @@ function ExplorationStageContent({ activity, state, dispatch, preview }: Explora
       />
     )
   if (m === 'controls') return <ControlsStage state={state} cast={cast} dispatch={podeInteragir} />
+  if (m === 'touch-response') return <TouchResponseStage state={state} dispatch={podeInteragir} />
+  if (m === 'lighthouse-key') return <LighthouseKeyStage state={state} />
   if (m === 'draw-loop') return <DrawLoopStage state={state} cast={cast} />
   // ⭐⭐ O ateliê de O Jogo do Meu Jeito (lote 5 do Raio-X, G4): as sete cenas em
   // `scene-atelie-stages`, com a nave 32 × 32, a grade do espelho, as duas pedras e a folha da aula.

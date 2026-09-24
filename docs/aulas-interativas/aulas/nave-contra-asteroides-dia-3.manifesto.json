@@ -1,0 +1,1293 @@
+{
+  "version": 5,
+  "courseSlug": "nave-contra-asteroides",
+  "lessonSlug": "dia-3",
+  "title": "A chuva de pedras",
+  "blocks": [
+    {
+      "key": "projeto",
+      "content": {
+        "kind": "studio",
+        "purpose": "submission",
+        "chain": "nave-contra-asteroides",
+        "level": "iniciante-2d",
+        "allowedModes": ["blocks"],
+        "allowLevelReveal": false,
+        "allowBlocks": [
+          "sz_frame_events",
+          "sz_frame_loops",
+          "sz_frame_start",
+          "sz_g2d_arrows_x",
+          "sz_g2d_center_x",
+          "sz_g2d_clamp_to_screen",
+          "sz_g2d_clear",
+          "sz_g2d_create_group",
+          "sz_g2d_create_ship",
+          "sz_g2d_draw_group",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_every_frames",
+          "sz_g2d_explode",
+          "sz_g2d_on_group_overlap",
+          "sz_g2d_on_key",
+          "sz_g2d_play_fx",
+          "sz_g2d_prune_offscreen",
+          "sz_g2d_random_x",
+          "sz_g2d_remove_from_group",
+          "sz_g2d_setup_stage",
+          "sz_g2d_spawn_asteroid",
+          "sz_g2d_spawn_bullet",
+          "sz_g2d_sprite_y",
+          "sz_g2d_starfield",
+          "sz_g2d_update_each_frame",
+          "sz_g2d_update_group",
+          "sz_val_number"
+        ],
+        "showcase": {
+          "enabled": false,
+          "title": "Nave contra Asteroides",
+          "summary": "Um jogo de nave, tiros e asteroides criado em Nave Contra Asteroides."
+        },
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-nave-contra-asteroides-3",
+          "name": "Nave contra Asteroides",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Nave contra Asteroides</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": ""
+          },
+          "extraFiles": [],
+          "assets": [],
+          "ir": null,
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#07162e"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 800
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_create_ship",
+                            "fields": {
+                              "NAME": "nave",
+                              "BODY": "#35e8ff",
+                              "WINGS": "#2568ff"
+                            },
+                            "inputs": {
+                              "X": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 400
+                                  }
+                                }
+                              },
+                              "Y": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 410
+                                  }
+                                }
+                              },
+                              "W": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 54
+                                  }
+                                }
+                              },
+                              "H": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 62
+                                  }
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_group",
+                                "fields": {
+                                  "NAME": "tiros"
+                                },
+                                "inputs": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "fields": {},
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "fields": {},
+                              "inputs": {},
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_starfield",
+                                  "fields": {},
+                                  "inputs": {
+                                    "SPEED": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 1
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_arrows_x",
+                                      "fields": {
+                                        "SPRITE": "nave"
+                                      },
+                                      "inputs": {
+                                        "SPEED": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 7
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_clamp_to_screen",
+                                          "fields": {
+                                            "SPRITE": "nave"
+                                          },
+                                          "inputs": {},
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_g2d_draw_sprite",
+                                              "fields": {
+                                                "SPRITE": "nave"
+                                              },
+                                              "inputs": {},
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_update_group",
+                                                  "fields": {
+                                                    "GROUP": "tiros"
+                                                  },
+                                                  "inputs": {},
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g2d_prune_offscreen",
+                                                      "fields": {
+                                                        "GROUP": "tiros",
+                                                        "ITEM": "sprite"
+                                                      },
+                                                      "inputs": {},
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_g2d_draw_group",
+                                                          "fields": {
+                                                            "GROUP": "tiros"
+                                                          },
+                                                          "inputs": {}
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_events",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_on_key",
+                        "fields": {
+                          "KEY": "Space"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_spawn_bullet",
+                              "fields": {
+                                "GROUP": "tiros",
+                                "COLOR": "#9cff57"
+                              },
+                              "inputs": {
+                                "X": {
+                                  "block": {
+                                    "type": "sz_g2d_center_x",
+                                    "fields": {
+                                      "SPRITE": "nave"
+                                    },
+                                    "inputs": {}
+                                  }
+                                },
+                                "Y": {
+                                  "block": {
+                                    "type": "sz_g2d_sprite_y",
+                                    "fields": {
+                                      "SPRITE": "nave"
+                                    },
+                                    "inputs": {}
+                                  }
+                                },
+                                "R": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 5
+                                    }
+                                  }
+                                },
+                                "VX": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 0
+                                    }
+                                  }
+                                },
+                                "VY": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": -9
+                                    }
+                                  }
+                                }
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_play_fx",
+                                  "fields": {
+                                    "FX": "shoot"
+                                  },
+                                  "inputs": {}
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: A chuva de pedras chega\n\nOrigem: video-abertura-v6, com fala parcial e tela regravada. Duração alvo: 25 a 35 segundos.\n\nMostrar o jogo do fim do Dia 3 rodando: pedras caindo do alto em lugares diferentes, a nave se movendo embaixo e um tiro explodindo uma das pedras, com o som. Nada de menu, nada de placar: hoje o jogo ainda não conta ponto.\n\nFala: \"Hoje seus tiros vão ter o que acertar. As pedras vão começar a chegar do alto, uma de cada vez, e o jogo vai aprender a perceber quando um tiro encontra uma pedra.\"\n\nCortes obrigatórios: sai a enumeração dos seis passos e sai a promessa de mexer no número do relógio depois."
+    },
+    {
+      "key": "fala-avalanche",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora é sua vez de descobrir como dar espaço entre as pedras. Observe a cena e compare o que acontece quando o tempo de nascimento muda."
+      }
+    },
+    {
+      "key": "experiencia-relogio",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Abra espaço entre as pedras",
+        "instructions": "Compare o nascimento e a queda das pedras sem relógio e com dois intervalos diferentes. O que muda em cada teste?",
+        "hints": [
+          "Com Criar asteroide fora do relógio, solte o Tempo por cerca de 1 segundo e observe quantas nasceram.",
+          "Leve Criar asteroide para o relógio de 40 quadros. Solte o Tempo por cerca de 4 segundos e observe duas pedras caindo.",
+          "Troque o intervalo para 20 quadros e solte o Tempo por mais 3 segundos. Compare quantas nasceram e quanto cada pedra desceu."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "spawn",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "preset": {
+              "id": "pedra-quadros",
+              "unit": "frames",
+              "intervals": [20, 40, 80],
+              "falling": true
+            }
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "fala-grupo-asteroides",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora leve esse ritmo para o seu jogo: crie o grupo das pedras e o relógio de 40 quadros no Estúdio."
+      }
+    },
+    {
+      "key": "video-grupo-e-relogio",
+      "plannedVideo": "Título: O saquinho das pedras e o relógio vizinho\n\nOrigem: fusão de video-grupo-asteroides com video-relogio, tela regravada. Duração alvo: 55 a 65 segundos.\n\nPrimeira metade: o gesto de pegar Criar grupo de sprites e encaixar em Ao iniciar, abaixo do grupo dos tiros, deixando o nome asteroides. Manter a fala do saquinho, que já está gravada e é boa.\n\nSegunda metade: o gesto de soltar A cada quadros em Enquanto estiver rodando, encostado por baixo do A cada quadro do jogo, com zoom no ponto de encaixe para mostrar que um relógio fica do lado de fora do outro. Escrever 40 no campo. Manter a fala do relógio mais lento.\n\nCortes obrigatórios: sai a contagem de passos, sai a chamada para a parte seguinte e sai a promessa de que o número será trocado depois."
+    },
+    {
+      "key": "fala-sorteio",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você viu como funciona um sorteio. Agora observe onde as pedras aparecem quando o jogo sorteia seus lugares."
+      }
+    },
+    {
+      "key": "experiencia-sorteio",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "De onde vem a próxima pedra",
+        "instructions": "Sorteie alguns lugares e observe as marcas da régua. Depois acompanhe uma pedra entrando na tela.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "random",
+          "cast": {
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "preset": {
+              "id": "pedra-acima",
+              "axis": "above",
+              "speedModule": false
+            }
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "fala-asteroide",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora monte no seu jogo a pedra que nasce acima da tela e cai de um lugar sorteado."
+      }
+    },
+    {
+      "key": "video-asteroide",
+      "plannedVideo": "Título: A pedra que nasce fora da tela\n\nOrigem: video-asteroide do roteiro original, com fala parcial e dois cortes obrigatórios. Duração alvo: 75 a 90 segundos; recalibrar após gravar.\n\nMostrar o gesto de pegar o bloco em Jogo 2D, Kits prontos › Espaço, encaixar dentro do relógio de 40 quadros e encaixar o sorteio em cima do número do x. Trocar y por menos 30 e vy por 3, confirmando cada campo fora do bloco. Conferir tamanho 40 e vx 0, que já vêm escritos, sem redigitar. Ao terminar, enquadrar a tela ainda sem pedras: o nascimento foi programado, mas o motor ainda não move nem desenha o grupo. Essa falta motiva a próxima seção; não encenar pedras visíveis antes dos blocos de mover e desenhar.\n\nCorte obrigatório 1: a explicação do sorteio e a do menos de y já aconteceram no vídeo conceitual e na experiência da seção anterior.\n\nCorte obrigatório 2: o sorteio não garante um lugar novo a cada vez.\n\nO tamanho 40 é a medida de base do kit. Não prometer largura igual para todas as pedras."
+    },
+    {
+      "key": "fala-ciclo-asteroides",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Use com os asteroides o padrão de mover, retirar e desenhar que você já conhece dos tiros."
+      }
+    },
+    {
+      "key": "video-ciclo-asteroides",
+      "plannedVideo": "Título: O mesmo padrão, agora com as pedras\n\nDuração alvo: 100 a 120 segundos; recalibrar após gravar.\n\nOrigem: Parte 4 do roteiro original e video-ciclo-asteroides, sem contagem de passos. Duração alvo: recalibrar após gravar.\n\nMostrar os três blocos entrando dentro do A cada quadro do jogo, abaixo do Desenhar o grupo dos tiros, e escolher asteroides nos três. Deixar o fazer da limpeza vazio. Preservar a fala breve sobre reconhecer e repetir o padrão. Depois clicar no jogo: agora as pedras aparecem e caem. Mirar e atirar numa delas; o tiro a atravessa sem explosão. Segurar esse resultado para motivar o conceito de colisão da seção seguinte, sem consertar ainda."
+    },
+    {
+      "key": "fala-trombada",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora compare o que acontece quando a ordem fala com o grupo inteiro ou só com os participantes da trombada."
+      }
+    },
+    {
+      "key": "experiencia-trombada",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Quem some na trombada?",
+        "instructions": "Compare uma batida com os comandos apontando para os grupos inteiros e depois só para o tiro e a pedra envolvidos. Quem desaparece?",
+        "hints": [
+          "Olhe os dois contadores antes e depois da trombada.",
+          "Só um tiro encostou numa pedra. Quantos sumiram?",
+          "Troque o alvo dos dois comandos para os apelidos, tiro e asteroide. Volte ao começo e faça a trombada de novo.",
+          "Depois da segunda trombada, deixe o tempo passar até as outras duas pedras saírem pela borda de baixo."
+        ],
+        "prediction": {
+          "context": {
+            "label": "O alvo de cada comando",
+            "explanation": "Nesta experiência, você escolhe se cada comando fala com o apelido de um participante ou com o grupo inteiro, e vê quantos objetos somem na trombada."
+          },
+          "prompt": "Três tiros e três pedras estão no jogo. Um tiro encosta numa pedra, e o comando manda tirar o grupo asteroides. O que some?",
+          "choices": [
+            {
+              "id": "so-a-atingida",
+              "label": "Só a pedra que foi atingida",
+              "shows": "O comando falou com o grupo, e o grupo é todo mundo."
+            },
+            {
+              "id": "todas",
+              "label": "Todas as pedras do jogo"
+            }
+          ],
+          "correctChoiceId": "todas",
+          "revealOn": "whole-group"
+        },
+        "activity": {
+          "type": "experimentation",
+          "scene": "collision-pair",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "goals": ["whole-group", "just-the-pair", "others-stay"]
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "fala-colisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Faça o jogo responder ao encontro entre tiro e asteroide. Use os apelidos para agir só nos dois que se tocaram."
+      }
+    },
+    {
+      "key": "video-colisao",
+      "plannedVideo": "Título: Os dois que se bateram\n\nOrigem: fusão de video-encontro com video-colisao, tela regravada. Duração alvo: 85 a 105 segundos.\n\nA explicação abstrata dos apelidos já está no vídeo conceitual da seção anterior. Neste clipe, retomar em uma frase e focar a montagem. Os dois grupos e os apelidos do bloco de colisão já vêm em tiros, asteroides, tiro e asteroide: conferir sem escolher novamente. Dizer para cada um dos quatro comandos a categoria, a seção, o bloco, o lugar exato do encaixe e os menus que de fato precisem ser configurados; não resumir a cadeia como uma lista de nomes.\n\nConferência para a gravação: o congelamento de três pares fica só na experiência anterior. Soltar explosão no sprite cor está em Jogo 2D › Desenho e efeitos › Partículas, não em Kit espaço. Narração completa no roteiro correspondente."
+    },
+    {
+      "key": "video-fecho",
+      "plannedVideo": "Título: A sua chuva de pedras está pronta\n\nOrigem: video-fecho-v6, com fala parcial, agora com o teste e o envio dentro do clipe. Duração alvo: 75 a 90 segundos.\n\nGravação de tela no jogo do fim do Dia 3, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho. Não existe botão de play, e o clipe não procura nenhum.\n\nO teste era um balão do Zappy no começo da seção e passou para cá, porque passo a passo de gesto se mostra na tela. O fecho fica no fim do clipe pelo mesmo motivo: na seção o Estúdio ocupa a coluna da direita sozinho, e um fecho escrito seria lido antes do envio.\n\nO que passa na tela, nesta ordem:\n\n1. O clique dentro da área do jogo, que é o que avisa o jogo que o teclado agora é dele.\n2. A barra de espaço apertada mirando numa pedra. O tiro acerta, os dois somem juntos e a explosão aparece, com o som.\n3. A barra de espaço apertada de novo, agora mirando no vazio. Esse tiro continua subindo até sair pela borda de cima.\n4. Alguns segundos parados olhando o resto da tela: as outras pedras continuam caindo e saem por baixo, sem sumir junto com a que explodiu.\n5. A conferência dos dois números antes do envio, cada campo enquadrado: o intervalo do relógio em 40 e o vy da pedra em 3. O clipe mostra os campos e não convida a mudar nenhum dos dois, porque os dois continuam assim no Dia 4.\n6. O gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFecho, depois do envio, reaproveitando a conquista da gravação, que é sincera. Mostrar o jogo rodando por alguns segundos, com uma pedra explodindo, e a fala: \"A chuva de pedras já funciona e os tiros conseguem destruir. Você usou um relógio para decidir quando uma pedra nasce e uma colisão para responder ao encontro de dois objetos. Amanhã cada acerto vai valer ponto, e a sua nave vai ganhar vidas.\"\n\nCorte obrigatório: sai o resumo numerado dos seis passos. Não afirmar que a publicação já aconteceu."
+    },
+    {
+      "key": "quiz",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O seu relógio espera 40 quadros entre uma pedra e outra. Você troca para 20. O que muda?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Nascem mais pedras no mesmo tempo."
+              },
+              {
+                "id": "b",
+                "label": "Cada pedra passa a cair mais rápido."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O relógio só decide de quanto em quanto tempo nasce uma pedra: esperando menos, nascem mais no mesmo tempo. Quem faz cada uma descer é o vy."
+          },
+          {
+            "id": "q2",
+            "prompt": "Três pedras estão na tela. Um tiro acerta uma delas. O que deve desaparecer?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Todas as pedras do grupo."
+              },
+              {
+                "id": "a",
+                "label": "O tiro e só a pedra que ele acertou."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Os apelidos da colisão apontam para os dois participantes daquele encontro. As outras pedras continuam no jogo."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-intervalo",
+      "plannedVideo": "Título: Um relógio para as pedras\n\nDuração alvo: 40 a 50 segundos, recalibrar após gravar. Retomar o motor do Dia 2 que move os tiros a cada quadro. Usar dois relógios esquemáticos para contrastar instantes muito próximos com intervalos mais espaçados. Explicar que o relógio lento decide quando nasce uma pedra, não como se move uma que já nasceu. Não mostrar a chuva de pedras nem os contadores das três comparações da experiência. Origem: roteiro original do Dia 3, Parte 2."
+    },
+    {
+      "key": "video-sorteio",
+      "plannedVideo": "Título: Um lugar surpresa, dentro dos limites\n\nDuração alvo: 40 a 50 segundos, recalibrar após gravar. Usar cartões de lugares possíveis e um saquinho para explicar o sorteio de x; lembrar que o mesmo lugar pode sair outra vez. Indicar y −30 acima da borda como posição inicial, não velocidade. Não mostrar a sequência de nascimentos nem as marcas que a criança vai produzir na experiência. Origem: roteiro original do Dia 3, Parte 3, corrigido para não prometer um lugar novo em cada sorteio."
+    },
+    {
+      "key": "video-apelidos",
+      "plannedVideo": "Título: Só os dois desta colisão\n\nDuração alvo: 40 a 50 segundos, recalibrar após gravar. Depois do tiro que atravessou a pedra na seção anterior, apresentar colisão como o encontro entre objetos. Mostrar três tiros e três pedras; destacar o par que se toca sem removê-lo. Retomar a formulação concreta do roteiro original: nesta trombada foi este tiro e esta pedra, embora existam outros nos grupos. Explicar que os apelidos deixam a ordem agir só nesses participantes. A experiência compara os alvos."
+    },
+    {
+      "key": "fala-quiz",
+      "content": {
+        "kind": "dialogue",
+        "pose": "happy",
+        "text": "Hora de conferir o que você descobriu sobre o relógio e as colisões. Pense no que viu nas experiências antes de escolher."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "O que a gente vai fazer hoje",
+      "intent": "presentation",
+      "objective": "Ver a chuva de pedras e a primeira explosão antes de encaixar qualquer coisa.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
+      }
+    },
+    {
+      "key": "avalanche",
+      "title": "Uma pedra de cada vez",
+      "intent": "exploration",
+      "objective": "Separar nascer em cada quadro de nascer no ritmo de um relógio, e ver que a frequência não muda a velocidade de queda.",
+      "blockKeys": ["video-intervalo", "fala-avalanche", "experiencia-relogio"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-intervalo", "experiencia-relogio"]
+      }
+    },
+    {
+      "key": "relogio",
+      "title": "O grupo e o relógio da chuva",
+      "intent": "application",
+      "objective": "Criar o segundo grupo e pendurar o relógio como vizinho do motor, não como filho dele.",
+      "blockKeys": ["video-grupo-e-relogio", "fala-grupo-asteroides"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-grupo-e-relogio"],
+        "projectChecks": [
+          {
+            "id": "grupo-asteroides",
+            "label": "Crie o grupo asteroides em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "asteroides"
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "relogio",
+            "label": "Use A cada 40 quadros como vizinho de A cada quadro do jogo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_frames",
+              "area": "loops",
+              "inputs": {
+                "N": 40
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "relogios-vizinhos",
+            "label": "Os dois relógios são vizinhos em Enquanto estiver rodando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "beforeBlock": "sz_g2d_every_frames"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "sorteio",
+      "title": "De onde vem a próxima pedra",
+      "intent": "exploration",
+      "objective": "Ver que o sorteio pode repetir e que a régua do nascimento fica acima da borda de cima da tela.",
+      "blockKeys": ["video-sorteio", "fala-sorteio", "experiencia-sorteio"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-sorteio", "experiencia-sorteio"]
+      }
+    },
+    {
+      "key": "asteroide",
+      "title": "A pedra que nasce fora da tela",
+      "intent": "application",
+      "objective": "Configurar o nascimento sorteado e a queda da pedra dentro do relógio.",
+      "blockKeys": ["video-asteroide", "fala-asteroide"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-asteroide"],
+        "projectChecks": [
+          {
+            "id": "asteroide",
+            "label": "No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_asteroid",
+              "fields": {
+                "GROUP": "asteroides"
+              },
+              "inputs": {
+                "Y": -30,
+                "SIZE": 40,
+                "VX": 0,
+                "VY": 3
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_x"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_frames",
+              "count": 1
+            }
+          },
+          {
+            "id": "criador-unico",
+            "label": "Mantenha um único comando de criar asteroide.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_asteroid",
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "ciclo-asteroides",
+      "title": "As pedras caem, e o tiro passa reto",
+      "intent": "application",
+      "objective": "Transferir o ciclo mover, faxina e desenhar para o grupo novo, e sentir a falta da colisão.",
+      "blockKeys": ["video-ciclo-asteroides", "fala-ciclo-asteroides"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-ciclo-asteroides"],
+        "projectChecks": [
+          {
+            "id": "mover-asteroides",
+            "label": "Mova asteroides antes de limpar o grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "asteroides"
+              },
+              "beforeBlock": "sz_g2d_prune_offscreen"
+            }
+          },
+          {
+            "id": "limpar-asteroides",
+            "label": "Retire os asteroides que saem e depois desenhe esse grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_prune_offscreen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "asteroides"
+              },
+              "beforeBlock": "sz_g2d_draw_group"
+            }
+          },
+          {
+            "id": "desenhar-asteroides",
+            "label": "Desenhe o grupo asteroides a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "asteroides"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "trombada",
+      "title": "Quem some na trombada",
+      "intent": "exploration",
+      "objective": "Descobrir que o apelido aponta para um participante do encontro, e o grupo aponta para todos.",
+      "blockKeys": ["video-apelidos", "fala-trombada", "experiencia-trombada"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-apelidos", "experiencia-trombada"]
+      }
+    },
+    {
+      "key": "colisao",
+      "title": "Faça o acerto acontecer",
+      "intent": "application",
+      "objective": "Responder ao encontro de um tiro com uma pedra: tirar os dois, explodir e tocar o som.",
+      "blockKeys": ["video-colisao", "fala-colisao"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-colisao"],
+        "projectChecks": [
+          {
+            "id": "efeito-explosao",
+            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "explosion"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "remover-tiro",
+            "label": "Na colisão tiros × asteroides, remova o tiro do grupo tiros.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_remove_from_group",
+                  "fields": {
+                    "SPRITE": "tiro",
+                    "GROUP": "tiros"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "remover-pedra",
+            "label": "Na mesma colisão, remova o asteroide e então solte a explosão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_remove_from_group",
+                  "fields": {
+                    "SPRITE": "asteroide",
+                    "GROUP": "asteroides"
+                  },
+                  "beforeBlock": "sz_g2d_explode"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "explosao",
+            "label": "Exploda o asteroide atingido e toque o som de explosão dentro da colisão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_explode",
+                  "fields": {
+                    "SPRITE": "asteroide"
+                  },
+                  "beforeBlock": "sz_g2d_play_fx"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "quiz-final",
+      "title": "Hora do desafio",
+      "intent": "closing",
+      "objective": "Conferir o ritmo de nascimento e a escolha dos participantes da colisão.",
+      "blockKeys": ["fala-quiz", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Teste, envie e fecha",
+      "intent": "delivery",
+      "objective": "As pedras nascem em lugares sorteados, caem e podem ser destruídas pelos tiros.",
+      "blockKeys": ["video-fecho", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho", "projeto"],
+        "projectChecks": [
+          {
+            "id": "efeito-tiro",
+            "label": "No evento Espaço, use Tocar efeito e escolha tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "shoot"
+                  }
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "disparo",
+            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_bullet",
+                  "fields": {
+                    "GROUP": "tiros"
+                  },
+                  "inputs": {
+                    "R": 5,
+                    "VX": 0,
+                    "VY": -9
+                  },
+                  "inputBlocks": {
+                    "X": {
+                      "blockType": "sz_g2d_center_x",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_g2d_sprite_y",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    }
+                  },
+                  "beforeBlock": "sz_g2d_play_fx"
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "tiro-unico",
+            "label": "Mantenha apenas um comando de criar tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_bullet",
+              "count": 1
+            }
+          },
+          {
+            "id": "grupo-asteroides",
+            "label": "Crie o grupo asteroides em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "asteroides"
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "relogio",
+            "label": "Use A cada 40 quadros como vizinho de A cada quadro do jogo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_frames",
+              "area": "loops",
+              "inputs": {
+                "N": 40
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "relogios-vizinhos",
+            "label": "Os dois relógios são vizinhos em Enquanto estiver rodando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "beforeBlock": "sz_g2d_every_frames"
+            }
+          },
+          {
+            "id": "asteroide",
+            "label": "No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_asteroid",
+              "fields": {
+                "GROUP": "asteroides"
+              },
+              "inputs": {
+                "Y": -30,
+                "SIZE": 40,
+                "VX": 0,
+                "VY": 3
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_x"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_frames",
+              "count": 1
+            }
+          },
+          {
+            "id": "criador-unico",
+            "label": "Mantenha um único comando de criar asteroide.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_asteroid",
+              "count": 1
+            }
+          },
+          {
+            "id": "mover-asteroides",
+            "label": "Mova asteroides antes de limpar o grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "asteroides"
+              },
+              "beforeBlock": "sz_g2d_prune_offscreen"
+            }
+          },
+          {
+            "id": "limpar-asteroides",
+            "label": "Retire os asteroides que saem e depois desenhe esse grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_prune_offscreen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "asteroides"
+              },
+              "beforeBlock": "sz_g2d_draw_group"
+            }
+          },
+          {
+            "id": "desenhar-asteroides",
+            "label": "Desenhe o grupo asteroides a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "asteroides"
+              }
+            }
+          },
+          {
+            "id": "efeito-explosao",
+            "label": "Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "explosion"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "remover-tiro",
+            "label": "Na colisão tiros × asteroides, remova o tiro do grupo tiros.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_remove_from_group",
+                  "fields": {
+                    "SPRITE": "tiro",
+                    "GROUP": "tiros"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "remover-pedra",
+            "label": "Na mesma colisão, remova o asteroide e então solte a explosão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_remove_from_group",
+                  "fields": {
+                    "SPRITE": "asteroide",
+                    "GROUP": "asteroides"
+                  },
+                  "beforeBlock": "sz_g2d_explode"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "explosao",
+            "label": "Exploda o asteroide atingido e toque o som de explosão dentro da colisão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_explode",
+                  "fields": {
+                    "SPRITE": "asteroide"
+                  },
+                  "beforeBlock": "sz_g2d_play_fx"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "construir-3",
+    "video-construir-3-1",
+    "convite-construir-1",
+    "construir-4",
+    "video-construir-4-1",
+    "construir-5",
+    "video-construir-5-1",
+    "convite-construir-4",
+    "checar-construir-5",
+    "construir-6",
+    "video-construir-6-1",
+    "fechamento",
+    "video-abertura-v6",
+    "video-grupo-asteroides",
+    "experiencia-intervalo",
+    "video-relogio",
+    "video-nascer-fora",
+    "demonstracao-nascer-fora",
+    "video-encontro",
+    "video-teste-colisao",
+    "entrega-fala-v6",
+    "video-fecho-v6",
+    "quiz-v6",
+    "fala-relogio",
+    "fala-relogio-vazio",
+    "fala-campos-da-pedra",
+    "fala-kit",
+    "fala-ciclo-limpeza",
+    "fala-tiro-fantasma",
+    "fala-quatro-comandos",
+    "fala-retorno"
+  ]
+}

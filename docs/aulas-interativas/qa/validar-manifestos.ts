@@ -34,9 +34,9 @@ const arquivos = readdirSync(DIR)
   .filter((f) => f.endsWith('.manifesto.json') && f.includes(filtro))
   .sort()
 
-if (arquivos.length === 0 || (!filtro && arquivos.length !== 28)) {
+if (arquivos.length === 0 || (!filtro && arquivos.length !== 34)) {
   console.error(
-    `Esperados ${filtro ? 'manifestos com o filtro' : '28 manifestos'}, encontrados ${arquivos.length} em ${DIR}`,
+    `Esperados ${filtro ? 'manifestos com o filtro' : '34 manifestos'}, encontrados ${arquivos.length} em ${DIR}`,
   )
   process.exit(1)
 }

@@ -1,6 +1,6 @@
 # Corre, Dino! · Aula 7 · O jogo aprende a esperar
 
-> Análise de redesenho didático. Formato herdado de `desafio-dia-1.md`.
+> Análise de redesenho didático. Formato herdado de `nave-contra-asteroides-dia-1.md`.
 
 ## Resumo
 

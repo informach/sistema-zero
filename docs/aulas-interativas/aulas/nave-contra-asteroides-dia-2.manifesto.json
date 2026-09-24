@@ -1,0 +1,1153 @@
+{
+  "version": 5,
+  "courseSlug": "nave-contra-asteroides",
+  "lessonSlug": "dia-2",
+  "title": "A nave atira",
+  "retireBlockKeys": [
+    "video-abertura-v6",
+    "video-grupo-tiros",
+    "fala-grupo-tiros",
+    "video-espaco",
+    "fala-espaco",
+    "video-origem",
+    "video-ciclo-tiros",
+    "fala-ciclo-tiros",
+    "video-testar",
+    "entrega-fala-v6",
+    "video-fecho-v6",
+    "quiz-v6",
+    "fala-evento",
+    "fala-raio-e-cor",
+    "fala-desenhar-grupo",
+    "fala-camadas"
+  ],
+  "blocks": [
+    {
+      "key": "video-teste-e-envio",
+      "plannedVideo": "Título: Dois tiros de dois lugares e o envio\n\nOrigem: novo, com o video-testar do v6 como referência de tela. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 70 a 85 segundos.\n\nGravação de tela no jogo do fim do Dia 2, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, um gesto de cada vez, com uma marquinha visual a cada som que toca:\n\n1. O clique dentro da área do jogo.\n2. A nave levada até a esquerda pela seta, e a barra de espaço. O tiro sai de onde ela está, sobe e some na borda de cima.\n3. A nave levada até a direita, e a barra de espaço de novo. O segundo tiro sai do lugar novo, e não do lugar do primeiro.\n4. A conferência dos três números antes do envio, cada campo enquadrado: raio 5, vx 0 e vy menos 9.\n\nConferir junto, olhando a tela: os dois tiros nascem em lugares diferentes, os dois sobem, os dois somem lá em cima, e cada disparo tem som.\n\nO vy menos 9 continua assim para o Dia 3, então o clipe mostra o campo e não convida a mudar o número.\n\nQuem estiver sem som precisa conseguir contar os disparos com os olhos, então a marquinha visual é obrigatória.\n\nDepois o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFecho do clipe, com o jogo ainda rodando ao fundo, depois de o envio já ter acontecido na tela: \"Agora cada disparo nasce na sua nave, onde quer que ela esteja. A área Quando acontecer cria o tiro, e o motor faz o resto: move o grupo, tira quem saiu e desenha. No Dia 3 chegam os asteroides para você acertar.\"\n\nDe onde veio este fecho: ele era um balão do Zappy no fim da seção. Na seção de entrega o Estúdio fica sozinho na coluna da direita e todo o resto se lê na esquerda, de cima para baixo, então qualquer fecho escrito seria lido antes do envio. Aqui ele cai no lugar certo, depois do envio.\n\nA instrução de gesto que abria a seção também era um balão e veio para cá. Ela já está nos itens 1 a 4 desta lista, inclusive a conferência dos três números."
+    },
+    {
+      "key": "projeto",
+      "content": {
+        "kind": "studio",
+        "purpose": "submission",
+        "chain": "nave-contra-asteroides",
+        "level": "iniciante-2d",
+        "allowedModes": ["blocks"],
+        "allowLevelReveal": false,
+        "allowBlocks": [
+          "sz_frame_events",
+          "sz_frame_loops",
+          "sz_frame_start",
+          "sz_g2d_arrows_x",
+          "sz_g2d_center_x",
+          "sz_g2d_clamp_to_screen",
+          "sz_g2d_clear",
+          "sz_g2d_create_group",
+          "sz_g2d_create_ship",
+          "sz_g2d_draw_group",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_on_key",
+          "sz_g2d_play_fx",
+          "sz_g2d_prune_offscreen",
+          "sz_g2d_setup_stage",
+          "sz_g2d_spawn_bullet",
+          "sz_g2d_sprite_y",
+          "sz_g2d_starfield",
+          "sz_g2d_update_each_frame",
+          "sz_g2d_update_group",
+          "sz_val_number"
+        ],
+        "showcase": {
+          "enabled": false,
+          "title": "Nave contra Asteroides",
+          "summary": "Um jogo de nave, tiros e asteroides criado em Nave Contra Asteroides."
+        },
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-nave-contra-asteroides-2",
+          "name": "Nave contra Asteroides",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Nave contra Asteroides</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": ""
+          },
+          "extraFiles": [],
+          "assets": [],
+          "ir": null,
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#07162e"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 800
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_create_ship",
+                            "fields": {
+                              "NAME": "nave",
+                              "BODY": "#35e8ff",
+                              "WINGS": "#2568ff"
+                            },
+                            "inputs": {
+                              "X": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 400
+                                  }
+                                }
+                              },
+                              "Y": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 410
+                                  }
+                                }
+                              },
+                              "W": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 54
+                                  }
+                                }
+                              },
+                              "H": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 62
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "fields": {},
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "fields": {},
+                              "inputs": {},
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_starfield",
+                                  "fields": {},
+                                  "inputs": {
+                                    "SPEED": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 1
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_arrows_x",
+                                      "fields": {
+                                        "SPRITE": "nave"
+                                      },
+                                      "inputs": {
+                                        "SPEED": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 7
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_clamp_to_screen",
+                                          "fields": {
+                                            "SPRITE": "nave"
+                                          },
+                                          "inputs": {},
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_g2d_draw_sprite",
+                                              "fields": {
+                                                "SPRITE": "nave"
+                                              },
+                                              "inputs": {}
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: O primeiro disparo da sua nave\n\nMostrar o jogo do fim do Dia 2 rodando: a nave andando para os dois lados e atirando, com o som do tiro. Só o jogo na tela, sem a interface do Estúdio à vista.\n\nFala: \"A sua nave já voa. Hoje você vai apertar a barra de espaço e ver um tiro sair dela, de onde ela estiver na tela. A gente vai ensinar o jogo a criar o tiro, a fazer ele subir e a mostrar ele na tela.\"\n\nDuração alvo: 25 a 35 segundos.\n\nOrigem: video-abertura-v6. A fala se aproveita em parte. A tela é nova, gravada no Estúdio atual. Sai a enumeração antiga de seis passos."
+    },
+    {
+      "key": "video-terceira-area",
+      "plannedVideo": "Título: A campainha do jogo\n\nComeçar com a nave do Dia 1: apertar espaço ainda não dispara. Explicar que o jogo precisa esperar o comando. Relembrar Ao iniciar, que prepara, e Enquanto estiver rodando, que repete; nenhuma das duas espera uma tecla. Mostrar então a terceira área, Quando acontecer, ainda vazia e sem gesto de montagem. Comparar sua espera com uma campainha que toca quando alguém aperta. Nomear evento só depois de mostrar ação e resposta.\n\nDuração alvo: 40 a 50 segundos, recalibrar após gravar.\n\nOrigem: roteiro original do Dia 2, Parte 2, para o propósito da terceira área; video-espaco para a estrutura conceitual. A analogia da campainha substitui o antigo \"de ouvido em pé\"."
+    },
+    {
+      "key": "experiencia-tres-areas",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Uma vez, sempre, e na hora que acontecer",
+        "instructions": "Teste Criar um tiro em Quando acontecer e Enquanto estiver rodando. Comece o jogo, experimente a tecla e compare os disparos.",
+        "hints": [
+          "Ponha Criar um tiro em Quando acontecer e aperte Começar o jogo. Espere o teste parar sem apertar a tecla.",
+          "Agora aperte a tecla. Surgiu algum tiro?",
+          "Arraste a mesma ação para Enquanto estiver rodando e comece o jogo de novo. Compare quantos tiros nasceram."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "once-vs-always",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "preset": {
+              "id": "tres-caixas-tiro",
+              "areas": ["start", "loop", "event"],
+              "cards": [
+                {
+                  "id": "paint",
+                  "kind": "paint",
+                  "label": "Pintar o fundo"
+                },
+                {
+                  "id": "create",
+                  "kind": "create",
+                  "label": "Criar a nave"
+                },
+                {
+                  "id": "move",
+                  "kind": "move",
+                  "label": "Mover a nave um pouquinho"
+                },
+                {
+                  "id": "event",
+                  "kind": "shot",
+                  "label": "Criar um tiro"
+                }
+              ]
+            }
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "fala-terceira-area",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "A campainha só toca quando alguém aperta. Agora veja como a área Quando acontecer responde à tecla no jogo."
+      }
+    },
+    {
+      "key": "fala-grupo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você já viu como preparar o grupo e a tecla. Agora monte esse começo do disparo no seu jogo."
+      }
+    },
+    {
+      "key": "video-montar-grupo-e-evento",
+      "plannedVideo": "Título: O grupo dos tiros e a tecla que o jogo escuta\n\nAntes do gesto, mostrar uma nave e vários tiros possíveis: o grupo é como um saquinho que começa vazio e recebe cada disparo. Recuperar a explicação do roteiro original do Dia 2, Parte 1: uma nave, muitos tiros; uma ordem para o grupo inteiro. Depois mostrar Criar grupo de sprites entrando no fim do Ao iniciar com o nome trocado de asteroides para tiros, a área Quando acontecer ao lado das outras e Quando apertar a tecla dentro dela. Aproximar no menu e escolher barra de espaço, quinta opção, depois das quatro setas. A fala nomeia as gavetas atuais.\n\nDuração alvo: 70 a 85 segundos, recalibrar após gravar.\n\nOrigem: roteiro original do Dia 2, Parte 1, mais fusão dos gestos de video-grupo-tiros e video-espaco. Não repetir a analogia depois de pegar o bloco."
+    },
+    {
+      "key": "fala-escrito-e-lido",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "O papel guarda um número; uma pergunta ao jogo busca a posição de agora. Veja essa diferença nos disparos."
+      }
+    },
+    {
+      "key": "video-escrito-e-lido",
+      "plannedVideo": "Título: O endereço que acompanha a nave\n\nDuração alvo: 35 a 45 segundos; recalibrar após gravar.\n\nAbrir com a necessidade do jogo: a nave se move e o tiro deve nascer onde ela estiver na hora do disparo. Só depois usar a analogia de um endereço escrito num papel, que permanece igual se a peça mudar de lugar, e contrastar com perguntar a posição naquele momento. Ligar isso ao x do tiro sem mostrar dois disparos, marcas de nascimento nem controles da experiência.\n\nDuração alvo: recalibrar após gravar a narração completa do roteiro. Origem: conceito do roteiro original do Dia 2, Parte 3."
+    },
+    {
+      "key": "experiencia-escrito-e-lido",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "O número escrito e o número lido",
+        "instructions": "Dispare de lugares diferentes com O número 400 e depois com O centro x da nave. Compare as marcas de nascimento dos tiros.",
+        "hints": [
+          "Atire, depois arraste a nave para longe e atire de novo. Olhe as duas marquinhas.",
+          "Troque de onde vem o x do tiro e repita: atire, arraste a nave, atire.",
+          "Ligue as marcas da caixa e olhe por onde o tiro sai."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "fixed-vs-read",
+          "cenario": "nave",
+          "setup": {
+            "goals": ["same-spot", "follows", "box-marks"]
+          }
+        },
+        "prediction": {
+          "context": {
+            "label": "De onde vem o x do tiro",
+            "explanation": "Nesta experiência, vamos comparar um número escrito no campo do tiro com a leitura da posição da nave na hora do disparo."
+          },
+          "prompt": "O x do tiro está com o número 400 escrito. Você leva a nave para a beirada da direita e atira. De onde sai o tiro?",
+          "choices": [
+            {
+              "id": "perto",
+              "label": "De perto da nave",
+              "shows": "As duas marquinhas caíram no mesmo lugar: o 400 estava escrito, e escrito não muda."
+            },
+            {
+              "id": "meio",
+              "label": "Do meio da tela, onde está o 400"
+            }
+          ],
+          "correctChoiceId": "meio",
+          "revealOn": "same-spot"
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "fala-criar-tiro",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "O vídeo mostrou como o tiro lê a posição da nave. Agora monte esse disparo no seu jogo."
+      }
+    },
+    {
+      "key": "video-criar-tiro",
+      "plannedVideo": "Título: O tiro nasce na nave\n\nMostrar o gesto de encaixar Criar tiro no grupo dentro do Quando apertar a tecla, e depois arrastar os dois blocos de leitura por cima dos números do x e do y. Aproximar no momento em que o bloco cobre o número e dá o clique de encaixe, que é o gesto mais delicado da aula. Na narração, dizer o caminho completo de cada bloco: Jogo 2D › Movimento › Posição e tamanho. Ao pegar o segundo, dizer novamente que continua nessa categoria, subcategoria e seção; apontar o campo y do Criar tiro no grupo e selecionar nave no bloco de leitura. Usar marcas didáticas para mostrar o centro x e a borda de cima da caixa, sem simular tiro visível antes de o grupo ser movido e desenhado na seção 8. O raio já vem em 5: explicar que mede do meio até a beirada da bolinha e conferir sem redigitar.\n\nDuração alvo: 90 a 105 segundos; recalibrar após gravar.\n\nOrigem: video-criar-tiro. A posição y é a borda de cima da caixa da nave, e não a ponta do desenho do kit. Narração completa no roteiro correspondente."
+    },
+    {
+      "key": "fala-sinal",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Agora experimente como o sinal muda o caminho do tiro. Observe também o número do y."
+      }
+    },
+    {
+      "key": "video-sinal-da-velocidade",
+      "plannedVideo": "Título: O sinal muda a direção\n\nMostrar um eixo y abstrato, com o zero em cima, valores crescentes para baixo e setas para os sentidos positivo e negativo. Explicar que o sinal da velocidade em y indica direção e o tamanho do número indica quanto anda por quadro. Não animar o mesmo tiro com menos 9 e 9 nem antecipar a sequência de controles: esse contraste concreto pertence à experiência.\n\nDuração alvo: 45 a 55 segundos; recalibrar após gravar. Origem: explicação do antigo video-velocidade-som, separada do gesto."
+    },
+    {
+      "key": "experiencia-direcao",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Compare o sinal da velocidade",
+        "instructions": "Experimente uma velocidade negativa e outra positiva em y. Para onde o tiro vai em cada caso?",
+        "hints": [
+          "Olhe o número do y na faixa enquanto o tiro sobe ou desce.",
+          "Mexa só na velocidade para baixo. A velocidade para o lado fica em 0.",
+          "Ponha a velocidade para baixo em −9 e deixe o tempo passar. Depois ponha em 9 e deixe o tempo passar de novo."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "velocity",
+          "cast": {
+            "hero": {
+              "name": "tiro",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "actions": [
+              {
+                "type": "velocity",
+                "vx": 5,
+                "vy": 0
+              },
+              {
+                "type": "advance",
+                "seconds": 1.5
+              },
+              {
+                "type": "velocity",
+                "vx": 0,
+                "vy": 0
+              }
+            ],
+            "goals": ["up", "down"]
+          }
+        },
+        "prediction": {
+          "context": {
+            "label": "A velocidade para baixo",
+            "explanation": "Nesta experiência, vamos usar a velocidade para baixo para observar o caminho de um tiro na tela."
+          },
+          "prompt": "Com a velocidade para baixo em −9, para onde o tiro vai?",
+          "choices": [
+            {
+              "id": "baixo",
+              "label": "Para baixo",
+              "shows": "Com o número negativo, o y diminuiu e o tiro subiu."
+            },
+            {
+              "id": "cima",
+              "label": "Para cima"
+            }
+          ],
+          "correctChoiceId": "cima",
+          "revealOn": "up"
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "fala-velocidade-som",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você já viu a direção do tiro e onde o som entra. Agora é sua vez de completar o disparo no jogo."
+      }
+    },
+    {
+      "key": "video-velocidade-som",
+      "plannedVideo": "Título: A velocidade e o som do tiro\n\nAbrir retomando que o sinal da velocidade foi explicado. Conferir vx 0, que já vem no Criar tiro no grupo, sem redigitar. Trocar apenas o vy padrão por menos 9 e clicar fora para confirmar. Depois narrar Jogo 2D › Som › Efeitos prontos, pegar Tocar efeito, encaixar logo abaixo do Criar tiro no grupo dentro do evento e escolher tiro no menu. Explicar por que o som toca por disparo.\n\nDuração alvo: 55 a 65 segundos; recalibrar após gravar. Origem: video-velocidade-som; não convidar a trocar vy por menos 15."
+    },
+    {
+      "key": "fala-mover-grupo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você viu o motor mover e desenhar os tiros. Agora faça o primeiro disparo aparecer no seu jogo."
+      }
+    },
+    {
+      "key": "video-tiros-voam",
+      "plannedVideo": "Título: Mover e desenhar o grupo\n\nDuração alvo: 70 a 85 segundos; recalibrar após gravar.\n\nAbrir com o estado atual: a barra de espaço já cria o tiro e toca o som, mas o motor ainda precisa movê-lo e desenhá-lo. Mostrar os dois blocos entrando no motor abaixo de Desenhar o sprite da nave, narrando o caminho de paleta e o destino de cada um. Escolher tiros nos dois menus. Terminar com o primeiro disparo visível, acompanhado de som.\n\nDuração alvo: recalibrar após gravar a narração completa do roteiro. Origem: video-ciclo-tiros, com o rótulo atual Mover os sprites do grupo usando suas velocidades."
+    },
+    {
+      "key": "fala-pergunta-faxina",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "O brinquedo atrás da porta continuava guardado. Agora veja o que acontece com um tiro que sai da tela."
+      }
+    },
+    {
+      "key": "video-tiro-fora-da-tela",
+      "plannedVideo": "Título: Invisível não quer dizer removido\n\nUsar a analogia de um brinquedo atrás da porta: não aparece aos olhos, mas continua guardado. Ligar essa diferença ao tiro que passa da borda e ao grupo que ainda precisa de uma regra para retirar quem saiu. Não simular o disparo nem revelar os números da prateleira da experiência.\n\nDuração alvo: 35 a 45 segundos. Origem: explicação nova; não repetir a promessa antiga de que poucos tiros deixam este jogo lento."
+    },
+    {
+      "key": "experiencia-faxina",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Para onde vai o tiro que sai da tela?",
+        "instructions": "Deixe tiros saírem da tela com a regra de limpeza desligada e depois ligada. Compare a cena com os bastidores.",
+        "hints": [
+          "Olhe a prateleira dos bastidores quando um tiro sai da tela.",
+          "Conte os tiros da prateleira depois que um tiro sai.",
+          "Ligue Tirar do grupo quem sair da tela e deixe o tempo passar de novo."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "cleanup",
+          "cast": {
+            "obstacle": {
+              "name": "tiro",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "preset": {
+              "id": "tiro-cima",
+              "exit": "top",
+              "incoming": false
+            },
+            "goals": ["invisible-stored", "rule-removes"]
+          }
+        },
+        "prediction": {
+          "context": {
+            "label": "O grupo dos tiros",
+            "explanation": "Nesta experiência, vamos olhar os bastidores para ver o que acontece com o tiro depois que ele some da tela."
+          },
+          "prompt": "O tiro sumiu lá em cima. Ele saiu do grupo?",
+          "choices": [
+            {
+              "id": "saiu",
+              "label": "Saiu do grupo junto",
+              "shows": "O tiro saiu da tela e continuou guardado no grupo."
+            },
+            {
+              "id": "ficou",
+              "label": "Continua no grupo"
+            }
+          ],
+          "correctChoiceId": "ficou",
+          "revealOn": "invisible-stored"
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "fala-faxina",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você viu a regra tirar os tiros que saíram. Agora coloque essa faxina no motor do seu jogo."
+      }
+    },
+    {
+      "key": "video-faxina",
+      "plannedVideo": "Título: A peça que entra no meio\n\nDuração alvo: 50 a 65 segundos; recalibrar após gravar.\n\nAbrir retomando o que a experiência mostrou: o tiro pode sair da tela e continuar no grupo. Agora vamos retirá-lo. Mostrar Tirar do grupo quem sair da tela, para cada um, entrando entre os blocos que movem e desenham os tiros. Narrar o caminho Jogo 2D › Grupos › Participação e limpeza e o encaixe exato. Aproximar na peça abrindo espaço no meio; o fazer fica vazio neste dia.\n\nDuração alvo: recalibrar após gravar a narração completa do roteiro. Origem: video-ciclo-tiros, último terço. Não prometer que sem a faxina o jogo ficará visivelmente lento."
+    },
+    {
+      "key": "quiz",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "A nave mudou de lugar. O que mantém o tiro novo alinhado com ela?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Ler o centro x da nave na hora do disparo."
+              },
+              {
+                "id": "b",
+                "label": "Usar sempre o número 400 no x do tiro."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Ler o sprite acompanha sua posição atual; um número fixo continua igual."
+          },
+          {
+            "id": "q2",
+            "prompt": "O tiro saiu por cima. Por que retirá-lo do grupo?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Para apagar a nave também."
+              },
+              {
+                "id": "a",
+                "label": "Para não continuar atualizando um objeto que já foi embora."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A limpeza cuida dos tiros que saíram, sem apagar a nave nem os tiros que ainda estão visíveis."
+          }
+        ]
+      }
+    },
+    {
+      "key": "fala-quiz",
+      "content": {
+        "kind": "dialogue",
+        "pose": "thinking",
+        "text": "Antes de enviar, duas perguntas rápidas sobre o disparo e a faxina. Vamos ver o que ficou."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "O que a gente vai fazer hoje",
+      "intent": "presentation",
+      "objective": "Ver o disparo acontecendo antes de montar a primeira peça.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
+      }
+    },
+    {
+      "key": "terceira-area",
+      "title": "A área que fica esperando você",
+      "intent": "exploration",
+      "objective": "Descobrir a terceira área do projeto: o que está dentro dela não acontece sozinho nem acontece sempre, acontece na hora em que a coisa acontece.",
+      "blockKeys": ["video-terceira-area", "fala-terceira-area", "experiencia-tres-areas"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-terceira-area", "experiencia-tres-areas"]
+      }
+    },
+    {
+      "key": "montar-grupo-e-evento",
+      "title": "Monte o grupo dos tiros e a área que espera a tecla",
+      "intent": "application",
+      "objective": "Preparar o lugar onde o disparo vai nascer: o grupo tiros no fim de Ao iniciar e a barra de espaço dentro de Quando acontecer.",
+      "blockKeys": ["video-montar-grupo-e-evento", "fala-grupo"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-montar-grupo-e-evento"],
+        "projectChecks": [
+          {
+            "id": "grupo-tiros",
+            "label": "Crie o grupo tiros em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "tiros"
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "evento-espaco",
+            "label": "Em Quando acontecer, coloque Quando apertar a tecla: barra de espaço.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "area": "events",
+              "fields": {
+                "KEY": "Space"
+              },
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "escrito-e-lido",
+      "title": "O número escrito e o número lido",
+      "intent": "exploration",
+      "objective": "Separar um número escrito no campo, que continua o mesmo para sempre, de uma leitura da posição da nave feita na hora do disparo.",
+      "blockKeys": ["video-escrito-e-lido", "fala-escrito-e-lido", "experiencia-escrito-e-lido"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-escrito-e-lido", "experiencia-escrito-e-lido"]
+      }
+    },
+    {
+      "key": "criar-tiro",
+      "title": "Faça o tiro nascer na nave",
+      "intent": "application",
+      "objective": "Encaixar os dois blocos de leitura por cima dos números do x e do y do tiro, com raio 5. A cor é escolha sua.",
+      "blockKeys": ["video-criar-tiro", "fala-criar-tiro"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-criar-tiro"],
+        "projectChecks": [
+          {
+            "id": "tiro-origem",
+            "label": "Dentro de Espaço, crie o tiro usando centro x e posição y da nave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_bullet",
+                  "fields": {
+                    "GROUP": "tiros"
+                  },
+                  "inputBlocks": {
+                    "X": {
+                      "blockType": "sz_g2d_center_x",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_g2d_sprite_y",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    }
+                  },
+                  "inputs": {
+                    "R": 5
+                  }
+                }
+              },
+              "area": "events"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "sinal-da-velocidade",
+      "title": "O menos que manda para cima",
+      "intent": "exploration",
+      "objective": "Descobrir que o sinal da velocidade para baixo decide o lado, e que o número negativo leva para cima.",
+      "blockKeys": ["video-sinal-da-velocidade", "fala-sinal", "experiencia-direcao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-sinal-da-velocidade", "experiencia-direcao"]
+      }
+    },
+    {
+      "key": "velocidade-e-som",
+      "title": "Escreva a velocidade e ponha o som",
+      "intent": "application",
+      "objective": "Conferir vx 0, escrever vy menos 9 no Criar tiro e encaixar o som logo abaixo, dentro do mesmo evento.",
+      "blockKeys": ["video-velocidade-som", "fala-velocidade-som"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-velocidade-som"],
+        "projectChecks": [
+          {
+            "id": "efeito-tiro",
+            "label": "No evento Espaço, use Tocar efeito e escolha tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "shoot"
+                  }
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "disparo",
+            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_bullet",
+                  "fields": {
+                    "GROUP": "tiros"
+                  },
+                  "inputs": {
+                    "R": 5,
+                    "VX": 0,
+                    "VY": -9
+                  },
+                  "inputBlocks": {
+                    "X": {
+                      "blockType": "sz_g2d_center_x",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_g2d_sprite_y",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    }
+                  },
+                  "beforeBlock": "sz_g2d_play_fx"
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "tiro-unico",
+            "label": "Mantenha apenas um comando de criar tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_bullet",
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "tiros-voam",
+      "title": "Os tiros voam",
+      "intent": "application",
+      "objective": "Mover e desenhar o grupo tiros dentro do motor, abaixo do desenho da nave. A barra de espaço passa a valer.",
+      "blockKeys": ["video-tiros-voam", "fala-mover-grupo"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-tiros-voam"],
+        "projectChecks": [
+          {
+            "id": "mover-tiros",
+            "label": "Mova o grupo tiros a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              }
+            }
+          },
+          {
+            "id": "desenhar-tiros",
+            "label": "Desenhe o grupo tiros a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "tiro-que-sai-da-tela",
+      "title": "Para onde vai o tiro que sai da tela",
+      "intent": "exploration",
+      "objective": "Ver por dentro que o tiro que some da tela continua guardado no grupo, e que quem tira é a regra.",
+      "blockKeys": ["video-tiro-fora-da-tela", "fala-pergunta-faxina", "experiencia-faxina"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-tiro-fora-da-tela", "experiencia-faxina"]
+      }
+    },
+    {
+      "key": "faxina",
+      "title": "Ponha a faxina entre os dois blocos",
+      "intent": "application",
+      "objective": "Encaixar Tirar do grupo quem sair da tela entre o que move o grupo e o que desenha o grupo.",
+      "blockKeys": ["video-faxina", "fala-faxina"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-faxina"],
+        "projectChecks": [
+          {
+            "id": "mover-tiros",
+            "label": "Mova tiros antes de limpar o grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              },
+              "beforeBlock": "sz_g2d_prune_offscreen"
+            }
+          },
+          {
+            "id": "limpar-tiros",
+            "label": "Retire os tiros que saem e depois desenhe esse grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_prune_offscreen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              },
+              "beforeBlock": "sz_g2d_draw_group"
+            }
+          },
+          {
+            "id": "desenhar-tiros",
+            "label": "Desenhe o grupo tiros a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "quiz-final",
+      "title": "Hora do desafio",
+      "intent": "closing",
+      "objective": "Responder a duas perguntas que aplicam a leitura da posição e a faxina do grupo dos tiros.",
+      "blockKeys": ["fala-quiz", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Teste, envie e fecha",
+      "intent": "delivery",
+      "objective": "Tiros saem da posição atual da nave, sobem com som e são retirados do grupo ao sair da tela.",
+      "blockKeys": ["video-teste-e-envio", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-teste-e-envio", "projeto"],
+        "projectChecks": [
+          {
+            "id": "nave",
+            "label": "Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_ship",
+              "fields": {
+                "NAME": "nave"
+              },
+              "inputs": {
+                "X": 400,
+                "Y": 410,
+                "W": 54,
+                "H": 62
+              },
+              "area": "start",
+              "count": 1
+            }
+          },
+          {
+            "id": "grupo-tiros",
+            "label": "Crie o grupo tiros em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "tiros"
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "efeito-tiro",
+            "label": "No evento Espaço, use Tocar efeito e escolha tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_play_fx",
+                  "fields": {
+                    "FX": "shoot"
+                  }
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "disparo",
+            "label": "No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_bullet",
+                  "fields": {
+                    "GROUP": "tiros"
+                  },
+                  "inputs": {
+                    "R": 5,
+                    "VX": 0,
+                    "VY": -9
+                  },
+                  "inputBlocks": {
+                    "X": {
+                      "blockType": "sz_g2d_center_x",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    },
+                    "Y": {
+                      "blockType": "sz_g2d_sprite_y",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    }
+                  },
+                  "beforeBlock": "sz_g2d_play_fx"
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "tiro-unico",
+            "label": "Mantenha apenas um comando de criar tiro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_bullet",
+              "count": 1
+            }
+          },
+          {
+            "id": "mover-tiros",
+            "label": "Mova tiros antes de limpar o grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              },
+              "beforeBlock": "sz_g2d_prune_offscreen"
+            }
+          },
+          {
+            "id": "limpar-tiros",
+            "label": "Retire os tiros que saem e depois desenhe esse grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_prune_offscreen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              },
+              "beforeBlock": "sz_g2d_draw_group"
+            }
+          },
+          {
+            "id": "desenhar-tiros",
+            "label": "Desenhe o grupo tiros a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "tiros"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -16,13 +16,13 @@ import type { SceneFigure, SceneRole } from './cast'
  * para cá inverteria a seta e arrastaria o pacote do editor para dentro do núcleo.
  *
  * ⚠️ `temChao` substituiu a comparação `=== 'espaco'` que estava espalhada pelos palcos. Com
- * quatro cenários, `gorilas` tem chão e não é o Corre Dino: cada palco precisaria de um `if` novo,
+ * vários cenários, `gorilas` tem chão e não é o Corre Dino: cada palco precisaria de um `if` novo,
  * e é exatamente esse puxadinho que o campo evita. Quem pergunta usa `cenarioTemChao`.
  */
 
 export interface SceneCenario {
   /** O fundo que o palco pinta. O nome é resolvido na arte do jogo pelo member-shell. */
-  readonly fundo: 'floresta' | 'estrelas' | 'cidade'
+  readonly fundo: 'floresta' | 'estrelas' | 'cidade' | 'jardim' | 'farol'
   /**
    * Há chão para pisar.
    *
@@ -45,7 +45,7 @@ export interface SceneCenario {
 }
 
 /**
- * Os quatro jogos que os cursos ensinam.
+ * Os jogos que os cursos ensinam.
  *
  * ⚠️ `meu-jeito` tem fundo de ESTRELAS, e não de floresta: nos cursos a pedra e a chama SÃO o
  * asteroide e o fogo dele (O Jogo do Meu Jeito desenha a pedra com crateras e a chama atrás
@@ -76,6 +76,18 @@ export const SCENE_CENARIOS = {
     temChao: false,
     fundoEscuro: true,
     figuras: { hero: 'pedra', obstacle: 'chama', scenery: 'pedra' },
+  },
+  jardim: {
+    fundo: 'jardim',
+    temChao: true,
+    fundoEscuro: false,
+    figuras: { hero: 'coelho', obstacle: 'arbusto', scenery: 'flores' },
+  },
+  farol: {
+    fundo: 'farol',
+    temChao: true,
+    fundoEscuro: false,
+    figuras: { hero: 'personagem-farol', obstacle: 'chave-farol', scenery: 'farol' },
   },
 } as const satisfies Record<string, SceneCenario>
 

@@ -1,6 +1,6 @@
 # Corre, Dino! · Aula 8 · O jogo abre com o nome que você deu
 
-> Análise de redesenho didático. Formato herdado de `desafio-dia-1.md`.
+> Análise de redesenho didático. Formato herdado de `nave-contra-asteroides-dia-1.md`.
 
 ## Resumo
 

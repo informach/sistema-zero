@@ -1,4 +1,4 @@
-# Desafio do Primeiro Jogo · Dia 4 · O jogo passa a contar
+# Nave Contra Asteroides · Dia 4 · O jogo passa a contar
 
 ## Resultado pedagógico
 
@@ -66,7 +66,7 @@ do resultado e da ação.
 ## Gravação e continuidade
 
 `video-variavel`, `video-protecao` e `video-vidas-uma-vez` ainda são planos de clipe.
-O [roteiro](desafio-dia-4.roteiro.md) registra narração e enquadramento; conferir a
+O [roteiro](nave-contra-asteroides-dia-4.roteiro.md) registra narração e enquadramento; conferir a
 gravação antes de importar como aula publicada. O vídeo prático da batida deve falar
 os nomes atuais dos blocos e mostrar o campo dos 45 quadros. A tremida é retorno visual,
 não dano extra. Na entrega, dois acertos elevam pontos de 0 a 2; duas batidas apagam
@@ -77,4 +77,4 @@ Valores canônicos para o Dia 5: `pontos=0` na partida, soma de 1 por acerto, r�
 apelido `inimigo`. Cores de placar, corações e explosão são livres se tiverem contraste
 com o fundo. Esses números, o rótulo do placar e o estilo corações já vêm nos blocos: os vídeos
 os conferem sem mandar redigitar. Já os campos de sprite de Dar vidas, Machucar e Desenhar vidas
-precisam ser trocados de `jogador` para `nave`. Introdução e certificado não são alterados.
+precisam ser trocados de `jogador` para `nave`. A introdução e o certificado são do Desafio do Primeiro Jogo, não deste curso.

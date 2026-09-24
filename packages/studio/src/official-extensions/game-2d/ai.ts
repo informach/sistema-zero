@@ -50,7 +50,7 @@ API global injetada como window.SZGame2D:
   chamada nem ofereça o bloco legado. Use as Áreas do projeto.
 - gameLoop(fn): adiciona fn ao agendador do jogo, com passo fixo de 60 Hz. Vários loops coexistem.
 - keys: estado das setas { left, right, up, down }.
-- enableClassicControls('auto'|'always'|'off') liga ações semânticas e controles de toque
+- enableClassicControls('auto'|'always'|'off'|'directions') liga ações semânticas e controles de toque; 'directions' mostra só as quatro setas
   acessíveis. Use uma vez em Ao iniciar. actionDown/actionPressed aceitam
   left/right/up/down/jump/action/select/start/pause. Backspace = select, Enter = start e Escape =
   pause; o botão pause NÃO altera o jogo sozinho.

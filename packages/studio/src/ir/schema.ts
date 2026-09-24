@@ -2545,7 +2545,10 @@ export type JSStatement =
       speed: number | JSExpr
       jump: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g2d:enableClassicControls'; mode: 'auto' | 'always' | 'off' })
+  | (JSStatementCommon & {
+      type: 'g2d:enableClassicControls'
+      mode: 'auto' | 'always' | 'off' | 'directions'
+    })
   | (JSStatementCommon & {
       type: 'g2d:classicPlatformer'
       spriteVar: string

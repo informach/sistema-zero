@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "courseSlug": "desafio-primeiro-jogo",
+  "courseSlug": "nave-contra-asteroides",
   "lessonSlug": "dia-5",
   "title": "O jogo ganha começo e fim",
   "blocks": [
@@ -9,7 +9,7 @@
       "content": {
         "kind": "studio",
         "purpose": "submission",
-        "chain": "desafio-primeiro-jogo",
+        "chain": "nave-contra-asteroides",
         "level": "iniciante-2d",
         "allowedModes": ["blocks"],
         "allowLevelReveal": false,
@@ -63,12 +63,12 @@
         "showcase": {
           "enabled": true,
           "title": "Nave contra Asteroides",
-          "summary": "Um jogo de nave, tiros e asteroides criado no Desafio do Primeiro Jogo."
+          "summary": "Um jogo de nave, tiros e asteroides criado em Nave Contra Asteroides."
         },
         "initialProject": {
           "formatVersion": 2,
           "projectTools": [],
-          "id": "manifest-desafio-5",
+          "id": "manifest-nave-contra-asteroides-5",
           "name": "Nave contra Asteroides",
           "createdAt": 0,
           "updatedAt": 0,
@@ -719,7 +719,7 @@
     },
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: O jogo ganha começo e fim\n\nOrigem: abertura do roteiro original do Dia 5 e video-abertura-v6, com tela regravada. Duração alvo: 35 a 45 segundos, recalibrar após gravar.\n\nMostrar o jogo pronto: a tela de abertura com o nome, um Enter começando a partida, um trecho curto de jogo, a tela de derrota e a de vitória. Abrir a fala com saudação e o último dia do desafio. Dizer que a partida vai ganhar começo e fim e que vamos montar uma parte de cada vez. Se a criança precisar parar, o projeto fica salvo. Não anunciar que é a aula mais longa, não prometer publicação automática e não enumerar sete passos."
+      "plannedVideo": "Título: O jogo ganha começo e fim\n\nOrigem: abertura do roteiro original do Dia 5 e video-abertura-v6, com tela regravada. Duração alvo: 35 a 45 segundos, recalibrar após gravar.\n\nMostrar o jogo pronto: a tela de abertura com o nome, um Enter começando a partida, um trecho curto de jogo, a tela de derrota e a de vitória. Abrir a fala com saudação e o último dia de Nave Contra Asteroides. Dizer que a partida vai ganhar começo e fim e que vamos montar uma parte de cada vez. Se a criança precisar parar, o projeto fica salvo. Não anunciar que é a aula mais longa, não prometer publicação automática e não enumerar sete passos."
     },
     {
       "key": "video-telas",
