@@ -64,14 +64,17 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    ambassador-link:<id>:<n>` — versionada por reenvio); `referrals-scholarship-invite`:
    `nome`+`indicador`+`link` (convite ÚNICO com rodapé LGPD "não enviaremos de novo",
    `idempotencyKey = ambassador-invite:<inviteId>:<n>`); `referrals-scholarship-welcome`:
-   `nome`+`indicador`+`link` (boas-vindas da bolsa com link de definir senha — TTL 14 dias,
+   `nome`+`indicador`+`link` (boas-vindas com link de definir senha — TTL 14 dias,
    `idempotencyKey = scholarship-welcome:<redemptionId>`). Bolsista com conta PRÉ-EXISTENTE
-   recebe o `new-access` de sempre (sem template novo). `referrals-bonus-eligible` (09/2026):
+   recebe o `new-access` de sempre (sem template novo). O convite e o link do embaixador
+   nomeiam **Cadê Todo Mundo?**; boas-vindas e `new-access` ficam neutros sobre qual curso foi
+   liberado, pois resgates históricos do Desafio ainda podem reprocessar o e-mail.
+   `referrals-bonus-eligible` (09/2026):
    `nome`+`valor`+`link` — o bônus de indicação liberou (garantia passou), pede a chave Pix na
    página do embaixador (`idempotencyKey = bonus-eligible:<conversionId>`; enviado pelo sweep do
    referrals, mark-after-send).
-   `new-access` (e-mail + whatsapp) = aviso de "novo curso liberado" ao comprador
-   RECORRENTE (já tem conta) — link p/ `/cursos`, SEM token de senha (≠ do `welcome`, que é 1º acesso).
+   `new-access` (e-mail + whatsapp) = aviso de "novo curso liberado" a quem já tem conta
+   (compra ou indicação) — link p/ `/cursos`, SEM token de senha (≠ do `welcome`, que é 1º acesso).
    **Desafio do Primeiro Jogo (09/2026):** `challenge-access-approved` (e-mail + WhatsApp;
    `nome`+`link`+`expira_em`+`acao`+`orientacao`) confirma os 30 dias no funil;
    `challenge-not-activated`, `challenge-not-started`, `challenge-day-one-complete` e

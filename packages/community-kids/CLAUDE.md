@@ -425,9 +425,9 @@ senha"). O limite de perfis é do plano (criar acima → 409 no
 toast). Toda a lógica do BFF vive no **member-shell** (`shell.routes.profile*` + `shell.profiles`);
 os `route.ts` são shims de 1-3 linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
 **Card "Indique e ganhe" (embaixador, 09/2026):** a Área dos pais (modo gestão) mostra o
-`AmbassadorCard` (`app/perfis/ambassador-card.tsx`) — o responsável vira embaixador da Bolsa do
-Primeiro Jogo com UM clique (os dados já são os da conta): não cadastrado → explicação (bolsa
-100% + agradecimento por Pix quando a família indicada assina, depois da garantia de 7 dias —
+`AmbassadorCard` (`app/perfis/ambassador-card.tsx`) — o responsável vira embaixador e indica o
+curso **Cadê Todo Mundo?** com UM clique (os dados já são os da conta): não cadastrado → explicação
+(curso sem custo para a família indicada + agradecimento por Pix quando ela assina, depois da garantia de 7 dias —
 ⚠️ o VALOR vem de `bonus.amountCents` da view, NUNCA cravado na copy: é env do referrals) +
 botão "Quero ser embaixador(a)" + os TERMOS do dinheiro (agradecimento único, não é salário, sem
 vínculo — ficam AQUI, no ponto do compromisso: no funil eles só apareceriam depois do 1º bônus,

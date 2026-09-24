@@ -9,7 +9,7 @@ import type { AmbassadorEnrollmentView } from '@/lib/types'
 
 /**
  * Card "Indique e ganhe" da área dos pais: o responsável vira embaixador da
- * Bolsa do Primeiro Jogo com um clique (os dados já são os da conta) e recebe
+ * indicação do curso Cadê Todo Mundo? com um clique (os dados já são os da conta) e recebe
  * o link da própria página por e-mail. Best-effort: serviço fora → card some.
  * O VALOR do bônus vem do serviço (`bonus.amountCents`) — nunca fica cravado
  * na copy, senão uma mudança de env deixaria esta tela prometendo errado.
@@ -101,9 +101,9 @@ export function AmbassadorCard() {
             ) : view.enrolled && view.ambassador ? (
               <>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Compartilhe o seu link de bolsa e presenteie crianças que você conhece com o
-                  Desafio do Primeiro Jogo completo, de graça. Se a família depois assinar a
-                  Comunidade dos Criadores, você recebe um agradecimento
+                  Compartilhe o seu link de bolsa e presenteie crianças que você conhece com o curso
+                  Cadê Todo Mundo? sem custo para ela. Se a família depois assinar a Comunidade dos
+                  Criadores, você recebe um agradecimento
                   {bonusValue ? ` de ${bonusValue}` : ''} por Pix.
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -160,9 +160,9 @@ export function AmbassadorCard() {
             ) : (
               <>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Vire embaixador(a) e presenteie crianças que você conhece com uma bolsa 100% do
-                  Desafio do Primeiro Jogo. E tem mais: quando uma família indicada assina a
-                  Comunidade dos Criadores, você recebe um agradecimento
+                  Vire embaixador(a) e presenteie crianças que você conhece com acesso ao curso Cadê
+                  Todo Mundo? sem custo para a família. E tem mais: quando uma família indicada
+                  assina a Comunidade dos Criadores, você recebe um agradecimento
                   {bonusValue ? ` de ${bonusValue}` : ''} por Pix, depois da garantia de 7 dias.
                 </p>
                 {/* Os TERMOS moram aqui, no ponto em que a pessoa se

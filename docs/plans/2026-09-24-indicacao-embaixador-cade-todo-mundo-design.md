@@ -34,7 +34,7 @@ Em seguida, a página explica que o Sistema Zero ensina crianças a criar jogos 
 
 A copy deve refletir o curso real: faixa de 8 a 15 anos; projeto inicial preparado; programação guiada de reação ao toque e contagem; continuação em casa; certificado ao concluir. Não prometer Pinta, Estúdio completo, acesso a todos os cursos, resultado escolar, duração rígida ou funcionalidades ainda não publicadas. Remover as promessas antigas de cinco dias, idade a partir de nove anos e Desafio do Primeiro Jogo.
 
-Alinhar a mesma promessa no painel e no texto de compartilhamento do embaixador, na área Kids, no admin, no convite por e-mail, nas boas-vindas e na confirmação do formulário. Para contas existentes, o aviso de novo acesso deve identificar o curso. Manter o envio de convites por e-mail existente; não adicionar disparo frio por WhatsApp. Textos públicos e templates persistidos em staging precisam ser atualizados juntos.
+Alinhar a mesma promessa no painel e no texto de compartilhamento do embaixador, na área Kids, no admin, no convite por e-mail e na confirmação do formulário. As boas-vindas e o aviso de novo acesso devem ser neutros quanto ao nome do curso: um resgate histórico do Desafio já concluído pode reprocessar o envio de e-mail, e nomear Cadê Todo Mundo? nesse caso seria falso. O template compartilhado `new-access` também atende compras; remover dele a afirmação de compra para que funcione em ambos os fluxos. Manter o envio de convites por e-mail existente; não adicionar disparo frio por WhatsApp. Textos públicos e templates persistidos em staging precisam ser atualizados juntos.
 
 ## Verificação e publicação
 

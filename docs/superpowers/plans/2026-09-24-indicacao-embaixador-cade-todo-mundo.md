@@ -130,23 +130,17 @@
 - Modify: `packages/community-kids/src/app/perfis/ambassador-card.tsx`
 - Modify: `packages/admin/src/app/admin/embaixadores/embaixadores-client.tsx`
 - Modify: `packages/messaging/scripts/seed-templates.ts`
-- Modify: `packages/referrals/src/application/redeem-scholarship/redeem-scholarship.service.ts` to choose a course-specific existing-account template
+- Preserve: `packages/referrals/src/application/redeem-scholarship/redeem-scholarship.service.ts` email keys for historical resends
 - Add focused copy/template tests in the corresponding package test directories.
 - Update `packages/messaging/CLAUDE.md` for template contract.
 
 **Interfaces:**
 - Consumes: completed course-only grant from Task 2.
-- Produces: updated `referrals-ambassador-link`, `referrals-scholarship-invite`, `referrals-scholarship-welcome`, and new `referrals-scholarship-existing-access` email template with `{nome, indicador, link}`.
+- Produces: course-specific `referrals-ambassador-link` and `referrals-scholarship-invite`; course-neutral `referrals-scholarship-welcome` and `new-access` for historical resends and shared purchase flows.
 
-- [ ] **Step 1: Write failing tests.** Verify that each ambassador surface names `Cadê Todo Mundo?`, and the share text says the child creates a game of finding characters, not a five-day Desafio. Verify all referral templates name only the new course, keep the existing keys/variables for sent-email compatibility, and the existing-account path chooses the new course-specific template. Search the target files for legacy promises as a regression check.
+- [ ] **Step 1: Write failing tests.** Verify that each ambassador surface names `Cadê Todo Mundo?`, and the share text says the child creates a game of finding characters, not a five-day Desafio. Verify invitation templates name the new course and both welcome paths remain course-neutral for historical resends. Search the target files for legacy promises as a regression check.
 - [ ] **Step 2: Verify red.** Run focused tests in funnel, community-kids, admin, messaging and referrals.
-- [ ] **Step 3: Implement copy and template changes.** Keep the embaixador bonus/conversion language unchanged. Invite subject can read `{{indicador}} convidou sua família para criar um jogo 🎁`; welcome subject can read `Cadê Todo Mundo? já está liberado, {{nome}}`. Existing-account template links directly to `/cursos`. Do not imply that the family got every Community course or tool. Keep the no-WhatsApp-automation rule. The existing-account send should be course-specific:
-
-  ```ts
-  templateKey: 'referrals-scholarship-existing-access',
-  recipient: { name: firstName, email: redemption.email },
-  variables: { nome: firstName, indicador: referrerName, link: `${base}/cursos` },
-  ```
+- [ ] **Step 3: Implement copy and template changes.** Keep the embaixador bonus/conversion language unchanged. Invite names the new course and its concrete outcome. Welcome stays course-neutral because an old completed Desafio resgate can retry its email. Existing accounts keep the shared `new-access` template pointing to `/cursos`; remove the purchase assertion so it truthfully covers both purchase and indication. Do not imply that the family got every Community course or tool. Keep the no-WhatsApp-automation rule.
 - [ ] **Step 4: Verify green.** Run `bun run typecheck`, `bun test`, `bun run check` in each touched package. Inspect rendered HTML email content; verify template variables match sender payloads.
 - [ ] **Step 5: Commit only Task 4 files.** Inspect staged paths and commit `feat: alinhar comunicacao da indicacao ao novo curso`.
 

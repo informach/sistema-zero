@@ -237,7 +237,7 @@ const seeds = [
       title: 'Novo curso liberado, {{nome}}! 🎉',
       content: [
         p(
-          'Boa notícia! Sua compra foi confirmada e um novo curso já está liberado na sua conta do <strong>Sistema Zero</strong>.',
+          'Boa notícia! Um novo curso já está liberado na sua conta do <strong>Sistema Zero</strong>.',
         ),
         p(
           'Como você já tem conta, não precisa criar senha de novo — é só entrar com o seu e-mail e senha de sempre e começar.',
@@ -249,7 +249,7 @@ const seeds = [
         ),
         fallbackLink('{{link}}'),
       ].join('\n'),
-      footerNote: 'Você recebeu este e-mail porque uma compra foi realizada com este endereço.',
+      footerNote: 'Você recebeu este e-mail porque um novo acesso foi liberado para este endereço.',
     }),
   },
   {
@@ -260,7 +260,7 @@ const seeds = [
     body: [
       'Olá, {{nome}}! 👋',
       '',
-      'Boa notícia! Sua compra foi confirmada e um novo curso já está liberado no seu *Sistema Zero*. 🎉',
+      'Boa notícia! Um novo curso já está liberado no seu *Sistema Zero*. 🎉',
       '',
       'Como você já tem conta, é só entrar com o seu e-mail e senha de sempre e começar:',
       '{{link}}',
@@ -705,11 +705,11 @@ const seeds = [
     subject: 'Sua página de embaixador do Sistema Zero está pronta, {{nome}}!',
     variables: ['nome', 'link'],
     body: emailLayout({
-      preheader: 'Distribua bolsas do Desafio do Primeiro Jogo para quem você quiser.',
+      preheader: 'Convide famílias para criar um jogo com o curso Cadê Todo Mundo?.',
       title: 'Sua página de embaixador está pronta, {{nome}} 🎁',
       content: [
         p(
-          'Você agora é embaixador(a) do <strong>Sistema Zero</strong> e pode presentear crianças que você conhece com uma <strong>bolsa 100% do Desafio do Primeiro Jogo</strong> (curso completo, vitalício).',
+          'Você agora é embaixador(a) do <strong>Sistema Zero</strong> e pode presentear crianças que você conhece com acesso ao curso <strong>Cadê Todo Mundo?</strong>, sem custo para a família indicada.',
         ),
         p(
           'Na sua página você encontra o seu link de bolsa para compartilhar e também pode enviar convites por e-mail. Tudo pronto, sem burocracia:',
@@ -729,20 +729,22 @@ const seeds = [
     key: 'referrals-scholarship-invite',
     channel: 'email' as const,
     name: 'Convite de bolsa (e-mail)',
-    subject: '{{indicador}} indicou você: bolsa 100% do Desafio do Primeiro Jogo 🎁',
+    subject: '{{indicador}} indicou você para o curso Cadê Todo Mundo? 🎁',
     variables: ['nome', 'indicador', 'link'],
     body: emailLayout({
-      preheader: 'Um presente de {{indicador}}: o curso completo, sem pagar nada.',
+      preheader: 'Seu filho pode criar um jogo de procurar personagens, sem custo pelo convite.',
       title: '{{nome}}, você ganhou um presente de {{indicador}} 🎁',
       content: [
         p(
-          '<strong>{{indicador}}</strong> acha que tem uma criança aí na sua casa que ia adorar criar o próprio jogo. Por isso, indicou você para uma <strong>bolsa 100%</strong> do <strong>Desafio do Primeiro Jogo</strong>, do Sistema Zero.',
+          '<strong>{{indicador}}</strong> pensou na sua família e convidou você para receber o curso <strong>Cadê Todo Mundo?</strong>, do Sistema Zero, sem custo.',
         ),
         p(
-          'É o nosso curso em que a criança (a partir de 9 anos) monta um jogo de verdade em 5 dias, passo a passo. Com a bolsa, o acesso é completo, vitalício e sem pagar nada.',
+          'No Sistema Zero, crianças aprendem criando projetos. Neste curso, crianças de 8 a 15 anos montam, passo a passo, um jogo de procurar personagens e concluem a jornada com um certificado. O convite libera apenas este curso — não a assinatura da Comunidade dos Criadores.',
         ),
-        p('Para resgatar, é só confirmar os seus dados de responsável no link abaixo:'),
-        ctaButton('Resgatar a bolsa', '{{link}}'),
+        p(
+          'Para receber o curso, confirme seus dados de responsável no link abaixo. Não pedimos cartão:',
+        ),
+        ctaButton('Conhecer e liberar o curso', '{{link}}'),
         divider,
         small(
           'Este é um convite único: {{indicador}} nos passou o seu e-mail só para isso. Se não tiver interesse, pode ignorar, que a gente não escreve de novo.',
@@ -757,14 +759,14 @@ const seeds = [
     key: 'referrals-scholarship-welcome',
     channel: 'email' as const,
     name: 'Boas-vindas da bolsa (e-mail)',
-    subject: 'Sua bolsa está ativa, {{nome}}! Crie sua senha e comecem hoje',
+    subject: 'Seu acesso está pronto, {{nome}}! Crie sua senha',
     variables: ['nome', 'indicador', 'link'],
     body: emailLayout({
-      preheader: 'O Desafio do Primeiro Jogo já está liberado na sua conta.',
-      title: 'Bolsa ativada, {{nome}} 🎉',
+      preheader: 'O curso recebido por indicação já está na sua conta.',
+      title: 'Seu acesso está pronto, {{nome}} 🎉',
       content: [
         p(
-          'A bolsa indicada por <strong>{{indicador}}</strong> foi resgatada e o <strong>Desafio do Primeiro Jogo</strong> já está liberado na sua conta do <strong>Sistema Zero</strong>, completo e vitalício.',
+          'O curso indicado por <strong>{{indicador}}</strong> já está liberado na sua conta do <strong>Sistema Zero</strong>.',
         ),
         p(
           'Falta só um passo: criar a sua senha de acesso. O perfil da criança vocês criam juntos lá dentro, em um minutinho.',

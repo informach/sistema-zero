@@ -1399,7 +1399,7 @@ Dockerfile: valida e só então importa o `server.js` standalone).
 ## Embaixadores (indicações/bolsas — 08/2026, Fase 1)
 
 Item "Embaixadores" no grupo **Gestão** (ícone `Gift`) → `/admin/embaixadores`
-(`embaixadores-client.tsx`): gestão de quem distribui bolsas 100% do Desafio do Primeiro Jogo
+(`embaixadores-client.tsx`): gestão de quem distribui acesso ao curso **Cadê Todo Mundo?** por indicação
 (pessoas COM ou SEM conta). Criar = nome + e-mail → o **@sistemazero/referrals** gera o código +
 a página (capability-URL) e envia o magic-link por e-mail (`emailSent:false` = copie o link no
 detalhe e mande por fora). Tabela: nome/código/bolsas resgatadas/convites/status; ações: detalhe
