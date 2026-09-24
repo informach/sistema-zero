@@ -96,6 +96,7 @@ describe('baú da trilha', () => {
     const hover = rule('\\.kids-node-link:hover \\.kids-node\\.kids-node--chest-ready')
     const active = rule('\\.kids-node-link:active \\.kids-node\\.kids-node--chest-ready')
     const label = rule('\\.kids-chest-label')
+    const rive = rule('\\.kids-chest-rive')
 
     expect(base).toContain('box-shadow:')
     expect(base).toContain('inset 0 3px 0')
@@ -112,6 +113,10 @@ describe('baú da trilha', () => {
     expect(active).toContain('--k3d-altura: 2px')
     expect(active).toContain('translate: 0 6px')
     expect(label).toContain('margin-top: 2px')
+    // A arte do Rive não pode preencher o disco inteiro: ela é maior que o SVG
+    // de fallback e pisaria visualmente na borda/na sombra 3D do botão.
+    expect(rive).toContain('width: 72%')
+    expect(rive).toContain('height: 72%')
   })
 
   test('todos os estados renderizam o mesmo molde de baú 3D', () => {

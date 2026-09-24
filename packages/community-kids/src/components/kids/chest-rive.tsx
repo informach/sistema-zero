@@ -54,7 +54,10 @@ export function ChestRive({
   if (!src || !canLoad || load.failed) return null
 
   return (
-    <span aria-hidden="true" className="pointer-events-none absolute inset-0">
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 grid place-items-center"
+    >
       <ChestRiveCanvas
         key={src}
         src={src}

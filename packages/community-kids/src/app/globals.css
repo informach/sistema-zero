@@ -1232,6 +1232,13 @@ a.kid-pop:has(> .kids-carta):hover {
   .kids-chest-label {
     margin-top: 2px;
   }
+  /* A arte do Rive aproveita quase todo o artboard; deixá-la preencher o nó
+     esconderia a borda e o degrau 3D. O botão e sua área de toque continuam
+     com `--trail-node`; só a ilustração fica mais confortável dentro dele. */
+  .kids-chest-rive {
+    width: 72%;
+    height: 72%;
+  }
   .kids-node--chest-closed {
     background-color: var(--card);
     color: var(--muted-foreground);

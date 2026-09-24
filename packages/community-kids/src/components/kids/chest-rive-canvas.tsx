@@ -122,6 +122,9 @@ export function ChestRiveCanvas({
   }, [rive, onOpened])
 
   return (
-    <RiveComponent aria-hidden="true" className={visible ? 'size-full' : 'size-full opacity-0'} />
+    <RiveComponent
+      aria-hidden="true"
+      className={visible ? 'kids-chest-rive' : 'kids-chest-rive opacity-0'}
+    />
   )
 }
