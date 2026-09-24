@@ -27,10 +27,10 @@
 
 **Interfaces:** Usa `.sz-scene-console-visual` e `.sz-scene-frame` existentes; não exporta API nova.
 
-- [ ] Acrescentar ao teste E2E uma verificação em `/?width=900`: a diferença entre `frame.left - visual.left` e `visual.right - frame.right` deve ser menor que 1px; o estilo computado de `scrollbar-gutter` deve ser `stable both-edges`.
-- [ ] Executar `bunx playwright test --config playwright.scenes.config.ts -g 'margens laterais'` em `packages/community-kids`; confirmar falha antes do CSS.
-- [ ] Mudar a reserva de espaço da barra de rolagem do painel visual para `scrollbar-gutter: stable both-edges`, sem adicionar padding artificial ao palco. Se um segundo overflow dentro de `.sz-scene-console-mundo` ainda desequilibrar uma cena, aplicar a mesma regra somente nesse contêiner, com reprodução específica.
-- [ ] Reexecutar o E2E em 900px, o E2E existente de layout adaptativo e `git diff --check`.
+- [x] Acrescentar ao teste E2E uma verificação em `/?width=900`: a diferença entre `frame.left - visual.left` e `visual.right - frame.right` deve ser menor que 1px; o estilo computado de `scrollbar-gutter` deve ser `stable both-edges`.
+- [x] Executar `bunx playwright test --config playwright.scenes.config.ts -g 'margens laterais'` em `packages/community-kids`; confirmar falha antes do CSS.
+- [x] Mudar a reserva de espaço da barra de rolagem do painel visual para `scrollbar-gutter: stable both-edges`, sem adicionar padding artificial ao palco. Se um segundo overflow dentro de `.sz-scene-console-mundo` ainda desequilibrar uma cena, aplicar a mesma regra somente nesse contêiner, com reprodução específica.
+- [x] Reexecutar o E2E em 900px, o E2E existente de layout adaptativo e `git diff --check`.
 
 ### Task 2: Percursos didáticos do manifesto
 
@@ -42,24 +42,25 @@
 
 **Interfaces:** Mantém `LearningManifest`, os IDs das cinco experiências, metas, vídeos e cenas. Só o conteúdo de `instructions`, `checkpoint` de coordenadas e a flag `semPerguntaFinal` mudam.
 
-- [ ] Escrever teste autoral que lê o bloco `experiencia-coordenadas` e exige `semPerguntaFinal === true`, `checkpoint === undefined` e instrução com aumento isolado de `x` e `y`.
-- [ ] No mesmo teste, exigir que `experiencia-criar-mostrar` peça observação após criar, `experiencia-quadro` peça novo avanço após cada mudança e `experiencia-camadas` descreva três trocas. Verificar que os roteiros dos vídeos e os IDs das metas não mudaram.
-- [ ] Rodar o teste isolado e confirmar falha inicial.
-- [ ] Ajustar apenas os quatro blocos interativos do manifesto; preservar a alteração local já feita na instrução de “Uma vez e sempre”. Atualizar o briefing com a regra “vídeo explica, instrução não entrega o efeito”.
-- [ ] Rodar `bun test packages/core/tests/learning.test.ts`, `bun test packages/member-shell/tests/scene-sem-pergunta.test.tsx` e a validação `isLearningManifest` do core; corrigir eventuais expectativas de pergunta final.
+- [x] Escrever teste autoral que lê o bloco `experiencia-coordenadas` e exige ausência de pergunta final pública e instrução com aumento isolado de `x` e `y`.
+- [x] No mesmo teste, exigir que `experiencia-criar-mostrar` peça observação após criar, `experiencia-quadro` peça novo avanço após cada mudança e `experiencia-camadas` descreva três trocas. Verificar no diff que roteiros dos vídeos e IDs das metas não mudaram.
+- [x] Rodar o teste isolado e confirmar falha inicial.
+- [x] Ajustar apenas os quatro blocos interativos do manifesto; preservar a alteração local já feita na instrução de “Uma vez e sempre”. Atualizar o briefing com a regra “vídeo explica, instrução não entrega o efeito”.
+- [x] Rodar `bun test packages/core/tests/learning.test.ts`, `bun test packages/member-shell/tests/scene-sem-pergunta.test.tsx` e a validação `isLearningManifest` do core; corrigir eventuais expectativas de pergunta final.
 
 ### Task 3: Verificação integrada e revisão
 
-**Files:** Somente arquivos de teste se a verificação revelar uma falha reproduzida.
+**Files:** `packages/community-kids/e2e-scenes/scene-workspace.spec.ts` e, diante da falha visual reproduzida, `packages/member-shell/src/components/scene-dino-stages.tsx`.
 
 **Interfaces:** Nenhuma API nova.
 
-- [ ] Exercitar os cinco percursos com os testes do core, cobrindo estado inicial, gestos, metas e conclusão.
-- [ ] Executar os testes E2E de `scene-workspace.spec.ts` para painel estreito, dividido e ampliado, incluindo as quatro outras experiências.
-- [ ] Executar formatter/linter nos arquivos alterados e `git diff --check`; revisar o diff para confirmar que vídeos, motor e mudanças de outra sessão não foram tocados.
-- [ ] Relatar o que mudou, evidência de teste e necessidade de reimportação. Não fazer push/deploy sem pedido explícito neste turno.
+- [x] Exercitar os cinco percursos com os testes do core, cobrindo estado inicial, gestos, metas e conclusão.
+- [x] Executar os testes E2E de `scene-workspace.spec.ts` para painel estreito, dividido e ampliado, incluindo as quatro outras experiências.
+- [x] Conferir visualmente a abertura de `experiencia-camadas`; exigir no E2E uma parte reconhecível da nave e nenhum selo encoberto pelo cartão de estrelas. Ajustar apenas o caso de estrelas, preservando o desenho do Dino e do Meu Jeito.
+- [x] Executar formatter/linter nos arquivos alterados e `git diff --check`; revisar o diff para confirmar que vídeos, motor e mudanças de outra sessão não foram tocados.
+- [x] Relatar o que mudou, evidência de teste e necessidade de reimportação. Não fazer push/deploy sem pedido explícito neste turno.
 
 ## Self-review
 
-- Cobertura: margem, coordenadas, criar/mostrar, quadros, camadas, briefing, regressão e publicação constam das três tarefas.
+- Cobertura: margem, coordenadas, criar/mostrar, quadros, camadas (inclusive sobreposição visual), briefing, regressão e publicação constam das três tarefas.
 - Nenhum componente novo ou refatoração global é necessário.

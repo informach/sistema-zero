@@ -132,7 +132,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Uma vez e sempre",
-        "instructions": "Primeiro, coloque Mover a nave um pouquinho em Ao iniciar e avance três passos. Veja a nave se mover uma vez e parar. Use Voltar ao começo. Depois, coloque a mesma ficha em Enquanto estiver rodando e avance três passos.",
+        "instructions": "Coloque Mover a nave um pouquinho em Ao iniciar e avance três passos. Observe a nave e o contador de movimentos. Use Voltar ao começo, coloque a mesma ficha em Enquanto estiver rodando e avance três passos de novo. O que mudou de um teste para o outro?",
         "hints": [],
         "semPerguntaFinal": true,
         "activity": {
@@ -206,8 +206,9 @@
         "kind": "interactive",
         "required": true,
         "title": "O endereço na tela",
-        "instructions": "Mude só o x e veja para que lado a nave vai. Depois mude só o y. Por último, leve a nave para x 0 e y 0.",
+        "instructions": "Aumente só o x e observe para onde a nave vai. Depois, aumente só o y e observe de novo. Por último, coloque x 0 e y 0. Onde a nave ficou?",
         "hints": [],
+        "semPerguntaFinal": true,
         "activity": {
           "type": "experimentation",
           "scene": "coordinates",
@@ -253,21 +254,6 @@
           ],
           "correctChoiceId": "baixo",
           "revealOn": "down"
-        },
-        "checkpoint": {
-          "prompt": "Você quer a nave mais perto da beirada de baixo da tela. O que faz com o y?",
-          "choices": [
-            {
-              "id": "diminui",
-              "label": "Diminuo o y."
-            },
-            {
-              "id": "aumenta",
-              "label": "Aumento o y."
-            }
-          ],
-          "correctChoiceId": "aumenta",
-          "explanation": "Na tela, o y começa em 0 lá no alto. Quanto maior o y, mais embaixo a nave fica."
         }
       }
     },
@@ -305,7 +291,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Criar e mostrar são duas coisas diferentes",
-        "instructions": "Primeiro, crie a nave nos bastidores. Depois, faça a nave aparecer na tela do jogo.",
+        "instructions": "Crie a nave e observe os bastidores e a tela do jogo. Depois, mostre a nave. O que mudou?",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -354,7 +340,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Por que o desenho se repete",
-        "instructions": "Avance um quadro por vez e olhe a tela e o x da nave. Depois desenhe a nave a cada quadro. Por último, ligue Limpar a tela antes.",
+        "instructions": "Com Desenhar a nave em Só no começo, avance dois quadros e observe a tela e o x da nave. Escolha A cada quadro, avance mais dois quadros e observe a tela. Ligue Limpar a tela antes, avance outros dois quadros e veja o que mudou.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -441,7 +427,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Quem fica na frente?",
-        "instructions": "A nave está escondida. Mude a ordem de desenhar e faça a nave aparecer.",
+        "instructions": "A nave está parcialmente coberta. Troque a ordem para deixá-la na frente. Troque de novo e observe a cena. Por fim, ponha a nave na frente outra vez.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -463,7 +449,7 @@
           }
         },
         "checkpoint": {
-          "prompt": "A nave sumiu quando o fundo de estrelas foi para o fim da ordem. O que mudou?",
+          "prompt": "Quando a nave ficou parcialmente coberta pelas estrelas, o que tinha mudado?",
           "choices": [
             {
               "id": "b",

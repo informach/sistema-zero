@@ -149,8 +149,8 @@ const LAYERS_DE_PERTO = { x: 130, y: 44, w: 290, h: 236 } as const
  * criança tinha visto um Dino. Agora a cabeça aparece num vão da folhagem e o corpo fica atrás.
  * ⚠️ Sem o triângulo cinza e sem texto que diga quem cobre quem: a ordem está na faixa e na lista
  * da bancada, e o efeito, no desenho.
- * ⚠️ O cenário que não é floresta é UMA figura só (`CENARIO_UNICO`, a chama do Meu Jeito), um pouco
- * à direita, e deixa à vista o lado esquerdo da pedra com a cratera.
+ * ⚠️ O cenário que não é floresta é UMA figura só. A chama do Meu Jeito usa `CENARIO_UNICO`;
+ * o cartão de estrelas do Desafio fica mais à direita para deixar metade da nave reconhecível.
  */
 export function LayersStage({
   state,
@@ -183,7 +183,7 @@ export function LayersStage({
     ) : (
       <ActorFigure
         figure={cenario}
-        x={DINO_DO_LAYERS + CENARIO_UNICO.dx}
+        x={DINO_DO_LAYERS + (cenario === 'estrelas' ? 80 : CENARIO_UNICO.dx)}
         y={piso}
         escala={CENARIO_UNICO.escala}
       />
@@ -222,7 +222,8 @@ export function LayersStage({
       }
     >
       <Pista mundo={mundo} semDetalhe={[{ x: 14, y: 8, w: 240, h: 30 }]} />
-      <Selo>{castText('Quem fica na frente', cast)}</Selo>
+      {/* No Desafio, o HUD já nomeia a cena; o cartão de estrelas cobriria este selo no palco. */}
+      {cenario !== 'estrelas' && <Selo>{castText('Quem fica na frente', cast)}</Selo>}
       {ocultarOrdem ? (
         desenhosSeparados
       ) : (

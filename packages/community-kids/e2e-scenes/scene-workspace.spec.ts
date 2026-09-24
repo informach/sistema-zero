@@ -87,6 +87,31 @@ async function fits(page: Page) {
   }
 }
 
+test('margens laterais da cena ficam equilibradas no painel dividido', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 })
+  await page.goto('/?width=900')
+  await expectLayout(page, true)
+
+  await expectBalancedSceneMargins(page)
+})
+
+async function expectBalancedSceneMargins(page: Page) {
+  await expect(page.locator('.sz-scene-console-visual .sz-scene-frame')).toBeVisible()
+  const edges = await page.locator('.sz-scene-console-visual').evaluate((visual) => {
+    const frame = visual.querySelector('.sz-scene-frame')
+    if (!frame) throw new Error('Cena ausente')
+    const panel = visual.getBoundingClientRect()
+    const scene = frame.getBoundingClientRect()
+    return {
+      left: scene.left - panel.left,
+      right: panel.right - scene.right,
+      gutter: getComputedStyle(visual).scrollbarGutter,
+    }
+  })
+  expect(Math.abs(edges.left - edges.right)).toBeLessThan(1)
+  expect(edges.gutter).toBe('stable both-edges')
+}
+
 test('a divisória adapta o painel sem ampliar nem perder seleção e progresso', async ({
   page,
 }, info) => {
@@ -271,10 +296,21 @@ test('o palpite mantém pergunta e alternativas juntas, sem controles, ao amplia
   await expect(page.locator('.sz-scene-prancha')).toBeVisible()
 })
 
-for (const block of ['experiencia-criar-mostrar', 'experiencia-quadro', 'experiencia-camadas']) {
-  test(`outra experiência do piloto: ${block}`, async ({ page }) => {
+for (const block of [
+  'experiencia-coordenadas',
+  'experiencia-criar-mostrar',
+  'experiencia-quadro',
+  'experiencia-camadas',
+]) {
+  test(`outra experiência do piloto: ${block}`, async ({ page }, info) => {
     await page.goto(`/?block=${block}&width=900`)
     await expectLayout(page, true)
+    if (block === 'experiencia-coordenadas')
+      await page.getByRole('button', { name: 'Para baixo', exact: true }).click()
+    if (block === 'experiencia-criar-mostrar')
+      await page.getByRole('button', { name: 'A tela fica vazia', exact: true }).click()
+    await expectBalancedSceneMargins(page)
+    await page.screenshot({ path: info.outputPath('inline.png') })
     for (const region of await page
       .locator('.sz-scene-console-visual, .sz-scene-console-actions')
       .all()) {
@@ -282,10 +318,42 @@ for (const block of ['experiencia-criar-mostrar', 'experiencia-quadro', 'experie
     }
     await expand(page).click()
     await expectFullyVisible(page.locator('.sz-scene-console-visual'))
+    await expectBalancedSceneMargins(page)
     await expect(page.locator('.sz-scene-console-actions')).toBeVisible()
     await close(page).click()
     await expect(expand(page)).toBeFocused()
     await expectLayout(page, true)
+  })
+}
+
+for (const viewport of [
+  { width: 1366, height: 768, panel: 900 },
+  { width: 390, height: 844, panel: 620 },
+]) {
+  test(`camadas começa com parte da nave à vista em ${viewport.width}px`, async ({ page }) => {
+    await page.setViewportSize(viewport)
+    await page.goto(`/?block=experiencia-camadas&width=${viewport.panel}`)
+    const composition = await page.locator('.sz-scene-console-mundo svg').evaluate((svg) => {
+      const ship = svg.querySelector('[data-figure="nave"]')?.getBoundingClientRect()
+      const starCard = svg.querySelector('[data-figure="estrelas"] rect')?.getBoundingClientRect()
+      if (!ship || !starCard) throw new Error('Nave ou cartão de estrelas ausente')
+      const caption = [...svg.querySelectorAll('text')]
+        .find((text) => text.textContent?.includes('Quem fica na frente'))
+        ?.getBoundingClientRect()
+      return {
+        visibleFraction: (starCard.left - ship.left) / ship.width,
+        captionCovered: Boolean(
+          caption &&
+            caption.left < starCard.right &&
+            caption.right > starCard.left &&
+            caption.top < starCard.bottom &&
+            caption.bottom > starCard.top,
+        ),
+      }
+    })
+    expect(composition.visibleFraction).toBeGreaterThan(0.35)
+    expect(composition.visibleFraction).toBeLessThan(0.8)
+    expect(composition.captionCovered).toBe(false)
   })
 }
 

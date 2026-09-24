@@ -294,6 +294,44 @@ const quadros = (count: number): SceneAction[] =>
 const segundos = (count: number): SceneAction[] =>
   Array.from({ length: count }, () => ({ type: 'advance', seconds: 1 }))
 
+describe('experiências do Dia 1 do Desafio', () => {
+  const piloto = JSON.parse(
+    readFileSync(
+      resolve(
+        import.meta.dir,
+        '../../../docs/aulas-interativas/aulas/desafio-dia-1.manifesto.json',
+      ),
+      'utf8',
+    ),
+  ) as { blocks: { key: string; content?: unknown }[] }
+  const cena = (key: string): InteractiveBlock => {
+    const content = piloto.blocks.find((block) => block.key === key)?.content
+    if (!isInteractiveBlock(content)) throw new Error(`Experiência ausente: ${key}`)
+    return content
+  }
+
+  test('coordenadas pergunta só no palpite e orienta aumentar um eixo por vez', () => {
+    const bloco = cena('experiencia-coordenadas')
+    expect(bloco.instructions).toMatch(/aumente só o x/i)
+    expect(bloco.instructions).toMatch(/aumente só o y/i)
+    expect(publicInteractiveBlock(bloco).prediction).toBeDefined()
+    expect(publicInteractiveBlock(bloco).checkpoint).toBeUndefined()
+  })
+
+  test('criar, desenhar, limpar e ordenar exigem observação dos estados intermediários', () => {
+    const criar = cena('experiencia-criar-mostrar')
+    const quadros = cena('experiencia-quadro')
+    const camadas = cena('experiencia-camadas')
+    expect(criar.instructions).toMatch(/observe os bastidores e a tela/i)
+    expect(criar.instructions.indexOf('observe')).toBeLessThan(criar.instructions.indexOf('mostre'))
+    expect(quadros.instructions.match(/avance/g)).toHaveLength(3)
+    expect(camadas.instructions).toMatch(/parcialmente coberta/i)
+    expect(camadas.instructions.match(/troque/gi)).toHaveLength(2)
+    expect(camadas.instructions).toMatch(/por fim/i)
+    expect(camadas.checkpoint?.prompt).toMatch(/parcialmente coberta/i)
+  })
+})
+
 /** Percursos dos casos autorais que mudam a montagem ou as metas da cena padrão. */
 const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
   'corre-dino-aula-04.manifesto.json/experiencia-tres-areas': [

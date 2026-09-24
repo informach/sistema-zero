@@ -385,7 +385,8 @@
       min-height: 0;
       overflow-y: auto;
       overscroll-behavior: contain;
-      scrollbar-gutter: stable;
+      /* A barra reserva a mesma largura dos dois lados: o palco não fica colado à esquerda. */
+      scrollbar-gutter: stable both-edges;
     }
     .sz-scene-console-actions {
       border-left: 2px solid var(--color-border);

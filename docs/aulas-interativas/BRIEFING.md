@@ -50,7 +50,8 @@ instrução específica da atividade.
 ### Eixo do conceito: explicar e concretizar
 
 Um conceito abstrato é explicado e em seguida vira algo que a criança vê mudar. A experiência
-**não é descoberta e não é avaliação**: é a metade concreta de uma explicação.
+**não é uma prova nem uma descoberta sem ensino prévio**: é a metade concreta de uma explicação.
+O vídeo pode explicar a regra por inteiro; na experiência, a criança a confere por si mesma.
 
 Exemplo canônico: a aula explica o que são x e y, e logo depois a criança arrasta um controle de x
 e um de y e vê o sprite mudar de lugar em tempo real. Ela não descobriu a coordenada, ela sentiu a
@@ -81,6 +82,13 @@ Na seção de conceito, o vídeo explica a ideia abstrata com exemplos e analogi
 aprende. A experiência, na coluna ao lado, deixa a criança alterar algo e observar o efeito. Nenhum
 dos dois bloqueia o outro: ambos estão disponíveis desde a abertura. A seção só conclui quando o
 vídeo chega a 90% **e** a experiência é completada.
+
+A instrução da experiência diz **o que fazer e o que observar**, sem narrar antes o efeito de cada
+teste. Se a atividade exige mais de um arranjo, ela orienta cada troca e a observação seguinte;
+nenhuma meta obrigatória pode ficar escondida fora desse percurso. A descoberta concreta pode
+confirmar algo que o vídeo já explicou: não é preciso empobrecer o vídeo para preservar esse gesto.
+Uma pergunta final só permanece quando pede uma interpretação nova; se repete o palpite ou a
+observação que a criança acabou de fazer, deve sair.
 
 Uma experiência só existe quando materializa a relação central do conceito. Operação de interface,
 vocabulário simples ou algo que já fica concreto no próprio projeto não ganha uma cena artificial.
