@@ -2349,9 +2349,24 @@ const config: GatewayConfigInput = {
       upstreamAuth: 'resign',
       rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
     },
-    // Concessão MANUAL S2S (referrals → gateway → members): a Bolsa do Primeiro
-    // Jogo concede a oferta completa SEM pagamento. Espelho exato do
-    // members-webhook-grant (HMAC de borda + resign como consumer `gateway`).
+    // Consulta do curso-presente: somente referrals pode verificar se o curso
+    // kids já foi publicado. A leitura também é re-assinada para o members.
+    {
+      id: 'members-webhook-gift-course',
+      methods: ['GET'],
+      pathPattern: '/members/webhooks/gift-course/:slug',
+      service: 'members',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['referrals'],
+      },
+      upstreamAuth: 'resign',
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    // Concessão MANUAL S2S (referrals → gateway → members): mantém a oferta
+    // legada e permite o novo presente de curso específico, sem pagamento.
     {
       id: 'members-webhook-grant-manual',
       methods: ['POST'],

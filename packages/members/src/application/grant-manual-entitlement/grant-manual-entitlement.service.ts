@@ -37,6 +37,8 @@ export type GrantManualCommand =
       courseRef: string
       expiresAt?: Date | null
       sourceId?: string
+      /** Fluxo de indicação S2S: nunca conceder um curso rascunho ou de outra audiência. */
+      requirePublishedKids?: boolean
     }
   | { mode: 'all_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
   | { mode: 'all_kids_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
@@ -85,6 +87,11 @@ interface GrantOneInput {
 export class GrantManualEntitlementService {
   constructor(private readonly deps: GrantManualDeps) {}
 
+  async isPublishedKidsCourse(courseRef: string): Promise<boolean> {
+    const course = await this.deps.courses.findCourseBySlug(courseRef)
+    return course?.status === 'published' && course.audience === 'kids'
+  }
+
   async execute(cmd: GrantManualCommand): Promise<GrantManualResult> {
     const now = this.deps.clock()
     const expiresAt = cmd.expiresAt ?? null
@@ -92,7 +99,14 @@ export class GrantManualEntitlementService {
       case 'offer':
         return this.grantByOffer(cmd.userId, cmd.offerRef, expiresAt, now, cmd.sourceId)
       case 'course':
-        return this.grantByCourse(cmd.userId, cmd.courseRef, expiresAt, now, cmd.sourceId)
+        return this.grantByCourse(
+          cmd.userId,
+          cmd.courseRef,
+          expiresAt,
+          now,
+          cmd.sourceId,
+          cmd.requirePublishedKids,
+        )
       case 'all_courses':
         return this.grantAllCourses(cmd.userId, expiresAt, now, cmd.sourceId)
       case 'all_kids_courses':
@@ -156,9 +170,14 @@ export class GrantManualEntitlementService {
     expiresAt: Date | null,
     now: Date,
     sourceId?: string,
+    requirePublishedKids = false,
   ): Promise<GrantManualResult> {
     const course = await this.deps.courses.findCourseBySlug(courseRef)
-    if (!course) throw new CourseNotFoundError()
+    if (
+      !course ||
+      (requirePublishedKids && (course.status !== 'published' || course.audience !== 'kids'))
+    )
+      throw new CourseNotFoundError()
 
     // `product_id = course.id`: uuid estável → o índice de dedupe funciona (re-conceder
     // o mesmo curso ao mesmo membro colide em vez de duplicar). Snapshot sintético (sem oferta).

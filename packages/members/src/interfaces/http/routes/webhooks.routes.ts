@@ -1,11 +1,12 @@
 import { PayloadTooLargeError } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import type { AwardGamificationService } from '../../../application/gamification/award-gamification.service'
 import type { GrantEntitlementService } from '../../../application/grant-entitlement/grant-entitlement.service'
 import type { GrantManualEntitlementService } from '../../../application/grant-manual-entitlement/grant-manual-entitlement.service'
 import type { RevokeEntitlementService } from '../../../application/revoke-entitlement/revoke-entitlement.service'
 import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
+import { CourseNotFoundError } from '../../../domain/course/course.errors'
 import {
   EntitlementConflictError,
   EntitlementSaveRaceError,
@@ -61,7 +62,7 @@ function parseIsoDate(field: string, value: string | null | undefined): Date | n
 
 export interface WebhooksRoutesDeps {
   grant: GrantEntitlementService
-  /** Concessão manual S2S (bolsa do referrals) — mode 'offer' apenas. */
+  /** Concessão manual S2S: oferta legada ou curso específico da indicação. */
   grantManual: GrantManualEntitlementService
   revoke: RevokeEntitlementService
   processed: ProcessedWebhookRepository
@@ -154,10 +155,17 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
       },
       { body: GrantWebhookBody },
     )
+    .get(
+      '/gift-course/:slug',
+      async ({ params }) => ({
+        available: await deps.grantManual.isPublishedKidsCourse(params.slug),
+      }),
+      { params: t.Object({ slug: t.String({ minLength: 1, maxLength: 200 }) }) },
+    )
     .post(
-      // Concessão MANUAL S2S (referrals → gateway [resign] → members): a bolsa do
-      // Primeiro Jogo concede a oferta COMPLETA sem pagamento (catálogo rejeita
-      // oferta R$0 — grant direto é o único caminho). Régua de erros:
+      // Concessão MANUAL S2S (referrals → gateway [resign] → members): mantém
+      // a oferta legada e também aceita o curso específico da indicação.
+      // Régua de erros:
       // oferta não resolvida/vazia → 502 SEM marcar (re-entrega/retry do chamador);
       // corrida de escrita → 502 SEM marcar (transitória; retry resolve);
       // conflito de matrícula → 409 SEM marcar (terminal para o CHAMADOR, que o
@@ -172,24 +180,46 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         }
         const expiresAt = parseIsoDate('expiresAt', body.expiresAt)
         try {
-          const result = await deps.grantManual.execute({
-            mode: 'offer',
-            userId: body.userId,
-            offerRef: body.offerRef,
-            expiresAt,
-            sourceId: body.sourceId,
-          })
+          const result = await deps.grantManual.execute(
+            body.mode === 'offer'
+              ? {
+                  mode: 'offer',
+                  userId: body.userId,
+                  offerRef: body.offerRef,
+                  expiresAt,
+                  sourceId: body.sourceId,
+                }
+              : {
+                  mode: 'course',
+                  userId: body.userId,
+                  courseRef: body.courseRef,
+                  expiresAt,
+                  sourceId: body.sourceId,
+                  requirePublishedKids: true,
+                },
+          )
           if (deliveryId) await deps.processed.markProcessed(deliveryId, 'grant-manual')
           await deps.hub.notifyAccessChanged(body.userId, 'grant')
           return { ok: true, granted: result.granted.length }
         } catch (error) {
+          if (error instanceof CourseNotFoundError) {
+            deps.logger.warn('grant.manual.course_unavailable', {
+              courseRef: body.mode === 'course' ? body.courseRef : null,
+            })
+            set.status = 503
+            return { ok: false, error: 'COURSE_UNAVAILABLE' }
+          }
           if (error instanceof OfferNotFoundError) {
-            deps.logger.warn('grant.manual.offer_unresolved', { offerRef: body.offerRef })
+            deps.logger.warn('grant.manual.offer_unresolved', {
+              offerRef: body.mode === 'offer' ? body.offerRef : null,
+            })
             set.status = 502
             return { ok: false, error: 'OFFER_UNRESOLVED' }
           }
           if (error instanceof InvalidEntitlementCommandError) {
-            deps.logger.error('grant.manual.offer_empty', { offerRef: body.offerRef })
+            deps.logger.error('grant.manual.offer_empty', {
+              offerRef: body.mode === 'offer' ? body.offerRef : null,
+            })
             set.status = 502
             return { ok: false, error: 'OFFER_EMPTY' }
           }

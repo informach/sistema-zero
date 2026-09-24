@@ -803,11 +803,15 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `fixed/months`; `subscription` sem política continua no caminho legado; sem nenhum dos
   três campos continua sendo vitalício. Renovar compra fixa = NOVO paymentId/matrícula,
   sem encurtar uma matrícula vitalícia ou com validade mais distante já existente.
-- **`POST /members/webhooks/grant-manual` (08/2026 — bolsa do @sistemazero/referrals):**
-  concessão manual S2S SEM pagamento (o catálogo rejeita oferta R$ 0 — grant direto é o
-  único caminho da bolsa). `GrantManualWebhookBody` = `{userId, mode: 'offer' (literal —
-  v1 restrita; os demais modos seguem SÓ no admin JWT), offerRef, expiresAt?: ISO|null,
-  sourceId?}`. Reusa o `GrantManualEntitlementService`, que ganhou `sourceId?` em TODOS os
+- **`POST /members/webhooks/grant-manual` (bolsa do @sistemazero/referrals):**
+  concessão manual S2S SEM pagamento. `GrantManualWebhookBody` aceita a oferta legada
+  `{userId, mode:'offer', offerRef, expiresAt?, sourceId?}` ou o presente novo
+  `{userId, mode:'course', courseRef, expiresAt?, sourceId?}`; os demais modos seguem
+  SÓ no admin JWT. No braço S2S de curso, o members exige curso kids `published`
+  (caso contrário, 503 `COURSE_UNAVAILABLE` sem marcar a entrega). A leitura assinada
+  `GET /members/webhooks/gift-course/:slug` devolve `{available:boolean}` com a mesma
+  regra, para o referrals bloquear o resgate antes de criar conta. Reusa o
+  `GrantManualEntitlementService`, que ganhou `sourceId?` em TODOS os
   braços do command: `sourceKind` FICA `'manual'` (enum INTOCADO — regra do monorepo) e a
   procedência vai em `sourceId` (ex.: `scholarship:<redemptionId>`); ausente → `'manual'`
   (admin como sempre). Idempotência: `manual:userId:productId` — e com `sourceId` próprio
@@ -823,8 +827,9 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   retry pós-conserto → `{ok:true, deduped}` SEM conceder nada — sucesso FALSO no chamador.
   Sucesso marca + notifica o hub (mesma régua do `/grant`). Mesmo HMAC + `x-delivery-id`
   obrigatório do router.
-  Gateway: rota `members-webhook-grant-manual` (hmac + `upstreamAuth: 'resign'`, espelho
-  da `members-webhook-grant`). Testes: `tests/integration/grant-manual-webhook.test.ts`.
+  Gateway: rotas `members-webhook-grant-manual` e `members-webhook-gift-course` (HMAC
+  restrito ao consumer `referrals` + `upstreamAuth: 'resign'`). Testes:
+  `tests/integration/grant-manual-webhook.test.ts`.
 - **Extensão de assinatura re-tenta sob conflito otimista** (até 3×, recarregando a
   matrícula): sem isso, a renovação que perdesse a corrida p/ um cancel/ação admin
   respondia 200 e a extensão do ciclo se perdia de vez. Conflito persistente → lança

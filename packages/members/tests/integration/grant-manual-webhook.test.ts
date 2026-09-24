@@ -1,5 +1,12 @@
 import { describe, expect, test } from 'bun:test'
-import { buildApp, offerWithCourse, seedSampleCourse, signedWebhookHeaders } from '../helpers'
+import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
+import {
+  buildApp,
+  offerWithCourse,
+  seedSampleCourse,
+  signedWebhookHeaders,
+  WEBHOOK_SECRET,
+} from '../helpers'
 
 const USER = '22222222-2222-2222-2222-222222222222'
 const PATH = '/members/webhooks/grant-manual'
@@ -15,7 +22,79 @@ function post(app: ReturnType<typeof buildApp>['app'], raw: string, deliveryId?:
   )
 }
 
+function getGiftAvailability(app: ReturnType<typeof buildApp>['app'], slug: string, signed = true) {
+  const path = `/members/webhooks/gift-course/${slug}`
+  const ts = Math.floor(Date.now() / 1000)
+  const signature = signHmac(
+    WEBHOOK_SECRET,
+    canonicalHmacMessage({ method: 'GET', path, body: '' }),
+    ts,
+  )
+  return app.handle(
+    new Request(`http://localhost${path}`, {
+      headers: signed ? { 'x-signature': `t=${ts},v1=${signature}` } : {},
+    }),
+  )
+}
+
 describe('POST /members/webhooks/grant-manual (bolsa do referrals)', () => {
+  test('consulta assinada só libera curso kids publicado', async () => {
+    const { app, courses } = buildApp()
+    seedSampleCourse(courses, 'cade-todo-mundo', 'published', 'kids')
+    seedSampleCourse(courses, 'curso-rascunho', 'draft', 'kids')
+    seedSampleCourse(courses, 'curso-adulto', 'published', 'adult')
+
+    expect(await readJson(await getGiftAvailability(app, 'cade-todo-mundo'))).toEqual({
+      available: true,
+    })
+    for (const slug of ['curso-rascunho', 'curso-adulto', 'curso-ausente']) {
+      const res = await getGiftAvailability(app, slug)
+      expect(res.status).toBe(200)
+      expect(await readJson(res)).toEqual({ available: false })
+    }
+    expect((await getGiftAvailability(app, 'cade-todo-mundo', false)).status).toBe(401)
+  })
+
+  test('concede somente o curso kids publicado sem oferta e com procedência auditável', async () => {
+    const { app, courses, entitlements, hubCalls } = buildApp()
+    seedSampleCourse(courses, 'cade-todo-mundo', 'published', 'kids')
+    const raw = JSON.stringify({
+      userId: USER,
+      mode: 'course',
+      courseRef: 'cade-todo-mundo',
+      expiresAt: null,
+      sourceId: 'scholarship:red-1',
+    })
+
+    const res = await post(app, raw, 'course-1')
+    expect(res.status).toBe(200)
+    expect(await readJson(res)).toMatchObject({ ok: true, granted: 1 })
+    const active = await entitlements.listActiveByUser(USER, new Date())
+    expect(active).toHaveLength(1)
+    expect(active[0]!.toSnapshot()).toMatchObject({
+      courseRef: 'cade-todo-mundo',
+      offerId: null,
+      sourceId: 'scholarship:red-1',
+      expiresAt: null,
+    })
+    expect(hubCalls).toEqual([{ userId: USER, event: 'grant' }])
+  })
+
+  test('curso ainda em rascunho recusa o grant sem marcar a entrega', async () => {
+    const { app, courses, entitlements, hubCalls } = buildApp()
+    seedSampleCourse(courses, 'cade-todo-mundo', 'draft', 'kids')
+    const raw = JSON.stringify({ userId: USER, mode: 'course', courseRef: 'cade-todo-mundo' })
+
+    const first = await post(app, raw, 'course-draft')
+    expect(first.status).toBe(503)
+    expect(await readJson(first)).toMatchObject({ ok: false, error: 'COURSE_UNAVAILABLE' })
+    const second = await post(app, raw, 'course-draft')
+    expect(second.status).toBe(503)
+    expect((await readJson(second)).deduped).toBeUndefined()
+    expect(await entitlements.listActiveByUser(USER, new Date())).toHaveLength(0)
+    expect(hubCalls).toHaveLength(0)
+  })
+
   test('concede a oferta completa vitalícia com sourceId auditável + notifica o hub', async () => {
     const { app, courses, catalog, entitlements, hubCalls } = buildApp()
     const course = seedSampleCourse(courses)

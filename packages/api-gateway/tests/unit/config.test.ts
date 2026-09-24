@@ -356,6 +356,20 @@ describe('loadGatewayConfig', () => {
 // invariantes que valem só sobre as rotas REAIS (audit em rota mutante, ids únicos, novas
 // rotas presentes) ficavam sem rede. Asserimos direto sobre o objeto exportado (estático).
 describe('gateway.config.ts (configuração real)', () => {
+  test('consulta do curso-presente é exclusiva do referrals e re-assinada para members', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    const matched = registry.resolve('GET', '/members/webhooks/gift-course/cade-todo-mundo', 'v1')
+    expect(matched?.route).toMatchObject({
+      id: 'members-webhook-gift-course',
+      service: 'members',
+      auth: { strategies: ['hmac'], allowedConsumers: ['referrals'] },
+      upstreamAuth: 'resign',
+    })
+    expect(matched?.params.slug).toBe('cade-todo-mundo')
+  })
+
   test('gallery preparation belongs to the active student; confirmation requires a signed actor', () => {
     const prepare = realConfig.routes.find((route) => route.id === 'members-gallery-prepare')
     const commit = realConfig.routes.find((route) => route.id === 'members-gallery-commit')

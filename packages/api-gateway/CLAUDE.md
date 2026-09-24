@@ -120,14 +120,17 @@ POST/PATCH → admin+, 60/min + corpo 64KB + `audit: {}`) e **internas do funil*
 ambassadors/by-token/:token 600/min, POST …/invites e POST redemptions 300/min + corpo 64KB;
 ⚠️ o balde `by: 'principal'` é AGREGADO — o consumer é sempre `funnel` — então o teto é o
 disjuntor do agregado dimensionado p/ pico de campanha; a proteção por VISITANTE é o rate limit
-por IP do middleware do funil; `redeem` tem `timeoutMs: 45_000` — o resgate encadeia 3 S2S) —
+por IP do middleware do funil; `redeem` tem `timeoutMs: 45_000` — o resgate consulta a
+disponibilidade antes de criar conta e então encadeia as chamadas de concessão/e-mail) —
 TODAS com `referralsInternalTransforms` (o serviço exige o `x-internal-token`,
 `REFERRALS_INTERNAL_TOKEN`). O **referrals também é consumer HMAC de borda**
 (`REFERRALS_HMAC_SECRET` + `REFERRALS_ALLOWED_CIDRS`, condicional como os demais): é como a bolsa
 chama `/auth/internal/{ensure-buyer,password-tokens}`, `/messaging/send` e o novo
 **`members-webhook-grant-manual`** (`POST /members/webhooks/grant-manual`, hmac +
-`allowedConsumers: ['referrals']` + `upstreamAuth: 'resign'`, 120/min — espelho do
-`members-webhook-grant`; concede a oferta da bolsa SEM pagamento). Sem colisões: `/referrals/internal/*` é literal distinto do wildcard
+`allowedConsumers: ['referrals']` + `upstreamAuth: 'resign'`, 120/min; aceita oferta
+legada ou curso kids publicado sem pagamento) e `members-webhook-gift-course`
+(`GET /members/webhooks/gift-course/:slug`, mesma proteção, disponibilidade do
+curso-presente). Sem colisões: `/referrals/internal/*` é literal distinto do wildcard
 `/referrals/admin/*`, e `grant-manual` ≠ `grant` (coberto em `route-registry.test.ts`).
 **Extensão 09/2026 (bônus + auto-cadastro):** +3 rotas — `referrals-internal-pix` (PATCH
 `/referrals/internal/ambassadors/by-token/:token/pix`, hmac `allowedConsumers: ['funnel']`, corpo
