@@ -11,7 +11,7 @@ Três seções: conceito com experiência, construção no Estúdio, fechamento.
 **Narração:**
 > "Você já fez a chave desaparecer do caminho e fez o jogo guardar que o personagem está com ela. Só que olha para o farol: a luz continua apagada. Falta ensinar uma decisão ao jogo. Imagina que você chega em casa e encontra a porta fechada. Antes de entrar, precisa conferir uma coisa: está com a chave? Essa pergunta tem duas respostas possíveis. Na programação, chamamos uma pergunta assim de condição. A condição ajuda o jogo a escolher o que faz em cada situação. Aqui, a pergunta vai ser sobre a informação temChave, que você guardou ontem. Depois deste vídeo, experimente a porta do farol nas duas situações. Repare no que muda quando o personagem leva ou não leva a chave."
 
-**Na tela:** encerrar o vídeo antes de qualquer toque na experiência. Deixar o balão curto do Zappy fazer a ponte, sem repetir os passos dos controles da cena.
+**Cena final:** encerrar o vídeo antes de qualquer toque na experiência. Deixar o balão curto do Zappy fazer a ponte, sem repetir os passos dos controles da cena.
 
 ## Seção 2. Faça a porta conferir a chave
 

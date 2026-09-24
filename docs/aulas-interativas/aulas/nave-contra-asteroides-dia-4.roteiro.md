@@ -51,7 +51,7 @@ orienta a gravação; as **Notas de produção** são lembretes para a equipe, n
 ## Seção 1. O que a gente vai fazer hoje
 
 ### Clipe `video-abertura` · O jogo começa a contar
-**Duração alvo:** 25 a 35 s · **Palavras:** 59 (cerca de 26 s)
+**Duração alvo:** 25 a 35 s · **Palavras:** 57 (cerca de 25 s)
 
 **Na tela:** o jogo do fim do Dia 4 rodando, com o placar no canto de cima e os três corações logo
 abaixo dele. Um tiro acerta uma pedra e o número do placar sobe.
@@ -290,7 +290,7 @@ sem colocar a ficha nelas, simular batidas ou revelar as duas contagens da exper
 
 ---
 
-## Seção 7. Quiz do Dia 4
+## Seção 7. Hora do desafio
 
 Sem vídeo. O Zappy faz uma ponte curta: "Agora confira o que você descobriu sobre os pontos
 e as vidas. Pense nas duas contagens antes de responder." O quiz não divide seção com

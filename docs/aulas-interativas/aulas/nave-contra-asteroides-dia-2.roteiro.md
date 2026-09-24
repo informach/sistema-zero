@@ -180,7 +180,7 @@ barra de espaço na lista e escolher ela.
 
 ---
 
-## Seção 4. Número escrito ou posição lida?
+## Seção 4. O número escrito e o número lido
 
 ### Clipe `video-escrito-e-lido` · O endereço que acompanha a nave
 **Duração alvo:** 35 a 45 segundos.
@@ -258,7 +258,7 @@ mostrar o quadradinho de cor do tiro, com uma cor escolhida.
 
 ---
 
-## Seção 6. Para que lado vai o tiro?
+## Seção 6. O menos que manda para cima
 
 ### Clipe `video-sinal-da-velocidade` · O sinal muda a direção
 **Duração alvo:** 45 a 55 segundos; recalibrar após gravar.
@@ -367,7 +367,7 @@ primeiro tiro saindo da nave, subindo, com o som.
 
 ---
 
-## Seção 9. O tiro sumiu. Ele foi embora?
+## Seção 9. Para onde vai o tiro que sai da tela
 
 ### Clipe `video-tiro-fora-da-tela` · Invisível não quer dizer removido
 **Duração alvo:** 35 a 45 segundos.
@@ -424,7 +424,7 @@ segurando.
 
 ---
 
-## Seção 11. Quiz do Dia 2
+## Seção 11. Hora do desafio
 
 Sem vídeo. O Zappy faz uma única ponte curta para o quiz separado: "Hora de conferir o que você
 descobriu sobre os tiros. Pode pensar com calma antes de escolher!" As perguntas verificam o

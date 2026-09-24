@@ -169,7 +169,7 @@ contadores da experiência.
 ## Seção 5. Embrulhe a partida numa pergunta
 
 ### Clipe `video-embrulhar` · Embrulhar no Se, do começo ao fim
-**Duração alvo:** 95 a 115 s · **Palavras:** 220 (cerca de 96 s)
+**Duração alvo:** 95 a 115 s · **Palavras:** 225 (cerca de 99 s)
 
 **Na tela:** a área Enquanto estiver rodando enquadrada inteira, com a cadeia do `A cada quadro do
 jogo` rolando do `Limpar a tela` até o `Desenhar as vidas do sprite como em x y tamanho cor`.
@@ -529,7 +529,7 @@ vez.
 
 ---
 
-## Seção 11. Quiz do Dia 5
+## Seção 11. Hora do desafio
 
 Sem vídeo. O Zappy faz uma ponte curta: "Hora de conferir o ciclo do seu jogo: começo,
 partida e recomeço. Pense no que você observou antes de responder."

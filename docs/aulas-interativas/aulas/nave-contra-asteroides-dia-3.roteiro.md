@@ -88,7 +88,7 @@ experiência.
 ## Seção 3. O grupo e o relógio da chuva
 
 ### Clipe `video-grupo-e-relogio` · O saquinho das pedras e o relógio vizinho
-**Duração alvo:** 55 a 65 s · **Palavras:** 143 (cerca de 63 s)
+**Duração alvo:** 55 a 65 s · **Palavras:** 146 (cerca de 64 s)
 
 **Na tela:** Estúdio aberto no projeto do fim do Dia 2, com a área Ao iniciar enquadrada e o `Criar
 grupo de sprites` dos tiros à vista como último bloco da pilha.
@@ -247,7 +247,7 @@ apertar a barra de espaço; o tiro atravessa a pedra, sem explosão. Não corrig
 
 ---
 
-## Seção 7. Quem some na trombada?
+## Seção 7. Quem some na trombada
 
 ### Clipe `video-apelidos` · Só os dois desta colisão
 **Duração alvo:** 40 a 50 segundos; recalibrar após gravar.
@@ -314,7 +314,7 @@ a lista à vista antes de escolher explosão.
 > o menu do efeito e escolhe **explosão**, que não vem escolhida."
 ---
 
-## Seção 9. Quiz do Dia 3
+## Seção 9. Hora do desafio
 
 Sem vídeo. O Zappy faz uma única ponte curta: "Hora de conferir o que você descobriu sobre o
 relógio e as colisões. Pense no que viu nas experiências antes de escolher." O quiz fica sozinho,

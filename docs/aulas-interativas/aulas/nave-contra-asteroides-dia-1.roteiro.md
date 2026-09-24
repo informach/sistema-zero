@@ -114,7 +114,7 @@ depois, desligado e parado.
 > **Enquanto estiver rodando** guarda o trabalho que se repete enquanto o jogo está ligado. Pensa
 > num ventilador. Quando está ligado, ele gira. Quando a gente desliga, ele para."
 
-**Na tela:** encerrar com as duas áreas vazias lado a lado. Não mostrar a ação, o contador nem o
+**Cena final:** encerrar com as duas áreas vazias lado a lado. Não mostrar a ação, o contador nem o
 resultado da comparação; a criança fará esse teste na experiência ao lado.
 
 ---
@@ -528,7 +528,7 @@ do fundo da experiência.
 
 ---
 
-## Seção 14. Quiz do Dia 1
+## Seção 14. O que fez a nave ganhar vida
 
 Sem vídeo. O Zappy faz uma ponte curta antes das perguntas sobre o que acontece ao iniciar, o
 que se repete e por que criar a nave não basta para ela aparecer. O quiz fica sozinho.
@@ -539,6 +539,8 @@ que se repete e por que criar a nave não basta para ela aparecer. O quiz fica s
 
 ### Clipe `video-teste-e-envio` · A nave nas duas bordas e o envio
 **Duração alvo:** 80 a 95 segundos; recalibrar após gravar.
+
+**Na tela:** abrir a prévia do jogo completo, com a nave e o céu de estrelas à vista.
 
 **Narração:**
 > "A nave está pronta: ela aparece, tem um céu de estrelas e responde às setas. Vamos testar se

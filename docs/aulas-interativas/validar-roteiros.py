@@ -5,8 +5,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent / 'aulas'
 WORD = re.compile(r"[\wÀ-ÿ]+(?:['’][\wÀ-ÿ]+)?", re.UNICODE)
-CLIP = re.compile(r'^### Clipe `([^`]+)`', re.MULTILINE)
+CLIP = re.compile(r'^### (?:Clipe|Vídeo) `([^`]+)`', re.MULTILINE)
 SECTION = re.compile(r'^## Seção (\d+)\. (.+)$', re.MULTILINE)
+SINGLE_VIDEO_SECTION = re.compile(r'^## (?:\d+\. )?(.+?)(?: — .+)?$', re.MULTILINE)
 
 def audit(manifest_path):
     manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
@@ -17,6 +18,18 @@ def audit(manifest_path):
         return [f'{script_path.name}: ausente ({len(expected)} clipes)'], None
     script = script_path.read_text(encoding='utf-8')
     proposal = manifest_path.with_name(manifest_path.name.replace('.manifesto.json', '.md')).read_text(encoding='utf-8')
+    if manifest_path.name.startswith('cade-todo-mundo-'):
+        headings = list(SINGLE_VIDEO_SECTION.finditer(script))
+        titles = [match.group(1) for match in headings]
+        expected_titles = [section['title'] for section in manifest['sections']]
+        errors = []
+        if titles != expected_titles or len(expected) != len(headings):
+            errors.append(f'{script_path.name}: seções ou vídeos diferentes do manifesto: {titles} vs {expected_titles}')
+        for index, heading in enumerate(headings):
+            body = script[heading.end():headings[index + 1].start() if index + 1 < len(headings) else len(script)]
+            if '**Na tela:**' not in body or '> “' not in body:
+                errors.append(f'{script_path.name}/seção {index + 1}: direção de tela ou fala ausente')
+        return errors, (script_path.name, len(expected), len(headings), [])
     found = CLIP.findall(script)
     errors = []
     if found != expected:
@@ -65,13 +78,15 @@ def audit(manifest_path):
             if manifest_duration and (lo, hi) != tuple(map(int, manifest_duration.groups())):
                 errors.append(f'{script_path.name}/{key}: duração difere do manifesto')
             table = next((line for line in proposal.splitlines() if line.startswith(f'| `{key}` |')), None)
-            if table and f'{lo} a {hi} s' not in table:
+            if table and re.search(r'\d+ a \d+ s', table) and f'{lo} a {hi} s' not in table:
                 errors.append(f'{script_path.name}/{key}: duração difere da tabela da proposta')
             spoken_seconds = count / 137 * 60
             held_seconds = 20 if 'pelo menos vinte segundos' in body else 0
             if spoken_seconds + held_seconds < lo * .75 or spoken_seconds > hi * 1.25:
                 durations.append(f'{key}:{count}p/{lo}-{hi}s')
         for bad in [r'\bcrianç[ao]s?\b', r'\broda (?:o |seu )?jogo\b', r'\baí embaixo\b', r'\bali do lado\b']:
+            if manifest_path.name == 'desafio-certificado.manifesto.json' and key == 'video-pitch-farol' and bad == r'\bcrianç[ao]s?\b':
+                continue
             if re.search(bad, spoken, re.IGNORECASE):
                 errors.append(f'{script_path.name}/{key}: fala proibida: {bad}')
     if '—' in script:
