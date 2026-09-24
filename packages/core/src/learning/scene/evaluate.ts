@@ -211,6 +211,19 @@ function degrau(
     texto: castText(texto, cast),
     metas,
   })
+  if (scene === 'random' && state.speed.fallingY !== undefined) {
+    if (!d.includes('positions'))
+      return t(
+        level >= 3
+          ? 'Aperte Sortear lugar na régua de cima até aparecerem marcas em dois lugares diferentes.'
+          : 'Sorteie o lugar de mais uma pedra e compare as marcas na régua de cima.',
+        ['positions'],
+      )
+    if (!d.includes('above'))
+      return t('Agora deixe o tempo passar até a primeira pedra entrar pela borda de cima.', [
+        'above',
+      ])
+  }
   /**
    * ⚠️⚠️ Os ESTADOS SEM SAÍDA vêm antes da escada, em todo degrau (consertos do review da onda A do
    * lote 5). Neles a pista de sempre manda fazer o que já não funciona:

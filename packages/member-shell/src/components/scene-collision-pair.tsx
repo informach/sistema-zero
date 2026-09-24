@@ -127,11 +127,6 @@ export function CollisionPairControls({
         </SceneButton>
         <SceneButton onClick={() => dispatch({ type: 'reset' })}>Voltar ao começo</SceneButton>
       </div>
-      {pair.collided && (
-        <p className="text-sm text-muted-foreground">
-          Volte ao começo depois de trocar os seletores para comparar a mesma trombada.
-        </p>
-      )}
     </div>
   )
 }

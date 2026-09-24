@@ -16,7 +16,7 @@
 ## Seção 1. O que a gente vai fazer hoje
 
 ### Clipe `video-abertura` · Hoje o seu dino aparece
-**Duração alvo:** 20 a 30 segundos · **Palavras:** 52
+**Duração alvo:** 20 a 30 segundos; recalibrar após gravar.
 
 **Na tela:** Reabrir a aula no estado final da Aula 1: borda, cor e nenhum Dino na área do jogo.
 
@@ -27,8 +27,8 @@
 **Na tela:** Mostrar por poucos segundos o resultado de hoje, com a floresta passando atrás do Dino.
 
 **Narração:**
-> "Repara numa coisa: ele corre no mesmo lugar, e é a floresta que passa. Vamos montar o motor
-> que desenha tudo isso."
+> "Hoje vamos montar o motor que põe o Dino e a floresta em movimento. Um bloco de cada vez,
+> até ele aparecer no seu jogo."
 
 ## Seção 2. O jogo é um filme desenhado na hora
 

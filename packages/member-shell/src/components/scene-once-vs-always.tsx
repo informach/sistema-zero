@@ -9,6 +9,7 @@ import {
   type OncePlacement,
   type OnceVsAlwaysPreset,
   oncePreset,
+  onceRunFinished,
   type SceneAction,
   type SceneCast,
   type SceneState,
@@ -58,12 +59,30 @@ export function OnceVsAlwaysStage({
   const temChao = cenarioTemChao(mundo)
   const piso = pisoDoMundo(mundo, 248)
   const temFichaDeFundo = prepared.cards.some((card) => card.kind === 'paint')
+  const estadoDoJogo =
+    frames === 0
+      ? 'Pronto para começar'
+      : onceRunFinished(state.once, prepared)
+        ? 'Teste encerrado'
+        : 'Jogo começou'
+  const acoesFeitas = Object.values(state.once.fires).reduce((total, vezes) => total + vezes, 0)
+  const detalheDaCena = isLives
+    ? `${hearts} vidas e ${hits} batidas.`
+    : prepared.id === 'duas-caixas-nave'
+      ? heroX >= 620
+        ? 'A nave saiu da cena.'
+        : 'A nave está visível no espaço.'
+      : prepared.id === 'tres-caixas-tiro'
+        ? `${shots} tiros.`
+        : prepared.id === 'tres-caixas-som'
+          ? `${sounds} sons.`
+          : `${heroCount} Dinos.`
   return (
     <SceneCanvas
       cast={chosenCast}
       mundo={mundo}
-      titulo="O jogo reagindo às fichas do projeto"
-      descricao={`Passo ${frames}. ${heroCount} personagens, ${shots} tiros, ${sounds} sons, ${hearts} vidas e ${hits} batidas.`}
+      titulo="O jogo reagindo às ações do projeto"
+      descricao={`${estadoDoJogo}. ${detalheDaCena} ${acoesFeitas} ações feitas.`}
     >
       {(palco) => (
         <>
@@ -79,15 +98,15 @@ export function OnceVsAlwaysStage({
           )}
           {temChao && <path d="M0 248H560" className="stroke-scene-line" strokeWidth={2} />}
           <Texto x={24} y={35} tamanho={15} className="fill-scene-ink" fontWeight="700">
-            {`Passo ${frames}`}
+            {estadoDoJogo}
           </Texto>
-          {prepared.cards.some((card) => card.id === 'move') && (
-            <Texto x={24} y={67} tamanho={14} className="fill-scene-b-ink" fontWeight="700">
-              {`Movimentos: ${state.once.fires.move}`}
-            </Texto>
-          )}
           {HERO_SLOTS.slice(0, heroCount).map((slot, index) => (
-            <ActorFigure key={slot} figure={hero} x={Math.min(490, heroX + index * 76)} y={piso} />
+            <ActorFigure
+              key={slot}
+              figure={hero}
+              x={prepared.id === 'duas-caixas-nave' ? heroX : Math.min(490, heroX + index * 76)}
+              y={piso}
+            />
           ))}
           <ActorFigure
             figure={obstacle}
@@ -154,9 +173,6 @@ export function OnceVsAlwaysControls({
   }
   return (
     <div className="sz-once-controls space-y-2">
-      <p className="text-sm text-muted-foreground">
-        Escolha uma ficha e depois onde colocá-la. Você também pode arrastar.
-      </p>
       <div className="sz-once-areas">
         {(['outside', ...prepared.areas] as OncePlacement[]).map((area) => (
           <div
@@ -177,12 +193,12 @@ export function OnceVsAlwaysControls({
           >
             <div className="sz-once-area-heading">
               <p className="text-sm font-semibold">
-                {area === 'outside' ? 'Fichas disponíveis' : AREA_LABEL[area]}
+                {area === 'outside' ? 'Ações disponíveis' : AREA_LABEL[area]}
               </p>
               {selected && state.once.placement[selected.id] !== area && (
                 <SceneButton
                   className="h-auto max-w-full whitespace-normal px-2"
-                  aria-label={`${area === 'outside' ? 'Devolver para Fichas disponíveis' : `Colocar em ${AREA_LABEL[area]}`}: ${castText(selected.label, cast)}`}
+                  aria-label={`${area === 'outside' ? 'Devolver para Ações disponíveis' : `Colocar em ${AREA_LABEL[area]}`}: ${castText(selected.label, cast)}`}
                   onClick={() => place(area)}
                 >
                   {area === 'outside' ? 'Devolver aqui' : 'Colocar aqui'}
@@ -215,7 +231,7 @@ export function OnceVsAlwaysControls({
       </div>
       {selected && (
         <p role="status" className="text-sm font-medium text-primary">
-          {castText(selected.label, cast)} escolhida. Agora escolha uma área.
+          Ação escolhida: {castText(selected.label, cast)}. Agora escolha uma área.
         </p>
       )}
       {prepared.areas.includes('event') && (
@@ -229,7 +245,7 @@ export function OnceVsAlwaysControls({
           </SceneButton>
           {state.once.placement.event !== 'event' && (
             <p className="text-sm text-muted-foreground">
-              Abre quando a ficha do evento estiver em Quando acontecer.
+              Disponível quando a ação estiver em Quando acontecer.
             </p>
           )}
         </div>

@@ -1,11 +1,14 @@
 # Roteiro de gravação · Desafio do Primeiro Jogo · Dia 5 · O jogo ganha começo e fim
 
+**Como ler este roteiro:** só o texto entre aspas em **Narração** é falado no vídeo. **Na tela**
+orienta a gravação; as **Notas de produção** são lembretes para a equipe, não falas para a criança.
+
 ## Especificações
 
-- **Formato:** gravação da tela do Estúdio com narração por cima. Dez clipes, um ou dois por seção
-  com vídeo. O projeto de partida é o do fim do Dia 4.
-- **Duração:** 700 a 840 segundos de clipe somados, narração pura de 1.710 palavras a **137
-  palavras por minuto**, que é o ritmo real medido em gravação. É a aula mais longa das cinco.
+- **Formato:** 11 clipes, exatamente um por seção com vídeo. Conceitos sem gesto de paleta,
+  prática no Estúdio. O projeto de partida é o do fim do Dia 4.
+- **Duração:** aferir após gravar. É a aula mais longa dos cinco dias; os clipes conceituais
+  novos ficam em cerca de 35 a 45 segundos, e a entrega inclui o fecho no mesmo clipe.
 - **Calibração:** ela já traz variável, leitura de variável dentro de outro bloco, evento de tecla,
   relógio, duas colisões, vida do sprite e HUD. É novo de verdade nesta aula: a constante, o estado
   do jogo, embrulhar no Se, o senão se, o desenho de tela e o reinício.
@@ -48,67 +51,72 @@
 ## Seção 1. O que a gente vai fazer hoje
 
 ### Clipe `video-abertura` · O jogo ganha começo e fim
-**Duração alvo:** 30 a 40 s · **Palavras:** 69 (cerca de 30 s)
+**Duração alvo:** 35 a 45 segundos; recalibrar após gravar.
 
 **Na tela:** o jogo pronto, aberto na tela de abertura com o nome. Apertar Enter e mostrar um trecho
 curto de partida.
 
 **Narração:**
-> "Hoje o seu jogo ganha começo e fim! Ele vai abrir numa tela com o nome que você escolher, e a
-> partida só começa quando alguém apertar o Enter."
+> "Oi! Chegou o último dia do desafio. Hoje o seu jogo ganha começo e fim! Ele vai abrir numa
+> tela com o nome que você escolher, e a partida só começa quando alguém apertar o Enter."
 
 **Na tela:** deixar as vidas acabarem até a tela de derrota, depois cortar para uma partida que
 chega na tela de vitória.
 
 **Narração:**
-> "A gente vai guardar a partida inteira atrás de uma pergunta, montar as telas, e ensinar o Enter a
-> comandar tudo. É a aula mais longa das cinco, e o seu projeto fica guardado se você precisar parar
-> no meio."
+> "A gente vai montar as telas e ensinar o jogo a esperar o Enter antes de começar a partida.
+> Vamos fazer uma parte de cada vez. Se você quiser parar um pouco, seu projeto
+> fica salvo para continuar depois."
 
 ---
 
 ## Seção 2. Os quatro momentos do jogo
 
 ### Clipe `video-telas` · Os quatro momentos do jogo
-**Duração alvo:** 40 a 50 s · **Palavras:** 92 (cerca de 40 s)
+**Duração alvo:** 55 a 65 segundos; recalibrar após gravar.
 
-**Na tela:** quatro cartões entrando um de cada vez, escritos inicio, jogando, vitoria e fim. Nenhuma
-seta ainda.
+**Na tela:** uma criança abre um jogo e encontra a tela com o nome dele. Depois aperta começar,
+joga e chega a uma tela de vitória; em outra tentativa, chega a uma tela de derrota. Só então
+aparecem quatro cartões, um de cada vez, escritos inicio, jogando, vitoria e fim.
 
 **Narração:**
-> "O seu jogo vai ter quatro momentos: **inicio**, **jogando**, **vitoria** e **fim**. Ele guarda um
-> de cada vez, e o momento que está guardado é que decide o que o jogo faz agora."
+> "Antes de montar a abertura e os finais do nosso jogo, vamos entender por quais momentos uma
+> partida passa. Pensa num jogo que você já jogou. Primeiro aparece o nome dele. Você aperta para começar,
+> joga um pouco e, no final, pode ganhar ou perder. O nosso jogo também vai ter esse caminho.
+> Vamos chamar essas partes de **inicio**, **jogando**, **vitoria** e **fim**. Esse último nome é para
+> quando a gente perde. O jogo sabe em qual
+> delas está, e por isso sabe o que deve fazer agora."
 
 **Na tela:** uma seta do cartão inicio para o cartão jogando, com a palavra Enter escrita em cima
 dela. Nenhuma outra seta na tela.
 
 **Narração:**
-> "Do **inicio** para o **jogando**, quem leva é o Enter. Enquanto o momento guardado for inicio, a
-> partida não anda."
+> "Na abertura, o Enter leva para **jogando**. Até você apertar, a partida espera."
 
 **Na tela:** a seta anterior apaga. Entra uma seta do cartão jogando para o cartão vitoria, com o
 número 26 escrito em cima dela.
 
 **Narração:**
-> "Do **jogando** para o **vitoria**, quem leva são os pontos chegando na meta, que vai ser **26**."
+> "Se os pontos chegarem à meta de **26**, o jogo vai para **vitoria**."
 
 **Na tela:** a seta anterior apaga. Entra uma seta do cartão jogando para o cartão fim, com três
 corações vazios desenhados em cima dela.
 
 **Narração:**
-> "E do **jogando** para o **fim**, quem leva são as vidas acabando. Esses três caminhos são o que
-> você vai montar hoje."
+> "Se as vidas acabarem, ele vai para **fim**. Hoje você vai montar esses caminhos no seu jogo."
+
+## Seção 3. A meta e o primeiro momento
 
 ### Clipe `video-alvo` · A meta e o primeiro momento
-**Duração alvo:** 45 a 55 s · **Palavras:** 121 (cerca de 53 s)
+**Duração alvo:** 50 a 60 segundos; recalibrar após gravar.
 
 **Na tela:** a área Ao iniciar enquadrada, com o `Criar variável com valor` dos pontos e o `Dar ao
 sprite de vida` à vista.
 
 **Narração:**
-> "Para saber quando alguém ganhou, o jogo precisa de uma meta: **26** pedras destruídas. A caixa dos
-> pontos muda o tempo todo, e essa aqui não muda nunca. Caixa que não muda tem nome próprio:
-> **constante**. É uma caixinha lacrada."
+> "Para saber quando alguém ganhou, o jogo precisa de uma meta. A nossa é destruir **26** pedras.
+> Os pontos vão mudando durante a partida, mas a meta fica em 26. Imagina uma caixinha lacrada,
+> com esse número guardado lá dentro. No Estúdio, a gente chama essa caixinha de **constante**."
 
 **Na tela:** na categoria Programação, abrir 🏷️ Variáveis e arrastar `Criar constante com valor`
 para dentro do Ao iniciar, encaixado por baixo do `Dar ao sprite de vida`.
@@ -117,10 +125,12 @@ para dentro do Ao iniciar, encaixado por baixo do `Dar ao sprite de vida`.
 > "Na categoria **Programação**, abre **Variáveis**. Pega **Criar constante com valor** e encaixa
 > dentro do Ao iniciar, logo abaixo do Dar ao sprite de vida."
 
-**Na tela:** escrever alvo no campo do nome e 26 no campo do valor, parando o cursor em cada um.
+**Na tela:** trocar PI por alvo no campo do nome da constante e clicar fora. Trocar 0 por 26
+no campo do valor e clicar fora também.
 
 **Narração:**
-> "No nome, escreve **alvo**. No valor, **26**."
+> "No nome da constante, troca **PI** por **alvo** e clica fora para confirmar. No valor, troca
+> o **0** por **26** e clica fora também."
 
 **Na tela:** na categoria Jogo 2D, abrir Jogo e telas, seção Telas e partida, e arrastar `Mudar o
 estado do jogo para` até o fim do Ao iniciar, encaixado por baixo do `Criar constante com valor`.
@@ -138,7 +148,25 @@ momentos aparecerem e fechar sem trocar.
 
 ---
 
-## Seção 4. Embrulhe a partida numa pergunta
+## Seção 4. O relógio pode agir agora?
+
+### Clipe `video-estado-do-jogo` · A pergunta que abre a partida
+**Duração alvo:** 35 a 45 segundos.
+
+**Na tela:** quatro cartões de momento e uma porta esquemática marcada `jogando`. Uma pergunta
+antes da porta decide se a ordem de criar pode passar, sem animar o relógio nem revelar os
+contadores da experiência.
+
+**Narração:**
+> "Lembra do relógio que faz nascer uma pedra a cada 40 quadros? Ele continua contando o tempo,
+> mesmo quando a tela de abertura está aparecendo. Mas a gente não quer pedras caindo no menu.
+> Então, antes de criar uma pedra, o jogo pergunta se já estamos em **jogando**. Se sim, ela nasce.
+> Se ainda estamos na abertura, ele espera. Na experiência, veja o que muda quando a partida
+> começa."
+
+---
+
+## Seção 5. Embrulhe a partida numa pergunta
 
 ### Clipe `video-embrulhar` · Embrulhar no Se, do começo ao fim
 **Duração alvo:** 95 a 115 s · **Palavras:** 220 (cerca de 96 s)
@@ -147,8 +175,8 @@ momentos aparecerem e fechar sem trocar.
 jogo` rolando do `Limpar a tela` até o `Desenhar as vidas do sprite como em x y tamanho cor`.
 
 **Narração:**
-> "Hoje a partida inteira mora solta dentro do motor, e roda desde o instante em que a página abre. A
-> gente vai trancar ela atrás de uma pergunta."
+> "Até agora, os blocos da partida estão soltos dentro do motor. Por isso, eles funcionam desde
+> que o jogo abre. Vamos colocar todos dentro de uma pergunta: o jogo já está em **jogando**?"
 
 **Na tela:** na categoria Programação, abrir ❓ Lógica & Se e arrastar `Condição se, senão se e
 senão` para o topo do `A cada quadro do jogo`, encaixado por cima do `Limpar a tela`. Gravar sem
@@ -179,7 +207,7 @@ acompanhando, para dentro do então. Mostrar o arraste inteiro, sem atalho de te
 **Narração:**
 > "Quatro: pega a sequência que já existia pelo primeiro bloco dela, o **Limpar a tela**, e solta
 > dentro do então. Quando você arrasta o primeiro, todos os que estão encaixados embaixo vêm junto. E
-> é **arrastar**, nunca copiar: se copiar, ficam dois jogos rodando ao mesmo tempo."
+> é **arrastar**, não copiar: se copiar, ficam dois jogos rodando ao mesmo tempo."
 
 **Na tela:** zoom e pausa no contorno do então. Rolar de cima para baixo dentro dele, parando no
 `Limpar a tela` e depois no `Desenhar as vidas do sprite como em x y tamanho cor`.
@@ -187,29 +215,32 @@ acompanhando, para dentro do então. Mostrar o arraste inteiro, sem atalho de te
 **Narração:**
 > "Agora confere o contorno do então. No começo da cadeia, dentro dele, o **Limpar a tela**. No fim,
 > ainda dentro dele, o **Desenhar as vidas do sprite como em x y tamanho cor**. A partida inteira
-> ficou de dentro."
+> ficou lá dentro."
 
 ---
 
-## Seção 5. O relógio e a barra de espaço também perguntam
+## Seção 6. O relógio e a barra de espaço também perguntam
 
 ### Clipe `video-relogio-e-tiro` · A mesma manobra em mais dois lugares
-**Duração alvo:** 95 a 110 s · **Palavras:** 225
+**Duração alvo:** 155 a 175 segundos; recalibrar após gravar.
 
 **Na tela:** rolar até o `A cada quadros` de 40, com o `No grupo criar um asteroide em x y tamanho
 cor com vx vy` dentro dele.
 
 **Narração:**
-> "Agora é embrulhar no Se outra vez, em dois lugares, com as mesmas quatro etapas."
+> "A partida já ficou dentro da pergunta. Mas o relógio que cria as pedras e o evento que cria os
+> tiros ainda estão fora dela. Vamos colocar uma pergunta em cada um desses lugares, para os dois
+> só funcionarem quando o jogo estiver em **jogando**. Vou mostrar cada encaixe."
 
 **Na tela:** na categoria Programação, abrir ❓ Lógica & Se e arrastar `Condição se, senão se e
 senão` para dentro do `A cada quadros` de 40, encaixado por cima do `No grupo criar um asteroide`.
 Tirar a comparação de fábrica e apagar.
 
 **Narração:**
-> "Na categoria **Programação**, abre **Lógica e Se**. Pega **Condição se, senão se e senão** e
-> encaixa dentro do A cada quadros de 40, logo acima do No grupo criar um asteroide. Tira a comparação
-> de fábrica e apaga."
+> "Primeiro, vai até o **A cada quadros** que está com **40**. Na categoria **Programação**, abre
+> **Lógica e Se**. Pega **Condição se, senão se e senão** e encaixa dentro desse relógio, logo
+> acima do **No grupo criar um asteroide**. A pergunta vem com uma comparação de fábrica: arrasta
+> essa comparação para fora e apaga."
 
 **Na tela:** na categoria Jogo 2D, abrir Jogo e telas, seção Telas e partida, e arrastar `o estado do
 jogo é ?` para o buraco da pergunta, escolhendo jogando. Depois arrastar o bloco da pedra para
@@ -217,24 +248,29 @@ dentro do então.
 
 **Narração:**
 > "Na categoria **Jogo 2D**, abre **Jogo e telas**, e dentro dela **Telas e partida**. Pega **o estado
-> do jogo é ?**, encaixa no buraco da pergunta e escolhe **jogando** no menu. Depois arrasta o No
-> grupo criar um asteroide para dentro do então."
+> do jogo é ?**, encaixa no buraco vazio da pergunta do **Se** e escolhe **jogando** no menu.
+> Agora pega o **No grupo criar um asteroide** pelo começo e arrasta para dentro do **então**.
+> Assim, o relógio só cria pedras durante a partida."
 
 **Na tela:** rolar até a área Quando acontecer e enquadrar o `Quando apertar a tecla` da barra de
-espaço com os dois blocos dentro. Repetir as três primeiras etapas, mais rápido.
+espaço com os dois blocos dentro. Mostrar cada abertura de categoria e cada encaixe, sem acelerar
+nem cortar o caminho.
 
 **Narração:**
-> "Agora o evento, com as mesmas quatro etapas dentro do Quando apertar a tecla da barra de espaço.
-> Uma: em **Programação**, **Lógica e Se**, o **Condição se, senão se e senão**. Duas: a comparação de
-> fábrica para fora. Três: em **Jogo 2D**, **Jogo e telas**, **Telas e partida**, o **o estado do jogo
-> é ?** com **jogando**."
+> "Agora vai até a área **Quando acontecer** e encontra o **Quando apertar a tecla** da barra de
+> espaço. Dentro dele estão o tiro e o som. Na categoria **Programação**, abre **Lógica e Se**.
+> Pega **Condição se, senão se e senão** e encaixa dentro desse **Quando apertar a tecla**, logo
+> acima do **Criar tiro no grupo**. Arrasta a comparação de fábrica para fora da pergunta e apaga.
+> Depois, na categoria **Jogo 2D**, abre **Jogo e telas** e **Telas e partida**. Pega **o estado do
+> jogo é ?**, encaixa no buraco vazio da pergunta e escolhe **jogando** no menu."
 
 **Na tela:** arrastar o `Criar tiro no grupo` para dentro do então, com o `Tocar efeito` vindo junto
 por estar encaixado embaixo.
 
 **Narração:**
-> "Quatro: arrasta os dois blocos que já estavam lá, o **Criar tiro no grupo** e o **Tocar efeito**,
-> para dentro do então, nessa ordem."
+> "Por último, pega o **Criar tiro no grupo** pelo começo da sequência e arrasta para dentro do
+> **então**. O **Tocar efeito**, que está encaixado embaixo, vai junto. Confere que os dois ficaram
+> dentro da pergunta, com o tiro antes do som."
 
 **Na tela:** clicar num espaço vazio da área dos blocos, clicar na área do jogo e apertar a barra de
 espaço várias vezes. Segurar alguns segundos com a tela preta parada.
@@ -246,15 +282,16 @@ espaço várias vezes. Segurar alguns segundos com a tela preta parada.
 para a seção seguinte sem avançar a seção da criança no vídeo.
 
 **Narração:**
-> "Quando você terminar estes dois encaixes e a seção estiver concluída, este é um bom lugar para
-> parar. Espere aparecer **Salvo**. Depois, volte pelo mesmo aparelho e continue na próxima seção."
+> "Agora o jogo só pode criar pedras e tiros durante a partida. Por enquanto, ela ainda não
+> começou, então a tela fica quietinha. Espera aparecer **Salvo** antes de continuar. Daqui a
+> pouco vamos ensinar o jogo a perceber quando a partida acaba."
 
 ---
 
-## Seção 6. O jogo decide quando acaba
+## Seção 7. O jogo decide quando acaba
 
 ### Clipe `video-finais` · A vitória pergunta primeiro
-**Duração alvo:** 95 a 110 s · **Palavras:** 229
+**Duração alvo:** 120 a 145 segundos; recalibrar após gravar.
 
 **Na tela:** mostrar rapidamente os três lugares protegidos: motor, relógio e evento da barra de
 espaço.
@@ -268,41 +305,47 @@ tamanho cor` como último bloco de dentro. Na categoria Programação, abrir ❓
 `Condição se, senão se e senão` encaixado por baixo dele, ainda dentro do então.
 
 **Narração:**
-> "A primeira é a vitória. As duas moram no finalzinho do então de jogando, depois do Desenhar as
-> vidas do sprite. Na categoria **Programação**, abre **Lógica e Se**. Pega **Condição se, senão se e
-> senão** e encaixa ali. A comparação de fábrica serve, e você não tira nada."
+> "A primeira pergunta é a vitória. Vai até o fim do **então** de **jogando**, logo depois do
+> **Desenhar as vidas do sprite**. Na categoria **Programação**, abre **Lógica e Se**. Pega
+> **Condição se, senão se e senão** e encaixa abaixo desse bloco de vidas, ainda dentro do
+> **então**. A comparação que já vem na pergunta serve; não precisa tirá-la."
 
 **Na tela:** abrir o menu do `valor da variável` da esquerda e escolher pontos. Abrir o menu do sinal
 e escolher o maior ou igual. Na categoria Programação, abrir 🔣 Valores e arrastar outro `valor da
 variável` por cima do número da direita, escolhendo alvo. Zoom no encaixe.
 
 **Narração:**
-> "Do lado esquerdo já tem um valor da variável: escolhe **pontos**. No sinal do meio, o **maior ou
-> igual**. Do lado direito tem um número, e por cima dele, da categoria **Programação**, **Valores**,
-> arrasta outro **valor da variável**, com **alvo**."
+> "Na comparação da pergunta, abre o menu da variável do lado esquerdo e escolhe **pontos**.
+> Abre o menu do sinal, no meio, e escolhe **maior ou igual**. Do lado direito, ainda há um número.
+> Na categoria **Programação**, abre **Valores**, pega **valor da variável** e arrasta por cima
+> desse número, até encaixar. Nesse novo bloco, abre o menu e escolhe **alvo**."
 
 **Na tela:** na categoria Jogo 2D, abrir Jogo e telas, seção Telas e partida, e arrastar `Mudar o
 estado do jogo para` para dentro do então dessa pergunta. Abrir o menu e escolher vitoria.
 
 **Narração:**
-> "Dentro dessa pergunta: na categoria **Jogo 2D**, abre **Jogo e telas**, e dentro dela **Telas e
-> partida**. Pega **Mudar o estado do jogo para**, com **vitoria** no menu."
+> "Dentro do **então** dessa pergunta de vitória, na categoria **Jogo 2D**, abre **Jogo e telas**
+> e depois **Telas e partida**. Pega **Mudar o estado do jogo para** e encaixa no primeiro lugar
+> do **então**. Abre o menu do bloco e escolhe **vitoria**."
 
 **Na tela:** na categoria Programação, abrir ❓ Lógica & Se e arrastar outro `Condição se, senão se e
 senão` encaixado por baixo do primeiro. Tirar a comparação de fábrica e apagar.
 
 **Narração:**
-> "Agora a derrota. Na categoria **Programação**, abre **Lógica e Se**. Pega outro **Condição se,
-> senão se e senão** e encaixa abaixo do primeiro. Tira a comparação de fábrica e apaga."
+> "Agora a pergunta da derrota. Ainda dentro do **então** de **jogando**, na categoria
+> **Programação**, abre **Lógica e Se**. Pega outro **Condição se, senão se e senão** e encaixa
+> logo abaixo da pergunta de vitória. Arrasta a comparação de fábrica para fora e apaga."
 
 **Na tela:** na categoria Jogo 2D, abrir Vida e placar, seção Vida, e arrastar `as vidas do sprite
 acabaram?` para o buraco da pergunta, escolhendo nave. Depois arrastar `Mudar o estado do jogo para`
 para dentro, escolhendo fim.
 
 **Narração:**
-> "No lugar dela, na categoria **Jogo 2D**, abre **Vida e placar**, e dentro dela **Vida**. Pega **as
-> vidas do sprite acabaram?**, com a **nave**. Dentro dessa pergunta, mais um **Mudar o estado do jogo
-> para**, de **Jogo 2D**, **Jogo e telas**, **Telas e partida**, com **fim**."
+> "Para preencher a pergunta vazia, na categoria **Jogo 2D**, abre **Vida e placar** e depois
+> **Vida**. Pega **as vidas do sprite acabaram?** e encaixa no buraco da pergunta. No menu desse
+> bloco, escolhe **nave**. Agora, ainda na categoria **Jogo 2D**, abre **Jogo e telas** e depois
+> **Telas e partida**. Pega **Mudar o estado do jogo para** e encaixa dentro do **então** da
+> pergunta de derrota. No menu, escolhe **fim**."
 
 **Na tela:** afastar o enquadramento e dar uma volta lenta mostrando as duas perguntas encostadas,
 uma em cima da outra, com o cursor passando primeiro pela de cima e depois pela de baixo.
@@ -312,75 +355,117 @@ uma em cima da outra, com o cursor passando primeiro pela de cima e depois pela 
 
 ---
 
-## Seção 7. Desenhe as três telas
+## Seção 8. Desenhe as três telas
 
 ### Clipe `video-mostrar-telas` · As três telas ganham texto
-**Duração alvo:** 85 a 100 s · **Palavras:** 222 (cerca de 97 s)
+**Duração alvo:** 185 a 210 segundos; recalibrar após gravar.
 
 **Na tela:** enquadrar a base do `Condição se, senão se e senão` grande, com o botão mais senão se à
-vista. Clicar nele três vezes, mostrando os três ramos novos aparecendo.
+vista. Clicar nele uma vez e mostrar o primeiro ramo novo. Os outros dois serão criados na hora
+de montá-los.
 
 **Narração:**
-> "O seu Se grande pode ganhar irmãos. Embaixo dele tem um botãozinho escrito **mais senão se**. Clica
-> nele três vezes, uma para cada momento que falta."
+> "Até aqui, o **Se** grande mostra a partida quando o jogo está em **jogando**. Agora vamos
+> montar as outras três telas: a de abertura, a de vitória e a de derrota. Embaixo desse **Se**
+> tem o botão **mais senão se**. Clica nele uma vez para abrir o espaço da tela de abertura."
 
 **Na tela:** no primeiro senão se, arrastar a comparação de fábrica para fora e apagar. Na categoria
 Jogo 2D, abrir Jogo e telas, seção Telas e partida, e arrastar `o estado do jogo é ?` para o buraco
-da pergunta. Abrir o menu e escolher inicio.
+da pergunta. Conferir inicio, que já vem escolhido.
 
 **Narração:**
 > "No primeiro senão se, tira a comparação de fábrica e apaga. Na categoria **Jogo 2D**, abre **Jogo
 > e telas**, e dentro dela **Telas e partida**. Pega **o estado do jogo é ?**, encaixa no buraco da
-> pergunta e escolhe **inicio** no menu."
+> pergunta e confere **inicio**, que já vem escolhido."
 
 **Na tela:** na categoria Jogo 2D, abrir Jogo e telas, seção Telas e partida, e arrastar `Mostrar
 tela com título subtítulo dica fundo` para dentro desse primeiro senão se.
 
 **Narração:**
-> "Dentro dele, na categoria **Jogo 2D**, abre **Jogo e telas**, e dentro dela **Telas e partida**.
-> Pega **Mostrar tela com título subtítulo dica fundo** e encaixa."
+> "Dentro do **então** desse primeiro **senão se**, ainda na categoria **Jogo 2D**, abre **Jogo e
+> telas** e depois **Telas e partida**. Pega **Mostrar tela com título subtítulo dica fundo** e
+> encaixa no primeiro lugar do **então**."
 
-**Na tela:** preencher os quatro campos, um de cada vez, com o cursor parando em cada um: título,
-subtítulo, dica e o seletor de cor do fundo.
-
-**Narração:**
-> "No título, escreve o nome do seu jogo. O meu é **Nave contra Asteroides**. No subtítulo, **Destrua
-> os asteroides**. Na dica, **Aperte Enter para começar**. E no fundo, uma cor que deixe as letras
-> aparecerem."
-
-**Na tela:** montar o segundo senão se inteiro, em ritmo mais rápido, e parar com os campos
-preenchidos à vista.
+**Na tela:** mostrar os três textos que já vêm no bloco: Nave contra Asteroides, Destrua os
+asteroides! e Aperte Enter para começar. Se o título for personalizado, editá-lo e clicar fora.
+Abrir o seletor de cor apenas se o fundo precisar mudar para manter contraste.
 
 **Narração:**
-> "No segundo senão se, a receita é a mesma, com o **o estado do jogo é ?** e o **Mostrar tela com
-> título subtítulo dica fundo**, os dois de **Jogo 2D**, **Jogo e telas**, **Telas e partida**. A
-> pergunta é **vitoria**, o título é **Você Ganhou**, e a dica é **Aperte Enter para voltar ao
-> início**."
+> "O título já vem em **Nave contra Asteroides**. Se você deu outro nome ao seu jogo, pode
+> escrever o seu aqui e clicar fora. O subtítulo **Destrua os asteroides!** e a dica **Aperte
+> Enter para começar** também já vêm prontos. Confere os dois. Escolhe um fundo em que as
+> letras apareçam bem."
 
-**Na tela:** montar o terceiro senão se do mesmo jeito e parar com os campos preenchidos à vista.
+**Na tela:** clicar mais uma vez em **mais senão se**. No segundo ramo, retirar a comparação de
+fábrica, encaixar `o estado do jogo é ?` com vitoria e depois `Mostrar tela com título subtítulo
+dica fundo`. Mostrar a categoria e a seção reabrindo para cada bloco. Preencher título, dica e
+cor; mostrar que o subtítulo pode ficar vazio.
 
 **Narração:**
-> "No terceiro, a pergunta é **fim**, o título é **Você Perdeu**, e a dica é a mesma: **Aperte Enter
-> para voltar ao início**."
+> "Clica mais uma vez em **mais senão se** para criar o espaço da vitória. Nesse segundo
+> **senão se**, arrasta a comparação de fábrica para fora da pergunta e apaga. Na categoria
+> **Jogo 2D**, abre **Jogo e telas** e depois **Telas e partida**. Pega **o estado do jogo é ?**,
+> encaixa no buraco da pergunta e escolhe **vitoria** no menu. Agora, ainda em **Jogo 2D**,
+> **Jogo e telas**, **Telas e partida**, pega **Mostrar tela com título subtítulo dica fundo** e
+> encaixa no **então** desse segundo ramo. No título, troca o nome do jogo por **Você Ganhou**
+> e clica fora. No subtítulo, apaga o texto que veio e clica fora para deixar vazio. Na dica,
+> escreve **Aperte Enter para voltar ao início** e confirma. Escolhe uma cor de
+> fundo em que dê para ler as letras."
+
+**Na tela:** clicar outra vez em **mais senão se**. No terceiro ramo, repetir a retirada da
+comparação de fábrica e mostrar os dois encaixes completos, sem corte. Preencher título, dica e
+cor; mostrar que o subtítulo pode ficar vazio.
+
+**Narração:**
+> "Clica em **mais senão se** pela terceira vez para abrir o espaço da derrota. No terceiro
+> **senão se**, arrasta a comparação de fábrica para fora e apaga. Na categoria **Jogo 2D**,
+> abre **Jogo e telas** e depois **Telas e partida**. Pega **o estado do jogo é ?**, encaixa no
+> buraco da pergunta e escolhe **fim** no menu. Ainda em **Jogo 2D**, **Jogo e telas**,
+> **Telas e partida**, pega **Mostrar tela com título subtítulo dica fundo** e encaixa no
+> **então** desse terceiro ramo. No título, troca o nome do jogo por **Você Perdeu** e clica
+> fora. Apaga o subtítulo que veio e clica fora. Na dica, escreve **Aperte Enter para voltar ao
+> início** e confirma. Escolhe uma cor de
+> fundo que deixe as letras fáceis de ler."
 
 **Na tela:** zoom nos dois campos de dica, o da vitória e o da derrota, lado a lado.
 
 **Narração:**
-> "Nesses dois, o Enter volta para a abertura, e é preciso apertar de novo para jogar."
+> "As dicas dessas telas falam para apertar Enter. Daqui a pouquinho, vamos programar essa tecla
+> para voltar à abertura. Depois, vai ser preciso apertar de novo para jogar."
 
 ---
 
-## Seção 8. O Enter comanda o jogo
+## Seção 9. Jogue outra vez
+
+### Clipe `video-reiniciar` · Trocar a tela ou recomeçar de verdade?
+**Duração alvo:** 35 a 45 segundos.
+
+**Na tela:** dois cartões abstratos: mudar de momento vira uma página; reiniciar volta à primeira
+etapa da preparação. Não mostrar pontos, vidas, pedras nem os resultados dos dois testes.
+
+**Narração:**
+> "As telas estão prontas, e agora vamos ensinar o Enter a começar e recomeçar a partida. Mas
+> voltar para a abertura basta para preparar um jogo novo? Mudar o momento é como virar para
+> outra parte de uma história: o que já estava guardado continua lá. **Reiniciar o jogo** faz
+> outra coisa. Ele volta à preparação de **Ao iniciar** e a faz de novo. Na experiência, compare
+> os dois jeitos de voltar à abertura."
+
+---
+
+## Seção 10. O Enter comanda o jogo
 
 ### Clipe `video-enter` · A mesma tecla, três respostas
-**Duração alvo:** 80 a 95 s · **Palavras:** 214 (cerca de 94 s)
+**Duração alvo:** 170 a 195 segundos; recalibrar após gravar.
 
 **Na tela:** rolar até a área Quando acontecer. Na categoria Jogo 2D, abrir Controles, seção Teclado,
 ações e toque, e arrastar `Quando apertar a tecla` encaixado por baixo do `Quando apertar a tecla` da
 barra de espaço.
 
 **Narração:**
-> "Falta a última peça: o Enter. Na categoria **Jogo 2D**, abre **Controles**, e dentro dela
+> "Você acabou de comparar trocar só a tela com reiniciar a partida. Agora vamos fazer a tecla
+> **Enter** responder de acordo com a tela aberta: começar na abertura e reiniciar depois de
+> cada final. Vamos
+> montar essas três respostas no evento da tecla. Na categoria **Jogo 2D**, abre **Controles**, e dentro dela
 > **Teclado, ações e toque**. Pega **Quando apertar a tecla** e encaixa dentro do Quando acontecer,
 > logo abaixo do Quando apertar a tecla da barra de espaço."
 
@@ -393,37 +478,48 @@ barra de espaço.
 senão` para dentro do evento novo. Tirar a comparação de fábrica e apagar.
 
 **Narração:**
-> "Dentro dele, na categoria **Programação**, abre **Lógica e Se**. Pega **Condição se, senão se e
-> senão**, tira a comparação de fábrica e apaga."
+> "Dentro do novo **Quando apertar a tecla**, na categoria **Programação**, abre **Lógica e Se**.
+> Pega **Condição se, senão se e senão** e encaixa no primeiro lugar. A pergunta vem com uma
+> comparação de fábrica: arrasta essa comparação para fora e apaga."
 
 **Na tela:** montar o primeiro ramo: `o estado do jogo é ?` com inicio na pergunta, e `Mudar o estado
 do jogo para` com jogando dentro dele.
 
 **Narração:**
-> "Na pergunta de cima, na categoria **Jogo 2D**, abre **Jogo e telas**, e dentro dela **Telas e
-> partida**. Pega **o estado do jogo é ?** e escolhe **inicio**. Dentro dela, do mesmo **Jogo 2D**,
-> **Jogo e telas**, **Telas e partida**, o **Mudar o estado do jogo para**, com **jogando**."
+> "Na primeira pergunta desse **Se**, abre a categoria **Jogo 2D**, depois **Jogo e telas** e
+> **Telas e partida**. Pega **o estado do jogo é ?**, encaixa no buraco vazio da pergunta e
+> confere **inicio**, que já vem escolhido. Agora, ainda na categoria **Jogo 2D**, em **Jogo e telas**,
+> **Telas e partida**, pega **Mudar o estado do jogo para** e encaixa no **então** dessa primeira
+> pergunta. No menu dele, escolhe **jogando**."
 
-**Na tela:** clicar no botão mais senão se duas vezes. No primeiro ramo novo, montar a pergunta com
-fim e encaixar `Reiniciar o jogo` dentro.
-
-**Narração:**
-> "Clica no **mais senão se** duas vezes. No primeiro, a pergunta é **fim**, e dentro vai um bloco
-> novo: de **Jogo 2D**, **Jogo e telas**, **Telas e partida**, o **Reiniciar o jogo**."
-
-**Na tela:** no segundo ramo novo, montar a pergunta com vitoria e encaixar outro `Reiniciar o jogo`
-dentro.
+**Na tela:** clicar no botão mais senão se uma vez. No primeiro ramo novo, retirar a comparação de
+fábrica, montar a pergunta com fim e encaixar `Reiniciar o jogo` dentro.
 
 **Narração:**
-> "No segundo senão se, a pergunta é **vitoria**, e dentro vai outro **Reiniciar o jogo**, do mesmo
-> **Jogo 2D**, **Jogo e telas**, **Telas e partida**."
+> "Clica em **mais senão se** uma vez para criar a pergunta da derrota. No primeiro **senão se**,
+> arrasta a comparação de fábrica para fora da pergunta e apaga. Na categoria **Jogo 2D**, abre
+> **Jogo e telas** e depois **Telas e partida**. Pega **o estado do jogo é ?**, encaixa no buraco
+> dessa pergunta e escolhe **fim** no menu. Ainda em **Jogo 2D**, **Jogo e telas**,
+> **Telas e partida**, pega **Reiniciar o jogo** e encaixa no **então** desse primeiro **senão
+> se**."
 
-**Na tela:** zoom nos dois buracos de pergunta dos senão se, mostrando a comparação de fábrica sendo
-retirada antes do encaixe em cada um.
+**Na tela:** clicar outra vez em mais senão se. No segundo ramo novo, retirar a comparação de
+fábrica, montar a pergunta com vitoria e encaixar outro `Reiniciar o jogo` dentro.
 
 **Narração:**
-> "Nos dois senão se, a pergunta vem do **o estado do jogo é ?**, e a comparação de fábrica sai
-> antes."
+> "Clica em **mais senão se** mais uma vez para criar a pergunta da vitória. Nesse segundo
+> **senão se**, arrasta a comparação de fábrica para fora e apaga. Na categoria **Jogo 2D**,
+> abre **Jogo e telas** e depois **Telas e partida**. Pega **o estado do jogo é ?**, encaixa no
+> buraco da pergunta e escolhe **vitoria** no menu. Ainda em **Jogo 2D**, **Jogo e telas**,
+> **Telas e partida**, pega outro **Reiniciar o jogo** e encaixa no **então** desse segundo
+> **senão se**."
+
+**Na tela:** zoom nos dois buracos de pergunta dos senão se, agora com as perguntas de fim e
+vitoria encaixadas.
+
+**Narração:**
+> "Confere os dois **senão se**: um pergunta por **fim** e o outro por **vitoria**. Dentro de
+> cada um está o **Reiniciar o jogo**."
 
 **Na tela:** afastar o enquadramento e mostrar o evento inteiro, com os três ramos visíveis de uma
 vez.
@@ -433,16 +529,25 @@ vez.
 
 ---
 
-## Seção 10. Teste, entregue e mostre para o mundo
+## Seção 11. Quiz do Dia 5
+
+Sem vídeo. O Zappy faz uma ponte curta: "Hora de conferir o ciclo do seu jogo: começo,
+partida e recomeço. Pense no que você observou antes de responder."
+
+---
+
+## Seção 12. Teste, entregue e mostre para o mundo
 
 ### Clipe `video-ciclo-completo` · Do menu ao recomeço
-**Duração alvo:** 100 a 120 s · **Palavras:** 228 (cerca de 101 s)
+**Duração alvo:** 150 a 180 segundos, incluindo o fecho; recalibrar após gravar.
 
 **Na tela:** o jogo do fim do Dia 5 com o Estúdio aberto, parado na tela de abertura. O cursor clica
 dentro da área do jogo.
 
 **Narração:**
-> "Agora o percurso inteiro, do menu ao recomeço, uma vez só."
+> "O jogo já tem abertura, partida, vitória, derrota e a tecla de recomeçar. Vamos jogar esse
+> caminho inteiro para conferir se cada momento funciona. Depois, vamos enviar o projeto e ver
+> como compartilhá-lo, se você quiser. Primeiro, olha a tela de abertura."
 
 **Na tela:** apertar a barra de espaço algumas vezes com o enquadramento na tela inteira do jogo,
 para dar para ver que nenhum tiro sai e nenhuma pedra nasce.
@@ -497,8 +602,9 @@ Mostrar a confirmação do envio.
 e depois.
 
 **Narração:**
-> "Depois do envio, o botão **Compartilhar** libera. Ele dá ao seu jogo um link só dele, e quem abrir
-> esse link consegue jogar. Você não precisa deixar o seu perfil público para isso."
+> "Depois do envio, o botão **Compartilhar** fica disponível. Se você escolher publicar o jogo,
+> ele ganha um link para você mostrar a quem quiser. Não precisa deixar seu perfil público para
+> fazer isso."
 
 **Na tela:** clicar no Compartilhar e deixar a janela abrir. Não percorrer campo nenhum, não
 preencher nada e não concluir a publicação na gravação.
@@ -507,14 +613,14 @@ preencher nada e não concluir a publicação na gravação.
 > "Publicar é uma escolha, não um passo obrigatório da entrega. Clica no Compartilhar, confere o que a
 > janela pedir e publica quando você quiser mostrar."
 
-### Clipe `video-fecho` · O seu primeiro jogo está pronto
-**Duração alvo:** 35 a 45 s · **Palavras:** 90 (cerca de 39 s)
+**Fecho no mesmo `video-ciclo-completo`, depois do teste e do envio.** Não abrir um segundo
+clipe nesta seção. Cortar repetições de jogo para preservar a atenção.
 
 **Na tela:** o jogo completo rodando desde o primeiro quadro do clipe, da abertura até um trecho de
 partida.
 
 **Narração:**
-> "Você terminou o Desafio do Primeiro Jogo! O que está rodando na sua tela agora foi você que
+> "Você terminou o Desafio do Primeiro Jogo! O que está rodando na sua tela foi você que
 > montou, bloquinho por bloquinho, em cinco dias."
 
 **Na tela:** cortes curtos das peças do projeto: o Ao iniciar, a colisão, o Se grande com os quatro

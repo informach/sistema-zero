@@ -103,8 +103,12 @@
         "kind": "interactive",
         "required": true,
         "title": "Uma vez e sempre",
-        "instructions": "Põe Criar o Dino em Ao iniciar e avança três quadros. Depois põe Mover o Dino um pouquinho em Enquanto estiver rodando e avança três quadros. Por último, deixa uma ficha em cada caixa e avança cinco quadros, olhando o contador de cada ficha.",
-        "hints": [],
+        "instructions": "Teste as ações de preparar e mover nas duas áreas do projeto. Comece o jogo e compare os contadores. Quantos Dinos aparecem?",
+        "hints": [
+          "Ponha Pintar o fundo em Ao iniciar e aperte Começar o jogo. Observe quantas vezes a ação aconteceu.",
+          "Ponha Mover o Dino um pouquinho em Enquanto estiver rodando e comece outra partida. Compare os contadores.",
+          "Devolva Pintar o fundo para Ações disponíveis, ponha Criar o Dino em Ao iniciar e mantenha Mover o Dino um pouquinho no motor. Comece o jogo e observe quantos Dinos há."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "once-vs-always",

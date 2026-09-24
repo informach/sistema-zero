@@ -1,11 +1,14 @@
 # Roteiro de gravação · Desafio do Primeiro Jogo · Dia 4 · O jogo passa a contar
 
+**Como ler este roteiro:** só o texto entre aspas em **Narração** é falado no vídeo. **Na tela**
+orienta a gravação; as **Notas de produção** são lembretes para a equipe, não falas para a criança.
+
 ## Especificações
 
-- **Formato:** gravação da tela do Estúdio com narração por cima. Quatro clipes, um por seção com
-  vídeo. O projeto de partida é o do fim do Dia 3.
-- **Duração:** 300 a 355 segundos de clipes somados pelo manifesto, com 777 palavras de
-  narração pura a **137 palavras por minuto**. Os quatro clipes cabem nas faixas previstas.
+- **Formato:** sete clipes, um por seção com vídeo. Três clipes conceituais não têm gesto de
+  paleta; os práticos mostram o projeto que veio do Dia 3.
+- **Duração:** aferir após a gravação. Os três clipes novos foram planejados para cerca de
+  30 a 45 segundos cada; não acelerar a demonstração prática para caber numa conta antiga.
 - **Calibração:** ela já traz grupo, relógio, colisão entre dois grupos, apelido, explosão e som.
   É novo de verdade nesta aula: a variável, a leitura da variável dentro de outro bloco, a colisão
   de um grupo contra um sprite, a vida do sprite e os quadros de invencibilidade. Também é a
@@ -22,7 +25,7 @@
   `inimigo`, que já vem escrito.
 - **Campos livres:** cor do placar, cor dos corações e cor da explosão da batida. A narração pede só
   contraste com o fundo escuro e nunca crava um valor.
-- **Nota de produção:** reservar **140 a 155 segundos** para `video-batida-e-coracoes`.
+- **Nota de produção:** reservar **165 a 185 segundos** para `video-batida-e-coracoes`.
   O clipe reúne sete blocos e precisa mostrar o caminho completo de cada um. Zoom obrigatório em
   dois pontos: no campo do valor do `Mostrar
   placar`, no instante em que o `valor da variável` cobre o número que estava ali, e no campo dos
@@ -54,7 +57,7 @@
 abaixo dele. Um tiro acerta uma pedra e o número do placar sobe.
 
 **Narração:**
-> "O seu jogo já explode pedra, mas ninguém sabe quantas você destruiu ontem. Hoje o seu jogo começa
+> "O seu jogo já explode pedras, mas ainda não conta quantas você destruiu. Hoje ele começa
 > a **contar**, e o número fica na tela para o jogador ver."
 
 **Na tela:** uma pedra encosta na nave. A explosão aparece, a tela treme, um coração apaga e a nave
@@ -66,16 +69,37 @@ fica piscando. Segurar o placar e os corações no mesmo enquadramento.
 
 ---
 
+## Seção 2. A caixa que guarda o seu placar
+
+### Clipe `video-variavel` · Uma caixa que guarda um número
+**Duração alvo:** 40 a 50 segundos; recalibrar após gravar.
+
+**Na tela:** uma caixa de papel chamada `pontos` recebe marcas por acertos em um desenho simples.
+Ao lado, uma placa vazia representa o placar. Não mostrar a cena, os controles nem a sequência de
+resultados da experiência.
+
+**Narração:**
+> "Se você acertou duas pedras, como o jogo vai lembrar disso? Ele precisa de um lugar para
+> guardar os pontos. Imagina uma caixinha com o nome **pontos** escrito nela. Ela começa com zero
+> e ganha mais um a cada acerto. No Estúdio, essa caixinha se chama **variável**, porque o número
+> guardado pode mudar. Mas guardar não é mostrar. O jogo já pode saber que você tem dois pontos
+> sem que o jogador veja o placar. Na experiência, veja como uma coisa se liga à outra."
+
+---
+
 ## Seção 3. O acerto vira número na tela
 
 ### Clipe `video-pontos-e-placar` · A caixa, a soma e o placar
-**Duração alvo:** 80 a 95 s · **Palavras:** 216 (cerca de 95 s)
+**Duração alvo:** 110 a 130 segundos; recalibrar após gravar.
 
 **Na tela:** na categoria Programação, abrir 🏷️ Variáveis e arrastar `Criar variável com valor` até
 o fim do Ao iniciar, encaixado por baixo do `Criar grupo de sprites` dos asteroides.
 
 **Narração:**
-> "Na categoria **Programação**, abre **Variáveis**. Pega **Criar variável com valor** e encaixa no
+> "Você viu que o jogo precisa guardar a contagem dos acertos. Agora vamos criar esse número,
+> somar um ponto quando um tiro acertar uma pedra e mostrar o placar na tela. Vamos montar uma
+> parte de cada vez. Na categoria **Programação**, abre **Variáveis**. Pega **Criar variável com
+> valor** e encaixa no
 > fim do Ao iniciar, logo abaixo do Criar grupo de sprites dos asteroides."
 
 **Na tela:** enquadrar o bloco novo ao lado dos blocos vizinhos, para a diferença de cor ficar
@@ -84,11 +108,12 @@ visível no mesmo quadro.
 **Narração:**
 > "Repara na cor: os de Programação são **laranjas**, e os de Jogo 2D são rosas."
 
-**Na tela:** clicar no campo do nome e escrever pontos. Zoom no campo do valor, mostrando o 0 que já
-está lá.
+**Na tela:** clicar no campo do nome da variável, trocar contador por pontos e clicar fora.
+Zoom no campo do valor, mostrando o 0 que já está lá.
 
 **Narração:**
-> "No nome, escreve **pontos**. No valor, deixa **0**, porque este jogo começa com zero ponto."
+> "No nome da variável, troca **contador** por **pontos** e clica fora para confirmar. O valor
+> já vem em **0**; deixa assim, porque este jogo começa com zero ponto."
 
 **Na tela:** rolar até o `Para cada colisão entre os grupos e` no motor. Na categoria Programação,
 abrir 🏷️ Variáveis e arrastar `Somar em variável` para dentro do fazer da colisão, encaixado por
@@ -120,27 +145,52 @@ trás dele.
 **Narração:**
 > "Esse painel por cima do jogo tem nome de criador: **HUD**, e esse é o seu primeiro!"
 
-**Na tela:** escrever Pontos: no rótulo. Depois, na categoria Programação, abrir 🔣 Valores e
+**Na tela:** conferir Pontos: no rótulo, sem redigitar. Depois, na categoria Programação, abrir 🔣 Valores e
 arrastar `valor da variável` por cima do número que está no campo do valor, até o encaixe
 acontecer. Zoom nesse instante. Abrir o menu e escolher pontos.
 
 **Narração:**
-> "No rótulo, escreve **Pontos:**. No campo do valor tem um número fixo. Na categoria
+> "O rótulo já vem em **Pontos:**; pode deixar. No campo do valor tem um número fixo. Na categoria
 > **Programação**, abre **Valores**. Pega **valor da variável** e arrasta por cima desse número, até
 > encaixar. Escolhe **pontos**."
 
-**Na tela:** preencher x 12, y 30 e tamanho 24, parando o cursor em cada campo. Abrir o seletor de
-cor e escolher uma cor clara. Clicar num espaço vazio da área dos blocos.
+**Na tela:** aproximar nos campos x 12, y 30 e tamanho 24, que já vêm preenchidos. Conferir sem
+redigitar. Abrir o seletor de cor apenas se a cor precisar de mais contraste com o fundo.
 
 **Narração:**
-> "No x, **12**. No y, **30**. No tamanho, **24**. E a cor, uma clara que apareça no fundo escuro."
+> "O placar já vem em x **12**, y **30** e tamanho **24**. Confere os três sem mudar. A cor
+> precisa aparecer bem no fundo que você escolheu; se precisar, escolhe uma cor mais clara."
+
+---
+
+## Seção 4. O respiro depois da batida
+
+### Clipe `video-protecao` · O respiro entre duas batidas
+**Duração alvo:** 35 a 45 segundos.
+
+**Na tela:** uma pedra encosta na nave, sai do grupo e a nave pisca; outras pedras se
+aproximam. Marcar uma janela de tempo sem revelar a contagem final de cada teste.
+
+**Narração:**
+> "Vamos fazer a pedra sair do jogo quando bater na nave. Só que outras pedras podem vir logo atrás.
+> A nave precisa de um respiro. Por alguns quadros, ela pisca e não perde outra vida. Quando
+> esse tempo acaba, uma próxima pedra pode machucar de novo. É para isso que serve a proteção.
+> Na experiência, compare tempos diferentes e veja o que acontece com os corações."
 
 ---
 
 ## Seção 5. A batida machuca
 
 ### Clipe `video-batida-e-coracoes` · A batida custa um coração
-**Duração alvo:** 140 a 155 s · **Palavras:** 347 (cerca de 152 s)
+**Duração alvo:** 165 a 185 segundos; recalibrar após gravar.
+
+**Na tela:** o jogo como está no fim da seção anterior. As pedras ainda atravessam a nave sem
+tirar vida. Mostrar três corações vazios como representação do que vamos construir, antes de
+abrir a paleta.
+
+**Narração:**
+> "Até aqui, as pedras passam pela nave e nada acontece. Vamos dar a ela três vidas, como nos
+> jogos que mostram corações. Depois vamos dizer o que acontece quando uma pedra bate."
 
 **Na tela:** na categoria Jogo 2D, abrir Vida e placar, seção Vida, e arrastar `Dar ao sprite de
 vida` para dentro do Ao iniciar, encaixado por baixo do `Criar variável com valor` dos pontos.
@@ -149,11 +199,15 @@ vida` para dentro do Ao iniciar, encaixado por baixo do `Criar variável com val
 > "Na categoria **Jogo 2D**, abre **Vida e placar**, e dentro dela **Vida**. Pega **Dar ao sprite de
 > vida** e encaixa dentro do Ao iniciar, logo abaixo do Criar variável com valor dos pontos."
 
-**Na tela:** zoom nos dois campos do bloco, com nave escolhida e o número 3 à vista. Manter a área
-Ao iniciar inteira no quadro.
+**Na tela:** zoom no campo de sprite, que vem em jogador. Se houver aviso, abri-lo antes de
+alterar o campo. Abrir o seletor e escolher nave. Mostrar o número 3, que já vem escrito, e
+manter a área Ao iniciar inteira no quadro.
 
 **Narração:**
-> "O sprite é a **nave** e o número fica em **3**. Esse bloco mora em Ao iniciar, e não no motor."
+> "Esse bloco veio apontando para **jogador**, mas a sua nave se chama **nave**. Se apareceu
+> um aviso, clica nele para entender o que falta. Depois, no campo do sprite, escolhe
+> **nave**. O número já vem em **3**; deixa assim. Esse bloco fica em **Ao iniciar**, para dar
+> as vidas uma vez no começo."
 
 **Na tela:** na categoria Jogo 2D, abrir Colisões, seção Encostar e bloquear, e arrastar `Para cada
 sprite do grupo que colidir com o sprite` para dentro do `A cada quadro do jogo`, encaixado por
@@ -164,11 +218,12 @@ baixo do `Mostrar placar valor em x y cor tamanho`.
 > cada sprite do grupo que colidir com o sprite** e encaixa dentro do A cada quadro do jogo, abaixo
 > do Mostrar placar."
 
-**Na tela:** abrir o menu do grupo e escolher asteroides, abrir o menu do sprite e escolher nave.
-Zoom no campo do apelido, com a palavra inimigo já escrita.
+**Na tela:** aproximar nos campos do grupo e do sprite, que já vêm em asteroides e nave. Conferir
+sem trocar. Zoom no campo do apelido, com a palavra inimigo já escrita.
 
 **Narração:**
-> "O grupo é **asteroides**, o sprite é a **nave**, e o apelido já vem escrito **inimigo**."
+> "O grupo já vem em **asteroides**, o sprite em **nave** e o apelido em **inimigo**. Confere
+> os três; não precisa escrever de novo."
 
 **Na tela:** montar os dois primeiros blocos dentro do fazer da colisão, um encaixado por baixo do
 outro, com os menus preenchidos na hora.
@@ -180,21 +235,23 @@ outro, com os menus preenchidos na hora.
 > **Partículas**. Pega **Soltar explosão no sprite cor** e encaixa logo abaixo do **Tirar o sprite
 > do grupo**. Sprite **inimigo**; a cor da explosão é sua."
 
-**Na tela:** montar os dois últimos blocos por baixo dos dois primeiros. Zoom no campo dos 45
-quadros do `Machucar o sprite em e deixá-lo invencível por quadros`.
+**Na tela:** montar os dois últimos blocos por baixo dos dois primeiros. No bloco Machucar,
+mostrar o campo de sprite que veio em jogador e escolher nave; aproximar nos valores padrão
+1 e 45 sem redigitar. No bloco Tremer, conferir a intensidade padrão 8.
 
 **Narração:**
 > "Três: em **Jogo 2D**, abre **Vida e placar**, depois **Vida**. Pega **Machucar o sprite em
 > e deixá-lo invencível por quadros** e encaixa logo abaixo do **Soltar explosão no sprite cor**.
-> Na **nave**, tira **1** e protege por **45** quadros. Quatro: em **Jogo 2D**, abre **Desenho e
-> efeitos**, depois **Efeitos**. Pega **Tremer a tela com intensidade** e encaixa logo abaixo do
-> **Machucar o sprite**. A intensidade fica em **8**."
+> No campo do sprite, escolhe **nave**. Os números já vêm em **1** de dano e **45** quadros de
+> proteção; deixa os dois assim. Quatro: em **Jogo 2D**, abre **Desenho e efeitos**, depois
+> **Efeitos**. Pega **Tremer a tela com intensidade** e encaixa logo abaixo do **Machucar o
+> sprite**. A intensidade já vem em **8**; pode deixar."
 
 **Na tela:** enquadrar a linha do `Tirar o sprite do grupo` e a linha do `Machucar o sprite` juntas,
 com o cursor apontando primeiro para uma e depois para a outra.
 
 **Narração:**
-> "A pedra que bateu já saiu do grupo na linha de cima. O respiro não é para ela: é para as outras
+> "A pedra que bateu já saiu do grupo na linha de cima. O respiro protege a nave das outras
 > pedras que chegam logo atrás."
 
 **Na tela:** na categoria Jogo 2D, abrir Vida e placar, seção Vida, e arrastar `Desenhar as vidas do
@@ -206,25 +263,53 @@ da colisão e do lado de fora dele. Zoom no ponto de encaixe.
 > dentro dela **Vida**. Pega **Desenhar as vidas do sprite como em x y tamanho cor** e encaixa no fim
 > do A cada quadro do jogo, abaixo do Para cada sprite do grupo que colidir com o sprite."
 
-**Na tela:** escolher nave, abrir o menu do jeito de mostrar com as duas opções à vista e escolher
-corações. Preencher x 12, y 48 e tamanho 22. Escolher uma cor no seletor.
+**Na tela:** no campo de sprite, trocar jogador por nave. Conferir que o jeito de mostrar já
+vem em corações. Aproximar nos campos padrão x 12, y 48 e tamanho 22 sem redigitar. Se quiser,
+escolher uma cor no seletor.
 
 **Narração:**
-> "O sprite é a **nave**. No jeito, dos dois da lista escolhe **corações**. x **12**, y **48**,
-> tamanho **22**, e a cor é sua."
+> "No campo do sprite, escolhe **nave**. O jeito já vem em **corações**, e os lugares também
+> estão prontos: x **12**, y **48**, tamanho **22**. Confere e deixa. Se quiser, escolhe a cor
+> dos corações."
 
 ---
 
-## Seção 7. Teste, envie e fecha
+## Seção 6. As vidas são dadas uma vez
+
+### Clipe `video-vidas-uma-vez` · Vidas no começo ou durante o jogo?
+**Duração alvo:** 25 a 35 segundos; recalibrar após gravar.
+
+**Na tela:** as duas áreas do projeto que a criança já conhece e um desenho de três corações,
+sem colocar a ficha nelas, simular batidas ou revelar as duas contagens da experiência.
+
+**Narração:**
+> "A gente deu três vidas à nave em **Ao iniciar** porque isso prepara a partida uma vez. O motor,
+> em **Enquanto estiver rodando**, faz de novo o que estiver dentro dele a cada quadro. Será que
+> dar vidas de novo o tempo todo combina com um jogo em que elas precisam diminuir depois das
+> batidas? Vamos deixar a nave mostrar essa diferença na experiência."
+
+---
+
+## Seção 7. Quiz do Dia 4
+
+Sem vídeo. O Zappy faz uma ponte curta: "Agora confira o que você descobriu sobre os pontos
+e as vidas. Pense nas duas contagens antes de responder." O quiz não divide seção com
+Estúdio ou vídeo.
+
+---
+
+## Seção 8. Teste, envie e fecha
 
 ### Clipe `video-fecho` · Duas contagens, cada uma com o seu motivo
-**Duração alvo:** 55 a 70 s · **Palavras:** 155 (cerca de 69 s)
+**Duração alvo:** 80 a 95 segundos; recalibrar após gravar.
 
 **Na tela:** o jogo do fim do Dia 4 com o Estúdio aberto. O cursor clica dentro da área do jogo. O
 placar e os três corações inteiros dentro do enquadramento.
 
 **Narração:**
-> "Clica dentro da área do jogo."
+> "O jogo agora mostra duas contagens: os pontos pelos acertos e os corações pelas vidas da
+> nave. Vamos testar as duas, conferir o que muda em cada situação e depois enviar o projeto.
+> Primeiro, clica dentro da área do jogo."
 
 **Na tela:** explodir duas pedras, uma de cada vez, com o placar à vista. O número vai de 0 para 1 e
 de 1 para 2.

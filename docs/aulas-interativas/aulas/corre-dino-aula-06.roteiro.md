@@ -16,14 +16,13 @@
 ## Seção 1. O que a gente vai fazer hoje
 
 ### Clipe `video-abertura` · Tem uma coisa acontecendo que você não vê
-**Duração alvo:** 25 a 35 segundos · **Palavras:** 64
+**Duração alvo:** 25 a 35 segundos; recalibrar após gravar.
 
 **Na tela:** Deixar o jogo da Aula 5 rodar: cacto entra, Dino pula, nada parece errado.
 
 **Narração:**
-> "Olha o seu jogo. Cactos vindo, Dino pulando, tudo funcionando. Só que uma coisa está
-> acontecendo aí dentro que a tela não mostra. Hoje vamos construir um medidor para enxergar
-> essa coisa."
+> "Seu jogo já tem cactos e pulo. Hoje vamos construir um medidor para descobrir algo que
+> acontece por dentro, mesmo quando a tela parece igual."
 
 **Na tela:** Manter a pista em movimento sem revelar o número.
 

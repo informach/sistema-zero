@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { openScene, stepScene } from './engine'
 import { evaluateExperimentation } from './evaluate'
 import { type ExperimentationActivity, sceneTargets } from './index'
-import { initialOnce, isSceneOnce } from './once-vs-always'
+import { initialOnce, isSceneOnce, onceRunFinished } from './once-vs-always'
 import { ONCE_VS_ALWAYS_PRESETS } from './presets'
 import type { SceneStart, SceneState } from './state'
 
@@ -54,7 +54,7 @@ describe('uma vez, sempre e na hora', () => {
     expect(c.get().evidence.discoveries).toEqual([])
     c.place('move', 'start')
     c.frames(3)
-    expect(c.get().once.heroX).toBe(56)
+    expect(c.get().once.heroX).toBe(68)
     expect(c.get().once.fires.move).toBe(1)
     expect(c.get().evidence.discoveries).toContain('once')
     expect(c.get().evidence.discoveries).not.toContain('always')
@@ -63,13 +63,21 @@ describe('uma vez, sempre e na hora', () => {
     expect(c.get().evidence.discoveries).toContain('once')
     c.place('move', 'loop')
     c.frames(3)
-    expect(c.get().once.heroX).toBe(80)
+    expect(c.get().once.heroX).toBeGreaterThan(44)
     expect(c.get().once.fires.move).toBe(3)
+    expect(c.get().evidence.discoveries).not.toContain('always')
+    expect(onceRunFinished(c.get().once, ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave'])).toBe(false)
+    c.frames(21)
+    expect(c.get().once.heroX).toBeGreaterThan(560)
+    expect(onceRunFinished(c.get().once, ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave'])).toBe(true)
     expect(c.get().evidence.discoveries).toContain('always')
+    c.frames(10)
+    expect(c.get().once.frames).toBe(24)
+    expect(c.get().once.heroX).toBe(620)
     const result = evaluateExperimentation('once-vs-always', c.get(), true, undefined, c.targets)
     expect(result.passed).toBe(true)
     expect(result.feedback).toBe(
-      'Você viu a mesma ação uma vez no começo e repetida em cada passo.',
+      'Você viu a mesma ação uma vez no começo e repetida enquanto o jogo rodava.',
     )
   })
 
@@ -114,7 +122,8 @@ describe('uma vez, sempre e na hora', () => {
   test('o preset do som dispara com a tecla, sem criar tiros', () => {
     const c = lab('tres-caixas-som', ['on-event', 'key-fires'])
     c.place('event', 'event')
-    c.frames(3)
+    c.frames(5)
+    expect(onceRunFinished(c.get().once, ONCE_VS_ALWAYS_PRESETS['tres-caixas-som'])).toBe(true)
     c.trigger()
     expect(c.get().once.sounds).toBe(1)
     expect(c.get().once.shots).toBe(0)
@@ -124,12 +133,16 @@ describe('uma vez, sempre e na hora', () => {
   })
 
   test('vidas dadas uma vez diminuem em duas batidas agendadas', () => {
-    const c = lab('uma-ficha-vidas', ['once'])
+    const c = lab('uma-ficha-vidas', ['once', 'lives-loop'])
     c.place('lives', 'start')
     c.frames(6)
     expect(c.get().once.hits).toBe(2)
     expect(c.get().once.hearts).toBe(1)
     expect(c.get().evidence.discoveries).toContain('once')
+    expect(c.get().evidence.discoveries).not.toContain('lives-loop')
+    expect(
+      evaluateExperimentation('once-vs-always', c.get(), true, undefined, c.targets).passed,
+    ).toBe(false)
     c.reset()
     expect(c.get().once.frames).toBe(0)
     expect(c.get().once.placement.lives).toBe('outside')
@@ -139,16 +152,19 @@ describe('uma vez, sempre e na hora', () => {
     c.frames(9)
     expect(c.get().once.hits).toBe(3)
     expect(c.get().once.hearts).toBe(2)
+    expect(c.get().evidence.discoveries).toContain('lives-loop')
+    expect(
+      evaluateExperimentation('once-vs-always', c.get(), true, undefined, c.targets).passed,
+    ).toBe(true)
   })
 
-  test('colocar o movimento depois de começar não inventa o começo que não houve', () => {
+  test('reconfigurar depois de começar prepara uma nova partida sem apagar descobertas', () => {
     const c = lab('duas-caixas-nave', ['once', 'always'])
-    c.frames(1)
-    c.place('move', 'start')
+    c.place('move', 'loop')
     c.frames(3)
-    expect(c.get().evidence.discoveries).not.toContain('once')
-    c.reset()
     c.place('move', 'start')
+    expect(c.get().once.frames).toBe(0)
+    expect(c.get().once.heroX).toBe(44)
     c.frames(3)
     expect(c.get().evidence.discoveries).toContain('once')
   })

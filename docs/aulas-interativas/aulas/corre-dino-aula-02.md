@@ -291,13 +291,13 @@ Estúdio" não é um lugar. Nada foi apagado. A conferência e o envio foram par
 
 A cena foi especificada na análise do Desafio do Primeiro Jogo, Dia 1, e está no catálogo com
 parametrização por preset. Ela **não precisa ser especificada de novo**: o motor, as metas, as
-pistas e o formato são os mesmos. O que muda aqui é o elenco e o texto das fichas.
+pistas e o formato são os mesmos. O que muda aqui é o elenco e o texto das ações.
 
 - **Conceito:** o que está em `Ao iniciar` acontece uma vez, no começo. O que está em `Enquanto
   estiver rodando` acontece de novo a cada quadro, sem parar.
 - **Tipo:** experimentação. A relação tem botão, porque a variável é **onde** a ação é colocada.
 - **Delta para o Corre, Dino!:**
-  - As três fichas passam a ser **Pintar o fundo**, **Criar o Dino** e **Mover o Dino um
+  - As três ações disponíveis passam a ser **Pintar o fundo**, **Criar o Dino** e **Mover o Dino um
     pouquinho**.
   - O palpite antes de abrir vira: "Se você põe Mover o Dino em Ao iniciar, o que acontece quando o
     jogo roda?" · "Ele se mexe uma vez e para" ✓ · "Ele se mexe sem parar".
@@ -307,8 +307,8 @@ pistas e o formato são os mesmos. O que muda aqui é o elenco e o texto das fic
   - A explicação ao acertar vira: "Ao iniciar é a arrumação: acontece uma vez, no começo. Enquanto
     estiver rodando é o motor: acontece de novo a cada quadro, sem parar. O Dino foi criado uma vez
     e é o mesmo Dino que aparece em todos os quadros."
-- **Por que ela cai tão bem aqui:** o contador de disparos por ficha responde sozinho ao engano que
-  o quiz de hoje cobra. Com cinco quadros passados, a ficha de criar marca um disparo e a de mover
+- **Por que ela cai tão bem aqui:** o contador de execuções por ação responde sozinho ao engano que
+  o quiz de hoje cobra. Ao fim da partida, a ação de criar marca uma execução e a de mover
   marca cinco. A criança vê que existe um Dino só.
 - **Elenco/cenário:** Dino, cenário `corre-dino`.
 - **Metas cobradas nesta aula:** `once`, `always`, `both`. O bloco **declara só o preset**

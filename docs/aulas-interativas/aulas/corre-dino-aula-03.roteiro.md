@@ -16,19 +16,19 @@
 ## Seção 1. O que a gente vai fazer hoje
 
 ### Clipe `video-abertura` · Ele corre, mas não te obedece
-**Duração alvo:** 20 a 30 segundos · **Palavras:** 60
+**Duração alvo:** 20 a 30 segundos; recalibrar após gravar.
 
 **Na tela:** Jogo da Aula 2 rodando; clicar na área do jogo e apertar espaço, depois seta para cima.
 
 **Narração:**
-> "O Dino corre, a floresta passa, mas olha quando eu aperto **espaço**. Nada. E com a **seta
-> para cima**? Também nada. Ele ainda não recebe nenhum comando de pulo."
+> "O Dino já corre no seu jogo. Hoje vamos dar a ele um comando de pulo para você controlar
+> a corrida com o teclado."
 
 **Na tela:** Mostrar rapidamente o resultado da aula, com um salto que sobe e volta à grama.
 
 **Narração:**
-> "Hoje isso muda. No fim, você manda o Dino pular, ele sai do chão e volta sozinho. Vamos
-> montar uma peça de cada vez e olhar o que acontece de verdade."
+> "No fim, você vai mandar o Dino pular, ver ele sair do chão e voltar sozinho. Vamos montar
+> uma peça de cada vez."
 
 ## Seção 2. Dê o comando de pulo
 

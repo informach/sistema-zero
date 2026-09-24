@@ -42,8 +42,8 @@ describe('amostras visuais da experiência', () => {
     expect(samples.situations.every((text) => text === castText(text, cast))).toBe(true)
   })
 
-  test('reserva o vocabulário certo para quadro e passo', () => {
+  test('reserva o vocabulário certo para quadro e ações feitas', () => {
     expect(sceneDisplaySamples('draw-loop').readouts[0]?.label).toBe('quadro')
-    expect(sceneDisplaySamples('once-vs-always').readouts[0]?.label).toBe('passo')
+    expect(sceneDisplaySamples('once-vs-always').readouts[0]?.label).toBe('ações feitas')
   })
 })

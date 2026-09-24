@@ -16,13 +16,13 @@
 ## Seção 1. O que a gente vai fazer hoje
 
 ### Clipe `video-abertura` · O pulo ganha som
-**Duração alvo:** 25 a 35 segundos · **Palavras:** 57
+**Duração alvo:** 25 a 35 segundos; recalibrar após gravar.
 
 **Na tela:** Jogo da Aula 3: clicar na área e pular em silêncio; manter dois segundos só com o movimento.
 
 **Narração:**
-> "O Dino já corre e já pula, mas faz isso em silêncio. Repara como falta alguma coisa quando
-> ele sai do chão."
+> "O Dino já corre e pula. Hoje vamos colocar som nesse pulo para ele responder também aos
+> seus ouvidos."
 
 **Na tela:** Mostrar o mesmo pulo com áudio e uma marca visual a cada som; repetir com toque na parte de cima.
 

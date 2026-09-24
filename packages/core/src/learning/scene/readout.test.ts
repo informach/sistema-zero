@@ -217,7 +217,7 @@ describe('a faixa de estado', () => {
     expect(lidas.size).toBe(Object.keys(GENERO).length * 2 - SO_DESLIGADO.size)
   })
 
-  test('o par de comparação usa os tons do desenho, nunca tudo igual', () => {
+  test('o par de comparação usa os tons do desenho; Uma vez e sempre foca só a ação', () => {
     // A e B são as cores com que a cena mostra a medida A contra a medida B. Uma faixa toda
     // `plain` perde justamente a ligação com o palco.
     // ⚠️ O primeiro tom não é sempre `a`: em `screen-reader` a descrição VAZIA nasce em
@@ -226,7 +226,12 @@ describe('a faixa de estado', () => {
     // toque") só entra DEPOIS de a criança tocar, porque "desligado" embaixo da previsão ("você
     // aperta Toque para começar. O que acontece?") era a resposta. O par é conferido ali.
     for (const scene of SCENE_IDS) {
-      const tons = sceneReadout(scene, toqueRecusado(scene)).map((l) => l.tone)
+      const leituras = sceneReadout(scene, toqueRecusado(scene))
+      if (scene === 'once-vs-always') {
+        expect(leituras.map((leitura) => leitura.label)).toEqual(['ações feitas'])
+        continue
+      }
+      const tons = leituras.map((l) => l.tone)
       expect(tons.filter((t) => t !== 'plain').length).toBeGreaterThanOrEqual(2)
     }
     expect(sceneReadout('controls', nasce('controls'))).toHaveLength(1)

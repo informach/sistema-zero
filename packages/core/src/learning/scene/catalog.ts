@@ -102,57 +102,65 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     group: 'events',
     title: 'Uma vez, sempre, e na hora que acontecer',
     instruction:
-      'Ponha as fichas nas áreas do projeto e avance passos. Compare os contadores de cada ficha. Volte ao começo antes de experimentar outro lugar.',
-    manipulates: 'As fichas de ação, as áreas do projeto e o avanço dos passos',
+      'Teste as ações em áreas diferentes. Comece o jogo e compare o que acontece na cena e nos contadores.',
+    manipulates: 'As ações, as áreas do projeto e o começo do jogo',
     success: 'Ao iniciar é uma vez. Enquanto estiver rodando é sempre. Quando acontecer é na hora.',
     successNoCaso: {
-      'always+once': 'Você viu a mesma ação uma vez no começo e repetida em cada passo.',
+      'always+once': 'Você viu a mesma ação uma vez no começo e repetida enquanto o jogo rodava.',
       'always+both+once': 'Você achou a diferença: arrumar é uma vez, o motor é sempre.',
       'key-fires+on-event': 'Quando acontecer espera a tecla e age na hora em que ela é apertada.',
       once: 'Em Ao iniciar, a ação acontece uma vez e a batida consegue tirar vidas.',
+      'lives-loop+once':
+        'Você comparou: uma vida pode acabar quando é dada no começo, mas volta a encher quando é dada durante o jogo.',
     },
-    extra: 'E se você levar uma ficha para outra área e voltar ao começo?',
+    extra: 'E se você levar a mesma ação para outra área e começar de novo?',
     goals: [
       {
         id: 'once',
         label: 'Em Ao iniciar, a ação aconteceu uma vez só',
-        pedido: 'Ponha a ficha de arrumação em Ao iniciar e avance três passos.',
+        pedido: 'Ponha a ação de preparação em Ao iniciar e comece o jogo.',
       },
       {
         id: 'always',
-        label: 'Em Enquanto estiver rodando, a ação se repete a cada passo',
-        pedido: 'Ponha a ficha de movimento em Enquanto estiver rodando e avance três passos.',
+        label: 'Em Enquanto estiver rodando, a ação se repetiu durante o jogo',
+        pedido: 'Ponha a ação de movimento em Enquanto estiver rodando e comece o jogo.',
+      },
+      {
+        id: 'lives-loop',
+        label: 'No motor, as vidas voltaram a encher depois das batidas',
+        pedido:
+          'Depois de testar Ao iniciar, ponha Dar três vidas à nave em Enquanto estiver rodando e comece o jogo.',
+        soNoCaso: true,
       },
       {
         id: 'both',
         label: 'Preparar uma vez e repetir sempre, juntos',
         pedido:
-          'Deixe a preparação em Ao iniciar e o movimento em Enquanto estiver rodando; avance cinco passos.',
+          'Deixe a preparação em Ao iniciar e o movimento em Enquanto estiver rodando; comece o jogo.',
       },
       {
         id: 'on-event',
         label: 'Em Quando acontecer, a ação ficou esperando',
-        pedido:
-          'Ponha a ficha do evento em Quando acontecer e avance três passos sem apertar a tecla.',
+        pedido: 'Ponha a ação do evento em Quando acontecer e comece o jogo sem apertar a tecla.',
         soNoCaso: true,
       },
       {
         id: 'key-fires',
         label: 'A tecla fez a ação acontecer na hora',
-        pedido: 'Com a ficha do evento em Quando acontecer, aperte a tecla.',
+        pedido: 'Com a ação do evento em Quando acontecer, aperte a tecla.',
         soNoCaso: true,
       },
       {
         id: 'flood',
-        label: 'Em Enquanto estiver rodando, nasceu um tiro em cada passo',
-        pedido: 'Ponha Criar um tiro em Enquanto estiver rodando e avance cinco passos.',
+        label: 'Em Enquanto estiver rodando, nasceram tiros durante o jogo',
+        pedido: 'Ponha Criar um tiro em Enquanto estiver rodando e comece o jogo.',
         soNoCaso: true,
       },
     ],
     hints: [
-      'Olhe o número do passo e conte quantas vezes cada ação aconteceu.',
-      'Ponha uma ação em Ao iniciar e avance mais de um passo. Ela acontece de novo?',
-      'Agora arraste a mesma ação para Enquanto estiver rodando e avance de novo.',
+      'Olhe a cena e conte quantas vezes cada ação aconteceu.',
+      'Ponha uma ação em Ao iniciar e comece o jogo. Ela acontece de novo?',
+      'Agora arraste a mesma ação para Enquanto estiver rodando e comece de novo.',
     ],
   },
   'fixed-vs-read': {
@@ -1440,7 +1448,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     instruction:
       'Sorteie o lugar algumas vezes e olhe as marquinhas. Depois sorteie a velocidade e veja qual cacto chega mais longe.',
     manipulates: 'Sorteio do lugar e sorteio da velocidade, com as marquinhas e as raias',
-    success: 'Cada sorteio saiu dentro dos limites que você deu, e às vezes repetiu!',
+    success: 'Cada sorteio ficou dentro dos limites, e um lugar pode sair mais de uma vez.',
     extra: 'Sorteie a velocidade mais vezes. Algum cacto passa do de −6?',
     goals: [
       {
@@ -1453,8 +1461,8 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       {
         id: 'repeat',
         label: 'Um lugar repetiu',
-        // ⚠️ Oito vezes, e não "até repetir": são sete lugares, então oito sorteios repetem com
-        // certeza, e o pedido não conta o resultado.
+        // ⚠️ No caso base são sete lugares: oito sorteios repetem com certeza. No caso da pedra,
+        // com 61 lugares, esta meta não entra na conclusão.
         pedido: 'Aperte Sortear lugar mais oito vezes.',
       },
       {

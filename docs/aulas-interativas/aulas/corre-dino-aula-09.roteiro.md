@@ -16,20 +16,19 @@
 ## Seção 1. Hoje o seu jogo fica inteiro
 
 ### Clipe `video-abertura` · Hoje o seu jogo fica inteiro
-**Duração alvo:** 35 a 45 segundos · **Palavras:** 69
+**Duração alvo:** 35 a 45 segundos; recalibrar após gravar.
 
 **Na tela:** Jogar a versão da Aula 8 até o Dino atravessar um cacto sem efeito.
 
 **Narração:**
-> "Olha a batida de agora: o Dino passa por dentro do cacto, e a corrida continua. Os dois
-> aparecem na tela, mas o jogo ainda não pergunta se se encostaram."
+> "O Dino e os cactos já aparecem juntos, mas a batida ainda não muda o jogo. Hoje vamos
+> ensinar o projeto a perceber quando eles se encontram."
 
 **Na tela:** Mostrar rodada completa do resultado final: menu, toque, corrida, batida, fim e recomeço com pista vazia.
 
 **Narração:**
-> "Hoje isso muda. O jogo vai perceber a colisão, mostrar o fim e deixar você começar outra vez.
-> Olha a volta inteira, do menu à pista limpa. Quando a aula terminar, o seu jogo terá começo,
-> meio e fim."
+> "Vamos montar a colisão, mostrar o fim e deixar você começar outra vez. Quando a aula
+> terminar, o seu jogo terá começo, meio e fim."
 
 ## Seção 2. A batida acaba a partida
 

@@ -16,7 +16,7 @@
 ## Seção 1. O que a gente vai fazer hoje
 
 ### Clipe `video-abertura` · O seu jogo rodando fora da aula
-**Duração alvo:** 25 a 35 segundos · **Palavras:** 69
+**Duração alvo:** 25 a 35 segundos; recalibrar após gravar.
 
 **Na tela:** Mostrar o jogo da nave rodando no Estúdio Completo, com cartão nomeado, sem passeio por menus.
 
@@ -28,8 +28,8 @@
 **Na tela:** Mostrar a nave respondendo às setas, tiros e placar.
 
 **Narração:**
-> "No fim da aula, você saberá qual cartão abrir para continuar criando. Olha: a nave, os tiros
-> e o placar continuam juntos na cópia."
+> "No fim da aula, você terá uma cópia do seu jogo pronta para continuar criando no
+> Estúdio Completo. Vem comigo."
 
 ## Seção 2. Seu caderno para criar do seu jeito
 

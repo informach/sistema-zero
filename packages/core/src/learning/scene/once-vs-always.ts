@@ -81,6 +81,12 @@ export function placeOnce(
   if (!preset.cards.some((item) => item.id === card)) return false
   if (area !== 'outside' && !preset.areas.includes(area)) return false
   if (state.placement[card] === area) return false
+  // Uma nova montagem é uma nova partida. O resultado anterior continua na evidência da atividade.
+  if (state.frames > 0) {
+    const placement = { ...state.placement }
+    Object.assign(state, initialOnce(preset))
+    state.placement = placement
+  }
   state.placement[card] = area
   state.placedAtFrame[card] = state.frames
   state.firedAtPlacement[card] = state.fires[card]
@@ -97,7 +103,7 @@ function fire(state: SceneOnce, card: OnceCard): void {
       state.heroCount += 1
       break
     case 'move':
-      state.heroX = Math.min(430, state.heroX + 12)
+      state.heroX = Math.min(620, state.heroX + 24)
       break
     case 'shot':
       state.shots += 1
@@ -115,6 +121,7 @@ function fire(state: SceneOnce, card: OnceCard): void {
 
 /** Um quadro tem ordem fixa: iniciar no primeiro, motor em todos, batida no final. */
 export function advanceOnce(state: SceneOnce, preset: OnceVsAlwaysPreset): void {
+  if (onceRunFinished(state, preset)) return
   state.frames += 1
   for (const card of preset.cards) {
     const area = state.placement[card.id]
@@ -134,6 +141,15 @@ export function triggerOnce(state: SceneOnce, preset: OnceVsAlwaysPreset): boole
   return true
 }
 
+/** Um teste tem fim observável: no piloto a nave sai de cena; nos demais há tempo limitado. */
+export function onceRunFinished(state: SceneOnce, preset: OnceVsAlwaysPreset): boolean {
+  if (state.frames === 0) return false
+  if (preset.id === 'duas-caixas-nave')
+    return state.placement.move === 'loop' ? state.heroX >= 620 : state.frames >= 3
+  if (preset.id === 'uma-ficha-vidas') return state.frames >= 9
+  return state.frames >= 5
+}
+
 /** Evidência derivada do que ficou observável, nunca de colocar uma ficha sem rodar. */
 export function onceDiscoveries(state: SceneOnce, preset: OnceVsAlwaysPreset): string[] {
   const found: string[] = []
@@ -146,6 +162,14 @@ export function onceDiscoveries(state: SceneOnce, preset: OnceVsAlwaysPreset): s
       state.hearts <= 1
     )
       found.push('once')
+    if (
+      state.placement.lives === 'loop' &&
+      state.frames - state.placedAtFrame.lives >= 9 &&
+      state.fires.lives - state.firedAtPlacement.lives >= 9 &&
+      state.hits >= 3 &&
+      state.hearts === 2
+    )
+      found.push('lives-loop')
     return found
   }
   const cards = onceGoalCards(preset)
@@ -165,7 +189,8 @@ export function onceDiscoveries(state: SceneOnce, preset: OnceVsAlwaysPreset): s
     always !== undefined &&
     state.placement[always] === 'loop' &&
     state.frames - state.placedAtFrame[always] >= 3 &&
-    state.fires[always] - state.firedAtPlacement[always] >= 3
+    state.fires[always] - state.firedAtPlacement[always] >= 3 &&
+    (preset.id !== 'duas-caixas-nave' || state.heroX >= 620)
   )
     found.push('always')
   if (

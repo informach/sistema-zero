@@ -296,7 +296,7 @@ export function PecaQueMudaDeCaixa<K extends string>({
       ) : (
         <div className="sz-scene-pecas">{caixas.map((c) => caixa(c))}</div>
       )}
-      <p id={ajuda} className="text-sm text-muted-foreground">
+      <p id={ajuda} className="sr-only">
         {`Arraste ${nomeDaPeca} para a outra caixa. Ou toque em Colocar aqui.`}
       </p>
       {arrasto &&
@@ -462,11 +462,6 @@ function OrdemDeDesenhar({
           </li>
         ))}
       </ol>
-      <p className="text-sm text-muted-foreground">
-        {camadas
-          ? 'A de cima fica na frente. Arraste uma forma ou use Uma camada para a frente e Uma camada para trás.'
-          : 'O jogo desenha a lista de cima para baixo. Arraste uma peça, ou use Descer e Subir.'}
-      </p>
     </div>
   )
 }

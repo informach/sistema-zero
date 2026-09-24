@@ -219,6 +219,29 @@ describe('Auditoria Jogo 2D — inventário', () => {
       ])
     }
   })
+
+  it('mantém os nomes padrão que o roteiro do primeiro dia mostra antes dos avisos', () => {
+    for (const [type, field, expected] of [
+      ['sz_g2d_create_ship', 'NAME', 'nave'],
+      ['sz_g2d_draw_sprite', 'SPRITE', 'jogador'],
+      ['sz_g2d_arrows_x', 'SPRITE', 'nave'],
+      ['sz_g2d_clamp_to_screen', 'SPRITE', 'heroi'],
+    ]) {
+      const definition = gameTwoDBlocks.find((block) => block.type === type)
+      expect(
+        definition?.args0?.find(
+          (argument) =>
+            typeof argument === 'object' &&
+            argument !== null &&
+            'name' in argument &&
+            argument.name === field,
+        ),
+        type,
+      ).toMatchObject({
+        text: expected,
+      })
+    }
+  })
 })
 
 describe('Auditoria Jogo 2D — pipeline completo por bloco', () => {

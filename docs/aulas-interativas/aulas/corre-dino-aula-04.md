@@ -266,26 +266,27 @@ roteiro do `video-teste-e-envio`, e só o gancho da Aula 5 continuou balão.
 
 - **Situação:** a cena está no catálogo com parametrização por preset, e o preset desta aula se
   chama **`tres-caixas-som`**: três caixas (`Ao iniciar`, `Enquanto estiver rodando`,
-  `Quando acontecer`), quatro fichas (Pintar o fundo, Criar o Dino, Mover o Dino um pouquinho e
+  `Quando acontecer`), quatro ações (Pintar o fundo, Criar o Dino, Mover o Dino um pouquinho e
   `Tocar efeito · pulo`) e o botão de apertar a tecla. O manifesto declara o preset por extenso.
   Este é o único bloco de cena do Corre, Dino! que precisava de preset próprio, porque as três
   caixas não são o palco de fábrica.
 - **O que a criança manipula, a mais que na Aula 2:** o botão **Apertar a tecla** no palco e a
-  quarta ficha, `Tocar efeito · pulo`. As três caixas ficam lado a lado, e as fichas podem ir para
+  quarta ação, `Tocar efeito · pulo`. As três caixas ficam lado a lado, e as ações podem ir para
   qualquer uma delas.
-- **Como o palco começa:** as três caixas vazias, as fichas de lado, o contador de quadros em 0 e um
-  contador de disparos por ficha.
+- **Como o palco começa:** as três caixas vazias, as ações disponíveis de lado e o HUD focado em
+  **Ações feitas**, sem passo ou quantidade de personagens. Cada ação também mostra sua própria contagem.
+  O botão **Começar o jogo** inicia um teste curto; a tecla
+  continua disponível depois de o tempo parar.
 - **A prova é duas, e não uma.** O `on-event` único que esta análise propôs, com o pedido "avance
-  três quadros sem apertar nada, e só depois aperte a tecla", era duas provas dentro de um pedido. A
+  alguns quadros sem apertar nada, e só depois aperte a tecla", era duas provas dentro de um pedido. A
   consolidação em `cenas/CENAS-NOVAS.md` dividiu em duas, e é o que o código tem:
-  - `on-event`, rótulo "Em `Quando acontecer`, a ação ficou esperando", pedido "Ponha a ficha do
-    evento em `Quando acontecer` e avance três quadros sem apertar a tecla."
-  - `key-fires`, rótulo "A tecla fez a ação acontecer na hora", pedido "Com a ficha do evento em
+  - `on-event`, rótulo "Em `Quando acontecer`, a ação ficou esperando", pedido "Ponha a ação do
+    evento em `Quando acontecer` e comece o jogo sem apertar a tecla."
+  - `key-fires`, rótulo "A tecla fez a ação acontecer na hora", pedido "Com a ação do evento em
     `Quando acontecer`, aperte a tecla."
-- **Palpite antes de abrir:** "Você põe `Tocar efeito` com `pulo` dentro de `Quando acontecer` e
-  deixa passar cinco quadros sem encostar no teclado. Quantas vezes o som toca?"
-  - Nenhuma ✓
-  - Cinco, uma por quadro
+- **Palpite antes de abrir:** "Se o jogo estiver rodando e ninguém apertar a tecla, o som toca?"
+  - Não toca ✓
+  - Toca sozinho
 - **Pergunta depois de descobrir:** "O jogo precisa arrumar a tela uma vez no começo, desenhar sem
   parar, e tocar um som quando alguém aperta uma tecla. Onde vai cada uma dessas três coisas?"
   - Arrumar em `Ao iniciar`, desenhar em `Enquanto estiver rodando`, tocar em `Quando acontecer` ✓
@@ -297,7 +298,7 @@ roteiro do `video-teste-e-envio`, e só o gancho da Aula 5 continuou balão.
   `Quando acontecer` é na hora." A versão proposta aqui ("uma vez a cada vez que acontece") saiu,
   porque lida ao pé da letra se contradiz. O código guarda a frase das três caixas como a frase
   padrão da cena, e é ela que esta aula recebe.
-- **Rótulo da ficha:** `Tocar efeito · pulo`, e não "Tocar o som do pulo", porque é o nome que ela
+- **Rótulo da ação:** `Tocar efeito · pulo`, e não "Tocar o som do pulo", porque é o nome que ela
   vai procurar na coluna da esquerda cinco minutos depois. A mesma troca foi feita na `jump-sound`.
 - **Elenco/cenário:** dino / `corre-dino`.
 - **Metas cobradas nesta aula:** `on-event` e `key-fires`, **declaradas em `setup.goals`**. A

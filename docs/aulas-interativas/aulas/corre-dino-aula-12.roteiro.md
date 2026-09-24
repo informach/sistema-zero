@@ -16,27 +16,24 @@
 ## Seção 1. Dá para decorar o seu jogo
 
 ### Clipe `video-padrao-fixo` · Dá para decorar o seu jogo
-**Duração alvo:** 60 a 75 segundos · **Palavras:** 114
+**Duração alvo:** 60 a 75 segundos; recalibrar após gravar.
 
 **Na tela:** Mostrar várias partidas curtas, uma após a outra, com cactos percorrendo lugares e tempos iguais.
 
 **Narração:**
-> "Joga de novo e repara nos cactos. Outra partida, o mesmo caminho. Mais uma, e eles chegam na
-> mesma ordem. Dá para decorar quando pular, porque o jogo repete sempre a mesma instrução."
+> "Até agora, os cactos seguem sempre as mesmas regras de nascimento. Hoje vamos deixar
+> cada partida menos previsível."
 
 **Na tela:** Abrir No grupo criar obstáculo e relógio; apontar x 560, vx -5 e intervalo 1.4.
 
 **Narração:**
-> "Olha os três números que mandam nisso: x **560**, vx **menos 5** e relógio **1.4**. Mesmo
-> lugar, mesma velocidade, mesmo tempo. O computador está fazendo certinho o que a gente mandou,
-> sempre a mesma coisa."
+> "Vamos manter o ritmo do relógio e ensinar o jogo a sortear o lugar e a velocidade de
+> cada cacto."
 
 **Na tela:** Conferir no projeto do aluno vx -5 e relógio 1.4, corrigindo se necessário.
 
 **Narração:**
-> "Confere no seu projeto: o vx do criador precisa estar em **menos 5** e o relógio dos cactos
-> em **1.4**. Se algum estiver diferente, põe esses números agora. Hoje vamos manter o tempo e
-> pedir que o jogo sorteie o lugar e a velocidade."
+> "Depois vamos conferir os números no seu projeto e testar como os sorteios mudam a corrida."
 
 ## Seção 3. Cada cacto nasce num lugar diferente
 

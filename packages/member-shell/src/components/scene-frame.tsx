@@ -224,7 +224,7 @@ function maisLongas(candidatos: readonly (readonly SceneReading[])[]): SceneRead
  *
  * ⚠️⚠️ O botão de passo avança QUADROS INTEIROS da cena (lote 4 do Raio-X): o tempo e o nome vêm do
  * core (`sceneStepSeconds`, `sceneStepLabel`). "Avançar 1 quadro" anda UM quadro onde o quadro é o
- * assunto; `once-vs-always` diz "Avançar 1 passo" para não antecipar o termo; "Um passo" anda os
+ * assunto; `once-vs-always` usa uma partida automática; "Um passo" anda os
  * quadros inteiros de ~0,2 s (review do lote 4: um quadro de 1/30 s era um tique invisível, e o pulo
  * pedia 30 cliques). Era 0,2 s em toda cena, e o motor contava UM quadro
  * por clique qualquer que fosse o tempo: o mesmo gesto dava números diferentes no ▶ e no passo.
@@ -238,6 +238,9 @@ export function botoesDoMundo({
   dispatch,
   gestoEmDestaque = true,
   semRelogio = false,
+  onceReady = false,
+  onceFinished = false,
+  onceStarted = false,
 }: {
   scene: SceneId
   tocando: boolean
@@ -255,7 +258,29 @@ export function botoesDoMundo({
    * das `lives` do Desafio o ponto vem do acerto do tiro, e o relógio só mostrava "o placar continua".
    */
   semRelogio?: boolean
+  onceReady?: boolean
+  onceFinished?: boolean
+  onceStarted?: boolean
 }): ReactElement[] {
+  if (scene === 'once-vs-always')
+    return [
+      <SceneButton
+        key="comecar-jogo"
+        tom={gestoEmDestaque ? 'gesto' : 'ferramenta'}
+        fechado={!onceReady || onceFinished}
+        onClick={onTocar}
+      >
+        {tocando
+          ? 'Pausar o jogo'
+          : onceFinished
+            ? 'Teste encerrado'
+            : onceStarted
+              ? 'Continuar o jogo'
+              : onceReady
+                ? 'Começar o jogo'
+                : 'Coloque uma ação para começar'}
+      </SceneButton>,
+    ]
   // ⚠️⚠️ Na `frames` a PRÉVIA é o relógio (lote 5 do Raio-X, G4): a chave "Prévia: tocando/parada" da
   // bancada liga o tempo do player. O ▶, o "Um passo" e o "Mais devagar" eram um segundo interruptor
   // para a mesma coisa, e com a prévia parada não mudavam nada na tela.

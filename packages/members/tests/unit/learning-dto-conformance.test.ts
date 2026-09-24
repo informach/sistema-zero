@@ -118,7 +118,7 @@ const validos: Array<[string, InteractiveBlock]> = [
         scene: 'random',
         setup: {
           preset: RANDOM_PRESETS['pedra-acima'],
-          goals: ['positions', 'repeat', 'above'],
+          goals: ['positions', 'above'],
         },
       },
     },

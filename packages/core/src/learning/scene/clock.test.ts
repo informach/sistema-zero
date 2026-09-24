@@ -467,13 +467,15 @@ describe('⭐⭐ o passo avança QUADROS INTEIROS da cena', () => {
   test('o nome e o tempo do passo respeitam o vocabulário de cada cena', () => {
     const quadro = SCENE_IDS.filter((s) => sceneStepLabel(s) === 'Avançar 1 quadro')
     expect(quadro.sort()).toEqual(['contact', 'draw-loop', 'hold-vs-press', 'spawn', 'velocity'])
-    expect(sceneStepLabel('once-vs-always')).toBe('Avançar 1 passo')
+    expect(sceneStepLabel('once-vs-always')).toBeNull()
     expect(sceneStepSeconds('once-vs-always')).toBe(1 / SCENE_FRAME_RATE['once-vs-always'])
     // As que chamam de quadro o DESENHO, ou os quadros de outro computador, não podem dizer isso.
     for (const s of ['frames', 'delta-time'] as const) expect(sceneStepLabel(s)).toBe('Um passo')
     // Sem relógio, sem botão.
     for (const s of SCENE_IDS) {
-      expect(sceneStepLabel(s) === null, s).toBe(sceneFrameRate(s) === null)
+      expect(sceneStepLabel(s) === null, s).toBe(
+        sceneFrameRate(s) === null || s === 'once-vs-always',
+      )
       expect(sceneStepSeconds(s) === null, s).toBe(sceneFrameRate(s) === null)
     }
     // Os números da tabela do review: 6 quadros no salto, 5 na `frames`, 4 nas de 20 por segundo, 2

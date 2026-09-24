@@ -67,7 +67,7 @@ describe('casos da once-vs-always', () => {
         },
       },
     }
-    expect(sceneTargets(activity)).toEqual(['once'])
+    expect(sceneTargets(activity)).toEqual(['once', 'lives-loop'])
     const state = openScene({ scene: activity.scene, setup: activity.setup })
     expect(
       sceneGoals(

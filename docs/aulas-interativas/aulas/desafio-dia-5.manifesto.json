@@ -719,47 +719,23 @@
     },
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: O jogo ganha começo e fim\n\nOrigem: video-abertura-v6, com fala parcial e tela regravada. Duração alvo: 30 a 40 segundos.\n\nMostrar o jogo pronto: a tela de abertura com o nome, um Enter começando a partida, um trecho curto de jogo, a tela de derrota e a de vitória.\n\nFala: \"Hoje o seu jogo ganha começo e fim. A gente vai guardar a partida inteira atrás de uma pergunta, montar as telas, e ensinar o Enter a comandar tudo. É a aula mais longa das cinco, e o seu projeto fica guardado se você precisar parar no meio.\"\n\nCorte obrigatório: sai a enumeração dos sete passos."
+      "plannedVideo": "Título: O jogo ganha começo e fim\n\nOrigem: abertura do roteiro original do Dia 5 e video-abertura-v6, com tela regravada. Duração alvo: 35 a 45 segundos, recalibrar após gravar.\n\nMostrar o jogo pronto: a tela de abertura com o nome, um Enter começando a partida, um trecho curto de jogo, a tela de derrota e a de vitória. Abrir a fala com saudação e o último dia do desafio. Dizer que a partida vai ganhar começo e fim e que vamos montar uma parte de cada vez. Se a criança precisar parar, o projeto fica salvo. Não anunciar que é a aula mais longa, não prometer publicação automática e não enumerar sete passos."
     },
     {
       "key": "video-telas",
-      "plannedVideo": "Título: Os quatro momentos do jogo\n\nOrigem: video-telas-observar, com a fala aproveitada e imagem nova. Duração alvo: 40 a 50 segundos.\n\nQuatro cartões na tela, um por momento: inicio, jogando, vitoria e fim. As setas entram uma de cada vez, nunca duas ao mesmo tempo. De inicio para jogando, pelo Enter. De jogando para vitoria, quando os pontos chegam a 26. De jogando para fim, quando as vidas acabam.\n\nFala: \"O seu jogo vai ter quatro momentos, e ele guarda um de cada vez. O momento que está guardado é que decide o que o jogo faz agora.\"\n\nVocabulário travado: o bloco se chama Mudar o estado do jogo para. Não usar o rótulo antigo Ir para a tela, nem a subcategoria antiga Telas e cenas."
-    },
-    {
-      "key": "fala-constante",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Para saber quando alguém ganhou, o jogo precisa de uma meta: 26 pedras destruídas. A caixa dos pontos muda o tempo todo durante a partida. Essa aqui não muda nunca, e caixa que não muda tem nome próprio: constante."
-      }
+      "plannedVideo": "Título: Os quatro momentos do jogo\n\nOrigem: roteiro original do Dia 5, Parte 1, e video-telas-observar, com imagem e fala novas. Duração alvo: 55 a 65 segundos, recalibrar após gravar.\n\nAntes de mostrar nomes internos, acompanhar um jogo conhecido pela criança: abre no nome, começa ao apertar uma tecla, deixa jogar e termina em vitória ou derrota. Depois entram os cartões inicio, jogando, vitoria e fim, um de cada vez. Mostrar as transições separadamente: Enter começa, 26 pontos levam à vitória, vidas esgotadas levam ao fim. Falar como conversa, sem começar pela enumeração dos nomes.\n\nVocabulário atual: Mudar o estado do jogo para; Jogo 2D › Jogo e telas › Telas e partida. Não usar Ir para a tela nem Telas e cenas."
     },
     {
       "key": "fala-alvo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Programação, 🏷️ Variáveis, pegue Criar constante com valor e encaixe em Ao iniciar, logo abaixo do Dar ao sprite de vida. No nome, escreva alvo, e no valor, 26. Depois, em Jogo 2D, Jogo e telas › Telas e partida, pegue Mudar o estado do jogo para e encaixe como último bloco de Ao iniciar. Ele já vem com inicio escolhido, é só deixar."
+        "text": "Agora prepare a meta de 26 pontos e faça o jogo começar no momento inicio. O vídeo mostra os dois encaixes."
       }
     },
     {
       "key": "video-alvo",
-      "plannedVideo": "Título: A meta e o primeiro momento\n\nOrigem: video-alvo do v6, com a fala aproveitada e troca de rótulos. Duração alvo: 45 a 55 segundos.\n\nMostrar o gesto dos dois blocos: Criar constante com valor encaixado em Ao iniciar, com alvo e 26, e Mudar o estado do jogo para como último bloco de Ao iniciar, com inicio.\n\nManter a comparação da caixinha lacrada, que é boa: a constante é uma caixa que ninguém abre depois de fechar.\n\nTroca obrigatória de rótulos: onde a gravação diz Ir para a tela, passa a dizer Mudar o estado do jogo para. Onde diz Telas e cenas, passa a dizer Jogo e telas › Telas e partida."
-    },
-    {
-      "key": "fala-guardar-nao-desenha",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "Olha o seu jogo: continua tudo igual, com as pedras caindo. Guardar o momento não muda nada sozinho, e é por isso que a próxima peça é uma pergunta."
-      }
-    },
-    {
-      "key": "fala-tudo-roda",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Hoje tudo o que está no motor acontece o tempo todo, desde o segundo em que a página abre. A nave anda, as pedras nascem e os tiros saem antes de alguém mandar começar. Olha o que acontece quando uma pergunta entra na frente de uma ação."
-      }
+      "plannedVideo": "Título: A meta e o primeiro momento\n\nOrigem: roteiro original do Dia 5, Parte 1, com fala e rótulos atualizados. Duração alvo: 50 a 60 segundos, recalibrar após gravar.\n\nAntes do gesto, explicar a meta de 26 pedras e compará-la aos pontos que mudam. Imaginar uma caixinha lacrada que guarda 26 durante a partida; só então nomear constante. Mostrar Criar constante com valor em Ao iniciar, trocar PI por alvo e o valor 0 por 26, confirmando cada campo fora do bloco. Mudar o estado do jogo para entra por último em Ao iniciar; inicio já vem selecionado e não precisa ser escolhido de novo.\n\nUsar os rótulos atuais Jogo 2D › Jogo e telas › Telas e partida, não Ir para a tela nem Telas e cenas."
     },
     {
       "key": "experiencia-estado",
@@ -767,8 +743,12 @@
         "kind": "interactive",
         "required": true,
         "title": "O relógio pode agir agora?",
-        "instructions": "Deixe o relógio de 40 quadros tocar três vezes com a peça Criar pedra solta, fora da caixa. Depois leve a peça para dentro da caixa Se o estado do jogo é jogando e deixe tocar de novo, olhando os contadores. Por último, comece a partida e deixe tocar mais três vezes.",
-        "hints": [],
+        "instructions": "Teste a criação das pedras dentro e fora da pergunta sobre estar jogando. Compare o relógio e as pedras antes e depois de começar a partida.",
+        "hints": [
+          "Com Criar asteroide fora do Se, solte o Tempo no início até o relógio tocar três vezes.",
+          "Leve Criar asteroide para dentro de Se o estado do jogo é jogando. Ainda no início, deixe o relógio tocar mais três vezes.",
+          "Comece a partida e deixe o relógio tocar outras três vezes. Compare o relógio com as pedras que nasceram."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "game-state",
@@ -798,21 +778,7 @@
             }
           }
         },
-        "checkpoint": {
-          "prompt": "O relógio tocou no momento inicio, mas tem a pergunta antes de criar. O que acontece?",
-          "choices": [
-            {
-              "id": "cria",
-              "label": "Cria uma pedra porque o relógio tocou."
-            },
-            {
-              "id": "nenhuma",
-              "label": "Nenhuma pedra é criada."
-            }
-          ],
-          "correctChoiceId": "nenhuma",
-          "explanation": "A chamada do relógio acontece do mesmo jeito. É a resposta da pergunta que decide se o bloco de dentro age."
-        }
+        "semPerguntaFinal": true
       }
     },
     {
@@ -820,15 +786,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Isso que a gente vai fazer agora tem nome: embrulhar no Se. São sempre quatro etapas. Um, pegar o Condição se, senão se e senão, em Programação, ❓ Lógica & Se, e encaixar no topo do A cada quadro do jogo, antes de tudo. Dois, tirar a comparação que já vem de fábrica na pergunta e apagar."
-      }
-    },
-    {
-      "key": "fala-embrulhar-cadeia",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Três, encaixar no lugar dela o o estado do jogo é ?, de Jogo 2D, Jogo e telas › Telas e partida, escolhendo jogando. Quatro, pegar a sequência que já existia pelo primeiro bloco dela, o Limpar a tela, e soltar dentro do então. Quando você arrasta o primeiro, todos os que estão encaixados embaixo vêm junto."
+        "text": "Agora coloque a partida dentro da pergunta jogando. Siga o gesto do vídeo e confira se a cadeia inteira entrou."
       }
     },
     {
@@ -836,116 +794,52 @@
       "plannedVideo": "Título: Embrulhar no Se, do começo ao fim\n\nOrigem: fusão de video-pergunta, video-mover-cadeia e video-guardar-jogo, com troca de rótulos. Duração alvo: 95 a 115 segundos.\n\nMostrar as quatro etapas seguidas, sem cortar entre elas, porque é a única vez em que a manobra aparece inteira.\n\n1. Pegar o Condição se, senão se e senão e encaixar no topo do A cada quadro do jogo.\n2. Tirar a comparação de fábrica e apagar.\n3. Encaixar o o estado do jogo é ? no lugar dela, com jogando.\n4. Pegar a cadeia pelo Limpar a tela e soltar dentro do então.\n\nGravar zoom e pausa no contorno do então, e conferir o começo e o fim da cadeia: Limpar a tela lá em cima e Desenhar as vidas do sprite como em x y tamanho cor lá embaixo, os dois dentro.\n\nTroca obrigatória de rótulo: onde a gravação diz a tela atual é, passa a dizer o estado do jogo é ?.\n\nNão incluir o relógio neste clipe: ele é a seção seguinte."
     },
     {
-      "key": "fala-tela-preta",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "Agora olha o seu jogo: ficou tudo preto. Calma, isso é sinal de que funcionou. O jogo está guardando o momento inicio, a partida está trancada dentro da pergunta, e ninguém desenhou a tela de abertura ainda. Guardar um momento não desenha nada, e é a gente que vai desenhar daqui a pouco."
-      }
-    },
-    {
       "key": "fala-relogio-e-tiro",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora é embrulhar no Se outra vez, em dois lugares, com as mesmas quatro etapas. Primeiro no relógio: dentro do A cada quadros de 40, embrulhe o No grupo criar um asteroide."
-      }
-    },
-    {
-      "key": "fala-embrulhar-tiro",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Depois no evento: dentro do Quando apertar a tecla da barra de espaço, embrulhe os dois blocos que estão lá, o Criar tiro no grupo e o Tocar efeito. Nos dois lugares a pergunta é a mesma: o estado do jogo é ? em jogando."
+        "text": "Proteja também o relógio e o disparo: eles só devem agir durante a partida."
       }
     },
     {
       "key": "video-relogio-e-tiro",
-      "plannedVideo": "Título: A mesma manobra em mais dois lugares\n\nOrigem: fusão de video-guardar-relogio com video-guardar-tiro. Duração alvo: 95 a 110 segundos.\n\nO segundo clipe é gravação nova: a proteção do evento da barra de espaço não existe no roteiro original, e precisa ser gravada sobre o evento que já existe.\n\nMostrar as quatro etapas rápido nos dois lugares, já que a manobra foi vista inteira na seção anterior. Primeiro dentro do A cada quadros de 40, depois dentro do Quando apertar a tecla da barra de espaço.\n\nTerminar com o teste do menu: a barra de espaço apertada várias vezes sem sair tiro, e o relógio batendo sem nascer pedra. Depois mostrar a etiqueta Salvo do Estúdio embutido e apontar esta como pausa possível: após concluir a seção, a criança pode fechar e retomar na próxima seção pelo mesmo aparelho. Não mostrar Guardado na sua conta neste Estúdio.\n\nTroca obrigatória de rótulos: o estado do jogo é ? e Jogo e telas › Telas e partida."
-    },
-    {
-      "key": "fala-teste-menu",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Clica na área do jogo e aperta a barra de espaço várias vezes. Nada sai, e nenhuma pedra nasce. O relógio continua batendo, como você viu na cena, mas a resposta da pergunta é não, e ninguém age."
-      }
+      "plannedVideo": "Título: A mesma manobra em mais dois lugares\n\nOrigem: fusão de video-guardar-relogio com video-guardar-tiro. Duração alvo: 155 a 175 segundos.\n\nAbrir explicando por que relógio e tecla também precisam da pergunta. Gravar sem acelerar as quatro etapas em cada lugar. Primeiro proteger A cada quadros de 40; depois proteger Quando apertar a tecla da barra de espaço. Em ambos, narrar novamente o caminho da categoria até cada bloco, o lugar exato do encaixe, a retirada da comparação de fábrica, o menu jogando e o arraste da cadeia existente para dentro do então.\n\nTerminar com o teste do menu: a barra de espaço apertada várias vezes sem sair tiro, e o relógio batendo sem nascer pedra. Depois do teste, mostrar a etiqueta Salvo do Estúdio embutido e fechar com uma ponte curta para as perguntas de vitória e derrota, sem linguagem técnica de produção na narração. Não mostrar Guardado na sua conta neste Estúdio. Narração completa no roteiro correspondente."
     },
     {
       "key": "fala-vitoria",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "As duas perguntas moram no finalzinho do então de jogando, logo depois do Desenhar as vidas do sprite. A primeira é a vitória. Pegue um Condição se, senão se e senão e encaixe ali. A comparação de fábrica serve: à esquerda, valor da variável com pontos; no meio, maior ou igual; à direita, outro valor da variável, com alvo. Dentro dela, Mudar o estado do jogo para com vitoria."
-      }
-    },
-    {
-      "key": "fala-derrota",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "A segunda é a derrota. Outro Condição se, senão se e senão, encaixado logo abaixo do primeiro. Nessa, tire a comparação de fábrica e encaixe no lugar as vidas do sprite acabaram?, de Jogo 2D, Vida e placar › Vida, escolhendo a nave. Dentro, Mudar o estado do jogo para com fim."
+        "text": "Agora ensine o jogo a decidir o fim da partida com pontos e vidas. Observe a ordem das duas perguntas no vídeo."
       }
     },
     {
       "key": "video-finais",
-      "plannedVideo": "Título: A vitória pergunta primeiro\n\nOrigem: fusão de video-vitoria com video-derrota, com troca de rótulos. Duração alvo: 95 a 110 segundos.\n\nAbrir com uma retomada curta que funciona também para quem continuou sem pausa: o motor, o relógio e o tiro só agem em jogando; agora vêm as perguntas do fim. Em seguida, as duas perguntas montadas em sequência, no finalzinho do então de jogando, logo depois do Desenhar as vidas do sprite.\n\nPrimeira: Condição se, senão se e senão com a comparação de fábrica, lendo pontos à esquerda, maior ou igual no meio e alvo à direita, com Mudar o estado do jogo para vitoria dentro.\n\nSegunda: outro Condição se, senão se e senão, com as vidas do sprite acabaram? na pergunta e Mudar o estado do jogo para fim dentro.\n\nFechar com uma volta mostrando as duas encostadas e a ordem entre elas. Não prometer prioridade da vitória: se os dois acontecerem no mesmo quadro, o jogo termina em fim."
-    },
-    {
-      "key": "fala-ordem-dos-finais",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Repara na ordem: a vitória pergunta primeiro e a derrota pergunta depois. Se acontecer de você chegar nos 26 pontos no mesmo quadro em que perde a última vida, a pergunta de baixo é a última a ser respondida, e o jogo vai para o fim. É raro, e agora você sabe por quê."
-      }
+      "plannedVideo": "Título: A vitória pergunta primeiro\n\nOrigem: fusão de video-vitoria com video-derrota, com troca de rótulos. Duração alvo: 120 a 145 segundos.\n\nAbrir com uma retomada curta: o motor, o relógio e o tiro só agem em jogando; agora vêm as perguntas do fim. Montar as duas perguntas em sequência no fim do então de jogando, logo depois do Desenhar as vidas do sprite. Narrar o caminho de cada peça, seu encaixe, cada menu e o destino dos dois blocos Mudar o estado do jogo para. A vitória compara pontos com alvo; a derrota pergunta se as vidas da nave acabaram.\n\nFechar mostrando as duas perguntas encostadas. Não prometer prioridade da vitória: se os dois acontecerem no mesmo quadro, o jogo termina em fim. Narração completa no roteiro correspondente."
     },
     {
       "key": "fala-tres-telas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "O seu Se grande pode ganhar irmãos. Embaixo dele tem um botãozinho escrito mais senão se. Clica nele três vezes, uma para cada momento que falta. No primeiro senão se, tire a comparação de fábrica e encaixe o estado do jogo é ? com inicio. Dentro, Mostrar tela com título subtítulo dica fundo, de Jogo e telas › Telas e partida."
-      }
-    },
-    {
-      "key": "fala-telas-finais",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Na abertura, no título escreva o nome do seu jogo, Nave contra Asteroides; no subtítulo, Destrua os asteroides; e na dica, Aperte Enter para começar. No segundo senão se, a pergunta é vitoria, o título é Você Ganhou e a dica é Aperte Enter para voltar ao início. No terceiro, a pergunta é fim, o título é Você Perdeu, e a dica é a mesma."
+        "text": "Dê uma tela própria à abertura, à vitória e à derrota. Escolha textos legíveis para cada uma."
       }
     },
     {
       "key": "video-mostrar-telas",
-      "plannedVideo": "Título: As três telas ganham texto\n\nOrigem: video-mostrar-telas do v6, com a fala aproveitada e correção das duas dicas. Duração alvo: 85 a 100 segundos.\n\nMostrar o primeiro ramo inteiro, campo por campo: o botão mais senão se, a pergunta com inicio, o Mostrar tela com título subtítulo dica fundo, e os quatro campos preenchidos. Depois, só o que muda nos outros dois ramos, com pausa em cada um.\n\nCorreção obrigatória das duas dicas: onde a gravação diz \"para jogar novamente\" e \"para tentar novamente\", passa a dizer \"Aperte Enter para voltar ao início\". O Enter ali volta para a abertura, e é preciso apertar de novo para jogar.\n\nLembrar que título, subtítulo e cor de fundo são escolha de quem faz a aula. Pedir só contraste suficiente para as letras aparecerem."
-    },
-    {
-      "key": "fala-abertura-apareceu",
-      "content": {
-        "kind": "dialogue",
-        "pose": "celebrating",
-        "text": "Olha o seu jogo agora: a tela de abertura apareceu, com o nome que você escolheu. Ele ainda não começa quando você aperta Enter, porque o Enter ainda não faz nada. É a última peça."
-      }
+      "plannedVideo": "Título: As três telas ganham texto\n\nOrigem: video-mostrar-telas do v6, regravado com os três caminhos completos. Duração alvo: 185 a 210 segundos; recalibrar após gravar.\n\nCriar um ramo de cada vez. Em cada um, mostrar e narrar o clique em mais senão se, retirar a comparação de fábrica, abrir Jogo 2D › Jogo e telas › Telas e partida, encaixar o estado do jogo é ? na pergunta e voltar pelo mesmo caminho para encaixar Mostrar tela com título subtítulo dica fundo no então. No primeiro ramo, inicio já vem escolhido. A tela de abertura já vem com Nave contra Asteroides, Destrua os asteroides! e Aperte Enter para começar; a criança pode personalizar o título, mas não deve ser mandada a redigitar os demais campos. Nas duas telas finais, trocar título, apagar o subtítulo padrão e mudar a dica para Aperte Enter para voltar ao início, confirmando as edições; escolher cores com contraste. Não usar a frase \"a receita é a mesma\" para omitir gestos.\n\nConferência para a gravação: o Enter nos finais volta à abertura; é preciso apertar de novo para jogar. Título, subtítulo e cor de fundo são escolhas da criança quando houver personalização. Narração completa no roteiro correspondente."
     },
     {
       "key": "fala-enter",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Áreas do projeto, dentro de Quando acontecer, coloque outro Quando apertar a tecla, logo abaixo do da barra de espaço, e escolha Enter no menu de teclas. Dentro dele, um Condição se, senão se e senão com três ramos. Na pergunta de cima, o estado do jogo é ? com inicio, e dentro dela Mudar o estado do jogo para com jogando."
-      }
-    },
-    {
-      "key": "fala-enter-ramos",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "No primeiro senão se, a pergunta é fim, e dentro vai um bloco novo: Reiniciar o jogo, de Jogo e telas › Telas e partida. No segundo senão se, a pergunta é vitoria, e dentro vai outro Reiniciar o jogo."
+        "text": "Agora faça o Enter responder de três jeitos: começar no menu e reiniciar após cada final."
       }
     },
     {
       "key": "video-enter",
-      "plannedVideo": "Título: A mesma tecla, três respostas\n\nOrigem: video-enter do v6, com a montagem aproveitada e dois cortes. Duração alvo: 80 a 95 segundos.\n\nMostrar o evento Quando apertar a tecla com Enter entrando em Quando acontecer, e o Condição se, senão se e senão com três ramos dentro: inicio muda o estado para jogando, fim reinicia, vitoria reinicia.\n\nTroca obrigatória de rótulos: o estado do jogo é ?, Mudar o estado do jogo para e Jogo e telas › Telas e partida.\n\nCorte obrigatório: sai a frase que diz que o Enter recomeça a partida zeradinha, porque ele volta para a abertura e é preciso apertar de novo."
+      "plannedVideo": "Título: A mesma tecla, três respostas\n\nOrigem: video-enter do v6, regravado com os três ramos completos. Duração alvo: 170 a 195 segundos; recalibrar após gravar.\n\nAbrir retomando a comparação da seção anterior entre trocar de tela e reiniciar. Mostrar o evento Quando apertar a tecla com Enter entrando em Quando acontecer. Dentro dele, montar Condição se, senão se e senão; narrar a retirada da comparação de fábrica e o encaixe de o estado do jogo é ? com inicio, seguido de Mudar o estado do jogo para jogando. Criar cada senão se separadamente: no primeiro, retirar a comparação de fábrica, encaixar o estado do jogo é ? com fim e Reiniciar o jogo; no segundo, repetir o caminho completo com vitoria e Reiniciar o jogo. Dizer em voz alta a categoria, a seção, o bloco, o destino e o menu de cada gesto.\n\nConferência para a gravação: usar os rótulos atuais de Jogo 2D › Jogo e telas › Telas e partida. O Enter em fim ou vitoria volta à abertura; a criança aperta de novo para jogar. Narração completa no roteiro correspondente."
     },
     {
       "key": "experiencia-reiniciar",
@@ -953,8 +847,12 @@
         "kind": "interactive",
         "required": true,
         "title": "Jogue outra vez",
-        "instructions": "Escolha qual bloco fica no ramo do fim. Primeiro Mudar o estado do jogo para inicio: aperte Enter e olhe a partida seguinte, as pedras que sobraram, o placar e as vidas. Depois troque para Reiniciar o jogo, faça de novo e olhe em que momento o jogo ficou.",
-        "hints": [],
+        "instructions": "Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo. O que acontece quando você tenta jogar outra vez?",
+        "hints": [
+          "Com Mudar o estado do jogo para inicio escolhido, deixe a partida acabar e aperte Enter no fim.",
+          "Aperte Enter mais uma vez para jogar. Observe as pedras, os pontos e as vidas que ficaram.",
+          "Volte ao começo, escolha Reiniciar o jogo, deixe a partida acabar e aperte Enter duas vezes. Compare as duas partidas."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "restart",
@@ -983,21 +881,7 @@
             }
           }
         },
-        "checkpoint": {
-          "prompt": "Depois da derrota você aperta Enter e o jogo reinicia. Para onde ele vai?",
-          "choices": [
-            {
-              "id": "abertura",
-              "label": "Para a abertura, e outro Enter começa a partida."
-            },
-            {
-              "id": "partida",
-              "label": "Direto para uma partida nova."
-            }
-          ],
-          "correctChoiceId": "abertura",
-          "explanation": "Reiniciar roda o Ao iniciar inteiro de novo, e o último bloco de lá guarda o momento inicio."
-        }
+        "semPerguntaFinal": true
       }
     },
     {
@@ -1005,16 +889,12 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "O Reiniciar o jogo não muda só o momento guardado: ele roda o seu Ao iniciar de novo, inteiro. Os pontos voltam para zero, a nave ganha as três vidas, os grupos ficam vazios, e o último bloco de lá guarda o momento inicio. Por isso você cai na tela de abertura, e aperta Enter mais uma vez para começar de verdade."
+        "text": "Experimente voltar ao início das duas maneiras. Compare o que acontece com pontos, vidas e pedras."
       }
     },
     {
       "key": "video-ciclo-completo",
-      "plannedVideo": "Título: Do menu ao recomeço\n\nOrigem: video-ciclo-completo do v6, com fala parcial e correção do ciclo dos dois Enter. Agora com o roteiro de teste, o envio e o Compartilhar dentro do clipe. Duração alvo: 100 a 120 segundos.\n\nGravação de tela no jogo do fim do Dia 5, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e vitrine.\n\nO roteiro de teste em cinco passos e o passo a passo do Compartilhar eram dois balões do Zappy nesta seção e passaram para cá. Os dois são sequência de gesto, e o Compartilhar depende de o envio já ter acontecido, o que só dá para mostrar num clipe, na ordem real. Na seção o Estúdio ocupa a coluna da direita sozinho, então tudo o que fosse escrito seria lido antes do envio.\n\nO percurso completo, acelerado, cortando o tempo repetido de jogo. O que passa na tela, nesta ordem:\n\n1. O clique dentro da área do jogo.\n2. No menu, a barra de espaço apertada algumas vezes. O enquadramento precisa mostrar a tela inteira o bastante para dar para ver que nenhum tiro sai e nenhuma pedra nasce.\n3. Enter, e a partida começa.\n4. As três vidas deixadas acabar, até a tela de Você Perdeu.\n5. Enter. Correção obrigatória: este primeiro Enter volta para a abertura, ele não começa a partida. Enquadrar o placar em zero e os três corações inteiros na volta.\n6. Enter de novo, e a partida seguinte, acelerada até os 26 pontos e a tela de vitória.\n7. O gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n8. Só depois do envio, o botão Compartilhar liberando. O clipe mostra o clique nele e a janela abrindo.\n\nSobre o Compartilhar, que é o momento mais delicado do curso. A publicação é uma escolha, não um passo obrigatório da entrega, e a narração precisa deixar isso claro. O que a narração pode dizer: que o jogo ganha um link só dele, que quem abrir o link consegue jogar, e que não é preciso deixar o perfil público para isso. O que a narração não pode fazer: descrever, prometer ou antecipar qualquer campo da janela, porque o que ela pede é configuração do professor e pode mudar. A fala fica em \"confira o que a janela pedir e publique quando você quiser mostrar\". Não prometer geração de capa. Não afirmar que a publicação já aconteceu."
-    },
-    {
-      "key": "video-fecho",
-      "plannedVideo": "Título: O seu primeiro jogo está pronto\n\nOrigem: video-fecho-v6, com fala parcial. Duração alvo: 35 a 45 segundos.\n\nReaproveitar a conquista da gravação, que é sincera e boa. Mostrar o jogo completo rodando por alguns segundos.\n\nSubstituir o resumo numerado dos sete passos por uma frase sobre o que a pessoa sabe fazer agora: guardar um valor, responder a um encontro, decidir com uma pergunta e dar começo e fim a um jogo.\n\nNão afirmar que a publicação já aconteceu: ela é uma escolha, e acontece depois do envio.\n\nOnde o clipe fica: é o último bloco da coluna da esquerda, depois do quiz. Ele fecha o Desafio inteiro, então a gravação começa já com o jogo completo rodando."
+      "plannedVideo": "Título: Do menu ao recomeço\n\nOrigem: video-ciclo-completo do v6, com correção dos dois Enter e fecho integrado. Duração alvo: 150 a 180 segundos, incluindo o fecho.\n\nEste clipe é teste, envio e vitrine, sem montagem. Cortar o tempo repetido de jogo. Mostrar, na ordem: clique no jogo; barra de espaço no menu sem disparo nem pedra; Enter para começar; três vidas perdidas até Você Perdeu; primeiro Enter de volta à abertura, com zero pontos e três corações; segundo Enter para a nova partida; vitória em 26 pontos; etiqueta Salvo e envio; só então Compartilhar disponível e janela aberta.\n\nA publicação é opcional e só acontece se a criança confirmar. Dizer que, se ela escolher publicar, o jogo ganha um link. Não dizer que o botão sozinho já criou esse link, não antecipar campos da janela nem prometer capa. A criança não precisa tornar o perfil público para compartilhar o jogo.\n\nFecho no mesmo vídeo: celebrar os cinco dias e as peças aprendidas sem afirmar que a publicação já aconteceu."
     },
     {
       "key": "quiz",
@@ -1056,6 +936,30 @@
           }
         ]
       }
+    },
+    {
+      "key": "video-estado-do-jogo",
+      "plannedVideo": "Título: A pergunta que abre a partida\n\nDuração alvo: 35 a 45 segundos. Retomar o relógio de 40 quadros que a criança conhece do Dia 3 e perguntar por que pedras não devem nascer no menu. Usar quatro cartões de momento e uma porta esquemática marcada jogando para explicar a condição. Não animar o relógio nem antecipar os contadores dos testes da experiência."
+    },
+    {
+      "key": "video-reiniciar",
+      "plannedVideo": "Título: Trocar a tela ou recomeçar de verdade?\n\nDuração alvo: 35 a 45 segundos. Depois de montar as três telas e antes de programar o Enter, usar a analogia de virar para outra parte da história versus voltar à preparação do começo. Explicar que mudar o momento conserva o que já foi guardado, enquanto Reiniciar o jogo executa Ao iniciar de novo. Não mostrar pontos, vidas, pedras nem os resultados dos testes: a criança descobrirá qual caminho prepara uma partida nova na experiência."
+    },
+    {
+      "key": "fala-estado",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Experimente fazer o relógio tocar antes e depois de começar a partida. Observe quando a pedra realmente nasce."
+      }
+    },
+    {
+      "key": "fala-quiz",
+      "content": {
+        "kind": "dialogue",
+        "pose": "happy",
+        "text": "Hora de conferir o ciclo do seu jogo: começo, partida e recomeço. Pense no que você observou antes de responder."
+      }
     }
   ],
   "sections": [
@@ -1076,21 +980,29 @@
     {
       "key": "momentos",
       "title": "Os quatro momentos do jogo",
+      "intent": "presentation",
+      "objective": "Conhecer os quatro momentos possíveis antes de montar as mudanças de estado.",
+      "blockKeys": ["video-telas"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-telas"]
+      }
+    },
+    {
+      "key": "alvo",
+      "title": "A meta e o primeiro momento",
       "intent": "application",
-      "objective": "Conhecer os quatro momentos, criar a meta fixa e guardar o momento inicial.",
-      "blockKeys": [
-        "video-telas",
-        "fala-constante",
-        "fala-alvo",
-        "video-alvo",
-        "fala-guardar-nao-desenha"
-      ],
+      "objective": "Criar a constante alvo e guardar o momento inicio ao começar.",
+      "blockKeys": ["video-alvo", "fala-alvo"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-telas"],
+        "blockIds": ["video-alvo"],
         "projectChecks": [
           {
             "id": "alvo",
@@ -1127,13 +1039,13 @@
       "title": "O relógio pode agir agora?",
       "intent": "exploration",
       "objective": "Ver que a pergunta decide se a ação acontece, e que o relógio continua tocando mesmo quando a resposta é não.",
-      "blockKeys": ["fala-tudo-roda", "experiencia-estado"],
+      "blockKeys": ["video-estado-do-jogo", "fala-estado", "experiencia-estado"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-estado"]
+        "blockIds": ["video-estado-do-jogo", "experiencia-estado"]
       }
     },
     {
@@ -1141,18 +1053,13 @@
       "title": "Embrulhe a partida numa pergunta",
       "intent": "application",
       "objective": "Fazer a manobra inteira uma vez: a partida do motor passa a acontecer só no momento jogando.",
-      "blockKeys": [
-        "fala-embrulhar",
-        "fala-embrulhar-cadeia",
-        "video-embrulhar",
-        "fala-tela-preta"
-      ],
+      "blockKeys": ["video-embrulhar", "fala-embrulhar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-embrulhar"],
         "projectChecks": [
           {
             "id": "pergunta-jogando",
@@ -1256,18 +1163,13 @@
       "title": "O relógio e a barra de espaço também perguntam",
       "intent": "application",
       "objective": "Repetir a manobra nos dois lugares que têm vida própria: o relógio das pedras e o evento do disparo.",
-      "blockKeys": [
-        "fala-relogio-e-tiro",
-        "fala-embrulhar-tiro",
-        "video-relogio-e-tiro",
-        "fala-teste-menu"
-      ],
+      "blockKeys": ["video-relogio-e-tiro", "fala-relogio-e-tiro"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-relogio-e-tiro"],
         "projectChecks": [
           {
             "id": "guardar-relogio",
@@ -1388,13 +1290,13 @@
       "title": "O jogo decide quando acaba",
       "intent": "application",
       "objective": "Montar as duas perguntas gêmeas do fim da partida e ver a ordem entre elas.",
-      "blockKeys": ["fala-vitoria", "fala-derrota", "video-finais", "fala-ordem-dos-finais"],
+      "blockKeys": ["video-finais", "fala-vitoria"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-finais"],
         "projectChecks": [
           {
             "id": "vitoria",
@@ -1538,18 +1440,13 @@
       "title": "Desenhe as três telas",
       "intent": "application",
       "objective": "Dar um ramo e uma imagem a cada momento, e transformar a tela preta na abertura do jogo.",
-      "blockKeys": [
-        "fala-tres-telas",
-        "fala-telas-finais",
-        "video-mostrar-telas",
-        "fala-abertura-apareceu"
-      ],
+      "blockKeys": ["video-mostrar-telas", "fala-tres-telas"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-mostrar-telas"],
         "projectChecks": [
           {
             "id": "tela-inicio",
@@ -1645,17 +1542,31 @@
       }
     },
     {
+      "key": "reiniciar",
+      "title": "Jogue outra vez",
+      "intent": "exploration",
+      "objective": "Comparar trocar só a tela com reiniciar a partida antes de programar o Enter.",
+      "blockKeys": ["video-reiniciar", "fala-reiniciar", "experiencia-reiniciar"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-reiniciar", "experiencia-reiniciar"]
+      }
+    },
+    {
       "key": "enter",
       "title": "O Enter comanda o jogo",
       "intent": "application",
       "objective": "Fazer a mesma tecla responder de três jeitos, conforme o momento guardado.",
-      "blockKeys": ["fala-enter", "fala-enter-ramos", "video-enter"],
+      "blockKeys": ["video-enter", "fala-enter"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-enter"],
         "projectChecks": [
           {
             "id": "enter",
@@ -1710,17 +1621,17 @@
       }
     },
     {
-      "key": "reiniciar",
-      "title": "Jogue outra vez",
-      "intent": "exploration",
-      "objective": "Ver que reiniciar volta ao estado inicial e cai na abertura, e que é preciso outro Enter para jogar.",
-      "blockKeys": ["experiencia-reiniciar", "fala-reiniciar"],
+      "key": "quiz-final",
+      "title": "Hora do desafio",
+      "intent": "closing",
+      "objective": "Conferir o estado do jogo e o recomeço.",
+      "blockKeys": ["fala-quiz", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-reiniciar"]
+        "blockIds": ["quiz"]
       }
     },
     {
@@ -1728,13 +1639,13 @@
       "title": "Teste, entregue e mostre para o mundo",
       "intent": "delivery",
       "objective": "Jogo completo com quatro momentos, ações limitadas à partida, reinício, entrega enviada e link de compartilhamento.",
-      "blockKeys": ["video-ciclo-completo", "quiz", "video-fecho", "projeto"],
+      "blockKeys": ["video-ciclo-completo", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-ciclo-completo", "video-fecho", "projeto", "quiz"],
+        "blockIds": ["video-ciclo-completo", "projeto"],
         "projectChecks": [
           {
             "id": "alvo",
@@ -2395,6 +2306,19 @@
     "fala-mostrar-telas",
     "entrega-fala-v6",
     "video-fecho-v6",
-    "quiz-v6"
+    "quiz-v6",
+    "fala-constante",
+    "fala-guardar-nao-desenha",
+    "fala-tudo-roda",
+    "fala-embrulhar-cadeia",
+    "fala-tela-preta",
+    "fala-embrulhar-tiro",
+    "fala-teste-menu",
+    "fala-derrota",
+    "fala-ordem-dos-finais",
+    "fala-telas-finais",
+    "fala-abertura-apareceu",
+    "fala-enter-ramos",
+    "video-fecho"
   ]
 }

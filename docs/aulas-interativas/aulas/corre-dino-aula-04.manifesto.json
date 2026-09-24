@@ -59,11 +59,11 @@
         "kind": "interactive",
         "required": true,
         "title": "Uma vez, sempre, e na hora que acontecer",
-        "instructions": "Põe a ficha Tocar efeito · pulo dentro de Quando acontecer e avança três quadros sem encostar no teclado. Olha o contador dela. Depois aperta a tecla e olha o contador de novo.",
+        "instructions": "Teste Tocar efeito · pulo em Quando acontecer. Comece o jogo e compare o contador antes e depois de apertar a tecla.",
         "hints": [
-          "Olhe o contador de quadros e conte quantas vezes cada ficha disparou.",
-          "Ponha a ficha do som em Quando acontecer e avance quadros sem tocar no botão. O contador dela sobe?",
-          "Agora aperte a tecla uma vez e olhe o contador da ficha do som."
+          "Ponha Tocar efeito · pulo em Quando acontecer e aperte Começar o jogo. Espere o teste parar sem apertar a tecla.",
+          "Olhe o contador de Tocar efeito · pulo. Agora aperte a tecla uma vez e compare.",
+          "Se o som não sair, confira se a ação está em Quando acontecer e aperte a tecla outra vez."
         ],
         "activity": {
           "type": "experimentation",
@@ -101,18 +101,18 @@
         "prediction": {
           "context": {
             "label": "A área que fica esperando",
-            "explanation": "Nesta experiência, vamos olhar as três áreas do projeto lado a lado e contar quantas vezes cada ficha dispara."
+            "explanation": "Nesta experiência, vamos observar quando a ação de tocar um som acontece no jogo."
           },
-          "prompt": "Você põe Tocar efeito com pulo dentro de Quando acontecer e deixa passar cinco quadros sem encostar no teclado. Quantas vezes o som toca?",
+          "prompt": "Se o jogo estiver rodando e ninguém apertar a tecla, o som toca?",
           "choices": [
             {
               "id": "nenhuma",
-              "label": "Nenhuma"
+              "label": "Não toca"
             },
             {
               "id": "cinco",
-              "label": "Cinco, uma por quadro",
-              "shows": "Depois de cinco quadros, o contador da ficha do som continuou em 0."
+              "label": "Toca sozinho",
+              "shows": "O jogo rodou, mas o som não tocou sem a tecla."
             }
           ],
           "correctChoiceId": "nenhuma",
@@ -489,7 +489,7 @@
       "key": "area-que-espera",
       "title": "A área que fica esperando",
       "intent": "exploration",
-      "objective": "Ver as três áreas do projeto lado a lado e descobrir que a ficha em Quando acontecer fica parada até alguém apertar a tecla.",
+      "objective": "Ver as três áreas do projeto lado a lado e descobrir que a ação em Quando acontecer espera até alguém apertar a tecla.",
       "blockKeys": ["fala-tres-areas", "experiencia-tres-areas"],
       "workspaceKey": null,
       "externalTool": null,

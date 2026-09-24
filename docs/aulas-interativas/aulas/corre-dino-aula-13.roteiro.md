@@ -16,21 +16,19 @@
 ## Seção 1. O seu jogo não aperta
 
 ### Clipe `video-jogo-nao-aperta` · Vinte segundos depois, está tudo igual
-**Duração alvo:** 40 a 55 segundos · **Palavras:** 66
+**Duração alvo:** 40 a 55 segundos; recalibrar após gravar.
 
 **Na tela:** Deixar uma partida acontecer por pelo menos vinte segundos, com placar crescendo e cactos mantendo o mesmo ritmo.
 
 **Narração:**
-> "No começo a corrida é gostosa. Agora olha vinte segundos depois. Os cactos ainda vêm com a
-> mesma folga e a mesma velocidade. Quem já aprendeu a pular continua recebendo o mesmo
-> desafio."
+> "Hoje vamos fazer a corrida mudar de ritmo ao longo da partida. Os cactos vão começar
+> mais espaçados e, aos poucos, pedir mais atenção de quem joga."
 
 **Na tela:** Mostrar o mesmo percurso com tempo marcado; sem paleta nem peça nova ainda.
 
 **Narração:**
-> "É como nos jogos que ficam mais difíceis conforme você avança. O seu ainda não faz isso. Hoje
-> ele vai aprender a apertar sozinho e, tão importante quanto acelerar, vai aprender onde
-> parar."
+> "A gente vai montar essa mudança e também decidir até onde ela pode ir, para o jogo
+> continuar divertido."
 
 ## Seção 2. Um número que manda em todos os cactos
 

@@ -25,7 +25,11 @@ import type { SceneId } from './actions'
 export type PistaMeta = readonly string[] | { readonly algumaDe: readonly string[] }
 
 export const PISTA_DA_META: Record<SceneId, readonly [PistaMeta, PistaMeta, PistaMeta]> = {
-  'once-vs-always': [['once'], ['always', 'on-event'], ['both', 'key-fires', 'flood']],
+  'once-vs-always': [
+    ['once'],
+    ['always', 'on-event', 'lives-loop'],
+    ['both', 'key-fires', 'flood'],
+  ],
   'fixed-vs-read': [['same-spot'], ['follows'], ['box-marks']],
   'collision-pair': [['whole-group'], ['just-the-pair'], ['others-stay']],
   invincibility: [['no-shield'], ['window'], ['expires']],

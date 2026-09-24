@@ -1,11 +1,14 @@
 # Roteiro de gravação · Desafio do Primeiro Jogo · Dia 2 · A nave atira
 
+**Como ler este roteiro:** só o texto entre aspas em **Narração** é falado no vídeo. **Na tela**
+orienta a gravação; as **Notas de produção** são lembretes para a equipe, não falas para a criança.
+
 ## Especificações
 
 - **Formato:** gravação da tela do Estúdio com narração por cima. Os clipes de gesto mostram a
-  paleta abrindo gaveta por gaveta, e os de conceito não têm gesto nenhum.
-- **Duração:** 8 clipes, de 5min35s a 6min55s somados, narração pura de **873 palavras** a
-  **137 palavras por minuto**, que é o ritmo real medido em gravação, o que dá **6min22s** de fala.
+  paleta abrindo gaveta por gaveta; os de conceito podem mostrar exemplos sem montar blocos.
+- **Duração:** 11 clipes. Os três novos clipes conceituais são curtos; medir a duração final
+  depois da gravação, sem comprimir demonstrações necessárias para a criança acompanhar.
 - **Calibração:** o projeto entra exatamente como o Dia 1 entrega. Duas áreas montadas, tela 800
   por 480, sprite `nave` em x 400, y 410, tamanho 54 por 62, e o motor com limpar, estrelas
   velocidade 1, mover com as setas velocidade 7, manter dentro da tela e desenhar a nave. As três
@@ -54,8 +57,8 @@
   - **"sem a faxina o jogo fica pesado e lento".** Neste jogo isso não acontece. Fica só a razão
     honesta: a faxina existe para o jogo não continuar carregando o que já foi embora.
   - **O convite a trocar o vy por menos 15.** O Dia 3 conta com o menos 9.
-  - **A explicação do sinal do número negativo.** Ela agora é da experiência da seção 6, e o clipe
-    de montagem não a repete.
+  - **A explicação longa do sinal negativo no clipe prático.** O conceito fica no vídeo da seção 6;
+    o clipe de montagem só relembra o valor a escrever.
   - **A enumeração dos seis passos** da gravação de 2026.
 
 ---
@@ -63,13 +66,13 @@
 ## Seção 1. O que a gente vai fazer hoje
 
 ### Clipe `video-abertura` · O primeiro disparo da sua nave
-**Duração alvo:** 25 a 35 segundos · **Palavras:** 75
+**Duração alvo:** 25 a 35 segundos; recalibrar após gravar.
 
 **Na tela:** o jogo do fim do Dia 2 rodando, ocupando o quadro inteiro, sem nenhuma parte do
 Estúdio à vista: a nave andando para os dois lados e atirando, com o som do tiro.
 
 **Narração:**
-> "Oi, que bom te ver de novo. A sua nave já voa. Hoje você vai apertar a barra de espaço e ver um
+> "Oi, que bom te ver de novo. A sua nave já se move. Hoje você vai apertar a barra de espaço e ver um
 > tiro sair dela, de onde ela estiver na tela."
 
 **Na tela:** o jogo continua, com a nave indo para um lado e atirando, e depois para o outro e
@@ -78,10 +81,10 @@ atirando de novo.
 **Narração:**
 > "A gente vai ensinar o jogo a criar o tiro, a fazer ele subir, e a mostrar ele na tela."
 
-**Na tela:** aproximar num disparo, com o tiro subindo e sumindo na borda de cima da tela do jogo.
+**Na tela:** manter o jogo completo em movimento, com a nave e um disparo à vista.
 
 **Narração:**
-> "Repara no tiro: ele sobe e some lá em cima. No fim do dia isso vai estar acontecendo no seu jogo!
+> "No fim da aula, a sua nave também vai disparar de onde estiver. Vamos montar isso juntos.
 > Vem comigo."
 
 ---
@@ -89,38 +92,48 @@ atirando de novo.
 ## Seção 2. A área que fica esperando você
 
 ### Clipe `video-terceira-area` · A campainha do jogo
-**Duração alvo:** 30 a 40 segundos · **Palavras:** 84
+**Duração alvo:** 40 a 50 segundos; recalibrar após gravar.
 
-**Na tela:** as três áreas do projeto lado a lado, a terceira ainda vazia. Nenhum gesto de montagem
-neste clipe.
-
-**Narração:**
-> "No Dia 1 você montou duas áreas. A **Ao iniciar**, que acontece uma vez. E a **Enquanto estiver
-> rodando**, que é o motor e repete sem parar."
-
-**Na tela:** enquadrar só a terceira caixa, **Quando acontecer**, vazia.
+**Na tela:** o jogo do Dia 1. Apertar a barra de espaço ainda não dispara nada. Mostrar as duas
+áreas já montadas e um espaço livre ao lado, sem gesto de montagem neste clipe.
 
 **Narração:**
-> "Hoje entra a terceira, que se chama **Quando acontecer**. Ela fica esperando."
+> "A nave já se move, mas ainda não sabe o que fazer quando você aperta a barra de espaço. O jogo
+> precisa esperar esse comando. No Dia 1 você montou **Ao iniciar**, para a preparação, e
+> **Enquanto estiver rodando**, para o trabalho que se repete. Nenhuma das duas espera uma tecla."
+
+**Na tela:** mostrar as três áreas do projeto lado a lado, a terceira ainda vazia. Enquadrar só
+**Quando acontecer**.
+
+**Narração:**
+> "Para isso existe a terceira área, **Quando acontecer**. Ela espera uma ação do jogador."
 
 **Na tela:** a mesma caixa vazia, com o enquadramento segurando.
 
 **Narração:**
-> "É como a campainha da sua casa: ela não toca sozinha, e não toca o tempo todo. Ela toca na hora em
-> que alguém aperta."
+> "Pensa na campainha de casa. Ela não toca sozinha nem fica tocando o tempo todo. Ela toca quando
+> alguém aperta. Essa área funciona parecido."
 
 **Na tela:** a caixa Quando acontecer com um rótulo curto aparecendo por cima.
 
 **Narração:**
-> "O que você põe dentro dela acontece na hora em que a coisa acontece. E isso tem um nome:
-> **evento**."
+> "Quando você aperta a tecla escolhida, o jogo faz o que estiver dentro dessa área. Você faz
+> uma coisa e o jogo responde. A gente chama isso de **evento**."
 
 ---
 
 ## Seção 3. Monte o grupo dos tiros e a área que espera a tecla
 
 ### Clipe `video-montar-grupo-e-evento` · O grupo dos tiros e a tecla que o jogo escuta
-**Duração alvo:** 55 a 65 segundos · **Palavras:** 136
+**Duração alvo:** 70 a 85 segundos; recalibrar após gravar.
+
+**Na tela:** a nave sozinha do Dia 1. Um, depois vários tiros aparecem saindo dela. Representar um
+grupo vazio que recebe cada tiro, como um saquinho, antes de abrir a paleta.
+
+**Narração:**
+> "Ontem a gente criou uma nave só. Hoje ela pode disparar muitos tiros, um atrás do outro. Para
+> cuidar de todos juntos, o jogo usa um **grupo**. É como um saquinho que guarda os tiros. Cada
+> disparo põe mais um lá dentro, e depois a gente pode mandar uma ordem para o grupo inteiro."
 
 **Na tela:** abrir a categoria **Jogo 2D**, a subcategoria **Grupos**, e dentro dela a seção
 **Criar e percorrer**. Arrastar **Criar grupo de sprites** para dentro do Ao iniciar, logo abaixo
@@ -135,7 +148,7 @@ nele e trocar para tiros, clicando fora depois.
 
 **Narração:**
 > "Esse bloco já vem com o nome **asteroides** escrito. Clica nesse nome e troca para **tiros**. O
-> grupo começa vazio, e cada disparo vai pôr um tiro nele. É tipo um saquinho."
+> grupo começa vazio. Cada disparo vai pôr um tiro nele."
 
 **Na tela:** abrir a categoria **Áreas do projeto** e arrastar **Quando acontecer**, soltando ao
 lado das outras duas, com um espaço visível entre elas.
@@ -167,17 +180,38 @@ barra de espaço na lista e escolher ela.
 
 ---
 
+## Seção 4. Número escrito ou posição lida?
+
+### Clipe `video-escrito-e-lido` · O endereço que acompanha a nave
+**Duração alvo:** 35 a 45 segundos.
+
+**Na tela:** um endereço escrito num papel permanece igual quando uma peça de papel muda de
+lugar. Ao lado, uma pergunta feita naquele momento acompanha a peça. Não mostrar disparos nem as
+marcas de nascimento da experiência.
+
+**Narração:**
+> "A nave já pode andar de um lado para o outro, mas o tiro precisa nascer onde ela estiver
+> no instante do disparo. Como o jogo descobre esse lugar? Imagina escrever num papel que a nave
+> está no x 400. Mesmo que ela ande, o papel continua
+> dizendo 400. Agora imagina perguntar ao jogo onde a nave está **neste momento**. Se ela andou,
+> a resposta muda. Para o tiro sair da nave, o jogo precisa perguntar a posição dela na hora do
+> disparo. Na experiência, veja o que acontece usando um número escrito e depois uma posição lida."
+
+---
+
 ## Seção 5. Faça o tiro nascer na nave
 
 ### Clipe `video-criar-tiro` · O tiro nasce na nave
-**Duração alvo:** 55 a 65 segundos · **Palavras:** 148
+**Duração alvo:** 90 a 105 segundos; recalibrar após gravar.
 
 **Na tela:** abrir a categoria **Jogo 2D**, a subcategoria **Grupos**, e dentro dela a seção
 **Criar e percorrer**. Arrastar **Criar tiro no grupo** para dentro do Quando apertar a tecla, que
 está vazio.
 
 **Narração:**
-> "Na categoria **Jogo 2D**, abre **Grupos**, e dentro dela **Criar e percorrer**. Pega o bloco
+> "A área que espera a barra de espaço já está no projeto. Agora vamos colocar nela a ordem que
+> cria um tiro. Depois, vamos fazer esse tiro nascer na posição da nave, mesmo quando ela mudar
+> de lugar. Na categoria **Jogo 2D**, abre **Grupos**, e dentro dela **Criar e percorrer**. Pega o bloco
 > **Criar tiro no grupo**, e encaixa dentro do **Quando apertar a tecla**, no primeiro lugar."
 
 **Na tela:** abrir o menu do grupo dentro do bloco e conferir que está escolhido tiros.
@@ -200,44 +234,68 @@ no momento em que o bloco cobre o número e dá o clique de encaixe.
 > **o centro x do sprite**, e arrasta ele por cima do número que está no x, até dar o clique. Escolhe
 > **nave** nele."
 
-**Na tela:** na mesma seção, arrastar **a posição y do sprite** por cima do número do y, com a
+**Na tela:** ainda em **Jogo 2D › Movimento › Posição e tamanho**, arrastar **a posição y do sprite** por cima do número do y, com a
 mesma aproximação no clique de encaixe.
 
 **Narração:**
-> "Na mesma seção, **Posição e tamanho**, pega **a posição y do sprite**, e arrasta por cima do
-> número que está no y. Escolhe **nave** nele também."
+> "Agora, ainda na categoria **Jogo 2D**, em **Movimento**, na seção **Posição e tamanho**, pega o
+> bloco **a posição y do sprite**. Arrasta por cima do número que está no y do **Criar tiro no
+> grupo**, até encaixar. No bloco de posição y, escolhe **nave**."
 
-**Na tela:** a tela do jogo com as marcas da caixa da nave ligadas, mostrando o meio da caixa e a
-borda de cima, e o tiro saindo desse ponto.
-
-**Narração:**
-> "Agora o tiro nasce no meio da nave, e na altura da borda de cima dela."
-
-**Na tela:** aproximar no campo do raio e escrever 5, clicando fora. Depois o quadradinho de cor do
-tiro, com uma cor escolhida.
+**Na tela:** sobrepor marcas didáticas na caixa da nave, mostrando o meio na horizontal e a
+borda de cima. Não simular um tiro visível no jogo: o grupo só será movido e desenhado na seção 8.
 
 **Narração:**
-> "Falta o **raio**, que é o tamanho da bolinha: escreve 5 e clica fora. E a cor é sua, capricha."
+> "Assim, quando você disparar, o tiro vai nascer no meio da nave, na altura da borda de cima
+> dela. Daqui a pouco a gente vai fazer ele aparecer e voar."
+
+**Na tela:** aproximar no campo do raio, que já mostra 5. Não apagar nem redigitar. Depois,
+mostrar o quadradinho de cor do tiro, com uma cor escolhida.
+
+**Narração:**
+> "O **raio** mede do meio até a beirada da bolinha. Ele já vem em 5; deixa assim. E a cor é
+> sua, capricha."
+
+---
+
+## Seção 6. Para que lado vai o tiro?
+
+### Clipe `video-sinal-da-velocidade` · O sinal muda a direção
+**Duração alvo:** 45 a 55 segundos; recalibrar após gravar.
+
+**Na tela:** um eixo vertical simples, com o zero em cima e valores crescentes para baixo. Setas
+identificam os sentidos positivo e negativo, sem animar o tiro da experiência.
+
+**Narração:**
+> "O tiro já sabe onde nascer. Agora precisamos escolher para que lado ele vai depois que nasce.
+> No bloco que cria o tiro, a velocidade em x decide o movimento para os lados. Com zero, o tiro não vai nem para a
+> esquerda nem para a direita. A velocidade em y decide o movimento para cima ou para baixo.
+> Neste jogo, y aumenta quando descemos. Com um número positivo, o tiro desce. Com um número que
+> tem menos na frente, ele sobe.
+> O tamanho do número diz quanto ele anda a cada quadro do jogo. Na experiência, descubra o que
+> muda quando você troca o sinal."
 
 ---
 
 ## Seção 7. Escreva a velocidade e ponha o som
 
 ### Clipe `video-velocidade-som` · A velocidade e o som do tiro
-**Duração alvo:** 40 a 50 segundos · **Palavras:** 96
+**Duração alvo:** 55 a 65 segundos; recalibrar após gravar.
 
-**Na tela:** aproximar no campo vx do Criar tiro no grupo. Escrever 0 e clicar num espaço vazio
-fora do bloco.
+**Na tela:** aproximar no campo vx do Criar tiro no grupo, que já mostra 0. Não apagar nem
+redigitar.
 
 **Narração:**
-> "No **vx** fica 0, porque o tiro não anda para os lados. Escreve o 0 e clica fora."
+> "Você viu que o sinal da velocidade muda a direção do tiro. Agora vamos escolher os números
+> do nosso disparo e acrescentar o som. No bloco **Criar tiro no grupo**, o **vx** já vem em
+> **0**, porque o tiro não vai para os lados. Confere e deixa assim."
 
 **Na tela:** aproximar no campo vy. Escrever menos 9, com o sinal de menos bem visível, e clicar
 fora.
 
 **Narração:**
-> "No **vy** escreve menos 9, com o sinal de menos na frente. É esse menos que manda o tiro para
-> cima."
+> "No **vy**, troca o número que veio por menos 9, com o sinal de menos na frente. Clica fora
+> para confirmar. É esse menos que manda o tiro para cima."
 
 **Na tela:** abrir a categoria **Jogo 2D**, a subcategoria **Som**, e dentro dela a seção **Efeitos
 prontos**. Arrastar **Tocar efeito** para dentro do Quando apertar a tecla, logo abaixo do Criar
@@ -263,14 +321,16 @@ tiro no grupo.
 ## Seção 8. Os tiros voam
 
 ### Clipe `video-tiros-voam` · Mover e desenhar o grupo
-**Duração alvo:** 45 a 55 segundos · **Palavras:** 112
+**Duração alvo:** 70 a 85 segundos; recalibrar após gravar.
 
 **Na tela:** abrir a categoria **Jogo 2D**, a subcategoria **Grupos**, e dentro dela a seção
 **Movimento**. Arrastar **Mover os sprites do grupo usando suas velocidades** para dentro do A cada
 quadro do jogo, logo abaixo do Desenhar o sprite da nave.
 
 **Narração:**
-> "Volta no motor, no **A cada quadro do jogo**. Na categoria **Jogo 2D**, abre **Grupos**, e dentro
+> "Quando você aperta a barra de espaço, o tiro já nasce e toca o som. Agora falta fazer os
+> tiros se moverem e aparecerem na tela a cada quadro. Volta no motor, no **A cada quadro do
+> jogo**. Na categoria **Jogo 2D**, abre **Grupos**, e dentro
 > dela **Movimento**. Pega o **Mover os sprites do grupo usando suas velocidades**, e encaixa logo
 > abaixo do **Desenhar o sprite** da nave."
 
@@ -293,6 +353,12 @@ abaixo do Mover os sprites do grupo.
 **Narração:**
 > "Escolhe **tiros** nele também. Esse é o que mostra os tiros na tela."
 
+**Na tela:** destacar a ordem: estrelas, nave, grupo tiros; o tiro passa à frente da nave.
+
+**Narração:**
+> "A ordem de desenho do Dia 1 continua valendo: primeiro as estrelas, depois a nave, por último
+> os tiros. Por isso o tiro aparece na frente."
+
 **Na tela:** o ponteiro clicando dentro da área do jogo, e a barra de espaço sendo apertada. O
 primeiro tiro saindo da nave, subindo, com o som.
 
@@ -301,16 +367,35 @@ primeiro tiro saindo da nave, subindo, com o som.
 
 ---
 
+## Seção 9. O tiro sumiu. Ele foi embora?
+
+### Clipe `video-tiro-fora-da-tela` · Invisível não quer dizer removido
+**Duração alvo:** 35 a 45 segundos.
+
+**Na tela:** o brinquedo da analogia fica atrás de uma porta: fora da vista, ainda presente. Ao
+lado, um desenho simples de uma caixa de grupo, sem simular os tiros, a prateleira ou os contadores
+da experiência. Não prometer lentidão ou travamento.
+
+**Narração:**
+> "Quando o tiro sai da tela, nossos olhos não conseguem mais vê-lo. Mas isso, sozinho, não
+> tira o tiro do grupo. É como guardar um brinquedo atrás da porta: ele não aparece, mas ainda
+> está ali. O jogo precisa de uma ação para retirar do grupo os tiros que já saíram. Na
+> experiência, observe a cena e o contador: eles contam histórias diferentes?"
+
+---
+
 ## Seção 10. Ponha a faxina entre os dois blocos
 
 ### Clipe `video-faxina` · A peça que entra no meio
-**Duração alvo:** 35 a 45 segundos · **Palavras:** 89
+**Duração alvo:** 50 a 65 segundos; recalibrar após gravar.
 
 **Na tela:** a pilha do motor à vista, com o Mover os sprites do grupo e o Desenhar o grupo colados
 um no outro.
 
 **Narração:**
-> "Essa peça entra num lugar diferente de todas as outras de hoje: no meio."
+> "Você viu que o tiro pode sair da tela e continuar guardado no grupo. Agora vamos retirar do
+> grupo cada tiro que saiu. Essa peça entra num lugar diferente das outras de hoje: no meio da
+> sequência que move e desenha os tiros."
 
 **Na tela:** abrir a categoria **Jogo 2D**, a subcategoria **Grupos**, e dentro dela a seção
 **Participação e limpeza**. Arrastar **Tirar do grupo quem sair da tela, para cada um** até o meio
@@ -339,15 +424,25 @@ segurando.
 
 ---
 
-## Seção 11. Teste, envie e fecha
+## Seção 11. Quiz do Dia 2
+
+Sem vídeo. O Zappy faz uma única ponte curta para o quiz separado: "Hora de conferir o que você
+descobriu sobre os tiros. Pode pensar com calma antes de escolher!" As perguntas verificam o
+conceito, sem pedir que a criança memorize o nome de um botão.
+
+---
+
+## Seção 12. Teste, envie e fecha
 
 ### Clipe `video-teste-e-envio` · Dois tiros de dois lugares e o envio
-**Duração alvo:** 50 a 60 segundos · **Palavras:** 133
+**Duração alvo:** 70 a 85 segundos; recalibrar após gravar.
 
 **Na tela:** o ponteiro clicando dentro da área do jogo.
 
 **Narração:**
-> "Clica dentro da área do jogo, para o teclado ser dele."
+> "O disparo já nasce na nave, sobe, faz som e sai do grupo quando deixa a tela. Vamos testar
+> tiros em dois lugares diferentes e depois enviar o jogo. Primeiro, clica dentro da área do
+> jogo, para o teclado ser dele."
 
 **Na tela:** a seta para a esquerda levando a nave até a beirada esquerda. Depois a barra de
 espaço, com o tiro saindo de onde a nave está, subindo e sumindo na borda de cima. Marquinha visual

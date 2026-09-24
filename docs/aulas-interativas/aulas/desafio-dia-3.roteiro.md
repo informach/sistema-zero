@@ -1,11 +1,14 @@
 # Roteiro de gravação · Desafio do Primeiro Jogo · Dia 3 · A chuva de pedras
 
+**Como ler este roteiro:** só o texto entre aspas em **Narração** é falado no vídeo. **Na tela**
+orienta a gravação; as **Notas de produção** são lembretes para a equipe, não falas para a criança.
+
 ## Especificações
 
-- **Formato:** gravação da tela do Estúdio com narração por cima. Seis clipes, um por seção com
-  vídeo. O projeto de partida é o do fim do Dia 2.
-- **Duração:** 300 a 365 segundos de clipe somados, narração pura de 788 palavras a **137
-  palavras por minuto**, que é o ritmo real medido em gravação.
+- **Formato:** nove clipes, um por seção com vídeo. Os clipes conceituais mostram a relação antes
+  da experiência; os práticos mostram o gesto no Estúdio. O projeto de partida é o fim do Dia 2.
+- **Duração:** aferir após a gravação. Os três clipes conceituais novos foram planejados para
+  aproximadamente 30 a 45 segundos cada, sem duplicar a instrução da cena.
 - **Calibração:** ela já traz grupo, relógio do motor, evento de tecla, sprite, velocidade com
   sinal e o trio mover, faxina e desenhar. É novo de verdade nesta aula: o relógio vizinho do motor,
   o sorteio de posição, o nascimento fora da tela e a colisão entre dois grupos com apelido.
@@ -27,8 +30,8 @@
   tempo, para dar para ver que só uma sumiu.
 - **O que NÃO entra, e por quê:**
   - A enumeração dos seis passos, na abertura e no fecho. A aula não é mais contada em passos.
-  - A explicação falada do sorteio e do menos de y. As duas viraram cena, e repetir na narração
-    gastaria o dobro do tempo com menos efeito.
+  - A explicação longa do sorteio e do menos de y no clipe prático. O conceito fica no vídeo da
+    seção 4; a montagem apenas lembra os valores.
   - A frase "cada vez, o jogo sorteia um lugar novo". O sorteio não garante isso, e a cena mostra
     dois lugares repetindo.
   - A promessa de trocar o 40 por 20 ou 80 no fim da aula. Os dois números continuam assim no Dia 4,
@@ -64,6 +67,24 @@ aparece com o som. Segurar mais dois segundos com outras pedras descendo.
 
 ---
 
+## Seção 2. Uma pedra de cada vez
+
+### Clipe `video-intervalo` · Um relógio para as pedras
+**Duração alvo:** 40 a 50 segundos; recalibrar após gravar.
+
+**Na tela:** dois relógios esquemáticos, um marcando muitos instantes próximos e outro deixando
+espaço entre os sinais. Não animar a chuva de pedras nem mostrar os contadores dos testes da
+experiência.
+
+**Narração:**
+> "Ontem você usou o motor para mover os tiros a cada quadro. Se ele também criar uma pedra a
+> cada quadro, o céu fica cheio delas de uma vez. Parece uma avalanche! Para fazer uma chuva que
+> dá tempo de jogar, precisamos de outro relógio, mais lento. Ele espera entre um nascimento e
+> outro. Quem faz a pedra cair é o motor que você já conhece. Agora teste essa diferença na
+> experiência."
+
+---
+
 ## Seção 3. O grupo e o relógio da chuva
 
 ### Clipe `video-grupo-e-relogio` · O saquinho das pedras e o relógio vizinho
@@ -73,7 +94,7 @@ aparece com o som. Segurar mais dois segundos com outras pedras descendo.
 grupo de sprites` dos tiros à vista como último bloco da pilha.
 
 **Narração:**
-> "Ontem você criou um saquinho para guardar os tiros. Pedra também vem em bando, então hoje entra um
+> "Ontem você criou um saquinho para guardar os tiros. As pedras também vêm em bando, então hoje entra um
 > **segundo** saquinho."
 
 **Na tela:** na categoria Jogo 2D, abrir Grupos, seção Criar e percorrer, e arrastar `Criar grupo de
@@ -84,10 +105,10 @@ sprites` até o fim do Ao iniciar, encaixado por baixo do `Criar grupo de sprite
 > **Criar grupo de sprites** e encaixa no fim do Ao iniciar, logo abaixo do Criar grupo de sprites dos
 > tiros."
 
-**Na tela:** zoom no campo do nome do bloco novo, mostrando a palavra asteroides já escrita.
+**Na tela:** zoom no campo que dá nome ao grupo novo, mostrando a palavra asteroides já escrita.
 
 **Narração:**
-> "O nome já vem escrito **asteroides**, é só deixar."
+> "O nome desse grupo já vem escrito **asteroides**, é só deixar."
 
 **Na tela:** na categoria Jogo 2D, abrir Tempo, seção Quadros e intervalos, e arrastar `A cada
 quadros` para dentro de Enquanto estiver rodando, encostando a base do `A cada quadro do jogo`.
@@ -112,16 +133,35 @@ nenhum dentro do outro.
 
 ---
 
+## Seção 4. De onde vem a próxima pedra
+
+### Clipe `video-sorteio` · Um lugar surpresa, dentro dos limites
+**Duração alvo:** 40 a 50 segundos; recalibrar após gravar.
+
+**Na tela:** cartões com lugares possíveis sobre uma régua horizontal; retirar um cartão de um
+saquinho para explicar o sorteio, sem mostrar a sequência de pedras ou as marcas produzidas na
+experiência. Destacar y −30 como lugar de partida acima da borda, não como velocidade.
+
+**Narração:**
+> "Se toda pedra nascer no mesmo lugar, fica fácil saber por onde ela virá. Para trazer surpresa,
+> o jogo **sorteia** um x dentro da largura da tela quando cria cada pedra. Um sorteio pode até
+> repetir o lugar anterior. Já o y menos 30 marca o lugar onde ela nasce, um pouco acima da tela.
+> Depois, a velocidade positiva faz a pedra descer. Experimente esses nascimentos."
+
+---
+
 ## Seção 5. A pedra que nasce fora da tela
 
 ### Clipe `video-asteroide` · A pedra que nasce fora da tela
-**Duração alvo:** 50 a 60 s · **Palavras:** 130 (cerca de 57 s)
+**Duração alvo:** 75 a 90 segundos; recalibrar após gravar.
 
 **Na tela:** na categoria Jogo 2D, abrir Kits prontos, seção Espaço, e arrastar `No grupo criar um
 asteroide em x y tamanho cor com vx vy` para dentro do `A cada quadros` de 40, que está vazio.
 
 **Narração:**
-> "Na categoria **Jogo 2D**, abre **Kits prontos**, e dentro dela **Espaço**. Pega o bloco **No grupo
+> "Você já viu por que vale sortear a posição da pedra e fazê-la começar acima da tela. Agora
+> vamos montar essa regra no relógio de 40 quadros: cada vez que ele tocar, nascerá uma pedra.
+> Na categoria **Jogo 2D**, abre **Kits prontos**, e dentro dela **Espaço**. Pega o bloco **No grupo
 > criar um asteroide em x y tamanho cor com vx vy** e encaixa dentro do A cada quadros de 40."
 
 **Na tela:** zoom no primeiro campo do bloco, o do grupo, mostrando asteroides escolhido.
@@ -137,32 +177,38 @@ instante em que o bloco cobre o número.
 > "Agora o x. Na categoria **Jogo 2D**, abre **Sorteios**, e dentro dela **Números e posições**. Pega
 > o bloco **um x aleatório na tela** e arrasta por cima do número que já está no x, até encaixar."
 
-**Na tela:** preencher os campos restantes, um de cada vez, com o cursor parando em cada um: y menos
-30, tamanho 40, vx 0, vy 3. Abrir o seletor de cor e escolher uma cor de pedra.
+**Na tela:** trocar y por menos 30 e clicar fora. Conferir tamanho 40 e vx 0, que já vêm no
+bloco, sem redigitar. Trocar vy por 3 e clicar fora. Abrir o seletor de cor e escolher uma cor
+de pedra.
 
 **Narração:**
-> "No y, escreve menos **30**. No tamanho, deixa **40**. No vx, **0**, porque ela não anda para os
-> lados. No vy, **3**, sem o menos, porque ela desce. E a cor é sua."
+> "No y, escreve menos **30** e clica fora para confirmar. O tamanho já vem em **40** e o vx
+> em **0**; deixa os dois assim, porque a pedra não vai para os lados. No vy, troca o número
+> que veio por **3**, sem o menos, e clica fora. Assim ela desce. E a cor é sua."
 
-**Na tela:** clicar num espaço vazio da área dos blocos, depois clicar na área do jogo. Segurar
-alguns segundos com as pedras entrando pela borda de cima, em lugares diferentes.
+**Na tela:** clicar num espaço vazio da área dos blocos, depois enquadrar o relógio e a tela do
+jogo. O bloco de nascimento está no lugar, mas nenhuma pedra aparece ainda: o motor ainda não
+recebeu os blocos que movem e desenham o grupo.
 
 **Narração:**
-> "Olha o seu jogo: as pedras já entram pela borda de cima, cada uma num lugar."
+> "A regra de nascimento está pronta. Ainda não apareceu pedra na tela, e está tudo bem. Daqui
+> a pouquinho, vamos ensinar o motor a mover e desenhar esse grupo."
 
 ---
 
 ## Seção 6. As pedras caem, e o tiro passa reto
 
 ### Clipe `video-ciclo-asteroides` · O mesmo padrão, agora com as pedras
-**Duração alvo:** 45 a 55 s · **Palavras:** 124 (cerca de 54 s)
+**Duração alvo:** 100 a 120 segundos; recalibrar após gravar.
 
 **Na tela:** na categoria Jogo 2D, abrir Grupos, seção Movimento, e arrastar `Mover os sprites do
 grupo usando suas velocidades` para dentro do `A cada quadro do jogo`, encaixado por baixo do
 `Desenhar o grupo` dos tiros.
 
 **Narração:**
-> "Na categoria **Jogo 2D**, abre **Grupos**, e dentro dela **Movimento**. Pega **Mover os sprites do
+> "O relógio já cria as pedras, mas o motor ainda não as move nem desenha. Vamos dar a elas o
+> mesmo cuidado que os tiros já têm: mover, retirar quando saírem da tela e desenhar. Na
+> categoria **Jogo 2D**, abre **Grupos**, e dentro dela **Movimento**. Pega **Mover os sprites do
 > grupo usando suas velocidades** e encaixa dentro do A cada quadro do jogo, logo abaixo do Desenhar o
 > grupo dos tiros."
 
@@ -186,22 +232,49 @@ grupo` encaixado por baixo do bloco da limpeza.
 com os três blocos enquadrados juntos, com a palavra asteroides visível nos três.
 
 **Narração:**
-> "Nos três, o grupo é **asteroides**. Quando você reconhece um padrão, montar de novo custa menos."
+> "Agora abre o menu de grupo de cada um dos três blocos que acabamos de encaixar. No **Mover
+> os sprites do grupo**, escolhe **asteroides**. No **Tirar do grupo quem sair da tela**, escolhe
+> **asteroides**. No **Desenhar o grupo**, escolhe **asteroides** também. A gente já fez isso com
+> os tiros; agora a mesma sequência cuida das pedras."
+
+**Na tela:** clicar na área do jogo. Deixar as pedras entrarem por cima e caírem. Mirar em uma e
+apertar a barra de espaço; o tiro atravessa a pedra, sem explosão. Não corrigir o jogo neste clipe.
+
+**Narração:**
+> "Agora as pedras aparecem e caem. Tenta acertar uma com um tiro. Ele atravessa a pedra! Criar,
+> mover e desenhar os dois grupos não ensina o jogo a perceber quando eles se encontram. É essa
+> peça que falta."
+
+---
+
+## Seção 7. Quem some na trombada?
+
+### Clipe `video-apelidos` · Só os dois desta colisão
+**Duração alvo:** 40 a 50 segundos; recalibrar após gravar.
+
+**Na tela:** três tiros e três pedras. Um par se toca e recebe destaque visual, sem desaparecer;
+o restante continua visível. Não demonstrar o resultado da experiência antes da criança agir.
+
+**Narração:**
+> "Você viu o tiro atravessar a pedra. Falta ensinar ao jogo o que fazer quando os dois se
+> encontram. O jogo guarda todos os tiros num grupo e todas as pedras em outro. Quando um tiro encosta
+> numa pedra, a gente chama esse encontro de **colisão**. Olha aqui. Tem vários tiros e várias
+> pedras, mas só **este tiro** e **esta pedra** se encostaram. O bloco de colisão dá um apelido
+> para cada um deles. Assim a ordem pode agir só nos dois, sem tirar os grupos inteiros. Teste
+> as duas escolhas na experiência."
 
 ---
 
 ## Seção 8. Faça o acerto acontecer
 
 ### Clipe `video-colisao` · Os dois que se bateram
-**Duração alvo:** 70 a 80 s · **Palavras:** 179 (cerca de 78 s)
+**Duração alvo:** 85 a 105 segundos; recalibrar após gravar.
 
 **Na tela:** o jogo rodando, com vários tiros subindo e várias pedras caindo ao mesmo tempo. Segurar
 o enquadramento na tela cheia, sem zoom.
 
 **Narração:**
-> "Tem vários tiros e várias pedras, mas cada encontro tem só **dois** participantes. O bloco da
-> colisão sabe disso: ele dá um apelido para cada um dos dois que se bateram, e o apelido vale só
-> ali."
+> "Você já viu por que usamos os apelidos. Agora vamos montar a colisão no seu jogo."
 
 **Na tela:** na categoria Jogo 2D, abrir Colisões, seção Encostar e bloquear, e arrastar `Para cada
 colisão entre os grupos e` para o fim do `A cada quadro do jogo`, encaixado por baixo do `Desenhar o
@@ -212,41 +285,55 @@ grupo` dos asteroides.
 > cada colisão entre os grupos e** e encaixa dentro do A cada quadro do jogo, abaixo do Desenhar o
 > grupo dos asteroides."
 
-**Na tela:** abrir os dois menus de grupo e escolher tiros e asteroides. Zoom nos dois campos de
-apelido, com tiro e asteroide já escritos.
+**Na tela:** aproximar nos dois menus de grupo, que já mostram tiros e asteroides. Conferir sem
+trocar. Zoom nos dois campos de apelido, com tiro e asteroide já escritos.
 
 **Narração:**
-> "No primeiro grupo, **tiros**. No segundo, **asteroides**. Os apelidos tiro e asteroide já vêm
-> escritos."
+> "O primeiro grupo já está em **tiros**, e o segundo, em **asteroides**. Confere e deixa assim.
+> Os apelidos **tiro** e **asteroide** também já vêm escritos para os dois que se encostarem."
 
 **Na tela:** montar os dois primeiros blocos dentro do fazer da colisão, um encaixado por baixo do
 outro, preenchendo os menus na hora.
 
 **Narração:**
-> "Dentro dele vão quatro blocos, um embaixo do outro. Um: em **Jogo 2D**, **Grupos**, **Participação
-> e limpeza**, o **Tirar o sprite do grupo**, com sprite **tiro** e grupo **tiros**. Dois: no mesmo
-> **Jogo 2D**, **Grupos**, **Participação e limpeza**, outro **Tirar o sprite do grupo**, com sprite
-> **asteroide** e grupo **asteroides**."
+> "Dentro do **fazer** da colisão vão quatro blocos, um embaixo do outro. Primeiro, na categoria
+> **Jogo 2D**, abre **Grupos** e depois **Participação e limpeza**. Pega **Tirar o sprite do grupo**
+> e encaixa no primeiro lugar do **fazer**. Nele, escolhe o sprite **tiro** e o grupo **tiros**.
+> Agora, ainda em **Jogo 2D**, **Grupos**, **Participação e limpeza**, pega outro **Tirar o sprite
+> do grupo**. Encaixa logo abaixo do primeiro. Nesse segundo bloco, escolhe o sprite
+> **asteroide** e o grupo **asteroides**."
 
 **Na tela:** montar os dois últimos blocos por baixo dos dois primeiros. Abrir o menu do efeito com
 a lista à vista antes de escolher explosão.
 
 **Narração:**
-> "Três: em **Jogo 2D**, **Desenho e efeitos**, **Partículas**, o **Soltar explosão no sprite cor**,
-> no sprite **asteroide**, na cor que você quiser. Quatro: em **Jogo 2D**, **Som**, **Efeitos
-> prontos**, o **Tocar efeito**, e no menu escolhe **explosão**, que não vem escolhido."
+> "Terceiro bloco: na categoria **Jogo 2D**, abre **Desenho e efeitos** e depois **Partículas**.
+> Pega **Soltar explosão no sprite cor** e encaixa abaixo do segundo bloco. Escolhe o sprite
+> **asteroide** e uma cor para a explosão. Quarto bloco: ainda na categoria **Jogo 2D**, abre
+> **Som** e depois **Efeitos prontos**. Pega **Tocar efeito** e encaixa abaixo da explosão. Abre
+> o menu do efeito e escolhe **explosão**, que não vem escolhida."
 ---
 
-## Seção 9. Teste, envie e fecha
+## Seção 9. Quiz do Dia 3
+
+Sem vídeo. O Zappy faz uma única ponte curta: "Hora de conferir o que você descobriu sobre o
+relógio e as colisões. Pense no que viu nas experiências antes de escolher." O quiz fica sozinho,
+antes da entrega.
+
+---
+
+## Seção 10. Teste, envie e fecha
 
 ### Clipe `video-fecho` · A sua chuva de pedras está pronta
-**Duração alvo:** 55 a 70 s · **Palavras:** 150 (cerca de 67 s)
+**Duração alvo:** 75 a 90 segundos; recalibrar após gravar.
 
 **Na tela:** o jogo do fim do Dia 3 com o Estúdio aberto. O cursor clica dentro da área do jogo, e a
 borda de foco aparece.
 
 **Narração:**
-> "Clica dentro da área do jogo. Esse clique é o que avisa o jogo que o teclado agora é dele."
+> "A colisão já está montada. Vamos testar um tiro que acerta a pedra e outro que passa pelo
+> vazio, para conferir o que o jogo faz. Depois, vamos enviar o projeto. Primeiro, clica dentro
+> da área do jogo. Esse clique avisa que o teclado agora é dele."
 
 **Na tela:** mirar numa pedra e apertar a barra de espaço. O tiro encontra a pedra, os dois somem
 juntos, a explosão aparece e o som toca.

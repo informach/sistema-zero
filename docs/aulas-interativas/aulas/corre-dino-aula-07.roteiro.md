@@ -16,20 +16,19 @@
 ## Seção 1. Hoje o seu jogo aprende a esperar
 
 ### Clipe `video-abertura` · O jogo já começou sem você
-**Duração alvo:** 25 a 35 segundos · **Palavras:** 64
+**Duração alvo:** 25 a 35 segundos; recalibrar após gravar.
 
 **Na tela:** Recarregar a página do projeto da Aula 6; manter Dino e cactos rodando por cinco segundos sem comando.
 
 **Narração:**
-> "Recarrega a página e olha o seu jogo. O Dino já está correndo e o primeiro cacto vem vindo.
-> Ninguém apertou nada para começar. A partida começou sozinha."
+> "Até agora, a corrida começa assim que o jogo abre. Hoje vamos criar um momento de espera
+> para quem joga poder começar quando quiser."
 
 **Na tela:** Mostrar apenas o jogo em movimento, sem paleta.
 
 **Narração:**
-> "Um jogo precisa de um momento antes da corrida. Hoje vamos fazer o seu esperar. No fim, a
-> floresta continua passando, mas o Dino e os cactos só entram quando o jogo estiver no estado
-> certo."
+> "No fim da aula, a floresta continua passando, mas o Dino e os cactos só entram quando a
+> partida começa. Vamos montar isso juntos."
 
 ## Seção 2. O jogo passa a saber onde está
 

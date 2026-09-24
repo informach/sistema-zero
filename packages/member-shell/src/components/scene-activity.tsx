@@ -13,6 +13,8 @@ import {
   evaluateExperimentation,
   falaDaInstrucao,
   falasDaCena,
+  oncePreset,
+  onceRunFinished,
   openScene,
   SCENE_LIMITS,
   type SceneActivity,
@@ -887,6 +889,12 @@ export function SceneActivityView({
       onLento: () => setSlow((v) => !v),
       dispatch,
       gestoEmDestaque: !(conclusao && temPergunta && !registered && !revisita),
+      onceReady:
+        m === 'once-vs-always' &&
+        Object.values(visto.once.placement).some((area) => area !== 'outside'),
+      onceFinished:
+        m === 'once-vs-always' && onceRunFinished(visto.once, oncePreset(activity.setup?.preset)),
+      onceStarted: m === 'once-vs-always' && visto.once.frames > 0,
     }),
   ]
   const controlesDaExecucao =
@@ -970,7 +978,14 @@ export function SceneActivityView({
       // ⚠️⚠️ Parar o ▶ em vez de rodar à toa é régua do CORE, a mesma do "Agora é sua vez"
       // (`sceneClockShouldStop`): o salto acabou (ou nem começou), o Dino sem gravidade passou do alto do
       // palco (parado ali, a criança liga a gravidade e vê o Dino voltar), ou a `circle-collision` bateu.
-      if (sceneClockShouldStop(m, antesDoTique, controller.getSnapshot().state)) {
+      if (
+        sceneClockShouldStop(
+          m,
+          antesDoTique,
+          controller.getSnapshot().state,
+          activity.setup?.preset,
+        )
+      ) {
         setRunning(false)
         return false
       }

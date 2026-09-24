@@ -16,7 +16,7 @@
 ## Seção 1. O que a gente vai fazer hoje
 
 ### Clipe `video-abertura` · A nave cinza sai, a sua entra
-**Duração alvo:** 25 a 35 segundos · **Palavras:** 68
+**Duração alvo:** 25 a 35 segundos; recalibrar após gravar.
 
 **Na tela:** Mostrar a partida com a nave desenhada no Pinta, motor pulsando e pedras cinzas do kit caindo.
 
@@ -27,9 +27,8 @@
 **Na tela:** Aproximar uma pedra cinza e depois a nave nova.
 
 **Narração:**
-> "Repara que as pedras ainda são as cinzas do kit. Elas ficam assim hoje de propósito; na
-> próxima aula entra a arte da pedra. Agora vamos cuidar da nave, sem perder os tiros e o placar
-> que já funcionam."
+> "Hoje vamos trocar a nave e manter o restante do jogo funcionando. A arte das pedras
+> entra na próxima aula."
 
 ## Seção 2. Traga as suas duas artes para dentro do projeto
 

@@ -31,7 +31,7 @@
   "blocks": [
     {
       "key": "video-teste-e-envio",
-      "plannedVideo": "Título: A nave nas duas bordas e o envio\n\nOrigem: novo, com o video-teste do v6 como referência de tela. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 45 a 55 segundos.\n\nGravação de tela no jogo do fim do Dia 1, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe mostra o teste final e o envio. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, nesta ordem:\n\n1. O gesto de confirmar um campo, bem enquadrado: o número digitado e o clique num espaço vazio fora do bloco. É esse clique fora que confirma, e é o mesmo gesto da introdução.\n2. O clique dentro da área do jogo, que é o que avisa o jogo que o teclado agora é dele.\n3. A seta para a esquerda segurada até a nave encostar na borda e parar ali.\n4. A seta para a direita segurada até a outra borda, com a nave parando de novo.\n\nConferir junto, olhando a tela: a nave anda para os dois lados, ela não passa das bordas, ela aparece na frente do espaço com estrelas, e não fica rastro nenhum atrás dela.\n\nSe ficar um rastro de naves na tela, o bloco que limpa a tela não está antes do fundo de estrelas, e é isso que a gravação deve deixar reconhecível.\n\nDepois, mostrar o gesto de enviar: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFecho neutro do clipe, mantendo a confirmação do envio na tela: \"Pronto. Esse é o caminho do teste final até a entrega.\"\n\nA instrução detalhada dos gestos fica no vídeo, onde a criança consegue vê-los. O convite para ela repetir esse percurso fica no balão curto do Zappy abaixo do vídeo, sem repetir os passos."
+      "plannedVideo": "Título: A nave nas duas bordas e o envio\n\nOrigem: novo, com o video-teste do v6 como referência de tela. Duração alvo: 80 a 95 segundos; recalibrar após gravar.\n\nAbrir recapitulando o que será conferido e só depois clicar. Gravação de tela no jogo do fim do Dia 1, com o Estúdio aberto. Nenhuma montagem de bloco nem botão de play aqui. Mostrar, na ordem: clicar dentro da área do jogo; segurar a seta para a esquerda até a borda; segurar a seta para a direita até a outra borda; conferir movimento, limite e a nave na frente do céu; enquadrar a pilha do motor e conferir a ordem limpar, estrelas, mover, manter e desenhar; esperar Salvo e apertar Enviar para o professor. Não redigitar um valor que já foi confirmado nas seções anteriores. Fechar com uma fala natural sobre a nave que não escapa e o tiro que virá no Dia 2, sem linguagem de produção nem afirmar que a criança já fez o próprio teste.\n\nO teste que prova por que Limpar a tela é necessário aconteceu antes das estrelas, sobre o fundo liso. O céu estrelado cobre o canvas inteiro e pode mascarar a falta de limpeza. No teste final, conferir a ordem dos blocos no Estúdio; não dizer que a ausência visual de rastro prova sozinha que Limpar a tela está correto. Narração completa no roteiro correspondente."
     },
     {
       "key": "fala-entrega",
@@ -116,14 +116,14 @@
     },
     {
       "key": "video-duas-areas",
-      "plannedVideo": "Título: A mesma ação em dois momentos\n\nMostrar uma linha do tempo curta: o começo do jogo e três passos depois dele. A ficha Mover a nave um pouquinho está em Ao iniciar. No começo, a nave anda uma casa; nos três passos seguintes, ela fica parada.\n\nFala: \"Ao iniciar é o comecinho do jogo. O que está aqui acontece uma vez e pronto.\"\n\nVoltar a linha do tempo ao começo. Mostrar a mesma ficha em Enquanto estiver rodando. Em cada um dos três passos, a nave anda outra casa.\n\nFala: \"Enquanto estiver rodando continua trabalhando a cada passo. A mesma ação muda porque está em outro lugar.\"\n\nFechar com os dois caminhos lado a lado: uma vez no começo e uma vez em cada passo.\n\nDuração alvo: 40 a 50 segundos.\n\nOrigem: video-areas. Regravar a comparação inteira com o mesmo movimento nos dois lugares. Não ensinar gesto de montagem neste clipe nem chamar a ação de ligar a nave."
+      "plannedVideo": "Título: A mesma ação em dois momentos\n\nDuração alvo: 65 a 80 segundos; recalibrar após gravar.\n\nAbrir dizendo por que vamos conversar sobre ações do começo e ações que se repetem antes de montar o jogo. Só depois mostrar papel e lápis separados uma vez e a mão que continua desenhando. Ligar essa comparação ao jogo: preparar a tela acontece no começo, mover a nave pode continuar enquanto se joga. Apresentar as Áreas do projeto como os espaços onde encaixamos os blocos, destacar Ao iniciar e Enquanto estiver rodando sem arrastar. Ilustrar a repetição com um ventilador ligado que gira e desligado que para.\n\nEncerrar com as duas áreas vazias. A ação Mover a nave um pouquinho, o jogo em movimento e os contadores pertencem à experiência: não mostrar nem narrar os resultados dos testes.\n\nDuração alvo: recalibrar após gravar a narração completa do roteiro. Origem: roteiro original do Dia 1, Parte 1, para o contexto e as analogias; paleta e comportamento atuais."
     },
     {
       "key": "fala-uma-vez-e-sempre",
       "content": {
         "kind": "dialogue",
         "pose": "thinking",
-        "text": "Agora veja a mesma ação nos dois lugares."
+        "text": "Você conheceu Ao iniciar e Enquanto estiver rodando. Agora teste a mesma ação nas duas áreas do projeto."
       }
     },
     {
@@ -132,8 +132,12 @@
         "kind": "interactive",
         "required": true,
         "title": "Uma vez e sempre",
-        "instructions": "Coloque Mover a nave um pouquinho em Ao iniciar e avance três passos. Observe a nave e o contador de movimentos. Use Voltar ao começo, coloque a mesma ficha em Enquanto estiver rodando e avance três passos de novo. O que mudou de um teste para o outro?",
-        "hints": [],
+        "instructions": "Teste Mover a nave um pouquinho nas duas áreas, uma de cada vez. Comece o jogo, observe a nave e compare Ações feitas nas duas partidas.",
+        "hints": [
+          "Ponha Mover a nave um pouquinho em Ao iniciar e aperte Começar o jogo. Espere o teste parar.",
+          "Leve a mesma ação para Enquanto estiver rodando. A mudança já prepara uma nova partida.",
+          "Aperte Começar o jogo de novo e observe até a nave sair da cena. Compare Ações feitas."
+        ],
         "semPerguntaFinal": true,
         "activity": {
           "type": "experimentation",
@@ -154,11 +158,11 @@
             "goalCopy": {
               "once": {
                 "label": "Em Ao iniciar, a nave se moveu uma vez e parou",
-                "pedido": "Ponha Mover a nave um pouquinho em Ao iniciar e avance três passos."
+                "pedido": "Ponha Mover a nave um pouquinho em Ao iniciar e comece o jogo."
               },
               "always": {
-                "label": "Enquanto estiver rodando, a nave se moveu a cada passo",
-                "pedido": "Volte ao começo, ponha Mover a nave um pouquinho em Enquanto estiver rodando e avance três passos."
+                "label": "Enquanto estiver rodando, a nave continuou se movendo",
+                "pedido": "Ponha Mover a nave um pouquinho em Enquanto estiver rodando e comece o jogo."
               }
             },
             "preset": {
@@ -186,11 +190,11 @@
     },
     {
       "key": "video-montar-areas-tela",
-      "plannedVideo": "Título: As áreas do projeto e a tela do jogo\n\nMostrar o gesto das três peças de uma vez: arrastar Ao iniciar e Enquanto estiver rodando para as Áreas do projeto, com um espaço entre os dois, e encaixar Preparar o jogo em tela cheia dentro de Ao iniciar.\n\nAproximar nos dois campos do bloco, que já chegam preenchidos. Não apagar nem redigitar. Apontar primeiro na horizontal da área do jogo e dizer: \"A largura já vem em 800: é a medida de um lado ao outro.\" Apontar de cima para baixo e dizer: \"A altura já vem em 480: é a medida de cima até embaixo. Hoje é só conferir os dois.\"\n\nEscolher um fundo escuro, para enxergar a nave e as estrelas.\n\nDuração alvo: 50 a 60 segundos.\n\nOrigem: fusão de video-areas (o gesto) com video-tela. Dois clipes viram um. A tela é nova."
+      "plannedVideo": "Título: As áreas do projeto e a tela do jogo\n\nAbrir mostrando o que a criança vai montar: as duas áreas do projeto e a tela onde a nave aparecerá. Guiar a montagem um gesto de cada vez, sem saltar caminhos. Abrir a categoria Áreas do projeto, pegar Ao iniciar e soltar na área de montagem, no meio do Estúdio. Dizer novamente o nome da categoria: ainda em Áreas do projeto, pegar Enquanto estiver rodando e soltar ao lado do Ao iniciar, com espaço entre as duas áreas.\n\nAbrir a categoria Jogo 2D, depois Jogo e telas e a seção Preparar a área do jogo. Pegar Preparar o jogo em tela cheia e encaixar dentro do Ao iniciar. Aproximar nos campos que já chegam preenchidos: 800 é a largura, de um lado ao outro; 480 é a altura, de cima até embaixo. Conferir sem apagar nem redigitar. Clicar no quadradinho de cor do próprio bloco e escolher um fundo escuro. Esse fundo liso permanece até a criança ver e limpar o rastro; as estrelas entram depois.\n\nNarração falada e completa no roteiro correspondente. Duração alvo: 100 a 115 segundos.\n\nOrigem: fusão de video-areas (o gesto) com video-tela. Dois clipes viram um. A tela é nova."
     },
     {
       "key": "video-coordenadas",
-      "plannedVideo": "Título: O endereço da nave na tela\n\nMostrar a tela do jogo com a marca do x e do y na caixa da nave, e o zero dos dois no canto de cima, à esquerda.\n\nFala: \"O x e o y são o endereço da nave na tela, é como dizer onde ela mora. O x cresce para a direita. O y cresce para baixo. E o zero dos dois fica no canto de cima, à esquerda. A marca mostra o canto de cima à esquerda da caixa da nave.\"\n\nDuração alvo: 30 a 40 segundos.\n\nOrigem: video-endereco. A fala se aproveita em parte. Retirar a afirmação de que x 400 centraliza a nave: 400 é o canto esquerdo de uma caixa de largura 54, e o centro dela fica em 427. Acrescentar a origem no alto à esquerda."
+      "plannedVideo": "Título: O endereço da nave na tela\n\nAbrir com a tela já preparada e com a pergunta concreta: onde a nave vai aparecer? Só depois apresentar x e y como os dois números desse endereço. Marcar x 0 e y 0 no canto de cima, à esquerda; mostrar a direção horizontal de x e a vertical de y, sem mover a nave nem reproduzir o teste da experiência. Por fim, mostrar que a marca fica no canto superior esquerdo da caixa da nave, não no meio.\n\nNarração falada e completa no roteiro correspondente. Duração alvo: 40 a 50 segundos.\n\nConferência para a gravação: não reaproveitar da versão anterior a frase de que x 400 centraliza a nave. Com largura 54, o centro da caixa fica em 427."
     },
     {
       "key": "fala-coordenadas",
@@ -206,7 +210,7 @@
         "kind": "interactive",
         "required": true,
         "title": "O endereço na tela",
-        "instructions": "Aumente só o x e observe para onde a nave vai. Depois, aumente só o y e observe de novo. Por último, coloque x 0 e y 0. Onde a nave ficou?",
+        "instructions": "Experimente mudar x e y separadamente. Para onde a nave vai em cada caso? E quando os dois valem zero?",
         "hints": [],
         "semPerguntaFinal": true,
         "activity": {
@@ -267,22 +271,22 @@
     },
     {
       "key": "video-criar-nave",
-      "plannedVideo": "Título: A nave com as suas cores\n\nMostrar o gesto de pegar Criar nave em Jogo 2D, Kits prontos, Espaço, encaixar abaixo de Preparar o jogo, preencher nome, x, y, largura e altura, e escolher as cores do corpo e das asas. Terminar com a tela do jogo ainda sem a nave.\n\nFala: \"Nome nave, x 400, y 410, largura 54 e altura 62. Agora as cores, que são sua escolha. Pronto. E repara na tela do jogo: a nave ainda não está lá. Guarda essa pergunta, que a gente resolve agora.\"\n\nDuração alvo: 45 a 55 segundos.\n\nOrigem: video-nave. A fala se aproveita. Encurtar a parte dos eixos, já resolvida na seção anterior. Manter a surpresa de a nave não aparecer, sem dizer que houve erro."
+      "plannedVideo": "Título: A nave com as suas cores\n\nDuração alvo: 65 a 75 segundos; recalibrar após gravar.\n\nAbrir retomando que a criança acabou de conhecer o endereço da nave; agora vai criá-la nesse lugar. Narrar o caminho completo: Jogo 2D › Kits prontos › Espaço, pegar Criar nave e encaixar dentro do Ao iniciar abaixo de Preparar o jogo em tela cheia. Conferir sem redigitar o nome nave e os tamanhos padrão largura 54 e altura 62, explicando o que medem; mudar só x para 400 e y para 410, confirmando cada campo. Escolher livremente as cores do corpo e das asas. Terminar com a tela ainda sem nave e guardar a pergunta para a seção seguinte, sem dizer que houve erro.\n\nDuração alvo: recalibrar após gravar a narração completa do roteiro. Origem: video-nave, adaptado ao Estúdio atual."
     },
     {
       "key": "video-livrinho",
-      "plannedVideo": "Título: O livrinho de folhear\n\nMostrar um livrinho de folhear, com cada página um pouco diferente da anterior, e o movimento aparecendo quando as páginas passam rápido.\n\nFala: \"Cada página é um desenho um pouquinho diferente, e passando rápido o seu olho enxerga movimento. Cada página dessas tem um nome: quadro.\"\n\nDuração alvo: 35 a 45 segundos.\n\nOrigem: video-criar-desenhar. A fala se aproveita. A imagem é nova."
+      "plannedVideo": "Título: O livrinho de folhear\n\nDuração alvo: 50 a 60 segundos; recalibrar após gravar.\n\nAbrir ligando o conceito ao jogo: a nave já foi criada e, para aparecer se mexendo, a tela será desenhada muitas vezes. Mostrar um livrinho de folhear, com cada página um pouco diferente da anterior, e o movimento aparecendo quando as páginas passam rápido. Só depois nomear cada imagem como quadro. Não mostrar o procedimento de montagem.\n\nDuração alvo: recalibrar após gravar a narração completa do roteiro. Origem: video-criar-desenhar; a imagem é nova."
     },
     {
       "key": "video-criar-e-mostrar",
-      "plannedVideo": "Título: Criar não é mostrar\n\nMostrar, lado a lado, os bastidores do jogo e a tela. Criar uma nave nos bastidores sem desenhá-la e deixar claro que o objeto existe, embora a tela continue vazia. Depois mostrar o comando de desenhar e a nave aparecendo.\n\nFala de referência: \"Criar prepara a nave nos bastidores: ela já tem nome, posição, tamanho e cores. Mas a tela só mostra o que o jogo manda desenhar. Por isso criar e mostrar são duas ações diferentes.\"\n\nDuração alvo: 35 a 45 segundos.\n\nOrigem: novo, aproveitando a conclusão de video-criar-nave e a explicação conceitual de video-criar-desenhar."
+      "plannedVideo": "Título: Criar não é mostrar\n\nMostrar a analogia de uma peça de teatro: os atores se preparam atrás da cortina antes de aparecer ao público. Ligar essa distinção ao jogo: Criar nave prepara o objeto nos bastidores; desenhar o mostra na tela. Não mostrar a cena, os controles nem o resultado da experiência.\n\nDuração alvo: 25 a 35 segundos, recalibrar após gravar.\n\nOrigem: explicação conceitual de video-criar-desenhar, com a experiência concreta reservada para a criança."
     },
     {
       "key": "fala-criar-mostrar",
       "content": {
         "kind": "dialogue",
         "pose": "thinking",
-        "text": "Agora é hora de ver a diferença entre existir nos bastidores e aparecer na tela."
+        "text": "No teatro, preparar e aparecer são duas ações. Agora veja como isso funciona com a nave."
       }
     },
     {
@@ -290,8 +294,9 @@
       "content": {
         "kind": "interactive",
         "required": true,
+        "semPerguntaFinal": true,
         "title": "Criar e mostrar são duas coisas diferentes",
-        "instructions": "Crie a nave e observe os bastidores e a tela do jogo. Depois, mostre a nave. O que mudou?",
+        "instructions": "Experimente criar e mostrar a nave. O que aparece nos bastidores? E na tela do jogo?",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -340,7 +345,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Por que o desenho se repete",
-        "instructions": "Com Desenhar a nave em Só no começo, avance dois quadros e observe a tela e o x da nave. Escolha A cada quadro, avance mais dois quadros e observe a tela. Ligue Limpar a tela antes, avance outros dois quadros e veja o que mudou.",
+        "instructions": "Teste desenhar a nave só no começo e a cada quadro. Depois experimente limpar a tela. O que muda enquanto os quadros passam?",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -374,51 +379,75 @@
       }
     },
     {
-      "key": "fala-motor-e-fundo",
+      "key": "fala-motor-e-nave",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Você viu a ordem do motor: limpar primeiro e desenhar o espaço depois. Agora é sua vez de montar essa parte no projeto."
+        "text": "Agora é sua vez de fazer a nave aparecer no seu jogo."
       }
     },
     {
-      "key": "video-motor-e-fundo",
-      "plannedVideo": "Título: A lousa mágica e o espaço com estrelas\n\nMostrar o gesto das três peças: A cada quadro do jogo encaixado em Enquanto estiver rodando, e dentro dele Limpar a tela e depois Desenhar fundo de estrelas com velocidade 1. Aproximar no momento em que a borracha entra antes do desenho novo.\n\nFala: \"O primeiro apaga a tela antes de desenhar de novo. Sabe aquelas lousas mágicas? Toda vez que a gente quer desenhar de novo, apaga o que estava lá. Depois vêm as estrelas, com velocidade 1, bem suave, para dar a sensação de que a nave está viajando pelo espaço.\"\n\nDuração alvo: 60 a 70 segundos.\n\nOrigem: fusão de video-quadro com video-fundo. Manter a lousa mágica, que é comparação literal e boa. Cortar a contagem de passos."
+      "key": "video-motor-e-nave",
+      "plannedVideo": "Título: O motor mostra a nave\n\nRetomar o conceito de quadro e dizer a meta: fazer a nave aparecer no jogo da criança. Manter a cor lisa escolhida para o fundo; não colocar limpeza ou estrelas ainda. Guiar Jogo 2D › Tempo › Quadros e intervalos, pegar A cada quadro do jogo e encaixar dentro de Enquanto estiver rodando. Antes de abrir a gaveta Sprites, explicar que sprite é o nome de um personagem ou objeto do jogo, como a nave que a criança criou. Depois guiar Jogo 2D › Sprites › Criar e trocar aparência e pegar Desenhar o sprite. O campo que escolhe qual sprite será desenhado inicia em jogador: abrir o aviso enquanto está errado, só depois escolher nave no seletor e mostrar o aviso sumindo e a nave aparecendo.\n\nDuração alvo: 85 a 100 segundos; recalibrar após gravar. Narração completa no roteiro correspondente."
     },
     {
-      "key": "fala-setas-e-borda",
+      "key": "fala-setas-e-rastro",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora é sua vez de dar o controle ao jogador e manter a nave dentro da tela."
+        "text": "Agora é sua vez de colocar as setas no jogo e testar o movimento da nave."
       }
     },
     {
-      "key": "video-setas-e-borda",
-      "plannedVideo": "Título: As setas e a borda da tela\n\nMostrar os dois blocos entrando no motor, logo abaixo das estrelas, e a troca do nome de fábrica para nave nos dois. Mostrar o alerta aparecendo e sumindo quando o nome é corrigido.\n\nFala: \"Esses dois blocos vêm escritos com outro nome. Clica no nome e troca para nave. Se aparecer um aviso, ele não é bronca, é um ajudante: ele te mostra certinho o que arrumar.\"\n\nDuração alvo: 55 a 65 segundos.\n\nOrigem: video-mover. A fala se aproveita, inclusive o tom do alerta como ajudante, que é o primeiro contato dela com depuração. A tela é nova."
+      "key": "video-setas-e-rastro",
+      "plannedVideo": "Título: As setas põem a nave em movimento\n\nAbrir com o estado do jogo: a nave já aparece, mas ainda não responde às teclas. Narrar o caminho de Mover o sprite com as setas e encaixar acima de Desenhar o sprite. Esse bloco já vem com nave selecionada; conferir sem simular aviso. Explicar que velocidade controla quanto a nave anda quando a seta é segurada e que um número maior a faz andar mais depressa; só depois escrever 7 e confirmar. Testar o movimento sem chegar à borda e deixar visível o rastro dos desenhos antigos. Não adicionar limpeza, limite nem estrelas neste clipe.\n\nDuração alvo: 65 a 80 segundos; recalibrar após gravar. Narração completa no roteiro correspondente."
     },
     {
-      "key": "fala-desenhar-nave",
+      "key": "fala-limpar-rastro",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Falta mostrar a nave. Agora é sua vez de completar o motor e colocar o desenho na ordem certa."
+        "text": "Agora veja o rastro sumir no seu jogo: coloque a limpeza antes dos blocos que movem e desenham a nave."
       }
     },
     {
-      "key": "video-desenhar-por-ultimo",
-      "plannedVideo": "Título: A nave no fim do motor\n\nMostrar o bloco Desenhar o sprite entrando no fim do motor, com nave escolhida, e a ordem inteira à vista: limpar, estrelas, mover, manter dentro da tela, desenhar a nave. Terminar com a nave aparecendo na tela do jogo.\n\nFala: \"Esse é o bloco que finalmente mostra a nave. Ele entra no fim do motor, depois de tudo. O que é desenhado depois pode cobrir o que veio antes, e por isso a nave vem no fim.\"\n\nDuração alvo: 35 a 45 segundos.\n\nOrigem: video-desenhar. A fala se aproveita com uma substituição: onde a gravação diz \"as estrelas iam tampar ela\", a fala nova diz \"o que é desenhado depois pode cobrir o que veio antes\". O rótulo da peça é Desenhar o sprite, e \"por último\" é a posição no motor, não o nome dela."
+      "key": "video-limpar-rastro",
+      "plannedVideo": "Título: A borracha antes do desenho\n\nComeçar mostrando o rastro que a nave deixou sobre o fundo liso. Explicar a causa: o jogo desenhou a nave em outro lugar e manteve o desenho anterior. Dizer por que precisamos apagar esses desenhos para ver só a nave atual; só então usar a analogia da lousa mágica. Guiar Jogo 2D › Desenho e efeitos › Efeitos, pegar Limpar a tela e encaixar no primeiro lugar dentro de A cada quadro do jogo, antes de mover e desenhar a nave. Explicar que o bloco apaga o desenho velho, não a nave criada. Repetir o mesmo teste de movimento e mostrar o rastro desaparecer sem usar o céu estrelado para cobri-lo.\n\nDuração alvo: 65 a 80 segundos; recalibrar após gravar. Narração completa no roteiro correspondente."
+    },
+    {
+      "key": "fala-limite-da-nave",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora é sua vez de testar a borda e manter a nave dentro do jogo."
+      }
+    },
+    {
+      "key": "video-limite-da-nave",
+      "plannedVideo": "Título: A borda segura a nave\n\nAbrir com a nave andando sem rastro e testar primeiro sem o bloco de borda, até ela sair visivelmente da tela. Só depois apresentar a solução: guiar Jogo 2D › Movimento › Bordas e rebatidas, pegar Manter o sprite dentro da tela e encaixar entre Mover o sprite com as setas e Desenhar o sprite. O campo que escolhe qual sprite esse bloco mantém na tela inicia em heroi: abrir e ler o aviso antes de selecionar nave; mostrar o aviso sumindo. Repetir o teste nas duas bordas e mostrar a nave parando e permanecendo visível. Não adicionar estrelas ainda.\n\nDuração alvo: 85 a 105 segundos; recalibrar após gravar. Narração completa no roteiro correspondente."
+    },
+    {
+      "key": "fala-fundo-estrelado",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "A nave já se move sem rastro. Agora é sua vez de dar ao jogo um céu de estrelas."
+      }
+    },
+    {
+      "key": "video-fundo-estrelado",
+      "plannedVideo": "Título: As estrelas entram no jogo\n\nAbrir mostrando a nave já com movimento, parando nas beiradas e sem rastro. Apresentar as estrelas como acabamento para dar ao jogo cara de aventura no espaço, sem enfatizar para a criança que o fundo anterior era liso. Guiar Jogo 2D › Cenários › Fundos e encaixar Desenhar fundo de estrelas primeiro depois de Desenhar o sprite, no fim do motor. Deixar a nave sumir por um instante: o céu cobre toda a tela, mas o bloco da nave continua no projeto. Sem narrar a experiência da seção seguinte, arrastar as estrelas para logo depois de Limpar a tela, antes do movimento e desenho da nave. Mostrar a nave reaparecer, conferir a velocidade padrão 1 sem redigitar e enquadrar a pilha correta inteira.\n\nDuração alvo: 65 a 80 segundos; recalibrar após gravar. Narração completa no roteiro correspondente."
     },
     {
       "key": "video-camadas",
-      "plannedVideo": "Título: Quem é desenhado depois fica na frente\n\nMostrar duas folhas ou cartões sobrepostos e trocar a ordem deles. Em seguida, mostrar a nave e o fundo de estrelas sendo desenhados em ordens diferentes, sem montar blocos no projeto.\n\nFala de referência: \"A tela funciona como uma pilha de desenhos. O que é desenhado depois fica por cima e pode cobrir o que veio antes. Ninguém foi apagado: só a ordem mudou.\"\n\nDuração alvo: 30 a 40 segundos.\n\nOrigem: novo, a partir da explicação conceitual de video-desenhar-por-ultimo."
+      "plannedVideo": "Título: Quem é desenhado depois fica na frente\n\nAbrir com a pergunta deixada pelo clipe anterior: por que a nave sumiu e voltou quando o bloco das estrelas mudou de lugar? Mostrar duas folhas sobrepostas e trocar a ordem delas. Explicar que a tela funciona da mesma forma: o que é desenhado depois fica por cima. Não reproduzir os controles da experiência nem pedir que a criança os mova durante o vídeo.\n\nDuração alvo: 40 a 50 segundos; recalibrar após gravar. Origem: conceito de ordem de desenho do roteiro original."
     },
     {
       "key": "fala-camadas",
       "content": {
         "kind": "dialogue",
         "pose": "thinking",
-        "text": "Agora é hora de ver essa pilha de desenhos funcionando e observar quem fica na frente."
+        "text": "Você viu a pilha de folhas. Agora veja o que a ordem dos desenhos muda na tela da nave."
       }
     },
     {
@@ -426,8 +455,9 @@
       "content": {
         "kind": "interactive",
         "required": true,
+        "semPerguntaFinal": true,
         "title": "Quem fica na frente?",
-        "instructions": "A nave está parcialmente coberta. Troque a ordem para deixá-la na frente. Troque de novo e observe a cena. Por fim, ponha a nave na frente outra vez.",
+        "instructions": "Troque a ordem dos desenhos algumas vezes. Observe quando a nave fica na frente e quando o fundo a cobre.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -447,21 +477,6 @@
           "setup": {
             "goals": ["front", "covered", "back-in-front"]
           }
-        },
-        "checkpoint": {
-          "prompt": "Quando a nave ficou parcialmente coberta pelas estrelas, o que tinha mudado?",
-          "choices": [
-            {
-              "id": "b",
-              "label": "A nave foi apagada do jogo."
-            },
-            {
-              "id": "a",
-              "label": "A ordem de desenhar."
-            }
-          ],
-          "correctChoiceId": "a",
-          "explanation": "As duas peças continuaram no jogo. Quem é desenhado depois fica por cima e pode cobrir o que veio antes."
         }
       }
     },
@@ -609,7 +624,7 @@
       "key": "criar-nave",
       "title": "Crie a sua nave",
       "intent": "application",
-      "objective": "Criar o sprite da nave uma vez, com posição e tamanho definidos. As cores são escolha sua.",
+      "objective": "Criar a nave uma vez, com posição e tamanho definidos. As cores são escolha sua.",
       "blockKeys": ["video-criar-nave", "fala-criar-nave"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -669,17 +684,17 @@
       }
     },
     {
-      "key": "motor-e-fundo",
-      "title": "Ligue o motor e desenhe o espaço",
+      "key": "motor-e-nave",
+      "title": "Faça a nave aparecer",
       "intent": "application",
-      "objective": "Encaixar o motor de quadros e desenhar o espaço dentro dele, com a borracha antes do desenho novo.",
-      "blockKeys": ["video-motor-e-fundo", "fala-motor-e-fundo"],
+      "objective": "Encaixar o motor de quadros e desenhar a nave dentro dele.",
+      "blockKeys": ["video-motor-e-nave", "fala-motor-e-nave"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-motor-e-fundo"],
+        "blockIds": ["video-motor-e-nave"],
         "projectChecks": [
           {
             "id": "quadro",
@@ -692,26 +707,15 @@
             }
           },
           {
-            "id": "borracha",
-            "label": "Limpe antes de desenhar o fundo de estrelas.",
+            "id": "sprite-certo",
+            "label": "Desenhe o sprite nave dentro de A cada quadro do jogo.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_clear",
+              "blockType": "sz_g2d_draw_sprite",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "beforeBlock": "sz_g2d_starfield"
-            }
-          },
-          {
-            "id": "estrelas",
-            "label": "Desenhe as estrelas com velocidade 1 a cada quadro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_starfield",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "inputs": {
-                "SPEED": 1
+              "fields": {
+                "SPRITE": "nave"
               }
             }
           }
@@ -720,20 +724,80 @@
     },
     {
       "key": "setas",
-      "title": "A nave obedece a você",
+      "title": "Faça a nave andar com as setas",
       "intent": "application",
-      "objective": "Mover a nave com as setas, sem deixar que ela saia da tela.",
-      "blockKeys": ["video-setas-e-borda", "fala-setas-e-borda"],
+      "objective": "Mover a nave com as setas e observar o que acontece na tela.",
+      "blockKeys": ["video-setas-e-rastro", "fala-setas-e-rastro"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-setas-e-borda"],
+        "blockIds": ["video-setas-e-rastro"],
         "projectChecks": [
           {
             "id": "setas",
-            "label": "Mova nave com as setas, velocidade 7, antes de prender à tela.",
+            "label": "Mova nave com as setas, velocidade 7, antes de desenhá-la.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_arrows_x",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "inputs": {
+                "SPEED": 7
+              },
+              "beforeBlock": "sz_g2d_draw_sprite"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "limpar-rastro",
+      "title": "Apague o rastro da nave",
+      "intent": "application",
+      "objective": "Comparar o movimento antes e depois de colocar Limpar a tela no motor.",
+      "blockKeys": ["video-limpar-rastro", "fala-limpar-rastro"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-limpar-rastro"],
+        "projectChecks": [
+          {
+            "id": "borracha",
+            "label": "Limpe a tela antes de mover e desenhar a nave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clear",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "beforeBlock": "sz_g2d_arrows_x"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "borda",
+      "title": "Não deixe a nave escapar",
+      "intent": "application",
+      "objective": "Ver a nave sair pela borda e depois mantê-la dentro da tela.",
+      "blockKeys": ["video-limite-da-nave", "fala-limite-da-nave"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-limite-da-nave"],
+        "projectChecks": [
+          {
+            "id": "setas-antes-do-limite",
+            "label": "Mova nave antes de prendê-la à tela.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_arrows_x",
@@ -750,36 +814,7 @@
           },
           {
             "id": "limite",
-            "label": "Mantenha nave dentro da tela, no motor.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_clamp_to_screen",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "SPRITE": "nave"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "desenhar-a-nave",
-      "title": "Desenhe a nave no fim do motor",
-      "intent": "application",
-      "objective": "Colocar Desenhar o sprite no fim do motor, depois do fundo e do movimento.",
-      "blockKeys": ["video-desenhar-por-ultimo", "fala-desenhar-nave"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-desenhar-por-ultimo"],
-        "projectChecks": [
-          {
-            "id": "nave-visivel",
-            "label": "Desenhe nave depois de manter dentro da tela.",
+            "label": "Mantenha nave dentro da tela antes de desenhá-la.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_clamp_to_screen",
@@ -790,28 +825,45 @@
               },
               "beforeBlock": "sz_g2d_draw_sprite"
             }
-          },
+          }
+        ]
+      }
+    },
+    {
+      "key": "fundo-estrelado",
+      "title": "Coloque o céu estrelado",
+      "intent": "application",
+      "objective": "Desenhar um céu de estrelas atrás da nave, depois de Limpar a tela.",
+      "blockKeys": ["video-fundo-estrelado", "fala-fundo-estrelado"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fundo-estrelado"],
+        "projectChecks": [
           {
-            "id": "sprite-certo",
-            "label": "Desenhe o sprite nave a cada quadro.",
+            "id": "borracha-primeiro",
+            "label": "Limpe antes de desenhar o céu estrelado.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_draw_sprite",
+              "blockType": "sz_g2d_clear",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "SPRITE": "nave"
-              }
+              "beforeBlock": "sz_g2d_starfield"
             }
           },
           {
-            "id": "fundo-atras",
-            "label": "As estrelas vêm antes do movimento da nave.",
+            "id": "estrelas",
+            "label": "Desenhe as estrelas com velocidade 1 antes da nave.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_starfield",
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame",
+              "inputs": {
+                "SPEED": 1
+              },
               "beforeBlock": "sz_g2d_arrows_x"
             }
           }

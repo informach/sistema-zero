@@ -357,22 +357,12 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
   'once-vs-always': {
     readouts: [
       {
-        label: 'passo',
-        value: '0',
-        tone: 'plain',
-      },
-      {
-        label: 'personagens',
-        value: '0',
-        tone: 'a',
-      },
-      {
         label: 'ações feitas',
         value: '0',
         tone: 'b',
       },
     ],
-    situations: ['Passo 0: 0 personagens, 0 tiros e 0 vidas.'],
+    situations: ['Jogo pronto para começar.'],
   },
   'collision-pair': {
     readouts: [

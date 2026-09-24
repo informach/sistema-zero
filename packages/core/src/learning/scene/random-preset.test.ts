@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { openScene, stepScene } from './engine'
-import { evaluateExperimentation } from './evaluate'
+import { evaluateExperimentation, sceneHintStep } from './evaluate'
 import { isSceneSetup } from './index'
-import { RANDOM_PRESETS } from './presets'
+import { RANDOM_GOALS_BY_PRESET, RANDOM_PRESETS } from './presets'
 import { isSceneState } from './state'
 
 const sortear = (unit: number) =>
@@ -12,9 +12,12 @@ describe('o sorteio das duas aulas', () => {
   test('o preset da pedra aceita metas próprias e recusa o módulo de velocidade', () => {
     const setup = {
       preset: RANDOM_PRESETS['pedra-acima'],
-      goals: ['positions', 'repeat', 'above'],
+      goals: ['positions', 'above'],
     }
     expect(isSceneSetup(setup, 'random')).toBe(true)
+    expect(isSceneSetup({ ...setup, goals: ['positions', 'repeat', 'above'] }, 'random')).toBe(
+      false,
+    )
     expect(isSceneSetup({ ...setup, goals: ['velocities'] }, 'random')).toBe(false)
     expect(isSceneSetup(setup, 'spawn')).toBe(false)
     const start = { scene: 'random' as const, setup }
@@ -32,7 +35,7 @@ describe('o sorteio das duas aulas', () => {
       scene: 'random' as const,
       setup: {
         preset: RANDOM_PRESETS['pedra-acima'],
-        goals: ['positions', 'repeat', 'above'],
+        goals: ['positions', 'above'],
       },
     }
     let state = openScene(start)
@@ -53,5 +56,44 @@ describe('o sorteio das duas aulas', () => {
     const reset = stepScene(start, state, { type: 'reset' })
     expect(reset.speed.fallingY).toBe(-30)
     expect(reset.evidence.discoveries).toContain('above')
+  })
+
+  test('pedra acima conclui sem obrigar uma repetição improvável', () => {
+    const start = {
+      scene: 'random' as const,
+      setup: { preset: RANDOM_PRESETS['pedra-acima'] },
+    }
+    let state = openScene(start)
+    for (let index = 0; index < 8; index++)
+      state = stepScene(start, state, sortear((index + 0.1) / 61))
+    state = stepScene(start, state, { type: 'advance', seconds: 10 / 30 })
+
+    expect(state.evidence.discoveries).toContain('positions')
+    expect(state.evidence.discoveries).toContain('above')
+    expect(state.evidence.discoveries).not.toContain('repeat')
+    expect(
+      evaluateExperimentation(
+        'random',
+        state,
+        true,
+        undefined,
+        RANDOM_GOALS_BY_PRESET['pedra-acima'],
+      ).passed,
+    ).toBe(true)
+  })
+
+  test('a ajuda da pedra fala dos controles que existem neste caso', () => {
+    const start = {
+      scene: 'random' as const,
+      setup: { preset: RANDOM_PRESETS['pedra-acima'] },
+    }
+    let state = openScene(start)
+    expect(sceneHintStep('random', state, 2).texto).not.toContain('velocidade')
+
+    state = stepScene(start, state, sortear(0.1 / 61))
+    state = stepScene(start, state, sortear(1.1 / 61))
+    expect(state.evidence.discoveries).toContain('positions')
+    expect(sceneHintStep('random', state, 1).metas).toContain('above')
+    expect(sceneHintStep('random', state, 2).texto).not.toContain('cacto')
   })
 })

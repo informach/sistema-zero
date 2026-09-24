@@ -16,21 +16,19 @@
 ## Seção 1. A batida que você não deu
 
 ### Clipe `video-batida-injusta` · A batida que você não deu
-**Duração alvo:** 25 a 35 segundos · **Palavras:** 75
+**Duração alvo:** 25 a 35 segundos; recalibrar após gravar.
 
 **Na tela:** Jogar a versão da Aula 9 até uma batida sem toque visual; congelar o quadro real e aproximar o vão.
 
 **Narração:**
-> "Olha esta batida de novo, bem devagar. O Dino não encostou no cacto. Ainda tem um espaço
-> entre os desenhos, mas a partida terminou. O jogo contou uma batida que os seus olhos não
-> viram."
+> "Às vezes a partida termina mesmo quando parece haver um espaço entre o Dino e o cacto.
+> Hoje vamos descobrir por que o jogo entende isso como batida."
 
 **Na tela:** Mostrar desenho do Dino e cacto no quadro congelado, sem inserir efeito de colisão.
 
 **Narração:**
-> "Não vamos fingir outra batida para explicar. Este quadro veio de uma partida real. Há uma
-> forma que o jogo usa para decidir o contato e que ainda está escondida. Hoje vamos mostrar
-> essa forma e ajustar o tamanho dela."
+> "O jogo usa uma forma escondida para decidir o contato. Nesta aula vamos mostrar essa
+> forma e ajustar o tamanho dela para a batida parecer justa."
 
 ## Seção 2. Ligue o raio-X
 

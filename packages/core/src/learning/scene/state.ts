@@ -733,8 +733,8 @@ export interface SceneSpeed {
   ticks: number
   samples: { x: number; velocity: number; positions: number[]; velocities: number[] }
   /**
-   * Quantas vezes cada lugar saiu no sorteio da `random` (lote 5 do Raio-X): 500, 510… 560, sete
-   * lugares. É a marquinha "2×" da régua, a repetição à vista.
+   * Quantas vezes cada lugar saiu no sorteio da `random`: sete lugares no caso base e 61 no
+   * caso da pedra. É a marquinha "2×" da régua quando há repetição.
    */
   spots: number[]
   /** Posição vertical da pedra do preset acima da tela; ausente nas sessões antigas. */

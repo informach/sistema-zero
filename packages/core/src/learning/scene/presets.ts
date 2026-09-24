@@ -132,7 +132,7 @@ export const SPAWN_PRESETS = {
 
 export const RANDOM_GOALS_BY_PRESET: Record<RandomPreset['id'], readonly string[]> = {
   'cacto-direita': ['positions', 'repeat', 'velocities'],
-  'pedra-acima': ['positions', 'repeat', 'above'],
+  'pedra-acima': ['positions', 'above'],
 }
 
 export const SPAWN_GOALS_BY_PRESET: Record<SpawnPreset['id'], readonly string[]> = {
@@ -233,7 +233,7 @@ export function onceGoalCards(preset: OnceVsAlwaysPreset): OnceGoalCards {
 export const ONCE_GOALS_BY_PRESET: Record<OnceVsAlwaysPreset['id'], readonly string[]> = {
   'duas-caixas-nave': ['once', 'always'],
   'tres-caixas-tiro': ['on-event', 'key-fires', 'flood'],
-  'uma-ficha-vidas': ['once'],
+  'uma-ficha-vidas': ['once', 'lives-loop'],
   'duas-caixas-dino': ['once', 'always', 'both'],
   'tres-caixas-som': ['on-event', 'key-fires'],
 }

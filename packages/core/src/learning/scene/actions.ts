@@ -569,18 +569,16 @@ const QUADRO_E_O_ASSUNTO: readonly SceneId[] = [
 
 /**
  * O nome do botão de passo desta cena, ou `null` para a cena sem relógio. "Avançar 1 quadro" anda UM
- * quadro; a `once-vs-always` usa "Avançar 1 passo" antes de apresentar esse vocabulário; "Um passo"
+ * quadro; a `once-vs-always` usa uma partida automática, sem botão de passo; "Um passo"
  * anda os quadros inteiros de ~0,2 s (`sceneStepSeconds`).
  */
-export function sceneStepLabel(
-  scene: SceneId,
-): 'Avançar 1 quadro' | 'Avançar 1 passo' | 'Um passo' | null {
+export function sceneStepLabel(scene: SceneId): 'Avançar 1 quadro' | 'Um passo' | null {
   if (sceneFrameRate(scene) === null) return null
-  if (scene === 'once-vs-always') return 'Avançar 1 passo'
+  if (scene === 'once-vs-always') return null
   return QUADRO_E_O_ASSUNTO.includes(scene) ? 'Avançar 1 quadro' : 'Um passo'
 }
 
-/** A cena compara passos contáveis; um relógio contínuo esconderia justamente essa contagem. */
+/** A `once-vs-always` tem um botão de partida próprio, com parada automática. */
 export function sceneHasContinuousTimeControl(scene: SceneId): boolean {
   return sceneFrameRate(scene) !== null && scene !== 'once-vs-always'
 }

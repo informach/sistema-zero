@@ -42,7 +42,7 @@ test('o professor escolhe o caso das vidas e adapta o texto sem trocar o motor',
     })
     expect(activity.setup?.preset?.id).toBe('uma-ficha-vidas')
     expect(activity.setup?.goals).toBeUndefined()
-    expect(sceneTargets(activity)).toEqual(['once'])
+    expect(sceneTargets(activity)).toEqual(['once', 'lives-loop'])
     expect(isSceneSetup(activity.setup, activity.scene)).toBe(true)
     const label = container.querySelector<HTMLInputElement>(
       'input[placeholder="Em Ao iniciar, a ação aconteceu uma vez só"]',
@@ -116,7 +116,7 @@ test('o professor escolhe os casos de sorteio e nascimento do Desafio', async ()
     })
     expect(activity.setup?.preset?.id).toBe('pedra-acima')
     expect(activity.setup?.goals).toBeUndefined()
-    expect(sceneTargets(activity)).toEqual(['positions', 'repeat', 'above'])
+    expect(sceneTargets(activity)).toEqual(['positions', 'above'])
     expect(isSceneSetup(activity.setup, 'random')).toBe(true)
 
     activity = { type: 'experimentation', scene: 'spawn' }

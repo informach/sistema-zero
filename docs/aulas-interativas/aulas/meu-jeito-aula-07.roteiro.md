@@ -16,20 +16,19 @@
 ## Seção 1. O que a gente vai fazer hoje
 
 ### Clipe `video-abertura` · A sua nave já está lá, agora entram as suas pedras
-**Duração alvo:** 25 a 35 segundos · **Palavras:** 73
+**Duração alvo:** 25 a 35 segundos; recalibrar após gravar.
 
 **Na tela:** Mostrar partida final: nave própria voando, pedras próprias caindo e girando, tiros, placar e vidas.
 
 **Narração:**
-> "A sua nave já voa no jogo. Hoje entram as suas pedras, com o fogo e as crateras que você
-> desenhou. Repara que cada uma nasce e já começa a girar."
+> "A sua nave já voa no jogo. Hoje entram as pedras que você desenhou, com fogo e crateras,
+> para deixar a partida com a sua cara."
 
 **Na tela:** Aproximar nave criada uma vez e sequência de pedras nascendo.
 
 **Narração:**
-> "A nave é criada uma vez, no começo. As pedras nascem durante a partida inteira, uma depois da
-> outra. Por isso a troca delas acontece num lugar diferente do projeto. Primeiro vamos preparar
-> a folha; depois cuidar do nascimento e da animação."
+> "Vamos preparar a folha das pedras e depois cuidar de como elas entram e se animam
+> durante a partida."
 
 ## Seção 2. Prepare a folha das pedras
 

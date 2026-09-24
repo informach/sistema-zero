@@ -9,6 +9,7 @@ import {
   sceneJumpLeftView,
   stepScene,
 } from './engine'
+import { ONCE_VS_ALWAYS_PRESETS } from './presets'
 
 import type { SceneState } from './state'
 
@@ -35,6 +36,48 @@ function tique(scene: SceneId, antes: SceneState) {
 }
 
 describe('o ▶ para sozinho (`sceneClockShouldStop`)', () => {
+  test('Uma vez e sempre: Ao iniciar para depois do começo; Enquanto estiver rodando para quando a nave sai', () => {
+    const scene = 'once-vs-always' as const
+    const preset = ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave']
+    const start = { scene, setup: { preset } }
+    for (const area of ['start', 'loop'] as const) {
+      let state = stepScene(start, openScene(start), { type: 'place-in-area', card: 'move', area })
+      let stopped = false
+      for (let i = 0; i < 30; i++) {
+        const before = state
+        state = stepScene(start, state, { type: 'advance', seconds: 0.25 })
+        stopped = sceneClockShouldStop(scene, before, state, preset)
+        if (stopped) break
+      }
+      expect(stopped).toBe(true)
+      expect(state.once.frames).toBe(area === 'start' ? 3 : 24)
+      expect(state.once.fires.move).toBe(area === 'start' ? 1 : 24)
+      if (area === 'loop') expect(state.once.heroX).toBeGreaterThan(560)
+    }
+  })
+
+  test('eventos e vidas também encerram a demonstração, sem relógio infinito', () => {
+    for (const [id, card, area, expectedFrames] of [
+      ['tres-caixas-tiro', 'event', 'event', 5],
+      ['uma-ficha-vidas', 'lives', 'loop', 9],
+      ['duas-caixas-dino', 'move', 'loop', 5],
+      ['tres-caixas-som', 'event', 'event', 5],
+    ] as const) {
+      const scene = 'once-vs-always' as const
+      const preset = ONCE_VS_ALWAYS_PRESETS[id]
+      const start = { scene, setup: { preset } }
+      let state = stepScene(start, openScene(start), { type: 'place-in-area', card, area })
+      let stopped = false
+      for (let i = 0; i < expectedFrames; i++) {
+        const before = state
+        state = stepScene(start, state, { type: 'advance', seconds: 0.25 })
+        stopped = sceneClockShouldStop(scene, before, state, preset)
+        if (i < expectedFrames - 1) expect(stopped).toBe(false)
+      }
+      expect(stopped).toBe(true)
+    }
+  })
+
   test('as cenas de salto são exatamente as três do laboratório do pulo', () => {
     expect(SALTOS.sort()).toEqual(['gravity', 'impulse', 'jump-sound'])
   })

@@ -50,7 +50,13 @@ import {
   tilemapMark,
   tilemapMarkedRows,
 } from './nucleo'
-import { advanceOnce, onceDiscoveries, placeOnce, triggerOnce } from './once-vs-always'
+import {
+  advanceOnce,
+  onceDiscoveries,
+  onceRunFinished,
+  placeOnce,
+  triggerOnce,
+} from './once-vs-always'
 import {
   gameStatePreset,
   isCleanupPreset,
@@ -58,6 +64,7 @@ import {
   isSpawnPreset,
   type OnceVsAlwaysPreset,
   oncePreset,
+  type ScenePreset,
 } from './presets'
 // ⚠️ Só o TIPO: a sessão importa o motor, e um valor daqui fecharia um ciclo de módulos.
 import type { SceneCommand } from './session'
@@ -553,14 +560,14 @@ export function stepScene(
     case 'place-in-area': {
       const preset = oncePreset(start.setup?.preset)
       if (!placeOnce(s.once, preset, action.card, action.area)) return previous
-      s.caption = 'A ficha mudou de área. Avance quadros para ver quando ela age.'
+      s.caption = 'A ação mudou de área. Comece o jogo para ver quando ela acontece.'
       break
     }
     case 'trigger': {
       const preset = oncePreset(start.setup?.preset)
       if (!triggerOnce(s.once, preset)) return previous
       observarMetasDaArea(s, preset)
-      s.caption = 'A tecla disparou a ficha que estava esperando.'
+      s.caption = 'A tecla disparou a ação que estava esperando.'
       break
     }
     case 'create':
@@ -2067,7 +2074,7 @@ function umQuadro(s: SceneState, start: SceneStart, fps: number): void {
     const preset = oncePreset(start.setup?.preset)
     advanceOnce(s.once, preset)
     observarMetasDaArea(s, preset)
-    s.caption = `Passo ${s.once.frames}: as fichas agiram conforme a área em que estão.`
+    s.caption = `Jogo rodando: as ações seguiram as áreas escolhidas.`
     return
   }
   // O núcleo do Iniciante 2D: cada uma dessas cenas mostra o que o TEMPO faz com o estado.
@@ -2103,12 +2110,12 @@ function umQuadro(s: SceneState, start: SceneStart, fps: number): void {
 }
 
 const OBSERVACOES_DAS_AREAS: Record<string, string> = {
-  once: 'A ficha em Ao iniciar agiu uma vez.',
-  always: 'A ficha no motor agiu a cada passo.',
-  both: 'Uma ficha preparou o jogo e a outra continuou agindo.',
-  'on-event': 'A ficha esperou sem agir durante três passos.',
-  'key-fires': 'A tecla disparou a ficha na hora.',
-  flood: 'A ficha no motor agiu em cada um dos cinco passos.',
+  once: 'A ação em Ao iniciar aconteceu uma vez.',
+  always: 'A ação em Enquanto estiver rodando continuou acontecendo.',
+  both: 'Uma ação preparou o jogo e a outra continuou acontecendo.',
+  'on-event': 'A ação esperou sem acontecer durante o jogo.',
+  'key-fires': 'A tecla disparou a ação na hora.',
+  flood: 'A ação em Enquanto estiver rodando aconteceu várias vezes.',
 }
 
 function observarMetasDaArea(s: SceneState, preset: OnceVsAlwaysPreset): void {
@@ -2723,6 +2730,7 @@ export function sceneGestureRunsClock(
   command: SceneCommand,
   after: SceneState,
 ): boolean | null {
+  if (scene === 'once-vs-always' && command.type === 'place-in-area') return false
   if (command.type === 'jump') return true
   if (command.type === 'connect') return sceneConnectRunsClock(scene, command, after)
   if (
@@ -2748,7 +2756,9 @@ export function sceneClockShouldStop(
   scene: SceneId,
   before: SceneState,
   after: SceneState,
+  preset?: ScenePreset,
 ): boolean {
+  if (scene === 'once-vs-always') return onceRunFinished(after.once, oncePreset(preset))
   const salta = isSceneAction({ type: 'jump', input: 'tap' }, scene)
   if (salta && (after.flight.time === null || sceneJumpLeftView(scene, before, after))) return true
   return sceneClockReachedStop(scene, after)
@@ -3215,7 +3225,8 @@ function observarAreaPequena(s: SceneState): void {
  * ⚠️⚠️ O sorteio é DE VERDADE (lote 5 do Raio-X): o número vem do gesto (`unit`, o `Math.random` do
  * navegador) e o motor só o transforma em lugar, então o servidor refaz o mesmo mundo. Eram quatro
  * exemplos fixos (500 e 560, −5 e −6), e a cena que pergunta se o lugar pode repetir nunca repetia.
- * Com sete lugares, oito sorteios repetem com certeza.
+ * No caso base há sete lugares, então oito sorteios repetem com certeza. O caso da pedra tem
+ * 61 lugares; nele repetir é possível, mas não é uma meta obrigatória.
  */
 function sortearLugar(s: SceneState, unidade: number, axis: 'right' | 'above'): void {
   const i = Math.min(

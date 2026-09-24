@@ -421,7 +421,7 @@ const CENAS: Record<SceneId, Cena> = {
   'once-vs-always': {
     pedidos: {
       once: {
-        texto: 'Ponha a ficha de arrumação em Ao iniciar e avance três passos.',
+        texto: 'Ponha a ação de preparação em Ao iniciar e comece o jogo.',
         faz: (m) => {
           if (m.estado.once.frames) m.faz({ type: 'reset' })
           m.faz({ type: 'place-in-area', card: 'paint', area: 'start' })
@@ -429,16 +429,27 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       always: {
-        texto: 'Ponha a ficha de movimento em Enquanto estiver rodando e avance três passos.',
+        texto: 'Ponha a ação de movimento em Enquanto estiver rodando e comece o jogo.',
         faz: (m) => {
           if (m.estado.once.frames) m.faz({ type: 'reset' })
           m.faz({ type: 'place-in-area', card: 'move', area: 'loop' })
           m.tempo(1)
         },
       },
+      'lives-loop': {
+        texto:
+          'Depois de testar Ao iniciar, ponha Dar três vidas à nave em Enquanto estiver rodando e comece o jogo.',
+        faz: (m) => {
+          m.faz({ type: 'place-in-area', card: 'lives', area: 'start' })
+          m.tempo(1.5)
+          m.faz({ type: 'reset' })
+          m.faz({ type: 'place-in-area', card: 'lives', area: 'loop' })
+          m.tempo(2.25)
+        },
+      },
       both: {
         texto:
-          'Deixe a preparação em Ao iniciar e o movimento em Enquanto estiver rodando; avance cinco passos.',
+          'Deixe a preparação em Ao iniciar e o movimento em Enquanto estiver rodando; comece o jogo.',
         faz: (m) => {
           if (m.estado.once.frames) m.faz({ type: 'reset' })
           m.faz({ type: 'place-in-area', card: 'create', area: 'start' })
@@ -447,22 +458,21 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       'on-event': {
-        texto:
-          'Ponha a ficha do evento em Quando acontecer e avance três passos sem apertar a tecla.',
+        texto: 'Ponha a ação do evento em Quando acontecer e comece o jogo sem apertar a tecla.',
         faz: (m) => {
           m.faz({ type: 'place-in-area', card: 'event', area: 'event' })
           m.tempo(1)
         },
       },
       'key-fires': {
-        texto: 'Com a ficha do evento em Quando acontecer, aperte a tecla.',
+        texto: 'Com a ação do evento em Quando acontecer, aperte a tecla.',
         faz: (m) => {
           m.faz({ type: 'place-in-area', card: 'event', area: 'event' })
           m.faz({ type: 'trigger' })
         },
       },
       flood: {
-        texto: 'Ponha Criar um tiro em Enquanto estiver rodando e avance cinco passos.',
+        texto: 'Ponha Criar um tiro em Enquanto estiver rodando e comece o jogo.',
         faz: (m) => {
           m.faz({ type: 'place-in-area', card: 'event', area: 'loop' })
           m.tempo(1.5)
@@ -1917,6 +1927,8 @@ const CENAS: Record<SceneId, Cena> = {
 }
 
 function startForGoal(scene: SceneId, goal: string): SceneStart {
+  if (scene === 'once-vs-always' && goal === 'lives-loop')
+    return { scene, setup: { preset: ONCE_VS_ALWAYS_PRESETS['uma-ficha-vidas'] } }
   if (scene === 'once-vs-always' && ['on-event', 'key-fires', 'flood'].includes(goal))
     return { scene, setup: { preset: ONCE_VS_ALWAYS_PRESETS['tres-caixas-tiro'] } }
   return { scene }

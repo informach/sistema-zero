@@ -231,6 +231,34 @@ describe('os manifestos atuais das aulas', () => {
     expect(MANIFESTOS.filter((name) => name.startsWith('desafio-'))).toHaveLength(7)
     expect(MANIFESTOS.filter((name) => name.startsWith('meu-jeito-'))).toHaveLength(8)
   })
+  test('o Desafio dos dias 2 a 5 não herda uma pergunta final redundante após experimentar', () => {
+    for (const dia of [2, 3, 4, 5]) {
+      const arquivo = `desafio-dia-${dia}.manifesto.json`
+      const manifest = JSON.parse(readFileSync(resolve(directory, arquivo), 'utf8')) as {
+        blocks: Array<{ key: string; content?: InteractiveBlock }>
+      }
+      for (const entry of manifest.blocks) {
+        if (entry.content?.kind !== 'interactive') continue
+        expect(entry.content.semPerguntaFinal, `${arquivo}/${entry.key}`).toBe(true)
+        expect(blockCheckpoint(entry.content), `${arquivo}/${entry.key}`).toBeUndefined()
+      }
+    }
+  })
+  test('o Dia 1 só pede uma síntese nova ao fim da experiência dos quadros', () => {
+    const arquivo = 'desafio-dia-1.manifesto.json'
+    const manifest = JSON.parse(readFileSync(resolve(directory, arquivo), 'utf8')) as {
+      blocks: Array<{ key: string; content?: InteractiveBlock }>
+    }
+    const byKey = new Map(manifest.blocks.map((entry) => [entry.key, entry.content]))
+    for (const key of ['experiencia-criar-mostrar', 'experiencia-camadas']) {
+      const content = byKey.get(key)
+      expect(content?.semPerguntaFinal, key).toBe(true)
+      if (content) expect(blockCheckpoint(content), key).toBeUndefined()
+    }
+    const quadro = byKey.get('experiencia-quadro')
+    if (!quadro) throw new Error('Experiência dos quadros ausente')
+    expect(blockCheckpoint(quadro)?.prompt).toContain('sem deixar rastro')
+  })
   for (const arquivo of MANIFESTOS)
     test(arquivo, () => {
       const manifest: unknown = JSON.parse(readFileSync(resolve(directory, arquivo), 'utf8'))
@@ -303,7 +331,63 @@ describe('experiências do Dia 1 do Desafio', () => {
       ),
       'utf8',
     ),
-  ) as { blocks: { key: string; content?: unknown }[] }
+  ) as {
+    blocks: { key: string; content?: unknown }[]
+    sections: {
+      key: string
+      title: string
+      objective: string
+      blockKeys: string[]
+      completion: {
+        projectChecks?: { id: string; rule: { type: string; beforeBlock?: string } }[]
+      }
+    }[]
+  }
+  test('rastro e saída pela borda aparecem antes das soluções; estrelas ficam no fim', () => {
+    const progresso = piloto.sections.slice(7, 12)
+    expect(progresso.map((section) => section.key)).toEqual([
+      'motor-e-nave',
+      'setas',
+      'limpar-rastro',
+      'borda',
+      'fundo-estrelado',
+    ])
+    expect(progresso[0]?.title).toBe('Faça a nave aparecer')
+    expect(
+      progresso.flatMap((section) => [section.title, section.objective]).join(' '),
+    ).not.toMatch(/fundo liso/i)
+    expect(progresso.map((section) => section.blockKeys[0])).toEqual([
+      'video-motor-e-nave',
+      'video-setas-e-rastro',
+      'video-limpar-rastro',
+      'video-limite-da-nave',
+      'video-fundo-estrelado',
+    ])
+    expect(progresso[0]?.completion.projectChecks?.map((check) => check.id)).toEqual([
+      'quadro',
+      'sprite-certo',
+    ])
+    expect(
+      progresso[1]?.completion.projectChecks?.find((check) => check.id === 'setas')?.rule,
+    ).toMatchObject({ beforeBlock: 'sz_g2d_draw_sprite' })
+    expect(
+      progresso[2]?.completion.projectChecks?.find((check) => check.id === 'borracha')?.rule,
+    ).toMatchObject({ beforeBlock: 'sz_g2d_arrows_x' })
+    expect(
+      progresso[3]?.completion.projectChecks?.find((check) => check.id === 'setas-antes-do-limite')
+        ?.rule,
+    ).toMatchObject({ beforeBlock: 'sz_g2d_clamp_to_screen' })
+    expect(
+      progresso[3]?.completion.projectChecks?.find((check) => check.id === 'limite')?.rule,
+    ).toMatchObject({ beforeBlock: 'sz_g2d_draw_sprite' })
+    expect(
+      progresso[4]?.completion.projectChecks?.find((check) => check.id === 'borracha-primeiro')
+        ?.rule,
+    ).toMatchObject({ beforeBlock: 'sz_g2d_starfield' })
+    expect(
+      progresso[4]?.completion.projectChecks?.find((check) => check.id === 'estrelas')?.rule,
+    ).toMatchObject({ beforeBlock: 'sz_g2d_arrows_x' })
+  })
   const cena = (key: string): InteractiveBlock => {
     const content = piloto.blocks.find((block) => block.key === key)?.content
     if (!isInteractiveBlock(content)) throw new Error(`Experiência ausente: ${key}`)
@@ -312,8 +396,8 @@ describe('experiências do Dia 1 do Desafio', () => {
 
   test('coordenadas pergunta só no palpite e orienta aumentar um eixo por vez', () => {
     const bloco = cena('experiencia-coordenadas')
-    expect(bloco.instructions).toMatch(/aumente só o x/i)
-    expect(bloco.instructions).toMatch(/aumente só o y/i)
+    expect(bloco.instructions).toMatch(/mudar x e y separadamente/i)
+    expect(bloco.instructions).not.toMatch(/500|100|400/)
     expect(publicInteractiveBlock(bloco).prediction).toBeDefined()
     expect(publicInteractiveBlock(bloco).checkpoint).toBeUndefined()
   })
@@ -322,14 +406,36 @@ describe('experiências do Dia 1 do Desafio', () => {
     const criar = cena('experiencia-criar-mostrar')
     const quadros = cena('experiencia-quadro')
     const camadas = cena('experiencia-camadas')
-    expect(criar.instructions).toMatch(/observe os bastidores e a tela/i)
-    expect(criar.instructions.indexOf('observe')).toBeLessThan(criar.instructions.indexOf('mostre'))
-    expect(quadros.instructions.match(/avance/g)).toHaveLength(3)
-    expect(camadas.instructions).toMatch(/parcialmente coberta/i)
-    expect(camadas.instructions.match(/troque/gi)).toHaveLength(2)
-    expect(camadas.instructions).toMatch(/por fim/i)
-    expect(camadas.checkpoint?.prompt).toMatch(/parcialmente coberta/i)
+    expect(criar.instructions).toMatch(/bastidores.*tela do jogo/i)
+    expect(criar.instructions).not.toMatch(/primeiro|depois/i)
+    expect(quadros.instructions).toMatch(/só no começo e a cada quadro/i)
+    expect(quadros.instructions).not.toMatch(/avance/i)
+    expect(camadas.instructions).toMatch(/troque a ordem/i)
+    expect(camadas.instructions).not.toMatch(/primeiro|depois|por fim/i)
+    expect(blockCheckpoint(criar)).toBeUndefined()
+    expect(blockCheckpoint(camadas)).toBeUndefined()
+    expect(blockCheckpoint(quadros)?.prompt).toMatch(/sem deixar rastro/i)
   })
+})
+
+test('no Dia 5, a comparação entre trocar a tela e reiniciar vem antes de programar o Enter', () => {
+  const dia5 = JSON.parse(
+    readFileSync(
+      resolve(
+        import.meta.dir,
+        '../../../docs/aulas-interativas/aulas/desafio-dia-5.manifesto.json',
+      ),
+      'utf8',
+    ),
+  ) as { sections: { key: string; blockKeys: string[] }[] }
+  expect(dia5.sections.slice(8, 12).map((section) => section.key)).toEqual([
+    'reiniciar',
+    'enter',
+    'quiz-final',
+    'entrega',
+  ])
+  expect(dia5.sections[8]?.blockKeys).toContain('experiencia-reiniciar')
+  expect(dia5.sections[9]?.blockKeys).toContain('video-enter')
 })
 
 /** Percursos dos casos autorais que mudam a montagem ou as metas da cena padrão. */
@@ -344,7 +450,7 @@ const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
     ...quadros(3),
     { type: 'reset' },
     { type: 'place-in-area', card: 'move', area: 'loop' },
-    ...quadros(3),
+    ...quadros(24),
   ],
   'desafio-dia-1.manifesto.json/experiencia-coordenadas': [
     { type: 'place', x: 500, y: 40 },
@@ -379,6 +485,9 @@ const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
   'desafio-dia-4.manifesto.json/experiencia-uma-vez': [
     { type: 'place-in-area', card: 'lives', area: 'start' },
     ...quadros(6),
+    { type: 'reset' },
+    { type: 'place-in-area', card: 'lives', area: 'loop' },
+    ...quadros(9),
   ],
   'desafio-dia-5.manifesto.json/experiencia-reiniciar': [
     ...scenePaths.restart,
