@@ -18,6 +18,8 @@ O papel **curso extra** não é uma concessão de acesso. A criança só entra c
 
 O cartão do curso extra usa a mesma apresentação e o mesmo comportamento dos cartões de cursos normais. Sem matrícula, aparece com cadeado e o botão **Mostrar ao responsável** abre a URL externa de oferta cadastrada no curso — para Cadê Todo Mundo?, a página da Comunidade dos Criadores. Com matrícula específica ou chave-mestra Kids ativa, mostra **Acessar curso**. Não haverá concessão automática de acesso apenas porque o curso é extra ou aparece na Faísca.
 
+Dentro de cada página de trilha, a ordem visual é: **cursos extras por criação (mais antigos primeiro), cursos com posição pelo número do slot e bônus-recompensa por criação (mais antigos primeiro)**. Essa ordenação não muda a ordem geral do catálogo nem atribui um slot ao curso extra. Na Faísca, Cadê Todo Mundo? aparece antes do Desafio do Primeiro Jogo.
+
 O servidor deve aplicar a distinção tanto na listagem do catálogo/Meus cursos quanto nas rotas de acesso direto. Para o curso extra, a trava pedagógica é sempre aberta; a verificação comercial da matrícula continua obrigatória. Os bônus-recompensa e cursos com posição mantêm a política atual, inclusive para cursos já cadastrados.
 
 ## Modelo e compatibilidade
@@ -28,4 +30,4 @@ Ao cadastrar Cadê Todo Mundo? no admin, configurar o papel curso extra, a etapa
 
 ## Verificação
 
-Testar os três papéis antes e depois da conclusão do curso-base; conferir matrícula específica, chave-mestra Kids, ausência/expiração de matrícula, acesso direto por URL, cartão com cadeado e destino externo, contagem da jornada e comportamento dos cursos já cadastrados. Não publicar ou implantar conteúdo automaticamente como parte desta alteração de código.
+Testar os três papéis antes e depois da conclusão do curso-base; conferir matrícula específica, chave-mestra Kids, ausência/expiração de matrícula, acesso direto por URL, cartão com cadeado e destino externo, ordenação da trilha, contagem da jornada e comportamento dos cursos já cadastrados. Não publicar ou implantar conteúdo automaticamente como parte desta alteração de código.
