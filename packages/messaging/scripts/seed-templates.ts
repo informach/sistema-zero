@@ -712,6 +712,9 @@ const seeds = [
           'Você agora é embaixador(a) do <strong>Sistema Zero</strong> e pode presentear crianças que você conhece com acesso ao curso <strong>Cadê Todo Mundo?</strong>, sem custo para a família indicada.',
         ),
         p(
+          'Para novos resgates, a família tem 7 dias de acesso ao curso a partir do cadastro pelo link.',
+        ),
+        p(
           'Na sua página você encontra o seu link de bolsa para compartilhar e também pode enviar convites por e-mail. Tudo pronto, sem burocracia:',
         ),
         ctaButton('Abrir minha página', '{{link}}'),
@@ -741,6 +744,7 @@ const seeds = [
         p(
           'No Sistema Zero, crianças aprendem criando projetos. Neste curso, crianças de 8 a 15 anos montam, passo a passo, um jogo de procurar personagens e concluem a jornada com um certificado. O convite libera apenas este curso — não a assinatura da Comunidade dos Criadores.',
         ),
+        p('O acesso ao curso dura 7 dias a partir do cadastro pelo link, não da primeira aula.'),
         p(
           'Para receber o curso, confirme seus dados de responsável no link abaixo. Não pedimos cartão:',
         ),
@@ -782,6 +786,55 @@ const seeds = [
         fallbackLink('{{link}}'),
       ].join('\n'),
       footerNote: 'Você recebeu este e-mail porque uma bolsa foi resgatada com este endereço.',
+    }),
+  },
+  {
+    key: 'referrals-scholarship-welcome-7d',
+    channel: 'email' as const,
+    name: 'Boas-vindas do presente por sete dias (conta nova)',
+    subject: 'Seu curso está liberado por 7 dias, {{nome}}',
+    variables: ['nome', 'indicador', 'link'],
+    body: emailLayout({
+      preheader: 'Cadê Todo Mundo? já está na sua conta. Seus 7 dias começaram no cadastro.',
+      title: 'Seu presente está pronto, {{nome}} 🎁',
+      content: [
+        p(
+          '<strong>{{indicador}}</strong> indicou sua família para receber o curso <strong>Cadê Todo Mundo?</strong> sem custo.',
+        ),
+        p(
+          'Você tem 7 dias de acesso ao curso a partir do cadastro pelo link. Criar ou recuperar a senha depois não reinicia esse prazo. Vale começar agora com a criança.',
+        ),
+        ctaButton('Criar minha senha e começar', '{{link}}'),
+        divider,
+        small(
+          'O link para criar a senha expira em 14 dias e só pode ser usado uma vez. Esse prazo do link é diferente dos 7 dias de acesso ao curso. Se o link expirar, use “Esqueci minha senha” na página de login.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque resgatou um presente por indicação.',
+    }),
+  },
+  {
+    key: 'referrals-scholarship-existing-7d',
+    channel: 'email' as const,
+    name: 'Presente por sete dias (conta existente)',
+    subject: 'Cadê Todo Mundo? está na sua conta por 7 dias, {{nome}}',
+    variables: ['nome', 'indicador', 'link'],
+    body: emailLayout({
+      preheader: 'Entre na sua conta para começar o curso recebido por indicação.',
+      title: 'Seu presente está na sua conta, {{nome}} 🎁',
+      content: [
+        p(
+          '<strong>{{indicador}}</strong> indicou sua família para receber o curso <strong>Cadê Todo Mundo?</strong> sem custo.',
+        ),
+        p(
+          'O acesso a este curso dura 7 dias a partir do cadastro pelo link. Entre com sua senha de sempre e comece agora. Recuperar a senha não reinicia esse prazo.',
+        ),
+        ctaButton('Acessar meus cursos', '{{link}}'),
+        divider,
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque resgatou um presente por indicação.',
     }),
   },
   {

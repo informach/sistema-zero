@@ -113,8 +113,13 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     ])
     const created = results.filter((r) => r.created)
     expect(created).toHaveLength(1)
+    expect(created[0]?.redemption.accessDurationDays).toBe(7)
     const ids = new Set(results.map((r) => r.redemption.id))
     expect(ids.size).toBe(1) // todos veem a MESMA linha
+
+    await connection.sql`update referrals.scholarship_redemptions set access_duration_days = null where email = 'paula@example.com'`
+    const historical = await repo.findRedemptionByEmail('paula@example.com')
+    expect(historical?.accessDurationDays).toBeNull()
   })
 
   test('lease do resgate é atômico: 2 concorrentes → 1 vence', async () => {

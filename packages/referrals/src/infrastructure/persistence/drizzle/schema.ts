@@ -110,6 +110,8 @@ export const scholarshipRedemptions = referralsSchema.table(
     processingUntil: timestamp({ withTimezone: true }),
     attemptCount: integer().notNull().default(0),
     completedAt: timestamp({ withTimezone: true }),
+    /** Null nos resgates históricos; novos inserts gravam sete dias na aplicação. */
+    accessDurationDays: integer(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },

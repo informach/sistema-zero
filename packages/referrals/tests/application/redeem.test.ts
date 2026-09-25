@@ -49,7 +49,9 @@ describe('RedeemScholarshipService', () => {
     // Grant com delivery-id/sourceId ESTÁVEIS + somente o curso indicado.
     const grant = gateway.callsOf('grantManualCourse')[0]!.input as GrantManualCourseInput
     expect(grant.courseRef).toBe('cade-todo-mundo')
-    expect(grant.expiresAt).toBeNull()
+    expect(grant.expiresAt).toBe(
+      new Date(r.createdAt.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    )
     expect(grant.sourceId).toBe(`scholarship:${r.id}`)
     expect(grant.deliveryId).toBe(`scholarship:course:cade-todo-mundo:${r.id}`)
 
@@ -57,7 +59,7 @@ describe('RedeemScholarshipService', () => {
     expect(gateway.callsOf('createPasswordToken')).toHaveLength(1)
     const send = gateway.callsOf('sendEmail')[0]!
     const email = send.input as SendEmailInput
-    expect(email.templateKey).toBe('referrals-scholarship-welcome')
+    expect(email.templateKey).toBe('referrals-scholarship-welcome-7d')
     expect(email.variables.indicador).toBe('Vó Cida')
     expect(email.variables.link).toContain('/redefinir-senha?token=tok-abc')
     expect(send.idempotencyKey).toBe(`scholarship-welcome:${r.id}`)
@@ -69,8 +71,88 @@ describe('RedeemScholarshipService', () => {
     expect(result.kind).toBe('completed')
     expect(gateway.callsOf('createPasswordToken')).toHaveLength(0)
     const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
-    expect(email.templateKey).toBe('new-access')
+    expect(email.templateKey).toBe('referrals-scholarship-existing-7d')
     expect(email.variables.link).toContain('/cursos')
+  })
+
+  test('resgate histórico conserva concessão sem vencimento', async () => {
+    const { redemption } = await repo.insertRedemption({
+      codeId: repo.codes[0]!.id,
+      email: 'paula@example.com',
+      name: 'Paula Prado',
+      phone: null,
+    })
+    redemption.accessDurationDays = null
+
+    expect((await service.execute(input)).kind).toBe('completed')
+    const grant = gateway.callsOf('grantManualCourse')[0]!.input as GrantManualCourseInput
+    expect(grant.expiresAt).toBeNull()
+    const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
+    expect(email.templateKey).toBe('referrals-scholarship-welcome')
+  })
+
+  test('conta histórica pré-existente conserva o aviso genérico de acesso', async () => {
+    const { redemption } = await repo.insertRedemption({
+      codeId: repo.codes[0]!.id,
+      email: 'paula@example.com',
+      name: 'Paula Prado',
+      phone: null,
+    })
+    redemption.accessDurationDays = null
+    gateway.ensureBuyerResult = { status: 200, body: { userId: 'u-1', created: false } }
+
+    expect((await service.execute(input)).kind).toBe('completed')
+    const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
+    expect(email.templateKey).toBe('new-access')
+  })
+
+  test('retomada do grant não reinicia os sete dias', async () => {
+    gateway.grantResult = { status: 502, body: {} }
+    expect((await service.execute(input)).kind).toBe('upstream_error')
+    const redemption = repo.redemptions[0]!
+    redemption.createdAt = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    gateway.grantResult = { status: 200, body: { ok: true } }
+
+    expect((await service.execute(input)).kind).toBe('completed')
+    const grant = gateway.callsOf('grantManualCourse')[1]!.input as GrantManualCourseInput
+    expect(grant.expiresAt).toBe(
+      new Date(redemption.createdAt.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    )
+  })
+
+  test('retomada depois do vencimento não concede curso nem envia boas-vindas', async () => {
+    gateway.grantResult = { status: 502, body: {} }
+    expect((await service.execute(input)).kind).toBe('upstream_error')
+    repo.redemptions[0]!.createdAt = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000)
+    gateway.grantResult = { status: 200, body: { ok: true } }
+
+    const result = await service.execute(input)
+    expect(result).toEqual({ kind: 'failed', reason: 'gift_window_elapsed' })
+    expect(repo.redemptions[0]!.failedReason).toBe('gift_window_elapsed')
+    expect(gateway.callsOf('grantManualCourse')).toHaveLength(1)
+    expect(gateway.callsOf('sendEmail')).toHaveLength(0)
+  })
+
+  test('grant que responde no instante do vencimento não anuncia acesso utilizável', async () => {
+    const { redemption } = await repo.insertRedemption({
+      codeId: repo.codes[0]!.id,
+      email: 'paula@example.com',
+      name: 'Paula Prado',
+      phone: null,
+    })
+    redemption.createdAt = new Date('2026-01-01T00:00:00.000Z')
+    const expiration = new Date(redemption.createdAt.getTime() + 7 * 24 * 60 * 60 * 1000)
+    let now = new Date(expiration.getTime() - 1)
+    service = new RedeemScholarshipService(repo, gateway, OPTS, silentLogger, () => now)
+    const grant = gateway.grantManualCourse.bind(gateway)
+    gateway.grantManualCourse = async (request) => {
+      const result = await grant(request)
+      now = expiration
+      return result
+    }
+
+    expect(await service.execute(input)).toEqual({ kind: 'failed', reason: 'gift_window_elapsed' })
+    expect(gateway.callsOf('sendEmail')).toHaveLength(0)
   })
 
   test('mesmo e-mail de novo → already_redeemed (1 bolsa global)', async () => {
@@ -144,6 +226,18 @@ describe('RedeemScholarshipService', () => {
     expect(r.welcomeSentAt).not.toBeNull() // ...mas o welcome saiu agora
     expect(gateway.callsOf('sendEmail')).toHaveLength(1)
     expect(gateway.callsOf('grantManualCourse')).toHaveLength(1) // grant NÃO repetiu
+  })
+
+  test('welcome atrasado não anuncia acesso depois de vencido', async () => {
+    gateway.passwordTokenResult = { status: 503, body: {} }
+    expect((await service.execute(input)).kind).toBe('completed')
+    const redemption = repo.redemptions[0]!
+    expect(redemption.welcomeSentAt).toBeNull()
+    redemption.createdAt = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000)
+    gateway.passwordTokenResult = { status: 201, body: { token: 'tok-novo' } }
+
+    expect((await service.execute(input)).kind).toBe('already_redeemed')
+    expect(gateway.callsOf('sendEmail')).toHaveLength(0)
   })
 
   test('curso despublicado entre consulta e grant → sem e-mail, lastError gravado', async () => {
