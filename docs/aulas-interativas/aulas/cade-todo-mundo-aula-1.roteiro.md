@@ -2,55 +2,43 @@
 
 Gravar cada seção em **um vídeo único**. As falas entre aspas são a narração. As indicações de tela não são lidas. Conferir a paleta na versão que será publicada antes de gravar. Falar com uma criança que chegou agora, sem presumir que ela conhece blocos ou o Estúdio. Não localizar a experiência “ao lado”: em tela estreita ela fica embaixo.
 
-## 1. Bem-vindo ao jardim — apresentação do jogo e da aula (2–3 min)
+## 1. Bem-vindo ao jardim — apresentação do jogo e da aula (40–60 s)
 
-É **um único vídeo**, com demonstrações curtas da página da aula. Não transformar a narração numa lista de botões: fazer cada gesto na tela enquanto fala. Não mostrar o resultado da experiência antes de a criança fazê-la nem ensinar os blocos nesta abertura.
+É um vídeo curto. Mostrar o jogo que a criança vai construir, sem ensinar a experiência ou os blocos. A primeira ação dela depois do vídeo é avançar à seção seguinte.
 
-**Na tela:** abrir o jogo pronto, tocar os três esconderijos, mostrar o contador e a comemoração. Depois voltar à primeira seção da aula.
+**Na tela:** abrir o jogo pronto e tocar um esconderijo para revelar um personagem. Voltar à primeira seção da aula. Apontar para o vídeo e demonstrar pausa e retorno de alguns segundos. Ao final, apontar para **Próxima seção** sem navegar na gravação; a criança fará isso.
 
-> “Oi! Hoje você vai começar a criar um jogo chamado Cadê Todo Mundo? Tem três personagens escondidos neste jardim. Olha: quando eu toco neste esconderijo, um personagem aparece e o número de achados aumenta. Posso procurar os outros também. Quando encontro os três, o jogo comemora. O jardim e os personagens já estão preparados para você. Hoje a gente vai fazer o primeiro personagem aparecer com um toque. Depois, vamos completar a busca.”
-
-**Na tela:** apontar para o vídeo da primeira seção. Demonstrar pausa e voltar alguns segundos no player. Ao terminar a reprodução de exemplo, apontar para **Próxima seção** e avançar; na seção seguinte, apontar para **Anterior** e voltar. Na gravação, usar uma prévia que permita navegar sem bloquear o botão pela conclusão.
-
-> “Antes de começar, deixa eu te mostrar como a aula funciona. Ela vem em pequenas partes, que a gente chama de seções. Esta é a primeira. Cada seção tem um vídeo como este. Se eu quiser ouvir uma explicação de novo, volto um pedacinho aqui no vídeo. Se precisar de um tempo, aperto pausa. Sem pressa.
+> “Oi! Hoje você vai começar um jogo chamado Cadê Todo Mundo? Olha este jardim: três personagens estão escondidos aqui. No jogo pronto, quando eu toco num esconderijo, alguém aparece. Hoje você vai ensinar o seu jogo a fazer isso.
 >
-> Quando termino esta parte, vou até aqui embaixo e aperto Próxima seção. Olha, cheguei à próxima. E, se eu quiser rever a parte anterior, aperto Anterior. Posso voltar sem perder o que já fiz.”
+> A aula tem pequenas partes, que a gente chama de seções. Esta é a primeira, e cada seção tem um vídeo como este. Você pode pausar ou voltar um pedacinho se quiser ouvir de novo. Quando este vídeo terminar, aperte Próxima seção, aqui embaixo. Vamos descobrir como o jogo entende um toque?”
 
-**Na tela:** mostrar brevemente uma seção futura com vídeo e experiência ainda intocada. Apontar para o pedido da atividade e para a divisória entre vídeo e atividade. Arrastar a divisória numa tela larga; clicar **Ampliar experiência** e depois **Voltar à aula**. Mostrar a mesma seção numa tela estreita, com a atividade abaixo do vídeo. Não ligar a reação ao toque nem revelar o personagem.
+Não demonstrar **Anterior**, a experiência, a divisória, o Estúdio ou o caderno nesta abertura. Não prometer que a criança já criou o jogo inteiro: cenário e personagens vêm preparados.
 
-> “Algumas seções têm só o vídeo, como a primeira. Em outras, tem também uma atividade para você experimentar. Olha esta: eu assisto ao vídeo e depois faço o que a atividade pede aqui. Numa tela grande, se eu quiser mais espaço para mexer, arrasto esta divisão no meio. Também posso apertar Ampliar experiência para olhar só para a atividade. Quando quiser ver a aula de novo, aperto Voltar à aula. Numa tela menor, a atividade aparece embaixo do vídeo. Continua tudo aqui na mesma seção.”
+## 2. O que um toque faz? — conceito e experiência (60–75 s)
 
-**Na tela:** mostrar apenas o cabeçalho do Estúdio incorporado numa seção prática, sem mexer em blocos. Arrastar a divisória, clicar **Expandir** e **Reduzir**. Retornar à primeira seção para encerrar o vídeo.
-
-> “E quando chegar a hora de montar o jogo, vamos usar o Estúdio. É esta ferramenta aqui, onde a gente encaixa blocos para dizer ao jogo o que fazer. Ele aparece dentro da aula, então você não precisa abrir outra página. Se eu precisar de mais espaço, arrasto esta divisão e deixo o Estúdio maior. Também posso apertar Expandir para olhar só para ele. Depois, aperto Reduzir e volto à aula. Quando chegarmos lá, vou mostrar cada bloco e cada passo com calma. Bora começar?”
-
-Não dizer que a criança já tocou ou reparou em algo. Falar o nome exato dos botões da interface: **Próxima seção**, **Anterior**, **Ampliar experiência**, **Voltar à aula**, **Expandir** e **Reduzir**. A divisória só aparece em telas largas; na demonstração do celular, não prometer esse controle.
-
-## 2. Seu mapa do jogo — vídeo do material (20–30 s)
-
-**Na tela:** o bloco de materiais com o PDF real anexado, aberto em uma página. Se o PDF ainda não estiver anexado, este vídeo fica pendente.
+**Na tela:** começar na segunda seção e apontar rapidamente para **Anterior**. Depois mostrar mão apertando uma campainha e alguém ouvindo o som; usar um desenho simples com `toque` e `ação`. Ao mencionar a experiência, indicar onde ela aparece. Se a área estiver pequena, mostrar **Ampliar experiência** e **Voltar à aula**, sem tocar no esconderijo ou ligar a reação. Em tela estreita, a experiência fica abaixo do vídeo; não prometer a divisória.
 
 **Narração:**
 
-> “Antes de começar, olha esta folha do jogo. Ela mostra o caminho que vamos seguir e serve para lembrar o que você fez quando continuar em casa. Se quiser, pode abrir ou guardar. Não precisa imprimir nem baixar para fazer a aula. O próprio vídeo vai mostrar todos os passos. Vamos descobrir o que faz um jogo responder ao nosso toque.”
+> “Você chegou à próxima seção! Se quiser rever a primeira, é só apertar Anterior, aqui embaixo.
+>
+> Imagina que você aperta a campainha de uma casa. Você aperta o botão e ela toca. O aperto é o que aconteceu; o som é a resposta. Se a campainha não estiver ligada, você aperta e não escuta nada.
+>
+> No jogo, tocar num esconderijo também é um acontecimento. A ação é o que o jogo faz depois desse toque, como mostrar um personagem. Mas será que o toque sozinho já faz isso acontecer?
+>
+> Aqui está a experiência para você descobrir. Se quiser enxergá-la maior, aperte Ampliar experiência. Para voltar ao vídeo, aperte Voltar à aula.”
 
-## 3. O que um toque faz? — vídeo de conceito (45–60 s)
+**Zappy fora da experiência:** “Agora é sua vez de descobrir o que faz o esconderijo responder ao toque.” Ele convida, sem repetir a instrução da cena. A instrução dentro da experiência continua: “Toque no esconderijo. Depois ligue a reação ao toque e experimente de novo.” A pista, se pedida, detalha a ordem. Não contar o resultado dos testes no vídeo.
 
-**Na tela:** mão apertando uma campainha e alguém ouvindo o som; depois, um desenho simples com as palavras `toque` e `ação`. Não filmar a cena interativa nem revelar seus resultados.
-
-**Narração:**
-
-> “Imagina que você aperta a campainha de uma casa. Apertar é o que aconteceu. Tocar o som é a resposta da campainha. Se ela não estiver ligada, você pode apertar, mas não ouve nada. Num jogo também é assim: tocar na tela é um acontecimento. O jogo só faz alguma coisa se a gente ligar uma ação a esse toque. Ação é aquilo que o jogo vai fazer depois, como mostrar um personagem. Você vai experimentar essa ligação num esconderijo. Toca, observa e compara o que acontece quando a reação está ligada.”
-
-**Zappy fora da experiência:** “Agora é sua vez de descobrir o que faz o esconderijo responder ao toque.” Ele não repete a instrução da cena. A instrução dentro da experiência é: “Toque no esconderijo. Depois ligue a reação ao toque e experimente de novo.” A pista, se pedida, detalha a ordem.
-
-## 4. Faça alguém aparecer — vídeo prático (2–3 min)
+## 3. Faça alguém aparecer — vídeo prático (3–4 min)
 
 **Na tela:** Estúdio incorporado da própria seção, dentro da aula. Manter o projeto preparado à vista. Mostrar cada clique, encaixe e teste sem acelerar. O jogo começa com os três esconderijos e o contador em zero.
 
 **Narração:**
 
-> “Agora vamos levar essa ideia para o seu jogo. Abre o Estúdio desta seção. Olha o jardim: os personagens já estão atrás dos esconderijos. Mas, se você tocar agora, ninguém aparece. Isso acontece porque o toque ainda não tem uma ação ligada a ele. Vamos criar essa reação.
+> “Agora você vai colocar essa ideia no seu jogo. Aqui está o Estúdio, dentro da própria aula. É onde a gente encaixa blocos para dizer ao jogo o que fazer. Se esta área estiver pequena, aperte Expandir para olhar só para o Estúdio. Para voltar à aula, aperte Reduzir.
+>
+> Olha o jardim: os personagens já estão atrás dos esconderijos. Mas, se você tocar agora, ninguém aparece. Isso acontece porque o toque ainda não tem uma ação ligada a ele. Vamos criar essa reação.
 >
 > Na área do projeto chamada Quando acontecer, já tem este bloco grande: ‘Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido’. Sprite é um objeto do jogo; aqui, cada esconderijo é um sprite. O nome `escolhido` quer dizer o esconderijo que você acabou de tocar. É o nome que o jogo vai usar para achar o certo, mesmo que você toque em outro lugar depois.
 >
@@ -58,8 +46,8 @@ Não dizer que a criança já tocou ou reparou em algo. Falar o nome exato dos b
 >
 > Confere comigo: o bloco novo está dentro de Quando clicar ou tocar; o sprite é `escolhido`; o número é 0. Agora aperta o botão de iniciar a prévia do jogo e toca num esconderijo. Apareceu alguém? Toca em outro e vê se o mesmo bloco funciona de novo. Cada toque escolhe um esconderijo diferente. Hoje o número Achados ainda fica em zero, e está tudo bem: vamos fazer a contagem na próxima aula.
 >
-> Espera o Estúdio mostrar Salvo. Depois aperta Enviar para o professor. Pronto: você programou a primeira reação do seu jogo.”
+> Espera o Estúdio mostrar Salvo. Depois aperta Enviar para o professor. Pronto: você programou a primeira reação do seu jogo! Se quiser lembrar esse caminho quando continuar em casa, tem um Mapa do jogo aqui embaixo para consultar. Ele é opcional: você não precisa baixar nem imprimir para terminar a aula.”
 
 **Zappy fora do Estúdio:** “O jardim já está montado. Agora você vai criar a reação que faz aparecer o primeiro personagem.” Não fazer o Zappy repetir o caminho da paleta.
 
-**Pontos de gravação:** capturar o estado antes/depois na prévia; verificar se o botão da prévia tem de fato o rótulo narrado. Se mudar, ajustar a fala antes de gravar. Não filmar Pinta nem Estúdio completo. A seleção `escolhido` só aparece no contexto do evento; manter esse evento aberto durante a gravação.
+**Pontos de gravação:** mostrar **Expandir/Reduzir** só nesta seção, antes de manipular os blocos. Capturar o estado antes/depois na prévia; verificar se o botão da prévia tem de fato o rótulo narrado. Se mudar, ajustar a fala antes de gravar. Não filmar Pinta nem Estúdio completo. A seleção `escolhido` só aparece no contexto do evento; manter esse evento aberto durante a gravação. Anexar o PDF real ao bloco do Mapa do jogo antes de gravar a referência a ele no final do vídeo.

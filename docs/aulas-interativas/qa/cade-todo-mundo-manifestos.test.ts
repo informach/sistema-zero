@@ -33,6 +33,31 @@ function checks(name: string): SectionProjectCheck[] {
 }
 
 describe('curso gratuito Cadê Todo Mundo?', () => {
+  test('Aula 1 chega à experiência na segunda seção e deixa o mapa opcional na prática', () => {
+    const m = manifesto('aula-1')
+    expect(m.sections.map((section) => section.key)).toEqual([
+      'apresentacao',
+      'toque-e-resposta',
+      'primeiro-achado',
+    ])
+    expect(m.sections[0]?.blockKeys).toEqual(['video-a1-abertura'])
+    expect(m.sections[1]?.blockKeys).toEqual([
+      'video-a1-toque',
+      'ponte-a1-toque',
+      'experiencia-toque',
+    ])
+    expect(m.sections[2]?.blockKeys).toEqual([
+      'video-a1-programar',
+      'ponte-a1-programar',
+      'projeto',
+      'caderno',
+    ])
+    expect(m.sections[2]?.completion?.blockIds).toEqual(['video-a1-programar', 'projeto'])
+    expect(m.blocks.filter((block) => 'plannedVideo' in block)).toHaveLength(3)
+    expect(m.blocks.filter((block) => block.key === 'caderno')).toHaveLength(1)
+    expect(m.blocks.some((block) => block.key === 'video-a1-caderno')).toBe(false)
+  })
+
   test('a prática e a entrega respeitam as regras de seção; a cena declara o jardim', () => {
     for (const name of ['aula-1', 'aula-2', 'certificado']) {
       const m = manifesto(name)

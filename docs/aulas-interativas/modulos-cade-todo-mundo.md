@@ -16,9 +16,9 @@
 
 ## Notas de importação
 
-Identificador interno: `cade-todo-mundo`. Não usar `desafio-primeiro-jogo` nem o identificador do curso Nave Contra Asteroides; o funil e o catálogo pago não são alterados por estes manifestos. A introdução leve à plataforma está no vídeo da primeira seção da Aula 1; não há uma aula de tour separada.
+Identificador interno: `cade-todo-mundo`. Não usar `desafio-primeiro-jogo` nem o identificador do curso Nave Contra Asteroides; o funil e o catálogo pago não são alterados por estes manifestos. Na Aula 1, a primeira seção apresenta o jogo e a navegação básica; atividade e Estúdio são explicados quando a criança chega a eles. Não há aula de tour separada.
 
-Todos os vídeos ainda são `plannedVideo`; portanto, o curso **não está pronto para publicação**. Gravar um vídeo por seção a partir dos respectivos `.roteiro.md`, vincular no admin e conferir a reprodução e a exigência de 90%. A folha opcional está em `output/pdf/cade-todo-mundo-mapa-do-jogo.pdf`: anexá-la ao bloco `caderno` da Aula 1 antes de gravar o vídeo dessa seção. O download da folha não bloqueia a progressão.
+Todos os vídeos ainda são `plannedVideo`; portanto, o curso **não está pronto para publicação**. Gravar um vídeo por seção a partir dos respectivos `.roteiro.md`, vincular no admin e conferir a reprodução e a exigência de 90%. A folha opcional está em `output/pdf/cade-todo-mundo-mapa-do-jogo.pdf`: anexá-la ao bloco `caderno` da seção prática da Aula 1 antes de gravar o vídeo prático. Não há vídeo próprio para a folha, e o download não bloqueia a progressão.
 
 ## Cadastro e importação no admin
 

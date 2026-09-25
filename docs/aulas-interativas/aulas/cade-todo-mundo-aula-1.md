@@ -8,22 +8,21 @@ Primeiro contato da criança com programação. Meta do evento presencial: em 15
 
 | Seção | Tipo | Vídeo | O que a criança faz | Conclusão |
 | --- | --- | --- | --- | --- |
-| Bem-vindo ao jardim | apresentação do jogo e demonstração guiada da aula | 2–3 min | conhece a brincadeira, sua primeira missão e pratica visualmente como navegar e ampliar as áreas | 90% do vídeo |
-| Seu mapa do jogo | material opcional | 20–30 s | conhece a folha de consulta; download não obrigatório | 90% do vídeo |
-| O que um toque faz? | conceito e experiência | 45–60 s | toca no mesmo esconderijo antes e depois de ligar uma reação | vídeo e duas metas da cena |
-| Faça alguém aparecer | construção no Estúdio | 2–3 min | encaixa o bloco de visibilidade no evento preparado, testa e envia | vídeo, regra correta e envio |
+| Bem-vindo ao jardim | apresentação breve do jogo e das seções | 40–60 s | vê a missão, aprende a pausar/rever o vídeo e avança | 90% do vídeo |
+| O que um toque faz? | conceito e experiência | 60–75 s | conhece Anterior e a atividade; toca no mesmo esconderijo antes e depois de ligar uma reação | vídeo e duas metas da cena |
+| Faça alguém aparecer | construção no Estúdio | 3–4 min | conhece o Estúdio, encaixa o bloco de visibilidade, testa e envia; pode consultar o mapa opcional | vídeo, regra correta e envio |
 
 ## Direção pedagógica
 
-- O primeiro vídeo começa pelo nome e pela brincadeira do jogo, mostra o resultado pronto e define a missão de hoje. Só então **demonstra** como a aula funciona, em vez de enumerar recursos: pausar/rever, avançar com **Próxima seção**, voltar com **Anterior**, assistir e experimentar na mesma seção, ajustar a divisória ou ampliar a experiência, e expandir/reduzir o Estúdio incorporado. Mostrar apenas o cabeçalho do Estúdio, sem antecipar blocos; não abrir menu, catálogo, Pinta nem fazer um tour completo.
-- No vídeo conceitual, a campainha torna clara a dupla **acontecimento → ação**. O vídeo não conta o resultado dos dois testes da experiência. A fala do Zappy convida; a instrução específica mora somente na experiência.
+- O primeiro vídeo apresenta o jogo e a missão de hoje, explica que a aula tem seções com vídeo e mostra apenas pausa, replay e **Próxima seção**. A criança avança para agir logo em seguida. Não antecipar experiência, Estúdio, caderno ou outros controles.
+- No vídeo conceitual, mostrar **Anterior** ao chegar à seção, explicar a dupla **acontecimento → ação** com a campainha e apontar para a atividade. Mostrar **Ampliar experiência/Voltar à aula** somente ali, sem fazer a descoberta pela criança. A fala do Zappy convida; a instrução específica mora somente na experiência.
 - Na experiência, o mesmo lugar é tocado antes e depois de ligar a reação. O controle não conta como aprendizado sozinho; cada meta exige o toque e seu efeito. Não pedir palpite.
-- O vídeo prático mostra todos os gestos no Estúdio atual, com o caminho da paleta. Dizer que `escolhido` é o nome dado ao esconderijo tocado, não o nome de um bloco. Explicar 0% como invisível antes de pedir a troca do número.
+- O vídeo prático apresenta o Estúdio incorporado e **Expandir/Reduzir** quando a criança chega a ele. Depois mostra todos os gestos, com o caminho da paleta. Dizer que `escolhido` é o nome dado ao esconderijo tocado, não o nome de um bloco. Explicar 0% como invisível antes de pedir a troca do número.
 - A primeira vitória deve ser visual: o personagem que já estava atrás aparece após o toque. O envio registra a própria alteração.
 
 ## Caderno
 
-Uma folha visual de uma página com a sequência: **ver o jogo → descobrir toque e ação → encaixar Deixar o sprite com 0% de visibilidade → testar → salvar e enviar**. O PDF é opcional e precisa ser anexado ao bloco `caderno` no admin. Não gravar o vídeo do caderno até confirmar o anexo real. A folha não dá o teste da experiência de antemão.
+Uma folha visual de uma página com a sequência: **ver o jogo → descobrir toque e ação → encaixar Deixar o sprite com 0% de visibilidade → testar → salvar e enviar**. O PDF fica como material opcional na seção prática; não tem vídeo próprio nem requisito de download. Anexar o arquivo real ao bloco `caderno` no admin antes de gravar a referência a ele no final do vídeo prático. A folha não dá o teste da experiência de antemão.
 
 ## Produção e QA
 

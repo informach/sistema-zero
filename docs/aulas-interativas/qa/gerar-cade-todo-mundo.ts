@@ -83,21 +83,12 @@ const aula1 = {
     video(
       'video-a1-abertura',
       'Vamos procurar!',
-      'Apresentar o nome Cadê Todo Mundo?, os três personagens escondidos e o primeiro toque que a criança programará. Depois, em uma única gravação guiada de 2–3 minutos, demonstrar na página real: pausa e retorno no vídeo, Próxima seção/Anterior, uma seção futura com vídeo e experiência sem revelar o resultado, divisória e Ampliar experiência/Voltar à aula, e o Estúdio incorporado com divisória e Expandir/Reduzir. Explicar que o Estúdio é a ferramenta onde se encaixam blocos para montar o jogo, sem antecipar o passo a passo dos blocos. Em tela pequena, mostrar a atividade abaixo do vídeo. Não abrir ferramentas fora da aula.',
+      'Mostrar brevemente o jogo pronto e contar a missão de hoje: fazer o primeiro personagem aparecer ao tocar num esconderijo. Apresentar as seções como pequenas partes da aula, cada uma com um vídeo. Demonstrar pausa e replay do vídeo e apontar Próxima seção ao encerrar. Não mostrar a experiência, o Estúdio, o caderno ou outros controles nesta abertura. Alvo: 40–60 segundos.',
     ),
-    video(
-      'video-a1-caderno',
-      'Um mapa para voltar quando quiser',
-      'Mostrar a folha visual de uma página, explicar que ela é opcional e serve para lembrar o caminho em casa. Não fazer o download virar requisito. Gravar depois de anexar o PDF no admin. Alvo: 20–30 segundos.',
-    ),
-    {
-      key: 'caderno',
-      content: { kind: 'materials', title: 'Mapa do jogo Cadê Todo Mundo?', items: [] },
-    },
     video(
       'video-a1-toque',
       'Um toque pode chamar uma ação',
-      'Explicar toque e ação com a analogia da campainha e dar contexto do jogo. Encerrar antes de mostrar os resultados da bancada. A criança descobre a diferença ali. Alvo: 45–60 segundos.',
+      'Ao chegar à segunda seção, mostrar Anterior em uma frase para quem quiser rever. Explicar toque e ação com a analogia da campainha e dar contexto do jogo. Mostrar onde está a experiência sem revelar seus resultados. Demonstrar Ampliar experiência e Voltar à aula apenas se necessário para enxergar os controles; em tela estreita, a experiência aparece abaixo. A criança descobre a diferença na atividade. Alvo: 60–75 segundos.',
     ),
     dialogue(
       'ponte-a1-toque',
@@ -117,30 +108,26 @@ const aula1 = {
     video(
       'video-a1-programar',
       'Faça o primeiro personagem aparecer',
-      'Mostrar a paleta, a área Quando acontecer já preparada, o bloco Deixar o sprite com 0% de visibilidade, o nome escolhido e o teste. Repetir cada passo na narração; não presumir familiaridade com blocos. Alvo: 2–3 minutos.',
+      'Apresentar o Estúdio incorporado ao chegar à prática. Mostrar Expandir e Reduzir no momento em que a criança precisar de espaço, sem tour separado. Depois mostrar a paleta, a área Quando acontecer já preparada, o bloco Deixar o sprite com 0% de visibilidade, o nome escolhido e o teste. Repetir cada passo na narração; não presumir familiaridade com blocos. Ao final, mostrar o mapa do jogo como material opcional para consultar em casa, sem tornar o download requisito. Alvo: 3–4 minutos.',
     ),
     dialogue(
       'ponte-a1-programar',
       'O jardim já está montado. Agora você vai criar a reação que faz aparecer o primeiro personagem.',
     ),
     studio(montarProjetoCadeTodoMundo()),
+    {
+      key: 'caderno',
+      content: { kind: 'materials', title: 'Mapa do jogo Cadê Todo Mundo?', items: [] },
+    },
   ],
   sections: [
     section(
       'apresentacao',
       'Bem-vindo ao jardim',
       'presentation',
-      'Ver o jogo terminado, conhecer só os controles da aula necessários para começar e saber que hoje fará o primeiro personagem aparecer com um toque.',
+      'Conhecer o jogo e a missão de hoje, aprender a pausar/rever o vídeo e avançar à próxima seção.',
       ['video-a1-abertura'],
       ['video-a1-abertura'],
-    ),
-    section(
-      'caderno',
-      'Seu mapa do jogo',
-      'material',
-      'Saber que a folha opcional ajuda a lembrar o caminho e pode ser consultada em casa.',
-      ['video-a1-caderno', 'caderno'],
-      ['video-a1-caderno'],
     ),
     section(
       'toque-e-resposta',
@@ -155,7 +142,7 @@ const aula1 = {
       'Faça alguém aparecer',
       'delivery',
       'Encaixar a reação no evento preparado e tocar num esconderijo do próprio jogo.',
-      ['video-a1-programar', 'ponte-a1-programar', 'projeto'],
+      ['video-a1-programar', 'ponte-a1-programar', 'projeto', 'caderno'],
       ['video-a1-programar', 'projeto'],
       'projeto',
       [
