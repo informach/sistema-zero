@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import type { AwardXpEventInput } from '../../src/domain/ports/gamification-repository.port'
-import { buildApp, grantAllKidsCourses, seedSampleCourse } from '../helpers'
+import { buildApp, grantAllKidsCourses, grantLifetime, seedSampleCourse } from '../helpers'
 
 const USER = '77777777-7777-4777-8777-777777777777'
 const ACCOUNT = '88888888-8888-4888-8888-888888888888'
@@ -59,6 +59,79 @@ async function comEntradaConcluida(
 }
 
 describe('Jornada do Criador — acesso pedagógico aos cursos', () => {
+  test('curso extra abre só com matrícula específica ou Comunidade, sem exigir o curso-base', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(
+      courses,
+      'desafio-primeiro-jogo',
+      'published',
+      'kids',
+      false,
+      'primeiros-passos',
+      '2d',
+      1,
+    )
+    const extra = seedSampleCourse(
+      courses,
+      'cade-todo-mundo',
+      'published',
+      'kids',
+      false,
+      'primeiros-passos',
+      '2d',
+      null,
+    )
+    const row = courses.courses.find((course) => course.id === extra.courseId)
+    if (!row) throw new Error('Curso extra não encontrado')
+    row.journeyRole = 'extra'
+
+    const url = 'http://localhost/members/courses/cade-todo-mundo'
+    expect((await app.handle(new Request(url, { headers }))).status).toBe(403)
+
+    grantLifetime(entitlements, { userId: ACCOUNT, courseRef: 'cade-todo-mundo' })
+    expect((await app.handle(new Request(url, { headers }))).status).toBe(200)
+    expect(
+      (await app.handle(new Request(`${url}/lessons/${extra.lessonIds[0]}`, { headers }))).status,
+    ).toBe(200)
+
+    const catalog = await app.handle(
+      new Request('http://localhost/members/catalog?audience=kids', { headers }),
+    )
+    const body = (await catalog.json()) as { courses: Record<string, any>[] }
+    expect(body.courses.find((course) => course.courseSlug === 'cade-todo-mundo')).toMatchObject({
+      journeyRole: 'extra',
+      hasAccess: true,
+      careerLock: { locked: false },
+    })
+
+    const second = buildApp()
+    seedSampleCourse(
+      second.courses,
+      'desafio-primeiro-jogo',
+      'published',
+      'kids',
+      false,
+      'primeiros-passos',
+      '2d',
+      1,
+    )
+    seedSampleCourse(
+      second.courses,
+      'cade-todo-mundo',
+      'published',
+      'kids',
+      false,
+      'primeiros-passos',
+      '2d',
+      null,
+    )
+    const secondRow = second.courses.courses.find((course) => course.slug === 'cade-todo-mundo')
+    if (!secondRow) throw new Error('Curso extra não encontrado')
+    secondRow.journeyRole = 'extra'
+    grantAllKidsCourses(second.entitlements, { userId: ACCOUNT })
+    expect((await second.app.handle(new Request(url, { headers }))).status).toBe(200)
+  })
+
   test('curso-base abre; demais aguardam concluir e publicar o curso-base', async () => {
     const { app, courses, entitlements, gamification } = buildApp()
     await comEntradaConcluida(courses, gamification)

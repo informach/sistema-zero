@@ -26,6 +26,7 @@ function makeCourse(over: Partial<Course> & { slug: string; title: string }): Co
     level: 'iniciante',
     track: '2d',
     careerSlot: null,
+    journeyRole: 'reward',
     metadata: null,
     createdAt: created,
     updatedAt: created,
@@ -121,6 +122,7 @@ describe('ListCatalogService (catálogo "Todos os cursos")', () => {
       level: 'iniciante',
       track: '2d',
       careerSlot: null,
+      journeyRole: 'reward',
       careerLock: { locked: false },
       // Vitrine adulta não tem Mural: os marcos vêm zerados sem nem consultar o ledger.
       milestones: { completed: false, showcased: false },

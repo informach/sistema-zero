@@ -989,6 +989,9 @@ const CourseBodyProperties = {
   // Slot da Jornada do Criador: 1 = curso-base; null = bônus/fora da jornada.
   // Máx 8 por degrau (reforma 07/2026); a faixa fina por etapa é validada no domínio.
   careerSlot: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 8 }), t.Null()])),
+  journeyRole: t.Optional(
+    t.Union([t.Literal('positioned'), t.Literal('reward'), t.Literal('extra')]),
+  ),
   // Blocos que este curso LIBERA no Estúdio livre ao satisfazer o critério atual:
   // bônus Kids exige conclusão; curso Kids com posição e Adult exigem também Mural.
   // Mesmo formato do `allowBlocks` da aula, só que no CURSO. Vira

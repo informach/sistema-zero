@@ -403,6 +403,8 @@ export interface CourseView {
   track?: CourseTrack
   /** Posição na etapa da jornada; `null` = curso bônus. */
   careerSlot: number | null
+  /** Papel do curso na etapa: posição, recompensa ou extra por matrícula. */
+  journeyRole?: 'positioned' | 'reward' | 'extra'
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   /**

@@ -306,6 +306,12 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                         {c.level === 'lenda' ? (
                           '👑 Lenda — curso bônus da formatura (aparece na trilha da Lenda; fora da jornada)'
+                        ) : c.journeyRole === 'extra' ? (
+                          `Extra — curso sem posição em ${
+                            COURSE_TIER_OPTIONS.find(
+                              (option) => option.level === c.level && option.track === c.track,
+                            )?.label ?? `${c.level} ${c.track}`
+                          }; abre para quem tem matrícula, sem depender da etapa`
                         ) : c.careerSlot == null ? (
                           `Bônus — recompensa da etapa ${
                             COURSE_TIER_OPTIONS.find(

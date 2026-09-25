@@ -118,11 +118,13 @@ export function CatalogCourseCard({
     <div className="min-w-0">
       {linha ? (
         <p className="font-bold text-muted-foreground text-xs">
-          {course.careerSlot === 1
-            ? 'Primeiro da trilha'
-            : typeof course.careerSlot === 'number'
-              ? 'Curso da jornada'
-              : 'Curso bônus'}
+          {course.journeyRole === 'extra'
+            ? 'Curso extra'
+            : course.careerSlot === 1
+              ? 'Primeiro da trilha'
+              : typeof course.careerSlot === 'number'
+                ? 'Curso da jornada'
+                : 'Curso bônus'}
         </p>
       ) : null}
       <h3

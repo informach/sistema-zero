@@ -236,4 +236,19 @@ describe('catálogo da Jornada do Criador', () => {
       reason: 'future-tier',
     })
   })
+
+  test('curso extra ignora a trava da jornada sem abrir o bônus-recompensa', () => {
+    expect(resolveJourneyCourseLock({}, 'primeiros-passos-2d', null, true, 'extra')).toEqual({
+      locked: false,
+    })
+    expect(resolveJourneyCourseLock({}, 'iniciante-2d', null, true, 'extra')).toEqual({
+      locked: false,
+    })
+    expect(resolveJourneyCourseLock({}, 'primeiros-passos-2d', null, true, 'reward')).toMatchObject(
+      {
+        locked: true,
+        reason: 'tier-reward',
+      },
+    )
+  })
 })

@@ -96,6 +96,11 @@ export const courseLevelEnum = members.enum('course_level', [
 // pedagógico ("Iniciante 2D" … "Avançado 3D") que alimenta a jornada de 8 níveis.
 // Default `2d` (backfill dos existentes; a usuária re-tagueia os cursos 3D no admin).
 export const courseTrackEnum = members.enum('course_track', ['2d', '3d'])
+export const courseJourneyRoleEnum = members.enum('course_journey_role', [
+  'positioned',
+  'reward',
+  'extra',
+])
 export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   'rich_text',
   'video',
@@ -167,6 +172,7 @@ export const courses = members.table(
     // 1 = curso-base. O domínio e o banco garantem que só Kids ocupa a jornada
     // e aplicam o teto específico de cada etapa.
     careerSlot: smallint('career_slot'),
+    journeyRole: courseJourneyRoleEnum('journey_role').notNull().default('reward'),
     // Trava sequencial estilo Duolingo: a próxima aula só libera quando a anterior
     // está concluída. Default `true` = backfill LIGADO p/ os cursos já existentes
     // (decisão da usuária: padrão ligado, com toggle por curso no admin).
@@ -189,6 +195,10 @@ export const courses = members.table(
       // antes, porque `ADD CONSTRAINT ... CHECK` valida as linhas existentes.
       'courses_career_slot_check',
       sql`(${t.level}::text <> 'primeiros-passos' or ${t.track}::text = '2d') and (${t.careerSlot} is null or (${t.audience} = 'kids' and ${t.level}::text <> 'lenda' and ${t.careerSlot} between 1 and (case when ${t.level}::text = 'primeiros-passos' then 1 else 8 end)))`,
+    ),
+    check(
+      'courses_journey_role_slot_check',
+      sql`(${t.journeyRole} = 'positioned') = (${t.careerSlot} is not null)`,
     ),
   ],
 )

@@ -31,8 +31,9 @@ export interface CourseView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
-  /** Posição na etapa da jornada; `null` = curso bônus. */
+  /** Posição na etapa da jornada; `null` = bônus ou extra. */
   careerSlot: number | null
+  journeyRole: string
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   /**
@@ -70,6 +71,7 @@ export function toCourseView(c: Course, hasShowcaseBlock?: boolean): CourseView 
     level: c.level,
     track: c.track,
     careerSlot: c.careerSlot,
+    journeyRole: c.journeyRole,
     sequentialLock: c.sequentialLock,
     studioUnlockBlocks: resolveStudioUnlockBlocks(c),
     clonedFrom: resolveClonedFrom(c),

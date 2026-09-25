@@ -47,6 +47,7 @@ interface FormState {
   level: string
   track: string
   careerSlot: string
+  journeyRole: 'positioned' | 'reward' | 'extra'
   sequentialLock: boolean
   /** Blocos que este curso libera no Estúdio livre (currículo, 08/2026). */
   studioUnlockBlocks: string[]
@@ -66,6 +67,7 @@ const EMPTY: FormState = {
   level: 'iniciante',
   track: '2d',
   careerSlot: '',
+  journeyRole: 'reward',
   // Padrão LIGADO (decisão da usuária): curso novo já trava as aulas em sequência.
   sequentialLock: true,
   studioUnlockBlocks: [],
@@ -101,6 +103,7 @@ function formFromCourse(c: CourseView): FormState {
     level: c.level ?? 'iniciante',
     track: c.track ?? '2d',
     careerSlot: c.careerSlot == null ? '' : String(c.careerSlot),
+    journeyRole: c.journeyRole ?? (c.careerSlot == null ? 'reward' : 'positioned'),
     sequentialLock: c.sequentialLock ?? true,
     studioUnlockBlocks: c.studioUnlockBlocks ?? [],
   }
@@ -114,6 +117,7 @@ function formFromPrefill(prefill: CoursePrefill | undefined): FormState {
     level: prefill.level ?? EMPTY.level,
     track: prefill.track ?? EMPTY.track,
     careerSlot: prefill.careerSlot != null ? String(prefill.careerSlot) : '',
+    journeyRole: prefill.careerSlot != null ? 'positioned' : 'reward',
   }
 }
 
@@ -191,9 +195,9 @@ export function CourseFormDialog({
 
   const isKids = form.audience === 'kids'
   const studioUnlockRule =
-    form.careerSlot === ''
-      ? 'Curso bônus: a criança recebe as ferramentas quando conclui todas as aulas.'
-      : 'Curso da jornada: a criança recebe as ferramentas quando conclui o curso e publica no Mural.'
+    form.journeyRole === 'positioned'
+      ? 'Curso da jornada: a criança recebe as ferramentas quando conclui o curso e publica no Mural.'
+      : 'A criança recebe as ferramentas quando conclui todas as aulas.'
   const maxSlot = slotsForTier(form.level, form.track)
   const occupantBySlot = new Map<number, CourseView>()
   for (const c of kidsCourses) {
@@ -257,6 +261,10 @@ export function CourseFormDialog({
       toast.error('A página de vendas precisa ser uma URL completa (começando com https://).')
       return
     }
+    if (form.audience === 'kids' && form.journeyRole === 'positioned' && !form.careerSlot) {
+      toast.error('Escolha a posição do curso na jornada.')
+      return
+    }
     setSaving(true)
     const warnings = await collectSaveWarnings()
     if (warnings.length > 0) {
@@ -294,6 +302,7 @@ export function CourseFormDialog({
         level: form.level,
         track: form.track,
         careerSlot: form.audience === 'kids' && form.careerSlot ? Number(form.careerSlot) : null,
+        journeyRole: form.audience === 'kids' ? form.journeyRole : 'reward',
         sequentialLock: form.sequentialLock,
         // SEMPRE enviado (como os demais): o members PRESERVA quando ausente, então
         // omitir aqui esconderia uma limpeza intencional do professor.
@@ -413,6 +422,7 @@ export function CourseFormDialog({
                 audience: e.target.value,
                 // Posição na jornada só existe p/ Kids; limpa ao virar adulto.
                 careerSlot: e.target.value === 'kids' ? f.careerSlot : '',
+                journeyRole: e.target.value === 'kids' ? f.journeyRole : 'reward',
               }))
             }
           >
@@ -446,6 +456,7 @@ export function CourseFormDialog({
                   // Trocar de etapa pode reduzir 6→5 posições: limpa se sobrar. Lenda
                   // é FORA da jornada → nunca tem posição.
                   careerSlot: nextLevel === 'lenda' || slotNum > max ? '' : f.careerSlot,
+                  journeyRole: nextLevel === 'lenda' || slotNum > max ? 'reward' : f.journeyRole,
                 }
               })
             }}
@@ -470,20 +481,29 @@ export function CourseFormDialog({
           <Field
             label="Posição na Jornada do Criador"
             htmlFor="journey-slot"
-            tooltip="Ordena os cursos Kids dentro da etapa. A posição 1 é o CURSO-BASE: o aluno precisa concluí-lo e publicar no Mural para as demais posições da etapa liberarem. 'Bônus' é a RECOMPENSA da etapa: abre quando o aluno completa todos os cursos com posição (etapa sem curso-base publicado não trava o bônus)."
+            tooltip="Curso extra abre para quem tem matrícula, sem depender da etapa. Bônus é recompensa após completar a etapa. Cursos com posição seguem a ordem dos slots; a posição 1 é o curso-base."
             hint={
               isKids
-                ? '1 é o curso-base da etapa (destrava as demais posições). Bônus vira recompensa: abre quando a etapa completa.'
+                ? 'Extra abre por matrícula; bônus abre ao completar a etapa; posições seguem a jornada.'
                 : 'Disponível apenas para cursos Kids.'
             }
           >
             <Select
               id="journey-slot"
-              value={form.careerSlot}
+              value={form.journeyRole === 'positioned' ? form.careerSlot : form.journeyRole}
               disabled={!isKids}
-              onChange={(e) => setForm((f) => ({ ...f, careerSlot: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) =>
+                  e.target.value === 'reward' || e.target.value === 'extra'
+                    ? { ...f, journeyRole: e.target.value as 'reward' | 'extra', careerSlot: '' }
+                    : { ...f, journeyRole: 'positioned', careerSlot: e.target.value },
+                )
+              }
             >
-              <option value="">Nenhuma — bônus (recompensa: abre quando a etapa completa)</option>
+              <option value="reward">Nenhuma — bônus (recompensa da etapa)</option>
+              {isKids && form.level !== 'lenda' ? (
+                <option value="extra">Nenhuma — curso extra (abre com matrícula)</option>
+              ) : null}
               {Array.from({ length: maxSlot }, (_, i) => i + 1).map((slot) => {
                 const occ = occupantBySlot.get(slot)
                 const takenByOther = !!occ && occ.id !== editing?.id

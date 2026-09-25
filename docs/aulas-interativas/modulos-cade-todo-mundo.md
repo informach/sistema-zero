@@ -22,7 +22,7 @@ Todos os vídeos ainda são `plannedVideo`; portanto, o curso **não está pront
 
 ## Cadastro e importação no admin
 
-- Criar o curso com slug `cade-todo-mundo`, acesso gratuito e título/subtítulo acima. A ordem é Aula 1, Aula 2, Aula 3 (certificado). A terceira lição usa o slug `certificado`; criar as demais com os slugs exatos indicados.
+- Criar o curso com slug `cade-todo-mundo`, título/subtítulo acima, etapa **Primeiros Passos / 2D** e papel **curso extra**, sem posição. Conceder o acesso gratuito apenas às crianças contempladas pela oferta ou evento; a matrícula da Comunidade também abre o curso. Configurar a página externa de oferta da Comunidade para quem não tem matrícula. A ordem é Aula 1, Aula 2, Aula 3 (certificado). A terceira lição usa o slug `certificado`; criar as demais com os slugs exatos indicados.
 - Importar `cade-todo-mundo-aula-1.manifesto.json`, `cade-todo-mundo-aula-2.manifesto.json` e `cade-todo-mundo-certificado.manifesto.json`, cada um na lição correspondente.
 - A cadeia `cade-todo-mundo` no bloco do Estúdio transporta o projeto da primeira para a segunda aula. A segunda tem um projeto inicial de retomada apenas se não houver projeto salvo; não apaga o trabalho da criança.
 - Na aula, a criança usa só o Estúdio incorporado em modo blocos, com Jogo 2D. Não há Pinta nem link para o Estúdio completo.

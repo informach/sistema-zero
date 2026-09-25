@@ -45,6 +45,7 @@ export function journeyLocksForCourses(
       tier,
       course.careerSlot,
       foundationByTier.has(tier),
+      course.journeyRole,
     )
     locks.set(course.id, {
       locked: lock.locked,

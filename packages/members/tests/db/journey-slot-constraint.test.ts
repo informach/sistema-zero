@@ -17,6 +17,10 @@ const checkExpression = latestCheckConstraint(
   'members.courses',
   'courses_career_slot_check',
 ).replaceAll('"members"."courses".', '')
+const roleCheckExpression = latestCheckConstraint(
+  'members.courses',
+  'courses_journey_role_slot_check',
+).replaceAll('"members"."courses".', '')
 
 const testDatabaseUrl = await prepareTestDatabase()
 if (!testDatabaseUrl) {
@@ -87,5 +91,33 @@ describe.skipIf(!testDatabaseUrl)('CHECK real das posições da jornada', () => 
     expect(await accepts({ audience: 'kids', level: 'lenda', track: '2d', careerSlot: 1 })).toBe(
       false,
     )
+  })
+
+  test('papel extra e recompensa não ocupam slot; curso posicionado exige slot', async () => {
+    async function acceptsRole(journeyRole: string, careerSlot: number | null): Promise<boolean> {
+      try {
+        await sql.begin(async (tx) => {
+          await tx.unsafe(`
+            create temporary table journey_role_probe (
+              journey_role text not null,
+              career_slot smallint,
+              constraint journey_role_probe_check check (${roleCheckExpression})
+            ) on commit drop`)
+          await tx`
+            insert into journey_role_probe (journey_role, career_slot)
+            values (${journeyRole}, ${careerSlot})`
+        })
+        return true
+      } catch {
+        return false
+      }
+    }
+
+    expect(await acceptsRole('extra', null)).toBe(true)
+    expect(await acceptsRole('reward', null)).toBe(true)
+    expect(await acceptsRole('positioned', 1)).toBe(true)
+    expect(await acceptsRole('extra', 1)).toBe(false)
+    expect(await acceptsRole('reward', 1)).toBe(false)
+    expect(await acceptsRole('positioned', null)).toBe(false)
   })
 })

@@ -64,6 +64,7 @@ const toCourse = (r: CourseRow): Course => ({
   level: r.level,
   track: r.track,
   careerSlot: r.careerSlot,
+  journeyRole: r.journeyRole,
   metadata: r.metadata ?? null,
   createdAt: r.createdAt,
   updatedAt: r.updatedAt,
@@ -328,6 +329,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       // Idem: `?? '2d'` cobre chamada direta.
       track: fields.track ?? ('2d' as const),
       careerSlot: fields.careerSlot ?? null,
+      journeyRole: fields.journeyRole ?? (fields.careerSlot == null ? 'reward' : 'positioned'),
       // `salesPageUrl` e `studioUnlockBlocks` moram no metadata (jsonb) — as duas
       // chaves geridas pelo form do curso (a 2ª é o currículo do Estúdio livre).
       metadata: buildCourseMetadata(fields),
@@ -392,6 +394,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         // Fora da jornada até a operadora etiquetar (evita conflito de posição
         // e a armadilha de um clone virar curso-base sem querer).
         careerSlot: null,
+        journeyRole: 'reward' as const,
         metadata,
         createdAt: now,
         updatedAt: now,
@@ -551,6 +554,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
             level: course.level,
             track: course.track,
             careerSlot: course.careerSlot,
+            journeyRole: course.journeyRole,
             metadata: course.metadata,
             updatedAt: new Date(),
             version: expectedVersion + 1,

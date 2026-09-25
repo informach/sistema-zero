@@ -49,6 +49,14 @@ describe('cadastro de curso', () => {
     })
 
     expect((document.querySelector('#caudience') as HTMLSelectElement | null)?.value).toBe(audience)
+    if (audience === 'kids') {
+      const role = document.querySelector('#journey-slot') as HTMLSelectElement | null
+      expect(role?.value).toBe('reward')
+      expect([...role!.options].map((option) => option.value)).toContain('extra')
+    } else {
+      const role = document.querySelector('#journey-slot') as HTMLSelectElement | null
+      expect([...role!.options].map((option) => option.value)).not.toContain('extra')
+    }
 
     await act(async () => root.unmount())
     container.remove()

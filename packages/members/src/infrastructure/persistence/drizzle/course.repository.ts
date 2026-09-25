@@ -39,6 +39,7 @@ function toCourse(row: typeof courses.$inferSelect): Course {
     level: row.level,
     track: row.track,
     careerSlot: row.careerSlot,
+    journeyRole: row.journeyRole,
     metadata: row.metadata ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,

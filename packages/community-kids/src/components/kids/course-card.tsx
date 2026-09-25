@@ -68,11 +68,13 @@ export function CourseCard({ course }: CourseCardProps) {
       </div>
       <div className="flex flex-1 flex-col p-5">
         <p className="font-bold text-muted-foreground text-xs">
-          {course.careerSlot === 1
-            ? 'Primeiro da trilha'
-            : typeof course.careerSlot === 'number'
-              ? 'Curso da jornada'
-              : 'Curso bônus'}
+          {course.journeyRole === 'extra'
+            ? 'Curso extra'
+            : course.careerSlot === 1
+              ? 'Primeiro da trilha'
+              : typeof course.careerSlot === 'number'
+                ? 'Curso da jornada'
+                : 'Curso bônus'}
         </p>
         <h3 className="sz-display mt-1.5 text-lg md:text-xl">{course.title}</h3>
         {course.subtitle ? (

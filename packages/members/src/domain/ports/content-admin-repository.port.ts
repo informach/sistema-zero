@@ -1,3 +1,4 @@
+import type { CourseJourneyRole } from '@sistemazero/core/journey'
 import type {
   Course,
   CourseAudience,
@@ -56,6 +57,8 @@ export interface CourseFields {
   track: CourseTrack | null
   /** Ausente no PATCH preserva; `null` remove da jornada; número define o slot. */
   careerSlot?: number | null
+  /** Ausente no PATCH preserva, salvo mudança explícita do slot. */
+  journeyRole?: CourseJourneyRole
 }
 
 export interface ModuleFields {

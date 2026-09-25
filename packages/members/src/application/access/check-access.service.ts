@@ -97,7 +97,13 @@ export class CheckAccessService {
       // Par que não é degrau da jornada (ex.: `primeiros-passos` + `3d`) não trava.
       const tier = courseTier(course.level, course.track)
       const lock = tier
-        ? resolveJourneyCourseLock(qualified, tier, course.careerSlot, foundationAvailable)
+        ? resolveJourneyCourseLock(
+            qualified,
+            tier,
+            course.careerSlot,
+            foundationAvailable,
+            course.journeyRole,
+          )
         : { locked: false as const }
       if (lock.locked && lock.reason) {
         throw new CourseJourneyLockedError(lock.reason, lock.requiredLevel)

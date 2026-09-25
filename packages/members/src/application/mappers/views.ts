@@ -437,8 +437,9 @@ export interface MyCourseView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
-  /** Posição na etapa da jornada; `null` = curso bônus. */
+  /** Posição na etapa da jornada; `null` = bônus ou extra. */
   careerSlot: number | null
+  journeyRole: string
   /** Trava pedagógica da jornada; independente da matrícula comercial. */
   careerLock: JourneyCourseLockView
   access: AccessView
@@ -466,6 +467,7 @@ export function toMyCourseView(
     level: course.level,
     track: course.track,
     careerSlot: course.careerSlot,
+    journeyRole: course.journeyRole,
     careerLock,
     milestones,
     access: toAccessView(entitlement),
@@ -489,8 +491,9 @@ export interface CatalogCourseView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
-  /** Posição na etapa da jornada; `null` = curso bônus. */
+  /** Posição na etapa da jornada; `null` = bônus ou extra. */
   careerSlot: number | null
+  journeyRole: string
   /** Trava pedagógica da jornada; `hasAccess` continua representando só a matrícula. */
   careerLock: JourneyCourseLockView
   hasAccess: boolean
@@ -517,6 +520,7 @@ export function toCatalogCourseView(
     level: course.level,
     track: course.track,
     careerSlot: course.careerSlot,
+    journeyRole: course.journeyRole,
     careerLock,
     milestones,
     hasAccess,

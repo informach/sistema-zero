@@ -695,6 +695,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       status: 'draft',
       audience: overrides.audience,
       careerSlot: null,
+      journeyRole: 'reward',
       metadata,
       createdAt: now,
       updatedAt: now,
@@ -743,6 +744,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       level,
       track,
       careerSlot,
+      journeyRole,
       ...rest
     } = fields
     // Mirror do `buildCourseMetadata` do repo Drizzle: as DUAS chaves geridas pelo form
@@ -765,6 +767,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       level: level ?? 'iniciante',
       track: track ?? '2d',
       careerSlot: careerSlot ?? null,
+      journeyRole: journeyRole ?? (careerSlot == null ? 'reward' : 'positioned'),
       metadata: Object.keys(metadata).length > 0 ? metadata : null,
       createdAt: now,
       updatedAt: now,

@@ -253,6 +253,57 @@ describe('Members HTTP — autoria: cursos', () => {
     expect((await readJson(removed)).careerSlot).toBeNull()
   })
 
+  test('papel do curso distingue posição, recompensa e extra sem posição', async () => {
+    const { app } = buildApp()
+    const extra = await createCourse(app, {
+      slug: 'cade-todo-mundo',
+      audience: 'kids',
+      level: 'primeiros-passos',
+      track: '2d',
+      journeyRole: 'extra',
+      careerSlot: null,
+    })
+    expect(extra.journeyRole).toBe('extra')
+
+    const preserved = await patchCourse(app, extra.id, {
+      ...COURSE,
+      slug: 'cade-todo-mundo',
+      audience: 'kids',
+      level: 'primeiros-passos',
+      track: '2d',
+      careerSlot: null,
+    })
+    expect((await readJson(preserved)).journeyRole).toBe('extra')
+
+    const invalidExtra = await send(app, '/members/admin/courses', 'POST', {
+      ...COURSE,
+      slug: 'extra-com-slot',
+      audience: 'kids',
+      journeyRole: 'extra',
+      careerSlot: 1,
+    })
+    expect(invalidExtra.status).toBe(400)
+    const invalidPosition = await send(app, '/members/admin/courses', 'POST', {
+      ...COURSE,
+      slug: 'posicao-sem-slot',
+      audience: 'kids',
+      journeyRole: 'positioned',
+      careerSlot: null,
+    })
+    expect(invalidPosition.status).toBe(400)
+
+    const changed = await patchCourse(app, extra.id, {
+      ...COURSE,
+      slug: 'cade-todo-mundo',
+      audience: 'kids',
+      level: 'primeiros-passos',
+      track: '2d',
+      journeyRole: 'reward',
+      careerSlot: null,
+    })
+    expect((await readJson(changed)).journeyRole).toBe('reward')
+  })
+
   test('⭐ o teto de posições é POR DEGRAU: 1 na ENTRADA, 8 em todos os demais', async () => {
     const { app } = buildApp()
     const base = { ...COURSE, audience: 'kids' as const }

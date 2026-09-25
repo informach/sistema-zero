@@ -27,7 +27,7 @@ A jornada possui sete etapas:
 | Avançado 2D | 1 a 8 | Arquiteto(a) |
 | Avançado 3D | 1 a 8 | Gênio da Criação |
 
-São **49 posições obrigatórias** (1 na entrada + 8 em cada uma das outras seis etapas). `careerSlot = null` identifica um curso bônus, que não conta para subir de nível.
+São **49 posições obrigatórias** (1 na entrada + 8 em cada uma das outras seis etapas). Cursos sem posição (`careerSlot = null`) não contam para subir de nível e têm dois papéis distintos: `reward` (bônus da etapa) e `extra` (curso normal que abre com matrícula, sem depender da conclusão da etapa).
 
 **Primeiros Passos (14/08/2026) é a trilha da Faísca.** Até então o curso base morava no Iniciante 2D e a divisão entre Faísca e Construtor(a) existia só na tela do mapa — por isso a Faísca **não podia ter curso bônus**: todo bônus do Iniciante 2D caía na trilha do Construtor(a). Agora ela tem etapa própria, com uma posição obrigatória (o curso de entrada) mais os bônus dela, que abrem quando esse curso é concluído e publicado.
 
@@ -38,6 +38,10 @@ A posição 1 é o curso base de cada etapa. Ao entrar em uma etapa, a criança 
 ### Curso bônus é RECOMPENSA da etapa (`tier-reward`, 24/07)
 
 O bônus **não abre de cara**: ele é o prêmio da etapa em que está tagueado (`level` + `track`). Abre quando a criança completa **todos os cursos com posição** daquela etapa (concluídos **e** publicados no Mural — a mesma régua da jornada), o que é exatamente o momento do level-up. Etapa já completada = recompensa ganha para sempre; etapa atual ou futura = o card mostra 🎁 "Recompensa: complete a etapa X" (motivo `tier-reward` no 423). O bônus continua **fora da contagem** de nível (não qualifica slot) e a tag de etapa do bônus agora importa de verdade — confira o degrau dos bônus ao montar cada etapa.
+
+### Curso extra é curso normal sem posição
+
+O curso `extra` aparece na trilha da etapa escolhida, mas não ocupa slot, não conta para subir de nível e não depende do curso-base nem da conclusão da etapa. Ele só abre para quem recebeu acesso específico ao curso ou acesso geral à Comunidade dos Criadores. Sem matrícula, o cartão mantém o cadeado e o botão **“Mostrar ao responsável”** leva à página externa de oferta configurada para o curso. Na página de cada trilha, a ordem é: **extras por data de criação**, **cursos com posição por número do slot** e **bônus por data de criação**. A ordem do catálogo geral não muda.
 
 **Regressão aceita ao montar uma etapa:** quando você publica o curso-base de uma etapa, os bônus dela passam a valer a trava — uma criança que estava no MEIO de um bônus perde o acesso a ele até completar a etapa (decisão de produto de 24/07; só acontece em etapa com base publicada, pelo fail-open). O que **não** é afetado: jogo já publicado continua no Mural e no link público de jogar (o post é um snapshot independente do curso), e todo XP/marco já ganho fica.
 
@@ -83,7 +87,7 @@ medalhão ficou com ✓, e a aventura nova morria sem público. O contador agora
 
 **O que mudou, só na página de cursos:**
 
-- O "N de M aventuras prontas" conta **todos os cursos publicados daquele degrau, bônus incluído** —
+- O "N de M aventuras prontas" conta **todos os cursos publicados daquele degrau, extras e bônus incluídos** —
   antes só as posições obrigatórias, e era isso que escondia o bônus.
 - **"Pronta" tem régua diferente para cada parte**, e é assim de propósito: posição
   **obrigatória** só conta como pronta quando foi **concluída e publicada no Mural** (a mesma
@@ -136,7 +140,7 @@ curso declara o que libera** e a criança recebe a união dos cursos elegíveis.
 do papel do curso:
 
 - **curso Kids com posição:** concluído **e** publicado no Mural, a mesma régua da jornada;
-- **curso Kids bônus (`careerSlot = null`):** concluído, mesmo sem projeto ou vitrine;
+- **curso Kids sem posição (`careerSlot = null`, bônus ou extra):** concluído, mesmo sem projeto ou vitrine;
 - **curso Adult:** mantém a exigência de conclusão e publicação.
 
 O bônus entrega ferramentas, mas continua fora da contagem de nível. Se ele tiver uma vitrine, a
@@ -280,6 +284,7 @@ Nas aulas, o professor pode criar um projeto Pro antes de a criança chegar à L
 No painel **Cursos** (`/admin/membros/cursos`), o formulário de curso (tanto ao criar quanto ao editar — o botão **"Editar curso"** também aparece dentro do editor de conteúdo de cada curso) tem o campo **Posição na Jornada do Criador**. Ele só fica habilitado quando a Audiência é **Kids**.
 
 * **Nenhuma — bônus:** recompensa da etapa (abre quando a criança completa os cursos com posição da etapa do bônus; não conta para subir de nível).
+* **Nenhuma — curso extra:** curso sem posição, liberado por matrícula específica ou acesso geral à comunidade, sem a trava da etapa.
 * **1 — Curso-base da etapa:** o curso que destrava as demais posições.
 * **2 em diante:** os demais cursos da etapa, liberados após o curso base.
 

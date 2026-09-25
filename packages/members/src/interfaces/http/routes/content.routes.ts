@@ -73,6 +73,7 @@ const courseFields = (b: CourseInput | CourseUpdateInput): CourseFields => ({
   // Aqui `undefined` e `null` são diferentes: ausente preserva no PATCH;
   // null explícito remove o curso da jornada.
   careerSlot: Object.hasOwn(b, 'careerSlot') ? b.careerSlot : undefined,
+  journeyRole: Object.hasOwn(b, 'journeyRole') ? b.journeyRole : undefined,
   // Currículo do Estúdio — MESMA distinção do `careerSlot`: ausente PRESERVA (build antigo
   // do admin não apaga o que a professora liberou), `null`/`[]` limpam de propósito.
   // ⚠️ Estar no DTO NÃO basta: este mapeador é a fronteira real, e um campo que não é

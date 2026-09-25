@@ -28,7 +28,7 @@ export const LEVEL_TIER: Record<StudentLevelSlug, CourseTierSlug | null> = {
 export interface LevelStudy {
   /** Posições OBRIGATÓRIAS que esta trilha estuda (`careerSlot`). */
   slots: readonly number[]
-  /** Inclui os cursos BÔNUS (`careerSlot` nulo = recompensa da etapa)? */
+  /** Inclui os cursos sem slot (extras e bônus)? */
   includeBonus: boolean
 }
 
@@ -85,7 +85,24 @@ export function levelForTier(tier: CourseTierSlug): StudentLevelSlug {
  * Lenda no mapa (nó liberado só p/ quem chegou à Lenda).
  */
 export function lendaCourses(courses: readonly CatalogCourseView[]): CatalogCourseView[] {
-  return courses.filter((course) => course.level === 'lenda')
+  return courses.filter((course) => course.level === 'lenda').sort(compareJourneyCourses)
+}
+
+function journeyGroup(course: CatalogCourseView): number {
+  if (course.journeyRole === 'extra') return 0
+  if (typeof course.careerSlot === 'number') return 1
+  return 2
+}
+
+function compareJourneyCourses(a: CatalogCourseView, b: CatalogCourseView): number {
+  const groupDifference = journeyGroup(a) - journeyGroup(b)
+  if (groupDifference !== 0) return groupDifference
+  if (typeof a.careerSlot === 'number' && typeof b.careerSlot === 'number') {
+    return a.careerSlot - b.careerSlot || a.courseSlug.localeCompare(b.courseSlug)
+  }
+  return (
+    (a.createdAt ?? '').localeCompare(b.createdAt ?? '') || a.courseSlug.localeCompare(b.courseSlug)
+  )
 }
 
 export function coursesForLevel(
@@ -100,17 +117,19 @@ export function coursesForLevel(
   if (!tier) return []
   const inTier = courses.filter((course) => courseTierOf(course.level, course.track) === tier)
   const study = LEVEL_STUDY[slug]
-  if (!study) return inTier
+  if (!study) return inTier.sort(compareJourneyCourses)
   // ⚠️ O desvio "sem curso-base marcado, mostra o degrau inteiro" MORREU em 14/08: ele
   // existia porque Faísca e Construtor(a) dividiam o `iniciante-2d` por slot e, com o
   // catálogo não etiquetado, a Faísca ficava vazia. Agora cada nível é dono de um degrau
   // inteiro e o bônus entra em todas as trilhas, então o curso sem posição aparece igual.
   const slots = new Set(study.slots)
-  return inTier.filter(
-    (course) =>
-      (typeof course.careerSlot === 'number' && slots.has(course.careerSlot)) ||
-      (course.careerSlot == null && study.includeBonus),
-  )
+  return inTier
+    .filter(
+      (course) =>
+        (typeof course.careerSlot === 'number' && slots.has(course.careerSlot)) ||
+        (course.careerSlot == null && study.includeBonus),
+    )
+    .sort(compareJourneyCourses)
 }
 
 /** Quantos cursos da trilha a criança já concluiu, de quantos existem. */
@@ -122,7 +141,7 @@ export interface TierCompletion {
 /**
  * O contador "N de M aventuras prontas" do medalhão.
  *
- * ⭐ Conta TODOS os cursos que a trilha MOSTRA — bônus incluído —, e não só as posições
+ * ⭐ Conta TODOS os cursos que a trilha MOSTRA — extras e bônus incluídos —, e não só as posições
  * obrigatórias. É o que faz um curso novo publicado num degrau JÁ CONCLUÍDO aparecer: o
  * medalhão passa de "8 de 8" para "8 de 9" e a criança volta lá. Com a conta antiga (só
  * `careerSlot`), a aventura nova era invisível e morria sem público.

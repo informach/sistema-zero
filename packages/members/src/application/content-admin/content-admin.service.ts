@@ -151,6 +151,7 @@ export class CourseAdminService {
       level: fields.level ?? 'iniciante',
       track: fields.track ?? '2d',
       careerSlot: fields.careerSlot ?? null,
+      journeyRole: fields.journeyRole ?? (fields.careerSlot == null ? 'reward' : 'positioned'),
     }
     assertJourneySlot(normalized)
     return toCourseView(await this.content.createCourse(normalized))
@@ -188,6 +189,7 @@ export class CourseAdminService {
       level,
       track,
       careerSlot,
+      journeyRole,
       version: _version,
       ...rest
     } = fields
@@ -199,6 +201,13 @@ export class CourseAdminService {
       level: level ?? existing.level,
       track: track ?? existing.track,
       careerSlot: careerSlot === undefined ? existing.careerSlot : careerSlot,
+      journeyRole:
+        journeyRole ??
+        (careerSlot !== undefined && careerSlot !== existing.careerSlot
+          ? careerSlot === null
+            ? 'reward'
+            : 'positioned'
+          : existing.journeyRole),
       metadata: withCourseMetadata(existing.metadata, { salesPageUrl, studioUnlockBlocks }),
     }
     assertJourneySlot(merged)
@@ -235,7 +244,18 @@ function assertJourneySlot(course: {
   level: string
   track: string
   careerSlot: number | null
+  journeyRole: string
 }): void {
+  if ((course.journeyRole === 'positioned') !== (course.careerSlot !== null)) {
+    throw new InvalidContentCommandError(
+      'Escolha uma posição apenas para curso da jornada; bônus e extras não têm posição',
+    )
+  }
+  if (course.journeyRole === 'extra' && (course.audience !== 'kids' || course.level === 'lenda')) {
+    throw new InvalidContentCommandError(
+      'Curso extra deve pertencer a uma etapa Kids, fora da Lenda',
+    )
+  }
   // O degrau de ENTRADA só existe no eixo 2D. Vale ANTES do desvio do bônus: um curso
   // `primeiros-passos` + `3d` não gera degrau nenhum (`courseTier` devolve `null`), então
   // ficaria SEMPRE aberto e não apareceria em trilha alguma — invisível no mapa e fora da

@@ -36,6 +36,10 @@ export const JOURNEY_COURSE_TIERS = [
 ] as const
 export type JourneyCourseTier = (typeof JOURNEY_COURSE_TIERS)[number]
 
+/** Papel de um curso Kids na etapa: posição, recompensa ou curso aberto por matrícula. */
+export const COURSE_JOURNEY_ROLES = ['positioned', 'reward', 'extra'] as const
+export type CourseJourneyRole = (typeof COURSE_JOURNEY_ROLES)[number]
+
 export const JOURNEY_STUDIO_REWARD_IDS = [
   'studio.lesson-only',
   'studio.blocks.2d-essential',
@@ -342,7 +346,10 @@ export function resolveJourneyCourseLock(
   courseTier: JourneyCourseTier,
   careerSlot: number | null,
   foundationAvailable = true,
+  journeyRole: CourseJourneyRole = careerSlot === null ? 'reward' : 'positioned',
 ): JourneyCourseLock {
+  // Curso extra continua exigindo matrícula; apenas não depende do progresso da jornada.
+  if (journeyRole === 'extra') return { locked: false }
   const level = creatorJourneyLevel(computeJourneyLevelSlug(qualified))
   if (level.learningTier === null) return { locked: false }
 

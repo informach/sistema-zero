@@ -152,8 +152,10 @@ export interface CatalogCourseView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
-  /** Posição na etapa da jornada; `null`/ausente = curso bônus. */
+  /** Posição na etapa da jornada; `null`/ausente = bônus ou extra. */
   careerSlot?: number | null
+  /** Papel explícito; ausente em versões antigas do members. */
+  journeyRole?: 'positioned' | 'reward' | 'extra'
   /** Trava pedagógica da jornada, separada da posse comercial. */
   careerLock?: JourneyCourseLockView
   /** Marcos do aluno neste curso; ausente = members antigo (trate como nenhum). */
@@ -255,8 +257,10 @@ export interface MyCourseView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
-  /** Posição na etapa da jornada; `null`/ausente = curso bônus. */
+  /** Posição na etapa da jornada; `null`/ausente = bônus ou extra. */
   careerSlot?: number | null
+  /** Papel explícito; ausente em versões antigas do members. */
+  journeyRole?: 'positioned' | 'reward' | 'extra'
   /** Trava pedagógica da jornada, separada da posse comercial. */
   careerLock?: JourneyCourseLockView
   /** Marcos do aluno neste curso; ausente = members antigo (trate como nenhum). */

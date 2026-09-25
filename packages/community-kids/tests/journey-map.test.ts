@@ -57,6 +57,78 @@ describe('journey-map (regras puras do Mapa da Jornada)', () => {
 })
 
 describe('coursesForLevel (cada nível é dono de um degrau inteiro)', () => {
+  test('ordena extras por criação, posições por slot e recompensas por criação', () => {
+    const courses = [
+      course({
+        courseSlug: 'bonus-novo',
+        careerSlot: null,
+        journeyRole: 'reward',
+        createdAt: '2026-05-01T00:00:00.000Z',
+      }),
+      course({
+        courseSlug: 'slot-3',
+        careerSlot: 3,
+        journeyRole: 'positioned',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      }),
+      course({
+        courseSlug: 'extra-novo',
+        careerSlot: null,
+        journeyRole: 'extra',
+        createdAt: '2026-04-01T00:00:00.000Z',
+      }),
+      course({
+        courseSlug: 'bonus-antigo',
+        careerSlot: null,
+        journeyRole: 'reward',
+        createdAt: '2026-02-01T00:00:00.000Z',
+      }),
+      course({
+        courseSlug: 'slot-1',
+        careerSlot: 1,
+        journeyRole: 'positioned',
+        createdAt: '2026-06-01T00:00:00.000Z',
+      }),
+      course({
+        courseSlug: 'extra-antigo',
+        careerSlot: null,
+        journeyRole: 'extra',
+        createdAt: '2026-03-01T00:00:00.000Z',
+      }),
+    ]
+    expect(coursesForLevel('coder', courses).map((item) => item.courseSlug)).toEqual([
+      'extra-antigo',
+      'extra-novo',
+      'slot-1',
+      'slot-3',
+      'bonus-antigo',
+      'bonus-novo',
+    ])
+  })
+
+  test('na Faísca, Cadê Todo Mundo? vem antes do Desafio do Primeiro Jogo', () => {
+    const courses = [
+      course({
+        courseSlug: 'desafio-primeiro-jogo',
+        level: 'primeiros-passos',
+        track: '2d',
+        careerSlot: 1,
+        journeyRole: 'positioned',
+      }),
+      course({
+        courseSlug: 'cade-todo-mundo',
+        level: 'primeiros-passos',
+        track: '2d',
+        careerSlot: null,
+        journeyRole: 'extra',
+      }),
+    ]
+    expect(coursesForLevel('noob', courses).map((item) => item.courseSlug)).toEqual([
+      'cade-todo-mundo',
+      'desafio-primeiro-jogo',
+    ])
+  })
+
   const entrada = [
     course({ courseSlug: 'entrada', level: 'primeiros-passos', careerSlot: 1 }),
     course({ courseSlug: 'entrada-bonus', level: 'primeiros-passos', careerSlot: null }),

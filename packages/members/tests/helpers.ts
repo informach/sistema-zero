@@ -684,6 +684,7 @@ export function seedSampleCourse(
   level: CourseLevel = 'iniciante',
   track: CourseTrack = '2d',
   careerSlot: number | null = null,
+  journeyRole: 'positioned' | 'reward' | 'extra' = careerSlot === null ? 'reward' : 'positioned',
 ) {
   const now = new Date('2026-06-01T00:00:00.000Z')
   const courseId = randomUUID()
@@ -705,6 +706,7 @@ export function seedSampleCourse(
     level,
     track,
     careerSlot,
+    journeyRole,
     metadata: null,
     createdAt: now,
     updatedAt: now,

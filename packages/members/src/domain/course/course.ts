@@ -1,3 +1,4 @@
+import type { CourseJourneyRole } from '@sistemazero/core/journey'
 import type { LessonBlockContent, LessonBlockKind } from './lesson-block'
 
 /**
@@ -87,6 +88,8 @@ export interface Course {
    * `null` identifica curso bônus/fora da jornada.
    */
   careerSlot: number | null
+  /** Posição obrigatória, recompensa da etapa ou curso extra aberto por matrícula. */
+  journeyRole: CourseJourneyRole
   /**
    * Trava sequencial (estilo Duolingo): quando `true`, uma aula só fica acessível
    * depois que TODAS as aulas publicadas anteriores (ordem do curso) estão
