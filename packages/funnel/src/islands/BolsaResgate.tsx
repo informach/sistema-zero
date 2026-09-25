@@ -86,7 +86,7 @@ export default function BolsaResgate({ code, referrerName }: BolsaResgateProps) 
         <p className="mt-3 text-sm text-muted">
           Enviamos orientações para <strong className="text-ink">{email.trim()}</strong> (vale olhar
           o spam). Se você já tem conta, entre com sua senha. Depois, crie o perfil da criança e
-          comece o curso Cadê Todo Mundo?.
+          comece o curso Cadê Todo Mundo?. Seus 7 dias de acesso começaram no cadastro pelo link.
         </p>
       </div>
     )
@@ -190,8 +190,8 @@ export default function BolsaResgate({ code, referrerName }: BolsaResgateProps) 
         {submitting ? 'Liberando o curso…' : 'Liberar o curso para minha família'}
       </button>
       <p className="text-center text-xs text-muted">
-        Presente de {referrerName}: acesso ao curso Cadê Todo Mundo? sem custo e sem cartão. Os
-        demais cursos não estão incluídos.
+        Presente de {referrerName}: acesso ao curso Cadê Todo Mundo? sem custo e sem cartão, por 7
+        dias a partir do cadastro pelo link. Os demais cursos não estão incluídos.
       </p>
     </form>
   )

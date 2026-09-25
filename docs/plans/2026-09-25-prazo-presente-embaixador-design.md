@@ -12,12 +12,14 @@ Se a concessão não puder ser concluída antes do vencimento, o resgate não de
 
 ## Comunicação
 
-Informar de forma direta que o prazo é de sete dias **a partir do cadastro pelo link**, não da primeira aula. A informação aparece na área dos pais, na página do embaixador, na página de resgate do presente, no texto compartilhável e nos e-mails de convite e boas-vindas. O convite oferece só o curso, sem assinatura, cartão ou demais cursos. Na área dos pais, o título passa a ser “Seja um embaixador do Sistema Zero”, não “Indique e ganhe”. A mensagem diferencia o prazo do curso do período de garantia de sete dias usado para o bônus do embaixador.
+Informar de forma direta que o prazo é de sete dias **a partir do cadastro pelo link**, não da primeira aula. A informação aparece na área dos pais, na página do embaixador, na página de resgate do presente, no texto compartilhável e nos e-mails de convite e boas-vindas. Novos resgates usam modelos próprios de boas-vindas; os modelos antigos continuam disponíveis para resgates históricos cujo e-mail atrasou. O convite oferece só o curso, sem assinatura, cartão ou demais cursos. Na área dos pais, o título passa a ser “Seja um embaixador do Sistema Zero”, não “Indique e ganhe”. A mensagem diferencia o prazo do curso do período de garantia de sete dias usado para o bônus do embaixador.
 
 ## Verificação
 
 Cobrir novos e antigos resgates, retomada sem reiniciar prazo, concessão com `expiresAt` correto, expiração real na checagem de acesso, e presença/clareza da informação nas superfícies públicas. Rodar testes, typecheck e formatação dos pacotes alterados. Não converter resgates antigos por backfill.
 
-## Decisão complementar pendente
+Na implantação, aplicar a migração do referrals e executar o seed idempotente de templates no messaging antes de liberar o novo código do referrals. Os templates novos não são criados pelo deploy padrão do messaging.
 
-O usuário esclareceu que os pais não devem ser apresentados como participantes de “Indique e ganhe”, mas como embaixadores. Ainda falta confirmar se isso muda apenas a comunicação ou se elimina o bônus por Pix para embaixadores auto-cadastrados. A regra dos sete dias não depende dessa resposta.
+## Apresentação do embaixador na área dos pais
+
+Os pais não devem ser apresentados como participantes de “Indique e ganhe”, mas como embaixadores. O bônus por Pix permanece inalterado para os embaixadores auto-cadastrados. Muda apenas o título e a comunicação, sem remover o ponto de entrada nem desativar a concessão do bônus.

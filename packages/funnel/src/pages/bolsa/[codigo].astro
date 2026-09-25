@@ -39,7 +39,7 @@ const hasGift = page.kind === 'ready' || page.kind === 'preparing'
             ) : (
               <div role="status" class="mt-7 max-w-lg rounded-2xl border border-line bg-card p-5 text-sm leading-relaxed text-ink"><strong>Este presente está sendo preparado.</strong> Guarde seu link e volte em breve. O cadastro será liberado quando o curso estiver pronto.</div>
             )}
-            <p class="mt-5 text-sm text-muted">Sem pagamento e sem pedir cartão para receber este curso.</p>
+            <p class="mt-5 text-sm text-muted">Para novos resgates, o acesso ao curso dura <strong class="text-ink">7 dias a partir do cadastro pelo link</strong>. Sem pagamento e sem pedir cartão.</p>
           </div>
 
           <div class="rounded-[2rem] border-2 border-line bg-card p-5 shadow-[0_8px_0_var(--kids-card-step)] sm:p-8" aria-label="O caminho da criança no curso">
@@ -73,7 +73,7 @@ const hasGift = page.kind === 'ready' || page.kind === 'preparing'
         </section>
 
         <section id="resgatar" class="mx-auto mt-20 max-w-2xl scroll-mt-8" aria-labelledby="resgatar-title">
-          <div class="mb-6 text-center"><p class="text-sm font-extrabold uppercase tracking-wider text-cyan">Presente por indicação</p><h2 id="resgatar-title" class="mt-2 text-3xl font-bold text-ink">Pronto para começar?</h2><p class="mt-3 text-sm leading-relaxed text-muted">Seu convite libera <strong class="text-ink">apenas este curso</strong>, sem custo para sua família. Os demais cursos e recursos da Comunidade dos Criadores não fazem parte deste presente.</p></div>
+          <div class="mb-6 text-center"><p class="text-sm font-extrabold uppercase tracking-wider text-cyan">Presente por indicação</p><h2 id="resgatar-title" class="mt-2 text-3xl font-bold text-ink">Pronto para começar?</h2><p class="mt-3 text-sm leading-relaxed text-muted">Seu convite libera <strong class="text-ink">apenas este curso</strong>, sem custo para sua família, por <strong class="text-ink">7 dias a partir do cadastro pelo link</strong>. Os demais cursos e recursos da Comunidade dos Criadores não fazem parte deste presente.</p></div>
           {page.kind === 'ready' ? (
             <BolsaResgate client:load code={codigo} referrerName={page.referrerName} />
           ) : (

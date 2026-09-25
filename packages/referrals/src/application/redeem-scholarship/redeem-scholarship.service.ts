@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import { isValidCode, normalizeCode, normalizeEmail } from '../../domain/codes'
+import { scholarshipExpiresAt } from '../../domain/gift-policy'
 import { normalizePhone, splitName } from '../../domain/names'
 import type { GatewayResult, ReferralsGateway } from '../../domain/ports/gateway.port'
 import type {
@@ -158,11 +159,16 @@ export class RedeemScholarshipService {
     // 2) Grant do curso indicado (dedupe do members por x-delivery-id ESTÁVEL +
     //    idempotência manual:userId:productId — replay é seguro).
     if (!redemption.grantedAt) {
+      const expiresAt = scholarshipExpiresAt(redemption.createdAt, redemption.accessDurationDays)
+      if (expiresAt && this.now().getTime() >= expiresAt.getTime()) {
+        await this.repo.markRedemptionFailed(redemption.id, 'gift_window_elapsed', null)
+        return { kind: 'failed', reason: 'gift_window_elapsed' }
+      }
       const res = await this.gateway.grantManualCourse({
         userId,
         courseRef: this.opts.courseSlug,
         sourceId: `scholarship:${redemption.id}`,
-        expiresAt: null,
+        expiresAt: expiresAt?.toISOString() ?? null,
         // A versão do presente integra a chave: uma entrega antiga da OFERTA
         // não pode deduplicar o novo grant do CURSO no members.
         deliveryId: `scholarship:course:${this.opts.courseSlug}:${redemption.id}`,
@@ -195,6 +201,10 @@ export class RedeemScholarshipService {
         })
         return { kind: 'upstream_error' }
       }
+      if (expiresAt && this.now().getTime() >= expiresAt.getTime()) {
+        await this.repo.markRedemptionFailed(redemption.id, 'gift_window_elapsed', null)
+        return { kind: 'failed', reason: 'gift_window_elapsed' }
+      }
       await this.repo.markRedemptionGranted(redemption.id, this.now())
     }
 
@@ -211,6 +221,11 @@ export class RedeemScholarshipService {
     referrerName: string,
   ): Promise<void> {
     try {
+      const expiresAt = scholarshipExpiresAt(redemption.createdAt, redemption.accessDurationDays)
+      if (expiresAt && this.now().getTime() >= expiresAt.getTime()) {
+        this.logger.warn('referrals.redeem_welcome_expired', { redemptionId: redemption.id })
+        return
+      }
       if (!(await this.repo.claimRedemptionWelcome(redemption.id, this.now()))) return
       const { firstName } = splitName(redemption.name)
       const base = this.opts.kidsCommunityUrl.replace(/\/$/, '')
@@ -233,7 +248,9 @@ export class RedeemScholarshipService {
         // o link entregue (o auth consome tokens pendentes ao emitir um novo).
         send = await this.gateway.sendEmail(
           {
-            templateKey: 'referrals-scholarship-welcome',
+            templateKey: expiresAt
+              ? 'referrals-scholarship-welcome-7d'
+              : 'referrals-scholarship-welcome',
             recipient: { name: firstName, email: redemption.email },
             variables: {
               nome: firstName,
@@ -245,12 +262,16 @@ export class RedeemScholarshipService {
         )
       } else {
         // Conta pré-existente: NÃO emite token (invalidaria um token vivo de
-        // compra/convite recente) — aviso de novo acesso, template existente.
+        // compra/convite recente). A política do resgate escolhe o aviso correto.
         send = await this.gateway.sendEmail(
           {
-            templateKey: 'new-access',
+            templateKey: expiresAt ? 'referrals-scholarship-existing-7d' : 'new-access',
             recipient: { name: firstName, email: redemption.email },
-            variables: { nome: firstName, link: `${base}/cursos` },
+            variables: {
+              nome: firstName,
+              ...(expiresAt ? { indicador: referrerName } : {}),
+              link: `${base}/cursos`,
+            },
           },
           idempotencyKey,
         )

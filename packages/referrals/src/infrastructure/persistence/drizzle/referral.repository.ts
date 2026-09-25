@@ -1,4 +1,5 @@
 import { and, count, desc, eq, gte, ilike, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm'
+import { SCHOLARSHIP_ACCESS_DURATION_DAYS } from '../../../domain/gift-policy'
 import type {
   AmbassadorListItem,
   AmbassadorRecord,
@@ -100,6 +101,7 @@ function toRedemption(row: RedemptionRow): RedemptionRecord {
     lastError: row.lastError,
     attemptCount: row.attemptCount,
     completedAt: row.completedAt,
+    accessDurationDays: row.accessDurationDays,
     createdAt: row.createdAt,
   }
 }
@@ -476,6 +478,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
         email: input.email,
         name: input.name,
         phone: input.phone,
+        accessDurationDays: SCHOLARSHIP_ACCESS_DURATION_DAYS,
       })
       .onConflictDoNothing({ target: scholarshipRedemptions.email })
       .returning()

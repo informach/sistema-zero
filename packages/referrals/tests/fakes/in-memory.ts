@@ -277,6 +277,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
       lastError: null,
       attemptCount: 0,
       completedAt: null,
+      accessDurationDays: 7,
       createdAt: new Date(),
     }
     this.redemptions.push(redemption)

@@ -93,6 +93,8 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
   const shareMessage = [
     `Oi! Quero presentear sua família com o curso Cadê Todo Mundo?, do Sistema Zero. Nele, crianças de 8 a 15 anos criam um jogo de procurar personagens, passo a passo. 🎮`,
     ``,
+    `O acesso ao curso dura 7 dias a partir do cadastro pelo link.`,
+    ``,
     `É um convite para acessar esse curso sem custo e sem cartão. Os demais cursos não estão incluídos:`,
     shareUrl,
   ].join('\n')
@@ -151,8 +153,9 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
       <div className="card rounded-2xl border-line/80 bg-card p-6 sm:p-8">
         <h2 className="text-lg font-bold text-ink">Compartilhe o seu link de bolsa</h2>
         <p className="mt-2 text-sm text-muted">
-          Quem entrar por ele recebe o curso <strong className="text-ink">Cadê Todo Mundo?</strong>{' '}
-          sem custo, indicado por você. Os demais cursos não estão incluídos.
+          Quem entrar por ele recebe 7 dias de acesso ao curso{' '}
+          <strong className="text-ink">Cadê Todo Mundo?</strong>, sem custo. O prazo começa no
+          cadastro pelo link. Os demais cursos não estão incluídos.
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
           <input

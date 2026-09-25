@@ -8,7 +8,7 @@ import { apiGet, apiSend } from '@/lib/api'
 import type { AmbassadorEnrollmentView } from '@/lib/types'
 
 /**
- * Card "Indique e ganhe" da área dos pais: o responsável vira embaixador da
+ * Card de embaixador da área dos pais: o responsável vira embaixador da
  * indicação do curso Cadê Todo Mundo? com um clique (os dados já são os da conta) e recebe
  * o link da própria página por e-mail. Best-effort: serviço fora → card some.
  * O VALOR do bônus vem do serviço (`bonus.amountCents`) — nunca fica cravado
@@ -91,7 +91,11 @@ export function AmbassadorCard() {
             <Gift className="size-5" aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1">
-            <h2 className="sz-display text-xl text-foreground">Indique e ganhe</h2>
+            <h2 className="sz-display text-xl text-foreground">
+              {view.enrolled
+                ? 'Você é embaixador do Sistema Zero'
+                : 'Seja um embaixador do Sistema Zero'}
+            </h2>
             {paused ? (
               <p className="mt-1 text-sm text-muted-foreground">
                 Sua página de embaixador está pausada no momento, então os links de bolsa não
@@ -101,9 +105,9 @@ export function AmbassadorCard() {
             ) : view.enrolled && view.ambassador ? (
               <>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Compartilhe o seu link de bolsa e presenteie crianças que você conhece com o curso
-                  Cadê Todo Mundo? sem custo para ela. Se a família depois assinar a Comunidade dos
-                  Criadores, você recebe um agradecimento
+                  Compartilhe o seu link e presenteie famílias com 7 dias de acesso ao curso Cadê
+                  Todo Mundo? sem custo, a partir do cadastro pelo link. Se a família depois assinar
+                  a Comunidade dos Criadores, você recebe um agradecimento
                   {bonusValue ? ` de ${bonusValue}` : ''} por Pix.
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -160,9 +164,9 @@ export function AmbassadorCard() {
             ) : (
               <>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Vire embaixador(a) e presenteie crianças que você conhece com acesso ao curso Cadê
-                  Todo Mundo? sem custo para a família. E tem mais: quando uma família indicada
-                  assina a Comunidade dos Criadores, você recebe um agradecimento
+                  Como embaixador(a), você pode presentear famílias com 7 dias de acesso ao curso
+                  Cadê Todo Mundo? sem custo, a partir do cadastro pelo link. Se uma família
+                  indicada assinar a Comunidade dos Criadores, você recebe um agradecimento
                   {bonusValue ? ` de ${bonusValue}` : ''} por Pix, depois da garantia de 7 dias.
                 </p>
                 {/* Os TERMOS moram aqui, no ponto em que a pessoa se

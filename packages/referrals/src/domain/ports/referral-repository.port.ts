@@ -45,6 +45,8 @@ export interface RedemptionRecord {
   lastError: string | null
   attemptCount: number
   completedAt: Date | null
+  /** Null identifica resgates anteriores à política de sete dias. */
+  accessDurationDays: number | null
   createdAt: Date
 }
 

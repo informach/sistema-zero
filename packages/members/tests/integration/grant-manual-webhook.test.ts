@@ -80,6 +80,37 @@ describe('POST /members/webhooks/grant-manual (bolsa do referrals)', () => {
     expect(hubCalls).toEqual([{ userId: USER, event: 'grant' }])
   })
 
+  test('curso-presente vence exatamente em expiresAt sem afetar outra concessão', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'cade-todo-mundo', 'published', 'kids')
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    const raw = JSON.stringify({
+      userId: USER,
+      mode: 'course',
+      courseRef: 'cade-todo-mundo',
+      expiresAt: expiresAt.toISOString(),
+      sourceId: 'scholarship:red-7d',
+    })
+
+    expect((await post(app, raw, 'course-7d')).status).toBe(200)
+    expect(
+      await entitlements.listActiveByUser(USER, new Date(expiresAt.getTime() - 1)),
+    ).toHaveLength(1)
+    expect(await entitlements.listActiveByUser(USER, expiresAt)).toHaveLength(0)
+
+    const independent = JSON.stringify({
+      userId: USER,
+      mode: 'course',
+      courseRef: 'cade-todo-mundo',
+      expiresAt: null,
+      sourceId: 'manual:other-campaign',
+    })
+    expect((await post(app, independent, 'course-other')).status).toBe(200)
+    const active = await entitlements.listActiveByUser(USER, expiresAt)
+    expect(active).toHaveLength(1)
+    expect(active[0]!.toSnapshot().sourceId).toBe('manual:other-campaign')
+  })
+
   test('curso ainda em rascunho recusa o grant sem marcar a entrega', async () => {
     const { app, courses, entitlements, hubCalls } = buildApp()
     seedSampleCourse(courses, 'cade-todo-mundo', 'draft', 'kids')

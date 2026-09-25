@@ -19,12 +19,27 @@ test('templates de indicação prometem o novo curso sem falsificar resgates his
   expect(invite).toContain('8 a 15 anos')
   expect(invite).toContain('Não pedimos cartão')
   expect(invite).toContain('apenas este curso')
+  expect(invite).toContain('7 dias')
+  expect(invite).toContain('cadastro')
 
   const welcome = referralTemplates.slice(
     referralTemplates.indexOf("key: 'referrals-scholarship-welcome'"),
+    referralTemplates.indexOf("key: 'referrals-scholarship-welcome-7d'"),
   )
   expect(welcome).not.toContain('Cadê Todo Mundo?')
   expect(welcome).not.toContain('Desafio do Primeiro Jogo')
+
+  const newWelcome = referralTemplates.slice(
+    referralTemplates.indexOf("key: 'referrals-scholarship-welcome-7d'"),
+    referralTemplates.indexOf("key: 'referrals-scholarship-existing-7d'"),
+  )
+  expect(newWelcome).toContain('7 dias')
+  expect(newWelcome).toContain('cadastro')
+
+  const existingWelcome = referralTemplates.slice(
+    referralTemplates.indexOf("key: 'referrals-scholarship-existing-7d'"),
+  )
+  expect(existingWelcome).toContain('7 dias')
 
   const existingAccountEmail = source.slice(
     source.indexOf("key: 'new-access'"),
