@@ -206,8 +206,8 @@ export function PensaApp({
   }, [adapter.transport])
 
   const loadProject = useCallback(
-    async (projectId: string) => {
-      setLoading(true)
+    async (projectId: string, showLoading = true) => {
+      if (showLoading) setLoading(true)
       setError(null)
       try {
         const result = await adapter.transport.request<{ project: PensaProjectDetailView }>(
@@ -229,7 +229,7 @@ export function PensaApp({
       } catch (cause) {
         setError(errorMessage(cause))
       } finally {
-        setLoading(false)
+        if (showLoading) setLoading(false)
       }
     },
     [adapter.transport],
@@ -379,6 +379,8 @@ export function PensaApp({
   }
 
   const refresh = () => loadProject(detail.id)
+  // A resposta do chat só atualiza os dados: a tela e o campo de mensagem continuam montados.
+  const refreshChat = () => loadProject(detail.id, false)
   const closePeek = () => {
     peekRef.current = null
     setPeek(null)
@@ -487,6 +489,7 @@ export function PensaApp({
                   busy={busy}
                   run={run}
                   refresh={refresh}
+                  refreshChat={refreshChat}
                   cardsRef={cardsRef}
                 />
               ) : (
@@ -1600,6 +1603,7 @@ function StageWorkspace(props: {
   busy: string | null
   run(key: string, action: () => Promise<void>): Promise<void>
   refresh(): Promise<void>
+  refreshChat(): Promise<void>
   /** A lista dos cartões do "Meu plano" (o "Ver os Cartões de Criação" rola até ela). */
   cardsRef?: React.RefObject<HTMLDivElement | null>
 }) {
@@ -1680,9 +1684,11 @@ function StageZ(props: StageProps) {
       {
         onDelta: (delta) => setStreaming((value) => value + delta),
         onDone: () => {
-          abortRef.current = null
-          setStreaming('')
-          void props.refresh()
+          // Mantém a resposta visível até a transcrição persistida chegar do servidor.
+          void props.refreshChat().finally(() => {
+            abortRef.current = null
+            setStreaming('')
+          })
         },
         onError: (cause) => {
           abortRef.current = null
