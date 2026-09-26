@@ -29,6 +29,9 @@ import type {
   EbookDownloadView,
   GamificationDelta,
   GamificationMeView,
+  HelpCollectionView,
+  HelpTutorialEntry,
+  HelpTutorialView,
   HubAttachmentKind,
   HubChannelView,
   HubCommentView,
@@ -451,6 +454,20 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     /** Conteúdo da aula (blocos + anexos). Busca por ID da aula (não slug). */
     getLesson(slug: string, lessonId: string): Promise<GatewayResponse<LessonDetailView>> {
       return gw.gatewayFetch(`/members/courses/${enc(slug)}/lessons/${enc(lessonId)}`)
+    },
+
+    // ── "Como fazer" (biblioteca de ajuda): SÓ o publicado, qualquer conta ativa, sem progresso ──
+    /** Coleções ativas com a contagem de tutoriais publicados (Server Component). */
+    listHelpCollectionsReadonly(): Promise<GatewayResponse<{ collections: HelpCollectionView[] }>> {
+      return gw.gatewayFetchReadonly('/members/help/collections')
+    },
+    /** A lista publicada, com o texto achatado para a busca no navegador (Server Component). */
+    listHelpTutorialsReadonly(): Promise<GatewayResponse<{ tutorials: HelpTutorialEntry[] }>> {
+      return gw.gatewayFetchReadonly('/members/help/tutorials')
+    },
+    /** Um tutorial publicado pelo slug (Server Component). 404 = não existe ou não está publicado. */
+    getHelpTutorialReadonly(slug: string): Promise<GatewayResponse<HelpTutorialView>> {
+      return gw.gatewayFetchReadonly(`/members/help/tutorials/${enc(slug)}`)
     },
 
     /**

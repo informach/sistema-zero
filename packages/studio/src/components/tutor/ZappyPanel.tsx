@@ -11,6 +11,7 @@ import { useStudioLayout } from '../../studio/layoutContext'
 import {
   buildStudioTutorContext,
   type StudioTutorBlockReference,
+  type StudioTutorHelpReference,
   type StudioTutorHistoryMessage,
   type StudioTutorLessonReference,
   type StudioTutorResponse,
@@ -58,6 +59,9 @@ function normalizeResponse(response: StudioTutorResponse): StudioTutorResponse {
     // não achou".
     ...(response.lessonReferences !== undefined
       ? { lessonReferences: list<StudioTutorLessonReference>(response.lessonReferences) }
+      : {}),
+    ...(response.helpReferences !== undefined
+      ? { helpReferences: list<StudioTutorHelpReference>(response.helpReferences) }
       : {}),
     ...(response.suggestions !== undefined
       ? { suggestions: list<string>(response.suggestions) }
@@ -528,6 +532,21 @@ export function ZappyPanel(): JSX.Element | null {
                       </button>
                     ) : null,
                   )}
+                </div>
+              ) : null}
+              {config?.openHelp && message.response?.helpReferences?.length ? (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {message.response.helpReferences.map((reference) => (
+                    <button
+                      key={reference.slug}
+                      type="button"
+                      onClick={() => config.openHelp?.(reference)}
+                      className="rounded-full border border-sz-border bg-sz-surface px-2.5 py-1 font-semibold text-sz-fg-soft text-xs hover:border-sz-accent hover:text-sz-accent"
+                      title="Abrir o passo a passo em nova aba"
+                    >
+                      Passo a passo: {reference.title} ↗
+                    </button>
+                  ))}
                 </div>
               ) : null}
               {message.role === 'assistant' && message.response && !isQuota ? (

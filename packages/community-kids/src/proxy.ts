@@ -35,6 +35,8 @@ export const proxy = createMemberProxy({
     // O Ranking se defendia só no RSC (redirect na página). Com o menu oferecendo o
     // link direto, ele passa a ser barrado na BORDA como as irmãs da Comunidade.
     '/ranking',
+    // "Como fazer" (biblioteca de ajuda): de todo perfil, mas só logado.
+    '/como-fazer',
     '/perfis',
   ],
   isRootProtected: true,

@@ -24,6 +24,9 @@ describe('backToSection', () => {
     ['/meu-avatar', '/perfil', 'Voltar ao Meu espaço'],
     ['/cursos/trilha/faisca', '/cursos', 'Voltar ao mapa'],
     ['/cursos/desafio-do-primeiro-jogo', '/cursos', 'Voltar ao mapa'],
+    // O "Como fazer" fica FORA das cinco seções (atalho no rodapé), mas a volta é pelo mapa.
+    ['/como-fazer/pinta-camada', '/como-fazer', 'Voltar ao Como fazer'],
+    ['/como-fazer/colecao/pinta', '/como-fazer', 'Voltar ao Como fazer'],
   ]
 
   it.each(casos)('%s volta para %s', (rota, href, label) => {

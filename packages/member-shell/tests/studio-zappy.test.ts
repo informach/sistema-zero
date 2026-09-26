@@ -527,6 +527,49 @@ describe('Validação da resposta do modelo (invalidStudioZappyAnswerReason)', (
     expect(response.suggestions).toEqual(['Como faço ele atirar?'])
   })
 
+  test('"Como fazer": só o slug que ESTAVA nos hits vira helpReferences; o resto cai', () => {
+    const raw = {
+      text: 'Toque em Pré-visualização no alto da área de trabalho.',
+      scope: 'block' as const,
+      blockReferences: [],
+      lessonReferences: [],
+      helpReferences: [{ slug: 'estudio-pre-visualizacao' }, { slug: 'slug-inventado' }],
+      suggestions: [],
+    }
+    expect(reason(raw)).toBeNull()
+    const response = validatedStudioZappyResponse(
+      raw,
+      'criador',
+      byType,
+      instances,
+      'blocks',
+      'classic',
+      [
+        {
+          kind: 'help-tutorial',
+          slug: 'estudio-pre-visualizacao',
+          title: 'Como ver meu jogo na Pré-visualização',
+          collectionTitle: 'Estúdio',
+          content: 'Onde o jogo aparece. 1. Abra a aba.',
+        },
+      ],
+    )
+    expect(response.helpReferences).toEqual([
+      { slug: 'estudio-pre-visualizacao', title: 'Como ver meu jogo na Pré-visualização' },
+    ])
+    // Sem hit de ajuda, nada de chip (nem campo vazio).
+    const semHit = validatedStudioZappyResponse(
+      raw,
+      'criador',
+      byType,
+      instances,
+      'blocks',
+      'classic',
+      [],
+    )
+    expect(semHit.helpReferences).toBeUndefined()
+  })
+
   test('a regra do prompt pede o CAMINHO da paleta em texto corrido, sem crases', () => {
     expect(prompt.system).toContain('sem crases')
     expect(prompt.system).toContain('"caminho"')

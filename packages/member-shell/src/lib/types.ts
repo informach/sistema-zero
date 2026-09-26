@@ -5,6 +5,15 @@ import type {
   SectionProgressView,
 } from '@sistemazero/core/learning'
 import type { SceneVozes, ZappySpeechOverride } from '@sistemazero/core/learning/scene'
+
+// "Como fazer" (biblioteca de ajuda do Kids): as views nascem no core e valem nos dois lados.
+export type {
+  HelpCollectionView,
+  HelpTutorialDocument,
+  HelpTutorialEntry,
+  HelpTutorialView,
+} from '@sistemazero/core/help'
+
 /**
  * Tipos compartilhados client/server do app do aluno. SEM lógica e SEM imports de
  * `server/*` — Client Components importam daqui com segurança. Espelham as views
@@ -1281,6 +1290,8 @@ export interface ZappyStoredResponseView {
     lessonId: string
     title: string
   }>
+  /** Tutoriais do "Como fazer" citados: o painel mostra "Passo a passo: …" e abre `/como-fazer/<slug>`. */
+  helpReferences?: Array<{ slug: string; title: string }>
   /** Continuações prováveis da criança (chips que preenchem o campo, ≤3). */
   suggestions?: string[]
   createdAt: string
@@ -1299,7 +1310,8 @@ export interface ZappyHistoryPageView {
   nextCursor: string | null
 }
 
-export interface ZappyKnowledgeHitView {
+export interface ZappyLessonKnowledgeHitView {
+  kind?: 'lesson'
   courseId: string
   courseSlug: string
   courseTitle: string
@@ -1307,6 +1319,25 @@ export interface ZappyKnowledgeHitView {
   lessonTitle: string
   sourceType: 'video-vtt' | 'rich-text' | 'student-notebook'
   content: string
+}
+
+/** Um tutorial publicado do "Como fazer" que casou com a pergunta (sem curso, sem gate). */
+export interface ZappyHelpKnowledgeHitView {
+  kind: 'help-tutorial'
+  slug: string
+  title: string
+  collectionTitle: string
+  content: string
+}
+
+export type ZappyKnowledgeHitView = ZappyLessonKnowledgeHitView | ZappyHelpKnowledgeHitView
+
+export function isZappyHelpHit(hit: ZappyKnowledgeHitView): hit is ZappyHelpKnowledgeHitView {
+  return hit.kind === 'help-tutorial'
+}
+
+export function isZappyLessonHit(hit: ZappyKnowledgeHitView): hit is ZappyLessonKnowledgeHitView {
+  return hit.kind !== 'help-tutorial'
 }
 
 /** Card do filho na área dos pais: stats do members + identidade do perfil (auth). */

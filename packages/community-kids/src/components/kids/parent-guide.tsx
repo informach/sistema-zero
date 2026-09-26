@@ -3,6 +3,7 @@
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Info } from 'lucide-react'
+import Link from 'next/link'
 import { KidsMascot } from '@/components/kids/mascot'
 import type { GuideWelcomeStep } from '@/lib/guide'
 
@@ -229,7 +230,23 @@ export function GuideWelcomeDialog({
               <span aria-hidden="true" className="text-xl">
                 {step.emoji}
               </span>
-              <span className="text-foreground text-sm">{step.text}</span>
+              <span className="text-foreground text-sm">
+                {step.text}
+                {step.link ? (
+                  <>
+                    {' '}
+                    <Link
+                      href={step.link.href}
+                      prefetch={false}
+                      onClick={onClose}
+                      className="font-bold text-primary underline underline-offset-2"
+                    >
+                      {step.link.label}
+                    </Link>
+                    .
+                  </>
+                ) : null}
+              </span>
             </li>
           ))}
         </ul>

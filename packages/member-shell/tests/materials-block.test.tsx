@@ -106,6 +106,33 @@ describe('o bloco de materiais complementares', () => {
     expect(html).toContain('rel="noopener noreferrer"')
   })
 
+  test('link interno do "Como fazer" abre em outra aba e leva o caminho da aula de volta', () => {
+    const html = render([
+      {
+        id: 'l1',
+        kind: 'link',
+        url: '/como-fazer/estudio-pre-visualizacao',
+        label: 'Pré-visualização',
+      },
+    ])
+    expect(html).toContain(
+      'href="/como-fazer/estudio-pre-visualizacao?voltar=%2Fcursos%2Fcorre-dino%2Faulas%2F11111111-1111-4111-8111-111111111111"',
+    )
+    expect(html).toContain('target="_blank"')
+    expect(html).toContain('data-sz-help-link')
+    // Fora da aula (prévia do admin, sem player) o link vai sem `voltar`.
+    const previa = renderToStaticMarkup(
+      <MaterialsBlockView
+        blockId="block"
+        content={{
+          kind: 'materials',
+          items: [{ id: 'l1', kind: 'link', url: '/como-fazer/x', label: 'x' }],
+        }}
+      />,
+    )
+    expect(previa).toContain('href="/como-fazer/x"')
+  })
+
   test('o nome do bloco aparece quando a autora escreve um, e some quando não', () => {
     expect(render([arquivo], 'Arquivos do Pinta')).toContain('Arquivos do Pinta')
     expect(render([arquivo])).not.toContain('sz-lesson-materials-title')

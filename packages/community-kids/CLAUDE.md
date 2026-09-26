@@ -2965,3 +2965,37 @@ A validação em staging e a promoção para produção estão em `../../docs/pl
   limitado e existe atualização manual. Falha de consulta não deve pedir recompra ou apagar marcos.
 
 As atividades interativas vivem nos blocos da própria aula. Respostas locais são isoladas por perfil/aula/bloco/revisão; escritas exigem `x-sz-viewer` correspondente à sessão. Vídeos usam Vimeo pelo componente compartilhado, com retomada por bloco e hash de privacidade. Não há auto-conclusão por porcentagem de vídeo. O upload continua no admin.
+
+## "Como fazer": a biblioteca de ajuda (26/09/2026)
+
+Pedido dela: uma área de ajuda SEPARADA da Jornada e dos cursos, onde a criança acha rápido
+"como usar" a plataforma ou uma ferramenta, também depois de terminar um curso, e que a equipe
+atualiza quando a interface muda sem obrigar ninguém a refazer aula. Rotas em
+`app/(app)/como-fazer/` (`/como-fazer` = busca + coleções, `/como-fazer/colecao/<slug>`,
+`/como-fazer/<slug>`), todas `force-dynamic`, em `protectedPrefixes`, FORA do modo foco.
+
+- **Sem progresso, sem XP, sem matrícula:** a página lê só o publicado (`listHelp*Readonly`/
+  `getHelpTutorialReadonly` do shell, gate do gateway = conta ativa) e nunca importa rota de
+  conclusão (`tests/help-pages.test.tsx` lê as fontes). Ver tutorial NÃO libera ferramenta: o
+  `HelpToolNotice` diz, de forma FACTUAL, "ainda não está liberado neste perfil" ou "abre mais
+  adiante na sua jornada" e oferece o atalho só quando `getCreativeTools()` responde `available`.
+  ⚠️ NUNCA o `KidsLockedProduct` aqui (ele tem pitch); a ajuda é neutra por decisão de produto.
+- **A entrada é um ATALHO, não uma sexta seção** (decisão dela): `HelpShortcut` em pílula no
+  rodapé do menu (acima dos Recados) e como ícone na barra de cima do celular. `HELP_NAV` mora
+  em `nav.ts` FORA de `NAV_ITEMS` (que segue com 5), e `backToSection` o conhece.
+- **A busca roda no navegador** (`components/kids/help/help-search.tsx`, régua do core
+  `searchHelpTutorials`: sem acento, prefixo, título > palavras alternativas > resumo > passos)
+  e abre o TUTORIAL exato, nunca a coleção. Teclado: seta para baixo vai ao primeiro resultado.
+- **Coleções vêm do banco**; ícone e cor são allowlists do core mapeadas em
+  `lib/help-collections.ts` (`Record` completo: valor novo no core sem entrada aqui é erro de
+  tipo). Os tons reusam `--tool-*` das oficinas e a cor da casa.
+- **Volta para a aula:** `?voltar=` allowlistado por `lib/help-return.ts` (`LESSON_PATH`, mesma
+  régua do `resolveAvatarReturnPath`). Quem escreve o `voltar` é o link da aula (materiais ou
+  `rich_text`, que agora passa `helpReturnPath` ao `renderMarkdown` quando está numa aula); o
+  link abre em outra aba (decisão dela).
+- **Zappy:** os hosts do Estúdio passam `openHelp: openStudioZappyHelp`
+  (`lib/studio-zappy-navigation.ts`), e o chip "Passo a passo: …" abre `/como-fazer/<slug>`.
+- O guia "Como funciona?" ganhou o passo final `ajuda` com link (é onboarding; a biblioteca é
+  consulta, e os dois não se confundem). Estilos em `globals.css` (`.sz-help-*`, em camada).
+- Autoria: admin em `/admin/como-fazer` (coleções, tutoriais, importar/exportar JSON, revisar e
+  publicar). Lote inicial em `docs/como-fazer/`.

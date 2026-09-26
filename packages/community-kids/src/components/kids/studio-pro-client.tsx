@@ -10,7 +10,7 @@ import type { StudioTutorConfig } from '@sistemazero/studio'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
-import { openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
+import { openStudioZappyHelp, openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 
@@ -66,6 +66,7 @@ export function StudioProClient({
         ? {
             adapter: createStudioZappyAdapter(),
             openLesson: openStudioZappyLesson,
+            openHelp: openStudioZappyHelp,
             cooldownMs: 1_500,
           }
         : undefined,

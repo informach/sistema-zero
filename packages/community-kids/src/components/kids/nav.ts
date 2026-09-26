@@ -2,6 +2,7 @@ import type { CreativeToolId } from '@sistemazero/core/journey'
 import {
   Blocks,
   Box,
+  CircleHelp,
   CircleUserRound,
   GraduationCap,
   Home,
@@ -97,6 +98,20 @@ export const NAV_ITEMS: NavItem[] = [
 export const MOBILE_NAV_ITEMS = NAV_ITEMS
 
 /**
+ * O "Como fazer" (a biblioteca de ajuda, 26/09/2026) fica FORA de `NAV_ITEMS` de propósito:
+ * decisão da dona, ele não é uma sexta seção nem uma sexta aba. Mora no rodapé do menu do
+ * computador e como ícone na barra de cima do celular (`HelpShortcut`). Está aqui, ao lado
+ * do mapa, porque a setinha de voltar das páginas dele (`backToSection`) deriva deste
+ * registro, e não de uma lista à parte.
+ */
+export const HELP_NAV: NavItem = {
+  href: '/como-fazer',
+  label: 'Como fazer',
+  icon: CircleHelp,
+  backLabel: 'Voltar ao Como fazer',
+}
+
+/**
  * As rotas que acendem o item além do próprio `href`. É DERIVADA dos filhos, nunca
  * escrita à mão: o menu é a fonte única do mapa (ver `backToSection`), e uma segunda
  * lista de rotas envelheceria em silêncio assim que um filho novo entrasse.
@@ -157,7 +172,7 @@ export function openGroupFor(pathname: string, escolhido: string | null): string
  * galerias das ferramentas usam a mesma régua pelo contrato `hostChrome.back`.
  */
 export function backToSection(pathname: string): { href: string; label: string } | null {
-  for (const item of NAV_ITEMS) {
+  for (const item of [...NAV_ITEMS, HELP_NAV]) {
     if (pathname === item.href) return null
     const inside =
       isNavActive(pathname, item.href, navMatch(item)) ||

@@ -24,7 +24,7 @@ import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-c
 import { pensaStudioLinkKey, pensaStudioProjectId } from '../../lib/pensa-studio-link'
 import { resumeExistingCreation } from '../../lib/resume-creation'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
-import { openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
+import { openStudioZappyHelp, openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { StudioFullEditor } from './studio-full-editor'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
@@ -532,6 +532,7 @@ export function StudioFullClient({
         ? {
             adapter: createStudioZappyAdapter(),
             openLesson: openStudioZappyLesson,
+            openHelp: openStudioZappyHelp,
             cooldownMs: 1_500,
             credits: aiCredits,
           }

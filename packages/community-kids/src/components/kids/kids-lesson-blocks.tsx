@@ -22,10 +22,11 @@ import {
   MessageCircle,
   Palette,
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { cn } from '@/lib/cn'
 import { parseLessonBlock } from '@/lib/lesson-block-content'
+import { isLessonPath } from '@/lib/lesson-path'
 import { renderMarkdown } from '@/lib/markdown'
 import type {
   AudioBlock,
@@ -274,9 +275,18 @@ function StudioBlockKids({
 
 // ── rich_text: markdown SIMPLES renderizado de forma controlada (sem HTML cru) ─
 function RichText({ content }: { content: RichTextBlock }) {
+  // Um link para o "Como fazer" escrito no texto da aula leva o caminho DESTA aula de volta
+  // (`?voltar=`), para o tutorial oferecer "Voltar para a aula". Fora de aula, sem `voltar`.
+  const pathname = usePathname()
   const markdown = content.markdown ?? ''
   if (!markdown) return null
-  return <div className="lesson-prose">{renderMarkdown(markdown)}</div>
+  return (
+    <div className="lesson-prose">
+      {renderMarkdown(markdown, {
+        ...(isLessonPath(pathname) ? { helpReturnPath: pathname } : {}),
+      })}
+    </div>
+  )
 }
 
 // ── video: URL canônica por provider (nunca interpola o src cru em iframe) ────

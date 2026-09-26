@@ -2124,3 +2124,32 @@ não basta o catálogo de blocos continuar compatível com um plano antigo.
 perfil. Campos aditivos do detalhe do curso: id, milestones e showcaseLessonId.
 
 `createLearningRoutes` atende Kids e Adult, exige perfil ativo e recusa impersonação somente leitura, campos extras e dono enviado no corpo. `x-sz-viewer` deve corresponder à sessão; não concede acesso. `LessonSections` preserva o editor entre seções; `LessonVideo` centraliza Vimeo e retomada. Atividades HTML usam iframe com origem opaca e protocolo validado por instância; checkpoints essenciais são avaliados no members.
+
+## "Como fazer": a biblioteca de ajuda do Kids (26/09/2026)
+
+Tutoriais curtos por TAREFA, separados dos cursos: sem progresso, sem XP, sem conclusão, de todo
+perfil. O conteúdo mora no members (`help_collections` + `help_tutorials`, só o publicado chega
+ao aluno). O que vive AQUI:
+
+- **`components/help-tutorial-view.tsx`** (`HelpTutorialView`): o tutorial como a criança o lê e
+  como a prévia do admin o mostra (o MESMO componente, para a prévia ser a página real). Passos
+  numerados em markdown (`renderMarkdown`), imagem com alt e "Veja também" por `renderRelated`
+  (o host conhece as rotas). ⚠️ O vídeo usa o **`VimeoPlayer` DIRETO com `watermark`** e SEM os
+  callbacks de progresso: decisão da dona, o vídeo do tutorial tem marca d'água como o da aula,
+  mas não tem retomada nem exigência de assistir. `parseVimeo`/`youtubeId` saíram de
+  `lesson-video.tsx` para **`lib/video-ids.ts`**, que os dois consomem.
+- **Link interno no markdown:** `renderInline` aceita `[texto](/como-fazer/<slug>)` (o ÚNICO
+  caminho interno; allowlist por prefixo + slug do core), em outra aba e com `data-sz-help-link`.
+  `RenderInlineOpts.helpReturnPath` acrescenta `?voltar=<caminho da aula>` (`helpLinkHref`), e a
+  página do tutorial no kids oferece "Voltar para a aula". O item `link` do bloco de materiais
+  aceita o mesmo caminho (o DTO do members também) e monta o `voltar` pelo `useLessonPlayer()`.
+  ⚠️ Decisão da dona: abre em NOVA ABA, para não atrapalhar o andamento da aula.
+- **Zappy:** `ZappyKnowledgeHitView` virou união (`isZappyLessonHit`/`isZappyHelpHit`); os hits
+  de tutorial entram no prompt como `ajudaComoFazer` e o modelo cita slugs em `helpReferences`
+  (≤2, validados contra os hits em `validatedStudioZappyResponse`, como `lessonReferences`).
+  `ZappyStoredResponseView.helpReferences` chega ao painel do Estúdio como chip "Passo a passo: …"
+  (`StudioTutorConfig.openHelp`, o kids abre `/como-fazer/<slug>` em nova aba). A regra "nunca
+  escreva link no texto" FICA: o link é chip, não texto.
+- Clients: `listHelpCollectionsReadonly`, `listHelpTutorialsReadonly`, `getHelpTutorialReadonly`
+  (Server Components, sem refresh). Testes: `tests/help-tutorial-view.test.tsx`,
+  `tests/materials-block.test.tsx` (link interno), `tests/studio-zappy.test.ts` (`helpReferences`).

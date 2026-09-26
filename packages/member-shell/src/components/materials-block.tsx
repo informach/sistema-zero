@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { downloadLessonAttachment, lessonAttachmentUrl } from '../lib/attachment-download'
 import { formatBytes, friendlyFileType } from '../lib/format'
-import { renderMarkdown } from '../lib/markdown'
+import { helpLinkHref, renderMarkdown } from '../lib/markdown'
 import type { MaterialItem, MaterialsBlock } from '../lib/types'
 import { videoEmbedUrl } from '../lib/video-embed'
 import { useLessonPlayer } from './lesson-player-context'
@@ -24,6 +24,20 @@ import { useLessonPlayer } from './lesson-player-context'
  * o mesmo padrão dos outros ganchos `sz-lesson-*`. Renomear um deles quebra o desenho dos DOIS
  * apps em silêncio.
  */
+const HELP_LINK_PREFIX = /^\/como-fazer\/[a-z0-9]+(?:-[a-z0-9]+)*(?:[?#].*)?$/
+
+function isHelpLink(url: string): boolean {
+  return HELP_LINK_PREFIX.test(url)
+}
+
+/** O caminho da aula em que o bloco está (as duas comunidades usam a mesma rota). */
+function lessonReturnPath(
+  player: { lessonId: string; courseSlug: string } | null | undefined,
+): string | undefined {
+  if (!player?.lessonId || !player.courseSlug) return undefined
+  return `/cursos/${encodeURIComponent(player.courseSlug)}/aulas/${encodeURIComponent(player.lessonId)}`
+}
+
 export function MaterialsBlockView({
   blockId,
   blockRevision,
@@ -135,10 +149,18 @@ export function MaterialsBlockView({
             {item.kind === 'link' ? (
               <>
                 <a
-                  href={item.url}
+                  // Link INTERNO do "Como fazer" (`/como-fazer/<slug>`): mesma aba nova (a ajuda
+                  // não atrapalha a aula), mas leva o caminho da aula de volta (`?voltar=`) e é
+                  // da nossa origem — o referrer pode ir.
+                  href={
+                    isHelpLink(item.url)
+                      ? helpLinkHref(item.url, lessonReturnPath(player))
+                      : item.url
+                  }
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel={isHelpLink(item.url) ? 'noopener' : 'noopener noreferrer'}
                   className="sz-lesson-material-action"
+                  {...(isHelpLink(item.url) ? { 'data-sz-help-link': '' } : {})}
                 >
                   <span className="sz-lesson-material-icon" aria-hidden>
                     <ExternalLink className="size-4" />

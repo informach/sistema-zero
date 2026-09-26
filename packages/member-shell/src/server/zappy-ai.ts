@@ -10,7 +10,12 @@ import { isStudioTutorSensitivePath } from '@sistemazero/studio/tutor-safety'
 import { z } from 'zod'
 import { getEnv } from '../lib/env'
 import type { StudioTier } from '../lib/studio-tier'
-import type { ZappyKnowledgeHitView, ZappyStoredResponseView } from '../lib/types'
+import {
+  isZappyHelpHit,
+  isZappyLessonHit,
+  type ZappyKnowledgeHitView,
+  type ZappyStoredResponseView,
+} from '../lib/types'
 import { PENSA_CHILD_SAFETY_CLAUSE } from './pensa-agents/safety'
 import { completePensaJson } from './pensa-llm'
 import {
@@ -99,6 +104,18 @@ const RawAnswer = z.object({
     )
     .max(8),
   lessonReferences: z.array(z.object({ lessonId: z.string().uuid() })).max(3),
+  // Tutoriais do "Como fazer" citados (slug de `ajudaComoFazer`); o painel vira chip.
+  helpReferences: z
+    .array(
+      z.object({
+        slug: z
+          .string()
+          .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+          .max(80),
+      }),
+    )
+    .max(2)
+    .optional(),
   suggestions: z.array(z.string().min(1).max(60)).max(3),
 })
 
@@ -108,7 +125,14 @@ const RAW_ANSWER_JSON_SCHEMA = {
   type: 'object',
   additionalProperties: false,
   // ⚠️ Modo estrito do provider: TODO campo em required (array vazio quando não usar).
-  required: ['text', 'scope', 'blockReferences', 'lessonReferences', 'suggestions'],
+  required: [
+    'text',
+    'scope',
+    'blockReferences',
+    'lessonReferences',
+    'helpReferences',
+    'suggestions',
+  ],
   properties: {
     text: { type: 'string', minLength: 1, maxLength: 8000 },
     scope: {
@@ -147,6 +171,16 @@ const RAW_ANSWER_JSON_SCHEMA = {
         additionalProperties: false,
         required: ['lessonId'],
         properties: { lessonId: { type: 'string', format: 'uuid' } },
+      },
+    },
+    helpReferences: {
+      type: 'array',
+      maxItems: 2,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['slug'],
+        properties: { slug: { type: 'string', minLength: 1, maxLength: 80 } },
       },
     },
     suggestions: {
@@ -603,6 +637,7 @@ function systemPrompt(
     'Ao citar um bloco no texto, diga onde ele fica copiando EXATAMENTE o valor "caminho" do catálogo, em texto corrido e sem crases (ex.: o bloco "nome do bloco" fica em Programação › 🏷️ Variáveis). Nunca invente, encurte nem repita o nome de um nível no outro.',
     'Cite no texto somente blocos que EXISTEM no catálogo abaixo, pelo valor exato de "nome", e inclua cada bloco citado também em blockReferences. Nunca invente bloco: se a ação pedida não tem bloco no catálogo, diga que esse bloco ainda não existe no Estúdio e mostre um caminho com os blocos que existem.',
     'Em lessonReferences use somente lessonId de releasedLessonKnowledge. Nunca invente curso ou aula.',
+    'Se a pergunta for sobre COMO USAR a plataforma ou uma ferramenta (onde fica um botão, como abrir, salvar, publicar) e um item de ajudaComoFazer responder, explique em poucas palavras com base nele e cite o slug em helpReferences (no máximo 2, só slugs de ajudaComoFazer). Nunca escreva o endereço ou o link no texto: o painel mostra o passo a passo como um botão. Sem item que responda, deixe helpReferences vazio.',
     'Preencha "suggestions" com até 3 continuações prováveis da criança (≤ 8 palavras cada, em primeira pessoa, ex.: "Como faço ele atirar?"). Sem dado pessoal; [] quando não fizer sentido.',
     `Catálogo autoritativo permitido: ${JSON.stringify(allowed.map(catalogPromptEntry))}`,
     `Trechos relevantes dos manuais oficiais: ${JSON.stringify(manuals)}`,
@@ -678,10 +713,23 @@ function projectData(
           path: file.path,
           content: file.content.slice(0, 4_000),
         }))
-  const releasedLessonKnowledge = knowledge.slice(0, 5).map((hit) => ({
-    ...hit,
-    content: hit.content.slice(0, 1_200),
-  }))
+  const releasedLessonKnowledge = knowledge
+    .filter(isZappyLessonHit)
+    .slice(0, 5)
+    .map((hit) => ({
+      ...hit,
+      content: hit.content.slice(0, 1_200),
+    }))
+  // Tutoriais do "Como fazer" que casaram com a pergunta: o modelo explica e cita o slug.
+  const ajudaComoFazer = knowledge
+    .filter(isZappyHelpHit)
+    .slice(0, 3)
+    .map((hit) => ({
+      slug: hit.slug,
+      titulo: hit.title,
+      colecao: hit.collectionTitle,
+      texto: hit.content.slice(0, 900),
+    }))
   // Memória: últimos 6 turnos, 280 chars cada (perguntas já chegam PII-redigidas;
   // respostas são saída do próprio modelo).
   const conversaRecente = recentTurns.slice(-6).map((turn) => ({
@@ -707,6 +755,7 @@ function projectData(
         ...(context.mode !== 'blocks' ? { code } : {}),
       },
       releasedLessonKnowledge,
+      ...(ajudaComoFazer.length > 0 ? { ajudaComoFazer } : {}),
     })
 
   let user = serialize()
@@ -945,7 +994,13 @@ export function validatedStudioZappyResponse(
     profileName,
   )
   if (mode === 'blocks') text = text.replace(/```[\s\S]*?```/g, '').replace(/`([^`]+)`/g, '$1')
-  const lessons = new Map(knowledge.map((hit) => [hit.lessonId, hit]))
+  const lessons = new Map(knowledge.filter(isZappyLessonHit).map((hit) => [hit.lessonId, hit]))
+  // Só tutoriais que ESTAVAM nos hits: slug inventado cai em silêncio, como a aula.
+  const helpHits = new Map(knowledge.filter(isZappyHelpHit).map((hit) => [hit.slug, hit]))
+  const helpReferences = (raw.helpReferences ?? []).flatMap((reference) => {
+    const hit = helpHits.get(reference.slug)
+    return hit ? [{ slug: hit.slug, title: hit.title }] : []
+  })
   const lessonReferences = raw.lessonReferences.flatMap((reference) => {
     const hit = lessons.get(reference.lessonId)
     return hit
@@ -971,6 +1026,7 @@ export function validatedStudioZappyResponse(
     scope: raw.scope,
     blockReferences: refs.slice(0, 8),
     ...(lessonReferences.length > 0 ? { lessonReferences: lessonReferences.slice(0, 3) } : {}),
+    ...(helpReferences.length > 0 ? { helpReferences: helpReferences.slice(0, 2) } : {}),
     ...(suggestions.length > 0 ? { suggestions } : {}),
     createdAt: new Date().toISOString(),
   }
@@ -1021,7 +1077,7 @@ export function prepareStudioZappyAnswer(input: StudioZappyAnswerInput): Prepare
     knowledge,
     byType,
     instances,
-    lessons: new Set(knowledge.map((hit) => hit.lessonId)),
+    lessons: new Set(knowledge.filter(isZappyLessonHit).map((hit) => hit.lessonId)),
   }
 }
 

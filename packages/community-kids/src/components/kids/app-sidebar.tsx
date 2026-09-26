@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { cn } from '@/lib/cn'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { useFocusMode } from './focus-mode'
+import { HelpShortcut } from './help-shortcut'
 import { KidsLogo } from './kids-logo'
 import {
   isNavActive,
@@ -230,6 +231,8 @@ export function AppSidebar({
       </nav>
 
       <div className={cn('flex flex-col gap-3.5 pt-4 pb-7', 'shrink-0')}>
+        {/* O "Como fazer" acima dos Recados (decisão da dona, 26/09/2026): atalho, não seção. */}
+        <HelpShortcut variant="pill" />
         <RecadosBell variant="pill" />
         {gamification ? <StreakWidget gamification={gamification} /> : null}
         <UserMenu

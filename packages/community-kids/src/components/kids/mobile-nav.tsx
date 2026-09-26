@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/cn'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
+import { HelpShortcut } from './help-shortcut'
 import { KidsLogo } from './kids-logo'
 import {
   isNavActive,
@@ -45,6 +46,7 @@ export function MobileTopbar({
       </Link>
       <div className="flex min-w-0 items-center gap-2">
         {gamification ? <StreakWidget gamification={gamification} compact /> : null}
+        <HelpShortcut variant="icon" />
         <RecadosBell />
         <UserMenu user={user} gamification={gamification} avatarPhotoUrl={avatarPhotoUrl} />
       </div>

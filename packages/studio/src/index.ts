@@ -176,6 +176,7 @@ export type {
   StudioTutorBlockReference,
   StudioTutorConfig,
   StudioTutorFeedbackInput,
+  StudioTutorHelpReference,
   StudioTutorHistoryMessage,
   StudioTutorLessonReference,
   StudioTutorProjectContext,

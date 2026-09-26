@@ -198,6 +198,46 @@ describe('ZappyPanel', () => {
     expect(opened).toEqual([reference])
   })
 
+  it('abre o tutorial do "Como fazer" pelo callback do host, em chip próprio', async () => {
+    const opened: Array<{ slug: string; title: string }> = []
+    const tutorResponse = {
+      ...response(),
+      helpReferences: [
+        { slug: 'estudio-pre-visualizacao', title: 'Como ver meu jogo na Pré-visualização' },
+      ],
+    }
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({
+        messages: [
+          {
+            id: tutorResponse.id,
+            role: 'assistant',
+            text: tutorResponse.text,
+            createdAt: tutorResponse.createdAt,
+            response: tutorResponse,
+          },
+        ],
+        nextCursor: null,
+      }),
+      deleteHistory: async () => undefined,
+      ask: async () => answer(tutorResponse),
+      feedback: async () => undefined,
+    }
+    const view = render(
+      renderPanel(adapter, {
+        openHelp: (reference) => {
+          opened.push(reference)
+        },
+      }),
+    )
+
+    fireEvent.click(await view.findByText('Passo a passo: Como ver meu jogo na Pré-visualização ↗'))
+
+    expect(opened).toEqual([
+      { slug: 'estudio-pre-visualizacao', title: 'Como ver meu jogo na Pré-visualização' },
+    ])
+  })
+
   it('não mostra referência Blockly histórica em projeto Pro', async () => {
     const proProject = {
       ...createEmptyProject('project-pro', 'Projeto Pro'),

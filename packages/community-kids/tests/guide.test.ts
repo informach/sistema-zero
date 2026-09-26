@@ -169,7 +169,7 @@ describe('resolveChildGuideStep — fase 2, a criança na home', () => {
   })
 
   /** A explicação FIXA do app, na ordem em que a criança a lê. */
-  const EXPLICACAO: GuideWelcomeStepId[] = ['aulas', 'xp', 'criar', 'mural', 'jornada']
+  const EXPLICACAO: GuideWelcomeStepId[] = ['aulas', 'xp', 'criar', 'mural', 'jornada', 'ajuda']
 
   it('boas-vindas de quem já estudou não promete uma primeira aula', () => {
     const steps = childWelcomeSteps({

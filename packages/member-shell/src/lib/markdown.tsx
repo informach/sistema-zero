@@ -33,6 +33,18 @@ export function imageStyleFromAttrs(raw: string | undefined): CSSProperties | un
   return Object.keys(style).length > 0 ? style : undefined
 }
 
+/** `[texto](/como-fazer/<slug>)` — o único caminho interno que o markdown aceita. */
+const HELP_LINK = /^\[([^\]]+)\]\((\/como-fazer\/[a-z0-9]+(?:-[a-z0-9]+)*)\)$/
+
+/**
+ * O href de um link do "Como fazer" a partir da AULA: acrescenta `?voltar=<caminho da aula>`
+ * para a página do tutorial oferecer a volta. Puro e exportado: o bloco de materiais monta o
+ * mesmo href.
+ */
+export function helpLinkHref(path: string, returnPath?: string): string {
+  return returnPath ? `${path}?voltar=${encodeURIComponent(returnPath)}` : path
+}
+
 /** Opções de renderização inline (compartilhadas por `renderMarkdown`). */
 export interface RenderInlineOpts {
   /**
@@ -41,6 +53,12 @@ export interface RenderInlineOpts {
    * onde aninhar `<a>` é HTML inválido / armadilha de a11y.
    */
   plainLinks?: boolean
+  /**
+   * `helpReturnPath`: o caminho da AULA em que o texto está sendo lido. Um link interno para o
+   * "Como fazer" (`/como-fazer/<slug>`) ganha `?voltar=<caminho>` para a página do tutorial
+   * oferecer "Voltar para a aula". Fora de aula, ausente.
+   */
+  helpReturnPath?: string
   /**
    * `dropImages`: NÃO embute `<img>` de `![alt](url)` — renderiza só o texto
    * alternativo. Use em CONTEÚDO DO ALUNO (UGC: corpo de tópico/comentário do
@@ -225,7 +243,7 @@ export function stripImageMarkdown(md: string): string {
 export function renderInline(text: string, opts: RenderInlineOpts = {}): ReactNode[] {
   const parts: ReactNode[] = []
   const pattern =
-    /(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|`[^`]+`|!\[[^\]]*\]\((?:https?:\/\/[^\s)]+|\/api\/lesson-visuals\/[a-z0-9-]+\.svg)\)(?:\{[^}]*\})?|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g
+    /(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|`[^`]+`|!\[[^\]]*\]\((?:https?:\/\/[^\s)]+|\/api\/lesson-visuals\/[a-z0-9-]+\.svg)\)(?:\{[^}]*\})?|\[[^\]]+\]\(https?:\/\/[^\s)]+\)|\[[^\]]+\]\(\/como-fazer\/[a-z0-9]+(?:-[a-z0-9]+)*\))/g
   let last = 0
   let key = 0
   for (const match of text.matchAll(pattern)) {
@@ -266,6 +284,10 @@ export function renderInline(text: string, opts: RenderInlineOpts = {}): ReactNo
       }
     } else {
       const link = token.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/)
+      // Link INTERNO para um tutorial do "Como fazer": só esse prefixo (allowlist), com o slug
+      // no formato do core. Abre em outra aba como os externos (decisão da dona: a ajuda não
+      // atrapalha o andamento da aula) e leva o caminho de volta.
+      const help = link ? null : token.match(HELP_LINK)
       if (link?.[1] && link[2]) {
         // Dentro de conteúdo interativo / UGC, só o texto (não aninhar <a> em <button>;
         // não levar a criança p/ fora com 1 toque).
@@ -275,6 +297,22 @@ export function renderInline(text: string, opts: RenderInlineOpts = {}): ReactNo
           parts.push(
             <a key={`a-${key++}`} href={link[2]} target="_blank" rel="noopener noreferrer">
               {link[1]}
+            </a>,
+          )
+        }
+      } else if (help?.[1] && help[2]) {
+        if (opts.plainLinks) {
+          parts.push(help[1])
+        } else {
+          parts.push(
+            <a
+              key={`a-${key++}`}
+              href={helpLinkHref(help[2], opts.helpReturnPath)}
+              target="_blank"
+              rel="noopener"
+              data-sz-help-link=""
+            >
+              {help[1]}
             </a>,
           )
         }
