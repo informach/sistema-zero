@@ -31,6 +31,14 @@ const registry = new RouteRegistry([
   r({ id: 'ai-usage-consume', methods: ['POST'], pathPattern: '/members/ai-usage/consume' }),
   r({ id: 'ai-usage-admin', methods: ['GET'], pathPattern: '/members/admin/ai-usage' }),
   r({ id: 'members-access', methods: ['GET'], pathPattern: '/members/access' }),
+  // "Como fazer": wildcard do aluno e os dois do admin (leitura e escrita).
+  r({ id: 'members-help-read', methods: ['GET'], pathPattern: '/members/help/*' }),
+  r({ id: 'members-admin-help-read', methods: ['GET'], pathPattern: '/members/admin/help/*' }),
+  r({
+    id: 'members-admin-help-write',
+    methods: ['POST', 'PATCH', 'PUT'],
+    pathPattern: '/members/admin/help/*',
+  }),
   r({ id: 'hub-thread-get', methods: ['GET'], pathPattern: '/hub/threads/:id' }),
   r({ id: 'hub-my-threads', methods: ['GET'], pathPattern: '/hub/my-threads' }),
   r({ id: 'room-get', methods: ['GET'], pathPattern: '/members/room' }),
@@ -290,6 +298,36 @@ describe('RouteRegistry', () => {
     expect(registry.resolve('GET', '/members/avatars', 'v1')?.route.id).toBe('avatars-batch')
     // "avatars" ≠ "avatar": o lote nunca é confundido com o get do próprio avatar.
     expect(registry.resolve('GET', '/members/avatar', 'v1')?.route.id).toBe('avatar-get')
+  })
+
+  test('"Como fazer": o wildcard cobre lista, slug, id e ação, sem invadir os vizinhos', () => {
+    expect(registry.resolve('GET', '/members/help/tutorials', 'v1')?.route.id).toBe(
+      'members-help-read',
+    )
+    expect(registry.resolve('GET', '/members/help/tutorials/pinta-camada', 'v1')?.route.id).toBe(
+      'members-help-read',
+    )
+    expect(registry.resolve('GET', '/members/help/collections', 'v1')?.route.id).toBe(
+      'members-help-read',
+    )
+    // A criança não escreve.
+    expect(registry.resolve('POST', '/members/help/tutorials', 'v1')).toBeUndefined()
+    const id = '3d1c2f5e-7b8a-4c9d-8e0f-1a2b3c4d5e6f'
+    expect(registry.resolve('GET', `/members/admin/help/tutorials/${id}`, 'v1')?.route.id).toBe(
+      'members-admin-help-read',
+    )
+    expect(
+      registry.resolve('POST', `/members/admin/help/tutorials/${id}/publish`, 'v1')?.route.id,
+    ).toBe('members-admin-help-write')
+    expect(registry.resolve('PUT', '/members/admin/help/collections/order', 'v1')?.route.id).toBe(
+      'members-admin-help-write',
+    )
+    expect(registry.resolve('DELETE', `/members/admin/help/tutorials/${id}`, 'v1')).toBeUndefined()
+    // `/members/access` e `/members/admin/ai-usage` continuam nos donos.
+    expect(registry.resolve('GET', '/members/access', 'v1')?.route.id).toBe('members-access')
+    expect(registry.resolve('GET', '/members/admin/ai-usage', 'v1')?.route.id).toBe(
+      'ai-usage-admin',
+    )
   })
 
   test('quota de IA: /members/ai-usage/consume e /members/admin/ai-usage resolvem certo', () => {

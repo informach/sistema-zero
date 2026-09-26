@@ -244,6 +244,8 @@ const sharedResilience = {
 // pagamento): AFINA o teto global de 2 MB (necessário só p/ os lotes da SendGrid)
 // — 64 KB já é generoso p/ esses payloads e corta abuso barato em rota sem auth.
 const SMALL_JSON_BODY_BYTES = 64 * 1024
+// Tutoriais do "Como fazer": passos em markdown + import em lote (espelha o teto do members).
+const HELP_JSON_BODY_BYTES = 512 * 1024
 
 const config: GatewayConfigInput = {
   defaultVersion: 'v1',
@@ -1306,6 +1308,20 @@ const config: GatewayConfigInput = {
       id: 'members-access',
       methods: ['GET'],
       pathPattern: '/members/access',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // "Como fazer" (biblioteca de ajuda do Kids, 26/09/2026): tutoriais publicados, lidos por
+    // QUALQUER conta ativa (inclusive perfil só com o gratuito ou o Desafio). Ler um tutorial
+    // não libera ferramenta nem toca progresso — o gate é só "conta ativa". O wildcard cobre
+    // `collections`, `tutorials` e `tutorials/:slug`.
+    {
+      id: 'members-help-read',
+      methods: ['GET'],
+      pathPattern: '/members/help/*',
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },
@@ -2715,6 +2731,32 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
       // Trilha de auditoria: trocar o tema do mês afeta todos os alunos.
+      audit: {},
+    },
+    // "Como fazer" (autoria): leitura staff+ (a equipe consulta), escrita admin+. O wildcard
+    // cobre coleções e tutoriais (`export`, `import`, `:id`, `:id/publish`…). Corpo maior que o
+    // JSON pequeno: um tutorial tem passos em markdown e o import vem em lote.
+    {
+      id: 'members-admin-help-read',
+      methods: ['GET'],
+      pathPattern: '/members/admin/help/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-admin-help-write',
+      methods: ['POST', 'PATCH', 'PUT'],
+      pathPattern: '/members/admin/help/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: HELP_JSON_BODY_BYTES,
+      // Publicar/despublicar muda o que toda criança lê e o que o Zappy responde.
       audit: {},
     },
 

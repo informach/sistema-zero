@@ -1,3 +1,4 @@
+import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
   LearningAnswers,
   LearningResult,
@@ -1551,6 +1552,69 @@ export const challengeMonthOverrides = members.table(
   ],
 )
 
+// ── "Como fazer": a biblioteca de ajuda do Kids (26/09/2026) ─────────────────
+// Tutoriais curtos por TAREFA ("Como ver meu jogo na Pré-visualização"), separados dos
+// cursos de propósito: SEM FK para `lessons`, sem progresso, sem XP, sem quiz. Guardar como
+// aula puxaria o ledger de XP, a contagem de aulas publicadas, a trava de matrícula e a
+// reconciliação do Zappy (que apaga fonte sem bloco publicado). Qualquer conta ATIVA lê o
+// publicado (gate no gateway, não aqui). A coleção mora no banco (decisão da dona): o admin
+// cria, renomeia, reordena e arquiva; ícone e cor são allowlists do core.
+export const helpCollections = members.table(
+  'help_collections',
+  {
+    id: uuid('id').primaryKey(),
+    slug: varchar('slug', { length: 80 }).notNull(),
+    title: varchar('title', { length: 60 }).notNull(),
+    description: varchar('description', { length: 240 }).notNull().default(''),
+    icon: varchar('icon', { length: 32 }).notNull(),
+    tone: varchar('tone', { length: 32 }).notNull(),
+    position: integer('position').notNull().default(0),
+    status: varchar('status', { length: 16 }).notNull().default('active'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('help_collections_slug_uq').on(t.slug),
+    check('help_collections_status_check', sql`${t.status} in ('active', 'archived')`),
+  ],
+)
+
+// O tutorial é um JSON inteiro em duas cópias: o admin edita `draft`; "Publicar" copia para
+// `published` (a criança lê SÓ essa) e grava `published_search_text`, o texto achatado e
+// normalizado que a busca do kids (no navegador) e a do Zappy (tsvector, índice criado à mão
+// na migration) leem. `revision` é o lock otimista do PATCH (`expectedRevision`), inteiro
+// porque viaja no corpo. RESTRICT na coleção: coleção com tutorial não é apagável, só arquiva.
+export const helpTutorials = members.table(
+  'help_tutorials',
+  {
+    id: uuid('id').primaryKey(),
+    slug: varchar('slug', { length: 80 }).notNull(),
+    collectionId: uuid('collection_id')
+      .notNull()
+      .references(() => helpCollections.id),
+    status: varchar('status', { length: 16 }).notNull().default('draft'),
+    draft: jsonb('draft').$type<HelpTutorialDocument>().notNull(),
+    published: jsonb('published').$type<HelpTutorialDocument>(),
+    publishedSearchText: text('published_search_text'),
+    revision: integer('revision').notNull().default(1),
+    position: integer('position').notNull().default(0),
+    createdBy: uuid('created_by'),
+    updatedBy: uuid('updated_by'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('help_tutorials_slug_uq').on(t.slug),
+    index('help_tutorials_status_collection_idx').on(t.status, t.collectionId, t.position),
+    check('help_tutorials_status_check', sql`${t.status} in ('draft', 'published', 'archived')`),
+    check(
+      'help_tutorials_published_pair',
+      sql`(${t.status} = 'published') = (${t.published} is not null)`,
+    ),
+  ],
+)
+
 // ── "Guardado na sua conta": criações do Estúdio Completo e do Pinta (18/08/2026) ──
 // ÍNDICE das criações que os editores LIVRES sobem sozinhos depois do autosave. O
 // blob (o `Project` do Estúdio / o `.pinta.json` do desenho, gzip) vive no R2 UGC
@@ -1734,6 +1798,8 @@ export const schema = {
   entitlementLifecycleMessagesSent,
   challengeCustomThemes,
   challengeMonthOverrides,
+  helpCollections,
+  helpTutorials,
   creations,
   accountDeletionFences,
   creationCleanupJobs,

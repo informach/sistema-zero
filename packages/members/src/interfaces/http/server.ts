@@ -14,6 +14,7 @@ import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
 import { creationCleanupRoutes } from './routes/creation-cleanup.routes'
 import { type CreationsRoutesDeps, creationsRoutes } from './routes/creations.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
+import { type HelpRoutesDeps, helpRoutes } from './routes/help.routes'
 import { type InternalRoutesDeps, internalRoutes } from './routes/internal.routes'
 import { type LearningRoutesDeps, learningRoutes } from './routes/learning.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
@@ -34,6 +35,8 @@ export interface HttpDeps {
   admin: AdminRoutesDeps
   content: ContentRoutesDeps
   internal: InternalRoutesDeps
+  /** "Como fazer": a biblioteca de ajuda do Kids (leitura da criança + autoria do admin). */
+  help: HelpRoutesDeps
 }
 
 // Rotas que carregam o projeto do Estúdio (entrega do aluno + autoria do bloco):
@@ -67,7 +70,9 @@ function bodyLimitForPath(pathname: string, env: Env): number {
     ADMIN_BLOCK_CREATE_PATH.test(pathname) ||
     ADMIN_BLOCK_UPDATE_PATH.test(pathname) ||
     /^\/members\/admin\/lessons\/[^/]+\/draft$/.test(pathname) ||
-    /^\/members\/admin\/lessons\/[^/]+\/import-(preview|learning)$/.test(pathname)
+    /^\/members\/admin\/lessons\/[^/]+\/import-(preview|learning)$/.test(pathname) ||
+    // "Como fazer": rascunho com passos em markdown e o import em lote passam de 64 KB.
+    /^\/members\/admin\/help\/tutorials(?:\/[^/]+|\/import)?$/.test(pathname)
   ) {
     return Math.max(env.MAX_STUDIO_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)
   }
@@ -167,4 +172,5 @@ export function createServer(deps: HttpDeps) {
     .use(adminRoutes(deps.admin))
     .use(contentRoutes(deps.content))
     .use(internalRoutes(deps.internal))
+    .use(helpRoutes(deps.help))
 }

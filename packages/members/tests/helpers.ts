@@ -57,6 +57,7 @@ import { GetShowcasePayloadService } from '../src/application/get-showcase-paylo
 import { GetStudioCarryoverService } from '../src/application/get-studio-carryover/get-studio-carryover.service'
 import { GrantEntitlementService } from '../src/application/grant-entitlement/grant-entitlement.service'
 import { GrantManualEntitlementService } from '../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
+import { HelpService } from '../src/application/help/help.service'
 import { IssueCertificateService } from '../src/application/issue-certificate/issue-certificate.service'
 import { LearningService } from '../src/application/learning/learning.service'
 import { LearningImportService } from '../src/application/learning/learning-import.service'
@@ -122,6 +123,10 @@ import { createServer } from '../src/interfaces/http/server'
 import { InMemoryAiUsageRepository } from './fakes/ai-usage-in-memory'
 import { InMemoryChallengeConfigRepository } from './fakes/challenge-config-in-memory'
 import { InMemoryCreationsRepository } from './fakes/creations-in-memory'
+import {
+  InMemoryHelpCollectionRepository,
+  InMemoryHelpTutorialRepository,
+} from './fakes/help-in-memory'
 import {
   FakeCatalogGateway,
   InMemoryAnalyticsRepository,
@@ -193,6 +198,9 @@ export function buildApp(
   const teacherThreads = new TeacherThreadsService(teacherThreadsRepo, clock)
   const aiUsage = new InMemoryAiUsageRepository()
   const challengeConfig = new InMemoryChallengeConfigRepository()
+  const helpCollections = new InMemoryHelpCollectionRepository()
+  const helpTutorials = new InMemoryHelpTutorialRepository(helpCollections)
+  const help = new HelpService(helpCollections, helpTutorials, clock)
   const consumeAiUsage = new ConsumeAiUsageService({
     aiUsage,
     dailyLimit: opts.aiLimits?.daily ?? 50,
@@ -637,6 +645,11 @@ export function buildApp(
       validateCertificate: new ValidateCertificateService(certificates),
       internalToken: opts.internalToken,
     },
+    help: {
+      help,
+      internalToken: opts.internalToken,
+      requireAdminEnabled: opts.requireAdmin ?? false,
+    },
   })
 
   return {
@@ -668,6 +681,9 @@ export function buildApp(
     authProfiles,
     aiUsage,
     challengeConfig,
+    help,
+    helpCollections,
+    helpTutorials,
   }
 }
 

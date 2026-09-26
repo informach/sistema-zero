@@ -4,11 +4,11 @@ import { and, asc, desc, eq, gt, inArray, like, ne, or, sql } from 'drizzle-orm'
 import type {
   PublishedZappyBlock,
   PublishedZappyNotebook,
-  ZappyKnowledgeHit,
   ZappyKnowledgeReport,
   ZappyKnowledgeRepository,
   ZappyKnowledgeSourceInput,
   ZappyKnowledgeSourceType,
+  ZappyLessonKnowledgeHit,
 } from '../../../domain/ports/zappy-knowledge-repository.port'
 import {
   coursesMissingStudentNotebook,
@@ -332,7 +332,11 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
     return deleted.length
   }
 
-  async search(lessonIds: string[], query: string, limit: number): Promise<ZappyKnowledgeHit[]> {
+  async search(
+    lessonIds: string[],
+    query: string,
+    limit: number,
+  ): Promise<ZappyLessonKnowledgeHit[]> {
     if (lessonIds.length === 0 || !query) return []
     // OR entre os termos: o websearch padrão junta com AND e "colisao personagem"
     // exigia as duas palavras no MESMO chunk de 1500 chars — quase nunca acontecia

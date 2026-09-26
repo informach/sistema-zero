@@ -2285,3 +2285,44 @@ faltava o caminho de volta: quem apagava sem querer só tinha como refazer à m�
 - Testes: `tests/integration/lesson-draft-restore.test.ts` (7 casos HTTP sobre o fake) e, contra
   Postgres REAL, dois casos em `tests/db/lesson-draft-cases.ts` — as colunas novas e o UPDATE que
   as grava e limpa só existem lá (o fake os reimplementa em JS).
+
+## "Como fazer": a biblioteca de ajuda do Kids (26/09/2026, migration `0097`)
+
+⭐⭐ Tutoriais curtos por tarefa, FORA dos cursos: `members.help_collections` e
+`members.help_tutorials` (`src/domain/help`, `application/help/help.service.ts`,
+`infrastructure/persistence/drizzle/help.repository.ts`, `interfaces/http/routes/help.routes.ts`).
+O modelo é separado de `lessons` de propósito: guardar como aula puxaria XP, contagem de aulas,
+trava de matrícula e a reconciliação do Zappy. Regras de documento, busca e validação moram no
+core (`@sistemazero/core/help`), e o `publish` roda o MESMO `validateHelpTutorial` que o admin
+mostra na revisão.
+
+- **Leitura da criança** em `/members/help` (`GET /collections`, `GET /tutorials`,
+  `GET /tutorials/:slug`): só o PUBLICADO, para qualquer conta ativa com JWT, sem
+  `CheckAccessService`. Ler nunca toca progresso, XP nem entitlements. O gateway limita a 120/min.
+- **Admin** em `/members/admin/help` (`requireAdmin`): coleções (CRUD, `PUT /collections/order`,
+  archive/restore, ⚠️ arquivar coleção com tutorial publicado → 409 `HELP_COLLECTION_IN_USE`) e
+  tutoriais (`GET|POST /tutorials`, `GET /tutorials/export`, `POST /tutorials/import` ANTES de
+  `:id`, `GET|PATCH /tutorials/:id`, `POST /tutorials/:id/publish|unpublish|archive`).
+  ⚠️ **Todo write leva `expectedRevision`**: defasado → 409 `HELP_TUTORIAL_CONFLICT` com
+  `details.currentRevision` (o serviço relê a revisão atual antes de responder). Publicar com
+  documento inválido → 400 `HELP_TUTORIAL_INVALID` com `details.issues`.
+- **Rascunho × publicado** são duas colunas JSON na mesma linha. `publish` copia `draft` →
+  `published` e grava `published_search_text` (`buildHelpSearchText`), que alimenta o índice GIN
+  `help_tutorials_fts_idx` (`to_tsvector('portuguese', …)`, escrito à mão na `0097`) e a lista
+  da criança (`searchText` pré-achatado, a busca é no cliente). CHECK
+  `help_tutorials_published_pair`: `status='published'` ⇔ `published IS NOT NULL`.
+- **Import/export** (`HelpImportBody`): upsert por SLUG, coleções antes dos tutoriais, e SÓ no
+  rascunho (`upsertDraftsBySlug`) — nada é publicado pelo import; `rejected[]` nomeia o que não
+  entrou. O lote inicial e o formato estão em `docs/como-fazer/`.
+- ⚠️ `HelpDocumentSchema` declara TODO campo do documento (`additionalProperties: false`): o
+  `normalize` do Elysia apaga campo não declarado, e um campo novo no core sem espelho aqui some
+  em silêncio no PATCH.
+- **Zappy**: `ZappyKnowledgeService.search` devolve `[...hitsDeAula, ...hitsDeTutorial]`
+  (`HELP_HITS_MAX = 3`, best-effort, SEM gate de matrícula: o tutorial é de todo mundo). O hit é
+  `{ kind: 'help-tutorial', slug, title, collectionTitle, content }` (`buildHelpZappyText`, ≤ 1500
+  chars) e a resposta guardada ganhou `helpReferences?: [{ slug, title }]` (DTO + repositório).
+  `zappy_knowledge_sources` NÃO foi tocada (FK em aula, índice único, reconciliação).
+- **Links de aula**: o item `link` do bloco `materials` aceita `/como-fazer/<slug>`
+  (`LESSON_LINK_URL_PATTERN`); o member-shell abre em nova aba com `?voltar=<aula>`.
+- Testes: `tests/unit/help.service.test.ts`, `tests/integration/help.test.ts`,
+  `tests/db/help.repository.test.ts` (skipIf sem Postgres), fakes em `tests/fakes/help-in-memory.ts`.

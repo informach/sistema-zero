@@ -13,11 +13,14 @@ import type {
   ZappyKnowledgeSourceType,
 } from '../../domain/ports/zappy-knowledge-repository.port'
 import type { GetMyCourseService } from '../get-my-course/get-my-course.service'
+import type { HelpService } from '../help/help.service'
 import type { ListMyCoursesService } from '../list-my-courses/list-my-courses.service'
 
 const MAX_SOURCE_CHARS = ZAPPY_SOURCE_CONTENT_MAX_BYTES
 const CHUNK_CHARS = 1_500
 const CHUNK_OVERLAP = 180
+/** Tutoriais do "Como fazer" por pergunta: poucos, e sempre depois das aulas liberadas. */
+const HELP_HITS_MAX = 3
 
 export function normalizeZappyText(value: string): string {
   return value
@@ -130,6 +133,8 @@ export class ZappyKnowledgeService {
     private readonly listMyCourses: ListMyCoursesService,
     private readonly getMyCourse: GetMyCourseService,
     private readonly clock: () => Date,
+    /** O "Como fazer": tutoriais publicados entram na busca sem gate de matrícula. */
+    private readonly help?: Pick<HelpService, 'searchForZappy'>,
   ) {}
 
   async sync(
@@ -216,7 +221,13 @@ export class ZappyKnowledgeService {
         module.lessons.filter((lesson) => !lesson.locked).map((lesson) => lesson.id),
       ),
     )
-    return this.repository.search(lessonIds, normalizeZappyText(input.query), input.limit ?? 5)
+    const normalized = normalizeZappyText(input.query)
+    const [lessonHits, helpHits] = await Promise.all([
+      this.repository.search(lessonIds, normalized, input.limit ?? 5),
+      // Best-effort: a ajuda nunca derruba a resposta didática.
+      this.help ? this.help.searchForZappy(normalized, HELP_HITS_MAX).catch(() => []) : [],
+    ])
+    return [...lessonHits, ...helpHits]
   }
 
   /** Indexa texto rico e devolve os downloads externos que o admin precisa extrair. */

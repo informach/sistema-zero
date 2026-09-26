@@ -32,6 +32,31 @@ describe('loadGatewayConfig', () => {
     expect(route?.auth).not.toBe('public')
   })
 
+  test('"Como fazer": a criança lê com qualquer conta ativa; a escrita é admin+ com auditoria', () => {
+    const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
+    expect(byId.get('members-help-read')).toMatchObject({
+      methods: ['GET'],
+      pathPattern: '/members/help/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+    })
+    // Sem `roles`: perfil só com o gratuito ou o Desafio também lê.
+    expect(byId.get('members-help-read')?.authorize).not.toHaveProperty('roles')
+    expect(byId.get('members-admin-help-read')).toMatchObject({
+      methods: ['GET'],
+      pathPattern: '/members/admin/help/*',
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+    })
+    expect(byId.get('members-admin-help-write')).toMatchObject({
+      methods: ['POST', 'PATCH', 'PUT'],
+      pathPattern: '/members/admin/help/*',
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      audit: {},
+    })
+    expect(byId.get('members-admin-help-write')?.maxBodyBytes).toBeGreaterThan(64 * 1024)
+  })
+
   test('valida e aplica defaults', async () => {
     const cfg = await loadGatewayConfig(env, {
       services: { p: service },

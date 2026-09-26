@@ -1,3 +1,11 @@
+import {
+  HELP_COLLECTION_ICONS,
+  HELP_COLLECTION_TONES,
+  HELP_SLUG_MAX,
+  HELP_TOOL_REFS,
+  HELP_TUTORIAL_STATUSES,
+  HELP_VIDEO_PROVIDERS,
+} from '@sistemazero/core/help'
 import { t } from 'elysia'
 import { InteractiveBlockSchema } from './learning.dtos'
 import { ProjectBlockRelationshipsSchema } from './project-pattern.schema'
@@ -173,6 +181,16 @@ export const ZappyInternalResponseBody = t.Object({
           title: t.String({ minLength: 1, maxLength: 240 }),
         }),
         { maxItems: 6 },
+      ),
+    ),
+    // Tutoriais do "Como fazer" que a resposta cita (o chip "Passo a passo: …" no painel).
+    helpReferences: t.Optional(
+      t.Array(
+        t.Object({
+          slug: t.String({ minLength: 1, maxLength: 80, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$' }),
+          title: t.String({ minLength: 1, maxLength: 240 }),
+        }),
+        { maxItems: 3 },
       ),
     ),
     suggestions: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 60 }), { maxItems: 3 })),
@@ -962,6 +980,9 @@ const NULLABLE_TEXT = t.Optional(t.Union([t.String({ maxLength: 20_000 }), t.Nul
 // chegaria intacto ao browser do aluno via views member-facing (o painel já
 // valida; aqui é defesa em profundidade na borda do serviço).
 const HTTP_URL_PATTERN = '^https?://'
+// O item `link` do bloco de materiais aceita também o caminho interno de um tutorial do
+// "Como fazer" (`/como-fazer/<slug>`): a aula aponta para a ajuda sem depender do host.
+const LESSON_LINK_URL_PATTERN = '^(?:https?://|/como-fazer/[a-z0-9]+(?:-[a-z0-9]+)*(?:[?#].*)?$)'
 // Mídia que pode viver no bucket R2 PRIVADO: URL http(s) OU `r2priv:<key>`.
 const MEDIA_REF_PATTERN = '^(?:https?://|r2priv:).'
 // Só `.riv`: ver o comentário em `ModuleBody.riveUrl`.
@@ -1443,7 +1464,7 @@ const MaterialsBlockSchema = t.Object({
       t.Object({
         id: t.String({ minLength: 1, maxLength: 64 }),
         kind: t.Literal('link'),
-        url: t.String({ minLength: 1, maxLength: 2000, pattern: HTTP_URL_PATTERN }),
+        url: t.String({ minLength: 1, maxLength: 2000, pattern: LESSON_LINK_URL_PATTERN }),
         label: t.String({ minLength: 1, maxLength: 200 }),
         note: t.Optional(t.String({ maxLength: 280 })),
       }),
@@ -1718,3 +1739,125 @@ export const CreationCommitBody = t.Object({
   ),
   uploadedParts: t.Optional(t.Array(t.String({ pattern: '^[a-f0-9]{64}$' }), { maxItems: 128 })),
 })
+
+// ── "Como fazer" (biblioteca de ajuda do Kids, 26/09/2026) ──────────────────
+// ⚠️ TODO campo do documento é declarado: o `normalize` do Elysia apaga campo não declarado
+// em silêncio, e o tutorial chegaria ao banco sem `posterUrl`, `imageAlt` ou `related`.
+// As allowlists (ícone, cor, ferramenta, provedor) DERIVAM do core, nunca reescritas aqui.
+const HELP_SLUG = t.String({
+  minLength: 1,
+  maxLength: HELP_SLUG_MAX,
+  pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
+})
+const HELP_COLLECTION_ICON = t.Union(HELP_COLLECTION_ICONS.map((icon) => t.Literal(icon)))
+const HELP_COLLECTION_TONE = t.Union(HELP_COLLECTION_TONES.map((tone) => t.Literal(tone)))
+const HELP_TOOL_REF = t.Union(HELP_TOOL_REFS.map((tool) => t.Literal(tool)))
+const HELP_VIDEO_PROVIDER = t.Union(HELP_VIDEO_PROVIDERS.map((provider) => t.Literal(provider)))
+const HELP_STATUS = t.Union(HELP_TUTORIAL_STATUSES.map((status) => t.Literal(status)))
+const HELP_URL = t.String({ minLength: 1, maxLength: 2000, pattern: HTTP_URL_PATTERN })
+
+export const HelpStepSchema = t.Object(
+  {
+    id: t.String({ minLength: 1, maxLength: 64 }),
+    title: t.String({ maxLength: 160 }),
+    body: t.String({ maxLength: 20_000 }),
+    imageUrl: t.Optional(HELP_URL),
+    imageAlt: t.Optional(t.String({ maxLength: 300 })),
+  },
+  { additionalProperties: false },
+)
+
+export const HelpDocumentSchema = t.Object(
+  {
+    title: t.String({ maxLength: 200 }),
+    summary: t.String({ maxLength: 600 }),
+    keywords: t.Array(t.String({ minLength: 1, maxLength: 60 }), { maxItems: 40 }),
+    toolRef: t.Optional(HELP_TOOL_REF),
+    video: t.Optional(
+      t.Object(
+        {
+          provider: HELP_VIDEO_PROVIDER,
+          src: HELP_URL,
+          posterUrl: t.Optional(HELP_URL),
+        },
+        { additionalProperties: false },
+      ),
+    ),
+    steps: t.Array(HelpStepSchema, { maxItems: 60 }),
+    related: t.Optional(t.Array(HELP_SLUG, { maxItems: 20 })),
+  },
+  { additionalProperties: false },
+)
+
+export const HelpCollectionBody = t.Object(
+  {
+    slug: HELP_SLUG,
+    title: t.String({ minLength: 1, maxLength: 60 }),
+    description: t.String({ maxLength: 240 }),
+    icon: HELP_COLLECTION_ICON,
+    tone: HELP_COLLECTION_TONE,
+  },
+  { additionalProperties: false },
+)
+export const HelpCollectionPatchBody = t.Partial(HelpCollectionBody)
+export const HelpCollectionOrderBody = t.Object({ ids: t.Array(UUID, { maxItems: 100 }) })
+
+export const HelpTutorialCreateBody = t.Object(
+  {
+    slug: HELP_SLUG,
+    collectionId: UUID,
+    position: t.Optional(t.Integer({ minimum: 0, maximum: 10_000 })),
+    draft: t.Optional(HelpDocumentSchema),
+  },
+  { additionalProperties: false },
+)
+export const HelpTutorialPatchBody = t.Object(
+  {
+    expectedRevision: t.Integer({ minimum: 1 }),
+    slug: t.Optional(HELP_SLUG),
+    collectionId: t.Optional(UUID),
+    position: t.Optional(t.Integer({ minimum: 0, maximum: 10_000 })),
+    draft: t.Optional(HelpDocumentSchema),
+  },
+  { additionalProperties: false },
+)
+export const HelpRevisionBody = t.Object({ expectedRevision: t.Integer({ minimum: 1 }) })
+export const HelpImportBody = t.Object(
+  {
+    collections: t.Optional(
+      t.Array(
+        t.Object(
+          {
+            slug: HELP_SLUG,
+            title: t.String({ minLength: 1, maxLength: 60 }),
+            description: t.String({ maxLength: 240 }),
+            icon: HELP_COLLECTION_ICON,
+            tone: HELP_COLLECTION_TONE,
+            position: t.Optional(t.Integer({ minimum: 0, maximum: 10_000 })),
+          },
+          { additionalProperties: false },
+        ),
+        { maxItems: 50 },
+      ),
+    ),
+    tutorials: t.Array(
+      t.Object(
+        {
+          slug: HELP_SLUG,
+          collection: HELP_SLUG,
+          position: t.Optional(t.Integer({ minimum: 0, maximum: 10_000 })),
+          draft: HelpDocumentSchema,
+        },
+        { additionalProperties: false },
+      ),
+      { maxItems: 300 },
+    ),
+  },
+  { additionalProperties: false },
+)
+export const HelpAdminListQuery = t.Object({
+  status: t.Optional(HELP_STATUS),
+  collectionId: t.Optional(UUID),
+  q: t.Optional(t.String({ maxLength: 200 })),
+})
+export const HelpSlugParams = t.Object({ slug: HELP_SLUG })

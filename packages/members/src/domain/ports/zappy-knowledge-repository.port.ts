@@ -29,7 +29,8 @@ export interface ZappySourceAuthority {
   blockRevision: string
 }
 
-export interface ZappyKnowledgeHit {
+export interface ZappyLessonKnowledgeHit {
+  kind?: 'lesson'
   courseId: string
   courseSlug: string
   courseTitle: string
@@ -38,6 +39,20 @@ export interface ZappyKnowledgeHit {
   sourceType: ZappyKnowledgeSourceType
   content: string
 }
+
+/**
+ * Um tutorial PUBLICADO do "Como fazer" que casou com a pergunta. Não é aula: sem curso,
+ * sem gate de matrícula. O modelo o cita em `helpReferences` e o painel mostra o chip.
+ */
+export interface ZappyHelpKnowledgeHit {
+  kind: 'help-tutorial'
+  slug: string
+  title: string
+  collectionTitle: string
+  content: string
+}
+
+export type ZappyKnowledgeHit = ZappyLessonKnowledgeHit | ZappyHelpKnowledgeHit
 
 export interface PublishedZappyBlock {
   blockId: string
@@ -82,7 +97,7 @@ export interface ZappyKnowledgeRepository {
   /** Retorna null quando a revisão deixou de ser autoritativa antes da escrita atômica. */
   upsert(input: ZappyKnowledgeSourceInput): Promise<{ id: string; changed: boolean } | null>
   deleteByRef(sourceRef: string): Promise<void>
-  search(lessonIds: string[], query: string, limit: number): Promise<ZappyKnowledgeHit[]>
+  search(lessonIds: string[], query: string, limit: number): Promise<ZappyLessonKnowledgeHit[]>
   listPublishedKidsBlocks(input?: {
     after?: string
     limit?: number

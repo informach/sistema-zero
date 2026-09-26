@@ -57,6 +57,7 @@ import { GetShowcasePayloadService } from './application/get-showcase-payload/ge
 import { GetStudioCarryoverService } from './application/get-studio-carryover/get-studio-carryover.service'
 import { GrantEntitlementService } from './application/grant-entitlement/grant-entitlement.service'
 import { GrantManualEntitlementService } from './application/grant-manual-entitlement/grant-manual-entitlement.service'
+import { HelpService } from './application/help/help.service'
 import { IssueCertificateService } from './application/issue-certificate/issue-certificate.service'
 import { LearningService } from './application/learning/learning.service'
 import { LearningImportService } from './application/learning/learning-import.service'
@@ -132,6 +133,10 @@ import { DrizzleCreationsRepository } from './infrastructure/persistence/drizzle
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleEntitlementRepository } from './infrastructure/persistence/drizzle/entitlement.repository'
 import { DrizzleGamificationRepository } from './infrastructure/persistence/drizzle/gamification.repository'
+import {
+  DrizzleHelpCollectionRepository,
+  DrizzleHelpTutorialRepository,
+} from './infrastructure/persistence/drizzle/help.repository'
 import { DrizzleLearningRepository } from './infrastructure/persistence/drizzle/learning.repository'
 import { DrizzleLessonDraftRepository } from './infrastructure/persistence/drizzle/lesson-draft.repository'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
@@ -390,11 +395,19 @@ export async function createApplication(env: Env): Promise<Application> {
     ratings,
     gamificationRepo,
   )
+  // "Como fazer": coleções e tutoriais da biblioteca de ajuda do Kids. O Zappy pesquisa os
+  // tutoriais publicados pelo MESMO serviço (é a mesma linha que o admin publica).
+  const help = new HelpService(
+    new DrizzleHelpCollectionRepository(db),
+    new DrizzleHelpTutorialRepository(db),
+    clock,
+  )
   const zappyKnowledge = new ZappyKnowledgeService(
     new DrizzleZappyKnowledgeRepository(db),
     listMyCourses,
     getMyCourse,
     clock,
+    help,
   )
   const teacherThreads = new TeacherThreadsService(new DrizzleTeacherThreadRepository(db), clock)
   const teacherBroadcasts = new TeacherBroadcastsService(
@@ -847,6 +860,11 @@ export async function createApplication(env: Env): Promise<Application> {
       showcasePayload: getShowcasePayload,
       validateCertificate,
       internalToken: env.INTERNAL_API_TOKEN,
+    },
+    help: {
+      help,
+      internalToken: env.INTERNAL_API_TOKEN,
+      requireAdminEnabled: env.REQUIRE_ADMIN,
     },
   })
 

@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/bun'
 import { DomainError } from '@sistemazero/core/errors'
+import type { HelpValidationIssue } from '@sistemazero/core/help'
 import {
   type ErrorEnvelope,
   envelope,
@@ -16,6 +17,7 @@ import {
   CreationPartsNeedBytesError,
   CreationStaleBaseError,
 } from '../../domain/creations/creation.errors'
+import { HelpTutorialConflictError, HelpTutorialInvalidError } from '../../domain/help/help.errors'
 import { PensaGateNotReadyError } from '../../domain/pensa/pensa.errors'
 
 export type { ErrorEnvelope }
@@ -101,6 +103,14 @@ const DOMAIN_STATUS: Record<string, number> = {
   CREATION_STALE_BASE: 409,
   CREATION_PARTS_NEED_BYTES: 409,
   CREATION_PART_MISSING: 409,
+  // "Como fazer" (biblioteca de ajuda do Kids).
+  HELP_TUTORIAL_NOT_FOUND: 404,
+  HELP_COLLECTION_NOT_FOUND: 404,
+  HELP_TUTORIAL_CONFLICT: 409,
+  HELP_TUTORIAL_INVALID: 400,
+  HELP_DUPLICATE_SLUG: 409,
+  HELP_COLLECTION_IN_USE: 409,
+  HELP_TUTORIAL_ARCHIVED: 409,
 }
 
 /** Traduz qualquer erro num par status + corpo padronizado. */
@@ -117,6 +127,7 @@ export function buildErrorResponse(input: {
       | { hashes: string[] }
       | { currentRevision: number }
       | { requiredVersion: number }
+      | { issues: HelpValidationIssue[] }
     careerLock?: {
       reason: 'future-tier' | 'foundation-first' | 'tier-reward'
       requiredLevel?: string
@@ -159,6 +170,25 @@ export function buildErrorResponse(input: {
         ...envelope(error.code, error.message),
         details: { gate: error.gate, missing: error.missing },
       },
+    }
+  }
+
+  // "Como fazer": o PATCH com `expectedRevision` velho devolve a revisão ATUAL (a outra aba
+  // salvou); o publish de rascunho incompleto devolve os BLOQUEIOS campo a campo (o diálogo
+  // "Revisar e publicar" do admin aponta cada um).
+  if (error instanceof HelpTutorialConflictError) {
+    return {
+      status: 409,
+      body: {
+        ...envelope(error.code, error.message),
+        details: { currentRevision: error.currentRevision },
+      },
+    }
+  }
+  if (error instanceof HelpTutorialInvalidError) {
+    return {
+      status: 400,
+      body: { ...envelope(error.code, error.message), details: { issues: error.issues } },
     }
   }
 
