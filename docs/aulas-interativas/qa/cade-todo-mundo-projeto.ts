@@ -149,3 +149,31 @@ export function montarProjetoCadeTodoMundo(primeiroAchadoPronto = false): Projec
     installedExtensions: [{ id: 'game-2d', version: '1.2.0', installedAt: 0 }],
   }
 }
+
+/** Cópia somente para jogar na abertura; não é o projeto que a criança vai editar. */
+export function montarProjetoCadeTodoMundoCompleto(): Project {
+  const ir = structuredClone(IR_CADE_TODO_MUNDO)
+  const evento = ir.behavior.events[0]
+  if (evento?.type !== 'g2d:onGroupClick') throw new Error('Evento dos esconderijos ausente')
+  evento.body.push(
+    { type: 'g2d:setOpacity', spriteVar: 'escolhido', percent: 0 },
+    {
+      type: 'assign',
+      name: 'achados',
+      value: {
+        type: 'binop',
+        op: '+',
+        left: { type: 'var', name: 'achados' },
+        right: { type: 'num', value: 1 },
+      },
+    },
+  )
+  return {
+    ...montarProjetoCadeTodoMundo(),
+    id: 'demonstracao-cade-todo-mundo',
+    name: 'Cadê Todo Mundo? — jogo pronto',
+    ir,
+    blocksState: buildWorkspaceStateFromIR(ir),
+    files: generateProjectFiles({ ir, projectName: NOME }),
+  }
+}

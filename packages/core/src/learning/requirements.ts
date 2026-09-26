@@ -132,7 +132,9 @@ export function lessonCompletionRequirements(input: {
         if (content.required === true)
           add(
             'LEARNING_GATE_INCOMPLETE',
-            'Conferir a descoberta',
+            record(content.activity) && content.activity.type === 'project-play'
+              ? 'Encontre todos os personagens no jogo'
+              : 'Conferir a descoberta',
             Boolean(
               input.learningProgress?.blocks.some(
                 (p) =>

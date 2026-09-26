@@ -11,7 +11,11 @@ import {
 } from '../../../packages/studio/src/arte/jardim-assets'
 import { sanitizeProjectAssets } from '../../../packages/studio/src/core/project'
 import { exampleHarness } from '../../../packages/studio/src/official-extensions/game-2d/__tests__/examplePlaythroughHarness'
-import { IR_CADE_TODO_MUNDO, montarProjetoCadeTodoMundo } from './cade-todo-mundo-projeto'
+import {
+  IR_CADE_TODO_MUNDO,
+  montarProjetoCadeTodoMundo,
+  montarProjetoCadeTodoMundoCompleto,
+} from './cade-todo-mundo-projeto'
 
 function blockTypes(node: unknown): string[] {
   if (!node || typeof node !== 'object') return []
@@ -102,24 +106,19 @@ describe('projeto inicial Cadê Todo Mundo?', () => {
     expect(blockTypes(montarProjetoCadeTodoMundo().blocksState)).not.toContain('sz_g2d_set_opacity')
   })
 
+  test('a abertura usa uma cópia jogável completa sem alterar o projeto inicial', () => {
+    const pronto = montarProjetoCadeTodoMundoCompleto()
+    expect(pronto.id).not.toBe(montarProjetoCadeTodoMundo().id)
+    expect(pronto.files['script.js']).toContain('setOpacity(escolhido, 0)')
+    expect(pronto.files['script.js']).toContain('achados = achados + 1')
+    expect(montarProjetoCadeTodoMundo().files['script.js']).not.toContain('achados = achados + 1')
+  })
+
   test('um esconderijo tocado conta uma só vez e a vitória aparece no terceiro', () => {
-    const ir = structuredClone(IR_CADE_TODO_MUNDO)
-    const event = ir.behavior.events[0]
-    if (event?.type !== 'g2d:onGroupClick') throw new Error('Evento preparado ausente')
-    event.body.push(
-      { type: 'g2d:setOpacity', spriteVar: 'escolhido', percent: 0 },
-      {
-        type: 'assign',
-        name: 'achados',
-        value: {
-          type: 'binop',
-          op: '+',
-          left: { type: 'var', name: 'achados' },
-          right: { type: 'num', value: 1 },
-        },
-      },
-    )
-    const game = exampleHarness({ name: 'Cadê Todo Mundo?', experience: 'game', ir }, () => 0.5, {
+    const pronto = montarProjetoCadeTodoMundoCompleto()
+    const ir = pronto.ir
+    if (!ir || !('behavior' in ir)) throw new Error('Projeto jogável sem comportamento')
+    const game = exampleHarness({ name: pronto.name, experience: 'game', ir }, () => 0.5, {
       contarCtx: true,
     })
     game.nextFrame()

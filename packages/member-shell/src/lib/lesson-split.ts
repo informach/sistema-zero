@@ -97,24 +97,26 @@ export function ehEditorDeSecao(block: SplitBlock): boolean {
 }
 
 /**
- * A experimentação em cena.
+ * A experimentação em cena ou o jogo pronto para brincar.
  *
  * ⚠️ `interactive` NÃO basta: a experiência em HTML também é `interactive` e fica na
  * coluna do CONTEÚDO. A cena é bancada, como o editor.
  */
-function ehCenaDeSecao(block: SplitBlock): boolean {
+function ehAtividadeDeSecao(block: SplitBlock): boolean {
   return (
     block.kind === 'interactive' &&
     isPublicInteractiveBlock(block.content) &&
-    // ⚠️ Pela leitura tolerante, como o guarda de cima: uma cena citando meta que saiu do catálogo
-    // continua sendo cena, e não cai na coluna do conteúdo.
-    isSceneActivity(sceneActivityForReading(block.content.activity))
+    // O jogo pronto da abertura é bancada como a experiência, sem editor.
+    (block.content.activity.type === 'project-play' ||
+      // ⚠️ Pela leitura tolerante, como o guarda de cima: uma cena citando meta que saiu do catálogo
+      // continua sendo cena, e não cai na coluna do conteúdo.
+      isSceneActivity(sceneActivityForReading(block.content.activity)))
   )
 }
 
 /** Vai para a coluna da DIREITA. */
 function ehLadoFerramenta(block: SplitBlock): boolean {
-  return ehEditorDeSecao(block) || ehCenaDeSecao(block)
+  return ehEditorDeSecao(block) || ehAtividadeDeSecao(block)
 }
 
 /** O arquivo continua na coluna de conteúdo; só a leitura ganha a segunda coluna. */

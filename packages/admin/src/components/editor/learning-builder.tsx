@@ -146,7 +146,9 @@ export const ACTIVITY_KINDS = [
   },
 ] as const satisfies readonly { type: LearningActivity['type']; label: string; hint: string }[]
 
-export function newLearningActivity(type: LearningActivity['type']): LearningActivity {
+export function newLearningActivity(
+  type: Exclude<LearningActivity['type'], 'project-play'>,
+): LearningActivity {
   switch (type) {
     case 'experimentation':
       return { type, scene: 'world' }
@@ -359,6 +361,12 @@ export function LearningBuilder({
 
       <fieldset className="space-y-2">
         <legend className="mb-2 text-sm font-medium">Tipo de atividade</legend>
+        {a.type === 'project-play' && (
+          <p className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
+            Jogo pronto configurado no manifesto. O projeto e os lugares para procurar são
+            preservados aqui; edite a orientação acima ou reimporte o manifesto para mudar o jogo.
+          </p>
+        )}
         <div className="grid gap-3 sm:grid-cols-2">
           {ACTIVITY_KINDS.map((kind) => (
             <label
@@ -375,6 +383,7 @@ export function LearningBuilder({
                   name={`${id}-kind`}
                   value={kind.type}
                   checked={a.type === kind.type}
+                  disabled={a.type === 'project-play'}
                   onChange={() => aplicar(trocarTipo(value, kind.type, memoria.current))}
                   className="accent-primary"
                 />

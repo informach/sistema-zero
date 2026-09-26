@@ -324,6 +324,8 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     if (_isEnemyMirror(group)) _marcarTiposDesenhados();
     for (var i = 0; i < group.items.length; i++) drawSprite(ctx, group.items[i]);
     _drawEnemyBeamsIfAny(ctx, group);
+    // O player de aula só habilita os controles de busca depois do PRIMEIRO desenho.
+    if (typeof window.__szReportGameReady === 'function') window.__szReportGameReady();
   }
   /**
    * Desenha o grupo ordenado pela BASE (y+h): quem está mais para baixo na tela

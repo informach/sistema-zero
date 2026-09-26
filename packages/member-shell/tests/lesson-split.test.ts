@@ -200,6 +200,44 @@ function cena(id = 'cena') {
 }
 
 describe('a partição da seção', () => {
+  test('vídeo e jogo pronto dividem a seção sem abrir o Estúdio', () => {
+    const video = { id: 'video', kind: 'video', content: { kind: 'video' } }
+    const jogo = {
+      id: 'jogo',
+      kind: 'interactive',
+      content: {
+        kind: 'interactive',
+        title: 'Procure',
+        instructions: 'Encontre os amigos.',
+        hints: [],
+        required: true,
+        activity: {
+          type: 'project-play',
+          project: {
+            formatVersion: 2,
+            id: 'demo',
+            name: 'Jardim',
+            mode: 'blocks',
+            files: {
+              'index.html': '',
+              'style.css': '',
+              'script.js': 'SZGame2D.setupStage(640,360)',
+            },
+            installedExtensions: [{ id: 'game-2d', version: '1.2.0', installedAt: 0 }],
+          },
+          stage: { width: 640, height: 360 },
+          targets: [{ id: 'arbusto', label: 'arbusto', x: 60, y: 166, width: 154, height: 116 }],
+        },
+      },
+    }
+    expect(partirSecao({ blocks: [video, jogo] })).toEqual({
+      contentIds: ['video'],
+      toolIds: ['jogo'],
+      podeDividir: true,
+      temEditor: false,
+    })
+  })
+
   test('caderno com leitura em livro usa a esquerda para baixar e a direita para folhear', () => {
     const caderno = {
       id: 'caderno',

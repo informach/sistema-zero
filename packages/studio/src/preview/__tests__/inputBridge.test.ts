@@ -92,10 +92,70 @@ function load(
     sent,
     dispatched,
     createAudio: () => new (win.Audio as typeof FakeAudio)(),
+    reportGroupClick: (x: number, y: number) =>
+      (win.__szReportGroupClick as (x: number, y: number) => void)(x, y),
+    reportGameReady: () => (win.__szReportGameReady as () => void)(),
   }
 }
 
 describe('inputBridge — window.__szInput', () => {
+  it('informa o clique real do grupo apenas à origem configurada', () => {
+    const bridge = load({ runtime: buildInputBridgeRuntime('https://aula.example') })
+    bridge.reportGroupClick(137, 224)
+    expect(bridge.sent).toEqual([
+      {
+        message: { type: 'sz:g2d:group-click', x: 137, y: 224 },
+        targetOrigin: 'https://aula.example',
+      },
+    ])
+  })
+
+  it('não divulga cliques nem prontidão sem origem do host configurada', () => {
+    const bridge = load()
+    bridge.reportGroupClick(137, 224)
+    bridge.reportGameReady()
+    expect(bridge.sent).toEqual([])
+  })
+
+  it('avisa uma vez quando o grupo foi desenhado e pode receber toques', () => {
+    const bridge = load({ runtime: buildInputBridgeRuntime('https://aula.example') })
+    bridge.reportGameReady()
+    bridge.reportGameReady()
+    expect(bridge.sent).toEqual([
+      { message: { type: 'sz:g2d:ready' }, targetOrigin: 'https://aula.example' },
+    ])
+  })
+
+  it('o botão acessível despacha toque no canvas somente quando vem do parent', () => {
+    const hits: Array<{ type: string; clientX: number; clientY: number }> = []
+    class PointerFromButton {
+      type: string
+      clientX: number
+      clientY: number
+      constructor(type: string, init: { clientX: number; clientY: number }) {
+        this.type = type
+        this.clientX = init.clientX
+        this.clientY = init.clientY
+      }
+    }
+    const canvas = {
+      clientWidth: 320,
+      clientHeight: 180,
+      clientLeft: 0,
+      clientTop: 0,
+      getBoundingClientRect: () => ({ left: 10, top: 20 }),
+      dispatchEvent: (event: { type: string; clientX: number; clientY: number }) =>
+        hits.push(event),
+    }
+    const bridge = load({ canvas, globals: { MouseEvent: PointerFromButton } })
+    const data = { type: 'sz:pointer-at', x: 137, y: 224, w: 640, h: 360 }
+    bridge.fire('message', { source: {}, data })
+    expect(hits).toEqual([])
+    bridge.fire('message', { source: bridge.parent, data })
+    expect(hits.map((event) => event.type)).toEqual(['pointerdown', 'pointerup'])
+    expect(hits[0]).toMatchObject({ clientX: 78.5, clientY: 132 })
+  })
+
   it('o runtime de produção mantém a entrada e exclui controles exclusivos do preview', () => {
     const runtime = buildInputRuntime()
     const { input, fire } = load({ runtime })

@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
 import { SCENE_MODELS, SCENE_QUESTIONS } from '@sistemazero/core/learning/scene'
+import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas/qa/cade-todo-mundo-projeto'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -104,6 +105,28 @@ test('pergunta em branco não fica presa ao trocar do HTML para a cena', async (
     // A pergunta em BRANCO continua não ficando presa: ela invalidaria o bloco sem dizer onde.
     expect(b.value.checkpoint).toBeUndefined()
     expect(isInteractiveBlock(b.value)).toBe(true)
+  } finally {
+    await b.fechar()
+  }
+})
+
+test('jogo pronto importado não perde o projeto ao abrir o editor', async () => {
+  const project = montarProjetoCadeTodoMundoCompleto()
+  const b = await montar({
+    ...EMPTY_LEARNING,
+    required: true,
+    activity: {
+      type: 'project-play',
+      project,
+      stage: { width: 640, height: 360 },
+      targets: [{ id: 'arbusto', label: 'no arbusto', x: 60, y: 166, width: 154, height: 116 }],
+    },
+  })
+  try {
+    expect(b.texto).toContain('Jogo pronto configurado no manifesto')
+    await b.clicar('Experimentação')
+    expect(b.value.activity.type).toBe('project-play')
+    if (b.value.activity.type === 'project-play') expect(b.value.activity.project).toEqual(project)
   } finally {
     await b.fechar()
   }

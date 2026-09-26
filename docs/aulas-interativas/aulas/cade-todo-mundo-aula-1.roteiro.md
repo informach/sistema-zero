@@ -2,21 +2,21 @@
 
 Gravar cada seção em **um vídeo único**. As falas entre aspas são a narração. As indicações de tela não são lidas. Conferir a paleta na versão que será publicada antes de gravar. Falar com uma criança que chegou agora, sem presumir que ela conhece blocos ou o Estúdio. Não localizar a experiência “ao lado”: em tela estreita ela fica embaixo.
 
-## 1. Bem-vindo ao jardim — apresentação do jogo e da aula (1–1,5 min)
+## 1. Bem-vindo ao jardim — veja e jogue (60–90 s de vídeo)
 
-Mostrar o jogo completo e a missão de hoje, sem ensinar a experiência ou os blocos. Fazer os gestos de navegação enquanto fala, com calma. A primeira ação da criança depois do vídeo é avançar à seção seguinte.
+Apresentar o jogo e a missão de hoje, sem ensinar a experiência ou os blocos. O jogo pronto aparece nesta mesma seção para a criança experimentar; não mostrar os três achados antes dela. Fazer os gestos de navegação com calma e logo convidar a jogar.
 
-**Na tela:** abrir o jogo pronto, tocar os três esconderijos, mostrar o contador **Achados** aumentando e a comemoração ao encontrar os três. Voltar à primeira seção da aula. Apontar para o vídeo e demonstrar pausa e retorno de alguns segundos. Ao final, apontar para **Próxima seção** sem navegar na gravação; a criança fará isso.
+**Na tela:** mostrar o jardim pronto, ainda com os três personagens escondidos. Apontar para o jogo na outra coluna (ou embaixo, numa tela estreita), sem tocar nos esconderijos. Apontar para o vídeo e demonstrar pausa e retorno de alguns segundos. Mostrar os botões de busca como alternativa de toque/teclado e o botão **Ampliar jogo** sem precisar ampliá-lo. Ao final, apontar para **Próxima seção** sem navegar na gravação: ela fica disponível após assistir ao vídeo e encontrar os três personagens.
 
-> “Oi! Hoje você vai começar a criar um jogo chamado Cadê Todo Mundo? Olha este jardim: tem três personagens escondidos. Neste jogo pronto, eu toco num esconderijo e um personagem aparece. Olha o número de Achados aumentando! Posso procurar os outros também. Quando encontro os três, o jogo comemora.
+> “Oi! Hoje você vai começar a criar um jogo chamado Cadê Todo Mundo? Olha este jardim: três personagens se esconderam por aqui. Você consegue encontrar todos eles?
 >
-> O jardim e os personagens já vão estar preparados para você. Hoje a gente vai fazer o primeiro personagem aparecer com um toque. Depois, em outra aula, vamos completar a busca.
+> Antes de começar a busca, deixa eu te mostrar rapidinho como a aula funciona. Ela vem em pequenas partes, que a gente chama de seções. Esta é a primeira, e cada seção tem um vídeo como este. Se quiser ouvir de novo, pode voltar um pedacinho no vídeo. Se precisar de um tempo, aperta pausa. Sem pressa.
 >
-> Antes de começar, deixa eu te mostrar como a aula funciona. Ela vem em pequenas partes, que a gente chama de seções. Esta é a primeira, e cada seção tem um vídeo como este. Se quiser ouvir uma explicação de novo, você pode voltar um pedacinho aqui no vídeo. Se precisar de um tempinho, aperta pausa. Sem pressa.
+> Agora é sua vez de procurar. Este aqui é o jogo pronto, para você brincar antes de construir o seu. Pode tocar nos esconderijos do jardim ou usar estes botões para escolher onde procurar. Se quiser mais espaço, aperta Ampliar jogo. Depois, aperta Voltar à aula para continuar aqui.
 >
-> Quando este vídeo terminar, aperta Próxima seção, aqui embaixo, para eu te mostrar um caderno que pode ajudar sempre que você esquecer algum passo. Vamos?”
+> Hoje eu vou te mostrar como fazer o seu jogo responder ao toque. O jardim e os personagens já vão estar preparados; na próxima aula, a gente completa a contagem dos achados. Quando você encontrar os três personagens neste jogo pronto, aperta Próxima seção, aqui embaixo. Lá eu vou te mostrar um caderno que ajuda quando você esquecer algum passo. Vamos procurar?”
 
-Não demonstrar **Anterior**, a experiência, a divisória, o Estúdio ou o caderno nesta abertura. Não prometer que a criança já criou o jogo inteiro: cenário e personagens vêm preparados.
+Não demonstrar **Anterior**, a experiência, a divisória, o Estúdio ou o caderno nesta abertura. Não revelar os três esconderijos, nem a tela de vitória, antes da criança jogar. Não prometer que ela já criou o jogo inteiro: cenário e personagens vêm preparados. O jogo pronto é uma cópia independente do projeto inicial da seção prática.
 
 ## 2. Seu Caderno do Aluno — apoio para construir o jogo (45–60 s)
 

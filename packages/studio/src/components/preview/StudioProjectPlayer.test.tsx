@@ -74,10 +74,12 @@ describe('StudioProjectPlayer', () => {
 
   it('recusa URL do adaptador na mesma origem do host', async () => {
     const project = createEmptyProject('p1', 'Jogo')
+    let failures = 0
     const { container } = render(
       <StudioProjectPlayer
         project={project}
         parentOrigin="https://host.example.test"
+        onError={() => failures++}
         originAdapter={{
           createPreviewUrl: async () => 'https://host.example.test/preview/p1',
         }}
@@ -90,6 +92,7 @@ describe('StudioProjectPlayer', () => {
     expect(container.querySelector('iframe')?.getAttribute('srcdoc')).toContain(
       'Não foi possível carregar',
     )
+    expect(failures).toBe(1)
   })
 
   it('usa o nome do projeto como título acessível por padrão', async () => {

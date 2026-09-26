@@ -1,5 +1,5 @@
 import type { CSSProperties, JSX, Ref } from 'react'
-import { forwardRef, useEffect, useState } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import type { Project } from '#core'
 import { renderProjectToPreviewDocAsync } from '#preview'
 import type { PreviewSecurityProfile } from '../../preview/csp'
@@ -52,6 +52,7 @@ export interface StudioProjectPlayerProps {
   title?: string
   className?: string
   style?: CSSProperties
+  onError?: () => void
 }
 
 /**
@@ -77,6 +78,7 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
       title,
       className,
       style,
+      onError,
     }: StudioProjectPlayerProps,
     ref: Ref<HTMLIFrameElement>,
   ): JSX.Element {
@@ -85,6 +87,8 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
       doc: PLAYER_LOADING_DOC,
       generation: 0,
     })
+    const onErrorRef = useRef(onError)
+    onErrorRef.current = onError
     useEffect(() => {
       let ignore = false
       let activeUrl: string | null = null
@@ -138,6 +142,7 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
         }))
       })().catch(() => {
         if (ignore) return
+        onErrorRef.current?.()
         setLoadState((current) => ({
           status: 'error',
           doc: PLAYER_ERROR_DOC,

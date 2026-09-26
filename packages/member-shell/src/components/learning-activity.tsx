@@ -18,6 +18,7 @@ import type { LessonBlockView } from '../lib/types'
 import { LearningHtml } from './learning-html'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
+import { ProjectPlayActivityView } from './project-play-activity'
 import { SceneActivityView } from './scene-activity'
 
 const PREVIA = 'Prévia: nada é guardado.'
@@ -261,7 +262,21 @@ function Activity({
       setBusy(false)
     }
   }
+  const checkRef = useRef(check)
+  checkRef.current = check
   const a = content.activity
+  const foundTargets = answers.foundTargets
+  const projectPlayComplete =
+    a.type === 'project-play' &&
+    Array.isArray(foundTargets) &&
+    a.targets.every((target) => foundTargets.includes(target.id))
+  useEffect(() => {
+    // Um navegador pode ser fechado depois do último achado, mas antes de o
+    // servidor confirmar. Ao recuperar os achados, conclua a tentativa uma vez.
+    if (!projectPlayComplete || result?.passed || _automaticAttemptStarted.current) return
+    _automaticAttemptStarted.current = true
+    void checkRef.current()
+  }, [projectPlayComplete, result?.passed])
   const set = (value: LearningAnswers) => change(value)
   return (
     /* `sz-lesson-activity` permite ao app estilizar a experiência em HTML. */
@@ -272,7 +287,7 @@ function Activity({
             "Atividade concluída"), e o texto antigo daqui era a segunda cópia dela. */}
         <p
           className="sz-lesson-chip inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary"
-          data-chip="html"
+          data-chip={a.type === 'project-play' ? 'project-play' : 'html'}
         >
           <Gamepad2 size={14} aria-hidden />
           Brinque
@@ -291,6 +306,9 @@ function Activity({
       <fieldset disabled={busy} className="space-y-5">
         {a.type === 'html' && (
           <LearningHtml html={a.html} title={content.title} answers={answers} onChange={set} />
+        )}
+        {a.type === 'project-play' && (
+          <ProjectPlayActivityView activity={a} answers={answers} onChange={set} />
         )}
         {content.checkpoint && (
           <fieldset disabled={busy} className="space-y-2 border-t border-border pt-5">
@@ -326,19 +344,28 @@ function Activity({
           </div>
         ))}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button
-            variant="ghost"
-            disabled={busy || hintsUsed >= content.hints.length}
-            onClick={() => change(answers, hintsUsed + 1)}
-          >
-            <Lightbulb className="size-4" />
-            {hintsUsed ? 'Outra pista' : 'Quero uma pista'}
-          </Button>
-          <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
-            {busy ? 'Guardando…' : 'Conferir minha descoberta'}
-          </Button>
+          {content.hints.length > 0 && (
+            <Button
+              variant="ghost"
+              disabled={busy || hintsUsed >= content.hints.length}
+              onClick={() => change(answers, hintsUsed + 1)}
+            >
+              <Lightbulb className="size-4" />
+              {hintsUsed ? 'Outra pista' : 'Quero uma pista'}
+            </Button>
+          )}
+          {a.type !== 'project-play' && (
+            <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
+              {busy ? 'Guardando…' : 'Conferir minha descoberta'}
+            </Button>
+          )}
+          {a.type === 'project-play' && projectPlayComplete && !result?.passed && (
+            <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
+              {busy ? 'Guardando…' : 'Tentar guardar descoberta'}
+            </Button>
+          )}
         </div>
-        {result && (
+        {result && (a.type !== 'project-play' || !result.passed) && (
           <div role="status" className="rounded-xl bg-primary/5 p-4 leading-relaxed">
             {result.passed && <CheckCircle2 className="mr-2 inline size-5 text-primary" />}
             {player?.renderInstruction

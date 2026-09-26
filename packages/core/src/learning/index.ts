@@ -111,8 +111,16 @@ export interface HtmlActivity {
   html: string
 }
 
+/** Projeto pronto e isolado para a criança brincar antes de editar o próprio jogo. */
+export interface ProjectPlayActivity {
+  type: 'project-play'
+  project: unknown
+  stage: { width: number; height: number }
+  targets: { id: string; label: string; x: number; y: number; width: number; height: number }[]
+}
+
 /** Uma experiência pronta ou uma interação em HTML personalizada. */
-export type LearningActivity = HtmlActivity | SceneActivity
+export type LearningActivity = HtmlActivity | SceneActivity | ProjectPlayActivity
 export interface InteractiveBlock {
   kind: 'interactive'
   title: string
@@ -203,6 +211,7 @@ const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
     'pilha',
   ],
   html: ['type', 'html'],
+  'project-play': ['type', 'project', 'stage', 'targets'],
 }
 function publicActivity(activity: LearningActivity): LearningActivity {
   const permitidos = PUBLIC_ACTIVITY_FIELDS[activity.type]
@@ -579,6 +588,64 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
       // bloco é ESSENCIAL para concluir a seção, a prova tem de vir de uma pergunta que o
       // servidor corrige — senão a criança avança sem que ninguém tenha conferido nada.
       return text(a.html, 500_000) && (!value.required || value.checkpoint !== undefined)
+    case 'project-play': {
+      const project = a.project
+      const stage = a.stage
+      const targets = a.targets
+      return (
+        record(project) &&
+        project.formatVersion === STUDIO_PROJECT_FORMAT_VERSION &&
+        text(project.id, 200) &&
+        text(project.name, 200) &&
+        project.mode === 'blocks' &&
+        record(project.files) &&
+        typeof project.files['index.html'] === 'string' &&
+        typeof project.files['style.css'] === 'string' &&
+        text(project.files['script.js'], 500_000) &&
+        Array.isArray(project.installedExtensions) &&
+        project.installedExtensions.some(
+          (entry: unknown) => record(entry) && entry.id === 'game-2d',
+        ) &&
+        JSON.stringify(project).length <= 1_500_000 &&
+        record(stage) &&
+        typeof stage.width === 'number' &&
+        typeof stage.height === 'number' &&
+        Number.isInteger(stage.width) &&
+        Number.isInteger(stage.height) &&
+        stage.width > 0 &&
+        stage.width <= 8192 &&
+        stage.height > 0 &&
+        stage.height <= 8192 &&
+        Array.isArray(targets) &&
+        targets.length >= 1 &&
+        targets.length <= 12 &&
+        targets.every(
+          (target: unknown) =>
+            record(target) &&
+            text(target.id, 80) &&
+            text(target.label, 100) &&
+            typeof target.x === 'number' &&
+            Number.isFinite(target.x) &&
+            target.x >= 0 &&
+            typeof stage.width === 'number' &&
+            target.x <= stage.width &&
+            typeof target.y === 'number' &&
+            Number.isFinite(target.y) &&
+            target.y >= 0 &&
+            typeof stage.height === 'number' &&
+            target.y <= stage.height &&
+            typeof target.width === 'number' &&
+            Number.isFinite(target.width) &&
+            target.width > 0 &&
+            target.x + target.width <= stage.width &&
+            typeof target.height === 'number' &&
+            Number.isFinite(target.height) &&
+            target.height > 0 &&
+            target.y + target.height <= stage.height,
+        ) &&
+        new Set(targets.map((target: { id: string }) => target.id)).size === targets.length
+      )
+    }
     default:
       return false
   }
@@ -597,6 +664,22 @@ export function evaluateLearning(
   const a = block.activity
   if (a.type === 'experimentation')
     return withAttachedQuestion(evaluateSceneBlock(a, answers), block, answers)
+  if (a.type === 'project-play') {
+    const found = answers.foundTargets
+    const passed =
+      Array.isArray(found) &&
+      found.length === a.targets.length &&
+      new Set(found).size === a.targets.length &&
+      a.targets.every((target) => found.includes(target.id))
+    return {
+      participated: Array.isArray(found) && found.length > 0,
+      passed,
+      feedback: passed
+        ? 'Você encontrou todo mundo!'
+        : 'Continue procurando os personagens escondidos.',
+      verifiedBy: 'client',
+    }
+  }
   if (a.type !== 'html')
     return {
       passed: false,

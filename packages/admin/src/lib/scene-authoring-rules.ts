@@ -264,7 +264,7 @@ export function trocarCena(
  */
 export function trocarTipo(
   value: InteractiveBlock,
-  tipo: LearningActivity['type'],
+  tipo: Exclude<LearningActivity['type'], 'project-play'>,
   memoria: MemoriaDaAutoria = {},
 ): Troca {
   const a = value.activity

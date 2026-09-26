@@ -99,8 +99,11 @@ ensinar honestamente explicando por que a peça fica mesmo sem sintoma visível.
 
 ## 3. Vídeo e experimentação: abstrato e concreto na mesma seção
 
-A plataforma tem dois tipos de atividade interativa: `experimentation` e `html`. O formato antigo
-de demonstração guiada foi removido; processo no tempo é ensinado pelo vídeo.
+A plataforma usa `experimentation` para conceitos manipuláveis e `html` para experiências
+personalizadas. Há também `project-play`: uma cópia pronta e isolada de um jogo Jogo 2D para a
+criança brincar antes de construí-lo, como na abertura de Cadê Todo Mundo?. Não é uma cena
+conceitual nem um Estúdio editável. O formato antigo de demonstração guiada foi removido;
+processo no tempo é ensinado pelo vídeo.
 
 Na seção de conceito, o vídeo explica a ideia abstrata com exemplos e analogias do universo de quem
 aprende. A experiência, na coluna ao lado, deixa a criança alterar algo e observar o efeito. Nenhum

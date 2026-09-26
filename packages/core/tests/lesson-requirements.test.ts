@@ -6,6 +6,60 @@ import {
 } from '../src/learning'
 
 describe('lesson completion requirements', () => {
+  test('a abertura exige assistir ao vídeo e encontrar todos no jogo pronto', () => {
+    const blocks = [
+      { id: 'video', kind: 'video', blockRevision: 'v1', content: { kind: 'video' } },
+      {
+        id: 'jogo',
+        kind: 'interactive',
+        blockRevision: 'g1',
+        content: { kind: 'interactive', required: true, activity: { type: 'project-play' } },
+      },
+    ]
+    const progress = (watched: boolean, found: boolean): LessonLearningProgress => ({
+      sectionId: null,
+      blocks: [
+        {
+          blockId: 'video',
+          revision: 'v1',
+          positionSeconds: null,
+          answers: { videoDuration: 100, videoRanges: watched ? ['0:90'] : ['0:40'] },
+          hintsUsed: 0,
+          attemptsCount: 0,
+          result: null,
+          updatedAt: 'now',
+        },
+        {
+          blockId: 'jogo',
+          revision: 'g1',
+          positionSeconds: null,
+          answers: { foundTargets: found ? ['arbusto', 'pedras', 'flores'] : ['arbusto'] },
+          hintsUsed: 0,
+          attemptsCount: 1,
+          updatedAt: 'now',
+          result: {
+            participated: true,
+            passed: found,
+            verifiedBy: 'client',
+            feedback: '',
+          },
+        },
+      ],
+    })
+    const requirements = (watched: boolean, found: boolean) =>
+      lessonCompletionRequirements({
+        completed: false,
+        blocks,
+        videoBlockIds: ['video'],
+        learningProgress: progress(watched, found),
+      })
+    expect(requirements(false, false).map((item) => item.complete)).toEqual([false, false])
+    expect(requirements(true, false).map((item) => item.complete)).toEqual([true, false])
+    expect(requirements(false, true).map((item) => item.complete)).toEqual([false, true])
+    expect(requirements(true, true).map((item) => item.complete)).toEqual([true, true])
+    expect(requirements(false, false)[1]?.action).toBe('Encontre todos os personagens no jogo')
+  })
+
   test('video and selected files must both be completed in the current revision', () => {
     const blocks = [
       { id: 'video', kind: 'video', blockRevision: 'v1', content: { kind: 'video' } },

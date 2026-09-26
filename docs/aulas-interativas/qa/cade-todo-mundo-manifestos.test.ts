@@ -78,7 +78,22 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
       'toque-e-resposta',
       'primeiro-achado',
     ])
-    expect(m.sections[0]?.blockKeys).toEqual(['video-a1-abertura'])
+    expect(m.sections[0]?.blockKeys).toEqual(['video-a1-abertura', 'jogo-pronto'])
+    expect(m.sections[0]?.completion?.blockIds).toEqual(['video-a1-abertura', 'jogo-pronto'])
+    const jogoPronto = m.blocks.find((block) => block.key === 'jogo-pronto')
+    expect(jogoPronto?.content?.kind).toBe('interactive')
+    if (jogoPronto?.content?.kind === 'interactive') {
+      expect(jogoPronto.content.activity.type).toBe('project-play')
+      if (jogoPronto.content.activity.type === 'project-play') {
+        expect(jogoPronto.content.activity.targets.map((target) => target.id)).toEqual([
+          'arbusto',
+          'pedras',
+          'flores',
+        ])
+        const projeto = jogoPronto.content.activity.project
+        expect(projeto).not.toEqual(montarProjetoCadeTodoMundo())
+      }
+    }
     expect(m.sections[1]?.blockKeys).toEqual(['video-a1-caderno', 'caderno'])
     expect(m.sections[1]?.intent).toBe('material')
     expect(m.sections[1]?.completion?.blockIds).toEqual(['video-a1-caderno'])

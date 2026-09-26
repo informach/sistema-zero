@@ -251,12 +251,15 @@ export function sectionCompletionIssues(
       }
       const content = block.content
       if (content.kind === 'interactive') {
-        // Só serve de critério o que o servidor consegue conferir: uma cena, que traz a
-        // própria evidência, ou uma atividade com pergunta anexa corrigida aqui.
-        const cena = isInteractiveBlock(content) && content.activity.type === 'experimentation'
-        if (!isInteractiveBlock(content) || (!cena && !content.checkpoint))
+        // A cena traz a própria sessão; o jogo pronto traz os alvos encontrados
+        // (evidência de participação, não prova antitrapaça). HTML livre ainda
+        // exige uma pergunta corrigida pelo servidor.
+        const atividadeObservavel =
+          isInteractiveBlock(content) &&
+          (content.activity.type === 'experimentation' || content.activity.type === 'project-play')
+        if (!isInteractiveBlock(content) || (!atividadeObservavel && !content.checkpoint))
           add(
-            'Use uma exploração nativa com objetivo observável ou uma resposta corrigida no servidor.',
+            'Use uma exploração nativa ou jogo pronto com objetivo observável, ou uma resposta corrigida no servidor.',
           )
       } else if (content.kind === 'video') {
         // A porcentagem assistida é evidência própria do vídeo e pode ser combinada com arquivos.

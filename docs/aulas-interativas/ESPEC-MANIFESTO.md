@@ -28,16 +28,17 @@ manifesto não escolhe coluna: quem escolhe é o tipo do bloco.
 **Vão para a coluna da DIREITA:**
 
 - Bloco de **Estúdio** ou **Pinta** embarcado (`kind: 'studio'` ou `'pinta'`) que não seja galeria
-- Bloco **interativo cuja atividade é uma CENA**, ou seja, experimentação
+- Bloco **interativo cuja atividade é uma CENA** (`experimentation`) ou um jogo pronto
+  (`project-play`), ambos tratados como bancada sem editor
 - A **prévia em livro** de um bloco `materials` com `bookPreview: true`; o download do mesmo bloco
   continua na esquerda
 
 **Vai para a coluna da ESQUERDA todo o resto**, na ordem em que aparece na seção:
 
 - vídeo planejado, diálogo do Zappy, texto, quiz
-- e, com atenção, **bloco interativo que NÃO é cena**: pergunta curta (`question`) e experiência em
-  HTML (`html`) ficam na **esquerda**. Elas se leem e se respondem no meio da aula, ao contrário da
-  cena, que é bancada
+- e, com atenção, **bloco interativo que não é bancada**: pergunta curta (`question`) e experiência
+  em HTML (`html`) ficam na **esquerda**. Elas se leem e se respondem no meio da aula, ao contrário
+  da cena e do jogo pronto
 
 ### O que isso obriga no desenho da seção
 
@@ -193,7 +194,7 @@ Todo conteúdo cabe em um de dois lugares:
 Se você está escrevendo um texto e ele não cabe num balão de 400 caracteres, **isso é sinal de que
 o conteúdo pertence ao vídeo**, não de que o texto deve ficar maior.
 
-**Interativo** (cena, pergunta ou HTML).
+**Interativo** (cena, jogo pronto, pergunta ou HTML).
 
 ```json
 { "key": "experiencia-tela", "content": {
@@ -212,6 +213,17 @@ controles nem o vídeo. A instrução fica abaixo da cena e imediatamente antes 
 
 `required` deve ser **true** sempre que a cena for o critério de conclusão da seção. Este é um
 defeito conhecido do material atual: quatro cenas estão como opcionais sendo o único critério.
+
+**Jogo pronto na aula.** Para uma abertura que pede à criança jogar antes de construir, use
+`activity.type: "project-play"` dentro de um bloco `interactive`. `project` é um snapshot Jogo 2D
+completo e independente do `initialProject` do Estúdio; `stage` declara a largura e altura lógicas
+do palco; `targets` declara cada esconderijo como `{ id, label, x, y, width, height }`, nas mesmas
+coordenadas dos sprites do projeto. O runtime conta apenas toques reais nos alvos do grupo. O
+player oferece botões de toque/teclado para esses mesmos pontos, sem abrir o editor. A conclusão
+requer todos os IDs distintos em `foundTargets`, além dos outros critérios da seção, como assistir
+ao vídeo. Isso registra participação, não é uma prova antitrapaça nem uma entrega da criança.
+Não use `html` para esse caso: uma atividade HTML obrigatória exige uma pergunta corrigida pelo
+servidor, que seria um pedágio artificial para a primeira brincadeira.
 
 **Quiz.** Use o formato dos manifestos atuais. Ele sempre ocupa uma seção própria, acompanhado no
 máximo por um diálogo introdutório do Zappy. O quiz não divide seção com vídeo, cena ou ferramenta.

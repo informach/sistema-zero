@@ -418,7 +418,12 @@ export const gameTwoDTextSpritesRuntime = `
       for (var sprite of group.items) {
         if (_spriteContainsPointer(sprite, x, y) && (!picked || (sprite._paintOrder || 0) > (picked._paintOrder || 0))) picked = sprite;
       }
-      if (picked) fn(picked);
+      if (picked) {
+        fn(picked);
+        // O preview pode observar um toque REAL no grupo, sem ler o canvas isolado.
+        // O jogo exportado não tem essa ponte e continua independente da plataforma.
+        if (typeof window.__szReportGroupClick === 'function') window.__szReportGroupClick(x, y);
+      }
     }, handlerId);
   }
   /** @param {string} prefix @param {string | undefined} id @param {object} target @param {object} fn */

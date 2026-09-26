@@ -1,7 +1,15 @@
 /** Gera apenas os três manifestos derivados deste curso. Não altera catálogo nem outros cursos. */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { montarProjetoCadeTodoMundo } from './cade-todo-mundo-projeto'
+import {
+  JARDIM_BASE_ESCONDERIJOS,
+  JARDIM_PARES,
+  jardimSpriteRect,
+} from '../../../packages/studio/src/arte/jardim-assets'
+import {
+  montarProjetoCadeTodoMundo,
+  montarProjetoCadeTodoMundoCompleto,
+} from './cade-todo-mundo-projeto'
 
 const DIR = resolve(import.meta.dir, '../aulas')
 const CURSO = 'cade-todo-mundo'
@@ -75,8 +83,34 @@ const aula1 = {
     video(
       'video-a1-abertura',
       'Vamos procurar!',
-      'Demonstrar o jogo pronto: revelar os três personagens, mostrar Achados aumentando e a comemoração. Distinguir a missão de hoje, fazer o primeiro personagem aparecer, da busca que será completada depois; cenário e personagens já vêm preparados. Apresentar as seções como pequenas partes da aula, cada uma com um vídeo. Demonstrar pausa, replay e Próxima seção, com ritmo acolhedor. Não mostrar a experiência, o Estúdio, o caderno ou outros controles nesta abertura. Alvo: 1–1,5 minuto.',
+      'Apresentar o jogo Cadê Todo Mundo? e apontar o jardim jogável nesta mesma seção, sem revelar os três esconderijos nem a comemoração antes da criança brincar. Convidar a procurar os três personagens no jogo pronto; toque no cenário ou botões acessíveis servem. Distinguir o jogo pronto desta abertura do projeto que a criança vai construir: hoje ela cria a primeira reação, depois completa a contagem. Apresentar as seções como pequenas partes da aula, cada uma com um vídeo; mostrar pausa, replay e Próxima seção sem navegar. Não mostrar a experiência, o Estúdio ou o caderno nesta abertura. Alvo: 60–90 segundos.',
     ),
+    {
+      key: 'jogo-pronto',
+      content: {
+        kind: 'interactive',
+        required: true,
+        title: 'Experimente o jogo pronto',
+        instructions: 'Tem três personagens escondidos no jardim. Procure todos eles!',
+        hints: [],
+        activity: {
+          type: 'project-play',
+          project: montarProjetoCadeTodoMundoCompleto(),
+          stage: { width: 640, height: 360 },
+          targets: JARDIM_PARES.map(({ esconderijo, centroX }) => {
+            const { x, y, w, h } = jardimSpriteRect(esconderijo, centroX, JARDIM_BASE_ESCONDERIJOS)
+            return {
+              id: esconderijo,
+              label: esconderijo === 'arbusto' ? 'no arbusto' : `nas ${esconderijo}`,
+              x,
+              y,
+              width: w,
+              height: h,
+            }
+          }),
+        },
+      },
+    },
     video(
       'video-a1-caderno',
       'Seu Caderno do Aluno',
@@ -125,9 +159,9 @@ const aula1 = {
       'apresentacao',
       'Bem-vindo ao jardim',
       'presentation',
-      'Conhecer o jogo e a missão de hoje, aprender a pausar/rever o vídeo e avançar à próxima seção.',
-      ['video-a1-abertura'],
-      ['video-a1-abertura'],
+      'Conhecer o jogo, encontrar os três personagens e aprender a pausar/rever o vídeo e avançar.',
+      ['video-a1-abertura', 'jogo-pronto'],
+      ['video-a1-abertura', 'jogo-pronto'],
     ),
     section(
       'seu-caderno-do-aluno',

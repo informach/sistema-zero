@@ -1552,7 +1552,8 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 }
 /* Experimentar e brincar usam a mesma família visual do tema Kids. */
 .sz-lesson-sections .sz-lesson-chip[data-chip="experimentation"],
-.sz-lesson-sections .sz-lesson-chip[data-chip="html"] {
+.sz-lesson-sections .sz-lesson-chip[data-chip="html"],
+.sz-lesson-sections .sz-lesson-chip[data-chip="project-play"] {
   --unit: var(--kids-verde);
   --unit-fg: oklch(1 0 0);
   --unit-bg: var(--unit);
