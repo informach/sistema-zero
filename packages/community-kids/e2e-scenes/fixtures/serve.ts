@@ -17,6 +17,14 @@ const bundle = await Bun.build({
 if (!bundle.success) throw new Error(bundle.logs.join('\n'))
 const script = bundle.outputs.find((output) => output.path.endsWith('.js'))
 if (!script) throw new Error('Bundle da experiência não foi gerado')
+const projectPlayBundle = await Bun.build({
+  entrypoints: [resolve(import.meta.dir, 'project-play-client.tsx')],
+  target: 'browser',
+  define: { 'process.env.NODE_ENV': JSON.stringify('production') },
+})
+if (!projectPlayBundle.success) throw new Error(projectPlayBundle.logs.join('\n'))
+const projectPlayScript = projectPlayBundle.outputs.find((output) => output.path.endsWith('.js'))
+if (!projectPlayScript) throw new Error('Bundle do jogo pronto não foi gerado')
 
 Bun.serve({
   hostname: '127.0.0.1',
@@ -24,10 +32,12 @@ Bun.serve({
   fetch(request) {
     const path = new URL(request.url).pathname
     if (path === '/client.js') return new Response(script)
+    if (path === '/project-play.js') return new Response(projectPlayScript)
     if (path === '/scene.css')
       return new Response(styles.css, { headers: { 'Content-Type': 'text/css' } })
+    const entrypoint = path === '/project-play' ? '/project-play.js' : '/client.js'
     return new Response(
-      '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/scene.css"></head><body><div id="root"></div><script type="module" src="/client.js"></script></body></html>',
+      `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/scene.css"></head><body><div id="root"></div><script type="module" src="${entrypoint}"></script></body></html>`,
       { headers: { 'Content-Type': 'text/html' } },
     )
   },

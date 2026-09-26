@@ -42,6 +42,9 @@ interface Window {
   // Sons do projeto, do mesmo bridge das imagens. Opcional porque o mapa não é
   // semeado quando o projeto não tem nenhum arquivo de áudio.
   __SZGAME_SOUNDS?: Record<string, string>
+  /** Ponte opcional do player de aula; ausente no jogo exportado. */
+  __szReportGroupClick?: (x: number, y: number) => void
+  __szReportGameReady?: () => void
   webkitAudioContext?: typeof AudioContext
 }
 `
