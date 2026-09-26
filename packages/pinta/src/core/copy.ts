@@ -357,7 +357,6 @@ export const COPY = {
     /** Linhas-guia do vetor (puxadas da régua). */
     guides: 'Guias',
     guidesLock: 'Travar as guias',
-    guidesUnlock: 'Destravar as guias',
     guidesClear: 'Limpar as guias',
     guideLimit: 'Já tem guias demais. Apague alguma para criar outra.',
     filled: 'Preencher formas',

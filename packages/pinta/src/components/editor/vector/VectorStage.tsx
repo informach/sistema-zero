@@ -290,6 +290,9 @@ const BRUSH_MIN_POINT_DISTANCE = 0.35
 /** Ferramentas de FORMA: a forma recém-desenhada fica com as alças (ajuste na hora). */
 const SHAPE_TOOLS: ReadonlySet<string> = new Set(['rect', 'ellipse', 'line', 'polygon', 'star'])
 
+/** Largura do alvo do toque de uma guia, em px de TELA (o traço visível tem 1 px). */
+const GUIDE_HIT_SCREEN_PX = 16
+
 const HANDLES: Array<{ id: string; fx: number; fy: number }> = [
   { id: 'nw', fx: 0, fy: 0 },
   { id: 'n', fx: 0.5, fy: 0 },
@@ -387,6 +390,12 @@ export function VectorStage(): JSX.Element {
    * BORDAS do pan: dois renders por arrasto, nenhum durante o movimento.
    */
   const [panning, setPanning] = useState(false)
+  /**
+   * A guia que está sendo arrastada para FORA da área rolável (soltar ali a apaga): só o id,
+   * e só nas BORDAS (entrou/saiu), como o `panning`. A linha ganha `data-guide-leaving` e o
+   * tracejado, para a criança ver que vai apagar antes de soltar.
+   */
+  const [leavingGuideId, setLeavingGuideId] = useState<string | null>(null)
   const gestureRef = useRef<Gesture | null>(null)
   const gradientDoneRef = useRef<HTMLButtonElement>(null)
   const maskDoneRef = useRef<HTMLButtonElement>(null)
@@ -552,6 +561,12 @@ export function VectorStage(): JSX.Element {
   }, [])
 
   useWheelZoom(stageRef, svgRef)
+
+  // O documento encolheu (outra peça/quadro menor): guia fora dele voltaria invisível, mas
+  // contando no teto e acendendo o "Limpar". Traz todas para a borda.
+  useEffect(() => {
+    session.getState().clampGuides(doc.width, doc.height)
+  }, [session, doc.width, doc.height])
 
   const gridSpacing = gridSpacingFor(doc.width, doc.height)
 
@@ -754,6 +769,9 @@ export function VectorStage(): JSX.Element {
   function startGuideFromRuler(axis: GuideAxis, event: PointerEvent<SVGSVGElement>): void {
     if (!event.isPrimary || gestureStillActive()) return
     event.preventDefault()
+    // Puxar com as guias ESCONDIDAS as mostra de novo (como o Illustrator): senão a criança
+    // criava uma guia invisível, que contava no teto sem aparecer.
+    if (!session.getState().showGuides) session.getState().toggleGuides()
     guideDragCleanupRef.current?.()
     const docSize = axis === 'x' ? doc.width : doc.height
     setGhostGuide({ axis, pos: clampGuidePos(guidePosFromClient(axis, event), docSize) })
@@ -774,6 +792,8 @@ export function VectorStage(): JSX.Element {
 
   /** Pegar uma guia para mover (só com a Selecionar e destravada, ver `guidesInteractive`). */
   function handleGuideDown(guide: StageGuide, event: PointerEvent<SVGElement>): void {
+    // Espaço segurado = Mão: o toque desce ao palco e faz o pan, não move a guia.
+    if (spaceHeld) return
     if (!guidesInteractive || !event.isPrimary || gestureStillActive()) return
     event.stopPropagation()
     const client = { x: event.clientX, y: event.clientY }
@@ -1380,6 +1400,8 @@ export function VectorStage(): JSX.Element {
     }
     if (gesture.kind === 'guideMove') {
       gesture.lastClient = { x: event.clientX, y: event.clientY }
+      // Só muda de valor nas bordas (o React ignora o `set` com o mesmo valor).
+      setLeavingGuideId(insideScroller(gesture.lastClient) ? null : gesture.id)
       const delta =
         gesture.axis === 'x'
           ? event.clientX - gesture.startClient.x
@@ -1591,8 +1613,18 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (gesture.kind === 'guideMove') {
+      setLeavingGuideId(null)
+      // `pointercancel` (o navegador tomou o ponteiro: gesto do sistema, toque a mais) não é
+      // um "soltar": a guia FICA, e volta para onde estava.
+      if (event?.type === 'pointercancel') {
+        session
+          .getState()
+          .moveGuide(gesture.id, gesture.start, gesture.axis === 'x' ? doc.width : doc.height)
+        return
+      }
       // Soltar FORA da área rolável (na régua, no canto, fora da janela) APAGA a guia: a
-      // régua é a saída natural, e é o que os programas de desenho fazem.
+      // régua é a saída natural, e é o que os programas de desenho fazem. A linha já vinha
+      // tracejada (`data-guide-leaving`) avisando.
       if (!insideScroller(gesture.lastClient)) session.getState().removeGuide(gesture.id)
       return
     }
@@ -1689,8 +1721,14 @@ export function VectorStage(): JSX.Element {
 
   // As guias só respondem ao toque com a Selecionar (e destravadas): com pincel e formas um
   // traço que começa em cima da guia tem que DESENHAR, não movê-la (a mesma razão das alças).
+  // Com o Espaço segurado (Mão temporária) o toque na guia tem que fazer o pan.
   const guidesInteractive =
-    tool === 'select' && !guidesLocked && !colorPick && !gradientAdjustShapeId && !maskEditId
+    tool === 'select' &&
+    !guidesLocked &&
+    !spaceHeld &&
+    !colorPick &&
+    !gradientAdjustShapeId &&
+    !maskEditId
 
   const singleBounds = single ? shapeBounds(single) : null
   const maskEditShape = maskEditId
@@ -1699,16 +1737,23 @@ export function VectorStage(): JSX.Element {
   const transformShapes = maskEditShape ? [maskEditShape] : selected
   const transformSingle = transformShapes.length === 1 ? (transformShapes[0] ?? null) : null
   const transformSingleBounds = transformSingle ? shapeBounds(transformSingle) : null
+  // A caixa que as alças cercam: a da forma só, ou a UNIÃO da seleção múltipla.
+  const transformBounds =
+    transformSingleBounds ??
+    (transformShapes.length > 1 ? boundsUnion(transformShapes.map(shapeBounds)) : null)
   // As alças de redimensionar/girar de fato: com a Selecionar, sempre que ativas; com
-  // uma ferramenta de FORMA, só numa forma grande o bastante para as alças não a
+  // uma ferramenta de FORMA, só numa caixa grande o bastante para as alças não a
   // cobrirem inteira (ver `HANDLE_MIN_SCREEN_PX`). Sem elas, o toque desce ao palco e
-  // desenha a próxima forma; ajustar a pequena é com a Selecionar (V).
+  // desenha a próxima forma; ajustar a pequena é com a Selecionar (V). ⚠️ A régua vale
+  // para a seleção MÚLTIPLA também: as alças da união eram desenhadas só sob `handlesActive`
+  // e, com uma ferramenta de forma, o toque nelas desenhava (o `handleResizeDown` saía sem
+  // parar a propagação). Agora elas só aparecem quando respondem.
   const handlesUsable =
     handlesActive &&
     (tool === 'select' ||
-      (transformSingleBounds !== null &&
-        transformSingleBounds.width * zoom >= HANDLE_MIN_SCREEN_PX &&
-        transformSingleBounds.height * zoom >= HANDLE_MIN_SCREEN_PX))
+      (transformBounds !== null &&
+        transformBounds.width * zoom >= HANDLE_MIN_SCREEN_PX &&
+        transformBounds.height * zoom >= HANDLE_MIN_SCREEN_PX))
   const transformPivot = transformShapes.length > 0 ? selectionRotationPivot(transformShapes) : null
   const transformCenter =
     transformSingle && transformSingleBounds
@@ -2097,31 +2142,41 @@ export function VectorStage(): JSX.Element {
                 </g>
               ) : null}
               {/* Linhas-guia (sessão, só visuais): fúcsia, distinta do azul da seleção e do
-                  cinza da grade. O traço transparente de 10 px é o ALVO do toque; o fino é
-                  o desenho. Nunca saem no export: não existem no asset. */}
+                  cinza da grade. O traço transparente de 16 px de tela é o ALVO do toque; o
+                  fino é o desenho. Nunca saem no export: não existem no asset. A que está
+                  sendo arrastada para fora (`data-guide-leaving`) fica tracejada. */}
               {showGuides && (guides.length > 0 || ghostGuide) ? (
                 <g data-guides pointerEvents={guidesInteractive ? 'stroke' : 'none'}>
-                  {guides.map((guide) => (
-                    <g
-                      key={guide.id}
-                      data-guide={guide.id}
-                      data-guide-axis={guide.axis}
-                      style={{ cursor: guide.axis === 'x' ? 'col-resize' : 'row-resize' }}
-                      onPointerDown={(event) => handleGuideDown(guide, event)}
-                    >
-                      <line
-                        {...guideLineAttrs(guide.axis, guide.pos)}
-                        stroke="transparent"
-                        strokeWidth={10 / zoom}
-                      />
-                      <line
-                        {...guideLineAttrs(guide.axis, guide.pos)}
-                        stroke="#d946ef"
-                        strokeWidth={1 / zoom}
-                        pointerEvents="none"
-                      />
-                    </g>
-                  ))}
+                  {guides.map((guide) => {
+                    const leaving = leavingGuideId === guide.id
+                    return (
+                      <g
+                        key={guide.id}
+                        data-guide={guide.id}
+                        data-guide-axis={guide.axis}
+                        data-guide-leaving={leaving ? '1' : undefined}
+                        style={
+                          leaving
+                            ? undefined
+                            : { cursor: guide.axis === 'x' ? 'col-resize' : 'row-resize' }
+                        }
+                        onPointerDown={(event) => handleGuideDown(guide, event)}
+                      >
+                        <line
+                          {...guideLineAttrs(guide.axis, guide.pos)}
+                          stroke="transparent"
+                          strokeWidth={GUIDE_HIT_SCREEN_PX / zoom}
+                        />
+                        <line
+                          {...guideLineAttrs(guide.axis, guide.pos)}
+                          stroke="#d946ef"
+                          strokeWidth={1 / zoom}
+                          strokeDasharray={leaving ? `${4 / zoom} ${3 / zoom}` : undefined}
+                          pointerEvents="none"
+                        />
+                      </g>
+                    )
+                  })}
                   {ghostGuide ? (
                     <line
                       data-guide-ghost="1"
@@ -2393,34 +2448,40 @@ export function VectorStage(): JSX.Element {
                           strokeWidth={1.5 / zoom}
                           pointerEvents="none"
                         />
-                        {HANDLES.map((handle) => (
-                          <rect
-                            key={`multi-${handle.id}`}
-                            x={union.x + handle.fx * union.width - 7 / zoom}
-                            y={union.y + handle.fy * union.height - 7 / zoom}
-                            width={14 / zoom}
-                            height={14 / zoom}
+                        {/* As alças só quando RESPONDEM (`handlesUsable`), como na forma só. */}
+                        {handlesUsable
+                          ? HANDLES.map((handle) => (
+                              <rect
+                                key={`multi-${handle.id}`}
+                                data-handle={handle.id}
+                                x={union.x + handle.fx * union.width - 7 / zoom}
+                                y={union.y + handle.fy * union.height - 7 / zoom}
+                                width={14 / zoom}
+                                height={14 / zoom}
+                                fill="#ffffff"
+                                stroke="#00a0c8"
+                                strokeWidth={1.5 / zoom}
+                                style={{ cursor: 'pointer' }}
+                                onPointerDown={(event) => handleResizeDown(handle, union, event)}
+                              />
+                            ))
+                          : null}
+                        {/* Alça de girar a seleção INTEIRA (mesma da forma só). */}
+                        {handlesUsable ? (
+                          <circle
+                            data-rotate="1"
+                            cx={union.x + union.width / 2}
+                            cy={union.y - 22 / zoom}
+                            r={8 / zoom}
                             fill="#ffffff"
                             stroke="#00a0c8"
                             strokeWidth={1.5 / zoom}
-                            style={{ cursor: 'pointer' }}
-                            onPointerDown={(event) => handleResizeDown(handle, union, event)}
+                            style={{ cursor: 'grab' }}
+                            onPointerDown={(event) =>
+                              transformPivot && handleRotateDown(transformPivot, event)
+                            }
                           />
-                        ))}
-                        {/* Alça de girar a seleção INTEIRA (mesma da forma só). */}
-                        <circle
-                          data-rotate="1"
-                          cx={union.x + union.width / 2}
-                          cy={union.y - 22 / zoom}
-                          r={8 / zoom}
-                          fill="#ffffff"
-                          stroke="#00a0c8"
-                          strokeWidth={1.5 / zoom}
-                          style={{ cursor: 'grab' }}
-                          onPointerDown={(event) =>
-                            transformPivot && handleRotateDown(transformPivot, event)
-                          }
-                        />
+                        ) : null}
                       </g>
                     )
                   })()}

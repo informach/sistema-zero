@@ -413,6 +413,12 @@
 [data-pinta-theme] .pin-ruler__cursor {
   stroke: var(--color-pin-accent);
 }
+/* A guia sendo arrastada para FORA da área rolável (vai ser apagada ao soltar): o cursor avisa
+   (o `<g>` tira o cursor inline nesse estado, para esta regra valer); o tracejado é do próprio
+   `<line>`, para escalar com o zoom. `pointercancel` a devolve ao lugar. */
+[data-pinta-theme] [data-guide-leaving] {
+  cursor: not-allowed;
+}
 /* ⚠⚠ A ÁREA DE TRABALHO NÃO entra na seleção de texto do navegador (18/09/2026).
 
    Relato dela: "quando seleciono um objeto e arrasto, se tiver texto, ele fica selecionado".

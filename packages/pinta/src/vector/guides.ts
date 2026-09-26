@@ -6,8 +6,9 @@
  *   migração nem export. É por construção que elas nunca saem no SVG/PNG/miniatura/Estúdio.
  * As posições são em UNIDADES DO DOCUMENTO e inteiras (lêem limpas na régua; guia em meio
  * pixel de sprite não ajuda ninguém).
+ * Não há hit-test aqui: quem descobre qual guia foi tocada é o NAVEGADOR (o `pointerdown` no
+ * `<g data-guide>` de cada uma), então o módulo só cuida da lista.
  */
-import type { Vec2 } from './model'
 
 export type GuideAxis = 'x' | 'y'
 
@@ -61,20 +62,22 @@ export function removeGuide(guides: readonly StageGuide[], id: string): readonly
   return result.length === guides.length ? guides : result
 }
 
-/** A guia mais perto do ponto dentro da tolerância (em unidades do documento), ou nenhuma. */
-export function guideAt(
+/**
+ * Traz para dentro do documento as guias que ficaram de fora quando ele ENCOLHEU (pos maior
+ * que o tamanho): órfã, a guia seguia invisível, mas contava no teto e acendia o "Limpar".
+ * Devolve o MESMO array quando nenhuma precisou mexer.
+ */
+export function clampGuides(
   guides: readonly StageGuide[],
-  point: Vec2,
-  tolerance: number,
-): StageGuide | null {
-  let best: StageGuide | null = null
-  let bestDistance = tolerance
-  for (const guide of guides) {
-    const distance = Math.abs((guide.axis === 'x' ? point.x : point.y) - guide.pos)
-    if (distance <= bestDistance) {
-      best = guide
-      bestDistance = distance
-    }
-  }
-  return best
+  docWidth: number,
+  docHeight: number,
+): readonly StageGuide[] {
+  let changed = false
+  const result = guides.map((guide) => {
+    const next = clampGuidePos(guide.pos, guide.axis === 'x' ? docWidth : docHeight)
+    if (next === guide.pos) return guide
+    changed = true
+    return { ...guide, pos: next }
+  })
+  return changed ? result : guides
 }

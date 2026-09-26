@@ -144,10 +144,12 @@ export function VectorToolbox({
               active={showGuides}
               onClick={() => session.getState().toggleGuides()}
             />
+            {/* Rótulo FIXO + `aria-pressed` (como o "Régua"): alternar o rótulo E o pressed
+                lia "Destravar as guias, pressionado", sinal duplo para o leitor de tela. */}
             <ToolButton
               tone="quiet"
               icon={guidesLocked ? Lock : LockOpen}
-              label={guidesLocked ? COPY.tools.guidesUnlock : COPY.tools.guidesLock}
+              label={COPY.tools.guidesLock}
               active={guidesLocked}
               onClick={() => session.getState().toggleGuidesLock()}
             />

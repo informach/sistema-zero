@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import {
   addGuide,
   clampGuidePos,
-  guideAt,
+  clampGuides,
   MAX_GUIDES,
   moveGuide,
   removeGuide,
@@ -40,10 +40,12 @@ describe('guias do palco (sessão, só visuais)', () => {
     expect(removeGuide(removed, id)).toBe(removed)
   })
 
-  it('guideAt acha a mais perto dentro da tolerância, por eixo', () => {
-    const guides = addGuide(addGuide([], 'x', 10, 64), 'y', 40, 64)
-    expect(guideAt(guides, { x: 12, y: 0 }, 3)?.axis).toBe('x')
-    expect(guideAt(guides, { x: 0, y: 43 }, 3)?.axis).toBe('y')
-    expect(guideAt(guides, { x: 20, y: 20 }, 3)).toBeNull()
+  it('encolher o documento traz as guias de fora para a borda (e não mexe nas outras)', () => {
+    const guides = addGuide(addGuide(addGuide([], 'x', 60, 64), 'y', 10, 64), 'y', 50, 64)
+    const clamped = clampGuides(guides, 32, 32)
+    expect(clamped.map((guide) => guide.pos)).toEqual([32, 10, 32])
+    // Sem órfã, o MESMO array (ninguém re-renderiza à toa).
+    expect(clampGuides(clamped, 32, 32)).toBe(clamped)
+    expect(clampGuides(guides, 64, 64)).toBe(guides)
   })
 })

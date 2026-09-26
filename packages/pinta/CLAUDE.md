@@ -3004,6 +3004,12 @@ pequenas"):
   a propagação) e virava um redimensionamento. Ajustar a pequena é com a Selecionar (V), onde
   nada mudou. ⚠️ Com a Selecionar as alças também cobrem formas minúsculas; fica como melhoria
   futura. As alças levam `data-handle` para os testes.
+  ⚠️ **Full review (26/09): a régua vale para a seleção MÚLTIPLA também.** A caixa medida é
+  `transformBounds` (a da forma só OU a união das bounds da seleção), e as alças da união só
+  são desenhadas sob `handlesUsable` (antes, sob `handlesActive`): com uma ferramenta de forma e
+  duas formas selecionadas elas apareciam MORTAS e o toque nelas caía no palco e desenhava um
+  retângulo em cima da alça (o `handleResizeDown` saía sem `stopPropagation`). Elas também
+  levam `data-handle` agora.
 
 ## Régua e guias do palco (26/09/2026, só no editor de VETOR)
 
@@ -3023,9 +3029,22 @@ Réguas em cima e à esquerda do palco, em UNIDADES DO DOCUMENTO, acompanhando z
   cursor são escritos por ref no `transform`. Um `ResizeObserver` na div rolável E no conteúdo
   cobre zoom, painéis e janela (guardado por `typeof`: o happy-dom não o tem). Sem região viva
   de coordenadas, de propósito: um `role=status` a cada movimento do mouse inunda o leitor.
-  `enabled={false}` devolve só a célula, então o `VectorStage` embrulha o miolo (barras
-  flutuantes + div rolável) UMA vez; as barras `.pin-float absolute top-2` passam a ser
-  absolutas em relação à célula, ou seja, nascem abaixo da régua sem número mágico.
+  O `VectorStage` embrulha o miolo (barras flutuantes + div rolável) UMA vez; as barras
+  `.pin-float absolute top-2` passam a ser absolutas em relação à célula, ou seja, nascem
+  abaixo da régua sem número mágico.
+- ⚠️⚠️ **A árvore é a MESMA ligada e desligada** (full review 26/09): a raiz é sempre a mesma
+  div (`pin-rulers grid` ligada, `flex` desligada), as réguas entram como um fragmento
+  condicional na posição 0 e a CÉLULA fica sempre na posição 1. A primeira versão devolvia
+  `<div>{children}</div>` desligada e a grade inteira ligada: o React desmontava e remontava a
+  div rolável a cada toggle, e o `useWheelZoom` (que pendura o `wheel` nela UMA vez, deps
+  estáveis) ficava preso na div morta: clicar em "Régua" (ou cruzar os 768 px) matava o zoom
+  pela rolagem e devolvia o scroll ao centro. O teste prova que a div rolável é o MESMO nó
+  antes e depois do toggle e que a rolagem ainda dá zoom (⚠️ comparação por booleano: um
+  `toBe(nó)` reprovado faz o bun imprimir o DOM inteiro por minutos).
+- **`RulerTicks` é `memo`** (`StageRulers.test.tsx`, com a sonda `onTicksRender`): o palco
+  re-renderiza a cada `pointermove` de gesto, e os `ticks` já eram memoizados como DADO, mas o
+  JSX `ticks.map(...)` era recriado e re-diffado (milhares de `<line>`/`<text>`) em cada render.
+  Com o subcomponente e a identidade de `ticks`, o React pula a subárvore.
 - **Nasce LIGADA** (`session.showRulers`; a grade nasce desligada porque suja o papel, a régua
   fica fora dele) e some na **tela estreita** (`!wide`): cada px vertical conta e uma tira de
   24 px é pouco para o dedo. Botão "Régua" na caixa (curationId `rulers`, no preset `livre`,
@@ -3054,25 +3073,41 @@ enquanto o editor está aberto) e **nada encaixa nelas** (são referência para 
   fantasma tracejada (`data-guide-ghost`) segue o ponteiro por `addPointerDragListeners(document)`
   (não passa pelo `beginGesture`, porque o ponteiro não é do `<svg>` e a captura nele falharia);
   soltar DENTRO da div rolável cria, fora cancela. O ponto vem do `svgPoint` (o ponteiro da régua
-  mapeado pelo retângulo do `<svg>`), com `clampGuidePos`.
+  mapeado pelo retângulo do `<svg>`), com `clampGuidePos`. Puxar com as guias ESCONDIDAS as
+  mostra de novo (Illustrator); antes nascia uma guia invisível, contando no teto.
 - **Mover/apagar:** gesto `guideMove` (delta em px de tela × `docPerPx`, como mover forma);
-  soltar FORA da div rolável (na régua, no canto, fora da janela) APAGA a guia. Zoom e troca de
-  quadro já fecham qualquer gesto. **Só com a Selecionar e destravadas** (`guidesInteractive`):
-  com pincel/formas o `<g data-guides>` fica `pointer-events: none` e o traço DESENHA por cima
-  da guia (a mesma razão das alças). O cadeado "Travar as guias" cobre quem quer a guia fixa
-  até com a Selecionar. ⚠️ Não há Delete com "guia selecionada" (exigiria um conceito de guia
-  selecionada e um `keydown` concorrendo com o do Delete das formas); arrastar para fora e
+  soltar FORA da div rolável (na régua, no canto, fora da janela) APAGA a guia. Enquanto o
+  ponteiro está fora, a guia AVISA: `data-guide-leaving` no `<g>` (estado `leavingGuideId`, só
+  nas bordas, como o `panning`), traço tracejado e cursor `not-allowed` (regra em `pinta.css`;
+  o `<g>` tira o cursor inline nesse estado). `pointercancel` NÃO é soltar: a guia fica e volta
+  para `gesture.start`. Zoom e troca de quadro já fecham qualquer gesto. **Só com a Selecionar,
+  destravadas e sem o Espaço segurado** (`guidesInteractive`; `handleGuideDown` também sai
+  cedo com `spaceHeld`, ANTES do `stopPropagation`, para o toque descer ao palco e fazer o
+  pan): com pincel/formas o `<g data-guides>` fica `pointer-events: none` e o traço DESENHA por
+  cima da guia (a mesma razão das alças). O cadeado "Travar as guias" cobre quem quer a guia
+  fixa até com a Selecionar. ⚠️ Não há Delete com "guia selecionada" (exigiria um conceito de
+  guia selecionada e um `keydown` concorrendo com o do Delete das formas); arrastar para fora e
   "Limpar as guias" cobrem o uso. Pendência de a11y declarada: criar/mover guia é gesto de
   ponteiro sem par de teclado.
+- **Documento que encolhe:** `clampGuides(w, h)` no `sessionStore` (helper puro em `guides.ts`),
+  chamado por efeito do `VectorStage` sobre `[doc.width, doc.height]`: guia com `pos` maior que
+  o documento ficava invisível mas contava no teto e acendia o "Limpar". O hit-test é do
+  NAVEGADOR (o `pointerdown` no `<g data-guide>`): `guideAt` foi apagada, ninguém a usava.
 - **Desenho:** fúcsia `#d946ef` (distinta do azul `#00a0c8` da seleção e do cinza da grade),
-  `1/zoom` de traço, com um traço TRANSPARENTE de `10/zoom` por baixo como alvo do toque
-  (`pointer-events: stroke` ignora a pintura). Renderizadas DEPOIS da grade e ANTES das alças.
+  `1/zoom` de traço, com um traço TRANSPARENTE de `GUIDE_HIT_SCREEN_PX / zoom` (16 px de tela)
+  por baixo como alvo do toque (`pointer-events: stroke` ignora a pintura). Renderizadas
+  DEPOIS da grade e ANTES das alças.
 - **Caixa:** os três botões (mostrar `Crosshair`, travar `Lock`/`LockOpen`, limpar
   `BrushCleaning`, desligado sem guias) são UMA entrada com UM id de curadoria (`guides`, no
-  preset `livre`); atalho **Ctrl+;** (Illustrator; o `;` existe sem Shift no ABNT2).
+  preset `livre`); atalho **Ctrl+;** (Illustrator; o `;` existe sem Shift no ABNT2). O cadeado
+  tem rótulo FIXO ("Travar as guias") e só o `aria-pressed` muda, como o "Régua": alternar o
+  rótulo E o pressed lia "Destravar as guias, pressionado" (sinal duplo); `guidesUnlock` saiu do
+  copy.
 - ⚠️ Nos testes o "soltar dentro" mede a div rolável, que no happy-dom tem retângulo zero: o
-  helper `measureScroll()` (irmão do `measureStage`) a mede. Testes: `vector/guides.test.ts` e
-  `vectorUi.test.tsx` §"guias".
+  helper `measureScroll()` (irmão do `measureStage`, no escopo do módulo) a mede. Testes:
+  `vector/guides.test.ts`, `state/sessionStore.test.ts` e `vectorUi.test.tsx` §"guias" e
+  §"régua e guias: os consertos do full review". ⚠️ O teste do pincel dispara o `pointerdown`
+  NA GUIA (`[data-guide]`), não no `<svg>`: no `<svg>` ele passava em vácuo.
 
 ## O arrasto não grifa nada, e o texto volta a ser editável (18/09/2026)
 

@@ -8,7 +8,14 @@ import { createStore, type StoreApi } from 'zustand/vanilla'
 import { TRANSPARENT_INDEX } from '../core/palette'
 import type { PixelToolId } from '../pixel/tools'
 import type { TileStamp } from '../tiles/stamp'
-import { addGuide, type GuideAxis, moveGuide, removeGuide, type StageGuide } from '../vector/guides'
+import {
+  addGuide,
+  clampGuides,
+  type GuideAxis,
+  moveGuide,
+  removeGuide,
+  type StageGuide,
+} from '../vector/guides'
 
 /**
  * Ferramentas da sessão: as do motor pixel + a Mão (navegação, mapa/vetor) + a
@@ -109,6 +116,8 @@ export interface PintaSessionState {
   addGuide(axis: GuideAxis, pos: number, docSize: number): boolean
   moveGuide(id: string, pos: number, docSize: number): void
   removeGuide(id: string): void
+  /** O documento ENCOLHEU: as guias que ficaram de fora voltam para a borda (nenhuma órfã). */
+  clampGuides(docWidth: number, docHeight: number): void
   clearGuides(): void
   toggleGuides(): void
   toggleGuidesLock(): void
@@ -194,6 +203,11 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     removeGuide: (id) =>
       set((state) => {
         const guides = removeGuide(state.guides, id)
+        return guides === state.guides ? {} : { guides }
+      }),
+    clampGuides: (docWidth, docHeight) =>
+      set((state) => {
+        const guides = clampGuides(state.guides, docWidth, docHeight)
         return guides === state.guides ? {} : { guides }
       }),
     clearGuides: () => set((state) => (state.guides.length === 0 ? {} : { guides: [] })),
