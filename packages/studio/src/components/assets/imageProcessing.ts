@@ -13,23 +13,24 @@ export async function fileToAssetDataUrl(
   file: File,
   maxDim = DEFAULT_MAX_DIM,
 ): Promise<ProcessedImage> {
-  if (!file.type.startsWith('image/')) {
+  const isSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')
+  if (!file.type.startsWith('image/') && !isSvg) {
     throw new Error('Selecione um arquivo de imagem.')
   }
   const sourceUrl = await readAsDataUrl(file)
-  const img = await loadImage(sourceUrl)
+  const comma = sourceUrl.indexOf(',')
+  if (comma < 0) throw new Error('Não foi possível ler a imagem.')
+  const imageUrl = isSvg ? `data:image/svg+xml;base64,${sourceUrl.slice(comma + 1)}` : sourceUrl
+  if (isSvg && imageUrl.length > PROJECT_ASSET_LIMITS.maxAssetDataUrlChars) {
+    throw new Error('O SVG é grande demais para o projeto. Simplifique o desenho no Pinta.')
+  }
+  const img = await loadImage(imageUrl)
   const w0 = img.naturalWidth || img.width
   const h0 = img.naturalHeight || img.height
   if (!w0 || !h0) throw new Error('Não foi possível ler a imagem.')
 
-  if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
-    const comma = sourceUrl.indexOf(',')
-    if (comma < 0) throw new Error('Não foi possível ler o SVG.')
-    const dataUrl = `data:image/svg+xml;base64,${sourceUrl.slice(comma + 1)}`
-    if (dataUrl.length > PROJECT_ASSET_LIMITS.maxAssetDataUrlChars) {
-      throw new Error('O SVG é grande demais para o projeto. Simplifique o desenho no Pinta.')
-    }
-    return { dataUrl, width: w0, height: h0 }
+  if (isSvg) {
+    return { dataUrl: imageUrl, width: w0, height: h0 }
   }
 
   const scale = Math.min(1, maxDim / Math.max(w0, h0))
