@@ -114,12 +114,37 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     const created = results.filter((r) => r.created)
     expect(created).toHaveLength(1)
     expect(created[0]?.redemption.accessDurationDays).toBe(7)
+    expect(created[0]?.redemption.muralVisitorPolicy).toBe('visitor')
+    expect(created[0]?.redemption.muralVisitorGrantedAt).toBeNull()
     const ids = new Set(results.map((r) => r.redemption.id))
     expect(ids.size).toBe(1) // todos veem a MESMA linha
 
-    await connection.sql`update referrals.scholarship_redemptions set access_duration_days = null where email = 'paula@example.com'`
+    await connection.sql`update referrals.scholarship_redemptions set access_duration_days = null, mural_visitor_policy = null where email = 'paula@example.com'`
     const historical = await repo.findRedemptionByEmail('paula@example.com')
     expect(historical?.accessDurationDays).toBeNull()
+    expect(historical?.muralVisitorPolicy).toBeNull()
+  })
+
+  test('curso e visita ao Mural têm checkpoints persistidos independentes', async () => {
+    const { code } = await seedCode()
+    const { redemption } = await repo.insertRedemption({
+      codeId: code.id,
+      email: 'visita@example.com',
+      name: 'Visita',
+      phone: null,
+    })
+    const when = new Date()
+    await repo.markCourseGranted(redemption.id, when)
+    const pending = await repo.findRedemptionByEmail('visita@example.com')
+    expect(pending?.status).toBe('pending')
+    expect(pending?.grantedAt?.toISOString()).toBe(when.toISOString())
+    expect(pending?.muralVisitorGrantedAt).toBeNull()
+
+    await repo.markMuralVisitorGranted(redemption.id, when)
+    await repo.markRedemptionGranted(redemption.id, when)
+    const completed = await repo.findRedemptionByEmail('visita@example.com')
+    expect(completed?.status).toBe('completed')
+    expect(completed?.muralVisitorGrantedAt?.toISOString()).toBe(when.toISOString())
   })
 
   test('lease do resgate é atômico: 2 concorrentes → 1 vence', async () => {

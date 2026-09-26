@@ -205,8 +205,41 @@ export class RedeemScholarshipService {
         await this.repo.markRedemptionFailed(redemption.id, 'gift_window_elapsed', null)
         return { kind: 'failed', reason: 'gift_window_elapsed' }
       }
-      await this.repo.markRedemptionGranted(redemption.id, this.now())
+      await this.repo.markCourseGranted(redemption.id, this.now())
     }
+
+    if (redemption.muralVisitorPolicy === 'visitor' && !redemption.muralVisitorGrantedAt) {
+      const res = await this.gateway.grantMuralVisitor({
+        userId,
+        sourceId: `scholarship:${redemption.id}`,
+        deliveryId: `scholarship:mural-visitor:${redemption.id}`,
+      })
+      if (res.status === 409) {
+        await this.repo.markRedemptionFailed(redemption.id, 'mural_grant_conflict', null)
+        this.logger.warn('referrals.redeem_mural_grant_conflict', { redemptionId: redemption.id })
+        return { kind: 'failed', reason: 'mural_grant_conflict' }
+      }
+      if (res.status < 200 || res.status >= 300) {
+        await this.repo
+          .recordRedemptionError(redemption.id, upstreamErrorSummary('mural-grant', res))
+          .catch(() => {})
+        this.logger.warn('referrals.redeem_mural_grant_failed', {
+          redemptionId: redemption.id,
+          status: res.status,
+          errorCode: readErrorCode(res.body),
+        })
+        return { kind: 'upstream_error' }
+      }
+      await this.repo.markMuralVisitorGranted(redemption.id, this.now())
+    }
+
+    const expiresAt = scholarshipExpiresAt(redemption.createdAt, redemption.accessDurationDays)
+    if (expiresAt && this.now().getTime() >= expiresAt.getTime()) {
+      await this.repo.markRedemptionFailed(redemption.id, 'gift_window_elapsed', null)
+      return { kind: 'failed', reason: 'gift_window_elapsed' }
+    }
+
+    await this.repo.markRedemptionGranted(redemption.id, this.now())
 
     // 3) E-mail (best-effort — o ACESSO é o produto; fallback = "esqueci minha
     //    senha"). Claim atômico: só uma execução emite token/envia.

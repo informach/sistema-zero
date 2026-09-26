@@ -47,6 +47,9 @@ export interface RedemptionRecord {
   completedAt: Date | null
   /** Null identifica resgates anteriores à política de sete dias. */
   accessDurationDays: number | null
+  /** Null identifica resgates anteriores à visita permanente ao Mural. */
+  muralVisitorPolicy: string | null
+  muralVisitorGrantedAt: Date | null
   createdAt: Date
 }
 
@@ -221,6 +224,8 @@ export interface ReferralRepository {
   acquireRedemptionLease(id: string, until: Date, now: Date): Promise<RedemptionRecord | null>
   releaseRedemptionLease(id: string): Promise<void>
   setRedemptionBuyer(id: string, userId: string, buyerCreated: boolean): Promise<void>
+  markCourseGranted(id: string, when: Date): Promise<void>
+  markMuralVisitorGranted(id: string, when: Date): Promise<void>
   /** granted_at + status completed + completed_at (o acesso é o produto). */
   markRedemptionGranted(id: string, when: Date): Promise<void>
   markRedemptionFailed(id: string, reason: string, lastError: string | null): Promise<void>

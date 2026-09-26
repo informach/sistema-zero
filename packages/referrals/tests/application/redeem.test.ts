@@ -54,6 +54,13 @@ describe('RedeemScholarshipService', () => {
     )
     expect(grant.sourceId).toBe(`scholarship:${r.id}`)
     expect(grant.deliveryId).toBe(`scholarship:course:cade-todo-mundo:${r.id}`)
+    const visitor = gateway.callsOf('grantMuralVisitor')[0]?.input
+    if (!r.userId) throw new Error('resgate concluído sem conta')
+    expect(visitor).toEqual({
+      userId: r.userId,
+      sourceId: `scholarship:${r.id}`,
+      deliveryId: `scholarship:mural-visitor:${r.id}`,
+    })
 
     // Welcome do comprador NOVO: token + template da bolsa com link de senha.
     expect(gateway.callsOf('createPasswordToken')).toHaveLength(1)
@@ -83,10 +90,12 @@ describe('RedeemScholarshipService', () => {
       phone: null,
     })
     redemption.accessDurationDays = null
+    redemption.muralVisitorPolicy = null
 
     expect((await service.execute(input)).kind).toBe('completed')
     const grant = gateway.callsOf('grantManualCourse')[0]!.input as GrantManualCourseInput
     expect(grant.expiresAt).toBeNull()
+    expect(gateway.callsOf('grantMuralVisitor')).toHaveLength(0)
     const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
     expect(email.templateKey).toBe('referrals-scholarship-welcome')
   })
@@ -99,11 +108,27 @@ describe('RedeemScholarshipService', () => {
       phone: null,
     })
     redemption.accessDurationDays = null
+    redemption.muralVisitorPolicy = null
     gateway.ensureBuyerResult = { status: 200, body: { userId: 'u-1', created: false } }
 
     expect((await service.execute(input)).kind).toBe('completed')
     const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
     expect(email.templateKey).toBe('new-access')
+    expect(gateway.callsOf('grantMuralVisitor')).toHaveLength(0)
+  })
+
+  test('resgate anterior à visita não recebe Mural mesmo com curso de sete dias', async () => {
+    const { redemption } = await repo.insertRedemption({
+      codeId: repo.codes[0]!.id,
+      email: 'paula@example.com',
+      name: 'Paula Prado',
+      phone: null,
+    })
+    redemption.muralVisitorPolicy = null
+
+    expect((await service.execute(input)).kind).toBe('completed')
+    expect(gateway.callsOf('grantMuralVisitor')).toHaveLength(0)
+    expect(gateway.callsOf('grantManualCourse')).toHaveLength(1)
   })
 
   test('retomada do grant não reinicia os sete dias', async () => {
@@ -118,6 +143,33 @@ describe('RedeemScholarshipService', () => {
     expect(grant.expiresAt).toBe(
       new Date(redemption.createdAt.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     )
+  })
+
+  test('falha no Mural não confirma o presente; retry concede só a etapa faltante', async () => {
+    gateway.muralVisitorResult = { status: 502, body: {} }
+    expect((await service.execute(input)).kind).toBe('upstream_error')
+    const redemption = repo.redemptions[0]!
+    expect(redemption.grantedAt).not.toBeNull()
+    expect(redemption.muralVisitorGrantedAt).toBeNull()
+    expect(redemption.status).toBe('pending')
+    expect(gateway.callsOf('sendEmail')).toHaveLength(0)
+
+    gateway.muralVisitorResult = { status: 200, body: { ok: true } }
+    expect((await service.execute(input)).kind).toBe('completed')
+    expect(gateway.callsOf('grantManualCourse')).toHaveLength(1)
+    expect(gateway.callsOf('grantMuralVisitor')).toHaveLength(2)
+    expect(redemption.muralVisitorGrantedAt).not.toBeNull()
+  })
+
+  test('conflito no grant do visitante fica diagnosticável e não envia e-mail', async () => {
+    gateway.muralVisitorResult = { status: 409, body: {} }
+    expect(await service.execute(input)).toEqual({
+      kind: 'failed',
+      reason: 'mural_grant_conflict',
+    })
+    expect(repo.redemptions[0]?.grantedAt).not.toBeNull()
+    expect(repo.redemptions[0]?.failedReason).toBe('mural_grant_conflict')
+    expect(gateway.callsOf('sendEmail')).toHaveLength(0)
   })
 
   test('retomada depois do vencimento não concede curso nem envia boas-vindas', async () => {

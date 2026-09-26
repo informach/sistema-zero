@@ -3,6 +3,7 @@ import type {
   EnsureBuyerInput,
   GatewayResult,
   GrantManualCourseInput,
+  GrantMuralVisitorInput,
   ReferralsGateway,
   SendEmailInput,
 } from '../../src/domain/ports/gateway.port'
@@ -278,6 +279,8 @@ export class InMemoryReferralRepository implements ReferralRepository {
       attemptCount: 0,
       completedAt: null,
       accessDurationDays: 7,
+      muralVisitorPolicy: 'visitor',
+      muralVisitorGrantedAt: null,
       createdAt: new Date(),
     }
     this.redemptions.push(redemption)
@@ -314,12 +317,22 @@ export class InMemoryReferralRepository implements ReferralRepository {
   async markRedemptionGranted(id: string, when: Date): Promise<void> {
     const r = this.redemptions.find((x) => x.id === id)
     if (r) {
-      r.grantedAt = when
+      r.grantedAt ??= when
       r.status = 'completed'
       r.completedAt = when
       r.failedReason = null
       r.lastError = null
     }
+  }
+
+  async markCourseGranted(id: string, when: Date): Promise<void> {
+    const r = this.redemptions.find((x) => x.id === id)
+    if (r) r.grantedAt = when
+  }
+
+  async markMuralVisitorGranted(id: string, when: Date): Promise<void> {
+    const r = this.redemptions.find((x) => x.id === id)
+    if (r) r.muralVisitorGrantedAt = when
   }
 
   async markRedemptionFailed(id: string, reason: string, lastError: string | null): Promise<void> {
@@ -561,6 +574,7 @@ export interface RecordedCall {
     | 'ensureBuyer'
     | 'createPasswordToken'
     | 'grantManualCourse'
+    | 'grantMuralVisitor'
     | 'sendEmail'
   input: unknown
   idempotencyKey?: string
@@ -576,6 +590,7 @@ export class FakeReferralsGateway implements ReferralsGateway {
     body: { token: 'tok-abc', expiresAt: new Date(Date.now() + 14 * 86_400_000).toISOString() },
   }
   grantResult: GatewayResult = { status: 200, body: { ok: true, granted: 1 } }
+  muralVisitorResult: GatewayResult = { status: 200, body: { ok: true, granted: 1 } }
   sendEmailResult: GatewayResult = { status: 202, body: {} }
 
   async getGiftAvailability(courseRef: string): Promise<GatewayResult> {
@@ -596,6 +611,11 @@ export class FakeReferralsGateway implements ReferralsGateway {
   async grantManualCourse(input: GrantManualCourseInput): Promise<GatewayResult> {
     this.calls.push({ kind: 'grantManualCourse', input })
     return this.grantResult
+  }
+
+  async grantMuralVisitor(input: GrantMuralVisitorInput): Promise<GatewayResult> {
+    this.calls.push({ kind: 'grantMuralVisitor', input })
+    return this.muralVisitorResult
   }
 
   async sendEmail(input: SendEmailInput, idempotencyKey: string): Promise<GatewayResult> {

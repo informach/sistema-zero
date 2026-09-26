@@ -31,6 +31,12 @@ export interface GrantManualCourseInput {
   deliveryId: string
 }
 
+export interface GrantMuralVisitorInput {
+  userId: string
+  sourceId: string
+  deliveryId: string
+}
+
 /** Corpo de `POST /messaging/send` (gateway → messaging). */
 export interface SendEmailInput {
   templateKey: string
@@ -45,6 +51,7 @@ export interface ReferralsGateway {
   /** `POST /auth/internal/password-tokens` — token de definir senha (TTL 14d). */
   createPasswordToken(email: string): Promise<GatewayResult>
   grantManualCourse(input: GrantManualCourseInput): Promise<GatewayResult>
+  grantMuralVisitor(input: GrantMuralVisitorInput): Promise<GatewayResult>
   /** Enfileira e-mail transacional (202). Idempotente por consumer+chave. */
   sendEmail(input: SendEmailInput, idempotencyKey: string): Promise<GatewayResult>
 }

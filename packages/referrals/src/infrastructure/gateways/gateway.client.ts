@@ -3,6 +3,7 @@ import type {
   EnsureBuyerInput,
   GatewayResult,
   GrantManualCourseInput,
+  GrantMuralVisitorInput,
   ReferralsGateway,
   SendEmailInput,
 } from '../../domain/ports/gateway.port'
@@ -129,6 +130,17 @@ export function createReferralsGatewayClient(opts: GatewayClientOptions): Referr
       })
     },
 
+    async grantMuralVisitor(input: GrantMuralVisitorInput): Promise<GatewayResult> {
+      const { deliveryId, ...rest } = input
+      const rawBody = JSON.stringify({ mode: 'mural_visitor', ...rest })
+      const path = '/members/webhooks/grant-manual'
+      return requestJson(`${opts.baseUrl}${path}`, {
+        method: 'POST',
+        headers: buildHeaders('POST', path, rawBody, undefined, deliveryId),
+        body: rawBody,
+      })
+    },
+
     async sendEmail(input: SendEmailInput, idempotencyKey: string): Promise<GatewayResult> {
       const rawBody = JSON.stringify({
         channel: 'email',
@@ -157,6 +169,7 @@ export function createNullReferralsGateway(): ReferralsGateway {
     ensureBuyer: async () => unavailable,
     createPasswordToken: async () => unavailable,
     grantManualCourse: async () => unavailable,
+    grantMuralVisitor: async () => unavailable,
     sendEmail: async () => unavailable,
   }
 }

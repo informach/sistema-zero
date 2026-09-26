@@ -102,6 +102,8 @@ function toRedemption(row: RedemptionRow): RedemptionRecord {
     attemptCount: row.attemptCount,
     completedAt: row.completedAt,
     accessDurationDays: row.accessDurationDays,
+    muralVisitorPolicy: row.muralVisitorPolicy,
+    muralVisitorGrantedAt: row.muralVisitorGrantedAt,
     createdAt: row.createdAt,
   }
 }
@@ -479,6 +481,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
         name: input.name,
         phone: input.phone,
         accessDurationDays: SCHOLARSHIP_ACCESS_DURATION_DAYS,
+        muralVisitorPolicy: 'visitor',
       })
       .onConflictDoNothing({ target: scholarshipRedemptions.email })
       .returning()
@@ -528,11 +531,25 @@ export class DrizzleReferralRepository implements ReferralRepository {
       .where(eq(scholarshipRedemptions.id, id))
   }
 
+  async markCourseGranted(id: string, when: Date): Promise<void> {
+    await this.db
+      .update(scholarshipRedemptions)
+      .set({ grantedAt: when, lastError: null, updatedAt: sql`now()` })
+      .where(eq(scholarshipRedemptions.id, id))
+  }
+
+  async markMuralVisitorGranted(id: string, when: Date): Promise<void> {
+    await this.db
+      .update(scholarshipRedemptions)
+      .set({ muralVisitorGrantedAt: when, lastError: null, updatedAt: sql`now()` })
+      .where(eq(scholarshipRedemptions.id, id))
+  }
+
   async markRedemptionGranted(id: string, when: Date): Promise<void> {
     await this.db
       .update(scholarshipRedemptions)
       .set({
-        grantedAt: when,
+        grantedAt: sql`coalesce(${scholarshipRedemptions.grantedAt}, ${when})`,
         status: 'completed',
         completedAt: when,
         failedReason: null,

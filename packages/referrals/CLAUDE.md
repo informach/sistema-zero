@@ -20,8 +20,11 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
 
 ## Conceito central (decisões travadas com a usuária)
 
-1. **Indicação = somente o curso Kids Cadê Todo Mundo?** (`SCHOLARSHIP_COURSE_SLUG`, default
-   `cade-todo-mundo`), via grant manual `mode:'course'` com `expiresAt: null`.
+1. **Indicação = curso Kids Cadê Todo Mundo? por 7 dias + visita permanente ao Mural só nos
+   novos resgates** (`SCHOLARSHIP_COURSE_SLUG`, default `cade-todo-mundo`). O curso usa grant
+   `mode:'course'` com `expiresAt = createdAt + 7 dias`; a visita usa outro grant manual
+   `mode:'mural_visitor'`, com chave `mural-dos-criadores-visitante` e sem vencimento.
+   Resgates antigos mantêm sua política gravada e não recebem visita por backfill.
    O curso segue bloqueado para quem apenas cria conta. Antes de registrar o resgate,
    o serviço verifica se ele está publicado; falha/rascunho fecha o fluxo sem criar conta.
    **1 resgate por E-MAIL, global** (UNIQUE em `scholarship_redemptions.email`).
@@ -33,8 +36,9 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
    `owner_email` (lower) já nasce aqui — base do anti-autoindicação da F3, sem backfill.
 4. **Sem WhatsApp automático** (decisão de produto): disparo da plataforma é E-MAIL único;
    o embaixador compartilha o link no próprio WhatsApp.
-5. **Ordem do resgate: DISPONIBILIDADE → CONTA → GRANT → E-MAIL** — se o e-mail falhar, o acesso já existe; se o
-   grant falhar, nenhum e-mail mentiroso saiu. O e-mail é best-effort (fallback do usuário =
+5. **Ordem do resgate: DISPONIBILIDADE → CONTA → CURSO → VISITA (se nova) → E-MAIL** — se o e-mail falhar, o acesso já existe; se um
+   grant falhar, nenhum e-mail mentiroso sai. As duas concessões têm delivery IDs e checkpoints
+   distintos, então um retry não reinicia o curso nem duplica a visita. O e-mail é best-effort (fallback do usuário =
    "esqueci minha senha").
 
 ## Fluxo do resgate (`RedeemScholarshipService`)
@@ -46,7 +50,7 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
    manter o 409 e a retomada do e-mail antigo. Claim da bolsa: `INSERT … ON CONFLICT (email) DO NOTHING`; conflito → `completed` = 409 —
    mas se `welcome_sent_at` for NULL, **RETOMA só o e-mail antes do 409** (crash entre o grant e
    o welcome; o claim atômico do welcome é o mutex — dispensa lease, que exclui completed);
-   `pending/failed` = **RETOMADA por etapas** (colunas `user_id`/`granted_at`/`welcome_sent_at`
+   `pending/failed` = **RETOMADA por etapas** (colunas `user_id`/`granted_at`/`mural_visitor_granted_at`/`welcome_sent_at`
    pulam o que já concluiu; o 1º claim vence o `code_id`).
 4. **Lease** em coluna (`processing_until`, `REDEMPTION_LEASE_MS` 90s): só uma execução roda;
    segunda submissão → 202 `processing`; crash no meio expira sozinho.

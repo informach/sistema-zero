@@ -1,0 +1,2 @@
+ALTER TABLE "referrals"."scholarship_redemptions" ADD COLUMN "mural_visitor_policy" varchar(16);--> statement-breakpoint
+ALTER TABLE "referrals"."scholarship_redemptions" ADD COLUMN "mural_visitor_granted_at" timestamp with time zone;

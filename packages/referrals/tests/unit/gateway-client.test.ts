@@ -65,6 +65,27 @@ describe('createReferralsGatewayClient — corpo e headers no fio', () => {
     expect(headers['idempotency-key']).toBeUndefined()
   })
 
+  test('grantMuralVisitor usa modo próprio e delivery-id independente', async () => {
+    const { client, seen } = capture()
+    const res = await client.grantMuralVisitor({
+      userId: 'u-1',
+      sourceId: 'scholarship:r-1',
+      deliveryId: 'scholarship:mural-visitor:r-1',
+    })
+    expect(res.status).toBe(200)
+    expect(seen).toHaveLength(1)
+    const call = seen[0]!
+    expect(call.url).toBe('http://gateway.test/members/webhooks/grant-manual')
+    expect(JSON.parse(String(call.init.body))).toEqual({
+      mode: 'mural_visitor',
+      userId: 'u-1',
+      sourceId: 'scholarship:r-1',
+    })
+    const headers = call.init.headers as Record<string, string>
+    expect(headers['x-delivery-id']).toBe('scholarship:mural-visitor:r-1')
+    expect(headers['x-signature']).toMatch(/^t=\d+,v1=[0-9a-f]{64}$/)
+  })
+
   test('sendEmail leva Idempotency-Key e o envelope de canal', async () => {
     const { client, seen } = capture()
     await client.sendEmail(
