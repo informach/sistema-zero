@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Exactly one video per section; three sections total in Aula 1.
-- Intro is short and only introduces the game, sections, video replay and **Próxima seção**.
+- Intro lasts about 1–1.5 minutes and introduces the complete game, sections, video pause/replay and **Próxima seção** without previewing the activity or Studio controls.
 - The first experiment is section two; **Anterior** and the activity controls are taught there.
 - Studio controls are taught only in the Studio section.
 - `caderno` is optional, belongs to the practice section and is not in `completion.blockIds`.
@@ -60,6 +60,17 @@
 - [ ] **Step 2: Run `bunx biome check docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts docs/aulas-interativas/qa/cade-todo-mundo-manifestos.test.ts` and `git diff --check`.**
 - [ ] **Step 3: Inspect all three generated manifests, confirm only Aula 1 changed and that intro, concept, Studio and caderno are internally consistent. Commit only the scoped files locally.**
 
+### Task 5: Restore explanatory depth without changing the sequence (26/09 clarification)
+
+**Files:** Modify `docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.roteiro.md`, `docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.md`, `docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts`, and the Aula 1 manifest JSON.
+
+**Interfaces:** Keep the three existing section keys and all `completion.blockIds` unchanged. Only spoken copy, recording directions and matching planned-video descriptions change.
+
+- [ ] **Step 1: Restore the complete-game demonstration in section 1.** Name three hidden characters, demonstrate all three reveals, the `Achados` counter and celebration; distinguish what is already prepared from what the child will program today. Explain sections, pause, replay and **Próxima seção** with the earlier reassurance, without touring the activity or Studio. Target around 1–1.5 minutes.
+- [ ] **Step 2: Restore navigation and activity guidance in section 2.** Explain **Anterior** without losing work, the campainha analogy and the meaning of acontecimento/ação. Show that video and activity share the section, the drag divider on wide screens, **Ampliar experiência/Voltar à aula**, and the activity below the video on narrow screens. Do not reveal the experiment's result or repeat its detailed instruction outside the experience.
+- [ ] **Step 3: Restore Studio guidance in section 3.** Explain that the embedded Studio is where blocks become game instructions and no other page is needed. Demonstrate divider, **Expandir/Reduzir** in context, preserve the full block-by-block directions, and give the optional map a fuller explanation at the end.
+- [ ] **Step 4: Match planned-video descriptions to the script.** Edit generator and manifest JSON together. Keep Aula 2 and certificate unchanged, then run `bun test docs/aulas-interativas/qa/cade-todo-mundo-manifestos.test.ts docs/aulas-interativas/qa/cade-todo-mundo-projeto.test.ts`, `bun docs/aulas-interativas/qa/validar-manifestos.ts cade-todo-mundo`, `bunx biome check docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts`, and `git diff --check`.
+
 ## Self-review
 
-The plan covers the three-section structure, contextual UI orientation, optional map placement, unchanged completion rules, generator/JSON consistency and recording handoff. No new runtime behavior or child-facing control is introduced.
+The plan covers the three-section structure, contextual UI orientation, optional map placement, unchanged completion rules, generator/JSON consistency and recording handoff. The 26/09 clarification restores original explanatory depth without changing runtime behavior or child-facing controls.
