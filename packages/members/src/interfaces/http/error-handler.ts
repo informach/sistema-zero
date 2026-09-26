@@ -95,6 +95,14 @@ const DOMAIN_STATUS: Record<string, number> = {
   PENSA_TASK_TRANSITION_INVALID: 409,
   PENSA_TASK_DEPENDENCY_PENDING: 409,
   PENSA_TASK_PROGRESS_CONFLICT: 409,
+  // Equipe do Pensa (26/09/2026): dono × membro; código que não abre nada é 404 (nunca
+  // vaza a existência do plano); o resto são conflitos de estado/cota.
+  PENSA_NOT_OWNER: 403,
+  PENSA_INVITE_INVALID: 404,
+  PENSA_ALREADY_MEMBER: 409,
+  PENSA_TEAM_FULL: 409,
+  PENSA_JOIN_LIMIT: 409,
+  PENSA_OWNER_CANNOT_LEAVE: 409,
   // "Guardado na sua conta" (criações do Estúdio Completo/Pinta). NOT_FOUND cobre
   // ownership mismatch; quota e revisão vencida são conflitos.
   CREATION_NOT_FOUND: 404,

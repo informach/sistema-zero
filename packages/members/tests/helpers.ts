@@ -80,9 +80,16 @@ import { DeletePensaTaskService } from '../src/application/pensa/delete-task.ser
 import { GetPensaProjectService } from '../src/application/pensa/get-project.service'
 import { GetPensaStageService } from '../src/application/pensa/get-stage.service'
 import { GetPensaTaskHandoffService } from '../src/application/pensa/get-task-handoff.service'
+import { JoinPensaProjectService } from '../src/application/pensa/join-project.service'
+import { ListPensaProjectMembersService } from '../src/application/pensa/list-project-members.service'
 import { ListPensaProjectsService } from '../src/application/pensa/list-projects.service'
+import { RemovePensaProjectMemberService } from '../src/application/pensa/remove-project-member.service'
 import { ReplacePensaTasksService } from '../src/application/pensa/replace-tasks.service'
 import { SavePensaArtifactService } from '../src/application/pensa/save-artifact.service'
+import {
+  SharePensaProjectService,
+  UnsharePensaProjectService,
+} from '../src/application/pensa/share-project.service'
 import { UpdatePensaProjectService } from '../src/application/pensa/update-project.service'
 import { UpdatePensaTaskService } from '../src/application/pensa/update-task.service'
 import { UpdatePensaTaskProgressService } from '../src/application/pensa/update-task-progress.service'
@@ -114,6 +121,7 @@ import type {
   CourseTrack,
 } from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
+import { SHARE_CODE_ALPHABET } from '../src/domain/pensa/share-code'
 import type { AuthGateway } from '../src/domain/ports/auth-gateway.port'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
 import type { HubAuthorActivity, HubGateway } from '../src/domain/ports/hub-gateway.port'
@@ -193,6 +201,14 @@ export function buildApp(
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
   const pensa = new InMemoryPensaRepository()
+  // Códigos de plano DETERMINÍSTICOS (a sequência é previsível nos testes; o índice único
+  // do fake continua valendo).
+  let shareCodeSeq = 0
+  const nextShareCode = () => {
+    shareCodeSeq += 1
+    const a = SHARE_CODE_ALPHABET
+    return `AAAA${a[Math.floor(shareCodeSeq / a.length) % a.length]}${a[shareCodeSeq % a.length]}`
+  }
   const creations = new InMemoryCreationsRepository()
   const teacherThreadsRepo = new InMemoryTeacherThreadRepository()
   const teacherThreads = new TeacherThreadsService(teacherThreadsRepo, clock)
@@ -516,7 +532,7 @@ export function buildApp(
       internalToken: opts.internalToken,
     },
     pensa: {
-      listProjects: new ListPensaProjectsService(pensa),
+      listProjects: new ListPensaProjectsService(pensa, authGateway),
       createProject: new CreatePensaProjectService(pensa, () => randomUUID(), clock),
       getProject: new GetPensaProjectService(pensa),
       updateProject: new UpdatePensaProjectService(pensa, clock),
@@ -533,6 +549,11 @@ export function buildApp(
       deleteTask: new DeletePensaTaskService(pensa, clock),
       getTaskHandoff: new GetPensaTaskHandoffService(pensa),
       updateTaskProgress: new UpdatePensaTaskProgressService(pensa, clock),
+      shareProject: new SharePensaProjectService(pensa, clock, () => nextShareCode()),
+      unshareProject: new UnsharePensaProjectService(pensa, clock),
+      joinProject: new JoinPensaProjectService(pensa, clock),
+      listProjectMembers: new ListPensaProjectMembersService(pensa, authGateway, avatarsByProfiles),
+      removeProjectMember: new RemovePensaProjectMemberService(pensa, clock),
       accessCheck: new AccessCheckService(entitlements, clock),
       getGamification: new GetGamificationService(gamification, clock),
       internalToken: opts.internalToken,

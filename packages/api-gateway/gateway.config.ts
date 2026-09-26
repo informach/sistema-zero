@@ -1717,6 +1717,20 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 4096,
     },
+    // Equipe (26/09/2026): entrar pelo código do plano. O literal `join` vence o
+    // `:projectId` (especificidade do route-registry). 10/min: junto com o alfabeto de 31
+    // símbolos × 6 posições, a adivinhação de código é inviável.
+    {
+      id: 'members-pensa-join',
+      methods: ['POST'],
+      pathPattern: '/members/pensa/projects/join',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 10, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
     {
       id: 'members-pensa-project',
       methods: ['GET', 'PATCH', 'DELETE'],
@@ -1727,6 +1741,41 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 4096,
+    },
+    // Equipe: gerar/trocar (POST) e desligar (DELETE) o código; a lista da equipe; tirar
+    // alguém ou sair (`me`).
+    {
+      id: 'members-pensa-project-share',
+      methods: ['POST', 'DELETE'],
+      pathPattern: '/members/pensa/projects/:projectId/share',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
+    {
+      id: 'members-pensa-project-members',
+      methods: ['GET'],
+      pathPattern: '/members/pensa/projects/:projectId/members',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
+    {
+      id: 'members-pensa-project-member',
+      methods: ['DELETE'],
+      pathPattern: '/members/pensa/projects/:projectId/members/:profileId',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
     },
     {
       id: 'members-pensa-cycle-create',

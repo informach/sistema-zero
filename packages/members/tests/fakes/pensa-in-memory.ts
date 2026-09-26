@@ -6,6 +6,8 @@ import type {
   PensaConversation,
   PensaCycle,
   PensaProject,
+  PensaProjectAccess,
+  PensaProjectMember,
   PensaStage,
   PensaTask,
   PensaTaskProgress,
@@ -17,6 +19,7 @@ import type {
   NewPensaArtifact,
   NewPensaCycle,
   NewPensaProject,
+  NewPensaProjectMember,
   NewPensaTask,
   PensaConversationUpsert,
   PensaProjectPatch,
@@ -45,6 +48,8 @@ const taskFromNew = (cycleId: string, task: NewPensaTask, now: Date): PensaTask 
 
 export class InMemoryPensaRepository implements PensaRepository {
   readonly projects = new Map<string, PensaProject>()
+  /** A equipe: chave `${projectId}:${profileId}`. */
+  readonly members = new Map<string, PensaProjectMember>()
   readonly cycles = new Map<string, PensaCycle>()
   readonly conversations = new Map<string, PensaConversation>()
   readonly artifacts: PensaArtifact[] = []
@@ -91,6 +96,26 @@ export class InMemoryPensaRepository implements PensaRepository {
     }
   }
 
+  private memberCount(projectId: string): number {
+    return [...this.members.values()].filter((member) => member.projectId === projectId).length
+  }
+
+  /** Dono OU membro, como o `accessibleProject` do Drizzle; `null` = nem um nem outro. */
+  private accessOf(
+    project: PensaProject | undefined,
+    userId: string,
+    audience: CourseAudience,
+  ): PensaProjectAccess | null {
+    if (!project || project.audience !== audience) return null
+    const isOwner = project.userId === userId
+    if (!isOwner && !this.members.has(`${project.id}:${userId}`)) return null
+    return {
+      ...project,
+      role: isOwner ? 'owner' : 'member',
+      memberCount: this.memberCount(project.id),
+    }
+  }
+
   async countActiveProjects(userId: string, audience: CourseAudience): Promise<number> {
     return [...this.projects.values()].filter(
       (project) =>
@@ -100,12 +125,11 @@ export class InMemoryPensaRepository implements PensaRepository {
 
   async listActiveProjects(userId: string, audience: CourseAudience) {
     return [...this.projects.values()]
-      .filter(
-        (project) =>
-          project.userId === userId && project.audience === audience && project.status === 'active',
-      )
+      .filter((project) => project.status === 'active')
       .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-      .flatMap((project) => {
+      .flatMap((raw) => {
+        const project = this.accessOf(raw, userId, audience)
+        if (!project) return []
         const currentCycle = [...this.cycles.values()]
           .filter((cycle) => cycle.projectId === project.id)
           .sort((a, b) => b.number - a.number)[0]
@@ -118,7 +142,13 @@ export class InMemoryPensaRepository implements PensaRepository {
     firstCycle: NewPensaCycle,
     now: Date,
   ): Promise<void> {
-    this.projects.set(project.id, { ...project, status: 'active', createdAt: now, updatedAt: now })
+    this.projects.set(project.id, {
+      ...project,
+      status: 'active',
+      shareCode: null,
+      createdAt: now,
+      updatedAt: now,
+    })
     this.cycles.set(firstCycle.id, {
       ...firstCycle,
       stage: 'z',
@@ -132,8 +162,46 @@ export class InMemoryPensaRepository implements PensaRepository {
   }
 
   async findProject(projectId: string, userId: string, audience: CourseAudience) {
+    return this.accessOf(this.projects.get(projectId), userId, audience)
+  }
+
+  async setShareCode(projectId: string, code: string | null, now: Date): Promise<void> {
     const project = this.projects.get(projectId)
-    return project?.userId === userId && project.audience === audience ? project : null
+    if (project) this.projects.set(projectId, { ...project, shareCode: code, updatedAt: now })
+  }
+
+  async findProjectByShareCode(code: string): Promise<PensaProject | null> {
+    return [...this.projects.values()].find((project) => project.shareCode === code) ?? null
+  }
+
+  async listMembers(projectId: string): Promise<PensaProjectMember[]> {
+    return [...this.members.values()]
+      .filter((member) => member.projectId === projectId)
+      .sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime())
+  }
+
+  async countMemberships(profileId: string, audience: CourseAudience): Promise<number> {
+    return [...this.members.values()].filter((member) => {
+      const project = this.projects.get(member.projectId)
+      return (
+        member.profileId === profileId &&
+        project?.audience === audience &&
+        project.status === 'active'
+      )
+    }).length
+  }
+
+  async addMember(member: NewPensaProjectMember, now: Date): Promise<void> {
+    const key = `${member.projectId}:${member.profileId}`
+    if (this.members.has(key)) throw new Error('duplicate key value violates unique constraint')
+    this.members.set(key, { ...member, joinedAt: now })
+    this.touch(member.projectId, now)
+  }
+
+  async removeMember(projectId: string, profileId: string, now: Date): Promise<boolean> {
+    const removed = this.members.delete(`${projectId}:${profileId}`)
+    if (removed) this.touch(projectId, now)
+    return removed
   }
 
   async updateProject(projectId: string, patch: PensaProjectPatch, now: Date): Promise<void> {
@@ -145,6 +213,9 @@ export class InMemoryPensaRepository implements PensaRepository {
   async deleteProject(projectId: string, userId: string, audience: CourseAudience): Promise<void> {
     const project = this.projects.get(projectId)
     if (project?.userId !== userId || project.audience !== audience) return
+    for (const key of [...this.members.keys()]) {
+      if (key.startsWith(`${projectId}:`)) this.members.delete(key)
+    }
     const cycleIds = new Set(
       [...this.cycles.values()]
         .filter((cycle) => cycle.projectId === projectId)

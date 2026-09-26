@@ -6,6 +6,8 @@ import type {
   PensaConversation,
   PensaCycle,
   PensaProject,
+  PensaProjectAccess,
+  PensaProjectMember,
   PensaProjectStatus,
   PensaStage,
   PensaTask,
@@ -99,19 +101,35 @@ export interface PensaTaskProgressPatch {
   outputRef?: PensaTaskOutputRef | null
 }
 
+export type NewPensaProjectMember = Omit<PensaProjectMember, 'joinedAt'>
+
 export interface PensaRepository {
+  /** Só os projetos PRÓPRIOS (a cota de criar é do dono; equipes não contam). */
   countActiveProjects(userId: string, audience: CourseAudience): Promise<number>
+  /** Projetos ativos de que o perfil é DONO ou MEMBRO, com o papel resolvido. */
   listActiveProjects(
     userId: string,
     audience: CourseAudience,
-  ): Promise<Array<{ project: PensaProject; currentCycle: PensaCycle }>>
+  ): Promise<Array<{ project: PensaProjectAccess; currentCycle: PensaCycle }>>
   createProject(project: NewPensaProject, firstCycle: NewPensaCycle, now: Date): Promise<void>
+  /** Dono OU membro da equipe; quem não é nenhum dos dois recebe `null` (→ 404). */
   findProject(
     projectId: string,
     userId: string,
     audience: CourseAudience,
-  ): Promise<PensaProject | null>
+  ): Promise<PensaProjectAccess | null>
   updateProject(projectId: string, patch: PensaProjectPatch, now: Date): Promise<void>
+  // ── Equipe (26/09/2026) ──
+  setShareCode(projectId: string, code: string | null, now: Date): Promise<void>
+  /** Por código, em QUALQUER vitrine (o índice único é global): o serviço confere a vitrine. */
+  findProjectByShareCode(code: string): Promise<PensaProject | null>
+  listMembers(projectId: string): Promise<PensaProjectMember[]>
+  /** Quantas equipes ATIVAS o perfil já entrou (o teto de `MAX_JOINED_PROJECTS`). */
+  countMemberships(profileId: string, audience: CourseAudience): Promise<number>
+  /** Toca o `updated_at` do projeto (o dono vê que o plano mudou). */
+  addMember(member: NewPensaProjectMember, now: Date): Promise<void>
+  /** `false` = não estava na equipe. Toca o `updated_at` quando tira alguém. */
+  removeMember(projectId: string, profileId: string, now: Date): Promise<boolean>
   /**
    * Apaga o plano INTEIRO do dono (ciclos, conversas, artefatos e cartões vão junto
    * pelas FKs `on delete cascade`). O ledger de XP/badges NÃO é tocado: `xp_events`
@@ -125,7 +143,7 @@ export interface PensaRepository {
     cycleId: string,
     userId: string,
     audience: CourseAudience,
-  ): Promise<{ cycle: PensaCycle; project: PensaProject } | null>
+  ): Promise<{ cycle: PensaCycle; project: PensaProjectAccess } | null>
   advanceCycle(
     projectId: string,
     cycleId: string,
@@ -153,7 +171,7 @@ export interface PensaRepository {
     taskId: string,
     userId: string,
     audience: CourseAudience,
-  ): Promise<{ task: PensaTask; project: PensaProject; cycle: PensaCycle } | null>
+  ): Promise<{ task: PensaTask; project: PensaProjectAccess; cycle: PensaCycle } | null>
   updateTaskPlan(
     projectId: string,
     taskId: string,

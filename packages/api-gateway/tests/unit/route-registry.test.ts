@@ -124,6 +124,18 @@ const registry = new RouteRegistry([
     methods: ['GET', 'PATCH', 'DELETE'],
     pathPattern: '/members/pensa/projects/:projectId',
   }),
+  // Equipe (26/09/2026): o literal `join` tem que vencer o `:projectId`.
+  r({ id: 'pensa-join', methods: ['POST'], pathPattern: '/members/pensa/projects/join' }),
+  r({
+    id: 'pensa-project-share',
+    methods: ['POST', 'DELETE'],
+    pathPattern: '/members/pensa/projects/:projectId/share',
+  }),
+  r({
+    id: 'pensa-project-member',
+    methods: ['DELETE'],
+    pathPattern: '/members/pensa/projects/:projectId/members/:profileId',
+  }),
   r({
     id: 'pensa-cycle-create',
     methods: ['POST'],

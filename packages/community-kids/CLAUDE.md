@@ -1762,7 +1762,11 @@ globals.css (MESMO gotcha das utilitárias `sz-*` do Estúdio — sem isso as `p
 `api/pensa/*` fica DENTRO do matcher do proxy (JSON pequeno; a resposta SSE não é bufferizada
 pelo middleware). Deploy: `packages/pensa/**` nos watchPatterns do railway.json + case no ci.yml.
 O host remove chaves locais do fluxo anterior e mantém apenas os deep links de tarefa. Contrato:
-[`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
+[`../../docs/pensa-planner.md`](../../docs/pensa-planner.md). **Equipe do plano (26/09/2026):** quatro shims novos sobre o BFF — `projects/join`
+(`pensaJoin`), `[projectId]/share` (`pensaShare` POST/DELETE), `[projectId]/members`
+(`pensaMembers`) e `[projectId]/members/[profileId]` (`pensaMember` DELETE); todos DENTRO do
+matcher do proxy, sem gate próprio (posse do Pensa e dono/membro são do members). Ordem de deploy:
+members (migration `0098`) → gateway → member-shell → kids.
 
 ## Pinta (editor de assets de jogos — produto vendável, 07/2026)
 

@@ -73,6 +73,56 @@ export class PensaTaskDependencyError extends DomainError {
   }
 }
 
+/** Ação reservada ao DONO do plano pedida por um membro da equipe. → 403. */
+export class PensaNotOwnerError extends DomainError {
+  readonly code = 'PENSA_NOT_OWNER'
+  constructor(message = 'Só quem criou o plano pode fazer isso.') {
+    super(message)
+  }
+}
+
+/** Código de plano que não abre nada (inválido, desligado, plano arquivado). → 404. */
+export class PensaInviteInvalidError extends DomainError {
+  readonly code = 'PENSA_INVITE_INVALID'
+  constructor(message = 'Esse código não abriu nenhum plano. Confira com quem te chamou.') {
+    super(message)
+  }
+}
+
+/** Já está na equipe (ou é o dono). → 409. */
+export class PensaAlreadyMemberError extends DomainError {
+  readonly code = 'PENSA_ALREADY_MEMBER'
+  constructor(message = 'Você já está nessa equipe.') {
+    super(message)
+  }
+}
+
+/** A equipe já tem o máximo de convidados. → 409. */
+export class PensaTeamFullError extends DomainError {
+  readonly code = 'PENSA_TEAM_FULL'
+  constructor(message = 'Essa equipe já está cheia.') {
+    super(message)
+  }
+}
+
+/** O perfil já entrou em equipes demais. → 409. */
+export class PensaJoinLimitError extends DomainError {
+  readonly code = 'PENSA_JOIN_LIMIT'
+  constructor(message = 'Você já entrou em muitas equipes. Saia de uma para entrar em outra.') {
+    super(message)
+  }
+}
+
+/** O dono não sai da própria equipe (apaga o plano ou desliga o código). → 409. */
+export class PensaOwnerCannotLeaveError extends DomainError {
+  readonly code = 'PENSA_OWNER_CANNOT_LEAVE'
+  constructor(
+    message = 'Quem criou o plano não sai da equipe. Apague o plano ou desligue o código.',
+  ) {
+    super(message)
+  }
+}
+
 export class PensaTaskProgressConflictError extends DomainError {
   readonly code = 'PENSA_TASK_PROGRESS_CONFLICT'
   constructor(message = 'A tarefa mudou em outro aparelho. Recarregue o guia e tente novamente.') {

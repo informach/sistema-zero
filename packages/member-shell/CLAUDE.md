@@ -282,6 +282,21 @@ explícito da impersonação (`readonly` bloqueia; `write` preserva as validaç�
 /tasks/:id/handoff` preserva o plano e informa a capability; `PATCH
 /tasks/:id/progress` valida IDs e transições.
 
+**Equipe do Pensa (26/09/2026):** o BFF ganhou o espelho do plano compartilhado. Tipos em
+`lib/types.ts`: `PensaProjectRole` (`owner | member`), `role`/`team` nas views de lista
+(`{memberCount, ownerFirstName}`) e detalhe (`{memberCount, shareEnabled}`),
+`PensaProjectMembersView` (lista com 1º nome e rosto; `shareCode` só chega ao DONO) e
+`PensaShareView` (`{code, display}`). Clients `pensaShareProject`/`pensaUnshareProject`/
+`pensaListProjectMembers`/`pensaRemoveProjectMember`/`pensaJoinProject`; handlers `pensaJoin`
+(`POST /api/pensa/projects/join`, Zod `JoinBody {code 4..16}` strict, o código vai como a criança
+digitou e quem normaliza é o members), `pensaShare` (POST/DELETE `…/:projectId/share`),
+`pensaMembers` (GET) e `pensaMember` (DELETE `…/:projectId/members/:profileId`, aceita `me` ou
+UUID; outra coisa é 404 sem ir ao gateway). Toda escrita passa pelo `requireWritableSession` da
+rota do Pensa (impersonação `readonly` barra ANTES do gateway); os 403/404/409 do members
+atravessam com `error.message` inteiro, porque é a frase que a janela da criança mostra. Regras
+(dono/membro, tetos, código) são do members: ver `../members/CLAUDE.md` §Pensa e
+`../../docs/pensa-planner.md` §Equipe. Teste: `tests/pensa-team-routes.test.ts`.
+
 `createPensaAiRoutes` mantém o chat SSE da etapa Z e gera somente `idea`, `game_design`,
 `visual_direction`, `task_plan` e `plan_review`. `planner-contract.ts` usa Zod 4, filtra
 `SERVER_BLOCK_CATALOG` e `SERVER_MECHANIC_DOCUMENTS` pelo `StudioTier`, recebe apenas IDs da IA e

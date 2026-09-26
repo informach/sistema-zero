@@ -1,5 +1,5 @@
 import type { CourseAudience } from '../../domain/course/course'
-import { PensaNotFoundError } from '../../domain/pensa/pensa.errors'
+import { PensaNotFoundError, PensaNotOwnerError } from '../../domain/pensa/pensa.errors'
 import type { PensaRepository } from '../../domain/ports/pensa-repository.port'
 
 /**
@@ -23,6 +23,8 @@ export class DeletePensaProjectService {
     // o mesmo plano em duas abas. Plano de outro perfil cai aqui também, e a frase
     // serve igual: não confirma nem nega que ele existe.
     if (!existing) throw new PensaNotFoundError('Esse plano não está mais aqui.')
+    // Só o dono apaga; quem entrou pelo código sai da equipe, não leva o plano junto.
+    if (existing.role !== 'owner') throw new PensaNotOwnerError()
     await this.repo.deleteProject(projectId, userId, audience)
   }
 }

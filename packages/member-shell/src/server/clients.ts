@@ -56,7 +56,9 @@ import type {
   PensaArtifactView,
   PensaProjectDetailView,
   PensaProjectListView,
+  PensaProjectMembersView,
   PensaProjectStatus,
+  PensaShareView,
   PensaStage,
   PensaStageView,
   PensaTaskCategory,
@@ -819,6 +821,47 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}`, {
         method: 'DELETE',
         query: { audience },
+      })
+    },
+    // ── Equipe do plano (26/09/2026) ──
+    /** Gera (ou troca) o código do plano. Só o dono. */
+    pensaShareProject(projectId: string): Promise<GatewayResponse<PensaShareView>> {
+      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}/share`, {
+        method: 'POST',
+        query: { audience },
+      })
+    },
+    /** Desliga o código (quem já entrou fica). Só o dono. */
+    pensaUnshareProject(projectId: string): Promise<GatewayResponse<{ ok: boolean }>> {
+      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}/share`, {
+        method: 'DELETE',
+        query: { audience },
+      })
+    },
+    /** A equipe do plano (dono primeiro); o código só vem para o dono. */
+    pensaListProjectMembers(projectId: string): Promise<GatewayResponse<PensaProjectMembersView>> {
+      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}/members`, {
+        query: { audience },
+      })
+    },
+    /** Tira alguém da equipe (dono) ou sai dela (`profileId: 'me'`, membro). */
+    pensaRemoveProjectMember(
+      projectId: string,
+      profileId: string,
+    ): Promise<GatewayResponse<{ ok: boolean }>> {
+      return gw.gatewayFetch(
+        `/members/pensa/projects/${enc(projectId)}/members/${enc(profileId)}`,
+        { method: 'DELETE', query: { audience } },
+      )
+    },
+    /** Entra numa equipe pelo código. O members aplica o gate do produto (os dois lados têm o Pensa). */
+    pensaJoinProject(body: {
+      code: string
+    }): Promise<GatewayResponse<{ project: PensaProjectDetailView }>> {
+      return gw.gatewayFetch('/members/pensa/projects/join', {
+        method: 'POST',
+        query: { audience },
+        body,
       })
     },
     /** Cria a Versão N+1 (exige a anterior `done`). */

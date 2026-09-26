@@ -1070,10 +1070,39 @@ export const pensaProjects = members.table(
     kind: pensaProjectKindEnum('kind').notNull(),
     name: varchar('name', { length: 120 }).notNull(),
     status: pensaProjectStatusEnum('status').notNull().default('active'),
+    // O código do plano (equipe, 26/09/2026): 6 símbolos sem ambíguos; `null` = desligado.
+    shareCode: varchar('share_code', { length: 8 }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
-  (t) => [index('pensa_projects_user_idx').on(t.userId, t.status)],
+  (t) => [
+    index('pensa_projects_user_idx').on(t.userId, t.status),
+    uniqueIndex('pensa_projects_share_code_uq')
+      .on(t.shareCode)
+      .where(sql`${t.shareCode} is not null`),
+  ],
+)
+
+/**
+ * A EQUIPE de um plano (26/09/2026): quem entrou pelo código. O dono é o `user_id` do
+ * projeto (não há papel além de "membro"). Cai na cascata do projeto.
+ */
+export const pensaProjectMembers = members.table(
+  'pensa_project_members',
+  {
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    // O perfil da criança convidada e a conta responsável dela (o gate de produto é da conta).
+    profileId: uuid('profile_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    invitedBy: uuid('invited_by').notNull(),
+    joinedAt: timestamp('joined_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.projectId, t.profileId] }),
+    index('pensa_project_members_profile_idx').on(t.profileId),
+  ],
 )
 
 export const pensaCycles = members.table(

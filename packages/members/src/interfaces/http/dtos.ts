@@ -667,6 +667,16 @@ const PENSA_ARTIFACT_TYPE = t.Union([
 const PENSA_PROJECT_NAME = t.String({ minLength: 2, maxLength: 120 })
 
 export const PensaProjectParams = t.Object({ projectId: UUID })
+/** `profileId` = um perfil da equipe, ou `me` (sair da equipe). */
+export const PensaMemberParams = t.Object({
+  projectId: UUID,
+  profileId: t.Union([UUID, t.Literal('me')]),
+})
+/** Corpo de `POST /members/pensa/projects/join`: o código como a criança digitou. */
+export const PensaJoinBody = t.Object(
+  { code: t.String({ minLength: 4, maxLength: 16 }) },
+  { additionalProperties: false },
+)
 export const PensaCycleParams = t.Object({ cycleId: UUID })
 /** GET da stage view aceita qualquer etapa (inclusive `done`). */
 export const PensaStageParams = t.Object({ cycleId: UUID, stage: PENSA_STAGE })

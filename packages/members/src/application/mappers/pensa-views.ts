@@ -5,7 +5,8 @@ import type {
   PensaChatMessage,
   PensaConversation,
   PensaCycle,
-  PensaProject,
+  PensaProjectAccess,
+  PensaProjectRole,
   PensaProjectStatus,
   PensaStage,
   PensaTask,
@@ -37,6 +38,14 @@ export interface PensaProjectListView {
   stage: PensaStage
   createdAt: string
   updatedAt: string
+  /** `owner` = meu plano; `member` = entrei pelo código de um colega. */
+  role: PensaProjectRole
+  team: {
+    /** Quantos convidados a equipe tem (o dono não conta). */
+    memberCount: number
+    /** 1º nome do dono, só para `member` (best-effort: `null` = "um colega"). */
+    ownerFirstName: string | null
+  }
 }
 
 export interface PensaArtifactIndexEntry {
@@ -56,6 +65,28 @@ export interface PensaProjectDetailView {
   cycles: PensaCycleView[]
   currentCycle: PensaCycleView
   artifactsIndex: PensaArtifactIndexEntry[]
+  role: PensaProjectRole
+  /** O CÓDIGO não vem aqui (só na rota de membros, para o dono): só se está ligado. */
+  team: { memberCount: number; shareEnabled: boolean }
+}
+
+/** Uma pessoa da equipe: 1º nome e foto best-effort (sem nome = "Colega" na tela). */
+export interface PensaTeamPersonView {
+  profileId: string
+  firstName: string | null
+  photoUrl: string | null
+  /** `null` para o dono (ele não "entrou"). */
+  joinedAt: string | null
+}
+
+export interface PensaProjectMembersView {
+  role: PensaProjectRole
+  viewerProfileId: string
+  /** Só para o dono; `null` para membro ou com o código desligado. */
+  shareCode: string | null
+  maxMembers: number
+  owner: PensaTeamPersonView
+  members: PensaTeamPersonView[]
 }
 
 export interface PensaArtifactView {
@@ -117,8 +148,9 @@ export function toPensaCycleView(cycle: PensaCycle): PensaCycleView {
 }
 
 export function toPensaProjectListView(
-  project: PensaProject,
+  project: PensaProjectAccess,
   currentCycle: PensaCycle,
+  ownerFirstName: string | null = null,
 ): PensaProjectListView {
   return {
     id: project.id,
@@ -128,6 +160,11 @@ export function toPensaProjectListView(
     stage: currentCycle.stage,
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),
+    role: project.role,
+    team: {
+      memberCount: project.memberCount,
+      ownerFirstName: project.role === 'member' ? ownerFirstName : null,
+    },
   }
 }
 
@@ -149,7 +186,7 @@ export function toPensaArtifactIndexEntry(artifact: PensaArtifact): PensaArtifac
 }
 
 export function toPensaProjectDetailView(
-  project: PensaProject,
+  project: PensaProjectAccess,
   cycles: PensaCycle[],
   currentCycle: PensaCycle,
   artifacts: PensaArtifact[],
@@ -163,6 +200,8 @@ export function toPensaProjectDetailView(
     cycles: cycles.map(toPensaCycleView),
     currentCycle: toPensaCycleView(currentCycle),
     artifactsIndex: artifacts.map(toPensaArtifactIndexEntry),
+    role: project.role,
+    team: { memberCount: project.memberCount, shareEnabled: project.shareCode !== null },
   }
 }
 

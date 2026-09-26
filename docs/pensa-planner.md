@@ -31,6 +31,14 @@ As ferramentas atualizam `PATCH /tasks/:id/progress`; o Pensa lê o resumo e `ne
 
 Tarefas planejadas podem ser alteradas. Se o plano já foi aprovado, a mudança reabre O e torna `plan_review` rascunho. Alterar uma tarefa iniciada ou concluída cria uma revisão, arquiva a original e atualiza dependentes.
 
+## Equipe (26/09/2026)
+
+Um plano pode ter até 5 membros além do dono. O convite é um código do projeto (`ZAP-XXXXXX`, alfabeto sem `0/O/1/I/L`; a entrada tolera minúsculas, espaços, hífen e o prefixo): o dono gera em `POST /projects/:id/share` (gerar de novo invalida o anterior) e desliga em `DELETE`; quem tem o Pensa entra em `POST /projects/join` com `{code}` (10/min no gateway) e passa a ver e mexer em tudo do plano: conversa, artefatos, avanço, tarefas, handoff e progresso. O dono continua sendo quem renomeia, arquiva, apaga, gera código e tira membro (`DELETE /projects/:id/members/:profileId`; `me` = sair); qualquer outro recebe 403 `PENSA_NOT_OWNER`. `GET /projects/:id/members` lista a equipe com primeiro nome e rosto; o código só aparece nessa resposta, e só para o dono.
+
+Nas views, `role: 'owner' | 'member'` e `team` (`memberCount` e `ownerFirstName` na lista; `memberCount` e `shareEnabled` no detalhe) chegam ao Pensa pelo member-shell. O detalhe não muda de forma: o plano compartilhado é o mesmo objeto. XP vai para quem avança a etapa; a cota de IA é da conta de quem chama. Estúdio, Pinta e Molda seguem por perfil: cada membro constrói no seu, a colaboração é no plano. Não há trava na conversa da etapa Z (último-vence); a UI avisa "alguém da equipe mexeu no plano" por polling do `updatedAt`.
+
+Migração `0098_pensa_project_members.sql`: `share_code` em `pensa_projects` (índice único parcial) e a tabela `pensa_project_members` (PK projeto + perfil, `on delete cascade`). Ordem de deploy: members, gateway, member-shell, kids.
+
 ## Migração
 
 `0060_pensa_planner_v2.sql` apaga por cascata todos os projetos Pensa e recria somente o novo domínio. A migração não toca projetos autônomos do Estúdio nem desenhos do Pinta. Os hosts removem chaves locais exclusivas do fluxo anterior.

@@ -1587,6 +1587,42 @@ progresso `planned | in_progress | completed`.
   `members-pensa-project` que já existia. O fake `tests/fakes/pensa-in-memory.ts` espelha a
   cascata (é ele que os testes de integração exercitam).
 
+- **Plano em EQUIPE (26/09/2026, migration gerada `0098_pensa_project_members`):** decisão da
+  dona: a criança compartilha o plano com outro perfil pelo **código do projeto** e os dois
+  precisam ter o Pensa. Modelo: `pensa_projects.share_code` (varchar 8, nulo = convite desligado,
+  índice único PARCIAL `pensa_projects_share_code_uq`) + a tabela `pensa_project_members`
+  (PK `project_id + profile_id`, FK `on delete cascade`, índice por perfil; `account_id` e
+  `invited_by` só para auditoria). **Sem coluna `role`**: dono = `pensa_projects.user_id`.
+  - **O acesso virou "dono OU membro"** (`accessibleProject` no repositório, usado por
+    `findProject`/`findCycleWithProject`/`findTaskWithProject`/`listActiveProjects`), e toda leitura
+    devolve `PensaProjectAccess` = projeto + `role: 'owner' | 'member'` + `memberCount`. As
+    MUTAÇÕES do plano (renomear, arquivar, apagar, gerar/desligar código, tirar membro) exigem o
+    dono → **403 `PENSA_NOT_OWNER`**; perfil de fora segue 404. `countActiveProjects` (o teto de
+    planos) conta só os do dono; plano compartilhado não gasta a cota de quem entrou.
+  - **O código** (`domain/pensa/share-code.ts`, puro): 6 letras do alfabeto sem `0/O/1/I/L`,
+    exibido `ZAP-XXXXXX`; `normalizeShareCode` aceita minúsculas, espaços, hífen e o prefixo.
+    Gerar de novo SOBRESCREVE (o antigo morre na hora), desligar = `NULL`; colisão = 5 tentativas
+    contra o índice único. ⚠️ O código nunca vai no `detail`: só o `GET …/members` do DONO o traz.
+  - **Entrar (`POST /members/pensa/projects/join`, declarado ANTES de `/projects/:projectId` — o
+    literal `join` tem de vencer o param):** exige o produto (`assertPensaProduct`, o mesmo do
+    create); código inválido, plano arquivado ou convite desligado → **404
+    `PENSA_INVITE_INVALID`** (uma mensagem só, para não confirmar que o código existe); o próprio
+    dono → 409 `PENSA_ALREADY_MEMBER` ("Esse plano já é seu."); já membro → 409; equipe com
+    `MAX_PROJECT_MEMBERS` (5) → 409 `PENSA_TEAM_FULL`; quem já entrou em `MAX_JOINED_PROJECTS` (20)
+    → 409 `PENSA_JOIN_LIMIT`. Entrar toca o `updatedAt` do plano (o dono vê "alguém mexeu").
+  - **Sair/tirar (`DELETE …/:projectId/members/:profileId`)**: `me` = sair (o dono não sai: 409
+    `PENSA_OWNER_CANNOT_LEAVE`; ele apaga); id explícito só o dono. Apagar o plano leva os membros
+    pela FK. **`GET …/:projectId/members`** = lista (1º nome pelo auth + rosto pelo
+    `GetAvatarsByProfilesService`, os dois best-effort) para dono e membros.
+  - **XP/cota:** quem avança a etapa ganha o XP (o `source_id` já carrega o ator); a cota de IA é
+    da CONTA de quem chama; a geração do `task_plan` usa posse/nível do chamador (aceito).
+  - ⚠️ Sem trava na conversa Z: dois na mesma etapa fazem último-vence (follow-up
+    `expectedMessageCount`). Estúdio/Pinta/Molda seguem locais por perfil: a colaboração é no
+    PLANO, cada um constrói no seu.
+  - Testes: `tests/unit/pensa-share-code.test.ts`, `tests/integration/pensa-team.test.ts` (perfis
+    A/B/C, `x-auth-account-id` distintos; o helper dá códigos determinísticos `AAAAAB`, …) e
+    `tests/db/pensa-team-migration.test.ts` (cascata + índice parcial, contra Postgres).
+
 Camadas: `domain/pensa/*`, port `pensa-repository.port.ts`, use cases em `application/pensa/*`,
 `DrizzlePensaRepository`, mappers e rotas HTTP. Contrato transversal:
 [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).

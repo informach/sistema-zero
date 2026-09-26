@@ -40,6 +40,8 @@ const response = (status: number, body: unknown) =>
   NextResponse.json(body ?? { ok: status === 200 }, { status })
 
 const CreateProjectBody = z.strictObject({ name: PROJECT_NAME })
+// O código como a criança digitou (o members normaliza: minúsculas, espaços, hífen, prefixo).
+const JoinBody = z.strictObject({ code: z.string().trim().min(4).max(16) })
 const UpdateProjectBody = z
   .strictObject({
     name: PROJECT_NAME.optional(),
@@ -307,6 +309,61 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
     },
   }
 
+  // ── Equipe do plano (26/09/2026) ──
+  const pensaJoin = {
+    POST: async (req: Request) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const parsed = JoinBody.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) return invalid()
+      const result = await members.pensaJoinProject(parsed.data)
+      return response(result.status, result.body)
+    },
+  }
+
+  const pensaShare = {
+    POST: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { projectId } = await ctx.params
+      if (!parseId(projectId)) return notFound()
+      const result = await members.pensaShareProject(projectId)
+      return response(result.status, result.body)
+    },
+    DELETE: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { projectId } = await ctx.params
+      if (!parseId(projectId)) return notFound()
+      const result = await members.pensaUnshareProject(projectId)
+      return response(result.status, result.body)
+    },
+  }
+
+  const pensaMembers = {
+    GET: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
+      const { projectId } = await ctx.params
+      if (!parseId(projectId)) return notFound()
+      const result = await members.pensaListProjectMembers(projectId)
+      return response(result.status, result.body)
+    },
+  }
+
+  const pensaMember = {
+    DELETE: async (
+      _req: Request,
+      ctx: { params: Promise<{ projectId: string; profileId: string }> },
+    ) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { projectId, profileId } = await ctx.params
+      // `me` = sair da equipe (o pacote não conhece o próprio profileId).
+      if (!parseId(projectId) || (profileId !== 'me' && !parseId(profileId))) return notFound()
+      const result = await members.pensaRemoveProjectMember(projectId, profileId)
+      return response(result.status, result.body)
+    },
+  }
+
   const pensaCycleCreate = {
     POST: async (req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
       const readonly = await requireWritableSession()
@@ -428,6 +485,10 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
   return {
     pensaProjects,
     pensaProject,
+    pensaJoin,
+    pensaShare,
+    pensaMembers,
+    pensaMember,
     pensaCycleCreate,
     pensaStage,
     pensaArtifactCreate,

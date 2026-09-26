@@ -12,9 +12,16 @@ import type { DeletePensaTaskService } from '../../../application/pensa/delete-t
 import type { GetPensaProjectService } from '../../../application/pensa/get-project.service'
 import type { GetPensaStageService } from '../../../application/pensa/get-stage.service'
 import type { GetPensaTaskHandoffService } from '../../../application/pensa/get-task-handoff.service'
+import type { JoinPensaProjectService } from '../../../application/pensa/join-project.service'
+import type { ListPensaProjectMembersService } from '../../../application/pensa/list-project-members.service'
 import type { ListPensaProjectsService } from '../../../application/pensa/list-projects.service'
+import type { RemovePensaProjectMemberService } from '../../../application/pensa/remove-project-member.service'
 import type { ReplacePensaTasksService } from '../../../application/pensa/replace-tasks.service'
 import type { SavePensaArtifactService } from '../../../application/pensa/save-artifact.service'
+import type {
+  SharePensaProjectService,
+  UnsharePensaProjectService,
+} from '../../../application/pensa/share-project.service'
 import type { UpdatePensaProjectService } from '../../../application/pensa/update-project.service'
 import type { UpdatePensaTaskService } from '../../../application/pensa/update-task.service'
 import type { UpdatePensaTaskProgressService } from '../../../application/pensa/update-task-progress.service'
@@ -39,6 +46,8 @@ import {
   PensaCreateCycleBody,
   PensaCreateProjectBody,
   PensaCycleParams,
+  PensaJoinBody,
+  PensaMemberParams,
   PensaProjectParams,
   PensaStageParams,
   PensaTaskParams,
@@ -66,6 +75,12 @@ export interface PensaRoutesDeps {
   deleteTask: DeletePensaTaskService
   getTaskHandoff: GetPensaTaskHandoffService
   updateTaskProgress: UpdatePensaTaskProgressService
+  // Equipe (26/09/2026)
+  shareProject: SharePensaProjectService
+  unshareProject: UnsharePensaProjectService
+  joinProject: JoinPensaProjectService
+  listProjectMembers: ListPensaProjectMembersService
+  removeProjectMember: RemovePensaProjectMemberService
   /** Gate de PRODUTO na criação de projeto (mesma régua da rota `/members/access`). */
   accessCheck: AccessCheckService
   /** Rank autoritativo do perfil; tarefas do Estúdio respeitam a jornada. */
@@ -87,6 +102,21 @@ export interface PensaRoutesDeps {
  * prova que tinha acesso ao criar.
  */
 export function pensaRoutes(deps: PensaRoutesDeps) {
+  /**
+   * GATE de produto: ref `pensa` no catálogo pela CONTA (responsável compra) — a mesma
+   * leitura da rota `/members/access` (grants OU communities; chave-mestra de cursos NÃO
+   * conta). Equipe interna pula. Vale para CRIAR um plano e para ENTRAR numa equipe.
+   */
+  async function assertPensaProduct(
+    headers: Record<string, string | undefined>,
+    accountId: string,
+  ): Promise<void> {
+    if (isPrivilegedActor(headers)) return
+    const result = await deps.accessCheck.execute(accountId, [PENSA_ACCESS_REF])
+    const allowed =
+      result.grants.includes(PENSA_ACCESS_REF) || result.communities.includes(PENSA_ACCESS_REF)
+    if (!allowed) throw new AccessDeniedError('Você não tem acesso ao Pensa')
+  }
   async function destinationCapability(
     userId: string,
     accountId: string,
@@ -148,13 +178,7 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
         async ({ headers, body, query }) => {
           const userId = resolveUserId(headers)
           const accountId = resolveAccountId(headers)
-          if (!isPrivilegedActor(headers)) {
-            const result = await deps.accessCheck.execute(accountId, [PENSA_ACCESS_REF])
-            const allowed =
-              result.grants.includes(PENSA_ACCESS_REF) ||
-              result.communities.includes(PENSA_ACCESS_REF)
-            if (!allowed) throw new AccessDeniedError('Você não tem acesso ao Pensa')
-          }
+          await assertPensaProduct(headers, accountId)
           return {
             project: await deps.createProject.execute(
               userId,
@@ -165,6 +189,25 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
           }
         },
         { body: PensaCreateProjectBody, query: AudienceQuery },
+      )
+      // Entrar numa equipe pelo código do plano. Mesmo gate de produto do criar: os DOIS lados
+      // precisam ter o Pensa. ⚠️ Declarada ANTES de `/projects/:projectId` (o literal vence).
+      .post(
+        '/projects/join',
+        async ({ headers, body, query }) => {
+          const userId = resolveUserId(headers)
+          const accountId = resolveAccountId(headers)
+          await assertPensaProduct(headers, accountId)
+          return {
+            project: await deps.joinProject.execute(
+              userId,
+              accountId,
+              query.audience ?? 'adult',
+              body.code,
+            ),
+          }
+        },
+        { body: PensaJoinBody, query: AudienceQuery },
       )
       .get(
         '/projects/:projectId',
@@ -202,6 +245,53 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
           return { ok: true }
         },
         { params: PensaProjectParams, query: AudienceQuery },
+      )
+      // Equipe: gerar/trocar o código (dono), desligar o código (dono), ver a equipe (dono e
+      // membros), tirar alguém (dono) ou sair (`me`, membro).
+      .post(
+        '/projects/:projectId/share',
+        async ({ headers, params, query }) =>
+          deps.shareProject.execute(
+            resolveUserId(headers),
+            query.audience ?? 'adult',
+            params.projectId,
+          ),
+        { params: PensaProjectParams, query: AudienceQuery },
+      )
+      .delete(
+        '/projects/:projectId/share',
+        async ({ headers, params, query }) => {
+          await deps.unshareProject.execute(
+            resolveUserId(headers),
+            query.audience ?? 'adult',
+            params.projectId,
+          )
+          return { ok: true }
+        },
+        { params: PensaProjectParams, query: AudienceQuery },
+      )
+      .get(
+        '/projects/:projectId/members',
+        async ({ headers, params, query }) =>
+          deps.listProjectMembers.execute(
+            resolveUserId(headers),
+            query.audience ?? 'adult',
+            params.projectId,
+          ),
+        { params: PensaProjectParams, query: AudienceQuery },
+      )
+      .delete(
+        '/projects/:projectId/members/:profileId',
+        async ({ headers, params, query }) => {
+          await deps.removeProjectMember.execute(
+            resolveUserId(headers),
+            query.audience ?? 'adult',
+            params.projectId,
+            params.profileId,
+          )
+          return { ok: true }
+        },
+        { params: PensaMemberParams, query: AudienceQuery },
       )
       // Ciclo n+1 (exige o anterior `done`; ≤10). Devolve o detail atualizado.
       .post(

@@ -28,6 +28,10 @@ export type PensaTaskCategory = 'art' | 'setup' | 'gameplay' | 'scene' | 'ui' | 
 export type PensaArtKind = 'sprite' | 'background' | 'tileset' | 'tilemap'
 
 export const MAX_ACTIVE_PROJECTS = 20
+/** Equipe (26/09/2026): até 5 convidados por plano (dono + 5 = 6 pessoas). */
+export const MAX_PROJECT_MEMBERS = 5
+/** Equipes em que um perfil pode ENTRAR (o mesmo teto dos projetos próprios). */
+export const MAX_JOINED_PROJECTS = 20
 export const MAX_CYCLES_PER_PROJECT = 20
 export const MAX_TASKS_PER_CYCLE = 80
 export const MAX_CONVERSATION_MESSAGES = 80
@@ -36,14 +40,37 @@ export const MAX_ARTIFACT_CONTENT_CHARS = 262_144
 
 export interface PensaProject {
   id: string
+  /** O DONO (o perfil da criança). Os membros da equipe vivem em `pensa_project_members`. */
   userId: string
   accountId: string
   audience: CourseAudience
   kind: PensaProjectKind
   name: string
   status: PensaProjectStatus
+  /** O código do plano (equipe); `null` = ninguém entra por código. Ver `share-code.ts`. */
+  shareCode: string | null
   createdAt: Date
   updatedAt: Date
+}
+
+export type PensaProjectRole = 'owner' | 'member'
+
+/**
+ * Um projeto visto por QUEM pediu: dono ou membro da equipe. É o que os `find*` do
+ * repositório devolvem — o papel decide o que a pessoa pode fazer (renomear, apagar, gerar
+ * código e tirar gente são só do dono).
+ */
+export interface PensaProjectAccess extends PensaProject {
+  role: PensaProjectRole
+  memberCount: number
+}
+
+export interface PensaProjectMember {
+  projectId: string
+  profileId: string
+  accountId: string
+  invitedBy: string
+  joinedAt: Date
 }
 
 export interface PensaCycle {

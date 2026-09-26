@@ -81,9 +81,16 @@ import { DeletePensaTaskService } from './application/pensa/delete-task.service'
 import { GetPensaProjectService } from './application/pensa/get-project.service'
 import { GetPensaStageService } from './application/pensa/get-stage.service'
 import { GetPensaTaskHandoffService } from './application/pensa/get-task-handoff.service'
+import { JoinPensaProjectService } from './application/pensa/join-project.service'
+import { ListPensaProjectMembersService } from './application/pensa/list-project-members.service'
 import { ListPensaProjectsService } from './application/pensa/list-projects.service'
+import { RemovePensaProjectMemberService } from './application/pensa/remove-project-member.service'
 import { ReplacePensaTasksService } from './application/pensa/replace-tasks.service'
 import { SavePensaArtifactService } from './application/pensa/save-artifact.service'
+import {
+  SharePensaProjectService,
+  UnsharePensaProjectService,
+} from './application/pensa/share-project.service'
 import { UpdatePensaProjectService } from './application/pensa/update-project.service'
 import { UpdatePensaTaskService } from './application/pensa/update-task.service'
 import { UpdatePensaTaskProgressService } from './application/pensa/update-task-progress.service'
@@ -605,7 +612,7 @@ export async function createApplication(env: Env): Promise<Application> {
   // Pensa (planejador de jogos — plano + Cartões de Criação + progresso externo)
   const pensaRepo = new DrizzlePensaRepository(db)
   const pensaNewId = () => randomUUID()
-  const listPensaProjects = new ListPensaProjectsService(pensaRepo)
+  const listPensaProjects = new ListPensaProjectsService(pensaRepo, authGateway)
   const createPensaProject = new CreatePensaProjectService(pensaRepo, pensaNewId, clock)
   const getPensaProject = new GetPensaProjectService(pensaRepo)
   const updatePensaProject = new UpdatePensaProjectService(pensaRepo, clock)
@@ -623,6 +630,16 @@ export async function createApplication(env: Env): Promise<Application> {
   const deletePensaTask = new DeletePensaTaskService(pensaRepo, clock)
   const getPensaTaskHandoff = new GetPensaTaskHandoffService(pensaRepo)
   const updatePensaTaskProgress = new UpdatePensaTaskProgressService(pensaRepo, clock)
+  // Equipe (26/09/2026)
+  const sharePensaProject = new SharePensaProjectService(pensaRepo, clock)
+  const unsharePensaProject = new UnsharePensaProjectService(pensaRepo, clock)
+  const joinPensaProject = new JoinPensaProjectService(pensaRepo, clock)
+  const listPensaProjectMembers = new ListPensaProjectMembersService(
+    pensaRepo,
+    authGateway,
+    getAvatarsByProfiles,
+  )
+  const removePensaProjectMember = new RemovePensaProjectMemberService(pensaRepo, clock)
 
   // "Guardado na sua conta" (índice das criações do Estúdio Completo/Pinta; blob no R2 via BFF)
   const creationsRepo = new DrizzleCreationsRepository(db)
@@ -793,6 +810,11 @@ export async function createApplication(env: Env): Promise<Application> {
       deleteTask: deletePensaTask,
       getTaskHandoff: getPensaTaskHandoff,
       updateTaskProgress: updatePensaTaskProgress,
+      shareProject: sharePensaProject,
+      unshareProject: unsharePensaProject,
+      joinProject: joinPensaProject,
+      listProjectMembers: listPensaProjectMembers,
+      removeProjectMember: removePensaProjectMember,
       accessCheck,
       getGamification,
       internalToken: env.INTERNAL_API_TOKEN,
