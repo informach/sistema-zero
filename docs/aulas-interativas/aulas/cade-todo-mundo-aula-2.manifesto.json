@@ -2,9 +2,7 @@
   "version": 5,
   "courseSlug": "cade-todo-mundo",
   "lessonSlug": "aula-2",
-  "retireBlockKeys": [
-    "caderno"
-  ],
+  "retireBlockKeys": ["caderno"],
   "title": "Complete a busca",
   "blocks": [
     {
@@ -58,9 +56,7 @@
         "purpose": "submission",
         "chain": "cade-todo-mundo",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -157,7 +153,7 @@
               "name": "pedras",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjEiIGhlaWdodD0iMTEyIiB2aWV3Qm94PSI5IDE4IDQ2IDMyIj48cGF0aCBkPSJNIDIzLjI3IDIxLjQyIEMgMTkuMTcgMjMuMjggMTcuNDYgMzQuMDMgMTcuNDYgMzkuMSBDIDE3LjQ2IDQxLjk0IDE5LjUxIDQzLjA4IDIzLjUyIDQ0LjIyIEMgMjguMTQgNDUuNTMgNDIuMzIgNDQuNjYgNDIuMzIgNDQuNjYgQyA0Mi4zMiA0NC42NiA1Mi41OCA0MS4zNSA1MS41OCAzMS4yMiBDIDUxLjI4IDI4LjE3IDQyLjI3IDIzLjc4IDQyLjI3IDIzLjc4IEMgNDIuMjcgMjMuNzggMjguMjYgMTkuMTYgMjMuMjcgMjEuNDIgWiIgZmlsbD0iIzMzM2M1NyIvPgogICAgPHBhdGggZD0iTSA0Mi4wMiAzNi41MiBMIDQyLjA3IDQ0LjU5IEMgNDIuMDcgNDQuNTkgNDYuMTYgNDQuODQgNDkuODEgMzkuNTMgQyA1My4xNyAzNC42NyA1MS45NiAzMC43OCA1MS45NiAzMC43OCBMIDQ5LjQ3IDI3LjE0IFoiIGZpbGw9IiM1NjZjODYiLz4KICAgIDxwYXRoIGQ9Ik0gMjMuMTYgMjAuOTkgQyAxOS41NiAyMi4yMyAxOS43NCAyOS41MyAxOS43NCAzMi45MiBDIDE5Ljc0IDM0LjgyIDIxLjUzIDM1LjYgMjUuMDQgMzYuMzUgQyAyOS4wNyAzNy4yMyA0MS40OSAzNi42NiA0MS40OSAzNi42NiBDIDQxLjQ5IDM2LjY2IDUwLjQ3IDM0LjQyIDQ5LjU4IDI3LjY0IEMgNDkuMzMgMjUuNTkgNDEuNDQgMjIuNjUgNDEuNDQgMjIuNjUgQyA0MS40NCAyMi42NSAyNy41MyAxOS40NyAyMy4xNiAyMC45OSBaIiBmaWxsPSIjOTRiMGMyIi8+CiAgICA8cGF0aCBkPSJNIDEzLjIxIDQ2LjExIEwgMTkuNjkgNDcuMDcgTCAyNy41MSA0NC45MSBDIDI3LjUxIDQ0LjkxIDI1Ljk0IDMwLjE1IDIzLjcxIDI3LjEgQyAyMS40OCAyNC4wNiAxNi4wOCAyNS44NSAxNC40IDI2LjUzIEMgMTIuNTEgMjcuMzIgMTEuNzEgMjkuMTcgMTEuNTIgMzIuMTMgQyAxMS4zMyAzNS4wNyAxMy4yMSA0Ni4xMSAxMy4yMSA0Ni4xMSBaIiBmaWxsPSIjNTY2Yzg2Ii8+CiAgICA8cG9seWdvbiBwb2ludHM9IjE3LjY0LDM1LjIxIDE5LjUxLDQ3LjA1IDEyLjc2LDQ2LjA3IDExLjEzLDMxLjU4IiBmaWxsPSIjMzMzYzU3Ii8+CiAgICA8cGF0aCBkPSJNIDEzIDI2Ljg1IEMgMTIuMiAyNy45OCAxMC41NSAzMC41NyAxMS4zMyAzMi4wMyBDIDEyLjEgMzMuNDggMTUuNTEgMzYuMTcgMTcuNyAzNS42IEMgMTkuODkgMzUuMDMgMjMuNjUgMzAuMzEgMjQuNDUgMjguNiBDIDI1LjI1IDI2Ljg5IDIzLjkgMjUuOSAyMi41MiAyNS4zNSBDIDIxLjE0IDI0Ljc4IDE3Ljc1IDI1LjAzIDE2LjE2IDI1LjI4IEMgMTQuNTcgMjUuNTMgMTMuODEgMjUuNzMgMTMgMjYuODUgWiIgZmlsbD0iIzk0YjBjMiIvPjwvc3ZnPg==",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjEiIGhlaWdodD0iMTEyIiB2aWV3Qm94PSI5IDE4IDQ2IDMyIj48cGF0aCBkPSJNIDIzLjI3IDIxLjQyIEMgMTkuMTcgMjMuMjggMTcuNDYgMzQuMDMgMTcuNDYgMzkuMSBDIDE3LjQ2IDQxLjk0IDE5LjUxIDQzLjA4IDIzLjUyIDQ0LjIyIEMgMjguMTQgNDUuNTMgNDIuMzIgNDQuNjYgNDIuMzIgNDQuNjYgQyA0Mi4zMiA0NC42NiA0OS44MyA0MS4yOSA0OC44MyAzMS4xNiBDIDQ4LjUzIDI4LjExIDQyLjI3IDIzLjc4IDQyLjI3IDIzLjc4IEMgNDIuMjcgMjMuNzggMjguMjYgMTkuMTYgMjMuMjcgMjEuNDIgWiIgZmlsbD0iIzMzM2M1NyIvPgogICAgPHBhdGggZD0iTSA0Mi4wMiAzNi41MiBMIDQyLjAxIDQ0LjcyIEMgNDUuMDMgNDQuODEgNDUuNjggNDQuMTYgNDguMTUgNDIuNjYgQyA1MC43OCA0MS4wNiA0OS42MiAzMi43NyA0OS42NiAyNy42NCBaIiBmaWxsPSIjNTY2Yzg2Ii8+CiAgICA8cGF0aCBkPSJNIDIzLjE2IDIwLjk5IEMgMTkuNTYgMjIuMjMgMTkuNzQgMjkuNTMgMTkuNzQgMzIuOTIgQyAxOS43NCAzNC44MiAyMS41MyAzNS42IDI1LjA0IDM2LjM1IEMgMjkuMDcgMzcuMjMgNDEuNDkgMzYuNjYgNDEuNDkgMzYuNjYgQyA0MS40OSAzNi42NiA1MC40NyAzNC40MiA0OS41OCAyNy42NCBDIDQ5LjMzIDI1LjU5IDQxLjQ0IDIyLjY1IDQxLjQ0IDIyLjY1IEMgNDEuNDQgMjIuNjUgMjcuNTMgMTkuNDcgMjMuMTYgMjAuOTkgWiIgZmlsbD0iIzk0YjBjMiIvPgogICAgPHBhdGggZD0iTSAxMy4yMSA0Ni4xMSBMIDE5LjY5IDQ3LjA3IEwgMjcuNTEgNDQuOTEgQyAyNy41MSA0NC45MSAyNS45NCAzMC4xNSAyMy43MSAyNy4xIEMgMjEuNDggMjQuMDYgMTYuMDggMjUuODUgMTQuNCAyNi41MyBDIDEyLjUxIDI3LjMyIDExLjcxIDI5LjE3IDExLjUyIDMyLjEzIEMgMTEuMzMgMzUuMDcgMTMuMjEgNDYuMTEgMTMuMjEgNDYuMTEgWiIgZmlsbD0iIzU2NmM4NiIvPgogICAgPHBvbHlnb24gcG9pbnRzPSIxNy42NCwzNS4yMSAxOS41MSw0Ny4wNSAxMi43Niw0Ni4wNyAxMS4xMywzMS41OCIgZmlsbD0iIzMzM2M1NyIvPgogICAgPHBhdGggZD0iTSAxMyAyNi44NSBDIDEyLjIgMjcuOTggMTAuNTUgMzAuNTcgMTEuMzMgMzIuMDMgQyAxMi4xIDMzLjQ4IDE1LjUxIDM2LjE3IDE3LjcgMzUuNiBDIDE5Ljg5IDM1LjAzIDIzLjY1IDMwLjMxIDI0LjQ1IDI4LjYgQyAyNS4yNSAyNi44OSAyMy45IDI1LjkgMjIuNTIgMjUuMzUgQyAyMS4xNCAyNC43OCAxNy43NSAyNS4wMyAxNi4xNiAyNS4yOCBDIDE0LjU3IDI1LjUzIDEzLjgxIDI1LjczIDEzIDI2Ljg1IFoiIGZpbGw9IiM5NGIwYzIiLz48L3N2Zz4=",
               "width": 161,
               "height": 112
             },
@@ -954,17 +950,13 @@
       "title": "Volte ao seu jardim",
       "intent": "presentation",
       "objective": "Retomar o projeto salvo e perceber que revelar não está contando os achados ainda.",
-      "blockKeys": [
-        "video-a2-retomada"
-      ],
+      "blockKeys": ["video-a2-retomada"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a2-retomada"
-        ]
+        "blockIds": ["video-a2-retomada"]
       }
     },
     {
@@ -972,20 +964,13 @@
       "title": "Um número que acompanha a busca",
       "intent": "exploration",
       "objective": "Observar quando o valor atual de Achados muda e quando continua igual durante uma busca.",
-      "blockKeys": [
-        "video-a2-variavel",
-        "ponte-a2-variavel",
-        "experiencia-achados"
-      ],
+      "blockKeys": ["video-a2-variavel", "ponte-a2-variavel", "experiencia-achados"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a2-variavel",
-          "experiencia-achados"
-        ]
+        "blockIds": ["video-a2-variavel", "experiencia-achados"]
       }
     },
     {
@@ -993,20 +978,13 @@
       "title": "Cada personagem vale um achado",
       "intent": "delivery",
       "objective": "Somar um no contador no mesmo evento do toque e testar até a mensagem de vitória.",
-      "blockKeys": [
-        "video-a2-contagem",
-        "ponte-a2-contagem",
-        "projeto"
-      ],
+      "blockKeys": ["video-a2-contagem", "ponte-a2-contagem", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a2-contagem",
-          "projeto"
-        ],
+        "blockIds": ["video-a2-contagem", "projeto"],
         "projectChecks": [
           {
             "id": "somar-achado",
@@ -1030,17 +1008,13 @@
       "title": "Sua busca está completa",
       "intent": "closing",
       "objective": "Conferir que os três personagens aparecem, o contador chega a três e a vitória aparece.",
-      "blockKeys": [
-        "video-a2-fecho"
-      ],
+      "blockKeys": ["video-a2-fecho"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a2-fecho"
-        ]
+        "blockIds": ["video-a2-fecho"]
       }
     }
   ]

@@ -103,11 +103,18 @@ describe.skipIf(!testDatabaseUrl)('Drizzle da equipe do Pensa no Postgres real',
     return { id, cycleId }
   }
 
+  async function enableShare(projectId: string): Promise<string> {
+    const code = randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()
+    expect(await repo.setShareCode(projectId, code, now)).toBe(true)
+    return code
+  }
+
   test('dono, membro e estranho: findProject, findCycleWithProject e listActiveProjects', async () => {
     const owner = randomUUID()
     const member = randomUUID()
     const stranger = randomUUID()
     const { id, cycleId } = await plan(owner)
+    const code = await enableShare(id)
 
     // Antes do convite: só o dono vê.
     expect((await repo.findProject(id, owner, 'kids'))?.role).toBe('owner')
@@ -118,6 +125,7 @@ describe.skipIf(!testDatabaseUrl)('Drizzle da equipe do Pensa no Postgres real',
         { projectId: id, profileId: member, accountId: randomUUID(), invitedBy: owner },
         now,
         5,
+        code,
       ),
     ).toBe('added')
 
@@ -147,10 +155,12 @@ describe.skipIf(!testDatabaseUrl)('Drizzle da equipe do Pensa no Postgres real',
     const owner = randomUUID()
     const member = randomUUID()
     const { id } = await plan(owner)
+    const code = await enableShare(id)
     await repo.addMember(
       { projectId: id, profileId: member, accountId: randomUUID(), invitedBy: owner },
       now,
       5,
+      code,
     )
     await repo.updateProject(id, { status: 'archived' }, now)
     expect(await repo.findProject(id, member, 'kids')).toBeNull()
@@ -161,12 +171,14 @@ describe.skipIf(!testDatabaseUrl)('Drizzle da equipe do Pensa no Postgres real',
   test('addMember: duplicidade volta "duplicate", teto volta "full", e removeMember diz se tirou', async () => {
     const owner = randomUUID()
     const { id } = await plan(owner)
+    const code = await enableShare(id)
     const first = randomUUID()
     const join = (profileId: string, max = 2) =>
       repo.addMember(
         { projectId: id, profileId, accountId: randomUUID(), invitedBy: owner },
         now,
         max,
+        code,
       )
     expect(await join(first)).toBe('added')
     expect(await join(first)).toBe('duplicate')
@@ -176,6 +188,35 @@ describe.skipIf(!testDatabaseUrl)('Drizzle da equipe do Pensa no Postgres real',
     expect(await repo.removeMember(id, first, now)).toBe(true)
     expect(await repo.removeMember(id, first, now)).toBe(false)
     expect((await repo.findProject(id, owner, 'kids'))?.memberCount).toBe(1)
+  })
+
+  test('um convite revogado ou um plano arquivado não aceita ingresso após a leitura inicial', async () => {
+    const owner = randomUUID()
+    const { id } = await plan(owner)
+    const code = randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()
+    expect(await repo.setShareCode(id, code, now)).toBe(true)
+
+    await repo.setShareCode(id, null, now)
+    expect(
+      await repo.addMember(
+        { projectId: id, profileId: randomUUID(), accountId: randomUUID(), invitedBy: owner },
+        now,
+        5,
+        code,
+      ),
+    ).toBe('invite_invalid')
+
+    await repo.setShareCode(id, code, now)
+    await repo.updateProject(id, { status: 'archived' }, now)
+    expect(
+      await repo.addMember(
+        { projectId: id, profileId: randomUUID(), accountId: randomUUID(), invitedBy: owner },
+        now,
+        5,
+        code,
+      ),
+    ).toBe('invite_invalid')
+    expect(await repo.listMembers(id)).toEqual([])
   })
 
   test('setShareCode: o código de OUTRO plano volta false (índice único parcial), null sempre grava', async () => {
@@ -198,10 +239,12 @@ describe.skipIf(!testDatabaseUrl)('Drizzle da equipe do Pensa no Postgres real',
     const owner = randomUUID()
     const member = randomUUID()
     const { id } = await plan(owner)
+    const code = await enableShare(id)
     await repo.addMember(
       { projectId: id, profileId: member, accountId: randomUUID(), invitedBy: owner },
       now,
       5,
+      code,
     )
     await repo.deleteProject(id, owner, 'kids')
     expect(await repo.listMembers(id)).toEqual([])

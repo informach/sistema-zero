@@ -30,12 +30,18 @@ const doc: HelpTutorialDocument = {
 }
 
 describe('HelpTutorialView', () => {
-  test('passos numerados, imagem com alt e "Veja também" pelo host', () => {
+  test('passos numerados, imagem com alt e links relacionados vindos de dados', () => {
     const html = renderToStaticMarkup(
       <HelpTutorialView
         tutorial={doc}
         watermark="Perfil 1234abcd"
-        renderRelated={(slug) => <a href={`/como-fazer/${slug}`}>{slug}</a>}
+        relatedItems={[
+          {
+            slug: 'estudio-criar-projeto',
+            label: 'Como criar um projeto',
+            href: '/como-fazer/estudio-criar-projeto',
+          },
+        ]}
       />,
     )
     expect(html).toContain('Passo 1: ')
@@ -43,15 +49,29 @@ describe('HelpTutorialView', () => {
     expect(html).toContain('<strong>Pré-visualização</strong>')
     expect(html).toContain('alt="A barra do Estúdio com o olhinho"')
     expect(html).toContain('href="/como-fazer/estudio-criar-projeto"')
+    expect(html).toContain('Como criar um projeto')
     // O src cru do vídeo não vai ao HTML; o SDK monta a URL a partir do id e do hash.
     expect(html).not.toContain('https://vimeo.com/123456789/abcd1234')
     expect(html).toContain('Perfil 1234abcd')
   })
 
-  test('sem renderRelated não desenha "Veja também"; sem vídeo não desenha player', () => {
+  test('sem relatedItems não desenha "Veja também"; sem vídeo não desenha player', () => {
     const html = renderToStaticMarkup(<HelpTutorialView tutorial={{ ...doc, video: undefined }} />)
     expect(html).not.toContain('Veja também')
     expect(html).not.toContain('sz-help-video')
+  })
+
+  test('a prévia do admin mostra o endereço relacionado sem criar link', () => {
+    const html = renderToStaticMarkup(
+      <HelpTutorialView
+        tutorial={{ ...doc, video: undefined }}
+        relatedItems={[
+          { slug: 'estudio-criar-projeto', label: '/como-fazer/estudio-criar-projeto' },
+        ]}
+      />,
+    )
+    expect(html).toContain('/como-fazer/estudio-criar-projeto')
+    expect(html).not.toContain('href="/como-fazer/estudio-criar-projeto"')
   })
 })
 

@@ -134,13 +134,15 @@ export interface PensaRepository {
   /**
    * Entra na equipe DENTRO de uma transação que tranca o projeto: conferir a vaga e gravar
    * é um passo só, então dois convidados no mesmo instante não passam do teto, e a
-   * duplicidade volta como `'duplicate'` em vez de estourar a chave primária.
+   * duplicidade volta como `'duplicate'` em vez de estourar a chave primária. O código
+   * e o status são revalidados sob a mesma trava: revogar/arquivar fecha a porta imediatamente.
    */
   addMember(
     member: NewPensaProjectMember,
     now: Date,
     maxMembers: number,
-  ): Promise<'added' | 'duplicate' | 'full'>
+    expectedCode: string,
+  ): Promise<'added' | 'duplicate' | 'full' | 'invite_invalid'>
   /** `false` = não estava na equipe. Toca o `updated_at` quando tira alguém. */
   removeMember(projectId: string, profileId: string, now: Date): Promise<boolean>
   /**

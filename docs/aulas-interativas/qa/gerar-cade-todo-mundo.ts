@@ -310,10 +310,23 @@ const certificado = {
 }
 
 // O bloco de Estúdio mora fora de blockKeys e entra pela workspaceKey, como nos manifestos v5.
+const generatedFiles: string[] = []
 for (const [name, manifest] of [
   ['cade-todo-mundo-aula-1', aula1],
   ['cade-todo-mundo-aula-2', aula2],
   ['cade-todo-mundo-certificado', certificado],
 ] as const) {
-  writeFileSync(resolve(DIR, `${name}.manifesto.json`), `${JSON.stringify(manifest, null, 2)}\n`)
+  const target = resolve(DIR, `${name}.manifesto.json`)
+  writeFileSync(target, `${JSON.stringify(manifest, null, 2)}\n`)
+  generatedFiles.push(target)
+}
+
+const formatted = Bun.spawnSync({
+  cmd: [process.execPath, 'x', 'biome', 'format', '--write', ...generatedFiles],
+  cwd: resolve(import.meta.dir, '../../..'),
+  stdout: 'pipe',
+  stderr: 'pipe',
+})
+if (formatted.exitCode !== 0) {
+  throw new Error(`Biome não conseguiu formatar os manifestos: ${formatted.stderr.toString()}`)
 }

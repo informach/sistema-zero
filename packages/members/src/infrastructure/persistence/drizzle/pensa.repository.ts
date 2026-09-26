@@ -347,13 +347,20 @@ export class DrizzlePensaRepository implements PensaRepository {
     member: NewPensaProjectMember,
     now: Date,
     maxMembers: number,
-  ): Promise<'added' | 'duplicate' | 'full'> {
+    expectedCode: string,
+  ): Promise<'added' | 'duplicate' | 'full' | 'invite_invalid'> {
     return this.db.transaction(async (tx) => {
       // Tranca a linha do projeto: conferir a vaga e gravar viram um passo só (dois convidados
       // no mesmo instante com 4 na equipe não viram 6).
-      await tx.execute(
-        sql`select 1 from ${pensaProjects} where ${pensaProjects.id} = ${member.projectId}::uuid for update`,
-      )
+      const [project] = await tx
+        .select({ shareCode: pensaProjects.shareCode, status: pensaProjects.status })
+        .from(pensaProjects)
+        .where(eq(pensaProjects.id, member.projectId))
+        .limit(1)
+        .for('update')
+      if (!project || project.shareCode !== expectedCode || project.status !== 'active') {
+        return 'invite_invalid'
+      }
       const [already] = await tx
         .select({ profileId: pensaProjectMembers.profileId })
         .from(pensaProjectMembers)

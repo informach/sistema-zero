@@ -107,4 +107,10 @@ describe('as páginas do Como fazer não tocam em progresso', () => {
       }
     }
   })
+
+  it('a página de detalhe não passa callback de servidor ao visualizador cliente', () => {
+    const detalhe = fontes[2]
+    expect(detalhe).not.toContain('renderRelated=')
+    expect(detalhe).toContain('relatedItems={relatedItems}')
+  })
 })

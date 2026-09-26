@@ -204,7 +204,12 @@ export class InMemoryPensaRepository implements PensaRepository {
     member: NewPensaProjectMember,
     now: Date,
     maxMembers: number,
-  ): Promise<'added' | 'duplicate' | 'full'> {
+    expectedCode: string,
+  ): Promise<'added' | 'duplicate' | 'full' | 'invite_invalid'> {
+    const project = this.projects.get(member.projectId)
+    if (!project || project.shareCode !== expectedCode || project.status !== 'active') {
+      return 'invite_invalid'
+    }
     const key = `${member.projectId}:${member.profileId}`
     if (this.members.has(key)) return 'duplicate'
     if (this.memberCount(member.projectId) >= maxMembers) return 'full'

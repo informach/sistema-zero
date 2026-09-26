@@ -356,7 +356,10 @@ export function HelpEditorClient({
             <HelpTutorialView
               tutorial={draft}
               headingLevel={3}
-              renderRelated={(slug) => <span className="text-sm">/como-fazer/{slug}</span>}
+              relatedItems={(draft.related ?? []).filter(Boolean).map((slug) => ({
+                slug,
+                label: `/como-fazer/${slug}`,
+              }))}
             />
           </CardContent>
         </Card>

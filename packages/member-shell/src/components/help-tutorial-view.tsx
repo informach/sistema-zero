@@ -1,11 +1,17 @@
 'use client'
 
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
-import type { ReactNode } from 'react'
+import Link from 'next/link'
 import { renderMarkdown } from '../lib/markdown'
 import { parseVimeo, youtubeId } from '../lib/video-ids'
 import { LessonYoutubeVideo } from './lesson-youtube-video'
 import { VimeoPlayer } from './vimeo-player'
+
+export interface HelpRelatedItem {
+  slug: string
+  label: string
+  href?: string
+}
 
 /**
  * O tutorial do "Como fazer" como a criança o lê — e como a prévia do admin o mostra (é o
@@ -19,20 +25,19 @@ import { VimeoPlayer } from './vimeo-player'
 export function HelpTutorialView({
   tutorial,
   watermark = null,
-  renderRelated,
+  relatedItems = [],
   headingLevel = 2,
 }: {
   tutorial: HelpTutorialDocument
   /** Rótulo da marca d'água sobre o vídeo (kids: `Perfil <id8>`). `null` na prévia do admin. */
   watermark?: string | null
-  /** Como desenhar cada slug de "Veja também" (o host conhece as rotas; este componente não). */
-  renderRelated?: (slug: string) => ReactNode
+  /** Links já resolvidos pelo host; só dados atravessam a fronteira Server → Client. */
+  relatedItems?: HelpRelatedItem[]
   /** Nível do título dos passos (a página põe o título do tutorial no cabeçalho dela). */
   headingLevel?: 2 | 3
 }) {
   const StepHeading = headingLevel === 2 ? 'h2' : 'h3'
   const steps = tutorial.steps ?? []
-  const related = (tutorial.related ?? []).filter(Boolean)
   return (
     <div className="sz-help-tutorial">
       {tutorial.summary ? <p className="sz-help-tutorial-summary">{tutorial.summary}</p> : null}
@@ -59,14 +64,26 @@ export function HelpTutorialView({
           </li>
         ))}
       </ol>
-      {related.length > 0 && renderRelated ? (
+      {relatedItems.length > 0 ? (
         <section className="sz-help-related" aria-labelledby="sz-help-related-title">
           <h2 id="sz-help-related-title" className="sz-help-related-title">
             Veja também
           </h2>
           <ul className="sz-help-related-list">
-            {related.map((slug) => (
-              <li key={slug}>{renderRelated(slug)}</li>
+            {relatedItems.map((item) => (
+              <li key={item.slug}>
+                {item.href ? (
+                  <Link
+                    href={item.href}
+                    prefetch={false}
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-(--band-creme) px-4 font-bold text-foreground text-sm hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span className="text-sm">{item.label}</span>
+                )}
+              </li>
             ))}
           </ul>
         </section>

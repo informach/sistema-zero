@@ -2150,8 +2150,10 @@ ao aluno). O que vive AQUI:
 
 - **`components/help-tutorial-view.tsx`** (`HelpTutorialView`): o tutorial como a criança o lê e
   como a prévia do admin o mostra (o MESMO componente, para a prévia ser a página real). Passos
-  numerados em markdown (`renderMarkdown`), imagem com alt e "Veja também" por `renderRelated`
-  (o host conhece as rotas). ⚠️ O vídeo usa o **`VimeoPlayer` DIRETO com `watermark`** e SEM os
+  numerados em markdown (`renderMarkdown`), imagem com alt e "Veja também" por `relatedItems`
+  (o host resolve rótulos/rotas em dados serializáveis; jamais passa callback de um Server
+  Component ao `HelpTutorialView`, que é Client Component). ⚠️ O vídeo usa o **`VimeoPlayer`
+  DIRETO com `watermark`** e SEM os
   callbacks de progresso: decisão da dona, o vídeo do tutorial tem marca d'água como o da aula,
   mas não tem retomada nem exigência de assistir. `parseVimeo`/`youtubeId` saíram de
   `lesson-video.tsx` para **`lib/video-ids.ts`**, que os dois consomem.

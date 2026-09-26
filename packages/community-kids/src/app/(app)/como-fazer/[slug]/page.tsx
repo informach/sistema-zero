@@ -60,8 +60,13 @@ export default async function TutorialPage({
   const publicados = new Map(
     (publicadosRes?.body?.tutorials ?? []).map((t) => [t.slug, t.title] as const),
   )
-  const related = (tutorial.related ?? []).filter((s) => s !== slug && publicados.has(s))
-  const tutorialVisivel = { ...tutorial, related }
+  const relatedItems = (tutorial.related ?? [])
+    .filter((relatedSlug) => relatedSlug !== slug && publicados.has(relatedSlug))
+    .map((relatedSlug) => ({
+      slug: relatedSlug,
+      label: publicados.get(relatedSlug) ?? relatedSlug,
+      href: `/como-fazer/${encodeURIComponent(relatedSlug)}`,
+    }))
   const toolState = tutorial.toolRef
     ? (tools?.tools.find((t) => t.id === tutorial.toolRef)?.state ?? null)
     : null
@@ -87,18 +92,10 @@ export default async function TutorialPage({
       <KidsBand tone="branco">
         <article className="kids-card mx-auto max-w-3xl rounded-[1.75rem] bg-card px-5 py-6 md:px-8 md:py-8">
           <HelpTutorialView
-            tutorial={tutorialVisivel}
+            tutorial={tutorial}
             watermark={watermark}
             headingLevel={2}
-            renderRelated={(relatedSlug) => (
-              <Link
-                href={`/como-fazer/${encodeURIComponent(relatedSlug)}`}
-                prefetch={false}
-                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-(--band-creme) px-4 font-bold text-foreground text-sm hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
-              >
-                {publicados.get(relatedSlug) ?? relatedSlug}
-              </Link>
-            )}
+            relatedItems={relatedItems}
           />
         </article>
         {volta ? (

@@ -51,7 +51,9 @@ export class JoinPensaProjectService {
       { projectId: project.id, profileId: userId, accountId, invitedBy: project.userId },
       this.clock(),
       MAX_PROJECT_MEMBERS,
+      code,
     )
+    if (outcome === 'invite_invalid') throw new PensaInviteInvalidError()
     if (outcome === 'duplicate') throw new PensaAlreadyMemberError()
     if (outcome === 'full') throw new PensaTeamFullError()
     const access = await this.repo.findProject(project.id, userId, audience)
