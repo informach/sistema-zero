@@ -415,9 +415,8 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     if (!(sw > 0) || !(sh > 0) || !(cw > 0) || !(ch > 0)) return false;
     var scale = Math.max(cw / sw, ch / sh);
     var dw = sw * scale, dh = sh * scale;
-    // O _crispDraw mantém pixel art nítida ao ampliar (o cenário do Pinta costuma
-    // ser bem menor que o palco) e suave ao reduzir.
-    return _crispDraw(ctx, sw, dw, function () {
+    // Pixel art ampliada usa nearest; SVG preserva a suavização vetorial.
+    return _crispDraw(ctx, _isVectorImage(handle) ? 0 : sw, dw, function () {
       ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
     });
   }

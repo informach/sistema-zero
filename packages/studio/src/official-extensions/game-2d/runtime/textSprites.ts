@@ -262,7 +262,7 @@ export const gameTwoDTextSpritesRuntime = `
    * @param {number} h
    */
   function _drawTextBackgroundImage(ctx, img, srcW, w, h) {
-    _crispDraw(ctx, srcW || w, w, function () { ctx.drawImage(img, 0, 0, w, h); });
+    _crispDraw(ctx, _isVectorImage(img) ? 0 : (srcW || w), w, function () { ctx.drawImage(img, 0, 0, w, h); });
   }
   /**
    * A imagem vira a MOLDURA do sprite de texto: ela manda no tamanho (sem

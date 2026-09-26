@@ -369,7 +369,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     // enquanto dura. Se algo aqui dentro lançar sem fechar o lote, o modo fica
     // ligado para sempre — e aí toda imagem que a criança desenhar com os blocos
     // de Canvas do núcleo sai serrilhada, em silêncio, pelo resto da partida.
-    if (comFolha) _crispBatch(ctx, map.tileset ? map.tileset.frameW : 0, cell);
+    if (comFolha) _crispBatch(ctx, map.tileset && !_isVectorImage(map.tileset.image) ? map.tileset.frameW : 0, cell);
     try {
       for (var r = firstRow; r <= lastRow; r++) {
         var row = map.rows[r];

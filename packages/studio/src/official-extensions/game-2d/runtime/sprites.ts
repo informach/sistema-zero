@@ -46,8 +46,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   }
 
   /**
-   * Desenha com nitidez de pixel art quando AMPLIA (nearest, sem o borrão
-   * bilinear do navegador) e suave quando REDUZ (vetor/foto não serrilham).
+   * Amplia pixel art com nearest e reduz imagens com suavização. Quem chama passa
+   * srcW=0 para SVG: o vetor continua suave em qualquer tamanho.
    * Sempre restaura o smoothing: setupStage/_resizeBacking reatribuem c.width
    * (que reseta o estado do ctx), então o ajuste é POR DESENHO, nunca global.
    * Devolve false se o desenho lançou (o chamador cai no placeholder).
@@ -93,6 +93,12 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * em vez de duas por célula.
    */
   var _smoothBatchCtx = null, _smoothBatchOn = true, _smoothBatchRestore = true;
+  function _isVectorImage(image) {
+    var source = image && (image.url || image.src || (image.img && image.img.src));
+    if (typeof source !== 'string') return false;
+    var lower = source.toLowerCase();
+    return lower.slice(0, 18) === 'data:image/svg+xml' || lower.split(/[?#]/)[0].endsWith('.svg');
+  }
   function _crispBatch(ctx, srcW, dw) {
     _smoothBatchRestore = _readSmoothing(ctx);
     _smoothBatchOn = !(_isFiniteNumber(srcW) && srcW > 0 && dw * _deviceScale(ctx) >= srcW);
@@ -600,7 +606,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     var sy = Math.floor(i / cols) * fh;
     var dw = _finiteNumber(width, fw);
     var dh = _finiteNumber(height, fh);
-    _crispDraw(ctx, fw, dw, function () { ctx.drawImage(img, sx, sy, fw, fh, dx, dy, dw, dh); });
+    _crispDraw(ctx, _isVectorImage(sheet.image) ? 0 : fw, dw, function () { ctx.drawImage(img, sx, sy, fw, fh, dx, dy, dw, dh); });
   }
 
   /**
@@ -679,7 +685,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     }
     if (sprite.image && sprite.image.loaded && sprite.image.img) {
       var fimg = sprite.image.img;
-      var okDraw = _crispDraw(ctx, fimg.naturalWidth || sprite.w, sprite.w, function () {
+      var okDraw = _crispDraw(ctx, _isVectorImage(sprite.image) ? 0 : (fimg.naturalWidth || sprite.w), sprite.w, function () {
         ctx.drawImage(fimg, sprite.x, sprite.y, sprite.w, sprite.h);
       });
       if (okDraw) return;

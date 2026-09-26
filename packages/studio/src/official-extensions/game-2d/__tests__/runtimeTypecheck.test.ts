@@ -344,7 +344,8 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // acusava TODOS os sons carregados. Soltar de verdade (tirar o atributo,
   // remandar carregar, desligar o aviso) não cabe numa linha inline.
   // 1240 → 1241: +1 rótulo acessível do botão de direção no modo sem ações.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1241)
+  // 1241 → 1242: +1 detector de SVG para preservar a suavização ao ampliar vetores.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1242)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

@@ -3361,6 +3361,19 @@ describe('gameTwoDRuntime — nitidez de pixel art', () => {
     expect(current()).toBe(true)
   })
 
+  it('SVG ampliado continua suave e restaura o estado anterior', () => {
+    const { ctx, calls, current } = makeRecordingCtx(false)
+    const sprite = api.createSprite({ x: 0, y: 0, w: 256, h: 256 })
+    sprite.image = {
+      loaded: true,
+      url: 'data:image/svg+xml;base64,PHN2Zy8+',
+      img: { naturalWidth: 64 },
+    }
+    api.drawSprite(ctx, sprite)
+    expect(calls).toEqual([{ smoothing: true }])
+    expect(current()).toBe(false)
+  })
+
   it('imagem grande REDUZIDA continua suave (vetor/foto não serrilham)', () => {
     const { ctx, calls, current } = makeRecordingCtx()
     const sprite = api.createSprite({ x: 0, y: 0, w: 40, h: 40 })
@@ -3382,6 +3395,21 @@ describe('gameTwoDRuntime — nitidez de pixel art', () => {
     expect(calls.length).toBe(1)
     expect(calls[0]?.smoothing).toBe(false)
     expect(current()).toBe(true)
+  })
+
+  it('drawFrame de spritesheet SVG ampliada continua suave', () => {
+    const { ctx, calls } = makeRecordingCtx()
+    const sheet = {
+      image: {
+        loaded: true,
+        url: 'data:image/svg+xml;charset=utf-8,%3Csvg%2F%3E',
+        img: { naturalWidth: 64 },
+      },
+      frameW: 64,
+      frameH: 64,
+    }
+    api.drawFrame(ctx, sheet, 0, 0, 0, 256, 256)
+    expect(calls).toEqual([{ smoothing: true }])
   })
 
   it('drawFrame que REDUZ o quadro segue suave', () => {
