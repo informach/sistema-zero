@@ -1527,3 +1527,27 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Como fazer: a biblioteca de ajuda do Kids (26/09/2026)
+
+Item **Como fazer** no grupo Configuração (`LifeBuoy`) → `/admin/como-fazer`
+(`como-fazer-client.tsx`: abas **Tutoriais** (lista com filtros e "Novo tutorial"), **Coleções**
+(criar/editar/subir/descer/arquivar/restaurar; ícone e cor vêm das allowlists do core) e
+**Importar** (`JsonImportPanel`, o formato de `docs/como-fazer/como-fazer.json`); "Exportar JSON"
+gera o mesmo arquivo para levar de staging a produção) e `/admin/como-fazer/[id]`
+(`help-editor-client.tsx`). A criança só vê o PUBLICADO; o Zappy passa a citar o tutorial na hora.
+
+- **BFF**: um catch-all `app/api/members/help/[[...path]]/route.ts` com **allowlist explícita**
+  (molde do teacher-broadcasts), adapters em `server/help.ts`; sem DELETE. Trava:
+  `tests/help-route-handlers.test.ts`.
+- **O editor não tem autosave, de propósito**: "Salvar rascunho" manda `expectedRevision`; 409
+  `HELP_TUTORIAL_CONFLICT` → "recarregue". "Revisar e publicar" repete o diálogo da aula:
+  bloqueios de `validateHelpTutorial` (a MESMA função que o members roda) + `<details>` com
+  `helpEditorialWarnings` (sem keywords, passo longo, sem imagem/vídeo, pitch comercial). A prévia
+  é o `HelpTutorialView` REAL do member-shell (sem marca d'água aqui). Vídeo por `VideoUploader`
+  (sem `blockId`) ou URL Vimeo/YouTube; imagem do passo por `ImageUploader scope="block"` e o
+  alt é obrigatório quando há imagem. Slug trava depois de publicado (os links das aulas apontam
+  para ele). Trava: `tests/help-editor-client.test.tsx` (o TipTap é substituído por um
+  `<textarea>` no mock, preservando a superfície do módulo).
+- ⚠️ O import só mexe no RASCUNHO: depois de importar, cada tutorial passa por "Revisar e
+  publicar". Regras de escrita e o lote inicial: `docs/como-fazer/README.md`.

@@ -6,6 +6,7 @@ import {
   Home,
   Inbox,
   LayoutDashboard,
+  LifeBuoy,
   type LucideIcon,
   Mail,
   Medal,
@@ -111,6 +112,9 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'Configuração',
     items: [
       { label: 'Cursos', href: '/admin/membros/cursos', icon: BookOpen },
+      // A biblioteca de ajuda do Kids ("Como fazer", 26/09/2026): conteúdo GLOBAL, sem o
+      // seletor de plataforma (só existe no kids), no lugar da autoria.
+      { label: 'Como fazer', href: '/admin/como-fazer', icon: LifeBuoy },
       {
         label: 'Comunidade',
         href: '/admin/comunidade/servidores',

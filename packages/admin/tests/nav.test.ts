@@ -106,6 +106,9 @@ describe('nav — grupos e helpers de seção', () => {
     expect(pathIsPlatformScoped('/admin/catalogo/produtos')).toBe(false)
     expect(pathIsPlatformScoped('/admin/comunidade/servidores')).toBe(false)
     expect(pathIsPlatformScoped('/admin/auditoria')).toBe(false)
+    // O "Como fazer" é global: a biblioteca de ajuda só existe no kids.
+    expect(pathIsPlatformScoped('/admin/como-fazer')).toBe(false)
+    expect(pathIsPlatformScoped('/admin/como-fazer/t-1')).toBe(false)
     // Prefixo por SEGMENTO (não string crua).
     expect(pathIsPlatformScoped('/admin/membrosxyz')).toBe(false)
   })
@@ -119,5 +122,20 @@ describe('nav — grupos e helpers de seção', () => {
       ['/admin/professor/recados', 'recados'],
       ['/admin/comunidade/moderacao', 'moderacao'],
     ])
+  })
+})
+
+describe('nav — "Como fazer" (biblioteca de ajuda do Kids)', () => {
+  test('mora no grupo config, ao lado da autoria, e o editor de um tutorial acende o item', () => {
+    expect(sectionForPath('/admin/como-fazer')).toBe('config')
+    expect(sectionForPath('/admin/como-fazer/3d1c2f5e-7b8a-4c9d-8e0f-1a2b3c4d5e6f')).toBe('config')
+    expect(activeHref('/admin/como-fazer/3d1c2f5e-7b8a-4c9d-8e0f-1a2b3c4d5e6f')).toBe(
+      '/admin/como-fazer',
+    )
+  })
+
+  test('staff também vê (a equipe consulta; quem publica é o admin, e o gateway decide)', () => {
+    const labels = visibleGroups('staff').flatMap((group) => group.items.map((item) => item.label))
+    expect(labels).toContain('Como fazer')
   })
 })

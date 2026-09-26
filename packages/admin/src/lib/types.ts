@@ -1397,3 +1397,56 @@ export interface AmbassadorDetailView {
   ambassador: AmbassadorView
   redemptions: AmbassadorRedemptionView[]
 }
+
+// ── "Como fazer" (biblioteca de ajuda do Kids, 26/09/2026) ──────────────────
+// Espelha as views admin do members (`application/mappers/help-views.ts`). O DOCUMENTO e as
+// views da criança vêm do core (`@sistemazero/core/help`), a fonte única dos dois lados.
+export type {
+  HelpCollectionDocument,
+  HelpCollectionView,
+  HelpTutorialDocument,
+  HelpTutorialStatus,
+  HelpValidationIssue,
+} from '@sistemazero/core/help'
+
+export interface HelpTutorialAdminSummaryView {
+  id: string
+  slug: string
+  collectionId: string
+  status: 'draft' | 'published' | 'archived'
+  title: string
+  summary: string
+  toolRef: string | null
+  revision: number
+  position: number
+  /** O rascunho mudou depois da última publicação. */
+  hasUnpublishedChanges: boolean
+  updatedAt: string
+  publishedAt: string | null
+}
+
+export interface HelpTutorialAdminView extends HelpTutorialAdminSummaryView {
+  draft: import('@sistemazero/core/help').HelpTutorialDocument
+  published: import('@sistemazero/core/help').HelpTutorialDocument | null
+  createdAt: string
+}
+
+export interface HelpImportResultView {
+  collections: { created: number; updated: number }
+  tutorials: { created: number; updated: number }
+  rejected: Array<{ slug: string; reason: string }>
+}
+
+/** O arquivo de import/export (`docs/como-fazer/como-fazer.json` segue este formato). */
+export interface HelpImportFile {
+  collections?: Array<
+    import('@sistemazero/core/help').HelpCollectionDocument & { position?: number }
+  >
+  tutorials: Array<{
+    slug: string
+    /** Slug da coleção (o JSON viaja entre ambientes; ids não). */
+    collection: string
+    position?: number
+    draft: import('@sistemazero/core/help').HelpTutorialDocument
+  }>
+}
