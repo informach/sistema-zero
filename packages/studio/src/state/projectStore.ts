@@ -129,7 +129,12 @@ interface ProjectStore {
   renameProject: (id: string, name: string) => Promise<void>
   importProjectFromJSON: (
     raw: unknown,
-    options?: { storageScope?: ProjectStorageScope; silent?: boolean },
+    options?: {
+      storageScope?: ProjectStorageScope
+      silent?: boolean
+      /** A miniatura gravada junto com o projeto novo (na mesma transação dos `put`). */
+      thumb?: string | null
+    },
   ) => Promise<{ project: Project; warnings: string[] }>
   /**
    * Restaura um snapshot vindo da NUVEM ("guardado na sua conta") preservando id e datas,
@@ -506,7 +511,11 @@ export function createProjectStore(
       const { project, warnings } = sanitizeImportedProjectSnapshot(
         await prepareProjectDocument(raw),
       )
-      await persistProject(project, { silent: options.silent }, options.storageScope)
+      await persistProject(
+        project,
+        { silent: options.silent, thumb: options.thumb },
+        options.storageScope,
+      )
       return { project, warnings }
     },
     restoreProjectSnapshot: async (raw, options = {}) => {

@@ -179,6 +179,8 @@ export const en: Record<string, string> = {
   'assets.cover.reset': 'Back to the automatic photo',
   'assets.cover.resetAria': 'Back to the automatic cover photo',
   'assets.cover.resetHint': 'The cover goes back to a photo of the game running',
+  'assets.cover.failed':
+    'I could not use this image as the cover. The cover stays as it was. Try another image.',
   'pintaImport.button': '🎨 Bring from Pinta',
   'pintaImport.title': 'Bring from Pinta',
   'pintaImport.subtitle': 'Choose a drawing from your Pinta gallery to use in this project.',

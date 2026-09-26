@@ -29,10 +29,13 @@ describe('buildCloudThumb', () => {
     const OriginalImage = globalThis.Image
     /** Cada `toDataURL` devolve um data URL cujo tamanho é largura × qualidade × fator. */
     let fator = 100
+    /** A imagem de mentira decodifica (`true`) ou fica muda para sempre (`false`). */
+    let carrega = true
     const pedidos: Array<{ width: number; quality: number }> = []
 
     beforeEach(() => {
       pedidos.length = 0
+      carrega = true
       const doc = document as unknown as { createElement: typeof document.createElement }
       doc.createElement = ((tag: string, ...rest: unknown[]) => {
         if (tag !== 'canvas') return originalCreate(tag, ...(rest as []))
@@ -53,7 +56,7 @@ describe('buildCloudThumb', () => {
         onload: (() => void) | null = null
         onerror: (() => void) | null = null
         set src(_value: string) {
-          queueMicrotask(() => this.onload?.())
+          if (carrega) queueMicrotask(() => this.onload?.())
         }
       }
       globalThis.Image = FakeImage as unknown as typeof Image
@@ -94,6 +97,24 @@ describe('buildCloudThumb', () => {
       const antes = pedidos.length
       await buildCloudThumb(GRANDE)
       expect(pedidos.length).toBe(antes)
+    })
+
+    it('B6: uma imagem que nunca decodifica devolve null dentro do prazo, em vez de pendurar a subida', async () => {
+      carrega = false
+      const inicio = Date.now()
+      expect(await buildCloudThumb(GRANDE, undefined, { loadTimeoutMs: 20 })).toBeNull()
+      expect(Date.now() - inicio).toBeLessThan(1_000)
+      expect(pedidos).toEqual([])
+    })
+
+    it('B6: o null NÃO gruda no cache: a próxima chamada com a mesma fonte tenta de novo', async () => {
+      fator = 1_000
+      expect(await buildCloudThumb(GRANDE)).toBeNull()
+      // A mesma fonte, agora com a redução cabendo: sem o cache do null, ela sai.
+      fator = 100
+      const out = await buildCloudThumb(GRANDE)
+      expect(out).not.toBeNull()
+      expect(out?.length ?? 0).toBeLessThanOrEqual(CLOUD_THUMB_MAX_CHARS)
     })
   })
 })

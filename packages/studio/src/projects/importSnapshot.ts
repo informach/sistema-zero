@@ -30,7 +30,16 @@ import {
  */
 export async function importProjectSnapshot(
   raw: unknown,
-  opts?: { name?: string; namespace?: string; silent?: boolean },
+  opts?: {
+    name?: string
+    namespace?: string
+    silent?: boolean
+    /**
+     * A miniatura a gravar junto com o projeto novo (a cópia de conflito "(de outro aparelho)"
+     * nasce com a capa que a nuvem listou, em vez de um card em branco até ser aberta).
+     */
+    thumb?: string | null
+  },
 ): Promise<{ project: Project; warnings: string[] }> {
   const value =
     opts?.name && raw && typeof raw === 'object' && !Array.isArray(raw)
@@ -41,6 +50,7 @@ export async function importProjectSnapshot(
   return useProjectStore.getState().importProjectFromJSON(value, {
     storageScope,
     silent: opts?.silent,
+    thumb: opts?.thumb,
   })
 }
 

@@ -118,6 +118,14 @@ describe('o banco dos projetos só vê transações com commit explícito', () =
     await persistence.renameProjectMeta(project.id, 'Renomeado')
     await persistence.persistProjectAssets(project.id, [])
     expect(await persistence.writeProjectThumb(project.id, 'data:image/jpeg;base64,AAA')).toBe(true)
+    expect(await persistence.loadProjectThumb(project.id)).toBe('data:image/jpeg;base64,AAA')
+    // A adoção lê as CHAVES (uma transação) e grava só em quem não tem capa e tem o meta.
+    expect(
+      await persistence.adoptProjectThumbs([
+        { id: project.id, thumb: 'data:image/jpeg;base64,BBB' },
+        { id: 'nao-existe', thumb: 'data:image/jpeg;base64,BBB' },
+      ]),
+    ).toBe(0)
     await gameStorage.writeGameStorage(project.id, { placar: '10' })
     await expect(gameStorage.loadGameStorage(project.id)).resolves.toEqual({ placar: '10' })
     await gameStorage.writeGameStorage(project.id, {})

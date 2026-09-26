@@ -4,9 +4,10 @@
  * `pullMissing` desce com id conferido e SUBSTITUINDO, cria a cópia "(deste computador)"
  * só depois de a descida validar, e sobe o que só existe aqui.
  */
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, spyOn, test } from 'bun:test'
 import {
   type CloudCreationSummary,
+  CloudListTimeoutError,
   type CreationsCloud,
   canonicalJson,
   type RemovedListener,
@@ -110,6 +111,8 @@ function fakeStudio(initial: StudioProjectLike[] = []) {
       const project = { ...source, id: `${source.id}-copia`, name: opts?.name ?? source.name }
       projects.set(project.id, project)
       imported.push(project.name)
+      // Como o pacote: a miniatura passada nasce junto com o projeto novo.
+      if (opts?.thumb) thumbs.set(project.id, opts.thumb)
       // Como o pacote de verdade: imports provisórios ficam silenciosos até o commit.
       if (!opts?.silent) mirror?.onChanged(project.id)
       return { project, warnings: [] }
@@ -1098,5 +1101,176 @@ describe('createStudioCloudSync — a capa do card viaja (26/09/2026)', () => {
     expect(fake.imported).toEqual([])
     expect(marks.revision('p1')).toBe(4)
     expect((await uploads.get('p1')?.produce())?.meta?.baseRevision).toBe(4)
+  })
+})
+
+describe('createStudioCloudSync — full review da capa (26/09/2026)', () => {
+  const CAPA = 'data:image/jpeg;base64,CAPA'
+
+  test('A1: o prazo da lista é POR PÁGINA (chega ao cliente como `pageTimeoutMs`): uma lista de várias páginas que soma mais que o prazo desce inteira', async () => {
+    const soNuvem = { id: 'nuvem-1', name: 'Nuvem', updatedAt: 700 }
+    const fake = fakeStudio([])
+    const { cloud } = fakeCloud(remoteOf([soNuvem]))
+    const opcoes: Array<number | undefined> = []
+    cloud.list = async (options) => {
+      opcoes.push(options?.pageTimeoutMs)
+      // Três páginas de 20 ms: 60 ms somados, o dobro do prazo de UMA página (30 ms).
+      for (let pagina = 0; pagina < 3; pagina += 1) await Bun.sleep(20)
+      return [summaryOf(soNuvem)]
+    }
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks: createMemorySyncedMarks(),
+      listTimeoutMs: 30,
+    })
+    await sync.pullMissing()
+    expect(opcoes).toEqual([30])
+    expect(fake.restored.map((r) => r.id)).toEqual(['nuvem-1'])
+  })
+
+  test('A1: uma página que estoura o prazo sai no console (`[criacoes-nuvem]`) e o passe não mexe no local', async () => {
+    const fake = fakeStudio([{ id: 'p1', name: 'Nave', updatedAt: 1 }])
+    const { cloud } = fakeCloud(new Map())
+    cloud.list = async () => {
+      throw new CloudListTimeoutError(1, 30)
+    }
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks: createMemorySyncedMarks(),
+      listTimeoutMs: 30,
+    })
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      await expect(sync.pullMissing()).resolves.toBeUndefined()
+      const avisos = warn.mock.calls.map(([mensagem]) => String(mensagem))
+      expect(avisos.some((m) => m.startsWith('[criacoes-nuvem]') && m.includes('prazo'))).toBe(true)
+    } finally {
+      warn.mockRestore()
+    }
+    expect(fake.restored).toEqual([])
+  })
+
+  test('B1: sem a lista da nuvem (a rota PRO só liga o espelho) a capa NÃO sobe sozinha; vai de carona na próxima edição', async () => {
+    const fake = fakeStudio([{ id: 'p1', name: 'Nave', updatedAt: 1000 }])
+    const { cloud, uploads } = fakeCloud(new Map())
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks: createMemorySyncedMarks(),
+    })
+    sync.attach()
+    fake.thumbs.set('p1', CAPA)
+    fake.mirror()?.onThumbChanged?.('p1')
+    expect(uploads.has('p1')).toBe(false)
+    fake.mirror()?.onChanged('p1')
+    expect((await uploads.get('p1')?.produce())?.meta?.thumb).toBe(CAPA)
+  })
+
+  test('B1: uma lista velha (sem capa) que chega DEPOIS da subida confirmada com capa não reabre a subida só pela capa', async () => {
+    const local = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const fake = fakeStudio([local])
+    const { cloud, uploads } = fakeCloud(
+      new Map([
+        ['p1', { json: JSON.stringify(local), summary: summaryOf(local, { thumb: null }) }],
+      ]),
+    )
+    const marks = createMemorySyncedMarks()
+    const sync = createStudioCloudSync({ studio: fake.studio, cloud, viewerId: 'v1', marks })
+    sync.attach()
+    await sync.pullMissing()
+    fake.thumbs.set('p1', CAPA)
+    fake.mirror()?.onThumbChanged?.('p1')
+    const job = uploads.get('p1')
+    expect((await job?.produce())?.meta?.thumb).toBe(CAPA)
+    job?.onUploaded?.({ itemId: 'p1', updatedAt: 1000, revision: 2 })
+    // A mesma lista de antes (a nuvem "ainda" sem capa): não pode rebaixar o que foi confirmado.
+    await sync.pullMissing()
+    uploads.clear()
+    fake.mirror()?.onThumbChanged?.('p1')
+    expect(uploads.has('p1')).toBe(false)
+  })
+
+  test('B2: um `onChanged` que substitui o trabalho na fila não perde a subida pela capa', async () => {
+    const local = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const fake = fakeStudio([local])
+    const { cloud, uploads } = fakeCloud(
+      new Map([
+        ['p1', { json: JSON.stringify(local), summary: summaryOf(local, { thumb: null }) }],
+      ]),
+    )
+    const marks = createMemorySyncedMarks()
+    const sync = createStudioCloudSync({ studio: fake.studio, cloud, viewerId: 'v1', marks })
+    sync.attach()
+    await sync.pullMissing()
+    fake.thumbs.set('p1', CAPA)
+    fake.mirror()?.onThumbChanged?.('p1')
+    // O autosave chega antes de a fila produzir: a fila guarda UM trabalho por item.
+    fake.mirror()?.onChanged('p1')
+    const job = uploads.get('p1')
+    const snapshot = await job?.produce()
+    expect(snapshot?.meta?.thumb).toBe(CAPA)
+    expect(snapshot?.meta?.updatedAt).toBe(1000)
+    // Confirmada, a bandeira morre: a próxima edição sem mudança volta a devolver null.
+    job?.onUploaded?.({ itemId: 'p1', updatedAt: 1000, revision: 2 })
+    fake.mirror()?.onChanged('p1')
+    expect(await uploads.get('p1')?.produce()).toBeNull()
+  })
+
+  test('B4: a cópia "(de outro aparelho)" nasce com a capa que a nuvem listou', async () => {
+    const local = { id: 'p1', name: 'Nave', updatedAt: 500 }
+    const remoteProject = { id: 'p1', name: 'Nave', updatedAt: 300 }
+    const fake = fakeStudio([local])
+    const { cloud, uploads } = fakeCloud(
+      new Map([
+        [
+          'p1',
+          {
+            json: JSON.stringify(remoteProject),
+            summary: summaryOf(remoteProject, { revision: 4, thumb: CAPA }),
+          },
+        ],
+      ]),
+    )
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks: createMemorySyncedMarks(),
+    })
+    sync.attach()
+    fake.mirror()?.onChanged('p1')
+    const job = uploads.get('p1')
+    await job?.produce()
+    await job?.onStale?.({ itemId: 'p1' })
+    expect(fake.imported).toEqual(['Nave (de outro aparelho)'])
+    expect(fake.thumbs.get('p1-copia')).toBe(CAPA)
+  })
+
+  test('B7c: apagar o jogo esquece o que se sabia da capa dele (o mesmo id que volta não sobe pela capa até a nuvem o listar de novo)', async () => {
+    const local = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const fake = fakeStudio([local])
+    const { cloud, uploads } = fakeCloud(
+      new Map([
+        ['p1', { json: JSON.stringify(local), summary: summaryOf(local, { thumb: null }) }],
+      ]),
+    )
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks: createMemorySyncedMarks(),
+    })
+    sync.attach()
+    await sync.pullMissing()
+    fake.mirror()?.onDeleted('p1')
+    uploads.clear()
+    fake.thumbs.set('p1', CAPA)
+    fake.mirror()?.onThumbChanged?.('p1')
+    expect(uploads.has('p1')).toBe(false)
   })
 })

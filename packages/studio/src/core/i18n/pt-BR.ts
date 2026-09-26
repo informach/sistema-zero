@@ -78,6 +78,8 @@ export const ptBR: Record<string, string> = {
   'assets.cover.reset': 'Voltar para a foto automática',
   'assets.cover.resetAria': 'Voltar para a foto automática da capa',
   'assets.cover.resetHint': 'A capa volta a ser uma foto do jogo rodando',
+  'assets.cover.failed':
+    'Não consegui usar essa imagem como capa. A capa continua a de antes. Tente outra imagem.',
 
   'extensions.install': 'Instalar',
   'extensions.remove': 'Remover',

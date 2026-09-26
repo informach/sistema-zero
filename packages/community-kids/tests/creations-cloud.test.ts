@@ -8,6 +8,7 @@
 import { describe, expect, test } from 'bun:test'
 import {
   CLOUD_MESSAGES,
+  CloudListTimeoutError,
   type CloudPart,
   type CloudSyncState,
   canonicalJson,
@@ -1569,6 +1570,94 @@ describe('createCreationsCloud', () => {
     await cloud.flush()
     expect(server.calls).toHaveLength(0)
     expect(cloud.getState().status).toBe('saved')
+    cloud.dispose()
+  })
+})
+
+describe('list com prazo POR PÁGINA (26/09/2026)', () => {
+  const pagina = (items: unknown[], nextCursor: string | null) =>
+    new Response(JSON.stringify({ items, nextCursor }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })
+  const item = (id: string) => ({
+    itemId: id,
+    name: id,
+    kind: 'classic',
+    itemUpdatedAt: '2026-08-18T12:00:00.000Z',
+    revision: 1,
+    bytes: 1,
+    thumb: null,
+    syncedAt: '2026-08-18T12:00:01.000Z',
+  })
+  const numeroDaPagina = (url: string) => Number(url.match(/cursor=(\d+)/)?.[1] ?? 0)
+
+  test('o prazo é de cada página: três páginas de 15 ms descem com 40 ms por página, embora somem mais que isso', async () => {
+    const cloud = createCreationsCloud({
+      tool: 'studio',
+      wait: noWait,
+      fetch: async (input) => {
+        await new Promise((resolve) => setTimeout(resolve, 15))
+        const n = numeroDaPagina(String(input))
+        return pagina([item(`i${n}`)], n < 2 ? String(n + 1) : null)
+      },
+    })
+    const items = await cloud.list({ pageTimeoutMs: 40 })
+    expect(items.map((i) => i.itemId)).toEqual(['i0', 'i1', 'i2'])
+    cloud.dispose()
+  })
+
+  test('a página que não chega no prazo tem o fetch dela abortado e a lista lança `CloudListTimeoutError` com o número da página', async () => {
+    const abortadas: number[] = []
+    const cloud = createCreationsCloud({
+      tool: 'studio',
+      wait: noWait,
+      fetch: (input, init) => {
+        const n = numeroDaPagina(String(input))
+        if (n === 0) return Promise.resolve(pagina([item('i0')], '1'))
+        // A segunda página nunca responde: só o aborto a tira do caminho.
+        return new Promise((_, reject) => {
+          init?.signal?.addEventListener('abort', () => {
+            abortadas.push(n)
+            reject(init.signal?.reason ?? new DOMException('Abortado', 'AbortError'))
+          })
+        })
+      },
+    })
+    let erro: unknown = null
+    try {
+      await cloud.list({ pageTimeoutMs: 20 })
+    } catch (error) {
+      erro = error
+    }
+    expect(erro).toBeInstanceOf(CloudListTimeoutError)
+    expect((erro as CloudListTimeoutError).page).toBe(1)
+    expect((erro as CloudListTimeoutError).timeoutMs).toBe(20)
+    expect(abortadas).toEqual([1])
+    cloud.dispose()
+  })
+
+  test('o sinal de fora que aborta no meio segue lançando o aborto, não o prazo (e sem `pageTimeoutMs` a lista espera o que precisar)', async () => {
+    const controller = new AbortController()
+    const cloud = createCreationsCloud({
+      tool: 'studio',
+      wait: noWait,
+      fetch: (_input, init) =>
+        new Promise((_, reject) => {
+          init?.signal?.addEventListener('abort', () =>
+            reject(init.signal?.reason ?? new DOMException('Abortado', 'AbortError')),
+          )
+        }),
+    })
+    setTimeout(() => controller.abort(), 5)
+    let erro: unknown = null
+    try {
+      await cloud.list({ signal: controller.signal, pageTimeoutMs: 1_000 })
+    } catch (error) {
+      erro = error
+    }
+    expect(erro).not.toBeNull()
+    expect(erro instanceof CloudListTimeoutError).toBe(false)
     cloud.dispose()
   })
 })

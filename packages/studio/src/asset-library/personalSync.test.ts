@@ -65,8 +65,14 @@ type ProjectAsset = import('#core').ProjectAsset
 const { listPersonalAssets, savePersonalAsset, setPersonalAssetsNamespace } = await import(
   './personal'
 )
-const { loadProjectAssetsById, persistProject, setStorageNamespace, writeProjectThumb } =
-  await import('../state/persistence')
+const {
+  loadProjectAssetsById,
+  loadProjectMetaById,
+  persistProject,
+  setStorageNamespace,
+  setStudioCloudMirror,
+  writeProjectThumb,
+} = await import('../state/persistence')
 const { useProjectStore } = await import('../state/projectStore')
 const { getProjectStorageScope } = await import('../state/projectStorageRuntime')
 const {
@@ -721,5 +727,56 @@ describe('criações 3D do Molda (model3d/environment3d)', () => {
     })
     // O registro original fica intocado (os dois lados preservados).
     expect((await getPersonalAsset('m1'))?.dataUrl).toBe(GLB_A)
+  })
+})
+
+describe('M2 (full review 26/09/2026): a religação que MUDA o projeto restaurado muda também o `updatedAt`', () => {
+  // A régua da nuvem é "mesmo `updatedAt` ⇒ mesmo conteúdo" (o `resolveStale` do kids avança a
+  // marca sem cópia quando as datas batem). Se o restauro trocasse bytes/`libRevision` dos assets
+  // e subisse com a DATA da nuvem, o outro aparelho veria "a mesma versão" com conteúdo diferente
+  // e subiria por cima: religa, sobe, religa, sobe. A data nova é o que quebra o laço.
+  it('com um desenho divergente: grava e persiste `updatedAt` NOVO (maior que o da nuvem) e acorda o espelho', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+    const raw = {
+      ...createEmptyProject('01J00000000000000000000BMP', 'Vindo da nuvem'),
+      assets: [drawingAsset({ dataUrl: PNG_NOVO })],
+      createdAt: 1,
+      updatedAt: 2,
+    }
+    const changed: string[] = []
+    setStudioCloudMirror({ onChanged: (id) => changed.push(id), onDeleted: () => {} })
+    try {
+      const { project } = await useProjectStore.getState().restoreProjectSnapshot(raw, {
+        expectedId: raw.id,
+      })
+      expect(project.updatedAt).toBeGreaterThan(2)
+      expect((await loadProjectMetaById(raw.id))?.updatedAt).toBe(project.updatedAt)
+      expect(changed).toEqual([raw.id])
+    } finally {
+      setStudioCloudMirror(null)
+    }
+  })
+
+  it('sem mudança (o desenho é o mesmo): a data da nuvem é preservada e o espelho fica em silêncio', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+    const local = await getPersonalAsset('d1')
+    const raw = {
+      ...createEmptyProject('01J00000000000000000000SIL', 'Vindo da nuvem'),
+      assets: [drawingAsset({ dataUrl: PNG, libRevision: local?.updatedAt })],
+      createdAt: 1,
+      updatedAt: 2,
+    }
+    const changed: string[] = []
+    setStudioCloudMirror({ onChanged: (id) => changed.push(id), onDeleted: () => {} })
+    try {
+      const { project } = await useProjectStore.getState().restoreProjectSnapshot(raw, {
+        expectedId: raw.id,
+      })
+      expect(project.updatedAt).toBe(2)
+      expect((await loadProjectMetaById(raw.id))?.updatedAt).toBe(2)
+      expect(changed).toEqual([])
+    } finally {
+      setStudioCloudMirror(null)
+    }
   })
 })

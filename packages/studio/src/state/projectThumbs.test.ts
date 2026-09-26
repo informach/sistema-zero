@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it, mock } from 'bun:test'
-import { fakeUseStore } from '../testing/fakeIdbStore'
+import { fakeIdbTransactions, fakeUseStore, resetFakeIdb } from '../testing/fakeIdbStore'
 
 // Mock FUNCIONAL de idb-keyval (Map único): estes testes precisam ler de volta
 // o que gravaram (o no-op padrão dos outros arquivos não serve aqui). O registry
@@ -168,5 +168,54 @@ describe('a capa viaja: restauro com miniatura, adoção e o aviso ao espelho', 
     } finally {
       setStudioCloudMirror(null)
     }
+  })
+})
+
+describe('full review da capa (26/09/2026): a adoção lê CHAVES, e a cópia de conflito nasce com capa', () => {
+  const THUMB = 'data:image/jpeg;base64,NUVEM'
+
+  it('M1: adoptProjectThumbs decide pela EXISTÊNCIA da chave (uma leitura das chaves) e não lê o VALOR de nenhuma capa local', async () => {
+    db.clear()
+    failThumbWrite = false
+    resetFakeIdb()
+    db.set('sz:v2:project-meta:semcapa', meta('semcapa', 'A'))
+    db.set('sz:v2:project-meta:comcapa', meta('comcapa', 'B'))
+    db.set('sz:v2:project-thumb:comcapa', {
+      id: 'comcapa',
+      dataUrl: 'data:image/jpeg;base64,MINHA',
+    })
+    expect(
+      await adoptProjectThumbs([
+        { id: 'semcapa', thumb: THUMB },
+        { id: 'comcapa', thumb: THUMB },
+      ]),
+    ).toBe(1)
+    const leituras = fakeIdbTransactions().filter((t) => t.mode === 'readonly')
+    const chavesLidas = leituras.flatMap((t) =>
+      t.steps.flatMap((s) => (s.type === 'get' ? [String(s.key)] : [])),
+    )
+    // Nenhuma capa local foi LIDA por valor (nem a que existe, nem a que não existe).
+    expect(chavesLidas.filter((k) => k.startsWith('sz:v2:project-thumb:'))).toEqual([])
+    expect(leituras.some((t) => t.steps.some((s) => s.type === 'getAllKeys'))).toBe(true)
+    expect(await loadProjectThumb('comcapa')).toBe('data:image/jpeg;base64,MINHA')
+    expect(await loadProjectThumb('semcapa')).toBe(THUMB)
+  })
+
+  it('B4: importProjectSnapshot com `thumb` grava a capa junto com o projeto NOVO (a cópia "(de outro aparelho)" não nasce em branco)', async () => {
+    db.clear()
+    failThumbWrite = false
+    const { importProjectSnapshot } = await import('../projects/importSnapshot')
+    const raw = { ...createEmptyProject('01J00000000000000000000ORIG', 'Nave'), assets: [] }
+    const { project } = await importProjectSnapshot(raw, {
+      name: 'Nave (de outro aparelho)',
+      silent: true,
+      thumb: THUMB,
+    })
+    expect(project.id).not.toBe(raw.id)
+    expect(project.name).toBe('Nave (de outro aparelho)')
+    expect(await loadProjectThumb(project.id)).toBe(THUMB)
+    // Sem `thumb` (ou com uma inválida) o projeto novo nasce sem capa, como sempre.
+    const semCapa = await importProjectSnapshot(raw, { silent: true, thumb: 'data:text/plain,x' })
+    expect(await loadProjectThumb(semCapa.project.id)).toBeNull()
   })
 })

@@ -333,9 +333,14 @@ describe('ProjectList — cabeçalho de duas linhas', () => {
   it('o cartão "Novo projeto" abre a grade, tem nome próprio e some quando a lista é filtrada', async () => {
     await seedProjects()
     render(<ProjectList onOpenProject={() => {}} theme="light" />)
-    await waitFor(() => {
-      expect(cardNames()).toHaveLength(3)
-    })
+    // ⚠️ 3 s, como o teste da descida em voo: rodando o arquivo SOZINHO a primeira leitura da
+    // lista passava dos 1000 ms de fábrica (1,2 s medido) e o caso reprovava só em isolamento.
+    await waitFor(
+      () => {
+        expect(cardNames()).toHaveLength(3)
+      },
+      { timeout: 3000 },
+    )
     const novo = screen.getByRole('button', { name: /^Novo projeto Comece do zero no Estúdio\.$/ })
     // O PRIMEIRO da grade, antes dos projetos.
     const grade = novo.parentElement as HTMLElement

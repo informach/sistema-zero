@@ -97,21 +97,25 @@ async function resolveThumb(project: Project): Promise<ResolvedThumb | null> {
  * num iframe próprio no document.body — que sobrevive ao unmount do Studio. Avisa
  * a lista pelo evento `PROJECT_THUMB_UPDATED_EVENT` quando a gravação termina.
  * Best-effort: sem canvas/print/quota, o card só fica sem capa. NUNCA lança.
+ * Devolve se uma miniatura NOVA foi gravada (`false` = a capa anterior ficou como
+ * estava): é o retorno que a escolha de capa usa para não deixar o selo mentir.
  */
-export function captureAndStoreProjectThumb(project: Project): Promise<void> {
+export function captureAndStoreProjectThumb(project: Project): Promise<boolean> {
   return perfSpanAsync('studio:thumb:capture', () => captureAndStoreUnmeasured(project))
 }
 
-async function captureAndStoreUnmeasured(project: Project): Promise<void> {
+async function captureAndStoreUnmeasured(project: Project): Promise<boolean> {
   try {
     const thumb = await resolveThumb(project)
-    if (!thumb) return
+    if (!thumb) return false
     // O `writeProjectThumb` avisa a lista (`PROJECT_THUMB_UPDATED_EVENT`) e o espelho da nuvem.
     const stored = await writeProjectThumb(project.id, thumb.dataUrl)
-    if (!stored) return
+    if (!stored) return false
     if (thumb.snapshot) consumeProjectSnapshot(thumb.snapshot)
+    return true
   } catch {
     // Best-effort de ponta a ponta.
+    return false
   }
 }
 

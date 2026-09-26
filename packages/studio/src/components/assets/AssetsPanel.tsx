@@ -1,6 +1,6 @@
 import { type JSX, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
+import { PROJECT_ASSET_LIMITS, type Project, type ProjectAsset } from '#core'
 import { Button, ConfirmDialog, Modal } from '#ui'
 import type { LibraryAsset } from '../../asset-library/catalog'
 import {
@@ -76,6 +76,11 @@ export interface AssetsPanelProps {
   tab?: AssetsTab
   /** Avisa o host da troca, para a porta do menu marcar a aba certa. */
   onTabChange?: (tab: AssetsTab) => void
+  /**
+   * Quem regrava a miniatura do card ao escolher a capa (`true` = gravou). Default:
+   * `captureAndStoreProjectThumb`; injetável só para os testes (o happy-dom não tem canvas).
+   */
+  captureThumb?: (project: Project) => Promise<boolean>
 }
 
 const EMPTY_ASSETS: ProjectAsset[] = []
@@ -90,6 +95,7 @@ export function AssetsPanel({
   allowUpload = true,
   tab = 'images',
   onTabChange = () => {},
+  captureThumb = captureAndStoreProjectThumb,
 }: AssetsPanelProps): JSX.Element {
   const t = useT()
   const { hasProject, assets, has3DExtension, has3DMaterials, coverAssetName } = useProjectStore(
@@ -549,7 +555,10 @@ export function AssetsPanel({
   }
 
   // A capa do card: grava o nome no projeto e regrava a miniatura NA HORA (a escolhida é
-  // derivada da imagem; voltar à automática usa a foto do preview ou a reserva). Best-effort.
+  // derivada da imagem; voltar à automática usa a foto do preview ou a reserva). Escolher uma
+  // imagem que NÃO dá miniatura (não decodifica, ou maior que o teto mesmo reduzida) DESFAZ a
+  // escolha e avisa: sem isso a aba dizia "Capa do jogo" e o card seguia com a foto antiga.
+  // Voltar à automática nunca é desfeito (a foto do preview pode simplesmente ainda não existir).
   const handleSetCover = (asset: ProjectAsset | null) => {
     const err = setCoverAsset(asset ? asset.id : null)
     if (err) {
@@ -558,7 +567,15 @@ export function AssetsPanel({
     }
     setError(null)
     const project = storeApi.getState().project
-    if (project) void captureAndStoreProjectThumb(project)
+    if (!project) return
+    void captureThumb(project).then((stored) => {
+      if (stored || !asset) return
+      // Só desfaz a escolha que ainda é a vigente (a criança pode ter escolhido outra no meio).
+      const current = storeApi.getState().project
+      if (current?.id !== project.id || current.coverAssetName !== asset.name) return
+      setCoverAsset(null)
+      setError(t('assets.cover.failed'))
+    })
   }
 
   // Quais abas existem. ⚠️ A de modelos 3D aparece por TRÊS motivos independentes,

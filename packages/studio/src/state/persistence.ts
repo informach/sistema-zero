@@ -621,10 +621,12 @@ export async function loadProjectThumb(
 
 /**
  * Adota as miniaturas que a NUVEM tem para projetos que já existem aqui SEM capa (o jogo que
- * sincronizou antes de a capa viajar, ou que nunca foi aberto neste aparelho): uma leitura das
- * chaves de capa em lote e uma gravação silenciosa por projeto que precisa (exige o meta, como
- * toda capa). Projeto que já tem capa é deixado como está: a dele é tão boa quanto a da nuvem, e
- * o `replace` do restauro é quem troca quando a versão da nuvem é a mais nova.
+ * sincronizou antes de a capa viajar, ou que nunca foi aberto neste aparelho): UMA leitura das
+ * CHAVES do banco (só a existência da capa importa; ler o VALOR de todas as capas locais a cada
+ * passe da descida custava dezenas de KB por projeto para nada) e uma gravação silenciosa por
+ * projeto que precisa (exige o meta, como toda capa). Projeto que já tem capa é deixado como
+ * está: a dele é tão boa quanto a da nuvem, e o `replace` do restauro é quem troca quando a
+ * versão da nuvem é a mais nova.
  */
 export async function adoptProjectThumbs(
   items: ReadonlyArray<{ id: string; thumb: string }>,
@@ -632,13 +634,10 @@ export async function adoptProjectThumbs(
 ): Promise<number> {
   if (items.length === 0) return 0
   const captured = storageScope ?? captureProjectStorageScope()
-  const existing = await readValues(
-    captured.store,
-    items.map((item) => projectThumbKey(item.id)),
-  )
+  const present = new Set(await readAllKeys(captured.store))
   let adopted = 0
-  for (const [index, item] of items.entries()) {
-    if (thumbDataUrlOf(existing[index])) continue
+  for (const item of items) {
+    if (present.has(projectThumbKey(item.id))) continue
     if (await writeProjectThumb(item.id, item.thumb, { silent: true }, captured)) adopted += 1
   }
   return adopted

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import type { JSX } from 'react'
 import { createEmptyProject } from '#core'
 import { useProjectStore } from '../../state/projectStore'
@@ -404,7 +404,8 @@ describe('Materiais do jogo — "Usar como capa"', () => {
 
   it('cada imagem tem "Usar como capa"; escolher grava o nome e mostra o selo com o "Voltar"', () => {
     seedWithImages()
-    render(<AssetsPanel open onClose={() => {}} />)
+    // O happy-dom não tem canvas: a derivação é injetada como "gravou".
+    render(<AssetsPanel open onClose={() => {}} captureThumb={async () => true} />)
     const painel = screen.getByRole('tabpanel')
     fireEvent.click(
       within(painel).getByRole('button', { name: 'Usar tela-inicial como capa do jogo' }),
@@ -424,5 +425,90 @@ describe('Materiais do jogo — "Usar como capa"', () => {
     const project = useProjectStore.getState().project
     expect(project && 'coverAssetName' in project).toBe(false)
     expect(within(painel).queryByText('Capa do jogo')).toBeNull()
+  })
+})
+
+/** B5 (full review 26/09/2026): a escolha de capa que não vira miniatura é DESFEITA e avisada. */
+describe('Materiais do jogo — a capa que não dá miniatura', () => {
+  function seedWithImages(): void {
+    seedProject()
+    for (const name of ['tela-inicial', 'heroi']) {
+      const err = useProjectStore.getState().addAsset({
+        name,
+        dataUrl: 'data:image/png;base64,AAA',
+        kind: 'image',
+        source: 'upload',
+      })
+      expect(err).toBeNull()
+    }
+  }
+  const usar = (painel: HTMLElement, name: string) =>
+    within(painel).getByRole('button', { name: `Usar ${name} como capa do jogo` })
+
+  it('a derivação falha: a escolha é desfeita (sem "Capa do jogo"), a aba avisa sem travessão e o botão volta', async () => {
+    seedWithImages()
+    render(<AssetsPanel open onClose={() => {}} captureThumb={async () => false} />)
+    const painel = screen.getByRole('tabpanel')
+    fireEvent.click(usar(painel, 'tela-inicial'))
+    await waitFor(() => {
+      const project = useProjectStore.getState().project
+      expect(project && 'coverAssetName' in project).toBe(false)
+    })
+    const alerta = screen.getByRole('alert')
+    expect(alerta.textContent).toContain('Não consegui usar essa imagem como capa')
+    expect(alerta.textContent).not.toContain('—')
+    expect(within(painel).queryByText('Capa do jogo')).toBeNull()
+    expect(usar(painel, 'tela-inicial')).toBeTruthy()
+  })
+
+  it('voltar à foto automática nunca é desfeito, mesmo sem foto para gravar', async () => {
+    seedWithImages()
+    const project = useProjectStore.getState().project
+    const asset = project?.assets?.find((a) => a.name === 'heroi')
+    if (!asset) throw new Error('asset não criado')
+    expect(useProjectStore.getState().setCoverAsset(asset.id)).toBeNull()
+    render(<AssetsPanel open onClose={() => {}} captureThumb={async () => false} />)
+    const painel = screen.getByRole('tabpanel')
+    fireEvent.click(
+      within(painel).getByRole('button', { name: 'Voltar para a foto automática da capa' }),
+    )
+    await act(async () => {
+      await Promise.resolve()
+    })
+    const depois = useProjectStore.getState().project
+    expect(depois && 'coverAssetName' in depois).toBe(false)
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  it('a falha de uma escolha ANTIGA não desfaz a escolha mais nova', async () => {
+    seedWithImages()
+    const pendentes: Array<(stored: boolean) => void> = []
+    render(
+      <AssetsPanel
+        open
+        onClose={() => {}}
+        captureThumb={() =>
+          new Promise<boolean>((resolve) => {
+            pendentes.push(resolve)
+          })
+        }
+      />,
+    )
+    const painel = screen.getByRole('tabpanel')
+    fireEvent.click(usar(painel, 'tela-inicial'))
+    fireEvent.click(usar(painel, 'heroi'))
+    expect(useProjectStore.getState().project?.coverAssetName).toBe('heroi')
+    // A primeira derivação (da tela-inicial) falha DEPOIS de a criança já ter escolhido o herói.
+    await act(async () => {
+      pendentes[0]?.(false)
+      await Promise.resolve()
+    })
+    expect(useProjectStore.getState().project?.coverAssetName).toBe('heroi')
+    expect(screen.queryByRole('alert')).toBeNull()
+    await act(async () => {
+      pendentes[1]?.(true)
+      await Promise.resolve()
+    })
+    expect(useProjectStore.getState().project?.coverAssetName).toBe('heroi')
   })
 })

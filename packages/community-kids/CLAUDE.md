@@ -700,6 +700,25 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   em cópia "(de outro aparelho)" por uma foto. E o `resolveStale` com a nuvem na MESMA versão
   daqui (só a revisão é nova: outra aba, ou a subida pela capa) avança a marca e sobe de novo
   SEM cópia (a regra que o Pinta já tinha).
+  **Full review do mesmo dia (26/09/2026), o que mudou aqui:** (a) ⚠️⚠️ **o prazo da lista da
+  nuvem é POR PÁGINA, não pela lista inteira**: com a miniatura em cada linha (7 a 12 KB) a
+  lista de 300 jogos num celular lento passava dos 4 s somados, o `withTimeout` devolvia `null`
+  em silêncio e o passe dizia "nada a descer" com o selo em "guardado". Hoje `cloud.list({
+  pageTimeoutMs })` (opção nova do `creations-cloud.ts`, relógio que nasce a cada página; a
+  página que estoura lança `CloudListTimeoutError`, com `page`/`timeoutMs`) e o `listRemote` do
+  adaptador escreve `console.warn('[criacoes-nuvem] …')` quando isso acontece (`listTimeoutMs`
+  é injetável nos testes); (b) `onThumbChanged` só sobe pela capa quando se SABE que a nuvem não
+  tem miniatura (`cloudHasThumb.get(id) === false`: a lista o listou sem capa, ou uma subida
+  daqui foi confirmada sem ela); sem a lista (a rota PRO só faz `attach()`) a capa vai de carona
+  na próxima edição, e uma lista NUNCA rebaixa `true` para `false` (uma lista velha que chegue
+  depois da confirmação não reabre a subida); (c) `pendingThumb`: a bandeira `thumbOnly` mora
+  fora do trabalho da fila, porque um `onChanged` que chegue depois SUBSTITUI o trabalho (a fila
+  guarda um por item) e a perdia; limpa no `onUploaded`; (d) a cópia "(de outro aparelho)" nasce
+  com a capa que a nuvem listou (`importProjectSnapshot(raw, {thumb})`); (e) `onDeleted` apaga
+  `cloudHasThumb`/`sendingThumb`/`pendingThumb` do item; (f) `tests/cloud-thumb-conformance.test.ts`
+  trava o teto de 12 000 em lockstep (members `CREATION_LIMITS.maxThumbChars`, BFF
+  `MAX_THUMB_CHARS`, studio `CLOUD_THUMB_MAX_CHARS`, kids `MAX_CLOUD_THUMB_CHARS` e o do Molda),
+  lendo por caminho como o `molda-conformance`.
 - **Medição (19/08):** `src/lib/perf.ts` (`perfSpan`/`perfSpanAsync`/`perfMark`; liga com
   `localStorage['sz:perf']='1'` ou `?szperf=1`; `[sz:perf]` no console + User Timing): spans
   `kids:cloud:produce|gzip|gzip-parts|reserve|put|commit`, `kids:pinta:reconcile`,
@@ -1205,8 +1224,10 @@ pregado no pé de toda seção e alheio à ordem que ela monta, e o card "Materi
 página SUMIRAM os dois. Hoje é um bloco (`materials`) com uma lista ordenada de arquivos, imagens,
 recados, links e vídeos, que aparece no ponto em que ela o colocou — inclusive embaixo do vídeo, na
 coluna do conteúdo. O desenho é do member-shell (`MaterialsBlockView`, um só para os dois apps, sem
-cor por dentro) e quem o veste é o `globals.css` daqui, pelos ganchos `sz-lesson-materials*`; o
-  `kids-lesson-attachments.tsx` foi APAGADO e a linha de arquivo herdou o desenho dele (bolinha da
+cor por dentro) e quem o veste é o `globals.css` daqui, pelos ganchos `sz-lesson-materials*`.
+O caderno com `bookPreview: true` mantém esse download na esquerda e coloca a leitura 3D do mesmo
+PDF na direita quando houver espaço (ou depois do download em tela estreita).
+O `kids-lesson-attachments.tsx` foi APAGADO e a linha de arquivo herdou o desenho dele (bolinha da
   marca, nome truncado, tipo/tamanho e relevo 3D). A ação “Baixar” aparece numa pílula explícita
   à direita, usando `--pen-acao`; o componente compartilhado também mostra a preparação e confirma
   o arquivo recebido. O chip é "Materiais" (`Backpack`, `kids-unit-cyan`

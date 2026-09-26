@@ -146,3 +146,27 @@ describe('a capa ESCOLHIDA vence a foto do preview', () => {
     expect(gravacoes.map((g) => g.dataUrl)).toEqual(['data:image/jpeg;base64,FOTO'])
   })
 })
+
+describe('o retorno da captura (B5, 26/09/2026): quem escolhe a capa precisa saber se gravou', () => {
+  beforeEach(() => {
+    gravacoes.length = 0
+    falharGravacao = false
+    duranteGravacao = null
+    forgetProjectSnapshot()
+  })
+
+  it('devolve false quando nada foi gravado (sem foto, sem canvas, gravação recusada)', async () => {
+    capaDevolvida = null
+    expect(await captureAndStoreProjectThumb(projeto)).toBe(false)
+    rememberProjectSnapshot('p1', 'data:image/jpeg;base64,RETRY')
+    falharGravacao = true
+    expect(await captureAndStoreProjectThumb(projeto)).toBe(false)
+  })
+
+  it('devolve true quando a miniatura nova foi gravada', async () => {
+    capaDevolvida = null
+    rememberProjectSnapshot('p1', 'data:image/jpeg;base64,FOTO')
+    expect(await captureAndStoreProjectThumb(projeto)).toBe(true)
+    expect(gravacoes).toHaveLength(1)
+  })
+})

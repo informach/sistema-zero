@@ -45,6 +45,7 @@ export { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/stu
 import {
   type CloudCreationSummary,
   type CloudDownload,
+  CloudListTimeoutError,
   type CloudPart,
   type CreationsCloud,
   canonicalJson,
@@ -84,7 +85,13 @@ export interface StudioCloudModule {
   ): Promise<{ project: StudioProjectLike; warnings: string[] }>
   importProjectSnapshot(
     raw: unknown,
-    opts?: { name?: string; namespace?: string; silent?: boolean },
+    opts?: {
+      name?: string
+      namespace?: string
+      silent?: boolean
+      /** A miniatura a gravar junto (a cópia de conflito nasce com a capa que a nuvem listou). */
+      thumb?: string | null
+    },
   ): Promise<{ project: StudioProjectLike; warnings: string[] }>
   discardImportedProjectSnapshot(id: string, opts?: { namespace?: string }): Promise<void>
   createLocalPersistenceAdapter(opts?: { namespace?: string }): {
@@ -203,6 +210,11 @@ export async function buildStudioCloudSnapshot(
 }
 
 const FIRST_LOAD_BUDGET_MS = 6000
+/**
+ * Prazo de CADA PÁGINA da lista da nuvem, não da lista inteira: desde que a capa viaja
+ * (26/09/2026) cada linha traz a miniatura (7 a 12 KB), e 300 jogos num celular a ~2 Mbps
+ * passam de 4 s somados. Medido pela lista inteira, nada descia e o selo dizia "guardado".
+ */
 const LIST_TIMEOUT_MS = 4000
 /** O que não coube no orçamento (`deferred`) volta em passes seguidos, com esta folga, até este teto. */
 const DEFERRED_PASS_DELAY_MS = 2000
@@ -220,27 +232,6 @@ type StudioMirror = Parameters<StudioCloudModule['setStudioCloudMirror']>[0]
 /** Mirror vigente por módulo carregado. Um cleanup antigo não pode apagar o sucessor. */
 const activeMirrors = new WeakMap<StudioCloudModule, Exclude<StudioMirror, null>>()
 
-function withTimeout<T>(promise: Promise<T>, ms: number, signal?: AbortSignal): Promise<T | null> {
-  return new Promise((resolve) => {
-    let settled = false
-    const finish = (value: T | null) => {
-      if (settled) return
-      settled = true
-      clearTimeout(timer)
-      signal?.removeEventListener('abort', abort)
-      resolve(value)
-    }
-    const abort = () => finish(null)
-    const timer = setTimeout(() => finish(null), ms)
-    if (signal?.aborted) abort()
-    else signal?.addEventListener('abort', abort, { once: true })
-    promise.then(
-      (value) => finish(value),
-      () => finish(null),
-    )
-  })
-}
-
 export function createStudioCloudSync(options: {
   studio: StudioCloudModule
   cloud: CreationsCloud
@@ -249,6 +240,8 @@ export function createStudioCloudSync(options: {
   now?: () => number
   /** Avisos de saneamento das descidas (partes descartadas). Default: `console.warn`. */
   onWarnings?: (itemId: string, warnings: string[]) => void
+  /** Prazo de cada PÁGINA da lista da nuvem (testes). Default: `LIST_TIMEOUT_MS`. */
+  listTimeoutMs?: number
 }): {
   /** Liga o espelho (subidas automáticas). Devolve o desligar. */
   attach(): () => void
@@ -294,6 +287,13 @@ export function createStudioCloudSync(options: {
   const cloudHasThumb = new Map<string, boolean>()
   /** Se o envio em voo de cada item levou miniatura (para o `onUploaded` atualizar o mapa). */
   const sendingThumb = new Map<string, boolean>()
+  /**
+   * Itens com uma subida SÓ pela capa pedida e ainda não confirmada. A fila guarda UM trabalho
+   * por item: um `onChanged` que chegue depois substitui o trabalho e perderia a bandeira
+   * `thumbOnly` (o produtor devolveria `null` com a marca igual, e a capa nunca subiria).
+   */
+  const pendingThumb = new Set<string>()
+  const listTimeoutMs = options.listTimeoutMs ?? LIST_TIMEOUT_MS
 
   function loadCloudThumb(id: string): Promise<string | null> {
     if (!studio.loadProjectThumbForCloud) return Promise.resolve(null)
@@ -350,6 +350,8 @@ export function createStudioCloudSync(options: {
   }
 
   function enqueue(id: string, flags: { thumbOnly?: boolean } = {}): void {
+    // A bandeira sobrevive à substituição do trabalho na fila (ver `pendingThumb`).
+    const thumbOnly = flags.thumbOnly === true || pendingThumb.has(id)
     cloud.enqueueUpload(
       id,
       async () => {
@@ -368,7 +370,7 @@ export function createStudioCloudSync(options: {
         // disco): não sobe de novo — zero HTTP. Só pula quando a marca é igual; uma edição
         // nunca enviada tem `updatedAt` diferente da marca e sobe. A exceção é a subida SÓ
         // pela capa (`thumbOnly`, ver `onThumbChanged`): mesmo `updatedAt`, revisão nova.
-        if (marks.get(id) === project.updatedAt && !(flags.thumbOnly && thumb)) {
+        if (marks.get(id) === project.updatedAt && !(thumbOnly && thumb)) {
           sendingAt.delete(id)
           return null
         }
@@ -392,6 +394,7 @@ export function createStudioCloudSync(options: {
         sendingAt.delete(itemId)
         cloudHasThumb.set(itemId, sendingThumb.get(itemId) ?? false)
         sendingThumb.delete(itemId)
+        pendingThumb.delete(itemId)
         marks.set(itemId, updatedAt, revision)
         // A criança apagou o jogo com este upload EM VOO (a lápide nasceu depois de o envio
         // começar)? Então a exclusão manda: a lápide FICA e passa a conhecer a revisão que o
@@ -435,10 +438,12 @@ export function createStudioCloudSync(options: {
         raw && typeof raw === 'object' && typeof (raw as { name?: unknown }).name === 'string'
           ? (raw as { name: string }).name
           : id
-      // Cópia = jogo NOVO (id novo) — o import minta ulid, sanitiza e sobe pelo espelho.
+      // Cópia = jogo NOVO (id novo) — o import minta ulid, sanitiza e sobe pelo espelho. Nasce
+      // com a capa que a nuvem listou (senão o card da cópia ficava em branco até ser aberto).
       await studio.importProjectSnapshot(raw, {
         name: Array.from(`${name} (de outro aparelho)`).slice(0, MAX_CLOUD_NAME).join(''),
         namespace: options.viewerId,
+        thumb: downloaded.summary.thumb,
       })
       marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
     }
@@ -533,11 +538,20 @@ export function createStudioCloudSync(options: {
           // A lápide (com a revisão conhecida) ANTES de apagar a marca.
           enqueueRemove(id)
           marks.delete(id)
+          // O que este adaptador sabia da capa morre com o item (o mesmo id pode voltar).
+          cloudHasThumb.delete(id)
+          sendingThumb.delete(id)
+          pendingThumb.delete(id)
         },
-        // A capa gravada (ao sair do editor, ou escolhida): sobe SÓ por ela apenas enquanto a
-        // nuvem não tem miniatura nenhuma deste jogo; depois vai de carona nas edições.
+        // A capa gravada (ao sair do editor, ou escolhida): sobe SÓ por ela apenas quando se
+        // SABE que a nuvem não tem miniatura deste jogo (a lista o listou sem capa, ou uma subida
+        // daqui foi confirmada sem ela). Sem essa informação (a rota PRO só liga o espelho, a
+        // lista ainda não chegou) a capa vai de carona na próxima edição: subir por uma foto
+        // quando a nuvem talvez já tenha a dela geraria uma revisão à toa.
         onThumbChanged: (id) => {
-          if (cloudHasThumb.get(id) !== true) enqueue(id, { thumbOnly: true })
+          if (cloudHasThumb.get(id) !== false) return
+          pendingThumb.add(id)
+          enqueue(id, { thumbOnly: true })
         },
       }
       activeMirrors.set(studio, mirror)
@@ -609,6 +623,27 @@ export function createStudioCloudSync(options: {
     }
   }
 
+  /**
+   * A lista da nuvem, com o prazo medido por PÁGINA (`listTimeoutMs`), nunca pela lista inteira.
+   * `null` = não veio (cancelada, sem rede, ou uma página estourou o prazo, que sai no console:
+   * antes isso morria em silêncio e o passe devolvia 0 como se não houvesse nada a descer).
+   */
+  async function listRemote(): Promise<CloudCreationSummary[] | null> {
+    try {
+      return await cloud.list({ signal: pullAbort.signal, pageTimeoutMs: listTimeoutMs })
+    } catch (error) {
+      if (pullAbort.signal.aborted) return null
+      if (error instanceof CloudListTimeoutError) {
+        console.warn('[criacoes-nuvem] a lista da nuvem estourou o prazo de uma página', {
+          tool: cloud.tool,
+          page: error.page,
+          timeoutMs: error.timeoutMs,
+        })
+      }
+      return null
+    }
+  }
+
   /** Um passe da descida; devolve quantos itens ficaram de fora por tempo. */
   async function pullPass(): Promise<number> {
     {
@@ -619,13 +654,14 @@ export function createStudioCloudSync(options: {
         ? () => studio.listProjectSummariesLightForCloud?.({ namespace: options.viewerId }) ?? []
         : studio.createLocalPersistenceAdapter({ namespace: options.viewerId }).list
       if (!list) return 0
-      const [local, remote] = await Promise.all([
-        list(),
-        withTimeout(cloud.list({ signal: pullAbort.signal }), LIST_TIMEOUT_MS, pullAbort.signal),
-      ])
+      const [local, remote] = await Promise.all([list(), listRemote()])
       if (!remote) return 0
       for (const summary of remote) {
-        if (!summary.deletedAt) cloudHasThumb.set(summary.itemId, summary.thumb !== null)
+        if (summary.deletedAt) continue
+        // A lista NUNCA rebaixa `true`: uma lista velha que chegue depois de uma subida
+        // confirmada com capa não pode reabrir a porta da subida só pela capa.
+        if (summary.thumb !== null) cloudHasThumb.set(summary.itemId, true)
+        else if (!cloudHasThumb.has(summary.itemId)) cloudHasThumb.set(summary.itemId, false)
       }
       const report = await reconcileCreations<
         { id: string; name: string; updatedAt: number },

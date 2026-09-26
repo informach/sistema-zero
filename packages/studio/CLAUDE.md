@@ -302,6 +302,31 @@ como capa fixa (vence a foto automática); sem escolha, a foto automática segue
   manifesto preserva), `projectStore.coverAsset.test.ts`, `AssetsPanel.test.tsx`; no kids,
   `tests/studio-cloud.test.ts` §"a capa do card viaja".
 
+**Full review do mesmo dia (26/09/2026), o que mudou aqui:**
+- `adoptProjectThumbs` decide pela EXISTÊNCIA da chave (`readAllKeys`, uma transação), não pelo
+  VALOR (`readValues` lia todas as capas locais a cada passe da descida, dezenas de KB por projeto
+  para nada). `projectThumbs.test.ts` prova pelo registro do fake que nenhuma chave
+  `sz:v2:project-thumb:*` é lida por `get`.
+- `importProjectSnapshot(raw, {thumb})` → `importProjectFromJSON({thumb})` → `persistProject({thumb})`:
+  a cópia de conflito "(de outro aparelho)" nasce com a capa que a nuvem listou.
+- `captureAndStoreProjectThumb` devolve `boolean` (gravou uma miniatura nova?). O `AssetsPanel`
+  usa isso: escolher uma imagem que não vira miniatura (não decodifica, ou maior que o teto mesmo
+  reduzida) DESFAZ a escolha (`setCoverAsset(null)`) e avisa (`assets.cover.failed`, pt-BR e en),
+  só se ela ainda é a vigente; voltar à automática nunca é desfeito. A captura é injetável pela
+  prop `captureThumb` (o happy-dom não tem canvas), default `captureAndStoreProjectThumb`.
+- `PreviewIframe` para de pedir fotos pela capa RESOLVIDA (`chosenCoverPausesSnapshots`, exportada
+  e testada), não pelo nome cru: um `coverAssetName` pendurado deixava o preview mudo e o
+  `resolveThumb` caía na reserva sem foto nenhuma.
+- `cloudThumb.ts`: `loadImage` com prazo (`CLOUD_THUMB_LOAD_TIMEOUT_MS` = 3 s; `buildCloudThumb(_,
+  _, {loadTimeoutMs})`) e o cache de tamanho 1 NÃO guarda `null` (uma falha passageira grudava e a
+  capa nunca mais subia).
+- M2, conferido e NÃO era defeito: `reconcileDrawingsFromRestoredProject` bumpa o `updatedAt` do
+  projeto restaurado quando muda os assets (desde 19/08, `personalSync.ts`), então o restauro que
+  religa sobe com data nova e o outro aparelho não cai no atalho "mesma data ⇒ mesmo conteúdo".
+  Agora há teste disso em `personalSync.test.ts` §M2 (data nova + espelho acordado; sem mudança,
+  data da nuvem + silêncio). `projectDatabaseInvariant.test.ts` enumera `loadProjectThumb` e
+  `adoptProjectThumbs`.
+
 ## Gravação de saída: toda transação com `commit()` explícito (11/09/2026)
 
 O `PersistenceService` grava o que está pendente no `beforeunload`/`pagehide`, e a gravação SAÍA,
