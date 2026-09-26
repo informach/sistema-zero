@@ -83,12 +83,12 @@ const aula1 = {
     video(
       'video-a1-abertura',
       'Vamos procurar!',
-      'Mostrar brevemente o jogo pronto e contar a missão de hoje: fazer o primeiro personagem aparecer ao tocar num esconderijo. Apresentar as seções como pequenas partes da aula, cada uma com um vídeo. Demonstrar pausa e replay do vídeo e apontar Próxima seção ao encerrar. Não mostrar a experiência, o Estúdio, o caderno ou outros controles nesta abertura. Alvo: 40–60 segundos.',
+      'Demonstrar o jogo pronto: revelar os três personagens, mostrar Achados aumentando e a comemoração. Distinguir a missão de hoje, fazer o primeiro personagem aparecer, da busca que será completada depois; cenário e personagens já vêm preparados. Apresentar as seções como pequenas partes da aula, cada uma com um vídeo. Demonstrar pausa, replay e Próxima seção, com ritmo acolhedor. Não mostrar a experiência, o Estúdio, o caderno ou outros controles nesta abertura. Alvo: 1–1,5 minuto.',
     ),
     video(
       'video-a1-toque',
       'Um toque pode chamar uma ação',
-      'Ao chegar à segunda seção, mostrar Anterior em uma frase para quem quiser rever. Explicar toque e ação com a analogia da campainha e dar contexto do jogo. Mostrar onde está a experiência sem revelar seus resultados. Demonstrar Ampliar experiência e Voltar à aula apenas se necessário para enxergar os controles; em tela estreita, a experiência aparece abaixo. A criança descobre a diferença na atividade. Alvo: 60–75 segundos.',
+      'Ao chegar à segunda seção, mostrar Anterior e assegurar que a criança pode rever sem perder o que fez. Explicar acontecimento e ação com a analogia da campainha e conectar ao jardim. Mostrar que vídeo e atividade ficam na mesma seção, onde está o pedido da atividade, a divisória em tela larga, Ampliar experiência e Voltar à aula. Em tela estreita, mostrar a experiência abaixo do vídeo. Não executar o teste nem revelar o resultado: a criança descobre na atividade. Alvo: 1,5–2 minutos.',
     ),
     dialogue(
       'ponte-a1-toque',
@@ -108,7 +108,7 @@ const aula1 = {
     video(
       'video-a1-programar',
       'Faça o primeiro personagem aparecer',
-      'Apresentar o Estúdio incorporado ao chegar à prática. Mostrar Expandir e Reduzir no momento em que a criança precisar de espaço, sem tour separado. Depois mostrar a paleta, a área Quando acontecer já preparada, o bloco Deixar o sprite com 0% de visibilidade, o nome escolhido e o teste. Repetir cada passo na narração; não presumir familiaridade com blocos. Ao final, mostrar o mapa do jogo como material opcional para consultar em casa, sem tornar o download requisito. Alvo: 3–4 minutos.',
+      'Apresentar o Estúdio dentro da aula como a ferramenta onde blocos viram instruções do jogo; não é preciso abrir outra página. Demonstrar a divisória em tela larga e Expandir/Reduzir ao chegar à prática, sem tour separado. Depois mostrar a paleta, a área Quando acontecer já preparada, o bloco Deixar o sprite com 0% de visibilidade, o nome escolhido e o teste. Repetir cada passo na narração; não presumir familiaridade com blocos. Ao final, mostrar o Mapa do jogo como folha opcional para lembrar os passos em casa, sem tornar download ou impressão requisito. Alvo: 3–4 minutos.',
     ),
     dialogue(
       'ponte-a1-programar',
