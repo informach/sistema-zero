@@ -125,14 +125,10 @@ describe.skipIf(!url)(
       // Establish the exact pre-change schema at 0077; historical enum upgrades commit independently.
       for (const migration of migrations.slice(0, 78))
         for (const statement of migration.sql) if (statement.trim()) await sql.unsafe(statement)
-      await db.insert(courses).values({
-        id: courseId,
-        slug: 'learning-qa',
-        title: 'Curso existente',
-        audience: 'kids',
-        createdAt: now,
-        updatedAt: now,
-      })
+      // O schema 0077 precede journey_role (0096): inserir com o modelo Drizzle
+      // atual faria o teste falhar antes de exercitar as migrations históricas.
+      await sql`insert into members.courses (id,slug,title,audience,created_at,updated_at)
+        values (${courseId},'learning-qa','Curso existente','kids',${now.toISOString()},${now.toISOString()})`
       // A fixture ainda está no schema 0077; o modelo Drizzle atual inclui colunas posteriores.
       await sql`insert into members.modules (id,course_id,title,sort_order,created_at,updated_at)
         values (${moduleId},${courseId},'Unidade',0,${now.toISOString()},${now.toISOString()})`

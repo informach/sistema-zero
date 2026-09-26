@@ -716,7 +716,7 @@ export function lessonDraftCases(getDb: () => Database) {
       // A importação exercita todos os manifestos atuais, copiados do fluxo criativo.
       const paths = [...new Bun.Glob('*.manifesto.json').scanSync(root)]
       // Piso anti-vácuo: um glob que deixasse de achar as aulas reprovaria.
-      expect(paths).toHaveLength(28)
+      expect(paths.length).toBeGreaterThanOrEqual(28)
       let plannedCount = 0
       // ⚠️ O esperado sai dos PRÓPRIOS manifestos, não de um número cravado. O 144 de
       // antes quebrava o CI toda vez que a autora acrescentava um vídeo a uma aula — e
