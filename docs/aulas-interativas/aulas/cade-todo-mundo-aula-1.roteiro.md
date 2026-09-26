@@ -34,19 +34,19 @@ Só o vídeo é necessário para concluir esta seção; assistir a 90% basta. O 
 
 ## 3. O que um toque faz? — conceito e experiência (1,5–2 min)
 
-**Na tela:** começar na terceira seção e apontar para **Anterior** sem voltar de fato. Depois mostrar mão apertando uma campainha e alguém ouvindo o som; usar um desenho simples com `toque` e `ação`. Ao mencionar a experiência, indicar onde ela aparece e onde fica o pedido da atividade, sem executar esse pedido. Numa tela larga, arrastar a divisória entre vídeo e experiência, mostrar **Ampliar experiência** e **Voltar à aula**. Numa tela estreita, mostrar a experiência abaixo do vídeo. Não tocar no arbusto nem ligar a reação durante o vídeo.
+**Na tela:** começar na terceira seção e apontar para **Anterior** sem voltar de fato. Mostrar o jardim parado enquanto apresenta a pergunta da seção. Depois mostrar mão apertando uma campainha e alguém ouvindo o som; usar um desenho simples com `toque` e `ação`. Ao voltar à pergunta sobre o jardim, indicar onde aparece a atividade e onde fica o pedido, sem executá-lo. Numa tela larga, arrastar a divisória entre vídeo e experiência, mostrar **Ampliar experiência** e **Voltar à aula**. Numa tela estreita, mostrar a experiência abaixo do vídeo. Não tocar no arbusto nem ligar a reação durante o vídeo.
 
 **Narração:**
 
-> “Você já viu onde consultar o Caderno do Aluno. Se quiser rever a seção anterior, aperta Anterior, aqui embaixo. Pode voltar e depois vir para cá de novo: o que você fizer na aula continua salvo.
+> “Na seção anterior você conheceu o Caderno do Aluno. Se precisar consultá-lo de novo, aperta Anterior, aqui embaixo. Depois é só voltar para cá. O caderno vai ajudar quando montarmos o jogo. Antes de encaixar os blocos, vamos entender o que acontece quando alguém toca num esconderijo.
 >
-> Agora imagina que você aperta a campainha de uma casa. Você aperta o botão e ela toca. O aperto é o que aconteceu; o som é a resposta. Se a campainha não estiver ligada, você aperta, mas não escuta nada.
+> Para pensar nisso, imagina a campainha de uma casa. Você aperta o botão e ela toca. O aperto é o que aconteceu; o som é a resposta. Mas, se a campainha não estiver ligada, você aperta e não escuta nada.
 >
-> No jogo também é assim. Tocar num esconderijo é um acontecimento. A ação é o que o jogo faz depois desse toque, como mostrar um personagem. Para isso, a gente precisa ligar uma ação ao toque. Como será que essa ligação funciona no nosso jardim?
+> No jogo acontece algo parecido. Tocar num esconderijo é um acontecimento. A ação é o que o jogo faz depois desse toque, como mostrar um personagem. Para ter essa resposta, a gente precisa ligar uma ação ao toque. Como será que isso funciona no nosso jardim?
 >
-> Algumas seções têm só o vídeo, como a primeira. Nesta, você assiste ao vídeo e depois faz a atividade que aparece aqui. Teste as duas situações e observe o que muda. Se estiver numa tela grande e quiser mais espaço, arrasta esta divisão no meio. Também pode apertar Ampliar experiência para olhar só para ela. Para ver a aula de novo, aperta Voltar à aula. Se a sua tela for menor, a atividade aparece embaixo do vídeo. Está tudo na mesma seção.”
+> É isso que você vai investigar na atividade desta seção. Olha: o pedido fica aqui. Se estiver numa tela grande e quiser mais espaço, arrasta esta divisão no meio. Também pode apertar Ampliar experiência para olhar só para a atividade. Para ver a aula de novo, aperta Voltar à aula. Se a sua tela for menor, a atividade aparece embaixo do vídeo. Está tudo na mesma seção.”
 
-**Zappy fora da experiência:** “Agora é sua vez de descobrir o que faz o esconderijo responder ao toque.” Ele convida, sem repetir a instrução da cena. A experiência pergunta: “O que muda quando você toca no arbusto com a reação desligada e ligada?”. A pista, se pedida, detalha a ordem. Não contar o resultado dos testes no vídeo. Não há pergunta final depois das duas metas.
+**Zappy fora da experiência:** “Bora testar essa ideia no jardim?” Ele convida, sem repetir a instrução da cena. A experiência pergunta: “O que muda quando você toca no arbusto com a reação desligada e ligada?”. A pista, se pedida, detalha a ordem. Não contar o resultado dos testes no vídeo. Não há pergunta final depois das duas metas.
 
 ## 4. Faça alguém aparecer — vídeo prático (4–5 min)
 

@@ -94,12 +94,9 @@ const aula1 = {
     video(
       'video-a1-toque',
       'Um toque pode chamar uma ação',
-      'Ao chegar à terceira seção, mostrar Anterior e assegurar que a criança pode rever sem perder o que fez. Explicar acontecimento e ação com a analogia da campainha e conectar ao jardim. Mostrar que vídeo e atividade ficam na mesma seção, onde está o pedido da atividade, a divisória em tela larga, Ampliar experiência e Voltar à aula. Em tela estreita, mostrar a experiência abaixo do vídeo. Não executar o teste nem revelar o resultado: a criança descobre na atividade. Alvo: 1,5–2 minutos.',
+      'Ao chegar à terceira seção, ligar o botão Anterior à consulta do Caderno do Aluno. Apresentar a pergunta sobre como o jardim responde ao toque antes da analogia da campainha; com ela, explicar acontecimento e ação e voltar à pergunta sobre o jardim. Fazer uma ponte explícita para a atividade desta seção antes de mostrar onde fica seu pedido, a divisória em tela larga, Ampliar experiência e Voltar à aula. Em tela estreita, mostrar a atividade abaixo do vídeo. Não executar o teste nem revelar o resultado: a criança investiga na atividade. Alvo: 1,5–2 minutos.',
     ),
-    dialogue(
-      'ponte-a1-toque',
-      'Agora é sua vez de descobrir o que faz o esconderijo responder ao toque.',
-    ),
+    dialogue('ponte-a1-toque', 'Bora testar essa ideia no jardim?'),
     {
       key: 'experiencia-toque',
       content: {
