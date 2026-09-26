@@ -26,6 +26,7 @@
 - Modify: `packages/members/src/application/grant-manual-entitlement/grant-manual-entitlement.service.ts`
 - Modify: `packages/members/src/application/grant-entitlement/grant-entitlement.service.ts`
 - Test: `packages/members/tests/application/grant.test.ts`
+- Test: `packages/members/tests/integration/http.test.ts`
 
 **Interfaces:**
 - Consumes: `EntitlementAggregate.grant`, `EntitlementRepository.save`, `ResolvedOffer`, `PurchasedAccessPolicy`.
@@ -73,7 +74,10 @@ Expected: todos passam.
 **Files:**
 - Modify: `docs/catalogo-e-entitlements.md`
 - Modify: `packages/members/CLAUDE.md`
+- Modify: `packages/catalog/CLAUDE.md`
+- Modify: `packages/catalog/scripts/seed.ts` (comentário do contrato)
 - Test: `packages/members/tests/application/grant.test.ts`
+- Test: `packages/members/tests/integration/http.test.ts`
 
 **Interfaces:**
 - Consumes: contrato do Task 1.
@@ -81,7 +85,7 @@ Expected: todos passam.
 
 - [ ] **Step 1: Add negative regression tests**
 
-Teste oferta histórica vitalícia, outra oferta fixa de 30 dias e oferta de Desafio sem item Mural completo. Nenhuma deve ganhar matrícula visitante. Confirme que uma matrícula vitalícia existente de Mural completo não é encurtada pela compra temporária.
+Teste oferta histórica vitalícia, outra oferta fixa de 30 dias, evento sem política explícita e oferta de Desafio sem item Mural completo. Nenhuma deve ganhar matrícula visitante. Confirme que uma matrícula vitalícia existente de Mural completo não é encurtada pela compra temporária. Teste o webhook assinado com `paidAt` e política fixa para provar que as três matrículas chegam pela borda HTTP.
 
 - [ ] **Step 2: Run focused tests**
 
@@ -91,7 +95,7 @@ Expected: todos passam.
 
 - [ ] **Step 3: Update manuals**
 
-No contrato comercial em `docs/catalogo-e-entitlements.md`, explicite curso + Mural pleno por 30 dias e visitante permanente depois, restrito à oferta indicada; alteração de prazo de outras ofertas não reproduz a regra. Em `packages/members/CLAUDE.md`, registre o grant extra, o produto sintético, a idempotência e a ausência de job de transição.
+No contrato comercial em `docs/catalogo-e-entitlements.md`, explicite curso + Mural pleno por 30 dias e visitante permanente depois, restrito à oferta indicada; alteração de prazo de outras ofertas não reproduz a regra. Em `packages/members/CLAUDE.md`, registre o grant extra, o produto sintético, a idempotência e a ausência de job de transição. Atualize o comentário do seed e `packages/catalog/CLAUDE.md` para não dizer que a entrega final das duas ofertas é idêntica.
 
 - [ ] **Step 4: Run package verification**
 
@@ -101,4 +105,4 @@ Expected: todos passam. Inspecione `git diff --check` e `git diff` dos arquivos 
 
 - [ ] **Step 5: Commit scoped files**
 
-Stage somente os cinco arquivos do Task 1 e os dois manuais do Task 2. Commit: `feat(members): manter Mural visitante após Desafio de 30 dias`.
+Stage somente os arquivos listados nestas tarefas. Commit: `feat(members): manter Mural visitante após Desafio de 30 dias`.

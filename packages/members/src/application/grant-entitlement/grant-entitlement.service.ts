@@ -5,7 +5,17 @@ import type {
   EntitlementSnapshot,
   PurchasedAccessPolicy,
 } from '../../domain/entitlement/entitlement-snapshot'
-import type { CatalogGateway, ResolvedOfferItem } from '../../domain/ports/catalog-gateway.port'
+import {
+  createMuralVisitorSnapshot,
+  MURAL_FULL_REF,
+  MURAL_VISITOR_PRODUCT_ID,
+  MURAL_VISITOR_REF,
+} from '../../domain/entitlement/mural-visitor'
+import type {
+  CatalogGateway,
+  ResolvedOffer,
+  ResolvedOfferItem,
+} from '../../domain/ports/catalog-gateway.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 
 /**
@@ -90,6 +100,27 @@ export class GrantEntitlementService {
         applied = await this.grantOneTime(cmd, item, snapshot, accessPolicy)
       }
       if (applied) granted += 1
+    }
+
+    if (shouldGrantPermanentMuralVisitor(offer, cmd.accessPolicy, accessPolicy)) {
+      const snapshot = createMuralVisitorSnapshot(offer.offerId, offer.offerSlug, cmd.grantedAt)
+      const visitorItem: ResolvedOfferItem = {
+        productId: MURAL_VISITOR_PRODUCT_ID,
+        sku: MURAL_VISITOR_REF,
+        name: snapshot.name,
+        kind: 'community',
+        isPrimary: false,
+        fulfillment: snapshot.fulfillment,
+      }
+      if (
+        await this.grantOneTime(cmd, visitorItem, snapshot, {
+          mode: 'lifetime',
+          durationValue: null,
+          durationUnit: null,
+        })
+      ) {
+        granted += 1
+      }
     }
 
     this.deps.logger?.info('grant.done', {
@@ -203,6 +234,28 @@ export class GrantEntitlementService {
     if (!current) return false // a linha sumiu (não deveria) — nada a estender
     throw new Error(`conflito persistente ao estender a matrícula (${idempotencyKey})`)
   }
+}
+
+const DESAFIO_30_DIAS_OFFER_SLUG = 'desafio-primeiro-jogo-30-dias'
+
+function shouldGrantPermanentMuralVisitor(
+  offer: ResolvedOffer,
+  purchasedPolicy: PurchasedAccessPolicy | null | undefined,
+  resolvedPolicy: PurchasedAccessPolicy,
+): boolean {
+  return (
+    offer.offerSlug === DESAFIO_30_DIAS_OFFER_SLUG &&
+    purchasedPolicy != null &&
+    resolvedPolicy.mode === 'fixed' &&
+    resolvedPolicy.durationValue === 30 &&
+    resolvedPolicy.durationUnit === 'days' &&
+    offer.items.some(
+      (item) =>
+        item.kind === 'community' &&
+        item.fulfillment?.accessType === 'community' &&
+        item.fulfillment.courseRef === MURAL_FULL_REF,
+    )
+  )
 }
 
 /** Tentativas de extensão sob conflito otimista antes de desistir (→ re-entrega). */

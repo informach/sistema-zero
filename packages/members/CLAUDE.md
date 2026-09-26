@@ -803,6 +803,15 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `fixed/months`; `subscription` sem política continua no caminho legado; sem nenhum dos
   três campos continua sendo vitalício. Renovar compra fixa = NOVO paymentId/matrícula,
   sem encurtar uma matrícula vitalícia ou com validade mais distante já existente.
+- **Desafio de 30 dias + Mural visitante:** no grant pago da oferta resolvida
+  `desafio-primeiro-jogo-30-dias`, com política comprada explícita `fixed/30/days` e item de Mural
+  pleno, concede também uma matrícula permanente de visitante (`product_id` sintético
+  `00000000-0000-0000-0000-000000000002`, `courseRef: mural-dos-criadores-visitante`,
+  `sourceKind: payment`). A matrícula usa a chave de idempotência pagamento+produto e snapshot
+  vitalício; falha parcial retorna erro para o webhook reentregar. `itemsResolved` continua sendo a
+  quantidade de itens do catálogo. No vencimento, a matrícula plena deixa de estar ativa e a de
+  visitante permanece: não há job de rebaixamento. A oferta histórica vitalícia e outras ofertas
+  não recebem esse direito adicional.
 - **`POST /members/webhooks/grant-manual` (bolsa do @sistemazero/referrals):**
   concessão manual S2S SEM pagamento. `GrantManualWebhookBody` aceita a oferta legada
   `{userId, mode:'offer', offerRef, expiresAt?, sourceId?}` ou o presente novo

@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  MURAL_VISITOR_PRODUCT_ID,
+  MURAL_VISITOR_REF,
+} from '../../src/domain/entitlement/mural-visitor'
+import {
   buildApp,
   grantAllKidsCourses,
   grantLifetime,
@@ -290,6 +294,49 @@ describe('Members HTTP — consumo do aluno', () => {
 })
 
 describe('Members HTTP — webhooks', () => {
+  test('compra do Desafio de 30 dias concede Mural pleno temporário e visitante permanente', async () => {
+    const { app, catalog, entitlements, hubCalls } = buildApp()
+    const offerSlug = 'desafio-primeiro-jogo-30-dias'
+    const offer = offerWithCourse(offerSlug, 'desafio-primeiro-jogo')
+    offer.items.push({
+      productId: '22222222-2222-2222-2222-222222222222',
+      sku: 'mural-dos-criadores',
+      name: 'Mural dos Criadores',
+      kind: 'community',
+      isPrimary: false,
+      fulfillment: { accessType: 'community', courseRef: 'mural-dos-criadores' },
+    })
+    catalog.set(offerSlug, offer)
+    const body = JSON.stringify({
+      userId: USER,
+      offerRef: offerSlug,
+      paymentId: 'pay-desafio-30',
+      paidAt: '2026-09-16T15:00:00Z',
+      accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' },
+    })
+
+    const res = await app.handle(
+      new Request('http://localhost/members/webhooks/grant', {
+        method: 'POST',
+        headers: signedWebhookHeaders('/members/webhooks/grant', body, 'd-desafio-30'),
+        body,
+      }),
+    )
+    expect(res.status).toBe(200)
+    expect((await readJson(res)).granted).toBe(3)
+    const all = await entitlements.listByUserId(USER)
+    expect(all).toHaveLength(3)
+    expect(all.find((e) => e.toSnapshot().productId === MURAL_VISITOR_PRODUCT_ID)?.courseRef).toBe(
+      MURAL_VISITOR_REF,
+    )
+    expect(
+      (await entitlements.listActiveByUser(USER, new Date('2026-10-16T15:00:00Z'))).map(
+        (e) => e.courseRef,
+      ),
+    ).toEqual([MURAL_VISITOR_REF])
+    expect(hubCalls).toEqual([{ userId: USER, event: 'grant' }])
+  })
+
   test('grant assinado concede acesso; reentrega (mesmo delivery) deduplica', async () => {
     const { app, courses, catalog, hubCalls } = buildApp()
     const course = seedSampleCourse(courses)

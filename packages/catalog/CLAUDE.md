@@ -43,7 +43,9 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > `kind: 'course'`, entrega `course` courseRef `desafio-primeiro-jogo`) **+ duas ofertas preservadas**:
 > a histórica `desafio-primeiro-jogo` (R$ 37, vitalícia) e a pública
 > `desafio-primeiro-jogo-30-dias` (R$ 67, `fixed`/30 dias, criada em `draft` para homologação), ambas
-> com o Mural como item de BÔNUS (`items`). Após homologar, o funil `/kids/desafio-primeiro-jogo`
+> com o Mural completo como item de BÔNUS (`items`). A nova compra da oferta de 30 dias também
+> concede, no members, Mural visitante permanente após o fim do prazo; a oferta vitalícia não recebe
+> esse grant adicional. Após homologar, o funil `/kids/desafio-primeiro-jogo`
 > deve usar `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO=desafio-primeiro-jogo-30-dias`; eventos aplicam
 > cupom fixo de R$ 30 na mesma oferta. Nunca reinterprete nem exclua a oferta vitalícia. O **Clube**
 > fica SEM oferta no seed (preço/venda no painel) · **Todos os cursos kids** (`todos-os-cursos-kids`, 07/2026 — a

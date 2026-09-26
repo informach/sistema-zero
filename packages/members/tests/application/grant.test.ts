@@ -1,15 +1,35 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { AccessCheckService } from '../../src/application/access-check/access-check.service'
 import {
   computeFixedExpiry,
   computeSubscriptionExpiry,
   GrantEntitlementService,
 } from '../../src/application/grant-entitlement/grant-entitlement.service'
+import {
+  MURAL_VISITOR_PRODUCT_ID,
+  MURAL_VISITOR_REF,
+} from '../../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { RevokeEntitlementService } from '../../src/application/revoke-entitlement/revoke-entitlement.service'
 import { FakeCatalogGateway, InMemoryEntitlementRepository, silentLogger } from '../fakes/in-memory'
 import { offerWithCourse } from '../helpers'
 
 const T = (s: string) => new Date(s)
+const DESAFIO_30_DIAS = 'desafio-primeiro-jogo-30-dias'
+const MURAL_FULL_REF = 'mural-dos-criadores'
+
+function offerWithMural(offerSlug: string) {
+  const offer = offerWithCourse(offerSlug, 'desafio-primeiro-jogo')
+  offer.items.push({
+    productId: randomUUID(),
+    sku: MURAL_FULL_REF,
+    name: 'Mural dos Criadores',
+    kind: 'community',
+    isPrimary: false,
+    fulfillment: { accessType: 'community', courseRef: MURAL_FULL_REF },
+  })
+  return offer
+}
 
 function setup() {
   const catalog = new FakeCatalogGateway()
@@ -25,6 +45,128 @@ function setup() {
 }
 
 describe('GrantEntitlementService', () => {
+  test('Desafio de 30 dias mantém Mural visitante após o vencimento do acesso pleno', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set(DESAFIO_30_DIAS, offerWithMural(DESAFIO_30_DIAS))
+    const grantedAt = T('2026-09-16T15:00:00Z')
+    const cmd = {
+      userId: 'u1',
+      offerRef: DESAFIO_30_DIAS,
+      paymentId: 'pay1',
+      grantedAt,
+      accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' } as const,
+    }
+    const result = await grant.execute(cmd)
+    expect(result).toEqual({ offerFound: true, granted: 3, itemsResolved: 2 })
+
+    const all = await entitlements.listByUserId('u1')
+    expect(all).toHaveLength(3)
+    const visitor = all.find((e) => e.toSnapshot().productId === MURAL_VISITOR_PRODUCT_ID)
+    expect(visitor?.toSnapshot().sourceKind).toBe('payment')
+    expect(visitor?.toSnapshot().sourceId).toBe('pay1')
+    expect(visitor?.expiresAt).toBeNull()
+    expect(visitor?.snapshot.accessPolicy).toEqual({
+      mode: 'lifetime',
+      durationValue: null,
+      durationUnit: null,
+    })
+    expect(visitor?.snapshot.offerSlug).toBe(DESAFIO_30_DIAS)
+    expect(
+      all
+        .filter((e) => e.toSnapshot().productId !== MURAL_VISITOR_PRODUCT_ID)
+        .map((e) => e.expiresAt?.toISOString()),
+    ).toEqual(['2026-10-16T15:00:00.000Z', '2026-10-16T15:00:00.000Z'])
+
+    let now = T('2026-10-16T14:59:59Z')
+    const access = new AccessCheckService(entitlements, () => now)
+    expect((await access.execute('u1', ['desafio-primeiro-jogo'])).communities).toEqual(
+      expect.arrayContaining([MURAL_FULL_REF, MURAL_VISITOR_REF]),
+    )
+    now = T('2026-10-16T15:00:00Z')
+    expect(await access.execute('u1', ['desafio-primeiro-jogo'])).toMatchObject({
+      grants: [],
+      communities: [MURAL_VISITOR_REF],
+    })
+    expect(await grant.execute(cmd)).toEqual({ offerFound: true, granted: 0, itemsResolved: 2 })
+    expect(entitlements.byId.size).toBe(3)
+  })
+
+  test('o visitante permanente não é concedido a ofertas históricas ou a outras ofertas fixas', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set('desafio-primeiro-jogo', offerWithMural('desafio-primeiro-jogo'))
+    catalog.set('outra-oferta', offerWithMural('outra-oferta'))
+    catalog.set(DESAFIO_30_DIAS, offerWithCourse(DESAFIO_30_DIAS, 'desafio-primeiro-jogo'))
+    const fixed = { mode: 'fixed', durationValue: 30, durationUnit: 'days' } as const
+    const at = T('2026-09-16T15:00:00Z')
+
+    await grant.execute({
+      userId: 'legacy',
+      offerRef: 'desafio-primeiro-jogo',
+      paymentId: 'p1',
+      grantedAt: at,
+    })
+    await grant.execute({
+      userId: 'other',
+      offerRef: 'outra-oferta',
+      paymentId: 'p2',
+      grantedAt: at,
+      accessPolicy: fixed,
+    })
+    await grant.execute({
+      userId: 'no-mural',
+      offerRef: DESAFIO_30_DIAS,
+      paymentId: 'p3',
+      grantedAt: at,
+      accessPolicy: fixed,
+    })
+    catalog.set(DESAFIO_30_DIAS, offerWithMural(DESAFIO_30_DIAS))
+    await grant.execute({
+      userId: 'legacy-event',
+      offerRef: DESAFIO_30_DIAS,
+      paymentId: 'p4',
+      grantedAt: at,
+    })
+    await grant.execute({
+      userId: 'wrong-duration',
+      offerRef: DESAFIO_30_DIAS,
+      paymentId: 'p5',
+      grantedAt: at,
+      accessPolicy: { mode: 'fixed', durationValue: 31, durationUnit: 'days' },
+    })
+    for (const userId of ['legacy', 'other', 'no-mural', 'legacy-event', 'wrong-duration']) {
+      expect(
+        (await entitlements.listByUserId(userId)).some(
+          (e) => e.toSnapshot().productId === MURAL_VISITOR_PRODUCT_ID,
+        ),
+      ).toBe(false)
+    }
+  })
+
+  test('reentrega completa o visitante quando o primeiro grant falha depois dos itens da oferta', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set(DESAFIO_30_DIAS, offerWithMural(DESAFIO_30_DIAS))
+    const originalSave = entitlements.save.bind(entitlements)
+    let failVisitorOnce = true
+    entitlements.save = async (entitlement) => {
+      if (entitlement.toSnapshot().productId === MURAL_VISITOR_PRODUCT_ID && failVisitorOnce) {
+        failVisitorOnce = false
+        throw new Error('falha transitória')
+      }
+      return originalSave(entitlement)
+    }
+    const cmd = {
+      userId: 'u1',
+      offerRef: DESAFIO_30_DIAS,
+      paymentId: 'pay1',
+      grantedAt: T('2026-09-16T15:00:00Z'),
+      accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' } as const,
+    }
+    await expect(grant.execute(cmd)).rejects.toThrow('falha transitória')
+    expect(entitlements.byId.size).toBe(2)
+    expect((await grant.execute(cmd)).granted).toBe(1)
+    expect(entitlements.byId.size).toBe(3)
+  })
+
   test('compra única → matrícula vitalícia com snapshot do catálogo', async () => {
     const { catalog, entitlements, grant } = setup()
     catalog.set('offer-x', offerWithCourse('offer-x', 'curso-demo'))

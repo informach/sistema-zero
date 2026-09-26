@@ -462,8 +462,8 @@ async function main(): Promise<void> {
         ctaLabel: 'Topar o desafio',
         allowsCoupon: true,
       },
-      // A oferta vitalícia anterior e esta nova entregam exatamente o mesmo curso
-      // e o mesmo bônus; somente o contrato comercial/prazo é diferente.
+      // Ambas incluem curso + Mural pleno; no grant da oferta de 30 dias, o
+      // members concede também o Mural visitante permanente após o prazo.
       items: [{ productId: muralProductId }],
     })
     logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })

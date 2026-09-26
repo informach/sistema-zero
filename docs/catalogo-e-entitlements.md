@@ -199,15 +199,24 @@ admin.
 
 ### Contrato comercial do Desafio do Primeiro Jogo
 
-- **Oferta pública:** `desafio-primeiro-jogo-30-dias`, compra única, R$ 67, acesso fixo por 30 dias.
+- **Oferta pública:** `desafio-primeiro-jogo-30-dias`, compra única, R$ 67. O curso e o Mural
+  completo duram 30 dias exatos desde a aprovação. Na mesma compra, o aluno recebe também acesso
+  permanente de **visitante do Mural**: depois do prazo, pode ver e jogar os jogos, mas não
+  publicar, copiar ou usar as ações exclusivas de membro pleno.
 - **Evento presencial:** a mesma oferta, com um cupom de desconto fixo de R$ 30 e escopo restrito à
   oferta; o total exibido e cobrado fica em R$ 37.
 - **Oferta histórica:** `desafio-primeiro-jogo`, compra única vitalícia. Ela continua no sistema e
   não deve ser excluída nem convertida em prazo fixo. Pode permanecer fora do funil público e ser
-  reutilizada no futuro em uma campanha específica.
+  reutilizada no futuro em uma campanha específica. Não recebe a matrícula adicional de visitante,
+  pois seu acesso completo ao Mural já é vitalício.
 - **Comunidade:** mensal e anual continuam sendo assinaturas. Uma matrícula válida da Comunidade
   que cubra o curso é mais forte que o vencimento do Desafio; o aluno não perde acesso nem recebe
-  avisos de expiração indevidos.
+  avisos de expiração indevidos. Enquanto a assinatura estiver ativa, o Mural também permanece
+  completo.
+
+O visitante permanente é uma regra da **nova compra desta oferta específica**, com política explícita
+de 30 dias e Mural completo entre os itens. Alterar só a duração de outra oferta no painel não
+concede automaticamente esse direito. Matrículas existentes não são alteradas retroativamente.
 
 Use **cupom, e não uma segunda oferta de evento**, quando a única diferença for o preço. Assim o
 mesmo contrato de 30 dias, a mesma página e a mesma mensuração servem para todos; o código do evento

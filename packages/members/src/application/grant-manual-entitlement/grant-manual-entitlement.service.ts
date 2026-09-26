@@ -9,6 +9,11 @@ import {
 } from '../../domain/entitlement/entitlement.errors'
 import type { EntitlementSnapshot } from '../../domain/entitlement/entitlement-snapshot'
 import type { AccessType } from '../../domain/entitlement/fulfillment'
+import {
+  createMuralVisitorSnapshot,
+  MURAL_VISITOR_PRODUCT_ID,
+  MURAL_VISITOR_REF,
+} from '../../domain/entitlement/mural-visitor'
 import type { CatalogGateway } from '../../domain/ports/catalog-gateway.port'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
@@ -52,8 +57,8 @@ export type GrantManualCommand =
  */
 export const MANUAL_ALL_COURSES_PRODUCT_ID = '00000000-0000-0000-0000-000000000000'
 export const MANUAL_ALL_KIDS_COURSES_PRODUCT_ID = '00000000-0000-0000-0000-000000000001'
-export const MURAL_VISITOR_PRODUCT_ID = '00000000-0000-0000-0000-000000000002'
-export const MURAL_VISITOR_REF = 'mural-dos-criadores-visitante'
+export { MURAL_VISITOR_PRODUCT_ID, MURAL_VISITOR_REF } from '../../domain/entitlement/mural-visitor'
+
 const MANUAL_SAVE_MAX_ATTEMPTS = 2
 
 export interface GrantManualResult {
@@ -289,18 +294,7 @@ export class GrantManualEntitlementService {
     now: Date,
     sourceId: string,
   ): Promise<GrantManualResult> {
-    const snapshot: EntitlementSnapshot = {
-      offerId: '',
-      offerSlug: '',
-      productId: MURAL_VISITOR_PRODUCT_ID,
-      sku: MURAL_VISITOR_REF,
-      name: 'Visita ao Mural dos Criadores',
-      kind: 'community',
-      accessType: 'community',
-      courseRef: MURAL_VISITOR_REF,
-      fulfillment: { accessType: 'community', courseRef: MURAL_VISITOR_REF },
-      resolvedAt: now.toISOString(),
-    }
+    const snapshot = createMuralVisitorSnapshot('', '', now)
     const view = await this.grantOne({
       userId,
       productId: MURAL_VISITOR_PRODUCT_ID,
