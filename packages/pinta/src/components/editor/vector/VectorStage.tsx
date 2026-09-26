@@ -40,6 +40,7 @@ import {
   moveGradientHandle,
 } from '../../../vector/gradient'
 import { gridSpacingFor, snapPoint, snapValue } from '../../../vector/grid'
+import { clampGuidePos, type GuideAxis, type StageGuide } from '../../../vector/guides'
 import { hitMovableShapeAt, shapeHitAt } from '../../../vector/hitTest'
 import {
   clearImageSampleCache,
@@ -227,6 +228,18 @@ type Gesture =
       base: PintaAsset
     }
   | { kind: 'pan'; pointerId: number; startClient: Vec2; startScroll: Vec2 }
+  // Mover uma GUIA (só com a Selecionar): posição de partida + delta em px de TELA, como
+  // mover forma. Sem undo: guia não é edição do desenho (vive na sessão).
+  | {
+      kind: 'guideMove'
+      pointerId: number
+      id: string
+      axis: GuideAxis
+      start: number
+      startClient: Vec2
+      docPerPx: number
+      lastClient: Vec2
+    }
 
 /**
  * O que o movimento do palco lê de um pointer event. É um objeto simples de
@@ -289,7 +302,7 @@ const HANDLES: Array<{ id: string; fx: number; fy: number }> = [
 ]
 
 export function VectorStage(): JSX.Element {
-  const { editor } = useEditorStores()
+  const { editor, session } = useEditorStores()
   const { showToast } = useToast()
   const {
     doc,
@@ -345,6 +358,11 @@ export function VectorStage(): JSX.Element {
   const zoom = useSession((state) => state.zoom)
   const showGrid = useSession((state) => state.showGrid)
   const showRulers = useSession((state) => state.showRulers)
+  const guides = useSession((state) => state.guides)
+  const showGuides = useSession((state) => state.showGuides)
+  const guidesLocked = useSession((state) => state.guidesLocked)
+  // A guia "fantasma" enquanto a criança a puxa da régua (some ao soltar).
+  const [ghostGuide, setGhostGuide] = useState<{ axis: GuideAxis; pos: number } | null>(null)
   // Mesmo corte do EditorScreen: no desktop a faixa da seleção substitui a
   // barra flutuante.
   const wide = useMediaQuery('(min-width: 768px)')
@@ -410,6 +428,9 @@ export function VectorStage(): JSX.Element {
   // o capture do ponteiro não existe (mesmo motivo do `endGestureRef`).
   const pointerMoveRef = useRef<(event: StagePointer) => void>(() => undefined)
   useEffect(() => () => dragCleanupRef.current?.(), [])
+  // O arrasto que nasce na RÉGUA (criar guia) não passa pelo `<svg>`: ouve o document direto.
+  const guideDragCleanupRef = useRef<(() => void) | null>(null)
+  useEffect(() => () => guideDragCleanupRef.current?.(), [])
   // Ctrl/Cmd+Enter salva o texto: o Enter cru pertence à quebra de linha.
   const textFormRef = useRef<HTMLFormElement>(null)
 
@@ -704,6 +725,70 @@ export function VectorStage(): JSX.Element {
     return false
   }
 
+  /** A posição, no eixo pedido, de um ponteiro que está na RÉGUA (em unidades do documento). */
+  function guidePosFromClient(
+    axis: GuideAxis,
+    event: { clientX: number; clientY: number },
+  ): number {
+    const at = svgPoint(event)
+    return axis === 'x' ? at.x : at.y
+  }
+
+  /** O ponto de tela está dentro da área rolável do palco (o papel e a folga em volta)? */
+  function insideScroller(client: Vec2): boolean {
+    const rect = stageRef.current?.getBoundingClientRect()
+    if (!rect || rect.width < 1 || rect.height < 1) return false
+    return (
+      client.x >= rect.left &&
+      client.x <= rect.right &&
+      client.y >= rect.top &&
+      client.y <= rect.bottom
+    )
+  }
+
+  /**
+   * Puxar uma guia da RÉGUA: uma fantasma tracejada segue o ponteiro; soltar DENTRO do palco
+   * cria a guia, soltar fora (na régua, na caixa, fora da janela) cancela. Não passa pelo
+   * `beginGesture`: o ponteiro não é do `<svg>` (a captura nele falharia).
+   */
+  function startGuideFromRuler(axis: GuideAxis, event: PointerEvent<SVGSVGElement>): void {
+    if (!event.isPrimary || gestureStillActive()) return
+    event.preventDefault()
+    guideDragCleanupRef.current?.()
+    const docSize = axis === 'x' ? doc.width : doc.height
+    setGhostGuide({ axis, pos: clampGuidePos(guidePosFromClient(axis, event), docSize) })
+    guideDragCleanupRef.current = addPointerDragListeners(document, {
+      pointerId: event.pointerId,
+      onMove: (move) =>
+        setGhostGuide({ axis, pos: clampGuidePos(guidePosFromClient(axis, move), docSize) }),
+      onEnd: (end) => {
+        guideDragCleanupRef.current = null
+        setGhostGuide(null)
+        if (end.type === 'pointercancel') return
+        if (!insideScroller({ x: end.clientX, y: end.clientY })) return
+        const added = session.getState().addGuide(axis, guidePosFromClient(axis, end), docSize)
+        if (!added) showToast(COPY.tools.guideLimit)
+      },
+    })
+  }
+
+  /** Pegar uma guia para mover (só com a Selecionar e destravada, ver `guidesInteractive`). */
+  function handleGuideDown(guide: StageGuide, event: PointerEvent<SVGElement>): void {
+    if (!guidesInteractive || !event.isPrimary || gestureStillActive()) return
+    event.stopPropagation()
+    const client = { x: event.clientX, y: event.clientY }
+    beginGesture({
+      kind: 'guideMove',
+      pointerId: event.pointerId,
+      id: guide.id,
+      axis: guide.axis,
+      start: guide.pos,
+      startClient: client,
+      docPerPx: docPerPxNow(),
+      lastClient: client,
+    })
+  }
+
   /** Começa a MOVER a forma tocada (com o grupo dela e a seleção, como sempre). */
   function startMoveGesture(shape: VectorShape, event: PointerEvent<Element>, at: Vec2): void {
     const shapes = currentShapes()
@@ -736,6 +821,16 @@ export function VectorStage(): JSX.Element {
       baseShapes: shapes,
       ids: editedMask ? [editedMask.id] : ids,
     })
+  }
+
+  /** Uma guia é uma reta de borda a borda do documento no eixo dela. */
+  function guideLineAttrs(
+    axis: GuideAxis,
+    pos: number,
+  ): { x1: number; x2: number; y1: number; y2: number } {
+    return axis === 'x'
+      ? { x1: pos, x2: pos, y1: 0, y2: doc.height }
+      : { x1: 0, x2: doc.width, y1: pos, y2: pos }
   }
 
   function drawPreview(start: Vec2, current: Vec2, points: Vec2[]): VectorShape | null {
@@ -1283,6 +1378,21 @@ export function VectorStage(): JSX.Element {
       stage.scrollTop = gesture.startScroll.y - (event.clientY - gesture.startClient.y)
       return
     }
+    if (gesture.kind === 'guideMove') {
+      gesture.lastClient = { x: event.clientX, y: event.clientY }
+      const delta =
+        gesture.axis === 'x'
+          ? event.clientX - gesture.startClient.x
+          : event.clientY - gesture.startClient.y
+      session
+        .getState()
+        .moveGuide(
+          gesture.id,
+          gesture.start + delta * gesture.docPerPx,
+          gesture.axis === 'x' ? doc.width : doc.height,
+        )
+      return
+    }
 
     const at = svgPoint(event)
 
@@ -1480,6 +1590,12 @@ export function VectorStage(): JSX.Element {
       setPanning(false)
       return
     }
+    if (gesture.kind === 'guideMove') {
+      // Soltar FORA da área rolável (na régua, no canto, fora da janela) APAGA a guia: a
+      // régua é a saída natural, e é o que os programas de desenho fazem.
+      if (!insideScroller(gesture.lastClient)) session.getState().removeGuide(gesture.id)
+      return
+    }
     if (gesture.kind === 'marquee') {
       const box = marquee
       setMarquee(null)
@@ -1570,6 +1686,11 @@ export function VectorStage(): JSX.Element {
   // resize/giro em vez de desenhar.
   const handlesActive =
     !gradientAdjustShapeId && !colorPick && (tool === 'select' || SHAPE_TOOLS.has(tool))
+
+  // As guias só respondem ao toque com a Selecionar (e destravadas): com pincel e formas um
+  // traço que começa em cima da guia tem que DESENHAR, não movê-la (a mesma razão das alças).
+  const guidesInteractive =
+    tool === 'select' && !guidesLocked && !colorPick && !gradientAdjustShapeId && !maskEditId
 
   const singleBounds = single ? shapeBounds(single) : null
   const maskEditShape = maskEditId
@@ -1684,6 +1805,7 @@ export function VectorStage(): JSX.Element {
         docWidth={doc.width}
         docHeight={doc.height}
         zoom={zoom}
+        onRulerPointerDown={startGuideFromRuler}
       >
         {/* Barra FLUTUANTE da seleção (espelho da do pixel): absoluta sobre o
           palco, fora do fluxo — aparecer/sumir não move o desenho. É a via do
@@ -1972,6 +2094,44 @@ export function VectorStage(): JSX.Element {
                     </pattern>
                   </defs>
                   <rect width={doc.width} height={doc.height} fill="url(#pin-editor-grid)" />
+                </g>
+              ) : null}
+              {/* Linhas-guia (sessão, só visuais): fúcsia, distinta do azul da seleção e do
+                  cinza da grade. O traço transparente de 10 px é o ALVO do toque; o fino é
+                  o desenho. Nunca saem no export: não existem no asset. */}
+              {showGuides && (guides.length > 0 || ghostGuide) ? (
+                <g data-guides pointerEvents={guidesInteractive ? 'stroke' : 'none'}>
+                  {guides.map((guide) => (
+                    <g
+                      key={guide.id}
+                      data-guide={guide.id}
+                      data-guide-axis={guide.axis}
+                      style={{ cursor: guide.axis === 'x' ? 'col-resize' : 'row-resize' }}
+                      onPointerDown={(event) => handleGuideDown(guide, event)}
+                    >
+                      <line
+                        {...guideLineAttrs(guide.axis, guide.pos)}
+                        stroke="transparent"
+                        strokeWidth={10 / zoom}
+                      />
+                      <line
+                        {...guideLineAttrs(guide.axis, guide.pos)}
+                        stroke="#d946ef"
+                        strokeWidth={1 / zoom}
+                        pointerEvents="none"
+                      />
+                    </g>
+                  ))}
+                  {ghostGuide ? (
+                    <line
+                      data-guide-ghost="1"
+                      {...guideLineAttrs(ghostGuide.axis, ghostGuide.pos)}
+                      stroke="#d946ef"
+                      strokeWidth={1 / zoom}
+                      strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                      pointerEvents="none"
+                    />
+                  ) : null}
                 </g>
               ) : null}
 

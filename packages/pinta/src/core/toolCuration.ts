@@ -54,6 +54,7 @@ export const PINTA_TOOL_PRESETS = {
     'pan',
     'grid',
     'rulers',
+    'guides',
     'mirror',
     'mirrorV',
     'filled',

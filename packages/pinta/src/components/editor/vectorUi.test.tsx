@@ -4562,3 +4562,178 @@ describe('régua do palco (só no vetor)', () => {
     }
   })
 })
+
+describe('guias: nascem da régua, valem só na sessão e não encaixam nada', () => {
+  function undoButton(): HTMLButtonElement {
+    return screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLButtonElement
+  }
+
+  /** A div ROLÁVEL do palco (a régua e o "soltar dentro" medem por ela), com medida real. */
+  function measureScroll(): HTMLElement {
+    const svg = screen.getByRole('img', { name: 'Área de desenho' })
+    const scroller = svg.parentElement?.parentElement as HTMLElement
+    ;(scroller as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        width: 480,
+        height: 360,
+        right: 480,
+        bottom: 360,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect
+    return scroller
+  }
+
+  /** Puxa uma guia HORIZONTAL da régua de cima até `y` px de tela. */
+  function pullGuideFromTop(y: number, pointerId = 1): void {
+    const ruler = document.querySelector('[data-stage-ruler="x"]') as Element
+    fireEvent.pointerDown(ruler, { isPrimary: true, pointerId, clientX: 100, clientY: 0 })
+    fireEvent.pointerMove(document, { pointerId, clientX: 100, clientY: y })
+    fireEvent.pointerUp(document, { pointerId, clientX: 100, clientY: y })
+  }
+
+  function guideLine(guide: Element): SVGLineElement {
+    return guide.querySelector('line[stroke="#d946ef"]') as SVGLineElement
+  }
+
+  async function openWithGuide(): Promise<HTMLElement> {
+    await openVectorEditor()
+    const stage = measureStage()
+    measureScroll()
+    pullGuideFromTop(80)
+    await waitFor(() => expect(stage.querySelector('[data-guide]')).toBeTruthy())
+    return stage
+  }
+
+  it('arrastar da régua de cima cria uma guia horizontal, sem entrada de undo', async () => {
+    const stage = await openWithGuide()
+    const guide = stage.querySelector('[data-guide]') as Element
+    expect(guide.getAttribute('data-guide-axis')).toBe('y')
+    expect(guideLine(guide).getAttribute('y1')).toBe('80')
+    expect(guideLine(guide).getAttribute('x2')).toBe('480')
+    expect(undoButton().disabled).toBe(true)
+    // A fantasma some ao soltar.
+    expect(stage.querySelector('[data-guide-ghost]')).toBeNull()
+  })
+
+  it('a régua da esquerda cria uma guia vertical', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    measureScroll()
+    const ruler = document.querySelector('[data-stage-ruler="y"]') as Element
+    fireEvent.pointerDown(ruler, { isPrimary: true, pointerId: 1, clientX: 0, clientY: 100 })
+    fireEvent.pointerMove(document, { pointerId: 1, clientX: 60, clientY: 100 })
+    fireEvent.pointerUp(document, { pointerId: 1, clientX: 60, clientY: 100 })
+    await waitFor(() => expect(stage.querySelector('[data-guide-axis="x"]')).toBeTruthy())
+    const guide = stage.querySelector('[data-guide-axis="x"]') as Element
+    expect(guideLine(guide).getAttribute('x1')).toBe('60')
+  })
+
+  it('soltar fora do palco cancela (nada nasce)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    measureScroll()
+    const ruler = document.querySelector('[data-stage-ruler="x"]') as Element
+    fireEvent.pointerDown(ruler, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 0 })
+    fireEvent.pointerMove(document, { pointerId: 1, clientX: 100, clientY: 80 })
+    await waitFor(() => expect(stage.querySelector('[data-guide-ghost]')).toBeTruthy())
+    fireEvent.pointerUp(document, { pointerId: 1, clientX: -50, clientY: 80 })
+    await waitFor(() => expect(stage.querySelector('[data-guide-ghost]')).toBeNull())
+    expect(stage.querySelector('[data-guide]')).toBeNull()
+  })
+
+  it('com a Selecionar a guia se move; com o Pincel o traço passa por cima dela', async () => {
+    const stage = await openWithGuide()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const guide = stage.querySelector('[data-guide]') as Element
+    fireEvent.pointerDown(guide, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 80 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 100, clientY: 110 })
+    await waitFor(() => expect(guideLine(guide).getAttribute('y1')).toBe('110'))
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    expect(stage.querySelector('[data-guide]')).toBeTruthy()
+    expect(undoButton().disabled).toBe(true)
+    // Pincel: as guias deixam de receber o ponteiro e um traço nasce em cima da guia.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.brush }))
+    await waitFor(() =>
+      expect(stage.querySelector('[data-guides]')?.getAttribute('pointer-events')).toBe('none'),
+    )
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 2, clientX: 40, clientY: 110 })
+    fireEvent.pointerMove(stage, { pointerId: 2, clientX: 200, clientY: 110 })
+    fireEvent.pointerUp(stage, { pointerId: 2 })
+    await waitFor(() => expect(stage.querySelector('path[d]')).toBeTruthy())
+  })
+
+  it('arrastar a guia para cima da régua apaga a guia', async () => {
+    const stage = await openWithGuide()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const guide = stage.querySelector('[data-guide]') as Element
+    fireEvent.pointerDown(guide, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 80 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 100, clientY: -10 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => expect(stage.querySelector('[data-guide]')).toBeNull())
+  })
+
+  it('travar as guias impede o arrasto; limpar apaga todas (e o botão nasce desligado)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    measureScroll()
+    const clear = screen.getByRole('button', { name: COPY.tools.guidesClear }) as HTMLButtonElement
+    expect(clear.disabled).toBe(true)
+    pullGuideFromTop(80, 1)
+    pullGuideFromTop(120, 2)
+    await waitFor(() => expect(stage.querySelectorAll('[data-guide]').length).toBe(2))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.guidesLock }))
+    await waitFor(() =>
+      expect(stage.querySelector('[data-guides]')?.getAttribute('pointer-events')).toBe('none'),
+    )
+    expect(screen.getByRole('button', { name: COPY.tools.guidesUnlock })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.guidesClear }))
+    await waitFor(() => expect(stage.querySelector('[data-guide]')).toBeNull())
+    expect(
+      (screen.getByRole('button', { name: COPY.tools.guidesClear }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+
+  it('o botão "Guias" e o Ctrl+; escondem e mostram', async () => {
+    const stage = await openWithGuide()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.guides }))
+    await waitFor(() => expect(stage.querySelector('[data-guides]')).toBeNull())
+    fireEvent.keyDown(document.body, { key: ';', ctrlKey: true })
+    await waitFor(() => expect(stage.querySelector('[data-guides]')).toBeTruthy())
+  })
+
+  it('as guias sobrevivem à troca de quadro (valem para o desenho inteiro)', async () => {
+    await openVectorEditor(
+      undefined,
+      async (seed) => {
+        await seed.getState().create({ kind: 'vector-sprite', name: 'heroi-v', frameSize: 64 })
+      },
+      'heroi-v',
+    )
+    const stage = measureStage(8, { width: 64, height: 64 })
+    measureScroll()
+    pullGuideFromTop(80)
+    await waitFor(() => expect(stage.querySelector('[data-guide]')).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: COPY.animation.addFrame }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'parado: quadro 2' })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'parado: quadro 2' }))
+    await waitFor(() => expect(stage.querySelector('[data-guide]')).toBeTruthy())
+  })
+
+  it('a guia NÃO encaixa a forma: é só visual', async () => {
+    const stage = await openWithGuide()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    // O retângulo acaba em 78, a 2 px da guia em 80: com encaixe viraria 80.
+    drawRect(stage, [30, 30], [93, 78])
+    await waitFor(() => {
+      const rect = stage.querySelector('rect[fill="#78dc52"]')
+      expect(rect?.getAttribute('height')).toBe('48')
+    })
+  })
+})

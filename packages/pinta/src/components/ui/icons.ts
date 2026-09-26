@@ -40,6 +40,7 @@ export {
   CloudOff,
   CloudUpload,
   Copy,
+  Crosshair,
   Download,
   Eraser,
   Eye,

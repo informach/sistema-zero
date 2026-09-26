@@ -3005,7 +3005,7 @@ pequenas"):
   nada mudou. ⚠️ Com a Selecionar as alças também cobrem formas minúsculas; fica como melhoria
   futura. As alças levam `data-handle` para os testes.
 
-## Régua do palco (26/09/2026, só no editor de VETOR)
+## Régua e guias do palco (26/09/2026, só no editor de VETOR)
 
 Pedido dela: "régua na área de desenho". Decisão dela: **só no vetor** (o pixel fica como está).
 Réguas em cima e à esquerda do palco, em UNIDADES DO DOCUMENTO, acompanhando zoom e rolagem.
@@ -3035,6 +3035,44 @@ Réguas em cima e à esquerda do palco, em UNIDADES DO DOCUMENTO, acompanhando z
 - ⚠️ happy-dom não faz layout: os testes afirmam DOM (`aria-hidden`, os rótulos por
   `data-ruler-label`, a árvore), nunca px. Testes: `rulerTicks.test.ts` e `vectorUi.test.tsx`
   §"régua do palco".
+
+### Linhas-guia (26/09/2026): puxadas da régua, só na SESSÃO, só VISUAIS
+
+Decisões dela, as duas explícitas: as guias **não ficam guardadas no desenho** (valem só
+enquanto o editor está aberto) e **nada encaixa nelas** (são referência para o olho).
+
+- **`vector/guides.ts`** (puro): `StageGuide {id, axis, pos}`, posições INTEIRAS em unidades do
+  documento, `MAX_GUIDES = 32` (no teto `addGuide` devolve o MESMO array e a UI avisa com
+  `guideLimit`). O módulo não exporta nada que o `maybeSnap` possa usar: o "não encaixa" é por
+  construção, e `vectorUi.test.tsx` prova com um retângulo a 2 px da guia que nasce sem mexer.
+- **Moram no `sessionStore`** (`guides`, `showGuides`, `guidesLocked`): por instância do editor,
+  para TODOS os quadros/peças do desenho aberto (alinhar quadros de uma animação é o uso mais
+  valioso), sem undo (como a grade, não são edição do desenho). Como não existem no asset, não
+  há sanitize, migração nem filtro de export: SVG, PNG, GIF, folha, miniatura e Estúdio nunca as
+  veem, por construção.
+- **Criar:** `StageRulers.onRulerPointerDown` → `startGuideFromRuler` no `VectorStage`: uma
+  fantasma tracejada (`data-guide-ghost`) segue o ponteiro por `addPointerDragListeners(document)`
+  (não passa pelo `beginGesture`, porque o ponteiro não é do `<svg>` e a captura nele falharia);
+  soltar DENTRO da div rolável cria, fora cancela. O ponto vem do `svgPoint` (o ponteiro da régua
+  mapeado pelo retângulo do `<svg>`), com `clampGuidePos`.
+- **Mover/apagar:** gesto `guideMove` (delta em px de tela × `docPerPx`, como mover forma);
+  soltar FORA da div rolável (na régua, no canto, fora da janela) APAGA a guia. Zoom e troca de
+  quadro já fecham qualquer gesto. **Só com a Selecionar e destravadas** (`guidesInteractive`):
+  com pincel/formas o `<g data-guides>` fica `pointer-events: none` e o traço DESENHA por cima
+  da guia (a mesma razão das alças). O cadeado "Travar as guias" cobre quem quer a guia fixa
+  até com a Selecionar. ⚠️ Não há Delete com "guia selecionada" (exigiria um conceito de guia
+  selecionada e um `keydown` concorrendo com o do Delete das formas); arrastar para fora e
+  "Limpar as guias" cobrem o uso. Pendência de a11y declarada: criar/mover guia é gesto de
+  ponteiro sem par de teclado.
+- **Desenho:** fúcsia `#d946ef` (distinta do azul `#00a0c8` da seleção e do cinza da grade),
+  `1/zoom` de traço, com um traço TRANSPARENTE de `10/zoom` por baixo como alvo do toque
+  (`pointer-events: stroke` ignora a pintura). Renderizadas DEPOIS da grade e ANTES das alças.
+- **Caixa:** os três botões (mostrar `Crosshair`, travar `Lock`/`LockOpen`, limpar
+  `BrushCleaning`, desligado sem guias) são UMA entrada com UM id de curadoria (`guides`, no
+  preset `livre`); atalho **Ctrl+;** (Illustrator; o `;` existe sem Shift no ABNT2).
+- ⚠️ Nos testes o "soltar dentro" mede a div rolável, que no happy-dom tem retângulo zero: o
+  helper `measureScroll()` (irmão do `measureStage`) a mede. Testes: `vector/guides.test.ts` e
+  `vectorUi.test.tsx` §"guias".
 
 ## O arrasto não grifa nada, e o texto volta a ser editável (18/09/2026)
 

@@ -235,6 +235,15 @@ export const SHORTCUT_CATALOG = [
     editors: VECTOR,
     curationId: 'rulers',
   },
+  // Ctrl+; é o do Illustrator; o `;` existe sem Shift no ABNT2 e no americano.
+  {
+    id: 'guides',
+    combo: 'Ctrl+;',
+    label: S.guides,
+    section: 'view',
+    editors: VECTOR,
+    curationId: 'guides',
+  },
   {
     id: 'mirrorH',
     combo: 'Alt+M',

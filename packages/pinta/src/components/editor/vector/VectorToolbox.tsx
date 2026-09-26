@@ -16,7 +16,17 @@ import { COPY } from '../../../core/copy'
 import { filterTools, toolFallback } from '../../../core/toolCuration'
 import { isVectorGradient } from '../../../vector/model'
 import { IconButton, ToolButton } from '../../ui/Button'
-import { Grid3x3, Image, Maximize, Repeat, Ruler } from '../../ui/icons'
+import {
+  BrushCleaning,
+  Crosshair,
+  Grid3x3,
+  Image,
+  Lock,
+  LockOpen,
+  Maximize,
+  Repeat,
+  Ruler,
+} from '../../ui/icons'
 import { useEditor, useEditorStores, useSession, useToolCuration } from '../editorContext'
 import { ScrollMoreHint } from '../ScrollMoreHint'
 import { TOOL_GRID } from '../toolGrid'
@@ -34,6 +44,9 @@ export function VectorToolbox({
   const { session } = useEditorStores()
   const showGrid = useSession((state) => state.showGrid)
   const showRulers = useSession((state) => state.showRulers)
+  const showGuides = useSession((state) => state.showGuides)
+  const guidesLocked = useSession((state) => state.guidesLocked)
+  const guideCount = useSession((state) => state.guides.length)
   const { tool, setTool, zoomToFit, style, applyStyle } = useVectorEditor()
   const assetId = useEditor((state) => state.asset.id)
   const allowTools = useToolCuration()
@@ -116,6 +129,36 @@ export function VectorToolbox({
             active={showRulers}
             onClick={() => session.getState().toggleRulers()}
           />
+        ),
+      },
+      {
+        // Os três botões das guias (mostrar, travar, limpar) são UMA entrada com UM id de
+        // curadoria, como a grade tem o dela: a professora esconde ou mostra o trio inteiro.
+        id: 'guides',
+        node: (
+          <>
+            <ToolButton
+              tone="quiet"
+              icon={Crosshair}
+              label={COPY.tools.guides}
+              active={showGuides}
+              onClick={() => session.getState().toggleGuides()}
+            />
+            <ToolButton
+              tone="quiet"
+              icon={guidesLocked ? Lock : LockOpen}
+              label={guidesLocked ? COPY.tools.guidesUnlock : COPY.tools.guidesLock}
+              active={guidesLocked}
+              onClick={() => session.getState().toggleGuidesLock()}
+            />
+            <ToolButton
+              tone="quiet"
+              icon={BrushCleaning}
+              label={COPY.tools.guidesClear}
+              disabled={guideCount === 0}
+              onClick={() => session.getState().clearGuides()}
+            />
+          </>
         ),
       },
       {

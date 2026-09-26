@@ -537,6 +537,11 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
       run: () => session.getState().toggleRulers(),
       when: () => isToolAllowed(allowTools, 'rulers'),
     },
+    {
+      combo: shortcut('guides'),
+      run: () => session.getState().toggleGuides(),
+      when: () => isToolAllowed(allowTools, 'guides'),
+    },
     { combo: shortcut('flipShapesH'), run: () => flipSelected('h') },
     { combo: shortcut('flipShapesV'), run: () => flipSelected('v') },
     {
