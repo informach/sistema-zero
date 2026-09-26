@@ -71,6 +71,17 @@
 - [ ] **Step 3: Restore Studio guidance in section 3.** Explain that the embedded Studio is where blocks become game instructions and no other page is needed. Demonstrate divider, **Expandir/Reduzir** in context, preserve the full block-by-block directions, and give the optional map a fuller explanation at the end.
 - [ ] **Step 4: Match planned-video descriptions to the script.** Edit generator and manifest JSON together. Keep Aula 2 and certificate unchanged, then run `bun test docs/aulas-interativas/qa/cade-todo-mundo-manifestos.test.ts docs/aulas-interativas/qa/cade-todo-mundo-projeto.test.ts`, `bun docs/aulas-interativas/qa/validar-manifestos.ts cade-todo-mundo`, `bunx biome check docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts`, and `git diff --check`.
 
+### Task 6: Teach where the child sees and tests the game (26/09 clarification)
+
+**Files:** Modify `docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.roteiro.md`, `docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.md`, `docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts`, and `docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.manifesto.json`.
+
+**Interfaces:** Keep all section keys, block keys and `completion.blockIds` unchanged. Edit only section 3 speech, recording direction and matching planned-video description. The narrow/wide distinction depends on the Studio width, not the fullscreen toggle alone.
+
+- [ ] **Step 1: Correct the spoken test.** Replace “aperta o botão de iniciar a prévia do jogo” with a short demonstration: narrow Studio → open the **Pré-visualização** tab; wide Studio → look at the game beside the blocks, use the eye only if hidden. Explain that the updated game appears there automatically; touch the hiding place to test. Do not make Reproduzir/Atualizar a required action.
+- [ ] **Step 2: Correct recording and author guidance.** Record both widths, point to the actual tab or adjacent game at test time, demonstrate the eye only in wide layout, and ensure the camera captures the touch and reveal. Remove the old instruction to check an invented preview-start button label. Preserve the existing block-placement, save and submission steps.
+- [ ] **Step 3: Align source and manifest.** Give `video-a1-programar` the same preview direction in `gerar-cade-todo-mundo.ts` and Aula 1 JSON. Do not change Aula 2 or certificate; review the diff to confirm only planned-video copy changed in the JSON.
+- [ ] **Step 4: Verify.** Run `bun test docs/aulas-interativas/qa/cade-todo-mundo-manifestos.test.ts docs/aulas-interativas/qa/cade-todo-mundo-projeto.test.ts`, `bun docs/aulas-interativas/qa/validar-manifestos.ts cade-todo-mundo`, `bunx biome check docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts`, and `git diff --check`. Check that no mandatory preview-start button remains in the Aula 1 script. Commit only the four scoped files locally; do not push or deploy.
+
 ## Self-review
 
-The plan covers the three-section structure, contextual UI orientation, optional map placement, unchanged completion rules, generator/JSON consistency and recording handoff. The 26/09 clarification restores original explanatory depth without changing runtime behavior or child-facing controls.
+The plan covers the three-section structure, contextual UI orientation, optional map placement, unchanged completion rules, generator/JSON consistency and recording handoff. The first 26/09 clarification restores original explanatory depth; the second corrects the preview demonstration for narrow and wide Studio without changing runtime behavior or child-facing controls.
