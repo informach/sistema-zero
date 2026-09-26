@@ -458,6 +458,8 @@ export interface MaterialsBlock {
   kind: 'materials'
   /** "Arquivos do Pinta". Vazio = só a etiqueta do bloco. */
   title?: string
+  /** Exibe o primeiro PDF deste bloco em um leitor na outra coluna da seção. */
+  bookPreview?: boolean
   items: MaterialItem[]
 }
 

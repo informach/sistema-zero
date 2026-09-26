@@ -816,7 +816,7 @@ export interface LearningManifest {
               allowTools?: string[]
               chain?: string
             }
-          | { kind: 'materials'; title?: string; items: unknown[] }
+          | { kind: 'materials'; title?: string; items: unknown[]; bookPreview?: boolean }
           | {
               kind: 'certificate'
               baseImageUrl?: string
@@ -889,6 +889,7 @@ function isManifestContent(content: unknown): boolean {
   if (content.kind === 'materials')
     return (
       (content.title === undefined || text(content.title, 120)) &&
+      (content.bookPreview === undefined || typeof content.bookPreview === 'boolean') &&
       Array.isArray(content.items) &&
       content.items.length <= 20 &&
       content.items.every(

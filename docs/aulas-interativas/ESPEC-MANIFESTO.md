@@ -25,10 +25,12 @@ Esta regra **não está no manifesto**. Ela é do player, mora em
 `packages/member-shell/src/lib/lesson-split.ts` (`partirSecao`) e é código puro com teste. O
 manifesto não escolhe coluna: quem escolhe é o tipo do bloco.
 
-**Vão para a coluna da DIREITA, e só eles:**
+**Vão para a coluna da DIREITA:**
 
 - Bloco de **Estúdio** ou **Pinta** embarcado (`kind: 'studio'` ou `'pinta'`) que não seja galeria
 - Bloco **interativo cuja atividade é uma CENA**, ou seja, experimentação
+- A **prévia em livro** de um bloco `materials` com `bookPreview: true`; o download do mesmo bloco
+  continua na esquerda
 
 **Vai para a coluna da ESQUERDA todo o resto**, na ordem em que aparece na seção:
 
@@ -142,7 +144,9 @@ na seção de entrega.
 **Pinta:** `initialAsset` é o desenho inicial completo. Em entregas pela galeria, `initialAsset` é
 `null` e `gallery` informa `minItems` e `maxItems`; a criança escolhe criações da própria galeria.
 
-**Materiais:** `content` inclui `kind: "materials"`, `title` e `items`. Um item `file` precisa do
+**Materiais:** `content` inclui `kind: "materials"`, `title` e `items`; `bookPreview: true` é opcional
+quando o primeiro PDF deve aparecer como livro na outra coluna, sem duplicar o bloco nem o upload.
+Um item `file` precisa do
 `attachmentId` de um arquivo realmente anexado à aula. O manifesto não contém bytes nem URL privada.
 Na introdução do Desafio e na primeira aula de Corre, Dino! e O Jogo do Meu Jeito, os blocos dos
 cadernos já são criados com `items: []`. Os PDFs precisam ser enviados e vinculados no admin;

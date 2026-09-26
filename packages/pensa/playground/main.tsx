@@ -394,6 +394,11 @@ const newCode = () =>
     { length: 6 },
     () => CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)],
   ).join('')
+/** Como o members: mexer na equipe grava o `updatedAt` do projeto (é o que o `syncDetail` puxa). */
+function touchPlan(id: string): void {
+  const plan = plans.get(id)
+  if (plan) plan.detail = { ...plan.detail, updatedAt: new Date().toISOString() }
+}
 function withTeam(detail: PensaProjectDetailView): PensaProjectDetailView {
   const team = teamOf(detail.id)
   return {
@@ -501,14 +506,17 @@ const transport: PensaHostAdapter['transport'] = {
     }
     const share = /^\/projects\/([^/]+)\/share$/.exec(path)
     if (share) {
-      const team = teamOf(decodeURIComponent(share[1] ?? ''))
+      const id = decodeURIComponent(share[1] ?? '')
+      const team = teamOf(id)
       if (team.role !== 'owner') throw new Error('Só quem criou o plano pode fazer isso.')
       if (method === 'POST') {
         team.shareCode = newCode()
+        touchPlan(id)
         return { code: team.shareCode, display: `ZAP-${team.shareCode}` } as T
       }
       if (method === 'DELETE') {
         team.shareCode = null
+        touchPlan(id)
         return { ok: true } as T
       }
     }
@@ -538,6 +546,7 @@ const transport: PensaHostAdapter['transport'] = {
       }
       if (team.role !== 'owner') throw new Error('Só quem criou o plano pode fazer isso.')
       team.members = team.members.filter((person) => person.profileId !== who)
+      touchPlan(id)
       return { ok: true } as T
     }
     const project = /^\/projects\/([^/]+)$/.exec(path)

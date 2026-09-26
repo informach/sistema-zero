@@ -618,7 +618,7 @@
   border: 2px solid var(--pz-line);
   border-radius: 12px;
   background: var(--pz-surface);
-  color: var(--sz-tool-ink, var(--pz-text));
+  color: var(--sz-tool-ink, var(--pz-ink));
   font-family: var(--sz-tool-font-display, var(--font-display, inherit));
   font-weight: 800;
   font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
@@ -1820,14 +1820,15 @@ button.pensa-map-node:hover {
    sem `cursor` fora de botão: a mãozinha é dos botões, e o único que a declara aqui é o
    "Tirar"/"Deixar" da linha, que nasce como texto e precisa dizer que é clicável.
    ═══════════════════════════════════════════════════════════════════════════════════════ */
+/* Tinta do acento sobre o acento a 8% (o mesmo do `.pensa-map-node`): a 12% o contraste do
+   texto de 12px/700 ficava no limite (≈4,5:1). Sem margem no "você": o `gap` do nome já separa. */
 .pensa-chip.is-team {
   color: var(--pz-accent);
-  background: color-mix(in oklab, var(--pz-accent) 12%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-accent) 8%, var(--pz-surface));
 }
 .pensa-chip.is-you {
-  margin-left: 6px;
   color: var(--pz-accent);
-  background: color-mix(in oklab, var(--pz-accent) 12%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-accent) 8%, var(--pz-surface));
 }
 /* "Alguém da equipe mexeu no plano." + "Atualizar": o cartão branco da faixa creme, o MESMO
    desenho do aviso de "revendo" (é um aviso da mesma família). */
@@ -1963,7 +1964,7 @@ button.pensa-map-node:hover {
   display: inline-grid;
   place-items: center;
   color: var(--pz-accent);
-  background: color-mix(in oklab, var(--pz-accent) 14%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-accent) 10%, var(--pz-surface));
   font-weight: 800;
 }
 .pensa-team-member__name {

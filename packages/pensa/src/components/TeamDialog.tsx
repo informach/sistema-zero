@@ -63,6 +63,16 @@ export function TeamDialog({
   const [pending, setPending] = useState<Pending>(null)
   const [copyState, setCopyState] = useState<'copied' | 'failed' | null>(null)
   const codeRef = useRef<HTMLOutputElement | null>(null)
+  // O foco dos dois passos ("Tirar" → "Tirar mesmo"/"Deixar"; "Sair da equipe" → "Sair mesmo"/
+  // "Ficar"): o botão que a criança apertou DESMONTA, e sem isto o foco cai no `body`.
+  const confirmRef = useRef<HTMLButtonElement | null>(null)
+  const leaveRef = useRef<HTMLButtonElement | null>(null)
+  const seatsRef = useRef<HTMLParagraphElement | null>(null)
+  const removeRefs = useRef(new Map<string, HTMLButtonElement>())
+  const pendingBefore = useRef<Pending>(null)
+  // Token do pedido: a resposta de uma abertura ANTERIOR (ou de uma janela já fechada) não
+  // repõe a lista por cima da atual.
+  const loadSeq = useRef(0)
 
   useDialogFocus({ open, cardRef, busy: busy !== null, onClose, returnFocusTo })
 
@@ -70,28 +80,54 @@ export function TeamDialog({
   const sharePath = `/projects/${encodeURIComponent(projectId)}/share`
 
   const load = useCallback(async () => {
+    loadSeq.current += 1
+    const seq = loadSeq.current
     setLoading(true)
     setError(null)
     try {
       const result = await transport.request<PensaProjectMembersView>(membersPath)
+      if (seq !== loadSeq.current) return
       setView(result)
     } catch (cause) {
+      if (seq !== loadSeq.current) return
       setError(errorText(cause))
     } finally {
-      setLoading(false)
+      if (seq === loadSeq.current) setLoading(false)
     }
   }, [transport, membersPath])
 
   useEffect(() => {
     if (!open) {
+      loadSeq.current += 1
       setView(null)
       setError(null)
       setPending(null)
       setCopyState(null)
       return
     }
+    // Reabrir começa do zero: a lista da abertura anterior não fica à vista até o GET voltar.
+    setView(null)
     void load()
   }, [open, load])
+
+  useEffect(() => {
+    const before = pendingBefore.current
+    pendingBefore.current = pending
+    if (!open) return
+    if (pending) {
+      confirmRef.current?.focus()
+      return
+    }
+    if (!before) return
+    if (before.kind === 'leave') {
+      leaveRef.current?.focus()
+      return
+    }
+    // Desarmou o "Tirar": de volta ao botão da linha; se a pessoa saiu da lista, ao contador.
+    const back = removeRefs.current.get(before.profileId)
+    if (back?.isConnected) back.focus()
+    else seatsRef.current?.focus()
+  }, [open, pending])
 
   const announce = (next: PensaProjectMembersView) => {
     setView(next)
@@ -210,11 +246,7 @@ export function TeamDialog({
             {display ? (
               <>
                 <div className="pensa-team__code-row">
-                  <output
-                    ref={codeRef}
-                    className="pensa-team-code"
-                    aria-label={TEAM_COPY.codeLabel}
-                  >
+                  <output ref={codeRef} className="pensa-team-code" aria-labelledby={codeId}>
                     {display}
                   </output>
                   <button
@@ -272,24 +304,34 @@ export function TeamDialog({
 
         {view ? (
           <section className="pensa-team__people" aria-label="Quem está na equipe">
-            <p className="pensa-team__seats">{TEAM_COPY.seats(seats, max)}</p>
+            {/* `tabIndex={-1}`: é onde o foco pousa depois de tirar alguém (a linha sumiu). */}
+            <p ref={seatsRef} className="pensa-team__seats" tabIndex={-1}>
+              {TEAM_COPY.seats(seats, max)}
+            </p>
             <ul className="pensa-team-list">
               <TeamPerson
                 person={view.owner}
                 isViewer={view.owner.profileId === view.viewerProfileId}
                 tag={TEAM_COPY.owner}
               />
-              {view.members.map((person) => {
+              {view.members.map((person, index) => {
                 const isViewer = person.profileId === view.viewerProfileId
                 const confirming =
                   pending?.kind === 'remove' && pending.profileId === person.profileId
+                const name = personName(person.firstName)
+                // Dois "João" na lista: o nome acessível diz qual ("João (2º da lista)").
+                const repeated = view.members.some(
+                  (other) => other !== person && personName(other.firstName) === name,
+                )
+                const spoken = repeated ? `${name} (${index + 1}º da lista)` : name
                 return (
                   <TeamPerson key={person.profileId} person={person} isViewer={isViewer}>
                     {isOwner ? (
                       confirming ? (
                         <span className="pensa-team-member__confirm">
-                          <span>{TEAM_COPY.removeConfirm(personName(person.firstName))}</span>
+                          <span>{TEAM_COPY.removeConfirm(name)}</span>
                           <button
+                            ref={confirmRef}
                             type="button"
                             className="pensa-team-member__remove is-danger"
                             disabled={busy !== null}
@@ -310,9 +352,13 @@ export function TeamDialog({
                         </span>
                       ) : (
                         <button
+                          ref={(node) => {
+                            if (node) removeRefs.current.set(person.profileId, node)
+                            else removeRefs.current.delete(person.profileId)
+                          }}
                           type="button"
                           className="pensa-team-member__remove"
-                          aria-label={`${TEAM_COPY.remove} ${personName(person.firstName)} da equipe`}
+                          aria-label={`${TEAM_COPY.remove} ${spoken} da equipe`}
                           disabled={busy !== null}
                           onClick={() =>
                             setPending({ kind: 'remove', profileId: person.profileId })
@@ -338,6 +384,7 @@ export function TeamDialog({
               <span className="pensa-team-member__confirm">
                 <span>{TEAM_COPY.leaveConfirm}</span>
                 <button
+                  ref={confirmRef}
                   type="button"
                   className="sz-tool-pill pensa-dialog__danger"
                   disabled={busy !== null}
@@ -356,6 +403,7 @@ export function TeamDialog({
               </span>
             ) : (
               <button
+                ref={leaveRef}
                 type="button"
                 className="sz-tool-pill sz-tool-pill--outline pensa-team__leave"
                 disabled={busy !== null}

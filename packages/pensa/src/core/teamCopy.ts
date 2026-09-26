@@ -20,7 +20,8 @@ export const TEAM_COPY = {
   button: 'Equipe',
   dialogTitle: 'Equipe do plano',
   ownerLead: (name: string) => `Quem entrar pelo código vê e mexe em tudo do plano "${name}".`,
-  memberLead: (owner: string) => `Este plano é de ${owner}. Vocês dois mexem no mesmo plano.`,
+  // "Vocês" e não "vocês dois": a equipe pode ter mais gente.
+  memberLead: (owner: string) => `Este plano é de ${owner}. Vocês mexem no mesmo plano.`,
   eachBuildsAlone:
     'Cada um constrói no seu Estúdio, no seu Pinta e no seu Molda. O que vocês dividem é o plano.',
   seats: (used: number, max: number) =>

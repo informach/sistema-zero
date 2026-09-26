@@ -38,11 +38,11 @@ Um vídeo por seção. A criança pode voltar dias depois; mostrar o jardim e o 
 >
 > Toca num esconderijo. O personagem apareceu e Achados virou 1? Agora toca em outro e vê se chegou a 2. Falta mais um. Quando você encontrar o terceiro, Achados chega a 3 e aparece ‘Você achou todo mundo!’. Essa mensagem já estava preparada no jogo. E se você tocar no mesmo lugar de novo? A contagem não aumenta, porque o esconderijo que ficou invisível não recebe outro toque. Se o número não mudar, volta para Blocos, se precisar, e confere: o bloco de somar está abaixo do bloco de visibilidade? O primeiro campo está em 1 e o segundo em `achados`?
 >
-> Se quiser rever como montou o jogo, o Caderno do Aluno está nesta seção, com os passos desta aula e da anterior. Não precisa baixar nem imprimir para continuar. Agora espera aparecer Salvo e aperta Enviar para o professor. Pronto, essa é a entrega da sua atividade. Você completou a busca!”
+> Se esquecer algum passo, o Caderno do Aluno está na seção Seu Caderno do Aluno, lá na Aula 1. Ele também tem os passos desta aula. Agora espera aparecer Salvo e aperta Enviar para o professor. Pronto, essa é a entrega da sua atividade. Você completou a busca!”
 
 **Zappy fora do Estúdio:** “Você já testou a contagem. Agora ensine o seu jogo a somar cada personagem encontrado.”
 
-**Nota de gravação:** confirmar o caminho **Programação > Variáveis**, o rótulo do bloco e a opção `achados` no seletor em nível `iniciante-2d`. Mostrar a Pré-visualização no formato de aba e no formato lado a lado apenas quando citar cada um. Não apresentar **Reproduzir** ou **Atualizar** como botão necessário para começar. A mensagem de vitória já veio preparada; dizer isso com honestidade. Anexar o mesmo PDF do Caderno do Aluno ao bloco `caderno` desta aula antes de gravar a referência.
+**Nota de gravação:** confirmar o caminho **Programação > Variáveis**, o rótulo do bloco e a opção `achados` no seletor em nível `iniciante-2d`. Mostrar a Pré-visualização no formato de aba e no formato lado a lado apenas quando citar cada um. Não apresentar **Reproduzir** ou **Atualizar** como botão necessário para começar. A mensagem de vitória já veio preparada; dizer isso com honestidade. O único PDF do caderno fica na Aula 1; não anexar nem mostrar uma segunda cópia nesta aula.
 
 ## 4. Sua busca está completa — vídeo de fechamento (80–100 s)
 

@@ -224,9 +224,9 @@ export class LearningImportService {
         })
     } else {
       for (const block of draft.document.blocks.filter((b) => retireIds.has(b.id))) {
-        if (!['rich_text', 'dialogue', 'interactive'].includes(block.content.kind))
+        if (!['rich_text', 'dialogue', 'interactive', 'materials'].includes(block.content.kind))
           throw new ValidationError(
-            'Só instruções e descobertas importadas podem ser aposentadas pelo manifesto. Projetos, mídias e quizzes são preservados.',
+            'Só instruções, descobertas e materiais importados podem ser aposentados pelo manifesto. Projetos, mídias e quizzes são preservados.',
           )
         const key = manifest.retireBlockKeys?.find(
           (key) => importedLearningId(lessonId, 'block', key) === block.id,
@@ -281,7 +281,7 @@ export class LearningImportService {
           : []),
         ...(actions.some((action) => action.action === 'retire')
           ? [
-              'As instruções importadas listadas como aposentadas sairão do rascunho. Projetos, vídeos originais e histórico de evidências são preservados.',
+              'Os blocos importados listados como aposentados sairão do rascunho. Projetos, vídeos originais e histórico de evidências são preservados.',
             ]
           : []),
         ...(draft.isPublished

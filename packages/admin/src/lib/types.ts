@@ -683,6 +683,7 @@ export type MaterialItem =
 /** Materiais complementares: uma lista ordenada de itens dentro de UM bloco. */
 export interface MaterialsBlock {
   kind: 'materials'
+  bookPreview?: boolean
   title?: string
   items: MaterialItem[]
 }

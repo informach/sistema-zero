@@ -336,6 +336,27 @@ describe('aula por seções', () => {
     expect(screen.queryByRole('button', { name: 'Criar' })).toBeNull()
   })
 
+  test('o caderno deixa o download no conteúdo e a leitura na outra coluna', () => {
+    const caderno = {
+      id: 'caderno',
+      kind: 'materials',
+      sortOrder: 1,
+      content: { kind: 'materials', title: 'Caderno do Aluno', bookPreview: true, items: [] },
+    }
+    const { container } = renderSecaoUnica([fala, caderno], ['fala', 'caderno'])
+    expect(painelDe(container, 'caderno')?.getAttribute('data-panel-id')).toBe('lesson-content')
+    expect(
+      screen
+        .getByRole('heading', { name: 'Folheie o caderno' })
+        .closest('[data-panel-id]')
+        ?.getAttribute('data-panel-id'),
+    ).toBe('lesson-tool')
+    expect(
+      screen.getByText('Vincule um PDF a este bloco de materiais para mostrar o caderno aqui.'),
+    ).toBeDefined()
+    expect(screen.queryByRole('button', { name: 'Criar' })).toBeNull()
+  })
+
   test('a ENTREGA por galeria é conteúdo da seção, e não some da aula', () => {
     // ⚠️ Achado do full review (14/09/2026): o painel do conteúdo filtrava por KIND
     // (`!== 'studio' && !== 'pinta'`) e a lista da ferramenta descartava a galeria — então um

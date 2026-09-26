@@ -79,12 +79,17 @@ const aula1 = {
     ),
     video(
       'video-a1-caderno',
-      'Seu mapa do jogo',
-      'Na segunda seção, mostrar o PDF real logo abaixo do vídeo: capa e página Mapa do jogo. Explicar que o caderno serve para consultar os passos das duas aulas, pode ser aberto quando a criança quiser e não precisa ser baixado nem impresso. Apontar para Próxima seção, onde virá a primeira atividade, sem revelar o resultado dela. Anexar o PDF no admin antes de gravar. Alvo: 35–50 segundos.',
+      'Seu Caderno do Aluno',
+      'Na segunda seção, mostrar o PDF real no leitor da seção: capa e página de orientação O que você vai fazer. Não abrir agora as páginas de passos, que antecipariam a descoberta da experiência. Explicar que o Caderno do Aluno reúne todos os passos para construir o jogo e pode ser consultado quando houver dúvida. Mostrar o download abaixo do vídeo e o livro 3D na outra coluna quando houver largura; em tela estreita, o livro fica depois do vídeo. Baixar, ler e imprimir são opcionais. Anexar o PDF uma vez nesta aula antes de gravar. Alvo: 45–60 segundos.',
     ),
     {
       key: 'caderno',
-      content: { kind: 'materials', title: 'Caderno do Aluno — Cadê Todo Mundo?', items: [] },
+      content: {
+        kind: 'materials',
+        title: 'Caderno do Aluno — Cadê Todo Mundo?',
+        bookPreview: true,
+        items: [],
+      },
     },
     video(
       'video-a1-toque',
@@ -128,10 +133,10 @@ const aula1 = {
       ['video-a1-abertura'],
     ),
     section(
-      'seu-mapa-do-jogo',
-      'Seu mapa do jogo',
+      'seu-caderno-do-aluno',
+      'Seu Caderno do Aluno',
       'material',
-      'Conhecer o caderno e saber onde consultá-lo durante as duas aulas.',
+      'Conhecer o caderno e saber onde consultá-lo durante a construção do jogo.',
       ['video-a1-caderno', 'caderno'],
       ['video-a1-caderno'],
     ),
@@ -173,6 +178,7 @@ const aula2 = {
   version: 5,
   courseSlug: CURSO,
   lessonSlug: 'aula-2',
+  retireBlockKeys: ['caderno'],
   title: 'Complete a busca',
   blocks: [
     video(
@@ -202,17 +208,13 @@ const aula2 = {
     video(
       'video-a2-contagem',
       'Cada descoberta conta',
-      'Retomar a descoberta da experiência e ensinar a regra no projeto real. No Estúdio incorporado, mostrar Programação > Variáveis, encaixar Somar 1 em variável achados dentro do evento, abaixo da reação, e conferir os campos. Mostrar onde fica a Pré-visualização em larguras estreita e larga, aguardar sua atualização automática e tocar nos três esconderijos, sem mandar iniciar o jogo. A mensagem de vitória já estava preparada. Esperar Salvo, clicar em Enviar para o professor e encerrar a prática aí. Apontar o Caderno do Aluno opcional. Não demonstrar Compartilhar nesta seção. Alvo: 4–5 minutos.',
+      'Retomar a descoberta da experiência e ensinar a regra no projeto real. No Estúdio incorporado, mostrar Programação > Variáveis, encaixar Somar 1 em variável achados dentro do evento, abaixo da reação, e conferir os campos. Mostrar onde fica a Pré-visualização em larguras estreita e larga, aguardar sua atualização automática e tocar nos três esconderijos, sem mandar iniciar o jogo. A mensagem de vitória já estava preparada. Esperar Salvo, clicar em Enviar para o professor e encerrar a prática aí. Se houver dúvida, lembrar que o Caderno do Aluno com os passos está na seção Seu Caderno do Aluno da Aula 1; não dizer que o PDF aparece nesta aula. Não demonstrar Compartilhar nesta seção. Alvo: 4–5 minutos.',
     ),
     dialogue(
       'ponte-a2-contagem',
       'Você já testou a contagem. Agora ensine o seu jogo a somar cada personagem encontrado.',
     ),
     studio(montarProjetoCadeTodoMundo(true), true),
-    {
-      key: 'caderno',
-      content: { kind: 'materials', title: 'Caderno do Aluno — Cadê Todo Mundo?', items: [] },
-    },
     video(
       'video-a2-fecho',
       'Sua busca está completa',
@@ -241,7 +243,7 @@ const aula2 = {
       'Cada personagem vale um achado',
       'delivery',
       'Somar um no contador no mesmo evento do toque e testar até a mensagem de vitória.',
-      ['video-a2-contagem', 'ponte-a2-contagem', 'projeto', 'caderno'],
+      ['video-a2-contagem', 'ponte-a2-contagem', 'projeto'],
       ['video-a2-contagem', 'projeto'],
       'projeto',
       [

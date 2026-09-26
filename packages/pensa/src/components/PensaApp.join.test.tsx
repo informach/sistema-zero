@@ -157,7 +157,7 @@ describe('a equipe na home', () => {
     await waitFor(() => screen.getByRole('heading', { name: 'Guardiões da Lua', level: 1 }))
     // Como a criança digitou (trim): quem normaliza é o servidor.
     expect(joins).toEqual([{ code: 'zap-aaaaab' }])
-    expect(screen.getByRole('button', { name: 'Equipe · 1' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Equipe, 1 na equipe' })).toBeTruthy()
   })
 
   test('código inválido: o recado do servidor fica ao lado do campo, e o campo continua', async () => {
@@ -193,6 +193,50 @@ describe('a equipe na home', () => {
     fireEvent.click(botao)
     fireEvent.click(screen.getByRole('button', { name: '+ Novo plano' }))
     expect(screen.queryByRole('textbox', { name: 'Código do plano de um colega' })).toBeNull()
+    expect(screen.getByRole('textbox', { name: 'Nome do novo jogo' })).toBeTruthy()
+  })
+
+  test('Esc fecha o formulário do código também com o foco nos botões "Entrar" e "Cancelar"', async () => {
+    await home([plan('runo', 'Runo')])
+    const botao = screen.getByRole('button', { name: 'Entrar com um código' })
+    fireEvent.click(botao)
+    fireEvent.change(screen.getByRole('textbox', { name: 'Código do plano de um colega' }), {
+      target: { value: 'ZAP-AAAAAB' },
+    })
+    const entrar = screen.getByRole('button', { name: 'Entrar' })
+    entrar.focus()
+    fireEvent.keyDown(entrar, { key: 'Escape' })
+    expect(screen.queryByRole('textbox', { name: 'Código do plano de um colega' })).toBeNull()
+    expect(document.activeElement).toBe(botao)
+    fireEvent.click(botao)
+    const cancelar = screen.getByRole('button', { name: 'Cancelar' })
+    cancelar.focus()
+    fireEvent.keyDown(cancelar, { key: 'Escape' })
+    expect(screen.queryByRole('textbox', { name: 'Código do plano de um colega' })).toBeNull()
+    expect(document.activeElement).toBe(botao)
+  })
+
+  test('no primeiro uso, cancelar o código devolve o campo de criar (o vazio não fica sem campo)', async () => {
+    await home([])
+    expect(screen.getByRole('textbox', { name: 'Nome do novo jogo' })).toBeTruthy()
+    const botao = screen.getByRole('button', { name: 'Entrar com um código' })
+    fireEvent.click(botao)
+    // Abrir o código fechou o criar (um de cada vez na faixa).
+    expect(screen.queryByRole('textbox', { name: 'Nome do novo jogo' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
+    expect(screen.queryByRole('textbox', { name: 'Código do plano de um colega' })).toBeNull()
+    // Sem planos, o convite "Dê um nome ao jogo" precisa do campo à vista.
+    expect(screen.getByText(/Dê um nome ao jogo/)).toBeTruthy()
+    expect(screen.getByRole('textbox', { name: 'Nome do novo jogo' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '+ Novo plano' }).getAttribute('aria-expanded')).toBe(
+      'true',
+    )
+    expect(document.activeElement).toBe(botao)
+    // Com Esc também.
+    fireEvent.click(botao)
+    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Código do plano de um colega' }), {
+      key: 'Escape',
+    })
     expect(screen.getByRole('textbox', { name: 'Nome do novo jogo' })).toBeTruthy()
   })
 })

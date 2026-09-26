@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { PensaHostAdapter, PensaStageView, PensaTaskView } from '../core/types'
 import { ConfirmDialog } from './ConfirmDialog'
+import { useUnsavedChanges } from './unsavedChanges'
 
 export interface TaskPlanProps {
   adapter: PensaHostAdapter
@@ -15,15 +16,6 @@ const draftId = (prefix: string): string =>
   `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
 
 const destinationNames = { pinta: 'Pinta', studio: 'Estúdio', molda: 'Molda' }
-
-function useUnsavedChanges(active: boolean) {
-  useEffect(() => {
-    if (!active) return
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault()
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [active])
-}
 
 export function TaskPlan(props: TaskPlanProps) {
   const titleById = useMemo(

@@ -20,6 +20,22 @@ import { LESSON_BLOCK_KINDS as ADMIN_KINDS } from '../src/lib/types'
  * string>` no editor), então aqui fica o elo que o tipo não alcança: os dois arrays.
  */
 describe('conformance admin×members — tipos de bloco de aula', () => {
+  test('o material mantém a opção de mostrar o PDF como livro ao salvar', () => {
+    expect(
+      buildContent({
+        ...EMPTY_BLOCK,
+        kind: 'materials',
+        materialsBookPreview: true,
+        materials: { title: 'Caderno do Aluno', items: [] },
+      }),
+    ).toEqual({
+      kind: 'materials',
+      title: 'Caderno do Aluno',
+      bookPreview: true,
+      items: [],
+    })
+  })
+
   test('gallery authoring saves delivery settings without a chain or an embedded Pinta seed', () => {
     const pinta = buildContent({
       ...EMPTY_BLOCK,

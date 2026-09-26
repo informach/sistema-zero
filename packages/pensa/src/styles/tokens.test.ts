@@ -110,6 +110,36 @@ describe('pensa.css lê os tokens compartilhados', () => {
   it('color-mix sempre em oklab (em oklch o matiz gira e dá rosa)', () => {
     expect(css).not.toMatch(/color-mix\(in oklch/)
   })
+
+  it('nenhum fallback aponta para um token que não existe (`--pz-text` nunca foi definido)', () => {
+    // Full review de 26/09/2026: o campo de renomear caía em `var(--pz-text)`; o token é `--pz-ink`.
+    expect(css).not.toContain('--pz-text')
+    expect(bloco('.pensa-planner .pensa-title-input {')).toMatch(
+      /color:\s*var\(--sz-tool-ink,\s*var\(--pz-ink\)\)/,
+    )
+  })
+})
+
+// Full review de 26/09/2026: tinta do acento sobre o acento a 12% dava ≈4,5:1 em 12px/700, no
+// limite. Os chips da equipe ficam em 8% (o mesmo do `.pensa-map-node`) e a inicial em 10%; e o
+// "você" não soma margem ao `gap` do nome.
+describe('os chips da equipe', () => {
+  const tint = (corpo: string) => /var\(--pz-accent\)\s+(\d+)%/.exec(corpo)?.[1]
+  it('fundo do acento em no máximo 8% (chips) e 10% (a inicial)', () => {
+    for (const seletor of ['.pensa-chip.is-team {', '.pensa-chip.is-you {']) {
+      expect({ seletor, tint: Number(tint(bloco(seletor))) }).toEqual({ seletor, tint: 8 })
+    }
+    expect(Number(tint(bloco('.pensa-team-member__initial {')))).toBe(10)
+  })
+  it('o "você" não declara margem (o gap do nome já separa)', () => {
+    for (const regra of regras(/\.pensa-chip\.is-you/)) {
+      expect({ seletor: regra.seletor, margem: /margin/.test(regra.corpo) }).toEqual({
+        seletor: regra.seletor,
+        margem: false,
+      })
+    }
+    expect(regras(/\.pensa-chip\.is-you/).length).toBeGreaterThan(0)
+  })
 })
 
 // 19/09/2026, decisão dela: o cartão do plano NÃO é clicável. O "Continuar" tinha um `::after`

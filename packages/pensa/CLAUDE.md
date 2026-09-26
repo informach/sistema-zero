@@ -146,6 +146,8 @@ não vê o lápis, ver "Equipe").
 - **CSS:** `.pensa-project-title__row` (flex, gap 8) e `.pensa-planner .pensa-title-input`
   (a receita do título das telas-modelo: família de exibição em 800, 44px, teto de 32rem para
   não engolir os créditos e a pílula). Nenhuma regra de elemento nova; nenhum `cursor`.
+  ⚠️ A cor cai em `var(--sz-tool-ink, var(--pz-ink))`: a primeira versão caía em `--pz-text`,
+  um token que NUNCA existiu (full review de 26/09/2026); o `tokens.test.ts` trava o nome.
 - Playground: `PATCH /projects/:id` simulado. Testes: `components/PensaApp.rename.test.tsx`.
 
 ## Equipe do plano (26/09/2026)
@@ -167,17 +169,35 @@ erros, quem é dono) são do members; o contrato está em `docs/pensa-planner.md
   O formulário `#pensa-join` é a mesma `.pensa-create` da faixa creme; abrir um fecha o outro;
   o código vai como a criança digitou (quem normaliza é o members); o erro do servidor fica ao
   lado do campo (`role="alert"`, a frase dele); Esc/Cancelar devolvem o foco ao botão; entrar
-  abre o plano (`POST /projects/join` → `loadProject`).
+  abre o plano (`POST /projects/join` → `loadProject`). O Esc mora no **`<form>`** (do código E
+  do criar): vale com o foco nos botões, não só no campo. No primeiro uso (0 planos) cancelar o
+  código REABRE o criar, senão o vazio "Dê um nome ao jogo…" ficava sem campo à vista.
 - **Detalhe:** o **"Equipe · N"** (`.pensa-team-button`, `aria-haspopup="dialog"`) nas ações do
   `ProjectHeader` abre a **`TeamDialog`** (`components/TeamDialog.tsx`), irmã das faixas como a
-  janela de apagar. Dono: o código (`<output class="pensa-team-code">` + "Copiar" com
+  janela de apagar. ⚠️ O nome acessível é **"Equipe, N na equipe"**: o "Equipe · N" visível fica
+  em `aria-hidden` (o leitor falaria "ponto médio") e o nome vem inteiro de um `.pensa-sr-only`;
+  os testes acham o botão por `/^Equipe, \d+ na equipe$/`. Dono: o código
+  (`<output class="pensa-team-code" aria-labelledby={h3}>` + "Copiar" com
   `navigator.clipboard`; sem clipboard o recado é honesto e o código fica selecionado, nunca
   `window.prompt`; "Gerar outro código" e "Desligar o código"), a lista (rosto ou inicial, 1º
   nome, "você"/"dono do plano") com **"Tirar" em dois passos NA LINHA** ("Tirar mesmo"/"Deixar")
-  e "N de 5 lugares". Membro: "Este plano é de X", a lista e **"Sair da equipe"** em dois passos
-  (→ `DELETE …/members/me` → a home). Erro fica na janela (`role="alert"`). `canRename` é
-  `detail.role !== 'member'`. `onTeamChanged` espelha `memberCount`/`shareEnabled` no `detail`
-  (o botão do cabeçalho acompanha sem recarregar).
+  e "N de 5 lugares". Dois colegas com o mesmo 1º nome: o `aria-label` do "Tirar" leva a posição
+  ("Tirar João (2º da lista) da equipe"). Membro: "Este plano é de X. Vocês mexem no mesmo plano."
+  ("vocês", não "vocês dois": pode ter mais gente), a lista e **"Sair da equipe"** em dois passos
+  (→ `DELETE …/members/me` → a home, que nasce com o FOCO no h1 "Meus projetos" (`tabIndex=-1`,
+  bandeira `homeFocusRef` consumida ao montar): o "Equipe" e a janela já se foram). Erro fica na
+  janela (`role="alert"`). `canRename` é `detail.role !== 'member'`.
+  ⭐ **O foco dos dois passos** é um efeito sobre `pending`: armar foca o "Tirar mesmo"/"Sair
+  mesmo"; desarmar ("Deixar"/"Ficar") devolve ao "Tirar" da linha/"Sair da equipe" (botões
+  NOVOS: refs por `profileId`); tirou alguém = a linha sumiu, o foco pousa no
+  `.pensa-team__seats` (`tabIndex=-1`). Sem isso Enter no "Tirar" jogava o foco no `body`.
+  ⭐ **`load` tem token de pedido** (`loadSeq`) e abrir faz `setView(null)`: a resposta atrasada
+  de uma abertura anterior (ou de uma janela já fechada) não repõe a lista velha.
+  ⭐⭐ **`onTeamChanged` espelha `memberCount`/`shareEnabled` E chama `syncDetail`**: o members
+  grava o `updatedAt` do projeto ao gerar/desligar o código e ao tirar alguém, então o app puxa
+  `GET /projects/:id` SÓ para o `detail` (sem `loading`, sem recarregar a etapa: o
+  `StageWorkspace` não desmonta e o rascunho fica). Sem isso o compasso acusava a própria
+  criança em até 30 s.
 - ⭐ **`useDialogFocus`** (`components/dialogFocus.ts`) saiu do `ConfirmDialog` e serve às DUAS
   janelas: foco no card ao abrir, Tab preso, Esc fecha (nunca gravando), foco de volta a quem
   abriu (`returnFocusTo`, lido no fechamento). Duas janelas com dois focos era como uma ia
@@ -187,19 +207,33 @@ erros, quem é dono) são do members; o contrato está em `docs/pensa-planner.md
   existe para o teste injetar um curto e `0` desliga) pergunta `GET /projects/:id` com a aba
   visível e sem ação em voo, e compara o `updatedAt`. Mudou = a faixa com **"Atualizar"**
   (`refresh()`), em vez de recarregar por cima do que a criança escreve. ⚠️ Toda ação própria
-  termina em `refresh` (o chat inclusive) e o renomear copia o `updatedAt` da resposta, senão o
-  compasso acusaria a própria criança.
+  termina em `refresh` (o chat inclusive), o renomear copia o `updatedAt` da resposta e a janela
+  da equipe passa pelo `syncDetail`, senão o compasso acusaria a própria criança.
+  ⭐ **"Atualizar" pergunta antes com coisa sem guardar**: `refresh` = `loadProject` →
+  `loading` → o `StageWorkspace` inteiro DESMONTA (rascunho do chat, cartão em edição, tarefa em
+  edição). O `useUnsavedChanges` (agora UM só, em `components/unsavedChanges.ts`; o `TaskPlan`
+  usa o mesmo) registra a posse no **`DirtyContext`** do `PensaApp` além do `beforeunload`, o
+  rascunho do chat da etapa Z também conta, e o botão confere `isDirty()`: sujo abre o
+  `ConfirmDialog` "Atualizar o plano?" / "Você tem coisa sem guardar. Atualizar mesmo?"
+  ("Atualizar" / "Continuar aqui", foco de volta ao botão da faixa); limpo recarrega direto.
 - **CSS:** seção "EQUIPE DO PLANO" no fim do `pensa.css`, por classe; o único `cursor` é o do
   "Tirar"/"Deixar" (`.pensa-planner .pensa-team-member__remove`, com o `.pensa-planner` na frente
-  pelo motivo da lixeira). O `tokens.test.ts` segue valendo.
+  pelo motivo da lixeira). Os chips `.is-team`/`.is-you` levam o acento a **8%** (era 12%: tinta
+  do acento em 12px/700 ficava em ≈4,5:1, no limite; 8% é o do `.pensa-map-node`) e a inicial
+  `.pensa-team-member__initial` a 10%; o "você" não tem `margin-left` (o `gap` do nome separa).
+  O `tokens.test.ts` trava os três.
 - **Playground:** `?equipe=1` põe a Bia no "Runo" (meu, com código ligado) e me põe no
-  "Guardiões da Lua" (dela); join/share/members/tirar/sair simulados, e 40 s depois de abrir a
-  Bia "mexe" no Runo para a faixa aparecer.
+  "Guardiões da Lua" (dela); join/share/members/tirar/sair simulados (share e tirar gravam o
+  `updatedAt` do plano, `touchPlan`, como o members: é o que o `syncDetail` puxa), e 40 s
+  depois de abrir a Bia "mexe" no Runo para a faixa aparecer.
 - ⚠️ Estúdio, Pinta e Molda seguem por perfil (a copy da janela diz: cada um constrói no seu);
   a conversa Z não tem trava (último-vence).
 - Testes: `components/PensaApp.team.test.tsx` (janela do dono e do membro, código, copiar,
-  tirar, sair, Esc/foco, erro, o compasso) e `components/PensaApp.join.test.tsx` (chips, lixeira
-  por papel, o formulário do código).
+  tirar, sair, Esc/foco, erro, o compasso; full review 26/09: o foco dos dois passos, nomes
+  repetidos, a corrida ao reabrir (`defer`/`release` no harness), mexer na equipe sem acusar a
+  criança e sem remontar a etapa, "Atualizar" sujo/limpo, aba escondida e `busy`),
+  `components/PensaApp.join.test.tsx` (chips, lixeira por papel, o formulário do código, Esc nos
+  botões, o primeiro uso) e `components/PensaApp.create.test.tsx` (Esc nos botões do criar).
 
 ## Apagar um plano (14/09/2026)
 

@@ -219,6 +219,8 @@ export interface BlockForm {
   pintaChain: string
   /** Materiais complementares: o nome do bloco e a lista ordenada de itens. */
   materials: MaterialsValue
+  /** Exibe o primeiro PDF em um leitor ao lado do vídeo quando couber. */
+  materialsBookPreview: boolean
 }
 
 /** Exportados para o teste de conformidade dos tipos de bloco (ver tests/). */
@@ -278,6 +280,7 @@ export const EMPTY_BLOCK: BlockForm = {
   pintaToolPreset: 'essencial',
   pintaChain: '',
   materials: EMPTY_MATERIALS,
+  materialsBookPreview: false,
 }
 
 /**
@@ -368,6 +371,7 @@ export function buildContent(
       return {
         kind: 'materials',
         ...(opt(f.materials.title) ? { title: f.materials.title.trim() } : {}),
+        ...(f.materialsBookPreview ? { bookPreview: true } : {}),
         items: f.materials.items,
       }
     case 'dialogue':
@@ -882,6 +886,7 @@ function LessonEditorSession({
       certSig2Name: c.kind === 'certificate' ? (c.signatures?.[1]?.name ?? '') : '',
       comingSoonMessage: c.kind === 'coming_soon' ? (c.message ?? '') : '',
       materials: c.kind === 'materials' ? materialsFromContent(c) : EMPTY_MATERIALS,
+      materialsBookPreview: c.kind === 'materials' && c.bookPreview === true,
       // Tipo/tamanho não são re-hidratados: na EDIÇÃO quem manda é o desenho salvo (o editor
       // abre com ele e o botão "Tamanho" dele resolve o resto). Os selects ficam escondidos.
       pintaAssetKind: EMPTY_BLOCK.pintaAssetKind,
@@ -2121,6 +2126,26 @@ function LessonEditorSession({
                       Arquivos só são obrigatórios se você marcar o download em Configurar avanço.
                       Imagens, recados, links e vídeos incorporados continuam opcionais neste bloco.
                     </p>
+                    <label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={blockForm.materialsBookPreview}
+                        onChange={(event) =>
+                          setBlockForm((form) => ({
+                            ...form,
+                            materialsBookPreview: event.target.checked,
+                          }))
+                        }
+                        className="mt-1 size-4"
+                      />
+                      <span>
+                        <strong>Mostrar o PDF como livro na aula</strong>
+                        <span className="mt-1 block text-muted-foreground">
+                          O primeiro PDF deste bloco aparece para leitura ao lado do vídeo quando
+                          houver espaço. O download continua abaixo do vídeo.
+                        </span>
+                      </span>
+                    </label>
                     <MaterialsBuilder
                       value={blockForm.materials}
                       onChange={(materials) => setBlockForm((f) => ({ ...f, materials }))}

@@ -57,6 +57,45 @@ async function revision(response: Response) {
 }
 
 describe('manifest import through the authoring HTTP boundary', () => {
+  test('a importação mantém a marca de prévia em livro no bloco de materiais', async () => {
+    const f = await setup(1)
+    const caderno = f.document.blocks.find((block) => block.key === 'materiais-caderno')
+    if (!caderno || !('content' in caderno) || caderno.content.kind !== 'materials')
+      throw new Error('Caderno ausente na fixture')
+    caderno.content.bookPreview = true
+    const preview = await f.preview()
+    expect(preview.status).toBe(200)
+    expect((await f.apply(await revision(preview))).status).toBe(200)
+    const draft = await readDraft(f.app, f.lessonId)
+    const imported = draft.document.blocks.find((block) => block.content.kind === 'materials')
+    expect(imported?.content).toMatchObject({ kind: 'materials', bookPreview: true })
+  })
+
+  test('a reimportação preservada pode aposentar um bloco de materiais importado', async () => {
+    const f = await setup(1)
+    const first = await f.preview()
+    expect(first.status).toBe(200)
+    expect((await f.apply(await revision(first))).status).toBe(200)
+    const before = await readDraft(f.app, f.lessonId)
+    const materials = before.document.blocks.find((block) => block.content.kind === 'materials')
+    expect(materials).toBeDefined()
+
+    f.document.blocks = f.document.blocks.filter((block) => block.key !== 'materiais-caderno')
+    f.document.sections = f.document.sections.map((section) => ({
+      ...section,
+      blockKeys: section.blockKeys.filter((key) => key !== 'materiais-caderno'),
+    }))
+    f.document.retireBlockKeys = ['materiais-caderno']
+    const preview = await f.preview()
+    expect(preview.status).toBe(200)
+    expect((await f.apply(await revision(preview))).status).toBe(200)
+    const after = await readDraft(f.app, f.lessonId)
+    expect(after.document.blocks.some((block) => block.id === materials?.id)).toBe(false)
+    expect(
+      after.document.sections.some((section) => section.blockIds.includes(materials?.id ?? '')),
+    ).toBe(false)
+  })
+
   test('Corre Dino 1 preserves the Studio ID and replaces its initial project from the manifest', async () => {
     const f = await setup(1)
     const id = randomUUID()

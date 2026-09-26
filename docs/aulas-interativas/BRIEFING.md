@@ -240,7 +240,10 @@ boas-vindas só para o PDF. O Desafio do Primeiro Jogo já tem uma apresentaçã
 nos cursos seguintes, aplicar esta regra na Aula 1.
 
 A seção tem intenção `material`, um vídeo curto que mostra onde o caderno fica e como usá-lo, e um
-bloco `materials` com o PDF logo abaixo. A conclusão depende de assistir a 90% do vídeo. O
+bloco `materials` com o download do PDF logo abaixo. Se `bookPreview: true`, o mesmo PDF aparece
+para leitura em livro 3D na coluna de consulta quando houver espaço; em tela estreita fica depois
+do vídeo e do download. O caderno é anexado apenas nesta primeira aula, e as demais podem remeter
+à seção sem repetir o bloco. A conclusão depende de assistir a 90% do vídeo. O
 download fica disponível, mas não é obrigatório para avançar. O arquivo real é vinculado no admin;
 o manifesto declara o bloco com `items: []`. Gravar o vídeo depois de anexar o PDF, mostrando uma
 página verdadeira do caderno. Registrar a seção no relatório, no manifesto e no roteiro da aula.

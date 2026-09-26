@@ -1027,7 +1027,9 @@ APAGADO (o fork do kids junto).
 - ⭐ **O posicionamento saiu de graça, e vale saber por quê:** não existe campo de "duas colunas"
   na seção — a divisão é DERIVADA (`lib/lesson-split.ts`: esquerda = conteúdo, direita =
   ferramenta). Um bloco que não é Estúdio, Pinta nem cena já cai sozinho na coluna da esquerda, na
-  ordem de `section.blockIds`. Travado em `tests/lesson-split.test.ts`.
+  ordem de `section.blockIds`. Exceção explícita: `materials.bookPreview: true` mantém o download
+  na esquerda e mostra o mesmo PDF em livro 3D na direita, sem duplicar o bloco ou o anexo.
+  Travado em `tests/lesson-split.test.ts`.
 - ⚠️⚠️ **O item de ARQUIVO aponta para um anexo da aula pelo id, e NUNCA carrega a URL.** O anexo
   já tem a entrega privada inteira por trás (R2 privado, `storageRef` que não chega ao navegador,
   marca d'água por aluno com cache por ETag, 302 acima de 20 MB) e o `content` de um bloco viaja

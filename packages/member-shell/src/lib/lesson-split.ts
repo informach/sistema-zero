@@ -117,6 +117,17 @@ function ehLadoFerramenta(block: SplitBlock): boolean {
   return ehEditorDeSecao(block) || ehCenaDeSecao(block)
 }
 
+/** O arquivo continua na coluna de conteúdo; só a leitura ganha a segunda coluna. */
+export function ehPreviaDeLivro(block: SplitBlock): boolean {
+  return (
+    block.kind === 'materials' &&
+    block.content !== null &&
+    typeof block.content === 'object' &&
+    'bookPreview' in block.content &&
+    block.content.bookPreview === true
+  )
+}
+
 export type SecaoPartida = {
   /** Blocos da coluna da esquerda, na ordem da seção. */
   contentIds: string[]
@@ -150,6 +161,11 @@ export function partirSecao({
   const contentIds: string[] = []
   let temEditor = false
   for (const block of blocks) {
+    if (ehPreviaDeLivro(block)) {
+      contentIds.push(block.id)
+      toolIds.push(block.id)
+      continue
+    }
     if (!ehLadoFerramenta(block)) {
       contentIds.push(block.id)
       continue

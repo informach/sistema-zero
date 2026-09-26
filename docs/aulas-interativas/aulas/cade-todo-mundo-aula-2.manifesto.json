@@ -2,6 +2,9 @@
   "version": 5,
   "courseSlug": "cade-todo-mundo",
   "lessonSlug": "aula-2",
+  "retireBlockKeys": [
+    "caderno"
+  ],
   "title": "Complete a busca",
   "blocks": [
     {
@@ -38,7 +41,7 @@
     },
     {
       "key": "video-a2-contagem",
-      "plannedVideo": "Título: Cada descoberta conta\n\nRetomar a descoberta da experiência e ensinar a regra no projeto real. No Estúdio incorporado, mostrar Programação > Variáveis, encaixar Somar 1 em variável achados dentro do evento, abaixo da reação, e conferir os campos. Mostrar onde fica a Pré-visualização em larguras estreita e larga, aguardar sua atualização automática e tocar nos três esconderijos, sem mandar iniciar o jogo. A mensagem de vitória já estava preparada. Esperar Salvo, clicar em Enviar para o professor e encerrar a prática aí. Apontar o Caderno do Aluno opcional. Não demonstrar Compartilhar nesta seção. Alvo: 4–5 minutos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Cada descoberta conta\n\nRetomar a descoberta da experiência e ensinar a regra no projeto real. No Estúdio incorporado, mostrar Programação > Variáveis, encaixar Somar 1 em variável achados dentro do evento, abaixo da reação, e conferir os campos. Mostrar onde fica a Pré-visualização em larguras estreita e larga, aguardar sua atualização automática e tocar nos três esconderijos, sem mandar iniciar o jogo. A mensagem de vitória já estava preparada. Esperar Salvo, clicar em Enviar para o professor e encerrar a prática aí. Se houver dúvida, lembrar que o Caderno do Aluno com os passos está na seção Seu Caderno do Aluno da Aula 1; não dizer que o PDF aparece nesta aula. Não demonstrar Compartilhar nesta seção. Alvo: 4–5 minutos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-a2-contagem",
@@ -55,7 +58,9 @@
         "purpose": "submission",
         "chain": "cade-todo-mundo",
         "level": "iniciante-2d",
-        "allowedModes": ["blocks"],
+        "allowedModes": [
+          "blocks"
+        ],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -939,14 +944,6 @@
       }
     },
     {
-      "key": "caderno",
-      "content": {
-        "kind": "materials",
-        "title": "Caderno do Aluno — Cadê Todo Mundo?",
-        "items": []
-      }
-    },
-    {
       "key": "video-a2-fecho",
       "plannedVideo": "Título: Sua busca está completa\n\nComeçar celebrando o jardim completo, o contador em 3 e as duas regras que a criança acrescentou; reconhecer que cenário, personagens e comemoração já estavam preparados. Com o mesmo Estúdio da seção prática visível ao lado, ensinar o compartilhamento opcional depois do envio: Compartilhar, resumo pronto, Gerar capa, Publicar e Copiar link de jogar. Distinguir entrega da aula e cópia pública; não mandar abrir o Mural nem prometer acesso permanente a ele. Dizer que a criança pode seguir ao certificado sem publicar ou repetir a publicação. Sem venda. Alvo: 80–100 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     }
@@ -957,13 +954,17 @@
       "title": "Volte ao seu jardim",
       "intent": "presentation",
       "objective": "Retomar o projeto salvo e perceber que revelar não está contando os achados ainda.",
-      "blockKeys": ["video-a2-retomada"],
+      "blockKeys": [
+        "video-a2-retomada"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a2-retomada"]
+        "blockIds": [
+          "video-a2-retomada"
+        ]
       }
     },
     {
@@ -971,13 +972,20 @@
       "title": "Um número que acompanha a busca",
       "intent": "exploration",
       "objective": "Observar quando o valor atual de Achados muda e quando continua igual durante uma busca.",
-      "blockKeys": ["video-a2-variavel", "ponte-a2-variavel", "experiencia-achados"],
+      "blockKeys": [
+        "video-a2-variavel",
+        "ponte-a2-variavel",
+        "experiencia-achados"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a2-variavel", "experiencia-achados"]
+        "blockIds": [
+          "video-a2-variavel",
+          "experiencia-achados"
+        ]
       }
     },
     {
@@ -985,13 +993,20 @@
       "title": "Cada personagem vale um achado",
       "intent": "delivery",
       "objective": "Somar um no contador no mesmo evento do toque e testar até a mensagem de vitória.",
-      "blockKeys": ["video-a2-contagem", "ponte-a2-contagem", "projeto", "caderno"],
+      "blockKeys": [
+        "video-a2-contagem",
+        "ponte-a2-contagem",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a2-contagem", "projeto"],
+        "blockIds": [
+          "video-a2-contagem",
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "somar-achado",
@@ -1015,13 +1030,17 @@
       "title": "Sua busca está completa",
       "intent": "closing",
       "objective": "Conferir que os três personagens aparecem, o contador chega a três e a vitória aparece.",
-      "blockKeys": ["video-a2-fecho"],
+      "blockKeys": [
+        "video-a2-fecho"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a2-fecho"]
+        "blockIds": [
+          "video-a2-fecho"
+        ]
       }
     }
   ]

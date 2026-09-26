@@ -6,7 +6,7 @@ Apresentar o Caderno do Aluno uma única vez, na segunda seção da Aula 1, como
 
 ## Decisões pedagógicas e de conteúdo
 
-- A seção passa a se chamar **Seu Caderno do Aluno**. O vídeo mostra onde consultar o material, uma página real com os passos e como voltar à seção. Não chama o caderno de mapa nem trata o panorama do jogo como função principal.
+- A seção passa a se chamar **Seu Caderno do Aluno**. O vídeo mostra onde consultar o material, a capa, a página de orientação e como voltar à seção. As páginas com os passos existem para consulta, mas não são abertas no vídeo antes da primeira experiência para não antecipar a descoberta. Não chama o caderno de mapa nem trata o panorama do jogo como função principal.
 - A capa e a página de panorama do próprio PDF deixam de usar “mapa do jogo” como rótulo. O panorama pode continuar, mas se apresenta como orientação breve antes das páginas com o passo a passo das Aulas 1 e 2.
 - A fala da Aula 2 deixa de dizer que o PDF está naquela seção. Ela remete à seção **Seu Caderno do Aluno**, na Aula 1. Não há segundo bloco, anexo ou upload na Aula 2.
 - Ler no navegador, baixar e imprimir são escolhas, não requisitos de conclusão. A seção continua exigindo somente o vídeo.

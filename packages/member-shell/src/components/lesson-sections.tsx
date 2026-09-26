@@ -23,13 +23,15 @@ import { apiSend } from '../lib/api'
 import { cn } from '../lib/cn'
 import {
   ehEditorDeSecao,
+  ehPreviaDeLivro,
   partirSecao,
   resolveLessonSplit,
   SPLIT_DEFAULT_SIZE,
   SPLIT_HANDLE_WIDTH_PX,
   type SplitBlock,
 } from '../lib/lesson-split'
-import type { LessonBlockView, LessonDetailView } from '../lib/types'
+import type { LessonBlockView, LessonDetailView, MaterialsBlock } from '../lib/types'
+import { MaterialsBookPreview } from './ebook/materials-book-preview'
 import { InteractiveLessonBlock } from './learning-activity'
 import { LessonGalleryDelivery } from './lesson-gallery-delivery'
 import { LessonPlayerProvider, useLessonPlayer } from './lesson-player-context'
@@ -1137,7 +1139,16 @@ function LessonSectionsContent({
               {cenasAtivas
                 .map((id) => blockById.get(id))
                 .filter((b): b is LessonBlockView => Boolean(b))
-                .map(render)}
+                .map((block) =>
+                  ehPreviaDeLivro(paraSplit(block)) ? (
+                    <MaterialsBookPreview
+                      key={block.id}
+                      content={block.content as MaterialsBlock}
+                    />
+                  ) : (
+                    render(block)
+                  ),
+                )}
             </Panel>
           </PanelGroup>
           {state?.sections

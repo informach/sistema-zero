@@ -59,11 +59,22 @@ function montarProjetoCompleto() {
 }
 
 describe('curso gratuito Cadê Todo Mundo?', () => {
+  test('o manifesto aceita leitura do caderno somente como booleano', () => {
+    const m = manifesto('aula-1')
+    const caderno = m.blocks.find((block) => block.key === 'caderno')
+    if (!caderno || !('content' in caderno) || caderno.content.kind !== 'materials')
+      throw new Error('Caderno ausente')
+    caderno.content.bookPreview = true
+    expect(isLearningManifest(m)).toBe(true)
+    caderno.content.bookPreview = 'sim' as never
+    expect(isLearningManifest(m)).toBe(false)
+  })
+
   test('Aula 1 apresenta o caderno antes da experiência e conclui a cena sem pergunta final', () => {
     const m = manifesto('aula-1')
     expect(m.sections.map((section) => section.key)).toEqual([
       'apresentacao',
-      'seu-mapa-do-jogo',
+      'seu-caderno-do-aluno',
       'toque-e-resposta',
       'primeiro-achado',
     ])
@@ -87,6 +98,11 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
     expect(caderno?.content?.kind).toBe('materials')
     expect(
       caderno && 'content' in caderno && caderno.content.kind === 'materials'
+        ? caderno.content.bookPreview
+        : undefined,
+    ).toBe(true)
+    expect(
+      caderno && 'content' in caderno && caderno.content.kind === 'materials'
         ? caderno.content.title
         : undefined,
     ).toBe('Caderno do Aluno — Cadê Todo Mundo?')
@@ -100,7 +116,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
     }
   })
 
-  test('Aula 2 oferece o mesmo caderno na prática sem exigir o download', () => {
+  test('Aula 2 remete ao caderno da Aula 1 sem duplicar o bloco', () => {
     const m = manifesto('aula-2')
     expect(m.sections.map((s) => s.key)).toEqual([
       'retomada',
@@ -132,20 +148,10 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
       expect(blockCheckpoint(experience.content)).toBeUndefined()
     }
     const practice = m.sections.find((section) => section.key === 'contar-achados')
-    expect(practice?.blockKeys).toEqual([
-      'video-a2-contagem',
-      'ponte-a2-contagem',
-      'projeto',
-      'caderno',
-    ])
+    expect(practice?.blockKeys).toEqual(['video-a2-contagem', 'ponte-a2-contagem', 'projeto'])
     expect(practice?.completion?.blockIds).toEqual(['video-a2-contagem', 'projeto'])
-    const caderno = m.blocks.find((block) => block.key === 'caderno')
-    expect(caderno?.content?.kind).toBe('materials')
-    expect(
-      caderno && 'content' in caderno && caderno.content.kind === 'materials'
-        ? caderno.content.title
-        : undefined,
-    ).toBe('Caderno do Aluno — Cadê Todo Mundo?')
+    expect(m.blocks.some((block) => block.key === 'caderno')).toBe(false)
+    expect(m.retireBlockKeys).toContain('caderno')
   })
 
   test('só a Aula 2 permite compartilhar após o envio, sem exigir publicação para concluir', () => {

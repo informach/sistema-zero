@@ -112,6 +112,22 @@ describe('PensaApp × "+ Novo plano"', () => {
     fireEvent.click(novo)
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
     expect(screen.queryByRole('textbox', { name: 'Nome do novo jogo' })).toBeNull()
+    // Esc vale no formulário inteiro: com o foco no "Criar meu plano" ou no "Cancelar" também.
+    fireEvent.click(novo)
+    fireEvent.change(screen.getByRole('textbox', { name: 'Nome do novo jogo' }), {
+      target: { value: 'Lua' },
+    })
+    const criarBtn = screen.getByRole('button', { name: 'Criar meu plano' })
+    criarBtn.focus()
+    fireEvent.keyDown(criarBtn, { key: 'Escape' })
+    expect(screen.queryByRole('textbox', { name: 'Nome do novo jogo' })).toBeNull()
+    expect(document.activeElement).toBe(novo)
+    fireEvent.click(novo)
+    const cancelarBtn = screen.getByRole('button', { name: 'Cancelar' })
+    cancelarBtn.focus()
+    fireEvent.keyDown(cancelarBtn, { key: 'Escape' })
+    expect(screen.queryByRole('textbox', { name: 'Nome do novo jogo' })).toBeNull()
+    expect(document.activeElement).toBe(novo)
     // Rodapé no lugar do antigo cabeçalho "Meus planos" (que segue só para o leitor).
     expect(screen.getByText('Mostrando 1 plano')).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Meus planos' }).className).toContain(

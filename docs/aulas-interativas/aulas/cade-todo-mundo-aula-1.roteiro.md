@@ -14,21 +14,21 @@ Mostrar o jogo completo e a missão de hoje, sem ensinar a experiência ou os bl
 >
 > Antes de começar, deixa eu te mostrar como a aula funciona. Ela vem em pequenas partes, que a gente chama de seções. Esta é a primeira, e cada seção tem um vídeo como este. Se quiser ouvir uma explicação de novo, você pode voltar um pedacinho aqui no vídeo. Se precisar de um tempinho, aperta pausa. Sem pressa.
 >
-> Quando este vídeo terminar, aperta Próxima seção, aqui embaixo. Vou te mostrar um mapa do jogo que você pode consultar quando quiser. Vamos?”
+> Quando este vídeo terminar, aperta Próxima seção, aqui embaixo. Vou te mostrar um caderno que pode ajudar sempre que você esquecer algum passo. Vamos?”
 
 Não demonstrar **Anterior**, a experiência, a divisória, o Estúdio ou o caderno nesta abertura. Não prometer que a criança já criou o jogo inteiro: cenário e personagens vêm preparados.
 
-## 2. Seu mapa do jogo — caderno (35–50 s)
+## 2. Seu Caderno do Aluno — apoio para construir o jogo (45–60 s)
 
-**Na tela:** mostrar a segunda seção já com o PDF real anexado ao bloco **Caderno do Aluno** logo abaixo do vídeo. Abrir o PDF, mostrar a capa e uma página verdadeira do **Mapa do jogo**, sem ler os passos da experiência nem revelar seu resultado. Apontar para **Próxima seção** sem navegar na gravação. Mostrar que o download é opcional; não pedir impressão.
+**Na tela:** mostrar o PDF real no leitor desta seção: a capa, a página de orientação **O que você vai fazer** e o controle para virar páginas. Explicar que as páginas seguintes guardam os passos para construir o jogo, sem abri-las agora para não antecipar a descoberta da experiência. Mostrar o botão de download abaixo do vídeo. Numa tela larga, mostrar o livro à direita e arrastar a divisória uma vez; numa tela estreita, mostrar o livro depois do vídeo e do download. Apontar para **Próxima seção** sem navegar na gravação. Não pedir impressão.
 
 **Narração:**
 
-> “Olha este mapa do nosso jogo. Ele está no Caderno do Aluno, aqui embaixo do vídeo. Tem um caminho para acompanhar a busca e os passos que você pode consultar nesta aula e na próxima.
+> “Este é o seu Caderno do Aluno. Nele estão todos os passos para construir o nosso jogo: os blocos que vamos usar, onde encaixar cada um e o que conferir quando testar. Você não precisa guardar tudo na cabeça.
 >
-> Vou abrir uma página para você ver. Se quiser, pode olhar o caderno na tela quando precisar. Também dá para baixar ou imprimir, mas não precisa fazer isso para continuar.
+> Se você esquecer um passo ou se o seu jogo ficar diferente do que aparece no vídeo, pode voltar a esta seção e consultar o caderno. Olha só: dá para folhear aqui mesmo na tela. Os passos estão organizados por aula, para você encontrar a parte que está fazendo. Se quiser guardar o PDF ou imprimir com a ajuda de um responsável, o botão Baixar fica embaixo do vídeo. Mas não precisa baixar nem imprimir para continuar.
 >
-> Agora aperta Próxima seção. Vamos testar o que acontece quando você toca no jardim.”
+> Agora aperta Próxima seção. Vamos descobrir o que acontece quando você toca no jardim.”
 
 Só o vídeo é necessário para concluir esta seção; assistir a 90% basta. O bloco do PDF permanece disponível, sem exigir download.
 
@@ -38,7 +38,7 @@ Só o vídeo é necessário para concluir esta seção; assistir a 90% basta. O 
 
 **Narração:**
 
-> “Você já viu onde fica o mapa do jogo. Se quiser rever a seção anterior, aperta Anterior, aqui embaixo. Pode voltar e depois vir para cá de novo: o que você fizer na aula continua salvo.
+> “Você já viu onde consultar o Caderno do Aluno. Se quiser rever a seção anterior, aperta Anterior, aqui embaixo. Pode voltar e depois vir para cá de novo: o que você fizer na aula continua salvo.
 >
 > Agora imagina que você aperta a campainha de uma casa. Você aperta o botão e ela toca. O aperto é o que aconteceu; o som é a resposta. Se a campainha não estiver ligada, você aperta, mas não escuta nada.
 >
@@ -66,7 +66,7 @@ Só o vídeo é necessário para concluir esta seção; assistir a 90% basta. O 
 >
 > Confere comigo: o bloco novo está dentro de Quando clicar ou tocar; o sprite é `escolhido`; o número é 0. Agora olha o jogo na Pré-visualização. Se ela estiver numa aba, toca nessa aba. O jogo acompanha a mudança que você fez, sem precisar apertar um botão para começar. Espera um instante e toca num esconderijo. Apareceu alguém? Toca em outro e vê se o mesmo bloco funciona de novo. Cada toque escolhe um esconderijo diferente. Hoje o número Achados ainda fica em zero, e está tudo bem: vamos fazer a contagem na próxima aula.
 >
-> Espera o Estúdio mostrar Salvo. Depois aperta Enviar para o professor. Pronto: você programou a primeira reação do seu jogo! Se quiser conferir algum passo depois, o Caderno do Aluno continua na seção Seu mapa do jogo.”
+> Espera o Estúdio mostrar Salvo. Depois aperta Enviar para o professor. Pronto: você programou a primeira reação do seu jogo! Se quiser conferir algum passo depois, o Caderno do Aluno continua na seção Seu Caderno do Aluno desta aula.”
 
 **Zappy fora do Estúdio:** “O jardim já está montado. Agora você vai criar a reação que faz aparecer o primeiro personagem.” Não fazer o Zappy repetir o caminho da paleta.
 

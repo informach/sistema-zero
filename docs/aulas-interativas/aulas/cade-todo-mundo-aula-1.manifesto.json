@@ -10,13 +10,14 @@
     },
     {
       "key": "video-a1-caderno",
-      "plannedVideo": "Título: Seu mapa do jogo\n\nNa segunda seção, mostrar o PDF real logo abaixo do vídeo: capa e página Mapa do jogo. Explicar que o caderno serve para consultar os passos das duas aulas, pode ser aberto quando a criança quiser e não precisa ser baixado nem impresso. Apontar para Próxima seção, onde virá a primeira atividade, sem revelar o resultado dela. Anexar o PDF no admin antes de gravar. Alvo: 35–50 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Seu Caderno do Aluno\n\nNa segunda seção, mostrar o PDF real no leitor da seção: capa e página de orientação O que você vai fazer. Não abrir agora as páginas de passos, que antecipariam a descoberta da experiência. Explicar que o Caderno do Aluno reúne todos os passos para construir o jogo e pode ser consultado quando houver dúvida. Mostrar o download abaixo do vídeo e o livro 3D na outra coluna quando houver largura; em tela estreita, o livro fica depois do vídeo. Baixar, ler e imprimir são opcionais. Anexar o PDF uma vez nesta aula antes de gravar. Alvo: 45–60 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
       "key": "caderno",
       "content": {
         "kind": "materials",
         "title": "Caderno do Aluno — Cadê Todo Mundo?",
+        "bookPreview": true,
         "items": []
       }
     },
@@ -67,7 +68,9 @@
         "purpose": "submission",
         "chain": "cade-todo-mundo",
         "level": "iniciante-2d",
-        "allowedModes": ["blocks"],
+        "allowedModes": [
+          "blocks"
+        ],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -926,27 +929,36 @@
       "title": "Bem-vindo ao jardim",
       "intent": "presentation",
       "objective": "Conhecer o jogo e a missão de hoje, aprender a pausar/rever o vídeo e avançar à próxima seção.",
-      "blockKeys": ["video-a1-abertura"],
+      "blockKeys": [
+        "video-a1-abertura"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a1-abertura"]
+        "blockIds": [
+          "video-a1-abertura"
+        ]
       }
     },
     {
-      "key": "seu-mapa-do-jogo",
-      "title": "Seu mapa do jogo",
+      "key": "seu-caderno-do-aluno",
+      "title": "Seu Caderno do Aluno",
       "intent": "material",
-      "objective": "Conhecer o caderno e saber onde consultá-lo durante as duas aulas.",
-      "blockKeys": ["video-a1-caderno", "caderno"],
+      "objective": "Conhecer o caderno e saber onde consultá-lo durante a construção do jogo.",
+      "blockKeys": [
+        "video-a1-caderno",
+        "caderno"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a1-caderno"]
+        "blockIds": [
+          "video-a1-caderno"
+        ]
       }
     },
     {
@@ -954,13 +966,20 @@
       "title": "O que um toque faz?",
       "intent": "exploration",
       "objective": "Comparar o mesmo toque antes e depois de ligar uma ação, sem palpite obrigatório.",
-      "blockKeys": ["video-a1-toque", "ponte-a1-toque", "experiencia-toque"],
+      "blockKeys": [
+        "video-a1-toque",
+        "ponte-a1-toque",
+        "experiencia-toque"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a1-toque", "experiencia-toque"]
+        "blockIds": [
+          "video-a1-toque",
+          "experiencia-toque"
+        ]
       }
     },
     {
@@ -968,13 +987,20 @@
       "title": "Faça alguém aparecer",
       "intent": "delivery",
       "objective": "Encaixar a reação no evento preparado e tocar num esconderijo do próprio jogo.",
-      "blockKeys": ["video-a1-programar", "ponte-a1-programar", "projeto"],
+      "blockKeys": [
+        "video-a1-programar",
+        "ponte-a1-programar",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-a1-programar", "projeto"],
+        "blockIds": [
+          "video-a1-programar",
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "revelar-ao-toque",

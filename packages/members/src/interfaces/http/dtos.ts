@@ -1450,6 +1450,7 @@ const ComingSoonBlockSchema = t.Object({
 const MaterialsBlockSchema = t.Object({
   kind: t.Literal('materials'),
   title: t.Optional(t.String({ maxLength: 120 })),
+  bookPreview: t.Optional(t.Boolean()),
   items: t.Array(
     t.Union([
       t.Object({

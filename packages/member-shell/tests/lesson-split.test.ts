@@ -200,6 +200,20 @@ function cena(id = 'cena') {
 }
 
 describe('a partição da seção', () => {
+  test('caderno com leitura em livro usa a esquerda para baixar e a direita para folhear', () => {
+    const caderno = {
+      id: 'caderno',
+      kind: 'materials',
+      content: { kind: 'materials', items: [], bookPreview: true },
+    }
+    expect(partirSecao({ blocks: [texto, caderno] })).toEqual({
+      contentIds: ['fala', 'caderno'],
+      toolIds: ['caderno'],
+      podeDividir: true,
+      temEditor: false,
+    })
+  })
+
   test('os MATERIAIS complementares são conteúdo — ficam na coluna da esquerda', () => {
     // É metade do pedido que criou o bloco: "embaixo do vídeo, no mesmo card da coluna da
     // esquerda". Ele não é bancada; se um dia cair na direita, a lista de arquivos vai parar ao
