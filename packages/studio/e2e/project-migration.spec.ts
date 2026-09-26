@@ -53,7 +53,7 @@ async function records(page: Page) {
   })
 }
 
-test('importa som histórico, salva atual e conserva a ferramenta após apagar e recarregar', async ({
+test('importa som histórico e remove o bloco da categoria após apagar e recarregar', async ({
   page,
 }) => {
   await page.goto('/')
@@ -67,11 +67,16 @@ test('importa som histórico, salva atual e conserva a ferramenta após apagar e
   await sound.click()
   await page.keyboard.press('Delete')
   await expect(sound).toHaveCount(0)
+  await expect
+    .poll(async () => JSON.stringify((await records(page))[`sz:v2:project-blocks:${id}`]))
+    .not.toContain('sz_g2d_play_fx')
+  await page.getByRole('treeitem', { name: '🧰 Blocos deste jogo', exact: true }).click()
+  await expect(page.locator('.blocklyToolboxFlyout')).not.toContainText('efeito')
   await expect(page.getByText('Salvo', { exact: true })).toBeVisible({ timeout: 15_000 })
   await page.reload()
   await expect(page.getByText('Blocos deste jogo', { exact: false })).toBeVisible()
   await page.getByRole('treeitem', { name: '🧰 Blocos deste jogo', exact: true }).click()
-  await expect(page.locator('.blocklyToolboxFlyout')).toContainText('efeito')
+  await expect(page.locator('.blocklyToolboxFlyout')).not.toContainText('efeito')
   const saved = await records(page)
   expect(saved[`sz:v2:project-meta:${id}`].formatVersion).toBe(2)
   expect(saved[`sz:v2:project-meta:${id}`].projectTools).toContain('sz_g2d_play_fx')

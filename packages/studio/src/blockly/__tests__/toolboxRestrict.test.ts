@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { LearningProfile } from '#core'
+import { projectBlockTypes } from '../../core/projectDocument'
 import { gameTwoDToolboxCategory } from '../../official-extensions/game-2d/blocks'
 import { BLOCK_CATALOG } from '../blockCatalog'
 import { classCategoryBlockTypes, functionCategoryBlockTypes } from '../paramsFlyout'
@@ -109,6 +110,7 @@ describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)'
       level: 'iniciante-2d',
       allowBlocks: ['sz_val_number'],
       projectTools: ['sz_g2d_set_position', 'sz_js_const_create', 'sz_gk_setup'],
+      currentBlockTypes: ['sz_g2d_set_position', 'sz_js_const_create', 'sz_gk_setup'],
     }
     const toolbox = buildCoreToolbox([gameTwoDToolboxCategory], profile)
     const category = toolbox.contents.find((entry) => entry.name === '🧰 Blocos deste jogo')
@@ -118,6 +120,40 @@ describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)'
     const types = allBlockTypes(toolbox.contents)
     expect(types).not.toContain('sz_gk_setup')
     expect(types).not.toContain('sz_g2d_create_sprite')
+  })
+  it('atualiza Blocos deste jogo conforme as instâncias restantes no projeto', () => {
+    const html = { type: 'sz_html_h1', id: 'html-1' }
+    const css = { type: 'sz_css_text_color', id: 'css-1' }
+    const state = (blocks: unknown[]) => ({ blocks: { blocks } })
+    const profileFor = (blocks: unknown[]): LearningProfile => ({
+      level: 'iniciante-2d',
+      allowBlocks: ['sz_val_number'],
+      projectTools: ['sz_html_h1', 'sz_css_text_color'],
+      currentBlockTypes: projectBlockTypes(state(blocks)),
+    })
+    const categoryTypes = (blocks: unknown[]) => {
+      const category = buildCoreToolbox([], profileFor(blocks)).contents.find(
+        (entry) => entry.name === '🧰 Blocos deste jogo',
+      )
+      return category && 'contents' in category ? allBlockTypes(category.contents) : []
+    }
+
+    expect(categoryTypes([html, css])).toEqual(['sz_html_h1', 'sz_css_text_color'])
+    expect(categoryTypes([html])).toEqual(['sz_html_h1'])
+    expect(categoryTypes([])).toEqual([])
+    expect(categoryTypes([html, { ...html, id: 'html-2' }])).toEqual(['sz_html_h1'])
+  })
+  it('não mantém CSS e Canvas na paleta só pelo histórico de ferramentas', () => {
+    const categories = categoryNames(
+      buildCoreToolbox([], {
+        level: 'iniciante-2d',
+        allowBlocks: ['sz_val_number'],
+        projectTools: ['sz_css_text_color', 'sz_canvas_clear'],
+        currentBlockTypes: ['sz_frame_start'],
+      }).contents,
+    )
+    expect(categories).not.toContain('CSS')
+    expect(categories).not.toContain('Canvas')
   })
   it('mostra SÓ os blocos CORE listados (+ frames sempre)', () => {
     const profile: LearningProfile = {
