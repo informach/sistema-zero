@@ -17,6 +17,9 @@ export type {
   PensaPintaTaskContext,
   PensaProjectDetailView,
   PensaProjectListView,
+  PensaProjectMembersView,
+  PensaProjectRole,
+  PensaShareView,
   PensaStage,
   PensaStageView,
   PensaStudioTaskContext,
@@ -27,6 +30,7 @@ export type {
   PensaTaskOutputRef,
   PensaTaskStatus,
   PensaTaskView,
+  PensaTeamPersonView,
   PensaTransport,
   PensaZState,
 } from './core/types'

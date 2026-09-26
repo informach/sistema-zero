@@ -10,16 +10,8 @@
  * abriu ao fechar, Esc fecha (nunca no meio de uma gravação) e o Tab fica preso
  * dentro da janela.
  */
-import { type ReactNode, type RefObject, useEffect, useId, useRef } from 'react'
-
-function focusable(root: HTMLElement): HTMLElement[] {
-  return Array.from(
-    root.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]'),
-  ).filter((element) => {
-    if (element.getAttribute('tabindex') === '-1') return false
-    return !('disabled' in element && element.disabled)
-  })
-}
+import { type ReactNode, type RefObject, useId, useRef } from 'react'
+import { useDialogFocus } from './dialogFocus'
 
 export function ConfirmDialog({
   open,
@@ -57,61 +49,9 @@ export function ConfirmDialog({
   const cardRef = useRef<HTMLDivElement | null>(null)
   const titleId = useId()
   const bodyId = useId()
-  // Em refs porque o `keydown` é registrado UMA vez: sem isso o Esc fecharia com o
-  // `busy`/`onClose` da primeira renderização. Atualizadas em efeito, nunca durante o
-  // render (o React 19 pode descartar uma renderização pela metade).
-  const busyRef = useRef(busy)
-  const closeRef = useRef(onClose)
-  useEffect(() => {
-    busyRef.current = busy
-    closeRef.current = onClose
-  })
-
-  useEffect(() => {
-    if (!open) return
-    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    const card = cardRef.current
-    if (!card) return
-
-    function handleKeyDown(event: KeyboardEvent) {
-      const active = cardRef.current
-      if (!active || event.defaultPrevented) return
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        event.stopPropagation()
-        // Fechar no meio da gravação deixaria a criança sem saber se apagou.
-        if (!busyRef.current) closeRef.current()
-        return
-      }
-      if (event.key !== 'Tab') return
-      const items = focusable(active)
-      const first = items[0]
-      const last = items.at(-1)
-      const focused = document.activeElement
-      if (!first || !last) {
-        event.preventDefault()
-        active.focus()
-      } else if (!focused || !active.contains(focused)) {
-        event.preventDefault()
-        ;(event.shiftKey ? last : first).focus()
-      } else if (event.shiftKey && (focused === first || focused === active)) {
-        event.preventDefault()
-        last.focus()
-      } else if (!event.shiftKey && focused === last) {
-        event.preventDefault()
-        first.focus()
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    card.focus()
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      const back = returnFocusTo?.current
-      if (back?.isConnected) back.focus()
-      else if (previous?.isConnected && previous !== document.body) previous.focus()
-    }
-  }, [open, returnFocusTo])
+  // O foco (entrar, prender o Tab, Esc, voltar a quem abriu) é o `useDialogFocus`, o MESMO da
+  // janela da equipe: duas janelas com dois focos era como uma delas ia apodrecer.
+  useDialogFocus({ open, cardRef, busy, onClose, returnFocusTo })
 
   if (!open) return null
 

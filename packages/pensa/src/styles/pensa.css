@@ -1812,3 +1812,197 @@ button.pensa-map-node:hover {
 .pensa-dialog__danger:hover:not(:disabled) {
   background: color-mix(in oklab, var(--pz-danger) 88%, var(--pz-ink));
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+   EQUIPE DO PLANO (26/09/2026): o "Equipe · N" do cabeçalho, os chips do cartão, o "Entrar com
+   um código" da home, o aviso "alguém mexeu" e a janela da equipe (sobre o `.pensa-dialog`).
+   ⚠️ Regras por CLASSE, sem seletor de elemento novo (o `tokens.test.ts` conta os de elemento) e
+   sem `cursor` fora de botão: a mãozinha é dos botões, e o único que a declara aqui é o
+   "Tirar"/"Deixar" da linha, que nasce como texto e precisa dizer que é clicável.
+   ═══════════════════════════════════════════════════════════════════════════════════════ */
+.pensa-chip.is-team {
+  color: var(--pz-accent);
+  background: color-mix(in oklab, var(--pz-accent) 12%, var(--pz-surface));
+}
+.pensa-chip.is-you {
+  margin-left: 6px;
+  color: var(--pz-accent);
+  background: color-mix(in oklab, var(--pz-accent) 12%, var(--pz-surface));
+}
+/* "Alguém da equipe mexeu no plano." + "Atualizar": o cartão branco da faixa creme, o MESMO
+   desenho do aviso de "revendo" (é um aviso da mesma família). */
+.pensa-changed-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 20px;
+  border: 1px solid var(--sz-tool-card-edge, var(--pz-line));
+  border-radius: 1.25rem;
+  padding: 12px 16px 12px 24px;
+  color: var(--pz-ink);
+  background: var(--pz-surface);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.pensa-changed-banner > svg {
+  flex: none;
+  color: var(--pz-accent);
+}
+.pensa-changed-banner > span {
+  flex: 1 1 16rem;
+}
+/* O formulário do código: o mesmo desenho do criar (é a `.pensa-create`), com o recado abaixo. */
+.pensa-join .pensa-inline-error {
+  margin: 0;
+}
+/* A janela da equipe é um `.pensa-dialog` mais largo: a lista de pessoas precisa de fôlego. */
+.pensa-team {
+  max-width: 30rem;
+}
+.pensa-team__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pensa-team__title > svg {
+  flex: none;
+  color: var(--pz-accent);
+}
+.pensa-team__subtitle {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--pz-muted);
+}
+.pensa-team__code {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--sz-tool-card-edge, var(--pz-line));
+  border-radius: 1rem;
+  background: var(--pz-surface-2);
+}
+.pensa-team__code-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+/* O código em letras grandes e espaçadas (é para ser LIDO em voz alta ou copiado). */
+.pensa-team-code {
+  flex: 1 1 10rem;
+  padding: 8px 14px;
+  border: 2px dashed color-mix(in oklab, var(--pz-accent) 45%, var(--pz-line));
+  border-radius: 12px;
+  color: var(--pz-ink);
+  background: var(--pz-surface);
+  font-family: var(--sz-tool-font-display, var(--font-display, inherit));
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-align: center;
+  user-select: all;
+}
+.pensa-team__code-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.pensa-team__hint {
+  margin: 10px 0 0;
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+.pensa-team__status {
+  min-height: 1.25rem;
+  margin: 8px 0 0;
+  color: var(--pz-accent);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.pensa-team__people {
+  margin-top: 20px;
+}
+.pensa-team__seats {
+  margin: 0 0 8px;
+  color: var(--pz-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.pensa-team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-team-member {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--sz-tool-card-edge, var(--pz-line));
+  border-radius: 12px;
+  background: var(--pz-surface);
+}
+.pensa-team-member__face {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--pz-surface-2);
+}
+.pensa-team-member__initial {
+  display: inline-grid;
+  place-items: center;
+  color: var(--pz-accent);
+  background: color-mix(in oklab, var(--pz-accent) 14%, var(--pz-surface));
+  font-weight: 800;
+}
+.pensa-team-member__name {
+  display: flex;
+  flex: 1 1 8rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-weight: 700;
+}
+/* "Tirar" nasce discreto; a confirmação troca a linha por "Tirar mesmo" (vermelho) + "Deixar". */
+.pensa-planner .pensa-team-member__remove {
+  min-height: var(--sz-tool-hit, 36px);
+  padding: 4px 12px;
+  border: 1px solid var(--pz-line);
+  border-radius: 9999px;
+  color: var(--pz-muted);
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pensa-planner .pensa-team-member__remove:hover:not(:disabled) {
+  border-color: color-mix(in oklab, var(--pz-danger) 40%, transparent);
+  color: var(--pz-danger);
+}
+.pensa-planner .pensa-team-member__remove.is-danger {
+  border-color: transparent;
+  color: var(--sz-tool-on-cta, #fff);
+  background: var(--pz-danger);
+}
+.pensa-team-member__confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+}
+.pensa-team__leave {
+  margin-right: auto;
+}

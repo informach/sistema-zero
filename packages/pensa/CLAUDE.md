@@ -148,6 +148,59 @@ não vê o lápis, ver "Equipe").
   não engolir os créditos e a pílula). Nenhuma regra de elemento nova; nenhum `cursor`.
 - Playground: `PATCH /projects/:id` simulado. Testes: `components/PensaApp.rename.test.tsx`.
 
+## Equipe do plano (26/09/2026)
+
+Pedido dela: planejar em parceria. Um plano pode ser dividido com outro perfil pelo **código do
+projeto** (decisões dela: convite por código, e os dois precisam ter o Pensa). Quem entra vê e
+mexe em TUDO do plano; só o dono renomeia, apaga, gera o código e tira gente. As regras (tetos,
+erros, quem é dono) são do members; o contrato está em `docs/pensa-planner.md` §Equipe. Aqui:
+
+- **Tipos** (`core/types.ts`): `PensaProjectRole`, `role?`/`team?` nas views de lista
+  (`{memberCount, ownerFirstName}`) e detalhe (`{memberCount, shareEnabled}`),
+  `PensaTeamPersonView`, `PensaProjectMembersView` (o `shareCode` vem CRU, só para o dono) e
+  `PensaShareView`. ⚠️ `role`/`team` são OPCIONAIS de propósito: members antigo = plano só meu
+  (lápis, lixeira, sem chip). As palavras moram em `core/teamCopy.ts` (`TEAM_COPY`,
+  `displayShareCode` = `ZAP-XXXXXX`, `personName` = 1º nome ou "Colega").
+- **Home:** o chip `.pensa-chip.is-team` no cartão ("Em equipe · N" no meu plano com gente; "De
+  <dono>" no plano em que entrei, que NÃO tem lixeira: apagar é do dono) e o **"Entrar com um
+  código"** (`sz-tool-pill--outline`, `aria-controls="pensa-join"`) ao lado do "+ Novo plano".
+  O formulário `#pensa-join` é a mesma `.pensa-create` da faixa creme; abrir um fecha o outro;
+  o código vai como a criança digitou (quem normaliza é o members); o erro do servidor fica ao
+  lado do campo (`role="alert"`, a frase dele); Esc/Cancelar devolvem o foco ao botão; entrar
+  abre o plano (`POST /projects/join` → `loadProject`).
+- **Detalhe:** o **"Equipe · N"** (`.pensa-team-button`, `aria-haspopup="dialog"`) nas ações do
+  `ProjectHeader` abre a **`TeamDialog`** (`components/TeamDialog.tsx`), irmã das faixas como a
+  janela de apagar. Dono: o código (`<output class="pensa-team-code">` + "Copiar" com
+  `navigator.clipboard`; sem clipboard o recado é honesto e o código fica selecionado, nunca
+  `window.prompt`; "Gerar outro código" e "Desligar o código"), a lista (rosto ou inicial, 1º
+  nome, "você"/"dono do plano") com **"Tirar" em dois passos NA LINHA** ("Tirar mesmo"/"Deixar")
+  e "N de 5 lugares". Membro: "Este plano é de X", a lista e **"Sair da equipe"** em dois passos
+  (→ `DELETE …/members/me` → a home). Erro fica na janela (`role="alert"`). `canRename` é
+  `detail.role !== 'member'`. `onTeamChanged` espelha `memberCount`/`shareEnabled` no `detail`
+  (o botão do cabeçalho acompanha sem recarregar).
+- ⭐ **`useDialogFocus`** (`components/dialogFocus.ts`) saiu do `ConfirmDialog` e serve às DUAS
+  janelas: foco no card ao abrir, Tab preso, Esc fecha (nunca gravando), foco de volta a quem
+  abriu (`returnFocusTo`, lido no fechamento). Duas janelas com dois focos era como uma ia
+  apodrecer.
+- **"Alguém da equipe mexeu no plano."** (`.pensa-changed-banner`, `role="status"`, o cartão
+  branco do aviso de "revendo"): com `memberCount > 0` um compasso (`teamPollMs`, 30 s; a prop
+  existe para o teste injetar um curto e `0` desliga) pergunta `GET /projects/:id` com a aba
+  visível e sem ação em voo, e compara o `updatedAt`. Mudou = a faixa com **"Atualizar"**
+  (`refresh()`), em vez de recarregar por cima do que a criança escreve. ⚠️ Toda ação própria
+  termina em `refresh` (o chat inclusive) e o renomear copia o `updatedAt` da resposta, senão o
+  compasso acusaria a própria criança.
+- **CSS:** seção "EQUIPE DO PLANO" no fim do `pensa.css`, por classe; o único `cursor` é o do
+  "Tirar"/"Deixar" (`.pensa-planner .pensa-team-member__remove`, com o `.pensa-planner` na frente
+  pelo motivo da lixeira). O `tokens.test.ts` segue valendo.
+- **Playground:** `?equipe=1` põe a Bia no "Runo" (meu, com código ligado) e me põe no
+  "Guardiões da Lua" (dela); join/share/members/tirar/sair simulados, e 40 s depois de abrir a
+  Bia "mexe" no Runo para a faixa aparecer.
+- ⚠️ Estúdio, Pinta e Molda seguem por perfil (a copy da janela diz: cada um constrói no seu);
+  a conversa Z não tem trava (último-vence).
+- Testes: `components/PensaApp.team.test.tsx` (janela do dono e do membro, código, copiar,
+  tirar, sair, Esc/foco, erro, o compasso) e `components/PensaApp.join.test.tsx` (chips, lixeira
+  por papel, o formulário do código).
+
 ## Apagar um plano (14/09/2026)
 
 A criança apaga o plano pelo próprio cartão, e some **de vez** — decisão dela: sem lixeira, com

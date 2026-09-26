@@ -3,6 +3,7 @@ import { isAiQuotaError } from '@sistemazero/core/ai-credits'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { editedAgo } from '../core/relativeTime'
 import { splitSuggestions, stripStreamingSuggestions } from '../core/suggestions'
+import { personName, TEAM_COPY } from '../core/teamCopy'
 import type {
   PensaArtifactType,
   PensaArtifactView,
@@ -33,8 +34,10 @@ import {
   PlusIcon,
   TargetIcon,
   TrashIcon,
+  UsersIcon,
 } from './icons'
 import { TaskPlan } from './TaskPlan'
+import { TeamDialog } from './TeamDialog'
 
 const STAGES: Array<{ id: PensaWorkStage; letter: string; title: string; description: string }> = [
   {
@@ -116,9 +119,12 @@ export function PensaApp({
   adapter,
   initialProjectId = null,
   onWorkspaceChange,
+  teamPollMs = 30_000,
 }: {
   adapter: PensaHostAdapter
   initialProjectId?: string | null
+  /** O compasso do "alguém da equipe mexeu no plano" (o teste injeta um curto; 0 desliga). */
+  teamPollMs?: number
   /** Informa ao host quando um plano está aberto, sem acoplar o Pensa ao menu externo. */
   onWorkspaceChange?: (active: boolean) => void
 }) {
@@ -133,6 +139,15 @@ export function PensaApp({
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Equipe (26/09/2026): a janela "Equipe · N", quem a abriu (para o foco voltar) e o aviso de
+  // que outro membro mexeu no plano enquanto este estava aberto.
+  const [teamOpen, setTeamOpen] = useState(false)
+  const teamOpenerRef = useRef<HTMLElement | null>(null)
+  const [changedRemotely, setChangedRemotely] = useState(false)
+  const busyRef = useRef<string | null>(null)
+  useEffect(() => {
+    busyRef.current = busy
+  }, [busy])
   // "Peek": rever uma etapa CONCLUÍDA em modo leitura, sem sair do agora.
   const [peek, setPeek] = useState<PensaWorkStage | null>(null)
   const [peekView, setPeekView] = useState<PensaStageView | null>(null)
@@ -162,6 +177,7 @@ export function PensaApp({
       setProjects(result.projects)
       setDetail(null)
       setStage(null)
+      setTeamOpen(false)
     } catch (cause) {
       setError(errorMessage(cause))
     } finally {
@@ -183,6 +199,7 @@ export function PensaApp({
         )
         setDetail(project)
         setStage(stageResult)
+        setChangedRemotely(false)
         // Abrir/recarregar um projeto sempre volta ao "agora" (peek fechado).
         peekRef.current = null
         setPeek(null)
@@ -231,7 +248,9 @@ export function PensaApp({
           { method: 'PATCH', body: { name } },
         )
         setDetail((now) =>
-          now && now.id === current.id ? { ...now, name: result.project.name } : now,
+          now && now.id === current.id
+            ? { ...now, name: result.project.name, updatedAt: result.project.updatedAt }
+            : now,
         )
       } catch (cause) {
         setDetail((now) => (now && now.id === current.id ? { ...now, name: previous } : now))
@@ -240,6 +259,36 @@ export function PensaApp({
     },
     [adapter.transport, detail],
   )
+
+  // "Alguém da equipe mexeu no plano" (26/09/2026): com equipe, um compasso leve pergunta o
+  // `updatedAt` do plano e, se mudou, mostra a faixa com "Atualizar" em vez de recarregar por
+  // cima do que a criança está escrevendo. Só com a aba visível e sem ação em voo; toda ação
+  // própria termina em `refresh`, então o `updatedAt` daqui já é o do servidor.
+  const memberCount = detail?.team?.memberCount ?? 0
+  const detailId = detail?.id ?? null
+  const detailUpdatedAt = detail?.updatedAt ?? null
+  useEffect(() => {
+    setChangedRemotely(false)
+    if (!detailId || !detailUpdatedAt || memberCount === 0 || teamPollMs <= 0) return
+    let alive = true
+    const tick = async () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
+      if (busyRef.current) return
+      try {
+        const result = await adapter.transport.request<{ project: PensaProjectDetailView }>(
+          `/projects/${encodeURIComponent(detailId)}`,
+        )
+        if (alive && result.project.updatedAt !== detailUpdatedAt) setChangedRemotely(true)
+      } catch {
+        // Rede caiu no compasso: o próximo tique tenta de novo, sem assustar ninguém.
+      }
+    }
+    const timer = setInterval(() => void tick(), teamPollMs)
+    return () => {
+      alive = false
+      clearInterval(timer)
+    }
+  }, [adapter.transport, detailId, detailUpdatedAt, memberCount, teamPollMs])
 
   if (loading)
     return (
@@ -256,6 +305,14 @@ export function PensaApp({
           error={error}
           mascot={adapter.mascotImages}
           onOpen={(id) => void loadProject(id)}
+          onJoin={async (code) => {
+            // Sem `run`: o recado fica NO formulário do código, ao lado do campo.
+            const result = await adapter.transport.request<{ project: PensaProjectDetailView }>(
+              '/projects/join',
+              { method: 'POST', body: { code } },
+            )
+            await loadProject(result.project.id)
+          }}
           onCreate={(name) =>
             run('create', async () => {
               const result = await adapter.transport.request<{ project: PensaProjectDetailView }>(
@@ -327,10 +384,28 @@ export function PensaApp({
               detail={detail}
               credits={stage?.credits}
               onBack={() => void loadProjects()}
-              canRename
+              canRename={detail.role !== 'member'}
               onRename={renameProject}
+              memberCount={memberCount}
+              onTeam={(opener) => {
+                teamOpenerRef.current = opener
+                setTeamOpen(true)
+              }}
             />
             {error ? <Alert>{error}</Alert> : null}
+            {changedRemotely ? (
+              <div className="pensa-changed-banner" role="status">
+                <UsersIcon size={18} />
+                <span>{TEAM_COPY.changed}</span>
+                <button
+                  type="button"
+                  className="sz-tool-pill sz-tool-pill--outline"
+                  onClick={() => void refresh()}
+                >
+                  {TEAM_COPY.reload}
+                </button>
+              </div>
+            ) : null}
             <CreationMap
               current={detail.currentCycle.stage}
               peek={peek}
@@ -375,6 +450,23 @@ export function PensaApp({
         </div>
         {approved && stage ? <ApprovedBand tasks={stage.tasks} onSeeCards={seeCards} /> : null}
       </div>
+      {/* A janela fica FORA das faixas (o mesmo motivo da janela de apagar). */}
+      <TeamDialog
+        open={teamOpen}
+        projectId={detail.id}
+        projectName={detail.name}
+        role={detail.role ?? 'owner'}
+        transport={adapter.transport}
+        onClose={() => setTeamOpen(false)}
+        onLeft={() => {
+          setTeamOpen(false)
+          void loadProjects()
+        }}
+        onTeamChanged={(team) =>
+          setDetail((now) => (now && now.id === detail.id ? { ...now, team } : now))
+        }
+        returnFocusTo={teamOpenerRef}
+      />
     </Shell>
   )
 }
@@ -538,6 +630,8 @@ function ProjectList(props: {
   onCreate(name: string): void
   /** Apaga o plano DE VEZ. Rejeita = a janela fica aberta com o recado. */
   onRemove(id: string): Promise<void>
+  /** Entrar num plano pelo código de um colega. Rejeita = o recado fica no formulário. */
+  onJoin(code: string): Promise<void>
 }) {
   const [name, setName] = useState('')
   // Apagar um plano: a janela pergunta antes, e o alvo é o plano inteiro (não há
@@ -557,6 +651,52 @@ function ProjectList(props: {
   // volta ao cancelar.
   const openerRef = useRef<HTMLElement | null>(null)
   const focusOnOpen = useRef(false)
+  // "Entrar com um código" (equipe, 26/09/2026): o irmão do criar, na mesma faixa creme. Abrir
+  // um fecha o outro; o erro do servidor (código inválido, sem Pensa, equipe cheia) fica ao
+  // lado do campo, com a frase que ele mandou.
+  const [joining, setJoining] = useState(false)
+  const [code, setCode] = useState('')
+  const [joinError, setJoinError] = useState<string | null>(null)
+  const [joinBusy, setJoinBusy] = useState(false)
+  const joinInputRef = useRef<HTMLInputElement | null>(null)
+  const joinButtonRef = useRef<HTMLButtonElement | null>(null)
+  const focusJoinOnOpen = useRef(false)
+  useEffect(() => {
+    if (joining && focusJoinOnOpen.current) {
+      focusJoinOnOpen.current = false
+      joinInputRef.current?.focus()
+    }
+  }, [joining])
+  const openJoin = () => {
+    if (joining) {
+      joinInputRef.current?.focus()
+      return
+    }
+    setCreating(false)
+    setJoinError(null)
+    focusJoinOnOpen.current = true
+    setJoining(true)
+  }
+  const cancelJoin = () => {
+    if (joinBusy) return
+    setJoining(false)
+    setCode('')
+    setJoinError(null)
+    joinButtonRef.current?.focus()
+  }
+  const submitJoin = async () => {
+    const trimmed = code.trim()
+    if (trimmed.length < 4 || joinBusy) return
+    setJoinBusy(true)
+    setJoinError(null)
+    try {
+      await props.onJoin(trimmed)
+    } catch (cause) {
+      setJoinError(errorMessage(cause))
+    } finally {
+      setJoinBusy(false)
+    }
+  }
   const hostChrome = usePensaHostChrome()
   useEffect(() => {
     if (creating && focusOnOpen.current) {
@@ -566,6 +706,7 @@ function ProjectList(props: {
   }, [creating])
   const openCreate = (opener: HTMLElement) => {
     openerRef.current = opener
+    setJoining(false)
     // Já aberto (o cartão do fim da grade, com o campo lá em cima): só leva o foco até ele.
     if (creating) {
       inputRef.current?.focus()
@@ -649,6 +790,17 @@ function ProjectList(props: {
                 >
                   + Novo plano
                 </button>
+                <button
+                  ref={joinButtonRef}
+                  type="button"
+                  className="sz-tool-pill sz-tool-pill--outline"
+                  aria-expanded={joining}
+                  aria-controls="pensa-join"
+                  onClick={openJoin}
+                >
+                  <UsersIcon size={16} />
+                  {TEAM_COPY.joinButton}
+                </button>
               </div>
             </div>
             {creating ? (
@@ -692,6 +844,57 @@ function ProjectList(props: {
                     Cancelar
                   </button>
                 </div>
+              </form>
+            ) : null}
+            {joining ? (
+              <form
+                id="pensa-join"
+                className="pensa-create pensa-join"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  void submitJoin()
+                }}
+              >
+                <label htmlFor="pensa-join-code">{TEAM_COPY.joinLabel}</label>
+                <div>
+                  <input
+                    ref={joinInputRef}
+                    id="pensa-join-code"
+                    value={code}
+                    maxLength={16}
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    spellCheck={false}
+                    onChange={(event) => setCode(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Escape') {
+                        event.preventDefault()
+                        cancelJoin()
+                      }
+                    }}
+                    placeholder={TEAM_COPY.joinPlaceholder}
+                  />
+                  <button
+                    type="submit"
+                    className="sz-tool-pill sz-tool-pill--primary"
+                    disabled={joinBusy || code.trim().length < 4}
+                  >
+                    {joinBusy ? TEAM_COPY.joinBusy : TEAM_COPY.joinSubmit}
+                  </button>
+                  <button
+                    type="button"
+                    className="sz-tool-pill sz-tool-pill--quiet"
+                    disabled={joinBusy}
+                    onClick={cancelJoin}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+                {joinError ? (
+                  <p className="pensa-inline-error" role="alert">
+                    {joinError}
+                  </p>
+                ) : null}
               </form>
             ) : null}
           </div>
@@ -826,6 +1029,10 @@ function PlanCard({
 }) {
   const done = project.stage === 'done'
   const currentIndex = done ? STAGES.length : STAGES.findIndex((item) => item.id === project.stage)
+  // Equipe: "De <dono>" no plano em que entrei (sem lixeira: apagar é do dono) e
+  // "Em equipe · N" no meu plano com gente dentro. Sem `role` (members antigo) = só meu.
+  const role = project.role ?? 'owner'
+  const members = project.team?.memberCount ?? 0
   const current = STAGES[currentIndex]
   return (
     <article className="pensa-project-card">
@@ -842,6 +1049,13 @@ function PlanCard({
         ) : (
           <span className="pensa-chip is-stage">Etapa {project.stage.toUpperCase()}</span>
         )}
+        {role === 'member' ? (
+          <span className="pensa-chip is-team">
+            {TEAM_COPY.chipFrom(personName(project.team?.ownerFirstName ?? null))}
+          </span>
+        ) : members > 0 ? (
+          <span className="pensa-chip is-team">{TEAM_COPY.chipTeam(members)}</span>
+        ) : null}
       </div>
       <ol className="pensa-zero-track">
         {STAGES.map((item, index) => {
@@ -869,15 +1083,17 @@ function PlanCard({
       <div className="pensa-project-card__foot">
         <span className="pensa-project-card__edited">{editedAgo(project.updatedAt)}</span>
         <div className="pensa-project-card__actions">
-          <button
-            type="button"
-            className="pensa-project-card__remove"
-            aria-label={`Apagar o plano ${project.name}`}
-            title="Apagar"
-            onClick={(event) => onRemove(project, event.currentTarget)}
-          >
-            <TrashIcon size={18} />
-          </button>
+          {role === 'member' ? null : (
+            <button
+              type="button"
+              className="pensa-project-card__remove"
+              aria-label={`Apagar o plano ${project.name}`}
+              title="Apagar"
+              onClick={(event) => onRemove(project, event.currentTarget)}
+            >
+              <TrashIcon size={18} />
+            </button>
+          )}
           <button
             type="button"
             className="sz-tool-pill sz-tool-pill--primary pensa-project-card__open"
@@ -995,12 +1211,16 @@ function ProjectHeader({
   onBack,
   canRename,
   onRename,
+  memberCount,
+  onTeam,
 }: {
   detail: PensaProjectDetailView
   credits?: AiCreditsView | null
   onBack(): void
   canRename: boolean
   onRename(name: string): Promise<void>
+  memberCount: number
+  onTeam(opener: HTMLElement): void
 }) {
   const hostChrome = usePensaHostChrome()
   const approved = detail.currentCycle.stage === 'done'
@@ -1027,6 +1247,16 @@ function ProjectHeader({
         </div>
       </div>
       <div className="sz-tool-header__actions">
+        {/* "Equipe · N" abre a janela da equipe (dono e membro; N = quem entrou). */}
+        <button
+          type="button"
+          className="sz-tool-pill sz-tool-pill--outline pensa-team-button"
+          aria-haspopup="dialog"
+          onClick={(event) => onTeam(event.currentTarget)}
+        >
+          <UsersIcon size={16} />
+          {TEAM_COPY.button} · {memberCount}
+        </button>
         <AiCreditsBadge credits={credits} />
         <p className={`sz-tool-status pensa-plan-status${approved ? ' sz-tool-status--ok' : ''}`}>
           <span className="pensa-plan-status__dot" aria-hidden="true" />

@@ -12,6 +12,8 @@ export type PensaTaskDestination = 'pinta' | 'studio' | 'molda'
 export type PensaTaskStatus = 'planned' | 'in_progress' | 'completed'
 export type PensaTaskCategory = 'art' | 'setup' | 'gameplay' | 'scene' | 'ui' | 'polish'
 export type PensaArtKind = 'sprite' | 'background' | 'tileset' | 'tilemap'
+/** `owner` = meu plano; `member` = entrei pelo código de um colega (equipe, 26/09/2026). */
+export type PensaProjectRole = 'owner' | 'member'
 
 export interface PensaCycleView {
   id: string
@@ -32,6 +34,14 @@ export interface PensaProjectListView {
   stage: PensaStage
   createdAt: string
   updatedAt: string
+  /** Ausente = members antigo: a tela trata como plano só meu. */
+  role?: PensaProjectRole
+  team?: {
+    /** Quantos convidados a equipe tem (o dono não conta). */
+    memberCount: number
+    /** 1º nome do dono, só para `member` (`null` = "um colega"). */
+    ownerFirstName: string | null
+  }
 }
 
 export interface PensaArtifactView {
@@ -53,6 +63,10 @@ export interface PensaProjectDetailView {
   cycles: PensaCycleView[]
   currentCycle: PensaCycleView
   artifactsIndex: Array<Omit<PensaArtifactView, 'id' | 'content'>>
+  /** Ausente = members antigo: a tela trata como plano só meu. */
+  role?: PensaProjectRole
+  /** O CÓDIGO não vem aqui (só na rota de membros, para o dono): só se está ligado. */
+  team?: { memberCount: number; shareEnabled: boolean }
 }
 
 export interface PensaGuideItem {
@@ -176,6 +190,31 @@ export interface PensaTaskHandoffView {
   project: { id: string; name: string }
   cycle: { id: string; number: number; goal: string | null }
   capability: { owned: boolean; blockedReason: string | null }
+}
+
+/** Uma pessoa da equipe do plano: 1º nome e foto best-effort (sem nome = "Colega"). */
+export interface PensaTeamPersonView {
+  profileId: string
+  firstName: string | null
+  photoUrl: string | null
+  /** `null` para o dono (ele não "entrou"). */
+  joinedAt: string | null
+}
+
+export interface PensaProjectMembersView {
+  role: PensaProjectRole
+  viewerProfileId: string
+  /** CRU (`AAAAAB`), só para o dono; `null` para membro ou com o código desligado. */
+  shareCode: string | null
+  maxMembers: number
+  owner: PensaTeamPersonView
+  members: PensaTeamPersonView[]
+}
+
+/** O código gerado (`code`) e como ele aparece na tela (`display`, com o prefixo). */
+export interface PensaShareView {
+  code: string
+  display: string
 }
 
 export class PensaApiError extends Error {

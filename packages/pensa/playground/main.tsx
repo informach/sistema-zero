@@ -26,10 +26,13 @@ import {
   PensaHostChromeProvider,
   type PensaProjectDetailView,
   type PensaProjectListView,
+  type PensaProjectMembersView,
+  type PensaProjectRole,
   type PensaStage,
   type PensaStageView,
   type PensaTaskDestination,
   type PensaTaskView,
+  type PensaTeamPersonView,
 } from '@sistemazero/pensa'
 import { type JSX, StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -41,6 +44,9 @@ const params = new URLSearchParams(window.location.search)
 const hostDemo = params.get('host') === '1'
 const theme = params.get('theme') === 'dark' ? 'dark' : 'light'
 const empty = params.get('vazio') === '1'
+// `?equipe=1`: o Runo é MEU com a Bia dentro (e um código ligado), e o Guardiões é da Bia (eu
+// entrei pelo código). E, 40 s depois de abrir, a Bia "mexe" no Runo para a faixa aparecer.
+const teamDemo = params.get('equipe') === '1'
 
 const MINUTE = 60_000
 const DAY = 24 * 60 * MINUTE
@@ -343,8 +349,68 @@ const plans = new Map<string, PlanRecord>(
   empty ? [] : [runo(), guardioes()].map((plan) => [plan.detail.id, plan]),
 )
 
-function listView(plan: PlanRecord): PensaProjectListView {
+// ── a equipe ────────────────────────────────────────────────────────────────────────────
+
+const ME = 'perfil-eu'
+const BIA: PensaTeamPersonView = {
+  profileId: 'perfil-bia',
+  firstName: 'Bia',
+  photoUrl: null,
+  joinedAt: ago(2 * DAY),
+}
+const EU: PensaTeamPersonView = {
+  profileId: ME,
+  firstName: 'Helena',
+  photoUrl: null,
+  joinedAt: null,
+}
+interface TeamRecord {
+  role: PensaProjectRole
+  owner: PensaTeamPersonView
+  members: PensaTeamPersonView[]
+  shareCode: string | null
+}
+const teams = new Map<string, TeamRecord>()
+if (teamDemo) {
+  teams.set('runo', { role: 'owner', owner: EU, members: [BIA], shareCode: 'AAAAAB' })
+  teams.set('guardioes-da-lua', {
+    role: 'member',
+    owner: BIA,
+    members: [{ ...EU, joinedAt: ago(DAY) }],
+    shareCode: null,
+  })
+}
+function teamOf(id: string): TeamRecord {
+  let team = teams.get(id)
+  if (!team) {
+    team = { role: 'owner', owner: EU, members: [], shareCode: null }
+    teams.set(id, team)
+  }
+  return team
+}
+const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
+const newCode = () =>
+  Array.from(
+    { length: 6 },
+    () => CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)],
+  ).join('')
+function withTeam(detail: PensaProjectDetailView): PensaProjectDetailView {
+  const team = teamOf(detail.id)
   return {
+    ...detail,
+    role: team.role,
+    team: { memberCount: team.members.length, shareEnabled: team.shareCode !== null },
+  }
+}
+
+function listView(plan: PlanRecord): PensaProjectListView {
+  const team = teamOf(plan.detail.id)
+  return {
+    role: team.role,
+    team: {
+      memberCount: team.members.length,
+      ownerFirstName: team.role === 'member' ? team.owner.firstName : null,
+    },
     id: plan.detail.id,
     name: plan.detail.name,
     status: plan.detail.status,
@@ -418,13 +484,67 @@ const transport: PensaHostAdapter['transport'] = {
       const name = String((init?.body as { name?: unknown } | undefined)?.name ?? '').trim()
       const plan = newPlan(name || 'Meu jogo')
       plans.set(plan.detail.id, plan)
-      return { project: plan.detail } as T
+      return { project: withTeam(plan.detail) } as T
+    }
+    if (method === 'POST' && path === '/projects/join') {
+      const raw = String((init?.body as { code?: unknown } | undefined)?.code ?? '')
+      const code = raw
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '')
+        .replace(/^ZAP/, '')
+      const found = [...teams.entries()].find(([, team]) => team.shareCode === code)
+      const plan = found ? plans.get(found[0]) : undefined
+      if (!found || !plan)
+        throw new Error('Esse código não abriu nenhum plano. Confira com quem te chamou.')
+      if (found[1].role === 'owner') throw new Error('Esse plano já é seu.')
+      return { project: withTeam(plan.detail) } as T
+    }
+    const share = /^\/projects\/([^/]+)\/share$/.exec(path)
+    if (share) {
+      const team = teamOf(decodeURIComponent(share[1] ?? ''))
+      if (team.role !== 'owner') throw new Error('Só quem criou o plano pode fazer isso.')
+      if (method === 'POST') {
+        team.shareCode = newCode()
+        return { code: team.shareCode, display: `ZAP-${team.shareCode}` } as T
+      }
+      if (method === 'DELETE') {
+        team.shareCode = null
+        return { ok: true } as T
+      }
+    }
+    const members = /^\/projects\/([^/]+)\/members$/.exec(path)
+    if (method === 'GET' && members) {
+      const team = teamOf(decodeURIComponent(members[1] ?? ''))
+      const view: PensaProjectMembersView = {
+        role: team.role,
+        viewerProfileId: ME,
+        shareCode: team.role === 'owner' ? team.shareCode : null,
+        maxMembers: 5,
+        owner: team.owner,
+        members: team.members,
+      }
+      return view as T
+    }
+    const member = /^\/projects\/([^/]+)\/members\/([^/]+)$/.exec(path)
+    if (method === 'DELETE' && member) {
+      const id = decodeURIComponent(member[1] ?? '')
+      const team = teamOf(id)
+      const who = decodeURIComponent(member[2] ?? '')
+      if (who === 'me') {
+        if (team.role === 'owner') throw new Error('Quem criou o plano não sai dele: pode apagar.')
+        plans.delete(id)
+        teams.delete(id)
+        return { ok: true } as T
+      }
+      if (team.role !== 'owner') throw new Error('Só quem criou o plano pode fazer isso.')
+      team.members = team.members.filter((person) => person.profileId !== who)
+      return { ok: true } as T
     }
     const project = /^\/projects\/([^/]+)$/.exec(path)
     if (method === 'GET' && project) {
       const plan = plans.get(decodeURIComponent(project[1] ?? ''))
       if (!plan) throw new Error('Esse plano não existe mais.')
-      return { project: plan.detail } as T
+      return { project: withTeam(plan.detail) } as T
     }
     if (method === 'DELETE' && project) {
       const id = decodeURIComponent(project[1] ?? '')
@@ -438,7 +558,7 @@ const transport: PensaHostAdapter['transport'] = {
       if (name.length < 2 || name.length > 120)
         throw new Error('Escolha um nome de 2 a 120 letras.')
       plan.detail = { ...plan.detail, name, updatedAt: new Date().toISOString() }
-      return { project: plan.detail } as T
+      return { project: withTeam(plan.detail) } as T
     }
     const stage = /^\/cycles\/([^/]+)\/stages\/([^/]+)$/.exec(path)
     if (method === 'GET' && stage) {
@@ -535,6 +655,14 @@ const adapter: PensaHostAdapter = {
   capabilities: { pintaOwned: true, studioOwned: true, moldaOwned: true },
   onOpenTask: ({ taskId, destination }) =>
     console.log('[playground] abrir o cartão', { taskId, destination }),
+}
+
+// A Bia mexe no Runo: 40 s depois, o `updatedAt` muda e a faixa "alguém mexeu" aparece.
+if (teamDemo) {
+  setTimeout(() => {
+    const plan = plans.get('runo')
+    if (plan) plan.detail = { ...plan.detail, updatedAt: new Date().toISOString() }
+  }, 40_000)
 }
 
 const root = document.getElementById('root')
