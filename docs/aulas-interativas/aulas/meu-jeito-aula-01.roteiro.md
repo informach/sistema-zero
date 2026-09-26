@@ -116,6 +116,8 @@
 > lá e volte a esta aula para comparar. No projeto de teste, a categoria Jogo 2D apareceu na
 > coluna dos blocos? Compare com a falta que você acabou de ver."
 
+**Na tela (sem narração):** o bloco **Se travar, o passo a passo está no Como fazer** fica abaixo do clipe nas seções 3 e 4. Não apontar nem abrir: ele é a rede para quem voltar dias depois, não parte da aula.
+
 ## Seção 6. Traga o jogo do Dia 5 para o seu Estúdio
 
 ### Clipe `video-importar` · Do Dia 5 até o seu Estúdio

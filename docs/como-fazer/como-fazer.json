@@ -1,0 +1,860 @@
+{
+  "collections": [
+    {
+      "slug": "plataforma",
+      "title": "Plataforma",
+      "description": "O menu, as aulas, o seu perfil e o que fica em volta das ferramentas.",
+      "icon": "compass",
+      "tone": "marca",
+      "position": 0
+    },
+    {
+      "slug": "estudio",
+      "title": "Estúdio",
+      "description": "Projetos, blocos, extensões e o seu jogo rodando.",
+      "icon": "blocks",
+      "tone": "estudio",
+      "position": 1
+    },
+    {
+      "slug": "pinta",
+      "title": "Pinta",
+      "description": "Desenhos, camadas e como levar a sua arte para o jogo.",
+      "icon": "palette",
+      "tone": "pinta",
+      "position": 2
+    },
+    {
+      "slug": "pensa",
+      "title": "Pensa",
+      "description": "O plano do seu jogo, etapa por etapa, até a ferramenta certa.",
+      "icon": "lightbulb",
+      "tone": "pensa",
+      "position": 3
+    }
+  ],
+  "tutorials": [
+    {
+      "slug": "plataforma-abrir-uma-aula",
+      "collection": "plataforma",
+      "position": 0,
+      "draft": {
+        "title": "Como abrir uma aula e trocar de seção",
+        "summary": "Onde as aulas ficam e como andar pelas seções de uma aula.",
+        "keywords": ["aula", "seção", "próxima", "anterior", "jornada", "curso", "começar"],
+        "steps": [
+          {
+            "id": "jornada",
+            "title": "Abra a Jornada",
+            "body": "No menu da esquerda, toque em **Jornada**. No celular, ela fica na barra de baixo. É o mapa com todos os seus cursos."
+          },
+          {
+            "id": "curso",
+            "title": "Escolha o curso e a aula",
+            "body": "Toque no cartão do curso. Cada aula tem um botão: **Começar agora** quando você ainda não abriu, ou **Continuar** quando já passou por ela."
+          },
+          {
+            "id": "secoes",
+            "title": "Ande pelas seções",
+            "body": "A aula é dividida em seções. No rodapé ficam **Anterior** e **Próxima seção**. Quando terminar o que a seção pede, toque em **Próxima seção**. Na última seção, no lugar de avançar, aparece o botão de concluir a aula."
+          },
+          {
+            "id": "trancada",
+            "title": "Se uma seção estiver trancada",
+            "body": "Algumas seções mostram *Abre após concluir a anterior*. Volte com **Anterior**, termine a atividade que faltou e a próxima abre."
+          }
+        ],
+        "related": ["plataforma-voltar-para-a-aula", "plataforma-mostrar-o-menu"]
+      }
+    },
+    {
+      "slug": "plataforma-voltar-para-a-aula",
+      "collection": "plataforma",
+      "position": 1,
+      "draft": {
+        "title": "Como voltar para a aula de onde parei",
+        "summary": "Fechou a página ontem? Assim você acha a aula certa e continua dali.",
+        "keywords": ["continuar", "parei", "ontem", "voltar", "retomar", "de onde parei"],
+        "steps": [
+          {
+            "id": "jornada",
+            "title": "Vá para a Jornada",
+            "body": "Toque em **Jornada** no menu. Se o menu estiver escondido, veja [Como mostrar o menu](/como-fazer/plataforma-mostrar-o-menu)."
+          },
+          {
+            "id": "continuar",
+            "title": "Toque em Continuar",
+            "body": "No cartão do curso, a aula onde você parou mostra o botão **Continuar**. Ela abre na seção em que você estava."
+          },
+          {
+            "id": "rever",
+            "title": "Quer rever uma seção antiga?",
+            "body": "Dentro da aula, toque em **Anterior** quantas vezes precisar. Nada do que você já fez se perde."
+          }
+        ],
+        "related": ["plataforma-abrir-uma-aula"]
+      }
+    },
+    {
+      "slug": "plataforma-mostrar-o-menu",
+      "collection": "plataforma",
+      "position": 2,
+      "draft": {
+        "title": "Como mostrar o menu dentro da aula ou da ferramenta",
+        "summary": "Na aula e nas ferramentas o menu começa escondido. Veja onde ele volta.",
+        "keywords": ["menu", "cadê o menu", "menu sumiu", "lista de aulas", "esconder", "voltar"],
+        "steps": [
+          {
+            "id": "por-que",
+            "title": "O menu se esconde de propósito",
+            "body": "Quando você entra numa aula ou abre o Estúdio, o Pinta, o Pensa ou o Molda, a barra da esquerda e a lista de aulas se recolhem sozinhas. Assim a tela inteira fica para o seu trabalho."
+          },
+          {
+            "id": "mostrar",
+            "title": "Toque em Mostrar menu",
+            "body": "Na beirada esquerda da tela aparece o botão **Mostrar menu**. Ele traz a barra de volta. Do lado direito, na aula, o botão é **Mostrar lista de aulas**."
+          },
+          {
+            "id": "projeto-aberto",
+            "title": "Com um projeto aberto, o botão some",
+            "body": "Dentro do Estúdio com um projeto aberto, a ferramenta toma a tela inteira e o **Mostrar menu** não aparece. Salve, volte para **Meus projetos** pelo menu **Mais opções** (os três pontinhos) e o botão volta."
+          },
+          {
+            "id": "celular",
+            "title": "No celular",
+            "body": "Em tela pequena não existe barra da esquerda. Use a barra de cima e a barra de baixo, que ficam sempre à mão."
+          }
+        ],
+        "related": ["plataforma-abrir-uma-aula"]
+      }
+    },
+    {
+      "slug": "plataforma-pedir-ajuda",
+      "collection": "plataforma",
+      "position": 3,
+      "draft": {
+        "title": "Como pedir ajuda ao professor",
+        "summary": "Travou numa aula? O botão Preciso de ajuda manda um recado para o professor.",
+        "keywords": ["professor", "ajuda", "dúvida", "travei", "recado", "não funciona", "erro"],
+        "steps": [
+          {
+            "id": "botao",
+            "title": "Toque em Preciso de ajuda",
+            "body": "O botão **Preciso de ajuda** fica no rodapé da aula, entre **Anterior** e **Próxima seção**."
+          },
+          {
+            "id": "escreva",
+            "title": "Conte onde travou",
+            "body": "Escreva o que você tentou e o que aconteceu. Um bom exemplo: *Coloquei o bloco de movimento, mas as setas não fizeram o personagem andar.* Quanto mais detalhes, mais rápido o professor entende."
+          },
+          {
+            "id": "resposta",
+            "title": "A resposta chega nos Recados",
+            "body": "O professor responde nos seus **Recados**. O sininho no menu avisa quando tem recado novo."
+          }
+        ],
+        "related": ["plataforma-abrir-uma-aula"]
+      }
+    },
+    {
+      "slug": "plataforma-escolher-a-minha-cor",
+      "collection": "plataforma",
+      "position": 4,
+      "draft": {
+        "title": "Como escolher a minha cor",
+        "summary": "A cor do seu perfil pinta a plataforma inteira. Troque quando quiser.",
+        "keywords": ["cor", "tema", "rosa", "azul", "roxo", "perfil", "mudar a cor"],
+        "steps": [
+          {
+            "id": "perfil",
+            "title": "Abra Meu perfil",
+            "body": "No menu, toque em **Meu espaço** e depois em **Meu perfil**."
+          },
+          {
+            "id": "cores",
+            "title": "Toque numa cor",
+            "body": "Em **Cor do seu perfil** há seis caixinhas: Azul, Turquesa, Verde, Laranja, Rosa e Roxo. Toque na que você gostar. A plataforma muda na hora e a escolha fica guardada."
+          },
+          {
+            "id": "estudio",
+            "title": "O tema do Estúdio é outra coisa",
+            "body": "Dentro do Estúdio existe **Mudar tema**, no menu **Mais opções**. Ele troca só o claro e o escuro da ferramenta, e não a sua cor."
+          }
+        ],
+        "related": ["plataforma-montar-o-avatar"]
+      }
+    },
+    {
+      "slug": "plataforma-montar-o-avatar",
+      "collection": "plataforma",
+      "position": 5,
+      "draft": {
+        "title": "Como montar o meu avatar",
+        "summary": "Escolha como você aparece para a turma e salve.",
+        "keywords": ["avatar", "boneco", "personagem", "aparência", "foto", "turma"],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra Meu avatar",
+            "body": "No menu, toque em **Meu espaço** e depois em **Meu avatar**."
+          },
+          {
+            "id": "montar",
+            "title": "Monte do seu jeito",
+            "body": "Toque em cada parte e escolha a opção que você quiser. Dá para mudar quantas vezes precisar."
+          },
+          {
+            "id": "salvar",
+            "title": "Toque em Salvar",
+            "body": "Sem salvar, a mudança se perde ao sair. Depois de **Salvar**, o avatar novo aparece no menu, no Mural e no Ranking."
+          }
+        ],
+        "related": ["plataforma-escolher-a-minha-cor"]
+      }
+    },
+    {
+      "slug": "plataforma-publicar-no-mural",
+      "collection": "plataforma",
+      "position": 6,
+      "draft": {
+        "title": "Como publicar meu jogo no Mural dos Criadores",
+        "summary": "Do botão Compartilhar do Estúdio até o seu jogo no Mural, com um link para mostrar.",
+        "keywords": [
+          "mural",
+          "compartilhar",
+          "publicar",
+          "link",
+          "amigos",
+          "família",
+          "mostrar o jogo"
+        ],
+        "toolRef": "estudio-completo",
+        "steps": [
+          {
+            "id": "compartilhar",
+            "title": "No Estúdio, toque em Compartilhar",
+            "body": "Com o projeto aberto, toque em **Compartilhar**. Abre a janela **Compartilhar no Mural dos Criadores**."
+          },
+          {
+            "id": "confirmar",
+            "title": "Confira as três frases",
+            "body": "Marque *Meu projeto está pronto e funcionando* e as outras frases da lista. Depois toque em **Avançar**."
+          },
+          {
+            "id": "publicar",
+            "title": "Toque em Publicar",
+            "body": "Pronto: o jogo aparece no **Mural dos Criadores**, dentro de **Comunidade**, e ganha um link para você mostrar para a família e os amigos."
+          },
+          {
+            "id": "copias",
+            "title": "O Mural guarda uma cópia",
+            "body": "Se você mudar o projeto no Estúdio depois, a versão do Mural não muda. Para atualizar, é só compartilhar de novo."
+          }
+        ],
+        "related": ["estudio-salvar-e-reabrir"]
+      }
+    },
+    {
+      "slug": "plataforma-ver-a-minha-jornada",
+      "collection": "plataforma",
+      "position": 7,
+      "draft": {
+        "title": "Como ver a minha jornada e o próximo passo",
+        "summary": "A Jornada mostra os cursos, o que você já fez e o que abre em seguida.",
+        "keywords": ["jornada", "mapa", "nível", "xp", "próximo curso", "trancado", "conquista"],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra a Jornada",
+            "body": "Toque em **Jornada** no menu. Cada cartão é um curso, na ordem da trilha."
+          },
+          {
+            "id": "ler",
+            "title": "Leia o cartão",
+            "body": "O cartão mostra quantas aulas você já concluiu e o botão **Começar agora** ou **Continuar**. Um curso trancado explica no próprio cartão o que falta para ele abrir."
+          },
+          {
+            "id": "inicio",
+            "title": "O Início resume tudo",
+            "body": "Na página **Início** ficam o seu nível, os pontos e o próximo passo sugerido. É um bom lugar para começar o dia."
+          }
+        ],
+        "related": ["plataforma-abrir-uma-aula"]
+      }
+    },
+    {
+      "slug": "plataforma-ampliar-a-atividade",
+      "collection": "plataforma",
+      "position": 8,
+      "draft": {
+        "title": "Como dar mais espaço para a atividade na aula",
+        "summary": "A divisória, o Ampliar experiência e o Expandir do Estúdio, para a atividade caber melhor na tela.",
+        "keywords": [
+          "ampliar",
+          "expandir",
+          "tela cheia",
+          "mais espaço",
+          "divisória",
+          "reduzir",
+          "ver exemplo",
+          "pequeno demais"
+        ],
+        "steps": [
+          {
+            "id": "divisoria",
+            "title": "Arraste a divisória",
+            "body": "Quando a seção tem vídeo de um lado e atividade do outro, a linha entre os dois é uma divisória. Arraste ela para dar mais espaço a um dos lados."
+          },
+          {
+            "id": "ampliar",
+            "title": "Toque em Ampliar experiência",
+            "body": "Nas atividades de experimentar, o botão **Ampliar experiência** deixa a atividade com a tela inteira. **Voltar à aula** traz o vídeo de volta."
+          },
+          {
+            "id": "expandir",
+            "title": "No Estúdio e no Pinta, o botão é Expandir",
+            "body": "Quando o Estúdio ou o Pinta aparecem dentro da aula, o botão se chama **Expandir**. **Reduzir** volta ao tamanho normal."
+          },
+          {
+            "id": "estreita",
+            "title": "Em tela estreita, são abas",
+            "body": "No celular podem aparecer as abas **Ver exemplo** e **Criar**. É o mesmo trabalho, só organizado para caber no aparelho."
+          }
+        ],
+        "related": ["plataforma-abrir-uma-aula", "estudio-pre-visualizacao"]
+      }
+    },
+    {
+      "slug": "estudio-pre-visualizacao",
+      "collection": "estudio",
+      "position": 0,
+      "draft": {
+        "title": "Como ver meu jogo na Pré-visualização",
+        "summary": "Onde o jogo aparece rodando enquanto você monta os blocos.",
+        "keywords": ["prévia", "ver o jogo", "rodar", "testar", "jogar", "preview", "tela do jogo"],
+        "toolRef": "estudio-completo",
+        "steps": [
+          {
+            "id": "tela-larga",
+            "title": "Em tela larga, ela fica ao lado",
+            "body": "Com o projeto aberto, o painel **Pré-visualização** fica ao lado dos blocos. O jogo roda ali toda vez que você muda alguma coisa."
+          },
+          {
+            "id": "escondida",
+            "title": "Se ela sumiu",
+            "body": "Na barra de cima, toque em **Mostrar pré-visualização**. O mesmo botão vira **Ocultar pré-visualização** para guardar o painel de novo."
+          },
+          {
+            "id": "tela-estreita",
+            "title": "Em tela estreita, é uma aba",
+            "body": "No celular e no tablet em pé, o Estúdio mostra abas no alto: **Blocos**, **Código** e **Pré-visualização**. Toque em **Pré-visualização** para ver o jogo e volte para **Blocos** para continuar montando."
+          },
+          {
+            "id": "erro",
+            "title": "O jogo não aparece?",
+            "body": "Abra o **Console** pelo menu **Mais opções**, no grupo **Mostrar**. Se houver um erro, ele diz qual bloco causou, com o botão *Ver o bloco que causou o erro*."
+          }
+        ],
+        "related": ["estudio-criar-um-projeto", "estudio-salvar-e-reabrir"]
+      }
+    },
+    {
+      "slug": "estudio-criar-um-projeto",
+      "collection": "estudio",
+      "position": 1,
+      "draft": {
+        "title": "Como criar um projeto novo no Estúdio",
+        "summary": "Da tela Meus Jogos até um projeto aberto, pronto para receber blocos.",
+        "keywords": ["novo jogo", "novo projeto", "começar", "criar", "meus jogos"],
+        "toolRef": "estudio-completo",
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra o Estúdio",
+            "body": "No menu, toque em **Criar** e depois em **Estúdio**. A tela que abre se chama **Meus Jogos**."
+          },
+          {
+            "id": "novo",
+            "title": "Toque em Novo projeto",
+            "body": "No alto ficam os botões **Importar** e **Novo projeto**. Toque em **Novo projeto**."
+          },
+          {
+            "id": "nome",
+            "title": "Dê um nome e abra",
+            "body": "Escreva o **Nome do projeto** e toque em **Criar e abrir**. O projeto nasce com os blocos básicos. Os blocos de jogo vêm de uma extensão: veja [Como instalar a extensão Jogo 2D](/como-fazer/estudio-instalar-jogo-2d)."
+          }
+        ],
+        "related": ["estudio-instalar-jogo-2d", "estudio-pre-visualizacao"]
+      }
+    },
+    {
+      "slug": "estudio-instalar-jogo-2d",
+      "collection": "estudio",
+      "position": 2,
+      "draft": {
+        "title": "Como instalar a extensão Jogo 2D",
+        "summary": "Os bloquinhos de personagem, cenário e pontos vêm de um pacote que você instala.",
+        "keywords": [
+          "extensão",
+          "bloquinhos",
+          "pacote",
+          "jogo 2d",
+          "instalar",
+          "cadê os blocos",
+          "blocos sumiram"
+        ],
+        "toolRef": "estudio-completo",
+        "steps": [
+          {
+            "id": "menu",
+            "title": "Abra o menu Mais opções",
+            "body": "Com o projeto aberto, toque nos três pontinhos, o botão **Mais opções**, na barra de cima."
+          },
+          {
+            "id": "extensoes",
+            "title": "Vá em O meu jogo e depois em Extensões",
+            "body": "No grupo **O meu jogo**, toque em **Extensões**. Abre a janela **Extensões oficiais**."
+          },
+          {
+            "id": "instalar",
+            "title": "Toque em Instalar no cartão do Jogo 2D",
+            "body": "Ache o cartão **Jogo 2D** e toque em **Instalar**. O selo do cartão vira **Instalada** e os blocos novos aparecem na paleta da esquerda."
+          },
+          {
+            "id": "por-projeto",
+            "title": "É por projeto",
+            "body": "Cada projeto tem as próprias extensões. Num projeto novo, a instalação precisa ser feita de novo."
+          }
+        ],
+        "related": ["estudio-criar-um-projeto", "estudio-pre-visualizacao"]
+      }
+    },
+    {
+      "slug": "estudio-salvar-e-reabrir",
+      "collection": "estudio",
+      "position": 3,
+      "draft": {
+        "title": "Como salvar e abrir de novo o meu projeto",
+        "summary": "O selo Salvo, o botão Salvar e o caminho de volta para a lista de projetos.",
+        "keywords": [
+          "salvar",
+          "guardar",
+          "sumiu",
+          "perdi",
+          "abrir de novo",
+          "meus projetos",
+          "salvo"
+        ],
+        "toolRef": "estudio-completo",
+        "steps": [
+          {
+            "id": "selo",
+            "title": "Olhe o selo na barra de cima",
+            "body": "Quando está tudo guardado, a barra mostra **Salvo**. Quando você mudou algo, mostra *Alterações não salvas*."
+          },
+          {
+            "id": "salvar",
+            "title": "Toque em Salvar",
+            "body": "Em tela larga o botão **Salvar** fica na barra. Em tela estreita, ele fica no menu **Mais opções**, no grupo **O meu jogo**."
+          },
+          {
+            "id": "voltar",
+            "title": "Volte para a lista",
+            "body": "No menu **Mais opções**, grupo **Estúdio**, toque em **Meus projetos**. Para abrir de novo, toque no cartão do projeto na tela **Meus Jogos**."
+          },
+          {
+            "id": "entregue",
+            "title": "Quer a versão que você entregou na aula?",
+            "body": "No grupo **O meu jogo** existe **Trazer o que eu enviei**. Ele troca o que está aqui pela versão que você entregou, então use só quando quiser voltar para ela."
+          }
+        ],
+        "related": ["estudio-baixar-o-projeto"]
+      }
+    },
+    {
+      "slug": "estudio-materiais-do-jogo",
+      "collection": "estudio",
+      "position": 4,
+      "draft": {
+        "title": "Como colocar imagens e sons no meu jogo",
+        "summary": "A janela Materiais do jogo tem uma aba para cada tipo: Imagens, Sons e Modelos 3D.",
+        "keywords": [
+          "imagem",
+          "som",
+          "música",
+          "foto",
+          "sprite",
+          "materiais",
+          "meus desenhos",
+          "modelo 3d"
+        ],
+        "toolRef": "estudio-completo",
+        "steps": [
+          {
+            "id": "menu",
+            "title": "Abra Mais opções e vá em Materiais",
+            "body": "Toque nos três pontinhos, **Mais opções**. No grupo **Materiais** há três portas: **Imagens**, **Sons** e **Modelos 3D**. Cada uma abre a janela **Materiais do jogo** já na aba certa."
+          },
+          {
+            "id": "enviar",
+            "title": "Envie ou escolha o arquivo",
+            "body": "Na aba, envie um arquivo do seu aparelho ou escolha um que já está lá. Os desenhos que você fez no Pinta aparecem em **Meus desenhos**."
+          },
+          {
+            "id": "usar",
+            "title": "Use nos blocos",
+            "body": "Os blocos que pedem uma imagem ou um som mostram uma lista com os materiais do projeto. Escolha o nome do arquivo ali."
+          }
+        ],
+        "related": ["pinta-usar-no-estudio"]
+      }
+    },
+    {
+      "slug": "estudio-baixar-o-projeto",
+      "collection": "estudio",
+      "position": 5,
+      "draft": {
+        "title": "Como baixar o meu projeto e trazer de volta",
+        "summary": "Os três botões de Baixar são diferentes. Este é o que serve para abrir no Estúdio de novo.",
+        "keywords": ["baixar", "exportar", "arquivo", "importar", "computador", "cópia", "backup"],
+        "toolRef": "estudio-completo",
+        "steps": [
+          {
+            "id": "levar",
+            "title": "Abra Mais opções e vá em Levar o jogo",
+            "body": "No menu **Mais opções**, o grupo **Levar o jogo** tem três opções, cada uma com uma linha explicando o que ela gera."
+          },
+          {
+            "id": "qual",
+            "title": "Escolha Baixar o projeto",
+            "body": "**Baixar o projeto** gera um arquivo para abrir este mesmo projeto no Estúdio. **Baixar o código** gera um .zip com o código para abrir no computador. **Baixar para publicar** gera um .zip pronto para pôr no ar. Para guardar uma cópia ou levar para outro perfil, use **Baixar o projeto**."
+          },
+          {
+            "id": "importar",
+            "title": "Para trazer de volta, use Importar",
+            "body": "Na tela **Meus Jogos**, toque em **Importar** e escolha o arquivo que você baixou. Ele entra como um projeto novo na lista."
+          }
+        ],
+        "related": ["estudio-salvar-e-reabrir"]
+      }
+    },
+    {
+      "slug": "pinta-usar-uma-camada",
+      "collection": "pinta",
+      "position": 0,
+      "draft": {
+        "title": "Como usar uma camada no Pinta",
+        "summary": "Camadas são folhas transparentes empilhadas: dá para esconder, trancar e reordenar cada uma.",
+        "keywords": [
+          "camada",
+          "camadas",
+          "olhinho",
+          "cadeado",
+          "esconder",
+          "trancar",
+          "layer",
+          "por cima"
+        ],
+        "toolRef": "pinta",
+        "steps": [
+          {
+            "id": "painel",
+            "title": "Ache o painel Camadas",
+            "body": "Com o desenho aberto, o painel **Camadas** lista as folhas do desenho. Em tela estreita ele fica dentro de **Cores e camadas**."
+          },
+          {
+            "id": "nova",
+            "title": "Toque em Nova camada",
+            "body": "**Nova camada** cria uma folha transparente por cima. Desenhe nela sem estragar o que está embaixo. Todo desenho precisa de pelo menos uma camada."
+          },
+          {
+            "id": "olhinho",
+            "title": "O olhinho esconde, o cadeado tranca",
+            "body": "Toque no olhinho para esconder ou mostrar a camada. Toque no cadeado para trancar: uma camada trancada não aceita pincel nem borracha. Se aparecer o aviso *Esta camada está escondida!* ou *Esta camada está trancada!*, é só destocar o olhinho ou o cadeado."
+          },
+          {
+            "id": "ordem",
+            "title": "Subir, descer e apagar",
+            "body": "**Subir a camada** e **Descer a camada** mudam quem fica na frente. **Apagar esta camada** remove a folha, com uma pergunta antes."
+          }
+        ],
+        "related": ["pinta-desfazer", "pinta-ferramentas"]
+      }
+    },
+    {
+      "slug": "pinta-criar-um-desenho",
+      "collection": "pinta",
+      "position": 1,
+      "draft": {
+        "title": "Como criar um desenho novo no Pinta",
+        "summary": "Da galeria Meus desenhos até a tela em branco, com as quatro perguntas do assistente.",
+        "keywords": ["novo desenho", "criar", "personagem", "cenário", "pixel", "vetor", "tamanho"],
+        "toolRef": "pinta",
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra o Pinta",
+            "body": "No menu, toque em **Criar** e depois em **Pinta**. A galeria se chama **Meus desenhos**."
+          },
+          {
+            "id": "criar",
+            "title": "Toque em Criar novo",
+            "body": "O cartão **Criar novo** fica na frente da galeria. Ele abre um assistente com quatro perguntas."
+          },
+          {
+            "id": "perguntas",
+            "title": "Responda as quatro perguntas",
+            "body": "**Como você quer desenhar?** Pixel art ou Vetor. **O que você quer criar?** Personagem, Cenário de fundo, ou Peças do cenário ou mapa. **Qual o tamanho?** **Qual o nome?** Use letras minúsculas e traços, porque esse nome aparece nos blocos do Estúdio."
+          },
+          {
+            "id": "comecar",
+            "title": "Toque em Começar a desenhar",
+            "body": "O desenho abre e vai sendo guardado sozinho. O selo **Guardado na sua conta** confirma."
+          }
+        ],
+        "related": ["pinta-ferramentas", "pinta-usar-no-estudio"]
+      }
+    },
+    {
+      "slug": "pinta-usar-no-estudio",
+      "collection": "pinta",
+      "position": 2,
+      "draft": {
+        "title": "Como enviar um desenho do Pinta para o Estúdio",
+        "summary": "O botão Usar no Estúdio leva o desenho para os materiais do seu jogo.",
+        "keywords": [
+          "estúdio",
+          "enviar",
+          "usar no estúdio",
+          "jogo",
+          "sprite",
+          "personagem no jogo"
+        ],
+        "toolRef": "pinta",
+        "steps": [
+          {
+            "id": "botao",
+            "title": "Toque em Usar no Estúdio",
+            "body": "Com o desenho aberto, toque em **Usar no Estúdio**. O Pinta guarda o desenho e manda uma cópia para o seu Estúdio."
+          },
+          {
+            "id": "onde",
+            "title": "Onde ele aparece",
+            "body": "No Estúdio, abra **Materiais do jogo** pelo menu **Mais opções**, grupo **Materiais**, porta **Imagens**. O desenho está em **Meus desenhos**."
+          },
+          {
+            "id": "mudou",
+            "title": "Mudou o desenho depois?",
+            "body": "Toque em **Usar no Estúdio** de novo. A cópia do Estúdio é atualizada com o mesmo nome."
+          }
+        ],
+        "related": ["estudio-materiais-do-jogo", "pinta-criar-um-desenho"]
+      }
+    },
+    {
+      "slug": "pinta-desfazer",
+      "collection": "pinta",
+      "position": 3,
+      "draft": {
+        "title": "Como desfazer o que eu fiz no Pinta",
+        "summary": "Errou o traço? Desfazer volta um passo de cada vez.",
+        "keywords": ["desfazer", "errei", "voltar atrás", "apagar tudo", "ctrl z", "undo"],
+        "toolRef": "pinta",
+        "steps": [
+          {
+            "id": "desfazer",
+            "title": "Toque em Desfazer",
+            "body": "O botão **Desfazer** fica na barra do desenho. Cada toque volta um passo. No computador, **Ctrl+Z** faz o mesmo."
+          },
+          {
+            "id": "tamanho",
+            "title": "Diminuiu o tamanho e cortou o desenho?",
+            "body": "Diminuir o quadro corta o que ficou de fora, mas dá para desfazer com **Ctrl+Z** ou com o botão **Desfazer** logo em seguida."
+          },
+          {
+            "id": "apagar",
+            "title": "Para apagar de vez",
+            "body": "Apagar um desenho da galeria **Meus desenhos** não tem volta. O Pinta pergunta antes."
+          }
+        ],
+        "related": ["pinta-usar-uma-camada"]
+      }
+    },
+    {
+      "slug": "pinta-ferramentas",
+      "collection": "pinta",
+      "position": 4,
+      "draft": {
+        "title": "Como usar o pincel, a borracha e o balde",
+        "summary": "As ferramentas de pintar do Pinta e onde muda o tamanho do traço.",
+        "keywords": [
+          "pincel",
+          "borracha",
+          "balde",
+          "balde de tinta",
+          "conta-gotas",
+          "pintar",
+          "traço",
+          "cor"
+        ],
+        "toolRef": "pinta",
+        "steps": [
+          {
+            "id": "pincel",
+            "title": "Pincel e Borracha",
+            "body": "**Pincel** pinta com a cor escolhida. **Borracha** apaga. **Tamanho do traço** muda a grossura dos dois."
+          },
+          {
+            "id": "balde",
+            "title": "Balde de tinta",
+            "body": "**Balde de tinta** enche uma área inteira de uma vez. Útil para fundos e para pintar por dentro de um contorno fechado."
+          },
+          {
+            "id": "conta-gotas",
+            "title": "Conta-gotas",
+            "body": "**Conta-gotas** pega a cor de um ponto do desenho e deixa ela pronta no pincel. Toque no ponto que tem a cor que você quer."
+          },
+          {
+            "id": "cores",
+            "title": "Cores novas",
+            "body": "Na paleta, **Nova cor** adiciona uma cor sua. O desenho fica guardado sozinho: procure o selo **Guardado na sua conta**."
+          }
+        ],
+        "related": ["pinta-usar-uma-camada", "pinta-desfazer"]
+      }
+    },
+    {
+      "slug": "pensa-criar-um-plano",
+      "collection": "pensa",
+      "position": 0,
+      "draft": {
+        "title": "Como criar um plano no Pensa",
+        "summary": "O plano é o mapa do seu jogo. Comece pelo nome.",
+        "keywords": ["plano", "novo plano", "ideia", "começar", "meu jogo", "criar"],
+        "toolRef": "pensa",
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra o Pensa",
+            "body": "No menu, toque em **Criar** e depois em **Pensa**."
+          },
+          {
+            "id": "novo",
+            "title": "Toque em + Novo plano",
+            "body": "O botão **+ Novo plano** fica no alto. O cartão **Novo plano**, no fim da lista, faz a mesma coisa."
+          },
+          {
+            "id": "nome",
+            "title": "Dê o nome do jogo",
+            "body": "Escreva o **Nome do novo jogo** e toque em **Criar meu plano**. O plano abre na primeira etapa."
+          }
+        ],
+        "related": ["pensa-etapas-do-metodo"]
+      }
+    },
+    {
+      "slug": "pensa-etapas-do-metodo",
+      "collection": "pensa",
+      "position": 1,
+      "draft": {
+        "title": "Como seguir as quatro etapas do método ZERO",
+        "summary": "O plano anda em quatro etapas, uma de cada vez, até virar um plano de tarefas.",
+        "keywords": [
+          "etapa",
+          "zero",
+          "método",
+          "carta da ideia",
+          "loop",
+          "cenas",
+          "telas",
+          "tarefas"
+        ],
+        "toolRef": "pensa",
+        "steps": [
+          {
+            "id": "trilha",
+            "title": "Olhe a trilha Z, E, R, O",
+            "body": "No alto do plano, a trilha mostra as quatro etapas. A cheia já foi concluída, a com o fio é a **Etapa atual** e as apagadas ainda vêm."
+          },
+          {
+            "id": "carta",
+            "title": "Comece pela Carta da Ideia",
+            "body": "Na primeira etapa, toque em **Criar a Carta da Ideia** e responda as perguntas. Nas seguintes, o botão muda, como **Criar loop, cenas e telas**."
+          },
+          {
+            "id": "rever",
+            "title": "Rever uma etapa concluída",
+            "body": "Toque na etapa na trilha. O aviso *Você está revendo uma etapa que já foi concluída* aparece, e você pode voltar para a atual quando quiser."
+          },
+          {
+            "id": "tarefas",
+            "title": "No fim, o plano de tarefas",
+            "body": "Com as quatro etapas concluídas, toque em **Criar plano de tarefas**. Cada tarefa vira um cartão que aponta para o Pinta, o Estúdio ou o Molda."
+          }
+        ],
+        "related": ["pensa-abrir-a-ferramenta-da-tarefa", "pensa-criar-um-plano"]
+      }
+    },
+    {
+      "slug": "pensa-abrir-a-ferramenta-da-tarefa",
+      "collection": "pensa",
+      "position": 2,
+      "draft": {
+        "title": "Como abrir a ferramenta de uma tarefa do plano",
+        "summary": "Cada cartão de tarefa tem um botão que leva direto para a ferramenta certa.",
+        "keywords": [
+          "tarefa",
+          "cartão",
+          "abrir no pinta",
+          "abrir no estúdio",
+          "próxima",
+          "concluída",
+          "planejada"
+        ],
+        "toolRef": "pensa",
+        "steps": [
+          {
+            "id": "status",
+            "title": "Leia o estado do cartão",
+            "body": "Cada tarefa mostra **Planejada**, **Em andamento** ou **Concluída**, e a que está pronta para começar tem o selo **PRÓXIMA**."
+          },
+          {
+            "id": "abrir",
+            "title": "Toque em Abrir no ...",
+            "body": "O botão diz **Abrir no Pinta**, **Abrir no Estúdio** ou **Abrir no Molda**. Ele abre a ferramenta já com o guia da tarefa. Uma tarefa planejada só abre quando é a próxima: conclua as anteriores primeiro."
+          },
+          {
+            "id": "nao-liberada",
+            "title": "Se aparecer Ferramenta não liberada",
+            "body": "Quer dizer que essa ferramenta não está disponível para o seu perfil. O plano continua guardado, e as outras tarefas seguem normais."
+          }
+        ],
+        "related": ["pensa-etapas-do-metodo"]
+      }
+    },
+    {
+      "slug": "pensa-apagar-um-plano",
+      "collection": "pensa",
+      "position": 3,
+      "draft": {
+        "title": "Como apagar um plano do Pensa",
+        "summary": "Apagar tira o plano inteiro, com as etapas e as tarefas. Não tem volta.",
+        "keywords": ["apagar", "excluir", "remover", "plano", "lixeira"],
+        "toolRef": "pensa",
+        "steps": [
+          {
+            "id": "cartao",
+            "title": "Ache o botão Apagar no cartão do plano",
+            "body": "Na tela inicial do Pensa, cada plano tem o botão **Apagar**."
+          },
+          {
+            "id": "confirmar",
+            "title": "Confirme",
+            "body": "A janela pergunta **Apagar este plano?**. Toque em **Apagar** para confirmar, ou em **Cancelar** para desistir. Depois de apagar, o plano não volta."
+          }
+        ],
+        "related": ["pensa-criar-um-plano"]
+      }
+    }
+  ]
+}

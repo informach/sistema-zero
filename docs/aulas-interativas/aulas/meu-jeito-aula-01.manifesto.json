@@ -54,6 +54,27 @@
       }
     },
     {
+      "key": "ajuda-projeto-novo",
+      "content": {
+        "kind": "materials",
+        "title": "Se travar, o passo a passo está no Como fazer",
+        "items": [
+          {
+            "id": "link-estudio-criar-um-projeto",
+            "kind": "link",
+            "url": "/como-fazer/estudio-criar-um-projeto",
+            "label": "Como criar um projeto novo no Estúdio"
+          },
+          {
+            "id": "link-plataforma-mostrar-o-menu",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-mostrar-o-menu",
+            "label": "Como mostrar o menu dentro da aula ou da ferramenta"
+          }
+        ]
+      }
+    },
+    {
       "key": "fala-extensao",
       "content": {
         "kind": "dialogue",
@@ -67,6 +88,21 @@
         "kind": "dialogue",
         "pose": "happy",
         "text": "Apareceu o selo Instalada, e o botão virou Remover. Agora clica no Fechar, lá embaixo. Olha a coluna da esquerda de novo: a categoria Jogo 2D está lá. Para voltar para a lista, clica no Sistema Zero Studio, no canto esquerdo da barra de cima."
+      }
+    },
+    {
+      "key": "ajuda-extensao",
+      "content": {
+        "kind": "materials",
+        "title": "Se travar, o passo a passo está no Como fazer",
+        "items": [
+          {
+            "id": "link-estudio-instalar-jogo-2d",
+            "kind": "link",
+            "url": "/como-fazer/estudio-instalar-jogo-2d",
+            "label": "Como instalar a extensão Jogo 2D"
+          }
+        ]
       }
     },
     {
@@ -309,7 +345,12 @@
       "title": "Um projeto do zero, e um bloco que não está lá",
       "intent": "application",
       "objective": "Criar o primeiro projeto no Estúdio Completo e encontrar a falta da categoria Jogo 2D, sem conserto nenhum ainda.",
-      "blockKeys": ["fala-projeto-teste", "video-lista-e-projeto", "fala-de-proposito"],
+      "blockKeys": [
+        "fala-projeto-teste",
+        "video-lista-e-projeto",
+        "fala-de-proposito",
+        "ajuda-projeto-novo"
+      ],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],
@@ -323,7 +364,7 @@
       "title": "Os bloquinhos vêm de um pacote que você instala",
       "intent": "application",
       "objective": "Instalar a extensão Jogo 2D no projeto de teste e ver a categoria voltar para a coluna da esquerda.",
-      "blockKeys": ["fala-extensao", "fala-jogo-2d-de-volta", "video-extensao"],
+      "blockKeys": ["fala-extensao", "fala-jogo-2d-de-volta", "video-extensao", "ajuda-extensao"],
       "workspaceKey": null,
       "externalTool": "estudio",
       "pendingMedia": [],

@@ -370,6 +370,23 @@ const dia3 = {
 
 // Chaves antigas de mídia saem da introdução. O bloco de materiais antigo também sai para que
 // um anexo do treino da nave não seja reutilizado por acidente neste novo jogo.
+/** Bloco de materiais só com links para `/como-fazer/<slug>` (o member-shell abre em nova aba). */
+function ajudaComoFazer(key: string, title: string, links: Array<[slug: string, label: string]>) {
+  return {
+    key,
+    content: {
+      kind: 'materials' as const,
+      title,
+      items: links.map(([slug, label]) => ({
+        id: `link-${slug}`,
+        kind: 'link' as const,
+        url: `/como-fazer/${slug}`,
+        label,
+      })),
+    },
+  }
+}
+
 const introducao = {
   version: 5,
   courseSlug: CURSO,
@@ -418,6 +435,18 @@ const introducao = {
       key: 'materiais-farol',
       content: { kind: 'materials', title: 'Caderno e mapa da aventura', items: [] },
     },
+    // Os tours de plataforma envelhecem com a interface: o vídeo mostra, e o passo a passo
+    // atualizável mora no "Como fazer" (abre em nova aba, com volta para a aula). Sem critério de
+    // conclusão: consultar é opcional.
+    ajudaComoFazer('ajuda-como-fazer-intro', 'Para rever depois, no Como fazer', [
+      ['plataforma-abrir-uma-aula', 'Como abrir uma aula e trocar de seção'],
+      ['plataforma-ampliar-a-atividade', 'Como dar mais espaço para a atividade na aula'],
+      ['plataforma-mostrar-o-menu', 'Como mostrar o menu dentro da aula ou da ferramenta'],
+    ]),
+    ajudaComoFazer('ajuda-como-fazer-voltar', 'Se travar, o passo a passo está aqui', [
+      ['plataforma-voltar-para-a-aula', 'Como voltar para a aula de onde parei'],
+      ['plataforma-pedir-ajuda', 'Como pedir ajuda ao professor'],
+    ]),
     video(
       'video-intro-voltar',
       'Como continuar amanhã',
@@ -431,7 +460,7 @@ const introducao = {
       'A Chave do Farol',
       'presentation',
       'Conhecer o jogo, o vídeo, as seções e como abrir uma atividade ou o Estúdio dentro da aula.',
-      ['video-intro-farol'],
+      ['video-intro-farol', 'ajuda-como-fazer-intro'],
       ['video-intro-farol'],
     ),
     secao(
@@ -447,7 +476,7 @@ const introducao = {
       'Como voltar e pedir ajuda',
       'explanation',
       'Saber retornar ao curso e pedir ajuda sem se perder na plataforma.',
-      ['video-intro-voltar'],
+      ['video-intro-voltar', 'ajuda-como-fazer-voltar'],
       ['video-intro-voltar'],
     ),
   ],

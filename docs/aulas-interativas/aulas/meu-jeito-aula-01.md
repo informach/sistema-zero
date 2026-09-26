@@ -166,6 +166,10 @@ lista vazia é a abertura natural do gesto de criar o primeiro projeto, não uma
      Meus Jogos, e a categoria Jogo 2D ausente da coluna da esquerda.
   3. `dialogue` (`fala-de-proposito`). "Esta seção fecha com alguma coisa faltando, e é de
      propósito. Você não fez nada de errado. O conserto vem na próxima."
+  4. `materials` (`ajuda-projeto-novo`, "Se travar, o passo a passo está no Como fazer"). Só
+     links, para `/como-fazer/estudio-criar-um-projeto` e `/como-fazer/plataforma-mostrar-o-menu`.
+     O passo a passo da seção continua no balão e no clipe; o link é a rede para quem travar num
+     detalhe da interface, e abre em nova aba com volta para a aula. Não conta para concluir.
 
 **A dor fecha aqui, sem conserto.** É o único lugar da aula onde uma seção termina com alguma coisa
 faltando, e é de propósito.
@@ -197,6 +201,9 @@ propósito, virou o balão acima. O atalho **Abrir meu Estúdio** continua onde 
      você conquistou até agora, e conforme você for terminando os próximos cursos, mais cartões vão
      aparecendo aqui." **Retirar "com uns cartões" e "procura o cartão"**, porque a janela tem um
      item só. Duração alvo: 50 a 60 segundos.
+  4. `materials` (`ajuda-extensao`, "Se travar, o passo a passo está no Como fazer"). Um link,
+     para `/como-fazer/estudio-instalar-jogo-2d`. Mesma regra da seção 3: o gesto é ensinado
+     aqui, e o tutorial é a versão consultável, atualizada quando o menu ⋯ mudar de nome.
 
 **Junta com a seção 3 o que hoje é uma seção só, e separa o que hoje está grudado.** A conta fecha:
 duas seções continuam sendo duas, mas o corte passou a ser no lugar certo, entre a falta e o

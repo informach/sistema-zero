@@ -21,6 +21,11 @@ Três vídeos, um por seção. Fala dirigida à criança; as indicações **Na t
 **Narração:**
 > "Quer mais espaço para mexer? Quando aparecer a atividade, você pode aumentar a área dela arrastando esta divisão ou tocar em Ampliar experiência. Depois, Voltar à aula traz o vídeo de volta. No Estúdio, o botão se chama Expandir; Reduzir volta ao tamanho normal. Se a tela for menor, talvez apareçam as abas Ver exemplo e Criar. É o mesmo trabalho, só organizado para caber no aparelho."
 
+**Na tela:** apontar o bloco **Para rever depois, no Como fazer**, logo abaixo do vídeo, sem abrir nenhum link.
+
+**Narração:**
+> "Se esquecer algum desses botões, não precisa rever o vídeo inteiro: logo aqui embaixo tem o passo a passo escrito, no Como fazer. Ele abre em outra aba e tem um botão para voltar para a aula."
+
 ## Seção 2. Seu mapa da aventura
 
 ### Vídeo `video-intro-caderno` · Um apoio para lembrar
@@ -37,4 +42,4 @@ Três vídeos, um por seção. Fala dirigida à criança; as indicações **Na t
 **Na tela:** sair da aula para **Mostrar lista de aulas**; mostrar o cartão do Desafio na página do curso; reabrir a aula. Mostrar o botão **Preciso de ajuda**, preencher um exemplo concreto curto e cancelar sem enviar uma mensagem real.
 
 **Narração:**
-> "E se você fechar a página e quiser continuar amanhã? Volte para a sua lista de aulas, procure o Desafio do Primeiro Jogo e abra o dia em que parou. Você também pode voltar a uma seção anterior para rever o vídeo. Se um bloco não encaixar ou o personagem não se mexer, não precisa ficar adivinhando sozinho. Aperte Preciso de ajuda e conte onde travou. Por exemplo: ‘No Dia 1, coloquei o bloco de movimento, mas as setas não fizeram o personagem andar.’ Assim eu consigo entender o que você viu e ajudar melhor. Pronto para começar? Na próxima aula, a primeira regra do jogo vai ser sua."
+> "E se você fechar a página e quiser continuar amanhã? Volte para a sua lista de aulas, procure o Desafio do Primeiro Jogo e abra o dia em que parou. Você também pode voltar a uma seção anterior para rever o vídeo. Se um bloco não encaixar ou o personagem não se mexer, não precisa ficar adivinhando sozinho. Aperte Preciso de ajuda e conte onde travou. Por exemplo: ‘No Dia 1, coloquei o bloco de movimento, mas as setas não fizeram o personagem andar.’ Assim eu consigo entender o que você viu e ajudar melhor. E o caminho de volta fica escrito aqui embaixo, no Como fazer, para o dia em que você esquecer. Pronto para começar? Na próxima aula, a primeira regra do jogo vai ser sua."

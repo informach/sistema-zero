@@ -47,6 +47,54 @@
       }
     },
     {
+      "key": "ajuda-como-fazer-intro",
+      "content": {
+        "kind": "materials",
+        "title": "Para rever depois, no Como fazer",
+        "items": [
+          {
+            "id": "link-plataforma-abrir-uma-aula",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-abrir-uma-aula",
+            "label": "Como abrir uma aula e trocar de seção"
+          },
+          {
+            "id": "link-plataforma-ampliar-a-atividade",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-ampliar-a-atividade",
+            "label": "Como dar mais espaço para a atividade na aula"
+          },
+          {
+            "id": "link-plataforma-mostrar-o-menu",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-mostrar-o-menu",
+            "label": "Como mostrar o menu dentro da aula ou da ferramenta"
+          }
+        ]
+      }
+    },
+    {
+      "key": "ajuda-como-fazer-voltar",
+      "content": {
+        "kind": "materials",
+        "title": "Se travar, o passo a passo está aqui",
+        "items": [
+          {
+            "id": "link-plataforma-voltar-para-a-aula",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-voltar-para-a-aula",
+            "label": "Como voltar para a aula de onde parei"
+          },
+          {
+            "id": "link-plataforma-pedir-ajuda",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-pedir-ajuda",
+            "label": "Como pedir ajuda ao professor"
+          }
+        ]
+      }
+    },
+    {
       "key": "video-intro-voltar",
       "plannedVideo": "Título: Como continuar amanhã\n\nMostrar o caminho para voltar ao curso e Preciso de ajuda no lugar real. Não ensinar Salvo/Enviar antes de fazer o jogo.\n\nRoteiro falado: desafio-introducao.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     }
@@ -57,7 +105,7 @@
       "title": "A Chave do Farol",
       "intent": "presentation",
       "objective": "Conhecer o jogo, o vídeo, as seções e como abrir uma atividade ou o Estúdio dentro da aula.",
-      "blockKeys": ["video-intro-farol"],
+      "blockKeys": ["video-intro-farol", "ajuda-como-fazer-intro"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -85,7 +133,7 @@
       "title": "Como voltar e pedir ajuda",
       "intent": "explanation",
       "objective": "Saber retornar ao curso e pedir ajuda sem se perder na plataforma.",
-      "blockKeys": ["video-intro-voltar"],
+      "blockKeys": ["video-intro-voltar", "ajuda-como-fazer-voltar"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
