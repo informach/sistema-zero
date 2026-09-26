@@ -1,6 +1,20 @@
 import { describe, expect, it } from 'bun:test'
 import { buildInputBridgeRuntime, buildInputRuntime } from '../inputBridge'
 
+it('encaminha Escape do jogo somente à origem configurada do host', () => {
+  const bridge = load({ runtime: buildInputBridgeRuntime('https://kids.test') })
+  bridge.fire('keydown', { key: 'Escape', code: 'Escape' })
+  expect(bridge.sent).toEqual([
+    { message: { type: 'sz:escape' }, targetOrigin: 'https://kids.test' },
+  ])
+  const exported = load({ runtime: buildInputRuntime() })
+  exported.fire('keydown', { key: 'Escape', code: 'Escape' })
+  expect(exported.sent).toEqual([])
+  const noOrigin = load()
+  noOrigin.fire('keydown', { key: 'Escape', code: 'Escape' })
+  expect(noOrigin.sent).toEqual([])
+})
+
 interface InputApi {
   key: (name: string) => boolean
   gamepadConnected: (index: number) => boolean
@@ -126,7 +140,7 @@ describe('inputBridge — window.__szInput', () => {
     ])
   })
 
-  it('o botão acessível despacha toque no canvas somente quando vem do parent', () => {
+  it('a restauração dos achados despacha toque no canvas somente quando vem do parent', () => {
     const hits: Array<{ type: string; clientX: number; clientY: number }> = []
     class PointerFromButton {
       type: string

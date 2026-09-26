@@ -730,35 +730,37 @@ export function LearningBuilder({
           )}
         </div>
       )}
-      {/* A pergunta anexa vale para os dois tipos. Na cena ela é o terceiro
+      {/* A pergunta anexa vale para HTML e cena, não para o jogo pronto. Na cena ela é o terceiro
           tempo do ciclo (mexer, prever, enunciar a regra) e só aparece para a criança DEPOIS de a
           descoberta acontecer — antes disso, perguntar "por quê?" é pedir adivinhação. */}
-      <label className="flex min-h-11 items-center gap-3">
-        <input
-          type="checkbox"
-          checked={Boolean(checkpoint)}
-          onChange={(e) =>
-            onChange({
-              ...value,
-              checkpoint: e.target.checked
-                ? (heranca.pergunta ?? {
-                    prompt: '',
-                    choices: initialChoices(),
-                    correctChoiceId: 'first',
-                    explanation: '',
-                  })
-                : undefined,
-              // ⚠️ Escrever a minha pergunta e dispensar a pergunta são ordens contrárias, e o
-              // domínio recusa as duas juntas. Aqui quem chegou por último manda: a caixa marcada
-              // agora é a escolha da professora, e não há trabalho a perder no outro lado.
-              ...(e.target.checked ? { semPerguntaFinal: undefined } : {}),
-            })
-          }
-        />
-        {heranca.pergunta
-          ? 'Escrever a minha pergunta (substitui a da cena)'
-          : 'Incluir pergunta de verificação'}
-      </label>
+      {a.type !== 'project-play' && (
+        <label className="flex min-h-11 items-center gap-3">
+          <input
+            type="checkbox"
+            checked={Boolean(checkpoint)}
+            onChange={(e) =>
+              onChange({
+                ...value,
+                checkpoint: e.target.checked
+                  ? (heranca.pergunta ?? {
+                      prompt: '',
+                      choices: initialChoices(),
+                      correctChoiceId: 'first',
+                      explanation: '',
+                    })
+                  : undefined,
+                // ⚠️ Escrever a minha pergunta e dispensar a pergunta são ordens contrárias, e o
+                // domínio recusa as duas juntas. Aqui quem chegou por último manda: a caixa marcada
+                // agora é a escolha da professora, e não há trabalho a perder no outro lado.
+                ...(e.target.checked ? { semPerguntaFinal: undefined } : {}),
+              })
+            }
+          />
+          {heranca.pergunta
+            ? 'Escrever a minha pergunta (substitui a da cena)'
+            : 'Incluir pergunta de verificação'}
+        </label>
+      )}
       {/* ⭐⭐ "Esta cena entra sem a pergunta do fim": a única maneira de uma aula pedir só o mexer.
           A Aula 1 do Corre Dino tem quatro cenas seguidas, e previsão + pergunta em cada uma dão
           oito momentos de responder na primeira aula da criança. ⚠️ A cena continua concluindo

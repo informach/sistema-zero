@@ -29,15 +29,17 @@ describe('jogo pronto na seção', () => {
     expect(clickedProjectPlayTarget(activity, { type: 'outro', x: 137, y: 224 })).toBeNull()
   })
 
-  test('mostra o jogo isolado, os controles acessíveis e o modo ampliado', () => {
+  test('mostra o jogo real, ampliar e jogar de novo, sem revelar esconderijos em botões', () => {
     const html = renderToStaticMarkup(
       <ProjectPlayActivityView activity={activity} answers={{}} onChange={() => {}} />,
     )
     expect(html).toContain('sandbox="allow-scripts allow-modals allow-pointer-lock"')
     expect(html).not.toContain('allow-same-origin')
     expect(html).toContain('Ampliar jogo')
-    expect(html).toContain('Procurar no arbusto')
-    expect(html).toContain('Procurar nas pedras')
-    expect(html).toContain('Procurar nas flores')
+    expect(html).toContain('Jogar de novo')
+    expect(html).not.toContain('Procurar no arbusto')
+    expect(html).not.toContain('Procurar nas pedras')
+    expect(html).not.toContain('Procurar nas flores')
+    expect(html).not.toContain('Encontrados:')
   })
 })

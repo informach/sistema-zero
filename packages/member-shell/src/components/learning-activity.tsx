@@ -303,12 +303,12 @@ function Activity({
           </p>
         )}
       </div>
+      {a.type === 'project-play' && (
+        <ProjectPlayActivityView activity={a} answers={answers} onChange={set} />
+      )}
       <fieldset disabled={busy} className="space-y-5">
         {a.type === 'html' && (
           <LearningHtml html={a.html} title={content.title} answers={answers} onChange={set} />
-        )}
-        {a.type === 'project-play' && (
-          <ProjectPlayActivityView activity={a} answers={answers} onChange={set} />
         )}
         {content.checkpoint && (
           <fieldset disabled={busy} className="space-y-2 border-t border-border pt-5">

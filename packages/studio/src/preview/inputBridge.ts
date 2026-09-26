@@ -145,7 +145,12 @@ function buildPreviewControlsRuntime(parentOrigin?: string): string {
     _szGameReadyReported = true;
     window.parent.postMessage({ type: 'sz:g2d:ready' }, _szReportOrigin);
   };
-  // Botões acessíveis no host acionam o MESMO pipeline do toque no canvas.
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && _szReportOrigin) {
+      window.parent.postMessage({ type: 'sz:escape' }, _szReportOrigin);
+    }
+  });
+  // A retomada dos achados salvos usa o MESMO pipeline do toque no canvas.
   // Coordenadas lógicas e dimensões são declaradas pela atividade; o canvas
   // transforma a posição exibida em posição interna como faria com um dedo.
   window.addEventListener('message', function (e) {

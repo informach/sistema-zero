@@ -4,7 +4,8 @@ import type { LearningAnswers, ProjectPlayActivity } from '@sistemazero/core/lea
 import { StudioProjectPlayer } from '@sistemazero/studio/player'
 import { sanitizeProjectForHost } from '@sistemazero/studio/project-validation'
 import { Button } from '@sistemazero/ui/button'
-import { Check, Expand, Minimize2 } from 'lucide-react'
+import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
+import { Expand, Minimize2, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 export function clickedProjectPlayTarget(
@@ -39,11 +40,13 @@ export function ProjectPlayActivityView({
   onChange: (answers: LearningAnswers) => void
 }) {
   const iframe = useRef<HTMLIFrameElement>(null)
-  const toggleButton = useRef<HTMLButtonElement>(null)
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const [expanded, setExpanded] = useState(false)
-  const found = foundIds(activity, answers)
+  const [round, setRound] = useState(0)
+  const roundFound = useRef<string[]>([])
+  const readyWindow = useRef<MessageEventSource | null>(null)
+  const workspace = useModalA11y({ open: expanded, onClose: () => setExpanded(false) })
   const current = useRef({ answers, onChange })
   current.current = { answers, onChange }
   const project = useMemo(() => {
@@ -72,52 +75,76 @@ export function ProjectPlayActivityView({
   useEffect(() => {
     const receive = (event: MessageEvent<unknown>) => {
       if (event.source !== iframe.current?.contentWindow) return
-      if (
-        typeof event.data === 'object' &&
-        event.data !== null &&
-        'type' in event.data &&
-        event.data.type === 'sz:g2d:ready'
-      ) {
+      if (typeof event.data !== 'object' || event.data === null || !('type' in event.data)) return
+      if (event.data.type === 'sz:escape') {
+        setExpanded(false)
+        return
+      }
+      if (event.data.type === 'sz:g2d:ready') {
+        if (readyWindow.current === event.source) return
+        readyWindow.current = event.source
         setReady(true)
-        for (const id of foundIds(activity, current.current.answers)) {
+        // Só a retomada restaura os achados. Jogar de novo começa uma partida vazia.
+        roundFound.current = round === 0 ? foundIds(activity, current.current.answers) : []
+        for (const id of roundFound.current) {
           const target = activity.targets.find((item) => item.id === id)
           if (target) sendPointer(target)
         }
         return
       }
       const id = clickedProjectPlayTarget(activity, event.data)
-      if (!id) return
-      const previous = foundIds(activity, current.current.answers)
-      if (previous.includes(id)) return
-      const next = { ...current.current.answers, foundTargets: [...previous, id] }
+      if (!id || roundFound.current.includes(id)) return
+      roundFound.current = [...roundFound.current, id]
+      // Depois da primeira vitória, brincar novamente não desfaz a conclusão
+      // nem altera a tentativa que pode ainda estar sendo salva no servidor.
+      if (foundIds(activity, current.current.answers).length === activity.targets.length) return
+      const next = { ...current.current.answers, foundTargets: roundFound.current }
       current.current.answers = next
       current.current.onChange(next)
     }
     window.addEventListener('message', receive)
     return () => window.removeEventListener('message', receive)
-  }, [activity, sendPointer])
+  }, [activity, sendPointer, round])
 
   useEffect(() => {
     if (!expanded) return
-    const oldOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    toggleButton.current?.focus()
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setExpanded(false)
+    // O iframe tem navegação de teclado própria. Inert impede que o Tab saia
+    // dele e alcance controles da aula que ficaram escondidos sob o modo ampliado.
+    const siblings = new Map<HTMLElement, boolean>()
+    let node: HTMLElement | null = workspace.current
+    while (node?.parentElement) {
+      for (const sibling of node.parentElement.children) {
+        if (sibling instanceof HTMLElement && sibling !== node) {
+          siblings.set(sibling, sibling.inert)
+          sibling.inert = true
+        }
+      }
+      node = node.parentElement
     }
-    window.addEventListener('keydown', onKey)
     return () => {
-      document.body.style.overflow = oldOverflow
-      window.removeEventListener('keydown', onKey)
-      toggleButton.current?.focus()
+      for (const [sibling, inert] of siblings) sibling.inert = inert
     }
-  }, [expanded])
+  }, [expanded, workspace])
+
+  function restart() {
+    roundFound.current = []
+    readyWindow.current = null
+    setReady(false)
+    setFailed(false)
+    setRound((value) => value + 1)
+    if (foundIds(activity, current.current.answers).length < activity.targets.length) {
+      const next = { ...current.current.answers, foundTargets: [] }
+      current.current.answers = next
+      current.current.onChange(next)
+    }
+  }
 
   if (!project) return <p role="alert">Não foi possível abrir o jogo desta atividade.</p>
 
   return (
-    <div
-      role="region"
+    <section
+      ref={workspace}
+      {...(expanded ? { role: 'dialog', 'aria-modal': true, tabIndex: -1 } : { role: 'region' })}
       aria-label={expanded ? 'Jogo ampliado' : 'Jogo pronto para brincar'}
       className={
         expanded
@@ -125,17 +152,25 @@ export function ProjectPlayActivityView({
           : 'space-y-4'
       }
     >
-      <div className="flex items-center justify-between gap-3">
-        <p className="font-semibold" role="status" aria-live="polite">
-          {found.length === activity.targets.length
-            ? 'Você encontrou todo mundo!'
-            : `Encontrados: ${found.length} de ${activity.targets.length}`}
-        </p>
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <Button
           type="button"
           variant="outline"
-          ref={toggleButton}
-          onClick={() => setExpanded((value) => !value)}
+          className="min-h-11"
+          disabled={!ready && !failed}
+          onClick={restart}
+        >
+          <RotateCcw className="size-4" aria-hidden />
+          Jogar de novo
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          aria-expanded={expanded}
+          onClick={(event) => {
+            event.currentTarget.focus({ preventScroll: true })
+            setExpanded((value) => !value)
+          }}
           className="min-h-11"
         >
           {expanded ? (
@@ -154,43 +189,19 @@ export function ProjectPlayActivityView({
         }
       >
         <StudioProjectPlayer
+          key={round}
           ref={iframe}
+          tabIndex={0}
           project={project}
-          title="Cadê Todo Mundo? — toque nos esconderijos para procurar"
+          title={project.name}
           onError={() => setFailed(true)}
         />
       </div>
-      {failed ? (
-        <p role="alert">Não foi possível carregar o jogo. Reabra a seção para tentar novamente.</p>
-      ) : (
-        <>
-          <p className="text-sm text-muted-foreground">
-            Toque no jardim ou escolha onde procurar pelos botões.
-          </p>
-          <div
-            className="grid gap-2 sm:grid-cols-3"
-            role="group"
-            aria-label="Lugares para procurar"
-          >
-            {activity.targets.map((target) => {
-              const discovered = found.includes(target.id)
-              return (
-                <Button
-                  key={target.id}
-                  type="button"
-                  variant={discovered ? 'secondary' : 'outline'}
-                  className="min-h-12 whitespace-normal"
-                  disabled={!ready || discovered}
-                  onClick={() => sendPointer(target)}
-                >
-                  {discovered && <Check className="size-4" aria-hidden />}
-                  {discovered ? `Já procurou ${target.label}` : `Procurar ${target.label}`}
-                </Button>
-              )
-            })}
-          </div>
-        </>
+      {failed && (
+        <p role="alert">
+          Não foi possível carregar o jogo. Aperte Jogar de novo para tentar novamente.
+        </p>
       )}
-    </div>
+    </section>
   )
 }

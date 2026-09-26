@@ -124,6 +124,7 @@ test('jogo pronto importado não perde o projeto ao abrir o editor', async () =>
   })
   try {
     expect(b.texto).toContain('Jogo pronto configurado no manifesto')
+    expect(b.temCaixa('Incluir pergunta de verificação')).toBe(false)
     await b.clicar('Experimentação')
     expect(b.value.activity.type).toBe('project-play')
     if (b.value.activity.type === 'project-play') expect(b.value.activity.project).toEqual(project)

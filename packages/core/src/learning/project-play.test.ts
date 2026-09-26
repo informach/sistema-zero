@@ -33,6 +33,22 @@ const activity: InteractiveBlock = {
 }
 
 describe('jogo pronto como atividade da aula', () => {
+  test('o jogo conclui pela ação de jogar, sem perguntas anexas ignoradas', () => {
+    expect(
+      isInteractiveBlock({
+        ...activity,
+        checkpoint: {
+          prompt: 'Quem apareceu?',
+          choices: [
+            { id: 'a', label: 'A' },
+            { id: 'b', label: 'B' },
+          ],
+          correctChoiceId: 'a',
+          explanation: 'A apareceu.',
+        },
+      }),
+    ).toBe(false)
+  })
   test('aceita o projeto Jogo 2D e recusa alvos duplicados', () => {
     expect(isInteractiveBlock(activity)).toBe(true)
     const duplicate = structuredClone(activity)

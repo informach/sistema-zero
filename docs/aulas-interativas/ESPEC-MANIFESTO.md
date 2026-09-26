@@ -219,9 +219,12 @@ defeito conhecido do material atual: quatro cenas estão como opcionais sendo o 
 completo e independente do `initialProject` do Estúdio; `stage` declara a largura e altura lógicas
 do palco; `targets` declara cada esconderijo como `{ id, label, x, y, width, height }`, nas mesmas
 coordenadas dos sprites do projeto. O runtime conta apenas toques reais nos alvos do grupo. O
-player oferece botões de toque/teclado para esses mesmos pontos, sem abrir o editor. A conclusão
+player mantém a interação do próprio jogo, sem abrir o editor nem acrescentar botões de busca.
+Só a moldura oferece Ampliar jogo, Voltar à aula e Jogar de novo. Reiniciar zera a partida, não
+uma conclusão já conquistada; achados de partidas incompletas diferentes não se somam. A conclusão
 requer todos os IDs distintos em `foundTargets`, além dos outros critérios da seção, como assistir
 ao vídeo. Isso registra participação, não é uma prova antitrapaça nem uma entrega da criança.
+Não admite `prediction` nem `checkpoint`: este bloco conclui pela brincadeira, sem pergunta anexa.
 Não use `html` para esse caso: uma atividade HTML obrigatória exige uma pergunta corrigida pelo
 servidor, que seria um pedágio artificial para a primeira brincadeira.
 

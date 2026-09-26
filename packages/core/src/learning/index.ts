@@ -589,6 +589,7 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
       // servidor corrige — senão a criança avança sem que ninguém tenha conferido nada.
       return text(a.html, 500_000) && (!value.required || value.checkpoint !== undefined)
     case 'project-play': {
+      if (value.checkpoint !== undefined || value.prediction !== undefined) return false
       const project = a.project
       const stage = a.stage
       const targets = a.targets

@@ -6,13 +6,13 @@ Gravar cada seção em **um vídeo único**. As falas entre aspas são a narraç
 
 Apresentar o jogo e a missão de hoje, sem ensinar a experiência ou os blocos. O jogo pronto aparece nesta mesma seção para a criança experimentar; não mostrar os três achados antes dela. Fazer os gestos de navegação com calma e logo convidar a jogar.
 
-**Na tela:** mostrar o jardim pronto, ainda com os três personagens escondidos. Apontar para o jogo na outra coluna (ou embaixo, numa tela estreita), sem tocar nos esconderijos. Apontar para o vídeo e demonstrar pausa e retorno de alguns segundos. Mostrar os botões de busca como alternativa de toque/teclado e o botão **Ampliar jogo** sem precisar ampliá-lo. Ao final, apontar para **Próxima seção** sem navegar na gravação: ela fica disponível após assistir ao vídeo e encontrar os três personagens.
+**Na tela:** mostrar o jardim pronto, ainda com os três personagens escondidos. Apontar para o jogo na outra coluna (ou embaixo, numa tela estreita), sem tocar nos esconderijos. Apontar para o vídeo e demonstrar pausa e retorno de alguns segundos. Mostrar **Ampliar jogo** e **Jogar de novo**, sem acioná-los. A busca acontece diretamente no jardim, como no jogo que a criança vai construir; não há botões que revelem onde procurar. Ao final, apontar para **Próxima seção** sem navegar na gravação: ela fica disponível após assistir ao vídeo e encontrar os três personagens.
 
 > “Oi! Hoje você vai começar a criar um jogo chamado Cadê Todo Mundo? Olha este jardim: três personagens se esconderam por aqui. Você consegue encontrar todos eles?
 >
 > Antes de começar a busca, deixa eu te mostrar rapidinho como a aula funciona. Ela vem em pequenas partes, que a gente chama de seções. Esta é a primeira, e cada seção tem um vídeo como este. Se quiser ouvir de novo, pode voltar um pedacinho no vídeo. Se precisar de um tempo, aperta pausa. Sem pressa.
 >
-> Agora é sua vez de procurar. Este aqui é o jogo pronto, para você brincar antes de construir o seu. Pode tocar nos esconderijos do jardim ou usar estes botões para escolher onde procurar. Se quiser mais espaço, aperta Ampliar jogo. Depois, aperta Voltar à aula para continuar aqui.
+> Agora é sua vez de procurar. Este aqui é o jogo pronto, para você brincar antes de construir o seu. Toque ou clique no jardim para procurar os personagens. Se quiser mais espaço, aperta Ampliar jogo. Depois, aperta Voltar à aula para continuar aqui. E, se quiser começar outra busca, é só apertar Jogar de novo.
 >
 > Hoje eu vou te mostrar como fazer o seu jogo responder ao toque. O jardim e os personagens já vão estar preparados; na próxima aula, a gente completa a contagem dos achados. Quando você encontrar os três personagens neste jogo pronto, aperta Próxima seção, aqui embaixo. Lá eu vou te mostrar um caderno que ajuda quando você esquecer algum passo. Vamos procurar?”
 

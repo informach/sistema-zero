@@ -490,7 +490,7 @@ export const InteractiveBlockSchema = t.Object({
   hints: t.Array(t.String({ maxLength: 10000 }), { maxItems: 10 }),
   required: t.Boolean(),
   /**
-   * As duas atividades. ⚠️ Mexer aqui vem ANTES de mexer no admin, nunca depois: um campo
+   * As atividades. ⚠️ Mexer aqui vem ANTES de mexer no admin, nunca depois: um campo
    * que o editor mande sem estar declarado só é aceito por acidente.
    *
    * ⚠️ E o comportamento é diferente em cada nível, MEDIDO no fluxo real de rascunho →
@@ -536,6 +536,26 @@ export const InteractiveBlockSchema = t.Object({
       pilha: t.Optional(ScenePilhaSchema),
     }),
     t.Object({ type: t.Literal('html'), html: t.String({ minLength: 1, maxLength: 500000 }) }),
+    t.Object({
+      type: t.Literal('project-play'),
+      // O domínio valida o snapshot; a borda preserva inclusive recursos embutidos.
+      project: t.Record(t.String(), t.Unknown()),
+      stage: t.Object({
+        width: t.Integer({ minimum: 1, maximum: 8192 }),
+        height: t.Integer({ minimum: 1, maximum: 8192 }),
+      }),
+      targets: t.Array(
+        t.Object({
+          id: t.String({ minLength: 1, maxLength: 80 }),
+          label: t.String({ minLength: 1, maxLength: 100 }),
+          x: t.Number({ minimum: 0, maximum: 8192 }),
+          y: t.Number({ minimum: 0, maximum: 8192 }),
+          width: t.Number({ exclusiveMinimum: 0, maximum: 8192 }),
+          height: t.Number({ exclusiveMinimum: 0, maximum: 8192 }),
+        }),
+        { minItems: 1, maxItems: 12 },
+      ),
+    }),
   ]),
   checkpoint: t.Optional(
     t.Object({

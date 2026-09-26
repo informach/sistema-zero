@@ -51,6 +51,7 @@ export interface StudioProjectPlayerProps {
   /** Título acessível do iframe (default = `project.name`). */
   title?: string
   className?: string
+  tabIndex?: number
   style?: CSSProperties
   onError?: () => void
 }
@@ -77,6 +78,7 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
       originAdapter,
       title,
       className,
+      tabIndex,
       style,
       onError,
     }: StudioProjectPlayerProps,
@@ -170,6 +172,7 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
           // um iframe que ainda pode estar concluindo a navegação anterior.
           key={loadState.generation}
           ref={ref}
+          tabIndex={tabIndex}
           title={title ?? project.name ?? 'Projeto'}
           src={loadState.url}
           srcDoc={loadState.url ? undefined : loadState.doc}
