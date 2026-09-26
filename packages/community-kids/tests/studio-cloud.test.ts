@@ -24,15 +24,23 @@ import {
   type StudioProjectLike,
 } from '../src/lib/studio-cloud'
 
-type Mirror = { onChanged(id: string): void; onDeleted(id: string): void } | null
+type Mirror = {
+  onChanged(id: string): void
+  onDeleted(id: string): void
+  onThumbChanged?(id: string): void
+} | null
 
 /** Um `@sistemazero/studio` de mentira: projetos em memória + o espelho registrado. */
 function fakeStudio(initial: StudioProjectLike[] = []) {
   const projects = new Map(initial.map((p) => [p.id, p]))
   let mirror: Mirror = null
   const restored: Array<{ id: string; expectedId?: string }> = []
+  /** A miniatura que cada restauro recebeu (`null` = a nuvem não tinha). */
+  const restoredThumbs: Array<string | null> = []
   const imported: string[] = []
   const openIds = new Set<string>()
+  /** As capas dos cards deste aparelho, por projeto. */
+  const thumbs = new Map<string, string>()
   const namespaces = {
     load: [] as Array<string | undefined>,
     assets: [] as Array<string | undefined>,
@@ -80,7 +88,21 @@ function fakeStudio(initial: StudioProjectLike[] = []) {
       }
       projects.set(project.id, project)
       restored.push({ id: project.id, expectedId: opts?.expectedId })
+      restoredThumbs.push(opts?.thumb ?? null)
+      // Como o pacote: com `thumb` a capa é a que veio; sem, a antiga é apagada (`replace`).
+      if (opts?.thumb) thumbs.set(project.id, opts.thumb)
+      else thumbs.delete(project.id)
       return { project, warnings: [] }
+    },
+    loadProjectThumbForCloud: async (id) => thumbs.get(id) ?? null,
+    adoptCloudProjectThumbs: async (items) => {
+      let adopted = 0
+      for (const item of items) {
+        if (!projects.has(item.id) || thumbs.has(item.id)) continue
+        thumbs.set(item.id, item.thumb)
+        adopted += 1
+      }
+      return adopted
     },
     importProjectSnapshot: async (raw, opts) => {
       namespaces.import.push(opts?.namespace)
@@ -106,7 +128,17 @@ function fakeStudio(initial: StudioProjectLike[] = []) {
       },
     }),
   }
-  return { studio, projects, restored, imported, namespaces, openIds, mirror: () => mirror }
+  return {
+    studio,
+    projects,
+    restored,
+    restoredThumbs,
+    imported,
+    namespaces,
+    openIds,
+    thumbs,
+    mirror: () => mirror,
+  }
 }
 
 function fakeCloud(
@@ -920,5 +952,151 @@ describe('createStudioCloudSync, review 06/09: apagar com um upload em voo e o 2
     expect(marks.tombstone('p1')).toEqual({ at: 77, sent: true, revision: 5 })
     expect(fake.restored).toEqual([])
     expect(removed).toHaveLength(2)
+  })
+})
+
+describe('createStudioCloudSync — a capa do card viaja (26/09/2026)', () => {
+  const CAPA = 'data:image/jpeg;base64,CAPA'
+  const OUTRA = 'data:image/jpeg;base64,OUTRA'
+
+  test('o produtor manda `meta.thumb` com a miniatura deste aparelho (ou null sem capa)', async () => {
+    const fake = fakeStudio([{ id: 'p1', name: 'Nave', updatedAt: 1000 }])
+    fake.thumbs.set('p1', CAPA)
+    const { cloud, uploads } = fakeCloud(new Map())
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks: createMemorySyncedMarks(),
+    })
+    sync.attach()
+    fake.mirror()?.onChanged('p1')
+    expect((await uploads.get('p1')?.produce())?.meta?.thumb).toBe(CAPA)
+    fake.thumbs.delete('p1')
+    expect((await uploads.get('p1')?.produce())?.meta?.thumb).toBeNull()
+  })
+
+  test('`onThumbChanged` sobe SÓ pela capa (mesmo updatedAt, revisão nova) enquanto a nuvem não tem miniatura; depois de confirmada, não sobe de novo', async () => {
+    const local = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const fake = fakeStudio([local])
+    const { cloud, uploads } = fakeCloud(
+      new Map([
+        ['p1', { json: JSON.stringify(local), summary: summaryOf(local, { thumb: null }) }],
+      ]),
+    )
+    const marks = createMemorySyncedMarks()
+    const sync = createStudioCloudSync({ studio: fake.studio, cloud, viewerId: 'v1', marks })
+    sync.attach()
+    await sync.pullMissing()
+    // Iguais dos dois lados: a marca conhece o `updatedAt` e nada sobe por `onChanged`.
+    expect(marks.get('p1')).toBe(1000)
+    uploads.clear()
+    fake.mirror()?.onChanged('p1')
+    expect(await uploads.get('p1')?.produce()).toBeNull()
+    // A captura ao sair do editor grava a capa: sobe só por ela.
+    fake.thumbs.set('p1', CAPA)
+    uploads.clear()
+    fake.mirror()?.onThumbChanged?.('p1')
+    const job = uploads.get('p1')
+    expect(job).toBeDefined()
+    const snapshot = await job?.produce()
+    expect(snapshot?.meta?.thumb).toBe(CAPA)
+    expect(snapshot?.meta?.updatedAt).toBe(1000)
+    expect(snapshot?.meta?.baseRevision).toBe(1)
+    job?.onUploaded?.({ itemId: 'p1', updatedAt: 1000, revision: 2 })
+    expect(marks.revision('p1')).toBe(2)
+    // A nuvem já tem a capa: uma captura nova não gera revisão à toa (vai de carona nas edições).
+    uploads.clear()
+    fake.thumbs.set('p1', OUTRA)
+    fake.mirror()?.onThumbChanged?.('p1')
+    expect(uploads.has('p1')).toBe(false)
+  })
+
+  test('a nuvem já listou miniatura: `onThumbChanged` não sobe nada', async () => {
+    const local = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const fake = fakeStudio([local])
+    const { cloud, uploads } = fakeCloud(
+      new Map([
+        ['p1', { json: JSON.stringify(local), summary: summaryOf(local, { thumb: CAPA }) }],
+      ]),
+    )
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks: createMemorySyncedMarks(),
+    })
+    sync.attach()
+    await sync.pullMissing()
+    uploads.clear()
+    fake.thumbs.set('p1', OUTRA)
+    fake.mirror()?.onThumbChanged?.('p1')
+    expect(uploads.has('p1')).toBe(false)
+  })
+
+  test('a descida grava a miniatura listada junto com o snapshot (o card nasce com capa sem abrir o jogo); `restoreProject` idem', async () => {
+    const soNuvem = { id: 'nuvem-1', name: 'Nuvem', updatedAt: 700 }
+    const fake = fakeStudio([])
+    const remote = new Map([
+      ['nuvem-1', { json: JSON.stringify(soNuvem), summary: summaryOf(soNuvem, { thumb: CAPA }) }],
+    ])
+    const { cloud } = fakeCloud(remote)
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks: createMemorySyncedMarks(),
+    })
+    sync.attach()
+    await sync.pullMissing()
+    expect(fake.restoredThumbs).toEqual([CAPA])
+    expect(fake.thumbs.get('nuvem-1')).toBe(CAPA)
+    fake.projects.delete('nuvem-1')
+    fake.thumbs.delete('nuvem-1')
+    expect(await sync.restoreProject('nuvem-1')).toBe(true)
+    expect(fake.restoredThumbs).toEqual([CAPA, CAPA])
+  })
+
+  test('adoção: um jogo que já existia aqui sem capa, igual ao da nuvem, recebe a miniatura listada sem baixar blob', async () => {
+    const igual = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const fake = fakeStudio([igual])
+    const { cloud, fetchedParts } = fakeCloud(
+      new Map([
+        ['p1', { json: JSON.stringify(igual), summary: summaryOf(igual, { thumb: CAPA }) }],
+      ]),
+    )
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks: createMemorySyncedMarks(),
+    })
+    sync.attach()
+    await sync.pullMissing()
+    expect(fake.restored).toEqual([])
+    expect(fetchedParts).toEqual([])
+    expect(fake.thumbs.get('p1')).toBe(CAPA)
+  })
+
+  test('base vencida com a nuvem na MESMA versão daqui (só a revisão é nova): avança a marca e sobe de novo, SEM cópia "(de outro aparelho)"', async () => {
+    const local = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const fake = fakeStudio([local])
+    const { cloud, uploads } = fakeCloud(
+      new Map([
+        ['p1', { json: JSON.stringify(local), summary: summaryOf(local, { revision: 4 }) }],
+      ]),
+    )
+    const marks = createMemorySyncedMarks()
+    marks.set('p1', 1000, 1)
+    const sync = createStudioCloudSync({ studio: fake.studio, cloud, viewerId: 'v1', marks })
+    sync.attach()
+    fake.projects.set('p1', { ...local, updatedAt: 1001 })
+    fake.mirror()?.onChanged('p1')
+    const job = uploads.get('p1')
+    expect((await job?.produce())?.meta?.baseRevision).toBe(1)
+    await job?.onStale?.({ itemId: 'p1' })
+    expect(fake.imported).toEqual([])
+    expect(marks.revision('p1')).toBe(4)
+    expect((await uploads.get('p1')?.produce())?.meta?.baseRevision).toBe(4)
   })
 })

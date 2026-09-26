@@ -16,6 +16,7 @@ import {
   syncDrawingsIntoProjects,
   takeDrawingSyncFailures,
 } from '../../asset-library/personalSync'
+import { captureAndStoreProjectThumb } from '../../cover/thumbCapture'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import type { AssetsTab } from '../../state/uiStore'
 import { useStudioEditCreation } from '../../studio/edit-creation'
@@ -91,7 +92,7 @@ export function AssetsPanel({
   onTabChange = () => {},
 }: AssetsPanelProps): JSX.Element {
   const t = useT()
-  const { hasProject, assets, has3DExtension, has3DMaterials } = useProjectStore(
+  const { hasProject, assets, has3DExtension, has3DMaterials, coverAssetName } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
       assets: s.project?.assets ?? EMPTY_ASSETS,
@@ -103,12 +104,14 @@ export function AssetsPanel({
       // (a SEÇÃO de modelos continua sem gate: gerenciar/excluir um órfão nunca
       // depende disso). A modal do Molda usa a MESMA régua.
       has3DExtension: projectHas3DConsumer(s.project),
+      coverAssetName: s.project?.coverAssetName,
     })),
   )
   const addAsset = useProjectStore((s) => s.addAsset)
   const removeAsset = useProjectStore((s) => s.removeAsset)
   const renameAsset = useProjectStore((s) => s.renameAsset)
   const setAssetLibraryOrigin = useProjectStore((s) => s.setAssetLibraryOrigin)
+  const setCoverAsset = useProjectStore((s) => s.setCoverAsset)
 
   const fileInputId = useId()
   const tabsBaseId = useId()
@@ -545,6 +548,19 @@ export function AssetsPanel({
     else setError(null)
   }
 
+  // A capa do card: grava o nome no projeto e regrava a miniatura NA HORA (a escolhida é
+  // derivada da imagem; voltar à automática usa a foto do preview ou a reserva). Best-effort.
+  const handleSetCover = (asset: ProjectAsset | null) => {
+    const err = setCoverAsset(asset ? asset.id : null)
+    if (err) {
+      setError(err)
+      return
+    }
+    setError(null)
+    const project = storeApi.getState().project
+    if (project) void captureAndStoreProjectThumb(project)
+  }
+
   // Quais abas existem. ⚠️ A de modelos 3D aparece por TRÊS motivos independentes,
   // e cada um já custou caro em algum lugar desta base:
   // 1. há quem consuma 3D instalado — o caso normal;
@@ -673,6 +689,8 @@ export function AssetsPanel({
                 personalImages={personalNamespace && !pintaLibrary ? personalImages : null}
                 onAddFromPersonal={addFromPersonal}
                 onEditDrawing={onEditDrawing}
+                coverAssetName={coverAssetName}
+                onSetCover={handleSetCover}
                 onDeletePersonal={(drawing) =>
                   setPendingDeletion({ scope: 'personal', id: drawing.id, name: drawing.name })
                 }

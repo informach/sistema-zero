@@ -23,6 +23,7 @@ export function projectToMetaRecord(
   | 'bridgeCodeAhead'
   | 'formatVersion'
   | 'projectTools'
+  | 'coverAssetName'
 > & { storageVersion: number } {
   return {
     id: project.id,
@@ -39,6 +40,8 @@ export function projectToMetaRecord(
     bridgeCodeAhead: project.bridgeCodeAhead,
     formatVersion: project.formatVersion,
     projectTools: project.projectTools,
+    // A capa escolhida mora no meta (é uma string): a lista e a nuvem a leem sem os assets.
+    coverAssetName: project.coverAssetName,
   }
 }
 

@@ -69,6 +69,15 @@ export const ptBR: Record<string, string> = {
   'assets.tab.images': 'Imagens',
   'assets.tab.sounds': 'Sons',
   'assets.tab.models3d': 'Modelos 3D',
+  // A capa do card "Meus Jogos": uma imagem do projeto vira a capa fixa, vencendo a foto
+  // automática do preview (26/09/2026).
+  'assets.cover.use': '⭐ Usar como capa',
+  'assets.cover.useAria': 'Usar {name} como capa do jogo',
+  'assets.cover.useHint': 'Esta imagem vira a capa do seu jogo na lista',
+  'assets.cover.current': 'Capa do jogo',
+  'assets.cover.reset': 'Voltar para a foto automática',
+  'assets.cover.resetAria': 'Voltar para a foto automática da capa',
+  'assets.cover.resetHint': 'A capa volta a ser uma foto do jogo rodando',
 
   'extensions.install': 'Instalar',
   'extensions.remove': 'Remover',

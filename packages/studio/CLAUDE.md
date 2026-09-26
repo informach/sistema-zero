@@ -182,9 +182,10 @@ que falta em outro computador (`community-kids/src/lib/studio-cloud.ts`; design 
   `renameProjectMeta`, `persistProjectAssets` (sincronia de desenhos do Pinta) → `onChanged(id)`;
   `deleteProject` → `onDeleted(id)`. Por aqui passam autosave (`PersistenceService`),
   renomear/duplicar/apagar do `ProjectCard`, `ImportButton` e `importProjectSnapshot` — nenhum
-  componente sabe que a nuvem existe. `writeProjectThumb` (capa do card) e o `game-storage` NÃO
-  avisam (não viajam: a capa fica vazia no outro aparelho até abrir o jogo). Best-effort: espelho
-  que lança não derruba a gravação. `null` desliga (aula, playground).
+  componente sabe que a nuvem existe. O `game-storage` NÃO avisa (não viaja). A CAPA do card
+  avisa por um gancho PRÓPRIO, `onThumbChanged(id)` (opcional), e viaja desde 26/09/2026: ver
+  "A capa do card viaja e pode ser escolhida" abaixo. Best-effort: espelho que lança não derruba
+  a gravação. `null` desliga (aula, playground).
 - **`persistProject(project, {silent, replace})`**: `silent` grava SEM acordar o espelho (o que
   acabou de descer não pode subir de novo); `replace` trata o snapshot como verdade COMPLETA —
   apaga a partição de blocos quando ele não traz `blocksState` (o canvas vazio sanitiza para
@@ -244,6 +245,62 @@ que falta em outro computador (`community-kids/src/lib/studio-cloud.ts`; design 
 - Testes: `state/persistence.test.ts` ("espelho da nuvem": avisos, `silent`, `replace`, guardas de
   id/aberto, `updatedAt` dos assets, espelho `null`, `loadProjectAssetsSnapshotForCloud`, lista
   light sem capas, `PROJECT_CHANGED_EVENT`).
+
+## A capa do card viaja e pode ser escolhida (26/09/2026)
+
+Relato dela: a capa dos cards de "Meus Jogos" não sobrevivia a abrir em outro navegador, e ela
+queria deixar a tela de abertura como capa. Decisão dela: a criança ESCOLHE uma imagem do projeto
+como capa fixa (vence a foto automática); sem escolha, a foto automática segue e passa a viajar.
+
+- **`Project.coverAssetName?: string`** = o NOME de um asset de imagem (o idioma dos blocos; o
+  `updateAssetImage` nunca toca o nome). Custa uma string, mora no META (`projectToMetaRecord`) e
+  viaja no `program` do manifesto da nuvem sem mexer no protocolo de partes. ⚠️ **Saneado por
+  FORMA (`sanitizeCoverAssetName`), nunca pela existência do asset:** o `program` do manifesto
+  viaja com `assets: []`, o BFF o valida com o mesmo saneador e o meta é lido sem os assets;
+  exigir o asset presente apagaria a escolha em silêncio nesses caminhos. A resolução nome →
+  asset é na hora de usar (`cover/coverAsset.ts`, `resolveCoverAsset`); nome pendurado = foto
+  automática. Chave OMITIDA quando não há capa (projetos antigos byte-idênticos).
+- **Store:** `setCoverAsset(assetId | null)` só grava o nome (com `bump()`: o `updatedAt` sobe e
+  a escolha vai pela nuvem como qualquer edição); `removeAsset` da capa limpa a chave;
+  `renameAsset` a segue. Quem regrava a miniatura NA HORA é o `AssetsPanel`
+  (`captureAndStoreProjectThumb`, best-effort); no `resolveThumb` do `thumbCapture` a capa
+  escolhida é o PRIMEIRO passo (derivada da própria imagem por `downscaleToThumb`; `null` sem
+  canvas não grava nada, e a capa anterior fica — o invariante do `thumbNeverErases`). A saída do
+  editor (`StudioCore`) fica intocada e nunca sobrescreve a escolhida; o `PreviewIframe` para de
+  pedir fotos com capa escolhida.
+- **UI:** aba Imagens da janela "Materiais do jogo": "⭐ Usar como capa" por imagem
+  (`aria-label` "Usar {nome} como capa do jogo"); na escolhida, o selo "Capa do jogo" + "Voltar
+  para a foto automática". Chaves `assets.cover.*`. ⚠️ O menu ⋯ do `ProjectCard` NÃO ganhou a
+  opção (exigiria seletor de imagens de projeto fechado e o `MENU_HEIGHT` em lockstep).
+- **A foto AUTOMÁTICA viaja** pelo `meta.thumb` da reserva, que já existia de ponta a ponta
+  (DTO, BFF, tabela, cliente) e nenhum adaptador preenchia: `loadProjectThumbForCloud(id,
+  {namespace, maxChars})` lê a capa gravada e a reduz com `cover/cloudThumb.ts`
+  (`buildCloudThumb`: escada 240×144 q0,6 → q0,45 → 200×120 → 160×96, a primeira que cabe em
+  **12 000 chars**, o teto do índice — acima disso o servidor DESCARTA sem erro; a foto do
+  bridge, 320×192 q0,75 ≈ 20 k, não cabe). Sem mudança de servidor.
+- **`writeProjectThumb(id, dataUrl, {silent?}, storageScope?)`** agora dispara o
+  `PROJECT_THUMB_UPDATED_EVENT` (era o `thumbCapture` que disparava) e acorda o espelho por
+  `onThumbChanged` (não por `onChanged`: a capa não muda o `updatedAt`, e o produtor do host
+  devolve `null` quando a marca já é o `updatedAt`). `silent` (a descida) não acorda. ⚠️ O host
+  sobe SÓ pela capa apenas enquanto a nuvem não tem miniatura nenhuma do jogo; depois ela vai de
+  carona nas edições — uma revisão nova por saída do editor invalidaria a base dos outros
+  aparelhos e um editor aberto lá cairia em cópia "(de outro aparelho)" por causa de uma FOTO.
+- **A descida grava a miniatura que veio:** `persistProject(_, {replace, thumb})` põe a capa na
+  MESMA transação dos `put` (com `replace` e sem `thumb`, a antiga é apagada, como sempre);
+  `restoreProjectFromCloud(raw, {thumb})` a repassa e, sem `thumb` mas com capa ESCOLHIDA,
+  deriva daqui (`storeChosenCoverThumb`, silencioso). **`adoptCloudProjectThumbs(items,
+  {namespace})`** (`adoptProjectThumbs` na persistência) grava as capas que a nuvem listou nos
+  projetos que já existem aqui SEM capa (sincronizados antes disto, ou nunca abertos neste
+  aparelho), uma leitura em lote e sem baixar blob; projeto que já tem capa fica com a dele.
+- ⚠️ Cliente VELHO lendo o manifesto novo descarta `coverAssetName` em silêncio (mostra a
+  automática; se reeditar e subir, a nuvem perde a escolha até um aparelho novo re-escolher).
+  Janela curta (F5), sem erro. ⚠️ A capa fixa de um jogo FECHADO cujo desenho o Pinta trocou só
+  se atualiza na próxima abertura (o `persistProjectAssets` não re-deriva).
+- Testes: `cover/__tests__/coverAsset.test.ts`, `cloudThumb.test.ts` (canvas de mentira),
+  `thumbNeverErases.test.ts` (a escolhida vence a foto do preview), `state/projectThumbs.test.ts`
+  (restauro com miniatura, adoção, `onThumbChanged`), `projectValidation.test.ts` (por forma; o
+  manifesto preserva), `projectStore.coverAsset.test.ts`, `AssetsPanel.test.tsx`; no kids,
+  `tests/studio-cloud.test.ts` §"a capa do card viaja".
 
 ## Gravação de saída: toda transação com `commit()` explícito (11/09/2026)
 

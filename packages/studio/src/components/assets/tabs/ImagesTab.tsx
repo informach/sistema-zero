@@ -27,6 +27,10 @@ export interface ImagesTabProps extends AssetsTabCommon {
   onEditDrawing: ((id: string) => void) | null
   onDeletePersonal: (drawing: PersonalAsset) => void
   onAddFromLibrary: (lib: LibraryAsset) => void
+  /** O nome da imagem escolhida como capa do card (ausente = foto automática). */
+  coverAssetName: string | undefined
+  /** Escolher uma imagem como capa; `null` = voltar à foto automática. */
+  onSetCover: (asset: ProjectAsset | null) => void
 }
 
 /** Aba "Imagens": o que o jogo desenha, mais as duas fontes de onde elas vêm. */
@@ -47,6 +51,8 @@ export function ImagesTab({
   onEditDrawing,
   onDeletePersonal,
   onAddFromLibrary,
+  coverAssetName,
+  onSetCover,
 }: ImagesTabProps): JSX.Element {
   const t = useT()
   return (
@@ -79,6 +85,7 @@ export function ImagesTab({
             {images.map((asset) => {
               // Quem edita esta imagem: o Pinta (desenho) ou o Molda (textura).
               const editTarget = editTargetOf(asset)
+              const isCover = coverAssetName !== undefined && asset.name === coverAssetName
               return (
                 <li
                   key={asset.id}
@@ -132,6 +139,32 @@ export function ImagesTab({
                           onClick={() => onOpenInOrigin(asset, editTarget)}
                         />
                       ) : null}
+                      {isCover ? (
+                        <>
+                          <span className="rounded bg-sz-accent/15 px-1 text-[10px] font-semibold text-sz-accent">
+                            {t('assets.cover.current')}
+                          </span>
+                          <button
+                            type="button"
+                            aria-label={t('assets.cover.resetAria')}
+                            title={t('assets.cover.resetHint')}
+                            className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
+                            onClick={() => onSetCover(null)}
+                          >
+                            {t('assets.cover.reset')}
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          aria-label={t('assets.cover.useAria').replace('{name}', asset.name)}
+                          title={t('assets.cover.useHint')}
+                          className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
+                          onClick={() => onSetCover(asset)}
+                        >
+                          {t('assets.cover.use')}
+                        </button>
+                      )}
                       {isOriginUnknown(asset) ? (
                         <span className="text-xs text-sz-warn">
                           Não sei de onde veio este desenho. Traga ele de novo pelo Pinta ou pelo

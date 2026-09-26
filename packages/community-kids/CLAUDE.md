@@ -689,7 +689,17 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   `status`, nunca na identidade de `account` nem de `back` (travado em `tests/host-chrome.test.tsx`).
   O Pensa espelha só `menu` e `back`. A tabela rota → seção está em `tests/nav-back.test.ts`.
 - Só com PERFIL (`viewerId`): sem sessão de perfil não há dono na nuvem e os apps abrem só-local.
-  Miniaturas dos cards NÃO viajam (capa vazia no outro aparelho até abrir o jogo).
+  **A capa dos cards viaja desde 26/09/2026** (`studio-cloud.ts`): o produtor manda
+  `meta.thumb` (a capa reduzida pelo pacote a ≤ 12 000 chars, `loadProjectThumbForCloud`), a
+  descida passa `summary.thumb` aos três restauros (`apply`, `restoreProject`,
+  `resolveStaleRemove`) e, no fim do `pullPass`, `adoptCloudProjectThumbs` grava a capa listada
+  nos jogos que já estavam aqui sem capa (sem baixar blob). O espelho ganhou `onThumbChanged`
+  (a captura ao sair do editor / a capa escolhida): sobe SÓ pela capa apenas enquanto a nuvem
+  não tem miniatura do jogo (`cloudHasThumb`, alimentado pela lista e pelas confirmações) — uma
+  revisão nova por saída invalidaria a base dos outros aparelhos e um editor aberto lá cairia
+  em cópia "(de outro aparelho)" por uma foto. E o `resolveStale` com a nuvem na MESMA versão
+  daqui (só a revisão é nova: outra aba, ou a subida pela capa) avança a marca e sobe de novo
+  SEM cópia (a regra que o Pinta já tinha).
 - **Medição (19/08):** `src/lib/perf.ts` (`perfSpan`/`perfSpanAsync`/`perfMark`; liga com
   `localStorage['sz:perf']='1'` ou `?szperf=1`; `[sz:perf]` no console + User Timing): spans
   `kids:cloud:produce|gzip|gzip-parts|reserve|put|commit`, `kids:pinta:reconcile`,
@@ -2989,6 +2999,9 @@ atualiza quando a interface muda sem obrigar ninguém a refazer aula. Rotas em
 - **Coleções vêm do banco**; ícone e cor são allowlists do core mapeadas em
   `lib/help-collections.ts` (`Record` completo: valor novo no core sem entrada aqui é erro de
   tipo). Os tons reusam `--tool-*` das oficinas e a cor da casa.
+- **Detalhe de tutorial:** a página filtra os `related` que não estão publicados e passa
+  `relatedItems` (slug, rótulo, href) ao `HelpTutorialView` cliente. Não passe callbacks de
+  renderização de um Server Component: o Next falha ao abrir qualquer tutorial publicado.
 - **Volta para a aula:** `?voltar=` allowlistado por `lib/help-return.ts` (`LESSON_PATH`, mesma
   régua do `resolveAvatarReturnPath`). Quem escreve o `voltar` é o link da aula (materiais ou
   `rich_text`, que agora passa `helpReturnPath` ao `renderMarkdown` quando está numa aula); o

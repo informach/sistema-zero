@@ -34,9 +34,16 @@ mock.module('idb-keyval', () => ({
   update: mock(async () => undefined),
 }))
 
-const { listAllProjects, MAX_PROJECT_THUMB_CHARS, writeProjectThumb } = await import(
-  './persistence'
-)
+const {
+  adoptProjectThumbs,
+  listAllProjects,
+  loadProjectThumb,
+  MAX_PROJECT_THUMB_CHARS,
+  persistProject,
+  setStudioCloudMirror,
+  writeProjectThumb,
+} = await import('./persistence')
+const { createEmptyProject } = await import('#core')
 
 afterAll(() => {
   // Devolve o no-op padrão da suíte (mesma forma de persistence.test.ts).
@@ -96,5 +103,70 @@ describe('miniaturas de projeto (partição sz:v2:project-thumb:)', () => {
     expect(db.has('sz:v2:project-thumb:p3')).toBe(false)
 
     failThumbWrite = false
+  })
+})
+
+describe('a capa viaja: restauro com miniatura, adoção e o aviso ao espelho', () => {
+  const THUMB = 'data:image/jpeg;base64,NUVEM'
+
+  it('persistProject com `replace` e `thumb` grava a capa que veio; sem `thumb` apaga a antiga', async () => {
+    db.clear()
+    failThumbWrite = false
+    const project = createEmptyProject('01J00000000000000000000CAP', 'Nave')
+    await persistProject(project, { replace: true, thumb: THUMB })
+    expect(await loadProjectThumb(project.id)).toBe(THUMB)
+    await persistProject(project, { replace: true })
+    expect(await loadProjectThumb(project.id)).toBeNull()
+    // Miniatura inválida (não é imagem) é ignorada: não grava nem apaga por engano.
+    await persistProject(project, { replace: true, thumb: 'data:text/plain,x' })
+    expect(await loadProjectThumb(project.id)).toBeNull()
+  })
+
+  it('adoptProjectThumbs grava só em quem NÃO tem capa, exige o meta e devolve quantas adotou', async () => {
+    db.clear()
+    failThumbWrite = false
+    db.set('sz:v2:project-meta:semcapa', meta('semcapa', 'A'))
+    db.set('sz:v2:project-meta:comcapa', meta('comcapa', 'B'))
+    db.set('sz:v2:project-thumb:comcapa', {
+      id: 'comcapa',
+      dataUrl: 'data:image/jpeg;base64,MINHA',
+    })
+    const adopted = await adoptProjectThumbs([
+      { id: 'semcapa', thumb: THUMB },
+      { id: 'comcapa', thumb: THUMB },
+      { id: 'inexistente', thumb: THUMB },
+    ])
+    expect(adopted).toBe(1)
+    expect(await loadProjectThumb('semcapa')).toBe(THUMB)
+    expect(await loadProjectThumb('comcapa')).toBe('data:image/jpeg;base64,MINHA')
+    expect(db.has('sz:v2:project-thumb:inexistente')).toBe(false)
+  })
+
+  it('writeProjectThumb avisa o espelho por `onThumbChanged` (não por `onChanged`); `silent` e a adoção não avisam', async () => {
+    db.clear()
+    failThumbWrite = false
+    const changed: string[] = []
+    const thumbs: string[] = []
+    setStudioCloudMirror({
+      onChanged: (id) => changed.push(id),
+      onDeleted: () => {},
+      onThumbChanged: (id) => thumbs.push(id),
+    })
+    try {
+      db.set('sz:v2:project-meta:p9', meta('p9', 'Nave'))
+      expect(await writeProjectThumb('p9', THUMB)).toBe(true)
+      expect(thumbs).toEqual(['p9'])
+      expect(changed).toEqual([])
+      expect(await writeProjectThumb('p9', THUMB, { silent: true })).toBe(true)
+      expect(thumbs).toEqual(['p9'])
+      db.delete('sz:v2:project-thumb:p9')
+      await adoptProjectThumbs([{ id: 'p9', thumb: THUMB }])
+      expect(thumbs).toEqual(['p9'])
+      // Sem o meta a gravação é recusada e ninguém é avisado.
+      expect(await writeProjectThumb('fantasma', THUMB)).toBe(false)
+      expect(thumbs).toEqual(['p9'])
+    } finally {
+      setStudioCloudMirror(null)
+    }
   })
 })

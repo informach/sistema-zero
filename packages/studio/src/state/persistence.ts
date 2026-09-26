@@ -92,6 +92,12 @@ export interface StudioCloudMirror {
   onChanged(id: string): void
   /** O projeto `id` foi apagado localmente. */
   onDeleted(id: string): void
+  /**
+   * A MINIATURA do projeto `id` foi gravada (a captura ao sair do editor, a capa escolhida). É
+   * um aviso à parte do `onChanged` de propósito: a capa não muda o `updatedAt` do projeto, e o
+   * host decide se vale uma subida só por ela (só quando a nuvem ainda não tem miniatura).
+   */
+  onThumbChanged?(id: string): void
 }
 
 let cloudMirror: StudioCloudMirror | null = null
@@ -139,6 +145,23 @@ function notifyMirrorDeleted(id: string): void {
     cloudMirror?.onDeleted(id)
   } catch {
     // idem
+  }
+}
+
+function notifyMirrorThumbChanged(id: string): void {
+  try {
+    cloudMirror?.onThumbChanged?.(id)
+  } catch {
+    // idem
+  }
+}
+
+function notifyThumbUpdated(id: string): void {
+  if (typeof window === 'undefined') return
+  try {
+    window.dispatchEvent(new CustomEvent(PROJECT_THUMB_UPDATED_EVENT, { detail: id }))
+  } catch {
+    // Ambiente sem CustomEvent: a lista relê no próximo gesto.
   }
 }
 
@@ -196,6 +219,12 @@ export interface PersistProjectOptions {
    * velhos, que o autosave ressuscitava e subia por cima da nuvem.
    */
   replace?: boolean
+  /**
+   * A miniatura que veio JUNTO com o snapshot (a descida da nuvem): gravada na mesma transação
+   * dos `put`. Com `replace` e sem `thumb`, a miniatura antiga é apagada (o snapshot é a verdade
+   * completa); com `thumb`, ela é a nova capa. Inválida (não é imagem / acima do teto) = ignorada.
+   */
+  thumb?: string | null
 }
 
 export async function persistProject(
@@ -222,8 +251,9 @@ export async function persistProject(
       // ⚠️ `blocksState == null` aqui só acontece quando a ORIGEM não tem blocos: o restauro
       // da nuvem recusa (lança) o snapshot cujo saneamento DESCARTOU blocos, ver
       // `sanitizeCloudProjectSnapshot`.
+      const thumb = validThumbDataUrl(options.thumb)
       const stale = [
-        ...(options.replace ? [projectThumbKey(id)] : []),
+        ...(options.replace && !thumb ? [projectThumbKey(id)] : []),
         ...((options.replace && project.blocksState == null) || project.bridgeCodeAhead === true
           ? [projectBlocksKey(id)]
           : []),
@@ -245,6 +275,7 @@ export async function persistProject(
       if (project.blocksState != null && project.bridgeCodeAhead !== true) {
         pairs.push([projectBlocksKey(id), projectToBlocksRecord(project)])
       }
+      if (thumb) pairs.push([projectThumbKey(id), { id, dataUrl: thumb }])
       // Assets: só reescreve quando a referência mudou desde o último persist deste
       // id (ou na 1ª gravação, quando ainda não há referência registrada). `has`
       // distingue "nunca persistido" de "persistido como undefined" — sem isso, um
@@ -275,6 +306,15 @@ export async function persistProject(
   if (captured.identity !== captureProjectStorageScope().identity) return
   if (!options.silent) notifyMirrorChanged(project.id)
   notifyProjectChanged(project.id)
+  if (validThumbDataUrl(options.thumb)) notifyThumbUpdated(project.id)
+}
+
+function validThumbDataUrl(value: unknown): string | null {
+  return typeof value === 'string' &&
+    value.startsWith('data:image/') &&
+    value.length <= MAX_PROJECT_THUMB_CHARS
+    ? value
+    : null
 }
 
 export async function loadProjectById(
@@ -528,27 +568,80 @@ export interface ProjectSummary {
  * o meta existir — um delete concorrente (que apaga o meta na mesma cadeia) não
  * é ressuscitado por uma captura que terminou depois.
  */
-export async function writeProjectThumb(id: string, dataUrl: string): Promise<boolean> {
+export async function writeProjectThumb(
+  id: string,
+  dataUrl: string,
+  options: {
+    /** `silent`: a miniatura DESCEU da nuvem — não acorda o espelho (senão subiria de novo). */
+    silent?: boolean
+  } = {},
+  storageScope?: ProjectStorageScope,
+): Promise<boolean> {
   if (!id || !dataUrl.startsWith('data:image/') || dataUrl.length > MAX_PROJECT_THUMB_CHARS) {
     return false
   }
+  const captured = storageScope ?? captureProjectStorageScope()
   let stored = false
   try {
-    await runSerializedWrite(id, async (scope) => {
-      const kvStore = scope.store
-      const meta = await readValue(kvStore, projectMetaKey(id))
-      if (!meta) return undefined
-      const done = writeInOneTransaction(kvStore, {
-        puts: [[projectThumbKey(id), { id, dataUrl }]],
-      }).then(() => {
-        stored = true
-      })
-      return { done }
-    })
+    await runSerializedWrite(
+      id,
+      async (scope) => {
+        const kvStore = scope.store
+        const meta = await readValue(kvStore, projectMetaKey(id))
+        if (!meta) return undefined
+        const done = writeInOneTransaction(kvStore, {
+          puts: [[projectThumbKey(id), { id, dataUrl }]],
+        }).then(() => {
+          stored = true
+        })
+        return { done }
+      },
+      captured,
+    )
   } catch {
     // Quota cheia / IndexedDB indisponível: o card só fica sem capa.
   }
-  return stored
+  if (!stored) return false
+  // A lista troca só este card; o host decide se a capa vale uma subida (ver o espelho).
+  if (captured.identity === captureProjectStorageScope().identity) {
+    if (!options.silent) notifyMirrorThumbChanged(id)
+    notifyThumbUpdated(id)
+  }
+  return true
+}
+
+/** A miniatura gravada de um projeto (`null` = sem capa ou projeto inexistente). */
+export async function loadProjectThumb(
+  id: string,
+  storageScope?: ProjectStorageScope,
+): Promise<string | null> {
+  const value = await readValue(getStore(storageScope), projectThumbKey(id))
+  return thumbDataUrlOf(value) ?? null
+}
+
+/**
+ * Adota as miniaturas que a NUVEM tem para projetos que já existem aqui SEM capa (o jogo que
+ * sincronizou antes de a capa viajar, ou que nunca foi aberto neste aparelho): uma leitura das
+ * chaves de capa em lote e uma gravação silenciosa por projeto que precisa (exige o meta, como
+ * toda capa). Projeto que já tem capa é deixado como está: a dele é tão boa quanto a da nuvem, e
+ * o `replace` do restauro é quem troca quando a versão da nuvem é a mais nova.
+ */
+export async function adoptProjectThumbs(
+  items: ReadonlyArray<{ id: string; thumb: string }>,
+  storageScope?: ProjectStorageScope,
+): Promise<number> {
+  if (items.length === 0) return 0
+  const captured = storageScope ?? captureProjectStorageScope()
+  const existing = await readValues(
+    captured.store,
+    items.map((item) => projectThumbKey(item.id)),
+  )
+  let adopted = 0
+  for (const [index, item] of items.entries()) {
+    if (thumbDataUrlOf(existing[index])) continue
+    if (await writeProjectThumb(item.id, item.thumb, { silent: true }, captured)) adopted += 1
+  }
+  return adopted
 }
 
 function thumbDataUrlOf(value: unknown): string | undefined {

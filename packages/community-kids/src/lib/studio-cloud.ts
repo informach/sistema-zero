@@ -57,7 +57,12 @@ import { perfSpanAsync } from './perf'
 /** O pedaço do módulo `@sistemazero/studio` que este adaptador usa. */
 export interface StudioCloudModule {
   setStudioCloudMirror(
-    mirror: { onChanged(id: string): void; onDeleted(id: string): void } | null,
+    mirror: {
+      onChanged(id: string): void
+      onDeleted(id: string): void
+      /** A MINIATURA do projeto foi gravada (capa do card): aviso à parte do `onChanged`. */
+      onThumbChanged?(id: string): void
+    } | null,
   ): void
   loadProjectSnapshotForCloud(
     id: string,
@@ -65,7 +70,12 @@ export interface StudioCloudModule {
   ): Promise<StudioProjectLike | null>
   restoreProjectFromCloud(
     raw: unknown,
-    opts?: { expectedId?: string; namespace?: string },
+    opts?: {
+      expectedId?: string
+      namespace?: string
+      /** A miniatura que a nuvem listou para o item (gravada junto com o snapshot). */
+      thumb?: string | null
+    },
   ): Promise<{ project: StudioProjectLike; warnings: string[] }>
   /** O mesmo saneamento do restauro, SEM gravar (a descida confere antes de tocar no disco). */
   validateCloudProjectSnapshot(
@@ -100,6 +110,22 @@ export interface StudioCloudModule {
    * ficaria órfã a cada passe); fica para a próxima carga, ou a subida cai em base vencida.
    */
   isProjectOpenAnywhere?(id: string): boolean
+  /**
+   * Opcional: a miniatura do card de um projeto, reduzida até caber em `maxChars` (o teto do
+   * índice da nuvem); `null` = sem capa aqui ou sem canvas. Vai em `meta.thumb` na subida.
+   */
+  loadProjectThumbForCloud?(
+    id: string,
+    opts?: { namespace?: string; maxChars?: number },
+  ): Promise<string | null>
+  /**
+   * Opcional: grava as miniaturas que a nuvem listou nos projetos que já existem aqui SEM capa
+   * (sincronizados antes de a capa viajar, ou nunca abertos neste aparelho), sem baixar blob.
+   */
+  adoptCloudProjectThumbs?(
+    items: ReadonlyArray<{ id: string; thumb: string }>,
+    opts?: { namespace?: string },
+  ): Promise<number>
 }
 
 /** O mínimo do `Project` que a nuvem precisa ler. */
@@ -183,6 +209,12 @@ const DEFERRED_PASS_DELAY_MS = 2000
 const MAX_DEFERRED_PASSES = 5
 /** Teto do nome no índice (`CREATION_LIMITS.maxNameChars`); o BFF também corta. */
 const MAX_CLOUD_NAME = 120
+/**
+ * Teto da miniatura no índice (`CREATION_LIMITS.maxThumbChars` do members e `MAX_THUMB_CHARS`
+ * do BFF): acima disso o servidor DESCARTA em silêncio. O pacote reduz até caber
+ * (`loadProjectThumbForCloud`); a mesma régua do Molda.
+ */
+const MAX_CLOUD_THUMB_CHARS = 12_000
 
 type StudioMirror = Parameters<StudioCloudModule['setStudioCloudMirror']>[0]
 /** Mirror vigente por módulo carregado. Um cleanup antigo não pode apagar o sucessor. */
@@ -252,6 +284,26 @@ export function createStudioCloudSync(options: {
    * começar não pode ser desfeita pela confirmação de um upload que já estava em voo.
    */
   const sendingAt = new Map<string, number>()
+  /**
+   * O que a NUVEM tem de miniatura por item, pelo que ela listou e pelo que este aparelho
+   * confirmou subir. É a régua da subida "só pela capa" (`onThumbChanged`): uma revisão nova
+   * invalida a base dos outros aparelhos (um editor aberto lá cairia em cópia "(de outro
+   * aparelho)" por causa de uma FOTO), então a capa só justifica uma subida própria quando a
+   * nuvem ainda não tem nenhuma; depois ela viaja de carona nas edições.
+   */
+  const cloudHasThumb = new Map<string, boolean>()
+  /** Se o envio em voo de cada item levou miniatura (para o `onUploaded` atualizar o mapa). */
+  const sendingThumb = new Map<string, boolean>()
+
+  function loadCloudThumb(id: string): Promise<string | null> {
+    if (!studio.loadProjectThumbForCloud) return Promise.resolve(null)
+    return studio
+      .loadProjectThumbForCloud(id, {
+        namespace: options.viewerId,
+        maxChars: MAX_CLOUD_THUMB_CHARS,
+      })
+      .catch(() => null)
+  }
 
   /**
    * Resolve o que desceu num `Project` completo: manifesto → monta `program + assets` (as
@@ -297,27 +349,30 @@ export function createStudioCloudSync(options: {
     }
   }
 
-  function enqueue(id: string): void {
+  function enqueue(id: string, flags: { thumbOnly?: boolean } = {}): void {
     cloud.enqueueUpload(
       id,
       async () => {
         // O instante em que ESTE envio começa, ANTES de ler o disco: uma exclusão feita durante
         // a leitura (ou durante o upload) é posterior a ele e vence a confirmação.
         sendingAt.set(id, now())
-        const project = await studio.loadProjectSnapshotForCloud(id, {
-          namespace: options.viewerId,
-        })
+        const [project, thumb] = await Promise.all([
+          studio.loadProjectSnapshotForCloud(id, { namespace: options.viewerId }),
+          loadCloudThumb(id),
+        ])
         if (!project) {
           sendingAt.delete(id)
           return null
         }
         // Nada mudou desde a última sincronia confirmada (a marca JÁ é o `updatedAt` deste
         // disco): não sobe de novo — zero HTTP. Só pula quando a marca é igual; uma edição
-        // nunca enviada tem `updatedAt` diferente da marca e sobe.
-        if (marks.get(id) === project.updatedAt) {
+        // nunca enviada tem `updatedAt` diferente da marca e sobe. A exceção é a subida SÓ
+        // pela capa (`thumbOnly`, ver `onThumbChanged`): mesmo `updatedAt`, revisão nova.
+        if (marks.get(id) === project.updatedAt && !(flags.thumbOnly && thumb)) {
           sendingAt.delete(id)
           return null
         }
+        sendingThumb.set(id, thumb !== null)
         return {
           ...(await buildStudioCloudSnapshot(project)),
           meta: {
@@ -327,12 +382,16 @@ export function createStudioCloudSync(options: {
             // A revisão que ESTE aparelho conhece (0 = nunca viu): a nuvem recusa base vencida.
             baseRevision: marks.revision(id) ?? 0,
             formatVersion: project.formatVersion,
+            // A capa do card viaja com cada revisão (a lista da nuvem a mostra sem baixar o blob).
+            thumb,
           },
         }
       },
       ({ itemId, updatedAt, revision }) => {
         const startedAt = sendingAt.get(itemId) ?? Number.POSITIVE_INFINITY
         sendingAt.delete(itemId)
+        cloudHasThumb.set(itemId, sendingThumb.get(itemId) ?? false)
+        sendingThumb.delete(itemId)
         marks.set(itemId, updatedAt, revision)
         // A criança apagou o jogo com este upload EM VOO (a lápide nasceu depois de o envio
         // começar)? Então a exclusão manda: a lápide FICA e passa a conhecer a revisão que o
@@ -363,6 +422,14 @@ export function createStudioCloudSync(options: {
   async function resolveStale(id: string): Promise<void> {
     const downloaded = await cloud.download(id)
     if (downloaded) {
+      // A nuvem tem EXATAMENTE a versão que este aparelho já conhecia (outra aba deste perfil,
+      // ou uma subida só pela capa): só a revisão é nova. Avança a marca e sobe de novo — sem
+      // cópia "(de outro aparelho)" de um jogo idêntico.
+      if (downloaded.summary.itemUpdatedAt === marks.get(id)) {
+        marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
+        enqueue(id)
+        return
+      }
       const raw = await resolveCloudProject(downloaded, id)
       const name =
         raw && typeof raw === 'object' && typeof (raw as { name?: unknown }).name === 'string'
@@ -427,6 +494,7 @@ export function createStudioCloudSync(options: {
     const restored = await studio.restoreProjectFromCloud(raw, {
       expectedId: id,
       namespace: options.viewerId,
+      thumb: downloaded.summary.thumb,
     })
     if (restored.project.id !== id) return
     marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
@@ -465,6 +533,11 @@ export function createStudioCloudSync(options: {
           // A lápide (com a revisão conhecida) ANTES de apagar a marca.
           enqueueRemove(id)
           marks.delete(id)
+        },
+        // A capa gravada (ao sair do editor, ou escolhida): sobe SÓ por ela apenas enquanto a
+        // nuvem não tem miniatura nenhuma deste jogo; depois vai de carona nas edições.
+        onThumbChanged: (id) => {
+          if (cloudHasThumb.get(id) !== true) enqueue(id, { thumbOnly: true })
         },
       }
       activeMirrors.set(studio, mirror)
@@ -506,6 +579,7 @@ export function createStudioCloudSync(options: {
       const restored = await studio.restoreProjectFromCloud(raw, {
         expectedId: id,
         namespace: options.viewerId,
+        thumb: downloaded.summary.thumb,
       })
       if (restored.project.id !== id) return false
       marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
@@ -550,6 +624,9 @@ export function createStudioCloudSync(options: {
         withTimeout(cloud.list({ signal: pullAbort.signal }), LIST_TIMEOUT_MS, pullAbort.signal),
       ])
       if (!remote) return 0
+      for (const summary of remote) {
+        if (!summary.deletedAt) cloudHasThumb.set(summary.itemId, summary.thumb !== null)
+      }
       const report = await reconcileCreations<
         { id: string; name: string; updatedAt: number },
         unknown
@@ -587,10 +664,12 @@ export function createStudioCloudSync(options: {
           }
         },
         apply: async (summary, project) => {
-          // Já conferido no `fetch`; o restauro sanea de novo (idempotente) e grava.
+          // Já conferido no `fetch`; o restauro sanea de novo (idempotente) e grava — com a
+          // miniatura que a nuvem listou (o card nasce com capa sem abrir o jogo).
           const restored = await studio.restoreProjectFromCloud(project, {
             expectedId: summary.itemId,
             namespace: options.viewerId,
+            thumb: summary.thumb,
           })
           return restored.project.id === summary.itemId
         },
@@ -639,6 +718,18 @@ export function createStudioCloudSync(options: {
           )
         },
       })
+      // As capas que a nuvem tem para jogos que JÁ estavam aqui sem capa (sincronizados antes
+      // de a capa viajar, ou nunca abertos neste aparelho): sem baixar blob nenhum. Best-effort.
+      if (studio.adoptCloudProjectThumbs && !pullAbort.signal.aborted) {
+        const withThumb = remote.flatMap((summary) =>
+          summary.thumb && !summary.deletedAt ? [{ id: summary.itemId, thumb: summary.thumb }] : [],
+        )
+        if (withThumb.length > 0) {
+          await studio
+            .adoptCloudProjectThumbs(withThumb, { namespace: options.viewerId })
+            .catch(() => 0)
+        }
+      }
       return report.deferred
     }
   }

@@ -8,6 +8,7 @@ import {
   type InstalledExtension,
   inferExtraLanguage,
   isReservedProjectFileName,
+  normalizeAssetName,
   normalizeClassicMode,
   normalizeExtraFileName,
   type Project,
@@ -962,6 +963,17 @@ function boundProjectIdFromBody(raw: unknown): string {
   return ulid()
 }
 
+/**
+ * A capa escolhida (`coverAssetName`) é saneada por FORMA (um nome de asset válido), nunca pela
+ * existência do asset: o `program` do manifesto da nuvem viaja com `assets: []`, o BFF o valida
+ * com este mesmo saneador, e o meta é lido sem os assets. Exigir o asset presente apagaria a
+ * escolha em silêncio nesses caminhos. Nome pendurado = foto automática (ver `cover/coverAsset`).
+ */
+export function sanitizeCoverAssetName(raw: unknown): string | undefined {
+  if (typeof raw !== 'string' || raw.length === 0) return undefined
+  return normalizeAssetName(raw) === raw ? raw : undefined
+}
+
 export function sanitizeStoredProject(
   raw: unknown,
   requestedId?: string,
@@ -1039,6 +1051,8 @@ export function sanitizeStoredProject(
     ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
     projectTools: retainProjectTools(r.projectTools, r.blocksState),
   }
+  const coverAssetName = sanitizeCoverAssetName(r.coverAssetName)
+  if (coverAssetName) project.coverAssetName = coverAssetName
   assertProjectContentPreserved(raw, project)
   return project
 }

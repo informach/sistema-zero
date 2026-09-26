@@ -1,10 +1,14 @@
 import { type Project, type ProjectAsset, sanitizeProjectAssets } from '#core'
+import { buildCloudThumb, CLOUD_THUMB_MAX_CHARS } from '../cover/cloudThumb'
+import { storeChosenCoverThumb } from '../cover/thumbCapture'
 import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
 import {
+  adoptProjectThumbs,
   deleteProject,
   listProjectSummariesLight,
   loadProjectAssetsById,
   loadProjectSummaryById,
+  loadProjectThumb,
   type ProjectSummary,
 } from '../state/persistence'
 import { getProjectStorageScope } from '../state/projectStorageRuntime'
@@ -68,14 +72,55 @@ export async function discardImportedProjectSnapshot(
  */
 export async function restoreProjectFromCloud(
   raw: unknown,
-  opts?: { expectedId?: string; namespace?: string },
+  opts?: {
+    expectedId?: string
+    namespace?: string
+    /** A miniatura que a nuvem listou para o item (gravada junto; `null` = a nuvem não tem). */
+    thumb?: string | null
+  },
 ): Promise<{ project: Project; warnings: string[] }> {
   const storageScope =
     opts?.namespace === undefined ? undefined : getProjectStorageScope(opts.namespace)
-  return useProjectStore.getState().restoreProjectSnapshot(raw, {
+  const restored = await useProjectStore.getState().restoreProjectSnapshot(raw, {
     expectedId: opts?.expectedId,
     storageScope,
+    thumb: opts?.thumb,
   })
+  // A nuvem não trouxe miniatura mas o projeto tem capa ESCOLHIDA: deriva daqui mesmo (o
+  // cliente que subiu não conseguiu reduzi-la, ou é anterior à capa viajar). Best-effort.
+  if (!opts?.thumb && restored.project.coverAssetName) {
+    void storeChosenCoverThumb(restored.project, { storageScope })
+  }
+  return restored
+}
+
+/**
+ * A miniatura do card de um projeto do perfil, reduzida até caber no teto do índice da nuvem
+ * (`maxChars`, ver `cover/cloudThumb.ts`); `null` = sem capa aqui ou sem canvas.
+ */
+export async function loadProjectThumbForCloud(
+  id: string,
+  opts?: { namespace?: string; maxChars?: number },
+): Promise<string | null> {
+  const storageScope =
+    opts?.namespace === undefined ? undefined : getProjectStorageScope(opts.namespace)
+  const thumb = await loadProjectThumb(id, storageScope)
+  if (!thumb) return null
+  return buildCloudThumb(thumb, opts?.maxChars ?? CLOUD_THUMB_MAX_CHARS)
+}
+
+/**
+ * Adota as miniaturas que a nuvem listou para projetos que já existem neste aparelho SEM capa
+ * (sincronizados antes de a capa viajar, ou nunca abertos aqui) — sem baixar blob nenhum.
+ * Devolve quantas foram gravadas.
+ */
+export async function adoptCloudProjectThumbs(
+  items: ReadonlyArray<{ id: string; thumb: string }>,
+  opts?: { namespace?: string },
+): Promise<number> {
+  const storageScope =
+    opts?.namespace === undefined ? undefined : getProjectStorageScope(opts.namespace)
+  return adoptProjectThumbs(items, storageScope)
 }
 
 /**

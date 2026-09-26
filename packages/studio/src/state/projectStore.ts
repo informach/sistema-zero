@@ -139,7 +139,12 @@ interface ProjectStore {
    */
   restoreProjectSnapshot: (
     raw: unknown,
-    options?: { expectedId?: string; storageScope?: ProjectStorageScope },
+    options?: {
+      expectedId?: string
+      storageScope?: ProjectStorageScope
+      /** A miniatura que veio da nuvem com o item (gravada na mesma transação). */
+      thumb?: string | null
+    },
   ) => Promise<{ project: Project; warnings: string[] }>
   setProject: (p: Project) => void
   setMode: (mode: IDEMode) => void
@@ -179,6 +184,13 @@ interface ProjectStore {
   updateAssetImage: (id: string, image: UpdateAssetImageInput) => string | null
   /** Persiste a origem descoberta de um asset pessoal legado. */
   setAssetLibraryOrigin: (id: string, origin: 'pinta' | 'molda') => string | null
+  /**
+   * Escolhe uma IMAGEM do projeto como capa fixa do card (`null` = voltar à foto automática).
+   * Só grava o nome no projeto (bumpa `updatedAt`, então sobe pela nuvem como qualquer edição);
+   * quem regrava a miniatura na hora é quem chama (`captureAndStoreProjectThumb`). Devolve erro
+   * legível ou `null`.
+   */
+  setCoverAsset: (assetId: string | null) => string | null
   // --- Modo profissional (project.kind === 'pro') ---
   /** Cria arquivo na árvore pro. Devolve mensagem de erro ou null se ok. */
   addProFile: (path: string) => string | null
@@ -523,7 +535,7 @@ export function createProjectStore(
       // (a partição de blocos só cai quando a ORIGEM não tem blocos: o estrito garante).
       await persistProject(
         project,
-        { silent: !drawings.projectChanged, replace: true },
+        { silent: !drawings.projectChanged, replace: true, thumb: options.thumb },
         options.storageScope,
       )
       return { project, warnings }
@@ -863,9 +875,17 @@ export function createProjectStore(
     removeAsset: (id) => {
       const p = get().project
       if (!p?.assets) return
+      const target = p.assets.find((a) => a.id === id)
       const next = p.assets.filter((a) => a.id !== id)
       if (next.length === p.assets.length) return
-      set({ project: bump({ ...p, assets: next }), isDirty: true, saveError: null })
+      // A capa escolhida era esta imagem: some junto (volta à foto automática).
+      const { coverAssetName, ...rest } = p
+      const wasCover = target !== undefined && coverAssetName === target.name
+      set({
+        project: bump(wasCover ? { ...rest, assets: next } : { ...p, assets: next }),
+        isDirty: true,
+        saveError: null,
+      })
     },
     updateAssetMeta: (id, meta) => {
       const p = get().project
@@ -1007,7 +1027,29 @@ export function createProjectStore(
       }
       if (target.name === name) return null
       const next = p.assets.map((a) => (a.id === id ? { ...a, name } : a))
-      set({ project: bump({ ...p, assets: next }), isDirty: true, saveError: null })
+      // A capa escolhida segue o nome novo.
+      const cover = p.coverAssetName === target.name ? { coverAssetName: name } : {}
+      set({ project: bump({ ...p, ...cover, assets: next }), isDirty: true, saveError: null })
+      return null
+    },
+    setCoverAsset: (assetId) => {
+      const p = get().project
+      if (!p) return 'Nenhum projeto carregado.'
+      if (assetId === null) {
+        if (p.coverAssetName === undefined) return null
+        const { coverAssetName: _cover, ...rest } = p
+        set({ project: bump(rest), isDirty: true, saveError: null })
+        return null
+      }
+      const target = p.assets?.find((a) => a.id === assetId)
+      if (!target) return 'Imagem não encontrada.'
+      if (target.kind !== 'image') return 'Só uma imagem pode ser a capa do jogo.'
+      if (p.coverAssetName === target.name) return null
+      set({
+        project: bump({ ...p, coverAssetName: target.name }),
+        isDirty: true,
+        saveError: null,
+      })
       return null
     },
     addProFile: (path) => {

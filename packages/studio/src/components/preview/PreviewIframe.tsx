@@ -67,20 +67,32 @@ const SNAPSHOT_FIRST_DELAY_MS = 2_500
 const SNAPSHOT_INTERVAL_MS = 20_000
 
 export function PreviewIframe(): JSX.Element {
-  const { projectId, html, css, js, ir, projectName, installedExtensions, extraFiles, assets } =
-    useProjectStore(
-      useShallow((s) => ({
-        projectId: s.project?.id ?? null,
-        html: s.project?.files['index.html'] ?? '',
-        css: s.project?.files['style.css'] ?? '',
-        js: s.project?.files['script.js'] ?? '',
-        ir: s.project?.ir ?? null,
-        projectName: s.project?.name ?? '',
-        installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
-        extraFiles: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
-        assets: s.project?.assets ?? EMPTY_ASSETS,
-      })),
-    )
+  const {
+    projectId,
+    html,
+    css,
+    js,
+    ir,
+    projectName,
+    installedExtensions,
+    extraFiles,
+    assets,
+    coverAssetName,
+  } = useProjectStore(
+    useShallow((s) => ({
+      projectId: s.project?.id ?? null,
+      // Com capa ESCOLHIDA o preview não tira fotos: a capa vem da imagem.
+      coverAssetName: s.project?.coverAssetName ?? null,
+      html: s.project?.files['index.html'] ?? '',
+      css: s.project?.files['style.css'] ?? '',
+      js: s.project?.files['script.js'] ?? '',
+      ir: s.project?.ir ?? null,
+      projectName: s.project?.name ?? '',
+      installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+      extraFiles: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
+      assets: s.project?.assets ?? EMPTY_ASSETS,
+    })),
+  )
   const pushLog = useLogsStore((s) => s.push)
   const previewSecurity = useStudioConfig().previewSecurity
   const previewRunning = useUIStore((s) => s.previewRunning)
@@ -424,7 +436,7 @@ export function PreviewIframe(): JSX.Element {
   // a imagem já reduzida ao tamanho do card (JPEG ~15 KB). Aba escondida não
   // recebe quadros, então pedir ali só renderia uma foto velha.
   useEffect(() => {
-    if (!projectId || !previewRunning || previewPaused) return
+    if (!projectId || !previewRunning || previewPaused || coverAssetName) return
     const pedir = () => {
       if (typeof document !== 'undefined' && document.hidden) return
       iframeRef.current?.contentWindow?.postMessage(
@@ -446,7 +458,7 @@ export function PreviewIframe(): JSX.Element {
     // dispararia uma foto poucos segundos depois de CADA mudança — exatamente o
     // custo que este desenho evita. O ritmo é o do intervalo, e o bridge do doc
     // novo responde ao próximo pedido normalmente.
-  }, [projectId, previewRunning, previewPaused])
+  }, [projectId, previewRunning, previewPaused, coverAssetName])
 
   const doc = useMemo(() => {
     // Parar (Play desligado): esvazia o iframe → mata setInterval/timers em execução.

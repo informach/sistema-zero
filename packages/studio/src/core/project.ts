@@ -677,6 +677,14 @@ export interface Project {
   extraFiles?: ExtraFile[]
   /** Assets embutidos (imagens/sprites) — opcional/retrocompatível. */
   assets?: ProjectAsset[]
+  /**
+   * A capa ESCOLHIDA do card "Meus Jogos": o NOME de um asset de imagem do projeto (a tela de
+   * abertura, por exemplo). Ausente = a foto automática do preview. Só o nome, no idioma dos
+   * blocos; a resolução para o asset é na hora de usar (`cover/coverAsset.ts`), e um nome
+   * pendurado cai na foto automática. Chave OMITIDA quando não há capa (projetos antigos
+   * seguem byte-idênticos).
+   */
+  coverAssetName?: string
   ir: SZIRInput | null
   blocksState: unknown | null
   /**

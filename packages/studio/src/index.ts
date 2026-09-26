@@ -79,12 +79,14 @@ export {
   renderProjectToPreviewDocAsync,
 } from './preview/renderProject'
 export {
+  adoptCloudProjectThumbs,
   discardImportedProjectSnapshot,
   importProjectSnapshot,
   listProjectSummariesLightForCloud,
   loadProjectAssetsSnapshotForCloud,
   loadProjectSnapshotForCloud,
   loadProjectSummaryForCloud,
+  loadProjectThumbForCloud,
   restoreProjectFromCloud,
   validateCloudProjectSnapshot,
 } from './projects/importSnapshot'

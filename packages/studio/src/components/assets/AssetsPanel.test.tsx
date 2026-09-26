@@ -386,3 +386,43 @@ describe('Materiais do jogo — a janela ligada à store, como no Shell', () => 
     expect(useUIStore.getState().showAssets).toBe(true)
   })
 })
+
+/** A capa do card escolhida na aba Imagens (26/09/2026). */
+describe('Materiais do jogo — "Usar como capa"', () => {
+  function seedWithImages(): void {
+    seedProject()
+    for (const name of ['tela-inicial', 'heroi']) {
+      const err = useProjectStore.getState().addAsset({
+        name,
+        dataUrl: 'data:image/png;base64,AAA',
+        kind: 'image',
+        source: 'upload',
+      })
+      expect(err).toBeNull()
+    }
+  }
+
+  it('cada imagem tem "Usar como capa"; escolher grava o nome e mostra o selo com o "Voltar"', () => {
+    seedWithImages()
+    render(<AssetsPanel open onClose={() => {}} />)
+    const painel = screen.getByRole('tabpanel')
+    fireEvent.click(
+      within(painel).getByRole('button', { name: 'Usar tela-inicial como capa do jogo' }),
+    )
+    expect(useProjectStore.getState().project?.coverAssetName).toBe('tela-inicial')
+    expect(within(painel).getByText('Capa do jogo')).toBeTruthy()
+    expect(
+      within(painel).queryByRole('button', { name: 'Usar tela-inicial como capa do jogo' }),
+    ).toBeNull()
+    // A outra imagem continua oferecendo virar capa.
+    expect(
+      within(painel).getByRole('button', { name: 'Usar heroi como capa do jogo' }),
+    ).toBeTruthy()
+    fireEvent.click(
+      within(painel).getByRole('button', { name: 'Voltar para a foto automática da capa' }),
+    )
+    const project = useProjectStore.getState().project
+    expect(project && 'coverAssetName' in project).toBe(false)
+    expect(within(painel).queryByText('Capa do jogo')).toBeNull()
+  })
+})

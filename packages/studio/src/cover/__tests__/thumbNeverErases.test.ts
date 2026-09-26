@@ -108,3 +108,41 @@ describe('gravação da miniatura', () => {
     expect(peekProjectSnapshot('p1')?.dataUrl).toBe('data:image/jpeg;base64,NOVA')
   })
 })
+
+describe('a capa ESCOLHIDA vence a foto do preview', () => {
+  const comCapa = {
+    id: 'p1',
+    name: 'jogo',
+    coverAssetName: 'tela-inicial',
+    assets: [
+      {
+        id: 'a1',
+        name: 'tela-inicial',
+        kind: 'image',
+        dataUrl: 'data:image/png;base64,AAA',
+        source: 'upload',
+      },
+    ],
+  } as unknown as Parameters<typeof captureAndStoreProjectThumb>[0]
+
+  beforeEach(() => {
+    gravacoes.length = 0
+    falharGravacao = false
+    capaDevolvida = 'data:image/jpeg;base64,RESERVA'
+    forgetProjectSnapshot()
+  })
+
+  it('com capa escolhida, nem a foto do preview nem a reserva são gravadas (sem canvas a derivada é null e a capa anterior fica)', async () => {
+    rememberProjectSnapshot('p1', 'data:image/jpeg;base64,FOTO')
+    await captureAndStoreProjectThumb(comCapa)
+    expect(gravacoes).toEqual([])
+    // A foto do preview continua guardada: ninguém a consumiu.
+    expect(peekProjectSnapshot('p1')?.dataUrl).toBe('data:image/jpeg;base64,FOTO')
+  })
+
+  it('nome pendurado (a imagem já não existe) volta ao caminho de sempre', async () => {
+    rememberProjectSnapshot('p1', 'data:image/jpeg;base64,FOTO')
+    await captureAndStoreProjectThumb({ ...comCapa, assets: [] })
+    expect(gravacoes.map((g) => g.dataUrl)).toEqual(['data:image/jpeg;base64,FOTO'])
+  })
+})
