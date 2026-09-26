@@ -1047,6 +1047,20 @@ export function offerWithCourse(offerSlug: string, courseRef: string): ResolvedO
   }
 }
 
+/** Oferta de curso que também entrega o Mural completo. */
+export function offerWithMural(offerSlug: string, courseRef: string): ResolvedOffer {
+  const offer = offerWithCourse(offerSlug, courseRef)
+  offer.items.push({
+    productId: randomUUID(),
+    sku: 'mural-dos-criadores',
+    name: 'Mural dos Criadores',
+    kind: 'community',
+    isPrimary: false,
+    fulfillment: { accessType: 'community', courseRef: 'mural-dos-criadores' },
+  })
+  return offer
+}
+
 /** Headers assinados (HMAC resign do gateway) para um webhook de entrada.
  *  Mensagem canônica: "POST.<path>.<corpo>" (método+path = anti replay cross-endpoint). */
 export function signedWebhookHeaders(

@@ -212,11 +212,16 @@ admin.
 - **Comunidade:** mensal e anual continuam sendo assinaturas. Uma matrícula válida da Comunidade
   que cubra o curso é mais forte que o vencimento do Desafio; o aluno não perde acesso nem recebe
   avisos de expiração indevidos. Enquanto a assinatura estiver ativa, o Mural também permanece
-  completo.
+  completo. Em um **novo pagamento confirmado** de assinatura cuja oferta inclui o Mural completo,
+  a conta recebe também Mural visitante permanente. Renovar a mesma assinatura não duplica esse
+  direito; cancelar ou deixar a assinatura expirar retira o acesso completo, mas preserva a visita
+  para ver e jogar sem publicar ou copiar.
 
 O visitante permanente é uma regra da **nova compra desta oferta específica**, com política explícita
 de 30 dias e Mural completo entre os itens. Alterar só a duração de outra oferta no painel não
 concede automaticamente esse direito. Matrículas existentes não são alteradas retroativamente.
+Da mesma forma, assinaturas pagas antes da implantação dessa regra não recebem visitante
+retroativamente, inclusive se já estiverem canceladas.
 
 Use **cupom, e não uma segunda oferta de evento**, quando a única diferença for o preço. Assim o
 mesmo contrato de 30 dias, a mesma página e a mesma mensuração servem para todos; o código do evento

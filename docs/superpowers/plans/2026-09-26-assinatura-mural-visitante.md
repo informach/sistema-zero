@@ -24,6 +24,7 @@
 **Files:**
 - Modify: `packages/members/src/application/grant-entitlement/grant-entitlement.service.ts`
 - Test: `packages/members/tests/application/grant.test.ts`
+- Test fixture: `packages/members/tests/helpers.ts`
 
 **Interfaces:**
 - Consumes: `GrantEntitlementCommand.subscription`, `ResolvedOffer.items`, `createMuralVisitorSnapshot`, `EntitlementAggregate.grant`.
@@ -85,4 +86,4 @@ Expected: testes do grant, HTTP, leitura e checagens estáticas passam. Se typec
 
 - [ ] **Step 4: Commit scoped files**
 
-Stage apenas os três arquivos de código/teste e o manual desta tarefa. Commit: `feat(members): manter Mural visitante após assinatura`.
+Stage apenas o grant service, os três arquivos de testes/fixture e o manual desta tarefa. Commit: `feat(members): manter Mural visitante após assinatura`.

@@ -12,24 +12,11 @@ import {
 } from '../../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { RevokeEntitlementService } from '../../src/application/revoke-entitlement/revoke-entitlement.service'
 import { FakeCatalogGateway, InMemoryEntitlementRepository, silentLogger } from '../fakes/in-memory'
-import { offerWithCourse } from '../helpers'
+import { offerWithCourse, offerWithMural } from '../helpers'
 
 const T = (s: string) => new Date(s)
 const DESAFIO_30_DIAS = 'desafio-primeiro-jogo-30-dias'
 const MURAL_FULL_REF = 'mural-dos-criadores'
-
-function offerWithMural(offerSlug: string) {
-  const offer = offerWithCourse(offerSlug, 'desafio-primeiro-jogo')
-  offer.items.push({
-    productId: randomUUID(),
-    sku: MURAL_FULL_REF,
-    name: 'Mural dos Criadores',
-    kind: 'community',
-    isPrimary: false,
-    fulfillment: { accessType: 'community', courseRef: MURAL_FULL_REF },
-  })
-  return offer
-}
 
 function setup() {
   const catalog = new FakeCatalogGateway()
@@ -45,9 +32,125 @@ function setup() {
 }
 
 describe('GrantEntitlementService', () => {
+  test('assinatura com Mural concede visitante permanente uma vez, preservado no cancelamento', async () => {
+    const { catalog, entitlements, grant } = setup()
+    const offerSlug = 'comunidade-dos-criadores-mensal'
+    catalog.set(offerSlug, offerWithMural(offerSlug, 'desafio-primeiro-jogo'))
+    const first = {
+      userId: 'u1',
+      offerRef: offerSlug,
+      paymentId: 'pay1',
+      grantedAt: T('2026-06-01T00:00:00Z'),
+      subscription: { subscriptionId: 'sub1', intervalMonths: 1 },
+      accessPolicy: { mode: 'billing_cycle', durationValue: null, durationUnit: null } as const,
+    }
+
+    expect(await grant.execute(first)).toEqual({ offerFound: true, granted: 3, itemsResolved: 2 })
+    const visitor = (await entitlements.listByUserId('u1')).find(
+      (e) => e.toSnapshot().productId === MURAL_VISITOR_PRODUCT_ID,
+    )
+    expect(visitor?.toSnapshot()).toMatchObject({
+      sourceKind: 'payment',
+      sourceId: 'pay1',
+      subscriptionId: null,
+      idempotencyKey: `subscription-visitor:sub1:${MURAL_VISITOR_PRODUCT_ID}`,
+    })
+    expect(visitor?.expiresAt).toBeNull()
+    expect(visitor?.snapshot.accessPolicy).toEqual({
+      mode: 'lifetime',
+      durationValue: null,
+      durationUnit: null,
+    })
+
+    const second = { ...first, paymentId: 'pay2', grantedAt: T('2026-07-01T00:00:00Z') }
+    expect((await grant.execute(second)).granted).toBe(2)
+    expect((await grant.execute(second)).granted).toBe(0)
+    expect(entitlements.byId.size).toBe(3)
+    expect(
+      (await entitlements.listByUserId('u1')).filter((e) => e.subscriptionId === 'sub1'),
+    ).toHaveLength(2)
+
+    const revoke = new RevokeEntitlementService({
+      entitlements,
+      clock: () => T('2026-07-10T00:00:00Z'),
+      logger: silentLogger,
+    })
+    expect((await revoke.cancel('sub1')).affected).toBe(2)
+    const active = await entitlements.listActiveByUser('u1', T('2026-07-10T00:00:00Z'))
+    expect(active.map((e) => e.courseRef)).toEqual([MURAL_VISITOR_REF])
+    const access = new AccessCheckService(entitlements, () => T('2026-07-10T00:00:00Z'))
+    expect((await access.execute('u1', ['desafio-primeiro-jogo'])).communities).toEqual([
+      MURAL_VISITOR_REF,
+    ])
+  })
+
+  test('expiração natural da assinatura mantém visitante; oferta sem Mural não o concede', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set(
+      'comunidade-dos-criadores-anual',
+      offerWithMural('comunidade-dos-criadores-anual', 'desafio-primeiro-jogo'),
+    )
+    catalog.set('assinatura-sem-mural', offerWithCourse('assinatura-sem-mural', 'curso-demo'))
+    const at = T('2026-06-01T00:00:00Z')
+    await grant.execute({
+      userId: 'u1',
+      offerRef: 'comunidade-dos-criadores-anual',
+      paymentId: 'pay1',
+      grantedAt: at,
+      subscription: { subscriptionId: 'sub1', intervalMonths: 12 },
+    })
+    await grant.execute({
+      userId: 'u2',
+      offerRef: 'assinatura-sem-mural',
+      paymentId: 'pay2',
+      grantedAt: at,
+      subscription: { subscriptionId: 'sub2', intervalMonths: 1 },
+    })
+    const revoke = new RevokeEntitlementService({
+      entitlements,
+      clock: () => T('2027-07-01'),
+      logger: silentLogger,
+    })
+    expect((await revoke.expire('sub1')).affected).toBe(2)
+    expect(
+      (await entitlements.listActiveByUser('u1', T('2027-07-01'))).map((e) => e.courseRef),
+    ).toEqual([MURAL_VISITOR_REF])
+    expect(
+      (await entitlements.listByUserId('u2')).some((e) => e.courseRef === MURAL_VISITOR_REF),
+    ).toBe(false)
+  })
+
+  test('reentrega de assinatura completa o visitante após falha parcial', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set(
+      'comunidade-dos-criadores-mensal',
+      offerWithMural('comunidade-dos-criadores-mensal', 'desafio-primeiro-jogo'),
+    )
+    const originalSave = entitlements.save.bind(entitlements)
+    let failVisitorOnce = true
+    entitlements.save = async (entitlement) => {
+      if (entitlement.toSnapshot().productId === MURAL_VISITOR_PRODUCT_ID && failVisitorOnce) {
+        failVisitorOnce = false
+        throw new Error('falha transitória')
+      }
+      return originalSave(entitlement)
+    }
+    const cmd = {
+      userId: 'u1',
+      offerRef: 'comunidade-dos-criadores-mensal',
+      paymentId: 'pay1',
+      grantedAt: T('2026-06-01T00:00:00Z'),
+      subscription: { subscriptionId: 'sub1', intervalMonths: 1 },
+    }
+    await expect(grant.execute(cmd)).rejects.toThrow('falha transitória')
+    expect(entitlements.byId.size).toBe(2)
+    expect((await grant.execute(cmd)).granted).toBe(1)
+    expect(entitlements.byId.size).toBe(3)
+  })
+
   test('Desafio de 30 dias mantém Mural visitante após o vencimento do acesso pleno', async () => {
     const { catalog, entitlements, grant } = setup()
-    catalog.set(DESAFIO_30_DIAS, offerWithMural(DESAFIO_30_DIAS))
+    catalog.set(DESAFIO_30_DIAS, offerWithMural(DESAFIO_30_DIAS, 'desafio-primeiro-jogo'))
     const grantedAt = T('2026-09-16T15:00:00Z')
     const cmd = {
       userId: 'u1',
@@ -93,8 +196,11 @@ describe('GrantEntitlementService', () => {
 
   test('o visitante permanente não é concedido a ofertas históricas ou a outras ofertas fixas', async () => {
     const { catalog, entitlements, grant } = setup()
-    catalog.set('desafio-primeiro-jogo', offerWithMural('desafio-primeiro-jogo'))
-    catalog.set('outra-oferta', offerWithMural('outra-oferta'))
+    catalog.set(
+      'desafio-primeiro-jogo',
+      offerWithMural('desafio-primeiro-jogo', 'desafio-primeiro-jogo'),
+    )
+    catalog.set('outra-oferta', offerWithMural('outra-oferta', 'desafio-primeiro-jogo'))
     catalog.set(DESAFIO_30_DIAS, offerWithCourse(DESAFIO_30_DIAS, 'desafio-primeiro-jogo'))
     const fixed = { mode: 'fixed', durationValue: 30, durationUnit: 'days' } as const
     const at = T('2026-09-16T15:00:00Z')
@@ -119,7 +225,7 @@ describe('GrantEntitlementService', () => {
       grantedAt: at,
       accessPolicy: fixed,
     })
-    catalog.set(DESAFIO_30_DIAS, offerWithMural(DESAFIO_30_DIAS))
+    catalog.set(DESAFIO_30_DIAS, offerWithMural(DESAFIO_30_DIAS, 'desafio-primeiro-jogo'))
     await grant.execute({
       userId: 'legacy-event',
       offerRef: DESAFIO_30_DIAS,
@@ -144,7 +250,7 @@ describe('GrantEntitlementService', () => {
 
   test('reentrega completa o visitante quando o primeiro grant falha depois dos itens da oferta', async () => {
     const { catalog, entitlements, grant } = setup()
-    catalog.set(DESAFIO_30_DIAS, offerWithMural(DESAFIO_30_DIAS))
+    catalog.set(DESAFIO_30_DIAS, offerWithMural(DESAFIO_30_DIAS, 'desafio-primeiro-jogo'))
     const originalSave = entitlements.save.bind(entitlements)
     let failVisitorOnce = true
     entitlements.save = async (entitlement) => {

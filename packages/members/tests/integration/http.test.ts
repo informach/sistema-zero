@@ -8,6 +8,7 @@ import {
   grantAllKidsCourses,
   grantLifetime,
   offerWithCourse,
+  offerWithMural,
   seedSampleCourse,
   signedWebhookHeaders,
 } from '../helpers'
@@ -294,19 +295,54 @@ describe('Members HTTP — consumo do aluno', () => {
 })
 
 describe('Members HTTP — webhooks', () => {
+  test('assinatura com Mural preserva visitante após cancelamento pelo webhook', async () => {
+    const { app, catalog, entitlements } = buildApp()
+    const offerSlug = 'comunidade-dos-criadores-mensal'
+    catalog.set(offerSlug, offerWithMural(offerSlug, 'desafio-primeiro-jogo'))
+    const grantBody = JSON.stringify({
+      userId: USER,
+      offerRef: offerSlug,
+      paymentId: 'pay-sub-http',
+      paidAt: '2026-09-16T15:00:00Z',
+      subscription: { subscriptionId: 'sub-http', intervalMonths: 1 },
+      accessPolicy: { mode: 'billing_cycle', durationValue: null, durationUnit: null },
+    })
+    const granted = await app.handle(
+      new Request('http://localhost/members/webhooks/grant', {
+        method: 'POST',
+        headers: signedWebhookHeaders('/members/webhooks/grant', grantBody, 'd-sub-grant'),
+        body: grantBody,
+      }),
+    )
+    expect(granted.status).toBe(200)
+    expect((await readJson(granted)).granted).toBe(3)
+    expect(
+      (await entitlements.listByUserId(USER)).find(
+        (e) => e.toSnapshot().productId === MURAL_VISITOR_PRODUCT_ID,
+      )?.subscriptionId,
+    ).toBeNull()
+
+    const cancelBody = JSON.stringify({ event: 'canceled', subscriptionId: 'sub-http' })
+    const canceled = await app.handle(
+      new Request('http://localhost/members/webhooks/subscription', {
+        method: 'POST',
+        headers: signedWebhookHeaders('/members/webhooks/subscription', cancelBody, 'd-sub-cancel'),
+        body: cancelBody,
+      }),
+    )
+    expect(canceled.status).toBe(200)
+    expect((await readJson(canceled)).affected).toBe(2)
+    expect(
+      (await entitlements.listActiveByUser(USER, new Date('2026-09-20T00:00:00Z'))).map(
+        (e) => e.courseRef,
+      ),
+    ).toEqual([MURAL_VISITOR_REF])
+  })
+
   test('compra do Desafio de 30 dias concede Mural pleno temporário e visitante permanente', async () => {
     const { app, catalog, entitlements, hubCalls } = buildApp()
     const offerSlug = 'desafio-primeiro-jogo-30-dias'
-    const offer = offerWithCourse(offerSlug, 'desafio-primeiro-jogo')
-    offer.items.push({
-      productId: '22222222-2222-2222-2222-222222222222',
-      sku: 'mural-dos-criadores',
-      name: 'Mural dos Criadores',
-      kind: 'community',
-      isPrimary: false,
-      fulfillment: { accessType: 'community', courseRef: 'mural-dos-criadores' },
-    })
-    catalog.set(offerSlug, offer)
+    catalog.set(offerSlug, offerWithMural(offerSlug, 'desafio-primeiro-jogo'))
     const body = JSON.stringify({
       userId: USER,
       offerRef: offerSlug,
