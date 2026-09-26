@@ -2977,6 +2977,34 @@ com captura de pé) e §"a faixa da seleção: uma moldura só" (os três ramos 
 `useStudioResync.test.tsx` (`failed` avisa, `not-linked` cala, rejeição avisa, raster falho cala;
 o canvas é dublado no protótipo e restaurado).
 
+## A linha pequena nasce: a régua do desenho é em px de TELA (26/09/2026)
+
+Relato dela: "não consigo desenhar uma linha pequena, só a partir de um determinado tamanho".
+A causa era um literal no `endGesture` do `VectorStage`: `bounds.width < 2 && bounds.height < 2`
+em UNIDADES DO DOCUMENTO, ou seja 16 px de tela em zoom 8 (o default do sprite pequeno) e 32 em
+zoom 16. O mesmo defeito que o laço já tinha pago em 06/09 (`MARQUEE_MIN_SCREEN_PX`), nunca
+levado ao desenho. Quatro consertos, todos com teste (`vectorUi.test.tsx`, §"desenhar formas
+pequenas"):
+
+- **`DRAW_MIN_SCREEN_PX` (= 3, a régua do laço) mede a distância que a MÃO andou**, do
+  `pointerdown` ao último `pointermove`, em px de tela. Não a caixa da forma: uma linha
+  horizontal tem altura 0 e o polígono nasce com raio 1 até parado (por isso um toque com o
+  Polígono criava um hexágono degenerado, e um com o Retângulo não criava nada). O gesto
+  `draw` guarda `startClient`/`lastClient` e a PRÓPRIA prévia (`gesture.shape`): o `endGesture`
+  não lê mais o `preview` do estado, que num gesto rápido ainda era o do `pointerdown`.
+- **A decimação `BRUSH_MIN_POINT_DISTANCE` vale só para o pincel.** Para as formas, em zoom 16
+  ela eram 5,6 px de tela e um arrasto de 4 px nunca atualizava a prévia.
+- **A grade não colapsa a forma:** se o fim encaixado cai EM CIMA do começo mas a mão andou, o
+  fim escapa da grade (o começo segue encaixado). A criança arrastou e viu o rastro, então algo
+  tem que nascer; arrastos maiores que meio espaçamento seguem 100% na grade.
+- ⭐ **As alças não roubam o toque da forma pequena** (`handlesUsable`, `HANDLE_MIN_SCREEN_PX =
+  40`): com uma ferramenta de FORMA ativa, as oito alças de 14 px e a de girar só aparecem quando
+  a forma recém-desenhada mede ≥ 40 px de tela nos dois eixos. Numa linha de 12 px elas a cobriam
+  inteira e mais 7 px para cada lado, e o `pointerdown` da PRÓXIMA linha caía numa alça (que pára
+  a propagação) e virava um redimensionamento. Ajustar a pequena é com a Selecionar (V), onde
+  nada mudou. ⚠️ Com a Selecionar as alças também cobrem formas minúsculas; fica como melhoria
+  futura. As alças levam `data-handle` para os testes.
+
 ## O arrasto não grifa nada, e o texto volta a ser editável (18/09/2026)
 
 Dois relatos dela no editor de VETOR, os dois já dados como corrigidos antes e os dois vivos na

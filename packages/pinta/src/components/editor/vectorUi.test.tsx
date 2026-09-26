@@ -4351,3 +4351,134 @@ describe('editar um texto no vetor: os consertos do full review', () => {
     })
   })
 })
+
+describe('desenhar formas pequenas: a régua é em px de tela', () => {
+  function undoButton(): HTMLButtonElement {
+    return screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLButtonElement
+  }
+
+  async function openSprite64(): Promise<HTMLElement> {
+    await openVectorEditor(
+      undefined,
+      async (seed) => {
+        await seed.getState().create({ kind: 'vector-sprite', name: 'heroi-v', frameSize: 64 })
+      },
+      'heroi-v',
+    )
+    // Quadro de 64 medido como se estivesse em zoom 8: os clientX/Y são px de TELA.
+    return measureStage(8, { width: 64, height: 64 })
+  }
+
+  it('uma linha de 12 px de tela nasce num quadro de 64 em zoom 8 (antes o corte era 16 px)', async () => {
+    const stage = await openSprite64()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.line }))
+    // Um ÚNICO move e o solto no mesmo turno: a forma sai do gesto, não do render.
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 92, clientY: 80 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      const line = stage.querySelector('line[x1="10"]')
+      expect(line?.getAttribute('x2')).toBe('11.5')
+      expect(line?.getAttribute('y2')).toBe('10')
+    })
+    expect(undoButton().disabled).toBe(false)
+  })
+
+  it('toque parado com a Linha não cria nada (nem entrada de undo)', async () => {
+    const stage = await openSprite64()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.line }))
+    const antes = stage.querySelectorAll('line').length
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 81, clientY: 80 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await Promise.resolve()
+    expect(stage.querySelectorAll('line').length).toBe(antes)
+    expect(undoButton().disabled).toBe(true)
+  })
+
+  it('um retângulo de 2 x 40 px de tela nasce (a caixa fina não é toque)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [30, 30], [32, 70])
+    await waitFor(() => {
+      const rect = stage.querySelector('rect[fill="#78dc52"]')
+      expect(rect?.getAttribute('width')).toBe('2')
+      expect(rect?.getAttribute('height')).toBe('40')
+    })
+  })
+
+  it('o polígono no toque parado não nasce degenerado', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.polygon }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 100 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await Promise.resolve()
+    expect(stage.querySelector('polygon')).toBeNull()
+    expect(undoButton().disabled).toBe(true)
+  })
+
+  it('com a grade ligada, um arrasto menor que meio espaçamento não colapsa a linha', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.line }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.grid }))
+    // 480×360 → grade de 16: (30,30) encaixa em (32,32) e (34,30) TAMBÉM em (32,32).
+    // O começo fica na grade; o fim escapa dela, porque a mão andou.
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 30, clientY: 30 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 34, clientY: 30 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      const line = stage.querySelector('line[x1="32"]')
+      expect(line?.getAttribute('y1')).toBe('32')
+      expect(line?.getAttribute('x2')).toBe('34')
+      expect(line?.getAttribute('y2')).toBe('30')
+    })
+  })
+
+  it('em zoom 16 um move de 4 px atualiza a prévia: a decimação é só do pincel', async () => {
+    await openVectorEditor()
+    for (let i = 0; i < 5; i += 1) {
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.zoomIn }))
+    }
+    const stage = measureStage(16)
+    await waitFor(() => expect(stage.getAttribute('width')).toBe(String(480 * 16)))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.line }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 100 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 104, clientY: 100 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      const line = stage.querySelector('line[x1="6.25"]')
+      expect(line?.getAttribute('x2')).toBe('6.5')
+    })
+  })
+
+  it('a linha pequena recém-criada não ganha alças: o próximo toque ao lado desenha OUTRA linha', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.line }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 100 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 112, clientY: 100 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => expect(stage.querySelectorAll('line[x1="100"]').length).toBe(1))
+    // Selecionada (moldura) mas sem as oito alças nem a de girar: 12 px é menor que 40.
+    expect(stage.querySelectorAll('[data-handle]').length).toBe(0)
+    expect(stage.querySelector('[data-rotate]')).toBeNull()
+    // O segundo gesto começa onde uma alça estaria (5 px abaixo do meio da linha).
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 106, clientY: 105 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 118, clientY: 105 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => expect(stage.querySelectorAll('line[y1="105"]').length).toBe(1))
+    expect(stage.querySelectorAll('line[x1="100"]').length).toBe(1)
+  })
+
+  it('uma forma grande recém-desenhada continua com as alças (ajuste na hora)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [30, 30], [130, 130])
+    await waitFor(() => expect(stage.querySelectorAll('[data-handle]').length).toBe(8))
+    expect(stage.querySelector('[data-rotate]')).toBeTruthy()
+  })
+})

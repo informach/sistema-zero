@@ -121,7 +121,18 @@ import { constrainPoint, expandToSelectionUnits } from './vectorTools'
 // Todo gesto guarda o pointerId: pointer capture é POR ponteiro, então um
 // segundo dedo/palma no palco dispararia move/up do gesto do primeiro dedo.
 type Gesture =
-  | { kind: 'draw'; pointerId: number; start: Vec2; points: Vec2[] }
+  // Desenhar guarda o ponto de TELA do começo e do último movimento (a régua de
+  // "toque × arrasto" é em px de tela) e a PRÓPRIA prévia: o `endGesture` não pode
+  // ler o estado React, que num gesto rápido ainda é o do `pointerdown`.
+  | {
+      kind: 'draw'
+      pointerId: number
+      start: Vec2
+      points: Vec2[]
+      startClient: Vec2
+      lastClient: Vec2
+      shape: VectorShape | null
+    }
   // Laço de seleção (arrasto no fundo com a ferramenta Selecionar).
   | { kind: 'marquee'; pointerId: number; start: Vec2; additive: boolean }
   // Mover guarda o PONTO inicial + os shapes da BASE: cada move aplica o delta
@@ -233,6 +244,25 @@ interface StagePointer {
 
 /** Um laço mais fino que isto, em px de TELA, é toque parado (limpa), não laço. */
 const MARQUEE_MIN_SCREEN_PX = 3
+
+/**
+ * Desenhar uma FORMA (retângulo, elipse, linha, polígono, estrela) só vale depois de a mão
+ * andar isto, em px de TELA, entre o `pointerdown` e o último movimento. É a MESMA régua do
+ * laço, e é a única que serve a todas as formas: a caixa da forma não serve (uma linha
+ * horizontal tem altura 0; o polígono nasce com raio 1 até parado). Antes o corte era de 2
+ * unidades do DOCUMENTO nas duas dimensões, ou seja 16 px de tela em zoom 8 e 32 em zoom
+ * 16: a criança arrastava uma linha pequena, via o rastro e nada nascia.
+ */
+const DRAW_MIN_SCREEN_PX = MARQUEE_MIN_SCREEN_PX
+
+/**
+ * Com uma ferramenta de FORMA ativa, as alças de redimensionar/girar só aparecem quando a
+ * forma recém-desenhada mede pelo menos isto em px de TELA nos dois eixos. Abaixo disso as
+ * oito alças de 14 px cobrem a forma inteira e mais 7 px para cada lado, e o `pointerdown`
+ * da PRÓXIMA linha pequena caía numa alça (que pára a propagação) e virava um
+ * redimensionamento em vez de um desenho. Com a Selecionar nada muda.
+ */
+const HANDLE_MIN_SCREEN_PX = 40
 
 /**
  * Distância mínima, em px de TELA, entre o nó e a alça para a alça aparecer.
@@ -938,8 +968,18 @@ export function VectorStage(): JSX.Element {
     }
     // Formas encaixam o PONTO INICIAL na grade; o pincel fica livre.
     const start = tool === 'brush' ? at : maybeSnap(at)
-    beginGesture({ kind: 'draw', pointerId: event.pointerId, start, points: [at] })
-    setPreview(drawPreview(start, start, [at]))
+    const shape = drawPreview(start, start, [at])
+    const client = { x: event.clientX, y: event.clientY }
+    beginGesture({
+      kind: 'draw',
+      pointerId: event.pointerId,
+      start,
+      points: [at],
+      startClient: client,
+      lastClient: client,
+      shape,
+    })
+    setPreview(shape)
   }
 
   function handleShapePointerDown(shape: VectorShape, event: PointerEvent<SVGElement>): void {
@@ -1017,8 +1057,9 @@ export function VectorStage(): JSX.Element {
   ): void {
     if (spaceHeld || transformShapes.length === 0 || !event.isPrimary || gestureStillActive())
       return
-    // Ferramenta sem alças (pincel, caneta, texto, mão): o toque desce ao palco e desenha.
-    if (!handlesActive) return
+    // Ferramenta sem alças (pincel, caneta, texto, mão) ou forma pequena demais para
+    // elas: o toque desce ao palco e desenha.
+    if (!handlesUsable) return
     event.stopPropagation()
     // Redimensionar escala a seleção INTEIRA em torno da mesma âncora — com
     // trancada dentro, escalar só as livres desmontaria o arranjo. Avisa e sai.
@@ -1048,8 +1089,9 @@ export function VectorStage(): JSX.Element {
   function handleRotateDown(center: Vec2, event: PointerEvent<SVGElement>): void {
     if (spaceHeld || transformShapes.length === 0 || !event.isPrimary || gestureStillActive())
       return
-    // Ferramenta sem alças (pincel, caneta, texto, mão): o toque desce ao palco e desenha.
-    if (!handlesActive) return
+    // Ferramenta sem alças (pincel, caneta, texto, mão) ou forma pequena demais para
+    // elas: o toque desce ao palco e desenha.
+    if (!handlesUsable) return
     event.stopPropagation()
     // Mesma régua do redimensionar: o giro é da seleção inteira.
     if (transformShapes.some((s) => s.locked === true)) {
@@ -1253,17 +1295,38 @@ export function VectorStage(): JSX.Element {
     }
 
     if (gesture.kind === 'draw') {
-      // Decimação: ponto quase em cima do anterior não acrescenta nada e
-      // encareceria a re-suavização do traço a cada move.
+      gesture.lastClient = { x: event.clientX, y: event.clientY }
+      // Decimação SÓ do pincel: ponto quase em cima do anterior não acrescenta nada e
+      // encareceria a re-suavização do traço a cada move. Para as formas ela era um
+      // defeito: em zoom 16 são 5,6 px de tela, e um arrasto de 4 px nunca atualizava
+      // a prévia da linha.
       const last = gesture.points[gesture.points.length - 1]
-      if (last && Math.hypot(at.x - last.x, at.y - last.y) < BRUSH_MIN_POINT_DISTANCE) return
+      if (
+        tool === 'brush' &&
+        last &&
+        Math.hypot(at.x - last.x, at.y - last.y) < BRUSH_MIN_POINT_DISTANCE
+      )
+        return
       gesture.points.push(at)
       // Grade PRIMEIRO, Shift depois: o quadrado travado fica com lado em
       // múltiplos da grade. Nada disso vale pro pincel (traço livre).
-      const target = tool === 'brush' ? at : maybeSnap(at)
+      let target = tool === 'brush' ? at : maybeSnap(at)
+      // A grade encaixou o fim EM CIMA do começo, mas a mão andou: a criança arrastou
+      // e viu o rastro, então algo TEM que nascer. O fim escapa da grade só neste caso
+      // (arrastos maiores que meio espaçamento seguem 100% na grade).
+      if (
+        tool !== 'brush' &&
+        target.x === gesture.start.x &&
+        target.y === gesture.start.y &&
+        drawDragDistance(gesture) >= DRAW_MIN_SCREEN_PX
+      ) {
+        target = at
+      }
       const end =
         event.shiftKey && tool !== 'brush' ? constrainPoint(tool, gesture.start, target) : target
-      setPreview(drawPreview(gesture.start, end, gesture.points))
+      const shape = drawPreview(gesture.start, end, gesture.points)
+      gesture.shape = shape
+      setPreview(shape)
       return
     }
     if (gesture.kind === 'gradient') {
@@ -1459,12 +1522,14 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (gesture.kind === 'draw') {
-      const shape = preview
+      // A prévia do GESTO, não a do estado: o `pointerup` de um gesto rápido pode
+      // chegar antes de o React ter renderizado o último `setPreview`.
+      const shape = gesture.shape
       setPreview(null)
       if (!shape) return
-      const bounds = shapeBounds(shape)
-      // Toque sem arrasto em ferramenta de forma: nada a criar (pincel pode).
-      if (shape.type !== 'path' && bounds.width < 2 && bounds.height < 2) return
+      // Toque sem arrasto em ferramenta de forma: nada a criar (pincel pode). A régua
+      // é a distância que a MÃO andou, em px de tela (ver `DRAW_MIN_SCREEN_PX`).
+      if (shape.type !== 'path' && drawDragDistance(gesture) < DRAW_MIN_SCREEN_PX) return
       commitShapes([...currentShapes(), shape])
       // A ferramenta fica ATIVA (padrão Scratch): desenhar 3 estrelas seguidas
       // não exige reescolher; a forma criada fica selecionada para ajustes.
@@ -1489,6 +1554,14 @@ export function VectorStage(): JSX.Element {
     return box.width * zoom < MARQUEE_MIN_SCREEN_PX || box.height * zoom < MARQUEE_MIN_SCREEN_PX
   }
 
+  /** Quanto a mão andou desde o `pointerdown` de um desenho, em px de TELA. */
+  function drawDragDistance(gesture: { startClient: Vec2; lastClient: Vec2 }): number {
+    return Math.hypot(
+      gesture.lastClient.x - gesture.startClient.x,
+      gesture.lastClient.y - gesture.startClient.y,
+    )
+  }
+
   // Alças da seleção: com a Selecionar e com as ferramentas de FORMA (ajustar o
   // que acabou de desenhar sem trocar de ferramenta). Com pincel, caneta, texto e
   // mão elas roubavam o toque: pressionar perto de uma forma selecionada começava um
@@ -1503,6 +1576,16 @@ export function VectorStage(): JSX.Element {
   const transformShapes = maskEditShape ? [maskEditShape] : selected
   const transformSingle = transformShapes.length === 1 ? (transformShapes[0] ?? null) : null
   const transformSingleBounds = transformSingle ? shapeBounds(transformSingle) : null
+  // As alças de redimensionar/girar de fato: com a Selecionar, sempre que ativas; com
+  // uma ferramenta de FORMA, só numa forma grande o bastante para as alças não a
+  // cobrirem inteira (ver `HANDLE_MIN_SCREEN_PX`). Sem elas, o toque desce ao palco e
+  // desenha a próxima forma; ajustar a pequena é com a Selecionar (V).
+  const handlesUsable =
+    handlesActive &&
+    (tool === 'select' ||
+      (transformSingleBounds !== null &&
+        transformSingleBounds.width * zoom >= HANDLE_MIN_SCREEN_PX &&
+        transformSingleBounds.height * zoom >= HANDLE_MIN_SCREEN_PX))
   const transformPivot = transformShapes.length > 0 ? selectionRotationPivot(transformShapes) : null
   const transformCenter =
     transformSingle && transformSingleBounds
@@ -1943,38 +2026,49 @@ export function VectorStage(): JSX.Element {
                   strokeWidth={1.5 / zoom}
                   pointerEvents="none"
                 />
-                {HANDLES.map((handle) => (
-                  <rect
-                    key={handle.id}
-                    x={transformSingleBounds.x + handle.fx * transformSingleBounds.width - 7 / zoom}
-                    y={
-                      transformSingleBounds.y + handle.fy * transformSingleBounds.height - 7 / zoom
-                    }
-                    width={14 / zoom}
-                    height={14 / zoom}
+                {handlesUsable
+                  ? HANDLES.map((handle) => (
+                      <rect
+                        key={handle.id}
+                        data-handle={handle.id}
+                        x={
+                          transformSingleBounds.x +
+                          handle.fx * transformSingleBounds.width -
+                          7 / zoom
+                        }
+                        y={
+                          transformSingleBounds.y +
+                          handle.fy * transformSingleBounds.height -
+                          7 / zoom
+                        }
+                        width={14 / zoom}
+                        height={14 / zoom}
+                        fill="#ffffff"
+                        stroke="#00a0c8"
+                        strokeWidth={1.5 / zoom}
+                        style={{ cursor: 'pointer' }}
+                        onPointerDown={(event) =>
+                          handleResizeDown(handle, transformSingleBounds, event)
+                        }
+                      />
+                    ))
+                  : null}
+                {/* Alça de girar (acima do topo-centro) */}
+                {handlesUsable ? (
+                  <circle
+                    data-rotate="1"
+                    cx={transformSingleBounds.x + transformSingleBounds.width / 2}
+                    cy={transformSingleBounds.y - 22 / zoom}
+                    r={8 / zoom}
                     fill="#ffffff"
                     stroke="#00a0c8"
                     strokeWidth={1.5 / zoom}
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: 'grab' }}
                     onPointerDown={(event) =>
-                      handleResizeDown(handle, transformSingleBounds, event)
+                      transformPivot && handleRotateDown(transformPivot, event)
                     }
                   />
-                ))}
-                {/* Alça de girar (acima do topo-centro) */}
-                <circle
-                  data-rotate="1"
-                  cx={transformSingleBounds.x + transformSingleBounds.width / 2}
-                  cy={transformSingleBounds.y - 22 / zoom}
-                  r={8 / zoom}
-                  fill="#ffffff"
-                  stroke="#00a0c8"
-                  strokeWidth={1.5 / zoom}
-                  style={{ cursor: 'grab' }}
-                  onPointerDown={(event) =>
-                    transformPivot && handleRotateDown(transformPivot, event)
-                  }
-                />
+                ) : null}
               </g>
             ) : null}
             {/* Modo reshape: nós arrastáveis (sem alças de bbox). */}
