@@ -39,8 +39,16 @@ export {
   desenharCoracao,
   desenharCoracoes,
 } from './hud'
-export type { JardimAssetName } from './jardim-assets'
-export { JARDIM_ASSETS, jardimSvg, jardimSvgUrl } from './jardim-assets'
+export type { JardimAssetName, JardimSpriteName } from './jardim-assets'
+export {
+  JARDIM_ASSETS,
+  JARDIM_BASE_ESCONDERIJOS,
+  JARDIM_BASE_PERSONAGENS,
+  JARDIM_PARES,
+  jardimSpriteRect,
+  jardimSvg,
+  jardimSvgUrl,
+} from './jardim-assets'
 export type {
   Ambiente,
   AreaDoFundo,

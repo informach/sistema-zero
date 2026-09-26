@@ -39,7 +39,6 @@ function importedContent(
   previous: DraftBlock['content'] | undefined,
 ): DraftBlock['content'] {
   if (!previous || previous.kind !== authored.kind) return authored
-  if (authored.kind === 'studio') return { ...authored, initialProject: previous.initialProject }
   if (authored.kind === 'pinta') return { ...authored, initialAsset: previous.initialAsset }
   if (authored.kind === 'materials' && Array.isArray(authored.items)) {
     if (!Array.isArray(previous.items) || authored.items.length === 0)
@@ -103,6 +102,7 @@ export class LearningImportService {
     }
     const mapping = new Map<string, string>()
     const used = new Set<string>()
+    let replacedStudioProject = false
     const actions: Array<{
       id: string
       label?: string
@@ -177,6 +177,12 @@ export class LearningImportService {
           throw new ValidationError(
             `O bloco ${entry.key} mudou de tipo na autoria. Revise o manifesto.`,
           )
+        if (
+          previous?.content.kind === 'studio' &&
+          entry.content.kind === 'studio' &&
+          stableJson(previous.content.initialProject) !== stableJson(entry.content.initialProject)
+        )
+          replacedStudioProject = true
         mapping.set(entry.key, id)
         add({ id, content: importedContent({ ...entry.content }, previous?.content) })
       }
@@ -261,6 +267,11 @@ export class LearningImportService {
       removedSections,
       document,
       warnings: [
+        ...(replacedStudioProject
+          ? [
+              'O projeto inicial do Estúdio será substituído pelo manifesto. Projetos e entregas já salvos pelos alunos não são apagados.',
+            ]
+          : []),
         ...(mode === 'replace'
           ? [
               omitted.length || removedSections.length

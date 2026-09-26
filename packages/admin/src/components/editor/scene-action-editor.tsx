@@ -45,6 +45,11 @@ const labelDaConexao = (port: ScenePort, enabled: boolean) =>
     : `${enabled ? 'Ligar' : 'Desligar'} ${PORTAS[port]}`
 
 const TODAS: { label: string; value: SceneAction }[] = [
+  { label: 'Tocar no arbusto', value: { type: 'find-character', id: 0 } },
+  { label: 'Tocar nas pedras', value: { type: 'find-character', id: 1 } },
+  { label: 'Tocar nas flores', value: { type: 'find-character', id: 2 } },
+  { label: 'Procurar sem encontrar', value: { type: 'look-around' } },
+  { label: 'Recomeçar a busca', value: { type: 'restart-search' } },
   { label: 'Usar o número 400 no tiro', value: { type: 'value-source', source: 'fixed' } },
   { label: 'Ler o centro x da nave no tiro', value: { type: 'value-source', source: 'read' } },
   { label: 'Mostrar as marcas da caixa', value: { type: 'box-marks', on: true } },
@@ -271,6 +276,7 @@ const TODAS: { label: string; value: SceneAction }[] = [
  * separadas na lista (`Ligar`/`Desligar`, `speed`/`life`, `ask`/`event`).
  */
 const DISTINGUE: Partial<Record<SceneAction['type'], readonly string[]>> = {
+  'find-character': ['id'],
   'value-source': ['source'],
   'box-marks': ['on'],
   'command-target': ['subject', 'target'],

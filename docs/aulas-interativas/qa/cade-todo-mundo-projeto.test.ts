@@ -1,5 +1,14 @@
 import { describe, expect, test } from 'bun:test'
-import { jardimSvg } from '../../../packages/studio/src/arte/jardim-assets'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import {
+  JARDIM_ASSETS,
+  JARDIM_BASE_ESCONDERIJOS,
+  JARDIM_BASE_PERSONAGENS,
+  JARDIM_PARES,
+  jardimSpriteRect,
+  jardimSvg,
+} from '../../../packages/studio/src/arte/jardim-assets'
 import { sanitizeProjectAssets } from '../../../packages/studio/src/core/project'
 import { exampleHarness } from '../../../packages/studio/src/official-extensions/game-2d/__tests__/examplePlaythroughHarness'
 import { IR_CADE_TODO_MUNDO, montarProjetoCadeTodoMundo } from './cade-todo-mundo-projeto'
@@ -14,6 +23,24 @@ function blockTypes(node: unknown): string[] {
 }
 
 describe('projeto inicial Cadê Todo Mundo?', () => {
+  test('os seis SVGs embutidos correspondem aos quadros da folha do Pinta', () => {
+    const sheet = readFileSync(
+      resolve(import.meta.dir, '../../../packages/studio/src/arte/jardim-spritesheet.svg'),
+      'utf8',
+    )
+    const frames = [
+      ...sheet.matchAll(
+        /<svg x="\d+" y="0" width="64" height="64" viewBox="0 0 64 64">([\s\S]*?)<\/svg>/g,
+      ),
+    ]
+    const names = ['coruja', 'pedras', 'arbusto', 'flores', 'raposa', 'coelho'] as const
+    expect(frames).toHaveLength(names.length)
+    for (const [index, name] of names.entries()) {
+      expect(JARDIM_ASSETS[name].body).toBe(frames[index]?.[1]?.trim())
+      expect(jardimSvg(name)).toContain(`viewBox="${JARDIM_ASSETS[name].viewBox}"`)
+    }
+  })
+
   test('leva arte própria embutida, sem Pinta ou rede', () => {
     const p = montarProjetoCadeTodoMundo()
     expect(p.installedExtensions.map((e) => e.id)).toEqual(['game-2d'])
@@ -33,6 +60,27 @@ describe('projeto inicial Cadê Todo Mundo?', () => {
       )
     }
     expect(p.ir).toEqual(IR_CADE_TODO_MUNDO)
+  })
+
+  test('personagens e esconderijos usam as dimensões e posições da arte nova', () => {
+    const sprites = IR_CADE_TODO_MUNDO.behavior.start.filter(
+      (statement) => statement.type === 'g2d:createImageSprite',
+    )
+    for (const { personagem, esconderijo, centroX } of JARDIM_PARES) {
+      for (const [name, baseY] of [
+        [personagem, JARDIM_BASE_PERSONAGENS],
+        [esconderijo, JARDIM_BASE_ESCONDERIJOS],
+      ] as const) {
+        expect(
+          sprites.find(
+            (sprite) => sprite.type === 'g2d:createImageSprite' && sprite.varName === name,
+          ),
+        ).toMatchObject({
+          ...jardimSpriteRect(name, centroX, baseY),
+          image: name,
+        })
+      }
+    }
   })
 
   test('prepara o jardim e deixa a regra do toque vazia para a criança', () => {

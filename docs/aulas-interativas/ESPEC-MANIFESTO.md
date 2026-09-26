@@ -128,8 +128,9 @@ específico.
 
 O manifesto inclui a configuração completa. Uma aula vazia cria os blocos declarados. Ao reimportar,
 a chave mantém o mesmo ID; se houver um único bloco anterior do mesmo tipo, ele conserva o ID e
-recebe a nova configuração. O projeto inicial do Estúdio, o desenho do Pinta, os itens anexados a
-materiais e a arte do certificado que já foram configurados manualmente são preservados.
+recebe a nova configuração. O projeto inicial do Estúdio vem sempre do manifesto nos dois modos
+de importação; isso não altera entregas ou rascunhos já salvos pelos alunos. O desenho do Pinta,
+os itens anexados a materiais e a arte do certificado configurados manualmente são preservados.
 Dois blocos candidatos tornam a prévia ambígua e impedem a importação.
 
 **Estúdio:** `initialProject` é um snapshot do formato atual com nome, arquivos, blocos de partida
@@ -275,6 +276,12 @@ Na direção vigente, uma seção com vídeo e atividade nunca conclui por apena
 - vídeo + ferramenta externa: o vídeo entra em `blockIds` e a ação verificável disponível entra no
   critério. Se a plataforma ainda não consegue observar a ação, registre explicitamente a limitação
   na proposta e não finja que houve validação.
+
+Exceção: um fechamento pode reutilizar como `workspaceKey` um Estúdio cuja prática já foi
+comprovada em seção anterior, apenas para oferecer uma ação **opcional**, como compartilhar o jogo.
+Nesse caso, o bloco do Estúdio continua pertencendo só à seção prática em `blockKeys`; o fechamento
+exige o próprio vídeo, não uma segunda entrega nem a ação opcional. Isso não dispensa a evidência da
+prática na seção anterior.
 
 Regras de `usesBlock`: `blockType` é o tipo real do bloco do Estúdio, `area` aceita `structure`,
 `appearance`, `molds`, `start`, `events` ou `loops`, `count` exige número exato de blocos ativos

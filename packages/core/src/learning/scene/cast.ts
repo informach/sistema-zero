@@ -330,6 +330,7 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
   'game-state': ['hero', 'obstacle'],
   controls: ['hero'],
   'touch-response': [],
+  'found-counter': [],
   'lighthouse-key': [],
   restart: ['hero', 'obstacle'],
   hitbox: ['hero', 'obstacle'],
@@ -369,6 +370,7 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
 /** Cenas que representam um jogo específico, sem papéis intercambiáveis do elenco. */
 export const SCENE_FIXED_CENARIOS: Readonly<Partial<Record<SceneId, SceneCenarioId>>> = {
   'touch-response': 'jardim',
+  'found-counter': 'jardim',
   'lighthouse-key': 'farol',
 }
 

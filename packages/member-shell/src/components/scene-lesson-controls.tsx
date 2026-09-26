@@ -18,6 +18,7 @@ import { CopyVsOriginalControls, PublishedCopyControls } from './scene-copies'
 import { CoreSceneControls } from './scene-core-controls'
 import { DinoNumbersControls } from './scene-dino-numbers-controls'
 import { FixedVsReadControls } from './scene-fixed-vs-read'
+import { FoundCounterControls } from './scene-found-counter'
 import { InvincibilityControls } from './scene-invincibility'
 import { LighthouseKeyControls } from './scene-lighthouse-key'
 import { MotionAmountControls } from './scene-motion-amount'
@@ -108,11 +109,12 @@ export function LessonSceneControls({
           </SceneButton>
           {state.match.screen === 'playing' && (
             <SceneButton tom="discreta" onClick={() => dispatch({ type: 'home' })}>
-              Voltar ao começo
+              Testar de novo com a reação {state.match.touch ? 'ligada' : 'desligada'}
             </SceneButton>
           )}
         </div>
       )}
+      {m === 'found-counter' && <FoundCounterControls dispatch={dispatch} />}
       {m === 'lighthouse-key' && <LighthouseKeyControls state={state} dispatch={dispatch} />}
       {m === 'fixed-vs-read' && <FixedVsReadControls state={state} dispatch={dispatch} />}
       {m === 'collision-pair' && <CollisionPairControls state={state} dispatch={dispatch} />}

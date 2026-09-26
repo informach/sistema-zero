@@ -77,6 +77,7 @@ test('confirma todas as remoções antes de substituir o rascunho', async () => 
         />,
       ),
     )
+    expect(container.textContent).toContain('O projeto inicial do Estúdio vem sempre do manifesto')
     const textarea = container.querySelector('textarea')!
     const setValue = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!
     await act(async () => {

@@ -278,6 +278,54 @@ describe('aula por seções', () => {
     )
   })
 
+  test('fechamento pode reutilizar o mesmo Estúdio enviado para compartilhar sem voltar', async () => {
+    const { container } = render(
+      <LessonSections
+        lesson={{
+          ...lesson,
+          blocks: [
+            lesson.blocks[0]!,
+            { id: 'video-final', kind: 'video', sortOrder: 1, content: { kind: 'video' } },
+          ],
+          sections: [
+            {
+              id: 'entrega',
+              title: 'Entregar o jogo',
+              blockIds: ['project'],
+              workspaceBlockId: 'project',
+              externalTool: null,
+            },
+            {
+              id: 'fechamento',
+              title: 'Sua busca está completa',
+              blockIds: ['video-final'],
+              workspaceBlockId: 'project',
+              externalTool: null,
+            },
+          ],
+        }}
+        renderBlocks={(items) =>
+          items.map((block) =>
+            block.id === 'project' ? (
+              <button key={block.id} type="button">
+                Compartilhar
+              </button>
+            ) : (
+              <p key={block.id}>Vídeo de fechamento</p>
+            ),
+          )
+        }
+      />,
+    )
+    const editor = container.querySelector('#lesson-block-project')
+    expect(editor).not.toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    await screen.findByRole('heading', { name: 'Sua busca está completa' })
+    expect(container.querySelector('#lesson-block-project')).toBe(editor)
+    expect(editor?.parentElement?.style.display).not.toBe('none')
+    expect(screen.getByRole('button', { name: 'Compartilhar' })).toBeDefined()
+  })
+
   test('a cena de aula mora na coluna da ferramenta, ao lado do conteúdo', () => {
     // ⚠️ Pedido dela (14/09/2026): experimentação e demonstração se comportam como o Estúdio.
     // Elas são `kind: 'interactive'` como a pergunta curta, então quem decide é a ATIVIDADE.

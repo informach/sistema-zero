@@ -71,7 +71,7 @@ const NO_JOGO: Record<
   // A pedra do Meu Jeito divide a tela do Desafio: os dois jogos são no espaço.
   'meu-jeito': { tela: { w: 800, h: 480 }, x: 400, y: 410, caixa: { w: 44, h: 32, centro: 0 } },
   // O primeiro personagem do jardim começa atrás do arbusto no projeto preparado.
-  jardim: { tela: { w: 640, h: 360 }, x: 97, y: 142, caixa: { w: 96, h: 112, centro: 0 } },
+  jardim: { tela: { w: 640, h: 360 }, x: 110, y: 181, caixa: { w: 54, h: 87, centro: 0 } },
   farol: { tela: { w: 640, h: 360 }, x: 170, y: 130, caixa: { w: 40, h: 48, centro: 0 } },
 }
 

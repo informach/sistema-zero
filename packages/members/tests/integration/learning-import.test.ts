@@ -57,7 +57,7 @@ async function revision(response: Response) {
 }
 
 describe('manifest import through the authoring HTTP boundary', () => {
-  test('Corre Dino 1 preserves the Studio ID while applying the manifest configuration', async () => {
+  test('Corre Dino 1 preserves the Studio ID and replaces its initial project from the manifest', async () => {
     const f = await setup(1)
     const id = randomUUID()
     const content = {
@@ -73,6 +73,11 @@ describe('manifest import through the authoring HTTP boundary', () => {
     const published = await f.courses.findLessonWithContent(f.lessonId)
     const before = await f.preview()
     expect(before.status).toBe(200)
+    expect(await before.clone().json()).toMatchObject({
+      warnings: expect.arrayContaining([
+        'O projeto inicial do Estúdio será substituído pelo manifesto. Projetos e entregas já salvos pelos alunos não são apagados.',
+      ]),
+    })
     const expectedRevision = await revision(before)
     const response = await f.apply(expectedRevision)
     expect(response.status).toBe(200)
@@ -80,9 +85,10 @@ describe('manifest import through the authoring HTTP boundary', () => {
     const configured = f.document.blocks.find(
       (block) => 'content' in block && block.content.kind === 'studio',
     )
-    if (!configured || !('content' in configured)) throw new Error('Estúdio ausente')
+    if (!configured || !('content' in configured) || configured.content.kind !== 'studio')
+      throw new Error('Estúdio ausente')
     expect(draft.document.blocks.filter((b) => b.content.kind === 'studio')).toEqual([
-      { id, content: { ...configured.content, initialProject: content.initialProject } },
+      { id, content: configured.content },
     ])
     expect(draft.document.sections.filter((s) => s.workspaceBlockId)).toHaveLength(
       f.document.sections.filter((s) => s.workspaceKey).length,
@@ -149,7 +155,7 @@ describe('manifest import through the authoring HTTP boundary', () => {
     expect(JSON.stringify(await response.json())).toContain('mais de um bloco de studio')
   })
 
-  test('replace removes omissions, keeps the configured Studio and leaves published content unchanged', async () => {
+  test('replace removes omissions, updates the Studio project and leaves published content unchanged', async () => {
     const f = await setup(2)
     const existing = await readDraft(f.app, f.lessonId)
     const studioBlockId = randomUUID()
@@ -222,7 +228,11 @@ describe('manifest import through the authoring HTTP boundary', () => {
       fingerprint: string
       blocks: Array<{ id: string; label?: string; action: string }>
       removedSections: Array<{ id: string; title: string }>
+      warnings: string[]
     }
+    expect(body.warnings).toContain(
+      'O projeto inicial do Estúdio será substituído pelo manifesto. Projetos e entregas já salvos pelos alunos não são apagados.',
+    )
     expect(body.blocks).toContainEqual({
       id: omittedBlockId,
       label: 'Texto · Seção antiga',
@@ -237,10 +247,15 @@ describe('manifest import through the authoring HTTP boundary', () => {
     const applied = await f.apply(body.fingerprint, 'replace', operationId)
     expect(applied.status).toBe(200)
     const draft = await readDraft(f.app, f.lessonId)
+    const configured = f.document.blocks.find(
+      (block) => 'content' in block && block.content.kind === 'studio',
+    )
+    if (!configured || !('content' in configured) || configured.content.kind !== 'studio')
+      throw new Error('Estúdio ausente')
     expect(draft.document.blocks.some((block) => block.id === omittedBlockId)).toBe(false)
     expect(draft.document.sections.some((section) => section.id === omittedSectionId)).toBe(false)
     expect(draft.document.blocks.find((block) => block.id === studioBlockId)?.content).toEqual(
-      expect.objectContaining({ kind: 'studio', initialProject }),
+      configured.content,
     )
     expect(
       draft.document.sections

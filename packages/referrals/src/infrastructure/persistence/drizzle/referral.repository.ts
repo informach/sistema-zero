@@ -549,7 +549,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
     await this.db
       .update(scholarshipRedemptions)
       .set({
-        grantedAt: sql`coalesce(${scholarshipRedemptions.grantedAt}, ${when})`,
+        grantedAt: sql`coalesce(${scholarshipRedemptions.grantedAt}, ${when.toISOString()}::timestamptz)`,
         status: 'completed',
         completedAt: when,
         failedReason: null,

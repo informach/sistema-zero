@@ -199,6 +199,23 @@ function diagnosticarNovoModelo(
     const conclui = new Set(completion.blockIds ?? [])
     const posicao = (block: { key: string } | undefined) =>
       block ? blockKeys.indexOf(block.key) : -1
+    // O fechamento pode mostrar o MESMO Estúdio só para o compartilhamento opcional.
+    // A prática precisa ter sido comprovada antes; não exigir nova entrega nesta seção.
+    const fechamentoComProjetoJaEntregue =
+      section.intent === 'closing' &&
+      section.workspaceKey &&
+      !blockKeys.includes(String(section.workspaceKey)) &&
+      m.sections.slice(0, indice).some((anterior) => {
+        const anteriorCompletion = anterior.completion as {
+          blockIds?: string[]
+          projectChecks?: unknown[]
+        }
+        return (
+          anterior.workspaceKey === section.workspaceKey &&
+          (anteriorCompletion.blockIds?.includes(String(section.workspaceKey)) ||
+            Boolean(anteriorCompletion.projectChecks?.length))
+        )
+      })
 
     if (videos.length > 1)
       problemas.push(`seção "${chave}": tem ${videos.length} vídeos; o máximo é um`)
@@ -263,7 +280,8 @@ function diagnosticarNovoModelo(
       if (
         section.workspaceKey &&
         !conclui.has(String(section.workspaceKey)) &&
-        !completion.projectChecks?.length
+        !completion.projectChecks?.length &&
+        !fechamentoComProjetoJaEntregue
       )
         problemas.push(`seção "${chave}": conclusão não comprova a prática no projeto`)
       if (section.externalTool && !completion.platformAction)

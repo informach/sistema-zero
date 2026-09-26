@@ -240,6 +240,11 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
     explanation:
       'Nesta experiência, um personagem está atrás do esconderijo. Você vai testar o que acontece ao tocá-lo.',
   },
+  'found-counter': {
+    label: 'A contagem dos achados',
+    explanation:
+      'Nesta experiência, você vai observar o número que o jogo guarda durante uma busca.',
+  },
   'lighthouse-key': {
     label: 'A porta do farol',
     explanation: 'Nesta experiência, você vai testar a mesma porta em duas situações.',
@@ -1204,6 +1209,30 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       ],
       correctChoiceId: 'toque',
       explanation: 'O toque foi o acontecimento. A ação ligada a ele revelou o personagem.',
+    },
+  },
+  'found-counter': {
+    prediction: {
+      prompt: 'Imagine que você procurou, mas não achou ninguém. O número Achados mudaria?',
+      choices: [
+        { id: 'nao', label: 'Não, porque ninguém foi encontrado.' },
+        {
+          id: 'sim',
+          label: 'Sim, porque eu procurei.',
+          shows: 'Ao procurar sem encontrar, Achados não mudou.',
+        },
+      ],
+      correctChoiceId: 'nao',
+      revealOn: 'no-find',
+    },
+    explain: {
+      prompt: 'Quando Achados aumenta?',
+      choices: [
+        { id: 'qualquer-busca', label: 'Sempre que eu procuro.' },
+        { id: 'encontro', label: 'Quando encontro mais um personagem.' },
+      ],
+      correctChoiceId: 'encontro',
+      explanation: 'Achados guarda quantos personagens foram encontrados nesta busca.',
     },
   },
   'lighthouse-key': {

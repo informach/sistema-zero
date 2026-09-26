@@ -580,12 +580,14 @@ function leituras(scene: SceneId, state: SceneState, pilha?: ScenePilha): SceneR
     case 'touch-response':
       return [
         {
-          label: 'esconderijo',
-          value: state.match.screen === 'start' ? 'fechado' : 'aberto',
+          label: 'arbusto',
+          value: state.match.screen === 'start' ? 'visível' : 'invisível',
           tone: 'a',
         },
         { label: 'reação ao toque', value: state.match.touch ? 'ligada' : 'desligada', tone: 'b' },
       ]
+    case 'found-counter':
+      return [{ label: 'Achados', value: String(state.match.points), tone: 'a' }]
     case 'lighthouse-key':
       return [
         {
@@ -1174,8 +1176,13 @@ function situacao(scene: SceneId, state: SceneState): string {
           : 'A partida terminou.'
     case 'touch-response':
       return state.match.screen === 'start'
-        ? 'O esconderijo está fechado.'
-        : 'O esconderijo abriu e revelou o personagem.'
+        ? 'O arbusto está visível.'
+        : 'O arbusto ficou invisível e o coelho apareceu.'
+    case 'found-counter':
+      return (
+        state.caption ||
+        `Nesta busca, ${quantos(state.match.points, 'personagem encontrado', 'personagens encontrados')}.`
+      )
     case 'lighthouse-key':
       return state.lighthouse.door === 'open'
         ? 'A porta abriu e a luz do farol acendeu.'

@@ -9,8 +9,20 @@
       "plannedVideo": "Título: Vamos procurar!\n\nDemonstrar o jogo pronto: revelar os três personagens, mostrar Achados aumentando e a comemoração. Distinguir a missão de hoje, fazer o primeiro personagem aparecer, da busca que será completada depois; cenário e personagens já vêm preparados. Apresentar as seções como pequenas partes da aula, cada uma com um vídeo. Demonstrar pausa, replay e Próxima seção, com ritmo acolhedor. Não mostrar a experiência, o Estúdio, o caderno ou outros controles nesta abertura. Alvo: 1–1,5 minuto.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
+      "key": "video-a1-caderno",
+      "plannedVideo": "Título: Seu mapa do jogo\n\nNa segunda seção, mostrar o PDF real logo abaixo do vídeo: capa e página Mapa do jogo. Explicar que o caderno serve para consultar os passos das duas aulas, pode ser aberto quando a criança quiser e não precisa ser baixado nem impresso. Apontar para Próxima seção, onde virá a primeira atividade, sem revelar o resultado dela. Anexar o PDF no admin antes de gravar. Alvo: 35–50 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "caderno",
+      "content": {
+        "kind": "materials",
+        "title": "Caderno do Aluno — Cadê Todo Mundo?",
+        "items": []
+      }
+    },
+    {
       "key": "video-a1-toque",
-      "plannedVideo": "Título: Um toque pode chamar uma ação\n\nAo chegar à segunda seção, mostrar Anterior e assegurar que a criança pode rever sem perder o que fez. Explicar acontecimento e ação com a analogia da campainha e conectar ao jardim. Mostrar que vídeo e atividade ficam na mesma seção, onde está o pedido da atividade, a divisória em tela larga, Ampliar experiência e Voltar à aula. Em tela estreita, mostrar a experiência abaixo do vídeo. Não executar o teste nem revelar o resultado: a criança descobre na atividade. Alvo: 1,5–2 minutos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Um toque pode chamar uma ação\n\nAo chegar à terceira seção, mostrar Anterior e assegurar que a criança pode rever sem perder o que fez. Explicar acontecimento e ação com a analogia da campainha e conectar ao jardim. Mostrar que vídeo e atividade ficam na mesma seção, onde está o pedido da atividade, a divisória em tela larga, Ampliar experiência e Voltar à aula. Em tela estreita, mostrar a experiência abaixo do vídeo. Não executar o teste nem revelar o resultado: a criança descobre na atividade. Alvo: 1,5–2 minutos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-a1-toque",
@@ -25,8 +37,9 @@
       "content": {
         "kind": "interactive",
         "required": true,
+        "semPerguntaFinal": true,
         "title": "O toque faz o jogo responder",
-        "instructions": "Toque no esconderijo. Depois ligue a reação ao toque e experimente de novo.",
+        "instructions": "O que muda quando você toca no arbusto com a reação desligada e ligada?",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -37,7 +50,7 @@
     },
     {
       "key": "video-a1-programar",
-      "plannedVideo": "Título: Faça o primeiro personagem aparecer\n\nApresentar o Estúdio dentro da aula como a ferramenta onde blocos viram instruções do jogo; não é preciso abrir outra página. Demonstrar a divisória em tela larga e Expandir/Reduzir ao chegar à prática, sem tour separado. Ensinar onde ver o jogo: no Estúdio estreito, alternar entre as abas Blocos e Pré-visualização; com largura suficiente, mostrar a área do jogo à direita e o olhinho que a exibe ou esconde. Depois mostrar a paleta, a área Quando acontecer já preparada, o bloco Deixar o sprite com 0% de visibilidade e o nome escolhido. Para testar, aguardar a atualização automática da Pré-visualização e tocar num esconderijo, sem exigir Reproduzir ou Atualizar. Repetir cada passo na narração; não presumir familiaridade com blocos. Ao final, mostrar o Mapa do jogo como folha opcional para lembrar os passos em casa, sem tornar download ou impressão requisito. Alvo: 4–5 minutos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Faça o primeiro personagem aparecer\n\nApresentar o Estúdio dentro da aula como a ferramenta onde blocos viram instruções do jogo; não é preciso abrir outra página. Demonstrar a divisória em tela larga e Expandir/Reduzir ao chegar à prática, sem tour separado. Ensinar onde ver o jogo: no Estúdio estreito, alternar entre as abas Blocos e Pré-visualização; com largura suficiente, mostrar a área do jogo à direita e o olhinho que a exibe ou esconde. Depois mostrar a paleta, a área Quando acontecer já preparada, o bloco Deixar o sprite com 0% de visibilidade e o nome escolhido. Para testar, aguardar a atualização automática da Pré-visualização e tocar num esconderijo, sem exigir Reproduzir ou Atualizar. Repetir cada passo na narração; não presumir familiaridade com blocos. O caderno opcional já foi apresentado na segunda seção e continua disponível para consulta. Alvo: 4–5 minutos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-a1-programar",
@@ -57,26 +70,28 @@
         "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
-          "sz_frame_start",
           "sz_frame_events",
           "sz_frame_loops",
-          "sz_g2d_setup_stage",
-          "sz_g2d_create_image_sprite",
-          "sz_g2d_create_group",
+          "sz_frame_start",
           "sz_g2d_add_to_group",
-          "sz_g2d_on_group_click",
-          "sz_g2d_update_each_frame",
           "sz_g2d_clear",
+          "sz_g2d_create_group",
+          "sz_g2d_create_image_sprite",
           "sz_g2d_draw_backdrop",
-          "sz_g2d_draw_sprite",
           "sz_g2d_draw_group",
-          "sz_g2d_draw_score",
           "sz_g2d_draw_label",
+          "sz_g2d_draw_score",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_on_group_click",
           "sz_g2d_set_opacity",
+          "sz_g2d_setup_stage",
+          "sz_g2d_update_each_frame",
+          "sz_js_if_else",
           "sz_js_var_create",
           "sz_js_var_increment",
-          "sz_js_if",
+          "sz_val_compare",
           "sz_val_number",
+          "sz_val_text",
           "sz_val_variable"
         ],
         "initialProject": {
@@ -88,9 +103,9 @@
           "updatedAt": 0,
           "mode": "blocks",
           "files": {
-            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Cadê Todo Mundo?</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <canvas id=\"tela\" width=\"640\" height=\"360\"></canvas>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
-            "style.css": "body {\n  margin: 0;\n  background: #c7effb;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 100vh;\n}\n",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#c7effb\");\n  let achados = 0;\n  const esconderijos = SZGame2D.createGroup();\n  const coelho = SZGame2D.createSprite({ x: 97, y: 142, w: 96, h: 112, image: \"coelho\" });\n  const arbusto = SZGame2D.createSprite({ x: 72, y: 160, w: 150, h: 122, image: \"arbusto\" });\n  SZGame2D.addToGroup(esconderijos, arbusto);\n  const raposa = SZGame2D.createSprite({ x: 270, y: 142, w: 96, h: 112, image: \"raposa\" });\n  const pedras = SZGame2D.createSprite({ x: 245, y: 160, w: 150, h: 122, image: \"pedras\" });\n  SZGame2D.addToGroup(esconderijos, pedras);\n  const coruja = SZGame2D.createSprite({ x: 443, y: 142, w: 96, h: 112, image: \"coruja\" });\n  const flores = SZGame2D.createSprite({ x: 418, y: 160, w: 150, h: 122, image: \"flores\" });\n  SZGame2D.addToGroup(esconderijos, flores);\n  // Quando acontecer\n  SZGame2D.onGroupClick(esconderijos, function (escolhido) {\n\n  }, \"cliqueSprite\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawSprite(ctx, coelho);\n    SZGame2D.drawSprite(ctx, raposa);\n    SZGame2D.drawSprite(ctx, coruja);\n    SZGame2D.drawGroup(ctx, esconderijos);\n    SZGame2D.drawScore(ctx, \"Achados:\", achados, 18, 34, \"#173844\", 24);\n    if (achados >= 3) {\n      SZGame2D.drawLabel(ctx, \"Você achou todo mundo!\", 174, 72, \"#173844\", 27, \"left\");\n    }\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Cadê Todo Mundo?</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#c7effb\");\n  let achados = 0;\n  const esconderijos = SZGame2D.createGroup();\n  const coelho = SZGame2D.createSprite({ x: 110, y: 181, w: 54, h: 87, image: \"coelho\" });\n  const arbusto = SZGame2D.createSprite({ x: 60, y: 166, w: 154, h: 116, image: \"arbusto\" });\n  SZGame2D.addToGroup(esconderijos, arbusto);\n  const raposa = SZGame2D.createSprite({ x: 277, y: 184, w: 66, h: 84, image: \"raposa\" });\n  const pedras = SZGame2D.createSprite({ x: 229.5, y: 170, w: 161, h: 112, image: \"pedras\" });\n  SZGame2D.addToGroup(esconderijos, pedras);\n  const coruja = SZGame2D.createSprite({ x: 447, y: 187, w: 72, h: 81, image: \"coruja\" });\n  const flores = SZGame2D.createSprite({ x: 416.5, y: 138, w: 133, h: 144, image: \"flores\" });\n  SZGame2D.addToGroup(esconderijos, flores);\n  // Quando acontecer\n  SZGame2D.onGroupClick(esconderijos, function (escolhido) {\n\n  }, \"cliqueSprite\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawSprite(ctx, coelho);\n    SZGame2D.drawSprite(ctx, raposa);\n    SZGame2D.drawSprite(ctx, coruja);\n    SZGame2D.drawGroup(ctx, esconderijos);\n    SZGame2D.drawScore(ctx, \"Achados:\", achados, 18, 34, \"#173844\", 24);\n    if (achados >= 3) {\n      SZGame2D.drawLabel(ctx, \"Você achou todo mundo!\", 174, 72, \"#173844\", 27, \"left\");\n    }\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -108,79 +123,60 @@
               "name": "coelho",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMTIiIHZpZXdCb3g9IjAgMCA5NiAxMTIiPjxlbGxpcHNlIGN4PSI0OCIgY3k9Ijg2IiByeD0iMzYiIHJ5PSIyNCIgZmlsbD0iI2ZmZjRlNiIgc3Ryb2tlPSIjNTk0ODYzIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMjMgNjBROSA0IDI3IDdRNDEgMTEgMzkgNTZNNTYgNTZRNjEgMyA3NiA4UTg5IDE1IDY4IDYyIiBmaWxsPSIjZmZmNGU2IiBzdHJva2U9IiM1OTQ4NjMiIHN0cm9rZS13aWR0aD0iMyIvPjxlbGxpcHNlIGN4PSI0OCIgY3k9IjYyIiByeD0iMzUiIHJ5PSIzMSIgZmlsbD0iI2ZmZjRlNiIgc3Ryb2tlPSIjNTk0ODYzIiBzdHJva2Utd2lkdGg9IjMiLz48Y2lyY2xlIGN4PSIzNSIgY3k9IjU4IiByPSI0IiBmaWxsPSIjMzgyZTQyIi8+PGNpcmNsZSBjeD0iNjEiIGN5PSI1OCIgcj0iNCIgZmlsbD0iIzM4MmU0MiIvPjxwYXRoIGQ9Ik00MyA3MEw0OCA3NEw1MyA3MCIgZmlsbD0iI2Y3OWU5ZiIgc3Ryb2tlPSIjNTk0ODYzIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=",
-              "width": 96,
-              "height": 112
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1NCIgaGVpZ2h0PSI4NyIgdmlld0JveD0iMjMgMTkgMTggMjkiPjxwYXRoIGQ9Ik0gMzIuMSAzNS42OSBDIDM1LjMxIDM1LjY5IDM3LjUzIDM5Ljk1IDM3LjUzIDQyLjY2IEMgMzcuNTMgNDUuMzcgMzUuMzEgNDUuNTEgMzIuMSA0NS41MSBDIDI4Ljg5IDQ1LjUxIDI2LjUzIDQ1LjMxIDI2LjUzIDQyLjYgQyAyNi41MyAzOS44OSAyOC44OSAzNS42OSAzMi4xIDM1LjY5IFoiIGZpbGw9IiNkZGU1ZjAiLz4KICAgIDxlbGxpcHNlIGN4PSIyNy41IiBjeT0iMjYuNzYiIHJ4PSIyLjIiIHJ5PSI1LjgiIGZpbGw9IiNlOGVkZjYiIHRyYW5zZm9ybT0icm90YXRlKDMzNi42IDI3LjUgMjYuNzYpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzUuOTMiIGN5PSIyNi42MyIgcng9IjIuMiIgcnk9IjUuOCIgZmlsbD0iI2U4ZWRmNiIgdHJhbnNmb3JtPSJyb3RhdGUoMjMuNCAzNS45MyAyNi42MykiLz4KICAgIDxlbGxpcHNlIGN4PSIzNi42MyIgY3k9IjI1LjUzIiByeD0iMS41MiIgcnk9IjQuMzEiIGZpbGw9IiNlNDliN2MiIHRyYW5zZm9ybT0icm90YXRlKDIxLjEgMzYuNjMgMjUuNTMpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjcuMDciIGN5PSIyNi4xNiIgcng9IjEuNTIiIHJ5PSI0LjMxIiBmaWxsPSIjZTQ5YjdjIiB0cmFuc2Zvcm09InJvdGF0ZSgzMzguOSAyNy4wNyAyNi4xNikiLz4KICAgIDxwYXRoIGQ9Ik0gMzIuMDkgMjYuNjMgQyAzNS45NyAyNi41OCAzOS4xNiAzMy41NyAzOS4xNiAzNi40OCBDIDM5LjE2IDM5LjUzIDM1LjY3IDM5LjY2IDMxLjk3IDM5LjYgQyAyOC40MiAzOS41MyAyNC42NSAzOS40NiAyNC42NSAzNi4zNSBDIDI0LjU5IDMyLjg0IDI4LjA5IDI2LjY5IDMyLjA5IDI2LjYzIFoiIGZpbGw9IiNlOGVkZjYiLz4KICAgIDxlbGxpcHNlIGN4PSIyOC42NiIgY3k9IjMyLjE5IiByeD0iMC44MSIgcnk9IjEuMjUiIGZpbGw9IiMwZjFhMzMiIHRyYW5zZm9ybT0icm90YXRlKDM1OS44IDI4LjY2IDMyLjE5KSIvPgogICAgPGVsbGlwc2UgY3g9IjM1LjM0IiBjeT0iMzIuMTMiIHJ4PSIwLjgxIiByeT0iMS4yNSIgZmlsbD0iIzBmMWEzMyIgdHJhbnNmb3JtPSJyb3RhdGUoMzU5LjcgMzUuMjggMzEuNDQpIi8+CiAgICA8cGF0aCBkPSJNIDMwLjkyIDM2Ljc2IEwgMzIuMTcgMzcuMzkgTCAzMy4zMSAzNi44MSIgZmlsbD0iI2U4ZWRmNiIgc3Ryb2tlPSIjNDY1MzZlIiBzdHJva2Utd2lkdGg9IjAuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgICA8bGluZSB4MT0iMzIuMSIgeTE9IjM3LjI1IiB4Mj0iMzIuMSIgeTI9IjM4LjI1IiBmaWxsPSIjZThlZGY2IiBzdHJva2U9IiM0NjUzNmUiIHN0cm9rZS13aWR0aD0iMC41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICAgIDxwYXRoIGQ9Ik0gMzAuNDggMzguMTQgQyAzMC40OCAzOC4xNCAzMS42NyAzOC42IDMyLjIzIDM4LjYyIEMgMzIuNzggMzguNjMgMzMuODEgMzguMTcgMzMuODEgMzguMTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzQ2NTM2ZSIgc3Ryb2tlLXdpZHRoPSIwLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogICAgPHBhdGggZD0iTSAzMC4wOCA0NC4xNSBDIDMwLjg3IDQ0LjE1IDMxLjUzIDQ0LjY0IDMxLjUzIDQ1LjIzIEMgMzEuNTMgNDUuODIgMzAuODcgNDUuNzYgMzAuMDggNDUuNzYgQyAyOS4yNyA0NS43NiAyOC42IDQ1LjgyIDI4LjYgNDUuMjMgQyAyOC42IDQ0LjY0IDI5LjI3IDQ0LjE1IDMwLjA4IDQ0LjE1IFoiIGZpbGw9IiNjNWNjZDgiLz4KICAgIDxwYXRoIGQ9Ik0gMzQuMTIgNDQuMTUgQyAzNC45MiA0NC4xNSAzNS41NyA0NC42NCAzNS41NyA0NS4yMyBDIDM1LjU3IDQ1LjgyIDM0LjkyIDQ1Ljc2IDM0LjEyIDQ1Ljc2IEMgMzMuMzEgNDUuNzYgMzIuNjUgNDUuODIgMzIuNjUgNDUuMjMgQyAzMi42NSA0NC42NCAzMy4zMSA0NC4xNSAzNC4xMiA0NC4xNSBaIiBmaWxsPSIjYzVjY2Q4Ii8+CiAgICA8cmVjdCB4PSIzMi45NyIgeT0iNDAuNDciIHdpZHRoPSIyIiBoZWlnaHQ9IjIuNzIiIHJ4PSIxIiBmaWxsPSIjZThlZGY2IiB0cmFuc2Zvcm09InJvdGF0ZSgxNSAzMy45NyA0MS44MykiLz4KICAgIDxyZWN0IHg9IjI5LjM1IiB5PSI0MC4zNCIgd2lkdGg9IjIiIGhlaWdodD0iMi43MiIgcng9IjEiIGZpbGw9IiNlOGVkZjYiIHRyYW5zZm9ybT0icm90YXRlKDM0NSAzMC4zNSA0MS43MSkiLz48L3N2Zz4=",
+              "width": 54,
+              "height": 87
             },
             {
               "id": "cade-todo-mundo-raposa",
               "name": "raposa",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMTIiIHZpZXdCb3g9IjAgMCA5NiAxMTIiPjxwYXRoIGQ9Ik02IDI0TDI0IDRMMzcgMjdRNDggMjEgNTkgMjdMNzMgNEw5MSAyNEw4NCA3OVE3NCAxMDMgNDggMTA1UTIyIDEwMyAxMiA3OVoiIGZpbGw9IiNmNmEzNWMiIHN0cm9rZT0iIzc3NDQ0YSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0IDcyUTI2IDkxIDQ4IDg2UTcwIDkxIDgyIDcyUTcwIDEwMSA0OCAxMDVRMjYgMTAxIDE0IDcyIiBmaWxsPSIjZmZmM2RmIi8+PGNpcmNsZSBjeD0iMzIiIGN5PSI2MiIgcj0iNCIgZmlsbD0iIzNlMzQ0MyIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjIiIHI9IjQiIGZpbGw9IiMzZTM0NDMiLz48Y2lyY2xlIGN4PSI0OCIgY3k9Ijc5IiByPSI1IiBmaWxsPSIjM2UzNDQzIi8+PC9zdmc+",
-              "width": 96,
-              "height": 112
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NiIgaGVpZ2h0PSI4NCIgdmlld0JveD0iMjEgMTggMjIgMjgiPjxwYXRoIGQ9Ik0gMzAuNzUgNDAuMjcgQyAzMS4wOSAzOS40NyAyOS4xNyAzOS41OCAyOC4wNSAzNS45NiBDIDI3LjY3IDM0LjY2IDIzLjY4IDM0Ljk0IDIzLjY4IDM0Ljk0IEMgMjMuNjggMzQuOTQgMjUuOTMgMzYuNTkgMjYuODIgMzkuNDMgQyAyNy41IDQxLjU1IDMwLjQxIDQxLjA4IDMwLjc1IDQwLjI3IFoiIGZpbGw9IiNkNzdmNTkiIHRyYW5zZm9ybT0icm90YXRlKDMzNS41IDI3LjM5IDM4LjEpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzEuNzUiIGN5PSIzNy4yNyIgcng9IjQuNjYiIHJ5PSI0LjYyIiBmaWxsPSIjZDc3ZjU5Ii8+CiAgICA8ZWxsaXBzZSBjeD0iMzEuNzMiIGN5PSIzNy4yNSIgcng9IjIuNyIgcnk9IjQuNjUiIGZpbGw9IiNkZGU1ZjAiLz4KICAgIDxlbGxpcHNlIGN4PSIzNyIgY3k9IjI0LjI0IiByeD0iMi4yIiByeT0iMy40NCIgZmlsbD0iI2Q3N2Y1OSIgdHJhbnNmb3JtPSJyb3RhdGUoMzAuNyAzNyAyNC4yNCkiLz4KICAgIDxlbGxpcHNlIGN4PSIzNy4yMiIgY3k9IjI0LjM3IiByeD0iMS41MiIgcnk9IjIuNzIiIGZpbGw9IiNlOGVkZjYiIHRyYW5zZm9ybT0icm90YXRlKDMxLjQgMzcuMjIgMjQuMzcpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjYuNzIiIGN5PSIyNC4xNyIgcng9IjIuMjUiIHJ5PSIzLjUyIiBmaWxsPSIjZDc3ZjU5IiB0cmFuc2Zvcm09InJvdGF0ZSgzMjcuOCAyNi43MiAyNC4xNykiLz4KICAgIDxlbGxpcHNlIGN4PSIyNi4zOSIgY3k9IjI0LjMxIiByeD0iMS41NSIgcnk9IjIuNzgiIGZpbGw9IiNlOGVkZjYiIHRyYW5zZm9ybT0icm90YXRlKDMyOC41IDI2LjM5IDI0LjMxKSIvPgogICAgPHBhdGggZD0iTSAyOC45NSAyMy44NiBMIDM0LjkgMjMuNzIgQyAzNy4xMiAyMy43MiAzOC45MyAyNS41MSAzOC45MyAyNy43MiBMIDM4Ljg2IDMyLjYxIEMgMzguODYgMzQuODIgMzYuMDkgMzcuNzcgMzMuODcgMzcuNzcgTCAyOS4xMSAzNy43NSBDIDI2Ljg4IDM3Ljc1IDI1LjA3IDM1Ljk2IDI1LjA3IDMzLjc1IEwgMjQuOTMgMjcuODYgQyAyNC45MyAyNS42NSAyNi43MyAyMy44NiAyOC45NSAyMy44NiBaIiBmaWxsPSIjZDc3ZjU5IiB0cmFuc2Zvcm09InJvdGF0ZSg0NS4xIDMxLjkzIDMwLjc1KSIvPgogICAgPHBhdGggZD0iTSAzMS44OSAzOC40IEwgMzIuMDQgMzYuNTggTCAzMi44NCAzNC43OSBMIDM0LjIyIDMzLjIyIEwgMzYuMDcgMzIgTCAzOC4yNSAzMS4yNCBMIDQwLjI2IDMxIEwgNDAuMjYgMzEuNDYgTCAzOS44OCAzMi42NSBMIDM5LjExIDMzLjcxIEwgMzUuNDkgMzcuMTUgTCAzNC41MSAzNy44MyBMIDMzLjI0IDM4LjI0IFoiIGZpbGw9IiNlOGVkZjYiLz4KICAgIDxwYXRoIGQ9Ik0gMzIuMDcgMzguNDkgTCAzMS45MiAzNi43MSBMIDMxLjE0IDM0LjkyIEwgMjkuNzggMzMuMzcgTCAyNy45NiAzMi4xOCBMIDI1LjgyIDMxLjQzIEwgMjMuODUgMzEuMiBMIDIzLjg1IDMxLjY1IEwgMjQuMjMgMzIuODIgTCAyNC45OCAzMy44NiBMIDI4LjUyIDM3LjI2IEwgMjkuNSAzNy45MyBMIDMwLjc0IDM4LjMzIFoiIGZpbGw9IiNlOGVkZjYiLz4KICAgIDxlbGxpcHNlIGN4PSIzMS44OCIgY3k9IjM2LjgiIHJ4PSIxLjIxIiByeT0iMC42NiIgZmlsbD0iIzBmMWEzMyIvPgogICAgPGVsbGlwc2UgY3g9IjI4LjgiIGN5PSIzMC42NCIgcng9IjEuMjEiIHJ5PSIwLjY2IiBmaWxsPSIjMGYxYTMzIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzQuNDYiIGN5PSIzMC43IiByeD0iMS4yMSIgcnk9IjAuNjYiIGZpbGw9IiMwZjFhMzMiLz4KICAgIDxwYXRoIGQ9Ik0gMjkuODIgNDAuODkgQyAzMC42MSA0MC44OSAzMS4yNyA0MS4zOCAzMS4yNyA0MS45NyBDIDMxLjI3IDQyLjU2IDMwLjYxIDQyLjUgMjkuODIgNDIuNSBDIDI5LjAxIDQyLjUgMjguMzUgNDIuNTYgMjguMzUgNDEuOTcgQyAyOC4zNSA0MS4zOCAyOS4wMSA0MC44OSAyOS44MiA0MC44OSBaIiBmaWxsPSIjMTIxYTMwIi8+CiAgICA8cGF0aCBkPSJNIDMzLjg2IDQwLjg5IEMgMzQuNjYgNDAuODkgMzUuMzEgNDEuMzggMzUuMzEgNDEuOTcgQyAzNS4zMSA0Mi41NiAzNC42NiA0Mi41IDMzLjg2IDQyLjUgQyAzMy4wNSA0Mi41IDMyLjM5IDQyLjU2IDMyLjM5IDQxLjk3IEMgMzIuMzkgNDEuMzggMzMuMDUgNDAuODkgMzMuODYgNDAuODkgWiIgZmlsbD0iIzEyMWEzMCIvPgogICAgPHBhdGggZD0iTSAyMi42OCAzNS42NyBMIDIzLjY5IDM1LjU5IEwgMjQuNjYgMzUuNTkgTCAyNS42NyAzNS42OCBMIDI2LjU0IDM1Ljk1IEwgMjcuMTEgMzYuNDMgTCAyNy4xOSAzNi41OSBMIDI2LjE0IDM3LjUgTCAyNC44NCAzNy45NSBMIDI0LjQ2IDM3LjQgTCAyMy42IDM2LjQ1IEwgMjIuOTQgMzUuODggWiIgZmlsbD0iI2U4ZWRmNiIgdHJhbnNmb3JtPSJyb3RhdGUoMzM1LjUgMjQuOTQgMzYuNzcpIi8+PC9zdmc+",
+              "width": 66,
+              "height": 84
             },
             {
               "id": "cade-todo-mundo-coruja",
               "name": "coruja",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMTIiIHZpZXdCb3g9IjAgMCA5NiAxMTIiPjxwYXRoIGQ9Ik0xMyAyOEwxMCA1TDI5IDE4UTQ4IDcgNjcgMThMODYgNUw4MyAyOFE5MSA1MCA4NCA4MFE3MiAxMDUgNDggMTA2UTI0IDEwNSAxMiA4MFE1IDUwIDEzIDI4IiBmaWxsPSIjOWU4MGMyIiBzdHJva2U9IiM1YjQ5N2QiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjMzIiBjeT0iNTYiIHI9IjE3IiBmaWxsPSIjZmZmNmRmIi8+PGNpcmNsZSBjeD0iNjMiIGN5PSI1NiIgcj0iMTciIGZpbGw9IiNmZmY2ZGYiLz48Y2lyY2xlIGN4PSIzMyIgY3k9IjU2IiByPSI2IiBmaWxsPSIjMzUzMDQ3Ii8+PGNpcmNsZSBjeD0iNjMiIGN5PSI1NiIgcj0iNiIgZmlsbD0iIzM1MzA0NyIvPjxwYXRoIGQ9Ik00MiA3M0w0OCA4Mkw1NCA3M1oiIGZpbGw9IiNmNmFkNjAiLz48L3N2Zz4=",
-              "width": 96,
-              "height": 112
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI4MSIgdmlld0JveD0iMTkgMjAgMjQgMjciPjxlbGxpcHNlIGN4PSIzMC41NyIgY3k9IjM3LjIxIiByeD0iNi42MyIgcnk9IjQuODEiIGZpbGw9IiNhYzkyODYiLz4KICAgIDxyZWN0IHg9IjIxLjgiIHk9IjIyLjM1IiB3aWR0aD0iMTguMDciIGhlaWdodD0iMTYuMDgiIHJ4PSI4LjA0IiBmaWxsPSIjNzE1MzQ2Ii8+CiAgICA8cGF0aCBkPSJNIDI0LjA1IDIxLjM1IEMgMjQuOTcgMjEuMzUgMjYuNjUgMjIuOSAyNi42NSAyNC43OCBDIDI2LjY1IDI2LjY3IDI1Ljg5IDI4LjIgMjQuOTYgMjguMiBDIDI0LjAzIDI4LjIgMjMuMjcgMjYuNjcgMjMuMjcgMjQuNzggQyAyMy4yNyAyMi45IDIzLjExIDIxLjM1IDI0LjA1IDIxLjM1IFoiIGZpbGw9IiM3MTUzNDYiIHRyYW5zZm9ybT0icm90YXRlKDMwMy45IDI0Ljg4IDI0Ljc4KSIvPgogICAgPHBhdGggZD0iTSAzNy44NCAyMS4yOCBDIDM4LjQ3IDIxLjI4IDM4LjMgMjIuOTkgMzguMyAyNC44OCBDIDM4LjMgMjYuNzUgMzcuNDYgMjguMjkgMzYuNDEgMjguMjkgQyAzNS4zOSAyOC4yOSAzNC41NSAyNi43NSAzNC41NSAyNC44OCBDIDM0LjU1IDIyLjk5IDM3LjIyIDIxLjI4IDM3Ljg0IDIxLjI4IFoiIGZpbGw9IiM3MTUzNDYiIHRyYW5zZm9ybT0icm90YXRlKDQyLjggMzYuNTEgMjQuNzkpIi8+CiAgICA8cGF0aCBkPSJNIDMwLjY4IDI3LjcxIEMgMzEuNTMgMjcuNiAzNy42MiAyNC4wNCAzOC40NyAzMC41NCBDIDM4Ljk2IDM0LjMzIDM1LjE0IDM3LjQ2IDMwLjkzIDM3LjQ2IEMgMjYuNzMgMzcuNDYgMjIuNyAzNC4zIDIzLjMyIDMwLjU0IEMgMjQuMzggMjQuMTEgMzAuMDUgMjcuNzkgMzAuNjggMjcuNzEgWiIgZmlsbD0iI2ZmZmZmZiIvPgogICAgPGVsbGlwc2UgY3g9IjI4LjE3IiBjeT0iMzAuOTQiIHJ4PSIxLjEzIiByeT0iMS4xNyIgZmlsbD0iIzBmMWEzMyIvPgogICAgPGVsbGlwc2UgY3g9IjMzLjQ4IiBjeT0iMzAuOTQiIHJ4PSIxLjEzIiByeT0iMS4xNyIgZmlsbD0iIzBmMWEzMyIvPgogICAgPGVsbGlwc2UgY3g9IjMwLjc5IiBjeT0iMzIuMzMiIHJ4PSIwLjcyIiByeT0iMS4xMyIgZmlsbD0iI2YzYjEyMyIvPgogICAgPGVsbGlwc2UgY3g9IjI4LjgyIiBjeT0iNDIuNDkiIHJ4PSIwLjUiIHJ5PSIxLjE2IiBmaWxsPSIjYzVjY2Q4Ii8+CiAgICA8ZWxsaXBzZSBjeD0iMjkuMTQiIGN5PSI0Mi4yNCIgcng9IjAuNSIgcnk9IjEuMTYiIGZpbGw9IiNjNWNjZDgiIHRyYW5zZm9ybT0icm90YXRlKDMzNC42IDI5LjE0IDQxLjE1KSIvPgogICAgPGVsbGlwc2UgY3g9IjI4LjU3IiBjeT0iNDIuMyIgcng9IjAuNSIgcnk9IjEuMTYiIGZpbGw9IiNjNWNjZDgiIHRyYW5zZm9ybT0icm90YXRlKDI1LjQgMjguNTcgNDEuMjEpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzIuNDciIGN5PSI0Mi41NSIgcng9IjAuNSIgcnk9IjEuMTYiIGZpbGw9IiNjNWNjZDgiLz4KICAgIDxlbGxpcHNlIGN4PSIzMi43OCIgY3k9IjQyLjMiIHJ4PSIwLjUiIHJ5PSIxLjE2IiBmaWxsPSIjYzVjY2Q4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMzQuNiAzMi43OCA0MS4yMSkiLz4KICAgIDxlbGxpcHNlIGN4PSIzMi4yMiIgY3k9IjQyLjM2IiByeD0iMC41IiByeT0iMS4xNiIgZmlsbD0iI2M1Y2NkOCIgdHJhbnNmb3JtPSJyb3RhdGUoMjUuNCAzMi4yMiA0MS4yNykiLz4KICAgIDxlbGxpcHNlIGN4PSIyNC43NCIgY3k9IjM4Ljc2IiByeD0iMS4wNiIgcnk9IjMiIGZpbGw9IiM3MTUzNDYiIHRyYW5zZm9ybT0icm90YXRlKDMzOC40IDI1LjUyIDM3LjI3KSIvPgogICAgPGVsbGlwc2UgY3g9IjM2LjMiIGN5PSIzOC41NyIgcng9IjEuMDYiIHJ5PSIzIiBmaWxsPSIjNzE1MzQ2IiB0cmFuc2Zvcm09InJvdGF0ZSgyMS42IDM1LjUyIDM3LjA4KSIvPjwvc3ZnPg==",
+              "width": 72,
+              "height": 81
             },
             {
               "id": "cade-todo-mundo-arbusto",
               "name": "arbusto",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTIyIiB2aWV3Qm94PSIwIDAgMTUwIDEyMiI+PHJlY3QgeD0iNjkiIHk9IjYxIiB3aWR0aD0iMTIiIGhlaWdodD0iNjEiIHJ4PSI1IiBmaWxsPSIjOGU2YTUzIi8+PGVsbGlwc2UgY3g9Ijc1IiBjeT0iNzYiIHJ4PSI3MCIgcnk9IjQ1IiBmaWxsPSIjNDA4YzViIiBzdHJva2U9IiMyZTcwNTEiIHN0cm9rZS13aWR0aD0iMyIvPjxlbGxpcHNlIGN4PSIzOSIgY3k9IjY0IiByeD0iMzMiIHJ5PSIzNCIgZmlsbD0iIzYwYWQ2OCIvPjxlbGxpcHNlIGN4PSIxMDYiIGN5PSI2MCIgcng9IjM3IiByeT0iMzciIGZpbGw9IiM2MGFkNjgiLz48ZWxsaXBzZSBjeD0iNzMiIGN5PSIzOSIgcng9IjM5IiByeT0iMzYiIGZpbGw9IiM3NGJmNzUiLz48Y2lyY2xlIGN4PSIyNSIgY3k9Ijg3IiByPSI2IiBmaWxsPSIjZjVhZDljIi8+PGNpcmNsZSBjeD0iMTE5IiBjeT0iODQiIHI9IjYiIGZpbGw9IiNmNWFkOWMiLz48L3N2Zz4=",
-              "width": 150,
-              "height": 122
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTQiIGhlaWdodD0iMTE2IiB2aWV3Qm94PSIxMCAxOSA0NCAzMyI+PHBhdGggZD0iTSAxNC41NiA0OC43MyBMIDQ2LjgxIDQ4Ljg0IEwgNDkuNCA0Ni42NyBDIDUxLjYyIDQ0LjE3IDUxIDQyLjMgNTAuMzIgNDEuMSBDIDQ5LjY0IDM5Ljk0IDQ2Ljg3IDQwLjI5IDQ1LjQ2IDQwLjAzIEMgNDUuODEgMzkuMyA0Ni45OSAzNi40NyA0NC4zNyAzNS4wNSBDIDQyLjI2IDMzLjg5IDQxLjI0IDM1LjU4IDM5LjQzIDM2LjcyIEMgNDEuNDMgMzQuMTcgNDEuNjQgMzEuNjMgNDEuMjMgMzAuNTkgQyA0MC43NCAyOS42OCA0MC4wNiAyOS42IDM3LjE5IDMwLjE4IEMgMzkuOCAyNy45MSAzOS42NSAyNS41MiAzOSAyNC42OCBDIDM4LjM2IDIzLjg0IDM1LjY4IDIzLjQyIDMzLjMyIDI1LjEzIEMgMzMuMzEgMjMuNzQgMzIuNjggMjEuMjYgMzAuMjYgMjEuMzEgQyAyOC4xMiAyMS4zNiAyNy43NCAyNC4xMSAyNy43MiAyNS40MSBDIDI2Ljc0IDIzLjc5IDI0LjA2IDIzLjI0IDIzLjI5IDIzLjk0IEMgMjIuNTIgMjQuNjQgMjEuNDkgMjYuMjkgMjMuMSAyOS42IEMgMjEuNjIgMjkuNiAyMC4xNCAyOS41OSAxOS40IDMwLjYgQyAxNy45MyAzMi42MiAxOS45OSAzNi4xOCAyMS4xMiAzNy4xIEMgMTkuOTkgMzYuMyAxNi44NyAzMy43MiAxNC42MyAzNS44NSBDIDEyLjMyIDM4LjA1IDE0LjU2IDQyLjA4IDE2LjggNDMuMzIgQyAxNC44MSA0My4yMyAxMi43NCA0Mi43MSAxMi45NSA0Ni4xOSBDIDEzLjU5IDQ3LjIgMTMuOTIgNDcuNyAxNC41NiA0OC43MyBaIiBmaWxsPSIjMjU3MTc5Ii8+CiAgICA8cGF0aCBkPSJNIDQ0Ljc0IDQ4LjgyIEwgMTguNTkgNDguODQgTCAxNi40MyA0Ny4xNiBDIDE0LjYyIDQ1LjE1IDE1LjEzIDQzLjY1IDE1LjY4IDQyLjcgQyAxNi4yMyA0MS43NCAxOC40OSA0Mi4wNCAxOS42MyA0MS44MiBDIDE5LjM1IDQxLjIyIDE4LjAxIDM5LjM2IDIwLjAyIDM4LjAyIEMgMjEuMTIgMzcuMjkgMjMuMDYgMzguMjcgMjQuNTMgMzkuMTkgQyAyMi45MSAzNy4xMSAyMi43NCAzNS41NSAyMy4wNyAzNC42OSBDIDIzLjQ2IDMzLjk2IDI0LjAyIDMzLjQ3IDI2LjM1IDMzLjkyIEMgMjMuNTcgMzEuNzEgMjQuNjYgMzAuMTkgMjUuMTkgMjkuNTEgQyAyNS43MiAyOC44MyAyNy41OCAyOC41IDI5LjUgMjkuODcgQyAyOS41IDI4Ljc1IDI5LjM1IDI2LjY1IDMxLjY5IDI2LjggQyAzMy44MyAyNi45NCAzNC4wMyAyOS4wNiAzNC4wNSAzMC4wOSBDIDM1LjIgMjkuMjUgMzUuOTUgMjguNCAzOC4xNiAyOS4yNiBDIDM5LjUxIDMxLjQ2IDM4LjI0IDMyLjU2IDM3LjM1IDMzLjgyIEMgMzguNTUgMzMuODIgNDAuMjggMzMuMzcgNDEuMDYgMzQuODUgQyA0Mi4yNiAzNi41NyA0MC4zMyAzOC43MiAzOS40MSAzOS40NyBDIDQwLjMzIDM4LjgyIDQyLjc3IDM2LjQ3IDQ0LjU5IDM4LjQ3IEMgNDYuMzIgNDAuMzYgNDQuNzQgNDMuNDggNDIuOTIgNDQuNDggQyA0NC41NCA0NC40MSA0Ny4xMiA0NC41NCA0NS42MyA0Ny40NSBDIDQ1LjEgNDguMjkgNDUuMjYgNDcuOTggNDQuNzQgNDguODIgWiIgZmlsbD0iIzM4Yjc2NCIvPjwvc3ZnPg==",
+              "width": 154,
+              "height": 116
             },
             {
               "id": "cade-todo-mundo-pedras",
               "name": "pedras",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTIyIiB2aWV3Qm94PSIwIDAgMTUwIDEyMiI+PHBhdGggZD0iTTYgMTE1TDE0IDU3TDM5IDMzTDY0IDUyTDg1IDI0TDEyNSAzOUwxNDUgNzlMMTQ0IDExNVoiIGZpbGw9IiM4ZmExYjMiIHN0cm9rZT0iIzY1Nzg4ZCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0IDU3TDM5IDMzTDY0IDUyTDQzIDkxWiIgZmlsbD0iI2I5YzhjZSIvPjxwYXRoIGQ9Ik04NSAyNEwxMjUgMzlMMTQ1IDc5TDkyIDcyWiIgZmlsbD0iI2I5YzhjZSIvPjxwYXRoIGQ9Ik0zNCAxMDFRNzUgNzggMTE5IDEwMSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZGFlMWQ5IiBzdHJva2Utd2lkdGg9IjUiLz48L3N2Zz4=",
-              "width": 150,
-              "height": 122
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjEiIGhlaWdodD0iMTEyIiB2aWV3Qm94PSI5IDE4IDQ2IDMyIj48cGF0aCBkPSJNIDIzLjI3IDIxLjQyIEMgMTkuMTcgMjMuMjggMTcuNDYgMzQuMDMgMTcuNDYgMzkuMSBDIDE3LjQ2IDQxLjk0IDE5LjUxIDQzLjA4IDIzLjUyIDQ0LjIyIEMgMjguMTQgNDUuNTMgNDIuMzIgNDQuNjYgNDIuMzIgNDQuNjYgQyA0Mi4zMiA0NC42NiA1Mi41OCA0MS4zNSA1MS41OCAzMS4yMiBDIDUxLjI4IDI4LjE3IDQyLjI3IDIzLjc4IDQyLjI3IDIzLjc4IEMgNDIuMjcgMjMuNzggMjguMjYgMTkuMTYgMjMuMjcgMjEuNDIgWiIgZmlsbD0iIzMzM2M1NyIvPgogICAgPHBhdGggZD0iTSA0Mi4wMiAzNi41MiBMIDQyLjA3IDQ0LjU5IEMgNDIuMDcgNDQuNTkgNDYuMTYgNDQuODQgNDkuODEgMzkuNTMgQyA1My4xNyAzNC42NyA1MS45NiAzMC43OCA1MS45NiAzMC43OCBMIDQ5LjQ3IDI3LjE0IFoiIGZpbGw9IiM1NjZjODYiLz4KICAgIDxwYXRoIGQ9Ik0gMjMuMTYgMjAuOTkgQyAxOS41NiAyMi4yMyAxOS43NCAyOS41MyAxOS43NCAzMi45MiBDIDE5Ljc0IDM0LjgyIDIxLjUzIDM1LjYgMjUuMDQgMzYuMzUgQyAyOS4wNyAzNy4yMyA0MS40OSAzNi42NiA0MS40OSAzNi42NiBDIDQxLjQ5IDM2LjY2IDUwLjQ3IDM0LjQyIDQ5LjU4IDI3LjY0IEMgNDkuMzMgMjUuNTkgNDEuNDQgMjIuNjUgNDEuNDQgMjIuNjUgQyA0MS40NCAyMi42NSAyNy41MyAxOS40NyAyMy4xNiAyMC45OSBaIiBmaWxsPSIjOTRiMGMyIi8+CiAgICA8cGF0aCBkPSJNIDEzLjIxIDQ2LjExIEwgMTkuNjkgNDcuMDcgTCAyNy41MSA0NC45MSBDIDI3LjUxIDQ0LjkxIDI1Ljk0IDMwLjE1IDIzLjcxIDI3LjEgQyAyMS40OCAyNC4wNiAxNi4wOCAyNS44NSAxNC40IDI2LjUzIEMgMTIuNTEgMjcuMzIgMTEuNzEgMjkuMTcgMTEuNTIgMzIuMTMgQyAxMS4zMyAzNS4wNyAxMy4yMSA0Ni4xMSAxMy4yMSA0Ni4xMSBaIiBmaWxsPSIjNTY2Yzg2Ii8+CiAgICA8cG9seWdvbiBwb2ludHM9IjE3LjY0LDM1LjIxIDE5LjUxLDQ3LjA1IDEyLjc2LDQ2LjA3IDExLjEzLDMxLjU4IiBmaWxsPSIjMzMzYzU3Ii8+CiAgICA8cGF0aCBkPSJNIDEzIDI2Ljg1IEMgMTIuMiAyNy45OCAxMC41NSAzMC41NyAxMS4zMyAzMi4wMyBDIDEyLjEgMzMuNDggMTUuNTEgMzYuMTcgMTcuNyAzNS42IEMgMTkuODkgMzUuMDMgMjMuNjUgMzAuMzEgMjQuNDUgMjguNiBDIDI1LjI1IDI2Ljg5IDIzLjkgMjUuOSAyMi41MiAyNS4zNSBDIDIxLjE0IDI0Ljc4IDE3Ljc1IDI1LjAzIDE2LjE2IDI1LjI4IEMgMTQuNTcgMjUuNTMgMTMuODEgMjUuNzMgMTMgMjYuODUgWiIgZmlsbD0iIzk0YjBjMiIvPjwvc3ZnPg==",
+              "width": 161,
+              "height": 112
             },
             {
               "id": "cade-todo-mundo-flores",
               "name": "flores",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTIyIiB2aWV3Qm94PSIwIDAgMTUwIDEyMiI+PHBhdGggZD0iTTE1IDExOVEyNiA3NCAzOCA4NU03MCAxMTlRNzEgNjQgNzQgNzJNMTMxIDExOVExMjIgNzEgMTEzIDgzIiBmaWxsPSJub25lIiBzdHJva2U9IiM1MTk1NjciIHN0cm9rZS13aWR0aD0iNyIvPjxnIGZpbGw9IiNmNWE1YmQiPjxjaXJjbGUgY3g9IjM4IiBjeT0iNjkiIHI9IjE4Ii8+PGNpcmNsZSBjeD0iNzQiIGN5PSI1NSIgcj0iMTkiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI3MCIgcj0iMTgiLz48L2c+PGcgZmlsbD0iI2ZmZTc5ZiI+PGNpcmNsZSBjeD0iMzgiIGN5PSI2OSIgcj0iOCIvPjxjaXJjbGUgY3g9Ijc0IiBjeT0iNTUiIHI9IjgiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI3MCIgcj0iOCIvPjwvZz48cGF0aCBkPSJNNCAxMThRNzUgOTYgMTQ2IDExOFoiIGZpbGw9IiM2M2FlNmMiLz48L3N2Zz4=",
-              "width": 150,
-              "height": 122
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMzMiIGhlaWdodD0iMTQ0IiB2aWV3Qm94PSIxMiAxMSAzOCA0MSI+PHBhdGggZD0iTSAyMC42IDMxLjQxIEMgMjIuMjQgMzEuNDEgMjUuMiAzNS45OSAyNS4yIDQxLjI3IEMgMjUuMiA0Ni41NiAyMi4zMSA1MC42MSAyMC42IDUwLjU2IEMgMTguMzcgNTAuNDcgMTUuNzcgNDYuMzMgMTUuNzcgNDEuMDQgQyAxNS43NyAzNS43NSAxOC43NCAzMS40MSAyMC42IDMxLjQxIFoiIGZpbGw9IiMyNTcxNzkiIHRyYW5zZm9ybT0icm90YXRlKDMzMS41IDIwLjQ5IDQxLjAxKSIvPgogICAgPHJlY3QgeD0iMjIuMTkiIHk9IjMyLjEzIiB3aWR0aD0iMi4zNCIgaGVpZ2h0PSI2LjMzIiBmaWxsPSIjMjU3MTc5Ii8+CiAgICA8cGF0aCBkPSJNIDI4LjE5IDMwLjI4IEMgMjkuOTYgMzAuMjggMzMuMTQgMzUuMDcgMzMuMTQgNDAuNiBDIDMzLjE0IDQ2LjE0IDMwLjAzIDUwLjM4IDI4LjE5IDUwLjMxIEMgMjUuOCA1MC4yNCAyMyA0NS45MSAyMyA0MC4zNiBDIDIzIDM0LjgzIDI2LjE4IDMwLjI4IDI4LjE5IDMwLjI4IFoiIGZpbGw9IiMzOGI3NjQiIHRyYW5zZm9ybT0icm90YXRlKDIzIDI4LjA3IDQwLjMzKSIvPgogICAgPHBhdGggZD0iTSAyMi40NSAxMy43IEwgMTcuOTIgMjMuNTIgQyAxNy45MiAyOC44MSAyMC45NyAzMy41MiAyMi41MyAzMi44MSBDIDI4LjQ2IDMwLjExIDI5LjUxIDI3LjQ4IDI3Ljg5IDIzLjAzIFoiIGZpbGw9IiNiMTNlNTMiIHRyYW5zZm9ybT0icm90YXRlKDI1LjcgMjIuNjggMzIuODgpIi8+CiAgICA8cGF0aCBkPSJNIDIzLjkzIDEzLjU4IEMgMjUuNTcgMTMuNTggMjguMzIgMTkuNyAyOC41NCAyMy40NCBDIDI4Ljg1IDI4LjcyIDI1LjY0IDMyLjc4IDIzLjkzIDMyLjcyIEMgMjEuNyAzMi42NCAxOS40MyAyOC41IDE5LjEgMjMuMjEgQyAxOC45MSAyMC4xNSAyMi4wNyAxMy41OCAyMy45MyAxMy41OCBaIiBmaWxsPSIjZWY3ZDU3IiB0cmFuc2Zvcm09InJvdGF0ZSgwLjIgMjMuODggMjMuMTgpIi8+CiAgICA8cGF0aCBkPSJNIDI0LjE1IDEzLjYgTCAyOC42OCAyMy40MiBDIDI4LjY4IDI4LjcyIDI1LjYzIDMzLjQyIDI0LjA2IDMyLjcyIEMgMTguMTQgMzAuMDIgMTcuMDkgMjcuMzkgMTguNzEgMjIuOTUgWiIgZmlsbD0iI2VmN2Q1NyIgdHJhbnNmb3JtPSJyb3RhdGUoMzM0LjMgMjMuOTIgMzIuNzkpIi8+CiAgICA8cGF0aCBkPSJNIDM0LjEgMzEuMTcgQyAzNS43NCAzMS4xNyAzOC43MSAzNS43NSAzOC43MSA0MS4wMyBDIDM4LjcxIDQ2LjMyIDM1LjgxIDUwLjM4IDM0LjEgNTAuMzIgQyAzMS44NyA1MC4yMiAyOS4yNyA0Ni4xIDI5LjI3IDQwLjggQyAyOS4yNyAzNS41MiAzMi4yNCAzMS4xNyAzNC4xIDMxLjE3IFoiIGZpbGw9IiMyNTcxNzkiIHRyYW5zZm9ybT0icm90YXRlKDMzMS41IDMzLjk5IDQwLjc4KSIvPgogICAgPHJlY3QgeD0iMzUuNjkiIHk9IjMxLjg4IiB3aWR0aD0iMi4zNCIgaGVpZ2h0PSI2LjMzIiBmaWxsPSIjMjU3MTc5Ii8+CiAgICA8cGF0aCBkPSJNIDQxLjY5IDMwLjAzIEMgNDMuNDYgMzAuMDMgNDYuNjQgMzQuODMgNDYuNjQgNDAuMzYgQyA0Ni42NCA0NS45IDQzLjUzIDUwLjE0IDQxLjY5IDUwLjA3IEMgMzkuMyA1MCAzNi41IDQ1LjY3IDM2LjUgNDAuMTMgQyAzNi41IDM0LjU4IDM5LjY5IDMwLjAzIDQxLjY5IDMwLjAzIFoiIGZpbGw9IiMzOGI3NjQiIHRyYW5zZm9ybT0icm90YXRlKDIzIDQxLjU3IDQwLjA5KSIvPgogICAgPHBhdGggZD0iTSAzNS45NSAxMy40NSBMIDMxLjQyIDIzLjI4IEMgMzEuNDIgMjguNTcgMzQuNDcgMzMuMjggMzYuMDMgMzIuNTcgQyA0MS45NiAyOS44NiA0My4wMSAyNy4yNCA0MS4zOSAyMi44IFoiIGZpbGw9IiNlZjdkNTciIHRyYW5zZm9ybT0icm90YXRlKDI1LjcgMzYuMTggMzIuNjMpIi8+CiAgICA8cGF0aCBkPSJNIDM3LjQzIDEzLjM0IEMgMzkuMDcgMTMuMzQgNDEuODIgMTkuNDYgNDIuMDMgMjMuMiBDIDQyLjM1IDI4LjQ3IDM5LjE0IDMyLjU1IDM3LjQzIDMyLjQ5IEMgMzUuMiAzMi4zOSAzMi45MyAyOC4yNSAzMi42IDIyLjk3IEMgMzIuNDEgMTkuOTEgMzUuNTcgMTMuMzQgMzcuNDMgMTMuMzQgWiIgZmlsbD0iI2ZhZTFiNSIgdHJhbnNmb3JtPSJyb3RhdGUoMC4yIDM3LjM4IDIyLjk1KSIvPgogICAgPHBhdGggZD0iTSAzNy42NSAxMy4zNyBMIDQyLjE3IDIzLjE5IEMgNDIuMTcgMjguNDcgMzkuMTMgMzMuMTkgMzcuNTcgMzIuNDcgQyAzMS42NCAyOS43OCAzMC41OSAyNy4xNSAzMi4yMSAyMi43MSBaIiBmaWxsPSIjZmFlMWI1IiB0cmFuc2Zvcm09InJvdGF0ZSgzMzQuMyAzNy40MiAzMi41NCkiLz48L3N2Zz4=",
+              "width": 133,
+              "height": 144
             }
           ],
           "ir": {
             "version": 2,
-            "html": [
-              {
-                "type": "canvas",
-                "id": "tela",
-                "width": 640,
-                "height": 360
-              }
-            ],
-            "css": [
-              {
-                "selector": "body",
-                "declarations": {
-                  "margin": "0",
-                  "background": "#c7effb",
-                  "display": "flex",
-                  "align-items": "center",
-                  "justify-content": "center",
-                  "min-height": "100vh"
-                }
-              }
-            ],
+            "html": [],
+            "css": [],
             "behavior": {
               "start": [
                 {
@@ -204,19 +200,19 @@
                 {
                   "type": "g2d:createImageSprite",
                   "varName": "coelho",
-                  "x": 97,
-                  "y": 142,
-                  "w": 96,
-                  "h": 112,
+                  "x": 110,
+                  "y": 181,
+                  "w": 54,
+                  "h": 87,
                   "image": "coelho"
                 },
                 {
                   "type": "g2d:createImageSprite",
                   "varName": "arbusto",
-                  "x": 72,
-                  "y": 160,
-                  "w": 150,
-                  "h": 122,
+                  "x": 60,
+                  "y": 166,
+                  "w": 154,
+                  "h": 116,
                   "image": "arbusto"
                 },
                 {
@@ -227,19 +223,19 @@
                 {
                   "type": "g2d:createImageSprite",
                   "varName": "raposa",
-                  "x": 270,
-                  "y": 142,
-                  "w": 96,
-                  "h": 112,
+                  "x": 277,
+                  "y": 184,
+                  "w": 66,
+                  "h": 84,
                   "image": "raposa"
                 },
                 {
                   "type": "g2d:createImageSprite",
                   "varName": "pedras",
-                  "x": 245,
-                  "y": 160,
-                  "w": 150,
-                  "h": 122,
+                  "x": 229.5,
+                  "y": 170,
+                  "w": 161,
+                  "h": 112,
                   "image": "pedras"
                 },
                 {
@@ -250,19 +246,19 @@
                 {
                   "type": "g2d:createImageSprite",
                   "varName": "coruja",
-                  "x": 443,
-                  "y": 142,
-                  "w": 96,
-                  "h": 112,
+                  "x": 447,
+                  "y": 187,
+                  "w": 72,
+                  "h": 81,
                   "image": "coruja"
                 },
                 {
                   "type": "g2d:createImageSprite",
                   "varName": "flores",
-                  "x": 418,
-                  "y": 160,
-                  "w": 150,
-                  "h": 122,
+                  "x": 416.5,
+                  "y": 138,
+                  "w": 133,
+                  "h": 144,
                   "image": "flores"
                 },
                 {
@@ -370,94 +366,6 @@
               "languageVersion": 0,
               "blocks": [
                 {
-                  "type": "sz_frame_structure",
-                  "inputs": {
-                    "CHILDREN": {
-                      "block": {
-                        "type": "sz_html_canvas",
-                        "fields": {
-                          "ID": "tela",
-                          "CLASS": "",
-                          "DESCRIPTION": ""
-                        },
-                        "data": "{\"width\":640,\"height\":360}"
-                      }
-                    }
-                  },
-                  "x": 32,
-                  "y": 32
-                },
-                {
-                  "type": "sz_frame_appearance",
-                  "inputs": {
-                    "CHILDREN": {
-                      "block": {
-                        "type": "sz_css_body_background",
-                        "fields": {
-                          "COLOR": "#c7effb"
-                        },
-                        "next": {
-                          "block": {
-                            "type": "sz_css_justify",
-                            "fields": {
-                              "SELECTOR": "body",
-                              "VALUE": "center"
-                            },
-                            "next": {
-                              "block": {
-                                "type": "sz_css_align",
-                                "fields": {
-                                  "SELECTOR": "body",
-                                  "VALUE": "center"
-                                },
-                                "next": {
-                                  "block": {
-                                    "type": "sz_css_rule",
-                                    "fields": {
-                                      "SELECTOR": "body"
-                                    },
-                                    "inputs": {
-                                      "CHILDREN": {
-                                        "block": {
-                                          "type": "sz_css_decl",
-                                          "fields": {
-                                            "PROP": "margin",
-                                            "VALUE": "0"
-                                          },
-                                          "next": {
-                                            "block": {
-                                              "type": "sz_css_decl",
-                                              "fields": {
-                                                "PROP": "display",
-                                                "VALUE": "flex"
-                                              },
-                                              "next": {
-                                                "block": {
-                                                  "type": "sz_css_decl",
-                                                  "fields": {
-                                                    "PROP": "min-height",
-                                                    "VALUE": "100vh"
-                                                  }
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
-                  "x": 452,
-                  "y": 32
-                },
-                {
                   "type": "sz_frame_start",
                   "inputs": {
                     "CHILDREN": {
@@ -518,7 +426,7 @@
                                         "shadow": {
                                           "type": "sz_val_number",
                                           "fields": {
-                                            "NUM": 97
+                                            "NUM": 110
                                           }
                                         }
                                       },
@@ -526,7 +434,7 @@
                                         "shadow": {
                                           "type": "sz_val_number",
                                           "fields": {
-                                            "NUM": 142
+                                            "NUM": 181
                                           }
                                         }
                                       },
@@ -534,7 +442,7 @@
                                         "shadow": {
                                           "type": "sz_val_number",
                                           "fields": {
-                                            "NUM": 96
+                                            "NUM": 54
                                           }
                                         }
                                       },
@@ -542,7 +450,7 @@
                                         "shadow": {
                                           "type": "sz_val_number",
                                           "fields": {
-                                            "NUM": 112
+                                            "NUM": 87
                                           }
                                         }
                                       }
@@ -559,7 +467,7 @@
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
-                                                "NUM": 72
+                                                "NUM": 60
                                               }
                                             }
                                           },
@@ -567,7 +475,7 @@
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
-                                                "NUM": 160
+                                                "NUM": 166
                                               }
                                             }
                                           },
@@ -575,7 +483,7 @@
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
-                                                "NUM": 150
+                                                "NUM": 154
                                               }
                                             }
                                           },
@@ -583,7 +491,7 @@
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
-                                                "NUM": 122
+                                                "NUM": 116
                                               }
                                             }
                                           }
@@ -607,7 +515,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 270
+                                                        "NUM": 277
                                                       }
                                                     }
                                                   },
@@ -615,7 +523,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 142
+                                                        "NUM": 184
                                                       }
                                                     }
                                                   },
@@ -623,7 +531,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 96
+                                                        "NUM": 66
                                                       }
                                                     }
                                                   },
@@ -631,7 +539,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 112
+                                                        "NUM": 84
                                                       }
                                                     }
                                                   }
@@ -648,7 +556,7 @@
                                                         "shadow": {
                                                           "type": "sz_val_number",
                                                           "fields": {
-                                                            "NUM": 245
+                                                            "NUM": 229.5
                                                           }
                                                         }
                                                       },
@@ -656,7 +564,7 @@
                                                         "shadow": {
                                                           "type": "sz_val_number",
                                                           "fields": {
-                                                            "NUM": 160
+                                                            "NUM": 170
                                                           }
                                                         }
                                                       },
@@ -664,7 +572,7 @@
                                                         "shadow": {
                                                           "type": "sz_val_number",
                                                           "fields": {
-                                                            "NUM": 150
+                                                            "NUM": 161
                                                           }
                                                         }
                                                       },
@@ -672,7 +580,7 @@
                                                         "shadow": {
                                                           "type": "sz_val_number",
                                                           "fields": {
-                                                            "NUM": 122
+                                                            "NUM": 112
                                                           }
                                                         }
                                                       }
@@ -696,7 +604,7 @@
                                                                 "shadow": {
                                                                   "type": "sz_val_number",
                                                                   "fields": {
-                                                                    "NUM": 443
+                                                                    "NUM": 447
                                                                   }
                                                                 }
                                                               },
@@ -704,7 +612,7 @@
                                                                 "shadow": {
                                                                   "type": "sz_val_number",
                                                                   "fields": {
-                                                                    "NUM": 142
+                                                                    "NUM": 187
                                                                   }
                                                                 }
                                                               },
@@ -712,7 +620,7 @@
                                                                 "shadow": {
                                                                   "type": "sz_val_number",
                                                                   "fields": {
-                                                                    "NUM": 96
+                                                                    "NUM": 72
                                                                   }
                                                                 }
                                                               },
@@ -720,7 +628,7 @@
                                                                 "shadow": {
                                                                   "type": "sz_val_number",
                                                                   "fields": {
-                                                                    "NUM": 112
+                                                                    "NUM": 81
                                                                   }
                                                                 }
                                                               }
@@ -737,7 +645,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": 418
+                                                                        "NUM": 416.5
                                                                       }
                                                                     }
                                                                   },
@@ -745,7 +653,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": 160
+                                                                        "NUM": 138
                                                                       }
                                                                     }
                                                                   },
@@ -753,7 +661,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": 150
+                                                                        "NUM": 133
                                                                       }
                                                                     }
                                                                   },
@@ -761,7 +669,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": 122
+                                                                        "NUM": 144
                                                                       }
                                                                     }
                                                                   }
@@ -1010,14 +918,6 @@
           ]
         }
       }
-    },
-    {
-      "key": "caderno",
-      "content": {
-        "kind": "materials",
-        "title": "Mapa do jogo Cadê Todo Mundo?",
-        "items": []
-      }
     }
   ],
   "sections": [
@@ -1033,6 +933,20 @@
       "completion": {
         "version": 1,
         "blockIds": ["video-a1-abertura"]
+      }
+    },
+    {
+      "key": "seu-mapa-do-jogo",
+      "title": "Seu mapa do jogo",
+      "intent": "material",
+      "objective": "Conhecer o caderno e saber onde consultá-lo durante as duas aulas.",
+      "blockKeys": ["video-a1-caderno", "caderno"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a1-caderno"]
       }
     },
     {
@@ -1054,7 +968,7 @@
       "title": "Faça alguém aparecer",
       "intent": "delivery",
       "objective": "Encaixar a reação no evento preparado e tocar num esconderijo do próprio jogo.",
-      "blockKeys": ["video-a1-programar", "ponte-a1-programar", "projeto", "caderno"],
+      "blockKeys": ["video-a1-programar", "ponte-a1-programar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

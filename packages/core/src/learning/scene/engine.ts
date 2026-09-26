@@ -400,6 +400,30 @@ export function stepScene(
         observe(s, 'locked-without-key', 'A porta ficou fechada sem a chave')
       }
       break
+    case 'find-character': {
+      const foundIds = s.match.foundIds ?? []
+      if (foundIds.includes(action.id)) {
+        s.caption = 'Este personagem já foi encontrado. Achados continua igual.'
+        break
+      }
+      s.match.foundIds = [...foundIds, action.id]
+      s.match.points = s.match.foundIds.length
+      if (s.match.points === 1) observe(s, 'first-find', 'Achados aumentou após encontrar alguém')
+      if (s.match.points === 2)
+        observe(s, 'second-find', 'Outra descoberta aumentou Achados de novo')
+      s.caption = `Você encontrou um personagem. Achados: ${s.match.points}.`
+      break
+    }
+    case 'look-around':
+      if (s.match.points > 0) observe(s, 'no-find', 'Procurar sem encontrar não mudou Achados')
+      s.caption = 'Você procurou, mas não encontrou ninguém. Achados continua igual.'
+      break
+    case 'restart-search':
+      if (s.match.points > 0) observe(s, 'back-to-zero', 'Uma nova busca começou com zero achados')
+      s.match.points = 0
+      s.match.foundIds = []
+      s.caption = 'Uma nova busca começou. Achados: 0.'
+      break
     case 'value-source':
       s.fixedRead.source = action.source
       s.caption =
@@ -882,7 +906,8 @@ export function stepScene(
       if (scene === 'controls' && action.input === 'key')
         observe(s, 'start-key', 'Começou com Enter.')
       else if (scene === 'controls') observe(s, 'start-tap', 'Começou tocando.')
-      else if (scene === 'touch-response') observe(s, 'responds', 'O toque revelou o personagem.')
+      else if (scene === 'touch-response')
+        observe(s, 'responds', 'O toque deixou o arbusto invisível e revelou o coelho.')
       else s.caption = 'A partida começou.'
       if (scene === 'score') verPlacar(s)
       break

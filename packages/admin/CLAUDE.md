@@ -235,7 +235,8 @@ remoção e só então o Admin envia `mode: replace` na aplicação. Trocar o mo
 prévia e gera outro `operationId`.
 
 A substituição continua sendo uma única escrita concorrente no rascunho. Blocos que reaparecem com
-a mesma chave preservam ID, vídeo vinculado e configurações operacionais; blocos omitidos saem
+a mesma chave preservam ID e vídeo vinculado; o projeto inicial do Estúdio é atualizado pelo
+manifesto nos dois modos, sem apagar entregas ou rascunhos dos alunos. Blocos omitidos saem
 independentemente do tipo. A versão publicada não é alterada. Não existe botão separado para
 “apagar tudo”, porque criaria um rascunho vazio entre duas operações e perderia a prévia do que sai.
 

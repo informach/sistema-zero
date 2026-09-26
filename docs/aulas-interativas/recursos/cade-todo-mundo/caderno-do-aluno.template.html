@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Caderno do Aluno - Cadê Todo Mundo?</title>
+  <style>
+    /* {{FONT_FACES}} */
+    :root {
+      --ink: #1f2042;
+      --muted: #585a7a;
+      --brand: #5a4bff;
+      --brand-soft: #ece9ff;
+      --blue: #2f80ed;
+      --blue-soft: #e7f0fd;
+      --purple: #8b5cf6;
+      --purple-soft: #f1ebfe;
+      --green: #16a34a;
+      --green-soft: #e3f6ec;
+      --event: #d99c10;
+      --game-block: #ec4899;
+      --program-block: #f97316;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; color: var(--ink); font-family: Nunito, Arial, sans-serif; }
+    body { background: #c7cadb; }
+    h1, h2, h3, .kicker, .number, .page-no { font-family: 'Baloo 2', Arial, sans-serif; }
+    p { margin: 0; line-height: 1.55; }
+    @page { size: A4; margin: 0; }
+    .page { width: 210mm; height: 297mm; background: #fff; position: relative; overflow: hidden; margin: 0 auto 8mm; break-after: page; page-break-after: always; }
+    .page:last-child { break-after: auto; page-break-after: auto; }
+    .inner { padding: 15mm 15mm 25mm; height: 100%; }
+    .page-no { position: absolute; bottom: 10mm; left: 15mm; right: 15mm; display: flex; justify-content: space-between; color: #a6a8c8; font-size: 10pt; }
+    .page-no .brand { color: var(--brand); }
+    .kicker { color: var(--brand); font-size: 11pt; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    h1, h2, h3 { margin: 0; line-height: 1.12; }
+    h2 { font-size: 25pt; }
+    h3 { font-size: 14pt; }
+    .lead { font-size: 12pt; line-height: 1.58; }
+    .small { font-size: 9.5pt; color: var(--muted); }
+    .soft-box { border-radius: 16px; padding: 18px 20px; }
+    .pill { display: inline-block; border-radius: 40px; padding: 4px 11px; font-size: 9pt; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+    .pill--experience { color: var(--brand); background: var(--brand-soft); }
+    .pill--build { color: var(--blue); background: var(--blue-soft); }
+    .pill--test { color: var(--green); background: var(--green-soft); }
+    .number { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; background: var(--blue-soft); color: var(--blue); font-size: 15pt; font-weight: 700; }
+    .steps { display: grid; gap: 12px; }
+    .step { display: flex; gap: 12px; font-size: 11pt; line-height: 1.48; }
+    .step strong { color: var(--ink); }
+    .path { color: var(--brand); font-weight: 800; }
+    .note { border-left: 5px solid var(--brand); background: #f8f7ff; border-radius: 0 12px 12px 0; padding: 12px 16px; font-size: 10pt; }
+    .check { border-radius: 16px; padding: 14px 17px; background: #f6f8ff; border: 1px solid #e0e4fb; }
+    .check strong { color: var(--brand); }
+    .scene { width: 100%; display: block; }
+
+    /* Capa: foto/arte acima, título num painel escuro abaixo, como no caderno de referência. */
+    .cover { background: #0e1230; color: #fff; }
+    .cover-art { height: 53%; overflow: hidden; position: relative; }
+    .cover-art .scene { height: 100%; object-fit: cover; }
+    .cover-art::after { content: ''; position: absolute; inset: auto 0 0; height: 26%; background: linear-gradient(transparent, #0e1230); }
+    .cover-copy { padding: 9mm 15mm 12mm; }
+    .cover .badge { border: 1px solid #ffffff55; background: #ffffff22; border-radius: 40px; padding: 7px 15px; font-size: 10pt; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .cover h1 { margin-top: 19px; font-size: 43pt; }
+    .cover h1 em { color: #ffd166; font-style: normal; }
+    .cover p { max-width: 155mm; font-size: 13pt; margin-top: 12px; color: #eef1ff; }
+    .cover .zappy { position: absolute; width: 36mm; right: 11mm; bottom: 12mm; }
+    .cover .cover-bottom { color: #ffd7ef; font-family: 'Baloo 2', Arial, sans-serif; font-size: 13pt; margin-top: 19mm; }
+
+    /* Mapa: uma abertura visual, não um segundo PDF. */
+    .map-intro { margin-top: 6mm; }
+    .map-scene { margin-top: 8mm; border-radius: 18px; overflow: hidden; border: 1px solid #e6e8f5; }
+    .map-scene .scene { height: 65mm; object-fit: cover; }
+    .map-scene figcaption { padding: 8px 14px; color: var(--muted); font-size: 9.5pt; font-weight: 700; }
+    .map-title { margin: 9mm 0 5mm; font-size: 20pt; }
+    .map-cards { display: grid; gap: 10px; }
+    .map-card { display: flex; gap: 14px; align-items: flex-start; border-radius: 16px; padding: 15px 17px; }
+    .map-card .number { background: #fff; }
+    .map-card:nth-child(1) { background: var(--blue-soft); }
+    .map-card:nth-child(2) { background: var(--purple-soft); }
+    .map-card:nth-child(2) .number { color: var(--purple); }
+    .map-card p { font-size: 10.5pt; }
+    .map-card h3 { margin-bottom: 3px; }
+    .map-end { margin-top: 6mm; }
+
+    /* Aulas: hero, parada de experiência, passos e montagem visual dos blocos. */
+    .lesson-hero { display: flex; min-height: 49mm; margin-bottom: 8mm; border-radius: 18px; overflow: hidden; border: 1px solid #e6e8f5; }
+    .lesson-hero .scene { width: 45%; object-fit: cover; }
+    .lesson-hero-text { flex: 1; padding: 15px 18px; border-top: 5px solid var(--accent); }
+    .lesson-hero .kicker { color: var(--accent); }
+    .lesson-hero h2 { margin: 5px 0 8px; font-size: 23pt; }
+    .lesson-hero p { font-size: 10pt; }
+    .lesson-one { --accent: var(--blue); --accent-soft: var(--blue-soft); }
+    .lesson-two { --accent: var(--purple); --accent-soft: var(--purple-soft); }
+    .lesson-two .number { background: var(--purple-soft); color: var(--purple); }
+    .lesson-two .pill--build { background: var(--purple-soft); color: var(--purple); }
+    .activity { background: var(--brand-soft); border: 1px dashed #b9b0ff; margin-bottom: 7mm; }
+    .activity p { margin-top: 8px; font-size: 10.5pt; }
+    .section-head { margin: 6mm 0 4mm; font-size: 15pt; }
+    .blocks { margin: 5mm 0; padding: 17px; border-radius: 15px; background: #f6f8ff; border: 1px solid #e0e4fb; }
+    .blocks h3 { color: var(--accent); margin-bottom: 16px; }
+    .event-block { padding: 10px; border-radius: 11px; background: var(--event); color: #fff; font-size: 10pt; font-weight: 800; }
+    .event-block .tag { display: inline-block; background: #fff; color: #a97608; border-radius: 30px; padding: 3px 9px; margin-bottom: 6px; font-size: 8pt; }
+    .event-body { background: #fff; border-radius: 8px; margin-top: 9px; padding: 8px; display: grid; gap: 7px; }
+    .block { border-radius: 8px; padding: 8px 10px; color: #fff; font-weight: 800; font-size: 10pt; }
+    .block--game { background: var(--game-block); }
+    .block--program { background: var(--program-block); }
+    .field { color: var(--ink); background: #fff; border-radius: 30px; padding: 1px 9px; margin: 0 2px; white-space: nowrap; }
+    .endline { font-size: 10.5pt; margin-top: 6mm; }
+    @media screen { .page { box-shadow: 0 12px 32px #16182b40; } }
+    @media print { html, body { background: #fff; } .page { margin: 0; box-shadow: none; } * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <section class="page cover">
+    <div class="cover-art"><img class="scene" src="{{SCENE_REVEALED}}" alt="Jardim com coelho, raposa e coruja"></div>
+    <div class="cover-copy">
+      <span class="badge">Caderno do Aluno</span>
+      <h1>Cadê <em>Todo Mundo?</em></h1>
+      <p>Seu mapa para criar o jogo e conferir cada passo quando quiser.</p>
+      <div class="cover-bottom">Do primeiro toque aos três personagens encontrados.</div>
+    </div>
+    <img class="zappy" src="{{ZAPPY}}" alt="Zappy feliz">
+  </section>
+
+  <section class="page">
+    <div class="inner">
+      <div class="kicker">Antes de começar</div>
+      <h2>O jardim espera por você</h2>
+      <p class="lead map-intro">O cenário, os três personagens, os esconderijos, o número <strong>Achados</strong> e a comemoração já vêm preparados. Nas duas aulas, você vai criar as ações que fazem a busca funcionar.</p>
+      <figure class="map-scene"><img class="scene" src="{{SCENE_HIDDEN}}" alt="Jardim com três esconderijos"><figcaption>O jogo começa com os personagens atrás dos esconderijos.</figcaption></figure>
+      <h3 class="map-title">Mapa do jogo</h3>
+      <div class="map-cards">
+        <div class="map-card"><div class="number">1</div><div><h3>O primeiro achado</h3><p>Experimente o toque e faça um personagem aparecer quando alguém tocar no esconderijo.</p></div></div>
+        <div class="map-card"><div class="number">2</div><div><h3>Complete a busca</h3><p>Faça cada descoberta aumentar o número Achados. Teste os três esconderijos e veja o jogo comemorar.</p></div></div>
+      </div>
+      <div class="note map-end">Este caderno é uma ajuda para consultar na tela quando precisar. Os vídeos mostram os gestos; você não precisa baixar nem imprimir para continuar.</div>
+    </div>
+    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>2 / 4</span></div>
+  </section>
+
+  <section class="page lesson-one">
+    <div class="inner">
+      <div class="lesson-hero"><img class="scene" src="{{SCENE_HIDDEN}}" alt="Jardim com personagens escondidos"><div class="lesson-hero-text"><div class="kicker">Aula 1 de 2</div><h2>O primeiro achado</h2><p>Você vai ligar o toque no esconderijo a uma ação.</p></div></div>
+      <div class="soft-box activity"><span class="pill pill--experience">Experiência</span><p>Toque no esconderijo da atividade. Depois ligue a reação e toque de novo. <strong>O que mudou?</strong> Observe antes de montar o seu jogo.</p></div>
+      <span class="pill pill--build">Montar no Estúdio</span>
+      <h3 class="section-head">Faça o personagem aparecer</h3>
+      <div class="steps">
+        <div class="step"><span class="number">1</span><p>Na área <strong>Quando acontecer</strong>, encontre o bloco que começa com <strong>Quando clicar ou tocar num sprite do grupo esconderijos</strong>. Ele já está no projeto.</p></div>
+        <div class="step"><span class="number">2</span><p>Na paleta, abra <span class="path">Jogo 2D &gt; Sprites &gt; Aparência</span>. Pegue <strong>Deixar o sprite com ___% de visibilidade</strong> e encaixe dentro do evento do toque.</p></div>
+        <div class="step"><span class="number">3</span><p>No bloco novo, escolha <strong>escolhido</strong>, que é o esconderijo tocado. Troque o número por <strong>0</strong>. Ele fica invisível e revela o personagem que já estava atrás.</p></div>
+      </div>
+      <div class="blocks"><h3>Confira se os blocos ficaram assim</h3><div class="event-block"><span class="tag">Áreas do projeto - Quando acontecer</span><br>Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de <span class="field">escolhido</span><div class="event-body"><div class="block block--game">Deixar o sprite <span class="field">escolhido</span> com <span class="field">0</span>% de visibilidade</div></div></div></div>
+      <div class="check"><span class="pill pill--test">Testar e enviar</span><p class="endline">Abra a <strong>Pré-visualização</strong>. Com o Estúdio estreito, ela fica numa aba; com mais espaço, o jogo aparece ao lado dos blocos. Espere a mudança aparecer e toque nos esconderijos. Quando aparecer <strong>Salvo</strong>, aperte <strong>Enviar para o professor</strong>. Achados ainda fica em zero: você fará a contagem na Aula 2.</p></div>
+    </div>
+    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>3 / 4</span></div>
+  </section>
+
+  <section class="page lesson-two">
+    <div class="inner">
+      <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="Jardim com os três personagens"><div class="lesson-hero-text"><div class="kicker">Aula 2 de 2</div><h2>Complete a busca</h2><p>Agora o jogo vai contar cada descoberta.</p></div></div>
+      <div class="note">Toque em um esconderijo antes de mudar os blocos. O personagem aparece, mas Achados continua em zero. Falta ligar a ação de contar.</div>
+      <span class="pill pill--build" style="margin-top:7mm">Montar no Estúdio</span>
+      <h3 class="section-head">Cada personagem vale um achado</h3>
+      <div class="steps">
+        <div class="step"><span class="number">1</span><p>Na área <strong>Quando acontecer</strong>, encontre o mesmo evento do toque. Dentro dele já está a ação que deixa o esconderijo invisível.</p></div>
+        <div class="step"><span class="number">2</span><p>Na paleta, abra <span class="path">Programação &gt; Variáveis</span>. Pegue <strong>Somar ___ em variável ___</strong> e encaixe no mesmo evento, <strong>abaixo</strong> do bloco de visibilidade.</p></div>
+        <div class="step"><span class="number">3</span><p>Deixe <strong>1</strong> no primeiro campo, porque cada personagem vale um achado. No segundo campo, escolha <strong>achados</strong>, o nome do número mostrado no jogo.</p></div>
+      </div>
+      <div class="blocks"><h3>Confira se os blocos ficaram assim</h3><div class="event-block"><span class="tag">Áreas do projeto - Quando acontecer</span><br>Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de <span class="field">escolhido</span><div class="event-body"><div class="block block--game">Deixar o sprite <span class="field">escolhido</span> com <span class="field">0</span>% de visibilidade</div><div class="block block--program">Somar <span class="field">1</span> em variável <span class="field">achados</span></div></div></div></div>
+      <div class="check"><span class="pill pill--test">Testar e enviar</span><p class="endline">Na <strong>Pré-visualização</strong>, toque nos três esconderijos. Achados deve passar por <strong>1, 2 e 3</strong>; então aparece a comemoração que já estava preparada. Se o número não mudar, confira os campos e a posição dos dois blocos. Espere aparecer <strong>Salvo</strong> e aperte <strong>Enviar para o professor</strong>.</p></div>
+    </div>
+    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>4 / 4</span></div>
+  </section>
+</body>
+</html>

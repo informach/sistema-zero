@@ -30,6 +30,7 @@ const CAMPOS_COMPATIVEIS = new Set([
   'animation.sameFrames',
   'match.scoreClock',
   'match.scoreFrameTicks',
+  'match.foundIds',
 ])
 
 /** Os 31 grupos que a hidratação conhece. Fora deles, grupo ausente já recusava o retrato. */

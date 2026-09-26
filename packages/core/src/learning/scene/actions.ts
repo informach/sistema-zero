@@ -46,6 +46,7 @@ export const SCENE_IDS = [
   'game-state',
   'controls',
   'touch-response',
+  'found-counter',
   'lighthouse-key',
   'restart',
   'hitbox',
@@ -135,6 +136,8 @@ export type SceneAction =
   | { type: 'trigger' }
   | { type: 'key-state'; hasKey: boolean }
   | { type: 'try-lighthouse-door' }
+  | { type: 'find-character'; id: 0 | 1 | 2 }
+  | { type: 'look-around' | 'restart-search' }
   | { type: 'value-source'; source: 'fixed' | 'read' }
   | { type: 'box-marks'; on: boolean }
   | { type: 'clear-marks' }
@@ -326,6 +329,7 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   'game-state': ['condition'],
   controls: ['touch'],
   'touch-response': ['touch'],
+  'found-counter': [],
   'lighthouse-key': [],
   restart: ['restart'],
   hitbox: [],
@@ -656,6 +660,11 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'lighthouse-key' && typeof value.hasKey === 'boolean'
     case 'try-lighthouse-door':
       return scene === 'lighthouse-key'
+    case 'find-character':
+      return scene === 'found-counter' && (value.id === 0 || value.id === 1 || value.id === 2)
+    case 'look-around':
+    case 'restart-search':
+      return scene === 'found-counter'
     case 'value-source':
       return scene === 'fixed-vs-read' && (value.source === 'fixed' || value.source === 'read')
     case 'box-marks':

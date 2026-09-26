@@ -17,6 +17,7 @@ export async function prepareContentReadinessTables(conn: DbConnection): Promise
       "level text not null default 'iniciante'",
       "track text not null default '2d'",
       'career_slot smallint',
+      "journey_role text not null default 'reward'",
       'sequential_lock boolean not null default true',
       'metadata jsonb',
       'created_at timestamptz not null default now()',

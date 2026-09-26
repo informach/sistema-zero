@@ -1297,9 +1297,9 @@
     "id": "touch-response",
     "grupo": "events",
     "titulo": "O toque faz o jogo responder",
-    "instrucao": "Toque no esconderijo. Depois ligue a reação ao toque e experimente de novo.",
+    "instrucao": "O que muda quando você toca no arbusto com a reação desligada e ligada?",
     "manipula": "A ligação da reação e o toque no esconderijo",
-    "frase_sucesso": "O toque só revelou o personagem quando havia uma ação ligada a ele.",
+    "frase_sucesso": "Com a reação ligada ao toque, o arbusto ficou invisível e o coelho apareceu.",
     "pergunta_extra": "O que aconteceria se você ligasse outra ação ao mesmo toque?",
     "metas": [
       {
@@ -1331,6 +1331,65 @@
       }
     ],
     "acoes_usadas": ["connect", "start"]
+  },
+  {
+    "id": "found-counter",
+    "grupo": "events",
+    "titulo": "Quantos já encontramos?",
+    "instrucao": "O que acontece com Achados quando você encontra alguém, procura sem achar e começa outra busca?",
+    "manipula": "A busca e o número atual de Achados",
+    "frase_sucesso": "Achados guarda o número de personagens encontrados nesta busca.",
+    "pergunta_extra": "E se você tocar outra vez no mesmo esconderijo?",
+    "metas": [
+      {
+        "id": "first-find",
+        "rotulo": "O primeiro achado mudou o número",
+        "pedido": "Toque em um esconderijo.",
+        "soNoCaso": false
+      },
+      {
+        "id": "second-find",
+        "rotulo": "Outro achado mudou o número de novo",
+        "pedido": "Toque em outro esconderijo.",
+        "soNoCaso": false
+      },
+      {
+        "id": "no-find",
+        "rotulo": "Procurar sem achar não somou",
+        "pedido": "Toque fora dos esconderijos depois de encontrar alguém.",
+        "soNoCaso": false
+      },
+      {
+        "id": "back-to-zero",
+        "rotulo": "Uma nova busca começou em zero",
+        "pedido": "Use Recomeçar a busca depois de encontrar alguém.",
+        "soNoCaso": false
+      }
+    ],
+    "pistas": [
+      "Olhe o número Achados enquanto toca no jardim.",
+      "Compare tocar em um esconderijo com tocar em um lugar vazio.",
+      "Toque no arbusto, depois nas pedras, toque fora dos esconderijos e use Recomeçar a busca."
+    ],
+    "roteiro_demonstracao": [
+      {
+        "passo": "step-1",
+        "fala": "O primeiro personagem fez Achados chegar a 1."
+      },
+      {
+        "passo": "step-2",
+        "fala": "O segundo personagem fez Achados chegar a 2."
+      },
+      {
+        "passo": "step-3",
+        "fala": "Procurar sem achar manteve Achados em 2."
+      },
+      {
+        "passo": "step-4",
+        "fala": "Uma nova busca levou Achados de volta a 0."
+      }
+    ],
+    "acoes_usadas": ["find-character", "look-around", "restart-search"]
   },
   {
     "id": "restart",

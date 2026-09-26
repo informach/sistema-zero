@@ -1227,9 +1227,9 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     id: 'touch-response',
     group: 'events',
     title: 'O toque faz o jogo responder',
-    instruction: 'Toque no esconderijo. Depois ligue a reação ao toque e experimente de novo.',
+    instruction: 'O que muda quando você toca no arbusto com a reação desligada e ligada?',
     manipulates: 'A ligação da reação e o toque no esconderijo',
-    success: 'O toque só revelou o personagem quando havia uma ação ligada a ele.',
+    success: 'Com a reação ligada ao toque, o arbusto ficou invisível e o coelho apareceu.',
     extra: 'O que aconteceria se você ligasse outra ação ao mesmo toque?',
     goals: [
       {
@@ -1247,6 +1247,43 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Toque no esconderijo e observe se a figura muda.',
       'Escolha se o toque tem uma ação ligada a ele.',
       'Primeiro toque sem reação. Depois ligue a reação e toque outra vez.',
+    ],
+  },
+  'found-counter': {
+    id: 'found-counter',
+    group: 'events',
+    title: 'Quantos já encontramos?',
+    instruction:
+      'O que acontece com Achados quando você encontra alguém, procura sem achar e começa outra busca?',
+    manipulates: 'A busca e o número atual de Achados',
+    success: 'Achados guarda o número de personagens encontrados nesta busca.',
+    extra: 'E se você tocar outra vez no mesmo esconderijo?',
+    goals: [
+      {
+        id: 'first-find',
+        label: 'O primeiro achado mudou o número',
+        pedido: 'Toque em um esconderijo.',
+      },
+      {
+        id: 'second-find',
+        label: 'Outro achado mudou o número de novo',
+        pedido: 'Toque em outro esconderijo.',
+      },
+      {
+        id: 'no-find',
+        label: 'Procurar sem achar não somou',
+        pedido: 'Toque fora dos esconderijos depois de encontrar alguém.',
+      },
+      {
+        id: 'back-to-zero',
+        label: 'Uma nova busca começou em zero',
+        pedido: 'Use Recomeçar a busca depois de encontrar alguém.',
+      },
+    ],
+    hints: [
+      'Olhe o número Achados enquanto toca no jardim.',
+      'Compare tocar em um esconderijo com tocar em um lugar vazio.',
+      'Toque no arbusto, depois nas pedras, toque fora dos esconderijos e use Recomeçar a busca.',
     ],
   },
   'lighthouse-key': {
@@ -2451,6 +2488,7 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   'game-state': PREVIA_INICIAL,
   controls: PREVIA_INICIAL,
   'touch-response': PREVIA_INICIAL,
+  'found-counter': PREVIA_INICIAL,
   'lighthouse-key': PREVIA_INICIAL,
   restart: PREVIA_INICIAL,
   hitbox: PREVIA_INICIAL,

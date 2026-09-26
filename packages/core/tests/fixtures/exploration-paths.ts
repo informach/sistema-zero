@@ -240,6 +240,12 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
     { type: 'connect', port: 'touch', enabled: true },
     { type: 'start', input: 'tap' },
   ],
+  'found-counter': [
+    { type: 'find-character', id: 0 },
+    { type: 'find-character', id: 1 },
+    { type: 'look-around' },
+    { type: 'restart-search' },
+  ],
   'lighthouse-key': [
     { type: 'try-lighthouse-door' },
     { type: 'key-state', hasKey: true },

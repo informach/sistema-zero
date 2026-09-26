@@ -27,7 +27,7 @@ describe('palco O toque faz o jogo responder', () => {
     expect(controls).toContain('Desligar a reação ao toque')
   })
 
-  test('depois do toque, o personagem aparece e pode-se voltar ao começo', () => {
+  test('depois do toque, o coelho aparece e o controle mostra como repetir', () => {
     const start = { scene: 'touch-response' } as const
     const state = stepScene(
       start,
@@ -40,7 +40,7 @@ describe('palco O toque faz o jogo responder', () => {
     )
     expect(
       renderToStaticMarkup(<TouchResponseStage state={state} dispatch={() => {}} />),
-    ).toContain('O personagem apareceu')
+    ).toContain('O coelho apareceu')
     expect(
       renderToStaticMarkup(
         <LessonSceneControls
@@ -51,6 +51,6 @@ describe('palco O toque faz o jogo responder', () => {
           onRunning={() => {}}
         />,
       ),
-    ).toContain('Voltar ao começo')
+    ).toContain('Testar de novo com a reação ligada')
   })
 })

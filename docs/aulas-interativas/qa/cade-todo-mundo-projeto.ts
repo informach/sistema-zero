@@ -1,6 +1,10 @@
 import {
   JARDIM_ASSETS,
+  JARDIM_BASE_ESCONDERIJOS,
+  JARDIM_BASE_PERSONAGENS,
+  JARDIM_PARES,
   type JardimAssetName,
+  jardimSpriteRect,
   jardimSvg,
 } from '../../../packages/studio/src/arte/jardim-assets'
 import { buildWorkspaceStateFromIR } from '../../../packages/studio/src/blockly/workspaceState'
@@ -38,29 +42,17 @@ export const ASSETS_CADE_TODO_MUNDO: ProjectAsset[] = [
   image('flores'),
 ]
 
-const pares = [
-  { personagem: 'coelho', esconderijo: 'arbusto', x: 72 },
-  { personagem: 'raposa', esconderijo: 'pedras', x: 245 },
-  { personagem: 'coruja', esconderijo: 'flores', x: 418 },
-] as const
-
-const criarSprites: JSStatement[] = pares.flatMap(({ personagem, esconderijo, x }) => [
+const criarSprites: JSStatement[] = JARDIM_PARES.flatMap(({ personagem, esconderijo, centroX }) => [
   {
     type: 'g2d:createImageSprite',
     varName: personagem,
-    x: x + 25,
-    y: 142,
-    w: 96,
-    h: 112,
+    ...jardimSpriteRect(personagem, centroX, JARDIM_BASE_PERSONAGENS),
     image: personagem,
   },
   {
     type: 'g2d:createImageSprite',
     varName: esconderijo,
-    x,
-    y: 160,
-    w: 150,
-    h: 122,
+    ...jardimSpriteRect(esconderijo, centroX, JARDIM_BASE_ESCONDERIJOS),
     image: esconderijo,
   },
   { type: 'g2d:addToGroup', spriteVar: esconderijo, groupVar: 'esconderijos' },
@@ -68,20 +60,10 @@ const criarSprites: JSStatement[] = pares.flatMap(({ personagem, esconderijo, x 
 
 export const IR_CADE_TODO_MUNDO: SZIRV2 = {
   version: 2,
-  html: [{ type: 'canvas', id: 'tela', width: TAMANHO.w, height: TAMANHO.h }],
-  css: [
-    {
-      selector: 'body',
-      declarations: {
-        margin: '0',
-        background: '#c7effb',
-        display: 'flex',
-        'align-items': 'center',
-        'justify-content': 'center',
-        'min-height': '100vh',
-      },
-    },
-  ],
+  // O facilitador Jogo 2D cria e ajusta a tela ao executar `setupStage`.
+  // Assim a criança trabalha só com blocos de programação, sem HTML/CSS/Canvas.
+  html: [],
+  css: [],
   behavior: {
     start: [
       { type: 'g2d:setupStage', width: TAMANHO.w, height: TAMANHO.h, bg: '#c7effb' },
@@ -103,7 +85,7 @@ export const IR_CADE_TODO_MUNDO: SZIRV2 = {
         body: [
           { type: 'g2d:clear' },
           { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: 'jardim' },
-          ...pares.map(({ personagem }) => ({
+          ...JARDIM_PARES.map(({ personagem }) => ({
             type: 'g2d:drawSprite' as const,
             spriteVar: personagem,
             ctxVar: 'ctx',

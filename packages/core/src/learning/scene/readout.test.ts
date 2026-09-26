@@ -218,7 +218,7 @@ describe('a faixa de estado', () => {
     expect(lidas.size).toBe(Object.keys(GENERO).length * 2 - SO_DESLIGADO.size)
   })
 
-  test('o par de comparação usa os tons do desenho; Uma vez e sempre foca só a ação', () => {
+  test('o par de comparação usa os tons do desenho; cenas de um número focam nele', () => {
     // A e B são as cores com que a cena mostra a medida A contra a medida B. Uma faixa toda
     // `plain` perde justamente a ligação com o palco.
     // ⚠️ O primeiro tom não é sempre `a`: em `screen-reader` a descrição VAZIA nasce em
@@ -230,6 +230,10 @@ describe('a faixa de estado', () => {
       const leituras = sceneReadout(scene, toqueRecusado(scene))
       if (scene === 'once-vs-always') {
         expect(leituras.map((leitura) => leitura.label)).toEqual(['ações feitas'])
+        continue
+      }
+      if (scene === 'found-counter') {
+        expect(leituras.map((leitura) => leitura.label)).toEqual(['Achados'])
         continue
       }
       const tons = leituras.map((l) => l.tone)

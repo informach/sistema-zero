@@ -122,9 +122,7 @@ describe('Meu Jeito authored manifests through the HTTP import boundary', () => 
           id,
           content: {
             ...authored.content,
-            ...(pinta
-              ? { initialAsset: content.initialAsset }
-              : { initialProject: content.initialProject }),
+            ...(pinta ? { initialAsset: content.initialAsset } : {}),
           },
         },
       ])

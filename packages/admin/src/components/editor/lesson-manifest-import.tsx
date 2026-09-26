@@ -122,8 +122,9 @@ export function LessonManifestImport({
           <strong>
             {courseSlug} / {lessonSlug}
           </strong>
-          . A prévia mostra os blocos que serão criados ou atualizados. Projetos e materiais já
-          configurados conservam o trabalho e os arquivos anexados.
+          . A prévia mostra os blocos que serão criados ou atualizados. O projeto inicial do Estúdio
+          vem sempre do manifesto; projetos já salvos pelos alunos e arquivos anexados não são
+          apagados.
         </p>
         <fieldset className="space-y-2 rounded-xl border border-border p-4">
           <legend className="px-1 text-sm font-semibold">Como importar</legend>

@@ -41,6 +41,7 @@ import {
   SpawnStage,
 } from './scene-dino-stages'
 import { FixedVsReadStage } from './scene-fixed-vs-read'
+import { FoundCounterStage } from './scene-found-counter'
 import { InvincibilityStage } from './scene-invincibility'
 import { LighthouseKeyStage } from './scene-lighthouse-key'
 import { MotionAmountStage } from './scene-motion-amount'
@@ -305,6 +306,7 @@ function ExplorationStageContent({ activity, state, dispatch, preview }: Explora
     )
   if (m === 'controls') return <ControlsStage state={state} cast={cast} dispatch={podeInteragir} />
   if (m === 'touch-response') return <TouchResponseStage state={state} dispatch={podeInteragir} />
+  if (m === 'found-counter') return <FoundCounterStage state={state} dispatch={podeInteragir} />
   if (m === 'lighthouse-key') return <LighthouseKeyStage state={state} />
   if (m === 'draw-loop') return <DrawLoopStage state={state} cast={cast} />
   // ⭐⭐ O ateliê de O Jogo do Meu Jeito (lote 5 do Raio-X, G4): as sete cenas em

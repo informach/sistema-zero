@@ -1048,6 +1048,36 @@ const CENAS: Record<SceneId, Cena> = {
     revelaNaConclusao:
       'A resposta sobre a reação ao toque só aparece quando a criança liga a ação e toca novamente.',
   },
+  'found-counter': {
+    pedidos: {
+      'first-find': {
+        texto: 'Toque em um esconderijo.',
+        faz: (m) => m.faz({ type: 'find-character', id: 0 }),
+      },
+      'second-find': {
+        texto: 'Toque em outro esconderijo.',
+        faz: (m) => {
+          m.faz({ type: 'find-character', id: 0 })
+          m.faz({ type: 'find-character', id: 1 })
+        },
+      },
+      'no-find': {
+        texto: 'Toque fora dos esconderijos depois de encontrar alguém.',
+        faz: (m) => {
+          m.faz({ type: 'find-character', id: 0 })
+          m.faz({ type: 'look-around' })
+        },
+      },
+      'back-to-zero': {
+        texto: 'Use Recomeçar a busca depois de encontrar alguém.',
+        faz: (m) => {
+          m.faz({ type: 'find-character', id: 0 })
+          m.faz({ type: 'restart-search' })
+        },
+      },
+    },
+    mostra: (s) => s.match.points > 0 && s.caption.includes('continua igual'),
+  },
   'lighthouse-key': {
     pedidos: {
       'locked-without-key': {

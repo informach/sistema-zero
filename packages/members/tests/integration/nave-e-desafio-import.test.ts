@@ -3,12 +3,13 @@ import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { isLearningManifest } from '@sistemazero/core/learning'
 import { studioSettings } from '../../../../docs/aulas-interativas/qa/nave-contra-asteroides-configuracao'
+import { importedLearningId } from '../../src/domain/learning/learning-import'
 import { changeDraft, readDraft } from '../draft-authoring-helpers'
 import { buildApp, seedSampleCourse } from '../helpers'
 
 test.each([
   0, 1, 2, 3, 4, 5,
-])('Day %i imports and reimports in its course while preserving the continuous project', async (day) => {
+])('Day %i imports and reimports in its course with the manifest project', async (day) => {
   const env = buildApp({ requireAdmin: true })
   const course = seedSampleCourse(
     env.courses,
@@ -68,7 +69,7 @@ test.each([
         await changeDraft(env.app, lessonId, {
           type: 'block',
           block: {
-            id: randomUUID(),
+            id: importedLearningId(lessonId, 'block', 'materiais-farol'),
             content: { kind: 'materials', title: 'Materiais do curso', items: [notebook] },
           },
         })
@@ -97,11 +98,9 @@ test.each([
   )
   if (day) {
     const authored = document.blocks.find((b) => 'content' in b && b.content.kind === 'studio')
-    if (!authored || !('content' in authored)) throw new Error('Estúdio ausente')
-    expect(first.document.blocks.find((b) => b.id === id)?.content).toEqual({
-      ...authored.content,
-      initialProject: content.initialProject,
-    })
+    if (!authored || !('content' in authored) || authored.content.kind !== 'studio')
+      throw new Error('Estúdio ausente')
+    expect(first.document.blocks.find((b) => b.id === id)?.content).toEqual(authored.content)
   } else {
     expect(first.document.blocks.some((b) => b.content.kind === 'studio')).toBe(false)
   }

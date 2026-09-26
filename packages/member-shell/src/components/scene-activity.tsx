@@ -1395,7 +1395,8 @@ export function SceneActivityView({
             {
               /* ⭐ A linha de ações: ferramentas à esquerda, o caminho para a frente à direita.
                    ⚠️ Os NOMES acessíveis das ferramentas são o contrato dos testes e de quem navega
-                   por leitor de tela; abaixo de 480px elas ficam só com o ícone. */
+                   por leitor de tela; abaixo de 480px a maioria fica só com o ícone. Nesta cena,
+                   o texto de Recomeçar continua visível para explicar que a reação será desligada. */
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-1">
                   {/* ⭐ `tom="ferramenta"` (contorno), e não `discreta` (fantasma): o kids mantém
@@ -1417,22 +1418,34 @@ export function SceneActivityView({
                     <Undo2 size={16} aria-hidden />
                     <span className="max-[30rem]:sr-only">Desfazer</span>
                   </SceneButton>
-                  {/* ⚠️⚠️ UM botão só para voltar ao começo (lote 2). "Recomeçar" e "Ver de novo"
-                        faziam o mesmo `reset`, lado a lado, e "Ver de novo" prometia assistir. */}
-                  <SceneButton
-                    tom="ferramenta"
-                    className="min-w-11"
-                    disabled={bloqueado}
-                    onClick={() => {
-                      setRunning(false)
-                      dispatch({ type: 'reset' })
-                    }}
-                  >
-                    <RotateCcw size={16} aria-hidden />
-                    <span className={m === 'once-vs-always' ? '' : 'max-[30rem]:sr-only'}>
-                      {m === 'once-vs-always' ? 'Voltar ao começo' : 'Recomeçar'}
-                    </span>
-                  </SceneButton>
+                  {/* A busca tem seu próprio recomeço, que também registra a descoberta de voltar a zero.
+                      Nas outras cenas, o botão geral reinicia o mundo sem apagar o que foi descoberto. */}
+                  {m !== 'found-counter' && (
+                    <SceneButton
+                      tom="ferramenta"
+                      className="min-w-11"
+                      disabled={bloqueado}
+                      onClick={() => {
+                        setRunning(false)
+                        dispatch({ type: 'reset' })
+                      }}
+                    >
+                      <RotateCcw size={16} aria-hidden />
+                      <span
+                        className={
+                          m === 'once-vs-always' || m === 'touch-response'
+                            ? ''
+                            : 'max-[30rem]:sr-only'
+                        }
+                      >
+                        {m === 'touch-response'
+                          ? 'Recomeçar com a reação desligada'
+                          : m === 'once-vs-always'
+                            ? 'Voltar ao começo'
+                            : 'Recomeçar'}
+                      </span>
+                    </SceneButton>
+                  )}
                   {/* ⚠️⚠️ "Uma pista" SOME depois de concluir (a caixa da pista já sumia, e o botão
                       virava um clique mudo que ainda CONTAVA pista no relatório do professor) e fica
                       fechado com o palpite pendente: várias pistas respondem o palpite (review do

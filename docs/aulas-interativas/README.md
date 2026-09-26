@@ -31,8 +31,8 @@ encerramento do antigo Desafio.
 | O Jogo do Meu Jeito | 8 | 76 | 57 | 55 | 49 |
 | **Total** | **28** | **281** | **207** | **202** | **169** |
 
-As 11 cenas anteriores foram construídas e os defeitos do catálogo, corrigidos. A cena de toque do
-gratuito e a experiência da porta do farol elevam o catálogo de 56 para **58 cenas**. Os **34 manifestos**
+As 11 cenas anteriores foram construídas e os defeitos do catálogo, corrigidos. As cenas de toque e
+contagem do gratuito e a experiência da porta do farol elevam o catálogo de 56 para **59 cenas**. Os **34 manifestos**
 passam no validador, sem nenhuma aula esperando cena. O novo Desafio ainda precisa das gravações,
 dos anexos no admin e de ensaio no navegador antes de qualquer publicação.
 
@@ -41,7 +41,7 @@ dos anexos no admin e de ensaio no navegador antes de qualquer publicação.
 | Arquivo | O que é |
 |---|---|
 | `BRIEFING.md` | A doutrina que governa o redesenho. Os dois eixos, as seis perguntas por conceito, o critério de experimentação contra demonstração, as regras de seção e as regras de língua herdadas. **Leia antes de mexer em qualquer aula.** |
-| `CATALOGO-CENAS.json` | As **58 cenas** que existem hoje, extraídas do código da plataforma, com título, o que manipulam, metas, pistas e roteiro de demonstração |
+| `CATALOGO-CENAS.json` | As **59 cenas** que existem hoje, extraídas do código da plataforma, com título, o que manipulam, metas, pistas e roteiro de demonstração |
 | `REFERENCIA-PLATAFORMA.md` | **Onde cada coisa está na plataforma hoje**, lido direto do código, com a fonte citada por linha: o menu da esquerda, o recolhimento dele na aula e na ferramenta, a cor do perfil, as três ações de plataforma, os grupos do menu ⋯ do Estúdio, a lista de projetos e o Pinta. Toda fala que nomeie menu, tela ou botão confere aqui |
 | `REFERENCIA-BLOCOS-JOGO-2D.json` | Os **285 tipos** da paleta do Jogo 2D, extraídos do código: família, seção, todas as linhas do rótulo, cada campo com o padrão de fábrica e a lista de cada menu na ordem da tela |
 | `ESPEC-ROTEIRO.md` | O contrato do roteiro de gravação: o par de nota de produção e fala em parágrafos separados, a regra do caminho completo, o que não existe mais (botão de play, exercício de pausa) e o vocabulário travado |

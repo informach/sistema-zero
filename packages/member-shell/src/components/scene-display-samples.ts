@@ -651,13 +651,23 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
   },
   'touch-response': {
     readouts: [
-      { label: 'esconderijo', value: 'aberto', tone: 'a' },
+      { label: 'arbusto', value: 'invisível', tone: 'a' },
       { label: 'reação ao toque', value: 'ligada', tone: 'b' },
     ],
     situations: [
-      'O esconderijo está fechado.',
+      'O arbusto está visível.',
       'Você tocou, e nada aconteceu.',
-      'O esconderijo abriu e revelou o personagem.',
+      'O arbusto ficou invisível e o coelho apareceu.',
+    ],
+  },
+  'found-counter': {
+    readouts: [{ label: 'Achados', value: '2', tone: 'a' }],
+    situations: [
+      'Nesta busca, 0 personagens encontrados.',
+      'Você encontrou um personagem. Achados: 3.',
+      'Este personagem já foi encontrado. Achados continua igual.',
+      'Você procurou, mas não encontrou ninguém. Achados continua igual.',
+      'Uma nova busca começou. Achados: 0.',
     ],
   },
   'lighthouse-key': {

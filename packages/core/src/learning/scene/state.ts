@@ -162,6 +162,8 @@ export interface SceneMatch {
   restartConnected: boolean
   screen: MatchScreen
   points: number
+  /** Os esconderijos já abertos na busca da cena `found-counter`; ausente nos retratos antigos. */
+  foundIds?: number[]
   clockRemainder: number
   scoreIdle: number
   /**
@@ -1728,6 +1730,7 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
       restartConnected: false,
       screen: 'start',
       points: 0,
+      foundIds: [],
       clockRemainder: 0,
       scoreIdle: 0,
       tries: [],
@@ -1862,6 +1865,7 @@ export function cloneScene(state: SceneState): SceneState {
       ...state.match,
       tries: state.match.tries.map((t) => ({ ...t })),
       seen: [...state.match.seen],
+      foundIds: state.match.foundIds ? [...state.match.foundIds] : undefined,
     },
     contact: { ...state.contact },
     speed: {
@@ -2300,6 +2304,14 @@ function isCorreDinoSegundaMetade(g: Record<string, unknown>): boolean {
   const L = SCENE_LIMITS
   const match = g.match as Record<string, unknown>
   if (!numbers(match.seen, 3) || match.seen.length !== 3 || !num(match.cleared)) return false
+  if (
+    match.foundIds !== undefined &&
+    (!Array.isArray(match.foundIds) ||
+      match.foundIds.length > 3 ||
+      !match.foundIds.every((id) => id === 0 || id === 1 || id === 2) ||
+      new Set(match.foundIds).size !== match.foundIds.length)
+  )
+    return false
   const speed = g.speed as Record<string, unknown>
   if (
     !numbers(speed.spots, 61) ||
