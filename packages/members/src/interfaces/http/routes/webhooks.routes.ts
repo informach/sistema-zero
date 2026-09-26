@@ -189,14 +189,20 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
                   expiresAt,
                   sourceId: body.sourceId,
                 }
-              : {
-                  mode: 'course',
-                  userId: body.userId,
-                  courseRef: body.courseRef,
-                  expiresAt,
-                  sourceId: body.sourceId,
-                  requirePublishedKids: true,
-                },
+              : body.mode === 'course'
+                ? {
+                    mode: 'course',
+                    userId: body.userId,
+                    courseRef: body.courseRef,
+                    expiresAt,
+                    sourceId: body.sourceId,
+                    requirePublishedKids: true,
+                  }
+                : {
+                    mode: 'mural_visitor',
+                    userId: body.userId,
+                    sourceId: body.sourceId,
+                  },
           )
           if (deliveryId) await deps.processed.markProcessed(deliveryId, 'grant-manual')
           await deps.hub.notifyAccessChanged(body.userId, 'grant')

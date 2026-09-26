@@ -42,6 +42,7 @@ export type GrantManualCommand =
     }
   | { mode: 'all_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
   | { mode: 'all_kids_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
+  | { mode: 'mural_visitor'; userId: string; sourceId: string }
 
 /**
  * `product_id` sintético das chaves-mestra MANUAIS (a coluna é uuid NOT NULL e não há
@@ -51,6 +52,8 @@ export type GrantManualCommand =
  */
 export const MANUAL_ALL_COURSES_PRODUCT_ID = '00000000-0000-0000-0000-000000000000'
 export const MANUAL_ALL_KIDS_COURSES_PRODUCT_ID = '00000000-0000-0000-0000-000000000001'
+export const MURAL_VISITOR_PRODUCT_ID = '00000000-0000-0000-0000-000000000002'
+export const MURAL_VISITOR_REF = 'mural-dos-criadores-visitante'
 const MANUAL_SAVE_MAX_ATTEMPTS = 2
 
 export interface GrantManualResult {
@@ -94,7 +97,7 @@ export class GrantManualEntitlementService {
 
   async execute(cmd: GrantManualCommand): Promise<GrantManualResult> {
     const now = this.deps.clock()
-    const expiresAt = cmd.expiresAt ?? null
+    const expiresAt = cmd.mode === 'mural_visitor' ? null : (cmd.expiresAt ?? null)
     switch (cmd.mode) {
       case 'offer':
         return this.grantByOffer(cmd.userId, cmd.offerRef, expiresAt, now, cmd.sourceId)
@@ -111,6 +114,8 @@ export class GrantManualEntitlementService {
         return this.grantAllCourses(cmd.userId, expiresAt, now, cmd.sourceId)
       case 'all_kids_courses':
         return this.grantAllKidsCourses(cmd.userId, expiresAt, now, cmd.sourceId)
+      case 'mural_visitor':
+        return this.grantMuralVisitor(cmd.userId, now, cmd.sourceId)
     }
   }
 
@@ -276,6 +281,39 @@ export class GrantManualEntitlementService {
       sourceId,
     })
     this.deps.logger?.info('grant.manual.all_kids_courses', { userId })
+    return { granted: [view] }
+  }
+
+  private async grantMuralVisitor(
+    userId: string,
+    now: Date,
+    sourceId: string,
+  ): Promise<GrantManualResult> {
+    const snapshot: EntitlementSnapshot = {
+      offerId: '',
+      offerSlug: '',
+      productId: MURAL_VISITOR_PRODUCT_ID,
+      sku: MURAL_VISITOR_REF,
+      name: 'Visita ao Mural dos Criadores',
+      kind: 'community',
+      accessType: 'community',
+      courseRef: MURAL_VISITOR_REF,
+      fulfillment: { accessType: 'community', courseRef: MURAL_VISITOR_REF },
+      resolvedAt: now.toISOString(),
+    }
+    const view = await this.grantOne({
+      userId,
+      productId: MURAL_VISITOR_PRODUCT_ID,
+      productKind: 'community',
+      accessType: 'community',
+      courseRef: MURAL_VISITOR_REF,
+      offerId: null,
+      snapshot,
+      expiresAt: null,
+      now,
+      sourceId,
+    })
+    this.deps.logger?.info('grant.manual.mural_visitor', { userId })
     return { granted: [view] }
   }
 

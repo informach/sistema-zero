@@ -111,6 +111,39 @@ describe('POST /members/webhooks/grant-manual (bolsa do referrals)', () => {
     expect(active[0]!.toSnapshot().sourceId).toBe('manual:other-campaign')
   })
 
+  test('visita ao Mural é permanente, distinta do curso e idempotente', async () => {
+    const { app, courses, entitlements, hubCalls } = buildApp()
+    seedSampleCourse(courses, 'cade-todo-mundo', 'published', 'kids')
+    const expiresAt = new Date(Date.now() + 7 * 86_400_000)
+    const course = JSON.stringify({
+      userId: USER,
+      mode: 'course',
+      courseRef: 'cade-todo-mundo',
+      expiresAt: expiresAt.toISOString(),
+      sourceId: 'scholarship:red-visitor',
+    })
+    const visitor = JSON.stringify({
+      userId: USER,
+      mode: 'mural_visitor',
+      sourceId: 'scholarship:red-visitor',
+    })
+
+    expect((await post(app, course, 'course-visitor')).status).toBe(200)
+    expect((await post(app, visitor, 'mural-visitor')).status).toBe(200)
+    expect((await readJson(await post(app, visitor, 'mural-visitor'))).deduped).toBe(true)
+    expect((await post(app, visitor, 'mural-visitor-retry')).status).toBe(200)
+
+    const active = await entitlements.listActiveByUser(USER, expiresAt)
+    expect(active).toHaveLength(1)
+    expect(active[0]!.toSnapshot()).toMatchObject({
+      accessType: 'community',
+      courseRef: 'mural-dos-criadores-visitante',
+      sourceId: 'scholarship:red-visitor',
+      expiresAt: null,
+    })
+    expect(hubCalls).toHaveLength(3)
+  })
+
   test('curso ainda em rascunho recusa o grant sem marcar a entrega', async () => {
     const { app, courses, entitlements, hubCalls } = buildApp()
     seedSampleCourse(courses, 'cade-todo-mundo', 'draft', 'kids')

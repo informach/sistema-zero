@@ -336,6 +336,12 @@ export const GrantManualWebhookBody = t.Union([
     mode: t.Literal('course'),
     courseRef: t.String({ minLength: 1, maxLength: 200 }),
   }),
+  t.Object({
+    ...ManualGrantBase,
+    mode: t.Literal('mural_visitor'),
+    sourceId: t.String({ pattern: '^scholarship:', minLength: 13, maxLength: 120 }),
+    expiresAt: t.Optional(t.Null()),
+  }),
 ])
 
 /**
