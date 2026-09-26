@@ -601,6 +601,29 @@
 .pensa-project-title .sz-tool-kicker {
   margin-bottom: 4px;
 }
+/* O nome do plano com o lápis (renomear, 26/09/2026): o botão é IRMÃO do h1 e usa o quadrado
+   compartilhado (`.sz-tool-icon-btn`). O campo que o substitui veste a receita do título das
+   telas-modelo (a família de exibição, 800) para o texto não pular ao trocar; a largura tem teto
+   para não engolir os créditos e a pílula à direita. */
+.pensa-project-title__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.pensa-planner .pensa-title-input {
+  width: min(100%, 32rem);
+  min-height: var(--sz-tool-hit, 44px);
+  padding: 4px 12px;
+  border: 2px solid var(--pz-line);
+  border-radius: 12px;
+  background: var(--pz-surface);
+  color: var(--sz-tool-ink, var(--pz-text));
+  font-family: var(--sz-tool-font-display, var(--font-display, inherit));
+  font-weight: 800;
+  font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  line-height: 1.1;
+}
 /* Na home o menu e a seta vão ANTES do título, dentro do bloco da esquerda (o layout vem da
    `.sz-tool-header__lead`; a classe fica como âncora do teste do host). */
 .pensa-home-lead {

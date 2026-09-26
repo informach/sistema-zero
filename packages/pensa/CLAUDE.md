@@ -125,6 +125,29 @@ do `.pensa-planner`.
   `components/PensaApp.hostChrome.test.tsx` (a seta), `styles/tokens.test.ts` e
   `styles/headingFont.test.ts`.
 
+## Renomear o plano (26/09/2026)
+
+Pedido dela: editar o nome do projeto. O servidor já aceitava `PATCH /projects/:id {name}`
+(2..120, trim) nas cinco camadas; só faltava a tela. Só o DONO renomeia (quem entra em equipe
+não vê o lápis, ver "Equipe").
+
+- **Onde:** no cabeçalho do detalhe (`ProjectHeader` → `ProjectNameTitle`), o lápis
+  (`PencilIcon`, inline como os outros) ao lado do `<h1>`, no quadrado compartilhado
+  `.sz-tool-icon-btn` (`aria-label` "Renomear o plano <nome>"). Molde do `ProjectNameField` do
+  Estúdio: clicar troca o título pelo campo "Nome do plano" com o texto selecionado; Enter ou
+  sair do campo grava, Esc desiste (`cancelledRef` segura o `blur` tardio), e o foco volta ao
+  lápis (`returnFocusRef`). Nome com menos de 2 letras ou igual ao atual só fecha, sem chamada.
+  ⚠️ O lápis é IRMÃO do h1, nunca filho: dentro dele entraria no nome acessível do título e os
+  `getByRole('heading', { name })` dos testes quebrariam.
+- **Otimista:** `renameProject` troca o `detail.name` na hora, manda o PATCH fora do `run` (não
+  trava o `busy` global) e, em erro, devolve o nome anterior com o `<Alert>` da faixa creme.
+  ⚠️ O lápis NÃO some nem trava enquanto grava: é para onde o foco volta, e um botão escondido
+  ou desabilitado não recebe foco (a primeira versão escondia e o foco se perdia).
+- **CSS:** `.pensa-project-title__row` (flex, gap 8) e `.pensa-planner .pensa-title-input`
+  (a receita do título das telas-modelo: família de exibição em 800, 44px, teto de 32rem para
+  não engolir os créditos e a pílula). Nenhuma regra de elemento nova; nenhum `cursor`.
+- Playground: `PATCH /projects/:id` simulado. Testes: `components/PensaApp.rename.test.tsx`.
+
 ## Apagar um plano (14/09/2026)
 
 A criança apaga o plano pelo próprio cartão, e some **de vez** — decisão dela: sem lixeira, com

@@ -29,6 +29,7 @@ import {
   FlagIcon,
   LightbulbIcon,
   PaletteIcon,
+  PencilIcon,
   PlusIcon,
   TargetIcon,
   TrashIcon,
@@ -213,6 +214,33 @@ export function PensaApp({
     }
   }, [])
 
+  // Renomear o plano (26/09/2026): OTIMISTA (o título troca na hora), fora do `run` para não
+  // travar o `busy` global; o erro restaura o nome e vai para o aviso da faixa creme. O lápis
+  // não some nem trava enquanto grava: é para onde o foco volta, e um botão escondido ou
+  // desabilitado não recebe foco.
+  const renameProject = useCallback(
+    async (name: string) => {
+      const current = detail
+      if (!current) return
+      const previous = current.name
+      setError(null)
+      setDetail({ ...current, name })
+      try {
+        const result = await adapter.transport.request<{ project: PensaProjectDetailView }>(
+          `/projects/${encodeURIComponent(current.id)}`,
+          { method: 'PATCH', body: { name } },
+        )
+        setDetail((now) =>
+          now && now.id === current.id ? { ...now, name: result.project.name } : now,
+        )
+      } catch (cause) {
+        setDetail((now) => (now && now.id === current.id ? { ...now, name: previous } : now))
+        setError(errorMessage(cause))
+      }
+    },
+    [adapter.transport, detail],
+  )
+
   if (loading)
     return (
       <Shell theme={adapter.theme}>
@@ -299,6 +327,8 @@ export function PensaApp({
               detail={detail}
               credits={stage?.credits}
               onBack={() => void loadProjects()}
+              canRename
+              onRename={renameProject}
             />
             {error ? <Alert>{error}</Alert> : null}
             <CreationMap
@@ -863,14 +893,114 @@ function PlanCard({
   )
 }
 
+/**
+ * O nome do plano com o lápis (26/09/2026), no molde do `ProjectNameField` do Estúdio: clicar
+ * troca o título pelo campo "Nome do plano" (texto selecionado); Enter ou sair do campo grava,
+ * Esc desiste, e o foco volta ao lápis. Nome igual ao atual ou com menos de 2 letras só fecha.
+ * ⚠️ O lápis é IRMÃO do h1, não filho: dentro dele entraria no nome acessível do título.
+ */
+function ProjectNameTitle({
+  name,
+  canRename,
+  onRename,
+}: {
+  name: string
+  canRename: boolean
+  onRename(name: string): Promise<void>
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(name)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  // Esc desiste: um `blur` que chegue depois (a remoção do campo) não pode gravar o rascunho.
+  const cancelledRef = useRef(false)
+  const returnFocusRef = useRef(false)
+
+  useEffect(() => {
+    if (!editing) setDraft(name)
+  }, [editing, name])
+
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    } else if (returnFocusRef.current) {
+      returnFocusRef.current = false
+      buttonRef.current?.focus()
+    }
+  }, [editing])
+
+  function commit(): void {
+    const next = draft.trim()
+    setEditing(false)
+    if (next.length < 2 || next === name) return
+    void onRename(next)
+  }
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        className="pensa-title-input"
+        aria-label="Nome do plano"
+        autoComplete="off"
+        maxLength={120}
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={() => {
+          if (cancelledRef.current) return
+          commit()
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault()
+            returnFocusRef.current = true
+            event.currentTarget.blur()
+          }
+          if (event.key === 'Escape') {
+            cancelledRef.current = true
+            returnFocusRef.current = true
+            setDraft(name)
+            setEditing(false)
+          }
+        }}
+      />
+    )
+  }
+  return (
+    <div className="pensa-project-title__row">
+      <h1 className="sz-tool-title">{name}</h1>
+      {canRename ? (
+        <button
+          ref={buttonRef}
+          type="button"
+          className="sz-tool-icon-btn pensa-title-rename"
+          aria-label={`Renomear o plano ${name}`}
+          onClick={() => {
+            cancelledRef.current = false
+            setDraft(name)
+            setEditing(true)
+          }}
+        >
+          <PencilIcon />
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
 function ProjectHeader({
   detail,
   credits,
   onBack,
+  canRename,
+  onRename,
 }: {
   detail: PensaProjectDetailView
   credits?: AiCreditsView | null
   onBack(): void
+  canRename: boolean
+  onRename(name: string): Promise<void>
 }) {
   const hostChrome = usePensaHostChrome()
   const approved = detail.currentCycle.stage === 'done'
@@ -893,7 +1023,7 @@ function ProjectHeader({
         </div>
         <div className="pensa-project-title sz-tool-header__title">
           <p className="sz-tool-kicker">VERSÃO {detail.currentCycle.number}</p>
-          <h1 className="sz-tool-title">{detail.name}</h1>
+          <ProjectNameTitle name={detail.name} canRename={canRename} onRename={onRename} />
         </div>
       </div>
       <div className="sz-tool-header__actions">
