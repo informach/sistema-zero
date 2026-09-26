@@ -7,12 +7,14 @@ import {
   type HelpTutorialDocument,
   type HelpTutorialEntry,
   type HelpTutorialView,
+  isHelpSlug,
   validateHelpCollection,
   validateHelpTutorial,
 } from '@sistemazero/core/help'
 import {
   HelpCollectionInUseError,
   HelpCollectionNotFoundError,
+  HelpSlugLockedError,
   HelpTutorialArchivedError,
   HelpTutorialConflictError,
   HelpTutorialInvalidError,
@@ -21,6 +23,7 @@ import {
 import type {
   HelpCollectionRecord,
   HelpCollectionRepository,
+  HelpImportItem,
   HelpTutorialListFilter,
   HelpTutorialRecord,
   HelpTutorialRepository,
@@ -271,6 +274,14 @@ export class HelpService {
     if (cmd.collectionId && cmd.collectionId !== current.collectionId) {
       await this.requireActiveCollection(cmd.collectionId)
     }
+    if (cmd.slug !== undefined && cmd.slug !== current.slug) {
+      // A mesma régua do `create` (formato + reservados): sem ela, `colecao` entrava pelo PATCH
+      // e o tutorial sumia atrás do segmento estático do kids até o próximo publish acusar.
+      if (!isHelpSlug(cmd.slug)) {
+        throw new HelpTutorialInvalidError([{ field: 'slug', message: 'Endereço inválido' }])
+      }
+      if (current.status === 'published') throw new HelpSlugLockedError()
+    }
     const patch = {
       ...(cmd.slug !== undefined ? { slug: cmd.slug } : {}),
       ...(cmd.collectionId !== undefined ? { collectionId: cmd.collectionId } : {}),
@@ -358,7 +369,12 @@ export class HelpService {
       this.listCollections(),
       this.tutorials.listAll(),
     ])
-    return { collections, tutorials: records.map(toHelpTutorialAdminView) }
+    // Arquivado NÃO viaja: o import do destino faria uma coleção arquivada nascer ativa e um
+    // tutorial arquivado ganhar rascunho novo sem poder ser editado (o status não vai no arquivo).
+    return {
+      collections: collections.filter((c) => c.status === 'active'),
+      tutorials: records.filter((r) => r.status !== 'archived').map(toHelpTutorialAdminView),
+    }
   }
 
   /**
@@ -368,13 +384,21 @@ export class HelpService {
   async import(cmd: HelpImportCommand, actorId: string | null): Promise<HelpImportResult> {
     const now = this.clock()
     const collectionsResult = { created: 0, updated: 0 }
-    for (const [index, doc] of (cmd.collections ?? []).entries()) {
+    // Valida o lote INTEIRO antes de gravar qualquer coisa: com a validação dentro do laço, a
+    // 3ª coleção inválida deixava as duas primeiras já gravadas e nenhum tutorial importado.
+    for (const doc of cmd.collections ?? []) {
       const issues = validateHelpCollection(doc)
       if (issues.length) {
         throw new ValidationError(
           `Coleção "${doc.slug}": ${issues.map((i) => i.message).join(' ')}`,
         )
       }
+    }
+    const slugsDeColecao = (cmd.collections ?? []).map((c) => c.slug)
+    if (new Set(slugsDeColecao).size !== slugsDeColecao.length) {
+      throw new ValidationError('Há coleção repetida no lote (mesmo slug duas vezes).')
+    }
+    for (const [index, doc] of (cmd.collections ?? []).entries()) {
       const existing = await this.collections.findBySlug(doc.slug)
       if (existing) {
         await this.collections.update(
@@ -404,30 +428,47 @@ export class HelpService {
       }
     }
     const all = await this.collections.list()
-    const bySlug = new Map(all.map((c) => [c.slug, c]))
+    // Só coleção ATIVA recebe tutorial: numa arquivada ele sumiria da criança (as leituras
+    // filtram coleção ativa) e o `publishedCounts` continuaria contando.
+    const bySlug = new Map(all.filter((c) => c.status === 'active').map((c) => [c.slug, c]))
     const rejected: HelpImportResult['rejected'] = []
-    const items = cmd.tutorials.flatMap((item, index) => {
+    const vistos = new Set<string>()
+    const items: HelpImportItem[] = []
+    for (const [index, item] of cmd.tutorials.entries()) {
+      if (vistos.has(item.slug)) {
+        rejected.push({ slug: item.slug, reason: 'endereço repetido no lote' })
+        continue
+      }
+      vistos.add(item.slug)
       const collection = bySlug.get(item.collection)
       if (!collection) {
-        rejected.push({ slug: item.slug, reason: `coleção "${item.collection}" não existe` })
-        return []
+        rejected.push({
+          slug: item.slug,
+          reason: `coleção "${item.collection}" não existe ou está arquivada`,
+        })
+        continue
+      }
+      // Tutorial arquivado não volta pelo import: o rascunho entraria numa linha que ninguém
+      // consegue editar nem publicar, e o resultado diria "atualizado".
+      const atual = await this.tutorials.findBySlug(item.slug)
+      if (atual?.status === 'archived') {
+        rejected.push({ slug: item.slug, reason: 'tutorial arquivado (o endereço fica reservado)' })
+        continue
       }
       const issues = validateHelpTutorial(item.draft, { slug: item.slug }).filter(
         (issue) => issue.field === 'slug',
       )
       if (issues.length) {
         rejected.push({ slug: item.slug, reason: issues[0]?.message ?? 'endereço inválido' })
-        return []
+        continue
       }
-      return [
-        {
-          slug: item.slug,
-          collectionId: collection.id,
-          draft: item.draft,
-          position: item.position ?? index,
-        },
-      ]
-    })
+      items.push({
+        slug: item.slug,
+        collectionId: collection.id,
+        draft: item.draft,
+        position: item.position ?? index,
+      })
+    }
     const tutorials = await this.tutorials.upsertDraftsBySlug(items, actorId, now)
     return { collections: collectionsResult, tutorials, rejected }
   }

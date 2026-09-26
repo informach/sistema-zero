@@ -225,7 +225,10 @@ export class DrizzleHelpTutorialRepository implements HelpTutorialRepository {
       .where(
         and(
           eq(helpTutorials.status, 'published'),
-          sql`(${vector} @@ ${tsQuery} or ${helpTutorials.publishedSearchText} ilike ${`%${normalized}%`})`,
+          // Só o tsquery: um OR com ILIKE obrigava seq scan (o GIN da 0097 nunca entrava) e a
+          // pergunta inteira em `%...%` quase nunca casava. O `websearch_to_tsquery` com "or"
+          // já cobre radical e acento (o texto é normalizado dos dois lados).
+          sql`${vector} @@ ${tsQuery}`,
         ),
       )
       .orderBy(desc(rank), asc(helpTutorials.position))
@@ -251,7 +254,8 @@ export class DrizzleHelpTutorialRepository implements HelpTutorialRepository {
     if (filter.status) conditions.push(eq(helpTutorials.status, filter.status))
     if (filter.collectionId) conditions.push(eq(helpTutorials.collectionId, filter.collectionId))
     if (filter.q?.trim()) {
-      const like = `%${filter.q.trim()}%`
+      // `%` e `_` são curingas do ILIKE: sem escapar, `q=%` listava tudo.
+      const like = `%${filter.q.trim().replace(/[\\%_]/g, (c) => `\\${c}`)}%`
       conditions.push(
         sql`(${helpTutorials.slug} ilike ${like} or ${helpTutorials.draft}->>'title' ilike ${like})`,
       )
@@ -365,6 +369,19 @@ export class DrizzleHelpTutorialRepository implements HelpTutorialRepository {
     now: Date,
   ): Promise<{ created: number; updated: number }> {
     if (items.length === 0) return { created: 0, updated: 0 }
+    try {
+      return await this.upsertDraftsInTransaction(items, actorId, now)
+    } catch (error) {
+      if (isUniqueViolation(error)) throw new HelpDuplicateSlugError()
+      throw error
+    }
+  }
+
+  private upsertDraftsInTransaction(
+    items: HelpImportItem[],
+    actorId: string | null,
+    now: Date,
+  ): Promise<{ created: number; updated: number }> {
     return this.db.transaction(async (tx) => {
       const existing = await tx
         .select({ id: helpTutorials.id, slug: helpTutorials.slug })

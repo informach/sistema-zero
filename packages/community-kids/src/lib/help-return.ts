@@ -25,7 +25,12 @@ export function resolveHelpReturn(value: string | undefined | null): HelpReturnT
   // Caminho ABSOLUTO da mesma origem: sem esquema, sem `//host`, sem quebra de linha.
   if (!path.startsWith('/') || path.startsWith('//') || /[\s\\]/.test(path)) return null
   const [pathname, hash] = path.split('#', 2)
-  if (!isLessonPath(pathname) || !/^\/cursos\/[^/?]+\/aulas\/[^/?#]+$/.test(pathname ?? '')) {
+  // Slug do curso e id da aula: só letras, números, `_` e `-` (nem `.` nem `..`: o navegador
+  // normalizaria `/cursos/../aulas/x` para outra rota, e o botão prometeria uma aula).
+  if (
+    !isLessonPath(pathname) ||
+    !/^\/cursos\/[A-Za-z0-9_-]+\/aulas\/[A-Za-z0-9_-]+$/.test(pathname ?? '')
+  ) {
     return null
   }
   const safeHash = hash && /^[A-Za-z0-9=_-]{1,120}$/.test(hash) ? `#${hash}` : ''

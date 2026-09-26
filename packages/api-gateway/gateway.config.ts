@@ -244,7 +244,8 @@ const sharedResilience = {
 // pagamento): AFINA o teto global de 2 MB (necessário só p/ os lotes da SendGrid)
 // — 64 KB já é generoso p/ esses payloads e corta abuso barato em rota sem auth.
 const SMALL_JSON_BODY_BYTES = 64 * 1024
-// Tutoriais do "Como fazer": passos em markdown + import em lote (espelha o teto do members).
+// Tutoriais do "Como fazer": passos em markdown + import em lote. É ESTE teto que vale (o do
+// members é maior); o lote inicial tem ~35 KB. Subir aqui quando a biblioteca crescer.
 const HELP_JSON_BODY_BYTES = 512 * 1024
 
 const config: GatewayConfigInput = {

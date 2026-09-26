@@ -106,6 +106,9 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
           blockId={block.id}
           blockRevision={block.blockRevision}
           content={content as unknown as MaterialsBlock}
+          // Este renderer é o do app ADULTO (o kids tem o `kids-lesson-blocks.tsx`), e lá não
+          // existe `/como-fazer`: o item vira texto em vez de um link que abre 404.
+          helpLinks={false}
         />
       )
     default:
@@ -141,7 +144,8 @@ function ComingSoon({ content }: { content: ComingSoonBlock }) {
 function RichText({ content }: { content: RichTextBlock }) {
   const markdown = content.markdown ?? ''
   if (!markdown) return null
-  return <div className="lesson-prose">{renderMarkdown(markdown)}</div>
+  // App adulto: `[texto](/como-fazer/<slug>)` vira texto (a biblioteca de ajuda é do Kids).
+  return <div className="lesson-prose">{renderMarkdown(markdown, { helpLinks: false })}</div>
 }
 
 function ImageView({ content }: { content: ImageBlock }) {

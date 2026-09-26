@@ -62,3 +62,17 @@ export class HelpTutorialArchivedError extends DomainError {
     super(message)
   }
 }
+
+/**
+ * O endereço de um tutorial PUBLICADO é contrato de URL: as aulas apontam para
+ * `/como-fazer/<slug>` e o Zappy guarda `helpReferences`. Trocar sem despublicar quebraria
+ * esses links em silêncio. → 409.
+ */
+export class HelpSlugLockedError extends DomainError {
+  readonly code = 'HELP_SLUG_LOCKED'
+  constructor(
+    message = 'O endereço de um tutorial publicado não muda. Despublique antes de trocar.',
+  ) {
+    super(message)
+  }
+}

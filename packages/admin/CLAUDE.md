@@ -1551,3 +1551,14 @@ gera o mesmo arquivo para levar de staging a produção) e `/admin/como-fazer/[i
   `<textarea>` no mock, preservando a superfície do módulo).
 - ⚠️ O import só mexe no RASCUNHO: depois de importar, cada tutorial passa por "Revisar e
   publicar". Regras de escrita e o lote inicial: `docs/como-fazer/README.md`.
+- **Full review 26/09/2026 (o que mudou no editor):** "Revisar e publicar" publica a revisão
+  que está NA TELA (`record.revision`, atualizada pelo save), nunca uma revisão "fresca" do
+  servidor (isso publicava o rascunho de outra pessoa sem revisão); defasado → 409 com "recarregue".
+  O `save()` só limpa o `dirty` se ninguém digitou durante o request (refs do draft/meta). O slug
+  fica travado com o tutorial publicado e o members recusa a troca (409 `HELP_SLUG_LOCKED`). O
+  `parseImport` confere chaves fora do contrato (`additionalProperties: false` do members) e lista
+  por tutorial o que "Revisar e publicar" cobraria; o `JsonImportPanel` ganhou `onApply` assíncrono
+  (o toast de sucesso espera o servidor) e `confirmMessage` (o texto padrão falava de um "Salvar"
+  que aqui não existe). A pele do `HelpTutorialView` mora em `member-shell/src/styles/help.css`,
+  importada pelo `globals.css` do admin e do kids (sem ela a prévia saía sem numeração).
+  `/admin/como-fazer/<não-uuid>` → `notFound()`.

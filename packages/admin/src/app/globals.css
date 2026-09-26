@@ -12,6 +12,7 @@
 /* Régua das cenas de aula (--container-scene + --color-scene-…): MESMO gotcha do Estúdio —
    sem este @import o @source não acha as cores e as utilitárias fill-scene-* somem. */
 @import "../../../member-shell/src/styles/scene.css";
+@import "../../../member-shell/src/styles/help.css";
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";
 /* Editor embarcável (bloco `studio`, autoria + entregas): o scanner precisa gerar as

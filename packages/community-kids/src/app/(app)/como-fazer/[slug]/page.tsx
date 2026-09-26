@@ -3,14 +3,18 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { HelpToolNotice } from '@/components/kids/help/help-tool-notice'
-import { KidsAccessUnavailable } from '@/components/kids/kids-access-unavailable'
+import { HelpUnavailable } from '@/components/kids/help/help-unavailable'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsPageHeader } from '@/components/kids/kids-page-header'
 import { backToSection, HELP_NAV } from '@/components/kids/nav'
 import { HELP_COLLECTION_ICON } from '@/lib/help-collections'
 import { resolveHelpReturn } from '@/lib/help-return'
 import { getCreativeTools } from '@/server/creator-journey'
-import { getHelpTutorialReadonly, listHelpCollectionsReadonly } from '@/server/members'
+import {
+  getHelpTutorialReadonly,
+  listHelpCollectionsReadonly,
+  listHelpTutorialsReadonly,
+} from '@/server/members'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -37,21 +41,27 @@ export default async function TutorialPage({
   if (tutorialRes.status !== 200 || !tutorialRes.body) {
     return (
       <KidsBand tone="creme">
-        <KidsPageHeader back={back} title="Como fazer" />
-        <div className="mt-6">
-          <KidsAccessUnavailable title="Como fazer" />
-        </div>
+        <HelpUnavailable />
       </KidsBand>
     )
   }
   const tutorial = tutorialRes.body
 
   // A ferramenta do tutorial: a MESMA régua do menu, resolvida no servidor. Best-effort: sem
-  // resposta, o aviso simplesmente não aparece. As coleções servem só para o "Veja também".
-  const [tools, colecoesRes] = await Promise.all([
+  // resposta, o aviso simplesmente não aparece. As coleções dão o ícone do cabeçalho; a lista
+  // publicada dá o "Veja também" (título de verdade, e só o que a criança consegue abrir).
+  const [tools, colecoesRes, publicadosRes] = await Promise.all([
     tutorial.toolRef ? getCreativeTools().catch(() => null) : Promise.resolve(null),
     listHelpCollectionsReadonly().catch(() => null),
+    listHelpTutorialsReadonly().catch(() => null),
   ])
+  // "Veja também" só com tutorial PUBLICADO: o admin escreve `related` à mão e pode apontar
+  // para um rascunho ou um arquivado, e um chip que abre 404 é pior que chip nenhum.
+  const publicados = new Map(
+    (publicadosRes?.body?.tutorials ?? []).map((t) => [t.slug, t.title] as const),
+  )
+  const related = (tutorial.related ?? []).filter((s) => s !== slug && publicados.has(s))
+  const tutorialVisivel = { ...tutorial, related }
   const toolState = tutorial.toolRef
     ? (tools?.tools.find((t) => t.id === tutorial.toolRef)?.state ?? null)
     : null
@@ -77,7 +87,7 @@ export default async function TutorialPage({
       <KidsBand tone="branco">
         <article className="kids-card mx-auto max-w-3xl rounded-[1.75rem] bg-card px-5 py-6 md:px-8 md:py-8">
           <HelpTutorialView
-            tutorial={tutorial}
+            tutorial={tutorialVisivel}
             watermark={watermark}
             headingLevel={2}
             renderRelated={(relatedSlug) => (
@@ -86,7 +96,7 @@ export default async function TutorialPage({
                 prefetch={false}
                 className="inline-flex min-h-11 items-center gap-2 rounded-full bg-(--band-creme) px-4 font-bold text-foreground text-sm hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
               >
-                {relatedSlug.replaceAll('-', ' ')}
+                {publicados.get(relatedSlug) ?? relatedSlug}
               </Link>
             )}
           />

@@ -2335,3 +2335,18 @@ mostra na revisão.
   (`LESSON_LINK_URL_PATTERN`); o member-shell abre em nova aba com `?voltar=<aula>`.
 - Testes: `tests/unit/help.service.test.ts`, `tests/integration/help.test.ts`,
   `tests/db/help.repository.test.ts` (skipIf sem Postgres), fakes em `tests/fakes/help-in-memory.ts`.
+- ⚠️⚠️ **`tests/db`: NUNCA `await expect(repo.x()).rejects.toBeInstanceOf(...)` com o driver
+  `postgres`** (full review 26/09/2026): o servidor devolve o 23505 e fica em `ClientRead`
+  esperando um `Sync` que o driver não manda; o teste morre no timeout com `CONNECTION_DESTROYED`.
+  A MESMA chamada num try/catch (`lanca()` em `help.repository.test.ts`) ou num `bun -e` lança o
+  erro de domínio em 12 ms. Medido com `pg_stat_activity`. `rejects.toThrow`, que os outros
+  arquivos usam, não trava.
+- **Regras que o full review fechou (26/09/2026):** o `PATCH` recusa slug reservado/inválido
+  (400) e **slug de tutorial PUBLICADO (409 `HELP_SLUG_LOCKED`)**: `/como-fazer/<slug>` é contrato
+  de URL das aulas e do `helpReferences` do Zappy; despublique para trocar. O `export` NÃO leva
+  arquivados (coleção arquivada nasceria ativa no destino). O `import` valida o lote inteiro antes
+  de gravar coleção alguma, recusa slug repetido no lote, coleção arquivada/inexistente e tutorial
+  arquivado (`rejected[]` nomeia o motivo), e 23505 dentro da transação vira 409. A busca do
+  Zappy é SÓ tsquery (o `OR ilike` anulava o GIN). A data do `HelpTutorialEntry` é a do
+  PUBLICADO. ⚠️ Pende: corrida arquivar-coleção × publicar (check-then-act sem lock) e
+  `helpReferences` guardadas em respostas antigas do Zappy apontando para tutorial despublicado.

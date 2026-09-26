@@ -19,6 +19,22 @@ if (!testDatabaseUrl) {
   console.warn('[tests/db] Postgres indisponível (porta 5433?) — teste do Como fazer PULADO.')
 }
 
+/**
+ * ⚠️⚠️ NUNCA `await expect(repo.x()).rejects.toBeInstanceOf(...)` com o driver `postgres` dentro
+ * do `bun test` (26/09/2026): o servidor devolve o erro (23505) e fica em `ClientRead` esperando
+ * um `Sync` que o driver não manda; o teste morre no timeout com `CONNECTION_DESTROYED`, e a
+ * MESMA chamada num try/catch (ou num `bun -e`) lança o erro de domínio em 12 ms. Medido com
+ * `pg_stat_activity`; os outros arquivos de `tests/db` usam `rejects.toThrow`, que não trava.
+ */
+async function lanca(fn: () => Promise<unknown>): Promise<unknown> {
+  try {
+    await fn()
+    return null
+  } catch (error) {
+    return error
+  }
+}
+
 const documento: HelpTutorialDocument = {
   title: 'Como ver meu jogo na Pré-visualização',
   summary: 'Onde o jogo aparece enquanto você monta os blocos.',
@@ -115,9 +131,9 @@ describe.skipIf(!testDatabaseUrl)('Drizzle do Como fazer no Postgres real', () =
       position: 0,
       now,
     })
-    await expect(collections.create({ ...colecao, id: randomUUID(), now })).rejects.toBeInstanceOf(
-      HelpDuplicateSlugError,
-    )
+    expect(
+      await lanca(() => collections.create({ ...colecao, id: randomUUID(), now })),
+    ).toBeInstanceOf(HelpDuplicateSlugError)
 
     const slug = `pre-visualizacao-${randomUUID().slice(0, 8)}`
     const criado = await tutorials.create({
@@ -129,9 +145,9 @@ describe.skipIf(!testDatabaseUrl)('Drizzle do Como fazer no Postgres real', () =
       actorId: null,
       now,
     })
-    await expect(
-      tutorials.create({ ...criado, actorId: null, now, id: randomUUID() }),
-    ).rejects.toBeInstanceOf(HelpDuplicateSlugError)
+    expect(
+      await lanca(() => tutorials.create({ ...criado, actorId: null, now, id: randomUUID() })),
+    ).toBeInstanceOf(HelpDuplicateSlugError)
 
     // Lock otimista: a revisão velha não grava nada.
     const salvo = await tutorials.update(

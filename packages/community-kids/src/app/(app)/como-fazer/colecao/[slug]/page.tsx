@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { KidsAccessUnavailable } from '@/components/kids/kids-access-unavailable'
+import { HelpUnavailable } from '@/components/kids/help/help-unavailable'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsEmptyState } from '@/components/kids/kids-empty-state'
 import { KidsPageHeader } from '@/components/kids/kids-page-header'
@@ -21,13 +21,7 @@ export default async function ColecaoPage({ params }: { params: Promise<{ slug: 
   if (colecoesRes.status !== 200 || tutoriaisRes.status !== 200) {
     return (
       <KidsBand tone="creme">
-        <KidsPageHeader
-          back={backToSection(`${HELP_NAV.href}/colecao/${slug}`)}
-          title="Como fazer"
-        />
-        <div className="mt-6">
-          <KidsAccessUnavailable title="Como fazer" />
-        </div>
+        <HelpUnavailable />
       </KidsBand>
     )
   }

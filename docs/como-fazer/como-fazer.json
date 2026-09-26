@@ -50,8 +50,8 @@
           },
           {
             "id": "curso",
-            "title": "Escolha o curso e a aula",
-            "body": "Toque no cartão do curso. Cada aula tem um botão: **Começar agora** quando você ainda não abriu, ou **Continuar** quando já passou por ela."
+            "title": "Entre no curso e escolha a aula",
+            "body": "No cartão do curso, toque em **Começar agora** (se você ainda não entrou) ou em **Continuar**. A página do curso mostra a trilha das aulas: toque na aula que você quer."
           },
           {
             "id": "secoes",
@@ -83,8 +83,8 @@
           },
           {
             "id": "continuar",
-            "title": "Toque em Continuar",
-            "body": "No cartão do curso, a aula onde você parou mostra o botão **Continuar**. Ela abre na seção em que você estava."
+            "title": "Toque em Continuar no cartão do curso",
+            "body": "No cartão do curso, toque em **Continuar**. Na trilha do curso, toque na aula onde você parou: ela abre na seção em que você estava."
           },
           {
             "id": "rever",
@@ -237,13 +237,13 @@
           },
           {
             "id": "confirmar",
-            "title": "Confira as três frases",
-            "body": "Marque *Meu projeto está pronto e funcionando* e as outras frases da lista. Depois toque em **Avançar**."
+            "title": "Preencha o título, o resumo e a capa",
+            "body": "Confira o **Título**, escreva o **Resumo do projeto** e escolha a **Capa do projeto**: **Gerar capa** tira uma foto do jogo, e **Enviar uma imagem** usa um print seu. O botão **Publicar** só acende com os três preenchidos."
           },
           {
             "id": "publicar",
             "title": "Toque em Publicar",
-            "body": "Pronto: o jogo aparece no **Mural dos Criadores**, dentro de **Comunidade**, e ganha um link para você mostrar para a família e os amigos."
+            "body": "Toque em **Publicar**. Pronto: o jogo aparece no **Mural dos Criadores**, dentro de **Comunidade**, e ganha um link para você mostrar para a família e os amigos."
           },
           {
             "id": "copias",
@@ -271,12 +271,12 @@
           {
             "id": "ler",
             "title": "Leia o cartão",
-            "body": "O cartão mostra quantas aulas você já concluiu e o botão **Começar agora** ou **Continuar**. Um curso trancado explica no próprio cartão o que falta para ele abrir."
+            "body": "O cartão mostra quantas aulas você já concluiu e o botão **Começar agora** ou **Continuar**. Um curso que ainda não abriu diz no próprio cartão por onde começar, como *Comece por este*."
           },
           {
             "id": "inicio",
             "title": "O Início resume tudo",
-            "body": "Na página **Início** ficam o seu nível, os pontos e o próximo passo sugerido. É um bom lugar para começar o dia."
+            "body": "Na página **Início** fica o seu próximo passo sugerido. O seu nível e os seus pontos aparecem no menu, ao lado do seu nome."
           }
         ],
         "related": ["plataforma-abrir-uma-aula"]
@@ -342,7 +342,7 @@
           {
             "id": "escondida",
             "title": "Se ela sumiu",
-            "body": "Na barra de cima, toque em **Mostrar pré-visualização**. O mesmo botão vira **Ocultar pré-visualização** para guardar o painel de novo."
+            "body": "Na barra de cima, toque no botão do olho, que se chama **Mostrar pré-visualização**. O mesmo botão vira **Ocultar pré-visualização** para guardar o painel de novo. Em tela estreita esse botão não existe: use a aba do passo seguinte."
           },
           {
             "id": "tela-estreita",
@@ -454,8 +454,8 @@
           },
           {
             "id": "salvar",
-            "title": "Toque em Salvar",
-            "body": "Em tela larga o botão **Salvar** fica na barra. Em tela estreita, ele fica no menu **Mais opções**, no grupo **O meu jogo**."
+            "title": "Toque em Salvar, no menu Mais opções",
+            "body": "Toque nos três pontinhos, o botão **Mais opções**, na barra de cima. No grupo **O meu jogo**, toque em **Salvar**. É o mesmo caminho em tela larga e em tela estreita."
           },
           {
             "id": "voltar",
@@ -493,7 +493,7 @@
           {
             "id": "menu",
             "title": "Abra Mais opções e vá em Materiais",
-            "body": "Toque nos três pontinhos, **Mais opções**. No grupo **Materiais** há três portas: **Imagens**, **Sons** e **Modelos 3D**. Cada uma abre a janela **Materiais do jogo** já na aba certa."
+            "body": "Toque nos três pontinhos, **Mais opções**. No grupo **Materiais** há as portas **Imagens** e **Sons** (e **Modelos 3D**, quando o projeto usa uma extensão 3D). Cada uma abre a janela **Materiais do jogo** já na aba certa."
           },
           {
             "id": "enviar",
@@ -560,7 +560,7 @@
           {
             "id": "painel",
             "title": "Ache o painel Camadas",
-            "body": "Com o desenho aberto, o painel **Camadas** lista as folhas do desenho. Em tela estreita ele fica dentro de **Cores e camadas**."
+            "body": "Com o desenho aberto, o painel **Camadas** lista as folhas do desenho. Em tela estreita ele fica recolhido: no Vetor, dentro de **Cores e camadas**; no Pixel art, dentro de **Prévia e animações**."
           },
           {
             "id": "nova",
@@ -570,7 +570,7 @@
           {
             "id": "olhinho",
             "title": "O olhinho esconde, o cadeado tranca",
-            "body": "Toque no olhinho para esconder ou mostrar a camada. Toque no cadeado para trancar: uma camada trancada não aceita pincel nem borracha. Se aparecer o aviso *Esta camada está escondida!* ou *Esta camada está trancada!*, é só destocar o olhinho ou o cadeado."
+            "body": "Toque no olhinho para esconder ou mostrar a camada. Toque no cadeado para trancar: uma camada trancada não aceita lápis nem borracha. Se aparecer o aviso *Esta camada está escondida!* ou *Esta camada está trancada!*, é só tocar de novo no olhinho ou no cadeado."
           },
           {
             "id": "ordem",
@@ -604,7 +604,7 @@
           {
             "id": "perguntas",
             "title": "Responda as quatro perguntas",
-            "body": "**Como você quer desenhar?** Pixel art ou Vetor. **O que você quer criar?** Personagem, Cenário de fundo, ou Peças do cenário ou mapa. **Qual o tamanho?** **Qual o nome?** Use letras minúsculas e traços, porque esse nome aparece nos blocos do Estúdio."
+            "body": "**Como você quer desenhar?** Pixel art, Vetor ou Modelos prontos. **O que você quer criar?** Personagem, Cenário de fundo, Peças do cenário ou Mapa (o Mapa só existe no Pixel art). **Qual o tamanho?** **Qual o nome?** Use letras minúsculas e traços, porque esse nome aparece nos blocos do Estúdio."
           },
           {
             "id": "comecar",
@@ -685,9 +685,10 @@
       "collection": "pinta",
       "position": 4,
       "draft": {
-        "title": "Como usar o pincel, a borracha e o balde",
-        "summary": "As ferramentas de pintar do Pinta e onde muda o tamanho do traço.",
+        "title": "Como usar o lápis, a borracha e o balde",
+        "summary": "As ferramentas de pintar do Pinta, no Pixel art e no Vetor, e onde muda o tamanho do traço.",
         "keywords": [
+          "lápis",
           "pincel",
           "borracha",
           "balde",
@@ -701,18 +702,18 @@
         "steps": [
           {
             "id": "pincel",
-            "title": "Pincel e Borracha",
-            "body": "**Pincel** pinta com a cor escolhida. **Borracha** apaga. **Tamanho do traço** muda a grossura dos dois."
+            "title": "Lápis e Borracha",
+            "body": "No Pixel art, o **Lápis** pinta com a cor escolhida e a **Borracha** apaga. **Tamanho do traço** muda a grossura dos dois. No Vetor, a ferramenta de desenhar se chama **Pincel**, e lá não existem balde nem conta-gotas: cada forma tem a própria cor."
           },
           {
             "id": "balde",
             "title": "Balde de tinta",
-            "body": "**Balde de tinta** enche uma área inteira de uma vez. Útil para fundos e para pintar por dentro de um contorno fechado."
+            "body": "No Pixel art, o **Balde de tinta** enche uma área inteira de uma vez. Útil para fundos e para pintar por dentro de um contorno fechado."
           },
           {
             "id": "conta-gotas",
             "title": "Conta-gotas",
-            "body": "**Conta-gotas** pega a cor de um ponto do desenho e deixa ela pronta no pincel. Toque no ponto que tem a cor que você quer."
+            "body": "No Pixel art, o **Conta-gotas** pega a cor de um ponto do desenho e deixa ela pronta no lápis. Toque no ponto que tem a cor que você quer."
           },
           {
             "id": "cores",
@@ -774,7 +775,7 @@
           {
             "id": "trilha",
             "title": "Olhe a trilha Z, E, R, O",
-            "body": "No alto do plano, a trilha mostra as quatro etapas. A cheia já foi concluída, a com o fio é a **Etapa atual** e as apagadas ainda vêm."
+            "body": "No alto do plano, a trilha mostra as quatro etapas: a cheia já foi concluída, a com o fio é a de agora e as apagadas ainda vêm. Na lista de planos, o cartão diz qual é a *Etapa atual*."
           },
           {
             "id": "carta",
@@ -844,8 +845,8 @@
         "steps": [
           {
             "id": "cartao",
-            "title": "Ache o botão Apagar no cartão do plano",
-            "body": "Na tela inicial do Pensa, cada plano tem o botão **Apagar**."
+            "title": "Toque na lixeira do cartão do plano",
+            "body": "Na tela inicial do Pensa, cada cartão de plano tem uma lixeira no canto. Toque nela."
           },
           {
             "id": "confirmar",

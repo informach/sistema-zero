@@ -111,6 +111,7 @@ const DOMAIN_STATUS: Record<string, number> = {
   HELP_DUPLICATE_SLUG: 409,
   HELP_COLLECTION_IN_USE: 409,
   HELP_TUTORIAL_ARCHIVED: 409,
+  HELP_SLUG_LOCKED: 409,
 }
 
 /** Traduz qualquer erro num par status + corpo padronizado. */

@@ -385,7 +385,95 @@ describe('Como fazer: autoria', () => {
       adminHeaders,
     )
     expect((await readJson(outra)).rejected).toEqual([
-      { slug: 'pinta-camada', reason: 'coleção "nao-existe" não existe' },
+      { slug: 'pinta-camada', reason: 'coleção "nao-existe" não existe ou está arquivada' },
+    ])
+  })
+
+  test('full review 26/09: slug publicado é contrato de URL; import recusa repetido e arquivado; export não leva arquivado', async () => {
+    const { app } = buildApp()
+    await send(
+      app,
+      '/members/admin/help/tutorials/import',
+      'POST',
+      {
+        collections: [
+          { slug: 'pensa', title: 'Pensa', description: '', icon: 'lightbulb', tone: 'pensa' },
+        ],
+        tutorials: [
+          { slug: 'pensa-plano', collection: 'pensa', draft: documento },
+          { slug: 'pensa-plano', collection: 'pensa', draft: documento },
+          { slug: 'pensa-apagar', collection: 'pensa', draft: documento },
+        ],
+      },
+      adminHeaders,
+    )
+    const lista = await readJson(await get(app, '/members/admin/help/tutorials', adminHeaders))
+    const plano = lista.tutorials.find((t: { slug: string }) => t.slug === 'pensa-plano')
+    const apagar = lista.tutorials.find((t: { slug: string }) => t.slug === 'pensa-apagar')
+    expect(plano && apagar).toBeTruthy()
+
+    // Slug reservado não entra pelo PATCH (a mesma régua do create).
+    const reservado = await send(
+      app,
+      `/members/admin/help/tutorials/${plano.id}`,
+      'PATCH',
+      { expectedRevision: plano.revision, slug: 'colecao' },
+      adminHeaders,
+    )
+    expect(reservado.status).toBe(400)
+
+    // Publicado: o endereço trava (as aulas e o Zappy apontam para ele).
+    const pub = await send(
+      app,
+      `/members/admin/help/tutorials/${plano.id}/publish`,
+      'POST',
+      { expectedRevision: plano.revision },
+      adminHeaders,
+    )
+    expect(pub.status).toBe(200)
+    const publicado = await readJson(pub)
+    const troca = await send(
+      app,
+      `/members/admin/help/tutorials/${plano.id}`,
+      'PATCH',
+      { expectedRevision: publicado.revision, slug: 'pensa-plano-novo' },
+      adminHeaders,
+    )
+    expect(troca.status).toBe(409)
+    expect((await readJson(troca)).error.code).toBe('HELP_SLUG_LOCKED')
+
+    // Arquivado: o import não ressuscita, e o export não leva.
+    await send(
+      app,
+      `/members/admin/help/tutorials/${apagar.id}/archive`,
+      'POST',
+      { expectedRevision: apagar.revision },
+      adminHeaders,
+    )
+    const imp = await readJson(
+      await send(
+        app,
+        '/members/admin/help/tutorials/import',
+        'POST',
+        {
+          tutorials: [
+            { slug: 'pensa-apagar', collection: 'pensa', draft: documento },
+            { slug: 'pensa-x', collection: 'pensa', draft: documento },
+            { slug: 'pensa-x', collection: 'pensa', draft: documento },
+          ],
+        },
+        adminHeaders,
+      ),
+    )
+    expect(imp.rejected).toEqual([
+      { slug: 'pensa-apagar', reason: 'tutorial arquivado (o endereço fica reservado)' },
+      { slug: 'pensa-x', reason: 'endereço repetido no lote' },
+    ])
+    expect(imp.tutorials).toEqual({ created: 1, updated: 0 })
+    const exp = await readJson(await get(app, '/members/admin/help/tutorials/export', adminHeaders))
+    expect(exp.tutorials.map((t: { slug: string }) => t.slug).sort()).toEqual([
+      'pensa-plano',
+      'pensa-x',
     ])
   })
 

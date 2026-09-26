@@ -90,7 +90,7 @@ export interface HelpTutorialStatusChange {
 export interface HelpTutorialListFilter {
   status?: HelpTutorialStatus
   collectionId?: string
-  /** Busca por título e slug, sem acento. */
+  /** Busca por título e slug, por ILIKE no slug e no título do rascunho (curingas escapados). */
   q?: string
 }
 

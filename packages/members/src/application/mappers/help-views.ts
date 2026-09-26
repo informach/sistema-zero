@@ -46,7 +46,8 @@ export function toHelpTutorialEntry(
     toolRef: doc.toolRef ?? null,
     searchText: record.publishedSearchText ?? '',
     position: record.position,
-    updatedAt: record.updatedAt.toISOString(),
+    // A data que a criança vê é a do PUBLICADO: salvar rascunho não pode dizer "atualizado".
+    updatedAt: (record.publishedAt ?? record.updatedAt).toISOString(),
   }
 }
 

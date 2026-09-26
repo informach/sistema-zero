@@ -2,7 +2,7 @@ import { CircleHelp, Mail, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import { HelpCollectionCard } from '@/components/kids/help/help-collection-card'
 import { HelpSearch } from '@/components/kids/help/help-search'
-import { KidsAccessUnavailable } from '@/components/kids/kids-access-unavailable'
+import { HelpUnavailable } from '@/components/kids/help/help-unavailable'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsClosingCard } from '@/components/kids/kids-closing-card'
 import { KidsEmptyState } from '@/components/kids/kids-empty-state'
@@ -29,6 +29,14 @@ export default async function ComoFazerPage() {
   const tutorials = tutoriaisRes.status === 200 ? (tutoriaisRes.body?.tutorials ?? []) : []
   const comTutorial = collections.filter((c) => c.publishedCount > 0)
 
+  if (indisponivel) {
+    return (
+      <KidsBand tone="creme">
+        <HelpUnavailable />
+      </KidsBand>
+    )
+  }
+
   return (
     <>
       <KidsBand tone="creme">
@@ -39,11 +47,7 @@ export default async function ComoFazerPage() {
           subtitle="Passo a passo curto para usar a plataforma e as ferramentas. Procure pelo que você quer fazer."
         />
         <div className="mt-6">
-          {indisponivel ? (
-            <KidsAccessUnavailable title="Como fazer" />
-          ) : (
-            <HelpSearch tutorials={tutorials} collections={collections} />
-          )}
+          <HelpSearch tutorials={tutorials} collections={collections} />
         </div>
       </KidsBand>
 

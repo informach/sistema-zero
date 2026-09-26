@@ -4,8 +4,10 @@ import {
   HELP_COLLECTION_ICONS,
   HELP_COLLECTION_TONES,
   type HelpCollectionDocument,
+  type HelpTutorialDocument,
   isHelpSlug,
   validateHelpCollection,
+  validateHelpTutorial,
 } from '@sistemazero/core/help'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
@@ -104,6 +106,33 @@ function slugify(value: string): string {
     .slice(0, 80)
 }
 
+// As chaves que o `HelpImportBody` do members aceita (`additionalProperties: false`): um campo a
+// mais derrubava o lote INTEIRO com a mensagem crua do TypeBox, em inglês, sem dizer qual tutorial.
+const CHAVES_TUTORIAL = new Set(['slug', 'collection', 'position', 'draft'])
+const CHAVES_DRAFT = new Set([
+  'title',
+  'summary',
+  'keywords',
+  'toolRef',
+  'video',
+  'steps',
+  'related',
+])
+const CHAVES_PASSO = new Set(['id', 'title', 'body', 'imageUrl', 'imageAlt'])
+const CHAVES_VIDEO = new Set(['provider', 'src', 'posterUrl'])
+const CHAVES_COLECAO = new Set(['slug', 'title', 'description', 'icon', 'tone', 'position'])
+
+function chavesForaDoLugar(obj: unknown, permitidas: Set<string>): string[] {
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return []
+  return Object.keys(obj).filter((k) => !permitidas.has(k))
+}
+
+/**
+ * Confere o arquivo ANTES de mandar ao members: formato do envelope, chaves desconhecidas e o
+ * mesmo `validateHelpTutorial` que o publish roda. O import aceita rascunho incompleto (o
+ * members é leniente no rascunho), então aqui só o que bloquearia o LOTE vira erro: slug,
+ * coleção e chaves fora do contrato. O resto vira aviso na prévia, tutorial por tutorial.
+ */
 function parseImport(text: string): ImportParseResult<HelpImportFile> {
   let raw: unknown
   try {
@@ -117,12 +146,38 @@ function parseImport(text: string): ImportParseResult<HelpImportFile> {
   const file = raw as Partial<HelpImportFile>
   const errors: string[] = []
   if (!Array.isArray(file.tutorials)) errors.push('Falta a lista "tutorials".')
+  const vistos = new Set<string>()
   for (const [i, t] of (file.tutorials ?? []).entries()) {
-    if (!isHelpSlug(t?.slug)) errors.push(`Tutorial ${i + 1}: "slug" inválido.`)
-    if (!isHelpSlug(t?.collection)) errors.push(`Tutorial ${i + 1}: "collection" inválida.`)
-    if (!t?.draft || typeof t.draft !== 'object') errors.push(`Tutorial ${i + 1}: falta "draft".`)
+    const nome = `Tutorial ${i + 1}${t?.slug ? ` (${t.slug})` : ''}`
+    if (!isHelpSlug(t?.slug)) errors.push(`${nome}: "slug" inválido.`)
+    else if (vistos.has(t.slug)) errors.push(`${nome}: "slug" repetido no arquivo.`)
+    else vistos.add(t.slug)
+    if (!isHelpSlug(t?.collection)) errors.push(`${nome}: "collection" inválida.`)
+    if (!t?.draft || typeof t.draft !== 'object') {
+      errors.push(`${nome}: falta "draft".`)
+      continue
+    }
+    for (const k of chavesForaDoLugar(t, CHAVES_TUTORIAL))
+      errors.push(`${nome}: campo "${k}" não existe.`)
+    for (const k of chavesForaDoLugar(t.draft, CHAVES_DRAFT)) {
+      errors.push(`${nome}: campo "${k}" não existe no rascunho.`)
+    }
+    for (const k of chavesForaDoLugar(t.draft.video, CHAVES_VIDEO)) {
+      errors.push(`${nome}: campo "${k}" não existe no vídeo.`)
+    }
+    for (const [j, step] of (Array.isArray(t.draft.steps) ? t.draft.steps : []).entries()) {
+      for (const k of chavesForaDoLugar(step, CHAVES_PASSO)) {
+        errors.push(`${nome}, passo ${j + 1}: campo "${k}" não existe.`)
+      }
+    }
+    if (!Array.isArray(t.draft.steps) || !Array.isArray(t.draft.keywords)) {
+      errors.push(`${nome}: "steps" e "keywords" precisam ser listas.`)
+    }
   }
   for (const [i, c] of (file.collections ?? []).entries()) {
+    for (const k of chavesForaDoLugar(c, CHAVES_COLECAO)) {
+      errors.push(`Coleção ${i + 1}: campo "${k}" não existe.`)
+    }
     for (const issue of validateHelpCollection(c as HelpCollectionDocument)) {
       errors.push(`Coleção ${i + 1}: ${issue.message}`)
     }
@@ -130,6 +185,16 @@ function parseImport(text: string): ImportParseResult<HelpImportFile> {
   return errors.length
     ? { success: false, errors }
     : { success: true, data: file as HelpImportFile }
+}
+
+/** O que o publish vai cobrar de cada tutorial do lote (informa; o import não bloqueia). */
+function pendenciasDoLote(file: HelpImportFile): Array<{ slug: string; issues: string[] }> {
+  return file.tutorials.flatMap((t) => {
+    const issues = validateHelpTutorial(t.draft as HelpTutorialDocument, { slug: t.slug }).map(
+      (i) => i.message,
+    )
+    return issues.length ? [{ slug: t.slug, issues }] : []
+  })
 }
 
 /**
@@ -255,12 +320,16 @@ export function ComoFazerClient({ currentRole }: { currentRole: string }) {
   }
 
   function archiveCollection(c: HelpCollectionView) {
+    if (c.publishedCount > 0) {
+      // O members recusa com 409; abrir o confirm só para falhar era um botão que mentia.
+      toast.error(
+        `"${c.title}" ainda tem ${c.publishedCount} tutorial(is) publicado(s). Despublique-os antes de arquivar.`,
+      )
+      return
+    }
     confirm({
       title: `Arquivar "${c.title}"?`,
-      message:
-        c.publishedCount > 0
-          ? 'Esta coleção ainda tem tutoriais publicados. Despublique-os antes.'
-          : 'A coleção some do Como fazer da criança. Os tutoriais dela continuam guardados.',
+      message: 'A coleção some do Como fazer da criança. Os tutoriais dela continuam guardados.',
       confirmText: 'Arquivar',
       confirmVariant: 'destructive',
       onConfirm: async () => {
@@ -313,6 +382,7 @@ export function ComoFazerClient({ currentRole }: { currentRole: string }) {
     }
   }
 
+  /** Lança em falha: o `JsonImportPanel` só mostra o sucesso dele quando isto resolve. */
   async function applyImport(data: HelpImportFile) {
     try {
       const result = await apiSend<HelpImportResultView>(
@@ -329,12 +399,13 @@ export function ComoFazerClient({ currentRole }: { currentRole: string }) {
           `${partes.join('; ')}. Recusados: ${result.rejected.map((r) => `${r.slug} (${r.reason})`).join(', ')}`,
         )
       } else {
-        toast.success(`${partes.join('; ')}. Tudo entrou como rascunho: revise e publique.`)
+        toast.info(`${partes.join('; ')}. Tudo entrou como rascunho: revise e publique.`)
       }
       await reload()
       setTab('tutoriais')
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Não consegui importar.')
+      throw err
     }
   }
 
@@ -458,76 +529,113 @@ export function ComoFazerClient({ currentRole }: { currentRole: string }) {
               </Button>
             )}
             <ul className="divide-y">
-              {(collections ?? []).map((c, index) => (
-                <li key={c.id} className="flex flex-wrap items-center gap-3 py-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium">
-                      {c.title}{' '}
-                      <span className="text-muted-foreground text-xs">
-                        · {c.publishedCount} publicado(s) · {ICON_LABEL[c.icon]} ·{' '}
-                        {TONE_LABEL[c.tone]}
-                      </span>
-                    </p>
-                    <p className="text-muted-foreground text-xs">
-                      {c.description || 'Sem descrição.'}
-                    </p>
-                  </div>
-                  {c.status === 'archived' ? (
-                    <>
-                      <Badge variant="destructive">Arquivada</Badge>
-                      {canWrite && (
-                        <Button size="sm" variant="ghost" onClick={() => void restoreCollection(c)}>
-                          Restaurar
-                        </Button>
-                      )}
-                    </>
-                  ) : (
-                    canWrite && (
+              {(collections ?? []).map((c) => {
+                // As setas andam na lista das ATIVAS: o índice da lista completa (com
+                // arquivadas) habilitava "Subir" numa primeira ativa que não subia.
+                const index = activeCollections.findIndex((a) => a.id === c.id)
+                return (
+                  <li key={c.id} className="flex flex-wrap items-center gap-3 py-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">
+                        {c.title}{' '}
+                        <span className="text-muted-foreground text-xs">
+                          · {c.publishedCount} publicado(s) · {ICON_LABEL[c.icon]} ·{' '}
+                          {TONE_LABEL[c.tone]}
+                        </span>
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        {c.description || 'Sem descrição.'}
+                      </p>
+                    </div>
+                    {c.status === 'archived' ? (
                       <>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          aria-label={`Subir ${c.title}`}
-                          disabled={index === 0}
-                          onClick={() => void moveCollection(c.id, -1)}
-                        >
-                          <ArrowUp className="size-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          aria-label={`Descer ${c.title}`}
-                          disabled={index === activeCollections.length - 1}
-                          onClick={() => void moveCollection(c.id, 1)}
-                        >
-                          <ArrowDown className="size-4" />
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => setColForm({ ...c })}>
-                          Editar
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => archiveCollection(c)}>
-                          Arquivar
-                        </Button>
+                        <Badge variant="destructive">Arquivada</Badge>
+                        {canWrite && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => void restoreCollection(c)}
+                          >
+                            Restaurar
+                          </Button>
+                        )}
                       </>
-                    )
-                  )}
-                </li>
-              ))}
+                    ) : (
+                      canWrite && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            aria-label={`Subir ${c.title}`}
+                            disabled={index === 0}
+                            onClick={() => void moveCollection(c.id, -1)}
+                          >
+                            <ArrowUp className="size-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            aria-label={`Descer ${c.title}`}
+                            disabled={index === activeCollections.length - 1}
+                            onClick={() => void moveCollection(c.id, 1)}
+                          >
+                            <ArrowDown className="size-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => setColForm({ ...c })}>
+                            Editar
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => archiveCollection(c)}>
+                            Arquivar
+                          </Button>
+                        </>
+                      )
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           </CardContent>
         </Card>
       ) : (
         <JsonImportPanel<HelpImportFile>
           parse={parseImport}
-          renderPreview={(data) => (
-            <ul className="list-disc space-y-1 pl-5 text-sm">
-              <li>{data.collections?.length ?? 0} coleção(ões)</li>
-              <li>
-                {data.tutorials.length} tutorial(is): {data.tutorials.map((t) => t.slug).join(', ')}
-              </li>
-            </ul>
+          renderPreview={(data) => {
+            const pendencias = pendenciasDoLote(data)
+            return (
+              <div className="space-y-3 text-sm">
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>{data.collections?.length ?? 0} coleção(ões)</li>
+                  <li>
+                    {data.tutorials.length} tutorial(is):{' '}
+                    {data.tutorials.map((t) => t.slug).join(', ')}
+                  </li>
+                </ul>
+                {pendencias.length > 0 && (
+                  <details>
+                    <summary className="cursor-pointer font-medium">
+                      {pendencias.length} tutorial(is) ainda não passariam em "Revisar e publicar"
+                      (entram como rascunho mesmo assim)
+                    </summary>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
+                      {pendencias.map((p) => (
+                        <li key={p.slug}>
+                          <strong>{p.slug}</strong>: {p.issues.join(' ')}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+              </div>
+            )
+          }}
+          onApply={applyImport}
+          confirmMessage={(filename) => (
+            <span>
+              A importação de <strong>{filename}</strong> grava no servidor agora: cria ou atualiza
+              o RASCUNHO de cada tutorial pelo endereço (slug). O que está publicado não muda até
+              você publicar de novo.
+            </span>
           )}
-          onApply={(data) => void applyImport(data)}
           hasExistingContent={(tutorials?.length ?? 0) > 0}
           guide={
             <p className="text-sm">

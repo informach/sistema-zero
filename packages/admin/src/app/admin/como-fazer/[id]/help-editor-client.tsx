@@ -21,7 +21,7 @@ import { Textarea } from '@sistemazero/ui/textarea'
 import { ArrowDown, ArrowUp, Download, Eye, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { useConfirm } from '@/components/admin/use-confirm'
@@ -92,6 +92,11 @@ export function HelpEditorClient({
   const [keywordsText, setKeywordsText] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
   const { confirm, confirmDialog } = useConfirm()
+  // O que está na tela AGORA, para o save saber se alguém digitou durante o request.
+  const draftRef = useRef(draft)
+  const metaRef = useRef(meta)
+  draftRef.current = draft
+  metaRef.current = meta
 
   const load = useCallback(async () => {
     try {
@@ -146,8 +151,25 @@ export function HelpEditorClient({
   )
   const warnings = useMemo(() => (draft ? helpEditorialWarnings(draft) : []), [draft])
 
-  async function save(): Promise<boolean> {
-    if (!record || !draft || !meta) return false
+  function avisarErro(err: unknown, fallback: string) {
+    const e = err as ApiError
+    if (
+      e.status === 409 &&
+      (e.code === 'HELP_TUTORIAL_CONFLICT' || e.code === 'HELP_SLUG_LOCKED')
+    ) {
+      toast.error(
+        e.code === 'HELP_SLUG_LOCKED'
+          ? (e.message ?? 'O endereço de um tutorial publicado não muda.')
+          : 'Outra pessoa salvou este tutorial. Recarregue a página para continuar.',
+      )
+    } else {
+      toast.error(e.message ?? fallback)
+    }
+  }
+
+  async function save(): Promise<HelpTutorialAdminView | null> {
+    if (!record || !draft || !meta) return null
+    const enviado = { draft, meta }
     setBusy(true)
     try {
       const saved = await apiSend<HelpTutorialAdminView>(
@@ -162,17 +184,16 @@ export function HelpEditorClient({
         },
       )
       setRecord(saved)
-      setDirty(false)
-      toast.success('Rascunho salvo.')
-      return true
-    } catch (err) {
-      const e = err as ApiError
-      if (e.status === 409 && e.code === 'HELP_TUTORIAL_CONFLICT') {
-        toast.error('Outra pessoa salvou este tutorial. Recarregue a página para continuar.')
-      } else {
-        toast.error(e.message ?? 'Não consegui salvar.')
+      // Só limpa o "dirty" se ninguém digitou DURANTE o request: os campos ficam abertos
+      // enquanto salva, e uma tecla nesse meio-tempo continua precisando ser salva.
+      if (draftRef.current === enviado.draft && metaRef.current === enviado.meta) {
+        setDirty(false)
       }
-      return false
+      toast.success('Rascunho salvo.')
+      return saved
+    } catch (err) {
+      avisarErro(err, 'Não consegui salvar.')
+      return null
     } finally {
       setBusy(false)
     }
@@ -180,16 +201,21 @@ export function HelpEditorClient({
 
   async function act(action: 'publish' | 'unpublish' | 'archive'): Promise<boolean> {
     if (!record) return false
-    if (dirty && !(await save())) return false
+    // O publish vale para a revisão que está NA TELA (a que o diálogo validou): salvar antes se
+    // houver edição, e mandar a revisão conhecida. Buscar a revisão "fresca" do servidor
+    // publicaria o rascunho de outra pessoa sem ninguém ter revisado; defasado → 409 explícito.
+    let base = record
+    if (dirty) {
+      const saved = await save()
+      if (!saved) return false
+      base = saved
+    }
     setBusy(true)
     try {
-      const current = await apiGet<HelpTutorialAdminView>(
-        `/api/members/help/tutorials/${tutorialId}`,
-      )
       const next = await apiSend<HelpTutorialAdminView>(
         `/api/members/help/tutorials/${tutorialId}/${action}`,
         'POST',
-        { expectedRevision: current.revision },
+        { expectedRevision: base.revision },
       )
       setRecord(next)
       toast.success(
@@ -201,8 +227,7 @@ export function HelpEditorClient({
       )
       return true
     } catch (err) {
-      const e = err as ApiError
-      toast.error(e.message ?? 'Não consegui.')
+      avisarErro(err, 'Não consegui.')
       return false
     } finally {
       setBusy(false)
@@ -324,8 +349,8 @@ export function HelpEditorClient({
         <Card>
           <CardContent className="pt-6">
             <p className="mb-4 text-muted-foreground text-sm">
-              É o rascunho, como a criança vai ler (o mesmo componente da página dela). Sem marca
-              d'água aqui.
+              É o rascunho, como a criança vai ler (o mesmo componente e a mesma pele da página
+              dela). Sem marca d'água aqui, e os links de "Veja também" saem como endereço.
             </p>
             <h2 className="mb-3 font-semibold text-2xl">{draft.title}</h2>
             <HelpTutorialView
@@ -494,7 +519,13 @@ export function HelpEditorClient({
                 <Field
                   label="Endereço"
                   htmlFor="t-slug"
-                  hint="/como-fazer/… Estável: os links das aulas apontam para ele."
+                  hint={
+                    record.status === 'published'
+                      ? '/como-fazer/… Publicado: o endereço está travado (as aulas e o Zappy apontam para ele). Despublique para trocar.'
+                      : record.publishedAt
+                        ? '/como-fazer/… Já foi publicado uma vez: trocar quebra os links das aulas que apontam para o endereço antigo.'
+                        : '/como-fazer/… Estável: os links das aulas apontam para ele.'
+                  }
                   error={
                     !isHelpSlug(meta.slug) ? 'Só letras minúsculas, números e traços.' : undefined
                   }
@@ -533,10 +564,15 @@ export function HelpEditorClient({
                     id="t-pos"
                     type="number"
                     min={0}
+                    step={1}
                     value={meta.position}
                     disabled={readOnly}
                     onChange={(e) => {
-                      setMeta({ ...meta, position: Math.max(0, Number(e.target.value) || 0) })
+                      // Inteiro: o DTO do members é `t.Integer`, e 1.5 voltava como 400 em inglês.
+                      setMeta({
+                        ...meta,
+                        position: Math.max(0, Math.trunc(Number(e.target.value) || 0)),
+                      })
                       setDirty(true)
                     }}
                   />

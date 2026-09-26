@@ -42,7 +42,10 @@ export function MaterialsBlockView({
   blockId,
   blockRevision,
   content,
+  helpLinks = true,
 }: {
+  /** `false` no app adulto, que não tem `/como-fazer`: o item vira texto, sem link quebrado. */
+  helpLinks?: boolean
   blockId: string
   blockRevision?: string
   content: MaterialsBlock
@@ -146,7 +149,11 @@ export function MaterialsBlockView({
               </>
             ) : null}
 
-            {item.kind === 'link' ? (
+            {item.kind === 'link' && isHelpLink(item.url) && !helpLinks ? (
+              <span className="sz-lesson-material-action">
+                <span className="sz-lesson-material-label">{item.label}</span>
+              </span>
+            ) : item.kind === 'link' ? (
               <>
                 <a
                   // Link INTERNO do "Como fazer" (`/como-fazer/<slug>`): mesma aba nova (a ajuda

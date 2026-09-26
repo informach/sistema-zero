@@ -70,7 +70,11 @@ export interface RenderInlineOpts {
    * `plainLinks` (links de UGC só como texto). Ver `renderUgcMarkdown` e o strip
    * no write do hub (`stripImageMarkdown`).
    */
-  dropImages?: boolean
+  dropImages?: boolean /**
+   * `false` desenha `[texto](/como-fazer/<slug>)` como TEXTO: é o caso do app adulto, que não
+   * tem a rota `/como-fazer` (a biblioteca é do Kids). Ausente = link.
+   */
+  helpLinks?: boolean
 }
 
 /**
@@ -301,15 +305,17 @@ export function renderInline(text: string, opts: RenderInlineOpts = {}): ReactNo
           )
         }
       } else if (help?.[1] && help[2]) {
-        if (opts.plainLinks) {
+        if (opts.plainLinks || opts.helpLinks === false) {
           parts.push(help[1])
         } else {
+          // Nova aba SÓ de dentro da aula (`helpReturnPath`): a ajuda não pode atrapalhar o
+          // curso. Já dentro do Como fazer (um passo citando outro tutorial), a mesma aba.
+          const dentroDaAula = Boolean(opts.helpReturnPath)
           parts.push(
             <a
               key={`a-${key++}`}
               href={helpLinkHref(help[2], opts.helpReturnPath)}
-              target="_blank"
-              rel="noopener"
+              {...(dentroDaAula ? { target: '_blank', rel: 'noopener' } : {})}
               data-sz-help-link=""
             >
               {help[1]}

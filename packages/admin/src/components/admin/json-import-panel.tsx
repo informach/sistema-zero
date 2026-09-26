@@ -29,16 +29,24 @@ export function JsonImportPanel<T>({
   exampleFilename,
   extraDownloads = [],
   successMessage,
+  confirmMessage,
 }: {
   parse: (text: string) => ImportParseResult<T>
   renderPreview: (data: T) => ReactNode
-  onApply: (data: T) => void
+  /**
+   * Pode ser assíncrono: o toast de sucesso só sai depois que a promessa resolve, e uma
+   * rejeição NÃO mostra sucesso (quem chamou trata o erro). Sem isso, um import que grava no
+   * servidor dizia "importado" antes de o servidor responder.
+   */
+  onApply: (data: T) => void | Promise<void>
   hasExistingContent: boolean
   guide: ReactNode
   example: unknown
   exampleFilename: string
   extraDownloads?: JsonDownload[]
   successMessage: string
+  /** O corpo do "Substituir o conteúdo atual?". O padrão fala do formulário local com "Salvar". */
+  confirmMessage?: (filename: string) => ReactNode
 }) {
   const inputId = useId()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -67,29 +75,35 @@ export function JsonImportPanel<T>({
     }
   }
 
-  function apply(data: T) {
-    onApply(data)
+  async function apply(data: T) {
     setCandidate(null)
     setErrors([])
+    try {
+      await onApply(data)
+    } catch {
+      return
+    }
     toast.success(successMessage)
   }
 
   function requestApply() {
     if (!candidate) return
     if (!hasExistingContent) {
-      apply(candidate.data)
+      void apply(candidate.data)
       return
     }
     confirm({
       title: 'Substituir o conteúdo atual?',
-      message: (
+      message: confirmMessage ? (
+        confirmMessage(candidate.filename)
+      ) : (
         <span>
           A importação de <strong>{candidate.filename}</strong> substituirá tudo que está preenchido
           neste campo. O bloco só será persistido quando você usar o botão <strong>Salvar</strong>.
         </span>
       ),
       confirmText: 'Substituir e aplicar',
-      onConfirm: () => apply(candidate.data),
+      onConfirm: () => void apply(candidate.data),
     })
   }
 
