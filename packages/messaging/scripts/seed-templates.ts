@@ -742,9 +742,12 @@ const seeds = [
           '<strong>{{indicador}}</strong> pensou na sua família e convidou você para receber o curso <strong>Cadê Todo Mundo?</strong>, do Sistema Zero, sem custo.',
         ),
         p(
-          'No Sistema Zero, crianças aprendem criando projetos. Neste curso, crianças de 8 a 15 anos montam, passo a passo, um jogo de procurar personagens e concluem a jornada com um certificado. O convite libera apenas este curso — não a assinatura da Comunidade dos Criadores.',
+          'No Sistema Zero, crianças aprendem criando projetos. Neste curso, crianças de 8 a 15 anos montam, passo a passo, um jogo de procurar personagens e concluem a jornada com um certificado. O convite libera apenas este curso e o Mural dos Criadores em modo visitante — não a assinatura da Comunidade dos Criadores.',
         ),
         p('O acesso ao curso dura 7 dias a partir do cadastro pelo link, não da primeira aula.'),
+        p(
+          'O convite também dá acesso ao <strong>Mural dos Criadores</strong> para ver e jogar criações de outras crianças enquanto a conta existir. Publicar, comentar e copiar jogos não fazem parte do presente.',
+        ),
         p(
           'Para receber o curso, confirme seus dados de responsável no link abaixo. Não pedimos cartão:',
         ),
@@ -831,6 +834,61 @@ const seeds = [
           'O acesso a este curso dura 7 dias a partir do cadastro pelo link. Entre com sua senha de sempre e comece agora. Recuperar a senha não reinicia esse prazo.',
         ),
         ctaButton('Acessar meus cursos', '{{link}}'),
+        divider,
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque resgatou um presente por indicação.',
+    }),
+  },
+  {
+    key: 'referrals-scholarship-welcome-7d-mural',
+    channel: 'email' as const,
+    name: 'Presente de sete dias com Mural visitante (conta nova)',
+    subject: 'Seu curso e o Mural estão liberados, {{nome}}',
+    variables: ['nome', 'indicador', 'link'],
+    body: emailLayout({
+      preheader: 'Cadê Todo Mundo? por 7 dias; jogos do Mural para ver e jogar sem prazo.',
+      title: 'Seu presente está pronto, {{nome}} 🎁',
+      content: [
+        p(
+          '<strong>{{indicador}}</strong> indicou sua família para receber o curso <strong>Cadê Todo Mundo?</strong> sem custo.',
+        ),
+        p(
+          'O curso fica disponível por <strong>7 dias a partir do cadastro pelo link</strong>. Criar ou recuperar a senha depois não reinicia esse prazo.',
+        ),
+        p(
+          'Vocês também podem <strong>ver e jogar os jogos do Mural dos Criadores</strong> enquanto a conta existir, mesmo depois dos 7 dias. Este presente não libera publicar, comentar, reagir nem fazer cópias dos jogos. Uma assinatura ativa libera a participação completa.',
+        ),
+        ctaButton('Criar minha senha e começar', '{{link}}'),
+        divider,
+        small(
+          'O link para criar a senha expira em 14 dias e só pode ser usado uma vez. Esse prazo é diferente dos 7 dias de acesso ao curso. Se expirar, use “Esqueci minha senha” na página de login.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque resgatou um presente por indicação.',
+    }),
+  },
+  {
+    key: 'referrals-scholarship-existing-7d-mural',
+    channel: 'email' as const,
+    name: 'Presente de sete dias com Mural visitante (conta existente)',
+    subject: 'Seu curso e o Mural estão na sua conta, {{nome}}',
+    variables: ['nome', 'indicador', 'link'],
+    body: emailLayout({
+      preheader: 'Entre na sua conta para começar o curso e jogar no Mural.',
+      title: 'Seu presente está na sua conta, {{nome}} 🎁',
+      content: [
+        p(
+          '<strong>{{indicador}}</strong> indicou sua família para receber o curso <strong>Cadê Todo Mundo?</strong> sem custo.',
+        ),
+        p(
+          'O curso fica disponível por <strong>7 dias a partir do cadastro pelo link</strong>. Recuperar a senha não reinicia esse prazo.',
+        ),
+        p(
+          'O acesso para <strong>ver e jogar os jogos do Mural dos Criadores</strong> continua enquanto sua conta existir. Publicar, comentar, reagir e copiar jogos não fazem parte do presente; uma assinatura ativa libera a participação completa.',
+        ),
+        ctaButton('Acessar meu presente', '{{link}}'),
         divider,
         fallbackLink('{{link}}'),
       ].join('\n'),

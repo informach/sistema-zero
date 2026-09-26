@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import {
+  AccessUnavailableError,
   ChannelNotFoundError,
   PostingNotAllowedError,
   SpaceNotFoundError,
@@ -30,6 +31,8 @@ const STUDIO_STANDALONE_ACCESS_REF = 'estudio-completo'
  * tem os dois). Fixa como o slug do produto no catálogo/hub.
  */
 const CHALLENGE_CLUB_REF = 'clube-dos-criadores'
+const MURAL_VISITOR_REF = 'mural-dos-criadores-visitante'
+const MURAL_FULL_REF = 'mural-dos-criadores'
 
 const CHALLENGE_KEY_RE = /^m:\d{4}-\d{2}$/
 // `m:YYYY-MM` do mês civil de São Paulo — MESMA régua do members (challenges.ts).
@@ -139,6 +142,29 @@ export class ShowcaseService {
     private readonly showcaseChannelSlug = 'parede',
   ) {}
 
+  /** O curso presenteado pode ser concluído, mas sua visita ao Mural não autoriza publicar. */
+  private async assertNotVisitorOnly(actor: Actor): Promise<void> {
+    if (actor.privileged) return
+    let access: Awaited<ReturnType<MembersGateway['checkAccess']>>
+    try {
+      access = await this.members.checkAccess(
+        actor.accountId,
+        [],
+        [MURAL_VISITOR_REF, MURAL_FULL_REF],
+      )
+    } catch {
+      throw new AccessUnavailableError()
+    }
+    if (
+      access.communities.includes(MURAL_VISITOR_REF) &&
+      !access.communities.includes(MURAL_FULL_REF) &&
+      !access.hasMasterKids
+    )
+      throw new PostingNotAllowedError(
+        'O acesso de visitante permite ver e jogar, mas não publicar no Mural',
+      )
+  }
+
   /**
    * Destino da vitrine (FONTE ÚNICA das 3 publicações): o Mural é um space KIDS
    * cuja parede é um canal `staff_only` (curado pelo admin) E está na allowlist de
@@ -182,6 +208,7 @@ export class ShowcaseService {
     if (!elig.eligible) throw new PostingNotAllowedError('Projeto não elegível para o Mural')
     if (elig.audience !== 'kids')
       throw new PostingNotAllowedError('A vitrine é só da plataforma kids')
+    await this.assertNotVisitorOnly(actor)
 
     // Destino: parede curada do Mural (kids + staff_only + allowlist) — ver helper.
     const channel = await this.resolveShowcaseDestination(cmd.spaceSlug)
@@ -360,6 +387,7 @@ export class ShowcaseService {
     if (!elig.eligible) throw new PostingNotAllowedError('Projeto não elegível para o Mural')
     if (elig.audience !== 'kids')
       throw new PostingNotAllowedError('A vitrine é só da plataforma kids')
+    await this.assertNotVisitorOnly(actor)
 
     // Destino: parede curada do Mural (mesmas guardas de `create`) — ver helper.
     const channel = await this.resolveShowcaseDestination(cmd.spaceSlug)
@@ -467,6 +495,7 @@ export class ShowcaseService {
       }
     }
     if (!owns) throw new PostingNotAllowedError('Sem acesso ao Estúdio para publicar')
+    await this.assertNotVisitorOnly(actor)
 
     // Tag do desafio: formato + mês CORRENTE (SP, recomputado aqui — o corpo não
     // dita o mês) + posse do Clube. Reprovada → post SEM a tag (drop SILENCIOSO:

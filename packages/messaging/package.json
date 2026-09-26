@@ -12,6 +12,7 @@
     "test": "bun test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:deploy": "bun run db:migrate && bun run templates:seed",
     "db:push": "drizzle-kit push",
     "templates:seed": "bun run scripts/seed-templates.ts",
     "evolution:create-instance": "bun run scripts/create-instance.ts",

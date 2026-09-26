@@ -1507,6 +1507,8 @@ export interface HubSpaceView {
   audience: 'adult' | 'kids'
   /** Aparece BLOQUEADO no menu (sem acesso): a UI mostra um recado e NÃO carrega canais. */
   locked: boolean
+  /** Full community membership enables social actions; visitor entitlement is read-only. */
+  canInteract: boolean
 }
 
 /** Canal (fórum) visto pelo aluno. `requiresApproval` é o efetivo (canal ?? space). */

@@ -322,9 +322,25 @@ const ReactionBar = memo(function ReactionBar({
   target: 'threads' | 'comments'
   id: string
   reactions: HubThreadView['reactions']
-  onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
+  onReact:
+    | ((target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void)
+    | null
 }) {
   const byEmoji = useMemo(() => new Map(reactions.map((r) => [r.emoji, r])), [reactions])
+  if (!onReact) {
+    return reactions.length > 0 ? (
+      <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Reações da turma">
+        {reactions.map((reaction) => (
+          <span
+            key={reaction.emoji}
+            className="rounded-full border-2 border-border px-2.5 py-1 text-sm"
+          >
+            {reaction.emoji} <span className="text-xs">{reaction.count}</span>
+          </span>
+        ))}
+      </div>
+    ) : null
+  }
   return (
     <div className="flex flex-wrap items-center gap-1">
       {QUICK_EMOJIS.map((emoji) => {
@@ -374,7 +390,9 @@ const CommentRow = memo(function CommentRow({
 }: {
   comment: HubCommentView
   label: ReactNode
-  onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
+  onReact:
+    | ((target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void)
+    | null
   onReport: (target: 'threads' | 'comments', id: string) => void
 }) {
   const body = useMemo(() => renderUgcMarkdown(comment.body), [comment.body])
@@ -419,6 +437,7 @@ export function ThreadDetail({
   onRemix = null,
   remixLock = null,
   canReply,
+  canInteract = true,
 }: {
   thread: HubThreadView
   comments: HubCommentView[]
@@ -426,6 +445,7 @@ export function ThreadDetail({
   isWall: boolean
   /** Viewer pode responder aqui? `false` = canal `staff_only` sem ser equipe (só lê e reage). */
   canReply: boolean
+  canInteract?: boolean
   replyBody: string
   setReplyBody: (v: string) => void
   replyAttachments: UploadedAttachment[]
@@ -435,7 +455,9 @@ export function ThreadDetail({
   onLoadMoreComments: () => void
   onBack: () => void
   onSend: () => void
-  onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
+  onReact:
+    | ((target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void)
+    | null
   onReport: (target: 'threads' | 'comments', id: string) => void
   authorLabel: (item: AuthorItem) => ReactNode
   onRemix?: ((thread: HubThreadView) => void) | null
@@ -523,7 +545,12 @@ export function ThreadDetail({
         ) : null}
       </div>
 
-      {thread.isLocked ? (
+      {!canInteract ? (
+        <div className="kids-carta p-4 text-center font-semibold text-muted-foreground text-sm">
+          Seu presente permite ver e jogar os projetos. Comentários e reações ficam disponíveis com
+          a Comunidade dos Criadores.
+        </div>
+      ) : thread.isLocked ? (
         <div className="kids-carta p-4 text-center font-semibold text-muted-foreground text-sm">
           Esta conversa está fechada para novas respostas.
         </div>

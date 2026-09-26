@@ -34,6 +34,7 @@ const espaco = {
   iconUrl: null,
   audience: 'kids',
   locked: false,
+  canInteract: true,
 }
 
 const parede = {

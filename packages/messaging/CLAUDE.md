@@ -81,7 +81,8 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    `challenge-completed` (e-mail; `nome`+`link`) cobrem ativação/progresso; `challenge-expiry-7d`,
    `challenge-expiry-3d` e `challenge-expired` (e-mail; `nome`+`data`+`link`) cobrem o vencimento.
    Os envios pós-compra partem do MEMBERS com idempotência por matrícula+vencimento+marco.
-   NÃO renomeie sem mudar os chamadores. Template novo → re-rode `templates:seed` no deploy.
+   NÃO renomeie sem mudar os chamadores. Template novo → o `db:deploy` do Railway roda
+   a migration e o `templates:seed` (UPSERT) antes de iniciar o serviço.
 4. **Outbox + worker + webhooks de status** (espelha o `payments`): enfileira em `QUEUED`, o worker
    envia respeitando o ritmo, e os webhooks (`delivered`/`read`/`bounce`/`spam`) atualizam a `Message`
    e alimentam a **supressão** (não reenviar a hard-bounce/spam/unsub). ⚠️ `bounce` com

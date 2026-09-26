@@ -281,9 +281,12 @@ export class RedeemScholarshipService {
         // o link entregue (o auth consome tokens pendentes ao emitir um novo).
         send = await this.gateway.sendEmail(
           {
-            templateKey: expiresAt
-              ? 'referrals-scholarship-welcome-7d'
-              : 'referrals-scholarship-welcome',
+            templateKey:
+              redemption.muralVisitorPolicy === 'visitor'
+                ? 'referrals-scholarship-welcome-7d-mural'
+                : expiresAt
+                  ? 'referrals-scholarship-welcome-7d'
+                  : 'referrals-scholarship-welcome',
             recipient: { name: firstName, email: redemption.email },
             variables: {
               nome: firstName,
@@ -298,7 +301,12 @@ export class RedeemScholarshipService {
         // compra/convite recente). A política do resgate escolhe o aviso correto.
         send = await this.gateway.sendEmail(
           {
-            templateKey: expiresAt ? 'referrals-scholarship-existing-7d' : 'new-access',
+            templateKey:
+              redemption.muralVisitorPolicy === 'visitor'
+                ? 'referrals-scholarship-existing-7d-mural'
+                : expiresAt
+                  ? 'referrals-scholarship-existing-7d'
+                  : 'new-access',
             recipient: { name: firstName, email: redemption.email },
             variables: {
               nome: firstName,

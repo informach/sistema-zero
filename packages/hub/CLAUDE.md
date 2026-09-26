@@ -12,6 +12,9 @@ somente leitura do space `mural-dos-criadores` (canais, jogos, comentários e an
 visíveis). `AccessResolutionService` expõe `canInteract` no detalhe/listagem do
 space. Publicar, editar, comentar e reagir exigem a chave completa
 `mural-dos-criadores`; a checagem é feita nas rotas de escrita, não só na UI.
+As três rotas de publicação de vitrine (automática, kid-driven e Estúdio livre)
+também recusam a conta que tenha somente a chave visitante, mesmo que conclua um
+curso elegível ou possua o Estúdio separadamente.
 Assinantes com ambas as chaves interagem normalmente; após perder a assinatura,
 voltam à leitura. Não adicionar a chave visitante ao `accessConfig` persistido:
 isso ampliaria a autorização de escrita por acidente.

@@ -76,7 +76,9 @@ type KidsSpaceDiscussion = {
   onLoadMoreComments: () => void
   onBackFromThread: () => void
   onSendReply: () => void
-  onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
+  onReact:
+    | ((target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void)
+    | null
   onReport: (target: 'threads' | 'comments', id: string) => void
   authorLabel: (item: AuthorItem) => ReactNode
   onRemix: ((thread: HubThreadView) => void) | null
@@ -166,6 +168,7 @@ export function KidsSpaceContent(props: KidsSpaceContentProps) {
       onRemix={discussion.onRemix}
       remixLock={discussion.remixLockFor(thread)}
       canReply={discussion.canReply}
+      canInteract={space.canInteract}
     />
   ) : null
 
@@ -216,7 +219,11 @@ export function KidsSpaceContent(props: KidsSpaceContentProps) {
       <KidsBand tone="lilas">
         {/* O remix e o "Publicar" pedem a MESMA coisa (Estúdio livre na jornada), então
             a presença do `onRemix` é a régua do botão de publicar. */}
-        {isWall ? <MuralClosing canPublish={discussion.onRemix !== null} /> : <ClubeClosing />}
+        {isWall ? (
+          <MuralClosing canPublish={discussion.onRemix !== null} canInteract={space.canInteract} />
+        ) : (
+          <ClubeClosing />
+        )}
       </KidsBand>
 
       <ReportDialog report={report} />

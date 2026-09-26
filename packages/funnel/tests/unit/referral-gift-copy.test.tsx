@@ -19,6 +19,9 @@ describe('promessa do curso na indicação', () => {
     expect(page).toContain('apenas este curso')
     expect(page).toContain('7 dias')
     expect(page).toContain('cadastro pelo link')
+    expect(page).toContain('Mural dos Criadores')
+    expect(page).toContain('ver e jogar')
+    expect(page).toContain('enquanto mantiver o cadastro')
     expect(page).not.toContain('Desafio do Primeiro Jogo')
     expect(page).not.toContain('5 dias')
     expect(page).not.toContain('a partir de 9 anos')
@@ -30,6 +33,8 @@ describe('promessa do curso na indicação', () => {
     expect(html).toContain('Liberar o curso para minha família')
     expect(html).toContain('Cadê Todo Mundo?')
     expect(html).toContain('7 dias')
+    expect(html).toContain('Mural dos Criadores')
+    expect(html).toContain('copiar jogos não estão incluídos')
     expect(html).not.toContain('vitalício')
     expect(html).not.toContain('Uma bolsa por família')
   })
@@ -48,6 +53,7 @@ describe('promessa do curso na indicação', () => {
     for (const value of [page, panelSource, html]) {
       expect(value).toContain('Cadê Todo Mundo?')
       expect(value).toContain('7 dias')
+      expect(value).toContain('Mural dos Criadores')
       expect(value).not.toContain('Desafio do Primeiro Jogo')
     }
     expect(panelSource).not.toContain('vitalício')

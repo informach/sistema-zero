@@ -12,7 +12,7 @@
     ]
   },
   "deploy": {
-    "preDeployCommand": "bun run --filter @sistemazero/messaging db:migrate",
+    "preDeployCommand": "bun run --filter @sistemazero/messaging db:deploy",
     "startCommand": "bun run --filter @sistemazero/messaging start",
     "healthcheckPath": "/readyz",
     "restartPolicyType": "ON_FAILURE",

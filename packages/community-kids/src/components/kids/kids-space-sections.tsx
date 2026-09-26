@@ -56,7 +56,11 @@ export function MuralHeader({
         eyebrow="Comunidade · vitrine da turma"
         eyebrowIcon={Images}
         title={space.name}
-        subtitle={space.description || SEM_DESCRICAO}
+        subtitle={
+          space.canInteract
+            ? space.description || SEM_DESCRICAO
+            : 'Explore e jogue as criações da turma no Mural dos Criadores.'
+        }
       />
       <div role="group" aria-label="Ordem dos jogos" className="mt-6 flex flex-wrap gap-2.5">
         {MURAL_SORTS.map((option) => (
@@ -205,18 +209,26 @@ export function ChannelsPanel({
  * nunca levar a criança a uma tela trancada. Sem ele, a frase explica de onde vêm os
  * jogos sem prometer nada.
  */
-export function MuralClosing({ canPublish }: { canPublish: boolean }) {
+export function MuralClosing({
+  canPublish,
+  canInteract = true,
+}: {
+  canPublish: boolean
+  canInteract?: boolean
+}) {
   return (
     <KidsClosingCard
       icon={Rocket}
-      title="Seu jogo também merece o mural"
+      title={canInteract ? 'Seu jogo também merece o mural' : 'Inspire-se com os jogos da turma'}
       description={
-        canPublish
-          ? 'Publique uma criação do Estúdio e a turma inteira vai poder jogar e comentar.'
-          : 'Os jogos da turma chegam aqui pelo Estúdio. Jogue, comente e ajude quem criou.'
+        !canInteract
+          ? 'Explore e jogue as criações da turma. Para publicar, comentar e fazer sua versão, conheça a Comunidade dos Criadores.'
+          : canPublish
+            ? 'Publique uma criação do Estúdio e a turma inteira vai poder jogar e comentar.'
+            : 'Os jogos da turma chegam aqui pelo Estúdio. Jogue, comente e ajude quem criou.'
       }
       action={
-        canPublish ? (
+        canInteract && canPublish ? (
           <Link
             href="/estudio"
             prefetch={false}

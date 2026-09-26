@@ -96,6 +96,26 @@ describe('vitrine (Mural dos Criadores)', () => {
     })
   })
 
+  test('presenteado visitante não publica ao concluir curso; assinatura ativa libera', async () => {
+    const accountId = randomUUID()
+    ctx.members.communitiesByUser.set(accountId, new Set(['mural-dos-criadores-visitante']))
+    const publish = () =>
+      ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread', {
+          headers: child(accountId),
+          body: showcaseBody(),
+        }),
+      )
+    expect((await publish()).status).toBe(403)
+    expect(ctx.members.showcaseNotifications).toHaveLength(0)
+
+    ctx.members.communitiesByUser.set(
+      accountId,
+      new Set(['mural-dos-criadores-visitante', 'mural-dos-criadores']),
+    )
+    expect((await publish()).status).toBe(200)
+  })
+
   test('projeto NÃO elegível → não publica nem notifica o nível do aluno', async () => {
     ctx.members.showcaseEligibility = { ...ctx.members.showcaseEligibility, eligible: false }
     const res = await ctx.app.handle(
@@ -340,6 +360,18 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(thread.status).toBe('visible')
   })
 
+  test('studio: visitante não usa publicação kid-driven mesmo com curso elegível', async () => {
+    const accountId = randomUUID()
+    ctx.members.communitiesByUser.set(accountId, new Set(['mural-dos-criadores-visitante']))
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
+        headers: child(accountId),
+        body: studioBody(),
+      }),
+    )
+    expect(res.status).toBe(403)
+  })
+
   test('studio: studioMeta persiste saneado (dedupe) e volta na view; ausente → null', async () => {
     const withMeta = await ctx.app.handle(
       jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
@@ -525,6 +557,21 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(thread.title).toBe('Meu jogo livre')
     expect(thread.body).toBe('Fiz no Estúdio Completo!')
     expect(thread.playId).toBe('66666666-6666-6666-6666-666666666666')
+  })
+
+  test('standalone: visitante com Estúdio separado ainda precisa assinar para publicar no Mural', async () => {
+    const accountId = randomUUID()
+    ctx.members.communitiesByUser.set(
+      accountId,
+      new Set(['estudio-completo', 'mural-dos-criadores-visitante']),
+    )
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+        headers: child(accountId),
+        body: standaloneBody(),
+      }),
+    )
+    expect(res.status).toBe(403)
   })
 
   test('standalone: studioMeta persiste ({pro:true} do modo Código) e volta na view', async () => {

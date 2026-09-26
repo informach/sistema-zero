@@ -66,7 +66,7 @@ describe('RedeemScholarshipService', () => {
     expect(gateway.callsOf('createPasswordToken')).toHaveLength(1)
     const send = gateway.callsOf('sendEmail')[0]!
     const email = send.input as SendEmailInput
-    expect(email.templateKey).toBe('referrals-scholarship-welcome-7d')
+    expect(email.templateKey).toBe('referrals-scholarship-welcome-7d-mural')
     expect(email.variables.indicador).toBe('Vó Cida')
     expect(email.variables.link).toContain('/redefinir-senha?token=tok-abc')
     expect(send.idempotencyKey).toBe(`scholarship-welcome:${r.id}`)
@@ -78,7 +78,7 @@ describe('RedeemScholarshipService', () => {
     expect(result.kind).toBe('completed')
     expect(gateway.callsOf('createPasswordToken')).toHaveLength(0)
     const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
-    expect(email.templateKey).toBe('referrals-scholarship-existing-7d')
+    expect(email.templateKey).toBe('referrals-scholarship-existing-7d-mural')
     expect(email.variables.link).toContain('/cursos')
   })
 
@@ -129,6 +129,8 @@ describe('RedeemScholarshipService', () => {
     expect((await service.execute(input)).kind).toBe('completed')
     expect(gateway.callsOf('grantMuralVisitor')).toHaveLength(0)
     expect(gateway.callsOf('grantManualCourse')).toHaveLength(1)
+    const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
+    expect(email.templateKey).toBe('referrals-scholarship-welcome-7d')
   })
 
   test('retomada do grant não reinicia os sete dias', async () => {

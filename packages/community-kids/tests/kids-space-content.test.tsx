@@ -76,6 +76,7 @@ function contentProps(): KidsSpaceContentProps {
         iconUrl: null,
         audience: 'kids',
         locked: false,
+        canInteract: true,
       },
       viewerId: 'profile-1',
       spaceChannelIds: [channel.id],
@@ -306,6 +307,38 @@ describe('KidsSpaceContent — comportamento do boundary de apresentação', () 
 
     expect(onOpenThread).toHaveBeenCalledWith(showcase)
     expect(onRemix).toHaveBeenCalledWith(showcase)
+  })
+
+  test('visitante do Mural pode ver e jogar, sem controles sociais ou de cópia', () => {
+    const props = contentProps()
+    const showcase = { ...thread, isShowcase: true, playId: 'play-1' }
+    render(
+      <KidsSpaceContent
+        {...props}
+        context={{
+          ...props.context,
+          isWall: true,
+          space: { ...props.context.space, canInteract: false },
+        }}
+        discussion={{
+          ...props.discussion,
+          thread: showcase,
+          comments: [comment],
+          onReact: null,
+          canReply: false,
+        }}
+      />,
+    )
+
+    expect(screen.getByRole('link', { name: /Jogar/i })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Comentar' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Fazer a minha versão' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '👍' })).toBeNull()
+    expect(screen.getByText(/Seu presente permite ver e jogar os projetos/)).toBeTruthy()
+    expect(screen.getByText('Inspire-se com os jogos da turma')).toBeTruthy()
+    expect(
+      screen.getByText('Explore e jogue as criações da turma no Mural dos Criadores.'),
+    ).toBeTruthy()
   })
 })
 

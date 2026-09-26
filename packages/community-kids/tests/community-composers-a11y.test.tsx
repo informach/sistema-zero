@@ -79,6 +79,7 @@ function installFetch() {
           iconUrl: null,
           audience: 'kids',
           locked: false,
+          canInteract: true,
         })
       }
       if (path === '/api/hub/spaces/clube/channels') {
