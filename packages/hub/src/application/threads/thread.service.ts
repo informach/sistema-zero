@@ -116,6 +116,8 @@ export class ThreadService {
     cmd: CreateThreadCommand,
   ): Promise<ThreadView> {
     const { space, channel } = await this.requireChannelAccess(actor, channelId)
+    if (!(await this.access.canInteractChannel(actor, space, channel)))
+      throw new AccessDeniedError()
     await this.assertNotMutedOrBanned(actor, space.id, channelId)
     // Canal "somente avisos": só staff abre tópico.
     if (channel.postingPolicy === 'staff_only' && !actor.privileged) {
@@ -232,7 +234,9 @@ export class ThreadService {
     body: string,
     expectedVersion: number,
   ): Promise<ThreadView> {
-    const { thread } = await this.requireThreadView(actor, threadId)
+    const { thread, space, channel } = await this.requireThreadView(actor, threadId)
+    if (!(await this.access.canInteractChannel(actor, space, channel)))
+      throw new AccessDeniedError()
     if (thread.authorId !== actor.userId && !actor.privileged) {
       throw new AccessDeniedError('Só o autor pode editar')
     }
@@ -258,6 +262,8 @@ export class ThreadService {
     cmd: CreateCommentCommand,
   ): Promise<CommentView> {
     const { thread, space, channel } = await this.requireThreadView(actor, threadId)
+    if (!(await this.access.canInteractChannel(actor, space, channel)))
+      throw new AccessDeniedError()
     await this.assertNotMutedOrBanned(actor, space.id, thread.channelId)
     // Só se comenta em tópico VISÍVEL (pendente/oculto não recebe resposta).
     if (thread.status !== 'visible') throw new PostingNotAllowedError('Tópico indisponível')
@@ -321,7 +327,9 @@ export class ThreadService {
     const comment = await this.threads.findCommentById(commentId)
     if (!comment) throw new CommentNotFoundError()
     // Garante acesso ao tópico-pai (e que o tópico existe/é visível ao ator).
-    await this.requireThreadView(actor, comment.threadId)
+    const { space, channel } = await this.requireThreadView(actor, comment.threadId)
+    if (!(await this.access.canInteractChannel(actor, space, channel)))
+      throw new AccessDeniedError()
     if (comment.authorId !== actor.userId && !actor.privileged) {
       throw new AccessDeniedError('Só o autor pode editar')
     }

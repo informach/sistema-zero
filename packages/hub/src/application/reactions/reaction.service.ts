@@ -37,6 +37,7 @@ export class ReactionService {
     emoji: string,
   ): Promise<{ ok: true }> {
     const { space, channelId } = await this.requireTargetVisible(actor, target, targetId)
+    if (!(await this.access.canInteractSpace(actor, space))) throw new AccessDeniedError()
     // Banido não participa (silenciado ainda pode reagir). Escopo: este canal.
     if (!actor.privileged) {
       const mb = await this.moderation.findActiveForUser(
@@ -58,7 +59,8 @@ export class ReactionService {
     targetId: string,
     emoji: string,
   ): Promise<{ ok: true }> {
-    await this.requireTargetVisible(actor, target, targetId)
+    const { space } = await this.requireTargetVisible(actor, target, targetId)
+    if (!(await this.access.canInteractSpace(actor, space))) throw new AccessDeniedError()
     await this.reactions.remove(target, targetId, actor.userId, emoji.trim())
     return { ok: true }
   }

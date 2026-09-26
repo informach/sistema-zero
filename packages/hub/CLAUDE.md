@@ -7,6 +7,15 @@
 
 Guia operacional para trabalhar neste package. Leia antes de editar.
 
+**Mural visitante (09/2026):** o entitlement `mural-dos-criadores-visitante` concede
+somente leitura do space `mural-dos-criadores` (canais, jogos, comentários e anexos
+visíveis). `AccessResolutionService` expõe `canInteract` no detalhe/listagem do
+space. Publicar, editar, comentar e reagir exigem a chave completa
+`mural-dos-criadores`; a checagem é feita nas rotas de escrita, não só na UI.
+Assinantes com ambas as chaves interagem normalmente; após perder a assinatura,
+voltam à leitura. Não adicionar a chave visitante ao `accessConfig` persistido:
+isso ampliaria a autorização de escrita por acidente.
+
 ## O que é
 
 **Comunidade em FÓRUM** (só back-end/API; os front-ends são o **[@sistemazero/community](../community)**

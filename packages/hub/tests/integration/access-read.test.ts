@@ -129,6 +129,87 @@ describe('leitura do aluno com resolução de acesso', () => {
     )
   })
 
+  test('visitante do Mural vê a vitrine sem capacidade de interação', async () => {
+    const mural = await ctx.repo.createSpace(
+      space({
+        slug: 'mural-dos-criadores',
+        name: 'Mural dos Criadores',
+        audience: 'kids',
+        accessConfig: {
+          visibility: 'community_gated',
+          courses: [],
+          communities: ['mural-dos-criadores'],
+          roles: [],
+        },
+      }),
+    )
+    const visitor = randomUUID()
+    ctx.members.communitiesByUser.set(visitor, new Set(['mural-dos-criadores-visitante']))
+    const channel = await ctx.repo.createChannel(mural.id, {
+      slug: 'jogos',
+      name: 'Jogos',
+      topic: null,
+      accessConfig: null,
+      postingPolicy: 'staff_only',
+      requiresApproval: null,
+      status: 'active',
+    })
+    const list = await ctx.app.handle(
+      jsonRequest('GET', '/hub/spaces?audience=kids', { headers: studentHeaders(visitor) }),
+    )
+    expect(
+      (await list.json()) as { items: Array<{ slug: string; canInteract: boolean }> },
+    ).toMatchObject({
+      items: expect.arrayContaining([
+        expect.objectContaining({ slug: 'mural-dos-criadores', canInteract: false }),
+      ]),
+    })
+    const visitorRes = await ctx.app.handle(
+      jsonRequest('GET', '/hub/spaces/mural-dos-criadores', {
+        headers: studentHeaders(visitor),
+      }),
+    )
+    expect(visitorRes.status).toBe(200)
+    expect(await visitorRes.json()).toMatchObject({ locked: false, canInteract: false })
+    const channels = await ctx.app.handle(
+      jsonRequest('GET', '/hub/spaces/mural-dos-criadores/channels', {
+        headers: studentHeaders(visitor),
+      }),
+    )
+    expect(channels.status).toBe(200)
+    expect(await channels.json()).toMatchObject({
+      items: [expect.objectContaining({ id: channel.id })],
+    })
+
+    const subscriber = randomUUID()
+    ctx.members.communitiesByUser.set(subscriber, new Set(['mural-dos-criadores']))
+    const subscriberRes = await ctx.app.handle(
+      jsonRequest('GET', '/hub/spaces/mural-dos-criadores', {
+        headers: studentHeaders(subscriber),
+      }),
+    )
+    expect(await subscriberRes.json()).toMatchObject({ locked: false, canInteract: true })
+
+    // Assinatura ativa amplia o mesmo cadastro; sem ela, retorna ao modo visitante.
+    ctx.members.communitiesByUser.set(
+      visitor,
+      new Set(['mural-dos-criadores-visitante', 'mural-dos-criadores']),
+    )
+    const upgraded = await ctx.app.handle(
+      jsonRequest('GET', '/hub/spaces/mural-dos-criadores', {
+        headers: studentHeaders(visitor),
+      }),
+    )
+    expect(await upgraded.json()).toMatchObject({ canInteract: true })
+    ctx.members.communitiesByUser.set(visitor, new Set(['mural-dos-criadores-visitante']))
+    const lapsed = await ctx.app.handle(
+      jsonRequest('GET', '/hub/spaces/mural-dos-criadores', {
+        headers: studentHeaders(visitor),
+      }),
+    )
+    expect(await lapsed.json()).toMatchObject({ canInteract: false })
+  })
+
   test('staff/admin vê tudo (bypass) sem chamar o members', async () => {
     const slugs = await listSlugs(ctx.app, adminHeaders())
     expect(new Set(slugs)).toEqual(new Set(['geral', 'curso-a-srv']))

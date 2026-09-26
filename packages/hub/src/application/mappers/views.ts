@@ -19,6 +19,8 @@ export interface SpacePublicView {
    * mostra um recado gentil; o CONTEÚDO (canais) não é carregado quando `locked`.
    */
   locked: boolean
+  /** Acesso completo permite publicar/comentar/reagir; visitante só lê e joga. */
+  canInteract: boolean
 }
 
 /** Canal visto pelo aluno. `requiresApproval` é o efetivo (canal ?? space). */
@@ -34,7 +36,11 @@ export interface ChannelPublicView {
   hasUnread: boolean
 }
 
-export function toSpacePublicView(s: Space, locked = false): SpacePublicView {
+export function toSpacePublicView(
+  s: Space,
+  locked = false,
+  canInteract = !locked,
+): SpacePublicView {
   return {
     id: s.id,
     slug: s.slug,
@@ -43,6 +49,7 @@ export function toSpacePublicView(s: Space, locked = false): SpacePublicView {
     iconUrl: s.iconUrl,
     audience: s.audience,
     locked,
+    canInteract,
   }
 }
 
