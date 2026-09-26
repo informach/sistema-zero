@@ -3,6 +3,7 @@ import { MAX_CYCLES_PER_PROJECT } from '../../domain/pensa/pensa'
 import {
   PensaCycleNotDoneError,
   PensaNotFoundError,
+  PensaNotOwnerError,
   PensaQuotaExceededError,
 } from '../../domain/pensa/pensa.errors'
 import type { PensaRepository } from '../../domain/ports/pensa-repository.port'
@@ -31,6 +32,9 @@ export class CreatePensaCycleService {
   ): Promise<PensaProjectDetailView> {
     const project = await this.repo.findProject(projectId, userId, audience)
     if (!project) throw new PensaNotFoundError()
+    // Uma versão nova vira o ciclo corrente de TODA a equipe e gasta a cota do plano: é decisão
+    // do dono, como renomear e apagar (equipe, 26/09/2026).
+    if (project.role !== 'owner') throw new PensaNotOwnerError()
 
     const trimmedGoal = goal.trim()
     if (trimmedGoal.length < 2 || trimmedGoal.length > 500) {

@@ -170,6 +170,8 @@ describe('equipe do Pensa — HTTP', () => {
       req(ctx.app, 'POST', `${base}/share`, asB),
       req(ctx.app, 'DELETE', `${base}/share`, asB),
       req(ctx.app, 'DELETE', `${base}/members/${A}`, asB),
+      // Uma versão nova é do dono: vira o ciclo corrente de todo mundo e gasta a cota do plano.
+      req(ctx.app, 'POST', `${base}/cycles`, asB, { goal: 'Versão 2 do Beto' }),
     ]) {
       const response = await attempt
       expect(response.status).toBe(403)
@@ -255,6 +257,31 @@ describe('equipe do Pensa — HTTP', () => {
     expect((await req(ctx.app, 'DELETE', `${base}/members/${B}`, asA)).status).toBe(200)
     expect((await req(ctx.app, 'GET', base, asB)).status).toBe(404)
     expect((await req(ctx.app, 'DELETE', `${base}/members/${B}`, asA)).status).toBe(404)
+  })
+
+  test('plano ARQUIVADO some para o membro (o dono segue vendo): arquivar é como o dono fecha o plano', async () => {
+    const ctx = buildTeam()
+    const plan = await createPlan(ctx)
+    const { code } = await share(ctx, plan.id)
+    expect((await join(ctx, code)).status).toBe(200)
+    const base = `/members/pensa/projects/${plan.id}`
+    expect((await req(ctx.app, 'PATCH', base, asA, { status: 'archived' })).status).toBe(200)
+    expect((await req(ctx.app, 'GET', base, asB)).status).toBe(404)
+    expect(
+      (await req(ctx.app, 'GET', `/members/pensa/cycles/${plan.currentCycle.id}/stages/z`, asB))
+        .status,
+    ).toBe(404)
+    expect((await req(ctx.app, 'GET', base, asA)).status).toBe(200)
+  })
+
+  test('o membro que manda o PRÓPRIO id no DELETE sai da equipe, como com `me`', async () => {
+    const ctx = buildTeam()
+    const plan = await createPlan(ctx)
+    const { code } = await share(ctx, plan.id)
+    expect((await join(ctx, code)).status).toBe(200)
+    const base = `/members/pensa/projects/${plan.id}`
+    expect((await req(ctx.app, 'DELETE', `${base}/members/${B}`, asB)).status).toBe(200)
+    expect((await req(ctx.app, 'GET', base, asB)).status).toBe(404)
   })
 
   test('apagar o plano leva a equipe junto (o membro cai em 404) e a cota de criar ignora os planos em que entrei', async () => {

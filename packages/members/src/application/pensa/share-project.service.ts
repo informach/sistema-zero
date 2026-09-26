@@ -8,7 +8,9 @@ const MAX_ATTEMPTS = 5
 /**
  * Gera (ou TROCA) o código do plano. Só o dono. Gerar de novo sobrescreve: o código antigo
  * para de funcionar na hora, e quem já entrou continua na equipe (o código é só a porta).
- * O índice único parcial do banco é a rede contra colisão; aqui a tentativa é repetida.
+ * O índice único parcial do banco é a rede contra colisão: a pré-checagem evita a ida à toa e,
+ * se dois donos sortearem o MESMO código no mesmo instante, o `setShareCode` devolve `false`
+ * e o sorteio é repetido (até `MAX_ATTEMPTS`; 31^6 códigos, colisão real é ~1 em 887 milhões).
  */
 export class SharePensaProjectService {
   constructor(
@@ -28,7 +30,7 @@ export class SharePensaProjectService {
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
       const code = this.generate()
       if (await this.repo.findProjectByShareCode(code)) continue
-      await this.repo.setShareCode(projectId, code, this.clock())
+      if (!(await this.repo.setShareCode(projectId, code, this.clock()))) continue
       return { code, display: formatShareCode(code) }
     }
     throw new Error('Não consegui gerar um código único para o plano')

@@ -108,7 +108,9 @@ export class InMemoryPensaRepository implements PensaRepository {
   ): PensaProjectAccess | null {
     if (!project || project.audience !== audience) return null
     const isOwner = project.userId === userId
-    if (!isOwner && !this.members.has(`${project.id}:${userId}`)) return null
+    // O membro só alcança plano ATIVO (o dono arquiva para "fechar"); o dono alcança sempre.
+    if (!isOwner && (project.status !== 'active' || !this.members.has(`${project.id}:${userId}`)))
+      return null
     return {
       ...project,
       role: isOwner ? 'owner' : 'member',
@@ -165,9 +167,16 @@ export class InMemoryPensaRepository implements PensaRepository {
     return this.accessOf(this.projects.get(projectId), userId, audience)
   }
 
-  async setShareCode(projectId: string, code: string | null, now: Date): Promise<void> {
+  async setShareCode(projectId: string, code: string | null, now: Date): Promise<boolean> {
+    if (code !== null) {
+      // O índice único parcial do banco: outro plano com o mesmo código recusa a gravação.
+      for (const [id, other] of this.projects) {
+        if (id !== projectId && other.shareCode === code) return false
+      }
+    }
     const project = this.projects.get(projectId)
     if (project) this.projects.set(projectId, { ...project, shareCode: code, updatedAt: now })
+    return true
   }
 
   async findProjectByShareCode(code: string): Promise<PensaProject | null> {
@@ -191,11 +200,17 @@ export class InMemoryPensaRepository implements PensaRepository {
     }).length
   }
 
-  async addMember(member: NewPensaProjectMember, now: Date): Promise<void> {
+  async addMember(
+    member: NewPensaProjectMember,
+    now: Date,
+    maxMembers: number,
+  ): Promise<'added' | 'duplicate' | 'full'> {
     const key = `${member.projectId}:${member.profileId}`
-    if (this.members.has(key)) throw new Error('duplicate key value violates unique constraint')
+    if (this.members.has(key)) return 'duplicate'
+    if (this.memberCount(member.projectId) >= maxMembers) return 'full'
     this.members.set(key, { ...member, joinedAt: now })
     this.touch(member.projectId, now)
+    return 'added'
   }
 
   async removeMember(projectId: string, profileId: string, now: Date): Promise<boolean> {

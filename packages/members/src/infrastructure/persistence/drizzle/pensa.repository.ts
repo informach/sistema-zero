@@ -168,11 +168,29 @@ function accessibleProject(userId: string, audience: CourseAudience) {
     eq(pensaProjects.audience, audience),
     or(
       eq(pensaProjects.userId, userId),
-      exists(
-        sql`(select 1 from ${pensaProjectMembers} where ${pensaProjectMembers.projectId} = ${pensaProjects.id} and ${pensaProjectMembers.profileId} = ${userId}::uuid)`,
+      // ⚠️ O MEMBRO só alcança plano ATIVO: arquivar é o jeito de o dono "fechar" o plano, e sem
+      // isto a equipe continuava escrevendo num plano que ele já tirou da lista.
+      and(
+        eq(pensaProjects.status, 'active'),
+        exists(
+          sql`(select 1 from ${pensaProjectMembers} where ${pensaProjectMembers.projectId} = ${pensaProjects.id} and ${pensaProjectMembers.profileId} = ${userId}::uuid)`,
+        ),
       ),
     ),
   )
+}
+
+/**
+ * 23505 = unique_violation. O drizzle-orm envelopa o erro do driver em `DrizzleQueryError`
+ * com o `PostgresError` em `cause`: caminha a cadeia (com teto), como o content-admin.
+ */
+function isUniqueViolation(error: unknown): boolean {
+  let current: unknown = error
+  for (let depth = 0; depth < 5 && typeof current === 'object' && current !== null; depth++) {
+    if ((current as { code?: unknown }).code === '23505') return true
+    current = (current as { cause?: unknown }).cause
+  }
+  return false
 }
 
 function accessColumns(userId: string) {
@@ -277,11 +295,19 @@ export class DrizzlePensaRepository implements PensaRepository {
     return row ? toAccess(row.project, row.isOwner, row.memberCount) : null
   }
 
-  async setShareCode(projectId: string, code: string | null, now: Date): Promise<void> {
-    await this.db
-      .update(pensaProjects)
-      .set({ shareCode: code, updatedAt: now })
-      .where(eq(pensaProjects.id, projectId))
+  async setShareCode(projectId: string, code: string | null, now: Date): Promise<boolean> {
+    try {
+      await this.db
+        .update(pensaProjects)
+        .set({ shareCode: code, updatedAt: now })
+        .where(eq(pensaProjects.id, projectId))
+      return true
+    } catch (error) {
+      // Dois donos sorteando o MESMO código no mesmo instante: o índice único parcial recusa
+      // o segundo, e o serviço sorteia outro em vez de responder 500.
+      if (code !== null && isUniqueViolation(error)) return false
+      throw error
+    }
   }
 
   async findProjectByShareCode(code: string): Promise<PensaProject | null> {
@@ -317,10 +343,36 @@ export class DrizzlePensaRepository implements PensaRepository {
     return row?.value ?? 0
   }
 
-  async addMember(member: NewPensaProjectMember, now: Date): Promise<void> {
-    await this.db.transaction(async (tx) => {
+  async addMember(
+    member: NewPensaProjectMember,
+    now: Date,
+    maxMembers: number,
+  ): Promise<'added' | 'duplicate' | 'full'> {
+    return this.db.transaction(async (tx) => {
+      // Tranca a linha do projeto: conferir a vaga e gravar viram um passo só (dois convidados
+      // no mesmo instante com 4 na equipe não viram 6).
+      await tx.execute(
+        sql`select 1 from ${pensaProjects} where ${pensaProjects.id} = ${member.projectId}::uuid for update`,
+      )
+      const [already] = await tx
+        .select({ profileId: pensaProjectMembers.profileId })
+        .from(pensaProjectMembers)
+        .where(
+          and(
+            eq(pensaProjectMembers.projectId, member.projectId),
+            eq(pensaProjectMembers.profileId, member.profileId),
+          ),
+        )
+        .limit(1)
+      if (already) return 'duplicate'
+      const [row] = await tx
+        .select({ value: count() })
+        .from(pensaProjectMembers)
+        .where(eq(pensaProjectMembers.projectId, member.projectId))
+      if ((row?.value ?? 0) >= maxMembers) return 'full'
       await tx.insert(pensaProjectMembers).values({ ...member, joinedAt: now })
       await touchProject(tx, member.projectId, now)
+      return 'added'
     })
   }
 

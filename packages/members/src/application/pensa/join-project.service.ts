@@ -44,10 +44,16 @@ export class JoinPensaProjectService {
     if ((await this.repo.countMemberships(userId, audience)) >= MAX_JOINED_PROJECTS) {
       throw new PensaJoinLimitError()
     }
-    await this.repo.addMember(
+    // As conferências acima são a UX (mensagens certas, sem ir ao banco à toa); a que VALE é a
+    // do repositório, dentro da transação que tranca o projeto: duas abas ou dois convidados no
+    // mesmo instante voltam como 'duplicate'/'full' em vez de estourar a chave ou passar do teto.
+    const outcome = await this.repo.addMember(
       { projectId: project.id, profileId: userId, accountId, invitedBy: project.userId },
       this.clock(),
+      MAX_PROJECT_MEMBERS,
     )
+    if (outcome === 'duplicate') throw new PensaAlreadyMemberError()
+    if (outcome === 'full') throw new PensaTeamFullError()
     const access = await this.repo.findProject(project.id, userId, audience)
     if (!access) throw new PensaNotFoundError() // defensivo: acabou de entrar
     return loadPensaProjectDetail(this.repo, access)

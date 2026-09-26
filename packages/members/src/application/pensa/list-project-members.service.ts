@@ -29,11 +29,17 @@ export class ListPensaProjectMembersService {
     const members = await this.repo.listMembers(projectId)
     const ids = [access.userId, ...members.map((member) => member.profileId)]
     const identities: Map<string, ProfileIdentity> = this.authGateway
-      ? await this.authGateway.getProfileIdentities(ids).catch(() => new Map())
+      ? await this.authGateway.getProfileIdentities(ids).catch((error: unknown) => {
+          console.warn('[pensa] identidades da equipe indisponíveis (segue como "Colega")', error)
+          return new Map()
+        })
       : new Map()
     const avatars: Record<string, { photoUrl: string | null }> = await this.avatars
       .execute(ids, audience)
-      .catch(() => ({}))
+      .catch((error: unknown) => {
+        console.warn('[pensa] rostos da equipe indisponíveis (segue sem foto)', error)
+        return {}
+      })
     const person = (profileId: string, joinedAt: string | null): PensaTeamPersonView => ({
       profileId,
       firstName: identities.get(profileId)?.firstName ?? null,

@@ -25,7 +25,9 @@ export class RemovePensaProjectMemberService {
   ): Promise<void> {
     const access = await this.repo.findProject(projectId, userId, audience)
     if (!access) throw new PensaNotFoundError('Esse plano não está mais aqui.')
-    if (target === 'me') {
+    // `me` ou o PRÓPRIO id: os dois são "sair" (o BFF manda `me`; um cliente que mande o uuid
+    // dele não pode cair em "só quem criou o plano pode fazer isso").
+    if (target === 'me' || target === userId) {
       if (access.role === 'owner') throw new PensaOwnerCannotLeaveError()
       await this.repo.removeMember(projectId, userId, this.clock())
       return

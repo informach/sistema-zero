@@ -120,14 +120,27 @@ export interface PensaRepository {
   ): Promise<PensaProjectAccess | null>
   updateProject(projectId: string, patch: PensaProjectPatch, now: Date): Promise<void>
   // ── Equipe (26/09/2026) ──
-  setShareCode(projectId: string, code: string | null, now: Date): Promise<void>
+  /**
+   * Grava (ou apaga, `null`) o código. `false` = o código já é de OUTRO plano (o índice
+   * único parcial recusou): quem chama sorteia outro. Nunca lança por colisão.
+   */
+  setShareCode(projectId: string, code: string | null, now: Date): Promise<boolean>
   /** Por código, em QUALQUER vitrine (o índice único é global): o serviço confere a vitrine. */
   findProjectByShareCode(code: string): Promise<PensaProject | null>
   listMembers(projectId: string): Promise<PensaProjectMember[]>
   /** Quantas equipes ATIVAS o perfil já entrou (o teto de `MAX_JOINED_PROJECTS`). */
   countMemberships(profileId: string, audience: CourseAudience): Promise<number>
   /** Toca o `updated_at` do projeto (o dono vê que o plano mudou). */
-  addMember(member: NewPensaProjectMember, now: Date): Promise<void>
+  /**
+   * Entra na equipe DENTRO de uma transação que tranca o projeto: conferir a vaga e gravar
+   * é um passo só, então dois convidados no mesmo instante não passam do teto, e a
+   * duplicidade volta como `'duplicate'` em vez de estourar a chave primária.
+   */
+  addMember(
+    member: NewPensaProjectMember,
+    now: Date,
+    maxMembers: number,
+  ): Promise<'added' | 'duplicate' | 'full'>
   /** `false` = não estava na equipe. Toca o `updated_at` quando tira alguém. */
   removeMember(projectId: string, profileId: string, now: Date): Promise<boolean>
   /**

@@ -1619,9 +1619,30 @@ progresso `planned | in_progress | completed`.
   - ⚠️ Sem trava na conversa Z: dois na mesma etapa fazem último-vence (follow-up
     `expectedMessageCount`). Estúdio/Pinta/Molda seguem locais por perfil: a colaboração é no
     PLANO, cada um constrói no seu.
+  - **Full review do lote (26/09/2026), o que ficou de contrato:** (a) **nova versão (`POST
+    …/cycles`) é do DONO** (403 para membro): ela vira o ciclo corrente de toda a equipe e gasta
+    a cota do plano; (b) **`addMember` é uma transação que TRANCA o projeto** (`select … for
+    update`) e devolve `'added' | 'duplicate' | 'full'`: a vaga e a duplicidade são conferidas
+    DENTRO dela, então dois convidados no mesmo instante não passam de 5 e duas abas do mesmo
+    perfil viram 409, não 500 na chave primária (as checagens do serviço antes disso são só a UX);
+    (c) **`setShareCode` devolve `false` na colisão do índice único** (23505 caminhando a cadeia
+    de `cause`, como o content-admin) e o serviço sorteia outro, em vez de 500; (d) **o MEMBRO só
+    alcança plano ATIVO** (`accessibleProject` exige `status='active'` no ramo do membro; o dono
+    alcança sempre): arquivar é como o dono "fecha" o plano; (e) `DELETE …/members/<meu uuid>`
+    por um membro é sair, como `me`; (f) identidades/rostos indisponíveis passam a logar
+    (`console.warn('[pensa] …')`) em vez de virar "Colega" mudo. ⚠️ Aceitos e registrados:
+    `POST …/share` SEMPRE rotaciona (o código atual vive só no `GET …/members` do dono; a UI só
+    chama o POST em "Criar"/"Gerar outro"); um membro que reabre O (editar/apagar tarefa depois de
+    `done`) e fecha de novo ganha o XP do ciclo uma vez por perfil (teto 6× por ciclo); o membro
+    pode substituir o plano de tarefas e escrever na conversa (a lente infantil confia no código
+    passado de mão, e o dono tira quem abusar).
   - Testes: `tests/unit/pensa-share-code.test.ts`, `tests/integration/pensa-team.test.ts` (perfis
-    A/B/C, `x-auth-account-id` distintos; o helper dá códigos determinísticos `AAAAAB`, …) e
-    `tests/db/pensa-team-migration.test.ts` (cascata + índice parcial, contra Postgres).
+    A/B/C, `x-auth-account-id` distintos; o helper dá códigos determinísticos `AAAAAB`, …),
+    `tests/db/pensa-team-migration.test.ts` (cascata + índice parcial, contra Postgres) e
+    **`tests/db/pensa-team-repository.test.ts`** (o `DrizzlePensaRepository` de verdade contra
+    Postgres: dono/membro/estranho em `findProject`, `findCycleWithProject` e
+    `listActiveProjects`, arquivado, `addMember` trancado, colisão do código, cascata; até aqui só
+    o fake exercitava o SQL que decide a autorização).
 
 Camadas: `domain/pensa/*`, port `pensa-repository.port.ts`, use cases em `application/pensa/*`,
 `DrizzlePensaRepository`, mappers e rotas HTTP. Contrato transversal:

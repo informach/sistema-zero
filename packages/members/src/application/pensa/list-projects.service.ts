@@ -24,7 +24,10 @@ export class ListPensaProjectsService {
     ]
     const names =
       ownerIds.length > 0 && this.authGateway
-        ? await this.authGateway.getProfileNames(ownerIds).catch(() => new Map<string, string>())
+        ? await this.authGateway.getProfileNames(ownerIds).catch((error: unknown) => {
+            console.warn('[pensa] nome do dono do plano indisponível (segue como "Colega")', error)
+            return new Map<string, string>()
+          })
         : new Map<string, string>()
     return rows.map(({ project, currentCycle }) =>
       toPensaProjectListView(project, currentCycle, names.get(project.userId) ?? null),
