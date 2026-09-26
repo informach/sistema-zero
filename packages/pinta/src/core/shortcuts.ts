@@ -225,6 +225,16 @@ export const SHORTCUT_CATALOG = [
     editors: PIXEL_VECTOR,
     curationId: 'grid',
   },
+  // Shift+R é o do Figma. Ctrl+R (Illustrator) recarrega a página. As LETRAS de ferramenta
+  // ignoram o Shift, então não colide com nenhuma.
+  {
+    id: 'rulers',
+    combo: 'Shift+R',
+    label: S.rulers,
+    section: 'view',
+    editors: VECTOR,
+    curationId: 'rulers',
+  },
   {
     id: 'mirrorH',
     combo: 'Alt+M',

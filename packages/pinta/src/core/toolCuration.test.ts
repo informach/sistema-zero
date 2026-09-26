@@ -69,6 +69,14 @@ describe('curadoria da caixa de ferramentas', () => {
       expect(livre.map((t) => t.id)).toContain('rect')
       expect(livre.map((t) => t.id)).not.toContain('rotate')
     })
+
+    it('a régua do vetor entra no "livre" e fica fora do "essencial"', () => {
+      const caixa = [{ id: 'brush' }, { id: 'grid' }, { id: 'rulers' }, { id: 'fit' }]
+      expect(filterTools(caixa, PINTA_TOOL_PRESETS.livre).map((t) => t.id)).toContain('rulers')
+      expect(filterTools(caixa, PINTA_TOOL_PRESETS.essencial).map((t) => t.id)).not.toContain(
+        'rulers',
+      )
+    })
   })
 
   describe('🚨 ferramenta ativa cortada não pode virar estado impossível', () => {

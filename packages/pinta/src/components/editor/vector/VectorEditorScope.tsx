@@ -532,6 +532,11 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     { combo: shortcut('zoomIn'), run: () => session.getState().zoomIn(), repeat: true },
     { combo: shortcut('zoomOut'), run: () => session.getState().zoomOut(), repeat: true },
     { combo: shortcut('grid'), run: () => session.getState().toggleGrid() },
+    {
+      combo: shortcut('rulers'),
+      run: () => session.getState().toggleRulers(),
+      when: () => isToolAllowed(allowTools, 'rulers'),
+    },
     { combo: shortcut('flipShapesH'), run: () => flipSelected('h') },
     { combo: shortcut('flipShapesV'), run: () => flipSelected('v') },
     {

@@ -102,6 +102,7 @@ import {
 import { useToast } from '../../ui/Toast'
 import { useEditorStores, useSession } from '../editorContext'
 import { addPointerDragListeners } from '../pointerDrag'
+import { StageRulers } from '../StageRulers'
 import { stageCursor } from '../stageCursor'
 import { isPintaModalOpen } from '../useActionShortcuts'
 import { useMediaQuery } from '../useMediaQuery'
@@ -343,6 +344,7 @@ export function VectorStage(): JSX.Element {
   const frameIndex = useSession((state) => state.frameIndex)
   const zoom = useSession((state) => state.zoom)
   const showGrid = useSession((state) => state.showGrid)
+  const showRulers = useSession((state) => state.showRulers)
   // Mesmo corte do EditorScreen: no desktop a faixa da seleção substitui a
   // barra flutuante.
   const wide = useMediaQuery('(min-width: 768px)')
@@ -1672,511 +1674,524 @@ export function VectorStage(): JSX.Element {
 
   return (
     <div className="pin-stage relative flex min-h-0 min-w-0 flex-1">
-      {/* Barra FLUTUANTE da seleção (espelho da do pixel): absoluta sobre o
+      {/* As réguas (em cima e à esquerda) embrulham a CÉLULA do palco: as barras flutuantes
+          abaixo são absolutas em relação a ela, então nascem abaixo da régua de cima. Na tela
+          estreita não há régua: cada px vertical conta e a tira de 24 px é pouco para o dedo. */}
+      <StageRulers
+        enabled={wide && showRulers}
+        stageRef={stageRef}
+        contentRef={svgRef}
+        docWidth={doc.width}
+        docHeight={doc.height}
+        zoom={zoom}
+      >
+        {/* Barra FLUTUANTE da seleção (espelho da do pixel): absoluta sobre o
           palco, fora do fluxo — aparecer/sumir não move o desenho. É a via do
           TOUCH e SÓ DELE: no desktop as mesmas ações (mais alinhar e ordem)
           moram na faixa colada na barra de cima, e ter as duas na mesma tela
           confunde. Por isso as duas compartilham `aria-label` e rótulos. */}
-      {/* Região viva SEMPRE montada (vazia fora do modo): sem ela o leitor de
+        {/* Região viva SEMPRE montada (vazia fora do modo): sem ela o leitor de
           tela ouve "a janela fechou" e nada mais. Texto diferente do da faixinha
           para os dois não se duplicarem na árvore. */}
-      <span role="status" className="sr-only">
-        {maskEditId
-          ? COPY.vector.maskEditMode
-          : gradientAdjustShapeId
-            ? COPY.vector.gradientAdjustMode
-            : colorPick
-              ? `${COPY.vector.pickColorBar}. ${COPY.vector.pickColorHint}`
-              : pickAnnounce}
-      </span>
-      {gradientAdjustShapeId ? (
-        <div
-          role="toolbar"
-          aria-label={COPY.vector.gradientAdjustMode}
-          className="pin-float absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3"
-        >
-          <span className="text-pin-text text-sm font-bold">{COPY.vector.gradientAdjustMode}</span>
-          <Button ref={gradientDoneRef} variant="outline" onClick={endGradientAdjust}>
-            {COPY.vector.gradientAdjustDone}
-          </Button>
-        </div>
-      ) : null}
-      {maskEditId ? (
-        <div
-          role="toolbar"
-          aria-label={COPY.vector.maskEditMode}
-          className="pin-float absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3"
-        >
-          <span className="text-pin-text text-sm font-bold">{COPY.vector.maskEditMode}</span>
-          <Button ref={maskDoneRef} variant="outline" onClick={endMaskEdit}>
-            {COPY.vector.maskEditDone}
-          </Button>
-        </div>
-      ) : null}
-      {/* Faixinha do modo de CAPTURA de cor (conta-gotas da janelinha): em toda
+        <span role="status" className="sr-only">
+          {maskEditId
+            ? COPY.vector.maskEditMode
+            : gradientAdjustShapeId
+              ? COPY.vector.gradientAdjustMode
+              : colorPick
+                ? `${COPY.vector.pickColorBar}. ${COPY.vector.pickColorHint}`
+                : pickAnnounce}
+        </span>
+        {gradientAdjustShapeId ? (
+          <div
+            role="toolbar"
+            aria-label={COPY.vector.gradientAdjustMode}
+            className="pin-float absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3"
+          >
+            <span className="text-pin-text text-sm font-bold">
+              {COPY.vector.gradientAdjustMode}
+            </span>
+            <Button ref={gradientDoneRef} variant="outline" onClick={endGradientAdjust}>
+              {COPY.vector.gradientAdjustDone}
+            </Button>
+          </div>
+        ) : null}
+        {maskEditId ? (
+          <div
+            role="toolbar"
+            aria-label={COPY.vector.maskEditMode}
+            className="pin-float absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3"
+          >
+            <span className="text-pin-text text-sm font-bold">{COPY.vector.maskEditMode}</span>
+            <Button ref={maskDoneRef} variant="outline" onClick={endMaskEdit}>
+              {COPY.vector.maskEditDone}
+            </Button>
+          </div>
+        ) : null}
+        {/* Faixinha do modo de CAPTURA de cor (conta-gotas da janelinha): em toda
           largura, porque toque não tem Esc e o desktop precisa da dica. Ocupa o
           mesmo canto das barras flutuantes, que somem enquanto ela existe.
           `w-max`: com `left-1/2` o shrink-to-fit só enxerga a metade direita do
           palco (~188px em 375px) e a dica quebrava em três linhas; o teto de
           largura continua valendo. */}
-      {colorPick ? (
-        <div
-          role="toolbar"
-          aria-label={COPY.vector.pickColorBar}
-          className="pin-float absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3"
-        >
-          <span className="text-sm font-bold text-pin-text">{COPY.vector.pickColorHint}</span>
-          <ToolButton
-            icon={X}
-            label={COPY.vector.pickColorCancel}
-            onClick={() => cancelColorPick('user')}
-          />
-        </div>
-      ) : null}
-      {tool === 'reshape' &&
-      nodeTarget &&
-      nodePath &&
-      !wide &&
-      !colorPick &&
-      !gradientAdjustShapeId &&
-      !maskEditId ? (
-        <div
-          role="toolbar"
-          aria-label={COPY.vector.nodeBar}
-          className="pin-float pin-scroll-x absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1"
-        >
-          <VectorNodeActions />
-        </div>
-      ) : null}
-      {tool !== 'reshape' &&
-      selected.length > 0 &&
-      !wide &&
-      !colorPick &&
-      !gradientAdjustShapeId &&
-      !maskEditId ? (
-        <div
-          role="toolbar"
-          aria-label={COPY.vector.selectionBar}
-          className="pin-float pin-scroll-x absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1"
-        >
-          <ToolButton icon={Copy} label={COPY.vector.selDuplicate} onClick={duplicateSelected} />
-          <ToolButton
-            icon={FlipHorizontal2}
-            label={COPY.vector.selFlipH}
-            onClick={() => flipSelected('h')}
-          />
-          <ToolButton
-            icon={FlipVertical2}
-            label={COPY.vector.selFlipV}
-            onClick={() => flipSelected('v')}
-          />
-          <ToolButton
-            icon={AlignHorizontalDistributeCenter}
-            label={COPY.vector.distributeCentersH}
-            disabled={!canDistributeSelected}
-            onClick={() => distributeSelected('horizontal')}
-          />
-          <ToolButton
-            icon={AlignVerticalDistributeCenter}
-            label={COPY.vector.distributeCentersV}
-            disabled={!canDistributeSelected}
-            onClick={() => distributeSelected('vertical')}
-          />
-          {selected.length >= 2 ? (
-            <>
-              <ToolButton icon={Group} label={COPY.vector.selGroup} onClick={groupSelected} />
-              <ToolButton
-                icon={SquareDashed}
-                label={COPY.vector.selCreateMask}
-                onClick={createMaskSelected}
-              />
-              {/* Só UNIR no toque (decisão dela). As outras três pedem enxergar
+        {colorPick ? (
+          <div
+            role="toolbar"
+            aria-label={COPY.vector.pickColorBar}
+            className="pin-float absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3"
+          >
+            <span className="text-sm font-bold text-pin-text">{COPY.vector.pickColorHint}</span>
+            <ToolButton
+              icon={X}
+              label={COPY.vector.pickColorCancel}
+              onClick={() => cancelColorPick('user')}
+            />
+          </div>
+        ) : null}
+        {tool === 'reshape' &&
+        nodeTarget &&
+        nodePath &&
+        !wide &&
+        !colorPick &&
+        !gradientAdjustShapeId &&
+        !maskEditId ? (
+          <div
+            role="toolbar"
+            aria-label={COPY.vector.nodeBar}
+            className="pin-float pin-scroll-x absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1"
+          >
+            <VectorNodeActions />
+          </div>
+        ) : null}
+        {tool !== 'reshape' &&
+        selected.length > 0 &&
+        !wide &&
+        !colorPick &&
+        !gradientAdjustShapeId &&
+        !maskEditId ? (
+          <div
+            role="toolbar"
+            aria-label={COPY.vector.selectionBar}
+            className="pin-float pin-scroll-x absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1"
+          >
+            <ToolButton icon={Copy} label={COPY.vector.selDuplicate} onClick={duplicateSelected} />
+            <ToolButton
+              icon={FlipHorizontal2}
+              label={COPY.vector.selFlipH}
+              onClick={() => flipSelected('h')}
+            />
+            <ToolButton
+              icon={FlipVertical2}
+              label={COPY.vector.selFlipV}
+              onClick={() => flipSelected('v')}
+            />
+            <ToolButton
+              icon={AlignHorizontalDistributeCenter}
+              label={COPY.vector.distributeCentersH}
+              disabled={!canDistributeSelected}
+              onClick={() => distributeSelected('horizontal')}
+            />
+            <ToolButton
+              icon={AlignVerticalDistributeCenter}
+              label={COPY.vector.distributeCentersV}
+              disabled={!canDistributeSelected}
+              onClick={() => distributeSelected('vertical')}
+            />
+            {selected.length >= 2 ? (
+              <>
+                <ToolButton icon={Group} label={COPY.vector.selGroup} onClick={groupSelected} />
+                <ToolButton
+                  icon={SquareDashed}
+                  label={COPY.vector.selCreateMask}
+                  onClick={createMaskSelected}
+                />
+                {/* Só UNIR no toque (decisão dela). As outras três pedem enxergar
                   quem está na frente e um alvo por operação, e em 375px a barra
                   já chega a 6 alvos. O caminho de crescimento, se ela pedir, é o
                   disclosure "Cores e camadas", não esta barra. */}
+                <ToolButton
+                  icon={SquaresUnite}
+                  label={COPY.vector.selUnite}
+                  onClick={() => pathfinderSelected('unir')}
+                />
+              </>
+            ) : null}
+            {selectionHasMask ? (
+              <>
+                <ToolButton
+                  icon={SquarePen}
+                  label={COPY.vector.selEditMask}
+                  onClick={beginMaskEdit}
+                />
+                <ToolButton
+                  icon={Unlink2}
+                  label={COPY.vector.selReleaseMask}
+                  onClick={releaseMaskSelected}
+                />
+              </>
+            ) : null}
+            {selectionHasCustomPivot ? (
               <ToolButton
-                icon={SquaresUnite}
-                label={COPY.vector.selUnite}
-                onClick={() => pathfinderSelected('unir')}
+                icon={CircleDot}
+                label={COPY.vector.selCenterPivot}
+                onClick={centerSelectionPivot}
               />
-            </>
-          ) : null}
-          {selectionHasMask ? (
-            <>
-              <ToolButton
-                icon={SquarePen}
-                label={COPY.vector.selEditMask}
-                onClick={beginMaskEdit}
-              />
-              <ToolButton
-                icon={Unlink2}
-                label={COPY.vector.selReleaseMask}
-                onClick={releaseMaskSelected}
-              />
-            </>
-          ) : null}
-          {selectionHasCustomPivot ? (
-            <ToolButton
-              icon={CircleDot}
-              label={COPY.vector.selCenterPivot}
-              onClick={centerSelectionPivot}
-            />
-          ) : null}
-          {selected.some((s) => s.groupId) ? (
-            <ToolButton icon={Ungroup} label={COPY.vector.selUngroup} onClick={ungroupSelected} />
-          ) : null}
-          <ToolButton icon={Trash2} label={COPY.vector.selRemove} onClick={removeSelected} />
-        </div>
-      ) : null}
-      {/* O palco SVG: dimensão DEFINIDA (doc × zoom), centraliza quando menor
+            ) : null}
+            {selected.some((s) => s.groupId) ? (
+              <ToolButton icon={Ungroup} label={COPY.vector.selUngroup} onClick={ungroupSelected} />
+            ) : null}
+            <ToolButton icon={Trash2} label={COPY.vector.selRemove} onClick={removeSelected} />
+          </div>
+        ) : null}
+        {/* O palco SVG: dimensão DEFINIDA (doc × zoom), centraliza quando menor
           que a área e rola quando maior. */}
-      {/* `safe center` no lugar do `m-auto`: margem automática ENGOLE o que
+        {/* `safe center` no lugar do `m-auto`: margem automática ENGOLE o que
           passa do topo/da esquerda (rolagem não vai a negativo) e o palco
           aproximado ficava com metade inalcançável. */}
-      <div
-        ref={stageRef}
-        className="flex min-h-0 min-w-0 flex-1 overflow-auto p-2 [align-items:safe_center] [justify-content:safe_center]"
-      >
-        {/* Papel BRANCO fixo (sem xadrez): cor absoluta em qualquer tema; canto
+        <div
+          ref={stageRef}
+          className="flex min-h-0 min-w-0 flex-1 overflow-auto p-2 [align-items:safe_center] [justify-content:safe_center]"
+        >
+          {/* Papel BRANCO fixo (sem xadrez): cor absoluta em qualquer tema; canto
             RETO para a borda não "comer" o desenho da criança. */}
-        <div className="pin-paper bg-white">
-          <svg
-            ref={svgRef}
-            width={stageWidth}
-            height={stageHeight}
-            viewBox={`0 0 ${doc.width} ${doc.height}`}
-            className="block bg-white/60"
-            style={{
-              touchAction: 'none',
-              cursor: stageCursor({
-                handTool: tool === 'pan',
-                spaceHeld,
-                panning,
-                pickerTool: tool === 'picker',
-              }),
-            }}
-            role="img"
-            aria-label={COPY.a11y.drawArea}
-            onPointerDown={handleCanvasPointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={endGesture}
-            onPointerCancel={endGesture}
-            // O navegador tirou o capture (aba escondida, gesto do sistema): fecha o gesto
-            // em vez de deixar o palco preso.
-            onLostPointerCapture={(event) => endGesture(event)}
-            onDoubleClick={handleStageDoubleClick}
-          >
-            <SceneDefs shapes={doc.shapes} />
-            {onionShapes ? <SceneDefs shapes={onionShapes} idPrefix="onion-" /> : null}
-            {preview ? <GradientDefs shapes={[preview]} /> : null}
-            {/* Onion skin: o quadro ANTERIOR, apagadinho e sem eventos. */}
-            {onionShapes ? (
-              <g opacity={0.3} pointerEvents="none">
-                {onionScene.painted.map((shape) => (
-                  <ShapeElement
-                    key={`onion-${shape.id}`}
-                    shape={shape}
-                    idPrefix="onion-"
-                    clipPath={
-                      shape.maskId ? `url(#${clipPathId(shape.maskId, 'onion-')})` : undefined
-                    }
-                  />
-                ))}
-              </g>
-            ) : null}
-            {documentScene.painted.map((shape) => (
-              <ShapeElement
-                key={shape.id}
-                shape={shape}
-                clipPath={shape.maskId ? `url(#${clipPathId(shape.maskId)})` : undefined}
-                onPointerDown={(event) => handleShapePointerDown(shape, event)}
-                onDoubleClick={() => handleShapeDoubleClick(shape)}
-              />
-            ))}
-            {maskGuideShape && maskEditId ? (
-              <g
-                data-mask-guide={maskEditId}
-                pointerEvents="none"
-                strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-              >
-                <ShapeElement shape={maskGuideShape} />
-              </g>
-            ) : null}
-            {preview ? <ShapeElement shape={preview} /> : null}
+          <div className="pin-paper bg-white">
+            <svg
+              ref={svgRef}
+              width={stageWidth}
+              height={stageHeight}
+              viewBox={`0 0 ${doc.width} ${doc.height}`}
+              className="block bg-white/60"
+              style={{
+                touchAction: 'none',
+                cursor: stageCursor({
+                  handTool: tool === 'pan',
+                  spaceHeld,
+                  panning,
+                  pickerTool: tool === 'picker',
+                }),
+              }}
+              role="img"
+              aria-label={COPY.a11y.drawArea}
+              onPointerDown={handleCanvasPointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={endGesture}
+              onPointerCancel={endGesture}
+              // O navegador tirou o capture (aba escondida, gesto do sistema): fecha o gesto
+              // em vez de deixar o palco preso.
+              onLostPointerCapture={(event) => endGesture(event)}
+              onDoubleClick={handleStageDoubleClick}
+            >
+              <SceneDefs shapes={doc.shapes} />
+              {onionShapes ? <SceneDefs shapes={onionShapes} idPrefix="onion-" /> : null}
+              {preview ? <GradientDefs shapes={[preview]} /> : null}
+              {/* Onion skin: o quadro ANTERIOR, apagadinho e sem eventos. */}
+              {onionShapes ? (
+                <g opacity={0.3} pointerEvents="none">
+                  {onionScene.painted.map((shape) => (
+                    <ShapeElement
+                      key={`onion-${shape.id}`}
+                      shape={shape}
+                      idPrefix="onion-"
+                      clipPath={
+                        shape.maskId ? `url(#${clipPathId(shape.maskId, 'onion-')})` : undefined
+                      }
+                    />
+                  ))}
+                </g>
+              ) : null}
+              {documentScene.painted.map((shape) => (
+                <ShapeElement
+                  key={shape.id}
+                  shape={shape}
+                  clipPath={shape.maskId ? `url(#${clipPathId(shape.maskId)})` : undefined}
+                  onPointerDown={(event) => handleShapePointerDown(shape, event)}
+                  onDoubleClick={() => handleShapeDoubleClick(shape)}
+                />
+              ))}
+              {maskGuideShape && maskEditId ? (
+                <g
+                  data-mask-guide={maskEditId}
+                  pointerEvents="none"
+                  strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                >
+                  <ShapeElement shape={maskGuideShape} />
+                </g>
+              ) : null}
+              {preview ? <ShapeElement shape={preview} /> : null}
 
-            {/* Prévia da CANETA: contorno elástico até o cursor + os pontos já
+              {/* Prévia da CANETA: contorno elástico até o cursor + os pontos já
                 marcados (o 1º maior = o alvo de fechar). O estilo de verdade
                 entra no commit. */}
-            {tool === 'pen' && penPoints.length > 0 ? (
-              <g pointerEvents="none">
-                <polyline
-                  points={[...penPoints, ...(penCursor ? [penCursor] : [])]
-                    .map((p) => `${p.x},${p.y}`)
-                    .join(' ')}
-                  fill={penPoints.length >= 3 ? '#00a0c8' : 'none'}
-                  fillOpacity={0.12}
-                  stroke="#00a0c8"
-                  strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-                  strokeWidth={1.5 / zoom}
-                />
-                {penPoints.map((p, i) => (
-                  <circle
-                    // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do ponto
-                    key={`pen-${i}`}
-                    cx={p.x}
-                    cy={p.y}
-                    r={(i === 0 ? 6 : 4) / zoom}
-                    fill="#ffffff"
+              {tool === 'pen' && penPoints.length > 0 ? (
+                <g pointerEvents="none">
+                  <polyline
+                    points={[...penPoints, ...(penCursor ? [penCursor] : [])]
+                      .map((p) => `${p.x},${p.y}`)
+                      .join(' ')}
+                    fill={penPoints.length >= 3 ? '#00a0c8' : 'none'}
+                    fillOpacity={0.12}
                     stroke="#00a0c8"
+                    strokeDasharray={`${4 / zoom} ${3 / zoom}`}
                     strokeWidth={1.5 / zoom}
                   />
-                ))}
-              </g>
-            ) : null}
-
-            {/* Grade de APOIO (só no editor, nunca no export): um <pattern> e um
-                <rect> — O(1) nós de DOM em qualquer documento; o traço divide
-                pelo zoom para ficar fininho em qualquer aproximação. */}
-            {showGrid ? (
-              // Decorativa por herança: o <svg> pai é role="img" com rótulo.
-              <g pointerEvents="none">
-                <defs>
-                  <pattern
-                    id="pin-editor-grid"
-                    width={gridSpacing}
-                    height={gridSpacing}
-                    patternUnits="userSpaceOnUse"
-                  >
-                    <path
-                      d={`M ${gridSpacing} 0 L 0 0 0 ${gridSpacing}`}
-                      fill="none"
-                      stroke="#64748b"
-                      strokeOpacity={0.35}
-                      strokeWidth={1 / zoom}
-                    />
-                  </pattern>
-                </defs>
-                <rect width={doc.width} height={doc.height} fill="url(#pin-editor-grid)" />
-              </g>
-            ) : null}
-
-            {gradientHandles.length === 2 ? (
-              <g>
-                <line
-                  x1={gradientHandles[0]?.point.x}
-                  y1={gradientHandles[0]?.point.y}
-                  x2={gradientHandles[1]?.point.x}
-                  y2={gradientHandles[1]?.point.y}
-                  stroke="#00a0c8"
-                  strokeWidth={2 / zoom}
-                  pointerEvents="none"
-                />
-                {gradientHandles.map(({ handle, point, color, label }) => (
-                  <g key={handle}>
-                    {/* biome-ignore lint/a11y/useSemanticElements: uma alça SVG arrastável não pode ser um button HTML dentro do palco. */}
+                  {penPoints.map((p, i) => (
                     <circle
-                      data-gradient-handle={handle}
-                      cx={point.x}
-                      cy={point.y}
-                      r={22 / zoom}
-                      fill="transparent"
-                      role="button"
-                      aria-label={label}
-                      aria-description={COPY.vector.gradientHandleKeyboard}
-                      tabIndex={0}
-                      onPointerDown={(event) => startGradientGesture(handle, event)}
-                      onKeyDown={(event) => nudgeGradientHandle(handle, event)}
-                    />
-                    <circle
-                      cx={point.x}
-                      cy={point.y}
-                      r={8 / zoom}
-                      fill={color}
-                      stroke="#00a0c8"
-                      strokeWidth={2 / zoom}
-                      pointerEvents="none"
-                    />
-                  </g>
-                ))}
-              </g>
-            ) : null}
-
-            {/* Moldura + alças da seleção única. As medidas dividem pelo zoom
-                para manter um tamanho CONSTANTE na tela (alça pequena demais
-                em zoom baixo era impossível de tocar). */}
-            {/* Sem alças com o CONTA-GOTAS (ferramenta ou captura de cor): as
-                alças não checam a ferramenta, e tocar numa delas com ele
-                começaria um resize/giro em vez de pegar a cor. */}
-            {handlesActive && transformSingle && transformSingleBounds ? (
-              <g
-                transform={
-                  transformSingle.rotation !== 0
-                    ? `rotate(${transformSingle.rotation} ${rotationPivotOf(transformSingle).x} ${rotationPivotOf(transformSingle).y})`
-                    : undefined
-                }
-              >
-                <rect
-                  x={transformSingleBounds.x}
-                  y={transformSingleBounds.y}
-                  width={transformSingleBounds.width}
-                  height={transformSingleBounds.height}
-                  fill="none"
-                  stroke="#00a0c8"
-                  strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-                  strokeWidth={1.5 / zoom}
-                  pointerEvents="none"
-                />
-                {handlesUsable
-                  ? HANDLES.map((handle) => (
-                      <rect
-                        key={handle.id}
-                        data-handle={handle.id}
-                        x={
-                          transformSingleBounds.x +
-                          handle.fx * transformSingleBounds.width -
-                          7 / zoom
-                        }
-                        y={
-                          transformSingleBounds.y +
-                          handle.fy * transformSingleBounds.height -
-                          7 / zoom
-                        }
-                        width={14 / zoom}
-                        height={14 / zoom}
-                        fill="#ffffff"
-                        stroke="#00a0c8"
-                        strokeWidth={1.5 / zoom}
-                        style={{ cursor: 'pointer' }}
-                        onPointerDown={(event) =>
-                          handleResizeDown(handle, transformSingleBounds, event)
-                        }
-                      />
-                    ))
-                  : null}
-                {/* Alça de girar (acima do topo-centro) */}
-                {handlesUsable ? (
-                  <circle
-                    data-rotate="1"
-                    cx={transformSingleBounds.x + transformSingleBounds.width / 2}
-                    cy={transformSingleBounds.y - 22 / zoom}
-                    r={8 / zoom}
-                    fill="#ffffff"
-                    stroke="#00a0c8"
-                    strokeWidth={1.5 / zoom}
-                    style={{ cursor: 'grab' }}
-                    onPointerDown={(event) =>
-                      transformPivot && handleRotateDown(transformPivot, event)
-                    }
-                  />
-                ) : null}
-              </g>
-            ) : null}
-            {/* Modo reshape: nós arrastáveis (sem alças de bbox). */}
-            {tool === 'reshape' && single && singleBounds ? (
-              <g
-                transform={
-                  single.rotation !== 0
-                    ? `rotate(${single.rotation} ${rotationPivotOf(single).x} ${rotationPivotOf(single).y})`
-                    : undefined
-                }
-              >
-                <rect
-                  x={singleBounds.x}
-                  y={singleBounds.y}
-                  width={singleBounds.width}
-                  height={singleBounds.height}
-                  fill="none"
-                  stroke="#00a0c8"
-                  strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-                  strokeWidth={1 / zoom}
-                  pointerEvents="none"
-                />
-                {reshapeNodes.map((node, i) => (
-                  <g
-                    // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do nó
-                    key={`node-${i}`}
-                    style={{ cursor: 'move' }}
-                    onPointerDown={(event) => handleNodeDown(i, event)}
-                  >
-                    <circle
-                      data-node-hit={i}
-                      cx={node.x}
-                      cy={node.y}
-                      r={22 / zoom}
-                      fill="transparent"
-                    />
-                    <circle
-                      data-node={i}
-                      cx={node.x}
-                      cy={node.y}
-                      r={7 / zoom}
-                      // Escolhido = cheio; solto = vazado. É o único jeito de ver
-                      // quantos pontos o Delete vai levar.
-                      fill={selectedNodes.includes(i) ? '#00a0c8' : '#ffffff'}
+                      // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do ponto
+                      key={`pen-${i}`}
+                      cx={p.x}
+                      cy={p.y}
+                      r={(i === 0 ? 6 : 4) / zoom}
+                      fill="#ffffff"
                       stroke="#00a0c8"
                       strokeWidth={1.5 / zoom}
-                      pointerEvents="none"
                     />
-                  </g>
-                ))}
-                {/* ⚠️ Alças DEPOIS das âncoras (ficam por cima e são pegáveis),
+                  ))}
+                </g>
+              ) : null}
+
+              {/* Grade de APOIO (só no editor, nunca no export): um <pattern> e um
+                <rect> — O(1) nós de DOM em qualquer documento; o traço divide
+                pelo zoom para ficar fininho em qualquer aproximação. */}
+              {showGrid ? (
+                // Decorativa por herança: o <svg> pai é role="img" com rótulo.
+                <g pointerEvents="none">
+                  <defs>
+                    <pattern
+                      id="pin-editor-grid"
+                      width={gridSpacing}
+                      height={gridSpacing}
+                      patternUnits="userSpaceOnUse"
+                    >
+                      <path
+                        d={`M ${gridSpacing} 0 L 0 0 0 ${gridSpacing}`}
+                        fill="none"
+                        stroke="#64748b"
+                        strokeOpacity={0.35}
+                        strokeWidth={1 / zoom}
+                      />
+                    </pattern>
+                  </defs>
+                  <rect width={doc.width} height={doc.height} fill="url(#pin-editor-grid)" />
+                </g>
+              ) : null}
+
+              {gradientHandles.length === 2 ? (
+                <g>
+                  <line
+                    x1={gradientHandles[0]?.point.x}
+                    y1={gradientHandles[0]?.point.y}
+                    x2={gradientHandles[1]?.point.x}
+                    y2={gradientHandles[1]?.point.y}
+                    stroke="#00a0c8"
+                    strokeWidth={2 / zoom}
+                    pointerEvents="none"
+                  />
+                  {gradientHandles.map(({ handle, point, color, label }) => (
+                    <g key={handle}>
+                      {/* biome-ignore lint/a11y/useSemanticElements: uma alça SVG arrastável não pode ser um button HTML dentro do palco. */}
+                      <circle
+                        data-gradient-handle={handle}
+                        cx={point.x}
+                        cy={point.y}
+                        r={22 / zoom}
+                        fill="transparent"
+                        role="button"
+                        aria-label={label}
+                        aria-description={COPY.vector.gradientHandleKeyboard}
+                        tabIndex={0}
+                        onPointerDown={(event) => startGradientGesture(handle, event)}
+                        onKeyDown={(event) => nudgeGradientHandle(handle, event)}
+                      />
+                      <circle
+                        cx={point.x}
+                        cy={point.y}
+                        r={8 / zoom}
+                        fill={color}
+                        stroke="#00a0c8"
+                        strokeWidth={2 / zoom}
+                        pointerEvents="none"
+                      />
+                    </g>
+                  ))}
+                </g>
+              ) : null}
+
+              {/* Moldura + alças da seleção única. As medidas dividem pelo zoom
+                para manter um tamanho CONSTANTE na tela (alça pequena demais
+                em zoom baixo era impossível de tocar). */}
+              {/* Sem alças com o CONTA-GOTAS (ferramenta ou captura de cor): as
+                alças não checam a ferramenta, e tocar numa delas com ele
+                começaria um resize/giro em vez de pegar a cor. */}
+              {handlesActive && transformSingle && transformSingleBounds ? (
+                <g
+                  transform={
+                    transformSingle.rotation !== 0
+                      ? `rotate(${transformSingle.rotation} ${rotationPivotOf(transformSingle).x} ${rotationPivotOf(transformSingle).y})`
+                      : undefined
+                  }
+                >
+                  <rect
+                    x={transformSingleBounds.x}
+                    y={transformSingleBounds.y}
+                    width={transformSingleBounds.width}
+                    height={transformSingleBounds.height}
+                    fill="none"
+                    stroke="#00a0c8"
+                    strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                    strokeWidth={1.5 / zoom}
+                    pointerEvents="none"
+                  />
+                  {handlesUsable
+                    ? HANDLES.map((handle) => (
+                        <rect
+                          key={handle.id}
+                          data-handle={handle.id}
+                          x={
+                            transformSingleBounds.x +
+                            handle.fx * transformSingleBounds.width -
+                            7 / zoom
+                          }
+                          y={
+                            transformSingleBounds.y +
+                            handle.fy * transformSingleBounds.height -
+                            7 / zoom
+                          }
+                          width={14 / zoom}
+                          height={14 / zoom}
+                          fill="#ffffff"
+                          stroke="#00a0c8"
+                          strokeWidth={1.5 / zoom}
+                          style={{ cursor: 'pointer' }}
+                          onPointerDown={(event) =>
+                            handleResizeDown(handle, transformSingleBounds, event)
+                          }
+                        />
+                      ))
+                    : null}
+                  {/* Alça de girar (acima do topo-centro) */}
+                  {handlesUsable ? (
+                    <circle
+                      data-rotate="1"
+                      cx={transformSingleBounds.x + transformSingleBounds.width / 2}
+                      cy={transformSingleBounds.y - 22 / zoom}
+                      r={8 / zoom}
+                      fill="#ffffff"
+                      stroke="#00a0c8"
+                      strokeWidth={1.5 / zoom}
+                      style={{ cursor: 'grab' }}
+                      onPointerDown={(event) =>
+                        transformPivot && handleRotateDown(transformPivot, event)
+                      }
+                    />
+                  ) : null}
+                </g>
+              ) : null}
+              {/* Modo reshape: nós arrastáveis (sem alças de bbox). */}
+              {tool === 'reshape' && single && singleBounds ? (
+                <g
+                  transform={
+                    single.rotation !== 0
+                      ? `rotate(${single.rotation} ${rotationPivotOf(single).x} ${rotationPivotOf(single).y})`
+                      : undefined
+                  }
+                >
+                  <rect
+                    x={singleBounds.x}
+                    y={singleBounds.y}
+                    width={singleBounds.width}
+                    height={singleBounds.height}
+                    fill="none"
+                    stroke="#00a0c8"
+                    strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                    strokeWidth={1 / zoom}
+                    pointerEvents="none"
+                  />
+                  {reshapeNodes.map((node, i) => (
+                    <g
+                      // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do nó
+                      key={`node-${i}`}
+                      style={{ cursor: 'move' }}
+                      onPointerDown={(event) => handleNodeDown(i, event)}
+                    >
+                      <circle
+                        data-node-hit={i}
+                        cx={node.x}
+                        cy={node.y}
+                        r={22 / zoom}
+                        fill="transparent"
+                      />
+                      <circle
+                        data-node={i}
+                        cx={node.x}
+                        cy={node.y}
+                        r={7 / zoom}
+                        // Escolhido = cheio; solto = vazado. É o único jeito de ver
+                        // quantos pontos o Delete vai levar.
+                        fill={selectedNodes.includes(i) ? '#00a0c8' : '#ffffff'}
+                        stroke="#00a0c8"
+                        strokeWidth={1.5 / zoom}
+                        pointerEvents="none"
+                      />
+                    </g>
+                  ))}
+                  {/* ⚠️ Alças DEPOIS das âncoras (ficam por cima e são pegáveis),
                     mas só as que estão longe o bastante do nó para não brigarem
                     com ele pelo toque. Num traço de pincel a Catmull-Rom deixa a
                     alça a uns 4 px do nó: desenhada por cima ela roubaria o
                     arrasto do PONTO, e escondida atrás ela era impossível de
                     pegar. Aproximar o zoom afasta as duas e a alça reaparece. */}
-                {nodePath?.nodes.map((node, i) =>
-                  selectedNodes.includes(i) ? (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do nó (mesma regra das âncoras)
-                    <g key={`alcas-${i}`}>
-                      {(['in', 'out'] as const).map((which) => {
-                        const handle = node[which]
-                        if (!handle) return null
-                        const far =
-                          Math.hypot(handle.x - node.p.x, handle.y - node.p.y) * zoom >=
-                          MIN_HANDLE_GAP
-                        if (!far) return null
-                        return (
-                          <g
-                            key={which}
-                            style={{ cursor: 'move' }}
-                            onPointerDown={(event) => handleBezierDown(i, which, event)}
-                          >
-                            <line
-                              x1={node.p.x}
-                              y1={node.p.y}
-                              x2={handle.x}
-                              y2={handle.y}
-                              stroke="#00a0c8"
-                              strokeWidth={1 / zoom}
-                              pointerEvents="none"
-                            />
-                            <circle
-                              data-handle-hit={which}
-                              cx={handle.x}
-                              cy={handle.y}
-                              r={22 / zoom}
-                              fill="transparent"
-                            />
-                            <circle
-                              data-handle={which}
-                              cx={handle.x}
-                              cy={handle.y}
-                              r={5 / zoom}
-                              fill="#ffffff"
-                              stroke="#00a0c8"
-                              strokeWidth={1.5 / zoom}
-                              pointerEvents="none"
-                            />
-                          </g>
-                        )
-                      })}
-                    </g>
-                  ) : null,
-                )}
-              </g>
-            ) : null}
-            {/* Seleção múltipla: moldura fina POR forma + a caixa da UNIÃO com
+                  {nodePath?.nodes.map((node, i) =>
+                    selectedNodes.includes(i) ? (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do nó (mesma regra das âncoras)
+                      <g key={`alcas-${i}`}>
+                        {(['in', 'out'] as const).map((which) => {
+                          const handle = node[which]
+                          if (!handle) return null
+                          const far =
+                            Math.hypot(handle.x - node.p.x, handle.y - node.p.y) * zoom >=
+                            MIN_HANDLE_GAP
+                          if (!far) return null
+                          return (
+                            <g
+                              key={which}
+                              style={{ cursor: 'move' }}
+                              onPointerDown={(event) => handleBezierDown(i, which, event)}
+                            >
+                              <line
+                                x1={node.p.x}
+                                y1={node.p.y}
+                                x2={handle.x}
+                                y2={handle.y}
+                                stroke="#00a0c8"
+                                strokeWidth={1 / zoom}
+                                pointerEvents="none"
+                              />
+                              <circle
+                                data-handle-hit={which}
+                                cx={handle.x}
+                                cy={handle.y}
+                                r={22 / zoom}
+                                fill="transparent"
+                              />
+                              <circle
+                                data-handle={which}
+                                cx={handle.x}
+                                cy={handle.y}
+                                r={5 / zoom}
+                                fill="#ffffff"
+                                stroke="#00a0c8"
+                                strokeWidth={1.5 / zoom}
+                                pointerEvents="none"
+                              />
+                            </g>
+                          )
+                        })}
+                      </g>
+                    ) : null,
+                  )}
+                </g>
+              ) : null}
+              {/* Seleção múltipla: moldura fina POR forma + a caixa da UNIÃO com
                 as 8 alças e a de girar (todas escalam e giram juntas).
                 ⚠️ A caixa da união fica ALINHADA AOS EIXOS durante o giro, sem o
                 `<g rotate>` que a seleção única usa: os membros podem carregar
@@ -2184,147 +2199,148 @@ export function VectorStage(): JSX.Element {
                 giradas, girada como um bloco rígido, NÃO é a caixa da união
                 girada — a moldura sairia de cima do desenho. Ela é recalculada
                 a cada quadro, então "respira" enquanto as formas orbitam. */}
-            {handlesActive && transformShapes.length > 1 ? (
-              <>
-                {transformShapes.map((shape) => {
-                  const b = shapeBounds(shape)
-                  return (
-                    <rect
-                      key={`sel-${shape.id}`}
-                      x={b.x}
-                      y={b.y}
-                      width={b.width}
-                      height={b.height}
-                      fill="none"
-                      stroke="#00a0c8"
-                      strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-                      strokeWidth={1 / zoom}
-                      pointerEvents="none"
-                    />
-                  )
-                })}
-                {(() => {
-                  const union = boundsUnion(transformShapes.map(shapeBounds))
-                  return (
-                    <g>
+              {handlesActive && transformShapes.length > 1 ? (
+                <>
+                  {transformShapes.map((shape) => {
+                    const b = shapeBounds(shape)
+                    return (
                       <rect
-                        x={union.x}
-                        y={union.y}
-                        width={union.width}
-                        height={union.height}
+                        key={`sel-${shape.id}`}
+                        x={b.x}
+                        y={b.y}
+                        width={b.width}
+                        height={b.height}
                         fill="none"
                         stroke="#00a0c8"
                         strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-                        strokeWidth={1.5 / zoom}
+                        strokeWidth={1 / zoom}
                         pointerEvents="none"
                       />
-                      {HANDLES.map((handle) => (
+                    )
+                  })}
+                  {(() => {
+                    const union = boundsUnion(transformShapes.map(shapeBounds))
+                    return (
+                      <g>
                         <rect
-                          key={`multi-${handle.id}`}
-                          x={union.x + handle.fx * union.width - 7 / zoom}
-                          y={union.y + handle.fy * union.height - 7 / zoom}
-                          width={14 / zoom}
-                          height={14 / zoom}
+                          x={union.x}
+                          y={union.y}
+                          width={union.width}
+                          height={union.height}
+                          fill="none"
+                          stroke="#00a0c8"
+                          strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                          strokeWidth={1.5 / zoom}
+                          pointerEvents="none"
+                        />
+                        {HANDLES.map((handle) => (
+                          <rect
+                            key={`multi-${handle.id}`}
+                            x={union.x + handle.fx * union.width - 7 / zoom}
+                            y={union.y + handle.fy * union.height - 7 / zoom}
+                            width={14 / zoom}
+                            height={14 / zoom}
+                            fill="#ffffff"
+                            stroke="#00a0c8"
+                            strokeWidth={1.5 / zoom}
+                            style={{ cursor: 'pointer' }}
+                            onPointerDown={(event) => handleResizeDown(handle, union, event)}
+                          />
+                        ))}
+                        {/* Alça de girar a seleção INTEIRA (mesma da forma só). */}
+                        <circle
+                          data-rotate="1"
+                          cx={union.x + union.width / 2}
+                          cy={union.y - 22 / zoom}
+                          r={8 / zoom}
                           fill="#ffffff"
                           stroke="#00a0c8"
                           strokeWidth={1.5 / zoom}
-                          style={{ cursor: 'pointer' }}
-                          onPointerDown={(event) => handleResizeDown(handle, union, event)}
+                          style={{ cursor: 'grab' }}
+                          onPointerDown={(event) =>
+                            transformPivot && handleRotateDown(transformPivot, event)
+                          }
                         />
-                      ))}
-                      {/* Alça de girar a seleção INTEIRA (mesma da forma só). */}
-                      <circle
-                        data-rotate="1"
-                        cx={union.x + union.width / 2}
-                        cy={union.y - 22 / zoom}
-                        r={8 / zoom}
-                        fill="#ffffff"
-                        stroke="#00a0c8"
-                        strokeWidth={1.5 / zoom}
-                        style={{ cursor: 'grab' }}
-                        onPointerDown={(event) =>
-                          transformPivot && handleRotateDown(transformPivot, event)
-                        }
-                      />
-                    </g>
-                  )
-                })()}
-              </>
-            ) : null}
-            {pivotVisible && transformPivot && transformCenter ? (
-              <g>
-                <line
-                  x1={transformCenter.x}
-                  y1={transformCenter.y}
-                  x2={transformPivot.x}
-                  y2={transformPivot.y}
+                      </g>
+                    )
+                  })()}
+                </>
+              ) : null}
+              {pivotVisible && transformPivot && transformCenter ? (
+                <g>
+                  <line
+                    x1={transformCenter.x}
+                    y1={transformCenter.y}
+                    x2={transformPivot.x}
+                    y2={transformPivot.y}
+                    stroke="#00a0c8"
+                    strokeDasharray={`${3 / zoom} ${3 / zoom}`}
+                    strokeWidth={1 / zoom}
+                    pointerEvents="none"
+                  />
+                  {/* biome-ignore lint/a11y/useSemanticElements: uma âncora SVG arrastável precisa permanecer dentro do palco. */}
+                  <circle
+                    data-rotation-pivot=""
+                    cx={transformPivot.x}
+                    cy={transformPivot.y}
+                    r={22 / zoom}
+                    fill="transparent"
+                    role="button"
+                    aria-label={COPY.vector.rotationPivot}
+                    aria-description={COPY.vector.rotationPivotKeyboard}
+                    tabIndex={0}
+                    style={{ cursor: 'move' }}
+                    onPointerDown={startPivotGesture}
+                    onKeyDown={nudgeRotationPivot}
+                  />
+                  <circle
+                    cx={transformPivot.x}
+                    cy={transformPivot.y}
+                    r={6 / zoom}
+                    fill="#ffffff"
+                    stroke="#00a0c8"
+                    strokeWidth={2 / zoom}
+                    pointerEvents="none"
+                  />
+                  <line
+                    x1={transformPivot.x - 9 / zoom}
+                    y1={transformPivot.y}
+                    x2={transformPivot.x + 9 / zoom}
+                    y2={transformPivot.y}
+                    stroke="#00a0c8"
+                    strokeWidth={1.5 / zoom}
+                    pointerEvents="none"
+                  />
+                  <line
+                    x1={transformPivot.x}
+                    y1={transformPivot.y - 9 / zoom}
+                    x2={transformPivot.x}
+                    y2={transformPivot.y + 9 / zoom}
+                    stroke="#00a0c8"
+                    strokeWidth={1.5 / zoom}
+                    pointerEvents="none"
+                  />
+                </g>
+              ) : null}
+              {/* Laço de seleção em andamento */}
+              {marquee ? (
+                <rect
+                  x={marquee.x}
+                  y={marquee.y}
+                  width={marquee.width}
+                  height={marquee.height}
+                  fill="#00a0c8"
+                  fillOpacity={0.08}
                   stroke="#00a0c8"
-                  strokeDasharray={`${3 / zoom} ${3 / zoom}`}
+                  strokeDasharray={`${4 / zoom} ${3 / zoom}`}
                   strokeWidth={1 / zoom}
                   pointerEvents="none"
                 />
-                {/* biome-ignore lint/a11y/useSemanticElements: uma âncora SVG arrastável precisa permanecer dentro do palco. */}
-                <circle
-                  data-rotation-pivot=""
-                  cx={transformPivot.x}
-                  cy={transformPivot.y}
-                  r={22 / zoom}
-                  fill="transparent"
-                  role="button"
-                  aria-label={COPY.vector.rotationPivot}
-                  aria-description={COPY.vector.rotationPivotKeyboard}
-                  tabIndex={0}
-                  style={{ cursor: 'move' }}
-                  onPointerDown={startPivotGesture}
-                  onKeyDown={nudgeRotationPivot}
-                />
-                <circle
-                  cx={transformPivot.x}
-                  cy={transformPivot.y}
-                  r={6 / zoom}
-                  fill="#ffffff"
-                  stroke="#00a0c8"
-                  strokeWidth={2 / zoom}
-                  pointerEvents="none"
-                />
-                <line
-                  x1={transformPivot.x - 9 / zoom}
-                  y1={transformPivot.y}
-                  x2={transformPivot.x + 9 / zoom}
-                  y2={transformPivot.y}
-                  stroke="#00a0c8"
-                  strokeWidth={1.5 / zoom}
-                  pointerEvents="none"
-                />
-                <line
-                  x1={transformPivot.x}
-                  y1={transformPivot.y - 9 / zoom}
-                  x2={transformPivot.x}
-                  y2={transformPivot.y + 9 / zoom}
-                  stroke="#00a0c8"
-                  strokeWidth={1.5 / zoom}
-                  pointerEvents="none"
-                />
-              </g>
-            ) : null}
-            {/* Laço de seleção em andamento */}
-            {marquee ? (
-              <rect
-                x={marquee.x}
-                y={marquee.y}
-                width={marquee.width}
-                height={marquee.height}
-                fill="#00a0c8"
-                fillOpacity={0.08}
-                stroke="#00a0c8"
-                strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-                strokeWidth={1 / zoom}
-                pointerEvents="none"
-              />
-            ) : null}
-          </svg>
+              ) : null}
+            </svg>
+          </div>
         </div>
-      </div>
+      </StageRulers>
 
       {/* Texto: criar num ponto OU reeditar (duplo clique no palco). Vazio
           mantém o botão desabilitado — sem apagar texto sem querer. */}

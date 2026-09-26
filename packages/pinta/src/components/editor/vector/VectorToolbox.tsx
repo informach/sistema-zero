@@ -16,7 +16,7 @@ import { COPY } from '../../../core/copy'
 import { filterTools, toolFallback } from '../../../core/toolCuration'
 import { isVectorGradient } from '../../../vector/model'
 import { IconButton, ToolButton } from '../../ui/Button'
-import { Grid3x3, Image, Maximize, Repeat } from '../../ui/icons'
+import { Grid3x3, Image, Maximize, Repeat, Ruler } from '../../ui/icons'
 import { useEditor, useEditorStores, useSession, useToolCuration } from '../editorContext'
 import { ScrollMoreHint } from '../ScrollMoreHint'
 import { TOOL_GRID } from '../toolGrid'
@@ -33,6 +33,7 @@ export function VectorToolbox({
   const vertical = orientation === 'vertical'
   const { session } = useEditorStores()
   const showGrid = useSession((state) => state.showGrid)
+  const showRulers = useSession((state) => state.showRulers)
   const { tool, setTool, zoomToFit, style, applyStyle } = useVectorEditor()
   const assetId = useEditor((state) => state.asset.id)
   const allowTools = useToolCuration()
@@ -102,6 +103,18 @@ export function VectorToolbox({
             label={COPY.tools.grid}
             active={showGrid}
             onClick={() => session.getState().toggleGrid()}
+          />
+        ),
+      },
+      {
+        id: 'rulers',
+        node: (
+          <ToolButton
+            tone="quiet"
+            icon={Ruler}
+            label={COPY.tools.rulers}
+            active={showRulers}
+            onClick={() => session.getState().toggleRulers()}
           />
         ),
       },

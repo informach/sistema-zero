@@ -48,6 +48,11 @@ export interface PintaSessionState {
   filled: boolean
   /** Grade de pixels por cima do desenho (só rende em zoom alto). */
   showGrid: boolean
+  /**
+   * Réguas em cima e à esquerda do palco (só o editor de VETOR as desenha). Nascem
+   * LIGADAS: ficam fora do papel, então não sujam o desenho como a grade sujaria.
+   */
+  showRulers: boolean
   zoom: number
   /** Degraus de zoom do editor (pixel e vetor usam escalas diferentes). */
   zoomLevels: readonly number[]
@@ -89,6 +94,7 @@ export interface PintaSessionState {
   toggleMirrorY(): void
   toggleFilled(): void
   toggleGrid(): void
+  toggleRulers(): void
   setZoom(zoom: number): void
   zoomIn(): void
   zoomOut(): void
@@ -123,6 +129,7 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     mirrorY: false,
     filled: false,
     showGrid: true,
+    showRulers: true,
     zoom: 8,
     zoomLevels: ZOOM_LEVELS,
     onion: false,
@@ -149,6 +156,7 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     toggleMirrorY: () => set((state) => ({ mirrorY: !state.mirrorY })),
     toggleFilled: () => set((state) => ({ filled: !state.filled })),
     toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
+    toggleRulers: () => set((state) => ({ showRulers: !state.showRulers })),
     setZoom: (zoom) => set({ zoom: Math.min(Math.max(zoom, 0.25), 48) }),
     zoomIn: () => set((state) => ({ zoom: nextZoom(state.zoomLevels, state.zoom, 1) })),
     zoomOut: () => set((state) => ({ zoom: nextZoom(state.zoomLevels, state.zoom, -1) })),

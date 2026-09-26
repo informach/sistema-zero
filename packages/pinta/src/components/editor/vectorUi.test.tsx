@@ -4482,3 +4482,83 @@ describe('desenhar formas pequenas: a régua é em px de tela', () => {
     expect(stage.querySelector('[data-rotate]')).toBeTruthy()
   })
 })
+
+describe('régua do palco (só no vetor)', () => {
+  function rulerX(): Element | null {
+    return document.querySelector('[data-stage-ruler="x"]')
+  }
+
+  function labelsOf(axis: 'x' | 'y'): string[] {
+    return Array.from(
+      document.querySelectorAll(`[data-stage-ruler="${axis}"] [data-ruler-label]`),
+    ).map((node) => node.getAttribute('data-ruler-label') ?? '')
+  }
+
+  it('nasce ligada, decorativa, com um rótulo a cada 64 no cenário de 480 em zoom 1', async () => {
+    await openVectorEditor()
+    const x = rulerX()
+    expect(x?.getAttribute('aria-hidden')).toBe('true')
+    expect(document.querySelector('[data-stage-ruler="y"]')?.getAttribute('aria-hidden')).toBe(
+      'true',
+    )
+    expect(labelsOf('x')).toEqual(['0', '64', '128', '192', '256', '320', '384', '448'])
+    expect(labelsOf('y')).toEqual(['0', '64', '128', '192', '256', '320'])
+  })
+
+  it('o botão "Régua" esconde e mostra; Shift+R faz o mesmo', async () => {
+    await openVectorEditor()
+    expect(rulerX()).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rulers }))
+    await waitFor(() => expect(rulerX()).toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rulers }))
+    await waitFor(() => expect(rulerX()).toBeTruthy())
+    fireEvent.keyDown(document.body, { key: 'R', shiftKey: true })
+    await waitFor(() => expect(rulerX()).toBeNull())
+    fireEvent.keyDown(document.body, { key: 'R', shiftKey: true })
+    await waitFor(() => expect(rulerX()).toBeTruthy())
+  })
+
+  it('aproximar troca os rótulos (o passo acompanha o zoom)', async () => {
+    await openVectorEditor()
+    expect(labelsOf('x')).not.toContain('4')
+    for (let i = 0; i < 5; i += 1) {
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.zoomIn }))
+    }
+    await waitFor(() => expect(labelsOf('x').slice(0, 3)).toEqual(['0', '4', '8']))
+  })
+
+  it('a div rolável do palco mora na célula das réguas (as barras flutuantes nascem abaixo da régua)', async () => {
+    await openVectorEditor()
+    const svg = screen.getByRole('img', { name: 'Área de desenho' })
+    const scroller = svg.parentElement?.parentElement
+    expect(scroller?.className).toContain('overflow-auto')
+    expect(scroller?.parentElement?.parentElement?.className).toContain('pin-rulers')
+  })
+
+  it('na tela estreita não há régua, mesmo ligada', async () => {
+    const originalMatchMedia = window.matchMedia
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        dispatchEvent: () => true,
+      }),
+    })
+    try {
+      await openVectorEditor()
+      expect(rulerX()).toBeNull()
+      expect(document.querySelector('.pin-rulers')).toBeNull()
+    } finally {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        value: originalMatchMedia,
+      })
+    }
+  })
+})

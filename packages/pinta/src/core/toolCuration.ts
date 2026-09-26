@@ -53,6 +53,7 @@ export const PINTA_TOOL_PRESETS = {
     'reshape',
     'pan',
     'grid',
+    'rulers',
     'mirror',
     'mirrorV',
     'filled',

@@ -86,6 +86,7 @@ export {
   Replace,
   Rocket,
   RotateCw,
+  Ruler,
   Scaling,
   Scissors,
   Search,

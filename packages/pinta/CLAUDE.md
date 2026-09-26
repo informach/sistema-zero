@@ -3005,6 +3005,37 @@ pequenas"):
   nada mudou. ⚠️ Com a Selecionar as alças também cobrem formas minúsculas; fica como melhoria
   futura. As alças levam `data-handle` para os testes.
 
+## Régua do palco (26/09/2026, só no editor de VETOR)
+
+Pedido dela: "régua na área de desenho". Decisão dela: **só no vetor** (o pixel fica como está).
+Réguas em cima e à esquerda do palco, em UNIDADES DO DOCUMENTO, acompanhando zoom e rolagem.
+
+- **`components/editor/rulerTicks.ts`** (puro): os passos são POTÊNCIAS DE 2 (`RULER_STEPS`), não
+  1/2/5/10, porque os documentos medem 16/32/64/256/2048 e a grade encaixa em 4/8/16: um sprite
+  de 32 rotulado 0-8-16-24-32 lê melhor e casa com a grade. `rulerStep(zoom)` = o menor passo
+  com rótulos a ≥ 40 px de tela; os traços pequenos ficam em um quarto (ou metade) do passo se
+  couberem a ≥ 6 px. Zoom fracionário (o "Ajustar") funciona igual.
+- **`components/editor/StageRulers.tsx`** (genérico: recebe a div rolável, o conteúdo e o
+  tamanho do documento; um dia serve ao pixel): grid `--pin-ruler` (24 px) × `1fr` com canto,
+  régua de cima, régua da esquerda (`<svg aria-hidden data-stage-ruler="x|y">`) e a CÉLULA do
+  palco. **Nenhum `setState` em `scroll` nem em `pointermove`:** os traços são montados uma vez
+  por zoom/documento e o deslocamento (canto do `<svg>` menos canto da régua) e o risquinho do
+  cursor são escritos por ref no `transform`. Um `ResizeObserver` na div rolável E no conteúdo
+  cobre zoom, painéis e janela (guardado por `typeof`: o happy-dom não o tem). Sem região viva
+  de coordenadas, de propósito: um `role=status` a cada movimento do mouse inunda o leitor.
+  `enabled={false}` devolve só a célula, então o `VectorStage` embrulha o miolo (barras
+  flutuantes + div rolável) UMA vez; as barras `.pin-float absolute top-2` passam a ser
+  absolutas em relação à célula, ou seja, nascem abaixo da régua sem número mágico.
+- **Nasce LIGADA** (`session.showRulers`; a grade nasce desligada porque suja o papel, a régua
+  fica fora dele) e some na **tela estreita** (`!wide`): cada px vertical conta e uma tira de
+  24 px é pouco para o dedo. Botão "Régua" na caixa (curationId `rulers`, no preset `livre`,
+  fora do `essencial`), atalho **Shift+R** (o do Figma; Ctrl+R recarrega a página; as letras de
+  ferramenta ignoram o Shift, então não colide). `useWheelZoom`/`zoomToFit` medem a div rolável,
+  que já desconta a régua: seguem certos.
+- ⚠️ happy-dom não faz layout: os testes afirmam DOM (`aria-hidden`, os rótulos por
+  `data-ruler-label`, a árvore), nunca px. Testes: `rulerTicks.test.ts` e `vectorUi.test.tsx`
+  §"régua do palco".
+
 ## O arrasto não grifa nada, e o texto volta a ser editável (18/09/2026)
 
 Dois relatos dela no editor de VETOR, os dois já dados como corrigidos antes e os dois vivos na
