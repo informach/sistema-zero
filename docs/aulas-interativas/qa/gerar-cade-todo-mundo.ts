@@ -108,7 +108,7 @@ const aula1 = {
     video(
       'video-a1-programar',
       'Faça o primeiro personagem aparecer',
-      'Apresentar o Estúdio dentro da aula como a ferramenta onde blocos viram instruções do jogo; não é preciso abrir outra página. Demonstrar a divisória em tela larga e Expandir/Reduzir ao chegar à prática, sem tour separado. Depois mostrar a paleta, a área Quando acontecer já preparada, o bloco Deixar o sprite com 0% de visibilidade, o nome escolhido e o teste. Repetir cada passo na narração; não presumir familiaridade com blocos. Ao final, mostrar o Mapa do jogo como folha opcional para lembrar os passos em casa, sem tornar download ou impressão requisito. Alvo: 3–4 minutos.',
+      'Apresentar o Estúdio dentro da aula como a ferramenta onde blocos viram instruções do jogo; não é preciso abrir outra página. Demonstrar a divisória em tela larga e Expandir/Reduzir ao chegar à prática, sem tour separado. Ensinar onde ver o jogo: no Estúdio estreito, alternar entre as abas Blocos e Pré-visualização; com largura suficiente, mostrar a área do jogo à direita e o olhinho que a exibe ou esconde. Depois mostrar a paleta, a área Quando acontecer já preparada, o bloco Deixar o sprite com 0% de visibilidade e o nome escolhido. Para testar, aguardar a atualização automática da Pré-visualização e tocar num esconderijo, sem exigir Reproduzir ou Atualizar. Repetir cada passo na narração; não presumir familiaridade com blocos. Ao final, mostrar o Mapa do jogo como folha opcional para lembrar os passos em casa, sem tornar download ou impressão requisito. Alvo: 4–5 minutos.',
     ),
     dialogue(
       'ponte-a1-programar',
