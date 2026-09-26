@@ -134,12 +134,15 @@ test('a divisória adapta o painel sem ampliar nem perder seleção e progresso'
   await page
     .getByRole('button', { name: 'Colocar em Ao iniciar: Mover a nave um pouquinho', exact: true })
     .click()
-  const step = page.getByRole('button', { name: 'Avançar 1 passo', exact: true })
-  for (let n = 0; n < 3; n++) await step.click()
+  const run = page.getByRole('button', {
+    name: /^(Começar o jogo|Pausar o jogo|Teste encerrado)$/,
+  })
+  await run.click()
+  await expect(page.getByRole('button', { name: 'Teste encerrado' })).toBeVisible()
   await expect(chip(page)).toContainText('1 vez')
   await expect(page.getByRole('meter')).toHaveAttribute('aria-valuenow', '1')
   await expectFullyVisible(page.locator('.sz-scene-console-mundo svg').first())
-  await expect(step).toBeInViewport({ ratio: 1 })
+  await expect(run).toBeInViewport({ ratio: 1 })
   await fits(page)
   await page.screenshot({ path: info.outputPath('inline-wide.png') })
 
@@ -194,9 +197,9 @@ test('fontes maiores empilham sem cortar os controles no modo ampliado', async (
   await expectLayout(page, false)
   await expand(page).click()
   await expectLayout(page, false)
-  const step = page.getByRole('button', { name: 'Avançar 1 passo', exact: true })
-  await step.click()
-  await expect(step).toBeInViewport({ ratio: 1 })
+  const run = page.getByRole('button', { name: 'Coloque uma ação para começar' })
+  await run.scrollIntoViewIfNeeded()
+  await expect(run).toBeInViewport({ ratio: 1 })
   await expect(close(page)).toBeInViewport({ ratio: 1 })
   await close(page).click()
   await expect(expand(page)).toBeFocused()
@@ -216,7 +219,7 @@ for (const size of [
   })
 }
 
-test('ampliar/recolher preserva seleção, montagem, passos e descobertas', async ({
+test('ampliar/recolher preserva seleção, montagem, execução e descobertas', async ({
   page,
 }, info) => {
   await page.setViewportSize({ width: 1366, height: 768 })
@@ -228,12 +231,17 @@ test('ampliar/recolher preserva seleção, montagem, passos e descobertas', asyn
   await page
     .getByRole('button', { name: 'Colocar em Ao iniciar: Mover a nave um pouquinho', exact: true })
     .click()
-  const step = page.getByRole('button', { name: 'Avançar 1 passo', exact: true })
-  for (let n = 0; n < 3; n++) await step.click()
+  const run = page.getByRole('button', {
+    name: /^(Começar o jogo|Pausar o jogo|Teste encerrado)$/,
+  })
+  await run.click()
+  await expect(page.getByRole('button', { name: 'Teste encerrado' })).toBeVisible({
+    timeout: 20_000,
+  })
   await expect(chip(page)).toContainText('1 vez')
   await expect(page.getByRole('meter')).toHaveAttribute('aria-valuenow', '1')
   await expectFullyVisible(page.locator('.sz-scene-console-visual'))
-  await expect(step).toBeInViewport({ ratio: 1 })
+  await expect(run).toBeInViewport({ ratio: 1 })
   const visual = await page.locator('.sz-scene-console-visual').boundingBox()
   const actions = await page.locator('.sz-scene-console-actions').boundingBox()
   expect(visual!.x + visual!.width).toBeLessThanOrEqual(actions!.x + 1)
@@ -255,11 +263,15 @@ test('ampliar/recolher preserva seleção, montagem, passos e descobertas', asyn
       exact: true,
     })
     .click()
-  for (let n = 0; n < 3; n++) await step.click()
-  await expect(chip(page)).toContainText('3 vezes')
+  await run.click()
+  await expect(page.getByRole('button', { name: 'Teste encerrado' })).toBeVisible({
+    timeout: 20_000,
+  })
+  await expect(chip(page)).toContainText(/[1-9]\d* vezes/)
   await expect(page.getByRole('meter')).toHaveAttribute('aria-valuenow', '2')
+  const count = await chip(page).textContent()
   await close(page).click()
-  await expect(chip(page)).toContainText('3 vezes')
+  await expect(chip(page)).toHaveText(count ?? '')
   expect(await page.evaluate(() => document.body.style.overflow)).not.toBe('hidden')
 })
 
@@ -386,8 +398,11 @@ for (const size of [
       await expectFullyVisible(page.locator('.sz-scene-console-mundo svg').first())
     }
     await expect(close(page)).toBeInViewport({ ratio: 1 })
-    await page.getByRole('button', { name: 'Avançar 1 passo', exact: true }).click()
-    await expect(chip(page)).toContainText('1 vez')
+    await page.getByRole('button', { name: 'Começar o jogo', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Teste encerrado' })).toBeVisible({
+      timeout: 20_000,
+    })
+    await expect(chip(page)).toContainText(/[1-9]\d* vezes/)
     await expect(close(page)).toBeInViewport({ ratio: 1 })
     await close(page).click()
   })

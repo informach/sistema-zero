@@ -71,6 +71,7 @@ export {
   captureCoverFromProject,
 } from './cover/coverCapture'
 export { ESSENTIAL_2D_ALLOW_BLOCKS, ESSENTIAL_2D_BLOCK_TYPES } from './journey/blockProfiles'
+export { replaceLocalProject } from './persistence/local'
 export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/types'
 export type { PreviewSecurityProfile } from './preview/csp'
 export {

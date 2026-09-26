@@ -14,7 +14,7 @@ Mostrar o jogo completo e a missão de hoje, sem ensinar a experiência ou os bl
 >
 > Antes de começar, deixa eu te mostrar como a aula funciona. Ela vem em pequenas partes, que a gente chama de seções. Esta é a primeira, e cada seção tem um vídeo como este. Se quiser ouvir uma explicação de novo, você pode voltar um pedacinho aqui no vídeo. Se precisar de um tempinho, aperta pausa. Sem pressa.
 >
-> Quando este vídeo terminar, aperta Próxima seção, aqui embaixo. Vou te mostrar um caderno que pode ajudar sempre que você esquecer algum passo. Vamos?”
+> Quando este vídeo terminar, aperta Próxima seção, aqui embaixo, para eu te mostrar um caderno que pode ajudar sempre que você esquecer algum passo. Vamos?”
 
 Não demonstrar **Anterior**, a experiência, a divisória, o Estúdio ou o caderno nesta abertura. Não prometer que a criança já criou o jogo inteiro: cenário e personagens vêm preparados.
 

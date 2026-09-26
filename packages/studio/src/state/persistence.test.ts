@@ -70,7 +70,7 @@ const { createProjectStore, MAX_BLOCKSTATE_BLOCKS, PROJECT_FILE_LIMITS, useProje
 const { cancelPendingAutosavesFor, createPersistenceService, setAutosaveDelayForTests } =
   await import('../persistence/service')
 const { createPendingEditorEdits } = await import('./pendingEditorEdits')
-const { createLocalPersistenceAdapter } = await import('../persistence/local')
+const { createLocalPersistenceAdapter, replaceLocalProject } = await import('../persistence/local')
 const { setStorageNamespace } = await import('./persistence')
 const { BEHAVIOR_AREAS_STATE_KEY, BEHAVIOR_AREAS_STATE_VERSION } = await import(
   '../blockly/blocksStateVersion'
@@ -1082,6 +1082,28 @@ describe('loadProject', () => {
     })
     expect(written('sz:v2:project-state:split-blocks')).not.toHaveProperty('blocksState')
     expect(written('sz:v2:project-blocks:split-blocks')?.blocksState).toEqual(blocksState)
+  })
+
+  it('substitui um rascunho local inteiro ao recomeçar uma aula', async () => {
+    const id = 'lesson-restart'
+    const old = createEmptyProject(id, 'Versão antiga')
+    old.blocksState = {
+      blocks: {
+        languageVersion: 0,
+        blocks: [{ type: 'sz_css_rule', fields: {} }],
+      },
+    }
+    await persistProject(old)
+
+    const initial = createEmptyProject(id, 'Versão nova')
+    initial.files['index.html'] = '<main>Jogo novo</main>'
+    initial.blocksState = null
+    await replaceLocalProject(initial)
+
+    expect(fakeIdbDeletes(lastFakeIdbWrite())).toContain(`sz:v2:project-blocks:${id}`)
+    expect(written(`sz:v2:project-files:${id}`)).toMatchObject({
+      files: { 'index.html': '<main>Jogo novo</main>' },
+    })
   })
 
   it('quando o código da Ponte está à frente, persiste a autoridade e apaga blocos antigos NA MESMA transação', async () => {

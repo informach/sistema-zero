@@ -38,6 +38,7 @@ import {
   refreshSpriteThumbs,
 } from '../../blockly/fields/FieldSpritePicker'
 import { SearchAwareHorizontalFlyout } from '../../blockly/searchHorizontalFlyout'
+import { projectBlockTypes } from '../../core/projectDocument'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { useHostAppearanceRevision } from '../../hooks/useHostAppearanceRevision'
 import { primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
@@ -416,15 +417,23 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       (entry) => requested.has(entry.type) && (!entry.extension || installed.has(entry.extension)),
     ).map((entry) => entry.type)
   }, [projectToolsKey, installedIdsKey])
+  // A categoria "Blocos deste jogo" espelha o programa salvo, não o histórico
+  // de ferramentas. A chave de conteúdo evita reconstruir a toolbox ao mover
+  // blocos sem mudar seus tipos (o que fecharia o flyout aberto).
+  const currentBlockTypesKey = useMemo(
+    () => projectBlockTypes(blocksState).join('\n'),
+    [blocksState],
+  )
   const profile = useMemo<LearningProfile>(
     () => ({
       level: learning.level,
       revealed: learning.allowLevelReveal && revealAdvanced,
       allowBlocks: learning.allowBlocks,
       projectTools,
+      currentBlockTypes: currentBlockTypesKey ? currentBlockTypesKey.split('\n') : [],
       allowCategories: learning.allowCategories,
     }),
-    [learning, revealAdvanced, projectTools],
+    [learning, revealAdvanced, projectTools, currentBlockTypesKey],
   )
 
   const toolbox = useMemo(() => {

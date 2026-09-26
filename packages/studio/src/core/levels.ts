@@ -97,8 +97,10 @@ export function levelRank(level: BlockLevel): number {
 export const DEFAULT_LEARNING_LEVEL: BlockLevel = MAX_BLOCK_LEVEL
 
 export interface LearningProfile {
-  /** Tipos atuais necessários para continuar editando o projeto aberto. */
+  /** Histórico legado de ferramentas; usado quando não há estado atual disponível. */
   projectTools?: readonly string[]
+  /** Tipos que ainda têm instâncias no projeto; alimentam a paleta e Blocos deste jogo. */
+  currentBlockTypes?: readonly string[]
   /** Nível fixado pelo professor (host). */
   level: BlockLevel
   /** Aluno revelou o avançado → sobe o teto efetivo para o topo da escada. */
@@ -115,6 +117,11 @@ export interface LearningProfile {
 
 /** Perfil que mostra tudo (default fora de um <Studio> e no playground). */
 export const FULL_LEARNING_PROFILE: LearningProfile = { level: MAX_BLOCK_LEVEL }
+
+/** O estado atual prevalece sobre o histórico, inclusive quando está vazio. */
+export function projectEditingBlockTypes(profile: LearningProfile): readonly string[] {
+  return profile.currentBlockTypes ?? profile.projectTools ?? []
+}
 
 /** Teto de nível efetivo considerando o "revelar avançado" do aluno. */
 export function effectiveLevel(profile: LearningProfile): BlockLevel {
@@ -134,7 +141,7 @@ export function isBlockTypeAllowed(
   blockLevel: BlockLevel,
   profile: LearningProfile,
 ): boolean {
-  if (profile.projectTools?.includes(blockType)) return true
+  if (projectEditingBlockTypes(profile).includes(blockType)) return true
   const only = profile.allowBlocks
   if (only && only.length > 0) return only.includes(blockType)
   return isLevelWithin(blockLevel, profile)
@@ -150,7 +157,7 @@ export function isCategoryAllowed(
   categoryLevel: BlockLevel,
   profile: LearningProfile,
 ): boolean {
-  if (profile.projectTools?.length) return true
+  if (projectEditingBlockTypes(profile).length) return true
   if (profile.allowBlocks && profile.allowBlocks.length > 0) return true
   if (profile.allowCategories?.includes(categoryName)) return true
   return isLevelWithin(categoryLevel, profile)

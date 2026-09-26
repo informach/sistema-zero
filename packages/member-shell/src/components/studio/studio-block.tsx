@@ -8,13 +8,13 @@ import type {
   StudioShareAdapter,
   StudioShareResult,
 } from '@sistemazero/studio'
-import { STUDIO_PRO_BUILD_LIMITS } from '@sistemazero/studio'
+import { replaceLocalProject, STUDIO_PRO_BUILD_LIMITS } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { CheckCheck, CheckCircle2, Maximize2, Minimize2, Send } from 'lucide-react'
+import { CheckCheck, CheckCircle2, Maximize2, Minimize2, RotateCcw, Send } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
@@ -113,6 +113,7 @@ export function StudioBlockView({
 
   const [StudioLesson, setStudioLesson] = useState<StudioComponent | null>(null)
   const [seed, setSeed] = useState<Project | null>(null)
+  const [studioVersion, setStudioVersion] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(studioState?.submitted ?? false)
   const [submittedAt, setSubmittedAt] = useState<string | null>(studioState?.submittedAt ?? null)
@@ -141,6 +142,9 @@ export function StudioBlockView({
   const [syncOpen, setSyncOpen] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [syncNote, setSyncNote] = useState<string | null>(null)
+  const [restartOpen, setRestartOpen] = useState(false)
+  const [restarting, setRestarting] = useState(false)
+  const [restartNote, setRestartNote] = useState<string | null>(null)
 
   const activity = content.activity
   const passingScore = activity?.passingScore
@@ -352,6 +356,29 @@ export function StudioBlockView({
     }
   }, [lessonId, blockId, projectId])
 
+  const doRestart = useCallback(async () => {
+    const handle = handleRef.current
+    if (!handle) return
+    setRestarting(true)
+    setRestartNote(null)
+    try {
+      // Drena qualquer autosave antigo antes da substituição. A gravação de reposição
+      // apaga também partições de blocos/capa que o projeto inicial não possui.
+      await handle.save()
+      const initial: Project = { ...(content.initialProject as Project), id: projectId }
+      await replaceLocalProject(initial)
+      // Uma nova instância também encerra qualquer leitura tardia dos blocos do
+      // rascunho antigo, que usa o mesmo id local do projeto inicial.
+      setSeed(initial)
+      setStudioVersion((version) => version + 1)
+      setRestartOpen(false)
+    } catch {
+      setRestartNote('Não consegui recomeçar agora. Seu projeto continua como estava.')
+    } finally {
+      setRestarting(false)
+    }
+  }, [content.initialProject, projectId])
+
   // O Studio LATCHA o adapter uma vez (memoizado por lessonId/blockId), mas `onShared` pode
   // mudar por render — lê via ref pra manter o adapter estável e ainda chamar o handler ATUAL.
   const onSharedRef = useRef(onShared)
@@ -438,6 +465,18 @@ export function StudioBlockView({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="sz-display text-base">Atividade no Estúdio</h3>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setRestartNote(null)
+              setRestartOpen(true)
+            }}
+            disabled={!ready || restarting}
+          >
+            <RotateCcw className="size-4" />
+            Recomeçar
+          </Button>
           <Button variant="outline" size="sm" onClick={toggleExpanded} disabled={!ready}>
             {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
             {expanded ? 'Reduzir' : 'Expandir'}
@@ -486,6 +525,7 @@ export function StudioBlockView({
           // StudioLesson já desliga terminal/IA/profissional/export; aqui o
           // aluno corta também as extensões (editor enxuto na aula).
           <StudioLesson
+            key={studioVersion}
             ref={handleRef}
             initialProject={seed as Project}
             persistence="local"
@@ -653,6 +693,34 @@ export function StudioBlockView({
           professor. Use se você terminou em outro computador.
         </p>
         {syncNote ? <p className="mt-2 text-sm text-destructive">{syncNote}</p> : null}
+      </Dialog>
+
+      <Dialog
+        open={restartOpen}
+        onClose={() => setRestartOpen(false)}
+        title="Recomeçar do projeto inicial?"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setRestartOpen(false)}
+              disabled={restarting}
+            >
+              Cancelar
+            </Button>
+            <Button size="sm" onClick={() => void doRestart()} disabled={restarting}>
+              {restarting ? <Spinner /> : <RotateCcw className="size-4" />}
+              Recomeçar
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-muted-foreground">
+          O Estúdio vai abrir o projeto inicial mais recente desta aula. O que você mudou neste
+          aparelho será substituído. Se já enviou um projeto ao professor, o envio continuará salvo.
+        </p>
+        {restartNote ? <p className="mt-2 text-sm text-destructive">{restartNote}</p> : null}
       </Dialog>
     </div>
   )
