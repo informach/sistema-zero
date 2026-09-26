@@ -62,6 +62,7 @@ export function PintaImportDialog({ onClose, onImported }: PintaImportDialogProp
   const adapter = useStudioPintaLibrary()
   const assets = useProjectStore(useShallow((s) => s.project?.assets ?? EMPTY_ASSETS))
   const addAsset = useProjectStore((s) => s.addAsset)
+  const updateAssetImage = useProjectStore((s) => s.updateAssetImage)
 
   const [load, setLoad] = useState<LoadState>({ phase: 'loading' })
   const [reloadKey, setReloadKey] = useState(0)
@@ -104,6 +105,25 @@ export function PintaImportDialog({ onClose, onImported }: PintaImportDialogProp
           // Apagado no Pinta entre listar e importar → o card sai da lista.
           setLoad({ phase: 'ready', drawings: load.drawings.filter((d) => d.id !== drawing.id) })
         }
+        return
+      }
+      const existing = assets.find((asset) => personalIdOf(asset) === drawing.id)
+      if (existing) {
+        if (!result.asset.dataUrl.startsWith('data:image/svg+xml')) {
+          setError(t('pintaImport.vectorTooLarge'))
+          return
+        }
+        const err = updateAssetImage(existing.id, {
+          dataUrl: result.asset.dataUrl,
+          width: result.asset.width,
+          height: result.asset.height,
+          sprite: result.asset.sprite,
+          tileset: result.asset.tileset,
+          tilemap: result.asset.tilemap,
+          libRevision: result.asset.libRevision,
+        })
+        if (err) setError(err)
+        else onImported?.()
         return
       }
       const taken = new Set(assets.map((a) => a.name))
@@ -245,9 +265,28 @@ export function PintaImportDialog({ onClose, onImported }: PintaImportDialogProp
                     {/* Já no projeto → SÓ o selinho (decisão da dona: sem
                         "Adicionar de novo" — re-add acidental não existe). */}
                     {added ? (
-                      <span className="inline-flex items-center text-xs font-semibold text-emerald-500">
-                        {t('pintaImport.inProject')}
-                      </span>
+                      <>
+                        <span className="inline-flex items-center text-xs font-semibold text-emerald-500">
+                          {t('pintaImport.inProject')}
+                        </span>
+                        {drawing.style === 'vector' &&
+                        assets.some(
+                          (asset) =>
+                            personalIdOf(asset) === drawing.id &&
+                            !asset.dataUrl.startsWith('data:image/svg+xml'),
+                        ) ? (
+                          <Button
+                            variant="subtle"
+                            size="sm"
+                            disabled={busyId !== null}
+                            onClick={() => void handleAdd(drawing)}
+                          >
+                            {busyId === drawing.id
+                              ? t('pintaImport.adding')
+                              : t('pintaImport.refreshVector')}
+                          </Button>
+                        ) : null}
+                      </>
                     ) : (
                       <Button
                         variant="primary"

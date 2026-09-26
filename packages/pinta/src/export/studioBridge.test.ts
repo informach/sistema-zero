@@ -23,24 +23,44 @@ function findIn(assets: PintaAsset[]): (id: string) => PintaAsset | null {
 }
 
 describe('buildStudioPayload (happy-dom: raster devolve null gracioso)', () => {
-  // Sem canvas 2D, TODO ramo devolve null sem lançar nem pendurar — o
-  // chamador mostra o toast gentil. (O conteúdo real é QA de browser.)
-  it('todos os kinds devolvem null sem canvas, sem lançar', async () => {
+  // Sem canvas 2D, os formatos raster devolvem null; SVG vetorial não precisa de canvas.
+  it('formatos que exigem canvas devolvem null sem lançar', async () => {
     const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     const vTileset = createVectorTilesetAsset({ name: 'pecas-v', tileSize: 16 })
     const assets: PintaAsset[] = [
       createPixelSpriteAsset({ name: 'heroi', frameSize: 8 }),
       tileset,
-      vTileset,
       createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 2 }),
       createTilemapAsset({ name: 'fase-v', tilesetId: vTileset.id, cols: 2, rows: 2 }),
-      createVectorBackgroundAsset({ name: 'livre', width: 100, height: 80 }),
-      createVectorSpriteAsset({ name: 'heroi-v', frameSize: 64 }),
     ]
     for (const asset of assets) {
       const payload = await buildStudioPayload(asset, findIn(assets), REF)
       expect(payload).toBeNull()
     }
+  })
+
+  it('leva o sprite vetorial do Pinta ao Estúdio como SVG escalável', async () => {
+    const asset = createVectorSpriteAsset({ name: 'heroi-v', frameSize: 64 })
+    const payload = await buildStudioPayload(asset, findIn([asset]), REF)
+    expect(payload?.dataUrl).toStartWith('data:image/svg+xml')
+    expect(payload?.width).toBe(64)
+    expect(payload?.height).toBe(64)
+    expect(payload?.sprite?.frameW).toBe(64)
+  })
+
+  it('leva o cenário vetorial do Pinta ao Estúdio como SVG escalável', async () => {
+    const asset = createVectorBackgroundAsset({ name: 'jardim-v', width: 64, height: 64 })
+    const payload = await buildStudioPayload(asset, findIn([asset]), REF)
+    expect(payload?.dataUrl).toStartWith('data:image/svg+xml')
+    expect(payload?.width).toBe(64)
+    expect(payload?.height).toBe(64)
+  })
+
+  it('conserva SVG no tileset vetorial e seus metadados de peças', async () => {
+    const asset = createVectorTilesetAsset({ name: 'pecas-v', tileSize: 16 })
+    const payload = await buildStudioPayload(asset, findIn([asset]), REF)
+    expect(payload?.dataUrl).toStartWith('data:image/svg+xml')
+    expect(payload?.tileset?.tileSize).toBe(16)
   })
 
   it('tilemap sem tileset (apagado) devolve null', async () => {

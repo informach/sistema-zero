@@ -1,10 +1,4 @@
-/**
- * A ponte "Usar no Estúdio": monta o payload {dataUrl, width, height} que o
- * host grava em `@sistemazero/studio/personal-assets`. SEMPRE um PNG achatado:
- * sprites enviam a FOLHA inteira (a criança usa os from/to da receita no bloco
- * "Animar sprite"), tilesets a folha de peças, tilemap o mapa achatado,
- * cenários a imagem. `null` = não deu para rasterizar (o chamador mostra toast).
- */
+/** A ponte "Usar no Estúdio": conserva SVG vetorial quando cabe no projeto. */
 
 import type { ActiveFrameRef } from '../core/assetEdit'
 import { flattenActiveOf } from '../core/assetEdit'
@@ -18,16 +12,21 @@ import {
 } from '../core/project'
 import type { PintaSpriteMeta, PintaTilemapMeta, PintaTilesetMeta } from '../core/types'
 import { packTileset, tilesetPngDataUrl } from '../tiles/packTileset'
-import { packVectorTileset, vectorTilesetPngDataUrl } from '../tiles/packVectorTileset'
+import {
+  packVectorTileset,
+  vectorTilesetPngDataUrl,
+  vectorTilesetPortableSvg,
+} from '../tiles/packVectorTileset'
 import { tilemapThumbnail } from '../tiles/renderTilemap'
 import { vectorTilemapPngDataUrl } from '../tiles/renderVectorTilemap'
 import { hasFrontLayer } from '../tiles/tilemapOps'
+import { vectorToPortableSvg } from '../vector/portableSvg'
 import { vectorPngDataUrl } from '../vector/rasterize'
 import { bitmapToPngDataUrl } from './png'
 import { pixelSpriteHitbox, vectorSpriteHitbox } from './spriteHitbox'
 import { packSpritesheet, spritesheetPngDataUrl } from './spritesheet'
 import { tilemapToStudioGrid } from './studioGrid'
-import { packVectorSpritesheet, vectorSheetPngDataUrl } from './vectorSheet'
+import { packVectorSpritesheet, vectorSheetPngDataUrl, vectorSheetPortableSvg } from './vectorSheet'
 
 export interface StudioPayload {
   dataUrl: string
@@ -128,6 +127,11 @@ export const STUDIO_MAX_ASSET_CHARS = 800_000
 // de lá descartaria o metadado em silêncio).
 export const STUDIO_MAX_TILEMAP_SHEET_CHARS = 180_000
 
+function svgDataUrlWithinLimit(svg: string, limit: number): string | null {
+  const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+  return dataUrl.length <= limit ? dataUrl : null
+}
+
 /**
  * O payload cabe nos tetos do Estúdio? Funil ÚNICO das checagens que antes
  * viviam duplicadas nos call sites (enviar, jogar o mapa, reenvio automático).
@@ -218,7 +222,10 @@ export async function buildStudioPayload(
       const sheetUrl =
         tileset.kind === 'tileset'
           ? tilesetPngDataUrl(tileset)
-          : await vectorTilesetPngDataUrl(tileset)
+          : (svgDataUrlWithinLimit(
+              await vectorTilesetPortableSvg(tileset),
+              STUDIO_MAX_TILEMAP_SHEET_CHARS,
+            ) ?? (await vectorTilesetPngDataUrl(tileset)))
       if (!sheetUrl) return null
       const sheet = {
         dataUrl: sheetUrl,
@@ -243,10 +250,9 @@ export async function buildStudioPayload(
       }
     }
     case 'vector-background': {
-      // Cenário vetorial vai ×2: upscale vetorial é re-render (sem perda) e o
-      // PNG chega com folga de resolução para cobrir o palco 800×480. É o único
-      // kind SEM receita acoplada (sprite/tileset têm frameW/tileSize — lá o ×1
-      // é contrato). Estouro do teto do Studio ou falha de raster → ×1 de antes.
+      const svg = svgDataUrlWithinLimit(await vectorToPortableSvg(asset), STUDIO_MAX_ASSET_CHARS)
+      if (svg) return { dataUrl: svg, width: asset.width, height: asset.height }
+      // SVG acima do orçamento: conserva o fallback raster anterior.
       const scaled = await vectorPngDataUrl(asset, 2)
       if (scaled && scaled.length <= STUDIO_MAX_ASSET_CHARS) {
         return { dataUrl: scaled, width: asset.width * 2, height: asset.height * 2 }
@@ -257,7 +263,9 @@ export async function buildStudioPayload(
     }
     case 'vector-sprite': {
       const pack = packVectorSpritesheet(asset)
-      const dataUrl = await vectorSheetPngDataUrl(pack)
+      const dataUrl =
+        svgDataUrlWithinLimit(await vectorSheetPortableSvg(pack), STUDIO_MAX_ASSET_CHARS) ??
+        (await vectorSheetPngDataUrl(pack))
       if (!dataUrl) return null
       const hitbox = vectorSpriteHitbox(
         asset.animations.flatMap((a) => a.frames),
@@ -273,7 +281,9 @@ export async function buildStudioPayload(
     }
     case 'vector-tileset': {
       const pack = packVectorTileset(asset)
-      const dataUrl = await vectorTilesetPngDataUrl(asset)
+      const dataUrl =
+        svgDataUrlWithinLimit(await vectorTilesetPortableSvg(asset), STUDIO_MAX_ASSET_CHARS) ??
+        (await vectorTilesetPngDataUrl(asset))
       if (!dataUrl) return null
       return {
         dataUrl,

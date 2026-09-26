@@ -60,6 +60,7 @@ const { AssetsPanel } = await import('./AssetsPanel')
 const { filterPintaDrawings } = await import('./PintaImportDialog')
 
 const PNG = 'data:image/png;base64,AAAA'
+const SVG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"/>')}`
 
 const DRAWINGS: DrawingSummary[] = [
   {
@@ -155,6 +156,42 @@ describe('AssetsPanel — botão "Trazer do Pinta"', () => {
 })
 
 describe('PintaImportDialog', () => {
+  it('atualiza a cópia raster antiga de um vetor sem trocar o nome usado pelos blocos', async () => {
+    const project = createEmptyProject('p1', 'Meu Jogo')
+    project.assets = [
+      {
+        id: 'a-vetor',
+        name: 'ceu-que-meus-blocos-usam',
+        kind: 'image',
+        dataUrl: PNG,
+        source: 'library',
+        libId: 'personal:d2',
+        libOrigin: 'pinta',
+        width: 64,
+        height: 64,
+      },
+    ]
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    await openDialog(
+      fakeAdapter({
+        import: async () => ({
+          ok: true,
+          asset: { id: 'd2', name: 'ceu-azul', dataUrl: SVG, width: 64, height: 64 },
+        }),
+      }),
+    )
+    const dialog = screen.getByRole('dialog', { name: 'Trazer do Pinta' })
+    fireEvent.click(await within(dialog).findByRole('button', { name: 'Atualizar vetor' }))
+    await waitFor(() => {
+      expect(useProjectStore.getState().project?.assets?.[0]).toMatchObject({
+        id: 'a-vetor',
+        name: 'ceu-que-meus-blocos-usam',
+        dataUrl: SVG,
+      })
+    })
+    expect(within(dialog).queryByRole('button', { name: 'Atualizar vetor' })).toBeNull()
+  })
+
   it('lista a galeria e a busca filtra sem acento/caixa', async () => {
     await openDialog(fakeAdapter())
     await waitFor(() => {

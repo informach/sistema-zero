@@ -1,11 +1,6 @@
 import { PROJECT_ASSET_LIMITS } from '#core'
 
-/**
- * Reduz + comprime uma imagem enviada pelo aluno via CANVAS (browser, sem `sharp`):
- * encolhe para caber numa dimensão máxima e exporta em WebP (cai para PNG se o
- * browser não suportar WebP no canvas). Mantém o asset pequeno o bastante para o
- * orçamento do projeto (mitiga inchaço do save/quota do IndexedDB). Browser-only.
- */
+/** Imagens raster são comprimidas; SVGs continuam vetoriais ao entrar no Estúdio. */
 export interface ProcessedImage {
   dataUrl: string
   width: number
@@ -26,6 +21,16 @@ export async function fileToAssetDataUrl(
   const w0 = img.naturalWidth || img.width
   const h0 = img.naturalHeight || img.height
   if (!w0 || !h0) throw new Error('Não foi possível ler a imagem.')
+
+  if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
+    const comma = sourceUrl.indexOf(',')
+    if (comma < 0) throw new Error('Não foi possível ler o SVG.')
+    const dataUrl = `data:image/svg+xml;base64,${sourceUrl.slice(comma + 1)}`
+    if (dataUrl.length > PROJECT_ASSET_LIMITS.maxAssetDataUrlChars) {
+      throw new Error('O SVG é grande demais para o projeto. Simplifique o desenho no Pinta.')
+    }
+    return { dataUrl, width: w0, height: h0 }
+  }
 
   const scale = Math.min(1, maxDim / Math.max(w0, h0))
   const width = Math.max(1, Math.round(w0 * scale))

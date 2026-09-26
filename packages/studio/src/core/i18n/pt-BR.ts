@@ -225,6 +225,8 @@ export const ptBR: Record<string, string> = {
   'pintaImport.add': 'Adicionar ao projeto',
   'pintaImport.adding': 'Trazendo…',
   'pintaImport.inProject': '✓ no projeto',
+  'pintaImport.refreshVector': 'Atualizar vetor',
+  'pintaImport.vectorTooLarge': 'Este vetor é grande demais para manter em SVG no Estúdio.',
   'pintaImport.gameBadge': 'jogo: {name}',
   'pintaImport.kind.sprite': '🧍 personagem',
   'pintaImport.kind.background': '🖼️ cenário',

@@ -150,12 +150,14 @@ describe('exportAssetForStudio', () => {
     expect(await exportAssetForStudio('nao-existe')).toEqual({ ok: false, reason: 'not-found' })
   })
 
-  it('sem canvas (happy-dom) todo raster falha gracioso → raster-failed', async () => {
+  it('sem canvas, pixel falha e vetor segue em SVG', async () => {
     const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
     const vetor = createVectorBackgroundAsset({ name: 'ceu', width: 20, height: 10 })
     await persistAssets([sprite, vetor])
     expect(await exportAssetForStudio(sprite.id)).toEqual({ ok: false, reason: 'raster-failed' })
-    expect(await exportAssetForStudio(vetor.id)).toEqual({ ok: false, reason: 'raster-failed' })
+    const exported = await exportAssetForStudio(vetor.id)
+    expect(exported.ok).toBe(true)
+    if (exported.ok) expect(exported.asset.dataUrl).toStartWith('data:image/svg+xml')
   })
 
   it('tilemap órfão (tileset apagado) → raster-failed', async () => {
