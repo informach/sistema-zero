@@ -184,14 +184,24 @@ describe('MoldaApp', () => {
       expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('fim-de-tarde'),
     )
     fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.noite }))
+    // O store notifica o React de forma assíncrona. Comprovar cada etapa antes do próximo atalho.
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: COPY.skyPresets.noite }).getAttribute('aria-pressed'),
+      ).toBe('true'),
+    )
     fireEvent.keyDown(document, { key: 'z', ctrlKey: true })
-    expect(
-      screen.getByRole('button', { name: COPY.skyPresets.entardecer }).getAttribute('aria-pressed'),
-    ).toBe('true')
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: COPY.skyPresets.entardecer }).getAttribute('aria-pressed'),
+      ).toBe('true'),
+    )
     fireEvent.keyDown(document, { key: 'z', ctrlKey: true, shiftKey: true })
-    expect(
-      screen.getByRole('button', { name: COPY.skyPresets.noite }).getAttribute('aria-pressed'),
-    ).toBe('true')
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: COPY.skyPresets.noite }).getAttribute('aria-pressed'),
+      ).toBe('true'),
+    )
   })
 
   test('renomear e apagar pela galeria', async () => {
