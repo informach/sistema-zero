@@ -193,7 +193,9 @@ describe('MoldaApp', () => {
     fireEvent.keyDown(document, { key: 'z', ctrlKey: true })
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: COPY.skyPresets.entardecer }).getAttribute('aria-pressed'),
+        screen
+          .getByRole('button', { name: COPY.skyPresets.entardecer })
+          .getAttribute('aria-pressed'),
       ).toBe('true'),
     )
     fireEvent.keyDown(document, { key: 'z', ctrlKey: true, shiftKey: true })
