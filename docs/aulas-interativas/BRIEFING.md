@@ -100,10 +100,14 @@ ensinar honestamente explicando por que a peça fica mesmo sem sintoma visível.
 ## 3. Vídeo e experimentação: abstrato e concreto na mesma seção
 
 A plataforma usa `experimentation` para conceitos manipuláveis e `html` para experiências
-personalizadas. Há também `project-play`: uma cópia pronta e isolada de um jogo Jogo 2D para a
+personalizadas. Há também `project-play`: uma cópia pronta e isolada de um jogo do Estúdio para a
 criança brincar antes de construí-lo, como na abertura de Cadê Todo Mundo?. Não é uma cena
 conceitual nem um Estúdio editável. O formato antigo de demonstração guiada foi removido;
-processo no tempo é ensinado pelo vídeo.
+processo no tempo é ensinado pelo vídeo. O admin oferece **Jogo pronto para jogar**, com importação,
+edição da cópia no Estúdio e prévia; todas as configurações também existem no manifesto. Para novas
+apresentações, o padrão é assistir ao vídeo e experimentar o jogo, sem exigir vitória. O critério
+por alvos continua disponível para jogos Jogo 2D e permanece nas aulas que já o utilizam, como
+Cadê Todo Mundo?. A moldura não acrescenta controles de jogabilidade ao jogo original.
 
 Na seção de conceito, o vídeo explica a ideia abstrata com exemplos e analogias do universo de quem
 aprende. A experiência, na coluna ao lado, deixa a criança alterar algo e observar o efeito. Nenhum

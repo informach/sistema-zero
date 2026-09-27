@@ -1,5 +1,9 @@
 # Jogo jogável na abertura de Cadê Todo Mundo?
 
+Atualização de autoria: [Jogo pronto para jogar](2026-09-26-project-play-autoria-design.md)
+generaliza este bloco para cadastro manual e participação nas apresentações novas. As regras
+por três alvos descritas abaixo continuam específicas do Cadê Todo Mundo? e foram preservadas.
+
 ## Objetivo
 
 Na primeira seção da Aula 1, a criança assiste ao vídeo de apresentação e brinca com uma cópia pronta de Cadê Todo Mundo? antes de construir seu próprio jogo. Concluir a seção requer assistir ao vídeo e encontrar os três personagens. A seção apresenta o produto com ação imediata, sem transformar a abertura num tutorial longo.

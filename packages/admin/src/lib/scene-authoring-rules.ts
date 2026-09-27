@@ -1,4 +1,8 @@
-import type { InteractiveBlock, LearningActivity } from '@sistemazero/core/learning'
+import type {
+  InteractiveBlock,
+  LearningActivity,
+  ProjectPlayActivity,
+} from '@sistemazero/core/learning'
 import {
   initialScene,
   isSceneSetup,
@@ -14,6 +18,7 @@ import {
   sceneGoalIds,
   stepScene,
 } from '@sistemazero/core/learning/scene'
+import { newProjectPlayActivity, PROJECT_PLAY_TEXT } from './project-play-authoring'
 
 /**
  * O que acontece com o trabalho do professor quando ele troca o tipo ou a cena do bloco.
@@ -142,6 +147,9 @@ export interface MemoriaDaAutoria {
   cenario?: SceneCenarioId
   pilha?: ScenePilha
   html?: string
+  projectPlay?: ProjectPlayActivity
+  checkpoint?: InteractiveBlock['checkpoint']
+  prediction?: InteractiveBlock['prediction']
 }
 
 /** Guarda o que o bloco atual tem de próprio, sem apagar o que já estava lembrado. */
@@ -161,6 +169,9 @@ export function lembrar(anterior: MemoriaDaAutoria, value: InteractiveBlock): Me
   if (a.type === 'experimentation' && a.initialImpulse !== undefined)
     nova.initialImpulse = a.initialImpulse
   if (a.type === 'html' && a.html) nova.html = a.html
+  if (a.type === 'project-play') nova.projectPlay = a
+  else nova.checkpoint = value.checkpoint
+  if (a.type === 'experimentation') nova.prediction = value.prediction
   return nova
 }
 
@@ -264,7 +275,7 @@ export function trocarCena(
  */
 export function trocarTipo(
   value: InteractiveBlock,
-  tipo: Exclude<LearningActivity['type'], 'project-play'>,
+  tipo: LearningActivity['type'],
   memoria: MemoriaDaAutoria = {},
 ): Troca {
   const a = value.activity
@@ -286,6 +297,10 @@ export function trocarTipo(
     )
   if (tipo === 'html' && value.prediction)
     avisos.push('O palpite saiu porque só uma cena pode mostrar o resultado da escolha da criança.')
+  if (tipo === 'project-play' && (value.checkpoint || value.prediction))
+    avisos.push(
+      'Perguntas e palpites não acompanham o jogo pronto. Ficam guardados enquanto este editor estiver aberto e voltam ao tipo anterior.',
+    )
 
   let activity: LearningActivity
   if (tipo === 'experimentation') {
@@ -302,13 +317,43 @@ export function trocarTipo(
       pilha: pilhaNaCena(source.pilha, scene),
       initialImpulse: CENAS_COM_IMPULSO.includes(scene) ? source.initialImpulse : undefined,
     }
+  } else if (tipo === 'project-play') {
+    activity = memoria.projectPlay ?? newProjectPlayActivity()
   } else {
     activity = { type: 'html', html: a.type === 'html' ? a.html : (memoria.html ?? HTML_INICIAL) }
   }
 
   const viraCena = activity.type === 'experimentation'
+  const textoAtual =
+    a.type === 'project-play'
+      ? {
+          ...value,
+          title: value.title === PROJECT_PLAY_TEXT.title ? '' : value.title,
+          instructions:
+            value.instructions === PROJECT_PLAY_TEXT.instructions ? '' : value.instructions,
+        }
+      : value
+  const textoDoJogo =
+    tipo === 'project-play'
+      ? {
+          title:
+            !value.title.trim() ||
+            (a.type === 'experimentation' && value.title === SCENE_MODELS[a.scene].title)
+              ? PROJECT_PLAY_TEXT.title
+              : value.title,
+          instructions:
+            !value.instructions.trim() ||
+            (a.type === 'experimentation' &&
+              value.instructions === SCENE_MODELS[a.scene].instruction)
+              ? PROJECT_PLAY_TEXT.instructions
+              : value.instructions,
+        }
+      : {}
   const previsao = viraCena
-    ? previsaoNaCena(value.prediction, scene)
+    ? previsaoNaCena(
+        value.prediction ?? (a.type === 'project-play' ? memoria.prediction : undefined),
+        scene,
+      )
     : { prediction: undefined, saiu: false }
   if (previsao.saiu) avisos.push(AVISO_DA_PREVISAO)
   return {
@@ -316,11 +361,16 @@ export function trocarTipo(
       ...value,
       activity,
       prediction: previsao.prediction,
-      ...(viraCena ? textoAoTrocarCena(value, cenaDe(a), scene) : {}),
+      ...(viraCena ? textoAoTrocarCena(textoAtual, cenaDe(a), scene) : textoDoJogo),
       ...(!viraCena && cenaDe(a) && value.hints.join('\n') === SCENE_MODELS[scene].hints.join('\n')
         ? { hints: [] }
         : {}),
-      checkpoint: perguntaEmBranco(value.checkpoint) ? undefined : value.checkpoint,
+      checkpoint:
+        tipo === 'project-play'
+          ? undefined
+          : perguntaEmBranco(value.checkpoint ?? memoria.checkpoint)
+            ? undefined
+            : (value.checkpoint ?? memoria.checkpoint),
       semPerguntaFinal: viraCena ? value.semPerguntaFinal : undefined,
     },
     aviso: avisos.join(' '),

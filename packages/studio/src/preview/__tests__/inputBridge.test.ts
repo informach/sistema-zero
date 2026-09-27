@@ -113,6 +113,27 @@ function load(
 }
 
 describe('inputBridge — window.__szInput', () => {
+  it('registra uma participação por entrada real, não por restauração, navegação ou carregamento', () => {
+    const bridge = load({ runtime: buildInputBridgeRuntime('https://aula.example') })
+    bridge.fire('pointermove', { isTrusted: true })
+    bridge.fire('pointerdown', { isTrusted: false })
+    for (const key of ['Tab', 'Shift', 'Control', 'Alt', 'Meta']) {
+      bridge.fire('keydown', { isTrusted: true, key })
+    }
+    bridge.fire('keydown', { isTrusted: false, key: 'ArrowRight' })
+    expect(bridge.sent).toEqual([])
+    bridge.fire('keydown', { isTrusted: true, key: 'ArrowRight' })
+    bridge.fire('pointerdown', { isTrusted: true })
+    expect(bridge.sent).toEqual([
+      { message: { type: 'sz:game-interaction' }, targetOrigin: 'https://aula.example' },
+    ])
+    const touch = load({ runtime: buildInputBridgeRuntime('https://aula.example') })
+    touch.fire('pointerdown', { isTrusted: true })
+    expect(touch.sent).toHaveLength(1)
+    const noOrigin = load()
+    noOrigin.fire('pointerdown', { isTrusted: true })
+    expect(noOrigin.sent).toEqual([])
+  })
   it('informa o clique real do grupo apenas à origem configurada', () => {
     const bridge = load({ runtime: buildInputBridgeRuntime('https://aula.example') })
     bridge.reportGroupClick(137, 224)

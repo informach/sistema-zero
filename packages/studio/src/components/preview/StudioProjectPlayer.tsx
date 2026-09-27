@@ -54,6 +54,8 @@ export interface StudioProjectPlayerProps {
   tabIndex?: number
   style?: CSSProperties
   onError?: () => void
+  /** Carregamento do documento jogável, sem contar o placeholder. */
+  onReady?: () => void
 }
 
 /**
@@ -81,6 +83,7 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
       tabIndex,
       style,
       onError,
+      onReady,
     }: StudioProjectPlayerProps,
     ref: Ref<HTMLIFrameElement>,
   ): JSX.Element {
@@ -177,6 +180,9 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
           src={loadState.url}
           srcDoc={loadState.url ? undefined : loadState.doc}
           aria-busy={loadState.status === 'loading'}
+          onLoad={() => {
+            if (loadState.status === 'ready') onReady?.()
+          }}
           // Mesmo sandbox do preview vivo do editor. Pointer Lock habilita a câmera FPS;
           // NUNCA adicionar `allow-same-origin`.
           sandbox="allow-scripts allow-modals allow-pointer-lock"

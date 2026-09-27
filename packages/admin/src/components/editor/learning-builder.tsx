@@ -34,6 +34,7 @@ import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { useId, useRef, useState } from 'react'
+import { newProjectPlayActivity } from '../../lib/project-play-authoring'
 // ⚠️ Caminho relativo, e não o alias `@/`: o ensaio visual do kids compila este arquivo pelo
 // CAMINHO, e lá o alias do admin não existe.
 import {
@@ -44,6 +45,7 @@ import {
   trocarTipo,
 } from '../../lib/scene-authoring-rules'
 import { HtmlCodeEditor } from './html-code-editor'
+import { ProjectPlayEditor } from './project-play-editor'
 import { SceneCastEditor } from './scene-cast-editor'
 import { ScenePicker } from './scene-picker'
 import { SceneSetupEditor } from './scene-setup-editor'
@@ -131,9 +133,14 @@ function PerguntaHerdada({
 }
 
 /**
- * As duas formas de atividade interativa oferecidas ao professor.
+ * Formas de atividade interativa oferecidas ao professor.
  */
 export const ACTIVITY_KINDS = [
+  {
+    type: 'project-play',
+    label: 'Jogo pronto para jogar',
+    hint: 'O jogo completo na apresentação. Carregue ou edite um projeto e escolha como concluir.',
+  },
   {
     type: 'experimentation',
     label: 'Experimentação',
@@ -146,10 +153,10 @@ export const ACTIVITY_KINDS = [
   },
 ] as const satisfies readonly { type: LearningActivity['type']; label: string; hint: string }[]
 
-export function newLearningActivity(
-  type: Exclude<LearningActivity['type'], 'project-play'>,
-): LearningActivity {
+export function newLearningActivity(type: LearningActivity['type']): LearningActivity {
   switch (type) {
+    case 'project-play':
+      return newProjectPlayActivity()
     case 'experimentation':
       return { type, scene: 'world' }
     case 'html':
@@ -361,13 +368,7 @@ export function LearningBuilder({
 
       <fieldset className="space-y-2">
         <legend className="mb-2 text-sm font-medium">Tipo de atividade</legend>
-        {a.type === 'project-play' && (
-          <p className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
-            Jogo pronto configurado no manifesto. O projeto e os lugares para procurar são
-            preservados aqui; edite a orientação acima ou reimporte o manifesto para mudar o jogo.
-          </p>
-        )}
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {ACTIVITY_KINDS.map((kind) => (
             <label
               key={kind.type}
@@ -383,7 +384,6 @@ export function LearningBuilder({
                   name={`${id}-kind`}
                   value={kind.type}
                   checked={a.type === kind.type}
-                  disabled={a.type === 'project-play'}
                   onChange={() => aplicar(trocarTipo(value, kind.type, memoria.current))}
                   className="accent-primary"
                 />
@@ -396,6 +396,7 @@ export function LearningBuilder({
       </fieldset>
 
       {avisoDaTroca}
+      {a.type === 'project-play' && <ProjectPlayEditor value={a} onChange={activity} />}
 
       {cena && (
         <div className="space-y-4">

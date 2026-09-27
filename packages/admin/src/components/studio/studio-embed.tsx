@@ -7,7 +7,7 @@ import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
 import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
-import { createAdminProRuntimeAdapter } from '@/lib/studio-pro-authoring'
+import { createAdminProRuntimeAdapter } from '../../lib/studio-pro-authoring'
 import { loadStudioEmbedModule } from './studio-embed-loader'
 
 type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']

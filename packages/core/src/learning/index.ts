@@ -114,6 +114,8 @@ export interface HtmlActivity {
 /** Projeto pronto e isolado para a criança brincar antes de editar o próprio jogo. */
 export interface ProjectPlayActivity {
   type: 'project-play'
+  /** Ausente nos manifestos antigos: concluir por todos os alvos. */
+  completion?: 'participation' | 'targets'
   project: unknown
   stage: { width: number; height: number }
   targets: { id: string; label: string; x: number; y: number; width: number; height: number }[]
@@ -211,7 +213,7 @@ const PUBLIC_ACTIVITY_FIELDS: Record<string, readonly string[]> = {
     'pilha',
   ],
   html: ['type', 'html'],
-  'project-play': ['type', 'project', 'stage', 'targets'],
+  'project-play': ['type', 'project', 'stage', 'targets', 'completion'],
 }
 function publicActivity(activity: LearningActivity): LearningActivity {
   const permitidos = PUBLIC_ACTIVITY_FIELDS[activity.type]
@@ -590,6 +592,13 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
       return text(a.html, 500_000) && (!value.required || value.checkpoint !== undefined)
     case 'project-play': {
       if (value.checkpoint !== undefined || value.prediction !== undefined) return false
+      if (
+        a.completion !== undefined &&
+        a.completion !== 'participation' &&
+        a.completion !== 'targets'
+      )
+        return false
+      const participation = a.completion === 'participation'
       const project = a.project
       const stage = a.stage
       const targets = a.targets
@@ -598,15 +607,18 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
         project.formatVersion === STUDIO_PROJECT_FORMAT_VERSION &&
         text(project.id, 200) &&
         text(project.name, 200) &&
-        project.mode === 'blocks' &&
+        (project.kind === undefined || project.kind === 'classic') &&
+        (project.mode === 'blocks' || project.mode === 'bridge' || project.mode === 'code') &&
         record(project.files) &&
         typeof project.files['index.html'] === 'string' &&
         typeof project.files['style.css'] === 'string' &&
-        text(project.files['script.js'], 500_000) &&
-        Array.isArray(project.installedExtensions) &&
-        project.installedExtensions.some(
-          (entry: unknown) => record(entry) && entry.id === 'game-2d',
-        ) &&
+        typeof project.files['script.js'] === 'string' &&
+        project.files['script.js'].length <= 500_000 &&
+        (participation ||
+          (Array.isArray(project.installedExtensions) &&
+            project.installedExtensions.some(
+              (entry: unknown) => record(entry) && entry.id === 'game-2d',
+            ))) &&
         JSON.stringify(project).length <= 1_500_000 &&
         record(stage) &&
         typeof stage.width === 'number' &&
@@ -618,7 +630,7 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
         stage.height > 0 &&
         stage.height <= 8192 &&
         Array.isArray(targets) &&
-        targets.length >= 1 &&
+        targets.length >= (participation ? 0 : 1) &&
         targets.length <= 12 &&
         targets.every(
           (target: unknown) =>
@@ -652,6 +664,21 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
   }
 }
 
+export function projectPlayComplete(
+  activity: ProjectPlayActivity,
+  answers: LearningAnswers,
+): boolean {
+  if (activity.completion === 'participation') return answers.participated === true
+  const found = answers.foundTargets
+  return (
+    activity.targets.length > 0 &&
+    Array.isArray(found) &&
+    found.length === activity.targets.length &&
+    new Set(found).size === activity.targets.length &&
+    activity.targets.every((target) => found.includes(target.id))
+  )
+}
+
 /**
  * O resultado de uma atividade.
  *
@@ -667,17 +694,24 @@ export function evaluateLearning(
     return withAttachedQuestion(evaluateSceneBlock(a, answers), block, answers)
   if (a.type === 'project-play') {
     const found = answers.foundTargets
-    const passed =
-      Array.isArray(found) &&
-      found.length === a.targets.length &&
-      new Set(found).size === a.targets.length &&
-      a.targets.every((target) => found.includes(target.id))
+    const passed = projectPlayComplete(a, answers)
+    const participation = a.completion === 'participation'
     return {
-      participated: Array.isArray(found) && found.length > 0,
+      participated: participation
+        ? answers.participated === true
+        : Array.isArray(found) && found.length > 0,
       passed,
-      feedback: passed
-        ? 'Você encontrou todo mundo!'
-        : 'Continue procurando os personagens escondidos.',
+      feedback: participation
+        ? passed
+          ? 'Você experimentou o jogo!'
+          : 'Experimente jogar para continuar.'
+        : a.completion === 'targets'
+          ? passed
+            ? 'Você completou os alvos do jogo!'
+            : 'Continue procurando os alvos no jogo.'
+          : passed
+            ? 'Você encontrou todo mundo!'
+            : 'Continue procurando os personagens escondidos.',
       verifiedBy: 'client',
     }
   }

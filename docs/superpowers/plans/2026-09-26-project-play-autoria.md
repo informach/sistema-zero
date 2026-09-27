@@ -24,7 +24,7 @@
 
 **Interfaces:** `ProjectPlayActivity.completion?: 'participation' | 'targets'`; `projectPlayComplete(activity, answers): boolean`. Sem completion significa targets. Participação usa `answers.participated === true`; o iframe envia `sz:game-interaction` apenas por entrada real. `StudioProjectPlayer.onReady?: () => void` informa o carregamento do documento jogável, não do placeholder.
 
-- [ ] Escrever e rodar testes vermelhos para participação sem alvos, preservação do comportamento antigo, projeção e DTO.
+- [x] Escrever e rodar testes vermelhos para participação sem alvos, preservação do comportamento antigo, projeção e DTO.
 
 ```ts
 expect(evaluateLearning(participationBlock, {}).passed).toBe(false)
@@ -32,10 +32,10 @@ expect(evaluateLearning(participationBlock, { participated: true }).passed).toBe
 expect(evaluateLearning(targetBlock, { participated: true }).passed).toBe(false)
 ```
 
-- [ ] Implementar validação dos dois critérios, permitir snapshot clássico sem game-2d no modo participação, manter limites de palco/alvos e proibir Pro. Manter mensagens antigas apenas para o formato legado.
-- [ ] Implementar emissão de participação no bridge com `event.isTrusted`, origem explícita e deduplicação; ignorar Tab/Escape/modificadores, movimento de ponteiro e cliques de restauração. O host exige a janela exata do iframe.
-- [ ] Reusar a avaliação no autoenvio da atividade e na preservação da conclusão ao reiniciar. Exibir proporção configurada do palco.
-- [ ] Rodar testes core, contratos HTTP, bridge e player. Revisar antes da autoria.
+- [x] Implementar validação dos dois critérios, permitir snapshot clássico sem game-2d no modo participação, manter limites de palco/alvos e proibir Pro. Manter mensagens antigas apenas para o formato legado.
+- [x] Implementar emissão de participação no bridge com `event.isTrusted`, origem explícita e deduplicação; ignorar Tab/Escape/modificadores, movimento de ponteiro e cliques de restauração. O host exige a janela exata do iframe.
+- [x] Reusar a avaliação no autoenvio da atividade e na preservação da conclusão ao reiniciar. Exibir proporção configurada do palco.
+- [x] Rodar testes core, contratos HTTP, bridge e player. Revisar antes da autoria.
 
 ### Task 2: Autoria manual
 
@@ -50,17 +50,19 @@ const novo: ProjectPlayActivity = {
 }
 ```
 
-- [ ] Escrever teste que seleciona Jogo pronto para jogar, carrega projeto e muda critério; confirmar falha antes da UI.
-- [ ] Adicionar terceira opção, retirar aviso manifesto-only e liberar a troca preservando memória. Não sobrescrever texto autoral; substituir apenas o texto de fábrica ao criar jogo novo.
-- [ ] Criar formulário com upload rotulado, projeto selecionado, criar/editar no Estúdio, largura/altura, critério e lista de alvos editável (ID, nome, X, Y, largura, altura). Exibir limites e avisos de campos incompatíveis.
-- [ ] Carregar StudioEmbed dinamicamente ao editar; manter edição local, aplicar `handle.getProject()` e validar antes de gravar no bloco; cancelar descarta só essa edição. Não montar o Estúdio em cada render do formulário.
-- [ ] Rodar testes com componentes reais do formulário e testes puros da importação. Manter prévia existente capaz de ensaiar ambos os critérios.
+- [x] Escrever teste que seleciona Jogo pronto para jogar, carrega projeto e muda critério; confirmar falha antes da UI.
+- [x] Adicionar terceira opção, retirar aviso manifesto-only e liberar a troca preservando memória. Não sobrescrever texto autoral; substituir apenas o texto de fábrica ao criar jogo novo.
+- [x] Criar formulário com upload rotulado, projeto selecionado, criar/editar no Estúdio, largura/altura, critério e lista de alvos editável (ID, nome, X, Y, largura, altura). Exibir limites e avisos de campos incompatíveis.
+- [x] Carregar StudioEmbed dinamicamente ao editar; manter edição local, aplicar `handle.getProject()` e validar antes de gravar no bloco; cancelar descarta só essa edição. Não montar o Estúdio em cada render do formulário.
+- [x] Rodar testes com componentes reais do formulário e testes puros da importação. Manter prévia existente capaz de ensaiar ambos os critérios.
 
 ### Task 3: Revisão e documentação
 
 **Files:** `docs/aulas-interativas/ESPEC-MANIFESTO.md`, `BRIEFING.md`, este plano e relatório de revisão.
 
-- [ ] Documentar os dois critérios e a paridade manual/manifesto, sem instruir dependência exclusiva do manifesto.
-- [ ] Conferir no navegador criação manual, arquivo inválido sem perda, preview, entrada real e reinício; conferir também modo estreito.
-- [ ] Rodar typechecks core/members/member-shell/studio/admin/kids, testes focados e suítes core/member-shell; validar os 34 manifestos.
-- [ ] Revisar o diff, verificar Biome e git diff --check. Registrar evidências e limitações e fazer commit local do escopo.
+- [x] Documentar os dois critérios e a paridade manual/manifesto, sem instruir dependência exclusiva do manifesto.
+- [x] Conferir no navegador criação manual, arquivo inválido sem perda, preview, entrada real e reinício; conferir também modo estreito.
+- [x] Rodar typechecks core/members/member-shell/studio/admin/kids, testes focados e suítes core/member-shell; validar os 34 manifestos.
+- [x] Revisar o diff, verificar Biome e git diff --check. Registrar evidências e limitações e fazer commit local do escopo.
+
+Evidências e limites: `docs/plans/2026-09-26-project-play-autoria-review.md`.

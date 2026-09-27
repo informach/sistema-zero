@@ -3,6 +3,7 @@ import {
   evaluateLearning,
   type InteractiveBlock,
   isInteractiveBlock,
+  projectPlayComplete,
   publicInteractiveBlock,
 } from './index'
 import { sectionCompletionIssues } from './section-progression'
@@ -33,6 +34,42 @@ const activity: InteractiveBlock = {
 }
 
 describe('jogo pronto como atividade da aula', () => {
+  test('participação explícita não exige alvos nem Jogo 2D; legado continua exigindo os alvos', () => {
+    const block = structuredClone(activity)
+    if (block.activity.type !== 'project-play') throw new Error('Tipo incorreto')
+    block.activity.completion = 'participation'
+    block.activity.targets = []
+    if (typeof block.activity.project !== 'object' || !block.activity.project)
+      throw new Error('Projeto ausente')
+    block.activity.project = { ...block.activity.project, installedExtensions: [], mode: 'bridge' }
+    expect(isInteractiveBlock(block)).toBe(true)
+    expect(evaluateLearning(block, {}).passed).toBe(false)
+    expect(evaluateLearning(block, { participated: true }).passed).toBe(true)
+    expect(projectPlayComplete(block.activity, { participated: true })).toBe(true)
+    expect(publicInteractiveBlock(block).activity).toEqual(block.activity)
+    expect(evaluateLearning(activity, { participated: true }).passed).toBe(false)
+    block.activity.completion = 'targets'
+    expect(isInteractiveBlock(block)).toBe(false)
+  })
+
+  test('recusa critério desconhecido e projeto Pro, mesmo com participação', () => {
+    if (activity.activity.type !== 'project-play') throw new Error('Tipo incorreto')
+    if (typeof activity.activity.project !== 'object' || !activity.activity.project)
+      throw new Error('Projeto ausente')
+    expect(
+      isInteractiveBlock({ ...activity, activity: { ...activity.activity, completion: 'win' } }),
+    ).toBe(false)
+    expect(
+      isInteractiveBlock({
+        ...activity,
+        activity: {
+          ...activity.activity,
+          completion: 'participation',
+          project: { ...activity.activity.project, kind: 'pro' },
+        },
+      }),
+    ).toBe(false)
+  })
   test('o jogo conclui pela ação de jogar, sem perguntas anexas ignoradas', () => {
     expect(
       isInteractiveBlock({

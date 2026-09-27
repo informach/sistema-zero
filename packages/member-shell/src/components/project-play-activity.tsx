@@ -1,6 +1,10 @@
 'use client'
 
-import type { LearningAnswers, ProjectPlayActivity } from '@sistemazero/core/learning'
+import {
+  type LearningAnswers,
+  type ProjectPlayActivity,
+  projectPlayComplete,
+} from '@sistemazero/core/learning'
 import { StudioProjectPlayer } from '@sistemazero/studio/player'
 import { sanitizeProjectForHost } from '@sistemazero/studio/project-validation'
 import { Button } from '@sistemazero/ui/button'
@@ -74,10 +78,21 @@ export function ProjectPlayActivityView({
 
   useEffect(() => {
     const receive = (event: MessageEvent<unknown>) => {
-      if (event.source !== iframe.current?.contentWindow) return
+      if (!iframe.current?.contentWindow || event.source !== iframe.current.contentWindow) return
       if (typeof event.data !== 'object' || event.data === null || !('type' in event.data)) return
       if (event.data.type === 'sz:escape') {
         setExpanded(false)
+        return
+      }
+      if (activity.completion === 'participation') {
+        if (
+          event.data.type !== 'sz:game-interaction' ||
+          projectPlayComplete(activity, current.current.answers)
+        )
+          return
+        const next = { ...current.current.answers, participated: true }
+        current.current.answers = next
+        current.current.onChange(next)
         return
       }
       if (event.data.type === 'sz:g2d:ready') {
@@ -97,7 +112,7 @@ export function ProjectPlayActivityView({
       roundFound.current = [...roundFound.current, id]
       // Depois da primeira vitória, brincar novamente não desfaz a conclusão
       // nem altera a tentativa que pode ainda estar sendo salva no servidor.
-      if (foundIds(activity, current.current.answers).length === activity.targets.length) return
+      if (projectPlayComplete(activity, current.current.answers)) return
       const next = { ...current.current.answers, foundTargets: roundFound.current }
       current.current.answers = next
       current.current.onChange(next)
@@ -132,7 +147,10 @@ export function ProjectPlayActivityView({
     setReady(false)
     setFailed(false)
     setRound((value) => value + 1)
-    if (foundIds(activity, current.current.answers).length < activity.targets.length) {
+    if (
+      activity.completion !== 'participation' &&
+      !projectPlayComplete(activity, current.current.answers)
+    ) {
       const next = { ...current.current.answers, foundTargets: [] }
       current.current.answers = next
       current.current.onChange(next)
@@ -182,10 +200,11 @@ export function ProjectPlayActivityView({
         </Button>
       </div>
       <div
+        style={{ aspectRatio: `${activity.stage.width} / ${activity.stage.height}` }}
         className={
           expanded
-            ? 'mx-auto aspect-video w-full max-w-3xl overflow-hidden rounded-xl border border-border bg-card [@media(min-height:900px)]:max-w-5xl'
-            : 'aspect-video w-full overflow-hidden rounded-xl border border-border bg-card'
+            ? 'mx-auto w-full max-w-3xl shrink-0 overflow-hidden rounded-xl border border-border bg-card [@media(min-height:900px)]:max-w-5xl'
+            : 'w-full overflow-hidden rounded-xl border border-border bg-card'
         }
       >
         <StudioProjectPlayer
@@ -195,6 +214,7 @@ export function ProjectPlayActivityView({
           project={project}
           title={project.name}
           onError={() => setFailed(true)}
+          onReady={() => setReady(true)}
         />
       </div>
       {failed && (

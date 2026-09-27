@@ -123,11 +123,42 @@ test('jogo pronto importado não perde o projeto ao abrir o editor', async () =>
     },
   })
   try {
-    expect(b.texto).toContain('Jogo pronto configurado no manifesto')
+    expect(b.texto).toContain('Arquivo do projeto')
+    expect(b.texto).toContain('Conclusão do jogo')
     expect(b.temCaixa('Incluir pergunta de verificação')).toBe(false)
     await b.clicar('Experimentação')
+    expect(b.value.activity.type).toBe('experimentation')
+    await b.clicar('Jogo pronto para jogar')
     expect(b.value.activity.type).toBe('project-play')
     if (b.value.activity.type === 'project-play') expect(b.value.activity.project).toEqual(project)
+  } finally {
+    await b.fechar()
+  }
+})
+
+test('cria jogo por participação e guarda a pergunta ao passear entre os tipos', async () => {
+  const checkpoint = {
+    prompt: 'Por quê?',
+    choices: [
+      { id: 'a', label: 'A' },
+      { id: 'b', label: 'B' },
+    ],
+    correctChoiceId: 'a',
+    explanation: 'Porque sim.',
+  }
+  const b = await montar({ ...EMPTY_LEARNING, checkpoint })
+  try {
+    await b.clicar('Jogo pronto para jogar')
+    expect(b.value.activity).toMatchObject({
+      type: 'project-play',
+      completion: 'participation',
+      targets: [],
+    })
+    expect(b.value.title).toBe('Conheça o jogo')
+    expect(b.value.checkpoint).toBeUndefined()
+    await b.clicar('Experimentação')
+    expect(b.value.checkpoint).toEqual(checkpoint)
+    expect(b.value.title).toBe(EMPTY_LEARNING.title)
   } finally {
     await b.fechar()
   }

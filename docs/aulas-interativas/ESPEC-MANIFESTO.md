@@ -215,15 +215,33 @@ controles nem o vídeo. A instrução fica abaixo da cena e imediatamente antes 
 defeito conhecido do material atual: quatro cenas estão como opcionais sendo o único critério.
 
 **Jogo pronto na aula.** Para uma abertura que pede à criança jogar antes de construir, use
-`activity.type: "project-play"` dentro de um bloco `interactive`. `project` é um snapshot Jogo 2D
+`activity.type: "project-play"` dentro de um bloco `interactive`. No admin, a mesma configuração
+fica em **Tipo de atividade → Jogo pronto para jogar**: importar o arquivo exportado pelo Estúdio,
+criar ou editar uma cópia no Estúdio incorporado, aplicar/cancelar e testar a prévia. Manifesto é
+um atalho de cadastro, não uma exigência para editar. `project` é um snapshot clássico do Estúdio
 completo e independente do `initialProject` do Estúdio; `stage` declara a largura e altura lógicas
-do palco; `targets` declara cada esconderijo como `{ id, label, x, y, width, height }`, nas mesmas
-coordenadas dos sprites do projeto. O runtime conta apenas toques reais nos alvos do grupo. O
+do palco (inteiros de 1 a 8192); `targets` declara cada alvo como `{ id, label, x, y, width, height }`,
+com IDs únicos e retângulos dentro do palco. O
 player mantém a interação do próprio jogo, sem abrir o editor nem acrescentar botões de busca.
 Só a moldura oferece Ampliar jogo, Voltar à aula e Jogar de novo. Reiniciar zera a partida, não
 uma conclusão já conquistada; achados de partidas incompletas diferentes não se somam. A conclusão
-requer todos os IDs distintos em `foundTargets`, além dos outros critérios da seção, como assistir
-ao vídeo. Isso registra participação, não é uma prova antitrapaça nem uma entrega da criança.
+depende de `completion`:
+
+- `"participation"`: padrão para apresentações novas. Um toque/clique ou comando real de teclado
+  dentro do jogo registra `participated: true`, sem exigir vitória. Carregar, focar, mover o mouse,
+  ampliar e reiniciar não contam. `targets` pode ser `[]`. Não exige a extensão Jogo 2D.
+- `"targets"`: exige de 1 a 12 alvos e a extensão Jogo 2D. Conta os eventos de clique/toque em grupo
+  dentro dos retângulos e requer todos os IDs distintos em `foundTargets`. Não é um detector
+  genérico de vitória. O admin edita todos os campos dos alvos.
+- Ausente: mantém o critério antigo por alvos, inclusive o Cadê Todo Mundo?. Não migrar uma aula
+  existente para participação sem uma decisão pedagógica explícita.
+
+Os outros critérios da seção, como assistir ao vídeo, continuam separados. Isso registra
+participação, não é uma prova antitrapaça nem uma entrega da criança. O snapshot admite até
+1.500.000 caracteres, incluindo recursos. Projetos Pro não são suportados por este player.
+Importação inválida não substitui o projeto atual; edições no Estúdio só entram ao aplicar.
+Para exigir a brincadeira, marque `required: true` e inclua o bloco na conclusão da seção,
+junto do vídeo. No admin, use a opção de atividade essencial e os critérios da seção.
 Não admite `prediction` nem `checkpoint`: este bloco conclui pela brincadeira, sem pergunta anexa.
 Não use `html` para esse caso: uma atividade HTML obrigatória exige uma pergunta corrigida pelo
 servidor, que seria um pedágio artificial para a primeira brincadeira.

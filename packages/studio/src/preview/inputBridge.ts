@@ -133,6 +133,18 @@ ${previewControls}
 function buildPreviewControlsRuntime(parentOrigin?: string): string {
   return `
   var _szReportOrigin = ${JSON.stringify(parentOrigin ?? null)};
+  var _szInteractionReported = false;
+  function reportInteraction(e) {
+    if (!_szReportOrigin || _szInteractionReported || e.isTrusted !== true) return;
+    _szInteractionReported = true;
+    window.parent.postMessage({ type: 'sz:game-interaction' }, _szReportOrigin);
+  }
+  window.addEventListener('pointerdown', reportInteraction, { passive: true });
+  window.addEventListener('keydown', function (e) {
+    if (e.repeat || e.ctrlKey || e.altKey || e.metaKey ||
+        ['Tab', 'Escape', 'Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].indexOf(e.key) !== -1) return;
+    reportInteraction(e);
+  });
   // Só o preview possui esta ponte. A atividade de aula conta o alvo depois que
   // o callback real de onGroupClick foi executado pelo runtime Jogo 2D.
   window.__szReportGroupClick = function (x, y) {

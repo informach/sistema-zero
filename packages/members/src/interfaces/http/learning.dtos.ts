@@ -538,6 +538,7 @@ export const InteractiveBlockSchema = t.Object({
     t.Object({ type: t.Literal('html'), html: t.String({ minLength: 1, maxLength: 500000 }) }),
     t.Object({
       type: t.Literal('project-play'),
+      completion: t.Optional(t.Union([t.Literal('participation'), t.Literal('targets')])),
       // O domínio valida o snapshot; a borda preserva inclusive recursos embutidos.
       project: t.Record(t.String(), t.Unknown()),
       stage: t.Object({
@@ -553,7 +554,7 @@ export const InteractiveBlockSchema = t.Object({
           width: t.Number({ exclusiveMinimum: 0, maximum: 8192 }),
           height: t.Number({ exclusiveMinimum: 0, maximum: 8192 }),
         }),
-        { minItems: 1, maxItems: 12 },
+        { minItems: 0, maxItems: 12 },
       ),
     }),
   ]),

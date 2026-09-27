@@ -9,6 +9,7 @@ import {
   type LearningAttemptView,
   type LearningBlockProgress,
   type PublicInteractiveBlock,
+  projectPlayComplete,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { CheckCircle2, Gamepad2, Lightbulb } from 'lucide-react'
@@ -265,18 +266,14 @@ function Activity({
   const checkRef = useRef(check)
   checkRef.current = check
   const a = content.activity
-  const foundTargets = answers.foundTargets
-  const projectPlayComplete =
-    a.type === 'project-play' &&
-    Array.isArray(foundTargets) &&
-    a.targets.every((target) => foundTargets.includes(target.id))
+  const gameComplete = a.type === 'project-play' && projectPlayComplete(a, answers)
   useEffect(() => {
     // Um navegador pode ser fechado depois do último achado, mas antes de o
     // servidor confirmar. Ao recuperar os achados, conclua a tentativa uma vez.
-    if (!projectPlayComplete || result?.passed || _automaticAttemptStarted.current) return
+    if (!gameComplete || result?.passed || _automaticAttemptStarted.current) return
     _automaticAttemptStarted.current = true
     void checkRef.current()
-  }, [projectPlayComplete, result?.passed])
+  }, [gameComplete, result?.passed])
   const set = (value: LearningAnswers) => change(value)
   return (
     /* `sz-lesson-activity` permite ao app estilizar a experiência em HTML. */
@@ -359,7 +356,7 @@ function Activity({
               {busy ? 'Guardando…' : 'Conferir minha descoberta'}
             </Button>
           )}
-          {a.type === 'project-play' && projectPlayComplete && !result?.passed && (
+          {a.type === 'project-play' && gameComplete && !result?.passed && (
             <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
               {busy ? 'Guardando…' : 'Tentar guardar descoberta'}
             </Button>

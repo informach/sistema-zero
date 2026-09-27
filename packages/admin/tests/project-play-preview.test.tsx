@@ -27,11 +27,15 @@ const { LessonPreviewProvider } = await import(
   '../../member-shell/src/components/lesson-preview-context'
 )
 
-async function mount(initial: LearningAnswers = {}) {
+async function mount(initial: LearningAnswers = {}, participation = false) {
   const content: unknown = manifest.blocks.find((block) => block.key === 'jogo-pronto')?.content
   if (!isInteractiveBlock(content) || content.activity.type !== 'project-play')
     throw new Error('Jogo ausente')
-  const activity = content.activity
+  const activity = structuredClone(content.activity)
+  if (participation) {
+    activity.completion = 'participation'
+    activity.targets = []
+  }
   const host = document.createElement('div')
   document.body.append(host)
   const root = createRoot(host)
@@ -54,6 +58,7 @@ async function mount(initial: LearningAnswers = {}) {
     await act(async () => window.dispatchEvent(new MessageEvent('message', { data, source })))
   }
   await message({ type: 'sz:g2d:ready' })
+  await act(async () => host.querySelector('iframe')?.dispatchEvent(new Event('load')))
   return {
     get answers() {
       return answers
@@ -68,7 +73,7 @@ async function mount(initial: LearningAnswers = {}) {
       if (!button) throw new Error('Botão ausente')
       const oldFrame = host.querySelector('iframe')
       await act(async () => button.click())
-      expect(host.querySelector('iframe')).not.toBe(oldFrame)
+      expect(host.querySelector('iframe') === oldFrame).toBe(false)
       await message({ type: 'sz:g2d:ready' })
     },
     close: async () => {
@@ -78,6 +83,21 @@ async function mount(initial: LearningAnswers = {}) {
   }
 }
 
+test('participação vem apenas do iframe do jogo e reiniciar preserva a conclusão', async () => {
+  const view = await mount({}, true)
+  try {
+    expect(view.answers).toEqual({})
+    await view.message({ type: 'sz:game-interaction' }, false)
+    await view.click(137, 224)
+    expect(view.answers).toEqual({})
+    await view.message({ type: 'sz:game-interaction' })
+    expect(view.answers).toEqual({ participated: true })
+    await view.restart()
+    expect(view.answers).toEqual({ participated: true })
+  } finally {
+    await view.close()
+  }
+})
 test('a prévia reinicia sem somar descobertas de partidas incompletas', async () => {
   const view = await mount()
   try {
