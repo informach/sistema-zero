@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/auth
 
+## Diretório interno para recados Kids — 11/09/2026
+
+`GET /auth/internal/teacher-recipients` exige o token interno e pagina perfis ativos com responsável
+ativo; omite órfãos e contas bloqueadas/suspensas. Retorna perfil, conta, nome da criança e nome/e-mail
+do responsável. O `total` é anterior ao filtro de status da conta: consumidores avançam pelo offset
+solicitado até atingir o total, mesmo quando uma página filtrada fica vazia. O Members determina
+acesso e fixa os destinatários; a lista de conversas não é um cadastro de alunos.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, jose,
 > Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,
@@ -325,12 +333,14 @@ arquivado/sumido → CAI para sessão da conta — a criança volta à grade). R
 - **Report semanal dos pais (Fase 5, 07/2026) — 2 rotas S2S em lote** (mesma proteção
   `x-internal-token`; consumidas pelo MEMBERS via `AUTH_BASE_URL`, fora do gateway;
   body `{ids: uuid[] ≤100}`): `POST /auth/internal/users/emails` →
-  `{users: [{id, email, firstName}]}` (identidade do RESPONSÁVEL p/ o destinatário do
+  `{users: [{id, email, firstName, activated}]}` (identidade do RESPONSÁVEL p/ o destinatário do
   e-mail) e `POST /auth/internal/profiles/batch` → `{profiles: [{id, name,
   publicProfileEnabled}]}` (NOMES das crianças p/ o resumo + o flag PÚBLICO p/ a liga kids decidir
   o link ao perfil público sem 2º round-trip; só perfis ATIVOS — `ProfileRepository.listActiveByIds`;
   o `publicProfileEnabled` já está no agregado, projeção de 1 campo). Ambas devolvem SÓ o que existe
   (id desconhecido é omitido, não enumera).
+  `activated` é somente o booleano derivado de `password_set_at` e permite ao MEMBERS lembrar uma
+  compra ainda não ativada sem expor hash, token ou timestamp.
 - **Guards:** **criar** e **arquivar** perfil RECUSAM a sessão de perfil (403) — detectada
   pela presença do `x-auth-account-id` que o gateway injeta só quando há `pfl`. Mas
   **editar** (`PATCH /:id`) usa `ownProfileEditContext`: a CONTA edita qualquer perfil

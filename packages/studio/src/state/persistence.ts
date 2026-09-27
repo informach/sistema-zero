@@ -1,4 +1,3 @@
-import { delMany, get, getMany, keys, set, setMany } from 'idb-keyval'
 import {
   IDE_MODES,
   type IDEMode,
@@ -7,31 +6,42 @@ import {
   sanitizeProjectAssets,
 } from '#core'
 import { perfSpanAsync } from '../core/perf'
+import {
+  CURRENT_PROJECT_FORMAT_VERSION,
+  ProjectDocumentError,
+  projectFormatVersion,
+} from '../core/projectDocument'
 import { cancelPendingAutosavesFor } from '../persistence/service'
+import { readAllKeys, readValue, readValues, writeInOneTransaction } from './idbTransaction'
+import {
+  PROJECT_META_KEY_PREFIX,
+  projectAssetsKey,
+  projectBlocksKey,
+  projectFilesKey,
+  projectMetaKey,
+  projectMigrationKey,
+  projectStateKey,
+  projectThumbKey,
+} from './projectStorageKeys'
+import {
+  assembleProjectRecord,
+  projectToAssetsRecord,
+  projectToBlocksRecord,
+  projectToFilesRecord,
+  projectToMetaRecord,
+  projectToStateRecord,
+} from './projectStorageRecords'
 import {
   captureProjectStorageScope,
   fenceGameStorageDelete,
   gameStorageKey,
   type ProjectStorageScope,
+  type RequestedProjectWrite,
   runSerializedProjectWrite,
   scopedProjectIdentity,
   setProjectStorageNamespace,
 } from './projectStorageRuntime'
 
-const LEGACY_PROJECT_KEY_PREFIX = 'sz:project:'
-const PROJECT_META_KEY_PREFIX = 'sz:project-meta:'
-const PROJECT_FILES_KEY_PREFIX = 'sz:project-files:'
-const PROJECT_STATE_KEY_PREFIX = 'sz:project-state:'
-const PROJECT_BLOCKS_KEY_PREFIX = 'sz:project-blocks:'
-// 4ª partição: assets embutidos (imagens/sprites como data: URL). São GRANDES e
-// mudam POUCO — partição própria para não inchar o autosave debounced de `files`,
-// que reescreve a cada tecla. Ausente em projetos legados (load é tolerante).
-const PROJECT_ASSETS_KEY_PREFIX = 'sz:project-assets:'
-// 5ª partição: MINIATURA do card (capturada ao sair do editor). Partição própria
-// de propósito: o persistProject reescreve o meta a partir do Project em memória
-// (que não conhece a thumb) — no meta, o próximo autosave a apagaria.
-const PROJECT_THUMB_KEY_PREFIX = 'sz:project-thumb:'
-const PROJECT_STORAGE_VERSION = 2
 const MAX_PROJECT_SUMMARY_NAME_CHARS = 200
 /** Teto da miniatura (data URL JPEG ~320×192 fica bem abaixo disso). */
 export const MAX_PROJECT_THUMB_CHARS = 300_000
@@ -59,14 +69,6 @@ function notifyProjectChanged(id: string, deleted = false): void {
     // Ambiente sem CustomEvent: a lista recarrega no próximo gesto, como antes.
   }
 }
-const legacyProjectKey = (id: string) => `${LEGACY_PROJECT_KEY_PREFIX}${id}`
-const projectMetaKey = (id: string) => `${PROJECT_META_KEY_PREFIX}${id}`
-const projectFilesKey = (id: string) => `${PROJECT_FILES_KEY_PREFIX}${id}`
-const projectStateKey = (id: string) => `${PROJECT_STATE_KEY_PREFIX}${id}`
-const projectBlocksKey = (id: string) => `${PROJECT_BLOCKS_KEY_PREFIX}${id}`
-const projectAssetsKey = (id: string) => `${PROJECT_ASSETS_KEY_PREFIX}${id}`
-const projectThumbKey = (id: string) => `${PROJECT_THUMB_KEY_PREFIX}${id}`
-
 /**
  * Define o namespace do armazenamento local. O HOST chama ANTES de qualquer operação
  * (ProjectList/editor): no Estúdio Completo com o id do perfil kids; vazio = store padrão (a
@@ -90,6 +92,12 @@ export interface StudioCloudMirror {
   onChanged(id: string): void
   /** O projeto `id` foi apagado localmente. */
   onDeleted(id: string): void
+  /**
+   * A MINIATURA do projeto `id` foi gravada (a captura ao sair do editor, a capa escolhida). É
+   * um aviso à parte do `onChanged` de propósito: a capa não muda o `updatedAt` do projeto, e o
+   * host decide se vale uma subida só por ela (só quando a nuvem ainda não tem miniatura).
+   */
+  onThumbChanged?(id: string): void
 }
 
 let cloudMirror: StudioCloudMirror | null = null
@@ -140,6 +148,23 @@ function notifyMirrorDeleted(id: string): void {
   }
 }
 
+function notifyMirrorThumbChanged(id: string): void {
+  try {
+    cloudMirror?.onThumbChanged?.(id)
+  } catch {
+    // idem
+  }
+}
+
+function notifyThumbUpdated(id: string): void {
+  if (typeof window === 'undefined') return
+  try {
+    window.dispatchEvent(new CustomEvent(PROJECT_THUMB_UPDATED_EVENT, { detail: id }))
+  } catch {
+    // Ambiente sem CustomEvent: a lista relê no próximo gesto.
+  }
+}
+
 function getStore(scope?: ProjectStorageScope) {
   return (scope ?? captureProjectStorageScope()).store
 }
@@ -147,20 +172,25 @@ function getStore(scope?: ProjectStorageScope) {
 // O AGENDAMENTO (autosave debounced/flush/salvar explícito) vive em
 // src/persistence/service.ts (PersistenceService, por instância do <Studio>).
 // Este módulo mantém só as operações PURAS de IndexedDB — que são exatamente o
-// adapter 'local' (ver src/persistence/local.ts).
+// adapter 'local' (ver src/persistence/local.ts). Toda leitura e toda escrita daqui
+// é uma transação com commit explícito (`idbTransaction.ts`).
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
 // Cadeia de ESCRITA por id de projeto: encadeia persistProject/renameProjectMeta/
-// deleteProject do MESMO id para não correrem entre si. O `renameProjectMeta` faz
-// um get-then-set NÃO-ATÔMICO do registro de meta — sem esta serialização, um
-// `persistProject` (autosave do editor aberto) do mesmo id intercalado entre o
-// `get` e o `set` do rename perderia o nome novo (o set do rename gravaria por
-// cima com base num meta lido ANTES do persist, ou o persist gravaria por cima do
-// rename). A entrada é removida quando a própria cauda termina, para o Map não
-// crescer. Vive aqui (módulo, não por instância) porque as escritas de IDB também
-// vêm de create/import/duplicate, fora do mutex por instância do service.
+// deleteProject do MESMO id. O `renameProjectMeta` LÊ o meta e depois grava (duas
+// transações, ver `idbTransaction.ts`) — sem esta serialização, um `persistProject`
+// (autosave do editor aberto) do mesmo id pedido entre a leitura e a gravação do rename
+// seria desfeito pelo meta velho que o rename grava por cima. A fila anda assim que a
+// operação da frente PEDE a sua escrita (`runSerializedProjectWrite`), então cada tarefa
+// devolve `{ done }` na hora em que pede. Vive aqui (módulo, não por instância) porque as
+// escritas de IDB também vêm de create/import/duplicate, fora do mutex por instância do
+// service.
 function runSerializedWrite(
   id: string,
-  task: (scope: ProjectStorageScope) => Promise<void>,
+  task: (scope: ProjectStorageScope) => Promise<RequestedProjectWrite | undefined>,
   scope?: ProjectStorageScope,
 ): Promise<void> {
   const captured = scope ?? captureProjectStorageScope()
@@ -175,7 +205,7 @@ function runSerializedWrite(
 // referência nova ao editar (addAsset/removeAsset/renameAsset e o spread do
 // import/load), então igualdade de referência é um dirty-check seguro: se a ref
 // não mudou desde o último persist deste id, a partição de assets não é
-// reescrita. Map por id, limpo no delete (a partição vai junto no delMany).
+// reescrita. Map por id, limpo no delete (a partição vai junto na transação que apaga).
 const lastPersistedAssetsRef = new Map<string, Project['assets']>()
 
 export interface PersistProjectOptions {
@@ -189,6 +219,12 @@ export interface PersistProjectOptions {
    * velhos, que o autosave ressuscitava e subia por cima da nuvem.
    */
   replace?: boolean
+  /**
+   * A miniatura que veio JUNTO com o snapshot (a descida da nuvem): gravada na mesma transação
+   * dos `put`. Com `replace` e sem `thumb`, a miniatura antiga é apagada (o snapshot é a verdade
+   * completa); com `thumb`, ela é a nova capa. Inválida (não é imagem / acima do teto) = ignorada.
+   */
+  thumb?: string | null
 }
 
 export async function persistProject(
@@ -196,20 +232,28 @@ export async function persistProject(
   options: PersistProjectOptions = {},
   storageScope?: ProjectStorageScope,
 ): Promise<void> {
+  if (projectFormatVersion(project) !== CURRENT_PROJECT_FORMAT_VERSION)
+    throw new ProjectDocumentError(
+      'migration-required',
+      'Converta o projeto antes de guardar nesta versão.',
+    )
+  const captured = storageScope ?? captureProjectStorageScope()
   await runSerializedWrite(
     project.id,
     async (scope) => {
       const id = project.id
       const scopedId = scopedProjectIdentity(scope, id)
       // `replace`: o que o snapshot não trouxer não pode sobreviver ao restauro (blocos
-      // velhos, capa velha). Apagado DEPOIS do `setMany`, no MESMO mutex: se a gravação
-      // falhar (quota cheia), o projeto local não fica sem a partição de blocos com uma IR
-      // velha (abrir reconstruiria com layout padrão e o autosave subiria isso).
+      // velhos, capa velha). Apagado na MESMA transação dos `put`, depois deles: se a
+      // gravação falhar (quota cheia), a transação inteira aborta e o projeto local não fica
+      // sem a partição de blocos com uma IR velha (abrir reconstruiria com layout padrão e o
+      // autosave subiria isso).
       // ⚠️ `blocksState == null` aqui só acontece quando a ORIGEM não tem blocos: o restauro
       // da nuvem recusa (lança) o snapshot cujo saneamento DESCARTOU blocos, ver
       // `sanitizeCloudProjectSnapshot`.
+      const thumb = validThumbDataUrl(options.thumb)
       const stale = [
-        ...(options.replace ? [projectThumbKey(id)] : []),
+        ...(options.replace && !thumb ? [projectThumbKey(id)] : []),
         ...((options.replace && project.blocksState == null) || project.bridgeCodeAhead === true
           ? [projectBlocksKey(id)]
           : []),
@@ -231,6 +275,7 @@ export async function persistProject(
       if (project.blocksState != null && project.bridgeCodeAhead !== true) {
         pairs.push([projectBlocksKey(id), projectToBlocksRecord(project)])
       }
+      if (thumb) pairs.push([projectThumbKey(id), { id, dataUrl: thumb }])
       // Assets: só reescreve quando a referência mudou desde o último persist deste
       // id (ou na 1ª gravação, quando ainda não há referência registrada). `has`
       // distingue "nunca persistido" de "persistido como undefined" — sem isso, um
@@ -242,18 +287,34 @@ export async function persistProject(
       ) {
         pairs.push([projectAssetsKey(id), projectToAssetsRecord(project)])
       }
-      await setMany(pairs, scope.store).then(() => {
-        // Só registra a referência DEPOIS do write resolver: se o setMany falhar
-        // (quota cheia), a partição não foi gravada e a próxima tentativa precisa
-        // reescrevê-la — manter a ref antiga (ou não registrar) garante isso.
+      // UMA transação com commit EXPLÍCITO (ver `writeInOneTransaction`): é o que faz o
+      // flush de saída (`pagehide`/`beforeunload`) sobreviver à troca de documento, e o que
+      // torna gravar e apagar uma coisa só. Os `put` são pedidos no MESMO turno de JS em que
+      // o flush chama isto (nada é esperado antes), então a transação nasce antes de a
+      // página ir embora, mesmo com um autosave anterior ainda em voo.
+      const done = writeInOneTransaction(scope.store, { puts: pairs, deletes: stale }).then(() => {
+        // Só registra a referência DEPOIS de a transação concluir: se ela abortar (quota
+        // cheia), a partição não foi gravada e a próxima tentativa precisa reescrevê-la —
+        // manter a ref antiga (ou não registrar) garante isso. Com um save anterior ainda
+        // em voo, este reescreve os assets à toa em vez de confiar num que pode abortar.
         lastPersistedAssetsRef.set(scopedId, project.assets)
       })
-      if (stale.length > 0) await delMany(stale, scope.store)
+      return { done }
     },
-    storageScope,
+    captured,
   )
+  if (captured.identity !== captureProjectStorageScope().identity) return
   if (!options.silent) notifyMirrorChanged(project.id)
   notifyProjectChanged(project.id)
+  if (validThumbDataUrl(options.thumb)) notifyThumbUpdated(project.id)
+}
+
+function validThumbDataUrl(value: unknown): string | null {
+  return typeof value === 'string' &&
+    value.startsWith('data:image/') &&
+    value.length <= MAX_PROJECT_THUMB_CHARS
+    ? value
+    : null
 }
 
 export async function loadProjectById(
@@ -261,22 +322,19 @@ export async function loadProjectById(
   storageScope?: ProjectStorageScope,
 ): Promise<Project | null> {
   const kvStore = getStore(storageScope)
-  const [meta, files, state, blocks, assets] = await getMany<unknown[]>(
-    [
-      projectMetaKey(id),
-      projectFilesKey(id),
-      projectStateKey(id),
-      projectBlocksKey(id),
-      projectAssetsKey(id),
-    ],
-    kvStore,
-  )
+  const [meta, files, state, blocks, assets] = await readValues(kvStore, [
+    projectMetaKey(id),
+    projectFilesKey(id),
+    projectStateKey(id),
+    projectBlocksKey(id),
+    projectAssetsKey(id),
+  ])
   if (meta && files && state) {
     // `assets` é a 4ª partição (opcional): ausente em projetos legados/pré-feature.
     return assembleProjectRecord(id, meta, files, state, assets, blocks)
   }
 
-  return ((await get<Project>(legacyProjectKey(id), kvStore)) ?? null) as Project | null
+  return loadHistoricalProject(id, storageScope)
 }
 
 /**
@@ -292,15 +350,16 @@ export async function loadProjectShellById(
   storageScope?: ProjectStorageScope,
 ): Promise<Project | null> {
   const kvStore = getStore(storageScope)
-  const [meta, files, assets] = await getMany<unknown[]>(
-    [projectMetaKey(id), projectFilesKey(id), projectAssetsKey(id)],
-    kvStore,
-  )
+  const [meta, files, assets] = await readValues(kvStore, [
+    projectMetaKey(id),
+    projectFilesKey(id),
+    projectAssetsKey(id),
+  ])
   if (meta && files) {
     return assembleProjectRecord(id, meta, files, { id, ir: null, blocksState: null }, assets)
   }
 
-  return ((await get<Project>(legacyProjectKey(id), kvStore)) ?? null) as Project | null
+  return loadHistoricalProject(id, storageScope)
 }
 
 /**
@@ -315,15 +374,10 @@ export async function loadProjectMetaById(
   storageScope?: ProjectStorageScope,
 ): Promise<Record<string, unknown> | null> {
   const kvStore = getStore(storageScope)
-  const meta = await get<unknown>(projectMetaKey(id), kvStore)
-  if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
-    return meta as Record<string, unknown>
-  }
-  const legacy = await get<unknown>(legacyProjectKey(id), kvStore)
-  if (legacy && typeof legacy === 'object' && !Array.isArray(legacy)) {
-    return legacy as Record<string, unknown>
-  }
-  return null
+  const meta = await readValue(kvStore, projectMetaKey(id))
+  if (isRecord(meta)) return meta
+  const historical = await loadHistoricalProject(id, storageScope)
+  return historical ? projectToMetaRecord(historical) : null
 }
 
 export async function loadProjectBlocksById(
@@ -331,27 +385,10 @@ export async function loadProjectBlocksById(
   storageScope?: ProjectStorageScope,
 ): Promise<unknown | null> {
   const kvStore = getStore(storageScope)
-  const fromPartition = await get<unknown>(projectBlocksKey(id), kvStore)
+  const fromPartition = await readValue(kvStore, projectBlocksKey(id))
   if (fromPartition != null) return fromPartition
-  // Fallback p/ projetos LEGADOS (salvos ANTES do split de partições): o
-  // `blocksState` ficava DENTRO de `sz:project-state` (junto do IR) ou no doc único
-  // `sz:project`. Sem este fallback, o restore em segundo plano devolveria null e o
-  // 1º autosave gravaria vazio por cima — perdendo os blocos de projetos antigos.
-  // Devolve o registro INTEIRO; o chamador lê `record.blocksState` e valida `id`.
-  const state = await get<Record<string, unknown>>(projectStateKey(id), kvStore)
-  if (state && typeof state === 'object' && !Array.isArray(state) && state.blocksState != null) {
-    return state
-  }
-  const legacy = await get<Record<string, unknown>>(legacyProjectKey(id), kvStore)
-  if (
-    legacy &&
-    typeof legacy === 'object' &&
-    !Array.isArray(legacy) &&
-    legacy.blocksState != null
-  ) {
-    return legacy
-  }
-  return null
+  const historical = await loadHistoricalProject(id, storageScope)
+  return historical?.blocksState ? projectToBlocksRecord(historical) : null
 }
 
 /**
@@ -368,9 +405,9 @@ export async function loadProjectAssetsById(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<ProjectAsset[]> {
-  const record = await get<unknown>(projectAssetsKey(id), getStore(storageScope))
-  if (!record || typeof record !== 'object' || Array.isArray(record)) return []
-  return sanitizeProjectAssets((record as { assets?: unknown }).assets)
+  const record = await readValue(getStore(storageScope), projectAssetsKey(id))
+  if (!isRecord(record)) return []
+  return sanitizeProjectAssets(record.assets)
 }
 
 /**
@@ -393,22 +430,29 @@ export async function persistProjectAssets(
     async (scope) => {
       const kvStore = scope.store
       // O meta PRIMEIRO: se o projeto foi apagado entre a leitura da varredura e esta gravação
-      // (o `delMany` entrou na mesma fila antes), gravar recriaria uma partição de assets
+      // (o delete entrou na mesma fila antes), gravar recriaria uma partição de assets
       // ÓRFÃ (MBs que nenhuma tela alcança) e acordaria a nuvem para um projeto morto.
-      const meta = await get<Record<string, unknown>>(projectMetaKey(id), kvStore)
-      if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return
-      await set(projectAssetsKey(id), { id, assets }, kvStore)
-      // O `lastPersistedAssetsRef` é o dirty-check POR REFERÊNCIA do
-      // `persistProject`. Gravamos por fora dele: manter a referência antiga
-      // registrada faria o Map mentir sobre o que está no disco. Esquecer o id
-      // é o lado seguro — no máximo custa uma reescrita da partição.
-      lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
-      // O conteúdo do projeto MUDOU (o desenho novo do Pinta): bumpa `updatedAt` no meta,
-      // como o rename faz. É a régua do "quem é mais novo" da nuvem — sem isso a revisão
-      // subia com o mesmo `updatedAt`, o outro computador via "iguais" e nunca baixava a
-      // troca de desenho (e, se editasse lá, apagava o desenho novo por cima).
-      await set(projectMetaKey(id), { ...meta, updatedAt: Date.now() }, kvStore)
-      written = true
+      const meta = await readValue(kvStore, projectMetaKey(id))
+      if (!isRecord(meta)) return undefined
+      // Os assets e o `updatedAt` do meta numa transação SÓ: o conteúdo do projeto MUDOU (o
+      // desenho novo do Pinta), e o `updatedAt` é a régua do "quem é mais novo" da nuvem.
+      // Sem ele a revisão subia com o mesmo `updatedAt`, o outro computador via "iguais" e
+      // nunca baixava a troca de desenho (e, se editasse lá, apagava o desenho novo por
+      // cima). Juntos, um não chega ao disco sem o outro.
+      const done = writeInOneTransaction(kvStore, {
+        puts: [
+          [projectAssetsKey(id), { id, assets }],
+          [projectMetaKey(id), { ...meta, updatedAt: Date.now() }],
+        ],
+      }).then(() => {
+        // O `lastPersistedAssetsRef` é o dirty-check POR REFERÊNCIA do
+        // `persistProject`. Gravamos por fora dele: manter a referência antiga
+        // registrada faria o Map mentir sobre o que está no disco. Esquecer o id
+        // é o lado seguro — no máximo custa uma reescrita da partição.
+        lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
+        written = true
+      })
+      return { done }
     },
     captured,
   )
@@ -429,32 +473,39 @@ export async function deleteProject(
   // Cancela autosaves em voo em TODAS as instâncias — um timer pendente
   // re-persistiria o projeto recém-apagado.
   cancelPendingAutosavesFor(id, scope.identity)
-  // Cerca o armazenamento do programa do aluno ANTES do delMany: um flush do
+  // Cerca o armazenamento do programa do aluno ANTES de apagar: um flush do
   // preview já em voo (writeGameStorage) que chegue depois é descartado.
   fenceGameStorageDelete(scope, id)
-  // Esquece a referência de assets persistida deste id: o delMany apaga a
-  // partição, e se o id voltar (improvável, mas duplicate/import mintam ulid
-  // novo) o 1º persist precisa re-materializar a partição de assets. Também
-  // evita o Map crescer sem limite por exclusão.
-  lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
-  // No MESMO mutex de escrita do id: o delMany não pode intercalar com um
-  // persist/rename em voo do mesmo projeto.
-  await runSerializedProjectWrite(scope, id, () =>
-    delMany(
-      [
+  // No MESMO mutex de escrita do id: apagar não pode intercalar com um
+  // persist/rename do mesmo projeto. Uma transação com commit explícito, como
+  // o `persistProject`: todas as partições somem juntas, mesmo que a página feche logo.
+  await runSerializedProjectWrite(scope, id, async () => {
+    const meta = await readValue(scope.store, projectMetaKey(id))
+    if (!meta) await loadHistoricalProject(id, scope)
+    const source = await readValue(scope.store, projectMigrationKey(id))
+    const done = writeInOneTransaction(scope.store, {
+      puts: [[projectMigrationKey(id), { ...(isRecord(source) ? source : {}), deleted: true }]],
+      deletes: [
         projectMetaKey(id),
         projectFilesKey(id),
         projectStateKey(id),
         projectBlocksKey(id),
         projectAssetsKey(id),
         projectThumbKey(id),
-        legacyProjectKey(id),
         // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
         gameStorageKey(id),
       ],
-      scope.store,
-    ),
-  )
+    }).then(() => {
+      // Esquece a referência de assets persistida deste id DEPOIS que a partição sumiu: um
+      // persist anterior ainda em voo termina antes (o IndexedDB respeita a ordem) e
+      // registraria a referência de novo se ela fosse esquecida já no pedido. Se o id
+      // voltar (improvável: duplicate/import mintam ulid novo), o 1º persist precisa
+      // re-materializar a partição de assets; e o Map não cresce por exclusão.
+      lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
+    })
+    return { done }
+  })
+  if (scope.identity !== captureProjectStorageScope().identity) return
   if (options.notifyCloudMirror !== false) notifyMirrorDeleted(id)
   notifyProjectChanged(id, true)
 }
@@ -468,32 +519,39 @@ export async function deleteProject(
  * meta (projeto inexistente ou só no formato legado).
  */
 export async function renameProjectMeta(id: string, name: string): Promise<void> {
-  // get-then-set SERIALIZADO contra persistProject/deleteProject do mesmo id: a
-  // leitura e a gravação do meta correm como uma unidade, sem um autosave do
-  // editor aberto intercalar entre elas e perder o nome novo (ou ser sobrescrito).
-  await runSerializedWrite(id, async (scope) => {
-    const kvStore = scope.store
-    const meta = await get<Record<string, unknown>>(projectMetaKey(id), kvStore)
-    if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
-      await set(projectMetaKey(id), { ...meta, name, updatedAt: Date.now() }, kvStore)
-      return
-    }
-    // Sem partição de meta: projeto no formato LEGADO (`sz:project:<id>`, doc único
-    // anterior à migração 3-partições) que nunca foi aberto/editado — só ganha
-    // partições no 1º persistProject. O legado é suportado p/ leitura/listagem
-    // (loadProjectById/listAllProjects), então o rename PRECISA persistir; senão a
-    // ProjectList reverte o nome ao reler o disco. Regrava o nome no PRÓPRIO doc
-    // legado (mesma chave), dentro do mesmo runSerializedWrite.
-    const legacy = await get<Record<string, unknown>>(legacyProjectKey(id), kvStore)
-    if (legacy && typeof legacy === 'object' && !Array.isArray(legacy)) {
-      await set(legacyProjectKey(id), { ...legacy, name, updatedAt: Date.now() }, kvStore)
-    }
-  })
+  const scope = captureProjectStorageScope()
+  // Ler e gravar o meta SERIALIZADO contra persistProject/deleteProject do mesmo id: até
+  // a gravação do rename ser pedida, nenhuma outra escrita do projeto passa na fila, então
+  // um autosave do editor aberto não é desfeito pelo meta que o rename leu antes dele.
+  await runSerializedWrite(
+    id,
+    async (scope) => {
+      const kvStore = scope.store
+      let meta = await readValue(kvStore, projectMetaKey(id))
+      if (!meta) {
+        const historical = await loadHistoricalProject(id, scope)
+        if (historical) meta = projectToMetaRecord(historical)
+      }
+      if (isRecord(meta)) {
+        return {
+          done: writeInOneTransaction(kvStore, {
+            puts: [[projectMetaKey(id), { ...meta, name, updatedAt: Date.now() }]],
+          }),
+        }
+      }
+      return undefined
+    },
+    scope,
+  )
+  if (scope.identity !== captureProjectStorageScope().identity) return
   notifyMirrorChanged(id)
   notifyProjectChanged(id)
 }
 
 export interface ProjectSummary {
+  /** Original preservado; abrir apresenta o diagnóstico sem bloquear os outros projetos. */
+  migrationPending?: boolean
+  hasPreservedEdit?: boolean
   id: string
   name: string
   createdAt: number
@@ -510,23 +568,79 @@ export interface ProjectSummary {
  * o meta existir — um delete concorrente (que apaga o meta na mesma cadeia) não
  * é ressuscitado por uma captura que terminou depois.
  */
-export async function writeProjectThumb(id: string, dataUrl: string): Promise<boolean> {
+export async function writeProjectThumb(
+  id: string,
+  dataUrl: string,
+  options: {
+    /** `silent`: a miniatura DESCEU da nuvem — não acorda o espelho (senão subiria de novo). */
+    silent?: boolean
+  } = {},
+  storageScope?: ProjectStorageScope,
+): Promise<boolean> {
   if (!id || !dataUrl.startsWith('data:image/') || dataUrl.length > MAX_PROJECT_THUMB_CHARS) {
     return false
   }
+  const captured = storageScope ?? captureProjectStorageScope()
   let stored = false
   try {
-    await runSerializedWrite(id, async (scope) => {
-      const kvStore = scope.store
-      const meta = await get<unknown>(projectMetaKey(id), kvStore)
-      if (!meta) return
-      await set(projectThumbKey(id), { id, dataUrl }, kvStore)
-      stored = true
-    })
+    await runSerializedWrite(
+      id,
+      async (scope) => {
+        const kvStore = scope.store
+        const meta = await readValue(kvStore, projectMetaKey(id))
+        if (!meta) return undefined
+        const done = writeInOneTransaction(kvStore, {
+          puts: [[projectThumbKey(id), { id, dataUrl }]],
+        }).then(() => {
+          stored = true
+        })
+        return { done }
+      },
+      captured,
+    )
   } catch {
     // Quota cheia / IndexedDB indisponível: o card só fica sem capa.
   }
-  return stored
+  if (!stored) return false
+  // A lista troca só este card; o host decide se a capa vale uma subida (ver o espelho).
+  if (captured.identity === captureProjectStorageScope().identity) {
+    if (!options.silent) notifyMirrorThumbChanged(id)
+    notifyThumbUpdated(id)
+  }
+  return true
+}
+
+/** A miniatura gravada de um projeto (`null` = sem capa ou projeto inexistente). */
+export async function loadProjectThumb(
+  id: string,
+  storageScope?: ProjectStorageScope,
+): Promise<string | null> {
+  const value = await readValue(getStore(storageScope), projectThumbKey(id))
+  return thumbDataUrlOf(value) ?? null
+}
+
+/**
+ * Adota as miniaturas que a NUVEM tem para projetos que já existem aqui SEM capa (o jogo que
+ * sincronizou antes de a capa viajar, ou que nunca foi aberto neste aparelho): UMA leitura das
+ * CHAVES do banco (só a existência da capa importa; ler o VALOR de todas as capas locais a cada
+ * passe da descida custava dezenas de KB por projeto para nada) e uma gravação silenciosa por
+ * projeto que precisa (exige o meta, como toda capa). Projeto que já tem capa é deixado como
+ * está: a dele é tão boa quanto a da nuvem, e o `replace` do restauro é quem troca quando a
+ * versão da nuvem é a mais nova.
+ */
+export async function adoptProjectThumbs(
+  items: ReadonlyArray<{ id: string; thumb: string }>,
+  storageScope?: ProjectStorageScope,
+): Promise<number> {
+  if (items.length === 0) return 0
+  const captured = storageScope ?? captureProjectStorageScope()
+  const present = new Set(await readAllKeys(captured.store))
+  let adopted = 0
+  for (const item of items) {
+    if (present.has(projectThumbKey(item.id))) continue
+    if (await writeProjectThumb(item.id, item.thumb, { silent: true }, captured)) adopted += 1
+  }
+  return adopted
 }
 
 function thumbDataUrlOf(value: unknown): string | undefined {
@@ -583,10 +697,10 @@ export async function loadProjectSummaryById(
   storageScope?: ProjectStorageScope,
 ): Promise<ProjectSummary | null> {
   const kvStore = getStore(storageScope)
-  const [meta, thumb] = await getMany<unknown>([projectMetaKey(id), projectThumbKey(id)], kvStore)
+  const [meta, thumb] = await readValues(kvStore, [projectMetaKey(id), projectThumbKey(id)])
   let summary = toProjectSummary(id, meta)
   if (!summary) {
-    const legacy = await get<unknown>(legacyProjectKey(id), kvStore)
+    const legacy = await loadHistoricalProject(id, storageScope)
     summary = toProjectSummary(id, legacy)
   }
   if (!summary) return null
@@ -606,16 +720,16 @@ export async function loadProjectSummariesByIds(
 ): Promise<Array<ProjectSummary | null>> {
   if (ids.length === 0) return []
   const kvStore = getStore(storageScope)
-  const values = await getMany<unknown>(
-    ids.flatMap((id) => [projectMetaKey(id), projectThumbKey(id)]),
+  const values = await readValues(
     kvStore,
+    ids.flatMap((id) => [projectMetaKey(id), projectThumbKey(id)]),
   )
   const out: Array<ProjectSummary | null> = []
   for (let index = 0; index < ids.length; index += 1) {
     const id = ids[index] as string
     let summary = toProjectSummary(id, values[index * 2])
     if (!summary) {
-      const legacy = await get<unknown>(legacyProjectKey(id), kvStore)
+      const legacy = await loadHistoricalProject(id, storageScope)
       summary = toProjectSummary(id, legacy)
     }
     if (summary) {
@@ -631,23 +745,47 @@ async function listAllProjectsInternal(
   storageScope: ProjectStorageScope | undefined,
   options: { withThumbs: boolean },
 ): Promise<ProjectSummary[]> {
-  const kvStore = getStore(storageScope)
-  const allKeys = await keys(kvStore)
+  const scope = storageScope ?? captureProjectStorageScope()
+  const kvStore = scope.store
+  let allKeys = await readAllKeys(kvStore)
+  let pending: ProjectSummary[] = []
+  if (
+    allKeys.some(
+      (key) =>
+        typeof key === 'string' && /^sz:project(?:-(?:meta|files|state|blocks|assets))?:/.test(key),
+    )
+  ) {
+    const { migrateLocalProjects } = await import('../project-migrations/localProjects')
+    const migrated = await migrateLocalProjects(scope, allKeys)
+    if (scope.identity === captureProjectStorageScope().identity)
+      for (const id of migrated.changed) {
+        notifyMirrorChanged(id)
+        notifyProjectChanged(id)
+      }
+    allKeys = await readAllKeys(kvStore)
+    pending = migrated.pending
+  }
   const metaKeys = allKeys.filter(
     (key): key is string => typeof key === 'string' && key.startsWith(PROJECT_META_KEY_PREFIX),
   )
-  const metaValues = metaKeys.length > 0 ? await getMany<unknown[]>(metaKeys, kvStore) : []
+  const metaValues = await readValues(kvStore, metaKeys)
   const summaries = metaKeys
     .map((key, index) =>
       toProjectSummary(key.slice(PROJECT_META_KEY_PREFIX.length), metaValues[index]),
     )
     .filter((summary): summary is ProjectSummary => Boolean(summary))
+  if (options.withThumbs) {
+    const currentIds = new Set(summaries.map((summary) => summary.id))
+    const pendingIds = new Set(pending.map((summary) => summary.id))
+    for (const summary of summaries) if (pendingIds.has(summary.id)) summary.hasPreservedEdit = true
+    summaries.push(...pending.filter((summary) => !currentIds.has(summary.id)))
+  }
 
   // Anexa as miniaturas (partição própria) aos summaries que têm uma.
   if (options.withThumbs && summaries.length > 0) {
-    const thumbValues = await getMany<unknown[]>(
-      summaries.map((summary) => projectThumbKey(summary.id)),
+    const thumbValues = await readValues(
       kvStore,
+      summaries.map((summary) => projectThumbKey(summary.id)),
     )
     for (let index = 0; index < summaries.length; index += 1) {
       const summary = summaries[index]
@@ -656,118 +794,32 @@ async function listAllProjectsInternal(
     }
   }
 
-  const indexedIds = new Set(summaries.map((summary) => summary.id))
-  const legacyKeys = allKeys.filter(
-    (key): key is string =>
-      typeof key === 'string' &&
-      key.startsWith(LEGACY_PROJECT_KEY_PREFIX) &&
-      !indexedIds.has(key.slice(LEGACY_PROJECT_KEY_PREFIX.length)),
-  )
-  if (legacyKeys.length > 0) {
-    const legacyValues = await getMany<unknown[]>(legacyKeys, kvStore)
-    for (let index = 0; index < legacyKeys.length; index += 1) {
-      const key = legacyKeys[index]
-      if (!key) continue
-      const summary = toProjectSummary(
-        key.slice(LEGACY_PROJECT_KEY_PREFIX.length),
-        legacyValues[index],
-      )
-      if (summary) summaries.push(summary)
-    }
-  }
-
   summaries.sort((a, b) => b.updatedAt - a.updatedAt)
   return summaries
 }
 
-function projectToMetaRecord(
-  project: Project,
-): Pick<
-  Project,
-  | 'id'
-  | 'name'
-  | 'createdAt'
-  | 'updatedAt'
-  | 'mode'
-  | 'installedExtensions'
-  | 'kind'
-  | 'proMeta'
-  | 'bridgeCodeAhead'
-> & { storageVersion: number } {
-  return {
-    id: project.id,
-    name: project.name,
-    createdAt: project.createdAt,
-    updatedAt: project.updatedAt,
-    mode: project.mode,
-    installedExtensions: project.installedExtensions,
-    storageVersion: PROJECT_STORAGE_VERSION,
-    // Modo profissional: discriminante + metadados do dev-server. Ausentes em
-    // projetos classic (undefined é preservado pelo structured clone do IDB).
-    kind: project.kind,
-    proMeta: project.proMeta,
-    bridgeCodeAhead: project.bridgeCodeAhead,
-  }
-}
-
-function projectToFilesRecord(
-  project: Project,
-): Pick<Project, 'id' | 'files' | 'extraFiles' | 'tree'> {
-  return {
-    id: project.id,
-    files: project.files,
-    extraFiles: project.extraFiles,
-    // Árvore real do modo profissional (path-keyed); ausente em classic.
-    tree: project.tree,
-  }
-}
-
-function projectToStateRecord(project: Project): Pick<Project, 'id' | 'ir'> {
-  return {
-    id: project.id,
-    ir: project.bridgeCodeAhead === true ? null : project.ir,
-  }
-}
-
-function projectToBlocksRecord(project: Project): Pick<Project, 'id' | 'blocksState'> {
-  return {
-    id: project.id,
-    blocksState: project.blocksState,
-  }
-}
-
-function projectToAssetsRecord(project: Project): Pick<Project, 'id' | 'assets'> {
-  return {
-    id: project.id,
-    // Assets embutidos (imagens). Ausente/undefined em projetos sem assets — o
-    // structured clone do IDB preserva undefined, e o load é tolerante.
-    assets: project.assets,
-  }
-}
-
-function assembleProjectRecord(
+/** Primeira abertura histórica: o módulo só entra quando não há registro atual. */
+async function loadHistoricalProject(
   id: string,
-  meta: unknown,
-  files: unknown,
-  state: unknown,
-  assets?: unknown,
-  blocks?: unknown,
-): Project | null {
-  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return null
-  if (!files || typeof files !== 'object' || Array.isArray(files)) return null
-  if (!state || typeof state !== 'object' || Array.isArray(state)) return null
-  return {
-    ...(meta as Record<string, unknown>),
-    ...(files as Record<string, unknown>),
-    ...(state as Record<string, unknown>),
-    ...(blocks && typeof blocks === 'object' && !Array.isArray(blocks)
-      ? (blocks as Record<string, unknown>)
-      : {}),
-    // Partição de assets (opcional): mescla só se for um registro válido. O
-    // sanitizer do projectStore valida o conteúdo de `assets` depois.
-    ...(assets && typeof assets === 'object' && !Array.isArray(assets)
-      ? (assets as Record<string, unknown>)
-      : {}),
-    id,
-  } as Project
+  storageScope?: ProjectStorageScope,
+): Promise<Project | null> {
+  const scope = storageScope ?? captureProjectStorageScope()
+  const old = await readValues(scope.store, [`sz:project:${id}`, `sz:project-meta:${id}`])
+  if (!old.some(Boolean)) return null
+  const { migrateLocalProject } = await import('../project-migrations/localProjects')
+  const migrated = await migrateLocalProject(id, scope)
+  if (migrated && scope.identity === captureProjectStorageScope().identity) {
+    notifyMirrorChanged(migrated)
+    notifyProjectChanged(migrated)
+  }
+  const [meta, files, state, blocks, assets] = await readValues(scope.store, [
+    projectMetaKey(id),
+    projectFilesKey(id),
+    projectStateKey(id),
+    projectBlocksKey(id),
+    projectAssetsKey(id),
+  ])
+  return meta && files && state
+    ? assembleProjectRecord(id, meta, files, state, assets, blocks)
+    : null
 }

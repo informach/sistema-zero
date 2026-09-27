@@ -87,6 +87,10 @@ export function round2(value: number): number {
   return Math.round(value * 100) / 100
 }
 
+function rotationPivotPatch(pivot: Vec2 | undefined): { rotationPivot: Vec2 } | object {
+  return pivot ? { rotationPivot: pivot } : {}
+}
+
 // ── Bounds ──────────────────────────────────────────────────────────────────
 
 /** Caixa SEM considerar a rotação (as alças giram junto com o shape). */
@@ -154,6 +158,43 @@ export function boundsCenter(bounds: Bounds): Vec2 {
   return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 }
 }
 
+/** Pivô efetivo da forma: explícito ou o centro histórico da caixa não girada. */
+export function rotationPivotOf(shape: VectorShape): Vec2 {
+  return shape.rotationPivot ?? boundsCenter(shapeBounds(shape))
+}
+
+/** Caixa alinhada aos eixos da forma como ela é renderizada, já com a rotação aplicada. */
+export function renderedShapeBounds(shape: VectorShape): Bounds {
+  const bounds = shapeBounds(shape)
+  const rotation = ((shape.rotation % 360) + 360) % 360
+  if (rotation === 0) return bounds
+  const pivot = rotationPivotOf(shape)
+  return fromPoints(
+    [
+      { x: bounds.x, y: bounds.y },
+      { x: bounds.x + bounds.width, y: bounds.y },
+      { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
+      { x: bounds.x, y: bounds.y + bounds.height },
+    ].map((point) => rotatePoint(point, pivot, rotation)),
+  )
+}
+
+/** Uma forma usa seu pivô; uma seleção múltipla gira pelo centro da união. */
+export function selectionRotationPivot(shapes: readonly VectorShape[]): Vec2 {
+  const only = shapes[0]
+  if (shapes.length === 1 && only) return rotationPivotOf(only)
+  const common = only?.rotationPivot
+  if (
+    common &&
+    shapes.every(
+      (shape) => shape.rotationPivot?.x === common.x && shape.rotationPivot.y === common.y,
+    )
+  ) {
+    return common
+  }
+  return boundsCenter(boundsUnion(shapes.map(shapeBounds)))
+}
+
 /** Caixa que envolve TODAS as caixas (bbox da seleção múltipla). */
 export function boundsUnion(list: Bounds[]): Bounds {
   if (list.length === 0) return { x: 0, y: 0, width: 0, height: 0 }
@@ -184,6 +225,16 @@ export function boundsIntersect(a: Bounds, b: Bounds): boolean {
  */
 export function boundsOverlap(a: Bounds, b: Bounds): boolean {
   return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
+}
+
+/** Interseção com área entre duas caixas; `null` quando só encostam ou não se encontram. */
+export function boundsIntersection(a: Bounds, b: Bounds): Bounds | null {
+  const x = Math.max(a.x, b.x)
+  const y = Math.max(a.y, b.y)
+  const right = Math.min(a.x + a.width, b.x + b.width)
+  const bottom = Math.min(a.y + a.height, b.y + b.height)
+  if (right <= x || bottom <= y) return null
+  return { x, y, width: right - x, height: bottom - y }
 }
 
 /** Borda/centro alvo do alinhamento. */
@@ -243,29 +294,111 @@ export function alignShapes(
   })
 }
 
+export type DistributionAxis = 'horizontal' | 'vertical'
+
+interface DistributionCluster {
+  key: string
+  index: number
+  bounds: Bounds
+}
+
+function distributionKey(shape: VectorShape): string {
+  return shape.groupId ? `g:${shape.groupId}` : `s:${shape.id}`
+}
+
+/** Grupos entram inteiros: selecionar só parte ou travar um membro exclui o grupo. */
+function selectedMovableClusters(shapes: VectorShape[], ids: string[]): DistributionCluster[] {
+  const selected = new Set(ids)
+  const all = new Map<string, { key: string; index: number; members: VectorShape[] }>()
+  shapes.forEach((shape, index) => {
+    const key = distributionKey(shape)
+    const cluster = all.get(key)
+    if (cluster) cluster.members.push(shape)
+    else all.set(key, { key, index, members: [shape] })
+  })
+  return [...all.values()]
+    .filter(({ members }) => members.every((shape) => selected.has(shape.id) && !shape.locked))
+    .map(({ key, index, members }) => ({
+      key,
+      index,
+      bounds: boundsUnion(members.map(shapeBounds)),
+    }))
+}
+
+export function canDistributeShapes(shapes: VectorShape[], ids: string[]): boolean {
+  return selectedMovableClusters(shapes, ids).length >= 3
+}
+
+/** Mantém as pontas e distribui os centros intermediários num único eixo. */
+export function distributeShapes(
+  shapes: VectorShape[],
+  ids: string[],
+  axis: DistributionAxis,
+): VectorShape[] {
+  const clusters = selectedMovableClusters(shapes, ids)
+  if (clusters.length < 3) return shapes
+  const center = (bounds: Bounds) =>
+    axis === 'horizontal' ? bounds.x + bounds.width / 2 : bounds.y + bounds.height / 2
+  const ordered = clusters
+    .map((cluster) => ({ ...cluster, center: center(cluster.bounds) }))
+    .sort((a, b) => a.center - b.center || a.index - b.index)
+  const firstCluster = ordered[0]
+  const lastCluster = ordered[ordered.length - 1]
+  if (!firstCluster || !lastCluster) return shapes
+  const first = firstCluster.center
+  const last = lastCluster.center
+  const step = (last - first) / (ordered.length - 1)
+  const deltas = new Map<string, number>()
+  for (let i = 1; i < ordered.length - 1; i++) {
+    const cluster = ordered[i]
+    if (!cluster) continue
+    const delta = first + step * i - cluster.center
+    if (Math.abs(delta) >= 1e-9) deltas.set(cluster.key, delta)
+  }
+  if (deltas.size === 0) return shapes
+  return shapes.map((shape) => {
+    const delta = deltas.get(distributionKey(shape))
+    return delta === undefined
+      ? shape
+      : translateShape(shape, axis === 'horizontal' ? delta : 0, axis === 'vertical' ? delta : 0)
+  })
+}
+
 // ── Manipulação ─────────────────────────────────────────────────────────────
 
 export function translateShape(shape: VectorShape, dx: number, dy: number): VectorShape {
+  const pivot = shape.rotationPivot
+    ? { x: shape.rotationPivot.x + dx, y: shape.rotationPivot.y + dy }
+    : undefined
   switch (shape.type) {
     case 'rect':
     case 'image':
-      return { ...shape, x: shape.x + dx, y: shape.y + dy }
+      return { ...shape, ...rotationPivotPatch(pivot), x: shape.x + dx, y: shape.y + dy }
     case 'ellipse':
-      return { ...shape, cx: shape.cx + dx, cy: shape.cy + dy }
+      return { ...shape, ...rotationPivotPatch(pivot), cx: shape.cx + dx, cy: shape.cy + dy }
     case 'line':
       return {
         ...shape,
+        ...rotationPivotPatch(pivot),
         x1: shape.x1 + dx,
         y1: shape.y1 + dy,
         x2: shape.x2 + dx,
         y2: shape.y2 + dy,
       }
     case 'polygon':
-      return { ...shape, points: shape.points.map((p) => ({ x: p.x + dx, y: p.y + dy })) }
+      return {
+        ...shape,
+        ...rotationPivotPatch(pivot),
+        points: shape.points.map((p) => ({ x: p.x + dx, y: p.y + dy })),
+      }
     case 'path':
-      return { ...shape, d: mapPathPoints(shape.d, (x, y) => ({ x: x + dx, y: y + dy })) }
+      return {
+        ...shape,
+        ...rotationPivotPatch(pivot),
+        d: mapPathPoints(shape.d, (x, y) => ({ x: x + dx, y: y + dy })),
+      }
     case 'text':
-      return { ...shape, x: shape.x + dx, y: shape.y + dy }
+      return { ...shape, ...rotationPivotPatch(pivot), x: shape.x + dx, y: shape.y + dy }
   }
 }
 
@@ -284,10 +417,14 @@ export function scaleShape(
   const fy = clampFactor(factorY)
   const sx = (x: number) => anchor.x + (x - anchor.x) * fx
   const sy = (y: number) => anchor.y + (y - anchor.y) * fy
+  const pivot = shape.rotationPivot
+    ? { x: sx(shape.rotationPivot.x), y: sy(shape.rotationPivot.y) }
+    : undefined
   switch (shape.type) {
     case 'rect':
       return {
         ...shape,
+        ...rotationPivotPatch(pivot),
         x: sx(shape.x),
         y: sy(shape.y),
         w: shape.w * fx,
@@ -297,10 +434,18 @@ export function scaleShape(
     // A figura é um retângulo sem raio (o `preserveAspectRatio="none"` deixa
     // ela preencher a caixa, então as 8 alças dizem a verdade).
     case 'image':
-      return { ...shape, x: sx(shape.x), y: sy(shape.y), w: shape.w * fx, h: shape.h * fy }
+      return {
+        ...shape,
+        ...rotationPivotPatch(pivot),
+        x: sx(shape.x),
+        y: sy(shape.y),
+        w: shape.w * fx,
+        h: shape.h * fy,
+      }
     case 'ellipse':
       return {
         ...shape,
+        ...rotationPivotPatch(pivot),
         cx: sx(shape.cx),
         cy: sy(shape.cy),
         rx: shape.rx * fx,
@@ -309,18 +454,28 @@ export function scaleShape(
     case 'line':
       return {
         ...shape,
+        ...rotationPivotPatch(pivot),
         x1: sx(shape.x1),
         y1: sy(shape.y1),
         x2: sx(shape.x2),
         y2: sy(shape.y2),
       }
     case 'polygon':
-      return { ...shape, points: shape.points.map((p) => ({ x: sx(p.x), y: sy(p.y) })) }
+      return {
+        ...shape,
+        ...rotationPivotPatch(pivot),
+        points: shape.points.map((p) => ({ x: sx(p.x), y: sy(p.y) })),
+      }
     case 'path':
-      return { ...shape, d: mapPathPoints(shape.d, (x, y) => ({ x: sx(x), y: sy(y) })) }
+      return {
+        ...shape,
+        ...rotationPivotPatch(pivot),
+        d: mapPathPoints(shape.d, (x, y) => ({ x: sx(x), y: sy(y) })),
+      }
     case 'text':
       return {
         ...shape,
+        ...rotationPivotPatch(pivot),
         x: sx(shape.x),
         y: sy(shape.y),
         fontSize: Math.min(Math.max(shape.fontSize * Math.max(fx, fy), 6), 200),
@@ -341,8 +496,33 @@ export function rotateShapeTo(shape: VectorShape, degrees: number): VectorShape 
 }
 
 /**
- * Gira um CONJUNTO de shapes em torno de um pivô comum: o centro da caixa de
- * cada um orbita o pivô e a forma recebe o giro SOMADO ao que já tinha.
+ * Troca o pivô persistido sem mover um único ponto renderizado. A geometria
+ * recebe `(I - R(-r)) · (novo - antigo)` antes de o novo pivô ser gravado.
+ */
+export function setRotationPivotPreservingAppearance(shape: VectorShape, pivot: Vec2): VectorShape {
+  const old = rotationPivotOf(shape)
+  if (old.x === pivot.x && old.y === pivot.y && shape.rotationPivot) return shape
+  const delta = { x: pivot.x - old.x, y: pivot.y - old.y }
+  const unrotated = rotatePoint(delta, { x: 0, y: 0 }, -shape.rotation)
+  const moved = translateShape(shape, delta.x - unrotated.x, delta.y - unrotated.y)
+  return { ...moved, rotationPivot: { x: pivot.x, y: pivot.y } }
+}
+
+/** Volta ao centro implícito sem alterar a pose que a criança está vendo. */
+export function resetRotationPivotPreservingAppearance(shape: VectorShape): VectorShape {
+  const old = shape.rotationPivot
+  if (!old) return shape
+  const center = boundsCenter(shapeBounds(shape))
+  const delta = { x: center.x - old.x, y: center.y - old.y }
+  const rotated = rotatePoint(delta, { x: 0, y: 0 }, shape.rotation)
+  const moved = translateShape(shape, rotated.x - delta.x, rotated.y - delta.y)
+  const { rotationPivot: _rotationPivot, ...withoutPivot } = moved
+  return withoutPivot as VectorShape
+}
+
+/**
+ * Gira um CONJUNTO de shapes em torno de um pivô comum: o pivô efetivo de cada
+ * um orbita o pivô comum e a forma recebe o giro SOMADO ao que já tinha.
  *
  * ⭐ É EXATO, inclusive com membros já girados. O render desenha
  * `rotate(r, centro-da-caixa-SEM-rotação)` (`svg.ts shapeCommonAttrs`) e
@@ -364,10 +544,10 @@ export function rotateShapesAround(
   const chosen = new Set(ids)
   return shapes.map((shape) => {
     if (!chosen.has(shape.id)) return shape
-    const center = boundsCenter(shapeBounds(shape))
-    const moved = rotatePoint(center, pivot, degrees)
-    const dx = round2(moved.x - center.x)
-    const dy = round2(moved.y - center.y)
+    const ownPivot = rotationPivotOf(shape)
+    const moved = rotatePoint(ownPivot, pivot, degrees)
+    const dx = round2(moved.x - ownPivot.x)
+    const dy = round2(moved.y - ownPivot.y)
     // ⭐ Sem deslocamento, NÃO translada. Com UMA forma o pivô É o centro dela,
     // e `translateShape(s, 0, 0)` devolveria um objeto novo (re-serializando o
     // `d` de um traço a cada quadro): quebraria a memoização por identidade do
@@ -458,7 +638,13 @@ export function flipShape(shape: VectorShape, axis: 'h' | 'v', center: Vec2): Ve
       }
     }
   }
-  const flipped = flip()
+  const geometry = flip()
+  const flipped = shape.rotationPivot
+    ? {
+        ...geometry,
+        rotationPivot: { x: mx(shape.rotationPivot.x), y: my(shape.rotationPivot.y) },
+      }
+    : geometry
   return shape.rotation !== 0
     ? { ...flipped, rotation: Math.round(((360 - shape.rotation) % 360) * 10) / 10 }
     : flipped

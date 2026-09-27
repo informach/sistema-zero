@@ -1,0 +1,34 @@
+/*
+ * Entry CSS do PLAYGROUND (equivale ao globals.css de um app consumidor). O Pensa não usa
+ * Tailwind: são só as folhas, na MESMA ordem do host (o teste de ordem de import do
+ * `@sistemazero/ui` lê este arquivo).
+ */
+/* Primitivos da marca kids: o host REAL (community-kids) os importa, então sem isto o
+   playground mostraria só os valores de reserva e o QA visual mentiria. Caminho relativo de
+   propósito: não cria dependência de package no Pensa. */
+@import "../../ui/src/styles/theme-kids.css";
+/* Chrome compartilhado das ferramentas (tokens --sz-tool-* + receitas das faixas, pílulas e
+   cartões): o kids importa; sem isto a galeria sairia sem estilo. */
+@import "../../ui/src/styles/tool-chrome.css";
+@import "../src/styles/pensa.css";
+
+/* Simula o next/font do host (lá as famílias têm nome hasheado; aqui são as literais das
+   webfonts carregadas no index.html). */
+:root {
+  --font-display: "Baloo 2", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Resets de APP standalone: fora do CSS exportado pelo package. */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}

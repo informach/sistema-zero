@@ -1,0 +1,51 @@
+import type { SectionIntent } from './index'
+
+export const LESSON_SECTION_TEMPLATES: ReadonlyArray<{
+  intent: SectionIntent
+  label: string
+  title: string
+  guidance: string
+}> = [
+  {
+    intent: 'exploration',
+    label: 'Explorar um conceito',
+    title: 'Experimente esta ideia',
+    guidance:
+      'Vídeo curto, missão do Zappy e cena manipulável. Pode aparecer antes, depois ou entre trechos de criação. Critério: descobertas da missão.',
+  },
+  {
+    intent: 'application',
+    label: 'Criar',
+    title: 'Crie no seu projeto',
+    guidance:
+      'Vídeo de orientação e a mesma ferramenta ao lado. Critério: objetivo verificável no projeto. A entrega fica em outra etapa.',
+  },
+  {
+    intent: 'delivery',
+    label: 'Entregar',
+    title: 'Mostre sua criação',
+    guidance:
+      'A criança testa o projeto e envia ao professor. Esta etapa pode vir antes do quiz final.',
+  },
+  {
+    intent: 'closing',
+    label: 'Quiz de fechamento',
+    title: 'O que você descobriu?',
+    guidance:
+      'Poucas perguntas sobre o que a criança já explorou e criou. Critério: atingir a nota mínima do quiz.',
+  },
+  {
+    intent: 'presentation',
+    label: 'Assistir',
+    title: 'Conheça por aqui',
+    guidance:
+      'Para tour, boas-vindas ou orientação: somente o vídeo. Critério: assistir a 90% dos trechos. Não substitui uma entrega feita em ferramenta externa.',
+  },
+  {
+    intent: 'material',
+    label: 'Material do curso',
+    title: 'Seu caderno de aventuras',
+    guidance:
+      'Apresente o material com vídeo e Zappy. O Livro 3D e os arquivos para baixar são independentes. Escolha explicitamente se o avanço exige abrir o livro, baixar arquivos e/ou assistir ao vídeo.',
+  },
+]

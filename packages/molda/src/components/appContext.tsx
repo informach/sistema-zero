@@ -4,7 +4,9 @@
  */
 import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
+import type { MoldaToolAccess } from '../core/toolFamilies'
 import type { MoldaExportedAsset, MoldaStudioResyncResult } from '../export/studioLibrary'
+import type { GallerySceneSource } from '../state/gallerySceneSource'
 import type { GalleryActions, GalleryState, GalleryStore } from '../state/galleryStore'
 import type { MoldaPersistence } from '../state/persistence'
 
@@ -23,14 +25,36 @@ export interface MoldaHostAdapter {
    * foi levada ao Estúdio (o host decide pela guarda dele). Nunca chamado ao abrir.
    */
   resyncToStudio?: (asset: MoldaExportedAsset) => Promise<MoldaStudioResyncResult>
+  /** Check the existing link before encoding or asking to review a Studio copy. */
+  canResyncToStudio?: (creationId: string) => Promise<boolean>
   /** A lista de criações mudou (criar, renomear, apagar, salvar, releitura). */
   onChange?: () => void
+  /**
+   * PROMOVER modelos antigos para a oficina da geração seguinte. Desligada por padrão.
+   *
+   * ⚠️ Ela governa só a promoção, e não o acesso: uma criação JÁ promovida continua
+   * listada e continua abrindo na oficina mesmo com isto desligado. É o que torna
+   * desligar reversível — do contrário, voltar atrás deixaria o trabalho da criança
+   * inalcançável, porque o editor antigo não sabe ler o documento novo.
+   *
+   * Promover é escrever o formato novo no disco e na nuvem: só ligar depois que os
+   * leitores compatíveis (lote 230) estiverem implantados.
+   */
+  sceneWorkshop?: boolean
+  /**
+   * As famílias de ferramentas que a criança pode USAR: o portão por nível de jornada, que o
+   * host calcula (o Molda não conhece jornada). Ausente = tudo liberado. Trancar tira a
+   * autoria, nunca a leitura: ver `core/toolFamilies.ts`.
+   */
+  toolAccess?: MoldaToolAccess
 }
 
 export interface MoldaAppContextValue {
   adapter: MoldaHostAdapter
   gallery: GalleryStore
   persistence: MoldaPersistence
+  /** A geração seguinte, para o que a galeria precisa dela além da lista. */
+  scene: GallerySceneSource
 }
 
 const MoldaAppContext = createContext<MoldaAppContextValue | null>(null)
@@ -41,6 +65,11 @@ export function useMoldaApp(): MoldaAppContextValue {
   const value = useContext(MoldaAppContext)
   if (!value) throw new Error('useMoldaApp deve ser usado dentro de <MoldaApp>')
   return value
+}
+
+/** O mesmo, ou `null` fora do app: a oficina montada sozinha (playground e testes) não tem galeria. */
+export function useOptionalMoldaApp(): MoldaAppContextValue | null {
+  return useContext(MoldaAppContext)
 }
 
 export function useGallery<T>(selector: (state: GalleryState & GalleryActions) => T): T {

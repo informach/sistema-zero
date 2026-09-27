@@ -55,6 +55,19 @@ const FILE_TYPE_LABELS: Record<string, string> = {
  * interna que confunde o aluno. MIME conhecido vira a sigla usual; desconhecido
  * exibe só o subtipo; texto livre curto do admin passa como veio (maiúsculo).
  */
+/**
+ * Tamanho de arquivo em português, para a criança saber se vale esperar o download.
+ * ⚠️ Base 1024 com os rótulos KB/MB, que é o que o sistema operacional dela mostra. Uma casa
+ * decimal só no MB: "1,2 MB" ajuda, "347,8 KB" é ruído.
+ */
+export function formatBytes(bytes: number | null | undefined): string | null {
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes < 0) return null
+  if (bytes < 1024) return `${Math.round(bytes)} B`
+  const kb = bytes / 1024
+  if (kb < 1024) return `${Math.round(kb)} KB`
+  return `${(kb / 1024).toFixed(1).replace('.', ',')} MB`
+}
+
 export function friendlyFileType(value: string | null | undefined): string | null {
   const raw = value?.split(';')[0]?.trim() ?? ''
   if (!raw) return null

@@ -1,3 +1,4 @@
+import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
@@ -44,12 +45,11 @@ export default function AdminLogin() {
   return (
     <Card className="w-full max-w-sm p-7 shadow-2xl shadow-black/40">
       <div className="flex flex-col items-center text-center">
-        {/* Logo do sistema-zero (versão p/ fundo escuro — o /admin é sempre dark). */}
-        <img
-          src="/logo_dark.svg"
-          alt="Sistema Zero"
-          width={515}
-          height={44}
+        {/* A logo oficial em SVG embutido: o ZERO lê `--logo-zero-*` (a cor da casa). O
+            /admin do funil é sempre escuro, daí o fundo `escuro`. */}
+        <BrandLogo
+          fundo="escuro"
+          label="Sistema Zero — painel do funil"
           className="h-auto w-[196px] max-w-full"
         />
         <h1 className="mt-6 text-xl font-bold text-foreground">Painel administrativo</h1>

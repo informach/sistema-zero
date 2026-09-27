@@ -1,0 +1,144 @@
+{
+  "sourceFile": "roteiro-aula-01-corre-dino.md",
+  "status": "Planejamento por âncoras do roteiro; conferir o arquivo de vídeo antes de definir timecodes.",
+  "clips": [
+    {
+      "key": "video-abertura-v7",
+      "sourceSection": "Abertura: o jogo que você vai construir",
+      "entry": "Oi! Seja bem-vindo ao",
+      "exit": "Então bora começar pelo primeiro.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Regravar a apresentação do jogo pronto com os três passos de hoje: preparar Ao iniciar, a tela e o Dino. A criança só assiste ao exemplo.",
+      "production": "regravar-estudio-atual",
+      "sourceFile": "roteiro-aula-01-corre-dino.md",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-iniciar-v7",
+      "sourceSection": "Parte 1. Passo 1: montar a área que prepara o jogo",
+      "entry": "Antes de tudo, o seu jogo precisa de um lugar pra ser montado.",
+      "exit": "O segundo é preparar a tela.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Preservar o gesto completo, a área vazia e a analogia do tabuleiro. Não acrescentar outra demonstração.",
+      "production": "regravar-estudio-atual",
+      "sourceFile": "roteiro-aula-01-corre-dino.md",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-tela-v7",
+      "sourceSection": "Parte 2. Passo 2: preparar a tela",
+      "entry": "Agora a gente prepara a tela onde o jogo acontece.",
+      "exit": "O terceiro é rapidinho.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Manter tela sem limite visível, encaixe da borda e retângulo revelado no mesmo clipe. Manter 480 × 270 e espessura 4. Escolhas de cor ficam limitadas a céu e borda com contraste.",
+      "production": "regravar-estudio-atual",
+      "sourceFile": "roteiro-aula-01-corre-dino.md",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-coordenadas-demo-v7",
+      "sourceSection": "Parte 4. Passo 4: criar o dino",
+      "entry": "O x diz se ele fica mais pra esquerda ou mais pra direita.",
+      "exit": "A linha 150 está bem mais embaixo que a linha 1.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar a narração sobre x e y sobre uma cartela de 480 × 270. Mover apenas um marcador: primeiro x com y fixo, depois y com x fixo. Origem no canto superior esquerdo; valores 110 e 150. Abrir com uma ponte curta: cada personagem tem um endereço. Não há arraste nem parâmetros para a criança.",
+      "production": "regravar-estudio-atual",
+      "sourceFile": "roteiro-aula-01-corre-dino.md",
+      "inSeconds": null,
+      "outSeconds": null,
+      "cenaAnterior": {
+        "cena": "coordinates",
+        "oQueMudou": "A seção deixou de ser só o vídeo: depois dele a criança abre a cena coordinates e mexe no x e no y. O marcador animado sobre a cartela e a frase de que não há arraste nem parâmetros para a criança descrevem a demonstração antiga.",
+        "acao": "cortar"
+      }
+    },
+    {
+      "key": "video-dino-v7",
+      "sourceSection": "Parte 4. Passo 4: criar o dino",
+      "entry": "Chegou a hora do seu dinossauro.",
+      "exit": "Quarto passo concluído.",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar criação, sprite, configuração e explicação da invisibilidade. Retirar o trecho de coordenadas usado na demonstração, de “Depois vêm” até “grande maioria dos jogos que você vai fazer”. Retomar em “O y já está em 150”. Preservar x 110, y 150 e tamanho 64. Na trilha guiada, manter o identificador dino para evitar confusão nos seletores das próximas aulas. A cor continua livre; encurtar o passeio pela paleta a uma escolha, sem desafio extra.",
+      "production": "regravar-estudio-atual",
+      "sourceFile": "roteiro-aula-01-corre-dino.md",
+      "inSeconds": null,
+      "outSeconds": null
+    },
+    {
+      "key": "video-fecho-v7",
+      "sourceSection": "Fecho",
+      "entry": "Parabéns, você terminou a Aula 1!",
+      "exit": "Te espero lá!",
+      "edit": "Regravar a tela com a edição jogo-2d-1.0-documento-2; seguir o mapa de blocos do roteiro para categorias, rótulos e opções de som. Reaproveitar recapitulacão e gancho da Aula 2. Acrescentar somente uma cartela curta indicando o quiz. Não dizer que o aluno já programou o desenho do Dino.",
+      "production": "regravar-estudio-atual",
+      "sourceFile": "roteiro-aula-01-corre-dino.md",
+      "inSeconds": null,
+      "outSeconds": null
+    }
+  ],
+  "sourceHash": "738a241605766d49dbc78937703c7aef36f3cb8eab09db69d152440a358e37bf",
+  "cenas": [
+    {
+      "secao": "tela-experiencia-v8",
+      "bloco": "experiencia-tela",
+      "cena": "stage-size",
+      "atividade": "experimentation",
+      "clipesAntes": []
+    },
+    {
+      "secao": "coordenadas-demonstracao-v7",
+      "bloco": "experiencia-coordenadas",
+      "cena": "coordinates",
+      "atividade": "experimentation",
+      "clipesAntes": ["video-coordenadas-demo-v7"]
+    },
+    {
+      "secao": "comeco",
+      "bloco": "descoberta",
+      "cena": "world",
+      "atividade": "experimentation",
+      "clipesAntes": []
+    }
+  ],
+  "studio": {
+    "edition": "jogo-2d-1.0-documento-2",
+    "documentFormatVersion": 2,
+    "extensionVersion": "1.0.0",
+    "recordingStatus": "regravar-e-validar-em-staging",
+    "blocks": [
+      {
+        "type": "sz_frame_start",
+        "label": "⚙️ Ao iniciar",
+        "palettePath": ["🗂️ Áreas do projeto"],
+        "area": "start",
+        "tooltip": "Roda ao abrir ou a cada nova partida."
+      },
+      {
+        "type": "sz_g2d_create_dino",
+        "label": "Criar dinossauro em x y tamanho cor",
+        "palettePath": ["Jogo 2D", "Kits prontos", "Dino"],
+        "area": "start",
+        "tooltip": "Cria um dinossauro desenhado (com perninhas que correm sozinhas). A pose muda quando ele pula ou abaixa."
+      },
+      {
+        "type": "sz_g2d_setup_stage",
+        "label": "Preparar o jogo em tela cheia, tela × , fundo",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Preparar a área do jogo"],
+        "area": "start",
+        "tooltip": "Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”."
+      },
+      {
+        "type": "sz_g2d_stage_border",
+        "label": "Mostrar a borda da tela, cor espessura",
+        "palettePath": ["Jogo 2D", "Jogo e telas", "Preparar a área do jogo"],
+        "area": "start",
+        "tooltip": "Desenha uma moldura colorida em volta da tela do jogo, para ver onde começa e termina a área de desenho. Ótimo para explicar o palco. Para tirar, apague o bloco."
+      },
+      {
+        "type": "sz_val_number",
+        "label": "Número",
+        "palettePath": ["Programação", "🔣 Valores"],
+        "area": "value",
+        "tooltip": "Um valor numérico."
+      }
+    ]
+  }
+}

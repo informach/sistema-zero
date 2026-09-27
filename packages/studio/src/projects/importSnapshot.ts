@@ -1,15 +1,22 @@
 import { type Project, type ProjectAsset, sanitizeProjectAssets } from '#core'
+import { buildCloudThumb, CLOUD_THUMB_MAX_CHARS } from '../cover/cloudThumb'
+import { storeChosenCoverThumb } from '../cover/thumbCapture'
 import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
 import {
+  adoptProjectThumbs,
   deleteProject,
   listProjectSummariesLight,
   loadProjectAssetsById,
-  loadProjectById,
   loadProjectSummaryById,
+  loadProjectThumb,
   type ProjectSummary,
 } from '../state/persistence'
 import { getProjectStorageScope } from '../state/projectStorageRuntime'
-import { sanitizeCloudProjectSnapshot, useProjectStore } from '../state/projectStore'
+import {
+  loadSanitizedProjectById,
+  sanitizeCloudProjectSnapshot,
+  useProjectStore,
+} from '../state/projectStore'
 
 /**
  * Importa um SNAPSHOT de projeto (o JSON jogável do Mural / `.szproject.json`)
@@ -23,7 +30,16 @@ import { sanitizeCloudProjectSnapshot, useProjectStore } from '../state/projectS
  */
 export async function importProjectSnapshot(
   raw: unknown,
-  opts?: { name?: string; namespace?: string; silent?: boolean },
+  opts?: {
+    name?: string
+    namespace?: string
+    silent?: boolean
+    /**
+     * A miniatura a gravar junto com o projeto novo (a cópia de conflito "(de outro aparelho)"
+     * nasce com a capa que a nuvem listou, em vez de um card em branco até ser aberta).
+     */
+    thumb?: string | null
+  },
 ): Promise<{ project: Project; warnings: string[] }> {
   const value =
     opts?.name && raw && typeof raw === 'object' && !Array.isArray(raw)
@@ -34,6 +50,7 @@ export async function importProjectSnapshot(
   return useProjectStore.getState().importProjectFromJSON(value, {
     storageScope,
     silent: opts?.silent,
+    thumb: opts?.thumb,
   })
 }
 
@@ -65,14 +82,55 @@ export async function discardImportedProjectSnapshot(
  */
 export async function restoreProjectFromCloud(
   raw: unknown,
-  opts?: { expectedId?: string; namespace?: string },
+  opts?: {
+    expectedId?: string
+    namespace?: string
+    /** A miniatura que a nuvem listou para o item (gravada junto; `null` = a nuvem não tem). */
+    thumb?: string | null
+  },
 ): Promise<{ project: Project; warnings: string[] }> {
   const storageScope =
     opts?.namespace === undefined ? undefined : getProjectStorageScope(opts.namespace)
-  return useProjectStore.getState().restoreProjectSnapshot(raw, {
+  const restored = await useProjectStore.getState().restoreProjectSnapshot(raw, {
     expectedId: opts?.expectedId,
     storageScope,
+    thumb: opts?.thumb,
   })
+  // A nuvem não trouxe miniatura mas o projeto tem capa ESCOLHIDA: deriva daqui mesmo (o
+  // cliente que subiu não conseguiu reduzi-la, ou é anterior à capa viajar). Best-effort.
+  if (!opts?.thumb && restored.project.coverAssetName) {
+    void storeChosenCoverThumb(restored.project, { storageScope })
+  }
+  return restored
+}
+
+/**
+ * A miniatura do card de um projeto do perfil, reduzida até caber no teto do índice da nuvem
+ * (`maxChars`, ver `cover/cloudThumb.ts`); `null` = sem capa aqui ou sem canvas.
+ */
+export async function loadProjectThumbForCloud(
+  id: string,
+  opts?: { namespace?: string; maxChars?: number },
+): Promise<string | null> {
+  const storageScope =
+    opts?.namespace === undefined ? undefined : getProjectStorageScope(opts.namespace)
+  const thumb = await loadProjectThumb(id, storageScope)
+  if (!thumb) return null
+  return buildCloudThumb(thumb, opts?.maxChars ?? CLOUD_THUMB_MAX_CHARS)
+}
+
+/**
+ * Adota as miniaturas que a nuvem listou para projetos que já existem neste aparelho SEM capa
+ * (sincronizados antes de a capa viajar, ou nunca abertos aqui) — sem baixar blob nenhum.
+ * Devolve quantas foram gravadas.
+ */
+export async function adoptCloudProjectThumbs(
+  items: ReadonlyArray<{ id: string; thumb: string }>,
+  opts?: { namespace?: string },
+): Promise<number> {
+  const storageScope =
+    opts?.namespace === undefined ? undefined : getProjectStorageScope(opts.namespace)
+  return adoptProjectThumbs(items, storageScope)
 }
 
 /**
@@ -88,7 +146,7 @@ export async function loadProjectSnapshotForCloud(
 ): Promise<Project | null> {
   const storageScope =
     opts?.namespace === undefined ? undefined : getProjectStorageScope(opts.namespace)
-  const project = await loadProjectById(id, storageScope)
+  const project = await loadSanitizedProjectById(id, storageScope)
   if (!project) return null
   return snapshotProjectWithCurrentAuthority({
     ...project,
@@ -143,9 +201,9 @@ export function loadProjectAssetsSnapshotForCloud(
  * não pode deixar uma cópia órfã a cada carga. O `Project` devolvido pode ir direto
  * ao `restoreProjectFromCloud` (o saneamento é idempotente).
  */
-export function validateCloudProjectSnapshot(
+export async function validateCloudProjectSnapshot(
   raw: unknown,
   opts?: { expectedId?: string },
-): { project: Project; warnings: string[] } {
+): Promise<{ project: Project; warnings: string[] }> {
   return sanitizeCloudProjectSnapshot(raw, opts)
 }

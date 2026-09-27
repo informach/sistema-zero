@@ -13,8 +13,9 @@
  * cilindro convertidos em malha não podem ser arredondados ao encaixe.
  */
 import { MOLDA_LIMITS } from '../core/limits'
-import type { MeshFace, MeshFaceKey, MoldaMesh, Vec3 } from '../core/model'
+import type { MeshFace, MeshFaceKey, MeshLooseEdge, MoldaMesh, Vec3 } from '../core/model'
 import { add, cross, dot, length, normalize, scale, sub } from './vec'
+import { overlappingVertices } from './vertexOverlap'
 
 export const MESH_VERTEX_KEY = /^v_[a-z0-9]{1,16}$/
 export const MESH_FACE_KEY = /^f_[a-z0-9]{1,16}$/
@@ -141,20 +142,38 @@ export function meshTriangleCount(mesh: MoldaMesh): number {
   return total
 }
 
-/** Arestas únicas (par de chaves em ordem), para o overlay de arestas e o loop cut. */
-export function meshEdges(mesh: MoldaMesh): Array<[string, string]> {
+function canonicalEdge(a: string, b: string): [string, string] {
+  return a < b ? [a, b] : [b, a]
+}
+
+/** Arestas únicas da superfície (sem as arestas de construção). */
+export function meshSurfaceEdges(mesh: MoldaMesh): Array<[string, string]> {
   const seen = new Set<string>()
   const edges: Array<[string, string]> = []
   for (const face of Object.values(mesh.faces)) {
     for (let i = 0; i < face.v.length; i += 1) {
       const a = face.v[i] as string
       const b = face.v[(i + 1) % face.v.length] as string
-      const pair: [string, string] = a < b ? [a, b] : [b, a]
+      const pair = canonicalEdge(a, b)
       const key = `${pair[0]} ${pair[1]}`
       if (seen.has(key)) continue
       seen.add(key)
       edges.push(pair)
     }
+  }
+  return edges
+}
+
+/** Todas as arestas selecionáveis: superfície primeiro, construção depois. */
+export function meshEdges(mesh: MoldaMesh): Array<[string, string]> {
+  const edges = meshSurfaceEdges(mesh)
+  const seen = new Set(edges.map(([a, b]) => `${a} ${b}`))
+  for (const edge of mesh.looseEdges ?? []) {
+    const pair = canonicalEdge(edge[0], edge[1])
+    const key = `${pair[0]} ${pair[1]}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    edges.push(pair)
   }
   return edges
 }
@@ -232,7 +251,8 @@ function sortedKeys<T>(record: Record<string, T>): string[] {
 /**
  * A forma CANÔNICA de uma malha: só vértices finitos, só faces de 3 ou 4 chaves
  * distintas que existem (a face quebrada cai SEM derrubar a malha), quads em
- * ciclo, vértice que nenhuma face usa cai, chaves em ordem. Idempotente.
+ * ciclo, arestas de construção válidas/canônicas, vértice que nada usa cai,
+ * chaves em ordem. Idempotente.
  */
 export function normalizeMesh(mesh: MoldaMesh): MoldaMesh {
   const vertices: Record<string, Vec3> = {}
@@ -258,8 +278,25 @@ export function normalizeMesh(mesh: MoldaMesh): MoldaMesh {
     faces[key] = { v: cycle }
     for (const k of cycle) used.add(k)
   }
+  const surface = new Set(meshSurfaceEdges({ vertices, faces }).map(([a, b]) => `${a} ${b}`))
+  const looseEdges: MeshLooseEdge[] = []
+  const looseSeen = new Set<string>()
+  for (const raw of mesh.looseEdges ?? []) {
+    if (!Array.isArray(raw) || raw.length !== 2) continue
+    const [a, b] = raw
+    if (typeof a !== 'string' || typeof b !== 'string' || a === b) continue
+    if (!(a in vertices) || !(b in vertices)) continue
+    const pair = canonicalEdge(a, b)
+    const key = `${pair[0]} ${pair[1]}`
+    if (surface.has(key) || looseSeen.has(key)) continue
+    looseSeen.add(key)
+    looseEdges.push(pair)
+    used.add(pair[0])
+    used.add(pair[1])
+  }
+  looseEdges.sort(([a1, b1], [a2, b2]) => a1.localeCompare(a2) || b1.localeCompare(b2))
   for (const key of Object.keys(vertices)) if (!used.has(key)) delete vertices[key]
-  return { vertices, faces }
+  return looseEdges.length > 0 ? { vertices, faces, looseEdges } : { vertices, faces }
 }
 
 /** Cópia rasa dos dois mapas (ninguém muta um `Vec3` no lugar, mas a IDENTIDADE da malha importa). */
@@ -270,13 +307,14 @@ export function cloneMesh(mesh: MoldaMesh): MoldaMesh {
   for (const [key, face] of Object.entries(mesh.faces)) {
     faces[key as MeshFaceKey] = { v: [...face.v] }
   }
-  return { vertices, faces }
+  const looseEdges = mesh.looseEdges?.map(([a, b]) => [a, b] as const)
+  return looseEdges?.length ? { vertices, faces, looseEdges } : { vertices, faces }
 }
 
 export function translateMesh(mesh: MoldaMesh, delta: Vec3): MoldaMesh {
   const vertices: Record<string, Vec3> = {}
   for (const [key, v] of Object.entries(mesh.vertices)) vertices[key] = add(v, delta)
-  return { vertices, faces: mesh.faces }
+  return { ...mesh, vertices, faces: mesh.faces }
 }
 
 /** Reposiciona/escala os vértices para a caixa nova (a caixa antiga é `meshBox`). */
@@ -294,7 +332,7 @@ export function scaleMeshToBox(mesh: MoldaMesh, box: { from: Vec3; to: Vec3 }): 
     }
     vertices[key] = next
   }
-  return { vertices, faces: mesh.faces }
+  return { ...mesh, vertices, faces: mesh.faces }
 }
 
 /** Arredonda os vértices à precisão dada (a do disco é `MOLDA_LIMITS.meshPrecision`). */
@@ -307,7 +345,7 @@ export function roundMesh(mesh: MoldaMesh, precision = MOLDA_LIMITS.meshPrecisio
       Math.round(v[2] / precision) * precision,
     ]
   }
-  return { vertices, faces: mesh.faces }
+  return { ...mesh, vertices, faces: mesh.faces }
 }
 
 /**
@@ -323,7 +361,9 @@ export function mirrorMesh(mesh: MoldaMesh): MoldaMesh {
   for (const [key, face] of Object.entries(mesh.faces)) {
     faces[key as MeshFaceKey] = { v: [...face.v].reverse() }
   }
-  return { vertices, faces }
+  return mesh.looseEdges?.length
+    ? { vertices, faces, looseEdges: mesh.looseEdges }
+    : { vertices, faces }
 }
 
 export function meshEquals(a: MoldaMesh | undefined, b: MoldaMesh | undefined): boolean {
@@ -345,6 +385,12 @@ export function meshEquals(a: MoldaMesh | undefined, b: MoldaMesh | undefined): 
     const q = b.faces[key]
     if (!p || !q || p.v.length !== q.v.length) return false
     for (let i = 0; i < p.v.length; i += 1) if (p.v[i] !== q.v[i]) return false
+  }
+  const ea = a.looseEdges ?? []
+  const eb = b.looseEdges ?? []
+  if (ea.length !== eb.length) return false
+  for (let i = 0; i < ea.length; i += 1) {
+    if (ea[i]?.[0] !== eb[i]?.[0] || ea[i]?.[1] !== eb[i]?.[1]) return false
   }
   return true
 }
@@ -396,15 +442,10 @@ export function faceGeometryIssue(
  * regra local, sem depender do centro da malha).
  */
 export function meshIssues(mesh: MoldaMesh): MeshIssue[] {
-  const issues: MeshIssue[] = []
-  const entries = Object.entries(mesh.vertices)
-  for (let i = 0; i < entries.length; i += 1) {
-    const [keyA, a] = entries[i] as [string, Vec3]
-    for (let j = i + 1; j < entries.length; j += 1) {
-      const [keyB, b] = entries[j] as [string, Vec3]
-      if (length(sub(a, b)) <= OVERLAP_EPS) issues.push({ kind: 'overlap', vertices: [keyA, keyB] })
-    }
-  }
+  const issues: MeshIssue[] = overlappingVertices(mesh.vertices, OVERLAP_EPS).map((vertices) => ({
+    kind: 'overlap',
+    vertices,
+  }))
   // Quem percorre cada aresta, e em que sentido: numa malha coerente, duas vizinhas
   // percorrem a aresta que dividem em sentidos OPOSTOS.
   const traversals = new Map<string, Array<{ face: MeshFaceKey; forward: boolean }>>()

@@ -27,6 +27,18 @@ function toThree(part: MoldaPart): Mesh {
 }
 
 describe('geometria das peças', () => {
+  test('a face range never includes triangles of a different face', () => {
+    const built = buildPartGeometry(partOf('cylinder'))
+    for (const [face, spans] of Object.entries(built.faceRanges)) {
+      if (!spans) throw new Error(`missing spans for ${face}`)
+      for (const range of spans) {
+        expect(built.faceOfTriangle.slice(range.start, range.start + range.count)).toEqual(
+          Array(range.count).fill(face),
+        )
+      }
+    }
+  })
+
   test('contagem de triângulos por forma e por modelo', () => {
     for (const shape of SHAPE_IDS) {
       const built = buildPartGeometry(partOf(shape))
@@ -35,7 +47,9 @@ describe('geometria das peças', () => {
       expect(built.normals.length).toBe(built.triangleCount * 9)
       expect(built.uvs.length).toBe(built.triangleCount * 6)
       expect(built.faceOfTriangle).toHaveLength(built.triangleCount)
-      const covered = Object.values(built.faceRanges).reduce((sum, r) => sum + (r?.count ?? 0), 0)
+      const covered = Object.values(built.faceRanges)
+        .flatMap((spans) => spans ?? [])
+        .reduce((sum, range) => sum + range.count, 0)
       expect(covered).toBe(built.triangleCount)
       for (const face of Object.keys(built.faceRanges)) {
         expect(partFaces(partOf(shape)) as readonly string[]).toContain(face)
@@ -158,7 +172,7 @@ describe('geometria das peças', () => {
   test('a mesma UV local (0,0) é o canto superior esquerdo visto de fora na face pz', () => {
     const box = partOf('box')
     const built = buildPartGeometry(box)
-    const range = built.faceRanges.pz
+    const range = built.faceRanges.pz?.[0]
     if (!range) throw new Error('pz')
     // Primeiro vértice do primeiro triângulo = TL = (x0, y1, z1).
     const i = range.start * 9

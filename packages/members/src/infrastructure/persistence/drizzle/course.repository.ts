@@ -14,7 +14,14 @@ import type {
 import { ACCESSIBLE_COURSE_STATUSES } from '../../../domain/course/course'
 import type { CourseRepository } from '../../../domain/ports/course-repository.port'
 import type { Database } from './db'
-import { courses, lessonAttachments, lessonBlocks, lessons, modules } from './schema'
+import { lessonContentAvailable } from './lesson-availability'
+import {
+  courses,
+  lessonAttachments,
+  activeLessonBlocks as lessonBlocks,
+  lessons,
+  modules,
+} from './schema'
 import { JAVASCRIPT_TRIM_CHARACTERS } from './text-normalization'
 
 function toCourse(row: typeof courses.$inferSelect): Course {
@@ -32,6 +39,7 @@ function toCourse(row: typeof courses.$inferSelect): Course {
     level: row.level,
     track: row.track,
     careerSlot: row.careerSlot,
+    journeyRole: row.journeyRole,
     metadata: row.metadata ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -44,6 +52,7 @@ function toModule(row: typeof modules.$inferSelect): Module {
     courseId: row.courseId,
     title: row.title,
     summary: row.summary,
+    riveUrl: row.riveUrl,
     sortOrder: row.sortOrder,
   }
 }
@@ -80,12 +89,52 @@ function toAttachment(row: typeof lessonAttachments.$inferSelect): LessonAttachm
     url: row.url,
     fileType: row.fileType,
     sizeBytes: row.sizeBytes,
+    zappyStudentNotebook: row.zappyStudentNotebook,
     sortOrder: row.sortOrder,
   }
 }
 
 export class DrizzleCourseRepository implements CourseRepository {
-  constructor(private readonly db: Database) {}
+  constructor(
+    private readonly db: Database | Parameters<Parameters<Database['transaction']>[0]>[0],
+  ) {}
+
+  async listMaterialLessonIds(courseId: string): Promise<string[]> {
+    const rows = await this.db
+      .select({ lessonId: lessons.id })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .innerJoin(modules, eq(lessons.moduleId, modules.id))
+      .where(
+        and(
+          eq(lessons.courseId, courseId),
+          eq(lessons.isPublished, true),
+          eq(lessonBlocks.kind, 'ebook'),
+          lessonContentAvailable(lessons.id),
+        ),
+      )
+      .orderBy(asc(modules.sortOrder), asc(lessons.sortOrder), asc(lessonBlocks.sortOrder))
+    return [...new Set(rows.map((row) => row.lessonId))]
+  }
+
+  async listShowcaseLessonIds(courseId: string): Promise<string[]> {
+    const rows = await this.db
+      .select({ lessonId: lessons.id })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .innerJoin(modules, eq(lessons.moduleId, modules.id))
+      .where(
+        and(
+          eq(lessons.courseId, courseId),
+          eq(lessons.isPublished, true),
+          eq(lessonBlocks.kind, 'studio'),
+          sql`${lessonBlocks.content} -> 'showcase' ->> 'enabled' = 'true'`,
+          lessonContentAvailable(lessons.id),
+        ),
+      )
+      .orderBy(asc(modules.sortOrder), asc(lessons.sortOrder), asc(lessonBlocks.sortOrder))
+    return [...new Set(rows.map((row) => row.lessonId))]
+  }
 
   async findCourseBySlug(slug: string): Promise<Course | null> {
     const [row] = await this.db.select().from(courses).where(eq(courses.slug, slug)).limit(1)

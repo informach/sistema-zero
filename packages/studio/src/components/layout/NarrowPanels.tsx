@@ -17,6 +17,8 @@ export interface NarrowEditorPane {
   label: ReactNode
   /** Conteúdo do editor. Fica MONTADO mesmo quando a aba não está ativa. */
   content: ReactNode
+  /** A criança escolheu esta aba (a Ponte usa para saber qual editor os botões de desfazer servem). */
+  onSelect?: () => void
 }
 
 export interface NarrowPanelsProps {
@@ -77,6 +79,7 @@ export function NarrowPanels({
 
   const handleSelect = (id: string) => {
     setActive(id)
+    editorPanes.find((pane) => pane.id === id)?.onSelect?.()
     // Mantém o `bottomTab` global em sincronia: se o aluno alargar a janela (volta
     // ao wide), o BottomPanel reabre na mesma aba inferior.
     if (id === 'console' || id === 'terminal' || id === 'ai') setBottomTab(id as BottomTab)

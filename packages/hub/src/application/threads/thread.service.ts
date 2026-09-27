@@ -5,6 +5,7 @@ import {
   ChannelNotFoundError,
   CommentNotFoundError,
   ConcurrencyConflictError,
+  CursorSortMismatchError,
   PostingNotAllowedError,
   ThreadNotFoundError,
   TooManyAttachmentsError,
@@ -15,7 +16,7 @@ import type { AttachmentRepository } from '../../domain/ports/attachment-reposit
 import type { CommunityReadRepository } from '../../domain/ports/community-read-repository.port'
 import type { ModerationRepository } from '../../domain/ports/moderation-repository.port'
 import type { ReactionRepository } from '../../domain/ports/reaction-repository.port'
-import type { ThreadRepository } from '../../domain/ports/thread-repository.port'
+import type { ThreadRepository, ThreadSort } from '../../domain/ports/thread-repository.port'
 import { type Channel, effectiveRequiresApproval, type Space } from '../../domain/space/space'
 import type { Comment, Thread } from '../../domain/thread/thread'
 import type { AccessResolutionService, Actor } from '../access/access-resolution.service'
@@ -115,6 +116,8 @@ export class ThreadService {
     cmd: CreateThreadCommand,
   ): Promise<ThreadView> {
     const { space, channel } = await this.requireChannelAccess(actor, channelId)
+    if (!(await this.access.canInteractChannel(actor, space, channel)))
+      throw new AccessDeniedError()
     await this.assertNotMutedOrBanned(actor, space.id, channelId)
     // Canal "somente avisos": só staff abre tópico.
     if (channel.postingPolicy === 'staff_only' && !actor.privileged) {
@@ -169,7 +172,12 @@ export class ThreadService {
     limit: number,
     /** Prateleira do desafio mensal (`m:YYYY-MM`) — filtra por `challenge_key`. */
     challengeKey: string | null = null,
+    /** Ordem da listagem (filtros do Mural); o padrão é a de sempre. */
+    sort: ThreadSort = 'activity',
   ): Promise<Page<ThreadView>> {
+    // Cursor de outra ordem pularia ou repetiria itens: a chave de posição dele não é
+    // a desta listagem. Recusa em vez de devolver uma página errada em silêncio.
+    if (cursor && (cursor.s ?? 'activity') !== sort) throw new CursorSortMismatchError()
     await this.requireChannelAccess(actor, channelId)
     const { items, hasMore } = await this.threads.listThreads(channelId, {
       viewerId: actor.userId,
@@ -177,13 +185,14 @@ export class ThreadService {
       cursor,
       limit,
       challengeKey,
+      sort,
     })
     const ids = items.map((t) => t.id)
     const [reactions, attachments] = await Promise.all([
       this.reactions.summarize('thread', ids, actor.userId),
       this.attachments.listByThreadIds(ids),
     ])
-    return toThreadPage(items, hasMore, reactions, attachments)
+    return toThreadPage(items, hasMore, reactions, attachments, sort)
   }
 
   /**
@@ -225,7 +234,9 @@ export class ThreadService {
     body: string,
     expectedVersion: number,
   ): Promise<ThreadView> {
-    const { thread } = await this.requireThreadView(actor, threadId)
+    const { thread, space, channel } = await this.requireThreadView(actor, threadId)
+    if (!(await this.access.canInteractChannel(actor, space, channel)))
+      throw new AccessDeniedError()
     if (thread.authorId !== actor.userId && !actor.privileged) {
       throw new AccessDeniedError('Só o autor pode editar')
     }
@@ -251,6 +262,8 @@ export class ThreadService {
     cmd: CreateCommentCommand,
   ): Promise<CommentView> {
     const { thread, space, channel } = await this.requireThreadView(actor, threadId)
+    if (!(await this.access.canInteractChannel(actor, space, channel)))
+      throw new AccessDeniedError()
     await this.assertNotMutedOrBanned(actor, space.id, thread.channelId)
     // Só se comenta em tópico VISÍVEL (pendente/oculto não recebe resposta).
     if (thread.status !== 'visible') throw new PostingNotAllowedError('Tópico indisponível')
@@ -314,7 +327,9 @@ export class ThreadService {
     const comment = await this.threads.findCommentById(commentId)
     if (!comment) throw new CommentNotFoundError()
     // Garante acesso ao tópico-pai (e que o tópico existe/é visível ao ator).
-    await this.requireThreadView(actor, comment.threadId)
+    const { space, channel } = await this.requireThreadView(actor, comment.threadId)
+    if (!(await this.access.canInteractChannel(actor, space, channel)))
+      throw new AccessDeniedError()
     if (comment.authorId !== actor.userId && !actor.privileged) {
       throw new AccessDeniedError('Só o autor pode editar')
     }

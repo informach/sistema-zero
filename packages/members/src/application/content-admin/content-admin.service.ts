@@ -1,5 +1,13 @@
-import { careerSlotsForTier } from '@sistemazero/core/career'
-import { isStudioProTemplateId } from '@sistemazero/core/studio'
+import { ValidationError } from '@sistemazero/core/errors'
+import { journeySlotsForTier } from '@sistemazero/core/journey'
+import { isInteractiveBlock, isPdfAttachment } from '@sistemazero/core/learning'
+import {
+  isSceneVozes,
+  SCENE_IDS,
+  type SceneId,
+  sceneUnknownSetupGoals,
+} from '@sistemazero/core/learning/scene'
+import { isStudioProTemplateId, STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { CourseAudience } from '../../domain/course/course'
 import {
@@ -34,6 +42,7 @@ import type {
   ModuleFields,
 } from '../../domain/ports/content-admin-repository.port'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
+import type { LearningService } from '../learning/learning.service'
 import {
   type AttachmentView,
   type BlockView,
@@ -78,21 +87,20 @@ export class CourseAdminService {
     filter: ListCoursesAdminFilter,
   ): Promise<{ items: CourseView[]; total: number; limit: number; offset: number }> {
     const { items, total } = await this.content.listCoursesAdmin(filter)
-    // Curso-base (kids, slot 1) sem bloco de Estúdio com vitrine em aula publicada
-    // nunca qualifica → a etapa não destrava. Marca p/ o painel avisar o operador.
-    const foundationIds = items
-      .filter((course) => course.audience === 'kids' && course.careerSlot === 1)
+    // Toda posição obrigatória exige publicação para qualificar na jornada.
+    const mandatoryIds = items
+      .filter((course) => course.audience === 'kids' && course.careerSlot !== null)
       .map((course) => course.id)
     const withShowcase = new Set(
-      foundationIds.length > 0
-        ? await this.content.listCourseIdsWithShowcaseBlock(foundationIds)
+      mandatoryIds.length > 0
+        ? await this.content.listCourseIdsWithShowcaseBlock(mandatoryIds)
         : [],
     )
     return {
       items: items.map((course) =>
         toCourseView(
           course,
-          course.audience === 'kids' && course.careerSlot === 1
+          course.audience === 'kids' && course.careerSlot !== null
             ? withShowcase.has(course.id)
             : undefined,
         ),
@@ -105,9 +113,9 @@ export class CourseAdminService {
 
   /**
    * CLONA o curso para a plataforma destino (o substituto da "audiência Ambas"):
-   * o clone é um curso INDEPENDENTE — entra na carreira/chave-mestra/XP da
+   * o clone é um curso INDEPENDENTE — entra na jornada/chave-mestra/XP da
    * plataforma dele sem nenhuma regra nova — e edições NÃO sincronizam (fork,
-   * avisado na UI). Nasce `draft` e fora da carreira; `metadata.clonedFrom`
+   * avisado na UI). Nasce `draft` e fora da jornada; `metadata.clonedFrom`
    * guarda a proveniência.
    */
   async clone(
@@ -143,8 +151,9 @@ export class CourseAdminService {
       level: fields.level ?? 'iniciante',
       track: fields.track ?? '2d',
       careerSlot: fields.careerSlot ?? null,
+      journeyRole: fields.journeyRole ?? (fields.careerSlot == null ? 'reward' : 'positioned'),
     }
-    assertCareerSlot(normalized)
+    assertJourneySlot(normalized)
     return toCourseView(await this.content.createCourse(normalized))
   }
 
@@ -180,6 +189,7 @@ export class CourseAdminService {
       level,
       track,
       careerSlot,
+      journeyRole,
       version: _version,
       ...rest
     } = fields
@@ -191,9 +201,16 @@ export class CourseAdminService {
       level: level ?? existing.level,
       track: track ?? existing.track,
       careerSlot: careerSlot === undefined ? existing.careerSlot : careerSlot,
+      journeyRole:
+        journeyRole ??
+        (careerSlot !== undefined && careerSlot !== existing.careerSlot
+          ? careerSlot === null
+            ? 'reward'
+            : 'positioned'
+          : existing.journeyRole),
       metadata: withCourseMetadata(existing.metadata, { salesPageUrl, studioUnlockBlocks }),
     }
-    assertCareerSlot(merged)
+    assertJourneySlot(merged)
     // Curso-base kids (slot 1) publicado exige uma aula PUBLICADA com bloco de Estúdio
     // de vitrine — sem ela o aluno nunca qualifica o slot e a etapa trava (armadilha do
     // fail-open). Guard SÓ NA TRANSIÇÃO para o estado-armadilha: um curso que JÁ está
@@ -201,9 +218,11 @@ export class CourseAdminService {
     // no editor de AULA, e o aviso ⚠️ da listagem cobre a detecção. Caminho inverso
     // (remover a vitrine de curso-base publicado) fica de fora — follow-up documentado.
     const becomesTrapped =
-      merged.status === 'published' && merged.audience === 'kids' && merged.careerSlot === 1
+      merged.status === 'published' && merged.audience === 'kids' && merged.careerSlot !== null
     const wasTrapped =
-      existing.status === 'published' && existing.audience === 'kids' && existing.careerSlot === 1
+      existing.status === 'published' &&
+      existing.audience === 'kids' &&
+      existing.careerSlot !== null
     if (becomesTrapped && !wasTrapped) {
       const withShowcase = await this.content.listCourseIdsWithShowcaseBlock([id])
       if (withShowcase.length === 0) throw new NoShowcaseBlockError()
@@ -220,16 +239,27 @@ export class CourseAdminService {
   }
 }
 
-function assertCareerSlot(course: {
+function assertJourneySlot(course: {
   audience: string
   level: string
   track: string
   careerSlot: number | null
+  journeyRole: string
 }): void {
+  if ((course.journeyRole === 'positioned') !== (course.careerSlot !== null)) {
+    throw new InvalidContentCommandError(
+      'Escolha uma posição apenas para curso da jornada; bônus e extras não têm posição',
+    )
+  }
+  if (course.journeyRole === 'extra' && (course.audience !== 'kids' || course.level === 'lenda')) {
+    throw new InvalidContentCommandError(
+      'Curso extra deve pertencer a uma etapa Kids, fora da Lenda',
+    )
+  }
   // O degrau de ENTRADA só existe no eixo 2D. Vale ANTES do desvio do bônus: um curso
   // `primeiros-passos` + `3d` não gera degrau nenhum (`courseTier` devolve `null`), então
   // ficaria SEMPRE aberto e não apareceria em trilha alguma — invisível no mapa e fora da
-  // carreira, sem ninguém notar. O select do admin nunca oferece esse par; isto barra o
+  // jornada, sem ninguém notar. O select do admin nunca oferece esse par; isto barra o
   // PATCH feito à mão.
   if (course.level === 'primeiros-passos' && course.track !== '2d') {
     throw new InvalidContentCommandError('Primeiros Passos existe somente no eixo 2D')
@@ -237,20 +267,20 @@ function assertCareerSlot(course: {
   if (course.careerSlot === null) return
   if (course.level === 'lenda') {
     throw new InvalidContentCommandError(
-      'Curso Lenda é bônus da formatura — não ocupa posição na carreira',
+      'Curso Lenda é bônus da formatura — não ocupa posição na jornada',
     )
   }
   if (course.audience !== 'kids') {
-    throw new InvalidContentCommandError('Somente cursos Kids podem ocupar a carreira')
+    throw new InvalidContentCommandError('Somente cursos Kids podem ocupar a jornada')
   }
   // O teto é POR DEGRAU e vem do catálogo CANÔNICO do core (1 em Primeiros Passos, 7 no
   // Iniciante 2D, 8 nos demais); o CHECK da migration `0063` e o admin (via conformance)
-  // espelham a mesma fonte. O `CAREER_SLOT_MAX` continua como limite externo do DTO.
+  // espelham a mesma fonte. O `JOURNEY_SLOT_MAX` continua como limite externo do DTO.
   const tier = `${course.level}-${course.track}`
-  const maximum = careerSlotsForTier(tier)
+  const maximum = journeySlotsForTier(tier)
   if (maximum === 0) {
     throw new InvalidContentCommandError(
-      'Esta combinação de nível e eixo não é um degrau da carreira',
+      'Esta combinação de nível e eixo não é um degrau da jornada',
     )
   }
   if (
@@ -260,8 +290,8 @@ function assertCareerSlot(course: {
   ) {
     throw new InvalidContentCommandError(
       maximum === 1
-        ? 'Esta etapa aceita somente a posição 1 na carreira'
-        : `Esta etapa aceita posições de 1 a ${maximum} na carreira`,
+        ? 'Esta etapa aceita somente a posição 1 na jornada'
+        : `Esta etapa aceita posições de 1 a ${maximum} na jornada`,
     )
   }
 }
@@ -355,6 +385,7 @@ export class LessonAdminService {
   constructor(
     private readonly content: ContentAdminRepository,
     private readonly courses: CourseRepository,
+    private readonly learning: LearningService,
   ) {}
 
   async create(moduleId: string, fields: LessonFields): Promise<LessonView> {
@@ -371,6 +402,7 @@ export class LessonAdminService {
     if (existing.isPublished && !fields.isPublished) {
       await this.assertNotLastPublished(existing.courseId, id)
     }
+    if (fields.isPublished) await this.learning.assertPublishable(id)
     const updated = await this.content.updateLesson(id, fields)
     if (!updated) throw new LessonNotFoundError()
     return toLessonView(updated)
@@ -415,8 +447,56 @@ export class LessonAdminService {
 
 // ── Blocos ──────────────────────────────────────────────────────────────────
 
+/** Os ids de objetivo que o caso cita e a cena escolhida não conhece. */
+function metasQueACenaNaoTem(content: LessonBlockContent): string[] {
+  const activity = (content as { activity?: { scene?: unknown; setup?: { goals?: unknown } } })
+    .activity
+  const scene = activity?.scene
+  if (!SCENE_IDS.some((id) => id === scene)) return []
+  return sceneUnknownSetupGoals(scene as SceneId, activity?.setup?.goals)
+}
+
 /** Coerência semântica do bloco (além do shape TypeBox). Quiz/estúdio incoerente → 400. */
-function assertBlockCoherent(content: LessonBlockContent): void {
+export function assertBlockCoherent(content: LessonBlockContent): void {
+  if ((content.kind === 'studio' || content.kind === 'pinta') && content.gallery !== undefined) {
+    if (
+      !isGalleryDeliveryConfig(content.gallery, content.kind) ||
+      content.chain ||
+      (content.kind === 'studio' && content.showcase?.enabled) ||
+      content.purpose === 'experiment'
+    )
+      throw new InvalidContentCommandError(
+        'A entrega pela galeria precisa de limites válidos e não usa cadeia, vitrine incorporada nem modo de exploração.',
+      )
+  }
+  if (content.kind === 'interactive' && !isInteractiveBlock(content)) {
+    // ⚠️⚠️ O objetivo que a cena não tem sai NOMEADO, na mesma voz do editor (M3 do full review 2 de
+    // dados, 17/09/2026). O rascunho guarda o caso assim, e quem recusa é a publicação: com a frase
+    // genérica a professora lia "configure a atividade" sobre um bloco em que só um id estava
+    // errado, e não tinha como saber qual.
+    const semNaCena = metasQueACenaNaoTem(content)
+    if (semNaCena.length)
+      throw new InvalidContentCommandError(
+        `Este caso cita ${semNaCena.length === 1 ? 'um objetivo que não existe' : 'objetivos que não existem'} nesta cena: ${semNaCena.join(', ')}. Confira se a cena certa está escolhida e tire do caso.`,
+      )
+    throw new InvalidContentCommandError(
+      'Configure a atividade e sua verificação. Experimentos e HTML essenciais precisam de uma pergunta de verificação.',
+    )
+  }
+  // ⚠⚠ A voz do Zappy do BALÃO passa pela MESMA régua da cena (`isSceneVozes`): chave normalizada,
+  // endereço `https://` ou do próprio site, teto de entradas. Na cena quem cobra é o
+  // `isInteractiveBlock` acima; aqui o `dialogue` não tem guard de core, e sem esta linha o DTO
+  // deixaria passar um dicionário que o player nunca encontraria — um balão mudo, sem erro nenhum.
+  if (content.kind === 'dialogue' && !isSceneVozes(content.vozes))
+    throw new InvalidContentCommandError('A voz deste recado está inválida. Gere a voz de novo.')
+  if (
+    (content.kind === 'studio' || content.kind === 'pinta') &&
+    content.purpose === 'experiment' &&
+    (content.chain?.trim() || (content.kind === 'studio' && content.showcase?.enabled))
+  )
+    throw new InvalidContentCommandError(
+      'Experimentos não podem continuar uma cadeia ou publicar no Mural.',
+    )
   if (content.kind === 'quiz') {
     const problem = validateQuizAuthoring(content)
     if (problem) throw new InvalidContentCommandError(problem)
@@ -425,6 +505,7 @@ function assertBlockCoherent(content: LessonBlockContent): void {
   // Estúdio: limita o peso no jsonb e valida o discriminante crítico do projeto
   // Pro. O restante do snapshot continua defensivo e é sanitizado pelo Studio.
   if (content.kind === 'studio') {
+    assertCurrentStudioAuthoring(content.initialProject)
     if (JSON.stringify(content.initialProject).length > MAX_STUDIO_PROJECT_CHARS) {
       throw new InvalidContentCommandError('Projeto inicial excede o tamanho máximo permitido')
     }
@@ -456,8 +537,24 @@ function assertBlockCoherent(content: LessonBlockContent): void {
   }
 }
 
+/** Escritores antigos não podem reintroduzir projetos históricos nas aulas. */
+export function assertCurrentStudioAuthoring(project: unknown): void {
+  if (
+    !project ||
+    typeof project !== 'object' ||
+    (project as { formatVersion?: unknown }).formatVersion !== STUDIO_PROJECT_FORMAT_VERSION
+  )
+    throw new InvalidContentCommandError(
+      'Abra o projeto no Studio atualizado antes de salvar a aula.',
+    )
+}
+
 /** Valida e estabiliza o desenho inicial antes de qualquer regra ou escrita no repositório. */
-function canonicalizeBlockContent(content: LessonBlockContent): LessonBlockContent {
+export function canonicalizeBlockContent(content: LessonBlockContent): LessonBlockContent {
+  if ((content.kind === 'studio' || content.kind === 'pinta') && content.gallery !== undefined) {
+    assertBlockCoherent(content)
+    return content
+  }
   if (content.kind !== 'pinta') return content
   const asset = pintaAssetFromWire(content.initialAsset)
   if (!asset) throw new InvalidContentCommandError('O desenho inicial do Pinta é inválido')
@@ -497,7 +594,7 @@ const CERTIFICATE_LESSON_NO_GATES =
  * ⚠️ Bloco com snapshot ilegível (`assetKind: null`) NÃO conflita, dos dois lados: recusar por
  * causa de um bloco quebrado prenderia o autor justamente quando ele está consertando.
  */
-async function assertPintaChainTypeMatches(
+export async function assertPintaChainTypeMatches(
   content: ContentAdminRepository,
   courseId: string,
   block: PintaBlock,
@@ -616,10 +713,14 @@ export class AttachmentAdminService {
 
   async create(lessonId: string, fields: AttachmentFields): Promise<AttachmentView> {
     if (!(await this.content.findLessonById(lessonId))) throw new LessonNotFoundError()
+    if (fields.zappyStudentNotebook && !isPdfAttachment(fields))
+      throw new ValidationError('O Caderno do aluno precisa ser um PDF.')
     return toAttachmentView(await this.content.createAttachment(lessonId, fields))
   }
 
   async update(id: string, fields: AttachmentFields): Promise<AttachmentView> {
+    if (fields.zappyStudentNotebook && !isPdfAttachment(fields))
+      throw new ValidationError('O Caderno do aluno precisa ser um PDF.')
     const updated = await this.content.updateAttachment(id, fields)
     if (!updated) throw new ContentNotFoundError('Anexo não encontrado')
     return toAttachmentView(updated)
@@ -637,3 +738,5 @@ export class AttachmentAdminService {
     return { ok: true }
   }
 }
+
+import { isGalleryDeliveryConfig } from '@sistemazero/core/learning'

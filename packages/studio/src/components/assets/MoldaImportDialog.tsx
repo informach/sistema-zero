@@ -1,10 +1,10 @@
-import { type JSX, useEffect, useState } from 'react'
+import { type JSX, useEffect, useMemo, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import type { ProjectAsset } from '#core'
 import { Button, Modal } from '#ui'
 import { personalIdOf } from '../../asset-library/personalSync'
 import { normalizeSearchText } from '../../core/searchText'
-import { useProjectStore } from '../../state/projectStore'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
 import { type StudioMoldaCreationSummary, useStudioMoldaLibrary } from '../../studio/molda-library'
 import { uniqueAssetName } from './assetNames'
@@ -65,9 +65,11 @@ type LoadState =
 export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProps): JSX.Element {
   const t = useT()
   const adapter = useStudioMoldaLibrary()
-  const { assets, has3D } = useProjectStore(
+  const storeApi = useProjectStoreApi()
+  const { assets, has3D, projectId } = useProjectStore(
     useShallow((s) => ({
       assets: s.project?.assets ?? EMPTY_ASSETS,
+      projectId: s.project?.id,
       has3D: projectHas3DConsumer(s.project),
     })),
   )
@@ -78,6 +80,24 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
   const [query, setQuery] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [review, setReview] = useState<{
+    creation: StudioMoldaCreationSummary
+    token: string
+    losses: string[]
+  } | null>(null)
+  const owner = useMemo(
+    () => ({ adapter, projectId, storeApi, active: true, busy: false }),
+    [adapter, projectId, storeApi],
+  )
+  useEffect(() => {
+    owner.active = true
+    setBusyId(null)
+    setReview(null)
+    setError(null)
+    return () => {
+      owner.active = false
+    }
+  }, [owner])
 
   useEffect(() => {
     if (!adapter) return
@@ -102,13 +122,27 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
   // Quais criações já estão NESTE projeto (o elo é o libId `personal:<id>`).
   const inProject = new Set(assets.map((a) => personalIdOf(a)).filter(Boolean))
 
-  const handleAdd = async (creation: StudioMoldaCreationSummary): Promise<void> => {
-    if (!adapter || busyId) return
+  const handleAdd = async (
+    creation: StudioMoldaCreationSummary,
+    acceptedReview?: string,
+  ): Promise<void> => {
+    if (!adapter || owner.busy || !owner.active) return
+    owner.busy = true
+    const current = () => owner.active && owner.storeApi.getState().project?.id === owner.projectId
     setBusyId(creation.id)
     setError(null)
+    setReview(null)
     try {
-      const result = await adapter.import(creation.id)
+      const result = await adapter.import(
+        creation.id,
+        acceptedReview ? { acceptedReview } : undefined,
+      )
+      if (!current()) return
       if (!result.ok) {
+        if (result.code === 'needs-review' && result.review) {
+          setReview({ creation, ...result.review })
+          return
+        }
         setError(result.error)
         if (result.code === 'not-found' && load.phase === 'ready') {
           // Apagada no Molda entre listar e importar → o card sai da lista.
@@ -119,7 +153,7 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
         }
         return
       }
-      const taken = new Set(assets.map((a) => a.name))
+      const taken = new Set((owner.storeApi.getState().project?.assets ?? []).map((a) => a.name))
       const err = addAsset({
         name: uniqueAssetName(result.asset.name, taken),
         dataUrl: result.asset.dataUrl,
@@ -143,9 +177,10 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
       }
       onImported?.()
     } catch {
-      setError(t('moldaImport.importError'))
+      if (current()) setError(t('moldaImport.importError'))
     } finally {
-      setBusyId(null)
+      owner.busy = false
+      if (current()) setBusyId(null)
     }
   }
 
@@ -186,6 +221,34 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
             {error}
           </p>
         ) : null}
+
+        {review && (
+          <section
+            aria-label={t('moldaImport.review.title')}
+            className="rounded-md border border-sz-border p-3"
+          >
+            <p className="text-sm font-semibold">
+              {t('moldaImport.review.title')}: {review.creation.name}
+            </p>
+            <p className="text-sm">{t('moldaImport.review.hint')}</p>
+            <ul className="list-disc pl-5 text-sm">
+              {review.losses.map((loss) => (
+                <li key={loss}>{loss}</li>
+              ))}
+            </ul>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button
+                disabled={busyId !== null}
+                onClick={() => void handleAdd(review.creation, review.token)}
+              >
+                {t('moldaImport.review.accept')}
+              </Button>
+              <Button variant="ghost" onClick={() => setReview(null)}>
+                {t('moldaImport.review.cancel')}
+              </Button>
+            </div>
+          </section>
+        )}
 
         {someoneNeeds3D ? (
           <p role="note" className="text-xs text-sz-fg-soft">

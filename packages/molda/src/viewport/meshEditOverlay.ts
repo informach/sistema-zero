@@ -15,7 +15,9 @@ import {
   Float32BufferAttribute,
   Group,
   LineBasicMaterial,
+  LineDashedMaterial,
   LineSegments,
+  OrthographicCamera,
   PerspectiveCamera,
   Points,
   PointsMaterial,
@@ -23,8 +25,8 @@ import {
   Vector3,
 } from 'three'
 import type { FaceId, MeshFaceKey, MoldaMesh, Vec3 } from '../core/model'
-import { isMeshFaceKey, meshEdges } from '../model/mesh'
-import type { MeshPick } from '../model/meshSelection'
+import { isMeshFaceKey, meshEdges, meshSurfaceEdges } from '../model/mesh'
+import { type MeshPick, selectionVertices } from '../model/meshSelection'
 
 const VERTEX_COLOR = 0x1d6fd6
 const SELECTED_COLOR = 0xff8a00
@@ -38,6 +40,8 @@ export class MeshEditOverlay {
   private readonly pointsGeometry = new BufferGeometry()
   private readonly selectedGeometry = new BufferGeometry()
   private readonly edgesGeometry = new BufferGeometry()
+  private readonly looseEdgesGeometry = new BufferGeometry()
+  private readonly selectedEdgesGeometry = new BufferGeometry()
   private readonly pointsMaterial = new PointsMaterial({
     color: VERTEX_COLOR,
     size: 9,
@@ -58,6 +62,20 @@ export class MeshEditOverlay {
     transparent: true,
     opacity: 0.85,
   })
+  private readonly looseEdgesMaterial = new LineDashedMaterial({
+    color: EDGE_COLOR,
+    dashSize: 0.16,
+    gapSize: 0.1,
+    depthTest: false,
+    transparent: true,
+    opacity: 0.9,
+  })
+  private readonly selectedEdgesMaterial = new LineBasicMaterial({
+    color: SELECTED_COLOR,
+    depthTest: false,
+    transparent: true,
+    opacity: 1,
+  })
   private keys: string[] = []
   private positions: Vec3[] = []
   private edgePairs: Array<[string, string]> = []
@@ -67,17 +85,28 @@ export class MeshEditOverlay {
     const points = new Points(this.pointsGeometry, this.pointsMaterial)
     const selected = new Points(this.selectedGeometry, this.selectedMaterial)
     const edges = new LineSegments(this.edgesGeometry, this.edgesMaterial)
+    const looseEdges = new LineSegments(this.looseEdgesGeometry, this.looseEdgesMaterial)
+    const selectedEdges = new LineSegments(this.selectedEdgesGeometry, this.selectedEdgesMaterial)
     points.renderOrder = 4
     selected.renderOrder = 5
     edges.renderOrder = 3
+    looseEdges.renderOrder = 3
+    selectedEdges.renderOrder = 5
     points.frustumCulled = false
     selected.frustumCulled = false
     edges.frustumCulled = false
-    this.group.add(edges, points, selected)
+    looseEdges.frustumCulled = false
+    selectedEdges.frustumCulled = false
+    this.group.add(edges, looseEdges, selectedEdges, points, selected)
   }
 
   /** Reconstrói os buffers para a malha (em coordenadas da caixa menos o pivô). */
-  setMesh(mesh: MoldaMesh, pivot: Vec3, selected: readonly string[]): void {
+  setMesh(
+    mesh: MoldaMesh,
+    pivot: Vec3,
+    selected: readonly string[],
+    selection: readonly MeshPick[] = [],
+  ): void {
     this.keys = Object.keys(mesh.vertices)
     this.positions = this.keys.map((key) => {
       const v = mesh.vertices[key] as Vec3
@@ -91,7 +120,9 @@ export class MeshEditOverlay {
       'position',
       new Float32BufferAttribute(this.positions.flat(), 3),
     )
-    const selectedSet = new Set(selected)
+    const selectedSet = new Set(
+      selection.length > 0 ? selectionVertices(mesh, selection) : selected,
+    )
     const selectedPositions = this.positions.filter((_p, index) =>
       selectedSet.has(this.keys[index] as string),
     )
@@ -99,16 +130,62 @@ export class MeshEditOverlay {
       'position',
       new Float32BufferAttribute(selectedPositions.flat(), 3),
     )
-    this.edgePairs = meshEdges(mesh)
-    const edgePositions: number[] = []
-    for (const [a, b] of this.edgePairs) {
-      const p = this.byKey.get(a)
-      const q = this.byKey.get(b)
-      if (!p || !q) continue
-      edgePositions.push(p[0], p[1], p[2], q[0], q[1], q[2])
+    const positionsOf = (pairs: ReadonlyArray<readonly [string, string]>): number[] => {
+      const positions: number[] = []
+      for (const [a, b] of pairs) {
+        const p = this.byKey.get(a)
+        const q = this.byKey.get(b)
+        if (!p || !q) continue
+        positions.push(p[0], p[1], p[2], q[0], q[1], q[2])
+      }
+      return positions
     }
-    this.edgesGeometry.setAttribute('position', new Float32BufferAttribute(edgePositions, 3))
-    for (const geometry of [this.pointsGeometry, this.selectedGeometry, this.edgesGeometry]) {
+    const surfacePairs = meshSurfaceEdges(mesh)
+    const loosePairs = (mesh.looseEdges ?? []).map(
+      ([a, b]) => (a < b ? [a, b] : [b, a]) as [string, string],
+    )
+    this.edgePairs = meshEdges(mesh)
+    const selectedPairs = selection.flatMap((pick) => (pick.kind === 'edge' ? [pick.keys] : []))
+    this.edgesGeometry.setAttribute(
+      'position',
+      new Float32BufferAttribute(
+        positionsOf(
+          surfacePairs.filter(
+            ([a, b]) =>
+              !selectedPairs.some(([x, y]) => `${a} ${b}` === (x < y ? `${x} ${y}` : `${y} ${x}`)),
+          ),
+        ),
+        3,
+      ),
+    )
+    this.looseEdgesGeometry.setAttribute(
+      'position',
+      new Float32BufferAttribute(
+        positionsOf(
+          loosePairs.filter(
+            ([a, b]) =>
+              !selectedPairs.some(([x, y]) => `${a} ${b}` === (x < y ? `${x} ${y}` : `${y} ${x}`)),
+          ),
+        ),
+        3,
+      ),
+    )
+    this.selectedEdgesGeometry.setAttribute(
+      'position',
+      new Float32BufferAttribute(positionsOf(selectedPairs), 3),
+    )
+    // `LineDashedMaterial` usa as distâncias acumuladas do segmento para alternar traço/vão.
+    const looseObject = this.group.children.find(
+      (child) => child instanceof LineSegments && child.geometry === this.looseEdgesGeometry,
+    ) as LineSegments | undefined
+    looseObject?.computeLineDistances()
+    for (const geometry of [
+      this.pointsGeometry,
+      this.selectedGeometry,
+      this.edgesGeometry,
+      this.looseEdgesGeometry,
+      this.selectedEdgesGeometry,
+    ]) {
       geometry.computeBoundingSphere()
     }
   }
@@ -135,6 +212,9 @@ export class MeshEditOverlay {
     mode: MeshPick['kind'],
   ): MeshPick | null {
     const toleranceAt = (point: Vector3): number => {
+      if (camera instanceof OrthographicCamera && viewportHeightPx > 0) {
+        return (tolerancePx * (camera.top - camera.bottom)) / (camera.zoom * viewportHeightPx)
+      }
       if (!(camera instanceof PerspectiveCamera) || viewportHeightPx <= 0) return 0.25
       const distance = point.distanceTo(camera.position)
       const worldPerPx = (2 * distance * Math.tan((camera.fov * Math.PI) / 360)) / viewportHeightPx
@@ -181,8 +261,12 @@ export class MeshEditOverlay {
     this.pointsGeometry.dispose()
     this.selectedGeometry.dispose()
     this.edgesGeometry.dispose()
+    this.looseEdgesGeometry.dispose()
+    this.selectedEdgesGeometry.dispose()
     this.pointsMaterial.dispose()
     this.selectedMaterial.dispose()
     this.edgesMaterial.dispose()
+    this.looseEdgesMaterial.dispose()
+    this.selectedEdgesMaterial.dispose()
   }
 }

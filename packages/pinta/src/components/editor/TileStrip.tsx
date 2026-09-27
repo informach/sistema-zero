@@ -106,9 +106,7 @@ function TileThumbButton({
       aria-label={label}
       aria-pressed={selected}
       onClick={onSelect}
-      className={`pin-checkerboard relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border-2 transition ${
-        selected ? 'border-pin-accent ring-2 ring-pin-accent' : 'border-pin-border'
-      }`}
+      className="pin-thumb pin-thumb--lg pin-checkerboard relative"
     >
       {children}
       {/* O NÚMERO da peça é o que a criança digita na grade/sólidos do Estúdio. */}
@@ -201,9 +199,10 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
   }
 
   return (
-    <div className={clsx('pin-panel flex items-center gap-2 p-2', className)}>
-      <span className="px-1 text-sm font-bold text-pin-muted">{COPY.tiles.tiles}</span>
-      <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1">
+    // O cartão branco da faixa azul (11/09/2026, no desenho da faixa de quadros do personagem).
+    <div className={clsx('flex items-center gap-2 rounded-2xl bg-pin-surface p-2', className)}>
+      <span className="pin-section-title px-1">{COPY.tiles.tiles}</span>
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto p-1">
         {asset.tiles.map((tile, index) => (
           <TileThumbButton
             // biome-ignore lint/suspicious/noArrayIndexKey: peças não têm id; a ordem É a identidade (índice nos mapas)
@@ -227,8 +226,9 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
           </TileThumbButton>
         ))}
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
         <ToolButton
+          tone="quiet"
           icon={Plus}
           label={COPY.tiles.addTile}
           onClick={() =>
@@ -241,6 +241,7 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
           }
         />
         <ToolButton
+          tone="quiet"
           icon={Copy}
           label={COPY.tiles.duplicateTile}
           onClick={() =>
@@ -253,6 +254,7 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
           }
         />
         <ToolButton
+          tone="quiet"
           icon={Trash2}
           label={COPY.tiles.removeTile}
           disabled={asset.tiles.length <= 1}
@@ -265,6 +267,7 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
           }
         />
         <ToolButton
+          tone="quiet"
           icon={selectedCollision === 'platform' ? ArrowUpToLine : BrickWall}
           label={`${COPY.tiles.cycleCollision} — ${COLLISION_LABEL[selectedCollision]}`}
           active={selectedCollision !== 'none'}

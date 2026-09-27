@@ -12,6 +12,7 @@ import {
   VECTOR_FONT_FAMILIES,
   visibleShapes,
 } from './model'
+import { DEFAULT_STYLE, makeRect } from './shapes'
 
 const base = { id: 's1', stroke: null, opacity: 1, rotation: 0 }
 
@@ -60,6 +61,31 @@ describe('sanitizeVectorShape — preenchimento degradê', () => {
     })
     expect(shape).toBeNull()
   })
+
+  it('preserva pontos válidos e descarta geometria inválida', () => {
+    const shape = sanitizeVectorShape({
+      ...base,
+      type: 'rect',
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 10,
+      rx: 0,
+      fill: {
+        type: 'radial',
+        from: '#ffffff',
+        to: '#000000',
+        angle: 0,
+        center: { x: 0.2, y: 0.3 },
+        radius: 0.8,
+        start: { x: Number.NaN, y: 0.2 },
+      },
+    })
+    if (!shape || !isVectorGradient(shape.fill)) throw new Error('degradê esperado')
+    expect(shape.fill.center).toEqual({ x: 0.2, y: 0.3 })
+    expect(shape.fill.radius).toBe(0.8)
+    expect(shape.fill.start).toBeUndefined()
+  })
 })
 
 describe('sanitizeVectorShape — grupo', () => {
@@ -80,6 +106,56 @@ describe('sanitizeVectorShape — grupo', () => {
     expect(
       sanitizeVectorShape({ ...rectRaw, groupId: 'grupo com espaço' })?.groupId,
     ).toBeUndefined()
+  })
+})
+
+describe('sanitizeVectorShape — identidade de movimento', () => {
+  const rectRaw = { ...base, type: 'rect', x: 0, y: 0, w: 10, h: 10, rx: 0, fill: '#78dc52' }
+
+  it('preserva um motionId seguro para ligar a forma entre quadros', () => {
+    expect(sanitizeVectorShape({ ...rectRaw, motionId: 'movimento-1' })?.motionId).toBe(
+      'movimento-1',
+    )
+  })
+
+  it('mantém desenhos antigos sem motionId e descarta valores inseguros', () => {
+    expect(sanitizeVectorShape(rectRaw)?.motionId).toBeUndefined()
+    expect(
+      sanitizeVectorShape({ ...rectRaw, motionId: 'x"><script>alert(1)</script>' })?.motionId,
+    ).toBeUndefined()
+  })
+
+  it('uma forma nova nasce com identidades de instância e movimento distintas', () => {
+    const shape = makeRect({ x: 0, y: 0 }, { x: 10, y: 10 }, DEFAULT_STYLE)
+    expect(shape.motionId).toBeTruthy()
+    expect(shape.motionId).not.toBe(shape.id)
+  })
+})
+
+describe('sanitizeVectorShape — relações e âncora de rotação', () => {
+  const rectRaw = { ...base, type: 'rect', x: 0, y: 0, w: 10, h: 10, rx: 0, fill: '#78dc52' }
+
+  it('preserva uma âncora finita e um maskId seguro', () => {
+    expect(
+      sanitizeVectorShape({
+        ...rectRaw,
+        rotationPivot: { x: 12, y: -4 },
+        maskId: 'janela-1',
+      }),
+    ).toMatchObject({ rotationPivot: { x: 12, y: -4 }, maskId: 'janela-1' })
+  })
+
+  it('omite âncora e máscara ausentes ou inválidas sem derrubar a forma', () => {
+    for (const rotationPivot of [undefined, null, { x: Number.NaN, y: 2 }, { x: 1 }, 'centro']) {
+      const shape = sanitizeVectorShape({ ...rectRaw, rotationPivot })
+      expect(shape).not.toBeNull()
+      expect(shape && 'rotationPivot' in shape).toBe(false)
+    }
+    for (const maskId of [undefined, null, '', 'com espaço', '<script>', 42]) {
+      const shape = sanitizeVectorShape({ ...rectRaw, maskId })
+      expect(shape).not.toBeNull()
+      expect(shape && 'maskId' in shape).toBe(false)
+    }
   })
 })
 

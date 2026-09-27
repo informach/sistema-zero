@@ -7,6 +7,7 @@ import { apiGet } from '@/lib/api'
 import type { TeacherThreadContext, TeacherThreadSummaryView } from '@/lib/types'
 
 const CONTEXT_LABEL: Record<TeacherThreadContext, string> = {
+  lesson_section: 'Dúvida na aula',
   studio_submission: 'Entrega',
   mural_publication: 'Comunidade',
   general: 'Recado',
@@ -54,7 +55,7 @@ export function RecadosClient({
       </header>
 
       {threads.length === 0 ? (
-        <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+        <div className="rounded-[1.75rem] border-2 border-dashed bg-card p-8 text-center text-sm text-muted-foreground">
           Ainda não há recados. Quando a equipe escrever, a conversa aparecerá aqui.
         </div>
       ) : (

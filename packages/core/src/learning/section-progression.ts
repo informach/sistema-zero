@@ -1,0 +1,415 @@
+import { isInteractiveBlock, type LessonSection } from './index'
+import { isPlatformAction, type PlatformAction } from './platform-action'
+
+export interface ProjectBlockPattern {
+  blockType: string
+  fields?: Record<string, string | number | boolean>
+  inputs?: Record<string, string | number | boolean>
+  /** A later enabled sibling in this same statement chain, never another branch. */
+  beforeBlock?: string
+  /** Match an active child in this named input, keeping all conditions on that same child. */
+  inputBlocks?: Record<string, ProjectBlockPattern>
+}
+
+export type SectionStructureRule =
+  | { type: 'usesLoop' }
+  | { type: 'declaresVariable'; name: string }
+  | { type: 'definesFunction'; name: string }
+  | { type: 'callsFunction'; name: string }
+  | (ProjectBlockPattern & {
+      type: 'usesBlock'
+      area?: 'structure' | 'appearance' | 'molds' | 'start' | 'events' | 'loops'
+      withinBlock?: string
+      /** Exact number of matching active blocks; zero checks removal. */
+      count?: number
+    })
+
+export interface SectionProjectCheck {
+  id: string
+  label: string
+  rule: SectionStructureRule
+}
+
+/** Presence on every section opts a published lesson into sequential progression. */
+export interface SectionCompletion {
+  version: 1
+  blockIds: string[]
+  /** Arquivos efetivamente exigidos em cada bloco de materiais escolhido. */
+  materialItems?: { blockId: string; itemIds: string[] }[]
+  projectChecks?: SectionProjectCheck[]
+  platformAction?: PlatformAction
+}
+
+export interface SectionProgressRecord {
+  sectionId: string
+  revision: string
+  completedAt: string | null
+  projectPassed: boolean
+}
+
+export interface SectionProgressView {
+  revision: string
+  completed: number
+  total: number
+  percent: number
+  sections: Array<{
+    id: string
+    title: string
+    status: 'locked' | 'available' | 'completed'
+    pending: string[]
+  }>
+}
+
+const record = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v)
+const label = (v: unknown): v is string =>
+  typeof v === 'string' && v.trim().length > 0 && v.length <= 200
+
+/** Authors save half-filled objectives; an empty block type is the placeholder, not a broken draft. */
+const blockName = (v: unknown): v is string => typeof v === 'string' && v.length <= 200
+
+export function isProjectBlockPattern(value: unknown): value is ProjectBlockPattern {
+  let remaining = 64
+  function valid(v: unknown, depth: number): boolean {
+    if (!record(v) || !blockName(v.blockType) || depth > 4 || --remaining < 0) return false
+    if (v.beforeBlock !== undefined && !label(v.beforeBlock)) return false
+    if (
+      ![v.fields, v.inputs].every(
+        (values) =>
+          values === undefined ||
+          (record(values) &&
+            Object.keys(values).length <= 20 &&
+            Object.entries(values).every(
+              ([key, val]) =>
+                label(key) &&
+                (typeof val === 'boolean' ||
+                  (typeof val === 'number' && Number.isFinite(val)) ||
+                  (typeof val === 'string' && val.length <= 200)),
+            )),
+      )
+    )
+      return false
+    return (
+      v.inputBlocks === undefined ||
+      (record(v.inputBlocks) &&
+        Object.keys(v.inputBlocks).length <= 20 &&
+        Object.entries(v.inputBlocks).every(
+          ([key, child]) =>
+            label(key) &&
+            !(record(v.inputs) && Object.hasOwn(v.inputs, key)) &&
+            valid(child, depth + 1),
+        ))
+    )
+  }
+  return valid(value, 0)
+}
+
+/** A placeholder still without a block, at the top or in any connected socket, is an editorial warning. */
+function hasBlankBlockType(pattern: ProjectBlockPattern): boolean {
+  return (
+    !label(pattern.blockType) || Object.values(pattern.inputBlocks ?? {}).some(hasBlankBlockType)
+  )
+}
+
+export function isSectionCompletion(v: unknown): v is SectionCompletion {
+  if (
+    !record(v) ||
+    v.version !== 1 ||
+    !Array.isArray(v.blockIds) ||
+    v.blockIds.length > 200 ||
+    !v.blockIds.every(label) ||
+    new Set(v.blockIds).size !== v.blockIds.length
+  )
+    return false
+  if (v.platformAction !== undefined && !isPlatformAction(v.platformAction)) return false
+  if (v.materialItems !== undefined) {
+    if (
+      !Array.isArray(v.materialItems) ||
+      v.materialItems.length > 20 ||
+      !v.materialItems.every(
+        (entry) =>
+          record(entry) &&
+          label(entry.blockId) &&
+          Array.isArray(entry.itemIds) &&
+          entry.itemIds.length > 0 &&
+          entry.itemIds.length <= 20 &&
+          entry.itemIds.every(label) &&
+          new Set(entry.itemIds).size === entry.itemIds.length,
+      ) ||
+      new Set(v.materialItems.map((entry) => entry.blockId)).size !== v.materialItems.length
+    )
+      return false
+  }
+  if (v.projectChecks === undefined) return true
+  if (!Array.isArray(v.projectChecks) || v.projectChecks.length > 20) return false
+  return (
+    new Set(v.projectChecks.map((c) => (record(c) ? c.id : null))).size ===
+      v.projectChecks.length &&
+    v.projectChecks.every((c) => {
+      if (
+        !record(c) ||
+        !label(c.id) ||
+        !(typeof c.label === 'string' && c.label.length <= 200) ||
+        !record(c.rule)
+      )
+        return false
+      switch (c.rule.type) {
+        case 'usesLoop':
+          return true
+        case 'usesBlock':
+          return (
+            isProjectBlockPattern(c.rule) &&
+            (c.rule.count === undefined ||
+              (Number.isInteger(c.rule.count) &&
+                Number(c.rule.count) >= 0 &&
+                Number(c.rule.count) <= 200_000)) &&
+            (c.rule.beforeBlock === undefined || label(c.rule.beforeBlock)) &&
+            (c.rule.area === undefined ||
+              ['structure', 'appearance', 'molds', 'start', 'events', 'loops'].includes(
+                String(c.rule.area),
+              )) &&
+            (c.rule.withinBlock === undefined || label(c.rule.withinBlock))
+          )
+        case 'declaresVariable':
+        case 'definesFunction':
+        case 'callsFunction':
+          return typeof c.rule.name === 'string' && c.rule.name.length <= 200
+        default:
+          return false
+      }
+    })
+  )
+}
+
+export function hasSectionProgression(sections: { completion?: SectionCompletion }[]): boolean {
+  return sections.some((s) => s.completion !== undefined)
+}
+
+/** Delivery may precede the final review. Historical closing sections remain valid. */
+export function isFinalProjectSection(
+  sections: readonly Pick<LessonSection, 'id' | 'intent'>[],
+  sectionId: string,
+): boolean {
+  const index = sections.findIndex((section) => section.id === sectionId)
+  const section = sections[index]
+  if (!section) return false
+  if (section.intent === 'closing') return index === sections.length - 1
+  return (
+    section.intent === 'delivery' &&
+    sections.slice(index + 1).every((following) => following.intent === 'closing')
+  )
+}
+
+/** Validate at publication, not while an author is still writing a draft. */
+export function sectionCompletionIssues(
+  sections: LessonSection[],
+  blocks: { id: string; content: unknown }[],
+  options: { purpose?: 'publication' | 'playback' } = {},
+): Array<{ sectionId: string; message: string }> {
+  if (!hasSectionProgression(sections)) return []
+  return sections.flatMap((s) => {
+    const issues: Array<{ sectionId: string; message: string }> = []
+    const add = (message: string) => issues.push({ sectionId: s.id, message })
+    const c = s.completion
+    if (
+      s.workspaceBlockId &&
+      blocks.some((b) => b.id === s.workspaceBlockId && record(b.content) && b.content.gallery)
+    )
+      add(
+        'Uma entrega pela galeria não é um espaço de trabalho incorporado. Coloque o bloco na seção de entrega.',
+      )
+    if (!isSectionCompletion(c)) {
+      add('Configure os critérios de conclusão desta seção.')
+      return issues
+    }
+    if (!c.blockIds.length && !c.projectChecks?.length && !c.platformAction)
+      add('Esta seção precisa de uma checagem ou objetivo verificável.')
+    if (
+      blocks.some(
+        (block) =>
+          s.blockIds.includes(block.id) &&
+          record(block.content) &&
+          block.content.kind === 'certificate' &&
+          !c.blockIds.includes(block.id),
+      )
+    )
+      add('Inclua a emissão do certificado como critério desta seção.')
+    if (
+      c.platformAction &&
+      (c.blockIds.length ||
+        c.materialItems?.length ||
+        c.projectChecks?.length ||
+        s.workspaceBlockId ||
+        s.externalTool)
+    )
+      add('A ação da plataforma é o critério desta etapa. Separe outras atividades em outra seção.')
+    for (const id of c.blockIds) {
+      const block = blocks.find((b) => b.id === id)
+      if (!s.blockIds.includes(id) || !block || !record(block.content)) {
+        add('A checagem deve pertencer à própria seção.')
+        continue
+      }
+      const content = block.content
+      if (content.kind === 'interactive') {
+        // A cena traz a própria sessão; o jogo pronto traz os alvos encontrados
+        // (evidência de participação, não prova antitrapaça). HTML livre ainda
+        // exige uma pergunta corrigida pelo servidor.
+        const atividadeObservavel =
+          isInteractiveBlock(content) &&
+          (content.activity.type === 'experimentation' || content.activity.type === 'project-play')
+        if (!isInteractiveBlock(content) || (!atividadeObservavel && !content.checkpoint))
+          add(
+            'Use uma exploração nativa ou jogo pronto com objetivo observável, ou uma resposta corrigida no servidor.',
+          )
+      } else if (content.kind === 'video') {
+        // A porcentagem assistida é evidência própria do vídeo e pode ser combinada com arquivos.
+      } else if (content.kind === 'certificate') {
+        // O registro emitido é a evidência; a conclusão da aula espera as demais seções.
+      } else if (content.kind === 'materials') {
+        const selected = c.materialItems?.find((entry) => entry.blockId === id)?.itemIds
+        const items = content.items
+        if (!selected?.length) {
+          add('Escolha ao menos um arquivo do bloco de materiais para exigir o download.')
+        } else if (
+          !Array.isArray(items) ||
+          selected.some(
+            (itemId) =>
+              !items.some(
+                (item: unknown) =>
+                  record(item) &&
+                  item.id === itemId &&
+                  item.kind === 'file' &&
+                  label(item.attachmentId),
+              ),
+          )
+        ) {
+          add('Um arquivo obrigatório foi removido ou ainda não foi enviado.')
+        }
+      } else if (content.kind === 'ebook') {
+        if (s.intent !== 'material')
+          add('Use a seção Material do curso para exigir abrir o livro ou baixar o PDF.')
+      } else if (content.kind === 'quiz') {
+        if (
+          typeof content.passingScore !== 'number' ||
+          content.passingScore <= 0 ||
+          !Array.isArray(content.questions) ||
+          !content.questions.length
+        )
+          add('O quiz precisa de perguntas e nota mínima maior que zero.')
+      } else if (content.kind === 'studio' || content.kind === 'pinta') {
+        if (content.purpose === 'experiment' || !['closing', 'delivery'].includes(s.intent))
+          add(
+            'A entrega obrigatória do projeto deve ficar em Entrega e compartilhamento ou no fechamento.',
+          )
+        if (
+          options.purpose !== 'playback' &&
+          content.kind === 'studio' &&
+          record(content.activity) &&
+          typeof content.activity.passingScore === 'number' &&
+          content.activity.passingScore > 0 &&
+          Array.isArray(content.activity.checks) &&
+          content.activity.checks.some((check) => !record(check) || check.kind !== 'structure')
+        )
+          add(
+            'Para exigir aprovação do projeto nesta seção, use apenas checagens estruturais. Deixe testes de execução como formativos ou acrescente uma pergunta corrigida pelo servidor.',
+          )
+      } else add('Use uma pergunta, desafio ou entrega como critério de conclusão.')
+    }
+    for (const requirement of c.materialItems ?? []) {
+      if (
+        !c.blockIds.includes(requirement.blockId) ||
+        !blocks.some(
+          (block) =>
+            block.id === requirement.blockId &&
+            record(block.content) &&
+            block.content.kind === 'materials',
+        )
+      )
+        add('A seleção de arquivos obrigatórios deve pertencer a um bloco de materiais escolhido.')
+    }
+    if (
+      c.projectChecks?.some(
+        (check) =>
+          !label(check.label) ||
+          (check.rule.type === 'usesBlock'
+            ? hasBlankBlockType(check.rule)
+            : check.rule.type === 'usesLoop'
+              ? false
+              : !label(check.rule.name)),
+      )
+    )
+      add('Preencha o objetivo e o nome esperado na verificação do Estúdio.')
+    if (
+      s.intent === 'material' &&
+      (c.platformAction ||
+        s.workspaceBlockId ||
+        s.externalTool ||
+        c.projectChecks?.length ||
+        c.blockIds.some(
+          (id) =>
+            !blocks.some(
+              (b) =>
+                b.id === id &&
+                record(b.content) &&
+                ['ebook', 'materials', 'video'].includes(String(b.content.kind)),
+            ),
+        ))
+    )
+      add(
+        'Em Material do curso, escolha o livro, os arquivos para baixar ou o vídeo desta seção. Separe quiz e entrega de projeto em outra seção.',
+      )
+    if (
+      c.projectChecks?.length &&
+      !blocks.some(
+        (b) =>
+          b.id === s.workspaceBlockId &&
+          record(b.content) &&
+          b.content.kind === 'studio' &&
+          !b.content.gallery,
+      )
+    )
+      add('A verificação de projeto precisa de um Estúdio incorporado nesta seção.')
+    for (const b of blocks) {
+      if (!s.blockIds.includes(b.id) || !record(b.content)) continue
+      if (
+        (b.content.kind === 'studio' || b.content.kind === 'pinta') &&
+        b.content.purpose !== 'experiment' &&
+        !isFinalProjectSection(sections, s.id)
+      )
+        add(
+          'Coloque a entrega antes do quiz final, em Entrega e compartilhamento, ou no último Fechamento.',
+        )
+    }
+    return issues
+  })
+}
+
+/** Completed milestones survive review. Only the first unfinished section is available. */
+export function sectionProgressView(
+  revision: string,
+  sections: { id: string; title: string }[],
+  completedIds: ReadonlySet<string>,
+  pending: ReadonlyMap<string, string[]>,
+): SectionProgressView {
+  let available = true
+  const states = sections.map((s) => {
+    if (completedIds.has(s.id))
+      return { id: s.id, title: s.title, status: 'completed' as const, pending: [] }
+    const status = available ? ('available' as const) : ('locked' as const)
+    available = false
+    return {
+      id: s.id,
+      title: s.title,
+      status,
+      pending: status === 'locked' ? ['Conclua a seção anterior.'] : (pending.get(s.id) ?? []),
+    }
+  })
+  const completed = states.filter((s) => s.status === 'completed').length
+  return {
+    revision,
+    sections: states,
+    completed,
+    total: sections.length,
+    percent: sections.length ? (completed / sections.length) * 100 : 0,
+  }
+}

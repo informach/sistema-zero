@@ -926,7 +926,7 @@ describe('Reino Zero — a campanha JOGADA', () => {
     expect(game.errors).toEqual([])
   })
 
-  it('a segunda jornada reduz o tempo e troca a composição de inimigos', () => {
+  it('a segunda volta reduz o tempo e troca a composição de inimigos', () => {
     const game = exampleHarness(reinoZeroExample, () => 0.5)
     comecarPartida(game)
     const heroi = game.sprites[0]

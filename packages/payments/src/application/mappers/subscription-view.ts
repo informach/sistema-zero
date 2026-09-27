@@ -25,7 +25,7 @@ export interface SubscriptionView {
    * `paymentId` ao lead sem esperar o webhook). Ausente/null nas leituras
    * posteriores — os ciclos são consultáveis via `payment.paid`.
    */
-  firstPayment?: { id: string; status: string } | null
+  firstPayment?: { id: string; status: string; paidAt: string | null } | null
 }
 
 /**
@@ -66,7 +66,7 @@ export function toMySubscriptionView(subscription: SubscriptionAggregate): MySub
 
 export function toSubscriptionView(
   subscription: SubscriptionAggregate,
-  firstPayment?: { id: string; status: string } | null,
+  firstPayment?: { id: string; status: string; paidAt: string | null } | null,
 ): SubscriptionView {
   return {
     id: subscription.id,

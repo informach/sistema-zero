@@ -55,7 +55,7 @@ interface BufferView {
   byteLength: number
 }
 
-const COMPONENTS: Record<string, number> = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 }
+const COMPONENTS: Record<string, number> = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4, MAT4: 16 }
 
 export function readAccessor(
   parsed: ParsedGlb,

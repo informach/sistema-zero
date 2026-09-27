@@ -62,8 +62,8 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(true)
-  const [careerItems, setCareerItems] = useState<CourseView[]>([])
-  const [careerLoading, setCareerLoading] = useState(true)
+  const [journeyItems, setJourneyItems] = useState<CourseView[]>([])
+  const [journeyLoading, setJourneyLoading] = useState(true)
 
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CourseView | null>(null)
@@ -71,7 +71,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const [prefill, setPrefill] = useState<CoursePrefill | undefined>(undefined)
   const { confirm, confirmDialog } = useConfirm()
   const loadAuthority = useRef(createForegroundPriority()).current
-  const careerAuthority = useRef(createForegroundPriority()).current
+  const journeyAuthority = useRef(createForegroundPriority()).current
   const mutationScope = useRef(createScopeAuthority(platform)).current
   mutationScope.update(platform)
   const renderScope = mutationScope.capture()
@@ -109,19 +109,19 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
     )
   }, [offset, q, status, platform, loadAuthority])
 
-  const loadCareer = useCallback(async () => {
-    // O painel da Carreira só existe no modo Kids — no Adultos nem busca (a
+  const loadJourney = useCallback(async () => {
+    // O painel da Jornada só existe no modo Kids — no Adultos nem busca (a
     // varredura pagina TODOS os cursos kids; os call-sites pós-save chamam
     // sempre e viram no-op aqui). Voltar para Kids re-dispara pelo effect.
     if (platform !== 'kids') {
-      careerAuthority.invalidate()
-      setCareerItems([])
-      setCareerLoading(false)
+      journeyAuthority.invalidate()
+      setJourneyItems([])
+      setJourneyLoading(false)
       return
     }
-    setCareerLoading(true)
+    setJourneyLoading(true)
     await runLatestForeground(
-      careerAuthority,
+      journeyAuthority,
       () =>
         loadAllPages((pageOffset, limit) =>
           apiGet<Paginated<CourseView>>(
@@ -129,14 +129,14 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
           ),
         ),
       {
-        onSuccess: setCareerItems,
+        onSuccess: setJourneyItems,
         onError: (error) => {
-          toast.error((error as ApiError).message ?? 'Falha ao conferir a Carreira do Criador.')
+          toast.error((error as ApiError).message ?? 'Falha ao conferir a Jornada do Criador.')
         },
-        onSettled: () => setCareerLoading(false),
+        onSettled: () => setJourneyLoading(false),
       },
     )
-  }, [platform, careerAuthority])
+  }, [platform, journeyAuthority])
 
   useEffect(() => {
     const timer = setTimeout(() => void load(), 250)
@@ -147,9 +147,9 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   }, [load, loadAuthority])
 
   useEffect(() => {
-    void loadCareer()
-    return () => careerAuthority.invalidate()
-  }, [loadCareer, careerAuthority])
+    void loadJourney()
+    return () => journeyAuthority.invalidate()
+  }, [loadJourney, journeyAuthority])
 
   function openCreate() {
     setEditing(null)
@@ -195,7 +195,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         try {
           await apiSend(`/api/members/courses/${c.id}`, 'DELETE')
           toast.success('Curso excluído.')
-          if (mutationScope.isCurrent(scope)) await Promise.all([load(), loadCareer()])
+          if (mutationScope.isCurrent(scope)) await Promise.all([load(), loadJourney()])
         } catch (err) {
           toast.error((err as ApiError).message ?? 'Não foi possível excluir.')
         }
@@ -218,11 +218,11 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         }
       />
 
-      {/* Carreira do Criador é conceito KIDS — no modo Adultos o painel some. */}
+      {/* Jornada do Criador é conceito KIDS — no modo Adultos o painel some. */}
       {platform === 'kids' ? (
-        <CareerReadiness
-          courses={careerItems}
-          loading={careerLoading}
+        <JourneyReadiness
+          courses={journeyItems}
+          loading={journeyLoading}
           canWrite={canWrite}
           onPickSlot={(level, track, slot, course) =>
             course ? openEdit(course) : openCreateAtSlot(level, track, slot)
@@ -305,7 +305,13 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                     {c.audience === 'kids' ? (
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                         {c.level === 'lenda' ? (
-                          '👑 Lenda — curso bônus da formatura (aparece na trilha da Lenda; fora da carreira)'
+                          '👑 Lenda — curso bônus da formatura (aparece na trilha da Lenda; fora da jornada)'
+                        ) : c.journeyRole === 'extra' ? (
+                          `Extra — curso sem posição em ${
+                            COURSE_TIER_OPTIONS.find(
+                              (option) => option.level === c.level && option.track === c.track,
+                            )?.label ?? `${c.level} ${c.track}`
+                          }; abre para quem tem matrícula, sem depender da etapa`
                         ) : c.careerSlot == null ? (
                           `Bônus — recompensa da etapa ${
                             COURSE_TIER_OPTIONS.find(
@@ -315,7 +321,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                         ) : (
                           <>
                             <span>
-                              {`Carreira: ${
+                              {`Jornada: ${
                                 COURSE_TIER_OPTIONS.find(
                                   (option) => option.level === c.level && option.track === c.track,
                                 )?.label ?? `${c.level} ${c.track}`
@@ -377,10 +383,10 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         onClose={() => setOpen(false)}
         editing={editing}
         prefill={prefill}
-        careerCourses={careerItems}
+        journeyCourses={journeyItems}
         onSaved={async () => {
           if (!mutationScope.isCurrent(renderScope)) return
-          await Promise.all([load(), loadCareer()])
+          await Promise.all([load(), loadJourney()])
         }}
       />
 
@@ -389,14 +395,14 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         onClose={() => setCloning(null)}
         onCloned={async () => {
           if (!mutationScope.isCurrent(renderScope)) return
-          await Promise.all([load(), loadCareer()])
+          await Promise.all([load(), loadJourney()])
         }}
       />
     </div>
   )
 }
 
-function CareerReadiness({
+function JourneyReadiness({
   courses,
   loading,
   canWrite,
@@ -410,7 +416,7 @@ function CareerReadiness({
   const tiers = COURSE_TIER_OPTIONS.map((tier) => {
     // ⚠️ POR DEGRAU, não um 8 fixo: a entrada tem 1 e o Iniciante 2D tem 7 (14/08). Este
     // número ficava solto aqui e não era coberto pela conformance — com o 8 fixo, o painel
-    // pediria 8 cursos numa trilha de 1 e nunca marcaria a carreira como pronta.
+    // pediria 8 cursos numa trilha de 1 e nunca marcaria a jornada como pronta.
     const required = slotsForTier(tier.level, tier.track)
     const slots = Array.from({ length: required }, (_, slotIndex) => {
       const slot = slotIndex + 1
@@ -420,16 +426,17 @@ function CareerReadiness({
           (item.track ?? '2d') === tier.track &&
           item.careerSlot === slot,
       )
-      // Curso-base publicado SEM aula publicada com bloco de Estúdio de vitrine:
-      // o aluno nunca publica no Mural → o slot 1 nunca qualifica e a etapa não
-      // destrava. Publicado sem vitrine NÃO conta como pronto.
-      const missingShowcase =
-        slot === 1 && course?.status === 'published' && course.hasShowcaseBlock === false
+      // Toda posição obrigatória exige uma oportunidade publicada de ir ao Mural.
+      // Resposta de um servidor antigo sem a verificação não significa prontidão.
+      const missingShowcase = course?.status === 'published' && course.hasShowcaseBlock === false
+      const unknownShowcase =
+        course?.status === 'published' && course.hasShowcaseBlock === undefined
       return {
         slot,
         course,
         missingShowcase,
-        ready: course?.status === 'published' && !missingShowcase,
+        unknownShowcase,
+        ready: course?.status === 'published' && course.hasShowcaseBlock === true,
       }
     })
     return {
@@ -448,7 +455,7 @@ function CareerReadiness({
     <Card className="p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="font-semibold text-base">Carreira do Criador</h2>
+          <h2 className="font-semibold text-base">Jornada do Criador</h2>
           <p className="mt-1 text-muted-foreground text-sm">
             Confira se todos os cursos obrigatórios estão posicionados e publicados antes do
             lançamento. A <strong className="text-foreground">posição 1</strong> é o curso-base da
@@ -483,7 +490,7 @@ function CareerReadiness({
               )}
             </div>
             <div className="space-y-1.5">
-              {tier.slots.map(({ slot, course, missingShowcase }) => {
+              {tier.slots.map(({ slot, course, missingShowcase, unknownShowcase }) => {
                 const inner = (
                   <>
                     <span
@@ -501,10 +508,12 @@ function CareerReadiness({
                       missingShowcase ? (
                         <span
                           className="inline-flex items-center gap-1 text-destructive"
-                          title="Nenhuma aula publicada tem bloco de Estúdio com vitrine (Publicar no Mural). Sem isso o curso-base nunca qualifica e a etapa não destrava para os alunos."
+                          title="Nenhuma aula publicada tem bloco de Estúdio com vitrine (Publicar no Mural). Sem isso este curso não qualifica para a jornada."
                         >
                           <TriangleAlert className="size-3.5" /> Sem vitrine
                         </span>
+                      ) : unknownShowcase ? (
+                        <span className="text-muted-foreground">Verificação pendente</span>
                       ) : (
                         <span
                           className={
@@ -550,7 +559,7 @@ function CareerReadiness({
 /**
  * Clonar o curso para a OUTRA plataforma (o substituto da "audiência Ambas",
  * decisão de produto de 24/08): o clone é um curso INDEPENDENTE na plataforma
- * destino — entra na carreira/chave-mestra/XP de lá sem regra nova. É um FORK:
+ * destino — entra na jornada/chave-mestra/XP de lá sem regra nova. É um FORK:
  * edições depois do clone NÃO sincronizam (avisado aqui).
  */
 function CloneCourseDialog({
@@ -601,7 +610,7 @@ function CloneCourseDialog({
       open={course !== null}
       onClose={onClose}
       title={`Clonar para a plataforma ${targetLabel}`}
-      description="O conteúdo inteiro (módulos, aulas, blocos e anexos) é copiado. O clone nasce como rascunho, fora da Carreira do Criador — e edições depois do clone NÃO sincronizam entre os dois cursos."
+      description="O conteúdo inteiro (módulos, aulas, blocos e anexos) é copiado. O clone nasce como rascunho, fora da Jornada do Criador — e edições depois do clone NÃO sincronizam entre os dois cursos."
       footer={
         <>
           <Button variant="outline" onClick={onClose} disabled={busy}>

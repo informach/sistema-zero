@@ -54,4 +54,21 @@ describe('malha no .glb', () => {
     const result = exportModelGlb(model)
     expect(result.ok && result.triangles).toBe(12)
   })
+
+  test('arestas de construção não viram triângulos no GLB', () => {
+    const model = createModelAsset({ name: 'molde', starter: false, now: 1 })
+    const part = createPart({
+      name: 'cubo-com-guia',
+      shape: 'mesh',
+      from: [0, 0, 0],
+      to: [2, 2, 2],
+      color: 2,
+    })
+    if (!part.mesh) throw new Error('sem malha')
+    part.mesh.looseEdges = [['v_000', 'v_111']]
+    model.parts = [part]
+
+    const result = exportModelGlb(model)
+    expect(result.ok && result.triangles).toBe(12)
+  })
 })

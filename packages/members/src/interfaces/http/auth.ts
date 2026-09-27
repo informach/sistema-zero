@@ -50,13 +50,12 @@ export function isPrivilegedActor(headers: Record<string, string | undefined>): 
 }
 
 /**
- * As mutações do histórico do Zappy são exclusivas do BFF, que executa os
- * guardrails antes de persistir. O gateway remove o valor cru e re-injeta este
- * header somente após validar o HMAC do consumer.
+ * As mutações exclusivas do BFF exigem o consumer HMAC `member-shell`. O gateway
+ * remove o valor cru e re-injeta este header depois de validar a assinatura.
  */
-export function assertZappyBffConsumer(consumerId: string | undefined): void {
+export function assertMemberShellConsumer(consumerId: string | undefined): void {
   if (consumerId !== 'member-shell') {
-    throw new UnauthorizedError('Consumer do Zappy inválido')
+    throw new UnauthorizedError('Consumer do member-shell inválido')
   }
 }
 

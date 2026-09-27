@@ -5,7 +5,8 @@
  * consertar (peça inválida cai SEM derrubar o asset; pele com tamanho divergente
  * é re-amostrada; índice fora da paleta vira 0; gêmeo órfão perde o vínculo).
  *
- * ⚠️ Toda migração de formato mora AQUI (lazy, no load), nunca em massa.
+ * Compatibilidade/reparo do formato 1 apenas. Formatos seguintes têm parser próprio;
+ * nunca arredondar ou descartar seus dados através deste sanitizer legado.
  */
 import { partTriangleCount } from '../model/geometry'
 import {
@@ -21,6 +22,8 @@ import { clampSkinIndices, isSkinBlank, resampleSkin } from '../model/skinOps'
 import { bakeTwins, syncTwins } from '../model/twins'
 import { DEFAULT_SKY_PRESET, sanitizeSkyParams, skyPreset } from '../sky/params'
 import { normalizeHex } from './color'
+import { checkMoldaDocumentVersion } from './documentVersion'
+import { isMoldaAssetId } from './id'
 import { clampInt, isTexelsPerUnit, isTextureSize, MOLDA_LIMITS } from './limits'
 import {
   type FaceId,
@@ -50,9 +53,6 @@ import {
   RESERVED_INDEX,
 } from './palette'
 import { base64ToBytes } from './skinCodec'
-
-const MAX_ID_CHARS = 64
-const ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/
 
 // ── Paleta ──────────────────────────────────────────────────────────────────
 
@@ -188,7 +188,7 @@ function sanitizeThumb(raw: unknown): string | undefined {
 }
 
 function sanitizeBase(raw: Record<string, unknown>): MoldaAssetBase | null {
-  if (typeof raw.id !== 'string' || !ID_PATTERN.test(raw.id) || raw.id.length > MAX_ID_CHARS) {
+  if (!isMoldaAssetId(raw.id)) {
     return null
   }
   const name = typeof raw.name === 'string' ? normalizeAssetName(raw.name) : null
@@ -300,8 +300,20 @@ export function sanitizeMesh(raw: unknown): MoldaMesh | null {
     faces[key] = { v: cycle as string[] }
     faceCount += 1
   }
-  const mesh = normalizeMesh(roundMesh({ vertices, faces }))
-  return Object.keys(mesh.faces).length > 0 ? mesh : null
+  const looseEdges: Array<readonly [string, string]> = []
+  if (Array.isArray(r.looseEdges)) {
+    for (const value of r.looseEdges) {
+      if (looseEdges.length >= MOLDA_LIMITS.maxMeshLooseEdges) break
+      if (!Array.isArray(value) || value.length !== 2) continue
+      const [a, b] = value
+      if (typeof a !== 'string' || typeof b !== 'string' || !(a in vertices) || !(b in vertices)) {
+        continue
+      }
+      looseEdges.push([a, b])
+    }
+  }
+  const mesh = normalizeMesh(roundMesh({ vertices, faces, looseEdges }))
+  return Object.keys(mesh.faces).length > 0 || (mesh.looseEdges?.length ?? 0) > 0 ? mesh : null
 }
 
 /**
@@ -336,7 +348,7 @@ function sanitizePart(
 ): MoldaPart | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
-  if (typeof r.id !== 'string' || !ID_PATTERN.test(r.id)) return null
+  if (!isMoldaAssetId(r.id)) return null
   if (!isShapeId(r.shape)) return null
   let box: { from: Vec3; to: Vec3 }
   let mesh: MoldaMesh | undefined
@@ -377,7 +389,7 @@ function sanitizePart(
   if (mesh) part.mesh = mesh
   if (r.locked === true) part.locked = true
   if (r.hidden === true) part.hidden = true
-  if (typeof r.mirrorOf === 'string' && ID_PATTERN.test(r.mirrorOf) && r.mirrorOf !== r.id) {
+  if (isMoldaAssetId(r.mirrorOf) && r.mirrorOf !== r.id) {
     part.mirrorOf = r.mirrorOf
   }
   const rawFaces =
@@ -468,6 +480,8 @@ function sanitizeSky(raw: Record<string, unknown>, base: MoldaAssetBase): MoldaS
 
 /** O portão único. Nunca lança; `null` = não é uma criação legível. */
 export function sanitizeMoldaAsset(raw: unknown): MoldaAsset | null {
+  const version = checkMoldaDocumentVersion(raw)
+  if (version.status !== 'supported' || version.version !== 1) return null
   if (!raw || typeof raw !== 'object') return null
   const record = raw as Record<string, unknown>
   if (!isMoldaAssetKind(record.kind)) return null

@@ -1,6 +1,7 @@
 import { t } from 'elysia'
 import { COUPON_STATUSES } from '../../domain/coupon/coupon.status'
 import { COUPON_TYPES } from '../../domain/coupon/coupon.type'
+import { ACCESS_DURATION_UNITS, ACCESS_MODES } from '../../domain/offer/access-policy'
 import { OFFER_STATUSES } from '../../domain/offer/offer.status'
 import { PRICING_MODES } from '../../domain/offer/pricing-mode'
 import { PRODUCT_KINDS } from '../../domain/product/product.kind'
@@ -13,6 +14,8 @@ const productKindSchema = literals(PRODUCT_KINDS)
 const productStatusSchema = literals(PRODUCT_STATUSES)
 const offerStatusSchema = literals(OFFER_STATUSES)
 const pricingModeSchema = literals(PRICING_MODES)
+const accessModeSchema = literals(ACCESS_MODES)
+const accessDurationUnitSchema = literals(ACCESS_DURATION_UNITS)
 const couponTypeSchema = literals(COUPON_TYPES)
 const couponStatusSchema = literals(COUPON_STATUSES)
 
@@ -150,6 +153,11 @@ export const CreateOfferBody = t.Object({
   compareAtPriceCents: t.Optional(t.Integer({ minimum: 0, maximum: 2_000_000_000 })),
   currency: t.Optional(t.Literal('BRL')),
   pricingMode: t.Optional(pricingModeSchema),
+  accessMode: t.Optional(accessModeSchema),
+  accessDurationValue: t.Optional(
+    t.Union([t.Integer({ minimum: 1, maximum: 2_000_000_000 }), t.Null()]),
+  ),
+  accessDurationUnit: t.Optional(t.Union([accessDurationUnitSchema, t.Null()])),
   // Periodicidade da assinatura em meses (mensal=1, anual=12) — só com
   // pricingMode 'subscription' (one_time normaliza p/ null no domínio).
   billingIntervalMonths: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 24 }), t.Null()])),
@@ -209,6 +217,11 @@ export const UpdateOfferBody = t.Object({
     t.Union([t.Integer({ minimum: 0, maximum: 2_000_000_000 }), t.Null()]),
   ),
   pricingMode: t.Optional(pricingModeSchema),
+  accessMode: t.Optional(accessModeSchema),
+  accessDurationValue: t.Optional(
+    t.Union([t.Integer({ minimum: 1, maximum: 2_000_000_000 }), t.Null()]),
+  ),
+  accessDurationUnit: t.Optional(t.Union([accessDurationUnitSchema, t.Null()])),
   billingIntervalMonths: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 24 }), t.Null()])),
   installmentsMax: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 36 }), t.Null()])),
   trialDays: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 365 }), t.Null()])),

@@ -7,7 +7,8 @@ import { defineConfig, devices } from '@playwright/test'
  * Além do boot, a suíte percorre criação/reabertura de projetos, colagem e
  * arrasto de blocos, instalação de extensões, Ponte, preview e interações reais,
  * inclusive em layouts estreitos. O projeto Firefox cobre diferenças reais de
- * CSP/SRI que já quebraram a execução inteira do código do aluno.
+ * CSP/SRI que já quebraram a execução inteira do código do aluno, e o WebKit
+ * (o motor do iPad) cobre a gravação de quando a página vai embora.
  */
 const e2ePort = Number(process.env.E2E_PORT ?? 5195)
 const baseURL = `http://127.0.0.1:${e2ePort}`
@@ -41,6 +42,15 @@ export default defineConfig({
       // Chromium e duplicá-la adicionava centenas de casos sem sinal novo.
       testMatch: [/preview-security\.spec\.ts/, /preview-executes-user-code\.spec\.ts/],
       use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      // WebKit existe para o motor do iPad, onde a gravação de SAÍDA era a mais frágil: antes do
+      // commit explícito (11/09/2026), recarregando logo depois de trazer os arquivos do Molda,
+      // a mudança voltou em 0 de 10 recargas. Só os specs dessa gravação: o resto da suíte é
+      // coberto pelo Chromium, e duplicá-lo não traria sinal novo.
+      testMatch: [/reload-flush\.spec\.ts/],
+      use: { ...devices['Desktop Safari'] },
     },
   ],
   webServer: {

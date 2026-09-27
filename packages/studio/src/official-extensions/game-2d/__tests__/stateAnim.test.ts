@@ -50,7 +50,8 @@ interface Api {
   jumpOnGround: (s: Sprite, ctx: unknown, jump: number) => void
   topDown: (s: Sprite, speed: number) => void
   createTileMap: (opts: Record<string, unknown>) => unknown
-  drawTileMap: (ctx: unknown, map: unknown, x: number, y: number) => void
+  drawTileMap: (ctx: unknown, map: unknown) => void
+  centerTileMap: (ctx: unknown, map: unknown, x: number, y: number, size: number) => void
   collideTileMap: (s: Sprite, map: unknown) => void
   setGravity: (value: number) => void
   applyGravity: (s: Sprite) => void
@@ -368,7 +369,8 @@ describe('onGround persistido nos helpers de movimento', () => {
     const { api } = load()
     const ctx = fakeCtx(64, 64)
     const map = api.createTileMap({ image: '', tile: 32, solid: '1', grid: '. .;1 1' })
-    api.drawTileMap(ctx, map, 0, 0)
+    api.centerTileMap(ctx, map, 0, 0, 0)
+    api.drawTileMap(ctx, map)
     const s = api.createSprite({ x: 4, y: 10, w: 16, h: 16, vy: 8 })
     api.setGravity(0.6)
 
@@ -390,7 +392,8 @@ describe('onGround persistido nos helpers de movimento', () => {
     const ctx = fakeCtx(64, 64)
     // Mapa 2x2 com o chão sólido na linha de baixo (tile 1 = sólido).
     const map = api.createTileMap({ image: '', tile: 32, solid: '1', grid: '. .;1 1' })
-    api.drawTileMap(ctx, map, 0, 0)
+    api.centerTileMap(ctx, map, 0, 0, 0)
+    api.drawTileMap(ctx, map)
     const s = api.createSprite({ x: 4, y: 20, w: 16, h: 16 })
     s.vy = 8
     s.y = 24 // sobrepõe o topo do tile sólido (linha y=32)
@@ -411,7 +414,8 @@ describe('onGround persistido nos helpers de movimento', () => {
     const { api } = load()
     const ctx = fakeCtx(64, 64)
     const map = api.createTileMap({ image: '', tile: 32, solid: '1', grid: '. .;1 1' })
-    api.drawTileMap(ctx, map, 0, 0)
+    api.centerTileMap(ctx, map, 0, 0, 0)
+    api.drawTileMap(ctx, map)
     const s = api.createSprite({ x: 4, y: 10, w: 16, h: 16, vx: 0, vy: 8 })
     const andando = sheetOf(api, 'andando-sair-do-tile')
     const caindo = sheetOf(api, 'caindo-sair-do-tile')
@@ -436,7 +440,8 @@ describe('onGround persistido nos helpers de movimento', () => {
     const { api } = load()
     const ctx = fakeCtx(64, 64)
     const map = api.createTileMap({ image: '', tile: 32, solid: '1', grid: '. .;1 1' })
-    api.drawTileMap(ctx, map, 0, 0)
+    api.centerTileMap(ctx, map, 0, 0, 0)
+    api.drawTileMap(ctx, map)
     const s = api.createSprite({ x: 4, y: 10, w: 16, h: 16, vx: 0, vy: 8 })
     api.setGravity(0.6)
 

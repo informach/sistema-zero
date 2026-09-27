@@ -1,0 +1,220 @@
+{
+  "version": 3,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-06",
+  "title": "A sua nave entra no jogo",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! Chegou a hora de pilotar a nave que você desenhou. Vamos trocar a arte e manter os controles do seu jogo.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "Tamanho do desenho ou tamanho no jogo?",
+        "instructions": "Uma configuração recorta a imagem original; a outra decide quanto espaço ela ocupa no jogo.",
+        "hints": [
+          "A folha recorta a imagem original; o sprite decide quanto espaço ela ocupa no jogo."
+        ],
+        "required": true,
+        "activity": {
+          "type": "question"
+        },
+        "checkpoint": {
+          "prompt": "Qual configuração é o tamanho de cada quadro da folha da nave?",
+          "choices": [
+            {
+              "id": "peca-1",
+              "label": "54 × 54"
+            },
+            {
+              "id": "peca-2",
+              "label": "32 × 32"
+            },
+            {
+              "id": "peca-3",
+              "label": "0 até 1"
+            }
+          ],
+          "correctChoiceId": "peca-2",
+          "explanation": "A folha recorta a imagem original; o sprite decide quanto espaço ela ocupa no jogo."
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Uma imagem importada fica disponível como recurso; um sprite usa esse recurso no jogo. O nome nave continua ligando os controles e os outros blocos ao personagem.\n\nA folha de animação precisa saber o tamanho de cada quadro da arte: 32 × 32. Isso é diferente do tamanho do sprite na tela, que será 54 × 54.\n\nOs quadros 0 e 1 são as duas imagens, porque a contagem da folha começa em zero."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### Trazer os seus desenhos para dentro do projeto\n\nAbra Estúdio pelo menu e entre no cartão do jogo importado, não no projeto de teste. Use a área de recursos para trazer nave e asteroide do Pinta.\n\nConfira os nomes antes de trocar os blocos."
+      }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-06-passo-01: gravar a demonstração \"trazer os seus desenhos para dentro do projeto\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### Apagar a nave do kit e montar a sua\n\nEm Ao iniciar, remova somente Criar nave do kit, preservando a pilha. Em Jogo 2D, Sprites, crie o sprite nave com imagem nave: x 400, y 410, largura 54 e altura 54.\n\nO nome nave mantém a ligação com os controles."
+      }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-06-passo-02: gravar a demonstração \"apagar a nave do kit e montar a sua\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Abra o projeto importado. Depois da troca, teste as setas antes de mexer na animação."
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["Os blocos de controle precisam encontrar o mesmo personagem."],
+        "required": true,
+        "activity": {
+          "type": "question"
+        },
+        "checkpoint": {
+          "prompt": "A nave nova apareceu, mas os controles procuram outro nome. O que conferir?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Se o sprite continua com o nome nave."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Se o título do jogo tem a palavra nave."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Se a folha tem uma cor diferente."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "O nome nave liga o sprite aos controles e às outras regras. Trocar a imagem não exige mudar essa ligação."
+        }
+      }
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### Carregar a folha e animar a nave\n\nEm Jogo 2D, Animação, carregue folha-nave da imagem nave com quadros 32 por 32. Configure a animação voando do quadro 0 ao 1 a 8 fps.\n\nTeste o fogo, as setas, os tiros e as colisões no mesmo jogo."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-06-passo-03: gravar a demonstração \"carregar a folha e animar a nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "A nave tem sua arte e o fogo animado; movimento, tiros, vidas e telas continuam funcionando. Confira o salvamento do mesmo projeto livre.\n\nNa Aula 7, você troca também os asteroides, preservando a chuva e as colisões.\n\nDepois de conferir o salvamento, volte a esta aba para a pergunta final. Na próxima aula você continua o trabalho guardado na ferramenta."
+      }
+    },
+    {
+      "key": "checar-fechamento",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": [
+          "A folha recorta o desenho original; o sprite muda o tamanho em que ele aparece."
+        ],
+        "required": true,
+        "activity": {
+          "type": "question"
+        },
+        "checkpoint": {
+          "prompt": "A animação ficou recortada. Qual tamanho conferir na folha da nave?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "800 × 480, porque é o tamanho da tela."
+            },
+            {
+              "id": "opcao-2",
+              "label": "32 × 32 por quadro, o tamanho da arte."
+            },
+            {
+              "id": "opcao-3",
+              "label": "54 × 54, porque é o tamanho do sprite no jogo."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Cada quadro da arte mede 32 × 32. O sprite pode aparecer com 54 × 54 sem mudar esse recorte. Teste também controles e tiros."
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "Tamanho do desenho ou tamanho no jogo?",
+      "objective": "Usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave.",
+      "intent": "exploration",
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
+    },
+    {
+      "key": "construir-1",
+      "title": "Sua nave entra no jogo",
+      "objective": "Substituir a arte preservando a identidade usada pelos controles.",
+      "intent": "application",
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "convite-construir-1",
+        "checar-construir-2"
+      ],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
+    },
+    {
+      "key": "fechamento",
+      "title": "Veja seu fogo voando",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.",
+      "intent": "closing",
+      "blockKeys": ["construir-3", "video-construir-3-1", "fechamento", "checar-fechamento"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-fechamento"]
+      }
+    }
+  ]
+}

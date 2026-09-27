@@ -1,5 +1,6 @@
 import type { SZIRInput } from '#ir'
 import type { IDEMode } from './modes'
+import { CURRENT_PROJECT_FORMAT_VERSION } from './projectDocument'
 import type { ProjectKind, ProjectTree, ProProjectMeta } from './proProject'
 
 export interface ProjectFiles {
@@ -662,6 +663,10 @@ export const PROJECT_ASSET_LIMITS = {
 } as const
 
 export interface Project {
+  /** Ausente somente em documentos anteriores à conversão. */
+  formatVersion?: number
+  /** Ferramentas validadas para editar este projeto; não concede modos ou extensões. */
+  projectTools?: string[]
   id: string
   name: string
   createdAt: number
@@ -672,6 +677,14 @@ export interface Project {
   extraFiles?: ExtraFile[]
   /** Assets embutidos (imagens/sprites) — opcional/retrocompatível. */
   assets?: ProjectAsset[]
+  /**
+   * A capa ESCOLHIDA do card "Meus Jogos": o NOME de um asset de imagem do projeto (a tela de
+   * abertura, por exemplo). Ausente = a foto automática do preview. Só o nome, no idioma dos
+   * blocos; a resolução para o asset é na hora de usar (`cover/coverAsset.ts`), e um nome
+   * pendurado cai na foto automática. Chave OMITIDA quando não há capa (projetos antigos
+   * seguem byte-idênticos).
+   */
+  coverAssetName?: string
   ir: SZIRInput | null
   blocksState: unknown | null
   /**
@@ -724,6 +737,8 @@ export function isReservedProjectFileName(fileName: string): boolean {
 export function createEmptyProject(id: string, name: string): Project {
   const now = Date.now()
   return {
+    formatVersion: CURRENT_PROJECT_FORMAT_VERSION,
+    projectTools: [],
     id,
     name,
     createdAt: now,

@@ -13,7 +13,7 @@ const clone = (app: App, courseId: string, body: Record<string, unknown>) =>
   )
 
 describe('clone de curso para a outra plataforma', () => {
-  test('árvore inteira copiada; clone nasce draft, fora da carreira, com clonedFrom', async () => {
+  test('árvore inteira copiada; clone nasce draft, fora da jornada, com clonedFrom', async () => {
     const { app, courses } = buildApp()
     const { courseId } = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
     const src = courses.courses.find((c) => c.id === courseId)

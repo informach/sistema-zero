@@ -1,6 +1,7 @@
 'use client'
-
+import { TeacherLessonLink } from '@sistemazero/member-shell/components/teacher-lesson-link'
 import { renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
+import { refreshTeacherUnread } from '@sistemazero/member-shell/lib/teacher-unread'
 import { ArrowLeft, Send } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
@@ -26,7 +27,9 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
         if (!alive) return
         setThread(value)
         setState('ready')
-        apiSend(`/api/members/teacher-threads/${threadId}/read`, 'POST', {}).catch(() => {})
+        apiSend(`/api/members/teacher-threads/${threadId}/read`, 'POST', {})
+          .then(refreshTeacherUnread)
+          .catch(() => {})
       })
       .catch((error: ApiError) => {
         if (!alive) return
@@ -77,6 +80,7 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
         { body },
       )
       setThread(updated)
+      refreshTeacherUnread()
       setReply('')
     } catch {
       setError('Não foi possível enviar sua resposta. Seu texto foi mantido para tentar novamente.')
@@ -93,6 +97,7 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
 
   return (
     <section className="mx-auto max-w-2xl">
+      <TeacherLessonLink thread={thread} />
       <div className="mb-4 flex items-center gap-3">
         <Link href="/recados" className="rounded-full border p-2" aria-label="Voltar aos recados">
           <ArrowLeft className="size-4" />

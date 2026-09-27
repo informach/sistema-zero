@@ -1,7 +1,9 @@
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 import { isAiQuotaError } from '@sistemazero/core/ai-credits'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { editedAgo } from '../core/relativeTime'
 import { splitSuggestions, stripStreamingSuggestions } from '../core/suggestions'
+import { personName, TEAM_COPY } from '../core/teamCopy'
 import type {
   PensaArtifactType,
   PensaArtifactView,
@@ -11,12 +13,32 @@ import type {
   PensaProjectListView,
   PensaStage,
   PensaStageView,
+  PensaTaskView,
   PensaWorkStage,
   PensaZState,
 } from '../core/types'
 import { AiCreditsBadge, AiCreditsNotice } from './AiCredits'
-import { ArrowLeftIcon, HostMenuButton, usePensaHostChrome } from './hostChrome'
+import { ConfirmDialog } from './ConfirmDialog'
+import { ArrowLeftIcon, HostBackLink, HostMenuButton, usePensaHostChrome } from './hostChrome'
+import {
+  ArrowRightIcon,
+  BlocksIcon,
+  CheckIcon,
+  CircleCheckIcon,
+  CubeIcon,
+  EyeIcon,
+  FlagIcon,
+  LightbulbIcon,
+  PaletteIcon,
+  PencilIcon,
+  PlusIcon,
+  TargetIcon,
+  TrashIcon,
+  UsersIcon,
+} from './icons'
 import { TaskPlan } from './TaskPlan'
+import { TeamDialog } from './TeamDialog'
+import { DirtyContext, type DirtyRegistry, useUnsavedChanges } from './unsavedChanges'
 
 const STAGES: Array<{ id: PensaWorkStage; letter: string; title: string; description: string }> = [
   {
@@ -69,15 +91,6 @@ const lines = (value: string): string[] =>
 const draftId = (prefix: string): string =>
   `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
 
-function useUnsavedChanges(active: boolean) {
-  useEffect(() => {
-    if (!active) return
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault()
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [active])
-}
-
 function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : 'Algo deu errado. Tente novamente.'
 }
@@ -94,18 +107,85 @@ function failure(cause: unknown): PensaFailure {
   return { kind: 'technical', text: errorMessage(cause) }
 }
 
-export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
+export function PensaApp({
+  adapter,
+  initialProjectId = null,
+  onWorkspaceChange,
+  teamPollMs = 30_000,
+}: {
+  adapter: PensaHostAdapter
+  initialProjectId?: string | null
+  /** O compasso do "alguém da equipe mexeu no plano" (o teste injeta um curto; 0 desliga). */
+  teamPollMs?: number
+  /** Informa ao host quando um plano está aberto, sem acoplar o Pensa ao menu externo. */
+  onWorkspaceChange?: (active: boolean) => void
+}) {
   const [projects, setProjects] = useState<PensaProjectListView[]>([])
   const [detail, setDetail] = useState<PensaProjectDetailView | null>(null)
+  const projectOpen = detail !== null
+  useLayoutEffect(() => {
+    onWorkspaceChange?.(projectOpen)
+    return () => onWorkspaceChange?.(false)
+  }, [projectOpen, onWorkspaceChange])
   const [stage, setStage] = useState<PensaStageView | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Equipe (26/09/2026): a janela "Equipe · N", quem a abriu (para o foco voltar) e o aviso de
+  // que outro membro mexeu no plano enquanto este estava aberto.
+  const [teamOpen, setTeamOpen] = useState(false)
+  const teamOpenerRef = useRef<HTMLElement | null>(null)
+  const [changedRemotely, setChangedRemotely] = useState(false)
+  const busyRef = useRef<string | null>(null)
+  useEffect(() => {
+    busyRef.current = busy
+  }, [busy])
+  // "Coisa sem guardar": cada editor sujo (cartão, tarefa, o rascunho do chat) segura uma posse
+  // aqui pelo `useUnsavedChanges`; o "Atualizar" da faixa pergunta antes de recarregar por cima.
+  const dirtyHolds = useRef(0)
+  const dirtyRegistry = useMemo<DirtyRegistry>(
+    () => ({
+      hold: () => {
+        dirtyHolds.current += 1
+        let released = false
+        return () => {
+          if (released) return
+          released = true
+          dirtyHolds.current -= 1
+        }
+      },
+      isDirty: () => dirtyHolds.current > 0,
+    }),
+    [],
+  )
+  const [reloadAsk, setReloadAsk] = useState(false)
+  const reloadButtonRef = useRef<HTMLButtonElement | null>(null)
+  // "Sair da equipe" leva à home sem ninguém para o foco voltar (o "Equipe" e a janela já se
+  // foram): a home nasce com o foco no h1 quando esta bandeira está de pé (consumida ao montar).
+  const homeFocusRef = useRef(false)
+  const takeTitleFocus = useCallback(() => {
+    const wanted = homeFocusRef.current
+    homeFocusRef.current = false
+    return wanted
+  }, [])
   // "Peek": rever uma etapa CONCLUÍDA em modo leitura, sem sair do agora.
   const [peek, setPeek] = useState<PensaWorkStage | null>(null)
   const [peekView, setPeekView] = useState<PensaStageView | null>(null)
   const [peekError, setPeekError] = useState<string | null>(null)
   const peekRef = useRef<PensaWorkStage | null>(null)
+  // "Ver os Cartões de Criação" (a faixa lilás do plano aprovado): fecha o peek e, DEPOIS que o
+  // "Meu plano" volta à tela, rola até a lista dos cartões e leva o foco para ela. O contador é o
+  // pedido; o efeito roda depois da renderização que remonta a lista.
+  const cardsRef = useRef<HTMLDivElement | null>(null)
+  const [cardsRequest, setCardsRequest] = useState(0)
+  useEffect(() => {
+    if (!cardsRequest) return
+    const target = cardsRef.current
+    if (!target) return
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    target.scrollIntoView?.({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    target.focus({ preventScroll: true })
+  }, [cardsRequest])
 
   const loadProjects = useCallback(async () => {
     setLoading(true)
@@ -117,6 +197,7 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
       setProjects(result.projects)
       setDetail(null)
       setStage(null)
+      setTeamOpen(false)
     } catch (cause) {
       setError(errorMessage(cause))
     } finally {
@@ -125,12 +206,12 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
   }, [adapter.transport])
 
   const loadProject = useCallback(
-    async (projectId: string) => {
-      setLoading(true)
+    async (projectId: string, showLoading = true) => {
+      if (showLoading) setLoading(true)
       setError(null)
       try {
         const result = await adapter.transport.request<{ project: PensaProjectDetailView }>(
-          `/projects/${projectId}`,
+          `/projects/${encodeURIComponent(projectId)}`,
         )
         const project = result.project
         const stageResult = await adapter.transport.request<PensaStageView>(
@@ -138,6 +219,8 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
         )
         setDetail(project)
         setStage(stageResult)
+        setChangedRemotely(false)
+        setReloadAsk(false)
         // Abrir/recarregar um projeto sempre volta ao "agora" (peek fechado).
         peekRef.current = null
         setPeek(null)
@@ -146,15 +229,16 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
       } catch (cause) {
         setError(errorMessage(cause))
       } finally {
-        setLoading(false)
+        if (showLoading) setLoading(false)
       }
     },
     [adapter.transport],
   )
 
   useEffect(() => {
-    void loadProjects()
-  }, [loadProjects])
+    if (initialProjectId) void loadProject(initialProjectId)
+    else void loadProjects()
+  }, [loadProjects, loadProject, initialProjectId])
 
   const run = useCallback(async (key: string, action: () => Promise<void>) => {
     setBusy(key)
@@ -167,6 +251,83 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
       setBusy(null)
     }
   }, [])
+
+  // Renomear o plano (26/09/2026): OTIMISTA (o título troca na hora), fora do `run` para não
+  // travar o `busy` global; o erro restaura o nome e vai para o aviso da faixa creme. O lápis
+  // não some nem trava enquanto grava: é para onde o foco volta, e um botão escondido ou
+  // desabilitado não recebe foco.
+  const renameProject = useCallback(
+    async (name: string) => {
+      const current = detail
+      if (!current) return
+      const previous = current.name
+      setError(null)
+      setDetail({ ...current, name })
+      try {
+        const result = await adapter.transport.request<{ project: PensaProjectDetailView }>(
+          `/projects/${encodeURIComponent(current.id)}`,
+          { method: 'PATCH', body: { name } },
+        )
+        setDetail((now) =>
+          now && now.id === current.id
+            ? { ...now, name: result.project.name, updatedAt: result.project.updatedAt }
+            : now,
+        )
+      } catch (cause) {
+        setDetail((now) => (now && now.id === current.id ? { ...now, name: previous } : now))
+        setError(errorMessage(cause))
+      }
+    },
+    [adapter.transport, detail],
+  )
+
+  // A janela da equipe mexeu no projeto (gerar/desligar o código, tirar alguém): o members grava
+  // o `updatedAt` do projeto, então o app puxa o detalhe de novo SÓ para o `detail` (sem
+  // `loading`, sem recarregar a etapa: o `StageWorkspace` não desmonta e nada que a criança
+  // escreve se perde). Sem isso o compasso acusaria a própria criança em até 30 s.
+  const syncDetail = useCallback(
+    async (projectId: string) => {
+      try {
+        const result = await adapter.transport.request<{ project: PensaProjectDetailView }>(
+          `/projects/${encodeURIComponent(projectId)}`,
+        )
+        setDetail((now) => (now && now.id === projectId ? result.project : now))
+      } catch {
+        // O espelho otimista da janela já está na tela; o próximo tique do compasso confere.
+      }
+    },
+    [adapter.transport],
+  )
+
+  // "Alguém da equipe mexeu no plano" (26/09/2026): com equipe, um compasso leve pergunta o
+  // `updatedAt` do plano e, se mudou, mostra a faixa com "Atualizar" em vez de recarregar por
+  // cima do que a criança está escrevendo. Só com a aba visível e sem ação em voo; toda ação
+  // própria termina em `refresh`, então o `updatedAt` daqui já é o do servidor.
+  const memberCount = detail?.team?.memberCount ?? 0
+  const detailId = detail?.id ?? null
+  const detailUpdatedAt = detail?.updatedAt ?? null
+  useEffect(() => {
+    setChangedRemotely(false)
+    if (!detailId || !detailUpdatedAt || memberCount === 0 || teamPollMs <= 0) return
+    let alive = true
+    const tick = async () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
+      if (busyRef.current) return
+      try {
+        const result = await adapter.transport.request<{ project: PensaProjectDetailView }>(
+          `/projects/${encodeURIComponent(detailId)}`,
+        )
+        if (alive && result.project.updatedAt !== detailUpdatedAt) setChangedRemotely(true)
+      } catch {
+        // Rede caiu no compasso: o próximo tique tenta de novo, sem assustar ninguém.
+      }
+    }
+    const timer = setInterval(() => void tick(), teamPollMs)
+    return () => {
+      alive = false
+      clearInterval(timer)
+    }
+  }, [adapter.transport, detailId, detailUpdatedAt, memberCount, teamPollMs])
 
   if (loading)
     return (
@@ -182,7 +343,16 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
           busy={busy}
           error={error}
           mascot={adapter.mascotImages}
+          takeTitleFocus={takeTitleFocus}
           onOpen={(id) => void loadProject(id)}
+          onJoin={async (code) => {
+            // Sem `run`: o recado fica NO formulário do código, ao lado do campo.
+            const result = await adapter.transport.request<{ project: PensaProjectDetailView }>(
+              '/projects/join',
+              { method: 'POST', body: { code } },
+            )
+            await loadProject(result.project.id)
+          }}
           onCreate={(name) =>
             run('create', async () => {
               const result = await adapter.transport.request<{ project: PensaProjectDetailView }>(
@@ -192,12 +362,25 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
               await loadProject(result.project.id)
             })
           }
+          onRemove={async (id) => {
+            // Sem `run`: o erro tem que aparecer NA JANELA, que fica aberta para a
+            // criança tentar de novo, e não no aviso lá do alto da lista.
+            await adapter.transport.request(`/projects/${encodeURIComponent(id)}`, {
+              method: 'DELETE',
+            })
+            // ⚠️ E sem `loadProjects()`: ele acende o "Preparando seu mapa de criação…",
+            // que DESMONTA a lista (e a janela aberta) no meio do gesto — a tela pisca e
+            // o foco se perde. O servidor já confirmou; tirar o cartão da lista basta.
+            setProjects((current) => current.filter((project) => project.id !== id))
+          }}
         />
       </Shell>
     )
   }
 
   const refresh = () => loadProject(detail.id)
+  // A resposta do chat só atualiza os dados: a tela e o campo de mensagem continuam montados.
+  const refreshChat = () => loadProject(detail.id, false)
   const closePeek = () => {
     peekRef.current = null
     setPeek(null)
@@ -226,41 +409,211 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
         },
       )
   }
+  const approved = detail.currentCycle.stage === 'done'
+  const seeCards = () => {
+    closePeek()
+    setCardsRequest((value) => value + 1)
+  }
+  // A tela do plano nas faixas das telas-modelo (11/09/2026): creme com o cabeçalho, o mapa ZERO
+  // e o aviso de "revendo"; céu com a etapa (ou o "Meu plano"); lilás com o "Plano aprovado!"
+  // quando as quatro etapas estão vencidas.
   return (
     <Shell theme={adapter.theme}>
-      <ProjectHeader detail={detail} credits={stage?.credits} onBack={() => void loadProjects()} />
-      {error ? <Alert>{error}</Alert> : null}
-      <CreationMap
-        current={detail.currentCycle.stage}
-        peek={peek}
-        onPeek={openPeek}
-        onExitPeek={closePeek}
+      <DirtyContext.Provider value={dirtyRegistry}>
+        <div className="pensa-plan sz-tool-bands">
+          <header className="sz-tool-band sz-tool-band--creme">
+            <div className="sz-tool-band__inner pensa-plan-top">
+              <ProjectHeader
+                detail={detail}
+                credits={stage?.credits}
+                onBack={() => void loadProjects()}
+                canRename={detail.role !== 'member'}
+                onRename={renameProject}
+                memberCount={memberCount}
+                onTeam={(opener) => {
+                  teamOpenerRef.current = opener
+                  setTeamOpen(true)
+                }}
+              />
+              {error ? <Alert>{error}</Alert> : null}
+              {changedRemotely ? (
+                <div className="pensa-changed-banner" role="status">
+                  <UsersIcon size={18} />
+                  <span>{TEAM_COPY.changed}</span>
+                  <button
+                    ref={reloadButtonRef}
+                    type="button"
+                    className="sz-tool-pill sz-tool-pill--outline"
+                    onClick={() => {
+                      // Recarregar DESMONTA a etapa: com um editor sujo, a janela pergunta antes.
+                      if (dirtyRegistry.isDirty()) setReloadAsk(true)
+                      else void refresh()
+                    }}
+                  >
+                    {TEAM_COPY.reload}
+                  </button>
+                </div>
+              ) : null}
+              <CreationMap
+                current={detail.currentCycle.stage}
+                peek={peek}
+                onPeek={openPeek}
+                onExitPeek={closePeek}
+              />
+              {peek ? (
+                <PeekBanner
+                  label={approved ? 'Voltar para o meu plano' : 'Voltar para a etapa atual'}
+                  onClose={closePeek}
+                />
+              ) : null}
+            </div>
+          </header>
+          <div className="sz-tool-band sz-tool-band--ceu">
+            <div className="sz-tool-band__inner">
+              {peek ? (
+                <StagePeek
+                  adapter={adapter}
+                  detail={detail}
+                  stageId={peek}
+                  view={peekView}
+                  error={peekError}
+                  busy={busy}
+                  run={run}
+                  refresh={refresh}
+                />
+              ) : stage ? (
+                <StageWorkspace
+                  adapter={adapter}
+                  detail={detail}
+                  stage={stage}
+                  busy={busy}
+                  run={run}
+                  refresh={refresh}
+                  refreshChat={refreshChat}
+                  cardsRef={cardsRef}
+                />
+              ) : (
+                <Status>Carregando esta parte do plano…</Status>
+              )}
+            </div>
+          </div>
+          {approved && stage ? <ApprovedBand tasks={stage.tasks} onSeeCards={seeCards} /> : null}
+        </div>
+      </DirtyContext.Provider>
+      {/* A janela fica FORA das faixas (o mesmo motivo da janela de apagar). */}
+      <TeamDialog
+        open={teamOpen}
+        projectId={detail.id}
+        projectName={detail.name}
+        role={detail.role ?? 'owner'}
+        transport={adapter.transport}
+        onClose={() => setTeamOpen(false)}
+        onLeft={() => {
+          setTeamOpen(false)
+          homeFocusRef.current = true
+          void loadProjects()
+        }}
+        onTeamChanged={(team) => {
+          // O espelho otimista (o botão do cabeçalho acompanha na hora) e, atrás dele, o
+          // detalhe do servidor com o `updatedAt` novo, para o compasso não acusar a criança.
+          setDetail((now) => (now && now.id === detail.id ? { ...now, team } : now))
+          void syncDetail(detail.id)
+        }}
+        returnFocusTo={teamOpenerRef}
       />
-      {peek ? (
-        <StagePeek
-          adapter={adapter}
-          detail={detail}
-          stageId={peek}
-          view={peekView}
-          error={peekError}
-          busy={busy}
-          run={run}
-          refresh={refresh}
-          onClose={closePeek}
-        />
-      ) : stage ? (
-        <StageWorkspace
-          adapter={adapter}
-          detail={detail}
-          stage={stage}
-          busy={busy}
-          run={run}
-          refresh={refresh}
-        />
-      ) : (
-        <Status>Carregando esta parte do plano…</Status>
-      )}
+      <ConfirmDialog
+        open={reloadAsk}
+        title="Atualizar o plano?"
+        body="Você tem coisa sem guardar. Atualizar mesmo?"
+        confirmLabel={TEAM_COPY.reload}
+        cancelLabel="Continuar aqui"
+        onConfirm={() => {
+          setReloadAsk(false)
+          void refresh()
+        }}
+        onClose={() => setReloadAsk(false)}
+        returnFocusTo={reloadButtonRef}
+      />
     </Shell>
+  )
+}
+
+/**
+ * O aviso de que a criança está REVENDO uma etapa vencida (no fim da faixa creme, como na
+ * imagem-modelo). O `role="status"`, o texto e o nome do botão são os de antes: o leitor de tela e
+ * os testes contam com eles.
+ */
+function PeekBanner({ label, onClose }: { label: string; onClose(): void }) {
+  return (
+    <div className="pensa-peek-banner" role="status">
+      <EyeIcon size={18} />
+      <span>Você está revendo uma etapa que já foi concluída.</span>
+      <button
+        type="button"
+        className="sz-tool-pill sz-tool-pill--outline pensa-peek-back"
+        onClick={onClose}
+      >
+        {label}
+      </button>
+    </div>
+  )
+}
+
+/** As oficinas na ordem da faixa lilás, com o ícone de cada uma. */
+const DESTINATIONS: Array<{
+  id: PensaTaskView['destination']
+  name: string
+  Icon: (props: { size?: number }) => React.ReactElement
+}> = [
+  { id: 'studio', name: 'Estúdio', Icon: BlocksIcon },
+  { id: 'pinta', name: 'Pinta', Icon: PaletteIcon },
+  { id: 'molda', name: 'Molda', Icon: CubeIcon },
+]
+
+/**
+ * A faixa lilás do plano APROVADO (a imagem-modelo): o recado, quantos cartões foram para cada
+ * oficina (contados dos cartões do plano; oficina sem cartão não aparece) e o "Ver os Cartões de
+ * Criação", que fecha o peek e rola até a lista.
+ */
+function ApprovedBand({ tasks, onSeeCards }: { tasks: PensaTaskView[]; onSeeCards(): void }) {
+  const counts = DESTINATIONS.map((item) => ({
+    ...item,
+    count: tasks.filter((task) => task.destination === item.id).length,
+  })).filter((item) => item.count > 0)
+  return (
+    <section aria-labelledby="pensa-approved-title" className="sz-tool-band sz-tool-band--lilas">
+      <div className="sz-tool-band__inner">
+        <div className="sz-tool-cta-card pensa-approved-cta">
+          <span className="sz-tool-tile sz-tool-tile--ok" aria-hidden="true">
+            <CircleCheckIcon size={24} />
+          </span>
+          <div className="sz-tool-cta-card__body">
+            <h2 id="pensa-approved-title" className="sz-tool-cta-card__title">
+              Plano aprovado! Agora é só construir.
+            </h2>
+            <p className="sz-tool-cta-card__text">
+              As quatro etapas do método ZERO estão concluídas. Os Cartões de Criação já foram
+              separados por oficina.
+            </p>
+            {counts.length ? (
+              <ul className="pensa-destination-chips">
+                {counts.map(({ id, name, count, Icon }) => (
+                  <li key={id} data-destination={id}>
+                    <Icon size={14} />
+                    {name} · {count}
+                    <span className="pensa-sr-only">{count === 1 ? ' cartão' : ' cartões'}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+          <button type="button" className="sz-tool-pill sz-tool-pill--primary" onClick={onSeeCards}>
+            Ver os Cartões de Criação
+            <ArrowRightIcon size={16} />
+          </button>
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -297,6 +650,44 @@ function Zappy({
   )
 }
 
+/**
+ * As oficinas para onde vão os Cartões de Criação (a faixa lilás da home, 11/09/2026):
+ * cartões INFORMATIVOS, sem link (quem abre a oficina é o cartão do plano, com o guia). O selo
+ * "3 cartões" da imagem-modelo ficou de fora: a lista de planos não traz a contagem.
+ */
+const WORKSHOPS: Array<{
+  id: 'estudio' | 'pinta' | 'molda'
+  name: string
+  text: string
+  Icon: (props: { size?: number }) => React.ReactElement
+}> = [
+  {
+    id: 'estudio',
+    name: 'Estúdio',
+    text: 'Os cartões de jogo viram blocos e telas no Estúdio.',
+    Icon: BlocksIcon,
+  },
+  {
+    id: 'pinta',
+    name: 'Pinta',
+    text: 'Os cartões de arte viram personagens e cenários no Pinta.',
+    Icon: PaletteIcon,
+  },
+  {
+    id: 'molda',
+    name: 'Molda',
+    text: 'Os cartões de mundo viram modelos e texturas no Molda.',
+    Icon: CubeIcon,
+  },
+]
+
+/**
+ * A home no desenho das telas-modelo (11/09/2026), o MESMO das galerias do Estúdio e do Pinta:
+ * três faixas de borda a borda que rolam juntas. Creme com o cabeçalho ([menu][voltar] + o selo
+ * do Pensa + título, e o "+ Novo plano" que abre o campo de criar logo abaixo), céu com os planos
+ * e o cartão "Novo plano" no FIM da grade, lilás com as oficinas para onde os cartões vão. As
+ * receitas `sz-tool-*` vêm de `@sistemazero/ui/tool-chrome.css` (o kids importa).
+ */
 function ProjectList(props: {
   projects: PensaProjectListView[]
   busy: string | null
@@ -304,14 +695,88 @@ function ProjectList(props: {
   mascot?: Partial<Record<PensaMascotPose, string>>
   onOpen(id: string): void
   onCreate(name: string): void
+  /** Apaga o plano DE VEZ. Rejeita = a janela fica aberta com o recado. */
+  onRemove(id: string): Promise<void>
+  /** Entrar num plano pelo código de um colega. Rejeita = o recado fica no formulário. */
+  onJoin(code: string): Promise<void>
+  /**
+   * A home deve nascer com o foco no h1? (Depois de "Sair da equipe" não sobra ninguém para o
+   * foco voltar.) Lido UMA vez ao montar; quem responde `true` consome o pedido.
+   */
+  takeTitleFocus?(): boolean
 }) {
   const [name, setName] = useState('')
+  const titleRef = useRef<HTMLHeadingElement | null>(null)
+  const { takeTitleFocus } = props
+  useEffect(() => {
+    if (takeTitleFocus?.()) titleRef.current?.focus()
+  }, [takeTitleFocus])
+  // Apagar um plano: a janela pergunta antes, e o alvo é o plano inteiro (não há
+  // desfazer do outro lado).
+  const [removeTarget, setRemoveTarget] = useState<PensaProjectListView | null>(null)
+  const [removing, setRemoving] = useState(false)
+  const [removeError, setRemoveError] = useState<string | null>(null)
+  // A lixeira que abriu a janela — e, quando o plano é apagado, ela some com o cartão:
+  // aí o foco passa para o "+ Novo plano", que é o ponto estável da tela.
+  const removeOpenerRef = useRef<HTMLElement | null>(null)
   // O campo de criar nasce FECHADO quando já há planos e ABERTO no primeiro uso (a criança
   // nova não paga um clique a mais, e o vazio "Dê um nome ao jogo..." continua verdadeiro).
   const [creating, setCreating] = useState(() => props.projects.length === 0)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const newButtonRef = useRef<HTMLButtonElement | null>(null)
+  // Quem abriu o campo (o botão do cabeçalho ou o cartão "Novo plano"): é para ele que o foco
+  // volta ao cancelar.
+  const openerRef = useRef<HTMLElement | null>(null)
   const focusOnOpen = useRef(false)
+  // "Entrar com um código" (equipe, 26/09/2026): o irmão do criar, na mesma faixa creme. Abrir
+  // um fecha o outro; o erro do servidor (código inválido, sem Pensa, equipe cheia) fica ao
+  // lado do campo, com a frase que ele mandou.
+  const [joining, setJoining] = useState(false)
+  const [code, setCode] = useState('')
+  const [joinError, setJoinError] = useState<string | null>(null)
+  const [joinBusy, setJoinBusy] = useState(false)
+  const joinInputRef = useRef<HTMLInputElement | null>(null)
+  const joinButtonRef = useRef<HTMLButtonElement | null>(null)
+  const focusJoinOnOpen = useRef(false)
+  useEffect(() => {
+    if (joining && focusJoinOnOpen.current) {
+      focusJoinOnOpen.current = false
+      joinInputRef.current?.focus()
+    }
+  }, [joining])
+  const openJoin = () => {
+    if (joining) {
+      joinInputRef.current?.focus()
+      return
+    }
+    setCreating(false)
+    setJoinError(null)
+    focusJoinOnOpen.current = true
+    setJoining(true)
+  }
+  const cancelJoin = () => {
+    if (joinBusy) return
+    setJoining(false)
+    setCode('')
+    setJoinError(null)
+    // No primeiro uso (0 planos) abrir o código fechou o criar: cancelar devolve o campo, senão
+    // o vazio "Dê um nome ao jogo…" fica sem campo nenhum à vista.
+    if (props.projects.length === 0) setCreating(true)
+    joinButtonRef.current?.focus()
+  }
+  const submitJoin = async () => {
+    const trimmed = code.trim()
+    if (trimmed.length < 4 || joinBusy) return
+    setJoinBusy(true)
+    setJoinError(null)
+    try {
+      await props.onJoin(trimmed)
+    } catch (cause) {
+      setJoinError(errorMessage(cause))
+    } finally {
+      setJoinBusy(false)
+    }
+  }
   const hostChrome = usePensaHostChrome()
   useEffect(() => {
     if (creating && focusOnOpen.current) {
@@ -319,7 +784,14 @@ function ProjectList(props: {
       inputRef.current?.focus()
     }
   }, [creating])
-  const openCreate = () => {
+  const openCreate = (opener: HTMLElement) => {
+    openerRef.current = opener
+    setJoining(false)
+    // Já aberto (o cartão do fim da grade, com o campo lá em cima): só leva o foco até ele.
+    if (creating) {
+      inputRef.current?.focus()
+      return
+    }
     focusOnOpen.current = true
     setCreating(true)
   }
@@ -327,126 +799,492 @@ function ProjectList(props: {
     if (props.busy === 'create') return
     setCreating(false)
     setName('')
-    newButtonRef.current?.focus()
+    const opener = openerRef.current?.isConnected ? openerRef.current : newButtonRef.current
+    opener?.focus()
+  }
+  const askRemove = (project: PensaProjectListView, opener: HTMLElement) => {
+    removeOpenerRef.current = opener
+    setRemoveError(null)
+    setRemoveTarget(project)
+  }
+  const closeRemove = () => {
+    if (removing) return
+    setRemoveTarget(null)
+    setRemoveError(null)
+  }
+  const confirmRemove = async () => {
+    if (!removeTarget || removing) return
+    setRemoving(true)
+    setRemoveError(null)
+    const eraOUltimo = props.projects.length === 1
+    try {
+      await props.onRemove(removeTarget.id)
+      // O cartão (e a lixeira dele) saem da tela agora: o foco precisa de outro pouso.
+      removeOpenerRef.current = newButtonRef.current
+      setRemoveTarget(null)
+      // Apagou o último: a tela do vazio nasce com o campo ABERTO (a mesma regra do
+      // primeiro acesso). Sem isto ela ficava com o convite "dê um nome ao jogo" e
+      // nenhum campo à vista — o `creating` só olhava a lista na PRIMEIRA renderização.
+      if (eraOUltimo) setCreating(true)
+    } catch (cause) {
+      setRemoveError(errorMessage(cause))
+    } finally {
+      setRemoving(false)
+    }
   }
   const count = props.projects.length
   return (
-    <section className="pensa-home">
-      {/* Cabeçalho de DUAS linhas (07/09/2026), o mesmo do Pinta e do Estúdio: menu do host +
-          título/subtítulo à esquerda, o "+ Novo plano" (pílula 3D) à direita. O layout vem
-          das classes `sz-tool-*` de `@sistemazero/ui/tool-chrome.css` (o kids importa). */}
-      <header className="pensa-home-header sz-tool-header">
-        {/* `pensa-home-lead` fica como âncora do teste do host: menu ANTES do h1. */}
-        <div className="pensa-home-lead sz-tool-header__lead">
-          {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
-          <div className="sz-tool-header__title">
-            <h1 className="pensa-display">Meus projetos</h1>
-            <p>
-              Use o método ZERO para criar um plano claro e mandar cada Cartão de Criação ao lugar
-              certo.
-            </p>
-          </div>
-        </div>
-        <div className="sz-tool-header__actions">
-          <button
-            ref={newButtonRef}
-            type="button"
-            className="sz-tool-btn-3d"
-            aria-expanded={creating}
-            aria-controls="pensa-create"
-            onClick={openCreate}
-          >
-            + Novo plano
-          </button>
-        </div>
-      </header>
-      {creating ? (
-        <form
-          id="pensa-create"
-          className="pensa-create"
-          onSubmit={(event) => {
-            event.preventDefault()
-            if (name.trim().length >= 2) props.onCreate(name.trim())
-          }}
-        >
-          <label htmlFor="pensa-project-name">Nome do novo jogo</label>
-          <div>
-            <input
-              ref={inputRef}
-              id="pensa-project-name"
-              value={name}
-              maxLength={120}
-              onChange={(event) => setName(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Escape') {
+    <>
+      <div className="pensa-home sz-tool-bands">
+        <header className="sz-tool-band sz-tool-band--creme">
+          <div className="sz-tool-band__inner pensa-home-top">
+            <div className="pensa-home-header sz-tool-header">
+              {/* `pensa-home-lead` fica como âncora do teste do host: menu ANTES do h1. */}
+              <div className="pensa-home-lead sz-tool-header__lead">
+                {hostChrome?.menu || hostChrome?.back ? (
+                  <div className="sz-tool-header__nav">
+                    {hostChrome.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
+                    {hostChrome.back ? <HostBackLink back={hostChrome.back} /> : null}
+                  </div>
+                ) : null}
+                <div className="sz-tool-header__title">
+                  <p className="pensa-home-chip">
+                    <LightbulbIcon size={16} />
+                    Pensa · sua oficina de planos
+                  </p>
+                  <h1 ref={titleRef} className="sz-tool-title" tabIndex={-1}>
+                    Meus projetos
+                  </h1>
+                  <p className="sz-tool-subtitle">
+                    Use o método ZERO para criar um plano claro e mandar cada Cartão de Criação ao
+                    lugar certo.
+                  </p>
+                </div>
+              </div>
+              <div className="sz-tool-header__actions">
+                <button
+                  ref={newButtonRef}
+                  type="button"
+                  className="sz-tool-pill sz-tool-pill--primary"
+                  aria-expanded={creating}
+                  aria-controls="pensa-create"
+                  onClick={(event) => openCreate(event.currentTarget)}
+                >
+                  + Novo plano
+                </button>
+                <button
+                  ref={joinButtonRef}
+                  type="button"
+                  className="sz-tool-pill sz-tool-pill--outline"
+                  aria-expanded={joining}
+                  aria-controls="pensa-join"
+                  onClick={openJoin}
+                >
+                  <UsersIcon size={16} />
+                  {TEAM_COPY.joinButton}
+                </button>
+              </div>
+            </div>
+            {creating ? (
+              <form
+                id="pensa-create"
+                className="pensa-create"
+                onSubmit={(event) => {
                   event.preventDefault()
-                  cancelCreate()
-                }
-              }}
-              placeholder="Ex.: Guardiões da Lua"
-            />
-            <button
-              type="submit"
-              className="sz-tool-btn-3d"
-              disabled={props.busy === 'create' || name.trim().length < 2}
-            >
-              Criar meu plano
-            </button>
+                  if (name.trim().length >= 2) props.onCreate(name.trim())
+                }}
+                onKeyDown={(event) => {
+                  // No FORMULÁRIO, não no campo: o Esc vale também com o foco nos botões.
+                  if (event.key === 'Escape') {
+                    event.preventDefault()
+                    cancelCreate()
+                  }
+                }}
+              >
+                <label htmlFor="pensa-project-name">Nome do novo jogo</label>
+                <div>
+                  <input
+                    ref={inputRef}
+                    id="pensa-project-name"
+                    value={name}
+                    maxLength={120}
+                    onChange={(event) => setName(event.target.value)}
+                    placeholder="Ex.: Guardiões da Lua"
+                  />
+                  <button
+                    type="submit"
+                    className="sz-tool-pill sz-tool-pill--primary"
+                    disabled={props.busy === 'create' || name.trim().length < 2}
+                  >
+                    Criar meu plano
+                  </button>
+                  <button
+                    type="button"
+                    className="sz-tool-pill sz-tool-pill--quiet"
+                    disabled={props.busy === 'create'}
+                    onClick={cancelCreate}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            ) : null}
+            {joining ? (
+              <form
+                id="pensa-join"
+                className="pensa-create pensa-join"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  void submitJoin()
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape') {
+                    event.preventDefault()
+                    cancelJoin()
+                  }
+                }}
+              >
+                <label htmlFor="pensa-join-code">{TEAM_COPY.joinLabel}</label>
+                <div>
+                  <input
+                    ref={joinInputRef}
+                    id="pensa-join-code"
+                    value={code}
+                    maxLength={16}
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    spellCheck={false}
+                    onChange={(event) => setCode(event.target.value)}
+                    placeholder={TEAM_COPY.joinPlaceholder}
+                  />
+                  <button
+                    type="submit"
+                    className="sz-tool-pill sz-tool-pill--primary"
+                    disabled={joinBusy || code.trim().length < 4}
+                  >
+                    {joinBusy ? TEAM_COPY.joinBusy : TEAM_COPY.joinSubmit}
+                  </button>
+                  <button
+                    type="button"
+                    className="sz-tool-pill sz-tool-pill--quiet"
+                    disabled={joinBusy}
+                    onClick={cancelJoin}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+                {joinError ? (
+                  <p className="pensa-inline-error" role="alert">
+                    {joinError}
+                  </p>
+                ) : null}
+              </form>
+            ) : null}
+          </div>
+        </header>
+
+        <section aria-labelledby="pensa-plans-title" className="sz-tool-band sz-tool-band--ceu">
+          <div className="sz-tool-band__inner">
+            {/* O heading da seção segue para o leitor de tela; visualmente o título da página já
+              diz tudo, e o contador fica no rodapé (par do "Mostrando N de M" do Estúdio). */}
+            <h2 id="pensa-plans-title" className="pensa-sr-only">
+              Meus planos
+            </h2>
+            {props.error ? <Alert>{props.error}</Alert> : null}
+            {count === 0 ? (
+              <div className="pensa-empty">
+                {props.mascot?.happy ? (
+                  <Zappy pose="happy" images={props.mascot} className="pensa-empty-zappy" />
+                ) : (
+                  <span>✦</span>
+                )}
+                <h3>Seu primeiro mundo começa aqui</h3>
+                <p>Dê um nome ao jogo e vamos organizar a ideia juntos.</p>
+              </div>
+            ) : (
+              <>
+                <div className="pensa-project-grid">
+                  {props.projects.map((project) => (
+                    <PlanCard
+                      key={project.id}
+                      project={project}
+                      onOpen={props.onOpen}
+                      onRemove={(target, opener) => askRemove(target, opener)}
+                    />
+                  ))}
+                  {/* O cartão "Novo plano" FECHA a grade (a imagem-modelo): abre o MESMO campo do
+                    "+ Novo plano" lá em cima, e o foco volta para ele ao cancelar. */}
+                  <button
+                    type="button"
+                    className="sz-tool-card sz-tool-card--new pensa-new-plan-card"
+                    aria-controls="pensa-create"
+                    aria-expanded={creating}
+                    onClick={(event) => openCreate(event.currentTarget)}
+                  >
+                    <span className="sz-tool-new-dot" aria-hidden="true">
+                      <PlusIcon />
+                    </span>
+                    <span className="sz-tool-card-title pensa-new-plan-card__title">
+                      Novo plano
+                    </span>
+                    <span className="pensa-new-plan-card__hint">
+                      Comece pela etapa Z e siga o método.
+                    </span>
+                  </button>
+                </div>
+                <p className="pensa-home-footer">
+                  {count === 1 ? 'Mostrando 1 plano' : `Mostrando ${count} planos`}
+                </p>
+              </>
+            )}
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="pensa-workshops-title"
+          className="sz-tool-band sz-tool-band--lilas"
+        >
+          <div className="sz-tool-band__inner">
+            <h2 id="pensa-workshops-title" className="sz-tool-section-title">
+              Cada Cartão de Criação vai para o lugar certo
+            </h2>
+            <p className="sz-tool-section-text">
+              Quando o plano fica pronto, o Pensa manda cada cartão para a oficina que vai construir
+              aquela parte.
+            </p>
+            <ul className="pensa-workshops">
+              {WORKSHOPS.map(({ id, name, text, Icon }) => (
+                <li key={id} className="pensa-workshop">
+                  <span className={`sz-tool-tile sz-tool-tile--${id}`} aria-hidden="true">
+                    <Icon size={22} />
+                  </span>
+                  <h3 className="sz-tool-card-title">{name}</h3>
+                  <p>{text}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      </div>
+      {/* A janela fica FORA das faixas: dentro delas as pílulas ganhariam o relevo 3D
+        das galerias, que é desenho de grade, não de diálogo. */}
+      <ConfirmDialog
+        open={removeTarget !== null}
+        title="Apagar este plano?"
+        body={
+          removeTarget
+            ? `O plano "${removeTarget.name}" vai sumir: a conversa com o Zappy, a carta da ideia, as telinhas e os Cartões de Criação. O que você já fez no Estúdio, no Pinta e no Molda continua guardado lá. Não dá para desfazer.`
+            : ''
+        }
+        confirmLabel="Apagar"
+        busyLabel="Apagando…"
+        busy={removing}
+        error={removeError}
+        onConfirm={() => void confirmRemove()}
+        onClose={closeRemove}
+        returnFocusTo={removeOpenerRef}
+      />
+    </>
+  )
+}
+
+/**
+ * O cartão de um plano (a imagem-modelo): o alvo e o nome, os selos da versão e da etapa, a
+ * trilha Z-E-R-O em ladrilhos (concluída cheia, atual com o fio, futura apagada; o nome de cada
+ * etapa só para o leitor de tela), a linha do andamento e o rodapé com "Editado há…" e o
+ * "Continuar". O nome acessível do botão leva o nome do plano: "Continuar" sozinho repetido na
+ * grade não diria qual.
+ *
+ * ⚠️⚠️ O cartão NÃO é clicável (19/09/2026, decisão dela). O "Continuar" já teve um `::after` que
+ * esticava a área clicável até a borda do cartão; ela saiu junto com a mãozinha do `<article>`,
+ * porque a mãozinha tem de aparecer só onde de fato se clica. Quem abre o plano é este botão e
+ * quem apaga é a lixeira — os dois únicos alvos do cartão. Ver o comentário do
+ * `.pensa-project-card` no `pensa.css`, que guarda o porquê inteiro.
+ */
+function PlanCard({
+  project,
+  onOpen,
+  onRemove,
+}: {
+  project: PensaProjectListView
+  onOpen(id: string): void
+  onRemove(project: PensaProjectListView, opener: HTMLElement): void
+}) {
+  const done = project.stage === 'done'
+  const currentIndex = done ? STAGES.length : STAGES.findIndex((item) => item.id === project.stage)
+  // Equipe: "De <dono>" no plano em que entrei (sem lixeira: apagar é do dono) e
+  // "Em equipe · N" no meu plano com gente dentro. Sem `role` (members antigo) = só meu.
+  const role = project.role ?? 'owner'
+  const members = project.team?.memberCount ?? 0
+  const current = STAGES[currentIndex]
+  return (
+    <article className="pensa-project-card">
+      <div className="pensa-project-card__head">
+        <span className="pensa-project-orbit" aria-hidden="true">
+          <TargetIcon size={22} />
+        </span>
+        <h3 className="sz-tool-card-title pensa-project-card__name">{project.name}</h3>
+      </div>
+      <div className="pensa-project-card__chips">
+        <span className="pensa-chip">Versão {project.cycleNumber}</span>
+        {done ? (
+          <span className="pensa-chip is-approved">Plano aprovado</span>
+        ) : (
+          <span className="pensa-chip is-stage">Etapa {project.stage.toUpperCase()}</span>
+        )}
+        {role === 'member' ? (
+          <span className="pensa-chip is-team">
+            {TEAM_COPY.chipFrom(personName(project.team?.ownerFirstName ?? null))}
+          </span>
+        ) : members > 0 ? (
+          <span className="pensa-chip is-team">{TEAM_COPY.chipTeam(members)}</span>
+        ) : null}
+      </div>
+      <ol className="pensa-zero-track">
+        {STAGES.map((item, index) => {
+          const state =
+            index < currentIndex ? 'complete' : index === currentIndex ? 'current' : 'next'
+          return (
+            <li key={item.id} className={`is-${state}`}>
+              <span aria-hidden="true">{item.letter}</span>
+              <span className="pensa-sr-only">
+                {item.title}
+                {state === 'complete'
+                  ? ' (concluída)'
+                  : state === 'current'
+                    ? ' (etapa atual)'
+                    : ' (ainda não)'}
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+      <p className={`pensa-project-card__progress${done ? ' is-done' : ''}`}>
+        <FlagIcon size={16} />
+        {done ? 'Todas as 4 etapas concluídas' : `Etapa atual: ${current?.title ?? ''}`}
+      </p>
+      <div className="pensa-project-card__foot">
+        <span className="pensa-project-card__edited">{editedAgo(project.updatedAt)}</span>
+        <div className="pensa-project-card__actions">
+          {role === 'member' ? null : (
             <button
               type="button"
-              className="sz-tool-btn"
-              disabled={props.busy === 'create'}
-              onClick={cancelCreate}
+              className="pensa-project-card__remove"
+              aria-label={`Apagar o plano ${project.name}`}
+              title="Apagar"
+              onClick={(event) => onRemove(project, event.currentTarget)}
             >
-              Cancelar
+              <TrashIcon size={18} />
             </button>
-          </div>
-        </form>
-      ) : null}
-      {props.error ? <Alert>{props.error}</Alert> : null}
-      {/* O heading da seção segue para o leitor de tela; visualmente o título da página já
-          diz tudo, e o contador foi para o rodapé (par do "Mostrando N de M" do Estúdio). */}
-      <h2 className="pensa-sr-only">Meus planos</h2>
-      {count === 0 ? (
-        <div className="pensa-empty">
-          {props.mascot?.happy ? (
-            <Zappy pose="happy" images={props.mascot} className="pensa-empty-zappy" />
-          ) : (
-            <span>✦</span>
           )}
-          <h3>Seu primeiro mundo começa aqui</h3>
-          <p>Dê um nome ao jogo e vamos organizar a ideia juntos.</p>
+          <button
+            type="button"
+            className="sz-tool-pill sz-tool-pill--primary pensa-project-card__open"
+            aria-label={`Continuar o plano ${project.name}`}
+            onClick={() => onOpen(project.id)}
+          >
+            Continuar
+            <ArrowRightIcon size={16} />
+          </button>
         </div>
-      ) : (
-        <>
-          <div className="pensa-project-grid">
-            {props.projects.map((project) => (
-              <button
-                key={project.id}
-                type="button"
-                className="pensa-project-card"
-                onClick={() => props.onOpen(project.id)}
-              >
-                <span className="pensa-project-orbit" aria-hidden="true">
-                  ◉
-                </span>
-                <strong>{project.name}</strong>
-                <span>
-                  Versão {project.cycleNumber} ·{' '}
-                  {project.stage === 'done'
-                    ? 'Plano aprovado'
-                    : `Etapa ${project.stage.toUpperCase()}`}
-                </span>
-                <i>Continuar →</i>
-              </button>
-            ))}
-          </div>
-          <p className="pensa-home-footer">
-            {count === 1 ? 'Mostrando 1 plano' : `Mostrando ${count} planos`}
-          </p>
-        </>
-      )}
-    </section>
+      </div>
+    </article>
+  )
+}
+
+/**
+ * O nome do plano com o lápis (26/09/2026), no molde do `ProjectNameField` do Estúdio: clicar
+ * troca o título pelo campo "Nome do plano" (texto selecionado); Enter ou sair do campo grava,
+ * Esc desiste, e o foco volta ao lápis. Nome igual ao atual ou com menos de 2 letras só fecha.
+ * ⚠️ O lápis é IRMÃO do h1, não filho: dentro dele entraria no nome acessível do título.
+ */
+function ProjectNameTitle({
+  name,
+  canRename,
+  onRename,
+}: {
+  name: string
+  canRename: boolean
+  onRename(name: string): Promise<void>
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(name)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  // Esc desiste: um `blur` que chegue depois (a remoção do campo) não pode gravar o rascunho.
+  const cancelledRef = useRef(false)
+  const returnFocusRef = useRef(false)
+
+  useEffect(() => {
+    if (!editing) setDraft(name)
+  }, [editing, name])
+
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    } else if (returnFocusRef.current) {
+      returnFocusRef.current = false
+      buttonRef.current?.focus()
+    }
+  }, [editing])
+
+  function commit(): void {
+    const next = draft.trim()
+    setEditing(false)
+    if (next.length < 2 || next === name) return
+    void onRename(next)
+  }
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        className="pensa-title-input"
+        aria-label="Nome do plano"
+        autoComplete="off"
+        maxLength={120}
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={() => {
+          if (cancelledRef.current) return
+          commit()
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault()
+            returnFocusRef.current = true
+            event.currentTarget.blur()
+          }
+          if (event.key === 'Escape') {
+            cancelledRef.current = true
+            returnFocusRef.current = true
+            setDraft(name)
+            setEditing(false)
+          }
+        }}
+      />
+    )
+  }
+  return (
+    <div className="pensa-project-title__row">
+      <h1 className="sz-tool-title">{name}</h1>
+      {canRename ? (
+        <button
+          ref={buttonRef}
+          type="button"
+          className="sz-tool-icon-btn pensa-title-rename"
+          aria-label={`Renomear o plano ${name}`}
+          onClick={() => {
+            cancelledRef.current = false
+            setDraft(name)
+            setEditing(true)
+          }}
+        >
+          <PencilIcon />
+        </button>
+      ) : null}
+    </div>
   )
 }
 
@@ -454,32 +1292,66 @@ function ProjectHeader({
   detail,
   credits,
   onBack,
+  canRename,
+  onRename,
+  memberCount,
+  onTeam,
 }: {
   detail: PensaProjectDetailView
   credits?: AiCreditsView | null
   onBack(): void
+  canRename: boolean
+  onRename(name: string): Promise<void>
+  memberCount: number
+  onTeam(opener: HTMLElement): void
 }) {
   const hostChrome = usePensaHostChrome()
+  const approved = detail.currentCycle.stage === 'done'
   return (
-    <header className="pensa-project-header">
-      {/* Menu da comunidade (host) e voltar: a MESMA receita compartilhada, o menu primeiro. */}
-      {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
-      <button
-        type="button"
-        className="sz-tool-btn sz-tool-btn--icon"
-        onClick={onBack}
-        aria-label="Voltar aos meus planos"
-      >
-        <ArrowLeftIcon />
-      </button>
-      <div className="pensa-project-title">
-        <span>VERSÃO {detail.currentCycle.number}</span>
-        <h1 className="pensa-display">{detail.name}</h1>
+    // O cabeçalho das galerias (`.sz-tool-header`): [menu][voltar] + "VERSÃO N" e o nome à
+    // esquerda; os créditos e a pílula do andamento à direita (menta quando aprovado).
+    <header className="pensa-project-header sz-tool-header">
+      <div className="sz-tool-header__lead">
+        {/* Menu da comunidade (host) e voltar: o MESMO quadrado das galerias, o menu primeiro. */}
+        <div className="sz-tool-header__nav">
+          {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
+          <button
+            type="button"
+            className="sz-tool-icon-btn"
+            onClick={onBack}
+            aria-label="Voltar aos meus planos"
+          >
+            <ArrowLeftIcon />
+          </button>
+        </div>
+        <div className="pensa-project-title sz-tool-header__title">
+          <p className="sz-tool-kicker">VERSÃO {detail.currentCycle.number}</p>
+          <ProjectNameTitle name={detail.name} canRename={canRename} onRename={onRename} />
+        </div>
       </div>
-      <AiCreditsBadge credits={credits} />
-      <div className="pensa-plan-status">
-        <span aria-hidden="true">●</span>
-        {detail.currentCycle.stage === 'done' ? 'Plano aprovado' : 'Planejando'}
+      <div className="sz-tool-header__actions">
+        {/* "Equipe · N" abre a janela da equipe (dono e membro; N = quem entrou). */}
+        <button
+          type="button"
+          className="sz-tool-pill sz-tool-pill--outline pensa-team-button"
+          aria-haspopup="dialog"
+          onClick={(event) => onTeam(event.currentTarget)}
+        >
+          <UsersIcon size={16} />
+          {/* O "·" é desenho: o leitor de tela falaria "ponto médio". O nome acessível vem
+            INTEIRO do texto invisível ("Equipe, N na equipe"); o visível fica fora dele. */}
+          <span aria-hidden="true">
+            {TEAM_COPY.button} · {memberCount}
+          </span>
+          <span className="pensa-sr-only">
+            {TEAM_COPY.button}, {memberCount} na equipe
+          </span>
+        </button>
+        <AiCreditsBadge credits={credits} />
+        <p className={`sz-tool-status pensa-plan-status${approved ? ' sz-tool-status--ok' : ''}`}>
+          <span className="pensa-plan-status__dot" aria-hidden="true" />
+          {approved ? 'Plano aprovado' : 'Planejando'}
+        </p>
       </div>
     </header>
   )
@@ -502,7 +1374,9 @@ function CreationMap(props: {
         const className = `pensa-map-node ${complete ? 'is-complete' : ''} ${isCurrent ? 'is-current' : ''} ${viewing ? 'is-viewing' : ''}`
         const inner = (
           <>
-            <span>{complete ? '✓' : item.letter}</span>
+            <span aria-hidden={complete ? true : undefined}>
+              {complete ? <CheckIcon size={18} /> : item.letter}
+            </span>
             <div>
               <strong>{item.title}</strong>
               <small>{item.description}</small>
@@ -643,29 +1517,12 @@ function StagePeek(props: {
   busy: string | null
   run(key: string, action: () => Promise<void>): Promise<void>
   refresh(): Promise<void>
-  onClose(): void
 }) {
   const config = STAGES.find((item) => item.id === props.stageId)
   if (!config) return null
-  const backLabel =
-    props.detail.currentCycle.stage === 'done'
-      ? 'Voltar para o meu plano'
-      : 'Voltar para a etapa atual'
   return (
     <section className="pensa-workspace pensa-peek">
-      <div className="pensa-peek-banner" role="status">
-        <span>Você está revendo uma etapa que já foi concluída.</span>
-        <button type="button" onClick={props.onClose}>
-          {backLabel}
-        </button>
-      </div>
-      <div className="pensa-stage-title">
-        <span>{config.letter}</span>
-        <div>
-          <h2>{config.title}</h2>
-          <p>{config.description}</p>
-        </div>
-      </div>
+      <StageTitle config={config} />
       {props.error ? (
         <Alert>{props.error}</Alert>
       ) : props.view ? (
@@ -746,6 +1603,9 @@ function StageWorkspace(props: {
   busy: string | null
   run(key: string, action: () => Promise<void>): Promise<void>
   refresh(): Promise<void>
+  refreshChat(): Promise<void>
+  /** A lista dos cartões do "Meu plano" (o "Ver os Cartões de Criação" rola até ela). */
+  cardsRef?: React.RefObject<HTMLDivElement | null>
 }) {
   const current = props.detail.currentCycle.stage
   if (current === 'done') return <MyPlan {...props} />
@@ -760,13 +1620,7 @@ function StageWorkspace(props: {
     })
   return (
     <section className="pensa-workspace">
-      <div className="pensa-stage-title">
-        <span>{config.letter}</span>
-        <div>
-          <h2>{config.title}</h2>
-          <p>{config.description}</p>
-        </div>
-      </div>
+      <StageTitle config={config} />
       {current === 'z' ? <StageZ {...props} onAdvance={advance} /> : null}
       {current === 'e' ? <StageE {...props} onAdvance={advance} /> : null}
       {current === 'r' ? <StageR {...props} onAdvance={advance} /> : null}
@@ -775,7 +1629,20 @@ function StageWorkspace(props: {
   )
 }
 
-type StageProps = Parameters<typeof StageWorkspace>[0] & { onAdvance(): void }
+/** O título da etapa: o ladrilho azul com a letra e o nome no h2 da régua das galerias. */
+function StageTitle({ config }: { config: (typeof STAGES)[number] }) {
+  return (
+    <div className="pensa-stage-title">
+      <span aria-hidden="true">{config.letter}</span>
+      <div>
+        <h2 className="sz-tool-section-title">{config.title}</h2>
+        <p>{config.description}</p>
+      </div>
+    </div>
+  )
+}
+
+type StageProps = Omit<Parameters<typeof StageWorkspace>[0], 'cardsRef'> & { onAdvance(): void }
 
 function StageZ(props: StageProps) {
   const [message, setMessage] = useState('')
@@ -783,6 +1650,8 @@ function StageZ(props: StageProps) {
   const [chatError, setChatError] = useState<PensaFailure | null>(null)
   const abortRef = useRef<null | (() => void)>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  // O rascunho da conversa também é "coisa sem guardar": o "Atualizar" pergunta antes de apagar.
+  useUnsavedChanges(message.trim().length > 0)
   useEffect(
     () => () => {
       abortRef.current?.()
@@ -815,9 +1684,11 @@ function StageZ(props: StageProps) {
       {
         onDelta: (delta) => setStreaming((value) => value + delta),
         onDone: () => {
-          abortRef.current = null
-          setStreaming('')
-          void props.refresh()
+          // Mantém a resposta visível até a transcrição persistida chegar do servidor.
+          void props.refreshChat().finally(() => {
+            abortRef.current = null
+            setStreaming('')
+          })
         },
         onError: (cause) => {
           abortRef.current = null
@@ -972,7 +1843,7 @@ function StageR(props: StageProps) {
       <div className="pensa-ribbon">
         <div>
           <strong>Cartões de Criação</strong>
-          <span>Cada cartão vai abrir com o mesmo guia no Pinta ou Estúdio.</span>
+          <span>Cada cartão abre com seu guia na ferramenta indicada.</span>
         </div>
         <GenerateButton {...props} type="task_plan">
           {props.stage.tasks.length ? 'Recriar plano' : 'Criar plano de tarefas'}
@@ -1798,7 +2669,9 @@ function MyPlan(props: Parameters<typeof StageWorkspace>[0]) {
         <div>
           <p>PLANO APROVADO</p>
           <h2>Meu plano</h2>
-          <small>A criação acontece no Pinta e no Estúdio. O Pensa acompanha o caminho.</small>
+          <small>
+            A criação acontece no Pinta, no Molda e no Estúdio. O Pensa acompanha o caminho.
+          </small>
         </div>
         <Zappy
           pose="celebrating"
@@ -1806,7 +2679,11 @@ function MyPlan(props: Parameters<typeof StageWorkspace>[0]) {
           className="pensa-approved-zappy"
         />
       </div>
-      <TaskPlan {...props} editable />
+      {/* A âncora do "Ver os Cartões de Criação": foco programático (`tabIndex={-1}`), sem entrar
+          na ordem do Tab. */}
+      <div ref={props.cardsRef} tabIndex={-1} className="pensa-cards-anchor">
+        <TaskPlan {...props} editable />
+      </div>
       <div className="pensa-next-summary">
         {props.stage.nextTaskId
           ? 'A próxima tarefa pronta para começar está destacada.'

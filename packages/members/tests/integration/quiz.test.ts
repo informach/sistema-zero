@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { publishBlock } from '../draft-authoring-helpers'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
@@ -74,14 +75,12 @@ const getLesson = (app: App, slug: string, lessonId: string) =>
     }),
   )
 
-const updateBlock = (app: App, blockId: string, content: unknown) =>
-  app.handle(
-    new Request(`http://localhost/members/admin/blocks/${blockId}`, {
-      method: 'PATCH',
-      headers: authHeaders,
-      body: JSON.stringify({ content }),
-    }),
-  )
+const updateBlock = (
+  app: App,
+  lessonId: string,
+  blockId: string,
+  content: { kind: string; [key: string]: unknown },
+) => publishBlock(app, lessonId, { content }, {}, blockId)
 
 describe('Quiz server-side', () => {
   test('GET da aula NÃO vaza gabarito e traz quizState zerado', async () => {
@@ -232,7 +231,7 @@ describe('Quiz server-side', () => {
     expect(oldPass.status).toBe(200)
     expect((await readJson(oldPass)).passed).toBe(true)
 
-    const patched = await updateBlock(app, blockId, {
+    const patched = await updateBlock(app, lessonId, blockId, {
       kind: 'quiz',
       passingScore: 100,
       questions: [
@@ -256,7 +255,7 @@ describe('Quiz server-side', () => {
         },
       ],
     })
-    expect(patched.status).toBe(200)
+    expect(patched.status, await patched.clone().text()).toBe(200)
 
     const blocked = await complete(app, lessonId)
     expect(blocked.status).toBe(409)
@@ -322,7 +321,11 @@ describe('Quiz server-side', () => {
     const lessonId = course.lessonIds[0]
     const blockId = seedQuizBlock(courses, lessonId, { passingScore: 100 })
 
-    expect((await submit(app, lessonId, randomUUID(), { q1: ['b'] })).status).toBe(404)
+    // ⚠️ 423, não 404: com a progressão por seções, um bloco que não está na seção
+    // acessível é barrado ANTES de o servidor dizer se ele existe (a regra que
+    // `legacy-lesson-progression.test.ts` fixa). Um id que não é de bloco nenhum cai aí.
+    // O bloco de texto abaixo ESTÁ na seção aberta, então chega ao 404 de "não é quiz".
+    expect((await submit(app, lessonId, randomUUID(), { q1: ['b'] })).status).toBe(423)
     const richTextBlock = courses.blocks.find((b) => b.kind === 'rich_text')
     expect((await submit(app, lessonId, richTextBlock?.id ?? '', { q1: ['b'] })).status).toBe(404)
 

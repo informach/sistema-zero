@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { getEnv, isProd } from '@/lib/env'
 import { safeExtension, sanitizeFilename } from '@/lib/filenames'
+import { assertRivFile } from '@/lib/riv-file'
 import type { SessionUser } from '@/lib/types'
 import { pickTranscriptTrack } from '@/lib/vimeo-helpers'
 import { type ImagePreset, optimizeImage } from './image-optimizer'
@@ -24,6 +25,7 @@ import {
 // ── Limites/validações ──────────────────────────────────────────────────────
 
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024 // 5MB
+export const MAX_MODULE_RIVE_BYTES = 5 * 1024 * 1024 // 5MB (animação Rive da trilha)
 export const MAX_FILE_BYTES = 200 * 1024 * 1024 // 200MB (anexos/e-book)
 export const MAX_AUDIO_BYTES = 50 * 1024 * 1024 // 50MB (áudio de aula)
 export const MAX_VIDEO_BYTES = 5 * 1024 * 1024 * 1024 // 5GB (Vimeo)
@@ -142,6 +144,39 @@ export async function optimizeAndStoreImage(file: File, preset: ImagePreset): Pr
     contentType: optimized.contentType,
   })
   return { url, width: optimized.width, height: optimized.height, sizeBytes: optimized.sizeBytes }
+}
+
+/**
+ * A animação Rive da trilha vai para o bucket PÚBLICO: quem a busca é o runtime
+ * no navegador da criança.
+ *
+ * ⚠️ `application/octet-stream` de propósito. Não existe MIME registrado para
+ * `.riv`, o runtime lê por `arrayBuffer()` sem olhar o cabeçalho, e este é o
+ * valor que NUNCA vira tipo ativo em sniffing — o oposto exato do
+ * `image/svg+xml` que este caminho servia antes.
+ *
+ * ⚠️ Chave com UUID novo a cada upload: é o que torna seguro o
+ * `Cache-Control: immutable` padrão do `r2PutObject`. Sobrescrever a mesma chave
+ * serviria o arquivo VELHO por um ano.
+ */
+export async function storeModuleRive(bytes: Uint8Array): Promise<{ url: string }> {
+  assertRivFile(bytes)
+  const { url } = await r2PutObject({
+    key: `admin/module-rive/${randomUUID()}.riv`,
+    body: Buffer.from(bytes),
+    contentType: 'application/octet-stream',
+  })
+  return { url }
+}
+
+/**
+ * Prefixo público das animações — o guarda anti-SSRF da rota de preview.
+ * Lança `MediaNotConfiguredError` (→ 503) quando a env falta, como o resto da fatia.
+ */
+export function moduleRivePublicPrefix(): string {
+  const base = getEnv().R2_PUBLIC_URL
+  if (!base) throw new MediaNotConfiguredError('Prévia indisponível: configure R2_PUBLIC_URL.')
+  return `${base.replace(/\/+$/, '')}/admin/module-rive/`
 }
 
 // ── Arquivos genéricos (anexos/áudio) ───────────────────────────────────────
@@ -349,9 +384,12 @@ export async function getVideoStatus(vimeoVideoId: string): Promise<VideoStatus>
  * Sobe a capa custom direto no Vimeo (pictures API) — o player do aluno usa a
  * capa do próprio Vimeo; não guardamos cópia no R2 (decisão da autoria v3).
  */
-export async function storeVideoThumbnail(vimeoVideoId: string, file: File): Promise<{ ok: true }> {
+export async function storeVideoThumbnail(
+  vimeoVideoId: string,
+  file: File,
+): Promise<{ ok: true; pictureId: string }> {
   const bytes = await file.arrayBuffer()
   const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg'
-  await uploadVideoThumbnail(vimeoVideoId, bytes, mime)
-  return { ok: true }
+  const pictureId = await uploadVideoThumbnail(vimeoVideoId, bytes, mime)
+  return { ok: true, pictureId }
 }

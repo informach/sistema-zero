@@ -12,10 +12,10 @@ type App = ReturnType<typeof buildApp>['app']
 const readJson = (res: Response): Promise<any> => res.json()
 
 /**
- * O curso de ENTRADA da carreira: degrau `primeiros-passos-2d`, posição 1. Concluí-lo e
+ * O curso de ENTRADA da jornada: degrau `primeiros-passos-2d`, posição 1. Concluí-lo e
  * publicá-lo é a régua do Construtor(a) desde 14/08 (antes era o slot 1 do Iniciante 2D).
  */
-function seedCareerCourse(courses: InMemoryCourseRepository) {
+function seedJourneyCourse(courses: InMemoryCourseRepository) {
   const sample = seedSampleCourse(
     courses,
     'curso-demo',
@@ -32,6 +32,20 @@ function seedCareerCourse(courses: InMemoryCourseRepository) {
 const complete = (app: App, lessonId: string, headers: Record<string, string> = authHeaders) =>
   app.handle(
     new Request(`http://localhost/members/lessons/${lessonId}/complete`, {
+      method: 'POST',
+      headers,
+    }),
+  )
+
+/** Abre o baú de fim de unidade (o clique da criança na trilha). */
+const claimChest = (
+  app: App,
+  courseSlug: string,
+  moduleId: string,
+  headers: Record<string, string> = authHeaders,
+) =>
+  app.handle(
+    new Request(`http://localhost/members/courses/${courseSlug}/units/${moduleId}/chest/claim`, {
       method: 'POST',
       headers,
     }),
@@ -125,17 +139,21 @@ describe('Gamificação — XP e idempotência', () => {
     expect(again.gamification.badgesUnlocked).toEqual([])
   })
 
-  test('última aula do módulo → baú (+25) e curso completo → badge course-complete', async () => {
+  test('KIDS: fechar a unidade AVISA do baú, mas quem paga é o clique da criança', async () => {
+    // Desde 09/2026 o XP de fim de unidade é o prêmio do BAÚ da trilha, e o baú é
+    // clicável. Concluir a última aula do módulo passa a só ANUNCIAR que ele está
+    // esperando: `unitCompleted` virou convite, não recibo. Vale SÓ no kids: ver o
+    // teste do adulto logo abaixo.
     const { app, courses, entitlements } = buildApp()
-    const course = seedSampleCourse(courses)
+    const course = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
 
     await complete(app, course.lessonIds[0])
     const done = await readJson(await complete(app, course.lessonIds[1]))
-    // 10 da aula + 25 do baú (módulo único = curso completo).
+    // Só os 10 da aula: os 25 do baú ficam para o clique.
     expect(done.gamification).toMatchObject({
-      xpAwarded: 35,
-      totalXp: 45,
+      xpAwarded: 10,
+      totalXp: 20,
       unitCompleted: true,
       streak: { current: 1, extended: false },
     })
@@ -143,9 +161,37 @@ describe('Gamificação — XP e idempotência', () => {
       'course-complete',
     ])
 
-    // Re-complete: baú NÃO duplica (ledger por moduleId).
-    const again = await readJson(await complete(app, course.lessonIds[1]))
-    expect(again.gamification).toMatchObject({ xpAwarded: 0, totalXp: 45, unitCompleted: false })
+    // Abrir o baú paga; abrir de novo não paga duas vezes (ledger por moduleId).
+    const chest = await readJson(await claimChest(app, course.slug, course.moduleId))
+    expect(chest).toMatchObject({ xpAwarded: 25, totalXp: 45 })
+    const denovo = await readJson(await claimChest(app, course.slug, course.moduleId))
+    expect(denovo).toMatchObject({ xpAwarded: 0, totalXp: 45 })
+  })
+
+  test('ADULTO: sem trilha e sem baú, o XP de unidade continua caindo no complete', async () => {
+    // A comunidade adulta não tem trilha, não tem baú e não tem tela que resgate.
+    // Tirar o award automático dela também teria feito os 25 XP + 15 moedas
+    // sumirem do produto, em silêncio e sem ninguém pedir.
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses, 'curso-adulto', 'published', 'adult')
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    await complete(app, course.lessonIds[0])
+    const done = await readJson(await complete(app, course.lessonIds[1]))
+    expect(done.gamification).toMatchObject({ xpAwarded: 35, totalXp: 45, unitCompleted: true })
+  })
+
+  test('o baú recusa 409 enquanto a unidade não fechou, e 404 para unidade de outro curso', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+
+    // O cliente NUNCA decide que a unidade fechou: o servidor reconta.
+    await complete(app, course.lessonIds[0])
+    expect((await claimChest(app, course.slug, course.moduleId)).status).toBe(409)
+
+    await complete(app, course.lessonIds[1])
+    expect((await claimChest(app, course.slug, course.moduleId)).status).toBe(200)
+    expect((await claimChest(app, course.slug, randomUUID())).status).toBe(404)
   })
 
   test('2º e 3º cursos 100% destravam course-complete-2 e -3 (marco no ledger)', async () => {
@@ -169,7 +215,8 @@ describe('Gamificação — XP e idempotência', () => {
     expect(second.gamification.badgesUnlocked.map((b: { slug: string }) => b.slug)).toEqual([
       'course-complete-2',
     ])
-    // Marco é evento de amount 0 — o XP do complete não muda (10 + 25 do baú).
+    // Marco é evento de amount 0 — o XP do complete não muda. Cursos adultos, que
+    // não têm baú, seguem somando os 25 da unidade aqui mesmo.
     expect(second.gamification.xpAwarded).toBe(35)
 
     const third = await finishCourse(c3)
@@ -185,14 +232,18 @@ describe('Gamificação — XP e idempotência', () => {
 
   test('aula despublicada não conta p/ o baú (módulo fecha sobre as PUBLICADAS)', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedSampleCourse(courses)
+    const course = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     const draft = courses.lessons.find((l) => l.id === course.lessonIds[1])
     if (draft) draft.isPublished = false
 
-    // Única aula publicada do módulo concluída → baú abre (e curso 100%).
+    // Única aula publicada do módulo concluída → a unidade FECHA (e o curso 100%).
     const done = await readJson(await complete(app, course.lessonIds[0]))
-    expect(done.gamification).toMatchObject({ xpAwarded: 35, unitCompleted: true })
+    expect(done.gamification).toMatchObject({ xpAwarded: 10, unitCompleted: true })
+    // E o baú libera sobre a mesma régua: a aula rascunho não segura o prêmio.
+    expect(await readJson(await claimChest(app, course.slug, course.moduleId))).toMatchObject({
+      xpAwarded: 25,
+    })
   })
 })
 
@@ -439,10 +490,11 @@ describe('Gamificação — segregação por vitrine (?audience=)', () => {
     grantLifetime(entitlements, { userId: USER, courseRef: kidsCourse.slug })
     grantLifetime(entitlements, { userId: USER, courseRef: adultCourse.slug })
 
-    // 1 aula kids (+10) e curso adulto INTEIRO (+10+10+25 = 45).
+    // 1 aula kids (+10) e curso adulto INTEIRO com o baú aberto (+10+10+25 = 45).
     await complete(app, kidsCourse.lessonIds[0])
     await complete(app, adultCourse.lessonIds[0])
     await complete(app, adultCourse.lessonIds[1])
+    await claimChest(app, adultCourse.slug, adultCourse.moduleId)
 
     const kids = await readJson(
       await app.handle(
@@ -686,14 +738,17 @@ describe('Gamificação — Zappy Coins (carteira)', () => {
     expect(again.gamification.coinBalance).toBe(5)
   })
 
-  test('baú de unidade soma moedas (aula 5 + baú 15) na ação que fecha o módulo', async () => {
+  test('as moedas do baú entram no CLIQUE, não na aula que fecha o módulo', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedSampleCourse(courses)
+    const course = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await complete(app, course.lessonIds[0])
     const done = await readJson(await complete(app, course.lessonIds[1]))
-    expect(done.gamification.coinsAwarded).toBe(20) // 5 (aula) + 15 (baú)
-    expect(done.gamification.coinBalance).toBe(25)
+    expect(done.gamification.coinsAwarded).toBe(5) // só a aula
+    expect(done.gamification.coinBalance).toBe(10)
+    const chest = await readJson(await claimChest(app, course.slug, course.moduleId))
+    expect(chest.coinsAwarded).toBe(15)
+    expect(chest.coinBalance).toBe(25)
   })
 
   test('quiz aprovado nota 100 → +15 moedas (10 base + 5 bônus)', async () => {
@@ -711,6 +766,7 @@ describe('Gamificação — Zappy Coins (carteira)', () => {
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await complete(app, course.lessonIds[0])
     await complete(app, course.lessonIds[1])
+    await claimChest(app, course.slug, course.moduleId)
     expect(await gamification.getBalance(USER, 'adult')).toBe(25)
 
     const now = new Date('2026-06-02T12:00:00.000Z')
@@ -1134,7 +1190,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('concluir + publicar no Mural → curso qualificado → sobe p/ Coder', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedCareerCourse(courses) // curso-base Iniciante 2D
+    const course = seedJourneyCourse(courses) // curso-base Iniciante 2D
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
 
@@ -1153,7 +1209,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     expect(me.level.slug).toBe('coder')
   })
 
-  test('kids expõe revisão curta que muda ao qualificar ou editar curso da carreira', async () => {
+  test('kids expõe revisão curta que muda ao qualificar ou editar curso da jornada', async () => {
     const { app, courses, entitlements } = buildApp()
     // Curso de ENTRADA: é o único que uma Faísca kids consegue abrir (o Iniciante 2D é
     // degrau futuro para ela desde 14/08, e a trava responderia 423 no complete).
@@ -1247,7 +1303,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('rank NÃO regride quando o curso é re-nivelado depois de qualificado', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedCareerCourse(courses) // curso-base Iniciante 2D
+    const course = seedJourneyCourse(courses) // curso-base Iniciante 2D
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
     await postShowcase(app, {
@@ -1278,7 +1334,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('re-taggear o TRACK depois de qualificado também não move o balde (snapshot)', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedCareerCourse(courses) // curso-base Iniciante 2D
+    const course = seedJourneyCourse(courses) // curso-base Iniciante 2D
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
     await postShowcase(app, {
@@ -1300,7 +1356,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('marco LEGADO sem snapshot de track segue o courses.track VIVO (re-tag corrige)', async () => {
     const { app, courses, entitlements, gamification } = buildApp()
-    const course = seedCareerCourse(courses) // curso-base Iniciante 2D
+    const course = seedJourneyCourse(courses) // curso-base Iniciante 2D
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
     await postShowcase(app, {
@@ -1316,7 +1372,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     }
     // Sem snapshot, o coalesce cai no curso ao vivo: re-taggear p/ 3D MOVE o balde (é
     // exatamente o mecanismo de correção retroativa da reforma). Aqui o par vira
-    // `primeiros-passos` + `3d`, que NÃO é degrau da carreira, então o marco simplesmente
+    // `primeiros-passos` + `3d`, que NÃO é degrau da jornada, então o marco simplesmente
     // sai da contagem e o perfil volta a Faísca neste cenário histórico sem snapshot.
     const row = courses.courses.find((c) => c.id === course.courseId)
     if (row) row.track = '3d'
@@ -1327,7 +1383,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('webhook é idempotente por x-delivery-id (replay = no-op)', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedCareerCourse(courses)
+    const course = seedJourneyCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
 
@@ -1340,7 +1396,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('falha ao registrar marco não deduplica a entrega', async () => {
     const { app, courses, entitlements, gamification, processed } = buildApp()
-    const course = seedCareerCourse(courses)
+    const course = seedJourneyCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await completeCourse(app, course.lessonIds)
 
@@ -1364,7 +1420,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
   test('publicar SEM concluir não qualifica (continua Noob)', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedCareerCourse(courses)
+    const course = seedJourneyCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
 
     await postShowcase(app, {

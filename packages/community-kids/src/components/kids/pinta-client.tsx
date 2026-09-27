@@ -6,7 +6,6 @@
 import type { PintaHostAdapter, PintaInitialIntent, PintaTaskSession } from '@sistemazero/pinta'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '@/lib/creations-cloud'
 import {
@@ -14,7 +13,9 @@ import {
   type PintaPersistenceLike,
 } from '@/lib/pinta-cloud-persistence'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
+import { useFocusMode } from './focus-mode'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
+import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
 import { usePintaTaskHandoff } from './use-pensa-task-handoff'
 
 // O pacote é client-only (zustand/canvas/IndexedDB); carregamos DENTRO de um
@@ -34,7 +35,7 @@ type PintaResyncResult =
  * Pinta embarcado na comunidade kids (produto vendável). O pacote traz a UI inteira
  * (galeria + editores); este host injeta o tema da comunidade e a PONTE "Usar no
  * Estúdio": salva o desenho na biblioteca pessoal do Studio (IndexedDB do MESMO
- * perfil — aparece em "Meus desenhos" no painel de Imagens do /estudio).
+ * perfil — aparece em "Meus desenhos" na aba "Imagens" do /estudio).
  */
 export function PintaClient({
   viewerId,
@@ -52,9 +53,12 @@ export function PintaClient({
   const [syncing, setSyncing] = useState(false)
   const [persistence, setPersistence] = useState<PintaPersistenceLike | null>(null)
   const router = useRouter()
-  // O Pinta SEGUE o tema da comunidade (next-themes) — sem toggle próprio.
-  const { resolvedTheme } = useTheme()
-  const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
+  const { setWorkspaceActive } = useFocusMode()
+  // O Pinta SEGUE a plataforma (hoje só claro) — sem toggle próprio.
+  // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
+  // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
+  // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
+  const theme: 'light' | 'dark' = 'light'
   // "Editar este desenho" vindo do Estúdio: `/pinta?desenho=<id>` numa ABA NOVA.
   // Precisa ser query string — o botão de lá abre com `noopener` (padrão do app),
   // e aí sessionStorage (o caminho do intent do Pensa) não atravessa. Lido no 1º
@@ -147,6 +151,12 @@ export function PintaClient({
     }
   }, [persistence])
 
+  // O guia do Pensa recolhido, lembrado por CRIANÇA e valendo para as três oficinas. O painel
+  // vive no PACOTE e não conhece `viewerId` nem `localStorage`, então o par desce como DADO —
+  // o mesmo idioma do `menu.hidden`/`onToggle` do `hostChrome`.
+  const { collapsed: guiaRecolhido, setCollapsed: setGuiaRecolhido } =
+    usePensaGuideCollapsed(viewerId)
+
   const adapter = useMemo<PintaHostAdapter>(() => {
     const initialIntent: PintaInitialIntent | undefined =
       handoff && !handoff.task.progress.outputRef
@@ -170,7 +180,7 @@ export function PintaClient({
           brief: handoff.task.context,
           guide: handoff.task.guide,
           ...(handoff.task.context.requiresStudioUse && !studioAvailable
-            ? { studioUseBlockedReason: 'O Estúdio ainda não foi liberado pela sua carreira.' }
+            ? { studioUseBlockedReason: 'O Estúdio ainda não foi liberado pela sua jornada.' }
             : {}),
           progress: handoff.task.progress,
           onProgress: async (input) => {
@@ -197,6 +207,13 @@ export function PintaClient({
               throw new Error(body?.error?.message ?? 'Não consegui sincronizar a tarefa.')
             updateHandoffProgress(body.task.progress)
           },
+          // "Voltar ao plano" no painel do brief: o id do plano já veio no handoff
+          // (nada de parâmetro novo na URL). Espelho do Molda (`molda-client.tsx`).
+          // Quem guarda o desenho ANTES de chamar é o próprio Pinta.
+          onReturnToPlan: () =>
+            router.push(`/pensa?plano=${encodeURIComponent(handoff.project.id)}`),
+          collapsed: guiaRecolhido,
+          onCollapsedChange: setGuiaRecolhido,
         }
       : undefined
     return {
@@ -272,8 +289,8 @@ export function PintaClient({
           }
         : {}),
     }
+    // ⚠️ `theme` saiu do dep array: virou constante (sem tema escuro nesta plataforma).
   }, [
-    theme,
     studioAvailable,
     viewerId,
     router,
@@ -281,10 +298,12 @@ export function PintaClient({
     updateHandoffProgress,
     retryHandoff,
     initialAssetId,
+    guiaRecolhido,
+    setGuiaRecolhido,
   ])
 
-  // Botão do menu lateral + selo "Guardado na sua conta", desenhados DENTRO da barra do
-  // Pinta (contrato `hostChrome`, 07/09/2026) — antes o selo era uma linha acima do app.
+  // O selo "Guardado na sua conta" fica na barra do Pinta. O menu lateral pertence
+  // à alça do shell Kids; `hostChrome.menu` é null para não duplicar o botão.
   const { chrome: hostChrome, announcement } = useHostChrome({ cloud, syncing })
 
   return (
@@ -335,7 +354,11 @@ export function PintaClient({
           {/* O wrapper dá ao `h-full` do Pinta uma altura definida. */}
           <div className="flex min-h-0 flex-1 flex-col">
             <mod.PintaHostChromeProvider value={hostChrome}>
-              <mod.PintaApp adapter={adapter} {...(persistence ? { persistence } : {})} />
+              <mod.PintaApp
+                adapter={adapter}
+                onWorkspaceChange={setWorkspaceActive}
+                {...(persistence ? { persistence } : {})}
+              />
             </mod.PintaHostChromeProvider>
           </div>
         </>

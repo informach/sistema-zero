@@ -223,3 +223,59 @@ describe('CelebrationWatcher', () => {
     expect(localStorage.getItem(toolsKey)).toBe(stored(REV_1, sprites[0]!.blockIds))
   })
 })
+
+describe('CelebrationWatcher — a linha do Molda', () => {
+  // A frase chega pronta do servidor (`moldaLevelGain`, só com a posse do produto e só nos
+  // postos em que uma faixa abre): o watcher só a mostra na comemoração do posto dela.
+  const GAIN = 'chegaram a malha, as camadas de pintura e a pintura que se mexe.'
+
+  it('subiu para o posto e o servidor mandou a frase: "No Molda"', async () => {
+    localStorage.setItem(levelKey, 'elite')
+    render(
+      <CelebrationWatcher
+        levelSlug="architect"
+        toolsRevision={null}
+        ownsStudio={false}
+        moldaGain={GAIN}
+        profileKey={PERFIL}
+      />,
+    )
+    expect((await screen.findByRole('dialog')).getAttribute('aria-label')).toContain('Arquiteto')
+    expect(screen.getByText(/No Molda:/)).toBeDefined()
+    expect(screen.getByText(/chegaram a malha/)).toBeDefined()
+  })
+
+  it('sem a frase (sem o produto, sem saber ou posto sem faixa), a comemoração não fala do Molda', async () => {
+    for (const moldaGain of [null, undefined]) {
+      localStorage.setItem(levelKey, 'elite')
+      const view = render(
+        <CelebrationWatcher
+          levelSlug="architect"
+          toolsRevision={null}
+          ownsStudio={false}
+          moldaGain={moldaGain}
+          profileKey={PERFIL}
+        />,
+      )
+      await screen.findByRole('dialog')
+      expect(screen.queryByText(/No Molda/)).toBeNull()
+      view.unmount()
+    }
+  })
+
+  it('a frase não aparece sem subir de posto', async () => {
+    localStorage.setItem(levelKey, 'architect')
+    render(
+      <CelebrationWatcher
+        levelSlug="architect"
+        toolsRevision={null}
+        ownsStudio={false}
+        moldaGain={GAIN}
+        profileKey={PERFIL}
+      />,
+    )
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.queryByText(/No Molda/)).toBeNull()
+  })
+})

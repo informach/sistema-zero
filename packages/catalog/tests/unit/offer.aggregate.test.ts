@@ -9,6 +9,11 @@ function makeOffer(
     priceCents: number
     compareAtPriceCents: number
     status: 'draft' | 'active' | 'paused' | 'archived'
+    pricingMode: 'one_time' | 'subscription'
+    billingIntervalMonths: number | null
+    accessMode: 'lifetime' | 'fixed' | 'billing_cycle'
+    accessDurationValue: number | null
+    accessDurationUnit: 'days' | 'months' | null
   }>,
 ) {
   return OfferAggregate.create({
@@ -20,6 +25,11 @@ function makeOffer(
     priceCents: overrides?.priceCents ?? 3700,
     compareAtPriceCents: overrides?.compareAtPriceCents,
     status: overrides?.status,
+    pricingMode: overrides?.pricingMode,
+    billingIntervalMonths: overrides?.billingIntervalMonths,
+    accessMode: overrides?.accessMode,
+    accessDurationValue: overrides?.accessDurationValue,
+    accessDurationUnit: overrides?.accessDurationUnit,
   })
 }
 
@@ -173,9 +183,9 @@ describe('OfferAggregate — periodicidade da assinatura (billingIntervalMonths)
     expect(() => makeSubscription({ billingIntervalMonths: -3 })).toThrow(ValidationError)
   })
 
-  it('mudar assinatura ativa para one_time normaliza o intervalo para null', () => {
+  it('mudar assinatura ativa para one_time normaliza o intervalo após escolher o acesso', () => {
     const offer = makeSubscription({ billingIntervalMonths: 12, status: 'active' })
-    offer.updateDetails({ pricingMode: 'one_time' })
+    offer.updateDetails({ pricingMode: 'one_time', accessMode: 'lifetime' })
     expect(offer.billingIntervalMonths).toBeNull()
   })
 
@@ -190,5 +200,117 @@ describe('OfferAggregate — periodicidade da assinatura (billingIntervalMonths)
     // Consolidado com intervalo junto, passa.
     offer.updateDetails({ pricingMode: 'subscription', billingIntervalMonths: 1 })
     expect(offer.billingIntervalMonths).toBe(1)
+  })
+})
+
+describe('OfferAggregate — política de acesso', () => {
+  it('mantém compra única vitalícia como padrão retrocompatível', () => {
+    const offer = makeOffer()
+    expect(offer.accessMode).toBe('lifetime')
+    expect(offer.accessDurationValue).toBeNull()
+    expect(offer.accessDurationUnit).toBeNull()
+  })
+
+  it('aceita compra única com prazo fixo em dias ou meses', () => {
+    const days = makeOffer({
+      status: 'active',
+      accessMode: 'fixed',
+      accessDurationValue: 30,
+      accessDurationUnit: 'days',
+    })
+    expect(days.toSnapshot()).toMatchObject({
+      accessMode: 'fixed',
+      accessDurationValue: 30,
+      accessDurationUnit: 'days',
+    })
+
+    const months = makeOffer({
+      accessMode: 'fixed',
+      accessDurationValue: 12,
+      accessDurationUnit: 'months',
+    })
+    expect(months.toSnapshot()).toMatchObject({
+      accessMode: 'fixed',
+      accessDurationValue: 12,
+      accessDurationUnit: 'months',
+    })
+  })
+
+  it('permite rascunho fixed incompleto, mas recusa ativá-lo', () => {
+    const offer = makeOffer({ accessMode: 'fixed' })
+    expect(offer.status).toBe('draft')
+    expect(() => offer.setStatus('active')).toThrow(ValidationError)
+    expect(offer.status).toBe('draft')
+
+    expect(() => makeOffer({ status: 'active', accessMode: 'fixed' })).toThrow(ValidationError)
+  })
+
+  it.each([0, -1, 1.5])('recusa duração fixa inválida: %p', (accessDurationValue) => {
+    expect(() =>
+      makeOffer({ accessMode: 'fixed', accessDurationValue, accessDurationUnit: 'days' }),
+    ).toThrow(ValidationError)
+  })
+
+  it('normaliza assinatura para billing_cycle sem duração', () => {
+    const offer = makeOffer({
+      pricingMode: 'subscription',
+      billingIntervalMonths: 1,
+      status: 'active',
+    })
+    expect(offer.accessMode).toBe('billing_cycle')
+    expect(offer.accessDurationValue).toBeNull()
+    expect(offer.accessDurationUnit).toBeNull()
+  })
+
+  it('recusa lifetime/fixed em assinatura e billing_cycle em compra única', () => {
+    expect(() =>
+      makeOffer({
+        pricingMode: 'subscription',
+        billingIntervalMonths: 1,
+        accessMode: 'lifetime',
+      }),
+    ).toThrow(ValidationError)
+    expect(() =>
+      makeOffer({
+        pricingMode: 'subscription',
+        billingIntervalMonths: 1,
+        accessMode: 'fixed',
+        accessDurationValue: 1,
+        accessDurationUnit: 'months',
+      }),
+    ).toThrow(ValidationError)
+    expect(() => makeOffer({ accessMode: 'billing_cycle' })).toThrow(ValidationError)
+  })
+
+  it('assinatura → compra única exige escolher vitalício ou prazo fixo', () => {
+    const offer = makeOffer({
+      pricingMode: 'subscription',
+      billingIntervalMonths: 12,
+      status: 'active',
+    })
+
+    expect(() => offer.updateDetails({ pricingMode: 'one_time' })).toThrow(ValidationError)
+    expect(offer.pricingMode).toBe('subscription')
+    expect(offer.billingIntervalMonths).toBe(12)
+    expect(offer.accessMode).toBe('billing_cycle')
+
+    offer.updateDetails({ pricingMode: 'one_time', accessMode: 'lifetime' })
+    expect(offer.pricingMode).toBe('one_time')
+    expect(offer.billingIntervalMonths).toBeNull()
+    expect(offer.accessMode).toBe('lifetime')
+  })
+
+  it('ida e volta pelo snapshot preserva a política', () => {
+    const original = makeOffer({
+      accessMode: 'fixed',
+      accessDurationValue: 30,
+      accessDurationUnit: 'days',
+    })
+    const restored = OfferAggregate.restore(structuredClone(original.toSnapshot()))
+    expect(restored.toSnapshot()).toMatchObject({
+      accessMode: 'fixed',
+      accessDurationValue: 30,
+      accessDurationUnit: 'days',
+    })
   })
 })

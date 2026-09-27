@@ -22,7 +22,7 @@ As ferramentas atualizam `PATCH /tasks/:id/progress`; o Pensa lê o resumo e `ne
 
 ## Handoff
 
-- `/pinta?tarefa=<id>` restaura o brief, preenche tipo, estilo e paleta, vincula o desenho aberto e exige “Usar no Estúdio” quando o cartão pede.
+- `/pinta?tarefa=<id>` restaura o brief, preenche tipo, estilo e paleta, vincula o desenho aberto e exige “Usar no Estúdio” quando o cartão pede. A volta é o botão “Voltar ao plano” no pé do painel do brief, sempre visível na galeria e no editor: ele guarda o desenho e só então navega para `/pensa?plano=<projectId>`; gravação que falha não navega e mostra o recado na própria tela. O contrato é o `onReturnToPlan` opcional do `PintaTaskSession`, e o id do plano vem do handoff, não da URL. O Molda tem o mesmo botão, com o mesmo rótulo, no guia da tarefa.
 - `/estudio?tarefa=<id>` restaura ou cria `pensa-<pensaProjectId sem hífens>`, apresenta as extensões permitidas no guia e mantém o painel após reload. O vínculo local usa `sz:studio:pensa-link:<viewerId>:<pensaProjectId>`.
 
 `StudioTaskSession` é independente de `LessonActivity`. O backup pertence ao armazenamento do host do Estúdio, não ao Pensa.
@@ -30,6 +30,14 @@ As ferramentas atualizam `PATCH /tasks/:id/progress`; o Pensa lê o resumo e `ne
 ## Edição e revisão
 
 Tarefas planejadas podem ser alteradas. Se o plano já foi aprovado, a mudança reabre O e torna `plan_review` rascunho. Alterar uma tarefa iniciada ou concluída cria uma revisão, arquiva a original e atualiza dependentes.
+
+## Equipe (26/09/2026)
+
+Um plano pode ter até 5 membros além do dono. O convite é um código do projeto (`ZAP-XXXXXX`, alfabeto sem `0/O/1/I/L`; a entrada tolera minúsculas, espaços, hífen e o prefixo): o dono gera em `POST /projects/:id/share` (gerar de novo invalida o anterior) e desliga em `DELETE`; quem tem o Pensa entra em `POST /projects/join` com `{code}` (10/min no gateway) e passa a ver e mexer em tudo do plano: conversa, artefatos, avanço, tarefas, handoff e progresso. O dono continua sendo quem renomeia, arquiva, apaga, abre uma versão nova (`POST /projects/:id/cycles`), gera código e tira membro (`DELETE /projects/:id/members/:profileId`; `me` ou o próprio id = sair); qualquer outro recebe 403 `PENSA_NOT_OWNER`. Plano arquivado some para o membro (404) e segue com o dono. O join confere a vaga e a duplicidade numa transação que tranca o projeto (dois convidados no mesmo instante não passam de 5). `GET /projects/:id/members` lista a equipe com primeiro nome e rosto; o código só aparece nessa resposta, e só para o dono.
+
+Nas views, `role: 'owner' | 'member'` e `team` (`memberCount` e `ownerFirstName` na lista; `memberCount` e `shareEnabled` no detalhe) chegam ao Pensa pelo member-shell. O detalhe não muda de forma: o plano compartilhado é o mesmo objeto. XP vai para quem avança a etapa; a cota de IA é da conta de quem chama. Estúdio, Pinta e Molda seguem por perfil: cada membro constrói no seu, a colaboração é no plano. Não há trava na conversa da etapa Z (último-vence); a UI avisa "alguém da equipe mexeu no plano" por polling do `updatedAt`.
+
+Migração `0098_pensa_project_members.sql`: `share_code` em `pensa_projects` (índice único parcial) e a tabela `pensa_project_members` (PK projeto + perfil, `on delete cascade`). Ordem de deploy: members, gateway, member-shell, kids.
 
 ## Migração
 

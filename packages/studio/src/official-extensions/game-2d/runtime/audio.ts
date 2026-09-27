@@ -275,7 +275,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     _musicName = null;
     _musicState = null;
   }
-  // ---- 🔊 Som de ARQUIVO (o que a crianca enviou em "Imagens e sons") ----
+  // ---- 🔊 Som de ARQUIVO (o que a crianca enviou na aba "Sons") ----
   // Tudo acima e SINTETIZADO (oscilador). Daqui para baixo toca o mp3/wav dela,
   // por HTMLAudio.
   // ⚠️ Os nomes internos sao clip/track, e nao playSound/playMusic, porque esses
@@ -314,7 +314,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
       ? registered
       : (wanted.indexOf('data:audio/') === 0 ? wanted : null);
     if (!src) {
-      warnOnce('som-ausente-' + wanted, 'o som "' + wanted + '" nao esta no projeto. Envie o arquivo em "Imagens e sons".');
+      warnOnce('som-ausente-' + wanted, 'o som "' + wanted + '" nao esta no projeto. Envie o arquivo em "Sons", no menu de tres pontinhos.');
       return;
     }
     if (_clips[key] && _clipSrc[key] === src) return;
@@ -375,12 +375,12 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     _trackKey = key;
     _requestClip(key, true);
   }
-  function stopTrack() {
-    // ⚠️ Para as DUAS: a do arquivo e a melodia sintetizada. Assim "Parar a
-    // musica" sempre faz o que a crianca espera, sem ela precisar lembrar de
-    // qual dos dois blocos de musica usou.
-    if (_trackKey) stopClip(_trackKey);
-    stopMusic();
+  /** @param {'all' | 'synth' | 'file'} [scope] */
+  function stopTrack(scope) {
+    var target = scope === undefined ? 'all' : scope;
+    if (target !== 'all' && target !== 'synth' && target !== 'file') return;
+    if (target !== 'synth' && _trackKey) stopClip(_trackKey);
+    if (target !== 'file') stopMusic();
   }
   function setSoundVolume(level) {
     // ⚠️ NAO usar _positiveFiniteNumber aqui: ele so aceita > 0, entao o ZERO
@@ -396,11 +396,27 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
       }
     }
   }
+  // ⚠️⚠️ Soltar o arquivo NAO pode ser "el.src = ''": o navegador trata a
+  // fonte VAZIA como uma fonte que nao da para tocar e dispara o evento 'error'
+  // (medido no Chrome: MEDIA_ELEMENT_ERROR "Empty src attribute"). Como o
+  // onerror que avisa "o som X nao pode ser carregado" continua pendurado, a
+  // PROPRIA limpeza acusava TODOS os sons a cada "jogar de novo" -- aviso
+  // mentindo na cara de quem tinha feito tudo certo, e o som nunca esteve
+  // quebrado. Soltar de verdade e tirar o ATRIBUTO e remandar carregar (medido:
+  // nenhum erro). O aviso so vale para a carga que NOS pedimos, entao o
+  // elemento descartado perde o onerror antes de qualquer coisa.
+  function _releaseClipElement(el) {
+    if (!el) return;
+    try { el.onerror = null; } catch (e) {}
+    try { if (el.removeAttribute) el.removeAttribute('src'); } catch (e) {}
+    try { if (el.load) el.load(); } catch (e) {}
+  }
   /** Sem isto a trilha em loop sobrevive ao "jogar de novo" e some so no F5. */
   function _resetClips() {
     for (var key in _clips) {
       if (Object.prototype.hasOwnProperty.call(_clips, key)) {
-        try { _clips[key].pause(); _clips[key].src = ''; } catch (e) {}
+        try { _clips[key].pause(); } catch (e) {}
+        _releaseClipElement(_clips[key]);
       }
     }
     _clips = Object.create(null);

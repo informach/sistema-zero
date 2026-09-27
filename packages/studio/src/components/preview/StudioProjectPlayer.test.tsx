@@ -1,10 +1,32 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createEmptyProject } from '#core'
 import { StudioProjectPlayer } from './StudioProjectPlayer'
 
 describe('StudioProjectPlayer', () => {
   afterEach(() => cleanup())
+
+  it('onReady só informa o carregamento do documento jogável', async () => {
+    let ready = 0
+    const { container } = render(
+      <StudioProjectPlayer
+        project={createEmptyProject('ready', 'Teste')}
+        onReady={() => ready++}
+      />,
+    )
+    const placeholder = container.querySelector('iframe')
+    if (!placeholder) throw new Error('Iframe ausente')
+    fireEvent.load(placeholder)
+    expect(ready).toBe(0)
+    await waitFor(() =>
+      expect(container.querySelector('iframe')?.getAttribute('aria-busy')).toBe('false'),
+    )
+    const frame = container.querySelector('iframe')
+    if (!frame) throw new Error('Iframe ausente')
+    const before = ready
+    fireEvent.load(frame)
+    expect(ready).toBe(before + 1)
+  })
 
   it('renderiza um iframe sandbox com srcDoc não-vazio (sem allow-same-origin)', async () => {
     const project = createEmptyProject('p1', 'Jogo')
@@ -74,10 +96,12 @@ describe('StudioProjectPlayer', () => {
 
   it('recusa URL do adaptador na mesma origem do host', async () => {
     const project = createEmptyProject('p1', 'Jogo')
+    let failures = 0
     const { container } = render(
       <StudioProjectPlayer
         project={project}
         parentOrigin="https://host.example.test"
+        onError={() => failures++}
         originAdapter={{
           createPreviewUrl: async () => 'https://host.example.test/preview/p1',
         }}
@@ -90,6 +114,7 @@ describe('StudioProjectPlayer', () => {
     expect(container.querySelector('iframe')?.getAttribute('srcdoc')).toContain(
       'Não foi possível carregar',
     )
+    expect(failures).toBe(1)
   })
 
   it('usa o nome do projeto como título acessível por padrão', async () => {

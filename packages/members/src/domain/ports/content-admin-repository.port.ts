@@ -1,3 +1,4 @@
+import type { CourseJourneyRole } from '@sistemazero/core/journey'
 import type {
   Course,
   CourseAudience,
@@ -54,13 +55,17 @@ export interface CourseFields {
    * no CREATE vira `2d`; no UPDATE **preserva o atual** (régua do `audience`).
    */
   track: CourseTrack | null
-  /** Ausente no PATCH preserva; `null` remove da carreira; número define o slot. */
+  /** Ausente no PATCH preserva; `null` remove da jornada; número define o slot. */
   careerSlot?: number | null
+  /** Ausente no PATCH preserva, salvo mudança explícita do slot. */
+  journeyRole?: CourseJourneyRole
 }
 
 export interface ModuleFields {
   title: string
   summary: string | null
+  /** Ausente no PATCH preserva a animação atual; null remove. */
+  riveUrl?: string | null
 }
 
 export interface LessonFields {
@@ -75,6 +80,7 @@ export interface AttachmentFields {
   url: string
   fileType: string | null
   sizeBytes: number | null
+  zappyStudentNotebook?: boolean
 }
 
 export interface ListCoursesAdminFilter {
@@ -133,8 +139,8 @@ export interface ContentAdminRepository {
   /**
    * Dos cursos pedidos, quais têm ≥1 aula PUBLICADA com bloco de Estúdio de
    * vitrine (`showcase.enabled`)? Sem ela o aluno nunca publica no Mural — um
-   * curso-base assim nunca qualifica o slot 1 e a etapa não destrava (o painel
-   * usa isso p/ avisar o operador).
+   * curso obrigatório assim nunca qualifica sua posição na jornada (o painel
+   * usa isso para avisar o operador).
    */
   listCourseIdsWithShowcaseBlock(courseIds: string[]): Promise<string[]>
 

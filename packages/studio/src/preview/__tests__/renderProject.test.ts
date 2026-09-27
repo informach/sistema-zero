@@ -57,13 +57,13 @@ describe('renderProjectToPreviewDoc', () => {
     expect(doc).toContain('data:image/png;base64,AAAA')
   })
 
-  it('injeta cada extensão uma única vez mesmo em snapshot duplicado', async () => {
+  it('recusa instalações conflitantes antes de executar o projeto', async () => {
     const installation = { id: 'game-2d', version: '1.0.0', installedAt: 0 }
-    const doc = await renderProjectToPreviewDocAsync(
-      projectWith({ installedExtensions: [installation, { ...installation, installedAt: 1 }] }),
-    )
-
-    expect(doc.match(/window\.SZGame2D = \{/g)).toHaveLength(1)
+    await expect(
+      renderProjectToPreviewDocAsync(
+        projectWith({ installedExtensions: [installation, { ...installation, installedAt: 1 }] }),
+      ),
+    ).rejects.toThrow('$.installedExtensions')
   })
 
   it('expõe nome assíncrono explícito e mantém o alias depreciado', async () => {

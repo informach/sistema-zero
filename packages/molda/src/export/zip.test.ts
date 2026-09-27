@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'bun:test'
 import { strFromU8, unzipSync } from 'fflate'
+import { readSceneProjectFile } from '../import/sceneProjectFile'
+import { sceneToJson } from '../scene/documentJson'
+import { migrateLegacyModel } from '../scene/migrateLegacy'
 import { makeModel, makeSky, makeTexture } from '../testing/fixtures'
 import { readGlb } from '../testing/glbRead'
 import { decodePng } from '../testing/pngDecode'
 import { decodeRgbe } from '../testing/rgbeDecode'
 import { MOLDA_GALLERY_ZIP_ENTRY } from './backupFormat'
 import { importMoldaJson } from './projectJson'
+import { exportSkyHdr } from './skyHdr'
 import {
   buildGalleryFileMap,
   GalleryZipError,
@@ -18,6 +22,27 @@ import {
 const SKY_SIZE = { width: 64, height: 32 }
 
 describe('"Baixar tudo" (o zip da galeria)', () => {
+  it('worker-produced HDR is identical inside the compressed archive', async () => {
+    const sky = makeSky()
+    const original = structuredClone(sky)
+    const expected = exportSkyHdr(sky, SKY_SIZE)
+    const bytes = await zipGallery([sky], { skySize: SKY_SIZE, yieldBetween: null })
+    const entries = unzipSync(bytes)
+    expect(expected.ok).toBe(true)
+    if (expected.ok)
+      expect(entries['ceus/fim-de-tarde.hdr']).toEqual(Uint8Array.from(expected.bytes))
+    expect(sky).toEqual(original)
+  })
+
+  it('aborts asynchronous sky preparation without returning partial files or archives', async () => {
+    for (const prepare of [buildGalleryFileMap, zipGallery]) {
+      const controller = new AbortController()
+      const pending = prepare([makeSky()], { signal: controller.signal, yieldBetween: null })
+      controller.abort()
+      await expect(pending).rejects.toMatchObject({ code: 'aborted' })
+    }
+  })
+
   it('um arquivo pronto por criação, separado por tipo, mais o backup completo e o LEIA-ME', async () => {
     const assets = [makeModel(), makeTexture(), makeSky()]
     const { files, readme, skipped } = await buildGalleryFileMap(assets, {
@@ -127,5 +152,28 @@ describe('"Baixar tudo" (o zip da galeria)', () => {
     await expect(
       zipGallery([makeTexture()], { yieldBetween: null, maxCompressedBytes: 1 }),
     ).rejects.toMatchObject({ code: 'compressed-bytes' })
+  })
+})
+
+describe('o pacote e a geração seguinte', () => {
+  it('leva a criação da oficina nova no arquivo nativo dela, sem mexer no envelope v1', async () => {
+    const model = makeModel()
+    const scene = migrateLegacyModel({ ...makeModel(), id: 'promovida', name: 'nave' }).document
+    const bytes = await zipGallery([model], {
+      yieldBetween: null,
+      scenes: [{ name: 'nave', json: JSON.stringify(sceneToJson(scene)) }],
+    })
+    const entries = unzipSync(bytes)
+    // Duas criações com o MESMO nome, uma de cada geração, não podem se sobrescrever.
+    expect(Object.keys(entries)).toContain('modelos/nave.glb')
+    expect(Object.keys(entries)).toContain('projetos/nave-2.molda.json')
+    // O envelope antigo continua exatamente o que era: só a geração v1 mora nele.
+    const backup = importMoldaJson(strFromU8(entries[MOLDA_GALLERY_ZIP_ENTRY] as Uint8Array))
+    expect(backup?.assets.map((asset) => asset.id)).toEqual([model.id])
+    // E o arquivo nativo volta pela mesma porta do "Trazer uma cópia do Molda".
+    const restored = readSceneProjectFile(entries['projetos/nave-2.molda.json'] as Uint8Array)
+    expect(restored.id).toBe('promovida')
+    expect(restored.formatVersion).toBe(2)
+    expect(strFromU8(entries[README_ENTRY] as Uint8Array)).toContain('projetos/nave-2.molda.json')
   })
 })

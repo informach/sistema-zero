@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { AccessCheckService } from '../../src/application/access-check/access-check.service'
 import { GetChildrenStatsService } from '../../src/application/children-stats/get-children-stats.service'
 import { AwardGamificationService } from '../../src/application/gamification/award-gamification.service'
 import { SendParentReportsService } from '../../src/application/parent-report/send-parent-reports.service'
@@ -20,6 +21,7 @@ import {
   InMemoryStudioSubmissionRepository,
   silentLogger,
 } from '../fakes/in-memory'
+import { InMemoryLearningRepository } from '../fakes/learning-in-memory'
 
 const ACCOUNT = '11111111-1111-1111-1111-111111111111'
 const CHILD = '22222222-2222-2222-2222-222222222222'
@@ -30,6 +32,7 @@ const FRIDAY_17H_SP = new Date('2026-07-03T20:00:00.000Z')
 function buildSender(now: Date) {
   const clockRef = { now }
   const clock = () => clockRef.now
+  const learning = new InMemoryLearningRepository()
   const courses = new InMemoryCourseRepository()
   const progress = new InMemoryProgressRepository(courses)
   const studio = new InMemoryStudioSubmissionRepository(courses)
@@ -60,13 +63,15 @@ function buildSender(now: Date) {
     courses,
     progress,
     studio,
+    new AccessCheckService(new InMemoryEntitlementRepository(), clock),
+    learning,
     clock,
     hub,
   )
   const reports = new InMemoryParentReportRepository()
 
   const identities: AccountIdentity[] = [
-    { id: ACCOUNT, email: 'pai@example.com', firstName: 'Marcos' },
+    { id: ACCOUNT, email: 'pai@example.com', firstName: 'Marcos', activated: true },
   ]
   const authCalls = { failAlways: false }
   const auth: AuthGateway = {
@@ -96,6 +101,7 @@ function buildSender(now: Date) {
   const sender = new SendParentReportsService(
     gamification,
     studio,
+    learning,
     childrenStats,
     reports,
     auth,
@@ -104,7 +110,7 @@ function buildSender(now: Date) {
     silentLogger,
     { dow: 5, hour: 17, kidsUrl: 'https://kids.example.com' },
   )
-  return { sender, award, gamification, reports, sentEmails, clockRef, authCalls }
+  return { sender, award, gamification, reports, sentEmails, clockRef, authCalls, learning }
 }
 
 /** Semeia atividade da semana (aula concluída na quinta) para a criança da conta. */
@@ -149,6 +155,34 @@ describe('SendParentReportsService.runCycle', () => {
   beforeEach(async () => {
     ctx = buildSender(FRIDAY_17H_SP)
     await seedWeekActivity(ctx)
+  })
+
+  it('inclui a primeira descoberta antes de qualquer XP e preserva a audiência', async () => {
+    const fresh = buildSender(FRIDAY_17H_SP)
+    fresh.learning.weeklyTopicRows.push(
+      {
+        accountId: ACCOUNT,
+        userId: CHILD,
+        audience: 'kids',
+        updatedAt: new Date('2026-07-02T12:00:00Z'),
+        summary: {
+          lessonId: randomUUID(),
+          lessonTitle: 'O salto do Dino',
+          topics: ['Comparar valores de gravidade'],
+        },
+      },
+      {
+        accountId: randomUUID(),
+        userId: randomUUID(),
+        audience: 'adult',
+        updatedAt: new Date('2026-07-02T12:00:00Z'),
+        summary: { lessonId: randomUUID(), lessonTitle: 'Outra criança', topics: ['Tema privado'] },
+      },
+    )
+    expect(await fresh.sender.runCycle()).toEqual({ sent: 1, skipped: 0, failed: 0 })
+    expect(fresh.sentEmails[0]?.variables.resumo).toContain('Comparar valores de gravidade')
+    expect(fresh.sentEmails[0]?.variables.resumo).not.toContain('Tema privado')
+    expect(fresh.sentEmails[0]?.variables.resumo).not.toContain('aula concluída')
   })
 
   it('envia 1 e-mail por conta com atividade e marca APÓS o envio (2º ciclo dedupa)', async () => {

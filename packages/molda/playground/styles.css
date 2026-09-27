@@ -1,6 +1,6 @@
 /*
  * Entry CSS do PLAYGROUND (equivale ao globals.css de um app consumidor):
- * um consumer real replica as 3 primeiras linhas no css dele.
+ * importar os tokens do host e o stylesheet do Molda, que registra suas fontes.
  */
 @import "tailwindcss";
 /* Primitivos da marca kids — o host REAL (community-kids) os importa, então sem
@@ -11,8 +11,6 @@
    usá-lo no lote 6b (por ora só os tokens ficam presentes, como no host). */
 @import "../../ui/src/styles/tool-chrome.css";
 @import "../src/styles/molda.css";
-
-@source "../src";
 
 /* Simula o next/font do host (lá as famílias têm nome hasheado; aqui são as
    literais das webfonts carregadas no index.html). */

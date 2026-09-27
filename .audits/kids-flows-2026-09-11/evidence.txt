@@ -1,0 +1,148 @@
+SUITE 0
+bun test v1.3.11 (af24e281)
+
+tests\lesson-requirements.test.ts:
+(pass) lesson completion requirements > reusing a project points to its primary section and counts a single requirement
+(pass) lesson completion requirements > optional experiments, empty legacy quizzes and video never become completion requirements
+(pass) lesson completion requirements > grade and delivery are distinct, and an already completed lesson never regresses
+(pass) lesson completion requirements > a discovery pass must belong to the current content revision [16.00ms]
+(pass) lesson completion requirements > coming-soon explains availability without exposing hidden activity requirements
+
+tests\section-progression.test.ts:
+(pass) section progression > native checkpoint requires a real correct answer and keeps the key private
+(pass) section progression > only completed evidence changes percent; future sections have no activity details
+(pass) section progression > publication rejects missing, foreign and participation-only criteria [15.00ms]
+(pass) section progression > a shared project can be used early but delivery belongs to closing
+(pass) section progression > the studio delivery must close the actual section order [16.00ms]
+(pass) section progression > the pinta delivery must close the actual section order
+
+ 11 pass
+ 0 fail
+ 30 expect() calls
+Ran 11 tests across 2 files. [282.00ms]
+
+
+SUITE 1
+bun test v1.3.11 (af24e281)
+
+tests\integration\learning.test.ts:
+(pass) learning activities and sections > studio experiment authoring survives the HTTP schema and never requires submission [125.00ms]
+(pass) learning activities and sections > pinta experiment authoring survives the HTTP schema and never requires submission [31.00ms]
+(pass) learning activities and sections > removed authoring endpoints cannot bypass the shared draft [31.00ms]
+(pass) learning activities and sections > answer keys are private, grading gates completion, retries are idempotent [16.00ms]
+(pass) learning activities and sections > draft state cannot forge a pass, revisions conflict, and access is checked [31.00ms]
+(pass) learning activities and sections > section authoring preserves IDs, checks coverage, and detects a stale edit [31.00ms]
+(pass) learning activities and sections > help is anchored to a real accessible section and reaches the existing inbox [31.00ms]
+(pass) learning activities and sections > essential HTML must have a native server checkpoint and iframe claims do not pass it [16.00ms]
+
+tests\integration\section-progression.test.ts:
+(pass) section gates across HTTP and persistence > hides future content and refuses navigation, draft saves and attempts there [15.00ms]
+(pass) section gates across HTTP and persistence > saving an answer and wrong attempts do not count; passing unlocks exactly the next section [32.00ms]
+(pass) section gates across HTTP and persistence > review, retries and navigation never regress or duplicate milestones [15.00ms]
+(pass) section gates across HTTP and persistence > the final section is required before completing the lesson [31.00ms]
+(pass) section gates across HTTP and persistence > an old saved position cannot unlock a future section and profiles do not share evidence
+(pass) section gates across HTTP and persistence > completed legacy lessons remain reviewable without manufacturing section records [32.00ms]
+(pass) section gates across HTTP and persistence > direct quiz requests cannot reveal answers or record attempts in a future section [15.00ms]
+(pass) section gates across HTTP and persistence > optional support quizzes can be answered before and after completing the sections [32.00ms]
+(pass) section gates across HTTP and persistence > a changed checkpoint revision rejects stale attempts; confirmed milestones survive edits [15.00ms]
+(pass) section gates across HTTP and persistence > delivery requires the final section even if an earlier one is labeled closing [31.00ms]
+(pass) section gates across HTTP and persistence > workspace is accessible before closing but cannot be submitted early; project check is separate [32.00ms]
+
+tests\integration\teacher-threads.test.ts:
+(pass) conversas com o professor (canal de retorno) > professor abre conversa na Entrega → aluno vê, sino conta, lê e zera [62.00ms]
+(pass) conversas com o professor (canal de retorno) > aluno responde → professor vê como não-lido; texto vazio é 400 [31.00ms]
+(pass) conversas com o professor (canal de retorno) > leitura é individual por professor [16.00ms]
+(pass) conversas com o professor (canal de retorno) > unread-count do PROFESSOR: individual por staff; read-all zera e devolve o nº [31.00ms]
+(pass) conversas com o professor (canal de retorno) > read-all respeita o escopo (context) e mensagem nova volta a contar [16.00ms]
+(pass) conversas com o professor (canal de retorno) > filtro por aluno (?userIds=): casa userId E accountId; lixo é descartado [31.00ms]
+(pass) conversas com o professor (canal de retorno) > posse: outro aluno não acessa a conversa (404 sem vazar) [16.00ms]
+(pass) conversas com o professor (canal de retorno) > audiência: conversa kids não aparece na vitrine adulta [15.00ms]
+(pass) conversas com o professor (canal de retorno) > marcar como lida respeita a audiência da conversa [16.00ms]
+(pass) conversas com o professor (canal de retorno) > Entrega deduplica por bloco; recado geral cria conversa nova a cada vez [16.00ms]
+(pass) conversas com o professor (canal de retorno) > caixa do aluno informa quando há conversas além da primeira página [31.00ms]
+(pass) conversas com o professor (canal de retorno) > Entrega sem blockId é rejeitada (400)
+(pass) conversas com o professor (canal de retorno) > aluno não inicia conversa: só responde a existentes [16.00ms]
+(pass) conversas com o professor (canal de retorno) > admin abre a conversa da Entrega por contexto (viewer) [31.00ms]
+(pass) conversas com o professor (canal de retorno) > histórico é paginado por cursor sem ocultar mensagens antigas [31.00ms]
+(pass) conversas com o professor (canal de retorno) > cursor bem-formado, mas com id inválido, retorna 400 [47.00ms]
+(pass) conversas com o professor (canal de retorno) > marcar como lida usa a última mensagem persistida, sem apagar recado concorrente [16.00ms]
+(pass) conversas com o professor (canal de retorno) > caixa do professor prioriza não-lidas antes de paginar [15.00ms]
+(pass) webhook do Mural (motivo da moderação → recado ao aluno) > cria conversa mural_publication visível ao aluno + dedupe por entrega [31.00ms]
+(pass) webhook do Mural (motivo da moderação → recado ao aluno) > recusa webhook sem delivery id para não duplicar recados em retries [16.00ms]
+(pass) webhook do Mural (motivo da moderação → recado ao aluno) > rejeita trocar o delivery id de uma entrega já assinada [16.00ms]
+(pass) webhook do Mural (motivo da moderação → recado ao aluno) > assinatura HMAC inválida → 401 (nada criado) [31.00ms]
+
+ 41 pass
+ 0 fail
+ 171 expect() calls
+Ran 41 tests across 3 files. [2.54s]
+
+
+SUITE 2
+bun test v1.3.11 (af24e281)
+
+tests\lesson-learning-panel.test.tsx:
+(pass) professor vê os valores realmente testados no experimento motion [94.00ms]
+(pass) professor vê os valores realmente testados no experimento population [31.00ms]
+(pass) professor vê os valores realmente testados no experimento collision
+
+tests\section-completion-editor.test.tsx:
+(pass) author selects completion evidence and configures a structural objective through the form [46.00ms]
+
+ 4 pass
+ 0 fail
+ 16 expect() calls
+Ran 4 tests across 2 files. [803.00ms]
+
+
+SUITE 3
+bun test v1.3.11 (af24e281)
+
+tests\lesson-sections.test.tsx:
+(pass) aula por seções > a barra conta conclusões e o índice não permite abrir seções futuras [156.00ms]
+(pass) aula por seções > falha de navegação mantém a seção atual; a nova tentativa preserva o projeto [156.00ms]
+(pass) aula por seções > pendência leva ao único projeto e fecha a lista durante a navegação [63.00ms]
+(pass) aula por seções > descoberta incompleta na prévia mostra orientação e não registra tentativas [15.00ms]
+(pass) aula por seções > uma resposta atrasada do perfil anterior não apaga o progresso do perfil atual [16.00ms]
+(pass) aula por seções > a prévia da sequência permite conferir os blocos completos de autoria [47.00ms]
+(pass) aula por seções > prévia de autoria permite conferir o resultado sem registrar atividade de aluno [62.00ms]
+(pass) aula por seções > preserva a mesma instância e o rascunho do projeto ao ocultar e voltar ao editor [47.00ms]
+(pass) aula por seções > a divisória entre a aula e a ferramenta é arrastável e alcançável pelo teclado [16.00ms]
+(pass) aula por seções > trocar de perfil no meio da aula não oferece "tentar novamente" [47.00ms]
+(pass) aula por seções > a troca de seção sobrevive ao fechamento da aba [47.00ms]
+(pass) aula por seções > retoma a seção salva e inclui seu contexto no pedido de ajuda [62.00ms]
+(pass) aula por seções > experimento exige valores distintos e transmite a evidência esperada pelo servidor [16.00ms]
+(pass) aula por seções > recupera respostas locais por perfil e revisão sem misturar irmãos [78.00ms]
+
+ 14 pass
+ 0 fail
+ 45 expect() calls
+Ran 14 tests across 1 file. [1.52s]
+
+
+MEMBER SHELL
+bun test v1.3.11 (af24e281)
+
+tests\learning-routes.test.ts:
+(pass) learning BFF boundary > forwards validated answers to the fixed gateway route without accepting an owner [31.00ms]
+(pass) learning BFF boundary > expired, read-only and switched profile sessions never reach the gateway
+(pass) learning BFF boundary > bounds payloads, rejects malformed IDs, non-finite positions and nested state [15.00ms]
+(pass) learning BFF boundary > project checks preserve profile, section and publication revision boundaries
+(pass) learning BFF boundary > navigation, help and attempts use the same session boundary and strict contracts
+
+ 5 pass
+ 0 fail
+ 30 expect() calls
+Ran 5 tests across 1 file. [336.00ms]
+
+
+REPRODUCTIONS
+[gateway] MARKETING_INTERNAL_TOKEN ausente — as rotas /marketing/* responderão 401 (o serviço exige o token interno)
+[gateway] HELPDESK_INTERNAL_TOKEN ausente — as rotas /helpdesk/* responderão 401 (o serviço exige o token interno)
+{"case":"unselected_block_still_blocks","extraKind":"quiz","authoringIssues":[],"selectedPassed":true,"section":{"id":"e83a4a01-24a2-49b6-8e71-2d354829acf1","title":"Etapa","status":"available","pending":["Atingir a nota mínima (100%)"]}}
+{"case":"unselected_block_still_blocks","extraKind":"interactive","authoringIssues":[],"selectedPassed":true,"section":{"id":"abee35d1-1c5a-4df6-8222-51877b7f23f6","title":"Etapa","status":"available","pending":["Conferir a descoberta"]}}
+{"case":"help_round_trip","sameThread":true,"context":"lesson_section","title":"Aula composta · Preparar","teacherReceivedUnread":true,"studentReceivedUnreadReply":true}
+{"case":"verification_limits","disabledBlockPassesUsesBlock":true,"emptyProjectBehaviorGrade":{"score":100,"passed":true,"results":[{"checkId":"result","kind":"behavior","passed":true,"verifiedBy":"client"}]}}
+{"case":"read_all_drops_student_filter","visibleThreads":1,"markedRead":2,"hiddenStudentsMarkedRead":true}
+{"case":"real_gateway_routes","projectCheck":null,"help":"members-section-help","teacherPost":"members-admin-teacher-threads-write"}
+

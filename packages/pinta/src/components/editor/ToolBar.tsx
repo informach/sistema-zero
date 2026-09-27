@@ -6,9 +6,13 @@
  *
  * Clicar num dos quadrados de cor escolhe QUEM recebe a próxima cor tocada na
  * paleta (`sessionStore.activeSlot`).
+ *
+ * O desenho (11/09/2026, a tela-modelo): quadrados CLAROS de 40px (44 no toque) com o ativo
+ * azul chapado, cada grupo numa grade de duas colunas (o que sobra sozinho numa linha fica no
+ * meio) e um fio entre os grupos. A caixa mora na coluna branca (`.pin-col`), sem moldura.
  */
 import { clsx } from 'clsx'
-import { Fragment, type JSX, useEffect } from 'react'
+import { Fragment, type JSX, useEffect, useRef } from 'react'
 import { activeBitmapOf, withActiveBitmap, withActiveCels } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
 import { isAnimatedSpriteKind, isPixelLayeredKind, resolveAssetPalette } from '../../core/project'
@@ -19,6 +23,7 @@ import { clearBitmap, flipHorizontal, flipVertical, rotate90 } from '../../pixel
 import type { PintaSessionTool } from '../../state/sessionStore'
 import { IconButton, ToolButton } from '../ui/Button'
 import {
+  Ban,
   BrushCleaning,
   Circle,
   Eraser,
@@ -41,7 +46,10 @@ import {
 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession, useToolCuration } from './editorContext'
+import { ScrollMoreHint } from './ScrollMoreHint'
+import { TOOL_GRID } from './toolGrid'
 import { useActionShortcuts } from './useActionShortcuts'
+import { useScrollMore } from './useScrollMore'
 import { toolShortcutMap, useToolShortcuts } from './useToolShortcuts'
 
 /**
@@ -95,6 +103,10 @@ export function ToolBar({
   const layerId = useSession((state) => state.layerId)
   const asset = useEditor((state) => state.asset)
   const allowTools = useToolCuration()
+  // O miolo das ferramentas rola com a barra ESCONDIDA (a clássica comeria a coluna de 104px);
+  // o degradê no pé é a pista de que tem mais embaixo, como nas colunas da direita.
+  const middleRef = useRef<HTMLDivElement>(null)
+  const more = useScrollMore(middleRef)
 
   useToolShortcuts(TOOL_SHORTCUTS, (id) => session.getState().setTool(id))
 
@@ -198,7 +210,7 @@ export function ToolBar({
   ])
 
   const divider = vertical ? (
-    <hr className="col-span-2 my-1 w-8 border-pin-border" />
+    <hr className="pin-tool-divider" />
   ) : (
     <span aria-hidden="true" className="mx-1 h-8 w-0.5 shrink-0 rounded bg-pin-border" />
   )
@@ -206,6 +218,7 @@ export function ToolBar({
   const brushSizes = BRUSH_SIZES.map((size) => (
     <IconButton
       key={size}
+      tone="quiet"
       active={brushSize === size}
       aria-label={`${COPY.tools.brushSize}: ${size}`}
       aria-pressed={brushSize === size}
@@ -228,6 +241,7 @@ export function ToolBar({
   const drawNodes = filterTools(TOOLS, allowTools).map((entry) => (
     <ToolButton
       key={entry.id}
+      tone="quiet"
       icon={entry.icon}
       label={entry.label}
       shortcut={entry.shortcut}
@@ -242,6 +256,7 @@ export function ToolBar({
         id: 'mirror',
         node: (
           <ToolButton
+            tone="quiet"
             icon={FlipHorizontal}
             label={COPY.tools.mirror}
             active={mirrorX}
@@ -253,6 +268,7 @@ export function ToolBar({
         id: 'mirrorV',
         node: (
           <ToolButton
+            tone="quiet"
             icon={FlipVertical}
             label={COPY.tools.mirrorV}
             active={mirrorY}
@@ -264,6 +280,7 @@ export function ToolBar({
         id: 'grid',
         node: (
           <ToolButton
+            tone="quiet"
             icon={Grid3x3}
             label={COPY.tools.grid}
             active={showGrid}
@@ -278,6 +295,7 @@ export function ToolBar({
               id: 'filled',
               node: (
                 <ToolButton
+                  tone="quiet"
                   icon={PaintRoller}
                   label={COPY.tools.filled}
                   active={filled}
@@ -297,6 +315,7 @@ export function ToolBar({
         id: 'flipH',
         node: (
           <ToolButton
+            tone="quiet"
             icon={FlipHorizontal2}
             label={COPY.tools.flipH}
             onClick={() => transformBitmap('flipH')}
@@ -307,6 +326,7 @@ export function ToolBar({
         id: 'flipV',
         node: (
           <ToolButton
+            tone="quiet"
             icon={FlipVertical2}
             label={COPY.tools.flipV}
             onClick={() => transformBitmap('flipV')}
@@ -317,6 +337,7 @@ export function ToolBar({
         id: 'rotate',
         node: (
           <ToolButton
+            tone="quiet"
             icon={RotateCw}
             label={COPY.tools.rotate}
             disabled={!canRotate}
@@ -326,7 +347,14 @@ export function ToolBar({
       },
       {
         id: 'clear',
-        node: <ToolButton icon={BrushCleaning} label={COPY.tools.clear} onClick={clearActive} />,
+        node: (
+          <ToolButton
+            tone="quiet"
+            icon={BrushCleaning}
+            label={COPY.tools.clear}
+            onClick={clearActive}
+          />
+        ),
       },
     ],
     allowTools,
@@ -343,17 +371,6 @@ export function ToolBar({
     { name: 'action', nodes: actionNodes },
   ].filter((group) => group.nodes.length > 0)
 
-  const tools = (
-    <>
-      {groups.map((group, index) => (
-        <Fragment key={group.name}>
-          {index > 0 ? divider : null}
-          {group.nodes}
-        </Fragment>
-      ))}
-    </>
-  )
-
   // Tela estreita: uma linha só, rolando na horizontal.
   if (!vertical) {
     return (
@@ -363,7 +380,12 @@ export function ToolBar({
         aria-orientation={orientation}
         className="pin-panel flex shrink-0 items-center gap-1 overflow-x-auto p-2"
       >
-        {tools}
+        {groups.map((group, index) => (
+          <Fragment key={group.name}>
+            {index > 0 ? divider : null}
+            {group.nodes}
+          </Fragment>
+        ))}
       </div>
     )
   }
@@ -384,12 +406,23 @@ export function ToolBar({
       role="toolbar"
       aria-label={COPY.a11y.tools}
       aria-orientation={orientation}
-      className="pin-panel flex max-h-full min-h-0 shrink-0 flex-col gap-1 p-2"
+      className="flex max-h-full min-h-0 shrink-0 flex-col gap-2 px-1 py-2"
     >
-      <div className="grid shrink-0 grid-cols-2 justify-items-center gap-1">{brushSizes}</div>
+      <div className={`shrink-0 ${TOOL_GRID}`}>{brushSizes}</div>
       {divider}
-      <div className="grid min-h-0 flex-1 grid-cols-2 content-start justify-items-center gap-1 overflow-y-auto">
-        {tools}
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <div
+          ref={middleRef}
+          className="pin-scroll-y flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-1"
+        >
+          {groups.map((group, index) => (
+            <Fragment key={group.name}>
+              {index > 0 ? divider : null}
+              <div className={TOOL_GRID}>{group.nodes}</div>
+            </Fragment>
+          ))}
+        </div>
+        {more ? <ScrollMoreHint /> : null}
       </div>
       {divider}
       <ColorSlots />
@@ -398,10 +431,14 @@ export function ToolBar({
 }
 
 /**
- * As DUAS cores da caixa: principal (frente) e secundária (atrás, deslocada),
- * mais o botão de trocar. Clicar num quadrado o deixa SELECIONADO — a próxima
- * cor tocada na paleta cai nele. O botão esquerdo do mouse pinta com a
- * principal; o direito, com a secundária.
+ * As DUAS cores da caixa: principal e secundária, mais o botão de trocar. Clicar num quadrado
+ * o deixa SELECIONADO (o anel azul) — a próxima cor tocada na paleta cai nele. O botão esquerdo
+ * do mouse pinta com a principal; o direito, com a secundária.
+ *
+ * O desenho da tela-modelo (11/09/2026): [trocar][principal] numa linha e a secundária, menor,
+ * no meio da linha de baixo. Os dois ALVOS não se cruzam mais (antes a secundária ficava atrás
+ * da principal, com metade escondida). Sem cor (índice 0) é o tom claro com o sinal de proibido,
+ * o mesmo "sem cor" da paleta.
  */
 function ColorSlots(): JSX.Element | null {
   const { session } = useEditorStores()
@@ -428,32 +465,30 @@ function ColorSlots(): JSX.Element | null {
         title={hint}
         onClick={() => session.getState().setActiveSlot(slot)}
         className={clsx(
-          'size-11 rounded-lg border-2 transition',
-          // Sem cor (índice 0) mostra o xadrez de transparência.
-          !hex && 'pin-checkerboard',
-          active ? 'border-pin-accent ring-2 ring-pin-accent' : 'border-pin-border',
-          slot === 'secondary' && 'absolute right-0 bottom-0',
+          'pin-swatch',
+          !hex && 'pin-swatch--none',
+          // A secundária é a menor, como na imagem; o alvo continua inteiro (a borda transparente
+          // do `.pin-swatch--small` é alvo, não tinta).
+          slot === 'secondary' && 'pin-swatch--small',
         )}
         style={hex ? { backgroundColor: hex } : undefined}
-      />
+      >
+        {hex ? null : <Ban aria-hidden="true" />}
+      </button>
     )
   }
 
   return (
-    <div className="flex items-end justify-center gap-1 py-1">
+    <div className="grid shrink-0 grid-cols-2 items-center justify-items-center gap-2 py-1">
       <IconButton
         aria-label={COPY.tools.swapColors}
         title={COPY.tools.swapColors}
         onClick={() => session.getState().swapColors()}
-        className="self-end"
       >
         <Repeat aria-hidden="true" className="size-4" />
       </IconButton>
-      {/* A secundária fica ATRÁS e deslocada, como nos programas de desenho. */}
-      <div className="relative size-16 shrink-0">
-        {swatch('secondary')}
-        <span className="absolute top-0 left-0">{swatch('primary')}</span>
-      </div>
+      {swatch('primary')}
+      <span className="col-span-2 flex justify-center">{swatch('secondary')}</span>
     </div>
   )
 }

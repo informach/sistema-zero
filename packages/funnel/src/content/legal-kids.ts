@@ -146,7 +146,7 @@ export const TERMOS_KIDS: LegalDoc = {
   titulo: 'Termos de Uso',
   descricao:
     'Condições para a contratação e o uso do Desafio do Primeiro Jogo, da Informach — Núcleo de Aprendizagem Ltda. A compra e o aceite são feitos por um adulto responsável.',
-  atualizadoEm: '26 de junho de 2026',
+  atualizadoEm: '16 de setembro de 2026',
   secoes: [
     {
       titulo: '1. Das definições',
@@ -162,9 +162,10 @@ export const TERMOS_KIDS: LegalDoc = {
     {
       titulo: '2. O que é e como funciona o Produto',
       paragrafos: [
-        `O ${PRODUTO} é um material digital de caráter educacional: uma trilha de 5 dias em que a criança monta o primeiro joguinho jogável, com passo a passo em vídeo e um estúdio feito para crianças, sem instalar nada. A compra é feita neste site, com pagamento único via Pix ou cartão de crédito.`,
-        'Após a confirmação do pagamento, o acesso é liberado na área de membros e as instruções de primeiro acesso são enviadas ao e-mail do Responsável informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
-        'A Empresa pode, a seu critério, atualizar o conteúdo, incluir bônus e melhorar a entrega do Produto, sempre preservando o acesso ao conteúdo adquirido.',
+        `O ${PRODUTO} é um material digital de caráter educacional: uma trilha recomendada de 5 (cinco) etapas em que a criança monta o primeiro joguinho jogável, com passo a passo em vídeo e um estúdio feito para crianças, sem instalar programas. A compra é feita neste site, com pagamento único via Pix ou cartão de crédito.`,
+        'Após a aprovação do pagamento, o acesso é liberado na área de membros por 30 (trinta) dias corridos, contados em períodos exatos de 24 horas. As instruções de primeiro acesso e a data final são enviadas ao e-mail do Responsável informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
+        'Os cinco dias representam a sequência recomendada do projeto, não dias corridos obrigatórios. Cada família pode distribuir as etapas dentro dos 30 dias de acesso.',
+        'A Empresa pode atualizar o conteúdo, incluir bônus e melhorar a entrega do Produto. Essas mudanças não alteram o preço, a duração nem as demais condições congeladas no momento de cada compra.',
       ],
     },
     {
@@ -195,44 +196,53 @@ export const TERMOS_KIDS: LegalDoc = {
     {
       titulo: '6. Do pagamento',
       paragrafos: [
-        'O pagamento é único (não é assinatura) e processado pela Efí — Efí S.A. Instituição de Pagamento, nas modalidades Pix e cartão de crédito. O preço vigente é o exibido na página da oferta no momento da compra.',
+        'O pagamento é único, não cria assinatura e não possui renovação automática. Ele é processado pela Efí — Efí S.A. Instituição de Pagamento, nas modalidades Pix e cartão de crédito. O preço vigente, eventual cupom e valor total são os exibidos no resumo do checkout no momento da compra.',
         'Os dados completos do cartão não transitam pelos servidores da Empresa: a captura é feita de forma segura, por tokenização, diretamente pelo processador de pagamentos.',
       ],
     },
     {
-      titulo: '7. Garantia e reembolso',
+      titulo: '7. Prazo de acesso, projetos e compras anteriores',
       paragrafos: [
-        `O Responsável pode solicitar o reembolso integral em até 7 (sete) dias corridos a contar da compra, conforme o art. 49 do Código de Defesa do Consumidor, por qualquer motivo. Basta enviar a solicitação para ${EMPRESA.email} informando o e-mail usado na compra.`,
-        'Confirmada a solicitação dentro do prazo, o valor é estornado pelo mesmo meio de pagamento e o acesso à área de membros é encerrado.',
+        'O prazo de 30 (trinta) dias começa somente com a aprovação do pagamento. Uma cobrança criada, mas ainda pendente, não inicia a contagem. A data e a hora finais são calculadas a partir da aprovação e exibidas na página de confirmação e na área de membros.',
+        'Depois do prazo, o acesso às aulas do Desafio termina. O progresso e os projetos permanecem armazenados conforme a Política de Privacidade e podem voltar a ficar disponíveis caso o Responsável adquira uma nova condição de acesso válida, inclusive uma assinatura da Comunidade dos Criadores que inclua o Desafio.',
+        'Compras vitalícias realizadas sob ofertas anteriores permanecem vitalícias nos termos contratados na época. A nova condição de 30 dias não reduz nem substitui direitos de acesso já adquiridos.',
       ],
     },
     {
-      titulo: '8. Da propriedade intelectual',
+      titulo: '8. Garantia e reembolso',
+      paragrafos: [
+        `O Responsável pode solicitar o reembolso integral em até 7 (sete) dias corridos a contar da compra, conforme o art. 49 do Código de Defesa do Consumidor, por qualquer motivo. Basta enviar a solicitação para ${EMPRESA.email} informando o e-mail usado na compra.`,
+        'Confirmada a solicitação dentro do prazo, o valor é estornado pelo mesmo meio de pagamento e o acesso à área de membros é encerrado.',
+        'O prazo de garantia não aumenta, pausa nem reinicia o período de 30 dias de acesso.',
+      ],
+    },
+    {
+      titulo: '9. Da propriedade intelectual',
       paragrafos: [
         'Todo o conteúdo do Produto e deste site (textos, imagens, vídeos, marcas, layout, trilha e materiais) é de titularidade da Empresa e protegido pelas Leis nº 9.610/1998 (Direitos Autorais) e nº 9.609/1998 (Software). A aquisição concede uma licença de uso pessoal, limitada, não exclusiva e intransferível, vedada a reprodução, distribuição ou revenda.',
         'As criações feitas pelo Aluno na plataforma (como o jogo montado no Estúdio) pertencem ao Aluno e ao seu Responsável. Ao usar o Produto, o Responsável autoriza a Empresa a armazenar e exibir essas criações na área de membros para o funcionamento do serviço. Caso o Responsável opte por gerar um link público de uma criação, essa publicação é feita sob a sua responsabilidade, e a Empresa pode moderar ou remover conteúdo que viole a lei ou estes Termos.',
       ],
     },
     {
-      titulo: '9. Isenção de garantias de resultado',
+      titulo: '10. Isenção de garantias de resultado',
       paragrafos: [
         'O Produto tem caráter educacional e informativo. Os exemplos e demonstrações não constituem promessa ou garantia de resultados específicos, que dependem da dedicação, do contexto e do acompanhamento de cada família.',
       ],
     },
     {
-      titulo: '10. Da privacidade e proteção de dados',
+      titulo: '11. Da privacidade e proteção de dados',
       paragrafos: [
         'O tratamento de dados pessoais é regido pela Política de Privacidade (Kids), disponível neste site, que integra estes Termos para todos os fins. Os dados de crianças e adolescentes são tratados no melhor interesse deles, com o consentimento do responsável, nos termos do art. 14 da LGPD (Lei nº 13.709/2018) e da Lei nº 15.211/2025 (ECA Digital).',
       ],
     },
     {
-      titulo: '11. Das alterações destes termos',
+      titulo: '12. Das alterações destes termos',
       paragrafos: [
-        'A Empresa pode alterar estes Termos a qualquer momento, publicando a versão atualizada nesta página com a respectiva data. As alterações não prejudicam direitos já adquiridos, como o acesso ao conteúdo comprado e o prazo de garantia em curso.',
+        'A Empresa pode alterar estes Termos para contratações futuras, publicando a versão atualizada nesta página com a respectiva data. Cada cobrança guarda a versão aceita no momento da compra. As alterações não prejudicam o preço, a duração, a garantia nem outros direitos já adquiridos.',
       ],
     },
     {
-      titulo: '12. Da lei aplicável e do foro',
+      titulo: '13. Da lei aplicável e do foro',
       paragrafos: [
         `Estes Termos são regidos pelas leis da República Federativa do Brasil, incluindo o ECA (Lei nº 8.069/1990) e a Lei nº 15.211/2025. Fica eleito o foro da comarca de ${EMPRESA.foro} para dirimir controvérsias, sem prejuízo do foro do domicílio do consumidor, garantido pelo Código de Defesa do Consumidor.`,
         `Dúvidas sobre estes Termos podem ser enviadas para ${EMPRESA.email}.`,

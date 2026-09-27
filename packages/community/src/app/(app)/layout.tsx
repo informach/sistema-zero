@@ -21,7 +21,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = { ...session, avatarUrl }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    // `sz-app`: gancho do fundo da página (a aula troca para o fundo alternativo pelo CSS).
+    <div className="sz-app flex min-h-screen flex-col bg-background">
       {/* Sessão de impersonação (suporte): faixa persistente acima do header. */}
       {session.act ? (
         <ImpersonationBanner

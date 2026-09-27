@@ -154,6 +154,42 @@ describe('vectorSpriteHitbox', () => {
     expect([q?.w, q?.h]).toEqual([0.25, 0.5])
   })
 
+  it('gira a caixa em torno da âncora personalizada', () => {
+    const anchored: VectorShape[] = [
+      {
+        ...rect({ x: 40, y: 40, w: 20, h: 10 }),
+        rotation: 90,
+        rotationPivot: { x: 40, y: 40 },
+      },
+    ]
+    expect(vectorSpriteHitbox([anchored], 100, 100)).toEqual({
+      x: 0.3,
+      y: 0.4,
+      w: 0.1,
+      h: 0.2,
+    })
+  })
+
+  it('mede só a interseção visível do conteúdo com a máscara e omite a fonte', () => {
+    const source: VectorShape = {
+      ...rect({ x: 16, y: 16, w: 16, h: 16 }),
+      id: 'janela',
+      hidden: true,
+    }
+    const content: VectorShape = {
+      ...rect({ x: 0, y: 0, w: 64, h: 64 }),
+      id: 'rosto',
+      maskId: source.id,
+    }
+
+    expect(vectorSpriteHitbox([[content, source]], 64, 64)).toEqual({
+      x: 0.25,
+      y: 0.25,
+      w: 0.25,
+      h: 0.25,
+    })
+  })
+
   it('⭐ a mesma UNIÃO vale no vetor', () => {
     const a: VectorShape[] = [rect({ x: 16, y: 16, w: 16, h: 16 })]
     const b: VectorShape[] = [rect({ x: 32, y: 16, w: 16, h: 16 })]

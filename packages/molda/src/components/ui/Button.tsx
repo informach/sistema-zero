@@ -9,11 +9,17 @@ import type { LucideIcon } from './icons'
 
 export type ButtonVariant = 'primary' | 'ghost' | 'danger' | 'outline'
 
+/**
+ * Botão de escolha (`aria-pressed`) PRECISA mostrar qual está ligado: Fino/Médio/Grosso e
+ * Fosco/Brilhante/Metal saíam idênticos, ligados ou não. Fundo tingido e um anel, que não
+ * depende só da cor e mantém o texto no contraste de sempre.
+ */
+const PRESSED = 'aria-pressed:bg-mld-accent/15 aria-pressed:ring-2 aria-pressed:ring-mld-accent'
+
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary: 'mld-btn-3d disabled:hover:brightness-100',
-  ghost: 'rounded-xl text-mld-text hover:bg-mld-border/40',
-  outline:
-    'rounded-xl border-2 border-mld-border bg-mld-surface text-mld-text hover:border-mld-accent',
+  ghost: `rounded-xl text-mld-text hover:bg-mld-border/40 ${PRESSED}`,
+  outline: `rounded-xl border-2 border-mld-border bg-mld-surface text-mld-text hover:border-mld-accent aria-pressed:border-mld-accent ${PRESSED}`,
   danger: 'rounded-full bg-mld-danger text-white hover:brightness-110',
 }
 

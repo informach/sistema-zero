@@ -1,0 +1,473 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-01",
+  "title": "Prepare o mundo do Dino",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "construir-3",
+    "convite-construir-1",
+    "construir-4",
+    "fechamento",
+    "video-missao",
+    "video-construir-1-1",
+    "zappy-construir-1",
+    "video-construir-2-1",
+    "zappy-construir-2",
+    "video-construir-3-1",
+    "zappy-construir-3",
+    "video-construir-4-1",
+    "zappy-construir-4",
+    "zappy-convite-construir-1",
+    "video-entrega",
+    "zappy-entrega",
+    "zappy-revisao",
+    "video-descricao-demo-v7",
+    "experiencia-leitor-de-tela",
+    "video-descricao-criar-v7",
+    "orientacao-descricao-v7"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura-v7",
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-01-corre-dino.md, Abertura: o jogo que você vai construir. Entrada: “Oi! Seja bem-vindo ao”. Saída: “Então bora começar pelo primeiro.”. Montagem: Regravar a apresentação do jogo pronto com os três passos de hoje: preparar Ao iniciar, a tela e o Dino. A criança só assiste ao exemplo. Timecodes dependem da conferência do vídeo gravado."
+    },
+    {
+      "key": "video-iniciar-v7",
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-01-corre-dino.md, Parte 1. Passo 1: montar a área que prepara o jogo. Entrada: “Antes de tudo, o seu jogo precisa de um lugar pra ser montado.”. Saída: “O segundo é preparar a tela.”. Montagem: Preservar o gesto completo, a área vazia e a analogia do tabuleiro. Não acrescentar outra demonstração. Timecodes dependem da conferência do vídeo gravado."
+    },
+    {
+      "key": "video-tela-v7",
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-01-corre-dino.md, Parte 2. Passo 2: preparar a tela. Entrada: “Agora a gente prepara a tela onde o jogo acontece.”. Saída: “O terceiro é rapidinho.”. Montagem: Manter tela sem limite visível, encaixe da borda e retângulo revelado no mesmo clipe. Manter 480 × 270 e espessura 4. Escolhas de cor ficam limitadas a céu e borda com contraste. Timecodes dependem da conferência do vídeo gravado."
+    },
+    {
+      "key": "experiencia-tela",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Descubra o limite da tela",
+        "instructions": "Ligue a borda e veja o que aparece. Depois mude a largura e a altura até chegar em 480 por 270.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "stage-size",
+          "cenario": "corre-dino"
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-coordenadas-demo-v7",
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-01-corre-dino.md, Parte 4. Passo 4: criar o dino. Entrada: “O x diz se ele fica mais pra esquerda ou mais pra direita.”. Saída: “A linha 150 está bem mais embaixo que a linha 1.”. Montagem: Reaproveitar a narração sobre x e y sobre uma cartela de 480 × 270. Mover apenas um marcador: primeiro x com y fixo, depois y com x fixo. Origem no canto superior esquerdo; valores 110 e 150. Abrir com uma ponte curta: cada personagem tem um endereço. Não há arraste nem parâmetros para a criança. Timecodes dependem da conferência do vídeo gravado."
+    },
+    {
+      "key": "experiencia-coordenadas",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Descubra o endereço na tela",
+        "instructions": "Mude o x e veja para que lado o Dino vai. Depois mude só o y e compare. Por último, leve o Dino para x 0 e y 0.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "coordinates",
+          "cenario": "corre-dino"
+        }
+      }
+    },
+    {
+      "key": "video-dino-v7",
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-01-corre-dino.md, Parte 4. Passo 4: criar o dino. Entrada: “Chegou a hora do seu dinossauro.”. Saída: “Quarto passo concluído.”. Montagem: Reaproveitar criação, sprite, configuração e explicação da invisibilidade. Retirar o trecho de coordenadas usado na demonstração, de “Depois vêm” até “grande maioria dos jogos que você vai fazer”. Retomar em “O y já está em 150”. Preservar x 110, y 150 e tamanho 64. Na trilha guiada, manter o identificador dino para evitar confusão nos seletores das próximas aulas. A cor continua livre; encurtar o passeio pela paleta a uma escolha, sem desafio extra. Timecodes dependem da conferência do vídeo gravado."
+    },
+    {
+      "key": "video-fecho-v7",
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. Fonte: roteiro-aula-01-corre-dino.md, Fecho. Entrada: “Parabéns, você terminou a Aula 1!”. Saída: “Te espero lá!”. Montagem: Reaproveitar recapitulacão e gancho da Aula 2. Acrescentar somente uma cartela curta indicando o quiz. Não dizer que o aluno já programou o desenho do Dino. Timecodes dependem da conferência do vídeo gravado."
+    },
+    {
+      "key": "orientacao-iniciar-v7",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Áreas do projeto, coloque Ao iniciar no espaço de montar. Nesta etapa ele fica vazio. Confira seu projeto para continuar."
+      }
+    },
+    {
+      "key": "orientacao-tela-v7",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Dentro de Ao iniciar, prepare a tela de 480 × 270. Logo abaixo, coloque Mostrar a borda da tela, com espessura 4. Escolha uma borda que apareça sobre o céu."
+      }
+    },
+    {
+      "key": "orientacao-experiencia-tela-v8",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Antes de montar no seu jogo, descubra onde a tela do jogo termina. A borda é o que mostra esse limite."
+      }
+    },
+    {
+      "key": "orientacao-dino-v7",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Kits prontos, Dino, encaixe Criar dinossauro em Ao iniciar. Use nome dino, x 110, y 150 e tamanho 64. Você pode escolher a cor. Ele ainda não aparece nesta aula."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "required": false,
+        "title": "Criar e mostrar são duas coisas diferentes",
+        "instructions": "Primeiro, crie o Dino nos bastidores. Depois, faça o Dino aparecer na tela do jogo.",
+        "hints": [
+          "Olhe a ficha dos bastidores e a tela do jogo.",
+          "Primeiro, crie o Dino nos bastidores.",
+          "Depois, mostre o Dino na tela do jogo."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "world",
+          "cenario": "corre-dino"
+        }
+      }
+    },
+    {
+      "key": "orientacao-descoberta-v7",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Esta é uma experiência separada do seu projeto. No seu jogo, o desenho vem na próxima aula."
+      }
+    },
+    {
+      "key": "orientacao-entrega-v7",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Confira a tela com borda e o bloco que cria seu Dino. O Dino ainda invisível é o resultado esperado. Teste e envie seu projeto ao professor."
+      }
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O Dino foi criado, mas a tela está vazia. O que falta?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Mostrar o Dino na tela."
+              },
+              {
+                "id": "b",
+                "label": "Criar outro Dino igual."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Criar guarda o personagem nos bastidores; mostrar na tela faz ele aparecer."
+          },
+          {
+            "id": "q2",
+            "prompt": "Onde ficam os blocos que preparam a partida?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Só dentro do evento de pulo."
+              },
+              {
+                "id": "b",
+                "label": "Em Ao iniciar."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Ao iniciar prepara a tela e os personagens para uma nova partida."
+          },
+          {
+            "id": "q3-coordenadas",
+            "prompt": "O x continua igual e o y aumenta. Para onde vai o personagem?",
+            "choices": [
+              {
+                "id": "baixo",
+                "label": "Mais para baixo."
+              },
+              {
+                "id": "direita",
+                "label": "Mais para a direita."
+              }
+            ],
+            "correctChoiceIds": ["baixo"],
+            "explanation": "Na tela do jogo, o y aumenta de cima para baixo. O x indica a posição na horizontal."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "apresentacao-v7",
+      "title": "Conheça o jogo que vamos criar",
+      "intent": "presentation",
+      "objective": "Reconhecer o jogo final e os três passos de hoje. Nesta aula o Dino será criado, ainda sem aparecer.",
+      "blockKeys": ["video-abertura-v7"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-v7"]
+      }
+    },
+    {
+      "key": "iniciar-v7",
+      "title": "Um lugar para começar",
+      "intent": "application",
+      "objective": "Colocar Ao iniciar no projeto e entender que esta área prepara a partida.",
+      "blockKeys": ["video-iniciar-v7", "orientacao-iniciar-v7"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "area-iniciar-v7",
+            "label": "Coloque a área Ao iniciar no projeto.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_frame_start",
+              "area": "start"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "tela-experiencia-v8",
+      "title": "Descubra o limite da tela",
+      "intent": "exploration",
+      "objective": "Perceber que a borda mostra onde a tela do jogo termina e que o tamanho dela pode mudar.",
+      "blockKeys": ["orientacao-experiencia-tela-v8", "experiencia-tela"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-tela"]
+      }
+    },
+    {
+      "key": "tela-criar-v8",
+      "title": "Prepare a tela no seu projeto",
+      "intent": "application",
+      "objective": "Preparar o palco de 480 × 270 e tornar sua borda visível.",
+      "blockKeys": ["video-tela-v7", "orientacao-tela-v7"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "g2d-setup-stage",
+            "label": "Prepare a tela de 480 × 270 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_setup_stage",
+              "area": "start",
+              "inputs": {
+                "W": 480,
+                "H": 270
+              }
+            }
+          },
+          {
+            "id": "borda-v7",
+            "label": "Coloque Mostrar a borda da tela em Ao iniciar, com espessura 4.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_stage_border",
+              "area": "start",
+              "inputs": {
+                "WIDTH": 4
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "coordenadas-demonstracao-v7",
+      "title": "Descubra o endereço na tela",
+      "intent": "exploration",
+      "objective": "Observar x crescendo para a direita e y crescendo para baixo, uma direção por vez.",
+      "blockKeys": ["video-coordenadas-demo-v7", "experiencia-coordenadas"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experiencia-coordenadas"]
+      }
+    },
+    {
+      "key": "dino-v7",
+      "title": "Crie o seu dinossauro",
+      "intent": "application",
+      "objective": "Criar e posicionar um sprite, reconhecendo que ele pode existir sem estar desenhado.",
+      "blockKeys": ["video-dino-v7", "orientacao-dino-v7"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "dino-v7",
+            "label": "Crie o dinossauro dino em Ao iniciar: x 110, y 150 e tamanho 64.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_dino",
+              "area": "start",
+              "fields": {
+                "NAME": "dino"
+              },
+              "inputs": {
+                "X": 110,
+                "Y": 150,
+                "SIZE": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "comeco",
+      "title": "Criar e mostrar são duas coisas diferentes",
+      "intent": "exploration",
+      "objective": "Observar o Dino criado nos bastidores, aparecer na tela e voltar aos bastidores sem ser apagado.",
+      "blockKeys": ["orientacao-descoberta-v7", "descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
+    },
+    {
+      "key": "entrega-v7",
+      "title": "Confira e guarde sua construção",
+      "intent": "delivery",
+      "objective": "Conferir o projeto, testá-lo e enviar ao professor com o Dino ainda invisível.",
+      "blockKeys": ["orientacao-entrega-v7", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"],
+        "projectChecks": [
+          {
+            "id": "area-iniciar-v7",
+            "label": "Coloque a área Ao iniciar no projeto.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_frame_start",
+              "area": "start"
+            }
+          },
+          {
+            "id": "g2d-setup-stage",
+            "label": "Prepare a tela de 480 × 270 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_setup_stage",
+              "area": "start",
+              "inputs": {
+                "W": 480,
+                "H": 270
+              }
+            }
+          },
+          {
+            "id": "borda-v7",
+            "label": "Coloque Mostrar a borda da tela em Ao iniciar, com espessura 4.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_stage_border",
+              "area": "start",
+              "inputs": {
+                "WIDTH": 4
+              }
+            }
+          },
+          {
+            "id": "dino-v7",
+            "label": "Crie o dinossauro dino em Ao iniciar: x 110, y 150 e tamanho 64.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_dino",
+              "area": "start",
+              "fields": {
+                "NAME": "dino"
+              },
+              "inputs": {
+                "X": 110,
+                "Y": 150,
+                "SIZE": 64
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fechamento",
+      "title": "Relembre o que você construiu",
+      "intent": "closing",
+      "objective": "Retomar os três passos e preparar a continuidade na aula 2.",
+      "blockKeys": ["video-fecho-v7"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-v7"]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "O que você entendeu?",
+      "intent": "closing",
+      "objective": "Retomar Ao iniciar, criação e desenho, e direção das coordenadas.",
+      "blockKeys": ["quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

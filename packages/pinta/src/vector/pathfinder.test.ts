@@ -115,6 +115,12 @@ describe('⭐⭐ a identidade do resultado', () => {
     expect(r.resultId).toBe('fundo')
   })
 
+  it('o resultado continua sendo a mesma peça para a animação', () => {
+    const fundo = { ...quad('fundo', 0), motionId: 'mov-fundo' }
+    const r = esperaOk(pathfinderShapes([fundo, quad('frente', 5)], ['fundo', 'frente'], 'unir'))
+    expect(r.shapes[0]?.motionId).toBe('mov-fundo')
+  })
+
   it('o ESTILO é o do de trás, não o do de cima', () => {
     const r = esperaOk(
       pathfinderShapes(

@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { createEmptyProject, type Project } from '#core'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
-import { extractDocumentTitle, PreviewIframe } from './PreviewIframe'
+import { chosenCoverPausesSnapshots, extractDocumentTitle, PreviewIframe } from './PreviewIframe'
 
 const PAUSED_PREVIEW_DOC = '<!doctype html><html lang="pt-BR"><body></body></html>'
 
@@ -278,3 +278,34 @@ function getRenderNonce(doc: string): number {
   expect(match).not.toBeNull()
   return Number(match?.[1])
 }
+
+describe('chosenCoverPausesSnapshots (B3, 26/09/2026): o preview para de fotografar pela capa RESOLVIDA, não pelo nome cru', () => {
+  const imagem = {
+    id: 'a1',
+    name: 'tela-inicial',
+    kind: 'image' as const,
+    dataUrl: 'data:image/png;base64,AAA',
+    source: 'upload' as const,
+  }
+
+  it('sem projeto, ou sem capa escolhida, as fotos seguem', () => {
+    expect(chosenCoverPausesSnapshots(null)).toBe(false)
+    expect(chosenCoverPausesSnapshots({ assets: [imagem] })).toBe(false)
+  })
+
+  it('capa escolhida que EXISTE no projeto segura as fotos', () => {
+    expect(chosenCoverPausesSnapshots({ assets: [imagem], coverAssetName: 'tela-inicial' })).toBe(
+      true,
+    )
+  })
+
+  it('nome pendurado (a imagem já não está no projeto, ou não é imagem) NÃO segura as fotos: a capa cai na automática e ela precisa existir', () => {
+    expect(chosenCoverPausesSnapshots({ assets: [], coverAssetName: 'tela-inicial' })).toBe(false)
+    expect(
+      chosenCoverPausesSnapshots({
+        assets: [{ ...imagem, kind: 'audio' }],
+        coverAssetName: 'tela-inicial',
+      }),
+    ).toBe(false)
+  })
+})

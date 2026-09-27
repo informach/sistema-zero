@@ -1,9 +1,17 @@
+import type { LessonRequirement, SectionProgressView } from '@sistemazero/core/learning'
+import {
+  type LessonLearningProgress,
+  type LessonSection,
+  publicInteractiveBlock,
+} from '@sistemazero/core/learning'
 import type { AvatarCategory, AvatarSlot } from '../../domain/avatar/avatar3d-catalog'
 import type { CertificateRecord } from '../../domain/certificate/certificate'
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
-import { hasComingSoonBlock } from '../../domain/course/lesson-block'
+import { hasComingSoonBlock, type MaterialItem } from '../../domain/course/lesson-block'
 import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
+import { COIN_VALUES } from '../../domain/gamification/coins'
+import { XP_VALUES } from '../../domain/gamification/gamification'
 import type { StudentLevel, StudentLevelSlug } from '../../domain/gamification/levels'
 import type { AwardResult } from '../../domain/ports/gamification-repository.port'
 import type { CourseProgress } from '../../domain/progress/progress'
@@ -44,7 +52,11 @@ export interface GamificationDeltaView {
   totalXp: number
   streak: { current: number; best: number; extended: boolean }
   badgesUnlocked: { slug: string; unlockedAt: string }[]
-  /** `true` quando ESTA ação fechou a unidade (baú de +25 XP incluído no total). */
+  /**
+   * `true` quando ESTA ação FECHOU a unidade. Desde 09/2026 isso NÃO significa que
+   * o XP entrou: o prêmio é do baú da trilha, que a criança abre com um clique. O
+   * campo virou convite ("tem um baú te esperando"), não recibo.
+   */
   unitCompleted: boolean
   /** Moedas Zappy ganhas nesta ação (já com teto diário aplicado). */
   coinsAwarded: number
@@ -68,7 +80,10 @@ export function toGamificationDeltaView(result: AwardResult): GamificationDeltaV
       slug: b.slug,
       unlockedAt: b.unlockedAt.toISOString(),
     })),
-    unitCompleted: result.newEvents.some((e) => e.sourceType === 'unit_complete'),
+    // Preenchido pelo chamador que SABE se a unidade fechou (o mark-lesson-complete
+    // calcula isso do outline). O ledger não serve mais de fonte: o evento do baú
+    // só nasce no clique, e pode nunca ter acontecido nesta ação.
+    unitCompleted: false,
     coinsAwarded: result.coinsAwarded,
     coinBalance: result.coinBalance,
     coinsCapped: result.coinsCapped,
@@ -422,10 +437,11 @@ export interface MyCourseView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
-  /** Posição na etapa da carreira; `null` = curso bônus. */
+  /** Posição na etapa da jornada; `null` = bônus ou extra. */
   careerSlot: number | null
-  /** Trava pedagógica da carreira; independente da matrícula comercial. */
-  careerLock: CareerCourseLockView
+  journeyRole: string
+  /** Trava pedagógica da jornada; independente da matrícula comercial. */
+  careerLock: JourneyCourseLockView
   access: AccessView
   progress: CourseProgress
   /** Marcos do aluno neste curso (ledger) — o selo do card. Kids; adulto vem zerado. */
@@ -439,7 +455,7 @@ export function toMyCourseView(
   entitlement: EntitlementAggregate,
   progress: CourseProgress,
   continueLessonId: string | null,
-  careerLock: CareerCourseLockView = { locked: false },
+  careerLock: JourneyCourseLockView = { locked: false },
   milestones: CourseMilestonesView = { completed: false, showcased: false },
 ): MyCourseView {
   return {
@@ -451,6 +467,7 @@ export function toMyCourseView(
     level: course.level,
     track: course.track,
     careerSlot: course.careerSlot,
+    journeyRole: course.journeyRole,
     careerLock,
     milestones,
     access: toAccessView(entitlement),
@@ -474,10 +491,11 @@ export interface CatalogCourseView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
-  /** Posição na etapa da carreira; `null` = curso bônus. */
+  /** Posição na etapa da jornada; `null` = bônus ou extra. */
   careerSlot: number | null
-  /** Trava pedagógica da carreira; `hasAccess` continua representando só a matrícula. */
-  careerLock: CareerCourseLockView
+  journeyRole: string
+  /** Trava pedagógica da jornada; `hasAccess` continua representando só a matrícula. */
+  careerLock: JourneyCourseLockView
   hasAccess: boolean
   /** Marcos do aluno neste curso (ledger) — o selo do card. Kids; adulto vem zerado. */
   milestones: CourseMilestonesView
@@ -490,7 +508,7 @@ export interface CatalogCourseView {
 export function toCatalogCourseView(
   course: Course,
   hasAccess: boolean,
-  careerLock: CareerCourseLockView = { locked: false },
+  careerLock: JourneyCourseLockView = { locked: false },
   milestones: CourseMilestonesView = { completed: false, showcased: false },
 ): CatalogCourseView {
   return {
@@ -502,6 +520,7 @@ export function toCatalogCourseView(
     level: course.level,
     track: course.track,
     careerSlot: course.careerSlot,
+    journeyRole: course.journeyRole,
     careerLock,
     milestones,
     hasAccess,
@@ -513,7 +532,7 @@ export function toCatalogCourseView(
 /**
  * Os marcos do aluno NESTE curso, como o card precisa deles: separados.
  *
- * A carreira cruza os dois (`course_complete` ∩ `course_showcased`) e devolve um
+ * A jornada cruza os dois (`course_complete` ∩ `course_showcased`) e devolve um
  * veredito; a vitrine precisa da diferença, porque é ela que responde a pergunta
  * "por que este curso ainda não conta?" — concluir e publicar no Mural são passos
  * distintos e só o segundo costuma ficar para trás.
@@ -529,7 +548,7 @@ export interface CourseMilestonesView {
   showcased: boolean
 }
 
-export interface CareerCourseLockView {
+export interface JourneyCourseLockView {
   locked: boolean
   reason?: 'future-tier' | 'foundation-first' | 'tier-reward'
   requiredLevel?: StudentLevelSlug
@@ -597,15 +616,36 @@ export interface LessonOutlineView {
   locked: boolean
 }
 
+/**
+ * Baú de fim de unidade na trilha. `null` fora da vitrine kids (o adulto não tem
+ * trilha nem baú). Sem este campo, um F5 apagava a memória de que o baú já foi
+ * aberto: o estado era derivado no cliente e não tinha como saber.
+ */
+export interface ModuleChestView {
+  /** Todas as aulas publicadas da unidade concluídas: dá para abrir. */
+  unlocked: boolean
+  /** Já aberto. Contas antigas nascem `true` pela linha do ledger, sem backfill. */
+  claimed: boolean
+  /** O prêmio, para a criança ver ANTES de abrir. */
+  xp: number
+  coins: number
+}
+
 export interface ModuleOutlineView {
   id: string
   title: string
   summary: string | null
+  riveUrl: string | null
   sortOrder: number
   lessons: LessonOutlineView[]
+  chest: ModuleChestView | null
 }
 
 export interface CourseDetailView {
+  id: string
+  milestones?: CourseMilestonesView
+  showcaseLessonId?: string | null
+  materialLessonIds?: string[]
   slug: string
   title: string
   subtitle: string | null
@@ -617,7 +657,7 @@ export interface CourseDetailView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
-  /** Posição na etapa da carreira; `null` = curso bônus. */
+  /** Posição na etapa da jornada; `null` = curso bônus. */
   careerSlot: number | null
   access: AccessView
   progress: CourseProgressView
@@ -641,8 +681,11 @@ export function toCourseDetailView(
   // Aulas TRAVADAS pela trava sequencial (já resolvido pelo service: vazio quando a
   // trava está desligada ou para equipe interna). Default vazio = nada travado.
   lockedLessonIds: Set<string> = new Set(),
+  /** Unidades cujo baú já foi aberto. `null` = curso sem trilha (adulto). */
+  claimedUnitIds: Set<string> | null = null,
 ): CourseDetailView {
   return {
+    id: course.id,
     slug: course.slug,
     title: course.title,
     subtitle: course.subtitle,
@@ -661,7 +704,18 @@ export function toCourseDetailView(
       id: m.id,
       title: m.title,
       summary: m.summary,
+      riveUrl: m.riveUrl ?? null,
       sortOrder: m.sortOrder,
+      chest: claimedUnitIds
+        ? {
+            // Unidade sem aula publicada NUNCA libera: baú impossível não vira
+            // prêmio grátis só porque a autora ainda não montou a unidade.
+            unlocked: m.lessons.length > 0 && m.lessons.every((l) => completedLessonIds.has(l.id)),
+            claimed: claimedUnitIds.has(m.id),
+            xp: XP_VALUES.UNIT_COMPLETE,
+            coins: COIN_VALUES.UNIT_COMPLETE,
+          }
+        : null,
       lessons: m.lessons.map((l) => ({
         id: l.id,
         slug: l.slug,
@@ -701,6 +755,7 @@ export interface StudioStateView {
 }
 
 export interface LessonBlockView {
+  blockRevision?: string
   id: string
   kind: string
   sortOrder: number
@@ -747,6 +802,15 @@ export interface EbookDownloadView {
 }
 
 export interface LessonDetailView {
+  requirements?: LessonRequirement[]
+  sections?: Pick<
+    LessonSection,
+    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool' | 'completion'
+  >[]
+  legacyLayout?: boolean
+  structureRevision?: string | null
+  sectionProgress?: SectionProgressView
+  learningProgress?: LessonLearningProgress
   id: string
   slug: string
   title: string
@@ -778,6 +842,7 @@ export function toLessonDetailView(
   const visibleBlocks = comingSoon
     ? lesson.blocks.filter((b) => b.content.kind === 'coming_soon')
     : lesson.blocks
+  const anexos = new Map(lesson.attachments.map((a) => [a.id, a]))
 
   return {
     id: lesson.id,
@@ -789,11 +854,20 @@ export function toLessonDetailView(
     completed,
     positionSeconds,
     blocks: visibleBlocks.map((b) => {
+      if (b.content.kind === 'interactive')
+        return {
+          id: b.id,
+          kind: b.kind,
+          sortOrder: b.sortOrder,
+          blockRevision: b.contentRevision,
+          content: publicInteractiveBlock(b.content),
+        }
       // Quiz: NUNCA envia o gabarito (correctChoiceIds/explanation) ao aluno —
       // a projeção member-facing remove e anexa o estado das tentativas.
       if (b.content.kind === 'quiz') {
         return {
           id: b.id,
+          blockRevision: b.contentRevision,
           kind: b.kind,
           sortOrder: b.sortOrder,
           content: toMemberFacingQuizContent(b.content),
@@ -805,17 +879,26 @@ export function toLessonDetailView(
           },
         }
       }
-      // E-book: a localização real do PDF (`r2priv:<key>`) nunca chega ao browser —
-      // o community resolve via rota própria e serve com marca d'água (igual anexo).
+      // E-book: o id do anexo também fica no servidor. O community resolve o PDF
+      // pela rota autenticada e serve com marca d'água.
       if (b.content.kind === 'ebook') {
-        const { url: _url, ...memberFacing } = b.content
-        return { id: b.id, kind: b.kind, sortOrder: b.sortOrder, content: memberFacing }
+        return {
+          id: b.id,
+          blockRevision: b.contentRevision,
+          kind: b.kind,
+          sortOrder: b.sortOrder,
+          content: {
+            kind: 'ebook' as const,
+            ...(b.content.title ? { title: b.content.title } : {}),
+          },
+        }
       }
       // Estúdio: a config (initialProject/level/allowlist) NÃO é segredo — o aluno
       // precisa dela para montar o editor. Anexa só o estado da entrega (já enviou?).
       if (b.content.kind === 'studio') {
         return {
           id: b.id,
+          blockRevision: b.contentRevision,
           kind: b.kind,
           sortOrder: b.sortOrder,
           content: b.content,
@@ -829,13 +912,49 @@ export function toLessonDetailView(
       if (b.content.kind === 'pinta') {
         return {
           id: b.id,
+          blockRevision: b.contentRevision,
           kind: b.kind,
           sortOrder: b.sortOrder,
           content: b.content,
           pintaState: studioStates.get(b.id) ?? { submitted: false, submittedAt: null },
         }
       }
-      return { id: b.id, kind: b.kind, sortOrder: b.sortOrder, content: b.content }
+      // Materiais complementares: o item de ARQUIVO guarda só o id do anexo, então é aqui que o
+      // rótulo, o tipo e o tamanho entram — lidos do anexo da aula, que é quem guarda o arquivo.
+      // ⚠️⚠️ A localização real (`r2priv:<key>`) segue sem sair do servidor: o download é pela
+      // rota autenticada de anexo, a MESMA que aplica a marca d'água por aluno. ⚠️ Item cujo anexo
+      // foi apagado SOME, em vez de virar uma linha morta que a criança clica e nada baixa.
+      if (b.content.kind === 'materials') {
+        return {
+          id: b.id,
+          blockRevision: b.contentRevision,
+          kind: b.kind,
+          sortOrder: b.sortOrder,
+          content: {
+            ...b.content,
+            items: b.content.items.flatMap((item): MaterialItem[] => {
+              if (item.kind !== 'file') return [item]
+              const anexo = anexos.get(item.attachmentId)
+              if (!anexo) return []
+              return [
+                {
+                  ...item,
+                  label: item.label?.trim() || anexo.label,
+                  fileType: anexo.fileType,
+                  sizeBytes: anexo.sizeBytes,
+                },
+              ]
+            }),
+          },
+        }
+      }
+      return {
+        id: b.id,
+        blockRevision: b.contentRevision,
+        kind: b.kind,
+        sortOrder: b.sortOrder,
+        content: b.content,
+      }
     }),
     // Anexo é conteúdo baixável da aula — numa aula "em breve" ele some junto.
     attachments: (comingSoon ? [] : lesson.attachments).map((a) => ({

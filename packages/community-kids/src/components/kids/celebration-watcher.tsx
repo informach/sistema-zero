@@ -12,6 +12,7 @@ import {
 } from '@/lib/tools-gain'
 import type { StudentLevelSlug } from '@/lib/types'
 import { LevelUpCelebration } from './level-up-celebration'
+import { useChildOverlayState } from './platform-renovation-notice'
 import { ToolsCelebration } from './tools-celebration'
 
 interface DrawerSnapshotResponse {
@@ -81,18 +82,26 @@ export function CelebrationWatcher({
   levelSlug,
   toolsRevision,
   ownsStudio,
+  moldaGain = null,
   profileKey,
 }: {
   levelSlug?: string
   toolsRevision: string | null
   /** `null` = consulta desconhecida; `false` = produto não adquirido. */
   ownsStudio: boolean | null
+  /**
+   * O que o Molda ganhou no posto ATUAL (`moldaLevelGain`), já filtrado pelo servidor: só chega
+   * para quem tem o produto e só nos postos em que uma faixa abre. `null` = nada a dizer.
+   */
+  moldaGain?: string | null
   profileKey: string
 }) {
   const [levelUp, setLevelUp] = useState<StudentLevelSlug | null>(null)
   const [toolsGain, setToolsGain] = useState<ToolsGain | null>(null)
+  const { noticePending, guideOpen } = useChildOverlayState()
 
   useEffect(() => {
+    if (noticePending) return
     let cancelled = false
     const controller = new AbortController()
 
@@ -118,13 +127,16 @@ export function CelebrationWatcher({
       cancelled = true
       controller.abort()
     }
-  }, [levelSlug, ownsStudio, profileKey, toolsRevision])
+  }, [levelSlug, ownsStudio, profileKey, toolsRevision, noticePending])
+
+  if (noticePending || guideOpen) return null
 
   if (levelUp) {
     return (
       <LevelUpCelebration
         level={levelUp}
         tools={toolsGain}
+        molda={levelUp === levelSlug ? moldaGain : null}
         onClose={() => {
           setLevelUp(null)
           setToolsGain(null)

@@ -1,7 +1,7 @@
 import type { FormEvent, JSX } from 'react'
 import { useEffect, useState } from 'react'
+import type { MoldaAssetSummary } from '../../core/assetSummary'
 import { COPY } from '../../core/copy'
-import type { MoldaAsset } from '../../core/model'
 import { normalizeAssetName } from '../../core/names'
 import { useGallery, useMoldaApp } from '../appContext'
 import { Button } from '../ui/Button'
@@ -12,7 +12,7 @@ export function RenameDialog({
   asset,
   onClose,
 }: {
-  asset: MoldaAsset | null
+  asset: Pick<MoldaAssetSummary, 'id' | 'name'> | null
   onClose: () => void
 }): JSX.Element | null {
   const { gallery } = useMoldaApp()
@@ -57,6 +57,9 @@ export function RenameDialog({
         return
       case 'open':
         setError(COPY.rename.open)
+        return
+      case 'changed':
+        setError(COPY.rename.changed)
         return
       case 'missing':
         onClose()

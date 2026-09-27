@@ -38,8 +38,8 @@ const PAGE_SIZE = 25
 const WRITE_ROLES = new Set(['superadmin', 'admin'])
 
 /**
- * Embaixadores da Bolsa do Primeiro Jogo: pessoas (com ou sem conta) que
- * distribuem bolsas 100% do Desafio. Criar = nome + e-mail → o referrals gera o
+ * Embaixadores do curso Cadê Todo Mundo?: pessoas (com ou sem conta) que
+ * distribuem acessos ao curso por indicação. Criar = nome + e-mail → o referrals gera o
  * código + a página (capability-URL) e envia o magic-link por e-mail.
  */
 export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
@@ -129,7 +129,7 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
     <div className="space-y-6">
       <AdminHeader
         title="Embaixadores"
-        description="Quem distribui bolsas 100% do Desafio do Primeiro Jogo, com ou sem conta na plataforma."
+        description="Quem indica o curso Cadê Todo Mundo? sem custo para a família convidada, com ou sem conta na plataforma."
         action={
           canWrite ? (
             <Button onClick={() => setCreateOpen(true)}>
@@ -714,7 +714,7 @@ function AmbassadorDetailDialog({
                   <TableRow>
                     <TableHead>Responsável</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Jornada</TableHead>
+                    <TableHead>Etapa</TableHead>
                     <TableHead>Quando</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -746,7 +746,7 @@ function AmbassadorDetailDialog({
                         )}
                       </TableCell>
                       <TableCell>
-                        <JourneyBadge r={r} />
+                        <StageBadge r={r} />
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {formatDate(r.completedAt ?? r.createdAt)}
@@ -769,8 +769,8 @@ function AmbassadorDetailDialog({
   )
 }
 
-/** Rótulos da JORNADA (fraseado próprio; Record EXAUSTIVO como o do badge). */
-const JOURNEY_LABEL: Record<ConversionStatus, string> = {
+/** Rótulos da ETAPA (fraseado próprio; Record EXAUSTIVO como o do badge). */
+const STAGE_LABEL: Record<ConversionStatus, string> = {
   pending: 'Assinou, na garantia',
   eligible: 'Bônus liberado',
   paid: 'Bônus pago',
@@ -779,14 +779,14 @@ const JOURNEY_LABEL: Record<ConversionStatus, string> = {
 }
 
 /**
- * Jornada do bolsista dentro do detalhe: ficou só no Desafio ou virou
+ * Etapa do bolsista dentro do detalhe: ficou só no curso indicado ou virou
  * assinatura (e em que pé o bônus está). Deriva de `redemption.conversion`;
  * variante/tooltip vêm da MESMA tabela do badge da lista (uma fonte só).
  */
-function JourneyBadge({ r }: { r: AmbassadorRedemptionView }) {
+function StageBadge({ r }: { r: AmbassadorRedemptionView }) {
   if (r.status !== 'completed') return <span className="text-xs text-muted-foreground">—</span>
   const c = r.conversion
-  if (!c) return <Badge variant="outline">Só no Desafio</Badge>
+  if (!c) return <Badge variant="outline">Sem assinatura</Badge>
   const p = CONVERSION_STATUS_BADGE[c.status]
   const title =
     c.status === 'pending'
@@ -796,7 +796,7 @@ function JourneyBadge({ r }: { r: AmbassadorRedemptionView }) {
         : undefined
   return (
     <Badge variant={p.variant} className={p.className} title={title}>
-      {JOURNEY_LABEL[c.status]}
+      {STAGE_LABEL[c.status]}
     </Badge>
   )
 }

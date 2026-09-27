@@ -8,6 +8,8 @@ import {
   classicGameTwoDExpressionToCode,
   isClassicGameTwoDExpression,
 } from '../official-extensions/game-2d/classicCodec'
+import { textSpriteExpressionToCode } from '../official-extensions/game-2d/textCodec'
+import { isTextSpriteExpression } from '../official-extensions/game-2d/textIR'
 import { normalizeIdentifier, safeIdent } from './identifier'
 import type { SourceMapBuilder } from './sourceMap'
 
@@ -219,6 +221,14 @@ export function compileExpr(
       objectKey,
     })
   }
+  if (expr.type === 'g2d:circleTouches')
+    return `SZGame2D.circleCollides(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+  if (isTextSpriteExpression(expr))
+    return textSpriteExpressionToCode(
+      expr,
+      (value) => compileExpr(value, 0, identifiers, rec),
+      (name) => identifiers.get(name),
+    )
   if (isClassicGameTwoDExpression(expr)) {
     return classicGameTwoDExpressionToCode(
       expr,

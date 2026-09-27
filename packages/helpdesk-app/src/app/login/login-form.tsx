@@ -1,11 +1,11 @@
 'use client'
 
+import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import { Button } from '@sistemazero/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Spinner } from '@sistemazero/ui/spinner'
-import Image from 'next/image'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -75,23 +75,12 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        {/* Logo dual-theme (mesmos SVGs do admin/community): dark ⇄ light */}
+        {/* A logo oficial: SVG embutido, o ZERO lendo `--logo-zero-*` do chassi console. */}
         <div className="flex justify-center pb-1">
-          <Image
-            src="/logo_dark.svg"
-            width={515}
-            height={75}
-            alt="Sistema Zero"
-            className="hidden h-auto w-[220px] max-w-full dark:block"
-            priority
-          />
-          <Image
-            src="/logo_white.svg"
-            width={515}
-            height={72}
-            alt="Sistema Zero"
-            className="block h-auto w-[220px] max-w-full dark:hidden"
-            priority
+          <BrandLogo
+            fundo="claro"
+            label="Sistema Zero — atendimento"
+            className="block h-auto w-[220px] max-w-full"
           />
         </div>
         <CardTitle className="sr-only">Helpdesk | Sistema Zero</CardTitle>

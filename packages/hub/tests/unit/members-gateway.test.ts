@@ -243,6 +243,6 @@ describe('members-http.gateway', () => {
         courseId: 'curso-1',
         audience: 'kids',
       }),
-    ).resolves.toBeUndefined()
+    ).resolves.toBe(false)
   })
 })

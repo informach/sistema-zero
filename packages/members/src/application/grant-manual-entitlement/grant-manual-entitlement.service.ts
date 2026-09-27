@@ -9,6 +9,11 @@ import {
 } from '../../domain/entitlement/entitlement.errors'
 import type { EntitlementSnapshot } from '../../domain/entitlement/entitlement-snapshot'
 import type { AccessType } from '../../domain/entitlement/fulfillment'
+import {
+  createMuralVisitorSnapshot,
+  MURAL_VISITOR_PRODUCT_ID,
+  MURAL_VISITOR_REF,
+} from '../../domain/entitlement/mural-visitor'
 import type { CatalogGateway } from '../../domain/ports/catalog-gateway.port'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
@@ -37,9 +42,12 @@ export type GrantManualCommand =
       courseRef: string
       expiresAt?: Date | null
       sourceId?: string
+      /** Fluxo de indicação S2S: nunca conceder um curso rascunho ou de outra audiência. */
+      requirePublishedKids?: boolean
     }
   | { mode: 'all_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
   | { mode: 'all_kids_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
+  | { mode: 'mural_visitor'; userId: string; sourceId: string }
 
 /**
  * `product_id` sintético das chaves-mestra MANUAIS (a coluna é uuid NOT NULL e não há
@@ -49,6 +57,8 @@ export type GrantManualCommand =
  */
 export const MANUAL_ALL_COURSES_PRODUCT_ID = '00000000-0000-0000-0000-000000000000'
 export const MANUAL_ALL_KIDS_COURSES_PRODUCT_ID = '00000000-0000-0000-0000-000000000001'
+export { MURAL_VISITOR_PRODUCT_ID, MURAL_VISITOR_REF } from '../../domain/entitlement/mural-visitor'
+
 const MANUAL_SAVE_MAX_ATTEMPTS = 2
 
 export interface GrantManualResult {
@@ -85,18 +95,32 @@ interface GrantOneInput {
 export class GrantManualEntitlementService {
   constructor(private readonly deps: GrantManualDeps) {}
 
+  async isPublishedKidsCourse(courseRef: string): Promise<boolean> {
+    const course = await this.deps.courses.findCourseBySlug(courseRef)
+    return course?.status === 'published' && course.audience === 'kids'
+  }
+
   async execute(cmd: GrantManualCommand): Promise<GrantManualResult> {
     const now = this.deps.clock()
-    const expiresAt = cmd.expiresAt ?? null
+    const expiresAt = cmd.mode === 'mural_visitor' ? null : (cmd.expiresAt ?? null)
     switch (cmd.mode) {
       case 'offer':
         return this.grantByOffer(cmd.userId, cmd.offerRef, expiresAt, now, cmd.sourceId)
       case 'course':
-        return this.grantByCourse(cmd.userId, cmd.courseRef, expiresAt, now, cmd.sourceId)
+        return this.grantByCourse(
+          cmd.userId,
+          cmd.courseRef,
+          expiresAt,
+          now,
+          cmd.sourceId,
+          cmd.requirePublishedKids,
+        )
       case 'all_courses':
         return this.grantAllCourses(cmd.userId, expiresAt, now, cmd.sourceId)
       case 'all_kids_courses':
         return this.grantAllKidsCourses(cmd.userId, expiresAt, now, cmd.sourceId)
+      case 'mural_visitor':
+        return this.grantMuralVisitor(cmd.userId, now, cmd.sourceId)
     }
   }
 
@@ -156,9 +180,14 @@ export class GrantManualEntitlementService {
     expiresAt: Date | null,
     now: Date,
     sourceId?: string,
+    requirePublishedKids = false,
   ): Promise<GrantManualResult> {
     const course = await this.deps.courses.findCourseBySlug(courseRef)
-    if (!course) throw new CourseNotFoundError()
+    if (
+      !course ||
+      (requirePublishedKids && (course.status !== 'published' || course.audience !== 'kids'))
+    )
+      throw new CourseNotFoundError()
 
     // `product_id = course.id`: uuid estável → o índice de dedupe funciona (re-conceder
     // o mesmo curso ao mesmo membro colide em vez de duplicar). Snapshot sintético (sem oferta).
@@ -257,6 +286,28 @@ export class GrantManualEntitlementService {
       sourceId,
     })
     this.deps.logger?.info('grant.manual.all_kids_courses', { userId })
+    return { granted: [view] }
+  }
+
+  private async grantMuralVisitor(
+    userId: string,
+    now: Date,
+    sourceId: string,
+  ): Promise<GrantManualResult> {
+    const snapshot = createMuralVisitorSnapshot('', '', now)
+    const view = await this.grantOne({
+      userId,
+      productId: MURAL_VISITOR_PRODUCT_ID,
+      productKind: 'community',
+      accessType: 'community',
+      courseRef: MURAL_VISITOR_REF,
+      offerId: null,
+      snapshot,
+      expiresAt: null,
+      now,
+      sourceId,
+    })
+    this.deps.logger?.info('grant.manual.mural_visitor', { userId })
     return { granted: [view] }
   }
 

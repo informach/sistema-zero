@@ -349,7 +349,8 @@ export const sobreviventeExample: ExtensionExample = beginnerGameExample({
               color: '#ffb347',
             },
             {
-              type: 'g2d:playExplosion',
+              type: 'g2d:playFx',
+              fx: 'explosion',
             },
           ],
         },
@@ -522,7 +523,8 @@ export const sobreviventeExample: ExtensionExample = beginnerGameExample({
                           color: '#9cff57',
                         },
                         {
-                          type: 'g2d:playShoot',
+                          type: 'g2d:playFx',
+                          fx: 'shoot',
                         },
                       ],
                     },
@@ -727,6 +729,7 @@ export const sobreviventeExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 0.8,
           },
+          key: 'nasce-inimigo',
           body: [
             {
               type: 'if',
@@ -800,6 +803,7 @@ export const sobreviventeExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 1,
           },
+          key: 'ponto-por-segundo',
           body: [
             {
               type: 'if',

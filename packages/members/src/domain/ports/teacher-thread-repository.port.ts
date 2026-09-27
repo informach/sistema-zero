@@ -1,12 +1,26 @@
 import type { CourseAudience } from '../course/course'
 
 /** Contexto que ANCORA a conversa (a origem do retorno). */
-export type TeacherThreadContext = 'studio_submission' | 'mural_publication' | 'general'
+export type TeacherThreadContext =
+  | 'studio_submission'
+  | 'mural_publication'
+  | 'general'
+  | 'lesson_section'
 /** Quem escreveu o turno. */
 export type TeacherMessageRole = 'teacher' | 'student'
+export type TeacherWorkflowStatus = 'waiting_teacher' | 'waiting_student' | 'resolved'
+export interface TeacherHelpContext {
+  courseSlug: string
+  lessonId: string
+  sectionId: string
+  sectionTitle: string
+  revision: string | null
+  pending: string[]
+}
 
 /** Uma conversa professor↔aluno (cabeçalho). */
 export interface TeacherThreadRecord {
+  workflowStatus?: TeacherWorkflowStatus
   id: string
   userId: string
   accountId: string | null
@@ -25,6 +39,7 @@ export interface TeacherThreadRecord {
 
 /** Um turno da conversa. */
 export interface TeacherMessageRecord {
+  helpContext?: TeacherHelpContext | null
   id: string
   threadId: string
   authorRole: TeacherMessageRole
@@ -52,6 +67,7 @@ export interface TeacherMessagePage {
  * do aluno não lida) — o repo calcula pelo watermark do lado.
  */
 export interface TeacherThreadSummary {
+  workflowStatus?: TeacherWorkflowStatus
   id: string
   userId: string
   accountId: string | null
@@ -91,6 +107,7 @@ export interface EnsureThreadInput {
 
 /** Dados de um turno novo. Ao inserir, o lado do AUTOR é marcado como já-lido. */
 export interface AppendMessageInput {
+  helpContext?: TeacherHelpContext
   threadId: string
   authorRole: TeacherMessageRole
   authorId: string | null
@@ -107,6 +124,7 @@ export interface AppendMessageInput {
 
 /** Filtros da caixa de entrada do PROFESSOR. */
 export interface AdminThreadsFilter {
+  workflowStatus?: TeacherWorkflowStatus
   /** Identidade do professor para calcular não-lidas individualmente. */
   staffUserId: string
   audience?: CourseAudience
@@ -124,12 +142,15 @@ export interface AdminThreadsFilter {
 
 /** Escopo opcional do "marcar todas como lidas" (espelha os filtros da caixa). */
 export interface MarkAllReadFilter {
+  workflowStatus?: TeacherWorkflowStatus
   audience?: CourseAudience
   contextType?: TeacherThreadContext
   courseId?: string
+  userIds?: string[]
 }
 
 export interface TeacherThreadRepository {
+  setWorkflowStatus(id: string, status: TeacherWorkflowStatus): Promise<void>
   /**
    * Cria (ou, em entrega/Mural, REUSA) a conversa do contexto e devolve o id.
    * `general` sempre cria uma nova (cada recado geral é sua própria conversa).

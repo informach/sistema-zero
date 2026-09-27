@@ -12,6 +12,7 @@ import { MOLDA_LIMITS } from '../core/limits'
 import type {
   FaceId,
   MoldaModelAsset,
+  MoldaPaletteFields,
   MoldaPart,
   MoldaSkin,
   MoldaTextureAsset,
@@ -27,6 +28,16 @@ function mod(value: number, size: number): number {
   return ((value % size) + size) % size
 }
 
+/** View-space texel to canonical pixels. Offset never rewrites the bitmap. */
+function texturePixelIndex(
+  bitmap: MoldaSkin,
+  x: number,
+  y: number,
+  offset: readonly [number, number],
+): number {
+  return mod(y + offset[1], bitmap.height) * bitmap.width + mod(x + offset[0], bitmap.width)
+}
+
 export function textureColors(asset: MoldaTextureAsset): readonly string[] {
   return resolvePaletteColors(asset)
 }
@@ -34,10 +45,11 @@ export function textureColors(asset: MoldaTextureAsset): readonly string[] {
 /** Pinta texels na folha; com `wrap`, coordenadas fora dão a volta. */
 export function paintTexture(
   asset: MoldaTextureAsset,
-  texels: readonly Texel[],
+  texels: Iterable<Texel>,
   color: number,
   brush: BrushSize,
   wrap: boolean,
+  offset: readonly [number, number] = [0, 0],
 ): MoldaTextureAsset {
   const { bitmap } = asset
   let out: MoldaSkin | null = null
@@ -51,7 +63,7 @@ export function paintTexture(
       } else if (x < 0 || y < 0 || x >= bitmap.width || y >= bitmap.height) {
         continue
       }
-      const index = y * bitmap.width + x
+      const index = texturePixelIndex(bitmap, x, y, offset)
       if ((out ?? bitmap).data[index] === color) continue
       if (!out) out = cloneSkin(bitmap)
       out.data[index] = color
@@ -114,11 +126,12 @@ export function floodFillTexture(
   y: number,
   color: number,
   wrap: boolean,
+  offset: readonly [number, number] = [0, 0],
 ): MoldaTextureAsset {
   const { bitmap } = asset
   const { width, height } = bitmap
   if (x < 0 || y < 0 || x >= width || y >= height) return asset
-  const target = bitmap.data[y * width + x] ?? 0
+  const target = bitmap.data[texturePixelIndex(bitmap, x, y, offset)] ?? 0
   if (target === color) return asset
   const out = cloneSkin(bitmap)
   const stack: Texel[] = [[x, y]]
@@ -132,7 +145,7 @@ export function floodFillTexture(
     } else if (cx < 0 || cy < 0 || cx >= width || cy >= height) {
       continue
     }
-    const index = cy * width + cx
+    const index = texturePixelIndex(bitmap, cx, cy, offset)
     if (out.data[index] !== target) continue
     out.data[index] = color
     stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1])
@@ -140,10 +153,15 @@ export function floodFillTexture(
   return { ...asset, bitmap: out }
 }
 
-export function sampleTexture(asset: MoldaTextureAsset, x: number, y: number): number {
+export function sampleTexture(
+  asset: MoldaTextureAsset,
+  x: number,
+  y: number,
+  offset: readonly [number, number] = [0, 0],
+): number {
   const { bitmap } = asset
   if (x < 0 || y < 0 || x >= bitmap.width || y >= bitmap.height) return 0
-  return bitmap.data[y * bitmap.width + x] ?? 0
+  return bitmap.data[texturePixelIndex(bitmap, x, y, offset)] ?? 0
 }
 
 /** Cor extra nova na textura (índice ≥ 16). `null` = teto. */
@@ -211,13 +229,14 @@ function colorDistance(a: string, b: string): number {
  * Índice USADO da textura → índice do modelo: mesma cor = mesmo índice; cor
  * que o modelo não tem entra como extra (até o teto); sem vaga, a cor mais
  * parecida. Índices ausentes de `sourceIndices` ficam em 0 e nunca reservam
- * uma extra. Devolve o modelo (talvez com extras novas) e a tabela.
+ * uma extra. Devolve o modelo (talvez com extras novas) e a tabela. Vale para qualquer dono de
+ * paleta: o modelo antigo e o documento da oficina nova usam os mesmos campos.
  */
-export function buildColorRemap(
+export function buildColorRemap<T extends MoldaPaletteFields>(
   sourceColors: readonly string[],
   sourceIndices: Iterable<number>,
-  model: MoldaModelAsset,
-): { model: MoldaModelAsset; map: number[] } {
+  model: T,
+): { model: T; map: number[] } {
   let next = model
   const map: number[] = Array.from({ length: sourceColors.length }, () => 0)
   const seen = new Set<number>([0])
@@ -255,7 +274,8 @@ export function buildColorRemap(
   return { model: next, map }
 }
 
-function sampleTextureSkin(
+/** A textura amostrada no tamanho pedido: repetida (x % lado) ou esticada (vizinho). */
+export function sampleTextureSkin(
   texture: MoldaTextureAsset,
   width: number,
   height: number,

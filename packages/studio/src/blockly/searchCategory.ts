@@ -4,6 +4,7 @@ import { palettePathOf } from './paletteMap'
 import { blockedDynamicSearchTypes, dynamicCategoryBlockTypes } from './paramsFlyout'
 import { installSearchFlyoutMetrics } from './searchFlyoutMetrics'
 import { searchHeaderInfo } from './searchHorizontalFlyout'
+import { searchWithSynonyms } from './searchTerms'
 
 // Perfil de aprendizado POR WORKSPACE para a busca respeitar o nível. A categoria
 // de busca é um registro GLOBAL (singleton por origin) e indexa os tipos
@@ -357,7 +358,7 @@ export function registerPtSearchCategory(): void {
       // item num `type` = objeto inválido e o flyout não renderizava nada.
       this.flyoutItems_ =
         value && typeof searcher?.blockTypesMatching === 'function'
-          ? (searcher.blockTypesMatching(value) ?? [])
+          ? searchWithSynonyms(value, (query) => searcher.blockTypesMatching(query) ?? [])
           : []
       // Respeita o nível do aluno: a busca indexa Funções/Classes GLOBALMENTE (eles
       // não estão no languageTree estático já filtrado), então a OFERTA não pode

@@ -24,11 +24,20 @@ import { AdminHeader } from '@/components/admin/admin-header'
 import { CatalogTabs } from '@/components/admin/catalog-tabs'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
+import { useConfirm } from '@/components/admin/use-confirm'
 import { type OfferItemDraft, OfferItemsEditor } from '@/components/catalog/offer-items-editor'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatCents, reaisToCents } from '@/lib/format'
 import { offerCodeSuggestion, offerSlugSuggestion } from '@/lib/slug'
-import type { OfferContent, OfferListItem, Paginated, ProductView } from '@/lib/types'
+import type {
+  AccessDurationUnit,
+  AccessMode,
+  OfferContent,
+  OfferListItem,
+  Paginated,
+  PricingMode,
+  ProductView,
+} from '@/lib/types'
 
 const LIMIT = 20
 const OFFER_STATUSES = ['draft', 'active', 'paused', 'archived']
@@ -43,6 +52,17 @@ const BILLING_INTERVALS = [
   { value: '12', label: 'Anual (cobra 1x ao ano)' },
 ] as const
 
+const ACCESS_MODE_LABELS: Record<AccessMode, string> = {
+  lifetime: 'Vitalício',
+  fixed: 'Prazo fixo',
+  billing_cycle: 'Enquanto a assinatura estiver ativa',
+}
+
+const ACCESS_DURATION_UNIT_LABELS: Record<AccessDurationUnit, string> = {
+  days: 'dias',
+  months: 'meses',
+}
+
 interface FormState {
   productId: string
   code: string
@@ -50,8 +70,11 @@ interface FormState {
   name: string
   price: string
   compareAt: string
-  pricingMode: string
+  pricingMode: PricingMode
   billingInterval: string
+  accessMode: AccessMode | ''
+  accessDurationValue: string
+  accessDurationUnit: AccessDurationUnit | ''
   altOfferSlug: string
   altOfferLabel: string
   installmentsMax: string
@@ -70,6 +93,9 @@ const EMPTY_FORM: FormState = {
   compareAt: '',
   pricingMode: 'one_time',
   billingInterval: '',
+  accessMode: 'lifetime',
+  accessDurationValue: '',
+  accessDurationUnit: '',
   altOfferSlug: '',
   altOfferLabel: '',
   installmentsMax: '',
@@ -81,6 +107,93 @@ const EMPTY_FORM: FormState = {
 
 /** Teto de perfis kids (espelha o DTO do catálogo: `maxProfiles` 1..50). */
 const MAX_KIDS_PROFILES = 50
+
+interface AccessPolicyFormInput {
+  pricingMode: PricingMode
+  accessMode: AccessMode | ''
+  accessDurationValue: string
+  accessDurationUnit: AccessDurationUnit | ''
+  status: string
+}
+
+export interface OfferAccessPolicyPayload {
+  accessMode: AccessMode
+  accessDurationValue: number | null
+  accessDurationUnit: AccessDurationUnit | null
+}
+
+export interface OfferAccessPolicyErrors {
+  accessMode?: string
+  accessDurationValue?: string
+  accessDurationUnit?: string
+}
+
+export function validateOfferAccessPolicyForm(input: AccessPolicyFormInput): {
+  payload: OfferAccessPolicyPayload | null
+  errors: OfferAccessPolicyErrors
+} {
+  if (input.pricingMode === 'subscription') {
+    return {
+      payload: {
+        accessMode: 'billing_cycle',
+        accessDurationValue: null,
+        accessDurationUnit: null,
+      },
+      errors: {},
+    }
+  }
+
+  if (input.accessMode !== 'lifetime' && input.accessMode !== 'fixed') {
+    return { payload: null, errors: { accessMode: 'Escolha Vitalício ou Prazo fixo.' } }
+  }
+  if (input.accessMode === 'lifetime') {
+    return {
+      payload: { accessMode: 'lifetime', accessDurationValue: null, accessDurationUnit: null },
+      errors: {},
+    }
+  }
+
+  const rawValue = input.accessDurationValue.trim()
+  const value = rawValue === '' ? null : Number(rawValue)
+  const hasValidValue = value !== null && Number.isInteger(value) && value > 0
+  const unit = input.accessDurationUnit || null
+  const errors: OfferAccessPolicyErrors = {}
+  if (value !== null && !hasValidValue) {
+    errors.accessDurationValue = 'Informe uma duração inteira maior que zero.'
+  }
+  if (rawValue && !unit) errors.accessDurationUnit = 'Escolha dias ou meses.'
+  if (!rawValue && unit) errors.accessDurationValue = 'Informe a duração do acesso.'
+  if (input.status === 'active') {
+    if (!rawValue) errors.accessDurationValue = 'Oferta ativa exige a duração do acesso.'
+    if (!unit) errors.accessDurationUnit = 'Oferta ativa exige dias ou meses.'
+  }
+  if (Object.keys(errors).length > 0) return { payload: null, errors }
+
+  return {
+    payload: {
+      accessMode: 'fixed',
+      accessDurationValue: hasValidValue ? value : null,
+      accessDurationUnit: unit,
+    },
+    errors: {},
+  }
+}
+
+export function offerAccessSummary(
+  offer: Pick<
+    OfferListItem,
+    'pricingMode' | 'accessMode' | 'accessDurationValue' | 'accessDurationUnit'
+  >,
+): string {
+  if (offer.pricingMode === 'subscription' || offer.accessMode === 'billing_cycle') {
+    return ACCESS_MODE_LABELS.billing_cycle
+  }
+  if (offer.accessMode === 'lifetime') return ACCESS_MODE_LABELS.lifetime
+  if (offer.accessDurationValue && offer.accessDurationUnit) {
+    return `${offer.accessDurationValue} ${ACCESS_DURATION_UNIT_LABELS[offer.accessDurationUnit]}`
+  }
+  return ACCESS_MODE_LABELS.fixed
+}
 
 function optInt(v: string): number | null {
   const n = Number.parseInt(v, 10)
@@ -120,7 +233,9 @@ export function OffersClient() {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<OfferListItem | null>(null)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
+  const [accessErrors, setAccessErrors] = useState<OfferAccessPolicyErrors>({})
   const [saving, setSaving] = useState(false)
+  const { confirm, confirmDialog } = useConfirm()
   // Auto-geração de slug/code a partir de produto + preço + modo (só na criação).
   // Edição manual do campo (dirty) desliga a regeneração daquele campo.
   const [slugDirty, setSlugDirty] = useState(false)
@@ -174,6 +289,7 @@ export function OffersClient() {
     setEditing(null)
     setSlugDirty(false)
     setCodeDirty(false)
+    setAccessErrors({})
     setForm(
       withSuggestions(
         { ...EMPTY_FORM, productId: products[0]?.id ?? '' },
@@ -187,6 +303,7 @@ export function OffersClient() {
     setEditing(o)
     setSlugDirty(true)
     setCodeDirty(true)
+    setAccessErrors({})
     setForm({
       productId: o.productId,
       code: o.code,
@@ -196,6 +313,9 @@ export function OffersClient() {
       compareAt: o.compareAtPriceCents != null ? (o.compareAtPriceCents / 100).toFixed(2) : '',
       pricingMode: o.pricingMode,
       billingInterval: o.billingIntervalMonths != null ? String(o.billingIntervalMonths) : '',
+      accessMode: o.accessMode ?? (o.pricingMode === 'subscription' ? 'billing_cycle' : 'lifetime'),
+      accessDurationValue: o.accessDurationValue != null ? String(o.accessDurationValue) : '',
+      accessDurationUnit: o.accessDurationUnit ?? '',
       altOfferSlug: o.content?.altOffer?.slug ?? '',
       altOfferLabel: o.content?.altOffer?.label ?? '',
       installmentsMax: o.installmentsMax != null ? String(o.installmentsMax) : '',
@@ -211,6 +331,66 @@ export function OffersClient() {
     setOpen(true)
   }
 
+  function applyAccessMode(accessMode: AccessMode) {
+    setAccessErrors({})
+    setForm((current) => ({
+      ...current,
+      accessMode,
+      ...(accessMode === 'fixed' ? {} : { accessDurationValue: '', accessDurationUnit: '' }),
+    }))
+  }
+
+  function changeAccessMode(accessMode: AccessMode | '') {
+    if (accessMode === '') {
+      setAccessErrors({})
+      setForm((current) => ({
+        ...current,
+        accessMode: '',
+        accessDurationValue: '',
+        accessDurationUnit: '',
+      }))
+      return
+    }
+    const discardsDuration =
+      accessMode === 'lifetime' &&
+      form.accessMode === 'fixed' &&
+      Boolean(form.accessDurationValue || form.accessDurationUnit)
+    if (!discardsDuration) {
+      applyAccessMode(accessMode)
+      return
+    }
+    confirm({
+      title: 'Tornar o acesso vitalício?',
+      message: 'O prazo fixo preenchido será removido desta oferta.',
+      confirmText: 'Tornar vitalício',
+      onConfirm: () => applyAccessMode('lifetime'),
+    })
+  }
+
+  function changePricingMode(pricingMode: PricingMode) {
+    setAccessErrors({})
+    setForm((current) =>
+      withSuggestions({
+        ...current,
+        pricingMode,
+        accessMode:
+          pricingMode === 'subscription'
+            ? 'billing_cycle'
+            : current.pricingMode === 'subscription'
+              ? ''
+              : current.accessMode,
+        accessDurationValue:
+          pricingMode === 'subscription' || current.pricingMode === 'subscription'
+            ? ''
+            : current.accessDurationValue,
+        accessDurationUnit:
+          pricingMode === 'subscription' || current.pricingMode === 'subscription'
+            ? ''
+            : current.accessDurationUnit,
+      }),
+    )
+  }
+
   async function save() {
     const priceCents = reaisToCents(form.price)
     if (!form.name.trim() || Number.isNaN(priceCents)) {
@@ -223,6 +403,13 @@ export function OffersClient() {
     }
     const compareAtCents = form.compareAt.trim() ? reaisToCents(form.compareAt) : null
     const isSubscription = form.pricingMode === 'subscription'
+    const accessPolicy = validateOfferAccessPolicyForm(form)
+    if (!accessPolicy.payload) {
+      setAccessErrors(accessPolicy.errors)
+      toast.error('Revise a política de acesso da oferta.')
+      return
+    }
+    setAccessErrors({})
     // Assinatura exige a periodicidade (o payments monta o plano Efí a partir dela).
     const billingIntervalMonths = isSubscription ? optInt(form.billingInterval) : null
     if (isSubscription && billingIntervalMonths == null) {
@@ -251,6 +438,7 @@ export function OffersClient() {
           priceCents,
           compareAtPriceCents: compareAtCents,
           pricingMode: form.pricingMode,
+          ...accessPolicy.payload,
           billingIntervalMonths,
           // Assinatura recorrente não parcela (a Efí cobra 1x por ciclo).
           installmentsMax: isSubscription ? null : optInt(form.installmentsMax),
@@ -270,6 +458,7 @@ export function OffersClient() {
           priceCents,
           ...(compareAtCents != null ? { compareAtPriceCents: compareAtCents } : {}),
           pricingMode: form.pricingMode,
+          ...accessPolicy.payload,
           ...(billingIntervalMonths != null ? { billingIntervalMonths } : {}),
           ...(!isSubscription && optInt(form.installmentsMax)
             ? { installmentsMax: optInt(form.installmentsMax) }
@@ -363,16 +552,19 @@ export function OffersClient() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">{o.productName ?? '—'}</TableCell>
                   <TableCell>
-                    {formatCents(o.priceCents, o.currency)}
-                    {o.pricingMode === 'subscription' ? (
-                      <span className="text-xs text-muted-foreground">
-                        {o.billingIntervalMonths === 12
-                          ? '/ano'
-                          : o.billingIntervalMonths === 1
-                            ? '/mês'
-                            : ' (assinatura)'}
-                      </span>
-                    ) : null}
+                    <div>
+                      {formatCents(o.priceCents, o.currency)}
+                      {o.pricingMode === 'subscription' ? (
+                        <span className="text-xs text-muted-foreground">
+                          {o.billingIntervalMonths === 12
+                            ? '/ano'
+                            : o.billingIntervalMonths === 1
+                              ? '/mês'
+                              : ' (assinatura)'}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="text-xs text-muted-foreground">{offerAccessSummary(o)}</div>
                   </TableCell>
                   <TableCell>
                     {o.isAvailable ? (
@@ -517,9 +709,7 @@ export function OffersClient() {
               <Select
                 id="pricingMode"
                 value={form.pricingMode}
-                onChange={(e) =>
-                  setForm((f) => withSuggestions({ ...f, pricingMode: e.target.value }))
-                }
+                onChange={(e) => changePricingMode(e.target.value as PricingMode)}
               >
                 {PRICING_MODES.map((m) => (
                   <option key={m} value={m}>
@@ -546,6 +736,84 @@ export function OffersClient() {
               </Select>
             </Field>
           </div>
+          {form.pricingMode === 'subscription' ? (
+            <Field
+              label="Acesso"
+              htmlFor="accessMode"
+              hint="Assinaturas mantêm o acesso enquanto os ciclos pagos estiverem ativos."
+            >
+              <Input id="accessMode" value={ACCESS_MODE_LABELS.billing_cycle} disabled readOnly />
+            </Field>
+          ) : (
+            <Field
+              label="Acesso"
+              htmlFor="accessMode"
+              error={accessErrors.accessMode}
+              tooltip="Vitalício não vence. Prazo fixo começa na aprovação do pagamento e pode ser definido em dias ou meses."
+            >
+              <Select
+                id="accessMode"
+                value={form.accessMode}
+                onChange={(e) => changeAccessMode(e.target.value as AccessMode | '')}
+              >
+                <option value="">Escolha…</option>
+                <option value="lifetime">Vitalício</option>
+                <option value="fixed">Prazo fixo</option>
+              </Select>
+            </Field>
+          )}
+          {form.pricingMode === 'one_time' && form.accessMode === 'fixed' ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                label="Duração do acesso"
+                htmlFor="accessDurationValue"
+                error={accessErrors.accessDurationValue}
+                hint={
+                  form.status === 'active'
+                    ? 'Obrigatória para uma oferta ativa.'
+                    : 'Pode ficar vazia enquanto a oferta estiver em rascunho ou pausada.'
+                }
+              >
+                <Input
+                  id="accessDurationValue"
+                  type="number"
+                  min={1}
+                  step={1}
+                  inputMode="numeric"
+                  placeholder="Ex.: 30"
+                  value={form.accessDurationValue}
+                  onChange={(e) => {
+                    setAccessErrors((errors) => ({ ...errors, accessDurationValue: undefined }))
+                    setForm((current) => ({
+                      ...current,
+                      accessDurationValue: e.target.value,
+                    }))
+                  }}
+                />
+              </Field>
+              <Field
+                label="Unidade"
+                htmlFor="accessDurationUnit"
+                error={accessErrors.accessDurationUnit}
+              >
+                <Select
+                  id="accessDurationUnit"
+                  value={form.accessDurationUnit}
+                  onChange={(e) => {
+                    setAccessErrors((errors) => ({ ...errors, accessDurationUnit: undefined }))
+                    setForm((current) => ({
+                      ...current,
+                      accessDurationUnit: e.target.value as AccessDurationUnit,
+                    }))
+                  }}
+                >
+                  <option value="">Escolha…</option>
+                  <option value="days">Dias</option>
+                  <option value="months">Meses</option>
+                </Select>
+              </Field>
+            </div>
+          ) : null}
           {form.pricingMode === 'subscription' ? (
             <>
               <Field
@@ -648,6 +916,7 @@ export function OffersClient() {
           </Field>
         </div>
       </Dialog>
+      {confirmDialog}
     </div>
   )
 }

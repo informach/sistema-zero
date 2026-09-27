@@ -1,4 +1,5 @@
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
+import type { GetShowcaseDeliveryService } from '../../../application/showcase/get-showcase-delivery.service'
 import type { ShowcaseService } from '../../../application/showcase/showcase.service'
 import { assertInternalCaller, resolveActor } from '../auth'
 import {
@@ -10,6 +11,7 @@ import {
 } from '../dtos'
 
 export interface ShowcaseRoutesDeps {
+  delivery: GetShowcaseDeliveryService
   showcase: ShowcaseService
   /** Token interno do gateway (defesa em profundidade). Vazio em dev → desligado. */
   internalToken?: string
@@ -98,7 +100,12 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
     )
     .get('/hub/my-showcase-stats', async ({ headers }) => {
       // Rota de ALUNO (JWT no gateway; aqui o token interno + ator dos headers):
-      // agregado da carreira — "seus jogos já foram jogados N vezes".
+      // agregado da jornada — "seus jogos já foram jogados N vezes".
       return deps.showcase.myShowcaseStats(resolveActor(headers))
     })
+    .get(
+      '/hub/my-showcase-delivery/:courseId',
+      ({ headers, params }) => deps.delivery.execute(resolveActor(headers), params.courseId),
+      { params: t.Object({ courseId: t.String({ format: 'uuid' }) }) },
+    )
 }

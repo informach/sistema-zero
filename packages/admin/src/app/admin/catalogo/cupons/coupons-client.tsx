@@ -26,6 +26,11 @@ import { StatusBadge } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type OfferOption, OffersMultiSelect } from '@/components/catalog/offers-multi-select'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import {
+  dateInputToSaoPauloEndOfDayIso,
+  dateInputToSaoPauloStartOfDayIso,
+  isoToSaoPauloDateInput,
+} from '@/lib/dates'
 import { formatCents, reaisToCents } from '@/lib/format'
 import type { CouponView, OfferListItem, Paginated } from '@/lib/types'
 
@@ -40,6 +45,8 @@ interface FormState {
   appliesToAll: boolean
   offerIds: string[]
   maxRedemptions: string
+  validFrom: string
+  validUntil: string
   status: string
 }
 
@@ -51,6 +58,8 @@ const EMPTY_FORM: FormState = {
   appliesToAll: true,
   offerIds: [],
   maxRedemptions: '',
+  validFrom: '',
+  validUntil: '',
   status: 'active',
 }
 
@@ -133,6 +142,8 @@ export function CouponsClient() {
       appliesToAll: c.appliesToAll,
       offerIds: c.offerIds,
       maxRedemptions: c.maxRedemptions != null ? String(c.maxRedemptions) : '',
+      validFrom: isoToSaoPauloDateInput(c.validFrom),
+      validUntil: isoToSaoPauloDateInput(c.validUntil),
       status: c.status,
     })
     void ensureOfferOptions()
@@ -144,6 +155,16 @@ export function CouponsClient() {
       toast.error('Escolha ao menos uma oferta (ou marque "vale para todas").')
       return
     }
+    const validFrom = form.validFrom ? dateInputToSaoPauloStartOfDayIso(form.validFrom) : null
+    const validUntil = form.validUntil ? dateInputToSaoPauloEndOfDayIso(form.validUntil) : null
+    if ((form.validFrom && !validFrom) || (form.validUntil && !validUntil)) {
+      toast.error('Informe datas de validade válidas.')
+      return
+    }
+    if (validFrom && validUntil && validFrom >= validUntil) {
+      toast.error('A data final deve ser posterior à data inicial.')
+      return
+    }
     setSaving(true)
     try {
       if (editing) {
@@ -153,6 +174,8 @@ export function CouponsClient() {
           // PATCH substitui a coleção — envia o escopo completo escolhido.
           offerIds: form.appliesToAll ? [] : form.offerIds,
           maxRedemptions: optInt(form.maxRedemptions),
+          validFrom,
+          validUntil,
         })
         toast.success('Cupom atualizado.')
       } else {
@@ -168,6 +191,8 @@ export function CouponsClient() {
           ...(form.appliesToAll ? {} : { offerIds: form.offerIds }),
           status: form.status,
           ...(optInt(form.maxRedemptions) ? { maxRedemptions: optInt(form.maxRedemptions) } : {}),
+          ...(validFrom ? { validFrom } : {}),
+          ...(validUntil ? { validUntil } : {}),
         }
         if (form.type === 'percent') {
           const percentOff = optInt(form.percentOff)
@@ -396,6 +421,33 @@ export function CouponsClient() {
                   </option>
                 ))}
               </Select>
+            </Field>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Início da validade (opcional)"
+              htmlFor="validFrom"
+              tooltip="O cupom passa a valer no início deste dia, no horário de São Paulo."
+            >
+              <Input
+                id="validFrom"
+                type="date"
+                value={form.validFrom}
+                onChange={(e) => setForm((f) => ({ ...f, validFrom: e.target.value }))}
+              />
+            </Field>
+            <Field
+              label="Fim da validade (opcional)"
+              htmlFor="validUntil"
+              tooltip="O cupom vale até o fim deste dia, no horário de São Paulo."
+            >
+              <Input
+                id="validUntil"
+                type="date"
+                min={form.validFrom || undefined}
+                value={form.validUntil}
+                onChange={(e) => setForm((f) => ({ ...f, validUntil: e.target.value }))}
+              />
             </Field>
           </div>
           <label className="flex items-center gap-2 text-sm">

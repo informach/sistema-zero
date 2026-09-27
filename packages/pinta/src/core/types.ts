@@ -179,6 +179,32 @@ export interface PintaTaskSession {
       usedInStudioAt?: string
     }
   }): Promise<void>
+  /**
+   * "Voltar ao plano" no painel do brief (09/2026): leva a criança de volta ao
+   * plano do Pensa que abriu esta tarefa. O id do plano já está em `project.id`,
+   * então o host não precisa de parâmetro novo de URL.
+   *
+   * OPCIONAL de propósito, como o `sendToStudio` do adapter: ausente = o botão
+   * não aparece (o playground, a aula e os fixtures seguem válidos). O Pinta
+   * GUARDA o desenho antes de chamar; se a gravação falhar, não chama.
+   */
+  onReturnToPlan?(): void | Promise<void>
+  /**
+   * O guia recolhido, e o aviso de que a criança mexeu na seta (18/09/2026).
+   *
+   * Quem LEMBRA é o host (uma chave por criança, valendo para as três oficinas); aqui isso
+   * chega como DADO, o mesmo idioma do `menu.hidden`/`onToggle` do chrome do host. Sem o par,
+   * o painel recolhe por conta própria e esquece ao sair — é o caso do playground e dos testes.
+   * ⚠ Recolhido sobra UMA linha, o título e a seta (19/09/2026, decisão dela). O que NÃO
+   * recolhe é PROBLEMA: o recado de falha e o aviso do desenho que não está neste aparelho,
+   * com os dois botões que o resolvem.
+   * ⚠⚠ Os dois andam JUNTOS. Passar só o `collapsed` entrega um botão de 44px com
+   * `aria-expanded` que não faz NADA ao ser clicado (o estado local roda e o `??` o ignora), e
+   * passar só o `onCollapsedChange` faz o host ser avisado sem nunca mandar. São dois opcionais
+   * porque o par inteiro é opcional — não porque um sirva sem o outro.
+   */
+  collapsed?: boolean
+  onCollapsedChange?(collapsed: boolean): void
 }
 
 export interface PintaHostAdapter {
@@ -269,7 +295,30 @@ export interface PintaHostChromeStatus {
   text: string
 }
 
+/**
+ * A seta da GALERIA de volta à seção do host (11/09/2026: "← Criar"). Só a galeria desenha;
+ * o editor já volta para a galeria pela seta dele. É um `<a href>`: o clique simples chama
+ * `onNavigate` (navegação do host) e o com Ctrl/Cmd/do meio fica com o navegador.
+ */
+export interface PintaHostChromeBack {
+  /** O nome acessível ("Voltar para Criar"): a seta é só o ícone. Nunca vira `title`. */
+  label: string
+  href: string
+  onNavigate: () => void
+}
+
+/**
+ * A nuvem da CONTA está ligada (11/09/2026). A galeria mostra a pílula `label` em repouso,
+ * quando o `status` não tem nada a dizer, e conta os desenhos "na sua conta" em vez de
+ * "neste aparelho". O editor não lê este campo (ali só o `status` fala).
+ */
+export interface PintaHostChromeAccount {
+  label: string
+}
+
 export interface PintaHostChrome {
   menu: PintaHostChromeMenu | null
   status: PintaHostChromeStatus | null
+  back: PintaHostChromeBack | null
+  account: PintaHostChromeAccount | null
 }

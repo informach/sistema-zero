@@ -1,6 +1,6 @@
 import type { CourseAudience } from '../../domain/course/course'
 import type { PensaProjectStatus } from '../../domain/pensa/pensa'
-import { PensaNotFoundError } from '../../domain/pensa/pensa.errors'
+import { PensaNotFoundError, PensaNotOwnerError } from '../../domain/pensa/pensa.errors'
 import type { PensaProjectPatch, PensaRepository } from '../../domain/ports/pensa-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 import type { PensaProjectDetailView } from '../mappers/pensa-views'
@@ -26,6 +26,8 @@ export class UpdatePensaProjectService {
   ): Promise<PensaProjectDetailView> {
     const existing = await this.repo.findProject(projectId, userId, audience)
     if (!existing) throw new PensaNotFoundError()
+    // Renomear e arquivar são do DONO: um membro da equipe vê o plano, não o comanda.
+    if (existing.role !== 'owner') throw new PensaNotOwnerError()
 
     const patch: PensaProjectPatch = {}
     if (input.name !== undefined) {

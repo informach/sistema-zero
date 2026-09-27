@@ -1,24 +1,25 @@
 /**
  * Tela do editor de UM asset: cria as stores (editor + sessão), liga o flush
  * do autosave em pagehide/unmount/voltar e monta o layout por tipo de asset.
- * Topbar: voltar · nome · desfazer/refazer · badge de salvo · Baixar ·
- * Usar no Estúdio (só quando o host dá o callback).
+ * Barra de cima (11/09/2026, a tela-modelo): [menu][voltar] · o ícone do papel e o nome ·
+ * tamanho · desfazer/refazer · "Salvo" · a nuvem do host; à direita atalhos · Baixar · Jogar
+ * meu mapa · Usar no Estúdio (os dois últimos só quando o host dá o callback).
  *
- * Layout (desktop, ≥768px): coluna ESQUERDA de altura inteira (ferramentas em
- * cima, cores embaixo), e à direita dela uma coluna com o palco + a prévia lado
- * a lado em cima e a faixa (quadros/peças + zoom) encostada EMBAIXO,
- * atravessando as duas. A faixa NÃO é um rodapé de tudo: ali ela roubava altura
- * da coluna da esquerda e era o que forçava a criança a rolar as ferramentas.
- * A cadeia min-h-0 + overflow interno fecha a altura sem rolagem de página. Em
- * tela estreita o palco domina: rail horizontal em cima, paleta em linha única
- * e prévia/animações colapsáveis.
+ * Layout (desktop, ≥768px; 11/09/2026, a área da tela-modelo): coluna BRANCA das
+ * ferramentas à esquerda, o palco no tom claro no meio e a coluna BRANCA dos painéis à
+ * direita, de borda a borda, separadas por fios de 1px (`.pin-col`, `.pin-stage`); embaixo,
+ * atravessando a largura inteira, a faixa azul-céu dos quadros/peças + zoom (`.pin-band`).
+ * Dentro das colunas os painéis viram SEÇÕES sem moldura (`PanelLook value="flat"`). A cadeia
+ * min-h-0 + overflow interno fecha a altura sem rolagem de página. Em tela estreita o palco
+ * domina: rail horizontal em cima, paleta em linha única e prévia/animações colapsáveis (os
+ * painéis ali seguem em cartão).
  */
 import type { JSX } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { resizeTargetOf } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
-import { assetStyle, type PintaAsset } from '../../core/project'
+import { assetRole, assetStyle, type PintaAsset, type PintaAssetRole } from '../../core/project'
 import { type ShortcutEditor, shortcut } from '../../core/shortcuts'
 import { filterTools } from '../../core/toolCuration'
 import {
@@ -43,18 +44,26 @@ import { updateTaskProgress } from '../../state/taskProgress'
 import { usePintaApp } from '../appContext'
 import { ExportDialog } from '../export/ExportDialog'
 import { HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChrome'
-import { Button, IconButton, ToolButton } from '../ui/Button'
+import { Button, IconButton } from '../ui/Button'
 import {
   ArrowLeft,
+  Check,
   ChevronDown,
   Download,
   Gamepad2,
+  Image as ImageIcon,
   Keyboard,
+  type LucideIcon,
+  Map as MapIcon,
+  PersonStanding,
+  Puzzle,
   Redo2,
   Rocket,
   Scaling,
+  TriangleAlert,
   Undo2,
 } from '../ui/icons'
+import { PanelLook } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { CoachMarks } from './CoachMarks'
 import { PintaEditorProvider, useEditor, useSession, useToolCuration } from './editorContext'
@@ -63,6 +72,7 @@ import { PaletteBar } from './PaletteBar'
 import { PixelCanvas } from './PixelCanvas'
 import { PreviewPlayer } from './PreviewPlayer'
 import { ResizeAssetDialog } from './ResizeAssetDialog'
+import { ScrollMoreHint } from './ScrollMoreHint'
 import { ShortcutsDialog, type ShortcutsDialogTool } from './ShortcutsDialog'
 import { SpriteSheetPanel } from './SpriteSheetPanel'
 import { TilemapEditor } from './TilemapEditor'
@@ -74,17 +84,18 @@ import { useMediaQuery } from './useMediaQuery'
 import { useScrollMore } from './useScrollMore'
 import { useStudioResync } from './useStudioResync'
 import { VectorEditorScope } from './vector/VectorEditorScope'
-import {
-  ScrollMoreHint,
-  VectorPanelsDisclosure,
-  VectorRightColumn,
-} from './vector/VectorRightColumn'
+import { VectorPanelsDisclosure, VectorRightColumn } from './vector/VectorRightColumn'
 import { VectorSelectionBar } from './vector/VectorSelectionBar'
 import { VectorStage } from './vector/VectorStage'
 import { VectorToolbox } from './vector/VectorToolbox'
 import { TOOLS as VECTOR_TOOLS } from './vector/vectorTools'
 import { ZoomControls } from './ZoomControls'
 
+/**
+ * O salvamento local na pílula da tela-modelo: menta com o visto quando está salvo, quieta
+ * enquanto salva e vermelha (com o recado do erro) quando falhou. O texto mora DIRETO na região
+ * viva (`role="status"`), que é como o leitor anuncia e como os testes a encontram.
+ */
 function SaveBadge(): JSX.Element {
   const saveState = useEditor((state) => state.saveState)
   const saveError = useEditor((state) => state.saveError)
@@ -94,28 +105,39 @@ function SaveBadge(): JSX.Element {
       : saveState !== 'error'
         ? COPY.editor.saving
         : (saveError ?? COPY.editor.saveError)
-  const tone =
-    saveState === 'saved'
-      ? 'text-pin-ok'
-      : saveState !== 'error'
-        ? 'text-pin-muted'
-        : 'text-pin-danger'
+  const tone = saveState === 'saved' ? 'ok' : saveState !== 'error' ? 'muted' : 'danger'
   return (
     <span
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      className={`text-sm font-bold ${tone}`}
+      className={`pin-bar-seal pin-bar-seal--${tone}`}
     >
+      {tone === 'ok' ? <Check aria-hidden="true" /> : null}
+      {tone === 'danger' ? <TriangleAlert aria-hidden="true" /> : null}
       {label}
     </span>
   )
 }
 
-/** Coluna ESQUERDA dos kinds PIXEL (desktop): só o rail de ferramentas. */
+/** O ícone de linha de cada PAPEL (os mesmos dos filtros da galeria), na cor do papel. */
+const ROLE_ICON: Record<PintaAssetRole, LucideIcon> = {
+  sprite: PersonStanding,
+  background: ImageIcon,
+  tileset: Puzzle,
+  tilemap: MapIcon,
+}
+const ROLE_ICON_TONE: Record<PintaAssetRole, string> = {
+  sprite: 'text-pin-kind-sprite',
+  background: 'text-pin-kind-background',
+  tileset: 'text-pin-kind-tileset',
+  tilemap: 'text-pin-kind-tilemap',
+}
+
+/** Coluna ESQUERDA dos kinds PIXEL (desktop): só o rail de ferramentas, na coluna branca. */
 function PixelLeftColumn(): JSX.Element {
   return (
-    <div className="flex min-h-0 shrink-0 flex-col gap-2 overflow-y-auto">
+    <div className="pin-col pin-col--start flex min-h-0 shrink-0 flex-col overflow-y-auto">
       <ToolBar />
     </div>
   )
@@ -129,7 +151,7 @@ function PixelLeftColumn(): JSX.Element {
  */
 function VectorLeftColumn(): JSX.Element {
   return (
-    <div className="flex min-h-0 shrink-0 flex-col gap-2 overflow-y-auto">
+    <div className="pin-col pin-col--start flex min-h-0 shrink-0 flex-col overflow-y-auto">
       <VectorToolbox />
     </div>
   )
@@ -153,17 +175,30 @@ function PixelRightColumn(): JSX.Element {
   const columnRef = useRef<HTMLDivElement>(null)
   const more = useScrollMore(columnRef)
   return (
-    <div className="relative flex min-h-0 w-68 shrink-0 flex-col">
+    <div className="pin-col pin-col--end relative flex min-h-0 w-68 shrink-0 flex-col">
       <div
         ref={columnRef}
         data-pin-right-column=""
-        className="pin-scroll-y flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto"
+        className="pin-scroll-y flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto"
       >
-        <PreviewPlayer />
-        <LayerPanel />
-        <PaletteBar />
+        <PanelLook value="flat">
+          <PreviewPlayer />
+          <LayerPanel />
+          <PaletteBar />
+        </PanelLook>
       </div>
       {more ? <ScrollMoreHint /> : null}
+    </div>
+  )
+}
+
+/** Coluna DIREITA das PEÇAS de pixel (desktop): só as cores (peça não tem camadas nem prévia). */
+function TilesetRightColumn(): JSX.Element {
+  return (
+    <div className="pin-col pin-col--end pin-scroll-y flex min-h-0 w-68 shrink-0 flex-col overflow-x-hidden overflow-y-auto">
+      <PanelLook value="flat">
+        <PaletteBar />
+      </PanelLook>
     </div>
   )
 }
@@ -206,9 +241,10 @@ function SpritePanelDisclosure(): JSX.Element {
 }
 
 /**
- * A faixa do rodapé. Sprites (pixel e vetor) ganham a faixa "Spritesheet" (uma
- * linha por animação, com os quadros inline) + o zoom no cabeçalho dela. Peças
- * mantêm a tira de tiles; cenários ficam só com o zoom encostado à direita.
+ * A faixa do rodapé, no azul-céu da tela-modelo (`.pin-band`). Sprites (pixel e vetor) ganham a
+ * faixa "Spritesheet" (uma linha por animação, com os quadros inline) + o zoom no cabeçalho
+ * dela. Peças mantêm a tira de tiles; cenários ficam só com o zoom encostado à direita. Em tela
+ * estreita (`stacked`) a faixa é um cartão entre os outros, com os cantos redondos.
  */
 function EditorFooter({
   asset,
@@ -219,12 +255,21 @@ function EditorFooter({
 }): JSX.Element {
   const hasFrames = asset.kind === 'pixel-sprite' || asset.kind === 'vector-sprite'
   const hasTiles = asset.kind === 'tileset' || asset.kind === 'vector-tileset'
+  const band = stacked
+    ? 'pin-band shrink-0 rounded-2xl border border-pin-border px-2 py-2'
+    : 'pin-band shrink-0 px-3 py-2'
   if (hasFrames) {
-    return <SpriteSheetPanel className="shrink-0" zoomSlot={<ZoomControls />} />
+    return (
+      <div className={band}>
+        <PanelLook value="band">
+          <SpriteSheetPanel zoomSlot={<ZoomControls />} />
+        </PanelLook>
+      </div>
+    )
   }
   if (stacked) {
     return (
-      <div className="flex shrink-0 flex-col gap-2">
+      <div className={`${band} flex flex-col gap-2`}>
         {hasTiles ? <TileStrip /> : null}
         <div className="flex justify-end">
           <ZoomControls />
@@ -233,7 +278,7 @@ function EditorFooter({
     )
   }
   return (
-    <div className="flex shrink-0 items-stretch gap-2">
+    <div className={`${band} flex items-center gap-2`}>
       {hasTiles ? <TileStrip className="min-w-0 flex-1" /> : <div className="flex-1" />}
       <ZoomControls />
     </div>
@@ -253,20 +298,20 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
         // INTEIRA. Isso só cabe porque as cores saíram da coluna esquerda (que
         // agora tem só as ferramentas): era a soma ferramentas+cores que não
         // cabia em 1366×768 quando a faixa era um rodapé de tudo.
-        <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-          <div className="flex min-h-0 flex-1 items-stretch gap-2">
+        <div className="pin-work flex min-h-0 flex-1 flex-col">
+          <div className="flex min-h-0 flex-1 items-stretch">
             <PixelLeftColumn />
             <PixelCanvas />
             {/* A coluna existe também no CENÁRIO (que não tem prévia) porque é
                 onde moram camadas e cores; peças não têm camadas. */}
-            {asset.kind === 'tileset' ? <PaletteBar /> : <PixelRightColumn />}
+            {asset.kind === 'tileset' ? <TilesetRightColumn /> : <PixelRightColumn />}
           </div>
           <EditorFooter asset={asset} />
         </div>
       )
     }
     return (
-      <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
+      <div className="pin-work flex min-h-0 flex-1 flex-col gap-2 p-2">
         <ToolBar orientation="horizontal" />
         <PixelCanvas />
         <PaletteBar layout="row" />
@@ -287,9 +332,9 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
     // poder nascer colada na barra de cima. Ele é só um Provider, não vira DOM.
     return (
       <VectorEditorScope>
-        <VectorSelectionBar />
-        <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-          <div className="flex min-h-0 flex-1 items-stretch gap-2">
+        <div className="pin-work flex min-h-0 flex-1 flex-col">
+          <VectorSelectionBar />
+          <div className="flex min-h-0 flex-1 items-stretch">
             <VectorLeftColumn />
             <VectorStage />
             <VectorRightColumn />
@@ -300,7 +345,7 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
     )
   }
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
+    <div className="pin-work flex min-h-0 flex-1 flex-col gap-2 p-2">
       <VectorEditorScope>
         <VectorToolbox orientation="horizontal" />
         <VectorStage />
@@ -350,7 +395,11 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
     onFailure: (message) => showToast(message ?? COPY.editor.studioSyncFailed),
   })
 
-  const kind = COPY.kinds[asset.kind]
+  const role = assetRole(asset.kind)
+  const RoleIcon = ROLE_ICON[role]
+  // A pílula azul é UMA: o "Usar no Estúdio" (desenho de um jogo do Pensa) quando ele aparece;
+  // senão, o "Baixar".
+  const sendsToStudio = Boolean(adapter.sendToStudio && asset.projectRef)
 
   /**
    * O que atravessa a ponte "Usar no Estúdio" (PNG achatado na v1): montado em
@@ -469,31 +518,34 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
   }
 
   return (
-    <header className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2 [--sz-tool-inset:0.75rem]">
+    <header className="pin-bar shrink-0">
       {/* Numa aula não há para onde voltar (nem menu da comunidade a esconder): o desenho é
           a tela inteira do bloco. Fora dela, o botão do menu do HOST vem primeiro — é o
           canto mais perto do painel que ele controla. */}
       {lesson ? null : (
         <div className="flex shrink-0 items-center gap-1">
           {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
-          <ToolButton
-            icon={ArrowLeft}
-            label={COPY.editor.back}
+          <IconButton
+            tone="quiet"
+            aria-label={COPY.editor.back}
+            title={COPY.editor.back}
             disabled={closing}
             aria-busy={closing}
             onClick={onBack}
-          />
+          >
+            <ArrowLeft aria-hidden="true" className="size-5" />
+          </IconButton>
         </div>
       )}
-      <span aria-hidden="true" className="text-xl">
-        {kind.emoji}
-      </span>
-      <span className="pin-display mr-2 truncate text-lg" title={asset.name}>
-        {asset.name}
+      <span className="pin-bar-name">
+        <RoleIcon aria-hidden="true" className={ROLE_ICON_TONE[role]} />
+        <span className="pin-bar-name__text" title={asset.name}>
+          {asset.name}
+        </span>
       </span>
       {resizeTarget ? (
-        <Button onClick={() => setResizeOpen(true)}>
-          <Scaling aria-hidden="true" className="size-4" />
+        <Button variant="barQuiet" onClick={() => setResizeOpen(true)}>
+          <Scaling aria-hidden="true" />
           {COPY.editor.resize.button(resizeTarget.width, resizeTarget.height)}
         </Button>
       ) : null}
@@ -523,8 +575,9 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
           {COPY.sendToStudio.resynced}
         </span>
       ) : null}
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex flex-wrap items-center gap-2">
         <IconButton
+          tone="quiet"
           aria-label={COPY.shortcuts.button}
           title={`${COPY.shortcuts.button} (?)`}
           aria-haspopup="dialog"
@@ -533,23 +586,26 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
           <Keyboard aria-hidden="true" className="size-5" />
         </IconButton>
         {canExport ? (
-          <Button onClick={() => setExportOpen(true)}>
-            <Download aria-hidden="true" className="size-4" />
+          <Button
+            variant={sendsToStudio ? 'barOutline' : 'barPrimary'}
+            onClick={() => setExportOpen(true)}
+          >
+            <Download aria-hidden="true" />
             {COPY.editor.download}
           </Button>
         ) : null}
         {asset.kind === 'tilemap' && adapter.sendGameToStudio ? (
-          <Button disabled={sending} onClick={() => void handlePlayMap()}>
-            <Gamepad2 aria-hidden="true" className="size-4" />
+          <Button variant="barOutline" disabled={sending} onClick={() => void handlePlayMap()}>
+            <Gamepad2 aria-hidden="true" />
             {COPY.tiles.playMap}
           </Button>
         ) : null}
         {/* O foguete só existe em desenho DE UM JOGO do Pensa (projectRef): é
             onde ele marca o progresso da missão. Desenho avulso chega ao
             Estúdio pelo "Trazer do Pinta" de lá (decisão da dona, 08/2026). */}
-        {adapter.sendToStudio && asset.projectRef ? (
-          <Button variant="primary" disabled={sending} onClick={() => void handleSendToStudio()}>
-            <Rocket aria-hidden="true" className="size-4" />
+        {sendsToStudio ? (
+          <Button variant="barPrimary" disabled={sending} onClick={() => void handleSendToStudio()}>
+            <Rocket aria-hidden="true" />
             {sending ? COPY.sendToStudio.sending : COPY.editor.sendToStudio}
           </Button>
         ) : null}
@@ -689,16 +745,27 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
 
   // O primeiro desenho aberto nesta sessão passa a ser o output vinculado do
   // Cartão de Criação. Recarregar é idempotente; trocar de desenho religa.
+  //
+  // ⚠⚠ A dependência é o `progress`, NÃO o objeto da sessão (18/09/2026, achado do full review
+  // da seta que recolhe o brief). O host remonta o `taskSession` a cada mudança do adapter — e
+  // desde a seta isso acontece a cada clique nela —, enquanto o `progress` vem por REFERÊNCIA do
+  // handoff e só muda quando o progresso muda de verdade. Com o objeto nas deps, um clique na
+  // seta enquanto a tarefa ainda está `planned` (ou com o primeiro PATCH em voo, ou depois de um
+  // PATCH que falhou offline) re-disparava a marcação com o MESMO `expectedUpdatedAt`: 409,
+  // recarga do brief e o toast de erro. Ou seja, recolher o painel dava erro de sincronização.
+  // A sessão vem de um ref para o corpo usar sempre a mais fresca, sem entrar nas deps.
+  const taskSessionRef = useRef(adapter.taskSession)
+  taskSessionRef.current = adapter.taskSession
+  const taskProgress = adapter.taskSession?.progress ?? null
+  // biome-ignore lint/correctness/useExhaustiveDependencies: o `progress` é o gatilho de verdade; a sessão vem do ref
   useEffect(() => {
-    if (!stores || !adapter.taskSession || adapter.taskSession.progress.status === 'completed')
-      return
+    const sessao = taskSessionRef.current
+    if (!stores || !sessao || sessao.progress.status === 'completed') return
     const asset = stores.editor.getState().asset
-    const current = adapter.taskSession.progress.outputRef
-    if (current?.assetId === asset.id && adapter.taskSession.progress.status !== 'planned') return
-    void updateTaskProgress(adapter.taskSession, {
-      ...(adapter.taskSession.progress.status === 'planned'
-        ? { status: 'in_progress' as const }
-        : {}),
+    const current = sessao.progress.outputRef
+    if (current?.assetId === asset.id && sessao.progress.status !== 'planned') return
+    void updateTaskProgress(sessao, {
+      ...(sessao.progress.status === 'planned' ? { status: 'in_progress' as const } : {}),
       outputRef: {
         kind: 'pinta_asset',
         assetId: asset.id,
@@ -710,7 +777,7 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
     }).then((saved) => {
       if (!saved) showToast(COPY.editor.taskLinkError)
     })
-  }, [stores, adapter.taskSession, showToast])
+  }, [stores, taskProgress, showToast])
 
   // Flush do autosave em pagehide e no desmonte (voltar/troca de tela).
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, render, waitFor } from '@testing-library/react'
 import { createEmptyProject } from '#core'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 
 // bun:test não isola module mocks por arquivo: captura o Shell real antes e
 // restaura no afterAll para não vazar o probe para os próximos arquivos.
@@ -9,7 +10,7 @@ const realShell = { ...(await import('../components/layout/Shell')) }
 // idb-keyval mockado (sem restore, de propósito): IndexedDB não existe no
 // happy-dom e o registry de módulos é compartilhado pela suíte toda.
 mock.module('idb-keyval', () => ({
-  createStore: mock(() => ({ name: 'test-store' })),
+  createStore: mock((dbName: string) => fakeUseStore(dbName)),
   del: mock(async () => undefined),
   delMany: mock(async () => undefined),
   get: mock(async (): Promise<unknown> => undefined),

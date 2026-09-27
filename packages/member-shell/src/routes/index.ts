@@ -1,3 +1,7 @@
+import { createHash } from 'node:crypto'
+import { createGalleryDeliveryRoutes } from './gallery-delivery'
+import { createLearningRoutes } from './learning'
+import { createProfilePreferencesRoutes } from './profile-preferences'
 import 'server-only'
 import { redirect } from 'next/navigation'
 import { NextResponse } from 'next/server'
@@ -31,6 +35,7 @@ import {
 } from '../server/r2'
 import type { SessionModule } from '../server/session'
 import { watermarkImage } from '../server/watermark'
+import { WatermarkUnavailableError } from '../server/watermark-error'
 import { WATERMARK_WAIT_TIMEOUT_MS, watermarkGate } from '../server/watermark-queue'
 
 const R2_PRIVATE_PREFIX = 'r2priv:'
@@ -86,6 +91,8 @@ export interface ShellRoutesDeps {
   payments: PaymentsClient
   profiles: ProfilesClient
   media: MediaModule
+  /** Nome do cookie que espelha a cor escolhida (ver `lib/palette-cookie`). */
+  paletteCookie: string
 }
 
 export type ShellRoutes = ReturnType<typeof createShellRoutes>
@@ -273,7 +280,7 @@ const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0
  * `export const { POST } = shell.routes.authLogin`.
  */
 export function createShellRoutes(deps: ShellRoutesDeps) {
-  const { session, gateway, auth, members, payments, profiles, media } = deps
+  const { session, gateway, auth, members, payments, profiles, media, paletteCookie } = deps
 
   const impersonationReadonly = () =>
     NextResponse.json(
@@ -621,6 +628,22 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       if (user instanceof NextResponse) return user
 
       const { slug, lessonId, attachmentId } = await ctx.params
+      const downloadQuery = new URL(req.url).searchParams
+      const blockId = downloadQuery.get('blockId')
+      const itemId = downloadQuery.get('itemId')
+      const viewerId = downloadQuery.get('viewerId')
+      const blockRevision = downloadQuery.get('blockRevision')
+      if (
+        (blockId !== null || itemId !== null || viewerId !== null || blockRevision !== null) &&
+        (!z.uuid().safeParse(blockId).success ||
+          !z.uuid().safeParse(itemId).success ||
+          !/^[0-9a-f]{32}$/.test(blockRevision ?? '') ||
+          viewerId !== user.id)
+      )
+        return NextResponse.json(
+          { error: { code: 'INVALID_ATTACHMENT', message: 'Abra o material novamente na aula.' } },
+          { status: 400 },
+        )
       const resolved = await members.resolveAttachment(slug, lessonId, attachmentId)
       if (resolved.status !== 200 || !resolved.body) {
         return NextResponse.json(
@@ -630,8 +653,35 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       }
 
       const { label, storageRef } = resolved.body
+      const finish = async (response: Response): Promise<Response> => {
+        if (!blockId || !itemId || !blockRevision || user.act) return response
+        const recorded = await members.recordMaterialDownload({
+          actor: { userId: user.id, accountId: user.activeProfile?.accountId ?? user.id },
+          courseSlug: slug,
+          lessonId,
+          attachmentId,
+          blockId,
+          itemId,
+          expectedRevision: blockRevision,
+          expectedStorageRefHash: createHash('sha256').update(storageRef).digest('hex'),
+        })
+        if (recorded.status !== 200) {
+          await response.body?.cancel().catch(() => undefined)
+          return NextResponse.json(
+            recorded.body ?? {
+              error: {
+                code: 'DOWNLOAD_NOT_RECORDED',
+                message: 'Não foi possível confirmar o download. Tente novamente.',
+              },
+            },
+            { status: recorded.status },
+          )
+        }
+        return response
+      }
 
-      // Anexo externo (URL colada pelo admin) ou legado público → passthrough.
+      // Arquivos externos não passam pela marcação. PDFs/imagens protegidos não
+      // podem sair por esse atalho; links comuns continuam com passthrough.
       if (!storageRef.startsWith(R2_PRIVATE_PREFIX)) {
         if (!/^https?:\/\//.test(storageRef)) {
           return NextResponse.json(
@@ -639,7 +689,15 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
             { status: 502 },
           )
         }
-        return NextResponse.redirect(storageRef, 302)
+        if (
+          resolveDownloadMedia({
+            contentType: null,
+            key: new URL(storageRef).pathname,
+            fileType: resolved.body.fileType,
+          }).watermark !== null
+        )
+          return mediaErrorResponse(new WatermarkUnavailableError())
+        return finish(NextResponse.redirect(storageRef, 302))
       }
 
       try {
@@ -667,6 +725,9 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         const disposition = `attachment; filename="${filename}"`
         const len = head.contentLength
 
+        if (dlMedia.watermark !== null && len !== null && len > WATERMARK_MAX_BYTES)
+          throw new WatermarkUnavailableError()
+
         if (len !== null && len > DIRECT_DELIVERY_MIN_BYTES) {
           // PDF marcável dentro do teto → cache do PDF marcado + 302 direto do R2.
           if (dlMedia.watermark === 'pdf' && len <= WATERMARK_MAX_BYTES) {
@@ -678,18 +739,13 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
               responseContentDisposition: disposition,
               signal: req.signal,
             })
-            return NextResponse.redirect(url, 302)
+            return finish(NextResponse.redirect(url, 302))
           }
-          // Sem marca (office/zip/…), imagem gigante (não realista) ou acima do
-          // teto da marca → original direto do R2 (mesma filosofia do fallback).
-          if (len > WATERMARK_MAX_BYTES && dlMedia.watermark !== null) {
-            console.warn(
-              "[anexos] arquivo excede o teto da marca d'água — pré-assinando original",
-              { key, contentLength: len },
-            )
-          }
+          // Imagens grandes não têm cache marcado como PDFs; não expor o original.
+          if (dlMedia.watermark === 'image') throw new WatermarkUnavailableError()
+          // Office/zip/áudio não têm marcação e seguem como arquivos comuns.
           const url = await r2PresignGetPrivate(key, { responseContentDisposition: disposition })
-          return NextResponse.redirect(url, 302)
+          return finish(NextResponse.redirect(url, 302))
         }
 
         const headers = {
@@ -708,9 +764,10 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
             userId: user.id,
             signal: req.signal,
           })
-          return new Response(
-            pdf.body instanceof Uint8Array ? new Uint8Array(pdf.body) : pdf.body,
-            { headers },
+          return finish(
+            new Response(pdf.body instanceof Uint8Array ? new Uint8Array(pdf.body) : pdf.body, {
+              headers,
+            }),
           )
         }
 
@@ -718,25 +775,26 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
         // Sem marca (office/zip/áudio/…) → STREAM direto, sem bufferizar.
         if (dlMedia.watermark === null) {
-          return new Response(obj.body, { headers })
+          return finish(new Response(obj.body, { headers }))
         }
 
         // Imagem: bufferizar+marcar dentro do GATE de concorrência (materializa
         // ≤20MB + cópias do sharp). Espera com prazo e some se o cliente for embora.
-        return await watermarkGate().run(
+        const marked = await watermarkGate().run(
           async () => {
             const original = await bufferFromStream(obj.body, WATERMARK_MAX_BYTES)
-            let out: Uint8Array = original
+            let out: Uint8Array
             try {
               out = await watermarkImage(original, dlMedia.mime, user.email)
             } catch (error) {
-              // Imagem corrompida: melhor servir o original do que falhar.
-              console.warn('[anexos] watermark falhou — servindo original', { key, error })
+              console.error('[anexos] watermark falhou — download bloqueado', { key, error })
+              throw new WatermarkUnavailableError(error)
             }
             return new Response(new Uint8Array(out), { headers })
           },
           { signal: req.signal, waitTimeoutMs: WATERMARK_WAIT_TIMEOUT_MS },
         )
+        return finish(marked)
       } catch (error) {
         return mediaErrorResponse(error)
       }
@@ -769,7 +827,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
       const { storageRef } = resolved.body
 
-      // URL externa/legada → passthrough (sem marca; o pdf.js busca de lá direto).
+      // Livro 3D exige PDF privado para que a marca chegue ao pdf.js.
       if (!storageRef.startsWith(R2_PRIVATE_PREFIX)) {
         if (!/^https?:\/\//.test(storageRef)) {
           return NextResponse.json(
@@ -777,7 +835,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
             { status: 502 },
           )
         }
-        return NextResponse.redirect(storageRef, 302)
+        return mediaErrorResponse(new WatermarkUnavailableError())
       }
 
       try {
@@ -793,19 +851,10 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         // Sinais reais (Content-Type do R2 + extensão .pdf) decidem a marca.
         const dlMedia = resolveDownloadMedia({ contentType: head.contentType, key, fileType: null })
         const len = head.contentLength
+        if (dlMedia.watermark !== 'pdf' || (len !== null && len > WATERMARK_MAX_BYTES))
+          throw new WatermarkUnavailableError()
 
         if (len !== null && len > DIRECT_DELIVERY_MIN_BYTES) {
-          if (dlMedia.watermark !== 'pdf' || len > WATERMARK_MAX_BYTES) {
-            // Sem marca possível (legado raro / acima do teto) → original direto.
-            if (len > WATERMARK_MAX_BYTES) {
-              console.warn("[ebook] PDF excede o teto da marca d'água — pré-assinando original", {
-                key,
-                contentLength: len,
-              })
-            }
-            const url = await r2PresignGetPrivate(key, { responseContentDisposition: 'inline' })
-            return NextResponse.redirect(url, 302)
-          }
           const url = await presignWatermarkedPdf({
             srcKey: key,
             srcEtag: head.etag,
@@ -823,12 +872,6 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           'content-disposition': 'inline',
           // Conteúdo é POR ALUNO (e-mail estampado) — nunca cachear compartilhado.
           'cache-control': 'private, no-store',
-        }
-
-        // Sem sinal de PDF (legado raro) → serve cru em stream, como antes.
-        if (dlMedia.watermark !== 'pdf') {
-          const obj = await r2GetObjectPrivate(key)
-          return new Response(obj.body, { headers })
         }
 
         // Marca d'água por aluno com CACHE (incidente 07/09: re-marcar a cada
@@ -1066,6 +1109,20 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   }
 
   /**
+   * Abre o baú de fim de unidade (a criança clica na trilha). Escrita, então exige
+   * sessão que possa escrever — impersonação em leitura é recusada.
+   */
+  const unitChestClaim = {
+    POST: async (_req: Request, ctx: { params: Promise<{ slug: string; moduleId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { slug, moduleId } = await ctx.params
+      const { status, body } = await members.claimUnitChest(slug, moduleId)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /**
    * Registra o REMIX de um jogo do Mural ("Fazer a minha versão") — marco da missão
    * gated por estudio-completo (retenção pós-cursos). Best-effort do cliente kids
    * (o toast do remix não espera); os guards anti-farm (posse + playId real no hub
@@ -1171,6 +1228,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           projectsCount: s?.projectsCount ?? 0,
           submissionsCount: s?.submissionsCount ?? s?.projectsCount ?? 0,
           rankingPosition: s?.rankingPosition ?? null,
+          career: s?.career,
           // "Esta semana" + jogos do Mural (Fase 5) — opcionais (members antigo).
           week: s?.week,
           games: s?.games ?? null,
@@ -1249,6 +1307,15 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
   }
+
+  const {
+    learningNavigation,
+    learningProgress,
+    learningAttempt,
+    learningHelp,
+    learningProjectCheck,
+    learningActionCheck,
+  } = createLearningRoutes({ session, gateway })
 
   /** Submete o quiz ao members (score no servidor; gabarito SÓ na resposta). */
   const quizAttempts = {
@@ -1647,6 +1714,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     roomBuy,
     missionsGet,
     missionClaim,
+    unitChestClaim,
     studioRemix,
     studioActivityDay,
     streakFreezeBuy,
@@ -1656,6 +1724,14 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     ambassadorMe,
     lessonPosition,
     quizAttempts,
+    learningNavigation,
+    learningProjectCheck,
+    learningActionCheck,
+    learningProgress,
+    profilePreferences: createProfilePreferencesRoutes(session, gateway, paletteCookie),
+    galleryDelivery: createGalleryDeliveryRoutes(session, gateway),
+    learningAttempt,
+    learningHelp,
     studioSubmit,
     studioCarryover,
     studioSubmissionGet,

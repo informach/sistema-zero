@@ -1,0 +1,198 @@
+[
+  {
+    "key": "demonstracao-world",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Faça o Dino aparecer",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "world"
+      }
+    }
+  },
+  {
+    "key": "demonstracao-layers",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Quem fica na frente?",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "layers"
+      }
+    }
+  },
+  {
+    "key": "demonstracao-gravity",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Faça o Dino voltar ao chão",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "gravity"
+      }
+    }
+  },
+  {
+    "key": "demonstracao-impulse",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Escolha a altura do salto",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "impulse"
+      }
+    }
+  },
+  {
+    "key": "demonstracao-jump-sound",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: O som acompanha o pulo",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "jump-sound"
+      }
+    }
+  },
+  {
+    "key": "demonstracao-spawn",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Abra espaço entre os cactos",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "spawn"
+      }
+    }
+  },
+  {
+    "key": "demonstracao-cleanup",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Para onde vai o cacto que sai da tela?",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "cleanup"
+      }
+    }
+  },
+  {
+    "key": "demonstracao-game-state",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: O relógio na tela de início",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "game-state"
+      }
+    }
+  },
+  {
+    "key": "demonstracao-controls",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: O convite para começar",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "controls"
+      }
+    }
+  },
+  {
+    "key": "demonstracao-restart",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Jogue outra vez",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "restart"
+      }
+    }
+  },
+  {
+    "key": "demonstracao-hitbox",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Onde a batida acontece?",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "hitbox"
+      }
+    }
+  },
+  {
+    "key": "demonstracao-score",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Quando o placar cresce?",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "score"
+      }
+    }
+  },
+  {
+    "key": "demonstracao-random",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Cada cacto pode nascer diferente",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "random"
+      }
+    }
+  },
+  {
+    "key": "demonstracao-acceleration",
+    "content": {
+      "kind": "interactive",
+      "title": "Observe: Acelere com um limite",
+      "instructions": "Observe cada etapa. Você pode pausar e rever o exemplo.",
+      "hints": [],
+      "required": false,
+      "activity": {
+        "type": "demonstration",
+        "scene": "acceleration"
+      }
+    }
+  }
+]

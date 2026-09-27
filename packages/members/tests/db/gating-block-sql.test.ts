@@ -63,9 +63,29 @@ describe.skipIf(!testDatabaseUrl)('lessonHasGatingBlock: espelho SQL × domínio
   // Cada caso roda nos DOIS lados. Se alguém mexer só num, o teste acusa.
   const casos = [
     {
+      nome: 'experimento do Estúdio não exige entrega',
+      kind: 'studio',
+      content: { kind: 'studio', purpose: 'experiment', initialProject: { formatVersion: 2 } },
+    },
+    {
+      nome: 'experimento do Pinta não exige entrega',
+      kind: 'pinta',
+      content: { kind: 'pinta', purpose: 'experiment', initialAsset: {} },
+    },
+    {
+      nome: 'atividade essencial impede emissão antecipada do certificado',
+      kind: 'interactive',
+      content: { kind: 'interactive', required: true },
+    },
+    {
+      nome: 'exploração opcional não bloqueia certificado',
+      kind: 'interactive',
+      content: { kind: 'interactive', required: false },
+    },
+    {
       nome: 'estúdio SEMPRE trava',
       kind: 'studio',
-      content: { kind: 'studio', initialProject: {} },
+      content: { kind: 'studio', initialProject: { formatVersion: 2 } },
     },
     {
       nome: 'Pinta SEMPRE trava (a entrega do desenho é gate, como a do Estúdio)',

@@ -14,7 +14,7 @@
     ]
   },
   "deploy": {
-    "preDeployCommand": "bun packages/members/scripts/production-schema-a.ts",
+    "preDeployCommand": "bun run --filter @sistemazero/members db:migrate",
     "startCommand": "bun scripts/release/start.mjs packages/members/src/index.ts",
     "healthcheckPath": "/readyz",
     "restartPolicyType": "ON_FAILURE",

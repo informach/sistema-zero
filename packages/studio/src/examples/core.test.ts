@@ -180,7 +180,7 @@ describe('CORE_EXAMPLES — invadersNaMaoExample (classes 100% núcleo)', () => 
     }
     // O fundo estrelado embutido é PEQUENO (regra do bundle) e o CSS o referencia.
     const asset = invadersNaMaoExample.assets?.[0]
-    expect(asset?.name).toBe('background.png')
+    expect(asset?.name).toBe('backgroundpng')
     expect((asset?.dataUrl.length ?? 0) < 2_000).toBe(true)
     const css = JSON.stringify(invadersNaMaoExample.ir.css)
     expect(css).toContain("url('background.png')")

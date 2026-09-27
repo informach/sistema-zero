@@ -10,9 +10,10 @@
  * (unidades da caixa), então o que ela vê é o que ela pega.
  */
 import { normalizeHex } from '../core/color'
-import { type Bounds, boundsCenter, rotatePoint, shapeBounds } from './geometry'
+import { type Bounds, rotatePoint, rotationPivotOf, shapeBounds } from './geometry'
+import { gradientGeometry } from './gradient'
+import { pointPassesMask, resolveMaskScene } from './mask'
 import { isVectorGradient, type Vec2, type VectorGradient, type VectorShape } from './model'
-import { linearGradientVector } from './svg'
 
 /** Ponto dentro do retângulo (hit-test grosso do conta-gotas). */
 export function boundsContains(b: Bounds, p: Vec2): boolean {
@@ -26,8 +27,43 @@ export function inflate(b: Bounds, by: number): Bounds {
 }
 
 /** O ponto no espaço LOCAL da forma (desfaz a rotação em torno do centro da caixa). Exportado: o `hitTest.ts` usa. */
-export function localPoint(shape: VectorShape, bounds: Bounds, point: Vec2): Vec2 {
-  return shape.rotation === 0 ? point : rotatePoint(point, boundsCenter(bounds), -shape.rotation)
+export function localPoint(shape: VectorShape, _bounds: Bounds, point: Vec2): Vec2 {
+  return shape.rotation === 0 ? point : rotatePoint(point, rotationPivotOf(shape), -shape.rotation)
+}
+
+/**
+ * O ponto em coordenadas 0..1 DENTRO da figura (0,0 = canto de cima à esquerda
+ * da imagem; 1,1 = o de baixo à direita), ou `null` fora dela. É regra de três
+ * pura porque o `<image>` sai com `preserveAspectRatio="none"` (`svg.ts`): a
+ * imagem PREENCHE a caixa, sem tarja e sem corte. `localPoint` desfaz a
+ * rotação, então figura girada também responde certo.
+ *
+ * ⚠️ `slack` (unidades do documento) tem que ser a MESMA folga com que o
+ * `hitShapeAt` escolheu esta figura, e o resultado então é CLAMPADO em [0,1]:
+ * o hit-test acerta um anel de `10/zoom` em volta da caixa, e sem a folga aqui
+ * mirar a beirada do adesivo caía "fora da imagem" — a criança levava um recado
+ * de erro com a figura perfeitamente carregada. Dentro do anel ela pega o pixel
+ * da borda, que é exatamente o que está vendo.
+ *
+ * Quem transforma isto em cor é o `imageSampler.ts` — ler pixel precisa de
+ * canvas, e este módulo é puro.
+ */
+export function imageUvAt(
+  shape: Extract<VectorShape, { type: 'image' }>,
+  point: Vec2,
+  slack = 0,
+): Vec2 | null {
+  const bounds = shapeBounds(shape)
+  // Defensivo: o sanitize recusa figura com `w`/`h` não positivos, então uma
+  // caixa degenerada não chega aqui vinda do disco.
+  if (bounds.width <= 0 || bounds.height <= 0) return null
+  const local = localPoint(shape, bounds, point)
+  const u = (local.x - bounds.x) / bounds.width
+  const v = (local.y - bounds.y) / bounds.height
+  const du = slack / bounds.width
+  const dv = slack / bounds.height
+  if (u < -du || u > 1 + du || v < -dv || v > 1 + dv) return null
+  return { x: Math.min(1, Math.max(0, u)), y: Math.min(1, Math.max(0, v)) }
 }
 
 /**
@@ -54,12 +90,18 @@ export function hitShapeAt(
   point: Vec2,
   slack = 0,
 ): VectorShape | null {
-  for (let i = shapes.length - 1; i >= 0; i -= 1) {
-    const shape = shapes[i]
+  const scene = resolveMaskScene(shapes)
+  for (let i = scene.painted.length - 1; i >= 0; i -= 1) {
+    const shape = scene.painted[i]
     if (!shape || shape.hidden === true || !paintsSomething(shape)) continue
     const bounds = shapeBounds(shape)
     const hit = inflate(bounds, slack + (shape.stroke?.width ?? 0) / 2)
-    if (boundsContains(hit, localPoint(shape, bounds, point))) return shape
+    if (
+      pointPassesMask(scene, shape, point) &&
+      boundsContains(hit, localPoint(shape, bounds, point))
+    ) {
+      return shape
+    }
   }
   return null
 }
@@ -72,25 +114,28 @@ function unit(value: number, start: number, size: number): number {
 /**
  * A ponta do degradê mais perto do ponto (já no espaço local da forma), em
  * unidades da caixa, exatamente como o SVG avalia `objectBoundingBox`. Radial:
- * `cx=cy=r=0,5` por default, então o meio do degradê fica a 0,25 do centro.
+ * `cx=cy=r=0,5` por default, então o meio do degradê antigo fica a 0,25 do centro.
  */
 function nearestGradientStop(gradient: VectorGradient, bounds: Bounds, point: Vec2): string {
   const u = unit(point.x, bounds.x, bounds.width)
   const v = unit(point.y, bounds.y, bounds.height)
-  if (gradient.type === 'radial') {
-    return Math.hypot(u - 0.5, v - 0.5) < 0.25 ? gradient.from : gradient.to
+  const geometry = gradientGeometry(gradient)
+  if (geometry.type === 'radial') {
+    return Math.hypot(u - geometry.center.x, v - geometry.center.y) < geometry.radius / 2
+      ? gradient.from
+      : gradient.to
   }
-  const axis = linearGradientVector(gradient.angle)
-  const dx = axis.x2 - axis.x1
-  const dy = axis.y2 - axis.y1
+  const dx = geometry.end.x - geometry.start.x
+  const dy = geometry.end.y - geometry.start.y
   const length = dx * dx + dy * dy
-  const t = length > 0 ? ((u - axis.x1) * dx + (v - axis.y1) * dy) / length : 0
+  const t = length > 0 ? ((u - geometry.start.x) * dx + (v - geometry.start.y) * dy) / length : 0
   return t < 0.5 ? gradient.from : gradient.to
 }
 
 /**
- * UMA cor da forma, ou `null` quando não há uma cor só (figura de pixel art, ou
- * forma sem cor nenhuma). Preenchimento sólido vence; sem preenchimento (traço
+ * UMA cor da forma, ou `null` quando não dá para responder SEM DOM (a figura de
+ * pixel art, cuja cor é o PIXEL sob o toque — quem a lê é o `imageSampler.ts`),
+ * ou quando não há cor nenhuma. Preenchimento sólido vence; sem preenchimento (traço
  * do pincel) e linha valem o contorno; degradê devolve a ponta mais perto do
  * toque. Sempre normalizada (`#rrggbb` minúsculo: desenho antigo pode guardar
  * maiúsculas).
@@ -110,7 +155,8 @@ export function colorAtPoint(shape: VectorShape, point: Vec2): string | null {
 
 /**
  * As duas perguntas de uma vez: a forma tocada e a cor dela. `hex` nulo só
- * acontece com a figura de pixel art (forma sem cor nem entra no hit-test).
+ * acontece com a figura de pixel art (forma sem cor nem entra no hit-test) —
+ * aí quem responde é o `imageSampler.ts`, com o pixel.
  */
 export function pickColorAt(
   shapes: readonly VectorShape[],

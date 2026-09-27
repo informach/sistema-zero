@@ -62,7 +62,16 @@ describe('evaluateStructureRule', () => {
   })
 
   it('usesBlock anda a serialização do Blockly (blocksState)', () => {
-    const blocks = { blocks: { blocks: [{ type: 'controls_repeat', inputs: {} }] } }
+    const blocks = {
+      blocks: {
+        blocks: [
+          {
+            type: 'sz_frame_start',
+            inputs: { CHILDREN: { block: { type: 'controls_repeat', inputs: {} } } },
+          },
+        ],
+      },
+    }
     expect(
       evaluateStructureRule({ type: 'usesBlock', blockType: 'controls_repeat' }, ir([]), blocks),
     ).toBe(true)

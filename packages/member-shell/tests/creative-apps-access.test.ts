@@ -16,7 +16,7 @@ function membersStub(result: { status: number; body?: unknown }) {
   } as unknown as Parameters<typeof hasAiAppsLevel>[0]
 }
 
-describe('portão de carreira dos apps criativos', () => {
+describe('portão de jornada dos apps criativos', () => {
   test('o que chama IA (Pensa e Zappy) abre em Inventor(a)', () => {
     expect(AI_APPS_MIN_LEVEL).toBe('hacker')
     expect(meetsAiAppsLevel('coder', 'student')).toBe(false)

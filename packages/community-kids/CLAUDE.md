@@ -1,35 +1,71 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Recados iniciados pelo professor e ajuda — 11/09/2026
+
+Avisos individuais/coletivos chegam em conversas privadas no mesmo Recados. O sino usa
+`useTeacherUnread` compartilhado e atualiza após leitura/resposta, navegação e retorno à janela.
+Pedido de ajuda na aula oferece Ver conversa; a conversa usa `TeacherLessonLink` para voltar à seção
+acessível pelo hash. Objetivos práticos exibem resultados individuais vindos do servidor. Contratos
+e evidências de validação: [plano](../../docs/plans/2026-09-11-kids-recados-progresso-implementacao.md).
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Next.js, React, Tailwind,
 > jose, Zod, etc.). Para **pesquisa/exploração**, use o **MCP do Octocode**.
 
 Plataforma de cursos **KIDS/infanto-juvenil (8–13 anos)** do Sistema Zero — segundo app de área
 do aluno, irmão do [`@sistemazero/community`](../community/CLAUDE.md). Next.js 16 + React 19 +
-Tailwind v4, porta **3008**. Visual "estilo Duolingo" (redesign 06/2026) com a **PALETA DO TEMA
-KIDS** (re-tema 07/2026, a mesma do funil kids — ver `design-tema-kids.md` no fluxo-criativo):
-light = AZUL `oklch(0.52 0.15 252)` primário sobre azul-céu + LARANJA CTA (gradiente 3D
-`--sz-gradient` com pontas escurecidas p/ texto claro AA) + acentos rosa/verde/amarelo; dark =
-navy `#0C1E3E` com laranja claro `oklch(0.8 0.15 70)` primário e azul claro de apoio. ⚠️ Os
+Tailwind v4, porta **3008**. Visual "estilo Duolingo" (redesign 06/2026) que desde 11/09/2026
+veste a **PALETA DO PEN** (as telas-modelo dela): um fundo só por página, o menu como âncora
+ESCURA, a cor de ação AZUL `#1B5CF3` e dois temas, **Padrão** e **Pink** (não existe mais
+claro/escuro), com o 3D do Brilliant nos botões e cartões clicáveis. Ver
+§"Tema: a paleta do Pen" logo abaixo. ⚠️ Os
 tokens `--brand-lime`/`--brand-cyan`/`--kids-lime`/`--kids-cyan` mantêm os NOMES históricos com
 VALORES novos (lime→laranja, cyan→azul) — **trocar valor é ok, RENOMEAR é proibido** (ui e
 member-shell consomem os nomes; idem `--primary`, `.brand-gradient-text`, `.sz-progress`,
 `button.bg-primary…`). Radius 1rem,
-fontes **Baloo 2** (display) + **Nunito** (corpo) + Geist Mono (código), CTA "botão 3D" (sombra
-dura + afunda no clique), microinterações `kid-pop`/`kid-wiggle`/`kid-float` com
+fontes **Baloo 2** (display) + **Nunito** (corpo) + Geist Mono (código), microinterações
+`kid-pop`/`kid-wiggle`/`kid-float` com
 `prefers-reduced-motion` global. **Layout próprio (≠ community)**: sidebar fixa no desktop + top
-bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`). **Nav (lote UX 07/2026):** a sidebar
-segue com os 9 `NAV_ITEMS`; a TAB BAR mobile usa **`MOBILE_NAV_ITEMS` (5 abas)** — Início, Cursos,
-**Criar**, Mural, Perfil (9 alvos eram minúsculos p/ mãos pequenas). "Criar" → **`/criar`**
-(`(app)/criar/page.tsx`, em `protectedPrefixes`): hub de cards do trio criativo (Pensa→Pinta→
-Estúdio, na ordem da jornada) + Quarto + Clube; a aba acende nessas rotas (`NavItem.match` aceita
-`string | string[]`). **Home (lote UX 07/2026):** o StreakCard MORREU — virou
-**`creator-career-card.tsx`** ("Carreira de Criador": aura + insígnia do rank + `nextLevelHint` +
+bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`).
+
+⭐⭐ **Nav: cinco seções, e as três com destinos por dentro ABREM em vez de navegar (09/2026).**
+`NAV_ITEMS` (= `MOBILE_NAV_ITEMS`) tem Início, Jornada, Criar, Comunidade e Meu espaço. As três
+últimas têm **`children`**, e é isso que o menu desenha: no computador um `<details>` controlado
+(o padrão nativo do "Minhas ferramentas"), no celular uma **gaveta** sobre a barra de abas
+(`useModalA11y`, o mesmo das celebrações). O agrupamento de 07/09 tinha deixado as ferramentas a
+dois cliques e uma página no meio, e as crianças reclamaram do caminho no vaivém Estúdio↔Pinta.
+- ⚠️ **Só UM grupo aberto, e por padrão o da PÁGINA ATUAL** (`openGroupFor`): entrar no Estúdio já
+  deixa o Criar aberto, então o Pinta fica a UM clique. A escolha da criança vale até a próxima
+  navegação, quando o menu volta a refletir onde ela está.
+- ⚠️ **O clique no nome do grupo ABRE, não navega** (decisão da dona): a página da seção é o
+  primeiro filho ("Meus trabalhos" → `/criar`, "Nossa turma" → `/comunidade`, "Meu perfil" →
+  `/perfil`). Quem esperava navegar paga um clique a mais; o que torna isso aceitável é o grupo da
+  página já nascer aberto.
+- ⚠️⚠️ **O `match` é DERIVADO dos filhos** (`navMatch`), nunca escrito à mão: o menu é a fonte
+  única do mapa e é dele que `backToSection` deriva a setinha. Uma segunda lista de rotas
+  envelheceria em silêncio (travado em `tests/nav-back.test.ts`).
+- ⚠️⚠️ O `<details>` é CONTROLADO, e o navegador dispara `toggle` **também** quando quem mudou o
+  atributo foi o React (o grupo que fecha porque outro abriu). Sem descartar esse eco, abrir o
+  segundo grupo zerava a escolha na mesma volta e o clique não abria nada. O happy-dom não
+  reproduz isso sozinho: `tests/nav-group.test.tsx` dispara o evento à mão, senão o caso passaria
+  com e sem o conserto.
+- **Ferramenta que a criança não pode abrir NÃO entra no menu** (o motivo fica na página `/criar`,
+  que já a apresenta). A régua é a MESMA da página de destino, `creativeToolAvailability` do core;
+  ⚠️ `unavailable` (a consulta falhou) APARECE — fail-open, um soluço de rede não encolhe o menu.
+  O dado vem de **`getCreativeTools()`** (`server/creator-journey.ts`, `cache`), que o layout passa
+  por prop; o `getCreatorJourney` (com os cursos) ficou só para a `/criar`, porque o `listMyCourses`
+  usa `gatewayFetch` e seria caro em toda navegação. Para isso o
+  `checkCreativeToolsAccessReadonly` do member-shell ganhou `React.cache` — sem ele o layout e a
+  `/estudio` fariam DUAS idas a `/members/access` no mesmo render.
+- Os Recados ficam FORA dos filhos da Comunidade (já têm o sino no rodapé do menu) e seguem no
+  `inner`. O `/ranking` entrou em `protectedPrefixes`: era a única rota da criança que se defendia
+  só no RSC, e agora o menu a oferece direto. **Home (lote UX 07/2026):** o StreakCard MORREU — virou
+**`creator-journey-card.tsx`** ("Jornada do Criador": aura + insígnia do rank + `nextLevelHint` +
 fogo/XP secundários; placeholder gentil quando a gamificação está fora; a home soma
 `getAvatarReadonly()` ao Promise.all p/ a foto da aura). **"Meus cursos" = SÓ LIBERADOS (24/07):**
 o grid da home filtra `careerLock?.locked !== true` (superfície de AÇÃO — travados vivem no Mapa
-da Carreira) com ordenação ação-primeiro (em andamento → não começados → concluídos) + link "Ver
-o mapa da carreira" no título; empty-state defensivo aponta o mapa quando tudo está travado. O
+da Jornada) com ordenação ação-primeiro (em andamento → não começados → concluídos) + link "Ver
+o mapa da jornada" no título; empty-state defensivo aponta o mapa quando tudo está travado. O
 `course-card.tsx` PERDEU os estados de cadeado (foundation/reward/future — só a trilha/catálogo
 renderizam trava agora). **Festa no fim do vídeo:** a
 auto-conclusão a 90% ARMA a celebração (`deferredCelebrationRef` no lesson-player-client) e o
@@ -38,7 +74,7 @@ overlay completo abre no **`onVideoEnded`** (fio novo do member-shell); manual s
 CSP-safe): botão QrCode no `PlayLinkActions` dos cards do Mural → cartão imprimível (capa +
 título + QR do `/jogar/<id>`; imprimir usa `body[data-print='game-card']` + regra `@media print`
 no globals.css). **`/estudio` gated pelo RANK:** `studio-full-client` passa
-`level`/`allowedModes` derivados da carreira via `resolveStudioTier` (member-shell) ao
+`level`/`allowedModes` derivados da jornada via `resolveStudioTier` (member-shell) ao
 `StudioEditor` — o nível decide o MODO do editor; os BLOCOS vêm do currículo (ver a seção
 abaixo).
 Home com mascote + card-herói "Continuar" (`continue-hero.tsx`), **trilha serpenteante** no detalhe do curso
@@ -69,9 +105,11 @@ quando `buildTrail` vem vazio.
 E **celebração** ao
 concluir aula (`lesson-celebration.tsx`: mascote + confete CSS puro + barra antes→depois; o
 `complete()` não-silent abre o overlay em vez de navegar; auto-complete a ~90% segue só com
-toast). **Mascote Zappy** = o robô oficial da marca (`mascot.tsx`, um sprite WebP transparente
-1:1 por expressão em `public/zappy/`, expressions happy/celebrating/thinking/sleeping; `<img>`
-server-safe — a className controla o tamanho e herda `kid-float`/`kid-wiggle`/`animate-pulse`). A
+toast). **Mascote Zappy** = o vagalume oficial da marca (`mascot.tsx`, um sprite WebP transparente
+1:1 por expressão em `public/zappy/`, expressions happy/celebrating/thinking/sleeping/speaking; `<img>`
+server-safe — a className controla o tamanho e herda `kid-float`/`kid-wiggle`/`animate-pulse`).
+Desde 15/09/2026 ele também tem uma versão ANIMADA (Rive, com som) em nove pontos escolhidos —
+o `<img>` continua sendo o padrão e o chão de queda; ver §"O Zappy animado" abaixo. A
 **moeda Zappy** (`zappy-coin.tsx` → `<ZappyCoin>`, WebP em `public/zappy/coin.webp`) substituiu o
 ícone genérico `Coins` do lucide nos 6 pontos de saldo/recompensa (streak-widget, missions-panel,
 lesson-celebration, room-builder, configurator). **Página de aula kids (2ª rodada
@@ -87,32 +125,16 @@ blocks/[blockId]/certificate` (GET estado + POST emitir/baixar) e `/api/certific
 no negative-lookahead do matcher do proxy); env `APP_PUBLIC_URL` p/ o QR. O members é o portão (ver
 `../members/CLAUDE.md`); PDF/QR/R2 vivem no member-shell.
 o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell — editor embarcado
-(altura padrão GENEROSA: `lg:h-[82vh]`, piso 44rem — mais espaço pra programar; mudança no member-shell,
-vale tb no adulto),
+(altura `h-[36rem] lg:h-[40rem]` desde 09/2026, quando ele passou a dividir a tela com o conteúdo
+da seção; mudança no member-shell, vale tb no adulto),
 rascunho local, "Enviar para o professor" (o modal de confirmação tem um campo OPCIONAL de recado ao professor — compartilhado do member-shell, vale tb no adulto) + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
 ou `STUDIO_GATE_NOT_PASSED` (atividade enviada, mas abaixo da nota mínima); o `lesson-player-client`
-distingue os dois no toast/botão. **MODO CRIAÇÃO GUIADA (28/06):** quando a aula tem um bloco de VÍDEO
-**e** um de ESTÚDIO (`lessonSupportsGuided`), um botão "Modo criação guiada" aparece sob o título →
-abre o `GuidedCreationMode` (export do `kids-lesson-blocks`): overlay `fixed inset-0` com o vídeo à
-esquerda e o estúdio à direita (lado a lado no desktop; empilha no mobile) + botão "Voltar ao modo
-normal". A intenção de permanecer nesse modo fica em memória por `viewerId` + aula
-(`guided-creation-session.ts`): o `router.refresh()` disparado ao enviar a atividade para o professor
-pode remontar o player, mas NÃO fecha a criação guiada; somente "Voltar ao modo normal" a encerra
-(um reload completo da página começa no modo normal). **Split ARRASTÁVEL no desktop (07/2026):**
-`react-resizable-panels` (dep própria do kids —
-mesma lib/handle `.sz-resize-handle--vertical` de dentro do Estúdio), `autoSaveId
-"kids-guided-creation"` persiste a posição; vídeo `minSize 20`, estúdio `minSize 35` (Blockly
-inusável estreito). Gate por `useIsDesktop` (matchMedia 1024px, estado inicial lido direto — o modo
-só monta pós-clique, sem SSR/mismatch); <1024px segue o empilhado. Cruzar o limiar remonta o
-StudioBlockKids (re-semeia do rascunho, custo aceito); os DOIS layouts nunca montam juntos.
-O estúdio recebe `fillHeight` (prop nova do `StudioBlockView` → o editor preenche a coluna). É
-um OU outro (guiada vs layout normal) — renderizar os dois montaria o MESMO bloco de estúdio 2× (mesma
-chave de rascunho no IndexedDB → conflito); alternar remonta e re-semeia do rascunho local (sem perda).
+distingue os dois no toast/botão. O player compartilhado `LessonSections` mostra uma seção por vez e mantém uma instância do editor entre seções, ocultando-a quando não usada. O índice é livre dentro da aula desbloqueada.
 Renderizado DENTRO do `LessonPlayerProvider` (precisa do contexto do player). Exige `@sistemazero/studio` em transpilePackages + `@source`
 + `frame-src blob:`;
 ⚠️ invariantes de segurança COPIADOS do shell: URL canônica de vídeo, sandbox SEM
 allow-same-origin, markdown controlado — mexeu na segurança de bloco, replique nos DOIS
-renderers), `kids-lesson-attachments.tsx` (mesma mecânica de download) e **`kids-quiz.tsx`
+renderers) e **`kids-quiz.tsx`
 estilo Duolingo** (intro c/ mascote → UMA pergunta por vez c/ segmentos de progresso e cartas
 de resposta → correção verde/vermelho no FINAL — o gabarito só chega na resposta do submit,
 grading é server-side; cooldown/passingScore preservados; ⚠️ enunciado/opções/explicação são
@@ -120,6 +142,28 @@ MARKDOWN — `renderMarkdown` (bloco) no enunciado/explicação e `renderInline`
 recap, pois o `<button>` só aceita conteúdo inline; imagens limitadas por `[&_img]:max-h-*`).
 **Gamificação REAL implementada
 (11/06/2026)** — ver §"Gamificação estilo Duolingo" abaixo; nada fake, estado no members.
+
+## As barras de rolagem vestem o tema (13/09/2026)
+
+A rolagem padrão do navegador — a cinza grossa e escura — aparecia em qualquer área que
+rolasse, sem relação nenhuma com o tema. O caso que se via primeiro era o **menu da esquerda
+numa tela baixa**, com a barra cinza cortando o navy.
+
+⚠️ **A regra é GLOBAL (`*`), não uma classe a pedido.** A `.scrollbar-subtle` existia desde
+sempre e estava em SEIS lugares do app inteiro: opt-in não veste uma plataforma. A regra nova
+alcança também as **ferramentas embarcadas** (Estúdio, Pinta, Pensa, Molda), que vivem no MESMO
+documento e não em iframe.
+- Tokens `--rolagem` e `--rolagem-hover` no `:root`, derivados do `--foreground`; polegar com
+  borda transparente e `background-clip: padding-box` (afina o traço sem estreitar a ÁREA de
+  arrasto, que continua com os 10px que a mão pequena pega).
+- **`.kids-menu`** redeclara os dois tokens a partir do `--menu-texto`: o menu é a âncora
+  ESCURA e a barra do chão claro sumiria dentro dele. A classe está na raiz do `app-sidebar`,
+  na top bar e na gaveta do `mobile-nav`.
+- ⚠️ `color-mix` em **`oklab`**, nunca `oklch`: no espaço cilíndrico a interpolação passeia pelo
+  matiz e um cinza vira ROSA (foi assim que os embarcados já quebraram uma vez).
+- A `.scrollbar-subtle` continua existindo com a MESMA paleta, só mais quieta (some em repouso):
+  fica para as áreas densas que já a pediam — a mini-trilha da aula, as fileiras do configurador
+  de avatar e as tabelas do `@sistemazero/ui`.
 
 ## ⚠️ Classe de componente no `globals.css` vai em `@layer components`
 
@@ -132,9 +176,94 @@ o app segue nos demais controles). Não era specificity: as duas são `(0,1,0)` 
 Agora ela vive em **`@layer components`** e o default virou **44px** (call site sem `h-*` já nasce
 acessível). **Regra para este arquivo:** classe que existe para ser ajustada no call site (tamanho,
 espaçamento, tipografia) pertence a `@layer components`; deixá-la solta transforma todo `className`
-do consumidor em mentira silenciosa. ⚠️ O mesmo defeito segue no `.sz-btn-gradient` do
-**community adulto** (`packages/community/src/app/globals.css`) — lá só 1 dos 4 usos passa altura,
-então o estrago é pequeno, mas a armadilha é a mesma.
+do consumidor em mentira silenciosa. (O `.sz-btn-gradient` do **community adulto** tinha o mesmo
+defeito e foi para `@layer components` em 11/09/2026, no `994f2eac`.)
+
+## Tema: a paleta do Pen, temas Padrão e Pink, menu escuro e o 3D do Brilliant (11/09/2026)
+
+Pedido dela, só de design (função, estrutura, textos e imagens iguais): as telas do Pen
+(`esboço plataforma.pen`, quadro "★ Paleta") viraram a paleta padrão do kids e da comunidade
+adulta. Plano: `~/.claude/plans/eu-estou-mexendo-na-golden-forest.md`. Isto REVOGA três leis
+antigas: "cor não muda de valor, só aparece mais", "o fundo não segue o tema, só a tinta" e
+"pílulas chapadas, sem sombra dura". Commits: `c04b0bdf` (paleta, temas e chão), `d117ee3b` (menu
+escuro e logo) e `52de024f` (3D).
+
+- **A COR é do PERFIL e vem do SERVIDOR (17/09/2026).** O `next-themes` SAIU do kids e do adulto,
+  e com ele o `data-tema`, o `ProfileThemeProvider`, o `profile-theme.tsx` e a chave
+  `sz:kids:tema-dono`. Hoje: o catálogo de cores mora em `@sistemazero/core/palette` (ids em
+  inglês, rótulos em português, `DEFAULT_PALETTE = 'blue'` para TODO o ecossistema), os VALORES são
+  gerados em `@sistemazero/ui` (ver o CLAUDE.md de lá) e a cor escolhida chega por
+  **`data-sz-palette` no `<html>`**, emitido pelo layout raiz a partir de um espelho em cookie que
+  o **proxy do member-shell** hidrata ANTES do render.
+  ⚠️⚠️ **É isso que apagou o flash.** O valor do `next-themes` era do APARELHO (localStorage) e a
+  preferência é do PERFIL; o script de "no-flash" dele lê um armazenamento que o servidor não
+  enxerga, então servidor e cliente nunca podiam concordar no primeiro quadro. As duas cicatrizes
+  que existiam por causa disso — o reinício condicional pelo "dono do tema local" e a proibição de
+  `setTheme` em dep array — morreram junto com a biblioteca. O dono agora vive DENTRO do valor do
+  cookie (`"<dono>.<cor>"`) e quem reconcilia é o servidor.
+  ⚠️ Os seis `useTheme()` do kids (Estúdio, Pinta, Pensa, Molda, avatar 3D, Estúdio Pro) calculavam
+  uma CONSTANTE (`resolvedTheme` nunca era `'dark'` com `themes=['padrao','pink']`) e viraram
+  literais — código morto removido, não mudança de comportamento. Se o eixo claro/escuro voltar,
+  volta com atributo e hook próprios.
+  ⚠️ O ajuste das cores de ferramenta sob a paleta Rosa foi rechaveado para
+  `:root[data-sz-palette="pink"]` no `globals.css`: com o atributo antigo ele viraria código morto
+  em silêncio, e o Estúdio voltaria a uma cor que não passa AA sobre o chão rosado.
+  O seletor de cor é o `PalettePicker` do member-shell, montado em "Meu perfil" (a entrada
+  "Mudar tema" do menu do avatar SAIU: dois lugares escrevendo o mesmo estado foi como o adulto e
+  o kids divergiram antes).
+- **Tokens:** a fonte CANÔNICA da paleta Pen é
+  `packages/ui/src/styles/community-kids-theme.css` (`--sz-community-*`, inclusive o Pink).
+  `theme-kids.css` importa essa fonte e preserva os aliases `--sz-kids-*`. O `globals.css` daqui
+  mantém somente os aliases históricos `--pen-*`/`--menu-*` para o contrato interno da plataforma.
+  O funil kids importa o mesmo `theme-kids.css`; portanto, valor Pen novo ou corrigido nasce no
+  arquivo canônico e NUNCA é repetido nos consumidores. É pelos aliases `--sz-kids-*` que a
+  paleta chega às quatro ferramentas, cujos escopos claros re-declaram os `--sz-tool-*`.
+- ⚠️⚠️ **Identidade × ação.** O azul de IDENTIDADE (`--sz-kids-azul-texto`, `--kids-cyan`, o
+  Estúdio, o nível Construtor(a), as unidades e grupos de missão) não muda no Pink; a cor de AÇÃO
+  (botão, link, item ativo, "você está aqui") é `--pen-acao` → `--primary` e `--sz-kids-acao`, e
+  vira rosa no Pink. As ferramentas leem `--sz-kids-acao` primeiro. No Pink o Estúdio vira o
+  verde-azulado `#0E7C86` (o azul dele brigava com o rosa). Cores dos grupos, das oficinas,
+  moeda, sucesso e alerta não mudam.
+- **Um fundo só:** toda `KidsBand` pinta o chão (`--chao`) e a de fechamento (`lilas`, por
+  convenção a última), o chão alternativo (`--chao-alt`). Os tons do tipo `BandTone` ficaram para
+  as páginas não mudarem: as seções abaixo que falam em "faixa creme/menta/céu" descrevem o TOM
+  passado ao componente, não uma cor na tela. Os `--band-*` viraram tons de APOIO (chips,
+  ladrilhos): `creme` = superfície 2, `ceu` = chão alternativo, `menta` e `lilas` do Pen. ⚠️ Texto
+  na cor de ação sobre esses tons reprova (4,27:1 no céu): rótulo em tinta, ação só em ação.
+- **Menu escuro** (`app-sidebar.tsx`, `mobile-nav.tsx`, `SidebarFallback`, o fallback da top
+  bar no `(app)/layout.tsx`): `--menu` (navy no Padrão, ameixa no Pink), rótulo `--menu-texto`,
+  ícone `--menu-icone`, ativo na pílula da cor de ação (`.kids-marca`). O rodapé (Recados, fogo e
+  XP, moedas, cartão do perfil) é branco a 8% (`--menu-vidro`) com números em branco e ícones no
+  amarelo da moeda; o fogo apagado fica no cinza do menu e o aceso, amarelo cheio. Barra de abas:
+  rótulo ativo na ação clara (`--pen-acao-clara`; a ação crua dava 3,2:1 no navy). As iniciais do
+  responsável (sessão da conta) ganham o par da ação por `[&>span]` (as classes do `UserAvatar`
+  vêm depois do `className`). Viewport: `colorScheme: 'light'`, `themeColor` na cor do menu.
+- **Logo e favicons (PackLogo):** `kids-logo.tsx` é SVG EMBUTIDO gerado de
+  `public/logo_kids_dark.svg` (fundo escuro) e `logo_kids_white.svg` (fundo claro), com
+  `fundo="escuro" | "claro"` (padrão claro) e `size="nav" | "auth"`. O azul da logo lê
+  `--logo-zero` e fica rosa no Pink (no fundo claro o selo "kids" também, porque é o mesmo azul);
+  SISTEMA, a estrela e o selo amarelo do fundo escuro não mudam. Não edite os caminhos à mão:
+  troque os SVGs e gere de novo. Favicons: o `favicon.ico` do pacote em `src/app/` e os PNGs
+  gerados do `favicon.svg` (o apple-touch-icon sobre branco). A decisão antiga "mesmo favicon do
+  adulto" caiu com a logo nova.
+- **O 3D do Brilliant** (seção "O 3D DO BRILLIANT" do `globals.css`): a borda de baixo é uma
+  sombra dura num tom mais escuro da própria cor (o layout não anda); no hover sobe 1px e a borda
+  cresce, no aperto afunda até quase sumir, com a base sempre no mesmo lugar. Movimento por
+  `translate` (compõe com o que já gira); com menos movimento, nada anda. Onde entra: o override do
+  `Button` e as variantes contorno, secundário e apagar do ui (foco em CONTORNO, porque a sombra
+  apagaria o anel do `Button`); as `.sz-btn-*` (a `.sz-btn-inverso` pega o degrau da ação só dentro
+  de `.kids-marca`); os cartões clicáveis por seletor (`a.kids-carta`, `button.kids-carta`,
+  `a.kid-pop > .kids-carta`: fio de 2px e degrau cinza, no lugar do pulo do `kid-pop`); os nós da
+  trilha que abrem aula e o baú liberado; e peças soltas com `.kids-3d` (+ `--carta`, `--acao`,
+  `--sol`), com o movimento vindo do link ou botão em volta. Cor própria? Declare `--k3d-degrau`
+  na peça (o "Resgatar" faz no `style`). ⚠️ As `--k3d-*` são declaradas em CADA peça, nunca
+  herdadas: um cartão em hover em volta de um botão mexeria no degrau dele. Planos de propósito:
+  o menu, as abas e os chips de filtro (decisão dela), o nó travado e o baú fechado. Nas
+  ferramentas o relevo vale só nas galerias (ver o CLAUDE.md do ui).
+- **Conferência visual** (o app exige banco e login): `tmp/pen/` (fora do git) tem uma cópia da
+  conferência das telas-modelo (`?tema=pink` liga o Pink), o servidor `:4803`, uma amostra das
+  receitas do `tool-chrome.css` (`ferramentas.html`) e uma da logo (`logo.tsx`). Contraste medido
+  por script em 11/09: 27 páginas a 1440px e 5 a 390px, nos dois temas, sem falha.
 
 ## A trilha da Faísca é um degrau de verdade (14/08)
 
@@ -165,7 +294,7 @@ foi APAGADO por isso.
 ⚠️ **Nunca dizer quanto falta para o próximo posto enquanto o degrau não tem todos os cursos
 publicados** (1 em Primeiros Passos e 8 em todos os demais). Com o
 degrau pela metade, "faltam 2 para virar Inventor(a)" é mentira: a criança fecha os 2 e não sobe.
-`careerProgress` devolve `hint: null` nesse caso e as telas silenciam; quando o degrau enche, o
+`journeyProgress` devolve `hint: null` nesse caso e as telas silenciam; quando o degrau enche, o
 `remaining` do members vira verdade e a frase volta sozinha. O retorno por curso nesse meio-tempo é
 a GAVETA nova no Estúdio. As bolinhas do nó ficam, mas falam do que EXISTE ("1 de 3 aventuras
 prontas"), nunca do que falta para subir — e desde 15/08 elas contam a TRILHA INTEIRA, bônus
@@ -173,10 +302,10 @@ incluído (ver "O contador do medalhão" abaixo).
 
 ⚠️ **O POSTO não anuncia mais kit de blocos.** Desde a reforma do currículo (08/2026) quem entrega
 ferramenta é o CURSO; o posto entrega MODO (livre → Ponte → Pro) e PRODUTO (Estúdio+Pinta no
-Construtor(a), Pensa+Zappy no Inventor(a), Molda no Explorador(a) de Mundos desde 05/09). Por isso
-dois postos do meio (Mestre, Arquiteto(a)) anunciam só "um posto novo no mapa" — porque é o que
-eles dão de verdade.
-`CAREER_REWARD_INFO` (`lib/career-rewards.ts`) é a copy e `tests/career-rewards-conformance.test.ts`
+Construtor(a), Pensa+Zappy no Inventor(a), Molda no Explorador(a) de Mundos desde 05/09). O Mestre
+anuncia só "um posto novo no mapa", porque é o que ele dá de verdade. Desde 11/09 o Arquiteto(a) e a
+Lenda também citam as ferramentas do Molda que abrem neles (ver "Ferramentas do Molda por posto").
+`JOURNEY_REWARD_INFO` (`lib/journey-rewards.ts`) é a copy e `tests/journey-rewards-conformance.test.ts`
 trava as promessas contra o core E contra as constantes dos portões (inclusive proibindo nome de kit).
 
 ⚠️ **Copy sem travessão (—)**: é marca de texto de IA e a voz da casa é humana. Travado por
@@ -251,7 +380,7 @@ Resolver puro `resolveChildGuideStep` em `lib/guide.ts` (avatar PRIMEIRO — ord
 passos somem SOZINHOS quando a coisa acontece: montou avatar/abriu aula). O modal usa
 `childWelcomeSteps`: as AÇÕES que ainda faltam (não promete "primeira aula" para quem já estudou
 nem aponta "Começar" sem curso liberado) **seguidas da explicação FIXA do app** (aulas, XP/foguinho,
-Estúdio, Mural, carreira).
+Estúdio, Mural, jornada).
 ⚠️ **A explicação fixa é o conserto de 14/08:** antes só existiam os passos condicionais, então quem
 já tinha avatar e já tinha estudado abria "Como funciona?", lia UMA linha sobre XP e o "Vamos lá"
 fechava sem nada acontecer — o botão prometia o que o app não tinha. Duas regras nasceram daí:
@@ -296,9 +425,9 @@ senha"). O limite de perfis é do plano (criar acima → 409 no
 toast). Toda a lógica do BFF vive no **member-shell** (`shell.routes.profile*` + `shell.profiles`);
 os `route.ts` são shims de 1-3 linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
 **Card "Indique e ganhe" (embaixador, 09/2026):** a Área dos pais (modo gestão) mostra o
-`AmbassadorCard` (`app/perfis/ambassador-card.tsx`) — o responsável vira embaixador da Bolsa do
-Primeiro Jogo com UM clique (os dados já são os da conta): não cadastrado → explicação (bolsa
-100% + agradecimento por Pix quando a família indicada assina, depois da garantia de 7 dias —
+`AmbassadorCard` (`app/perfis/ambassador-card.tsx`) — o responsável vira embaixador e indica o
+curso **Cadê Todo Mundo?** com UM clique (os dados já são os da conta): não cadastrado → explicação
+(curso sem custo para a família indicada + agradecimento por Pix quando ela assina, depois da garantia de 7 dias —
 ⚠️ o VALOR vem de `bonus.amountCents` da view, NUNCA cravado na copy: é env do referrals) +
 botão "Quero ser embaixador(a)" + os TERMOS do dinheiro (agradecimento único, não é salário, sem
 vínculo — ficam AQUI, no ponto do compromisso: no funil eles só apareceriam depois do 1º bônus,
@@ -542,10 +671,54 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   `sr-only`, sempre montada) fica no HOST, irmã do app. ⚠️ O Provider TEM que vir do MESMO
   módulo do `import()` que montou o app, senão são duas instâncias de contexto e nada aparece.
   ⚠️ Nenhum texto do selo contém "Salvo" (o e2e do Studio usa `getByText('Salvo')` estrito).
-  **INTERINO:** `cloud-save-badge.tsx` (a camada acima do app) só existe para o `/molda`, até o
-  pacote sair da obra da outra sessão (lote 6b); ele lê a mesma função pura.
+  Desde o lote 6b (11/09/2026) o Molda também: o `molda-client` embrulha o app no
+  `mod.MoldaHostChromeProvider`, e o `cloud-save-badge.tsx` (a camada acima do app, que só o
+  `/molda` ainda usava) foi apagado.
+- **Seta e conta (11/09/2026, telas-modelo):** o contrato ganhou dois campos, os dois nulos no
+  `EMPTY_HOST_CHROME`. **`back: {label, href, onNavigate}`** é a seta das GALERIAS de volta
+  à seção-mãe, lida do `backToSection` do menu (`nav.ts`), nunca de lista paralela. Na ferramenta
+  ela é o QUADRADO com a seta ao lado do botão do menu (as barras das telas-modelo), e o nome
+  existe só para o leitor: o `label` é a frase falada ("Voltar para Criar"). ⚠️ O `text` curto que
+  a ferramenta mostrava ao lado da seta SAIU do contrato em `58c02632`, quando ela virou só o
+  quadrado. O `<a href>` da ferramenta chama
+  `onNavigate` (`router.push`) no clique simples e deixa o navegador cuidar do Ctrl/Cmd/meio. O
+  editor e o bloco de aula ignoram o campo. **`account: {label}`** diz que a nuvem da CONTA está
+  ligada (há fila e o navegador guarda; `unsupported` = `null`): a galeria mostra a pílula
+  "Guardado na sua conta" em REPOUSO (a imagem-modelo mostra assim) e diz "na sua conta" ×
+  "neste aparelho" na contagem. É memoizado por um BOOLEANO: o guardando↔guardado mexe no
+  `status`, nunca na identidade de `account` nem de `back` (travado em `tests/host-chrome.test.tsx`).
+  O Pensa espelha só `menu` e `back`. A tabela rota → seção está em `tests/nav-back.test.ts`.
 - Só com PERFIL (`viewerId`): sem sessão de perfil não há dono na nuvem e os apps abrem só-local.
-  Miniaturas dos cards NÃO viajam (capa vazia no outro aparelho até abrir o jogo).
+  **A capa dos cards viaja desde 26/09/2026** (`studio-cloud.ts`): o produtor manda
+  `meta.thumb` (a capa reduzida pelo pacote a ≤ 12 000 chars, `loadProjectThumbForCloud`), a
+  descida passa `summary.thumb` aos três restauros (`apply`, `restoreProject`,
+  `resolveStaleRemove`) e, no fim do `pullPass`, `adoptCloudProjectThumbs` grava a capa listada
+  nos jogos que já estavam aqui sem capa (sem baixar blob). O espelho ganhou `onThumbChanged`
+  (a captura ao sair do editor / a capa escolhida): sobe SÓ pela capa apenas enquanto a nuvem
+  não tem miniatura do jogo (`cloudHasThumb`, alimentado pela lista e pelas confirmações) — uma
+  revisão nova por saída invalidaria a base dos outros aparelhos e um editor aberto lá cairia
+  em cópia "(de outro aparelho)" por uma foto. E o `resolveStale` com a nuvem na MESMA versão
+  daqui (só a revisão é nova: outra aba, ou a subida pela capa) avança a marca e sobe de novo
+  SEM cópia (a regra que o Pinta já tinha).
+  **Full review do mesmo dia (26/09/2026), o que mudou aqui:** (a) ⚠️⚠️ **o prazo da lista da
+  nuvem é POR PÁGINA, não pela lista inteira**: com a miniatura em cada linha (7 a 12 KB) a
+  lista de 300 jogos num celular lento passava dos 4 s somados, o `withTimeout` devolvia `null`
+  em silêncio e o passe dizia "nada a descer" com o selo em "guardado". Hoje `cloud.list({
+  pageTimeoutMs })` (opção nova do `creations-cloud.ts`, relógio que nasce a cada página; a
+  página que estoura lança `CloudListTimeoutError`, com `page`/`timeoutMs`) e o `listRemote` do
+  adaptador escreve `console.warn('[criacoes-nuvem] …')` quando isso acontece (`listTimeoutMs`
+  é injetável nos testes); (b) `onThumbChanged` só sobe pela capa quando se SABE que a nuvem não
+  tem miniatura (`cloudHasThumb.get(id) === false`: a lista o listou sem capa, ou uma subida
+  daqui foi confirmada sem ela); sem a lista (a rota PRO só faz `attach()`) a capa vai de carona
+  na próxima edição, e uma lista NUNCA rebaixa `true` para `false` (uma lista velha que chegue
+  depois da confirmação não reabre a subida); (c) `pendingThumb`: a bandeira `thumbOnly` mora
+  fora do trabalho da fila, porque um `onChanged` que chegue depois SUBSTITUI o trabalho (a fila
+  guarda um por item) e a perdia; limpa no `onUploaded`; (d) a cópia "(de outro aparelho)" nasce
+  com a capa que a nuvem listou (`importProjectSnapshot(raw, {thumb})`); (e) `onDeleted` apaga
+  `cloudHasThumb`/`sendingThumb`/`pendingThumb` do item; (f) `tests/cloud-thumb-conformance.test.ts`
+  trava o teto de 12 000 em lockstep (members `CREATION_LIMITS.maxThumbChars`, BFF
+  `MAX_THUMB_CHARS`, studio `CLOUD_THUMB_MAX_CHARS`, kids `MAX_CLOUD_THUMB_CHARS` e o do Molda),
+  lendo por caminho como o `molda-conformance`.
 - **Medição (19/08):** `src/lib/perf.ts` (`perfSpan`/`perfSpanAsync`/`perfMark`; liga com
   `localStorage['sz:perf']='1'` ou `?szperf=1`; `[sz:perf]` no console + User Timing): spans
   `kids:cloud:produce|gzip|gzip-parts|reserve|put|commit`, `kids:pinta:reconcile`,
@@ -695,12 +868,12 @@ extensões, e não foi preciso protocolo novo de entrada.
   usar. Régua pura em `directionsAtPoint`.
 - ⚠️ **Em pé a tira vai numa linha PRÓPRIA:** cruz + tira + diamante dá mais que a largura de um
   celular, e o console saía com a cruz e o A cortados nas beiradas (medido em 412px).
-- ⚠️⚠️ **A seta gravada no braço tem token PRÓPRIO (`--snes-cross-ink`), e ele TROCA entre os
-  temas.** Ela contrasta com a CRUZ, não com o corpo do console: usando `--snes-ink` (a tinta de
-  texto, escura no tema claro porque o corpo é claro) a seta ficava escura sobre um braço escuro e
-  sumia — medido em ~1,2:1. A cruz é escura no claro e CLARA no escuro, então a tinta é branca num e
-  navy no outro; um valor só para os dois traz o defeito de volta. Travado por
-  `tests/console-controls.test.tsx`.
+- ⚠️⚠️ **A seta gravada no braço tem token PRÓPRIO (`--snes-cross-ink`).** Ela contrasta com a
+  CRUZ, não com o corpo do console: usando `--snes-ink` (a tinta de texto, escura porque o corpo é
+  claro) a seta ficava escura sobre um braço escuro e sumia — medido em ~1,2:1. Até 11/09/2026 a
+  cruz clareava no tema escuro e a tinta trocava junto; com os temas Padrão e Pink (os dois
+  claros) a cruz é escura nos dois e a tinta é UMA só, clara. Travado por
+  `tests/console-controls.test.tsx` (um valor, com claridade alta).
 - ⭐ **No desktop o teclado passou a chegar ao jogo sem clicar nele.** O foco nasce na página de
   fora: a criança abria o link, apertava a seta e não acontecia NADA. Medido: 0 teclas antes do
   clique, 1 depois. O foco é dado quando o jogo RESPONDE, não ao montar (até lá o `<Player>` ainda
@@ -813,7 +986,7 @@ em 26/07) e o Pro e "Promover para Pro" abrem somente na Lenda/equipe. As duas b
 `AI_APPS_MIN_LEVEL` e `FREE_CREATION_MIN_LEVEL` (member-shell `lib/studio-tier.ts`) — eram uma só até
 14/08, e por isso o Pinta ficava preso junto com a IA. Os BLOCOS não dependem mais do rank. Projeto importado com
 extensão futura é preservado, mas não abre antes da conquista. A matriz exata está em
-`docs/carreira-do-criador.md`. O modo Pro livre usa WebContainer local na rota dedicada; atividades Pro
+`docs/jornada-do-criador.md`. O modo Pro livre usa WebContainer local na rota dedicada; atividades Pro
 de aula usam `proRuntime` remoto via `/api/studio/pro-runtime/build`, com autorização do curso e template
 autoral, sem exigir COOP/COEP no player. O botão **"Compartilhar"** usa um `share` adapter
 próprio → `/api/studio/describe` + **`/api/studio/publish-standalone`** (shim sobre
@@ -841,7 +1014,7 @@ altura à página (o `overflow-auto` interno dela nunca engatava), e o puxador d
 (`absolute top-1/2`) centrava no MEIO do main crescido — fora da tela.
 ⚠️⚠️ **Par obrigatório do travamento: `md:min-h-[36rem]` (full review 26/08)** = o piso
 `min-h-[34rem]` dos frames (`embedded-app-loading.tsx`) + 2rem de `md:py-4` — **desde 07/09/2026 o
-padding é ZERO e o par virou `md:min-h-[34rem]` (só o `/molda` interino segue em 36rem)**. Sem ele, janela
+padding é ZERO e o par virou `md:min-h-[34rem]`, o `/molda` incluso desde o lote 6b)**. Sem ele, janela
 desktop mais BAIXA que ~560px (snap de meia tela, zoom 175-200% — quem mais usa zoom é quem
 menos pode perder o controle) fazia o piso do frame estourar contra o `overflow-hidden` e o PÉ
 do app — a barra de seleção — ficava CLIPADO sem caminho de rolagem (medido: 2px visíveis a
@@ -849,7 +1022,7 @@ do app — a barra de seleção — ficava CLIPADO sem caminho de rolagem (medid
 travado por `tests/main-container.test.tsx` (regime das rotas embarcadas + ramo normal fora do
 regime + o par main↔frames); mexeu no piso de um lado, mexa no outro (o comentário do
 `studio-full-client` aponta o par). **SEGUE o tema da comunidade:** o
-`studio-full-client` lê `useTheme().resolvedTheme` (next-themes) e passa `theme` ao `<StudioEditor>` E ao
+`studio-full-client` passa `theme='light'` (constante: não há tema escuro aqui) ao `<StudioEditor>` E ao
 `<ProjectList>` — assim o Estúdio não tem toggle próprio nem destoa do app (sem `theme`, o Studio mostraria
 o toggle e poderia ficar em tema diferente da comunidade). ⚠️ a **CSP** (`next.config.ts`) inclui
 **`script-src … data:`**: o preview injeta o script.js do aluno como `<script src="data:…">` num iframe
@@ -932,23 +1105,320 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
   mudando por XP de OUTRAS crianças enquanto a tela fica parada — o número do ranking é calculado ao vivo
   no servidor (members `getRanking`), só faltava re-buscar. Sem polling contínuo (custo do cálculo caro).
 
+### Ranking no desenho das telas-modelo (11/09/2026)
+
+- **Abas no cabeçalho:** o `RankingHub` recebe o `KidsPageHeader` pronto do servidor (`header`, o
+  texto continua na página) e desenha as faixas: creme (cabeçalho + `KidsTabs`), menta (o conteúdo
+  da aba) e lilás. O estado da aba precisa estar nas duas faixas, por isso o hub é dono delas.
+- **Pódio:** um cartão branco com 2º, 1º e 3º (ordem de DESENHO por `order-*`; a `<ol>` segue 1-2-3
+  para o leitor), bloco de metal com a ALTURA da posição. ⚠️ O lugar é DITO (`sr-only` "Nº lugar",
+  full review de 11/09/2026): a `<ol>` numera pela ordem no DOM e o placar é por competição, então
+  num empate (1º, 1º, 3º) a contagem da lista nem bate com o que está na tela. A cor e a altura saem da `position`, não do
+  índice (o ranking empata). A própria criança aparece pelo NOME com a pílula azul "você" (antes era
+  "Você" no lugar do nome), aqui e na liga.
+- **"Placar em pausa"** usa o `KidsEmptyState tone="pausa"` (círculo creme, ícone cinza) e o
+  "Tentar de novo" RECARREGA a página: o placar vem do servidor e o `useState` do hub não se refaria
+  com um `router.refresh()`.
+- ⚠️ **Os números dos cartões "quanto vale cada coisa" são do SERVIDOR.** `lib/xp-sources.ts` repete
+  os valores de `members/src/domain/gamification/gamification.ts` (`XP_VALUES`) e o
+  `tests/xp-conformance.test.ts` lê o arquivo do members PELO CAMINHO (molde do `badge-conformance`):
+  mover/renomear aquele arquivo quebra este teste, e não o typecheck. O jogo publicado no Mural só
+  vira fonte para quem abre o Estúdio livre (`canOpenFreeStudio`: posse + nível).
+
+### Meu perfil no desenho das telas-modelo (11/09/2026)
+
+- **Faixas:** creme (cabeçalho + herói azul) → menta (jornada, feitos e "Minhas ferramentas") →
+  azul-claro ("Meu cantinho" + "Proteja sua sequência") → lilás ("Minhas conquistas"). Sem
+  gamificação as conquistas somem e o cantinho vira a faixa lilás (a última é sempre lilás).
+- **Herói:** o avatar num quadrado de vidro (`.kids-marca-vidro`: a tinta da marca a 10% e um fio de
+  35%). ⚠️ Não usar o `.kids-marca-tile` (20%) atrás de TEXTO: o branco caía para 3,7:1; o vidro dá
+  4,58:1 no claro e 5,87:1 no escuro. O hover das pílulas de vidro engrossa o FIO em vez de clarear o
+  fundo, pelo mesmo motivo.
+- **Jornada:** linhas-cartão (o posto atual com contorno azul e "Você está aqui", o seguinte com
+  "Próximo nível", os que o catálogo não alcança numa linha "Em construção"). O ladrilho dos outros
+  postos é a cor do nível com a tinta `var(--card)`: branca no claro, navy no escuro (onde as cores
+  de nível clareiam), sem par novo.
+- **Feitos:** o ladrilho colorido sai de `badgeTone(slug)` (`badges.ts`), pela FAMÍLIA do slug, para
+  conquista nova já nascer colorida. A grade de conquistas é de cinco colunas, a conquistada com o
+  contorno azul e a travada num cartão branco comum (sem tracejado nem transparência).
+- **Cantinho:** o cartão inteiro é o link; a pílula creme só vai para a direita quando o PRÓPRIO
+  cartão tem 28rem (`@container` + `@md:`), porque a largura dele vem da grade de duas colunas.
+
+### Início, Jornada, Trilha e curso no desenho das telas-modelo (11/09/2026)
+
+- **Início:** o "Como funciona?" sobe para o canto do cabeçalho pelo `header` do `ChildGuide` (os
+  balões seguem entre o cabeçalho e o herói). Missões por grupo (`kids-unit-cyan|rosa|verde`) no fio,
+  no ladrilho e no "Resgatar"; ⚠️ o fundo do Resgatar é a cor do grupo puxada 14% para a tinta, porque
+  a rosa pura dava 4,37:1 com o branco. ⚠️ Item de grade com texto `truncate` precisa de `min-w-0`:
+  sem ele o cartão da missão vazava a tela no celular.
+- **Jornada:** o chip amarelo "Você é <posto>" e a frase do próximo marco moram no CABEÇALHO (o
+  `JourneyMap` não os desenha mais). A página fecha com as "Aventuras da trilha" em
+  `CatalogCourseCard layout="linha"`, com o progresso vindo de `listMyCourses` (o catálogo não sabe as
+  aulas feitas). No mapa: o posto atual com o anel azul da marca, o travado claro sem borda e com o
+  selo branco, e o travado também diz quantas aventuras a trilha dele tem.
+- **Trilha:** cartões grandes de duas colunas (`CatalogCourseCard`, sem cor de unidade: o prop `theme`
+  saiu) e, na trilha ATUAL, o cartão lilás "Próximo nível" (o que ele libera + N de M prontas).
+  ⚠️ O cartão só aparece quando o catálogo LEVA até o posto (`promisedNextLevel`, full review de
+  11/09/2026): com o degrau pela metade o mapa fecha com "E tem muito mais pela frente" e a frase de
+  quanto falta cala, então prometer o posto aqui seria a mesma falsa esperança por outro caminho.
+  E o cartão de curso COM barra ao vivo (as "Aventuras da trilha") mostra só o selo pendente, como
+  o da home: o marco é congelado e a barra não, então "Pronta!" apareceria ao lado de 90%.
+- **Trilha de aulas:** nós e faixas de unidade CHAPADOS (a sombra dura de 5px e o `--node-shadow`
+  saíram); o aperto virou `translateY(2px) scale(.97)`.
+
+### A aula no desenho das telas-modelo (11/09/2026)
+
+A aula é do member-shell (compartilhada com o adulto), então o kids a veste por CSS a partir dos
+GANCHOS de lá (lista no CLAUDE.md do member-shell, invariante 8). ⚠️ As regras ficam FORA de camada
+no `globals.css` (bloco "A AULA NO DESENHO DAS TELAS-MODELO"): o member-shell pinta com utilitárias,
+e dentro de `@layer components` elas perdiam (era por isso que o raio da barra do índice nunca
+mudava). Cada bloco vira cartão branco; o título da seção abre o primeiro (seletor de irmão
+`.sz-lesson-section-head + .sz-lesson-block`); a borda é a `--borda-carta` e NÃO sombra, porque o
+bloco usa o anel de foco em `box-shadow`. A barra de cima
+(`components/kids/kids-lesson-progress.tsx`), o chip "AULA N DE M", o índice da direita e o pé
+moram no `lesson-player-client.tsx`.
+
+⭐⭐ **E o cartão do TÍTULO saiu (18/09/2026).** O nome da aula era um `<h1>` do
+`lesson-player-client.tsx` e o nome da seção um `<h2>` logo abaixo, dentro de um cartão com o
+índice: duas linhas de título, cada uma com a sua margem, e a seção — que é o que muda ao avançar —
+por último. Hoje é UM cabeçalho só, do `LessonSections`: "aula · seção" numa linha, com o índice ao
+lado, sem borda nem fundo (`.sz-lesson-section-head` ficou só com o respiro de baixo).
+- ⚠️ A regra do corpo do título é `:is(h1, h2)`, nunca `h2`: o cabeçalho VIRA `<h1>` quando o player
+  passa `lessonTitle`, e mirando só a tag antiga a regra morre em silêncio — o título encolhia para
+  1,5rem no celular e crescia para 1,875rem no desktop.
+- ⚠️ O índice fica **só no ícone abaixo de 640px** (`sr-only sm:not-sr-only`, com `aria-label`).
+  Medido nos 392 pares reais de aula × seção dos manifestos: com o cartão e com o texto do botão na
+  mesma linha eram 5,3 linhas de cabeçalho a 390px (pior caso 8); sem os dois, 3,2 (pior caso 4).
+- ⚠️ O `loading.tsx` desta rota acompanha: ele reservava a altura do `<h1>` que saiu, e sem o
+  ajuste a aula abria com pulo de layout.
+
+⭐⭐ **E o cartão do TÍTULO saiu (18/09/2026).** O nome da aula era um `<h1>` do
+`lesson-player-client.tsx` e o nome da seção um `<h2>` logo abaixo, dentro de um cartão com o
+índice: duas linhas de título, cada uma com a sua margem, e a seção — que é o que muda ao avançar —
+por último. Hoje é UM cabeçalho só, do `LessonSections`: "aula · seção" numa linha, com o índice ao
+lado, sem borda nem fundo (`.sz-lesson-section-head` ficou só com o respiro de baixo).
+- ⚠️ A regra do corpo do título é `:is(h1, h2)`, nunca `h2`: o cabeçalho VIRA `<h1>` quando o player
+  passa `lessonTitle`, e mirando só a tag antiga a regra morre em silêncio — o título encolhia para
+  1,5rem no celular e crescia para 1,875rem no desktop.
+- ⚠️ O índice fica **só no ícone abaixo de 640px** (`sr-only sm:not-sr-only`, com `aria-label`).
+  Medido nos 392 pares reais de aula × seção dos manifestos: com o cartão e com o texto do botão na
+  mesma linha eram 5,3 linhas de cabeçalho a 390px (pior caso 8); sem os dois, 3,2 (pior caso 4).
+- ⚠️ O `loading.tsx` desta rota acompanha: ele reservava a altura do `<h1>` que saiu, e sem o
+  ajuste a aula abria com pulo de layout.
+
+⭐ **O cartão com "O que falta para concluir / Índice da aula" SAIU do kids (13/09/2026)** e não
+volta. Ele era a terceira cópia da mesma conta: a barra do topo recebe as mesmas `requirements` e
+já mede as atividades, e o índice já marca "Atividade pendente" na seção. O **"o que falta para
+concluir" não existe mais aqui**; o **índice desceu para o cabeçalho da seção** (título à esquerda,
+índice à direita, SEMPRE na mesma linha, inclusive no celular). Isso revoga a linha do plano de
+design de 11/09 que pedia a barra como cartão branco de raio 16. No member-shell a bifurcação é a
+flag `kids` (o `sz-lesson-toolbar` segue existindo no ADULTO e no ensaio do admin, que não leem
+este arquivo), e os dois únicos testes que exercitam o caminho do kids estão em
+`tests/lesson-sections.test.tsx` — o resto do arquivo renderiza sem a flag, ou seja, testa o
+adulto. Chips das atividades em cor sólida (Crie/Brinque/Desenhe no
+verde, sem o gradiente) e o quiz sem cartão dentro de cartão (painel `bg-background`; aprovado =
+bloco azul chapado). O fundo da aula ficou liso (a `.kids-field` de pontinhos saiu).
+
+⭐⭐ **Materiais complementares viraram um BLOCO (19/09/2026).** O `<details>` "Materiais de apoio",
+pregado no pé de toda seção e alheio à ordem que ela monta, e o card "Materiais da aula" no pé da
+página SUMIRAM os dois. Hoje é um bloco (`materials`) com uma lista ordenada de arquivos, imagens,
+recados, links e vídeos, que aparece no ponto em que ela o colocou — inclusive embaixo do vídeo, na
+coluna do conteúdo. O desenho é do member-shell (`MaterialsBlockView`, um só para os dois apps, sem
+cor por dentro) e quem o veste é o `globals.css` daqui, pelos ganchos `sz-lesson-materials*`.
+O caderno com `bookPreview: true` mantém esse download na esquerda e coloca a leitura 3D do mesmo
+PDF na direita quando houver espaço (ou depois do download em tela estreita).
+O `kids-lesson-attachments.tsx` foi APAGADO e a linha de arquivo herdou o desenho dele (bolinha da
+  marca, nome truncado, tipo/tamanho e relevo 3D). A ação “Baixar” aparece numa pílula explícita
+  à direita, usando `--pen-acao`; o componente compartilhado também mostra a preparação e confirma
+  o arquivo recebido. O chip é "Materiais" (`Backpack`, `kids-unit-cyan`
+— a mesma cor e o mesmo ícone do card que ele substituiu) e é um SUBSTANTIVO, como "Em breve": os
+verbos são das atividades. ⚠️ Materiais são opcionais por padrão; apenas os arquivos marcados
+pela autora como obrigatórios travam a seção, em conjunto com outros critérios como 90% do vídeo.
+O arquivo marcado mostra “Obrigatório para avançar”. ⚠️⚠️ O item de arquivo aponta para o
+ANEXO da aula pelo id e nunca carrega a URL — as regras, e o porquê, estão no CLAUDE.md do
+member-shell.
+
+⭐ **O chip dos blocos INTERATIVOS (14/09/2026).** Experimentação, demonstração, pergunta curta e
+experiência em HTML não tinham o selo colorido dos outros blocos — tinham uma linha de texto solta
+("Experimentação", "Atividade essencial"). ⚠️ Eles não passam pelo `BlockRenderer` daqui: o
+`LessonSections` manda `kind: 'interactive'` direto ao `InteractiveLessonBlock` do member-shell, e
+fazê-los passar significaria mexer no `parseLessonBlock`, no union `ParsedLessonBlock` e no desvio
+de lá — refator grande por um chip. O caminho é o gancho **`sz-lesson-chip`** + `data-chip`: o
+member-shell põe classe, ícone e rótulo (VERBO, como os outros: **Experimente**, **Observe**,
+**Responda**, **Brinque**) e o `globals.css` daqui veste a MESMA pílula do `BlockChip`, com as
+mesmas famílias de cor — experimentar e brincar no verde ("Crie"), observar no azul ("Assista"),
+responder no laranja (o do quiz). **Mexeu num, mexa no outro.** ⚠️ Em pergunta/HTML o chip
+SUBSTITUIU o texto de obrigatoriedade, que já tem linha própria logo acima do bloco
+(`sz-lesson-requirement`); era a segunda cópia da mesma informação.
+
+⭐ **E um bloco que sumia voltou:** a ENTREGA por galeria (`studio`/`pinta` com `gallery`)
+colocada numa SEÇÃO não aparecia em lugar nenhum — o painel do conteúdo filtrava por kind e a
+lista da ferramenta descartava a galeria. Detalhe no CLAUDE.md do member-shell.
+
+⭐⭐ **A cena virou um CONSOLE (18/09/2026).** Relato dela: *"a aparência geral da experiência, e isso
+conta instrução do Zappy, cena e controles da cena, tem que parecer que são uma única unidade e fazem
+parte de um jogo"*. Instrução, pista, mundo, frase e bancada passaram a morar numa moldura só, e o
+placar de dentro do palco passou a ser o do Jogo 2D (o `drawScore` e os corações do runtime, pela arte
+compartilhada). É tudo do member-shell — o desenho, as regras e as armadilhas estão no CLAUDE.md de lá,
+em "O CONSOLE" e "O placar é o do Jogo 2D". O que muda AQUI é só o material: o console veste o tema do
+PERFIL (cartão, borda, cor de ação), e não o deck escuro do jogo. Foi o meio-termo que ela escolheu
+depois de ver três propostas numa maquete descartável.
+
+⚠️ **A cena agora divide a tela como o Estúdio, e o teto dela subiu para 680px** — a régua é do
+member-shell (`lib/lesson-split.ts`), com o porquê no CLAUDE.md de lá. O que muda AQUI é o que se
+vê: seção com cena + conteúdo abre lado a lado numa coluna ≥1080px; seção cujo ÚNICO bloco é a
+cena (ou o Estúdio) ocupa a largura toda em vez de deixar meia tela vazia; e coluna estreita com
+cena EMPILHA, sem as abas "Ver exemplo"/"Criar". Cumprir o objetivo também deixou de travar os
+controles da experimentação (Desfazer, Recomeçar e Ligar som seguem vivos, inclusive ao reabrir a
+aula) — a marcação da seção continua sendo de primeira vez e não se desfaz. ⚠️ "Uma pista" SOME ao
+concluir desde os consertos do review do lote 2 (a caixa já sumia, e o clique mudo contava pista para
+o professor); ver o CLAUDE.md do member-shell.
+
+⭐⭐ **A barra do topo NUNCA some (09/2026), e a régua tem três degraus** — pura em
+`lib/lesson-progress.ts` (`vistaProgressoAula`), pintada pelo `KidsLessonProgress`:
+(1) com `lesson.sectionProgress` ela mede a CONCLUSÃO conferida no servidor ("67%"); (2) sem ele e
+com 2+ seções, a POSIÇÃO no percurso ("Seção 2 de 5"); (3) sem ele e com UMA seção, as atividades
+obrigatórias ("1 de 2 atividades"). Sem nada a medir, vira o espaçador — inventar número seria pior.
+⚠️ Os degraus 2 e 3 não são enfeite: o members devolve `sectionProgress` **undefined** para conta
+PRIVILEGIADA (`get-lesson.service.ts`, `privileged ? undefined : …`) e para aula em que nenhuma
+seção tem `completion` — e a migration `0080` agrupou TODA aula legada numa seção sem critérios.
+Ou seja, a dona (admin) nunca via a barra, e o `loading.tsx` reserva o espaço dela: sobrava um vão.
+⚠️ Aula "em breve" não mede atividade (o único requisito é o próprio bloco, que a criança não pode
+cumprir). A posição vem do `onSectionChange` do `LessonSections` (ver o CLAUDE.md do member-shell),
+porque o índice muda no CLIENTE e o `learningProgress.sectionId` só se mexe num refresh.
+
+⭐ **A divisória do lado a lado ficou visível** (`.sz-lesson-split-handle`/`-grip` no bloco da aula
+do `globals.css`, fora de camada): 44px de alvo, fio em `--linha-carta` (⚠️ NUNCA `--borda-carta`,
+que é `transparent` no tema Padrão) e uma pastilha de três pontinhos PARADA no meio dos painéis.
+Acende na cor de ação por `[data-resize-handle-state="hover"|"drag"]` (a lib marca "hover" já na
+folga de 6/20px, antes de o dedo encostar). ⚠️ Nada aqui pode criar contexto de contenção
+(`contain`, `container-type`, `transform`, `filter`): foi o que prendeu o `position: fixed` do
+"Expandir" do Estúdio e derrubou o `@container` em `c21f576d`. O achado que consertou o arrasto
+(a divisória tinha ZERO de altura) está no CLAUDE.md do member-shell.
+
+⚠️ **A pastilha já foi `sticky` no meio da viewport e a dona reprovou (13/09/2026):** ela deslizava
+pela divisória a cada rolagem ("ficou estranho o fato de ela se movimentar ao rolar a tela"). Hoje
+ela é `margin: auto` + `position: relative` sem deslocamento, e não se mexe; quem garante o alcance
+ao rolar é o FIO de alto a baixo, que é a zona de arrasto inteira. Não reintroduzir o `sticky`.
+⚠️⚠️ As duas declarações que sobraram no lugar dele são load-bearing, e as duas foram achadas no
+full review do próprio lote: **`margin: auto`** centra sem depender do `items-center`/`justify-center`
+que o member-shell põe no handle (tirar o `sticky` tinha criado essa dependência invisível em
+utilitárias de outro pacote); **`position: relative`** só devolve a CAMADA DE PINTURA — o fio é
+`absolute`, e elemento posicionado pinta acima de item de fluxo, então com o `::after` estático o
+fio passava a CORTAR a pastilha ao meio. Medido no navegador: margem 573px/10px (centro exato) e
+0px de deslocamento ao rolar 400px. No mesmo lote os
+limites do arrasto mudaram (o Estúdio encolhe até 380px e o lado a lado só liga com coluna ≥1080px)
+— a régua é `lib/lesson-split.ts` do member-shell, com o porquê no CLAUDE.md de lá.
+
+⚠️ **O Estúdio e o Pinta da aula ENCOLHERAM** (`h-[36rem] lg:h-[40rem]` e `h-[34rem] lg:h-[36rem]`;
+eram 44/60rem e 40/52rem): 960px de altura numa coluna de metade da tela viravam um retângulo
+comprido. Quem quer mais espaço usa o "Expandir". A mudança é no member-shell, então **vale também
+no adulto** (como sempre valeu a altura de lá).
+
 ## Telas de produto bloqueado (Estúdio/Clube/Pensa/Pinta/Mural + CTA da Comunidade) — 07/2026
 
 As 5 telas de "Ainda não liberado" dos produtos vendáveis (`kids-locked-{studio,clube,pensa,pinta,
 mural}.tsx`) são **wrappers finos** do componente compartilhado
-**`kids-locked-product.tsx`** (`KidsLockedProduct`, Server Component): mascote `thinking` + título +
-pílula "Ainda não liberado" + prévia (`preview`) + o **bloco da Comunidade dos Criadores** com um
-**CTA** para a oferta de assinatura. Cada wrapper só passa `title`/`intro`/`preview`; a API dos
+**`kids-locked-product.tsx`** (`KidsLockedProduct`, Server Component): mascote dormindo + título +
+pílula "Ainda não liberado" + prévia (`preview`) + o **cartão da Comunidade dos Criadores** (na faixa
+lilás) com um **CTA** para a oferta de assinatura. Cada wrapper só passa `title`/`intro`/`preview`; a API dos
 exports (`KidsLockedStudio`/`KidsLockedClube`/…, sem props) não mudou. **A promessa é REAL:** a
 assinatura "Comunidade dos Criadores" é um combo do catálogo que concede Clube + Mural + Estúdio +
 Pensa + Pinta (+ cursos) — confirmado em `packages/catalog/scripts/seed.ts`, então o CTA vale para as
-5. ⚠️ A **URL da oferta** é uma CONSTANTE nomeada no componente
-(`https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta`, `target="_blank"`), NÃO uma env
+5. ⚠️ A **URL da oferta** é uma CONSTANTE nomeada (`COMUNIDADE_OFERTA_URL` em `lib/links.ts`:
+`https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta`, `target="_blank"`), NÃO uma env
 (kids segue sem `FUNNEL_URL` de env). ⚠️ **NÃO usar `KidsLockedProduct` na tela genérica
 `KidsLockedSpace`** (coringa de qualquer espaço do hub, que pode ser gateado por curso/cargo e não só
 pela assinatura — o CTA prometeria errado); a genérica fica sem CTA. As telas transientes
 `kids-*-unavailable.tsx` ("tente de novo") e a trava de aula `kids-locked-lesson.tsx` são gates
 diferentes (não-produto) e seguem sem CTA.
+
+### O molde das telas de recado (11/09/2026)
+
+Essas telas não têm imagem-modelo, então seguem a régua das que têm. Todas passam por
+**`kids-recado.tsx`** (`KidsRecado`): faixa creme, cartão branco no meio com a arte, a pílula amarela
+do motivo (`chip`), o h1, as frases, os botões em pílula chapada e a letrinha miúda (`footnote`);
+`closing` abre a faixa lilás com um `KidsClosingCard` (a Comunidade dos Criadores no produto
+bloqueado). Usam o molde: `KidsLockedProduct`, `KidsJourneyLockedProduct`, `KidsJourneyLockedStudio`,
+`KidsLockedCourse`, `KidsLockedLesson`, `KidsLockedSpace` e `KidsAccessUnavailable` (e, por ele, as
+cascas `kids-*-unavailable`). Antes cada uma escrevia a coluna à mão, e quatro já tinham drifado
+(duas sem faixa, três tamanhos de título, dois botões). ⚠️ O `KidsAccessUnavailable` fica SEM a
+pílula do motivo, de propósito: é a nossa conexão que tropeçou, não algo a festejar nem a explicar.
+
+⚠️ **Nas rotas de ferramenta (Estúdio, Pinta, Pensa, Molda) o recado vai dentro do
+`ToolRouteRecado`** (`tool-route-recado.tsx`, `<ToolRouteRecado screen={KidsLockedPinta} />`).
+Essas rotas travam a altura na janela e cortam o que passa (o regime dos apps embarcados do
+`MainContainer`), e o recado não rola por dentro: sem a caixa, medido na conferência, 440px do
+produto bloqueado ficavam cortados sem rolagem num celular de 390×700, e 370px numa janela desktop
+de 560px de altura (full review de 11/09/2026). No celular a caixa desce por baixo da barra de abas
+e reserva o espaço dela (`-mb-24 pb-24`), que a última faixa devolve e pinta
+(`last:-mb-24 last:pb-24`): o mesmo par do `<main>` das páginas comuns, sem rolagem à toa numa
+janela alta. `tests/tool-route-recado.test.tsx` trava o par e varre as cinco páginas: nenhuma
+devolve um `Kids*` solto.
+
+### As telas fora do `(app)` e os estados de erro (11/09/2026)
+
+Também sem imagem-modelo, na mesma régua. Uma tela INTEIRA fora do grupo `(app)` (a grade de
+perfis, o formulário e as compras dos pais, `/responsavel`, o Atendimento) usa **`KidsScreen`**
+(`kids-screen.tsx`): um `<main>` com uma faixa só, do topo ao pé. A classe da faixa,
+`KIDS_SCREEN_BAND`, anula o `last:-mb-24 last:pb-24` da `KidsBand` (fora do `(app)` não há barra de
+abas por baixo, e a margem abriria 96px de rolagem à toa) e centra o conteúdo na altura;
+`align="start"` deixa as telas de LISTA no alto. As telas de recado inteiras (`ProfilesUnavailable`,
+`ProfilesNotIncluded`, o 404 da raiz e os `error.tsx` do `/jogar` e do `/validar`) passam a mesma
+classe pelo `bandClassName` do `KidsRecado`.
+- O `error.tsx` do `(app)` e a validação do certificado (`/validar/[id]`) também são `KidsRecado`,
+  sem a pílula do motivo (foi a gente que tropeçou, ou é um veredito). O `global-error.tsx` fica
+  de fora: ele não recebe o `globals.css`.
+- Entrar, esqueci e redefinir: o `Card` do ui com `AUTH_CARD`/`AUTH_TITLE` (`auth-card.ts`). O
+  `Card` pinta com utilitárias, então o `.kids-carta` (em camada) perderia para elas. O painel de
+  marca virou o herói azul (`.kids-marca`), sem as bolhas e as estrelinhas.
+- Os `Button` do ui nessas telas ganham a pílula e os 44px pelo CONTÊINER
+  (`[&_button]:min-h-11 [&_button]:rounded-full`): o ui desenha 36px com cantos de 8px, e o
+  `perfis-client` está a poucas linhas do teto de 600 do `component-boundaries`.
+- Perfil público (`/crianca/[id]`): herói azul como o do Meu perfil, e a seta volta para a
+  Comunidade (`inner` do item no `nav.ts`). O Quarto ganhou cabeçalho com a seta para Meu espaço
+  (`quarto-header.tsx`, o mesmo no `loading.tsx`).
+- Esqueletos (`loading.tsx`): imitam a página que carregam (as mesmas faixas e o formato dos
+  cartões), para a tela não pular quando os dados chegam.
+
+### Mural e Clube no desenho das telas-modelo (11/09/2026)
+
+As peças de moldura moram em `kids-space-sections.tsx` (cabeçalhos, painel "CANAIS", fechamentos);
+o `kids-space-content.tsx` só compõe e o `kids-space-view-client.tsx` (teto de 625 linhas do
+`component-boundaries`) ganhou apenas o estado do filtro.
+- **Filtros do Mural** ("Todos os jogos", "Mais jogados", "Novidades") são ORDENS de verdade no hub
+  (`?sort=`, ver o CLAUDE.md do hub); `mural-sort.ts` é a régua (a padrão é a AUSÊNCIA do parâmetro).
+  Trocar o filtro recarrega a lista do zero: o `loadThreads` depende do `sort`, e o cursor do hub
+  carrega a ordem. O "Da minha turma" da imagem ficou de fora: não existe turma no sistema.
+  ⚠️ A paginação dos tópicos mora em `use-thread-pages.ts` (full review de 11/09/2026): cada
+  recomeço (canal, filtro, recarga depois de postar) abre uma VEZ nova, e uma página pedida na
+  vez anterior que chega depois é descartada. Antes, um "Carregar mais" em voo na ordem antiga
+  emendava a página dele na lista nova; e até a primeira página nova chegar o botão seguia com o
+  cursor antigo, que o hub recusa na ordem nova (hoje ele some nesse intervalo). A falha do
+  "Carregar mais" mostra recado de criança, nunca a mensagem do hub
+  (`tests/mural-sort-race.test.tsx`, que monta o Mural com respostas adiadas).
+- **Faixas:** cabeçalho no creme, Mural no menta e Clube no azul-claro, fechamento no lilás. O
+  "Publicar um jogo" do fechamento do Mural usa a MESMA régua do remix (`onRemix` presente = posse do
+  Estúdio + Estúdio livre na jornada), para nunca levar a criança a uma tela trancada.
+- **Clube:** o nome do espaço mora DENTRO do herói azul (`KidsHero titleAs="h1"`), com o sino e os
+  Combinados em pílula branca (`ClubeCombinados variant="heroi"`). O estado vazio do canal usa
+  `emptyTitle`/`emptyText` (`channel-presentation.ts`): as MESMAS palavras do `emptyState`, partidas
+  em título e frase. A pílula creme "Escreva uma mensagem para a turma…" abre o mesmo formulário do
+  "Começar conversa" e leva o FOCO ao título dele: ela fica no pé da lista e o formulário abre no
+  topo do cartão, então sem isso a criança clicava e, na vista dela, nada acontecia. Os combinados (`COMBINADOS`, exportado) aparecem também no fechamento.
+- **Autor sem foto** mostra a INICIAL na bolinha (`AuthorBadge` passa `name`), e não o boneco
+  genérico igual para todo mundo.
+- ⚠️ **O sino mora no herói, e o herói não pode cortar** (full review de 11/09/2026): só a forma
+  `alto` do `KidsHero` tem `overflow-hidden` (a ilustração); na `faixa` a lista do sino sumia no
+  meio do azul. A lista abre para a DIREITA no celular (lá o sino fica à esquerda, e ancorada à
+  direita ela saía da tela) e para a esquerda do `md` em diante. O botão e a lista pintam
+  `text-foreground`: dentro do herói a tinta herdada é a branca da marca, e o ícone e os títulos
+  saíam brancos sobre o cartão branco. Abrir mostra as respostas NOVAS (guardadas na hora do
+  clique) e só então as marca como vistas; antes, marcar zerava a lista no mesmo clique.
+- **O Clube não rola de lado no celular:** a grade é `grid-cols-1` (a coluna `auto` crescia até
+  a fileira inteira de canais) e a fileira é `relative` (o "com novidades" `sr-only` é absoluto e
+  escapava do recorte). Medido a 390px: a página rolava 62px de lado. Testes:
+  `tests/clube-activity-bell.test.tsx` e `tests/kids-space-content.test.tsx`.
 
 ### Hub/fórum (compartilhado)
 
@@ -1050,40 +1520,104 @@ rodada do dia ele virou uma **ABA da barra lateral** (pedido dela: "semanticamen
 ao menu da esquerda, não às ferramentas"): cantos quadrados à esquerda, sem borda esquerda,
 ENCOSTADA na linha da sidebar (o `border-r` do `<aside>`) por uma margem negativa igual ao padding
 da barra (`--sz-tool-inset`, declarado por cada barra), 44px mantidos; com o menu escondido a aba
-fica colada na borda da tela. A folha entra
+fica colada na borda da tela. ⚠️ **11/09/2026: a aba SAIU** (as telas-modelo mostram o botão como
+um QUADRADO de cantos de 12px dentro do conteúdo, 40px no mouse e 44px no toque, branco sobre a
+faixa creme): a imagem venceu a decisão antiga, e o `--sz-tool-inset` foi apagado das barras e da
+folha. A folha entra
 no `globals.css` DEPOIS do `theme-kids` e ANTES dos CSS dos pacotes (ver `packages/ui/CLAUDE.md`
 regra 3b) e traz também os tokens semânticos `--sz-tool-*` que os três pacotes passaram a ler e as
 receitas do cabeçalho de duas linhas das galerias. A sidebar colapsada é `inert`
 + `aria-hidden` (antes os 9 links ficavam no tab order invisíveis). Os fundos das quatro
 ferramentas e o `--background` do kids são os MESMOS primitivos, então sem padding não há emenda.
-⚠️ INTERINO: o `/molda` mantém calha + puxador `edge` + o selo acima (pacote em obra na outra
-sessão); some no lote 6b. Contrato em `tests/main-container.test.tsx` e `tests/host-chrome.test.tsx`.
+O `/molda` entrou no mesmo regime no lote 6b (11/09/2026): a calha, o puxador `edge` e o selo
+acima do app saíram. Contrato em `tests/main-container.test.tsx` e `tests/host-chrome.test.tsx`.
 
-`focus-mode.tsx` (`FocusModeProvider`/`useFocusMode`/`SidebarFallback`) guarda DUAS preferências
-independentes por PERFIL no localStorage — esconder o MENU esquerdo (`sz:kids:hide-nav:<perfil>`) e
-esconder a LISTA DE AULAS à direita (`sz:kids:hide-outline:<perfil>`) —; a sidebar
-(`app-sidebar.tsx`) e o esqueleto do Suspense já reagem a `navCollapsed` (`w-0` + `opacity-0`,
+⭐⭐ **O QUARTO e o AVATAR entraram no modo foco (19/09/2026).** Relato dela: o editor de avatar
+ocupava a tela inteira sem oferecer caminho de volta ao menu, e o quarto nascia com o menu aberto
+e sem botão. Agora os dois nascem recolhidos e têm o botãozinho, como as ferramentas.
+
+⚠️⚠️ **Isto partiu em DUAS a régua que era uma só, e a distinção é a ALTURA.**
+`isEmbeddedAppPath` (`lib/embedded-app-path.ts`) continua sendo "a altura é travada na janela,
+borda a borda" — é o que o `MainContainer` pergunta — e ganhou **`/meu-avatar`**. A régua do FOCO
+virou **`isFocusRoutePath`** (`lib/focus-route.ts`, o único consumidor do `FocusModeProvider`) =
+aula + embarcados + **`FOCUS_ONLY_PREFIXES`**, hoje só `/quarto`. O Quarto ROLA (as bandejas de
+móveis são longas): pôr `/quarto` na lista dos embarcados travaria a altura e cortaria as
+bandejas sem nenhum caminho de rolagem — o mesmo defeito que obrigou a existir o
+`ToolRouteRecado`. Travado em `tests/focus-route.test.ts` e no caso novo do
+`tests/main-container.test.tsx`.
+
+- **O avatar entrou no layout, mas só a partir do `md`.** A página foi de `app/meu-avatar/` para
+  `app/(app)/meu-avatar/` (grupo de rota: a URL não mudou) e a raiz do `configurator.tsx` — nos
+  DOIS ramos, o normal e o de erro — virou
+  `fixed inset-0 z-50 … md:static md:z-auto md:h-full md:min-h-0 md:flex-1`. O esqueleto do
+  `dynamic` (`configurator-client.tsx`) segue a mesma regra, senão cobriria a barra da esquerda
+  enquanto o 3D carrega. A alça do menu é montada uma vez no shell, não na barra do avatar.
+  ⚠️⚠️ **O par `fixed` × `md:static` é load-bearing e foi MEDIDO.** No celular o painel de baixo
+  mede a JANELA (`max-h-[26vh]`) enquanto a caixa do `<main>` perdeu 152px para a barra de cima e
+  a de abas: em fluxo, a cena 3D (que é `flex-1` sem piso) encolhia de ~218px para **~66px** sem
+  erro nenhum — e a foto do avatar é um recorte do canvas escalado para 512², então ela passaria
+  a ser salva BORRADA a partir do celular. Imersivo no celular também é o certo de produto: lá o
+  botão do menu nem existe (abaixo de 768px a barra da esquerda não existe), então não há nada a
+  mostrar. ⚠️ A saída segue `window.location.assign(returnTo)` e o comentário de lá ficou MAIS
+  importante: no desktop o avatar do menu agora está na tela durante a edição, e só um reload
+  duro o atualiza.
+- **O quarto mantém o cabeçalho** (`quarto-header.tsx`) sem um segundo botão de menu. O shell
+  desenha a alça, inclusive durante o `loading.tsx`, então o controle não pula.
+- ⭐ **"Adequar o layout" virou uma regra de CSS.** A `KidsBand` mede 73.25rem (a coluna à direita
+  do menu a 1440px), então esconder o menu só CENTRALIZAVA o quarto. As faixas do quarto levam
+  `kids-band-foco` e o `globals.css` solta a régua para `73.25rem + --kids-menu-width` quando a
+  barra está com `aria-hidden="true"`. ⚠️ O estado vem do contexto pelo ARIA via `:has()`, sem
+  prop nova nem client component a mais — a mesma receita do rodapé imersivo da aula, e a
+  transição de 300ms casa com a da barra.
+  ⚠️⚠️ **A regra tem de ficar FORA de camada**, como está: a régua que ela precisa derrotar é a
+  utilitária `max-w-[73.25rem]` do `KidsBand`, e dentro de `@layer components` ela seria emitida,
+  legível e MUDA. `tests/quarto-foco.test.tsx` conta as camadas abertas antes da regra.
+  ⚠️ **As DUAS faixas levam a classe, e o `loading.tsx` também.** Só o palco crescendo deixaria o
+  cabeçalho 134px indentado em relação à borda do quarto; e o esqueleto sem a classe faria a
+  página saltar 268px de largura no primeiro quadro em que os dados chegam.
+  ⚠️ Consequência medida e aceita: a 1440px com o menu escondido, o palco `aspect-[3/2]` vai de
+  1044×696 para 1312×875, ou seja, ganha 268px de largura e empurra as bandejas 179px para baixo.
+  Se isso incomodar, o teto vai no palco (`room-canvas.tsx`), não na faixa.
+- ⚠️ As duas telas nascem com o menu recolhido a CADA entrada: o estado do foco é por visita e
+  por rota (não há preferência guardada). Abaixo de 768px o botão não existe, porque a barra da
+  esquerda também não.
+
+`focus-mode.tsx` (`FocusModeProvider`/`useFocusMode`/`SidebarFallback`) guarda DUAS escolhas
+independentes — esconder o MENU esquerdo e esconder a LISTA DE AULAS à direita —; a sidebar
+(`app-sidebar.tsx`) e o esqueleto do Suspense reagem a `navCollapsed` (`w-0` + `opacity-0`,
 transição de 300ms com `motion-reduce`). O provider mora no layout `(app)`, que NÃO remonta entre
-navegações, então o estado atravessa a navegação.
+navegações.
 
-- **Onde vale** (`navAvailable`): página de aula **OU app de criação embarcado**
-  (`isEmbeddedAppPath` — Estúdio/Pensa/Pinta, sub-rotas inclusas), sempre a partir de 768px (abaixo
-  disso a sidebar nem existe). `outlineAvailable` segue EXCLUSIVO da aula. A preferência persistida
-  nunca some a barra em `/cursos`, `/perfil` etc. — quem decide é o `available`.
-- ⚠️ **A preferência do menu é UMA SÓ**, não uma por tela: esconder no Estúdio mantém escondido na
-  aula e vice-versa. "Esconder o menu" é gosto da criança, não configuração de página.
-- **Duas roupas do MESMO botão** (`focus-mode-toggle.tsx`, prop `variant`): `header` (padrão) é o
-  círculo do cabeçalho da aula; **`edge`** é o PUXADOR colado na borda esquerda, para as três telas
-  de criação, que não têm cabeçalho nenhum onde pendurar o círculo. Mesmo rótulo, mesmo ícone,
-  mesmo `aria-pressed`.
-- ⚠️ **O puxador mora na CALHA do `MainContainer`** (`md:pl-9` contra `md:pr-4`), nunca flutuando
-  sobre o app: no Estúdio a borda esquerda é a **caixa de blocos do Blockly**, e um puxador por cima
-  cobriria uma categoria. Ele é IRMÃO do frame do app — a cerca `isolation: isolate` da raiz do
-  Estúdio prende os z-index de dentro dele (a toolbox é 70), então `z-30` basta; o que é portalado
-  p/ o `document.body` (menus da Topbar, dropdowns do Blockly) segue passando por cima, que é o certo.
-- **Um mount point só** (dentro do `MainContainer`) cobre Estúdio, Pensa, Pinta e `/estudio/pro` —
-  os três clients (`studio-full-client`/`pensa-client`/`pinta-client`) não sabem que ele existe.
-- ⚠️ `useMinWidth` e as preferências começam `false` TAMBÉM no cliente, de propósito (ver o
+⚠️⚠️ **NÃO há preferência guardada, e o estado é POR ROTA.** O que existe é um
+`useState<{path, navOpen, outlineOpen}>`: cada entrada numa tela de foco nasce recolhida, e abrir
+o menu vale só naquela rota — navegar recolhe de novo. Trocar de perfil (`viewerId`) e sair das
+telas de foco zeram. As chaves `sz:kids:hide-nav:<perfil>`/`sz:kids:hide-outline:<perfil>` que
+este arquivo descrevia **não existem mais** em lugar nenhum do código, e
+`tests/focus-mode.test.tsx` chega a assertar que o `localStorage` segue vazio depois de alternar.
+
+- **Onde vale** (`navAvailable`): o que o **`isFocusRoutePath`** (`lib/focus-route.ts`) disser —
+  página de aula, apps de criação embarcados (`isEmbeddedAppPath`, hoje Estúdio/Pensa/Pinta/Molda
+  e o configurador de avatar, sub-rotas inclusas) e as telas de foco de altura livre
+  (`FOCUS_ONLY_PREFIXES`, hoje o Quarto) —, sempre a partir de 768px (abaixo disso a sidebar nem
+  existe). `outlineAvailable` segue EXCLUSIVO da aula.
+- **19/09/2026, estado atual:** `FocusModeToggle` usa `EdgePanelHandle` do pacote UI, montado
+  uma vez no shell `(app)` como irmão dos painéis. A alça esquerda tem o mesmo fundo escuro da
+  sidebar; a direita tem o branco do índice da aula. Ambas usam a mesma largura CSS do respectivo
+  painel para permanecer coladas à borda aberta e à borda da tela quando fechadas. Os botões
+  antigos saíram dos cabeçalhos da aula, ferramentas, avatar e quarto. O `hostChrome.menu` dos
+  apps embarcados recebe `null`; os contratos dos pacotes de ferramenta seguem disponíveis para
+  seus playgrounds isolados. A alça da esquerda só aparece a partir de 768px.
+- **Projeto aberto nas ferramentas:** a galeria do Estúdio, Pinta, Molda e Pensa conserva a alça.
+  O editor ativo informa `setWorkspaceActive` ao mesmo `FocusModeProvider`; o shell recolhe o
+  menu e não monta a alça enquanto aquele projeto está aberto. O Estúdio informa isso quando
+  o projeto está pronto no `StudioFullEditor`; os outros três pacotes expõem o callback opcional
+  `onWorkspaceChange` para seus hosts. Ao voltar à galeria, a escolha anterior de menu aberto
+  ou fechado volta, sem preferência persistida. `/estudio/pro/[id]` já é editor pela própria rota.
+  Aula, avatar e quarto mantêm suas alças. Não resolver com transparência da alça: mesmo invisível,
+  ela continuaria capturando cliques e toques na área de criação.
+- ⚠️ HISTÓRICO: a versão anterior tinha um puxador na calha do `MainContainer`, depois um botão
+  nos cabeçalhos. Não reintroduzir outro mount point, pois isso duplica o controle do mesmo menu.
+- ⚠️ `useMinWidth` começa `false` TAMBÉM no cliente, de propósito (ver o
   comentário longo no `focus-mode.tsx`): ler `matchMedia`/localStorage no inicializador dava React
   #418 em toda página de aula, porque o botão faz `if (!available) return null`.
 
@@ -1216,11 +1750,10 @@ e encontra o recado, que é justamente a mensagem que a autora quer dar.
    fica vermelho no modo explícito `write`; ao sair/trocar de perfil a nova sessão volta a
    `readonly`. Gamificação é a fase 2 (ver seção própria) — NÃO improvisar
    contadores fake no meio-tempo.
-7. **Branding (06/2026)**: logo = wordmark OFICIAL (`public/logo_dark|white.svg`, copiados do
-   community) + selo "kids" composto em HTML (`kids-logo.tsx` — SVG via `<img>` não carrega
-   webfont, por isso o selo vive no DOM); `public/logo_kids_*.svg` são o fallback ESTÁTICO de
-   marca (letras desenhadas em paths, nunca `<text>`). Favicons herdados do community DE
-   PROPÓSITO (decisão: mesmo favicon).
+7. **Branding (11/09/2026, PackLogo)**: a logo do kids é própria (`public/logo_kids_dark.svg`,
+   `logo_kids_white.svg` e `logo_kids_vertical.svg`, os arquivos do pacote dela) e a `KidsLogo` a
+   desenha em SVG embutido, com o selo "kids" já no desenho (antes era a wordmark do adulto + um
+   selo em HTML). Os favicons também são do pacote. Ver §"Tema: a paleta do Pen".
 
 ## Pensa (planejador de jogos — 08/2026)
 
@@ -1231,8 +1764,8 @@ e **O** (auditoria e aprovação). Item "Pensa" no `nav.ts` → rota
 de Inventor(a), liberado):
 `app/(app)/pensa/page.tsx` chama `checkPensaAccessReadonly()` (`GET /members/access?refs=pensa`;
 ref = `PENSA_ACCESS_REF` do member-shell) → 200 sem produto = `KidsLockedPensa`; status ≠ 200 =
-`KidsPensaUnavailable` (retry); produto + carreira ≥ `hacker` = `pensa-client.tsx` (`'use client'`, import dinâmico
-do pacote no effect, tema do next-themes e sprites do Zappy). A persistência do plano é
+`KidsPensaUnavailable` (retry); produto + jornada ≥ `hacker` = `pensa-client.tsx` (`'use client'`, import dinâmico
+do pacote no effect, tema claro fixo e sprites do Zappy). A persistência do plano é
 BACKEND (members, tabelas `pensa_*`) — o client injeta um **transport** que prefixa `/api/pensa`
 (shims de 1–3 linhas sobre `shell.routes.pensa*`; o chat SSE `/api/pensa/chat` E o
 `…/artifacts/generate` têm `force-dynamic` — a geração responde SSE desde 08/2026, ver
@@ -1250,7 +1783,11 @@ globals.css (MESMO gotcha das utilitárias `sz-*` do Estúdio — sem isso as `p
 `api/pensa/*` fica DENTRO do matcher do proxy (JSON pequeno; a resposta SSE não é bufferizada
 pelo middleware). Deploy: `packages/pensa/**` nos watchPatterns do railway.json + case no ci.yml.
 O host remove chaves locais do fluxo anterior e mantém apenas os deep links de tarefa. Contrato:
-[`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
+[`../../docs/pensa-planner.md`](../../docs/pensa-planner.md). **Equipe do plano (26/09/2026):** quatro shims novos sobre o BFF — `projects/join`
+(`pensaJoin`), `[projectId]/share` (`pensaShare` POST/DELETE), `[projectId]/members`
+(`pensaMembers`) e `[projectId]/members/[profileId]` (`pensaMember` DELETE); todos DENTRO do
+matcher do proxy, sem gate próprio (posse do Pensa e dono/membro são do members). Ordem de deploy:
+members (migration `0098`) → gateway → member-shell → kids.
 
 ## Pinta (editor de assets de jogos — produto vendável, 07/2026)
 
@@ -1262,12 +1799,12 @@ terceiro irmão do fluxo criativo (**Pensa planeja → Pinta desenha → Estúdi
 Inventor(a), liberado):
 `app/(app)/pinta/page.tsx` chama `checkPintaAccessReadonly()` (refs `pinta,estudio-completo` numa
 ida — a 2ª vira `studioOwned`, copy da ponte) → 200 sem produto = `KidsLockedPinta`; status ≠ 200
-= `KidsPintaUnavailable` (retry); produto + carreira ≥ `hacker` = `pinta-client.tsx` (`'use client'`, import
-dinâmico no effect, tema do next-themes). **Sem backend próprio**: a galeria vive no IndexedDB
+= `KidsPintaUnavailable` (retry); produto + jornada ≥ `hacker` = `pinta-client.tsx` (`'use client'`, import
+dinâmico no effect, tema claro fixo). **Sem backend próprio**: a galeria vive no IndexedDB
 POR PERFIL (`setPintaStorageNamespace(viewerId)` ANTES de montar — mesmo contrato do /estudio) e
 a ponte **"Usar no Estúdio"** grava na biblioteca pessoal do Studio
 (`@sistemazero/studio/personal-assets` → `savePersonalAsset`, upsert por id) — o desenho aparece
-em "Meus desenhos" no painel de Imagens do `/estudio` do MESMO perfil.
+em "Meus desenhos" na aba "Imagens" (menu ⋯ → Materiais) do `/estudio` do MESMO perfil.
 **Mão DUPLA (08/2026):** o Estúdio ganhou um botão "Editar" nos desenhos vindos daqui →
 `studio-full-client` passa `onEditDrawing` = `window.open('/pinta?desenho=<id>', '_blank',
 'noopener,noreferrer')`; o `pinta-client` lê `?desenho=` (query, porque `noopener` corta o
@@ -1309,10 +1846,10 @@ Estúdio; o `/criar` ganhou o card 3 e o Estúdio virou o 4) → rota `/molda` (
 `EMBEDDED_APP_PREFIXES`), gate em 4 ESTADOS: `app/(app)/molda/page.tsx` chama
 `checkMoldaAccessReadonly()` (refs `molda,estudio-completo` numa ida — a 2ª vira `studioOwned`,
 atalho e dica do "Trazer do Molda") → 200 sem produto = `KidsLockedMolda`; status ≠ 200 =
-`KidsMoldaUnavailable` (retry); produto + carreira ≥ **`THREE_D_CREATION_MIN_LEVEL`**
+`KidsMoldaUnavailable` (retry); produto + jornada ≥ **`THREE_D_CREATION_MIN_LEVEL`**
 (`explorer`, o Explorador(a) de Mundos desde 05/09 — antes `hacker`: ⚠️ a oficina abre no posto
 que ganha o kit Jogo 3D, consumidor do modelo; `meetsThreeDCreationLevel` no member-shell) = `molda-client.tsx` (`'use client'`, import
-dinâmico no effect, tema do next-themes, `setMoldaStorageNamespace(viewerId)` ANTES de montar,
+dinâmico no effect, tema claro fixo, `setMoldaStorageNamespace(viewerId)` ANTES de montar,
 deep link `?criacao=`). **Sem backend próprio** (galeria no IndexedDB POR PERFIL), mas COM a nuvem
 desde 04/09: **"Guardado na sua conta" com a tool `molda`** — `src/lib/molda-cloud-persistence.ts`
 embrulha `createMoldaPersistence({namespace})` (molde do wrapper do Pinta, sem biblioteca de
@@ -1320,11 +1857,42 @@ paletas; superfície `loadAll/load/save/saveMany/remove/removeMany/subscribe`; m
 `sz:creations-synced:molda:<perfil>`; a miniatura viaja SÓ no modelo e só até 12 000 chars; o
 registro de "aberta no editor" do pacote avisa SEM id, então o wrapper confere `isMoldaAssetOpen`
 nas puladas; os `changed` do próprio IndexedDB atravessam o embrulho) e o `molda-client` liga
-`createCreationsCloud({ tool: 'molda', viewerId, idleMs: 5_000 })` + `CloudSaveBadge` +
-`flush({timeoutMs: 5000})` no cleanup. ⚠️ O members precisa da migration `0072` (`creation_tool`
+`createCreationsCloud({ tool: 'molda', viewerId, idleMs: 5_000 })` + o selo pelo `useHostChrome`
+(dentro da barra do Molda desde o lote 6b) + `flush({timeoutMs: 5000})` no cleanup. ⚠️ O members precisa da migration `0072` (`creation_tool`
 + `molda`) ANTES do deploy do kids — sem ela a reserva falha e a fila retenta. Os espelhos do
 union (members domínio/schema/DTO/cache/contagem, core, member-shell, kids) são travados por
 `tests/molda-conformance.test.ts` (lê por texto + o `CREATION_TOOLS` puro do members).
+
+**Proteção de formato (06/09, evolution lote 1):** uploads do Molda levam
+`formatVersion` do próprio `assetToJson` (hoje 1), separado de `baseRevision`.
+Filtro de versões futuras e exclusão usam `MOLDA_MAX_READ_VERSION`, independente
+da liberação de escrita. Serializar uma vez e usar a versão desse mesmo payload.
+`CREATION_CLIENT_OUTDATED` não retenta PUT nem confirma a marca; o selo pede atualizar.
+DELETE envia a capacidade `maxFormatVersion` configurada na instância da nuvem.
+Molda informa sua capacidade de leitura; Studio/Pinta sem opção mantêm o wire
+legado (servidor assume 1). Incompatibilidade não dispara resolvedor de revisão
+vencida nem confirma exclusão. Repetir exclusão compatível cancela restauro pendente.
+O transporte também confere a versão confirmada no ticket ANTES de qualquer PUT
+(07/09): ausência confirma só 1; divergência/null/texto é 503
+`CLOUD_FORMAT_UNSUPPORTED`, com retry limitado, sem avançar marcas. O BFF faz a mesma
+checagem antes de assinar URLs. Escritor novo continua dependendo do rollout dos guards.
+O adaptador exclui formatos futuros dos DOIS lados da reconciliação, inclusive com
+timestamps iguais; `getReadIssues/read` permitem mostrar e baixar o original na galeria.
+`assetFromCloudJson` lança `MoldaUnsupportedVersionError` em formato futuro: não converter
+essa falha em "não existe" nem avançar a revisão conhecida. Migration 0075 e guards
+de todos os servidores devem preceder escritores novos. Plano e gates restantes:
+`../../docs/plans/2026-09-06-molda-evolution.md`.
+
+**Galeria e concorrência (evolution lotes 12/13):** wrapper lista `listSummaries`
+e reconcilia metadados; documento completo é leitura pontual para abrir/exportar/
+copiar conflito. Fila captura somente id e relê a revisão atual ao produzir upload.
+Persistência exige `saveIfUnchanged`/`removeIfUnchanged`: comparação de `updatedAt`
+e mutação na MESMA transação local, `null` = ausência. Usar ao baixar, excluir,
+restaurar após 409 e reverter cópia de conflito; recusa não avança marcas nem fila.
+Se a criança editou a cópia antes do rollback, mantê-la e enfileirar sua revisão
+atual. Nunca emular atomicidade com `load` seguido de `saveMany`. `loadAll` continua
+disponível para backup completo explícito, não para abrir a galeria.
+
 **"Trazer do Molda" no Estúdio (lote 7, 04/09):** a página `/estudio` passou a pedir
 `checkCreativeToolsAccessReadonly()` (refs `estudio-completo,pinta,molda` numa ida) e o
 `studio-full-client` monta o adapter `moldaLibrary` SÓ com `moldaOwned` (import dinâmico do subpath
@@ -1334,10 +1902,11 @@ origin: 'molda'})` ANTES de devolver, com o nome salvo). No Estúdio o botão "�
 traz modelo/textura/céu, e o kit Jogo 3D ganhou "Criar o objeto … com o modelo" e "Usar o céu
 360°" (ver `packages/studio/CLAUDE.md`). A
 recompensa do Explorador(a) de Mundos anuncia "Molda, a sua oficina 3D" e a do Inventor(a) voltou a
-"Pensa + Zappy" (`career-rewards.ts`; o `career-rewards-conformance` trava a promessa em
+"Pensa + Zappy" (`journey-rewards.ts`; o `journey-rewards-conformance` trava a promessa em
 `THREE_D_CREATION_MIN_LEVEL`). Requisitos de build: `transpilePackages` + `@import`
-do `molda.css` + `@source "../../../molda/src"` no globals.css (MESMO gotcha das `sz-*`/`pz-*`/
-`pin-*`: sem isso as `mld-*` são no-op). Deploy: `packages/molda/**` nos watchPatterns do
+do `molda.css` no globals.css. O stylesheet do Molda registra suas fontes de UI e exclui
+testes; não registrar todo `molda/src` no host. Sem importar seus tokens, as `mld-*`
+são no-op. Deploy: `packages/molda/**` nos watchPatterns do
 railway.json + case `packages/molda/*` no ci.yml. Produto no catálogo: sku/slug/chave **`molda`**
 (seed idempotente, R$97 placeholder; o seed também reconcilia o componente num combo existente).
 Assinantes anteriores entram pelo comando do members `entitlements:rollout-molda`: dry-run por
@@ -1349,6 +1918,35 @@ foi trazido, com `kind`/`origin: 'molda'`/`originalFileName`), e o Estúdio leva
 jogos (a `personalSync` do Studio cobre `.glb`/`.hdr` desde 06/09). O botão do Estúdio repara o
 registro pessoal no clique (a biblioteca é local por aparelho), então "Editar" funciona também num
 jogo que desceu da nuvem. Teste: `tests/molda-client.test.tsx` (guarda do `resyncToStudio`).
+
+### Ferramentas do Molda por posto (11/09/2026)
+
+Dentro da oficina, as ferramentas de profissional abrem pela jornada, em três faixas
+(`MOLDA_TOOL_BAND_LEVELS`, no core): básico no Explorador(a), intermediário no Arquiteto(a) de
+Mundos e profissional na Lenda. O Molda não conhece jornada: recebe `toolAccess` no adapter
+(`{allow, upcoming}` com as famílias de `@sistemazero/molda/tools`), e ausência = tudo liberado.
+- **`lib/molda-tool-access.ts`** é a régua pura: `moldaToolAccessFor({levelSlug, role, horizon})`
+  (equipe e Lenda = `undefined`) e `moldaToolAccessRestricted`. O `when` de cada grupo sai do
+  `LEVEL_INFO` ("Abrem no nível Arquiteto(a) de Mundos"); o que passa do horizonte do catálogo vira
+  `BEYOND_HORIZON_PHRASE` (a mesma frase do nó do mapa, fonte única em `journey-horizon.ts`).
+  ⚠️ `horizon: null` = catálogo DESCONHECIDO: aí nenhuma faixa ganha nome de posto.
+- **A página só espera o catálogo quando há o que trancar**, e no máximo 1,5 s
+  (`CATALOG_WAIT_MS`): a equipe fora da prévia nem pergunta, e um catálogo lento não segura a
+  criança na porta.
+- **`?nivel=explorer|architect|…`** mostra à EQUIPE a oficina daquele posto (`moldaPreviewLevel`);
+  para quem não é da equipe o parâmetro não muda nada. O `molda-client` preserva o `?nivel=` ao
+  limpar o deep link (`?criacao=`) e compara o `toolAccess` pelo CONTEÚDO, para um render novo do
+  servidor não trocar o adapter.
+- **A promessa tem uma fonte só:** `MOLDA_BAND_PROMISES` (`lib/molda-level-gain.ts`) diz o que cada
+  faixa traz e quais famílias isso é. A comemoração de subir de posto ("🧊 No Molda: …") e as
+  recompensas do Arquiteto(a) e da Lenda (`journey-rewards.ts`) montam o texto daqui, e
+  `tests/molda-tool-access.test.ts` exige que cada família prometida esteja de fato na faixa do
+  pacote (lendo `packages/molda/src/core/toolFamilies.ts` pelo caminho).
+- **A linha "No Molda" só vai para quem tem o produto:** o layout pergunta a posse só nos três
+  postos das faixas (a ida é deduplicada com a da página /molda) e passa ao `CelebrationWatcher` a
+  frase pronta (`moldaGain`), ou `null`.
+- ⚠️ O mapa da jornada (`journey-timeline`) cita o Molda nas recompensas mesmo para quem não tem o
+  produto: é a copy do posto, igual à do Estúdio e do Pensa.
 
 ## Gamificação estilo Duolingo (Fase 2 + expansão Zappy/avatar — 6 fases)
 
@@ -1381,16 +1979,33 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   (forward-compat). Inclui a de PARTICIPAÇÃO **`clube-primeiro-post`** ("Voz da turma", `MessagesSquare`
   — 1ª conversa aprovada no Clube; ver §Full review do Clube dos Criadores).
 - `lesson-celebration.tsx` — overlay ganhou `gamification` (chip +XP, fogo do streak com
-  destaque quando `extended`, "abriu o baú da unidade", badges); `xpAwarded: 0`/`null` →
+  destaque quando `extended`, o CONVITE "tem um baú te esperando na trilha" — desde 09/2026 quem
+  abre o baú é a criança, então aqui não cabe mais dizer "você abriu" —, badges); `xpAwarded: 0`/`null` →
   overlay antigo. O `lesson-player-client` agora LÊ a resposta do complete (estado
   `celebration = {progress, gamification}`); auto-complete a ~90% vira toast `+N XP`.
 - `kids-quiz.tsx` — tela de aprovado mostra chip +XP e badges destravadas (vêm na resposta do
   submit).
-- `course-trail.tsx` + `trail-layout.ts` — nó de BAÚ no fim de cada unidade (`TrailUnit.chest`,
-  derivado client-side: todas as aulas do módulo `completed`; o índice global do serpenteado
-  avança TAMBÉM no baú — offsets consecutivos seguem diferindo de 1, travado em teste).
-  Fechado = tracejado neutro; aberto = tema da unidade (`kids-node--chest-{open,closed}` no
-  globals). Não-clicável. ⚠️ o label "+25 XP" do baú aberto espelha o XP_VALUES do members.
+- `course-trail.tsx` + `trail-layout.ts` + **`trail-chest.tsx`** — nó de BAÚ no fim de cada
+  unidade. O índice global do serpenteado avança TAMBÉM no baú (offsets consecutivos seguem
+  diferindo de 1, travado em teste), e o `trail-layout` só devolve a POSIÇÃO dele.
+  ⭐⭐ **CLICÁVEL desde 09/2026:** a criança clica, o baú abre com animação, confete e som, e AÍ
+  ganha o XP + moedas. Antes o `unit_complete` caía sozinho no `complete` da última aula do
+  módulo e o baú era só desenho. O estado (`liberado`/`resgatado`/prêmio) vem do SERVIDOR em
+  `ModuleOutlineView.chest` — derivar no cliente não sobrevivia a um F5. O claim é
+  `POST /members/courses/:slug/units/:moduleId/chest/claim`, revalidado no servidor e idempotente
+  pelo índice único de `xp_events`; contas antigas nascem com os baús ABERTOS, porque a linha
+  `unit_complete` que elas já têm no ledger É o carimbo (sem backfill).
+  ⚠️ **Só o KIDS** trocou de modelo: a vitrine ADULTA não tem trilha nem baú, então lá o XP de
+  unidade continua caindo no complete. ⚠️ Fechado, o baú **não é `<button>`** (seria parada de
+  foco que não faz nada) — o estado vive no `aria-label`, como sempre foi. Fechado = tracejado
+  neutro; liberado/aberto = OURO (`kids-unit-tesouro`, o `--sz-kids-amarelo` da marca).
+  ⭐ **Rive opcional do baú (22/09/2026):** `NEXT_PUBLIC_KIDS_CHEST_RIVE_URL` aponta para um único
+  `.riv` com artboard `Chest`, máquina `ChestState`, trigger `open` e estado terminal `Open`.
+  O `POST .../chest/claim` continua vindo primeiro; só o sucesso dispara a máquina, e só a entrada
+  em `Open` mostra o prêmio. Sem URL, economia de dados, movimento reduzido ou falha do runtime, o
+  SVG existente permanece visível e conclui pelo próprio `animationend` — nunca por `setTimeout`.
+  O canvas só esconde o SVG depois de validar a entrada; `StateChange.data` pode ser `string` ou
+  `string[]`. A falha depois do claim devolve a transição ao SVG, sem pular a reação da criança.
 - `streak-widget.tsx` — sidebar (cheio) + `MobileTopbar` (compact): fogo aceso (vermelho
   `--sz-hot`) quando `activeToday` + XP total. O layout busca via `Promise.all` com o avatar.
   **Equipe (passe livre):** quando `coins.unlimited` (members marca p/ superadmin/admin/staff), o
@@ -1398,7 +2013,7 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `room-builder.tsx` (quarto), que também leem `balanceUnlimited`. Compras da equipe voltam grátis
   (`unlimited:true`). Ver `docs/gamificacao.md` §4.
 - `streak-card.tsx` — card da home (só com cursos liberados E gamificação disponível).
-- **Carreira do aluno (rank, 06/2026; ESCADA DE 8 na reforma 2D/3D 17/07/2026: Faísca→Construtor(a)→Inventor(a)→Explorador(a) de Mundos→Mestre dos Jogos→Arquiteto(a) de Mundos→Gênio da Criação→Lenda — slugs internos noob/coder/hacker/explorer/elite/architect/champion/god)** — `lib/level-info.ts` (`LEVEL_INFO` rótulo/cor/ícone +
+- **Jornada do aluno (rank, 06/2026; ESCADA DE 8 na reforma 2D/3D 17/07/2026: Faísca→Construtor(a)→Inventor(a)→Explorador(a) de Mundos→Mestre dos Jogos→Arquiteto(a) de Mundos→Gênio da Criação→Lenda — slugs internos noob/coder/hacker/explorer/elite/architect/champion/god)** — `lib/level-info.ts` (`LEVEL_INFO` rótulo/cor/ícone +
   `levelInfo()`/`nextLevelHint()`; cor = CSS var `--level-<slug>` em `globals.css` `:root`+`.dark`),
   `components/kids/avatar-with-aura.tsx` (`AvatarWithAura` — anel/brilho na cor do nível ao redor do
   `KidsAvatar`, estático p/ reduced-motion) e `level-badge.tsx` (`LevelBadge` — insígnia ícone+nome).
@@ -1435,25 +2050,25 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
     âncora — virar atalho para publicar exigiria refazer a raiz do card.
   - ⚠️ Sem `milestones` (members antigo, vitrine adulta) não há selo. Silêncio > selo errado.
 
-  **Trava da carreira nos cards (24/07):** os dois cards tratam o `careerLock.reason` —
+  **Trava da jornada nos cards (24/07):** os dois cards tratam o `careerLock.reason` —
   `foundation-first` (CTA que NOMEIA o curso-base), **`tier-reward`** (🎁 "Recompensa: complete a
   etapa X" — bônus `careerSlot=null` virou recompensa, abre quando a etapa completa) e
-  `future-tier` ("Em breve na sua carreira"); deep-link em curso travado cai no 423 →
+  `future-tier` ("Em breve na sua jornada"); deep-link em curso travado cai no 423 →
   `KidsLockedCourse` com copy por motivo (`careerLockReason`, testado em
-  `tests/career-lock-reason.test.ts`).
-  **MAPA DA CARREIRA em /cursos (24/07; FITA + medalhões grandes):** a
+  `tests/journey-lock-reason.test.ts`).
+  **MAPA DA JORNADA em /cursos (24/07; FITA + medalhões grandes):** a
   página de cursos é o MAPA — os 8 níveis ligados por uma **FITA curva CONTÍNUA** (SVG) que
   serpenteia entre eles; a parte conquistada acende no **degradê das cores dos níveis**
   (`--level-<slug>`) e a parte à frente fica apagada com cadeado (≠ a antiga linha reta tracejada,
-  que lia como "timeline genérica"). Geometria PURA em `lib/career-path.ts` (centros dos nós + `d`
+  que lia como "timeline genérica"). Geometria PURA em `lib/journey-path.ts` (centros dos nós + `d`
   da fita completa/percorrida + paradas do degradê, num espaço de viewBox NORMALIZADO; o `<svg>`
   usa `preserveAspectRatio=none` + `vector-effect: non-scaling-stroke` e os nós ficam em `top/left %`
-  → fita e medalhões alinham em qualquer largura; vars `--career-node`/`--career-row` no globals).
-  Regras PURAS em `lib/career-map.ts` (`LEVEL_TIER` espelha o learningTier do core, `LEVEL_STUDY`,
-  `coursesForLevel`, `careerNodeState`, `trilhaLocked`; testes `career-map`/`career-path`/
-  `career-conformance`). Nó = **MEDALHÃO GRANDE** (`--career-node`) com a ilustração Dedé/Debinha em
-  **`public/carreira/<slug>.webp`** (**as 8 COMMITADAS 24/07**; fallback `onError` → ícone do
-  LEVEL_INFO; pipeline = `fluxo-criativo/scripts/preparar-poses-carreira.py` — lê
+  → fita e medalhões alinham em qualquer largura; vars `--journey-node`/`--journey-row` no globals).
+  Regras PURAS em `lib/journey-map.ts` (`LEVEL_TIER` espelha o learningTier do core, `LEVEL_STUDY`,
+  `coursesForLevel`, `journeyNodeState`, `trilhaLocked`; testes `journey-map`/`journey-path`/
+  `journey-conformance`). Nó = **MEDALHÃO GRANDE** (`--journey-node`) com a ilustração Dedé/Debinha em
+  **`public/jornada/<slug>.webp`** (**as 8 COMMITADAS 24/07**; fallback `onError` → ícone do
+  LEVEL_INFO; pipeline = `fluxo-criativo/scripts/preparar-poses-jornada.py` — lê
   `~/Downloads/<slug>.png` do ChatGPT, recorta o chroma `#00B140` e escreve os WebP aqui; trata os
   casos especiais do 1º lote: fundo em DEGRADÊ no `god` [corte por cor de fundo POR LINHA] e brilhos
   VERDES pintados pela IA em `god`/`elite`/`noob` [hue girado p/ o acento do nível]); nível não
@@ -1461,21 +2076,21 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `/cursos/trilha/[level]`** (por SLUG DO NÍVEL, não por degrau; o segmento estático `trilha` NÃO
   colide com `/cursos/[slug]`). **Cada trilha mostra o degrau inteiro do seu posto**, bônus incluso:
   Faísca → Primeiros Passos, Construtor(a) → Iniciante 2D e assim por diante. O `LEVEL_STUDY` do kids é ESPELHO da escada do core
-  (`CREATOR_CAREER_LEVELS`), travado por `tests/career-conformance.test.ts`. Deep-link em trilha
+  (`CREATOR_JOURNEY_LEVELS`), travado por `tests/journey-conformance.test.ts`. Deep-link em trilha
   bloqueada → recado gentil (`trilhaLocked` por nível, escape p/ EQUIPE: algum curso liberado →
   nunca mura). Gamificação fora → grade clássica.
-  ⭐ **HORIZONTE DO CATÁLOGO (08/2026) — `lib/career-horizon.ts` (puro) + `tests/career-horizon.test.ts`:**
-  a carreira exige 49 cursos (1 + 8×6, em 7 degraus) e o catálogo real tem punhados, então o mapa dizia
+  ⭐ **HORIZONTE DO CATÁLOGO (08/2026) — `lib/journey-horizon.ts` (puro) + `tests/journey-horizon.test.ts`:**
+  a jornada exige 49 cursos (1 + 8×6, em 7 degraus) e o catálogo real tem punhados, então o mapa dizia
   "faltam 7 cursos" de cursos que ninguém gravou e mostrava 6 medalhões com CADEADO — que para
   criança significa "você não fez o suficiente". Agora o mapa desenha **só até onde o catálogo
-  consegue levar** (`careerHorizon` = último nível cujos `requiredSlots` estão todos publicados) e
-  fecha com o **nó "E tem muito mais pela frente"** (`career-horizon-node.tsx`: arte da Lenda,
+  consegue levar** (`journeyHorizon` = último nível cujos `requiredSlots` estão todos publicados) e
+  fecha com o **nó "E tem muito mais pela frente"** (`journey-horizon-node.tsx`: arte da Lenda,
   martelinho no lugar do cadeado; tocar balança o nó e mostra um toast dizendo que essa parte está
   em construção). O contador do nó conta **só o que existe**; nada pronto a fazer → "Você está em
   dia!" + atalho p/ `/estudio` (só com posse — produto à parte).
 
   ⭐⭐ **O CONTADOR DO MEDALHÃO conta a TRILHA INTEIRA (15/08/2026)** — `tierCompletion` /
-  `tierCompletionByLevel` / `nodeShowsCheck` em `lib/career-map.ts`. O problema: quando a usuária
+  `tierCompletionByLevel` / `nodeShowsCheck` em `lib/journey-map.ts`. O problema: quando a usuária
   publica um curso num degrau que a criança JÁ PASSOU, ela nunca fica sabendo — subiu de posto, o
   medalhão está com ✓, e a aventura nova morre sem público. Três mudanças, todas de APRESENTAÇÃO:
   - **Denominador = `coursesForLevel`**, a mesma função que a página da trilha usa: TODOS os cursos
@@ -1494,28 +2109,28 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
     e a página deixou de buscar o `listMyCourses` só para contar.
     ⚠️ Selo do card e contador leem o MESMO campo, logo não podem divergir. Curso re-etiquetado
     depois de qualificado conta no degrau em que está AGORA (é o que a criança vê na trilha),
-    enquanto a carreira segue o retrato congelado do marco — divergência aceita e rara.
+    enquanto a jornada segue o retrato congelado do marco — divergência aceita e rara.
   - **O contador aparece nos postos JÁ VENCIDOS** (antes só no atual) e o **✓ regride** enquanto
     faltar curso ali (`nodeShowsCheck`). Sem as duas, mudar o denominador não resolveria nada: o
     degrau passado não tinha contador algum para virar "8 de 9".
 
-  ⚠️⚠️ **A régua da CARREIRA não mudou, e não pode mudar.** Subir de posto continua exigindo as
+  ⚠️⚠️ **A régua da JORNADA não mudou, e não pode mudar.** Subir de posto continua exigindo as
   posições OBRIGATÓRIAS com os dois marcos (concluir + publicar no Mural), no members/core. São duas
-  contas separadas de propósito: `careerProgress` (career-horizon.ts) alimenta a frase "Faltam N para
+  contas separadas de propósito: `journeyProgress` (journey-horizon.ts) alimenta a frase "Faltam N para
   virar X" e ficou INTOCADO; `tierCompletion` alimenta bolinhas, contador e ✓. Mexer no primeiro
   quebraria a frase, porque ele calcula `remaining = min(missing, ready − done)`.
 
-  ⚠️ **O `/perfil` NÃO mudou** (decisão da usuária, 15/08): aquela escada é a CARREIRA — os postos
+  ⚠️ **O `/perfil` NÃO mudou** (decisão da usuária, 15/08): aquela escada é a JORNADA — os postos
   conquistados —, não o conteúdo do degrau. O ✓ de lá segue posicional.
 
   ⚠️ **Dois defeitos achados no full review do próprio lote, os dois de "o que fazer quando a fonte
   falha ou quando as duas contas discordam":**
-  1. O card **"Você está em dia!"** é regido pelo `careerProgress` (só obrigatórias). Com um bônus
+  1. O card **"Você está em dia!"** é regido pelo `journeyProgress` (só obrigatórias). Com um bônus
      novo por fazer, o medalhão dizia "8 de 9" e o card logo abaixo afirmava "você já fez tudo que
      está pronto por aqui" — a mentira que este contador existe para matar. Agora ele exige TAMBÉM
-     a trilha completa (`trilhaComplete`). Regressão em `tests/career-map-counter.test.tsx`.
+     a trilha completa (`trilhaComplete`). Regressão em `tests/journey-map-counter.test.tsx`.
   2. **Progresso DESCONHECIDO ≠ nada feito.** `listMyCourses` falhando fazia `done = 0` em todo
-     degrau: um veterano perderia TODOS os ✓ e veria "0 de 8" na carreira inteira por um soluço de
+     degrau: um veterano perderia TODOS os ✓ e veria "0 de 8" na jornada inteira por um soluço de
      rede. Era a mesma régua do `catálogo null ≠ vazio`. ⭐ **O caso deixou de existir** quando os
      marcos passaram a vir no próprio catálogo (15/08): ou ele carregou, e o contador é confiável,
      ou a página já falhou antes. `completionByLevel` segue OPCIONAL só para o ✓ ter um caminho
@@ -1528,16 +2143,16 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
      Antes isso era impossível por construção — o defeito nasceu ao remover essa garantia.
 
   ⚠️ **O lado duro da régua mista, e é intencional:** quem concluiu os 8 e não publicou nenhum lê
-  "0 de 8 aventuras prontas", agora também em degrau já vencido. É a carreira sendo fiel — e é
+  "0 de 8 aventuras prontas", agora também em degrau já vencido. É a jornada sendo fiel — e é
   justamente o que o SELO do card tornou legível: ao entrar na trilha, os oito cards dizem o motivo. ⚠️ **Nenhum espelho novo do core:** `requiredSlots[nível_i] = ∪ LEVEL_STUDY[j].slots
-  p/ j < i`, então `LEVEL_TIER`+`LEVEL_STUDY` bastam e a garantia do `career-conformance` é herdada.
+  p/ j < i`, então `LEVEL_TIER`+`LEVEL_STUDY` bastam e a garantia do `journey-conformance` é herdada.
   ⚠️ **Catálogo `null` (a busca FALHOU) ≠ catálogo vazio:** `null` não restringe nada (cai na visão
   definitiva), senão um soluço de rede tiraria postos conquistados da tela; vazio é informação real
   e encolhe. **A visão provisória se dissolve SOZINHA:** catálogo completo → horizonte `god` → os 8
   medalhões de sempre e o nó de fechamento some (travado no teste "catálogo COMPLETO"). Consomem o
-  horizonte: `/cursos`, `/cursos/trilha/[level]`, `/perfil` (`career-timeline`, que colapsa os postos
-  além do horizonte em UMA linha) e a home (`creator-career-card`). ⚠️ A frase "falta N curso…" tem
-  UMA fonte só — `nextLevelHintWithin` no `career-horizon.ts`; o antigo `nextLevelHint` do
+  horizonte: `/cursos`, `/cursos/trilha/[level]`, `/perfil` (`journey-timeline`, que colapsa os postos
+  além do horizonte em UMA linha) e a home (`creator-journey-card`). ⚠️ A frase "falta N curso…" tem
+  UMA fonte só — `nextLevelHintWithin` no `journey-horizon.ts`; o antigo `nextLevelHint` do
   `level-info.ts` foi REMOVIDO (era a mesma frase sem o limite do catálogo, e duplicata de frase já
   drifou 2× neste arquivo). ⚠️ O `<ol>` do mapa leva `mb-10`: a legenda do ÚLTIMO nó é absoluta e cai
   ~42px ABAIXO da caixa, e sem a margem o bloco "em dia" entra por cima dela (medido, 10px).
@@ -1557,8 +2172,9 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   desbloqueada = cor da marca + data. Inclui as **badges de MAESTRIA** da expansão
   (`studio-first`/`-master-3`/`-master-10` do Estúdio; `coins-saver-300`/`-1000` de poupador de
   Zappy) — copy/ícone em `badges.ts`, detecção no members.
-- **Avatar 3D — `components/kids/avatar3d/*` (rota `/meu-avatar`, tela cheia IMERSIVA fora do
-  grupo `(app)`):** configurador de personagem 3D (substituiu o DiceBear). `configurator-client.tsx`
+- **Avatar 3D — `components/kids/avatar3d/*` (rota `/meu-avatar`, DENTRO do grupo `(app)` desde
+  19/09/2026: imersivo no celular, em fluxo com o menu recolhido a partir do `md` — ver §"Modo
+  foco"):** configurador de personagem 3D (substituiu o DiceBear). `configurator-client.tsx`
   (`dynamic ssr:false` — three/fiber/drei só no cliente, espelha o `studio-full-client`) → `configurator.tsx`
   (estado + loja por categoria + 2 modos: **Personalizar** ⇄ **Cabine de fotos**) + `avatar-scene.tsx`
   (`<Canvas>` R3F) + `avatar-rig.tsx` + `asset-part.tsx` + `camera-manager.tsx` + `thumb-canvas.tsx`.
@@ -1616,8 +2232,8 @@ A `<Canvas>` precisa de
   hat/accessory), `face-01..07` (pintura) + `face-08` (máscara). Auditoria por md5 pegou 9 GLBs duplicados
   (`eyes-09..12`/`eyebrow-07..10`/`hair-09`) e re-apontou p/ a arte distinta; só PumpkinHead (sazonal) e o
   corpo-base nu ficaram de fora. **Toda peça/categoria nova → re-rode `bun run gen:avatar-thumbs`.**
-  **Sem item no `nav.ts`** — acessado
-  pelo CLIQUE no avatar em `/perfil` (`profile-client` → `router.push('/meu-avatar')`); `/meu-avatar`
+  Está no `nav.ts` como "Meu avatar" (grupo "Meu espaço") e também é acessado pelo CLIQUE no
+  avatar em `/perfil` (`profile-client` → `router.push('/meu-avatar')`); `/meu-avatar`
   em `protectedPrefixes` + `api/members/avatar/snapshot` no negative-lookahead do matcher.
 - **Quarto virtual 3D (06/2026) — `room/room-canvas.tsx` (wrapper `dynamic ssr:false`) +
   `room/room-canvas-3d.tsx` (`<Canvas>` react-three-fiber) + `room/room-builder.tsx`** (rota
@@ -1709,7 +2325,7 @@ A `<Canvas>` precisa de
 adulto (campos já chegam — decisão de produto). *(Ligas, lojinha/Zappy, avatar, quarto, missões e
 proteção de sequência saíram do backlog — entregues na expansão de 6 fases.)*
 
-## Fase 5 — Carreira/Projeto transversal/Troféus/Plays/Remix/Desafio (07/2026, não commitado)
+## Fase 5 — Jornada/Projeto transversal/Troféus/Plays/Remix/Desafio (07/2026, não commitado)
 
 > ⚠️ **Restrição central**: Pensa/Pinta/Estúdio/Clube/Mural são produtos VENDIDOS À PARTE — nada
 > da jornada/gamificação nuclear DEPENDE deles; integrações cross-app só aparecem com a POSSE
@@ -1720,10 +2336,10 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   6 modelos low-poly em `furniture-models.tsx` (+ material `gold`). Badge nova `first-showcase` em
   `badges.ts`; a `lesson-celebration` mostra "🏆 Um troféu novo apareceu no seu quarto!" quando a
   badge destravada está em `TROPHY_BADGE_SLUGS`. Conformance kids×members cobre os itens.
-- **Carreira (B):** `career-timeline.tsx` no `/perfil` — escada universal Faísca→Lenda (rung atual +
+- **Jornada (B):** `journey-timeline.tsx` no `/perfil` — escada universal Faísca→Lenda (rung atual +
   `nextLevelHint`) + FEITOS como cartões (universais primeiro; badges `studio-*`/`pensa-*` agrupadas
   em "Bônus dos apps criativos"; troféu → link "veja no seu quarto") + linha de jogos/jogadas. O
-  `CreatorCareerCard` (home) ganhou "seus jogos já foram jogados N vezes" + "Ver minha carreira"
+  `CreatorJourneyCard` (home) ganhou "seus jogos já foram jogados N vezes" + "Ver minha jornada"
   (dados de `shell.hub.myShowcaseStatsReadonly()`, best-effort).
 - **Plays (B):** cards/detalhe do Mural mostram "🎮 N jogadas" (`thread.playsCount`; contado no
   resolve público do /jogar com dedupe ip:playId no BFF).
@@ -1735,7 +2351,7 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   salvo equipe = Lenda) → fetch `/api/studio/play/:id` → **checagem de FERRAMENTAS**
   (`remixRequirementFromSnapshot` × `studioRemixCovered` do member-shell — jogo Pro sem ser
   Lenda ou extensão fora da allowlist do degrau → `toast.info` gentil nomeando o nível via
-  `minCareerLevelForRemix`+`levelInfo`, SEM importar) → `setStudioStorageNamespace(viewerId)` →
+  `minJourneyLevelForRemix`+`levelInfo`, SEM importar) → `setStudioStorageNamespace(viewerId)` →
   `importProjectSnapshot(snapshot, {name: 'Remix de <título>'})` → toast + push `/estudio`.
   **Selo no card:** `thread.studioMeta` ({pro, extensions[]}, snapshot no publish — hub migr
   `0007`) fora do degrau → botão vira cadeado tracejado "Fazer a minha versão · no nível X"
@@ -1751,6 +2367,68 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   mantém o plano visível mesmo sem posse. O client abre `?tarefa=<id>`; cada ferramenta busca
   `/api/pensa/tasks/:id/handoff`, restaura seu painel e sincroniza
   `/api/pensa/tasks/:id/progress`. Não use `sessionStorage` para contexto de tarefa.
+  ⭐ **A volta existe (09/2026):** o `pinta-client` monta `taskSession.onReturnToPlan` =
+  `router.push('/pensa?plano=' + handoff.project.id)` (espelho do `onReturn` do
+  `molda-client`/`MoldaTaskGuide`), e o painel do brief do Pinta desenha o botão "Voltar ao plano"
+  nas duas telas. O id do plano vem do HANDOFF, nunca de parâmetro novo na URL, e quem guarda o
+  desenho antes de navegar é o pacote. ⚠️ O `hostChrome.back` continua sendo só da galeria, sempre
+  "Voltar para Criar" (`tests/host-chrome.test.tsx`, `tests/nav-back.test.ts`).
+  ⭐⭐ **O guia RECOLHE por uma seta, e quem lembra é o host (18/09/2026).** Relato dela: o painel
+  come muito da tela e sobra pouco para criar. Não existe "o painel": são TRÊS componentes
+  independentes — `TaskBriefPanel` (pacote pinta), `TaskGuidePanel` (pacote studio) e o
+  `MoldaTaskGuide` daqui, que era o único no host e o único cujo corpo engolia o "Voltar ao plano".
+  O estado mora AQUI, numa chave por CRIANÇA valendo para as três oficinas
+  (`sz:kids:pensa-guia-recolhido:<viewerId>`, hook `use-pensa-guide-collapsed.tsx`), e desce aos
+  dois pacotes como DADO pelo par OPCIONAL `collapsed`/`onCollapsedChange` das sessões de tarefa —
+  o mesmo idioma do `menu.hidden`/`onToggle` do `hostChrome`, porque os pacotes não conhecem
+  `viewerId` nem `localStorage`. ⚠⚠ **O hook mora nos TRÊS clients, nunca dentro do painel** (conserto do full review de
+  18/09/2026): ele lê a preferência num efeito pós-mount, e o `MoldaTaskGuide` — que só monta
+  depois de o módulo do Molda carregar e o handoff resolver — pintava ABERTO no primeiro quadro e
+  fechava no seguinte. Pior: a `key` dele inclui a `revision` da tarefa, então cada progresso
+  guardado remontava e repetia o pisca. Nos clients o hook monta muito antes, e o painel já nasce
+  com o valor certo — por isso o guia do Molda também recebe `collapsed`/`onCollapsedChange` por
+  PROP, como os irmãos.
+  ⚠ Cobertura que FALTA, declarada: a fiação dos clients (o par descendo pelo adapter e pela
+  sessão) não tem teste. O hook tem o seu (`tests/use-pensa-guide-collapsed.test.tsx`, com os dois
+  mutantes que sobreviviam: gravar só o `'1'`, e vazar entre irmãos por varredura de prefixo) e os
+  três painéis têm os deles.
+  ⚠⚠ **A preferência é lida num `useEffect` PÓS-MOUNT, nunca no inicializador do `useState`**:
+  ler `localStorage` na primeira renderização dá mismatch de hidratação (React #418). Molde exato
+  do `focus-mode.tsx`, e a regra é load-bearing — ela já custou caro uma vez.
+  ⚠⚠ **O pé do Molda SAIU do que recolhe** (18/09): o `<details>` antigo embrulhava tudo, então
+  recolher escondia o ÚNICO caminho de volta ao plano e também o recado de um progresso que não
+  subiu. De quebra o pé saiu do corpo que ROLA (`max-h-80`), onde os botões nasciam abaixo da
+  dobra no celular.
+  ⭐⭐ **E em 19/09/2026 esse invariante foi REVOGADO EM PARTE, por decisão dela:** *"quando fechar
+  pode fechar tudo, mantendo só uma linha ali: o título e a setinha, para a gente deixar bastante
+  espaço para as ferramentas"*. O pé de ROTINA (guardar, concluir, abrir a criação vinculada,
+  voltar ao plano, a linha de situação) passou a recolher junto nos TRÊS guias. A regra que ficou
+  no lugar, e vale para os três: **recolher esconde conteúdo e ação de ROTINA, NUNCA um
+  problema** — o recado de erro e o aviso da criação que não está nesta galeria seguem fora do
+  que recolhe (escolha dela entre três opções), e a rotina volta com um clique na seta, que nunca
+  sai da tela. O sobretítulo também some recolhido, senão o cabeçalho tem duas linhas.
+  ⭐⭐ **No mesmo lote os três ganharam UMA casca só** (`.sz-tool-guide` do
+  `@sistemazero/ui/tool-chrome.css`): ela disse que o painel estava "totalmente fora do design da
+  identidade visual da comunidade", e era verdade — o do Pinta tinha fio de 2px no acento com
+  12px de respiro, este aqui o fio da marca com 20px, e o do Estúdio nem cartão era. Agora os
+  três são o cartão branco das galerias (canto de 20px, Baloo de 15px, 14/18px de respiro) com os
+  botões em `.sz-tool-pill`. ⚠️ Este guia é o único dos três que mora no HOST, então é o único
+  que usa a receita sem passar por um contrato de pacote.
+  **Full review do lote (19/09/2026), o que ele mudou aqui:** (a) o rascunho que o navegador NÃO
+  conseguiu guardar (`draftError`) SAIU da linha de situação e virou um recado próprio, fora do
+  que recolhe — ele só existe quando o `localStorage.setItem` lançou, ou seja as marcações da
+  criança estão só em memória, e recolhia junto com a rotina; (b) a SITUAÇÃO da tarefa virou a
+  pílula `.sz-tool-guide__state` no cabeçalho: enquanto ela era o sobretítulo, era `aria-hidden`
+  e sumia ao recolher, então quem usa leitor de tela deixava de saber que a tarefa estava pronta;
+  (c) os dois recados informativos (`role="status"`) usam `__alert--warn`, e o vermelho ficou
+  para o `role="alert"`: vermelho o tempo todo, para uma criança de 8 anos, lê como "quebrou";
+  (d) com o recado de falha na tela o pé FICA, porque "tente novamente" precisa do botão.
+  O review de integração acrescentou o caso da tarefa CONCLUÍDA e recolhida: a pílula
+  "Concluída" continua no cabeçalho e no nome acessível do botão, sem trazer o pé de rotina.
+  ⚠ As identidades novas nos `useMemo` do `pinta-client` (adapter) e do `studio-full-client`
+  (taskSession) NÃO remontam nada: o `PintaApp` guarda store/view/refs em `useState`/`useRef` e o
+  `EditorScreen` é chaveado pelo asset, e o `StudioCore` não latcha `taskSession`. Conferido antes
+  de fechar o lote, porque um remonte ali custaria o desenho aberto da criança.
 - **Desafio do MÊS (D — game jam, decisão da usuária: MENSAL e só Clube+Estúdio):** card
   `challenge-card.tsx` na home SÓ com as duas refs (`checkChallengeAccessReadonly`, 1 ida; tema de
   `getChallengeReadonly` — determinístico global, `m:YYYY-MM` SP); o `/estudio` passa
@@ -1863,10 +2541,11 @@ acionável** (as invariantes das revisões 19/06 e 20/06 seguem de pé). Todos o
 corrigidos; verde no `typecheck:kids` + `test:kids` (20) + `check` + `build:kids`. Mudanças:
 
 - **1 peça com falha não derruba mais o configurador (robustez):** o `<Suspense fallback={null}>`
-  POR peça isola o *carregamento*, mas o `useGLTF` joga um *erro* de carga PRA FORA do Suspense — e
-  `/meu-avatar` fica fora do grupo `(app)` (sem `error.tsx` próprio), então um único GLB de
-  acessório falhando subia pro `global-error` e matava a tela inteira (perdendo a edição em
-  andamento). Agora cada peça também vai num **`PieceErrorBoundary`** (`avatar-rig.tsx`) que some
+  POR peça isola o *carregamento*, mas o `useGLTF` joga um *erro* de carga PRA FORA do Suspense,
+  então um único GLB de acessório falhando matava a tela inteira e levava junto a edição em
+  andamento (na época `/meu-avatar` ficava fora do grupo `(app)`, e a queda ia parar no
+  `global-error`; desde 19/09/2026 ela cai no recado do `(app)/error.tsx`, o que não muda a
+  razão de existir a rede). Agora cada peça também vai num **`PieceErrorBoundary`** (`avatar-rig.tsx`) que some
   com a peça quebrada; `resetKey={asset}` zera o erro ao trocar de peça (nova tentativa).
 - **`prefers-reduced-motion` no 3D do avatar (fotossensibilidade):** o configurador ignorava o gate
   de movimento que o **quarto** já respeita (o CSS não alcança o `useFrame`). Agora o `avatar-rig`
@@ -1916,7 +2595,7 @@ test:community (5) + biome + **build dos 3 apps**.
   fantasma (`freeFloorSpot`/`freeWallSpot` agora devolvem `null`).
 - **Quarto: drag sem churn** — `moveTo` num ref; o efeito de pointer listeners (`room-canvas-3d.tsx`)
   ficou estável (era re-assinado a cada frame do arraste; fechava a janela rara de órbita travada).
-- **Avatar: configurador SEGUE o tema da comunidade** (`useTheme` do next-themes, igual ao Estúdio)
+- **Avatar: configurador abre no CLARO** (constante; não há tema escuro nesta plataforma)
   — era `prefers-color-scheme` do SO.
 - **Avatar: giro da "cabine" mais suave** (~230°/s; era ~630°/s) — gatilho vestibular no PADRÃO (quase
   nenhuma criança tem `prefers-reduced-motion` no SO); o caminho reduzido segue assentando sem girar.
@@ -2052,7 +2731,7 @@ auditados e **de pé**. Achados corrigidos; verde no typecheck+test+check (membe
   (XP 50, ledger `challenge_entry`) mas o union `BadgeSlug` do **member-shell** estava 1 slug atrás
   (21 vs 22 do members) → `BADGE_INFO` (kids) omitia a entrada e COMPILAVA (o `Record<BadgeSlug,…>`
   é sobre o union defasado); `badgeInfo()` caía em `null` e a badge sumia de TODA superfície
-  (showcase/carreira/celebração). Fix: `+'challenge-first'` no union (`member-shell/src/lib/types.ts`)
+  (showcase/jornada/celebração). Fix: `+'challenge-first'` no union (`member-shell/src/lib/types.ts`)
   + entrada em `BADGE_INFO` (`badges.ts`, ícone `Swords`). **Guard novo:**
   `packages/community-kids/tests/badge-conformance.test.ts` assere `BADGE_SLUGS` (members, módulo
   PURO por caminho relativo) == chaves de `BADGE_INFO` (kids) — o teste vive no KIDS (não no members)
@@ -2067,9 +2746,176 @@ auditados e **de pé**. Achados corrigidos; verde no typecheck+test+check (membe
 - **Literais soltos (BAIXO):** `course-trail.tsx` tirou o "+25 XP" hardcoded do baú ("Baú aberto!");
   `kids-quiz.tsx` trocou o fallback `?? 100` da nota mínima por `null` (nunca há caminho real sem valor).
 
+## O Zappy animado (Rive) — 15/09/2026
+
+O mascote ganhou ONZE pontos ANIMADOS, com som sincronizado ao keyframe, a partir de um lote de
+`.riv` dela. O `<img>` NÃO foi substituído: das 47 aparições do Zappy no app, 38 seguem estáticas
+de propósito, e o WebP é o chão de queda dos outros 11 (e foi ele que segurou o app durante as duas voltas de arquivo).
+
+⚠️⚠️ **TOCAMOS A TIMELINE, NÃO A STATE MACHINE — e foi o erro que custou uma volta inteira.** Os
+`.riv` trazem a `State Machine 1` com ZERO inputs e um estado que não entra na timeline: montar
+por ela deixa o Zappy PARADO, com o runtime a 60 fps desenhando sempre o mesmo quadro (medido: 242
+quadros seguidos idênticos, `ultimaMudanca=-1`). A primeira leitura disso foi "os arquivos não têm
+animação", e estava ERRADA — a dona disse que no editor animava, e animava mesmo: pela
+**`Timeline 1`** as cinco poses se mexem (`happy`/`celebrating`/`thinking` em laço,
+`sleeping`/`speaking` tocam uma vez e assentam). ⚠️ O `animations` do runtime é deprecated em favor
+de `stateMachine`; sair do deprecated depende do EDITOR (a SM ganhar um estado que toque a
+timeline), não daqui — trocar antes disso volta a congelar o mascote. ⚠️ **Lição de método:**
+nenhum teste do pacote pega isso (happy-dom não tem WebGL, e o guarda de bytes só vê NOMES), e o
+`toDataURL()` MENTIU nas primeiras medições — devolveu quadros idênticos onde havia animação. O que
+vale é `getImageData` dentro de `requestAnimationFrame`, com `useOffscreenRenderer: false`.
+
+⚠️⚠️ **O SOM não sai dos `.riv`, e o `KidsConfetti` continua sendo a fonte.** O áudio está EMBUTIDO
+(dá para ler o nome do asset nos bytes) e mesmo assim o pico na saída é ZERO: pendurei um analisador
+em tudo que conecta ao `destination` e o runtime cria o AudioContext mas **nunca conecta nada**,
+nem por timeline nem por state machine. Falta o evento de áudio na timeline. Por isso o
+`ZAPPY_RIVE_COM_SOM` está TODO `false` e as quatro celebrações grandes voltaram a `<KidsConfetti />`
+COM som — eu tinha tirado apostando no `.riv`, o que as deixaria MUDAS. Quando o evento de áudio
+existir, vire `celebrating` no mapa e ponha `sound={false}` no confete NA MESMA PASSADA.
+
+**A régua: som quando o Zappy REAGE, silêncio quando ele só está PRESENTE.** O mesmo `.riv` serve
+os dois casos — quem cala é o `volume` da instância (`ZAPPY_RIVE_COM_SOM` em `mascot.tsx`), nunca
+o arquivo. Hoje só `celebrating` toca: a varredura dos call sites mostrou que **nenhum** uso de
+`speaking`/`thinking`/`sleeping` é evento (são todos balão de aula, tela vazia ou cadeado, que
+repetem a cada navegação; um chime ali vira tortura por repetição).
+
+- **Onde anima:** as 7 celebrações (`chest-reward`, `lesson-celebration`, `level-up-celebration`,
+  `mural-celebration`, `tools-celebration`, `course-rating-flow` passo 4 e o quiz aprovado), o
+  balão de fala da aula (`kids-lesson-blocks` bloco `dialogue` + o `renderInstruction` do
+  `lesson-player-client`) e dois pontos de presença (a saudação da home e o estado vazio do Mural).
+- ⚠️ **No quiz, só quem ACABOU de passar.** Aquela tela é também o que a criança vê ao reabrir uma
+  aula aprovada semanas atrás (`result` nulo) — ali o Zappy comemoraria do nada uma conquista
+  velha. O `result` decide entre `KidsMascotAnimated` e `KidsMascot`.
+- ⚠️ **O confete das 4 celebrações grandes perdeu o som** (`<KidsConfetti sound={false} />`): o
+  áudio agora vem do `.riv`, no keyframe. Dois ao mesmo tempo seria chime por cima de chime. O
+  `tools-celebration` já era mudo (vem atrás da `MuralCelebration`) e o Rive dele também é.
+
+⭐⭐ **A BOCA obedece ao "Ouvir" (17/09/2026).** O balão de fala ganhou um `.riv` PRÓPRIO
+(`/zappy/fala.riv`, 42 KB) e um regime novo: montado com `autoplay: false`, ele fica PARADO no
+primeiro quadro (boca fechada) e só anda enquanto o áudio da voz do Zappy toca — fim do MP3 ou
+"Parar" e ele volta à mesma pose. O estado vem do member-shell pelo contexto
+`components/zappy-fala-context` (`{podeFalar, falando}`), provido em DOIS lugares — o
+`DialogueBlockView` (em volta do slot `mascot`) e a faixa da instrução do `scene-activity` (em
+volta do `renderInstruction`) —, e a régua que o traduz em "toca ou não" é o `tocandoDoZappy` do
+`mascot.tsx`. ⚠️ Vale para a voz do NAVEGADOR também: para a criança, alguém está falando.
+- ⚠️⚠️ **A régua é a POSE, não o balão:** só `speaking` obedece. A autora escolhe a cara do Zappy
+  em cada bloco (`DIALOGUE_POSES`), e `happy`/`thinking`/`celebrating` animam em laço por desenho
+  — congelá-las porque o balão tem áudio tiraria movimento que ninguém pediu para tirar.
+- ⚠️⚠️ **Balão SEM botão "Ouvir" continua animando sozinho** (`podeFalar` falso → `tocando`
+  `undefined` → autoplay de sempre). É a maioria: a instrução de cena sem dicionário, a pista, o
+  retorno da resposta. Decisão dela, e o `zappy-fala.test.tsx` a guarda.
+- ⚠️⚠️ **PARAR é `stop` + `pause` + `drawFrame`**, nessa ordem: `pause` sozinho não rebobina nem
+  repinta e a boca ficaria congelada ABERTA no meio de um viseme. Medido: volta ao quadro inicial
+  com 0,00% de pixels diferentes (o `reset()` rebobina também, mas destrói o artboard e deu 1,3%).
+- ⚠️ **A `key` do canvas carrega a EXPRESSÃO e o REGIME** (`speaking:voz`): o `useRive` lê os
+  parâmetros uma vez, então um canvas montado solto que depois passe a ser regido seguiria rodando
+  sozinho, sem erro nenhum. Na cena isso acontece — o `temVoz` do navegador só liga depois do
+  `voiceschanged`.
+- **Medições que decidiram o código** (harness `tmp/zappy/`, `getImageData` dentro do
+  `requestAnimationFrame`, `useOffscreenRenderer: false`): a `State Machine 1` do arquivo novo
+  segue CONGELADA (1 quadro distinto em 240, mesmo com a camada `Mouth` que ela ganhou), a
+  `Timeline 1` anima (240/240) e **repete sozinha** (6 `Loop` em 12 s, zero `Stop`) — por isso não
+  existe rede de religar —, e `autoplay: false` PINTA o primeiro quadro, inclusive depois do
+  resize.
+- ⚠️ **O nome do arquivo mudou de propósito** (`speaking.riv` → `fala.riv`): `/zappy/*` tem
+  `Cache-Control` de um dia, e sobrescrever serviria o arquivo VELHO com o código novo pelas 24 h
+  seguintes — em staging isso lê como "a animação não funcionou". O `tests/mascot-assets.test.ts`
+  passou a derivar o nome do arquivo da URL do mapa, nunca da chave da pose.
+- ⭐ O `fala.riv` é o `speaking` PADRONIZADO: trouxe `SMLipSync`/`Viseme` (a infraestrutura de lip
+  sync que faltava só nele) e veio SEM o MP3 inerte — 42 KB contra 54 KB. Some uma pendência de
+  editor; sobram `thinking`/`sleeping` (~131 KB) para reexportar sem áudio.
+
+**Quatro caminhos voltam ao WebP, todos calados:** SSR, `prefers-reduced-motion`, a economia de
+dados do aparelho (`navigator.connection.saveData`) e qualquer falha do Rive. A pose nunca some da
+tela. ⚠️ Isso é uma faca de dois gumes: **a quebra também é silenciosa**, e foi para isso que
+nasceram os guardas do `tests/mascot-assets.test.ts` (o `.riv` e o `.webp` de cada pose no disco,
+e os nomes `Artboard 1`/`State Machine 1` DENTRO dos bytes) e a asserção nova no
+`tests/csp-media-data.test.ts`.
+
+- ⚠️⚠️ **`'wasm-unsafe-eval'` entrou na CSP ESTRITA** (`next.config.ts`). É keyword à parte: nem
+  `https:` nem `'unsafe-inline'` liberam a compilação de WASM, e a recusa do Chrome é silenciosa.
+  O `iframe srcDoc` dos blocos interativos HERDA a CSP, então o conteúdo autoral ganhou WASM
+  junto — aceito porque a fronteira real do embed é o sandbox SEM allow-same-origin.
+- ⚠️⚠️ **O WASM é servido da NOSSA origem.** Por padrão o `@rive-app/canvas` baixa o binário de
+  `unpkg.com` (fallback no jsdelivr): código executável de host de terceiro no caminho de render,
+  numa área infantil. `scripts/sync-rive-wasm.ts` copia de `node_modules` para `public/rive/` no
+  `dev` e no `build` (arquivo DERIVADO, no `.gitignore`), e o `mascot-rive-canvas` faz
+  `setWasmUrl` + `setWasmFallbackUrl(null)` + `enableRiveAssetCDN: false`.
+- ⚠️ **`useRive` lê os parâmetros UMA vez** (deps: canvas, "tem params", instância — o `src` não
+  está lá). Trocar de pose no mesmo componente montado NÃO troca o arquivo: por isso a
+  `key={expression}` no canvas, e por isso o estado de carga anda junto com a pose.
+- **Peso e cache:** runtime 676 KB comprimidos (81 de JS + 595 de WASM) contra 120 KB do lote
+  inteiro de WebP. Por isso `/rive/*` e `/zappy/*` ganharam `Cache-Control` (1 dia, como o
+  `/avatar3d/*`) e o player de aula chama `prefetchZappyRive()` ao montar. ⚠️ O `import()` sozinho
+  adianta só o JS — o `aquecerRuntimeRive()` é que puxa os sete oitavos restantes.
+- ⚠️ O `test-setup.ts` neutraliza o `mascot-rive-canvas`: sem isso toda suíte que monta uma
+  celebração tenta buscar o WASM e cospe `Aborted(both async and sync fetching of the wasm failed)`.
+  O WRAPPER segue testado de verdade em `tests/mascot-rive.test.tsx`; o desenho é e2e.
+
+**Pendências no editor (dela), todas registradas em `mascot.tsx`:** o fundo do artboard (acima, a
+que BLOQUEIA); renomear `Artboard 1`/
+`State Machine 1` para nomes estáveis (um reexport que os mude derruba tudo no WebP sem avisar);
+~~padronizar o `speaking.riv`~~ (FEITO: o `fala.riv` de 17/09 trouxe `SMLipSync`/`Viseme`/camada
+`Mouth` e nenhum áudio); e reexportar `thinking`/`sleeping` SEM áudio (~131 KB de MP3 que hoje
+atravessam a rede e nunca tocam). O `alivio.riv` ("Magical Heart UI Chime") ficou FORA do `public/`: não tem tela de destino
+nem WebP de queda — o candidato natural é o quiz reprovado, hoje com o Zappy dormindo.
+
+⭐ Os arquivos trazem `mouth_open`/`mouth_state` + a state machine `SMLipSync` com `Viseme`: é
+infraestrutura de LIP SYNC. Nada disso é consumido ainda, e é o que torna o Rive a escolha certa
+aqui em vez de um WebM com alpha (que faria as poses por um décimo do peso, mas nunca o Zappy
+falando o texto do balão com a boca sincronizada).
+
+## A arte da trilha virou Rive — 21/09/2026
+
+O SVG animado por módulo (`illustration`, de 20/09) durou um dia. Saiu inteiro:
+upload, as 3 artes de exemplo, o `<img>` e o validador de 249 linhas do Admin. No
+lugar entrou um **`.riv` por módulo** (`ModuleOutlineView.riveUrl`), tocando em laço
+no mesmo lugar da trilha. O runtime já estava aqui por causa do Zappy — o que esta
+entrega acrescentou foi o caminho do arquivo ENVIADO, que é outro problema.
+
+**O que muda quando o arquivo não é nosso.** Para o Zappy dá para cravar
+`animations: 'Timeline 1'`; para um `.riv` que alguém sobe, não. O
+`trail-rive-canvas.tsx` descobre em runtime: `autoplay: false` (um decisor só, o
+nosso) e depois `rive.play(rive.animationNames[0])` — **a primeira timeline linear,
+nunca a state machine**, pela razão medida na seção do Zappy acima. E, diferente de
+lá, existe **rede de religar** no `EventType.Stop`: a timeline do Zappy repete
+sozinha, mas um arquivo exportado como "one shot" para no fim. A rede tem teto (60
+religadas/s) porque uma animação de duração zero viraria ventoinha ligada no tablet.
+
+⚠️⚠️ **CORS no bucket PÚBLICO — o furo que quase passou.** `<img src>` não faz CORS;
+o runtime do Rive lê por `fetch().arrayBuffer()`, que faz. Os buckets públicos nunca
+tiveram regra de CORS porque nada nunca os buscou cross-origin. Sem a regra, o
+`onLoadError` dispara, o `TrailRive` não renderiza nada e fica **indistinguível de
+"ninguém subiu animação"**. Nasceram daí o `packages/admin/scripts/r2-cors-public.ts`
+(rode ANTES de subir este app) e o `console.warn('[trilha-rive] não carregou')` — é o
+que troca uma tarde de investigação por cinco segundos.
+
+⚠️ O `.kids-trail-art` ganhou `aspect-ratio: 9 / 8` e perdeu a regra de `img`: o
+`<canvas>` **não tem proporção intrínseca** e cairia nos 150px de fábrica. O 9/8 é o
+`180x160` do `<Image>` que saiu, então a trilha não se mexeu um pixel.
+
+Os quatro desvios calados (SSR/primeiro quadro, `saveData`, fora da viewport, falha
+do Rive) não deixam buraco porque a arte é `position: absolute` — fora do fluxo.
+`prefers-reduced-motion` é o único que NÃO some: monta com `autoplay: false`, que
+pinta o primeiro quadro. O canvas monta na primeira interseção e depois só pausa,
+nunca desmonta (desmontar reiniciaria do quadro 0 a cada rolagem).
+
+⚠️ `RuntimeLoader.setWasmUrl` + `setWasmFallbackUrl(null)` saíram do
+`mascot-rive-canvas.tsx` para o `rive-runtime.ts`, e o `saveData` para
+`lib/economia-de-dados.ts`: são dois consumidores agora, e duas cópias de uma decisão
+de segurança é como uma delas apodrece.
+
+⚠️ **Teste:** o `IntersectionObserver` do happy-dom EXISTE mas nunca chama o callback
+(medido) — sem o falso, o canvas nunca monta e o teste mediria o contrário do que a
+criança vê. E, como sempre com Rive aqui, **nenhum teste prova que anima**: quem
+verifica é a prévia no Admin.
+
 ## Comandos
 
 `bun run dev` (:3008) · `build`/`start` · `typecheck` · `bun test` · `check[:fix]` ·
+**`galeria:cenas`** (monta `tmp/galeria-cenas.html` com as 45 cenas de aula lado a lado — os
+componentes de PRODUÇÃO e o CSS deste app, cada cena no estado em que o roteiro dela a deixa; é a
+conferência visual das cenas, como o `tmp/pen/` é a das telas-modelo) ·
 **`gen:avatar-thumbs`** (pré-gera os PNGs das miniaturas do avatar → `public/avatar3d/thumbs/`, abre no
 navegador; rode 1× e commite). Da raiz: `dev:kids`, **`build:kids` (package-local — gotcha do `--filter`
 quebrar o React)**, `typecheck:kids`, `test:kids`. Mexeu no member-shell? Rode as suítes/builds DOS DOIS apps.
@@ -2087,6 +2933,9 @@ CLAUDE.md de lá): `GATEWAY_URL`, `JWT_JWKS_URL` (prod EXIGE; HS256 RECUSADO),
 `SENTRY_DSN` opcional, **`OPENROUTER_API_KEY` + `OPENROUTER_MODEL`** (opcionais — descrição IA do
 "Compartilhar"; ausentes → fallback, a criança escreve). **SEM FUNNEL_URL.** Porta 3008; réplica ÚNICA (globalThis no shell);
 healthcheck `/api/healthz`.
+
+`NEXT_PUBLIC_KIDS_CHEST_RIVE_URL` também é opcional e entra no bundle no build: vazia mantém o SVG
+do baú sem solicitar arquivo; preenchida precisa ser HTTPS público com CORS para a origem do Kids.
 
 **Pendências de infra (não bloqueiam):** domínio definitivo `kids.sistemazero.com.br`
 (dashboard + CNAME Cloudflare; depois apontar o `KIDS_COMMUNITY_URL` de prod p/ ele) e projeto
@@ -2128,3 +2977,63 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Oficina e Jornada do Criador — 07/09/2026
+
+Atualização das superfícies descritas acima: `../../docs/plans/2026-09-07-creator-journey-evolution.md`.
+A validação em staging e a promoção para produção estão em `../../docs/plans/creator-journey-rollout.md`.
+
+- A navegação tem cinco grupos para todos os alunos. O Criar reúne os links das ferramentas
+  e os trabalhos disponíveis conforme a posse da conta e a Jornada do Criador.
+- Início, cartões, mapa e curso usam a política comum: aulas concluídas e publicação são marcos
+  distintos; aulas novas não apagam conquistas. Celebração usa progresso da resposta do servidor.
+- `creator-works.tsx` lista metadados da nuvem e planos; criações somente locais ficam nas galerias.
+  Retomar Estúdio pelo ID conserva a preferência pelo rascunho local e os conflitos existentes.
+- Molda aceita `?tarefa=` do Pensa, guia contextual e saída vinculada a uma criação real do perfil.
+  O guia exige guardar/fechar pelo Voltar nativo do Molda antes de concluir/sair, preservando IDs.
+  Cada abertura pelo guia tem revisão própria (o `initialAssetId` do editor só é consumido na
+  montagem). Marcações do guia têm rascunho por perfil+tarefa, validado pela revisão e pelo
+  timestamp do progresso; uma atualização do servidor invalida um rascunho antigo.
+- `/responsavel` exige sessão da conta e verificação de responsável. Reusa o dashboard com jornada,
+  ferramentas e publicações pendentes; o fluxo de gerenciamento antigo continua em `/perfis`.
+- Curso com entrega recebida pelo Hub mostra propagação em andamento; refresh automático é
+  limitado e existe atualização manual. Falha de consulta não deve pedir recompra ou apagar marcos.
+
+As atividades interativas vivem nos blocos da própria aula. Respostas locais são isoladas por perfil/aula/bloco/revisão; escritas exigem `x-sz-viewer` correspondente à sessão. Vídeos usam Vimeo pelo componente compartilhado, com retomada por bloco e hash de privacidade. Não há auto-conclusão por porcentagem de vídeo. O upload continua no admin.
+
+## "Como fazer": a biblioteca de ajuda (26/09/2026)
+
+Pedido dela: uma área de ajuda SEPARADA da Jornada e dos cursos, onde a criança acha rápido
+"como usar" a plataforma ou uma ferramenta, também depois de terminar um curso, e que a equipe
+atualiza quando a interface muda sem obrigar ninguém a refazer aula. Rotas em
+`app/(app)/como-fazer/` (`/como-fazer` = busca + coleções, `/como-fazer/colecao/<slug>`,
+`/como-fazer/<slug>`), todas `force-dynamic`, em `protectedPrefixes`, FORA do modo foco.
+
+- **Sem progresso, sem XP, sem matrícula:** a página lê só o publicado (`listHelp*Readonly`/
+  `getHelpTutorialReadonly` do shell, gate do gateway = conta ativa) e nunca importa rota de
+  conclusão (`tests/help-pages.test.tsx` lê as fontes). Ver tutorial NÃO libera ferramenta: o
+  `HelpToolNotice` diz, de forma FACTUAL, "ainda não está liberado neste perfil" ou "abre mais
+  adiante na sua jornada" e oferece o atalho só quando `getCreativeTools()` responde `available`.
+  ⚠️ NUNCA o `KidsLockedProduct` aqui (ele tem pitch); a ajuda é neutra por decisão de produto.
+- **A entrada é um ATALHO, não uma sexta seção** (decisão dela): `HelpShortcut` em pílula no
+  rodapé do menu (acima dos Recados) e como ícone na barra de cima do celular. `HELP_NAV` mora
+  em `nav.ts` FORA de `NAV_ITEMS` (que segue com 5), e `backToSection` o conhece.
+- **A busca roda no navegador** (`components/kids/help/help-search.tsx`, régua do core
+  `searchHelpTutorials`: sem acento, prefixo, título > palavras alternativas > resumo > passos)
+  e abre o TUTORIAL exato, nunca a coleção. Teclado: seta para baixo vai ao primeiro resultado.
+- **Coleções vêm do banco**; ícone e cor são allowlists do core mapeadas em
+  `lib/help-collections.ts` (`Record` completo: valor novo no core sem entrada aqui é erro de
+  tipo). Os tons reusam `--tool-*` das oficinas e a cor da casa.
+- **Detalhe de tutorial:** a página filtra os `related` que não estão publicados e passa
+  `relatedItems` (slug, rótulo, href) ao `HelpTutorialView` cliente. Não passe callbacks de
+  renderização de um Server Component: o Next falha ao abrir qualquer tutorial publicado.
+- **Volta para a aula:** `?voltar=` allowlistado por `lib/help-return.ts` (`LESSON_PATH`, mesma
+  régua do `resolveAvatarReturnPath`). Quem escreve o `voltar` é o link da aula (materiais ou
+  `rich_text`, que agora passa `helpReturnPath` ao `renderMarkdown` quando está numa aula); o
+  link abre em outra aba (decisão dela).
+- **Zappy:** os hosts do Estúdio passam `openHelp: openStudioZappyHelp`
+  (`lib/studio-zappy-navigation.ts`), e o chip "Passo a passo: …" abre `/como-fazer/<slug>`.
+- O guia "Como funciona?" ganhou o passo final `ajuda` com link (é onboarding; a biblioteca é
+  consulta, e os dois não se confundem). Estilos em `globals.css` (`.sz-help-*`, em camada).
+- Autoria: admin em `/admin/como-fazer` (coleções, tutoriais, importar/exportar JSON, revisar e
+  publicar). Lote inicial em `docs/como-fazer/`.

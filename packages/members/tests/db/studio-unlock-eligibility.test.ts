@@ -9,7 +9,7 @@ import { DrizzleGamificationRepository } from '../../src/infrastructure/persiste
 import { prepareTestDatabase } from './test-database'
 
 /**
- * Prova o predicado SQL que separa ferramenta de carreira: um bônus Kids concluído
+ * Prova o predicado SQL que separa ferramenta de jornada: um bônus Kids concluído
  * entra na paleta mesmo sem a linha `course_showcased`. Os testes de serviço usam um
  * fake e, portanto, não alcançam o `leftJoin` real desta consulta.
  */

@@ -34,24 +34,27 @@ export default function GlobalError({
           placeItems: 'center',
           padding: '1.5rem',
           textAlign: 'center',
-          background: '#0C1E3E',
-          color: '#ffffff',
+          // O tema Padrão do Pen (sem tokens aqui): o chão, a tinta e a tinta suave.
+          background: '#E9EEF6',
+          color: '#0F1A33',
           fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
         }}
       >
         <div>
           <p style={{ fontSize: '3rem', margin: 0 }}>🌟</p>
           <h1 style={{ fontSize: '1.5rem', margin: '0.5rem 0 0.25rem' }}>Ops! Algo deu errado</h1>
-          <p style={{ opacity: 0.8, margin: '0 0 1.25rem' }}>Vamos tentar de novo?</p>
+          <p style={{ color: '#46536E', margin: '0 0 1.25rem' }}>Vamos tentar de novo?</p>
           <button
             type="button"
             onClick={() => reset()}
             style={{
-              // Azul claro da marca (espelho de --sz-kids-azul-vivo; sem tokens aqui).
-              background: '#37A6F5',
-              color: '#0C1E3E',
+              // A cor de ação do Pen com o degrau do 3D embaixo (espelhos de --pen-acao e
+              // --pen-acao-degrau; sem tokens aqui).
+              background: '#1B5CF3',
+              color: '#ffffff',
               border: 0,
               borderRadius: '9999px',
+              boxShadow: '0 4px 0 #1343B8',
               padding: '0.7rem 1.6rem',
               fontWeight: 700,
               fontSize: '1rem',

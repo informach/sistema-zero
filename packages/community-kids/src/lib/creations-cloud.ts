@@ -129,7 +129,12 @@ export interface CreationsCloud {
   readonly tool: CreationTool
   /** A nuvem funciona neste navegador? (`CompressionStream`; sem ele, tudo vira no-op). */
   readonly supported: boolean
-  list(options?: { signal?: AbortSignal }): Promise<CloudCreationSummary[]>
+  /**
+   * A lista inteira (todas as páginas). `pageTimeoutMs` é o prazo de CADA página, não da lista:
+   * uma galeria grande (a lista traz a miniatura de cada item) leva o tempo que precisar, e só
+   * uma página que não chega dentro do prazo derruba a chamada (`CloudListTimeoutError`).
+   */
+  list(options?: { signal?: AbortSignal; pageTimeoutMs?: number }): Promise<CloudCreationSummary[]>
   /**
    * Sobe AGORA (fora da fila): comprime, reserva, envia, confirma. Lança em falha. Com `parts`,
    * declara as partes na reserva e sobe só as que a nuvem pede (ver `CloudPart`).
@@ -237,6 +242,18 @@ export function anySignal(a: AbortSignal, b: AbortSignal): AbortSignal {
     b.addEventListener('abort', forward(b), { once: true })
   }
   return controller.signal
+}
+
+/** Uma página da lista da nuvem não chegou dentro do prazo por página (`list({pageTimeoutMs})`). */
+export class CloudListTimeoutError extends Error {
+  readonly code = 'CLOUD_LIST_PAGE_TIMEOUT'
+  constructor(
+    readonly page: number,
+    readonly timeoutMs: number,
+  ) {
+    super(`A página ${page + 1} da lista de criações não chegou em ${timeoutMs} ms`)
+    this.name = 'CloudListTimeoutError'
+  }
 }
 
 /** Recados do selo, na linguagem da criança. */
@@ -412,6 +429,8 @@ function toSummary(raw: RawCloudSummary): CloudCreationSummary {
 
 export function createCreationsCloud(options: {
   tool: CreationTool
+  /** Highest native format the editor can read when deleting. Absent = legacy 1. */
+  maxFormatVersion?: number
   /** Perfil dono da fila: vai em `x-sz-viewer` (o BFF confere com a sessão). */
   viewerId?: string
   /** Injetável (testes). Default: o `fetch` global. */
@@ -427,6 +446,7 @@ export function createCreationsCloud(options: {
   wait?: (ms: number, wake: Promise<void>) => Promise<void>
 }): CreationsCloud {
   const tool = options.tool
+  const maxFormatVersion = options.maxFormatVersion
   const doFetch: FetchLike = options.fetch ?? ((input, init) => fetch(input, init))
   const idleMs = options.idleMs ?? IDLE_MS
   const now = options.now ?? (() => Date.now())
@@ -531,13 +551,16 @@ export function createCreationsCloud(options: {
     return (await response.json()) as T
   }
 
-  async function list(options?: { signal?: AbortSignal }): Promise<CloudCreationSummary[]> {
+  async function list(options?: {
+    signal?: AbortSignal
+    pageTimeoutMs?: number
+  }): Promise<CloudCreationSummary[]> {
     const items: CloudCreationSummary[] = []
     const seen = new Set<string>()
     let cursor: string | null = null
     for (let page = 0; page < 100; page += 1) {
       const path: string = cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''
-      const body: CloudListPage = await api<CloudListPage>(path, { signal: options?.signal })
+      const body: CloudListPage = await listPage(path, page, options)
       items.push(...body.items.map(toSummary))
       const next: string | null = body.nextCursor ?? null
       if (!next) return items
@@ -548,8 +571,39 @@ export function createCreationsCloud(options: {
     throw new Error('A lista de criações excedeu o limite de páginas')
   }
 
+  /**
+   * UMA página da lista, com o prazo POR PÁGINA (`pageTimeoutMs`): o relógio nasce a cada página,
+   * então uma lista de 300 jogos com miniatura numa rede lenta desce inteira; só a página que não
+   * chega no prazo aborta, e aí a chamada lança `CloudListTimeoutError` (o sinal de fora, quando
+   * é ele que aborta, segue lançando o `AbortError` de sempre).
+   */
+  async function listPage(
+    path: string,
+    page: number,
+    options?: { signal?: AbortSignal; pageTimeoutMs?: number },
+  ): Promise<CloudListPage> {
+    if (options?.pageTimeoutMs === undefined)
+      return api<CloudListPage>(path, { signal: options?.signal })
+    const pageAbort = new AbortController()
+    const timer = setTimeout(() => pageAbort.abort(), options.pageTimeoutMs)
+    try {
+      return await api<CloudListPage>(path, {
+        signal: options.signal ? anySignal(options.signal, pageAbort.signal) : pageAbort.signal,
+      })
+    } catch (error) {
+      if (pageAbort.signal.aborted && !options.signal?.aborted) {
+        throw new CloudListTimeoutError(page, options.pageTimeoutMs)
+      }
+      throw error
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
   interface UploadTicket {
     revision: number
+    /** Old servers omit this and only confirm native format 1. */
+    formatVersion?: number
     bytes: number
     uploadUrl: string
     method: 'PUT'
@@ -649,6 +703,15 @@ export function createCreationsCloud(options: {
       }
     }
     if (!ticket) throw new Error('Reserva sem resposta')
+    const confirmedFormat = ticket.formatVersion === undefined ? 1 : ticket.formatVersion
+    if (confirmedFormat !== (meta.formatVersion ?? 1)) {
+      // A legacy BFF can drop the field even with an updated Members service.
+      // Never upload parts/manifest or advance marks on an unconfirmed format.
+      const err = new Error('A nuvem não confirmou o formato solicitado') as CloudError
+      err.status = 503
+      err.code = 'CLOUD_FORMAT_UNSUPPORTED'
+      throw err
+    }
     if (byHash.size > 0 && !Array.isArray(ticket.parts)) {
       // O serviço do outro lado ainda não fala "partes" (janela de deploy/rollback): sem a
       // lista do que falta, subir só o manifesto gravaria na conta um jogo sem os desenhos.
@@ -764,7 +827,10 @@ export function createCreationsCloud(options: {
   async function remove(itemId: string, baseRevision: number): Promise<{ revision: number }> {
     const result = await api<{ revision: number }>(`/${encodeURIComponent(itemId)}`, {
       method: 'DELETE',
-      body: JSON.stringify({ baseRevision }),
+      body: JSON.stringify({
+        baseRevision,
+        ...(maxFormatVersion !== undefined ? { maxFormatVersion } : {}),
+      }),
     })
     return { revision: result.revision }
   }

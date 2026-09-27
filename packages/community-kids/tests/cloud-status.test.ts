@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { CLOUD_STATUS_COPY, cloudStatusView } from '../src/lib/cloud-status'
+import { CLOUD_ACCOUNT_COPY, CLOUD_STATUS_COPY, cloudStatusView } from '../src/lib/cloud-status'
 import type { CloudSyncState } from '../src/lib/creations-cloud'
 
 /**
@@ -68,8 +68,11 @@ describe('cloudStatusView', () => {
   })
 
   it('nenhuma copy contém "Salvo" nem travessão, e os rótulos curtos cabem numa barra', () => {
-    const textos = Object.values(CLOUD_STATUS_COPY).flatMap((c) => [c.label, c.text])
-    expect(textos.length).toBeGreaterThanOrEqual(10) // anti-vácuo: a tabela existe
+    const textos = [
+      ...Object.values(CLOUD_STATUS_COPY).flatMap((c) => [c.label, c.text]),
+      CLOUD_ACCOUNT_COPY.label,
+    ]
+    expect(textos.length).toBeGreaterThanOrEqual(11) // anti-vácuo: a tabela existe
     for (const t of textos) {
       expect(t).not.toMatch(/salvo/i)
       expect(t).not.toContain('—')

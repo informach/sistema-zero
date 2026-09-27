@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { fakeUseStore } from '../../testing/fakeIdbStore'
 
 /**
  * Modal "Trazer do Pinta" (fluxo pull) + o botão no AssetsPanel.
@@ -20,7 +21,7 @@ const kvOf = (store?: { name?: string }): KV => {
 }
 
 mock.module('idb-keyval', () => ({
-  createStore: (dbName: string) => ({ name: dbName }),
+  createStore: (dbName: string) => fakeUseStore(dbName),
   get: async (key: IDBValidKey, store?: { name?: string }) => kvOf(store).get(key),
   getMany: async (keys: IDBValidKey[], store?: { name?: string }) =>
     keys.map((key) => kvOf(store).get(key)),
@@ -59,6 +60,7 @@ const { AssetsPanel } = await import('./AssetsPanel')
 const { filterPintaDrawings } = await import('./PintaImportDialog')
 
 const PNG = 'data:image/png;base64,AAAA'
+const SVG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"/>')}`
 
 const DRAWINGS: DrawingSummary[] = [
   {
@@ -154,14 +156,53 @@ describe('AssetsPanel — botão "Trazer do Pinta"', () => {
 })
 
 describe('PintaImportDialog', () => {
+  it('atualiza a cópia raster antiga de um vetor sem trocar o nome usado pelos blocos', async () => {
+    const project = createEmptyProject('p1', 'Meu Jogo')
+    project.assets = [
+      {
+        id: 'a-vetor',
+        name: 'ceu-que-meus-blocos-usam',
+        kind: 'image',
+        dataUrl: PNG,
+        source: 'library',
+        libId: 'personal:d2',
+        libOrigin: 'pinta',
+        width: 64,
+        height: 64,
+      },
+    ]
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    await openDialog(
+      fakeAdapter({
+        import: async () => ({
+          ok: true,
+          asset: { id: 'd2', name: 'ceu-azul', dataUrl: SVG, width: 64, height: 64 },
+        }),
+      }),
+    )
+    const dialog = screen.getByRole('dialog', { name: 'Trazer do Pinta' })
+    fireEvent.click(await within(dialog).findByRole('button', { name: 'Atualizar vetor' }))
+    await waitFor(() => {
+      expect(useProjectStore.getState().project?.assets?.[0]).toMatchObject({
+        id: 'a-vetor',
+        name: 'ceu-que-meus-blocos-usam',
+        dataUrl: SVG,
+      })
+    })
+    expect(within(dialog).queryByRole('button', { name: 'Atualizar vetor' })).toBeNull()
+  })
+
   it('lista a galeria e a busca filtra sem acento/caixa', async () => {
     await openDialog(fakeAdapter())
     await waitFor(() => {
       expect(screen.getByText('dragao-pintado')).toBeTruthy()
     })
     expect(screen.getByText('ceu-azul')).toBeTruthy()
-    // Miniatura ausente → emoji do papel; presente → <img>.
-    expect(screen.getByText('🖼️')).toBeTruthy()
+    // Miniatura ausente → emoji do papel; presente → <img>. ⚠️ Escopado NA MODAL:
+    // a aba "Imagens" da janela atrás usa o mesmo emoji, e `getByText` não
+    // respeita `aria-hidden` — solto, ele acha dois e falha por ambiguidade.
+    const galeria = screen.getByRole('dialog', { name: 'Trazer do Pinta' })
+    expect(within(galeria).getByText('🖼️')).toBeTruthy()
 
     const search = screen.getByRole('searchbox', { name: 'Buscar desenhos' })
     fireEvent.change(search, { target: { value: 'Dragão' } })

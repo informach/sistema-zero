@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/bun'
 import { DomainError } from '@sistemazero/core/errors'
+import type { HelpValidationIssue } from '@sistemazero/core/help'
 import {
   type ErrorEnvelope,
   envelope,
@@ -9,13 +10,14 @@ import {
   UnauthorizedError,
 } from '@sistemazero/core/http'
 import { type Logger, serializeError } from '@sistemazero/core/logging'
-import { CourseCareerLockedError, QuizCooldownError } from '../../domain/course/course.errors'
+import { CourseJourneyLockedError, QuizCooldownError } from '../../domain/course/course.errors'
 import {
   CreationClientOutdatedError,
   CreationPartMissingError,
   CreationPartsNeedBytesError,
   CreationStaleBaseError,
 } from '../../domain/creations/creation.errors'
+import { HelpTutorialConflictError, HelpTutorialInvalidError } from '../../domain/help/help.errors'
 import { PensaGateNotReadyError } from '../../domain/pensa/pensa.errors'
 
 export type { ErrorEnvelope }
@@ -23,6 +25,7 @@ export type { ErrorEnvelope }
 /** Mapeia o `code` de domínio para o status HTTP apropriado. */
 const DOMAIN_STATUS: Record<string, number> = {
   VALIDATION_ERROR: 400,
+  PURCHASE_ACCESS_POLICY_INVALID: 422,
   ACCESS_DENIED: 403,
   COURSE_NOT_FOUND: 404,
   LESSON_NOT_FOUND: 404,
@@ -33,6 +36,11 @@ const DOMAIN_STATUS: Record<string, number> = {
   ENTITLEMENT_NOT_FOUND: 404,
   OFFER_NOT_FOUND: 404,
   QUIZ_BLOCK_NOT_FOUND: 404,
+  LEARNING_CONFLICT: 409,
+  SECTION_LOCKED: 423,
+  SECTION_GATE_INCOMPLETE: 409,
+  LESSON_DRAFT_CONFLICT: 409,
+  LEARNING_GATE_INCOMPLETE: 409,
   EBOOK_BLOCK_NOT_FOUND: 404,
   STUDIO_BLOCK_NOT_FOUND: 404,
   PINTA_BLOCK_NOT_FOUND: 404,
@@ -68,6 +76,7 @@ const DOMAIN_STATUS: Record<string, number> = {
   // Missões + proteção de sequência.
   MISSION_NOT_FOUND: 404,
   MISSION_NOT_COMPLETED: 409,
+  UNIT_NOT_COMPLETED: 409,
   MAX_FREEZES: 409,
   VACATION_INVALID: 400,
   // Desafio do mês (tema gerenciável pelo admin).
@@ -86,6 +95,14 @@ const DOMAIN_STATUS: Record<string, number> = {
   PENSA_TASK_TRANSITION_INVALID: 409,
   PENSA_TASK_DEPENDENCY_PENDING: 409,
   PENSA_TASK_PROGRESS_CONFLICT: 409,
+  // Equipe do Pensa (26/09/2026): dono × membro; código que não abre nada é 404 (nunca
+  // vaza a existência do plano); o resto são conflitos de estado/cota.
+  PENSA_NOT_OWNER: 403,
+  PENSA_INVITE_INVALID: 404,
+  PENSA_ALREADY_MEMBER: 409,
+  PENSA_TEAM_FULL: 409,
+  PENSA_JOIN_LIMIT: 409,
+  PENSA_OWNER_CANNOT_LEAVE: 409,
   // "Guardado na sua conta" (criações do Estúdio Completo/Pinta). NOT_FOUND cobre
   // ownership mismatch; quota e revisão vencida são conflitos.
   CREATION_NOT_FOUND: 404,
@@ -94,6 +111,15 @@ const DOMAIN_STATUS: Record<string, number> = {
   CREATION_STALE_BASE: 409,
   CREATION_PARTS_NEED_BYTES: 409,
   CREATION_PART_MISSING: 409,
+  // "Como fazer" (biblioteca de ajuda do Kids).
+  HELP_TUTORIAL_NOT_FOUND: 404,
+  HELP_COLLECTION_NOT_FOUND: 404,
+  HELP_TUTORIAL_CONFLICT: 409,
+  HELP_TUTORIAL_INVALID: 400,
+  HELP_DUPLICATE_SLUG: 409,
+  HELP_COLLECTION_IN_USE: 409,
+  HELP_TUTORIAL_ARCHIVED: 409,
+  HELP_SLUG_LOCKED: 409,
 }
 
 /** Traduz qualquer erro num par status + corpo padronizado. */
@@ -110,6 +136,7 @@ export function buildErrorResponse(input: {
       | { hashes: string[] }
       | { currentRevision: number }
       | { requiredVersion: number }
+      | { issues: HelpValidationIssue[] }
     careerLock?: {
       reason: 'future-tier' | 'foundation-first' | 'tier-reward'
       requiredLevel?: string
@@ -118,7 +145,7 @@ export function buildErrorResponse(input: {
 } {
   const { error, code } = input
 
-  if (error instanceof CourseCareerLockedError) {
+  if (error instanceof CourseJourneyLockedError) {
     return {
       status: 423,
       body: {
@@ -152,6 +179,25 @@ export function buildErrorResponse(input: {
         ...envelope(error.code, error.message),
         details: { gate: error.gate, missing: error.missing },
       },
+    }
+  }
+
+  // "Como fazer": o PATCH com `expectedRevision` velho devolve a revisão ATUAL (a outra aba
+  // salvou); o publish de rascunho incompleto devolve os BLOQUEIOS campo a campo (o diálogo
+  // "Revisar e publicar" do admin aponta cada um).
+  if (error instanceof HelpTutorialConflictError) {
+    return {
+      status: 409,
+      body: {
+        ...envelope(error.code, error.message),
+        details: { currentRevision: error.currentRevision },
+      },
+    }
+  }
+  if (error instanceof HelpTutorialInvalidError) {
+    return {
+      status: 400,
+      body: { ...envelope(error.code, error.message), details: { issues: error.issues } },
     }
   }
 

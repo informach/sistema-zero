@@ -53,7 +53,6 @@ interface EnemyType {
     shotSpeed: number
     animStates?: Record<string, unknown> | null
   }
-  onDefeat: ((s: Sprite) => void) | null
 }
 
 interface Api {
@@ -160,7 +159,6 @@ describe('createEnemyType / spawnEnemy', () => {
     expect(t.config.speed).toBe(2)
     expect(t.config.dmg).toBe(1)
     expect(t.config.w).toBe(32)
-    expect(t.onDefeat).toBeNull()
   })
 
   it('spawnEnemy aplica vida/dano/tamanho/cor do tipo e devolve o sprite', () => {

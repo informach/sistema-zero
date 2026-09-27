@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { PensaHostAdapter, PensaStageView, PensaTaskView } from '../core/types'
+import { ConfirmDialog } from './ConfirmDialog'
+import { useUnsavedChanges } from './unsavedChanges'
 
 export interface TaskPlanProps {
   adapter: PensaHostAdapter
@@ -13,14 +15,7 @@ export interface TaskPlanProps {
 const draftId = (prefix: string): string =>
   `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
 
-function useUnsavedChanges(active: boolean) {
-  useEffect(() => {
-    if (!active) return
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault()
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [active])
-}
+const destinationNames = { pinta: 'Pinta', studio: 'Estúdio', molda: 'Molda' }
 
 export function TaskPlan(props: TaskPlanProps) {
   const titleById = useMemo(
@@ -79,7 +74,9 @@ function TaskCard(
   const owned =
     props.task.destination === 'pinta'
       ? props.adapter.capabilities.pintaOwned
-      : props.adapter.capabilities.studioOwned
+      : props.task.destination === 'molda'
+        ? props.adapter.capabilities.moldaOwned === true
+        : props.adapter.capabilities.studioOwned
   const save = () =>
     props.run(`task-${props.task.id}`, async () => {
       await props.adapter.transport.request(`/tasks/${props.task.id}`, {
@@ -97,8 +94,12 @@ function TaskCard(
       setEditing(false)
       await props.refresh()
     })
+  // A pergunta antes de apagar sai na janela da casa, nunca no `window.confirm` do
+  // navegador (cinza, fora do tema e em inglês no botão dependendo do sistema).
+  const [confirmRemove, setConfirmRemove] = useState(false)
+  const removeButtonRef = useRef<HTMLButtonElement | null>(null)
   const remove = () => {
-    if (!window.confirm(`Apagar o cartão “${props.task.title}”?`)) return
+    setConfirmRemove(false)
     void props.run(`task-${props.task.id}`, async () => {
       await props.adapter.transport.request(`/tasks/${props.task.id}`, { method: 'DELETE' })
       await props.refresh()
@@ -114,7 +115,7 @@ function TaskCard(
       <article>
         <header>
           <span data-destination={props.task.destination}>
-            {props.task.destination === 'pinta' ? 'PINTA' : 'ESTÚDIO'}
+            {destinationNames[props.task.destination].toLocaleUpperCase('pt-BR')}
           </span>
           <em data-status={props.task.progress.status}>
             {props.task.progress.status === 'planned'
@@ -202,7 +203,7 @@ function TaskCard(
                 {props.task.progress.status === 'planned' ? 'Editar cartão' : 'Criar revisão'}
               </button>
               {props.task.progress.status === 'planned' ? (
-                <button type="button" onClick={remove}>
+                <button ref={removeButtonRef} type="button" onClick={() => setConfirmRemove(true)}>
                   Apagar cartão
                 </button>
               ) : null}
@@ -215,7 +216,7 @@ function TaskCard(
               disabled={!owned || (props.task.progress.status === 'planned' && !props.next)}
               title={
                 !owned
-                  ? `Você ainda não possui ${props.task.destination === 'pinta' ? 'o Pinta' : 'o Estúdio Completo'}.`
+                  ? `O ${destinationNames[props.task.destination]} ainda não está disponível para este perfil.`
                   : undefined
               }
               onClick={() =>
@@ -226,12 +227,21 @@ function TaskCard(
               }
             >
               {owned
-                ? `Abrir no ${props.task.destination === 'pinta' ? 'Pinta' : 'Estúdio'} →`
+                ? `Abrir no ${destinationNames[props.task.destination]} →`
                 : 'Ferramenta não liberada'}
             </button>
           ) : null}
         </footer>
       </article>
+      <ConfirmDialog
+        open={confirmRemove}
+        title="Apagar este cartão?"
+        body={`O cartão "${props.task.title}" sai do plano. Não dá para desfazer.`}
+        confirmLabel="Apagar"
+        onConfirm={remove}
+        onClose={() => setConfirmRemove(false)}
+        returnFocusTo={removeButtonRef}
+      />
     </li>
   )
 }
@@ -326,7 +336,7 @@ function TaskEditor(props: TaskEditorProps) {
       </fieldset>
       <GuideEditor value={props.guide} onChange={props.onGuide} />
       <div className="pensa-context-lock">
-        <strong>Destino: {props.task.destination === 'pinta' ? 'Pinta' : 'Estúdio'}</strong>
+        <strong>Destino: {destinationNames[props.task.destination]}</strong>
         <small>
           O brief e as referências oficiais ficam protegidos. Recrie o plano para trocar o destino,
           assets, blocos ou extensões.

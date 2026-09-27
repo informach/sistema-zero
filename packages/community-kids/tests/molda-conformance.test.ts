@@ -90,7 +90,12 @@ describe('os espelhos fora do members', () => {
     const client = read('community-kids/src/components/kids/molda-client.tsx')
     expect(client).toContain("tool: 'molda'")
     expect(client).toContain('createCloudMirroredMoldaPersistence(')
-    expect(client).toContain('<CloudSaveBadge cloud={cloud} syncing={syncing} />')
+    // O selo mora na barra do Molda (lote 6b): o host só manda os DADOS pelo Provider do
+    // próprio pacote, e a região viva fica do lado de fora, sempre montada.
+    expect(client).toContain('useHostChrome({ cloud, syncing })')
+    expect(client).toContain('<mod.MoldaHostChromeProvider value={hostChrome}>')
+    expect(client).toContain('<HostChromeAnnouncer text={announcement} />')
+    expect(client).not.toContain('CloudSaveBadge')
     expect(client).toContain('cloud.flush({ timeoutMs: 5000 })')
     expect(client).toContain('isAssetOpen: m.isMoldaAssetOpen')
     const wrapper = read('community-kids/src/lib/molda-cloud-persistence.ts')

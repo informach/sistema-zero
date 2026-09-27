@@ -1,4 +1,4 @@
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import type { CreationCleanupService } from '../../../application/admin/creation-cleanup/creation-cleanup.service'
 import type { PurgeUserDataService } from '../../../application/admin/purge-user-data/purge-user-data.service'
 import type { GetAiUsageStatsService } from '../../../application/ai-usage/get-ai-usage-stats.service'
@@ -17,6 +17,7 @@ import type { ListMemberRatingsService } from '../../../application/list-member-
 import type { ListMembersService } from '../../../application/list-members/list-members.service'
 import type { ManageEntitlementService } from '../../../application/manage-entitlement/manage-entitlement.service'
 import type { GetProfilesOverviewService } from '../../../application/profiles-overview/get-profiles-overview.service'
+import type { TeacherBroadcastsService } from '../../../application/teacher-threads/teacher-broadcasts.service'
 import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
 import type { GetMemberToolUsageService } from '../../../application/tool-usage/get-member-tool-usage.service'
 import type { RevokeCertificateService } from '../../../application/validate-certificate/validate-certificate.service'
@@ -58,11 +59,13 @@ import {
   TeacherThreadReplyBody,
   UserIdParams,
 } from '../dtos'
+import { teacherBroadcastRoutes } from './teacher-broadcast.routes'
 
 const DEFAULT_LIMIT = 20
 const MAX_LIMIT = 100
 
 export interface AdminRoutesDeps {
+  teacherBroadcasts?: TeacherBroadcastsService
   requireAdminEnabled: boolean
   /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
   internalToken?: string
@@ -111,6 +114,11 @@ export function adminRoutes(deps: AdminRoutesDeps) {
     new Elysia({ prefix: '/members/admin' })
       .onTransform(({ headers }) =>
         assertInternalCaller(headers['x-internal-token'], deps.internalToken),
+      )
+      .use(
+        deps.teacherBroadcasts
+          ? teacherBroadcastRoutes(deps.teacherBroadcasts, deps.requireAdminEnabled)
+          : new Elysia(),
       )
       .get(
         '/members',
@@ -259,6 +267,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
               staffUserId: resolveUserId(headers),
               audience: query.audience,
               contextType: query.context,
+              workflowStatus: query.workflowStatus,
               courseId: query.courseId,
               unreadOnly: query.unread === 'true',
               userIds: parseUserIds(query.userIds),
@@ -287,7 +296,9 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return deps.teacherThreads.markAllReadByTeacher(resolveUserId(headers), {
             audience: body?.audience,
             contextType: body?.context,
+            workflowStatus: body?.workflowStatus,
             courseId: body?.courseId,
+            userIds: body?.userIds,
           })
         },
         { body: AdminTeacherThreadsReadAllBody },
@@ -326,6 +337,23 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           )
         },
         { query: AdminTeacherThreadByContextQuery },
+      )
+      .post(
+        '/teacher-threads/:id/status',
+        ({ headers, params, body }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.teacherThreads.setWorkflowStatus(params.id, body.status)
+        },
+        {
+          params: IdParams,
+          body: t.Object({
+            status: t.Union([
+              t.Literal('waiting_teacher'),
+              t.Literal('waiting_student'),
+              t.Literal('resolved'),
+            ]),
+          }),
+        },
       )
       .get(
         '/teacher-threads/:id',

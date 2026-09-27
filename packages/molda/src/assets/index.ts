@@ -4,14 +4,29 @@
  * importam para validar, converter e medir criações fora do app. O teste
  * `purity.test.ts` varre o grafo de módulos e reprova qualquer import de UI.
  */
+
+export { type MoldaAssetSummary, summarizeAsset } from '../core/assetSummary'
 export { assetBytes } from '../core/bytes'
 export { hexToRgb, normalizeHex, rgbToHex } from '../core/color'
+export {
+  type MoldaDocumentRead,
+  type MoldaReadIssue,
+  readMoldaDocument,
+} from '../core/documentReader'
+export {
+  checkMoldaDocumentVersion,
+  MOLDA_DOCUMENT_VERSION,
+  MOLDA_DOCUMENT_WRITE_VERSION,
+  MOLDA_MAX_READ_VERSION,
+  MoldaUnsupportedVersionError,
+} from '../core/documentVersion'
 export type { TexelsPerUnit, TextureSize } from '../core/limits'
 export { clampInt, isTexelsPerUnit, isTextureSize, MOLDA_LIMITS } from '../core/limits'
 export type {
   FaceId,
   MeshFace,
   MeshFaceKey,
+  MeshLooseEdge,
   MoldaAsset,
   MoldaAssetBase,
   MoldaAssetKind,
@@ -62,7 +77,14 @@ export {
   sanitizeSkin,
 } from '../core/sanitize'
 export { base64ToBytes, bytesToBase64 } from '../core/skinCodec'
-export type { MoldaAssetJson, MoldaSkinJson } from '../export/assetJson'
+export type {
+  MoldaAssetJson,
+  MoldaModelJson,
+  MoldaPartJson,
+  MoldaSkinJson,
+  MoldaSkyJson,
+  MoldaTextureJson,
+} from '../export/assetJson'
 export { assetFromJson, assetToJson } from '../export/assetJson'
 export type { MoldaGalleryJson, MoldaImportResult } from '../export/projectJson'
 export {

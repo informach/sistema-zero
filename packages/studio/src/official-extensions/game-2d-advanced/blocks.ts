@@ -1,6 +1,6 @@
-import type { ExtensionToolboxCategory } from '#extensions'
 import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
+import type { ExtensionToolboxCategory } from '../../extensions/toolboxTypes'
 import { gameKitBlockDefinitions01 } from './blocks/definitions01'
 import { gameKitBlockDefinitions02 } from './blocks/definitions02'
 import { gameKitBlockDefinitions03 } from './blocks/definitions03'

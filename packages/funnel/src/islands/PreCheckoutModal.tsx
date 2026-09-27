@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { type Ref, useEffect, useId, useRef, useState } from 'react'
 import { apiPost } from '../lib/api-fetch'
 import { ContactSchema, fieldErrors } from '../lib/contact-schema'
+import { leadAttributionFromLocation } from '../lib/lead-attribution'
 
 type Errors = Partial<Record<'nome' | 'email' | 'telefone', string>>
 
@@ -12,9 +13,11 @@ export interface PreCheckoutModalProps {
   basePath: string
   /** Chave do funil (`pro/no-comando-da-ia`) — gravada na criação do lead. */
   funnel: string
+  /** Código recebido na oferta; o checkout volta a validá-lo no servidor. */
+  couponCode?: string | null
 }
 
-export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalProps) {
+export default function PreCheckoutModal({ basePath, funnel, couponCode }: PreCheckoutModalProps) {
   const [open, setOpen] = useState(false)
   // Oferta ESCOLHIDA no CTA que abriu o modal (`data-checkout-oferta="<slug>"`,
   // opcional — usado pelos funis de assinatura pra pré-selecionar o plano no
@@ -35,13 +38,18 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
   // (audience ∈ {pro, kids}) — ver registry. Deixar isso explícito evita o pai
   // preencher os dados da criança aqui.
   const isKids = funnel.startsWith('kids/')
+  const isChallenge = funnel === 'kids/desafio-primeiro-jogo'
+  const isCommunity = funnel === 'kids/comunidade-dos-criadores'
 
   // Garante o lead (mesmo p/ quem cai direto na oferta) e marca viu_pagina_vendas
   // com o perfil que veio na URL (`?perfil=`), quando válido.
   useEffect(() => {
     ;(async () => {
       try {
-        await apiPost('/api/leads', { funnel })
+        await apiPost('/api/leads', {
+          funnel,
+          attribution: leadAttributionFromLocation(window.location),
+        })
         // Perfil é POR FUNIL (string livre) — repassa o que veio na URL; o servidor
         // valida `perfil_resultado` (max 32). Antes usava o enum do NCI e descartava
         // os perfis dos outros funis (ex.: kids).
@@ -113,6 +121,19 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
       // Plano escolhido no CTA → o checkout pré-seleciona (validado no servidor
       // contra {principal, altOffer} — slug forjado dá 400 INVALID_OFFER).
       if (oferta) q.set('oferta', oferta)
+      if (couponCode) q.set('cupom', couponCode)
+      const current = new URLSearchParams(window.location.search)
+      for (const key of [
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_content',
+        'event_code',
+        'event',
+      ]) {
+        const value = current.get(key)
+        if (value) q.set(key, value)
+      }
       // Marca o redirecionamento antes de sair da página (best-effort, aguardado).
       await apiPost('/api/events', { eventName: 'redirecionou_checkout' }).catch(() => {})
       window.location.href = `${basePath}/checkout?${q.toString()}`
@@ -143,7 +164,9 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
           role="dialog"
           aria-modal="true"
           aria-labelledby={`${uid}-title`}
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4"
+          className={`fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4 ${
+            isKids ? 'kids-precheckout-overlay' : ''
+          }`}
           onClick={(e) => {
             if (e.target === e.currentTarget) setOpen(false)
           }}
@@ -152,24 +175,34 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
             key="dialog"
             {...dialogAnim}
             transition={{ duration: reduce ? 0 : 0.26, ease: [0.22, 1, 0.36, 1] }}
-            className="card w-full max-w-md rounded-t-2xl border-line/80 bg-card-2 p-6 shadow-2xl shadow-black/50 sm:rounded-2xl sm:p-7"
+            className={`card w-full max-w-md rounded-t-2xl border-line/80 bg-card-2 p-6 shadow-2xl shadow-black/50 sm:rounded-2xl sm:p-7 ${
+              isKids ? 'kids-precheckout' : ''
+            }`}
           >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 id={`${uid}-title`} className="text-xl font-bold text-ink">
-                  Falta um passo
+                  {isChallenge
+                    ? 'O primeiro jogo está a um passo de começar'
+                    : isCommunity
+                      ? 'A Comunidade está a um passo de começar'
+                      : 'Falta um passo'}
                 </h2>
                 <p className="mt-1 text-sm text-muted">
-                  {isKids
-                    ? 'Confirme os dados do responsável para ir ao pagamento seguro.'
-                    : 'Confirme seus dados para ir pro pagamento seguro.'}
+                  {isChallenge
+                    ? 'Confirme os dados do responsável. Na próxima tela, você revisa o valor, aplica o cupom se tiver um e escolhe como pagar.'
+                    : isCommunity
+                      ? 'Confirme os dados do responsável. Na próxima tela, você escolhe o plano e revisa o valor e a renovação.'
+                      : isKids
+                        ? 'Confirme os dados do responsável para ir ao pagamento seguro.'
+                        : 'Confirme seus dados para ir pro pagamento seguro.'}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Fechar"
-                className="-mr-1 -mt-1 rounded-lg p-1 text-muted transition hover:text-ink"
+                className="kids-precheckout-close -mr-1 -mt-1 rounded-lg p-1 text-muted transition hover:text-ink"
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                   <path
@@ -199,6 +232,7 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
             >
               <Field
                 id={`${uid}-nome`}
+                name="nome"
                 label={isKids ? 'Nome do responsável' : 'Nome'}
                 placeholder={isKids ? 'Nome completo do responsável' : 'Seu nome completo'}
                 autoComplete="name"
@@ -212,6 +246,7 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
               />
               <Field
                 id={`${uid}-email`}
+                name="email"
                 label={isKids ? 'E-mail do responsável' : 'E-mail'}
                 type="email"
                 inputMode="email"
@@ -226,6 +261,7 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
               />
               <Field
                 id={`${uid}-telefone`}
+                name="telefone"
                 label={isKids ? 'Telefone do responsável' : 'Telefone'}
                 type="tel"
                 inputMode="tel"
@@ -239,14 +275,24 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
                 }}
               />
 
-              {erroGeral && <p className="text-sm text-red-400">{erroGeral}</p>}
+              {erroGeral && (
+                <p role="alert" className="text-sm text-red-400">
+                  {erroGeral}
+                </p>
+              )}
 
               <button
                 type="submit"
                 disabled={submitting}
                 className="btn btn-primary mt-1 disabled:opacity-50"
               >
-                {submitting ? 'Aguarde…' : 'Ir pro pagamento seguro →'}
+                {submitting
+                  ? 'Aguarde…'
+                  : isChallenge
+                    ? 'Continuar para o pagamento'
+                    : isCommunity
+                      ? 'Escolher o plano e continuar'
+                      : 'Ir pro pagamento seguro →'}
               </button>
               <button
                 type="button"
@@ -256,7 +302,11 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
                 Cancelar
               </button>
               <p className="text-center text-xs text-muted">
-                Pagamento via Pix ou cartão de crédito, com garantia de 7 dias.
+                {isChallenge
+                  ? 'Compra única por Pix ou cartão, sem renovação automática e com garantia de 7 dias.'
+                  : isCommunity
+                    ? 'Assinatura mensal ou anual, com 7 dias de garantia. As formas de pagamento aparecem na próxima tela.'
+                    : 'Pagamento via Pix ou cartão de crédito, com garantia de 7 dias.'}
               </p>
             </form>
           </motion.div>
@@ -268,6 +318,7 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
 
 interface FieldProps {
   id: string
+  name: string
   label: string
   placeholder: string
   value: string
@@ -281,6 +332,7 @@ interface FieldProps {
 
 function Field({
   id,
+  name,
   label,
   placeholder,
   value,
@@ -299,9 +351,11 @@ function Field({
       <input
         ref={inputRef}
         id={id}
+        name={name}
         type={type}
         inputMode={inputMode}
         autoComplete={autoComplete}
+        spellCheck={type === 'email' ? false : undefined}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}

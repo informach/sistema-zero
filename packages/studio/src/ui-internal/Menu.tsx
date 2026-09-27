@@ -1,5 +1,5 @@
 import type { JSX, KeyboardEvent, ReactNode } from 'react'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { StudioThemeScope } from '../studio/theme'
 import { cn } from './cn'
@@ -7,6 +7,18 @@ import { cn } from './cn'
 export interface MenuItem {
   id: string
   label: string
+  /**
+   * Linha de apoio abaixo do rótulo, para quando o nome sozinho não diz o
+   * DESTINO (os três jeitos de o jogo sair do Estúdio, por exemplo).
+   * ⚠️ Ela não pode entrar no NOME acessível (o nome viraria "Baixar o código um
+   * .zip com o código…" e os `getByRole('menuitem', { name, exact: true })` dos
+   * e2e quebrariam em silêncio), mas também não pode SUMIR para quem usa leitor
+   * de tela — a dica existe justamente porque o nome sozinho não basta. Por isso
+   * o botão aponta `aria-labelledby` para o span do rótulo e `aria-describedby`
+   * para o span da dica: nome curto, descrição junto. Um `aria-label` cru
+   * resolvia a primeira metade e apagava a segunda.
+   */
+  hint?: string
   icon?: ReactNode
   onSelect: () => void
   /** Item-interruptor: mostra estado ligado (cor de destaque + marca). */
@@ -30,6 +42,12 @@ export interface MenuProps {
   align?: 'left' | 'right'
   className?: string
   triggerClassName?: string
+  /**
+   * `bar` = o círculo quieto da barra do editor (`.sz-bar-icon-btn` do `studio.css`, o "⋯" da
+   * tela-modelo), no lugar das utilitárias de sempre: o `cn` daqui só junta classes (sem
+   * tailwind-merge), então um `triggerClassName` não TIRARIA as de base.
+   */
+  triggerVariant?: 'default' | 'bar'
 }
 
 interface PanelPos {
@@ -53,7 +71,9 @@ export function Menu({
   align = 'right',
   className,
   triggerClassName,
+  triggerVariant = 'default',
 }: MenuProps): JSX.Element {
+  const baseId = useId()
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState<PanelPos | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -127,6 +147,9 @@ export function Menu({
 
   // Índice plano estável (mesma ordem de itemRefs) atribuído durante o render.
   let flatIndex = -1
+  // Painel mais largo SÓ quando alguma linha de apoio precisa caber (o menu do
+  // card da lista, que não tem nenhuma, continua estreito como antes).
+  const hasHint = sections.some((s) => s.items.some((i) => i.hint))
 
   return (
     <div className={cn('relative', className)}>
@@ -145,8 +168,12 @@ export function Menu({
           }
         }}
         className={cn(
-          'sz-touch-target inline-flex h-9 w-9 items-center justify-center rounded-md text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
-          open && 'bg-sz-bg text-sz-fg',
+          triggerVariant === 'bar'
+            ? 'sz-bar-icon-btn'
+            : cn(
+                'sz-touch-target inline-flex h-9 w-9 items-center justify-center rounded-md text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
+                open && 'bg-sz-bg text-sz-fg',
+              ),
           triggerClassName,
         )}
       >
@@ -170,7 +197,10 @@ export function Menu({
               role="menu"
               aria-label={label}
               style={{ top: pos.top, left: pos.left, right: pos.right }}
-              className="fixed z-50 max-h-[min(70vh,32rem)] min-w-56 overflow-auto rounded-lg border border-sz-border bg-sz-panel py-1 shadow-lg"
+              className={cn(
+                'fixed z-50 max-h-[min(70vh,32rem)] overflow-auto rounded-lg border border-sz-border bg-sz-panel py-1 shadow-lg',
+                hasHint ? 'min-w-72' : 'min-w-56',
+              )}
             >
               {sections.map((section, si) => (
                 <fieldset
@@ -195,8 +225,15 @@ export function Menu({
                         }}
                         type="button"
                         role="menuitem"
+                        // O id no DOM é o que deixa um teste perguntar QUAL item
+                        // está ali. Pelo rótulo a pergunta é ambígua: dois itens
+                        // podem mostrar o mesmo texto, e aí um item morto passa
+                        // por vivo (medido, ao sabotar o drift do menu).
+                        data-sz-menu-item={item.id}
                         tabIndex={-1}
                         disabled={item.disabled}
+                        aria-labelledby={item.hint ? `${baseId}-rotulo-${item.id}` : undefined}
+                        aria-describedby={item.hint ? `${baseId}-dica-${item.id}` : undefined}
                         aria-current={item.active || undefined}
                         onClick={() => {
                           item.onSelect()
@@ -214,7 +251,19 @@ export function Menu({
                             {item.icon}
                           </span>
                         )}
-                        <span className="flex-1 truncate">{item.label}</span>
+                        <span className="min-w-0 flex-1">
+                          <span id={`${baseId}-rotulo-${item.id}`} className="block truncate">
+                            {item.label}
+                          </span>
+                          {item.hint && (
+                            <span
+                              id={`${baseId}-dica-${item.id}`}
+                              className="block text-xs leading-snug text-sz-fg-mute"
+                            >
+                              {item.hint}
+                            </span>
+                          )}
+                        </span>
                         {item.active && (
                           <span className="text-sz-accent" aria-hidden="true">
                             ●

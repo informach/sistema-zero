@@ -1,3 +1,3 @@
 import { shell } from '@/server/shell'
 
-export const { GET, PATCH } = shell.routes.pensaProject
+export const { GET, PATCH, DELETE } = shell.routes.pensaProject

@@ -1,0 +1,300 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-05",
+  "title": "Cactos no ritmo certo",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "construir-3",
+    "construir-4",
+    "convite-construir-3",
+    "construir-5",
+    "fechamento"
+  ],
+  "blocks": [
+    {
+      "key": "video-missao",
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre a pista vazia e o relógio. “Precisamos de espaço entre os cactos. Avance o relógio e veja como eles nascem.” Apresente a ligação entre relógio e nascimento quando a pista ficar cheia. Compare dois segundos em cada montagem, com a mesma velocidade. Não peça à criança que sobreviva aos obstáculos."
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "required": false,
+        "title": "Abra espaço entre os cactos",
+        "instructions": "Avance o relógio. Depois ligue um intervalo ao nascimento dos cactos.",
+        "hints": [
+          "Veja quantos cactos nascem enquanto o relógio anda.",
+          "Compare o mesmo tempo com e sem intervalo.",
+          "Ligue Relógio a Nascer e avance dois segundos."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "spawn"
+        }
+      }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: Criar o grupo dos cactos. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Muitos, coloque Criar grupo de sprites em Ao iniciar, abaixo do dino. Escreva cactos.\n\nUse esse mesmo nome nos próximos blocos. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-1",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Muitos, coloque Criar grupo de sprites em Ao iniciar, abaixo do dino. Escreva cactos."
+      }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: Fazer o cacto nascer, andar e aparecer. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Abaixo do desenho do dino, coloque criar obstáculo do Kit dino, Atualizar o grupo e Desenhar o grupo, de Muitos. Escolha cactos nos três.\n\nRode por pouco tempo para observar a avalanche. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-2",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Abaixo do desenho do dino, coloque criar obstáculo do Kit dino, Atualizar o grupo e Desenhar o grupo, de Muitos. Escolha cactos nos três."
+      }
+    },
+    {
+      "key": "zappy-convite-construir-1",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Rode só um pouco e observe quantos nascem. Essa avalanche faz parte da experiência; você vai organizá-la a seguir."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: O relógio. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Tempo e repetição, coloque A cada segundos ao lado de A cada quadro, dentro de Enquanto estiver rodando. Use 1.4.\n\nLeve somente a criação do cacto para dentro desse relógio. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-3",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Tempo e repetição, coloque A cada segundos ao lado de A cada quadro, dentro de Enquanto estiver rodando. Use 1.4."
+      }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: Nascer fora da tela. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No cacto, troque x 400 por 560 e vx menos 3 por menos 5. O tamanho fica 44.\n\nObserve que agora ele nasce fora da tela e entra pela direita. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-4",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No cacto, troque x 400 por 560 e vx menos 3 por menos 5. O tamanho fica 44."
+      }
+    },
+    {
+      "key": "video-construir-5-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Compare vx menos 3 e menos 9 mantendo o relógio. Depois compare intervalos 0.8 e 2.5 mantendo a velocidade.\n\nVolte ao ponto de partida de 1.4 e menos 5 antes de seguir. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-5",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Compare vx menos 3 e menos 9 mantendo o relógio. Depois compare intervalos 0.8 e 2.5 mantendo a velocidade."
+      }
+    },
+    {
+      "key": "zappy-convite-construir-3",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Rode outra vez e compare com a avalanche. Agora há uma pausa entre os nascimentos."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! Vamos conferir antes de enviar.” Demonstre os testes desta aula: Os cactos devem nascer espaçados, entrar pela direita e atravessar a pista. Ainda não há derrota ao encostar neles. Envie seu projeto. Mostre o botão Enviar ao professor e a confirmação do envio.  Termine: “Depois de enviar, tem um quiz curtinho sobre o que você descobriu.”"
+    },
+    {
+      "key": "zappy-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!"
+      }
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Nasceu uma avalanche de cactos. Como dar espaço entre eles?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Criar usando um relógio com intervalo."
+              },
+              {
+                "id": "b",
+                "label": "Criar dois em cada quadro."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O relógio controla a espera entre nascimentos."
+          },
+          {
+            "id": "q2",
+            "prompt": "Um cacto com vx −5 anda para qual lado?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Para a direita."
+              },
+              {
+                "id": "b",
+                "label": "Para a esquerda."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Uma velocidade horizontal negativa diminui x, indo para a esquerda."
+          }
+        ]
+      }
+    },
+    {
+      "key": "zappy-revisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "Abra espaço entre os cactos",
+      "objective": "Criação em cada quadro; Criação com intervalo",
+      "intent": "exploration",
+      "blockKeys": ["video-missao", "descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
+    },
+    {
+      "key": "construir-1",
+      "title": "Uma avalanche de cactos",
+      "objective": "Reconhecer o efeito de criar objetos em cada quadro.",
+      "intent": "application",
+      "blockKeys": [
+        "video-construir-1-1",
+        "zappy-construir-1",
+        "video-construir-2-1",
+        "zappy-construir-2",
+        "zappy-convite-construir-1"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "g2d-create-group",
+            "label": "Crie o grupo cactos em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "cactos"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "construir-3",
+      "title": "Dê espaço aos obstáculos",
+      "objective": "Mover o nascimento dos cactos para um relógio separado.",
+      "intent": "application",
+      "blockKeys": [
+        "video-construir-3-1",
+        "zappy-construir-3",
+        "video-construir-4-1",
+        "zappy-construir-4",
+        "video-construir-5-1",
+        "zappy-construir-5",
+        "zappy-convite-construir-3"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "g2d-every-seconds",
+            "label": "Encaixe o relógio de 1,4 segundo em Enquanto estiver rodando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fechamento",
+      "title": "Mostre sua criação",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
+      "intent": "delivery",
+      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "O que você descobriu?",
+      "objective": "Retomar o conceito depois de explorar, criar e entregar.",
+      "intent": "closing",
+      "blockKeys": ["zappy-revisao", "quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

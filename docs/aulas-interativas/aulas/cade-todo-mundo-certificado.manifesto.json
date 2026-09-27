@@ -1,0 +1,45 @@
+{
+  "version": 5,
+  "courseSlug": "cade-todo-mundo",
+  "lessonSlug": "certificado",
+  "title": "Seu certificado",
+  "blocks": [
+    {
+      "key": "video-certificado",
+      "plannedVideo": "Título: Você criou seu primeiro jogo!\n\nCelebrar a autoria da criança: toque, reação e contagem. Mostrar como emitir e guardar o certificado. Sem oferta, pitch, chamada para compra ou convite à criança para vender a um responsável. Alvo: 40–55 segundos.\n\nRoteiro falado completo: cade-todo-mundo-certificado.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "ponte-certificado",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você fez o jogo responder aos seus toques. Seu certificado está pronto!"
+      }
+    },
+    {
+      "key": "certificado",
+      "content": {
+        "kind": "certificate",
+        "introLine": "Certificamos que",
+        "coursePhrase": "concluiu Cadê Todo Mundo?",
+        "bodyText": "Criou um jogo de procurar personagens com toque, reação e contagem de achados."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "certificado",
+      "title": "Comemore sua criação",
+      "intent": "delivery",
+      "objective": "Assistir à mensagem final e emitir o certificado do primeiro jogo criado.",
+      "blockKeys": ["video-certificado", "ponte-certificado", "certificado"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-certificado", "certificado"]
+      }
+    }
+  ]
+}

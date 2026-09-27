@@ -91,9 +91,11 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
   }
 
   const shareMessage = [
-    `Oi! Eu consegui uma bolsa 100% de um curso em que a criança cria o próprio jogo de computador em 5 dias (a partir de 9 anos) 🎮`,
+    `Oi! Quero presentear sua família com o curso Cadê Todo Mundo?, do Sistema Zero. Nele, crianças de 8 a 15 anos criam um jogo de procurar personagens, passo a passo. 🎮`,
     ``,
-    `É do Sistema Zero, e com o meu link o acesso é completo, vitalício e sem pagar nada:`,
+    `O acesso ao curso dura 7 dias a partir do cadastro pelo link. O Mural dos Criadores continua disponível para ver e jogar enquanto a conta existir.`,
+    ``,
+    `É um convite sem custo e sem cartão. Publicar, comentar e copiar jogos do Mural não estão incluídos; os demais cursos também não:`,
     shareUrl,
   ].join('\n')
 
@@ -151,8 +153,11 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
       <div className="card rounded-2xl border-line/80 bg-card p-6 sm:p-8">
         <h2 className="text-lg font-bold text-ink">Compartilhe o seu link de bolsa</h2>
         <p className="mt-2 text-sm text-muted">
-          Quem entrar por ele ganha o <strong className="text-ink">Desafio do Primeiro Jogo</strong>{' '}
-          completo, de graça e para sempre, indicado por você.
+          Quem entrar por ele recebe 7 dias de acesso ao curso{' '}
+          <strong className="text-ink">Cadê Todo Mundo?</strong>, sem custo. O prazo começa no
+          cadastro pelo link. O Mural dos Criadores fica disponível para ver e jogar enquanto a
+          conta existir, sem publicar, comentar, reagir ou copiar jogos. Os demais cursos não estão
+          incluídos.
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
           <input

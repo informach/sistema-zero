@@ -64,7 +64,7 @@ export async function POST(request: Request): Promise<Response> {
 
   // A mesma consulta que abre a aula garante matrícula, trava sequencial e
   // vínculo do perfil. O cliente nunca consegue usar esta rota como compilador
-  // livre antes de a carreira liberar o Estúdio Pro.
+  // livre antes de a jornada liberar o Estúdio Pro.
   const lesson = await getLesson(courseSlug, lessonId)
   if (lesson.status !== 200 || !lesson.body) {
     return response({ error: { message: 'Esta atividade não está liberada.' } }, 403)

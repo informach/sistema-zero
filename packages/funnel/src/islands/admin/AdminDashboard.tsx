@@ -1,3 +1,4 @@
+import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import { Button } from '@sistemazero/ui/button'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
@@ -30,12 +31,11 @@ export default function AdminDashboard({ funnels }: { funnels: AdminFunnelInfo[]
     <div>
       <header className="mb-6 flex items-center justify-between gap-4 border-b border-line pb-5">
         <div className="flex min-w-0 items-center gap-3">
-          {/* Logo do sistema-zero (versão p/ fundo escuro — o /admin é sempre dark). */}
-          <img
-            src="/logo_dark.svg"
-            alt="Sistema Zero"
-            width={515}
-            height={44}
+          {/* A logo oficial em SVG embutido: o ZERO lê `--logo-zero-*` (a cor da casa). O
+              /admin do funil é sempre escuro, daí o fundo `escuro`. */}
+          <BrandLogo
+            fundo="escuro"
+            label="Sistema Zero — painel do funil"
             className="h-auto w-[116px] shrink-0 sm:w-[132px]"
           />
           <span aria-hidden="true" className="hidden h-5 w-px bg-line sm:block" />

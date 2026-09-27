@@ -83,8 +83,8 @@ describe('FieldNamePicker', () => {
 
     it('reconhece variáveis do Jogo 2D (pontuação e resultado de colisão)', () => {
       const ws = new Blockly.Workspace()
-      ws.newBlock('sz_g2d_score').setFieldValue('pontos', 'NAME')
-      ws.newBlock('sz_g2d_collides').setFieldValue('bateu', 'NAME')
+      ws.newBlock('sz_js_var_create').setFieldValue('pontos', 'NAME')
+      ws.newBlock('sz_js_const_create').setFieldValue('bateu', 'NAME')
 
       expect(collectVariables(ws)).toEqual(['pontos', 'bateu'])
     })
@@ -1137,7 +1137,7 @@ describe('FieldNamePicker', () => {
 
     it('desenhar/colidir mapa consomem o mapa (MAP = tilemap)', () => {
       const ws = new Blockly.Workspace()
-      expect(kindOf(ws.newBlock('sz_g2d_draw_tilemap'), 'MAP')).toBe('tilemap')
+      expect(kindOf(ws.newBlock('sz_g2d_draw_prepared_tilemap'), 'MAP')).toBe('tilemap')
       expect(kindOf(ws.newBlock('sz_g2d_tilemap_collide'), 'MAP')).toBe('tilemap')
     })
   })

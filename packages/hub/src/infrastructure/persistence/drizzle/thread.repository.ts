@@ -12,7 +12,14 @@ import type {
 import type { Comment, Thread } from '../../../domain/thread/thread'
 import type { Database } from './db'
 import { isUniqueViolation } from './pg-errors'
-import { attachments, type CommentRow, comments, type ThreadRow, threads } from './schema'
+import {
+  attachments,
+  type CommentRow,
+  comments,
+  showcaseDeliveries,
+  type ThreadRow,
+  threads,
+} from './schema'
 
 const toThread = (r: ThreadRow): Thread => ({
   id: r.id,
@@ -125,44 +132,60 @@ export class DrizzleThreadRepository implements ThreadRepository {
   async createShowcaseThread(
     input: CreateShowcaseThreadInput,
   ): Promise<{ thread: Thread; deduped: boolean }> {
-    // Idempotente pela chave: dois publish concorrentes (duplo-clique/re-conclusão)
-    // → só um insere; o outro recupera o existente. NASCE `visible` (aparece na hora).
-    const inserted = await this.db
-      .insert(threads)
-      .values({
-        id: input.id,
-        version: 0,
-        channelId: input.channelId,
-        authorId: input.authorId,
-        title: input.title,
-        slug: input.slug,
-        body: input.body,
-        isPinned: false,
-        isLocked: false,
-        status: 'visible',
-        commentCount: 0,
-        isShowcase: true,
-        authorDisplayName: input.authorDisplayName,
-        authorPublic: input.authorPublic,
-        coverImageUrl: input.coverImageUrl,
-        playId: input.playId,
-        challengeKey: input.challengeKey ?? null,
-        studioMeta: input.studioMeta ?? null,
-        showcaseIdempotencyKey: input.idempotencyKey,
-        lastActivityAt: input.now,
-        createdAt: input.now,
-        editedAt: null,
-      })
-      .onConflictDoNothing({ target: threads.showcaseIdempotencyKey })
-      .returning()
-    if (inserted.length > 0) return { thread: toThread(inserted[0] as ThreadRow), deduped: false }
-    // Conflito na chave → já publicado; devolve o original.
-    const [existing] = await this.db
-      .select()
-      .from(threads)
-      .where(eq(threads.showcaseIdempotencyKey, input.idempotencyKey))
-      .limit(1)
-    return { thread: toThread(existing as ThreadRow), deduped: true }
+    return this.db.transaction(async (tx) => {
+      // Idempotente pela chave: dois publish concorrentes (duplo-clique/re-conclusão)
+      // → só um insere; o outro recupera o existente. NASCE `visible` (aparece na hora).
+      const inserted = await tx
+        .insert(threads)
+        .values({
+          id: input.id,
+          version: 0,
+          channelId: input.channelId,
+          authorId: input.authorId,
+          title: input.title,
+          slug: input.slug,
+          body: input.body,
+          isPinned: false,
+          isLocked: false,
+          status: 'visible',
+          commentCount: 0,
+          isShowcase: true,
+          authorDisplayName: input.authorDisplayName,
+          authorPublic: input.authorPublic,
+          coverImageUrl: input.coverImageUrl,
+          playId: input.playId,
+          challengeKey: input.challengeKey ?? null,
+          studioMeta: input.studioMeta ?? null,
+          showcaseIdempotencyKey: input.idempotencyKey,
+          lastActivityAt: input.now,
+          createdAt: input.now,
+          editedAt: null,
+        })
+        .onConflictDoNothing({ target: threads.showcaseIdempotencyKey })
+        .returning()
+      // Conflito na chave → já publicado; devolve o original.
+      const existing =
+        inserted[0] ??
+        (
+          await tx
+            .select()
+            .from(threads)
+            .where(eq(threads.showcaseIdempotencyKey, input.idempotencyKey))
+            .limit(1)
+        )[0]
+      if (!existing) throw new Error('Showcase transaction did not resolve a thread')
+      if (input.coursePublication) {
+        await tx
+          .insert(showcaseDeliveries)
+          .values({
+            threadId: existing.id,
+            ...input.coursePublication,
+            nextAttemptAt: input.now,
+          })
+          .onConflictDoNothing({ target: showcaseDeliveries.threadId })
+      }
+      return { thread: toThread(existing), deduped: inserted.length === 0 }
+    })
   }
 
   async hasVisibleShowcasePlayId(
@@ -289,7 +312,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
 
   async showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }> {
     // Agregado NO banco (usa o threads_author_status_idx): "seus jogos já foram
-    // jogados N vezes" do card de carreira — nunca lista threads p/ somar no app.
+    // jogados N vezes" do card de jornada — nunca lista threads p/ somar no app.
     const [row] = await this.db
       .select({
         published: sql<number>`count(*)::int`,
@@ -419,6 +442,37 @@ export class DrizzleThreadRepository implements ThreadRepository {
     const vis = threadVisibility(opts)
     // Filtro do desafio mensal (prateleira do Mural): usa o índice parcial.
     const challenge = opts.challengeKey ? eq(threads.challengeKey, opts.challengeKey) : undefined
+    const sort = opts.sort ?? 'activity'
+    if (sort !== 'activity') {
+      // Filtros do Mural ("Novidades" e "Mais jogados"): ordem ÚNICA, sem puxar os
+      // fixados para o topo. Desempate sempre por `created_at` e depois `id`, então a
+      // chave é total e o cursor nunca pula nem repete um item entre páginas.
+      // ⚠️ Parâmetros do `sql` cru com CAST explícito e o timestamp em ISO: bindar um
+      // `Date` cru num `sql` já quebrou só no container de produção (ver o CLAUDE.md).
+      const where: SQL[] = [eq(threads.channelId, channelId), vis as SQL]
+      if (challenge) where.push(challenge)
+      const c = opts.cursor
+      if (c) {
+        const t = sql`${c.t.toISOString()}::timestamptz`
+        const id = sql`${c.id}::uuid`
+        where.push(
+          sort === 'plays'
+            ? sql`(${threads.playsCount}, ${threads.createdAt}, ${threads.id}) < (${c.n ?? 0}::int, ${t}, ${id})`
+            : sql`(${threads.createdAt}, ${threads.id}) < (${t}, ${id})`,
+        )
+      }
+      const order =
+        sort === 'plays'
+          ? [desc(threads.playsCount), desc(threads.createdAt), desc(threads.id)]
+          : [desc(threads.createdAt), desc(threads.id)]
+      const rows = await this.db
+        .select()
+        .from(threads)
+        .where(and(...where))
+        .orderBy(...order)
+        .limit(opts.limit + 1)
+      return { items: rows.slice(0, opts.limit).map(toThread), hasMore: rows.length > opts.limit }
+    }
     // Página 1 (sem cursor): os FIXADOS vêm primeiro (sempre visíveis).
     const pinned =
       opts.cursor === null
@@ -435,8 +489,11 @@ export class DrizzleThreadRepository implements ThreadRepository {
     if (challenge) where.push(challenge)
     if (opts.cursor) {
       // Row comparison: (last_activity_at, id) < (cursor) → próxima página (desc).
+      // ⚠️ ISO + cast, NUNCA o `Date` cru: o postgres.js recusa `Date` como parâmetro de
+      // `sql` ("Received an instance of Date"). A 2ª página do Clube e do Mural caía aqui
+      // desde sempre; o teste SQL das ordens (tests/db) foi quem pegou, em 09/2026.
       where.push(
-        sql`(${threads.lastActivityAt}, ${threads.id}) < (${opts.cursor.t}, ${opts.cursor.id})`,
+        sql`(${threads.lastActivityAt}, ${threads.id}) < (${opts.cursor.t.toISOString()}::timestamptz, ${opts.cursor.id}::uuid)`,
       )
     }
     const rows = await this.db
@@ -600,7 +657,11 @@ export class DrizzleThreadRepository implements ThreadRepository {
   ): Promise<{ items: Comment[]; hasMore: boolean }> {
     const where: SQL[] = [eq(comments.threadId, threadId), commentVisibility(opts) as SQL]
     if (opts.after) {
-      where.push(sql`(${comments.createdAt}, ${comments.id}) > (${opts.after.t}, ${opts.after.id})`)
+      // ISO + cast pelo mesmo motivo da listagem de tópicos: `Date` cru num `sql` quebra
+      // no postgres.js, e o "Carregar mais respostas" morria na 2ª página.
+      where.push(
+        sql`(${comments.createdAt}, ${comments.id}) > (${opts.after.t.toISOString()}::timestamptz, ${opts.after.id}::uuid)`,
+      )
     }
     const rows = await this.db
       .select()

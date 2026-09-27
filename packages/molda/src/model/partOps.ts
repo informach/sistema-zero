@@ -146,6 +146,12 @@ export interface AddResult {
   partId: string
 }
 
+export type PartCapacityFailureReason = 'parts-full' | 'triangles-full'
+
+export type TryAddResult =
+  | ({ ok: true } & AddResult)
+  | { ok: false; reason: PartCapacityFailureReason }
+
 interface AddOptions {
   nearId?: string | null
   color?: number
@@ -156,7 +162,7 @@ function addPartInBox(
   shape: ShapeId,
   box: Box,
   options: AddOptions,
-): AddResult | null {
+): TryAddResult {
   const near = options.nearId
     ? (findPart(model, resolveSourceId(model, options.nearId)) ?? null)
     : null
@@ -170,19 +176,22 @@ function addPartInBox(
     color,
   })
   const slots = model.mirrorX && !partCrossesMirror(part) ? 2 : 1
-  if (model.parts.length + slots > MOLDA_LIMITS.maxParts) return null
+  if (model.parts.length + slots > MOLDA_LIMITS.maxParts) {
+    return { ok: false, reason: 'parts-full' }
+  }
   const next = { ...model, parts: [...model.parts, part] }
-  if (syncedTriangleCount(next) > MOLDA_LIMITS.maxTriangles) return null
-  return { model: syncTwins(next), partId: part.id }
+  if (syncedTriangleCount(next) > MOLDA_LIMITS.maxTriangles) {
+    return { ok: false, reason: 'triangles-full' }
+  }
+  return { ok: true, model: syncTwins(next), partId: part.id }
 }
 
-/** `null` = teto de peças ou triângulos. */
-export function addPart(
+/** Adição com falha tipada, para a interface explicar qual orçamento acabou. */
+export function tryAddPart(
   model: MoldaModelAsset,
   shape: ShapeId,
   options: AddOptions = {},
-): AddResult | null {
-  if (model.parts.length >= MOLDA_LIMITS.maxParts) return null
+): TryAddResult {
   const near = options.nearId
     ? (findPart(model, resolveSourceId(model, options.nearId)) ?? null)
     : null
@@ -191,20 +200,29 @@ export function addPart(
   return addPartInBox(model, shape, spot, options)
 }
 
+/** Compatibilidade para operações puras que só precisam saber se coube. */
+export function addPart(
+  model: MoldaModelAsset,
+  shape: ShapeId,
+  options: AddOptions = {},
+): AddResult | null {
+  const result = tryAddPart(model, shape, options)
+  return result.ok ? { model: result.model, partId: result.partId } : null
+}
+
 /**
  * Adiciona uma peça encostada na superfície tocada. O eixo dominante da
  * normal decide o lado; nos outros eixos a peça fica centralizada no toque.
  * Se o ponto não produzir um vão livre (por exemplo numa face girada), cai no
  * primeiro vão livre perto da peça tocada.
  */
-export function addPartAtSurface(
+export function tryAddPartAtSurface(
   model: MoldaModelAsset,
   shape: ShapeId,
   point: Vec3,
   normal: Vec3,
   options: AddOptions = {},
-): AddResult | null {
-  if (model.parts.length >= MOLDA_LIMITS.maxParts) return null
+): TryAddResult {
   const size = DEFAULT_PART_SIZE[shape]
   const axis = [0, 1, 2].reduce((best, index) =>
     Math.abs(normal[index] as number) > Math.abs(normal[best] as number) ? index : best,
@@ -230,6 +248,18 @@ export function addPartAtSurface(
   return addPartInBox(model, shape, spot, options)
 }
 
+/** Variante compatível da adição na superfície. */
+export function addPartAtSurface(
+  model: MoldaModelAsset,
+  shape: ShapeId,
+  point: Vec3,
+  normal: Vec3,
+  options: AddOptions = {},
+): AddResult | null {
+  const result = tryAddPartAtSurface(model, shape, point, normal, options)
+  return result.ok ? { model: result.model, partId: result.partId } : null
+}
+
 /** Apaga a peça (e o gêmeo dela, se houver). */
 export function removePart(model: MoldaModelAsset, id: string): MoldaModelAsset {
   return syncTwins({
@@ -238,11 +268,16 @@ export function removePart(model: MoldaModelAsset, id: string): MoldaModelAsset 
   })
 }
 
-/** Cópia da peça (peles inclusas) no primeiro vão livre ao lado. `null` = teto. */
-export function duplicatePart(model: MoldaModelAsset, id: string): AddResult | null {
-  if (model.parts.length >= MOLDA_LIMITS.maxParts) return null
+type DuplicatePartResult =
+  | ({ ok: true } & AddResult)
+  | { ok: false; reason: PartCapacityFailureReason | 'invalid-selection' }
+
+function tryDuplicatePart(model: MoldaModelAsset, id: string): DuplicatePartResult {
+  if (model.parts.length >= MOLDA_LIMITS.maxParts) {
+    return { ok: false, reason: 'parts-full' }
+  }
   const source = findPart(model, resolveSourceId(model, id))
-  if (!source) return null
+  if (!source) return { ok: false, reason: 'invalid-selection' }
   const size = partSize(source)
   const spot = findFreeSpot(model, size, source)
   const copy = structuredClone(source)
@@ -265,10 +300,45 @@ export function duplicatePart(model: MoldaModelAsset, id: string): AddResult | n
   delete copy.locked
   delete copy.hidden
   const slots = model.mirrorX && !partCrossesMirror(copy) ? 2 : 1
-  if (model.parts.length + slots > MOLDA_LIMITS.maxParts) return null
+  if (model.parts.length + slots > MOLDA_LIMITS.maxParts) {
+    return { ok: false, reason: 'parts-full' }
+  }
   const next = { ...model, parts: [...model.parts, copy] }
-  if (syncedTriangleCount(next) > MOLDA_LIMITS.maxTriangles) return null
-  return { model: syncTwins(next), partId: copy.id }
+  if (syncedTriangleCount(next) > MOLDA_LIMITS.maxTriangles) {
+    return { ok: false, reason: 'triangles-full' }
+  }
+  return { ok: true, model: syncTwins(next), partId: copy.id }
+}
+
+export type DuplicatePartsResult =
+  | { ok: true; model: MoldaModelAsset; partIds: string[] }
+  | { ok: false; reason: PartCapacityFailureReason | 'invalid-selection' }
+
+/**
+ * Duplica a seleção inteira como uma transação: qualquer falha descarta todas
+ * as cópias projetadas, então a UI nunca grava só uma parte do grupo.
+ */
+export function duplicateParts(
+  model: MoldaModelAsset,
+  ids: readonly string[],
+): DuplicatePartsResult {
+  if (ids.length === 0) return { ok: false, reason: 'invalid-selection' }
+  let next = model
+  const partIds: string[] = []
+  for (const id of ids) {
+    const result = tryDuplicatePart(next, id)
+    if (!result.ok) return result
+    next = result.model
+    partIds.push(result.partId)
+  }
+  return { ok: true, model: next, partIds }
+}
+
+/** Cópia de uma peça (peles inclusas) no primeiro vão livre ao lado. */
+export function duplicatePart(model: MoldaModelAsset, id: string): AddResult | null {
+  const result = duplicateParts(model, [id])
+  const partId = result.ok ? result.partIds[0] : undefined
+  return result.ok && partId ? { model: result.model, partId } : null
 }
 
 /** Re-amostra as peles para o tamanho novo da caixa (a pintura acompanha). */

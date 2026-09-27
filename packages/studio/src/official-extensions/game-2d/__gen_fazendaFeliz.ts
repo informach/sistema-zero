@@ -102,6 +102,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "Que colheita!", "Você juntou 30 moedas cuidando da sua fazenda!", "Aperte Enter para plantar de novo", "#3a5a2a");
   }
 });
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("crescer", 3)) {
   if (SZGame2D.sceneIs("jogando")) {
     for (let i = 0; i < 15; i++) {
@@ -113,6 +114,7 @@ if (SZGame2D.everySeconds("crescer", 3)) {
     }
   }
 }
+});
 `.trim()
 
 // Só gera quando RODADO direto (o drift test importa o SOURCE daqui).

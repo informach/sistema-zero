@@ -2,7 +2,7 @@ export const gameTwoDArcadeDinoRuntime = `  // ---- Pulo no chão (genérico) + 
   // Bloco genérico "pular no chão": pouso na borda atraída + pulo com
   // ↑/Espaço/W ou um toque. A gravidade é aplicada à parte.
   function jumpOnGround(sprite, ctx, jump) {
-    if (!sprite || !ctx || !ctx.canvas) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !ctx || !ctx.canvas) return;
     var j = (_isFiniteNumber(jump) && jump > 0) ? jump : 14;
     var g = world.gravity;
     sprite.vy = _finiteNumber(sprite.vy, 0);
@@ -49,7 +49,7 @@ export const gameTwoDArcadeDinoRuntime = `  // ---- Pulo no chão (genérico) + 
    * pular/pousar. A gravidade é aplicada à parte, antes deste controle.
    */
   function controlDino(sprite, ctx, jump) {
-    if (!sprite || !ctx || !ctx.canvas) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !ctx || !ctx.canvas) return;
     var sk = sprite.skin || (sprite.skin = { kind: 'dino' });
     var j = _positiveFiniteNumber(jump, 15);
     var g = world.gravity;

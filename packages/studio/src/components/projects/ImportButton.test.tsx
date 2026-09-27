@@ -53,6 +53,6 @@ describe('ImportButton', () => {
       expect(screen.getByText(/Não foi possível importar/i)).toBeTruthy()
     })
     // A mensagem do store é em português ("Arquivo inválido: ...").
-    expect(screen.getByText(/Arquivo inválido/i)).toBeTruthy()
+    expect(screen.getByText(/O projeto não contém nome e arquivos válidos/)).toBeTruthy()
   })
 })

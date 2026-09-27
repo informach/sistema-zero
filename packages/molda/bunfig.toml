@@ -1,3 +1,8 @@
 [test]
 # happy-dom global (document/window) p/ os testes de componente.
 preload = ["./test-setup.ts"]
+
+# `bun test` CRU varria o `e2e/` junto (specs do Playwright estouram fora do runner deles)
+# e a suíte terminava vermelha com tudo de verdade verde. `root` escopa a DESCOBERTA: o
+# `bun test src` do package.json e os caminhos explícitos seguem iguais; o e2e roda por Playwright.
+root = "src"

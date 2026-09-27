@@ -1,7 +1,8 @@
 import * as Blockly from 'blockly/core'
+import { PROJECT_AREA_SAFE_DELETE_EXTENSION } from './blockExtensionNames'
 import { isWorkspaceLoading } from './loadFence'
 
-export const PROJECT_AREA_SAFE_DELETE_EXTENSION = 'sz_project_area_safe_delete'
+export { PROJECT_AREA_SAFE_DELETE_EXTENSION } from './blockExtensionNames'
 
 type DisposableProjectArea = Blockly.Block & {
   dispose(healStack?: boolean, animate?: boolean): void

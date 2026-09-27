@@ -51,7 +51,7 @@ describe('trilha dona do curso', () => {
     expect(trilhaHrefForCourse({})).toBeNull()
   })
 
-  it('par que não é degrau da carreira não vira URL de trilha', () => {
+  it('par que não é degrau da jornada não vira URL de trilha', () => {
     // Só existe `primeiros-passos-2d`. Sem o guard do `courseTierOf`, isto produziria
     // `/cursos/trilha/noob` para um curso que a trilha da Faísca não lista.
     expect(trilhaHrefForCourse({ level: 'primeiros-passos', track: '3d' })).toBeNull()

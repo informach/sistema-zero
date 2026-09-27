@@ -56,12 +56,15 @@ const MOLDA_OFFER_SLUG = 'molda'
 const CLUBE_SKU = 'clube-dos-criadores'
 const MURAL_SKU = 'mural-dos-criadores'
 
-// Desafio do Primeiro Jogo (kids) — o funil `/kids/desafio-primeiro-jogo` vende ESTA
-// oferta (env `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO=desafio-primeiro-jogo`). É um
-// CURSO (a criança faz o 1º jogo dentro do curso, autorado no admin com este slug) +
+// Desafio do Primeiro Jogo (kids) — o funil `/kids/desafio-primeiro-jogo` usa a
+// oferta pública de 30 dias abaixo; esta oferta histórica permanece para bolsas e
+// contratos vitalícios. É um CURSO (autorado no admin com este slug) +
 // o **Mural de BÔNUS** (item da oferta). Sem o produto/oferta, o checkout do funil quebra.
 const DESAFIO_SKU = 'desafio-primeiro-jogo'
 const DESAFIO_OFFER_SLUG = 'desafio-primeiro-jogo'
+// Novo contrato público: slug próprio para nunca reinterpretar compras vitalícias
+// históricas como temporárias. Fica em rascunho até a homologação ponta a ponta.
+const DESAFIO_30_DIAS_OFFER_SLUG = 'desafio-primeiro-jogo-30-dias'
 
 // Comunidade dos Criadores (kids) — a ASSINATURA da plataforma inteira, vendida pelo
 // funil `/kids/comunidade-dos-criadores` (env `FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES`
@@ -69,7 +72,7 @@ const DESAFIO_OFFER_SLUG = 'desafio-primeiro-jogo'
 // (`kind: 'bundle'`) cujos componentes espalham o acesso: chave-mestra dos cursos kids
 // (produto-folha `todos-os-cursos-kids`, abaixo) + Clube + Mural + Estúdio Completo +
 // Pensa + Pinta. O Desafio do Mês destrava sozinho (exige clube+estúdio); Quarto 3D,
-// Carreira, missões-núcleo e Recados são núcleo GRÁTIS (nenhum grant além destes).
+// Jornada, missões-núcleo e Recados são núcleo GRÁTIS (nenhum grant além destes).
 const TODOS_CURSOS_KIDS_SKU = 'todos-os-cursos-kids'
 const COMUNIDADE_SKU = 'comunidade-dos-criadores'
 const COMUNIDADE_OFFER_MENSAL_SLUG = 'comunidade-dos-criadores-mensal'
@@ -421,11 +424,46 @@ async function main(): Promise<void> {
       priceCents: 3700,
       currency: 'BRL',
       pricingMode: 'one_time',
+      // Contrato legado deliberadamente preservado: compradores e bolsas atuais
+      // continuam vitalícios, independentemente da nova oferta pública.
+      accessMode: 'lifetime',
       installmentsMax: 12,
       guaranteeDays: 7,
       status: 'active',
       content: { badge: 'Crie seu primeiro jogo', ctaLabel: 'Topar o desafio' },
       // Mural dos Criadores entra como BÔNUS desta oferta (item extra entregue junto).
+      items: [{ productId: muralProductId }],
+    })
+    logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
+  }
+
+  const existingDesafio30DiasOffer = await offers.findBySlug(DESAFIO_30_DIAS_OFFER_SLUG)
+  if (existingDesafio30DiasOffer) {
+    logger.info('seed.offer_exists', {
+      id: existingDesafio30DiasOffer.id,
+      slug: existingDesafio30DiasOffer.slug,
+    })
+  } else {
+    const view = await createOffer.execute({
+      productId: desafio.id,
+      code: 'desafio-30-dias',
+      slug: DESAFIO_30_DIAS_OFFER_SLUG,
+      name: 'Desafio do Primeiro Jogo — 30 dias',
+      priceCents: 6700,
+      currency: 'BRL',
+      pricingMode: 'one_time',
+      accessMode: 'fixed',
+      accessDurationValue: 30,
+      accessDurationUnit: 'days',
+      guaranteeDays: 7,
+      status: 'draft',
+      content: {
+        badge: 'Primeiro jogo em cinco dias',
+        ctaLabel: 'Topar o desafio',
+        allowsCoupon: true,
+      },
+      // Ambas incluem curso + Mural pleno; no grant da oferta de 30 dias, o
+      // members concede também o Mural visitante permanente após o prazo.
       items: [{ productId: muralProductId }],
     })
     logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })

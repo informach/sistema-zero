@@ -1,3 +1,8 @@
+import type { InteractiveBlock } from '@sistemazero/core/learning'
+import type { SceneVozes, ZappySpeechOverride } from '@sistemazero/core/learning/scene'
+
+export type { InteractiveBlock } from '@sistemazero/core/learning'
+
 import type { LessonActivity } from './studio-activity'
 
 /**
@@ -8,6 +13,7 @@ import type { LessonActivity } from './studio-activity'
  */
 export const LESSON_BLOCK_KINDS = [
   'rich_text',
+  'dialogue',
   'video',
   'image',
   'audio',
@@ -16,8 +22,10 @@ export const LESSON_BLOCK_KINDS = [
   'ebook',
   'studio',
   'pinta',
+  'interactive',
   'certificate',
   'coming_soon',
+  'materials',
 ] as const
 
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
@@ -35,6 +43,39 @@ export interface RichTextBlock {
   html?: string
   markdown?: string
   codeLanguageHints?: string[]
+}
+
+/**
+ * Poses do mascote que o bloco de diálogo oferece. É um subconjunto DELIBERADO do
+ * elenco: "dormindo" existe para tela vazia, e num balão de fala seria absurdo.
+ */
+export const DIALOGUE_POSES = ['speaking', 'happy', 'thinking', 'celebrating'] as const
+export type DialoguePose = (typeof DIALOGUE_POSES)[number]
+
+/** Tamanho máximo da fala. É régua EDITORIAL antes de ser limite técnico: o bloco
+ *  existe para não ser parede de texto. Três frases curtas cabem folgadas. */
+export const DIALOGUE_MAX_LENGTH = 400
+
+/**
+ * Fala do mascote num balão de conversa, no lugar de contexto corrido. Serve de
+ * instrução ("agora você vai...") logo acima do bloco que ela explica.
+ *
+ * O texto é SIMPLES, não markdown, e isso é escolha: markdown num balão convida
+ * título, imagem e bloco de código, que estouram a forma. Quebras de linha são
+ * preservadas na apresentação. De brinde, superfície de XSS zero.
+ *
+ * O mascote é do KIDS; o renderizador compartilhado recebe a figura por slot e a
+ * comunidade adulta vê o mesmo balão como um recado destacado, sem personagem.
+ */
+export interface DialogueBlock {
+  kind: 'dialogue'
+  /** Ausente = 'speaking' (o balão pede um mascote falando). */
+  pose?: DialoguePose
+  text: string
+  /** A voz do Zappy: `texto falado → MP3`, gerado na autoria (core `voz.ts`). */
+  vozes?: SceneVozes
+  /** Pronúncia particular desta fala, presa ao texto que a criança vê. */
+  zappySpeech?: ZappySpeechOverride
 }
 
 export type VideoProvider = 'mux' | 'youtube' | 'vimeo' | 'file'
@@ -104,15 +145,13 @@ export interface EmbedBlock {
 
 /**
  * E-book (PDF) renderizado como livro 3D interativo no front do aluno.
- * `url` é `r2priv:<key>` (bucket privado) — a view member-facing NÃO a expõe;
- * o community resolve via rota própria e serve com marca d'água.
+ * O bloco aponta para um arquivo desta aula. Sua URL privada nunca vai ao aluno;
+ * o community a resolve pela rota autenticada e aplica a marca d'água.
  */
 export interface EbookBlock {
   kind: 'ebook'
-  url: string
+  attachmentId: string
   title?: string
-  /** Inclui o PDF na base didática do Zappy; opt-in explícito do professor. */
-  zappyStudentNotebook?: boolean
 }
 
 /**
@@ -147,12 +186,15 @@ export type StudioMode = 'blocks' | 'bridge' | 'code'
  * pelo admin para a atividade da aula. `initialProject` é o snapshot do Estúdio
  * (shape `Project` da lib) autorado no editor embutido da autoria — já codifica nome,
  * TIPO (extensões web/jogo-2D/jogo-3D) e o código/blocos de partida. O members NÃO importa
- * a lib (é backend): trata `initialProject` como JSON defensivo. O service valida o tipo e
- * o template dos projetos Pro, além do teto de tamanho; o Estúdio sanitiza o snapshot na
+ * o runtime do editor (é backend): trata `initialProject` como JSON defensivo. O service valida o tipo e
+ * o template dos projetos Pro, além do teto de tamanho; a autoria usa apenas o catálogo JSON
+ * server-safe do Studio para validar critérios, sem carregar o editor. O Estúdio sanitiza o snapshot na
  * autoria e de novo no aluno. A ENTREGA do aluno (mesmo formato JSON) bloqueia a conclusão da
  * aula até ser enviada — espelha o gate do quiz (ver mark-lesson-complete.service).
  */
 export interface StudioBlock {
+  gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
+  purpose?: 'experiment' | 'submission'
   kind: 'studio'
   /** Snapshot `Project` do Estúdio autorado pelo admin (JSON opaco aqui). */
   initialProject: unknown
@@ -256,6 +298,8 @@ export const MAX_PINTA_ASSET_CHARS = 1_800_000
  * `pintaAssetKindOf` — uma leitura de string, que não obriga o members a conhecer o formato.
  */
 export interface PintaBlock {
+  gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
+  purpose?: 'experiment' | 'submission'
   kind: 'pinta'
   /** Snapshot `PintaAsset` autorado pelo admin (JSON opaco aqui). */
   initialAsset: unknown
@@ -367,9 +411,63 @@ export interface ComingSoonBlock {
   message?: string
 }
 
+/** Os tipos de item que cabem num bloco de materiais complementares. */
+export const MATERIAL_ITEM_KINDS = ['file', 'image', 'text', 'link', 'video'] as const
+export type MaterialItemKind = (typeof MATERIAL_ITEM_KINDS)[number]
+export const MATERIALS_MAX_ITEMS = 20
+
+/**
+ * Um item da lista de materiais complementares.
+ *
+ * ⚠️⚠️ **O item de ARQUIVO aponta para um anexo da aula (`lesson_attachments`) pelo id, e
+ * NUNCA carrega a URL.** O anexo já tem a entrega privada inteira por trás — R2 privado,
+ * `storageRef` que jamais chega ao navegador, marca d'água por aluno no PDF com cache por ETag,
+ * 302 pré-assinado acima de 20 MB — e o `content` de um bloco viaja CRU para o aluno
+ * (`toLessonDetailView`). Guardar `r2priv:<key>` aqui vazaria a chave do bucket E passaria por
+ * fora da marca d'água, de uma vez só.
+ *
+ * ⚠️ `fileType`/`sizeBytes` são preenchidos pelo SERVIDOR na projeção do aluno (a partir do
+ * anexo) e de propósito não existem no schema de autoria: o Elysia os descarta se alguém tentar
+ * gravá-los, então eles nunca ficam velhos no banco.
+ */
+export type MaterialItem =
+  | {
+      id: string
+      kind: 'file'
+      attachmentId: string
+      label?: string
+      note?: string
+      fileType?: string | null
+      sizeBytes?: number | null
+    }
+  | { id: string; kind: 'image'; url: string; alt?: string; caption?: string }
+  | { id: string; kind: 'text'; markdown: string }
+  | { id: string; kind: 'link'; url: string; label: string; note?: string }
+  | { id: string; kind: 'video'; url: string; label?: string }
+
+/**
+ * **Materiais complementares.** Um bloco de aula como qualquer outro: mora numa seção, obedece
+ * à ordem de `section.blockIds` e aparece no ponto em que a autora o colocou — inclusive dentro
+ * da coluna de conteúdo, embaixo do vídeo.
+ *
+ * ⚠️ O bloco não trava por si (`isCompletionGatingBlock`): arquivos só viram critério quando a
+ * autora os seleciona explicitamente em `SectionCompletion.materialItems`. É o que substituiu os "materiais de apoio", que eram um
+ * LUGAR fora das seções (`supportBlockIds`), em posição fixa e alheio à ordem da autora.
+ */
+export interface MaterialsBlock {
+  kind: 'materials'
+  /** "Arquivos do Pinta". Vazio = só a etiqueta do bloco. */
+  title?: string
+  /** Exibe o primeiro PDF deste bloco em um leitor na outra coluna da seção. */
+  bookPreview?: boolean
+  items: MaterialItem[]
+}
+
 /** União discriminada por `kind` — o conteúdo guardado na coluna `lesson_blocks.content`. */
 export type LessonBlockContent =
+  | InteractiveBlock
   | RichTextBlock
+  | DialogueBlock
   | VideoBlock
   | ImageBlock
   | AudioBlock
@@ -380,20 +478,23 @@ export type LessonBlockContent =
   | PintaBlock
   | CertificateBlock
   | ComingSoonBlock
+  | MaterialsBlock
 
 /**
  * O bloco TRAVA a conclusão da aula? Estúdio e Pinta SEMPRE travam (exigem envio —
  * `STUDIO_GATE_NOT_SUBMITTED` / `PINTA_GATE_NOT_SUBMITTED`, ver mark-lesson-complete);
  * "em breve" SEMPRE trava (a
  * aula ainda está sendo montada); quiz só trava COM nota de corte (`passingScore`). Os
- * demais (texto/vídeo/imagem/áudio/embed/ebook/quiz de fixação) são conteúdo livre.
+ * demais (texto/vídeo/imagem/áudio/embed/ebook/quiz de fixação/materiais) são conteúdo livre —
+ * e no caso dos MATERIAIS isso é definição, não omissão: complementar é o que está fora do
+ * percurso obrigatório.
  * Usado pela autoria para manter a aula do certificado SEM gates: a emissão conclui
  * essa aula DIRETO (sem passar pelos gates), então um bloco travante ali seria PULADO —
  * o aluno emitiria o diploma sem fazê-lo.
  */
 export function isCompletionGatingBlock(content: LessonBlockContent): boolean {
-  if (content.kind === 'studio') return true
-  if (content.kind === 'pinta') return true
+  if (content.kind === 'studio' || content.kind === 'pinta') return content.purpose !== 'experiment'
+  if (content.kind === 'interactive') return content.required
   if (content.kind === 'coming_soon') return true
   if (content.kind === 'quiz') return content.passingScore !== undefined
   return false

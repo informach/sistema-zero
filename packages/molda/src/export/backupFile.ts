@@ -10,6 +10,8 @@ import {
   MOLDA_GALLERY_ZIP_ENTRY,
 } from './backupFormat'
 
+import { crc32 } from './png'
+
 export { MAX_BACKUP_FILE_BYTES, MOLDA_GALLERY_ZIP_ENTRY } from './backupFormat'
 
 export type MoldaBackupReadFailure =
@@ -24,6 +26,8 @@ export type MoldaBackupReadResult =
   | { ok: false; reason: MoldaBackupReadFailure }
 
 interface ZipEntryLocation {
+  name: string
+  crc: number
   compression: 0 | 8
   flags: number
   compressedSize: number
@@ -59,14 +63,6 @@ async function readRange(file: File, start: number, end: number): Promise<Uint8A
   return bytes.byteLength === end - start ? bytes : null
 }
 
-function matchesCanonicalName(bytes: Uint8Array, start: number, length: number): boolean {
-  if (length !== MOLDA_GALLERY_ZIP_ENTRY.length) return false
-  for (let index = 0; index < length; index += 1) {
-    if (bytes[start + index] !== MOLDA_GALLERY_ZIP_ENTRY.charCodeAt(index)) return false
-  }
-  return true
-}
-
 function findEocd(bytes: Uint8Array): number {
   const view = dataView(bytes)
   for (let offset = bytes.length - EOCD_FIXED_BYTES; offset >= 0; offset -= 1) {
@@ -77,10 +73,11 @@ function findEocd(bytes: Uint8Array): number {
   return -1
 }
 
-async function locateGalleryEntry(
+async function locateEntries(
   file: File,
   maxBytes: number,
-): Promise<ZipEntryLocation | MoldaBackupReadFailure> {
+  include: (name: string) => boolean,
+): Promise<ZipEntryLocation[] | MoldaBackupReadFailure> {
   if (file.size < EOCD_FIXED_BYTES) return 'invalid-zip'
   const tailStart = Math.max(0, file.size - MAX_EOCD_SEARCH_BYTES)
   const tail = await readRange(file, tailStart, file.size)
@@ -118,7 +115,9 @@ async function locateGalleryEntry(
   if (!directory) return 'read-error'
   const view = dataView(directory)
   let offset = 0
-  let found: ZipEntryLocation | null = null
+  const found: ZipEntryLocation[] = []
+  const names = new Set<string>()
+  let totalBytes = 0
 
   for (let index = 0; index < entryCount; index += 1) {
     if (offset + CENTRAL_HEADER_FIXED_BYTES > directory.length) return 'invalid-zip'
@@ -136,8 +135,17 @@ async function locateGalleryEntry(
       offset + CENTRAL_HEADER_FIXED_BYTES + nameLength + extraLength + commentLength
     if (nextOffset > directory.length || entryDisk !== 0) return 'invalid-zip'
 
-    if (matchesCanonicalName(directory, offset + CENTRAL_HEADER_FIXED_BYTES, nameLength)) {
-      if (found) return 'duplicate-backup'
+    const name = new TextDecoder('utf-8', { fatal: true }).decode(
+      directory.subarray(
+        offset + CENTRAL_HEADER_FIXED_BYTES,
+        offset + CENTRAL_HEADER_FIXED_BYTES + nameLength,
+      ),
+    )
+    if (include(name)) {
+      if (names.has(name)) return 'duplicate-backup'
+      names.add(name)
+      totalBytes += uncompressedSize
+      if (totalBytes > maxBytes) return 'too-large'
       if (
         (flags & 1) !== 0 ||
         (compression !== 0 && compression !== 8) ||
@@ -150,18 +158,20 @@ async function locateGalleryEntry(
       if (uncompressedSize > maxBytes) return 'too-large'
       if (compressedSize > maxBytes + MAX_COMPRESSED_OVERHEAD_BYTES) return 'too-large'
       if (compression === 0 && compressedSize !== uncompressedSize) return 'invalid-zip'
-      found = {
+      found.push({
+        name,
+        crc: view.getUint32(offset + 16, true),
         compression,
         flags,
         compressedSize,
         uncompressedSize,
         localHeaderOffset,
-      }
+      })
     }
     offset = nextOffset
   }
 
-  return found ?? 'missing-backup'
+  return found
 }
 
 async function* blobChunks(blob: Blob): AsyncIterable<Uint8Array> {
@@ -170,7 +180,8 @@ async function* blobChunks(blob: Blob): AsyncIterable<Uint8Array> {
     while (true) {
       const { done, value } = await reader.read()
       if (done) return
-      if (value.byteLength > 0) yield value
+      for (let offset = 0; offset < value.byteLength; offset += 4096)
+        yield value.subarray(offset, offset + 4096)
     }
   } finally {
     reader.releaseLock()
@@ -203,7 +214,11 @@ async function readEntryText(
 
   const metadataEnd = headerEnd + nameLength + extraLength
   const metadata = await readRange(file, headerEnd, metadataEnd)
-  if (!metadata || !matchesCanonicalName(metadata, 0, nameLength)) {
+  if (
+    !metadata ||
+    new TextDecoder('utf-8', { fatal: true }).decode(metadata.subarray(0, nameLength)) !==
+      entry.name
+  ) {
     return { ok: false, reason: 'invalid-zip' }
   }
   const dataEnd = metadataEnd + entry.compressedSize
@@ -213,6 +228,7 @@ async function readEntryText(
 
   const decoder = new TextDecoder('utf-8', { fatal: true })
   const textParts: string[] = []
+  let checksum = 0
   let outputBytes = 0
   let complete = entry.compression === 0
   let failure: MoldaBackupReadFailure | null = null
@@ -224,6 +240,7 @@ async function readEntryText(
       failure = 'too-large'
       return
     }
+    checksum = crc32(chunk, checksum)
     try {
       textParts.push(decoder.decode(chunk, { stream: !final }))
       if (final) complete = true
@@ -251,7 +268,7 @@ async function readEntryText(
   }
 
   if (failure) return { ok: false, reason: failure }
-  if (!complete || outputBytes !== entry.uncompressedSize) {
+  if (!complete || outputBytes !== entry.uncompressedSize || checksum !== entry.crc) {
     return { ok: false, reason: 'invalid-zip' }
   }
   return { ok: true, source: 'zip', text: textParts.join('') }
@@ -270,7 +287,8 @@ async function readMoldaZipFile(
   file: File,
   maxBytes = MAX_BACKUP_FILE_BYTES,
 ): Promise<MoldaBackupReadResult> {
-  const entry = await locateGalleryEntry(file, maxBytes)
+  const entries = await locateEntries(file, maxBytes, (name) => name === MOLDA_GALLERY_ZIP_ENTRY)
+  const entry = typeof entries === 'string' ? entries : (entries[0] ?? 'missing-backup')
   if (typeof entry === 'string') return { ok: false, reason: entry }
   return readEntryText(file, entry, maxBytes)
 }
@@ -286,6 +304,31 @@ export async function readMoldaBackupFile(file: File): Promise<MoldaBackupReadRe
   if (file.size > MAX_BACKUP_FILE_BYTES) return { ok: false, reason: 'too-large' }
   try {
     return { ok: true, source: 'json', text: await file.text() }
+  } catch {
+    return { ok: false, reason: 'read-error' }
+  }
+}
+
+/** Native project entries from both old and new gallery ZIPs, without reading GLB/PNG/HDR.
+ * Directory and aggregate inflated bytes are bounded before the first project is decoded.
+ * No filesystem extraction: only direct children of the canonical project folder qualify.
+ */
+export async function readMoldaBackupProjects(
+  file: File,
+): Promise<{ ok: true; projects: string[] } | { ok: false; reason: MoldaBackupReadFailure }> {
+  if (!isZipFile(file)) return { ok: true, projects: [] }
+  try {
+    const entries = await locateEntries(file, MAX_BACKUP_FILE_BYTES, (name) =>
+      /^projetos\/[^/\\]+\.molda\.json$/.test(name),
+    )
+    if (typeof entries === 'string') return { ok: false, reason: entries }
+    const projects: string[] = []
+    for (const entry of entries) {
+      const read = await readEntryText(file, entry, MAX_BACKUP_FILE_BYTES)
+      if (!read.ok) return read
+      projects.push(read.text)
+    }
+    return { ok: true, projects }
   } catch {
     return { ok: false, reason: 'read-error' }
   }

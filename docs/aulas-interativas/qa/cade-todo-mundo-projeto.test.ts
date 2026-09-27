@@ -1,0 +1,152 @@
+import { describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import {
+  JARDIM_ASSETS,
+  JARDIM_PARES,
+  jardimSvg,
+} from '../../../packages/studio/src/arte/jardim-assets'
+import { sanitizeProjectAssets } from '../../../packages/studio/src/core/project'
+import { exampleHarness } from '../../../packages/studio/src/official-extensions/game-2d/__tests__/examplePlaythroughHarness'
+import {
+  IR_CADE_TODO_MUNDO,
+  montarProjetoCadeTodoMundo,
+  montarProjetoCadeTodoMundoCompleto,
+} from './cade-todo-mundo-projeto'
+
+function blockTypes(node: unknown): string[] {
+  if (!node || typeof node !== 'object') return []
+  const obj = node as Record<string, unknown>
+  return [
+    ...(typeof obj.type === 'string' ? [obj.type] : []),
+    ...Object.values(obj).flatMap(blockTypes),
+  ]
+}
+
+describe('projeto inicial Cadê Todo Mundo?', () => {
+  test('os seis SVGs embutidos correspondem aos quadros da folha do Pinta', () => {
+    const sheet = readFileSync(
+      resolve(import.meta.dir, '../../../packages/studio/src/arte/jardim-spritesheet.svg'),
+      'utf8',
+    )
+    const frames = [
+      ...sheet.matchAll(
+        /<svg x="\d+" y="0" width="64" height="64" viewBox="0 0 64 64">([\s\S]*?)<\/svg>/g,
+      ),
+    ]
+    const names = ['coruja', 'pedras', 'arbusto', 'flores', 'raposa', 'coelho'] as const
+    expect(frames).toHaveLength(names.length)
+    for (const [index, name] of names.entries()) {
+      expect(JARDIM_ASSETS[name].body).toBe(frames[index]?.[1]?.trim())
+      expect(jardimSvg(name)).toContain(`viewBox="${JARDIM_ASSETS[name].viewBox}"`)
+    }
+  })
+
+  test('leva arte própria embutida, sem Pinta ou rede', () => {
+    const p = montarProjetoCadeTodoMundo()
+    expect(p.installedExtensions.map((e) => e.id)).toEqual(['game-2d'])
+    expect(sanitizeProjectAssets(p.assets)).toHaveLength(7)
+    expect(p.assets.every((a) => a.dataUrl.startsWith('data:image/svg+xml;base64,'))).toBe(true)
+    const jardim = p.assets.find((a) => a.name === 'jardim')
+    const coelho = p.assets.find((a) => a.name === 'coelho')
+    const arbusto = p.assets.find((a) => a.name === 'arbusto')
+    for (const [asset, name] of [
+      [jardim, 'jardim'],
+      [coelho, 'coelho'],
+      [arbusto, 'arbusto'],
+    ] as const) {
+      expect(asset).toBeDefined()
+      expect(Buffer.from(asset?.dataUrl.split(',')[1] ?? '', 'base64').toString()).toBe(
+        jardimSvg(name),
+      )
+    }
+    expect(p.ir).toEqual(IR_CADE_TODO_MUNDO)
+  })
+
+  test('personagens e esconderijos usam as dimensões e posições da arte nova', () => {
+    const expectedY = {
+      coelho: 181,
+      arbusto: 166,
+      raposa: 190,
+      pedras: 185,
+      coruja: 187,
+      flores: 138,
+    }
+    const sprites = IR_CADE_TODO_MUNDO.behavior.start.filter(
+      (statement) => statement.type === 'g2d:createImageSprite',
+    )
+    for (const { personagem, esconderijo, centroX } of JARDIM_PARES) {
+      for (const name of [personagem, esconderijo]) {
+        expect(
+          sprites.find(
+            (sprite) => sprite.type === 'g2d:createImageSprite' && sprite.varName === name,
+          ),
+        ).toMatchObject({
+          x: centroX - JARDIM_ASSETS[name].width / 2,
+          y: expectedY[name],
+          w: JARDIM_ASSETS[name].width,
+          h: JARDIM_ASSETS[name].height,
+          image: name,
+        })
+      }
+    }
+  })
+
+  test('prepara o jardim e deixa a regra do toque vazia para a criança', () => {
+    const p = montarProjetoCadeTodoMundo()
+    const blocks = blockTypes(p.blocksState)
+    expect(blocks.filter((t) => t === 'sz_g2d_create_image_sprite')).toHaveLength(6)
+    expect(blocks).toContain('sz_g2d_on_group_click')
+    expect(blocks).toContain('sz_g2d_draw_group')
+    expect(blocks).toContain('sz_g2d_draw_score')
+    expect(blocks).not.toContain('sz_g2d_set_opacity')
+    expect(p.files['script.js']).toContain('onGroupClick')
+    expect(p.files['script.js']).toContain('drawBackdrop')
+  })
+
+  test('a segunda aula retoma o primeiro achado se não houver projeto salvo', () => {
+    const p = montarProjetoCadeTodoMundo(true)
+    expect(blockTypes(p.blocksState)).toContain('sz_g2d_set_opacity')
+    expect(p.files['script.js']).toContain('setOpacity(escolhido, 0)')
+    expect(blockTypes(montarProjetoCadeTodoMundo().blocksState)).not.toContain('sz_g2d_set_opacity')
+  })
+
+  test('a abertura usa uma cópia jogável completa sem alterar o projeto inicial', () => {
+    const pronto = montarProjetoCadeTodoMundoCompleto()
+    expect(pronto.id).not.toBe(montarProjetoCadeTodoMundo().id)
+    expect(pronto.files['script.js']).toContain('setOpacity(escolhido, 0)')
+    expect(pronto.files['script.js']).toContain('achados = achados + 1')
+    expect(montarProjetoCadeTodoMundo().files['script.js']).not.toContain('achados = achados + 1')
+  })
+
+  test('um esconderijo tocado conta uma só vez e a vitória aparece no terceiro', () => {
+    const pronto = montarProjetoCadeTodoMundoCompleto()
+    const ir = pronto.ir
+    if (!ir || !('behavior' in ir)) throw new Error('Projeto jogável sem comportamento')
+    const game = exampleHarness({ name: pronto.name, experience: 'game', ir }, () => 0.5, {
+      contarCtx: true,
+    })
+    game.nextFrame()
+    expect(game.scores['Achados:']).toBe(0)
+    const touch = (x: number) => {
+      game.firePointer('pointerdown', x, 215)
+      game.firePointer('pointerup', x, 215)
+      game.nextFrame()
+    }
+    touch(145)
+    expect(game.scores['Achados:']).toBe(1)
+    touch(145)
+    expect(game.scores['Achados:']).toBe(1)
+    touch(315)
+    expect(game.scores['Achados:']).toBe(2)
+    game.zerarCtxOps()
+    game.nextFrame()
+    const textosAntesDaVitoria = game.contarCtxOps('fillText')
+    touch(485)
+    expect(game.scores['Achados:']).toBe(3)
+    game.zerarCtxOps()
+    game.nextFrame()
+    expect(game.contarCtxOps('fillText')).toBeGreaterThan(textosAntesDaVitoria)
+    expect(game.errors).toEqual([])
+  })
+})

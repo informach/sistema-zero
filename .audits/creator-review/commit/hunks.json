@@ -1,0 +1,42 @@
+[
+  {
+    "path": "bun.lock",
+    "total": 13,
+    "selected": 1
+  },
+  {
+    "path": "packages/community-kids/src/components/kids/molda-client.tsx",
+    "total": 8,
+    "selected": 6
+  },
+  {
+    "path": "packages/member-shell/src/lib/types.ts",
+    "total": 6,
+    "selected": 5
+  },
+  {
+    "path": "packages/member-shell/src/server/clients.ts",
+    "total": 5,
+    "selected": 4
+  },
+  {
+    "path": "packages/members/src/interfaces/http/dtos.ts",
+    "total": 6,
+    "selected": 3
+  },
+  {
+    "path": "packages/community-kids/CLAUDE.md",
+    "total": 2,
+    "selected": 1
+  },
+  {
+    "path": "packages/member-shell/CLAUDE.md",
+    "total": 3,
+    "selected": 1
+  },
+  {
+    "path": "packages/members/CLAUDE.md",
+    "total": 2,
+    "selected": 1
+  }
+]

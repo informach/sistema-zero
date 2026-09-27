@@ -1,0 +1,815 @@
+import { experimentacao, step } from './desafio-aulas-00-02'
+import { finalChecks, checks as k } from './desafio-checks'
+import type { Recipe } from './desafio-editorial'
+
+export const lateRecipes: Record<number, Recipe> = {
+  3: {
+    title: 'Asteroides chegam e os tiros acertam',
+    entry: 'Retomar o Dia 2: nave controlada e tiros que sobem.',
+    exit: 'Asteroides nascem em posições sorteadas, caem e podem ser destruídos pelos tiros.',
+    minutes: '18–27 minutos',
+    opening:
+      'Hoje seus tiros vão ter o que acertar. Vamos fazer os asteroides chegarem aos poucos e ensinar o jogo a perceber quando um tiro encontra uma pedra.',
+    closing:
+      'A chuva de asteroides já funciona, e os tiros conseguem destruí-los. Você usou um relógio para criar e uma colisão para responder ao encontro de dois objetos. Amanhã, cada acerto vai valer ponto.',
+    steps: [
+      step(
+        'grupo-asteroides',
+        'Prepare o grupo das pedras',
+        'Parte 1.',
+        'build',
+        'Separar tiros e asteroides em grupos diferentes.',
+        'Em Jogo 2D, Muitos, coloque outro Criar grupo de sprites no final de Ao iniciar. Deixe o nome asteroides. O grupo tiros continua lá: cada grupo cuida de um tipo de objeto.',
+        { checks: k.grupoAsteroides },
+      ),
+      experimentacao(
+        'intervalo',
+        'Abra espaço entre os asteroides',
+        'Parte 2.',
+        'Distinguir nascer em cada quadro de nascer no ritmo de um relógio.',
+        {
+          chave: 'experiencia-intervalo',
+          bloco: {
+            required: true,
+            title: 'Abra espaço entre os asteroides',
+            instructions:
+              'Aperte ▶ Tempo e veja quantos asteroides nascem. Depois leve Criar asteroide para dentro do relógio e compare.',
+            hints: [],
+            activity: {
+              type: 'experimentation',
+              scene: 'spawn',
+              cast: {
+                hero: {
+                  name: 'nave',
+                  gender: 'f',
+                },
+                obstacle: {
+                  name: 'asteroide',
+                  gender: 'm',
+                },
+              },
+            },
+            checkpoint: {
+              prompt: 'Por que virou uma parede de asteroides sem o relógio?',
+              choices: [
+                {
+                  id: 'lentos',
+                  label: 'Porque os asteroides ficaram lentos e se amontoaram.',
+                },
+                {
+                  id: 'todo-quadro',
+                  label: 'Porque o pedido de criar acontece em todo quadro.',
+                },
+              ],
+              correctChoiceId: 'todo-quadro',
+              explanation:
+                'Sem um relógio para segurar, o pedido de criar acontece em todo quadro, e os asteroides nascem colados.',
+            },
+          },
+        },
+        {
+          reason:
+            'Ver a parede de asteroides que nasce em todo quadro, antes de montar o relógio, mostra para que ele serve.',
+        },
+      ),
+      step(
+        'relogio',
+        'Monte o relógio dos asteroides',
+        'Parte 2.',
+        'build',
+        'Criar uma repetição periódica separada do motor principal.',
+        'Em Jogo 2D, Tempo e repetição, pegue A cada quadros e coloque 40. Ele fica em Enquanto estiver rodando, como vizinho do A cada quadro do jogo. Não encaixe um relógio dentro do outro.',
+        {
+          checks: k.relogio,
+          visual:
+            'Área Enquanto estiver rodando com dois contornos destacados: o motor principal e o relógio de 40 quadros. Mostrar a conexão de vizinhos e o espaço BODY do novo relógio.',
+          help: 'O motor não deve contornar o relógio de 40 quadros. Os dois pertencem diretamente à área de repetição.',
+        },
+      ),
+      step(
+        'nascer-fora',
+        'Observe posição e velocidade',
+        'Parte 3.',
+        'observe',
+        'Distinguir y negativo de vy positivo e reconhecer o sorteio de x.',
+        'Este menos 30 é o lugar onde a pedra nasce: acima da tela. Já o vy 3 é a velocidade: faz a pedra descer. O x é sorteado quando ela nasce; não troca de lugar a cada quadro. Um sorteio também pode cair perto de outro.',
+        {
+          edit: 'Recortar a explicação do x sorteado, y e vy. Substituir “lugar novo” por “posição sorteada”, pois resultados podem repetir. Mostrar caixa completa fora da área antes de entrar.',
+          visual:
+            'Faixa superior externa ao retângulo da tela, y −30 marcado, seta de velocidade para baixo e dois sorteios possíveis de x. No clipe, a passagem é observada sem controles; a cena da seção vem depois.',
+          help: 'y responde “onde está?”; vy responde “como muda de altura?”.',
+          cena: {
+            chave: 'demonstracao-nascer-fora',
+            bloco: {
+              title: 'Onde a pedra nasce e o que faz a pedra descer',
+              instructions:
+                'São dois números diferentes: o y diz ONDE a pedra está agora, e a velocidade diz quanto a pedra anda em cada quadro.',
+              hints: [],
+              required: false,
+              activity: {
+                type: 'demonstration',
+                scene: 'velocity',
+                cast: {
+                  hero: {
+                    name: 'pedra',
+                    gender: 'f',
+                    plural: 'pedras',
+                  },
+                },
+                setup: {
+                  actions: [
+                    {
+                      type: 'velocity',
+                      vx: 10,
+                      vy: -5,
+                    },
+                    {
+                      type: 'advance',
+                      seconds: 3.6,
+                    },
+                    {
+                      type: 'velocity',
+                      vx: 0,
+                      vy: -5,
+                    },
+                    // ⚠️ 3 s, e não 3,4 s: a 5 quadros por segundo são 15 quadros de −5, que levam a
+                    // pedra de y 45 a y −30 — o MESMO número que o clipe narra e que a criança digita
+                    // no Estúdio (y menos 30, tamanho 40). Com 3,4 s ela parava em −40, e a seção
+                    // mostrava três números para um lugar só.
+                    {
+                      type: 'advance',
+                      seconds: 3,
+                    },
+                    {
+                      type: 'velocity',
+                      vx: 0,
+                      vy: 0,
+                    },
+                  ],
+                },
+                script: [
+                  {
+                    id: 'passo-1',
+                    caption:
+                      'A pedra nasce em y −30, na faixa fora da tela. Quem joga ainda não vê a pedra.',
+                    highlight: 'scene',
+                    actions: [
+                      {
+                        type: 'velocity',
+                        vx: 0,
+                        vy: 0,
+                      },
+                    ],
+                  },
+                  {
+                    id: 'passo-2',
+                    caption:
+                      'Velocidade para baixo 3: a cada quadro o y aumenta 3, até a pedra chegar na borda da tela.',
+                    highlight: 'scene',
+                    actions: [
+                      {
+                        type: 'velocity',
+                        vx: 0,
+                        vy: 3,
+                      },
+                      {
+                        type: 'advance',
+                        seconds: 3,
+                      },
+                    ],
+                    waitFor: 'down',
+                  },
+                  {
+                    id: 'passo-3',
+                    caption: 'Velocidade 0: a pedra para onde chegou.',
+                    highlight: 'scene',
+                    actions: [
+                      {
+                        type: 'velocity',
+                        vx: 0,
+                        vy: 0,
+                      },
+                      {
+                        type: 'advance',
+                        seconds: 1,
+                      },
+                    ],
+                    waitFor: 'stopped',
+                  },
+                ],
+              },
+              prediction: {
+                context: {
+                  label: 'A velocidade para baixo',
+                  explanation:
+                    'Nesta demonstração, vamos acompanhar como a velocidade para baixo muda o número y de uma pedra.',
+                },
+                prompt:
+                  'Com a velocidade para baixo em 3, o que acontece com o y da pedra a cada quadro?',
+                choices: [
+                  {
+                    id: 'aumenta',
+                    label: 'O y aumenta',
+                  },
+                  {
+                    id: 'diminui',
+                    label: 'O y diminui',
+                    shows: 'Com a velocidade para baixo em 3, o número do y ficou maior.',
+                  },
+                ],
+                correctChoiceId: 'aumenta',
+                revealOn: 'down',
+              },
+            },
+          },
+        },
+      ),
+      step(
+        'asteroide',
+        'Crie a pedra no relógio',
+        'Parte 3.',
+        'build',
+        'Configurar nascimento e movimento vertical do asteroide.',
+        'Dentro do relógio, encaixe No grupo criar um asteroide, de Jogo 2D, Kit espaço. Grupo asteroides; no x, encaixe um x aleatório na tela, de Mira e contas. Use y menos 30, tamanho 40, vx 0 e vy 3. Escolha uma cor visível.',
+        {
+          checks: k.asteroide,
+          edit: 'Aproveitar a montagem dos campos; encurtar a explicação já demonstrada. O tamanho 40 é a base do kit: não prometer que toda pedra tem exatamente a mesma largura.',
+        },
+      ),
+      step(
+        'ciclo-asteroides',
+        'Use o padrão que você já conhece',
+        'Parte 4.',
+        'build',
+        'Transferir o ciclo mover, retirar, desenhar para outro grupo.',
+        'No A cada quadro do jogo, abaixo do Desenhar grupo tiros, coloque Atualizar o grupo, Tirar do grupo quem sair da tela e Desenhar o grupo. Agora escolha asteroides nos três. Deixe o fazer da limpeza vazio. O padrão é o mesmo dos tiros.',
+        {
+          checks: k.cicloAsteroides,
+          reason:
+            'Reutilizar um padrão já dominado dá fluidez; não fragmentar em três vídeos para repetir o mesmo gesto.',
+          help: 'Se os tiros mudaram e as pedras não, confira qual grupo foi escolhido em cada bloco.',
+        },
+      ),
+      step(
+        'encontro',
+        'Observe quais dois objetos se encontraram',
+        'Parte 5.',
+        'observe',
+        'Distinguir o grupo inteiro dos dois objetos de uma colisão.',
+        'Há vários tiros e várias pedras, mas esta colisão tem dois participantes. Aqui dentro, tiro é o tiro que acertou, e asteroide é a pedra atingida. São esses dois que vamos retirar. Os outros continuam no jogo.',
+        {
+          to: 'aqui dentro, a gente consegue mandar ordens certinhas pros dois que se bateram.',
+          edit: 'Aproveitar a explicação dos apelidos. Acrescentar congelamento de uma colisão com outros objetos ao redor. Não mover a colisão para Quando acontecer: este bloco verifica encontros em cada quadro.',
+          visual:
+            'Congelar três tiros e três pedras, destacar um par, ligar às etiquetas tiro/asteroide e remover só esse par. Voltar ao jogo com os demais presentes.',
+          help: 'tiros é o grupo; tiro é um participante daquele encontro.',
+        },
+      ),
+      step(
+        'colisao',
+        'Faça a colisão destruir os dois',
+        'Parte 5.',
+        'build',
+        'Responder à colisão entre os grupos a cada quadro.',
+        'Em Jogo 2D, Colisões, coloque Para cada colisão entre os grupos no motor, depois de desenhar asteroides. Escolha tiros e asteroides, com apelidos tiro e asteroide. Dentro: retire tiro de tiros; retire asteroide de asteroides; solte explosão em asteroide; use Tocar efeito, na família Som, e escolha explosão.',
+        {
+          checks: k.colisaoTiros,
+          visual:
+            'Mostrar primeiro grupos e apelidos, depois os quatro encaixes no mesmo BODY. Destacar que a explosão usa a referência do asteroide atingido, mesmo depois de removido do grupo.',
+          help: 'Se todas as pedras somem, confira se usou Tirar o sprite do grupo, apontando para o apelido daquela colisão.',
+        },
+      ),
+      step(
+        'teste-colisao',
+        'Observe um acerto e uma tentativa',
+        'Parte 6.',
+        'observe',
+        'Conferir que a colisão remove somente objetos que se encontram.',
+        'Um tiro que passa longe continua subindo. Um tiro que encontra um asteroide tira os dois e solta a explosão. Nesta aula, a nave ainda não perde vida quando uma pedra encosta nela. Isso vem no Dia 4.',
+        {
+          to: 'Sente como o seu jogo já parece um jogo de verdade.',
+          edit: 'Usar os acertos do início; acrescentar um tiro que erra. Retirar novos testes com 20 e 80, já substituídos pela comparação isolada.',
+          visual:
+            'Um disparo sem colisão e outro com colisão; contagem visual dos objetos retirados.',
+          help: 'Se atravessar a pedra, confira a colisão dentro do motor, os dois grupos e o bloco que tira cada participante.',
+        },
+      ),
+    ],
+    test: 'Teste um tiro que erra e outro que acerta. No acerto, confira se só o tiro e a pedra envolvidos saem. Observe outras pedras chegando e saindo por baixo. Mantenha intervalo 40 e vy 3. Envie o projeto; ainda não é necessário desviar para preservar vidas.',
+    finalChecks: finalChecks(3),
+    corrections: [
+      'Não exigir que cada sorteio de x seja diferente. O runtime sorteia posição sem memória de resultados anteriores.',
+      'O kit varia o tamanho real em torno da base 40. Não usar essa base como prova de largura idêntica de todos os asteroides.',
+      'A limpeza não deve tirar asteroides que nasceram fora e ainda estão entrando. Isso será validado com o runtime real.',
+      'A nave ainda não tem dano: retirar a sugestão de que desviar já é uma regra de sobrevivência. Pode mover para mirar.',
+      'As colisões são comandos do motor, apesar de a fala usar “quando”. A categoria e o comportamento do bloco prevalecem sobre essa ambiguidade.',
+    ],
+    cenasAnteriores: {
+      'video-teste-colisao': {
+        cena: 'spawn',
+        oQueMudou:
+          'A orientação de edição corta os testes com 20 e 80 quadros porque a comparação isolada já mostraria intervalos diferentes. Essa comparação em HTML virou a cena spawn, que compara nascer em todo quadro com nascer no relógio e deixa escolher o tempo do relógio em segundos, não em quadros.',
+        acao: 'conferir',
+      },
+    },
+    quiz: [
+      // ⚠️ Em SEGUNDOS, e com os números da bancada (0,5 s a 2 s): a pergunta antiga ("de 40 para 20
+      // quadros") era a conclusão da comparação em HTML, que virou a cena `spawn`. A cena de hoje
+      // escolhe o tempo do relógio em segundos, e a criança nunca vê quadro nenhum ali.
+      [
+        'Na cena, o relógio esperava 2 segundos entre um asteroide e outro. Você troca para meio segundo. O que muda?',
+        'Nascem mais asteroides no mesmo tempo.',
+        'Cada asteroide passa a cair mais rápido.',
+        'O relógio só decide de quanto em quanto tempo nasce um asteroide: esperando menos, nascem mais no mesmo tempo. Quem faz cada um descer é o vy.',
+      ],
+      [
+        'Dentro da colisão, quem é asteroide?',
+        'A pedra que participou daquele encontro.',
+        'Todas as pedras do grupo ao mesmo tempo.',
+        'O apelido permite agir sobre o participante, preservando os outros.',
+      ],
+    ],
+  },
+  4: {
+    title: 'Pontos, vidas e tempo para escapar',
+    entry: 'Retomar a chuva de asteroides e a colisão com os tiros do Dia 3.',
+    exit: 'Cada acerto soma um ponto; a nave tem três vidas, perde vida ao bater e ganha proteção temporária.',
+    minutes: '18–26 minutos',
+    opening:
+      'Hoje o jogo vai lembrar seus acertos e mostrar quantas vidas a nave ainda tem. Você vai ver um placar subir e descobrir por que uma nave precisa de um respiro depois de levar uma batida.',
+    closing:
+      'Agora os acertos ficam guardados nos pontos, e as batidas mudam as vidas. O placar e os corações mostram essas informações. No Dia 5, vamos usar esses valores para decidir vitória e derrota.',
+    steps: [
+      step(
+        'memoria',
+        'Observe o número e o placar',
+        'Parte 1.',
+        'observe',
+        'Separar guardar, alterar e mostrar um valor.',
+        'Pontos é uma caixinha com um número. Ela começa em zero. Um acerto soma um. O placar só lê o número que está guardado e mostra na tela. Mostrar o placar muitas vezes não deve somar mais pontos.',
+        {
+          to: 'esse número pode mudar o tempo todo.',
+          edit: 'Reaproveitar a analogia da caixinha. Acrescentar três imagens: guardar 0, acertar e guardar 1, desenhar 1 novamente sem somar.',
+          visual:
+            'Caixa pontos e placar lado a lado. Uma colisão muda 0 para 1; dois quadros seguintes mostram 1. Não ensinar por um contador abstrato desconectado da colisão.',
+          help: 'Veja qual ação muda o número e qual apenas mostra o mesmo número.',
+          cena: {
+            chave: 'demonstracao-memoria',
+            bloco: {
+              required: true,
+              title: 'Veja o número e o placar',
+              instructions: 'Veja o número mudar dentro da caixa antes de aparecer na tela.',
+              hints: [],
+              activity: {
+                type: 'demonstration',
+                scene: 'variable',
+                cast: {
+                  hero: {
+                    name: 'nave',
+                    gender: 'f',
+                  },
+                  obstacle: {
+                    name: 'asteroide',
+                    gender: 'm',
+                  },
+                },
+              },
+            },
+          },
+        },
+      ),
+      step(
+        'pontos',
+        'Crie a memória dos pontos',
+        'Parte 1.',
+        'build',
+        'Preparar uma variável uma vez.',
+        'Em Programação, Variáveis, coloque Criar variável no final de Ao iniciar. Nome pontos, valor 0. Este jogo começa com zero ponto; durante a partida, esse número vai mudar.',
+        {
+          from: 'Na categoria Programação, subcategoria Variáveis, pega o bloco Criar variável',
+          to: 'porque todo jogo começa com zero ponto.',
+          checks: k.pontos,
+          edit: 'Usar o gesto; trocar “todo jogo começa” por “este jogo começa”. Variáveis podem ter outros valores iniciais em outros projetos.',
+        },
+      ),
+      step(
+        'somar',
+        'Faça o acerto valer um ponto',
+        'Parte 1.',
+        'build',
+        'Somar por acerto dentro da colisão certa.',
+        'Na colisão entre tiros e asteroides, coloque Somar em variável, de Programação, Variáveis, depois do som de explosão. Escolha pontos e deixe 1. A soma fica dentro dessa colisão, não solta no motor.',
+        { from: 'Agora vamos fazer essa caixinha crescer.', checks: k.somar },
+      ),
+      step(
+        'placar',
+        'Mostre o que está guardado',
+        'Parte 2.',
+        'build',
+        'Ler a variável no HUD a cada quadro.',
+        'Em Jogo 2D, Placar e HUD, coloque Mostrar placar abaixo da colisão. Texto Pontos:. No valor, encaixe valor da variável, de Programação, Valores, escolhendo pontos. Use x 12, y 30, tamanho 24 e uma cor clara para aparecer no fundo.',
+        {
+          checks: k.placar,
+          help: 'Se o placar ficar sempre em zero, confira se o campo valor tem a leitura de pontos, em vez de um número 0.',
+        },
+      ),
+      step(
+        'vida',
+        'Dê três vidas à nave',
+        'Parte 3.',
+        'build',
+        'Preparar vida atual e máxima na inicialização.',
+        'Em Jogo 2D, Vida, coloque Dar ao sprite de vida em Ao iniciar, depois dos pontos. Escolha nave e 3. As vidas ficam preparadas uma vez; não coloque esse bloco no motor, ou ele devolveria as vidas o tempo todo.',
+        { checks: k.vida },
+      ),
+      step(
+        'protecao',
+        'Compare três batidas bem próximas',
+        'Parte 4.',
+        'experiment',
+        'Compreender a proteção temporária contra novos danos.',
+        'Três pedras diferentes vão bater uma depois da outra. Compare a nave sem proteção e com 45 quadros de proteção. Cada pedra é retirada ao bater. Observe quantas vidas sobraram em cada teste.',
+        {
+          experiment: 'protecao',
+          question: [
+            'Por que só a primeira batida tira vida durante a proteção?',
+            'As próximas tentativas de dano são ignoradas por um tempo.',
+            'A nave ganhou vidas infinitas para a partida inteira.',
+            'A proteção dura 45 quadros após o dano aceito. Depois desse tempo, outra batida pode tirar vida.',
+          ],
+          reason:
+            'A comparação isola novos danos sem exigir que a criança provoque três colisões rápidas no próprio jogo.',
+          visual:
+            'Nave com três símbolos de coração e três batidas numeradas nos quadros 1, 6 e 11. Sem piscar ou tremer na atividade; número de vidas e rótulos comunicam o resultado.',
+          help: 'As três pedras desaparecem nos dois testes. Compare somente a perda de vidas.',
+        },
+      ),
+      step(
+        'batida',
+        'Faça a nave sentir a batida',
+        'Parte 4.',
+        'build',
+        'Responder à colisão nave × asteroides com remoção e dano protegido.',
+        'Em Jogo 2D, Colisões, encaixe Para cada sprite do grupo que colidir com o sprite no motor, depois do placar. Grupo asteroides, sprite nave, apelido inimigo. Dentro: retire inimigo de asteroides; exploda inimigo; machuque nave em 1 com 45 quadros de proteção; trema a tela com intensidade 8.',
+        {
+          checks: k.batida,
+          edit: 'Manter a montagem. Corrigir a explicação da invencibilidade: o mesmo asteroide já foi removido, então o respiro protege de outras pedras que chegam logo depois. Manter a tremida breve da gravação, sem repetição automática.',
+          help: 'inimigo é a pedra desta batida; nave é quem perde vida. Os blocos não devem trocar esses nomes.',
+        },
+      ),
+      step(
+        'coracoes',
+        'Mostre as vidas que restam',
+        'Parte 5.',
+        'build',
+        'Ler a vida da nave no desenho dos corações.',
+        'Em Jogo 2D, Vida, coloque Desenhar as vidas do sprite depois da batida, no motor. Escolha nave e corações. Use x 12, y 48 e tamanho 22. Deixe uma cor que apareça bem no fundo.',
+        { checks: k.coracoes },
+      ),
+      step(
+        'teste-vidas',
+        'Observe ponto e vida mudarem',
+        'Parte 6.',
+        'observe',
+        'Associar cada mudança à sua causa.',
+        'Acertou uma pedra com tiro: mais um ponto. Uma pedra bateu na nave: de três vidas para duas. Espere a proteção acabar; outra batida deixa uma vida. Quando as vidas chegam a zero, ainda falta ensinar o jogo a terminar. Vamos fazer isso no próximo dia.',
+        {
+          edit: 'Reaproveitar um acerto e uma batida. Corrigir a contagem: depois da segunda perda, sobra 1, não 2. Mostrar a espera antes da próxima batida.',
+          visual:
+            'Placar 0 → 1; corações 3 → 2; após proteção, 2 → 1. Cada mudança acompanhada de rótulo, sem depender apenas do som ou do vermelho.',
+          help: 'Se a segunda batida muito próxima não tira vida, pode ser a proteção funcionando.',
+          cena: {
+            chave: 'demonstracao-vidas',
+            bloco: {
+              required: true,
+              title: 'Veja ponto e vida mudarem por motivos diferentes',
+              instructions: 'Veja o que o acerto muda e o que a batida muda.',
+              hints: [],
+              activity: {
+                type: 'demonstration',
+                scene: 'lives',
+                cast: {
+                  hero: {
+                    name: 'nave',
+                    gender: 'f',
+                  },
+                  obstacle: {
+                    name: 'asteroide',
+                    gender: 'm',
+                  },
+                },
+                script: [
+                  {
+                    id: 'passo-1',
+                    caption:
+                      'O tiro acertou um asteroide: o placar ganhou 1. Os corações não mudaram.',
+                    highlight: 'scene',
+                    actions: [
+                      {
+                        type: 'shoot',
+                      },
+                    ],
+                  },
+                  {
+                    id: 'passo-2',
+                    caption: 'Um asteroide bateu na nave: saiu um coração. O placar continua 1.',
+                    highlight: 'scene',
+                    actions: [
+                      {
+                        type: 'connect',
+                        port: 'life',
+                        enabled: true,
+                      },
+                      {
+                        type: 'collide',
+                      },
+                    ],
+                  },
+                  {
+                    id: 'passo-3',
+                    caption:
+                      'Mais duas batidas: acabaram os corações e a partida. O placar guardou o 1.',
+                    highlight: 'scene',
+                    actions: [
+                      {
+                        type: 'collide',
+                      },
+                      {
+                        type: 'collide',
+                      },
+                    ],
+                  },
+                ],
+              },
+              prediction: {
+                context: {
+                  label: 'Vidas e placar',
+                  explanation:
+                    'Nesta demonstração, vamos observar o que muda nas vidas e no placar quando a nave encosta em um asteroide.',
+                },
+                prompt: 'Imagine: a nave já tem 1 ponto e bate num asteroide. O que muda?',
+                choices: [
+                  {
+                    id: 'so-coracao',
+                    label: 'Só o coração',
+                  },
+                  {
+                    id: 'placar-e-coracao',
+                    label: 'O placar e o coração',
+                    shows: 'A batida não tirou nenhum ponto do placar.',
+                  },
+                ],
+                correctChoiceId: 'so-coracao',
+                revealOn: 'points-stay',
+              },
+            },
+            noFimDaLista: true,
+          },
+        },
+      ),
+    ],
+    test: 'Destrua um asteroide e veja o placar subir uma vez. Deixe outra pedra bater na nave: devem sobrar duas vidas. Espere a proteção passar e observe outra perda. Confira contraste do placar e dos corações. Envie ao professor; a tela de derrota ainda não faz parte deste dia.',
+    finalChecks: finalChecks(4),
+    corrections: [
+      'Corrigir a contagem falada do teste original: 3 → 2 → 1, respeitando o intervalo de proteção.',
+      'O asteroide da batida é retirado antes do dano; a proteção atende novos contatos, não a permanência daquela mesma pedra.',
+      'Evitar “jogo sem perigo não tem emoção”: apresentar as vidas como regra escolhida para este jogo.',
+      'A experiência não força animações de tremor ou piscar; o efeito breve no Estúdio é apenas um reforço. Vidas e resultados precisam ser legíveis sem ele.',
+      'O professor deve distinguir somar por colisão de somar a cada quadro, e inicializar vida de restaurar vida continuamente.',
+    ],
+    quiz: [
+      [
+        'O placar foi redesenhado três vezes sem nenhum novo acerto. O que deve acontecer?',
+        'Continuar mostrando o mesmo número de pontos.',
+        'Somar três pontos por ter sido desenhado três vezes.',
+        'Desenhar lê a variável; a colisão é que soma.',
+      ],
+      [
+        'Onde dar as três vidas iniciais à nave?',
+        'Em Ao iniciar.',
+        'No motor, a cada quadro.',
+        'Preparar uma vez permite que as vidas diminuam durante a partida.',
+      ],
+    ],
+  },
+  5: {
+    title: 'Começo, vitória, derrota e recomeço',
+    entry: 'Retomar o Dia 4, com pontuação, três vidas e as duas colisões funcionando.',
+    exit: 'Jogo completo com quatro telas, ações limitadas à partida, reinício e entrega pronta para compartilhar.',
+    minutes: '28–40 minutos, com pausa possível após proteger as ações',
+    opening:
+      'Chegou a hora de dar começo e final ao seu jogo. Hoje vamos guardar a partida atrás de uma pergunta: estamos jogando? Depois entram as telas, o Enter e o teste completo. Vamos por partes; seu projeto continua guardado se você precisar de uma pausa.',
+    closing:
+      'Seu jogo agora tem começo, partida e dois finais. O Enter também permite voltar ao início e jogar outra vez. Confira a entrega e o Compartilhar quando estiver pronto. Você terminou a construção do seu primeiro jogo; faltam só duas ideias para guardar no quiz.',
+    steps: [
+      step(
+        'telas-observar',
+        'Observe os quatro momentos do jogo',
+        'Parte 1.',
+        'observe',
+        'Distinguir tela atual de desenho da tela e reconhecer a meta fixa.',
+        'O jogo abre em inicio. Enter leva para jogando. Se os pontos chegam a 26, vai para vitoria; se as vidas acabam, vai para fim. Pontos mudam durante a partida. O alvo fica em 26: ele é uma constante, a meta deste jogo.',
+        {
+          edit: 'Usar a apresentação de telas e da constante. Acrescentar um percurso visual das quatro telas, sem ainda mostrar a reorganização de todos os blocos.',
+          visual:
+            'Quatro cartões de estado, uma seta de cada vez e valores pontos/vidas. De inicio para jogando; uma partida de exemplo termina em fim e outra em vitoria. Não trocar estados por cliques do aluno.',
+          help: 'A tela atual guarda em qual momento estamos. Mostrar tela desenha esse momento para o jogador.',
+        },
+      ),
+      step(
+        'alvo',
+        'Prepare a meta e a tela inicial',
+        'Parte 1.',
+        'build',
+        'Inicializar a constante alvo e escolher inicio.',
+        'Em Programação, Variáveis, coloque Criar constante no final de Ao iniciar: nome alvo, valor 26. Depois, em Jogo 2D, Telas e cenas, coloque Ir para a tela e escolha inicio. O jogo vai começar nesse estado.',
+        { checks: k.alvo },
+      ),
+      step(
+        'telas',
+        'O relógio pode agir agora?',
+        'Parte 3.',
+        'experiment',
+        'Entender que uma condição controla a ação sem desligar o relógio.',
+        'O relógio vai tocar três vezes. Compare a tela inicio com jogando. Ele só cria uma pedra se a pergunta a tela atual é jogando tiver resposta sim. Veja a diferença antes de fazer isso no seu projeto.',
+        {
+          experiment: 'telas',
+          question: [
+            'O relógio tocou na tela inicio, mas tem Se a tela é jogando antes de criar. O que acontece?',
+            'Nenhum asteroide é criado.',
+            'Cria um asteroide porque o relógio tocou.',
+            'A chamada do relógio acontece; a condição falsa impede o bloco de criar.',
+          ],
+          visual:
+            'Rótulo do estado, três chamadas do relógio e contagem de nascimentos. Sem escolher outras condições ou inventar fases extras.',
+          help: 'Veja se a pergunta da condição é verdadeira no estado escolhido.',
+        },
+      ),
+      step(
+        'pergunta',
+        'Faça a pergunta da partida',
+        'Parte 2.',
+        'build',
+        'Encaixar a comparação de tela no Se.',
+        'Em Programação, Lógica e Se, coloque Se no topo de A cada quadro do jogo. Retire a comparação que veio na pergunta. No lugar, encaixe a tela atual é, de Jogo 2D, Telas e cenas, e escolha jogando. Ainda vamos levar os blocos para dentro.',
+        {
+          checks: k.pergunta,
+          help: 'A pergunta deve dizer jogando; não deixe a comparação de números que veio no Se.',
+        },
+      ),
+      step(
+        'mover-cadeia',
+        'Observe a mudança de todos os blocos',
+        'Parte 3.',
+        'observe',
+        'Ver como mover a sequência preservando sua ordem.',
+        'Vou pegar a sequência pelo primeiro bloco, Limpar a tela. Os que estão encaixados abaixo vêm junto. Eu solto a sequência dentro do então do Se. Confira o começo e o fim: Limpar a tela lá em cima e Desenhar as vidas lá embaixo, todos dentro.',
+        {
+          to: 'Capricha no encaixe.',
+          edit: 'Reaproveitar só o arraste da cadeia. Gravar zoom e pausa no contorno do então. Não incluir ainda o relógio neste clipe.',
+          visual:
+            'Realçar a cadeia inteira, arrastar uma vez e mostrar o contorno do Se envolvendo todos os blocos. Alternar visão geral e aproximação, sem cortes que escondam a conexão.',
+          help: 'Não arraste o Se com a cadeia. Pegue a sequência por Limpar a tela.',
+        },
+      ),
+      step(
+        'guardar-jogo',
+        'Leve a partida para dentro da pergunta',
+        'Parte 3.',
+        'build',
+        'Limitar o motor da partida à tela jogando.',
+        'No seu Estúdio, arraste a sequência de Limpar a tela até Desenhar as vidas para o então do Se jogando. Preserve a ordem. Enquanto a tela for inicio, essa sequência não roda. A tela pode ficar vazia por enquanto: vamos desenhar a abertura daqui a pouco.',
+        {
+          to: 'Capricha no encaixe.',
+          checks: k.guardarJogo,
+          reason:
+            'Separar observar o arraste de executar reduz o risco de soltar metade da cadeia e perder o ponto de partida.',
+        },
+      ),
+      step(
+        'guardar-relogio',
+        'Proteja também o nascimento das pedras',
+        'Parte 3.',
+        'build',
+        'Colocar a condição dentro do relógio independente.',
+        'Dentro de A cada 40 quadros, coloque outro Se com a pergunta a tela atual é jogando. Leve Criar asteroide para o então desse Se. Proteger o motor principal não protege automaticamente este outro relógio.',
+        {
+          from: 'Ah, e tem um lugarzinho a mais:',
+          checks: k.guardarRelogio,
+          help: 'Deixe só um Criar asteroide: ele deve estar dentro da condição que está dentro do relógio.',
+        },
+      ),
+      step(
+        'guardar-tiro',
+        'Deixe o disparo só para a partida',
+        'Parte 6.',
+        'build',
+        'Evitar tiros e sons acumulados no menu e depois do fim.',
+        'Agora veja o evento da barra de espaço. Dentro dele, coloque Se a tela atual é jogando. Leve Criar tiro e Tocar efeito com tiro selecionado para o então. Fora da partida, espaço não dispara. O evento continua ouvindo; a pergunta decide se ele age.',
+        {
+          checks: k.guardarTiro,
+          edit: 'Complemento novo: o roteiro original protege motor e asteroides, mas deixa o evento de tiro sem condição. A Parte 6 localiza a área de eventos; regravar este gesto sobre o evento Espaço antes de criar o Enter.',
+          visual:
+            'Evento Espaço já existente, pergunta jogando e os dois comandos transferidos para dentro; teste curto no menu sem tiro e sem som.',
+          help: 'Não crie um segundo evento Espaço. Envolva os comandos do evento que já existe.',
+        },
+      ),
+      step(
+        'vitoria',
+        'Decida quando vencer',
+        'Parte 4.',
+        'build',
+        'Comparar pontos e alvo para mudar de tela.',
+        'No fim do então de Se jogando, depois dos corações, coloque outro Se. Na comparação, leia pontos à esquerda, escolha maior ou igual e leia alvo à direita. Dentro dele, coloque Ir para a tela vitoria.',
+        {
+          to: 'escolhe vitoria na listinha.',
+          checks: k.vitoria,
+          help: 'O lado direito lê a constante alvo. Não substitua por um número diferente só para passar de seção.',
+        },
+      ),
+      step(
+        'derrota',
+        'Decida quando a partida termina sem vidas',
+        'Parte 4.',
+        'build',
+        'Separar a condição de derrota da condição de vitória.',
+        'Logo abaixo da pergunta de vitória, ainda dentro de jogando, coloque outro Se. Troque a comparação por as vidas do sprite acabaram?, de Jogo 2D, Vida, escolhendo nave. Dentro, coloque Ir para a tela fim.',
+        {
+          from: 'Agora, a derrota.',
+          checks: k.derrota,
+          edit: 'Manter a ordem original. O professor deve saber: se meta e zero vidas acontecerem no mesmo quadro, a segunda condição leva a fim. Não prometer prioridade de vitória.',
+          help: 'As vidas decidem fim; os pontos decidem vitoria. As duas perguntas ficam no então da partida.',
+        },
+      ),
+      step(
+        'mostrar-telas',
+        'Desenhe a abertura e os dois finais',
+        'Parte 5.',
+        'build',
+        'Associar um ramo e uma imagem a cada estado.',
+        'No Se grande, use + senão se três vezes: inicio, vitoria e fim. Cada pergunta usa a tela atual é. Em cada ramo, encaixe Mostrar tela. Na abertura: Nave contra Asteroides e dica Aperte Enter para começar. Nos dois finais, use a dica Aperte Enter para voltar ao início. Escolha títulos e fundos legíveis.',
+        {
+          checks: k.telas,
+          reason:
+            'Os três ramos repetem o mesmo padrão e são construídos juntos; o vídeo faz uma abertura e depois mostra apenas o que muda nos finais.',
+          edit: 'Reaproveitar a criação dos ramos e telas. Nos finais, trocar a dica por “Aperte Enter para voltar ao início”: o reinício executa Ao iniciar e volta ao menu, não entra imediatamente em jogando.',
+          visual:
+            'Construir inicio com todos os campos; repetir vitoria/fim destacando só o nome do estado, título e dica. Pausa em cada ramo.',
+          help: 'Os senão se pertencem ao Se grande. Não os coloque dentro da pergunta de vitória ou da pergunta de derrota.',
+        },
+      ),
+      step(
+        'enter',
+        'Faça Enter começar e recomeçar',
+        'Parte 6.',
+        'build',
+        'Usar a mesma tecla de acordo com o estado atual.',
+        'Em Quando acontecer, adicione Quando apertar a tecla Enter. Dentro: Se a tela é inicio, vá para jogando. No senão se fim, use Reiniciar o jogo. No senão se vitoria, também Reiniciar o jogo. Depois de reiniciar, você volta à abertura; Enter mais uma vez começa outra partida.',
+        {
+          checks: k.enter,
+          edit: 'Reaproveitar montagem de Enter e seus ramos. Complementar o retorno ao menu e o segundo Enter. Não dizer que o primeiro Enter após derrota já começa a partida.',
+          help: 'O evento Espaço continua separado. O Enter tem três ramos, com perguntas de tela diferentes.',
+        },
+      ),
+      step(
+        'ciclo-completo',
+        'Observe como testar o jogo completo',
+        'Parte 7.',
+        'observe',
+        'Conferir início, derrota, reinício e vitória sem alterar a meta.',
+        'Teste primeiro o menu: espaço não dispara e as pedras não nascem. Enter começa. Depois de perder, Enter volta ao início, com zero ponto e três vidas; outro Enter começa. Faça também o caminho até 26 pontos e veja a vitória. Na entrega, envie ao professor e use Compartilhar quando estiver disponível.',
+        {
+          edit: 'Reaproveitar os testes e o Compartilhar, com corte do tempo repetido de jogo. Corrigir o ciclo de dois Enter. Conferir campos atuais de publicação, sem prometer edição ou geração de capa que não esteja presente.',
+          visual:
+            'Menu imóvel, espaço sem efeito; partida; derrota; Enter no menu; Enter na partida; montagem acelerada até 26 pontos e vitória. Gravação atual do botão Compartilhar depois do envio.',
+          help: 'Se tiros ou asteroides já estiverem esperando ao começar, reveja as condições dos eventos e relógios.',
+        },
+      ),
+    ],
+    test: 'Teste o menu sem atirar nem gerar pedras. Comece com Enter. Confira derrota, Enter de volta ao início, zero ponto, três vidas e grupos vazios. Comece novamente e teste a vitória em 26 pontos. Se perder a última vida no mesmo quadro da meta, esta montagem termina em fim.\n\nQuando estiver pronto, envie ao professor. Depois use Compartilhar, confira o que a janela pedir e publique quando desejar mostrar sua criação. Abra o link e teste se o jogo inicia. A entrega é registrada pela plataforma; publicação e qualidade do jogo são conferidas pelo professor. Não é necessário tornar seu perfil pessoal público. O projeto do Dia 5 será a base de O jogo do meu jeito.',
+    finalChecks: finalChecks(5),
+    corrections: [
+      'O Dia 5 tem carga maior. Separar pergunta, mudança da cadeia, guarda do relógio e guarda do disparo. Oferecer pausa após essas três proteções, retomando o mesmo rascunho.',
+      'Incluir o Se jogando também no evento Espaço. Esta lacuna do original permite criar tiros e sons fora da partida.',
+      'O Reiniciar roda Ao iniciar novamente. Como o último bloco escolhe inicio, há um retorno ao menu e depois outro Enter para jogar.',
+      'Conservar a ordem vitória depois derrota no fim do motor: se ambas forem verdadeiras no mesmo quadro, fim prevalece. O roteiro e os testes explicitam essa regra.',
+      'Constante significa que o valor não é alterado durante esta execução. O criador pode editar a meta em uma versão futura; essa edição não é tarefa deste dia.',
+      'Configurar showcase.enabled apenas no Estúdio do Dia 5. O manifesto preserva a configuração do bloco existente; não inventa um novo comando de publicação.',
+      'Não afirmar que o curso está publicado ou que vídeos estão editados. Os arquivos são autoria importável e mapa de produção.',
+    ],
+    quiz: [
+      [
+        'Você protegeu o desenho, mas os tiros nascem no menu. Onde falta a pergunta jogando?',
+        'Dentro do evento da barra de espaço, antes de criar o tiro.',
+        'Na cor do título da tela de início.',
+        'O evento é independente do motor; sua ação também precisa da condição.',
+      ],
+      [
+        'Depois da derrota, Reiniciar executa Ao iniciar, que escolhe inicio. Para onde o jogo volta?',
+        'Para a abertura; Enter começa uma nova partida.',
+        'Direto para uma partida com os pontos antigos.',
+        'Reiniciar refaz a preparação: zero ponto, três vidas, grupos novos e tela inicio.',
+      ],
+    ],
+  },
+}

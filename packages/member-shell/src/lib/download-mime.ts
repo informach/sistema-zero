@@ -20,10 +20,8 @@ export interface DownloadMedia {
 
 /**
  * Teto p/ APLICAR a marca d'água: marcar exige materializar o arquivo em
- * memória (pdf-lib/sharp); acima disso serve o original em stream + warn
- * (mesma filosofia do fallback de falha de watermark — melhor entregar do que
- * quebrar o download). Casado com o teto de upload do admin (200MB) — sem isso
- * um e-book grande perderia a marca d'água por aluno (anti-pirataria). ⚠️ marcar
+ * memória (pdf-lib/sharp); acima disso o download protegido é recusado, nunca
+ * servido sem marca. Casado com o teto de upload do admin (200MB). ⚠️ marcar
  * 200MB carrega tudo em memória (ver `watermark-queue` p/ o gate de concorrência
  * e o requisito de RAM do serviço).
  */

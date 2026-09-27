@@ -1,31 +1,35 @@
 'use client'
 
-import { LessonAttachments } from '@sistemazero/member-shell/components/lesson-attachments'
+import { lessonCompletionRequirements } from '@sistemazero/core/learning'
+
 import { LessonBlocks } from '@sistemazero/member-shell/components/lesson-blocks'
 import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
 } from '@sistemazero/member-shell/components/lesson-player-context'
+import { LessonProgressBar } from '@sistemazero/member-shell/components/lesson-progress-bar'
+import {
+  LessonSections,
+  useLessonLearning,
+} from '@sistemazero/member-shell/components/lesson-sections'
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
-import { Button, buttonVariants } from '@sistemazero/ui/button'
+import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
+import { EdgePanelHandle } from '@sistemazero/ui/edge-panel-handle'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { ArrowLeft, ArrowRight, CheckCircle2, ChevronLeft, Circle, Lock } from 'lucide-react'
+import { CheckCircle2, ChevronLeft, Circle, Lock, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CourseRatingFlow, type RatingViewer } from '@/components/community/course-rating-flow'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
-import type { CourseDetailView, LessonDetailView, QuizBlock, StudioBlock } from '@/lib/types'
+import type { CourseDetailView, LessonDetailView } from '@/lib/types'
 
 interface Props {
   course: CourseDetailView
   lesson: LessonDetailView
-  prevHref: string | null
-  /** Próxima aula LIBERADA (travada → null): botão "Próxima" do rodapé. */
-  nextHref: string | null
   /**
    * Próxima aula na ORDEM, ignorando a trava — destino do avanço APÓS concluir
    * (concluir a atual destrava a próxima). `null` só na última aula do curso.
@@ -41,14 +45,9 @@ interface Props {
   shareUrl: string | null
 }
 
-/** Persistência da posição: salva no máximo a cada N segundos durante o playback. */
-const POSITION_SAVE_INTERVAL_MS = 12_000
-
 export function LessonPlayer({
   course,
   lesson,
-  prevHref,
-  nextHref,
   nextLessonHref,
   viewerWatermark,
   viewerId,
@@ -56,159 +55,54 @@ export function LessonPlayer({
   shareUrl,
 }: Props) {
   const router = useRouter()
+  const learning = useLessonLearning(lesson, viewerId)
+  const requirements = lessonCompletionRequirements({
+    ...lesson,
+    learningProgress: learning.progress,
+  })
+  const missing = (reason: string) => requirements.some((r) => !r.complete && r.reason === reason)
+  const blockedByLearning =
+    missing('LEARNING_GATE_INCOMPLETE') || missing('SECTION_GATE_INCOMPLETE')
+  const blockedByPinta = missing('PINTA_GATE_NOT_SUBMITTED')
+
   const [completing, setCompleting] = useState(false)
+  const [outlineOpen, setOutlineOpen] = useState(false)
+  const [sectionPosition, setSectionPosition] = useState<{ index: number; total: number } | null>(
+    () => {
+      const sections = lesson.sections ?? []
+      if (sections.length === 0) return null
+      const savedIndex = sections.findIndex(
+        (section) => section.id === lesson.learningProgress?.sectionId,
+      )
+      return { index: savedIndex >= 0 ? savedIndex : 0, total: sections.length }
+    },
+  )
   const courseHref = `/cursos/${encodeURIComponent(course.slug)}`
 
-  // Há quiz com nota de corte ainda não aprovado? (bloqueia o concluir — 409 no backend)
-  const blockedByQuiz = useMemo(
-    () =>
-      lesson.blocks.some((b) => {
-        if (b.kind !== 'quiz') return false
-        const content = b.content as QuizBlock | null
-        return content?.passingScore != null && !b.quizState?.passed
-      }),
-    [lesson.blocks],
-  )
+  const blockedByQuiz = missing('QUIZ_GATE_NOT_PASSED')
+  const blockedByStudio = missing('STUDIO_GATE_NOT_SUBMITTED')
+  const blockedByStudioNotPassed = missing('STUDIO_GATE_NOT_PASSED')
+  const blockedByComingSoon = missing('LESSON_COMING_SOON')
 
-  // Há bloco de estúdio cujo projeto ainda não foi enviado? (mesmo gate do quiz — 409)
-  const blockedByStudio = useMemo(
-    () => lesson.blocks.some((b) => b.kind === 'studio' && !b.studioState?.submitted),
-    [lesson.blocks],
-  )
-  // Aula EM PRODUÇÃO: com o bloco "em breve" o members serve SÓ o recado (segura os
-  // demais blocos e os anexos) e recusa a conclusão com 409 LESSON_COMING_SOON.
-  const blockedByComingSoon = useMemo(
-    () => lesson.blocks.some((b) => b.kind === 'coming_soon'),
-    [lesson.blocks],
-  )
-  // Atividade do Estúdio COM nota mínima exige aprovação, não só envio. O backend já
-  // devolvia 409 `STUDIO_GATE_NOT_PASSED` (o kids espelha desde 06/2026), mas aqui o
-  // botão seguia habilitado: o aluno clicava e só descobria pelo toast.
-  const blockedByStudioNotPassed = useMemo(
-    () =>
-      lesson.blocks.some((b) => {
-        if (b.kind !== 'studio' || !b.studioState?.submitted) return false
-        const content = b.content as StudioBlock | null
-        return content?.activity?.passingScore !== undefined && !b.studioState?.passed
-      }),
-    [lesson.blocks],
-  )
-  const completeBlocked =
-    blockedByComingSoon || blockedByQuiz || blockedByStudio || blockedByStudioNotPassed
+  const completeBlocked = requirements.some((r) => !r.complete)
 
-  // ── Posição do vídeo: refs (sem re-render) + throttle + flush por beacon ────
-  const positionUrl = `/api/members/lessons/${encodeURIComponent(lesson.id)}/position`
-  const lastPosRef = useRef(lesson.positionSeconds ?? 0)
-  const lastSavedAtRef = useRef(0)
-  const lastSavedPosRef = useRef(lesson.positionSeconds ?? 0)
-
-  const savePosition = useCallback(
-    (seconds: number) => {
-      lastSavedAtRef.current = Date.now()
-      lastSavedPosRef.current = seconds
-      // keepalive: sobrevive à navegação client-side; erros são silenciosos
-      // (posição é best-effort, nunca atrapalha a aula).
-      fetch(positionUrl, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ courseSlug: course.slug, positionSeconds: Math.floor(seconds) }),
-        keepalive: true,
-      }).catch(() => {})
-    },
-    [positionUrl, course.slug],
-  )
-
-  const onVideoProgress = useCallback(
-    (seconds: number) => {
-      lastPosRef.current = seconds
-      const now = Date.now()
-      if (
-        now - lastSavedAtRef.current >= POSITION_SAVE_INTERVAL_MS &&
-        Math.abs(seconds - lastSavedPosRef.current) >= 3
-      ) {
-        savePosition(seconds)
-      }
-    },
-    [savePosition],
-  )
-
-  const onVideoFlush = useCallback((seconds: number) => savePosition(seconds), [savePosition])
-
-  // Flush ao sair (troca de aba/fechar/navegar): sendBeacon sobrevive ao unload.
-  useEffect(() => {
-    const flushBeacon = () => {
-      const seconds = Math.floor(lastPosRef.current)
-      if (seconds <= 0 || seconds === Math.floor(lastSavedPosRef.current)) return
-      lastSavedPosRef.current = seconds
-      navigator.sendBeacon(
-        positionUrl,
-        new Blob([JSON.stringify({ courseSlug: course.slug, positionSeconds: seconds })], {
-          type: 'application/json',
-        }),
-      )
-    }
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') flushBeacon()
-    }
-    document.addEventListener('visibilitychange', onVisibility)
-    window.addEventListener('pagehide', flushBeacon)
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibility)
-      window.removeEventListener('pagehide', flushBeacon)
-      flushBeacon() // troca de aula (unmount) também persiste
-    }
-  }, [positionUrl, course.slug])
-
-  // ── Concluir aula (botão manual + auto a ~90% do vídeo) ─────────────────────
   const completedRef = useRef(lesson.completed)
-
-  const complete = useCallback(
-    async (opts: { silent?: boolean } = {}) => {
-      if (completedRef.current) return
-      if (!opts.silent) setCompleting(true)
-      try {
-        await apiSend(`/api/members/lessons/${encodeURIComponent(lesson.id)}/complete`, 'POST')
-        completedRef.current = true
-        toast.success('Aula concluída!')
-        // Avança para a próxima na ordem (concluir a atual a destravou).
-        if (!opts.silent && nextLessonHref) router.push(nextLessonHref)
-        router.refresh()
-      } catch (err) {
-        const apiErr = err as ApiError
-        if (apiErr?.code === 'QUIZ_GATE_NOT_PASSED') {
-          // Auto-conclusão silenciada: a aula só conclui passando no quiz.
-          if (!opts.silent) {
-            toast.error('Conclua o quiz da aula com a nota mínima para finalizá-la.')
-          }
-        } else if (apiErr?.code === 'STUDIO_GATE_NOT_SUBMITTED') {
-          // A aula só conclui depois de enviar o projeto do Estúdio ao professor.
-          if (!opts.silent) {
-            toast.error('Envie o projeto do Estúdio para poder concluir a aula.')
-          }
-        } else if (apiErr?.code === 'STUDIO_GATE_NOT_PASSED') {
-          // Atividade do Estúdio com nota mínima exige aprovação, não só envio.
-          if (!opts.silent) {
-            toast.error('Atinja a nota mínima do Estúdio para poder concluir a aula.')
-          }
-        } else if (apiErr?.code === 'LESSON_COMING_SOON') {
-          // A aula ainda está sendo montada (bloco "em breve").
-          if (!opts.silent) {
-            toast.error('Esta aula ainda está sendo preparada. Volte em breve.')
-          }
-        } else if (!opts.silent) {
-          toast.error('Não foi possível marcar a aula. Tente de novo.')
-        }
-      } finally {
-        if (!opts.silent) setCompleting(false)
-      }
-    },
-    [lesson.id, nextLessonHref, router],
-  )
-
-  const onVideoReachedThreshold = useCallback(() => {
-    // Auto-marca ao assistir ~90% (sem navegar); bloqueio por quiz é silencioso.
-    void complete({ silent: true })
-  }, [complete])
+  const complete = useCallback(async () => {
+    if (completedRef.current) return
+    setCompleting(true)
+    try {
+      await apiSend(`/api/members/lessons/${encodeURIComponent(lesson.id)}/complete`, 'POST')
+      completedRef.current = true
+      toast.success('Aula concluída!')
+      if (nextLessonHref) router.push(nextLessonHref)
+      router.refresh()
+    } catch (error) {
+      const apiError = error as ApiError
+      toast.error(apiError.message || 'Não foi possível concluir a aula. Tente novamente.')
+    } finally {
+      setCompleting(false)
+    }
+  }, [lesson.id, nextLessonHref, router])
 
   const playerContext = useMemo<LessonPlayerContextValue>(
     () => ({
@@ -216,112 +110,131 @@ export function LessonPlayer({
       courseSlug: course.slug,
       viewerWatermark,
       viewerId,
-      initialPositionSeconds: lesson.completed ? null : lesson.positionSeconds,
-      onVideoProgress,
-      onVideoFlush,
-      onVideoReachedThreshold,
+      initialPositionSeconds: lesson.positionSeconds,
+      learningProgress: learning.progress,
+      onLearningProgress: learning.onProgress,
+      refreshAfterLearning: () => router.refresh(),
       refreshAfterQuiz: () => router.refresh(),
       refreshAfterStudio: () => router.refresh(),
     }),
     [
       lesson.id,
-      lesson.completed,
       lesson.positionSeconds,
+      learning.progress,
+      learning.onProgress,
       course.slug,
       viewerWatermark,
       viewerId,
-      onVideoProgress,
-      onVideoFlush,
-      onVideoReachedThreshold,
       router,
     ],
   )
 
+  const completionAction = lesson.completed ? (
+    <span className="inline-flex items-center gap-2 font-semibold text-accent text-sm">
+      <CheckCircle2 className="size-4" />
+      Aula concluída
+    </span>
+  ) : (
+    <Button onClick={() => complete()} disabled={completing || completeBlocked}>
+      {completing ? <Spinner /> : <CheckCircle2 className="size-4" />}
+      Concluir aula
+    </Button>
+  )
+  const completionMessage = lesson.completed ? null : blockedByLearning ? (
+    <p>Termine as atividades essenciais das seções para concluir a aula.</p>
+  ) : blockedByPinta ? (
+    <p>Envie seu desenho ao professor para concluir a aula.</p>
+  ) : blockedByComingSoon ? (
+    <p>Esta aula ainda está sendo preparada.</p>
+  ) : blockedByQuiz ? (
+    <p>Passe no quiz da aula para poder concluí-la.</p>
+  ) : blockedByStudio ? (
+    <p>Envie o projeto do Estúdio para poder concluir a aula.</p>
+  ) : blockedByStudioNotPassed ? (
+    <p>Atinja a nota mínima do Estúdio para poder concluir a aula.</p>
+  ) : null
+
   return (
     <LessonPlayerProvider value={playerContext}>
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+      {/* `sz-aula-adulto`: gancho do fundo alternativo da aula (a régua do Pen), aplicado no
+          invólucro do app pelo `globals.css` sem mexer no layout. */}
+      <div className="sz-aula-adulto flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-0">
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          {/* mb-2: título → 1º bloco fica um pouco maior que o gap entre blocos */}
-          <div className="mb-2">
+          <div className="mx-auto flex w-full max-w-[860px] items-center gap-3 md:gap-4">
             <Link
               href={courseHref}
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+              aria-label={`Voltar ao curso ${course.title}`}
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
             >
-              <ChevronLeft className="size-4" />
-              {course.title}
+              <ChevronLeft className="size-5" />
             </Link>
-            <h1 className="sz-display mt-2 text-2xl">{lesson.title}</h1>
-          </div>
-
-          <LessonBlocks blocks={lesson.blocks} />
-
-          {lesson.attachments.length > 0 ? (
-            <LessonAttachments
-              courseSlug={course.slug}
-              lessonId={lesson.id}
-              attachments={lesson.attachments}
-            />
-          ) : null}
-
-          {/* Ações: concluir + navegação */}
-          <div className="flex flex-wrap items-center gap-3 border-t border-border pt-5">
-            {lesson.completed ? (
-              <span className="inline-flex items-center gap-2 text-sm text-accent dark:text-primary">
-                <CheckCircle2 className="size-4" />
-                Aula concluída
-              </span>
-            ) : (
-              <div className="flex flex-col gap-1">
-                <Button onClick={() => complete()} disabled={completing || completeBlocked}>
-                  {completing ? <Spinner /> : <CheckCircle2 className="size-4" />}
-                  Concluir aula
-                </Button>
-                {blockedByComingSoon ? (
-                  <p className="text-xs text-muted-foreground">
-                    Esta aula ainda está sendo preparada.
-                  </p>
-                ) : blockedByQuiz ? (
-                  <p className="text-xs text-muted-foreground">
-                    Passe no quiz da aula para poder concluí-la.
-                  </p>
-                ) : blockedByStudio ? (
-                  <p className="text-xs text-muted-foreground">
-                    Envie o projeto do Estúdio para poder concluir a aula.
-                  </p>
-                ) : blockedByStudioNotPassed ? (
-                  <p className="text-xs text-muted-foreground">
-                    Atinja a nota mínima do Estúdio para poder concluir a aula.
-                  </p>
-                ) : null}
-              </div>
-            )}
-            <div className="ml-auto flex items-center gap-2">
-              {prevHref ? (
-                <Link href={prevHref} className={buttonVariants({ variant: 'outline' })}>
-                  <ArrowLeft className="size-4" />
-                  Anterior
-                </Link>
-              ) : null}
-              {nextHref ? (
-                <Link href={nextHref} className={buttonVariants({ variant: 'outline' })}>
-                  Próxima
-                  <ArrowRight className="size-4" />
-                </Link>
-              ) : null}
+            <div className="min-w-0 flex-1">
+              <LessonProgressBar progress={lesson.sectionProgress} compact />
             </div>
+            {sectionPosition ? (
+              <span className="shrink-0 text-sm font-semibold tabular-nums">
+                Seção {sectionPosition.index + 1} de {sectionPosition.total}
+              </span>
+            ) : null}
           </div>
+          <LessonSections
+            key={`${viewerId}:${lesson.id}`}
+            lesson={lesson}
+            lessonTitle={lesson.title}
+            immersive
+            onSectionChange={setSectionPosition}
+            completionAction={completionAction}
+            completionMessage={completionMessage}
+            renderBlocks={(blocks) => <LessonBlocks blocks={blocks} />}
+          />
         </div>
 
-        {/* Outline do curso (sidebar) */}
-        {/* lg:mt-7 alinha o topo do card com o título da aula (breadcrumb 20px + mt-2 do h1) */}
-        <aside className="w-full shrink-0 lg:sticky lg:top-20 lg:mt-7 lg:w-72">
-          <Card className="overflow-hidden p-0">
+        {/* A alça usa a mesma largura responsiva da gaveta e permanece visível fechada. */}
+        <EdgePanelHandle
+          side="right"
+          open={outlineOpen}
+          openOffset="var(--lesson-outline-width)"
+          label={outlineOpen ? 'Esconder lista de aulas' : 'Mostrar lista de aulas'}
+          controlsId="adult-lesson-outline"
+          onToggle={() => setOutlineOpen((open) => !open)}
+          className="z-[62] border-border bg-card text-foreground lg:z-[42]"
+        />
+        {/* Lista de aulas sob demanda: gaveta no celular, lateral contínua no desktop. */}
+        <button
+          type="button"
+          onClick={() => setOutlineOpen(false)}
+          aria-label="Fechar lista de aulas"
+          aria-hidden={!outlineOpen}
+          inert={!outlineOpen}
+          className={cn(
+            'fixed inset-0 z-[60] bg-foreground/25 transition-opacity duration-300 motion-reduce:transition-none lg:hidden',
+            outlineOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
+          )}
+        />
+        <aside
+          id="adult-lesson-outline"
+          aria-hidden={!outlineOpen}
+          inert={!outlineOpen}
+          className={cn(
+            'fixed inset-y-0 right-0 z-[61] flex w-(--lesson-outline-width) flex-col overflow-hidden border-border border-l bg-card transition-transform duration-300 ease-in-out motion-reduce:transition-none lg:z-40',
+            !outlineOpen ? 'pointer-events-none translate-x-full' : 'translate-x-0',
+          )}
+        >
+          <button
+            type="button"
+            onClick={() => setOutlineOpen(false)}
+            aria-label="Fechar lista de aulas"
+            className="ml-auto flex size-11 items-center justify-center lg:hidden"
+          >
+            <X className="size-5" aria-hidden />
+          </button>
+          <Card className="flex min-h-0 flex-1 flex-col overflow-hidden p-0 lg:rounded-none lg:border-0 lg:shadow-none">
             <div className="border-b border-border px-4 py-3">
               <p className="text-sm font-semibold">{course.title}</p>
               <div className="mt-2 flex items-center gap-2">
                 <ProgressBar value={course.progress.percent} className="flex-1" />
-                <span className="sz-display text-xs">{course.progress.percent}%</span>
+                <span className="sz-display text-primary text-xs">{course.progress.percent}%</span>
               </div>
               {/* Classificação do curso: o link some quando myRating != null. */}
               <CourseRatingFlow
@@ -331,10 +244,10 @@ export function LessonPlayer({
                 viewer={viewer}
               />
             </div>
-            <nav className="scrollbar-subtle max-h-[28rem] overflow-y-auto">
+            <nav className="scrollbar-subtle max-h-[28rem] overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1">
               {course.modules.map((module) => (
                 <div key={module.id}>
-                  <p className="bg-muted/40 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <p className="bg-muted px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {module.title}
                   </p>
                   <ul>
@@ -360,14 +273,16 @@ export function LessonPlayer({
                             href={`${courseHref}/aulas/${encodeURIComponent(item.id)}`}
                             className={cn(
                               'flex items-center gap-2 px-4 py-2 text-sm transition-colors',
+                              // Aula atual: o tom da linha de cartão com a barrinha na cor de
+                              // ação à esquerda (o "você está aqui" do Pen).
                               active
-                                ? 'bg-muted font-medium text-foreground'
+                                ? 'bg-muted font-medium text-foreground shadow-[inset_3px_0_0_var(--primary)]'
                                 : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
                             )}
                             aria-current={active ? 'page' : undefined}
                           >
                             {item.completed ? (
-                              <CheckCircle2 className="size-3.5 shrink-0 text-accent dark:text-primary" />
+                              <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
                             ) : (
                               <Circle className="size-3.5 shrink-0" />
                             )}

@@ -1,6 +1,6 @@
 import { afterAll, expect, mock, test } from 'bun:test'
 import type { PintaHostAdapter } from '@sistemazero/pinta'
-import { render, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 
 const actualNavigation = await import('next/navigation')
@@ -39,18 +39,34 @@ function localPersistence(namespace: string) {
 
 function ObservedPintaApp({
   adapter,
+  onWorkspaceChange,
 }: {
   adapter?: PintaHostAdapter
   persistence?: object
+  onWorkspaceChange?: (active: boolean) => void
 }): ReactNode {
   lastAdapter = adapter
-  return <output data-testid="pinta-app">montado</output>
+  return (
+    <>
+      <output data-testid="pinta-app">montado</output>
+      <button type="button" onClick={() => onWorkspaceChange?.(true)}>
+        Abrir desenho de teste
+      </button>
+      <button type="button" onClick={() => onWorkspaceChange?.(false)}>
+        Voltar à galeria de teste
+      </button>
+    </>
+  )
 }
+
+/** A query string da vez (`?tarefa=` é o deep link do Pensa). */
+let searchParams = new URLSearchParams()
 
 mock.module('next/navigation', () => ({
   ...actualNavigation,
+  usePathname: () => '/pinta',
   useRouter: () => router,
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => searchParams,
 }))
 
 mock.module('@sistemazero/pinta', () => ({
@@ -79,6 +95,35 @@ mock.module('@sistemazero/studio/personal-assets', () => ({
 }))
 
 const { PintaClient } = await import('../src/components/kids/pinta-client')
+const { FocusModeProvider, useFocusMode } = await import('../src/components/kids/focus-mode')
+
+function NavProbe() {
+  const { navCollapsed, toggleNav } = useFocusMode()
+  return (
+    <>
+      <output data-testid="nav-collapsed">{String(navCollapsed)}</output>
+      <button type="button" onClick={toggleNav}>
+        Abrir menu de teste
+      </button>
+    </>
+  )
+}
+
+test('o Pinta comunica a abertura do desenho ao menu do shell', async () => {
+  render(
+    <FocusModeProvider viewerId="perfil-pinta">
+      <PintaClient viewerId="perfil-pinta" studioAvailable />
+      <NavProbe />
+    </FocusModeProvider>,
+  )
+  await screen.findByTestId('pinta-app')
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir menu de teste' }))
+  expect(screen.getByTestId('nav-collapsed').textContent).toBe('false')
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir desenho de teste' }))
+  expect(screen.getByTestId('nav-collapsed').textContent).toBe('true')
+  fireEvent.click(screen.getByRole('button', { name: 'Voltar à galeria de teste' }))
+  expect(screen.getByTestId('nav-collapsed').textContent).toBe('false')
+})
 
 afterAll(() => {
   mock.module('next/navigation', () => actualNavigation)
@@ -120,4 +165,79 @@ test('a volta da ponte diz POR QUE não atualizou (nunca levado ao Estúdio, bib
   expect(personalNamespaces).toEqual(['perfil-b', 'perfil-b', 'perfil-b', 'perfil-b', 'perfil-b'])
   expect(namespaces).toContain('perfil-b')
   expect(namespaces).not.toContain('personal:perfil-b')
+})
+
+/** O que a rota `/api/pensa/tasks/:id/handoff` devolve para uma tarefa de arte. */
+const handoffDeArte = {
+  project: { id: 'plano-1', name: 'Bosque encantado' },
+  cycle: { id: 'ciclo-1', number: 1, goal: null },
+  capability: { owned: true, blockedReason: null },
+  task: {
+    id: 'tarefa-1',
+    title: 'Desenhar a heroína',
+    summary: null,
+    category: 'art',
+    estimatedMinutes: 20,
+    position: 1,
+    dependencies: [],
+    revision: 1,
+    supersedesTaskId: null,
+    destination: 'pinta',
+    guide: { steps: [], criteria: [] },
+    context: {
+      kind: 'pinta',
+      assetId: 'heroina',
+      artKind: 'sprite',
+      style: 'pixel',
+      palette: [{ role: 'roupa', color: '#aa33cc' }],
+      appearance: 'Pequena, ágil e com capa roxa',
+      animations: [],
+      states: [],
+      usage: 'Personagem principal',
+      requiresStudioUse: false,
+    },
+    progress: {
+      status: 'in_progress',
+      completedStepIds: [],
+      completedCriteriaIds: [],
+      startedAt: null,
+      completedAt: null,
+      updatedAt: null,
+      outputRef: null,
+    },
+  },
+}
+
+test('com ?tarefa= o "Voltar ao plano" do brief leva ao plano do Pensa, e o id vem do handoff', async () => {
+  searchParams = new URLSearchParams('tarefa=tarefa-1')
+  const fetchOriginal = globalThis.fetch
+  globalThis.fetch = (async (_input: RequestInfo | URL) =>
+    new Response(JSON.stringify(handoffDeArte), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })) as typeof fetch
+
+  try {
+    const view = render(<PintaClient viewerId="perfil-c" studioAvailable />)
+    await waitFor(() => expect(lastAdapter?.taskSession).toBeDefined())
+    const session = lastAdapter?.taskSession
+    if (!session) throw new Error('sem taskSession')
+
+    router.push.mockClear()
+    await session.onReturnToPlan?.()
+    expect(router.push).toHaveBeenCalledTimes(1)
+    expect(router.push).toHaveBeenCalledWith('/pensa?plano=plano-1')
+    view.unmount()
+  } finally {
+    globalThis.fetch = fetchOriginal
+    searchParams = new URLSearchParams()
+  }
+})
+
+test('sem ?tarefa= não há brief nenhum (quem abre o Pinta pelo menu não tem plano para voltar)', async () => {
+  searchParams = new URLSearchParams()
+  const view = render(<PintaClient viewerId="perfil-d" studioAvailable />)
+  await waitFor(() => expect(lastAdapter?.resyncToStudio).toBeDefined())
+  expect(lastAdapter?.taskSession).toBeUndefined()
+  view.unmount()
 })

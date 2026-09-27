@@ -15,11 +15,24 @@ export default defineConfig({
     baseURL,
     trace: 'on-first-retry',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], hasTouch: true } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'], hasTouch: true } },
+    {
+      name: 'firefox',
+      testMatch: /scene-workshop\.spec\.ts/,
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      testMatch: /scene-workshop\.spec\.ts/,
+      use: { ...devices['Desktop Safari'], hasTouch: true },
+    },
+  ],
   webServer: {
-    command: `bun run dev -- --port ${port}`,
+    command: 'bun run serve:e2e',
+    env: { E2E_PORT: String(port) },
     url: baseURL,
-    reuseExistingServer: true,
+    reuseExistingServer: process.env.PW_REUSE_SERVER === '1',
     timeout: 120_000,
   },
 })

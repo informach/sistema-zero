@@ -81,15 +81,18 @@ export type GuideWelcomeStepId =
   | 'start'
   | 'aulas'
   | 'xp'
-  | 'carreira'
+  | 'jornada'
   | 'criar'
   | 'mural'
+  | 'ajuda'
   | `parent-${number}`
 
 export interface GuideWelcomeStep {
   id: GuideWelcomeStepId
   emoji: string
   text: string
+  /** Um link no fim da frase (o "Como fazer"): destino interno e o texto do link. */
+  link?: { href: string; label: string }
 }
 
 type ChildWelcomeInput = Pick<ChildGuideInput, 'hasAvatar' | 'hasCourseActivity' | 'startAvailable'>
@@ -155,9 +158,16 @@ export function childWelcomeSteps(input: ChildWelcomeInput): readonly GuideWelco
       text: 'Publique o seu jogo no Mural e a turma inteira pode jogar.',
     },
     {
-      id: 'carreira',
+      id: 'jornada',
       emoji: '🗺️',
-      text: 'Terminou um curso e publicou o jogo? O mapa mostra o seu progresso na carreira.',
+      text: 'Terminou um curso e publicou o jogo? O mapa mostra o seu progresso na jornada.',
+    },
+    // A biblioteca de ajuda (26/09/2026): consulta, não onboarding. O guia só aponta a porta.
+    {
+      id: 'ajuda',
+      emoji: '❓',
+      text: 'Ficou com dúvida de como fazer alguma coisa? O passo a passo está no',
+      link: { href: '/como-fazer', label: 'Como fazer' },
     },
   )
   return steps

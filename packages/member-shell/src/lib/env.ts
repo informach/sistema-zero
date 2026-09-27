@@ -74,12 +74,16 @@ const EnvSchema = z
     OPENROUTER_PENSA_SYNTHESIS_MODEL: z.string().optional(),
     OPENROUTER_ZAPPY_MODEL: z.string().optional(),
     OPENROUTER_REFERER: z.string().url().optional(),
-    // Interruptor de emergência. A carreira decide o acesso; equipe sempre entra.
+    // Interruptor de emergência. A jornada decide o acesso; equipe sempre entra.
     ZAPPY_ENABLED: z
       .enum(['true', 'false'])
       .default('true')
       .transform((value) => value === 'true'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    KIDS_REFORM_NOTICE_ENABLED: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
   })
   // Sem nenhuma forma de verificar o token, toda sessão seria inválida em silêncio.
   .refine((e) => Boolean(e.JWT_HS256_SECRET || e.JWT_JWKS_URL), {
@@ -101,7 +105,7 @@ const EnvSchema = z
     path: ['JWT_HS256_SECRET'],
   })
   .refine((e) => e.NODE_ENV !== 'production' || Boolean(e.MEMBER_SHELL_HMAC_SECRET), {
-    message: 'Em produção, MEMBER_SHELL_HMAC_SECRET é obrigatório para persistir o Zappy',
+    message: 'Em produção, MEMBER_SHELL_HMAC_SECRET é obrigatório para Zappy e downloads de aula',
     path: ['MEMBER_SHELL_HMAC_SECRET'],
   })
 

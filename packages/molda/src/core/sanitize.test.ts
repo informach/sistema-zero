@@ -457,6 +457,29 @@ describe('malha no sanitize (06/09/2026)', () => {
     expect((sanitizeMoldaAsset(raw) as MoldaModelAsset).parts).toHaveLength(0)
   })
 
+  test('arestas de construção sobrevivem ao round-trip e sustentam uma malha sem faces', () => {
+    const part = meshPart()
+    if (!part.mesh) throw new Error('sem malha')
+    part.mesh = {
+      vertices: { v_a: [0, 0, 0], v_b: [2, 0, 0], v_c: [4, 0, 0] },
+      faces: {},
+      looseEdges: [
+        ['v_b', 'v_a'],
+        ['v_b', 'v_c'],
+      ],
+    }
+    const out = sanitizeMoldaAsset(structuredClone(makeModel({ parts: [part] })))
+    if (out?.kind !== 'model') throw new Error('não é modelo')
+    expect(out.parts[0]?.mesh).toEqual({
+      vertices: { v_a: [0, 0, 0], v_b: [2, 0, 0], v_c: [4, 0, 0] },
+      faces: {},
+      looseEdges: [
+        ['v_a', 'v_b'],
+        ['v_b', 'v_c'],
+      ],
+    })
+  })
+
   test('a caixa gravada é ignorada: from/to vêm dos vértices; fora da grade a malha é empurrada para dentro', () => {
     const raw = structuredClone(makeModel({ parts: [meshPart()] })) as unknown as MeshRaw
     const first = raw.parts[0]

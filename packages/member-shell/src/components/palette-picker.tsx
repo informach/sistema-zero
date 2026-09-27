@@ -1,0 +1,279 @@
+'use client'
+
+import { PALETTE_LABELS, PALETTES, type Palette, readPalette } from '@sistemazero/core/palette'
+import { Check } from 'lucide-react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { apiGet, apiSend } from '../lib/api'
+import { cn } from '../lib/cn'
+
+/**
+ * As caixinhas de cor do perfil.
+ *
+ * ⭐ O componente não tem UM hexadecimal, e não precisa: cada caixinha carrega
+ * `data-sz-palette` e lê `--sz-action` de dentro dela. Custom property herda, e um seletor de
+ * atributo puro pinta a subárvore — então a amostra é a cor DE VERDADE que a folha gerada
+ * produz, sem espelho manual para divergir quando entra uma cor nova.
+ *
+ * ⚠️ Mora no `member-shell`, não no `@sistemazero/ui`: aquele pacote não tem dep de framework
+ * nem CSS próprio de componente, e este aqui fala com o BFF e carrega o contrato do `x-sz-viewer`.
+ */
+
+/** ~1,2 s entre idas ao servidor. Com o agrupamento abaixo, o teto de 60/min fica com folga. */
+const PISO_ENTRE_ENVIOS_MS = 1200
+
+function paintPalette(palette: Palette | null) {
+  // A única mutação legítima do `<html>` pelo cliente: é o que faz a troca ser instantânea sem
+  // recarregar. O valor é sempre um id do catálogo, nunca texto solto.
+  const root = document.documentElement
+  if (palette) root.dataset.szPalette = palette
+  else root.removeAttribute('data-sz-palette')
+}
+
+export function PalettePicker({
+  viewerId,
+  initial,
+  readOnly = false,
+  labelledBy,
+  className,
+}: {
+  /** O perfil dono da escolha — vira o `x-sz-viewer`, que o BFF confere. */
+  viewerId: string
+  /**
+   * Vem do SERVIDOR (o mesmo cookie que o layout leu) — é o que pinta a tela no primeiro quadro,
+   * sem esperar rede. A conferência com o banco vem logo depois (ver a reconciliação abaixo).
+   */
+  initial: Palette | null
+  /** Impersonação somente-leitura: mostra o estado, não deixa salvar. */
+  readOnly?: boolean
+  /**
+   * O id de um título que a PÁGINA já escreveu (o do cartão, por exemplo). Com ele o seletor não
+   * escreve legenda própria e as caixinhas passam a ser nomeadas por esse título.
+   *
+   * ⚠️ Sem isso o perfil adulto mostrava dois títulos empilhados dizendo a mesma coisa com
+   * palavras diferentes ("Cor do tema" no cartão, "Cor do seu perfil" na legenda) — e o leitor de
+   * tela anunciava os dois.
+   */
+  labelledBy?: string
+  className?: string
+}) {
+  const grupo = useId()
+  const [escolhida, setEscolhida] = useState<Palette | null>(initial)
+  const [erro, setErro] = useState<string | null>(null)
+  const [salvando, setSalvando] = useState(false)
+
+  /** A última cor que o SERVIDOR confirmou — para onde a tela volta quando a rede falha. */
+  const confirmada = useRef<Palette | null>(initial)
+  /** O que a pessoa quer AGORA. Cliques durante um envio só atualizam isto. */
+  const desejada = useRef<Palette | null>(initial)
+  const emVoo = useRef(false)
+  const ultimoEnvio = useRef(0)
+  /**
+   * A cor que o servidor RECUSOU e que o "Tentar de novo" vai reenviar. `undefined` = nada
+   * pendente. ⚠️ Sem isto o botão de erro era MORTO: a tela volta para a cor confirmada, então
+   * `desejada === confirmada` e o `enviar()` saía na primeira linha, sem pedido nenhum.
+   */
+  const alvoRecusado = useRef<Palette | null | undefined>(undefined)
+  /** A pessoa já mexeu nesta tela? Se sim, nenhuma resposta de rede pode desfazer a escolha. */
+  const mexeu = useRef(false)
+  /**
+   * A conferência em voo, para DESISTIR dela antes de gravar.
+   *
+   * ⚠️⚠️ O `mexeu` protege a TELA; o cookie ele não protege. A resposta do GET também grava o
+   * espelho (é o auto-conserto), e uma leitura lenta que tenha saído ANTES do clique carrega o
+   * valor de antes dele: chegando depois do PUT, ela carimbaria a cor velha por seis horas — e o
+   * proxy, vendo dono e cookie casados, nunca mais perguntaria. Abortar antes de gravar fecha a
+   * única ordem que faz mal.
+   */
+  const conferencia = useRef<AbortController | null>(null)
+
+  const desistirDaConferencia = () => {
+    conferencia.current?.abort()
+    conferencia.current = null
+  }
+
+  const enviar = useCallback(async () => {
+    if (emVoo.current) return
+    // Agrupar em vez de enfileirar: A→B→A termina em zero ou um pedido, não em três.
+    if (desejada.current === confirmada.current) return
+    const espera = PISO_ENTRE_ENVIOS_MS - (Date.now() - ultimoEnvio.current)
+    if (espera > 0) {
+      setTimeout(() => void enviar(), espera)
+      return
+    }
+    emVoo.current = true
+    setSalvando(true)
+    const alvo = desejada.current
+    try {
+      await apiSend(
+        '/api/members/preferences',
+        'PUT',
+        { palette: alvo },
+        { 'x-sz-viewer': viewerId },
+      )
+      confirmada.current = alvo
+      setErro(null)
+    } catch (e) {
+      // ⚠️⚠️ Só desfaz se NADA mais novo foi escolhido no meio. A pessoa clica Laranja, a rede
+      // falha, e ela já clicou Verde enquanto isso: desfazer aqui jogaria o Verde fora sem nunca
+      // enviá-lo — o clique sumia em silêncio e a tela voltava para uma cor que ela não acabou
+      // de escolher. Com algo mais novo na fila, o `finally` abaixo o envia.
+      if (desejada.current === alvo) {
+        // Volta para a última cor CONFIRMADA, nunca para a cor da casa: uma falha de rede não
+        // pode apagar da tela a cor que a pessoa já tinha.
+        alvoRecusado.current = alvo
+        desejada.current = confirmada.current
+        setEscolhida(confirmada.current)
+        paintPalette(confirmada.current)
+        setErro(
+          (e as { code?: string })?.code === 'VIEWER_CHANGED'
+            ? 'O perfil mudou. Abra a página novamente.'
+            : 'Não consegui guardar a sua cor agora.',
+        )
+      }
+    } finally {
+      ultimoEnvio.current = Date.now()
+      emVoo.current = false
+      setSalvando(false)
+      if (desejada.current !== confirmada.current) void enviar()
+    }
+  }, [viewerId])
+
+  const escolher = (palette: Palette) => {
+    if (readOnly) return
+    mexeu.current = true
+    desistirDaConferencia()
+    alvoRecusado.current = undefined
+    setErro(null)
+    setEscolhida(palette)
+    desejada.current = palette
+    paintPalette(palette)
+    void enviar()
+  }
+
+  /** Reenvia a cor que o servidor recusou — é o que faz o botão do erro existir de verdade. */
+  const tentarDeNovo = () => {
+    const alvo = alvoRecusado.current
+    if (alvo === undefined || readOnly) return
+    mexeu.current = true
+    desistirDaConferencia()
+    setErro(null)
+    setEscolhida(alvo)
+    desejada.current = alvo
+    paintPalette(alvo)
+    void enviar()
+  }
+
+  /**
+   * ⭐ A reconciliação entre APARELHOS — e a única leitura que este componente faz.
+   *
+   * ⚠️ O espelho em cookie vale seis horas e é POR APARELHO: quem trocou a cor no celular abre o
+   * computador e, até o espelho vencer, vê a caixinha antiga marcada. Nas páginas comuns isso é
+   * só uma cor velha; AQUI é a tela que diz qual é a sua cor — e onde a pessoa vai agir sobre
+   * essa informação. Uma ida ao servidor, na página de perfil (que se abre de vez em quando), é
+   * barata; a mesma resposta ainda REGRAVA o cookie no BFF, então o aparelho inteiro se cura.
+   *
+   * ⚠️⚠️ Um clique vence a resposta, sempre: quem mexeu nesta tela não pode ver a própria
+   * escolha ser desfeita por um pedido que já estava no ar.
+   */
+  useEffect(() => {
+    // ⚠️ Sem um "já rodei" de módulo: no StrictMode do desenvolvimento o React monta, desmonta e
+    // monta de novo, e uma marca que sobrevive à remontagem faria a segunda montagem desistir
+    // com a resposta da primeira já descartada — a conferência ficava MORTA no `bun dev`. Quem
+    // cancela a leitura obsoleta é o `abort` da limpeza; a segunda montagem faz a dela.
+    const controlador = new AbortController()
+    conferencia.current = controlador
+    apiGet<{ palette?: unknown }>(
+      '/api/members/preferences',
+      { 'x-sz-viewer': viewerId },
+      { signal: controlador.signal },
+    )
+      .then((body) => {
+        const doServidor = readPalette(body?.palette)
+        if (controlador.signal.aborted || mexeu.current) return
+        confirmada.current = doServidor
+        desejada.current = doServidor
+        setEscolhida(doServidor)
+        paintPalette(doServidor)
+      })
+      // Rede fora (ou desistência): a tela fica com o que o servidor pintou. Nada a dizer.
+      .catch(() => {})
+    return () => {
+      controlador.abort()
+      if (conferencia.current === controlador) conferencia.current = null
+    }
+  }, [viewerId])
+
+  return (
+    <fieldset className={cn('min-w-0', className)} disabled={readOnly}>
+      {labelledBy ? null : <legend className="font-semibold text-sm">Cor do seu perfil</legend>}
+      <p className={cn('text-muted-foreground text-sm', labelledBy ? null : 'mt-1')}>
+        Escolha uma cor e a plataforma inteira muda com ela.
+      </p>
+      <div
+        role="radiogroup"
+        aria-labelledby={labelledBy || grupo}
+        className="mt-3 flex flex-wrap gap-3"
+      >
+        {labelledBy ? null : (
+          <span id={grupo} className="sr-only">
+            Cor do seu perfil
+          </span>
+        )}
+        {PALETTES.map((palette) => {
+          const ativa = escolhida === palette
+          return (
+            <label
+              key={palette}
+              data-sz-palette={palette}
+              className={cn(
+                'relative grid min-h-11 min-w-11 cursor-pointer place-items-center rounded-full border-2 transition',
+                'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring has-[:focus-visible]:outline-offset-2',
+                ativa ? 'border-foreground' : 'border-transparent hover:border-border',
+                readOnly && 'cursor-not-allowed opacity-60',
+              )}
+            >
+              {/* Radios NATIVOS: setas, Home/End, `aria-checked` e o foco vêm da plataforma. */}
+              <input
+                type="radio"
+                name={`sz-palette-${grupo}`}
+                value={palette}
+                checked={ativa}
+                onChange={() => escolher(palette)}
+                className="sr-only"
+              />
+              <span
+                aria-hidden
+                className="grid size-8 place-items-center rounded-full"
+                style={{ background: 'var(--sz-action)' }}
+              >
+                {/* Marca NÃO-cromática: a seleção não pode depender só de cor. */}
+                {ativa ? (
+                  <Check className="size-4" style={{ color: 'var(--sz-on-action)' }} />
+                ) : null}
+              </span>
+              {/* O nome acessível é o rótulo em português, NUNCA o hexadecimal. */}
+              <span className="sr-only">{PALETTE_LABELS[palette]}</span>
+            </label>
+          )
+        })}
+      </div>
+      <p role="status" className="mt-2 min-h-5 text-muted-foreground text-sm">
+        {readOnly
+          ? 'Sessão de suporte: a cor não pode ser alterada aqui.'
+          : salvando
+            ? 'Guardando…'
+            : escolhida
+              ? `Cor escolhida: ${PALETTE_LABELS[escolhida]}.`
+              : ''}
+      </p>
+      {erro ? (
+        <p role="alert" className="mt-1 text-destructive text-sm">
+          {erro}{' '}
+          <button type="button" onClick={tentarDeNovo} className="min-h-11 underline">
+            Tentar de novo
+          </button>
+        </p>
+      ) : null}
+    </fieldset>
+  )
+}

@@ -236,12 +236,15 @@ describe('a seta gravada na cruz precisa CONTRASTAR com a cruz', () => {
     expect(componente).not.toContain('fill={C.ink}')
   })
 
-  it('a tinta da cruz é definida nos DOIS temas, e com valores diferentes', () => {
+  it('a tinta da cruz é UMA só, e CLARA: a cruz é escura nos dois temas', () => {
     const valores = [...css.matchAll(/--snes-cross-ink:\s*([^;]+);/g)].map((m) => m[1]?.trim())
-    // Um valor só significa que um dos temas herdou o do outro — e a cruz troca de
-    // claridade entre eles, então a tinta tem de trocar junto.
-    expect(valores).toHaveLength(2)
-    expect(valores[0]).not.toBe(valores[1])
+    // Até 11/09/2026 havia o tema escuro, em que a cruz CLAREAVA, e por isso a tinta tinha dois
+    // valores. Padrão e Pink pintam a cruz com o mesmo azul de identidade escurecido (ele não
+    // muda no Pink), então a tinta é uma só e clara. Se um tema voltar a clarear a cruz, a
+    // tinta volta a precisar de um valor por tema.
+    expect(valores).toHaveLength(1)
+    const claridade = Number(/^oklch\(\s*([\d.]+)/.exec(valores[0] ?? '')?.[1])
+    expect(claridade).toBeGreaterThanOrEqual(0.9)
   })
 })
 

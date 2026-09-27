@@ -6,6 +6,7 @@ import type { ProjectTree } from '#core'
 import { FontSizeControls } from '../../components/code/FontSizeControls'
 import { MonacoTabs } from '../../components/code/LazyMonacoTabs'
 import { ProFileTree } from '../../components/code/ProFileTree'
+import { useCodeHistory } from '../../components/code/useCodeHistory'
 import { useFormatIssueLogger } from '../../components/code/useFormatIssueLogger'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { NarrowPanels } from '../../components/layout/NarrowPanels'
@@ -41,6 +42,11 @@ export function ProCodeMode(): JSX.Element {
   const setProFileContent = useProjectStore((s) => s.setProFileContent)
   const studioConfig = useStudioConfig()
   const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
+  // No ESTREITO (abas) o olhinho da Topbar não é renderizado, então `showPreview`
+  // ali é só uma preferência velha de desktop. Se ela apagasse a aba, quem
+  // desligou o preview no computador abriria no celular sem preview E sem botão
+  // para trazer de volta. A aba existe sempre que o host oferece preview.
+  const previewAvailable = studioConfig.preview
   const codeFontSize = useSettingsStore((s) => s.codeFontSize)
   const studioTheme = useStudioTheme()
   const { isNarrow } = useStudioLayout()
@@ -48,6 +54,8 @@ export function ProCodeMode(): JSX.Element {
   const [openFiles, setOpenFiles] = useState<string[]>([])
   const [activeFile, setActiveFile] = useState<string>('')
   const onFormatIssue = useFormatIssueLogger()
+  // Desfazer/refazer da barra: aqui o alvo é sempre o código.
+  const onCodeEditorReady = useCodeHistory()
 
   // Auto-abre o arquivo padrão UMA VEZ por carga de projeto. Antes o efeito
   // disparava sempre que `openFiles.length === 0`, então fechar a última aba
@@ -121,6 +129,7 @@ export function ProCodeMode(): JSX.Element {
         tabsRightSlot={<FontSizeControls />}
         canCloseFile={() => true}
         onCloseFile={handleCloseFile}
+        onEditorReady={onCodeEditorReady}
       />
     </Suspense>
   )
@@ -130,7 +139,7 @@ export function ProCodeMode(): JSX.Element {
       <ProWebContainerProvider>
         <NarrowPanels
           editorPanes={[{ id: 'code', label: t('tab.code'), content: codeEditor }]}
-          preview={showPreview ? <ProPreview /> : undefined}
+          preview={previewAvailable ? <ProPreview /> : undefined}
           filesDrawer={(close) => (
             <ProFileTree
               activeFile={activeFile}

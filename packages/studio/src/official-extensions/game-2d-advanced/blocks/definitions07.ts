@@ -3,7 +3,7 @@ import {
   GAME_KIT_ACTIONS,
   GAME_KIT_CAMPAIGN_EVENT_FIELDS,
   type GameKitCampaignEventField,
-} from '../runtimeContract'
+} from '../campaignVocabulary'
 import { GAME_KIT_COLOUR as C } from './shared'
 
 const ACTIONS = GAME_KIT_ACTIONS.map((action) => [action, action])
@@ -23,7 +23,7 @@ const CAMPAIGN_EVENT_FIELD_LABELS: Record<GameKitCampaignEventField, string> = {
   target: 'alvo',
   value: 'valor',
   complete: 'completou?',
-  journey: 'jornada',
+  journey: 'volta',
   column: 'coluna',
   row: 'linha',
 }

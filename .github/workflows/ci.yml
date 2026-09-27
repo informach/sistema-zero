@@ -3,7 +3,8 @@
 # O passo global roda sem a variável dos bancos descartáveis, então os tests/db
 # usam passos explícitos no Postgres dedicado para provar invariantes críticas.
 # O Studio executa a suíte Chromium completa em três shards contra build de
-# produção e prova CSP/SRI também no Firefox.
+# produção, prova CSP/SRI também no Firefox e a gravação de saída (recarregar
+# ou esconder a aba logo depois de uma mudança) no WebKit, o motor do iPad.
 # Sem `.env` aqui — testes não podem depender de env local (handlers recebem tudo por deps).
 #
 # Push na STAGING também faz o DEPLOY do ambiente staging do Railway (job
@@ -75,12 +76,31 @@ jobs:
       - name: Lint (biome ci)
         run: bun run ci
 
+      # O molda voltou a rodar aqui (10/09/2026). Ele passou um dia num job Windows porque o Bun
+      # 1.3.11 segfaultava neste runner dentro de `SceneWorkshop.test.tsx`: `terminate()` num
+      # Worker cujo módulo ainda transpilava no pool de threads (oven-sh/bun#33936, corrigido no
+      # Bun 1.4.0). O conserto no código é o aperto de mão de `packages/molda/src/workers/
+      # workerHandshake.ts` (nenhum worker é encerrado antes de anunciar que carregou).
       - name: Testes (todos os pacotes)
         run: bun run --filter '*' test
 
       - name: Verificar IR gerada dos exemplos 3D
         working-directory: packages/studio
         run: bun run check:game-3d-examples
+
+      # ⚠️ Este portão nunca rodou no CI: ele só era encadeado pelo `test:coverage` do
+      # pacote, e o passo global chama `test`. Ele reprova quando um módulo declarado
+      # crítico sai do grafo de import dos testes — o `bun test` verde não percebe isso.
+      - name: Alcance dos testes do Community Kids
+        working-directory: packages/community-kids
+        run: bun run test:reachability
+
+      # Valida os 27 manifestos atuais, versionados junto dos roteiros em docs/aulas-interativas/aulas.
+      - name: Manifestos das aulas interativas
+        run: bun docs/aulas-interativas/qa/validar-manifestos.ts
+
+      - name: Roteiros das aulas interativas
+        run: python3 docs/aulas-interativas/validar-roteiros.py
 
       - name: Testes DB fiscal (Postgres real)
         run: cd packages/fiscal && bun test tests/db
@@ -92,10 +112,14 @@ jobs:
       # alcança este SQL", porque o fake in-memory o reimplementa em JS — nunca rodaram no
       # CI: eles PULAM sozinhos sem Postgres (`describe.skipIf`) e o passo verde do
       # `bun test` geral parecia cobri-los.
+      - name: Criar banco descartável para upgrade das aulas
+        run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE sz_aulas_qa_ci"
+
       - name: Testes DB members (Postgres real)
         run: cd packages/members && bun test tests/db
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
+          LEARNING_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sz_aulas_qa_ci
 
       - name: Testes DB referrals (Postgres real)
         run: cd packages/referrals && bun test tests/db
@@ -140,12 +164,18 @@ jobs:
         working-directory: packages/community-kids
         run: bun run e2e:smoke
 
+      - name: Experiências ampliadas e responsivas
+        working-directory: packages/community-kids
+        run: bun run e2e:scenes
+
       - name: Publicar diagnóstico Playwright
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: community-kids-playwright
-          path: packages/community-kids/.cache/playwright-results
+          path: |
+            packages/community-kids/.cache/playwright-results
+            packages/community-kids/.cache/scene-results
           retention-days: 7
 
   studio-e2e-chromium:
@@ -214,16 +244,53 @@ jobs:
           path: packages/studio/.cache/playwright-results
           retention-days: 7
 
+  # O WebKit é o motor do iPad, onde a gravação de saída era a mais frágil (antes do
+  # commit explícito de 11/09/2026, 0 de 10 recargas guardavam a mudança). Roda só os
+  # specs dessa gravação (`testMatch` do projeto `webkit` no playwright.config.ts).
+  studio-e2e-webkit:
+    name: studio-e2e-webkit
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+
+      - name: Instalar dependências (lockfile congelado)
+        run: bun install --frozen-lockfile
+
+      - name: Instalar WebKit do Playwright
+        working-directory: packages/studio
+        run: bunx playwright install --with-deps webkit
+
+      - name: E2E da gravação de saída no WebKit
+        working-directory: packages/studio
+        run: bunx playwright test --project=webkit
+
+      - name: Publicar diagnóstico Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-playwright-webkit
+          path: packages/studio/.cache/playwright-results
+          retention-days: 7
+
   deploy-staging:
     name: deploy-staging
-    needs: [ci, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox]
+    needs: [ci, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit]
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 50min: o members espera ficar pronto ANTES de disparar admin, community-kids e community (ver
+    # DEPOIS_DO_MEMBERS), e cada espera tem teto próprio de 20min.
+    timeout-minutes: 50
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_API: https://backboard.railway.com/graphql/v2
+      RAILWAY_PROJECT_ID: 415d5a1c-5f75-432c-8445-b395d0977ce3
       STAGING_ENV_ID: f634cff6-aafb-4804-8b69-172fad4e946e
       HELPDESK_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_SERVICE_ID }}
       HELPDESK_APP_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_APP_SERVICE_ID }}
@@ -231,6 +298,23 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0 # diff do range do push (multi-commit)
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+
+      - name: Instalar dependências do gate de infraestrutura
+        run: bun install --frozen-lockfile
+
+      # O Admin usa proxy e não enxerga a falta de CORS que derruba o fetch do Rive no Kids.
+      # O objeto-prova permanente é instalado pela CLI com as envs do Admin. O deploy faz
+      # somente o mesmo GET público que o navegador da criança, sem depender de credenciais
+      # do Railway/R2 e sem misturar manutenção de infraestrutura com entrega de código.
+      - name: Provar CORS do R2 público
+        working-directory: packages/admin
+        env:
+          R2_PUBLIC_URL: ${{ vars.R2_PUBLIC_URL }}
+        run: bun run r2:cors:public:check
 
       - name: Calcular serviços afetados e deployar
         env:
@@ -302,7 +386,7 @@ jobs:
                   # core é lib COMPARTILHADA: além dos serviços, os 3 apps Next o EMPACOTAM
                   # (admin/community via member-shell+studio; kids direto) — sem eles aqui, o
                   # front servia um core VELHO até alguém deployar na mão.
-                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub marketing referrals admin community community-kids; do add "$s"; done; [ -n "${SVC_ID[helpdesk]:-}" ] && add helpdesk ;;
+                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub marketing referrals admin community community-kids marketing-app; do add "$s"; done; [ -n "${SVC_ID[helpdesk]:-}" ] && add helpdesk; [ -n "${SVC_ID[helpdesk-app]:-}" ] && add helpdesk-app ;;
                   packages/ui/*) add admin; add community; add community-kids; add funnel; add marketing-app; [ -n "${SVC_ID[helpdesk-app]:-}" ] && add helpdesk-app ;;
                   packages/api-gateway/*) add api-gateway ;;
                   packages/auth/*) add auth ;;
@@ -346,7 +430,8 @@ jobs:
           gql() { curl -sS -X POST -H "Authorization: Bearer $RAILWAY_TOKEN" -H 'content-type: application/json' -d "$1" "$RAILWAY_API"; }
 
           declare -A DEP=()
-          for s in "${!WANT[@]}"; do
+          disparar() {
+            local s="$1"
             BODY=$(jq -nc --arg sid "${SVC_ID[$s]}" --arg eid "$STAGING_ENV_ID" --arg sha "$GITHUB_SHA" \
               '{query:"mutation($s:String!,$e:String!,$c:String){serviceInstanceDeployV2(serviceId:$s,environmentId:$e,commitSha:$c)}",variables:{s:$sid,e:$eid,c:$sha}}')
             RESP=$(gql "$BODY")
@@ -354,42 +439,78 @@ jobs:
             if [ -z "$ID" ]; then echo "::error::deploy de $s falhou ao disparar: $(echo "$RESP" | jq -c '.errors // .')"; exit 1; fi
             DEP[$s]="$ID"
             echo "  $s → deployment $ID"
-          done
+          }
 
-          # espera todos chegarem a estado terminal (healthcheck gateia o SUCCESS)
+          # espera os serviços pedidos chegarem a estado terminal (healthcheck gateia o SUCCESS)
           # a API às vezes devolve corpo não-JSON transitório num poll — conta como
           # poll perdido (segue tentando) e só aborta após 5 rounds ruins SEGUIDOS
-          FAIL=0; BADPOLLS=0
-          for i in $(seq 1 60); do
-            sleep 20
-            PENDING=0; LINE=""; ROUND_OK=1
-            for s in "${!DEP[@]}"; do
-              Q=$(jq -nc --arg id "${DEP[$s]}" '{query:"query($id:String!){deployment(id:$id){status}}",variables:{id:$id}}')
-              RESP=$(gql "$Q") || RESP=""
-              if ! echo "$RESP" | jq -e . >/dev/null 2>&1; then
-                echo "  poll de $s devolveu corpo não-JSON: $(echo "$RESP" | head -c 120)"
-                ROUND_OK=0; PENDING=1; LINE="$LINE $s=?"
-                continue
+          esperar() {
+            FAIL=0; PENDING=1; BADPOLLS=0
+            for i in $(seq 1 60); do
+              sleep 20
+              PENDING=0; LINE=""; ROUND_OK=1
+              for s in "$@"; do
+                Q=$(jq -nc --arg id "${DEP[$s]}" '{query:"query($id:String!){deployment(id:$id){status}}",variables:{id:$id}}')
+                RESP=$(gql "$Q") || RESP=""
+                if ! echo "$RESP" | jq -e . >/dev/null 2>&1; then
+                  echo "  poll de $s devolveu corpo não-JSON: $(echo "$RESP" | head -c 120)"
+                  ROUND_OK=0; PENDING=1; LINE="$LINE $s=?"
+                  continue
+                fi
+                ST=$(echo "$RESP" | jq -r '.data.deployment.status // "?"')
+                LINE="$LINE $s=$ST"
+                case "$ST" in
+                  SUCCESS) ;;
+                  FAILED|CRASHED|REMOVED) FAIL=1 ;;
+                  *) PENDING=1 ;;
+                esac
+              done
+              if [ "$ROUND_OK" -eq 1 ]; then
+                BADPOLLS=0
+              else
+                BADPOLLS=$((BADPOLLS+1))
+                if [ "$BADPOLLS" -ge 5 ]; then
+                  echo "::error::API do Railway sem resposta válida em $BADPOLLS polls consecutivos"
+                  exit 1
+                fi
               fi
-              ST=$(echo "$RESP" | jq -r '.data.deployment.status // "?"')
-              LINE="$LINE $s=$ST"
-              case "$ST" in
-                SUCCESS) ;;
-                FAILED|CRASHED|REMOVED) FAIL=1 ;;
-                *) PENDING=1 ;;
-              esac
+              echo "[$i]$LINE"
+              [ "$PENDING" -eq 0 ] && break
             done
-            if [ "$ROUND_OK" -eq 1 ]; then
-              BADPOLLS=0
-            else
-              BADPOLLS=$((BADPOLLS+1))
-              if [ "$BADPOLLS" -ge 5 ]; then
-                echo "::error::API do Railway sem resposta válida em $BADPOLLS polls consecutivos"
-                exit 1
-              fi
-            fi
-            echo "[$i]$LINE"
-            [ "$PENDING" -eq 0 ] && break
+          }
+
+          # ⚠️⚠️ ORDEM: o members sobe ANTES dos apps que carregam o player de cena e do admin que
+          # escreve blocos novos. O player novo contra o members antigo pode gravar progresso errado
+          # ou receber 400; o admin novo contra o enum antigo pode falhar ao salvar materiais. O
+          # inverso é tolerado. Os outros serviços sobem junto com o members. Se ele não ficar pronto,
+          # esses apps NÃO sobem e o job fica vermelho.
+          # ⚠️ Um push novo CANCELA este run (concurrency): cancelado entre as duas fases, os apps ficam sem
+          # deploy e o run seguinte só olha o diff DELE. Remédio: gh workflow run ci.yml --ref staging
+          # -f services=admin,community-kids,community
+          DEPOIS_DO_MEMBERS=(community-kids community admin)
+          ESPERA_MEMBERS=0
+          if [ -n "${WANT[members]:-}" ]; then
+            for s in "${DEPOIS_DO_MEMBERS[@]}"; do
+              if [ -n "${WANT[$s]:-}" ]; then ESPERA_MEMBERS=1; fi
+            done
+          fi
+          for s in "${!WANT[@]}"; do
+            if [ "$ESPERA_MEMBERS" -eq 1 ] && [[ " ${DEPOIS_DO_MEMBERS[*]} " == *" $s "* ]]; then continue; fi
+            disparar "$s"
           done
+          if [ "$ESPERA_MEMBERS" -eq 1 ]; then
+            echo "esperando o members antes de: ${DEPOIS_DO_MEMBERS[*]}"
+            esperar members
+            if [ "$FAIL" -eq 1 ] || [ "$PENDING" -eq 1 ]; then
+              echo "::error::o members não ficou pronto: ${DEPOIS_DO_MEMBERS[*]} NÃO foram disparados (contratos de aula incompatíveis)"
+              esperar "${!DEP[@]}"
+              exit 1
+            fi
+            for s in "${DEPOIS_DO_MEMBERS[@]}"; do
+              if [ -n "${WANT[$s]:-}" ]; then disparar "$s"; fi
+            done
+          fi
+
+          esperar "${!DEP[@]}"
           if [ "$FAIL" -eq 1 ] || [ "$PENDING" -eq 1 ]; then echo "::error::deploy do staging não convergiu"; exit 1; fi
           echo "staging atualizado ✅"

@@ -77,10 +77,10 @@ async function readJson<T>(res: Response): Promise<T> {
   }
 }
 
-// Single-flight da rotação: chamadas PARALELAS com o mesmo refresh token (ex.:
-// `Promise.all` no BFF, fetches concorrentes do dashboard) compartilham UMA
-// rotação. Sem isso, a segunda rotação perde o claim atômico do auth, recebe
-// !ok e limparia os cookies que a primeira acabou de regravar → logout aleatório.
+// Requisições que saíram do navegador com o mesmo cookie podem chegar ao refresh
+// depois de a primeira rotação terminar. O resultado precisa sobreviver por um
+// curto intervalo; guardar só a Promise pendente reapresenta o token consumido ao
+// auth, que revoga a família inteira por detecção de reuso.
 //
 // ⚠️ O estado vive em **`globalThis`**, NÃO em escopo de módulo: o Turbopack
 // separa route handlers (e, se um dia o proxy/RSC rotacionar, esses também) em
@@ -94,29 +94,44 @@ async function readJson<T>(res: Response): Promise<T> {
 // horizontal) — NÃO escale sem antes mover isto p/ um store compartilhado ou dar
 // ao auth uma janela de reuso do refresh. (Ver CLAUDE.md §Deploy.)
 const refreshGlobal = globalThis as typeof globalThis & {
-  __szAdminInflightRefresh?: Map<string, Promise<string | null>>
+  __szAdminRefreshResults?: Map<string, { at: number; promise: Promise<RefreshResult> }>
 }
-refreshGlobal.__szAdminInflightRefresh ??= new Map()
-const inflightRefresh = refreshGlobal.__szAdminInflightRefresh
+refreshGlobal.__szAdminRefreshResults ??= new Map()
+const refreshResults = refreshGlobal.__szAdminRefreshResults
+const REFRESH_RESULT_TTL_MS = 60_000
+type RefreshResult = AuthTokens | 'invalid' | 'unavailable'
 
 /**
- * Rotação de tokens (gateway → auth /refresh), com single-flight por refresh
- * token. Regrava os cookies; `null` se falhar. Falha de REDE não limpa cookies
- * (transitória); recusa do auth (401/409) limpa — o refresh já não vale.
+ * Rotação de tokens (gateway → auth /refresh), com resultado compartilhado por
+ * refresh token. Cada request grava os cookies na PRÓPRIA resposta, inclusive
+ * quando recebeu um resultado já concluído. Falha transitória não limpa cookies.
  */
 export async function tryRefresh(): Promise<string | null> {
   const refreshToken = await getRefreshToken()
   if (!refreshToken) return null
-  const existing = inflightRefresh.get(refreshToken)
-  if (existing) return existing
-  const attempt = rotateTokens(refreshToken).finally(() => {
-    inflightRefresh.delete(refreshToken)
-  })
-  inflightRefresh.set(refreshToken, attempt)
-  return attempt
+  const now = Date.now()
+  for (const [token, entry] of refreshResults) {
+    if (now - entry.at >= REFRESH_RESULT_TTL_MS) refreshResults.delete(token)
+  }
+  let entry = refreshResults.get(refreshToken)
+  if (!entry) {
+    entry = { at: now, promise: rotateTokens(refreshToken) }
+    refreshResults.set(refreshToken, entry)
+  }
+  const result = await entry.promise
+  if (result === 'unavailable') {
+    if (refreshResults.get(refreshToken) === entry) refreshResults.delete(refreshToken)
+    return null
+  }
+  if (result === 'invalid') {
+    await clearSessionCookies()
+    return null
+  }
+  await setSessionCookies(result)
+  return result.accessToken
 }
 
-async function rotateTokens(refreshToken: string): Promise<string | null> {
+async function rotateTokens(refreshToken: string): Promise<RefreshResult> {
   const env = getEnv()
   let res: Response
   try {
@@ -128,19 +143,11 @@ async function rotateTokens(refreshToken: string): Promise<string | null> {
       signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
     })
   } catch {
-    return null // rede/timeout: não derruba a sessão por falha transitória
+    return 'unavailable' // rede/timeout: não derruba a sessão por falha transitória
   }
-  if (!res.ok) {
-    await clearSessionCookies()
-    return null
-  }
+  if (!res.ok) return res.status >= 500 ? 'unavailable' : 'invalid'
   const data = await readJson<{ tokens?: AuthTokens }>(res)
-  if (!data?.tokens?.accessToken) {
-    await clearSessionCookies()
-    return null
-  }
-  await setSessionCookies(data.tokens)
-  return data.tokens.accessToken
+  return data?.tokens?.accessToken && data.tokens.refreshToken ? data.tokens : 'invalid'
 }
 
 /**

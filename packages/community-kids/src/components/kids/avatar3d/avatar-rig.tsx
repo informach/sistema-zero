@@ -27,10 +27,12 @@ type Slots = Partial<Record<string, AvatarSlot>>
 
 /**
  * Isola UMA peça: se o GLB dela falhar ao carregar, o `useGLTF` lança o erro PRA FORA do
- * `<Suspense>` (que só captura o carregamento). Sem isto, uma peça com falha derrubaria o
- * configurador inteiro pro `global-error` — a rota `/meu-avatar` fica fora do grupo `(app)`,
- * sem `error.tsx` próprio. Aqui a peça com falha simplesmente some. `resetKey` (= asset id)
- * zera o erro ao trocar de peça (uma nova tentativa pode dar certo).
+ * `<Suspense>` (que só captura o carregamento). Sem isto, um chapéu que não baixa derruba a
+ * tela inteira e leva junto o que a criança estava montando — desde 19/09/2026 a queda é no
+ * recado do `(app)/error.tsx` (a rota entrou no grupo), e não mais no `global-error`, mas
+ * perder a edição por causa de uma peça continua sendo o que esta rede evita. Aqui a peça com
+ * falha simplesmente some. `resetKey` (= asset id) zera o erro ao trocar de peça (uma nova
+ * tentativa pode dar certo).
  */
 class PieceErrorBoundary extends Component<
   { resetKey: string; children: ReactNode },

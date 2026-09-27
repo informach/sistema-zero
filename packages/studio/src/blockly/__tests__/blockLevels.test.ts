@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { ESSENTIAL_2D_BLOCK_TYPES } from '../../career/blockProfiles'
+import { ESSENTIAL_2D_BLOCK_TYPES } from '../../journey/blockProfiles'
 import { BLOCK_CATALOG } from '../blockCatalog'
 import { _LEVEL_SETS, resolveBlockLevel } from '../blockLevels'
 import { PROGRAMMING_VISIBLE_TYPES } from '../programmingContract'

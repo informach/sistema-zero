@@ -13,3 +13,14 @@ describe('chrome global de comemoração', () => {
     expect(layoutSource).toContain('ownsStudio=')
   })
 })
+
+describe('a linha do Molda na comemoração', () => {
+  test('a frase chega pronta ao watcher, e a posse só é perguntada nos postos das faixas', () => {
+    expect(layoutSource).toContain('moldaGain=')
+    expect(layoutSource).toMatch(
+      /const gain = moldaLevelGain\(levelSlug\)\s*const moldaRes = gain \? await checkMoldaAccessReadonly\(\)/,
+    )
+    // A frase só passa com a posse CONFIRMADA (produtos vendidos à parte).
+    expect(layoutSource).toMatch(/access\?\.molda === true \? gain : null/)
+  })
+})

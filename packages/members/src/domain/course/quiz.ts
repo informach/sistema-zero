@@ -1,63 +1,19 @@
 import type { QuizBlock, QuizChoice } from './lesson-block'
 
+export {
+  gradeLearningQuiz as gradeQuizAttempt,
+  QUIZ_DEFAULT_PASSING_SCORE,
+  type QuizAnswers,
+  type QuizGrade,
+  type QuizQuestionResult,
+} from '@sistemazero/core/learning'
+
 /**
  * Cooldown de retry após reprovar. 90s (07/2026; era 5 min): para uma criança de
  * 7–8 anos, 5 minutos é desmotivador — 90s ainda barra o chute em loop (a correção
  * chega no submit, então a janela dá tempo de LER a revisão antes de tentar de novo).
  */
 export const QUIZ_RETRY_COOLDOWN_MS = 90_000
-
-/** Nota de corte quando o bloco não define `passingScore`. */
-export const QUIZ_DEFAULT_PASSING_SCORE = 100
-
-/** Respostas do aluno: questionId → choiceIds marcados. */
-export type QuizAnswers = Record<string, string[]>
-
-export interface QuizQuestionResult {
-  questionId: string
-  correct: boolean
-  /** Gabarito — revelado SÓ aqui (resposta do submit), nunca no GET da aula. */
-  correctChoiceIds: string[]
-  explanation: string | null
-}
-
-export interface QuizGrade {
-  /** 0–100, inteiro. Quiz sem questões → 100 (nada a errar). */
-  score: number
-  passed: boolean
-  passingScore: number
-  questions: QuizQuestionResult[]
-}
-
-/**
- * Corrige a tentativa NO SERVIDOR. Uma questão só conta como certa se o conjunto
- * de choices marcados é EXATAMENTE o gabarito (suporta múltipla resposta correta).
- * Respostas para questões inexistentes são ignoradas.
- *
- * **Fixação** (bloco SEM `passingScore`): não há nota de corte → `passed: true`
- * ao enviar (qualquer nota). Isso evita cooldown e credita o XP uma vez (ledger
- * idempotente) — coerente com o rótulo "só para treinar". COM `passingScore`,
- * aprova só quem alcança a nota.
- */
-export function gradeQuizAttempt(block: QuizBlock, answers: QuizAnswers): QuizGrade {
-  const hasGate = block.passingScore !== undefined
-  const passingScore = block.passingScore ?? QUIZ_DEFAULT_PASSING_SCORE
-  const questions = block.questions.map((q) => {
-    const given = new Set(answers[q.id] ?? [])
-    const expected = new Set(q.correctChoiceIds)
-    const correct = given.size === expected.size && [...expected].every((id) => given.has(id))
-    return {
-      questionId: q.id,
-      correct,
-      correctChoiceIds: [...q.correctChoiceIds],
-      explanation: q.explanation ?? null,
-    }
-  })
-  const total = questions.length
-  const right = questions.filter((q) => q.correct).length
-  const score = total > 0 ? Math.round((right / total) * 100) : 100
-  return { score, passed: hasGate ? score >= passingScore : true, passingScore, questions }
-}
 
 /**
  * Coerência estrutural do quiz na AUTORIA (defesa além do shape do TypeBox):

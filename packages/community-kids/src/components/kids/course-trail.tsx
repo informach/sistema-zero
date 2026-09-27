@@ -1,9 +1,19 @@
-import { Check, Gift, Lock, Star } from 'lucide-react'
+import { moduleRiveSrc } from '@sistemazero/core/course/module-rive'
+import { Check, Lock, Star } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { CourseDetailView } from '@/lib/types'
+import { chestRiveSrc } from './chest-rive-src'
 import { KidsMascot } from './mascot'
-import { balloonLabel, buildTrail, type TrailNode } from './trail-layout'
+import { TrailChest } from './trail-chest'
+import {
+  balloonLabel,
+  buildTrail,
+  type TrailArtSide,
+  type TrailNode,
+  trailArtPlacement,
+} from './trail-layout'
+import { TrailRive } from './trail-rive'
 import { UNIT_THEME_CLASS } from './unit-theme'
 
 /** Mapa LITERAL (nunca montar classe por template string). */
@@ -13,9 +23,6 @@ const NODE_STATE_CLASS: Record<TrailNode['state'], string> = {
   todo: 'kids-node--todo',
   locked: 'kids-node--locked',
 }
-
-/** Posições (0..1) dos conectores entre os centros de nós consecutivos. */
-const DOT_STEPS = [0.55, 0.78] as const
 
 function nodeAria(node: TrailNode): string {
   const status =
@@ -33,26 +40,13 @@ function nodeAria(node: TrailNode): string {
   return `${node.lesson.title} (${status})${minutes}`
 }
 
-/** Conectores pontilhados entre dois centros consecutivos do serpenteado. */
-function TrailDots({ from, to, done }: { from: number; to: number; done: boolean }) {
-  return DOT_STEPS.map((t) => (
-    <span
-      key={t}
-      className={cn('kids-trail-dot', done && 'kids-trail-dot--done')}
-      style={{
-        left: `calc(50% + ${from + (to - from) * t} * var(--trail-step) - 0.25rem)`,
-        top: `calc(var(--trail-node) / 2 + ${t} * var(--trail-row))`,
-      }}
-    />
-  ))
-}
-
 /**
  * Trilha estilo Duolingo: módulo = unidade com banner colorido (temas
  * alternando nas cores da marca), aula = nó circular serpenteante e fim de
- * unidade = BAÚ (abre com o módulo 100% — o +25 XP é do backend). Trilha
- * LIVRE: os nós de aula são clicáveis — o estado é só visual; o baú não é
- * clicável. Server Component puro (as animações são CSS do globals).
+ * unidade = BAÚ. Desde 09/2026 o baú é CLICÁVEL: a criança abre e AÍ ganha o XP
+ * (antes ele caía sozinho ao concluir a última aula do módulo). Por isso o baú é
+ * a única ilha `'use client'` daqui — ver `trail-chest.tsx`. O resto segue Server
+ * Component puro, com as animações no CSS do globals.
  *
  * Sem ícone por TIPO de aula (quiz/vídeo): LessonOutlineView não expõe os
  * blocos — seria mudança de backend, fora desta fatia.
@@ -60,6 +54,7 @@ function TrailDots({ from, to, done }: { from: number; to: number; done: boolean
 export function CourseTrail({ course }: { course: CourseDetailView }) {
   const units = buildTrail(course)
   const label = balloonLabel(course)
+  const chestRive = chestRiveSrc()
   const lessonHref = (id: string) =>
     `/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(id)}`
 
@@ -81,13 +76,19 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
   }
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="mx-auto flex w-full max-w-[40rem] flex-col gap-10">
       {units.map((unit, unitIndex) => {
         const doneCount = unit.module.lessons.filter((l) => l.completed).length
+        const art = moduleRiveSrc(unit.module.riveUrl)
+        const preferredSide: TrailArtSide = unitIndex % 2 === 0 ? 'left' : 'right'
+        const { side: artSide, row: artRow } = trailArtPlacement(unit, preferredSide)
+        const artTop = Math.round(((artRow + 0.65) / (unit.nodes.length + 1)) * 10_000) / 100
         return (
           <section key={unit.module.id} className={UNIT_THEME_CLASS[unit.theme]}>
             <header className="kids-unit-banner px-5 py-4 md:px-6">
-              <p className="[font-family:var(--font-display)] font-bold text-xs uppercase tracking-widest opacity-80">
+              {/* Sem `opacity-*` no texto da faixa: a tinta a 80% caía para 4,04:1 no azul e
+                  3,45:1 na laranja (medido na paleta do Pen, 11/09/2026). */}
+              <p className="[font-family:var(--font-display)] font-bold text-xs uppercase tracking-widest">
                 Unidade {unitIndex + 1}
               </p>
               <div className="flex items-end justify-between gap-3">
@@ -96,109 +97,101 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                   {doneCount}/{unit.module.lessons.length} aulas
                 </span>
               </div>
-              {unit.module.summary ? (
-                <p className="mt-1 text-sm opacity-85">{unit.module.summary}</p>
-              ) : null}
+              {unit.module.summary ? <p className="mt-1 text-sm">{unit.module.summary}</p> : null}
             </header>
 
-            <ol className="relative mt-10">
-              {unit.nodes.map((node, nodeIndex) => {
-                const next = unit.nodes[nodeIndex + 1]
-                // Último nó da unidade conecta no BAÚ (mesma diagonal).
-                const nextOffset = next?.offset ?? unit.chest.offset
-                return (
-                  <li
-                    key={node.lesson.id}
-                    className="relative"
-                    style={{ height: 'var(--trail-row)' }}
-                  >
-                    {nextOffset !== undefined ? (
-                      <TrailDots from={node.offset} to={nextOffset} done={node.state === 'done'} />
-                    ) : null}
-                    {(() => {
-                      const inner = (
-                        <>
-                          {node.state === 'current' ? (
-                            <span className="kids-balloon">{label}</span>
-                          ) : null}
-                          <span className={cn('kids-node', NODE_STATE_CLASS[node.state])}>
-                            {node.state === 'done' ? (
-                              <Check className="size-7" strokeWidth={3.5} />
-                            ) : node.state === 'locked' ? (
-                              <Lock className="size-6" strokeWidth={2.5} />
-                            ) : (
-                              <Star className="size-7 fill-current" />
-                            )}
-                          </span>
-                          <span
-                            className={cn(
-                              'line-clamp-2 max-w-24 text-center font-semibold text-xs leading-tight',
-                              node.state === 'done' || node.state === 'current'
-                                ? 'text-foreground'
-                                : 'text-muted-foreground',
-                            )}
-                          >
-                            {node.lesson.title}
-                          </span>
-                        </>
-                      )
-                      const className =
-                        'kids-node-link -ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5'
-                      const style = { left: `calc(50% + ${node.offset} * var(--trail-step))` }
-                      // Aula travada: nó NÃO clicável (a regra de acesso é do backend).
-                      return node.state === 'locked' ? (
-                        <div
-                          role="img"
-                          aria-label={nodeAria(node)}
-                          className={cn(className, 'cursor-not-allowed')}
-                          style={style}
-                        >
-                          {inner}
-                        </div>
-                      ) : (
-                        <Link
-                          href={lessonHref(node.lesson.id)}
-                          aria-label={nodeAria(node)}
-                          className={className}
-                          style={style}
-                        >
-                          {inner}
-                        </Link>
-                      )
-                    })()}
-                  </li>
-                )
-              })}
-
-              <li className="relative" style={{ height: 'var(--trail-row)' }}>
+            <div className="relative mt-10">
+              {art ? (
                 <div
-                  role="img"
-                  aria-label={`Baú da unidade ${unitIndex + 1} (${unit.chest.opened ? 'aberto, você completou a unidade' : 'fechado, abre quando você completar a unidade'})`}
-                  className="-ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5"
-                  style={{ left: `calc(50% + ${unit.chest.offset} * var(--trail-step))` }}
+                  data-trail-art
+                  aria-hidden="true"
+                  className={cn(
+                    'kids-trail-art',
+                    artSide === 'left' ? 'kids-trail-art--left' : 'kids-trail-art--right',
+                  )}
+                  style={{ top: `${artTop}%` }}
                 >
-                  <span
-                    className={cn(
-                      'kids-node',
-                      unit.chest.opened ? 'kids-node--chest-open' : 'kids-node--chest-closed',
-                    )}
-                  >
-                    <Gift
-                      className={cn('size-7', unit.chest.opened && 'kid-float')}
-                      strokeWidth={2.5}
-                    />
-                  </span>
-                  <span
-                    className={cn(
-                      'text-center font-semibold text-xs leading-tight',
-                      unit.chest.opened ? 'sz-display-grad' : 'text-muted-foreground',
-                    )}
-                  >
-                    {unit.chest.opened ? 'Baú aberto!' : 'Baú da unidade'}
-                  </span>
+                  <TrailRive src={art} />
                 </div>
-              </li>
-            </ol>
+              ) : null}
+              <ol className="relative z-10">
+                {unit.nodes.map((node) => {
+                  return (
+                    <li
+                      key={node.lesson.id}
+                      className="relative"
+                      style={{ height: 'var(--trail-row)' }}
+                    >
+                      {(() => {
+                        const inner = (
+                          <>
+                            {node.state === 'current' ? (
+                              <span className="kids-balloon">{label}</span>
+                            ) : null}
+                            <span className={cn('kids-node', NODE_STATE_CLASS[node.state])}>
+                              {node.state === 'done' ? (
+                                <Check className="size-7" strokeWidth={3.5} />
+                              ) : node.state === 'locked' ? (
+                                <Lock className="size-6" strokeWidth={2.5} />
+                              ) : (
+                                <Star className="size-7 fill-current" />
+                              )}
+                            </span>
+                            <span
+                              className={cn(
+                                'line-clamp-2 max-w-24 text-center font-semibold text-xs leading-tight',
+                                node.state === 'done' || node.state === 'current'
+                                  ? 'text-foreground'
+                                  : 'text-muted-foreground',
+                              )}
+                            >
+                              {node.lesson.title}
+                            </span>
+                          </>
+                        )
+                        const className =
+                          'kids-node-link -ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5'
+                        const style = { left: `calc(50% + ${node.offset} * var(--trail-step))` }
+                        // Aula travada: nó NÃO clicável (a regra de acesso é do backend).
+                        return node.state === 'locked' ? (
+                          <div
+                            role="img"
+                            aria-label={nodeAria(node)}
+                            className={cn(className, 'cursor-not-allowed')}
+                            style={style}
+                          >
+                            {inner}
+                          </div>
+                        ) : (
+                          <Link
+                            href={lessonHref(node.lesson.id)}
+                            aria-label={nodeAria(node)}
+                            className={className}
+                            style={style}
+                          >
+                            {inner}
+                          </Link>
+                        )
+                      })()}
+                    </li>
+                  )
+                })}
+
+                <li className="relative" style={{ height: 'var(--trail-row)' }}>
+                  <TrailChest
+                    courseSlug={course.slug}
+                    moduleId={unit.module.id}
+                    unitNumber={unitIndex + 1}
+                    // Sem `chest` do servidor (curso adulto, ou resposta de um
+                    // deploy anterior) o baú fica DECORATIVO: prometer "ganhe 0 XP"
+                    // num botão seria pior que não ter botão.
+                    chest={unit.module.chest}
+                    offset={unit.chest.offset}
+                    riveSrc={chestRive}
+                  />
+                </li>
+              </ol>
+            </div>
           </section>
         )
       })}

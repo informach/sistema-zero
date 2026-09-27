@@ -38,7 +38,7 @@ export default async function MuralPage() {
   ])
   const ownsStudio =
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true
-  // Remix gated pela CARREIRA além da posse: Faísca ainda não tem o Estúdio livre
+  // Remix gated pela JORNADA além da posse: Faísca ainda não tem o Estúdio livre
   // (o botão importaria um projeto que ela nem consegue abrir). Rank indisponível →
   // sem tier → botão some (conservador; a EQUIPE resolve como Lenda mesmo sem rank).
   let tier: StudioTier | null = null

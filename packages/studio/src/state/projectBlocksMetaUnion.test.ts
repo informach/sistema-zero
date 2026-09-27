@@ -1,4 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 
 // Mock FUNCIONAL de idb-keyval (Map único): o teste precisa que a leitura da
 // partição de blocos E do meta devolvam registros reais. O registry de mocks é
@@ -6,7 +7,7 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 // projectThumbs.test.ts / BlocksMode.test.tsx).
 const db = new Map<string, unknown>()
 mock.module('idb-keyval', () => ({
-  createStore: mock(() => ({ name: 'test-store' })),
+  createStore: mock((dbName: string) => fakeUseStore(dbName)),
   del: mock(async (k: string) => {
     db.delete(k)
   }),
@@ -30,7 +31,7 @@ const { loadSanitizedProjectBlocksStateById } = await import('./projectStore')
 afterAll(() => {
   // Devolve o no-op padrão da suíte (mesma forma de persistence.test.ts).
   mock.module('idb-keyval', () => ({
-    createStore: mock(() => ({ name: 'test-store' })),
+    createStore: mock((dbName: string) => fakeUseStore(dbName)),
     del: mock(async () => undefined),
     delMany: mock(async () => undefined),
     get: mock(async (): Promise<unknown> => undefined),
@@ -55,26 +56,28 @@ const game2d = { id: 'game-2d', version: '0.20.0', installedAt: 1 }
 describe('loadSanitizedProjectBlocksStateById — união com as extensões do META', () => {
   beforeEach(() => {
     db.clear()
-    db.set('sz:project-blocks:p1', { id: 'p1', blocksState: g2dBlocksState })
+    db.set('sz:v2:project-blocks:p1', { id: 'p1', blocksState: g2dBlocksState })
   })
 
   it('caller com lista VAZIA: as extensões do meta persistido salvam o estado', async () => {
-    db.set('sz:project-meta:p1', { id: 'p1', name: 'Jogo', installedExtensions: [game2d] })
+    db.set('sz:v2:project-meta:p1', { id: 'p1', name: 'Jogo', installedExtensions: [game2d] })
     // Regressão do "jogo abre sem blocos": uma lista defasada/vazia do chamador
     // avaliaria os blocos g2d contra a allowlist só-núcleo → descarte total.
     expect(await loadSanitizedProjectBlocksStateById('p1', [])).toEqual(g2dBlocksState)
   })
 
-  it('sem meta E sem extensões do caller, o tudo-ou-nada segue valendo (descarta)', async () => {
-    expect(await loadSanitizedProjectBlocksStateById('p1', [])).toBeNull()
+  it('sem extensão disponível, recusa os blocos sem apagá-los', async () => {
+    await expect(loadSanitizedProjectBlocksStateById('p1', [])).rejects.toThrow()
+    expect(db.get('sz:v2:project-blocks:p1')).toEqual({ id: 'p1', blocksState: g2dBlocksState })
   })
 
   it('extensões do caller continuam bastando sozinhas (meta ausente)', async () => {
     expect(await loadSanitizedProjectBlocksStateById('p1', [game2d])).toEqual(g2dBlocksState)
   })
 
-  it('meta legado (doc único sz:project:) também alimenta a união', async () => {
+  it('documento histórico incompleto não fornece uma permissão silenciosamente', async () => {
     db.set('sz:project:p1', { id: 'p1', name: 'Jogo', installedExtensions: [game2d] })
-    expect(await loadSanitizedProjectBlocksStateById('p1', [])).toEqual(g2dBlocksState)
+    await expect(loadSanitizedProjectBlocksStateById('p1', [])).rejects.toThrow()
+    expect(db.has('sz:project:p1')).toBe(true)
   })
 })

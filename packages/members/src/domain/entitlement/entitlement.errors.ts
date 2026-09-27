@@ -47,3 +47,11 @@ export class OfferNotFoundError extends DomainError {
 export class InvalidEntitlementCommandError extends DomainError {
   readonly code = 'VALIDATION_ERROR'
 }
+
+/** Política comercial comprada incompatível com a origem da cobrança. → 422. */
+export class InvalidPurchasedAccessPolicyError extends DomainError {
+  readonly code = 'PURCHASE_ACCESS_POLICY_INVALID'
+  constructor(message = 'Política de acesso da compra inválida') {
+    super(message)
+  }
+}

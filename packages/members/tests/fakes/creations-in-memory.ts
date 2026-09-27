@@ -217,6 +217,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     revision: number
     storageRef: string
     uploadedParts?: readonly string[]
+    verifiedPartHashes?: readonly string[]
     now: Date
     limits: CreationUploadInput['limits']
   }): Promise<CreationCommitResult> {
@@ -262,6 +263,12 @@ export class InMemoryCreationsRepository implements CreationsRepository {
       return { ok: false, reason: overBytes ? 'total-bytes' : 'items-per-tool' }
     }
     const committed = committedAlive ? existing.parts : []
+    if (
+      input.verifiedPartHashes &&
+      (input.verifiedPartHashes.length !== existing.pending.parts.length ||
+        existing.pending.parts.some((part) => !input.verifiedPartHashes?.includes(part.hash)))
+    )
+      return { ok: false, reason: 'manifest-mismatch' }
     const committedSet = new Set(committed.map((part) => part.hash))
     const uploaded = new Set(input.uploadedParts ?? [])
     const missing = existing.pending.parts
@@ -301,6 +308,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     itemId: string,
     baseRevision: number,
     now: Date,
+    maxFormatVersion = 1,
   ): ReturnType<CreationsRepository['softDelete']> {
     const k = key(userId, tool, itemId)
     const existing = this.rows.get(k)
@@ -312,7 +320,11 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     if (baseRevision !== existing.revision) {
       return { ok: false, reason: 'stale-base', currentRevision: existing.revision }
     }
-    if (existing.deletedAt !== null) {
+    const requiredVersion = Math.max(existing.formatVersion, existing.pending?.formatVersion ?? 1)
+    if (maxFormatVersion < requiredVersion) {
+      return { ok: false, reason: 'client-outdated', requiredVersion }
+    }
+    if (existing.deletedAt !== null && existing.pending === null) {
       return {
         ok: true,
         deleted: false,
@@ -323,7 +335,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     }
     this.rows.set(k, {
       ...existing,
-      deletedAt: now,
+      deletedAt: existing.deletedAt ?? now,
       pending: null,
       storageRef: null,
       parts: [],
@@ -333,7 +345,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     })
     return {
       ok: true,
-      deleted: true,
+      deleted: existing.deletedAt === null,
       storageRef: existing.storageRef,
       partRefs: existing.parts,
       revision: existing.revision,

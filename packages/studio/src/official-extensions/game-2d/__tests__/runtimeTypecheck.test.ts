@@ -42,6 +42,9 @@ interface Window {
   // Sons do projeto, do mesmo bridge das imagens. Opcional porque o mapa não é
   // semeado quando o projeto não tem nenhum arquivo de áudio.
   __SZGAME_SOUNDS?: Record<string, string>
+  /** Ponte opcional do player de aula; ausente no jogo exportado. */
+  __szReportGroupClick?: (x: number, y: number) => void
+  __szReportGameReady?: () => void
   webkitAudioContext?: typeof AudioContext
 }
 `
@@ -175,6 +178,8 @@ function compileRuntimeVariants(variants: ReadonlyMap<string, string>): Map<stri
     },
     resolveModuleNames: (moduleNames, containingFile) =>
       moduleNames.map((moduleName) => {
+        if (moduleName === './runtimeContract')
+          return { resolvedFileName: RUNTIME_CONTRACT_FILE, extension: ts.Extension.Ts }
         if (moduleName === './classicContracts') {
           return { resolvedFileName: CLASSIC_CONTRACTS_FILE, extension: ts.Extension.Ts }
         }
@@ -302,7 +307,7 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // toque alcançá-los e herdaram junto o mapa de TECLAS dela: a tecla z e o ESPAÇO
   // viraram pulo em todo jogo de plataforma que já existia.
   // 1122 → 1135: +2 da receita vetorial compacta, +9 do carregador preguiçoso
-  // de campanha (inclui elenco e jornada) e +2 da leitura de dados da fase. Eles substituem
+  // de campanha (inclui elenco e voltada) e +2 da leitura de dados da fase. Eles substituem
   // milhares de blocos/objetos vivos no editor e no preview.
   // 1135 → 1141: +5 da caixa de colisão medida no desenho (_artHitboxOf,
   // _applyArtHitbox, _artBoxOf) e +1 do `_spriteFlipped`, que virou o DONO ÚNICO
@@ -316,7 +321,34 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // leitura e duas escritas de contexto POR CÉLULA de mapa para um par por mapa.
   // 1157 → 1158: `_readSmoothing(ctx)` preserva a escolha real do Canvas livre;
   // a leitura continua uma vez por MAPA dentro do lote, não uma vez por célula.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1158)
+  // +42 parâmetros de texto, layout, dados e seleção por clique; APIs tipadas
+  // em JSDoc e verificadas contra o contrato público pelo arquivo composto.
+  // +6 parâmetros com JSDoc: identidade de clique por alvo e publicação no HUD acessível.
+  // +13: destruição, vínculos reais de grupos, limpeza de clique, ação com
+  // recarga e alcance da parada de música. APIs novas com JSDoc e contrato público.
+  // +2 líquidos: centralização explícita (cinco), desenho perde os três opcionais.
+  // 1221 → 1235: +14 do fundo de imagem no sprite de texto —
+  // `_scheduleSpriteImageRedraw` (4, EXTRAÍDO do desenho para os dois donos de
+  // imagem compartilharem um agendador só), `_drawTextBackgroundImage` (5),
+  // `setTextImage` (3), `_textBackgroundImage` (1) e `_paintsBackground` (1).
+  // +1: `_drawTextBackgroundImage` leva também o tamanho FINAL na tela, que é quem
+  // decide nitidez (a medida local mentiria na placa reduzida pela criança).
+  // 1236 → 1238: +2 do `_applySpriteTextSize` (sprite, style) — o dono único da
+  // regra "o tamanho pedido manda; sem pedido, vale a medida". Ele entrou junto
+  // com a saída da razão recuperada por divisão, que não tinha função própria.
+  // 1238 → 1239: +2 do `scaleTextSize` (sprite, factor) e **−1** do
+  // `_drawTextBackgroundImage`, que perdeu o `telaW`: ele existia só porque o
+  // desenho rodava sob um ctx.scale e a medida local mentia sobre o tamanho na
+  // tela. Sem a escala, as duas são a mesma coisa e o parâmetro perdeu a razão.
+  // 1239 → 1240: +1 do `_releaseClipElement(el)`. Soltar o arquivo de som era
+  // `el.src = ''` inline, e pôr a fonte em VAZIO dispara o evento `error` do
+  // elemento (medido no Chrome: MEDIA_ELEMENT_ERROR "Empty src attribute") —
+  // com o `onerror` ainda pendurado, a própria limpeza do "jogar de novo"
+  // acusava TODOS os sons carregados. Soltar de verdade (tirar o atributo,
+  // remandar carregar, desligar o aviso) não cabe numa linha inline.
+  // 1240 → 1241: +1 rótulo acessível do botão de direção no modo sem ações.
+  // 1241 → 1242: +1 detector de SVG para preservar a suavização ao ampliar vetores.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1242)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

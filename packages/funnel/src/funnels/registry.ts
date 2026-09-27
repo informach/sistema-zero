@@ -32,6 +32,8 @@ export interface FunnelCopy {
   artigo?: 'o' | 'a'
 }
 export interface FunnelLanding {
+  /** Selo acima do título; ausente preserva o rótulo genérico. */
+  badge?: string
   h1: string
   subtitulo: string
   tempo: string
@@ -108,6 +110,16 @@ export interface FunnelExtraOffer {
   productSku: string
 }
 
+/** Política de acesso prometida pela copy e que a oferta configurada deve cumprir. */
+export interface FunnelOfferContract {
+  pricingMode: 'one_time' | 'subscription'
+  accessMode: 'lifetime' | 'fixed' | 'billing_cycle'
+  accessDurationValue: number | null
+  accessDurationUnit: 'days' | 'months' | null
+  /** Condição legal repetida pela copy; `null` quando o funil não promete garantia. */
+  guaranteeDays: number | null
+}
+
 export interface FunnelDef {
   audience: Audience
   /** Slug do produto (kebab-case), 2º segmento da URL. */
@@ -139,6 +151,11 @@ export interface FunnelDef {
   theme?: string
   /** Oferta com acesso vitalício → exibe o disclaimer "vitalício = enquanto a empresa existir". */
   lifetimeAccess?: boolean
+  /**
+   * Use quando a copy contém uma promessa rígida de acesso. Página e cobrança falham fechadas se
+   * a env apontar para uma oferta com contrato diferente.
+   */
+  offerContract?: FunnelOfferContract
   steps: FunnelSteps
   content: FunnelContent
   /** Oferta de upsell (pós-compra), quando `steps.upsell`. */

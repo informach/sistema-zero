@@ -12,6 +12,7 @@ const {
   VisualDirectionArtifactSchema,
 } = await import('../src/server/pensa-agents/planner-contract')
 const { auditPlan } = await import('../src/routes/pensa-ai')
+const capabilities = { moldaAvailable: false, pintaAvailable: true, studioAvailable: true }
 
 // `hint`/`preset` são nullable (nunca ausentes) no draft: o modo estrito do provider
 // exige todas as chaves no `required`, então o modelo emite null quando não há valor.
@@ -243,7 +244,7 @@ describe('catálogo autoritativo do plano', () => {
       tasks: [task],
       nextTaskId: 'task-1',
     }
-    expect(auditPlan(stage, catalog, '2d', true).approved).toBe(true)
+    expect(auditPlan(stage, catalog, '2d', true, undefined, capabilities).approved).toBe(true)
 
     const drifted = structuredClone(stage)
     if (drifted.tasks[0]?.context.kind === 'studio') {
@@ -252,7 +253,7 @@ describe('catálogo autoritativo do plano', () => {
       drifted.tasks[0].context.extensionIds = ['extensao-inventada']
       drifted.tasks[0].context.dimension = '3d'
     }
-    const review = auditPlan(drifted, catalog, '2d', true)
+    const review = auditPlan(drifted, catalog, '2d', true, undefined, capabilities)
     expect(review.approved).toBe(false)
     expect(
       review.findings.filter((finding) => finding.severity === 'error').length,

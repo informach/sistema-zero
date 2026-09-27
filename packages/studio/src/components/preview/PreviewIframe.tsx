@@ -7,6 +7,7 @@ import {
   assetMetaManifest,
   type ExtraFile,
   type InstalledExtension,
+  type Project,
   type ProjectAsset,
   soundManifest,
 } from '#core'
@@ -26,6 +27,7 @@ import {
   withCoreImports,
 } from '#preview'
 import { Button } from '#ui'
+import { resolveCoverAsset } from '../../cover/coverAsset'
 import { rememberProjectSnapshot } from '../../cover/latestSnapshot'
 import { useDebounced } from '../../hooks/useDebounced'
 import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
@@ -66,21 +68,44 @@ const SNAPSHOT_FIRST_DELAY_MS = 2_500
 /** Intervalo entre fotos. Longo de propósito: a capa não precisa ser ao vivo. */
 const SNAPSHOT_INTERVAL_MS = 20_000
 
+/**
+ * Com capa ESCOLHIDA (e RESOLVIDA: a imagem existe no projeto) o preview não tira fotos, porque
+ * a capa vem da imagem. Um nome pendurado (a imagem apagada por outro aparelho, um snapshot sem
+ * os assets) NÃO segura as fotos: nesse caso o `resolveThumb` cai na foto automática, e ela
+ * precisa existir.
+ */
+export function chosenCoverPausesSnapshots(
+  project: Pick<Project, 'assets' | 'coverAssetName'> | null | undefined,
+): boolean {
+  return project ? resolveCoverAsset(project) !== null : false
+}
+
 export function PreviewIframe(): JSX.Element {
-  const { projectId, html, css, js, ir, projectName, installedExtensions, extraFiles, assets } =
-    useProjectStore(
-      useShallow((s) => ({
-        projectId: s.project?.id ?? null,
-        html: s.project?.files['index.html'] ?? '',
-        css: s.project?.files['style.css'] ?? '',
-        js: s.project?.files['script.js'] ?? '',
-        ir: s.project?.ir ?? null,
-        projectName: s.project?.name ?? '',
-        installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
-        extraFiles: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
-        assets: s.project?.assets ?? EMPTY_ASSETS,
-      })),
-    )
+  const {
+    projectId,
+    html,
+    css,
+    js,
+    ir,
+    projectName,
+    installedExtensions,
+    extraFiles,
+    assets,
+    hasChosenCover,
+  } = useProjectStore(
+    useShallow((s) => ({
+      projectId: s.project?.id ?? null,
+      hasChosenCover: chosenCoverPausesSnapshots(s.project),
+      html: s.project?.files['index.html'] ?? '',
+      css: s.project?.files['style.css'] ?? '',
+      js: s.project?.files['script.js'] ?? '',
+      ir: s.project?.ir ?? null,
+      projectName: s.project?.name ?? '',
+      installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+      extraFiles: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
+      assets: s.project?.assets ?? EMPTY_ASSETS,
+    })),
+  )
   const pushLog = useLogsStore((s) => s.push)
   const previewSecurity = useStudioConfig().previewSecurity
   const previewRunning = useUIStore((s) => s.previewRunning)
@@ -424,7 +449,7 @@ export function PreviewIframe(): JSX.Element {
   // a imagem já reduzida ao tamanho do card (JPEG ~15 KB). Aba escondida não
   // recebe quadros, então pedir ali só renderia uma foto velha.
   useEffect(() => {
-    if (!projectId || !previewRunning || previewPaused) return
+    if (!projectId || !previewRunning || previewPaused || hasChosenCover) return
     const pedir = () => {
       if (typeof document !== 'undefined' && document.hidden) return
       iframeRef.current?.contentWindow?.postMessage(
@@ -446,7 +471,7 @@ export function PreviewIframe(): JSX.Element {
     // dispararia uma foto poucos segundos depois de CADA mudança — exatamente o
     // custo que este desenho evita. O ritmo é o do intervalo, e o bridge do doc
     // novo responde ao próximo pedido normalmente.
-  }, [projectId, previewRunning, previewPaused])
+  }, [projectId, previewRunning, previewPaused, hasChosenCover])
 
   const doc = useMemo(() => {
     // Parar (Play desligado): esvazia o iframe → mata setInterval/timers em execução.

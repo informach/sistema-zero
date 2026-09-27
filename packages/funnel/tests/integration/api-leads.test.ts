@@ -28,9 +28,18 @@ describe('POST /api/leads', () => {
     expect(setCookie).toContain('HttpOnly')
     const { id } = (await res.json()) as { id: string }
     expect(leads.has(id)).toBe(true)
-    expect(events).toEqual([
-      { leadId: id, eventName: 'entrou_landing', step: 'landing', metadata: null },
-    ])
+    expect(events).toHaveLength(2)
+    expect(events[0]).toMatchObject({
+      leadId: id,
+      eventName: 'entrou_landing',
+      step: 'landing',
+      metadata: {},
+    })
+    expect(events[1]).toMatchObject({
+      leadId: id,
+      eventName: 'view_landing',
+      step: 'landing',
+    })
   })
 
   test('idempotente quando o cookie já aponta para um lead existente', async () => {
@@ -89,6 +98,57 @@ describe('POST /api/leads', () => {
     const res = await createLead(req('POST', { funnel: 'pro/produto-inexistente' }), deps(repo))
     const { id } = (await res.json()) as { id: string }
     expect(leads.get(id)?.funnel).toBeNull()
+  })
+
+  test('sanitiza a atribuição e não aceita PII em parâmetros técnicos', async () => {
+    const { repo, leads } = createFakeRepo()
+    const res = await createLead(
+      req('POST', {
+        funnel: DEFAULT_FUNNEL.key,
+        attribution: {
+          utmSource: 'escola-centro',
+          utmMedium: 'qr',
+          utmCampaign: 'evento_setembro',
+          utmContent: 'ana@example.com',
+          eventCode: 'ESCOLA_2026_09',
+          initialCouponCode: 'evento37',
+          landingPath: '/kids/desafio-primeiro-jogo/oferta?cpf=123',
+        },
+      }),
+      deps(repo),
+    )
+    const { id } = (await res.json()) as { id: string }
+    expect(leads.get(id)?.attribution).toEqual({
+      version: 1,
+      utmSource: 'escola-centro',
+      utmMedium: 'qr',
+      utmCampaign: 'evento_setembro',
+      utmContent: null,
+      eventCode: 'ESCOLA_2026_09',
+      initialCouponCode: 'EVENTO37',
+      landingPath: '/kids/desafio-primeiro-jogo/oferta',
+    })
+  })
+
+  test('first-touch não é sobrescrito ao reaproveitar o lead', async () => {
+    const { repo, leads } = createFakeRepo()
+    const first = await createLead(
+      req('POST', {
+        funnel: DEFAULT_FUNNEL.key,
+        attribution: { eventCode: 'PRIMEIRO', landingPath: '/quiz' },
+      }),
+      deps(repo),
+    )
+    const { id } = (await first.json()) as { id: string }
+    await createLead(
+      req(
+        'POST',
+        { funnel: DEFAULT_FUNNEL.key, attribution: { eventCode: 'SEGUNDO' } },
+        cookieFor(id),
+      ),
+      deps(repo),
+    )
+    expect(leads.get(id)?.attribution?.eventCode).toBe('PRIMEIRO')
   })
 })
 

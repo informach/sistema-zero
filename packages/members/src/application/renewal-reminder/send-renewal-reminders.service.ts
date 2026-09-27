@@ -1,5 +1,7 @@
+import { createHash } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import type { AuthGateway } from '../../domain/ports/auth-gateway.port'
+import type { ChallengeAnalyticsGateway } from '../../domain/ports/challenge-analytics-gateway.port'
 import type { MessagingGateway } from '../../domain/ports/messaging-gateway.port'
 import {
   type ExpiringTermEntitlement,
@@ -14,14 +16,44 @@ export interface RenewalReminderOptions {
   batchLimit?: number
   /** URL pública do FUNIL (base do link `/renovar?oferta=<slug>`). */
   funnelUrl: string
+  /** URL pública do app Kids (retomada direta do Desafio). */
+  kidsUrl: string
 }
 
 const DEFAULT_BATCH_LIMIT = 200
+
+/**
+ * A chave pertence ao grupo comercial, não à primeira matrícula retornada.
+ * Assim, se o envio ocorrer e o processo cair depois de marcar apenas parte das
+ * matrículas, o retry continua sendo deduplicado pelo Messaging. O hash evita
+ * expor ids internos no header e mantém a chave bem abaixo do limite de 200 chars.
+ */
+function lifecycleIdempotencyKey(
+  templateKey: string,
+  userId: string,
+  offerSlug: string | null,
+  expiresOn: string,
+): string {
+  const groupHash = createHash('sha256')
+    .update(`${userId}\u0000${offerSlug ?? ''}\u0000${expiresOn}`)
+    .digest('hex')
+    .slice(0, 32)
+  return `${templateKey}:${groupHash}`
+}
 
 /** `DD/MM/AAAA` a partir do vencimento (data UTC — a carência absorve o fuso). */
 function ddmmyyyy(expiresAt: Date): string {
   const key = expiresOnKey(expiresAt)
   return `${key.slice(8, 10)}/${key.slice(5, 7)}/${key.slice(0, 4)}`
+}
+
+function ddmmyyyySaoPaulo(expiresAt: Date): string {
+  return new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(expiresAt)
 }
 
 /**
@@ -43,6 +75,7 @@ export class SendRenewalRemindersService {
     private readonly clock: () => Date,
     private readonly logger: Logger,
     private readonly opts: RenewalReminderOptions,
+    private readonly analytics?: ChallengeAnalyticsGateway,
   ) {}
 
   async runCycle(): Promise<{ sent: number; skipped: number; failed: number }> {
@@ -53,7 +86,6 @@ export class SendRenewalRemindersService {
       to,
       this.opts.batchLimit ?? DEFAULT_BATCH_LIMIT,
     )
-    if (rows.length === 0) return { sent: 0, skipped: 0, failed: 0 }
 
     // Agrupa por (usuário, oferta, vencimento): 1 e-mail por COMPRA, não por item.
     const groups = new Map<string, ExpiringTermEntitlement[]>()
@@ -92,7 +124,12 @@ export class SendRenewalRemindersService {
           templateKey: 'renewal-reminder',
           recipient: { name: nome, email: identity.email },
           variables: { nome, produto, data: ddmmyyyy(first.expiresAt), link },
-          idempotencyKey: `renewal-reminder:${first.id}:${expiresOn}`,
+          idempotencyKey: lifecycleIdempotencyKey(
+            'renewal-reminder',
+            first.userId,
+            first.offerSlug,
+            expiresOn,
+          ),
         })
         // Mark-AFTER-send (crash-safety) — todas as matrículas do grupo.
         for (const e of group) await this.reminders.markReminded(e.id, expiresOn, this.clock())
@@ -107,8 +144,98 @@ export class SendRenewalRemindersService {
       }
     }
 
+    const fixedRows = await this.reminders.listFixedAccessLifecycleEntitlements(
+      now,
+      this.opts.batchLimit ?? DEFAULT_BATCH_LIMIT,
+    )
+    const fixedGroups = new Map<string, typeof fixedRows>()
+    for (const row of fixedRows) {
+      const key = `${row.userId}|${row.offerSlug ?? ''}|${expiresOnKey(row.expiresAt)}|${row.messageKind}`
+      const list = fixedGroups.get(key)
+      if (list) list.push(row)
+      else fixedGroups.set(key, [row])
+    }
+
+    for (const group of fixedGroups.values()) {
+      const first = group[0]
+      if (!first) continue
+      const expiresOn = expiresOnKey(first.expiresAt)
+      try {
+        const [identity] = await this.auth.getAccountIdentities([first.userId])
+        if (!identity) {
+          for (const entitlement of group) {
+            await this.reminders.markLifecycleMessageSent(
+              entitlement.id,
+              expiresOn,
+              entitlement.messageKind,
+              this.clock(),
+            )
+          }
+          skipped++
+          continue
+        }
+
+        const nome = identity.firstName || 'Responsável'
+        const expired = first.messageKind === 'expired'
+        const templateKey = expired
+          ? 'challenge-expired'
+          : first.messageKind === 'expiry_3d'
+            ? 'challenge-expiry-3d'
+            : 'challenge-expiry-7d'
+        const link = expired
+          ? `${this.opts.funnelUrl}/kids/comunidade-do-criador/oferta`
+          : `${this.opts.kidsUrl}/cursos/${encodeURIComponent(first.courseRef)}`
+
+        await this.messaging.sendEmail({
+          templateKey,
+          recipient: { name: nome, email: identity.email },
+          variables: { nome, data: ddmmyyyySaoPaulo(first.expiresAt), link },
+          idempotencyKey: lifecycleIdempotencyKey(
+            templateKey,
+            first.userId,
+            first.offerSlug,
+            expiresOn,
+          ),
+        })
+        for (const entitlement of group) {
+          await this.reminders.markLifecycleMessageSent(
+            entitlement.id,
+            expiresOn,
+            entitlement.messageKind,
+            this.clock(),
+          )
+        }
+        if (this.analytics) {
+          try {
+            await this.analytics.publish([
+              {
+                buyerUserId: first.userId,
+                eventName: expired ? 'challenge_expired' : 'expiry_reminder_sent',
+                occurredAt: this.clock(),
+              },
+            ])
+          } catch (error) {
+            this.logger.warn('fixed_access_lifecycle.analytics_failed', {
+              entitlementId: first.id,
+              messageKind: first.messageKind,
+              error: error instanceof Error ? error.message : String(error),
+            })
+          }
+        }
+        sent++
+      } catch (error) {
+        failed++
+        this.logger.warn('fixed_access_lifecycle.group_failed', {
+          entitlementId: first.id,
+          expiresOn,
+          messageKind: first.messageKind,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }
+    }
+
     if (sent > 0 || failed > 0) {
-      this.logger.info('renewal_reminder.cycle', { sent, skipped, failed })
+      this.logger.info('entitlement_lifecycle.cycle', { sent, skipped, failed })
     }
     return { sent, skipped, failed }
   }

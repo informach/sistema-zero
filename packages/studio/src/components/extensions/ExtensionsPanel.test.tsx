@@ -125,7 +125,7 @@ describe('ExtensionsPanel — extensões para instalar gated por nível', () => 
     expect(screen.getByText(ext3d.manifest.name)).not.toBeNull()
   })
 
-  it('allowExtensions da carreira restringe o catálogo mesmo quando allowBlocks está ativo', () => {
+  it('allowExtensions da jornada restringe o catálogo mesmo quando allowBlocks está ativo', () => {
     seedProject()
     const config = {
       ...STANDALONE_CONFIG,

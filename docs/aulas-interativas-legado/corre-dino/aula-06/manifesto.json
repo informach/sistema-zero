@@ -1,0 +1,287 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-06",
+  "title": "A faxina dos cactos invisíveis",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "checar-construir-2",
+    "construir-3",
+    "convite-construir-3",
+    "construir-4",
+    "fechamento"
+  ],
+  "blocks": [
+    {
+      "key": "video-missao",
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre a borda de saída e o contador dos bastidores. “O cacto saiu da tela. Será que saiu também do grupo que o jogo guarda?” Convide a avançar o relógio e olhar os dois lugares. A criança instala a regra na saída; os próximos cactos são removidos automaticamente. Não demonstre uma faxina manual de cada objeto."
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "required": false,
+        "title": "Cuide dos cactos invisíveis",
+        "instructions": "Avance o relógio até um cacto sair. Ele também saiu dos bastidores?",
+        "hints": [
+          "Compare a pista com os cactos guardados nos bastidores.",
+          "Sair da tela e sair do grupo são coisas diferentes.",
+          "Encaixe Remover na borda de saída. Avance o relógio novamente."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "cleanup"
+        }
+      }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: Montar o medidor. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Placar e HUD, coloque Mostrar placar como último bloco de A cada quadro. Escreva Cactos.\n\nNo valor, encaixe quantos sprites tem no grupo, de Muitos, e escolha cactos. Use uma cor escura para enxergar o número. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-1",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Placar e HUD, coloque Mostrar placar como último bloco de A cada quadro. Escreva Cactos."
+      }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: Provocar o problema. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Troque o relógio de 1.4 para 0.1 por um teste curto. Observe o número enquanto os cactos saem da tela.\n\nEle continua crescendo? Essa é a medida do problema que vamos corrigir. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-2",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Troque o relógio de 1.4 para 0.1 por um teste curto. Observe o número enquanto os cactos saem da tela."
+      }
+    },
+    {
+      "key": "zappy-convite-construir-1",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Deixe alguns cactos saírem. Compare a pista com o número do contador."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: A faxina. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Muitos, coloque Tirar do grupo quem sair da tela entre o desenho do grupo e o contador. Escolha cactos, use o apelido cacto e deixe fazer vazio.\n\nCompare o número com o teste anterior. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-3",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Muitos, coloque Tirar do grupo quem sair da tela entre o desenho do grupo e o contador. Escolha cactos, use o apelido cacto e deixe fazer vazio."
+      }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar dois ritmos, devolver o relógio e aposentar o medidor. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Com o contador ligado, compare 0.1 e 0.5. Depois devolva o relógio para 1.4 e confira um patamar baixo.\n\nRemova o Mostrar placar do medidor, junto com o valor encaixado. A limpeza continua; o medidor já cumpriu sua tarefa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-4",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Com o contador ligado, compare 0.1 e 0.5. Depois devolva o relógio para 1.4 e confira um patamar baixo."
+      }
+    },
+    {
+      "key": "zappy-convite-construir-3",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Compare o contador antes e depois da limpeza. A quantidade deve deixar de crescer sem parar."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! Vamos conferir antes de enviar.” Demonstre os testes desta aula: A limpeza deve permanecer e o relógio voltar a 1.4. O contador de diagnóstico deve sair ao final desta aula. Envie o projeto já sem o medidor. Mostre o botão Enviar ao professor e a confirmação do envio.  Termine: “Depois de enviar, tem um quiz curtinho sobre o que você descobriu.”"
+    },
+    {
+      "key": "zappy-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!"
+      }
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Um cacto saiu da tela. Ele saiu do grupo também?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Só se o programa o remover."
+              },
+              {
+                "id": "b",
+                "label": "Sempre, sem precisar de uma regra."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Um objeto pode continuar guardado mesmo fora da imagem."
+          },
+          {
+            "id": "q2",
+            "prompt": "Depois da faxina, qual bloco precisa continuar no projeto?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Só o contador de diagnóstico."
+              },
+              {
+                "id": "b",
+                "label": "O que remove os cactos que saíram."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "O contador ajudou a investigar. A regra de limpeza mantém o grupo organizado."
+          }
+        ]
+      }
+    },
+    {
+      "key": "zappy-revisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "Cuide dos cactos invisíveis",
+      "objective": "Fora da tela, ainda no grupo; Regra retira automaticamente",
+      "intent": "exploration",
+      "blockKeys": ["video-missao", "descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
+    },
+    {
+      "key": "construir-1",
+      "title": "Espie o que ficou guardado",
+      "objective": "Usar um contador para observar objetos fora da tela.",
+      "intent": "application",
+      "blockKeys": [
+        "video-construir-1-1",
+        "zappy-construir-1",
+        "video-construir-2-1",
+        "zappy-construir-2",
+        "zappy-convite-construir-1"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "contar-grupo",
+            "label": "Mostre a contagem do grupo cactos para investigar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_count_group",
+              "area": "loops",
+              "fields": {
+                "GROUP": "cactos"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "construir-3",
+      "title": "Faça a faxina do grupo",
+      "objective": "Adicionar a remoção de objetos que saíram da tela.",
+      "intent": "application",
+      "blockKeys": [
+        "video-construir-3-1",
+        "zappy-construir-3",
+        "video-construir-4-1",
+        "zappy-construir-4",
+        "zappy-convite-construir-3"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "g2d-prune-offscreen",
+            "label": "Tire do grupo cactos quem sair da tela, em A cada quadro do jogo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_prune_offscreen",
+              "area": "loops",
+              "fields": {
+                "GROUP": "cactos"
+              },
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fechamento",
+      "title": "Mostre sua criação",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
+      "intent": "delivery",
+      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "O que você descobriu?",
+      "objective": "Retomar o conceito depois de explorar, criar e entregar.",
+      "intent": "closing",
+      "blockKeys": ["zappy-revisao", "quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

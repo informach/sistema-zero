@@ -43,7 +43,7 @@ export const gameKit3DExtension: ExtensionDefinition = {
   conflictsWith: fullscreenConflictsFor('game-3d-advanced'),
   // Reclassificado p/ INTERMEDIÁRIO 3D (26/07/2026): o kit passa a abrir no Arquiteto
   // de Mundos (junto do Mundo 3D), não só na Lenda. Continua sendo base de engine
-  // (FSM/pooling/grade), mas gated pela carreira (só chega ao Arquiteto quem subiu 6
+  // (FSM/pooling/grade), mas gated pela jornada (só chega ao Arquiteto quem subiu 6
   // níveis). O piso por prefixo sz_g3k_ (em blockLevels.ts) acompanha este minLevel.
   minLevel: 'intermediario-3d',
   blockly: {

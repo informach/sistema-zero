@@ -1,0 +1,75 @@
+{
+  "version": 5,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "certificado",
+  "title": "Seu certificado e próximos passos",
+  "retireBlockKeys": ["video-pitch"],
+  "blocks": [
+    {
+      "key": "fala-certificado",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você guiou o personagem, encontrou a chave e acendeu o farol. Toque em Pegar meu certificado e guarde o arquivo com um responsável."
+      }
+    },
+    {
+      "key": "certificado",
+      "content": {
+        "kind": "certificate",
+        "introLine": "Certificamos que",
+        "coursePhrase": "concluiu o Desafio do Primeiro Jogo",
+        "bodyText": "Criou A Chave do Farol: movimento, coleta da chave e uma decisão que acende a luz."
+      }
+    },
+    {
+      "key": "fala-pitch",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Esta próxima parte é para quem cuida de você. Chame um responsável para assistir junto."
+      }
+    },
+    {
+      "key": "video-pitch-farol",
+      "plannedVideo": "Título: Para a família: próximos caminhos de criação\n\nComeçar pedindo para chamar um responsável. Dirigir a explicação da Comunidade ao adulto. Mostrar a oferta externa sem preço fixo no vídeo; compra nunca é requisito da aula.\n\nRoteiro falado: desafio-certificado.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "link-comunidade",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "[Conhecer a Comunidade dos Criadores](https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta)"
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "certificado",
+      "title": "Seu certificado",
+      "intent": "delivery",
+      "objective": "Emitir e guardar o certificado da aventura concluída.",
+      "blockKeys": ["fala-certificado", "certificado"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["certificado"]
+      }
+    },
+    {
+      "key": "proximos-passos",
+      "title": "Uma conversa com a família",
+      "intent": "closing",
+      "objective": "Apresentar ao responsável as possibilidades de continuar criando, sem exigir compra.",
+      "blockKeys": ["fala-pitch", "video-pitch-farol", "link-comunidade"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-pitch-farol"]
+      }
+    }
+  ]
+}

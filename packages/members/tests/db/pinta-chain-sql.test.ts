@@ -9,6 +9,7 @@ import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
+import { prepareContentReadinessTables } from './content-readiness-fixture'
 import { prepareTestDatabase } from './test-database'
 
 /**
@@ -38,6 +39,7 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
 
   beforeAll(async () => {
     conn = createDbConnection(testDatabaseUrl as string)
+    await prepareContentReadinessTables(conn)
     await conn.sql`create schema if not exists members`
     // Tabelas mínimas, com os nomes REAIS (é o que o Drizzle mira): o `kind` é enum no schema
     // de produção, mas aqui basta texto — o que se testa são os predicados (cadeia, tipo do
@@ -245,7 +247,11 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
     })
 
     test('bloco de Estúdio com o MESMO nome de cadeia não entra', async () => {
-      await inserirBloco(aula1, 'studio', { kind: 'studio', initialProject: {}, chain: 'heroi' })
+      await inserirBloco(aula1, 'studio', {
+        kind: 'studio',
+        initialProject: { formatVersion: 2 },
+        chain: 'heroi',
+      })
       expect(await content.listPintaChainBlocks(courseId, 'heroi')).toEqual([])
     })
 
@@ -279,7 +285,11 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
     })
 
     test('🚨 o kind entra na busca: cadeia de Pinta não enxerga bloco de Estúdio homônimo', async () => {
-      await inserirBloco(aula1, 'studio', { kind: 'studio', initialProject: {}, chain: 'heroi' })
+      await inserirBloco(aula1, 'studio', {
+        kind: 'studio',
+        initialProject: { formatVersion: 2 },
+        chain: 'heroi',
+      })
       await inserirBloco(aula2, 'pinta', pinta('pixel-sprite', 'heroi'))
 
       expect(await courses.findPrecedingChainBlock(courseId, aula2, 'heroi', 'pinta')).toBeNull()

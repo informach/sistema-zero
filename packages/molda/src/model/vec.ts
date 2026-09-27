@@ -30,6 +30,20 @@ export function sub(a: Vec3, b: Vec3): Vec3 {
   return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
 }
 
+/** Scale before the cross product so small authorial triangles do not underflow. */
+export function triangleUnitNormal(a: Vec3, b: Vec3, c: Vec3): Vec3 {
+  const ab = sub(b, a)
+  const ac = sub(c, a)
+  const extent = Math.max(...ab.map(Math.abs), ...ac.map(Math.abs))
+  if (extent === 0) return [0, 0, 0]
+  return normalize(
+    cross(
+      [ab[0] / extent, ab[1] / extent, ab[2] / extent],
+      [ac[0] / extent, ac[1] / extent, ac[2] / extent],
+    ),
+  )
+}
+
 export function scale(v: Vec3, k: number): Vec3 {
   return [v[0] * k, v[1] * k, v[2] * k]
 }

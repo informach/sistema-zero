@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
+import { EVENT_TARGET_EXTENSION } from '../blockExtensionNames'
 
-export const EVENT_TARGET_EXTENSION = 'sz_event_target'
+export { EVENT_TARGET_EXTENSION } from '../blockExtensionNames'
 
 function usesNamedElementTarget(value: unknown): boolean {
   return value === 'id' || value === 'var'

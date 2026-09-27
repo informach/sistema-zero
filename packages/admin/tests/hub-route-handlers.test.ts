@@ -37,8 +37,11 @@ mock.module('@/server/forward', () => ({
     Response.json(body, { status }),
 }))
 
-// Superfície completa — mesma armadilha descrita no mock de `@/server/media` abaixo.
+// Módulo real espalhado — mesma armadilha descrita no mock de `@/server/media` abaixo.
+process.env.JWT_HS256_SECRET ??= 'qa-admin-jwt-secret-0123456789'
+const actualR2 = await import('@/server/r2')
 mock.module('@/server/r2', () => ({
+  ...actualR2,
   r2PresignGetUgc: async (key: string, options: unknown) => {
     presignArgs = { key, options }
     return 'https://ugc.example.test/private-object'
@@ -46,13 +49,15 @@ mock.module('@/server/r2', () => ({
   r2ReadPrivateObject: async () => new Uint8Array(),
 }))
 
-// ⚠️ `mock.module` do bun é GLOBAL AO RUN: este mock parcial vaza para os arquivos SEGUINTES, e
+// ⚠️⚠️ `mock.module` do bun é GLOBAL AO RUN: um mock parcial vaza para os arquivos SEGUINTES, e
 // quem importar um símbolo que ele não exporta quebra com `SyntaxError: Export named 'X' not
-// found` — um erro entre testes, longe daqui, que não parece vir deste arquivo. Por isso o mock
-// cobre a SUPERFÍCIE que as outras suítes importam de `@/server/media`, não só o que este usa.
-// (Foi assim que as 3 suítes do Zappy quebraram quando este arquivo nasceu.)
+// found` — um erro entre testes, longe daqui, que não parece vir deste arquivo. (Foi assim que as
+// 3 suítes do Zappy quebraram quando este arquivo nasceu, e de novo quando a animação Rive do
+// módulo chegou.) Manter à mão "a superfície que as outras suítes importam" não escala; ESPALHAR
+// O MÓDULO REAL fecha a classe inteira do defeito.
+const actualMedia = await import('@/server/media')
 mock.module('@/server/media', () => ({
-  mediaErrorResponse: () => Response.json({ error: 'media' }, { status: 500 }),
+  ...actualMedia,
   syncVimeoTranscript: async () => null,
 }))
 

@@ -6,18 +6,27 @@ mock.module('server-only', () => ({}))
 let transcript: { lang: string; url: string; content: string } | null = null
 const sourceWrites: unknown[] = []
 const backfillRequests: unknown[] = []
-// ⚠️ Superfície COMPLETA de propósito (ver o comentário longo em hub-route-handlers.test.ts):
-// `mock.module` do bun é global ao run e o mock parcial vaza para os arquivos seguintes.
+// ⚠️⚠️ ESPALHE O MÓDULO REAL e troque só o necessário. O `mock.module` do bun é
+// GLOBAL AO RUN: um mock parcial vaza para os arquivos seguintes, e quem importar
+// um símbolo que ele não exporta quebra com `SyntaxError: Export named 'X' not
+// found` — num arquivo distante, conforme a ORDEM. Listar "a superfície que as
+// outras suítes importam" não escala: toda função nova em `@/server/media` teria
+// de ser lembrada aqui (foi o que aconteceu quando a animação Rive do módulo
+// nasceu). Espalhar o real fecha a classe inteira do defeito.
+// A env vai por `process.env` em vez de mock — assim `isProd` e o resto continuam
+// reais (mesma receita de `fixtures/video-thumbnails.fixture.ts`).
+process.env.JWT_HS256_SECRET ??= 'qa-admin-jwt-secret-0123456789'
+process.env.R2_PUBLIC_URL = 'https://media.test'
+const actualMedia = await import('@/server/media')
 mock.module('@/server/media', () => ({
+  ...actualMedia,
   syncVimeoTranscript: async () => transcript,
-  mediaErrorResponse: () => Response.json({ error: 'media' }, { status: 500 }),
 }))
+const actualR2 = await import('@/server/r2')
 mock.module('@/server/r2', () => ({
+  ...actualR2,
   r2ReadPrivateObject: async () => new Uint8Array(),
   r2PresignGetUgc: async () => 'https://ugc.example.test/private-object',
-}))
-mock.module('@/lib/env', () => ({
-  getEnv: () => ({ R2_PUBLIC_URL: 'https://media.test' }),
 }))
 mock.module('@/server/gateway', () => ({
   gatewayFetch: async (path: string, options?: { body?: unknown }) => {

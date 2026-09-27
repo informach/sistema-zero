@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { publishBlock } from '../draft-authoring-helpers'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
@@ -22,6 +23,7 @@ function seedStudioBlock(courses: InMemoryCourseRepository, lessonId: string): s
       level: 'iniciante',
       allowCategories: ['HTML', 'JavaScript'],
       initialProject: {
+        formatVersion: 2,
         name: 'Atividade da aula',
         files: { 'index.html': '<h1>Oi</h1>', 'style.css': '', 'script.js': '' },
       },
@@ -53,14 +55,12 @@ const getLesson = (app: App, slug: string, lessonId: string) =>
     }),
   )
 
-const updateBlock = (app: App, blockId: string, content: unknown) =>
-  app.handle(
-    new Request(`http://localhost/members/admin/blocks/${blockId}`, {
-      method: 'PATCH',
-      headers: authHeaders,
-      body: JSON.stringify({ content }),
-    }),
-  )
+const updateBlock = (
+  app: App,
+  lessonId: string,
+  blockId: string,
+  content: { kind: string; [key: string]: unknown },
+) => publishBlock(app, lessonId, { content }, {}, blockId)
 
 /** O "save na nuvem": o projeto que o PRÓPRIO aluno enviou neste bloco. */
 const getOwnSubmission = (app: App, lessonId: string, blockId: string) =>
@@ -72,11 +72,13 @@ const getOwnSubmission = (app: App, lessonId: string, blockId: string) =>
   )
 
 const STUDENT_PROJECT = {
+  formatVersion: 2,
   name: 'Minha entrega',
   files: { 'index.html': '<h1>Feito</h1>', 'style.css': '', 'script.js': 'console.log(1)' },
 }
 
 const STUDIO_LOOP_PROJECT = {
+  formatVersion: 2,
   name: 'Projeto com loop',
   files: { 'index.html': '', 'style.css': '', 'script.js': 'for (let i = 0; i < 3; i++) {}' },
   ir: { js: [{ type: 'repeat' }] },
@@ -84,6 +86,7 @@ const STUDIO_LOOP_PROJECT = {
 }
 
 const STUDIO_FUNCTION_PROJECT = {
+  formatVersion: 2,
   name: 'Projeto com função',
   files: { 'index.html': '', 'style.css': '', 'script.js': 'function go() { return 1 }' },
   ir: { js: [{ type: 'funcDecl', name: 'go', body: [] }] },
@@ -91,6 +94,23 @@ const STUDIO_FUNCTION_PROJECT = {
 }
 
 describe('Bloco Estúdio — gate de conclusão + entrega', () => {
+  test('expirar o acesso não apaga o projeto enviado pela criança', async () => {
+    const { app, courses, entitlements, studioSubmissions, clockRef } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, {
+      userId: USER,
+      courseRef: slug,
+      expiresAt: new Date('2026-06-03T00:00:00.000Z'),
+      key: 'payment:temporary-studio',
+    })
+    const blockId = seedStudioBlock(courses, lessonIds[0])
+    expect((await submit(app, lessonIds[0], blockId, STUDENT_PROJECT)).status).toBe(200)
+
+    clockRef.now = new Date('2026-06-04T00:00:00.000Z')
+    expect((await getLesson(app, slug, lessonIds[0])).status).toBe(403)
+    expect((await studioSubmissions.getOne(USER, blockId))?.project).toEqual(STUDENT_PROJECT)
+  })
+
   test('a aula NÃO conclui enquanto o projeto não for enviado (409)', async () => {
     const { app, courses, entitlements } = buildApp()
     const { slug, lessonIds } = seedSampleCourse(courses)
@@ -117,6 +137,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
         level: 'iniciante',
         allowCategories: ['JavaScript'],
         initialProject: {
+          formatVersion: 2,
           name: 'x',
           files: { 'index.html': '', 'style.css': '', 'script.js': '' },
         },
@@ -129,6 +150,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     })
     // Projeto SEM laço → o servidor recalcula a estrutura, reprova → não passa.
     const submitRes = await submit(app, lessonIds[0], blockId, {
+      formatVersion: 2,
       name: 'sem laço',
       files: { 'index.html': '', 'style.css': '', 'script.js': 'console.log(1)' },
       ir: { js: [{ type: 'consoleLog' }] },
@@ -152,6 +174,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
       level: 'iniciante' as const,
       allowCategories: ['JavaScript'],
       initialProject: {
+        formatVersion: 2,
         name: 'x',
         files: { 'index.html': '', 'style.css': '', 'script.js': '' },
       },
@@ -177,7 +200,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     expect(oldPass.status).toBe(200)
     expect((await readJson(oldPass)).passed).toBe(true)
 
-    const patched = await updateBlock(app, blockId, {
+    const patched = await updateBlock(app, lessonIds[0], blockId, {
       ...baseStudio,
       activity: {
         instructions: 'crie a função go',
@@ -192,7 +215,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
         ],
       },
     })
-    expect(patched.status).toBe(200)
+    expect(patched.status, await patched.clone().text()).toBe(200)
 
     // A aprovação antiga caiu (gate volta a travar) — mas por NOT_PASSED, não
     // por NOT_SUBMITTED: a ENTREGA do aluno fica (é o save na nuvem dele).
@@ -237,6 +260,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
         level: 'iniciante',
         allowCategories: ['JavaScript'],
         initialProject: {
+          formatVersion: 2,
           name: 'x',
           files: { 'index.html': '', 'style.css': '', 'script.js': '' },
         },
@@ -252,18 +276,19 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     // do initialProject sai re-serializado (normalizações do editor), a lista de
     // blocos muda, a vitrine é ligada… nada disso é a ATIVIDADE — a entrega e a
     // aprovação do aluno NÃO podem ser tocadas.
-    const patched = await updateBlock(app, blockId, {
+    const patched = await updateBlock(app, lessonIds[0], blockId, {
       kind: 'studio',
       level: 'intermediario',
       allowBlocks: ['sz_js_var_create'],
       initialProject: {
+        formatVersion: 2,
         name: 'x (retocado pela professora)',
         files: { 'index.html': '<h1>novo</h1>', 'style.css': '', 'script.js': '' },
       },
       showcase: { enabled: true, title: 'Meu jogo' },
       activity,
     })
-    expect(patched.status).toBe(200)
+    expect(patched.status, await patched.clone().text()).toBe(200)
 
     const kept = await getOwnSubmission(app, lessonIds[0], blockId)
     expect(kept.status).toBe(200)
@@ -359,6 +384,24 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     expect(studioSubmissions.submissions.filter((s) => s.blockId === blockId)).toHaveLength(1)
   })
 
+  test('cliente antigo não substitui uma entrega atual nem seu backup', async () => {
+    const { app, courses, entitlements, studioSubmissions } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = seedStudioBlock(courses, lessonIds[0])
+    expect((await submit(app, lessonIds[0], blockId, STUDENT_PROJECT)).status).toBe(200)
+    const before = structuredClone(await studioSubmissions.getOne(USER, blockId))
+    for (const formatVersion of [undefined, 1, 3]) {
+      const res = await submit(app, lessonIds[0], blockId, {
+        ...STUDENT_PROJECT,
+        formatVersion,
+        name: 'Documento incompatível',
+      })
+      expect(res.status).toBe(400)
+      expect(await studioSubmissions.getOne(USER, blockId)).toEqual(before)
+    }
+  })
+
   test('submeter num bloco que não é estúdio → 404', async () => {
     const { app, courses, entitlements } = buildApp()
     const { slug, lessonIds } = seedSampleCourse(courses)
@@ -379,7 +422,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     const blockId = seedStudioBlock(courses, lessonIds[0])
 
     // ~300 KB: passa do teto pequeno (64 KB) mas cabe no teto do Estúdio (2 MB).
-    const big = { name: 'Grande', files: { 'app.js': 'x'.repeat(300_000) } }
+    const big = { formatVersion: 2, name: 'Grande', files: { 'app.js': 'x'.repeat(300_000) } }
     const res = await submit(app, lessonIds[0], blockId, big)
     expect(res.status).toBe(200)
   })
@@ -1085,6 +1128,7 @@ describe('Versão anterior da entrega — backup do último reenvio', () => {
         level: 'iniciante',
         allowCategories: ['JavaScript'],
         initialProject: {
+          formatVersion: 2,
           name: 'x',
           files: { 'index.html': '', 'style.css': '', 'script.js': '' },
         },

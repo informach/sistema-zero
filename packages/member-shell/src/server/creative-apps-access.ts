@@ -1,5 +1,5 @@
 import 'server-only'
-import { careerLevelAtLeast } from '@sistemazero/core/career'
+import { journeyLevelAtLeast } from '@sistemazero/core/journey'
 import {
   AI_APPS_MIN_LEVEL,
   FREE_CREATION_MIN_LEVEL,
@@ -26,7 +26,7 @@ export function meetsAiAppsLevel(
   role: string | undefined,
 ): boolean {
   if (isPrivilegedRole(role)) return true
-  return careerLevelAtLeast(levelSlug, AI_APPS_MIN_LEVEL)
+  return journeyLevelAtLeast(levelSlug, AI_APPS_MIN_LEVEL)
 }
 
 /** Decisão autoritativa para handlers do BFF. Falhas recusam acesso. */
@@ -38,7 +38,7 @@ export async function hasAiAppsLevel(
   try {
     const result = await members.getGamification()
     if (result.status !== 200) return false
-    return careerLevelAtLeast(result.body?.level?.slug, AI_APPS_MIN_LEVEL)
+    return journeyLevelAtLeast(result.body?.level?.slug, AI_APPS_MIN_LEVEL)
   } catch {
     return false
   }
@@ -50,7 +50,7 @@ export function meetsFreeCreationLevel(
   role: string | undefined,
 ): boolean {
   if (isPrivilegedRole(role)) return true
-  return careerLevelAtLeast(levelSlug, FREE_CREATION_MIN_LEVEL)
+  return journeyLevelAtLeast(levelSlug, FREE_CREATION_MIN_LEVEL)
 }
 
 /** Decisão síncrona para a oficina 3D (Molda): abre onde a trilha 3D começa. */
@@ -59,5 +59,5 @@ export function meetsThreeDCreationLevel(
   role: string | undefined,
 ): boolean {
   if (isPrivilegedRole(role)) return true
-  return careerLevelAtLeast(levelSlug, THREE_D_CREATION_MIN_LEVEL)
+  return journeyLevelAtLeast(levelSlug, THREE_D_CREATION_MIN_LEVEL)
 }

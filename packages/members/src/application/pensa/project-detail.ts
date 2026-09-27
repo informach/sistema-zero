@@ -1,4 +1,4 @@
-import type { PensaProject } from '../../domain/pensa/pensa'
+import type { PensaProjectAccess } from '../../domain/pensa/pensa'
 import { PensaNotFoundError } from '../../domain/pensa/pensa.errors'
 import type { PensaRepository } from '../../domain/ports/pensa-repository.port'
 import { type PensaProjectDetailView, toPensaProjectDetailView } from '../mappers/pensa-views'
@@ -10,7 +10,7 @@ import { type PensaProjectDetailView, toPensaProjectDetailView } from '../mapper
  */
 export async function loadPensaProjectDetail(
   repo: PensaRepository,
-  project: PensaProject,
+  project: PensaProjectAccess,
 ): Promise<PensaProjectDetailView> {
   const cycles = await repo.listCycles(project.id)
   const currentCycle = cycles[cycles.length - 1]

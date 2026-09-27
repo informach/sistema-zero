@@ -96,8 +96,8 @@ Detalhes, URLs dos dois ambientes e regras: **[docs/ambientes-e-fluxo.md](docs/a
   gamificação infantil (XP, streak, Zappy Coins, avatar, quarto, missões, proteção de
   sequência, ligas e perfil público): a ética embutida no código e qual constante mudar,
   em qual arquivo.
-- **[Carreira do Criador e Estúdio](docs/carreira-do-criador.md)** — matriz dos oito
-  níveis, 31 cursos obrigatórios, travas pedagógicas, liberações do Estúdio, modo
+- **[Jornada do Criador e Estúdio](docs/jornada-do-criador.md)** — matriz dos oito
+  níveis, 49 posições obrigatórias, travas pedagógicas, liberações do Estúdio, modo
   Pro, autoria e operação do runtime remoto.
 - **[Marketing digital — manual de conceitos e operação](docs/marketing.md)** — a
   ferramenta interna da equipe (ideia → produção → aprovação → publicações por rede →

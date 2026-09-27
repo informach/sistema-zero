@@ -1,0 +1,14 @@
+<h2>Olhe a borda bem de perto</h2>
+<p>A mesma silhueta em uma grade de pixels e em curvas. Mude o tamanho para observar como as bordas se comportam. Nenhum formato é o “certo” para toda arte.</p>
+<label for="zoom">Ampliação <output id="value">4</output>×</label><input id="zoom" type="range" min="1" max="10" step="1" value="4">
+<div style="display:flex;gap:16px;flex-wrap:wrap">
+  <figure style="margin:0;flex:1;min-width:120px"><figcaption>Pixel art</figcaption><div style="height:190px;display:grid;place-items:center;overflow:hidden;background:#fff"><canvas id="pixel" width="16" height="16" aria-label="Pedra construída sobre uma grade de 16 por 16 pixels" role="img" style="image-rendering:pixelated"></canvas></div></figure>
+  <figure style="margin:0;flex:1;min-width:120px"><figcaption>Vetor</figcaption><div style="height:190px;display:grid;place-items:center;overflow:hidden;background:#fff"><svg id="vector" viewBox="0 0 16 16" aria-label="Pedra descrita por uma curva contínua" role="img"><path d="M2 7Q3 1 9 2Q16 3 14 10Q11 16 5 13Q1 12 2 7" fill="#1762bc"/></svg></div></figure>
+</div><button id="observe" type="button">Observei as duas bordas</button><p id="status" aria-live="polite"></p>
+<script>
+(()=>{const zoom=document.getElementById('zoom'),pixel=document.getElementById('pixel'),vector=document.getElementById('vector'),ctx=pixel.getContext('2d');let tested=[];ctx.fillStyle='#1762bc';ctx.beginPath();ctx.moveTo(2,7);ctx.quadraticCurveTo(3,1,9,2);ctx.quadraticCurveTo(16,3,14,10);ctx.quadraticCurveTo(11,16,5,13);ctx.quadraticCurveTo(1,12,2,7);ctx.fill();
+function render(){const size=Number(zoom.value)*16;pixel.style.width=`${size}px`;pixel.style.height=`${size}px`;vector.style.width=`${size}px`;vector.style.height=`${size}px`;document.getElementById('value').textContent=zoom.value}
+zoom.addEventListener('input',()=>{tested=[...new Set([...tested,zoom.value])];render();window.learning?.save({zoom:Number(zoom.value),testedValues:tested})});
+document.getElementById('observe').addEventListener('click',()=>{document.getElementById('status').textContent=tested.length>=2?'As duas representações foram observadas em tamanhos diferentes.':'Compare pelo menos dois tamanhos antes de registrar.';if(tested.length>=2)window.learning?.participated()});
+addEventListener('learning:restore',event=>{const s=event.detail;zoom.value=Number.isFinite(s.zoom)?s.zoom:4;tested=Array.isArray(s.testedValues)?s.testedValues:[];render()});render()})();
+</script>

@@ -5,10 +5,12 @@ import type {
   AudioBlock,
   CertificateBlock,
   ComingSoonBlock,
+  DialogueBlock,
   EbookBlock,
   EmbedBlock,
   ImageBlock,
   LessonBlockView,
+  MaterialsBlock,
   PintaBlock,
   PintaStateView,
   QuizBlock,
@@ -19,12 +21,14 @@ import type {
   VideoBlock,
 } from '../lib/types'
 import { CertificateBlockView } from './certificate-block'
+import { DialogueBlockView } from './dialogue-block'
 import { EbookBlockView } from './ebook/ebook-block'
-import { useLessonPlayer } from './lesson-player-context'
+import { InteractiveLessonBlock } from './learning-activity'
+import { LessonVideo } from './lesson-video'
+import { MaterialsBlockView } from './materials-block'
 import { PintaBlockView } from './pinta/pinta-block'
 import { QuizBlockView } from './quiz-block'
 import { StudioBlockView } from './studio/studio-block'
-import { VimeoPlayer } from './vimeo-player'
 
 /**
  * Renderer dos blocos de aula (união discriminada por `kind`). O `content` chega
@@ -49,10 +53,15 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
   if (!content || typeof content !== 'object') return null
 
   switch (block.kind) {
+    case 'interactive':
+      return <InteractiveLessonBlock block={block} />
     case 'rich_text':
       return <RichText content={content as unknown as RichTextBlock} />
+    // Sem `mascot`: o mascote é asset do kids. Aqui o balão vira recado destacado.
+    case 'dialogue':
+      return <DialogueBlockView content={content as unknown as DialogueBlock} />
     case 'video':
-      return <Video content={content as unknown as VideoBlock} />
+      return <LessonVideo content={content as unknown as VideoBlock} />
     case 'image':
       return <ImageView content={content as unknown as ImageBlock} />
     case 'audio':
@@ -91,6 +100,17 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       )
     case 'coming_soon':
       return <ComingSoon content={content as unknown as ComingSoonBlock} />
+    case 'materials':
+      return (
+        <MaterialsBlockView
+          blockId={block.id}
+          blockRevision={block.blockRevision}
+          content={content as unknown as MaterialsBlock}
+          // Este renderer é o do app ADULTO (o kids tem o `kids-lesson-blocks.tsx`), e lá não
+          // existe `/como-fazer`: o item vira texto em vez de um link que abre 404.
+          helpLinks={false}
+        />
+      )
     default:
       return null
   }
@@ -124,86 +144,8 @@ function ComingSoon({ content }: { content: ComingSoonBlock }) {
 function RichText({ content }: { content: RichTextBlock }) {
   const markdown = content.markdown ?? ''
   if (!markdown) return null
-  return <div className="lesson-prose">{renderMarkdown(markdown)}</div>
-}
-
-// ── video: URL canônica por provider (nunca interpola o src cru em iframe) ────
-function youtubeId(src: string): string | null {
-  const m = src.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,20})/,
-  )
-  return m?.[1] ?? null
-}
-
-/**
- * Extrai o ID numérico do Vimeo e, quando presente, o HASH de privacidade (`h`)
- * dos vídeos NÃO LISTADOS — forma de caminho (`vimeo.com/<id>/<hash>`) ou de query
- * (`?h=<hash>`). Sem o hash, o SDK não consegue tocar um vídeo unlisted. Tanto o id
- * (dígitos) quanto o hash (alfanumérico) são validados pela regex — nunca o src cru.
- */
-function parseVimeo(src: string): { id: string; hash: string | null } | null {
-  const m = src.match(/vimeo\.com\/(?:video\/)?(\d{6,12})(?:\/([A-Za-z0-9]{4,40}))?/)
-  const id = m?.[1]
-  if (!id) return null
-  const queryHash = src.match(/[?&]h=([A-Za-z0-9]{4,40})/)?.[1] ?? null
-  return { id, hash: m[2] ?? queryHash }
-}
-
-function Video({ content }: { content: VideoBlock }) {
-  if (!content.src) return null
-  if (content.provider === 'youtube') {
-    const id = youtubeId(content.src)
-    if (!id) return <UnsupportedBlock label="Vídeo indisponível" />
-    return (
-      <div className="aspect-video w-full overflow-hidden rounded-lg border border-border bg-black">
-        <iframe
-          src={`https://www.youtube-nocookie.com/embed/${id}`}
-          title="Vídeo da aula"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          className="h-full w-full"
-        />
-      </div>
-    )
-  }
-  if (content.provider === 'vimeo') {
-    const parsed = parseVimeo(content.src)
-    if (!parsed) return <UnsupportedBlock label="Vídeo indisponível" />
-    return <VimeoLessonVideo vimeoId={parsed.id} vimeoHash={parsed.hash} />
-  }
-  // `file`/`mux` (URL direta de vídeo) → player nativo.
-  return (
-    <video
-      controls
-      preload="metadata"
-      poster={content.posterUrl}
-      className="aspect-video w-full rounded-lg border border-border bg-black"
-    >
-      <source src={content.src} />
-      <track kind="captions" />
-    </video>
-  )
-}
-
-/**
- * Vimeo com o player rico (SDK): watermark do aluno, fullscreen custom, retomar
- * posição e auto-conclusão por % assistido — tudo vindo do LessonPlayerContext
- * (fora do player degrada para o embed sem callbacks).
- */
-function VimeoLessonVideo({ vimeoId, vimeoHash }: { vimeoId: string; vimeoHash: string | null }) {
-  const player = useLessonPlayer()
-  return (
-    <VimeoPlayer
-      vimeoId={vimeoId}
-      vimeoHash={vimeoHash}
-      watermark={player?.viewerWatermark ?? null}
-      initialPositionSeconds={player?.initialPositionSeconds ?? null}
-      onProgress={player?.onVideoProgress}
-      onFlush={player?.onVideoFlush}
-      onReachedThreshold={player?.onVideoReachedThreshold}
-      onEnded={player?.onVideoEnded}
-    />
-  )
+  // App adulto: `[texto](/como-fazer/<slug>)` vira texto (a biblioteca de ajuda é do Kids).
+  return <div className="lesson-prose">{renderMarkdown(markdown, { helpLinks: false })}</div>
 }
 
 function ImageView({ content }: { content: ImageBlock }) {

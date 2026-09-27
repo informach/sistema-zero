@@ -81,8 +81,66 @@ describe('toEditablePath / fromEditablePath', () => {
     ])
   })
 
-  it('não sabe editar rect/ellipse/text nem d fora do dialeto', () => {
-    expect(toEditablePath({ ...base, type: 'rect', x: 0, y: 0, w: 4, h: 4, rx: 0 })).toBeNull()
+  it('expõe os cantos do retângulo e as curvas do círculo para edição', () => {
+    const rect = { ...base, type: 'rect' as const, x: 0, y: 0, w: 40, h: 20, rx: 0 }
+    expect(toEditablePath(rect)?.nodes.map((node) => node.p)).toEqual([
+      { x: 0, y: 0 },
+      { x: 40, y: 0 },
+      { x: 40, y: 20 },
+      { x: 0, y: 20 },
+    ])
+    const circle = { ...base, type: 'ellipse' as const, cx: 50, cy: 50, rx: 20, ry: 20 }
+    const editable = toEditablePath(circle)
+    expect(editable?.closed).toBe(true)
+    expect(editable?.nodes.map((node) => node.p)).toEqual([
+      { x: 50, y: 30 },
+      { x: 70, y: 50 },
+      { x: 50, y: 70 },
+      { x: 30, y: 50 },
+    ])
+    expect(editable?.nodes.every((node) => node.in && node.out)).toBe(true)
+  })
+
+  it('mantém o retângulo arredondado até mudar um ponto e conserva os cantos curvos', () => {
+    const shape: VectorShape = {
+      ...base,
+      motionId: 'mov-retangulo',
+      type: 'rect',
+      x: 10,
+      y: 20,
+      w: 80,
+      h: 40,
+      rx: 10,
+    }
+    const editable = toEditablePath(shape)
+    if (!editable) throw new Error('retângulo arredondado sem pontos')
+    expect(editable.nodes).toHaveLength(8)
+    expect(editable.nodes[0]?.p).toEqual({ x: 20, y: 20 })
+    expect(editable.nodes[7]?.p).toEqual({ x: 10, y: 30 })
+    expect(editablePathToD(editable).match(/C /g)).toHaveLength(4)
+    expect(fromEditablePath(shape, editable)).toBe(shape)
+    const changed = fromEditablePath(shape, moveNodes(editable, [0], { x: 0, y: -5 }))
+    expect(changed).toMatchObject({
+      id: shape.id,
+      motionId: shape.motionId,
+      type: 'path',
+      fill: shape.fill,
+    })
+    expect(toEditablePath(changed)?.nodes[0]?.p).toEqual({ x: 20, y: 15 })
+  })
+
+  it('permite remodelar o círculo com suas alças e preserva a forma sem edição', () => {
+    const shape: VectorShape = { ...base, type: 'ellipse', cx: 50, cy: 50, rx: 20, ry: 20 }
+    const editable = toEditablePath(shape)
+    if (!editable) throw new Error('círculo sem pontos')
+    expect(fromEditablePath(shape, editable)).toBe(shape)
+    expect(minNodesFor(shape)).toBe(3)
+    const changed = fromEditablePath(shape, moveNodes(editable, [0], { x: 0, y: -10 }))
+    expect(changed).toMatchObject({ id: shape.id, type: 'path', stroke: shape.stroke })
+    expect(toEditablePath(changed)?.nodes[0]?.p).toEqual({ x: 50, y: 20 })
+  })
+
+  it('não sabe editar texto, figura nem d fora do dialeto', () => {
     expect(
       toEditablePath({ ...base, type: 'text', x: 0, y: 0, text: 'oi', fontSize: 12 }),
     ).toBeNull()
@@ -140,7 +198,7 @@ describe('a conversão polígono → traço (decisão de produto)', () => {
     expect(next.type === 'polygon' && next.points[1]).toEqual({ x: 13, y: -2 })
   })
 
-  it('ganhar curva converte em traço preservando estilo, grupo e olhinho', () => {
+  it('ganhar curva converte em traço preservando estilo, relações, pivô e cadeado', () => {
     const shape: VectorShape = {
       ...polygonOf([
         { x: 0, y: 0 },
@@ -149,6 +207,9 @@ describe('a conversão polígono → traço (decisão de produto)', () => {
       ]),
       groupId: 'g7',
       hidden: true,
+      locked: true,
+      maskId: 'janela',
+      rotationPivot: { x: -4, y: 30 },
       opacity: 0.5,
       rotation: 30,
     }
@@ -167,6 +228,9 @@ describe('a conversão polígono → traço (decisão de produto)', () => {
     expect(next.rotation).toBe(30)
     expect(next.groupId).toBe('g7')
     expect(next.hidden).toBe(true)
+    expect(next.locked).toBe(true)
+    expect(next.maskId).toBe('janela')
+    expect(next.rotationPivot).toEqual({ x: -4, y: 30 })
     // fechado, então o d termina em Z
     expect(next.type === 'path' && next.d.endsWith('Z')).toBe(true)
     expect(sanitizeVectorShape(next)).not.toBeNull()

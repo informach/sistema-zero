@@ -1,0 +1,227 @@
+import { describe, expect, it } from 'bun:test'
+import { publicInteractiveBlock } from '../index'
+import { sceneActivityForReading } from './index'
+import {
+  chaveDeVoz,
+  falaDaEscolhaDoPalpite,
+  falaDaInstrucao,
+  falaDaPergunta,
+  falaDoContextoDoPalpite,
+  falasDaCena,
+  filaDeVoz,
+  isSceneSpeechOverrides,
+  isSceneVozes,
+  isZappySpeechText,
+  reconciliarVozesDoZappy,
+  roteiroDoZappy,
+  textoFalado,
+  textosFalaveisDaCena,
+  VOZ_LIMITS,
+} from './voz'
+
+describe('o texto falado', () => {
+  it('tira os símbolos da tela e colapsa o espaço', () => {
+    expect(textoFalado('↑ Pular  agora')).toBe('Pular agora')
+    expect(textoFalado('✓ Você descobriu! 🎉')).toBe('Você descobriu!')
+  })
+
+  /**
+   * ⚠️⚠️ O ponto da feature inteira: a chave é o texto, então uma frase EDITADA não encontra o áudio
+   * dela e o "Ouvir" volta à voz do navegador. O pior caso — a criança ouvindo a instrução anterior
+   * à correção — não existe, e não depende de ninguém lembrar de regerar.
+   */
+  it('editar a frase derruba a resposta do dicionário', () => {
+    const antes = 'Ligue a borda e veja o que aparece.'
+    const vozes = { [chaveDeVoz(antes)]: 'https://cdn.test/a.mp3' }
+    expect(filaDeVoz([antes], vozes)).toEqual(['https://cdn.test/a.mp3'])
+    expect(filaDeVoz(['Ligue a borda e veja o que acontece.'], vozes)).toBeNull()
+  })
+
+  it('a diferença é só de símbolo ou espaço: o áudio continua servindo', () => {
+    const vozes = { [chaveDeVoz('Ligue a borda.')]: 'https://cdn.test/a.mp3' }
+    expect(filaDeVoz(['↑ Ligue  a borda.'], vozes)).toEqual(['https://cdn.test/a.mp3'])
+  })
+})
+
+describe('o roteiro que o Zappy recebe', () => {
+  it('troca apenas letras inglesas que estão sozinhas, sem tocar no texto visível', () => {
+    expect(roteiroDoZappy('Aperte X e Y.')).toBe('Aperte xis e ípsilon.')
+    expect(roteiroDoZappy('Xilofone e yoga não são letras sozinhas.')).toBe(
+      'Xilofone e yoga não são letras sozinhas.',
+    )
+  })
+
+  it('aceita um roteiro autoral somente quando ele ainda descreve exatamente o texto na tela', () => {
+    expect(
+      roteiroDoZappy('Experiência', {
+        sourceText: 'Experiência',
+        speechText: 'Experiênssia.',
+      }),
+    ).toBe('Experiênssia.')
+    expect(
+      roteiroDoZappy('Experiência nova', {
+        sourceText: 'Experiência',
+        speechText: 'Experiênssia.',
+      }),
+    ).toBe('Experiência nova')
+  })
+
+  it('permite somente pausas curtas e explícitas no roteiro', () => {
+    expect(isZappySpeechText('Pense.<break time="0.4s" /> Agora tente.')).toBe(true)
+    expect(isZappySpeechText('Pense.<break time="3.1s" /> Agora tente.')).toBe(false)
+    expect(isZappySpeechText('<audio src="fora" />')).toBe(false)
+  })
+
+  it('valida os quatro lugares determinísticos de ajuste da cena', () => {
+    expect(
+      isSceneSpeechOverrides({
+        instruction: { sourceText: 'Aperte X.', speechText: 'Aperte xis.' },
+        'prediction-question': { sourceText: 'E agora?', speechText: 'E agora?' },
+      }),
+    ).toBe(true)
+    expect(isSceneSpeechOverrides({ inventado: { sourceText: 'A', speechText: 'A' } })).toBe(false)
+  })
+})
+
+describe('a fila da fala', () => {
+  const url = (n: string) => `https://cdn.test/${n}.mp3`
+
+  it('é TUDO ou NADA: falta um trecho, a fala inteira cai para a voz do navegador', () => {
+    const vozes = { [chaveDeVoz('Primeiro.')]: url('a') }
+    expect(filaDeVoz(['Primeiro.'], vozes)).toEqual([url('a')])
+    // A pista que o motor monta na hora não tem áudio — e aí nem o trecho que TEM toca sozinho.
+    expect(filaDeVoz(['Primeiro.', 'Tente: mexer no fogo 2.'], vozes)).toBeNull()
+  })
+
+  it('trecho vazio não conta (o player monta a fala com buracos)', () => {
+    const vozes = { [chaveDeVoz('Só isto.')]: url('a') }
+    expect(filaDeVoz(['', 'Só isto.', '   '], vozes)).toEqual([url('a')])
+  })
+
+  it('sem dicionário nenhum, não há fila', () => {
+    expect(filaDeVoz(['Qualquer coisa.'], undefined)).toBeNull()
+  })
+
+  it('troca a voz antiga pela prévia do roteiro corrigido', () => {
+    const antigo = 'Aperte ípsilon.'
+    const corrigido = 'Aperte i grego.'
+    expect(
+      reconciliarVozesDoZappy(
+        [corrigido],
+        { [chaveDeVoz(antigo)]: url('antiga') },
+        { [chaveDeVoz(corrigido)]: url('corrigida') },
+      ),
+    ).toEqual({ [chaveDeVoz(corrigido)]: url('corrigida') })
+  })
+})
+
+describe('o dicionário é validado', () => {
+  it('recusa chave fora da forma falada', () => {
+    // Sem versão do perfil, a key poderia reaproveitar um MP3 gravado antes de uma correção global.
+    expect(isSceneVozes({ 'Duas  palavras': 'https://cdn.test/a.mp3' })).toBe(false)
+    expect(isSceneVozes({ [chaveDeVoz('Duas palavras')]: 'https://cdn.test/a.mp3' })).toBe(true)
+  })
+
+  it('recusa endereço que não é https nem caminho do próprio site', () => {
+    const chave = chaveDeVoz('Oi')
+    expect(isSceneVozes({ [chave]: 'http://cdn.test/a.mp3' })).toBe(false)
+    expect(isSceneVozes({ [chave]: '//outro-host/a.mp3' })).toBe(false)
+    expect(isSceneVozes({ [chave]: '/audio/a.mp3' })).toBe(true)
+  })
+
+  it('recusa dicionário acima do teto de entradas', () => {
+    const grande = Object.fromEntries(
+      Array.from({ length: VOZ_LIMITS.entradas + 1 }, (_, i) => [`Fala ${i}`, '/a.mp3']),
+    )
+    expect(isSceneVozes(grande)).toBe(false)
+  })
+
+  it('ausente é legal (a cena sem voz cai no navegador)', () => {
+    expect(isSceneVozes(undefined)).toBe(true)
+  })
+})
+
+describe('os textos faláveis de uma cena', () => {
+  const palpite = {
+    context: { explanation: 'Nesta experiência, vamos observar a gravidade do jogo.' },
+    prompt: 'O que acontece se a gravidade desligar?',
+    choices: [{ label: 'O Dino cai' }, { label: 'O Dino sobe' }],
+  }
+
+  it('lê a instrução, o contexto, a pergunta do palpite e a pergunta do fim', () => {
+    const textos = textosFalaveisDaCena({
+      instructions: 'Ligue a borda.',
+      prediction: palpite,
+      checkpoint: { prompt: 'Por quê?', choices: [{ label: 'Porque sim' }] },
+      activity: { type: 'experimentation' },
+    })
+    expect(textos).toEqual([
+      falaDaInstrucao('Ligue a borda.'),
+      falaDoContextoDoPalpite('Seu palpite', palpite.context),
+      falaDaEscolhaDoPalpite(palpite),
+      falaDaPergunta('Agora explique', { prompt: 'Por quê?', choices: [{ label: 'Porque sim' }] }),
+    ])
+  })
+
+  it('cena sem palpite nem pergunta fala só a instrução', () => {
+    expect(
+      textosFalaveisDaCena({
+        instructions: 'Mexa à vontade.',
+        activity: { type: 'experimentation' },
+      }),
+    ).toEqual(['Mexa à vontade.'])
+  })
+
+  it('resolve a fala efetiva de cada trecho sem mudar o texto que a criança vê', () => {
+    const [instruction] = falasDaCena(
+      publicInteractiveBlock({
+        kind: 'interactive',
+        title: 'Pronúncia',
+        instructions: 'Aperte X.',
+        hints: [],
+        required: false,
+        activity: {
+          type: 'experimentation',
+          scene: 'world',
+          zappySpeech: {
+            instruction: {
+              sourceText: 'Aperte X.',
+              speechText: 'Aperte xis.<break time="0.3s" />',
+            },
+          },
+        },
+      }),
+    )
+    expect(instruction).toMatchObject({
+      slot: 'instruction',
+      visibleText: 'Aperte X.',
+      speechText: 'Aperte xis.<break time="0.3s" />',
+    })
+  })
+})
+
+/**
+ * ⚠️⚠️ O áudio NUNCA derruba a cena. Com o members um deploy à frente, um teto novo em
+ * `VOZ_LIMITS` faria o app antigo recusar a atividade inteira — a criança veria "esta atividade
+ * precisa de uma configuração válida" no lugar do palco por causa do dicionário de voz.
+ */
+describe('a leitura tolerante e o dicionário', () => {
+  const atividade = (vozes: unknown) => ({ type: 'experimentation', scene: 'world', vozes })
+
+  it('descarta o dicionário inválido e PRESERVA a cena', () => {
+    const lida = sceneActivityForReading(
+      atividade({ 'Fala  torta': 'https://cdn.test/a.mp3' }),
+    ) as {
+      scene: string
+      vozes?: unknown
+    }
+    expect(lida.scene).toBe('world')
+    expect(lida.vozes).toBeUndefined()
+  })
+
+  it('o dicionário legal atravessa intacto', () => {
+    const vozes = { [chaveDeVoz('Ligue a borda.')]: 'https://cdn.test/a.mp3' }
+    const lida = sceneActivityForReading(atividade(vozes)) as { vozes?: unknown }
+    expect(lida.vozes).toEqual(vozes)
+  })
+})

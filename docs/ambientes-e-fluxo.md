@@ -97,6 +97,18 @@ put` do lado correspondente (os dois precisam bater, senão 401 a cada 5 min).
 
 ## Deploys
 
+Para a promoção ampla de staging para produção planejada em 27/09/2026, usar o
+[plano completo de promoção](superpowers/plans/2026-09-27-promocao-producao.md), com
+[diagnóstico dos ambientes e dos dados](plans/2026-09-27-promocao-producao-design.md).
+Ele atualiza a ordem das releases, a conversão dos jogos, a preservação dos cursos legados e
+os gates de infraestrutura. O caminho do runbook de 19/09 foi preservado, mas seu conteúdo foi
+substituído pela sequência vigente em 27/09.
+
+A sequência operacional da promoção está no
+[runbook de produção atualizado](runbooks/promocao-producao-aulas-2026-09-19.md), com preparação A
+até `0090`, transição B até `0098`, conversor com destino explícito e evidências das correções de
+CORS e anexos do Admin. Um merge direto com todos os serviços em paralelo não cumpre essa ordem.
+
 - **Staging — AUTOMÁTICO via GitHub Actions**: push/merge na branch `staging` roda
   o CI e, **se verde**, o job `deploy-staging` (no próprio `ci.yml`) dispara o
   deploy **só dos serviços afetados pelo diff** (mapa que espelha os

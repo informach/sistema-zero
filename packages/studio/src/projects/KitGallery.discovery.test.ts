@@ -9,8 +9,8 @@ import {
 } from './KitGallery'
 
 describe('descoberta dos exemplos do Jogo 2D', () => {
-  it('todos os 33 exemplos têm dificuldade, gênero e conceitos pesquisáveis', () => {
-    expect(gameTwoDExamples).toHaveLength(33)
+  it('todos os 35 exemplos têm dificuldade, gênero e conceitos pesquisáveis', () => {
+    expect(gameTwoDExamples).toHaveLength(35)
     for (const example of gameTwoDExamples) {
       expect(['beginner', 'intermediate', 'advanced'].includes(example.difficulty ?? '')).toBe(true)
       expect(example.genre?.trim().length ?? 0).toBeGreaterThan(0)
@@ -34,7 +34,7 @@ describe('descoberta dos exemplos do Jogo 2D', () => {
   it('o loader validado entrega os metadados à galeria', async () => {
     const gameTwoDGroup = (await buildKitGroups()).find((group) => group.extensionId === 'game-2d')
 
-    expect(gameTwoDGroup?.entries).toHaveLength(33)
+    expect(gameTwoDGroup?.entries).toHaveLength(35)
     expect(gameTwoDGroup?.entries.find((entry) => entry.name === 'Pegue a moeda')).toMatchObject({
       difficulty: 'beginner',
       genre: 'coleta',
@@ -44,7 +44,26 @@ describe('descoberta dos exemplos do Jogo 2D', () => {
   })
 
   it('busca sem acento e filtros combinados encontram metadados editoriais', () => {
-    const entries = gameTwoDExamples.slice(0, 8).map<KitEntry>((example) => ({
+    // ⚠️ A amostra é escolhida pelo NOME, não por `slice(0, 8)`. Ela era posicional, e a fatia
+    // de sprites de texto inseriu dois exemplos no TOPO da lista: os oito primeiros passaram a
+    // ser outros oito, "Sala com paredes" caiu fora da amostra e a busca por `tilemap` devolveu
+    // vazio — uma reprovação que não falava de busca nenhuma. Estes são os mesmos oito de antes.
+    const AMOSTRA = [
+      'Pegue a moeda',
+      'Cenário do meu desenho',
+      'Pong',
+      'Herói que anda',
+      'Mini plataforma',
+      'Plataforma com inimigos',
+      'Jogo desenhado por código',
+      'Sala com paredes',
+    ]
+    const amostrados = AMOSTRA.map((nome) => {
+      const achado = gameTwoDExamples.find((example) => example.name === nome)
+      if (!achado) throw new Error(`A amostra da busca perdeu "${nome}".`)
+      return achado
+    })
+    const entries = amostrados.map<KitEntry>((example) => ({
       key: `game-2d:${example.name}`,
       name: example.name,
       description: example.description ?? '',

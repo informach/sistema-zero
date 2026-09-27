@@ -1,5 +1,7 @@
 import 'server-only'
 import { creationPartStorageKey, creationStorageKey } from '@sistemazero/core/creations'
+import { isDocumentRecord, ProjectDocumentError } from '@sistemazero/studio/project-document'
+import { validateStudioCreationSnapshot } from '@sistemazero/studio/project-validation'
 import { after, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
@@ -11,12 +13,14 @@ import {
   r2HeadObjectUgc,
   r2PresignGetUgc,
   r2PresignPutUgc,
+  r2ReadCreationJson,
 } from '../server/r2'
 import type { SessionModule } from '../server/session'
 
 export type CreationsRoutes = ReturnType<typeof createCreationsRoutes>
 
 interface CreationsStorage {
+  readJson: typeof r2ReadCreationJson
   presignPut: typeof r2PresignPutUgc
   presignGet: typeof r2PresignGetUgc
   deleteObject: typeof r2DeleteObjectUgc
@@ -100,6 +104,7 @@ const CommitBody = z.strictObject({
 })
 const DeleteBody = z.strictObject({
   baseRevision: z.number().int().min(0),
+  maxFormatVersion: z.number().int().min(1).max(65_535).optional(),
 })
 const ListQuery = z.strictObject({
   cursor: z.string().min(1).max(512).optional(),
@@ -176,6 +181,7 @@ export function createCreationsRoutes(deps: {
 }) {
   const deferCleanup = deps.defer ?? deferWithNextAfter
   const storage: CreationsStorage = deps.storage ?? {
+    readJson: r2ReadCreationJson,
     presignPut: r2PresignPutUgc,
     presignGet: r2PresignGetUgc,
     deleteObject: r2DeleteObjectUgc,
@@ -286,6 +292,21 @@ export function createCreationsRoutes(deps: {
       }
       const reserved = await members.reserveCreationUpload(item.tool, item.itemId, parsed.data)
       if (reserved.status !== 200 || !reserved.body) return response(reserved.status, reserved.body)
+      // Old services may silently strip the request field. Confirm before signing ANY PUT.
+      // Only absence means legacy 1; malformed values (including null/string) fail closed.
+      const confirmedFormat =
+        reserved.body.formatVersion === undefined ? 1 : reserved.body.formatVersion
+      if (confirmedFormat !== (parsed.data.formatVersion ?? 1)) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'UPSTREAM_INCOMPATIBLE',
+              message: 'O serviço de criações não confirmou o formato solicitado',
+            },
+          },
+          { status: 503 },
+        )
+      }
       // Partes declaradas mas o members não devolveu a lista das faltantes (members ANTERIOR ao
       // protocolo, numa janela de deploy/rollback — o DTO dele descarta campos desconhecidos em
       // silêncio): sem essa lista o cliente subiria só o manifesto e o índice apontaria para
@@ -323,6 +344,7 @@ export function createCreationsRoutes(deps: {
         )
         return NextResponse.json({
           revision: reserved.body.revision,
+          formatVersion: confirmedFormat,
           bytes: reserved.body.bytes,
           uploadUrl,
           method: 'PUT',
@@ -347,6 +369,7 @@ export function createCreationsRoutes(deps: {
       // definitivo é bug de cliente (ou a corrida residual do GC) e vira 409 retriável, sem
       // promover uma revisão que aponta para partes inexistentes. Erro de HEAD ≠ 404 segue.
       const uploaded = parsed.data.uploadedParts ?? []
+      let verifiedPartHashes: string[] | undefined
       if (uploaded.length > 0 && storage.headObject) {
         const user = await session.getSession()
         if (user) {
@@ -393,11 +416,31 @@ export function createCreationsRoutes(deps: {
           }
         }
       }
-      const { status, body } = await members.commitCreationUpload(
-        item.tool,
-        item.itemId,
-        parsed.data,
-      )
+      if (item.tool === 'studio') {
+        const user = await session.getSession()
+        if (!user) return NextResponse.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
+        try {
+          const document = await storage.readJson(
+            creationStorageKey(user.id, item.tool, item.itemId, parsed.data.revision),
+          )
+          validateStudioCreationSnapshot(document, item.itemId)
+          verifiedPartHashes =
+            isDocumentRecord(document) && 'format' in document && Array.isArray(document.assets)
+              ? (document.assets as string[])
+              : []
+        } catch (error) {
+          if (error instanceof ProjectDocumentError)
+            return NextResponse.json(
+              { error: { code: 'CREATION_DOCUMENT_INVALID', message: error.message } },
+              { status: 409 },
+            )
+          return mediaErrorResponse(error)
+        }
+      }
+      const { status, body } = await members.commitCreationUpload(item.tool, item.itemId, {
+        ...parsed.data,
+        ...(verifiedPartHashes ? { verifiedPartHashes } : {}),
+      })
       if (status === 200 && body) {
         // Best-effort e DEPOIS da resposta: o manifesto anterior e as partes que a revisão
         // nova não referencia mais já não são de ninguém. Se falhar, fica um objeto órfão no

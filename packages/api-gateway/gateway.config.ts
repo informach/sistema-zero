@@ -244,6 +244,9 @@ const sharedResilience = {
 // pagamento): AFINA o teto global de 2 MB (necessário só p/ os lotes da SendGrid)
 // — 64 KB já é generoso p/ esses payloads e corta abuso barato em rota sem auth.
 const SMALL_JSON_BODY_BYTES = 64 * 1024
+// Tutoriais do "Como fazer": passos em markdown + import em lote. É ESTE teto que vale (o do
+// members é maior); o lote inicial tem ~35 KB. Subir aqui quando a biblioteca crescer.
+const HELP_JSON_BODY_BYTES = 512 * 1024
 
 const config: GatewayConfigInput = {
   defaultVersion: 'v1',
@@ -1312,6 +1315,20 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // "Como fazer" (biblioteca de ajuda do Kids, 26/09/2026): tutoriais publicados, lidos por
+    // QUALQUER conta ativa (inclusive perfil só com o gratuito ou o Desafio). Ler um tutorial
+    // não libera ferramenta nem toca progresso — o gate é só "conta ativa". O wildcard cobre
+    // `collections`, `tutorials` e `tutorials/:slug`.
+    {
+      id: 'members-help-read',
+      methods: ['GET'],
+      pathPattern: '/members/help/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Teto de perfis (kids) da conta — o app dos pais trava o "Adicionar" + "X de Y".
     {
       id: 'members-profile-allowance',
@@ -1366,6 +1383,21 @@ const config: GatewayConfigInput = {
       authorize: { statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-internal-material-downloads',
+      methods: ['POST'],
+      pathPattern: '/members/internal/material-downloads',
+      service: 'members',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'json-field', field: 'actor.userId' },
+      maxBodyBytes: 4096,
     },
     {
       id: 'members-internal-zappy-questions',
@@ -1685,9 +1717,23 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 4096,
     },
+    // Equipe (26/09/2026): entrar pelo código do plano. O literal `join` vence o
+    // `:projectId` (especificidade do route-registry). 10/min: junto com o alfabeto de 31
+    // símbolos × 6 posições, a adivinhação de código é inviável.
+    {
+      id: 'members-pensa-join',
+      methods: ['POST'],
+      pathPattern: '/members/pensa/projects/join',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 10, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
     {
       id: 'members-pensa-project',
-      methods: ['GET', 'PATCH'],
+      methods: ['GET', 'PATCH', 'DELETE'],
       pathPattern: '/members/pensa/projects/:projectId',
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
@@ -1695,6 +1741,41 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 4096,
+    },
+    // Equipe: gerar/trocar (POST) e desligar (DELETE) o código; a lista da equipe; tirar
+    // alguém ou sair (`me`).
+    {
+      id: 'members-pensa-project-share',
+      methods: ['POST', 'DELETE'],
+      pathPattern: '/members/pensa/projects/:projectId/share',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
+    {
+      id: 'members-pensa-project-members',
+      methods: ['GET'],
+      pathPattern: '/members/pensa/projects/:projectId/members',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
+    {
+      id: 'members-pensa-project-member',
+      methods: ['DELETE'],
+      pathPattern: '/members/pensa/projects/:projectId/members/:profileId',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
     },
     {
       id: 'members-pensa-cycle-create',
@@ -1918,6 +1999,22 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
+    // Baú de fim de unidade da trilha kids: a criança clica e AÍ ganha o XP+moedas
+    // (antes caía sozinho ao concluir a última aula do módulo). 5 segmentos, com
+    // literais `units` e `chest/claim` — não colide com `/courses/:slug` (2),
+    // `/courses/:slug/progress` (3) nem `/courses/:slug/rating` (3). Teto baixo:
+    // é escrita, e um baú por módulo para sempre.
+    {
+      id: 'members-unit-chest-claim',
+      methods: ['POST'],
+      pathPattern: '/members/courses/:slug/units/:moduleId/chest/claim',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
     {
       id: 'members-course-progress',
       methods: ['GET'],
@@ -2004,6 +2101,107 @@ const config: GatewayConfigInput = {
       authorize: { statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-learning-navigation',
+      methods: ['PUT'],
+      pathPattern: '/members/lessons/:lessonId/navigation',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    {
+      id: 'members-learning-progress',
+      methods: ['PUT'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/learning-progress',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    {
+      id: 'members-learning-attempt',
+      methods: ['POST'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/learning-attempts',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    {
+      id: 'members-section-project-check',
+      methods: ['POST'],
+      pathPattern: '/members/lessons/:lessonId/sections/:sectionId/project-check',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 2 * 1024 * 1024,
+    },
+    {
+      id: 'members-section-action-check',
+      methods: ['POST'],
+      pathPattern: '/members/lessons/:lessonId/sections/:sectionId/action-check',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    {
+      id: 'members-gallery-prepare',
+      methods: ['POST'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/gallery-prepare',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    {
+      id: 'members-gallery-commit',
+      methods: ['POST'],
+      pathPattern: '/members/internal/lessons/:lessonId/blocks/:blockId/gallery-commit',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'json-field', field: 'actor.userId' },
+      maxBodyBytes: 2 * 1024 * 1024,
+    },
+    // A cor do perfil. ⚠️ O teto de 60/min por principal é CIRCUITO DE SEGURANÇA, não estimativa:
+    // foi ele que pegou o laço de `setTheme` que martelava a rota (429 em série). Quem clica
+    // rápido nas caixinhas é o CLIENTE que precisa juntar os cliques — não se sobe este número.
+    {
+      id: 'members-profile-palette',
+      methods: ['GET', 'PUT'],
+      pathPattern: '/members/preferences',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    {
+      id: 'members-section-help',
+      methods: ['POST'],
+      pathPattern: '/members/lessons/:lessonId/section-help',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 10, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
     },
     // Submit de quiz (score no servidor; cooldown reforçado no members) — moderado.
     {
@@ -2217,9 +2415,24 @@ const config: GatewayConfigInput = {
       upstreamAuth: 'resign',
       rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
     },
-    // Concessão MANUAL S2S (referrals → gateway → members): a Bolsa do Primeiro
-    // Jogo concede a oferta completa SEM pagamento. Espelho exato do
-    // members-webhook-grant (HMAC de borda + resign como consumer `gateway`).
+    // Consulta do curso-presente: somente referrals pode verificar se o curso
+    // kids já foi publicado. A leitura também é re-assinada para o members.
+    {
+      id: 'members-webhook-gift-course',
+      methods: ['GET'],
+      pathPattern: '/members/webhooks/gift-course/:slug',
+      service: 'members',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['referrals'],
+      },
+      upstreamAuth: 'resign',
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    // Concessão MANUAL S2S (referrals → gateway → members): mantém a oferta
+    // legada e permite o novo presente de curso específico, sem pagamento.
     {
       id: 'members-webhook-grant-manual',
       methods: ['POST'],
@@ -2570,7 +2783,106 @@ const config: GatewayConfigInput = {
       // Trilha de auditoria: trocar o tema do mês afeta todos os alunos.
       audit: {},
     },
+    // "Como fazer" (autoria): leitura staff+ (a equipe consulta), escrita admin+. O wildcard
+    // cobre coleções e tutoriais (`export`, `import`, `:id`, `:id/publish`…). Corpo maior que o
+    // JSON pequeno: um tutorial tem passos em markdown e o import vem em lote.
+    {
+      id: 'members-admin-help-read',
+      methods: ['GET'],
+      pathPattern: '/members/admin/help/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-admin-help-write',
+      methods: ['POST', 'PATCH', 'PUT'],
+      pathPattern: '/members/admin/help/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: HELP_JSON_BODY_BYTES,
+      // Publicar/despublicar muda o que toda criança lê e o que o Zappy responde.
+      audit: {},
+    },
 
+    {
+      id: 'members-admin-lesson-draft-read',
+      methods: ['GET'],
+      pathPattern: '/members/admin/lessons/:id/draft',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 2 * 1024 * 1024,
+    },
+    {
+      id: 'members-admin-lesson-draft-write',
+      methods: ['PATCH'],
+      pathPattern: '/members/admin/lessons/:id/draft',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 2 * 1024 * 1024,
+      audit: {},
+    },
+    {
+      // O que está PUBLICADO, no formato do rascunho (o painel "Comparar com a versão
+      // publicada"). ⚠️ Entrada PRÓPRIA porque o matcher exige o número EXATO de segmentos: a
+      // `-read` acima tem um a menos, e a `-publication` abaixo é só POST.
+      id: 'members-admin-lesson-draft-published',
+      methods: ['GET'],
+      pathPattern: '/members/admin/lessons/:id/draft/published',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 2 * 1024 * 1024,
+    },
+    {
+      id: 'members-admin-lesson-draft-publication',
+      methods: ['POST'],
+      pathPattern: '/members/admin/lessons/:id/draft/:action',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 2 * 1024 * 1024,
+      audit: {},
+    },
+    {
+      id: 'members-admin-import-preview',
+      methods: ['POST'],
+      pathPattern: '/members/admin/lessons/:id/import-preview',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 2 * 1024 * 1024,
+      audit: {},
+    },
+    {
+      id: 'members-admin-import-learning',
+      methods: ['POST'],
+      pathPattern: '/members/admin/lessons/:id/import-learning',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 2 * 1024 * 1024,
+      audit: {},
+    },
     // ── Área de membros — Admin de AUTORIA de conteúdo ───────────────────────
     // Cursos → módulos → aulas → blocos/anexos. LEITURA (lista/árvore/conteúdo) →
     // superadmin/admin/staff; ESCRITA → superadmin/admin. Os `/*` casam o resto do
@@ -2629,20 +2941,6 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
-    {
-      id: 'members-admin-blocks-write',
-      methods: ['PATCH', 'DELETE'],
-      pathPattern: '/members/admin/blocks/*',
-      service: 'members',
-      auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
-      transforms: membersInternalTransforms,
-      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
-      // Auditoria: editar/apagar bloco mexe no que o ALUNO vê e (quiz/atividade)
-      // pode invalidar correção — sem trilha, o incidente das entregas sumidas
-      // (08/2026) ficou indiagnosticável em produção.
-      audit: {},
-    },
     // Leitura admin de blocos (GET `/members/admin/blocks/:id/studio-submissions[/:userId]`):
     // acompanhamento das entregas do Estúdio pelo professor (LEITURA staff+).
     {
@@ -2654,16 +2952,6 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
-    },
-    {
-      id: 'members-admin-attachments-write',
-      methods: ['PATCH', 'DELETE'],
-      pathPattern: '/members/admin/attachments/*',
-      service: 'members',
-      auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
-      transforms: membersInternalTransforms,
-      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     // Revogar um certificado emitido (a validação pública passa a mostrar inválido).
     // 4 segmentos — não colide com as demais rotas admin.
@@ -3053,11 +3341,21 @@ const config: GatewayConfigInput = {
       transforms: hubInternalTransforms,
       rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
     },
-    // Carreira do aluno: agregado dos próprios jogos no Mural (publicados + jogadas).
+    // Jornada do aluno: agregado dos próprios jogos no Mural (publicados + jogadas).
     {
       id: 'hub-my-showcase-stats',
       methods: ['GET'],
       pathPattern: '/hub/my-showcase-stats',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-my-showcase-delivery',
+      methods: ['GET'],
+      pathPattern: '/hub/my-showcase-delivery/:courseId',
       service: 'hub',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },

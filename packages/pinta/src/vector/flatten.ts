@@ -5,7 +5,7 @@
  * sabe de números). Duas coisas moram aqui e em nenhum outro lugar: a régua de
  * quantos segmentos um arco precisa, e o pivô da rotação.
  */
-import { boundsCenter, parsePathD, rotatePoint, shapeBounds } from './geometry'
+import { parsePathD, rotatePoint, rotationPivotOf } from './geometry'
 import type { Vec2, VectorShape } from './model'
 import type { Poly, Ring } from './polygonClip'
 
@@ -203,11 +203,10 @@ export function flattenPathD(d: string, tolerance = CHORD_TOLERANCE): FlattenedP
 /**
  * A forma achatada em anéis, prontos para o clipper.
  *
- * ⚠️ A ROTAÇÃO é assada aqui, e o pivô é `boundsCenter(shapeBounds(shape))` —
- * a MESMA conta que o `svg.ts` usa para emitir o `rotate()`. Chamar as mesmas
- * funções é o que garante que a mistura bata com o que a criança vê, inclusive
- * no caso torto em que o `shapeBounds` de um traço inclui pontos de controle.
- * Bug por bug com o render é o comportamento CERTO aqui.
+ * ⚠️ A ROTAÇÃO é assada aqui com `rotationPivotOf` — a MESMA conta que o
+ * `svg.ts` usa para emitir o `rotate()`. Sem pivô explícito, continua sendo o
+ * centro do `shapeBounds`, inclusive no caso torto em que a caixa de um traço
+ * inclui pontos de controle. Bug por bug com o render é o comportamento CERTO.
  */
 export function shapeToPoly(shape: VectorShape, tolerance = CHORD_TOLERANCE): FlattenResult {
   let bruto: Vec2[][]
@@ -236,7 +235,7 @@ export function shapeToPoly(shape: VectorShape, tolerance = CHORD_TOLERANCE): Fl
       return { ok: false, reason: 'unsupported-shape' }
   }
 
-  const pivot = shape.rotation === 0 ? null : boundsCenter(shapeBounds(shape))
+  const pivot = shape.rotation === 0 ? null : rotationPivotOf(shape)
   const poly: Poly = []
   for (const ring of bruto) {
     const girado = pivot ? ring.map((p) => rotatePoint(p, pivot, shape.rotation)) : ring

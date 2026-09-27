@@ -6,8 +6,10 @@ import { COMUNIDADE_DOS_CRIADORES } from '../../../funnels/comunidade-dos-criado
 import { getFunnel } from '../../../funnels/registry'
 import { formatBRLFromCents, formatBRLFromCents2 } from '../../../lib/money'
 import { getActiveOffer, type OfferPlans } from '../../../server/catalog'
+import { resolveCouponPresentation } from '../../../server/coupon-presentation'
 import { getDeps } from '../../../server/deps'
 import { resolveOfferSlug } from '../../../server/offer'
+import { checkOfferContract } from '../../../server/offer-contract'
 
 // SSR (não prerender): nome/preço vêm do catálogo em runtime. Marketing sem dado
 // por-usuário → cacheável na borda; reflete mudança de preço da oferta em ~1min.
@@ -18,12 +20,28 @@ export const prerender = false
 const f = getFunnel(Astro.params.audience, Astro.params.produto)
 if (!f) return new Response(null, { status: 404 })
 
-const { env, gateway } = getDeps()
+const { env, gateway, log } = getDeps()
 // Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout.
 const offerSlug = resolveOfferSlug(env, f.key)
-const offer = await getActiveOffer(gateway, offerSlug)
+const offer = await getActiveOffer(gateway, offerSlug, { log })
+const contractCheck = checkOfferContract(f.offerContract, offer)
+if (!contractCheck.ok) {
+  log('offer.contract_mismatch', {
+    funnel: f.key,
+    offerSlug,
+    reason: contractCheck.reason,
+    expected: contractCheck.expected,
+    actual: contractCheck.actual,
+  })
+  return new Response('Esta oferta está temporariamente indisponível.', { status: 503 })
+}
 const productName = offer?.productName || f.productName
-const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
+// QR/link de evento aceita `?cupom=` e o alias `?coupon=`. O desconto exibido
+// existe somente depois de uma cotação autoritativa no catálogo. A própria
+// cotação também atualiza o preço cheio caso o cache visual esteja defasado.
+const coupon = await resolveCouponPresentation(gateway, offerSlug, Astro.url.searchParams)
+const priceCents =
+  coupon.status === 'valid' ? coupon.listPriceCents : (offer?.priceCents ?? env.PRODUCT_PRICE_CENTS)
 const priceLabel = formatBRLFromCents2(priceCents) // "R$ 37,00" (boxes de preço)
 const priceLabelShort = formatBRLFromCents(priceCents) // "R$ 37" (botões e copy)
 const priceReais = (priceCents / 100).toFixed(2)
@@ -42,7 +60,7 @@ let plans: OfferPlans | null = null
 if (offer && offer.pricingMode === 'subscription') {
   let alt: OfferPlans['alt'] = null
   if (offer.altOffer) {
-    const sibling = await getActiveOffer(gateway, offer.altOffer.slug)
+    const sibling = await getActiveOffer(gateway, offer.altOffer.slug, { log })
     if (sibling && sibling.pricingMode === 'subscription' && sibling.billingIntervalMonths) {
       alt = {
         slug: sibling.slug,
@@ -81,6 +99,7 @@ const bodyProps = {
   perfil,
   quer,
   ofertaUrl,
+  coupon,
 }
 ---
 

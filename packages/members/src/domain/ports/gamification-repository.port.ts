@@ -233,7 +233,7 @@ export interface ListGamificationRankingInput {
 }
 
 /**
- * Os dois marcos de curso do aluno, POR CURSO. É o mesmo par que a carreira
+ * Os dois marcos de curso do aluno, POR CURSO. É o mesmo par que a jornada
  * cruza (`course_complete` ∩ `course_showcased`) — só que aqui vem separado,
  * porque a vitrine precisa distinguir "concluiu" de "concluiu e publicou".
  */
@@ -242,13 +242,19 @@ export interface CourseMilestones {
   showcased: boolean
 }
 
-/** Estado de carreira derivado de uma única leitura consistente do ledger. */
-export interface CareerCourseState {
+/** Estado de jornada derivado de uma única leitura consistente do ledger. */
+export interface JourneyCourseState {
   qualified: QualifyingByTier
   milestones: Map<string, CourseMilestones>
 }
 
 export interface GamificationRepository {
+  /** Remaining one-time content events in courses already accessible to this learner. */
+  listContentMissionOpportunities(
+    userId: string,
+    audience: CourseAudience,
+    courseSlugs: string[],
+  ): Promise<Map<MissionGoalType, number>>
   /**
    * Concede XP/streak/badges numa transação serializada POR ALUNO (advisory
    * xact-lock). Sem evento novo, streak/lastActivityDate ficam INTOCADOS (só
@@ -275,6 +281,16 @@ export interface GamificationRepository {
     sourceType: XpSourceType,
     sourceId: string,
   ): Promise<boolean>
+  /**
+   * Módulos cujo baú JÁ foi aberto. A linha `unit_complete` do ledger É o carimbo
+   * de resgate: quem ganhou o XP no modelo antigo (automático, ao concluir a
+   * última aula) nasce com o baú aberto, sem migration de backfill nenhuma.
+   */
+  listClaimedUnits(
+    userId: string,
+    audience: CourseAudience,
+    moduleIds: string[],
+  ): Promise<Set<string>>
   getProfile(userId: string, audience: CourseAudience): Promise<GamificationProfileRecord | null>
   listBadges(
     userId: string,
@@ -289,11 +305,11 @@ export interface GamificationRepository {
    * snapshot; track legado sem curso → `'2d'`). Curso sem ambos os marcos não
    * conta; degrau ausente do resultado = 0.
    */
-  listQualifyingCareerSlots(userId: string, audience: CourseAudience): Promise<QualifyingByTier>
+  listQualifyingJourneySlots(userId: string, audience: CourseAudience): Promise<QualifyingByTier>
   /**
    * Qualificação e marcos por curso calculados sobre o MESMO snapshot do ledger.
    * Os marcos vêm separados (`completed`/`showcased`) para o selo e o contador;
-   * a qualificação cruza ambos para a trava da carreira.
+   * a qualificação cruza ambos para a trava da jornada.
    *
    * ⚠️ A fonte é o LEDGER, não `progress`: progresso ao vivo pode regredir quando
    * uma aula nova é publicada, mas o marco é congelado. Curso sem marco não entra
@@ -301,7 +317,7 @@ export interface GamificationRepository {
    * já tem em mãos. Um único contrato impede duas implementações da mesma
    * derivação e evita misturar eventos de snapshots diferentes.
    */
-  listCareerCourseState(userId: string, audience: CourseAudience): Promise<CareerCourseState>
+  listJourneyCourseState(userId: string, audience: CourseAudience): Promise<JourneyCourseState>
   /**
    * Blocos do Estúdio que os cursos ELEGÍVEIS do aluno liberam AGORA, POR CURSO.
    * Curso Kids bônus exige `course_complete`; curso Kids com posição e curso Adult
@@ -322,12 +338,12 @@ export interface GamificationRepository {
    */
   getStudioUnlockRevision(userId: string, audience: CourseAudience): Promise<string>
   /**
-   * Versão em LOTE do `listQualifyingCareerSlots` — slots qualificados por
+   * Versão em LOTE do `listQualifyingJourneySlots` — slots qualificados por
    * degrau de VÁRIOS perfis numa query só (para o BFF derivar o nível/aura de
    * cada autor do fórum kids sem N+1). Mapa id→qualificados; perfil sem marco algum
    * some do mapa (o serviço trata como zero → nível Faísca/noob).
    */
-  listQualifyingCareerSlotsForProfiles(
+  listQualifyingJourneySlotsForProfiles(
     profileIds: string[],
     audience: CourseAudience,
   ): Promise<Map<string, QualifyingByTier>>

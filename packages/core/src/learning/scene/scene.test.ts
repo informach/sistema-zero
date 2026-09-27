@@ -1,0 +1,361 @@
+import { describe, expect, test } from 'bun:test'
+import { SCENE_IDS, type SceneAction } from './actions'
+import { castText } from './cast'
+import { SCENE_MODELS } from './catalog'
+import { openScene, stepScene } from './engine'
+import { evaluateExperimentation, sceneGoals } from './evaluate'
+import { isSceneActivity } from './index'
+import { SCENE_QUESTIONS } from './questions'
+import { drawLoopOnScreen, sceneReadout, sceneSituation } from './readout'
+import { hydrateSceneState, initialScene, isSceneState, type SceneState } from './state'
+
+/**
+ * ⚠️ A equivalência com o motor anterior foi PROVADA no commit que criou este módulo
+ * (`820b9a0a`): as 14 cenas rodaram o mesmo roteiro nos dois motores e as descobertas, as
+ * observações, a legenda e os 44 campos do estado bateram. Os testes que faziam essa
+ * comparação morreram junto com o motor antigo — mantê-lo vivo só para eles seria exatamente
+ * o puxadinho que a reescrita existe para tirar. O que ficou testa a cena por si.
+ */
+
+describe('cena: o catálogo', () => {
+  test('a sombra aparece antes de pedir para desligá-la', () => {
+    const goals = sceneGoals('shading', openScene({ scene: 'shading' }))
+    expect(goals.map((goal) => goal.id)).toEqual(['volume', 'flat', 'side'])
+  })
+
+  test('o placar espera no início antes de pedir para jogar', () => {
+    const targets = [
+      'score-runaway',
+      'score-idle-wrong',
+      'score-waiting',
+      'score-playing',
+      'score-kept',
+    ]
+    const goals = sceneGoals('score', openScene({ scene: 'score' }), undefined, targets)
+    expect(goals.map((goal) => goal.id)).toEqual(targets)
+  })
+
+  test('jump-sound usa o nome do bloco que a criança encontra no Estúdio', () => {
+    const model = SCENE_MODELS['jump-sound']
+    const copy = [
+      model.manipulates,
+      ...model.goals.flatMap((goal) => [goal.label, goal.pedido]),
+      ...model.hints,
+      SCENE_QUESTIONS['jump-sound'].explain?.prompt,
+    ].join(' ')
+    expect(copy).not.toContain('Tocar som')
+    expect(copy).toContain('Tocar efeito')
+    expect(model.extra).toContain('celular')
+  })
+
+  test('controls apresenta o toque como algo que a criança já viu no próprio jogo', () => {
+    const goal = SCENE_MODELS.controls.goals.find((item) => item.id === 'missing-touch')
+    expect(goal?.label).toBe('É o mesmo que aconteceu no seu jogo: tocou e nada aconteceu')
+    expect(goal?.pedido).toContain('Quando apertar a tecla')
+  })
+
+  test('as cenas do Se nomeiam o bloco que existe na paleta', () => {
+    for (const scene of ['game-state', 'score'] as const) {
+      const model = SCENE_MODELS[scene]
+      const copy = [
+        model.instruction,
+        model.manipulates,
+        ...model.goals.map((goal) => goal.pedido),
+        ...model.hints,
+      ].join(' ')
+      expect(copy).not.toContain('Se jogando')
+      expect(copy).toContain('o estado do jogo é jogando')
+    }
+  })
+})
+
+describe('cena: as duas atividades', () => {
+  test('o impulso inicial só existe nas duas cenas de salto', () => {
+    expect(isSceneActivity({ type: 'experimentation', scene: 'impulse', initialImpulse: 9 })).toBe(
+      true,
+    )
+    expect(isSceneActivity({ type: 'experimentation', scene: 'world', initialImpulse: 9 })).toBe(
+      false,
+    )
+    expect(isSceneActivity({ type: 'experimentation', scene: 'impulse', initialImpulse: 99 })).toBe(
+      false,
+    )
+  })
+})
+
+describe('cena: a avaliação', () => {
+  test('descobrir e desfazer não fecha as duas cenas que pedem montagem final', () => {
+    // ⚠️ Mudou de propósito (full review de experiência, M4): na `layers` a volta ao arranjo do jogo é a
+    // META `back-in-front`, e não uma condição escondida. Com duas trocas, a faixa diz "2 de 3".
+    let s = initialScene({ scene: 'layers' })
+    s = stepScene({ scene: 'layers' }, s, { type: 'layer', front: true })
+    s = stepScene({ scene: 'layers' }, s, { type: 'layer', front: false })
+    expect(sceneGoals('layers', s).filter((g) => g.complete).length).toBe(2)
+    expect(sceneGoals('layers', s).length).toBe(3)
+    expect(evaluateExperimentation('layers', s).passed).toBe(false)
+
+    s = stepScene({ scene: 'layers' }, s, { type: 'layer', front: true })
+    expect(evaluateExperimentation('layers', s).passed).toBe(true)
+  })
+
+  test('recomeçar guarda as descobertas', () => {
+    let s = initialScene({ scene: 'world' })
+    s = stepScene({ scene: 'world' }, s, { type: 'create' })
+    const antes = [...s.evidence.discoveries]
+    expect(antes.length).toBeGreaterThan(0)
+    s = stepScene({ scene: 'world' }, s, { type: 'reset' })
+    expect(s.evidence.discoveries).toEqual(antes)
+    expect(s.world.created).toBe(false)
+  })
+
+  test('⚠️⚠️ a frase de sucesso veste o ELENCO, como as metas', () => {
+    // Crua, uma turma de nave lia no cartão "É o mesmo Dino", com a pergunta e a faixa
+    // falando da nave. É o texto que o servidor grava na tentativa e o relatório lê de volta.
+    const nave = { hero: { name: 'nave', gender: 'f' as const } }
+    let s = initialScene({ scene: 'world' })
+    s = stepScene({ scene: 'world' }, s, { type: 'create' })
+    s = stepScene({ scene: 'world' }, s, { type: 'connect', port: 'draw', enabled: true })
+    const vestido = evaluateExperimentation('world', s, true, nave)
+    expect(vestido.passed).toBe(true)
+    expect(vestido.feedback).toBe(castText(SCENE_MODELS.world.success, nave))
+    expect(vestido.feedback).toContain('a mesma nave')
+    expect(vestido.feedback).not.toContain('Dino')
+    // Sem elenco, o texto de fábrica continua como está.
+    expect(evaluateExperimentation('world', s).feedback).toBe(SCENE_MODELS.world.success)
+  })
+
+  test('ação que não pertence à cena não muda nada', () => {
+    const s = initialScene({ scene: 'world' })
+    // `impulse` é de outra cena: no-op silencioso, sem contar como ação.
+    const depois = stepScene({ scene: 'world' }, s, { type: 'impulse', force: 9 })
+    expect(depois).toBe(s)
+  })
+})
+
+describe('controls: o Enter começa a partida com ou sem o fio do toque', () => {
+  const start = { scene: 'controls' } as const
+  const rodar = (acoes: SceneAction[], de = openScene(start)) =>
+    acoes.reduce((e, a) => stepScene(start, e, a), de)
+
+  test('⚠️⚠️ quem segue a instrução (teclado primeiro, toque depois) fecha as três metas', () => {
+    // "Comece pelo teclado e depois pelo toque": o Enter antes do fio começava a partida sem
+    // registrar a meta, e o "Já descobri" respondia "Ainda falta: Partida iniciada por Enter".
+    const enter = rodar([{ type: 'start', input: 'key' }])
+    expect(enter.match.screen).toBe('playing')
+    expect(enter.evidence.discoveries).toContain('start-key')
+    const tudo = rodar(
+      [
+        { type: 'home' },
+        { type: 'start', input: 'tap' },
+        { type: 'connect', port: 'touch', enabled: true },
+        { type: 'start', input: 'tap' },
+      ],
+      enter,
+    )
+    expect(evaluateExperimentation('controls', tudo).passed).toBe(true)
+  })
+
+  test('⚠️ sem brecha: a meta só cai com a tela SAINDO do Início pelo Enter', () => {
+    // Jogando, o Enter não começa nada, e a meta não cai.
+    const jogando = rodar([
+      { type: 'connect', port: 'touch', enabled: true },
+      { type: 'start', input: 'tap' },
+    ])
+    const deNovo = rodar([{ type: 'start', input: 'key' }], jogando)
+    expect(deNovo.evidence.discoveries).not.toContain('start-key')
+    // E um caso que já abre jogando pelo Enter não traz a descoberta junto.
+    const caso = openScene({
+      scene: 'controls',
+      setup: { actions: [{ type: 'start', input: 'key' }] },
+    })
+    expect(caso.match.screen).toBe('playing')
+    expect(caso.evidence.discoveries).toEqual([])
+  })
+})
+
+describe('draw-loop: limpar sem desenhar deixa a tela VAZIA', () => {
+  const start = { scene: 'draw-loop' } as const
+  const rodar = (acoes: SceneAction[], de = openScene(start)) =>
+    acoes.reduce((e, a) => stepScene(start, e, a), de)
+  const dinosNaFaixa = (s: SceneState) =>
+    sceneReadout('draw-loop', s).find((l) => l.label === 'Dinos na tela')?.value
+  // ⚠️ Mudou de propósito (lote 4 do Raio-X): o relógio anda em QUADROS de 0,25 s nesta cena, e um
+  // `advance` de 0,2 s não fecha quadro nenhum. "O relógio anda" aqui é UM quadro.
+  const umQuadro: SceneAction = { type: 'advance', seconds: 1 / 4 }
+
+  test('⚠️⚠️ o relógio anda com a limpeza e sem o desenho: 0 na tela, e a tela NÃO congela', () => {
+    // A cena mostrava o Dino inteiro, dizia "a tela continua igual" e fechava "a tela congela",
+    // justo no estado que a pergunta do modelo pergunta ("E se limpar sem desenhar?").
+    const vazia = rodar([{ type: 'erase', on: true }, umQuadro])
+    expect(vazia.render.empty).toBe(true)
+    expect(drawLoopOnScreen(vazia)).toBe(0)
+    expect(dinosNaFaixa(vazia)).toBe('0')
+    // ⚠️ Mudou de propósito (consertos do lote 1): a frase diz "vazia" e o número fica na faixa,
+    // sem a mesma coisa três vezes na tela.
+    expect(vazia.caption).toBe('Limpou e não desenhou: a tela ficou vazia.')
+    expect(vazia.caption).not.toContain('continua igual')
+    expect(vazia.evidence.discoveries).not.toContain('frozen')
+    expect(sceneSituation('draw-loop', { ...vazia, caption: '' })).toContain('vazia')
+    expect(isSceneState(vazia)).toBe(true)
+
+    // Desligar a limpeza não traz o Dino de volta: ninguém desenhou. E tela vazia parada também
+    // não é "congelar", porque não há desenho nenhum para ver parado.
+    const semLimpar = rodar([{ type: 'erase', on: false }, umQuadro], vazia)
+    expect(drawLoopOnScreen(semLimpar)).toBe(0)
+    expect(semLimpar.evidence.discoveries).not.toContain('frozen')
+
+    // O primeiro quadro que desenha acaba com o vazio.
+    const desenhou = rodar([{ type: 'loop', on: true }, umQuadro], semLimpar)
+    expect(desenhou.render.empty).toBe(false)
+    expect(drawLoopOnScreen(desenhou)).toBe(1)
+  })
+
+  test('com as duas chaves desligadas a tela congela, como sempre', () => {
+    const congelada = rodar([umQuadro])
+    expect(congelada.evidence.discoveries).toContain('frozen')
+    expect(drawLoopOnScreen(congelada)).toBe(1)
+    expect(dinosNaFaixa(congelada)).toBe('1')
+  })
+
+  test('⚠️⚠️ retrato com o `render` sem o campo `empty` é INVÁLIDO, e não completado', () => {
+    // Consertos do full review 2 (M-1): campo faltando dentro do grupo não recebe o valor de
+    // fábrica (isso fabricava estado incoerente); o retrato é recusado e a cena recomeça limpa.
+    const { empty: _fora, ...truncado } = openScene(start).render
+    expect(isSceneState(hydrateSceneState({ ...openScene(start), render: truncado }))).toBe(false)
+    // O grupo INTEIRO ausente continua recebendo o padrão de fábrica.
+    const { render: _grupo, ...semRender } = openScene(start)
+    const hidratado = hydrateSceneState(semRender)
+    expect(isSceneState(hidratado)).toBe(true)
+    expect((hidratado as SceneState).render.empty).toBe(false)
+  })
+})
+
+describe('hitbox: as pistas citam só o que existe na tela', () => {
+  test('⚠️ nada de "marca do meio", "alças" ou "contato indicado"', () => {
+    // A pista literal é a última saída de quem travou, e ela mandava procurar controles que a
+    // bancada nunca teve. Os que existem: a Distância do cacto e a Largura da área do Dino.
+    const textos = [SCENE_MODELS.hitbox.instruction, ...SCENE_MODELS.hitbox.hints]
+    for (const t of textos) expect(t).not.toMatch(/marca do meio|alças?|contato indicado/i)
+    // ⚠️ Mudou de propósito (lote 5): o controle virou "Tamanho da área do Dino", em porcentagem.
+    expect(SCENE_MODELS.hitbox.hints[2]).toContain('Tamanho da área do Dino')
+  })
+})
+
+describe('cena: o estado que volta do servidor', () => {
+  test('aceita o que o MOTOR produz, inclusive uma pista cheia de cactos', () => {
+    // ⚠️ O review pegou um teto meu de 40 cactos. Na cena `spawn` sem o relógio ligado nasce
+    // um cacto por quadro (1/30 s), então dois segundos de brincadeira já dão 60 — e o
+    // estado voltava do servidor recusado, mandando a criança recomeçar do zero.
+    let s = initialScene({ scene: 'spawn' })
+    s = stepScene({ scene: 'spawn' }, s, { type: 'advance', seconds: 2 })
+    expect(s.crowd.cacti.length).toBeGreaterThan(40)
+    expect(isSceneState(s)).toBe(true)
+
+    // O pior caso do motor: o filtro de limpeza segura o vivo em 288.
+    let cheio = initialScene({ scene: 'spawn' })
+    cheio = stepScene({ scene: 'spawn' }, cheio, { type: 'advance', seconds: 30 })
+    expect(isSceneState(cheio)).toBe(true)
+  })
+
+  test('⚠️ o motor nunca produz um resto NEGATIVO, em nenhuma cena nem fatia de tempo', () => {
+    // O `1e-9` que faz 0,1 s dez vezes contar o cacto certo empurrava o contador para cima sem
+    // ser descontado do resto: ele saía em −2,22e−16 e o próprio validador recusava o estado.
+    // A criança assistia a demonstração inteira e ouvia que ela "mudou, abra de novo".
+    // ⚠️ Com o relógio LIGADO, que é onde ele morde: em `spawn` o intervalo passa a ser o que a
+    // criança escolheu, e fatias que somam exatamente um múltiplo dele caem no fio.
+    for (const scene of SCENE_IDS)
+      for (const relogio of [false, true])
+        for (const fatia of [0.1, 0.2, 0.3, 0.6, 1 / 30, 0.05, 1]) {
+          let s = initialScene({ scene })
+          if (relogio)
+            s = stepScene({ scene }, s, { type: 'connect', port: 'timer', enabled: true })
+          const onde = `${scene}, relógio ${relogio}, fatias de ${fatia}`
+          for (let i = 0; i < 40; i++) {
+            s = stepScene({ scene }, s, { type: 'advance', seconds: fatia })
+            expect(s.crowd.remainder, onde).toBeGreaterThanOrEqual(0)
+          }
+          expect(isSceneState(s), onde).toBe(true)
+        }
+  })
+
+  test('recusa um intervalo que travaria o motor em laço infinito', () => {
+    // ⚠️ `interval: 0` faz `Math.floor(x / 0) = Infinity` no laço de nascimento: a aba
+    // congela até estourar a memória. Só a ação `interval` alimenta esse campo no jogo
+    // (0,5 a 2), então este validador é a única barreira para um checkpoint adulterado.
+    const bom = initialScene({ scene: 'spawn' })
+    expect(isSceneState({ ...bom, crowd: { ...bom.crowd, interval: 0 } })).toBe(false)
+    expect(isSceneState({ ...bom, crowd: { ...bom.crowd, interval: 9 } })).toBe(false)
+    expect(isSceneState({ ...bom, crowd: { ...bom.crowd, remainder: 1e9 } })).toBe(false)
+  })
+
+  test('o áudio da instrução não aceita URL sem protocolo', () => {
+    // ⚠️ `//host/audio.mp3` parece caminho local e não é: carrega de terceiro, pelo
+    // protocolo da página. Era o que a regex original barrava com `[^/]`.
+    const com = (instructionAudioUrl: string) =>
+      isSceneActivity({ type: 'experimentation', scene: 'world', instructionAudioUrl })
+    expect(com('https://cdn.sistemazero.com.br/a.mp3')).toBe(true)
+    expect(com('/audio/a.mp3')).toBe(true)
+    expect(com('//host-qualquer/a.mp3')).toBe(false)
+    expect(com('/')).toBe(false)
+    expect(com('http://inseguro/a.mp3')).toBe(false)
+  })
+
+  test('aceita o estado inicial de todas as cenas', () => {
+    for (const scene of SCENE_IDS) expect(isSceneState(initialScene({ scene }))).toBe(true)
+  })
+
+  test('recusa grupo ausente, campo de tipo errado e array acima do teto', () => {
+    const bom = initialScene({ scene: 'world' })
+    expect(isSceneState({ ...bom, flight: undefined })).toBe(false)
+    expect(isSceneState({ ...bom, match: { ...bom.match, screen: 'meio' } })).toBe(false)
+    expect(isSceneState({ ...bom, contact: { distance: 'longe', width: 48 } })).toBe(false)
+    expect(
+      isSceneState({
+        ...bom,
+        evidence: { ...bom.evidence, discoveries: Array.from({ length: 41 }, (_, i) => `d${i}`) },
+      }),
+    ).toBe(false)
+    // ⚠️ O validador antigo descobria os campos por reflexão e deixava passar array novo com
+    // um limite genérico. Este exige que cada grupo tenha a forma declarada.
+    expect(
+      isSceneState({
+        ...bom,
+        speed: { ...bom.speed, samples: { ...bom.speed.samples, positions: 'nenhuma' } },
+      }),
+    ).toBe(false)
+  })
+})
+
+describe('consertos do review do lote 1 (Raio-X)', () => {
+  test('⚠️⚠️ `spawn`: "criação em cada quadro" pede a parede à vista (1 s e 20 cactos)', () => {
+    // Com um "Um passo" (0,2 s) nasciam 6 cactos empilhados num tufo que ninguém conta, e a meta
+    // caía afirmando o que a criança não tinha visto (relatório g2).
+    const start = { scene: 'spawn' } as const
+    const passo = stepScene(start, openScene(start), { type: 'advance', seconds: 0.2 })
+    expect(passo.crowd.born).toBeGreaterThan(1)
+    expect(passo.evidence.discoveries).not.toContain('every-frame')
+    const parede = stepScene(start, openScene(start), { type: 'advance', seconds: 1 })
+    expect(parede.crowd.born).toBeGreaterThanOrEqual(20)
+    expect(parede.evidence.discoveries).toContain('every-frame')
+    // O intervalo continua caindo como antes.
+    const comRelogio = [
+      { type: 'connect' as const, port: 'timer' as const, enabled: true },
+      { type: 'advance' as const, seconds: 2 },
+    ].reduce((e, a) => stepScene(start, e, a), openScene(start))
+    expect(comRelogio.evidence.discoveries).toContain('with-timer')
+  })
+
+  test('⚠️⚠️ `circle-collision`: com o quadro fixo a distância anda INTEIRA e para EXATA em 60', () => {
+    // ⚠️ Mudou de propósito (lote 4 do Raio-X). A ponte do lote 1 guardava a distância crua e
+    // arredondava a COMPARAÇÃO no milionésimo, porque cem fatias de 0,04 s paravam em 60,0000001. O
+    // relógio de quadro fixo anda 2 inteiros por quadro: as mesmas cem fatias dão 60 exato, a
+    // comparação sem arredondar dá a batida, e a faixa (que nunca arredondou) diz o mesmo.
+    const start = { scene: 'circle-collision' } as const
+    let s = openScene(start)
+    for (let i = 0; i < 100; i++) s = stepScene(start, s, { type: 'advance', seconds: 0.04 })
+    expect(s.circles.distance).toBe(60)
+    expect(s.evidence.discoveries).toContain('touch')
+    expect(sceneReadout('circle-collision', s).some((l) => l.value === 'bateu')).toBe(true)
+    expect(isSceneState(s)).toBe(true)
+  })
+})

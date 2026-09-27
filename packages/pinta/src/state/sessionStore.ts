@@ -8,6 +8,14 @@ import { createStore, type StoreApi } from 'zustand/vanilla'
 import { TRANSPARENT_INDEX } from '../core/palette'
 import type { PixelToolId } from '../pixel/tools'
 import type { TileStamp } from '../tiles/stamp'
+import {
+  addGuide,
+  clampGuides,
+  type GuideAxis,
+  moveGuide,
+  removeGuide,
+  type StageGuide,
+} from '../vector/guides'
 
 /**
  * Ferramentas da sessão: as do motor pixel + a Mão (navegação, mapa/vetor) + a
@@ -48,6 +56,20 @@ export interface PintaSessionState {
   filled: boolean
   /** Grade de pixels por cima do desenho (só rende em zoom alto). */
   showGrid: boolean
+  /**
+   * Réguas em cima e à esquerda do palco (só o editor de VETOR as desenha). Nascem
+   * LIGADAS: ficam fora do papel, então não sujam o desenho como a grade sujaria.
+   */
+  showRulers: boolean
+  /**
+   * Linhas-guia do palco do VETOR (puxadas da régua). Moram na SESSÃO de propósito: valem só
+   * enquanto o desenho está aberto, para TODOS os quadros/peças dele, e não entram no undo
+   * (como a grade, não são edição do desenho). Só visuais: nada encaixa nelas.
+   */
+  guides: readonly StageGuide[]
+  showGuides: boolean
+  /** Travadas: não dá para arrastar nem apagar arrastando (para não mexer sem querer). */
+  guidesLocked: boolean
   zoom: number
   /** Degraus de zoom do editor (pixel e vetor usam escalas diferentes). */
   zoomLevels: readonly number[]
@@ -89,6 +111,16 @@ export interface PintaSessionState {
   toggleMirrorY(): void
   toggleFilled(): void
   toggleGrid(): void
+  toggleRulers(): void
+  /** Devolve `false` quando o teto de guias já foi atingido (nada é criado). */
+  addGuide(axis: GuideAxis, pos: number, docSize: number): boolean
+  moveGuide(id: string, pos: number, docSize: number): void
+  removeGuide(id: string): void
+  /** O documento ENCOLHEU: as guias que ficaram de fora voltam para a borda (nenhuma órfã). */
+  clampGuides(docWidth: number, docHeight: number): void
+  clearGuides(): void
+  toggleGuides(): void
+  toggleGuidesLock(): void
   setZoom(zoom: number): void
   zoomIn(): void
   zoomOut(): void
@@ -123,6 +155,10 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     mirrorY: false,
     filled: false,
     showGrid: true,
+    showRulers: true,
+    guides: [],
+    showGuides: true,
+    guidesLocked: false,
     zoom: 8,
     zoomLevels: ZOOM_LEVELS,
     onion: false,
@@ -149,6 +185,34 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     toggleMirrorY: () => set((state) => ({ mirrorY: !state.mirrorY })),
     toggleFilled: () => set((state) => ({ filled: !state.filled })),
     toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
+    toggleRulers: () => set((state) => ({ showRulers: !state.showRulers })),
+    addGuide: (axis, pos, docSize) => {
+      let added = false
+      set((state) => {
+        const guides = addGuide(state.guides, axis, pos, docSize)
+        added = guides !== state.guides
+        return added ? { guides } : {}
+      })
+      return added
+    },
+    moveGuide: (id, pos, docSize) =>
+      set((state) => {
+        const guides = moveGuide(state.guides, id, pos, docSize)
+        return guides === state.guides ? {} : { guides }
+      }),
+    removeGuide: (id) =>
+      set((state) => {
+        const guides = removeGuide(state.guides, id)
+        return guides === state.guides ? {} : { guides }
+      }),
+    clampGuides: (docWidth, docHeight) =>
+      set((state) => {
+        const guides = clampGuides(state.guides, docWidth, docHeight)
+        return guides === state.guides ? {} : { guides }
+      }),
+    clearGuides: () => set((state) => (state.guides.length === 0 ? {} : { guides: [] })),
+    toggleGuides: () => set((state) => ({ showGuides: !state.showGuides })),
+    toggleGuidesLock: () => set((state) => ({ guidesLocked: !state.guidesLocked })),
     setZoom: (zoom) => set({ zoom: Math.min(Math.max(zoom, 0.25), 48) }),
     zoomIn: () => set((state) => ({ zoom: nextZoom(state.zoomLevels, state.zoom, 1) })),
     zoomOut: () => set((state) => ({ zoom: nextZoom(state.zoomLevels, state.zoom, -1) })),

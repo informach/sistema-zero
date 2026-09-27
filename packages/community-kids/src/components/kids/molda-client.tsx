@@ -4,17 +4,22 @@
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa/Pinta: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
 import type { MoldaHostAdapter } from '@sistemazero/molda'
+import { MOLDA_MAX_READ_VERSION } from '@sistemazero/molda/assets'
+import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '@/lib/creations-cloud'
 import {
   createCloudMirroredMoldaPersistence,
   type MoldaPersistenceLike,
 } from '@/lib/molda-cloud-persistence'
-import { CloudSaveBadge } from './cloud-save-badge'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
+import { useFocusMode } from './focus-mode'
+import { type MoldaGuidePersistence, MoldaTaskGuide } from './molda-task-guide'
+import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
+import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
+import { useMoldaTaskHandoff } from './use-pensa-task-handoff'
 
 // O pacote é client-only (zustand/WebGL/IndexedDB); carregamos DENTRO de um
 // effect (igual ao pinta-client) e o server renderiza só o placeholder.
@@ -37,9 +42,12 @@ const MOLDA_CLOUD_IDLE_MS = 5_000
 export function MoldaClient({
   viewerId,
   studioAvailable,
+  toolAccess = null,
 }: {
   viewerId: string | null
   studioAvailable: boolean
+  /** As ferramentas do posto (`moldaToolAccessFor`); `null` = tudo liberado. */
+  toolAccess?: MoldaToolAccess | null
 }) {
   const [mod, setMod] = useState<MoldaModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -50,16 +58,46 @@ export function MoldaClient({
   const [syncing, setSyncing] = useState(false)
   const [persistence, setPersistence] = useState<MoldaPersistenceLike | null>(null)
   const router = useRouter()
-  // O Molda SEGUE o tema da comunidade (next-themes) — sem toggle próprio.
-  const { resolvedTheme } = useTheme()
-  const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
+  const { setWorkspaceActive } = useFocusMode()
+  // O Molda SEGUE a plataforma (hoje só claro) — sem toggle próprio.
+  // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
+  // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
+  // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
+  const theme: 'light' | 'dark' = 'light'
   // Deep link `/molda?criacao=<id>` (o Estúdio abre numa aba nova, com `noopener`,
   // então é query string). Lido no 1º render e limpo da URL logo depois.
   const searchParams = useSearchParams()
-  const [initialAssetId] = useState(() => searchParams.get('criacao'))
+  // O guia do Pensa recolhido, lembrado por CRIANÇA e valendo para as três oficinas. Vive AQUI,
+  // e não dentro do guia, porque o hook lê a preferência num efeito pós-mount: no guia, que só
+  // monta depois do módulo e do handoff, isso pintava o painel aberto por um quadro.
+  const { collapsed: guiaRecolhido, setCollapsed: setGuiaRecolhido } =
+    usePensaGuideCollapsed(viewerId)
+
+  const [openRequest, setOpenRequest] = useState(() => ({
+    assetId: searchParams.get('criacao'),
+    revision: 0,
+  }))
+  const initialAssetId = openRequest.assetId
+  const [taskId] = useState(() => searchParams.get('tarefa'))
+  // A prévia da equipe (`?nivel=`) sobrevive à limpeza: sem ela, a URL nova voltaria a
+  // resolver tudo liberado no servidor e a oficina trocaria de ferramentas no meio.
+  const [previewLevel] = useState(() => searchParams.get('nivel'))
+  const handoff = useMoldaTaskHandoff(taskId)
   useEffect(() => {
-    if (initialAssetId) router.replace('/molda')
-  }, [initialAssetId, router])
+    if (!initialAssetId) return
+    const keep = new URLSearchParams()
+    if (taskId) keep.set('tarefa', taskId)
+    if (previewLevel) keep.set('nivel', previewLevel)
+    const query = keep.toString()
+    router.replace(query ? `/molda?${query}` : '/molda')
+  }, [initialAssetId, router, taskId, previewLevel])
+  // O servidor manda um objeto novo a cada render (um `router.refresh`, a limpeza da URL):
+  // pelo CONTEÚDO, o adapter só muda quando as ferramentas mudam de fato.
+  const accessKey = toolAccess ? JSON.stringify(toolAccess) : null
+  const stableAccess = useMemo<MoldaToolAccess | null>(
+    () => (accessKey ? (JSON.parse(accessKey) as MoldaToolAccess) : null),
+    [accessKey],
+  )
 
   const loadMolda = useCallback(
     async (isCurrent?: () => boolean) => {
@@ -82,6 +120,7 @@ export function MoldaClient({
           // trocou de perfil (irmão que entrou no meio de um upload em voo).
           const nextCloud = createCreationsCloud({
             tool: 'molda',
+            maxFormatVersion: MOLDA_MAX_READ_VERSION,
             viewerId,
             idleMs: MOLDA_CLOUD_IDLE_MS,
           })
@@ -91,6 +130,9 @@ export function MoldaClient({
           setPersistence(
             createCloudMirroredMoldaPersistence({
               local,
+              // A geração seguinte entra no MESMO espelho. Sem ela, uma criação promovida
+              // sairia do inventário v1 e a reconciliação a leria como ausente.
+              sceneSource: m.createMoldaSceneCloudSource(),
               cloud: nextCloud,
               viewerId,
               // A descida não grava por baixo de uma criação ABERTA no editor — e, ao fechar
@@ -151,12 +193,29 @@ export function MoldaClient({
       theme,
       studioOwned: studioAvailable,
       onOpenStudio: () => router.push('/estudio'),
+      /**
+       * A oficina 3D nova é o editor de modelos. Abrir um modelo antigo por lá o PROMOVE
+       * para o formato seguinte, no aparelho e na nuvem.
+       *
+       * ⚠️ Depende dos leitores compatíveis já implantados (o espelho das duas gerações):
+       * sem eles, um cliente antigo veria a criação promovida como ilegível. Desligar de
+       * volta é seguro: quem já foi promovido continua listado e continua abrindo, porque
+       * a chave governa só a promoção, não o acesso.
+       */
+      sceneWorkshop: true,
       ...(initialAssetId ? { initialAssetId } : {}),
+      // As ferramentas de profissional abrem por posto; trancar tira a autoria, nunca a leitura.
+      ...(stableAccess ? { toolAccess: stableAccess } : {}),
       // A volta da ponte: salvar aqui atualiza a criação que JÁ está no Estúdio, e de lá
       // ela entra sozinha nos jogos (a sincronia é do Studio). ⚠️ A guarda do
       // `getPersonalAsset` é a regra do recurso (igual ao Pinta): sem ela, TODA criação
       // cairia na biblioteca do Estúdio sozinha e o "Trazer do Molda" deixaria de ser a
       // decisão explícita que é hoje.
+      canResyncToStudio: async (id) => {
+        const namespace = viewerId ?? ''
+        const bridge = await import('@sistemazero/studio/personal-assets')
+        return Boolean(await bridge.getPersonalAsset(id, { namespace }))
+      },
       resyncToStudio: async (asset) => {
         const namespace = viewerId ?? ''
         const bridge = await import('@sistemazero/studio/personal-assets')
@@ -186,8 +245,14 @@ export function MoldaClient({
         return { updated: true }
       },
     }),
-    [theme, studioAvailable, router, initialAssetId, viewerId],
+    // ⚠️ `theme` saiu do dep array: ele virou constante quando o tema escuro deixou de existir
+    // nesta plataforma (o hook que o calculava era código morto).
+    [studioAvailable, router, initialAssetId, viewerId, stableAccess],
   )
+
+  // O selo "Guardado na sua conta", a seta da galeria e o sinal da conta ficam na
+  // barra do Molda. O menu lateral é da alça do shell Kids (`hostChrome.menu` é null).
+  const { chrome: hostChrome, announcement } = useHostChrome({ cloud, syncing })
 
   return (
     // ⚠️ A moldura é COMPARTILHADA com o `loading.tsx` da rota (ver
@@ -210,14 +275,62 @@ export function MoldaClient({
         </div>
       ) : mod === null ? (
         <EmbeddedAppLoadingBody label="Carregando o Molda…" />
+      ) : taskId && handoff.status !== 'success' ? (
+        <div className="grid flex-1 place-content-center gap-4 p-6">
+          <p role="status">{handoff.error ?? 'Buscando o guia do Pensa…'}</p>
+          {handoff.status === 'error' ? (
+            <button
+              type="button"
+              onClick={handoff.retry}
+              className="min-h-11 rounded-xl border px-4 font-bold"
+            >
+              Tentar novamente
+            </button>
+          ) : null}
+        </div>
+      ) : handoff.data && !handoff.data.capability.owned ? (
+        <p role="status" className="p-6">
+          {handoff.data.capability.blockedReason}
+        </p>
       ) : (
         <>
-          <div className="flex justify-end">
-            <CloudSaveBadge cloud={cloud} syncing={syncing} />
-          </div>
-          {/* O selo é irmão do app: o wrapper dá ao `h-full` do Molda uma altura definida. */}
+          {handoff.data && persistence ? (
+            <MoldaTaskGuide
+              key={`${viewerId}:${handoff.data.task.id}:${handoff.data.task.revision}`}
+              profileId={viewerId}
+              handoff={handoff.data}
+              persistence={persistence}
+              onProgress={handoff.updateProgress}
+              collapsed={guiaRecolhido}
+              onCollapsedChange={setGuiaRecolhido}
+              onOpenAsset={(assetId) =>
+                setOpenRequest((current) => ({ assetId, revision: current.revision + 1 }))
+              }
+              hasOpenCreation={async () => {
+                const gallery: MoldaGuidePersistence = persistence
+                const all = gallery.listSummaries
+                  ? await gallery.listSummaries()
+                  : await gallery.loadAll()
+                return all.some((asset) => mod.isMoldaAssetOpen(asset.id))
+              }}
+              onReturn={() =>
+                router.push(`/pensa?plano=${encodeURIComponent(handoff.data.project.id)}`)
+              }
+            />
+          ) : null}
+          {/* A região viva do selo fica no HOST (sempre montada; só offline/erro falam). */}
+          <HostChromeAnnouncer text={announcement} />
+          {/* O wrapper dá ao `h-full` do Molda uma altura definida. ⚠️ O Provider vem do MESMO
+              módulo do `import()` que montou o app: dois módulos seriam dois contextos. */}
           <div className="flex min-h-0 flex-1 flex-col">
-            <mod.MoldaApp adapter={adapter} {...(persistence ? { persistence } : {})} />
+            <mod.MoldaHostChromeProvider value={hostChrome}>
+              <mod.MoldaApp
+                key={openRequest.revision}
+                adapter={adapter}
+                onWorkspaceChange={setWorkspaceActive}
+                {...(persistence ? { persistence } : {})}
+              />
+            </mod.MoldaHostChromeProvider>
           </div>
         </>
       )}

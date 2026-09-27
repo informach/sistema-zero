@@ -1,0 +1,88 @@
+{
+  "base": "c3f79880",
+  "checkedAt": "2026-09-12T19:35:38.270Z",
+  "scope": "Kids v5 + review fixes; v6 work in progress excluded",
+  "isolatedWorkspace": ".cache/aulas-v5-review",
+  "tests": [
+    {
+      "package": "core",
+      "command": "bun test 'tests/learning.test.ts' 'src/learning/exploration.test.ts' 'tests/legacy-lesson-layout.test.ts' 'tests/section-progression.test.ts' 'tests/simulation.test.ts' 'tests/video-watch.test.ts'",
+      "exitCode": 0,
+      "passed": 80,
+      "failed": 0,
+      "assertions": 702
+    },
+    {
+      "package": "members",
+      "command": "bun test 'tests/integration/course-publication-journey.test.ts' 'tests/integration/gallery-delivery.test.ts' 'tests/integration/learning-evidence-history.test.ts' 'tests/integration/learning-import.test.ts' 'tests/integration/learning.test.ts' 'tests/integration/legacy-section-grading.test.ts' 'tests/integration/material-video-sections.test.ts' 'tests/integration/platform-action-progression.test.ts' 'tests/integration/section-progression.test.ts' 'tests/integration/studio.test.ts' 'tests/unit/quiz.test.ts'",
+      "exitCode": 0,
+      "passed": 90,
+      "failed": 0,
+      "assertions": 418
+    },
+    {
+      "package": "admin",
+      "command": "bun test 'tests/learning-import-sync.test.ts' 'tests/lesson-block-kind-conformance.test.ts' 'tests/lesson-learning-panel.test.tsx' 'tests/lesson-rehearsal.test.tsx' 'tests/section-completion-editor.test.tsx'",
+      "exitCode": 0,
+      "passed": 10,
+      "failed": 0,
+      "assertions": 51
+    },
+    {
+      "package": "community-kids",
+      "command": "bun test 'tests/focus-mode.test.tsx' 'tests/lesson-exploration.test.tsx' 'tests/lesson-gallery-delivery.test.tsx' 'tests/lesson-quiz-retry.test.tsx' 'tests/lesson-sections.test.tsx' 'tests/lesson-video-quality.test.tsx'",
+      "exitCode": 0,
+      "passed": 44,
+      "failed": 0,
+      "assertions": 146
+    },
+    {
+      "package": "member-shell",
+      "command": "bun test 'tests/ebook-prefs.test.ts' 'tests/gallery-delivery.test.ts' 'tests/gallery-snapshot.test.ts' 'tests/learning-routes.test.ts' 'tests/lesson-media-focus.test.ts' 'tests/lesson-visuals.test.tsx' 'tests/markdown.test.tsx'",
+      "exitCode": 0,
+      "passed": 45,
+      "failed": 0,
+      "assertions": 138
+    },
+    {
+      "package": "studio",
+      "command": "bun test 'src/components/layout/ShareDialog.test.tsx' 'src/official-extensions/game-2d/__tests__/gravityAndJump.test.ts'",
+      "exitCode": 0,
+      "passed": 25,
+      "failed": 0,
+      "assertions": 73
+    }
+  ],
+  "typechecks": [
+    {
+      "package": "core",
+      "command": "bun run typecheck",
+      "exitCode": 0
+    },
+    {
+      "package": "members",
+      "command": "bun run typecheck",
+      "exitCode": 0
+    },
+    {
+      "package": "member-shell",
+      "command": "bun run typecheck",
+      "exitCode": 0
+    },
+    {
+      "package": "admin",
+      "command": "bun run typecheck",
+      "exitCode": 0
+    },
+    {
+      "package": "community-kids",
+      "command": "bun run typecheck",
+      "exitCode": 0
+    },
+    {
+      "package": "community",
+      "command": "bun run typecheck",
+      "exitCode": 0
+    }
+  ]
+}

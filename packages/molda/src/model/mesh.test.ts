@@ -10,6 +10,7 @@ import {
   meshEdges,
   meshEquals,
   meshIssues,
+  meshSurfaceEdges,
   meshTriangleCount,
   mirrorMesh,
   newFaceKey,
@@ -110,6 +111,39 @@ describe('malha: forma canônica', () => {
       faces: {},
     }
     expect(roundMesh(mesh).vertices.v_a).toEqual([0, 0.0625, 2])
+  })
+
+  test('preserva arestas de construção sem faces, canônicas e sem duplicar a superfície', () => {
+    const raw: MoldaMesh = {
+      vertices: {
+        v_a: [0, 0, 0],
+        v_b: [2, 0, 0],
+        v_c: [2, 2, 0],
+        v_d: [0, 2, 0],
+      },
+      faces: { f_a: { v: ['v_a', 'v_b', 'v_c'] } },
+      looseEdges: [
+        ['v_d', 'v_a'],
+        ['v_a', 'v_d'],
+        ['v_b', 'v_a'],
+      ],
+    }
+    const mesh = normalizeMesh(raw)
+    expect(mesh.looseEdges).toEqual([['v_a', 'v_d']])
+    expect(meshEdges(mesh)).toHaveLength(meshSurfaceEdges(mesh).length + 1)
+    expect(Object.keys(mesh.vertices)).toContain('v_d')
+    expect(normalizeMesh(mesh)).toEqual(mesh)
+  })
+
+  test('uma malha formada só por arestas continua válida nas transformações', () => {
+    const mesh: MoldaMesh = {
+      vertices: { v_a: [0, 0, 0], v_b: [2, 0, 0] },
+      faces: {},
+      looseEdges: [['v_a', 'v_b']],
+    }
+    expect(translateMesh(mesh, [1, 2, 3]).looseEdges).toEqual([['v_a', 'v_b']])
+    expect(mirrorMesh(mesh).looseEdges).toEqual([['v_a', 'v_b']])
+    expect(meshEquals(normalizeMesh(mesh), mesh)).toBe(true)
   })
 })
 

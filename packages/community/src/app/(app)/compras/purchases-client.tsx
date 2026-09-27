@@ -175,7 +175,7 @@ export function PurchasesClient() {
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border py-16 text-center">
+      <div className="flex flex-col items-center gap-3 rounded-[1.75rem] border-2 border-border border-dashed bg-card py-16 text-center">
         <Receipt className="size-10 text-muted-foreground" />
         <div>
           <p className="font-medium">Nenhuma compra encontrada</p>
@@ -273,7 +273,7 @@ function PurchaseDetail({
         </div>
       </dl>
       {payment.boleto ? (
-        <div className="mt-4 rounded-lg border border-border bg-muted/40 p-3 text-xs">
+        <div className="mt-4 rounded-lg border border-border bg-muted p-3 text-xs">
           <p className="font-medium">Boleto</p>
           <p className="mt-1 break-all font-mono">{payment.boleto.digitableLine}</p>
           <a

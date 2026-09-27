@@ -1,0 +1,2324 @@
+{
+  "version": 5,
+  "courseSlug": "nave-contra-asteroides",
+  "lessonSlug": "dia-5",
+  "title": "O jogo ganha começo e fim",
+  "blocks": [
+    {
+      "key": "projeto",
+      "content": {
+        "kind": "studio",
+        "purpose": "submission",
+        "chain": "nave-contra-asteroides",
+        "level": "iniciante-2d",
+        "allowedModes": ["blocks"],
+        "allowLevelReveal": false,
+        "allowBlocks": [
+          "sz_frame_events",
+          "sz_frame_loops",
+          "sz_frame_start",
+          "sz_g2d_arrows_x",
+          "sz_g2d_center_x",
+          "sz_g2d_clamp_to_screen",
+          "sz_g2d_clear",
+          "sz_g2d_create_group",
+          "sz_g2d_create_ship",
+          "sz_g2d_damage_sprite",
+          "sz_g2d_draw_group",
+          "sz_g2d_draw_score",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_draw_sprite_health",
+          "sz_g2d_every_frames",
+          "sz_g2d_explode",
+          "sz_g2d_health_depleted",
+          "sz_g2d_on_group_overlap",
+          "sz_g2d_on_key",
+          "sz_g2d_on_sprite_group_overlap",
+          "sz_g2d_play_fx",
+          "sz_g2d_prune_offscreen",
+          "sz_g2d_random_x",
+          "sz_g2d_remove_from_group",
+          "sz_g2d_restart",
+          "sz_g2d_scene_is",
+          "sz_g2d_set_health",
+          "sz_g2d_set_scene",
+          "sz_g2d_setup_stage",
+          "sz_g2d_shake",
+          "sz_g2d_show_screen",
+          "sz_g2d_spawn_asteroid",
+          "sz_g2d_spawn_bullet",
+          "sz_g2d_sprite_y",
+          "sz_g2d_starfield",
+          "sz_g2d_update_each_frame",
+          "sz_g2d_update_group",
+          "sz_js_const_create",
+          "sz_js_if_else",
+          "sz_js_var_create",
+          "sz_js_var_increment",
+          "sz_val_compare",
+          "sz_val_number",
+          "sz_val_text",
+          "sz_val_variable"
+        ],
+        "showcase": {
+          "enabled": true,
+          "title": "Nave contra Asteroides",
+          "summary": "Um jogo de nave, tiros e asteroides criado em Nave Contra Asteroides."
+        },
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-nave-contra-asteroides-5",
+          "name": "Nave contra Asteroides",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Nave contra Asteroides</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": ""
+          },
+          "extraFiles": [],
+          "assets": [],
+          "ir": null,
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#07162e"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 800
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_create_ship",
+                            "fields": {
+                              "NAME": "nave",
+                              "BODY": "#35e8ff",
+                              "WINGS": "#2568ff"
+                            },
+                            "inputs": {
+                              "X": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 400
+                                  }
+                                }
+                              },
+                              "Y": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 410
+                                  }
+                                }
+                              },
+                              "W": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 54
+                                  }
+                                }
+                              },
+                              "H": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 62
+                                  }
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_group",
+                                "fields": {
+                                  "NAME": "tiros"
+                                },
+                                "inputs": {},
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_create_group",
+                                    "fields": {
+                                      "NAME": "asteroides"
+                                    },
+                                    "inputs": {},
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_js_var_create",
+                                        "fields": {
+                                          "NAME": "pontos"
+                                        },
+                                        "inputs": {
+                                          "VALUE": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 0
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "next": {
+                                          "block": {
+                                            "type": "sz_g2d_set_health",
+                                            "fields": {
+                                              "SPRITE": "nave"
+                                            },
+                                            "inputs": {
+                                              "AMOUNT": {
+                                                "shadow": {
+                                                  "type": "sz_val_number",
+                                                  "fields": {
+                                                    "NUM": 3
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "fields": {},
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "fields": {},
+                              "inputs": {},
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_starfield",
+                                  "fields": {},
+                                  "inputs": {
+                                    "SPEED": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 1
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_arrows_x",
+                                      "fields": {
+                                        "SPRITE": "nave"
+                                      },
+                                      "inputs": {
+                                        "SPEED": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 7
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_clamp_to_screen",
+                                          "fields": {
+                                            "SPRITE": "nave"
+                                          },
+                                          "inputs": {},
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_g2d_draw_sprite",
+                                              "fields": {
+                                                "SPRITE": "nave"
+                                              },
+                                              "inputs": {},
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_update_group",
+                                                  "fields": {
+                                                    "GROUP": "tiros"
+                                                  },
+                                                  "inputs": {},
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g2d_prune_offscreen",
+                                                      "fields": {
+                                                        "GROUP": "tiros",
+                                                        "ITEM": "sprite"
+                                                      },
+                                                      "inputs": {},
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_g2d_draw_group",
+                                                          "fields": {
+                                                            "GROUP": "tiros"
+                                                          },
+                                                          "inputs": {},
+                                                          "next": {
+                                                            "block": {
+                                                              "type": "sz_g2d_update_group",
+                                                              "fields": {
+                                                                "GROUP": "asteroides"
+                                                              },
+                                                              "inputs": {},
+                                                              "next": {
+                                                                "block": {
+                                                                  "type": "sz_g2d_prune_offscreen",
+                                                                  "fields": {
+                                                                    "GROUP": "asteroides",
+                                                                    "ITEM": "sprite"
+                                                                  },
+                                                                  "inputs": {},
+                                                                  "next": {
+                                                                    "block": {
+                                                                      "type": "sz_g2d_draw_group",
+                                                                      "fields": {
+                                                                        "GROUP": "asteroides"
+                                                                      },
+                                                                      "inputs": {},
+                                                                      "next": {
+                                                                        "block": {
+                                                                          "type": "sz_g2d_on_group_overlap",
+                                                                          "fields": {
+                                                                            "A": "tiros",
+                                                                            "B": "asteroides",
+                                                                            "ANAME": "tiro",
+                                                                            "BNAME": "asteroide"
+                                                                          },
+                                                                          "inputs": {
+                                                                            "BODY": {
+                                                                              "block": {
+                                                                                "type": "sz_g2d_remove_from_group",
+                                                                                "fields": {
+                                                                                  "SPRITE": "tiro",
+                                                                                  "GROUP": "tiros"
+                                                                                },
+                                                                                "inputs": {},
+                                                                                "next": {
+                                                                                  "block": {
+                                                                                    "type": "sz_g2d_remove_from_group",
+                                                                                    "fields": {
+                                                                                      "SPRITE": "asteroide",
+                                                                                      "GROUP": "asteroides"
+                                                                                    },
+                                                                                    "inputs": {},
+                                                                                    "next": {
+                                                                                      "block": {
+                                                                                        "type": "sz_g2d_explode",
+                                                                                        "fields": {
+                                                                                          "SPRITE": "asteroide",
+                                                                                          "COLOR": "#ffb13b"
+                                                                                        },
+                                                                                        "inputs": {},
+                                                                                        "next": {
+                                                                                          "block": {
+                                                                                            "type": "sz_g2d_play_fx",
+                                                                                            "fields": {
+                                                                                              "FX": "explosion"
+                                                                                            },
+                                                                                            "inputs": {},
+                                                                                            "next": {
+                                                                                              "block": {
+                                                                                                "type": "sz_js_var_increment",
+                                                                                                "fields": {
+                                                                                                  "NAME": "pontos",
+                                                                                                  "DELTA": 1
+                                                                                                },
+                                                                                                "inputs": {}
+                                                                                              }
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          },
+                                                                          "next": {
+                                                                            "block": {
+                                                                              "type": "sz_g2d_draw_score",
+                                                                              "fields": {
+                                                                                "LABEL": "Pontos:",
+                                                                                "COLOR": "#ffffff"
+                                                                              },
+                                                                              "inputs": {
+                                                                                "VALUE": {
+                                                                                  "block": {
+                                                                                    "type": "sz_val_variable",
+                                                                                    "fields": {
+                                                                                      "NAME": "pontos"
+                                                                                    },
+                                                                                    "inputs": {}
+                                                                                  }
+                                                                                },
+                                                                                "X": {
+                                                                                  "shadow": {
+                                                                                    "type": "sz_val_number",
+                                                                                    "fields": {
+                                                                                      "NUM": 12
+                                                                                    }
+                                                                                  }
+                                                                                },
+                                                                                "Y": {
+                                                                                  "shadow": {
+                                                                                    "type": "sz_val_number",
+                                                                                    "fields": {
+                                                                                      "NUM": 30
+                                                                                    }
+                                                                                  }
+                                                                                },
+                                                                                "SIZE": {
+                                                                                  "shadow": {
+                                                                                    "type": "sz_val_number",
+                                                                                    "fields": {
+                                                                                      "NUM": 24
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              },
+                                                                              "next": {
+                                                                                "block": {
+                                                                                  "type": "sz_g2d_on_sprite_group_overlap",
+                                                                                  "fields": {
+                                                                                    "GROUP": "asteroides",
+                                                                                    "SPRITE": "nave",
+                                                                                    "ANAME": "inimigo"
+                                                                                  },
+                                                                                  "inputs": {
+                                                                                    "BODY": {
+                                                                                      "block": {
+                                                                                        "type": "sz_g2d_remove_from_group",
+                                                                                        "fields": {
+                                                                                          "SPRITE": "inimigo",
+                                                                                          "GROUP": "asteroides"
+                                                                                        },
+                                                                                        "inputs": {},
+                                                                                        "next": {
+                                                                                          "block": {
+                                                                                            "type": "sz_g2d_explode",
+                                                                                            "fields": {
+                                                                                              "SPRITE": "inimigo",
+                                                                                              "COLOR": "#ffb13b"
+                                                                                            },
+                                                                                            "inputs": {},
+                                                                                            "next": {
+                                                                                              "block": {
+                                                                                                "type": "sz_g2d_damage_sprite",
+                                                                                                "fields": {
+                                                                                                  "SPRITE": "nave"
+                                                                                                },
+                                                                                                "inputs": {
+                                                                                                  "AMOUNT": {
+                                                                                                    "shadow": {
+                                                                                                      "type": "sz_val_number",
+                                                                                                      "fields": {
+                                                                                                        "NUM": 1
+                                                                                                      }
+                                                                                                    }
+                                                                                                  },
+                                                                                                  "FRAMES": {
+                                                                                                    "shadow": {
+                                                                                                      "type": "sz_val_number",
+                                                                                                      "fields": {
+                                                                                                        "NUM": 45
+                                                                                                      }
+                                                                                                    }
+                                                                                                  }
+                                                                                                },
+                                                                                                "next": {
+                                                                                                  "block": {
+                                                                                                    "type": "sz_g2d_shake",
+                                                                                                    "fields": {},
+                                                                                                    "inputs": {
+                                                                                                      "INTENSITY": {
+                                                                                                        "shadow": {
+                                                                                                          "type": "sz_val_number",
+                                                                                                          "fields": {
+                                                                                                            "NUM": 8
+                                                                                                          }
+                                                                                                        }
+                                                                                                      }
+                                                                                                    }
+                                                                                                  }
+                                                                                                }
+                                                                                              }
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  },
+                                                                                  "next": {
+                                                                                    "block": {
+                                                                                      "type": "sz_g2d_draw_sprite_health",
+                                                                                      "fields": {
+                                                                                        "SPRITE": "nave",
+                                                                                        "STYLE": "hearts",
+                                                                                        "COLOR": "#ff5d5d"
+                                                                                      },
+                                                                                      "inputs": {
+                                                                                        "X": {
+                                                                                          "shadow": {
+                                                                                            "type": "sz_val_number",
+                                                                                            "fields": {
+                                                                                              "NUM": 12
+                                                                                            }
+                                                                                          }
+                                                                                        },
+                                                                                        "Y": {
+                                                                                          "shadow": {
+                                                                                            "type": "sz_val_number",
+                                                                                            "fields": {
+                                                                                              "NUM": 48
+                                                                                            }
+                                                                                          }
+                                                                                        },
+                                                                                        "SIZE": {
+                                                                                          "shadow": {
+                                                                                            "type": "sz_val_number",
+                                                                                            "fields": {
+                                                                                              "NUM": 22
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_every_frames",
+                            "fields": {},
+                            "inputs": {
+                              "N": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 40
+                                  }
+                                }
+                              },
+                              "BODY": {
+                                "block": {
+                                  "type": "sz_g2d_spawn_asteroid",
+                                  "fields": {
+                                    "GROUP": "asteroides",
+                                    "COLOR": "#8d8f9b"
+                                  },
+                                  "inputs": {
+                                    "X": {
+                                      "block": {
+                                        "type": "sz_g2d_random_x",
+                                        "fields": {},
+                                        "inputs": {}
+                                      }
+                                    },
+                                    "Y": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": -30
+                                        }
+                                      }
+                                    },
+                                    "SIZE": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 40
+                                        }
+                                      }
+                                    },
+                                    "VX": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 0
+                                        }
+                                      }
+                                    },
+                                    "VY": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 3
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_events",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_on_key",
+                        "fields": {
+                          "KEY": "Space"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_spawn_bullet",
+                              "fields": {
+                                "GROUP": "tiros",
+                                "COLOR": "#9cff57"
+                              },
+                              "inputs": {
+                                "X": {
+                                  "block": {
+                                    "type": "sz_g2d_center_x",
+                                    "fields": {
+                                      "SPRITE": "nave"
+                                    },
+                                    "inputs": {}
+                                  }
+                                },
+                                "Y": {
+                                  "block": {
+                                    "type": "sz_g2d_sprite_y",
+                                    "fields": {
+                                      "SPRITE": "nave"
+                                    },
+                                    "inputs": {}
+                                  }
+                                },
+                                "R": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 5
+                                    }
+                                  }
+                                },
+                                "VX": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 0
+                                    }
+                                  }
+                                },
+                                "VY": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": -9
+                                    }
+                                  }
+                                }
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_play_fx",
+                                  "fields": {
+                                    "FX": "shoot"
+                                  },
+                                  "inputs": {}
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "video-abertura",
+      "plannedVideo": "Título: O jogo ganha começo e fim\n\nOrigem: abertura do roteiro original do Dia 5 e video-abertura-v6, com tela regravada. Duração alvo: 35 a 45 segundos, recalibrar após gravar.\n\nMostrar o jogo pronto: a tela de abertura com o nome, um Enter começando a partida, um trecho curto de jogo, a tela de derrota e a de vitória. Abrir a fala com saudação e o último dia de Nave Contra Asteroides. Dizer que a partida vai ganhar começo e fim e que vamos montar uma parte de cada vez. Se a criança precisar parar, o projeto fica salvo. Não anunciar que é a aula mais longa, não prometer publicação automática e não enumerar sete passos."
+    },
+    {
+      "key": "video-telas",
+      "plannedVideo": "Título: Os quatro momentos do jogo\n\nOrigem: roteiro original do Dia 5, Parte 1, e video-telas-observar, com imagem e fala novas. Duração alvo: 55 a 65 segundos, recalibrar após gravar.\n\nAntes de mostrar nomes internos, acompanhar um jogo conhecido pela criança: abre no nome, começa ao apertar uma tecla, deixa jogar e termina em vitória ou derrota. Depois entram os cartões inicio, jogando, vitoria e fim, um de cada vez. Mostrar as transições separadamente: Enter começa, 26 pontos levam à vitória, vidas esgotadas levam ao fim. Falar como conversa, sem começar pela enumeração dos nomes.\n\nVocabulário atual: Mudar o estado do jogo para; Jogo 2D › Jogo e telas › Telas e partida. Não usar Ir para a tela nem Telas e cenas."
+    },
+    {
+      "key": "fala-alvo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora prepare a meta de 26 pontos e faça o jogo começar no momento inicio. O vídeo mostra os dois encaixes."
+      }
+    },
+    {
+      "key": "video-alvo",
+      "plannedVideo": "Título: A meta e o primeiro momento\n\nOrigem: roteiro original do Dia 5, Parte 1, com fala e rótulos atualizados. Duração alvo: 50 a 60 segundos, recalibrar após gravar.\n\nAntes do gesto, explicar a meta de 26 pedras e compará-la aos pontos que mudam. Imaginar uma caixinha lacrada que guarda 26 durante a partida; só então nomear constante. Mostrar Criar constante com valor em Ao iniciar, trocar PI por alvo e o valor 0 por 26, confirmando cada campo fora do bloco. Mudar o estado do jogo para entra por último em Ao iniciar; inicio já vem selecionado e não precisa ser escolhido de novo.\n\nUsar os rótulos atuais Jogo 2D › Jogo e telas › Telas e partida, não Ir para a tela nem Telas e cenas."
+    },
+    {
+      "key": "experiencia-estado",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "O relógio pode agir agora?",
+        "instructions": "Teste a criação das pedras dentro e fora da pergunta sobre estar jogando. Compare o relógio e as pedras antes e depois de começar a partida.",
+        "hints": [
+          "Com Criar asteroide fora do Se, solte o Tempo no início até o relógio tocar três vezes.",
+          "Leve Criar asteroide para dentro de Se o estado do jogo é jogando. Ainda no início, deixe o relógio tocar mais três vezes.",
+          "Comece a partida e deixe o relógio tocar outras três vezes. Compare o relógio com as pedras que nasceram."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "game-state",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "goals": ["outside", "waiting", "playing"],
+            "goalCopy": {
+              "outside": {
+                "label": "Sem a pergunta, as pedras nasceram antes de começar"
+              },
+              "waiting": {
+                "label": "Com a pergunta, o relógio tocou três vezes e nenhuma pedra nasceu"
+              },
+              "playing": {
+                "label": "Começando a partida, as pedras voltaram a nascer"
+              }
+            }
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "fala-embrulhar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora coloque a partida dentro da pergunta jogando. Siga o gesto do vídeo e confira se a cadeia inteira entrou."
+      }
+    },
+    {
+      "key": "video-embrulhar",
+      "plannedVideo": "Título: Embrulhar no Se, do começo ao fim\n\nOrigem: fusão de video-pergunta, video-mover-cadeia e video-guardar-jogo, com troca de rótulos. Duração alvo: 95 a 115 segundos.\n\nMostrar as quatro etapas seguidas, sem cortar entre elas, porque é a única vez em que a manobra aparece inteira.\n\n1. Pegar o Condição se, senão se e senão e encaixar no topo do A cada quadro do jogo.\n2. Tirar a comparação de fábrica e apagar.\n3. Encaixar o o estado do jogo é ? no lugar dela, com jogando.\n4. Pegar a cadeia pelo Limpar a tela e soltar dentro do então.\n\nGravar zoom e pausa no contorno do então, e conferir o começo e o fim da cadeia: Limpar a tela lá em cima e Desenhar as vidas do sprite como em x y tamanho cor lá embaixo, os dois dentro.\n\nTroca obrigatória de rótulo: onde a gravação diz a tela atual é, passa a dizer o estado do jogo é ?.\n\nNão incluir o relógio neste clipe: ele é a seção seguinte."
+    },
+    {
+      "key": "fala-relogio-e-tiro",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Proteja também o relógio e o disparo: eles só devem agir durante a partida."
+      }
+    },
+    {
+      "key": "video-relogio-e-tiro",
+      "plannedVideo": "Título: A mesma manobra em mais dois lugares\n\nOrigem: fusão de video-guardar-relogio com video-guardar-tiro. Duração alvo: 155 a 175 segundos.\n\nAbrir explicando por que relógio e tecla também precisam da pergunta. Gravar sem acelerar as quatro etapas em cada lugar. Primeiro proteger A cada quadros de 40; depois proteger Quando apertar a tecla da barra de espaço. Em ambos, narrar novamente o caminho da categoria até cada bloco, o lugar exato do encaixe, a retirada da comparação de fábrica, o menu jogando e o arraste da cadeia existente para dentro do então.\n\nTerminar com o teste do menu: a barra de espaço apertada várias vezes sem sair tiro, e o relógio batendo sem nascer pedra. Depois do teste, mostrar a etiqueta Salvo do Estúdio embutido e fechar com uma ponte curta para as perguntas de vitória e derrota, sem linguagem técnica de produção na narração. Não mostrar Guardado na sua conta neste Estúdio. Narração completa no roteiro correspondente."
+    },
+    {
+      "key": "fala-vitoria",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora ensine o jogo a decidir o fim da partida com pontos e vidas. Observe a ordem das duas perguntas no vídeo."
+      }
+    },
+    {
+      "key": "video-finais",
+      "plannedVideo": "Título: A vitória pergunta primeiro\n\nOrigem: fusão de video-vitoria com video-derrota, com troca de rótulos. Duração alvo: 120 a 145 segundos.\n\nAbrir com uma retomada curta: o motor, o relógio e o tiro só agem em jogando; agora vêm as perguntas do fim. Montar as duas perguntas em sequência no fim do então de jogando, logo depois do Desenhar as vidas do sprite. Narrar o caminho de cada peça, seu encaixe, cada menu e o destino dos dois blocos Mudar o estado do jogo para. A vitória compara pontos com alvo; a derrota pergunta se as vidas da nave acabaram.\n\nFechar mostrando as duas perguntas encostadas. Não prometer prioridade da vitória: se os dois acontecerem no mesmo quadro, o jogo termina em fim. Narração completa no roteiro correspondente."
+    },
+    {
+      "key": "fala-tres-telas",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Dê uma tela própria à abertura, à vitória e à derrota. Escolha textos legíveis para cada uma."
+      }
+    },
+    {
+      "key": "video-mostrar-telas",
+      "plannedVideo": "Título: As três telas ganham texto\n\nOrigem: video-mostrar-telas do v6, regravado com os três caminhos completos. Duração alvo: 185 a 210 segundos; recalibrar após gravar.\n\nCriar um ramo de cada vez. Em cada um, mostrar e narrar o clique em mais senão se, retirar a comparação de fábrica, abrir Jogo 2D › Jogo e telas › Telas e partida, encaixar o estado do jogo é ? na pergunta e voltar pelo mesmo caminho para encaixar Mostrar tela com título subtítulo dica fundo no então. No primeiro ramo, inicio já vem escolhido. A tela de abertura já vem com Nave contra Asteroides, Destrua os asteroides! e Aperte Enter para começar; a criança pode personalizar o título, mas não deve ser mandada a redigitar os demais campos. Nas duas telas finais, trocar título, apagar o subtítulo padrão e mudar a dica para Aperte Enter para voltar ao início, confirmando as edições; escolher cores com contraste. Não usar a frase \"a receita é a mesma\" para omitir gestos.\n\nConferência para a gravação: o Enter nos finais volta à abertura; é preciso apertar de novo para jogar. Título, subtítulo e cor de fundo são escolhas da criança quando houver personalização. Narração completa no roteiro correspondente."
+    },
+    {
+      "key": "fala-enter",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora faça o Enter responder de três jeitos: começar no menu e reiniciar após cada final."
+      }
+    },
+    {
+      "key": "video-enter",
+      "plannedVideo": "Título: A mesma tecla, três respostas\n\nOrigem: video-enter do v6, regravado com os três ramos completos. Duração alvo: 170 a 195 segundos; recalibrar após gravar.\n\nAbrir retomando a comparação da seção anterior entre trocar de tela e reiniciar. Mostrar o evento Quando apertar a tecla com Enter entrando em Quando acontecer. Dentro dele, montar Condição se, senão se e senão; narrar a retirada da comparação de fábrica e o encaixe de o estado do jogo é ? com inicio, seguido de Mudar o estado do jogo para jogando. Criar cada senão se separadamente: no primeiro, retirar a comparação de fábrica, encaixar o estado do jogo é ? com fim e Reiniciar o jogo; no segundo, repetir o caminho completo com vitoria e Reiniciar o jogo. Dizer em voz alta a categoria, a seção, o bloco, o destino e o menu de cada gesto.\n\nConferência para a gravação: usar os rótulos atuais de Jogo 2D › Jogo e telas › Telas e partida. O Enter em fim ou vitoria volta à abertura; a criança aperta de novo para jogar. Narração completa no roteiro correspondente."
+    },
+    {
+      "key": "experiencia-reiniciar",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Jogue outra vez",
+        "instructions": "Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo. O que acontece quando você tenta jogar outra vez?",
+        "hints": [
+          "Com Mudar o estado do jogo para inicio escolhido, deixe a partida acabar e aperte Enter no fim.",
+          "Aperte Enter mais uma vez para jogar. Observe as pedras, os pontos e as vidas que ficaram.",
+          "Volte ao começo, escolha Reiniciar o jogo, deixe a partida acabar e aperte Enter duas vezes. Compare as duas partidas."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "restart",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "goals": ["screen-only", "back-to-menu"],
+            "goalCopy": {
+              "screen-only": {
+                "label": "Mudando só o momento, as pedras da partida anterior continuaram caindo",
+                "pedido": "Escolha Mudar o estado do jogo para inicio, aperte Enter no fim e comece outra partida."
+              },
+              "back-to-menu": {
+                "label": "Reiniciar levou para a abertura, e foi preciso outro Enter para jogar",
+                "pedido": "Escolha Reiniciar o jogo, aperte Enter no fim e olhe em que momento o jogo ficou."
+              }
+            }
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "fala-reiniciar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Experimente voltar ao início das duas maneiras. Compare o que acontece com pontos, vidas e pedras."
+      }
+    },
+    {
+      "key": "video-ciclo-completo",
+      "plannedVideo": "Título: Do menu ao recomeço\n\nOrigem: video-ciclo-completo do v6, com correção dos dois Enter e fecho integrado. Duração alvo: 150 a 180 segundos, incluindo o fecho.\n\nEste clipe é teste, envio e vitrine, sem montagem. Cortar o tempo repetido de jogo. Mostrar, na ordem: clique no jogo; barra de espaço no menu sem disparo nem pedra; Enter para começar; três vidas perdidas até Você Perdeu; primeiro Enter de volta à abertura, com zero pontos e três corações; segundo Enter para a nova partida; vitória em 26 pontos; etiqueta Salvo e envio; só então Compartilhar disponível e janela aberta.\n\nA publicação é opcional e só acontece se a criança confirmar. Dizer que, se ela escolher publicar, o jogo ganha um link. Não dizer que o botão sozinho já criou esse link, não antecipar campos da janela nem prometer capa. A criança não precisa tornar o perfil público para compartilhar o jogo.\n\nFecho no mesmo vídeo: celebrar os cinco dias e as peças aprendidas sem afirmar que a publicação já aconteceu."
+    },
+    {
+      "key": "quiz",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você protegeu o desenho, mas os tiros nascem no menu. Onde falta a pergunta jogando?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Dentro do evento da barra de espaço, antes de criar o tiro."
+              },
+              {
+                "id": "b",
+                "label": "Na cor do título da tela de início."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O evento é independente do motor. A ação dele também precisa da própria pergunta."
+          },
+          {
+            "id": "q2",
+            "prompt": "Depois da derrota, Reiniciar roda o Ao iniciar, que guarda o momento inicio. Para onde o jogo volta?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Direto para uma partida com os pontos antigos."
+              },
+              {
+                "id": "a",
+                "label": "Para a abertura, e o Enter começa uma nova partida."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Reiniciar refaz a preparação: zero ponto, três vidas, grupos novos e o momento inicio."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-estado-do-jogo",
+      "plannedVideo": "Título: A pergunta que abre a partida\n\nDuração alvo: 35 a 45 segundos. Retomar o relógio de 40 quadros que a criança conhece do Dia 3 e perguntar por que pedras não devem nascer no menu. Usar quatro cartões de momento e uma porta esquemática marcada jogando para explicar a condição. Não animar o relógio nem antecipar os contadores dos testes da experiência."
+    },
+    {
+      "key": "video-reiniciar",
+      "plannedVideo": "Título: Trocar a tela ou recomeçar de verdade?\n\nDuração alvo: 35 a 45 segundos. Depois de montar as três telas e antes de programar o Enter, usar a analogia de virar para outra parte da história versus voltar à preparação do começo. Explicar que mudar o momento conserva o que já foi guardado, enquanto Reiniciar o jogo executa Ao iniciar de novo. Não mostrar pontos, vidas, pedras nem os resultados dos testes: a criança descobrirá qual caminho prepara uma partida nova na experiência."
+    },
+    {
+      "key": "fala-estado",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Experimente fazer o relógio tocar antes e depois de começar a partida. Observe quando a pedra realmente nasce."
+      }
+    },
+    {
+      "key": "fala-quiz",
+      "content": {
+        "kind": "dialogue",
+        "pose": "happy",
+        "text": "Hora de conferir o ciclo do seu jogo: começo, partida e recomeço. Pense no que você observou antes de responder."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "O que a gente vai fazer hoje",
+      "intent": "presentation",
+      "objective": "Ver o jogo completo, com abertura e os dois finais, antes de reorganizar o que já foi construído.",
+      "blockKeys": ["video-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura"]
+      }
+    },
+    {
+      "key": "momentos",
+      "title": "Os quatro momentos do jogo",
+      "intent": "presentation",
+      "objective": "Conhecer os quatro momentos possíveis antes de montar as mudanças de estado.",
+      "blockKeys": ["video-telas"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-telas"]
+      }
+    },
+    {
+      "key": "alvo",
+      "title": "A meta e o primeiro momento",
+      "intent": "application",
+      "objective": "Criar a constante alvo e guardar o momento inicio ao começar.",
+      "blockKeys": ["video-alvo", "fala-alvo"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-alvo"],
+        "projectChecks": [
+          {
+            "id": "alvo",
+            "label": "Crie a constante alvo = 26 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_const_create",
+              "area": "start",
+              "fields": {
+                "NAME": "alvo"
+              },
+              "inputs": {
+                "VALUE": 26
+              }
+            }
+          },
+          {
+            "id": "tela-inicial",
+            "label": "Vá para inicio em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "start",
+              "fields": {
+                "SCENE": "inicio"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "estado-do-jogo",
+      "title": "O relógio pode agir agora?",
+      "intent": "exploration",
+      "objective": "Ver que a pergunta decide se a ação acontece, e que o relógio continua tocando mesmo quando a resposta é não.",
+      "blockKeys": ["video-estado-do-jogo", "fala-estado", "experiencia-estado"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-estado-do-jogo", "experiencia-estado"]
+      }
+    },
+    {
+      "key": "embrulhar",
+      "title": "Embrulhe a partida numa pergunta",
+      "intent": "application",
+      "objective": "Fazer a manobra inteira uma vez: a partida do motor passa a acontecer só no momento jogando.",
+      "blockKeys": ["video-embrulhar", "fala-embrulhar"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-embrulhar"],
+        "projectChecks": [
+          {
+            "id": "pergunta-jogando",
+            "label": "No motor, use Se com a pergunta o estado do jogo é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "guardar-fundo",
+            "label": "Leve a sequência para o então de Se jogando, começando por Limpar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_clear",
+                  "beforeBlock": "sz_g2d_starfield"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "guardar-nave",
+            "label": "O movimento da nave fica dentro de Se jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_arrows_x",
+                  "fields": {
+                    "SPRITE": "nave"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "guardar-vidas",
+            "label": "Os corações também ficam dentro de Se jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_sprite_health",
+                  "fields": {
+                    "SPRITE": "nave",
+                    "STYLE": "hearts"
+                  },
+                  "inputs": {
+                    "X": 12,
+                    "Y": 48,
+                    "SIZE": 22
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "relogio-e-tiro",
+      "title": "O relógio e a barra de espaço também perguntam",
+      "intent": "application",
+      "objective": "Repetir a manobra nos dois lugares que têm vida própria: o relógio das pedras e o evento do disparo.",
+      "blockKeys": ["video-relogio-e-tiro", "fala-relogio-e-tiro"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-relogio-e-tiro"],
+        "projectChecks": [
+          {
+            "id": "guardar-relogio",
+            "label": "Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_frames",
+              "inputs": {
+                "N": 40
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_asteroid",
+                      "fields": {
+                        "GROUP": "asteroides"
+                      },
+                      "inputs": {
+                        "Y": -30,
+                        "SIZE": 40,
+                        "VX": 0,
+                        "VY": 3
+                      },
+                      "inputBlocks": {
+                        "X": {
+                          "blockType": "sz_g2d_random_x"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops"
+            }
+          },
+          {
+            "id": "um-asteroide",
+            "label": "Não deixe outro criador de asteroides fora da condição.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_asteroid",
+              "count": 1
+            }
+          },
+          {
+            "id": "guardar-tiro",
+            "label": "Dentro de Espaço, coloque criar tiro e som no então de Se jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_bullet",
+                      "fields": {
+                        "GROUP": "tiros"
+                      },
+                      "inputs": {
+                        "R": 5,
+                        "VX": 0,
+                        "VY": -9
+                      },
+                      "inputBlocks": {
+                        "X": {
+                          "blockType": "sz_g2d_center_x",
+                          "fields": {
+                            "SPRITE": "nave"
+                          }
+                        },
+                        "Y": {
+                          "blockType": "sz_g2d_sprite_y",
+                          "fields": {
+                            "SPRITE": "nave"
+                          }
+                        }
+                      },
+                      "beforeBlock": "sz_g2d_play_fx"
+                    }
+                  }
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "um-tiro",
+            "label": "Não deixe outro criador de tiro fora da condição.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_bullet",
+              "count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "finais",
+      "title": "O jogo decide quando acaba",
+      "intent": "application",
+      "objective": "Montar as duas perguntas gêmeas do fim da partida e ver a ordem entre elas.",
+      "blockKeys": ["video-finais", "fala-vitoria"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-finais"],
+        "projectChecks": [
+          {
+            "id": "vitoria",
+            "label": "No final da partida, se pontos ≥ alvo, vá para vitoria.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_compare",
+                      "fields": {
+                        "OP": ">="
+                      },
+                      "inputBlocks": {
+                        "LEFT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "pontos"
+                          }
+                        },
+                        "RIGHT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "alvo"
+                          }
+                        }
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "vitoria"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "ordem-dos-finais",
+            "label": "Na partida, coloque a pergunta de vitória antes da pergunta de derrota.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_js_if_else",
+                  "beforeBlock": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_compare",
+                      "fields": {
+                        "OP": ">="
+                      },
+                      "inputBlocks": {
+                        "LEFT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "pontos"
+                          }
+                        },
+                        "RIGHT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "alvo"
+                          }
+                        }
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "vitoria"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "derrota",
+            "label": "Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_health_depleted",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "fim"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "telas",
+      "title": "Desenhe as três telas",
+      "intent": "application",
+      "objective": "Dar um ramo e uma imagem a cada momento, e transformar a tela preta na abertura do jogo.",
+      "blockKeys": ["video-mostrar-telas", "fala-tres-telas"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-mostrar-telas"],
+        "projectChecks": [
+          {
+            "id": "tela-inicio",
+            "label": "No senão se inicio, encaixe Mostrar tela com a dica de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND0": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "inicio"
+                  }
+                },
+                "ELSEIF_THEN0": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte Enter para começar"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "tela-vitoria",
+            "label": "No senão se vitoria, encaixe Mostrar tela com a dica de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND1": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "vitoria"
+                  }
+                },
+                "ELSEIF_THEN1": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte Enter para voltar ao início"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "tela-fim",
+            "label": "No senão se fim, encaixe Mostrar tela com a dica de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND2": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "fim"
+                  }
+                },
+                "ELSEIF_THEN2": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte Enter para voltar ao início"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "reiniciar",
+      "title": "Jogue outra vez",
+      "intent": "exploration",
+      "objective": "Comparar trocar só a tela com reiniciar a partida antes de programar o Enter.",
+      "blockKeys": ["video-reiniciar", "fala-reiniciar", "experiencia-reiniciar"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-reiniciar", "experiencia-reiniciar"]
+      }
+    },
+    {
+      "key": "enter",
+      "title": "O Enter comanda o jogo",
+      "intent": "application",
+      "objective": "Fazer a mesma tecla responder de três jeitos, conforme o momento guardado.",
+      "blockKeys": ["video-enter", "fala-enter"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-enter"],
+        "projectChecks": [
+          {
+            "id": "enter",
+            "label": "Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Enter"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "inicio"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "ELSEIF_COND0": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "fim"
+                      }
+                    },
+                    "ELSEIF_THEN0": {
+                      "blockType": "sz_g2d_restart"
+                    },
+                    "ELSEIF_COND1": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "vitoria"
+                      }
+                    },
+                    "ELSEIF_THEN1": {
+                      "blockType": "sz_g2d_restart"
+                    }
+                  }
+                }
+              },
+              "area": "events"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "quiz-final",
+      "title": "Hora do desafio",
+      "intent": "closing",
+      "objective": "Conferir o estado do jogo e o recomeço.",
+      "blockKeys": ["fala-quiz", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Teste, entregue e mostre para o mundo",
+      "intent": "delivery",
+      "objective": "Jogo completo com quatro momentos, ações limitadas à partida, reinício, entrega enviada e link de compartilhamento.",
+      "blockKeys": ["video-ciclo-completo", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-ciclo-completo", "projeto"],
+        "projectChecks": [
+          {
+            "id": "alvo",
+            "label": "Crie a constante alvo = 26 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_const_create",
+              "area": "start",
+              "fields": {
+                "NAME": "alvo"
+              },
+              "inputs": {
+                "VALUE": 26
+              }
+            }
+          },
+          {
+            "id": "tela-inicial",
+            "label": "Vá para inicio em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "start",
+              "fields": {
+                "SCENE": "inicio"
+              }
+            }
+          },
+          {
+            "id": "guardar-fundo",
+            "label": "Leve a sequência para o então de Se jogando, começando por Limpar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_clear",
+                  "beforeBlock": "sz_g2d_starfield"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "guardar-nave",
+            "label": "O movimento da nave fica dentro de Se jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_arrows_x",
+                  "fields": {
+                    "SPRITE": "nave"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "guardar-vidas",
+            "label": "Os corações também ficam dentro de Se jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_sprite_health",
+                  "fields": {
+                    "SPRITE": "nave",
+                    "STYLE": "hearts"
+                  },
+                  "inputs": {
+                    "X": 12,
+                    "Y": 48,
+                    "SIZE": 22
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "guardar-relogio",
+            "label": "Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_frames",
+              "inputs": {
+                "N": 40
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_asteroid",
+                      "fields": {
+                        "GROUP": "asteroides"
+                      },
+                      "inputs": {
+                        "Y": -30,
+                        "SIZE": 40,
+                        "VX": 0,
+                        "VY": 3
+                      },
+                      "inputBlocks": {
+                        "X": {
+                          "blockType": "sz_g2d_random_x"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops"
+            }
+          },
+          {
+            "id": "um-asteroide",
+            "label": "Não deixe outro criador de asteroides fora da condição.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_asteroid",
+              "count": 1
+            }
+          },
+          {
+            "id": "guardar-tiro",
+            "label": "Dentro de Espaço, coloque criar tiro e som no então de Se jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Space"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_spawn_bullet",
+                      "fields": {
+                        "GROUP": "tiros"
+                      },
+                      "inputs": {
+                        "R": 5,
+                        "VX": 0,
+                        "VY": -9
+                      },
+                      "inputBlocks": {
+                        "X": {
+                          "blockType": "sz_g2d_center_x",
+                          "fields": {
+                            "SPRITE": "nave"
+                          }
+                        },
+                        "Y": {
+                          "blockType": "sz_g2d_sprite_y",
+                          "fields": {
+                            "SPRITE": "nave"
+                          }
+                        }
+                      },
+                      "beforeBlock": "sz_g2d_play_fx"
+                    }
+                  }
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "um-tiro",
+            "label": "Não deixe outro criador de tiro fora da condição.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_bullet",
+              "count": 1
+            }
+          },
+          {
+            "id": "vitoria",
+            "label": "No final da partida, se pontos ≥ alvo, vá para vitoria.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_compare",
+                      "fields": {
+                        "OP": ">="
+                      },
+                      "inputBlocks": {
+                        "LEFT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "pontos"
+                          }
+                        },
+                        "RIGHT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "alvo"
+                          }
+                        }
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "vitoria"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "ordem-dos-finais",
+            "label": "Na partida, coloque a pergunta de vitória antes da pergunta de derrota.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_js_if_else",
+                  "beforeBlock": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_compare",
+                      "fields": {
+                        "OP": ">="
+                      },
+                      "inputBlocks": {
+                        "LEFT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "pontos"
+                          }
+                        },
+                        "RIGHT": {
+                          "blockType": "sz_val_variable",
+                          "fields": {
+                            "NAME": "alvo"
+                          }
+                        }
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "vitoria"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "derrota",
+            "label": "Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_health_depleted",
+                      "fields": {
+                        "SPRITE": "nave"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "fim"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "tela-inicio",
+            "label": "No senão se inicio, encaixe Mostrar tela com a dica de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND0": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "inicio"
+                  }
+                },
+                "ELSEIF_THEN0": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte Enter para começar"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "tela-vitoria",
+            "label": "No senão se vitoria, encaixe Mostrar tela com a dica de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND1": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "vitoria"
+                  }
+                },
+                "ELSEIF_THEN1": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte Enter para voltar ao início"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "tela-fim",
+            "label": "No senão se fim, encaixe Mostrar tela com a dica de Enter.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "ELSEIF_COND2": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "fim"
+                  }
+                },
+                "ELSEIF_THEN2": {
+                  "blockType": "sz_g2d_show_screen",
+                  "inputs": {
+                    "HINT": "Aperte Enter para voltar ao início"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "enter",
+            "label": "Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "fields": {
+                "KEY": "Enter"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "inicio"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_scene",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    },
+                    "ELSEIF_COND0": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "fim"
+                      }
+                    },
+                    "ELSEIF_THEN0": {
+                      "blockType": "sz_g2d_restart"
+                    },
+                    "ELSEIF_COND1": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "vitoria"
+                      }
+                    },
+                    "ELSEIF_THEN1": {
+                      "blockType": "sz_g2d_restart"
+                    }
+                  }
+                }
+              },
+              "area": "events"
+            }
+          },
+          {
+            "id": "placar-jogando",
+            "label": "O placar da variável fica na partida.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_draw_score",
+                  "fields": {
+                    "LABEL": "Pontos:"
+                  },
+                  "inputs": {
+                    "X": 12,
+                    "Y": 30,
+                    "SIZE": 24
+                  },
+                  "inputBlocks": {
+                    "VALUE": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "pontos"
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "ponto-jogando",
+            "label": "A colisão que soma pontos fica na partida.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_on_group_overlap",
+                  "fields": {
+                    "A": "tiros",
+                    "B": "asteroides",
+                    "ANAME": "tiro",
+                    "BNAME": "asteroide"
+                  },
+                  "inputBlocks": {
+                    "BODY": {
+                      "blockType": "sz_js_var_increment",
+                      "fields": {
+                        "NAME": "pontos",
+                        "DELTA": 1
+                      }
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "dano-jogando",
+            "label": "A colisão que tira vida fica na partida.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "jogando"
+                  }
+                },
+                "THEN": {
+                  "blockType": "sz_g2d_on_sprite_group_overlap",
+                  "fields": {
+                    "GROUP": "asteroides",
+                    "SPRITE": "nave",
+                    "ANAME": "inimigo"
+                  },
+                  "inputBlocks": {
+                    "BODY": {
+                      "blockType": "sz_g2d_damage_sprite",
+                      "fields": {
+                        "SPRITE": "nave"
+                      },
+                      "inputs": {
+                        "AMOUNT": 1,
+                        "FRAMES": 45
+                      },
+                      "beforeBlock": "sz_g2d_shake"
+                    }
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "vida",
+            "label": "Dê 3 vidas à nave em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_health",
+              "area": "start",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "inputs": {
+                "AMOUNT": 3
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "construir-3",
+    "video-construir-3-1",
+    "convite-construir-1",
+    "checar-construir-3",
+    "construir-4",
+    "video-construir-4-1",
+    "construir-5",
+    "video-construir-5-1",
+    "convite-construir-4",
+    "checar-construir-4",
+    "construir-6",
+    "video-construir-6-1",
+    "convite-construir-6",
+    "construir-7",
+    "video-construir-7-1",
+    "fechamento",
+    "video-abertura-v6",
+    "video-telas-observar",
+    "experiencia-telas",
+    "video-pergunta",
+    "fala-pergunta",
+    "video-mover-cadeia",
+    "video-guardar-jogo",
+    "fala-guardar-jogo",
+    "video-guardar-relogio",
+    "fala-guardar-relogio",
+    "video-guardar-tiro",
+    "fala-guardar-tiro",
+    "video-vitoria",
+    "video-derrota",
+    "fala-mostrar-telas",
+    "entrega-fala-v6",
+    "video-fecho-v6",
+    "quiz-v6",
+    "fala-constante",
+    "fala-guardar-nao-desenha",
+    "fala-tudo-roda",
+    "fala-embrulhar-cadeia",
+    "fala-tela-preta",
+    "fala-embrulhar-tiro",
+    "fala-teste-menu",
+    "fala-derrota",
+    "fala-ordem-dos-finais",
+    "fala-telas-finais",
+    "fala-abertura-apareceu",
+    "fala-enter-ramos",
+    "video-fecho"
+  ]
+}

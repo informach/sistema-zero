@@ -169,6 +169,12 @@ export interface MonacoTabsProps {
    * de um descarta os models vivos do outro.
    */
   modelPathPrefix?: string
+  /**
+   * O editor do Monaco depois de montado (e `null` quando sai). É por onde o Studio liga a pilha
+   * de desfazer do código aos botões da barra (`useCodeHistory`) sem este pacote conhecer o
+   * estado do Studio.
+   */
+  onEditorReady?: (editor: monacoNs.editor.IStandaloneCodeEditor | null) => void
 }
 
 /** Ícone "formatar" (linhas alinhadas) — usado no botão compacto, sem dep externa. */
@@ -274,6 +280,7 @@ export function MonacoTabs({
   canCloseFile,
   onCloseFile,
   modelPathPrefix,
+  onEditorReady,
 }: MonacoTabsProps): JSX.Element {
   // Mede o PRÓPRIO contêiner (não o Studio): o cabeçalho compacta conforme a
   // largura real do editor, que muda ao arrastar o split do PanelGroup.
@@ -502,6 +509,18 @@ export function MonacoTabs({
     editorRef.current = editor
     setMountedEditor(editor)
   }, [])
+
+  // Entrega o editor montado a quem pediu (e `null` na saída). Pelo ref: o efeito roda uma vez
+  // por editor, mesmo que o pai passe um callback novo a cada render.
+  const onEditorReadyRef = useRef(onEditorReady)
+  useEffect(() => {
+    onEditorReadyRef.current = onEditorReady
+  }, [onEditorReady])
+  useEffect(() => {
+    if (!mountedEditor) return
+    onEditorReadyRef.current?.(mountedEditor)
+    return () => onEditorReadyRef.current?.(null)
+  }, [mountedEditor])
 
   // Salva o view state da aba que está SAINDO. É layout effect de propósito: a
   // troca de model do <Editor> acontece num efeito PASSIVO do

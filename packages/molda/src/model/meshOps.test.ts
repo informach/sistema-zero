@@ -135,6 +135,25 @@ describe('apagar a seleção', () => {
     ])
   })
 
+  test('apagar aresta de construção não apaga faces e uma malha só de arestas sobrevive', () => {
+    const mesh: MoldaMesh = {
+      vertices: { v_a: [0, 0, 0], v_b: [2, 0, 0], v_c: [4, 0, 0] },
+      faces: {},
+      looseEdges: [
+        ['v_a', 'v_b'],
+        ['v_b', 'v_c'],
+      ],
+    }
+    const model = meshModel(mesh)
+    const result = deleteMeshSelection(model, 'm', [{ kind: 'edge', keys: ['v_a', 'v_b'] }])
+    if (result.kind !== 'updated') throw new Error(result.kind)
+    expect(result.model.parts[0]?.mesh).toEqual({
+      vertices: { v_b: [2, 0, 0], v_c: [4, 0, 0] },
+      faces: {},
+      looseEdges: [['v_b', 'v_c']],
+    })
+  })
+
   test('peça trancada ou escondida recusa apagar na operação pura', () => {
     for (const flag of ['locked', 'hidden'] as const) {
       const model = meshModel()

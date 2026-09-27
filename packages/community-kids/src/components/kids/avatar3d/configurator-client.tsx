@@ -1,7 +1,6 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useTheme } from 'next-themes'
 import type { AvatarReturnPath } from '@/lib/avatar-return'
 import { KidsMascot } from '../mascot'
 
@@ -16,7 +15,9 @@ const AvatarConfigurator = dynamic(
 
 function ConfiguratorLoading() {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background">
+    // Espelha a raiz do configurador: imersivo no celular, em fluxo a partir do `md` (senão o
+    // esqueleto cobriria a barra da esquerda enquanto o 3D carrega).
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1">
       <KidsMascot expression="thinking" className="size-24 animate-pulse" />
       <p className="[font-family:var(--font-display)] font-bold text-muted-foreground">
         Preparando seu avatar 3D…
@@ -26,9 +27,11 @@ function ConfiguratorLoading() {
 }
 
 export function AvatarConfiguratorClient({ returnTo }: { returnTo: AvatarReturnPath }) {
-  // Fundo da cena casa com o tema DA COMUNIDADE (toggle do app via next-themes), não com a
+  // Fundo da cena casa com o tema DA COMUNIDADE (hoje só claro), não com a
   // preferência do SO — igual ao Estúdio (`studio-full-client`). Cosmético; `resolvedTheme` pode
   // vir `undefined` na 1ª render (pré-hidratação) → claro por padrão, ajusta ao montar.
-  const { resolvedTheme } = useTheme()
-  return <AvatarConfigurator dark={resolvedTheme === 'dark'} returnTo={returnTo} />
+  // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
+  // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
+  // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
+  return <AvatarConfigurator dark={false} returnTo={returnTo} />
 }

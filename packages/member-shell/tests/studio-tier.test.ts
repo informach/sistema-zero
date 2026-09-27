@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { ESSENTIAL_2D_ALLOW_BLOCKS } from '@sistemazero/studio'
 import {
-  minCareerLevelForRemix,
+  minJourneyLevelForRemix,
   remixRequirementFromSnapshot,
   resolveStudioTier,
   studioTierCoversRemix,
@@ -95,23 +95,23 @@ describe('remix do Mural — cobertura de ferramentas por nível', () => {
     ).toBe(true)
   })
 
-  test('minCareerLevelForRemix: primeiro nível com Estúdio livre que cobre as extensões', () => {
+  test('minJourneyLevelForRemix: primeiro nível com Estúdio livre que cobre as extensões', () => {
     // Sem extensão → o primeiro nível com Estúdio livre (Construtor).
-    expect(minCareerLevelForRemix({ pro: false, extensions: [] })).toBe('coder')
-    expect(minCareerLevelForRemix({ pro: false, extensions: ['game-2d'] })).toBe('coder')
+    expect(minJourneyLevelForRemix({ pro: false, extensions: [] })).toBe('coder')
+    expect(minJourneyLevelForRemix({ pro: false, extensions: ['game-2d'] })).toBe('coder')
     // 3D abre no Explorador de Mundos (perfil iniciante-3d).
-    expect(minCareerLevelForRemix({ pro: false, extensions: ['game-3d'] })).toBe('explorer')
-    expect(minCareerLevelForRemix({ pro: false, extensions: ['world-3d'] })).toBe('architect')
+    expect(minJourneyLevelForRemix({ pro: false, extensions: ['game-3d'] })).toBe('explorer')
+    expect(minJourneyLevelForRemix({ pro: false, extensions: ['world-3d'] })).toBe('architect')
     // Jogo 3D Avançado agora abre no Arquiteto (reclassificado; decisão 26/07).
-    expect(minCareerLevelForRemix({ pro: false, extensions: ['game-3d-advanced'] })).toBe(
+    expect(minJourneyLevelForRemix({ pro: false, extensions: ['game-3d-advanced'] })).toBe(
       'architect',
     )
     // Pro é só da Lenda.
-    expect(minCareerLevelForRemix({ pro: true, extensions: [] })).toBe('god')
+    expect(minJourneyLevelForRemix({ pro: true, extensions: [] })).toBe('god')
   })
 
-  test('minCareerLevelForRemix: extensão desconhecida (metadado forjado) → null', () => {
-    expect(minCareerLevelForRemix({ pro: false, extensions: ['hax-ext'] })).toBeNull()
+  test('minJourneyLevelForRemix: extensão desconhecida (metadado forjado) → null', () => {
+    expect(minJourneyLevelForRemix({ pro: false, extensions: ['hax-ext'] })).toBeNull()
   })
 
   test('remixRequirementFromSnapshot: extrai kind + ids de extensão; lixo → vazio', () => {

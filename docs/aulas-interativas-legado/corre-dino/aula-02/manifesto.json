@@ -1,0 +1,232 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-02",
+  "title": "O Dino aparece e corre",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "construir-3",
+    "fechamento"
+  ],
+  "blocks": [
+    {
+      "key": "video-missao",
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre a floresta cobrindo o Dino e as duas peças na faixa. “Tem um Dino escondido aqui. Troque o lugar das peças para encontrar nosso personagem!” Demonstre como pegar uma peça e a alternativa de escolher Antes/Depois, sem resolver a ordem. O efeito aparece imediatamente; não mande apertar Play."
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "required": false,
+        "title": "Quem fica na frente?",
+        "instructions": "Troque as peças de lugar. A última desenhada fica na frente!",
+        "hints": [
+          "O Dino está escondido atrás de quê?",
+          "Olhe a última peça na faixa de desenho.",
+          "Escolha o Dino e toque no espaço Depois."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "layers"
+        }
+      }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: Ligar o motor do jogo. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Áreas do projeto, coloque Enquanto estiver rodando ao lado de Ao iniciar. Em Jogo 2D, Tempo e repetição, encaixe A cada quadro do jogo dentro dele.\n\nEsse será o motor do desenho. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-1",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Áreas do projeto, coloque Enquanto estiver rodando ao lado de Ao iniciar. Em Jogo 2D, Tempo e repetição, encaixe A cada quadro do jogo dentro dele."
+      }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: Desenhar o mundo. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Sprites, comece com Desenhar o sprite e escolha dino. Em Aparência, encaixe Limpar a tela no topo.\n\nEm Kit dino, experimente colocar a floresta depois do dino: ele some. Mova a floresta para antes dele.\n\nUse velocidade 5 e remova só o bloco da borda, preservando os vizinhos. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-2",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Sprites, comece com Desenhar o sprite e escolha dino. Em Aparência, encaixe Limpar a tela no topo."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar e deixar do seu jeito. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Clique no jogo e observe a floresta passando. Teste velocidades 2 e 9 para o fundo.\n\nCompare a sensação de corrida e escolha seu ritmo. Se apagar uma pilha sem querer, use Ctrl+Z; para remover um bloco isolado, use Apagar este bloco no botão direito. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-3",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Clique no jogo e observe a floresta passando. Teste velocidades 2 e 9 para o fundo."
+      }
+    },
+    {
+      "key": "zappy-convite-construir-1",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Experimente a floresta depois do Dino e depois antes dele. Qual ordem deixa o personagem à vista?"
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! Vamos conferir antes de enviar.” Demonstre os testes desta aula: Confirme a ordem limpar, floresta e dino. O personagem precisa aparecer por cima do cenário, sem rastros. Envie o projeto. Mostre o botão Enviar ao professor e a confirmação do envio.  Termine: “Depois de enviar, tem um quiz curtinho sobre o que você descobriu.”"
+    },
+    {
+      "key": "zappy-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!"
+      }
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "![A: Dino coberto pela floresta. B: Dino aparece na frente.](/api/lesson-visuals/dino-camadas-v1.svg)\n\nQuem aparece por cima: o primeiro ou o último desenho?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "O último desenho."
+              },
+              {
+                "id": "b",
+                "label": "O primeiro desenho."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Como folhas empilhadas, o último desenho cobre os anteriores."
+          },
+          {
+            "id": "q2",
+            "prompt": "Ficaram rastros dos desenhos anteriores. O que ajuda?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Criar mais personagens."
+              },
+              {
+                "id": "b",
+                "label": "Limpar antes de desenhar cada quadro."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "A limpeza tira o quadro anterior antes do novo desenho."
+          }
+        ]
+      }
+    },
+    {
+      "key": "zappy-revisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "Quem fica na frente?",
+      "objective": "Floresta na frente; Dino na frente",
+      "intent": "exploration",
+      "blockKeys": ["video-missao", "descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
+    },
+    {
+      "key": "construir-1",
+      "title": "Tire o Dino do esconderijo",
+      "objective": "Desenhar o personagem a cada quadro e observar a ordem das camadas.",
+      "intent": "application",
+      "blockKeys": [
+        "video-construir-1-1",
+        "zappy-construir-1",
+        "video-construir-2-1",
+        "zappy-construir-2",
+        "video-construir-3-1",
+        "zappy-construir-3",
+        "zappy-convite-construir-1"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "g2d-draw-sprite",
+            "label": "Desenhe o sprite dino dentro de A cada quadro do jogo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "area": "loops",
+              "fields": {
+                "SPRITE": "dino"
+              },
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fechamento",
+      "title": "Mostre sua criação",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
+      "intent": "delivery",
+      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "O que você descobriu?",
+      "objective": "Retomar o conceito depois de explorar, criar e entregar.",
+      "intent": "closing",
+      "blockKeys": ["zappy-revisao", "quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

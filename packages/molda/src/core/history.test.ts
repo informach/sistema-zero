@@ -2,6 +2,15 @@ import { describe, expect, test } from 'bun:test'
 import { createHistory } from './history'
 
 describe('createHistory', () => {
+  test('undo includes retained redo bytes in the same budget', () => {
+    const h = createHistory<string>({ sizeOf: (s) => s.length, byteBudget: 10 })
+    h.record('aaaa')
+    h.record('bbbb')
+    expect(h.undo('123456789')).toBe('bbbb')
+    expect(h.canUndo()).toBe(false)
+    expect(h.redo('bbbb')).toBe('123456789')
+    expect(h.undo('123456789')).toBe('bbbb')
+  })
   test('undo/redo em ordem e um gesto novo limpa o redo', () => {
     const h = createHistory<number>({ sizeOf: () => 1 })
     h.record(1)

@@ -29,6 +29,9 @@ import type {
   EbookDownloadView,
   GamificationDelta,
   GamificationMeView,
+  HelpCollectionView,
+  HelpTutorialEntry,
+  HelpTutorialView,
   HubAttachmentKind,
   HubChannelView,
   HubCommentView,
@@ -36,6 +39,7 @@ import type {
   HubPage,
   HubResolvedAttachment,
   HubSpaceView,
+  HubThreadSort,
   HubThreadView,
   LeagueMeView,
   LessonCompleteResult,
@@ -52,7 +56,9 @@ import type {
   PensaArtifactView,
   PensaProjectDetailView,
   PensaProjectListView,
+  PensaProjectMembersView,
   PensaProjectStatus,
+  PensaShareView,
   PensaStage,
   PensaStageView,
   PensaTaskCategory,
@@ -347,6 +353,26 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         query: { refs: STUDIO_ACCESS_REF, audience },
       }),
   )
+  // O MENU do kids (em toda página, para não oferecer ferramenta travada) e a página de
+  // cada ferramenta perguntam a mesma coisa no mesmo render: uma ida só. Sem o cache eram
+  // DUAS idas a `/members/access` por render do /estudio.
+  const creativeToolsAccessReadonlyCached = cache(
+    (): Promise<GatewayResponse<ProductAccessView>> =>
+      gw.gatewayFetchReadonly('/members/access', {
+        query: {
+          refs: `${STUDIO_ACCESS_REF},${PINTA_ACCESS_REF},${MOLDA_ACCESS_REF},${PENSA_ACCESS_REF}`,
+          audience,
+        },
+      }),
+  )
+  // A página /molda e a comemoração do layout (nos postos em que o Molda ganha ferramentas)
+  // perguntam a mesma coisa no mesmo render: uma ida só.
+  const moldaAccessReadonlyCached = cache(
+    (): Promise<GatewayResponse<ProductAccessView>> =>
+      gw.gatewayFetchReadonly('/members/access', {
+        query: { refs: `${MOLDA_ACCESS_REF},${STUDIO_ACCESS_REF}`, audience },
+      }),
+  )
   const challengeReadonlyCached = cache(
     (): Promise<GatewayResponse<ChallengeMeView>> =>
       gw.gatewayFetchReadonly('/members/gamification/challenge', { query: { audience } }),
@@ -432,6 +458,20 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       return gw.gatewayFetch(`/members/courses/${enc(slug)}/lessons/${enc(lessonId)}`)
     },
 
+    // ── "Como fazer" (biblioteca de ajuda): SÓ o publicado, qualquer conta ativa, sem progresso ──
+    /** Coleções ativas com a contagem de tutoriais publicados (Server Component). */
+    listHelpCollectionsReadonly(): Promise<GatewayResponse<{ collections: HelpCollectionView[] }>> {
+      return gw.gatewayFetchReadonly('/members/help/collections')
+    },
+    /** A lista publicada, com o texto achatado para a busca no navegador (Server Component). */
+    listHelpTutorialsReadonly(): Promise<GatewayResponse<{ tutorials: HelpTutorialEntry[] }>> {
+      return gw.gatewayFetchReadonly('/members/help/tutorials')
+    },
+    /** Um tutorial publicado pelo slug (Server Component). 404 = não existe ou não está publicado. */
+    getHelpTutorialReadonly(slug: string): Promise<GatewayResponse<HelpTutorialView>> {
+      return gw.gatewayFetchReadonly(`/members/help/tutorials/${enc(slug)}`)
+    },
+
     /**
      * Resolve a localização REAL de um anexo (matrícula garantida pelo members).
      * SÓ para a rota de download — a `storageRef` nunca deve chegar ao browser.
@@ -444,6 +484,23 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       return gw.gatewayFetch(
         `/members/courses/${enc(slug)}/lessons/${enc(lessonId)}/attachments/${enc(attachmentId)}/resolve`,
       )
+    },
+
+    /** Evidência S2S: somente após a rota preparar uma entrega válida do arquivo. */
+    recordMaterialDownload(input: {
+      actor: { userId: string; accountId: string }
+      courseSlug: string
+      lessonId: string
+      attachmentId: string
+      blockId: string
+      itemId: string
+      expectedRevision: string
+      expectedStorageRefHash: string
+    }): Promise<GatewayResponse<{ required: boolean }>> {
+      return gw.gatewayFetchHmac('/members/internal/material-downloads', {
+        method: 'POST',
+        body: input,
+      })
     },
 
     /**
@@ -540,6 +597,19 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         method: 'POST',
         query: { audience },
       })
+    },
+    /**
+     * Abre o BAÚ de fim de unidade e paga o prêmio. O members revalida que TODAS as
+     * aulas publicadas da unidade estão concluídas; o ledger dedupa o clique repetido.
+     */
+    claimUnitChest(
+      courseSlug: string,
+      moduleId: string,
+    ): Promise<GatewayResponse<GamificationDelta | null>> {
+      return gw.gatewayFetch(
+        `/members/courses/${enc(courseSlug)}/units/${enc(moduleId)}/chest/claim`,
+        { method: 'POST' },
+      )
     },
     /**
      * Registra o REMIX de um jogo do Mural ("Fazer a minha versão") — marco da missão
@@ -694,12 +764,10 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
      * "Esta conta tem acesso ao Molda?" — Server Component (sem refresh de
      * cookie), p/ gatear a página /molda. Mesmo molde do Pinta: a segunda ref
      * (`estudio-completo`) alimenta o `studioOwned` do adapter (atalho e dica do
-     * "Trazer do Molda" na galeria).
+     * "Trazer do Molda" na galeria). Deduplicada por request.
      */
     checkMoldaAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
-      return gw.gatewayFetchReadonly('/members/access', {
-        query: { refs: `${MOLDA_ACCESS_REF},${STUDIO_ACCESS_REF}`, audience },
-      })
+      return moldaAccessReadonlyCached()
     },
     /**
      * As TRÊS ferramentas de criação numa ida só, para a página /estudio decidir de
@@ -707,16 +775,14 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
      * "Trazer do Molda" (produtos vendidos à parte: só com a posse de cada um).
      */
     checkCreativeToolsAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
-      return gw.gatewayFetchReadonly('/members/access', {
-        query: {
-          refs: `${STUDIO_ACCESS_REF},${PINTA_ACCESS_REF},${MOLDA_ACCESS_REF}`,
-          audience,
-        },
-      })
+      return creativeToolsAccessReadonlyCached()
     },
     /** Projetos ATIVOS do perfil (lista do Pensa). */
     pensaListProjects(): Promise<GatewayResponse<{ projects: PensaProjectListView[] }>> {
       return gw.gatewayFetch('/members/pensa/projects', { query: { audience } })
+    },
+    pensaListProjectsReadonly(): Promise<GatewayResponse<{ projects: PensaProjectListView[] }>> {
+      return gw.gatewayFetchReadonly('/members/pensa/projects', { query: { audience } })
     },
     /** Cria projeto + ciclo 1 (Versão 1, etapa z). O members aplica o gate do produto. */
     pensaCreateProject(body: {
@@ -743,6 +809,57 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     ): Promise<GatewayResponse<{ project: PensaProjectDetailView }>> {
       return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}`, {
         method: 'PATCH',
+        query: { audience },
+        body,
+      })
+    },
+    /**
+     * Apaga o plano DE VEZ. O members leva ciclos, conversas, artefatos e cartões
+     * junto (cascata); o XP já ganho fica. Quem pergunta antes é a tela.
+     */
+    pensaDeleteProject(projectId: string): Promise<GatewayResponse<{ ok: boolean }>> {
+      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}`, {
+        method: 'DELETE',
+        query: { audience },
+      })
+    },
+    // ── Equipe do plano (26/09/2026) ──
+    /** Gera (ou troca) o código do plano. Só o dono. */
+    pensaShareProject(projectId: string): Promise<GatewayResponse<PensaShareView>> {
+      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}/share`, {
+        method: 'POST',
+        query: { audience },
+      })
+    },
+    /** Desliga o código (quem já entrou fica). Só o dono. */
+    pensaUnshareProject(projectId: string): Promise<GatewayResponse<{ ok: boolean }>> {
+      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}/share`, {
+        method: 'DELETE',
+        query: { audience },
+      })
+    },
+    /** A equipe do plano (dono primeiro); o código só vem para o dono. */
+    pensaListProjectMembers(projectId: string): Promise<GatewayResponse<PensaProjectMembersView>> {
+      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}/members`, {
+        query: { audience },
+      })
+    },
+    /** Tira alguém da equipe (dono) ou sai dela (`profileId: 'me'`, membro). */
+    pensaRemoveProjectMember(
+      projectId: string,
+      profileId: string,
+    ): Promise<GatewayResponse<{ ok: boolean }>> {
+      return gw.gatewayFetch(
+        `/members/pensa/projects/${enc(projectId)}/members/${enc(profileId)}`,
+        { method: 'DELETE', query: { audience } },
+      )
+    },
+    /** Entra numa equipe pelo código. O members aplica o gate do produto (os dois lados têm o Pensa). */
+    pensaJoinProject(body: {
+      code: string
+    }): Promise<GatewayResponse<{ project: PensaProjectDetailView }>> {
+      return gw.gatewayFetch('/members/pensa/projects/join', {
+        method: 'POST',
         query: { audience },
         body,
       })
@@ -1167,6 +1284,11 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       const suffix = query.size > 0 ? `?${query}` : ''
       return gw.gatewayFetch(`/members/creations/${enc(tool)}${suffix}`, { method: 'GET' })
     },
+    listCreationsReadonly(
+      tool: CreationToolView,
+    ): Promise<GatewayResponse<{ items: CreationIndexView[]; nextCursor?: string | null }>> {
+      return gw.gatewayFetchReadonly(`/members/creations/${enc(tool)}`, { query: { limit: 24 } })
+    },
     /** Reserva a próxima revisão (gate de posse + quota no members) — o BFF assina o PUT. */
     reserveCreationUpload(
       tool: CreationToolView,
@@ -1191,7 +1313,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     commitCreationUpload(
       tool: CreationToolView,
       itemId: string,
-      body: { revision: number; uploadedParts?: string[] },
+      body: { revision: number; uploadedParts?: string[]; verifiedPartHashes?: string[] },
     ): Promise<GatewayResponse<CreationCommitResultView>> {
       return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}/commit`, {
         method: 'POST',
@@ -1211,7 +1333,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     deleteCreation(
       tool: CreationToolView,
       itemId: string,
-      body: { baseRevision: number },
+      body: { baseRevision: number; maxFormatVersion?: number },
     ): Promise<GatewayResponse<CreationDeleteResultView>> {
       return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}`, {
         method: 'DELETE',
@@ -1341,11 +1463,22 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
     },
     listThreads(
       channelId: string,
-      params: { cursor?: string; limit?: number; challenge?: string } = {},
+      params: {
+        cursor?: string
+        limit?: number
+        challenge?: string
+        /** Filtros do Mural: `recent` (Novidades) e `plays` (Mais jogados); ausente = padrão. */
+        sort?: HubThreadSort
+      } = {},
     ): Promise<GatewayResponse<HubPage<HubThreadView>>> {
       return gw.gatewayFetch(`/hub/channels/${enc(channelId)}/threads`, {
         // `challenge` = prateleira do Desafio do mês (`m:YYYY-MM`) — só posts com a tag.
-        query: { cursor: params.cursor, limit: params.limit, challenge: params.challenge },
+        query: {
+          cursor: params.cursor,
+          limit: params.limit,
+          challenge: params.challenge,
+          sort: params.sort,
+        },
       })
     },
     createThread(
@@ -1506,9 +1639,14 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
         `/hub/internal/studio-play/${enc(playId)}${countHit ? '?count=1' : ''}`,
       )
     },
-    /** Carreira (RSC, sem refresh): jogos publicados no Mural + soma das jogadas. */
+    /** Jornada (RSC, sem refresh): jogos publicados no Mural + soma das jogadas. */
     myShowcaseStatsReadonly(): Promise<GatewayResponse<{ published: number; plays: number }>> {
       return gw.gatewayFetchReadonly('/hub/my-showcase-stats')
+    },
+    myShowcaseDeliveryReadonly(
+      courseId: string,
+    ): Promise<GatewayResponse<{ state: 'none' | 'pending' | 'delivered' }>> {
+      return gw.gatewayFetchReadonly(`/hub/my-showcase-delivery/${enc(courseId)}`)
     },
     report(
       target: 'thread' | 'comment',

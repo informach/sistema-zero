@@ -32,6 +32,14 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
       'mission_claims (user_id uuid not null)',
       'room_inventory (user_id uuid not null)',
       'studio_submissions (user_id uuid not null, account_id uuid)',
+      // ⚠️ `lesson_id` entra aqui mesmo sem esta suíte usá-lo: o banco de tests/db é
+      // COMPARTILHADO e o `challenge-lifecycle` cria esta tabela com `lesson_id not null`. Quem
+      // chega primeiro vence, a ordem dos arquivos não é contrato, e sem a coluna o insert
+      // abaixo quebra só quando o outro arquivo roda antes — num banco novo, como o do CI.
+      'lesson_section_progress (user_id uuid not null, account_id uuid not null, lesson_id uuid)',
+      'lesson_navigation (user_id uuid not null, account_id uuid not null)',
+      'lesson_block_progress (user_id uuid not null, account_id uuid not null)',
+      'learning_attempts (user_id uuid not null, account_id uuid not null)',
       'gamification_profiles (user_id uuid not null, account_id uuid)',
       'avatar_configs (user_id uuid not null, account_id uuid)',
       'league_membership (user_id uuid not null, account_id uuid)',
@@ -70,6 +78,21 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
       `creations (id uuid primary key, user_id uuid not null, account_id uuid not null,
         tool text, item_id varchar(64), name varchar(120), kind varchar(40),
         item_updated_at timestamptz, created_at timestamptz, synced_at timestamptz)`,
+      // Recados e evidências (migration 0084). A mesma regra do comentário acima: a
+      // purga passou a alcançá-las, então sem o DDL aqui o teste cai com 42P01 num
+      // banco novo (o do CI), e só passa na máquina onde a migration já rodou.
+      `teacher_broadcast_recipients (broadcast_id uuid not null, profile_id uuid not null,
+        account_id uuid not null, name text, account_name text, account_email text,
+        thread_id uuid, status text default 'pending' not null, delivered_at timestamptz,
+        constraint teacher_broadcast_recipients_pk primary key (broadcast_id, profile_id))`,
+      `lesson_evidence (id uuid primary key, user_id uuid not null, account_id uuid,
+        lesson_id uuid not null, block_id uuid, section_id uuid, kind text,
+        revision text, payload jsonb, created_at timestamptz)`,
+      // A cor do perfil (migration 0086, renomeada para `palette` na 0088). A mesma regra do
+      // comentário acima: a purga alcança a tabela, então sem o DDL aqui o teste cai com 42P01
+      // num banco novo — o do CI — e só passa onde a migration já rodou.
+      `profile_preferences (user_id uuid primary key, account_id uuid not null,
+        palette varchar(32), updated_at timestamptz not null)`,
       'account_deletion_fences (account_id uuid primary key, created_at timestamptz not null)',
       `creation_cleanup_jobs (id uuid primary key, account_id uuid not null unique,
         user_ids jsonb not null default '[]'::jsonb, prefixes jsonb not null,
@@ -116,6 +139,10 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     // por ordem, não por lógica. Aqui a semântica desejada é "limpe o que depender disto".
     await conn.sql`
       truncate table
+        members.lesson_section_progress,
+        members.lesson_navigation,
+        members.lesson_block_progress,
+        members.learning_attempts,
         members.creation_cleanup_jobs,
         members.account_deletion_fences,
         members.creations,
@@ -172,6 +199,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
         (${randomUUID()}, ${profileId}, ${accountId}, 'studio', 'proj-1', 'Nave', 'classic', now(), now(), now()),
         (${randomUUID()}, ${accountId}, ${accountId}, 'pinta', 'd-1', 'nave', 'pixel-sprite', now(), now(), now())`
 
+    await conn.sql`insert into members.lesson_section_progress (user_id, account_id, lesson_id) values (${profileId}, ${accountId}, ${randomUUID()})`
     const cleanupId = randomUUID()
     const createdAt = new Date('2026-08-19T12:00:00.000Z')
     const notBefore = new Date('2026-08-19T12:15:00.000Z')
@@ -187,6 +215,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     })
 
     const tables = [
+      'lesson_section_progress',
       'creations',
       'teacher_threads',
       'pensa_projects',

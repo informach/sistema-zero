@@ -13,10 +13,9 @@ import { EquipAvatarService } from './application/avatar/equip-avatar.service'
 import { GetAvatarService } from './application/avatar/get-avatar.service'
 import { GetAvatarsByProfilesService } from './application/avatar/get-avatars-by-profiles.service'
 import { SetAvatarPhotoService } from './application/avatar/set-avatar-photo.service'
+import { SendChallengeLifecycleService } from './application/challenge-lifecycle/send-challenge-lifecycle.service'
 import { GetChildrenStatsService } from './application/children-stats/get-children-stats.service'
 import {
-  AttachmentAdminService,
-  BlockAdminService,
   CourseAdminService,
   LessonAdminService,
   ModuleAdminService,
@@ -33,6 +32,7 @@ import { AwardGamificationService } from './application/gamification/award-gamif
 import { BuyStreakFreezeService } from './application/gamification/buy-streak-freeze.service'
 import { ChallengeAdminService } from './application/gamification/challenge-admin.service'
 import { ClaimMissionService } from './application/gamification/claim-mission.service'
+import { ClaimUnitChestService } from './application/gamification/claim-unit-chest.service'
 import { GetChallengeService } from './application/gamification/get-challenge.service'
 import { GetGamificationService } from './application/gamification/get-gamification.service'
 import { GetLeagueService } from './application/gamification/get-league.service'
@@ -43,6 +43,7 @@ import { RecordStudioActivityDayService } from './application/gamification/recor
 import { RecordStudioRemixService } from './application/gamification/record-studio-remix.service'
 import { SetVacationService } from './application/gamification/set-vacation.service'
 import { GetAttachmentDownloadService } from './application/get-attachment-download/get-attachment-download.service'
+import { RecordMaterialDownloadService } from './application/get-attachment-download/record-material-download.service'
 import { GetCertificateService } from './application/get-certificate/get-certificate.service'
 import { GetCourseProgressService } from './application/get-course-progress/get-course-progress.service'
 import { GetCourseRatingService } from './application/get-course-rating/get-course-rating.service'
@@ -56,7 +57,11 @@ import { GetShowcasePayloadService } from './application/get-showcase-payload/ge
 import { GetStudioCarryoverService } from './application/get-studio-carryover/get-studio-carryover.service'
 import { GrantEntitlementService } from './application/grant-entitlement/grant-entitlement.service'
 import { GrantManualEntitlementService } from './application/grant-manual-entitlement/grant-manual-entitlement.service'
+import { HelpService } from './application/help/help.service'
 import { IssueCertificateService } from './application/issue-certificate/issue-certificate.service'
+import { LearningService } from './application/learning/learning.service'
+import { LearningImportService } from './application/learning/learning-import.service'
+import { SectionProgressionService } from './application/learning/section-progression.service'
 import { ListCatalogService } from './application/list-catalog/list-catalog.service'
 import { ListMemberCertificatesService } from './application/list-member-certificates/list-member-certificates.service'
 import { ListMemberRatingsService } from './application/list-member-ratings/list-member-ratings.service'
@@ -71,13 +76,21 @@ import { AppendPensaConversationTurnService } from './application/pensa/append-c
 import { AppendPensaTasksService } from './application/pensa/append-tasks.service'
 import { CreatePensaCycleService } from './application/pensa/create-cycle.service'
 import { CreatePensaProjectService } from './application/pensa/create-project.service'
+import { DeletePensaProjectService } from './application/pensa/delete-project.service'
 import { DeletePensaTaskService } from './application/pensa/delete-task.service'
 import { GetPensaProjectService } from './application/pensa/get-project.service'
 import { GetPensaStageService } from './application/pensa/get-stage.service'
 import { GetPensaTaskHandoffService } from './application/pensa/get-task-handoff.service'
+import { JoinPensaProjectService } from './application/pensa/join-project.service'
+import { ListPensaProjectMembersService } from './application/pensa/list-project-members.service'
 import { ListPensaProjectsService } from './application/pensa/list-projects.service'
+import { RemovePensaProjectMemberService } from './application/pensa/remove-project-member.service'
 import { ReplacePensaTasksService } from './application/pensa/replace-tasks.service'
 import { SavePensaArtifactService } from './application/pensa/save-artifact.service'
+import {
+  SharePensaProjectService,
+  UnsharePensaProjectService,
+} from './application/pensa/share-project.service'
 import { UpdatePensaProjectService } from './application/pensa/update-project.service'
 import { UpdatePensaTaskService } from './application/pensa/update-task.service'
 import { UpdatePensaTaskProgressService } from './application/pensa/update-task-progress.service'
@@ -96,6 +109,7 @@ import { StudioSubmissionsAdminService } from './application/studio-submissions-
 import { GetStudioUnlocksService } from './application/studio-unlocks/get-studio-unlocks.service'
 import { SubmitQuizAttemptService } from './application/submit-quiz-attempt/submit-quiz-attempt.service'
 import { SubmitStudioProjectService } from './application/submit-studio-project/submit-studio-project.service'
+import { TeacherBroadcastsService } from './application/teacher-threads/teacher-broadcasts.service'
 import { TeacherThreadsService } from './application/teacher-threads/teacher-threads.service'
 import { GetMemberToolUsageService } from './application/tool-usage/get-member-tool-usage.service'
 import {
@@ -107,14 +121,17 @@ import { ZappyKnowledgeService } from './application/zappy/zappy-knowledge.servi
 import type { Env } from './infrastructure/config/env'
 import { createAuthHttpGateway } from './infrastructure/gateways/auth-http.gateway'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
+import { FunnelChallengeAnalyticsGateway } from './infrastructure/gateways/funnel-challenge-analytics.gateway'
 import { createGatewayMessagingClient } from './infrastructure/gateways/gateway-messaging-client'
 import { createHubHttpGateway, noopHubGateway } from './infrastructure/gateways/hub-http.gateway'
+import { teacherRecipientDirectory } from './infrastructure/gateways/teacher-recipient-http.gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleAiUsageRepository } from './infrastructure/persistence/drizzle/ai-usage.repository'
 import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle/analytics.repository'
 import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
 import { DrizzleCertificateRepository } from './infrastructure/persistence/drizzle/certificate.repository'
 import { DrizzleChallengeConfigRepository } from './infrastructure/persistence/drizzle/challenge-config.repository'
+import { DrizzleChallengeLifecycleRepository } from './infrastructure/persistence/drizzle/challenge-lifecycle.repository'
 import { DrizzleContentAdminRepository } from './infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/course.repository'
 import { DrizzleCourseRatingRepository } from './infrastructure/persistence/drizzle/course-rating.repository'
@@ -123,6 +140,12 @@ import { DrizzleCreationsRepository } from './infrastructure/persistence/drizzle
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleEntitlementRepository } from './infrastructure/persistence/drizzle/entitlement.repository'
 import { DrizzleGamificationRepository } from './infrastructure/persistence/drizzle/gamification.repository'
+import {
+  DrizzleHelpCollectionRepository,
+  DrizzleHelpTutorialRepository,
+} from './infrastructure/persistence/drizzle/help.repository'
+import { DrizzleLearningRepository } from './infrastructure/persistence/drizzle/learning.repository'
+import { DrizzleLessonDraftRepository } from './infrastructure/persistence/drizzle/lesson-draft.repository'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
 import { DrizzlePensaRepository } from './infrastructure/persistence/drizzle/pensa.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
@@ -132,6 +155,7 @@ import { DrizzleRenewalReminderRepository } from './infrastructure/persistence/d
 import { DrizzleRoomRepository } from './infrastructure/persistence/drizzle/room.repository'
 import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/drizzle/studio-submission.repository'
 import { DrizzleStudioUnlockRepository } from './infrastructure/persistence/drizzle/studio-unlock.repository'
+import { DrizzleTeacherBroadcastRepository } from './infrastructure/persistence/drizzle/teacher-broadcast.repository'
 import { DrizzleTeacherThreadRepository } from './infrastructure/persistence/drizzle/teacher-thread.repository'
 import { DrizzleToolUsageRepository } from './infrastructure/persistence/drizzle/tool-usage.repository'
 import { DrizzleUserDataPurgeRepository } from './infrastructure/persistence/drizzle/user-data-purge.repository'
@@ -139,6 +163,7 @@ import { DrizzleVideoPositionRepository } from './infrastructure/persistence/dri
 import { DrizzleZappyRepository } from './infrastructure/persistence/drizzle/zappy.repository'
 import { DrizzleZappyKnowledgeRepository } from './infrastructure/persistence/drizzle/zappy-knowledge.repository'
 import { EncryptedRankingCursorCodec } from './infrastructure/security/ranking-cursor.codec'
+import { parsePublishedLessonBlock } from './interfaces/http/lesson-draft.dtos'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -190,6 +215,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const clock = () => new Date()
 
   // Adapters
+  const learningRepository = new DrizzleLearningRepository(db)
   const courses = new DrizzleCourseRepository(db)
   const content = new DrizzleContentAdminRepository(db)
   const entitlements = new DrizzleEntitlementRepository(db)
@@ -252,6 +278,8 @@ export async function createApplication(env: Env): Promise<Application> {
     courses,
     progress,
     studioSubmissions,
+    accessCheck,
+    learningRepository,
     clock,
     hub,
   )
@@ -277,6 +305,7 @@ export async function createApplication(env: Env): Promise<Application> {
       ? new SendParentReportsService(
           gamificationRepo,
           studioSubmissions,
+          learningRepository,
           childrenStats,
           parentReports,
           authGateway,
@@ -296,10 +325,23 @@ export async function createApplication(env: Env): Promise<Application> {
         )
       : null
 
+  const challengeAnalytics =
+    env.FUNNEL_URL && env.FUNNEL_INTERNAL_TOKEN
+      ? new FunnelChallengeAnalyticsGateway(
+          env.FUNNEL_URL,
+          env.FUNNEL_INTERNAL_TOKEN,
+          env.AUTH_REQUEST_TIMEOUT_MS,
+        )
+      : undefined
+
   // Lembrete de RENOVAÇÃO (anual à vista): mesmo quarteto do report dos pais +
   // FUNNEL_URL (o link /renovar vive no funil). Sem as envs = no-op (dev).
   const renewalReminderSender =
-    authGateway && env.GATEWAY_URL && env.MEMBERS_HMAC_SECRET && env.FUNNEL_URL
+    authGateway &&
+    env.GATEWAY_URL &&
+    env.MEMBERS_HMAC_SECRET &&
+    env.FUNNEL_URL &&
+    env.KIDS_COMMUNITY_URL
       ? new SendRenewalRemindersService(
           new DrizzleRenewalReminderRepository(db),
           authGateway,
@@ -314,7 +356,33 @@ export async function createApplication(env: Env): Promise<Application> {
             daysBefore: env.RENEWAL_REMINDER_DAYS_BEFORE,
             batchLimit: env.RENEWAL_REMINDER_BATCH_LIMIT,
             funnelUrl: env.FUNNEL_URL,
+            kidsUrl: env.KIDS_COMMUNITY_URL,
           },
+          challengeAnalytics,
+        )
+      : null
+  const challengeLifecycleSender =
+    authGateway &&
+    env.GATEWAY_URL &&
+    env.MEMBERS_HMAC_SECRET &&
+    env.FUNNEL_URL &&
+    env.KIDS_COMMUNITY_URL
+      ? new SendChallengeLifecycleService(
+          new DrizzleChallengeLifecycleRepository(db),
+          authGateway,
+          createGatewayMessagingClient({
+            gatewayUrl: env.GATEWAY_URL,
+            consumerId: 'members',
+            hmacSecret: env.MEMBERS_HMAC_SECRET,
+          }),
+          clock,
+          logger,
+          {
+            batchLimit: env.RENEWAL_REMINDER_BATCH_LIMIT,
+            funnelUrl: env.FUNNEL_URL,
+            kidsUrl: env.KIDS_COMMUNITY_URL,
+          },
+          challengeAnalytics,
         )
       : null
   const listMyCourses = new ListMyCoursesService(
@@ -326,12 +394,61 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   )
   const listCatalog = new ListCatalogService(courses, entitlements, gamificationRepo, clock)
-  const getMyCourse = new GetMyCourseService(checkAccess, courses, progress, positions, ratings)
+  const getMyCourse = new GetMyCourseService(
+    checkAccess,
+    courses,
+    progress,
+    positions,
+    ratings,
+    gamificationRepo,
+  )
+  // "Como fazer": coleções e tutoriais da biblioteca de ajuda do Kids. O Zappy pesquisa os
+  // tutoriais publicados pelo MESMO serviço (é a mesma linha que o admin publica).
+  const help = new HelpService(
+    new DrizzleHelpCollectionRepository(db),
+    new DrizzleHelpTutorialRepository(db),
+    clock,
+  )
   const zappyKnowledge = new ZappyKnowledgeService(
     new DrizzleZappyKnowledgeRepository(db),
     listMyCourses,
     getMyCourse,
     clock,
+    help,
+  )
+  const teacherThreads = new TeacherThreadsService(new DrizzleTeacherThreadRepository(db), clock)
+  const teacherBroadcasts = new TeacherBroadcastsService(
+    new DrizzleTeacherBroadcastRepository(db),
+    teacherRecipientDirectory(
+      env.AUTH_BASE_URL ?? 'http://localhost:3002',
+      env.AUTH_INTERNAL_TOKEN,
+    ),
+    courses,
+    entitlements,
+    checkAccess,
+    clock,
+  )
+  const avatarRepo = new DrizzleAvatarRepository(db)
+  const roomRepo = new DrizzleRoomRepository(db)
+  const preferencesRepository = new DrizzleProfilePreferencesRepository(db)
+  const preferences = new ProfilePreferencesService(preferencesRepository, clock)
+  const sectionProgression = new SectionProgressionService(
+    learningRepository,
+    progress,
+    quizAttempts,
+    studioSubmissions,
+    clock,
+    new PlatformActionService(avatarRepo, roomRepo, preferencesRepository),
+    certificates,
+  )
+  const learning = new LearningService(
+    learningRepository,
+    courses,
+    checkAccess,
+    progress,
+    clock,
+    teacherThreads,
+    sectionProgression,
   )
   const getLesson = new GetLessonService(
     checkAccess,
@@ -341,12 +458,24 @@ export async function createApplication(env: Env): Promise<Application> {
     quizAttempts,
     studioSubmissions,
     clock,
+    learning,
   )
   const resolveAttachment = new GetAttachmentDownloadService(checkAccess, courses, progress)
-  const resolveEbook = new GetEbookDownloadService(checkAccess, courses, progress)
+  const recordMaterialDownload = new RecordMaterialDownloadService(
+    resolveAttachment,
+    courses,
+    learningRepository,
+    sectionProgression,
+    clock,
+  )
+  const resolveEbook = new GetEbookDownloadService(
+    checkAccess,
+    courses,
+    progress,
+    sectionProgression,
+  )
   const awardGamification = new AwardGamificationService(gamificationRepo, clock, logger)
   const getGamification = new GetGamificationService(gamificationRepo, clock)
-  const avatarRepo = new DrizzleAvatarRepository(db)
   const getAvatar = new GetAvatarService(avatarRepo, gamificationRepo)
   const getAvatarsByProfiles = new GetAvatarsByProfilesService(avatarRepo, gamificationRepo)
   const ranking = new ListRankingService(gamificationRepo, getAvatarsByProfiles, clock)
@@ -365,7 +494,6 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const equipAvatar = new EquipAvatarService(avatarRepo, clock)
   const setAvatarPhoto = new SetAvatarPhotoService(avatarRepo, clock, env.AVATAR_PHOTO_URL_PREFIXES)
-  const roomRepo = new DrizzleRoomRepository(db)
   const studioUnlockRepo = new DrizzleStudioUnlockRepository(db)
   const getRoom = new GetRoomService(roomRepo, gamificationRepo)
   const saveRoom = new SaveRoomService(roomRepo, clock, logger)
@@ -381,8 +509,16 @@ export async function createApplication(env: Env): Promise<Application> {
   // Paleta do Estúdio livre pelo CURRÍCULO (união dos cursos concluídos+publicados).
   const getStudioUnlocks = new GetStudioUnlocksService(gamificationRepo, studioUnlockRepo, logger)
   const challengeAdmin = new ChallengeAdminService(challengeConfigRepo, clock)
-  const getMissions = new GetMissionsService(gamificationRepo, accessCheck, clock)
+  const getMissions = new GetMissionsService(gamificationRepo, accessCheck, clock, listMyCourses)
   const claimMission = new ClaimMissionService(gamificationRepo, accessCheck, clock)
+  // Baú de fim de unidade: a criança clica na trilha e AÍ ganha o XP (antes ele caía
+  // sozinho ao concluir a última aula do módulo).
+  const claimUnitChest = new ClaimUnitChestService(
+    checkAccess,
+    courses,
+    progress,
+    awardGamification,
+  )
   // Remix do Mural (marco de missão gated) — valida posse + playId no hub (anti-farm).
   const recordRemix = new RecordStudioRemixService(accessCheck, hub, awardGamification)
   // XP diário de CRIAR no Estúdio (sem hub/playId — só posse + award do dia).
@@ -398,6 +534,7 @@ export async function createApplication(env: Env): Promise<Application> {
     studioSubmissions,
     awardGamification,
     clock,
+    learning,
   )
   const getProgress = new GetCourseProgressService(checkAccess, courses, progress)
   const savePosition = new SaveVideoPositionService(
@@ -422,9 +559,9 @@ export async function createApplication(env: Env): Promise<Application> {
     awardGamification,
     () => randomUUID(),
     clock,
+    sectionProgression,
   )
   // Antes do submitStudio: o envio espelha o recado do aluno na conversa (histórico).
-  const teacherThreads = new TeacherThreadsService(new DrizzleTeacherThreadRepository(db), clock)
   const submitStudio = new SubmitStudioProjectService(
     checkAccess,
     courses,
@@ -435,24 +572,28 @@ export async function createApplication(env: Env): Promise<Application> {
     logger,
     () => randomUUID(),
     clock,
+    sectionProgression,
   )
   const getStudioCarryover = new GetStudioCarryoverService(
     checkAccess,
     courses,
     progress,
     studioSubmissions,
+    sectionProgression,
   )
   const getOwnStudioSubmission = new GetOwnStudioSubmissionService(
     checkAccess,
     courses,
     progress,
     studioSubmissions,
+    sectionProgression,
   )
   const getShowcasePayload = new GetShowcasePayloadService(
     checkAccess,
     courses,
     progress,
     studioSubmissions,
+    sectionProgression,
   )
   const studioSubmissionsAdmin = new StudioSubmissionsAdminService(studioSubmissions, clock)
   const getCertificate = new GetCertificateService(checkAccess, courses, progress, certificates)
@@ -463,6 +604,7 @@ export async function createApplication(env: Env): Promise<Application> {
     certificates,
     awardGamification,
     clock,
+    learningRepository,
   )
   const validateCertificate = new ValidateCertificateService(certificates)
   const revokeCertificate = new RevokeCertificateService(certificates, clock)
@@ -470,10 +612,11 @@ export async function createApplication(env: Env): Promise<Application> {
   // Pensa (planejador de jogos — plano + Cartões de Criação + progresso externo)
   const pensaRepo = new DrizzlePensaRepository(db)
   const pensaNewId = () => randomUUID()
-  const listPensaProjects = new ListPensaProjectsService(pensaRepo)
+  const listPensaProjects = new ListPensaProjectsService(pensaRepo, authGateway)
   const createPensaProject = new CreatePensaProjectService(pensaRepo, pensaNewId, clock)
   const getPensaProject = new GetPensaProjectService(pensaRepo)
   const updatePensaProject = new UpdatePensaProjectService(pensaRepo, clock)
+  const deletePensaProject = new DeletePensaProjectService(pensaRepo)
   const createPensaCycle = new CreatePensaCycleService(pensaRepo, pensaNewId, clock)
   const getPensaStage = new GetPensaStageService(pensaRepo)
   const appendPensaConversationTurn = new AppendPensaConversationTurnService(pensaRepo, clock)
@@ -487,6 +630,16 @@ export async function createApplication(env: Env): Promise<Application> {
   const deletePensaTask = new DeletePensaTaskService(pensaRepo, clock)
   const getPensaTaskHandoff = new GetPensaTaskHandoffService(pensaRepo)
   const updatePensaTaskProgress = new UpdatePensaTaskProgressService(pensaRepo, clock)
+  // Equipe (26/09/2026)
+  const sharePensaProject = new SharePensaProjectService(pensaRepo, clock)
+  const unsharePensaProject = new UnsharePensaProjectService(pensaRepo, clock)
+  const joinPensaProject = new JoinPensaProjectService(pensaRepo, clock)
+  const listPensaProjectMembers = new ListPensaProjectMembersService(
+    pensaRepo,
+    authGateway,
+    getAvatarsByProfiles,
+  )
+  const removePensaProjectMember = new RemovePensaProjectMemberService(pensaRepo, clock)
 
   // "Guardado na sua conta" (índice das criações do Estúdio Completo/Pinta; blob no R2 via BFF)
   const creationsRepo = new DrizzleCreationsRepository(db)
@@ -510,9 +663,7 @@ export async function createApplication(env: Env): Promise<Application> {
   // Autoria de conteúdo (painel)
   const courseAdmin = new CourseAdminService(content, courses)
   const moduleAdmin = new ModuleAdminService(content, courses)
-  const lessonAdmin = new LessonAdminService(content, courses)
-  const blockAdmin = new BlockAdminService(content)
-  const attachmentAdmin = new AttachmentAdminService(content)
+  const lessonAdmin = new LessonAdminService(content, courses, learning)
 
   // Gestão admin (painel)
   const listMembers = new ListMembersService(entitlements, clock)
@@ -565,6 +716,26 @@ export async function createApplication(env: Env): Promise<Application> {
   }
 
   const server = createServer({
+    learning: {
+      gallery: new GalleryDeliveryService(
+        courses,
+        checkAccess,
+        progress,
+        sectionProgression,
+        creationsRepo,
+        studioSubmissions,
+        submitStudio,
+      ),
+      preferences,
+      learning,
+      imports: new LearningImportService(
+        new DrizzleLessonDraftRepository(db, parsePublishedLessonBlock),
+        courses,
+      ),
+      drafts: new DrizzleLessonDraftRepository(db, parsePublishedLessonBlock),
+      internalToken: env.INTERNAL_API_TOKEN,
+      requireAdminEnabled: env.REQUIRE_ADMIN,
+    },
     env,
     logger,
     accountDeletionFence: userDataPurgeRepository,
@@ -576,6 +747,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getMyCourse,
       getLesson,
       resolveAttachment,
+      recordMaterialDownload,
       resolveEbook,
       markComplete,
       getProgress,
@@ -595,6 +767,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getStudioUnlocks,
       getMissions,
       claimMission,
+      claimUnitChest,
       recordRemix,
       recordStudioActivity,
       buyStreakFreeze,
@@ -624,6 +797,7 @@ export async function createApplication(env: Env): Promise<Application> {
       createProject: createPensaProject,
       getProject: getPensaProject,
       updateProject: updatePensaProject,
+      deleteProject: deletePensaProject,
       createCycle: createPensaCycle,
       getStage: getPensaStage,
       appendConversationTurn: appendPensaConversationTurn,
@@ -636,6 +810,11 @@ export async function createApplication(env: Env): Promise<Application> {
       deleteTask: deletePensaTask,
       getTaskHandoff: getPensaTaskHandoff,
       updateTaskProgress: updatePensaTaskProgress,
+      shareProject: sharePensaProject,
+      unshareProject: unsharePensaProject,
+      joinProject: joinPensaProject,
+      listProjectMembers: listPensaProjectMembers,
+      removeProjectMember: removePensaProjectMember,
       accessCheck,
       getGamification,
       internalToken: env.INTERNAL_API_TOKEN,
@@ -663,6 +842,7 @@ export async function createApplication(env: Env): Promise<Application> {
       logger,
     },
     admin: {
+      teacherBroadcasts,
       requireAdminEnabled: env.REQUIRE_ADMIN,
       internalToken: env.INTERNAL_API_TOKEN,
       listMembers,
@@ -691,8 +871,6 @@ export async function createApplication(env: Env): Promise<Application> {
       courses: courseAdmin,
       modules: moduleAdmin,
       lessons: lessonAdmin,
-      blocks: blockAdmin,
-      attachments: attachmentAdmin,
       studioSubmissions: studioSubmissionsAdmin,
       zappyKnowledge,
       zappyHistory: zappy,
@@ -705,9 +883,16 @@ export async function createApplication(env: Env): Promise<Application> {
       validateCertificate,
       internalToken: env.INTERNAL_API_TOKEN,
     },
+    help: {
+      help,
+      internalToken: env.INTERNAL_API_TOKEN,
+      requireAdminEnabled: env.REQUIRE_ADMIN,
+    },
   })
 
   let cleanupTimer: ReturnType<typeof setInterval> | null = null
+  let broadcastTimer: ReturnType<typeof setInterval> | null = null
+  let broadcastCycle: Promise<unknown> | null = null
   let parentReportTimer: ReturnType<typeof setInterval> | null = null
   let renewalReminderTimer: ReturnType<typeof setInterval> | null = null
 
@@ -752,22 +937,35 @@ export async function createApplication(env: Env): Promise<Application> {
     })
   }
 
-  // Lembrete de renovação (anual à vista): ciclo periódico sob advisory lock
-  // PRÓPRIO (1 réplica) — mesmo desenho do report dos pais.
+  // Renovação anual + ciclo do Desafio: um advisory lock cobre os dois envios.
   const runRenewalReminderCycle = async () => {
-    if (!renewalReminderSender) return
+    if (!renewalReminderSender && !challengeLifecycleSender) return
     await connection.sql.begin(async (gate) => {
       const [row] = await gate`
         select pg_try_advisory_xact_lock(${RENEWAL_REMINDER_ADVISORY_LOCK_KEY}::bigint) as locked
       `
       if (!row?.locked) return // outra réplica está enviando neste ciclo
-      await renewalReminderSender.runCycle()
+      await renewalReminderSender?.runCycle()
+      await challengeLifecycleSender?.runCycle()
     })
   }
 
   return {
     logger,
     async start() {
+      const deliverRecados = () => {
+        if (broadcastCycle) return
+        broadcastCycle = teacherBroadcasts
+          .runCycle()
+          .catch((error) =>
+            logger.error('teacher_broadcast.cycle_failed', { error: String(error) }),
+          )
+          .finally(() => {
+            broadcastCycle = null
+          })
+      }
+      deliverRecados()
+      broadcastTimer = setInterval(deliverRecados, 5000)
       cleanupTimer = setInterval(() => {
         void runRetentionCycle().catch((error) =>
           logger.error('retention.cleanup.failed', {
@@ -784,10 +982,10 @@ export async function createApplication(env: Env): Promise<Application> {
           )
         }, env.PARENT_REPORT_INTERVAL_MS)
       }
-      if (renewalReminderSender) {
+      if (renewalReminderSender || challengeLifecycleSender) {
         renewalReminderTimer = setInterval(() => {
           void runRenewalReminderCycle().catch((error) =>
-            logger.error('renewal_reminder.cycle_failed', {
+            logger.error('entitlement_lifecycle.cycle_failed', {
               error: error instanceof Error ? error.message : String(error),
             }),
           )
@@ -799,6 +997,8 @@ export async function createApplication(env: Env): Promise<Application> {
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
     },
     async stop() {
+      if (broadcastTimer) clearInterval(broadcastTimer)
+      if (broadcastCycle) await broadcastCycle
       if (cleanupTimer) clearInterval(cleanupTimer)
       if (parentReportTimer) clearInterval(parentReportTimer)
       if (renewalReminderTimer) clearInterval(renewalReminderTimer)
@@ -808,3 +1008,8 @@ export async function createApplication(env: Env): Promise<Application> {
     },
   }
 }
+
+import { GalleryDeliveryService } from './application/learning/gallery-delivery.service'
+import { PlatformActionService } from './application/learning/platform-action.service'
+import { ProfilePreferencesService } from './application/profile-preferences/profile-preferences.service'
+import { DrizzleProfilePreferencesRepository } from './infrastructure/persistence/drizzle/profile-preferences.repository'

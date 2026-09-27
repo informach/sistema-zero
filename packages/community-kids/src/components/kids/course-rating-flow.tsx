@@ -19,6 +19,7 @@ import type {
   CourseRatingView,
 } from '@/lib/types'
 import { KidsMascot } from './mascot'
+import { KidsMascotAnimated } from './mascot-rive'
 
 /**
  * Dados da CRIANÇA exibidos no passo de agradecimento (avatar + nome + idade).
@@ -214,9 +215,12 @@ export function CourseRatingFlow({ courseSlug, initialRating, shareUrl, viewer }
             setStep(1)
             setOpen(true)
           }}
-          className="mt-2 inline-flex items-center gap-1.5 rounded-full border-2 border-border px-3 py-1 font-bold text-xs uppercase tracking-wide [font-family:var(--font-display)] text-muted-foreground transition-colors hover:border-ring/60 hover:text-foreground"
+          // A pílula AMARELA de largura toda do índice da aula (telas-modelo de 11/09/2026).
+          // O amarelo é cor de fundo e não segue o tema; a tinta escura dá 8,73:1 nele. O
+          // 3D do Brilliant (`.kids-3d--sol`) põe embaixo um amarelo mais fundo.
+          className="kids-3d kids-3d--sol mt-3 flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full bg-(--sz-kids-amarelo) px-4 py-2 font-extrabold text-(--sz-kids-tinta) text-xs uppercase tracking-[0.12em] hover:brightness-95 any-pointer-coarse:min-h-11"
         >
-          <Star className="size-3.5 fill-amber-400 text-amber-400" />
+          <Star className="size-3.5" aria-hidden />
           Avalie este curso
         </button>
       ) : null}
@@ -278,7 +282,7 @@ export function CourseRatingFlow({ courseSlug, initialRating, shareUrl, viewer }
         {step === 4 ? (
           <div className="flex flex-col gap-5">
             <div className="flex justify-center">
-              <KidsMascot expression="celebrating" className="size-16" />
+              <KidsMascotAnimated expression="celebrating" className="size-16" />
             </div>
             <div className="flex items-start gap-3 border-border border-y py-4">
               <UserAvatar

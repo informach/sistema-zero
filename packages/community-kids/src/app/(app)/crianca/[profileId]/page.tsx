@@ -20,5 +20,6 @@ export default async function PublicChildProfilePage({
   if (!UUID_RE.test(profileId)) notFound()
   const profile = await getPublicProfile(profileId)
   if (!profile) notFound()
+  // As faixas (o herói no creme, o quarto, os jogos e as conquistas no lilás) moram na view.
   return <PublicProfileView profile={profile} />
 }

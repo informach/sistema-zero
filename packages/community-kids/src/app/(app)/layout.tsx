@@ -1,14 +1,21 @@
+import type { CreativeToolId } from '@sistemazero/core/journey'
 import { ImpersonationBanner } from '@sistemazero/member-shell/components/impersonation-banner'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { AppSidebar } from '@/components/kids/app-sidebar'
 import { CelebrationWatcher } from '@/components/kids/celebration-watcher'
 import { FocusModeProvider, SidebarFallback } from '@/components/kids/focus-mode'
+import { FocusModeToggle } from '@/components/kids/focus-mode-toggle'
 import { MainContainer } from '@/components/kids/main-container'
 import { MobileTabbar, MobileTopbar } from '@/components/kids/mobile-nav'
+import { PlatformRenovationNotice } from '@/components/kids/platform-renovation-notice'
 import { actorLabel } from '@/lib/act'
+import { getEnv } from '@/lib/env'
+import { moldaLevelGain } from '@/lib/molda-level-gain'
 import { getMeReadonly } from '@/server/auth'
+import { getCreativeTools } from '@/server/creator-journey'
 import {
+  checkMoldaAccessReadonly,
   checkStudioAccessReadonly,
   getAvatarReadonly,
   getGamificationReadonly,
@@ -50,9 +57,36 @@ async function loadChrome(session: Session) {
   return { user, gamification, avatarPhotoUrl }
 }
 
+/**
+ * As ferramentas que o MENU pode oferecer. Mesma régua da página de destino
+ * (`creativeToolAvailability`), para o menu nunca levar a criança a uma tela trancada.
+ * ⚠️ `unavailable` (a consulta falhou) ENTRA na lista: um soluço de rede não pode
+ * encolher o menu na cara dela, e a página tem a tela de "tente de novo".
+ */
+async function menuTools(): Promise<CreativeToolId[]> {
+  const { tools } = await getCreativeTools()
+  return tools
+    .filter((tool) => tool.state !== 'not-included' && tool.state !== 'career-locked')
+    .map((tool) => tool.id)
+}
+
 async function SidebarChrome({ session }: { session: Session }) {
-  const { user, gamification, avatarPhotoUrl } = await loadChrome(session)
-  return <AppSidebar user={user} gamification={gamification} avatarPhotoUrl={avatarPhotoUrl} />
+  const [{ user, gamification, avatarPhotoUrl }, tools] = await Promise.all([
+    loadChrome(session),
+    menuTools(),
+  ])
+  return (
+    <AppSidebar
+      user={user}
+      gamification={gamification}
+      avatarPhotoUrl={avatarPhotoUrl}
+      tools={tools}
+    />
+  )
+}
+
+async function TabbarChrome() {
+  return <MobileTabbar tools={await menuTools()} />
 }
 
 async function TopbarChrome({ session }: { session: Session }) {
@@ -86,11 +120,18 @@ async function CelebrationChrome({ session }: { session: Session }) {
   const studioAccess = studioRes?.body?.access?.['estudio-completo']
   const ownsStudio =
     studioRes?.status === 200 && typeof studioAccess === 'boolean' ? studioAccess : null
+  // O Molda é vendido à parte: a linha "No Molda" da comemoração só vai para quem tem o
+  // produto, e a pergunta só é feita nos postos em que uma faixa de ferramentas dele abre (a
+  // ida é deduplicada com a da página /molda). O watcher recebe a frase pronta, ou `null`.
+  const gain = moldaLevelGain(levelSlug)
+  const moldaRes = gain ? await checkMoldaAccessReadonly().catch(() => null) : null
+  const moldaGain = moldaRes?.status === 200 && moldaRes.body?.access?.molda === true ? gain : null
   return (
     <CelebrationWatcher
       levelSlug={levelSlug}
       toolsRevision={toolsRevision}
       ownsStudio={ownsStudio}
+      moldaGain={moldaGain}
       profileKey={session.id}
     />
   )
@@ -111,46 +152,61 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!session) redirect('/login')
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <a
-        href="#main-content"
-        className="fixed top-3 left-3 z-[100] -translate-y-20 rounded-full bg-primary px-4 py-3 font-bold text-primary-foreground shadow-lg transition-transform focus-visible:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-      >
-        Pular para o conteúdo
-      </a>
-      {/* Sessão de impersonação (suporte): faixa persistente acima de tudo. */}
-      {session.act ? (
-        <ImpersonationBanner
-          studentName={
-            session.activeProfile?.name ??
-            (`${session.firstName} ${session.lastName}`.trim() || session.email)
-          }
-          actorName={actorLabel(session.act)}
-          mode={session.act.mode}
-        />
-      ) : null}
-      <FocusModeProvider viewerId={session.id}>
-        <div className="flex flex-1">
-          <Suspense fallback={<SidebarFallback />}>
-            <SidebarChrome session={session} />
-          </Suspense>
-          <div className="flex min-w-0 flex-1 flex-col">
-            <Suspense
-              fallback={
-                <div className="sticky top-0 z-40 h-14 border-border border-b bg-background/80 backdrop-blur md:hidden" />
-              }
-            >
-              <TopbarChrome session={session} />
+    <PlatformRenovationNotice
+      key={session.activeProfile ? session.id : 'account'}
+      profileId={session.activeProfile ? session.id : null}
+      enabled={getEnv().KIDS_REFORM_NOTICE_ENABLED}
+    >
+      <div className="flex min-h-screen flex-col bg-background">
+        <a
+          href="#main-content"
+          className="fixed top-3 left-3 z-[100] -translate-y-20 rounded-full bg-primary px-4 py-3 font-bold text-primary-foreground shadow-lg transition-transform focus-visible:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          Pular para o conteúdo
+        </a>
+        {/* Sessão de impersonação (suporte): faixa persistente acima de tudo. */}
+        {session.act ? (
+          <ImpersonationBanner
+            studentName={
+              session.activeProfile?.name ??
+              (`${session.firstName} ${session.lastName}`.trim() || session.email)
+            }
+            actorName={actorLabel(session.act)}
+            mode={session.act.mode}
+          />
+        ) : null}
+        <FocusModeProvider viewerId={session.id}>
+          <div className="kids-shell-row flex flex-1">
+            <Suspense fallback={<SidebarFallback />}>
+              <SidebarChrome session={session} />
             </Suspense>
-            <MainContainer>{children}</MainContainer>
-            <MobileTabbar />
+            <FocusModeToggle target="nav" />
+            <FocusModeToggle target="outline" />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <Suspense
+                fallback={
+                  <div className="sticky top-0 z-40 h-14 border-(--menu-2) border-b bg-(--menu) md:hidden" />
+                }
+              >
+                <TopbarChrome session={session} />
+              </Suspense>
+              <MainContainer>{children}</MainContainer>
+              {/* ⚠️ Com `<Suspense>`: a barra de abas virou Server Component (espera a posse
+                das ferramentas para não oferecer porta trancada), e sem o boundary o
+                celular esperaria a ida ao gateway para ver QUALQUER menu — o oposto do
+                que o comentário acima promete. O fallback é a MESMA barra sem o dado:
+                as cinco abas aparecem na hora e só a gaveta chega depois. */}
+              <Suspense fallback={<MobileTabbar />}>
+                <TabbarChrome />
+              </Suspense>
+            </div>
           </div>
-        </div>
-      </FocusModeProvider>
-      {/* Comemoração de subida de nível (rank) — fora da chrome, sem fallback visível. */}
-      <Suspense fallback={null}>
-        <CelebrationChrome session={session} />
-      </Suspense>
-    </div>
+        </FocusModeProvider>
+        {/* Comemoração de subida de nível (rank) — fora da chrome, sem fallback visível. */}
+        <Suspense fallback={null}>
+          <CelebrationChrome session={session} />
+        </Suspense>
+      </div>
+    </PlatformRenovationNotice>
   )
 }

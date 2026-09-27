@@ -1,7 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { KidsMascot } from './mascot'
+import { KidsRecado } from './kids-recado'
+import { KidsScene } from './kids-scene'
 
 /**
  * Produto/servidor gated: o hub não conseguiu verificar o acesso agora. Diferente
@@ -16,20 +17,26 @@ import { KidsMascot } from './mascot'
 export function KidsAccessUnavailable({ title, onRetry }: { title: string; onRetry?: () => void }) {
   const router = useRouter()
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-12 text-center">
-      <KidsMascot expression="thinking" className="mx-auto size-24" />
-      <h1 className="mt-4 [font-family:var(--font-display)] font-bold text-2xl">{title}</h1>
-      <p className="mt-4 text-muted-foreground">
+    <KidsRecado
+      // Cena do funil, e não a pose pensativa do Zappy: aqui não é a criança que
+      // errou, é a nossa conexão que tropeçou — a cena de alívio diz isso. Sem a pílula
+      // amarela do motivo, de propósito: um tropeço não é conquista a festejar.
+      art={<KidsScene name="alivio" className="kid-float w-40" />}
+      title={title}
+      actions={
+        <button
+          type="button"
+          onClick={onRetry ?? (() => router.refresh())}
+          className="sz-btn-gradient"
+        >
+          Tentar de novo
+        </button>
+      }
+    >
+      <p>
         Não consegui verificar agora se está liberado pra você. Pode ter sido um tropeço na conexão.
         Tenta de novo?
       </p>
-      <button
-        type="button"
-        onClick={onRetry ?? (() => router.refresh())}
-        className="sz-btn-gradient mt-6 h-11 px-6 text-base"
-      >
-        Tentar de novo
-      </button>
-    </div>
+    </KidsRecado>
   )
 }

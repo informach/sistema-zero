@@ -12,7 +12,7 @@ import { describe, expect, it } from 'bun:test'
  * O defeito real (08/2026): faltava `data:`. O áudio que a criança envia é
  * embutido como `data:audio/…`, então:
  *
- *   1. o `<audio>` da PRÉVIA no painel "Imagens e sons" (que roda na página do
+ *   1. o `<audio>` da PRÉVIA na aba "Sons" dos materiais (que roda na página do
  *      Next) era recusado — com `preload="none"`, o clique no play simplesmente
  *      não fazia nada, sem erro visível na UI;
  *   2. o som DENTRO do jogo também, porque o iframe do preview é `srcdoc` e
@@ -28,13 +28,16 @@ interface ConfigComHeaders {
   headers?: () => Promise<unknown>
 }
 
-async function mediaSrcDirectives(mod: { default: unknown }): Promise<string[]> {
+async function directives(mod: { default: unknown }, nome: string): Promise<string[]> {
   const cfg = mod.default as ConfigComHeaders
   const headers = await cfg.headers?.()
   // O `headers()` devolve uma árvore de {source, headers:[{key,value}]}; a busca
   // por texto evita depender do formato exato do Next.
-  return [...JSON.stringify(headers).matchAll(/media-src[^;\\"]*/g)].map((m) => m[0])
+  const re = new RegExp(`${nome}[^;\\\\"]*`, 'g')
+  return [...JSON.stringify(headers).matchAll(re)].map((m) => m[0])
 }
+
+const mediaSrcDirectives = (mod: { default: unknown }) => directives(mod, 'media-src')
 
 describe('CSP: o som embutido do Estúdio precisa poder tocar', () => {
   it('kids: TODA diretiva media-src emitida libera data:', async () => {
@@ -48,5 +51,38 @@ describe('CSP: o som embutido do Estúdio precisa poder tocar', () => {
     const diretivas = await mediaSrcDirectives(await import('../../community/next.config'))
     expect(diretivas.length).toBeGreaterThan(0)
     for (const d of diretivas) expect(d).toContain('data:')
+  })
+})
+
+/**
+ * O mascote Zappy animado é Rive, ou seja, WebAssembly — e `'wasm-unsafe-eval'` é
+ * uma KEYWORD à parte: nem `https:` nem `'unsafe-inline'` no `script-src` liberam a
+ * compilação de um módulo WASM. Sem ela o Chrome recusa, e a recusa é do mesmo
+ * feitio do defeito do som acima: **silenciosa**. O Zappy simplesmente nunca sai do
+ * WebP, sem toast, sem erro na UI, e o fallback funcionando é justamente o que
+ * esconde a quebra. Mesma régua do irmão acima: aqui só dá para travar o cabeçalho.
+ */
+describe('CSP: o mascote animado precisa poder compilar WASM', () => {
+  it('kids: TODA diretiva script-src emitida libera wasm-unsafe-eval', async () => {
+    const diretivas = await directives(await import('../next.config'), 'script-src')
+    // Duas: a CSP estrita e a da rota `/estudio/pro` (WebContainer).
+    expect(diretivas.length).toBeGreaterThan(1)
+    for (const d of diretivas) expect(d).toContain("'wasm-unsafe-eval'")
+  })
+
+  /**
+   * ⚠️ Desde 09/2026 a ARTE DA TRILHA também é Rive, e ela mora no R2 público
+   * (outra origem). O `<img>` que ela substituiu dispensava `connect-src`; o
+   * runtime lê o `.riv` por `fetch().arrayBuffer()`, que NÃO dispensa. Apertar
+   * esta diretiva apagaria a arte de toda trilha — e, como o `TrailRive` não tem
+   * fallback, o sintoma seria "a arte sumiu", sem erro na UI.
+   */
+  it('kids: TODA diretiva connect-src emitida alcança o R2 público', async () => {
+    const diretivas = await directives(await import('../next.config'), 'connect-src')
+    expect(diretivas.length).toBeGreaterThan(1)
+    // ⚠️ O token EXATO `https:`, não `toContain('https:')`: a versão ingênua
+    // passaria com um `https://algum-host` qualquer e deixaria o CDN de fora —
+    // guardaria a aparência da diretiva, não o alcance dela.
+    for (const d of diretivas) expect(d.split(/\s+/).slice(1)).toContain('https:')
   })
 })

@@ -1,5 +1,6 @@
 'use client'
 
+import { type GallerySubmission, isGallerySubmission } from '@sistemazero/core/learning'
 /**
  * A entrega do Pinta e a do Estúdio moram na MESMA tabela (`studio_submissions`), e a linha não
  * carrega o kind do bloco. O PAYLOAD discrimina: desenho tem `kind` num dos 7 tipos do Pinta;
@@ -27,6 +28,7 @@ import { toast } from 'sonner'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { PintaEmbed } from '@/components/pinta/pinta-embed'
+import { GallerySubmissionViewer } from '@/components/professor/gallery-submission-viewer'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { preparePintaDownload } from '@/lib/pinta-download'
@@ -87,6 +89,10 @@ interface Props {
   nextLabel?: string
 }
 
+function gallerySnapshot(value: unknown): GallerySubmission | null {
+  return isGallerySubmission(value) ? value : null
+}
+
 /**
  * Viewer de UMA entrega do Estúdio, compartilhado pela aba "Entregas" por curso.
  * Busca o projeto pelo endpoint por-bloco (`/blocks/:blockId/studio-submissions/:userId`)
@@ -110,6 +116,8 @@ export function StudioSubmissionViewer({
 }: Props) {
   const [loading, setLoading] = useState(false)
   const [detail, setDetail] = useState<StudioSubmissionDetailView | null>(null)
+  const [previousGallery, setPreviousGallery] = useState<GallerySubmission | null>(null)
+  const gallery = gallerySnapshot(detail?.project)
   const [maximized, setMaximized] = useState(false)
   // "Já conferi": o estado vive aqui (e não só no detalhe recarregado) p/ o botão
   // responder na hora — a lista atrás só recarrega quando o professor fecha.
@@ -133,6 +141,7 @@ export function StudioSubmissionViewer({
       .then((res) => {
         if (!active) return
         setDetail(res)
+        setPreviousGallery(null)
         setReviewed(res.reviewed)
       })
       .catch((err) => {
@@ -182,7 +191,8 @@ export function StudioSubmissionViewer({
       const prev = await apiGet<StudioSubmissionPreviousView>(
         `/api/members/blocks/${blockId}/studio-submissions/${userId}/previous`,
       )
-      if (isPintaAssetLike(prev.project)) downloadPintaJson(prev.project)
+      if (isGallerySubmission(prev.project)) setPreviousGallery(prev.project)
+      else if (isPintaAssetLike(prev.project)) downloadPintaJson(prev.project)
       else downloadProjectJson(prev.project)
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Não foi possível baixar a versão anterior.')
@@ -265,7 +275,7 @@ export function StudioSubmissionViewer({
                 {maximized ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
                 {maximized ? 'Restaurar' : 'Tela cheia'}
               </Button>
-              {isPintaAssetLike(detail.project) ? (
+              {isGallerySubmission(detail.project) ? null : isPintaAssetLike(detail.project) ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -298,7 +308,7 @@ export function StudioSubmissionViewer({
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={downloadPrevious}>
-                  <Download className="size-4" /> Baixar versão anterior
+                  <Download className="size-4" /> Abrir versão anterior
                 </Button>
                 <Button
                   variant="outline"
@@ -313,6 +323,15 @@ export function StudioSubmissionViewer({
             </Card>
           ) : null}
 
+          {previousGallery && (
+            <GallerySubmissionViewer
+              key={`previous:${previousGallery.requestId}`}
+              snapshot={previousGallery}
+              blockId={blockId}
+              userId={userId}
+              previous
+            />
+          )}
           {/* Recado opcional que o aluno escreveu ao enviar o projeto. */}
           {detail.message ? (
             <Card className="space-y-1 p-3">
@@ -370,7 +389,14 @@ export function StudioSubmissionViewer({
               o embed preserva o seed do primeiro mount e continuaria mostrando o projeto velho.
               ⚠️ O professor PODE mexer no desenho/projeto aberto aqui, e isso é inócuo de
               propósito: `persistence:'none'` e ninguém captura o handle na inspeção. */}
-          {isPintaAssetLike(detail.project) ? (
+          {gallery ? (
+            <GallerySubmissionViewer
+              key={`${userId}:${blockId}:${gallery.requestId}`}
+              snapshot={gallery}
+              blockId={blockId}
+              userId={userId}
+            />
+          ) : isPintaAssetLike(detail.project) ? (
             <PintaEmbed
               key={`${userId}:${blockId}:${detail.submittedAt}`}
               initialAsset={detail.project as never}

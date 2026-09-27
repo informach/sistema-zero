@@ -4,6 +4,20 @@
 > Este arquivo também contém um diário histórico; em caso de conflito, o mapa
 > canônico, o código e os testes atuais prevalecem.
 
+> **Player de jogos de aula (26/09/2026):** `StudioProjectPlayer.onReady` informa o `load`
+> do documento final, nunca do placeholder. O bridge de preview envia `sz:game-interaction`
+> à origem do host uma vez por documento, somente com teclado/toque real (`isTrusted`);
+> Tab, Escape, modificadores, hover e restauração sintética não contam. As pontes opcionais
+> `__szReportGroupClick` e `__szReportGameReady` atendem os jogos por alvos. O jogo exportado
+> continua sem essas pontes do preview; não ampliar o sandbox ou a CSP para esse recurso.
+
+`server-project-checks` (12/09/2026) expõe validação de autoria e avaliação estrutural para
+Members/Admin. Importa apenas contratos puros do catálogo e Core; o teste de bundle rejeita
+Blockly, React e Monaco nessa fronteira. Cores de categorias, nomes de extensões de blocos,
+tipos de toolbox e vocabulário de campanha vivem em módulos puros, reexportados pelos módulos
+anteriores. O catálogo inclui conexões e parâmetros; sombras de valores são reconhecidas pelo
+contrato de saída do bloco e a simulação usa o mesmo avaliador do servidor.
+
 > Sempre consulte o Context7 (docs atualizadas) antes de mexer em qualquer lib/framework, e use Octocode para pesquisa/exploração de código no GitHub.
 
 IDE educacional embarcável (Sistema Zero Studio) — biblioteca INTERNA do monorepo, consumida como TS source (modelo do `@sistemazero/ui`). Migrada do repo standalone `sistema-zero-studio` em 2026-06-10; os 11 sub-packages `@sz/*` viraram pastas de `src/` referenciadas por subpath imports `#core`, `#ir`, `#blockly`, `#monaco`, `#parsers`, `#generators`, `#preview`, `#extensions`, `#official-extensions`, `#ai`, `#ui` (ver `imports` no package.json).
@@ -14,7 +28,49 @@ Editor com 3 modos — Blocos (Blockly), Código (Monaco) e Ponte (sync bidireci
 
 **Tarefas do Pensa:** `StudioEditorProps` aceita `taskSession?: StudioTaskSession`, independente
 de `LessonActivity`. O `TaskGuidePanel` mostra passos, dicas, blocos oficiais e critérios e envia
-progresso pelo callback do host. O host de `/estudio?tarefa=<id>` cria ou restaura o projeto
+progresso pelo callback do host.
+⭐⭐ **Ele RECOLHE por uma seta (18/09/2026).** Era o único dos três guias do Pensa que não
+recolhia, e no celular ele é a faixa do topo, comendo altura da área de criação. O botão mora
+DENTRO do `<h2>` (padrão de disclosure com cabeçalho), 44px, `aria-expanded`; recolhido, o título
+e a pílula de situação FICAM. Quem LEMBRA é o host: o par OPCIONAL
+`collapsed`/`onCollapsedChange` do `StudioTaskSession` desce como DADO (o mesmo idioma do
+`menu.hidden`/`onToggle` do `StudioHostChrome`), porque o pacote não conhece `viewerId` nem
+`localStorage`; sem o par, recolhe sozinho e esquece ao sair.
+⚠ `taskSession` NÃO é latchado no `StudioCore` (ao contrário de `activity`, `share`,
+`onCloudSync` e `onEditDrawing`), e é isso que faz o `collapsed` do host chegar vivo ao painel —
+latchar aquele contrato deixaria a seta MUDA.
+⚠ A margem de baixo é `mb-2 lg:mb-0`: até `lg` o guia é a faixa do topo e encostava no editor; a
+partir daí ele vira coluna lateral `lg:w-80` e quem separa é a borda da direita. O teto de altura
+e a rolagem só valem ABERTO.
+⚠⚠ **A casca do guia é COMPARTILHADA desde 19/09/2026**: `.sz-tool-guide` +
+`.sz-tool-guide--aside` do `@sistemazero/ui/tool-chrome.css`, a MESMA do guia do Pinta e do Molda
+(ela disse que o painel estava "totalmente fora do design da identidade visual da comunidade", e
+cada um dos três tinha inventado a própria). O `--aside` é deste painel: ele é o único dos três
+que vira coluna, e lá o fio em volta vira o fio do lado que separa do editor — em
+`--sz-tool-line`, nunca no `--sz-tool-card-edge`, que é TRANSPARENTE no claro. Medido no
+playground (o demo `taskSessionDemo`, novo neste lote; ⚠️ a lista reescreve a URL, então abra
+direto em `/editor/<id>?tarefa=1`, e `?tarefa=falha` faz a marcação REJEITAR, que é como se vê o
+recado sobrevivendo ao recolher): 320px de coluna com o fio à direita a partir de 1024px;
+abaixo disso, faixa que rola por dentro (`max-h-64`) com o `mb-2` de respiro. As utilitárias de
+espaçamento seguem LITERAIS no JSX (a receita cuida de cor, fio, canto e tipografia, e os testes
+leem as classes), e o sobretítulo virou "Guia do Pensa", igual nos três — ele SOME recolhido,
+porque ela pediu "só uma linha, o título e a setinha".
+O recado de falha (`syncError`) fica FORA do que recolhe — com o guia recolhido, uma marcação que
+não subiu ficaria invisível e a criança acharia que guardou. AQUI ele é a única coisa que
+sobrevive (não há mais nada a recuperar); nos irmãos sobrevivem também o aviso do desenho ou da
+criação ausente e os botões que o resolvem. A regra dos três, desde 19/09/2026: **recolher esconde
+conteúdo e ação de ROTINA, nunca um problema.**
+⚠️ Quem ROLA é o corpo, nunca o cartão: com o `max-h-64` no `<aside>`, a seta e o recado ficavam
+dentro da área rolável e o recado nascia abaixo da dobra justo quando a criança marca um passo.
+⚠ Recolhido, o `aria-controls` SAI (o corpo desmonta; id ausente é referência pendurada).
+⭐ **E a COLUNA encolhe recolhida** (conserto do full review de 18/09/2026): com o `lg:w-80` fixo
+na base, a partir de `lg` recolher devolvia altura nenhuma e largura nenhuma — 320px de título e
+vazio, com a seta parecendo inerte justo onde a largura é cara. Hoje o `lg:w-80` só vale aberto e
+o recolhido é `lg:w-auto lg:max-w-80`: título longo continua no pior caso de antes, título curto
+devolve o resto. O `mb-2` saiu para a base pelo mesmo motivo (no ramo do aberto, recolhido ele
+voltava a encostar no editor).
+⚠ O sobretítulo "Guia da tarefa" dentro do botão é `aria-hidden`: o `<aside>` em volta já se
+chama assim, e sem isso o leitor anunciava o nome duas vezes. O nome do botão é a TAREFA. O host de `/estudio?tarefa=<id>` cria ou restaura o projeto
 associado e mantém o guia após reload; o Studio não persiste vínculo ou backup no Pensa. Veja
 [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 
@@ -107,7 +163,7 @@ has no categories. Can't change mode."). A medição é síncrona (`useLayoutEff
 estado não-medido nunca chega à tela. Cruzar o limiar wide↔narrow EM USO ainda remonta (custo raro, aceito).
 
 **Mostrar/esconder painéis** (espelho do `showPreview`): `showConsole`/`showTerminal`/`showAI` no `uiStore`,
-togglados no menu "⋯" → Exibição da Topbar, **cada um no contexto em que aparece** (Console em todo modo;
+togglados no menu "⋯" → Mostrar da Topbar, **cada um no contexto em que aparece** (Console em todo modo;
 Terminal/IA só em `mode === 'code'`). `useVisibleBottomTabs` (`src/components/layout/bottomTabs.tsx`) é o
 ponto único que cruza features×contexto×preferência — consumido pelo `BottomPanel` (wide), `NarrowPanels`
 (abas) e `Shell` (decide se a barra inferior existe). No wide, esconder tudo COLAPSA a barra inferior.
@@ -133,15 +189,16 @@ que falta em outro computador (`community-kids/src/lib/studio-cloud.ts`; design 
   `renameProjectMeta`, `persistProjectAssets` (sincronia de desenhos do Pinta) → `onChanged(id)`;
   `deleteProject` → `onDeleted(id)`. Por aqui passam autosave (`PersistenceService`),
   renomear/duplicar/apagar do `ProjectCard`, `ImportButton` e `importProjectSnapshot` — nenhum
-  componente sabe que a nuvem existe. `writeProjectThumb` (capa do card) e o `game-storage` NÃO
-  avisam (não viajam: a capa fica vazia no outro aparelho até abrir o jogo). Best-effort: espelho
-  que lança não derruba a gravação. `null` desliga (aula, playground).
+  componente sabe que a nuvem existe. O `game-storage` NÃO avisa (não viaja). A CAPA do card
+  avisa por um gancho PRÓPRIO, `onThumbChanged(id)` (opcional), e viaja desde 26/09/2026: ver
+  "A capa do card viaja e pode ser escolhida" abaixo. Best-effort: espelho que lança não derruba
+  a gravação. `null` desliga (aula, playground).
 - **`persistProject(project, {silent, replace})`**: `silent` grava SEM acordar o espelho (o que
   acabou de descer não pode subir de novo); `replace` trata o snapshot como verdade COMPLETA —
   apaga a partição de blocos quando ele não traz `blocksState` (o canvas vazio sanitiza para
-  `null`) e a capa antiga, DEPOIS do `setMany` no mesmo mutex (falha de quota não deixa o local
-  sem blocos). Sem `replace`, blocos apagados noutro computador ressuscitavam aqui e subiam por
-  cima da nuvem.
+  `null`) e a capa antiga, NA MESMA transação dos `put` (desde 11/09/2026, ver "Gravação de saída";
+  falha de quota aborta tudo e não deixa o local sem blocos). Sem `replace`, blocos apagados
+  noutro computador ressuscitavam aqui e subiam por cima da nuvem.
 - **`restoreProjectFromCloud(raw, {expectedId})`** (`projects/importSnapshot.ts`) →
   `projectStore.restoreProjectSnapshot`, e **`validateCloudProjectSnapshot`** (o mesmo, SEM
   gravar — o adaptador confere no `fetch`, antes de fazer cópia de conflito): o MESMO saneamento
@@ -196,6 +253,156 @@ que falta em outro computador (`community-kids/src/lib/studio-cloud.ts`; design 
   id/aberto, `updatedAt` dos assets, espelho `null`, `loadProjectAssetsSnapshotForCloud`, lista
   light sem capas, `PROJECT_CHANGED_EVENT`).
 
+## A capa do card viaja e pode ser escolhida (26/09/2026)
+
+Relato dela: a capa dos cards de "Meus Jogos" não sobrevivia a abrir em outro navegador, e ela
+queria deixar a tela de abertura como capa. Decisão dela: a criança ESCOLHE uma imagem do projeto
+como capa fixa (vence a foto automática); sem escolha, a foto automática segue e passa a viajar.
+
+- **`Project.coverAssetName?: string`** = o NOME de um asset de imagem (o idioma dos blocos; o
+  `updateAssetImage` nunca toca o nome). Custa uma string, mora no META (`projectToMetaRecord`) e
+  viaja no `program` do manifesto da nuvem sem mexer no protocolo de partes. ⚠️ **Saneado por
+  FORMA (`sanitizeCoverAssetName`), nunca pela existência do asset:** o `program` do manifesto
+  viaja com `assets: []`, o BFF o valida com o mesmo saneador e o meta é lido sem os assets;
+  exigir o asset presente apagaria a escolha em silêncio nesses caminhos. A resolução nome →
+  asset é na hora de usar (`cover/coverAsset.ts`, `resolveCoverAsset`); nome pendurado = foto
+  automática. Chave OMITIDA quando não há capa (projetos antigos byte-idênticos).
+- **Store:** `setCoverAsset(assetId | null)` só grava o nome (com `bump()`: o `updatedAt` sobe e
+  a escolha vai pela nuvem como qualquer edição); `removeAsset` da capa limpa a chave;
+  `renameAsset` a segue. Quem regrava a miniatura NA HORA é o `AssetsPanel`
+  (`captureAndStoreProjectThumb`, best-effort); no `resolveThumb` do `thumbCapture` a capa
+  escolhida é o PRIMEIRO passo (derivada da própria imagem por `downscaleToThumb`; `null` sem
+  canvas não grava nada, e a capa anterior fica — o invariante do `thumbNeverErases`). A saída do
+  editor (`StudioCore`) fica intocada e nunca sobrescreve a escolhida; o `PreviewIframe` para de
+  pedir fotos com capa escolhida.
+- **UI:** aba Imagens da janela "Materiais do jogo": "⭐ Usar como capa" por imagem
+  (`aria-label` "Usar {nome} como capa do jogo"); na escolhida, o selo "Capa do jogo" + "Voltar
+  para a foto automática". Chaves `assets.cover.*`. ⚠️ O menu ⋯ do `ProjectCard` NÃO ganhou a
+  opção (exigiria seletor de imagens de projeto fechado e o `MENU_HEIGHT` em lockstep).
+- **A foto AUTOMÁTICA viaja** pelo `meta.thumb` da reserva, que já existia de ponta a ponta
+  (DTO, BFF, tabela, cliente) e nenhum adaptador preenchia: `loadProjectThumbForCloud(id,
+  {namespace, maxChars})` lê a capa gravada e a reduz com `cover/cloudThumb.ts`
+  (`buildCloudThumb`: escada 240×144 q0,6 → q0,45 → 200×120 → 160×96, a primeira que cabe em
+  **12 000 chars**, o teto do índice — acima disso o servidor DESCARTA sem erro; a foto do
+  bridge, 320×192 q0,75 ≈ 20 k, não cabe). Sem mudança de servidor.
+- **`writeProjectThumb(id, dataUrl, {silent?}, storageScope?)`** agora dispara o
+  `PROJECT_THUMB_UPDATED_EVENT` (era o `thumbCapture` que disparava) e acorda o espelho por
+  `onThumbChanged` (não por `onChanged`: a capa não muda o `updatedAt`, e o produtor do host
+  devolve `null` quando a marca já é o `updatedAt`). `silent` (a descida) não acorda. ⚠️ O host
+  sobe SÓ pela capa apenas enquanto a nuvem não tem miniatura nenhuma do jogo; depois ela vai de
+  carona nas edições — uma revisão nova por saída do editor invalidaria a base dos outros
+  aparelhos e um editor aberto lá cairia em cópia "(de outro aparelho)" por causa de uma FOTO.
+- **A descida grava a miniatura que veio:** `persistProject(_, {replace, thumb})` põe a capa na
+  MESMA transação dos `put` (com `replace` e sem `thumb`, a antiga é apagada, como sempre);
+  `restoreProjectFromCloud(raw, {thumb})` a repassa e, sem `thumb` mas com capa ESCOLHIDA,
+  deriva daqui (`storeChosenCoverThumb`, silencioso). **`adoptCloudProjectThumbs(items,
+  {namespace})`** (`adoptProjectThumbs` na persistência) grava as capas que a nuvem listou nos
+  projetos que já existem aqui SEM capa (sincronizados antes disto, ou nunca abertos neste
+  aparelho), uma leitura em lote e sem baixar blob; projeto que já tem capa fica com a dele.
+- ⚠️ Cliente VELHO lendo o manifesto novo descarta `coverAssetName` em silêncio (mostra a
+  automática; se reeditar e subir, a nuvem perde a escolha até um aparelho novo re-escolher).
+  Janela curta (F5), sem erro. ⚠️ A capa fixa de um jogo FECHADO cujo desenho o Pinta trocou só
+  se atualiza na próxima abertura (o `persistProjectAssets` não re-deriva).
+- Testes: `cover/__tests__/coverAsset.test.ts`, `cloudThumb.test.ts` (canvas de mentira),
+  `thumbNeverErases.test.ts` (a escolhida vence a foto do preview), `state/projectThumbs.test.ts`
+  (restauro com miniatura, adoção, `onThumbChanged`), `projectValidation.test.ts` (por forma; o
+  manifesto preserva), `projectStore.coverAsset.test.ts`, `AssetsPanel.test.tsx`; no kids,
+  `tests/studio-cloud.test.ts` §"a capa do card viaja".
+
+**Full review do mesmo dia (26/09/2026), o que mudou aqui:**
+- `adoptProjectThumbs` decide pela EXISTÊNCIA da chave (`readAllKeys`, uma transação), não pelo
+  VALOR (`readValues` lia todas as capas locais a cada passe da descida, dezenas de KB por projeto
+  para nada). `projectThumbs.test.ts` prova pelo registro do fake que nenhuma chave
+  `sz:v2:project-thumb:*` é lida por `get`.
+- `importProjectSnapshot(raw, {thumb})` → `importProjectFromJSON({thumb})` → `persistProject({thumb})`:
+  a cópia de conflito "(de outro aparelho)" nasce com a capa que a nuvem listou.
+- `captureAndStoreProjectThumb` devolve `boolean` (gravou uma miniatura nova?). O `AssetsPanel`
+  usa isso: escolher uma imagem que não vira miniatura (não decodifica, ou maior que o teto mesmo
+  reduzida) DESFAZ a escolha (`setCoverAsset(null)`) e avisa (`assets.cover.failed`, pt-BR e en),
+  só se ela ainda é a vigente; voltar à automática nunca é desfeito. A captura é injetável pela
+  prop `captureThumb` (o happy-dom não tem canvas), default `captureAndStoreProjectThumb`.
+- `PreviewIframe` para de pedir fotos pela capa RESOLVIDA (`chosenCoverPausesSnapshots`, exportada
+  e testada), não pelo nome cru: um `coverAssetName` pendurado deixava o preview mudo e o
+  `resolveThumb` caía na reserva sem foto nenhuma.
+- `cloudThumb.ts`: `loadImage` com prazo (`CLOUD_THUMB_LOAD_TIMEOUT_MS` = 3 s; `buildCloudThumb(_,
+  _, {loadTimeoutMs})`) e o cache de tamanho 1 NÃO guarda `null` (uma falha passageira grudava e a
+  capa nunca mais subia).
+- M2, conferido e NÃO era defeito: `reconcileDrawingsFromRestoredProject` bumpa o `updatedAt` do
+  projeto restaurado quando muda os assets (desde 19/08, `personalSync.ts`), então o restauro que
+  religa sobe com data nova e o outro aparelho não cai no atalho "mesma data ⇒ mesmo conteúdo".
+  Agora há teste disso em `personalSync.test.ts` §M2 (data nova + espelho acordado; sem mudança,
+  data da nuvem + silêncio). `projectDatabaseInvariant.test.ts` enumera `loadProjectThumb` e
+  `adoptProjectThumbs`.
+
+## Gravação de saída: toda transação com `commit()` explícito (11/09/2026)
+
+O `PersistenceService` grava o que está pendente no `beforeunload`/`pagehide`, e a gravação SAÍA,
+mas morria com a troca de documento. Três mecanismos, os três consertados no mesmo dia:
+
+1. **A gravação em auto-commit.** O `setMany`/`delMany` do idb-keyval só terminam depois que a
+   página recebe o resultado de cada `put`, e na saída a troca de documento chega antes.
+   Recarregando logo depois de gravar um arquivo grande, a mudança voltou em 0 de 10 recargas no
+   WebKit (o motor do iPad) e 8 de 10 no Firefox, trazendo os três arquivos do Molda, e em 4 de 10
+   no Chromium com a CPU lenta, enviando só o céu de 1,5 MB.
+2. **A leitura em auto-commit ainda aberta** no mesmo store: a gravação espera as transações
+   anteriores (regra do IndexedDB), a leitura só termina se a página processar o resultado, e as
+   duas morrem juntas. Trazer do Molda/Pinta grava na biblioteca pessoal e acorda a varredura dos
+   desenhos, que LÊ o banco: com o 1º conserto, o Chromium ainda perdia 2 de 46.
+3. **A fila que esperava o disco.** O flush entrava na fila atrás de um autosave em voo e só
+   pedia a própria gravação quando aquele terminasse, e na troca de página esse fim não chega.
+
+O que ficou:
+- **`state/idbTransaction.ts`** é o jeito de ler e gravar o banco dos projetos:
+  `writeInOneTransaction(store, { puts, deletes })`, `readValues`/`readValue`/`readAllKeys`. Tudo
+  passa por `inOneTransaction`: TODOS os pedidos dentro do callback, `commit()` explícito
+  (auto-commit onde o navegador não tem o método), `abort()` quando um pedido LANÇA (sem ele, os
+  de antes iriam ao disco pela metade), e a rejeição com o motivo do `abort`, nunca `null`.
+  ⭐ A regra: nenhuma transação deste banco pode depender da página continuar viva para terminar.
+  Quem LÊ para decidir o que gravar (renomear, a capa, a troca de desenho) faz duas transações na
+  fila por projeto; uma leitura e uma escrita presas na mesma transação só terminariam se a página
+  processasse a leitura. Por isso também o `persistProjectAssets` grava os assets e o `updatedAt`
+  do meta numa transação só (eram duas).
+- ⚠️⚠️ **O Chromium inverte `complete` e `success` numa leitura com `commit()`** quando o valor é
+  grande (medido: 0 de 5 até 1 MB; 5 de 5 com 1,5 MB e 5 MB, bloqueada ou não; Firefox e WebKit
+  seguem a especificação). Ler o `request.result` no `complete` lança InvalidStateError ("the
+  request has not finished"). A 1ª versão deste lote lia ali, e o e2e pegou: o editor não
+  reabria o projeto com o céu (o playground mostrava "Projeto não encontrado"). O protótipo da
+  medição anterior não viu porque só lia o banco cru. Hoje a leitura espera o `success` de cada
+  pedido E o `complete`. O fake de testes imita a inversão SEMPRE, com o `success` numa TAREFA
+  seguinte (numa microtask ele chegava antes de o código ler, e a sabotagem passava).
+- **Fila por projeto** (`projectStorageRuntime.ts` `runSerializedProjectWrite`): anda quando a
+  operação da frente PEDIU a sua escrita (a tarefa devolve `{ done }`), não quando o disco confirma.
+  A ordem fica com o IndexedDB (readwrite do mesmo store na ordem em que nascem; leitura nascida
+  depois de uma escrita espera por ela).
+- **Serviço**: o adapter que já aplica os saves na ordem das chamadas declara
+  `appliesSavesInCallOrder: true` (o local declara) e não é encadeado; um adapter remoto segue
+  encadeado (o POST antigo não pode confirmar por último).
+- **Teto do autosave**: o debounce (1 s) é só de borda final; com o teto, a gravação sai no máximo
+  5 s depois da PRIMEIRA edição ainda não gravada (`AUTOSAVE_MAX_WAIT_DEFAULT`,
+  `setAutosaveMaxWaitForTests`).
+- **Aba escondida**: `visibilitychange` → `hidden` faz o mesmo flush da saída (no iPad o Safari
+  descarta aba em segundo plano sem `pagehide`). O dedupe do `flushed` evita gravar de novo no
+  `pagehide` que vem depois.
+- **Preferências em banco próprio** (`settingsStore.ts`, `sz-studio-settings`): moravam no banco E
+  no store dos projetos do namespace padrão, gravadas por `update` (leitura e escrita presas na
+  mesma transação, que só termina se a página processar a leitura). A primeira carga traz de lá
+  (leitura com commit); o original fica. ⚠️ Nome fora da família `sistema-zero-studio-<ns>`.
+- É helper LOCAL de propósito, sem importar nada novo do idb-keyval (`promisifyRequest` incluso):
+  um export novo que um dos mocks da suíte não tenha quebra o linker só na ordem de arquivos do CI.
+- Testes: `state/projectDatabaseInvariant.test.ts` roda toda operação que toca o banco e exige
+  `commit()` no fim de cada transação (com anti-vácuo), e trava os imports do idb-keyval no `src/`
+  (só `createStore` e os bancos próprios); `idbTransaction.test.ts` (leituras, a inversão do
+  Chromium, o escalonamento do fake); `persistence.test.ts` (a fila que anda no pedido, o rename
+  que lê depois do autosave em voo, o flush pedido com o autosave em voo); `service.test.ts` (o
+  adapter que ordena, o teto, a aba escondida); `settingsStore.test.ts` (o banco novo e a cópia).
+- e2e `e2e/reload-flush.spec.ts` (o único que recarrega SEM esperar o "Salvo"), com o autosave
+  SEGURADO pelo gancho `?autosave-ms=` do playground (sem ele, no WebKit o autosave chegava antes
+  do reload em metade das rodadas): o céu enviado com a CPU 6× lenta (1º mecanismo), os três
+  arquivos do Molda com a modal aberta (2º) e a aba escondida. Roda no Chromium e no WebKit (job
+  `studio-e2e-webkit` do CI; `bun run e2e:flush` local). Medido com tudo isto: Chromium 30 de 30
+  (10 de cada teste), WebKit 30 de 30, e o fluxo do Molda instrumentado 20 de 20, cinco delas com
+  uma leitura do banco ainda aberta no instante do `beforeunload` (o caso que antes perdia).
+
 ## Persistência do programa do aluno (guardar/ler que PERSISTE)
 
 O programa que o aluno cria (jogo/app) pode **guardar e ler estado entre execuções** — não só o CÓDIGO
@@ -213,7 +420,9 @@ do projeto. Duas peças:
 **`src/state/persistence.ts`** virou **3 partições** por projeto no IndexedDB — `sz:project-meta:<id>` /
 `sz:project-files:<id>` / `sz:project-state:<id>` (legado `sz:project:<id>` em doc único). Escritas por
 namespace+id são **serializadas FIFO** (`runSerializedProjectWrite(scope, id, task)`) — autosave não intercala com rename
-(leitura+escrita não-atômica). **Cerca de exclusão** (`fenceGameStorageDelete`/`isGameStorageDeleted`,
+(leitura+escrita não-atômica). Desde 11/09/2026 a fila anda quando a operação da frente PEDE a sua
+escrita (a tarefa devolve `{ done }`), e não quando o disco confirma: ver "Gravação de saída" acima.
+**Cerca de exclusão** (`fenceGameStorageDelete`/`isGameStorageDeleted`,
 janela de graça ~60s + poda lazy): um flush de game-storage OU um autosave em voo que chegue DEPOIS do
 delete é descartado — **não ressuscita registro órfão**. O mesmo mutex cobre projeto e game-storage; o
 `settingsStore` agora CEGA a ausência de IndexedDB (modo privado/contexto restrito) — cai p/ defaults em
@@ -280,15 +489,109 @@ Quatro guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__t
   template). `ConvertLegacyPrompt.tsx` (no `Shell`) oferece a conversão automaticamente ao abrir um
   básico **legado com `extraFiles`** (Blocos/Ponte não editam extras) — "Transformar" ou "Agora não".
 
-## Topbar: ações (06/2026)
+## Topbar: o menu ⋯ e os materiais (18/09/2026)
+
+Relato dela: *"aquele menu de três pontinhos não está claro; e o painel de importação está com
+imagem, modelo 3D e som tudo no mesmo lugar dentro de Imagem — como é que a criança vai adivinhar
+que som ela vai ter que importar clicando no link Imagem?"*. A régua pedida foi a mesma da
+reorganização da paleta do Jogo 2D (13/09): grupo = a COISA do mundo da criança, ordem de uso,
+**nenhum grupo de despejo**, cada item em um lugar só, e a árvore como **dado PURO** com a lista
+derivada dela.
+
+**A árvore é `components/layout/topbar/menuLayout.ts`** (molde de `game-2d/palette.ts`): só grupo,
+ordem e chave de texto. A `Topbar` registra um `Partial<Record<StudioMenuItemId, MenuItemBehavior>>`
+com o que cada item FAZ, e as seções saem de um `map` sobre a árvore — item ausente do mapa não
+aparece (é assim que as features desligadas pelo host somem, sem um `if` de exibição sequer).
+
+Seis grupos: **Editar** (desfazer/refazer, só abaixo de `STUDIO_BAR_UNDO_MIN_PX`) · **O meu jogo**
+(Salvar · Trazer o que eu enviei · Extensões · Virar profissional) · **Materiais** (Imagens · Sons ·
+Modelos 3D) · **Mostrar** (Console · Terminal · IA) · **Levar o jogo** (Baixar o projeto · Baixar o
+código · Baixar para publicar) · **Estúdio** (Mudar tema · Meus projetos). Saíram "Arquivo" (nome do
+sistema de arquivos) e "Exibição"/"Conta", que tinham virado despejo — o gerenciador de materiais
+morava em "Exibição".
+
+- ⚠️⚠️ **A linha de apoio (`MenuItem.hint`) não pode entrar no NOME acessível**: o nome viraria
+  "Baixar o código um .zip com o código…" e todo `getByRole('menuitem', { exact: true })` dos e2e
+  quebraria em silêncio. Mas também não pode SUMIR para quem usa leitor de tela — ela existe porque
+  o nome sozinho não basta. O `Menu` aponta `aria-labelledby` para o span do rótulo e
+  `aria-describedby` para o da dica. Um `aria-label` cru resolvia a primeira metade e apagava a
+  segunda (foi a primeira versão, pega no full review).
+- ⭐ **O id do item vai ao DOM (`data-sz-menu-item`)**: perguntar pelo RÓTULO é ambíguo — com dois
+  itens de mesmo texto, um item morto passa por vivo. Medido ao sabotar o drift.
+- ⚠️ **"Virar profissional" mora em "O meu jogo", não com os três "Baixar"**: ele não leva o jogo a
+  lugar nenhum, transforma este projeto e apaga os blocos para sempre. No grupo das saídas, o
+  agrupamento ensinava que os quatro são a mesma coisa.
+- ⚠️ **Nomes que o review consertou porque MENTIAM**: "Publicar na internet" virou **"Baixar para
+  publicar"** (o `ExportDialog` termina num download; nada é publicado, e o nome competia com o
+  Compartilhar, que é o único que põe o jogo no ar) e "Levar para o Estúdio" virou **"Baixar o
+  projeto"** (dentro do próprio Estúdio Completo, "levar para o Estúdio" mandava a criança para
+  onde ela já estava).
+- Drift em `components/layout/__tests__/menuLayout.test.tsx`: item da árvore que nenhum contexto
+  real constrói, a lista LITERAL de ids do contexto com tudo ligado (um piso numérico deixava um
+  grupo inteiro sumir calado), o agrupamento conferido contra os grupos esperados (sem isso,
+  achatar o menu numa lista só passava verde) e a régua do despejo com a metade que morde. A
+  direção oposta fica com o COMPILADOR: o mapa é tipado pela árvore, e por isso o
+  `undoRedoMenuItems` devolve `id: 'undo' | 'redo'` — com `MenuItem` cru era preciso um `as` no
+  código de produção, e o compilador deixava de ser rede.
+
+### A janela "Materiais do jogo" (era "Imagens e sons")
+
+Três portas no menu abrem a MESMA janela, cada uma na SUA aba. O `AssetsPanel` virou a CASCA (tira
+de abas, cota do projeto, recado de erro, inputs de arquivo, modais aninhadas) e cada aba mora em
+`components/assets/tabs/` (`ImagesTab`, `SoundsTab`, `Models3DTab`, mais o `common.tsx` com a tira
+e as peças repetidas). O estado caro — biblioteca pessoal, catálogos do Pinta e do Molda — fica na
+casca e desce por props: carregá-lo por aba refaria a varredura de desenhos a cada troca.
+
+- ⭐⭐ **A régua da aba 3D tem TRÊS motivos independentes** e é FONTE ÚNICA
+  (`projectHas3DMaterials` em `components/assets/has3DConsumer.ts`, consumida pela aba E pela porta
+  do menu): há quem consuma 3D; o projeto TEM arquivo 3D (um órfão precisa continuar gerenciável);
+  ou o host deu o "Trazer do Molda" — sem o terceiro, a porta do Molda sumiria justo para quem
+  ainda não instalou nada de 3D, inclusive para trazer TEXTURA, que é imagem e entra em qualquer
+  projeto. As duas cópias da conta viveram um commit separadas; o review as juntou antes de
+  divergirem.
+- ⚠️⚠️ **`projectHas3DConsumer` faz `JSON.stringify(blocksState)` e passou a rodar no caminho
+  QUENTE**: a Topbar nunca desmonta e o seletor do zustand reexecuta a cada `set()` da store — cada
+  tecla na Ponte, cada lote de 120 ms do Blockly. Medido no Reino Zero (blocksState de 216 KB):
+  1,15 ms por chamada, **+66% no tempo de cada atualização** de um projeto sem 3D. Hoje há cache por
+  IDENTIDADE do `blocksState` (WeakMap), que mata o caso pior — digitar no Monaco troca `files`,
+  nunca o `blocksState`. E o seletor devolve um BOOLEAN, nunca a referência do projeto (devolvê-la
+  re-renderizaria a barra a cada tecla).
+- ⭐⭐ **A aba não é um interruptor.** `openAssetsTab` é a ação das PORTAS (fechada abre; outra aba
+  troca; a mesma aba fecha, porque a porta é a entrada e a saída); `setAssetsTab` é a da TIRA. Ligar
+  a tira à ação da porta fazia o clique na aba já ativa fechar a janela inteira — achado no
+  navegador, com a janela aberta.
+- ⭐ **A fiação mora num lugar só** (`components/assets/useAssetsPanel.ts`): o `Shell` e o teste
+  consomem o MESMO hook. Um teste que refizesse a fiação à mão estaria testando a própria cópia —
+  reverter o `Shell` passava verde, e foi o que o full review provou.
+- ⚠️ **O fallback de aba avisa o host**: a aba pode sumir COM a janela aberta (excluir o último
+  `.glb` de um projeto sem extensão 3D). Sem devolver a escolha à store, ela ficava em `models3d`,
+  nenhuma porta do menu aparecia ligada e "Imagens" precisava de dois cliques para fechar.
+- ⚠️ A janela ESPELHA a aba pedida em estado próprio (padrão "ajustar estado quando a prop muda",
+  sem efeito): controlada só por fora, ela ficava inerte para qualquer host que não religasse o
+  callback.
+- ⚠️ **Só a aba ATIVA leva `aria-controls`**: a janela renderiza um painel só, e referência
+  pendurada é atributo ARIA inválido que o axe classifica como *incomplete* — ou seja, não reprova
+  ninguém.
+- ⚠️ O `Tabs` de `components/layout/TabStrip.tsx` NÃO serve aqui: é para painel de ALTURA FIXA e
+  mantém todos os filhos montados (xterm/Monaco/Blockly/iframe). Numa modal rolável, `h-full` +
+  `overflow-hidden` cortariam a lista.
+- ⚠️ O emoji da aba "Imagens" colide com o do card da galeria do Pinta, e `getByText` **não**
+  respeita `aria-hidden`: teste que procure emoji nesta janela tem de escopar no `role="dialog"` ou
+  no `role="tabpanel"`.
+- **A copy toda aponta a aba certa** (som → `"Sons"`, modelo/céu → `"Modelos 3D"`, imagem →
+  `"Imagens"`, sempre com "no menu ⋯"): campos do Blockly, avisos dos runtimes das cinco extensões,
+  manuais, `ai.ts` do Zappy e o `audioBridge` do núcleo. ⚠️ O manual do Jogo 2D está a ~90
+  caracteres do teto de 60.000 do manifesto: medir o delta antes de commitar (este lote ENCOLHEU 23).
+
+## Topbar: ações (06/2026, histórico)
 
 A `Topbar` (`components/layout/Topbar.tsx`) deixa SOLTO só o botão **"Compartilhar"** (quando há
-`share`) + o toggle de Preview + o menu **⋯**. **Salvar e Baixar VIVEM no ⋯** (seção "Arquivo", junto
-de Exportar/Virar profissional) — decisão de UX do estúdio-produto kids (Topbar enxuta). O badge de
+`share`) + o toggle de Preview + o menu **⋯**. **Salvar e Baixar VIVEM no ⋯** (à época na seção "Arquivo", junto
+de Exportar/Virar profissional; ver a seção de 18/09/2026 acima para os grupos de hoje) — decisão de UX do estúdio-produto kids (Topbar enxuta). O badge de
 status ("Salvo"/"Não salvo"/"Erro") continua visível na Topbar comunicando o estado. Mudança no
 componente COMPARTILHADO → vale p/ `<StudioEditor>` E `<StudioLesson>` (na aula o Baixar já era oculto
 por `features.download:false`; o Salvar agora também fica no ⋯).
-**Mais 2 itens no ⋯ → Arquivo (28/06):**
+**Mais 2 itens no ⋯ → Arquivo (28/06; hoje em "Levar o jogo" e "O meu jogo"):**
 - **"Exportar para o Estúdio"** (SEM gate, vale nos DOIS componentes): baixa o projeto ATUAL como
   `.szproject.json` — o MESMO formato que a listagem importa (`downloadProjectAsJSON` em
   `export/download.ts`, reusada também pelo `ProjectCard`). É como a criança leva o projeto da AULA
@@ -318,16 +621,16 @@ mesma instância do módulo no bundle do kids) num único Provider. Default `nul
   painel, sombra dura; "menu escondido" = borda e tinta suaves do acento via
   `[aria-pressed="true"]`; sem `title`: com `aria-label`, `title` vira descrição e o leitor
   repete — regra do kids), a MESMA do Pinta e do Pensa (lote do mesmo dia: ela reclamou que os
-  três tinham saído diferentes). É uma **ABA colada na linha da sidebar** (cantos quadrados à
-  esquerda, sem borda esquerda, margem negativa `--sz-tool-inset`): a Topbar declara
-  `[--sz-tool-inset:1rem]` (`0.5rem` no compact) e a `ProjectList` `[--sz-tool-inset:1.5rem]`,
-  o padding esquerdo de cada uma. Mora ali, e não em `studio/host-chrome.ts`, porque aquele é o
-  contrato de DADOS `.ts` que o kids consome. Topbar: o menu é o PRIMEIRO filho do `<header>`
-  (antes da marca); a barra ficou `min-h-13` + `py-1` (52px com e sem o botão de 44). O status vem
-  logo após o bloco do "Salvo": `Badge` no tier wide e **BOLINHA** (`h-2.5 w-2.5`, texto no
-  `aria-label`/`title`) em narrow E compact — a Topbar não tem wrap, e o chip do host cede antes
-  do "Salvo" (`HOST_STATUS_BADGE_TONE`/`HOST_STATUS_DOT_CLASS` no `host-chrome.ts`). Ícones
-  `IconPanelLeftClose/Open`.
+  três tinham saído diferentes). ⚠️ Foi uma **ABA colada na linha da sidebar** até 11/09/2026;
+  desde as telas-modelo é o QUADRADO de cantos de 12px DENTRO do padding (40px no mouse, 44px no
+  toque), e o `--sz-tool-inset` saiu da Topbar e da `ProjectList`. Mora ali, e não em `studio/host-chrome.ts`, porque aquele é o
+  contrato de DADOS `.ts` que o kids consome. Topbar: o menu é o PRIMEIRO botão do `<header>`
+  (antes da marca). O status vem logo após o "Salvo": desde 11/09/2026 só a NUVEM em repouso e a
+  frase curta quando algo acontece (ver "A barra do editor das telas-modelo"), e a **BOLINHA**
+  (`h-2.5 w-2.5`, texto no `aria-label`/`title`) abaixo de 1400px (`STUDIO_BAR_LABELS_MIN_PX`, o
+  que inclui o estreito e o compacto) — a Topbar não tem wrap, e o
+  selo do host cede antes do "Salvo" (`HOST_STATUS_DOT_CLASS` no `host-chrome.ts`; o
+  `HOST_STATUS_BADGE_TONE` saiu com o `Badge`). Ícones `IconPanelLeftClose/Open`.
 - `ProjectList`: menu antes do bloco do h1 (`.sz-tool-header__lead`), status como 1º item das
   ações na PÍLULA compartilhada `.sz-tool-status(--tom)` com a frase inteira (o `title` é o nome).
 - ⚠️ Nenhum texto do host contém "Salvo": `e2e/smoke.spec.ts` usa `getByText('Salvo')` estrito.
@@ -336,6 +639,112 @@ mesma instância do módulo no bundle do kids) num único Provider. Default `nul
 - Testes: `components/layout/Topbar.test.tsx` (o primeiro teste da Topbar: wide/narrow/compact,
   sem Provider), `projects/ProjectList.hostChrome.test.tsx` e `styles/tokens.test.ts` (a ponte
   `--color-sz-*` → `--sz-tool-*` nos dois blocos de tema; o `@theme` intocado).
+
+## A barra do editor das telas-modelo (11/09/2026)
+
+A `Topbar` segue a imagem-modelo do Estúdio dela (plano `o-design-da-plataforma-composed-gray.md`,
+lote 7, passo 9). É o MESMO componente do Estúdio Completo, do bloco de aula, do admin e da
+comunidade adulta, então o desenho vale em todos, cada um com as cores dele: as regras são as
+**`.sz-bar-*` do `studio.css`** (na `@layer components`), pintadas com os `--color-sz-*`. Onde a
+imagem pede um tom que só o kids tem, a cadeia tenta o `--sz-tool-*` e cai num `--color-sz-*`
+(o círculo creme do voltar é o `--color-sz-panel-soft` fora do kids, nunca um creme literal).
+Conferido no playground com os primitivos e com todos os `--sz-kids-*`/`--sz-tool-*` anulados
+(`initial`), que é o que o admin e o adulto veem.
+
+- **Três grupos** (`.sz-bar__start|__center|__end`): à esquerda [menu do host][← marca][nome ✎]
+  [Salvo][nuvem]; no meio o segmentado dos modos; à direita [Zappy][desfazer][refazer][olho][⋯]
+  [Compartilhar] (desfazer e refazer desde o passo 10, abaixo). O
+  segmentado fica no meio do espaço LIVRE entre as pontas (margens automáticas), que é o que a
+  imagem mede (a 1440px ele começa em 668, não no centro exato). ⚠️ A primeira versão tinha as
+  duas pontas crescendo por igual: a esquerda ficava presa na metade dela e o NOME do projeto
+  sumia com a direita sobrando (visto no playground). Sem espaço, só o nome encolhe.
+- **Largo** (a partir de 1024px) = 68px; **estreito e compacto** = 52px, com o segmentado, o Zappy
+  e o Compartilhar só no ícone (o rótulo vira `sr-only` e o nome acessível não muda; o modo ganha
+  `title`). Quem abre o painel do Zappy no largo agora começa em `top-[4.25rem]`.
+- ⭐ **Os limites da barra (full review de 11/09/2026)**, medidos no playground com o chrome do host
+  e no pior caso de texto ("Alterações não salvas" + "Não consegui guardar"): com desfazer e
+  refazer na barra, os limites antigos deixavam a esquerda passar por baixo do segmentado. Hoje,
+  em `layoutBreakpoints.ts`: **`STUDIO_BRAND_MIN_PX` = 1600** (era 1360), **`STUDIO_BAR_LABELS_MIN_PX`
+  = 1400** (abaixo dele o segmentado, o Zappy e o Compartilhar ficam só no ícone, ainda na altura
+  larga, e o selo do host vira a bolinha), **`STUDIO_BAR_UNDO_MIN_PX` = 720** (abaixo dele
+  desfazer e refazer moram no "⋯") e **`STUDIO_BAR_COMPACT_MAX_PX` = 520** (a BARRA fica compacta
+  antes do `STUDIO_COMPACT_MAX_PX`, que também decide a paleta do Blockly e por isso não mudou).
+  O nome tem piso de 4.5rem fora do compacto e, depois dele, quem cede é o TEXTO dos selos, com
+  reticências (`.sz-bar-seal__text`, a frase inteira no `title`). De 1600 a 390px, nada passa por
+  baixo do segmentado. ⚠️ O "Salvo" ganhou um span próprio para o texto: nos testes, a pílula é o
+  `parentElement` do `getByText('Salvo')` (o e2e `smoke.spec.ts` segue achando o texto).
+- Peças em `components/layout/topbar/`: **`BackBrand`** (UM botão, o círculo da seta + a marca
+  "Sistema Zero Studio"; nome e `title` "Voltar à lista de projetos" intactos para os e2e; abaixo
+  de **`STUDIO_BRAND_MIN_PX` = 1600** a marca vira `sr-only` e a divisória sai, porque com o menu
+  do host, a nuvem, o Zappy, desfazer, refazer e o Compartilhar ela comia o nome; sem `onExit` é a
+  marca estática, só quando cabe), **`ProjectNameField`** (a pílula com o lápis, sem o lápis no compacto; clicar
+  leva o FOCO ao campo com o texto selecionado, Enter grava e Esc desiste, os dois devolvendo o
+  foco à pílula; antes o botão sumia e o foco caía no `body`), **`SavePill`** (a pílula menta
+  com o visto; "não salvo" e erro sobre o painel com o fio; SEM `role` no largo e no estreito, a
+  bolinha com `role="status"` na barra compacta, abaixo de 520px), **`HostStatusSeal`** (em
+  repouso só a nuvem, nome no `title`; com algo acontecendo a frase curta; bolinha abaixo de
+  1400px), **`ModeSegment`** (um
+  `fieldset` com a legenda `sr-only` "Modo de edição", ícones `IconBlocks`/`IconArrowLeftRight`/
+  `IconCode`, o ativo no azul da marca) e **`BarIconButton`** (o círculo quieto do olho). O "⋯" é
+  o `Menu` com `triggerVariant="bar"` (o `cn` daqui não tem tailwind-merge, então trocar a classe
+  de base pedia uma variante). O mapa de ícones do selo mora em `layout/hostStatusIcons.ts`,
+  compartilhado com a `ProjectList`.
+- Contraste medido nos quatro cenários (kids e sem kids, claro e escuro), régua 4,5:1 para o texto
+  de 13 a 15px em negrito: o pior par é o "Salvo" sem kids no claro (4,69). Os fundos tingidos
+  misturam pouco do tom (10% no "Salvo", 8% no Zappy), e o vermelho do erro leva um quarto da
+  tinta do texto: puro, ele dava 3,9:1 sobre o painel navy do kids.
+- Testes: `components/layout/Topbar.test.tsx` (os grupos, a marca que vira `sr-only`, a marca
+  estática, o segmentado, o "Salvo" nos três tons e no compacto, o foco do nome, o Zappy e o
+  Compartilhar com e sem motivo de bloqueio, além dos casos do chrome do host).
+
+### Desfazer e refazer na barra (11/09/2026, lote 7, passo 10)
+
+Os dois círculos da tela-modelo entre o Zappy e o olho da prévia (abaixo de 720px, a seção
+"Editar" do "⋯"). Nome acessível fixo "Desfazer"/"Refazer"; a dica diz ONDE ("Desfazer nos blocos
+(Ctrl+Z)", "no código"; ⌘Z no Mac); sem nada a desfazer, desligados.
+
+- **Registro por instância** `state/editorHistory.ts` (no molde do `pendingEditorEdits`, dentro das
+  `StudioStores`, `useEditorHistory()`; `null` fora de um <Studio>, e aí a barra não mostra os
+  botões): cada editor REGISTRA um adaptador com a pilha dele (`undo`/`redo`/`canUndo`/`canRedo`/
+  `subscribe`), e a barra lê pelo `useSyncExternalStore` (`topbar/UndoRedo.tsx`, `useUndoRedo`).
+  A saída de um editor antigo não derruba o novo do mesmo alvo (a remontagem wide ⇄ narrow).
+- **O alvo** (`historyTargetFor`): os blocos no modo Blocos, o código no Código e, na Ponte, o
+  ÚLTIMO editor tocado (os blocos até a criança tocar no código). Só um gesto dela troca:
+  `pointerdown`/`focusin` no contêiner do Blockly, `onDidFocusEditorText` do Monaco e, no
+  estreito, escolher a aba (`NarrowEditorPane.onSelect`). Clicar na barra ou uma mudança feita
+  por programa não troca.
+- **Blocos** (`components/blocks/blocklyHistory.ts`): a pilha do próprio Blockly (a mesma do
+  Ctrl+Z): `workspace.undo(false|true)` depois do `hideChaff`, fora de arrasto e de workspace só
+  de leitura; a barra só re-renderiza quando o TAMANHO de uma pilha muda. ⭐ **O Blockly nunca
+  limpa a pilha sozinho** (nem `load` nem `clear` chamam `clearUndo`, conferido no
+  `blockly_compressed`): depois que a Ponte reconstruía os blocos a partir do código, o desfazer
+  (inclusive o Ctrl+Z de antes deste lote) repetia passos de ANTES da recarga. O `BlocklyPanel`
+  chama `forgetBlocklyHistory` só nas recargas vindas de FORA do canvas (o efeito de restauração,
+  que já ignora o que o próprio workspace gravou). Provado no e2e: sem o esquecimento, o botão
+  seguia ligado depois da recarga. Ele é o `clearUndo` (que no Blockly 12 já esvazia a fila
+  pendente; a chamada à parte ao `clearPendingUndo` saiu no full review de 11/09/2026) mais o
+  AVISO à barra: o `clearUndo` não gera evento, então uma recarga sem evento nenhum (canvas que
+  já estava vazio) deixava o "Desfazer" ligado. O aviso vem de um `WeakMap` workspace → conferir
+  as pilhas, preenchido no `createBlocklyHistory`; o `dispose` só apaga o PRÓPRIO registro (na
+  remontagem wide ⇄ narrow o adaptador novo pode já estar lá).
+- **Código** (`monaco/monacoHistory.ts`, importado pelo CAMINHO para não arrastar o Monaco para o
+  chunk dos modos; `components/code/useCodeHistory.ts` + o `onEditorReady` novo do `MonacoTabs`,
+  ligado no `BridgeMode` e no `ProCodeMode`): o Ctrl+Z do Monaco é `editor.getModel().undo()`
+  (`CoreEditingCommands.Undo`), e é o que se chama, direto no modelo DESTE editor. ⚠️ O comando
+  global (`editor.trigger(…, 'undo')`) sem o foco no editor manda o desfazer para o último editor
+  ATIVO da página. O TextModel da 0.52 tem `canUndo`/`canRedo` (fora do `.d.ts`); sem eles, cai
+  no comando e o botão fica sempre ligado. A barra só é avisada quando `canUndo`/`canRedo` MUDA,
+  como no Blockly (cada aviso re-renderiza a barra inteira, e avisar a cada tecla fazia isso a
+  cada letra); trocar de aba avisa sempre e passa a comparar com a aba nova. ⚠️ O Monaco agrupa a digitação por palavra: cada
+  clique desfaz um grupo, como o Ctrl+Z. O `setValue` que a Ponte faz quando os blocos mudam o
+  código zera a pilha do código, então cada editor desfaz só enquanto é ele quem manda.
+- Os ↶↷ do `WorldComposerPanel` passaram a se chamar "Desfazer no mundo"/"Refazer no mundo" (dois
+  "Desfazer" na mesma tela confundiam o leitor e os testes).
+- Testes: `state/editorHistory.test.ts`, `components/blocks/blocklyHistory.test.ts` (workspace
+  headless de verdade, com o `load` e o `clear` que não limpam a pilha), `monaco/__tests__/
+  monacoHistory.test.ts`, `components/layout/Topbar.test.tsx` (os círculos, a dica por alvo, a
+  Ponte, o modo Código e o compacto) e o e2e `e2e/topbar-undo.spec.ts` (Blocos, Ponte com o
+  código, a recarga que esquece e o celular).
 
 ## Compartilhar (publicar no Mural dos Criadores)
 
@@ -571,6 +980,66 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
 - **No playground** (`bun run dev`): o `EditorScreen` passa um `share` de DEMONSTRAÇÃO (IA/publish
   mockados; print real) só p/ ver/testar o fluxo — o botão não existe sem `share`.
 
+## `./arte` — a arte do Jogo 2D como fonte ÚNICA (18/09/2026)
+
+Relato dela: *"nas cenas das experiências e demonstrações a aparência está muito fraquinha; a
+extensão Jogo 2D já tem o Dino, a nave, o fundo de estrelas, o fundo da floresta, os cactos, e
+está bem melhor — se a experiência é do corredinho, a cena tem que ser com os elementos do jogo
+real"*. O obstáculo era estrutural: os personagens do Jogo 2D sempre viveram dentro de TEMPLATE
+LITERALS em `game-2d/runtime/*` — strings que o TypeScript não enxerga, que ninguém pode importar
+e que já derrubaram o pacote dez vezes por uma crase crua. Como a cena de aula não tinha como usar
+aquela arte, ela acabou com um SEGUNDO Dino, desenhado à mão em SVG no member-shell.
+
+**`src/arte/`** é a arte como código de verdade, exportada pelo subpath LEVE
+**`@sistemazero/studio/arte`** (molde de `./controls` e `./server-examples`: nada de Blockly,
+Monaco, three ou React, e nada que toque o DOM em runtime — a cena renderiza no servidor).
+
+- ⭐⭐ **`Pincel` é um `Pick<CanvasRenderingContext2D, …>`**, e é a peça central. Não é "uma
+  interface parecida com o canvas": é literalmente o subconjunto que a arte usa, então o runtime do
+  jogo passa o `ctx` DIRETO (custo zero, zero risco de divergir) e o TypeScript cobra do pincel de
+  SVG a mesma assinatura. Uma interface escrita à mão em paralelo seria a terceira cópia de um
+  contrato que já existe.
+- ⭐ **`PincelSvg` é um adaptador, não uma reescrita**: `save`/`translate`/`scale`/`rotate` viram
+  `<g transform>` ANINHADOS, o que mantém as coordenadas LOCAIS — achatando a matriz, todo `arc`
+  viraria uma elipse girada calculada à mão. Volta inteira sai em DOIS comandos `A` (um `A` cujo
+  ponto final é igual ao inicial não desenha nada), o sentido é preservado (o recorte da cidade
+  fura os buracos com um arco anti-horário), `shadowBlur` vira `feDropShadow` e os ids de degradê,
+  recorte e sombra são determinísticos por instância.
+- ⚠️ **Nada de globais nos desenhos.** `now()`, `dinoGround(ctx)` e `world.gravity` viraram
+  parâmetros (`Ambiente { t, chao, gravidadeParaCima }`). É o que torna o desenho determinístico e
+  o que permite a cena animar pelo relógio DELA.
+- ⚠️ **Os FUNDOS têm uma mudança deliberada**: o parallax do runtime sorteia com `Math.random()` e
+  MUTA a posição a cada quadro; aqui a posição é função de `(semente, área, deslocamento)`. Uma
+  cena que renderiza no servidor e re-renderiza a cada gesto não pode sortear o céu. O teste
+  `subpath.test.ts` proíbe `Math.random` no módulo inteiro.
+- ⭐⭐ **`__tests__/paridade.test.ts` é o entregável central**: avalia a STRING do runtime de hoje
+  num escopo com stubs, roda os dois desenhos contra um `PincelGravador` e compara a sequência de
+  operações argumento a argumento. É ele que impede as duas cópias de divergirem enquanto
+  coexistirem, e é o portão do dia em que o runtime passar a ser GERADO daqui (ainda não é).
+  Provado que morde: um `w * 0.52` virado `0.53` no corpo do Dino reprova quatro casos.
+- ⭐⭐ **`arte/hud.ts` — o HUD, e não só as figuras (18/09/2026).** Relato dela, depois de olhar uma
+  cena de aula ao lado do jogo: *"o placar, por exemplo, você não fez igual ao da extensão Jogo 2D,
+  você fez um outro nada a ver com o estilo do jogo"*. Estava certa, e a causa era a mesma das
+  figuras: o coração, a barra e as medidas do placar viviam só dentro dos template literals de
+  `game-2d/runtime/arcadeKitsHud.ts`. Agora saem daqui, portados VERBATIM e travados pelo MESMO
+  teste de paridade: `CORACAO` (lado 22, vão 6), `CORES_DO_HUD`, `caminhoDoCoracao` (o `top = s*0.3`
+  da covinha), `desenharCoracao` (= `drawHeart`), `desenharCoracoes` (= `_drawHeartsVisual`, com o
+  teto de 20 do runtime) e `desenharBarra` (= `_drawBarVisual`). ⚠️ `caminhoDoCoracao` é separado do
+  preenchimento de propósito: a cena desenha a vida PERDIDA como contorno, e sem isso ela inventaria
+  outra geometria. Provado que morde: um `0.3` virado `0.31` reprova dois casos. ⚠️ A paridade
+  guarda também as CONSTANTES, não só a geometria: o teste passa `22` ao runtime e deixa o `CORACAO`
+  daqui decidir do lado da cena, então lado, vão e cor da vida não podem divergir em silêncio.
+  ⚠️ `desenharBarra` ainda não tem consumidor (nenhuma das 45 cenas mostra barra de vida): ela veio
+  junto porque o HUD é uma unidade e porque é a OUTRA forma do `drawSpriteHealth`.
+- Quem consome: `packages/member-shell/src/components/scene-arte.tsx` (`ArteSvg` e
+  `FundoDoCenario`) e `scene-hud.tsx` (o placar e os corações da cena), pelos cenários do
+  `packages/core/src/learning/scene/cenario.ts`.
+- ⚠️ **Ainda NÃO gerado, e isso é decisão DELA** (18/09/2026, depois do full review: *"vamos deixar
+  como está por enquanto; depois a gente pensa"*): `game-2d/runtime/*` continua com as strings de
+  hoje. O lote que fecha a duplicação (bundlar `src/arte` e emitir `__gen_arteRuntime.ts`) mexe no
+  runtime EM PRODUÇÃO e precisa reancorar a catraca de payload gzip (teto E piso), que está a 0,6%
+  do teto. Até lá, quem segura as duas cópias juntas é o teste de paridade — ele não é opcional.
+
 ## Regras não-negociáveis
 
 1. **Workers cross-bundler**: todo worker nasce de `new Worker(new URL('./caminho-relativo.ts', import.meta.url), { type: 'module' })` com URL **literal inline** — nada de `?worker` (Vite-only), nada de bare specifier dentro de `new URL()` (Vite não resolve), nada de variável/helper no 1º argumento (quebra a análise estática de Vite/Turbopack/webpack). Os workers do Monaco usam os wrappers em `src/monaco/workers/`. Plano B se um bundler de host falhar: extrair a criação p/ factory injetável via prop.
@@ -603,10 +1072,21 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
    não é afetado.
 4. **Sem react-router**: navegação é do host. Páginas/cards recebem callbacks (`onOpenProject`, `onExit`).
 5. **Globais residuais de multi-instância**: WebContainer é singleton por aba; o atalho da busca de blocos (`startSearch`) fica com a última instância (PtSearchCategory desregistra antes de registrar — NÃO remover, era crash na 2ª instância). `deleteProject` cancela autosaves em voo somente nas instâncias do MESMO namespace via registro de serviços.
-6. **Testes = bun:test** (`bun test src`). O CI executa a suíte Playwright completa em Chromium, dividida em 3 shards, e os cenários de segurança/CSP em Firefox. Gotchas que esta suíte já paga:
+6. **Testes = bun:test** (`bun test src`). O CI executa a suíte Playwright completa em Chromium, dividida em 3 shards, os cenários de segurança/CSP em Firefox e a gravação de saída (`reload-flush.spec.ts`) em WebKit. Gotchas que esta suíte já paga:
    - `mock.module` NÃO é isolado por arquivo — capture os exports reais antes e restaure no `afterAll` (ver `BlocksMode.test.tsx`); mocks de idb-keyval ficam sem restore de propósito (IndexedDB não existe no happy-dom).
-   - Sem fake timers — debounce do autosave encurta via `setAutosaveDelayForTests` (`src/persistence/service.ts`); relógio via `setSystemTime` (que RESETA se receber epoch 0). ⚠️ **Um teste que espera o debounce precisa DRENAR antes do próximo limpar os mocks** (`persistence.test.ts`, 19/08/2026): no runner de 2 vCPU do CI (22 pacotes juntos) o `setMany` de um caso ainda estava em voo quando o seguinte fazia `mockClear`, e caía no contador dele ("recebeu 1, esperava 0") — três casos antigos, local verde até sob carga. O `afterEach` dá um `waitForAutosave()` e a folga é 10× o delay, não 5×. Já tinha reprovado em `b0934ab0` e ficou mascarado por outro vermelho no mesmo run: quando um CI cai por um motivo, leia a lista INTEIRA de `(fail)`.
+   - ⚠️ **Todo mock de `idb-keyval` devolve `fakeUseStore(dbName)` no `createStore`** (`src/testing/fakeIdbStore.ts`, 11/09/2026) e exporta `get`, `getMany`, `keys`, `setMany` E `delMany`. O banco dos projetos só é lido e gravado por transações abertas pelo próprio `scope.store` (`idbTransaction.ts`), e o store fica em CACHE no escopo de armazenamento, que atravessa arquivos: um mock que devolvesse objeto não chamável quebraria a persistência só numa certa ordem de arquivos. A transação de mentira RESPONDE pelas funções do mock ATIVO (`get` quando lê uma chave, `getMany` quando lê várias, `keys` para o `getAllKeys`, `setMany`/`delMany` para gravar), imita o ESCALONAMENTO do IndexedDB (a escrita espera as transações anteriores do banco; a leitura, as escritas anteriores) e registra o que foi pedido: asserte no registro (`fakeIdbTransactions`, `fakeIdbWrites`, `fakeIdbReads`, `fakeIdbPuts`, `fakeIdbDeletes`), não no `setMany`. ⚠️ Semeie a leitura na função que ela vai chamar (uma chave = `get`): uma semente `mockResolvedValueOnce` não consumida VAZA para o teste seguinte, e foi assim que um erro virou quatro em cadeia. Falhas: `failNextFakeIdbWrite` (aborta), `holdNextFakeIdbWrite` (em voo, e segura quem nasce depois), `throwOnNextFakeIdbPut` (put que lança). ⚠️ O bun congela o CONJUNTO de nomes do módulo mockado pelo PRIMEIRO mock da suíte (medido no 1.3.11): um nome ausente no mock atual aponta para a função VELHA de outro arquivo, sem erro.
+   - Sem fake timers — debounce do autosave encurta via `setAutosaveDelayForTests` (`src/persistence/service.ts`); relógio via `setSystemTime` (que RESETA se receber epoch 0). ⚠️ **Um teste que espera o debounce precisa DRENAR antes do próximo limpar os mocks** (`persistence.test.ts`, 19/08/2026): no runner de 2 vCPU do CI (22 pacotes juntos) a gravação de um caso ainda estava em voo quando o seguinte fazia `mockClear`, e caía no contador dele ("recebeu 1, esperava 0") — três casos antigos, local verde até sob carga. O `afterEach` dá um `waitForAutosave()` e a folga é 10× o delay, não 5×. Já tinha reprovado em `b0934ab0` e ficou mascarado por outro vermelho no mesmo run: quando um CI cai por um motivo, leia a lista INTEIRA de `(fail)`.
    - DOM via happy-dom no preload (`bunfig.toml` + `test-setup.ts`).
+   - ⚠️⚠️ **`MutationObserver` do happy-dom é flake por COLETOR DE LIXO, não por ordem nem por
+     carga.** O `MutationObserverListener` guarda o callback do nó num **`WeakRef`**
+     (`callback: new WeakRef((record) => this.report(record))`) e ninguém mais segura aquela
+     função: o GC pode levá-la a qualquer momento e o observador PARA de entregar, em silêncio,
+     no meio do teste. Medido no `useHostAppearanceRevision.test.tsx` (11/09/2026): o mesmo
+     arquivo deu revisões 1, 2, 3 numa execução e 1, 1, 1 na seguinte, sem mudar uma linha — e
+     foi assim que o CI Linux reprovou com a suíte inteira verde no Windows. Teste que depende
+     da ENTREGA de verdade (mudar um atributo e esperar o callback) não tem conserto por espera
+     maior: use um DUBLÊ do observador (o arquivo acima tem o molde) e prove o que o SEU código
+     faz — o que ele observa, o que faz a cada entrega, e o `disconnect` ao sair.
    - Componentes que rendem DENTRO de um `<Studio>` precisam de PROBE (mock do Shell lendo hooks) — as estáticas `getState` leem a store default, não a da instância.
 7. **Vite playground** (`bun run dev`): `optimizeDeps.entries`/`include` precisam casar com os imports REAIS (sufixo `.js` nos deep imports do Monaco; paths com forward slash — backslash do Windows não casa no glob e o Vite re-otimiza com full reload no meio da navegação). Headers COOP/COEP do dev server são obrigatórios p/ o Terminal.
 
@@ -969,7 +1449,7 @@ sombra que reproduza a saída anterior byte a byte) é o único acréscimo segur
 (`level` + `allowCategories` + `allowBlocks`). **Reforma 2D/3D (07/2026):** `BlockLevel` virou a
 escada TOTAL de 6 degraus (`iniciante-2d` < `iniciante-3d` < `intermediario-2d` <
 `intermediario-3d` < `avancado-2d` < `avancado-3d` — 2D antes do 3D em cada dificuldade, a MESMA
-ordem da carreira do aluno; teto = `MAX_BLOCK_LEVEL`). A API pública aceita TAMBÉM os 3 valores
+ordem da jornada do aluno; teto = `MAX_BLOCK_LEVEL`). A API pública aceita TAMBÉM os 3 valores
 legados (`AnyBlockLevel`) e a fronteira ÚNICA `resolveLearning` normaliza via `normalizeBlockLevel`
 (legado: iniciante→ini-2d, intermediario→int-3d, avancado→av-3d — preserva os conjuntos antigos;
 lixo→ini-2d fail-closed); consumidores internos leem `config.learning.level` JÁ normalizado.
@@ -1036,7 +1516,7 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
 5. `parsers/{js,html,css}.ts` — código→IR (Ponte). Expr usável em `se`/valor precisa entrar em `isSimpleValue` (senão vira rawJS).
 6. `blockly/workspaceState.ts` — IR→bloco (`statementToBlock`/`exprToValueBlock`/`htmlNodeToBlock`; **5º arg do `block()` = inputs de VALOR**).
 7. `state/projectStore.ts` — type em `CORE_BLOCKLY_BLOCK_TYPES` (drift `blockAllowlist.test.ts`; faltar = `sanitizeImportedBlocksState` zera TODOS os blocos).
-8. **`blockly/blockLevels.ts` — DEGRAU do bloco** (curadoria por bloco; reforma 2D/3D 07/2026 = escada TOTAL de 6: `iniciante-2d` < `iniciante-3d` < `intermediario-2d` < `intermediario-3d` < `avancado-2d` < `avancado-3d`, a MESMA ordem da carreira do aluno): a categoria **Programação** tem progressão própria e exaustiva em `programmingContract.ts` (orçamento iniciante explícito; bloco novo cai no intermediário, nunca no iniciante por omissão). **Filosofia "kit primeiro, na unha por último" (26/07):** iniciante = jogos (kits) + **HTML/CSS ESSENCIAL** (cor/texto/imagem/caixa — default iniciante-2d); **SVG inteiro = intermediario-2d** (primitivo visual gentil, via `level` do catálogo); **Canvas 2D inteiro = avancado-2d** (prefixo `sz_canvas_` + os não-prefixados `sz_html_canvas`/`sz_val_image`/`sz_js_new_image`/`sz_input_*` no set `AVANCADO_2D`); **HTML/CSS PROFUNDOS = avancado-2d** (tags semânticas/forms via `level` do catálogo; layout/tipografia/animação/mecânica genérica no set); **Canvas 3D inteiro = avancado-3d** (`INTERMEDIARIO_3D` esvaziado → prefixo `sz_t3d_`). **Todo `sz_g3d_*` é iniciante-3d** (a aula filtra quais mostrar); os pisos por prefixo decidem canvas→av-2d, g3d→ini-3d, gk→int-2d, w3d→int-3d, g3k→int-3d, t3d→av-3d. ⚠️ NUNCA pôr bloco 3D nos sets `*_2D` (o split protege a promessa do eixo — travado no teste). Valores LEGADOS (`iniciante`/`intermediario`/`avancado`) seguem aceitos nas props públicas e normalizam via `normalizeBlockLevel` (`core/levels.ts`: legado→`iniciante-2d`/`intermediario-3d`/`avancado-3d`, preservando os conjuntos antigos; lixo→`iniciante-2d` fail-closed). Os testes cobram tipos reais, tiers exaustivos e ausência de duplicação entre o contrato de Programação e os sets genéricos.
+8. **`blockly/blockLevels.ts` — DEGRAU do bloco** (curadoria por bloco; reforma 2D/3D 07/2026 = escada TOTAL de 6: `iniciante-2d` < `iniciante-3d` < `intermediario-2d` < `intermediario-3d` < `avancado-2d` < `avancado-3d`, a MESMA ordem da jornada do aluno): a categoria **Programação** tem progressão própria e exaustiva em `programmingContract.ts` (orçamento iniciante explícito; bloco novo cai no intermediário, nunca no iniciante por omissão). **Filosofia "kit primeiro, na unha por último" (26/07):** iniciante = jogos (kits) + **HTML/CSS ESSENCIAL** (cor/texto/imagem/caixa — default iniciante-2d); **SVG inteiro = intermediario-2d** (primitivo visual gentil, via `level` do catálogo); **Canvas 2D inteiro = avancado-2d** (prefixo `sz_canvas_` + os não-prefixados `sz_html_canvas`/`sz_val_image`/`sz_js_new_image`/`sz_input_*` no set `AVANCADO_2D`); **HTML/CSS PROFUNDOS = avancado-2d** (tags semânticas/forms via `level` do catálogo; layout/tipografia/animação/mecânica genérica no set); **Canvas 3D inteiro = avancado-3d** (`INTERMEDIARIO_3D` esvaziado → prefixo `sz_t3d_`). **Todo `sz_g3d_*` é iniciante-3d** (a aula filtra quais mostrar); os pisos por prefixo decidem canvas→av-2d, g3d→ini-3d, gk→int-2d, w3d→int-3d, g3k→int-3d, t3d→av-3d. ⚠️ NUNCA pôr bloco 3D nos sets `*_2D` (o split protege a promessa do eixo — travado no teste). Valores LEGADOS (`iniciante`/`intermediario`/`avancado`) seguem aceitos nas props públicas e normalizam via `normalizeBlockLevel` (`core/levels.ts`: legado→`iniciante-2d`/`intermediario-3d`/`avancado-3d`, preservando os conjuntos antigos; lixo→`iniciante-2d` fail-closed). Os testes cobram tipos reais, tiers exaustivos e ausência de duplicação entre o contrato de Programação e os sets genéricos.
 8b. **SOMBRA nos soquetes (`blocks/valueSockets.ts`)** — todo `input_value` novo precisa nascer
    PREENCHIDO na paleta (feedback dela 24/07: "vários blocos sem sombra"): número em
    `VALUE_SOCKETS`, texto em `TEXT_SOCKETS`, cor em `COLOR_SOCKETS`, composto (variável nomeada /
@@ -1079,7 +1559,7 @@ prove o caminho inválido e o round-trip nos testes.
     `fill`) + `resolveSpriteVisual` (puro, cache `WeakMap` por workspace) +
     `attachSpriteThumbWatcher` (refresh coalescido em BLOCK_CHANGE/CREATE/DELETE de DECLARADOR +
     FINISHED_LOADING; registrado no inject do `BlocklyPanel` junto de um subscribe da identidade de
-    `project.assets` — renomear/trocar asset no painel Imagens não gera evento Blockly). Sem visual
+    `project.assets` — renomear/trocar asset na aba "Imagens" não gera evento Blockly). Sem visual
     (nome local de laço 🔁/desconhecido/asset sumido sem cor) → só texto, como antes; a serialização
     fica INTOCADA (elementos extras no `fieldGroup_` não entram). Pop-up com swatch 36×36
     (`<img> object-fit:contain` p/ imagem). E o **FieldColourSZ** tem o CÍRCULO CROMÁTICO:
@@ -1213,7 +1693,7 @@ seguem intocados. O host (kids) abre `/pinta?desenho=<id>` em aba nova.
 
 **2. Sincronia de volta** — `src/asset-library/personalSync.ts`
 (`syncDrawingsIntoProjects(storeApi)`), disparada pelo `DrawingSyncWatcher` (montado no `Shell`, no
-`focus`/`visibilitychange`) e ao abrir o painel de Imagens. Alcança **TODOS os jogos da criança**
+`focus`/`visibilitychange`) e ao abrir a janela dos materiais. Alcança **TODOS os jogos da criança**
 (decisão dela), não só o aberto:
 
 - **Portão barato:** marcador `localStorage sz:desenhos-alterados:<ns>` (escrito por
@@ -1235,7 +1715,7 @@ seguem intocados. O host (kids) abre `/pinta?desenho=<id>` em aba nova.
   os dele; não traz e a geometria é a mesma → preserva o do projeto (peças/mapa do `TileConfigDialog`
   não existem no Pinta); geometria MUDOU → descarta (índices inválidos).
 - **Silenciosa no sucesso** (decisão dela), **nunca na recusa**: cota estourada vai para
-  `takeDrawingSyncFailures()` e o painel de Imagens mostra ao abrir.
+  `takeDrawingSyncFailures()` e a janela dos materiais mostra ao abrir.
 - Preview, miniaturas de bloco e export reagem sozinhos (identidade nova de `project.assets`).
 
 Testes: `personalSync.test.ts` + `components/assets/AssetsPanelEditDrawing.test.tsx`. O playground
@@ -1380,7 +1860,7 @@ inteira). `sz_w3d_totem_image`/`sz_g3k_part` (W/H em unidades de MUNDO) estão n
 `blockly/fields/__tests__/applySuggestedSize.test.ts` (mapa × sombras reais da toolbox; todo bloco
 com seletor de imagem + soquete de tamanho no mapa OU no opt-out). Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.79.1`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`1.2.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -1866,8 +2346,9 @@ código, e todos mudam o que a criança tenta fazer:
   e o rótulo do menu dizia o oposto do instante da pisada ("virar casco **móvel**"). Pior: o
   **"Atualizar os cascos"** é OBRIGATÓRIO — sem ele o casco fica parado para sempre e não há aviso
   nenhum — e o manual nunca o nomeava, nem o `ai.ts` o mencionava.
-- **"aba Assets"** em dois pontos de entrada do fluxo de imagens: no produto é o painel **Imagens e
-  sons**, e o próprio manual acerta 300 linhas depois.
+- **"aba Assets"** em dois pontos de entrada do fluxo de imagens: no produto era o painel **Imagens e
+  sons** (desde 18/09/2026, a janela **Materiais do jogo** e as abas **Imagens** / **Sons** /
+  **Modelos 3D**), e o próprio manual acerta 300 linhas depois.
 - **A dica do "Ajustar" tinha 787 caracteres** — sete vezes a mediana da extensão —, com uma tabela
   de donos de parâmetro em prosa corrida dentro de um balão. Foi para o manual, e o drift que a
   cobrava foi junto. Mais três dicas com duas frases COLADAS por falta de um espaço na concatenação.
@@ -2549,6 +3030,326 @@ modo é dono do eixo Y a gravidade nunca roda, e quando outro comportamento LEVA
 quatro superfícies de copy (dropdown, os cinco níveis do manual, a família "Anda no chão" e o
 `ai.ts`) descrevem os três modos sem divergência, e as duas menções restantes ao `_enemyTrackMove`
 são os comentários que explicam a remoção dele, não referências.
+
+## Jogo 2D — fundo de IMAGEM no sprite de texto + seletor de cor (v1.1.0, 14/09)
+
+Pedido dela: *"só posso ter uma cor no fundo do texto; seria interessante poder
+escolher uma imagem, aí o sprite teria a forma da imagem e o texto seria escrito por
+cima"*. É o que destrava placa, botão, balão de fala e carta de quiz desenhados no
+Pinta. Antes era impossível por construção: `skin.kind === 'text'` retorna cedo no
+`_drawSpriteBody` (`runtime/sprites.ts`), antes do ramo de imagem.
+
+**Bloco NOVO, não campo no `sz_g2d_set_text_box`** (a régua de 02/08), por três
+motivos independentes: (1) um `input_value` novo naquele bloco NÃO ficaria vazio em
+projeto salvo — `migrateValueFields.ts` já cura os soquetes dele e a sombra entraria
+na reabertura, que é exatamente o defeito do `random_x` que ela mandou reverter;
+(2) a semântica é outra — a cor não mexe no tamanho, a imagem MANDA nele, e um
+soquete que às vezes redimensiona é impossível de explicar; (3) faltava campo (a
+altura do texto só faz sentido com imagem).
+
+**`sz_g2d_set_text_image`** — "Fundo do sprite ⟨resposta⟩ com a imagem ⟨placa⟩, texto
+⟨no meio⟩" (`command`, em Sprites › Texto e números). IR `g2d:setTextImage
+{spriteVar, image, valign}`; `image` é string literal, como o `g2d:setImage`.
+Decisões dela: **a imagem manda no tamanho** (sem deformar; o texto quebra na largura
+dela menos a margem, e a placa nunca estica) e **ela escolhe a altura do texto**
+(em cima / no meio / embaixo).
+
+- ⭐⭐ **A `layoutKey` ganhou a imagem** (`nome`, `imgW`, `imgH`, `valign`). A imagem
+  chega 1–2 quadros depois, como a fonte: sem isso o cache congela a medida do TEXTO
+  e a placa nunca aparece no tamanho certo.
+- ⭐⭐ **`sizeSource` reancora a escala.** As duas linhas que preservam um
+  redimensionamento feito à mão (`sprite.w / measuredW`) viram lixo quando a medida
+  troca de dono: o fator do TEXTO multiplicaria a IMAGEM. Ao mudar de `'text'` para
+  `'image'` (ou o contrário), a escala volta a 1.
+- ⭐ **`_scheduleSpriteImageRedraw` foi EXTRAÍDO** do `_drawSpriteBody` (era um bloco
+  inline) e agora serve aos DOIS donos de imagem de um sprite — a imagem fixa e o
+  fundo do texto —, cada um dizendo pelo `stillCurrent` se ainda manda quando a carga
+  termina. Sem ele, um jogo sem "a cada quadro" mostraria a placa vazia para sempre.
+- ⭐⭐ **O full review do mesmo dia achou que a extração estava pela METADE, e é a
+  lição do lote: derivei a FUNÇÃO e deixei o ESTADO compartilhado.** `sprite._imgHooked`
+  era um booleano único para os dois donos, e isso produziu dois defeitos mudos, os
+  dois só visíveis em jogo SEM laço: (1) trocar de placa no meio da carga deixava a
+  SEGUNDA sem agendamento nenhum (o booleano ainda estava ligado pela primeira); e
+  (2) o `_cancelSpriteImageRedraw` do `setSpriteText`, que existe para soltar a
+  IMAGEM FIXA, matava o redraw da PLACA — trocar o texto do botão fazia a moldura
+  dele nunca aparecer. Hoje o que marca "já agendei" é o **HANDLE**
+  (`sprite._hookedHandle`), um handle novo cancela o anterior e reagenda, e o
+  `setSpriteText` só cancela quando o pendente É a imagem fixa. Regressões nos dois,
+  com anti-vácuo na imagem fixa.
+- ⚠️ **A guarda de "ainda carregando" fica no CHAMADOR, não só dentro do agendador**:
+  o callback é uma closure NOVA por chamada e o `_drawSpriteBody` roda para todo
+  sprite desenhado, 60× por segundo. Era uma alocação por sprite por quadro no
+  caminho mais quente — a mesma classe que o `drawGroupByY` já pagou em 14/08.
+- ⚠️ **`setSpriteText` não pode mais zerar a caixa de arte**: ele fazia
+  `_applyArtHitbox(sprite, '')`, e trocar o texto de um botão apagaria a moldura dele.
+  Hoje consulta `style.image`.
+- ⚠️ **O `telaW` do `_crispDraw` é o tamanho FINAL na tela**, não a medida local: o
+  desenho roda sob um `ctx.scale`, e ali medida local e tamanho natural são iguais —
+  passar a local faria a placa REDUZIDA pela criança sair serrilhada.
+- **Texto que não cabe TRANSBORDA e avisa uma vez** (cortar esconderia em silêncio;
+  crescer contradiria a decisão dela). ⚠️ O aviso não dispara enquanto a imagem
+  carrega: ali a medida ainda é a do texto e ele acusaria quem está certo.
+
+**Parte 2 — o fundo de cor deixou de ser código digitado.** A sombra do soquete
+`BACKGROUND` era `sz_val_text('transparent')`: para pintar de azul, a criança digitava
+`#3b82f6`. Hoje nasce `sz_val_color_alpha` com **`ALPHA: 0`**. ⚠️ O campo mede
+OPACIDADE apesar do rótulo ("0% = invisível, 100% = sólida", diz o tooltip do bloco do
+núcleo; `codecs/programming/blockToIR.ts` faz `alpha: ALPHA / 100`), então alfa 0
+preserva o padrão histórico de **nascer sem fundo** — um `sz_val_color` puro estrearia
+o bloco com um retângulo que ninguém pediu, e o bloco existe sobretudo para quebrar
+linha. O runtime ganhou `_paintsBackground`: a régua literal `'transparent'` continua
+valendo (projeto salvo e código à mão) e cor com opacidade 0 também não pinta.
+
+⭐⭐ **Duas coisas que o full review mudou aqui, e a segunda virou rede para sempre:**
+1. **O rótulo do `sz_val_color_alpha` dizia o oposto do que o campo mede** ("cor ⟨⟩
+   transparência ⟨N⟩ %" para uma escala em que 0 é invisível). Virou **"opacidade %"**.
+   É bloco do NÚCLEO em uso, mas mexer no `message0` é seguro: não muda campo, valor,
+   IR nem forma. Sem isso, a criança escolhia a cor, via o número 0 ao lado e nada
+   acontecia — com um rótulo dizendo que ali havia 0% de transparência.
+2. ⭐⭐ **Uma sombra de fábrica nunca pode ser de um degrau ACIMA do bloco que a
+   contém**, e esta era a **única violação em toda a base**: o "Caixa de texto" é do
+   Kit essencial (`iniciante-2d`) e o "cor + opacidade" era do segundo degrau. A
+   sombra RENDERIZA estando ou não na paleta, então ninguém perceberia — só a criança,
+   que veria a peça e não a acharia. O bloco entrou no primeiro degrau
+   (`PROGRAMMING_BEGINNER_BUDGET` 25 → **26**, decisão da dona): o orçamento já estava
+   furado na prática, porque a sombra fazia 26 peças aparecerem ali; contá-la acerta a
+   conta em vez de inflá-la. A regra virou drift em
+   **`blockly/__tests__/shadowLevels.test.ts`**, varrendo as cinco extensões, com
+   anti-vácuo e a metade que morde.
+⚠️ Isso NÃO muda a forma do bloco (mesmos campos, mesma IR, mesmo helper) — só o que
+vem pré-encaixado; `LEGACY_VALUE_FIELDS` continua `'text'`, porque é ele que cura os
+`"transparent"` que já existem. A sombra nova é composta, logo só de paleta, e o drift
+`restoreShadowLiterals` a pula (só conhece literal simples).
+
+- **QA de pixel em Chrome real** (o `bun test` roda com `ctx` dublê, que prova ordem e
+  contagem e **não prova pixel**): sem placa 109×45, com placa 200×80; a faixa de 8 px
+  da imagem sai com 8 px **inclusive com o texto em 3 linhas** (é o que denuncia
+  deformação); nada vaza além dos 200; o texto sai em 10–29 / 28–47 / 46–65 para
+  cima / meio / baixo; e a cor de fábrica (alfa 0) deixa o pixel em `0,0,0,0`.
+- ⚠️ **Crase crua pela 9ª vez neste repositório**, escrevendo o comentário sobre o
+  `telaW`. O `templateGuard` MORDE (verificado reinserindo-a: 1 fail contra 7 pass) —
+  o erro foi não rodá-lo antes. É o primeiro comando, sempre.
+- ⚠️⚠️ **O soquete do fundo aceita QUALQUER valor (`JSValue`), e a régua nova lia a
+  string**: um número encaixado por engano derrubava a partida com
+  `color.slice is not a function`. O Canvas sempre ignorou um `fillStyle` que não
+  fosse cor — o motor não pode passar a quebrar por dado da criança. A normalização
+  ficou na FRONTEIRA (`setTextBox`, como o `_spriteText` faz com o texto), com guarda
+  de tipo na régua e regressão sobre número, booleano, objeto, lista, null e undefined.
+- ⚠️ **O default do seletor de imagem nasce VAZIO.** Um nome de fábrica que não existe
+  no projeto (`'placa'`) fazia o `loadImage` avisar "a imagem não está no projeto"
+  assim que a criança arrastava o bloco: aviso acusando quem acabou de chegar, a
+  classe que esta extensão já pagou cinco vezes. Os seletores opcionais dos irmãos já
+  nasciam vazios.
+- ⚠️ **Teste que passava por VÁCUO, achado no review**: "trocar o texto preserva a
+  caixa de colisão" comparava `null` com `null`, porque o manifesto de teste não tinha
+  `hitbox` nenhuma. Com a caixa medida no manifesto, ele morde (provado reinserindo o
+  `_applyArtHitbox(sprite, '')` antigo).
+- Contadores: blocos 283 → **284**, API 291 → **292**, arquivos 168 → **169**, catraca
+  de parâmetros 1221 → **1236**, payload 486k → **501k** (teto E piso reancorados),
+  Kit essencial 57 → **58**, orçamento do 1º degrau de Programação 25 → **26**. Testes
+  novos: `game-2d/__tests__/textSpriteImage.test.ts` (33) e o drift
+  `blockly/__tests__/shadowLevels.test.ts` (6).
+- **Fora do escopo, de propósito**: exemplo novo na vitrine (mexeria no `sha256`
+  travado do `examplesLoading.test.ts`) e o equivalente na gk (que não tem sprite de
+  texto). O rótulo do `sz_val_color_alpha` e o degrau dele foram
+  corrigidos no full review do mesmo dia (ver a Parte 2).
+
+## Jogo 2D — o TAMANHO do sprite de texto (v1.2.0, 15/09)
+
+Relato dela: *"acrescentamos blocos para criar sprites com texto, mas ficou faltando um
+bloco para alterar o tamanho do sprite em si… para sprite de texto com imagem de fundo,
+parece que não tem como"*. O bloco existia (`sz_g2d_set_size`) e funcionava com fundo de
+COR; com imagem ele era **apagado em silêncio**, e por dois motivos independentes.
+
+### ⭐⭐ A causa: o tamanho era estado DERIVADO
+
+`_layoutSpriteText` recuperava a escala por DIVISÃO (`sprite.w / measuredW`) e, quando a
+medida trocava de dono (o texto media, a imagem chegou e passou a mandar), aquele fator
+virava lixo — ele multiplicaria a imagem pela razão do TEXTO. O lote de 14/09 resolveu
+**reancorando**: jogava a escala fora. Está certo *para uma razão*; o erro é a razão
+existir. A dicotomia ("razão errada" × "jogar fora") é falsa, e a terceira saída é parar
+de derivar. ⚠️ Havia um teste CARIMBANDO o descarte (`a escala REANCORA`), o que o tornava
+permanente.
+
+Medido antes de mexer, na ordem natural dos blocos (criar o texto → pôr a placa → definir
+o tamanho): pedido 300×120, entregue **200×80**. E como num jogo sem laço tudo roda de uma
+vez e a imagem chega 1-2 quadros depois, **essa é a única ordem que a criança escreve**.
+
+**O conserto:** `sizeW`/`sizeH` (0 = automático) guardam o que ela PEDIU, e `laidOutW`/
+`laidOutH` guardam a saída do próprio layout. No topo do layout, `sprite.w !== laidOutW`
+significa "alguém de fora escreveu": vira o tamanho pedido. No fim, `_applySpriteTextSize`
+é o dono único da regra (`sizeW > 0 ? sizeW : measuredW`) e carimba a saída.
+- ⭐ **Ninguém precisa avisar o layout.** `setSize`, `scaleSprite`, os kits e o modo Código
+  continuam escrevendo `sprite.w` como sempre; quem detecta é o layout, comparando com a
+  PRÓPRIA saída — a única régua que não depende de quem escreveu. Derivar mata a classe;
+  uma marca deixada pelo `setSize` deixaria o modo Código de fora.
+- `sizeSource` e a reancoragem SUMIRAM: um campo e um invariante a menos.
+- ⚠️ **A aparência nasce EM DIA com o sprite** (`laidOutW: sprite.w`), que já vem com os
+  32×32 do `createSprite`: com `laidOutW: 0`, a primeira leitura leria esses 32 como um
+  tamanho pedido e **todo sprite de texto nasceria travado em 32**. Tem teste próprio.
+- ⚠️ A saída antecipada do cache (`layoutKey === key`) também aplica o tamanho — senão o
+  `setSize` feito depois da medida ficaria sem carimbo até a próxima remedição.
+- **Compatibilidade**: sem `setSize`, `sizeW` fica 0 e nada muda. O único teste que mudou
+  de veredito é o que carimbava o descarte.
+
+### A semântica: o tamanho pedido MANDA (decisão dela)
+
+"Largura 300" quer dizer 300 e continua 300 quando o texto cresce. Antes, no caminho da
+COR, o tamanho virava um zoom e o sprite crescia junto com o texto — o bloco "a largura do
+sprite" respondia um número que ninguém digitou, que é a mesma coisa que ela recusou no
+soquete "que às vezes redimensiona". Para o texto quebrar linha em vez de espremer, a saída
+é a "Caixa de texto … largura". Com imagem, as duas leituras dão o mesmo (a medida é
+constante), então a mudança de comportamento é só no caminho da cor.
+
+### A segunda causa: o bloco estava um degrau ACIMA
+
+`sz_g2d_set_size` e `sz_g2d_scale_sprite` não estavam no Kit essencial, e o piso de
+`sz_g2d_*` é DERIVADO dele: os dois caíam no Inventor enquanto os blocos de placa são do
+Construtor. **Quem monta a placa não tinha o bloco na paleta.** Kit essencial 58 → **60**,
+pelo precedente já escrito no `blockProfiles.test.ts` para o próprio bloco da imagem.
+
+### Descoberta, sem duplicar na paleta
+
+⚠️ A paleta também define a COR e a ORDEM do bloco (`blocks.ts`), então listar o mesmo tipo
+em duas famílias mudaria a cor dele — e o `docDrift` proíbe bloco em dois lugares. As
+alavancas foram termos de busca ("tamanho da placa", "aumentar/encolher a placa"), os
+tooltips dos dois blocos, o manual e o `ai.ts` (que ainda dizia só "a imagem MANDA no
+tamanho" — o Zappy responderia "não dá" à pergunta dela).
+
+## Full review do lote acima (15/09) — ⭐⭐⭐ o texto era ESTICADO
+
+Rodado logo depois, a pedido dela. O achado central não é regressão minha: é um defeito
+ANTERIOR que eu tinha acabado de promover a Kit essencial, a tooltip e a manual, o que o
+torna responsabilidade deste lote. E foi a pergunta dela no meio da revisão ("se eu definir
+o tamanho da imagem, o texto escala junto?") que fechou o diagnóstico.
+
+**Medido com um pincel que registra o `ctx.scale`** (o dublê da suíte ignorava o scale, e é
+por isso que nada acusava):
+
+| caso | escala aplicada | o que a criança via |
+|---|---|---|
+| cor, "oi" em 300×120 | 10,7× e 2,4× | letra esticada **4,5× mais na horizontal** |
+| imagem 200×80 pedida 300×80 | 1,5× e 1× | moldura E letra esticadas |
+| letra 32 → 64, sprite travado | — | 76,8 px → 83,5 px na tela: **+8,7%** |
+
+Ou seja: com o tamanho travado, o bloco "Texto do sprite … tamanho" ficava praticamente
+**MUDO** — a medida natural crescia junto e a escala desfazia na mesma proporção. É a classe
+"a criança mexe e nada acontece", a mesma do rótulo da opacidade corrigido em 14/09.
+
+⭐⭐ **A raiz: o desenho tinha UM espaço natural para tudo** (`measuredW/H`) e escalava o
+conjunto até o tamanho do sprite. Para a imagem isso é o certo; para o texto não —
+tipografia não se estica, se compõe dentro de uma caixa.
+
+**Decisão dela: uma regra só — a imagem se ESTICA, o texto se COMPÕE.** E o conserto
+SIMPLIFICA o desenho em vez de complicar: **o `ctx.scale` saiu inteiro**.
+- O fundo (cor e imagem) preenche `sprite.w × sprite.h`, como em qualquer sprite de imagem.
+- O texto é composto em coordenadas do sprite, no tamanho de letra escolhido; `align` e
+  `valign` passaram a valer sobre o tamanho final (o valign passou a servir ao botão de cor
+  também, de graça).
+- O tamanho pedido entra na MEDIÇÃO como a caixa: o texto **reflui** na largura pedida.
+  Precedência enunciável: **o tamanho pedido vence a largura do "Caixa de texto", que vence
+  a da imagem** — e os três são números conhecidos antes de medir, então não há laço.
+- ⚠️ `sizeW`/`sizeH` entraram na `layoutKey`: agora eles mudam a quebra de linha, e fora da
+  chave o cache congelaria o texto da medida anterior.
+- ⚠️ **Zero mudança para quem não pede tamanho**: ali medida e tamanho coincidem, a escala
+  era 1 e a aritmética é a mesma. Travado por dois testes de anti-regressão que comparam o
+  `fillText` e o `drawImage` com os valores exatos de antes.
+- ⭐ O `_drawTextBackgroundImage` **perdeu** o `telaW`: ele existia só porque o desenho
+  rodava sob escala e a medida local mentia sobre o tamanho na tela. Sem a escala, as duas
+  são a mesma coisa — a catraca de parâmetros DESCEU 1 por causa disso.
+- O aviso de transbordo passou a medir a **altura final do sprite** (`texto-nao-cabe`), então
+  cobre a placa E a caixa pedida à mão, e agora "deixe o sprite maior" É uma saída válida —
+  com a escala, mandar aumentar seria conselho falso, porque o texto crescia junto.
+
+### ⭐ O bloco 285: "Multiplicar o tamanho do texto" (ideia dela, no meio do review)
+
+Com a letra deixando de acompanhar o sprite, ela perguntou se não caberia um irmão do
+"Multiplicar o tamanho do sprite" para o texto. Cabe, e por um motivo mais forte que
+conveniência: **o "Texto do sprite … tamanho" é ABSOLUTO e nenhum bloco LÊ o tamanho atual
+da letra**, então "dobre a placa e a letra juntas" era inexpressável sem um número mágico.
+- `sz_g2d_scale_text_size` → `scaleTextSize(sprite, fator)`, com o **mesmo teto do
+  setTextStyle** (512) e piso de 1 px: o valor entra pelo mesmo campo e não pode ter duas
+  réguas. NÃO mexe na posição (quem recentraliza é o do sprite).
+- Entrou pelo **codec da extensão** (`textIR.ts`/`textCodec.ts`), não pelas fachadas — que
+  estão no teto de linhas —, e a allowlist de import é DERIVADA do catálogo, então não há
+  ponto manual a esquecer ali. O `blockAudit` varre a toolbox e cobriu o bloco de graça.
+
+### As redes novas (e a sabotagem de cada uma)
+
+- **Nenhuma escala no sprite de texto** e **a letra vai à tela no tamanho escolhido**:
+  reinserir o `ctx.scale` antigo derruba 2 (provado).
+- **Toda tooltip que manda usar outro bloco cita a face REAL dele**, e **o aviso do runtime
+  também** — o runtime é uma STRING, então o nome de bloco ali não era verificado por nada.
+  Renomear o "Definir o tamanho do sprite" derruba as duas (provado).
+- Os dois invariantes do lote anterior seguem provados por sabotagem (7 e 10 falhas).
+
+### ⚠️ Dois limites que este review deixou registrados
+
+1. **O manual do g2d está a ~90 caracteres do teto de 60 000** do `ExtensionManifest`. Quem
+   escrever a próxima frase estoura, e o erro aparece num teste de OUTRO arquivo
+   (`blockContracts.test.ts`, "nomes canônicos das áreas") com a mensagem do zod — foi
+   preciso enxugar duas vezes neste lote. Texto novo ali pede corte em outro lugar.
+2. **Pedir exatamente a medida automática é indistinguível de não pedir nada** (os dois
+   desenham igual naquele instante, e só divergem se o texto mudar depois). Distinguir
+   exigiria que cada escritor avisasse, e o modo Código ficaria de fora. Comentado no código.
+
+⚠️ **Crase crua pela 10ª vez**, escrevendo o comentário sobre o parâmetro que eu estava
+removendo. O `templateGuard` aponta em meio segundo — é o primeiro comando, sempre.
+
+### Verde
+
+studio **8317/0**, typecheck, biome. Contadores: blocos 284 → **285**, API 292 → **293**,
+catraca de parâmetros 1236 → **1239** (+2 do `_applySpriteTextSize`, +2 do `scaleTextSize`,
+−1 do `telaW`), Kit essencial 58 → **61**, manifest 1.1.0 → **1.2.0**.
+
+## SEGUNDO full review, no mesmo dia (15/09) — a doc que eu mesma tinha escrito
+
+Rodado sobre o review anterior, pela regra da casa (correção de review é código novo). O
+achado principal está na RECEITA que a doc nova ensinava, e só apareceu porque desta vez
+eu medi em vez de deduzir.
+
+1. ⭐⭐⭐ **A receita do manual falhava ao ENCOLHER.** Eu tinha escrito "multiplique o
+   tamanho do sprite e o do texto pelo mesmo número". Medido com "Vidas: 3": os dois em
+   0,5 deixam a caixa em 44 e o texto de 16 px precisa de 48 — **a margem não escala
+   junto**, o texto quebra em três linhas e o Console avisa. Ao CRESCER funciona (176×100
+   com letra 64, sem aviso). A receita certa sem imagem é outra e mais simples: **basta
+   multiplicar o texto, que a caixa acompanha sozinha** — ela é derivada da letra. Manual,
+   os dois tooltips e o `ai.ts` reescritos; a receita virou teste.
+2. ⭐⭐ **O aviso "o texto não cabe" citava as saídas erradas.** Ele mandava diminuir a letra
+   pelo bloco de ESTILO (que pede um número absoluto) e não citava o "Multiplicar o tamanho
+   do texto", que é exatamente o que resolve o caso que o próprio aviso descreve. O drift
+   das faces passou a cobrar as DUAS citadas (provado por sabotagem).
+3. ⭐⭐ **O tooltip do "Multiplicar o tamanho do sprite" não dizia nada sobre texto**, enquanto
+   o do "Definir o tamanho" dizia. E o comportamento dele MUDOU neste lote: num sprite de
+   texto ele agora mexe na CAIXA e o texto reflui dentro dela. Travado por teste.
+4. ⭐⭐ **O teste central do lote passava por VÁCUO em potencial.** `expect(scale).toEqual([])`
+   continuaria verde para sempre se alguém quebrasse o espião de `scale` no pincel. Ganhou a
+   metade positiva: o sprite VIRADO (`facing === -1`) é o caminho real do motor que usa
+   `ctx.scale(-1, 1)`, e ele prova que o espião registra.
+5. ⭐ **Centralizar a frase num botão de COR já era possível** e ninguém adivinharia pelo nome
+   do bloco: o "Fundo do sprite … com a imagem" com o seletor VAZIO grava só a altura do
+   texto (medido: y = 60 de 120, o centro exato). Passou a importar quando a caixa deixou de
+   ser justa. Virou uma frase no tooltip e um teste com anti-vácuo.
+6. A **rede de travessão** mordeu uma frase minha de tooltip, e a **catraca de parâmetros**
+   foi MEDIDA (1239 exatos, não estava frouxa).
+
+⚠️⚠️ **Lição de processo, e é a mais importante:** `bun test` verde **não prova typecheck**.
+Os quatro erros de tipo dos testes novos (`Api` sem o helper novo, `textAppearance` sem
+`size`) só apareceram no `tsc`. Pior: `bun run typecheck | tail -4` **mascara o exit code**
+(quem responde é o `tail`), e foi assim que um "TYPECHECK OK" saiu com o typecheck vermelho.
+Redirecione para arquivo e leia o `$?`.
+
+### ⚠️ Terceiro limite apertado (com os outros dois já registrados acima)
+
+O **payload do runtime está a 0,6% do teto de gzip** (146 073 de 147 000; cru 496 534 de
+501 000). O próximo lote que acrescentar runtime encosta na catraca — que tem teto E PISO de
+propósito, então a saída é medir e reancorar os dois, nunca só subir o teto.
+
+### Verde (final)
+
+studio **8323/0**, typecheck **exit 0**, biome **exit 0** (os três conferidos pelo código de
+saída, não pela última linha). **Pende QA dela no editor** — o `bun test` roda com `ctx`
+dublê, que prova geometria e não prova pixel.
 
 ## Jogo 2D Avançado — ver o invisível (v0.54.0, 01/08)
 
@@ -3585,15 +4386,63 @@ isso, `setHitboxScale` é a válvula.
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)
 - `bun run gen:server-examples` — regera o `__gen_serverExamplesIndex.ts` (ver seção acima)
 - `bun run typecheck` / `bun run test` / `bun run check`
-- `bun run e2e` — suíte Playwright completa em Chromium e cenários de segurança/CSP em Firefox
-- `bun run e2e:smoke` / `e2e:gallery` / `e2e:security` / `e2e:a11y` — recortes locais rápidos
+- `bun run e2e` — suíte Playwright completa em Chromium, cenários de segurança/CSP em Firefox e a
+  gravação de saída em WebKit
+- `bun run e2e:smoke` / `e2e:gallery` / `e2e:security` / `e2e:a11y` / `e2e:flush` — recortes locais
+  rápidos (o `e2e:flush` roda o `reload-flush.spec.ts` no Chromium e no WebKit)
 - `bun run gen:game-3d-examples` / `check:game-3d-examples` — regenera ou valida a IR 3D
-- O CI roda Chromium em 3 shards e o projeto Firefox completo definido em `playwright.config.ts`.
+- O CI roda Chromium em 3 shards e os projetos Firefox e WebKit definidos em `playwright.config.ts`.
+- ⚠️ Se o servidor do e2e estourar os 120 s do `webServer`: suba-o à mão
+  (`E2E_PORT=5297 bun scripts/serve-e2e.ts`) e rode com `PW_REUSE_SERVER=1`. Em 11/09/2026 o
+  `webServer` esperou os 120 s sem resposta duas vezes seguidas, e à mão o build levou 6 s (causa
+  não achada). O servidor serve o BUILD: mudou o código, suba de novo.
 
 ## Home "Meus Jogos" no padrão Pinta (08/2026)
 
+⭐⭐⭐ **11/09/2026 — o desenho das telas-modelo (a imagem "Meus Jogos" dela, medida a 1440px).**
+A lista virou TRÊS FAIXAS de borda a borda que rolam juntas (o cabeçalho deixou de ficar preso em
+cima): **creme** (`<header>`: [menu][seta "Voltar para Criar"] + h1 `sz-tool-title` + subtítulo;
+à direita a pílula do selo, o tema só no playground, "Importar" e "+ Novo projeto"; linha 2 com os
+chips de ícone de linha `IconBlocks`/`IconCode`, "Ver os jogos prontos" com `IconGamepad`, a busca
+e o ordenar com a seta desenhada) → **céu** (`<section aria-labelledby>`: o painel dos jogos
+prontos como cartão, a grade `.sz-tool-grid` com o cartão **"Novo projeto"** PRIMEIRO e o rodapé
+"Mostrando N de M") → **lilás** (só com projetos: `.sz-tool-cta-card` com o ladrilho amarelo da
+câmera, "N projetos guardados na sua conta" / "neste aparelho" e a pílula creme "Importar um
+jogo"). Tudo são receitas de `@sistemazero/ui/tool-chrome.css`; as `sz-home-*` do `studio.css`
+SAÍRAM (o `tokens.test.ts` trava que nenhuma regra volte). Detalhes que custaram medida:
+- O **cartão "Novo projeto"** é um `<button>` com nome próprio ("Novo projeto Comece do zero no
+  Estúdio."), então o "+ Novo projeto" do cabeçalho segue ÚNICO para os e2e (que usam o nome
+  exato); some quando a lista está filtrada; `min-h-40` (numa fileira a grade o estica até os
+  288px dos projetos, sozinho no celular ele não fica com 288px vazios).
+- **Um import só**: `ImportButton` ganhou `ref` com `open()` (`ImportButtonHandle`); o cartão
+  lilás chama o MESMO input e o MESMO modal de aviso. Teste: um `input[type=file]` na página.
+- **A pílula do cabeçalho** mostra o `status` do host (o que acontece agora) e, com ele nulo, a
+  conta em repouso (`account`: "Guardado na sua conta", tom ok). A frase do cartão lilás diz
+  "na sua conta" só com `account`; sem ela, "neste aparelho" (nunca promete nuvem que não há).
+  Com o selo em `warn` ou `danger` ("Sem internet agora", "Não consegui guardar") também
+  "neste aparelho": a cópia local sempre existe, e o cartão logo abaixo do selo não pode dizer o
+  contrário dele (full review de 11/09/2026).
+- **Seta de voltar** (`components/layout/HostBackLink.tsx`): o quadrado `.sz-tool-back` com
+  `IconArrowLeft` ao lado do menu, `<a href>` com o nome no `aria-label`; clique simples chama
+  `back.onNavigate()` (sem recarregar), com Ctrl/Cmd/Shift/Alt ou botão do meio o navegador cuida.
+- **Cartão do projeto**: `.sz-tool-card` (branco, 20px, sem borda aparente), título
+  `.sz-tool-card-title` (Baloo 800 de 15px, a receita comum das galerias), "⋯" com `-mt-2.5 -mr-2.5`
+  para os pontinhos ficarem na 1ª linha do nome, capa `.sz-tool-cover` (o aviso ganhou o
+  `IconImage` de linha no lugar do 📷), "Abrir" em `.sz-tool-pill--primary` de largura inteira com
+  `IconFolderOpen` (o nome segue "Abrir"). Chaves i18n novas: `projects.newCard.hint`,
+  `projects.saved.{account,accountOne,device,deviceOne,hint}`, `projects.importCta`; saiu
+  `kits.scratch` (o cartão "Novo projeto" é o "começar do zero"). Nada de `<main>` próprio: a
+  lista mora dentro do `<main>` do host.
+- Medido no playground a 1172px (= 1440 com o menu de 268): faixa creme de 218px (a imagem tem
+  215), cartões de 246×288 (244×284), busca de 280px (277), "Abrir" de 212×40 (212×41).
+- Testes: `ProjectList.test.tsx` (cartão novo, lista vazia sem faixa lilás, um import só) e
+  `ProjectList.hostChrome.test.tsx` (seta + clique com Ctrl, seta sem menu, conta em repouso ×
+  aparelho, o selo vence a conta).
+
 ⭐⭐ **07/09/2026 — cabeçalho de DUAS linhas (imagem-modelo dela; "o cabeçalho ocupa espaço
-demais").** Linha 1 (`<header class="sz-tool-header px-6 pt-4 pb-7">`): menu do host + h1 "Meus
+demais").** (⚠️ HISTÓRICO: as receitas `.sz-tool-btn`, `.sz-tool-btn-3d` e `.sz-tool-panel` citadas
+aqui saíram da folha compartilhada em 11/09/2026; a galeria de hoje é a das telas-modelo, na seção
+acima.) Linha 1 (`<header class="sz-tool-header px-6 pt-4 pb-7">`): menu do host + h1 "Meus
 Jogos" + subtítulo à esquerda; à direita o selo do host (`.sz-tool-status`), o `ThemeToggle`
 (`sz-tool-btn sz-tool-btn--icon`, nome "Mudar tema" intacto), "Importar" (`ImportButton` =
 `<button class="sz-tool-btn">` com `IconUpload`) e "+ Novo projeto" (`.sz-tool-btn-3d`). Linha 2
@@ -3665,6 +4514,57 @@ Pinta: h1 display `t('projects.heroTitle')` ("Meus Jogos") + subtítulo `t('proj
   Emojis decorativos por nome de exemplo (`KIT_EMOJI`, fallback 🎮); i18n `kits.*`.
 - **ActivityPanel**: micro-celebração ao passar TODAS as checagens — banner `<output>` verde com
   pop finito (`.sz-activity-pop` no studio.css; `prefers-reduced-motion` desliga a animação).
+
+## Contrato nativo Molda e recursos de skin (09/2026, lote 117)
+
+- **Pintura animada do Molda (lote 226)**: o contrato versionado chega em
+  `material.userData.molda.flipbook` (grade, sequência, fps, loop) e o
+  `KHR_texture_transform` do GLB já deixou a textura na primeira célula.
+  `collectModelFlipbooks` roda UMA vez no parse e guarda o **material**, não o mapa (uma
+  textura que chega depois continua sendo animada); `stepModelFlipbooks` entra em
+  `stepSystems`, ao lado das faíscas, então **a pausa congela a pintura** de graça.
+  ⭐ UMA linha do tempo por MATERIAL, compartilhada por todas as cópias do molde: a folha
+  é a mesma textura para todo mundo, e um relógio por entidade custaria uma cópia da folha
+  na GPU por boneco (1024² = 4 MiB cada). A sincronia é contrato, não acaso, e uma pintura
+  sem repetição toca uma vez por MODELO, não por boneco. Nada entra na posse do lote 118:
+  a textura é do cache e morre em `disposeCachedModels`. ⚠️ `placeFlipbook` devolve se
+  colocou, e o passo só é registrado quando colocou — marcar antes travava a pintura para
+  sempre quando a textura ainda não existia no primeiro quadro. Contrato diferente de 1,
+  grade vazia, fps não positivo ou célula fora da folha ficam PARADOS, sem adivinhação.
+
+- Lote Molda 187: data URLs das duas fixtures atualizados para a reflexão V da
+  exportação corrigida. Prova byte a byte e hashes históricos no produtor confirmam
+  que somente UV mudou nessas fixtures; poses, clipes e skin continuam idênticos.
+  Consumidor usa os mesmos testes/runtime, sem importar implementação Molda.
+- O motor avançado consome `fixtures/molda-skinned.json` e `molda-articulated.json`
+  como dados portáteis. Não importar código Molda no runtime Studio. As fixtures
+  são reproduzidas e validadas no pacote produtor; os testes Studio usam loader,
+  matemática, SkeletonUtils e mixers reais, com GPU simulada. Isso não homologa
+  aparência/WebGL/CSP, nem ativa ponte pública ou suporte do motor básico.
+- `cloneModel` usa clone comum apenas sem SkinnedMesh. Skin requer SkeletonUtils;
+  erro preserva a peça de reserva e avisa, sem compartilhar ossos. A instalação
+  é preparada antes de retirar a reserva; callback de molde substituído ou runtime
+  encerrado não pode instalar uma árvore órfã. `modelClips` pertence ao modelo
+  instalado no template, não à mera presença de um arquivo no cache.
+- Cada template/entidade possui seus Skeletons; geometria/material são do cache.
+  Reciclar conserva recursos reutilizáveis. Reiniciar ou encerrar chama
+  `disposeModelPools` para incluir também raízes recolhidas fora da cena: parar e
+  uncacheRoot do mixer, liberar boneTexture pelo Skeleton e limpar os recursos.
+  `disposeMoldTemplate` e `disposeImportedModel` liberam seus próprios Skeletons.
+  Reinício não descarta geometria/material do cache; teardown deduplica recursos
+  compartilhados. Não confiar somente em scene.traverse para liberar os pools.
+- Lote 118: cada recurso de pool guarda a receita dona e a revisão clonada. Somente
+  ambas iguais à receita atual permitem reaproveitamento. Instalar um GLB ou alterar
+  a receita invalida os recursos recolhidos antigos; instâncias ainda vivas conservam
+  seus ossos/clipes até serem recolhidas. `returnModelResource` cobre recolhimento,
+  compactação de varreduras e releaseAll; não adicionar atalhos de push em free[].
+- Materiais próprios de primitivas/reservas são registrados na criação em
+  `ownedMaterials`, inclusive reservas substituídas durante carregamento. A receita
+  aposentada só os libera quando `resourceCount` chega a zero; não percorrer o
+  template atual para inferir ownership nem usar nomes de molde para essa decisão.
+  GLB conserva seu próprio cache compartilhado. Teardown usa a mesma deduplicação
+  de geometrias para cena e UNIT_GEOS. A suíte cobre 20 trocas e descarte de 126
+  texturas de ossos, mas esses contadores não medem memória/GPU em hardware.
 
 ## Backlog
 

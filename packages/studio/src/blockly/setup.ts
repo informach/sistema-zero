@@ -34,7 +34,7 @@ import { registerFieldSvgPaint } from './fields/FieldSvgPaint'
 import { registerFieldTileGrid } from './fields/FieldTileGrid'
 import { organizeBlocks } from './organize'
 import { registerProjectAreaSafeDeleteExtension } from './projectAreaSafeDelete'
-import { FRAME_BEHAVIOR_LEGACY, PROJECT_AREA_FRAME_TYPES } from './projectAreas'
+import { PROJECT_AREA_FRAME_TYPES } from './projectAreas'
 import { exportWorkspaceImage } from './screenshot'
 import { registerPtSearchCategory } from './searchCategory'
 import { szTheme } from './theme'
@@ -214,7 +214,7 @@ function registerScreenshotContextMenu(): void {
 }
 
 /** As áreas do projeto, inclusive a moldura legada, não são copiáveis. */
-const FRAME_TYPES = new Set<string>([...PROJECT_AREA_FRAME_TYPES, FRAME_BEHAVIOR_LEGACY])
+const FRAME_TYPES = new Set<string>(PROJECT_AREA_FRAME_TYPES)
 
 /**
  * "Copiar blocos" no menu de contexto de um BLOCO: guarda o bloco + tudo dentro

@@ -98,7 +98,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.drawGroup(ctx, tiros);
     SZGame2D.overlapGroups(tiros, inimigos, (tiro, invasor) => {
       SZGame2D.explodeSprite(invasor, "#ffb347");
-      SZGame2D.playExplosion();
+      SZGame2D.playFx("explosion");
       SZGame2D.removeFromGroup(tiros, tiro);
       SZGame2D.removeFromGroup(inimigos, invasor);
       moedas = moedas + 25;
@@ -130,11 +130,14 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "O reino está a salvo!", "Você segurou todas as 6 ondas de invasores. Muralha firme!", "Aperte Enter para jogar de novo", "#1d4d33");
   }
 });
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("nasce-invasor", 1.2)) {
   if (SZGame2D.sceneIs("jogando")) {
     SZGame2D.spawn(inimigos, { x: -40, y: 168, w: 30, h: 30, color: "#c0504d", vx: onda + 1, vy: 0 });
   }
 }
+});
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("torres-atiram", 0.5)) {
   if (SZGame2D.sceneIs("jogando")) {
     SZGame2D.forEachInGroup(torres, (torre) => {
@@ -142,12 +145,15 @@ if (SZGame2D.everySeconds("torres-atiram", 0.5)) {
     });
   }
 }
+});
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("proxima-onda", 8)) {
   if (SZGame2D.sceneIs("jogando")) {
     onda = onda + 1;
     porOnda = porOnda + 2;
   }
 }
+});
 `.trim()
 
 // Só gera quando RODADO direto (o drift test importa o SOURCE daqui).

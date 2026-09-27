@@ -1,15 +1,27 @@
 import type { Logger } from '@sistemazero/core/logging'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
-import type { EntitlementSnapshot } from '../../domain/entitlement/entitlement-snapshot'
-import type { CatalogGateway, ResolvedOfferItem } from '../../domain/ports/catalog-gateway.port'
+import { InvalidPurchasedAccessPolicyError } from '../../domain/entitlement/entitlement.errors'
+import type {
+  EntitlementSnapshot,
+  PurchasedAccessPolicy,
+} from '../../domain/entitlement/entitlement-snapshot'
+import {
+  createMuralVisitorSnapshot,
+  MURAL_FULL_REF,
+  MURAL_VISITOR_PRODUCT_ID,
+  MURAL_VISITOR_REF,
+} from '../../domain/entitlement/mural-visitor'
+import type {
+  CatalogGateway,
+  ResolvedOffer,
+  ResolvedOfferItem,
+} from '../../domain/ports/catalog-gateway.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 
 /**
- * Intenção de concessão (normalizada). `subscription` presente → acesso por
- * ASSINATURA (cria/estende, com validade); `accessPeriodMonths` presente →
- * compra única POR PERÍODO (anual à vista via Pix/boleto: validade fixa +
- * carência, SEM assinatura — renovar = nova compra = nova matrícula); nenhum
- * dos dois → compra única VITALÍCIA.
+ * Intenção de concessão. A política comprada vence os campos legados; sem ela,
+ * `subscription` → ciclo, `accessPeriodMonths` → prazo fixo em meses, e a
+ * ausência de ambos preserva a compra vitalícia histórica.
  */
 export interface GrantEntitlementCommand {
   userId: string
@@ -21,6 +33,8 @@ export interface GrantEntitlementCommand {
   subscription?: { subscriptionId: string; intervalMonths: number | null } | null
   /** Meses de acesso de uma compra única POR PERÍODO (ignorado com `subscription`). */
   accessPeriodMonths?: number | null
+  /** Contrato imutável aceito na compra; ausente somente em eventos legados. */
+  accessPolicy?: PurchasedAccessPolicy | null
 }
 
 export interface GrantEntitlementDeps {
@@ -49,6 +63,9 @@ export class GrantEntitlementService {
   constructor(private readonly deps: GrantEntitlementDeps) {}
 
   async execute(cmd: GrantEntitlementCommand): Promise<GrantResult> {
+    // Valida a coerência ANTES de catálogo ou persistência. Uma política presente
+    // nunca é reinterpretada por campos legados divergentes.
+    const accessPolicy = resolvePurchasedAccessPolicy(cmd)
     const offer = await this.deps.catalog.resolveOfferEntitlements(cmd.offerRef)
     if (!offer) {
       this.deps.logger?.warn('grant.offer_not_found', {
@@ -71,12 +88,26 @@ export class GrantEntitlementService {
         courseRef: item.fulfillment?.courseRef ?? null,
         fulfillment: item.fulfillment,
         resolvedAt: cmd.grantedAt.toISOString(),
+        accessPolicy,
       }
-      const applied = cmd.subscription
-        ? await this.grantSubscription(cmd, item, snapshot, cmd.subscription)
-        : await this.grantOneTime(cmd, item, snapshot)
+      let applied: boolean
+      if (accessPolicy.mode === 'billing_cycle') {
+        const subscription = cmd.subscription
+        // Defesa em profundidade: `resolvePurchasedAccessPolicy` já fecha este caso.
+        if (!subscription) throw new InvalidPurchasedAccessPolicyError()
+        applied = await this.grantSubscription(cmd, item, snapshot, subscription)
+      } else {
+        applied = await this.grantOneTime(cmd, item, snapshot, accessPolicy)
+      }
       if (applied) granted += 1
     }
+
+    const visitorIdempotencyKey = permanentMuralVisitorIdempotencyKey(offer, cmd, accessPolicy)
+    if (
+      visitorIdempotencyKey &&
+      (await this.grantPermanentMuralVisitor(cmd, offer, visitorIdempotencyKey))
+    )
+      granted += 1
 
     this.deps.logger?.info('grant.done', {
       userId: cmd.userId,
@@ -88,19 +119,20 @@ export class GrantEntitlementService {
   }
 
   /**
-   * Compra única → matrícula VITALÍCIA (`expiresAt = null`) ou POR PERÍODO
-   * (`accessPeriodMonths` → validade = grant + N meses + carência; ex.: anual à
-   * vista via Pix/boleto — renovar é uma NOVA compra, com paymentId novo → linha
+   * Compra única → matrícula VITALÍCIA (`expiresAt = null`) ou POR PERÍODO sem
+   * carência de assinatura. Renovar é uma NOVA compra (paymentId novo → linha
    * nova, sem tocar esta). Idempotente por pagamento+produto.
    */
   private async grantOneTime(
     cmd: GrantEntitlementCommand,
     item: ResolvedOfferItem,
     snapshot: EntitlementSnapshot,
+    accessPolicy: Exclude<PurchasedAccessPolicy, { mode: 'billing_cycle' }>,
   ): Promise<boolean> {
-    const months = cmd.accessPeriodMonths ?? null
     const expiresAt =
-      months && months > 0 ? computeExpiry(cmd.grantedAt, months, this.deps.graceDays) : null
+      accessPolicy.mode === 'fixed'
+        ? computeFixedExpiry(cmd.grantedAt, accessPolicy.durationValue, accessPolicy.durationUnit)
+        : null
 
     const entitlement = EntitlementAggregate.grant({
       id: this.deps.newId(),
@@ -121,17 +153,43 @@ export class GrantEntitlementService {
     return this.deps.entitlements.save(entitlement)
   }
 
+  /** Bônus pago permanente, sem vínculo revogável com o ciclo da assinatura. */
+  private async grantPermanentMuralVisitor(
+    cmd: GrantEntitlementCommand,
+    offer: ResolvedOffer,
+    idempotencyKey: string,
+  ): Promise<boolean> {
+    const snapshot = createMuralVisitorSnapshot(offer.offerId, offer.offerSlug, cmd.grantedAt)
+    const entitlement = EntitlementAggregate.grant({
+      id: this.deps.newId(),
+      userId: cmd.userId,
+      productId: MURAL_VISITOR_PRODUCT_ID,
+      productKind: 'community',
+      accessType: 'community',
+      courseRef: MURAL_VISITOR_REF,
+      offerId: offer.offerId,
+      snapshot,
+      sourceKind: 'payment',
+      sourceId: cmd.paymentId,
+      subscriptionId: null,
+      grantedAt: cmd.grantedAt,
+      expiresAt: null,
+      idempotencyKey,
+    })
+    return this.deps.entitlements.save(entitlement)
+  }
+
   /** Assinatura → cria/estende com validade = grant + intervalo + carência. */
   private async grantSubscription(
     cmd: GrantEntitlementCommand,
     item: ResolvedOfferItem,
     snapshot: EntitlementSnapshot,
-    sub: { subscriptionId: string; intervalMonths: number | null },
+    sub: Subscription,
   ): Promise<boolean> {
     const idempotencyKey = `subscription:${sub.subscriptionId}:${item.productId}`
     const expiresAt =
       sub.intervalMonths && sub.intervalMonths > 0
-        ? computeExpiry(cmd.grantedAt, sub.intervalMonths, this.deps.graceDays)
+        ? computeSubscriptionExpiry(cmd.grantedAt, sub.intervalMonths, this.deps.graceDays)
         : null
 
     const existing = await this.deps.entitlements.findByIdempotencyKey(idempotencyKey)
@@ -190,15 +248,118 @@ export class GrantEntitlementService {
   }
 }
 
+const DESAFIO_30_DIAS_OFFER_SLUG = 'desafio-primeiro-jogo-30-dias'
+
+function permanentMuralVisitorIdempotencyKey(
+  offer: ResolvedOffer,
+  cmd: GrantEntitlementCommand,
+  resolvedPolicy: PurchasedAccessPolicy,
+): string | null {
+  const hasFullMural = offer.items.some(
+    (item) =>
+      item.kind === 'community' &&
+      item.fulfillment?.accessType === 'community' &&
+      item.fulfillment.courseRef === MURAL_FULL_REF,
+  )
+  if (!hasFullMural) return null
+
+  if (resolvedPolicy.mode === 'billing_cycle' && cmd.subscription) {
+    return `subscription-visitor:${cmd.subscription.subscriptionId}:${MURAL_VISITOR_PRODUCT_ID}`
+  }
+  if (
+    offer.offerSlug === DESAFIO_30_DIAS_OFFER_SLUG &&
+    cmd.accessPolicy != null &&
+    resolvedPolicy.mode === 'fixed' &&
+    resolvedPolicy.durationValue === 30 &&
+    resolvedPolicy.durationUnit === 'days'
+  ) {
+    return `payment:${cmd.paymentId}:${MURAL_VISITOR_PRODUCT_ID}`
+  }
+  return null
+}
+
 /** Tentativas de extensão sob conflito otimista antes de desistir (→ re-entrega). */
 const EXTEND_MAX_ATTEMPTS = 3
 
+type Subscription = { subscriptionId: string; intervalMonths: number | null }
+
+/** Resolve e valida a precedência do contrato comercial antes de qualquer efeito. */
+export function resolvePurchasedAccessPolicy(
+  cmd: Pick<GrantEntitlementCommand, 'accessPolicy' | 'subscription' | 'accessPeriodMonths'>,
+): PurchasedAccessPolicy {
+  if (cmd.accessPolicy) {
+    const policy = cmd.accessPolicy
+    if (policy.mode === 'billing_cycle') {
+      if (!cmd.subscription?.intervalMonths || cmd.subscription.intervalMonths <= 0) {
+        throw new InvalidPurchasedAccessPolicyError(
+          'Política billing_cycle exige uma assinatura com intervalo válido',
+        )
+      }
+      return policy
+    }
+    if (cmd.subscription) {
+      throw new InvalidPurchasedAccessPolicyError(
+        'Compra vitalícia ou por prazo fixo não pode carregar uma assinatura',
+      )
+    }
+    if (
+      policy.mode === 'fixed' &&
+      (!Number.isInteger(policy.durationValue) || policy.durationValue <= 0)
+    ) {
+      throw new InvalidPurchasedAccessPolicyError('Prazo fixo exige uma duração positiva')
+    }
+    return policy
+  }
+
+  if (cmd.subscription) {
+    // Compatibilidade: eventos de assinatura antigos podiam chegar sem intervalo
+    // e já eram persistidos sem validade calculada. Só o contrato novo explícito
+    // fecha essa inconsistência; não quebramos uma reentrega histórica.
+    return { mode: 'billing_cycle', durationValue: null, durationUnit: null }
+  }
+  if (cmd.accessPeriodMonths) {
+    return {
+      mode: 'fixed',
+      durationValue: cmd.accessPeriodMonths,
+      durationUnit: 'months',
+    }
+  }
+  return { mode: 'lifetime', durationValue: null, durationUnit: null }
+}
+
 /**
- * Fim do ciclo da assinatura + carência. Em UTC (determinístico, independente do
- * timezone do servidor). Dia exato não é crítico (a carência absorve o rollover de
- * fim de mês — ex.: 31/jan + 1 mês cai em mar via overflow do `setUTCMonth`).
+ * Fim de uma compra única por prazo fixo. Dias são blocos exatos de 24h em UTC;
+ * meses seguem o calendário e limitam o dia ao último dia do mês de destino.
  */
-export function computeExpiry(grantedAt: Date, intervalMonths: number, graceDays: number): Date {
+export function computeFixedExpiry(
+  grantedAt: Date,
+  durationValue: number,
+  durationUnit: 'days' | 'months',
+): Date {
+  let expiresAt: Date
+  if (durationUnit === 'days') {
+    expiresAt = new Date(grantedAt.getTime() + durationValue * 86_400_000)
+  } else {
+    expiresAt = addUtcCalendarMonths(grantedAt, durationValue)
+  }
+  if (Number.isNaN(expiresAt.getTime())) {
+    throw new InvalidPurchasedAccessPolicyError('Prazo fixo excede o calendário suportado')
+  }
+  return expiresAt
+}
+
+/** Fim do ciclo recorrente: mês-calendário em UTC + carência configurada. */
+export function computeSubscriptionExpiry(
+  grantedAt: Date,
+  intervalMonths: number,
+  graceDays: number,
+): Date {
+  const d = addUtcCalendarMonths(grantedAt, intervalMonths)
+  d.setUTCDate(d.getUTCDate() + graceDays)
+  return d
+}
+
+function addUtcCalendarMonths(grantedAt: Date, intervalMonths: number): Date {
   const totalMonths = grantedAt.getUTCFullYear() * 12 + grantedAt.getUTCMonth() + intervalMonths
   const targetMonth = totalMonths % 12
   const targetYear = (totalMonths - targetMonth) / 12
@@ -206,7 +367,7 @@ export function computeExpiry(grantedAt: Date, intervalMonths: number, graceDays
   const targetMonthDays = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate()
   const targetDay = Math.min(grantedAt.getUTCDate(), targetMonthDays)
 
-  const d = new Date(
+  return new Date(
     Date.UTC(
       targetYear,
       targetMonth,
@@ -217,6 +378,4 @@ export function computeExpiry(grantedAt: Date, intervalMonths: number, graceDays
       grantedAt.getUTCMilliseconds(),
     ),
   )
-  d.setUTCDate(d.getUTCDate() + graceDays)
-  return d
 }

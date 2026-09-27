@@ -77,7 +77,7 @@ export function toolCardKindFor(entitlement: {
   return ref ? (SKU_TO_CARD[ref] ?? null) : null
 }
 
-/** Ordem estável dos cartões na ficha (jornada: planejar → desenhar → modelar → construir → comunidade). */
+/** Ordem estável dos cartões na ficha (percurso: planejar → desenhar → modelar → construir → comunidade). */
 export const TOOL_CARD_ORDER: ToolCardKind[] = [
   'pensa',
   'pinta',
@@ -90,7 +90,7 @@ export const TOOL_CARD_ORDER: ToolCardKind[] = [
 /**
  * Cartões a mostrar na ficha = as matrículas de ferramenta/comunidade da FAMÍLIA
  * (qualquer status — o histórico de uso interessa mesmo com a matrícula vencida),
- * dedupadas por cartão e na ordem da jornada. O nome vem do snapshot da matrícula.
+ * dedupadas por cartão e na ordem do percurso. O nome vem do snapshot da matrícula.
  */
 export function ownedToolCards(
   entitlements: {

@@ -1,0 +1,91 @@
+/* ============================================================
+   "COMO FAZER" (26/09/2026): a pele do `HelpTutorialView` (passos numerados, vídeo,
+   "Veja também"). Mora no member-shell porque DOIS hosts o desenham: a página da criança
+   no kids e a prévia do admin; quando só o kids tinha estas regras, a prévia "como a
+   criança vai ler" saía sem numeração nem espaçamento. Importado pelo `globals.css` dos
+   dois (ao lado do `scene.css`). Em `@layer components`: são classes de componente que o
+   call site pode ajustar com utilitárias (regra do kids).
+   ============================================================ */
+@layer components {
+  .sz-help-tutorial-summary {
+    font-size: 1.0625rem;
+    line-height: 1.55;
+    color: var(--muted-foreground);
+    margin-bottom: 1.25rem;
+  }
+  .sz-help-video {
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    border-radius: 1rem;
+  }
+  .sz-help-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .sz-help-step {
+    display: flex;
+    gap: 0.875rem;
+    align-items: flex-start;
+  }
+  .sz-help-step-number {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.0625rem;
+    box-shadow: 0 3px 0 color-mix(in oklab, var(--primary) 55%, black);
+  }
+  .sz-help-step-body {
+    min-width: 0;
+    flex: 1;
+  }
+  .sz-help-step-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.125rem;
+    line-height: 1.3;
+    color: var(--foreground);
+    margin: 0.25rem 0 0.5rem;
+  }
+  .sz-help-step-figure {
+    margin: 0.75rem 0 0;
+    overflow: hidden;
+    border-radius: 1rem;
+    border: 2px solid var(--linha-carta, var(--border));
+    background: var(--band-creme);
+  }
+  .sz-help-step-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .sz-help-related {
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 2px solid var(--linha-carta, var(--border));
+  }
+  .sz-help-related-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.125rem;
+    margin: 0 0 0.75rem;
+  }
+  .sz-help-related-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+}

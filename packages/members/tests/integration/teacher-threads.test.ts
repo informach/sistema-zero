@@ -311,6 +311,27 @@ describe('conversas com o professor (canal de retorno)', () => {
     expect((await readJson(await studentUnread(app))).count).toBe(1)
   })
 
+  test('read-all preserves a selected student and leaves other students unread', async () => {
+    const { app, clockRef } = buildApp()
+    for (const userId of [STUDENT, STUDENT2]) {
+      const created = await readJson(
+        await adminPost(app, studioBody({ userId, contextType: 'general' })),
+      )
+      clockRef.now = new Date(clockRef.now.getTime() + 1000)
+      await studentReply(app, created.id, 'Tenho uma dúvida', userId)
+    }
+    const response = await app.handle(
+      new Request('http://localhost/members/admin/teacher-threads/read-all', {
+        method: 'POST',
+        headers: adminHeaders,
+        body: JSON.stringify({ audience: 'kids', userIds: [STUDENT] }),
+      }),
+    )
+    expect(await readJson(response)).toEqual({ updated: 1 })
+    const inbox = await readJson(await adminInbox(app, `?userIds=${STUDENT2}`))
+    expect(inbox.threads[0].unread).toBe(true)
+  })
+
   test('Entrega deduplica por bloco; recado geral cria conversa nova a cada vez', async () => {
     const { app } = buildApp()
 

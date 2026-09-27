@@ -1,0 +1,214 @@
+/**
+ * As duas costuras que o redesenho da interface precisa, e o motivo de cada uma.
+ *
+ * ⚠️⚠️ **Teste de unidade aqui é oráculo de MONTAGEM, não de layout.** O happy-dom declara
+ * `DETAILS: 'display: block;'` sem ramo `open` (diferente de `DIALOG`, que tem
+ * `{default:'display:none', open:'display:block'}`), então um `<details>` FECHADO continua
+ * inteiramente visível para `getByRole`. Duas consequências, e as duas moldam este arquivo:
+ *
+ * 1. Recolher um controle não quebra nenhuma das ~1085 consultas por papel. Um lote de puro
+ *    re-layout deve dar diferença ZERO nos testes.
+ * 2. E o perigo do avesso: esconder com `className="hidden"` mantém tudo verde enquanto a
+ *    criança perde o controle. Só o Playwright prova hierarquização; aqui se prova que nada
+ *    foi DESMONTADO.
+ */
+
+/**
+ * Abre uma revelação pelo texto do `<summary>`.
+ *
+ * Os testes da oficina sobem o DOM com `.closest('details')` em 44 lugares. Isso não é
+ * asserção sobre o widget: é o motorista que monta os painéis que só nascem no `onToggle`.
+ * Concentrando aqui, trocar o mecanismo de revelação um dia vira UM arquivo alterado, não 44.
+ */
+export function openDisclosure(container: HTMLElement, name: string | RegExp): HTMLDetailsElement {
+  const match = (text: string): boolean =>
+    typeof name === 'string' ? text.trim() === name.trim() : name.test(text)
+  for (const summary of container.querySelectorAll('summary')) {
+    if (!match(summary.textContent ?? '')) continue
+    const details = summary.closest('details')
+    if (!details) continue
+    if (!details.open) {
+      details.open = true
+      // ⚠️ MEDIDO: o happy-dom já dispara `toggle` sozinho ao mudar `open`, então este envio
+      // é o SEGUNDO. É de propósito: é exatamente o que os 44 lugares que abrem revelação
+      // fazem hoje (`open = true` + `fireEvent(details, new Event('toggle'))`) e o que os
+      // painéis preguiçosos toleram há 238 lotes. Montar é idempotente; confiar só no evento
+      // nativo mudaria o comportamento provado de todos eles de uma vez.
+      details.dispatchEvent(new Event('toggle'))
+    }
+    return details
+  }
+  throw new Error(`Nenhuma revelação com o resumo ${String(name)}`)
+}
+
+/**
+ * Abre TUDO o que dá para abrir, de fora para dentro (uma revelação aninhada só existe
+ * depois de a mãe abrir). São DOIS mecanismos, e o inventário precisa dos dois:
+ *
+ * - `<details>`, que é como a oficina revela hoje; e
+ * - painel recolhido do `Panel`, que é `aria-expanded="false"` num botão. O corpo dele fica
+ *   montado com o atributo `hidden`, então some do alcance até alguém abrir.
+ *
+ * Sem o segundo, a fase "com tudo aberto" do inventário passaria a mentir assim que o
+ * redesenho começasse a recolher painéis: ela acusaria como perdido o que só está recolhido.
+ */
+export function openEveryDisclosure(container: HTMLElement): number {
+  let opened = 0
+  for (let pass = 0; pass < 8; pass += 1) {
+    const details = [...container.querySelectorAll('details')].filter((item) => !item.open)
+    // Um painel recolhido tem DOIS gatilhos (a faixa do título e o chevron); abrir pelo
+    // primeiro já basta, e o segundo sai da lista sozinho na volta seguinte.
+    const panels = [...container.querySelectorAll<HTMLElement>('button[aria-expanded="false"]')]
+    if (details.length === 0 && panels.length === 0) return opened
+    for (const item of details) {
+      item.open = true
+      item.dispatchEvent(new Event('toggle'))
+      opened += 1
+    }
+    for (const panel of panels) {
+      if (panel.getAttribute('aria-expanded') !== 'false') continue
+      panel.click()
+      opened += 1
+    }
+  }
+  return opened
+}
+
+/**
+ * O nome acessível pela MESMA regra de que os testes dependem na prática: `aria-label`, senão
+ * `aria-labelledby`, senão o `<label>` associado, senão o texto. Não é o algoritmo completo da
+ * especificação — é uma função determinística e estável, que é o que um inventário precisa
+ * para comparar dois momentos. `ToolButton` põe o rótulo em `aria-label`, então trocar texto
+ * por ícone NÃO muda o que sai daqui: é isso que torna a adoção de ícones barata.
+ */
+export function accessibleName(element: Element): string {
+  const label = element.getAttribute('aria-label')
+  if (label) return label.trim()
+  const labelledBy = element.getAttribute('aria-labelledby')
+  if (labelledBy) {
+    const texts = labelledBy
+      .split(/\s+/)
+      .map((id) => element.ownerDocument.getElementById(id)?.textContent ?? '')
+      .filter(Boolean)
+    if (texts.length) return texts.join(' ').replace(/\s+/g, ' ').trim()
+  }
+  const id = element.getAttribute('id')
+  if (id) {
+    const bound = element.ownerDocument.querySelector(`label[for="${CSS.escape(id)}"]`)
+    if (bound?.textContent) return bound.textContent.replace(/\s+/g, ' ').trim()
+  }
+  const wrapping = element.closest('label')
+  if (wrapping) {
+    // ⚠️ Tirar o PRÓPRIO controle antes de ler o texto: um `<select>` dentro do `<label>`
+    // levava junto o texto de todas as opções ("Passo do movimentoLivre0,10,51").
+    const clone = wrapping.cloneNode(true) as HTMLElement
+    for (const control of clone.querySelectorAll('select, input, textarea, button'))
+      control.remove()
+    const text = (clone.textContent ?? '').replace(/\s+/g, ' ').trim()
+    if (text) return text
+  }
+  return (element.textContent ?? '').replace(/\s+/g, ' ').trim()
+}
+
+/** Um controle do inventário: o que ele é, como se chama e se dá para usar. */
+export interface ReachableControl {
+  role: string
+  name: string
+  disabled: boolean
+}
+
+const ROLE_OF: ReadonlyArray<readonly [string, string]> = [
+  ['button', 'button'],
+  ['summary', 'button'],
+  ['select', 'combobox'],
+  ['textarea', 'textbox'],
+  ['a[href]', 'link'],
+]
+
+function inputRole(input: HTMLInputElement): string {
+  if (input.type === 'checkbox') return 'checkbox'
+  if (input.type === 'radio') return 'radio'
+  if (input.type === 'number') return 'spinbutton'
+  if (input.type === 'range') return 'slider'
+  if (input.type === 'search') return 'searchbox'
+  if (input.type === 'hidden') return ''
+  return 'textbox'
+}
+
+/**
+ * O inventário do que a criança alcança. Ordenado e sem repetição, para comparar dois
+ * momentos como CONJUNTO — a ordem no DOM é justamente o que o redesenho muda.
+ *
+ * Elementos dentro de um ancestral com o ATRIBUTO `hidden` ficam de fora: é assim que o
+ * `WorkspaceInspector` recolhe sem desmontar, e é a única forma de esconder que o happy-dom
+ * enxerga. Classe `hidden` do Tailwind não conta aqui (não há CSS nos testes) — por isso o
+ * teto de visibilidade real é do Playwright.
+ */
+export function reachableControls(
+  container: HTMLElement,
+  keep: (element: Element) => boolean = () => true,
+): ReachableControl[] {
+  const found = new Map<string, ReachableControl>()
+  const add = (element: Element, role: string): void => {
+    if (!role || element.closest('[hidden]') || !keep(element)) return
+    const name = accessibleName(element)
+    if (!name) return
+    const disabled =
+      element.hasAttribute('disabled') ||
+      element.getAttribute('aria-disabled') === 'true' ||
+      element.closest('fieldset[disabled]') !== null
+    found.set(`${role}\u0000${name}\u0000${String(disabled)}`, { role, name, disabled })
+  }
+  for (const [selector, role] of ROLE_OF)
+    for (const element of container.querySelectorAll(selector)) add(element, role)
+  for (const input of container.querySelectorAll('input'))
+    add(input, inputRole(input as HTMLInputElement))
+  return [...found.values()].sort((a, b) =>
+    a.role === b.role ? a.name.localeCompare(b.name, 'pt-BR') : a.role.localeCompare(b.role),
+  )
+}
+
+/**
+ * Um controle está ESCONDIDO quando algum ancestral `<details>` está fechado e ele não é o
+ * `<summary>` desse ancestral (o `<summary>` continua à vista: é ele que convida a abrir).
+ */
+function behindClosedDisclosure(control: Element): boolean {
+  let node: Element | null = control
+  while (node) {
+    const details: HTMLDetailsElement | null = node.closest('details')
+    if (!details) return false
+    const summary: HTMLElement | null = node.closest('summary')
+    const ehOProprioSummary = summary !== null && summary.parentElement === details
+    if (!details.open && !ehOProprioSummary) return true
+    node = details.parentElement
+  }
+  return false
+}
+
+/**
+ * ⭐ O que a criança ENCARA ao chegar: o inventário menos o que está atrás de um `<details>`
+ * fechado.
+ *
+ * ⚠️⚠️ É a única forma de um teste de UNIDADE enxergar hierarquização. O happy-dom desenha
+ * `<details>` fechado como se estivesse aberto (`DETAILS: 'display: block;'`, sem ramo
+ * `open`, ao contrário de `DIALOG`), então `getByRole` acha tudo lá dentro e recolher não
+ * muda um único teste. A conta aqui é ESTRUTURAL — pergunta se o `<details>` está aberto,
+ * não onde o pixel caiu — e por isso vale mesmo sem CSS.
+ *
+ * Continua não sendo oráculo de LAYOUT: classe `hidden` do Tailwind, elemento fora da tela
+ * ou coberto por outro seguem invisíveis para ela. Esse teto é do Playwright.
+ */
+export function frontControls(container: HTMLElement): string[] {
+  return controlInventoryOf(container, (element) => !behindClosedDisclosure(element))
+}
+/** A forma comparável do inventário: uma linha por controle, estável entre execuções. */
+function controlInventoryOf(container: HTMLElement, keep: (element: Element) => boolean): string[] {
+  return reachableControls(container, keep).map(
+    (control) => `${control.role}: ${control.name}${control.disabled ? ' [desligado]' : ''}`,
+  )
+}
+
+/** A forma comparável do inventário: uma linha por controle, estável entre execuções. */
+export function controlInventory(container: HTMLElement): string[] {
+  return controlInventoryOf(container, () => true)
+}

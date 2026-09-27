@@ -1,5 +1,5 @@
 import type { CSSProperties, JSX, Ref } from 'react'
-import { forwardRef, useEffect, useState } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import type { Project } from '#core'
 import { renderProjectToPreviewDocAsync } from '#preview'
 import type { PreviewSecurityProfile } from '../../preview/csp'
@@ -51,7 +51,11 @@ export interface StudioProjectPlayerProps {
   /** Título acessível do iframe (default = `project.name`). */
   title?: string
   className?: string
+  tabIndex?: number
   style?: CSSProperties
+  onError?: () => void
+  /** Carregamento do documento jogável, sem contar o placeholder. */
+  onReady?: () => void
 }
 
 /**
@@ -76,7 +80,10 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
       originAdapter,
       title,
       className,
+      tabIndex,
       style,
+      onError,
+      onReady,
     }: StudioProjectPlayerProps,
     ref: Ref<HTMLIFrameElement>,
   ): JSX.Element {
@@ -85,6 +92,8 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
       doc: PLAYER_LOADING_DOC,
       generation: 0,
     })
+    const onErrorRef = useRef(onError)
+    onErrorRef.current = onError
     useEffect(() => {
       let ignore = false
       let activeUrl: string | null = null
@@ -138,6 +147,7 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
         }))
       })().catch(() => {
         if (ignore) return
+        onErrorRef.current?.()
         setLoadState((current) => ({
           status: 'error',
           doc: PLAYER_ERROR_DOC,
@@ -165,10 +175,14 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
           // um iframe que ainda pode estar concluindo a navegação anterior.
           key={loadState.generation}
           ref={ref}
+          tabIndex={tabIndex}
           title={title ?? project.name ?? 'Projeto'}
           src={loadState.url}
           srcDoc={loadState.url ? undefined : loadState.doc}
           aria-busy={loadState.status === 'loading'}
+          onLoad={() => {
+            if (loadState.status === 'ready') onReady?.()
+          }}
           // Mesmo sandbox do preview vivo do editor. Pointer Lock habilita a câmera FPS;
           // NUNCA adicionar `allow-same-origin`.
           sandbox="allow-scripts allow-modals allow-pointer-lock"

@@ -38,8 +38,11 @@ export function VectorGradientDialog(): JSX.Element {
     inspectedFill,
     currentGradient,
     applyGradient,
+    applyGradientPreset,
     clearGradient,
     hasGradient,
+    canAdjustGradient,
+    beginGradientAdjust,
     beginColorPick,
     gradientOpen,
     setGradientOpen,
@@ -112,19 +115,19 @@ export function VectorGradientDialog(): JSX.Element {
           icon={MoveHorizontal}
           label={COPY.vector.gradientH}
           active={activeGradient?.type === 'linear' && activeGradient.angle === 0}
-          onClick={() => applyGradient({ type: 'linear', angle: 0 })}
+          onClick={() => applyGradientPreset('horizontal')}
         />
         <ToolButton
           icon={MoveVertical}
           label={COPY.vector.gradientV}
           active={activeGradient?.type === 'linear' && activeGradient.angle === 90}
-          onClick={() => applyGradient({ type: 'linear', angle: 90 })}
+          onClick={() => applyGradientPreset('vertical')}
         />
         <ToolButton
           icon={CircleDot}
           label={COPY.vector.gradientRadial}
           active={activeGradient?.type === 'radial'}
-          onClick={() => applyGradient({ type: 'radial' })}
+          onClick={() => applyGradientPreset('radial')}
         />
         <ColorButton
           label={COPY.vector.gradientFrom}
@@ -147,6 +150,17 @@ export function VectorGradientDialog(): JSX.Element {
           onPickFromDrawing={canPickFromDrawing ? () => pickFor('to') : undefined}
         />
       </div>
+      <Button
+        variant="outline"
+        disabled={!canAdjustGradient}
+        onClick={beginGradientAdjust}
+        className="mt-4 w-full"
+      >
+        {COPY.vector.gradientAdjust}
+      </Button>
+      {!canAdjustGradient ? (
+        <p className="mt-2 text-sm text-pin-muted">{COPY.vector.gradientAdjustSelectOne}</p>
+      ) : null}
       {/* Sem isto não existe caminho de volta: qualquer toque nos controles
           acima vira degradê e a criança fica presa nele. */}
       <Button
@@ -156,7 +170,7 @@ export function VectorGradientDialog(): JSX.Element {
           clearGradient()
           setGradientOpen(false)
         }}
-        className="mt-4 w-full"
+        className="mt-2 w-full"
       >
         {COPY.vector.gradientOff}
       </Button>

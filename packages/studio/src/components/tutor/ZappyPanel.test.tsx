@@ -198,6 +198,46 @@ describe('ZappyPanel', () => {
     expect(opened).toEqual([reference])
   })
 
+  it('abre o tutorial do "Como fazer" pelo callback do host, em chip próprio', async () => {
+    const opened: Array<{ slug: string; title: string }> = []
+    const tutorResponse = {
+      ...response(),
+      helpReferences: [
+        { slug: 'estudio-pre-visualizacao', title: 'Como ver meu jogo na Pré-visualização' },
+      ],
+    }
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({
+        messages: [
+          {
+            id: tutorResponse.id,
+            role: 'assistant',
+            text: tutorResponse.text,
+            createdAt: tutorResponse.createdAt,
+            response: tutorResponse,
+          },
+        ],
+        nextCursor: null,
+      }),
+      deleteHistory: async () => undefined,
+      ask: async () => answer(tutorResponse),
+      feedback: async () => undefined,
+    }
+    const view = render(
+      renderPanel(adapter, {
+        openHelp: (reference) => {
+          opened.push(reference)
+        },
+      }),
+    )
+
+    fireEvent.click(await view.findByText('Passo a passo: Como ver meu jogo na Pré-visualização ↗'))
+
+    expect(opened).toEqual([
+      { slug: 'estudio-pre-visualizacao', title: 'Como ver meu jogo na Pré-visualização' },
+    ])
+  })
+
   it('não mostra referência Blockly histórica em projeto Pro', async () => {
     const proProject = {
       ...createEmptyProject('project-pro', 'Projeto Pro'),
@@ -603,7 +643,7 @@ describe('ZappyPanel', () => {
   it('aviso de limite não é aula: sem polegares e com cara de recado', async () => {
     const quota = {
       id: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e0aa',
-      text: 'Por hoje a gente já estudou bastante! Amanhã tem mais 🤖',
+      text: 'Por hoje a gente já estudou bastante! Amanhã tem mais ✨',
       scope: 'quota' as const,
       blockReferences: [],
       createdAt: new Date().toISOString(),

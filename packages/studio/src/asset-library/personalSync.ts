@@ -415,7 +415,7 @@ async function syncOpenProject(
   }
 }
 
-/** Recusa vai para o resultado E para a fila que o painel de Imagens drena. */
+/** Recusa vai para o resultado E para a fila que a janela dos materiais drena. */
 function pushFailure(result: DrawingSyncResult, state: DrawingSyncState, message: string): void {
   if (!result.failures.includes(message)) result.failures.push(message)
   if (!state.pendingFailures.includes(message)) state.pendingFailures.push(message)

@@ -1,6 +1,6 @@
-import type { ExtensionToolboxCategory } from '#extensions'
 import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
+import type { ExtensionToolboxCategory } from '../../extensions/toolboxTypes'
 import { GAME3D_DROPDOWN_OPTIONS } from '../../three/game3dContract'
 
 // Jogo 3D = UMA cor da categoria: AMARELO/dourado. A categoria inteira fica em
@@ -1711,7 +1711,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Põe na cena um modelo 3D de verdade (arquivo .glb que você trouxe do Molda ou enviou no painel Imagens). Ele nasce como um cubo e ganha a forma do arquivo assim que carrega; o tamanho é o lado maior, em blocos. Mover, girar, colidir e pintar funcionam nele.',
+      'Põe na cena um modelo 3D de verdade (arquivo .glb que você trouxe do Molda ou enviou em "Modelos 3D"). Ele nasce como um cubo e ganha a forma do arquivo assim que carrega; o tamanho é o lado maior, em blocos. Mover, girar, colidir e pintar funcionam nele.',
   },
   {
     type: 'sz_g3d_add_to_model',
@@ -2072,7 +2072,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Prepara um som do projeto (envie o arquivo em "Imagens e sons", na barra de cima) e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
+      'Prepara um som do projeto (envie o arquivo em "Sons", no menu ⋯) e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
   },
   {
     type: 'sz_g3d_play_sound',

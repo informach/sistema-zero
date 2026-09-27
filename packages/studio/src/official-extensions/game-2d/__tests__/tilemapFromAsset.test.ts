@@ -36,7 +36,8 @@ interface Api {
     grid: string
   }) => TileMap
   createTileMapFromAsset: (name: string) => TileMap
-  drawTileMap: (ctx: unknown, map: TileMap, x: number, y: number) => void
+  drawTileMap: (ctx: unknown, map: TileMap) => void
+  centerTileMap: (ctx: unknown, map: TileMap, x: number, y: number, size: number) => void
   collideTileMap: (sprite: Sprite, map: TileMap) => void
 }
 
@@ -85,7 +86,10 @@ describe('createTileMapFromAsset', () => {
       expect(map.rows).toEqual([])
       expect(warn).toHaveBeenCalled()
       const ctx = { canvas: { width: 100, height: 100 } }
-      expect(() => api.drawTileMap(ctx, map, 0, 0)).not.toThrow()
+      expect(() => {
+        api.centerTileMap(ctx, map, 0, 0, 0)
+        api.drawTileMap(ctx, map)
+      }).not.toThrow()
       expect(() =>
         api.collideTileMap({ x: 0, y: 0, w: 10, h: 10, vx: 0, vy: 0 }, map),
       ).not.toThrow()

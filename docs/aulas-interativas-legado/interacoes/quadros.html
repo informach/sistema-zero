@@ -1,0 +1,14 @@
+<h2>Um desenho ou uma sequência?</h2>
+<p>Passe os quadros com o botão. Ligue e desligue a limpeza e veja o que fica na tela.</p>
+<label><input id="clear" type="checkbox" checked> Limpar antes de desenhar</label>
+<button type="button" id="step">Próximo quadro</button><button type="button" id="reset">Voltar ao começo</button>
+<svg viewBox="0 0 400 160" role="img" aria-label="Desenhos sucessivos do personagem na tela" style="display:block;width:100%;background:#e8f1ff;border-radius:12px"><g id="drawings"></g></svg>
+<p id="status" aria-live="polite">Quadro 0</p>
+<script>
+(()=>{let frame=0,cleared=false,trailed=false;const check=document.getElementById('clear'),drawings=document.getElementById('drawings'),status=document.getElementById('status');
+function draw(){if(check.checked)drawings.replaceChildren();const shape=document.createElementNS('http://www.w3.org/2000/svg','rect');shape.setAttribute('x',String(15+(frame%12)*28));shape.setAttribute('y',String(frame%2?65:55));shape.setAttribute('width','24');shape.setAttribute('height','34');shape.setAttribute('rx','7');shape.setAttribute('fill','#1762bc');drawings.append(shape);status.textContent=`Quadro ${frame}: ${drawings.childElementCount} desenhos na tela.`}
+function save(){window.learning?.save({frame,clear:check.checked,cleared,trailed})}
+document.getElementById('step').addEventListener('click',()=>{frame++;if(check.checked)cleared=true;else trailed=true;draw();save();if(cleared&&trailed)window.learning?.participated()});
+document.getElementById('reset').addEventListener('click',()=>{frame=0;drawings.replaceChildren();draw();save()});check.addEventListener('change',save);
+addEventListener('learning:restore',event=>{const s=event.detail;frame=Number.isFinite(s.frame)?s.frame:0;check.checked=s.clear!==false;cleared=s.cleared===true;trailed=s.trailed===true;draw()})})();
+</script>

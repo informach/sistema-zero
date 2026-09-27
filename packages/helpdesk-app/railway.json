@@ -6,6 +6,7 @@
     "watchPatterns": [
       "/packages/helpdesk-app/**",
       "/packages/ui/**",
+      "/packages/core/**",
       "/bun.lock",
       "/package.json",
       "/.dockerignore"

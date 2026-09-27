@@ -45,19 +45,29 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
 
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pollStartedAt = useRef(0)
+  const generation = useRef(0)
+  const currentUpload = useRef<tus.Upload | null>(null)
   const onReadyRef = useRef(onReady)
   onReadyRef.current = onReady
 
   const stopPolling = useCallback(() => {
+    generation.current++
     if (pollTimer.current) clearTimeout(pollTimer.current)
     pollTimer.current = null
   }, [])
 
-  useEffect(() => stopPolling, [stopPolling])
+  useEffect(
+    () => () => {
+      stopPolling()
+      void currentUpload.current?.abort()
+    },
+    [stopPolling],
+  )
 
-  const poll = useCallback(async (id: string) => {
+  const poll = useCallback(async (id: string, version: number) => {
     try {
       const status = await apiGet<VideoStatusResponse>(`/api/media/videos/${id}/status`)
+      if (version !== generation.current) return
       if (status.status === 'ready') {
         setPhase('ready')
         setEmbedUrl(status.embedUrl)
@@ -77,8 +87,9 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
     } catch {
       // Falha transitória de rede/status — continua tentando até o cap.
     }
+    if (version !== generation.current) return
     if (Date.now() - pollStartedAt.current < POLL_MAX_MS) {
-      pollTimer.current = setTimeout(() => void poll(id), POLL_INTERVAL_MS)
+      pollTimer.current = setTimeout(() => void poll(id, version), POLL_INTERVAL_MS)
     }
     // Cap atingido: permanece "processing" — o botão "verificar" re-checa.
   }, [])
@@ -87,16 +98,20 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
   const checkStatus = useCallback(
     (id: string) => {
       stopPolling()
+      setError(null)
       setVideoId(id)
       setPhase('processing')
       pollStartedAt.current = Date.now()
-      void poll(id)
+      void poll(id, generation.current)
     },
     [poll, stopPolling],
   )
 
   const upload = useCallback(
     async (file: File) => {
+      stopPolling()
+      void currentUpload.current?.abort()
+      const version = generation.current
       setError(null)
       setProgress(0)
       if (!ALLOWED_TYPES.has(file.type)) {
@@ -119,11 +134,13 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
           { filename: file.name, sizeBytes: file.size, mimeType: file.type },
         )
       } catch (err) {
+        if (version !== generation.current) return
         setError((err as ApiError).message ?? 'Falha ao preparar o upload no Vimeo.')
         setPhase('error')
         return
       }
 
+      if (version !== generation.current) return
       setVideoId(ticket.vimeoVideoId)
       setEmbedUrl(ticket.embedUrl)
       setPhase('uploading')
@@ -137,18 +154,22 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
             metadata: { filename: file.name, filetype: file.type },
             onError: (err) => reject(err),
             onProgress: (sent, total) => {
-              if (total > 0) setProgress(sent / total)
+              if (version === generation.current && total > 0) setProgress(sent / total)
             },
             onSuccess: () => resolve(),
           })
+          currentUpload.current = up
           up.start()
         })
       } catch {
+        if (version !== generation.current) return
         setError('Falha no upload para o Vimeo. Tente novamente.')
         setPhase('error')
         return
       }
 
+      if (version !== generation.current) return
+      currentUpload.current = null
       setProgress(1)
       // Já propaga o `src` (embedUrl do ticket) ASSIM QUE o upload termina — antes de
       // o transcode acabar. Sem isto, salvar o bloco durante "processando" gravava sem
@@ -163,11 +184,13 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
       })
       checkStatus(ticket.vimeoVideoId)
     },
-    [checkStatus],
+    [checkStatus, stopPolling],
   )
 
   const reset = useCallback(() => {
     stopPolling()
+    void currentUpload.current?.abort()
+    currentUpload.current = null
     setPhase('idle')
     setProgress(0)
     setError(null)

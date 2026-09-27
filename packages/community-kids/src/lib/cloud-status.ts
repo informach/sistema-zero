@@ -32,6 +32,13 @@ export const CLOUD_STATUS_COPY = {
   error: { label: 'Não consegui guardar', text: 'Não consegui guardar na sua conta.' },
 } as const
 
+/**
+ * A pílula das GALERIAS quando a nuvem da conta está ligada e nada acontece agora (contrato
+ * `account`, 11/09/2026: a imagem-modelo da galeria mostra o selo em repouso). É a MESMA
+ * frase do "guardado": a criança não vê duas maneiras de dizer a mesma coisa.
+ */
+export const CLOUD_ACCOUNT_COPY = { label: CLOUD_STATUS_COPY.saved.label } as const
+
 export function cloudStatusView(
   state: CloudSyncState | null,
   /** A DESCIDA está em andamento (o host sabe: `pullMissing`/reconcile em voo). */

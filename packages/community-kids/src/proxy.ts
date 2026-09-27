@@ -1,5 +1,5 @@
 import { createMemberProxy } from '@sistemazero/member-shell/server/proxy'
-import { ACCESS_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
+import { ACCESS_COOKIE, PALETTE_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
 
 /**
  * Gate de borda da plataforma kids — a LÓGICA vive no @sistemazero/member-shell
@@ -10,6 +10,7 @@ import { ACCESS_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
  */
 export const proxy = createMemberProxy({
   cookies: { accessCookie: ACCESS_COOKIE, refreshCookie: REFRESH_COOKIE },
+  paletteCookie: PALETTE_COOKIE,
   // `/perfis` (grade estilo Netflix) exige sessão (conta OU perfil), mas é a rota
   // de SELEÇÃO — isenta do gate de perfil abaixo.
   protectedPrefixes: [
@@ -18,6 +19,7 @@ export const proxy = createMemberProxy({
     '/meu-avatar',
     // Hub "Criar" (tab bar mobile de 5 itens): cards p/ o trio criativo + quarto + clube.
     '/criar',
+    '/comunidade',
     '/quarto',
     '/crianca',
     '/clube-dos-criadores',
@@ -30,6 +32,11 @@ export const proxy = createMemberProxy({
     '/molda',
     // Recados (conversas com o professor — canal de retorno).
     '/recados',
+    // O Ranking se defendia só no RSC (redirect na página). Com o menu oferecendo o
+    // link direto, ele passa a ser barrado na BORDA como as irmãs da Comunidade.
+    '/ranking',
+    // "Como fazer" (biblioteca de ajuda): de todo perfil, mas só logado.
+    '/como-fazer',
     '/perfis',
   ],
   isRootProtected: true,

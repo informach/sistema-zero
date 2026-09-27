@@ -1471,6 +1471,43 @@ describe('Auth admin routes (/auth/admin/users)', () => {
     })
   })
 
+  test('diretório interno de recados exige token e exclui contas inativas, órfãos e perfis arquivados', async () => {
+    const { app, users, profilesRepo } = buildApp()
+    const accountId = seedUser(users, {
+      email: 'recados@example.com',
+      firstName: 'Ana',
+      lastName: 'Souza',
+    })
+    const blockedId = seedUser(users, { email: 'bloqueada@example.com', status: 'blocked' })
+    const profileId = seedProfile(profilesRepo, { accountUserId: accountId, name: 'Alice' })
+    seedProfile(profilesRepo, { accountUserId: blockedId, name: 'Bento' })
+    seedProfile(profilesRepo, { accountUserId: accountId, name: 'Caio', status: 'archived' })
+    seedProfile(profilesRepo, { name: 'Zoe' })
+    const path = '/auth/internal/teacher-recipients'
+    expect((await app.handle(getReq(path, {}))).status).toBe(401)
+    const headers = { 'x-internal-token': INTERNAL_TOKEN }
+    const response = await app.handle(getReq(path, headers))
+    expect(response.status).toBe(200)
+    const result = await response.json()
+    expect(result).toEqual({
+      total: 3,
+      items: [
+        {
+          profileId,
+          accountId,
+          name: 'Alice',
+          accountName: 'Ana Souza',
+          accountEmail: 'recados@example.com',
+        },
+      ],
+    })
+    const filtered = await app.handle(getReq(`${path}?q=recados&limit=1&offset=0`, headers))
+    expect(await filtered.json()).toMatchObject({ total: 1, items: [{ profileId }] })
+    const next = await app.handle(getReq(`${path}?limit=1&offset=1`, headers))
+    expect(await next.json()).toEqual({ total: 3, items: [] })
+    expect((await app.handle(getReq(`${path}?limit=201`, headers))).status).toBe(400)
+  })
+
   test('GET /auth/admin/profiles busca pelo nome completo do responsável', async () => {
     const { app, users, profilesRepo } = buildApp()
     const accountId = seedUser(users, {

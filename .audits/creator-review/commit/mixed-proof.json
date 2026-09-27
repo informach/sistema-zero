@@ -1,0 +1,42 @@
+[
+  {
+    "path": "bun.lock",
+    "hunks": 1,
+    "blob": "3a0c4f87120522fb48f809c262d253dbd1b1d795"
+  },
+  {
+    "path": "packages/community-kids/src/components/kids/molda-client.tsx",
+    "hunks": 6,
+    "blob": "febdbabc71b02288fea5026bea39684c74a18eac"
+  },
+  {
+    "path": "packages/member-shell/src/lib/types.ts",
+    "hunks": 5,
+    "blob": "3b172d096aa2b725756e685ff5ae3d23603157ad"
+  },
+  {
+    "path": "packages/member-shell/src/server/clients.ts",
+    "hunks": 4,
+    "blob": "71a5b22fc973f9e8c5a911804da84f70190943b8"
+  },
+  {
+    "path": "packages/members/src/interfaces/http/dtos.ts",
+    "hunks": 3,
+    "blob": "a4853ff193edaf943cbe5df064c6bd0a0cdaabb8"
+  },
+  {
+    "path": "packages/community-kids/CLAUDE.md",
+    "hunks": 1,
+    "blob": "db7f673cd8a4cb0fe1f4ba0c15cff130019a2700"
+  },
+  {
+    "path": "packages/member-shell/CLAUDE.md",
+    "hunks": 1,
+    "blob": "62e88d18c03aa0cf504008740eb1ad8fbd3d9709"
+  },
+  {
+    "path": "packages/members/CLAUDE.md",
+    "hunks": 1,
+    "blob": "596a6eac2b49339c0f85bfad5fcb0b145e0e5f9b"
+  }
+]

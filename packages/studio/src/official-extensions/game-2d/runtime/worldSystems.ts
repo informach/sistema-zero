@@ -22,6 +22,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
     return !!value && value._kind === 'g2d-level' && _isGameWorld(value.world);
   }
   function createWorld(width, height) {
+    /** @satisfies {import('./runtimeContract').GameTwoDWorld & { _viewportWidth: number, _viewportHeight: number }} */
     var worldValue = {
       _kind: 'g2d-world',
       // Os fallbacks são os MESMOS números das sombras do bloco (800x512): dois
@@ -291,7 +292,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
     return Math.round(Math.max(0, Math.min(desired, Math.max(0, worldSize - viewport))));
   }
   function followCameraInWorld(sprite, worldValue) {
-    if (!sprite || !_isGameWorld(worldValue)) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !_isGameWorld(worldValue)) return;
     _syncWorldViewport(worldValue);
     var ctx = ensureStage();
     var viewW = stageW(ctx), viewH = stageH(ctx);
@@ -322,7 +323,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
     camera.y = config.y;
   }
   function _collideWorldEdges(sprite, worldValue) {
-    if (!sprite || worldValue.edges === 'none') return;
+    if (!sprite || _isDestroyedSprite(sprite) || worldValue.edges === 'none') return;
     var pullsUp = _gravityPullsUp(world.gravity);
     var spriteW = Math.max(0, _finiteNumber(sprite.w, 0));
     var spriteH = Math.max(0, _finiteNumber(sprite.h, 0));
@@ -472,7 +473,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
     }
   }
   function collideWorld(sprite, worldValue) {
-    if (!sprite || !_isGameWorld(worldValue)) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !_isGameWorld(worldValue)) return;
     _beginSupportResolution(sprite);
     try {
       for (var i = 0; i < worldValue.tileMaps.length; i++) {
@@ -512,6 +513,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
       warnOnce('fase-sem-mundo', 'crie um Mundo antes de criar a Fase.');
       worldValue = createWorld(1, 1);
     }
+    /** @satisfies {import('./runtimeContract').GameTwoDLevel & { _entryGeneration: number, _mapSnapshots: null }} */
     var level = {
       _kind: 'g2d-level',
       world: worldValue,
@@ -617,6 +619,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
         visited.push(transition.level);
         var level = transition.level;
         var player = transition.player;
+        if (_isDestroyedSprite(player)) continue;
         if (transition.restart) {
           _ensureLevelMapSnapshots(level);
           for (var mapIndex = 0; mapIndex < level._mapSnapshots.length; mapIndex++) {
@@ -661,6 +664,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
   }
 
   function enterLevel(level, player) {
+    if (_isDestroyedSprite(player)) return;
     if (!_isGameLevel(level) || !player) {
       warnOnce('entrada-de-fase-invalida', 'escolha uma Fase e um sprite para entrar nela.');
       return;
@@ -674,6 +678,7 @@ export const gameTwoDWorldSystemsRuntime = `  // ---- Mundos e fases: Mapa -> Mu
    * entrada para que o conteúdo inicial seja criado uma vez.
    */
   function restartLevel(level, player) {
+    if (_isDestroyedSprite(player)) return;
     if (!_isGameLevel(level) || !player) {
       warnOnce('reinicio-de-fase-invalido', 'escolha uma Fase e um sprite para reiniciá-la.');
       return;

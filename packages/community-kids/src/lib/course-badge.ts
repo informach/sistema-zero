@@ -1,3 +1,4 @@
+import { journeyCourseQualified } from '@sistemazero/core/journey'
 import type { CourseMilestonesView } from '@/lib/types'
 
 /**
@@ -10,7 +11,7 @@ import type { CourseMilestonesView } from '@/lib/types'
  * | curso | pronta quando | selo de pendência |
  * |---|---|---|
  * | de POSIÇÃO (`careerSlot`) | concluiu **e** publicou no Mural | "Publique no Mural" |
- * | BÔNUS (`careerSlot` nulo) | só concluiu | nenhum |
+ * | BÔNUS ou EXTRA (`careerSlot` nulo) | só concluiu | nenhum |
  *
  * ⚠️⚠️ Bônus NUNCA pede o Mural. Publicar não é exigência dele em régua nenhuma —
  * cobrar seria inventar uma dívida que não existe, exatamente a mentira que a régua
@@ -27,7 +28,7 @@ import type { CourseMilestonesView } from '@/lib/types'
 export type CourseBadge = 'pronta' | 'publicar'
 
 export interface CourseBadgeInput {
-  /** Posição na trilha; `null`/ausente = curso bônus. */
+  /** Posição na trilha; `null`/ausente = bônus ou extra. */
   careerSlot?: number | null
   milestones?: CourseMilestonesView
 }
@@ -39,9 +40,7 @@ function isSlotCourse(course: CourseBadgeInput): boolean {
 
 /** A aventura conta como PRONTA? É a régua mista, num curso só. */
 export function courseIsDone(course: CourseBadgeInput): boolean {
-  const marcos = course.milestones
-  if (!marcos?.completed) return false
-  return isSlotCourse(course) ? marcos.showcased : true
+  return journeyCourseQualified(course)
 }
 
 /** O selo do card: pronta, falta publicar, ou nada. */

@@ -5,7 +5,8 @@ import type {
   StudioPintaLibraryAdapter,
   StudioShareAdapter,
 } from '@sistemazero/studio'
-import { render, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { useState } from 'react'
 
 const actualNavigation = await import('next/navigation')
 const router = {
@@ -19,10 +20,12 @@ const router = {
 
 mock.module('next/navigation', () => ({
   ...actualNavigation,
+  usePathname: () => '/estudio',
   useRouter: () => router,
 }))
 
 const { StudioFullEditor } = await import('../src/components/kids/studio-full-editor')
+const { FocusModeProvider, useFocusMode } = await import('../src/components/kids/focus-mode')
 
 afterAll(() => {
   mock.module('next/navigation', () => actualNavigation)
@@ -98,4 +101,55 @@ test('"Editar o desenho" só vai ao Estúdio COM a posse do Pinta, e "Editar a c
   expect(lastEditorProps?.onEditDrawing).toBeUndefined()
   expect(typeof lastEditorProps?.onEditCreation).toBe('function')
   expect(lastEditorProps?.moldaLibrary).toBe(molda)
+})
+
+function StudioPresenceHarness() {
+  const [editorOpen, setEditorOpen] = useState(false)
+  const { navCollapsed, toggleNav } = useFocusMode()
+  return (
+    <>
+      <output data-testid="menu-recolhido">{String(navCollapsed)}</output>
+      <button type="button" onClick={toggleNav}>
+        Abrir menu de teste
+      </button>
+      <button type="button" onClick={() => setEditorOpen(true)}>
+        Abrir projeto de teste
+      </button>
+      <button type="button" onClick={() => setEditorOpen(false)}>
+        Voltar à galeria de teste
+      </button>
+      {editorOpen ? (
+        <StudioFullEditor
+          mod={mod}
+          projectId="p1"
+          onExit={() => setEditorOpen(false)}
+          share={{} as StudioShareAdapter}
+          tutor={undefined}
+          theme="light"
+          tier={tier}
+          showExamples={false}
+          professional={false}
+          taskSession={undefined}
+          pintaLibrary={undefined}
+          moldaLibrary={undefined}
+        />
+      ) : null}
+    </>
+  )
+}
+
+test('o projeto aberto no Estúdio recolhe o menu e devolve a escolha ao voltar à galeria', async () => {
+  render(
+    <FocusModeProvider viewerId="perfil-1">
+      <StudioPresenceHarness />
+    </FocusModeProvider>,
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir menu de teste' }))
+  expect(screen.getByTestId('menu-recolhido').textContent).toBe('false')
+
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir projeto de teste' }))
+  await waitFor(() => expect(screen.getByTestId('menu-recolhido').textContent).toBe('true'))
+
+  fireEvent.click(screen.getByRole('button', { name: 'Voltar à galeria de teste' }))
+  expect(screen.getByTestId('menu-recolhido').textContent).toBe('false')
 })

@@ -1,6 +1,7 @@
 import { CustomerHelpdeskPortal } from '@sistemazero/member-shell/components/customer-helpdesk-portal'
 import type { CustomerTicketPage } from '@sistemazero/member-shell/lib/customer-helpdesk'
 import { redirect } from 'next/navigation'
+import { KidsScreen } from '@/components/kids/kids-screen'
 import { PARENT_AREA_HREF, ParentAreaBack } from '@/components/kids/parent-area-back'
 import { isParentVerifiedFor } from '@/server/parent-gate'
 import { getSession } from '@/server/session'
@@ -29,7 +30,7 @@ export default async function AjudaDoResponsavelPage() {
       : { items: [], total: 0, hasMore: false, nextCursor: null }
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-8 md:px-6">
+    <KidsScreen align="start" innerClassName="flex max-w-6xl flex-col gap-3">
       {/* A seta vive FORA do portal (que é compartilhado com o adulto, dono de um topo
           próprio): `/responsavel/*` não tem layout, sidebar nem topo, e sem ela o pai
           entra no Atendimento e não tem como voltar. Alinhada à largura do portal. */}
@@ -41,6 +42,6 @@ export default async function AjudaDoResponsavelPage() {
         initialLoadFailed={response.status !== 200}
         parentAreaHref={PARENT_AREA_HREF}
       />
-    </main>
+    </KidsScreen>
   )
 }

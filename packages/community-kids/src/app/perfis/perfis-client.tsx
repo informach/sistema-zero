@@ -5,6 +5,7 @@ import { Dialog } from '@sistemazero/ui/dialog'
 import { Plus, Receipt, RefreshCw } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { KidsScreen } from '@/components/kids/kids-screen'
 import { KidsMascot } from '@/components/kids/mascot'
 import { ParentGateDialog } from '@/components/kids/parent-gate-dialog'
 import {
@@ -35,6 +36,7 @@ import {
 } from '@/lib/guide'
 import { COMUNIDADE_OFERTA_URL } from '@/lib/links'
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
+import { endRenovationVisits, startRenovationVisit } from '@/lib/platform-renovation-visit'
 import { PROFILE_AGE_ERROR_MESSAGE } from '@/lib/profile-age'
 import { canAddProfile, type ProfileAllowance } from '@/lib/profile-allowance'
 import type { ProfileView } from '@/lib/types'
@@ -198,6 +200,7 @@ export function PerfisClient({
     try {
       const res = await fetch(`/api/profiles/${id}/select`, { method: 'POST' })
       if (res.ok) {
+        startRenovationVisit(id)
         window.location.replace('/') // full reload: o servidor passa a ver a sessão de perfil
         return
       }
@@ -229,6 +232,7 @@ export function PerfisClient({
       })
       if (res.ok) {
         // recarrega como sessão da conta (portão aberto); `?manage=1` já abre a gestão.
+        endRenovationVisits()
         window.location.replace('/perfis?manage=1')
         return
       }
@@ -394,7 +398,7 @@ export function PerfisClient({
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-5xl flex-col items-center justify-center gap-8 px-4 py-12">
+    <KidsScreen innerClassName="flex max-w-5xl flex-col items-center gap-8">
       <div className="flex flex-col items-center gap-3 text-center">
         <KidsMascot expression="happy" className="size-20" />
         <h1 className="sz-display text-3xl text-foreground sm:text-4xl">
@@ -503,6 +507,11 @@ export function PerfisClient({
         </div>
       ) : null}
 
+      {managing ? (
+        <a href="/responsavel" className="sz-btn-gradient px-6">
+          Abrir acompanhamento da família
+        </a>
+      ) : null}
       {managing ? <ChildrenDashboard avatarPhotoByProfile={avatarPhotoByProfile} /> : null}
       {/* IRMÃO do dashboard, não filho: aquele some quando não há filhos, e a
           ajuda de IA é da CONTA — precisa aparecer de qualquer jeito. */}
@@ -510,7 +519,8 @@ export function PerfisClient({
       {managing ? <ParentSupportCard /> : null}
       {managing ? <AmbassadorCard /> : null}
 
-      <div className="flex flex-wrap items-end justify-center gap-3">
+      {/* Os botões da tela em pílula, como no resto do app (o ui desenha cantos de 8px). */}
+      <div className="flex flex-wrap items-end justify-center gap-3 [&_button]:min-h-11 [&_button]:rounded-full">
         {managing ? (
           <>
             <Button variant="ghost" onClick={() => setShowPurchases(true)} disabled={busy}>
@@ -580,6 +590,6 @@ export function PerfisClient({
         }
         steps={welcomeSteps}
       />
-    </main>
+    </KidsScreen>
   )
 }

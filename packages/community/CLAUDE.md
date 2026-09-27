@@ -14,8 +14,8 @@ App que o **aluno** acessa: login/recuperação de senha, **meus cursos** (consu
 IA" via members — módulos, aulas em blocos, progresso), **todos os cursos** (`/cursos` — catálogo
 com cadeado), **perfil** (nome/telefone/**foto** + trocar senha) e **minhas compras**. Front-end
 **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um **BFF** que **chama o API
-Gateway** (NUNCA os serviços direto). Design/tema portado do projeto de referência
-`comunidade-sistema-zero` (tokens OKLch dual light/dark + utilities `sz-*`). Porta **3007**.
+Gateway** (NUNCA os serviços direto). Visual na paleta do Pen, com os temas **Padrão** e **Pink**
+(ver §Tema; o claro/escuro herdado do `comunidade-sistema-zero` saiu em 11/09/2026). Porta **3007**.
 
 > Estado: **MVP da área do aluno** (login/logout, esqueci/definir senha — mesma página serve o 1º
 > acesso pós-compra —, home na RAIZ `/` com grid de cursos, `/cursos` "Todos os cursos" com lock →
@@ -27,8 +27,7 @@ Gateway** (NUNCA os serviços direto). Design/tema portado do projeto de referê
 > (feed/fórum/etc.) é fatia futura.
 >
 > **Header (espelha a referência):** logo à esquerda (`w-[130px] md:w-[150px]`), menu CENTRALIZADO
-> (Início `/` + Todos os cursos `/cursos` — `nav.ts`), avatar à direita. Compras/Perfil/Mudar tema/
-> Sair vivem no **menu do avatar** (`user-menu.tsx`: cabeçalho com `UserAvatar` + nome + e-mail;
+> (Início `/` + Todos os cursos `/cursos` — `nav.ts`), avatar à direita. Compras/Perfil/Sair vivem no **menu do avatar** (`user-menu.tsx`: cabeçalho com `UserAvatar` + nome + e-mail;
 > regras de exibição em `lib/user-display.ts` — nome → handle do e-mail → "Membro"/"M"). NÃO existe
 > rota `/home` (a referência era monolito com landing na raiz; aqui a home É a raiz). O layout do
 > grupo `(app)` hidrata `avatarUrl` fresco via `getMe()` (claims não carregam foto).
@@ -46,6 +45,68 @@ Gateway** (NUNCA os serviços direto). Design/tema portado do projeto de referê
 > (`packages/member-shell/tests`); aqui ficou `tests/cookies.test.ts` (trava os nomes
 > `sz_member_*`). Dockerfile copia o `boot-check.mjs` DO member-shell; railway.json e ci.yml
 > incluem `/packages/member-shell/**` como gatilho de deploy deste app.
+
+## Tema: a paleta do Pen, e a COR escolhida pela pessoa (17/09/2026)
+
+O visual segue as telas-modelo do Pen (`esboço plataforma.pen`, quadro "Paleta"): **um fundo só por
+página** e a **barra do topo escura** (a âncora do Pen; o adulto não tem menu lateral). Não existe
+claro/escuro.
+
+⭐ **Desde 17/09/2026 a cor principal é escolhida por CADA PESSOA, em Meu perfil**, entre seis
+swatches curados (`@sistemazero/core/palette`: `blue teal green orange pink purple`), e a cor da
+casa é o **azul**, igual em todo o ecossistema — o verde `#0B7A54` deixou de ser o padrão do
+adulto e virou um dos swatches. O antigo par Padrão⇄Pink não existe mais.
+
+- **Tokens** (`globals.css`): os primitivos `--pen-*` e `--topo-*` continuam com os MESMOS nomes
+  (são contrato do `ui` e do member-shell), mas deixaram de ter valor próprio: hoje cada um é um
+  alias de `var(--sz-community-*)`, que vem do `@sistemazero/ui`. ⚠️ **Não existe mais um
+  hexadecimal de paleta neste arquivo** — os 29 que havia saíram, e um contrato varre todo valor
+  que o gerador produz (`packages/ui/tests/community-kids-theme.test.ts`). Valor novo nasce no
+  registro de `packages/ui/src/tokens`. ⚠️ **`--pen-sucesso`/`--pen-alerta` NÃO seguem a cor** (são
+  ESTADO) e por isso seguem literais aqui: sob a paleta rosa, o ✓ de aula concluída e a resposta
+  certa do quiz continuariam verdes.
+- **Sem `next-themes`.** A biblioteca saiu em 17/09/2026, junto com o `data-tema`: o valor dela era
+  do APARELHO (localStorage) enquanto a preferência é do PERFIL, e o script de "no-flash" dela lê um
+  armazenamento que o servidor não enxerga. Hoje a cor chega por **`data-sz-palette` no `<html>`**,
+  emitido pelo layout raiz a partir de um espelho em cookie que o proxy do member-shell hidrata
+  antes do render (ver o CLAUDE.md de lá). O seletor é o `PalettePicker`, em Meu perfil.
+- ⚠️ **`@custom-variant dark (&:is(.dark *))` FICA:** sem ela o Tailwind v4 volta ao
+  `prefers-color-scheme` e os `dark:` do `@sistemazero/ui` e do member-shell passariam a seguir o
+  modo escuro do sistema operacional. Como não existe `.dark` em lugar nenhum, eles ficam inertes.
+- **Botões:** o override `button/a.bg-primary.text-primary-foreground` (FORA de camada, para vencer
+  as utilitárias do `Button`) é a pílula chapada do Pen. `.sz-btn-gradient` virou a mesma pílula e
+  mora em `@layer components`: o `h-*`/`px-*` de quem usa voltou a valer (a armadilha que o kids
+  já tinha corrigido). `--radius: 1.25rem` e `--shadow-sm` zerado deixam o cartão plano.
+- **Aula:** `.sz-app:has(.sz-aula-adulto)` troca o chão da página para o alternativo. Sob
+  `.sz-aula-adulto`, os ganchos `sz-lesson-*` do member-shell viram cartões brancos, com regras
+  FORA de camada (mesmo motivo do kids). Só o bloco de TEXTO vira cartão (`> div > .lesson-prose`),
+  porque quiz, materiais e recado já trazem o deles; o cabeçalho da seção abre o cartão do texto.
+  ⚠️ Desde 18/09/2026 esse cabeçalho é o da PÁGINA ("nome da aula · nome da seção", com o índice ao
+  lado): o player parou de renderizar o `<h1>` e o índice saiu da `sz-lesson-toolbar`, que ficou só
+  com "O que falta para concluir".
+- **Materiais da aula:** o `MaterialsBlockView` do member-shell é compartilhado com o Kids;
+  `globals.css` mantém a linha sóbria e veste a ação explícita “Baixar” à direita sem criar
+  outro botão dentro da linha clicável.
+- **Avatar da barra:** sem foto, o `UserAvatar` do member-shell é tinta escura sobre verde a 15%, e
+  as iniciais sumiam na barra escura. O botão do menu aplica `[&>span]:bg-primary
+  [&>span]:text-primary-foreground`: o seletor de filho vence as classes do componente
+  compartilhado, que o menu suspenso (fundo branco) continua usando como estão.
+- **Estúdio e Pinta dentro da aula:** o `:root` declara os `--sz-tool-*` (fundo e ação dos dois
+  temas); no escuro próprio do Estúdio (`[data-sz-theme="dark"]`) eles voltam a `initial`.
+- **Logo:** `@sistemazero/ui/brand-logo` (`<BrandLogo fundo="escuro" | "claro">`) é a logo oficial
+  em SVG EMBUTIDO, gerada a partir de `public/logo_dark.svg`/`logo_white.svg` (que continuam lá,
+  e são a fonte dos caminhos). ⚠️ Ela MUDOU DE ENDEREÇO em 18/09/2026 (era
+  `components/community/brand-logo.tsx`): virou componente compartilhado quando os painéis
+  internos e o /admin do funil trocaram a wordmark antiga pela oficial. Por
+  `<img>` o CSS não alcança o degradê do ZERO, e no Pink ele fica rosa (decisão dela, 11/09). As
+  cores são os tokens `--logo-zero-{escuro,claro}-{de,ate}`; as letras de "SISTEMA" não seguem o
+  tema. Não edite os caminhos à mão: regenere a partir dos SVGs se a marca mudar.
+- **Conferência visual** (o app exige banco e login): `tmp/`, fora do git, tem `compila-css.ts`
+  (pipeline real; rodar DE DENTRO do pacote), `renderiza.tsx` (as páginas reais dentro do layout
+  real, com stubs; um HTML por página, `?tema=pink`), `servidor.ts` (:4802) e
+  `auditoria-contraste.js`. Medido em 11/09: todo texto habilitado passa (4,5:1; 3:1 no grande)
+  nas oito páginas, nos dois temas.
+- ⚠️ O admin (`globals.css` próprio), o `@sistemazero/ui` e o member-shell NÃO mudaram.
 
 ## Arquitetura (o padrão central — preserve-o; espelha o @sistemazero/admin)
 
@@ -209,7 +270,7 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 ```
 src/
   app/
-    layout.tsx              Root (Geist fonts, Providers: next-themes + Toaster)
+    layout.tsx              Root (Geist fonts, data-sz-palette no <html>, Providers: Toaster)
     (auth)/                 Grupo público (AuthSplitShell: form + imagem da comunidade)
       login/ · esqueci-senha/ · redefinir-senha/   (page + *-form.tsx client)
     (app)/                  Grupo logado (layout gate + avatar fresco + CommunityTopnav)
@@ -227,7 +288,8 @@ src/
       me/avatar/route.ts    POST multipart → sharp→WebP → R2 → PATCH /auth/me
       cursos/[slug]/aulas/[lessonId]/anexos/[attachmentId]/route.ts
                             GET download de material c/ MARCA D'ÁGUA do aluno (R2 privado).
-                            UI: lesson-attachments.tsx baixa via fetch NA MESMA página
+                            UI: o BLOCO de materiais do member-shell (o card "Materiais
+                            da aula" no pé saiu em 19/09/2026) baixa via fetch NA MESMA página
                             (spinner por item + lista desabilitada; a marca d'água demora
                             segundos — target=_blank deixava uma guia em branco "morta");
                             blob → âncora programática c/ filename do Content-Disposition;
@@ -419,6 +481,10 @@ valida e só então importa o `server.js` standalone).
   SÓ aqui; 429 `QUIZ_COOLDOWN` por 5min após reprovar — a UI mostra countdown MM:SS).
   Navegação prev/next é DERIVADA do outline (a API não fornece). Views em `src/lib/types.ts`
   (espelham `members/src/application/mappers/views.ts` — NÃO os tipos admin).
+- **Alça do índice da aula (19/09/2026):** o player adulto monta `EdgePanelHandle` do pacote UI
+  como irmão da gaveta, não no cabeçalho do conteúdo. A alça branca usa `--lesson-outline-width`
+  (18rem no desktop; `min(20rem,90vw)` no celular), a mesma largura da gaveta, para seguir sua
+  borda na transição e ficar visível na borda da tela quando fechada. O botão antigo no topo saiu.
 - **Trava sequencial das aulas (estilo Duolingo, 06/2026):** `LessonOutlineView.locked` (do
   members) marca aulas ainda bloqueadas (curso com `sequential_lock` ON e aulas anteriores não
   concluídas). A lista do curso (`cursos/[slug]/page.tsx`) renderiza a aula travada com cadeado
@@ -494,3 +560,13 @@ valida e só então importa o `server.js` standalone).
 - [ ] Novo endpoint do gateway? Atualizou `src/server/*` + tipos + este `CLAUDE.md`.
 - [ ] Mexeu nas regras de env? `src/instrumentation.ts` e `scripts/boot-check.mjs` em SINCRONIA.
 - [ ] Chamada de saída nova? Propaga `x-forwarded-for`/`x-request-id` + `AbortSignal.timeout`.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

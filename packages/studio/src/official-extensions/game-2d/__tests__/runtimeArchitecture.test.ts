@@ -7,6 +7,7 @@ import { gameTwoDInputAndMotionRuntime } from '../runtime/inputAndMotion'
 import { gameTwoDLifecycleRuntime } from '../runtime/lifecycle'
 import { gameTwoDPhysicsRuntime } from '../runtime/physics'
 import { gameTwoDSpritesRuntime } from '../runtime/sprites'
+import { gameTwoDTextSpritesRuntime } from '../runtime/textSprites'
 import { gameTwoDUtilitiesRuntime } from '../runtime/utilities'
 import { gameTwoDWorldRuntime } from '../runtime/world'
 
@@ -35,6 +36,7 @@ describe('gameTwoDRuntime — arquitetura dos domínios', () => {
       [gameTwoDArcadeKitsRuntime, 'arcade-kits'],
       [gameTwoDEnemiesRuntime, 'enemies'],
       [gameTwoDSpritesRuntime, 'sprites'],
+      [gameTwoDTextSpritesRuntime, 'text-sprites'],
       [gameTwoDUtilitiesRuntime, 'utilities'],
     ] as const
 
@@ -60,6 +62,7 @@ describe('gameTwoDRuntime — arquitetura dos domínios', () => {
       'sprites',
       'stage-accessibility',
       'stage-backdrop',
+      'text-sprites',
       'utilities',
       'world',
     ])

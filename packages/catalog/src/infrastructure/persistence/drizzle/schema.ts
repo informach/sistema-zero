@@ -1,6 +1,8 @@
+import { sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -35,6 +37,8 @@ export const offerStatusEnum = catalog.enum('offer_status', [
   'archived',
 ])
 export const pricingModeEnum = catalog.enum('pricing_mode', ['one_time', 'subscription'])
+export const accessModeEnum = catalog.enum('access_mode', ['lifetime', 'fixed', 'billing_cycle'])
+export const accessDurationUnitEnum = catalog.enum('access_duration_unit', ['days', 'months'])
 export const couponTypeEnum = catalog.enum('coupon_type', ['percent', 'fixed'])
 export const couponStatusEnum = catalog.enum('coupon_status', ['active', 'inactive', 'archived'])
 
@@ -103,6 +107,11 @@ export const offers = catalog.table(
     compareAtPriceCents: integer('compare_at_price_cents'),
     currency: text('currency').notNull().default('BRL'),
     pricingMode: pricingModeEnum('pricing_mode').notNull().default('one_time'),
+    // As migrations 0005→0007 fazem expand/backfill/contract: as colunas entram
+    // anuláveis, ofertas antigas são classificadas e só então o modo vira NOT NULL.
+    accessMode: accessModeEnum('access_mode').notNull(),
+    accessDurationValue: integer('access_duration_value'),
+    accessDurationUnit: accessDurationUnitEnum('access_duration_unit'),
     // Periodicidade da ASSINATURA em meses (mensal=1, anual=12). Null em one_time;
     // oferta subscription ATIVA exige o valor (invariante no agregado). É o
     // `intervalMonths` do plano Efí que o funil manda ao payments.
@@ -122,6 +131,27 @@ export const offers = catalog.table(
     uniqueIndex('offers_code_uq').on(t.code),
     uniqueIndex('offers_slug_uq').on(t.slug),
     index('offers_product_idx').on(t.productId),
+    check(
+      'offers_access_pricing_mode_ck',
+      sql`(
+        (${t.pricingMode} = 'one_time' AND ${t.accessMode} IN ('lifetime', 'fixed'))
+        OR (${t.pricingMode} = 'subscription' AND ${t.accessMode} = 'billing_cycle')
+      )`,
+    ),
+    check(
+      'offers_access_duration_ck',
+      sql`(
+        ${t.accessMode} = 'fixed'
+        AND (
+          (${t.accessDurationValue} IS NULL AND ${t.accessDurationUnit} IS NULL AND ${t.status} <> 'active')
+          OR (${t.accessDurationValue} > 0 AND ${t.accessDurationUnit} IS NOT NULL)
+        )
+      ) OR (
+        ${t.accessMode} <> 'fixed'
+        AND ${t.accessDurationValue} IS NULL
+        AND ${t.accessDurationUnit} IS NULL
+      )`,
+    ),
   ],
 )
 

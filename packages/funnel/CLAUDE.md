@@ -95,7 +95,12 @@ o `resolveOffer` é só o fallback quando `offerRef` é nulo, e também resolve 
 slug da env TEM que existir no catálogo (senão **502 CATALOG_ERROR** na cotação). Criar funil novo →
 **criar a env `FUNNEL_OFFER_<KEY>` no Railway (staging+prod)**, senão o funil nem sobe. (`CATALOG_OFFER_SLUG`/
 `CATALOG_OFFER_OVERRIDES` REMOVIDOS.) Promoção só de PREÇO/cupom não precisa de nada disso: edite a oferta no
-admin do catálogo. Teste: `tests/unit/offer.test.ts`.
+admin do catálogo. A view da oferta traz também `accessMode/accessDurationValue/accessDurationUnit`:
+`server/catalog.ts` valida preço e política na mesma resposta/cache, rejeita combinações incoerentes e
+aceita resposta legada sem os três campos apenas durante a implantação (`one_time → lifetime`,
+`subscription → billing_cycle`), sempre emitindo
+`catalog.offer_access_policy_legacy_fallback`. Resposta parcial não usa fallback. Testes:
+`tests/unit/offer.test.ts` e `tests/unit/catalog-cache.test.ts`.
 
 **Quiz por funil (`FunnelQuiz`):** cada funil declara `steps`, `valueSchema` (zod por chave),
 `derive?(answers)` (calculadas, ex.: custo_mensal) e `computePerfil?(answers)` (diagnóstico → string,
@@ -126,19 +131,19 @@ admin). O escopo `.theme-kids` em `global.css` **redefine os tokens** `--color-*
 `--font-sans` → Nunito (h1–h3 **Baloo 2**, via `@fontsource` — a MESMA display do
 community-kids, unificada em 07/2026; Fredoka foi removida do pacote). Como as utilitárias
 (`text-lime`/`bg-card`/`border-line`…) são `var(--color-*)`, **todas as páginas/ilhas compartilhadas
-re-skinam sem mudar markup** (quiz, resultado, checkout, obrigado, PreCheckoutModal).
+re-skinam sem mudar markup** (quiz, resultado, checkout, obrigado, PreCheckoutModal). A fonte
+CANÔNICA é `packages/ui/src/styles/community-kids-theme.css` (`--sz-community-*`), importada por
+`@sistemazero/ui/theme-kids.css`; o funil inteiro, inclusive o Desafio, usa a mesma identidade da
+plataforma. Não repetir valores Pen em `global.css` nem nos bodies bespoke: criar somente aliases
+semânticos com `var(--sz-community-*)`.
 
-**Tema kids = CLARO e colorido (11/07, extraído da página colorida aprovada; é o tema oficial de
-TODO funil kids futuro — basta `theme:'kids'`):** fundo **azul-céu `#E4F2FF`** nas etapas
-compartilhadas (quiz/resultado/checkout/obrigado; a página de vendas usa o creme `#FFF7E9` próprio
-dentro do `.dpj`), cards brancos, tinta `#26314A`, `--color-lime` = **laranja profundo `#EF6C00`**
-(token de TEXTO/acento, legível no claro) e `--color-cyan` = **azul `#1E88E5`**; radius 16/22px. O
-**CTA usa gradiente laranja vivo** (`#FFB53F→#FF9A1F`) com **sombra 3D dura** (`box-shadow: 0 6px 0
-#D8760A` + `:active` afunda) via overrides `.theme-kids .btn/.btn-primary/.card` no fim do
-`global.css` (fora de `@layer`, DEPOIS dos componentes base). Paleta de apoio da página de vendas
-(no `.dpj`): rosa `#F368A6`, verde `#37C871`, amarelo `#FFCE3A`, navy `#0C1E3E`. Textos logo abaixo
-de um CTA 3D pedem **respiro extra** (~26px+, a sombra ocupa a área); num container de altura fixa
-(ex.: a faixa sticky do topo da oferta), compense a sombra com `margin-bottom` igual à sua altura.
+**Tema kids = identidade da Comunidade Kids (17/09; é o tema oficial de TODO funil kids futuro —
+basta `theme:'kids'`):** as páginas compartilhadas e as duas ofertas usam o chão Pen, cartões
+brancos, tinta Pen e ação azul. O CTA é azul chapado com o degrau
+`--sz-community-action-step`; cartões interativos usam `--sz-community-card-step`. Os pontos de
+alegria (rosa, verde, amarelo, roxo e laranja) também vêm da fonte canônica. Textos logo abaixo de
+um CTA 3D pedem **respiro extra**; num container de altura fixa, compense a sombra com
+`margin-bottom` igual à sua altura.
 ⚠️ `overflow-x` em wrapper que contém um sticky deve ser `clip` (nunca `hidden`, que cria scroll
 container e mata o sticky). O wordmark branco (`img[alt="Sistema Zero"]`) recebe filtro escuro no
 kids. Ilustrações dos personagens: 3D cartoon, geradas com chroma key `#00B140` e recortadas para
@@ -152,9 +157,9 @@ promover a um map local `Record<funnelKey, Component>`). `content.sales` (shape 
 **opcional** — funis com layout de vendas próprio (Desafio, Comunidade) trazem a cópia no próprio
 body e ficam sem `sales`. Cada body monta o seu PRÓPRIO `<BaseLayout>` (título/tema/JSON-LD/
 preload). `src/components/funnel/oferta/NoComandoOfertaBody.astro` = template padrão (16 seções a
-partir de `SALES`); `DesafioOfertaBody.astro` = layout sob medida (porte fiel da página colorida
-aprovada: creme + azul + laranja, balões dos personagens, decorações flutuantes), com o CSS bespoke
-num `<style>` Astro escopado por `.dpj` (tokens próprios no wrapper, não no `:root`) e ícones
+partir de `SALES`); `DesafioOfertaBody.astro` = layout sob medida alinhado à plataforma (balões dos
+personagens, decorações flutuantes), com o CSS bespoke num `<style>` Astro escopado por `.dpj`
+(aliases semânticos no wrapper apontam para `--sz-community-*`, nunca valores repetidos) e ícones
 **Material Symbols self-hosted** (`@fontsource/material-symbols-rounded`; o NCI segue com o
 outlined); `ComunidadeOfertaBody.astro` = idem, escopado por `.cdc`. ⚠️ Astro escopa somando um
 atributo por elo do seletor: um override tipo `.kid.verde .name` só vence a base `.kid .char .name`
@@ -162,18 +167,30 @@ se incluir os MESMOS elos (`.kid.verde .char .name`). Os CTAs de compra levam `d
 o `PreCheckoutModal` (mesma ilha do NCI) abre o checkout; opcionalmente levam também
 **`data-checkout-oferta="<slug>"`** (o modal anexa `?oferta=` ao redirect e o checkout PRÉ-SELECIONA
 o plano — validado no servidor contra `{principal, altOffer}`, slug forjado → 400 INVALID_OFFER).
+Links/QRs promocionais aceitam `?cupom=` e o alias `?coupon=`. A rota normaliza um único código,
+faz a cotação autoritativa e repassa o código pelo `PreCheckoutModal`; a UI só exibe desconto
+confirmado pelo servidor. Cupom inválido/esgotado ou falha técnica bloqueia os componentes de
+pagamento até o adulto aplicar outro código ou clicar explicitamente em “Continuar sem cupom”.
 Para ASSINATURA, a rota da oferta também resolve a IRMÃ do alternador (`offer.altOffer` →
 `getActiveOffer`) e passa `plans {main, alt}` ao body próprio (o Comunidade normaliza mensal/anual
 por `billingIntervalMonths`, sem assumir qual é a principal da env). ⚠️ O fallback de preço da rota
 (`env.PRODUCT_PRICE_CENTS`) é o do NCI — body de outro funil com catálogo fora deve usar o SEU
 fallback (`COMUNIDADE_PRECO_FALLBACK`).
 
-**Funil kids "Desafio do Primeiro Jogo" (`kids/desafio-primeiro-jogo`, R$ 37):** criança 9+ monta um
-jogo de nave em 5 dias; **comunicação SEMPRE aos pais** (CONANDA/ECA — rodapé com o aviso legal).
-Módulo em `src/funnels/desafio-primeiro-jogo/` (index/quiz/content): perfil = a resposta da P1
-(`perfil_p1`, sem motor de scoring), `derive` = `horas_ano_calculadas = horas/dia × dias/semana × 52`,
-`renderCorpo` resolve `{resposta_p3}`/`{resposta_p5}`/`{resultado}`. A oferta no catálogo
-(slug `desafio-primeiro-jogo`, âncora R$ 97) é passo da usuária no admin (igual ao NCI).
+**Funil kids "Desafio do Primeiro Jogo" (`kids/desafio-primeiro-jogo`, R$ 67 público / R$ 37 com
+cupom de evento):** criança 9+ monta um jogo de nave em 5 etapas, com 30 dias contados da aprovação;
+é pagamento único sem renovação. **Comunicação SEMPRE aos pais** (CONANDA/ECA — rodapé com o aviso legal).
+Módulo em `src/funnels/desafio-primeiro-jogo/` (index/quiz/content): 7 perguntas de múltipla
+escolha; o perfil resulta da maioria entre `perfil_p1` a `perfil_p4`, com `perfil_p1` como
+desempate; `renderCorpo` resolve `{resposta_uso}`/`{resposta_desejo}`/`{resposta_apoio}`. O funil público deve
+apontar para `desafio-primeiro-jogo-30-dias`; a oferta `desafio-primeiro-jogo` continua
+reservada aos contratos vitalícios históricos e ao fluxo de bolsas.
+
+No pós-pagamento desse funil, `welcome-email.ts` lê o snapshot congelado da cobrança. Quando a
+política é `fixed`, usa `challenge-access-approved` (e-mail + WhatsApp) e informa a data/hora exata
+de término em São Paulo; comprador novo recebe o link de definir senha, e comprador recorrente o
+link direto para os cursos. Snapshot legado/inválido cai nos templates genéricos `welcome`/
+`new-access`, sem inventar uma validade.
 ⚠️ **Pré-checkout no KIDS deixa explícito que os dados são do RESPONSÁVEL** (28/06): o
 `PreCheckoutModal` deriva `isKids = funnel.startsWith('kids/')` (a `funnel` prop é a chave
 `audience/produto`) e, no kids, troca o subtítulo, adiciona um callout ("Estes dados são do
@@ -210,13 +227,17 @@ o estado (códigos, embaixadores, resgates, convites) vive no **@sistemazero/ref
 via gateway com o HMAC de borda de sempre (`gateway-client.ts`: `resolveReferralCode`,
 `getAmbassadorByToken`, `createAmbassadorInvite`, `redeemScholarship`). SSR resolve o código/token
 (404 amigável UNIFORME p/ inexistente/desativado; gateway fora → tela "recarregue", NUNCA afirmar
-que o código não existe) e passa tudo por prop às ilhas `BolsaResgate` (form do RESPONSÁVEL —
+que o código não existe). Em `/bolsa`, `resolveReferralGiftPage` exige `giftAvailable:boolean`
+na resposta do referrals: `false` mantém o link, mas mostra "em preparação" sem formulário;
+resposta incompleta/erro do gateway falha fechada. A página apresenta somente o curso
+**Cadê Todo Mundo?** (8–15 anos), não o Desafio ou a assinatura. Quando disponível, passa
+os dados por prop às ilhas `BolsaResgate` (form do RESPONSÁVEL —
 mesmo aviso kids do pré-checkout; telefone OPCIONAL, não reusar `ContactSchema`; estados
 completed/processing/409s por `ApiError.code`; o resgate é RETOMÁVEL no servidor — re-enviar após
 falha continua de onde parou) e `EmbaixadorPainel` (copiar link/mensagem pronta pro WhatsApp DELE
 — a plataforma NUNCA dispara WhatsApp; convite por e-mail único). Handlers puros em
 `server/referrals.ts` (`postRedeemScholarship`/`postAmbassadorInvite` — repassam envelopes
-conhecidos [404/409/429], 5xx/timeout viram 502 `GATEWAY_ERROR`), rotas finas
+conhecidos [404/409/429 e 503 `GIFT_UNAVAILABLE` no resgate], demais 5xx/timeout viram 502 `GATEWAY_ERROR`), rotas finas
 `/api/bolsa/resgatar` e `/api/embaixador/convites`. ⚠️ Rate limit: as escritas entraram no
 `RATE_LIMITED_WRITE` da middleware e os GETs SSR no `rate-limit-paths.ts` (cada hit = 1 chamada
 assinada ao gateway) — landing nova DEVE entrar nos dois regex. Testes:
@@ -256,6 +277,17 @@ marcadores abraçando SÓ ela; um novo body que conte a história = marcar igual
 automática). Os marcadores são comentários HTML e SAEM no HTML servido (inofensivo, consciente).
 Títulos de página usam **`Página | Sistema Zero`** (barra vertical; nada de travessão nem `·` em
 `<title>`/`seoTitle` — o byline visual "Helena e Júlio · Sistema Zero" mantém o `·`).
+
+### "Jornada" é NOME PRÓPRIO (22/09/2026)
+
+A **Carreira do Criador** virou **Jornada do Criador** (a dona achou "carreira" pesado demais para
+criança; e o app kids já dizia "jornada" em oito lugares). A regra da copy: **"jornada" pertence ao
+conceito**. Onde a frase precisar da palavra comum, use outra — *caminho*, *percurso*, *escada*.
+Sem isso o nome se dissolve e o texto produz coisas como "uma jornada: a Jornada do Criador" ou
+"a Jornada organiza a jornada", que foi exatamente o que a troca mecânica gerou aqui.
+⚠️ **Exceção deliberada:** `src/content/legal-kids.ts` mantém "não promete renda, emprego ou
+**carreira**" — ali a palavra está no sentido adulto/profissional, que é justamente o que a
+cláusula nega. O nome do produto não pode entrar naquela frase.
 
 ## Arquitetura (o padrão central — preserve-o)
 
@@ -374,9 +406,17 @@ pendurado segurava o handler e o SSR do checkout p/ sempre).
 - **`/renovar?oferta=<slug>`** (destino do lembrete de renovação do members): resolve o funil
   pela oferta (principal por env; irmã via altOffer no catálogo) → 302 p/ o checkout dele
   (com `?oferta=` quando é a irmã). Slug desconhecido → `/`.
-- ⚠️ `getActiveOffer` agora é OBRIGATÓRIO nos handlers (mode/intervalo): catálogo indisponível →
-  **502 `CATALOG_ERROR`** (sem view não dá p/ saber o modo — cobrar anual como vitalícia seria
-  bug de dinheiro). `clearOfferCache()` é hook de TESTE (cache por slug em módulo).
+- ⚠️ `getActiveOffer` agora é OBRIGATÓRIO nos handlers (modo de cobrança, intervalo e política de
+  acesso): catálogo indisponível → **502 `CATALOG_ERROR`** (sem view não dá p/ saber o modo — cobrar
+  anual como vitalícia seria bug de dinheiro). Preço e política são renovados juntos no cache. Uma
+  resposta 200 indisponível/incoerente apaga a cópia antiga; só falha transitória não-200 pode usar
+  stale. `clearOfferCache()` é hook de TESTE (cache por slug em módulo).
+- A cotação autoritativa devolve preço, modo de cobrança, intervalo, garantia e política de acesso
+  no MESMO contrato. Antes de chamar o provedor, o funil grava a versão validada em
+  `lead_payments.offer_snapshot` (migration `0015`): boleto/Pix antigos preservam exatamente os
+  termos aceitos mesmo que a oferta mude depois. Snapshot presente e malformado falha fechado com
+  `502 SNAPSHOT_RETRY`; cobrança legada sem snapshot continua pelo caminho compatível. O anual pago
+  à vista é congelado como compra única com 12 meses fixos. A modalidade `lifetime` segue válida.
 
 **Confirmação de pagamento (duas vias):**
 - **Polling** (`PixCheckout` → `GET /api/checkout/:id` via gateway) — UX/fallback.
@@ -462,11 +502,11 @@ histórico (conflito preserva o original — re-aponte do webhook passa sem cupo
   stale-while-revalidate=300`), `resultado`, `checkout`, `obrigado`, `admin`, `admin/login`,
   **todas** `/api/*`, `health`. Páginas com dados do lead setam `cache-control: no-store` e
   redirecionam se faltar cookie/contato.
-  - ⚠️ **`obrigado` é SSR só para EXPIRAR o cookie do lead** (`clearLeadCookie`, `Max-Age=0`):
-    após a compra, o próximo checkout começa do zero. Combina com dois pontos no `checkout.astro`:
-    o **CPF NUNCA é pré-preenchido** (`initialContact.cpf = ''` — dado sensível, digitado a cada
-    compra) e o **lead já PAGO não é reaproveitado** (`if (lead?.paidAt) → novo lead`). Nome/e-mail/
-    telefone repopulam pela URL do pré-checkout. (Decisão do usuário, 06/2026.)
+  - ⚠️ **`obrigado` lê o lead e o snapshot da cobrança:** só afirma aprovação se `paid_at` existe e,
+    em prazo fixo, calcula a data final a partir desse instante com o mesmo algoritmo do members.
+    Pagamento pendente nunca inicia a contagem. O cookie é mantido para que a confirmação sobreviva
+    a um reload; uma nova jornada continua segura porque `POST /api/leads` e `checkout.astro` nunca
+    reaproveitam lead pago. O **CPF NUNCA é pré-preenchido** (`initialContact.cpf = ''`).
 
 ## Segurança
 
@@ -581,10 +621,27 @@ vez; `funnel_events` NÃO é limpa de propósito: é o analytics histórico) e `
 (histórico payment→lead, ver seção de pagamentos; além do par payment→lead + `coupon_code` +
 `access_period_months`, guarda o SNAPSHOT de payment-context da migration `0013`: `offer_ref` +
 `customer_name`/`customer_email`/`customer_phone`/`customer_document` — os dados da cobrança no
-momento do checkout).
+momento do checkout) e o contrato comercial versionado da migration `0015` em `offer_snapshot`
+(preço cheio/final, cupom, garantia, versão dos termos e política de acesso).
 Migrations forward-only por `drizzle-kit`, com **journal próprio por pacote**
 (`migrations: { table: 'funil_migrations' }`) no schema `drizzle` — NÃO compartilhe
 `__drizzle_migrations` entre pacotes (a dedupe por `created_at` pularia migrations).
+
+**Atribuição de eventos (migration `0016`):** `leads.attribution` guarda first-touch versionado com
+UTMs, `eventCode`, cupom inicial e landing path; só aceita identificadores técnicos curtos e nunca
+PII. `funnel_events.event_key` é único e dá idempotência aos marcos enviados por outros serviços.
+O admin filtra Respostas por `event_code` e agrega leads únicos por etapa e pagamentos pelo preço
+real do snapshot. A rota interna `POST /api/internal/challenge-events` exige
+`x-internal-token = FUNNEL_INTERNAL_TOKEN`, aceita no máximo 500 eventos por lote e resolve os leads
+em batch. O Members envia ativação, início, Dia 1 e conclusão; a compra da Comunidade só é atribuída
+quando existe uma jornada anterior do Desafio para o mesmo responsável.
+
+**Trava copy × oferta:** `FunnelDef.offerContract` torna uma promessa rígida da página verificável
+em runtime. O Desafio declara `one_time/fixed/30/days`; `/oferta`, `/checkout` e os quatro caminhos
+de cobrança falham fechados com 503/`OFFER_CONTRACT_MISMATCH` se a env apontar para outra política
+ou se o catálogo não puder comprová-la. A view é conferida para apresentação e a cotação
+autoritativa é conferida novamente antes de criar a cobrança, fechando também a corrida de cache.
+O preço permanece dinâmico no catálogo; só a política prometida pela copy é rígida.
 
 Colunas de controle pós-pagamento no lead (2º full review 06/2026): `welcome_sent_at` (claim
 atômico do welcome — ver "Boas-vindas") e `members_granted_at` (one-shot da concessão);

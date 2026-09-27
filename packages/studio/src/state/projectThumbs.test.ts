@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, it, mock } from 'bun:test'
+import { fakeIdbTransactions, fakeUseStore, resetFakeIdb } from '../testing/fakeIdbStore'
 
 // Mock FUNCIONAL de idb-keyval (Map único): estes testes precisam ler de volta
 // o que gravaram (o no-op padrão dos outros arquivos não serve aqui). O registry
@@ -8,7 +9,7 @@ import { afterAll, describe, expect, it, mock } from 'bun:test'
 const db = new Map<string, unknown>()
 let failThumbWrite = false
 mock.module('idb-keyval', () => ({
-  createStore: mock(() => ({ name: 'test-store' })),
+  createStore: mock((dbName: string) => fakeUseStore(dbName)),
   del: mock(async (k: string) => {
     db.delete(k)
   }),
@@ -19,23 +20,35 @@ mock.module('idb-keyval', () => ({
   getMany: mock(async (ks: string[]) => ks.map((k) => db.get(k))),
   keys: mock(async () => [...db.keys()]),
   set: mock(async (k: string, v: unknown) => {
-    if (failThumbWrite && k.startsWith('sz:project-thumb:')) throw new Error('quota cheia')
+    if (failThumbWrite && k.startsWith('sz:v2:project-thumb:')) throw new Error('quota cheia')
     db.set(k, v)
   }),
+  // A capa é gravada por uma transação do próprio store, que aplica pelo `setMany` (ver
+  // `testing/fakeIdbStore.ts`): é aqui que o "disco cheio" recusa a capa.
   setMany: mock(async (pairs: Array<[string, unknown]>) => {
+    if (failThumbWrite && pairs.some(([k]) => k.startsWith('sz:v2:project-thumb:'))) {
+      throw new Error('quota cheia')
+    }
     for (const [k, v] of pairs) db.set(k, v)
   }),
   update: mock(async () => undefined),
 }))
 
-const { listAllProjects, MAX_PROJECT_THUMB_CHARS, writeProjectThumb } = await import(
-  './persistence'
-)
+const {
+  adoptProjectThumbs,
+  listAllProjects,
+  loadProjectThumb,
+  MAX_PROJECT_THUMB_CHARS,
+  persistProject,
+  setStudioCloudMirror,
+  writeProjectThumb,
+} = await import('./persistence')
+const { createEmptyProject } = await import('#core')
 
 afterAll(() => {
   // Devolve o no-op padrão da suíte (mesma forma de persistence.test.ts).
   mock.module('idb-keyval', () => ({
-    createStore: mock(() => ({ name: 'test-store' })),
+    createStore: mock((dbName: string) => fakeUseStore(dbName)),
     del: mock(async () => undefined),
     delMany: mock(async () => undefined),
     get: mock(async (): Promise<unknown> => undefined),
@@ -55,14 +68,14 @@ const meta = (id: string, name: string) => ({
   mode: 'blocks',
 })
 
-describe('miniaturas de projeto (partição sz:project-thumb:)', () => {
+describe('miniaturas de projeto (partição sz:v2:project-thumb:)', () => {
   it('só grava com o meta existente (delete concorrente não ressuscita órfão) e a lista anexa', async () => {
     db.clear()
     failThumbWrite = false
     expect(await writeProjectThumb('p1', 'data:image/jpeg;base64,AAA')).toBe(false)
-    expect(db.has('sz:project-thumb:p1')).toBe(false)
+    expect(db.has('sz:v2:project-thumb:p1')).toBe(false)
 
-    db.set('sz:project-meta:p1', meta('p1', 'Jogo'))
+    db.set('sz:v2:project-meta:p1', meta('p1', 'Jogo'))
     expect(await writeProjectThumb('p1', 'data:image/jpeg;base64,AAA')).toBe(true)
     const list = await listAllProjects()
     expect(list[0]?.thumbDataUrl).toBe('data:image/jpeg;base64,AAA')
@@ -71,24 +84,138 @@ describe('miniaturas de projeto (partição sz:project-thumb:)', () => {
   it('recusa data URL que não é imagem ou acima do teto', async () => {
     db.clear()
     failThumbWrite = false
-    db.set('sz:project-meta:p2', meta('p2', 'Jogo 2'))
+    db.set('sz:v2:project-meta:p2', meta('p2', 'Jogo 2'))
     expect(await writeProjectThumb('p2', 'data:text/html;base64,AAA')).toBe(false)
     expect(
       await writeProjectThumb('p2', `data:image/png;base64,${'A'.repeat(MAX_PROJECT_THUMB_CHARS)}`),
     ).toBe(false)
-    expect(db.has('sz:project-thumb:p2')).toBe(false)
+    expect(db.has('sz:v2:project-thumb:p2')).toBe(false)
     const list = await listAllProjects()
     expect(list[0]?.thumbDataUrl).toBeUndefined()
   })
 
   it('informa falha de persistência sem lançar nem criar uma miniatura fantasma', async () => {
     db.clear()
-    db.set('sz:project-meta:p3', meta('p3', 'Jogo 3'))
+    db.set('sz:v2:project-meta:p3', meta('p3', 'Jogo 3'))
     failThumbWrite = true
 
     expect(await writeProjectThumb('p3', 'data:image/jpeg;base64,AAA')).toBe(false)
-    expect(db.has('sz:project-thumb:p3')).toBe(false)
+    expect(db.has('sz:v2:project-thumb:p3')).toBe(false)
 
     failThumbWrite = false
+  })
+})
+
+describe('a capa viaja: restauro com miniatura, adoção e o aviso ao espelho', () => {
+  const THUMB = 'data:image/jpeg;base64,NUVEM'
+
+  it('persistProject com `replace` e `thumb` grava a capa que veio; sem `thumb` apaga a antiga', async () => {
+    db.clear()
+    failThumbWrite = false
+    const project = createEmptyProject('01J00000000000000000000CAP', 'Nave')
+    await persistProject(project, { replace: true, thumb: THUMB })
+    expect(await loadProjectThumb(project.id)).toBe(THUMB)
+    await persistProject(project, { replace: true })
+    expect(await loadProjectThumb(project.id)).toBeNull()
+    // Miniatura inválida (não é imagem) é ignorada: não grava nem apaga por engano.
+    await persistProject(project, { replace: true, thumb: 'data:text/plain,x' })
+    expect(await loadProjectThumb(project.id)).toBeNull()
+  })
+
+  it('adoptProjectThumbs grava só em quem NÃO tem capa, exige o meta e devolve quantas adotou', async () => {
+    db.clear()
+    failThumbWrite = false
+    db.set('sz:v2:project-meta:semcapa', meta('semcapa', 'A'))
+    db.set('sz:v2:project-meta:comcapa', meta('comcapa', 'B'))
+    db.set('sz:v2:project-thumb:comcapa', {
+      id: 'comcapa',
+      dataUrl: 'data:image/jpeg;base64,MINHA',
+    })
+    const adopted = await adoptProjectThumbs([
+      { id: 'semcapa', thumb: THUMB },
+      { id: 'comcapa', thumb: THUMB },
+      { id: 'inexistente', thumb: THUMB },
+    ])
+    expect(adopted).toBe(1)
+    expect(await loadProjectThumb('semcapa')).toBe(THUMB)
+    expect(await loadProjectThumb('comcapa')).toBe('data:image/jpeg;base64,MINHA')
+    expect(db.has('sz:v2:project-thumb:inexistente')).toBe(false)
+  })
+
+  it('writeProjectThumb avisa o espelho por `onThumbChanged` (não por `onChanged`); `silent` e a adoção não avisam', async () => {
+    db.clear()
+    failThumbWrite = false
+    const changed: string[] = []
+    const thumbs: string[] = []
+    setStudioCloudMirror({
+      onChanged: (id) => changed.push(id),
+      onDeleted: () => {},
+      onThumbChanged: (id) => thumbs.push(id),
+    })
+    try {
+      db.set('sz:v2:project-meta:p9', meta('p9', 'Nave'))
+      expect(await writeProjectThumb('p9', THUMB)).toBe(true)
+      expect(thumbs).toEqual(['p9'])
+      expect(changed).toEqual([])
+      expect(await writeProjectThumb('p9', THUMB, { silent: true })).toBe(true)
+      expect(thumbs).toEqual(['p9'])
+      db.delete('sz:v2:project-thumb:p9')
+      await adoptProjectThumbs([{ id: 'p9', thumb: THUMB }])
+      expect(thumbs).toEqual(['p9'])
+      // Sem o meta a gravação é recusada e ninguém é avisado.
+      expect(await writeProjectThumb('fantasma', THUMB)).toBe(false)
+      expect(thumbs).toEqual(['p9'])
+    } finally {
+      setStudioCloudMirror(null)
+    }
+  })
+})
+
+describe('full review da capa (26/09/2026): a adoção lê CHAVES, e a cópia de conflito nasce com capa', () => {
+  const THUMB = 'data:image/jpeg;base64,NUVEM'
+
+  it('M1: adoptProjectThumbs decide pela EXISTÊNCIA da chave (uma leitura das chaves) e não lê o VALOR de nenhuma capa local', async () => {
+    db.clear()
+    failThumbWrite = false
+    resetFakeIdb()
+    db.set('sz:v2:project-meta:semcapa', meta('semcapa', 'A'))
+    db.set('sz:v2:project-meta:comcapa', meta('comcapa', 'B'))
+    db.set('sz:v2:project-thumb:comcapa', {
+      id: 'comcapa',
+      dataUrl: 'data:image/jpeg;base64,MINHA',
+    })
+    expect(
+      await adoptProjectThumbs([
+        { id: 'semcapa', thumb: THUMB },
+        { id: 'comcapa', thumb: THUMB },
+      ]),
+    ).toBe(1)
+    const leituras = fakeIdbTransactions().filter((t) => t.mode === 'readonly')
+    const chavesLidas = leituras.flatMap((t) =>
+      t.steps.flatMap((s) => (s.type === 'get' ? [String(s.key)] : [])),
+    )
+    // Nenhuma capa local foi LIDA por valor (nem a que existe, nem a que não existe).
+    expect(chavesLidas.filter((k) => k.startsWith('sz:v2:project-thumb:'))).toEqual([])
+    expect(leituras.some((t) => t.steps.some((s) => s.type === 'getAllKeys'))).toBe(true)
+    expect(await loadProjectThumb('comcapa')).toBe('data:image/jpeg;base64,MINHA')
+    expect(await loadProjectThumb('semcapa')).toBe(THUMB)
+  })
+
+  it('B4: importProjectSnapshot com `thumb` grava a capa junto com o projeto NOVO (a cópia "(de outro aparelho)" não nasce em branco)', async () => {
+    db.clear()
+    failThumbWrite = false
+    const { importProjectSnapshot } = await import('../projects/importSnapshot')
+    const raw = { ...createEmptyProject('01J00000000000000000000ORIG', 'Nave'), assets: [] }
+    const { project } = await importProjectSnapshot(raw, {
+      name: 'Nave (de outro aparelho)',
+      silent: true,
+      thumb: THUMB,
+    })
+    expect(project.id).not.toBe(raw.id)
+    expect(project.name).toBe('Nave (de outro aparelho)')
+    expect(await loadProjectThumb(project.id)).toBe(THUMB)
+    // Sem `thumb` (ou com uma inválida) o projeto novo nasce sem capa, como sempre.
+    const semCapa = await importProjectSnapshot(raw, { silent: true, thumb: 'data:text/plain,x' })
+    expect(await loadProjectThumb(semCapa.project.id)).toBeNull()
   })
 })

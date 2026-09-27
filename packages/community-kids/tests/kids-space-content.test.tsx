@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import {
   KidsSpaceContent,
   type KidsSpaceContentProps,
@@ -67,6 +67,7 @@ function contentProps(): KidsSpaceContentProps {
   return {
     context: {
       isWall: false,
+      isStaff: false,
       space: {
         id: 'space-1',
         slug: 'clube',
@@ -75,6 +76,7 @@ function contentProps(): KidsSpaceContentProps {
         iconUrl: null,
         audience: 'kids',
         locked: false,
+        canInteract: true,
       },
       viewerId: 'profile-1',
       spaceChannelIds: [channel.id],
@@ -121,6 +123,8 @@ function contentProps(): KidsSpaceContentProps {
       threads: [thread],
       challengeThreads: [],
       challenge: null,
+      sort: 'activity',
+      onSortChange: noop,
       onOpenThread: noop,
       threadsHasMore: true,
       loadingMoreThreads: false,
@@ -249,6 +253,28 @@ describe('KidsSpaceContent — comportamento do boundary de apresentação', () 
     expect(onSendReply).toHaveBeenCalledTimes(1)
   })
 
+  test('os filtros do Mural pedem a ordem ao orquestrador e marcam a escolhida', () => {
+    const props = contentProps()
+    const onSortChange = mock((_sort: string) => {})
+    render(
+      <KidsSpaceContent
+        {...props}
+        context={{ ...props.context, isWall: true }}
+        feed={{ ...props.feed, sort: 'recent', onSortChange }}
+      />,
+    )
+    const grupo = screen.getByRole('group', { name: 'Ordem dos jogos' })
+    expect(grupo).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Novidades' }).getAttribute('aria-pressed')).toBe(
+      'true',
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Mais jogados' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Todos os jogos' }))
+    expect(onSortChange.mock.calls).toEqual([['plays'], ['activity']])
+    // "Da minha turma" da imagem não existe no sistema: não pode aparecer como filtro.
+    expect(screen.queryByRole('button', { name: /minha turma/i })).toBeNull()
+  })
+
   test('separa a prateleira do desafio e encaminha abertura e remix no Mural', () => {
     const props = contentProps()
     const showcase = {
@@ -281,5 +307,56 @@ describe('KidsSpaceContent — comportamento do boundary de apresentação', () 
 
     expect(onOpenThread).toHaveBeenCalledWith(showcase)
     expect(onRemix).toHaveBeenCalledWith(showcase)
+  })
+
+  test('visitante do Mural pode ver e jogar, sem controles sociais ou de cópia', () => {
+    const props = contentProps()
+    const showcase = { ...thread, isShowcase: true, playId: 'play-1' }
+    render(
+      <KidsSpaceContent
+        {...props}
+        context={{
+          ...props.context,
+          isWall: true,
+          space: { ...props.context.space, canInteract: false },
+        }}
+        discussion={{
+          ...props.discussion,
+          thread: showcase,
+          comments: [comment],
+          onReact: null,
+          canReply: false,
+        }}
+      />,
+    )
+
+    expect(screen.getByRole('link', { name: /Jogar/i })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Comentar' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Fazer a minha versão' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '👍' })).toBeNull()
+    expect(screen.getByText(/Seu presente permite ver e jogar os projetos/)).toBeTruthy()
+    expect(screen.getByText('Inspire-se com os jogos da turma')).toBeTruthy()
+    expect(
+      screen.getByText('Explore e jogue as criações da turma no Mural dos Criadores.'),
+    ).toBeTruthy()
+  })
+})
+
+describe('KidsSpaceContent — o Clube no celular não rola de lado', () => {
+  // Medido na conferência (11/09/2026): a 390px a página rolava 62px de lado. A fileira de
+  // canais rola por dentro do painel, mas a coluna `auto` da grade crescia até ela inteira,
+  // e o "com novidades" (sr-only, absoluto) escapava do recorte da fileira. happy-dom não
+  // faz layout: travam-se as duas classes que resolvem.
+  test('a coluna dos canais encolhe e a fileira contém o que é absoluto dentro dela', async () => {
+    installActivityFetch()
+    await act(async () => {
+      render(<KidsSpaceContent {...contentProps()} />)
+    })
+    const painel = screen.getByRole('navigation', { name: 'Canais do clube' })
+    expect((painel.parentElement as HTMLElement).className.split(' ')).toContain('grid-cols-1')
+    const fileira = painel.querySelector('ul') as HTMLElement
+    expect(fileira.className.split(' ')).toEqual(
+      expect.arrayContaining(['relative', 'overflow-x-auto']),
+    )
   })
 })

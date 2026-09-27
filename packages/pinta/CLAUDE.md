@@ -1,5 +1,26 @@
 # CLAUDE.md — @sistemazero/pinta
 
+## ⚠️⚠️ `content-visibility: auto` num cartão que recebe o ponteiro faz o cursor PISCAR (13/09/2026)
+
+Relato dela: "quando passo o mouse em cima de um card de um projeto em andamento, o mouse fica
+todo locão piscando". A causa é o `content-visibility: auto` que o cartão da galeria tinha desde
+19/08.
+
+A mecânica é um laço: passar o ponteiro torna o elemento **relevante**, o navegador renderiza o
+conteúdo, a altura REAL substitui a reservada por `contain-intrinsic-size`, a linha da grade
+reflui, o ponteiro deixa de estar em cima, o cartão volta a ser irrelevante e encolhe — e
+recomeça. O cursor alterna entre mão e seta várias vezes por segundo.
+
+⚠️ **A altura reservada não tinha como casar.** A miniatura é `aspect-square w-full` (no Molda,
+`aspect-[4/3]`), então a altura do cartão vem da LARGURA dele, que vem do número de colunas. O
+número reservado foi medido a 1440px com o menu aberto; em qualquer outra janela os dois
+discordam por construção. **No Estúdio a mesma técnica é segura** porque lá o cartão tem altura
+FIXA (`h-72` = 288px) e o reservado casa com ela — por isso a regra do `studio.css` FICA.
+
+⭐ **Não se perdeu otimização:** o custo real é pintar o canvas da miniatura, e isso já é
+preguiçoso por `IntersectionObserver` (`useNearViewport` no `AssetCard`, `paint={near}`). O que o
+`content-visibility` poupava a mais era o layout de meia dúzia de nós.
+
 > Sempre consulte o Context7 (docs atualizadas) antes de mexer em lib/framework, e use
 > Octocode para pesquisa/exploração de código no GitHub.
 
@@ -52,6 +73,55 @@ seu id ao `outputRef` e inicia a tarefa. A conclusão exige os itens obrigatóri
 vinculado e, quando `requiresStudioUse`, o sucesso de “Usar no Estúdio”. O host persiste o
 progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 
+⭐ **"Voltar ao plano" no painel (09/2026)**: com `PintaTaskSession.onReturnToPlan` (opcional;
+ausente = o botão não aparece) o painel ganha o botão de volta ao plano do Pensa, na galeria E no
+editor, inclusive com a tarefa concluída. O rótulo é o MESMO do Molda (`COPY.task.back`) e não muda
+enquanto guarda (`disabled` + `aria-busy` com o mesmo texto: trocá-lo mudaria o nome acessível no
+meio da ação). O id do plano já vem em `session.project.id` — nenhum parâmetro novo de URL.
+⭐⭐ **A seta que recolhe (18/09/2026)**: o brief era um `<details open>` — recolhia, mas com o
+triângulo do navegador (que criança não acha) e esquecendo a escolha ao sair. Virou botão de
+verdade (44px, `aria-expanded`, chevron `aria-hidden`), e o painel ganhou `mb-2`: o host empilha
+brief e palco sem vão nenhum, e sem a margem um encosta no outro. Quem LEMBRA é o HOST — o par
+OPCIONAL `collapsed`/`onCollapsedChange` do `PintaTaskSession` desce como DADO, o mesmo idioma do
+`menu.hidden`/`onToggle` do `hostChrome`, porque este pacote não conhece `viewerId` nem
+`localStorage`. Sem o par (playground, `<PintaLesson>`, admin) ele recolhe por conta própria e
+esquece ao sair. ⚠ Com o par, quem manda é o host: clicar AVISA e não abre sozinho.
+⚠ Recolhido, o `aria-controls` SAI (o corpo desmonta, e apontar para um id ausente é referência
+pendurada para o leitor de tela — a mesma régua do `Panel` deste pacote).
+⭐⭐ **Recolhido sobra UMA linha, e o painel veste a casca da comunidade (19/09/2026).** Dois
+pedidos dela no mesmo dia: *"quando fechar pode fechar tudo, mantendo só uma linha ali: o título e
+a setinha, para a gente deixar bastante espaço para as ferramentas"* e *"esse cartão está
+totalmente fora do design da identidade visual da comunidade"*.
+- **A casca é compartilhada**: `.sz-tool-guide` (`__head|__kicker|__title|__body|__foot|__alert`)
+  do `@sistemazero/ui/tool-chrome.css`, a MESMA do guia do Estúdio e do Molda — cartão branco,
+  canto de 20px, Baloo de 15px, 14/18px de respiro. O `rounded-2xl border-2 border-pin-accent/40
+  px-3 py-2` próprio saiu, e com ele o texto colado na curva (12px de lado e 8px embaixo, o que
+  ela relatou). Medido no playground: recolhido 141px → 50px de altura, com 19px à esquerda e
+  15px abaixo do título. Os botões viraram `.sz-tool-pill--primary|outline|quiet`.
+- ⚠️⚠️ **O pé de ROTINA passou a recolher junto** (o "Voltar ao plano" e a linha de situação), o
+  que REVOGA em parte o invariante de 18/09. A regra que ficou no lugar: **recolher esconde
+  conteúdo e ação de rotina, NUNCA um problema.** O recado de falha e o aviso do desenho ausente
+  — com os dois botões que o resolvem — seguem FORA do que recolhe, e a criança recupera a rotina
+  com um clique na seta, que nunca sai da tela. `TaskBriefPanel.test.tsx` trava os dois lados (e
+  não a tag: o teste antigo exigia `<details>` e foi reescrito).
+- ⚠️ O sobretítulo "GUIA DO PENSA" SOME recolhido: com ele o cabeçalho tem duas linhas, e ela
+  pediu uma. Aberto ele volta, porque é o que diz de onde veio aquele painel.
+- **Full review do lote (19/09/2026), o que ele mudou aqui:** a SITUAÇÃO da tarefa subiu para o
+  cabeçalho (`.sz-tool-guide__state`) — ela morava no corpo, que recolhe, então a criança perdia
+  de vista se a tarefa estava pronta justo quando escolhia recolher; e com o recado de falha na
+  tela o PÉ fica, porque "tente de novo" tem de apontar para um botão que existe (a regra é o
+  problema E o que o resolve). O "Vincular outro desenho" trocou a pílula quieta pela de contorno:
+  dentro do recado tingido, a quieta media 1,04:1 sem fio nenhum no tema claro.
+- ⚠️ Cobertura declarada: o sobretítulo que some e a situação no cabeçalho têm teste; a fiação do
+  `?tarefa=` do playground, não.
+⚠️ O `PintaApp` GUARDA antes de navegar: ele pega a store do editor aberto pelo `onEditorReady` do
+contexto (2º consumidor, ao lado do bloco de aula) e só chama o host com `flush().ok`, a mesma
+disciplina do "Voltar" do editor; falhou, o painel mostra o recado no `syncError` e NÃO navega (o
+flush de desmonte é `void` e não serve de garantia). ⚠️ NÃO mexer no `hostChrome.back`, que é só da
+galeria e sempre "Voltar para Criar". Testes: `TaskBriefPanel.test.tsx` (existência, a pílula compartilhada, clique
+duplo, falha) e `PintaApp.test.tsx` (a ORDEM gravação → navegação numa lista compartilhada, e a
+gravação que rejeita).
+
 ## Chrome do HOST na barra (07/09/2026)
 
 O kids parou de pôr o selo "Guardado na sua conta" numa linha ACIMA do Pinta e o puxador do menu
@@ -67,19 +137,19 @@ renderiza em volta do `<PintaApp>`. Sem Provider (playground, adulto, `<PintaLes
   **`@sistemazero/ui/tool-chrome.css`** (44px, borda 2px, fundo de painel, sombra dura; "menu
   escondido" = borda e tinta suaves do acento via `[aria-pressed="true"]`, NÃO o
   `pin-tool-active`, que leria como ferramenta selecionada; sem `title`) — a MESMA do Estúdio e
-  do Pensa (lote do mesmo dia: ela reclamou que os três tinham saído diferentes). Ela é uma **ABA
-  colada na linha da sidebar** (cantos quadrados à esquerda, sem borda esquerda, margem negativa
-  `--sz-tool-inset`): a barra do editor declara `[--sz-tool-inset:0.75rem]` (o `px-3` dela) e o
-  cabeçalho da galeria `[--sz-tool-inset:1rem] sm:[--sz-tool-inset:1.5rem]` (o `p-4 sm:p-6` da
-  raiz). `HostCloudStatus`:
-  na barra (`variant="bar"`) o idioma do `SaveBadge` (texto forte + ícone lucide; rótulo curto e,
-  abaixo de `lg`, só o ícone; offline/erro mostram texto sempre); no cabeçalho (`variant="header"`)
-  a PÍLULA compartilhada `.sz-tool-status(--tom)` com a frase inteira; `aria-live="off"` — quem
-  anuncia é o host.
+  do Pensa (lote do mesmo dia: ela reclamou que os três tinham saído diferentes). ⚠️ Foi uma
+  **ABA colada na linha da sidebar** até 11/09/2026; desde as telas-modelo é o QUADRADO de cantos
+  de 12px dentro do padding (40px no mouse, 44px no toque), e o `--sz-tool-inset` saiu da barra
+  do editor e do cabeçalho da galeria. `HostCloudStatus`:
+  na barra (`variant="bar"`) a pílula pequena do `SaveBadge` (`.pin-bar-seal`, ver §"A barra do
+  editor das telas-modelo"): em REPOUSO (tom ok) só a nuvem no círculo menta, com o nome no
+  `title`; com algo acontecendo, o rótulo curto e, abaixo de `lg`, só o ícone (offline/erro
+  mostram o texto sempre); no cabeçalho (`variant="header"`) a PÍLULA compartilhada
+  `.sz-tool-status(--tom)` com a frase inteira; `aria-live="off"` — quem anuncia é o host.
 - Editor: menu ANTES do Voltar (agrupados num `flex shrink-0 items-center gap-1`); status logo
-  depois do `<SaveBadge />`. Galeria: cabeçalho de DUAS linhas (`.sz-tool-header` + `__lead` com o
-  menu e o bloco do título + `__actions` com o status 1º e os CINCO botões); a linha
-  `COPY.gallery.syncing` só aparece SEM status do host (senão "Buscando…" 2×).
+  depois do `<SaveBadge />`. Galeria: ver §"A galeria das telas-modelo (11/09/2026)" (menu + seta
+  de volta para Criar + a pílula do selo, com a conta em repouso); a linha `COPY.gallery.syncing`
+  só aparece SEM status do host (senão "Buscando…" 2×). O editor IGNORA `back` e `account`.
 - ⚠️ O host tem que importar o `tool-chrome.css` (o kids e o playground importam); sem ele as
   classes `sz-tool-*` não existem — por isso os diálogos e as barras do editor, que rodam também no
   admin/adulto, seguem nas variantes `pin-*` do `Button`.
@@ -90,7 +160,158 @@ renderiza em volta do `<PintaApp>`. Sem Provider (playground, adulto, `<PintaLes
   `components/gallery/galleryHeaderUi.test.tsx` (as duas linhas) e `styles/tokens.test.ts` (a
   ponte `--color-pin-*` → `--sz-tool-*` nos dois temas).
 
+## A galeria das telas-modelo (11/09/2026)
+
+A galeria virou o MESMO desenho da "Meus Jogos" do Estúdio (a imagem-modelo dela; plano
+`o-design-da-plataforma-composed-gray.md`, lote 7, passo 6): três FAIXAS de borda a borda que
+rolam juntas dentro de `[data-pin-scroll-root]` (`.sz-tool-bands`, receitas de
+`@sistemazero/ui/tool-chrome.css`, que o host importa):
+- **creme** (`<header>`): [menu][seta] (`HostMenuButton` + `HostBackLink` em
+  `components/hostChrome.tsx`: o quadrado `.sz-tool-back` com o nome no `aria-label`, "Voltar para
+  Criar"; clique simples chama `back.onNavigate`, com Ctrl/Cmd/Shift/Alt ou o botão do meio fica
+  com o navegador) + h1 `.sz-tool-title` + `.sz-tool-subtitle`; à direita SÓ o que a imagem tem
+  ali: a pílula do selo (`status ?? account` em repouso, tom ok), "Trazer foto" (pílula quieta) e
+  "Criar novo" (pílula primária). Linha 2 (`.sz-tool-toolbar mt-7`): os dois trilhos de chips, com
+  ÍCONES DE LINHA no lugar dos emojis (Grid3x3/Shapes; PersonStanding/Image/Puzzle/Map; o "Todos"
+  sem ícone; a legend continua visível) e a busca. A 1172px (1440 com o menu) a busca cai para a
+  própria linha: os dois trilhos somam ~964px.
+- **céu**: a grade `.sz-tool-grid` compartilhada (auto-fill de 13,75rem, 4 colunas de ~242px a
+  1172px; a grade própria de 164px saiu) com o cartão **"Criar novo"** na FRENTE
+  (`.sz-tool-card--new`; nome acessível "Criar novo Comece um desenho do zero.", e o botão do
+  cabeçalho segue "Criar novo" EXATO: os testes usam o nome exato, nunca o regex). Com seções por
+  jogo do Pensa ele mora nos "Desenhos avulsos" (que aparecem só com ele, se preciso); some com
+  busca ou filtro; no modo seleção FICA, desligado (sumir faria todos os desenhos andarem uma casa
+  na grade, a mesma régua das ações do cartão). A galeria vazia mostra o recado e o cartão sozinho
+  (o botão "Começar meu primeiro desenho" e a copy `emptyCta` saíram).
+- **lilás** (sempre que a galeria carregou, INCLUSIVE vazia: num aparelho novo trazer os desenhos
+  de volta é o primeiro passo): `.sz-tool-cta-card` com "N desenhos guardados na sua conta" (só com
+  `account`), "neste aparelho" sem ela, "Nenhum desenho … ainda" com zero; e o arquivo dos
+  desenhos em pílulas creme: "Selecionar" e "Baixar tudo" (com desenhos, fora do modo seleção) e
+  "Trazer de volta". ⚠️ Os três SAÍRAM do cabeçalho (a 1172px os cinco botões iam para uma 2ª e
+  uma 3ª linha; o Molda move o "Baixar tudo" do mesmo jeito). Os dois `<input type=file>` seguem
+  no cabeçalho, SEMPRE montados (o cartão lilás não existe carregando).
+- **Cartão do desenho** (`AssetCard`): `.sz-tool-card` branco (a borda na cor do papel saiu; o
+  tipo fica no chip), o nome EM CIMA em `.sz-tool-card-title` com o chip do papel e o selinho do
+  estilo, a miniatura na caixa cinza-clara `.sz-tool-cover` (`AssetThumb surface="cover"`; o
+  seletor "Trazer um desenho" do vetor segue com o xadrez, `surface="checker"`, porque roda também
+  na aula e no admin, sem a folha), e as três ações de 44px embaixo.
+- **Barra do modo seleção**: virou a IRMÃ de baixo da área que rola (`data-pin-selection-bar`,
+  `shrink-0`), não mais `sticky` + espaçador `mt-auto`: com a última faixa esticando até o pé
+  (`min-height: 100%`), um sticky depois dela faria a galeria SEMPRE rolar a altura da barra.
+  Continua assentada no rodapé com a galeria curta ou comprida, e não cobre a última fileira.
+- `Button` ganhou `pill|pillPrimary|pillSoft` (as receitas `.sz-tool-pill--quiet|primary|creme`
+  SEM a base de utilitárias do Button: utilitária vence `@layer components`, e a pílula sairia com
+  44px, 16px e peso 700 no mouse). `.pin-gallery-card` com `contain-intrinsic-size: auto 246px
+  326px`.
+- Medido no playground (1172x900, que é 1440 com o menu de 268): faixa creme de 268px (a imagem
+  tem 215: é a linha a mais da busca), cartões de 242x326, busca de 280, "Criar novo" 135x40;
+  escuro e 375px conferidos, sem rolagem lateral. No celular a grade tem uma coluna e o cartão fica
+  alto (capa quadrada de ~319px): revisar no lote 9 (celular).
+- Testes: `galleryHeaderUi.test.tsx` (as três faixas, os botões de cada lugar, o cartão novo, a
+  capa, o lilás com e sem desenhos), `gallerySelectionUi.test.tsx` (barra irmã, cartão desligado)
+  e `hostChromeUi.test.tsx` (seta com Ctrl-clique, seta sem menu, conta em repouso x aparelho, o
+  selo vence a conta, o editor ignora a seta).
+
+## A barra do editor das telas-modelo (11/09/2026)
+
+A barra de cima do editor virou o desenho da tela-modelo dela (plano
+`o-design-da-plataforma-composed-gray.md`, lote 7, passo 11). Da esquerda para a direita:
+[menu][voltar] · o ícone do papel e o nome · a pílula do tamanho · desfazer e refazer · o "Salvo"
+· a nuvem do host; à direita os atalhos, "Baixar", "Jogar meu mapa" e "Usar no Estúdio".
+
+- ⭐ **As receitas moram no `pinta.css` (`.pin-bar-*`), NÃO no `tool-chrome.css`**: o editor roda
+  também no bloco de aula e no admin, que não importam a folha compartilhada. Elas pintam com os
+  `--color-pin-*` (que já herdam a cor do host) e usam os `--sz-tool-*` só como primeira escolha
+  da cadeia (`--sz-tool-ok-tint`, `--sz-tool-on-cta`). Mesmo formato do arquivo: sem `@layer`,
+  prefixadas por `[data-pinta-theme]`. Altura: 60px (`min-height: 3.75rem`), borda de 1px.
+- **Os botões da barra** são variantes do `Button` sem as utilitárias da base (a utilitária
+  venceria a receita): `barPrimary` (a pílula azul), `barOutline` (branca com o fio) e `barQuiet`
+  (a pílula pequena do tamanho, 36px no mouse e 44px no toque). As pílulas grandes têm 40px no
+  mouse e 44px no toque (`--pin-bar-hit`). `IconButton` ganhou `tone="quiet"`: o quadrado claro
+  (`bg-pin-bg`) do voltar e dos atalhos; desfazer e refazer seguem transparentes.
+- ⭐ **UMA pílula azul só**: o "Usar no Estúdio" quando ele aparece (desenho de um jogo do Pensa,
+  com `sendToStudio`); senão, o "Baixar". Com o "Usar no Estúdio" na tela, o "Baixar" fica branco.
+  "Jogar meu mapa" é sempre branco.
+- **O papel em ícone de linha** (os mesmos dos filtros da galeria: PersonStanding, Image, Puzzle,
+  Map) na cor do papel (`text-pin-kind-*`), decorativo; o emoji saiu. O `title` com o nome EXATO
+  continua no texto (`pintaLessonUi` usa `getByTitle('nave')`). O nome é Baloo 800 e é quem
+  encolhe com reticências, nunca um botão.
+- **O "Salvo" é pílula menta com o visto**, salvando é a quieta e o erro é a vermelha com o
+  triângulo. O texto mora DIRETO na região viva (`role="status"`), como antes: é como o leitor
+  anuncia e como os testes a encontram.
+- **Contraste** (texto de 13 a 15px em negrito, régua de 4,5:1): o verde e o vermelho da barra
+  levam um quinto da tinta do texto (`color-mix(in oklab, <tom> 80%, var(--color-pin-text))`), o
+  que os escurece no claro e os clareia no escuro. Medido no playground em quatro cenários (kids
+  claro e escuro; sem os primitivos do kids, claro e escuro): mínimo de 5,02:1.
+- Testes: `components/editor/editorBarUi.test.tsx` (a estrutura, os tons, a pílula azul única, o
+  mapa e a nuvem em repouso x com aviso). Seguem valendo `hostChromeUi` (menu antes do voltar),
+  `PintaApp.test` (o "Salvo" com `role="status"`), `pintaLessonUi` (os `title`), `resizeUi`
+  (o nome do botão do tamanho) e `shortcutsUi`.
+
+## A área da ferramenta das telas-modelo (11/09/2026)
+
+Ela liberou a área da ferramenta para seguir a imagem-modelo (lote 7, passo 12): de borda a
+borda, sem o respiro `p-2` e sem os cartões flutuando no fundo.
+
+- **O arranjo** (`EditorScreen`, `TilemapEditor`, ≥768px): `.pin-work` envolve a linha
+  [coluna branca das ferramentas `.pin-col--start`][palco `.pin-stage`][coluna branca dos painéis
+  `.pin-col--end`] e, embaixo, atravessando a largura inteira, a faixa azul-céu `.pin-band`
+  (quadros, peças, medidas do mapa, zoom). Fios de 1px separam tudo. Tokens novos no bloco
+  `[data-pinta-theme]`: `--pin-stage` (= `--color-pin-bg`, a imagem mede #f5f7fb),
+  `--pin-col-head` (a faixa de título das seções) e `--pin-band` (`--sz-tool-band-ceu`, com um azul
+  diluído da própria marca quando a folha compartilhada não existe: aula e admin).
+- ⭐ **Painéis das colunas viram SEÇÕES pelo `PanelLook`** (`components/ui/Panel.tsx`): contexto e
+  não prop, porque o mesmo painel (Prévia, Camadas, Cores) aparece na coluna do desktop E na
+  fileira da tela estreita, e as sub-seções da Aparência herdam o visual de quem as contém.
+  `card` (padrão) é o `.pin-panel` de sempre; `flat` é a `.pin-section` (sem moldura, faixa de
+  título clara com o nome em caixa alta `.pin-section-title`, fio embaixo); `band` é a seção da
+  faixa azul (o nome direto no azul). ⚠️ Por que não seletor de contexto no CSS (`.pin-col
+  .pin-panel`): os diálogos e o menu de paletas renderizam INLINE dentro dos painéis (sem portal)
+  e o `PaletteMenu` é `.pin-panel`; um seletor de descendente tiraria a moldura deles também.
+- **A caixa de ferramentas** (pixel e vetor): sem moldura, grupos em grades de duas colunas
+  separadas (`TOOL_GRID` em `toolGrid.ts`: o botão que sobra sozinho numa linha fica no meio,
+  regra que só vale por grupo) com o fio `.pin-tool-divider` entre elas; a caixa mede 104px, como
+  na imagem. O miolo rola com a barra ESCONDIDA e o degradê de "tem mais" (`ScrollMoreHint`, que
+  saiu do `VectorRightColumn` para o próprio arquivo), porque a barra clássica comia a coluna; o
+  `p-1` do miolo é o lugar do contorno de foco. O mapa segue com uma coluna só.
+- **Os botões**: `IconButton` ganhou o gancho `.pin-icon-btn`, e dentro de `.pin-work`/`.pin-bar`
+  o alvo é `--pin-hit` (40px no mouse, 44 no toque; era `--pin-bar-hit`). `tone="quiet"`
+  (`.pin-icon-btn--quiet`) é o quadrado claro das ferramentas, das ações dos quadros e da prévia;
+  o ativo (`.pin-tool-active`) é o azul CHAPADO (a sombra dura saiu). Os três da prévia são
+  redondos (`.pin-round`). O "+" das seções é o `AddDotButton` (a bolinha azul de 26px dentro do
+  alvo inteiro).
+- **As cores**: os quadradinhos são `.pin-swatch` (sem borda grossa, um fio por dentro para o
+  branco não sumir no branco, o ANEL azul no escolhido) e o "sem cor" é `.pin-swatch--none`, o tom
+  claro com o `Ban` no lugar do xadrez (nos dois editores). As duas cores da caixa do pixel
+  mudaram de arranjo: [trocar][principal] numa linha e a secundária, menor
+  (`.pin-swatch--small`, a borda transparente é alvo), no meio da de baixo; ⚠️ antes a secundária
+  ficava ATRÁS da principal, com metade escondida. Os slots do VETOR (placa e moldura) ficaram
+  como estavam (o `vectorUi` trava a estrutura deles).
+- **O resto da faixa e das colunas**: a animação é um cartão branco (a escolhida com a borda
+  azul), os quadros e as peças são `.pin-thumb` (cantos redondos, o anel no escolhido),
+  "N animações" é a pílula branca `.pin-chip`, o zoom é a pílula `.pin-zoom` e "Nova animação" é a
+  pílula azul da barra (`barPrimary`). As camadas ganharam a miniatura em bolinha. O papel no
+  palco é `.pin-paper` (fio + sombra por `box-shadow`: nenhuma borda que mude o tamanho do papel,
+  que é o desenho vezes o zoom). As barrinhas que flutuam no palco viraram `.pin-float`. O cartão
+  de dicas do primeiro uso virou a faixa `.pin-coach` com o ladrilho amarelo e a pílula azul, e a
+  faixa da seleção do vetor passou a ter o fio de 1px (53px, o teste da moldura acompanha).
+- **Tela estreita**: fora do escopo desta passada (lote 9). Lá os painéis seguem em cartão (sem
+  `PanelLook`), a caixa segue a fileira de sempre e a faixa de baixo é um cartão azul.
+- **Medido** no playground (1172x900, que é 1440 com o menu do kids): a caixa em 104px, sem rolagem
+  de página em 1366x768 (a caixa rola por dentro com o degradê) nem em 768 e 390. Contraste nos
+  quatro cenários (kids claro e escuro, sem os primitivos claro e escuro): menor texto 4,73:1 (o
+  título das seções e as dicas, no claro do kids); o azul ativo e o "+" contra a coluna, 5,3:1 ou
+  mais. ⚠️ Para medir ou fotografar o escuro, desligue as transições antes de trocar o tema (o
+  navegador do Playwright fica fora de foco e as transições de cor não terminam: a medição pegava
+  o fundo do tema anterior).
+- Testes: `components/editor/editorAreaUi.test.tsx` (colunas, seções, palco, faixa, a caixa, as
+  cores, a prévia, peças, vetor, mapa, e a tela estreita ainda em cartão).
+
 ## Galeria em DUAS linhas (07/09/2026, "o cabeçalho ocupa espaço demais")
+
+> ⚠️ HISTÓRICO: substituída em 11/09/2026 pela seção acima (os cinco botões, a grade de 164px, o
+> espaçador `mt-auto` e a barra sticky não existem mais; as variantes `tool`/`tool3d` do `Button`
+> saíram na limpeza do lote, junto com as receitas `.sz-tool-btn`/`-3d` da folha).
 
 Pedido dela, com a imagem-modelo do Estúdio: **linha 1** = menu do host + h1 "Meus desenhos" +
 subtítulo à esquerda; à direita o selo do host e os **cinco botões** ("Trazer de volta", "Trazer
@@ -330,13 +551,15 @@ meio do desenho que precisava de outro tamanho, e hoje tenho que apagar e criar 
   misturar o azul (252°) com o branco (`oklch(1 0 0)`, matiz 0) dá ROSA (pego no QA).
   ⚠️ O Tailwind v4 **PODA do `@theme`** os tokens que nenhuma utilitária usa: valor consumido só
   por CSS (ex.: `--pin-panel-head`) mora no bloco `[data-pinta-theme]`, não no `@theme`.
-- **Galeria compacta (08/2026)**: grade `auto-fill minmax(164px,1fr)` — ≈6 colunas num notebook de
+- **Galeria compacta (08/2026, ⚠️ a grade de 164px SAIU em 11/09/2026: hoje é a `.sz-tool-grid`; o resto da regra das ações vale)**: grade `auto-fill minmax(164px,1fr)` — ≈6 colunas num notebook de
   1366 e 9 em 1920, card sempre ~165px (número FIXO de colunas esticaria o card no monitor
   grande). ⚠️ **O piso de 164px é a REGRA DE TOQUE**: as três ações (renomear/duplicar/apagar)
   ficam NO card, e três alvos de 44px somam 132px + respiros. Um menu "⋮" com card de ~94px (10
   colunas) chegou a ser feito e foi REJEITADO pela dona — não reintroduzir sem ela pedir.
 - **Painéis com cabeçalho (`components/ui/Panel.tsx`)**: faixa de título tonal (`.pin-panel-head`)
-  + divisória, no lugar do `<span>` em negrito solto. ⚠️ O `aria-label` fica na MESMA `<section>`
+  + divisória, no lugar do `<span>` em negrito solto (nas colunas do desktop, desde 11/09/2026,
+  o `PanelLook` troca o cartão pela seção sem moldura: ver §"A área da ferramenta das
+  telas-modelo"). ⚠️ O `aria-label` fica na MESMA `<section>`
   (4 testes casam o seletor `section[aria-label=…]`) e o título é MOVIDO, nunca duplicado (Prévia
   e Spritesheet têm `getByText` que quebra com dois nós do mesmo texto). `disclosure` é controlado
   e põe o chevron em um botão separado (o título da paleta continua livre para abrir seu menu).
@@ -615,8 +838,9 @@ Mac, extras do pedaço colado, Caneta, curadoria).
 
 O `PaletteBar` virou painel COMPACTO: header = **nome da paleta ativa** (abre o DROPDOWN de troca)
 + **lixeira** (exclui a cor selecionada, com confirmação) + **"+" azul** (seletor livre); embaixo,
-grade de swatches QUADRADOS, **5 por linha**, com **scroll interno** (`max-h-48` — as 17 células
-base cabem em 4 linhas sem scroll; a coluna esquerda NÃO cresce). Os 3 cartões de paleta em fluxo
+grade de swatches QUADRADOS, **5 por linha**, com **scroll interno** (`max-h-52` desde 11/09/2026,
+com os 40px do mouse e os 44 do toque — as 16 células base cabem em 4 linhas sem scroll; a coluna
+esquerda NÃO cresce; o desenho dos quadradinhos está em §"A área da ferramenta das telas-modelo"). Os 3 cartões de paleta em fluxo
 MORRERAM. ⚠️ O painel tem **largura FIXA (`w-68`)** — pedido da usuária: sem ela a largura era
 ditada pelo NOME da paleta ativa ("Arcade" × "Lápis e carvão") e a grade `1fr` esticava os vãos
 junto, alternando o espaçamento a cada troca.
@@ -656,7 +880,9 @@ Layout de programa de desenho (pedido da usuária, com imagem-modelo): a caixa v
 COLUNA com três blocos — tamanhos do traço FIXOS no topo, ferramentas em **duas colunas** rolando
 no meio (`flex-1 min-h-0 overflow-y-auto`) e as duas CORES FIXAS no pé. ⚠️ Os extremos fixos não
 são enfeite: em 768px (com a faixa do Spritesheet comendo altura) a caixa mede ~670px e as cores
-saíam da vista — que é justamente o que ela precisa mostrar sempre.
+saíam da vista — que é justamente o que ela precisa mostrar sempre. (Desde 11/09/2026 o miolo
+rola com a barra escondida e o degradê no pé, e as duas cores ficam lado a lado, sem uma atrás
+da outra: ver §"A área da ferramenta das telas-modelo".)
 
 - **Duas cores na sessão** (`sessionStore`): `color` (PRINCIPAL, botão esquerdo) +
   `colorSecondary` (botão direito, nasce TRANSPARENTE = apagar) + `activeSlot` ('primary' |
@@ -814,6 +1040,28 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   palco e de TODO export/prévia num funil único (`shapesToMarkup`+`gradientDefsMarkup` no string,
   `VectorFrameSvg` no React) — paridade com a camada escondida do pixel. Laço/Ctrl+A/conta-gotas
   pulam escondidas; esconder desseleciona.
+- **Máscara geométrica NÃO destrutiva + âncora de giro livre (21/09/2026)**:
+  `VectorShape.maskId?` liga o conteúdo a uma forma fechada do mesmo quadro, e
+  `rotationPivot?: {x,y}` guarda o pivô absoluto. Ausentes, os dois preservam a semântica dos
+  desenhos antigos. Retângulo, elipse, polígono e path inteiramente fechado podem ser fonte;
+  texto, figura, linha, path aberto e máscara aninhada não podem. O sanitizer pós-IDs elimina
+  referência órfã, inválida, própria ou cíclica sem descartar o quadro.
+  - Fonte + conteúdos formam uma **unidade de seleção** (`expandToSelectionUnits` alterna o fecho
+    de grupo e de máscara até estabilizar). Clicar, laçar, camada, olho, cadeado, ordem, copiar,
+    colar e duplicar respeitam a unidade; clones remapeiam `maskId` para o novo id. Se qualquer
+    membro estiver trancado, nenhuma transformação parcial acontece.
+  - **Criar máscara** usa a forma selecionada mais à frente como fonte; **Editar máscara** troca
+    temporariamente as alças para a fonte, desenha o guia ciano tracejado e deixa os conteúdos
+    parados; Concluir/Esc sai do modo. **Soltar máscara** remove só a relação. Misturar e editar
+    pontos substituem geometria, portanto exigem soltar a máscara primeiro.
+  - O render resolve a cena uma vez: fonte sai da pintura normal e vira `clipPath`; conteúdo
+    recebe `clip-path`. `SceneDefs`/`sceneDefsMarkup` alimentam palco, onion skin, miniaturas, SVG,
+    PNG, GIF, spritesheet, ZIP e Studio com prefixos por cena/célula. Hit-test e conta-gotas também
+    recusam a área fora do recorte. Uma fonte escondida continua disponível ao conteúdo visível.
+  - A âncora ciana pode ser arrastada até a ponta ou para fora do objeto e movida por setas
+    (`Shift` = 10). Trocar o pivô preserva a pose visível; mover, redimensionar e espelhar levam o
+    pivô junto; **Centralizar âncora** remove o campo sem salto. Um gesto = um undo; cancelamento
+    restaura a base; alvo bloqueado não aparece.
 - **Caneta** (`pen`, atalho P, ícone PenLine — o PenTool é do editar pontos): clique a clique,
   fecha com clique perto do 1º ponto (raio 10/zoom), Enter ou duplo clique; Esc descarta; vira
   POLÍGONO comum (≤64 pontos; teto de formas checado no 1º clique). Prévia elástica tracejada.
@@ -826,10 +1074,78 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   ponto levado ao espaço LOCAL da forma girada; escondida não conta, trancada conta) e a
   ferramenta mostra o cursor de MIRA (`stageCursor({ pickerTool })`). O mesmo módulo responde
   "QUAL cor sai da forma" para o conta-gotas da janelinha do degradê (ver "Ajustes do VETOR").
-  Ver "Ajustes do vetor (08/2026)" abaixo — os chips saíram e o painel virou espelho do
-  `PaletteBar`.
+  Tocar no VAZIO avisa (`pickColorMiss`) — era um clique mudo.
+- ⭐⭐ **O conta-gotas pega o PIXEL da figura (15/09/2026)**: relato dela, "o conta-gotas do vetor
+  não está funcionando", junto do pedido de capturar a cor de uma imagem. Eram a mesma coisa. A
+  figura ENTRA no hit-test (`paintsSomething` devolve `true` para `image`) e nasce com
+  `fill: 'none'`/`stroke: null` (`insertAsset.ts`), então `adoptStyle` copiava esse "nada" e
+  **apagava a cor da criança em silêncio**. Agora ela é um caso próprio nos DOIS caminhos:
+  - **`vector/imageSampler.ts`** (novo, browser) abre o `src` (PNG assado no desenho) por
+    `dataUrlToBlob` + `createImageBitmap` — ⚠️ nunca `fetch('data:')`, a CSP do kids bloqueia — e
+    lê 1 pixel num canvas 1×1 (`drawImage` de 1×1 para 1×1 com `imageSmoothingEnabled = false`).
+    O mapeamento é a parte PURA, `imageUvAt` no `pickColor.ts`: regra de três direta porque o
+    `<image>` sai com `preserveAspectRatio="none"` (a imagem preenche a caixa), com `shapeBounds`
+    normalizando caixa invertida e `localPoint` desfazendo a rotação.
+  - ⭐ **A leitura é SÍNCRONA, e isso é o que decide o desenho**: na captura da janelinha o
+    `pointerdown` é `preventDefault`-ado para segurar o foco, e um `await` no meio quebraria a
+    coreografia. Por isso o `VectorStage` PRÉ-CARREGA as figuras do quadro num efeito quando
+    `tool === 'picker'` (a captura também liga o picker) e o toque só lê do cache.
+  - ⭐⭐ **O `slack` do toque atravessa o mapeamento.** `imageUvAt` recebe a MESMA folga com que o
+    `hitShapeAt` escolheu a figura e CLAMPA o resultado em [0,1]. Sem isso, o anel de `10/zoom` em
+    que o hit-test acerta a figura caía "fora da imagem" e a criança que mirava a beirada do
+    adesivo levava um recado de erro com a figura carregadíssima (achado do full review).
+  - ⭐⭐ **O cache é orçado em PIXELS, com o quadro atual PROTEGIDO da evicção**
+    (`MAX_CACHED_PIXELS`, `inUse`). Contar ENTRADAS (o teto de 8 da primeira versão) era um
+    defeito medido: num cenário com 9 adesivos a própria pré-carga despejava o que tinha acabado
+    de abrir, e a primeira figura ficava ilegível PARA SEMPRE (o efeito não roda de novo só porque
+    ela tocou). Oito PNGs de 2048² também seriam 128 MB num tablet.
+  - ⭐ **O resultado é DISCRIMINADO** (`ImageSample`: `color`/`transparent`/`outside`/`loading`/
+    `failed`), porque os desfechos pedem recados diferentes — e no miss do cache o próprio toque
+    DISPARA a abertura, senão o "toque de novo daqui a pouquinho" era mentira (nada estava
+    abrindo). Figura que não abre é `failed` e leva um recado que NÃO promete retry.
+  - **Pixel transparente vira "sem cor"** no canal ativo (decisão dela; o vazio da figura não
+    atravessa para a forma de baixo) **e AVISA** (`pickColorFigureHole`): calado, o quadradinho
+    virando "Sem cor" era indistinguível do defeito que o lote veio consertar. Na janelinha, onde
+    "sem cor" não vale para uma ponta de degradê, o recado é o `pickColorFigureHoleTake`. Alfa
+    parcial (≥128, o `ALPHA_THRESHOLD` compartilhado com o export) sai CHAPADO — e "exato" só vale
+    com alfa 255: o canvas guarda a cor pré-multiplicada.
+  - A cor da figura vai para o **canal ativo** (`adoptChannelColor`, irmão do `applyChannelColor`
+    que não escreve na seleção): uma figura não tem estilo para copiar, tem UM pixel. A `opacity`
+    dela NÃO é adotada de propósito (é do decalque, não da cor).
+  - ⭐⭐ **O efeito de sincronização de estilo PULA a figura** (`VectorEditorScope`, o
+    `useEffect([styleSource])`): ela não tem estilo nenhum para oferecer, e com o conta-gotas isso
+    virou perda real — pegar a cor com a figura selecionada e depois arrastá-la um tiquinho
+    (commit → objeto novo → efeito) zerava o contorno recém-pego, sem aviso.
+  - **Leitor de tela**: o sucesso era MUDO (só mudava o rótulo de um botão que ninguém focava).
+    Agora o `role="status"` do palco recebe `pickedColorAnnounce`, e o nome da cor vem do
+    **`core/colorName.ts`** (`colorNameFor`: nome exato da paleta, senão "parecido com <a mais
+    próxima>") — um hex cru é lido letra a letra, e a razão de ser desta feature é justamente
+    pegar cores de FORA da paleta. ⚠️ Os `aria-label` dos quadradinhos seguem com o hex cru: é
+    pré-existente e vale para todo swatch de cor livre, não só para a figura.
+  - **Tocar no VAZIO do palco avisa** (`pickColorMiss`) nos DOIS modos — era um clique mudo.
+  - ⚠️ **happy-dom TEM `createImageBitmap`, e ele LANÇA `TypeError` com um Blob** (medido); o
+    `getContext('2d')` segue `null`, como a regra nº2 sempre disse. Logo a guarda de `typeof` não
+    basta: quem segura é o try/catch do `decodeSource` mais a LÁPIDE. O cache é de MÓDULO (o
+    `VectorStage` o limpa no desmonte, porque `ImageBitmap` não é reclamável), então os testes de
+    UI o limpam no `beforeEach` — sem isso um caso herda a LÁPIDE do anterior, o `prime` nem
+    decodifica e o teste fica vermelho sem motivo aparente (aconteceu em 3).
+  - ⚠️ `decodeSource` grava em `pending` ANTES de rodar o corpo: uma IIFE async roda síncrona até
+    o primeiro `await`, e o caminho sem `await` nenhum (data URL malformada) apagava de `pending`
+    uma chave que só seria escrita depois — deixando a promessa resolvida presa ali.
+  - Testes: `vector/imageSampler.test.ts` (17 casos, dublando as duas primitivas do navegador),
+    `vector/pickColor.test.ts` (`imageUvAt`), `core/colorName.test.ts`, e 8 casos de UI no
+    describe "pegar uma cor do desenho" do `vectorUi.test.tsx`. ⚠️ **A asserção que segura a
+    feature inteira é a FORA DA DIAGONAL** (`u ≠ v`): a primeira rodada de testes caiu toda em
+    `u === v` e uma implementação que trocasse os eixos passava em 13 de 13 (achado por análise
+    de mutantes no full review). QA em navegador (playground :5199) com um PNG 2×2 de cores
+    conhecidas e um quadrante transparente: os quadrantes saem exatos nos dois canais, a beirada
+    (4 px fora, dentro da folga) pega a borda, o vazio vira "sem cor" com recado, a ponta do
+    degradê recebe o pixel e a janela reabre com o foco no card, arrastar a figura depois de pegar
+    NÃO zera o quadradinho, e girar 90° move a resposta para o canto certo.
+  - Ficou por decidir com ela (não é defeito): varrer a figura com o conta-gotas enche as 6 vagas
+    de cores recentes (`MAX_CUSTOM_COLORS`), porque cada toque chama `rememberColor`.
 - **Fora de escopo (futuro)**: degradê multi-stop/ângulo livre,
-  importar SVG, máscaras/filtros/blend, campos numéricos X/Y/W/H, snap dos nós do editar pontos,
+  importar SVG, filtros/blend/máscara de alfa suave, campos numéricos X/Y/W/H, snap dos nós do editar pontos,
   negrito/itálico do texto. ⚠️ **Operações booleanas (pathfinder) SAIU desta lista** (14/08/2026):
   ver "Misturar formas" abaixo. ⚠️ **Fonte SAIU desta lista** (12/08/2026): há cinco famílias
   portáteis; ver abaixo. ⚠️ **Alças de bézier SAIU desta lista** (08/2026): a Fase 2 da
@@ -1061,6 +1377,13 @@ triagem; `core/assetThumb.ts` (extraído do `AssetCard`) diz qual é a "cara" de
 A ferramenta "Editar os pontos" (`reshape`, atalho `A`) só arrastava UM nó de UMA forma. Agora ela
 escolhe vários, acrescenta, apaga, fecha/abre o caminho (Fase 1) e mexe na curvatura: alças de
 bézier, curva↔reta, ponto suave/canto e "suavizar o traço" (Fase 2).
+
+**20/09/2026 — formas prontas:** retângulos e círculos agora mostram pontos na mesma ferramenta.
+O retângulo simples oferece quatro cantos, o arredondado oferece oito pontos com curvas, e a
+elipse oferece quatro pontos com alças. Entrar no modo não altera a forma guardada; a primeira
+edição dos pontos a transforma em traço livre com o mesmo id, estilo e rotação. Desfazer recupera
+a forma original. Estrelas já eram polígonos e continuam editáveis. Texto, figura e traços com
+vários subcaminhos continuam sem edição por pontos.
 
 ### ⭐⭐ A decisão que evitou uma migração: nada é guardado por ponto
 
@@ -1408,8 +1731,8 @@ traço aberto e o meu laço o pegou junto.)
 Resultado com furo tem dois `M`, e `toEditablePath` recusa vários sub-caminhos de propósito
 (`pathNodes.ts:102`). Antes a `VectorSelectionBar` inteira devolvia `null` no modo reshape, o que lê
 como "quebrou". Agora mostra `COPY.vector.nodeUneditable`, com `min-h-11` nos dois ramos para o
-palco não pular. Conserta de quebra um buraco que já existia: retângulo/círculo/texto/figura também
-apagavam a faixa em silêncio.
+palco não pular. Texto, figura e traço com vários subcaminhos recebem a explicação em vez de
+apagar a faixa em silêncio; retângulo e círculo agora oferecem pontos editáveis.
 
 **Fora deste lote, nomeadamente:** ensinar sub-caminhos ao `toEditablePath`.
 
@@ -1568,7 +1891,9 @@ já saberemos o que é preenchimento e o que é contorno".
   request + a ferramenta de agora num REF e liga o conta-gotas); o palco resolve UMA cor
   (`pickColorAt`: preenchimento sólido; no degradê a ponta mais PERTO do toque, por projeção na
   bbox em unidades do `objectBoundingBox`, e no radial o meio fica a 0,25 do centro; contorno para
-  `none`/linha/pincel; figura de pixel art não tem cor única e toasta; forma SEM cor nenhuma nem
+  `none`/linha/pincel; ⚠️ **desde 15/09/2026 a figura de pixel art responde com o PIXEL sob o
+  toque** (`imageSampler.ts` — ver "Cores por CANAL"; antes ela toastava "tem muitas cores"), e o
+  pixel transparente cai no `pickColorNone`; forma SEM cor nenhuma nem
   entra no hit-test, `paintsSomething`; a caixa cresce pela folga `10/zoom` + metade do contorno,
   senão linha reta tem altura zero) e `endColorPick` restaura a
   ferramenta e entrega a cor: `rememberColor` + `applyGradient` (UMA entrada de undo, como o
@@ -2237,6 +2562,44 @@ Chrome, importando o módulo de produção pelo `/@fs/` do Vite:
 
 ⚠️ **Pende o QA dela desenhando** (o olho dela na borda, e o fluxo pelo botão de verdade).
 
+## Baixar animação vetorial em SVG (21/09/2026)
+
+O `ExportDialog` do `vector-sprite` baixa a animação SELECIONADA como
+`<desenho>-<animação>.svg`. A criança continua desenhando quadro a quadro; “Movimento mais
+suave” apenas melhora o arquivo final e vem ligado por padrão. `AnimatedSvgExport` mostra o SVG
+final em `<img>` por Blob URL (revogada ao trocar o modo/fechar), tamanho, movimentos suavizados e
+quadros repetidos compactados.
+
+- `VectorShape.motionId?` é a identidade da mesma peça entre poses; `id` continua único por
+  instância/quadro. Forma nova ganha os dois. Duplicar QUADRO conserva `motionId` e troca `id`
+  (legado sem o campo recebe o mesmo novo valor nos dois quadros). Copiar/inserir forma ou duplicar
+  a animação remapeia `motionId`, para movimentos independentes não se ligarem.
+- `export/animatedSvg.ts` é PURO. Compacta poses consecutivas idênticas, extrai formas estáticas e
+  só interpola `rect`/`ellipse`/`line` quando tipo, estilo, índice-Z e um `motionId` único batem em
+  todas as poses. Geometria, rotação e opacidade usam SMIL; qualquer dúvida, path/polygon alterado,
+  aparecimento ou mudança de estilo usa `visibility` discreta. A rotação suave usa
+  `rotationPivotOf`, não o centro presumido. Se qualquer pose contém máscara, a relação entre
+  slots impede interpolação segura: o arquivo emite uma cena composta completa e prefixada por
+  pose (`clipPath` incluído), alternada discretamente. Desligar a opção força o fallback normal.
+- Os tempos vêm de `frameDurationsMs` (inclusive `easing`), `loop=false` congela a última pose e
+  uma cópia integral do primeiro quadro, com defs de máscara/degradê próprios, aparece sob
+  `prefers-reduced-motion: reduce`.
+- Perfil "SÓ VETOR": texto visível e `image` embutida bloqueiam o botão; conteúdo escondido não
+  conta; saída acima de 2 MiB também bloqueia. Não entram script, evento, fonte/data URL ou recurso
+  externo.
+  ⚠️ **21/09/2026 — o consumidor sumiu, o exportador ficou.** Este perfil nasceu para o slot de
+  ilustração de módulo da trilha Kids, e havia um teste integrado
+  (`packages/admin/tests/module-illustration-svg.test.ts`) que passava o SVG real pelo
+  `validateModuleIllustrationSvg` do Admin. A trilha migrou para **Rive (`.riv`)**, e o upload de
+  SVG, o validador e aquele teste foram DELETADOS. O exportador segue valendo para download e
+  compartilhamento, mas o Pinta **não** alimenta mais os módulos — a cópia do diálogo foi reescrita
+  para não prometer isso, e o teto de 2 MiB agora é limite do próprio Pinta, não espelho do Admin.
+- Regressões: `export/animatedSvg.test.ts` (classificação/tempo/teto/máscara/pivô),
+  `components/export/AnimatedSvgExport.test.tsx` (Blob/download/bloqueios),
+  `animation/framesVector.test.ts` (identidade/relações), `export/animationGif.test.ts` e
+  `export/studioLibrary.test.ts` (funis herdados), além de
+  `components/editor/vectorSpriteUi.test.tsx` (fluxo completo do diálogo).
+
 ## Pack por seleção + paletas personalizadas (25/08/2026)
 
 Dois pedidos da artista no mesmo dia; design travado em plano com review adversarial.
@@ -2383,7 +2746,7 @@ exploração + fixes; decisões DELA via AskUserQuestion antes de codar.
   com o sufixo do tileset auto-incluído) — o toast confere o pack sozinho.
 - **Botão "Limpar" na barra sticky** (decisão dela: além do limpar-ao-baixar, que já existia):
   desmarca tudo e PERMANECE no modo; `disabled` com 0.
-- **A barra ASSENTA no rodapé mesmo SEM rolagem** (pedido dela, 2ª rodada 26/08): espaçador
+- **A barra ASSENTA no rodapé mesmo SEM rolagem** (pedido dela, 2ª rodada 26/08; ⚠️ desde 11/09/2026 o mecanismo é outro: a barra é a IRMÃ de baixo da área que rola, ver §"A galeria das telas-modelo"): espaçador
   `<div aria-hidden className="mt-auto" />` antes da barra — o scroll root já é coluna flex,
   então em galeria CURTA o `mt-auto` absorve a sobra e a barra desce ao rodapé do rolável; com
   rolagem ele zera e o sticky faz o de sempre (o `mt-4` da barra preserva o respiro no fim do
@@ -2614,6 +2977,255 @@ com captura de pé) e §"a faixa da seleção: uma moldura só" (os três ramos 
 `useStudioResync.test.tsx` (`failed` avisa, `not-linked` cala, rejeição avisa, raster falho cala;
 o canvas é dublado no protótipo e restaurado).
 
+## A linha pequena nasce: a régua do desenho é em px de TELA (26/09/2026)
+
+Relato dela: "não consigo desenhar uma linha pequena, só a partir de um determinado tamanho".
+A causa era um literal no `endGesture` do `VectorStage`: `bounds.width < 2 && bounds.height < 2`
+em UNIDADES DO DOCUMENTO, ou seja 16 px de tela em zoom 8 (o default do sprite pequeno) e 32 em
+zoom 16. O mesmo defeito que o laço já tinha pago em 06/09 (`MARQUEE_MIN_SCREEN_PX`), nunca
+levado ao desenho. Quatro consertos, todos com teste (`vectorUi.test.tsx`, §"desenhar formas
+pequenas"):
+
+- **`DRAW_MIN_SCREEN_PX` (= 3, a régua do laço) mede a distância que a MÃO andou**, do
+  `pointerdown` ao último `pointermove`, em px de tela. Não a caixa da forma: uma linha
+  horizontal tem altura 0 e o polígono nasce com raio 1 até parado (por isso um toque com o
+  Polígono criava um hexágono degenerado, e um com o Retângulo não criava nada). O gesto
+  `draw` guarda `startClient`/`lastClient` e a PRÓPRIA prévia (`gesture.shape`): o `endGesture`
+  não lê mais o `preview` do estado, que num gesto rápido ainda era o do `pointerdown`.
+- **A decimação `BRUSH_MIN_POINT_DISTANCE` vale só para o pincel.** Para as formas, em zoom 16
+  ela eram 5,6 px de tela e um arrasto de 4 px nunca atualizava a prévia.
+- **A grade não colapsa a forma:** se o fim encaixado cai EM CIMA do começo mas a mão andou, o
+  fim escapa da grade (o começo segue encaixado). A criança arrastou e viu o rastro, então algo
+  tem que nascer; arrastos maiores que meio espaçamento seguem 100% na grade.
+- ⭐ **As alças não roubam o toque da forma pequena** (`handlesUsable`, `HANDLE_MIN_SCREEN_PX =
+  40`): com uma ferramenta de FORMA ativa, as oito alças de 14 px e a de girar só aparecem quando
+  a forma recém-desenhada mede ≥ 40 px de tela nos dois eixos. Numa linha de 12 px elas a cobriam
+  inteira e mais 7 px para cada lado, e o `pointerdown` da PRÓXIMA linha caía numa alça (que pára
+  a propagação) e virava um redimensionamento. Ajustar a pequena é com a Selecionar (V), onde
+  nada mudou. ⚠️ Com a Selecionar as alças também cobrem formas minúsculas; fica como melhoria
+  futura. As alças levam `data-handle` para os testes.
+  ⚠️ **Full review (26/09): a régua vale para a seleção MÚLTIPLA também.** A caixa medida é
+  `transformBounds` (a da forma só OU a união das bounds da seleção), e as alças da união só
+  são desenhadas sob `handlesUsable` (antes, sob `handlesActive`): com uma ferramenta de forma e
+  duas formas selecionadas elas apareciam MORTAS e o toque nelas caía no palco e desenhava um
+  retângulo em cima da alça (o `handleResizeDown` saía sem `stopPropagation`). Elas também
+  levam `data-handle` agora.
+
+## Régua e guias do palco (26/09/2026, só no editor de VETOR)
+
+Pedido dela: "régua na área de desenho". Decisão dela: **só no vetor** (o pixel fica como está).
+Réguas em cima e à esquerda do palco, em UNIDADES DO DOCUMENTO, acompanhando zoom e rolagem.
+
+- **`components/editor/rulerTicks.ts`** (puro): os passos são POTÊNCIAS DE 2 (`RULER_STEPS`), não
+  1/2/5/10, porque os documentos medem 16/32/64/256/2048 e a grade encaixa em 4/8/16: um sprite
+  de 32 rotulado 0-8-16-24-32 lê melhor e casa com a grade. `rulerStep(zoom)` = o menor passo
+  com rótulos a ≥ 40 px de tela; os traços pequenos ficam em um quarto (ou metade) do passo se
+  couberem a ≥ 6 px. Zoom fracionário (o "Ajustar") funciona igual.
+- **`components/editor/StageRulers.tsx`** (genérico: recebe a div rolável, o conteúdo e o
+  tamanho do documento; um dia serve ao pixel): grid `--pin-ruler` (24 px) × `1fr` com canto,
+  régua de cima, régua da esquerda (`<svg aria-hidden data-stage-ruler="x|y">`) e a CÉLULA do
+  palco. **Nenhum `setState` em `scroll` nem em `pointermove`:** os traços são montados uma vez
+  por zoom/documento e o deslocamento (canto do `<svg>` menos canto da régua) e o risquinho do
+  cursor são escritos por ref no `transform`. Um `ResizeObserver` na div rolável E no conteúdo
+  cobre zoom, painéis e janela (guardado por `typeof`: o happy-dom não o tem). Sem região viva
+  de coordenadas, de propósito: um `role=status` a cada movimento do mouse inunda o leitor.
+  O `VectorStage` embrulha o miolo (barras flutuantes + div rolável) UMA vez; as barras
+  `.pin-float absolute top-2` passam a ser absolutas em relação à célula, ou seja, nascem
+  abaixo da régua sem número mágico.
+- ⚠️⚠️ **A árvore é a MESMA ligada e desligada** (full review 26/09): a raiz é sempre a mesma
+  div (`pin-rulers grid` ligada, `flex` desligada), as réguas entram como um fragmento
+  condicional na posição 0 e a CÉLULA fica sempre na posição 1. A primeira versão devolvia
+  `<div>{children}</div>` desligada e a grade inteira ligada: o React desmontava e remontava a
+  div rolável a cada toggle, e o `useWheelZoom` (que pendura o `wheel` nela UMA vez, deps
+  estáveis) ficava preso na div morta: clicar em "Régua" (ou cruzar os 768 px) matava o zoom
+  pela rolagem e devolvia o scroll ao centro. O teste prova que a div rolável é o MESMO nó
+  antes e depois do toggle e que a rolagem ainda dá zoom (⚠️ comparação por booleano: um
+  `toBe(nó)` reprovado faz o bun imprimir o DOM inteiro por minutos).
+- **`RulerTicks` é `memo`** (`StageRulers.test.tsx`, com a sonda `onTicksRender`): o palco
+  re-renderiza a cada `pointermove` de gesto, e os `ticks` já eram memoizados como DADO, mas o
+  JSX `ticks.map(...)` era recriado e re-diffado (milhares de `<line>`/`<text>`) em cada render.
+  Com o subcomponente e a identidade de `ticks`, o React pula a subárvore.
+- **Nasce LIGADA** (`session.showRulers`; a grade nasce desligada porque suja o papel, a régua
+  fica fora dele) e some na **tela estreita** (`!wide`): cada px vertical conta e uma tira de
+  24 px é pouco para o dedo. Botão "Régua" na caixa (curationId `rulers`, no preset `livre`,
+  fora do `essencial`), atalho **Shift+R** (o do Figma; Ctrl+R recarrega a página; as letras de
+  ferramenta ignoram o Shift, então não colide). `useWheelZoom`/`zoomToFit` medem a div rolável,
+  que já desconta a régua: seguem certos.
+- ⚠️ happy-dom não faz layout: os testes afirmam DOM (`aria-hidden`, os rótulos por
+  `data-ruler-label`, a árvore), nunca px. Testes: `rulerTicks.test.ts` e `vectorUi.test.tsx`
+  §"régua do palco".
+
+### Linhas-guia (26/09/2026): puxadas da régua, só na SESSÃO, só VISUAIS
+
+Decisões dela, as duas explícitas: as guias **não ficam guardadas no desenho** (valem só
+enquanto o editor está aberto) e **nada encaixa nelas** (são referência para o olho).
+
+- **`vector/guides.ts`** (puro): `StageGuide {id, axis, pos}`, posições INTEIRAS em unidades do
+  documento, `MAX_GUIDES = 32` (no teto `addGuide` devolve o MESMO array e a UI avisa com
+  `guideLimit`). O módulo não exporta nada que o `maybeSnap` possa usar: o "não encaixa" é por
+  construção, e `vectorUi.test.tsx` prova com um retângulo a 2 px da guia que nasce sem mexer.
+- **Moram no `sessionStore`** (`guides`, `showGuides`, `guidesLocked`): por instância do editor,
+  para TODOS os quadros/peças do desenho aberto (alinhar quadros de uma animação é o uso mais
+  valioso), sem undo (como a grade, não são edição do desenho). Como não existem no asset, não
+  há sanitize, migração nem filtro de export: SVG, PNG, GIF, folha, miniatura e Estúdio nunca as
+  veem, por construção.
+- **Criar:** `StageRulers.onRulerPointerDown` → `startGuideFromRuler` no `VectorStage`: uma
+  fantasma tracejada (`data-guide-ghost`) segue o ponteiro por `addPointerDragListeners(document)`
+  (não passa pelo `beginGesture`, porque o ponteiro não é do `<svg>` e a captura nele falharia);
+  soltar DENTRO da div rolável cria, fora cancela. O ponto vem do `svgPoint` (o ponteiro da régua
+  mapeado pelo retângulo do `<svg>`), com `clampGuidePos`. Puxar com as guias ESCONDIDAS as
+  mostra de novo (Illustrator); antes nascia uma guia invisível, contando no teto.
+- **Mover/apagar:** gesto `guideMove` (delta em px de tela × `docPerPx`, como mover forma);
+  soltar FORA da div rolável (na régua, no canto, fora da janela) APAGA a guia. Enquanto o
+  ponteiro está fora, a guia AVISA: `data-guide-leaving` no `<g>` (estado `leavingGuideId`, só
+  nas bordas, como o `panning`), traço tracejado e cursor `not-allowed` (regra em `pinta.css`;
+  o `<g>` tira o cursor inline nesse estado). `pointercancel` NÃO é soltar: a guia fica e volta
+  para `gesture.start`. Zoom e troca de quadro já fecham qualquer gesto. **Só com a Selecionar,
+  destravadas e sem o Espaço segurado** (`guidesInteractive`; `handleGuideDown` também sai
+  cedo com `spaceHeld`, ANTES do `stopPropagation`, para o toque descer ao palco e fazer o
+  pan): com pincel/formas o `<g data-guides>` fica `pointer-events: none` e o traço DESENHA por
+  cima da guia (a mesma razão das alças). O cadeado "Travar as guias" cobre quem quer a guia
+  fixa até com a Selecionar. ⚠️ Não há Delete com "guia selecionada" (exigiria um conceito de
+  guia selecionada e um `keydown` concorrendo com o do Delete das formas); arrastar para fora e
+  "Limpar as guias" cobrem o uso. Pendência de a11y declarada: criar/mover guia é gesto de
+  ponteiro sem par de teclado.
+- **Documento que encolhe:** `clampGuides(w, h)` no `sessionStore` (helper puro em `guides.ts`),
+  chamado por efeito do `VectorStage` sobre `[doc.width, doc.height]`: guia com `pos` maior que
+  o documento ficava invisível mas contava no teto e acendia o "Limpar". O hit-test é do
+  NAVEGADOR (o `pointerdown` no `<g data-guide>`): `guideAt` foi apagada, ninguém a usava.
+- **Desenho:** fúcsia `#d946ef` (distinta do azul `#00a0c8` da seleção e do cinza da grade),
+  `1/zoom` de traço, com um traço TRANSPARENTE de `GUIDE_HIT_SCREEN_PX / zoom` (16 px de tela)
+  por baixo como alvo do toque (`pointer-events: stroke` ignora a pintura). Renderizadas
+  DEPOIS da grade e ANTES das alças.
+- **Caixa:** os três botões (mostrar `Crosshair`, travar `Lock`/`LockOpen`, limpar
+  `BrushCleaning`, desligado sem guias) são UMA entrada com UM id de curadoria (`guides`, no
+  preset `livre`); atalho **Ctrl+;** (Illustrator; o `;` existe sem Shift no ABNT2). O cadeado
+  tem rótulo FIXO ("Travar as guias") e só o `aria-pressed` muda, como o "Régua": alternar o
+  rótulo E o pressed lia "Destravar as guias, pressionado" (sinal duplo); `guidesUnlock` saiu do
+  copy.
+- ⚠️ Nos testes o "soltar dentro" mede a div rolável, que no happy-dom tem retângulo zero: o
+  helper `measureScroll()` (irmão do `measureStage`, no escopo do módulo) a mede. Testes:
+  `vector/guides.test.ts`, `state/sessionStore.test.ts` e `vectorUi.test.tsx` §"guias" e
+  §"régua e guias: os consertos do full review". ⚠️ O teste do pincel dispara o `pointerdown`
+  NA GUIA (`[data-guide]`), não no `<svg>`: no `<svg>` ele passava em vácuo.
+
+## O arrasto não grifa nada, e o texto volta a ser editável (18/09/2026)
+
+Dois relatos dela no editor de VETOR, os dois já dados como corrigidos antes e os dois vivos na
+staging.
+
+### "quando seleciono um objeto e arrasto, se tiver texto, ele fica selecionado"
+
+⭐⭐ **A correção de 06/09 (seção acima) leu isso como "o objeto de TEXTO entra no laço" e
+consertou AQUILO** — e aquilo estava certo. O relato é outro andar: a **seleção nativa do
+navegador**. Até aqui o pacote inteiro não tinha **uma linha** de `user-select` (a única ocorrência
+era o `TilePicker` do mapa), e os dois commits de 06/09 não acrescentam nenhum `preventDefault` de
+ponteiro nem tocam o CSS.
+
+- **MEDIDO no playground com o ponteiro de verdade** (arrastando o texto do desenho até as dicas
+  do topo): sem a regra, a seleção pega **457 caracteres** da interface e **termina no `<text>` do
+  próprio desenho** — é literalmente o "se tiver texto, ele fica selecionado". Com a regra: **0**.
+- ⚠⚠ **A regra mora na ÁREA (`[data-pinta-theme] .pin-work`), não só no palco.** Medi as duas:
+  com ela só no `.pin-stage`, o texto do DESENHO sai da seleção (conteúdo com `none` fica de fora
+  até quando a seleção passa por cima dele) **mas os rótulos em volta continuam azuis**. A `.pin-work`
+  cobre os TRÊS editores (`EditorScreen` do pixel e do vetor, `TilemapEditor` do mapa).
+- ⚠⚠ **E ela DEVOLVE `user-select: text` a `input`/`textarea`/`[contenteditable]` de dentro.** Sem
+  isso a criança perde o clique duplo e o arrastar dentro do nome do desenho, do campo do hex e da
+  caixa do texto (conferido no navegador: o `<textarea>` do diálogo está DENTRO da `.pin-work` e
+  volta a `text`).
+- ⚠ Fora de camada, como todo este arquivo: a utilitária `select-none` mora em `@layer utilities`
+  e perderia para qualquer regra sem camada.
+- ⚠ **O que MASCARAVA o defeito nas primeiras medições:** o `setPointerCapture` do palco já
+  impede a seleção quando o arrasto começa DENTRO do `<svg>`. Só reproduz com o gesto real dela,
+  que começa na forma e cruza a interface. Testar isso no `bun test` é impossível (happy-dom não
+  tem seleção nativa nem layout): o que o `styles/tokens.test.ts` trava é o CONTRATO (a regra
+  existe, tem o prefixo do WebKit, fica fora de camada e os campos voltam DEPOIS dela).
+
+### "não estou conseguindo editar um texto, quando seleciono para editar ele apaga"
+
+Eram DOIS caminhos com o mesmo sintoma, e o segundo explica o "apaga":
+
+1. ⭐⭐ **Ferramenta Texto em cima de um texto que JÁ EXISTE** — o gesto intuitivo.
+   `handleShapePointerDown` saía cedo **sem `stopPropagation`** quando a ferramenta não é
+   Selecionar/Editar-pontos, o evento borbulhava para o `<svg>` e caía em
+   `setTextDialog({mode:'new'})` + `setTextValue('')`: a janela abria **vazia**, e salvar criava um
+   SEGUNDO texto por cima do primeiro. Agora ela abre a edição DAQUELE texto (`abrirEdicaoDeTexto`
+   é o ponto único dos dois caminhos). ⚠ Trancada segue atravessando, como no resto do palco.
+2. ⭐ **Duplo clique com a Selecionar num texto pequeno.** Depois do 1º clique a forma já está
+   selecionada e as **oito alças de 14px de TELA** são desenhadas por cima dela; num texto pequeno
+   elas cobrem quase todo o glifo, o 2º clique acerta uma alça e, como os dois cliques tiveram
+   alvos diferentes, o navegador dispara o `dblclick` no **ancestral comum** (o `<svg>`) — o
+   `handleShapeDoubleClick` da forma nunca roda. A rede é o `handleStageDoubleClick` do palco, que
+   vale não importa em qual peça cada clique caiu (só dentro da caixa do texto selecionado, com a
+   folga das alças). É por isso que o defeito era INTERMITENTE: em zoom alto o texto fica maior
+   que as alças e o caminho de sempre funciona.
+- ⭐⭐ **E a tremida de 1-2px desse 2º clique era um redimensionamento DE VERDADE:** no texto o
+  `scaleShape` escala o `fontSize` com fator de até 0,05 (`geometry.ts`, piso 6), ou seja a palavra
+  praticamente sumia — a leitura literal do "ele apaga". Entrou o **`alcaAindaParada`**: um limiar
+  de 4px de TELA para as alças de redimensionar e girar, em LATCH (passou uma vez, o gesto segue
+  inteiro até o solto, inclusive voltando para perto do começo). Mover não tem limiar: ele já tem
+  a guarda de delta zero, e um passo de 1px lá não destrói conteúdo.
+- **Provado no navegador:** com a ferramenta Texto, clicar no texto abre "Mudar o texto" com o
+  conteúdo dentro, e o palco segue com UM texto só.
+- Testes: `vectorUi.test.tsx` §"editar um texto no vetor" (5 casos; os três consertos provados por
+  MUTAÇÃO). ⚠⚠ **Gotcha do teste:** a alça é `rect[width="14"]`, NUNCA `rect[stroke="#00a0c8"]`
+  — esse seletor casa PRIMEIRO com a moldura tracejada da seleção, que é `pointerEvents: none`,
+  deixa o toque descer ao palco e vira um laço cujo solto LIMPA a seleção (dois testes meus
+  passaram a mentir por isso antes de eu achar).
+
+### Full review do lote (18/09/2026) — o que ele mudou
+
+Três revisores (estado/eventos · CSS/cascata/criança · testes). Os achados que viraram código:
+
+- ⭐⭐ **[ALTO] Recolher escondia o ÚNICO caminho de recuperar um desenho que sumiu.** O bloco
+  `outputMissing` (o `role="alert"` "Este desenho não está neste aparelho" mais os botões
+  "Recriar com este brief" e "Vincular outro desenho") morava DENTRO do brief. Era tolerável
+  enquanto o `<details>` nascia aberto toda vez; com a seta que LEMBRA, deixou de ser: a criança
+  que recolheu uma vez abriria a tarefa noutro aparelho e veria só o título, sem nada dizendo que
+  existe saída. Desceu para o pé. **Recolher esconde o brief, nunca um problema.**
+  ⚠️ REVOGADO EM PARTE em 19/09/2026: o PÉ passou a recolher (ela pediu uma linha só), então o
+  aviso não mora mais nele — é irmão do corpo e do pé, e vai junto com os dois botões que o
+  resolvem. A regra ficou mais forte: recolher esconde conteúdo e ação de ROTINA, nunca um
+  problema nem o que o resolve.
+- ⭐ **[MÉDIO] A rede do duplo clique usa o `shapeHitAt`**, não o `shapeBounds`: aquele trata a
+  ROTAÇÃO (a caixa a ignora, e está documentado), então num texto girado a primeira versão
+  errava nos dois sentidos — em cima do glifo não abria, e no vazio abria. Trava PURA em
+  `vector/hitTest.test.ts` ("TEXTO girado"), com o anti-vácuo do mesmo ponto sem o giro.
+- ⭐ **[MÉDIO] Recolher o brief re-disparava o PATCH de progresso.** O `EditorScreen` tinha o
+  OBJETO `adapter.taskSession` nas deps do efeito que vincula o desenho à tarefa, e o host o
+  remonta a cada mudança do adapter — desde a seta, a cada clique nela. Com a tarefa ainda
+  `planned` (ou com o primeiro PATCH em voo, ou depois de um que falhou offline), isso remarcava
+  com o MESMO `expectedUpdatedAt`: 409, recarga do brief e toast de erro. A dep virou o
+  `progress`, que vem por referência do handoff; a sessão vem de um ref.
+- **[MÉDIO] `openAsset`/`closeEditor` do contexto viraram `useCallback`**: o `context` depende do
+  adapter, e com eles nascendo inline o `onOpenCard` da galeria mudava de identidade a cada clique
+  na seta, quebrando o `memo` de TODOS os cartões — contra o invariante escrito no próprio
+  `AssetCard`.
+- **[BAIXO] Texto TRANCADO com a ferramenta Texto AVISA** em vez de atravessar: atravessando, ele
+  caía no palco e criava um texto novo por cima, reproduzindo o "selecionei para editar e ele
+  apagou" justamente para a forma que a criança protegeu.
+- **[BAIXO] `[contenteditable]:not([contenteditable="false"])`** no lugar de `[contenteditable="true"]`:
+  o atributo vale sem valor e como `plaintext-only`.
+
+E o que os revisores acharam nos TESTES deste lote (todos meus):
+- o helper `corpoDe` do `styles/tokens.test.ts` casava o seletor por string EXATA e quebrou quando
+  o biome partiu o seletor em três linhas — e a asserção de ordem que ele carregava era
+  **silenciosamente vácua** (`indexOf` de um literal que não existe devolve -1, e qualquer índice
+  é maior que -1). Hoje compara NORMALIZADO e a asserção de ordem SAIU: ela afirmava um
+  invariante FALSO, porque valor herdado perde para qualquer declaração que case o elemento,
+  independentemente de ordem e de especificidade;
+- `toContain('mb-2')` passa com `mb-20` (virou `classList.contains`);
+- `seta.querySelector('button')` era quase inerte (a seta É o botão): virou
+  `seta.contains(botao)`, que é o invariante de verdade.
+
+⚠ **Medido só com ponteiro.** A folha declara `-webkit-user-select` porque o iPad é o alvo
+principal do Pinta, mas a prova que existe é de mouse. `-webkit-touch-callout` segue com a regra
+do navegador. Vale reconferir no aparelho o callout de toque longo e as alças de seleção dentro
+dos campos.
+⚠ Efeito colateral aceito: com a regra na área, as mensagens dos diálogos do editor (que o Pinta
+renderiza INLINE dentro da `.pin-work`) deixaram de ser selecionáveis. Só `input`/`textarea` e
+`contenteditable` voltam.
+
 ## Regras não-negociáveis
 
 1. **NUNCA `fetch('data:')`** — bloqueado pelo `connect-src` da CSP do kids. Conversão data
@@ -2714,6 +3326,17 @@ por px reais.
   Full review no mesmo dia (3 revisores): 3 MÉDIAS corrigidas (request velha ao reabrir o Degradê
   na captura; forma sem cor roubando o toque; foco perdido ao reabrir) + baixas. Suíte (1154) +
   typecheck + biome verdes; QA em navegador no playground feito, inclusive dos consertos.
+- **O conta-gotas pega a cor de uma IMAGEM (15/09/2026)**: relato dela ("o conta-gotas do vetor
+  não está funcionando" + "dá para capturar a cor de uma imagem?") — eram o mesmo defeito, a
+  figura. Ver o bullet `imageSampler` em "Cores por CANAL". **Full review no mesmo dia (3
+  revisores: estado/eventos · lógica pura e testes · UX/a11y/copy/docs), 4 ALTOS + 6 MÉDIOS
+  corrigidos:** teto do cache por CONTAGEM deixava figura ilegível para sempre num quadro com 9
+  adesivos; o recado "toque de novo" era mentira (o toque não disparava abertura); a folga do
+  hit-test não existia no mapeamento (mirar a beirada dava erro com a figura pronta); o efeito de
+  sincronização zerava a cor recém-pega ao mover a figura; "sem cor" em silêncio era
+  indistinguível do defeito original; e **nenhum teste distinguia os eixos `u`/`v`** (análise de
+  mutantes: a implementação que os troca passava em 13 de 13 asserções). Suíte (1305) + typecheck
+  + biome verdes; QA em navegador no playground com um PNG 2×2 de cores conhecidas.
 - **Pendências**: QA em browser real (palco vetorial, fluxo estilo→tipo, animação vetorial
   ponta-a-ponta, peças/mapa vetoriais, export, ponte entre perfis, tema claro/escuro, touch,
   Cartão de Criação → Pinta pré-preenchido → asset vinculado → envio ao Estúdio; o lote novo do

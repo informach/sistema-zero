@@ -7,7 +7,7 @@ import type { GamificationRepository } from '../../domain/ports/gamification-rep
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import { computeProgress, resolveContinueLesson } from '../../domain/progress/progress'
-import { careerLocksForCourses } from '../career-course-locking/career-course-locking'
+import { journeyLocksForCourses } from '../journey-course-locking/journey-course-locking'
 import { lockedLessonSetForCourse } from '../lesson-locking/lesson-locking'
 import { type MyCourseView, toMyCourseView } from '../mappers/views'
 
@@ -79,11 +79,11 @@ export class ListMyCoursesService {
     // ⚠️ Os MARCOS não seguem o `!privileged` do `qualified`: aquele é uma TRAVA
     // (equipe passa por cima), estes são o histórico do próprio ator — esconder
     // deles só apagaria o selo de quem testa a vitrine. Kids porque o Mural é kids.
-    const careerState =
-      audience === 'kids' ? await this.gamification.listCareerCourseState(userId, audience) : null
-    const qualified = careerState && !privileged ? careerState.qualified : emptyQualifyingByTier()
-    const milestones = careerState?.milestones ?? new Map()
-    const careerLocks = careerLocksForCourses(
+    const journeyState =
+      audience === 'kids' ? await this.gamification.listJourneyCourseState(userId, audience) : null
+    const qualified = journeyState && !privileged ? journeyState.qualified : emptyQualifyingByTier()
+    const milestones = journeyState?.milestones ?? new Map()
+    const journeyLocks = journeyLocksForCourses(
       courses,
       qualified,
       audience === 'kids' && !privileged,
@@ -155,7 +155,7 @@ export class ListMyCoursesService {
           entitlement,
           progress,
           continueLessonId,
-          careerLocks.get(course.id),
+          journeyLocks.get(course.id),
           milestones.get(course.id),
         ),
       )

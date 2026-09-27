@@ -46,7 +46,7 @@ describe('watermarkPdf', () => {
     expect(out.byteLength).toBeGreaterThan(bytes.byteLength)
   })
 
-  test('bytes inválidos lançam (caller faz fallback p/ original)', async () => {
+  test('bytes inválidos lançam (caller bloqueia a entrega)', async () => {
     const garbage = new TextEncoder().encode('isto não é um PDF')
     await expect(watermarkPdf(garbage, EMAIL)).rejects.toThrow()
   })

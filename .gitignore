@@ -69,3 +69,6 @@ qa-screens/
 
 # Artefatos de conferência/rascunho (dumps de PDF, capturas de review).
 tmp/
+
+# Páginas de referência coletadas pelo Firecrawl (dados externos, não código).
+.firecrawl/

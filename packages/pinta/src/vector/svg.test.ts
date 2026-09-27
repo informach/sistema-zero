@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'bun:test'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { createVectorBackgroundAsset } from '../core/project'
 import { fontFamilyLabel, VECTOR_FONT_FAMILIES, type VectorShape } from './model'
 import { vectorToPortableSvg } from './portableSvg'
-import { gradientDefsMarkup, shapeToMarkup, textLines, vectorToSvg } from './svg'
+import { gradientDefsMarkup, sceneDefsMarkup, shapeToMarkup, textLines, vectorToSvg } from './svg'
+import { GradientDefs, VectorFrameSvg } from './VectorFrameSvg'
 
 const base = { fill: '#78dc52', stroke: null, opacity: 1, rotation: 0 }
 
@@ -39,6 +42,22 @@ describe('shapeToMarkup', () => {
     expect(shapeToMarkup(shape)).toContain('transform="rotate(45 5 5)"')
   })
 
+  it('rotação usa a âncora explícita, inclusive fora da forma', () => {
+    const shape: VectorShape = {
+      ...base,
+      id: 'r-pivo',
+      type: 'rect',
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 10,
+      rx: 0,
+      rotation: 45,
+      rotationPivot: { x: -20, y: 30 },
+    }
+    expect(shapeToMarkup(shape)).toContain('transform="rotate(45 -20 30)"')
+  })
+
   it('texto escapa XML (anti-injeção no SVG exportado)', () => {
     const shape: VectorShape = {
       ...base,
@@ -69,6 +88,23 @@ describe('shapeToMarkup', () => {
     const markup = shapeToMarkup(shape)
     expect(markup).toContain('points="0,0 10,0 5,9.13"')
     expect(markup).toContain('opacity="0.5"')
+  })
+
+  it('aceita filhos de animação sem alterar o markup estático padrão', () => {
+    const shape: VectorShape = {
+      ...base,
+      id: 'r3',
+      type: 'rect',
+      x: 1,
+      y: 2,
+      w: 3,
+      h: 4,
+      rx: 0,
+    }
+    expect(shapeToMarkup(shape)).toEndWith('/>')
+    expect(shapeToMarkup(shape, '', '<animate attributeName="x" values="1;2"/>')).toBe(
+      '<rect x="1" y="2" width="3" height="4" fill="#78dc52"><animate attributeName="x" values="1;2"/></rect>',
+    )
   })
 })
 
@@ -114,6 +150,48 @@ describe('degradê (gradient)', () => {
     expect(gradientDefsMarkup([radial])).toContain('<radialGradient id="pin-grad-g2">')
   })
 
+  it('degradês ajustados têm a mesma geometria no editor e no SVG exportado', () => {
+    const linear: VectorShape = {
+      ...gradShape,
+      fill: {
+        type: 'linear',
+        from: '#ff2121',
+        to: '#003fad',
+        angle: 0,
+        start: { x: 0.2, y: 0.1 },
+        end: { x: 0.9, y: 0.8 },
+      },
+    }
+    const radial: VectorShape = {
+      ...gradShape,
+      id: 'g2',
+      fill: {
+        type: 'radial',
+        from: '#ffffff',
+        to: '#000000',
+        angle: 0,
+        center: { x: 0.25, y: 0.2 },
+        radius: 0.8,
+      },
+    }
+    const exported = gradientDefsMarkup([linear, radial])
+    const rendered = renderToStaticMarkup(
+      createElement('svg', null, createElement(GradientDefs, { shapes: [linear, radial] })),
+    )
+    for (const attribute of [
+      'x1="0.2"',
+      'y1="0.1"',
+      'x2="0.9"',
+      'y2="0.8"',
+      'cx="0.25"',
+      'cy="0.2"',
+      'r="0.8"',
+    ]) {
+      expect(exported).toContain(attribute)
+      expect(rendered).toContain(attribute)
+    }
+  })
+
   it('sem degradê o markup fica idêntico (defs vazio)', () => {
     expect(gradientDefsMarkup([{ ...gradShape, fill: '#78dc52' }])).toBe('')
   })
@@ -154,6 +232,97 @@ describe('vectorToSvg (snapshot do documento)', () => {
         '</svg>',
       ].join('\n'),
     )
+  })
+})
+
+describe('máscaras no SVG', () => {
+  const maskedShapes: VectorShape[] = [
+    {
+      ...base,
+      id: 'fundo',
+      type: 'rect',
+      x: 0,
+      y: 0,
+      w: 100,
+      h: 100,
+      rx: 0,
+    },
+    {
+      ...base,
+      id: 'rosto',
+      type: 'rect',
+      x: 10,
+      y: 10,
+      w: 80,
+      h: 80,
+      rx: 0,
+      fill: '#ff2121',
+      maskId: 'janela',
+    },
+    {
+      ...base,
+      id: 'janela',
+      type: 'ellipse',
+      cx: 50,
+      cy: 50,
+      rx: 18,
+      ry: 18,
+      fill: { type: 'linear', from: '#000000', to: '#ffffff', angle: 0 },
+      opacity: 0.2,
+      rotation: 30,
+      rotationPivot: { x: -10, y: 120 },
+      hidden: true,
+    },
+    {
+      ...base,
+      id: 'brilho',
+      type: 'rect',
+      x: 45,
+      y: 45,
+      w: 10,
+      h: 10,
+      rx: 0,
+      fill: '#ffffff',
+    },
+  ]
+
+  it('emite uma definição sólida, omite a fonte e mantém o conteúdo na ordem-Z', () => {
+    const svg = vectorToSvg({ width: 100, height: 100, shapes: maskedShapes })
+    expect(svg.match(/<clipPath/g)).toHaveLength(1)
+    expect(svg).toContain('<clipPath id="pin-mask-janela">')
+    expect(svg).toContain(
+      '<ellipse cx="50" cy="50" rx="18" ry="18" fill="#000000" transform="rotate(30 -10 120)"/>',
+    )
+    expect(svg).toContain('clip-path="url(#pin-mask-janela)"')
+    expect(svg).not.toContain('pin-grad-janela')
+    expect(svg.indexOf('id="pin-mask-janela"')).toBeLessThan(svg.indexOf('fill="#78dc52"'))
+    expect(svg.indexOf('fill="#ff2121"')).toBeLessThan(svg.indexOf('fill="#ffffff"'))
+  })
+
+  it('prefixa ids e referências e não cria defs quando todo conteúdo está escondido', () => {
+    const prefixed = sceneDefsMarkup(maskedShapes, 'quadro-2-')
+    expect(prefixed).toContain('id="quadro-2-pin-mask-janela"')
+    expect(prefixed).not.toContain('pin-grad-janela')
+    const hidden = maskedShapes.map((shape) =>
+      shape.id === 'rosto' ? { ...shape, hidden: true } : shape,
+    )
+    expect(sceneDefsMarkup(hidden)).toBe('')
+  })
+
+  it('mantém paridade entre a cena React e a serialização string', () => {
+    const rendered = renderToStaticMarkup(
+      createElement(VectorFrameSvg, { width: 100, height: 100, shapes: maskedShapes }),
+    )
+    const exported = vectorToSvg({ width: 100, height: 100, shapes: maskedShapes })
+    for (const attribute of [
+      'id="pin-mask-janela"',
+      'transform="rotate(30 -10 120)"',
+      'clip-path="url(#pin-mask-janela)"',
+    ]) {
+      expect(rendered).toContain(attribute)
+      expect(exported).toContain(attribute)
+    }
+    expect(rendered.match(/<ellipse/g)).toHaveLength(1)
   })
 })
 

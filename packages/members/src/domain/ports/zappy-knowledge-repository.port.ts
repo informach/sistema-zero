@@ -11,7 +11,7 @@ export interface ZappyKnowledgeChunkInput {
 export interface ZappyKnowledgeSourceInput {
   courseId: string
   lessonId: string
-  blockId: string
+  blockId: string | null
   blockRevision: string
   sourceType: ZappyKnowledgeSourceType
   sourceRef: string
@@ -22,14 +22,15 @@ export interface ZappyKnowledgeSourceInput {
   now: Date
 }
 
-export interface ZappyBlockSourceAuthority {
-  blockId: string
+export interface ZappySourceAuthority {
+  blockId: string | null
   courseId: string
   lessonId: string
   blockRevision: string
 }
 
-export interface ZappyKnowledgeHit {
+export interface ZappyLessonKnowledgeHit {
+  kind?: 'lesson'
   courseId: string
   courseSlug: string
   courseTitle: string
@@ -39,6 +40,20 @@ export interface ZappyKnowledgeHit {
   content: string
 }
 
+/**
+ * Um tutorial PUBLICADO do "Como fazer" que casou com a pergunta. Não é aula: sem curso,
+ * sem gate de matrícula. O modelo o cita em `helpReferences` e o painel mostra o chip.
+ */
+export interface ZappyHelpKnowledgeHit {
+  kind: 'help-tutorial'
+  slug: string
+  title: string
+  collectionTitle: string
+  content: string
+}
+
+export type ZappyKnowledgeHit = ZappyLessonKnowledgeHit | ZappyHelpKnowledgeHit
+
 export interface PublishedZappyBlock {
   blockId: string
   courseId: string
@@ -46,6 +61,14 @@ export interface PublishedZappyBlock {
   blockRevision: string
   kind: string
   content: LessonBlockContent
+}
+
+export interface PublishedZappyNotebook {
+  attachmentId: string
+  courseId: string
+  lessonId: string
+  attachmentRevision: string
+  url: string
 }
 
 export interface ZappyKnowledgeReport {
@@ -70,16 +93,20 @@ export interface ZappyKnowledgeReport {
 }
 
 export interface ZappyKnowledgeRepository {
-  blockAuthorityForSource(sourceRef: string): Promise<ZappyBlockSourceAuthority | null>
+  sourceAuthorityForRef(sourceRef: string): Promise<ZappySourceAuthority | null>
   /** Retorna null quando a revisão deixou de ser autoritativa antes da escrita atômica. */
   upsert(input: ZappyKnowledgeSourceInput): Promise<{ id: string; changed: boolean } | null>
   deleteByRef(sourceRef: string): Promise<void>
-  search(lessonIds: string[], query: string, limit: number): Promise<ZappyKnowledgeHit[]>
+  search(lessonIds: string[], query: string, limit: number): Promise<ZappyLessonKnowledgeHit[]>
   listPublishedKidsBlocks(input?: {
     after?: string
     limit?: number
   }): Promise<PublishedZappyBlock[]>
-  /** Remove fontes cujo bloco publicado/tipo autoritativo já não existe no banco. */
-  reconcilePublishedBlockSources(): Promise<number>
+  listPublishedKidsNotebooks(input?: {
+    after?: string
+    limit?: number
+  }): Promise<PublishedZappyNotebook[]>
+  /** Remove fontes sem bloco ou arquivo publicado e autoritativo. */
+  reconcilePublishedSources(): Promise<number>
   report(): Promise<ZappyKnowledgeReport>
 }

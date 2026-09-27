@@ -41,6 +41,7 @@ describe('admin tool-usage — uso por ferramenta na ficha', () => {
       audience: 'kids' as const,
       kind: 'game' as const,
       status: 'active' as const,
+      shareCode: null,
       createdAt: new Date('2026-06-01T10:00:00.000Z'),
     }
     pensa.projects.set('p1', {

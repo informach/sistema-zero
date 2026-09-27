@@ -333,7 +333,7 @@ export function AvatarConfigurator({
 
   if (loadState === 'error') {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <div className="fixed inset-0 z-50 flex flex-col bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1">
         <div className="relative z-10 flex items-center justify-between gap-2 p-4">
           <KidsBackButton onClick={exitAvatar} label={exitLabel} variant="overlay" />
         </div>
@@ -355,7 +355,7 @@ export function AvatarConfigurator({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1">
       {/* Barra superior */}
       <div className="relative z-10 flex items-center justify-between gap-2 p-4">
         <div className="flex items-center gap-2">
@@ -445,7 +445,7 @@ export function AvatarConfigurator({
                     type="button"
                     onClick={cancelPendingBuy}
                     disabled={!!busy}
-                    className="inline-flex h-11 items-center rounded-full border-2 border-border bg-card px-4 font-semibold text-muted-foreground text-sm"
+                    className="sz-btn-gradient sz-btn-contorno h-11 px-4 text-sm"
                   >
                     Deixar para depois
                   </button>

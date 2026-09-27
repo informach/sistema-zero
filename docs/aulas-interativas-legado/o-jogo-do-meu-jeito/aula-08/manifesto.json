@@ -1,0 +1,234 @@
+{
+  "version": 3,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-08",
+  "title": "Crie as suas versões",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! Seu jogo tem desenhos feitos por você. Hoje vamos mostrar essa versão e escolher uma ideia pequena para a próxima.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "Um carro no lugar da nave",
+        "instructions": "Você quer transformar o jogo em um carro desviando na estrada. Qual seria uma primeira mudança que dá para testar? Sua primeira ideia pode mudar depois da observação.",
+        "hints": ["Que comparação deixaria mais fácil perceber a causa da diferença?"],
+        "required": true,
+        "activity": {
+          "type": "question"
+        },
+        "checkpoint": {
+          "prompt": "Você mudou o controle e as imagens ao mesmo tempo e não gostou do resultado. Como investigar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Apagar o projeto que funcionava."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Comparar uma mudança de cada vez."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Alterar ainda mais coisas antes de testar."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Uma mudança por vez ajuda a descobrir seu efeito. Guarde a versão que funciona para poder comparar."
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Uma nova versão pode nascer de uma mudança pequena: tema, personagem, obstáculo ou regra. Mudar tudo de uma vez dificulta perceber o que funcionou.\n\nEscolha uma intenção, faça uma alteração, jogue e compare com ela. Publicar permite mostrar uma versão; continuar editando é parte do processo.\n\nDesafios e Clube oferecem ideias e conversa, mas seu projeto não precisa ficar igual ao exemplo ou ao dos colegas."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### Publicar o seu jogo no Mural\n\nAbra seu jogo pelo cartão de Meus Jogos. Confira a partida e use o caminho de compartilhar do Estúdio livre.\n\nEscolha título, resumo e capa que mostrem a sua criação. Depois abra o link no Mural para testar como outra pessoa vai jogar."
+      }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-08-passo-01: gravar a demonstração \"publicar o seu jogo no Mural\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### A rotina depois de cada curso\n\nPara uma próxima versão, escolha uma ideia e preserve o projeto que já funciona. No Mural, veja o caminho Fazer a minha versão quando estiver disponível.\n\nCompare nave no espaço e carro na estrada: você pode começar mudando um recurso e testando."
+      }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-08-passo-02: gravar a demonstração \"a rotina depois de cada curso\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Abra a versão publicada como alguém que nunca viu os blocos. Depois escolha uma única mudança para experimentar."
+      }
+    },
+    {
+      "key": "checar-construir-1",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["Projeto em edição e versão publicada podem estar em momentos diferentes."],
+        "required": true,
+        "activity": {
+          "type": "question"
+        },
+        "checkpoint": {
+          "prompt": "Você editou o projeto depois de publicar. Como conferir o que outras pessoas estão jogando?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Mudar o nome do projeto e presumir que tudo foi atualizado."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Abrir o link publicado e testar essa versão."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Olhar só a prévia do editor."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Abrir o link mostra a experiência de quem joga sua publicação. Confira essa versão antes de compartilhar."
+        }
+      }
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### Onde buscar ideia quando não vier nenhuma\n\nVolte ao Início e veja o Desafio do mês. Leia a proposta e pense em uma mudança que combine com ela.\n\nVocê não precisa começar um jogo enorme; uma ideia pequena já pode virar algo para mostrar."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-08-passo-03: gravar a demonstração \"onde buscar ideia quando não vier nenhuma\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### O Clube dos Criadores\n\nAbra o Clube no menu. Veja as conversas, conte uma descoberta do seu projeto e peça uma opinião concreta, como sobre o controle ou a dificuldade.\n\nAo ver outro jogo, descreva o que funcionou e faça uma pergunta respeitosa."
+      }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-08-passo-04: gravar a demonstração \"o Clube dos Criadores\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Abra sua publicação, jogue e confira título, resumo e capa. Depois escolha uma única mudança para uma próxima versão e diga o que pretende testar.\n\nEste curso termina, mas os seus projetos continuam no Estúdio e os desenhos no Pinta. Use essa rotina depois dos próximos cursos: escolher, criar, testar e compartilhar.\n\nDepois de conferir o salvamento, volte a esta aba para a pergunta final. Seu projeto continua no Estúdio para quando você quiser criar outra versão."
+      }
+    },
+    {
+      "key": "checar-fechamento",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["Escolha uma parte do jogo sobre a qual você pode agir depois."],
+        "required": true,
+        "activity": {
+          "type": "question"
+        },
+        "checkpoint": {
+          "prompt": "Você quer uma opinião que ajude a melhorar o jogo. Qual pergunta pode fazer?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "“Meu jogo é melhor que o seu?”"
+            },
+            {
+              "id": "opcao-2",
+              "label": "“Você gostou?”, sem indicar o que quer investigar."
+            },
+            {
+              "id": "opcao-3",
+              "label": "“O controle ficou confortável? Em qual parte foi difícil?”"
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Uma pergunta concreta ajuda a receber uma observação útil. Conversar no Clube é um convite; esta etapa não exige publicar um comentário."
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "Um carro no lugar da nave",
+      "objective": "Publicar a criação, escolher uma mudança própria e repetir um processo de criar, testar e compartilhar.",
+      "intent": "exploration",
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
+    },
+    {
+      "key": "construir-1",
+      "title": "Mostre o jogo e imagine outra versão",
+      "objective": "Testar a publicação e planejar uma alteração de cada vez.",
+      "intent": "application",
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "convite-construir-1",
+        "checar-construir-1"
+      ],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-1"]
+      }
+    },
+    {
+      "key": "fechamento",
+      "title": "Uma ideia para continuar",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.",
+      "intent": "closing",
+      "blockKeys": [
+        "construir-3",
+        "video-construir-3-1",
+        "construir-4",
+        "video-construir-4-1",
+        "fechamento",
+        "checar-fechamento"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-fechamento"]
+      }
+    }
+  ]
+}

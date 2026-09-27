@@ -182,12 +182,17 @@
   background: rgb(192 38 211 / 14%);
 }
 
-/* A galeria pode passar de cem cards; grupos fora da viewport não participam
- * de layout/pintura até se aproximarem da área visível. */
-[data-sz-theme] .sz-kit-content-group {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 420px;
-}
+/*
+ * ⚠️⚠️ O grupo da galeria de kits NÃO usa `content-visibility: auto` (13/09/2026). Usava, com
+ * `contain-intrinsic-size: auto 420px`, e caía na MESMA armadilha que fez o cursor piscar na
+ * galeria do Pinta (a mecânica inteira está no `pinta.css`): o grupo embrulha uma GRADE de
+ * cartões de 2 a 4 colunas, então a altura dele vai de uma linha a muitas conforme a janela e
+ * o filtro — 420px é um chute que só casa por acaso. Os cartões de dentro são clicáveis, que é
+ * exatamente onde o laço aparece.
+ *
+ * A régua: só onde a altura é FIXA e o reservado casa com ela. É o caso do `.sz-project-card`
+ * logo abaixo (`h-72` = 288px), que FICA.
+ */
 
 /*
  * Cards da lista "Meus Jogos" (19/08/2026): com centenas de projetos, o navegador só
@@ -213,86 +218,439 @@
 }
 
 /*
- * ── Home do Estúdio no padrão do Pinta (SÓ a ProjectList; o editor não usa) ──
- * Nomes `sz-home-*` de propósito: `.sz-display`/`.sz-btn-gradient` são classes
- * GLOBAIS do community-kids e colidiriam ("última definição vence"). Tudo que
- * importa vive NA CLASSE ([data-sz-theme] .x vence utilitário por
- * especificidade), porque o cn() do Button é um join simples — sem
- * tailwind-merge para resolver conflito entre utilitários.
+ * ── A BARRA DO EDITOR (Topbar) ── 11/09/2026, a tela-modelo do Estúdio medida a 1440px:
+ * 68px de altura, [← marca | nome ✎ · Salvo] à esquerda, o segmentado dos modos no meio e os
+ * círculos quietos + a pílula azul à direita.
+ * É o MESMO componente do Estúdio Completo, do bloco de aula, do admin e da comunidade adulta:
+ * por isso as regras moram aqui (o `tool-chrome.css` só o kids importa) e pintam com os
+ * `--color-sz-*`, que já herdam a cor de cada host. Onde o desenho pede um tom que só o kids tem
+ * (o creme do círculo de voltar, o menta do "Salvo", o céu diluído dos controles quietos, o azul
+ * da pílula) a cadeia tenta o `--sz-tool-*` e cai num `--color-sz-*`: fora do kids o círculo
+ * creme é o `--color-sz-panel-soft`, nunca um creme literal.
+ * Na camada `components`, como as receitas compartilhadas: a utilitária (o `sr-only` dos rótulos
+ * no estreito) vence a receita sem briga de especificidade.
+ * Contraste (texto de 13 a 15px em negrito, régua de 4,5:1): os fundos tingidos misturam POUCO do
+ * tom (10% no "Salvo", 8% no Zappy) porque o verde e o azul de texto do Estúdio ficam abaixo de
+ * 4,5 sobre uma mistura mais forte; o "não salvo" e o erro ficam sobre o painel, com o fio.
  */
-[data-sz-theme] {
-  --sz-home-gradient: var(
-    --sz-tool-cta-gradient,
-    var(
-      --sz-kids-grad-cta-azul-suave,
-      linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
-    )
-  );
-  --sz-home-cta: var(--sz-tool-cta, var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)));
-}
-[data-sz-theme="light"] {
-  --sz-home-gradient: var(
-    --sz-tool-cta-gradient,
-    var(--sz-kids-grad-cta-azul, linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255)))
-  );
-  --sz-home-cta: var(--sz-tool-cta, var(--sz-kids-azul-texto, oklch(0.52 0.15 252)));
-}
-
-/* Pílula "3D" do CARD "Abrir" (espelho do .pin-btn-3d do Pinta e da `.sz-tool-btn-3d`
-   compartilhada, que o cabeçalho da lista usa desde 07/09/2026; alvo 44px).
-   ⚠️ `color-mix` SEMPRE `in oklab`: em oklch a mistura gira o matiz e passa pelo magenta. */
-[data-sz-theme] .sz-home-btn3d {
-  min-height: var(--sz-tool-control, 2.75rem);
-  border: 0;
-  border-radius: var(--sz-tool-radius-pill, 9999px);
-  padding-inline: 1.25rem;
-  font-size: 1rem;
-  font-weight: 700;
-  background-image: var(--sz-home-gradient);
-  color: var(--sz-tool-on-cta, var(--color-sz-bg));
-  box-shadow: 0 4px 0 color-mix(in oklab, var(--sz-home-cta) 60%, black);
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease,
-    filter 0.12s ease;
-}
-[data-sz-theme] .sz-home-btn3d:hover:not(:disabled) {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow: 0 5px 0 color-mix(in oklab, var(--sz-home-cta) 60%, black);
-}
-[data-sz-theme] .sz-home-btn3d:active:not(:disabled) {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 color-mix(in oklab, var(--sz-home-cta) 60%, black);
-}
-
-/* O secundário da home (`.sz-home-btn-ghost`) foi APOSENTADO em 07/09/2026: "Importar",
-   "Ver os jogos prontos" e os botões dos estados vazios usam a `.sz-tool-btn` compartilhada. */
-
-/* Painel de card (espelho do .pin-panel: borda 2px + sombra dura da borda). */
-[data-sz-theme] .sz-home-panel {
-  border: var(--sz-tool-border, 2px) solid var(--color-sz-border);
-  border-radius: var(--sz-tool-radius-card, 1rem);
-  background: var(--color-sz-panel);
-  box-shadow: 0 3px 0 color-mix(in oklab, var(--color-sz-border) 45%, transparent);
-}
-
-/* Hover pop dos cards (espelho do .pin-pop). */
-[data-sz-theme] .sz-home-pop {
-  transition: transform 0.18s ease-out;
-}
-[data-sz-theme] .sz-home-pop:hover {
-  transform: translateY(-2px) scale(1.02);
-}
-@media (prefers-reduced-motion: reduce) {
-  [data-sz-theme] .sz-home-pop,
-  [data-sz-theme] .sz-home-btn3d {
-    transition: none;
+@layer components {
+  .sz-bar {
+    --sz-bar-hit: 2.5rem;
+    --sz-bar-quiet: var(--sz-tool-quiet, var(--color-sz-panel-soft));
+    --sz-bar-cta: var(--sz-tool-cta, var(--color-sz-accent));
+    --sz-bar-on-cta: var(--sz-tool-on-cta, var(--color-sz-bg));
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-height: 4.25rem;
+    padding: 0.5rem 1.25rem;
+    border-bottom: 1px solid var(--color-sz-border);
+    background: var(--color-sz-panel);
+    color: var(--color-sz-fg);
+    font-size: 0.875rem;
   }
-  [data-sz-theme] .sz-home-pop:hover {
-    transform: none;
+  /* Estreito e compacto: a barra de 52px de sempre. */
+  .sz-bar--tight {
+    gap: 0.5rem;
+    min-height: 3.25rem;
+    padding: 0.25rem 0.75rem;
+  }
+  .sz-bar--compact {
+    gap: 0.375rem;
+    padding-inline: 0.5rem;
+  }
+  @media (any-pointer: coarse) {
+    .sz-bar {
+      --sz-bar-hit: 2.75rem;
+    }
+  }
+
+  /* O segmentado fica no meio do espaço LIVRE entre as pontas (as duas margens automáticas), que
+     é o que a tela-modelo mede: a 1440px ele começa em 668, e não no centro exato da barra (608).
+     Com metades fixas o grupo da esquerda ficava preso na metade dele e o nome do projeto sumia
+     com a direita sobrando. Quando não sobra espaço nenhum, só a esquerda encolhe, e dentro dela
+     só o NOME (reticências); os botões nunca. */
+  .sz-bar__start {
+    display: flex;
+    flex: 0 1 auto;
+    min-width: 0;
+    align-items: center;
+    gap: 0.875rem;
+  }
+  .sz-bar__center {
+    display: flex;
+    flex: none;
+    margin-inline: auto;
+  }
+  .sz-bar__end {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 0.875rem;
+  }
+  /* Sem modos (não há o segmentado) a direita continua na ponta. */
+  .sz-bar__start + .sz-bar__end {
+    margin-inline-start: auto;
+  }
+  .sz-bar--tight .sz-bar__start,
+  .sz-bar--tight .sz-bar__end {
+    gap: 0.5rem;
+  }
+  .sz-bar--compact .sz-bar__start,
+  .sz-bar--compact .sz-bar__end {
+    gap: 0.375rem;
+  }
+
+  .sz-bar :is(.sz-bar-back, .sz-bar-name, .sz-bar-mode, .sz-bar-icon-btn, .sz-bar-pill) {
+    touch-action: manipulation;
+  }
+  .sz-bar
+    :is(.sz-bar-back, .sz-bar-name, .sz-bar-mode, .sz-bar-icon-btn, .sz-bar-pill):focus-visible {
+    outline: 2px solid var(--color-sz-focus);
+    outline-offset: 2px;
+  }
+
+  /* ── o "voltar" com a marca ── */
+  .sz-bar-back {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0;
+    border: 0;
+    border-radius: 9999px;
+    background: transparent;
+    color: var(--color-sz-fg);
+    font: inherit;
+    cursor: pointer;
+  }
+  .sz-bar-back__circle {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: var(--sz-bar-hit);
+    height: var(--sz-bar-hit);
+    border-radius: 9999px;
+    background: var(--sz-tool-band-creme, var(--color-sz-panel-soft));
+    color: var(--color-sz-fg);
+    transition: background-color 0.12s ease;
+  }
+  .sz-bar-back__circle > svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .sz-bar-back:hover .sz-bar-back__circle {
+    background: color-mix(
+      in oklab,
+      var(--sz-tool-band-creme, var(--color-sz-panel-soft)) 88%,
+      var(--color-sz-fg)
+    );
+  }
+  .sz-bar-brand {
+    flex: none;
+    font-family: var(--font-family-display);
+    font-size: 1.125rem;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--color-sz-fg);
+  }
+  .sz-bar-divider {
+    flex: none;
+    width: 1px;
+    height: 1.75rem;
+    background: var(--color-sz-border);
+  }
+
+  /* ── o nome do projeto (pílula quieta com o lápis; o campo tem a mesma forma) ── */
+  .sz-bar-name {
+    display: inline-flex;
+    flex: 0 1 auto;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    max-width: 20rem;
+    min-height: var(--sz-bar-hit);
+    padding-inline: 0.875rem;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    background: var(--sz-bar-quiet);
+    color: var(--color-sz-fg);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 800;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+  }
+  .sz-bar-name:hover {
+    background: color-mix(in oklab, var(--sz-bar-quiet) 90%, var(--color-sz-fg));
+  }
+  .sz-bar-name__text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .sz-bar-name > svg {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-sz-fg-soft);
+  }
+  .sz-bar-name--editing,
+  .sz-bar-name--editing:hover {
+    width: 20rem;
+    border-color: var(--color-sz-accent);
+    background: var(--color-sz-panel);
+    font-weight: 700;
+    cursor: text;
+  }
+  .sz-bar--tight .sz-bar-name {
+    max-width: 12rem;
+  }
+  .sz-bar--tight .sz-bar-name--editing {
+    width: 12rem;
+  }
+  .sz-bar--compact .sz-bar-name {
+    max-width: 7rem;
+    padding-inline: 0.625rem;
+  }
+  .sz-bar--compact .sz-bar-name--editing {
+    width: 7rem;
+  }
+  /* O NOME tem piso (fora do compacto): sem ele, no aperto ele encolhia até sumir, antes dos
+     selos. Quem cede depois do piso é o texto dos selos, com reticências (logo abaixo). */
+  .sz-bar:not(.sz-bar--compact) .sz-bar-name {
+    min-width: 4.5rem;
+  }
+
+  /* ── os selos: o "Salvo" local e a nuvem do host ── */
+  .sz-bar-seal {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.375rem;
+    min-height: 1.75rem;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .sz-bar-seal > svg {
+    flex: none;
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+  /* Na barra (a esquerda), os selos também cedem no aperto: o texto encolhe com reticências e a
+     frase inteira fica no `title`. Rígidos, o "Alterações não salvas" e o "Não consegui guardar"
+     passavam por baixo do segmentado (full review, 11/09/2026). */
+  .sz-bar__start > .sz-bar-seal {
+    flex: 0 1 auto;
+    min-width: 1.75rem;
+  }
+  .sz-bar-seal__text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sz-bar-seal--icon {
+    justify-content: center;
+    width: 1.75rem;
+    padding: 0;
+  }
+  .sz-bar-seal--icon > svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  .sz-bar-seal--ok {
+    background: var(
+      --sz-tool-ok-tint,
+      color-mix(in oklab, var(--color-sz-success) 10%, var(--color-sz-panel))
+    );
+    color: var(--sz-tool-ok, var(--color-sz-success));
+  }
+  .sz-bar-seal--warn {
+    border-color: color-mix(in oklab, var(--color-sz-warn) 45%, var(--color-sz-panel));
+    background: var(--color-sz-panel);
+    color: var(--color-sz-warn);
+  }
+  /* O vermelho puro do Estúdio dá 3,9:1 sobre o painel navy do kids (medido): um quarto da
+     tinta do texto por cima clareia no escuro e escurece no claro, e os dois passam de 5. */
+  .sz-bar-seal--danger {
+    border-color: color-mix(in oklab, var(--color-sz-error) 45%, var(--color-sz-panel));
+    background: var(--color-sz-panel);
+    color: color-mix(in oklab, var(--color-sz-error) 75%, var(--color-sz-fg));
+  }
+  .sz-bar-seal--muted {
+    background: var(--sz-bar-quiet);
+    color: var(--color-sz-fg-soft);
+  }
+
+  /* ── o segmentado dos modos ── */
+  /* Um `fieldset` (o grupo com a legenda "Modo de edição" só para o leitor). */
+  .sz-bar-modes {
+    display: inline-flex;
+    flex: none;
+    gap: 0.25rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0.25rem;
+    border: 0;
+    border-radius: 9999px;
+    background: var(--sz-bar-quiet);
+  }
+  .sz-bar-mode {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    padding-inline: 1rem;
+    border: 0;
+    border-radius: 9999px;
+    background: transparent;
+    color: var(--color-sz-fg-soft);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 0.12s ease,
+      color 0.12s ease;
+  }
+  .sz-bar-mode > svg {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+  }
+  .sz-bar-mode:hover {
+    color: var(--color-sz-fg);
+  }
+  .sz-bar-mode[aria-pressed="true"],
+  .sz-bar-mode[aria-pressed="true"]:hover {
+    background: var(--sz-bar-cta);
+    color: var(--sz-bar-on-cta);
+    font-weight: 800;
+  }
+  .sz-bar--tight .sz-bar-mode {
+    padding-inline: 0.625rem;
+  }
+  @media (any-pointer: coarse) {
+    .sz-bar-mode {
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+    }
+  }
+
+  /* ── os círculos quietos (olho da prévia, desfazer, refazer, "⋯") ── */
+  .sz-bar-icon-btn {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: var(--sz-bar-hit);
+    height: var(--sz-bar-hit);
+    padding: 0;
+    border: 0;
+    border-radius: 9999px;
+    background: var(--sz-bar-quiet);
+    color: var(--color-sz-fg-soft);
+    cursor: pointer;
+    transition:
+      background-color 0.12s ease,
+      color 0.12s ease;
+  }
+  .sz-bar-icon-btn > svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+  .sz-bar-icon-btn:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--sz-bar-quiet) 88%, var(--color-sz-fg));
+    color: var(--color-sz-fg);
+  }
+  .sz-bar-icon-btn[aria-pressed="true"],
+  .sz-bar-icon-btn[aria-expanded="true"] {
+    background: color-mix(in oklab, var(--color-sz-accent) 14%, var(--color-sz-panel));
+    color: var(--color-sz-accent);
+  }
+  .sz-bar-icon-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  /* ── as pílulas: a azul da ação principal (Compartilhar) e a do Zappy ── */
+  .sz-bar-pill {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: var(--sz-bar-hit);
+    padding-inline: 1rem;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    background: var(--sz-bar-quiet);
+    color: var(--color-sz-fg);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease,
+      color 0.12s ease;
+  }
+  .sz-bar-pill > svg {
+    flex: none;
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+  .sz-bar-pill--primary {
+    min-height: 2.75rem;
+    padding-inline: 1.25rem;
+    background: var(--sz-bar-cta);
+    color: var(--sz-bar-on-cta);
+  }
+  .sz-bar-pill--primary:hover:not([aria-disabled="true"]) {
+    background: color-mix(in oklab, var(--sz-bar-cta) 88%, var(--color-sz-fg));
+  }
+  .sz-bar-pill--soft {
+    background: color-mix(in oklab, var(--color-sz-accent) 8%, var(--color-sz-panel));
+    color: var(--color-sz-accent);
+  }
+  .sz-bar-pill--soft:hover {
+    background: color-mix(in oklab, var(--color-sz-accent) 14%, var(--color-sz-panel));
+  }
+  .sz-bar-pill--soft[aria-expanded="true"] {
+    background: var(--sz-bar-cta);
+    color: var(--sz-bar-on-cta);
+  }
+  /* Só o ícone (estreito e compacto): o círculo da altura dos outros. */
+  .sz-bar-pill--icon {
+    width: var(--sz-bar-hit);
+    min-height: var(--sz-bar-hit);
+    padding-inline: 0;
+  }
+  .sz-bar-pill[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 }
+
+/*
+ * ── Home do Estúdio ("Meus Jogos") ──
+ * Desde 11/09/2026 (o desenho das telas-modelo) a lista usa só as receitas COMPARTILHADAS de
+ * `@sistemazero/ui/tool-chrome.css` (faixas, `.sz-tool-card`, pílulas chapadas): as `sz-home-*`
+ * (a pílula 3D do "Abrir", o painel com sombra dura e o pulo no hover) saíram daqui.
+ */
 
 /* Highlight cruzado bloco ↔ linha no Monaco (ver useCrossHighlight). */
 .sz-highlight-line {

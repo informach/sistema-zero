@@ -7,6 +7,7 @@ import { registerExtensionBlocks } from '../blockly/blocks'
 import { buildIRFromWorkspace } from '../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../blockly/setup'
 import { buildKitGroups, buildProjectFromKitEntry, type KitEntry } from '../projects/KitGallery'
+import { sanitizeProjectForHost } from '../state/projectValidation'
 import {
   EXAMPLE_QA_CONTRACTS,
   EXAMPLE_QA_TIMEOUTS,
@@ -72,7 +73,7 @@ beforeAll(() => {
   }
 })
 
-describe('contrato transversal dos 153 exemplos da KitGallery', () => {
+describe('contrato transversal dos 155 exemplos da KitGallery', () => {
   it('catálogo e contratos têm exatamente as mesmas chaves', () => {
     const catalogKeys = catalogEntries()
       .map((entry) => entry.key)
@@ -80,14 +81,16 @@ describe('contrato transversal dos 153 exemplos da KitGallery', () => {
     const contractKeys = EXAMPLE_QA_CONTRACTS.map((contract) => contract.key).sort()
 
     expect(catalogKeys).toEqual(contractKeys)
-    expect(catalogKeys).toHaveLength(153)
-    expect(new Set(catalogKeys).size).toBe(153)
+    expect(catalogKeys).toHaveLength(155)
+    expect(new Set(catalogKeys).size).toBe(155)
   })
 
-  it('mantém a classificação acordada: 131 jogos, 10 demos e 12 explorações', () => {
+  it('mantém a classificação acordada: 133 jogos, 10 demos e 12 explorações', () => {
+    // 131 até 13/09/2026: "Chuva de números" e "Quiz de números" entraram como JOGOS.
+
     const counts = { game: 0, demo: 0, exploration: 0 }
     for (const contract of EXAMPLE_QA_CONTRACTS) counts[contract.experience] += 1
-    expect(counts).toEqual({ game: 131, demo: 10, exploration: 12 })
+    expect(counts).toEqual({ game: 133, demo: 10, exploration: 12 })
   })
 
   const contractsByKey = new Map<string, ExampleQAContract>(
@@ -145,6 +148,8 @@ describe('contrato transversal dos 153 exemplos da KitGallery', () => {
         }
 
         const project = buildProjectFromKitEntry(entry)
+        // O host precisa aceitar o documento inteiro sem descartar ou reescrever conteúdo.
+        expect(sanitizeProjectForHost(project)?.id).toBe(project.id)
         expect(project.name).toBe(entry.name)
         expect(project.ir).toBe(entry.ir)
         expect(project.blocksState).toBeDefined()

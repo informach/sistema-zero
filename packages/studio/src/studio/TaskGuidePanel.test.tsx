@@ -63,4 +63,90 @@ describe('Guia da tarefa do Estúdio', () => {
     )
     expect(screen.getByText('Programar as estrelas')).toBeTruthy()
   })
+
+  /**
+   * 18/09/2026 — "o painel ocupa muito espaço da tela e sobra pouco para a criação". Este era o
+   * único dos três guias do Pensa que NÃO recolhia, e no celular ele é a faixa do topo.
+   */
+  test('a seta recolhe o guia, e o host é quem lembra', () => {
+    const session = createSession()
+    const onCollapsedChange = mock((_v: boolean) => undefined)
+    const view = render(<TaskGuidePanel session={session} />)
+    const seta = view.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
+    if (!seta) throw new Error('seta esperada')
+    expect(seta.getAttribute('aria-expanded')).toBe('true')
+    expect(screen.getByText('Mudar pontuação')).toBeTruthy()
+    fireEvent.click(seta)
+    expect(screen.queryByText('Mudar pontuação')).toBeNull()
+    // ⚠ Recolhido, o corpo DESMONTA e o `aria-controls` SAI (régua do `Panel` do Pinta):
+    // apontar para um id ausente é referência pendurada para o leitor de tela.
+    expect(seta.getAttribute('aria-controls')).toBeNull()
+    // O título e a situação da tarefa CONTINUAM na tela: recolhido não é invisível.
+    expect(screen.getByText('Programar as estrelas')).toBeTruthy()
+    expect(screen.getByText('Em andamento')).toBeTruthy()
+
+    // Com o par do contrato, quem manda é o host: a seta só avisa.
+    cleanup()
+    const comHost = render(
+      <TaskGuidePanel session={{ ...session, collapsed: true, onCollapsedChange }} />,
+    )
+    expect(screen.queryByText('Mudar pontuação')).toBeNull()
+    const setaHost = comHost.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
+    if (!setaHost) throw new Error('seta esperada')
+    fireEvent.click(setaHost)
+    expect(onCollapsedChange).toHaveBeenCalledWith(false)
+    expect(screen.queryByText('Mudar pontuação')).toBeNull()
+  })
+
+  test('o guia tem respiro embaixo até `lg`, onde ele vira coluna lateral', () => {
+    const view = render(<TaskGuidePanel session={createSession()} />)
+    const aside = view.container.querySelector('aside')
+    // ⚠️ `mb-2` sem o `lg:mb-0` deixaria um vão no meio do editor largo, onde o guia é coluna.
+    // ⚠ `classList.contains`: 'mb-20' contém 'mb-2' e 'lg:mb-0.5' contém 'lg:mb-0' — o teste
+    // passaria com um respiro errado (achado do full review de 18/09/2026).
+    expect(aside?.classList.contains('mb-2')).toBe(true)
+    expect(aside?.classList.contains('lg:mb-0')).toBe(true)
+  })
+
+  test('o quadro veste a casca compartilhada das ferramentas', () => {
+    // 19/09/2026: os três guias do Pensa (este, o do Pinta e o do Molda) passaram a vestir a
+    // MESMA receita (`.sz-tool-guide` do `@sistemazero/ui/tool-chrome.css`) — antes cada um
+    // tinha a própria casca, e foi isso que ela leu como "fora da identidade visual da
+    // comunidade". ⚠ Este é o único dos três que vira COLUNA lateral, e por isso leva também o
+    // `--aside`, que troca o fio em volta pelo fio que separa do editor.
+    const view = render(<TaskGuidePanel session={createSession()} />)
+    const aside = view.container.querySelector('aside')
+    expect(aside?.classList.contains('sz-tool-guide')).toBe(true)
+    expect(aside?.classList.contains('sz-tool-guide--aside')).toBe(true)
+    // ⚠ E a casca PRÓPRIA saiu. O `lg:border-r` é o que mais importa: a receita já desenha o
+    // fio do lado, então mantê-lo desenharia DOIS (achado do full review de 19/09/2026).
+    for (const morta of ['border-sz-border', 'border-b', 'bg-sz-surface', 'p-3', 'lg:border-r']) {
+      expect({ morta, tem: aside?.classList.contains(morta) }).toEqual({ morta, tem: false })
+    }
+    expect(view.container.querySelector('.sz-tool-guide__head')).toBeTruthy()
+    expect(view.container.querySelector('.sz-tool-guide__body')).toBeTruthy()
+    // ⚠⚠ Quem rola é o CORPO, nunca o cartão: com o teto no `<aside>`, a seta e o recado de
+    // falha ficavam dentro da área rolável e nasciam abaixo da dobra.
+    expect(aside?.classList.contains('overflow-auto')).toBe(false)
+    expect(
+      view.container.querySelector('.sz-tool-guide__body')?.classList.contains('overflow-auto'),
+    ).toBe(true)
+  })
+
+  test('recolhido, um recado de falha CONTINUA na tela', async () => {
+    // ⚠️ A mesma lição que o irmão do Pinta pagou com o "Voltar ao plano": recolher esconde o
+    // brief, nunca um problema. Sem isso, a marcação que não subiu ficaria invisível.
+    const session = createSession()
+    session.onProgress = mock(async () => {
+      throw new Error('offline')
+    })
+    const view = render(<TaskGuidePanel session={session} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Concluir tarefa' }))
+    await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy())
+    const seta = view.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
+    if (!seta) throw new Error('seta esperada')
+    fireEvent.click(seta)
+    expect(screen.queryByText('Mudar pontuação')).toBeNull()
+    expect(screen.getByRole('alert').textContent).toContain('Confira a internet')
+  })
 })

@@ -1,4 +1,4 @@
-import type { ExtensionToolboxCategory } from '../extensions/types'
+import type { ExtensionToolboxCategory } from '../extensions/toolboxTypes'
 import { gameTwoDToolboxCategory } from '../official-extensions/game-2d/blocks'
 import { gameKitToolboxCategory } from '../official-extensions/game-2d-advanced/blocks'
 import { gameThreeDToolboxCategory } from '../official-extensions/game-3d/blocks'

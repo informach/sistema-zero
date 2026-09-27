@@ -38,8 +38,9 @@ import type { JSX } from 'react'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import { ChevronDown } from '../../ui/icons'
-import type { PanelDisclosure } from '../../ui/Panel'
+import { type PanelDisclosure, PanelLook } from '../../ui/Panel'
 import { PreviewPlayer } from '../PreviewPlayer'
+import { ScrollMoreHint } from '../ScrollMoreHint'
 import { useScrollMore } from '../useScrollMore'
 import { VectorPropertiesPanel } from '../VectorPropertiesPanel'
 import { pickPanelToCollapse, touchRecent } from './rightColumnFit'
@@ -156,16 +157,19 @@ export function VectorRightColumn(): JSX.Element {
   }, [open, colorPick])
 
   return (
-    <div className="relative flex min-h-0 w-68 shrink-0 flex-col">
+    // A coluna BRANCA da tela-modelo (11/09/2026): os painéis viram seções sem moldura.
+    <div className="pin-col pin-col--end relative flex min-h-0 w-68 shrink-0 flex-col">
       <div
         ref={columnRef}
         data-pin-right-column=""
-        className="pin-scroll-y flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto"
+        className="pin-scroll-y flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto"
       >
-        <PreviewPlayer disclosure={disclosure('preview')} />
-        <VectorLayerPanel disclosure={disclosure('layers')} />
-        <VectorColorsPanel disclosure={disclosure('colors')} />
-        <VectorPropertiesPanel disclosure={disclosure('appearance')} />
+        <PanelLook value="flat">
+          <PreviewPlayer disclosure={disclosure('preview')} />
+          <VectorLayerPanel disclosure={disclosure('layers')} />
+          <VectorColorsPanel disclosure={disclosure('colors')} />
+          <VectorPropertiesPanel disclosure={disclosure('appearance')} />
+        </PanelLook>
       </div>
       {more ? <ScrollMoreHint /> : null}
       {/* Monta VAZIA e recebe o texto depois: região já preenchida não é anunciada. */}
@@ -173,22 +177,6 @@ export function VectorRightColumn(): JSX.Element {
         {notice}
       </span>
     </div>
-  )
-}
-
-/**
- * Degradê no pé de uma coluna que rola com a barra ESCONDIDA: "tem mais
- * embaixo". Fora do container rolável (irmão absoluto), para não entrar na
- * conta do `scrollHeight` que a régua mede.
- */
-export function ScrollMoreHint(): JSX.Element {
-  return (
-    <div
-      aria-hidden="true"
-      data-pin-scroll-more=""
-      className="pointer-events-none absolute inset-x-0 bottom-0 h-8"
-      style={{ background: 'linear-gradient(to top, var(--color-pin-bg), transparent)' }}
-    />
   )
 }
 

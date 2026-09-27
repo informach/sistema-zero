@@ -5,7 +5,7 @@ import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Gamepad2, Link2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { KidsConfetti } from './kids-confetti'
-import { KidsMascot } from './mascot'
+import { KidsMascotAnimated } from './mascot-rive'
 
 /**
  * Celebração ao PUBLICAR o jogo no Mural — o clímax do projeto. Overlay com o Zappy comemorando,
@@ -59,7 +59,11 @@ export function MuralCelebration({
         onClick={(e) => e.stopPropagation()}
         className="sz-modal w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-xl outline-none md:p-8"
       >
-        <KidsMascot expression="celebrating" className="kid-wiggle mx-auto size-24" />
+        <KidsMascotAnimated
+          expression="celebrating"
+          className="mx-auto size-24"
+          stillClassName="kid-wiggle"
+        />
         <h2 className="sz-display mt-3 text-2xl">Seu jogo está no Mural! 🎉</h2>
         <p className="mt-1 text-muted-foreground text-sm">
           Agora todo mundo pode jogar o que você criou.

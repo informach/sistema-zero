@@ -3,8 +3,13 @@
  * de teste, e uma folha de tokens se prova pela forma): os tokens do escuro são os mesmos do
  * claro, os cinco escopos de tema de cada ferramenta estão nos dois blocos, o escuro vem DEPOIS
  * do claro (empate de especificidade no `html.dark`), todo token usado está declarado, nada de
- * `in oklch`/peso 800/`!important`, uma camada `components` só, e quem embarca ferramentas
- * importa a folha DEPOIS dos primitivos e ANTES do CSS dos pacotes.
+ * `in oklch`/`!important`, uma camada `components` só, e quem embarca ferramentas importa a
+ * folha DEPOIS dos primitivos e ANTES do CSS dos pacotes.
+ *
+ * Desde 11/09/2026 (o desenho das telas-modelo): as faixas existem nos dois temas, as cores de
+ * assinatura moram só nas constantes, as pílulas são chapadas nos editores e têm o 3D do
+ * Brilliant só nas galerias, o alvo cresce para 44px no toque e o botão do menu é um quadrado
+ * dentro do conteúdo, não mais a aba colada.
  */
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
@@ -73,11 +78,39 @@ describe('tool-chrome.css: tokens', () => {
     for (const u of usados) expect(declarados.has(u)).toBe(true)
   })
 
-  it('sem `in oklch`, sem peso 800, sem !important, sem bloco de tema do Tailwind', () => {
+  it('sem `in oklch`, sem !important, sem bloco de tema do Tailwind', () => {
     expect(semComentarios).not.toMatch(/color-mix\(in oklch/)
-    expect(semComentarios).not.toMatch(/font-weight:\s*800/)
     expect(semComentarios).not.toContain('!important')
     expect(semComentarios).not.toContain('@theme')
+  })
+
+  it('as três faixas existem nos DOIS temas, e o escuro é literal (o kids já mediu)', () => {
+    for (const faixa of ['creme', 'ceu', 'lilas']) {
+      expect(claro.corpo).toContain(`--sz-tool-band-${faixa}: var(--sz-kids-`)
+      expect(escuro.corpo).toMatch(new RegExp(`--sz-tool-band-${faixa}: oklch\\(`))
+    }
+    // O fio do cartão some no claro e aparece no escuro (a `--borda-carta` do kids).
+    expect(claro.corpo).toContain('--sz-tool-card-edge: transparent')
+    expect(escuro.corpo).toContain('--sz-tool-card-edge: var(--sz-tool-line)')
+  })
+
+  it('as cores de assinatura e o amarelo do novo moram SÓ nas constantes (fundo não troca de tema)', () => {
+    for (const nome of ['sig-estudio', 'sig-pinta', 'sig-pensa', 'sig-molda', 'new', 'on-new']) {
+      expect(geometria.corpo).toContain(`--sz-tool-${nome}:`)
+      expect(claro.corpo).not.toContain(`--sz-tool-${nome}:`)
+      expect(escuro.corpo).not.toContain(`--sz-tool-${nome}:`)
+    }
+  })
+
+  it('o alvo das receitas novas é 40px no mouse e 44px com o dedo', () => {
+    expect(geometria.corpo).toContain('--sz-tool-hit: 2.5rem')
+    const i = semComentarios.indexOf('@media (any-pointer: coarse)')
+    expect(i).toBeGreaterThan(-1)
+    // Fora da camada: é token, e o bloco de constantes também é sem camada.
+    expect(i).toBeLessThan(semComentarios.indexOf('@layer components {'))
+    expect(semComentarios.slice(i)).toMatch(
+      /^@media \(any-pointer: coarse\) \{\s*:root \{\s*--sz-tool-hit: 2\.75rem;\s*\}/,
+    )
   })
 })
 
@@ -90,26 +123,283 @@ describe('tool-chrome.css: receitas', () => {
     )
   })
 
-  it('o botão do menu: 44px com borda; pressionado = tinta e borda suaves do acento', () => {
-    const base = bloco('.sz-tool-btn-menu {')
-    expect(base.corpo).toContain('min-height: var(--sz-tool-control)')
-    expect(base.corpo).toContain('border: var(--sz-tool-border) solid')
+  it('o botão do menu é o QUADRADO da imagem, com a mesma forma da seta de voltar', () => {
+    // Um bloco só para os três: menu, voltar e os outros quadrados de ícone.
+    const quadrado = bloco('.sz-tool-back {')
+    expect(quadrado.seletor).toContain('.sz-tool-btn-menu')
+    expect(quadrado.seletor).toContain('.sz-tool-icon-btn')
+    expect(quadrado.corpo).toContain('width: var(--sz-tool-hit)')
+    expect(quadrado.corpo).toContain('height: var(--sz-tool-hit)')
+    expect(quadrado.corpo).toContain('border-radius: var(--sz-tool-radius-control)')
+    // Branco dentro da faixa, céu diluído sobre barra branca (a mesma variável).
+    expect(quadrado.corpo).toContain('background: var(--sz-tool-quiet)')
+    expect(bloco('.sz-tool-band {').corpo).toContain('--sz-tool-quiet: var(--sz-tool-surface)')
     const pressionado = bloco('.sz-tool-btn-menu[aria-pressed="true"] {')
     expect(pressionado.corpo).toContain('var(--sz-tool-accent-tint)')
     expect(pressionado.corpo).toContain('var(--sz-tool-accent-line)')
     expect(pressionado.corpo).toContain('color: var(--sz-tool-accent)')
+    expect(bloco('.sz-tool-btn-menu[data-tooltip]::after {').corpo).toContain(
+      'content: attr(data-tooltip)',
+    )
+    expect(
+      bloco('.sz-tool-btn-menu[data-tooltip]:is(:hover, :focus-visible)::after {').corpo,
+    ).toContain('visibility: visible')
+  })
+
+  it('o botão do menu deixou de ser a ABA colada na barra lateral (11/09/2026)', () => {
+    expect(semComentarios).not.toContain('--sz-tool-inset')
+    expect(semComentarios).not.toContain('border-start-start-radius: 0')
+    expect(semComentarios).not.toContain('border-end-start-radius: 0')
+    expect(semComentarios).not.toMatch(/margin-inline-start:\s*calc\(-1/)
   })
 
   it('a legend dos chips flutua (inline com os chips, não numa linha acima)', () => {
     expect(bloco('.sz-tool-chips > legend {').corpo).toContain('float: left')
   })
 
-  it('o botão do menu é uma ABA colada na linha da sidebar (margem negativa do respiro da barra)', () => {
-    expect(bloco(':root {').corpo).toContain('--sz-tool-inset: 0px')
-    expect(semComentarios).toContain('margin-inline-start: calc(-1 * var(--sz-tool-inset))')
-    expect(semComentarios).toContain('border-start-start-radius: 0')
-    expect(semComentarios).toContain('border-end-start-radius: 0')
+  it('as pílulas, os chips, a busca, o ordenar e o selo são pílulas no alvo novo', () => {
+    // `.sz-tool-select {` casa primeiro com o bloco que ele divide com a busca.
+    for (const ancora of [
+      '.sz-tool-pill {',
+      '.sz-tool-chip {',
+      '.sz-tool-select {',
+      '.sz-tool-status {',
+    ]) {
+      const { corpo } = bloco(ancora)
+      expect(corpo).toContain('min-height: var(--sz-tool-hit)')
+      expect(corpo).toContain('border-radius: var(--sz-tool-radius-pill)')
+    }
   })
+
+  it('as pílulas são CHAPADAS, e o 3D do Brilliant (11/09/2026) mora SÓ nas galerias', () => {
+    // Cada regra com o seletor INTEIRO (do fim da anterior até a chave): é o seletor que diz
+    // se ela vale dentro das faixas das galerias ou em qualquer lugar (os editores).
+    const regras = [...semComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .map(([, seletor = '', corpo = '']) => ({ seletor: seletor.trim(), corpo }))
+      .filter(({ seletor }) => seletor.includes('.sz-tool-pill'))
+    expect(regras.length).toBeGreaterThanOrEqual(8) // anti-vácuo: base, variantes e hovers
+    for (const { seletor, corpo } of regras) {
+      expect(corpo).not.toContain('gradient')
+      // Fora das faixas, nenhuma sombra: os editores ficam planos (decisão dela).
+      if (!seletor.includes('.sz-tool-bands')) expect(corpo).not.toContain('box-shadow')
+    }
+    // Anti-vácuo do relevo: existe, é das galerias, e a pílula primária desce no degrau da ação.
+    const relevo = regras.filter(
+      ({ seletor, corpo }) => seletor.includes('.sz-tool-bands') && corpo.includes('box-shadow'),
+    )
+    expect(relevo.length).toBe(1)
+    expect(relevo[0]?.corpo).toContain('var(--sz-3d-degrau)')
+    expect(bloco('.sz-tool-bands .sz-tool-pill--primary {').corpo).toContain(
+      '--sz-3d-degrau: var(--sz-tool-cta-degrau)',
+    )
+    // Os chips de filtro são abas: planos até dentro das galerias.
+    for (const { seletor, corpo } of relevo) {
+      expect(seletor).not.toContain('.sz-tool-chip')
+      expect(corpo).not.toContain('.sz-tool-chip')
+    }
+  })
+
+  it('o cartão "novo" NÃO anda no hover nem no aperto: cartão de grade não pode tremer', () => {
+    // 14/09/2026: o cartão é a única peça de GRADE com relevo, e grade tem aresta longa. Com
+    // 1px de movimento, o ponteiro parado na borda de baixo entra e sai do hover várias vezes
+    // por segundo — é o "cursor tremendo" que ela relatou no Pensa. A sombra e a borda ficam.
+    const regras = [...semComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(
+      ([, seletor = '', corpo = '']) => ({ seletor: seletor.trim(), corpo }),
+    )
+    const trava = regras.findIndex(
+      ({ seletor, corpo }) =>
+        seletor.includes('.sz-tool-card--new') &&
+        seletor.includes(':hover') &&
+        /translate:\s*none/.test(corpo),
+    )
+    expect(trava).toBeGreaterThanOrEqual(0)
+    expect(regras[trava]?.corpo).toMatch(/transform:\s*none/)
+    // E ela vence: vem DEPOIS de toda regra que dá `translate` ao cartão (mesma especificidade).
+    const ultimoMovimento = regras.reduce(
+      (indice, { seletor, corpo }, atual) =>
+        seletor.includes('.sz-tool-card--new') && /translate:\s*0/.test(corpo) ? atual : indice,
+      -1,
+    )
+    expect(trava).toBeGreaterThan(ultimoMovimento)
+  })
+
+  it('as receitas ANTIGAS saíram na limpeza do lote (11/09/2026), com os tokens que só elas liam', () => {
+    // O secundário de borda 2px com sombra dura, a pílula 3D, o painel e o pulo no hover.
+    expect(semComentarios).not.toMatch(/\.sz-tool-btn(?!-menu)/)
+    expect(semComentarios).not.toContain('.sz-tool-panel')
+    expect(semComentarios).not.toContain('.sz-tool-pop')
+    for (const token of [
+      '--sz-tool-control:',
+      '--sz-tool-shadow-control',
+      '--sz-tool-shadow-card',
+      '--sz-tool-shadow-cta',
+      '--sz-tool-cta-shade',
+      '--sz-tool-line-shade',
+    ]) {
+      expect(semComentarios).not.toContain(token)
+    }
+    // Anti-vácuo: o botão do menu (o único `sz-tool-btn-*` que ficou) continua de pé.
+    expect(semComentarios).toContain('.sz-tool-btn-menu')
+  })
+
+  it('o chip ativo é o azul da marca cheio, e continua cheio no hover', () => {
+    const ativo = bloco('.sz-tool-chip[aria-pressed="true"],')
+    expect(ativo.seletor).toContain(':hover')
+    expect(ativo.corpo).toContain('background: var(--sz-tool-cta)')
+    expect(ativo.corpo).toContain('color: var(--sz-tool-on-cta)')
+  })
+
+  /*
+   * O GUIA DA TAREFA do Pensa (19/09/2026). Três componentes, em dois pacotes e no host,
+   * vestindo UMA receita — antes cada um tinha a própria casca, e foi isso que ela leu como
+   * "totalmente fora da identidade visual da comunidade".
+   */
+  it('o guia divide a regra do cartão das galerias, em vez de copiá-la', () => {
+    // ⚠ Enquanto eram dois blocos byte a byte iguais, mudar um deixava o outro para trás em
+    // silêncio (achado do full review de 19/09/2026). Hoje o seletor é o mesmo bloco.
+    const cartao = bloco('.sz-tool-card,')
+    expect(cartao.seletor.split(',').map((parte) => parte.trim())).toEqual([
+      '.sz-tool-card',
+      '.sz-tool-guide',
+    ])
+    expect(cartao.corpo).toContain('border-radius: var(--sz-tool-radius-card-md)')
+    expect(cartao.corpo).toContain('background: var(--sz-tool-surface)')
+    // O título idem: o guia entra na regra do `.sz-tool-card-title`.
+    expect(bloco('.sz-tool-card-title,').seletor).toContain('.sz-tool-guide__title')
+    // E não sobrou uma segunda regra de BASE só para o guia. ⚠ A asserção olha os seletores
+    // inteiros: um regex de texto casaria a própria regra compartilhada, que tem o guia numa
+    // linha só dele depois da vírgula.
+    const soDoGuia = [...semComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .map(([, seletor = '']) => seletor.trim())
+      .filter((seletor) => seletor === '.sz-tool-guide')
+    expect(soDoGuia).toEqual([])
+  })
+
+  it('o guia é CHAPADO: o relevo das galerias não o alcança', () => {
+    // ⚠️⚠️ A classe vive no SELETOR, nunca no corpo (que só tem declarações). A primeira versão
+    // deste caso olhava o corpo e era verdadeira para sempre — provado no full review de
+    // 19/09/2026 somando a classe do guia ao `:is()` do relevo sem o teste piscar. E são QUATRO
+    // regras de relevo (base, hover, aperto, reduced-motion), não uma.
+    const seletores = [...semComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(
+      ([, seletor = '']) => seletor.trim(),
+    )
+    const dasFaixas = seletores.filter((seletor) => seletor.includes('.sz-tool-bands'))
+    expect(dasFaixas.filter((seletor) => seletor.includes('sz-tool-guide'))).toEqual([])
+    // Anti-vácuo: o relevo existe mesmo, e alcança o cartão "Novo projeto".
+    expect(dasFaixas.some((seletor) => seletor.includes('sz-tool-card--new'))).toBe(true)
+  })
+
+  it('o cabeçalho do guia tem o alvo de toque e o respiro do canto de 20px', () => {
+    // O relato dela era o Pinta: 12px de lado e 8px embaixo num canto de 16px, com o texto
+    // encostando na curva. Recolhido o cabeçalho é o ÚNICO filho, então o respiro do cartão
+    // inteiro é o dele.
+    const cabeca = bloco('.sz-tool-guide__head {')
+    expect(cabeca.corpo).toContain('min-height: var(--sz-tool-hit)')
+    expect(cabeca.corpo).toContain('padding: 0.875rem 1.125rem')
+    // O primeiro filho come o espaço livre: sem isso a situação flutua no meio da linha.
+    expect(bloco('.sz-tool-guide__head > :first-child {').corpo).toContain('flex: 1 1 auto')
+    // O cabeçalho que é CONTÊINER (o do Estúdio, com o botão dentro) respira menos: o botão já
+    // traz o alvo de 44px, e 14+44+14 dava 72px contra os ~47px dos irmãos.
+    expect(bloco('div.sz-tool-guide__head {').corpo).toContain('padding-block: 0.125rem')
+    const botao = bloco('button.sz-tool-guide__head,')
+    expect(botao.seletor).toContain('.sz-tool-guide__head button')
+    expect(botao.corpo).toContain('cursor: pointer')
+    // ⚠ O raio inteiro só quando o cabeçalho É o cartão (recolhido): aberto, herdar os quatro
+    // cantos deixava o hover com dois entalhes arredondados sobre o corpo.
+    expect(bloco('button.sz-tool-guide__head {').corpo).toContain('border-start-start-radius')
+    expect(bloco('button.sz-tool-guide__head:only-child {').corpo).toContain(
+      'border-radius: inherit',
+    )
+  })
+
+  it('o texto pequeno do guia respeita o piso de 12px da casa', () => {
+    // ⚠️⚠️ Achado do full review de 19/09/2026: o sobretítulo nasceu em 11px e a situação em 10px
+    // (herdada de uma utilitária de 10px que existia só no Estúdio). Promover isso a receita
+    // teria espalhado o tamanho errado para as quatro ferramentas. O piso para criança é 12px.
+    for (const ancora of ['.sz-tool-guide__kicker {', '.sz-tool-guide__state {']) {
+      const tamanho = /font-size:\s*([\d.]+)rem/.exec(bloco(ancora).corpo)?.[1]
+      expect({ ancora, tamanho }).toEqual({ ancora, tamanho: '0.75' })
+    }
+  })
+
+  it('o corpo e o pé do guia trazem o respiro e a divisória', () => {
+    expect(bloco('.sz-tool-guide__body {').corpo).toContain('padding: 0 1.125rem 1rem')
+    const pe = bloco('.sz-tool-guide__foot {')
+    expect(pe.corpo).toContain('padding: 0.75rem 1.125rem 1.125rem')
+    expect(pe.corpo).toContain('border-top: 1px solid var(--sz-tool-line)')
+  })
+
+  it('a divisória do guia lateral usa o fio VISÍVEL, nunca a borda de cartão', () => {
+    // O `--sz-tool-card-edge` é transparent no claro (uma borda de cartão some de propósito);
+    // a divisória que separa o guia do editor não pode sumir.
+    const aside = bloco('.sz-tool-guide--aside {')
+    expect(aside.corpo).toContain('border-bottom: 1px solid var(--sz-tool-line)')
+    expect(aside.corpo).toContain('border-radius: 0')
+    expect(aside.corpo).not.toContain('card-edge')
+    // ⚠️⚠️ O bloco da media é RECORTADO de verdade: a primeira versão fatiava daqui até o FIM do
+    // arquivo, então esvaziar a media e pôr as declarações em qualquer regra mais abaixo passava
+    // verde (provado no full review de 19/09/2026) — e o fio do lado sumiria a partir de 1024px
+    // sem nenhum teste vermelho.
+    const iMedia = semComentarios.indexOf('@media', semComentarios.indexOf('.sz-tool-guide--aside'))
+    const abre = semComentarios.indexOf('{', iMedia)
+    const fimDaRegra = semComentarios.indexOf('}', abre)
+    const media = semComentarios.slice(iMedia, semComentarios.indexOf('}', fimDaRegra + 1) + 1)
+    expect(media).toContain('min-width: 64rem')
+    expect(media).toContain('.sz-tool-guide--aside')
+    expect(media).toContain('border-inline-end: 1px solid var(--sz-tool-line)')
+    expect(media).toContain('border-bottom: 0')
+  })
+
+  it('o recado de problema tem cara de problema, o de aviso não, e os dois passam nos temas', () => {
+    const alerta = bloco('.sz-tool-guide__alert {')
+    expect(alerta.corpo).toContain('var(--sz-tool-danger)')
+    expect(alerta.corpo).toContain('border-radius: var(--sz-tool-radius-control)')
+    // ⚠️ A tinta leva um quinto da tinta de texto (o truque da barra do Pinta): o vermelho puro
+    // sobre o fundo rosado do próprio alerta deu 4,25:1 no ESCURO, abaixo do piso de 4,5.
+    // Medido no playground depois da mistura: 6,31 no claro e 5,74 no escuro.
+    expect(alerta.corpo).toContain(
+      'color: color-mix(in oklab, var(--sz-tool-danger) 80%, var(--sz-tool-ink))',
+    )
+    // ⚠️⚠️ E existe a variante de AVISO: vermelho o tempo todo, para uma criança de 8 anos, lê
+    // como "quebrou". Ela vem DEPOIS da base (mesma especificidade: quem decide é a ordem).
+    expect(bloco('.sz-tool-guide__alert--warn {').corpo).toContain('var(--sz-tool-warn)')
+    expect(semComentarios.indexOf('.sz-tool-guide__alert--warn')).toBeGreaterThan(
+      semComentarios.indexOf('.sz-tool-guide__alert {'),
+    )
+    // A pílula quieta some dentro do recado (fundo do app e fio transparente no claro): lá
+    // dentro ela ganha a superfície do cartão e um fio de verdade.
+    expect(bloco('.sz-tool-guide__alert .sz-tool-pill--quiet {').corpo).toContain(
+      'border-color: var(--sz-tool-line)',
+    )
+  })
+})
+
+describe('nenhum pacote usa uma receita que a folha não tem mais', () => {
+  // Classe sem receita não quebra nada em teste nenhum: o botão só aparece sem desenho. Por isso
+  // a varredura lê o código-fonte de quem consome a folha (como texto, sem importar nada).
+  const PACOTES = ['studio', 'pinta', 'pensa', 'molda', 'community-kids']
+  const REMOVIDAS = [/\bsz-tool-btn(?!-menu)\b/, /\bsz-tool-panel\b/, /\bsz-tool-pop\b/]
+  for (const pacote of PACOTES) {
+    it(`${pacote}: sem .sz-tool-btn, -3d, .sz-tool-panel nem .sz-tool-pop`, async () => {
+      const raiz = join(HERE, '../..', pacote, 'src')
+      const achados: string[] = []
+      let lidos = 0
+      for await (const arquivo of new Bun.Glob('**/*.{ts,tsx,css}').scan({ cwd: raiz })) {
+        // Teste não é consumidor de estilo (e é lá que se confere a AUSÊNCIA da classe).
+        if (/\.test\.tsx?$/.test(arquivo)) continue
+        lidos++
+        // Comentário também não (a história de uma receita que saiu pode citar o nome dela).
+        const texto = (await Bun.file(join(raiz, arquivo)).text())
+          .replace(/\/\*[\s\S]*?\*\//g, '')
+          .replace(/(^|[^:])\/\/.*$/gm, '$1')
+        for (const re of REMOVIDAS) {
+          if (re.test(texto)) achados.push(`${pacote}/src/${arquivo} (${re.source})`)
+        }
+      }
+      expect(lidos).toBeGreaterThanOrEqual(5) // anti-vácuo: a pasta existe e tem código (o pensa tem 10)
+      expect(achados).toEqual([])
+    })
+  }
 })
 
 describe('quem embarca ferramentas importa a folha na ordem certa', () => {
@@ -118,6 +408,7 @@ describe('quem embarca ferramentas importa a folha na ordem certa', () => {
     ['../../pinta/playground/styles.css', 'pinta.css'],
     ['../../studio/playground/styles.css', 'studio.css'],
     ['../../molda/playground/styles.css', 'molda.css'],
+    ['../../pensa/playground/styles.css', 'pensa.css'],
   ]
   for (const [arquivo, cssDoPacote] of hosts) {
     it(`${arquivo}: theme-kids -> tool-chrome -> ${cssDoPacote}`, async () => {
@@ -128,6 +419,49 @@ describe('quem embarca ferramentas importa a folha na ordem certa', () => {
       expect(iKids).toBeGreaterThan(-1)
       expect(iTool).toBeGreaterThan(iKids)
       expect(iPacote).toBeGreaterThan(iTool)
+    })
+  }
+})
+
+describe('os três guias do Pensa vestem a MESMA casca', () => {
+  /*
+   * 19/09/2026. Não existe "o painel do guia": são TRÊS componentes, em dois pacotes e no host,
+   * e foi assim que cada um acabou com a própria casca (fio de 2px no acento, fio da marca,
+   * faixa sem canto) até ela dizer que aquilo estava "totalmente fora da identidade visual da
+   * comunidade". A regressão a evitar é a óbvia: alguém mexer em UM e deixar os outros dois
+   * para trás. Classe sem receita não quebra teste nenhum — o painel só sai sem desenho —,
+   * então a trava é ler os três como TEXTO.
+   * ⚠ O que ela vê é PRESENÇA, não divergência fina: um ganhar uma peça nova e os outros não
+   * continua passando.
+   */
+  const GUIAS = [
+    '../../pinta/src/components/TaskBriefPanel.tsx',
+    '../../studio/src/studio/TaskGuidePanel.tsx',
+    '../../community-kids/src/components/kids/molda-task-guide.tsx',
+  ]
+  it('a receita existe na folha que os três consomem', () => {
+    // Fora do laço: repetida a cada arquivo, ela não era anti-vácuo de nada.
+    expect(semComentarios).toMatch(/\.sz-tool-guide__head\b/)
+  })
+  for (const arquivo of GUIAS) {
+    it(`${arquivo} usa .sz-tool-guide`, async () => {
+      const texto = await Bun.file(join(HERE, arquivo)).text()
+      const semComentario = texto
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/(^|[^:])\/\/.*$/gm, '$1')
+      // ⚠ Por LIMITE de palavra: `toContain('sz-tool-guide')` casaria `sz-tool-guideXYZ` e
+      // `--aside` sozinho (achado do full review de 19/09/2026).
+      expect(semComentario).toMatch(/\bsz-tool-guide\b/)
+      expect(semComentario).toMatch(/\bsz-tool-guide__head\b/)
+      // ⚠️⚠️ E a cor do recado vem da receita: um `text-*-danger` no consumidor desfaz a mistura
+      // que faz o alerta passar no contraste do tema escuro.
+      for (const linha of semComentario.split('\n')) {
+        if (!linha.includes('sz-tool-guide__alert')) continue
+        expect({ arquivo, linha: linha.trim() }).toEqual({
+          arquivo,
+          linha: linha.trim().replace(/\btext-\w+-danger\b/g, 'COR-PROPRIA-NO-ALERTA'),
+        })
+      }
     })
   }
 })

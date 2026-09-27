@@ -8,6 +8,7 @@ import type { CourseRepository } from '../../domain/ports/course-repository.port
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
+import type { SectionProgressionService } from '../learning/section-progression.service'
 import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
 
 /** Projeto que o PRÓPRIO aluno/perfil ENVIOU neste bloco. `null` se nunca enviou. */
@@ -29,6 +30,7 @@ export class GetOwnStudioSubmissionService {
     private readonly courses: CourseRepository,
     private readonly progress: ProgressRepository,
     private readonly submissions: StudioSubmissionRepository,
+    private readonly sections: SectionProgressionService,
   ) {}
 
   async execute(
@@ -51,6 +53,12 @@ export class GetOwnStudioSubmissionService {
       userId,
     )
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
+    await this.sections.assertBlock(
+      { userId, accountId: accountId ?? userId },
+      lesson,
+      blockId,
+      privileged,
+    )
 
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== kind) {

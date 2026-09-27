@@ -8,10 +8,12 @@ export type PensaArtifactType =
   | 'visual_direction'
   | 'task_plan'
   | 'plan_review'
-export type PensaTaskDestination = 'pinta' | 'studio'
+export type PensaTaskDestination = 'pinta' | 'studio' | 'molda'
 export type PensaTaskStatus = 'planned' | 'in_progress' | 'completed'
 export type PensaTaskCategory = 'art' | 'setup' | 'gameplay' | 'scene' | 'ui' | 'polish'
 export type PensaArtKind = 'sprite' | 'background' | 'tileset' | 'tilemap'
+/** `owner` = meu plano; `member` = entrei pelo código de um colega (equipe, 26/09/2026). */
+export type PensaProjectRole = 'owner' | 'member'
 
 export interface PensaCycleView {
   id: string
@@ -32,6 +34,14 @@ export interface PensaProjectListView {
   stage: PensaStage
   createdAt: string
   updatedAt: string
+  /** Ausente = members antigo: a tela trata como plano só meu. */
+  role?: PensaProjectRole
+  team?: {
+    /** Quantos convidados a equipe tem (o dono não conta). */
+    memberCount: number
+    /** 1º nome do dono, só para `member` (`null` = "um colega"). */
+    ownerFirstName: string | null
+  }
 }
 
 export interface PensaArtifactView {
@@ -53,6 +63,10 @@ export interface PensaProjectDetailView {
   cycles: PensaCycleView[]
   currentCycle: PensaCycleView
   artifactsIndex: Array<Omit<PensaArtifactView, 'id' | 'content'>>
+  /** Ausente = members antigo: a tela trata como plano só meu. */
+  role?: PensaProjectRole
+  /** O CÓDIGO não vem aqui (só na rota de membros, para o dono): só se está ligado. */
+  team?: { memberCount: number; shareEnabled: boolean }
 }
 
 export interface PensaGuideItem {
@@ -95,8 +109,26 @@ export interface PensaStudioTaskContext {
   mechanicDocumentIds: string[]
   extensionIds: string[]
 }
-export type PensaTaskContext = PensaPintaTaskContext | PensaStudioTaskContext
+export interface PensaMoldaTaskContext {
+  kind: 'molda'
+  /** Inventory reference; the finished creation keeps its own stable ID. */
+  assetId: string
+  artKind: 'model' | 'texture' | 'sky'
+  appearance: string
+  usage: string
+  palette: Array<{ role: string; color: string }>
+}
+export type PensaTaskContext =
+  | PensaPintaTaskContext
+  | PensaStudioTaskContext
+  | PensaMoldaTaskContext
 export type PensaTaskOutputRef =
+  | {
+      kind: 'molda_asset'
+      assetId: string
+      assetName?: string
+      assetKind: 'model' | 'texture' | 'sky'
+    }
   | { kind: 'pinta_asset'; assetId: string; assetName?: string; usedInStudioAt?: string }
   | { kind: 'studio_project'; projectId: string; saveRevision?: string }
 
@@ -160,6 +192,31 @@ export interface PensaTaskHandoffView {
   capability: { owned: boolean; blockedReason: string | null }
 }
 
+/** Uma pessoa da equipe do plano: 1º nome e foto best-effort (sem nome = "Colega"). */
+export interface PensaTeamPersonView {
+  profileId: string
+  firstName: string | null
+  photoUrl: string | null
+  /** `null` para o dono (ele não "entrou"). */
+  joinedAt: string | null
+}
+
+export interface PensaProjectMembersView {
+  role: PensaProjectRole
+  viewerProfileId: string
+  /** CRU (`AAAAAB`), só para o dono; `null` para membro ou com o código desligado. */
+  shareCode: string | null
+  maxMembers: number
+  owner: PensaTeamPersonView
+  members: PensaTeamPersonView[]
+}
+
+/** O código gerado (`code`) e como ele aparece na tela (`display`, com o prefixo). */
+export interface PensaShareView {
+  code: string
+  display: string
+}
+
 export class PensaApiError extends Error {
   constructor(
     message: string,
@@ -198,7 +255,7 @@ export interface PensaHostAdapter {
   transport: PensaTransport
   mode: 'kids'
   theme?: 'light' | 'dark'
-  capabilities: { pintaOwned: boolean; studioOwned: boolean }
+  capabilities: { pintaOwned: boolean; studioOwned: boolean; moldaOwned?: boolean }
   mascotImages?: Partial<Record<PensaMascotPose, string>>
   onOpenTask(args: { taskId: string; destination: PensaTaskDestination }): void
 }
@@ -217,6 +274,20 @@ export interface PensaHostChromeMenu {
   onToggle: () => void
 }
 
+/**
+ * A seta da GALERIA de volta à seção do host (11/09/2026: "← Criar"). Só a home dos planos
+ * desenha; o detalhe de um plano já volta para a home pelo "voltar" dele. É um `<a href>`: o
+ * clique simples chama `onNavigate` (navegação do host) e o com Ctrl/Cmd/do meio fica com o
+ * navegador. O Pensa espelha só `menu` e `back` (sem nuvem de conta: o plano vive no servidor).
+ */
+export interface PensaHostChromeBack {
+  /** O nome acessível ("Voltar para Criar"): a seta é só o ícone. Nunca vira `title`. */
+  label: string
+  href: string
+  onNavigate: () => void
+}
+
 export interface PensaHostChrome {
   menu: PensaHostChromeMenu | null
+  back: PensaHostChromeBack | null
 }

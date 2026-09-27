@@ -13,7 +13,18 @@ PALCO IMPLÍCITO: o runtime é dono do canvas. As globais 'ctx' (contexto 2D) e
 getContext. Se a página não tiver <canvas>, o runtime cria um. Nos BLOCOS o 'ctx'
 fica escondido; no código gerado ele aparece como argumento (válido e reversível).
 
+PALETA ATUAL: Jogo e telas; Sprites; Movimento; Controles; Colisões; Grupos; Vida e placar; Som; Desenho e efeitos; Tempo; Sorteios; Cenários; Inimigos; Kits prontos. Use o palettePath atual do catálogo ao orientar a criança.
+
 API global injetada como window.SZGame2D:
+- withCooldown(sprite, quadros, () => {...}, chave): tenta executar agora, no máximo uma vez por intervalo. Exige chave estável por ação. Não é temporizador nem espera bloqueante. A primeira tentativa executa; pausa congela quadros.
+- destroySprite(sprite): destrói permanentemente; retira de todos os grupos, cancela desenho, contato e clique. Use removeFromGroup somente para tirar o vínculo com um grupo.
+- circleCollides(a, b) agora também tem pergunta circular editável, sem declaração obrigatória.
+- stopTrack('all'|'synth'|'file'): alcance explícito. Sem argumento, para todas as músicas. Efeitos individuais continuam.
+- createTextSprite(textoOuNumero, x, y): sprite comum cuja aparência é texto. Aceita expressões; cada chamada cria outra instância. spawnTextInGroup(grupo, textoOuNumero, x, y) também guarda no grupo. Nome opcional no bloco de grupo identifica o recém-criado.
+- setSpriteText(sprite, textoOuNumero), spriteText(sprite): mudar/ler apresentação; a troca conserva identidade, posição, velocidade, dados e grupos. setTextStyle(sprite, tamanho, cor) usa a fonte do jogo (o tamanho é ABSOLUTO, em pixels). scaleTextSize(sprite, fator) MULTIPLICA o tamanho da letra — é o irmão do scaleSprite: use os dois com o mesmo fator para a placa e o texto crescerem juntos, já que nenhum bloco LÊ o tamanho atual da letra. setTextBox(sprite, largura, alinhamento, margem, fundo): largura 0 automática, outra largura quebra linhas; alinhamento left/center/right; fundo "transparent", cor CSS ou rgba com alfa 0 (nada pintado). setTextImage(sprite, imagem, top|middle|bottom): põe uma imagem do projeto como fundo do sprite de texto; a imagem MANDA no tamanho (sem deformar), o texto quebra na largura dela menos a margem e o terceiro argumento diz a altura do texto. Para a placa ficar de outro tamanho, use setSize(sprite, w, h) ou scaleSprite: o tamanho PEDIDO vence a medida da imagem e do texto, inclusive quando a imagem chega depois ou o texto muda. Imagem vazia volta ao fundo de cor; exige um sprite que já seja de texto. Texto até 4096 caracteres, fonte até 512px.
+- setSpriteData(sprite, chave, valor), spriteData(sprite, chave, reserva): dados próprios de QUALQUER sprite. Número continua número; zero/falso não acionam reserva. Guarde valor para par/ímpar e correta para quiz. Nunca use o texto formatado como identidade da resposta.
+- onSpriteClick(sprite, () => {...}, id?), onGroupClick(grupo, (escolhida) => {...}, id?): eventos da área Quando acontecer. Use o evento de GRUPO para objetos gerados por laço. Só a caixa desenhada responde, câmera/giro/escala respeitados; no grupo sobreposto vence o desenhado por cima. Mover/desenhar/colidir continuam usando as APIs existentes.
+- drawLabel(ctx, textoOuExpressao, x, y, cor, tamanho, alinhamento) aceita variáveis e itens de listas para atualizar o enunciado. Exemplos disponíveis: Chuva de números e Quiz de números.
 - setupStage(largura, altura, fundo): prepara o canvas responsivo com proporção fixa.
 - createSprite({ x, y, w, h, color }) -> { x, y, w, h, color, vx, vy }
 - drawSprite(ctx, sprite): desenha como fillRect.
@@ -39,7 +50,7 @@ API global injetada como window.SZGame2D:
   chamada nem ofereça o bloco legado. Use as Áreas do projeto.
 - gameLoop(fn): adiciona fn ao agendador do jogo, com passo fixo de 60 Hz. Vários loops coexistem.
 - keys: estado das setas { left, right, up, down }.
-- enableClassicControls('auto'|'always'|'off') liga ações semânticas e controles de toque
+- enableClassicControls('auto'|'always'|'off'|'directions') liga ações semânticas e controles de toque; 'directions' mostra só as quatro setas
   acessíveis. Use uma vez em Ao iniciar. actionDown/actionPressed aceitam
   left/right/up/down/jump/action/select/start/pause. Backspace = select, Enter = start e Escape =
   pause; o botão pause NÃO altera o jogo sozinho.
@@ -68,8 +79,8 @@ API global injetada como window.SZGame2D:
 - playSound(freq, ms): bip sintetizado (Web Audio).
 - playFx("coin"|"jump"|"laser"|"explosion"|"hit"|"hurt"|"powerup"|"levelup"|"win"|"gameover"|"click"|"confirm"|"error"|"coin"|...): efeito sonoro PRONTO por nome (sintetizado, sem arquivo). Veja a lista completa no bloco "Tocar efeito".
 - playNote("C"|"D"|"E"|"F"|"G"|"A"|"B"|"C5", ms): toca uma nota musical (dó ré mi…); junte várias para uma melodia.
-- playMusic("adventure"|"happy"|"tense"|"calm"|"victory") / stopMusic(): música de fundo persistente em loop (só uma por vez). Gere em ⚙️ Ao iniciar, ⚡ Quando acontecer ou diretamente numa função, nunca dentro de 🔁 Enquanto estiver rodando. Repetir a mesma música não reinicia a faixa. Som só toca DEPOIS de um clique/tecla (exigência do navegador).
-- ÁUDIO DE ARQUIVO (o som que a criança enviou em "Imagens e sons"), em oposição a tudo acima, que é sintetizado: loadSound("apelido", "nome-do-arquivo") prepara e SÓ vale em ⚙️ Ao iniciar; playClip("apelido") toca uma vez; stopClip("apelido") para e rebobina; playTrack("apelido") toca em loop (uma trilha por vez — começar outra troca a anterior, repetir a mesma não recomeça) e stopTrack() desliga QUALQUER música, inclusive a sintetizada do playMusic. setSoundVolume(0..10) vale para os sons de arquivo. NUNCA invente nome de arquivo: use um que exista no projeto, senão o runtime avisa e não toca. Um som pedido antes do primeiro clique ESPERA o clique em vez de falhar calado.
+- playMusic("adventure"|"happy"|"tense"|"calm"|"victory") / stopTrack("synth"): música de fundo persistente em loop (só uma por vez). Gere em ⚙️ Ao iniciar, ⚡ Quando acontecer ou diretamente numa função, nunca dentro de 🔁 Enquanto estiver rodando. Repetir a mesma música não reinicia a faixa. Som só toca DEPOIS de um clique/tecla (exigência do navegador).
+- ÁUDIO DE ARQUIVO (o som que a criança enviou em "Sons", no menu ⋯), em oposição a tudo acima, que é sintetizado: loadSound("apelido", "nome-do-arquivo") prepara e SÓ vale em ⚙️ Ao iniciar; playClip("apelido") toca uma vez; stopClip("apelido") para e rebobina; playTrack("apelido") toca em loop (uma trilha por vez — começar outra troca a anterior, repetir a mesma não recomeça) e stopTrack() desliga QUALQUER música, inclusive a sintetizada do playMusic. setSoundVolume(0..10) vale para os sons de arquivo. NUNCA invente nome de arquivo: use um que exista no projeto, senão o runtime avisa e não toca. Um som pedido antes do primeiro clique ESPERA o clique em vez de falhar calado.
 - onPointer((x, y) => {…}): callback a cada clique/toque; pointer = { x, y, down }.
 
 Eventos "Quando…" e perguntas (booleanos) — o modelo Scratch/MakeCode:
@@ -106,7 +117,7 @@ Funções gerais — mira/contas, vida/tempo, aparência, mundo e pausa:
 - randomX(largura?)/randomY(altura?): posição x/y aleatória NA TELA. Passe a largura/altura do sprite para ele caber inteiro; sem argumento preserva 0..largura/altura. Evita Math.random()*largura na mão.
 - pruneOld(grupo, segundos): tira do grupo quem viveu mais que o tempo (tiros somem sozinhos).
 - setPosition(s, x, y): teleporta/respawna sem colidir com o caminho antigo. Nunca gere atribuições x/y pareadas para o bloco de posição.
-- flipSprite(s, 'left'|'right'|'up'|'down') / setOpacity(s, percent) / setSize(s, w, h) / scaleSprite(s, fator): direção/transparência/tamanho.
+- flipSprite(s, 'left'|'right'|'up'|'down') / setOpacity(s, percent) / setSize(s, w, h) / scaleSprite(s, fator): direção/transparência/tamanho. Os dois valem também no sprite de TEXTO (é assim que a criança escolhe o tamanho da placa, do botão ou do balão); sem eles, o sprite de texto segue a medida do texto ou da imagem de fundo.
 - wrapEdges(s): dá a volta na tela (sai de um lado, reaparece no outro).
 - pauseGame()/resumeGame()/isPaused(): pausa congela os loops e contatos; teclas/cliques continuam ativos para permitir retomar.
 
@@ -124,7 +135,7 @@ Mapa → Mundo → Fase — são conceitos separados; escolha somente os que o j
   apenas desenha o layout preparado e nunca o reposiciona. Não gere a forma legada ambígua de
   drawTileMap com x/y/tamanho: ela existe somente para abrir projetos antigos.
 - Campanhas grandes podem usar loadVectorCampaignLevel(indice, receitaJson, tileSize, spawnX,
-  spawnY, callback, tilesets, tiposDeInimigo?, jornada?): o runtime valida a receita, cria somente
+  spawnY, callback, tilesets, tiposDeInimigo?, volta?): o runtime valida a receita, cria somente
   a fase escolhida e entrega mapa/mundo/fase ao callback. Cada fase pode trazer "enemies" e
   "journey2Enemies" como triplas [índice do tipo, x, y]. campaignValue('chave', fallback) lê um
   metadado numérico da fase ativa. Prefira esses blocos quando expandir tudo criaria centenas.
@@ -155,9 +166,10 @@ Mapa → Mundo → Fase — são conceitos separados; escolha somente os que o j
   ('inicio', 'jogando', 'ganhou', 'perdeu') e não são Fases. ONDAS são grupos/ritmos de inimigos
   dentro da mesma Fase ou do mesmo Mundo: conte a onda numa variável; só crie outra Fase quando
   também mudar a etapa jogável (mundo, início ou regras de entrada).
-- cameraFollow(s, worldW, worldH) e setCamera(x, y) são compatibilidade para projetos antigos.
-  Em projetos novos com terreno rolável, prefira a câmera do Mundo. cameraX()/cameraY() continuam
-  úteis para parallax. ⚠️ onPointer/pointer usam coordenadas de TELA; mundo = tela + câmera.
+- cameraFollow(s, worldW, worldH) e setCamera(x, y) controlam diretamente a câmera global em
+  Código ou por chamada de função. Para construir terreno rolável em Blocos, use a câmera do
+  Mundo. cameraX()/cameraY() leem o deslocamento, inclusive para parallax.
+  ⚠️ onPointer/pointer usam coordenadas de TELA; mundo = tela + câmera.
 
 Mapa destrutível, ordem de desenho e depuração:
 - breakTileAtSprite(map, s)/setTileAtSprite(map, index, s)/tileAtSprite(map, s): muda/quebra/lê o tile na
@@ -165,7 +177,7 @@ Mapa destrutível, ordem de desenho e depuração:
 - bringToFront(grupo, s)/sendToBack(grupo, s): muda a ordem de desenho do sprite dentro do grupo.
 - drawHitbox(s): contorno da área de colisão (depurar). showFps(x, y): contador de quadros por segundo.
 
-Imagens e animação (v0.3.0) — as imagens vivem como ASSETS do projeto (aba Assets);
+Imagens e animação (v0.3.0) — as imagens vivem como ASSETS do projeto (aba "Imagens" de Materiais do jogo);
 nos blocos/código você usa o NOME do asset (string):
 - createSprite({ x, y, w, h, image: 'nome' }): sprite que mostra uma imagem (sem image, fica colorido).
 - setImage(sprite, 'nome'): troca a imagem fixa do sprite (cancela a animação).
@@ -247,7 +259,7 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
   do tipo", senão andariam duas vezes por quadro.
 - spawnEnemy(tipo, x, y): solta um inimigo com a vida/dano/animações do tipo.
 - updateEnemyType(tipo, ctx, alvo): DENTRO do gameLoop; comportamento + autoAnimate + tiros do
-  atirador + remove derrotados (hp<=0 -> particulas + onDefeat). Alvo = quem perseguir/mirar.
+  atirador + remove derrotados (hp<=0 -> partículas + evento onEnemyDefeated). Alvo = quem perseguir/mirar.
 - drawEnemyType(ctx, tipo): desenha inimigos + tiros.
 - onEnemyDefeated(tipo, function (inimigo) {...}): registrar UMA vez, fora do gameLoop.
 - overlapEnemyShots(() => sprite, tipo, function (tiro) {...}): DENTRO do gameLoop; remove o
@@ -344,7 +356,7 @@ criar um por um. Um grupo é uma lista gerenciada de sprites:
 - countGroup(grupo): quantidade atual (valor, use em if/conta). clearGroup(grupo): esvazia. addToGroup(grupo, sprite): põe um sprite que JÁ existe no grupo (repetido não entra duas vezes). removeFromGroup(grupo, sprite): tira um.
 - pruneOffscreen(ctx, grupo, margem, function (sprite) {…}): remove os que saíram da tela e roda o corpo para cada um (ex.: perder vida quando um inimigo escapa). Só descarta quem está fora E SE AFASTANDO: um obstáculo criado fora da tela que ainda vem entrando (o caso normal de "nasce à direita e anda para a esquerda") NÃO é removido, então pode criar o obstáculo bem longe da borda sem medo. Sprite parado fora da tela é removido.
 - overlapGroups(a, b, function (sa, sb) {…}): para cada par (um de cada grupo) que se encosta, roda o corpo com os dois sprites (use DENTRO do gameLoop). NÃO confundir com onOverlap (que é 1 sprite × 1 sprite).
-- overlapSpriteGroup(() => sprite, grupo, (item) => {…}): genérico — para cada item do grupo que encosta no sprite, roda o corpo (ex.: coletar moeda ou tirar vida). Fica em “💥 Colisões” e deve ser usado no gameLoop.
+- overlapSpriteGroup(() => sprite, grupo, (item) => {…}): genérico — para cada item do grupo que encosta no sprite, roda o corpo (ex.: coletar moeda ou tirar vida). Fica em “Colisões” e deve ser usado no gameLoop.
 - everyFrames("chave", N) / everySeconds("chave", S): mecanismos internos usados pelas raízes “A cada N quadros/segundos”. No projeto da criança, essas raízes ficam diretamente em “🔁 Enquanto estiver rodando”, nunca dentro de outro gameLoop. Elas continuam rodando nas telas de início, vitória e derrota; para criar objetos apenas durante a partida, coloque um “se a tela atual é jogando?” dentro da raiz periódica.
 - afterSeconds("chave", S): mecanismo interno da raiz “Depois de N segundos fazer” — one-shot: roda o corpo UMA vez por partida, S segundos depois do início (reiniciar o jogo re-arma). Para repetição use everySeconds. Mesma regra de raiz: fica direto em “🔁 Enquanto estiver rodando”.
 
@@ -385,7 +397,7 @@ Quando ajudar o aluno com jogos 2D:
 - Prefira os eventos "Quando…" (onKey/onOverlap) e as perguntas (keyDown/touches) a
   ficar lendo o estado das teclas na mão — é mais próximo de como a criança pensa.
 - Mostre que sprites são apenas objetos JS com x/y/w/h.
-- Para imagens, lembre que o aluno precisa ADICIONAR o asset na aba Assets e usar o nome dele.
+- Para imagens, lembre que o aluno precisa ADICIONAR o asset na aba "Imagens" e usar o nome dele.
 - Enquanto a imagem carrega, o cenário permanece visível; se a carga falhar, o sprite cai num retângulo (placeholder) — nunca quebra.
 - Prefira pequenas iterações didáticas — não despeje o jogo pronto.
 - DESEMPENHO: crie sprites/grupos/objetos UMA vez em ⚙️ Ao iniciar. Criar dentro do
@@ -394,11 +406,11 @@ Quando ajudar o aluno com jogos 2D:
   saíram, com pruneOffscreen, para o grupo não crescer sem fim e a colisão
   (overlapGroups) não ficar lenta.
 
-KIT ESPAÇO (v0.7.0) — categoria "🚀 Kit espaço" com atalhos PRONTOS (não genéricos) para jogos de nave espacial; os blocos genéricos seguem nas categorias normais:
+KIT ESPAÇO (v0.7.0) — categoria "Kits prontos > Espaço" com atalhos PRONTOS (não genéricos) para jogos de nave espacial; os blocos genéricos seguem nas categorias normais:
 - createShip({ x, y, w, h, body, wings }): nave desenhada (cabine + foguinho que pulsa sozinho); body = cor do corpo, wings = cor das asas. É um sprite normal (drawSprite desenha a nave).
 - spawnAsteroid(grupo, { x, y, size, color, vx, vy }): coloca no grupo um asteroide desenhado (polígono irregular que gira, cada um único). updateGroup/drawGroup tratam ele como qualquer sprite.
 - drawStarfield(ctx, velocidade): fundo espacial (gradiente + estrelas que cintilam/rolam) — chame logo após clear().
-- explodeSprite(sprite, "cor"): explosão de partículas no centro do sprite. playShoot()/playExplosion(): sons de tiro e explosão.
+- explodeSprite(sprite, "cor"): explosão de partículas no centro do sprite. playFx("shoot")/playFx("explosion"): sons de tiro e explosão.
 
 NAVE CLÁSSICA — girar + impulsionar na direção apontada (v0.10.0), para o Asteroids clássico (a nave gira e acelera pra onde aponta). Os sprites ganham um ÂNGULO em GRAUS (0 = pra cima, horário) que o desenho passa a respeitar (a nave/sprite aparece girada):
 - steerThrust(sprite, velocidade, giro): controle pronto de nave — vira com ←/A e →/D, acelera com ↑/W na direção apontada e desliza com atrito ao soltar; já move o sprite. Bloco "Controlar o sprite como nave". É o atalho recomendado para a criança.
@@ -408,16 +420,16 @@ NAVE CLÁSSICA — girar + impulsionar na direção apontada (v0.10.0), para o A
 PULO NO CHÃO (genérico, v0.9.0) — para jogos de corrida/pulo SEM andar para os lados:
 - jumpOnGround(sprite, ctx, força): pousa na borda atraída (base com gravidade positiva, teto com gravidade negativa) e pula com ↑/Espaço/W OU um toque; não soma gravidade. Gere applyGravity(sprite) imediatamente antes. Use dentro do gameLoop. Bloco "Fazer o sprite pular no chão". Diferente do platformer (que também anda esquerda/direita).
 
-KIT DINO (v0.9.0) — categoria "🦕 Kit dino" com atalhos PRONTOS (não genéricos) para um jogo de corrida estilo "Dino Run"; os blocos genéricos seguem nas categorias normais:
+KIT DINO (v0.9.0) — categoria "Kits prontos > Dino" com atalhos PRONTOS (não genéricos) para um jogo de corrida estilo "Dino Run"; os blocos genéricos seguem nas categorias normais:
 - createDino({ x, y, size, color }): dinossauro desenhado (perninhas que correm sozinhas; a pose muda no pulo/agachar). É um sprite normal (drawSprite desenha o dino).
 - controlDino(dino, ctx, força): controla o dino estilo corrida — pula com ↑/Espaço ou toque na metade de CIMA; abaixa com ↓ ou segurando o dedo embaixo. Já vem com chão e poeira, mas não soma gravidade: gere applyGravity(dino) imediatamente antes. Use no gameLoop.
 - spawnObstacle(grupo, ctx, { type, x, size, vx }): coloca no grupo um obstáculo desenhado. type = 'cactus'/'rock' (no chão, pule por cima), 'bird' (no alto, abaixe por baixo) ou 'random' (sorteia). O y é automático pelo tipo; ligue x na borda direita e vx negativo. updateGroup/drawGroup tratam como sprite normal.
 - spawnEgg(grupo, { x, y, vx }): coloca no grupo um OVO (item de bônus). Quando o dino encosta, dê pontos extras e remova o ovo.
 - drawForest(ctx, velocidade): fundo de FLORESTA com parallax (céu, sol, nuvens, morros e grama que rola) — chame logo após clear(). O dino corre sobre a grama.
-- playJump()/playDinoHurt()/playCollect(): sons de pulo, dano e coletar (sintetizados).
+- playFx("jump")/playFx("hurt")/playFx("collect"): sons de pulo, dano e coletar (sintetizados).
 - Recorde que PERSISTE: use os blocos genéricos de armazenamento (storageSet/storageGet, localStorage) — não há bloco específico de recorde. Existe o exemplo pronto "Dino Run" mostrando tudo junto.
 
-KIT GORILAS (v0.11.0) — categoria "🦍 Kit gorilas" com atalhos PRONTOS para um jogo de artilharia por TURNOS estilo "Gorillas", para 2 jogadores no mesmo aparelho. O estado pesado (cidade, banana, mira) mora no runtime; a criança só guarda a cidade, os gorilas e uma variável "vez" (0/1). Coordenadas de tela normais (Y para baixo); NÃO precisa de flip de Y nem fullscreen.
+KIT GORILAS (v0.11.0) — categoria "Kits prontos > Gorilas" com atalhos PRONTOS para um jogo de artilharia por TURNOS estilo "Gorillas", para 2 jogadores no mesmo aparelho. O estado pesado (cidade, banana, mira) mora no runtime; a criança só guarda a cidade, os gorilas e uma variável "vez" (0/1). Coordenadas de tela normais (Y para baixo); NÃO precisa de flip de Y nem fullscreen.
 - createCity(): sorteia uma cidade { buildings, holes, wind, W, H } (prédios com janelas + vento). Guarde numa variável (ex.: cidade). É nela que os gorilas ficam e a banana abre crateras.
 - drawCity(ctx, city): desenha céu, lua e prédios — JÁ com as crateras "furadas" (usa rect+arc+clip internamente). Use no começo do gameLoop, após clear().
 - placeThrower(city, { side, color }): cria um gorila (sprite normal, drawSprite desenha) no alto de um prédio perto da ponta ('left'/'right'). Faça um por jogador.
@@ -426,25 +438,27 @@ KIT GORILAS (v0.11.0) — categoria "🦍 Kit gorilas" com atalhos PRONTOS para 
 - aimReleased(thrower): valor (booleano) — verdadeiro no instante em que solta a mira. Use num "se" para então throwBanana.
 - throwBanana(thrower, city): lança a banana com a mira atual. updateBanana(city): move a banana (gravidade + vento). drawBanana(ctx, city): desenha a banana voando com rastro. Só existe UMA banana por vez.
 - bananaHitThrower(city, thrower): valor — a banana acertou o gorila? (passe o INIMIGO; acerto = vitória; some com a banana). bananaHitCity(city): valor — a banana bateu num prédio (abre cratera) ou saiu da tela? (some com a banana; é a hora de trocar a vez: vez = 1 - vez e newWind).
-- playWhistle()/playExplosion(): assobio de banana caindo e explosão (sintetizados). O bloco temático “Tocar explosão” usa a mesma implementação de playExplosion. Existe o exemplo pronto "Guerra de Gorilas" mostrando tudo junto.
+- playFx("whistle")/playFx("explosion"): assobio de banana caindo e explosão (sintetizados). O bloco temático “Tocar explosão” usa a mesma implementação de playFx("explosion"). Existe o exemplo pronto "Guerra de Gorilas" mostrando tudo junto.
 - computerTurn(thrower, city, enemy): vez do ROBÔ (IA). Use no gameLoop, na vez dele. Simula vários arremessos (mesma física da banana, sem ctx), escolhe o melhor mira no inimigo, "pensa" ~0,8s e joga sozinho. Respeita _banana (um tiro por vez). Para 1-jogador-vs-computador troque o ramo de um gorila por este bloco; para autoplay, os dois. Veja "Guerra de Gorilas vs Robô".
 - drawAimReadout(ctx): desenha "angulo X / forca Y" no canto (lê _aim) — útil para ver a escolha do robô.
 
-KIT EQUILIBRISTA v2 (v0.42.0) — categoria "🤸 Kit equilibrista", jogo estilo "Stick Hero". SEMÂNTICA: o EQUILIBRISTA é um SPRITE comum (participa de drawSprite, setShape/setImage, tamanho por soquete) e as REGRAS moram num objeto CAMINHO. A criança monta a regra do mouse com se/senão + pointerDown() e o PLACAR é uma variável dela (o kit não conta pontos). Canvas em pé (ex.: 360×480). Não combinar com a 🎥 câmera (o mundo desliza sozinho). Loop recomendado no "a cada quadro": clear → stickPathScenery → (se pointerDown() então stickPathGrow senão stickPathDrop) → stickPathWalk → stickPathDraw → drawSprite(heroi) → drawScore(var pontos) → se stickPathFell, trocar de cena.
+KIT EQUILIBRISTA v2 (v0.42.0) — categoria "Kits prontos > Equilibrista", jogo estilo "Stick Hero". SEMÂNTICA: o EQUILIBRISTA é um SPRITE comum (participa de drawSprite, setShape/setImage, tamanho por soquete) e as REGRAS moram num objeto CAMINHO. A criança monta a regra do mouse com se/senão + pointerDown() e o PLACAR é uma variável dela (o kit não conta pontos). Canvas em pé (ex.: 360×480). Não combinar com a 🎥 câmera (o mundo desliza sozinho). Loop recomendado no "a cada quadro": clear → stickPathScenery → (se pointerDown() então stickPathGrow senão stickPathDrop) → stickPathWalk → stickPathDraw → drawSprite(heroi) → drawScore(var pontos) → se stickPathFell, trocar de cena.
 - createStickHero({w, h, color}): cria o SPRITE do herói (skin de boneco desenhado; trocável por figura/imagem com os blocos genéricos de sprite). Faça UMA vez.
 - createStickPath(ctx, {platform, stick}): cria o CAMINHO (plataformas, bastão, árvores) com as cores da criança. Faça UMA vez.
 - stickPathScenery(caminho): fundo (céu/colinas/árvores) no tamanho lógico VIGENTE do palco. stickPathGrow(caminho, rapidez): o bastão cresce enquanto for chamado (esperando vira esticando na hora). stickPathDrop(caminho): derruba (só faz efeito se estava esticando). stickPathWalk(caminho, heroi, rapidez): gira o bastão até deitar, resolve o acerto (dispara os eventos, SEM pontuar), anda/atravessa/cai e posiciona o SPRITE em coordenadas de tela (sobrescreve x/y a cada quadro: blocos genéricos de movimento não mexem no herói durante o jogo). stickPathDraw(caminho): plataformas (com a marca do perfeito) e bastões.
 - stickPathOnCross(caminho, fn, id) / stickPathOnPerfect(caminho, fn, id): eventos; a criança soma os pontos na variável dela (1 na travessia, 2 extras no perfeito, convenção do exemplo). Registrar UMA vez, fora do "a cada quadro".
 - stickPathFell(caminho): valor (booleano) — caiu? Fim de jogo = trocar de cena; recomeçar = restart() GENÉRICO (o start recria sprite e caminho).
 
-KIT BALÃO v2 (v0.42.0) — categoria "🎈 Kit balão", jogo estilo "Hot-Air-Balloon". SEMÂNTICA: o BALÃO é um SPRITE comum com combustível próprio (interno _fuel, começa em 100); as ÁRVORES moram no CAMINHO. Canvas deitado (ex.: 560×360). Loop recomendado: clear → balloonPathScenery → (se pointerDown() então balloonFire) → balloonFly → balloonPathScroll → drawSprite(balao) → drawScore(balloonPathMeters)/drawBar(balloonFuel) → se balloonLandedOut, trocar de cena.
+KIT BALÃO v2 (v0.42.0) — categoria "Kits prontos > Balão", jogo estilo "Hot-Air-Balloon". SEMÂNTICA: o BALÃO é um SPRITE comum com combustível próprio (interno _fuel, começa em 100); as ÁRVORES moram no CAMINHO. Canvas deitado (ex.: 560×360). Loop recomendado: clear → balloonPathScenery → (se pointerDown() então balloonFire) → balloonFly → balloonPathScroll → drawSprite(balao) → drawScore(balloonPathMeters)/drawBar(balloonFuel) → se balloonLandedOut, trocar de cena.
 - createBalloon({x, y, w, h, body, basket}): cria o SPRITE do balão (skin com envelope, cordas, cesto e a chama quando o fogo acende; trocável por figura/imagem genéricas). Faça UMA vez.
 - createBalloonPath(ctx): cria o CAMINHO de árvores e a contagem de metros. Faça UMA vez.
 - balloonFire(balao, forca): empurra para cima e queima combustível (mais alto, mais gasto; sem combustível não acende). balloonFly(balao): gravidade suave + pouso no chão (nunca afunda); é quem INTEGRA a posição — sem ele no loop, o fogo não move o balão. balloonPathScroll(caminho, balao, velocidade): avança o mundo com o balão no ar, conta os metros, recicla árvores e confere a batida com o RETÂNGULO do sprite (dispara o evento a cada novo toque; a criança decide o fim).
 - balloonPathOnTreeHit(caminho, fn, id): evento da batida (explosão/tremida/som/trocar de cena). Registrar UMA vez, fora do "a cada quadro".
 - balloonPathMeters(caminho): valor — metros voados. balloonFuel(balao): valor — combustível 0..100. balloonLandedOut(balao): valor (booleano) — pousou sem combustível? Recomeçar = restart() GENÉRICO.
 
-ENTRADA DO MOUSE — pointerDown(): valor (booleano), verdadeiro enquanto o botão do mouse ou o dedo está pressionado no jogo (bloco "o mouse ou dedo está segurado ?" em 🎛️ Controles). É a peça do se/senão dos kits Equilibrista e Balão e serve para qualquer jogo de segurar/soltar.
+ENTRADA DO MOUSE — pointerDown(): valor (booleano), verdadeiro enquanto o botão do mouse ou o dedo está pressionado no jogo (bloco "o mouse ou dedo está segurado ?" em Controles). É a peça do se/senão dos kits Equilibrista e Balão e serve para qualquer jogo de segurar/soltar.
+
+LAYOUT DO MAPA: centerTileMap(ctx, mapa, x, y, tamanho) centraliza a geometria naquele instante; tamanho 0 calcula o encaixe. drawTileMap(ctx, mapa) apenas desenha a geometria preparada.
 
 CANVAS NA MÃO (genérico) — novos blocos de ✏️ Traçado úteis para crateras/máscaras: ctx.rect(x,y,w,h) adiciona um retângulo ao traçado; ctx.clip() recorta o desenho pelo traçado atual; ctx.isPointInPath(x,y)/ctx.isPointInStroke(x,y) são perguntas (o ponto está dentro/na linha do traçado?). Para "furar" um buraco: traçado com o retângulo da tela inteira + um arco no sentido anti-horário, depois clip. Há também os eventos "apertar o mouse/dedo"/"soltar o mouse/dedo" (pointerdown/pointerup) na programação normal, para mira por arrastar.
 `)

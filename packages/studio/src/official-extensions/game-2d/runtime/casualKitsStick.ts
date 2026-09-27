@@ -72,6 +72,7 @@ export const gameTwoDCasualKitsStickRuntime = `  // ============================
     opts = opts || {};
     var w = stageW(ctx), h = stageH(ctx);
     var path = {
+      phase: 'waiting', sceneOffset: 0, platforms: [], sticks: [],
       ctx: ctx,
       w: w,
       h: h,
@@ -151,6 +152,7 @@ export const gameTwoDCasualKitsStickRuntime = `  // ============================
   // plataforma (SEM somar pontos — o placar é da criança). Posiciona o SPRITE em coords de
   // tela — o "Desenhar o sprite" genérico desenha o herói no lugar certo.
   function stickPathWalk(path, hero, speed) {
+    if (_isDestroyedSprite(hero)) return;
     if (!path) return;
     _stickPathSync(path);
     var dt = _kitDt(path, '_lastWalk') * _kitSpeedMultiplier(speed);

@@ -8,7 +8,7 @@ import { useProjectStoreApi } from '../../state/projectStore'
  * assim que "editei o desenho na outra aba" chega ao jogo sem nenhum clique.
  *
  * Não renderiza nada. Fica no Shell (ao lado dos outros observadores sempre
- * ligados) porque o painel de Imagens pode estar fechado justamente quando ela
+ * ligados) porque a janela dos materiais pode estar fechada justamente quando ela
  * volta para cá — e o que ela quer ver atualizado é o JOGO rodando.
  *
  * O custo real é o portão do `syncDrawingsIntoProjects`: sem desenho novo desde

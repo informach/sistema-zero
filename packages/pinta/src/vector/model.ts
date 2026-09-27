@@ -25,6 +25,11 @@ export interface VectorGradient {
   to: string
   /** Graus (só `linear`): 0 = →, 90 = ↓. Ignorado no radial. */
   angle: number
+  /** Coordenadas proporcionais à caixa da forma; ausentes preservam o degradê antigo. */
+  start?: Vec2
+  end?: Vec2
+  center?: Vec2
+  radius?: number
 }
 
 /** Preenchimento: cor sólida (hex ou `'none'`) OU degradê. */
@@ -32,14 +37,24 @@ export type VectorFill = string | VectorGradient
 
 interface VectorShapeBase {
   id: string
+  /**
+   * Identidade estável da forma entre quadros de uma animação. Diferente de
+   * `id` (único por shape/quadro), ela permite ao exportador reconhecer a
+   * mesma peça em poses diferentes. Ausente em documentos antigos.
+   */
+  motionId?: string
   /** Cor sólida (`#rrggbb`/`'none'`) ou degradê. */
   fill: VectorFill
   /** `null` = sem contorno. */
   stroke: VectorStroke | null
   /** 0–1. */
   opacity: number
-  /** Graus, em torno do centro do bounding box. */
+  /** Graus, em torno de `rotationPivot` ou, quando ausente, do centro da caixa. */
   rotation: number
+  /** Pivô absoluto de rotação. Ausente = centro da caixa, como nos desenhos antigos. */
+  rotationPivot?: Vec2
+  /** Id da forma fechada que recorta esta forma. Ausente = conteúdo sem máscara. */
+  maskId?: string
   /** Grupo: shapes com o MESMO id se movem/selecionam juntos. Ausente = solto. */
   groupId?: string
   /**
@@ -209,11 +224,19 @@ export function isVectorGradient(value: unknown): value is VectorGradient {
 /** Normaliza um preenchimento vindo de fonte não confiável; `null` = inválido. */
 function sanitizeFill(raw: unknown): VectorFill | null {
   if (isVectorGradient(raw)) {
+    const validPoint = (point: unknown): point is Vec2 =>
+      isVec2(point) && point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1
+    const radius =
+      isFiniteNumber(raw.radius) && raw.radius >= 0.05 && raw.radius <= 1.5 ? raw.radius : undefined
     return {
       type: raw.type,
       from: raw.from,
       to: raw.to,
       angle: isFiniteNumber(raw.angle) ? ((raw.angle % 360) + 360) % 360 : 90,
+      ...(raw.type === 'linear' && validPoint(raw.start) ? { start: raw.start } : {}),
+      ...(raw.type === 'linear' && validPoint(raw.end) ? { end: raw.end } : {}),
+      ...(raw.type === 'radial' && validPoint(raw.center) ? { center: raw.center } : {}),
+      ...(raw.type === 'radial' && radius !== undefined ? { radius } : {}),
     }
   }
   return isVectorColor(raw) ? raw : null
@@ -279,12 +302,18 @@ export function sanitizeVectorShape(raw: unknown): VectorShape | null {
   const opacity = isFiniteNumber(s.opacity) ? Math.min(Math.max(s.opacity, 0), 1) : 1
   const rotation = isFiniteNumber(s.rotation) ? s.rotation % 360 : 0
   const groupId = isSafeVectorId(s.groupId) ? s.groupId : undefined
+  const motionId = isSafeVectorId(s.motionId) ? s.motionId : undefined
+  const rotationPivot = isVec2(s.rotationPivot) ? s.rotationPivot : undefined
+  const maskId = isSafeVectorId(s.maskId) ? s.maskId : undefined
   const base = {
     id: s.id,
+    ...(motionId ? { motionId } : {}),
     fill,
     stroke,
     opacity,
     rotation,
+    ...(rotationPivot ? { rotationPivot } : {}),
+    ...(maskId ? { maskId } : {}),
     ...(groupId ? { groupId } : {}),
     ...(s.hidden === true ? { hidden: true } : {}),
     ...(s.locked === true ? { locked: true } : {}),

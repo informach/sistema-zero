@@ -32,6 +32,26 @@ export function dateInputToSaoPauloStartOfDayIso(value: string): string | null {
   return Number.isNaN(date.getTime()) ? null : date.toISOString()
 }
 
+/** ISO-8601 → `YYYY-MM-DD` no fuso de São Paulo, para preencher `input[type=date]`. */
+export function isoToSaoPauloDateInput(value: string | null | undefined): string {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date)
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((entry) => entry.type === type)?.value
+  const year = part('year')
+  const month = part('month')
+  const day = part('day')
+  return year && month && day ? `${year}-${month}-${day}` : ''
+}
+
 const MONTH_NAMES_PT = [
   'janeiro',
   'fevereiro',

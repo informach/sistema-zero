@@ -5,8 +5,11 @@
  *
  * `?host=1` liga um chrome de HOST de mentira (07/09/2026): o botão de esconder
  * o menu (alterna o estado local) e o selo "Guardado na sua conta" percorrendo
- * os estados a cada 4 s — é como se vê, sem o kids, o que o Pinta desenha na
- * barra do editor e no cabeçalho da galeria. Sem o parâmetro nada muda.
+ * os estados a cada 4 s, começando pelo REPOUSO (selo nulo: a galeria mostra a
+ * pílula da conta). Desde 11/09 também a seta "← Criar" da galeria (loga no
+ * console em vez de navegar) e a conta ligada. É como se vê, sem o kids, o que
+ * o Pinta desenha na barra do editor e no cabeçalho da galeria. Sem o parâmetro
+ * nada muda.
  */
 
 import {
@@ -14,6 +17,7 @@ import {
   type PintaHostChrome,
   PintaHostChromeProvider,
   type PintaHostChromeStatus,
+  type PintaTaskSession,
   setPintaStorageNamespace,
 } from '@sistemazero/pinta'
 import { type JSX, StrictMode, useEffect, useState } from 'react'
@@ -25,7 +29,8 @@ setPintaStorageNamespace('playground')
 const root = document.getElementById('root')
 if (!root) throw new Error('#root não encontrado')
 
-const DEMO_STATUSES: PintaHostChromeStatus[] = [
+const DEMO_STATUSES: Array<PintaHostChromeStatus | null> = [
+  null,
   { tone: 'muted', icon: 'upload', label: 'Guardando…', text: 'Guardando na sua conta…' },
   { tone: 'ok', icon: 'cloud', label: 'Guardado na sua conta', text: 'Guardado na sua conta' },
   {
@@ -42,6 +47,14 @@ const DEMO_STATUSES: PintaHostChromeStatus[] = [
   },
 ]
 
+// Fora do componente: identidade estável, como a do host de verdade (`useHostChrome`).
+const DEMO_BACK: PintaHostChrome['back'] = {
+  label: 'Voltar para Criar',
+  href: '#criar',
+  onNavigate: () => console.log('[playground] voltar para Criar'),
+}
+const DEMO_ACCOUNT: PintaHostChrome['account'] = { label: 'Guardado na sua conta' }
+
 function DemoHostChrome({ children }: { children: JSX.Element }): JSX.Element {
   const [hidden, setHidden] = useState(false)
   const [step, setStep] = useState(0)
@@ -56,11 +69,64 @@ function DemoHostChrome({ children }: { children: JSX.Element }): JSX.Element {
       onToggle: () => setHidden((h) => !h),
     },
     status: DEMO_STATUSES[step] ?? null,
+    back: DEMO_BACK,
+    account: DEMO_ACCOUNT,
   }
   return <PintaHostChromeProvider value={chrome}>{children}</PintaHostChromeProvider>
 }
 
 const hostDemo = new URLSearchParams(window.location.search).get('host') === '1'
+
+/**
+ * `?tarefa=1` monta um brief de mentira (o que o kids monta a partir do handoff do
+ * Pensa), para ver o painel — e o "Voltar ao plano" — no navegador sem banco.
+ * `onReturnToPlan` só loga: aqui não há para onde navegar.
+ *
+ * `?tarefa=falha` faz a volta REJEITAR, para conferir que nada navega e o recado
+ * aparece no painel.
+ */
+const taskDemo = new URLSearchParams(window.location.search).get('tarefa')
+const DEMO_TASK: PintaTaskSession = {
+  taskId: 'tarefa-demo',
+  project: { id: 'plano-demo', name: 'Bosque encantado' },
+  cycle: { id: 'ciclo-demo', number: 1, goal: 'Desenhar a turma do jogo' },
+  title: 'Desenhar a heroína',
+  summary: 'A personagem que a criança controla.',
+  brief: {
+    assetId: 'heroina',
+    artKind: 'sprite',
+    style: 'pixel',
+    palette: [
+      { role: 'roupa', color: '#aa33cc' },
+      { role: 'pele', color: '#f2c4a0' },
+    ],
+    appearance: 'Pequena, ágil e com capa roxa.',
+    animations: ['andar'],
+    states: ['parada'],
+    usage: 'Personagem principal',
+    requiresStudioUse: false,
+  },
+  guide: {
+    steps: [{ id: 'desenhar', text: 'Desenhar a personagem de frente', required: true }],
+    criteria: [{ id: 'silhueta', text: 'Dá para reconhecer de longe', required: true }],
+  },
+  progress: {
+    status: 'in_progress',
+    completedStepIds: [],
+    completedCriteriaIds: [],
+    startedAt: '2026-09-17T12:00:00.000Z',
+    completedAt: null,
+    updatedAt: '2026-09-17T12:00:00.000Z',
+    outputRef: null,
+  },
+  onProgress: async (input) => {
+    console.log('[playground] onProgress', input)
+  },
+  onReturnToPlan: () => {
+    if (taskDemo === 'falha') throw new Error('Falha de mentira do playground.')
+    console.log('[playground] onReturnToPlan → /pensa?plano=plano-demo')
+  },
+}
 
 const app = (
   <PintaApp
@@ -103,6 +169,7 @@ const app = (
         ? { initialAssetId: new URLSearchParams(window.location.search).get('desenho') ?? '' }
         : {}),
       onOpenStudio: () => console.log('[playground] onOpenStudio'),
+      ...(taskDemo ? { taskSession: DEMO_TASK } : {}),
     }}
   />
 )

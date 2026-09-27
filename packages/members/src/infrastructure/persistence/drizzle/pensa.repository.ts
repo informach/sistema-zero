@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, asc, count, desc, eq, inArray, isNull, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, exists, inArray, isNull, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type {
   PensaArtifact,
@@ -7,6 +7,8 @@ import type {
   PensaConversation,
   PensaCycle,
   PensaProject,
+  PensaProjectAccess,
+  PensaProjectMember,
   PensaStage,
   PensaTask,
   PensaTaskProgress,
@@ -18,6 +20,7 @@ import type {
   NewPensaArtifact,
   NewPensaCycle,
   NewPensaProject,
+  NewPensaProjectMember,
   NewPensaTask,
   PensaConversationUpsert,
   PensaProjectPatch,
@@ -29,6 +32,7 @@ import {
   pensaArtifacts,
   pensaConversations,
   pensaCycles,
+  pensaProjectMembers,
   pensaProjects,
   pensaTasks,
 } from './schema'
@@ -39,7 +43,16 @@ type ArtifactRow = typeof pensaArtifacts.$inferSelect
 type TaskRow = typeof pensaTasks.$inferSelect
 type Tx = Parameters<Parameters<Database['transaction']>[0]>[0]
 
+type MemberRow = typeof pensaProjectMembers.$inferSelect
+
 const toProject = (row: ProjectRow): PensaProject => ({ ...row })
+const toMember = (row: MemberRow): PensaProjectMember => ({ ...row })
+/** O projeto como QUEM pediu o vê: dono ou membro, com quantos convidados a equipe tem. */
+const toAccess = (row: ProjectRow, isOwner: boolean, memberCount: number): PensaProjectAccess => ({
+  ...row,
+  role: isOwner ? 'owner' : 'member',
+  memberCount: Number(memberCount),
+})
 const toCycle = (row: CycleRow): PensaCycle => ({ ...row })
 const toArtifact = (row: ArtifactRow): PensaArtifact => ({ ...row })
 const toTask = (row: TaskRow): PensaTask => ({
@@ -141,8 +154,50 @@ async function reconcileTaskArtifacts(tx: Tx, cycleId: string, now: Date): Promi
   }
 }
 
+/** Só o DONO: apagar o plano e a cota de criar continuam presos ao `user_id`. */
 function ownedProject(userId: string, audience: CourseAudience) {
   return and(eq(pensaProjects.userId, userId), eq(pensaProjects.audience, audience))
+}
+
+/**
+ * Dono OU membro da equipe (26/09/2026): a régua de LEITURA e de trabalho no plano. O papel
+ * (`isOwner`) e a contagem de convidados vêm na mesma consulta (`accessColumns`).
+ */
+function accessibleProject(userId: string, audience: CourseAudience) {
+  return and(
+    eq(pensaProjects.audience, audience),
+    or(
+      eq(pensaProjects.userId, userId),
+      // ⚠️ O MEMBRO só alcança plano ATIVO: arquivar é o jeito de o dono "fechar" o plano, e sem
+      // isto a equipe continuava escrevendo num plano que ele já tirou da lista.
+      and(
+        eq(pensaProjects.status, 'active'),
+        exists(
+          sql`(select 1 from ${pensaProjectMembers} where ${pensaProjectMembers.projectId} = ${pensaProjects.id} and ${pensaProjectMembers.profileId} = ${userId}::uuid)`,
+        ),
+      ),
+    ),
+  )
+}
+
+/**
+ * 23505 = unique_violation. O drizzle-orm envelopa o erro do driver em `DrizzleQueryError`
+ * com o `PostgresError` em `cause`: caminha a cadeia (com teto), como o content-admin.
+ */
+function isUniqueViolation(error: unknown): boolean {
+  let current: unknown = error
+  for (let depth = 0; depth < 5 && typeof current === 'object' && current !== null; depth++) {
+    if ((current as { code?: unknown }).code === '23505') return true
+    current = (current as { cause?: unknown }).cause
+  }
+  return false
+}
+
+function accessColumns(userId: string) {
+  return {
+    isOwner: sql<boolean>`(${pensaProjects.userId} = ${userId}::uuid)`,
+    memberCount: sql<number>`(select count(*)::int from ${pensaProjectMembers} where ${pensaProjectMembers.projectId} = ${pensaProjects.id})`,
+  }
 }
 
 const taskValues = (cycleId: string, task: NewPensaTask, now: Date) => ({
@@ -185,11 +240,11 @@ export class DrizzlePensaRepository implements PensaRepository {
   async listActiveProjects(
     userId: string,
     audience: CourseAudience,
-  ): Promise<Array<{ project: PensaProject; currentCycle: PensaCycle }>> {
+  ): Promise<Array<{ project: PensaProjectAccess; currentCycle: PensaCycle }>> {
     const projects = await this.db
-      .select()
+      .select({ project: pensaProjects, ...accessColumns(userId) })
       .from(pensaProjects)
-      .where(and(ownedProject(userId, audience), eq(pensaProjects.status, 'active')))
+      .where(and(accessibleProject(userId, audience), eq(pensaProjects.status, 'active')))
       .orderBy(desc(pensaProjects.updatedAt))
     if (projects.length === 0) return []
     const currents = await this.db
@@ -198,15 +253,20 @@ export class DrizzlePensaRepository implements PensaRepository {
       .where(
         inArray(
           pensaCycles.projectId,
-          projects.map((project) => project.id),
+          projects.map((row) => row.project.id),
         ),
       )
       .orderBy(pensaCycles.projectId, desc(pensaCycles.number))
     const byProject = new Map(currents.map((cycle) => [cycle.projectId, cycle]))
-    return projects.flatMap((project) => {
-      const currentCycle = byProject.get(project.id)
+    return projects.flatMap((row) => {
+      const currentCycle = byProject.get(row.project.id)
       return currentCycle
-        ? [{ project: toProject(project), currentCycle: toCycle(currentCycle) }]
+        ? [
+            {
+              project: toAccess(row.project, row.isOwner, row.memberCount),
+              currentCycle: toCycle(currentCycle),
+            },
+          ]
         : []
     })
   }
@@ -226,13 +286,130 @@ export class DrizzlePensaRepository implements PensaRepository {
     projectId: string,
     userId: string,
     audience: CourseAudience,
-  ): Promise<PensaProject | null> {
+  ): Promise<PensaProjectAccess | null> {
+    const [row] = await this.db
+      .select({ project: pensaProjects, ...accessColumns(userId) })
+      .from(pensaProjects)
+      .where(and(eq(pensaProjects.id, projectId), accessibleProject(userId, audience)))
+      .limit(1)
+    return row ? toAccess(row.project, row.isOwner, row.memberCount) : null
+  }
+
+  async setShareCode(projectId: string, code: string | null, now: Date): Promise<boolean> {
+    try {
+      await this.db
+        .update(pensaProjects)
+        .set({ shareCode: code, updatedAt: now })
+        .where(eq(pensaProjects.id, projectId))
+      return true
+    } catch (error) {
+      // Dois donos sorteando o MESMO código no mesmo instante: o índice único parcial recusa
+      // o segundo, e o serviço sorteia outro em vez de responder 500.
+      if (code !== null && isUniqueViolation(error)) return false
+      throw error
+    }
+  }
+
+  async findProjectByShareCode(code: string): Promise<PensaProject | null> {
     const [row] = await this.db
       .select()
       .from(pensaProjects)
-      .where(and(eq(pensaProjects.id, projectId), ownedProject(userId, audience)))
+      .where(eq(pensaProjects.shareCode, code))
       .limit(1)
     return row ? toProject(row) : null
+  }
+
+  async listMembers(projectId: string): Promise<PensaProjectMember[]> {
+    const rows = await this.db
+      .select()
+      .from(pensaProjectMembers)
+      .where(eq(pensaProjectMembers.projectId, projectId))
+      .orderBy(asc(pensaProjectMembers.joinedAt))
+    return rows.map(toMember)
+  }
+
+  async countMemberships(profileId: string, audience: CourseAudience): Promise<number> {
+    const [row] = await this.db
+      .select({ value: count() })
+      .from(pensaProjectMembers)
+      .innerJoin(pensaProjects, eq(pensaProjectMembers.projectId, pensaProjects.id))
+      .where(
+        and(
+          eq(pensaProjectMembers.profileId, profileId),
+          eq(pensaProjects.audience, audience),
+          eq(pensaProjects.status, 'active'),
+        ),
+      )
+    return row?.value ?? 0
+  }
+
+  async addMember(
+    member: NewPensaProjectMember,
+    now: Date,
+    maxMembers: number,
+    expectedCode: string,
+  ): Promise<'added' | 'duplicate' | 'full' | 'invite_invalid'> {
+    return this.db.transaction(async (tx) => {
+      // Tranca a linha do projeto: conferir a vaga e gravar viram um passo só (dois convidados
+      // no mesmo instante com 4 na equipe não viram 6).
+      const [project] = await tx
+        .select({ shareCode: pensaProjects.shareCode, status: pensaProjects.status })
+        .from(pensaProjects)
+        .where(eq(pensaProjects.id, member.projectId))
+        .limit(1)
+        .for('update')
+      if (!project || project.shareCode !== expectedCode || project.status !== 'active') {
+        return 'invite_invalid'
+      }
+      const [already] = await tx
+        .select({ profileId: pensaProjectMembers.profileId })
+        .from(pensaProjectMembers)
+        .where(
+          and(
+            eq(pensaProjectMembers.projectId, member.projectId),
+            eq(pensaProjectMembers.profileId, member.profileId),
+          ),
+        )
+        .limit(1)
+      if (already) return 'duplicate'
+      const [row] = await tx
+        .select({ value: count() })
+        .from(pensaProjectMembers)
+        .where(eq(pensaProjectMembers.projectId, member.projectId))
+      if ((row?.value ?? 0) >= maxMembers) return 'full'
+      await tx.insert(pensaProjectMembers).values({ ...member, joinedAt: now })
+      await touchProject(tx, member.projectId, now)
+      return 'added'
+    })
+  }
+
+  async removeMember(projectId: string, profileId: string, now: Date): Promise<boolean> {
+    return this.db.transaction(async (tx) => {
+      const removed = await tx
+        .delete(pensaProjectMembers)
+        .where(
+          and(
+            eq(pensaProjectMembers.projectId, projectId),
+            eq(pensaProjectMembers.profileId, profileId),
+          ),
+        )
+        .returning({ profileId: pensaProjectMembers.profileId })
+      if (removed.length === 0) return false
+      await touchProject(tx, projectId, now)
+      return true
+    })
+  }
+
+  /**
+   * Um DELETE só: as FKs de `pensa_cycles` → conversas/artefatos/cartões são
+   * `on delete cascade` (migration `0060_pensa_planner_v2`), então a árvore inteira
+   * cai junto. O `ownedProject` no WHERE é o portão: plano de outro perfil (ou de
+   * outra vitrine) não é alcançado nem com o id certo.
+   */
+  async deleteProject(projectId: string, userId: string, audience: CourseAudience): Promise<void> {
+    await this.db
+      .delete(pensaProjects)
+      .where(and(eq(pensaProjects.id, projectId), ownedProject(userId, audience)))
   }
 
   async updateProject(projectId: string, patch: PensaProjectPatch, now: Date): Promise<void> {
@@ -281,14 +458,16 @@ export class DrizzlePensaRepository implements PensaRepository {
     cycleId: string,
     userId: string,
     audience: CourseAudience,
-  ): Promise<{ cycle: PensaCycle; project: PensaProject } | null> {
+  ): Promise<{ cycle: PensaCycle; project: PensaProjectAccess } | null> {
     const [row] = await this.db
-      .select({ cycle: pensaCycles, project: pensaProjects })
+      .select({ cycle: pensaCycles, project: pensaProjects, ...accessColumns(userId) })
       .from(pensaCycles)
       .innerJoin(pensaProjects, eq(pensaCycles.projectId, pensaProjects.id))
-      .where(and(eq(pensaCycles.id, cycleId), ownedProject(userId, audience)))
+      .where(and(eq(pensaCycles.id, cycleId), accessibleProject(userId, audience)))
       .limit(1)
-    return row ? { cycle: toCycle(row.cycle), project: toProject(row.project) } : null
+    return row
+      ? { cycle: toCycle(row.cycle), project: toAccess(row.project, row.isOwner, row.memberCount) }
+      : null
   }
 
   async advanceCycle(
@@ -471,9 +650,14 @@ export class DrizzlePensaRepository implements PensaRepository {
     taskId: string,
     userId: string,
     audience: CourseAudience,
-  ): Promise<{ task: PensaTask; project: PensaProject; cycle: PensaCycle } | null> {
+  ): Promise<{ task: PensaTask; project: PensaProjectAccess; cycle: PensaCycle } | null> {
     const [row] = await this.db
-      .select({ task: pensaTasks, project: pensaProjects, cycle: pensaCycles })
+      .select({
+        task: pensaTasks,
+        project: pensaProjects,
+        cycle: pensaCycles,
+        ...accessColumns(userId),
+      })
       .from(pensaTasks)
       .innerJoin(pensaCycles, eq(pensaTasks.cycleId, pensaCycles.id))
       .innerJoin(pensaProjects, eq(pensaCycles.projectId, pensaProjects.id))
@@ -481,12 +665,16 @@ export class DrizzlePensaRepository implements PensaRepository {
         and(
           eq(pensaTasks.id, taskId),
           isNull(pensaTasks.archivedAt),
-          ownedProject(userId, audience),
+          accessibleProject(userId, audience),
         ),
       )
       .limit(1)
     return row
-      ? { task: toTask(row.task), project: toProject(row.project), cycle: toCycle(row.cycle) }
+      ? {
+          task: toTask(row.task),
+          project: toAccess(row.project, row.isOwner, row.memberCount),
+          cycle: toCycle(row.cycle),
+        }
       : null
   }
 

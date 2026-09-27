@@ -16,7 +16,7 @@ interface CatalogCourseCardProps {
  */
 export function CatalogCourseCard({ course, salesUrl }: CatalogCourseCardProps) {
   const body = (
-    <Card className="h-full overflow-hidden p-0 transition-shadow group-hover:shadow-lg dark:group-hover:brand-glow">
+    <Card className="h-full overflow-hidden p-0 transition-shadow group-hover:shadow-lg">
       <div className="relative aspect-video w-full overflow-hidden bg-muted">
         {course.coverImageUrl ? (
           // Capa pode ser URL externa arbitrária (autoria) → <img> simples,
@@ -27,7 +27,7 @@ export function CatalogCourseCard({ course, salesUrl }: CatalogCourseCardProps) 
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary to-muted">
+          <div className="flex h-full w-full items-center justify-center bg-muted">
             <BookOpen className="size-10 text-muted-foreground" />
           </div>
         )}
@@ -47,18 +47,21 @@ export function CatalogCourseCard({ course, salesUrl }: CatalogCourseCardProps) 
           ) : null}
         </div>
         <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-3 text-sm">
+          {/* Selos do Pen: "Liberado" na tinta de sucesso sobre o menta; "Bloqueado" neutro. */}
           {course.hasAccess ? (
-            <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-              <ShieldCheck className="size-4 text-primary" />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-2.5 py-1 font-semibold text-success-foreground text-xs">
+              <ShieldCheck className="size-4" />
               Liberado
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 font-semibold text-muted-foreground text-xs">
               <Lock className="size-4" />
               Bloqueado
             </span>
           )}
-          <span className="sz-btn-gradient h-8 px-3 text-xs">
+          {/* Sem `h-8 px-3 text-xs`: eles nunca valeram (a classe vencia as utilitárias) e o
+              botão sempre saiu com a altura padrão, que é a do Pen. */}
+          <span className="sz-btn-gradient">
             {course.hasAccess ? 'Acessar curso' : 'Quero acesso'}
           </span>
         </div>

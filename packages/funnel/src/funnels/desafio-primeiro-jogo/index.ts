@@ -20,7 +20,6 @@ import {
   DESAFIO_PERFIL_LABELS,
   DESAFIO_VALUE_SCHEMA,
   desafioComputePerfil,
-  desafioDerive,
   desafioRenderCorpo,
 } from './quiz'
 
@@ -35,11 +34,18 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   // Sem capa dedicada: o checkout usa a arte clássica do produto (a mesma de antes).
   checkoutImage: 'hero-desafio.webp',
   byline: 'Helena e Júlio · Sistema Zero',
-  seoTitle: 'Desafio do Primeiro Jogo | Seu filho cria o primeiro jogo em 5 dias',
+  seoTitle: 'Desafio do Primeiro Jogo | Seu filho pode criar um jogo',
   seoDescription:
-    'Trilha guiada de 5 dias para crianças a partir de 9 anos criarem o primeiro jogo jogável, dentro do Sistema Zero Studio. Comunicação dirigida aos pais.',
+    'Trilha guiada de cinco etapas para crianças a partir de 9 anos criarem o primeiro jogo jogável, com 30 dias de acesso. Comunicação dirigida aos pais.',
   theme: 'kids',
-  lifetimeAccess: true,
+  lifetimeAccess: false,
+  offerContract: {
+    pricingMode: 'one_time',
+    accessMode: 'fixed',
+    accessDurationValue: 30,
+    accessDurationUnit: 'days',
+    guaranteeDays: 7,
+  },
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
   content: {
     copy: DESAFIO_PRODUTO,
@@ -50,7 +56,6 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
       steps: DESAFIO_QUIZ_STEPS,
       total: DESAFIO_TOTAL,
       valueSchema: DESAFIO_VALUE_SCHEMA,
-      derive: desafioDerive,
       computePerfil: desafioComputePerfil,
     },
     hero: {

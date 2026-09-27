@@ -143,6 +143,80 @@ export function IconGrid(p: IconProps): JSX.Element {
 }
 
 /** Painel esquerdo ABERTO com seta para fechar (menu visível → "Esconder menu"). */
+export function IconPlus(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M5 12h14" />
+      <path d="M12 5v14" />
+    </Base>
+  )
+}
+
+export function IconCamera(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+      <circle cx="12" cy="13" r="3" />
+    </Base>
+  )
+}
+
+export function IconFolderOpen(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />
+    </Base>
+  )
+}
+
+export function IconChevronDown(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="m6 9 6 6 6-6" />
+    </Base>
+  )
+}
+
+/** Os blocos do filtro "Blocos" (o `blocks` do Lucide: três quadrados e um solto). */
+export function IconBlocks(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <rect width="7" height="7" x="14" y="3" rx="1" />
+      <path d="M10 21V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H3" />
+    </Base>
+  )
+}
+
+export function IconCode(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+    </Base>
+  )
+}
+
+export function IconGamepad(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <line x1="6" x2="10" y1="11" y2="11" />
+      <line x1="8" x2="8" y1="9" y2="13" />
+      <line x1="15" x2="15.01" y1="12" y2="12" />
+      <line x1="18" x2="18.01" y1="10" y2="10" />
+      <path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z" />
+    </Base>
+  )
+}
+
+export function IconArrowLeft(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="m12 19-7-7 7-7" />
+      <path d="M19 12H5" />
+    </Base>
+  )
+}
+
 export function IconPanelLeftClose(p: IconProps): JSX.Element {
   return (
     <Base {...p}>
@@ -306,6 +380,73 @@ export function IconCloudOff(p: IconProps): JSX.Element {
   )
 }
 
+/* Ícones da barra do editor (11/09/2026, a tela-modelo do Estúdio): o lápis da pílula do nome,
+   o visto do "Salvo", as setas da Ponte e a bolinha do "não salvo". */
+
+export function IconPencil(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+      <path d="m15 5 4 4" />
+    </Base>
+  )
+}
+
+export function IconCheck(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M20 6 9 17l-5-5" />
+    </Base>
+  )
+}
+
+/** Desfazer e refazer da barra: o "undo-2" e o "redo-2" do Lucide. */
+export function IconUndo(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M9 14 4 9l5-5" />
+      <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />
+    </Base>
+  )
+}
+
+export function IconRedo(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="m15 14 5-5-5-5" />
+      <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13" />
+    </Base>
+  )
+}
+
+/** A Ponte (blocos ⇄ código): o "arrow-left-right" do Lucide. */
+export function IconArrowLeftRight(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M8 3 4 7l4 4" />
+      <path d="M4 7h16" />
+      <path d="m16 21 4-4-4-4" />
+      <path d="M20 17H4" />
+    </Base>
+  )
+}
+
+/** Bolinha cheia ("Alterações não salvas"): usa `fill`, como o `IconMore`. */
+export function IconDot({ className, size = 16 }: IconProps): JSX.Element {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="5" />
+    </svg>
+  )
+}
+
 /** Triângulo de alerta (Lucide "triangle-alert"). */
 export function IconAlert(p: IconProps): JSX.Element {
   return (
@@ -313,6 +454,65 @@ export function IconAlert(p: IconProps): JSX.Element {
       <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
       <path d="M12 9v4" />
       <path d="M12 17h.01" />
+    </Base>
+  )
+}
+
+/* Os materiais e os destinos do menu "⋯" (18/09/2026). Antes, som e modelo 3D não
+   tinham ícone nenhum (moravam dentro de "Imagens") e os TRÊS jeitos de o jogo sair
+   daqui dividiam o mesmo `IconDownload` — indistinguíveis na mesma lista. */
+
+/** Alto-falante com ondas (Lucide "volume-2") — os sons do projeto. */
+export function IconSpeaker(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </Base>
+  )
+}
+
+/** Caixa em perspectiva (Lucide "box") — os modelos 3D e os céus 360°. */
+export function IconBox(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+      <path d="m3.3 7 8.7 5 8.7-5" />
+      <path d="M12 22V12" />
+    </Base>
+  )
+}
+
+/** Globo (Lucide "globe") — publicar o jogo na internet. */
+export function IconGlobe(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      <path d="M2 12h20" />
+    </Base>
+  )
+}
+
+/** Folha com seta saindo (Lucide "file-output") — levar o projeto para o Estúdio Completo. */
+export function IconFileOutput(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M4 7V4a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2h-2" />
+      <path d="M2 15h10" />
+      <path d="m9 18 3-3-3-3" />
+    </Base>
+  )
+}
+
+/** Computador (Lucide "laptop") — baixar o código para abrir no computador. */
+export function IconLaptop(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <rect x="3" y="4" width="18" height="12" rx="2" />
+      <path d="M2 20h20" />
     </Base>
   )
 }

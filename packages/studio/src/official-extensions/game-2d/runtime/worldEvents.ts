@@ -117,7 +117,7 @@ export const gameTwoDWorldEventsRuntime = `  // ---- Eventos "Quando…" ----
   }
   /** Chamado pelo motor quando um sprite pula de verdade. */
   function _emitJump(sprite) {
-    if (!sprite || _jumpOrder.length === 0) return;
+    if (!sprite || _isDestroyedSprite(sprite) || _jumpOrder.length === 0) return;
     var generation = _driverGeneration;
     var handlers = _jumpOrder.slice();
     for (var i = 0; i < handlers.length; i++) {

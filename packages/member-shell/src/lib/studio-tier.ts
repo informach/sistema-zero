@@ -1,18 +1,18 @@
 import {
-  type CareerLevelSlug,
-  type CareerStudioBlockProfileId,
-  type CareerStudioRewardId,
-  CREATOR_CAREER_LEVELS,
-  creatorCareerLevel,
-} from '@sistemazero/core/career'
+  CREATOR_JOURNEY_LEVELS,
+  creatorJourneyLevel,
+  type JourneyLevelSlug,
+  type JourneyStudioBlockProfileId,
+  type JourneyStudioRewardId,
+} from '@sistemazero/core/journey'
 import type { BlockLevel, IDEMode } from '@sistemazero/studio'
-import { ESSENTIAL_2D_ALLOW_BLOCKS } from '@sistemazero/studio/career'
+import { ESSENTIAL_2D_ALLOW_BLOCKS } from '@sistemazero/studio/journey'
 
 /** Capacidades do Estúdio Completo já conquistadas pelo aluno. */
 export interface StudioTier {
   freeStudio: boolean
-  rewardId: CareerStudioRewardId
-  blockProfileId: CareerStudioBlockProfileId
+  rewardId: JourneyStudioRewardId
+  blockProfileId: JourneyStudioBlockProfileId
   level: BlockLevel
   allowBlocks?: readonly string[]
   allowedExtensions: readonly string[]
@@ -32,8 +32,6 @@ export interface StudioTier {
  * mínimo de repertório antes de perguntar qualquer coisa. Não confundir com o portão de
  * criação livre abaixo.
  */
-export const AI_APPS_MIN_LEVEL: CareerLevelSlug = 'hacker'
-
 /**
  * Ferramentas de criação livre — Estúdio Completo e Pinta — abrem no **Construtor(a)**,
  * o 2º degrau (decisão da usuária, 14/08: o Pinta desceu do Inventor).
@@ -42,11 +40,9 @@ export const AI_APPS_MIN_LEVEL: CareerLevelSlug = 'hacker'
  * projeto e pode criar sozinha. ⚠️ Casa com o `reward.freeStudio` do core — o Estúdio
  * continua sendo gateado por ele; esta constante existe para o Pinta e para a copy.
  */
-export const FREE_CREATION_MIN_LEVEL: CareerLevelSlug = 'coder'
-
 /**
  * A oficina 3D (Molda: modelos low poly, texturas e céus HDR) abre no **Explorador(a) de
- * Mundos** (`docs/carreira-do-criador.md`). Decisão da usuária (05/09/2026; de 04 a 05/09 era
+ * Mundos** (`docs/jornada-do-criador.md`). Decisão da usuária (05/09/2026; de 04 a 05/09 era
  * o Inventor(a)): o consumidor do que o Molda produz é o kit Jogo 3D, que no perfil do Estúdio
  * é recompensa do Explorador(a) (`iniciante-3d`) — abrir a oficina um degrau antes dava um
  * modelo sem lugar para ser usado.
@@ -55,7 +51,11 @@ export const FREE_CREATION_MIN_LEVEL: CareerLevelSlug = 'coder'
  * constante ao lado das duas acima, e agora as três são distintas (`coder` cria, `hacker`
  * usa IA, `explorer` modela em 3D); NUNCA colapsar duas mesmo que os valores coincidam.
  */
-export const THREE_D_CREATION_MIN_LEVEL: CareerLevelSlug = 'explorer'
+export {
+  AI_APPS_MIN_LEVEL,
+  FREE_CREATION_MIN_LEVEL,
+  THREE_D_CREATION_MIN_LEVEL,
+} from '@sistemazero/core/journey'
 
 const PRIVILEGED_ROLES = new Set(['superadmin', 'admin', 'staff'])
 
@@ -63,7 +63,7 @@ export function isPrivilegedRole(role: string | undefined): boolean {
   return !!role && PRIVILEGED_ROLES.has(role)
 }
 
-const EXTENSIONS_BY_PROFILE: Record<CareerStudioBlockProfileId, readonly string[]> = {
+const EXTENSIONS_BY_PROFILE: Record<JourneyStudioBlockProfileId, readonly string[]> = {
   'lesson-only': [],
   '2d-essential': ['game-2d'],
   'iniciante-2d': ['game-2d'],
@@ -129,13 +129,13 @@ export function remixRequirementFromSnapshot(snapshot: unknown): StudioRemixRequ
 }
 
 /**
- * PRIMEIRO nível da carreira cuja recompensa cobre as ferramentas do jogo (e já
+ * PRIMEIRO nível da jornada cuja recompensa cobre as ferramentas do jogo (e já
  * libera o Estúdio livre) — o selo "remix a partir do nível X" do card do Mural.
  * `null` = nenhum nível cobre (extensão desconhecida/forjada no metadado) — a UI
  * cai num recado genérico; fail-closed cosmético, nunca destrava nada.
  */
-export function minCareerLevelForRemix(req: StudioRemixRequirement): CareerLevelSlug | null {
-  for (const level of CREATOR_CAREER_LEVELS) {
+export function minJourneyLevelForRemix(req: StudioRemixRequirement): JourneyLevelSlug | null {
+  for (const level of CREATOR_JOURNEY_LEVELS) {
     const reward = level.reward
     if (!reward.freeStudio) continue
     if (req.pro && !reward.pro) continue
@@ -169,8 +169,8 @@ export function resolveStudioTier(
   unlocks?: StudioCurriculumUnlocks,
 ): StudioTier {
   const privileged = isPrivilegedRole(role)
-  const effectiveSlug: CareerLevelSlug = privileged ? 'god' : creatorCareerLevel(levelSlug).slug
-  const reward = creatorCareerLevel(effectiveSlug).reward
+  const effectiveSlug: JourneyLevelSlug = privileged ? 'god' : creatorJourneyLevel(levelSlug).slug
+  const reward = creatorJourneyLevel(effectiveSlug).reward
   const pro = reward.pro
   // ⚠️ A EQUIPE ignora o currículo: o passe livre existe p/ testar o Estúdio inteiro, e
   // restringir staff ao que ela "concluiu" esconderia justamente o que ela vai conferir.
@@ -189,7 +189,7 @@ export function resolveStudioTier(
       ? curriculum.extensions
       : (EXTENSIONS_BY_PROFILE[reward.blockProfileId] ?? []),
     // ⚠️ NENHUMA extensão vem instalada. A criança abre o painel de Extensões e
-    // instala a que quiser, entre as que a carreira dela já liberou
+    // instala a que quiser, entre as que a jornada dela já liberou
     // (`allowedExtensions`); os blocos continuam filtrados pelo `level`, então
     // instalar não adianta a paleta de um degrau acima. Decisão dela, 08/08:
     // instalar é parte do aprendizado, e o projeto novo nasce limpo.

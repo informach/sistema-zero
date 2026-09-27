@@ -1,4 +1,14 @@
+import {
+  HELP_COLLECTION_ICONS,
+  HELP_COLLECTION_TONES,
+  HELP_SLUG_MAX,
+  HELP_TOOL_REFS,
+  HELP_TUTORIAL_STATUSES,
+  HELP_VIDEO_PROVIDERS,
+} from '@sistemazero/core/help'
 import { t } from 'elysia'
+import { InteractiveBlockSchema } from './learning.dtos'
+import { ProjectBlockRelationshipsSchema } from './project-pattern.schema'
 
 // Ids que vão a colunas `uuid` validam o FORMATO na borda — um id lixo chegaria
 // ao Postgres como 22P02 e viraria 500 INTERNAL_ERROR (padrão do catalog).
@@ -30,6 +40,16 @@ export const AttachmentResolveParams = t.Object({
   slug: SLUG,
   lessonId: UUID,
   attachmentId: UUID,
+})
+export const MaterialDownloadBody = t.Object({
+  actor: t.Object({ userId: UUID, accountId: UUID }),
+  courseSlug: SLUG,
+  lessonId: UUID,
+  attachmentId: UUID,
+  blockId: UUID,
+  itemId: UUID,
+  expectedRevision: t.String({ pattern: '^[0-9a-f]{32}$' }),
+  expectedStorageRefHash: t.String({ pattern: '^[0-9a-f]{64}$' }),
 })
 export const EbookResolveParams = t.Object({ slug: SLUG, lessonId: UUID, blockId: UUID })
 export const QuizAttemptParams = t.Object({ lessonId: UUID, blockId: UUID })
@@ -163,6 +183,16 @@ export const ZappyInternalResponseBody = t.Object({
         { maxItems: 6 },
       ),
     ),
+    // Tutoriais do "Como fazer" que a resposta cita (o chip "Passo a passo: …" no painel).
+    helpReferences: t.Optional(
+      t.Array(
+        t.Object({
+          slug: t.String({ minLength: 1, maxLength: 80, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$' }),
+          title: t.String({ minLength: 1, maxLength: 240 }),
+        }),
+        { maxItems: 3 },
+      ),
+    ),
     suggestions: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 60 }), { maxItems: 3 })),
     createdAt: t.String({ minLength: 20, maxLength: 40 }),
   }),
@@ -200,6 +230,8 @@ export const AvatarsBatchQuery = t.Object({
 
 // ── Missões + proteção de sequência ──────────────────────────────────────────
 export const MissionSlugParams = t.Object({ slug: AVATAR_SLUG })
+/** Baú de fim de unidade: o curso pelo slug, a unidade pelo id do módulo. */
+export const UnitChestParams = t.Object({ slug: SLUG, moduleId: UUID })
 
 const ISO_DATE = t.String({ minLength: 10, maxLength: 10, pattern: '^\\d{4}-\\d{2}-\\d{2}$' })
 /** Corpo de `PUT /members/gamification/vacation` — janela (ou null/null p/ limpar). */
@@ -261,10 +293,28 @@ export const AvatarConfigBody = t.Object({
 /**
  * Corpo de `POST /members/webhooks/grant` — concessão de acesso (funil → gateway →
  * members). `subscription` presente = acesso por assinatura; `accessPeriodMonths`
- * presente = compra única POR PERÍODO (anual à vista Pix/boleto: validade fixa +
- * carência, sem assinatura); nenhum dos dois = compra única vitalícia.
+ * presente = compatibilidade com compra única POR PERÍODO em meses; nenhum dos
+ * dois = compra única vitalícia. `accessPolicy` é o contrato novo e tem precedência.
  * `userId` vem do auth (ensure-buyer) e é sempre uuid — formato validado na borda.
  */
+const PurchasedAccessPolicyBody = t.Union([
+  t.Object({
+    mode: t.Literal('lifetime'),
+    durationValue: t.Null(),
+    durationUnit: t.Null(),
+  }),
+  t.Object({
+    mode: t.Literal('fixed'),
+    durationValue: t.Integer({ minimum: 1, maximum: 2_000_000_000 }),
+    durationUnit: t.Union([t.Literal('days'), t.Literal('months')]),
+  }),
+  t.Object({
+    mode: t.Literal('billing_cycle'),
+    durationValue: t.Null(),
+    durationUnit: t.Null(),
+  }),
+])
+
 export const GrantWebhookBody = t.Object({
   userId: UUID,
   offerRef: t.String({ minLength: 1, maxLength: 200 }),
@@ -277,22 +327,40 @@ export const GrantWebhookBody = t.Object({
     }),
   ),
   accessPeriodMonths: t.Optional(t.Integer({ minimum: 1, maximum: 120 })),
+  accessPolicy: t.Optional(PurchasedAccessPolicyBody),
 })
 
 /**
  * Corpo de `POST /members/webhooks/grant-manual` — concessão manual S2S (referrals
- * → gateway → members; bolsa do Primeiro Jogo). v1 restrita a `mode:'offer'` (a
- * menor superfície que o resgate precisa — os demais modos seguem só no admin JWT).
+ * → gateway → members). O fluxo legado aceita `mode:'offer'`; indicações novas
+ * usam `mode:'course'`. Os demais modos seguem só no admin JWT.
  * `sourceId` = procedência auditável (ex.: `scholarship:<redemptionId>`); o
  * `sourceKind` fica `'manual'` (enum intocado). `expiresAt` ausente/null = vitalícia.
  */
-export const GrantManualWebhookBody = t.Object({
+const ManualGrantBase = {
   userId: UUID,
-  mode: t.Literal('offer'),
-  offerRef: t.String({ minLength: 1, maxLength: 200 }),
   expiresAt: t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()])),
   sourceId: t.Optional(t.String({ minLength: 1, maxLength: 120 })),
-})
+}
+
+export const GrantManualWebhookBody = t.Union([
+  t.Object({
+    ...ManualGrantBase,
+    mode: t.Literal('offer'),
+    offerRef: t.String({ minLength: 1, maxLength: 200 }),
+  }),
+  t.Object({
+    ...ManualGrantBase,
+    mode: t.Literal('course'),
+    courseRef: t.String({ minLength: 1, maxLength: 200 }),
+  }),
+  t.Object({
+    ...ManualGrantBase,
+    mode: t.Literal('mural_visitor'),
+    sourceId: t.String({ pattern: '^scholarship:', minLength: 13, maxLength: 120 }),
+    expiresAt: t.Optional(t.Null()),
+  }),
+])
 
 /**
  * Corpo de `POST /members/internal/access-check` (S2S — consumido pela comunidade):
@@ -599,6 +667,16 @@ const PENSA_ARTIFACT_TYPE = t.Union([
 const PENSA_PROJECT_NAME = t.String({ minLength: 2, maxLength: 120 })
 
 export const PensaProjectParams = t.Object({ projectId: UUID })
+/** `profileId` = um perfil da equipe, ou `me` (sair da equipe). */
+export const PensaMemberParams = t.Object({
+  projectId: UUID,
+  profileId: t.Union([UUID, t.Literal('me')]),
+})
+/** Corpo de `POST /members/pensa/projects/join`: o código como a criança digitou. */
+export const PensaJoinBody = t.Object(
+  { code: t.String({ minLength: 4, maxLength: 16 }) },
+  { additionalProperties: false },
+)
 export const PensaCycleParams = t.Object({ cycleId: UUID })
 /** GET da stage view aceita qualquer etapa (inclusive `done`). */
 export const PensaStageParams = t.Object({ cycleId: UUID, stage: PENSA_STAGE })
@@ -654,7 +732,11 @@ export const PensaArtifactBody = t.Object({
 /** Corpo de `POST /members/pensa/cycles/:cycleId/advance`. */
 export const PensaAdvanceBody = t.Object({ from: PENSA_WORK_STAGE })
 
-const PENSA_TASK_DESTINATION = t.Union([t.Literal('pinta'), t.Literal('studio')])
+const PENSA_TASK_DESTINATION = t.Union([
+  t.Literal('pinta'),
+  t.Literal('studio'),
+  t.Literal('molda'),
+])
 const PENSA_TASK_CATEGORY = t.Union([
   t.Literal('art'),
   t.Literal('setup'),
@@ -721,7 +803,25 @@ const PensaStudioContextSchema = t.Object({
   mechanicDocumentIds: t.Array(t.String({ maxLength: 100 }), { maxItems: 10 }),
   extensionIds: t.Array(t.String({ maxLength: 100 }), { maxItems: 10 }),
 })
-const PensaTaskContextSchema = t.Union([PensaPintaContextSchema, PensaStudioContextSchema])
+const PensaMoldaContextSchema = t.Object({
+  kind: t.Literal('molda'),
+  assetId: t.String({ minLength: 1, maxLength: 100 }),
+  artKind: t.Union([t.Literal('model'), t.Literal('texture'), t.Literal('sky')]),
+  appearance: t.String({ minLength: 1, maxLength: 2000 }),
+  usage: t.String({ minLength: 1, maxLength: 2000 }),
+  palette: t.Array(
+    t.Object({
+      role: t.String({ minLength: 1, maxLength: 80 }),
+      color: t.String({ maxLength: 20 }),
+    }),
+    { maxItems: 16 },
+  ),
+})
+const PensaTaskContextSchema = t.Union([
+  PensaPintaContextSchema,
+  PensaStudioContextSchema,
+  PensaMoldaContextSchema,
+])
 
 // REPLACE total das tasks. O teto de NEGÓCIO (≤60 → 409 PENSA_QUOTA_EXCEEDED) é
 // do use case — o `maxItems` da borda é só anti-DoS (mais folgado, senão viraria 400).
@@ -760,6 +860,12 @@ export const PensaTaskUpdateBody = t.Object({
   context: t.Optional(PensaTaskContextSchema),
 })
 const PensaTaskOutputRefSchema = t.Union([
+  t.Object({
+    kind: t.Literal('molda_asset'),
+    assetId: t.String({ minLength: 1, maxLength: 200 }),
+    assetName: t.Optional(t.String({ maxLength: 200 })),
+    assetKind: t.Union([t.Literal('model'), t.Literal('texture'), t.Literal('sky')]),
+  }),
   t.Object({
     kind: t.Literal('pinta_asset'),
     assetId: t.String({ minLength: 1, maxLength: 200 }),
@@ -868,7 +974,7 @@ export const ManageEntitlementBody = t.Object({
 
 const COURSE_STATUS = t.Union([t.Literal('draft'), t.Literal('published'), t.Literal('archived')])
 // Nível (dificuldade) do curso — espelha o enum `course_level` do schema.
-// `lenda` = categoria fora da carreira (bônus da formatura, sempre careerSlot null).
+// `lenda` = categoria fora da jornada (bônus da formatura, sempre careerSlot null).
 const COURSE_LEVEL = t.Union([
   t.Literal('primeiros-passos'),
   t.Literal('iniciante'),
@@ -884,8 +990,13 @@ const NULLABLE_TEXT = t.Optional(t.Union([t.String({ maxLength: 20_000 }), t.Nul
 // chegaria intacto ao browser do aluno via views member-facing (o painel já
 // valida; aqui é defesa em profundidade na borda do serviço).
 const HTTP_URL_PATTERN = '^https?://'
+// O item `link` do bloco de materiais aceita também o caminho interno de um tutorial do
+// "Como fazer" (`/como-fazer/<slug>`): a aula aponta para a ajuda sem depender do host.
+const LESSON_LINK_URL_PATTERN = '^(?:https?://|/como-fazer/[a-z0-9]+(?:-[a-z0-9]+)*(?:[?#].*)?$)'
 // Mídia que pode viver no bucket R2 PRIVADO: URL http(s) OU `r2priv:<key>`.
 const MEDIA_REF_PATTERN = '^(?:https?://|r2priv:).'
+// Só `.riv`: ver o comentário em `ModuleBody.riveUrl`.
+const RIVE_URL_PATTERN = '^https?://.+\\.riv$'
 const NULLABLE_URL = t.Optional(
   t.Union([t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN }), t.Null()]),
 )
@@ -912,9 +1023,12 @@ const CourseBodyProperties = {
   level: t.Optional(t.Union([COURSE_LEVEL, t.Null()])),
   // Eixo 2D/3D. AUSENTE: create → `2d`; update → PRESERVA o atual (mesma régua).
   track: t.Optional(t.Union([COURSE_TRACK, t.Null()])),
-  // Slot da Carreira do Criador: 1 = curso-base; null = bônus/fora da carreira.
+  // Slot da Jornada do Criador: 1 = curso-base; null = bônus/fora da jornada.
   // Máx 8 por degrau (reforma 07/2026); a faixa fina por etapa é validada no domínio.
   careerSlot: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 8 }), t.Null()])),
+  journeyRole: t.Optional(
+    t.Union([t.Literal('positioned'), t.Literal('reward'), t.Literal('extra')]),
+  ),
   // Blocos que este curso LIBERA no Estúdio livre ao satisfazer o critério atual:
   // bônus Kids exige conclusão; curso Kids com posição e Adult exigem também Mural.
   // Mesmo formato do `allowBlocks` da aula, só que no CURSO. Vira
@@ -951,7 +1065,22 @@ export const ListCoursesQuery = t.Object({
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })
 
-export const ModuleBody = t.Object({ title: TITLE, summary: NULLABLE_TEXT })
+export const ModuleBody = t.Object({
+  title: TITLE,
+  summary: NULLABLE_TEXT,
+  // Animação Rive (.riv) da unidade na trilha Kids. Ausente preserva a escolha ao
+  // editar com um Admin antigo; null remove. Quem confere os BYTES (assinatura
+  // `RIVE`) e o teto é o Admin, antes de publicar no R2 público.
+  // ⚠️ Aqui o padrão é mais estreito que o `NULLABLE_URL` dos outros campos de
+  // mídia, e de propósito: capa e afins vão para um `<img>`, que tolera qualquer
+  // URL, enquanto esta é lida pelo runtime do Rive. Uma URL que não termina em
+  // `.riv` é DESCARTADA no render (`moduleRiveSrc`), então guardá-la produziria um
+  // módulo sem arte indistinguível de "ninguém subiu nada". Recusar na borda deixa
+  // "sem arte" com um significado só.
+  riveUrl: t.Optional(
+    t.Union([t.String({ minLength: 1, maxLength: 2000, pattern: RIVE_URL_PATTERN }), t.Null()]),
+  ),
+})
 
 export const LessonBody = t.Object({
   slug: SLUG,
@@ -967,6 +1096,7 @@ export const AttachmentBody = t.Object({
   url: t.String({ minLength: 1, maxLength: 2000, pattern: MEDIA_REF_PATTERN }),
   fileType: t.Optional(t.Union([t.String({ maxLength: 100 }), t.Null()])),
   sizeBytes: t.Optional(t.Union([t.Integer({ minimum: 0 }), t.Null()])),
+  zappyStudentNotebook: t.Optional(t.Boolean()),
 })
 
 /** Reordenação: ids na nova ordem (devem ser exatamente os filhos atuais). */
@@ -980,6 +1110,31 @@ const RichTextBlockSchema = t.Object({
   html: t.Optional(t.String({ maxLength: 200_000 })),
   markdown: t.Optional(t.String({ maxLength: 200_000 })),
   codeLanguageHints: t.Optional(t.Array(t.String({ maxLength: 40 }))),
+})
+const DialogueBlockSchema = t.Object({
+  kind: t.Literal('dialogue'),
+  pose: t.Optional(
+    t.Union([
+      t.Literal('speaking'),
+      t.Literal('happy'),
+      t.Literal('thinking'),
+      t.Literal('celebrating'),
+    ]),
+  ),
+  // Texto SIMPLES (sem markdown) e curto de propósito: o balão existe para não ser
+  // parede de texto. Ver DIALOGUE_MAX_LENGTH no domínio.
+  text: t.String({ minLength: 1, maxLength: 400 }),
+  // A voz do Zappy. ⚠⚠ Campo fora do DTO some no `normalize` do Elysia: sem esta linha a
+  // publicação gravaria o balão mudo, sem erro nenhum.
+  vozes: t.Optional(t.Record(t.String(), t.String({ maxLength: 4000 }))),
+  // A grafia fica em `text`; este roteiro só corrige a pronúncia. Sem declará-lo, o normalize
+  // apagaria a chave do MP3 que o player deve procurar.
+  zappySpeech: t.Optional(
+    t.Object({
+      sourceText: t.String({ minLength: 1, maxLength: 6000 }),
+      speechText: t.String({ minLength: 1, maxLength: 6000 }),
+    }),
+  ),
 })
 const VideoBlockSchema = t.Object({
   kind: t.Literal('video'),
@@ -1051,12 +1206,11 @@ const EmbedBlockSchema = t.Object({
     }),
   ),
 })
-/** PDF no bucket R2 privado (`r2priv:<key>`) — vira livro 3D no front do aluno. */
+/** PDF da biblioteca de arquivos da aula — vira livro 3D no front do aluno. */
 const EbookBlockSchema = t.Object({
   kind: t.Literal('ebook'),
-  url: t.String({ minLength: 1, maxLength: 2000, pattern: MEDIA_REF_PATTERN }),
+  attachmentId: UUID,
   title: t.Optional(t.String({ maxLength: 300 })),
-  zappyStudentNotebook: t.Optional(t.Boolean()),
 })
 
 // 6 degraus novos (eixo 2D/3D) + 3 legados tolerados: aulas antigas seguem
@@ -1089,8 +1243,17 @@ const StudioProjectSchema = t.Object(
   { additionalProperties: true },
 )
 // ── Atividade com auto-correção (fase 2) ────────────────────────────────────
-// Base de toda checagem. Valores esperados (testcase/globalEquals) são `Unknown`
-// (dados opacos echoados ao cliente; o teto de tamanho é do corpo/jsonb).
+// Values are JSON at both the HTTP boundary and in the domain.
+const ActivityJsonValue = t.Recursive((self) =>
+  t.Union([
+    t.String(),
+    t.Number(),
+    t.Boolean(),
+    t.Null(),
+    t.Array(self),
+    t.Record(t.String(), self),
+  ]),
+)
 const ActivityCheckBase = {
   id: t.String({ minLength: 1, maxLength: 64 }),
   label: t.String({ minLength: 1, maxLength: 200 }),
@@ -1105,7 +1268,29 @@ const StructureRuleSchema = t.Union([
   }),
   t.Object({ type: t.Literal('definesFunction'), name: t.String({ minLength: 1, maxLength: 80 }) }),
   t.Object({ type: t.Literal('callsFunction'), name: t.String({ minLength: 1, maxLength: 80 }) }),
-  t.Object({ type: t.Literal('usesBlock'), blockType: t.String({ minLength: 1, maxLength: 80 }) }),
+  t.Object({
+    type: t.Literal('usesBlock'),
+    blockType: t.String({ minLength: 1, maxLength: 80 }),
+    area: t.Optional(
+      t.Union(
+        (['structure', 'appearance', 'molds', 'start', 'events', 'loops'] as const).map((area) =>
+          t.Literal(area),
+        ),
+      ),
+    ),
+    withinBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+    ...ProjectBlockRelationshipsSchema,
+    fields: t.Optional(
+      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
+        maxProperties: 20,
+      }),
+    ),
+    inputs: t.Optional(
+      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
+        maxProperties: 20,
+      }),
+    ),
+  }),
 ])
 const BehaviorRuleSchema = t.Union([
   t.Object({ type: t.Literal('consoleContains'), text: t.String({ maxLength: 2000 }) }),
@@ -1118,7 +1303,7 @@ const BehaviorRuleSchema = t.Union([
   t.Object({
     type: t.Literal('globalEquals'),
     name: t.String({ maxLength: 80 }),
-    value: t.Unknown(),
+    value: ActivityJsonValue,
   }),
 ])
 const ActivityCheckSchema = t.Union([
@@ -1131,8 +1316,8 @@ const ActivityCheckSchema = t.Union([
     cases: t.Array(
       t.Object({
         id: t.Optional(t.String({ maxLength: 64 })),
-        args: t.Array(t.Unknown(), { maxItems: 20 }),
-        expected: t.Unknown(),
+        args: t.Array(ActivityJsonValue, { maxItems: 20 }),
+        expected: ActivityJsonValue,
       }),
       {
         maxItems: 50,
@@ -1154,6 +1339,8 @@ const StudioActivitySchema = t.Object({
 /** Bloco Estúdio: editor pré-configurado embutido na aula (ver domain/course/lesson-block.ts). */
 const StudioBlockSchema = t.Object({
   kind: t.Literal('studio'),
+  gallery: t.Optional(t.Object({ minItems: t.Literal(1), maxItems: t.Literal(1) })),
+  purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
   initialProject: StudioProjectSchema,
   level: t.Optional(StudioLevelSchema),
   allowBlocks: t.Optional(t.Array(t.String({ maxLength: 80 }), { maxItems: 500 })),
@@ -1204,7 +1391,14 @@ const PintaAssetSchema = t.Object(
 /** Bloco Pinta: ateliê de desenho embarcado na aula (ver domain/course/lesson-block.ts). */
 const PintaBlockSchema = t.Object({
   kind: t.Literal('pinta'),
-  initialAsset: PintaAssetSchema,
+  gallery: t.Optional(
+    t.Object({
+      minItems: t.Integer({ minimum: 1, maximum: 12 }),
+      maxItems: t.Integer({ minimum: 1, maximum: 12 }),
+    }),
+  ),
+  purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
+  initialAsset: t.Union([PintaAssetSchema, t.Null()]),
   /** Curadoria da caixa de ferramentas (restritiva; vazia = a caixa inteira). */
   allowTools: t.Optional(t.Array(t.String({ maxLength: 40 }), { maxItems: 60 })),
   /** Nome do desenho contínuo (cadeia) — ver PintaBlock em domain/course/lesson-block.ts. */
@@ -1245,8 +1439,61 @@ const ComingSoonBlockSchema = t.Object({
   message: t.Optional(t.String({ maxLength: 500 })),
 })
 
+/**
+ * Materiais complementares: uma lista ordenada de itens dentro de UM bloco.
+ *
+ * ⚠⚠ O item de arquivo só aceita `attachmentId` — nunca uma URL. `fileType`/`sizeBytes`
+ * também estão FORA deste schema de propósito: quem os preenche é o servidor, na projeção do
+ * aluno, lendo o anexo. Declará-los aqui deixaria o admin gravar um tamanho que envelhece na
+ * primeira troca de arquivo. O `normalize` do Elysia descarta o que não está declarado.
+ */
+const MaterialsBlockSchema = t.Object({
+  kind: t.Literal('materials'),
+  title: t.Optional(t.String({ maxLength: 120 })),
+  bookPreview: t.Optional(t.Boolean()),
+  items: t.Array(
+    t.Union([
+      t.Object({
+        id: t.String({ minLength: 1, maxLength: 64 }),
+        kind: t.Literal('file'),
+        attachmentId: t.String({ minLength: 1, maxLength: 64 }),
+        label: t.Optional(t.String({ maxLength: 200 })),
+        note: t.Optional(t.String({ maxLength: 280 })),
+      }),
+      t.Object({
+        id: t.String({ minLength: 1, maxLength: 64 }),
+        kind: t.Literal('image'),
+        url: t.String({ minLength: 1, maxLength: 2000, pattern: HTTP_URL_PATTERN }),
+        alt: t.Optional(t.String({ maxLength: 500 })),
+        caption: t.Optional(t.String({ maxLength: 500 })),
+      }),
+      t.Object({
+        id: t.String({ minLength: 1, maxLength: 64 }),
+        kind: t.Literal('text'),
+        markdown: t.String({ minLength: 1, maxLength: 2000 }),
+      }),
+      t.Object({
+        id: t.String({ minLength: 1, maxLength: 64 }),
+        kind: t.Literal('link'),
+        url: t.String({ minLength: 1, maxLength: 2000, pattern: LESSON_LINK_URL_PATTERN }),
+        label: t.String({ minLength: 1, maxLength: 200 }),
+        note: t.Optional(t.String({ maxLength: 280 })),
+      }),
+      t.Object({
+        id: t.String({ minLength: 1, maxLength: 64 }),
+        kind: t.Literal('video'),
+        url: t.String({ minLength: 1, maxLength: 2000, pattern: HTTP_URL_PATTERN }),
+        label: t.Optional(t.String({ maxLength: 200 })),
+      }),
+    ]),
+    { minItems: 1, maxItems: 20 },
+  ),
+})
+
 export const LessonBlockContentSchema = t.Union([
+  InteractiveBlockSchema,
   RichTextBlockSchema,
+  DialogueBlockSchema,
   VideoBlockSchema,
   ImageBlockSchema,
   AudioBlockSchema,
@@ -1257,6 +1504,7 @@ export const LessonBlockContentSchema = t.Union([
   PintaBlockSchema,
   CertificateBlockSchema,
   ComingSoonBlockSchema,
+  MaterialsBlockSchema,
 ])
 
 /** Params da rota de entrega do Estúdio (aluno) — espelha o quiz-attempts. */
@@ -1302,6 +1550,7 @@ const TEACHER_CONTEXT = t.Union([
   t.Literal('studio_submission'),
   t.Literal('mural_publication'),
   t.Literal('general'),
+  t.Literal('lesson_section'),
 ])
 /**
  * Corpo de uma mensagem (aluno responde / professor responde a uma conversa por id).
@@ -1334,6 +1583,9 @@ export const AdminTeacherThreadPageQuery = t.Object({
 })
 /** Query da caixa de entrada do PROFESSOR (`GET /members/admin/teacher-threads`). */
 export const AdminTeacherThreadsQuery = t.Object({
+  workflowStatus: t.Optional(
+    t.Union([t.Literal('waiting_teacher'), t.Literal('waiting_student'), t.Literal('resolved')]),
+  ),
   audience: t.Optional(AUDIENCE),
   context: t.Optional(TEACHER_CONTEXT),
   courseId: t.Optional(UUID),
@@ -1345,9 +1597,13 @@ export const AdminTeacherThreadsQuery = t.Object({
 })
 /** Corpo de `POST /members/admin/teacher-threads/read-all` (escopo opcional da caixa). */
 export const AdminTeacherThreadsReadAllBody = t.Object({
+  workflowStatus: t.Optional(
+    t.Union([t.Literal('waiting_teacher'), t.Literal('waiting_student'), t.Literal('resolved')]),
+  ),
   audience: t.Optional(AUDIENCE),
   context: t.Optional(TEACHER_CONTEXT),
   courseId: t.Optional(UUID),
+  userIds: t.Optional(t.Array(UUID, { minItems: 1, maxItems: 20 })),
 })
 /** CSV de userIds (filtro por aluno) → uuids válidos; descarta lixo, teto 20. */
 export function parseUserIds(csv: string | undefined): string[] | undefined {
@@ -1434,8 +1690,10 @@ export const CreationItemParams = t.Object({
  * nome/kind nos tetos e descarta a miniatura grande; os `maxLength` aqui são a rede de
  * segurança de quem chegar por outro caminho.
  */
+// Elysia's t.Integer coerces numeric strings, unlike this strict JSON number contract.
+const CreationFormatVersion = t.Number({ minimum: 1, maximum: 65_535, multipleOf: 1 })
 export const CreationUploadBody = t.Object({
-  formatVersion: t.Optional(t.Integer({ minimum: 1, maximum: 65_535 })),
+  formatVersion: t.Optional(CreationFormatVersion),
   name: t.String({ minLength: 1, maxLength: 120 }),
   kind: t.String({ minLength: 1, maxLength: 40 }),
   /** `updatedAt` do item no relógio do editor (ISO). */
@@ -1473,6 +1731,7 @@ export const CreationUploadBody = t.Object({
 /** Exclusões também são condicionais: uma lápide velha não pode apagar uma edição nova. */
 export const CreationDeleteBody = t.Object({
   baseRevision: t.Integer({ minimum: 0 }),
+  maxFormatVersion: t.Optional(CreationFormatVersion),
 })
 
 export const CreationListQuery = t.Object({
@@ -1485,5 +1744,131 @@ export const CreationListQuery = t.Object({
  */
 export const CreationCommitBody = t.Object({
   revision: t.Integer({ minimum: 1 }),
+  /** Lista lida pelo BFF no manifesto validado; o endpoint público não aceita esse campo. */
+  verifiedPartHashes: t.Optional(
+    t.Array(t.String({ pattern: '^[a-f0-9]{64}$' }), { maxItems: 128 }),
+  ),
   uploadedParts: t.Optional(t.Array(t.String({ pattern: '^[a-f0-9]{64}$' }), { maxItems: 128 })),
 })
+
+// ── "Como fazer" (biblioteca de ajuda do Kids, 26/09/2026) ──────────────────
+// ⚠️ TODO campo do documento é declarado: o `normalize` do Elysia apaga campo não declarado
+// em silêncio, e o tutorial chegaria ao banco sem `posterUrl`, `imageAlt` ou `related`.
+// As allowlists (ícone, cor, ferramenta, provedor) DERIVAM do core, nunca reescritas aqui.
+const HELP_SLUG = t.String({
+  minLength: 1,
+  maxLength: HELP_SLUG_MAX,
+  pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
+})
+const HELP_COLLECTION_ICON = t.Union(HELP_COLLECTION_ICONS.map((icon) => t.Literal(icon)))
+const HELP_COLLECTION_TONE = t.Union(HELP_COLLECTION_TONES.map((tone) => t.Literal(tone)))
+const HELP_TOOL_REF = t.Union(HELP_TOOL_REFS.map((tool) => t.Literal(tool)))
+const HELP_VIDEO_PROVIDER = t.Union(HELP_VIDEO_PROVIDERS.map((provider) => t.Literal(provider)))
+const HELP_STATUS = t.Union(HELP_TUTORIAL_STATUSES.map((status) => t.Literal(status)))
+const HELP_URL = t.String({ minLength: 1, maxLength: 2000, pattern: HTTP_URL_PATTERN })
+
+export const HelpStepSchema = t.Object(
+  {
+    id: t.String({ minLength: 1, maxLength: 64 }),
+    title: t.String({ maxLength: 160 }),
+    body: t.String({ maxLength: 20_000 }),
+    imageUrl: t.Optional(HELP_URL),
+    imageAlt: t.Optional(t.String({ maxLength: 300 })),
+  },
+  { additionalProperties: false },
+)
+
+export const HelpDocumentSchema = t.Object(
+  {
+    title: t.String({ maxLength: 200 }),
+    summary: t.String({ maxLength: 600 }),
+    keywords: t.Array(t.String({ minLength: 1, maxLength: 60 }), { maxItems: 40 }),
+    toolRef: t.Optional(HELP_TOOL_REF),
+    video: t.Optional(
+      t.Object(
+        {
+          provider: HELP_VIDEO_PROVIDER,
+          src: HELP_URL,
+          posterUrl: t.Optional(HELP_URL),
+        },
+        { additionalProperties: false },
+      ),
+    ),
+    steps: t.Array(HelpStepSchema, { maxItems: 60 }),
+    related: t.Optional(t.Array(HELP_SLUG, { maxItems: 20 })),
+  },
+  { additionalProperties: false },
+)
+
+export const HelpCollectionBody = t.Object(
+  {
+    slug: HELP_SLUG,
+    title: t.String({ minLength: 1, maxLength: 60 }),
+    description: t.String({ maxLength: 240 }),
+    icon: HELP_COLLECTION_ICON,
+    tone: HELP_COLLECTION_TONE,
+  },
+  { additionalProperties: false },
+)
+export const HelpCollectionPatchBody = t.Partial(HelpCollectionBody)
+export const HelpCollectionOrderBody = t.Object({ ids: t.Array(UUID, { maxItems: 100 }) })
+
+export const HelpTutorialCreateBody = t.Object(
+  {
+    slug: HELP_SLUG,
+    collectionId: UUID,
+    position: t.Optional(t.Integer({ minimum: 0, maximum: 10_000 })),
+    draft: t.Optional(HelpDocumentSchema),
+  },
+  { additionalProperties: false },
+)
+export const HelpTutorialPatchBody = t.Object(
+  {
+    expectedRevision: t.Integer({ minimum: 1 }),
+    slug: t.Optional(HELP_SLUG),
+    collectionId: t.Optional(UUID),
+    position: t.Optional(t.Integer({ minimum: 0, maximum: 10_000 })),
+    draft: t.Optional(HelpDocumentSchema),
+  },
+  { additionalProperties: false },
+)
+export const HelpRevisionBody = t.Object({ expectedRevision: t.Integer({ minimum: 1 }) })
+export const HelpImportBody = t.Object(
+  {
+    collections: t.Optional(
+      t.Array(
+        t.Object(
+          {
+            slug: HELP_SLUG,
+            title: t.String({ minLength: 1, maxLength: 60 }),
+            description: t.String({ maxLength: 240 }),
+            icon: HELP_COLLECTION_ICON,
+            tone: HELP_COLLECTION_TONE,
+            position: t.Optional(t.Integer({ minimum: 0, maximum: 10_000 })),
+          },
+          { additionalProperties: false },
+        ),
+        { maxItems: 50 },
+      ),
+    ),
+    tutorials: t.Array(
+      t.Object(
+        {
+          slug: HELP_SLUG,
+          collection: HELP_SLUG,
+          position: t.Optional(t.Integer({ minimum: 0, maximum: 10_000 })),
+          draft: HelpDocumentSchema,
+        },
+        { additionalProperties: false },
+      ),
+      { maxItems: 300 },
+    ),
+  },
+  { additionalProperties: false },
+)
+export const HelpAdminListQuery = t.Object({
+  status: t.Optional(HELP_STATUS),
+  collectionId: t.Optional(UUID),
+  q: t.Optional(t.String({ maxLength: 200 })),
+})
+export const HelpSlugParams = t.Object({ slug: HELP_SLUG })

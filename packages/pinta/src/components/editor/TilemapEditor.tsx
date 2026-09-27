@@ -874,8 +874,10 @@ export function TilemapEditor(): JSX.Element | null {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-      <div className="flex min-h-0 flex-1 items-stretch gap-2">
+    // A área da tela-modelo (11/09/2026): a coluna branca das ferramentas, o palco claro, a coluna
+    // branca das peças e camadas, e a faixa azul com as medidas do mapa e o zoom.
+    <div className="pin-work flex min-h-0 flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 items-stretch">
         <TilemapToolbar
           tool={tool}
           autoExpand={autoExpand}
@@ -887,16 +889,17 @@ export function TilemapEditor(): JSX.Element | null {
 
         {/* A grade do mapa (centraliza quando menor; rola quando maior — com
             `safe center`, senão o que passa do topo fica inalcançável). */}
-        <div className="relative flex min-h-0 min-w-0 flex-1">
+        <div className="pin-stage relative flex min-h-0 min-w-0 flex-1">
           {/* Barra do pedaço FLUTUANDO sobre o palco: em fluxo ela empurrava a
               grade para baixo ao aparecer e para cima ao sumir — clicar em
               células seguidas fazia o mapa subir e descer. */}
           {selRect ? (
             <div
               ref={selectionBarRef}
-              className="pin-panel absolute top-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 p-1 shadow-lg"
+              className="pin-float absolute top-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 p-1.5"
             >
               <Button
+                variant="barOutline"
                 onClick={() => {
                   if (!tilemap) return
                   session.getState().setStamp(copyRegion(tilemap, layerId, selRect))
@@ -905,7 +908,7 @@ export function TilemapEditor(): JSX.Element | null {
               >
                 {COPY.tiles.copyPiece}
               </Button>
-              <Button variant="ghost" onClick={() => deleteSelectionRef.current()}>
+              <Button variant="barOutline" onClick={() => deleteSelectionRef.current()}>
                 {COPY.tiles.clearPiece}
               </Button>
             </div>
@@ -914,7 +917,7 @@ export function TilemapEditor(): JSX.Element | null {
             ref={stageRef}
             className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto p-2 [align-items:safe_center] [justify-content:safe_center]"
           >
-            <div className="pin-checkerboard border-2 border-pin-border shadow-inner">
+            <div className="pin-checkerboard pin-paper">
               <canvas
                 ref={canvasRef}
                 className="pin-pixelated block"
@@ -950,7 +953,7 @@ export function TilemapEditor(): JSX.Element | null {
           onAddLayer={addMapLayer}
         />
       </div>
-      <div className="flex shrink-0 items-center justify-between gap-2">
+      <div className="pin-band flex shrink-0 items-center justify-between gap-2 px-4 py-2">
         <MapStatusBar cols={tilemap.cols} rows={tilemap.rows} register={registerHover} />
         <ZoomControls />
       </div>

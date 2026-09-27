@@ -50,6 +50,21 @@ export interface StudioTaskSession {
     completedCriteriaIds?: string[]
     outputRef?: { kind: 'studio_project'; projectId: string; saveRevision?: string }
   }): Promise<void>
+  /**
+   * O guia recolhido, e o aviso de que a criança mexeu na seta (18/09/2026).
+   *
+   * Quem LEMBRA é o host (uma chave por criança, valendo para as três oficinas); aqui isso
+   * chega como DADO, o mesmo idioma do `menu.hidden`/`onToggle` do chrome do host. Sem o par,
+   * o painel recolhe por conta própria e esquece ao sair — é o caso do playground e dos testes.
+   * ⚠ Recolhido sobra UMA linha, o título e a seta (19/09/2026, decisão dela). O que NÃO
+   * recolhe é PROBLEMA: aqui, o recado de uma marcação que não subiu.
+   * ⚠⚠ Os dois andam JUNTOS. Passar só o `collapsed` entrega um botão de 44px com
+   * `aria-expanded` que não faz NADA ao ser clicado (o estado local roda e o `??` o ignora), e
+   * passar só o `onCollapsedChange` faz o host ser avisado sem nunca mandar. São dois opcionais
+   * porque o par inteiro é opcional — não porque um sirva sem o outro.
+   */
+  collapsed?: boolean
+  onCollapsedChange?(collapsed: boolean): void
 }
 
 /** Acesso imperativo à instância (prop `ref` do Studio — React 19). */
@@ -183,8 +198,8 @@ export interface StudioCommonProps {
    */
   shareDisabledReason?: string
   /**
-   * Callback OPCIONAL "Sincronizar com o enviado" (Estúdio da AULA): quando
-   * presente, a Topbar mostra o item ⋯ → "Sincronizar com o enviado" que o
+   * Callback OPCIONAL "Trazer o que eu enviei" (Estúdio da AULA): quando
+   * presente, a Topbar mostra o item ⋯ → "Trazer o que eu enviei" que o
    * dispara. O HOST puxa do servidor o projeto enviado ao professor e substitui o
    * editor via `StudioHandle.replaceProject`. Ausente (default) → sem item.
    * Estável por instância (latchado, igual à `share`).
@@ -192,7 +207,7 @@ export interface StudioCommonProps {
   onCloudSync?: () => void
   /**
    * Callback OPCIONAL "editar este desenho no Pinta": quando presente, os
-   * desenhos vindos do Pinta ganham um botão de editar no painel de Imagens (na
+   * desenhos vindos do Pinta ganham um botão de editar na aba "Imagens" (na
    * biblioteca "Meus desenhos" e nas imagens já usadas no projeto). O HOST abre o
    * Pinta — em aba nova — já naquele desenho; o Studio só entrega o id.
    * Ausente (default) → sem botão (embed do admin, bloco de aula).
@@ -201,13 +216,13 @@ export interface StudioCommonProps {
   onEditDrawing?: (drawingId: string) => void
   /**
    * Callback OPCIONAL "editar esta criação no Molda": quando presente, os modelos,
-   * céus e texturas trazidos do Molda ganham o botão "Editar" no painel de Imagens.
+   * céus e texturas trazidos do Molda ganham o botão "Editar" na janela dos materiais.
    * O HOST abre o Molda, em aba nova, já naquela criação; o Studio só entrega o id.
    * Ausente (default) → sem botão. Estável por instância (latchado, igual à `share`).
    */
   onEditCreation?: (creationId: string) => void
   /**
-   * Adapter OPCIONAL "Trazer do Pinta": quando presente, o painel de Imagens
+   * Adapter OPCIONAL "Trazer do Pinta": quando presente, a aba "Imagens"
    * ganha o botão que abre a modal com TODOS os desenhos da galeria do Pinta
    * (busca + importar direto ao projeto), e a seção "Meus desenhos" some
    * (substituída pela modal). O host só o passa com posse do Pinta E do
@@ -216,7 +231,7 @@ export interface StudioCommonProps {
    */
   pintaLibrary?: StudioPintaLibraryAdapter
   /**
-   * Adapter OPCIONAL "Trazer do Molda": quando presente, o painel de Imagens
+   * Adapter OPCIONAL "Trazer do Molda": quando presente, a aba "Modelos 3D"
    * ganha o botão que abre a modal com TODAS as criações da galeria do Molda
    * (modelos `.glb`, texturas `.png`, céus `.hdr`; busca + importar direto ao
    * projeto). O host só o passa com posse do Molda E do Estúdio (produtos
@@ -255,7 +270,7 @@ export interface StudioLearningProps {
   level?: AnyBlockLevel
   /** Tipos de bloco sempre visíveis, independente do nível (allowlist da aula). */
   allowBlocks?: readonly string[]
-  /** IDs de extensões que a carreira/aula permite oferecer para instalação. */
+  /** IDs de extensões que a jornada/aula permite oferecer para instalação. */
   allowExtensions?: readonly string[]
   /** Nomes de categoria sempre visíveis, independente do nível. */
   allowCategories?: readonly string[]

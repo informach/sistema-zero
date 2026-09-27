@@ -1,0 +1,193 @@
+{
+  "status": "passed",
+  "scope": "Chrome isolado; LearningHtml de produção em ensaio local, sem conta/API. Cinco experiências em 320, 390 e 1200 px, com movimento reduzido; animação também com reprodução normal e interrupção.",
+  "cases": [
+    {
+      "viewportWidth": 320,
+      "width": 296,
+      "index": 0,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 296,
+      "height": 1119,
+      "contentBottom": 1110.4375
+    },
+    {
+      "viewportWidth": 320,
+      "width": 296,
+      "index": 1,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 296,
+      "height": 1140,
+      "contentBottom": 1131.4375
+    },
+    {
+      "viewportWidth": 320,
+      "width": 296,
+      "index": 2,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 296,
+      "height": 1198,
+      "contentBottom": 1189.4375
+    },
+    {
+      "viewportWidth": 320,
+      "width": 296,
+      "index": 3,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 296,
+      "height": 1224,
+      "contentBottom": 1215.4375
+    },
+    {
+      "viewportWidth": 320,
+      "width": 296,
+      "index": 4,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 296,
+      "height": 1190,
+      "contentBottom": 1181.875
+    },
+    {
+      "viewportWidth": 390,
+      "width": 366,
+      "index": 0,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 366,
+      "height": 1002,
+      "contentBottom": 993.4375
+    },
+    {
+      "viewportWidth": 390,
+      "width": 366,
+      "index": 1,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 366,
+      "height": 1138,
+      "contentBottom": 1129.4375
+    },
+    {
+      "viewportWidth": 390,
+      "width": 366,
+      "index": 2,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 366,
+      "height": 1129,
+      "contentBottom": 1120.4375
+    },
+    {
+      "viewportWidth": 390,
+      "width": 366,
+      "index": 3,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 366,
+      "height": 1107,
+      "contentBottom": 1098.4375
+    },
+    {
+      "viewportWidth": 390,
+      "width": 366,
+      "index": 4,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 366,
+      "height": 1093,
+      "contentBottom": 1084.4375
+    },
+    {
+      "viewportWidth": 1200,
+      "width": 826,
+      "index": 0,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 826,
+      "height": 675,
+      "contentBottom": 662.296875
+    },
+    {
+      "viewportWidth": 1200,
+      "width": 826,
+      "index": 1,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 826,
+      "height": 702,
+      "contentBottom": 689.796875
+    },
+    {
+      "viewportWidth": 1200,
+      "width": 826,
+      "index": 2,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 826,
+      "height": 726,
+      "contentBottom": 713.796875
+    },
+    {
+      "viewportWidth": 1200,
+      "width": 826,
+      "index": 3,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 826,
+      "height": 739,
+      "contentBottom": 726.796875
+    },
+    {
+      "viewportWidth": 1200,
+      "width": 826,
+      "index": 4,
+      "keyboard": true,
+      "partialRestore": true,
+      "completeRestore": true,
+      "controlsLocked": true,
+      "bodyWidth": 826,
+      "height": 726,
+      "contentBottom": 713.796875
+    }
+  ],
+  "motion": {
+    "normalPlayback": true,
+    "noEarlyCompletion": true,
+    "interruptedTrialNotRecorded": true,
+    "complete": true
+  },
+  "pageErrors": []
+}

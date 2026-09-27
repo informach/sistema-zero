@@ -27,6 +27,7 @@ import {
   writeSessionGuideFlag,
 } from '@/lib/guide'
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
+import { useChildOverlayState } from './platform-renovation-notice'
 
 const ChildGuideStartContext = createContext<string | undefined>(undefined)
 
@@ -51,8 +52,16 @@ export function ChildGuide({
   hasAvatar,
   hasCourseActivity,
   startAvailable,
+  header,
   children,
 }: {
+  /**
+   * O cabeçalho da página (a saudação da home). Com ele, o "Como funciona?" sobe para o
+   * canto direito do cabeçalho, como nas telas-modelo (11/09/2026); sem ele, o botão fica
+   * embaixo do conteúdo, como sempre foi. Os balões continuam ENTRE o cabeçalho e o
+   * herói, porque o do "Começar" aponta para baixo, direto no botão do herói.
+   */
+  header?: ReactNode
   /** Id do PERFIL ativo (a home sempre roda em sessão de perfil). */
   profileKey: string
   childName: string | null
@@ -69,6 +78,8 @@ export function ChildGuide({
   const [avatarDismissed, setAvatarDismissed] = useState(true)
   const [startDismissed, setStartDismissed] = useState(true)
   const [welcomeOpen, setWelcomeOpen] = useState(false)
+  const { noticePending, setGuideOpen } = useChildOverlayState()
+  useEffect(() => () => setGuideOpen(false), [setGuideOpen])
   const focusAfterWelcomeRef = useRef(false)
   const avatarCtaRef = useRef<HTMLAnchorElement>(null)
   const startDismissRef = useRef<HTMLButtonElement>(null)
@@ -78,10 +89,11 @@ export function ChildGuide({
     [hasAvatar, hasCourseActivity, startAvailable],
   )
   useEffect(() => {
+    if (noticePending) return
     setAvatarDismissed(readSessionGuideFlag(childGuideAvatarDismissedKey(profileKey)))
     setStartDismissed(readGuideFlag(childGuideStartDismissedKey(profileKey)))
     // Boas-vindas 1× por perfil neste navegador — e só se houver AÇÃO a guiar.
-    // ⚠️ A explicação fixa do app (aulas/XP/Estúdio/Mural/carreira) NÃO conta aqui: ela
+    // ⚠️ A explicação fixa do app (aulas/XP/Estúdio/Mural/jornada) NÃO conta aqui: ela
     // existe sempre, e abrir a modal por causa dela poria o tutorial na cara de quem já
     // sabe tudo, a cada perfil novo. Quem já fez tudo vê a explicação quando PEDIR, pelo
     // "Como funciona?". Falha na API do avatar é "desconhecido", não evidência de que
@@ -91,9 +103,10 @@ export function ChildGuide({
       !readGuideFlag(childGuideWelcomeSeenKey(profileKey))
     ) {
       setWelcomeOpen(true)
+      setGuideOpen(true)
       trackOnboardingEvent({ audience: 'child', action: 'welcome_opened', step: 'welcome' })
     }
-  }, [profileKey, welcomeSteps])
+  }, [profileKey, welcomeSteps, noticePending, setGuideOpen])
 
   const resolvedStep = resolveChildGuideStep({
     hasAvatar,
@@ -102,7 +115,7 @@ export function ChildGuide({
     avatarDismissed,
     startDismissed,
   })
-  const step = welcomeOpen ? null : resolvedStep
+  const step = welcomeOpen || noticePending ? null : resolvedStep
 
   useEffect(() => {
     if (welcomeOpen || !focusAfterWelcomeRef.current) return
@@ -116,6 +129,7 @@ export function ChildGuide({
     writeGuideFlag(childGuideWelcomeSeenKey(profileKey))
     focusAfterWelcomeRef.current = true
     setWelcomeOpen(false)
+    setGuideOpen(false)
     trackOnboardingEvent({ audience: 'child', action, step: 'welcome' })
   }
 
@@ -125,12 +139,21 @@ export function ChildGuide({
     setAvatarDismissed(false)
     setStartDismissed(false)
     setWelcomeOpen(true)
+    setGuideOpen(true)
     trackOnboardingEvent({ audience: 'child', action: 'guide_reopened', step: 'welcome' })
     trackOnboardingEvent({ audience: 'child', action: 'welcome_opened', step: 'welcome' })
   }
 
+  const reopen = <GuideReopenButton buttonRef={reopenRef} onClick={reopenGuide} />
+
   return (
     <ChildGuideStartContext.Provider value={step === 'start' ? 'child-start-guide' : undefined}>
+      {header ? (
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-4 md:mb-7">
+          <div className="min-w-0">{header}</div>
+          {reopen}
+        </div>
+      ) : null}
       {step === 'avatar' ? (
         <GuideBalloon
           arrow="none"
@@ -190,7 +213,7 @@ export function ChildGuide({
       ) : null}
       {children}
       <GuideWelcomeDialog
-        open={welcomeOpen}
+        open={welcomeOpen && !noticePending}
         onClose={() => closeWelcome('welcome_dismissed')}
         onContinue={() => closeWelcome('welcome_completed')}
         title={childName ? `Oi, ${childName}! Eu sou o Zappy! 👋` : 'Oi! Eu sou o Zappy! 👋'}
@@ -200,9 +223,7 @@ export function ChildGuide({
         // pode dizer "Vamos lá!".
         continueLabel={hasActionableWelcomeStep(welcomeSteps) ? undefined : 'Entendi!'}
       />
-      <div className="flex justify-end">
-        <GuideReopenButton buttonRef={reopenRef} onClick={reopenGuide} />
-      </div>
+      {header ? null : <div className="flex justify-end">{reopen}</div>}
     </ChildGuideStartContext.Provider>
   )
 }

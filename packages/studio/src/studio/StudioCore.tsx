@@ -7,7 +7,7 @@ import { Shell } from '../components/layout/Shell'
 import { captureAndStoreProjectThumb } from '../cover/thumbCapture'
 import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
 import { useChecksStoreApi } from '../state/checksStore'
-import { sanitizeProjectForHost, useProjectStore, useProjectStoreApi } from '../state/projectStore'
+import { prepareProjectForHost, useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
 import { StudioStoresContext } from '../state/storesContext'
 import {
@@ -130,22 +130,22 @@ function StudioCoreBody({
   // mas o valor entregue ao provider fica estável. Default `null` → sem botão.
   const [shareValue] = useState(() => share ?? null)
 
-  // Callback "Sincronizar com o enviado" — latcha uma vez por instância (igual ao
+  // Callback "Trazer o que eu enviei" — latcha uma vez por instância (igual ao
   // share); o host fornece uma referência estável (useCallback). `null` → sem item.
   const [cloudSyncValue] = useState(() => onCloudSync ?? null)
 
   // "Editar o desenho no Pinta" — mesmo latch: o host passa uma referência
-  // estável e o painel de Imagens decide se mostra o botão. `null` → sem botão.
+  // estável e a janela dos materiais decide se mostra o botão. `null` → sem botão.
   const [editDrawingValue] = useState(() => onEditDrawing ?? null)
 
   // "Editar a criação no Molda": o gêmeo do Pinta, mesmo latch. `null` → sem botão.
   const [editCreationValue] = useState(() => onEditCreation ?? null)
 
-  // "Trazer do Pinta" — mesmo latch; o painel de Imagens mostra o botão e a
+  // "Trazer do Pinta" — mesmo latch; a janela dos materiais mostra o botão e a
   // modal quando presente (e esconde a seção "Meus desenhos"). `null` → nada.
   const [pintaLibraryValue] = useState(() => pintaLibrary ?? null)
 
-  // "Trazer do Molda" — o mesmo latch do Pinta; o painel de Imagens mostra o botão e
+  // "Trazer do Molda" — o mesmo latch do Pinta; a janela dos materiais mostra o botão e
   // a modal das criações 3D quando presente. `null` → nada.
   const [moldaLibraryValue] = useState(() => moldaLibrary ?? null)
 
@@ -189,6 +189,46 @@ function StudioCoreBody({
   // `replaceProject` (handle) troca o projeto sem mexer na prop.
   const [replacedProject, setReplacedProject] = useState<Project | null>(null)
   const sourceProject = replacedProject ?? initialProject
+  const [preparationLimits] = useState(() => proRuntime?.limits)
+  const preparationErrorHandler = useRef(onError)
+  useEffect(() => {
+    preparationErrorHandler.current = onError
+  }, [onError])
+  const [prepared, setPrepared] = useState<{
+    source: Project
+    project: Project | null
+    error: string | null
+  } | null>(null)
+  useEffect(() => {
+    let active = true
+    void prepareProjectForHost(sourceProject, { proBuildLimits: preparationLimits }).then(
+      (project) => {
+        if (active)
+          setPrepared({
+            source: sourceProject,
+            project,
+            error: project ? null : 'Este projeto não pôde ser aberto.',
+          })
+      },
+      (cause: unknown) => {
+        if (active)
+          setPrepared({
+            source: sourceProject,
+            project: null,
+            error: cause instanceof Error ? cause.message : 'Não foi possível abrir este projeto.',
+          })
+      },
+    )
+    return () => {
+      active = false
+    }
+  }, [sourceProject, preparationLimits])
+  const preparedProject = prepared?.source === sourceProject ? prepared.project : null
+  const preparationError = prepared?.source === sourceProject ? prepared.error : null
+  useEffect(() => {
+    if (preparationError)
+      preparationErrorHandler.current?.({ kind: 'persistence', message: preparationError })
+  }, [preparationError])
   // Chave primitiva estável dos modos RESOLVIDOS (não da prop): flipa exatamente
   // quando `config.allowedModes` muda — inclusive ao ligar `professional` numa
   // instância montada (que força ['code']). Keyar pela prop `allowedModesKey`
@@ -199,9 +239,7 @@ function StudioCoreBody({
   // (array que muda de referência a cada render do host com allowedModes inline).
   // biome-ignore lint/correctness/useExhaustiveDependencies: ver acima — depende de resolvedModesKey, não do array config.allowedModes
   const sanitized = useMemo(() => {
-    const project = sanitizeProjectForHost(sourceProject, {
-      proBuildLimits: proRuntime?.limits,
-    })
+    const project = preparedProject
     if (!project) return null
     // Coerção de modo (D2): os modos dependem do TIPO do projeto (modesForKind)
     // intersectados com a allowlist do host — pro = só Código; básico = Blocos/
@@ -213,7 +251,7 @@ function StudioCoreBody({
     let mode = initialMode ?? project.mode
     if (!allowed.includes(mode)) mode = allowed[0] ?? project.mode
     return mode === project.mode ? project : { ...project, mode }
-  }, [sourceProject, initialMode, resolvedModesKey])
+  }, [preparedProject, initialMode, resolvedModesKey])
   const disallowedExtensions = useMemo(
     () => (sanitized ? disallowedProjectExtensions(sanitized, learning.allowExtensions) : []),
     [sanitized, learning.allowExtensions],
@@ -300,10 +338,16 @@ function StudioCoreBody({
       readyFiredForIdRef.current = sanitizedId
       readyFiredRef.current = false
     }
-    if (!hasProject || readyFiredRef.current) return
+    if (
+      !hasProject ||
+      !sanitizedId ||
+      projectStoreApi.getState().project?.id !== sanitizedId ||
+      readyFiredRef.current
+    )
+      return
     readyFiredRef.current = true
     onReady?.()
-  }, [hasProject, onReady, sanitizedId])
+  }, [hasProject, onReady, sanitizedId, projectStoreApi])
 
   // onModeChange: observa o modo do projeto na store da instância.
   const onModeChangeRef = useRef(onModeChange)
@@ -398,8 +442,17 @@ function StudioCoreBody({
                                 {sanitized === null ? (
                                   <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
                                     <p className="text-sm">
-                                      Projeto inválido — confira o initialProject passado ao Studio.
+                                      {preparationError ?? 'Preparando seu projeto…'}
                                     </p>
+                                    {preparationError && onExit ? (
+                                      <button
+                                        type="button"
+                                        className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
+                                        onClick={onExit}
+                                      >
+                                        Voltar
+                                      </button>
+                                    ) : null}
                                   </div>
                                 ) : projectAccessBlocked ? (
                                   <div className="flex h-full flex-col items-center justify-center gap-3 bg-sz-bg px-6 text-center text-sz-fg-soft">
@@ -407,7 +460,7 @@ function StudioCoreBody({
                                       Este projeto usa ferramentas que você ainda vai conquistar
                                     </p>
                                     <p className="max-w-md text-sm">
-                                      Continue avançando na Carreira do Criador. O projeto ficou
+                                      Continue avançando na Jornada do Criador. O projeto ficou
                                       guardado e abrirá normalmente quando essas ferramentas forem
                                       liberadas.
                                     </p>

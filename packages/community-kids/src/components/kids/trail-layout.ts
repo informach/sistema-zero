@@ -10,18 +10,18 @@ export interface TrailNode {
    * travada pela trava sequencial (estilo Duolingo) — nó não clicável.
    */
   state: TrailNodeState
-  /** Coluna do serpenteado (−2..2) — multiplicada por --trail-step no render. */
+  /** Posição lateral do serpenteado (−2..2) — multiplicada por --trail-step no render. */
   offset: number
 }
 
 /**
- * Baú de fim de unidade (gamificação): abre quando TODAS as aulas do módulo
- * estão concluídas — derivado client-side do outline; o XP (+25) é concedido
- * pelo backend no complete que fechou o módulo. Estado é só visual.
+ * Baú de fim de unidade. Só a POSIÇÃO no serpenteado sai daqui: liberado, aberto
+ * e o valor do prêmio vêm do servidor (`module.chest`), porque desde 09/2026 a
+ * criança ABRE o baú com um clique e derivar isso no cliente não sobreviveria a
+ * um F5. Ver `trail-chest.tsx`.
  */
 export interface TrailChest {
   offset: number
-  opened: boolean
 }
 
 export interface TrailUnit {
@@ -31,13 +31,52 @@ export interface TrailUnit {
   chest: TrailChest
 }
 
+export type TrailArtSide = 'left' | 'right'
+
+export interface TrailArtPlacement {
+  side: TrailArtSide
+  row: number
+}
+
 /**
- * Padrão de colunas do serpenteado. O índice é GLOBAL (contínuo entre
- * unidades — e avança TAMBÉM no baú) e colunas consecutivas SEMPRE diferem
- * de 1 — os conectores ficam diagonais e nunca atravessam a legenda do nó
- * de cima.
+ * Escolhe lado e altura da arte ao mesmo tempo. Para pôr a arte à esquerda,
+ * nós positivos (à direita) abrem espaço; para pôr à direita, nós negativos
+ * abrem espaço. A ordem de `sides` faz a preferência decidir somente empates.
  */
-const OFFSETS = [0, 1, 2, 1, 0, -1, -2, -1] as const
+export function trailArtPlacement(unit: TrailUnit, preferredSide: TrailArtSide): TrailArtPlacement {
+  const offsets = [...unit.nodes.map((node) => node.offset), unit.chest.offset]
+  const sides: TrailArtSide[] = preferredSide === 'left' ? ['left', 'right'] : ['right', 'left']
+  let best: TrailArtPlacement & { score: number } = {
+    side: preferredSide,
+    row: 0,
+    score: Number.NEGATIVE_INFINITY,
+  }
+
+  for (const side of sides) {
+    const direction = side === 'left' ? 1 : -1
+    for (let row = 0; row < offsets.length - 1; row += 1) {
+      const score = direction * ((offsets[row] ?? 0) + (offsets[row + 1] ?? 0))
+      if (score > best.score) best = { side, row, score }
+    }
+  }
+
+  return { side: best.side, row: best.row }
+}
+
+/**
+ * Curva do serpenteado. O índice é GLOBAL (contínuo entre unidades — e avança
+ * TAMBÉM no baú). A senoide desacelera perto das pontas e acelera ao cruzar o
+ * centro, então os nós formam uma curva em vez de vários trechos retos.
+ */
+const TRAIL_AMPLITUDE = 2
+const TRAIL_PERIOD = 12
+
+function trailOffsetAt(index: number): number {
+  const radians = (index / TRAIL_PERIOD) * Math.PI * 2
+  const rounded = Math.round(Math.sin(radians) * TRAIL_AMPLITUDE * 100) / 100
+  // `Math.sin(2π)` pode arredondar para -0; normalizar deixa o CSS e o JSON estáveis.
+  return rounded === 0 ? 0 : rounded
+}
 
 /**
  * Módulos que VIRAM unidade na trilha: os que têm alguma aula para mostrar.
@@ -73,7 +112,7 @@ export function buildTrail(course: CourseDetailView): TrailUnit[] {
 
   let globalIndex = 0
   const nextOffset = () => {
-    const offset = OFFSETS[globalIndex % OFFSETS.length] as number
+    const offset = trailOffsetAt(globalIndex)
     globalIndex += 1
     return offset
   }
@@ -94,7 +133,7 @@ export function buildTrail(course: CourseDetailView): TrailUnit[] {
               : 'todo',
       }),
     ),
-    chest: { offset: nextOffset(), opened: module.lessons.every((l) => l.completed) },
+    chest: { offset: nextOffset() },
   }))
 }
 

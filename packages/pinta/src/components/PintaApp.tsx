@@ -4,10 +4,11 @@
  * `setPintaStorageNamespace(viewerId)` ANTES de montar.
  */
 import type { JSX } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../core/copy'
 import type { PintaHostAdapter } from '../core/types'
 import { createClipboardStore } from '../state/clipboardStore'
+import type { PintaEditorStore } from '../state/editorStore'
 import { createGalleryStore } from '../state/galleryStore'
 import { createPaletteLibraryStore } from '../state/paletteLibraryStore'
 import {
@@ -72,10 +73,13 @@ function InitialAssetOpener({ onMissing }: { onMissing(id: string): void }): nul
 export function PintaApp({
   adapter,
   persistence,
+  onWorkspaceChange,
 }: {
   adapter?: PintaHostAdapter
   /** Ausente = IndexedDB do perfil. O bloco de aula injeta o armazenamento dele. */
   persistence?: PintaPersistence
+  /** Informa ao host quando o editor ocupa toda a área, sem acoplar o Pinta ao menu externo. */
+  onWorkspaceChange?: (active: boolean) => void
 }): JSX.Element {
   // O default é resolvido UMA vez, junto com a store: `createPintaPersistence` captura o banco do
   // namespace vigente, e recriá-lo a cada render poderia atravessar perfis.
@@ -98,6 +102,11 @@ export function PintaApp({
   useEffect(() => gallery.getState().attachPersistence(), [gallery])
   useEffect(() => paletteLibrary.getState().attachPersistence(), [paletteLibrary])
   const [view, setView] = useState<PintaView>({ screen: 'gallery' })
+  const editorOpen = view.screen === 'editor'
+  useLayoutEffect(() => {
+    onWorkspaceChange?.(editorOpen)
+    return () => onWorkspaceChange?.(false)
+  }, [editorOpen, onWorkspaceChange])
   const [initialIntentVersion, setInitialIntentVersion] = useState(0)
   const [missingAssetId, setMissingAssetId] = useState<string | null>(null)
   const resolvedAdapter = adapter ?? EMPTY_ADAPTER
@@ -112,7 +121,25 @@ export function PintaApp({
   // "Abrir este desenho" (botão Editar do Estúdio): também 1x, e só depois que a
   // galeria carrega — ver o InitialAssetOpener.
   const initialAssetIdRef = useRef(resolvedAdapter.initialAssetId ?? null)
+  // A store do editor ABERTO (null na galeria). É o que deixa o "Voltar ao plano"
+  // do painel gravar antes de sair, sem o painel conhecer o editor.
+  // ⚠️ A identidade tem que ser estável: o `EditorScreen` tem `onEditorReady` nas
+  // deps do efeito que se anuncia, e uma função nova por render o faria
+  // desanunciar e reanunciar a cada volta do `useMemo` do contexto.
+  const editorRef = useRef<PintaEditorStore | null>(null)
+  const handleEditorReady = useCallback((editor: PintaEditorStore | null) => {
+    editorRef.current = editor
+  }, [])
 
+  // ⚠⚠ Navegação com identidade ESTÁVEL (18/09/2026, achado do full review da seta que
+  // recolhe). O `context` depende do `adapter`, e o adapter passou a mudar de identidade a cada
+  // clique na seta do brief — com `openAsset` nascendo inline, o `onOpenCard` do
+  // `GalleryScreen` (que o tem nas deps) mudava junto e o `memo` do `AssetCard` quebrava para
+  // TODOS os cartões a cada clique, contra o invariante escrito no próprio `AssetCard`
+  // ("callbacks POR ID, estáveis na galeria"). Com o `useCallback`, só quem lê o adapter
+  // re-renderiza. Vale para todo host que troque o adapter por qualquer motivo.
+  const openAsset = useCallback((id: string) => setView({ screen: 'editor', assetId: id }), [])
+  const closeEditor = useCallback(() => setView({ screen: 'gallery' }), [])
   const context = useMemo<PintaAppContextValue>(
     () => ({
       adapter: resolvedAdapter,
@@ -120,8 +147,8 @@ export function PintaApp({
       persistence: store.persistence,
       clipboard: store.clipboard,
       paletteLibrary: store.paletteLibrary,
-      openAsset: (id) => setView({ screen: 'editor', assetId: id }),
-      closeEditor: () => setView({ screen: 'gallery' }),
+      openAsset,
+      closeEditor,
       takeInitialIntent: () => {
         const intent = initialIntentRef.current
         initialIntentRef.current = null
@@ -138,6 +165,7 @@ export function PintaApp({
         initialAssetIdRef.current = null
         return id
       },
+      onEditorReady: handleEditorReady,
     }),
     [
       resolvedAdapter,
@@ -146,6 +174,9 @@ export function PintaApp({
       store.clipboard,
       store.paletteLibrary,
       initialIntentVersion,
+      handleEditorReady,
+      openAsset,
+      closeEditor,
     ],
   )
   const taskOutputId = resolvedAdapter.taskSession?.progress.outputRef?.assetId ?? null
@@ -162,6 +193,22 @@ export function PintaApp({
       artKind: session.brief.artKind,
       style: session.brief.style,
     })
+  }
+  /**
+   * "Voltar ao plano": GUARDA e só então navega, a MESMA disciplina do "Voltar"
+   * do editor (`EditorScreen`, que só fecha com `flush().ok`). O flush do
+   * desmonte NÃO serve de garantia: ele é `void` e roda depois da navegação.
+   *
+   * Falhou ao guardar? Lança, e o painel mostra o recado sem navegar — o desenho
+   * da criança não pode ficar para trás numa troca de tela.
+   */
+  const returnToPlan = async () => {
+    const editor = editorRef.current
+    if (editor) {
+      const saved = await editor.getState().flush()
+      if (!saved.ok) throw new Error(saved.error)
+    }
+    await resolvedAdapter.taskSession?.onReturnToPlan?.()
   }
 
   return (
@@ -184,6 +231,7 @@ export function PintaApp({
               outputMissing={taskOutputMissing}
               onRecreate={recreateTaskAsset}
               onRelink={() => setView({ screen: 'gallery' })}
+              {...(resolvedAdapter.taskSession.onReturnToPlan ? { onReturn: returnToPlan } : {})}
             />
           ) : null}
           {view.screen === 'gallery' ? (

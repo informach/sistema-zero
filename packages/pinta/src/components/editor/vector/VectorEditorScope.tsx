@@ -34,7 +34,11 @@ import {
   alignShapes,
   boundsCenter,
   boundsUnion,
+  canDistributeShapes,
+  type DistributionAxis,
+  distributeShapes,
   flipShape,
+  resetRotationPivotPreservingAppearance,
   setTextAlign as setTextAlignGeometry,
   shapeBounds,
   translateShape,
@@ -46,6 +50,14 @@ import {
   shapesForInsert,
 } from '../../../vector/insertAsset'
 import { lockedIdsOf, lockedShapesViolation } from '../../../vector/lock'
+import {
+  applyMask,
+  type MaskRefusal,
+  maskMembers,
+  maskSourceIds,
+  releaseMasks,
+  selectionHasLockedMaskMember,
+} from '../../../vector/mask'
 import {
   DEFAULT_VECTOR_FONT_FAMILY,
   isVectorGradient,
@@ -87,11 +99,16 @@ import { useEditor, useEditorStores, useSession } from '../editorContext'
 import { isPintaModalOpen, useActionShortcuts } from '../useActionShortcuts'
 import { useToolShortcuts } from '../useToolShortcuts'
 import {
+  alignSelectedUnits,
+  canDistributeSelectedUnits,
   cloneShapesWithNewIds,
+  distributeSelectedUnits,
+  expandToSelectionUnits,
   fitPastedShapes,
   MAX_CUSTOM_COLORS,
   occupiedBoundsOf,
   offsetInsideDoc,
+  selectedShapeUnits,
   TOOL_SHORTCUTS,
   type VectorPaletteChoice,
   type VectorTool,
@@ -187,6 +204,8 @@ export interface VectorEditorContextValue {
   activeChannel: VectorColorChannel
   setActiveChannel: (channel: VectorColorChannel) => void
   applyChannelColor: (hex: string) => void
+  /** Adota uma cor no canal ativo (conta-gotas numa FIGURA): só o estilo vigente. */
+  adoptChannelColor: (hex: string) => void
   swapFillStroke: () => void
   /**
    * O preenchimento que a janela do Degradê inspeciona e edita: o da primeira
@@ -196,6 +215,7 @@ export interface VectorEditorContextValue {
   currentGradient: () => VectorGradient
   /** Edita o degradê de CADA forma livre da seleção em cima do dela (e o estilo). */
   applyGradient: (partial: Partial<VectorGradient>) => void
+  applyGradientPreset: (preset: 'horizontal' | 'vertical' | 'radial') => void
   /** "Tirar o degradê": cada forma com degradê fica com a cor do começo DELA. */
   clearGradient: () => void
   /** Há degradê para tirar (alguma forma selecionada com preenchimento; sem seleção, o estilo). */
@@ -222,8 +242,18 @@ export interface VectorEditorContextValue {
    */
   gradientOpen: boolean
   setGradientOpen: (open: boolean) => void
+  canAdjustGradient: boolean
+  gradientAdjustShapeId: string | null
+  beginGradientAdjust: () => void
+  endGradientAdjust: () => void
   /** O botão "Degradê" do painel: a janela reaberta sozinha devolve o foco a ele. */
   gradientButtonRef: RefObject<HTMLButtonElement | null>
+  maskEditId: string | null
+  createMaskSelected: () => void
+  beginMaskEdit: () => void
+  endMaskEdit: () => void
+  releaseMaskSelected: () => void
+  centerSelectionPivot: () => void
   moveOrder: (to: 1 | -1 | 'front' | 'back') => void
   duplicateSelected: () => void
   removeSelected: () => void
@@ -232,6 +262,8 @@ export interface VectorEditorContextValue {
   pathfinderSelected: (op: PathfinderOp) => void
   flipSelected: (axis: 'h' | 'v') => void
   alignSelected: (edge: AlignEdge) => void
+  canDistributeSelected: boolean
+  distributeSelected: (axis: DistributionAxis) => void
   zoomToFit: () => void
 }
 
@@ -252,6 +284,14 @@ const PATHFINDER_REFUSALS: Record<PathfinderRefusal, string> = {
   'geometry-failed': COPY.vector.pathfinderFailed,
 }
 
+const MASK_REFUSALS: Record<MaskRefusal, string> = {
+  'needs-two': COPY.vector.maskNeedsTwo,
+  locked: COPY.vector.maskLocked,
+  'unsupported-source': COPY.vector.maskUnsupportedSource,
+  'already-masked': COPY.vector.maskAlreadyMasked,
+  'nested-mask': COPY.vector.maskNestedMask,
+}
+
 /** Tem preenchimento que se vê: linha não tem miolo e a figura desenha a própria imagem. */
 function hasFill(shape: VectorShape): boolean {
   return shape.type !== 'line' && shape.type !== 'image'
@@ -268,12 +308,20 @@ function gradientOf(fill: VectorFill): VectorGradient {
 }
 
 function sameGradient(fill: VectorFill, gradient: VectorGradient): boolean {
+  const samePoint = (
+    a: { x: number; y: number } | undefined,
+    b: { x: number; y: number } | undefined,
+  ) => a === b || (a !== undefined && b !== undefined && a.x === b.x && a.y === b.y)
   return (
     isVectorGradient(fill) &&
     fill.type === gradient.type &&
     fill.from === gradient.from &&
     fill.to === gradient.to &&
-    fill.angle === gradient.angle
+    fill.angle === gradient.angle &&
+    samePoint(fill.start, gradient.start) &&
+    samePoint(fill.end, gradient.end) &&
+    samePoint(fill.center, gradient.center) &&
+    fill.radius === gradient.radius
   )
 }
 
@@ -328,6 +376,8 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   const [colorPick, setColorPick] = useState<ColorPickSession | null>(null)
   const colorPickRef = useRef<(ColorPickRequest & ColorPickSession) | null>(null)
   const [gradientOpen, setGradientOpen] = useState(false)
+  const [gradientAdjustShapeId, setGradientAdjustShapeId] = useState<string | null>(null)
+  const [maskEditId, setMaskEditId] = useState<string | null>(null)
   const gradientButtonRef = useRef<HTMLButtonElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
@@ -343,6 +393,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   // biome-ignore lint/correctness/useExhaustiveDependencies: as deps são o GATILHO (mudou o quadro/tile ativo), não leituras
   useEffect(() => {
     setSelectedIds([])
+    setMaskEditId(null)
   }, [animationId, frameIndex])
 
   // Trocar de forma ou de ferramenta larga os nós escolhidos. ⚠️ A chave é o
@@ -481,6 +532,16 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     { combo: shortcut('zoomIn'), run: () => session.getState().zoomIn(), repeat: true },
     { combo: shortcut('zoomOut'), run: () => session.getState().zoomOut(), repeat: true },
     { combo: shortcut('grid'), run: () => session.getState().toggleGrid() },
+    {
+      combo: shortcut('rulers'),
+      run: () => session.getState().toggleRulers(),
+      when: () => isToolAllowed(allowTools, 'rulers'),
+    },
+    {
+      combo: shortcut('guides'),
+      run: () => session.getState().toggleGuides(),
+      when: () => isToolAllowed(allowTools, 'guides'),
+    },
     { combo: shortcut('flipShapesH'), run: () => flipSelected('h') },
     { combo: shortcut('flipShapesV'), run: () => flipSelected('v') },
     {
@@ -509,6 +570,52 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     if (doc) void ensureVectorFontsForShapes(doc.shapes)
   }, [doc, fontFamily])
   const selected = doc?.shapes.filter((s) => selectedIds.includes(s.id)) ?? []
+  useEffect(() => {
+    if (!maskEditId || !doc) return
+    const sourceExists = doc.shapes.some((shape) => shape.id === maskEditId)
+    const memberExists = doc.shapes.some((shape) => shape.maskId === maskEditId)
+    if (!sourceExists || !memberExists || !selectedIds.includes(maskEditId)) setMaskEditId(null)
+  }, [doc, maskEditId, selectedIds])
+  const adjustableShape = selected.length === 1 ? selected[0] : null
+  const canAdjustGradient = Boolean(
+    adjustableShape &&
+      !adjustableShape.hidden &&
+      !adjustableShape.locked &&
+      hasFill(adjustableShape) &&
+      isVectorGradient(adjustableShape.fill) &&
+      isToolAllowed(allowTools, 'select'),
+  )
+  function beginGradientAdjust(): void {
+    if (!canAdjustGradient || !adjustableShape) return
+    setTool('select')
+    setGradientOpen(false)
+    setGradientAdjustShapeId(adjustableShape.id)
+  }
+  function endGradientAdjust(): void {
+    setGradientAdjustShapeId(null)
+  }
+  useEffect(() => {
+    if (
+      gradientAdjustShapeId &&
+      (!canAdjustGradient ||
+        adjustableShape?.id !== gradientAdjustShapeId ||
+        tool !== 'select' ||
+        gradientOpen)
+    ) {
+      setGradientAdjustShapeId(null)
+    }
+  }, [gradientAdjustShapeId, canAdjustGradient, adjustableShape?.id, tool, gradientOpen])
+  const selectedSourceIds = doc ? maskSourceIds(doc.shapes) : new Set<string>()
+  const selectionHasMask = selected.some(
+    (shape) => shape.maskId !== undefined || selectedSourceIds.has(shape.id),
+  )
+  const selectedUnits = doc && selectionHasMask ? selectedShapeUnits(doc.shapes, selectedIds) : []
+  const canDistributeSelected = doc
+    ? selectionHasMask
+      ? selected.every((shape) => shape.locked !== true) &&
+        canDistributeSelectedUnits(selectedUnits)
+      : canDistributeShapes(doc.shapes, selectedIds)
+    : false
   const single = selected.length === 1 ? (selected[0] ?? null) : null
   // A forma que a janela do Degradê INSPECIONA (e da qual o estilo sincroniza
   // numa seleção com várias): a primeira LIVRE com preenchimento, na ordem do
@@ -540,8 +647,14 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   const styleSource = single ?? inspectedShape
   useEffect(() => {
     if (!styleSource) return
+    // ⚠️ A FIGURA não tem estilo NENHUM para oferecer (nasce `fill: 'none'` e
+    // `stroke: null`): sincronizar a partir dela apagaria o estilo vigente. Com
+    // o conta-gotas isso era perda real — pegar a cor de um pixel com a figura
+    // selecionada e depois arrastá-la um tiquinho (commit → objeto novo → este
+    // efeito) zerava o contorno recém-pego, sem aviso.
+    if (styleSource.type === 'image') return
     setStyle((current) => ({
-      // Linha e figura não têm preenchimento que valha como inspetor: o estilo
+      // Linha não tem preenchimento que valha como inspetor: o estilo
       // guarda o que já tinha (um degradê recém-montado para a PRÓXIMA forma).
       fill: hasFill(styleSource) ? styleSource.fill : current.fill,
       stroke: styleSource.stroke ? { ...styleSource.stroke } : null,
@@ -598,13 +711,72 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
    * está trancada: aí não há o que fazer, e o silêncio leria como "quebrou".
    */
   function freeSelectedIds(): string[] | null {
-    const locked = lockedIdsOf(currentShapes())
+    const shapes = currentShapes()
+    const locked = lockedIdsOf(shapes)
+    if (selectionHasLockedMaskMember(shapes, selectedIds)) {
+      showToast(COPY.layers.lockedShapeWarning)
+      return null
+    }
     const free = selectedIds.filter((id) => !locked.has(id))
     if (free.length === 0 && selectedIds.length > 0) {
       showToast(COPY.layers.lockedShapeWarning)
       return null
     }
     return free
+  }
+
+  function selectedMaskIds(shapes = currentShapes()): Set<string> {
+    const sources = maskSourceIds(shapes)
+    const ids = new Set<string>()
+    for (const shape of shapes) {
+      if (!selectedIds.includes(shape.id)) continue
+      if (shape.maskId) ids.add(shape.maskId)
+      if (sources.has(shape.id)) ids.add(shape.id)
+    }
+    return ids
+  }
+
+  function createMaskSelected(): void {
+    const result = applyMask(currentShapes(), selectedIds)
+    if (!result.ok) {
+      showToast(MASK_REFUSALS[result.reason])
+      return
+    }
+    commitShapes(result.shapes)
+    setSelectedIds(expandToSelectionUnits(result.shapes, selectedIds))
+  }
+
+  function beginMaskEdit(): void {
+    const shapes = currentShapes()
+    const ids = selectedMaskIds(shapes)
+    if (ids.size !== 1) return
+    const id = [...ids][0]
+    if (!id) return
+    if (maskMembers(shapes, id).some((shape) => shape.locked === true)) {
+      showToast(COPY.layers.lockedShapeWarning)
+      return
+    }
+    setTool('select')
+    setMaskEditId(id)
+  }
+
+  function endMaskEdit(): void {
+    setMaskEditId(null)
+  }
+
+  function releaseMaskSelected(): void {
+    const free = freeSelectedIds()
+    if (!free) return
+    const next = releaseMasks(currentShapes(), free)
+    if (!next) return
+    commitShapes(next)
+    setMaskEditId(null)
+  }
+
+  function centerSelectionPivot(): void {
+    const free = freeSelectedIds()
+    if (!free) return
+    updateFree(free, resetRotationPivotPreservingAppearance)
   }
 
   /**
@@ -758,6 +930,22 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   }
 
   /**
+   * ADOTA uma cor no canal ativo (conta-gotas em cima de uma FIGURA, onde não há
+   * estilo para copiar — há UM pixel). Espelho do `applyChannelColor`, mas pela
+   * régua do conta-gotas: muda só o estilo vigente, sem re-estilizar a seleção
+   * e sem commitar, como o `adoptStyle` faz com as outras formas.
+   */
+  function adoptChannelColor(hex: string): void {
+    if (activeChannel === 'stroke') {
+      adoptStyle({
+        stroke: hex === 'none' ? null : { color: hex, width: style.stroke?.width ?? 2 },
+      })
+      return
+    }
+    adoptStyle({ fill: hex })
+  }
+
+  /**
    * Troca preenchimento ↔ contorno (o botão de trocar dos slots, espelho do
    * swapColors do pixel). A espessura do traço fica; degradê no preenchimento
    * passa a cor DO COMEÇO para o contorno.
@@ -799,16 +987,29 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
    * já tem exatamente esse degradê sai pela MESMA referência (sem desfazer vazio
    * — é o "pegar a mesma cor que já está na ponta").
    */
-  function applyGradient(partial: Partial<VectorGradient>): void {
+  function updateGradient(update: (gradient: VectorGradient) => VectorGradient): void {
     const free = freeForStyle()
     if (!free) return
-    setStyle((current) => ({ ...current, fill: { ...currentGradient(), ...partial } }))
+    setStyle((current) => ({ ...current, fill: update(currentGradient()) }))
     if (free.length === 0) return
     updateFree(free, (shape) => {
       if (!hasFill(shape)) return shape
-      const next = { ...gradientOf(shape.fill), ...partial }
+      const next = update(gradientOf(shape.fill))
       return sameGradient(shape.fill, next) ? shape : { ...shape, fill: next }
     })
+  }
+
+  function applyGradient(partial: Partial<VectorGradient>): void {
+    updateGradient((gradient) => ({ ...gradient, ...partial }))
+  }
+
+  function applyGradientPreset(preset: 'horizontal' | 'vertical' | 'radial'): void {
+    updateGradient((gradient) => ({
+      type: preset === 'radial' ? 'radial' : 'linear',
+      from: gradient.from,
+      to: gradient.to,
+      angle: preset === 'horizontal' ? 0 : preset === 'vertical' ? 90 : gradient.angle,
+    }))
   }
 
   /** "Tirar o degradê": cada forma livre com degradê fica com a cor do COMEÇO dela. */
@@ -987,6 +1188,10 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
    * seguir ensina, e um botão apagado não ensina nada.
    */
   function pathfinderSelected(op: PathfinderOp): void {
+    if (selectedMaskIds().size > 0) {
+      showToast(COPY.vector.maskReleaseBeforeGeometry)
+      return
+    }
     // Misturar REESCREVE a geometria dos participantes: trancada fica de fora
     // (e não some) — com menos de 2 livres o próprio pathfinder recusa.
     const free = freeSelectedIds()
@@ -1079,21 +1284,34 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     // Só as visíveis e DESTRANCADAS: o Ctrl+A existe para agir em cima do que
     // vier (mover/apagar), e a trancada não entra nisso — quem quer mexer nela
     // clica a linha dela no painel de propósito.
-    setSelectedIds(
-      currentShapes()
-        .filter((s) => s.hidden !== true && s.locked !== true)
-        .map((s) => s.id),
-    )
+    const shapes = currentShapes()
+    const seeds = shapes
+      .filter((shape) => shape.hidden !== true && shape.locked !== true)
+      .map((shape) => shape.id)
+    setSelectedIds(expandToSelectionUnits(shapes, seeds))
   }
 
-  /** Espelha cada shape selecionado em torno do PRÓPRIO centro. */
+  /** Espelha formas soltas pelo próprio centro e cada composição mascarada como uma unidade. */
   function flipSelected(axis: 'h' | 'v'): void {
     if (selected.length === 0) return
     const free = freeSelectedIds()
     if (!free) return
+    const current = currentShapes()
+    const centers = new Map<string, { x: number; y: number }>()
+    if (selectionHasMask) {
+      for (const unit of selectedShapeUnits(current, free)) {
+        const ids = new Set(unit)
+        const center = boundsCenter(
+          boundsUnion(current.filter((shape) => ids.has(shape.id)).map(shapeBounds)),
+        )
+        for (const id of unit) centers.set(id, center)
+      }
+    }
     commitShapes(
-      currentShapes().map((s) =>
-        free.includes(s.id) ? flipShape(s, axis, boundsCenter(shapeBounds(s))) : s,
+      current.map((shape) =>
+        free.includes(shape.id)
+          ? flipShape(shape, axis, centers.get(shape.id) ?? boundsCenter(shapeBounds(shape)))
+          : shape,
       ),
     )
   }
@@ -1110,7 +1328,23 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
       selected.length >= 2
         ? boundsUnion(selected.map(shapeBounds))
         : { x: 0, y: 0, width: doc.width, height: doc.height }
-    commitShapes(alignShapes(currentShapes(), free, edge, target))
+    const current = currentShapes()
+    const next = selectionHasMask
+      ? alignSelectedUnits(current, selectedShapeUnits(current, free), edge, target)
+      : alignShapes(current, free, edge, target)
+    if (next !== current) commitShapes(next)
+  }
+
+  function distributeSelected(axis: DistributionAxis): void {
+    if (!doc) return
+    const free = freeSelectedIds()
+    if (!free) return
+    const current = currentShapes()
+    const next = selectionHasMask
+      ? distributeSelectedUnits(current, selectedShapeUnits(current, free), axis)
+      : distributeShapes(current, free, axis)
+    if (next === current) return
+    commitShapes(next)
   }
 
   /** Move a seleção com as setas (Shift = passos de 10). */
@@ -1217,7 +1451,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     // ficaria órfão por um render, `single` viraria null e a faixa de pontos
     // inteira sumiria da tela — leria como "quebrou".
     const first = fromEditablePath(before, halves[0])
-    const second = fromEditablePath({ ...before, id: newId() }, halves[1])
+    const second = fromEditablePath({ ...before, id: newId(), motionId: newId() }, halves[1])
     // ⚠️ `fromEditablePath` devolve a forma ORIGINAL quando o `d` estoura o
     // teto: sem esta guarda o corte duplicaria o traço inteiro.
     if (first === before || first.type !== 'path' || second.type !== 'path') {
@@ -1343,10 +1577,12 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     activeChannel,
     setActiveChannel,
     applyChannelColor,
+    adoptChannelColor,
     swapFillStroke,
     inspectedFill,
     currentGradient,
     applyGradient,
+    applyGradientPreset,
     clearGradient,
     hasGradient,
     colorPick,
@@ -1355,7 +1591,17 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     cancelColorPick,
     gradientOpen,
     setGradientOpen,
+    canAdjustGradient,
+    gradientAdjustShapeId,
+    beginGradientAdjust,
+    endGradientAdjust,
     gradientButtonRef,
+    maskEditId,
+    createMaskSelected,
+    beginMaskEdit,
+    endMaskEdit,
+    releaseMaskSelected,
+    centerSelectionPivot,
     moveOrder,
     duplicateSelected,
     removeSelected,
@@ -1364,6 +1610,8 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     pathfinderSelected,
     flipSelected,
     alignSelected,
+    canDistributeSelected,
+    distributeSelected,
     zoomToFit,
   }
 

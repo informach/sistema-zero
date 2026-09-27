@@ -17,12 +17,12 @@ export function buildInputRuntime(): string {
 }
 
 /** Runtime do preview: entrada compartilhada + controles do player/host. */
-export function buildInputBridgeRuntime(): string {
-  return buildInputRuntimeSource(true)
+export function buildInputBridgeRuntime(parentOrigin?: string): string {
+  return buildInputRuntimeSource(true, parentOrigin)
 }
 
-function buildInputRuntimeSource(includePreviewControls: boolean): string {
-  const previewControls = includePreviewControls ? buildPreviewControlsRuntime() : ''
+function buildInputRuntimeSource(includePreviewControls: boolean, parentOrigin?: string): string {
+  const previewControls = includePreviewControls ? buildPreviewControlsRuntime(parentOrigin) : ''
   return `(function () {
   var pressed = Object.create(null);
   window.addEventListener('keydown', function (e) { pressed[e.key] = true; pressed[e.code] = true; });
@@ -130,8 +130,55 @@ ${previewControls}
  * Controles exclusivos do iframe/player. São inseridos DENTRO do mesmo IIFE do
  * runtime para reutilizar `input` e `getCanvas`, mas ficam fora do site exportado.
  */
-function buildPreviewControlsRuntime(): string {
+function buildPreviewControlsRuntime(parentOrigin?: string): string {
   return `
+  var _szReportOrigin = ${JSON.stringify(parentOrigin ?? null)};
+  var _szInteractionReported = false;
+  function reportInteraction(e) {
+    if (!_szReportOrigin || _szInteractionReported || e.isTrusted !== true) return;
+    _szInteractionReported = true;
+    window.parent.postMessage({ type: 'sz:game-interaction' }, _szReportOrigin);
+  }
+  window.addEventListener('pointerdown', reportInteraction, { passive: true });
+  window.addEventListener('keydown', function (e) {
+    if (e.repeat || e.ctrlKey || e.altKey || e.metaKey ||
+        ['Tab', 'Escape', 'Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].indexOf(e.key) !== -1) return;
+    reportInteraction(e);
+  });
+  // Só o preview possui esta ponte. A atividade de aula conta o alvo depois que
+  // o callback real de onGroupClick foi executado pelo runtime Jogo 2D.
+  window.__szReportGroupClick = function (x, y) {
+    if (!_szReportOrigin || !isFinite(x) || !isFinite(y)) return;
+    window.parent.postMessage({ type: 'sz:g2d:group-click', x: x, y: y }, _szReportOrigin);
+  };
+  var _szGameReadyReported = false;
+  window.__szReportGameReady = function () {
+    if (!_szReportOrigin || _szGameReadyReported) return;
+    _szGameReadyReported = true;
+    window.parent.postMessage({ type: 'sz:g2d:ready' }, _szReportOrigin);
+  };
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && _szReportOrigin) {
+      window.parent.postMessage({ type: 'sz:escape' }, _szReportOrigin);
+    }
+  });
+  // A retomada dos achados salvos usa o MESMO pipeline do toque no canvas.
+  // Coordenadas lógicas e dimensões são declaradas pela atividade; o canvas
+  // transforma a posição exibida em posição interna como faria com um dedo.
+  window.addEventListener('message', function (e) {
+    if (e.source !== window.parent) return;
+    var d = e.data;
+    if (!d || d.type !== 'sz:pointer-at') return;
+    if (![d.x, d.y, d.w, d.h].every(function (n) { return typeof n === 'number' && isFinite(n); })) return;
+    if (d.w <= 0 || d.h <= 0 || d.w > 8192 || d.h > 8192 || d.x < 0 || d.y < 0 || d.x > d.w || d.y > d.h) return;
+    var c = getCanvas();
+    if (!c || typeof c.dispatchEvent !== 'function' || typeof window.MouseEvent !== 'function') return;
+    var rect = c.getBoundingClientRect();
+    var x = rect.left + c.clientLeft + d.x / d.w * c.clientWidth;
+    var y = rect.top + c.clientTop + d.y / d.h * c.clientHeight;
+    c.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, clientX: x, clientY: y }));
+    c.dispatchEvent(new window.MouseEvent('pointerup', { bubbles: true, clientX: x, clientY: y }));
+  });
   // Gamepad virtual: o parent (página /jogar) envia postMessage com teclas simuladas.
   // O iframe sandboxed tem origem opaca (srcdoc) — e.origin será 'null'; verificamos
   // apenas o formato da mensagem para não confundir com outras mensagens.

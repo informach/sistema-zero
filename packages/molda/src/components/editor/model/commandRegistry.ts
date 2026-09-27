@@ -1,4 +1,5 @@
 import { COPY } from '../../../core/copy'
+import { MESH_SELECTION_ACTIONS, type MeshSelectionAction } from '../../../model/meshSelectionGraph'
 import type { PaintTool } from '../../../paint/stroke'
 import type { MeshSelectMode, TransformTool } from '../../../state/sessionStore'
 import {
@@ -13,7 +14,6 @@ import {
   FlipVertical2,
   Focus,
   Frame,
-  GitFork,
   Grid3x3,
   Hexagon,
   ImageIcon,
@@ -60,6 +60,7 @@ export interface ModelCommandDefinition {
   contexts: readonly ModelCommandContext[]
   shortcut?: ModelCommandShortcut
   help?: string
+  selectionAction?: MeshSelectionAction
 }
 
 const key = (display: string, ...keys: string[]): ModelCommandShortcut => ({ display, keys })
@@ -74,8 +75,26 @@ const paint = ['paint'] as const
 const facePaint = ['face-paint'] as const
 const allMesh = ['mesh-vertex', 'mesh-edge', 'mesh-face'] as const
 const allMain = ['build', 'paint', ...allMesh] as const
+const selectionShortcuts: Partial<Record<MeshSelectionAction, ModelCommandShortcut>> = {
+  all: primary('Ctrl+A', 'a'),
+  connected: key('L', 'l'),
+  grow: key('+', '+', '='),
+  shrink: key('−', '-'),
+  invert: primary('Ctrl+I', 'i'),
+  ring: key('K', 'k'),
+  loop: key('J', 'j'),
+}
 
 const COMMAND_DEFINITIONS = [
+  ...MESH_SELECTION_ACTIONS.map((action) => ({
+    id: `mesh.select.${action}` as const,
+    selectionAction: action,
+    label: COPY.editor.model.mesh.selection.labels[action],
+    help: COPY.editor.model.mesh.selection.help[action],
+    icon: action === 'grow' ? Plus : action === 'shrink' ? Minus : Layers,
+    contexts: action === 'ring' || action === 'loop' ? (['mesh-edge'] as const) : allMesh,
+    shortcut: selectionShortcuts[action],
+  })),
   {
     id: 'add.box',
     label: `${COPY.editor.model.addGroup} caixa`,
@@ -311,12 +330,6 @@ const COMMAND_DEFINITIONS = [
     contexts: ['mesh-vertex'],
   },
   {
-    id: 'mesh.connect',
-    label: COPY.editor.model.mesh.tools.connect,
-    icon: GitFork,
-    contexts: ['mesh-vertex'],
-  },
-  {
     id: 'mesh.extrude-edges',
     label: COPY.editor.model.mesh.tools.extrude,
     icon: ArrowUpFromLine,
@@ -412,7 +425,6 @@ export const MESH_MODE_COMMAND = {
 export const MESH_ACTION_COMMAND = {
   merge: 'mesh.merge',
   createFace: 'mesh.create-face',
-  connect: 'mesh.connect',
   extrudeEdges: 'mesh.extrude-edges',
   loopCut: 'mesh.loop-cut',
   extrudeFaces: 'mesh.extrude-faces',

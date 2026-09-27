@@ -332,10 +332,10 @@ export function MemberDetailClient({
               <Inbox className="size-4" /> Entregas do aluno
             </Link>
             <Link
-              href={`/admin/professor/recados?userId=${encodeURIComponent(learner?.id ?? userId)}`}
+              href={`/admin/professor/recados?userId=${encodeURIComponent(learner?.id ?? userId)}${learner ? '&compose=1' : ''}`}
               className={buttonVariants({ variant: 'outline' })}
             >
-              <MailOpen className="size-4" /> Recados do aluno
+              <MailOpen className="size-4" /> {learner ? 'Enviar recado' : 'Recados do aluno'}
             </Link>
             {canWrite ? (
               <Button onClick={() => setGrantOpen(true)}>

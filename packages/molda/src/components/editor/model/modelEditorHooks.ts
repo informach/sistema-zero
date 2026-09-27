@@ -1,12 +1,13 @@
 import type { RefObject } from 'react'
 import { useEffect } from 'react'
 import type { MoldaModelAsset, ShapeId, Vec3 } from '../../../core/model'
+import type { MeshSelectionAction } from '../../../model/meshSelectionGraph'
 import type { EditorStore } from '../../../state/editorStore'
 import type { MeshSelectMode, SessionStore } from '../../../state/sessionStore'
 import type { MoldaViewportLike } from '../../../viewport/types'
 import { isMoldaDialogOpen } from '../../ui/Dialog'
 import { isTypingTarget } from '../../ui/interaction'
-import { commandForShortcut, type ModelCommandContext } from './commandRegistry'
+import { commandForShortcut, type ModelCommandContext, modelCommand } from './commandRegistry'
 
 const THUMB_DELAY_MS = 700
 
@@ -71,8 +72,7 @@ export function useModelEditorShortcuts(options: {
   nudge: (steps: Vec3, repeat: boolean) => void
   /** Soltar a seta fecha o gesto da tecla segurada (um desfazer só). */
   endNudge: () => void
-  /** Ctrl+A no Editar malha: todos os pontos (o caminho do teclado para escolher). */
-  selectAllVertices: () => void
+  selectMesh: (action: MeshSelectionAction) => void
   /** G liga; G de novo ou Esc cancela o fluxo de dois toques do “Grudar”. */
   toggleSnap: () => void
   cancelSnap: () => void
@@ -87,7 +87,7 @@ export function useModelEditorShortcuts(options: {
     deleteMeshSelection,
     nudge,
     endNudge,
-    selectAllVertices,
+    selectMesh,
     toggleSnap,
     cancelSnap,
   } = options
@@ -116,14 +116,6 @@ export function useModelEditorShortcuts(options: {
         nudge([arrow[0] * k, arrow[1] * k, arrow[2] * k], event.repeat)
         return
       }
-      if (state.meshEditId) {
-        if ((event.ctrlKey || event.metaKey) && key === 'a') {
-          event.preventDefault()
-          selectAllVertices()
-          return
-        }
-      }
-
       const context: ModelCommandContext = state.meshEditId
         ? `mesh-${state.meshSelectMode}`
         : state.mode
@@ -131,6 +123,12 @@ export function useModelEditorShortcuts(options: {
       if (!command) return
 
       if (state.meshEditId) {
+        const selectionAction = modelCommand(command).selectionAction
+        if (selectionAction) {
+          event.preventDefault()
+          selectMesh(selectionAction)
+          return
+        }
         const modes: Partial<Record<typeof command, MeshSelectMode>> = {
           'mesh.mode.vertex': 'vertex',
           'mesh.mode.edge': 'edge',
@@ -197,7 +195,7 @@ export function useModelEditorShortcuts(options: {
     deleteMeshSelection,
     nudge,
     endNudge,
-    selectAllVertices,
+    selectMesh,
     toggleSnap,
     cancelSnap,
     session,

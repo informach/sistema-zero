@@ -453,9 +453,10 @@ token model do boleto/cartão) — **não há worker/scheduler de cobrança noss
 - **`payment.paid`/`payment.failed` carregam `subscriptionId`** (07/2026, null em
   avulso) — é o que o webhook do funil usa p/ RAMIFICAR renovação (extend no
   members, sem welcome) e dunning (e-mail de falha de cobrança).
-- **`SubscriptionView.firstPayment {id, status}`** (07/2026): a CRIAÇÃO expõe o
+- **`SubscriptionView.firstPayment {id, status, paidAt}`** (09/2026): a CRIAÇÃO expõe o
   pagamento do 1º ciclo quando a resposta da Efí o traz — o funil linka o
-  `paymentId` ao lead sem esperar o webhook. Ausente/null nas leituras posteriores.
+  `paymentId` ao lead sem esperar o webhook e usa o instante pago no contrato de
+  acesso. Ausente/null nas leituras posteriores.
 - Planos são **reutilizáveis** (tabela `subscription_plans`, chave
   `(provider, intervalMonths, repeats_key=repeats??-1)`, get-or-create via ON CONFLICT).
 - Notificação: `HandleBoletoNotificationService` resolve o token 1x e despacha

@@ -9,22 +9,30 @@
     ".": "./src/index.ts",
     "./assets": "./src/assets/index.ts",
     "./studio-library": "./src/export/studioLibrary.ts",
+    "./tools": "./src/core/toolFamilies.ts",
     "./styles.css": "./src/styles/molda.css"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "bun test src",
+    "test": "bun run test:1 && bun run test:2 && bun run test:3",
     "e2e": "playwright test",
+    "serve:e2e": "bun scripts/serve-e2e.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "dev": "vite --config playground/vite.config.ts"
+    "dev": "vite --config playground/vite.config.ts",
+    "test:1": "bun test --timeout 20000 src/import src/workers src/export",
+    "test:2": "bun test --timeout 20000 src/scene src/components",
+    "test:3": "bun test --timeout 20000 src/accessibility-contract.test.ts src/host-conformance.test.ts src/assets src/core src/model src/paint src/sky src/state src/styles src/templates src/testing src/texture src/viewport"
   },
   "dependencies": {
     "clsx": "^2.1.1",
     "fflate": "^0.8.2",
     "idb-keyval": "^6.2.1",
+    "jpeg-js": "0.4.4",
     "lucide-react": "^0.546.0",
+    "pako": "3.0.1",
     "three": "^0.184.0",
+    "three-mesh-bvh": "0.9.2",
     "zustand": "^5.0.0"
   },
   "peerDependencies": {
@@ -41,6 +49,8 @@
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.184.1",
     "@vitejs/plugin-react": "^6.0.2",
+    "fake-indexeddb": "^6.2.5",
+    "gltf-validator": "2.0.0-dev.3.10",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "sharp": "^0.35.3",

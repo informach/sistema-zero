@@ -17,10 +17,10 @@ export interface StudioBlockGrant {
  * apagado) sumir da mão de quem já o tinha, inclusive de projetos que já o usam. O
  * snapshot é o piso que impede isso.
  *
- * É gravado na LEITURA, como UNIÃO com o que já estava lá (ver `GetStudioUnlocksService`):
- * o aluno nunca perde o que já lhe foi servido, e nada precisa de hook nos dois caminhos
- * de marco. Mesmo espírito do `xp_events.source_level`, que existe para o rank não
- * regredir quando um curso é re-nivelado.
+ * É gravado na transação dos marcos que tornam o curso elegível. A leitura em
+ * `GetStudioUnlocksService` também concilia currículos ampliados e concessões legadas,
+ * sempre como UNIÃO. O aluno preserva os blocos mesmo sem abrir o Estúdio entre
+ * conquistar um curso e a edição do currículo desse curso.
  */
 export interface StudioUnlockRepository {
   /** Conquistas congeladas do aluno na vitrine (vazio = nada congelado ainda). */

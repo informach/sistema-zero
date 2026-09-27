@@ -2,7 +2,6 @@ import 'server-only'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
-import { resolveStudioTier } from '../lib/studio-tier'
 import type { PensaArtifactView, PensaStageView } from '../lib/types'
 import type { MembersClient } from '../server/clients'
 import { hasAiAppsLevel } from '../server/creative-apps-access'
@@ -12,6 +11,7 @@ import {
   IdeaArtifactSchema,
   VisualDirectionArtifactSchema,
 } from '../server/pensa-agents/planner-contract'
+import { getPensaCapabilities } from '../server/pensa-capabilities'
 import type { SessionModule } from '../server/session'
 
 export type PensaRoutes = ReturnType<typeof createPensaRoutes>
@@ -27,7 +27,7 @@ export const ClientValidatableArtifactType = z.enum([
   'visual_direction',
   'task_plan',
 ])
-const Destination = z.enum(['pinta', 'studio'])
+const Destination = z.enum(['pinta', 'studio', 'molda'])
 const Category = z.enum(['art', 'setup', 'gameplay', 'scene', 'ui', 'polish'])
 
 const invalid = () =>
@@ -40,6 +40,8 @@ const response = (status: number, body: unknown) =>
   NextResponse.json(body ?? { ok: status === 200 }, { status })
 
 const CreateProjectBody = z.strictObject({ name: PROJECT_NAME })
+// O código como a criança digitou (o members normaliza: minúsculas, espaços, hífen, prefixo).
+const JoinBody = z.strictObject({ code: z.string().trim().min(4).max(16) })
 const UpdateProjectBody = z
   .strictObject({
     name: PROJECT_NAME.optional(),
@@ -96,7 +98,17 @@ const StudioContext = z.strictObject({
   mechanicDocumentIds: z.array(z.string().max(100)).max(10),
   extensionIds: z.array(z.string().max(100)).max(10),
 })
-const TaskContext = z.discriminatedUnion('kind', [PintaContext, StudioContext])
+const MoldaContext = z.strictObject({
+  kind: z.literal('molda'),
+  assetId: z.string().min(1).max(100),
+  artKind: z.enum(['model', 'texture', 'sky']),
+  appearance: z.string().min(1).max(2000),
+  usage: z.string().min(1).max(2000),
+  palette: z
+    .array(z.strictObject({ role: z.string().min(1).max(80), color: z.string().max(20) }))
+    .max(16),
+})
+const TaskContext = z.discriminatedUnion('kind', [PintaContext, StudioContext, MoldaContext])
 const TaskInput = z
   .strictObject({
     key: z.string().min(1).max(100),
@@ -125,6 +137,12 @@ const TaskUpdateBody = z
   })
   .refine((body) => Object.values(body).some((value) => value !== undefined))
 const OutputRef = z.discriminatedUnion('kind', [
+  z.strictObject({
+    kind: z.literal('molda_asset'),
+    assetId: z.string().min(1).max(200),
+    assetName: z.string().max(200).optional(),
+    assetKind: z.enum(['model', 'texture', 'sky']),
+  }),
   z.strictObject({
     kind: z.literal('pinta_asset'),
     assetId: z.string().min(1).max(200),
@@ -220,13 +238,21 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
         { status: 409 },
       )
     }
-    const tier = resolveStudioTier(gamification.body?.level?.slug ?? 'noob', user.role)
+    const capabilities = await getPensaCapabilities(
+      members,
+      gamification.body?.level?.slug,
+      user.role,
+    )
+    if (!capabilities)
+      return NextResponse.json({ error: { code: 'PENSA_TIER_UNAVAILABLE' } }, { status: 503 })
+    const { tier } = capabilities
     const review = auditPlan(
       oStage.body,
       availablePlannerCatalog(tier, idea.data.dimension),
       idea.data.dimension,
       true,
       visual.data,
+      capabilities,
     )
     if (review.approved) return null
     return NextResponse.json(
@@ -271,6 +297,69 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
       const parsed = UpdateProjectBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalid()
       const result = await members.pensaUpdateProject(projectId, parsed.data)
+      return response(result.status, result.body)
+    },
+    DELETE: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { projectId } = await ctx.params
+      if (!parseId(projectId)) return notFound()
+      const result = await members.pensaDeleteProject(projectId)
+      return response(result.status, result.body)
+    },
+  }
+
+  // ── Equipe do plano (26/09/2026) ──
+  const pensaJoin = {
+    POST: async (req: Request) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const parsed = JoinBody.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) return invalid()
+      const result = await members.pensaJoinProject(parsed.data)
+      return response(result.status, result.body)
+    },
+  }
+
+  const pensaShare = {
+    POST: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { projectId } = await ctx.params
+      if (!parseId(projectId)) return notFound()
+      const result = await members.pensaShareProject(projectId)
+      return response(result.status, result.body)
+    },
+    DELETE: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { projectId } = await ctx.params
+      if (!parseId(projectId)) return notFound()
+      const result = await members.pensaUnshareProject(projectId)
+      return response(result.status, result.body)
+    },
+  }
+
+  const pensaMembers = {
+    GET: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
+      const { projectId } = await ctx.params
+      if (!parseId(projectId)) return notFound()
+      const result = await members.pensaListProjectMembers(projectId)
+      return response(result.status, result.body)
+    },
+  }
+
+  const pensaMember = {
+    DELETE: async (
+      _req: Request,
+      ctx: { params: Promise<{ projectId: string; profileId: string }> },
+    ) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { projectId, profileId } = await ctx.params
+      // `me` = sair da equipe (o pacote não conhece o próprio profileId).
+      if (!parseId(projectId) || (profileId !== 'me' && !parseId(profileId))) return notFound()
+      const result = await members.pensaRemoveProjectMember(projectId, profileId)
       return response(result.status, result.body)
     },
   }
@@ -396,6 +485,10 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
   return {
     pensaProjects,
     pensaProject,
+    pensaJoin,
+    pensaShare,
+    pensaMembers,
+    pensaMember,
     pensaCycleCreate,
     pensaStage,
     pensaArtifactCreate,

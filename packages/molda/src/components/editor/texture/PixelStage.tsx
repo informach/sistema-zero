@@ -1,7 +1,7 @@
 /**
  * A folha de pixels: um canvas do tamanho da textura, ampliado sem suavizar,
- * sobre o xadrez da transparência. Só converte toque → texel (com o
- * deslocamento de vista) e avisa; quem pinta é o editor.
+ * sobre o xadrez da transparência. Eventos em coordenadas da VISTA: o editor
+ * interpola/desenha antes de mapear o deslocamento aos pixels canônicos.
  */
 import type { JSX } from 'react'
 import { useEffect, useRef } from 'react'
@@ -18,9 +18,21 @@ export interface PixelStageProps {
   onDown: (x: number, y: number, pointerId: number) => void
   onMove: (x: number, y: number, pointerId: number) => void
   onUp: (pointerId: number) => void
+  onCancel: (pointerId: number) => void
 }
 
-export function PixelStage({ asset, offset, onDown, onMove, onUp }: PixelStageProps): JSX.Element {
+export function PixelStage({
+  asset,
+  offset,
+  onDown,
+  onMove,
+  onUp,
+  onCancel,
+}: PixelStageProps): JSX.Element {
+  const display = (x: number, y: number): [number, number] => [
+    (x - offset[0] + asset.bitmap.width) % asset.bitmap.width,
+    (y - offset[1] + asset.bitmap.height) % asset.bitmap.height,
+  ]
   return (
     <IndexedPixelStage
       skin={asset.bitmap}
@@ -30,11 +42,12 @@ export function PixelStage({ asset, offset, onDown, onMove, onUp }: PixelStagePr
       clamp={!asset.seamless}
       ariaLabel={COPY.editor.texture.stage}
       className="mld-pixelated mld-viewport block aspect-square w-full max-w-full cursor-crosshair"
-      onDown={(point, pointerId) => onDown(point.x, point.y, pointerId)}
+      onDown={(point, pointerId) => onDown(...display(point.x, point.y), pointerId)}
       onMove={(point, pointerId) => {
-        if (point) onMove(point.x, point.y, pointerId)
+        if (point) onMove(...display(point.x, point.y), pointerId)
       }}
       onUp={onUp}
+      onCancel={onCancel}
     />
   )
 }

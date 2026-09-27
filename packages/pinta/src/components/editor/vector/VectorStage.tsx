@@ -11,8 +11,9 @@
  * canvas do pixel) — sem isso o wrapper shrink-to-fit colapsa o SVG a zero e
  * "a área de desenho não aparece".
  */
-import type { JSX, PointerEvent } from 'react'
+import type { JSX, PointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { colorNameFor } from '../../../core/colorName'
 import { COPY } from '../../../core/copy'
 import { isInteractiveControlTarget } from '../../../core/dom'
 import { safeSetPointerCapture } from '../../../core/pointer'
@@ -22,19 +23,44 @@ import {
   boundsCenter,
   boundsOverlap,
   boundsUnion,
+  rotatePoint,
   rotateShapesAround,
+  rotationPivotOf,
   scaleShape,
+  selectionRotationPivot,
+  setRotationPivotPreservingAppearance,
   shapeBounds,
   translateShape,
 } from '../../../vector/geometry'
-import { gridSpacingFor, snapPoint, snapValue } from '../../../vector/grid'
-import { hitMovableShapeAt } from '../../../vector/hitTest'
 import {
+  type GradientHandle,
+  gradientDocumentPointForShape,
+  gradientGeometry,
+  gradientPointForShape,
+  moveGradientHandle,
+} from '../../../vector/gradient'
+import { gridSpacingFor, snapPoint, snapValue } from '../../../vector/grid'
+import { clampGuidePos, type GuideAxis, type StageGuide } from '../../../vector/guides'
+import { hitMovableShapeAt, shapeHitAt } from '../../../vector/hitTest'
+import {
+  clearImageSampleCache,
+  type ImageSample,
+  primeImageSources,
+  sampleImageColorAt,
+} from '../../../vector/imageSampler'
+import {
+  clipPathId,
+  maskedShapeBounds,
+  maskSourceIds,
+  resolveMaskScene,
+  selectionHasLockedMaskMember,
+} from '../../../vector/mask'
+import {
+  isVectorGradient,
   MAX_TEXT_CHARS,
   normalizeTextContent,
   type Vec2,
   type VectorShape,
-  visibleShapes,
 } from '../../../vector/model'
 import {
   type EditablePath,
@@ -55,22 +81,29 @@ import {
   makeText,
 } from '../../../vector/shapes'
 import { smoothStrokeToPathCapped } from '../../../vector/smoothing'
-import { GradientDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
+import { GradientDefs, SceneDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
 import { Button, ToolButton } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
 import {
+  AlignHorizontalDistributeCenter,
+  AlignVerticalDistributeCenter,
+  CircleDot,
   Copy,
   FlipHorizontal2,
   FlipVertical2,
   Group,
+  SquareDashed,
+  SquarePen,
   SquaresUnite,
   Trash2,
   Ungroup,
+  Unlink2,
   X,
 } from '../../ui/icons'
 import { useToast } from '../../ui/Toast'
 import { useEditorStores, useSession } from '../editorContext'
 import { addPointerDragListeners } from '../pointerDrag'
+import { StageRulers } from '../StageRulers'
 import { stageCursor } from '../stageCursor'
 import { isPintaModalOpen } from '../useActionShortcuts'
 import { useMediaQuery } from '../useMediaQuery'
@@ -85,12 +118,23 @@ import {
   nodesInBox,
   toLocalPoint,
 } from './vectorNodeGestures'
-import { constrainPoint, expandToGroups } from './vectorTools'
+import { constrainPoint, expandToSelectionUnits } from './vectorTools'
 
 // Todo gesto guarda o pointerId: pointer capture é POR ponteiro, então um
 // segundo dedo/palma no palco dispararia move/up do gesto do primeiro dedo.
 type Gesture =
-  | { kind: 'draw'; pointerId: number; start: Vec2; points: Vec2[] }
+  // Desenhar guarda o ponto de TELA do começo e do último movimento (a régua de
+  // "toque × arrasto" é em px de tela) e a PRÓPRIA prévia: o `endGesture` não pode
+  // ler o estado React, que num gesto rápido ainda é o do `pointerdown`.
+  | {
+      kind: 'draw'
+      pointerId: number
+      start: Vec2
+      points: Vec2[]
+      startClient: Vec2
+      lastClient: Vec2
+      shape: VectorShape | null
+    }
   // Laço de seleção (arrasto no fundo com a ferramenta Selecionar).
   | { kind: 'marquee'; pointerId: number; start: Vec2; additive: boolean }
   // Mover guarda o PONTO inicial + os shapes da BASE: cada move aplica o delta
@@ -108,6 +152,7 @@ type Gesture =
       docPerPx: number
       base: PintaAsset
       baseShapes: VectorShape[]
+      ids: string[]
     }
   // Redimensionar vale para 1 OU várias formas: todas escalam em torno da
   // MESMA âncora (o canto oposto da caixa da seleção).
@@ -122,6 +167,15 @@ type Gesture =
       base: PintaAsset
       baseShapes: VectorShape[]
     }
+  | {
+      kind: 'pivot'
+      pointerId: number
+      start: Vec2
+      startClient: Vec2
+      docPerPx: number
+      base: PintaAsset
+      baseShapes: VectorShape[]
+    }
   // Girar vale para 1 OU várias formas: todas orbitam o MESMO pivô (o centro da
   // caixa da seleção) e somam o mesmo ângulo. O `baseRotation` de cada uma
   // viaja dentro do próprio shape da base, como no `resize`.
@@ -130,6 +184,17 @@ type Gesture =
       pointerId: number
       center: Vec2
       startAngle: number
+      start: Vec2
+      startClient: Vec2
+      docPerPx: number
+      base: PintaAsset
+      baseShapes: VectorShape[]
+    }
+  | {
+      kind: 'gradient'
+      pointerId: number
+      shapeId: string
+      handle: GradientHandle
       start: Vec2
       startClient: Vec2
       docPerPx: number
@@ -163,6 +228,18 @@ type Gesture =
       base: PintaAsset
     }
   | { kind: 'pan'; pointerId: number; startClient: Vec2; startScroll: Vec2 }
+  // Mover uma GUIA (só com a Selecionar): posição de partida + delta em px de TELA, como
+  // mover forma. Sem undo: guia não é edição do desenho (vive na sessão).
+  | {
+      kind: 'guideMove'
+      pointerId: number
+      id: string
+      axis: GuideAxis
+      start: number
+      startClient: Vec2
+      docPerPx: number
+      lastClient: Vec2
+    }
 
 /**
  * O que o movimento do palco lê de um pointer event. É um objeto simples de
@@ -183,6 +260,25 @@ interface StagePointer {
 const MARQUEE_MIN_SCREEN_PX = 3
 
 /**
+ * Desenhar uma FORMA (retângulo, elipse, linha, polígono, estrela) só vale depois de a mão
+ * andar isto, em px de TELA, entre o `pointerdown` e o último movimento. É a MESMA régua do
+ * laço, e é a única que serve a todas as formas: a caixa da forma não serve (uma linha
+ * horizontal tem altura 0; o polígono nasce com raio 1 até parado). Antes o corte era de 2
+ * unidades do DOCUMENTO nas duas dimensões, ou seja 16 px de tela em zoom 8 e 32 em zoom
+ * 16: a criança arrastava uma linha pequena, via o rastro e nada nascia.
+ */
+const DRAW_MIN_SCREEN_PX = MARQUEE_MIN_SCREEN_PX
+
+/**
+ * Com uma ferramenta de FORMA ativa, as alças de redimensionar/girar só aparecem quando a
+ * forma recém-desenhada mede pelo menos isto em px de TELA nos dois eixos. Abaixo disso as
+ * oito alças de 14 px cobrem a forma inteira e mais 7 px para cada lado, e o `pointerdown`
+ * da PRÓXIMA linha pequena caía numa alça (que pára a propagação) e virava um
+ * redimensionamento em vez de um desenho. Com a Selecionar nada muda.
+ */
+const HANDLE_MIN_SCREEN_PX = 40
+
+/**
  * Distância mínima, em px de TELA, entre o nó e a alça para a alça aparecer.
  * Abaixo disso os dois círculos se sobrepõem e um rouba o toque do outro.
  */
@@ -193,6 +289,9 @@ const BRUSH_MIN_POINT_DISTANCE = 0.35
 
 /** Ferramentas de FORMA: a forma recém-desenhada fica com as alças (ajuste na hora). */
 const SHAPE_TOOLS: ReadonlySet<string> = new Set(['rect', 'ellipse', 'line', 'polygon', 'star'])
+
+/** Largura do alvo do toque de uma guia, em px de TELA (o traço visível tem 1 px). */
+const GUIDE_HIT_SCREEN_PX = 16
 
 const HANDLES: Array<{ id: string; fx: number; fy: number }> = [
   { id: 'nw', fx: 0, fy: 0 },
@@ -206,7 +305,7 @@ const HANDLES: Array<{ id: string; fx: number; fy: number }> = [
 ]
 
 export function VectorStage(): JSX.Element {
-  const { editor } = useEditorStores()
+  const { editor, session } = useEditorStores()
   const { showToast } = useToast()
   const {
     doc,
@@ -235,6 +334,8 @@ export function VectorStage(): JSX.Element {
     commitShapes,
     rememberColor,
     adoptStyle,
+    adoptChannelColor,
+    activeChannel,
     colorPick,
     endColorPick,
     cancelColorPick,
@@ -244,15 +345,34 @@ export function VectorStage(): JSX.Element {
     groupSelected,
     ungroupSelected,
     pathfinderSelected,
+    canDistributeSelected,
+    distributeSelected,
+    gradientAdjustShapeId,
+    endGradientAdjust,
+    maskEditId,
+    createMaskSelected,
+    beginMaskEdit,
+    endMaskEdit,
+    releaseMaskSelected,
+    centerSelectionPivot,
   } = useVectorEditor()
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
   const zoom = useSession((state) => state.zoom)
   const showGrid = useSession((state) => state.showGrid)
+  const showRulers = useSession((state) => state.showRulers)
+  const guides = useSession((state) => state.guides)
+  const showGuides = useSession((state) => state.showGuides)
+  const guidesLocked = useSession((state) => state.guidesLocked)
+  // A guia "fantasma" enquanto a criança a puxa da régua (some ao soltar).
+  const [ghostGuide, setGhostGuide] = useState<{ axis: GuideAxis; pos: number } | null>(null)
   // Mesmo corte do EditorScreen: no desktop a faixa da seleção substitui a
   // barra flutuante.
   const wide = useMediaQuery('(min-width: 768px)')
   const [preview, setPreview] = useState<VectorShape | null>(null)
+  // Leitor de tela: o que o ultimo toque do conta-gotas pegou (o rotulo do
+  // quadradinho muda, mas ninguem esta focando nele).
+  const [pickAnnounce, setPickAnnounce] = useState('')
   const [marquee, setMarquee] = useState<Bounds | null>(null)
   // Diálogo do texto: criar num ponto OU reeditar um shape existente.
   const [textDialog, setTextDialog] = useState<
@@ -270,15 +390,56 @@ export function VectorStage(): JSX.Element {
    * BORDAS do pan: dois renders por arrasto, nenhum durante o movimento.
    */
   const [panning, setPanning] = useState(false)
+  /**
+   * A guia que está sendo arrastada para FORA da área rolável (soltar ali a apaga): só o id,
+   * e só nas BORDAS (entrou/saiu), como o `panning`. A linha ganha `data-guide-leaving` e o
+   * tracejado, para a criança ver que vai apagar antes de soltar.
+   */
+  const [leavingGuideId, setLeavingGuideId] = useState<string | null>(null)
   const gestureRef = useRef<Gesture | null>(null)
+  const gradientDoneRef = useRef<HTMLButtonElement>(null)
+  const maskDoneRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (gradientAdjustShapeId) gradientDoneRef.current?.focus()
+  }, [gradientAdjustShapeId])
+  useEffect(() => {
+    if (!gradientAdjustShapeId) return
+    function onKey(event: globalThis.KeyboardEvent): void {
+      if (event.key !== 'Escape' || isPintaModalOpen()) return
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      endGradientAdjust()
+    }
+    window.addEventListener('keydown', onKey, { capture: true })
+    return () => window.removeEventListener('keydown', onKey, { capture: true })
+  }, [gradientAdjustShapeId, endGradientAdjust])
+  useEffect(() => {
+    if (maskEditId) maskDoneRef.current?.focus()
+  }, [maskEditId])
+  useEffect(() => {
+    if (!maskEditId) return
+    function onKey(event: globalThis.KeyboardEvent): void {
+      if (event.key !== 'Escape' || isPintaModalOpen()) return
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      endMaskEdit()
+    }
+    window.addEventListener('keydown', onKey, { capture: true })
+    return () => window.removeEventListener('keydown', onKey, { capture: true })
+  }, [maskEditId, endMaskEdit])
   // O solto no `document` (para o gesto acabar mesmo FORA do palco) e a versão mais
   // recente do `endGesture`: o listener nasce num render, e o laço/a prévia mudam depois.
   const dragCleanupRef = useRef<(() => void) | null>(null)
-  const endGestureRef = useRef<(event?: { pointerId: number }) => void>(() => undefined)
+  const endGestureRef = useRef<(event?: { pointerId: number; type?: string }) => void>(
+    () => undefined,
+  )
   // A versão mais recente do movimento, para o `document` alimentar o gesto quando
   // o capture do ponteiro não existe (mesmo motivo do `endGestureRef`).
   const pointerMoveRef = useRef<(event: StagePointer) => void>(() => undefined)
   useEffect(() => () => dragCleanupRef.current?.(), [])
+  // O arrasto que nasce na RÉGUA (criar guia) não passa pelo `<svg>`: ouve o document direto.
+  const guideDragCleanupRef = useRef<(() => void) | null>(null)
+  useEffect(() => () => guideDragCleanupRef.current?.(), [])
   // Ctrl/Cmd+Enter salva o texto: o Enter cru pertence à quebra de linha.
   const textFormRef = useRef<HTMLFormElement>(null)
 
@@ -317,12 +478,37 @@ export function VectorStage(): JSX.Element {
     if (gestureRef.current) endGestureRef.current()
   }, [zoom])
 
+  useLayoutEffect(() => {
+    if (!gradientAdjustShapeId && gestureRef.current?.kind === 'gradient') endGestureRef.current()
+  }, [gradientAdjustShapeId])
+
+  useLayoutEffect(() => {
+    if (!maskEditId && gestureRef.current?.kind === 'move') endGestureRef.current()
+  }, [maskEditId])
+
   // Trocar de ferramenta descarta os pontos pendentes da Caneta.
   // biome-ignore lint/correctness/useExhaustiveDependencies: a dep é o GATILHO (trocou de ferramenta), não leitura
   useEffect(() => {
     setPenPoints([])
     setPenCursor(null)
   }, [tool])
+
+  // Conta-gotas ligado: abre as figuras deste quadro ANTES do toque. A cor de uma
+  // figura é o pixel sob o dedo, e lê-lo tem que ser síncrono (o `preventDefault`
+  // do pointerdown na captura é o que segura o foco da janelinha do degradê).
+  // A captura também liga o `picker`, então os dois caminhos ficam cobertos.
+  useEffect(() => {
+    if (tool !== 'picker') return
+    const sources = resolveMaskScene(doc.shapes)
+      .painted.filter((shape) => shape.type === 'image')
+      .map((shape) => (shape.type === 'image' ? shape.src : ''))
+    if (sources.length === 0) return
+    void primeImageSources(sources)
+  }, [tool, doc.shapes])
+
+  // Fechar o desenho larga as figuras abertas: um `ImageBitmap` segurado em JS
+  // não é reclamável, e um cenário de adesivos guarda dezenas de MB de RGBA.
+  useEffect(() => () => clearImageSampleCache(), [])
 
   // Enter fecha a forma da Caneta; Esc descarta os pontos. Registrado só com
   // pontos pendentes; ignora campos de texto E botões (Enter ativa botão).
@@ -376,6 +562,12 @@ export function VectorStage(): JSX.Element {
 
   useWheelZoom(stageRef, svgRef)
 
+  // O documento encolheu (outra peça/quadro menor): guia fora dele voltaria invisível, mas
+  // contando no teto e acendendo o "Limpar". Traz todas para a borda.
+  useEffect(() => {
+    session.getState().clampGuides(doc.width, doc.height)
+  }, [session, doc.width, doc.height])
+
   const gridSpacing = gridSpacingFor(doc.width, doc.height)
 
   /** Encaixa na grade quando ela está LIGADA (desenho de formas, mover, redimensionar). */
@@ -418,6 +610,34 @@ export function VectorStage(): JSX.Element {
   }
 
   /**
+   * ⚠⚠ A alça só vale depois de um arrasto de VERDADE (18/09/2026).
+   *
+   * As alças medem 14px de tela e se estendem 7px para DENTRO da caixa, então num alvo pequeno
+   * (um texto de uma palavra em zoom baixo) elas cobrem quase tudo. Sem limiar, a tremida de
+   * um ou dois pixels do segundo clique de um duplo clique já era um redimensionamento de
+   * verdade — e no texto o `scaleShape` escala o `fontSize` com fator de até 0,05, ou seja,
+   * a palavra praticamente SUMIA. É a leitura literal do "ele apaga" que ela relatou.
+   *
+   * O limiar é em pixels de TELA (como todo o resto dos gestos: o palco pode mudar de lugar no
+   * meio) e é um LATCH: passou uma vez, o gesto segue inteiro até o solto, inclusive voltando
+   * para perto do começo — senão não daria para desfazer o arrasto arrastando de volta.
+   */
+  const ALCA_LIMIAR_PX = 4
+  const alcaMoveuRef = useRef(false)
+
+  function alcaAindaParada(
+    gesture: { startClient: Vec2 },
+    event: { clientX: number; clientY: number },
+  ): boolean {
+    if (alcaMoveuRef.current) return false
+    const dx = event.clientX - gesture.startClient.x
+    const dy = event.clientY - gesture.startClient.y
+    if (Math.hypot(dx, dy) < ALCA_LIMIAR_PX) return true
+    alcaMoveuRef.current = true
+    return false
+  }
+
+  /**
    * Abre um gesto: captura o ponteiro no palco e, de todo jeito, ouve o solto no
    * `document`. Sem isto, soltar FORA do `<svg>` (alvo pequeno em zoom baixo) com o
    * capture perdido deixava o gesto preso e o palco "morto" até recarregar.
@@ -425,6 +645,7 @@ export function VectorStage(): JSX.Element {
   function beginGesture(gesture: Gesture): void {
     dragCleanupRef.current?.()
     gestureRef.current = gesture
+    alcaMoveuRef.current = false
     const captured = svgRef.current
       ? safeSetPointerCapture(svgRef.current, gesture.pointerId)
       : false
@@ -441,8 +662,67 @@ export function VectorStage(): JSX.Element {
             if (svgRef.current?.contains(event.target as Node | null)) return
             pointerMoveRef.current(event)
           },
-      onEnd: (event) => endGestureRef.current({ pointerId: event.pointerId }),
+      onEnd: (event) => endGestureRef.current({ pointerId: event.pointerId, type: event.type }),
     })
+  }
+
+  function startGradientGesture(
+    handle: GradientHandle,
+    event: PointerEvent<SVGCircleElement>,
+  ): void {
+    event.stopPropagation()
+    event.preventDefault()
+    if (!event.isPrimary || !gradientAdjustShapeId || gestureStillActive()) return
+    const baseShapes = currentShapes()
+    const shape = baseShapes.find((candidate) => candidate.id === gradientAdjustShapeId)
+    if (!shape || shape.locked || shape.hidden || !isVectorGradient(shape.fill)) return
+    beginGesture({
+      kind: 'gradient',
+      pointerId: event.pointerId,
+      shapeId: shape.id,
+      handle,
+      start: svgPoint(event),
+      startClient: { x: event.clientX, y: event.clientY },
+      docPerPx: docPerPxNow(),
+      base: editor.getState().asset,
+      baseShapes,
+    })
+  }
+
+  function nudgeGradientHandle(
+    handle: GradientHandle,
+    event: ReactKeyboardEvent<SVGCircleElement>,
+  ): void {
+    const { key } = event
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key)) return
+    event.preventDefault()
+    event.stopPropagation()
+    if (!gradientAdjustShapeId) return
+    const shapes = currentShapes()
+    const shape = shapes.find((candidate) => candidate.id === gradientAdjustShapeId)
+    if (!shape || !isVectorGradient(shape.fill) || shape.locked || shape.hidden) return
+    const geometry = gradientGeometry(shape.fill)
+    const step = event.shiftKey ? 0.1 : 0.02
+    const dx = key === 'ArrowRight' ? step : key === 'ArrowLeft' ? -step : 0
+    const dy = key === 'ArrowDown' ? step : key === 'ArrowUp' ? -step : 0
+    let point: Vec2
+    if (geometry.type === 'radial') {
+      if (handle === 'radius') {
+        const side = geometry.center.x + geometry.radius <= 1 ? 1 : -1
+        const radiusDelta = dx * side + (key === 'ArrowUp' ? step : key === 'ArrowDown' ? -step : 0)
+        point = { x: geometry.center.x + geometry.radius + radiusDelta, y: geometry.center.y }
+      } else {
+        point = { x: geometry.center.x + dx, y: geometry.center.y + dy }
+      }
+    } else {
+      const current = handle === 'start' ? geometry.start : geometry.end
+      point = { x: current.x + dx, y: current.y + dy }
+    }
+    const fill = moveGradientHandle(shape.fill, handle, point)
+    if (fill === shape.fill) return
+    commitShapes(
+      shapes.map((candidate) => (candidate.id === shape.id ? { ...candidate, fill } : candidate)),
+    )
   }
 
   /**
@@ -460,16 +740,97 @@ export function VectorStage(): JSX.Element {
     return false
   }
 
+  /** A posição, no eixo pedido, de um ponteiro que está na RÉGUA (em unidades do documento). */
+  function guidePosFromClient(
+    axis: GuideAxis,
+    event: { clientX: number; clientY: number },
+  ): number {
+    const at = svgPoint(event)
+    return axis === 'x' ? at.x : at.y
+  }
+
+  /** O ponto de tela está dentro da área rolável do palco (o papel e a folga em volta)? */
+  function insideScroller(client: Vec2): boolean {
+    const rect = stageRef.current?.getBoundingClientRect()
+    if (!rect || rect.width < 1 || rect.height < 1) return false
+    return (
+      client.x >= rect.left &&
+      client.x <= rect.right &&
+      client.y >= rect.top &&
+      client.y <= rect.bottom
+    )
+  }
+
+  /**
+   * Puxar uma guia da RÉGUA: uma fantasma tracejada segue o ponteiro; soltar DENTRO do palco
+   * cria a guia, soltar fora (na régua, na caixa, fora da janela) cancela. Não passa pelo
+   * `beginGesture`: o ponteiro não é do `<svg>` (a captura nele falharia).
+   */
+  function startGuideFromRuler(axis: GuideAxis, event: PointerEvent<SVGSVGElement>): void {
+    if (!event.isPrimary || gestureStillActive()) return
+    event.preventDefault()
+    // Puxar com as guias ESCONDIDAS as mostra de novo (como o Illustrator): senão a criança
+    // criava uma guia invisível, que contava no teto sem aparecer.
+    if (!session.getState().showGuides) session.getState().toggleGuides()
+    guideDragCleanupRef.current?.()
+    const docSize = axis === 'x' ? doc.width : doc.height
+    setGhostGuide({ axis, pos: clampGuidePos(guidePosFromClient(axis, event), docSize) })
+    guideDragCleanupRef.current = addPointerDragListeners(document, {
+      pointerId: event.pointerId,
+      onMove: (move) =>
+        setGhostGuide({ axis, pos: clampGuidePos(guidePosFromClient(axis, move), docSize) }),
+      onEnd: (end) => {
+        guideDragCleanupRef.current = null
+        setGhostGuide(null)
+        if (end.type === 'pointercancel') return
+        if (!insideScroller({ x: end.clientX, y: end.clientY })) return
+        const added = session.getState().addGuide(axis, guidePosFromClient(axis, end), docSize)
+        if (!added) showToast(COPY.tools.guideLimit)
+      },
+    })
+  }
+
+  /** Pegar uma guia para mover (só com a Selecionar e destravada, ver `guidesInteractive`). */
+  function handleGuideDown(guide: StageGuide, event: PointerEvent<SVGElement>): void {
+    // Espaço segurado = Mão: o toque desce ao palco e faz o pan, não move a guia.
+    if (spaceHeld) return
+    if (!guidesInteractive || !event.isPrimary || gestureStillActive()) return
+    event.stopPropagation()
+    const client = { x: event.clientX, y: event.clientY }
+    beginGesture({
+      kind: 'guideMove',
+      pointerId: event.pointerId,
+      id: guide.id,
+      axis: guide.axis,
+      start: guide.pos,
+      startClient: client,
+      docPerPx: docPerPxNow(),
+      lastClient: client,
+    })
+  }
+
   /** Começa a MOVER a forma tocada (com o grupo dela e a seleção, como sempre). */
   function startMoveGesture(shape: VectorShape, event: PointerEvent<Element>, at: Vec2): void {
-    // Clicar num shape agrupado seleciona o grupo inteiro (move junto).
-    const clicked = expandToGroups(currentShapes(), [shape.id])
+    const shapes = currentShapes()
+    const editedMask = maskEditId
+      ? shapes.find((candidate) => candidate.id === maskEditId)
+      : undefined
+    const target = editedMask ?? shape
+    if (target.locked === true) {
+      showToast(COPY.layers.lockedShapeWarning)
+      return
+    }
+    const clicked = editedMask ? [editedMask.id] : expandToSelectionUnits(shapes, [shape.id])
     const ids = event.shiftKey
       ? [...new Set([...selectedIds, ...clicked])]
       : selectedIds.includes(shape.id)
         ? selectedIds
         : clicked
-    setSelectedIds(ids)
+    if (!editedMask && selectionHasLockedMaskMember(shapes, ids)) {
+      showToast(COPY.layers.lockedShapeWarning)
+      return
+    }
+    if (!editedMask) setSelectedIds(ids)
     beginGesture({
       kind: 'move',
       pointerId: event.pointerId,
@@ -477,8 +838,19 @@ export function VectorStage(): JSX.Element {
       startClient: { x: event.clientX, y: event.clientY },
       docPerPx: docPerPxNow(),
       base: editor.getState().asset,
-      baseShapes: currentShapes(),
+      baseShapes: shapes,
+      ids: editedMask ? [editedMask.id] : ids,
     })
+  }
+
+  /** Uma guia é uma reta de borda a borda do documento no eixo dela. */
+  function guideLineAttrs(
+    axis: GuideAxis,
+    pos: number,
+  ): { x1: number; x2: number; y1: number; y2: number } {
+    return axis === 'x'
+      ? { x1: pos, x2: pos, y1: 0, y2: doc.height }
+      : { x1: 0, x2: doc.width, y1: pos, y2: pos }
   }
 
   function drawPreview(start: Vec2, current: Vec2, points: Vec2[]): VectorShape | null {
@@ -529,12 +901,50 @@ export function VectorStage(): JSX.Element {
     setSelectedIds([shape.id])
   }
 
+  /**
+   * Conta ao leitor de tela o que acabou de entrar no quadradinho. O nome vem do
+   * `colorNameFor` porque a cor de uma figura quase nunca está na paleta, e um
+   * hex cru é lido letra a letra.
+   */
+  function announcePicked(hex: string): void {
+    const channel = activeChannel === 'stroke' ? COPY.vector.stroke : COPY.vector.fill
+    // "Sem cor" é rótulo de botão; no meio de uma frase vai em minúscula.
+    const color = hex === 'none' ? COPY.vector.none.toLowerCase() : colorNameFor(hex)
+    setPickAnnounce(COPY.vector.pickedColorAnnounce(channel, color))
+  }
+
+  /**
+   * O recado de um toque que não virou cor. ⚠️ `loading` e `failed` são frases
+   * DIFERENTES de propósito: só a primeira promete que tocar de novo funciona
+   * (o `sampleImageColorAt` de fato manda abrir a figura no miss do cache);
+   * uma figura que não abre nunca vai abrir, e pedir paciência ali é armadilha.
+   */
+  function toolToastFor(sample: ImageSample): string {
+    if (sample.kind === 'loading') return COPY.vector.pickColorFigureLoading
+    if (sample.kind === 'failed') return COPY.vector.pickColorFigureFailed
+    return COPY.vector.pickColorMiss
+  }
+
+  /** O mesmo, na captura: lá o pixel vazio é recusa (a ponta precisa de cor). */
+  function captureToastFor(sample: ImageSample): string {
+    if (sample.kind === 'transparent') return COPY.vector.pickColorFigureHoleTake
+    return toolToastFor(sample)
+  }
+
   function handleCanvasPointerDown(event: PointerEvent<SVGSVGElement>): void {
+    if (gradientAdjustShapeId) return
     if (!event.isPrimary || gestureStillActive()) return
     safeSetPointerCapture(event.currentTarget, event.pointerId)
     const at = svgPoint(event)
     if (spaceHeld) {
       startPan(event)
+      return
+    }
+    if (maskEditId) {
+      const source = currentShapes().find((shape) => shape.id === maskEditId)
+      if (!source || source.locked === true) return
+      const hitShape = { ...source, fill: '#000000', stroke: null }
+      if (shapeHitAt(hitShape, at, 4 / zoom)) startMoveGesture(source, event, at)
       return
     }
     if (tool === 'text') {
@@ -572,7 +982,7 @@ export function VectorStage(): JSX.Element {
       // traço, de um círculo sem cor ou de uma polilinha abre o laço, e a
       // trancada nunca bloqueia a forma livre embaixo dela. Folga pequena (4px):
       // grande demais e o laço que começa PERTO de uma forma viraria mover.
-      const hit = hitMovableShapeAt(visibleShapes(currentShapes()), at, 4 / zoom)
+      const hit = hitMovableShapeAt(currentShapes(), at, 4 / zoom)
       if (hit) {
         startMoveGesture(hit, event, at)
         return
@@ -598,39 +1008,75 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (tool === 'picker') {
+      const slack = 10 / zoom
       // CAPTURA da janelinha de cor: o toque devolve UMA cor (fill, ponta do
-      // degradê mais perto, ou o contorno) e sai do modo. Tocar no vazio não
-      // faz nada (ela tenta de novo); figura de pixel art não tem cor única.
+      // degradê mais perto, o contorno, ou o PIXEL da figura) e sai do modo.
       if (colorPick) {
         // Cancelar o pointerdown segura o FOCO: o Degradê reabre e foca o card no
         // microtask, e o mousedown de compatibilidade que viria depois moveria o
-        // foco para o body (o svg não é focável).
+        // foco para o body (o svg não é focável). ⚠️ É por isso que a leitura do
+        // pixel é SÍNCRONA (as figuras já vêm abertas pelo efeito abaixo).
         event.preventDefault()
-        const picked = pickColorAt(visibleShapes(currentShapes()), at, 10 / zoom)
-        if (!picked) return
-        if (!picked.hex) {
-          // Só a figura de pixel art chega aqui: forma sem cor nenhuma nem entra
-          // no hit-test (`paintsSomething`).
-          if (picked.shape.type === 'image') showToast(COPY.vector.pickColorNoColor)
+        const picked = pickColorAt(currentShapes(), at, slack)
+        // Tocar no vazio não sai do modo — ela tenta de novo, e agora sabe por quê.
+        if (!picked) {
+          showToast(COPY.vector.pickColorMiss)
           return
         }
-        endColorPick(picked.hex)
+        if (picked.hex) {
+          endColorPick(picked.hex)
+          return
+        }
+        // Só a figura chega aqui: forma sem cor nem entra no hit-test.
+        if (picked.shape.type !== 'image') return
+        const sample = sampleImageColorAt(picked.shape, at, slack)
+        if (sample.kind === 'color') {
+          endColorPick(sample.hex)
+          return
+        }
+        showToast(captureToastFor(sample))
         return
       }
       // Conta-gotas: adota o estilo da forma mais AO TOPO sob o toque (bbox com a
       // folga do toque — o clique de forma borbulha até aqui porque não é a
       // ferramenta de seleção). `adoptStyle` muda SÓ o estilo vigente (não
       // re-estiliza a seleção).
-      const hit = hitShapeAt(visibleShapes(currentShapes()), at, 10 / zoom)
-      if (hit) {
-        adoptStyle({
-          fill: hit.fill,
-          stroke: hit.stroke ? { ...hit.stroke } : null,
-          opacity: hit.opacity,
-        })
-        if (typeof hit.fill === 'string' && hit.fill !== 'none') rememberColor(hit.fill)
-        if (hit.stroke) rememberColor(hit.stroke.color)
+      const hit = hitShapeAt(currentShapes(), at, slack)
+      if (!hit) {
+        showToast(COPY.vector.pickColorMiss)
+        return
       }
+      // ⭐ FIGURA: não há estilo para copiar (ela nasce `fill: 'none'`, e adotá-lo
+      // APAGAVA a cor da criança em silêncio) — há UM pixel. Ele vai para o canal
+      // ativo, que é o que os dois quadradinhos da caixa já dizem. ⚠️ A `opacity`
+      // da figura NÃO é adotada de propósito: ela é do decalque, não da cor.
+      if (hit.type === 'image') {
+        const sample = sampleImageColorAt(hit, at, slack)
+        if (sample.kind === 'color') {
+          adoptChannelColor(sample.hex)
+          rememberColor(sample.hex)
+          announcePicked(sample.hex)
+          return
+        }
+        // Pixel vazio arma o "sem cor" no quadradinho — só o estilo vigente, ao
+        // contrário do "Sem cor" da paleta, que re-estiliza a seleção. Calado,
+        // seria indistinguível do defeito antigo: por isso o recado.
+        if (sample.kind === 'transparent') {
+          adoptChannelColor('none')
+          announcePicked('none')
+          showToast(COPY.vector.pickColorFigureHole)
+          return
+        }
+        showToast(toolToastFor(sample))
+        return
+      }
+      adoptStyle({
+        fill: hit.fill,
+        stroke: hit.stroke ? { ...hit.stroke } : null,
+        opacity: hit.opacity,
+      })
+      if (typeof hit.fill === 'string' && hit.fill !== 'none') rememberColor(hit.fill)
+      if (hit.stroke) rememberColor(hit.stroke.color)
       return
     }
     if (currentShapes().length >= PINTA_LIMITS.maxShapes) {
@@ -639,13 +1085,55 @@ export function VectorStage(): JSX.Element {
     }
     // Formas encaixam o PONTO INICIAL na grade; o pincel fica livre.
     const start = tool === 'brush' ? at : maybeSnap(at)
-    beginGesture({ kind: 'draw', pointerId: event.pointerId, start, points: [at] })
-    setPreview(drawPreview(start, start, [at]))
+    const shape = drawPreview(start, start, [at])
+    const client = { x: event.clientX, y: event.clientY }
+    beginGesture({
+      kind: 'draw',
+      pointerId: event.pointerId,
+      start,
+      points: [at],
+      startClient: client,
+      lastClient: client,
+      shape,
+    })
+    setPreview(shape)
   }
 
   function handleShapePointerDown(shape: VectorShape, event: PointerEvent<SVGElement>): void {
+    if (gradientAdjustShapeId) {
+      event.stopPropagation()
+      return
+    }
     // Espaço segurado: deixa o evento SUBIR até o palco (vira pan).
     if (spaceHeld) return
+    if (maskEditId) {
+      if (!event.isPrimary || gestureStillActive()) return
+      event.stopPropagation()
+      if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
+      const source = currentShapes().find((candidate) => candidate.id === maskEditId)
+      if (source) startMoveGesture(source, event, svgPoint(event))
+      return
+    }
+    // ⭐⭐ Ferramenta TEXTO em cima de um texto que JÁ EXISTE: edita aquele texto (18/09/2026).
+    // Relato dela: "não estou conseguindo editar um texto, quando seleciono para editar ele
+    // apaga". Este é o gesto intuitivo — pegar a ferramenta de escrever e tocar na palavra — e
+    // até aqui ele ATRAVESSAVA a forma (a saída cedo logo abaixo não pára a propagação), caía no
+    // palco e abria a janela em `mode: 'new'` com o campo VAZIO. Salvando, nascia um SEGUNDO
+    // texto por cima do primeiro, o que na tela parece o texto ter virado outra coisa.
+    // ⚠ Trancada segue atravessando, como no resto do palco: para o mouse ela não está ali.
+    if (tool === 'text' && shape.type === 'text' && event.isPrimary && !gestureStillActive()) {
+      event.stopPropagation()
+      // ⚠ Trancado, o gesto AVISA em vez de atravessar. Atravessando (que é o que o resto do
+      // palco faz com a trancada) ele caía no palco e criava um texto NOVO por cima dela —
+      // reproduzindo, para um texto trancado, exatamente o "selecionei para editar e ele apagou"
+      // que este lote veio consertar. Achado do full review de 18/09/2026.
+      if (shape.locked === true) {
+        showToast(COPY.layers.lockedShapeWarning)
+        return
+      }
+      abrirEdicaoDeTexto(shape)
+      return
+    }
     if ((tool !== 'select' && tool !== 'reshape') || !event.isPrimary || gestureStillActive())
       return
     // Trancada: o clique ATRAVESSA para o palco (sem stopPropagation) — para o
@@ -684,13 +1172,15 @@ export function VectorStage(): JSX.Element {
     bounds: Bounds,
     event: PointerEvent<SVGElement>,
   ): void {
-    if (spaceHeld || selected.length === 0 || !event.isPrimary || gestureStillActive()) return
-    // Ferramenta sem alças (pincel, caneta, texto, mão): o toque desce ao palco e desenha.
-    if (!handlesActive) return
+    if (spaceHeld || transformShapes.length === 0 || !event.isPrimary || gestureStillActive())
+      return
+    // Ferramenta sem alças (pincel, caneta, texto, mão) ou forma pequena demais para
+    // elas: o toque desce ao palco e desenha.
+    if (!handlesUsable) return
     event.stopPropagation()
     // Redimensionar escala a seleção INTEIRA em torno da mesma âncora — com
     // trancada dentro, escalar só as livres desmontaria o arranjo. Avisa e sai.
-    if (selected.some((s) => s.locked === true)) {
+    if (transformShapes.some((s) => s.locked === true)) {
       showToast(COPY.layers.lockedShapeWarning)
       return
     }
@@ -709,22 +1199,23 @@ export function VectorStage(): JSX.Element {
       docPerPx: docPerPxNow(),
       base: editor.getState().asset,
       // 1 forma OU várias: todas escalam em torno da mesma âncora.
-      baseShapes: selected,
+      baseShapes: transformShapes,
     })
   }
 
-  function handleRotateDown(bounds: Bounds, event: PointerEvent<SVGElement>): void {
-    if (spaceHeld || selected.length === 0 || !event.isPrimary || gestureStillActive()) return
-    // Ferramenta sem alças (pincel, caneta, texto, mão): o toque desce ao palco e desenha.
-    if (!handlesActive) return
+  function handleRotateDown(center: Vec2, event: PointerEvent<SVGElement>): void {
+    if (spaceHeld || transformShapes.length === 0 || !event.isPrimary || gestureStillActive())
+      return
+    // Ferramenta sem alças (pincel, caneta, texto, mão) ou forma pequena demais para
+    // elas: o toque desce ao palco e desenha.
+    if (!handlesUsable) return
     event.stopPropagation()
     // Mesma régua do redimensionar: o giro é da seleção inteira.
-    if (selected.some((s) => s.locked === true)) {
+    if (transformShapes.some((s) => s.locked === true)) {
       showToast(COPY.layers.lockedShapeWarning)
       return
     }
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
-    const center = boundsCenter(bounds)
     const at = svgPoint(event)
     beginGesture({
       kind: 'rotate',
@@ -736,8 +1227,55 @@ export function VectorStage(): JSX.Element {
       docPerPx: docPerPxNow(),
       base: editor.getState().asset,
       // 1 forma OU várias: mesmo espelho do handleResizeDown.
-      baseShapes: selected,
+      baseShapes: transformShapes,
     })
+  }
+
+  function startPivotGesture(event: PointerEvent<SVGCircleElement>): void {
+    event.stopPropagation()
+    event.preventDefault()
+    if (
+      spaceHeld ||
+      transformShapes.length === 0 ||
+      transformShapes.some((shape) => shape.locked === true) ||
+      !event.isPrimary ||
+      gestureStillActive()
+    )
+      return
+    if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
+    beginGesture({
+      kind: 'pivot',
+      pointerId: event.pointerId,
+      start: svgPoint(event),
+      startClient: { x: event.clientX, y: event.clientY },
+      docPerPx: docPerPxNow(),
+      base: editor.getState().asset,
+      baseShapes: transformShapes,
+    })
+  }
+
+  function nudgeRotationPivot(event: ReactKeyboardEvent<SVGCircleElement>): void {
+    const { key } = event
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(key)) return
+    event.preventDefault()
+    event.stopPropagation()
+    if (transformShapes.length === 0 || transformShapes.some((shape) => shape.locked === true))
+      return
+    const step = event.shiftKey ? 10 : 1
+    const current = currentShapes()
+    const ids = new Set(transformShapes.map((shape) => shape.id))
+    const targets = current.filter((shape) => ids.has(shape.id))
+    if (targets.length === 0) return
+    const pivot = selectionRotationPivot(targets)
+    const next = {
+      x: pivot.x + (key === 'ArrowRight' ? step : key === 'ArrowLeft' ? -step : 0),
+      y: pivot.y + (key === 'ArrowDown' ? step : key === 'ArrowUp' ? -step : 0),
+    }
+    commitShapes(
+      current.map((shape) =>
+        ids.has(shape.id) ? setRotationPivotPreservingAppearance(shape, next) : shape,
+      ),
+    )
   }
 
   /** Laco de nos: compartilhado pelo fundo e pelo miolo da forma em edicao. */
@@ -799,12 +1337,50 @@ export function VectorStage(): JSX.Element {
     })
   }
 
-  /** Duplo clique num TEXTO (com a Selecionar) reabre o diálogo para editar. */
-  function handleShapeDoubleClick(shape: VectorShape): void {
-    if (tool !== 'select' || shape.type !== 'text') return
-    if (shape.locked === true) return
+  /** Abre a janela do texto JÁ COM o conteúdo dentro. Ponto Único dos dois caminhos de edição. */
+  function abrirEdicaoDeTexto(shape: VectorShape): void {
+    if (shape.type !== 'text') return
     setTextDialog({ mode: 'edit', shapeId: shape.id })
     setTextValue(shape.text)
+  }
+
+  /** Duplo clique num TEXTO (com a Selecionar) reabre o diálogo para editar. */
+  function handleShapeDoubleClick(shape: VectorShape): void {
+    if (gradientAdjustShapeId) return
+    if (tool !== 'select' || shape.type !== 'text') return
+    if (shape.locked === true) return
+    abrirEdicaoDeTexto(shape)
+  }
+
+  /**
+   * O duplo clique do PALCO. Fecha a Caneta e, com a Selecionar, é a REDE do texto pequeno.
+   *
+   * ⚠⚠ Por que a rede precisa existir: depois do primeiro clique a forma já está selecionada
+   * e as oito alças (14px de TELA cada, opacas) são desenhadas POR CIMA dela. Num texto
+   * pequeno elas cobrem quase todo o glifo, então o segundo clique acerta uma alça: como os
+   * dois cliques tiveram alvos diferentes, o navegador dispara o `dblclick` no ancestral comum
+   * (o `<svg>`) e o `handleShapeDoubleClick` da forma NUNCA roda. Ouvindo aqui, o gesto vale
+   * não importa em qual peça cada clique caiu. É por isso que o defeito era intermitente: em
+   * zoom alto o texto fica maior que as alças e o caminho de sempre funciona.
+   */
+  function handleStageDoubleClick(event: { clientX: number; clientY: number }): void {
+    if (gradientAdjustShapeId) return
+    if (tool === 'pen' && penPoints.length > 0) {
+      finishPen(penPoints)
+      return
+    }
+    if (tool !== 'select') return
+    const alvo = single
+    if (alvo?.type !== 'text' || alvo.locked === true) return
+    // ⚠⚠ Só EM CIMA do texto selecionado (com a folga das alças, que ficam meio para fora): um
+    // duplo clique no vazio do papel não pode abrir a janela de um texto distante. Quem responde
+    // é o `shapeHitAt`, que leva o ponto ao espaço LOCAL da forma e TRATA a rotação — a primeira
+    // versão comparava com a caixa do `shapeBounds`, que a ignora (está documentado), e num texto
+    // girado errava nos dois sentidos: o duplo clique em cima do glifo caía fora e o duplo
+    // clique no vazio caía dentro. E a rede existe justamente para o texto pequeno, girado
+    // inclusive. De quebra some a terceira cópia da régua de "o ponto está na forma?".
+    if (!shapeHitAt(alvo, svgPoint(event), 8 / zoom)) return
+    abrirEdicaoDeTexto(alvo)
   }
 
   function handlePointerMove(event: StagePointer): void {
@@ -822,6 +1398,23 @@ export function VectorStage(): JSX.Element {
       stage.scrollTop = gesture.startScroll.y - (event.clientY - gesture.startClient.y)
       return
     }
+    if (gesture.kind === 'guideMove') {
+      gesture.lastClient = { x: event.clientX, y: event.clientY }
+      // Só muda de valor nas bordas (o React ignora o `set` com o mesmo valor).
+      setLeavingGuideId(insideScroller(gesture.lastClient) ? null : gesture.id)
+      const delta =
+        gesture.axis === 'x'
+          ? event.clientX - gesture.startClient.x
+          : event.clientY - gesture.startClient.y
+      session
+        .getState()
+        .moveGuide(
+          gesture.id,
+          gesture.start + delta * gesture.docPerPx,
+          gesture.axis === 'x' ? doc.width : doc.height,
+        )
+      return
+    }
 
     const at = svgPoint(event)
 
@@ -836,17 +1429,71 @@ export function VectorStage(): JSX.Element {
     }
 
     if (gesture.kind === 'draw') {
-      // Decimação: ponto quase em cima do anterior não acrescenta nada e
-      // encareceria a re-suavização do traço a cada move.
+      gesture.lastClient = { x: event.clientX, y: event.clientY }
+      // Decimação SÓ do pincel: ponto quase em cima do anterior não acrescenta nada e
+      // encareceria a re-suavização do traço a cada move. Para as formas ela era um
+      // defeito: em zoom 16 são 5,6 px de tela, e um arrasto de 4 px nunca atualizava
+      // a prévia da linha.
       const last = gesture.points[gesture.points.length - 1]
-      if (last && Math.hypot(at.x - last.x, at.y - last.y) < BRUSH_MIN_POINT_DISTANCE) return
+      if (
+        tool === 'brush' &&
+        last &&
+        Math.hypot(at.x - last.x, at.y - last.y) < BRUSH_MIN_POINT_DISTANCE
+      )
+        return
       gesture.points.push(at)
       // Grade PRIMEIRO, Shift depois: o quadrado travado fica com lado em
       // múltiplos da grade. Nada disso vale pro pincel (traço livre).
-      const target = tool === 'brush' ? at : maybeSnap(at)
+      let target = tool === 'brush' ? at : maybeSnap(at)
+      // A grade encaixou o fim EM CIMA do começo, mas a mão andou: a criança arrastou
+      // e viu o rastro, então algo TEM que nascer. O fim escapa da grade só neste caso
+      // (arrastos maiores que meio espaçamento seguem 100% na grade).
+      if (
+        tool !== 'brush' &&
+        target.x === gesture.start.x &&
+        target.y === gesture.start.y &&
+        drawDragDistance(gesture) >= DRAW_MIN_SCREEN_PX
+      ) {
+        target = at
+      }
       const end =
         event.shiftKey && tool !== 'brush' ? constrainPoint(tool, gesture.start, target) : target
-      setPreview(drawPreview(gesture.start, end, gesture.points))
+      const shape = drawPreview(gesture.start, end, gesture.points)
+      gesture.shape = shape
+      setPreview(shape)
+      return
+    }
+    if (gesture.kind === 'gradient') {
+      if (alcaAindaParada(gesture, event)) return
+      const shape = gesture.baseShapes.find((candidate) => candidate.id === gesture.shapeId)
+      if (!shape || !isVectorGradient(shape.fill)) return
+      const point = gradientPointForShape(shape, gesturePoint(gesture, event))
+      const fill = moveGradientHandle(shape.fill, gesture.handle, point)
+      if (fill === shape.fill) {
+        if (editor.getState().asset !== gesture.base) editor.getState().replace(gesture.base)
+        return
+      }
+      commitShapes(
+        gesture.baseShapes.map((candidate) =>
+          candidate.id === shape.id ? { ...candidate, fill } : candidate,
+        ),
+        false,
+      )
+      return
+    }
+    if (gesture.kind === 'pivot') {
+      if (alcaAindaParada(gesture, event)) return
+      const pivot = gesturePoint(gesture, event)
+      const anchored = new Map(
+        gesture.baseShapes.map((shape) => {
+          const next = setRotationPivotPreservingAppearance(shape, pivot)
+          return [shape.id, next]
+        }),
+      )
+      commitShapes(
+        currentShapes().map((shape) => anchored.get(shape.id) ?? shape),
+        false,
+      )
       return
     }
     if (gesture.kind === 'move') {
@@ -869,13 +1516,15 @@ export function VectorStage(): JSX.Element {
       commitShapes(
         gesture.baseShapes.map((s) =>
           // Seleção mista arrasta só as LIVRES (a trancada fica plantada).
-          selectedIds.includes(s.id) && s.locked !== true ? translateShape(s, dx, dy) : s,
+          gesture.ids.includes(s.id) && s.locked !== true ? translateShape(s, dx, dy) : s,
         ),
         false,
       )
       return
     }
     if (gesture.kind === 'resize') {
+      // Tremida do duplo clique não é arrasto (ver `alcaAindaParada`).
+      if (alcaAindaParada(gesture, event)) return
       const { anchor, start, baseShapes, handle } = gesture
       const point = maybeSnap(gesturePoint(gesture, event))
       const isCorner = handle.length === 2
@@ -894,6 +1543,8 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (gesture.kind === 'rotate') {
+      // Mesma régua do redimensionar: gesto de alça pede arrasto de verdade.
+      if (alcaAindaParada(gesture, event)) return
       const point = gesturePoint(gesture, event)
       const angle = Math.atan2(point.y - gesture.center.y, point.x - gesture.center.x)
       // Delta TOTAL sobre a base (nunca acumulado): mesma régua do mover e do
@@ -950,7 +1601,7 @@ export function VectorStage(): JSX.Element {
     }
   }
 
-  function endGesture(event?: { pointerId: number }): void {
+  function endGesture(event?: { pointerId: number; type?: string }): void {
     const gesture = gestureRef.current
     if (!gesture) return
     if (event && event.pointerId !== gesture.pointerId) return
@@ -959,6 +1610,22 @@ export function VectorStage(): JSX.Element {
     dragCleanupRef.current = null
     if (gesture.kind === 'pan') {
       setPanning(false)
+      return
+    }
+    if (gesture.kind === 'guideMove') {
+      setLeavingGuideId(null)
+      // `pointercancel` (o navegador tomou o ponteiro: gesto do sistema, toque a mais) não é
+      // um "soltar": a guia FICA, e volta para onde estava.
+      if (event?.type === 'pointercancel') {
+        session
+          .getState()
+          .moveGuide(gesture.id, gesture.start, gesture.axis === 'x' ? doc.width : doc.height)
+        return
+      }
+      // Soltar FORA da área rolável (na régua, no canto, fora da janela) APAGA a guia: a
+      // régua é a saída natural, e é o que os programas de desenho fazem. A linha já vinha
+      // tracejada (`data-guide-leaving`) avisando.
+      if (!insideScroller(gesture.lastClient)) session.getState().removeGuide(gesture.id)
       return
     }
     if (gesture.kind === 'marquee') {
@@ -976,10 +1643,15 @@ export function VectorStage(): JSX.Element {
       // O laço só pega formas VISÍVEIS (apagar algo invisível assustaria) e
       // DESTRANCADAS (o laço existe para mover/apagar — trancada fica de fora;
       // quem quer mexer nela usa o painel Camadas).
-      const hit = visibleShapes(shapes)
-        .filter((s) => s.locked !== true && boundsOverlap(shapeBounds(s), box))
-        .map((s) => s.id)
-      const expanded = expandToGroups(shapes, hit)
+      const scene = resolveMaskScene(shapes)
+      const hit = scene.painted
+        .filter((shape) => {
+          if (shape.locked === true) return false
+          const bounds = maskedShapeBounds(scene, shape)
+          return bounds ? boundsOverlap(bounds, box) : false
+        })
+        .map((shape) => shape.id)
+      const expanded = expandToSelectionUnits(shapes, hit)
       setSelectedIds((current) =>
         gesture.additive ? [...new Set([...current, ...expanded])] : expanded,
       )
@@ -1000,19 +1672,28 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (gesture.kind === 'draw') {
-      const shape = preview
+      // A prévia do GESTO, não a do estado: o `pointerup` de um gesto rápido pode
+      // chegar antes de o React ter renderizado o último `setPreview`.
+      const shape = gesture.shape
       setPreview(null)
       if (!shape) return
-      const bounds = shapeBounds(shape)
-      // Toque sem arrasto em ferramenta de forma: nada a criar (pincel pode).
-      if (shape.type !== 'path' && bounds.width < 2 && bounds.height < 2) return
+      // Toque sem arrasto em ferramenta de forma: nada a criar (pincel pode). A régua
+      // é a distância que a MÃO andou, em px de tela (ver `DRAW_MIN_SCREEN_PX`).
+      if (shape.type !== 'path' && drawDragDistance(gesture) < DRAW_MIN_SCREEN_PX) return
       commitShapes([...currentShapes(), shape])
       // A ferramenta fica ATIVA (padrão Scratch): desenhar 3 estrelas seguidas
       // não exige reescolher; a forma criada fica selecionada para ajustes.
       setSelectedIds([shape.id])
       return
     }
-    // move/resize/rotate: fecha o gesto com 1 entrada de undo.
+    if (
+      (gesture.kind === 'gradient' || gesture.kind === 'pivot') &&
+      event?.type === 'pointercancel'
+    ) {
+      editor.getState().replace(gesture.base)
+      return
+    }
+    // move/resize/rotate/pivot: fecha o gesto com 1 entrada de undo.
     editor.getState().commitGesture(gesture.base)
   }
   endGestureRef.current = endGesture
@@ -1023,378 +1704,709 @@ export function VectorStage(): JSX.Element {
     return box.width * zoom < MARQUEE_MIN_SCREEN_PX || box.height * zoom < MARQUEE_MIN_SCREEN_PX
   }
 
+  /** Quanto a mão andou desde o `pointerdown` de um desenho, em px de TELA. */
+  function drawDragDistance(gesture: { startClient: Vec2; lastClient: Vec2 }): number {
+    return Math.hypot(
+      gesture.lastClient.x - gesture.startClient.x,
+      gesture.lastClient.y - gesture.startClient.y,
+    )
+  }
+
   // Alças da seleção: com a Selecionar e com as ferramentas de FORMA (ajustar o
   // que acabou de desenhar sem trocar de ferramenta). Com pincel, caneta, texto e
   // mão elas roubavam o toque: pressionar perto de uma forma selecionada começava um
   // resize/giro em vez de desenhar.
-  const handlesActive = tool === 'select' || SHAPE_TOOLS.has(tool)
+  const handlesActive =
+    !gradientAdjustShapeId && !colorPick && (tool === 'select' || SHAPE_TOOLS.has(tool))
+
+  // As guias só respondem ao toque com a Selecionar (e destravadas): com pincel e formas um
+  // traço que começa em cima da guia tem que DESENHAR, não movê-la (a mesma razão das alças).
+  // Com o Espaço segurado (Mão temporária) o toque na guia tem que fazer o pan.
+  const guidesInteractive =
+    tool === 'select' &&
+    !guidesLocked &&
+    !spaceHeld &&
+    !colorPick &&
+    !gradientAdjustShapeId &&
+    !maskEditId
 
   const singleBounds = single ? shapeBounds(single) : null
+  const maskEditShape = maskEditId
+    ? (doc.shapes.find((shape) => shape.id === maskEditId) ?? null)
+    : null
+  const transformShapes = maskEditShape ? [maskEditShape] : selected
+  const transformSingle = transformShapes.length === 1 ? (transformShapes[0] ?? null) : null
+  const transformSingleBounds = transformSingle ? shapeBounds(transformSingle) : null
+  // A caixa que as alças cercam: a da forma só, ou a UNIÃO da seleção múltipla.
+  const transformBounds =
+    transformSingleBounds ??
+    (transformShapes.length > 1 ? boundsUnion(transformShapes.map(shapeBounds)) : null)
+  // As alças de redimensionar/girar de fato: com a Selecionar, sempre que ativas; com
+  // uma ferramenta de FORMA, só numa caixa grande o bastante para as alças não a
+  // cobrirem inteira (ver `HANDLE_MIN_SCREEN_PX`). Sem elas, o toque desce ao palco e
+  // desenha a próxima forma; ajustar a pequena é com a Selecionar (V). ⚠️ A régua vale
+  // para a seleção MÚLTIPLA também: as alças da união eram desenhadas só sob `handlesActive`
+  // e, com uma ferramenta de forma, o toque nelas desenhava (o `handleResizeDown` saía sem
+  // parar a propagação). Agora elas só aparecem quando respondem.
+  const handlesUsable =
+    handlesActive &&
+    (tool === 'select' ||
+      (transformBounds !== null &&
+        transformBounds.width * zoom >= HANDLE_MIN_SCREEN_PX &&
+        transformBounds.height * zoom >= HANDLE_MIN_SCREEN_PX))
+  const transformPivot = transformShapes.length > 0 ? selectionRotationPivot(transformShapes) : null
+  const transformCenter =
+    transformSingle && transformSingleBounds
+      ? rotatePoint(
+          boundsCenter(transformSingleBounds),
+          rotationPivotOf(transformSingle),
+          transformSingle.rotation,
+        )
+      : transformShapes.length > 0
+        ? boundsCenter(boundsUnion(transformShapes.map(shapeBounds)))
+        : null
+  const pivotVisible =
+    handlesActive &&
+    tool === 'select' &&
+    transformShapes.length > 0 &&
+    !transformShapes.some((shape) => shape.locked === true)
+  const maskGuideShape: VectorShape | null = maskEditShape
+    ? {
+        ...maskEditShape,
+        fill: 'none',
+        stroke: { color: '#00a0c8', width: 1.5 / zoom },
+        opacity: 1,
+      }
+    : null
+  const adjustedShape = gradientAdjustShapeId
+    ? doc.shapes.find((shape) => shape.id === gradientAdjustShapeId)
+    : null
+  const adjustedFill =
+    adjustedShape && isVectorGradient(adjustedShape.fill) ? adjustedShape.fill : null
+  const gradientHandles: Array<{
+    handle: GradientHandle
+    point: Vec2
+    color: string
+    label: string
+  }> = []
+  if (adjustedShape && adjustedFill) {
+    const geometry = gradientGeometry(adjustedFill)
+    if (geometry.type === 'linear') {
+      gradientHandles.push(
+        {
+          handle: 'start',
+          point: gradientDocumentPointForShape(adjustedShape, geometry.start),
+          color: adjustedFill.from,
+          label: COPY.vector.gradientHandleStart,
+        },
+        {
+          handle: 'end',
+          point: gradientDocumentPointForShape(adjustedShape, geometry.end),
+          color: adjustedFill.to,
+          label: COPY.vector.gradientHandleEnd,
+        },
+      )
+    } else {
+      const { center, radius } = geometry
+      const reach =
+        center.x + radius <= 1
+          ? { x: center.x + radius, y: center.y }
+          : { x: center.x - radius, y: center.y }
+      gradientHandles.push(
+        {
+          handle: 'center',
+          point: gradientDocumentPointForShape(adjustedShape, center),
+          color: adjustedFill.from,
+          label: COPY.vector.gradientHandleCenter,
+        },
+        {
+          handle: 'radius',
+          point: gradientDocumentPointForShape(adjustedShape, reach),
+          color: adjustedFill.to,
+          label: COPY.vector.gradientHandleRadius,
+        },
+      )
+    }
+  }
   const reshapeNodes = tool === 'reshape' && nodePath ? nodePath.nodes.map((n) => n.p) : []
   const stageWidth = Math.max(Math.round(doc.width * zoom), 1)
   const stageHeight = Math.max(Math.round(doc.height * zoom), 1)
 
+  const documentScene = resolveMaskScene(doc.shapes)
+  const onionScene = resolveMaskScene(onionShapes ?? [])
+  const sourceIds = maskSourceIds(doc.shapes)
+  const selectionHasMask = selected.some((shape) => shape.maskId || sourceIds.has(shape.id))
+  const selectionHasCustomPivot = selected.some((shape) => shape.rotationPivot !== undefined)
+
   return (
-    <div className="relative flex min-h-0 min-w-0 flex-1">
-      {/* Barra FLUTUANTE da seleção (espelho da do pixel): absoluta sobre o
+    <div className="pin-stage relative flex min-h-0 min-w-0 flex-1">
+      {/* As réguas (em cima e à esquerda) embrulham a CÉLULA do palco: as barras flutuantes
+          abaixo são absolutas em relação a ela, então nascem abaixo da régua de cima. Na tela
+          estreita não há régua: cada px vertical conta e a tira de 24 px é pouco para o dedo. */}
+      <StageRulers
+        enabled={wide && showRulers}
+        stageRef={stageRef}
+        contentRef={svgRef}
+        docWidth={doc.width}
+        docHeight={doc.height}
+        zoom={zoom}
+        onRulerPointerDown={startGuideFromRuler}
+      >
+        {/* Barra FLUTUANTE da seleção (espelho da do pixel): absoluta sobre o
           palco, fora do fluxo — aparecer/sumir não move o desenho. É a via do
           TOUCH e SÓ DELE: no desktop as mesmas ações (mais alinhar e ordem)
           moram na faixa colada na barra de cima, e ter as duas na mesma tela
           confunde. Por isso as duas compartilham `aria-label` e rótulos. */}
-      {/* Região viva SEMPRE montada (vazia fora do modo): sem ela o leitor de
+        {/* Região viva SEMPRE montada (vazia fora do modo): sem ela o leitor de
           tela ouve "a janela fechou" e nada mais. Texto diferente do da faixinha
           para os dois não se duplicarem na árvore. */}
-      <span role="status" className="sr-only">
-        {colorPick ? `${COPY.vector.pickColorBar}. ${COPY.vector.pickColorHint}` : ''}
-      </span>
-      {/* Faixinha do modo de CAPTURA de cor (conta-gotas da janelinha): em toda
+        <span role="status" className="sr-only">
+          {maskEditId
+            ? COPY.vector.maskEditMode
+            : gradientAdjustShapeId
+              ? COPY.vector.gradientAdjustMode
+              : colorPick
+                ? `${COPY.vector.pickColorBar}. ${COPY.vector.pickColorHint}`
+                : pickAnnounce}
+        </span>
+        {gradientAdjustShapeId ? (
+          <div
+            role="toolbar"
+            aria-label={COPY.vector.gradientAdjustMode}
+            className="pin-float absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3"
+          >
+            <span className="text-pin-text text-sm font-bold">
+              {COPY.vector.gradientAdjustMode}
+            </span>
+            <Button ref={gradientDoneRef} variant="outline" onClick={endGradientAdjust}>
+              {COPY.vector.gradientAdjustDone}
+            </Button>
+          </div>
+        ) : null}
+        {maskEditId ? (
+          <div
+            role="toolbar"
+            aria-label={COPY.vector.maskEditMode}
+            className="pin-float absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3"
+          >
+            <span className="text-pin-text text-sm font-bold">{COPY.vector.maskEditMode}</span>
+            <Button ref={maskDoneRef} variant="outline" onClick={endMaskEdit}>
+              {COPY.vector.maskEditDone}
+            </Button>
+          </div>
+        ) : null}
+        {/* Faixinha do modo de CAPTURA de cor (conta-gotas da janelinha): em toda
           largura, porque toque não tem Esc e o desktop precisa da dica. Ocupa o
           mesmo canto das barras flutuantes, que somem enquanto ela existe.
           `w-max`: com `left-1/2` o shrink-to-fit só enxerga a metade direita do
           palco (~188px em 375px) e a dica quebrava em três linhas; o teto de
           largura continua valendo. */}
-      {colorPick ? (
-        <div
-          role="toolbar"
-          aria-label={COPY.vector.pickColorBar}
-          className="pin-panel absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3 shadow-lg"
-        >
-          <span className="text-sm font-bold text-pin-text">{COPY.vector.pickColorHint}</span>
-          <ToolButton
-            icon={X}
-            label={COPY.vector.pickColorCancel}
-            onClick={() => cancelColorPick('user')}
-          />
-        </div>
-      ) : null}
-      {tool === 'reshape' && nodeTarget && nodePath && !wide && !colorPick ? (
-        <div
-          role="toolbar"
-          aria-label={COPY.vector.nodeBar}
-          className="pin-panel absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 pin-scroll-x overflow-x-auto p-1 shadow-lg"
-        >
-          <VectorNodeActions />
-        </div>
-      ) : null}
-      {tool !== 'reshape' && selected.length > 0 && !wide && !colorPick ? (
-        <div
-          role="toolbar"
-          aria-label={COPY.vector.selectionBar}
-          className="pin-panel absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 pin-scroll-x overflow-x-auto p-1 shadow-lg"
-        >
-          <ToolButton icon={Copy} label={COPY.vector.selDuplicate} onClick={duplicateSelected} />
-          <ToolButton
-            icon={FlipHorizontal2}
-            label={COPY.vector.selFlipH}
-            onClick={() => flipSelected('h')}
-          />
-          <ToolButton
-            icon={FlipVertical2}
-            label={COPY.vector.selFlipV}
-            onClick={() => flipSelected('v')}
-          />
-          {selected.length >= 2 ? (
-            <>
-              <ToolButton icon={Group} label={COPY.vector.selGroup} onClick={groupSelected} />
-              {/* Só UNIR no toque (decisão dela). As outras três pedem enxergar
+        {colorPick ? (
+          <div
+            role="toolbar"
+            aria-label={COPY.vector.pickColorBar}
+            className="pin-float absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3"
+          >
+            <span className="text-sm font-bold text-pin-text">{COPY.vector.pickColorHint}</span>
+            <ToolButton
+              icon={X}
+              label={COPY.vector.pickColorCancel}
+              onClick={() => cancelColorPick('user')}
+            />
+          </div>
+        ) : null}
+        {tool === 'reshape' &&
+        nodeTarget &&
+        nodePath &&
+        !wide &&
+        !colorPick &&
+        !gradientAdjustShapeId &&
+        !maskEditId ? (
+          <div
+            role="toolbar"
+            aria-label={COPY.vector.nodeBar}
+            className="pin-float pin-scroll-x absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1"
+          >
+            <VectorNodeActions />
+          </div>
+        ) : null}
+        {tool !== 'reshape' &&
+        selected.length > 0 &&
+        !wide &&
+        !colorPick &&
+        !gradientAdjustShapeId &&
+        !maskEditId ? (
+          <div
+            role="toolbar"
+            aria-label={COPY.vector.selectionBar}
+            className="pin-float pin-scroll-x absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1"
+          >
+            <ToolButton icon={Copy} label={COPY.vector.selDuplicate} onClick={duplicateSelected} />
+            <ToolButton
+              icon={FlipHorizontal2}
+              label={COPY.vector.selFlipH}
+              onClick={() => flipSelected('h')}
+            />
+            <ToolButton
+              icon={FlipVertical2}
+              label={COPY.vector.selFlipV}
+              onClick={() => flipSelected('v')}
+            />
+            <ToolButton
+              icon={AlignHorizontalDistributeCenter}
+              label={COPY.vector.distributeCentersH}
+              disabled={!canDistributeSelected}
+              onClick={() => distributeSelected('horizontal')}
+            />
+            <ToolButton
+              icon={AlignVerticalDistributeCenter}
+              label={COPY.vector.distributeCentersV}
+              disabled={!canDistributeSelected}
+              onClick={() => distributeSelected('vertical')}
+            />
+            {selected.length >= 2 ? (
+              <>
+                <ToolButton icon={Group} label={COPY.vector.selGroup} onClick={groupSelected} />
+                <ToolButton
+                  icon={SquareDashed}
+                  label={COPY.vector.selCreateMask}
+                  onClick={createMaskSelected}
+                />
+                {/* Só UNIR no toque (decisão dela). As outras três pedem enxergar
                   quem está na frente e um alvo por operação, e em 375px a barra
                   já chega a 6 alvos. O caminho de crescimento, se ela pedir, é o
                   disclosure "Cores e camadas", não esta barra. */}
+                <ToolButton
+                  icon={SquaresUnite}
+                  label={COPY.vector.selUnite}
+                  onClick={() => pathfinderSelected('unir')}
+                />
+              </>
+            ) : null}
+            {selectionHasMask ? (
+              <>
+                <ToolButton
+                  icon={SquarePen}
+                  label={COPY.vector.selEditMask}
+                  onClick={beginMaskEdit}
+                />
+                <ToolButton
+                  icon={Unlink2}
+                  label={COPY.vector.selReleaseMask}
+                  onClick={releaseMaskSelected}
+                />
+              </>
+            ) : null}
+            {selectionHasCustomPivot ? (
               <ToolButton
-                icon={SquaresUnite}
-                label={COPY.vector.selUnite}
-                onClick={() => pathfinderSelected('unir')}
+                icon={CircleDot}
+                label={COPY.vector.selCenterPivot}
+                onClick={centerSelectionPivot}
               />
-            </>
-          ) : null}
-          {selected.some((s) => s.groupId) ? (
-            <ToolButton icon={Ungroup} label={COPY.vector.selUngroup} onClick={ungroupSelected} />
-          ) : null}
-          <ToolButton icon={Trash2} label={COPY.vector.selRemove} onClick={removeSelected} />
-        </div>
-      ) : null}
-      {/* O palco SVG: dimensão DEFINIDA (doc × zoom), centraliza quando menor
+            ) : null}
+            {selected.some((s) => s.groupId) ? (
+              <ToolButton icon={Ungroup} label={COPY.vector.selUngroup} onClick={ungroupSelected} />
+            ) : null}
+            <ToolButton icon={Trash2} label={COPY.vector.selRemove} onClick={removeSelected} />
+          </div>
+        ) : null}
+        {/* O palco SVG: dimensão DEFINIDA (doc × zoom), centraliza quando menor
           que a área e rola quando maior. */}
-      {/* `safe center` no lugar do `m-auto`: margem automática ENGOLE o que
+        {/* `safe center` no lugar do `m-auto`: margem automática ENGOLE o que
           passa do topo/da esquerda (rolagem não vai a negativo) e o palco
           aproximado ficava com metade inalcançável. */}
-      <div
-        ref={stageRef}
-        className="flex min-h-0 min-w-0 flex-1 overflow-auto p-2 [align-items:safe_center] [justify-content:safe_center]"
-      >
-        {/* Papel BRANCO fixo (sem xadrez): cor absoluta em qualquer tema; canto
+        <div
+          ref={stageRef}
+          className="flex min-h-0 min-w-0 flex-1 overflow-auto p-2 [align-items:safe_center] [justify-content:safe_center]"
+        >
+          {/* Papel BRANCO fixo (sem xadrez): cor absoluta em qualquer tema; canto
             RETO para a borda não "comer" o desenho da criança. */}
-        <div className="border-2 border-pin-border bg-white shadow-inner">
-          <svg
-            ref={svgRef}
-            width={stageWidth}
-            height={stageHeight}
-            viewBox={`0 0 ${doc.width} ${doc.height}`}
-            className="block bg-white/60"
-            style={{
-              touchAction: 'none',
-              cursor: stageCursor({
-                handTool: tool === 'pan',
-                spaceHeld,
-                panning,
-                pickerTool: tool === 'picker',
-              }),
-            }}
-            role="img"
-            aria-label={COPY.a11y.drawArea}
-            onPointerDown={handleCanvasPointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={endGesture}
-            onPointerCancel={endGesture}
-            // O navegador tirou o capture (aba escondida, gesto do sistema): fecha o gesto
-            // em vez de deixar o palco preso.
-            onLostPointerCapture={(event) => endGesture(event)}
-            onDoubleClick={
-              tool === 'pen' && penPoints.length > 0 ? () => finishPen(penPoints) : undefined
-            }
-          >
-            {/* Degradês de TODOS os shapes visíveis (doc + onion + prévia) — o
-                olhinho do painel Camadas tira a forma do palco inteiro. */}
-            <GradientDefs
-              shapes={[
-                ...visibleShapes(doc.shapes),
-                ...visibleShapes(onionShapes ?? []),
-                ...(preview ? [preview] : []),
-              ]}
-            />
-            {/* Onion skin: o quadro ANTERIOR, apagadinho e sem eventos. */}
-            {onionShapes ? (
-              <g opacity={0.3} pointerEvents="none">
-                {visibleShapes(onionShapes).map((shape) => (
-                  <ShapeElement key={`onion-${shape.id}`} shape={shape} />
-                ))}
-              </g>
-            ) : null}
-            {visibleShapes(doc.shapes).map((shape) => (
-              <ShapeElement
-                key={shape.id}
-                shape={shape}
-                onPointerDown={(event) => handleShapePointerDown(shape, event)}
-                onDoubleClick={() => handleShapeDoubleClick(shape)}
-              />
-            ))}
-            {preview ? <ShapeElement shape={preview} /> : null}
+          <div className="pin-paper bg-white">
+            <svg
+              ref={svgRef}
+              width={stageWidth}
+              height={stageHeight}
+              viewBox={`0 0 ${doc.width} ${doc.height}`}
+              className="block bg-white/60"
+              style={{
+                touchAction: 'none',
+                cursor: stageCursor({
+                  handTool: tool === 'pan',
+                  spaceHeld,
+                  panning,
+                  pickerTool: tool === 'picker',
+                }),
+              }}
+              role="img"
+              aria-label={COPY.a11y.drawArea}
+              onPointerDown={handleCanvasPointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={endGesture}
+              onPointerCancel={endGesture}
+              // O navegador tirou o capture (aba escondida, gesto do sistema): fecha o gesto
+              // em vez de deixar o palco preso.
+              onLostPointerCapture={(event) => endGesture(event)}
+              onDoubleClick={handleStageDoubleClick}
+            >
+              <SceneDefs shapes={doc.shapes} />
+              {onionShapes ? <SceneDefs shapes={onionShapes} idPrefix="onion-" /> : null}
+              {preview ? <GradientDefs shapes={[preview]} /> : null}
+              {/* Onion skin: o quadro ANTERIOR, apagadinho e sem eventos. */}
+              {onionShapes ? (
+                <g opacity={0.3} pointerEvents="none">
+                  {onionScene.painted.map((shape) => (
+                    <ShapeElement
+                      key={`onion-${shape.id}`}
+                      shape={shape}
+                      idPrefix="onion-"
+                      clipPath={
+                        shape.maskId ? `url(#${clipPathId(shape.maskId, 'onion-')})` : undefined
+                      }
+                    />
+                  ))}
+                </g>
+              ) : null}
+              {documentScene.painted.map((shape) => (
+                <ShapeElement
+                  key={shape.id}
+                  shape={shape}
+                  clipPath={shape.maskId ? `url(#${clipPathId(shape.maskId)})` : undefined}
+                  onPointerDown={(event) => handleShapePointerDown(shape, event)}
+                  onDoubleClick={() => handleShapeDoubleClick(shape)}
+                />
+              ))}
+              {maskGuideShape && maskEditId ? (
+                <g
+                  data-mask-guide={maskEditId}
+                  pointerEvents="none"
+                  strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                >
+                  <ShapeElement shape={maskGuideShape} />
+                </g>
+              ) : null}
+              {preview ? <ShapeElement shape={preview} /> : null}
 
-            {/* Prévia da CANETA: contorno elástico até o cursor + os pontos já
+              {/* Prévia da CANETA: contorno elástico até o cursor + os pontos já
                 marcados (o 1º maior = o alvo de fechar). O estilo de verdade
                 entra no commit. */}
-            {tool === 'pen' && penPoints.length > 0 ? (
-              <g pointerEvents="none">
-                <polyline
-                  points={[...penPoints, ...(penCursor ? [penCursor] : [])]
-                    .map((p) => `${p.x},${p.y}`)
-                    .join(' ')}
-                  fill={penPoints.length >= 3 ? '#00a0c8' : 'none'}
-                  fillOpacity={0.12}
-                  stroke="#00a0c8"
-                  strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-                  strokeWidth={1.5 / zoom}
-                />
-                {penPoints.map((p, i) => (
-                  <circle
-                    // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do ponto
-                    key={`pen-${i}`}
-                    cx={p.x}
-                    cy={p.y}
-                    r={(i === 0 ? 6 : 4) / zoom}
-                    fill="#ffffff"
+              {tool === 'pen' && penPoints.length > 0 ? (
+                <g pointerEvents="none">
+                  <polyline
+                    points={[...penPoints, ...(penCursor ? [penCursor] : [])]
+                      .map((p) => `${p.x},${p.y}`)
+                      .join(' ')}
+                    fill={penPoints.length >= 3 ? '#00a0c8' : 'none'}
+                    fillOpacity={0.12}
                     stroke="#00a0c8"
+                    strokeDasharray={`${4 / zoom} ${3 / zoom}`}
                     strokeWidth={1.5 / zoom}
                   />
-                ))}
-              </g>
-            ) : null}
-
-            {/* Grade de APOIO (só no editor, nunca no export): um <pattern> e um
-                <rect> — O(1) nós de DOM em qualquer documento; o traço divide
-                pelo zoom para ficar fininho em qualquer aproximação. */}
-            {showGrid ? (
-              // Decorativa por herança: o <svg> pai é role="img" com rótulo.
-              <g pointerEvents="none">
-                <defs>
-                  <pattern
-                    id="pin-editor-grid"
-                    width={gridSpacing}
-                    height={gridSpacing}
-                    patternUnits="userSpaceOnUse"
-                  >
-                    <path
-                      d={`M ${gridSpacing} 0 L 0 0 0 ${gridSpacing}`}
-                      fill="none"
-                      stroke="#64748b"
-                      strokeOpacity={0.35}
-                      strokeWidth={1 / zoom}
-                    />
-                  </pattern>
-                </defs>
-                <rect width={doc.width} height={doc.height} fill="url(#pin-editor-grid)" />
-              </g>
-            ) : null}
-
-            {/* Moldura + alças da seleção única. As medidas dividem pelo zoom
-                para manter um tamanho CONSTANTE na tela (alça pequena demais
-                em zoom baixo era impossível de tocar). */}
-            {/* Sem alças com o CONTA-GOTAS (ferramenta ou captura de cor): as
-                alças não checam a ferramenta, e tocar numa delas com ele
-                começaria um resize/giro em vez de pegar a cor. */}
-            {handlesActive && single && singleBounds ? (
-              <g
-                transform={
-                  single.rotation !== 0
-                    ? `rotate(${single.rotation} ${boundsCenter(singleBounds).x} ${boundsCenter(singleBounds).y})`
-                    : undefined
-                }
-              >
-                <rect
-                  x={singleBounds.x}
-                  y={singleBounds.y}
-                  width={singleBounds.width}
-                  height={singleBounds.height}
-                  fill="none"
-                  stroke="#00a0c8"
-                  strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-                  strokeWidth={1.5 / zoom}
-                  pointerEvents="none"
-                />
-                {HANDLES.map((handle) => (
-                  <rect
-                    key={handle.id}
-                    x={singleBounds.x + handle.fx * singleBounds.width - 7 / zoom}
-                    y={singleBounds.y + handle.fy * singleBounds.height - 7 / zoom}
-                    width={14 / zoom}
-                    height={14 / zoom}
-                    fill="#ffffff"
-                    stroke="#00a0c8"
-                    strokeWidth={1.5 / zoom}
-                    style={{ cursor: 'pointer' }}
-                    onPointerDown={(event) => handleResizeDown(handle, singleBounds, event)}
-                  />
-                ))}
-                {/* Alça de girar (acima do topo-centro) */}
-                <circle
-                  data-rotate="1"
-                  cx={singleBounds.x + singleBounds.width / 2}
-                  cy={singleBounds.y - 22 / zoom}
-                  r={8 / zoom}
-                  fill="#ffffff"
-                  stroke="#00a0c8"
-                  strokeWidth={1.5 / zoom}
-                  style={{ cursor: 'grab' }}
-                  onPointerDown={(event) => handleRotateDown(singleBounds, event)}
-                />
-              </g>
-            ) : null}
-            {/* Modo reshape: nós arrastáveis (sem alças de bbox). */}
-            {tool === 'reshape' && single && singleBounds ? (
-              <g
-                transform={
-                  single.rotation !== 0
-                    ? `rotate(${single.rotation} ${boundsCenter(singleBounds).x} ${boundsCenter(singleBounds).y})`
-                    : undefined
-                }
-              >
-                <rect
-                  x={singleBounds.x}
-                  y={singleBounds.y}
-                  width={singleBounds.width}
-                  height={singleBounds.height}
-                  fill="none"
-                  stroke="#00a0c8"
-                  strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-                  strokeWidth={1 / zoom}
-                  pointerEvents="none"
-                />
-                {reshapeNodes.map((node, i) => (
-                  <g
-                    // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do nó
-                    key={`node-${i}`}
-                    style={{ cursor: 'move' }}
-                    onPointerDown={(event) => handleNodeDown(i, event)}
-                  >
+                  {penPoints.map((p, i) => (
                     <circle
-                      data-node-hit={i}
-                      cx={node.x}
-                      cy={node.y}
-                      r={22 / zoom}
-                      fill="transparent"
-                    />
-                    <circle
-                      data-node={i}
-                      cx={node.x}
-                      cy={node.y}
-                      r={7 / zoom}
-                      // Escolhido = cheio; solto = vazado. É o único jeito de ver
-                      // quantos pontos o Delete vai levar.
-                      fill={selectedNodes.includes(i) ? '#00a0c8' : '#ffffff'}
+                      // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do ponto
+                      key={`pen-${i}`}
+                      cx={p.x}
+                      cy={p.y}
+                      r={(i === 0 ? 6 : 4) / zoom}
+                      fill="#ffffff"
                       stroke="#00a0c8"
                       strokeWidth={1.5 / zoom}
+                    />
+                  ))}
+                </g>
+              ) : null}
+
+              {/* Grade de APOIO (só no editor, nunca no export): um <pattern> e um
+                <rect> — O(1) nós de DOM em qualquer documento; o traço divide
+                pelo zoom para ficar fininho em qualquer aproximação. */}
+              {showGrid ? (
+                // Decorativa por herança: o <svg> pai é role="img" com rótulo.
+                <g pointerEvents="none">
+                  <defs>
+                    <pattern
+                      id="pin-editor-grid"
+                      width={gridSpacing}
+                      height={gridSpacing}
+                      patternUnits="userSpaceOnUse"
+                    >
+                      <path
+                        d={`M ${gridSpacing} 0 L 0 0 0 ${gridSpacing}`}
+                        fill="none"
+                        stroke="#64748b"
+                        strokeOpacity={0.35}
+                        strokeWidth={1 / zoom}
+                      />
+                    </pattern>
+                  </defs>
+                  <rect width={doc.width} height={doc.height} fill="url(#pin-editor-grid)" />
+                </g>
+              ) : null}
+              {/* Linhas-guia (sessão, só visuais): fúcsia, distinta do azul da seleção e do
+                  cinza da grade. O traço transparente de 16 px de tela é o ALVO do toque; o
+                  fino é o desenho. Nunca saem no export: não existem no asset. A que está
+                  sendo arrastada para fora (`data-guide-leaving`) fica tracejada. */}
+              {showGuides && (guides.length > 0 || ghostGuide) ? (
+                <g data-guides pointerEvents={guidesInteractive ? 'stroke' : 'none'}>
+                  {guides.map((guide) => {
+                    const leaving = leavingGuideId === guide.id
+                    return (
+                      <g
+                        key={guide.id}
+                        data-guide={guide.id}
+                        data-guide-axis={guide.axis}
+                        data-guide-leaving={leaving ? '1' : undefined}
+                        style={
+                          leaving
+                            ? undefined
+                            : { cursor: guide.axis === 'x' ? 'col-resize' : 'row-resize' }
+                        }
+                        onPointerDown={(event) => handleGuideDown(guide, event)}
+                      >
+                        <line
+                          {...guideLineAttrs(guide.axis, guide.pos)}
+                          stroke="transparent"
+                          strokeWidth={GUIDE_HIT_SCREEN_PX / zoom}
+                        />
+                        <line
+                          {...guideLineAttrs(guide.axis, guide.pos)}
+                          stroke="#d946ef"
+                          strokeWidth={1 / zoom}
+                          strokeDasharray={leaving ? `${4 / zoom} ${3 / zoom}` : undefined}
+                          pointerEvents="none"
+                        />
+                      </g>
+                    )
+                  })}
+                  {ghostGuide ? (
+                    <line
+                      data-guide-ghost="1"
+                      {...guideLineAttrs(ghostGuide.axis, ghostGuide.pos)}
+                      stroke="#d946ef"
+                      strokeWidth={1 / zoom}
+                      strokeDasharray={`${4 / zoom} ${3 / zoom}`}
                       pointerEvents="none"
                     />
-                  </g>
-                ))}
-                {/* ⚠️ Alças DEPOIS das âncoras (ficam por cima e são pegáveis),
+                  ) : null}
+                </g>
+              ) : null}
+
+              {gradientHandles.length === 2 ? (
+                <g>
+                  <line
+                    x1={gradientHandles[0]?.point.x}
+                    y1={gradientHandles[0]?.point.y}
+                    x2={gradientHandles[1]?.point.x}
+                    y2={gradientHandles[1]?.point.y}
+                    stroke="#00a0c8"
+                    strokeWidth={2 / zoom}
+                    pointerEvents="none"
+                  />
+                  {gradientHandles.map(({ handle, point, color, label }) => (
+                    <g key={handle}>
+                      {/* biome-ignore lint/a11y/useSemanticElements: uma alça SVG arrastável não pode ser um button HTML dentro do palco. */}
+                      <circle
+                        data-gradient-handle={handle}
+                        cx={point.x}
+                        cy={point.y}
+                        r={22 / zoom}
+                        fill="transparent"
+                        role="button"
+                        aria-label={label}
+                        aria-description={COPY.vector.gradientHandleKeyboard}
+                        tabIndex={0}
+                        onPointerDown={(event) => startGradientGesture(handle, event)}
+                        onKeyDown={(event) => nudgeGradientHandle(handle, event)}
+                      />
+                      <circle
+                        cx={point.x}
+                        cy={point.y}
+                        r={8 / zoom}
+                        fill={color}
+                        stroke="#00a0c8"
+                        strokeWidth={2 / zoom}
+                        pointerEvents="none"
+                      />
+                    </g>
+                  ))}
+                </g>
+              ) : null}
+
+              {/* Moldura + alças da seleção única. As medidas dividem pelo zoom
+                para manter um tamanho CONSTANTE na tela (alça pequena demais
+                em zoom baixo era impossível de tocar). */}
+              {/* Sem alças com o CONTA-GOTAS (ferramenta ou captura de cor): as
+                alças não checam a ferramenta, e tocar numa delas com ele
+                começaria um resize/giro em vez de pegar a cor. */}
+              {handlesActive && transformSingle && transformSingleBounds ? (
+                <g
+                  transform={
+                    transformSingle.rotation !== 0
+                      ? `rotate(${transformSingle.rotation} ${rotationPivotOf(transformSingle).x} ${rotationPivotOf(transformSingle).y})`
+                      : undefined
+                  }
+                >
+                  <rect
+                    x={transformSingleBounds.x}
+                    y={transformSingleBounds.y}
+                    width={transformSingleBounds.width}
+                    height={transformSingleBounds.height}
+                    fill="none"
+                    stroke="#00a0c8"
+                    strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                    strokeWidth={1.5 / zoom}
+                    pointerEvents="none"
+                  />
+                  {handlesUsable
+                    ? HANDLES.map((handle) => (
+                        <rect
+                          key={handle.id}
+                          data-handle={handle.id}
+                          x={
+                            transformSingleBounds.x +
+                            handle.fx * transformSingleBounds.width -
+                            7 / zoom
+                          }
+                          y={
+                            transformSingleBounds.y +
+                            handle.fy * transformSingleBounds.height -
+                            7 / zoom
+                          }
+                          width={14 / zoom}
+                          height={14 / zoom}
+                          fill="#ffffff"
+                          stroke="#00a0c8"
+                          strokeWidth={1.5 / zoom}
+                          style={{ cursor: 'pointer' }}
+                          onPointerDown={(event) =>
+                            handleResizeDown(handle, transformSingleBounds, event)
+                          }
+                        />
+                      ))
+                    : null}
+                  {/* Alça de girar (acima do topo-centro) */}
+                  {handlesUsable ? (
+                    <circle
+                      data-rotate="1"
+                      cx={transformSingleBounds.x + transformSingleBounds.width / 2}
+                      cy={transformSingleBounds.y - 22 / zoom}
+                      r={8 / zoom}
+                      fill="#ffffff"
+                      stroke="#00a0c8"
+                      strokeWidth={1.5 / zoom}
+                      style={{ cursor: 'grab' }}
+                      onPointerDown={(event) =>
+                        transformPivot && handleRotateDown(transformPivot, event)
+                      }
+                    />
+                  ) : null}
+                </g>
+              ) : null}
+              {/* Modo reshape: nós arrastáveis (sem alças de bbox). */}
+              {tool === 'reshape' && single && singleBounds ? (
+                <g
+                  transform={
+                    single.rotation !== 0
+                      ? `rotate(${single.rotation} ${rotationPivotOf(single).x} ${rotationPivotOf(single).y})`
+                      : undefined
+                  }
+                >
+                  <rect
+                    x={singleBounds.x}
+                    y={singleBounds.y}
+                    width={singleBounds.width}
+                    height={singleBounds.height}
+                    fill="none"
+                    stroke="#00a0c8"
+                    strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                    strokeWidth={1 / zoom}
+                    pointerEvents="none"
+                  />
+                  {reshapeNodes.map((node, i) => (
+                    <g
+                      // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do nó
+                      key={`node-${i}`}
+                      style={{ cursor: 'move' }}
+                      onPointerDown={(event) => handleNodeDown(i, event)}
+                    >
+                      <circle
+                        data-node-hit={i}
+                        cx={node.x}
+                        cy={node.y}
+                        r={22 / zoom}
+                        fill="transparent"
+                      />
+                      <circle
+                        data-node={i}
+                        cx={node.x}
+                        cy={node.y}
+                        r={7 / zoom}
+                        // Escolhido = cheio; solto = vazado. É o único jeito de ver
+                        // quantos pontos o Delete vai levar.
+                        fill={selectedNodes.includes(i) ? '#00a0c8' : '#ffffff'}
+                        stroke="#00a0c8"
+                        strokeWidth={1.5 / zoom}
+                        pointerEvents="none"
+                      />
+                    </g>
+                  ))}
+                  {/* ⚠️ Alças DEPOIS das âncoras (ficam por cima e são pegáveis),
                     mas só as que estão longe o bastante do nó para não brigarem
                     com ele pelo toque. Num traço de pincel a Catmull-Rom deixa a
                     alça a uns 4 px do nó: desenhada por cima ela roubaria o
                     arrasto do PONTO, e escondida atrás ela era impossível de
                     pegar. Aproximar o zoom afasta as duas e a alça reaparece. */}
-                {nodePath?.nodes.map((node, i) =>
-                  selectedNodes.includes(i) ? (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do nó (mesma regra das âncoras)
-                    <g key={`alcas-${i}`}>
-                      {(['in', 'out'] as const).map((which) => {
-                        const handle = node[which]
-                        if (!handle) return null
-                        const far =
-                          Math.hypot(handle.x - node.p.x, handle.y - node.p.y) * zoom >=
-                          MIN_HANDLE_GAP
-                        if (!far) return null
-                        return (
-                          <g
-                            key={which}
-                            style={{ cursor: 'move' }}
-                            onPointerDown={(event) => handleBezierDown(i, which, event)}
-                          >
-                            <line
-                              x1={node.p.x}
-                              y1={node.p.y}
-                              x2={handle.x}
-                              y2={handle.y}
-                              stroke="#00a0c8"
-                              strokeWidth={1 / zoom}
-                              pointerEvents="none"
-                            />
-                            <circle
-                              data-handle-hit={which}
-                              cx={handle.x}
-                              cy={handle.y}
-                              r={22 / zoom}
-                              fill="transparent"
-                            />
-                            <circle
-                              data-handle={which}
-                              cx={handle.x}
-                              cy={handle.y}
-                              r={5 / zoom}
-                              fill="#ffffff"
-                              stroke="#00a0c8"
-                              strokeWidth={1.5 / zoom}
-                              pointerEvents="none"
-                            />
-                          </g>
-                        )
-                      })}
-                    </g>
-                  ) : null,
-                )}
-              </g>
-            ) : null}
-            {/* Seleção múltipla: moldura fina POR forma + a caixa da UNIÃO com
+                  {nodePath?.nodes.map((node, i) =>
+                    selectedNodes.includes(i) ? (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do nó (mesma regra das âncoras)
+                      <g key={`alcas-${i}`}>
+                        {(['in', 'out'] as const).map((which) => {
+                          const handle = node[which]
+                          if (!handle) return null
+                          const far =
+                            Math.hypot(handle.x - node.p.x, handle.y - node.p.y) * zoom >=
+                            MIN_HANDLE_GAP
+                          if (!far) return null
+                          return (
+                            <g
+                              key={which}
+                              style={{ cursor: 'move' }}
+                              onPointerDown={(event) => handleBezierDown(i, which, event)}
+                            >
+                              <line
+                                x1={node.p.x}
+                                y1={node.p.y}
+                                x2={handle.x}
+                                y2={handle.y}
+                                stroke="#00a0c8"
+                                strokeWidth={1 / zoom}
+                                pointerEvents="none"
+                              />
+                              <circle
+                                data-handle-hit={which}
+                                cx={handle.x}
+                                cy={handle.y}
+                                r={22 / zoom}
+                                fill="transparent"
+                              />
+                              <circle
+                                data-handle={which}
+                                cx={handle.x}
+                                cy={handle.y}
+                                r={5 / zoom}
+                                fill="#ffffff"
+                                stroke="#00a0c8"
+                                strokeWidth={1.5 / zoom}
+                                pointerEvents="none"
+                              />
+                            </g>
+                          )
+                        })}
+                      </g>
+                    ) : null,
+                  )}
+                </g>
+              ) : null}
+              {/* Seleção múltipla: moldura fina POR forma + a caixa da UNIÃO com
                 as 8 alças e a de girar (todas escalam e giram juntas).
                 ⚠️ A caixa da união fica ALINHADA AOS EIXOS durante o giro, sem o
                 `<g rotate>` que a seleção única usa: os membros podem carregar
@@ -1402,89 +2414,154 @@ export function VectorStage(): JSX.Element {
                 giradas, girada como um bloco rígido, NÃO é a caixa da união
                 girada — a moldura sairia de cima do desenho. Ela é recalculada
                 a cada quadro, então "respira" enquanto as formas orbitam. */}
-            {handlesActive && selected.length > 1 ? (
-              <>
-                {selected.map((shape) => {
-                  const b = shapeBounds(shape)
-                  return (
-                    <rect
-                      key={`sel-${shape.id}`}
-                      x={b.x}
-                      y={b.y}
-                      width={b.width}
-                      height={b.height}
-                      fill="none"
-                      stroke="#00a0c8"
-                      strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-                      strokeWidth={1 / zoom}
-                      pointerEvents="none"
-                    />
-                  )
-                })}
-                {(() => {
-                  const union = boundsUnion(selected.map(shapeBounds))
-                  return (
-                    <g>
+              {handlesActive && transformShapes.length > 1 ? (
+                <>
+                  {transformShapes.map((shape) => {
+                    const b = shapeBounds(shape)
+                    return (
                       <rect
-                        x={union.x}
-                        y={union.y}
-                        width={union.width}
-                        height={union.height}
+                        key={`sel-${shape.id}`}
+                        x={b.x}
+                        y={b.y}
+                        width={b.width}
+                        height={b.height}
                         fill="none"
                         stroke="#00a0c8"
                         strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-                        strokeWidth={1.5 / zoom}
+                        strokeWidth={1 / zoom}
                         pointerEvents="none"
                       />
-                      {HANDLES.map((handle) => (
+                    )
+                  })}
+                  {(() => {
+                    const union = boundsUnion(transformShapes.map(shapeBounds))
+                    return (
+                      <g>
                         <rect
-                          key={`multi-${handle.id}`}
-                          x={union.x + handle.fx * union.width - 7 / zoom}
-                          y={union.y + handle.fy * union.height - 7 / zoom}
-                          width={14 / zoom}
-                          height={14 / zoom}
-                          fill="#ffffff"
+                          x={union.x}
+                          y={union.y}
+                          width={union.width}
+                          height={union.height}
+                          fill="none"
                           stroke="#00a0c8"
+                          strokeDasharray={`${4 / zoom} ${3 / zoom}`}
                           strokeWidth={1.5 / zoom}
-                          style={{ cursor: 'pointer' }}
-                          onPointerDown={(event) => handleResizeDown(handle, union, event)}
+                          pointerEvents="none"
                         />
-                      ))}
-                      {/* Alça de girar a seleção INTEIRA (mesma da forma só). */}
-                      <circle
-                        data-rotate="1"
-                        cx={union.x + union.width / 2}
-                        cy={union.y - 22 / zoom}
-                        r={8 / zoom}
-                        fill="#ffffff"
-                        stroke="#00a0c8"
-                        strokeWidth={1.5 / zoom}
-                        style={{ cursor: 'grab' }}
-                        onPointerDown={(event) => handleRotateDown(union, event)}
-                      />
-                    </g>
-                  )
-                })()}
-              </>
-            ) : null}
-            {/* Laço de seleção em andamento */}
-            {marquee ? (
-              <rect
-                x={marquee.x}
-                y={marquee.y}
-                width={marquee.width}
-                height={marquee.height}
-                fill="#00a0c8"
-                fillOpacity={0.08}
-                stroke="#00a0c8"
-                strokeDasharray={`${4 / zoom} ${3 / zoom}`}
-                strokeWidth={1 / zoom}
-                pointerEvents="none"
-              />
-            ) : null}
-          </svg>
+                        {/* As alças só quando RESPONDEM (`handlesUsable`), como na forma só. */}
+                        {handlesUsable
+                          ? HANDLES.map((handle) => (
+                              <rect
+                                key={`multi-${handle.id}`}
+                                data-handle={handle.id}
+                                x={union.x + handle.fx * union.width - 7 / zoom}
+                                y={union.y + handle.fy * union.height - 7 / zoom}
+                                width={14 / zoom}
+                                height={14 / zoom}
+                                fill="#ffffff"
+                                stroke="#00a0c8"
+                                strokeWidth={1.5 / zoom}
+                                style={{ cursor: 'pointer' }}
+                                onPointerDown={(event) => handleResizeDown(handle, union, event)}
+                              />
+                            ))
+                          : null}
+                        {/* Alça de girar a seleção INTEIRA (mesma da forma só). */}
+                        {handlesUsable ? (
+                          <circle
+                            data-rotate="1"
+                            cx={union.x + union.width / 2}
+                            cy={union.y - 22 / zoom}
+                            r={8 / zoom}
+                            fill="#ffffff"
+                            stroke="#00a0c8"
+                            strokeWidth={1.5 / zoom}
+                            style={{ cursor: 'grab' }}
+                            onPointerDown={(event) =>
+                              transformPivot && handleRotateDown(transformPivot, event)
+                            }
+                          />
+                        ) : null}
+                      </g>
+                    )
+                  })()}
+                </>
+              ) : null}
+              {pivotVisible && transformPivot && transformCenter ? (
+                <g>
+                  <line
+                    x1={transformCenter.x}
+                    y1={transformCenter.y}
+                    x2={transformPivot.x}
+                    y2={transformPivot.y}
+                    stroke="#00a0c8"
+                    strokeDasharray={`${3 / zoom} ${3 / zoom}`}
+                    strokeWidth={1 / zoom}
+                    pointerEvents="none"
+                  />
+                  {/* biome-ignore lint/a11y/useSemanticElements: uma âncora SVG arrastável precisa permanecer dentro do palco. */}
+                  <circle
+                    data-rotation-pivot=""
+                    cx={transformPivot.x}
+                    cy={transformPivot.y}
+                    r={22 / zoom}
+                    fill="transparent"
+                    role="button"
+                    aria-label={COPY.vector.rotationPivot}
+                    aria-description={COPY.vector.rotationPivotKeyboard}
+                    tabIndex={0}
+                    style={{ cursor: 'move' }}
+                    onPointerDown={startPivotGesture}
+                    onKeyDown={nudgeRotationPivot}
+                  />
+                  <circle
+                    cx={transformPivot.x}
+                    cy={transformPivot.y}
+                    r={6 / zoom}
+                    fill="#ffffff"
+                    stroke="#00a0c8"
+                    strokeWidth={2 / zoom}
+                    pointerEvents="none"
+                  />
+                  <line
+                    x1={transformPivot.x - 9 / zoom}
+                    y1={transformPivot.y}
+                    x2={transformPivot.x + 9 / zoom}
+                    y2={transformPivot.y}
+                    stroke="#00a0c8"
+                    strokeWidth={1.5 / zoom}
+                    pointerEvents="none"
+                  />
+                  <line
+                    x1={transformPivot.x}
+                    y1={transformPivot.y - 9 / zoom}
+                    x2={transformPivot.x}
+                    y2={transformPivot.y + 9 / zoom}
+                    stroke="#00a0c8"
+                    strokeWidth={1.5 / zoom}
+                    pointerEvents="none"
+                  />
+                </g>
+              ) : null}
+              {/* Laço de seleção em andamento */}
+              {marquee ? (
+                <rect
+                  x={marquee.x}
+                  y={marquee.y}
+                  width={marquee.width}
+                  height={marquee.height}
+                  fill="#00a0c8"
+                  fillOpacity={0.08}
+                  stroke="#00a0c8"
+                  strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                  strokeWidth={1 / zoom}
+                  pointerEvents="none"
+                />
+              ) : null}
+            </svg>
+          </div>
         </div>
-      </div>
+      </StageRulers>
 
       {/* Texto: criar num ponto OU reeditar (duplo clique no palco). Vazio
           mantém o botão desabilitado — sem apagar texto sem querer. */}

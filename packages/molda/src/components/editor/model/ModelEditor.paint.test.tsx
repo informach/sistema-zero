@@ -13,7 +13,11 @@ let fake: ReturnType<typeof installFakeViewport>
 
 beforeEach(() => {
   resetMoldaPersistenceForTests()
-  fake = installFakeViewport()
+  // ⚠️ Sem foto por padrão: com a foto, cada montagem agenda um `setThumb` 700 ms depois,
+  // e um teste que passe desse tempo recebe essa atualização FORA do act. Era a causa dos
+  // avisos act intermitentes que só apareciam na suíte inteira, onde os testes ficam mais
+  // lentos. Quem prova a miniatura reinstala o palco com ela.
+  fake = installFakeViewport({ thumb: null })
 })
 
 afterEach(() => {
@@ -42,6 +46,29 @@ async function openPaint(): Promise<ReturnType<typeof createMemoryPersistence>> 
 }
 
 describe('ModelEditor (Pintar)', () => {
+  test('Escape cancels the close-up stroke first; a second Escape closes the dialog', async () => {
+    await openPaint()
+    const before = lastModel()
+    act(() => fake.instances[0]?.callbacks.onOpenFace({ partId: 'body', face: 'px', flipX: false }))
+    const dialog = await screen.findByRole('dialog', {
+      name: COPY.editor.model.paint.faceEditor.title,
+    })
+    const stage = within(dialog).getByRole('img', {
+      name: COPY.editor.model.paint.faceEditor.stage,
+    })
+    fireEvent.pointerDown(stage, { clientX: 1, clientY: 1, button: 0, pointerId: 20 })
+    expect(lastModel().parts[0]?.faces.px).toBeDefined()
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.getByRole('dialog')).toBe(dialog)
+    expect(lastModel().parts).toEqual(before.parts)
+    fireEvent.pointerUp(stage, { pointerId: 20 })
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+
   test('a aba Pintar troca a caixa de ferramentas, o palco recebe modo e ajustes', async () => {
     await openPaint()
     expect(screen.getByRole('button', { name: COPY.editor.model.paint.tools.pencil })).toBeDefined()

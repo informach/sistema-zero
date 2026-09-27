@@ -1,0 +1,1 @@
+ALTER TABLE "members"."modules" ADD COLUMN "illustration" text;

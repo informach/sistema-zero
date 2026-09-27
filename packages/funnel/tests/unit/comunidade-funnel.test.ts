@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { COMUNIDADE_DOS_CRIADORES } from '../../src/funnels/comunidade-dos-criadores'
 import { COMUNIDADE_PRECO_FALLBACK } from '../../src/funnels/comunidade-dos-criadores/content'
 import { FUNNELS, getFunnel, getFunnelByKey, isFunnelKey } from '../../src/funnels/registry'
@@ -42,6 +44,33 @@ describe('registro do funil Comunidade dos Criadores', () => {
       expect(p.titulo.length).toBeGreaterThan(0)
       expect(p.texto.length).toBeGreaterThan(0)
     }
+    expect(o.entrega.join(' ')).toContain('Desafio do Primeiro Jogo')
+    expect(o.entrega.join(' ')).toContain('Estúdio, Pinta, Pensa e Molda')
+    expect(o.entrega.join(' ')).toContain('Até 2 perfis de criança')
+    expect(o.passos.map((p) => p.titulo)).toContain('Mostre a Jornada do Criador')
+  })
+
+  test('metadados apresentam tecnologia como contexto e criação como possibilidade', () => {
+    const f = COMUNIDADE_DOS_CRIADORES
+    expect(f.content.landing.h1).toContain('mundo tecnológico')
+    expect(f.content.landing.h1).toContain('transformar ideias em jogos')
+    expect(f.seoTitle).toContain('Tecnologia para criar jogos')
+    expect(f.seoDescription).toContain('criarem e publicarem jogos')
+    expect(f.seoDescription).not.toContain('parte do tempo digital')
+  })
+
+  test('checkout de assinatura mantém a copy pública sem travessão', () => {
+    const card = readFileSync(
+      join(import.meta.dir, '..', '..', 'src', 'islands', 'CardCheckout.tsx'),
+      'utf8',
+    )
+    const publicRenewalCopy = card.slice(
+      card.indexOf('Renovação automática no cartão.'),
+      card.indexOf('{!contact'),
+    )
+
+    expect(publicRenewalCopy).toContain('Cancele quando quiser. O acesso continua')
+    expect(publicRenewalCopy).not.toContain('—')
   })
 
   test('fallback de preço próprio da página (o da rota é o do NCI)', () => {

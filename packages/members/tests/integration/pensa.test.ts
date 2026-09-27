@@ -176,16 +176,19 @@ describe('Pensa planejador — HTTP', () => {
     const allowed = await json(
       await req(ctx.app, 'GET', `/members/pensa/tasks/${tasks[0].id}/handoff?audience=kids`),
     )
-    expect(allowed.capability).toEqual({ owned: true, blockedReason: null })
+    expect(allowed.capability).toEqual({
+      owned: false,
+      blockedReason: 'O Pinta ainda não foi liberado pelo seu nível na jornada.',
+    })
 
-    // O Estúdio do Pensa exige produto E o primeiro desbloqueio da carreira.
+    // O Estúdio do Pensa exige produto E o primeiro desbloqueio da jornada.
     grantLifetime(ctx.entitlements, { userId: USER, courseRef: 'estudio-completo' })
     const studioLocked = await json(
       await req(ctx.app, 'GET', `/members/pensa/tasks/${tasks[1].id}/handoff?audience=kids`),
     )
     expect(studioLocked.capability).toEqual({
       owned: false,
-      blockedReason: 'O Estúdio ainda não foi liberado pelo seu nível na carreira.',
+      blockedReason: 'O Estúdio ainda não foi liberado pelo seu nível na jornada.',
     })
 
     // O curso de ENTRADA (degrau `primeiros-passos-2d`) é o que promove a Construtor(a),
@@ -216,6 +219,11 @@ describe('Pensa planejador — HTTP', () => {
       await req(ctx.app, 'GET', `/members/pensa/tasks/${tasks[1].id}/handoff?audience=kids`),
     )
     expect(studioAllowed.capability).toEqual({ owned: true, blockedReason: null })
+    expect(
+      await (
+        await req(ctx.app, 'GET', `/members/pensa/tasks/${tasks[0].id}/handoff?audience=kids`)
+      ).json(),
+    ).toMatchObject({ capability: { owned: true, blockedReason: null } })
 
     const hidden = await req(
       ctx.app,
@@ -232,6 +240,30 @@ describe('Pensa planejador — HTTP', () => {
 
   test('sincroniza transições e só conclui com output + itens obrigatórios', async () => {
     const ctx = buildWithAccess()
+    grantLifetime(ctx.entitlements, { userId: USER, courseRef: 'pinta' })
+    grantLifetime(ctx.entitlements, { userId: USER, courseRef: 'estudio-completo' })
+    const foundation = seedSampleCourse(
+      ctx.courses,
+      'base-progresso',
+      'published',
+      'kids',
+      false,
+      'primeiros-passos',
+      '2d',
+      1,
+    )
+    await ctx.gamification.award({
+      userId: USER,
+      accountId: USER,
+      audience: 'kids',
+      events: [
+        { sourceType: 'course_complete', sourceId: foundation.courseId, amount: 0 },
+        { sourceType: 'course_showcased', sourceId: foundation.courseId, amount: 0 },
+      ],
+      today: '2026-06-02',
+      now: new Date('2026-06-02T12:00:00Z'),
+      privileged: false,
+    })
     const project = await createProject(ctx)
     const cycleId = project.currentCycle.id
     const tasks = (
@@ -322,6 +354,101 @@ describe('Pensa planejador — HTTP', () => {
     expect(checklist.status).toBe(404)
   })
 
+  test('apaga o plano de vez, com tudo que pendura nele', async () => {
+    const ctx = buildWithAccess()
+    const project = await createProject(ctx)
+    const cycleId = project.currentCycle.id
+    await req(ctx.app, 'POST', `/members/pensa/cycles/${cycleId}/artifacts?audience=kids`, {
+      stage: 'z',
+      type: 'idea',
+      content: {
+        title: 'Nave Zero',
+        idea: 'Uma nave coleta estrelas',
+        objective: 'Coletar todas as estrelas',
+        controls: ['setas'],
+        victory: 'todas coletadas',
+        defeat: 'tempo acabou',
+        dimension: '2d',
+      },
+    })
+    expect(ctx.pensa.artifacts.length).toBe(1)
+
+    // Plano de outro perfil não é alcançado nem com o id certo.
+    const foreign = await req(
+      ctx.app,
+      'DELETE',
+      `/members/pensa/projects/${project.id}?audience=kids`,
+      undefined,
+      { 'x-auth-user-id': OTHER, 'content-type': 'application/json' },
+    )
+    expect(foreign.status).toBe(404)
+    expect(ctx.pensa.projects.size).toBe(1)
+
+    // Vitrine errada também é 404 (a régua é user_id + audience, como no resto do Pensa).
+    const outraVitrine = await req(
+      ctx.app,
+      'DELETE',
+      `/members/pensa/projects/${project.id}?audience=adult`,
+    )
+    expect(outraVitrine.status).toBe(404)
+    expect(ctx.pensa.projects.size).toBe(1)
+
+    const removed = await req(
+      ctx.app,
+      'DELETE',
+      `/members/pensa/projects/${project.id}?audience=kids`,
+    )
+    expect(removed.status).toBe(200)
+    expect(await json(removed)).toEqual({ ok: true })
+
+    const list = await json(await req(ctx.app, 'GET', '/members/pensa/projects?audience=kids'))
+    expect(list.projects).toEqual([])
+    expect(
+      (await req(ctx.app, 'GET', `/members/pensa/projects/${project.id}?audience=kids`)).status,
+    ).toBe(404)
+    // A cascata levou ciclo e artefatos junto.
+    expect(ctx.pensa.cycles.size).toBe(0)
+    expect(ctx.pensa.artifacts).toHaveLength(0)
+
+    // Apagar de novo é 404: não há lixeira para ressuscitar.
+    expect(
+      (await req(ctx.app, 'DELETE', `/members/pensa/projects/${project.id}?audience=kids`)).status,
+    ).toBe(404)
+  })
+
+  test('o XP e as medalhas do plano apagado FICAM com a criança', async () => {
+    const ctx = buildWithAccess()
+    const project = await createProject(ctx)
+    const base = `/members/pensa/cycles/${project.currentCycle.id}`
+    await req(ctx.app, 'POST', `${base}/artifacts?audience=kids`, {
+      stage: 'z',
+      type: 'idea',
+      content: {
+        title: 'Nave Zero',
+        idea: 'Uma nave coleta estrelas',
+        objective: 'Coletar todas as estrelas',
+        controls: ['setas'],
+        victory: 'todas coletadas',
+        defeat: 'tempo acabou',
+        dimension: '2d',
+      },
+    })
+    await req(ctx.app, 'POST', `${base}/artifacts/idea/validate?audience=kids`)
+    expect(
+      (await req(ctx.app, 'POST', `${base}/advance?audience=kids`, { from: 'z' })).status,
+    ).toBe(200)
+    const ganhos = ctx.gamification.events.length
+    expect(ganhos).toBeGreaterThan(0)
+
+    expect(
+      (await req(ctx.app, 'DELETE', `/members/pensa/projects/${project.id}?audience=kids`)).status,
+    ).toBe(200)
+
+    // O ledger guarda snapshot sem FK: ela fez o trabalho, o XP é dela. Se um dia alguém
+    // "limpar o histórico junto com o plano", este teste é quem avisa.
+    expect(ctx.gamification.events.length).toBe(ganhos)
+  })
+
   test('valida IDs na borda e exige autenticação', async () => {
     const ctx = buildWithAccess()
     expect(
@@ -329,5 +456,12 @@ describe('Pensa planejador — HTTP', () => {
     ).toBe(400)
     const anonymous = await ctx.app.handle(new Request('http://localhost/members/pensa/projects'))
     expect(anonymous.status).toBe(401)
+    // O DELETE entrou no MESMO grupo guardado: sem identidade, nem chega ao serviço.
+    const anonymousDelete = await ctx.app.handle(
+      new Request(`http://localhost/members/pensa/projects/${USER}?audience=kids`, {
+        method: 'DELETE',
+      }),
+    )
+    expect(anonymousDelete.status).toBe(401)
   })
 })

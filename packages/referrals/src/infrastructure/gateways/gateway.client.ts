@@ -2,7 +2,8 @@ import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import type {
   EnsureBuyerInput,
   GatewayResult,
-  GrantManualOfferInput,
+  GrantManualCourseInput,
+  GrantMuralVisitorInput,
   ReferralsGateway,
   SendEmailInput,
 } from '../../domain/ports/gateway.port'
@@ -89,6 +90,14 @@ export function createReferralsGatewayClient(opts: GatewayClientOptions): Referr
   }
 
   return {
+    async getGiftAvailability(courseRef: string): Promise<GatewayResult> {
+      const path = `/members/webhooks/gift-course/${encodeURIComponent(courseRef)}`
+      return requestJson(`${opts.baseUrl}${path}`, {
+        method: 'GET',
+        headers: buildHeaders('GET', path, ''),
+      })
+    },
+
     async ensureBuyer(input: EnsureBuyerInput): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
       const path = '/auth/internal/ensure-buyer'
@@ -109,12 +118,21 @@ export function createReferralsGatewayClient(opts: GatewayClientOptions): Referr
       })
     },
 
-    async grantManualOffer(input: GrantManualOfferInput): Promise<GatewayResult> {
+    async grantManualCourse(input: GrantManualCourseInput): Promise<GatewayResult> {
       const { deliveryId, ...rest } = input
-      // `mode` é OBRIGATÓRIO no DTO do members (t.Literal('offer')) — é detalhe
-      // do WIRE, não do domínio, por isso injetado aqui e não na porta. (Achado
-      // do full review: sem ele, TODA bolsa era reprovada pela validação.)
-      const rawBody = JSON.stringify({ mode: 'offer', ...rest })
+      // `mode` é detalhe do wire S2S, não do domínio da indicação.
+      const rawBody = JSON.stringify({ mode: 'course', ...rest })
+      const path = '/members/webhooks/grant-manual'
+      return requestJson(`${opts.baseUrl}${path}`, {
+        method: 'POST',
+        headers: buildHeaders('POST', path, rawBody, undefined, deliveryId),
+        body: rawBody,
+      })
+    },
+
+    async grantMuralVisitor(input: GrantMuralVisitorInput): Promise<GatewayResult> {
+      const { deliveryId, ...rest } = input
+      const rawBody = JSON.stringify({ mode: 'mural_visitor', ...rest })
       const path = '/members/webhooks/grant-manual'
       return requestJson(`${opts.baseUrl}${path}`, {
         method: 'POST',
@@ -147,9 +165,11 @@ export function createNullReferralsGateway(): ReferralsGateway {
     body: { error: { code: 'GATEWAY_UNCONFIGURED', message: 'GATEWAY_URL ausente' } },
   }
   return {
+    getGiftAvailability: async () => unavailable,
     ensureBuyer: async () => unavailable,
     createPasswordToken: async () => unavailable,
-    grantManualOffer: async () => unavailable,
+    grantManualCourse: async () => unavailable,
+    grantMuralVisitor: async () => unavailable,
     sendEmail: async () => unavailable,
   }
 }

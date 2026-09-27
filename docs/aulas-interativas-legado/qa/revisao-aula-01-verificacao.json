@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-09-18T20:40:08.140Z",
+  "manifest": "corre-dino-v6/aula-01/manifesto.json",
+  "sections": 10,
+  "distinctProjectCriteria": 4,
+  "sharedStudioBlocks": 1,
+  "clips": 6,
+  "originalAnchorsChecked": false,
+  "sourceSha256": null,
+  "status": "passed",
+  "scope": "Validação de autoria e critérios sobre snapshots representativos. Não executa edição de vídeo, teste de fala, publicação ou percurso autenticado."
+}

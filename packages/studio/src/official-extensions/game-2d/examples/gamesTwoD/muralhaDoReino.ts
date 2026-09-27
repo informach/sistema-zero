@@ -614,7 +614,8 @@ export const muralhaDoReinoExample: ExtensionExample = beginnerGameExample({
                       color: '#ffb347',
                     },
                     {
-                      type: 'g2d:playExplosion',
+                      type: 'g2d:playFx',
+                      fx: 'explosion',
                     },
                     {
                       type: 'g2d:removeFromGroup',
@@ -891,6 +892,7 @@ export const muralhaDoReinoExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 1.2,
           },
+          key: 'nasce-invasor',
           body: [
             {
               type: 'if',
@@ -946,6 +948,7 @@ export const muralhaDoReinoExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 0.5,
           },
+          key: 'torres-atiram',
           body: [
             {
               type: 'if',
@@ -996,6 +999,7 @@ export const muralhaDoReinoExample: ExtensionExample = beginnerGameExample({
             type: 'num',
             value: 8,
           },
+          key: 'proxima-onda',
           body: [
             {
               type: 'if',

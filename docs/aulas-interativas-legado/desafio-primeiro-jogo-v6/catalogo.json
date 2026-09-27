@@ -1,0 +1,44 @@
+[
+  {
+    "path": "introducao",
+    "title": "Bem-vindo: encontre sua aula e saiba continuar",
+    "sections": 7,
+    "clips": 6,
+    "minutes": "6–9 minutos"
+  },
+  {
+    "path": "dia-1",
+    "title": "A nave ganha vida",
+    "sections": 16,
+    "clips": 12,
+    "minutes": "20–30 minutos"
+  },
+  {
+    "path": "dia-2",
+    "title": "O tiro nasce na nave e sobe",
+    "sections": 12,
+    "clips": 9,
+    "minutes": "16–24 minutos"
+  },
+  {
+    "path": "dia-3",
+    "title": "Asteroides chegam e os tiros acertam",
+    "sections": 13,
+    "clips": 10,
+    "minutes": "18–27 minutos"
+  },
+  {
+    "path": "dia-4",
+    "title": "Pontos, vidas e tempo para escapar",
+    "sections": 13,
+    "clips": 10,
+    "minutes": "18–26 minutos"
+  },
+  {
+    "path": "dia-5",
+    "title": "Começo, vitória, derrota e recomeço",
+    "sections": 17,
+    "clips": 14,
+    "minutes": "28–40 minutos, com pausa possível após proteger as ações"
+  }
+]

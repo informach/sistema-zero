@@ -1,4 +1,12 @@
-import { sql } from 'drizzle-orm'
+import type { HelpTutorialDocument } from '@sistemazero/core/help'
+import type {
+  LearningAnswers,
+  LearningResult,
+  LessonDraftDocument,
+  LessonSection,
+} from '@sistemazero/core/learning'
+import type { Palette } from '@sistemazero/core/palette'
+import { isNull, sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
   boolean,
@@ -36,6 +44,30 @@ import type { RoomState } from '../../../domain/room/room-catalog'
 // snapshots de outros serviços (auth/catalog/payments).
 export const members = pgSchema('members')
 
+export const profilePreferences = members.table(
+  'profile_preferences',
+  {
+    userId: uuid('user_id').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    /**
+     * `null` = nunca escolheu; quem renderiza pinta a cor da casa. ⚠️ O CHECK é de FORMA, não de
+     * vocabulário: um `in ('a','b',…)` pediria uma migration por cor nova, e apertar um CHECK
+     * VALIDA as linhas existentes — com todas as migrações pendentes numa transação só, uma
+     * linha fora da lista derruba o lote inteiro (lição da `0063`). A régua de quais cores
+     * existem mora em `@sistemazero/core/palette`, e a leitura é tolerante.
+     */
+    palette: varchar('palette', { length: 32 }).$type<Palette>(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index('profile_preferences_account_idx').on(table.accountId),
+    check(
+      'profile_preferences_palette_shape_check',
+      sql`${table.palette} is null or ${table.palette} ~ '^[a-z0-9-]{1,32}$'`,
+    ),
+  ],
+)
+
 const xid8 = customType<{ data: string; driverData: string }>({
   dataType: () => 'xid8',
 })
@@ -50,21 +82,26 @@ export const courseAudienceEnum = members.enum('course_audience', ['adult', 'kid
 // (domain/gamification/levels.ts): um curso "qualificado" (concluído + publicado no
 // Mural) conta para o nível conforme a sua dificuldade.
 export const courseLevelEnum = members.enum('course_level', [
-  // Degrau de ENTRADA da carreira (14/08, migration `0063`): 1 posição só, o curso que a
+  // Degrau de ENTRADA da jornada (14/08, migration `0063`): 1 posição só, o curso que a
   // Faísca faz. Antes o curso-base morava no `iniciante` e a divisão Faísca × Construtor(a)
   // era só apresentação — por isso a Faísca não podia ter curso bônus próprio.
   'primeiros-passos',
   'iniciante',
   'intermediario',
   'avancado',
-  // `lenda` = categoria de curso FORA da carreira (bônus da formatura; não é degrau,
+  // `lenda` = categoria de curso FORA da jornada (bônus da formatura; não é degrau,
   // não conta p/ nível, não trava). Renderizado só na trilha da Lenda no kids.
   'lenda',
 ])
 // Eixo 2D/3D do curso (ortogonal à dificuldade). Par (level, track) = o DEGRAU
-// pedagógico ("Iniciante 2D" … "Avançado 3D") que alimenta a carreira de 8 níveis.
+// pedagógico ("Iniciante 2D" … "Avançado 3D") que alimenta a jornada de 8 níveis.
 // Default `2d` (backfill dos existentes; a usuária re-tagueia os cursos 3D no admin).
 export const courseTrackEnum = members.enum('course_track', ['2d', '3d'])
+export const courseJourneyRoleEnum = members.enum('course_journey_role', [
+  'positioned',
+  'reward',
+  'extra',
+])
 export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   'rich_text',
   'video',
@@ -81,6 +118,13 @@ export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   // enxergar um enum divergente e propor recriá-lo — o que levaria junto a coluna que o usa.
   // Bloco do PINTA (migration `0065`) — o ateliê de desenho embarcado na aula.
   'pinta',
+  'interactive',
+  // Balão de fala do mascote (migration `0082`) — instrução para criança em vez de
+  // contexto corrido.
+  'dialogue',
+  // Materiais complementares (migration `0090`) — a lista de arquivos/imagens/links que a autora
+  // põe no ponto que quiser da seção. Substituiu o lugar `support_block_ids`, que saiu.
+  'materials',
 ])
 export const accessTypeEnum = members.enum('access_type', [
   'download',
@@ -125,10 +169,11 @@ export const courses = members.table(
     // Eixo 2D/3D (par com `level` = degrau pedagógico). Mesma régua de autoria do
     // `audience`/`level`: UPDATE sem o campo PRESERVA o atual.
     track: courseTrackEnum('track').notNull().default('2d'),
-    // Posição do curso na etapa da Carreira do Criador. NULL = curso bônus;
-    // 1 = curso-base. O domínio e o banco garantem que só Kids ocupa a carreira
+    // Posição do curso na etapa da Jornada do Criador. NULL = curso bônus;
+    // 1 = curso-base. O domínio e o banco garantem que só Kids ocupa a jornada
     // e aplicam o teto específico de cada etapa.
     careerSlot: smallint('career_slot'),
+    journeyRole: courseJourneyRoleEnum('journey_role').notNull().default('reward'),
     // Trava sequencial estilo Duolingo: a próxima aula só libera quando a anterior
     // está concluída. Default `true` = backfill LIGADO p/ os cursos já existentes
     // (decisão da usuária: padrão ligado, com toggle por curso no admin).
@@ -143,7 +188,7 @@ export const courses = members.table(
       .on(t.audience, t.level, t.track, t.careerSlot)
       .where(sql`${t.careerSlot} is not null`),
     check(
-      // Espelha `assertCareerSlot`: Primeiros Passos existe só em 2D; Lenda nunca ocupa
+      // Espelha `assertJourneySlot`: Primeiros Passos existe só em 2D; Lenda nunca ocupa
       // posição; o teto é 1 no degrau de ENTRADA e 8 em todos os demais.
       // ⚠️ Compara `level::text`, não o literal do enum: a `0063` é quem o adiciona.
       // ⚠️ O Iniciante 2D teve teto 7 entre 14/08 e 15/08 (a `0063` apertou, a `0064`
@@ -151,6 +196,10 @@ export const courses = members.table(
       // antes, porque `ADD CONSTRAINT ... CHECK` valida as linhas existentes.
       'courses_career_slot_check',
       sql`(${t.level}::text <> 'primeiros-passos' or ${t.track}::text = '2d') and (${t.careerSlot} is null or (${t.audience} = 'kids' and ${t.level}::text <> 'lenda' and ${t.careerSlot} between 1 and (case when ${t.level}::text = 'primeiros-passos' then 1 else 8 end)))`,
+    ),
+    check(
+      'courses_journey_role_slot_check',
+      sql`(${t.journeyRole} = 'positioned') = (${t.careerSlot} is not null)`,
     ),
   ],
 )
@@ -164,6 +213,7 @@ export const modules = members.table(
       .references(() => courses.id, { onDelete: 'cascade' }),
     title: text('title').notNull(),
     summary: text('summary'),
+    riveUrl: text('rive_url'),
     sortOrder: integer('sort_order').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
@@ -209,13 +259,148 @@ export const lessonBlocks = members.table(
     sortOrder: integer('sort_order').notNull().default(0),
     // União discriminada por `kind` (ver domain/course/lesson-block.ts).
     content: jsonb('content').$type<LessonBlockContent>().notNull(),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
     // Token opaco da revisão do conteúdo. Muda somente em create/update do bloco;
     // ordenação não invalida extrações do Zappy.
     contentRevision: varchar('content_revision', { length: 32 })
       .notNull()
       .default(sql`md5(random()::text || clock_timestamp()::text)`),
   },
-  (t) => [uniqueIndex('lesson_blocks_lesson_sort_order_uq').on(t.lessonId, t.sortOrder)],
+  (t) => [
+    uniqueIndex('lesson_blocks_lesson_sort_order_uq')
+      .on(t.lessonId, t.sortOrder)
+      .where(isNull(t.archivedAt)),
+  ],
+)
+
+/** Student/content reads use the active view; teacher history keeps the underlying rows. */
+export const activeLessonBlocks = members
+  .view('active_lesson_blocks')
+  .as((qb) => qb.select().from(lessonBlocks).where(isNull(lessonBlocks.archivedAt)))
+
+export const lessonDrafts = members.table('lesson_drafts', {
+  lessonId: uuid('lesson_id')
+    .primaryKey()
+    .references(() => lessons.id, { onDelete: 'cascade' }),
+  revision: uuid('revision').notNull(),
+  publishedRevision: text('published_revision').notNull(),
+  document: jsonb('document').$type<LessonDraftDocument>().notNull(),
+  /**
+   * O rascunho de ANTES da última restauração, para o "Desfazer" do painel.
+   *
+   * Vale só até a próxima alteração: todo write que não seja restauração limpa as duas colunas
+   * (ver `lesson-draft.repository.ts`). Desfazer horas depois devolveria um documento velho por
+   * cima de trabalho novo, que é o acidente que a restauração existe para consertar.
+   */
+  previousDocument: jsonb('previous_document').$type<LessonDraftDocument>(),
+  updatedBy: uuid('updated_by'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const lessonDraftOperations = members.table(
+  'lesson_draft_operations',
+  {
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    operationId: uuid('operation_id').notNull(),
+    authorId: uuid('author_id').notNull(),
+    fingerprint: text('fingerprint').notNull(),
+    revision: uuid('revision').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.lessonId, t.operationId] })],
+)
+
+/** The complete section layout is replaced atomically with optimistic concurrency. */
+export const lessonStructures = members.table('lesson_structures', {
+  lessonId: uuid('lesson_id')
+    .primaryKey()
+    .references(() => lessons.id, { onDelete: 'cascade' }),
+  revision: uuid('revision').notNull(),
+  sections: jsonb('sections').$type<LessonSection[]>().notNull(),
+})
+
+export const lessonNavigation = members.table(
+  'lesson_navigation',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    sectionId: uuid('section_id').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.lessonId] }),
+    index('lesson_navigation_account_idx').on(t.accountId),
+  ],
+)
+
+/** Section milestones are independent of navigation and survive later review. */
+export const lessonSectionProgress = members.table(
+  'lesson_section_progress',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    sectionId: uuid('section_id').notNull(),
+    revision: varchar('revision', { length: 32 }).notNull(),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    projectPassed: boolean('project_passed').notNull().default(false),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.lessonId, t.sectionId] }),
+    index('lesson_section_progress_account_idx').on(t.accountId),
+  ],
+)
+
+export const lessonBlockProgress = members.table(
+  'lesson_block_progress',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    blockId: uuid('block_id')
+      .notNull()
+      .references(() => lessonBlocks.id, { onDelete: 'cascade' }),
+    revision: varchar('revision', { length: 32 }).notNull(),
+    positionSeconds: integer('position_seconds'),
+    answers: jsonb('answers').$type<LearningAnswers>().notNull().default({}),
+    hintsUsed: integer('hints_used').notNull().default(0),
+    attemptsCount: integer('attempts_count').notNull().default(0),
+    result: jsonb('result').$type<LearningResult>(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.blockId] }),
+    index('lesson_block_progress_account_lesson_idx').on(t.accountId, t.lessonId),
+  ],
+)
+
+/** Historical snapshots survive content revisions; no FK to individual blocks. */
+export const learningAttempts = members.table(
+  'learning_attempts',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    lessonId: uuid('lesson_id').notNull(),
+    blockId: uuid('block_id').notNull(),
+    revision: varchar('revision', { length: 32 }).notNull(),
+    answers: jsonb('answers').$type<LearningAnswers>().notNull(),
+    hintsUsed: integer('hints_used').notNull(),
+    result: jsonb('result').$type<LearningResult>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('learning_attempts_owner_lesson_idx').on(t.userId, t.accountId, t.lessonId, t.createdAt),
+  ],
 )
 
 export const lessonAttachments = members.table(
@@ -229,6 +414,7 @@ export const lessonAttachments = members.table(
     url: text('url').notNull(),
     fileType: text('file_type'),
     sizeBytes: integer('size_bytes'),
+    zappyStudentNotebook: boolean('zappy_student_notebook').notNull().default(false),
     sortOrder: integer('sort_order').notNull().default(0),
   },
   (t) => [uniqueIndex('lesson_attachments_lesson_sort_order_uq').on(t.lessonId, t.sortOrder)],
@@ -585,7 +771,7 @@ export const xpEvents = members.table(
     // `coalesce(source_track, courses.track, '2d')` — re-taggear um curso 3D no
     // admin corrige os marcos legados sozinho; congelar '2d' aqui impediria isso.
     sourceTrack: courseTrackEnum('source_track'),
-    // Snapshot do slot da carreira nos marcos de curso. Linhas anteriores ficam
+    // Snapshot do slot da jornada nos marcos de curso. Linhas anteriores ficam
     // NULL e usam `courses.career_slot` como fallback até o primeiro snapshot.
     sourceCareerSlot: smallint('source_career_slot'),
     // XID 64-bit da transação que criou o evento. Diferente de `created_at`,
@@ -854,7 +1040,11 @@ export const pensaArtifactTypeEnum = members.enum('pensa_artifact_type', [
   'plan_review',
 ])
 export const pensaArtifactStatusEnum = members.enum('pensa_artifact_status', ['draft', 'validated'])
-export const pensaTaskDestinationEnum = members.enum('pensa_task_destination', ['pinta', 'studio'])
+export const pensaTaskDestinationEnum = members.enum('pensa_task_destination', [
+  'pinta',
+  'studio',
+  'molda',
+])
 export const pensaTaskStatusEnum = members.enum('pensa_task_status', [
   'planned',
   'in_progress',
@@ -880,10 +1070,39 @@ export const pensaProjects = members.table(
     kind: pensaProjectKindEnum('kind').notNull(),
     name: varchar('name', { length: 120 }).notNull(),
     status: pensaProjectStatusEnum('status').notNull().default('active'),
+    // O código do plano (equipe, 26/09/2026): 6 símbolos sem ambíguos; `null` = desligado.
+    shareCode: varchar('share_code', { length: 8 }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
-  (t) => [index('pensa_projects_user_idx').on(t.userId, t.status)],
+  (t) => [
+    index('pensa_projects_user_idx').on(t.userId, t.status),
+    uniqueIndex('pensa_projects_share_code_uq')
+      .on(t.shareCode)
+      .where(sql`${t.shareCode} is not null`),
+  ],
+)
+
+/**
+ * A EQUIPE de um plano (26/09/2026): quem entrou pelo código. O dono é o `user_id` do
+ * projeto (não há papel além de "membro"). Cai na cascata do projeto.
+ */
+export const pensaProjectMembers = members.table(
+  'pensa_project_members',
+  {
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    // O perfil da criança convidada e a conta responsável dela (o gate de produto é da conta).
+    profileId: uuid('profile_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    invitedBy: uuid('invited_by').notNull(),
+    joinedAt: timestamp('joined_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.projectId, t.profileId] }),
+    index('pensa_project_members_profile_idx').on(t.profileId),
+  ],
 )
 
 export const pensaCycles = members.table(
@@ -1005,8 +1224,70 @@ export const teacherThreadContextEnum = members.enum('teacher_thread_context', [
   'studio_submission',
   'mural_publication',
   'general',
+  'lesson_section',
 ])
 export const teacherMessageRoleEnum = members.enum('teacher_message_role', ['teacher', 'student'])
+export const lessonEvidence = members.table(
+  'lesson_evidence',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id'),
+    lessonId: uuid('lesson_id').notNull(),
+    blockId: uuid('block_id'),
+    sectionId: uuid('section_id'),
+    kind: text('kind').$type<'section_project' | 'platform_action' | 'quiz' | 'studio'>().notNull(),
+    revision: text('revision').notNull(),
+    payload: jsonb('payload').$type<unknown>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('lesson_evidence_owner_idx').on(t.userId, t.lessonId, t.createdAt)],
+)
+
+/** Base para rebase exato dos rascunhos existentes na migração dos critérios. */
+export const lessonCriteriaMigrationSnapshots = members.table(
+  'lesson_criteria_migration_snapshots',
+  {
+    lessonId: uuid('lesson_id').primaryKey(),
+    previousSections: jsonb('previous_sections').$type<LessonSection[]>().notNull(),
+    migratedSections: jsonb('migrated_sections').$type<LessonSection[]>().notNull(),
+  },
+)
+
+export const teacherBroadcasts = members.table('teacher_broadcasts', {
+  id: uuid('id').primaryKey(),
+  authorId: uuid('author_id').notNull(),
+  authorName: text('author_name').notNull(),
+  audience: jsonb('audience')
+    .$type<import('../../../domain/ports/teacher-broadcast-repository.port').TeacherAudience>()
+    .notNull(),
+  title: varchar('title', { length: 160 }).notNull(),
+  body: varchar('body', { length: 8000 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  sentAt: timestamp('sent_at', { withTimezone: true }),
+})
+
+export const teacherBroadcastRecipients = members.table(
+  'teacher_broadcast_recipients',
+  {
+    broadcastId: uuid('broadcast_id')
+      .notNull()
+      .references(() => teacherBroadcasts.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    name: text('name').notNull(),
+    accountName: text('account_name').notNull(),
+    accountEmail: text('account_email').notNull(),
+    threadId: uuid('thread_id').notNull(),
+    status: text('status').$type<'pending' | 'delivered' | 'failed'>().notNull().default('pending'),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.broadcastId, t.profileId] }),
+    uniqueIndex('teacher_delivery_thread_uq').on(t.threadId),
+    index('teacher_delivery_pending_idx').on(t.status, t.broadcastId),
+  ],
+)
 
 export const teacherThreads = members.table(
   'teacher_threads',
@@ -1020,6 +1301,13 @@ export const teacherThreads = members.table(
     contextType: teacherThreadContextEnum('context_type').notNull(),
     /** Snapshot SEM FK: blockId (entrega) | threadId do hub (Mural) | null (geral). */
     contextRef: text('context_ref'),
+    broadcastId: uuid('broadcast_id').references(() => teacherBroadcasts.id, {
+      onDelete: 'set null',
+    }),
+    workflowStatus: text('workflow_status')
+      .$type<'waiting_teacher' | 'waiting_student' | 'resolved'>()
+      .notNull()
+      .default('waiting_student'),
     // Denormalizados p/ renderizar mesmo se a origem sumir (snapshot).
     courseId: uuid('course_id'),
     lessonId: uuid('lesson_id'),
@@ -1058,6 +1346,10 @@ export const teacherMessages = members.table(
     // 8000: o professor escreve markdown com print (URL) + trecho de código; o recado curto
     // do aluno cabe de sobra. Espelha os DTOs `TeacherThreadReplyBody`/`AdminTeacherThreadPostBody`.
     body: varchar('body', { length: 8000 }).notNull(),
+    helpContext:
+      jsonb('help_context').$type<
+        import('../../../domain/ports/teacher-thread-repository.port').TeacherHelpContext
+      >(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   // Cobre o EXISTS de não-lido (thread + papel + data), a paginação do histórico
@@ -1230,6 +1522,28 @@ export const renewalRemindersSent = members.table(
   ],
 )
 
+// ── Ciclo de vida de acessos fixos ──────────────────────────────────────────
+// Diferente do lembrete anual, um mesmo vencimento pode gerar mais de uma
+// mensagem (7 dias, 3 dias, expirou e marcos comportamentais). A terceira parte
+// da chave preserva cada envio sem sobrecarregar `renewal_reminders_sent`.
+export const entitlementLifecycleMessagesSent = members.table(
+  'entitlement_lifecycle_messages_sent',
+  {
+    entitlementId: uuid('entitlement_id')
+      .notNull()
+      .references(() => entitlements.id, { onDelete: 'cascade' }),
+    expiresOn: date('expires_on', { mode: 'string' }).notNull(),
+    messageKind: text('message_kind').notNull(),
+    sentAt: timestamp('sent_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({
+      name: 'entitlement_lifecycle_messages_sent_pk',
+      columns: [t.entitlementId, t.expiresOn, t.messageKind],
+    }),
+  ],
+)
+
 // ── Desafio do mês — tema gerenciável pelo admin (07/2026) ──────────────────
 // Biblioteca de temas CUSTOM criados pelo professor + override do tema por mês.
 // Sem override, o tema vem do sorteio determinístico em código (fallback,
@@ -1263,6 +1577,69 @@ export const challengeMonthOverrides = members.table(
     check(
       'challenge_month_overrides_one_theme',
       sql`(${t.builtinSlug} IS NULL) <> (${t.customThemeId} IS NULL)`,
+    ),
+  ],
+)
+
+// ── "Como fazer": a biblioteca de ajuda do Kids (26/09/2026) ─────────────────
+// Tutoriais curtos por TAREFA ("Como ver meu jogo na Pré-visualização"), separados dos
+// cursos de propósito: SEM FK para `lessons`, sem progresso, sem XP, sem quiz. Guardar como
+// aula puxaria o ledger de XP, a contagem de aulas publicadas, a trava de matrícula e a
+// reconciliação do Zappy (que apaga fonte sem bloco publicado). Qualquer conta ATIVA lê o
+// publicado (gate no gateway, não aqui). A coleção mora no banco (decisão da dona): o admin
+// cria, renomeia, reordena e arquiva; ícone e cor são allowlists do core.
+export const helpCollections = members.table(
+  'help_collections',
+  {
+    id: uuid('id').primaryKey(),
+    slug: varchar('slug', { length: 80 }).notNull(),
+    title: varchar('title', { length: 60 }).notNull(),
+    description: varchar('description', { length: 240 }).notNull().default(''),
+    icon: varchar('icon', { length: 32 }).notNull(),
+    tone: varchar('tone', { length: 32 }).notNull(),
+    position: integer('position').notNull().default(0),
+    status: varchar('status', { length: 16 }).notNull().default('active'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('help_collections_slug_uq').on(t.slug),
+    check('help_collections_status_check', sql`${t.status} in ('active', 'archived')`),
+  ],
+)
+
+// O tutorial é um JSON inteiro em duas cópias: o admin edita `draft`; "Publicar" copia para
+// `published` (a criança lê SÓ essa) e grava `published_search_text`, o texto achatado e
+// normalizado que a busca do kids (no navegador) e a do Zappy (tsvector, índice criado à mão
+// na migration) leem. `revision` é o lock otimista do PATCH (`expectedRevision`), inteiro
+// porque viaja no corpo. RESTRICT na coleção: coleção com tutorial não é apagável, só arquiva.
+export const helpTutorials = members.table(
+  'help_tutorials',
+  {
+    id: uuid('id').primaryKey(),
+    slug: varchar('slug', { length: 80 }).notNull(),
+    collectionId: uuid('collection_id')
+      .notNull()
+      .references(() => helpCollections.id),
+    status: varchar('status', { length: 16 }).notNull().default('draft'),
+    draft: jsonb('draft').$type<HelpTutorialDocument>().notNull(),
+    published: jsonb('published').$type<HelpTutorialDocument>(),
+    publishedSearchText: text('published_search_text'),
+    revision: integer('revision').notNull().default(1),
+    position: integer('position').notNull().default(0),
+    createdBy: uuid('created_by'),
+    updatedBy: uuid('updated_by'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('help_tutorials_slug_uq').on(t.slug),
+    index('help_tutorials_status_collection_idx').on(t.status, t.collectionId, t.position),
+    check('help_tutorials_status_check', sql`${t.status} in ('draft', 'published', 'archived')`),
+    check(
+      'help_tutorials_published_pair',
+      sql`(${t.status} = 'published') = (${t.published} is not null)`,
     ),
   ],
 )
@@ -1398,11 +1775,24 @@ export const processedWebhooks = members.table(
 )
 
 export const schema = {
+  teacherBroadcasts,
+  teacherBroadcastRecipients,
+  teacherThreadStaffReads,
+  lessonEvidence,
+  lessonCriteriaMigrationSnapshots,
+  lessonDrafts,
+  lessonDraftOperations,
+  activeLessonBlocks,
   courses,
   modules,
   lessons,
   lessonBlocks,
   lessonAttachments,
+  lessonStructures,
+  lessonNavigation,
+  lessonSectionProgress,
+  lessonBlockProgress,
+  learningAttempts,
   entitlements,
   lessonCompletions,
   lessonProgress,
@@ -1414,6 +1804,7 @@ export const schema = {
   userBadges,
   coinEvents,
   avatarConfigs,
+  profilePreferences,
   avatarInventory,
   missionClaims,
   leagueMembership,
@@ -1433,8 +1824,11 @@ export const schema = {
   zappyKnowledgeChunks,
   aiUsageDaily,
   renewalRemindersSent,
+  entitlementLifecycleMessagesSent,
   challengeCustomThemes,
   challengeMonthOverrides,
+  helpCollections,
+  helpTutorials,
   creations,
   accountDeletionFences,
   creationCleanupJobs,

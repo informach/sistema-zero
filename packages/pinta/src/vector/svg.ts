@@ -3,7 +3,9 @@
  * editor renderiza (atributos idênticos) — o export é o editor serializado,
  * snapshot-testável e abre em qualquer navegador/editor de SVG.
  */
-import { boundsCenter, shapeBounds } from './geometry'
+import { rotationPivotOf } from './geometry'
+import { gradientGeometry } from './gradient'
+import { clipPathId, resolveMaskScene } from './mask'
 import {
   fontFamilyCss,
   fontFamilyOf,
@@ -35,26 +37,29 @@ function escapeXml(value: string): string {
 
 const round2 = (value: number) => Math.round(value * 100) / 100
 
-/**
- * Vetor do degradê LINEAR em coords de objectBoundingBox (0–1): o ângulo (0 = →,
- * 90 = ↓) vira uma reta que atravessa o centro. Usado no export string e no
- * render React (mesmos números).
- */
-export function linearGradientVector(angle: number): {
-  x1: number
-  y1: number
-  x2: number
-  y2: number
-} {
-  const rad = (angle * Math.PI) / 180
-  const dx = Math.cos(rad) / 2
-  const dy = Math.sin(rad) / 2
-  return {
-    x1: round2(0.5 - dx),
-    y1: round2(0.5 - dy),
-    x2: round2(0.5 + dx),
-    y2: round2(0.5 + dy),
-  }
+function attrsMarkup(attrs: Record<string, string>): string {
+  return Object.entries(attrs)
+    .map(([key, value]) => `${key}="${escapeXml(value)}"`)
+    .join(' ')
+}
+
+function gradientDefsContent(shapes: readonly VectorShape[], idPrefix = ''): string[] {
+  return shapes
+    .filter((s) => isVectorGradient(s.fill))
+    .map((s) => {
+      const g = s.fill as VectorGradient
+      const id = escapeXml(gradientId(s.id, idPrefix))
+      const stops = `<stop offset="0" stop-color="${g.from}"/><stop offset="1" stop-color="${g.to}"/>`
+      const geometry = gradientGeometry(g)
+      if (geometry.type === 'radial') {
+        const attrs =
+          g.center || g.radius !== undefined
+            ? ` cx="${geometry.center.x}" cy="${geometry.center.y}" r="${geometry.radius}"`
+            : ''
+        return `  <radialGradient id="${id}"${attrs}>${stops}</radialGradient>`
+      }
+      return `  <linearGradient id="${id}" x1="${geometry.start.x}" y1="${geometry.start.y}" x2="${geometry.end.x}" y2="${geometry.end.y}">${stops}</linearGradient>`
+    })
 }
 
 /**
@@ -62,16 +67,28 @@ export function linearGradientVector(angle: number): {
  * nenhum). Formas ESCONDIDAS ficam fora (paridade com o markup dos shapes).
  */
 export function gradientDefsMarkup(shapes: VectorShape[], idPrefix = ''): string {
-  const defs = visibleShapes(shapes)
-    .filter((s) => isVectorGradient(s.fill))
-    .map((s) => {
-      const g = s.fill as VectorGradient
-      const id = escapeXml(gradientId(s.id, idPrefix))
-      const stops = `<stop offset="0" stop-color="${g.from}"/><stop offset="1" stop-color="${g.to}"/>`
-      if (g.type === 'radial') return `  <radialGradient id="${id}">${stops}</radialGradient>`
-      const v = linearGradientVector(g.angle)
-      return `  <linearGradient id="${id}" x1="${v.x1}" y1="${v.y1}" x2="${v.x2}" y2="${v.y2}">${stops}</linearGradient>`
-    })
+  const defs = gradientDefsContent(visibleShapes(shapes), idPrefix)
+  return defs.length > 0 ? `<defs>\n${defs.join('\n')}\n</defs>` : ''
+}
+
+function clipSourceMarkup(source: VectorShape, idPrefix: string): string {
+  const geometry = shapeGeometryAttrs(source)
+  const common = shapeCommonAttrs(source, idPrefix)
+  const attrs = {
+    ...geometry.attrs,
+    fill: '#000000',
+    ...(common.transform ? { transform: common.transform } : {}),
+  }
+  return `  <clipPath id="${escapeXml(clipPathId(source.id, idPrefix))}"><${geometry.tag} ${attrsMarkup(attrs)}/></clipPath>`
+}
+
+/** Definições completas da cena: degradês pintados e geometrias de recorte. */
+export function sceneDefsMarkup(shapes: VectorShape[], idPrefix = ''): string {
+  const scene = resolveMaskScene(shapes)
+  const defs = [
+    ...gradientDefsContent(scene.painted, idPrefix),
+    ...[...scene.sources.values()].map((source) => clipSourceMarkup(source, idPrefix)),
+  ]
   return defs.length > 0 ? `<defs>\n${defs.join('\n')}\n</defs>` : ''
 }
 
@@ -87,8 +104,8 @@ export function shapeCommonAttrs(shape: VectorShape, idPrefix = ''): Record<stri
   }
   if (shape.opacity < 1) attrs.opacity = String(shape.opacity)
   if (shape.rotation !== 0) {
-    const center = boundsCenter(shapeBounds(shape))
-    attrs.transform = `rotate(${round2(shape.rotation)} ${round2(center.x)} ${round2(center.y)})`
+    const pivot = rotationPivotOf(shape)
+    attrs.transform = `rotate(${round2(shape.rotation)} ${round2(pivot.x)} ${round2(pivot.y)})`
   }
   return attrs
 }
@@ -201,12 +218,15 @@ export function shapeGeometryAttrs(shape: VectorShape): {
   }
 }
 
-export function shapeToMarkup(shape: VectorShape, idPrefix = ''): string {
+export function shapeToMarkup(
+  shape: VectorShape,
+  idPrefix = '',
+  children = '',
+  extraAttrs: Record<string, string> = {},
+): string {
   const { tag, attrs, content, lines } = shapeGeometryAttrs(shape)
-  const all = { ...attrs, ...shapeCommonAttrs(shape, idPrefix) }
-  const attrText = Object.entries(all)
-    .map(([key, value]) => `${key}="${escapeXml(value)}"`)
-    .join(' ')
+  const all = { ...attrs, ...shapeCommonAttrs(shape, idPrefix), ...extraAttrs }
+  const attrText = attrsMarkup(all)
   if (lines) {
     const spans = lines
       .map((line) => `<tspan x="${line.x}" dy="${line.dy}">${escapeXml(line.text)}</tspan>`)
@@ -214,6 +234,7 @@ export function shapeToMarkup(shape: VectorShape, idPrefix = ''): string {
     return `<${tag} ${attrText}>${spans}</${tag}>`
   }
   if (content !== undefined) return `<${tag} ${attrText}>${escapeXml(content)}</${tag}>`
+  if (children) return `<${tag} ${attrText}>${children}</${tag}>`
   return `<${tag} ${attrText}/>`
 }
 
@@ -223,14 +244,23 @@ export function shapeToMarkup(shape: VectorShape, idPrefix = ''): string {
  * (SVG solto, folhas, tilemap, PNG via raster, ZIP, ponte com o Estúdio).
  */
 export function shapesToMarkup(shapes: VectorShape[], indent = '  ', idPrefix = ''): string {
-  return visibleShapes(shapes)
-    .map((shape) => `${indent}${shapeToMarkup(shape, idPrefix)}`)
+  const scene = resolveMaskScene(shapes)
+  return scene.painted
+    .map(
+      (shape) =>
+        `${indent}${shapeToMarkup(
+          shape,
+          idPrefix,
+          '',
+          shape.maskId ? { 'clip-path': `url(#${clipPathId(shape.maskId, idPrefix)})` } : {},
+        )}`,
+    )
     .join('\n')
 }
 
 /** O documento SVG inteiro (ordem do array = z-order, fundo primeiro). */
 export function vectorToSvg(doc: VectorDoc): string {
-  const defs = gradientDefsMarkup(doc.shapes)
+  const defs = sceneDefsMarkup(doc.shapes)
   const lines = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${doc.width}" height="${doc.height}" viewBox="0 0 ${doc.width} ${doc.height}">`,
   ]

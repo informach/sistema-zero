@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import { gameTwoDBlocks, gameTwoDToolboxCategory } from '../blocks'
-
-interface ToolboxGroup {
-  name?: string
-  contents?: Array<{ type?: string }>
-}
+import { gameTwoDBlocks } from '../blocks'
+import { GAME_TWO_D_PALETTE } from '../palette'
 
 describe('clareza dos blocos de velocidade do Jogo 2D', () => {
   it('explica de onde vem a velocidade usada para mover o sprite', () => {
@@ -16,11 +12,11 @@ describe('clareza dos blocos de velocidade do Jogo 2D', () => {
   })
 
   it('mantém definir, gravidade e mover juntos na ordem em que são usados', () => {
-    const groups = gameTwoDToolboxCategory.contents as ToolboxGroup[]
-    const sprites = groups.find(({ name }) => name === '🎮 Sprites')
-    const movement = groups.find(({ name }) => name === '🕹️ Movimento')
-    const spriteTypes = sprites?.contents?.map(({ type }) => type) ?? []
-    const movementTypes = movement?.contents?.map(({ type }) => type) ?? []
+    const sprites = GAME_TWO_D_PALETTE.find(({ name }) => name === 'Sprites')
+    const movement = GAME_TWO_D_PALETTE.find(({ name }) => name === 'Movimento')
+    const spriteTypes = sprites?.sections.flatMap((section) => section.types) ?? []
+    const movementTypes: readonly string[] =
+      movement?.sections.flatMap((section) => section.types) ?? []
 
     expect(spriteTypes).not.toContain('sz_g2d_set_velocity')
     for (const type of [

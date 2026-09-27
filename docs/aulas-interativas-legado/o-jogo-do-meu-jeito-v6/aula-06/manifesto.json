@@ -1,0 +1,413 @@
+{
+  "version": 4,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-06",
+  "title": "A sua nave entra no jogo",
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "convite-construir-1",
+    "checar-construir-2",
+    "construir-3",
+    "video-construir-3-1",
+    "fechamento",
+    "checar-fechamento"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura-v6",
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-06-o-jogo-do-meu-jeito.md → Abertura. Entrada: “Você tem duas coisas prontas. De um lado, o seu jogo da nave rodando aqui no Estúdio Completo. Do ou”. Saída: “nta a sua no lugar. E no fim a gente faz a sua nave ganhar a animação do motor. Vamos pro primeiro.\"”. Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil. Complemento: “Hoje o desenho da sua nave vai entrar no jogo. Vamos trazer as duas artes para o projeto, trocar a nave do kit e ensinar o jogo a mostrar um quadro por vez. O motor vai pulsar como na Prévia do Pinta. Os asteroides ficam para a próxima aula.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-trazer-artes",
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-06-o-jogo-do-meu-jeito.md → Parte 1. Passo 1: trazer os seus desenhos para dentro do projeto. Entrada: “Então vai no menu da esquerda e clica em Estúdio. Abriu o Meus Jogos, com os seus projetos. Clica no”. Saída: “nda usar são os blocos, e é isso que a gente faz agora. Primeiro passo concluído. Bora pro segundo.\"”. Reutilizar o caminho inteiro, incluindo ambos os Fechar. Não afirmar que No projeto estará vazio em toda conta. Manter botão de adição de cada desenho. Complemento: “Abra o jogo da nave em Meus Jogos. Em Mais opções → Materiais → Imagens, escolha Trazer do Pinta. Adicione nave e asteroide. Feche as duas janelas e confira: os desenhos estão No projeto, mas o jogo ainda usa as peças do kit.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-trazer-artes",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Abra o jogo da nave em Meus Jogos. Em Mais opções → Materiais → Imagens, escolha Trazer do Pinta. Adicione nave e asteroide. Feche as duas janelas e confira: os desenhos estão No projeto, mas o jogo ainda usa as peças do kit.\n\n**Antes de voltar à aula, confira:**\n\n- Projeto é o jogo importado, não Meu jogo novo.\n- As duas artes estão No projeto com suas animações.\n- O jogo ainda funciona com a arte do kit.\n\nSe as artes não apareceram, confira o perfil e o salvamento do Pinta. Não importe o mesmo desenho repetidamente para tentar atualizar.\n\nPause o vídeo e use **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-trazer-artes",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Os desenhos estão No projeto, mas a nave continua cinza. O que falta?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Desenhar a nave novamente."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Mandar os blocos usarem a imagem e sua animação."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "Trazer do Pinta disponibiliza o recurso; os blocos decidem como mostrá-lo.\n\nSe as artes não apareceram, confira o perfil e o salvamento do Pinta. Não importe o mesmo desenho repetidamente para tentar atualizar."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-trocar-nave",
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-06-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: apagar a nave do kit e montar a sua. Entrada: “Com os seus desenhos guardados no projeto, olha a nave que está voando aí. Ela veio pronta, de um ki”. Saída: “uas naves. Duas, espremidas uma do lado da outra, dentro do lugar de uma só. Não foi você que errou.”. Preservar exclusão isolada e pilha religada. Identificar blocos pelo rótulo, não por “segundo da gaveta”. Não prometer o quadrado azul em toda etapa de digitação: o preview pode manter a última versão válida. Complemento: “No Ao iniciar, use botão direito → Apagar este bloco no Criar nave do kit. Coloque Criar sprite … com imagem no lugar. Preencha nave; x 400; y 410; largura 54; altura 54; imagem nave. Se aparecerem duas naves espremidas, vamos entender isso na próxima seção.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-trocar-nave",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "No Ao iniciar, use botão direito → Apagar este bloco no Criar nave do kit. Coloque Criar sprite … com imagem no lugar. Preencha nave; x 400; y 410; largura 54; altura 54; imagem nave. Se aparecerem duas naves espremidas, vamos entender isso na próxima seção.\n\n**Antes de voltar à aula, confira:**\n\n- Criar nave do kit retirado; um único criador chamado nave.\n- Criar sprite com imagem nave, x 400, y 410, largura 54, altura 54 no Ao iniciar.\n- Blocos de grupo e lógica abaixo preservados.\n\nUse Apagar este bloco, não a lixeira com a pilha toda. Se removeu algo junto, desfaça antes de continuar.\n\nPause o vídeo e use **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-trocar-nave",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Por que apagamos o Criar nave do kit antes de montar o novo?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Para não criar duas coisas chamadas nave no mesmo trecho."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Porque toda troca de bloco deve sempre começar apagando."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "Os dois criadores usam o mesmo nome. Na próxima aula a peça antiga tem outro contrato, então a ordem será diferente.\n\nUse Apagar este bloco, não a lixeira com a pilha toda. Se removeu algo junto, desfaça antes de continuar."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-folha-demo",
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-06-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: apagar a nave do kit e montar a sua. Entrada: “E as duas vieram do seu próprio desenho: a sua nave tem dois quadros, um com o motor apagado e um co”. Saída: “m de cada vez, bem depressa. Isso chama animar. Segundo passo concluído, e o terceiro é o conserto.\"”. Substituir “apagado e aceso” por “menor e maior”. Mostrar 64 × 32 como dimensão total desta folha de dois quadros 32 × 32; não confundir com 54 × 54 no jogo. Complemento: “O Pinta levou os dois quadros numa imagem só. O sprite está mostrando essa imagem inteira dentro de seu quadrado. Vamos marcar onde termina cada quadro e mostrar um de cada vez. Um fogo é menor e o outro maior.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "experimento-recorte",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Onde cortar a folha?",
+        "instructions": "Mude a largura do recorte e olhe a nave no jogo. Qual largura mostra uma nave inteira?",
+        "hints": [
+          "Mude a largura do recorte e olhe o que aparece no jogo.",
+          "Um quadro da folha tem 32 de largura. Que recorte mostra uma nave inteira?",
+          "Com o recorte de 32, deixe a nave do jogo bem maior e compare a folha com antes."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "sheet-vs-sprite",
+          "cenario": "meu-jeito",
+          "setup": {
+            "goals": ["crop-half", "crop-whole", "size-apart"]
+          }
+        },
+        "checkpoint": {
+          "prompt": "No bloco Carregar folha de quadros, qual é o tamanho de cada quadro?",
+          "choices": [
+            {
+              "id": "jogo",
+              "label": "54 x 54, o tamanho da nave no jogo."
+            },
+            {
+              "id": "quadro",
+              "label": "32 x 32, o tamanho de um quadro na folha."
+            }
+          ],
+          "correctChoiceId": "quadro",
+          "explanation": "O bloco pergunta o tamanho de um quadro na folha: 32. O 54 é o tamanho em que a nave aparece no jogo."
+        }
+      }
+    },
+    {
+      "key": "video-carregar-folha",
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-06-o-jogo-do-meu-jeito.md → Parte 3. Passo 3: carregar a folha e animar a nave. Entrada: “Pra separar essa fila em quadros, faltam dois blocos, e os dois moram no mesmo lugar. Na coluna da e”. Saída: “ o tamanho e você marcou o Médio. O bloco precisa dele pra cortar a fila de desenhos no lugar certo.”. Manter os campos e a razão do 32. Esclarecer nomes de recurso/imagem/variável: imagem nave pode ser usada pelo sprite nave; folha recebe outro identificador para não conflitar no programa. Complemento: “Em Jogo 2D → Sprites → Animação, coloque Carregar folha de quadros logo abaixo do Criar sprite nave. Digite folha-nave e escolha imagem nave. Os dois campos de tamanho ficam em 32. O bloco de animar virá em seguida.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-carregar-folha",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Jogo 2D → Sprites → Animação, coloque Carregar folha de quadros logo abaixo do Criar sprite nave. Digite folha-nave e escolha imagem nave. Os dois campos de tamanho ficam em 32. O bloco de animar virá em seguida.\n\n**Antes de voltar à aula, confira:**\n\n- Carregar folha-nave da imagem nave, FW 32 e FH 32.\n- Bloco no Ao iniciar, depois de criar a nave e antes de animar.\n\nO nome da folha é digitado; a imagem vem do seletor. Não escolha asteroide nesta folha.\n\nPause o vídeo e use **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-carregar-folha",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Carregar a folha já faz o motor pulsar?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Sim, todos os sprites usam toda folha carregada automaticamente."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Ainda falta mandar animar o sprite com essa folha."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "A folha prepara os quadros. Animar sprite associa a sequência ao objeto.\n\nO nome da folha é digitado; a imagem vem do seletor. Não escolha asteroide nesta folha."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-animacao-nave",
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-06-o-jogo-do-meu-jeito.md → Parte 3. Passo 3: carregar a folha e animar a nave. Entrada: “Agora vem o bloco que faz a nave se mexer, e ele está aí mesmo, na Animação: um bloco comprido que c”. Saída: “rea do jogo! É a sua nave! Com o motor dela acendendo e apagando sozinho. Terceiro passo concluído.\"”. Corrigir todas as falas de acender/apagar. Mostrar preenchimento por metadados e conferir os valores reais; se a faixa estiver diferente, revisar os dois quadros no Pinta. Complemento: “Logo abaixo da folha, coloque Animar sprite. Escolha nave, folha-nave e voando. Confira os campos: do quadro 0 ao 1, a 8 fps. Inicie a partida e teste movimento, tiro e reinício. O motor deve pulsar, com uma nave por vez.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-animacao-nave",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Logo abaixo da folha, coloque Animar sprite. Escolha nave, folha-nave e voando. Confira os campos: do quadro 0 ao 1, a 8 fps. Inicie a partida e teste movimento, tiro e reinício. O motor deve pulsar, com uma nave por vez.\n\n**Antes de voltar à aula, confira:**\n\n- Animar nave com folha-nave/voando do 0 ao 1 a 8 fps no Ao iniciar, depois de carregar.\n- Uma nave animada; movimento e tiro respondem.\n- Asteroides ainda usam o kit nesta aula.\n\nSe voando não aparece, confira o nome da animação no Pinta e a importação da arte com seus metadados. Não digite um nome de folha inexistente.\n\nPause o vídeo e use **Abrir meu Estúdio**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-animacao-nave",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O Estúdio mostra quadros 0 e 1. Quantos desenhos isso representa?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Dois: o primeiro é 0 e o segundo é 1."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Um, porque o último número é 1."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "Os índices começam em zero. Do 0 ao 1 inclui os dois quadros.\n\nSe voando não aparece, confira o nome da animação no Pinta e a importação da arte com seus metadados. Não digite um nome de folha inexistente."
+          }
+        ]
+      }
+    },
+    {
+      "key": "orientacao-entrega-v6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Envie o mesmo projeto livre com a nave animada. Jogue antes de selecionar o cartão: a entrega precisa incluir os blocos e as imagens.\n\n**Confira na sua criação:**\n\n- No projeto: artes nave e asteroide com metadados; não exigir que a segunda já esteja sendo usada.\n- Criador do kit removido, um único sprite nave em 400/410, 54 × 54, imagem nave.\n- Folha-nave: quadro 32 × 32; carregar antes de animar nave/voando, 0–1, 8 fps.\n- Movimento, tiros, estados, placar, vidas e reinício do jogo original preservados.\n\nEspere **Guardado na sua conta**, escolha a criação abaixo e envie ao professor. Se ainda não estiver na lista, confira o salvamento e tente carregar a lista novamente. O envio guarda uma cópia deste momento; você continua criando na ferramenta."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-fecho-v6",
+      "plannedVideo": "Gravação atual obrigatória: seguir o mapa de blocos do roteiro. roteiro-aula-06-o-jogo-do-meu-jeito.md → Fecho. Entrada: “Parabéns, você terminou a Aula 6! Olha a sua nave aí, com o motor acendendo e apagando. E ela não ve”. Saída: “um pouquinho diferente do da nave, porque os asteroides nascem sem parar, um atrás do outro. Até já.”. Reaproveitar a recapitulação, ajustando: A nave tem fogo pequeno e grande; atualizar referências ao motor apagado/aceso. O azul de recurso ausente e a última prévia válida são estados transitórios, não critério de aprovação. A folha tem 64 × 32 no total; cada quadro é 32 × 32 e o sprite no jogo é 54 × 54. Nome do recurso de imagem pode coincidir com nome do sprite; identificadores de sprite e folha devem ser distintos. Se a criança já personalizou nomes no Desafio, adaptar todas as referências ao mesmo nome, sem renomear apenas um campo. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar. Complemento: “Sua nave desenhada está no jogo. A imagem entrou no projeto, o sprite ganhou nome, lugar e tamanho, e a folha separou os quadros para animar. O motor cresce e diminui como você desenhou. Na próxima aula os asteroides também mudam. Agora, duas ideias para conferir.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Uma nave aparece esticada verticalmente. Qual par define seu tamanho no jogo?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Largura e altura do Criar sprite."
+              },
+              {
+                "id": "b",
+                "label": "Primeiro e último quadro da animação."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Largura e altura definem a caixa visível; o intervalo escolhe os desenhos."
+          },
+          {
+            "id": "q2",
+            "prompt": "Qual é a ordem necessária para usar uma folha na animação?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Mandar animar antes de a folha existir."
+              },
+              {
+                "id": "a",
+                "label": "Carregar a folha antes de mandar animar com ela."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O bloco de animação precisa da folha já preparada."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-v6",
+      "title": "O que vamos criar hoje",
+      "intent": "presentation",
+      "objective": "Abrir o jogo importado na aula 1; nave e asteroide já estão animados na galeria do Pinta.",
+      "blockKeys": ["video-abertura-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-v6"]
+      }
+    },
+    {
+      "key": "trazer-artes",
+      "title": "Traga nave e asteroide para o projeto",
+      "intent": "application",
+      "objective": "Importar as artes do Pinta no projeto certo, sem esperar troca visual automática.",
+      "blockKeys": ["video-trazer-artes", "orientacao-trazer-artes", "conferir-trazer-artes"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-trazer-artes"]
+      }
+    },
+    {
+      "key": "trocar-nave",
+      "title": "Troque o criador da nave",
+      "intent": "application",
+      "objective": "Retirar o criador do kit e criar o sprite com imagem sem duplicar o nome.",
+      "blockKeys": ["video-trocar-nave", "orientacao-trocar-nave", "conferir-trocar-nave"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-trocar-nave"]
+      }
+    },
+    {
+      "key": "folha-demo",
+      "title": "Observe: duas imagens dentro de uma só",
+      "intent": "presentation",
+      "objective": "Distinguir a folha inteira e um quadro que ocupa o sprite.",
+      "blockKeys": ["video-folha-demo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-folha-demo"]
+      }
+    },
+    {
+      "key": "recorte",
+      "title": "Experimente: onde cortar a folha?",
+      "intent": "exploration",
+      "objective": "Comparar largura de recorte 16 e 32 na mesma folha, mantendo o sprite do jogo em 54 × 54.",
+      "blockKeys": ["experimento-recorte"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experimento-recorte"]
+      }
+    },
+    {
+      "key": "carregar-folha",
+      "title": "Prepare a folha da nave",
+      "intent": "application",
+      "objective": "Carregar folha-nave da imagem nave com quadros 32 × 32 no Ao iniciar.",
+      "blockKeys": ["video-carregar-folha", "orientacao-carregar-folha", "conferir-carregar-folha"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-carregar-folha"]
+      }
+    },
+    {
+      "key": "animacao-nave",
+      "title": "Anime e teste a sua nave",
+      "intent": "application",
+      "objective": "Animar nave com folha-nave/voando e preservar controles.",
+      "blockKeys": ["video-animacao-nave", "orientacao-animacao-nave", "conferir-animacao-nave"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-animacao-nave"]
+      }
+    },
+    {
+      "key": "entrega-v6",
+      "title": "Confira e envie sua criação",
+      "intent": "delivery",
+      "objective": "Nave com arte própria no mesmo jogo, em 400/410, 54 × 54, folha 32 × 32, voando do 0 ao 1 a 8 fps; controles preservados.",
+      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
+      "workspaceKey": null,
+      "externalTool": "estudio",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["entrega-galeria-v6"]
+      }
+    },
+    {
+      "key": "fecho-v6",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Nave com arte própria no mesmo jogo, em 400/410, 54 × 54, folha 32 × 32, voando do 0 ao 1 a 8 fps; controles preservados.",
+      "blockKeys": ["video-fecho-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-v6"]
+      }
+    },
+    {
+      "key": "quiz-v6",
+      "title": "Duas ideias para guardar",
+      "intent": "closing",
+      "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
+      "blockKeys": ["quiz-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-v6"]
+      }
+    }
+  ]
+}

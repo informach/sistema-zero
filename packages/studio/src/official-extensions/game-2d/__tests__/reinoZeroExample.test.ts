@@ -107,7 +107,7 @@ describe('Reino Zero — campanha de plataforma vetorial', () => {
       '"behavior":"arrancada"',
       '"type":"g2d:countGroup","groupVar":"guardioes"',
       '"name":"jogadores"',
-      '"name":"jornada"',
+      '"name":"volta"',
       '"name":"continua"',
     ]) {
       expect(serialized).toContain(expected)

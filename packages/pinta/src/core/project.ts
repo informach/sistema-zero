@@ -8,6 +8,7 @@
  * operações puras testáveis sem canvas.
  */
 
+import { sanitizeMaskReferences } from '../vector/mask'
 import { sanitizeVectorShape, type VectorShape } from '../vector/model'
 import { normalizeHex } from './color'
 import { COPY } from './copy'
@@ -155,7 +156,7 @@ export interface PintaAnimation<TFrame = PintaBitmap> {
   /** Quadros por segundo (1–30) — o MESMO valor que sai no metadado do export. */
   fps: number
   loop: boolean
-  /** Suavização da prévia (opcional; ausente = `linear`). Não sai no export. */
+  /** Suavização da prévia (opcional; ausente = `linear`). GIF/SVG preservam os tempos. */
   easing?: PintaEasing
   frames: TFrame[]
 }
@@ -695,7 +696,7 @@ function sanitizeVectorFrame(raw: unknown): VectorFrame | null {
     .slice(0, PINTA_LIMITS.maxShapes)
     .map((s) => sanitizeVectorShape(s))
     .filter((s): s is VectorShape => s !== null)
-  return ensureUniqueIds(shapes)
+  return sanitizeMaskReferences(ensureUniqueIds(shapes))
 }
 
 function sanitizeTilemapCells(raw: unknown, cellCount: number): Int16Array | null {

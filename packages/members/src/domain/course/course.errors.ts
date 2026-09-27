@@ -26,20 +26,20 @@ export class LessonLockedError extends DomainError {
   }
 }
 
-const CAREER_LOCK_MESSAGES = {
+const JOURNEY_LOCK_MESSAGES = {
   'foundation-first': 'Conclua e publique o curso-base desta etapa para liberar este curso',
   'tier-reward': 'Este curso é uma recompensa: complete os cursos da etapa para liberar',
-  'future-tier': 'Continue sua carreira para liberar este curso',
+  'future-tier': 'Continue sua jornada para liberar este curso',
 } as const
 
-/** Curso futuro na carreira, aguardando o curso-base, ou bônus-recompensa da etapa. → 423. */
-export class CourseCareerLockedError extends DomainError {
+/** Curso futuro na jornada, aguardando o curso-base, ou bônus-recompensa da etapa. → 423. */
+export class CourseJourneyLockedError extends DomainError {
   readonly code = 'COURSE_CAREER_LOCKED'
   constructor(
-    readonly reason: keyof typeof CAREER_LOCK_MESSAGES,
+    readonly reason: keyof typeof JOURNEY_LOCK_MESSAGES,
     readonly requiredLevel?: string,
   ) {
-    super(CAREER_LOCK_MESSAGES[reason])
+    super(JOURNEY_LOCK_MESSAGES[reason])
   }
 }
 
@@ -83,10 +83,10 @@ export class CloneSameAudienceError extends DomainError {
   }
 }
 
-/** Já existe outro curso no mesmo slot da etapa da carreira. → 409. */
-export class CareerSlotConflictError extends DomainError {
+/** Já existe outro curso no mesmo slot da etapa da jornada. → 409. */
+export class JourneySlotConflictError extends DomainError {
   readonly code = 'CAREER_SLOT_CONFLICT'
-  constructor(message = 'Já existe um curso nesta posição da carreira') {
+  constructor(message = 'Já existe um curso nesta posição da jornada') {
     super(message)
   }
 }
@@ -113,14 +113,14 @@ export class CourseConflictError extends DomainError {
 }
 
 /**
- * Curso-base kids (careerSlot=1) publicado SEM aula publicada com bloco de Estúdio de
- * vitrine (`showcase.enabled`) — o aluno nunca qualificaria o slot e a etapa da carreira
- * travaria (armadilha do fail-open, full review 24/07). → 409. Guard SÓ na transição.
+ * Curso obrigatório Kids precisa de uma aula publicada com vitrine. Recusa publicar
+ * sem essa oportunidade e remover a última de um curso válido. Legado inválido
+ * continua editável para permitir reparo. → 409.
  */
 export class NoShowcaseBlockError extends DomainError {
   readonly code = 'NO_SHOWCASE_BLOCK'
   constructor(
-    message = 'Publique uma aula com bloco de Estúdio com vitrine (Publicar no Mural) antes de publicar o curso-base',
+    message = 'Publique uma aula com bloco de Estúdio com vitrine (Publicar no Mural) antes de publicar um curso obrigatório da jornada',
   ) {
     super(message)
   }

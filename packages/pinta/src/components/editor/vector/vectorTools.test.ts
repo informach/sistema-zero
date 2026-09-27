@@ -3,13 +3,149 @@ import { boundsUnion, shapeBounds } from '../../../vector/geometry'
 import type { VectorShape } from '../../../vector/model'
 import { DEFAULT_STYLE } from '../../../vector/shapes'
 import {
+  alignSelectedUnits,
+  canDistributeSelectedUnits,
+  cloneShapesWithNewIds,
+  distributeSelectedUnits,
+  expandToSelectionUnits,
   formatStrokeWidth,
   occupiedBoundsOf,
   offsetInsideDoc,
   STROKE_WIDTHS,
+  selectedShapeUnits,
   strokeDotSize,
   strokeWidthIndex,
 } from './vectorTools'
+
+describe('cloneShapesWithNewIds', () => {
+  it('uma cópia independente recebe ids de forma e movimento novos', () => {
+    const shape: VectorShape = {
+      id: 'forma-original',
+      motionId: 'movimento-original',
+      type: 'rect',
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 10,
+      rx: 0,
+      fill: '#000000',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    }
+
+    const [copy] = cloneShapesWithNewIds([shape], 12, 12)
+    expect(copy?.id).not.toBe(shape.id)
+    expect(copy?.motionId).toBeTruthy()
+    expect(copy?.motionId).not.toBe(shape.motionId)
+  })
+
+  it('remapeia a máscara em duas passagens, leva o pivô junto e solta órfãos', () => {
+    const content: VectorShape = {
+      id: 'rosto',
+      maskId: 'janela',
+      rotationPivot: { x: -5, y: 8 },
+      type: 'rect',
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 10,
+      rx: 0,
+      fill: '#000000',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    }
+    const source = { ...content, id: 'janela', maskId: undefined, rotationPivot: undefined }
+    const copies = cloneShapesWithNewIds([content, source], 12, 8)
+    const copiedContent = copies[0]
+    const copiedSource = copies.find((shape) => shape.id === copiedContent?.maskId)
+    expect(copiedSource).toBeTruthy()
+    expect(copiedContent?.maskId).not.toBe('janela')
+    expect(copiedContent?.rotationPivot).toEqual({ x: 7, y: 16 })
+
+    const [orphan] = cloneShapesWithNewIds([content], 0, 0)
+    expect(orphan?.maskId).toBeUndefined()
+  })
+})
+
+describe('expandToSelectionUnits', () => {
+  const box = (
+    id: string,
+    over: Partial<Extract<VectorShape, { type: 'rect' }>> = {},
+  ): VectorShape => ({
+    id,
+    type: 'rect',
+    x: 0,
+    y: 0,
+    w: 10,
+    h: 10,
+    rx: 0,
+    fill: '#000000',
+    stroke: null,
+    opacity: 1,
+    rotation: 0,
+    ...over,
+  })
+
+  it('selecionar fonte ou conteúdo fecha a unidade inteira, inclusive membro trancado', () => {
+    const shapes = [
+      box('rosto', { maskId: 'janela' }),
+      box('olhos', { maskId: 'janela', locked: true }),
+      box('janela'),
+    ]
+    expect(new Set(expandToSelectionUnits(shapes, ['rosto']))).toEqual(
+      new Set(['rosto', 'olhos', 'janela']),
+    )
+    expect(new Set(expandToSelectionUnits(shapes, ['janela']))).toEqual(
+      new Set(['rosto', 'olhos', 'janela']),
+    )
+  })
+
+  it('alcança o fecho transitivo de grupos e máscaras sem puxar trancada só pelo grupo', () => {
+    const shapes = [
+      box('rosto', { maskId: 'janela', groupId: 'vagalume' }),
+      box('corpo', { groupId: 'vagalume' }),
+      box('janela', { groupId: 'nave' }),
+      box('nave', { groupId: 'nave' }),
+      box('nave-trancada', { groupId: 'nave', locked: true }),
+    ]
+    expect(new Set(expandToSelectionUnits(shapes, ['corpo']))).toEqual(
+      new Set(['rosto', 'corpo', 'janela', 'nave']),
+    )
+  })
+
+  it('forma componentes e alinha/distribui sem separar máscara e conteúdo', () => {
+    const shapes = [
+      box('esquerda', { x: 0 }),
+      box('rosto', { x: 20, maskId: 'janela' }),
+      box('janela', { x: 30 }),
+      box('direita', { x: 100 }),
+    ]
+    const units = selectedShapeUnits(
+      shapes,
+      shapes.map((shape) => shape.id),
+    )
+    expect(units).toEqual([['esquerda'], ['rosto', 'janela'], ['direita']])
+    expect(canDistributeSelectedUnits(units)).toBe(true)
+
+    const aligned = alignSelectedUnits(shapes, [units[1] ?? []], 'left', {
+      x: 50,
+      y: 0,
+      width: 100,
+      height: 100,
+    })
+    expect(aligned.find((shape) => shape.id === 'rosto')).toMatchObject({ x: 50 })
+    expect(aligned.find((shape) => shape.id === 'janela')).toMatchObject({ x: 60 })
+
+    const distributed = distributeSelectedUnits(shapes, units, 'horizontal')
+    const rosto = distributed.find((shape) => shape.id === 'rosto')
+    const janela = distributed.find((shape) => shape.id === 'janela')
+    if (rosto?.type !== 'rect' || janela?.type !== 'rect') throw new Error('retângulos esperados')
+    expect(janela.x - rosto.x).toBe(10)
+    expect((rosto.x + janela.x) / 2).toBe(50)
+  })
+})
 
 describe('espessuras do contorno (vetor)', () => {
   it('são seis degraus crescentes de meio em meio, e o default está entre eles', () => {

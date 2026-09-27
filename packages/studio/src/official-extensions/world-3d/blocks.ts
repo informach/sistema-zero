@@ -1,6 +1,6 @@
-import type { ExtensionToolboxCategory } from '#extensions'
 import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
+import type { ExtensionToolboxCategory } from '../../extensions/toolboxTypes'
 
 // Mundo 3D = UMA cor da categoria: ESMERALDA (natureza/mundo). As sub-categorias
 // são TONS dela (derivados por categoryShades mais abaixo). Distinta do índigo
@@ -341,7 +341,7 @@ export const world3DBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Espalha cópias de um modelo .glb SEU (envie no painel de imagens → modelos 3D e escolha no seletor). Cada cópia pousa no terreno com giro e tamanho parecidos. Tamanho 1 = o tamanho original do arquivo.',
+      'Espalha cópias de um modelo .glb SEU (envie em "Modelos 3D", no menu ⋯, e escolha no seletor). Cada cópia pousa no terreno com giro e tamanho parecidos. Tamanho 1 = o tamanho original do arquivo.',
   },
   {
     type: 'sz_w3d_place_thing',
@@ -1538,7 +1538,7 @@ export const world3DBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Pendura um quadro com uma imagem do projeto (envie em "Imagens") numa moldura, em pé no mundo. A sua foto, o seu desenho, a capa do seu jogo.',
+      'Pendura um quadro com uma imagem do projeto (envie em "Imagens", no menu ⋯) numa moldura, em pé no mundo. A sua foto, o seu desenho, a capa do seu jogo.',
   },
 
   // ---- 🖼️ Galeria ----
@@ -1821,7 +1821,7 @@ export const world3DBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Prepara um som do projeto (envie o arquivo em "Imagens" na barra de cima) e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
+      'Prepara um som do projeto (envie o arquivo em "Sons", no menu ⋯) e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
   },
   {
     type: 'sz_w3d_play_sound',

@@ -1,0 +1,146 @@
+{
+  "version": 5,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "boas-vindas",
+  "title": "A aventura começa aqui",
+  "retireBlockKeys": [
+    "treino",
+    "video-abertura",
+    "video-achar-a-aula",
+    "video-por-dentro-da-aula",
+    "fala-caminho",
+    "fala-sem-play",
+    "video-testar",
+    "video-guardar-e-entregar",
+    "fala-tres-destinos",
+    "video-caderno",
+    "materiais",
+    "video-ajuda",
+    "fala-pedido-bom",
+    "fala-responsavel",
+    "fala-fecho",
+    "video-menu",
+    "quiz",
+    "video-abertura-v6",
+    "video-percurso",
+    "video-tela",
+    "video-materiais",
+    "video-salvar",
+    "video-fecho-v6",
+    "quiz-v6"
+  ],
+  "blocks": [
+    {
+      "key": "video-intro-farol",
+      "plannedVideo": "Título: Seu primeiro jogo: A Chave do Farol\n\nDemonstrar o jogo pronto por toque e teclado e a navegação real da aula, conversando com a criança e mostrando cada botão.\n\nRoteiro falado: desafio-introducao.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "video-intro-caderno",
+      "plannedVideo": "Título: Um mapa para acompanhar a aventura\n\nMostrar o caderno opcional e o mapa para responsáveis; conferir nomes dos anexos no admin antes de gravar.\n\nRoteiro falado: desafio-introducao.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "materiais-farol",
+      "content": {
+        "kind": "materials",
+        "title": "Caderno e mapa da aventura",
+        "items": []
+      }
+    },
+    {
+      "key": "ajuda-como-fazer-intro",
+      "content": {
+        "kind": "materials",
+        "title": "Para rever depois, no Como fazer",
+        "items": [
+          {
+            "id": "link-plataforma-abrir-uma-aula",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-abrir-uma-aula",
+            "label": "Como abrir uma aula e trocar de seção"
+          },
+          {
+            "id": "link-plataforma-ampliar-a-atividade",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-ampliar-a-atividade",
+            "label": "Como dar mais espaço para a atividade na aula"
+          },
+          {
+            "id": "link-plataforma-mostrar-o-menu",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-mostrar-o-menu",
+            "label": "Como mostrar o menu dentro da aula ou da ferramenta"
+          }
+        ]
+      }
+    },
+    {
+      "key": "ajuda-como-fazer-voltar",
+      "content": {
+        "kind": "materials",
+        "title": "Se travar, o passo a passo está aqui",
+        "items": [
+          {
+            "id": "link-plataforma-voltar-para-a-aula",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-voltar-para-a-aula",
+            "label": "Como voltar para a aula de onde parei"
+          },
+          {
+            "id": "link-plataforma-pedir-ajuda",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-pedir-ajuda",
+            "label": "Como pedir ajuda ao professor"
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-intro-voltar",
+      "plannedVideo": "Título: Como continuar amanhã\n\nMostrar o caminho para voltar ao curso e Preciso de ajuda no lugar real. Não ensinar Salvo/Enviar antes de fazer o jogo.\n\nRoteiro falado: desafio-introducao.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    }
+  ],
+  "sections": [
+    {
+      "key": "apresentacao",
+      "title": "A Chave do Farol",
+      "intent": "presentation",
+      "objective": "Conhecer o jogo, o vídeo, as seções e como abrir uma atividade ou o Estúdio dentro da aula.",
+      "blockKeys": ["video-intro-farol", "ajuda-como-fazer-intro"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-intro-farol"]
+      }
+    },
+    {
+      "key": "caderno",
+      "title": "Seu mapa da aventura",
+      "intent": "material",
+      "objective": "Encontrar os materiais opcionais e saber qual é para a criança e qual é para a família.",
+      "blockKeys": ["video-intro-caderno", "materiais-farol"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-intro-caderno"]
+      }
+    },
+    {
+      "key": "voltar",
+      "title": "Como voltar e pedir ajuda",
+      "intent": "explanation",
+      "objective": "Saber retornar ao curso e pedir ajuda sem se perder na plataforma.",
+      "blockKeys": ["video-intro-voltar", "ajuda-como-fazer-voltar"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-intro-voltar"]
+      }
+    }
+  ]
+}

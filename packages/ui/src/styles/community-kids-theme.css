@@ -1,0 +1,64 @@
+/*
+ * ALIASES `--sz-community-*` — CAMADA DE COMPATIBILIDADE, SEM VALOR NENHUM.
+ *
+ * A fonte canônica das cores é `./palettes/community.css`, GERADA a partir de
+ * `packages/ui/src/tokens/` (registro em `palettes.ts`, receita em `recipe.ts`). Para mudar uma
+ * cor, mexa no registro e rode `bun run tokens:gen` — nunca edite hexadecimal aqui.
+ *
+ * Este arquivo existe porque `--sz-community-*` é contrato consumido pela plataforma kids, pelo
+ * funil e, por dois degraus, pelas ferramentas embarcadas. Trocar VALOR é no registro; RENOMEAR
+ * segue proibido.
+ *
+ * O nome canônico encurtou para `--sz-*` porque a paleta deixou de ser só da comunidade: o mesmo
+ * contrato serve kids, adultos, funil e, na etapa do chassi `console`, o admin.
+ */
+@import "./palettes/community.css";
+
+:root {
+  /* Chão, superfícies e texto */
+  --sz-community-ground: var(--sz-ground);
+  --sz-community-ground-alt: var(--sz-ground-alt);
+  --sz-community-card: var(--sz-card);
+  --sz-community-surface-2: var(--sz-surface-2);
+  --sz-community-line: var(--sz-line);
+  --sz-community-ink: var(--sz-ink);
+  --sz-community-ink-muted: var(--sz-ink-muted);
+  --sz-community-field: var(--sz-field);
+
+  /* Ação e relevo 3D */
+  --sz-community-action: var(--sz-action);
+  --sz-community-action-step: var(--sz-action-step);
+  --sz-community-action-hover: var(--sz-action-hover);
+  --sz-community-action-light: var(--sz-action-light);
+  --sz-community-on-action: var(--sz-on-action);
+  --sz-community-over-action: var(--sz-over-action);
+  --sz-community-white-step: var(--sz-white-step);
+  --sz-community-card-step: var(--sz-card-step);
+
+  /* Âncora escura */
+  --sz-community-menu: var(--sz-menu);
+  --sz-community-menu-2: var(--sz-menu-2);
+  --sz-community-menu-text: var(--sz-menu-text);
+  --sz-community-menu-icon: var(--sz-menu-icon);
+  --sz-community-menu-glass: var(--sz-menu-glass);
+  --sz-community-logo-zero: var(--sz-logo-zero);
+
+  /* Identidade das ferramentas e pontos de alegria — NÃO seguem a cor escolhida */
+  --sz-community-blue: var(--sz-blue);
+  --sz-community-blue-light: var(--sz-blue-light);
+  --sz-community-blue-deep: var(--sz-blue-deep);
+  --sz-community-yellow: var(--sz-yellow);
+  --sz-community-red: var(--sz-red);
+  --sz-community-pink: var(--sz-pink);
+  --sz-community-pink-light: var(--sz-pink-light);
+  --sz-community-purple: var(--sz-purple);
+  --sz-community-green: var(--sz-green);
+  --sz-community-orange: var(--sz-orange);
+  --sz-community-amber: var(--sz-amber);
+
+  /* Fundos de apoio */
+  --sz-community-mint: var(--sz-mint);
+  --sz-community-lilac: var(--sz-lilac);
+  --sz-community-pink-surface: var(--sz-pink-surface);
+  --sz-community-yellow-surface: var(--sz-yellow-surface);
+}

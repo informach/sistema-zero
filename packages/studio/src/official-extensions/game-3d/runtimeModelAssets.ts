@@ -177,7 +177,7 @@ const gameThreeDModelAssetsRuntimeTemplate = `
     if (_modelPending[k]) { _modelPending[k].push(onReady); return; }
     var entry = MODELS3D[k];
     if (!entry || entry.kind !== 'model3d') {
-      warn('o modelo "' + k + '" não está no projeto. Traga um do Molda (ou envie um .glb) no painel Imagens; o objeto fica com a forma de reserva.');
+      warn('o modelo "' + k + '" não está no projeto. Traga um do Molda (ou envie um .glb) em "Modelos 3D"; o objeto fica com a forma de reserva.');
       return;
     }
     var buf = dataUrlToBuffer(entry.dataUrl);
@@ -348,7 +348,7 @@ const gameThreeDModelAssetsRuntimeTemplate = `
       mesh.userData.sz.modelLoaded = false;
     }
     if (!k) {
-      warnOnce('model-file-empty', 'escolha um modelo 3D no bloco "Criar o objeto … com o modelo" (traga um do Molda no painel Imagens).');
+      warnOnce('model-file-empty', 'escolha um modelo 3D no bloco "Criar o objeto … com o modelo" (traga um do Molda em "Modelos 3D").');
       return mesh;
     }
     loadModel(k, function (hit) { attachModelToObject(mesh, world, hit, s); });
@@ -444,7 +444,7 @@ const gameThreeDModelAssetsRuntimeTemplate = `
     var k = String(name || '');
     var entry = MODELS3D[k];
     if (!entry || entry.kind !== 'environment3d') {
-      warn('o céu "' + k + '" não está no projeto. Traga um do Molda (ou envie um .hdr) no painel Imagens.');
+      warn('o céu "' + k + '" não está no projeto. Traga um do Molda (ou envie um .hdr) em "Modelos 3D".');
       return;
     }
     // Uma carga antiga não vence a escolha mais nova do MESMO mundo.

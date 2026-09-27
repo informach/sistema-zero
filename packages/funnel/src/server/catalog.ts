@@ -1,5 +1,10 @@
 import type { GatewayClient } from '../lib/gateway-client'
 
+export type CatalogPricingMode = 'one_time' | 'subscription'
+export type CatalogAccessMode = 'lifetime' | 'fixed' | 'billing_cycle'
+export type CatalogAccessDurationUnit = 'days' | 'months'
+export type CatalogLog = (event: string, meta?: Record<string, unknown>) => void
+
 /**
  * Acesso ao catálogo (@sistemazero/catalog) via gateway. O catálogo é a FONTE DA
  * VERDADE do preço e do que está incluído. O valor cobrado no checkout vem SEMPRE
@@ -20,7 +25,11 @@ export interface CatalogOfferView {
   /** Opt-in (de `offer.content.allowsCoupon`): se o checkout deve exibir o cupom. */
   allowsCoupon: boolean
   /** `one_time` (pagamento único) ou `subscription` (recorrente). */
-  pricingMode: string
+  pricingMode: CatalogPricingMode
+  /** Regra de validade do acesso, publicada pelo catálogo junto com o preço. */
+  accessMode: CatalogAccessMode
+  accessDurationValue: number | null
+  accessDurationUnit: CatalogAccessDurationUnit | null
   /** Periodicidade da assinatura em meses (mensal=1, anual=12); null em one_time. */
   billingIntervalMonths: number | null
   /** Oferta IRMÃ do alternador mensal↔anual (de `content.altOffer`); null = sem alternador. */
@@ -44,8 +53,24 @@ export interface OfferPlans {
   alt: OfferPlan | null
 }
 
+export interface ResolvedCharge {
+  amountInCents: number
+  offerId: string
+  offerSlug: string
+  couponCode: string | null
+  listPriceCents: number
+  discountCents: number
+  currency: 'BRL'
+  pricingMode: CatalogPricingMode
+  billingIntervalMonths: number | null
+  guaranteeDays: number | null
+  accessMode: CatalogAccessMode
+  accessDurationValue: number | null
+  accessDurationUnit: CatalogAccessDurationUnit | null
+}
+
 export type ChargeResolution =
-  | { ok: true; amountInCents: number; offerId: string; couponCode: string | null }
+  | ({ ok: true } & ResolvedCharge)
   | { ok: false; status: number; code: string; message: string }
 
 /** Cotação para PREVIEW na UI (cupom): preço cheio, desconto e final. */
@@ -74,10 +99,56 @@ export async function resolveCharge(
   if (status === 200) {
     const q = body as {
       offerId?: unknown
+      offerSlug?: unknown
+      priceCents?: unknown
+      discountCents?: unknown
       finalPriceCents?: unknown
+      currency?: unknown
+      pricingMode?: unknown
+      billingIntervalMonths?: unknown
+      guaranteeDays?: unknown
+      accessMode?: unknown
+      accessDurationValue?: unknown
+      accessDurationUnit?: unknown
       coupon?: { code?: string } | null
     }
-    if (typeof q.offerId !== 'string' || typeof q.finalPriceCents !== 'number') {
+    const pricingMode = parsePricingMode(q.pricingMode)
+    const accessPolicy = parseAccessPolicy(
+      q as unknown as Record<string, unknown>,
+      pricingMode ?? 'one_time',
+    )
+    const coupon = parseQuotedCoupon(q.coupon)
+    const billingIntervalMonths =
+      q.billingIntervalMonths === null ||
+      (Number.isInteger(q.billingIntervalMonths) && (q.billingIntervalMonths as number) > 0)
+        ? (q.billingIntervalMonths as number | null)
+        : undefined
+    const guaranteeDays =
+      q.guaranteeDays === null ||
+      (Number.isInteger(q.guaranteeDays) && (q.guaranteeDays as number) > 0)
+        ? (q.guaranteeDays as number | null)
+        : undefined
+    if (
+      typeof q.offerId !== 'string' ||
+      !q.offerId ||
+      typeof q.offerSlug !== 'string' ||
+      !q.offerSlug ||
+      !positiveInteger(q.priceCents) ||
+      !nonNegativeInteger(q.discountCents) ||
+      !positiveInteger(q.finalPriceCents) ||
+      q.priceCents - q.discountCents !== q.finalPriceCents ||
+      coupon === undefined ||
+      (q.discountCents > 0 && coupon === null) ||
+      Boolean(code) !== Boolean(coupon) ||
+      (code !== undefined && coupon !== null && coupon.toUpperCase() !== code.toUpperCase()) ||
+      q.currency !== 'BRL' ||
+      !pricingMode ||
+      !accessPolicy ||
+      billingIntervalMonths === undefined ||
+      guaranteeDays === undefined ||
+      (pricingMode === 'one_time' && billingIntervalMonths !== null) ||
+      (pricingMode === 'subscription' && billingIntervalMonths === null)
+    ) {
       return {
         ok: false,
         status: 502,
@@ -89,7 +160,15 @@ export async function resolveCharge(
       ok: true,
       amountInCents: q.finalPriceCents,
       offerId: q.offerId,
-      couponCode: q.coupon?.code ?? null,
+      offerSlug: q.offerSlug,
+      couponCode: coupon,
+      listPriceCents: q.priceCents,
+      discountCents: q.discountCents,
+      currency: q.currency,
+      pricingMode,
+      billingIntervalMonths,
+      guaranteeDays,
+      ...accessPolicy,
     }
   }
   const errorCode = readErrorCode(body)
@@ -114,6 +193,21 @@ export async function resolveCharge(
   }
 }
 
+function parseQuotedCoupon(value: unknown): string | null | undefined {
+  if (value === null) return null
+  if (!value || typeof value !== 'object') return undefined
+  const code = (value as { code?: unknown }).code
+  return typeof code === 'string' && code ? code : undefined
+}
+
+function positiveInteger(value: unknown): value is number {
+  return Number.isInteger(value) && (value as number) > 0
+}
+
+function nonNegativeInteger(value: unknown): value is number {
+  return Number.isInteger(value) && (value as number) >= 0
+}
+
 /** Cotação de PREVIEW (endpoint do cupom na UI). Cupom inválido → ok:false + message. */
 export async function quotePreview(
   gateway: GatewayClient,
@@ -124,23 +218,37 @@ export async function quotePreview(
   const { status, body } = await gateway.quoteOffer(offerSlug, code)
   if (status === 200) {
     const q = body as {
-      priceCents?: number
-      discountCents?: number
-      finalPriceCents?: number
+      priceCents?: unknown
+      discountCents?: unknown
+      finalPriceCents?: unknown
       coupon?: { code?: string } | null
+    }
+    const coupon = parseQuotedCoupon(q.coupon)
+    if (
+      !positiveInteger(q.priceCents) ||
+      !nonNegativeInteger(q.discountCents) ||
+      !positiveInteger(q.finalPriceCents) ||
+      q.priceCents - q.discountCents !== q.finalPriceCents ||
+      coupon === undefined ||
+      (q.discountCents > 0 && coupon === null) ||
+      Boolean(code) !== Boolean(coupon) ||
+      (code !== undefined && coupon !== null && coupon.toUpperCase() !== code.toUpperCase())
+    ) {
+      return { status: 502, error: 'Não foi possível cotar a oferta.' }
     }
     return {
       status: 200,
       preview: {
         ok: true,
-        priceCents: q.priceCents ?? 0,
-        discountCents: q.discountCents ?? 0,
-        finalPriceCents: q.finalPriceCents ?? q.priceCents ?? 0,
-        couponCode: q.coupon?.code ?? null,
+        priceCents: q.priceCents,
+        discountCents: q.discountCents,
+        finalPriceCents: q.finalPriceCents,
+        couponCode: coupon,
       },
     }
   }
   const errorCode = readErrorCode(body)
+  const errorMessage = readErrorMessage(body)
   if (errorCode === 'OFFER_NOT_AVAILABLE') {
     return { status: 409, error: 'Esta oferta não está disponível no momento.' }
   }
@@ -154,7 +262,7 @@ export async function quotePreview(
         finalPriceCents: 0,
         couponCode: null,
         code: errorCode ?? 'INVALID_COUPON',
-        message: couponMessage(errorCode),
+        message: couponMessage(errorCode, errorMessage),
       },
     }
   }
@@ -178,7 +286,7 @@ export function clearOfferCache(): void {
 export async function getActiveOffer(
   gateway: GatewayClient,
   offerSlug: string,
-  opts?: { ttlMs?: number; now?: number },
+  opts?: { ttlMs?: number; now?: number; log?: CatalogLog },
 ): Promise<CatalogOfferView | null> {
   const ttlMs = opts?.ttlMs ?? 60_000
   const now = opts?.now ?? Date.now()
@@ -188,15 +296,30 @@ export async function getActiveOffer(
   }
   const { status, body } = await gateway.getOffer(offerSlug)
   if (status !== 200) return cached?.view ?? null
-  const view = mapOffer(body)
-  if (view) offerCache.set(offerSlug, { view, at: now })
-  return view ?? cached?.view ?? null
+  const view = parseCatalogOffer(body, { log: opts?.log })
+  if (!view) {
+    // Uma resposta autoritativa 200 dizendo que a oferta está indisponível ou
+    // incoerente não pode ressuscitar a cópia antiga. Falha transitória (status
+    // não-200) continua usando stale acima.
+    offerCache.delete(offerSlug)
+    return null
+  }
+  offerCache.set(offerSlug, { view, at: now })
+  return view
 }
 
-function mapOffer(body: unknown): CatalogOfferView | null {
+export function parseCatalogOffer(
+  body: unknown,
+  opts?: { log?: CatalogLog },
+): CatalogOfferView | null {
   if (!body || typeof body !== 'object') return null
   const o = body as Record<string, unknown>
   if (typeof o.id !== 'string' || typeof o.priceCents !== 'number') return null
+  if (o.isAvailable !== true) return null
+  const pricingMode = parsePricingMode(o.pricingMode)
+  if (!pricingMode) return null
+  const accessPolicy = parseAccessPolicy(o, pricingMode, opts?.log)
+  if (!accessPolicy) return null
   const product = (o.product ?? {}) as Record<string, unknown>
   const content = (o.content ?? {}) as Record<string, unknown>
   const includesRaw = Array.isArray(o.includes) ? (o.includes as Record<string, unknown>[]) : []
@@ -216,7 +339,8 @@ function mapOffer(body: unknown): CatalogOfferView | null {
     installmentsMax: typeof o.installmentsMax === 'number' ? o.installmentsMax : null,
     productName: typeof product.name === 'string' ? product.name : '',
     allowsCoupon: content.allowsCoupon === true,
-    pricingMode: typeof o.pricingMode === 'string' ? o.pricingMode : 'one_time',
+    pricingMode,
+    ...accessPolicy,
     billingIntervalMonths:
       typeof o.billingIntervalMonths === 'number' ? o.billingIntervalMonths : null,
     altOffer,
@@ -227,14 +351,76 @@ function mapOffer(body: unknown): CatalogOfferView | null {
   }
 }
 
-function couponMessage(code: string | null): string {
+function parsePricingMode(value: unknown): CatalogPricingMode | null {
+  return value === 'one_time' || value === 'subscription' ? value : null
+}
+
+function parseAccessPolicy(
+  offer: Record<string, unknown>,
+  pricingMode: CatalogPricingMode,
+  log?: CatalogLog,
+): Pick<CatalogOfferView, 'accessMode' | 'accessDurationValue' | 'accessDurationUnit'> | null {
+  const hasMode = Object.hasOwn(offer, 'accessMode')
+  const hasDurationValue = Object.hasOwn(offer, 'accessDurationValue')
+  const hasDurationUnit = Object.hasOwn(offer, 'accessDurationUnit')
+
+  if (!hasMode) {
+    // Compatibilidade de deploy: o catálogo antigo não enviava nenhum dos três
+    // campos. Resposta parcial não é legado válido e falha fechada.
+    if (hasDurationValue || hasDurationUnit) return null
+    const fallbackAccessMode: CatalogAccessMode =
+      pricingMode === 'subscription' ? 'billing_cycle' : 'lifetime'
+    const warn =
+      log ??
+      ((event: string, meta?: Record<string, unknown>) => {
+        console.warn(event, meta ?? {})
+      })
+    warn('catalog.offer_access_policy_legacy_fallback', {
+      offerId: offer.id,
+      offerSlug: typeof offer.slug === 'string' ? offer.slug : '',
+      pricingMode,
+      fallbackAccessMode,
+    })
+    return {
+      accessMode: fallbackAccessMode,
+      accessDurationValue: null,
+      accessDurationUnit: null,
+    }
+  }
+
+  const accessMode = offer.accessMode
+  const durationValue = offer.accessDurationValue
+  const durationUnit = offer.accessDurationUnit
+  if (accessMode === 'billing_cycle') {
+    return pricingMode === 'subscription' && durationValue === null && durationUnit === null
+      ? { accessMode, accessDurationValue: null, accessDurationUnit: null }
+      : null
+  }
+  if (accessMode === 'lifetime') {
+    return pricingMode === 'one_time' && durationValue === null && durationUnit === null
+      ? { accessMode, accessDurationValue: null, accessDurationUnit: null }
+      : null
+  }
+  if (accessMode !== 'fixed' || pricingMode !== 'one_time') return null
+  if (!Number.isInteger(durationValue) || (durationValue as number) <= 0) return null
+  if (durationUnit !== 'days' && durationUnit !== 'months') return null
+  return {
+    accessMode,
+    accessDurationValue: durationValue as number,
+    accessDurationUnit: durationUnit,
+  }
+}
+
+function couponMessage(code: string | null, detail?: string | null): string {
   switch (code) {
     case 'COUPON_EXHAUSTED':
-      return 'Cupom esgotado.'
+      return 'Os resgates disponíveis para este evento terminaram.'
     case 'COUPON_NOT_APPLICABLE':
-      return 'Cupom não aplicável a esta oferta.'
+      return detail?.toLowerCase().includes('expir')
+        ? 'A validade deste cupom terminou.'
+        : 'Não encontramos esse cupom para esta oferta. Confira o código.'
     default:
-      return 'Cupom inválido.'
+      return 'Não encontramos esse cupom para esta oferta. Confira o código.'
   }
 }
 
@@ -244,6 +430,17 @@ function readErrorCode(body: unknown): string | null {
     if (err && typeof err === 'object' && 'code' in err) {
       const code = (err as { code?: unknown }).code
       if (typeof code === 'string') return code
+    }
+  }
+  return null
+}
+
+function readErrorMessage(body: unknown): string | null {
+  if (body && typeof body === 'object' && 'error' in body) {
+    const err = (body as { error?: unknown }).error
+    if (err && typeof err === 'object' && 'message' in err) {
+      const message = (err as { message?: unknown }).message
+      if (typeof message === 'string') return message
     }
   }
   return null

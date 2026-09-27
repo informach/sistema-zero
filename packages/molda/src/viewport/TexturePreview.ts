@@ -129,6 +129,7 @@ export class TexturePreview implements TexturePreviewLike {
     for (const item of this.disposables) item.dispose()
     this.texture?.dispose()
     this.renderer.dispose()
+    this.renderer.forceContextLoss()
   }
 
   private requestFrame(): void {

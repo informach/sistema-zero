@@ -1,26 +1,28 @@
 import { and, desc, eq, inArray, sql } from 'drizzle-orm'
 import type { QuizAttemptSummary } from '../../../domain/course/quiz'
+import { LearningConflictError } from '../../../domain/learning/learning.errors'
 import type {
   QuizAttemptRecord,
   QuizAttemptRepository,
   RecentQuizAttempt,
 } from '../../../domain/ports/quiz-attempt-repository.port'
 import type { Database } from './db'
-import { courses, lessons, quizAttempts } from './schema'
+import { lockLearningOwner } from './learning-owner-lock'
+import { courses, lessonBlocks, lessonEvidence, lessons, quizAttempts } from './schema'
 
 export class DrizzleQuizAttemptRepository implements QuizAttemptRepository {
   constructor(private readonly db: Database) {}
 
-  async save(attempt: QuizAttemptRecord, guard?: { cooldownMs: number }): Promise<boolean> {
-    if (!guard) {
-      await this.db.insert(quizAttempts).values(attempt)
-      return true
-    }
+  async save(
+    attempt: QuizAttemptRecord,
+    guard?: { cooldownMs: number; revision?: string },
+  ): Promise<boolean> {
     // Fecha a corrida check-then-act de dois submits simultâneos: o advisory
     // xact-lock serializa por (aluno, bloco) — escopo mínimo, não trava outros
     // alunos — e o cooldown é RE-checado dentro da seção crítica. O lock solta
     // sozinho no commit/rollback.
     return this.db.transaction(async (tx) => {
+      await lockLearningOwner(tx, attempt)
       await tx.execute(
         sql`select pg_advisory_xact_lock(hashtextextended(${`${attempt.userId}:${attempt.blockId}`}, 0))`,
       )
@@ -39,9 +41,34 @@ export class DrizzleQuizAttemptRepository implements QuizAttemptRepository {
         last !== undefined &&
         !everPassed &&
         !last.passed &&
-        last.createdAt.getTime() + guard.cooldownMs > attempt.createdAt.getTime()
+        last.createdAt.getTime() + (guard?.cooldownMs ?? 0) > attempt.createdAt.getTime()
       if (blocked) return false
       await tx.insert(quizAttempts).values(attempt)
+      const [block] = await tx
+        .select()
+        .from(lessonBlocks)
+        .where(eq(lessonBlocks.id, attempt.blockId))
+        .for('share')
+      if (
+        guard?.revision &&
+        (!block || block.archivedAt || block.contentRevision !== guard.revision)
+      )
+        throw new LearningConflictError()
+      if (block)
+        await tx
+          .insert(lessonEvidence)
+          .values({
+            id: attempt.id,
+            userId: attempt.userId,
+            accountId: attempt.accountId,
+            lessonId: attempt.lessonId,
+            blockId: attempt.blockId,
+            kind: 'quiz',
+            revision: block.contentRevision,
+            createdAt: attempt.createdAt,
+            payload: { ...attempt, definition: block.content, verifiedBy: 'server' },
+          })
+          .onConflictDoNothing()
       return true
     })
   }

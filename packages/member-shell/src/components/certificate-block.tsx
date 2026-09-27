@@ -126,12 +126,13 @@ export function CertificateBlockView({
         issuedAt: s?.issuedAt ?? null,
         revokedAt: null,
       }))
+      player?.refreshAfterLearning?.()
     } catch {
       setError('Não foi possível gerar o certificado agora. Tente novamente.')
     } finally {
       setBusy(false)
     }
-  }, [path, copy.notEligible])
+  }, [path, copy.notEligible, player])
 
   const title = content.title?.trim() || 'Certificado de Conclusão'
 

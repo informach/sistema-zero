@@ -8,8 +8,8 @@ import { RichEditor } from '@sistemazero/member-shell/components/rich-editor'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { Lock, MessageCircle, Plus } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { Bot, ChevronRight, MessageCircle, Plus, Send } from 'lucide-react'
+import { type ReactNode, useEffect, useRef } from 'react'
 import type {
   HubChannelView,
   HubCommentView,
@@ -17,11 +17,18 @@ import type {
   HubSpaceView,
   HubThreadView,
 } from '@/lib/types'
-import { channelPresentation } from './channel-presentation'
-import { ClubeActivityBell } from './clube-activity-bell'
-import { ClubeCombinados } from './clube-combinados'
+import { channelPresentation, emptyStateParts } from './channel-presentation'
+import { KidsBand } from './kids-band'
 import { GamePicker, ShowcaseCard, Tag, ThreadDetail } from './kids-space-detail'
-import { KidsMascot } from './mascot'
+import {
+  ChannelsPanel,
+  ClubeClosing,
+  ClubeHeader,
+  MuralClosing,
+  MuralHeader,
+} from './kids-space-sections'
+import { KidsMascotAnimated } from './mascot-rive'
+import type { MuralSort } from './mural-sort'
 import { AuthorBadge, type AuthorItem, authorText } from './space-author'
 
 const SUGGESTION_STARTERS: { chip: string; title: string }[] = [
@@ -43,6 +50,8 @@ function timeAgo(iso: string): string {
 
 type KidsSpaceContext = {
   isWall: boolean
+  /** Viewer é da equipe: muda só a legenda dos canais `staff_only` ("Só a equipe escreve"). */
+  isStaff: boolean
   space: HubSpaceView
   viewerId: string
   spaceChannelIds: string[]
@@ -67,7 +76,9 @@ type KidsSpaceDiscussion = {
   onLoadMoreComments: () => void
   onBackFromThread: () => void
   onSendReply: () => void
-  onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
+  onReact:
+    | ((target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void)
+    | null
   onReport: (target: 'threads' | 'comments', id: string) => void
   authorLabel: (item: AuthorItem) => ReactNode
   onRemix: ((thread: HubThreadView) => void) | null
@@ -97,6 +108,9 @@ type KidsSpaceFeed = {
   threads: HubThreadView[]
   challengeThreads: HubThreadView[]
   challenge: { key: string; title: string; emoji: string } | null
+  /** Filtro do Mural (ordem da lista); o Clube não usa. */
+  sort: MuralSort
+  onSortChange: (sort: MuralSort) => void
   onOpenThread: (thread: HubThreadView) => void
   threadsHasMore: boolean
   loadingMoreThreads: boolean
@@ -122,111 +136,95 @@ export type KidsSpaceContentProps = {
   busy: boolean
 }
 
-/** Apresentação do espaço; rede, autorização e estado continuam no orquestrador. */
+/**
+ * Apresentação do espaço, no desenho das telas-modelo (11/09/2026): cabeçalho no
+ * creme, o conteúdo na faixa da porta (Mural no menta, Clube no azul-claro) e o
+ * fechamento no lilás. Rede, autorização e estado continuam no orquestrador.
+ */
 export function KidsSpaceContent(props: KidsSpaceContentProps) {
   const { context, navigation, discussion, composer, feed, report, busy } = props
   const { isWall, space, viewerId, spaceChannelIds } = context
   const { channels, channel } = navigation
   const { thread } = discussion
 
+  const detail = thread ? (
+    <ThreadDetail
+      thread={thread}
+      comments={discussion.comments}
+      busy={busy}
+      isWall={isWall}
+      replyBody={discussion.replyBody}
+      setReplyBody={discussion.onReplyBodyChange}
+      replyAttachments={discussion.replyAttachments}
+      setReplyAttachments={discussion.onReplyAttachmentsChange}
+      commentsHasMore={discussion.commentsHasMore}
+      loadingMoreComments={discussion.loadingMoreComments}
+      onLoadMoreComments={discussion.onLoadMoreComments}
+      onBack={discussion.onBackFromThread}
+      onSend={discussion.onSendReply}
+      onReact={discussion.onReact}
+      onReport={discussion.onReport}
+      authorLabel={discussion.authorLabel}
+      onRemix={discussion.onRemix}
+      remixLock={discussion.remixLockFor(thread)}
+      canReply={discussion.canReply}
+      canInteract={space.canInteract}
+    />
+  ) : null
+
   return (
     <>
-      <div className="w-full">
-        {!isWall ? (
-          <div className="mb-4 flex items-center gap-3 rounded-3xl border-2 border-border bg-(--kids-cyan-tint) p-4">
-            <KidsMascot expression="happy" className="size-14 shrink-0 md:size-16" />
-            <div className="min-w-0 flex-1">
-              <h1 className="[font-family:var(--font-display)] font-bold text-2xl">{space.name}</h1>
-              <p className="text-muted-foreground text-sm">
-                {space.description || 'Converse com a turma e mostre o que você criou! 🎉'}
-              </p>
-            </div>
-            <ClubeActivityBell
-              viewerId={viewerId}
-              channelIds={spaceChannelIds}
-              onOpenThread={context.onOpenThreadById}
-            />
-            <ClubeCombinados viewerId={viewerId} />
-          </div>
+      <KidsBand tone="creme">
+        {isWall ? (
+          <MuralHeader space={space} sort={feed.sort} onSortChange={feed.onSortChange} />
         ) : (
-          <>
-            <h1 className="mb-1 [font-family:var(--font-display)] font-bold text-2xl">
-              {space.name}
-            </h1>
-            {space.description ? (
-              <p className="mb-4 text-muted-foreground text-sm">{space.description}</p>
-            ) : (
-              <div className="mb-4" />
-            )}
-          </>
+          <ClubeHeader
+            space={space}
+            viewerId={viewerId}
+            channelIds={spaceChannelIds}
+            onOpenThreadById={context.onOpenThreadById}
+          />
         )}
+      </KidsBand>
 
-        <div className={`grid gap-4 ${isWall ? '' : 'md:grid-cols-[200px_1fr]'}`}>
-          {!isWall ? (
-            <aside className="flex gap-2 overflow-x-auto md:flex-col md:gap-1.5">
-              {channels.map((item) => (
-                <button
-                  type="button"
-                  key={item.id}
-                  onClick={() => navigation.onSelectChannel(item)}
-                  className={`flex shrink-0 items-center gap-2 rounded-2xl border-2 px-3 py-2 text-left text-sm transition-colors ${
-                    channel?.id === item.id
-                      ? 'border-primary bg-(--kids-cyan-tint) font-bold text-primary'
-                      : 'border-transparent text-muted-foreground hover:bg-muted/60'
-                  }`}
-                >
-                  <span aria-hidden="true" className="shrink-0 text-base leading-none">
-                    {channelPresentation(item.slug).emoji}
-                  </span>
-                  <span className="truncate">{item.name}</span>
-                  {item.postingPolicy === 'staff_only' ? (
-                    <Lock className="size-3 shrink-0 opacity-60" />
-                  ) : null}
-                  {item.hasUnread ? (
-                    <span className="ml-auto size-2 rounded-full bg-primary" />
-                  ) : null}
-                </button>
-              ))}
-            </aside>
-          ) : null}
+      <KidsBand tone={isWall ? 'menta' : 'ceu'}>
+        {isWall ? (
+          (detail ?? <WallFeed feed={feed} viewerId={viewerId} discussion={discussion} />)
+        ) : (
+          // `grid-cols-1` (= `minmax(0,1fr)`) no celular: a coluna `auto` de sempre crescia até
+          // a fileira INTEIRA de canais (a lista rola de lado dentro do painel, mas o painel
+          // não encolhia), e a página rolava 62px de lado a 390px (full review de 11/09/2026).
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[18.75rem_minmax(0,1fr)]">
+            <ChannelsPanel
+              channels={channels}
+              channel={channel}
+              isStaff={context.isStaff}
+              onSelect={navigation.onSelectChannel}
+            />
+            <div className="min-w-0">
+              {detail ?? (
+                <ForumChannel
+                  channel={channel}
+                  viewerId={viewerId}
+                  composer={composer}
+                  feed={feed}
+                  busy={busy}
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </KidsBand>
 
-          <main className="min-w-0">
-            {thread ? (
-              <ThreadDetail
-                thread={thread}
-                comments={discussion.comments}
-                busy={busy}
-                isWall={isWall}
-                replyBody={discussion.replyBody}
-                setReplyBody={discussion.onReplyBodyChange}
-                replyAttachments={discussion.replyAttachments}
-                setReplyAttachments={discussion.onReplyAttachmentsChange}
-                commentsHasMore={discussion.commentsHasMore}
-                loadingMoreComments={discussion.loadingMoreComments}
-                onLoadMoreComments={discussion.onLoadMoreComments}
-                onBack={discussion.onBackFromThread}
-                onSend={discussion.onSendReply}
-                onReact={discussion.onReact}
-                onReport={discussion.onReport}
-                authorLabel={discussion.authorLabel}
-                onRemix={discussion.onRemix}
-                remixLock={discussion.remixLockFor(thread)}
-                canReply={discussion.canReply}
-              />
-            ) : (
-              <KidsSpaceFeedView
-                isWall={isWall}
-                viewerId={viewerId}
-                channel={channel}
-                composer={composer}
-                feed={feed}
-                discussion={discussion}
-                busy={busy}
-              />
-            )}
-          </main>
-        </div>
-      </div>
+      <KidsBand tone="lilas">
+        {/* O remix e o "Publicar" pedem a MESMA coisa (Estúdio livre na jornada), então
+            a presença do `onRemix` é a régua do botão de publicar. */}
+        {isWall ? (
+          <MuralClosing canPublish={discussion.onRemix !== null} canInteract={space.canInteract} />
+        ) : (
+          <ClubeClosing />
+        )}
+      </KidsBand>
 
       <ReportDialog report={report} />
     </>
@@ -267,120 +265,167 @@ function ReportDialog({ report }: { report: KidsSpaceReport }) {
   )
 }
 
-function KidsSpaceFeedView({
-  isWall,
-  viewerId,
-  channel,
-  composer,
-  feed,
-  discussion,
-  busy,
-}: {
-  isWall: boolean
-  viewerId: string
-  channel: HubChannelView | null
-  composer: KidsSpaceComposer
-  feed: KidsSpaceFeed
-  discussion: KidsSpaceDiscussion
-  busy: boolean
-}) {
+/** "Carregar mais", na pílula de contorno das telas-modelo. */
+function LoadMore({ feed, label }: { feed: KidsSpaceFeed; label: string }) {
+  if (!feed.threadsHasMore) return null
   return (
-    <div className="space-y-3">
-      {!isWall ? (
-        <div className="flex items-center justify-between">
-          <p className="text-muted-foreground text-sm">
-            {channel ? channel.topic || `#${channel.slug}` : 'Escolha um canal'}
-          </p>
-          {channel && composer.canComposeInChannel ? (
-            <button
-              type="button"
-              onClick={composer.onToggleNew}
-              className="inline-flex items-center gap-1 rounded-2xl bg-primary px-4 py-2 font-bold text-primary-foreground text-sm"
-            >
-              <Plus className="size-4" /> Começar conversa
-            </button>
-          ) : channel && channel.postingPolicy === 'staff_only' ? (
-            <span className="text-muted-foreground text-xs">Aqui só a equipe escreve 💬</span>
-          ) : null}
-        </div>
-      ) : null}
-
-      {!isWall && composer.showNew && composer.canComposeInChannel ? (
-        <ThreadComposer composer={composer} busy={busy} />
-      ) : null}
-
-      {feed.threads.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border border-dashed p-6 text-center text-muted-foreground text-sm">
-          <KidsMascot expression="happy" className="size-16" />
-          <p>
-            {isWall
-              ? 'Os projetos dos criadores vão aparecer aqui! 🎨'
-              : channel
-                ? channelPresentation(channel.slug).emptyState
-                : 'Nenhuma conversa ainda. Comece a primeira! ✨'}
-          </p>
-        </div>
-      ) : isWall ? (
-        <WallThreads
-          threads={feed.threads}
-          challengeThreads={feed.challengeThreads}
-          challenge={feed.challenge}
-          viewerId={viewerId}
-          onOpenThread={feed.onOpenThread}
-          onRemix={discussion.onRemix}
-          remixLockFor={discussion.remixLockFor}
-        />
-      ) : (
-        feed.threads.map((item) => (
-          <button
-            type="button"
-            key={item.id}
-            onClick={() => feed.onOpenThread(item)}
-            className="w-full rounded-2xl border-2 border-border bg-card p-3 text-left transition-colors hover:border-primary"
-          >
-            <div className="flex items-center gap-2">
-              {item.isPinned ? <Tag>Fixado</Tag> : null}
-              {item.pending ? <Tag>Aguardando ✅</Tag> : null}
-              <span className="truncate font-bold">{item.title}</span>
-            </div>
-            <p className="flex items-center gap-3 text-muted-foreground text-xs">
-              <AuthorBadge item={item} viewerId={viewerId} nameNode={authorText(item, viewerId)} />
-              <span className="inline-flex items-center gap-1">
-                <MessageCircle className="size-3" /> {item.commentCount}
-              </span>
-              <span>{timeAgo(item.lastActivityAt)}</span>
-            </p>
-          </button>
-        ))
-      )}
-      {feed.threadsHasMore ? (
-        <button
-          type="button"
-          onClick={feed.onLoadMoreThreads}
-          disabled={feed.loadingMoreThreads}
-          className="w-full rounded-2xl border-2 border-border border-dashed p-2.5 text-center font-bold text-muted-foreground text-sm transition-colors hover:border-primary hover:text-primary disabled:opacity-60"
-        >
-          {feed.loadingMoreThreads
-            ? 'Carregando…'
-            : isWall
-              ? 'Carregar mais projetos'
-              : 'Carregar mais conversas'}
-        </button>
-      ) : null}
+    <div className="mt-6 flex justify-center">
+      <button
+        type="button"
+        onClick={feed.onLoadMoreThreads}
+        disabled={feed.loadingMoreThreads}
+        className="sz-btn-gradient sz-btn-contorno h-11 px-6 disabled:opacity-60"
+      >
+        {feed.loadingMoreThreads ? 'Carregando…' : label}
+      </button>
     </div>
   )
 }
 
-function ThreadComposer({ composer, busy }: { composer: KidsSpaceComposer; busy: boolean }) {
+/**
+ * O canal aberto do Clube, num cartão branco: "#canal" em Baloo com a frase do canal,
+ * "Começar conversa" à direita, as conversas (ou o vazio com o Zappy) e, no pé, a
+ * pílula creme de "Escreva uma mensagem", que abre o mesmo formulário.
+ */
+function ForumChannel({
+  channel,
+  viewerId,
+  composer,
+  feed,
+  busy,
+}: {
+  channel: HubChannelView | null
+  viewerId: string
+  composer: KidsSpaceComposer
+  feed: KidsSpaceFeed
+  busy: boolean
+}) {
+  const presentation = channelPresentation(channel?.slug ?? '')
+  // O título e a frase do vazio saem do MESMO convite (ver `emptyStateParts`).
+  const vazio = emptyStateParts(presentation.emptyState)
+  const staffOnly = channel?.postingPolicy === 'staff_only'
+  const canCompose = Boolean(channel) && composer.canComposeInChannel
   return (
-    <div className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
+    <section aria-labelledby="canal-heading" className="kids-carta p-5 md:p-7">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h2 id="canal-heading" className="sz-display text-2xl">
+            {channel ? `#${channel.slug}` : 'Escolha um canal'}
+          </h2>
+          {/* A frase do canal é a que o admin escreveu (`topic`). Sem ela não há frase: as
+              duas de reserva que o redesenho pôs aqui eram copy nova no lugar de conteúdo
+              (full review de 11/09/2026). Quem pode escrever já está dito no painel de canais. */}
+          {channel?.topic ? (
+            <p className="mt-1 text-muted-foreground text-sm">{channel.topic}</p>
+          ) : null}
+        </div>
+        {canCompose ? (
+          <button
+            type="button"
+            onClick={composer.onToggleNew}
+            aria-expanded={composer.showNew}
+            className="sz-btn-gradient h-[2.875rem] gap-2 px-6"
+          >
+            <Plus className="size-[1.125rem]" aria-hidden /> Começar conversa
+          </button>
+        ) : null}
+      </div>
+
+      {composer.showNew && canCompose ? (
+        <div className="mt-5">
+          <ThreadComposer composer={composer} busy={busy} />
+        </div>
+      ) : null}
+
+      <div className="mt-5">
+        {feed.threads.length === 0 ? (
+          <div className="flex flex-col items-center rounded-[1.25rem] border-[1.5px] border-border bg-background px-6 py-12 text-center md:py-[4.5rem]">
+            <span className="grid size-[4.75rem] place-items-center rounded-full bg-(--band-ceu)">
+              <Bot className="size-9" strokeWidth={1.5} aria-hidden />
+            </span>
+            <p className="sz-display mt-4 text-xl">{vazio.title}</p>
+            {vazio.text ? (
+              <p className="mt-2 text-[0.9375rem] text-muted-foreground">{vazio.text}</p>
+            ) : null}
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {feed.threads.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => feed.onOpenThread(item)}
+                  className="flex w-full items-center gap-4 rounded-2xl bg-background p-4 text-left transition-colors hover:bg-muted"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2">
+                      {item.isPinned ? <Tag>Fixado</Tag> : null}
+                      {item.pending ? <Tag>Aguardando ✅</Tag> : null}
+                      <span className="truncate font-extrabold text-[0.9375rem]">{item.title}</span>
+                    </span>
+                    <span className="mt-1.5 flex items-center gap-3 text-muted-foreground text-xs">
+                      <AuthorBadge
+                        item={item}
+                        viewerId={viewerId}
+                        nameNode={authorText(item, viewerId)}
+                      />
+                      <span className="inline-flex items-center gap-1">
+                        <MessageCircle className="size-3.5" aria-hidden /> {item.commentCount}
+                      </span>
+                      <span>{timeAgo(item.lastActivityAt)}</span>
+                    </span>
+                  </span>
+                  <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <LoadMore feed={feed} label="Carregar mais conversas" />
+      </div>
+
+      {canCompose && !composer.showNew ? (
+        <button
+          type="button"
+          onClick={composer.onToggleNew}
+          className="mt-5 flex w-full items-center gap-3 rounded-full bg-(--band-creme) py-2 pr-2 pl-6 text-left transition-colors hover:bg-[color-mix(in_oklab,var(--band-creme)_92%,var(--foreground))]"
+        >
+          <span className="min-w-0 flex-1 truncate text-[0.9375rem] text-muted-foreground">
+            Escreva uma mensagem para a turma…
+          </span>
+          <span
+            aria-hidden="true"
+            className="kids-marca grid size-12 shrink-0 place-items-center rounded-full"
+          >
+            <Send className="size-5" />
+          </span>
+        </button>
+      ) : channel && staffOnly ? (
+        <p className="mt-5 rounded-2xl bg-(--band-creme) px-5 py-3.5 text-center font-semibold text-muted-foreground text-sm">
+          Aqui só a equipe escreve 💬
+        </p>
+      ) : null}
+    </section>
+  )
+}
+
+function ThreadComposer({ composer, busy }: { composer: KidsSpaceComposer; busy: boolean }) {
+  const tituloRef = useRef<HTMLInputElement | null>(null)
+  // O formulário abre no TOPO do cartão, e a pílula "Escreva uma mensagem…" que também o abre
+  // fica no PÉ da lista de conversas: numa lista comprida a criança clicava e, na vista dela,
+  // não acontecia nada. O foco leva a tela junto (full review de 11/09/2026).
+  useEffect(() => {
+    tituloRef.current?.focus()
+  }, [])
+  return (
+    <div className="space-y-3 rounded-[1.25rem] bg-background p-4">
       <div className="flex flex-wrap gap-1.5">
         {SUGGESTION_STARTERS.map((suggestion) => (
           <button
             type="button"
             key={suggestion.chip}
             onClick={() => composer.onNewTitleChange(suggestion.title)}
-            className="rounded-full border-2 border-border px-2.5 py-1 font-bold text-muted-foreground text-xs transition-colors hover:border-primary hover:text-primary"
+            className="rounded-full bg-card px-3 py-1.5 font-bold text-muted-foreground text-xs ring-1 ring-border transition-colors hover:text-primary hover:ring-primary"
           >
             {suggestion.chip}
           </button>
@@ -390,9 +435,10 @@ function ThreadComposer({ composer, busy }: { composer: KidsSpaceComposer; busy:
         Título da conversa
       </label>
       <input
+        ref={tituloRef}
         id="new-thread-title"
         name="threadTitle"
-        className="w-full rounded-xl border-2 border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-ring"
+        className="w-full rounded-xl border-2 border-input bg-card px-3 py-2 text-sm outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-ring"
         placeholder="Sobre o que você quer falar?"
         value={composer.newTitle}
         onChange={(event) => composer.onNewTitleChange(event.target.value)}
@@ -416,14 +462,14 @@ function ThreadComposer({ composer, busy }: { composer: KidsSpaceComposer; busy:
       <div className="flex justify-end gap-2">
         <button
           type="button"
-          className="rounded-2xl border-2 border-border px-4 py-2 text-sm"
+          className="sz-btn-gradient sz-btn-contorno h-11 px-5"
           onClick={composer.onCancelNew}
         >
           Cancelar
         </button>
         <button
           type="button"
-          className="rounded-2xl bg-primary px-4 py-2 font-bold text-primary-foreground text-sm disabled:opacity-60"
+          className="sz-btn-gradient h-11 px-6 disabled:opacity-60"
           onClick={composer.onCreateThread}
           disabled={busy}
         >
@@ -434,23 +480,27 @@ function ThreadComposer({ composer, busy }: { composer: KidsSpaceComposer; busy:
   )
 }
 
-function WallThreads({
-  threads,
-  challengeThreads,
-  challenge,
+/** O Mural: a prateleira do Desafio do mês (quando há) e a grade de três colunas. */
+function WallFeed({
+  feed,
   viewerId,
-  onOpenThread,
-  onRemix,
-  remixLockFor,
+  discussion,
 }: {
-  threads: HubThreadView[]
-  challengeThreads: HubThreadView[]
-  challenge: { key: string; title: string; emoji: string } | null
+  feed: KidsSpaceFeed
   viewerId: string
-  onOpenThread: (thread: HubThreadView) => void
-  onRemix: ((thread: HubThreadView) => void) | null
-  remixLockFor: (thread: HubThreadView) => { levelLabel: string | null } | null
+  discussion: KidsSpaceDiscussion
 }) {
+  if (feed.threads.length === 0) {
+    return (
+      // Estado vazio de verdade, e não a caixa tracejada cinza: aqui o Zappy faz o
+      // papel do círculo colorido do `KidsEmptyState`, porque a fala é dele.
+      <div className="kids-carta flex flex-col items-center gap-2 px-6 py-12 text-center">
+        <KidsMascotAnimated expression="happy" className="size-20" stillClassName="kid-float" />
+        <p className="sz-display mt-2 text-xl">{channelPresentation('parede').emptyState}</p>
+      </div>
+    )
+  }
+  const { challenge, challengeThreads, threads } = feed
   const shelf =
     challengeThreads.length > 0
       ? challengeThreads
@@ -460,40 +510,28 @@ function WallThreads({
   const others = challenge
     ? threads.filter((thread) => thread.challengeKey !== challenge.key)
     : threads
-
+  const card = (thread: HubThreadView) => (
+    <ShowcaseCard
+      key={thread.id}
+      thread={thread}
+      viewerId={viewerId}
+      onOpen={() => feed.onOpenThread(thread)}
+      onRemix={discussion.onRemix}
+      remixLock={discussion.remixLockFor(thread)}
+    />
+  )
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       {challenge && shelf.length > 0 ? (
         <section aria-label="Desafio do mês">
-          <h3 className="mb-2 flex items-center gap-2 font-bold [font-family:var(--font-display)]">
+          <h2 className="sz-display mb-4 flex items-center gap-2 text-2xl">
             <span aria-hidden="true">{challenge.emoji}</span>🏆 Desafio do mês: {challenge.title}
-          </h3>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {shelf.map((thread) => (
-              <ShowcaseCard
-                key={thread.id}
-                thread={thread}
-                viewerId={viewerId}
-                onOpen={() => onOpenThread(thread)}
-                onRemix={onRemix}
-                remixLock={remixLockFor(thread)}
-              />
-            ))}
-          </div>
+          </h2>
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{shelf.map(card)}</div>
         </section>
       ) : null}
-      <div className="grid gap-4 sm:grid-cols-2">
-        {others.map((thread) => (
-          <ShowcaseCard
-            key={thread.id}
-            thread={thread}
-            viewerId={viewerId}
-            onOpen={() => onOpenThread(thread)}
-            onRemix={onRemix}
-            remixLock={remixLockFor(thread)}
-          />
-        ))}
-      </div>
+      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{others.map(card)}</div>
+      <LoadMore feed={feed} label="Carregar mais projetos" />
     </div>
   )
 }

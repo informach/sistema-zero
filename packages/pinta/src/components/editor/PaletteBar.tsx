@@ -41,9 +41,9 @@ import {
   resolveAssetPalette,
 } from '../../core/project'
 import { usePintaApp } from '../appContext'
-import { Button, ToolButton } from '../ui/Button'
+import { AddDotButton, Button, ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
-import { ChevronDown, Palette, Plus, Trash2 } from '../ui/icons'
+import { Ban, ChevronDown, Palette, Trash2 } from '../ui/icons'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { ColorPickerDialog } from './ColorPicker'
@@ -248,16 +248,17 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
 
   const swatches = (
     <>
+      {/* O "sem cor" da tela-modelo (o tom claro com o proibido): é a borracha. */}
       <button
         type="button"
         aria-pressed={tool === 'eraser'}
         aria-label={COPY.palette.transparent}
         title={COPY.palette.transparent}
         onClick={() => session.getState().setTool('eraser')}
-        className={`pin-checkerboard size-11 shrink-0 rounded-md border-2 transition ${
-          tool === 'eraser' ? 'border-pin-accent ring-2 ring-pin-accent' : 'border-pin-border'
-        }`}
-      />
+        className="pin-swatch pin-swatch--none"
+      >
+        <Ban aria-hidden="true" />
+      </button>
       {colors.map((hex, index) => {
         if (index === TRANSPARENT_INDEX || !hex) return null
         // O destaque acompanha a cor SELECIONADA na caixa de ferramentas (a
@@ -275,9 +276,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
               s.applyColor(index)
               if (s.tool === 'eraser' || s.tool === 'picker') s.setTool('pencil')
             }}
-            className={`size-11 shrink-0 rounded-md border-2 transition ${
-              selected ? 'border-pin-accent ring-2 ring-pin-accent' : 'border-pin-border'
-            }`}
+            className="pin-swatch"
             style={{ backgroundColor: hex }}
           />
         )
@@ -299,17 +298,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
     setPickerOpen(true)
   }
 
-  const addButton = (
-    <button
-      type="button"
-      aria-label={COPY.palette.addColor}
-      title={COPY.palette.addColor}
-      onClick={openPicker}
-      className="flex size-11 shrink-0 items-center justify-center rounded-full bg-pin-accent text-pin-accent-fg transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
-    >
-      <Plus aria-hidden="true" className="size-5" />
-    </button>
-  )
+  const addButton = <AddDotButton label={COPY.palette.addColor} onClick={openPicker} />
 
   const trashButton = (
     <ToolButton
@@ -484,9 +473,9 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
       }
     >
       {/* 5 por linha → painel mais largo e mais curto; as 16 células base
-          (xadrez + 15 cores) cabem em 4 linhas SEM scroll (extras rolam por
-          dentro). */}
-      <div className="grid max-h-48 grid-cols-5 justify-items-center gap-1 overflow-y-auto p-0.5">
+          ("sem cor" + 15 cores) cabem em 4 linhas SEM scroll, também com os 44px
+          do toque (extras rolam por dentro). O `p-1` é o lugar do anel azul. */}
+      <div className="grid max-h-52 grid-cols-5 justify-items-center gap-1.5 overflow-y-auto p-1">
         {swatches}
       </div>
       {paletteMenu}

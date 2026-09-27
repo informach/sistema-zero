@@ -1,0 +1,90 @@
+{
+  "capturedAt": "2026-09-12T18:41:28.598858+00:00",
+  "files": [
+    {
+      "path": "packages/core/src/learning/index.ts",
+      "sha256": "4b048a897d8fe2fffa82e6d27e2411f7779c8ea8605a2cf0ce4bc7abdf7e569b",
+      "bytes": 22035
+    },
+    {
+      "path": "packages/core/src/learning/exploration.ts",
+      "sha256": "f5cb3d32d527cd1fcf8f172d3caeb84c3aafd14179112b14e733d0ff3b9e6db4",
+      "bytes": 13971
+    },
+    {
+      "path": "packages/core/src/learning/exploration-model.ts",
+      "sha256": "11a762d68123e050ece0e09ba48af44b8c3b152e617d5ee97d93a5951907593e",
+      "bytes": 25700
+    },
+    {
+      "path": "packages/core/src/learning/section-templates.ts",
+      "sha256": "24a620a3900bfce80f273b8eb099e9b25e0098a511d6c4a4b231054daf8cb65e",
+      "bytes": 1675
+    },
+    {
+      "path": "packages/member-shell/src/components/learning-exploration.tsx",
+      "sha256": "d89f9c654740b1614ba7554bde7c51f6e072d958d6cafefb48ba47ccacc299ba",
+      "bytes": 18152
+    },
+    {
+      "path": "packages/member-shell/src/components/exploration-stage.tsx",
+      "sha256": "261175c02d7ad56db2d4255861e3b90e15c79564594e04c4c0c66b8d3ad6fd48",
+      "bytes": 18043
+    },
+    {
+      "path": "packages/member-shell/src/components/exploration-pieces.tsx",
+      "sha256": "65a4c56a05fc1691c689f76c19e97f22cc76ce5b119b45e32129ee88e5561521",
+      "bytes": 14101
+    },
+    {
+      "path": "packages/member-shell/src/components/learning-activity.tsx",
+      "sha256": "f4e6c43d8d5c46146f953aa4547fc1a6838499a3ee214d3721f6a8350752e8d7",
+      "bytes": 19873
+    },
+    {
+      "path": "packages/member-shell/src/components/lesson-sections.tsx",
+      "sha256": "08aa28652b58fef0839c1e523f2c92ffa38f8d4d84c4772ce716768cda9b2e7b",
+      "bytes": 42498
+    },
+    {
+      "path": "packages/member-shell/src/lib/lesson-media-focus.ts",
+      "sha256": "9531e4b0a5089a52ca9fb9a595f44376e358c967975a96cc7c50c12959f4db60",
+      "bytes": 656
+    },
+    {
+      "path": "packages/admin/src/components/editor/learning-builder.tsx",
+      "sha256": "4ded082cb09b5afba31682fbc73f741c2e0a73e484d0b609e3b5793a031a2a2e",
+      "bytes": 22588
+    },
+    {
+      "path": "packages/admin/src/components/editor/lesson-editorial-warnings.ts",
+      "sha256": "4799c8906955ecede93e04df13eaa034337f0e5c158af44f4d20483ea0578e93",
+      "bytes": 2606
+    },
+    {
+      "path": "packages/admin/src/components/professor/lesson-learning-panel.tsx",
+      "sha256": "9b547a7ee72ff50a0b9d99b7df0a74117547e59f7054a3195ff66cbb7d589706",
+      "bytes": 13196
+    },
+    {
+      "path": "packages/studio/src/activity/sandbox.ts",
+      "sha256": "8c2dc23e30d98e0ab487ee4254d428eb0e193f52fa4468cd7a77275e80f32b65",
+      "bytes": 5956
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d/runtime/physics.ts",
+      "sha256": "ef2038be098c68a98de52d6ca2b50b46d0144776a8d489005fa38dc7ab7948e8",
+      "bytes": 16993
+    },
+    {
+      "path": "packages/members/src/application/learning/learning.service.ts",
+      "sha256": "f5fad7187bdf884cdcfc468fe2b164ca920200a9f9ed847e61e605aef0c0bbc7",
+      "bytes": 14486
+    },
+    {
+      "path": "docs/aulas-interativas/corre-dino/aula-03/manifesto.json",
+      "sha256": "eae8be75d15979772439c830020856eb4ffc37a97e6118a16cdee402511859c4",
+      "bytes": 11886
+    }
+  ]
+}

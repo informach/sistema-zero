@@ -19,6 +19,8 @@ import type {
 } from '../core/project'
 import { createBitmap, PINTA_LIMITS, uniqueAnimationName } from '../core/project'
 import { cloneBitmap } from '../pixel/bitmap'
+import { remapMaskIds } from '../vector/mask'
+import type { VectorShape } from '../vector/model'
 
 /** O tipo do quadro de um sprite: `PintaBitmap` (pixel) ou `VectorFrame` (vetor). */
 export type FrameOf<A extends AnimatedSpriteAsset> = A['animations'][number]['frames'][number]
@@ -38,12 +40,27 @@ function emptyFrameFor<A extends AnimatedSpriteAsset>(asset: A): FrameOf<A> {
   return frame as FrameOf<A>
 }
 
-function cloneFrameOf<A extends AnimatedSpriteAsset>(asset: A, frame: FrameOf<A>): FrameOf<A> {
+function cloneFrameOf<A extends AnimatedSpriteAsset>(
+  asset: A,
+  frame: FrameOf<A>,
+  motionIds = new Map<string, string>(),
+): FrameOf<A> {
   const clone: PintaPixelFrame | VectorFrame =
     asset.kind === 'pixel-sprite'
       ? (frame as PintaPixelFrame).map(cloneBitmap)
-      : (frame as VectorFrame).map((shape) => ({ ...shape, id: newId() }))
+      : cloneVectorFrame(frame as VectorFrame, motionIds)
   return clone as FrameOf<A>
+}
+
+function cloneVectorFrame(frame: VectorFrame, motionIds: Map<string, string>): VectorFrame {
+  const shapeIds = new Map(frame.map((shape) => [shape.id, newId()]))
+  const copy = frame.map((shape) => {
+    const sourceMotionId = shape.motionId
+    const motionId = sourceMotionId ? (motionIds.get(sourceMotionId) ?? newId()) : newId()
+    if (sourceMotionId) motionIds.set(sourceMotionId, motionId)
+    return { ...shape, id: shapeIds.get(shape.id) as string, motionId } as VectorShape
+  })
+  return remapMaskIds(copy, shapeIds)
 }
 
 function withAnimation<A extends AnimatedSpriteAsset>(
@@ -91,7 +108,22 @@ export function duplicateFrame<A extends AnimatedSpriteAsset>(
     const source = animation.frames[index]
     if (!source) return animation
     const frames = [...animation.frames]
-    frames.splice(index + 1, 0, cloneFrameOf(asset, source as FrameOf<A>))
+    if (asset.kind === 'vector-sprite') {
+      const prepared = (source as VectorFrame).map((shape) =>
+        shape.motionId ? shape : { ...shape, motionId: newId() },
+      )
+      const shapeIds = new Map(prepared.map((shape) => [shape.id, newId()]))
+      const copy = remapMaskIds(
+        prepared.map(
+          (shape) => ({ ...shape, id: shapeIds.get(shape.id) as string }) as VectorShape,
+        ),
+        shapeIds,
+      )
+      frames[index] = prepared as FrameOf<A>
+      frames.splice(index + 1, 0, copy as FrameOf<A>)
+    } else {
+      frames.splice(index + 1, 0, cloneFrameOf(asset, source as FrameOf<A>))
+    }
     return { ...animation, frames }
   })
 }
@@ -189,6 +221,7 @@ export function duplicateAnimation<A extends AnimatedSpriteAsset>(
   const animations = asset.animations as AnimationOf<A>[]
   const source = animations.find((a) => a.id === animationId)
   if (!source) return { asset, animationId: null }
+  const motionIds = new Map<string, string>()
   const copy = {
     ...source,
     id: newId(),
@@ -196,7 +229,7 @@ export function duplicateAnimation<A extends AnimatedSpriteAsset>(
       source.name,
       animations.map((animation) => animation.name),
     ),
-    frames: source.frames.map((frame) => cloneFrameOf(asset, frame as FrameOf<A>)),
+    frames: source.frames.map((frame) => cloneFrameOf(asset, frame as FrameOf<A>, motionIds)),
   } as AnimationOf<A>
   const index = animations.findIndex((a) => a.id === animationId)
   const next = [...animations]
@@ -237,9 +270,9 @@ export function setAnimationLoop<A extends AnimatedSpriteAsset>(
 }
 
 /**
- * Grava a suavização da PRÉVIA (só dentro do Pinta — não sai no export). Só
- * `ease` fica gravado; `linear` (o padrão) volta a omitir a chave, mantendo o
- * asset idêntico ao histórico.
+ * Grava a suavização da PRÉVIA. GIF e SVG animado preservam os tempos visíveis;
+ * a ponte do Estúdio não leva este campo. Só `ease` fica gravado; `linear` (o
+ * padrão) volta a omitir a chave, mantendo o asset idêntico ao histórico.
  */
 export function setAnimationEasing<A extends AnimatedSpriteAsset>(
   asset: A,

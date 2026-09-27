@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { COPY } from '../../core/copy'
 import { clearIdbMock } from '../../testing/idbMock'
 import { rightColumn, stubColumn } from '../../testing/rightColumnStub'
+import { clearImageSampleCache } from '../../vector/imageSampler'
 import type { VectorShape } from '../../vector/model'
 import { DEFAULT_STYLE, makeRect } from '../../vector/shapes'
 
@@ -12,11 +13,289 @@ const { createGalleryStore } = await import('../../state/galleryStore')
 
 beforeEach(() => {
   clearIdbMock()
+  // O cache de figuras abertas é de MÓDULO: sem limpar, um caso herdaria a
+  // imagem (ou a lápide) do anterior e o `prime` nem decodificaria de novo.
+  clearImageSampleCache()
   setPintaStorageNamespace('')
   // O espelho da área de transferência é o localStorage da página (o teste do
   // personagem pequeno copia): cada teste começa limpo, e nada vaza para o
   // arquivo seguinte (o bun não isola módulos e o CI enumera noutra ordem).
   localStorage.clear()
+})
+
+describe('ajustar degradê no desenho', () => {
+  async function openGradientShape(type: 'linear' | 'radial', rotation = 0): Promise<HTMLElement> {
+    const shape: VectorShape = {
+      id: 'gradiente-teste',
+      type: 'rect',
+      x: 40,
+      y: 40,
+      w: 100,
+      h: 100,
+      rx: 0,
+      fill: { type, from: '#ffffff', to: '#000000', angle: 0 },
+      stroke: null,
+      opacity: 1,
+      rotation,
+    }
+    const stage = await openWithShapes([shape])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const rect = stage.querySelector('rect[fill^="url(#"]')
+    if (!rect) throw new Error('forma com degradê esperada')
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientAdjust }))
+    return stage
+  }
+
+  it('entra e sai do modo sem abrir outra ferramenta', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [40, 40], [140, 140])
+    await waitFor(() =>
+      expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy(),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.vector.gradientRadial }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ajustar no desenho' }))
+    expect(screen.queryByRole('dialog', { name: COPY.vector.gradient })).toBeNull()
+    expect(screen.getByRole('toolbar', { name: 'Ajustando o degradê' })).toBeTruthy()
+    expect(screen.queryByRole('toolbar', { name: COPY.vector.selectionBar })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Concluir' }))
+    expect(screen.queryByRole('toolbar', { name: 'Ajustando o degradê' })).toBeNull()
+  })
+
+  it('orienta a selecionar uma forma com degradê antes de ajustar', async () => {
+    await openVectorEditor()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    const adjust = screen.getByRole('button', {
+      name: COPY.vector.gradientAdjust,
+    }) as HTMLButtonElement
+    expect(adjust.disabled).toBe(true)
+    expect(screen.getByText(COPY.vector.gradientAdjustSelectOne)).toBeTruthy()
+  })
+
+  it('não entra no ajuste com duas formas selecionadas', async () => {
+    const gradient = { type: 'radial' as const, from: '#ffffff', to: '#000000', angle: 0 }
+    const stage = await openWithShapes([
+      makeRect({ x: 40, y: 40 }, { x: 140, y: 140 }, { ...DEFAULT_STYLE, fill: gradient }),
+      makeRect({ x: 170, y: 40 }, { x: 270, y: 140 }, { ...DEFAULT_STYLE, fill: gradient }),
+    ])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const shapes = stage.querySelectorAll('rect[fill^="url(#"]')
+    const first = shapes[0]
+    const second = shapes[1]
+    if (!first || !second) throw new Error('duas formas com degradê esperadas')
+    fireEvent.pointerDown(first, { isPrimary: true, pointerId: 21, clientX: 80, clientY: 80 })
+    fireEvent.pointerUp(stage, { pointerId: 21 })
+    fireEvent.pointerDown(second, {
+      isPrimary: true,
+      pointerId: 22,
+      clientX: 210,
+      clientY: 80,
+      shiftKey: true,
+    })
+    fireEvent.pointerUp(stage, { pointerId: 22 })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    expect(
+      (screen.getByRole('button', { name: COPY.vector.gradientAdjust }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true)
+  })
+
+  it('não entra no ajuste de uma forma trancada', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [40, 40], [140, 140])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientRadial }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: `${COPY.layers.lock}: ${COPY.vector.shapeNames.rect}`,
+      }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: /^Selecionar: / }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    expect(
+      (screen.getByRole('button', { name: COPY.vector.gradientAdjust }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true)
+  })
+
+  it('Esc ou troca de ferramenta encerra o modo', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [40, 40], [140, 140])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.vector.gradientRadial }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientAdjust }))
+    fireEvent.keyDown(window, { key: 'Escape' })
+    await waitFor(() =>
+      expect(screen.queryByRole('toolbar', { name: COPY.vector.gradientAdjustMode })).toBeNull(),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientAdjust }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.brush }))
+    await waitFor(() =>
+      expect(screen.queryByRole('toolbar', { name: COPY.vector.gradientAdjustMode })).toBeNull(),
+    )
+  })
+
+  it('predefinições devolvem a posição padrão do gradiente', async () => {
+    const shape: VectorShape = {
+      id: 'gradiente-ajustado',
+      type: 'rect',
+      x: 40,
+      y: 40,
+      w: 100,
+      h: 100,
+      rx: 0,
+      fill: {
+        type: 'linear',
+        from: '#ffffff',
+        to: '#000000',
+        angle: 0,
+        start: { x: 0.2, y: 0.2 },
+        end: { x: 0.8, y: 0.8 },
+      },
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    }
+    const stage = await openWithShapes([shape])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const rect = stage.querySelector('rect[fill^="url(#"]')
+    if (!rect) throw new Error('forma com gradiente esperada')
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientH }))
+    await waitFor(() => {
+      const gradient = stage.querySelector('linearGradient')
+      expect(gradient?.getAttribute('x1')).toBe('0')
+      expect(gradient?.getAttribute('x2')).toBe('1')
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientRadial }))
+    await waitFor(() => {
+      const gradient = stage.querySelector('radialGradient')
+      expect(gradient).toBeTruthy()
+      expect(gradient?.hasAttribute('cx')).toBe(false)
+    })
+  })
+
+  it('arrastar alças do degradê redondo move o brilho com um desfazer', async () => {
+    const stage = await openGradientShape('radial')
+    const handle = stage.querySelector('[data-gradient-handle="center"]')
+    if (!handle) throw new Error('alça do brilho esperada')
+    fireEvent.pointerDown(handle, {
+      isPrimary: true,
+      pointerId: 11,
+      pointerType: 'touch',
+      clientX: 90,
+      clientY: 90,
+    })
+    fireEvent.pointerMove(stage, { pointerId: 11, pointerType: 'touch', clientX: 70, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 11, pointerType: 'touch', clientX: 70, clientY: 60 })
+    await waitFor(() => {
+      expect(stage.querySelector('radialGradient')?.getAttribute('cx')).toBe('0.3')
+      expect(stage.querySelector('radialGradient')?.getAttribute('cy')).toBe('0.2')
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() =>
+      expect(stage.querySelector('radialGradient')?.hasAttribute('cx')).toBe(false),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+    await waitFor(() =>
+      expect(stage.querySelector('radialGradient')?.getAttribute('cx')).toBe('0.3'),
+    )
+  })
+
+  it('arrastar alças do degradê redondo ajusta o alcance', async () => {
+    const stage = await openGradientShape('radial')
+    const handle = stage.querySelector('[data-gradient-handle="radius"]')
+    if (!handle) throw new Error('alça do alcance esperada')
+    fireEvent.pointerDown(handle, { isPrimary: true, pointerId: 12, clientX: 140, clientY: 90 })
+    fireEvent.pointerMove(stage, { pointerId: 12, clientX: 120, clientY: 90 })
+    fireEvent.pointerUp(stage, { pointerId: 12, clientX: 120, clientY: 90 })
+    await waitFor(() =>
+      expect(stage.querySelector('radialGradient')?.getAttribute('r')).toBe('0.3'),
+    )
+  })
+
+  it('alças também respondem ao teclado sem mover a forma', async () => {
+    const stage = await openGradientShape('radial')
+    const center = stage.querySelector('[data-gradient-handle="center"]')
+    const radius = stage.querySelector('[data-gradient-handle="radius"]')
+    if (!center || !radius) throw new Error('alças do degradê esperadas')
+    fireEvent.keyDown(center, { key: 'ArrowRight' })
+    expect(stage.querySelector('radialGradient')?.getAttribute('cx')).toBe('0.52')
+    expect(stage.querySelector('rect[fill^="url(#"]')?.getAttribute('x')).toBe('40')
+    fireEvent.keyDown(radius, { key: 'ArrowUp', shiftKey: true })
+    expect(stage.querySelector('radialGradient')?.getAttribute('r')).toBe('0.6')
+  })
+
+  it('arrastar alças do degradê linear posiciona começo e fim', async () => {
+    const stage = await openGradientShape('linear')
+    const start = stage.querySelector('[data-gradient-handle="start"]')
+    if (!start) throw new Error('alça inicial esperada')
+    fireEvent.pointerDown(start, { isPrimary: true, pointerId: 13, clientX: 40, clientY: 90 })
+    fireEvent.pointerMove(stage, { pointerId: 13, clientX: 60, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 13, clientX: 60, clientY: 60 })
+    await waitFor(() => {
+      expect(stage.querySelector('linearGradient')?.getAttribute('x1')).toBe('0.2')
+      expect(stage.querySelector('linearGradient')?.getAttribute('y1')).toBe('0.2')
+    })
+    const end = stage.querySelector('[data-gradient-handle="end"]')
+    if (!end) throw new Error('alça final esperada')
+    fireEvent.pointerDown(end, { isPrimary: true, pointerId: 14, clientX: 140, clientY: 90 })
+    fireEvent.pointerMove(stage, { pointerId: 14, clientX: 120, clientY: 120 })
+    fireEvent.pointerUp(stage, { pointerId: 14, clientX: 120, clientY: 120 })
+    await waitFor(() => {
+      expect(stage.querySelector('linearGradient')?.getAttribute('x2')).toBe('0.8')
+      expect(stage.querySelector('linearGradient')?.getAttribute('y2')).toBe('0.8')
+    })
+  })
+
+  it('toque parado não grava desfazer e cancelar um arraste restaura a forma', async () => {
+    const stage = await openGradientShape('radial')
+    const undo = screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement
+    expect(undo.disabled).toBe(true)
+    const handle = stage.querySelector('[data-gradient-handle="center"]')
+    if (!handle) throw new Error('alça do brilho esperada')
+    fireEvent.pointerDown(handle, { isPrimary: true, pointerId: 15, clientX: 90, clientY: 90 })
+    fireEvent.pointerUp(stage, { pointerId: 15, clientX: 90, clientY: 90 })
+    expect(undo.disabled).toBe(true)
+    fireEvent.pointerDown(handle, { isPrimary: true, pointerId: 16, clientX: 90, clientY: 90 })
+    fireEvent.pointerMove(stage, { pointerId: 17, clientX: 70, clientY: 60 })
+    expect(stage.querySelector('radialGradient')?.hasAttribute('cx')).toBe(false)
+    fireEvent.pointerMove(stage, { pointerId: 16, clientX: 70, clientY: 60 })
+    await waitFor(() =>
+      expect(stage.querySelector('radialGradient')?.getAttribute('cx')).toBe('0.3'),
+    )
+    fireEvent.pointerCancel(stage, { pointerId: 16 })
+    await waitFor(() =>
+      expect(stage.querySelector('radialGradient')?.hasAttribute('cx')).toBe(false),
+    )
+    expect(undo.disabled).toBe(true)
+  })
+
+  it('alças de uma forma girada seguem o espaço local do degradê', async () => {
+    const stage = await openGradientShape('radial', 90)
+    const handle = stage.querySelector('[data-gradient-handle="center"]')
+    if (!handle) throw new Error('alça do brilho esperada')
+    fireEvent.pointerDown(handle, { isPrimary: true, pointerId: 18, clientX: 90, clientY: 90 })
+    fireEvent.pointerMove(stage, { pointerId: 18, clientX: 110, clientY: 90 })
+    fireEvent.pointerUp(stage, { pointerId: 18, clientX: 110, clientY: 90 })
+    await waitFor(() => {
+      expect(stage.querySelector('radialGradient')?.getAttribute('cx')).toBe('0.5')
+      expect(stage.querySelector('radialGradient')?.getAttribute('cy')).toBe('0.3')
+    })
+  })
 })
 
 // Deixa o autosave pendente do editor assentar ANTES do próximo arquivo (régua
@@ -77,6 +356,41 @@ function measureStage(scale = 1, doc = { width: 480, height: 360 }): HTMLElement
   return stage
 }
 
+/** A div ROLÁVEL do palco (a régua e o "soltar dentro" medem por ela), com medida real. */
+function measureScroll(): HTMLElement {
+  const svg = screen.getByRole('img', { name: 'Área de desenho' })
+  const scroller = svg.parentElement?.parentElement as HTMLElement
+  ;(scroller as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect = () =>
+    ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 360,
+      right: 480,
+      bottom: 360,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    }) as DOMRect
+  return scroller
+}
+
+/**
+ * Rolagem do mouse na div rolável. O `WheelEvent` do happy-dom DESCARTA deltaMode/shiftKey
+ * do init, então o evento é montado à mão (o mesmo helper do `pixelSelectionUi.test.tsx`).
+ */
+function wheel(target: HTMLElement, deltaY: number): void {
+  const event = new Event('wheel', { bubbles: true, cancelable: true })
+  Object.defineProperties(event, {
+    deltaY: { value: deltaY },
+    deltaMode: { value: 0 },
+    shiftKey: { value: false },
+    clientX: { value: 0 },
+    clientY: { value: 0 },
+  })
+  fireEvent(target, event)
+}
+
 /**
  * Abre o cenário 'livre' JÁ com formas no disco (sem entrada de undo): o
  * "Desfazer" nasce apagado, então os testes de "nenhuma entrada de undo" têm o
@@ -90,6 +404,304 @@ async function openWithShapes(shapes: VectorShape[]): Promise<HTMLElement> {
   })
   return measureStage()
 }
+
+function maskFixture(over: { locked?: boolean } = {}): VectorShape[] {
+  return [
+    {
+      id: 'vagalume',
+      type: 'rect',
+      x: 20,
+      y: 20,
+      w: 100,
+      h: 100,
+      rx: 0,
+      fill: '#78dc52',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+      ...(over.locked ? { locked: true } : {}),
+    },
+    {
+      id: 'janela',
+      type: 'ellipse',
+      cx: 70,
+      cy: 70,
+      rx: 28,
+      ry: 28,
+      fill: '#00a0c8',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    },
+  ]
+}
+
+function marqueeAll(stage: HTMLElement): void {
+  fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 5, clientY: 5 })
+  fireEvent.pointerMove(stage, { pointerId: 1, clientX: 140, clientY: 140 })
+  fireEvent.pointerUp(stage, { pointerId: 1, clientX: 140, clientY: 140 })
+}
+
+describe('máscara vetorial no editor', () => {
+  it('cria em um commit, desfaz, refaz e solta sem perder as formas', async () => {
+    const stage = await openWithShapes(maskFixture())
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    marqueeAll(stage)
+    const create = await screen.findByRole('button', { name: COPY.vector.selCreateMask })
+    fireEvent.click(create)
+
+    await waitFor(() => {
+      expect(stage.querySelector('clipPath#pin-mask-janela')).toBeTruthy()
+      expect(stage.querySelector('rect[clip-path="url(#pin-mask-janela)"]')).toBeTruthy()
+    })
+    expect(screen.getByRole('button', { name: COPY.vector.selReleaseMask })).toBeTruthy()
+    expect(
+      screen.getByRole('button', {
+        name: `Selecionar: ${COPY.vector.shapeNames.ellipse} — ${COPY.vector.maskLayer}`,
+      }),
+    ).toBeTruthy()
+
+    fireEvent.click(screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLElement)
+    await waitFor(() => expect(stage.querySelector('clipPath')).toBeNull())
+    expect(stage.querySelectorAll('rect[fill="#78dc52"]')).toHaveLength(1)
+    expect(stage.querySelectorAll('ellipse[fill="#00a0c8"]')).toHaveLength(1)
+
+    fireEvent.click(screen.getAllByRole('button', { name: /^Refazer/ })[0] as HTMLElement)
+    await waitFor(() => expect(stage.querySelector('clipPath#pin-mask-janela')).toBeTruthy())
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selReleaseMask }))
+    await waitFor(() => expect(stage.querySelector('clipPath')).toBeNull())
+    expect(stage.querySelectorAll('rect[fill="#78dc52"]')).toHaveLength(1)
+    expect(stage.querySelectorAll('ellipse[fill="#00a0c8"]')).toHaveLength(1)
+  })
+
+  it('recusa misturar e apagar uma unidade mascarada com membro trancado', async () => {
+    const [content, source] = maskFixture()
+    if (!content || !source) throw new Error('formas esperadas')
+    const stage = await openWithShapes([
+      { ...content, maskId: 'janela' },
+      { ...source, locked: true },
+    ])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: `Selecionar: ${COPY.vector.shapeNames.ellipse} — ${COPY.vector.maskLayer}`,
+      }),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selEditMask }))
+    await waitFor(() => expect(screen.getByText(COPY.layers.lockedShapeWarning)).toBeTruthy())
+    expect(screen.queryByRole('toolbar', { name: COPY.vector.maskEditMode })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selReleaseMask }))
+    await waitFor(() => expect(stage.querySelector('clipPath#pin-mask-janela')).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selUnite }))
+    await waitFor(() =>
+      expect(screen.getByText(COPY.vector.maskReleaseBeforeGeometry)).toBeTruthy(),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selRemove }))
+    await waitFor(() => expect(screen.getByText(COPY.layers.lockedShapeWarning)).toBeTruthy())
+    expect(stage.querySelector('clipPath#pin-mask-janela')).toBeTruthy()
+
+    const before = stage.querySelector('rect[clip-path="url(#pin-mask-janela)"]')?.getAttribute('x')
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 31, clientX: 70, clientY: 70 })
+    fireEvent.pointerMove(stage, { pointerId: 31, clientX: 100, clientY: 70 })
+    fireEvent.pointerUp(stage, { pointerId: 31, clientX: 100, clientY: 70 })
+    expect(stage.querySelector('rect[clip-path="url(#pin-mask-janela)"]')?.getAttribute('x')).toBe(
+      before,
+    )
+  })
+
+  it('oferece criar e soltar também na barra estreita', async () => {
+    const originalMatchMedia = window.matchMedia
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        dispatchEvent: () => true,
+      }),
+    })
+    try {
+      const stage = await openWithShapes(maskFixture())
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+      marqueeAll(stage)
+      fireEvent.click(await screen.findByRole('button', { name: COPY.vector.selCreateMask }))
+      await waitFor(() => expect(stage.querySelector('clipPath#pin-mask-janela')).toBeTruthy())
+      expect(screen.getByRole('button', { name: COPY.vector.selEditMask })).toBeTruthy()
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.selReleaseMask }))
+      await waitFor(() => expect(stage.querySelector('clipPath')).toBeNull())
+    } finally {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        value: originalMatchMedia,
+      })
+    }
+  })
+})
+
+describe('editar máscara e âncora de rotação', () => {
+  it('move somente a fonte no modo de máscara, conclui e desfaz em uma entrada', async () => {
+    const [content, source] = maskFixture()
+    if (!content || !source) throw new Error('formas esperadas')
+    const stage = await openWithShapes([{ ...content, maskId: 'janela' }, source])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: `Selecionar: ${COPY.vector.shapeNames.ellipse} — ${COPY.vector.maskLayer}`,
+      }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selEditMask }))
+
+    expect(screen.getByRole('toolbar', { name: COPY.vector.maskEditMode })).toBeTruthy()
+    expect(stage.querySelector('[data-mask-guide="janela"]')).toBeTruthy()
+    const contentBefore = stage
+      .querySelector('rect[clip-path="url(#pin-mask-janela)"]')
+      ?.getAttribute('x')
+
+    fireEvent.pointerDown(stage, {
+      isPrimary: true,
+      pointerId: 12,
+      clientX: 70,
+      clientY: 70,
+    })
+    fireEvent.pointerMove(stage, { pointerId: 12, clientX: 100, clientY: 80 })
+    fireEvent.pointerUp(stage, { pointerId: 12, clientX: 100, clientY: 80 })
+    await waitFor(() => {
+      expect(stage.querySelector('clipPath ellipse')?.getAttribute('cx')).toBe('100')
+    })
+    expect(stage.querySelector('rect[clip-path="url(#pin-mask-janela)"]')?.getAttribute('x')).toBe(
+      contentBefore,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.maskEditDone }))
+    expect(screen.queryByRole('toolbar', { name: COPY.vector.maskEditMode })).toBeNull()
+    fireEvent.click(screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLElement)
+    await waitFor(() => {
+      expect(stage.querySelector('clipPath ellipse')?.getAttribute('cx')).toBe('70')
+    })
+  })
+
+  it('Esc sai da edição da máscara sem soltar a relação', async () => {
+    const [content, source] = maskFixture()
+    if (!content || !source) throw new Error('formas esperadas')
+    const stage = await openWithShapes([{ ...content, maskId: 'janela' }, source])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: `Selecionar: ${COPY.vector.shapeNames.ellipse} — ${COPY.vector.maskLayer}`,
+      }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selEditMask }))
+    fireEvent.keyDown(window, { key: 'Escape' })
+    await waitFor(() => {
+      expect(screen.queryByRole('toolbar', { name: COPY.vector.maskEditMode })).toBeNull()
+    })
+    expect(stage.querySelector('clipPath#pin-mask-janela')).toBeTruthy()
+  })
+
+  it('uma fonte escondida continua limitando onde o conteúdo pode ser selecionado', async () => {
+    const [content, source] = maskFixture()
+    if (!content || !source) throw new Error('formas esperadas')
+    const stage = await openWithShapes([
+      { ...content, maskId: 'janela' },
+      { ...source, hidden: true },
+    ])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 21, clientX: 25, clientY: 25 })
+    fireEvent.pointerMove(stage, { pointerId: 21, clientX: 35, clientY: 35 })
+    fireEvent.pointerUp(stage, { pointerId: 21, clientX: 35, clientY: 35 })
+    expect(screen.queryByRole('button', { name: COPY.vector.rotationPivot })).toBeNull()
+
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 22, clientX: 70, clientY: 70 })
+    fireEvent.pointerUp(stage, { pointerId: 22, clientX: 70, clientY: 70 })
+    expect(await screen.findByRole('button', { name: COPY.vector.rotationPivot })).toBeTruthy()
+  })
+
+  it('arrasta a âncora para fora, cancela sem gravar e aceita teclado', async () => {
+    const shape = maskFixture()[0]
+    if (!shape) throw new Error('forma esperada')
+    const stage = await openWithShapes([shape])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage.querySelector('rect[fill="#78dc52"]') as Element, {
+      isPrimary: true,
+      pointerId: 1,
+      clientX: 70,
+      clientY: 70,
+    })
+    fireEvent.pointerUp(stage, { pointerId: 1, clientX: 70, clientY: 70 })
+    const pivot = await screen.findByRole('button', { name: COPY.vector.rotationPivot })
+
+    fireEvent.pointerDown(pivot, {
+      isPrimary: true,
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 70,
+      clientY: 70,
+    })
+    fireEvent.pointerMove(stage, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 150,
+      clientY: 10,
+    })
+    fireEvent.pointerCancel(stage, { pointerId: 7, pointerType: 'touch' })
+    await waitFor(() => expect(pivot.getAttribute('cx')).toBe('70'))
+    expect(
+      (screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLButtonElement).disabled,
+    ).toBe(true)
+
+    fireEvent.pointerDown(pivot, {
+      isPrimary: true,
+      pointerId: 6,
+      clientX: 70,
+      clientY: 70,
+    })
+    fireEvent.pointerUp(stage, { pointerId: 6 })
+    expect(
+      (screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLButtonElement).disabled,
+    ).toBe(true)
+
+    fireEvent.pointerDown(pivot, {
+      isPrimary: true,
+      pointerId: 8,
+      clientX: 70,
+      clientY: 70,
+    })
+    fireEvent.pointerMove(stage, { pointerId: 99, clientX: 190, clientY: 190 })
+    expect(pivot.getAttribute('cx')).toBe('70')
+    fireEvent.pointerMove(stage, { pointerId: 8, clientX: 150, clientY: 10 })
+    fireEvent.pointerUp(stage, { pointerId: 8 })
+    await waitFor(() => {
+      expect(pivot.getAttribute('cx')).toBe('150')
+      expect(pivot.getAttribute('cy')).toBe('10')
+    })
+
+    fireEvent.click(screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLElement)
+    await waitFor(() => expect(pivot.getAttribute('cx')).toBe('70'))
+    fireEvent.click(screen.getAllByRole('button', { name: /^Refazer/ })[0] as HTMLElement)
+    await waitFor(() => expect(pivot.getAttribute('cx')).toBe('150'))
+
+    fireEvent.keyDown(pivot, { key: 'ArrowRight', shiftKey: true })
+    await waitFor(() => expect(pivot.getAttribute('cx')).toBe('160'))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selCenterPivot }))
+    await waitFor(() => expect(pivot.getAttribute('cx')).toBe('70'))
+  })
+
+  it('não expõe a âncora para uma seleção trancada', async () => {
+    const shape = { ...maskFixture({ locked: true })[0], locked: true } as VectorShape
+    await openWithShapes([shape])
+    fireEvent.click(
+      screen.getByRole('button', { name: `Selecionar: ${COPY.vector.shapeNames.rect}` }),
+    )
+    expect(screen.queryByRole('button', { name: COPY.vector.rotationPivot })).toBeNull()
+  })
+})
 
 /** Desenha um retângulo pelo gesto (a ferramenta Retângulo precisa estar ativa). */
 function drawRect(stage: HTMLElement, from: [number, number], to: [number, number]): void {
@@ -785,6 +1397,105 @@ describe('UI vetorial (F5)', () => {
     })
   })
 
+  it('distribuir: centros horizontais mantêm as pontas e um clique repetido não cria desfazer vazio', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [48, 48])
+    drawRect(stage, [112, 16], [144, 48])
+    drawRect(stage, [320, 16], [352, 48])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 111, clientX: 8, clientY: 8 })
+    fireEvent.pointerMove(stage, { pointerId: 111, clientX: 370, clientY: 64 })
+    fireEvent.pointerUp(stage, { pointerId: 111 })
+    const horizontal = await screen.findByRole('button', {
+      name: COPY.vector.distributeCentersH,
+    })
+    const vertical = screen.getByRole('button', { name: COPY.vector.distributeCentersV })
+    expect((horizontal as HTMLButtonElement).disabled).toBe(false)
+    expect((vertical as HTMLButtonElement).disabled).toBe(false)
+    fireEvent.click(horizontal)
+    await waitFor(() => {
+      const xs = [...stage.querySelectorAll('rect[fill="#78dc52"]')].map((rect) =>
+        rect.getAttribute('x'),
+      )
+      expect(xs).toEqual(['16', '168', '320'])
+    })
+    fireEvent.click(horizontal)
+    fireEvent.click(screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLElement)
+    await waitFor(() => {
+      const xs = [...stage.querySelectorAll('rect[fill="#78dc52"]')].map((rect) =>
+        rect.getAttribute('x'),
+      )
+      expect(xs).toEqual(['16', '112', '320'])
+    })
+  })
+
+  it('distribuir: com uma forma os dois comandos ficam indisponíveis', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [48, 48])
+    const horizontal = await screen.findByRole('button', {
+      name: COPY.vector.distributeCentersH,
+    })
+    const vertical = screen.getByRole('button', { name: COPY.vector.distributeCentersV })
+    expect((horizontal as HTMLButtonElement).disabled).toBe(true)
+    expect((vertical as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('distribuir: centros verticais mantêm as pontas e a posição horizontal', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [48, 48])
+    drawRect(stage, [16, 112], [48, 144])
+    drawRect(stage, [16, 320], [48, 352])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 112, clientX: 8, clientY: 8 })
+    fireEvent.pointerMove(stage, { pointerId: 112, clientX: 64, clientY: 370 })
+    fireEvent.pointerUp(stage, { pointerId: 112 })
+    const vertical = await screen.findByRole('button', { name: COPY.vector.distributeCentersV })
+    fireEvent.click(vertical)
+    await waitFor(() => {
+      const rects = [...stage.querySelectorAll('rect[fill="#78dc52"]')]
+      expect(rects.map((rect) => rect.getAttribute('y'))).toEqual(['16', '168', '320'])
+      expect(rects.map((rect) => rect.getAttribute('x'))).toEqual(['16', '16', '16'])
+    })
+  })
+
+  it('distribuir: os comandos aparecem na barra de seleção do toque', async () => {
+    const originalMatchMedia = window.matchMedia
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        dispatchEvent: () => true,
+      }),
+    })
+    try {
+      await openVectorEditor()
+      const stage = measureStage()
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+      drawRect(stage, [16, 16], [48, 48])
+      const bar = await screen.findByRole('toolbar', { name: COPY.vector.selectionBar })
+      expect(bar.className).toContain('pin-float')
+      expect(within(bar).getByRole('button', { name: COPY.vector.distributeCentersH })).toBeTruthy()
+      expect(within(bar).getByRole('button', { name: COPY.vector.distributeCentersV })).toBeTruthy()
+    } finally {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        value: originalMatchMedia,
+      })
+    }
+  })
+
   it('slider de cantos arredondados aplica o raio no retângulo selecionado', async () => {
     await openVectorEditor()
     const stage = measureStage()
@@ -1067,6 +1778,27 @@ describe('editar os pontos do vetor', () => {
     [...stage.querySelectorAll('circle[data-handle]')] as SVGCircleElement[]
   const chosenNodes = (stage: HTMLElement): SVGCircleElement[] =>
     nodeCircles(stage).filter((c) => c.getAttribute('fill') === '#00a0c8')
+
+  it('edita os pontos de um círculo pronto e desfaz para a forma original', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.ellipse }))
+    drawRect(stage, [50, 50], [150, 150])
+    startNodeEditing()
+    await waitFor(() => expect(nodeCircles(stage)).toHaveLength(4))
+    expect(stage.querySelector('ellipse')).toBeTruthy()
+
+    const top = nodeCircles(stage)[0]
+    if (!top) throw new Error('círculo sem ponto superior')
+    fireEvent.pointerDown(top, { isPrimary: true, pointerId: 44, clientX: 100, clientY: 50 })
+    fireEvent.pointerMove(stage, { pointerId: 44, clientX: 100, clientY: 35 })
+    fireEvent.pointerUp(stage, { pointerId: 44 })
+    await waitFor(() => expect(stage.querySelector('path[d]')).toBeTruthy())
+    expect(stage.querySelector('ellipse')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => expect(stage.querySelector('ellipse')).toBeTruthy())
+  })
 
   it('mostra um no por ponto e a caixa de selecao escolhe VARIOS', async () => {
     await openVectorEditor()
@@ -1627,7 +2359,7 @@ describe('Misturar formas (pathfinder)', () => {
       expect(screen.getByText(COPY.vector.pathfinderSkips)).toBeTruthy()
     })
     expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(1)
-    expect(stage.querySelectorAll('line').length).toBe(1)
+    expect(stage.querySelectorAll('line:not([pointer-events])').length).toBe(1)
   })
 
   it('recusa quando as formas NÃO se encostam', async () => {
@@ -1650,13 +2382,15 @@ describe('Misturar formas (pathfinder)', () => {
     expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
   })
 
-  it('⭐ a faixa dos pontos EXPLICA em vez de sumir', async () => {
+  it('⭐ a faixa dos pontos explica por que texto não tem nós', async () => {
     await openVectorEditor()
     const stage = measureStage()
-    // Um retângulo já não se edita por pontos: antes deste lote a faixa inteira
-    // sumia em silêncio, o que lia como "quebrou".
-    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
-    drawRect(stage, [16, 16], [80, 80])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    fireEvent.pointerDown(stage, { isPrimary: true, clientX: 40, clientY: 40 })
+    fireEvent.change(await screen.findByPlaceholderText(COPY.vector.textPlaceholder), {
+      target: { value: 'Olá!' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.reshape }))
     await waitFor(() => {
       expect(screen.getByRole('toolbar', { name: COPY.vector.nodeBar })).toBeTruthy()
@@ -1892,7 +2626,11 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
     expect(stage.querySelectorAll('rect[fill="#ff2121"]').length).toBe(1)
   })
 
-  it('figura de pixel art avisa que não tem uma cor só e continua na captura', async () => {
+  const FIGURA_SRC =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+
+  /** Abre um cenário com UMA figura (pixel art trazida para dentro do vetor) em 200..300. */
+  async function openComFigura(): Promise<void> {
     await openVectorEditor(
       undefined,
       async (seed) => {
@@ -1909,7 +2647,7 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
                 y: 200,
                 w: 100,
                 h: 100,
-                src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                src: FIGURA_SRC,
                 fill: 'none',
                 stroke: null,
                 opacity: 1,
@@ -1921,6 +2659,83 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
       },
       'figura',
     )
+  }
+
+  /**
+   * Dubla `createImageBitmap` e o canvas 2D (happy-dom não tem nenhum dos dois),
+   * então o `imageSampler` de produção roda inteiro. O contexto é um Proxy com
+   * no-op no que não é usado: nada mais do editor pode quebrar por causa daqui.
+   */
+  function installImageStub(pixel: [number, number, number, number]): {
+    decodes: () => number
+    restore: () => void
+  } {
+    const contextDescriptor = Object.getOwnPropertyDescriptor(
+      HTMLCanvasElement.prototype,
+      'getContext',
+    )
+    const bitmapDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'createImageBitmap')
+    let decodes = 0
+    const base: Record<string, unknown> = {
+      imageSmoothingEnabled: true,
+      clearRect: () => {},
+      drawImage: () => {},
+      getImageData: () => ({ data: Uint8ClampedArray.from(pixel) }),
+      createImageData: (w: number, h: number) => ({
+        data: new Uint8ClampedArray(Math.max(0, w) * Math.max(0, h) * 4),
+        width: w,
+        height: h,
+      }),
+    }
+    const context = new Proxy(base, {
+      get: (target, prop: string) => (prop in target ? target[prop] : () => undefined),
+      set: (target, prop: string, value) => {
+        target[prop] = value
+        return true
+      },
+    })
+    Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+      configurable: true,
+      value: () => context,
+    })
+    Object.defineProperty(globalThis, 'createImageBitmap', {
+      configurable: true,
+      value: async () => {
+        decodes += 1
+        return { width: 4, height: 4, close: () => {} } as unknown as ImageBitmap
+      },
+    })
+    return {
+      decodes: () => decodes,
+      restore: () => {
+        if (contextDescriptor) {
+          Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', contextDescriptor)
+        } else Reflect.deleteProperty(HTMLCanvasElement.prototype, 'getContext')
+        if (bitmapDescriptor) {
+          Object.defineProperty(globalThis, 'createImageBitmap', bitmapDescriptor)
+        } else Reflect.deleteProperty(globalThis, 'createImageBitmap')
+      },
+    }
+  }
+
+  function figuraNoPalco(stage: HTMLElement): Element {
+    const el = stage.querySelector('image')
+    if (!el) throw new Error('figura esperada')
+    return el
+  }
+
+  /** O quadradinho do canal na caixa (o `title` o distingue dos swatches da paleta). */
+  function slotName(channel: string, name: string): HTMLElement | undefined {
+    return screen
+      .queryAllByRole('button', { name: `${channel}: ${name}` })
+      .find((button) => button.getAttribute('title') === channel)
+  }
+
+  it('a figura que não abre neste ambiente avisa e CONTINUA na captura', async () => {
+    // ⚠️ O nome NÃO é "sem canvas": em happy-dom o `getContext('2d')` é null, mas
+    // quem barra antes é o `createImageBitmap`, que LANÇA com um Blob. O caminho
+    // exercitado aqui é a LÁPIDE.
+    await openComFigura()
     const stage = measureStage()
     fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
     drawRect(stage, [16, 16], [64, 64])
@@ -1928,13 +2743,239 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
       expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(1)
     })
     await startPicking('from')
-    const figuraEl = stage.querySelector('image')
-    if (!figuraEl) throw new Error('figura esperada')
-    fireEvent.pointerDown(figuraEl, { isPrimary: true, pointerId: 1, clientX: 250, clientY: 250 })
-    expect(await screen.findByText(COPY.vector.pickColorNoColor)).toBeTruthy()
+    fireEvent.pointerDown(figuraNoPalco(stage), {
+      isPrimary: true,
+      pointerId: 1,
+      clientX: 250,
+      clientY: 250,
+    })
+    expect(await screen.findByText(COPY.vector.pickColorFigureFailed)).toBeTruthy()
     expect(screen.getByText(COPY.vector.pickColorHint)).toBeTruthy()
     expect(pressed(COPY.tools.picker)).toBe('true')
     expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('a mesma figura com a ferramenta solta também avisa (e não apaga a cor)', async () => {
+    await openComFigura()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.picker }))
+    await waitFor(() => {
+      expect(pressed(COPY.tools.picker)).toBe('true')
+    })
+    fireEvent.pointerDown(figuraNoPalco(stage), {
+      isPrimary: true,
+      pointerId: 1,
+      clientX: 250,
+      clientY: 250,
+    })
+    expect(await screen.findByText(COPY.vector.pickColorFigureFailed)).toBeTruthy()
+    // O quadradinho fica como estava: figura que não abre não apaga cor nenhuma.
+    expect(slotName(COPY.vector.fill, COPY.vector.none)).toBeUndefined()
+  })
+
+  it('a captura pega a COR DO PIXEL da figura e monta o degradê com ela', async () => {
+    const stub = installImageStub([255, 146, 33, 255])
+    try {
+      await openComFigura()
+      const stage = measureStage()
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+      drawRect(stage, [16, 16], [64, 64])
+      await waitFor(() => {
+        expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(1)
+      })
+      await startPicking('from')
+      // A pré-carga é do EFEITO do palco, disparada ao ligar o conta-gotas.
+      await waitFor(() => {
+        expect(stub.decodes()).toBe(1)
+      })
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 1,
+        clientX: 250,
+        clientY: 250,
+      })
+      await waitFor(() => {
+        expect(document.querySelectorAll('stop[stop-color="#ff9221"]').length).toBeGreaterThan(0)
+      })
+      expect(screen.queryByText(COPY.vector.pickColorFigureLoading)).toBeNull()
+    } finally {
+      stub.restore()
+    }
+  })
+
+  it('o conta-gotas comum leva a cor do pixel para o CANAL ativo (e não apaga mais a cor)', async () => {
+    const stub = installImageStub([255, 146, 33, 255])
+    try {
+      await openComFigura()
+      const stage = measureStage()
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.picker }))
+      await waitFor(() => {
+        expect(stub.decodes()).toBe(1)
+      })
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 1,
+        clientX: 250,
+        clientY: 250,
+      })
+      // Antes deste lote a figura adotava o estilo dela (`fill: 'none'`) e o
+      // quadradinho virava "sem cor" em silêncio: era o "não está funcionando".
+      await waitFor(() => {
+        expect(slotName(COPY.vector.fill, '#ff9221')).toBeTruthy()
+      })
+      expect(slotName(COPY.vector.fill, COPY.vector.none)).toBeUndefined()
+      // ⚠️ Anti-vácuo do defeito ORIGINAL: o `adoptStyle` antigo levava junto o
+      // `stroke: null` da figura e zerava o contorno. Ele fica intacto.
+      expect(slotName(COPY.vector.stroke, 'preto')).toBeTruthy()
+      // Leitor de tela: o sucesso era mudo, e o hex seria lido letra a letra.
+      expect(
+        screen.getByText(
+          COPY.vector.pickedColorAnnounce(COPY.vector.fill, COPY.vector.colorApprox('laranja')),
+        ),
+      ).toBeTruthy()
+    } finally {
+      stub.restore()
+    }
+  })
+
+  it('⭐ com o CONTORNO ativo, a cor do pixel vai para o contorno', async () => {
+    const stub = installImageStub([255, 146, 33, 255])
+    try {
+      await openComFigura()
+      const stage = measureStage()
+      // Troca o canal ativo ANTES de pegar (sem isso, uma implementação que
+      // sempre escreve no preenchimento passaria no teste de cima).
+      const contorno = slotName(COPY.vector.stroke, 'preto')
+      if (!contorno) throw new Error('slot de contorno esperado')
+      fireEvent.click(contorno)
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.picker }))
+      await waitFor(() => {
+        expect(stub.decodes()).toBe(1)
+      })
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 1,
+        clientX: 250,
+        clientY: 250,
+      })
+      await waitFor(() => {
+        expect(slotName(COPY.vector.stroke, '#ff9221')).toBeTruthy()
+      })
+      // O preenchimento não se mexeu.
+      expect(slotName(COPY.vector.fill, 'verde')).toBeTruthy()
+    } finally {
+      stub.restore()
+    }
+  })
+
+  it('pixel transparente da figura arma o "sem cor" E avisa (e na captura não vale)', async () => {
+    const stub = installImageStub([10, 20, 30, 0])
+    try {
+      await openComFigura()
+      const stage = measureStage()
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.picker }))
+      await waitFor(() => {
+        expect(stub.decodes()).toBe(1)
+      })
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 1,
+        clientX: 250,
+        clientY: 250,
+      })
+      await waitFor(() => {
+        expect(slotName(COPY.vector.fill, COPY.vector.none)).toBeTruthy()
+      })
+      // Calado, "sem cor" seria indistinguível do defeito antigo.
+      expect(screen.getByText(COPY.vector.pickColorFigureHole)).toBeTruthy()
+      // Na captura, uma ponta de degradê precisa de cor: recado PRÓPRIO.
+      await startPicking('from')
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 2,
+        clientX: 250,
+        clientY: 250,
+      })
+      expect(await screen.findByText(COPY.vector.pickColorFigureHoleTake)).toBeTruthy()
+      expect(pressed(COPY.tools.picker)).toBe('true')
+    } finally {
+      stub.restore()
+    }
+  })
+
+  it('⭐ mexer na figura DEPOIS de pegar a cor não zera o quadradinho', async () => {
+    const stub = installImageStub([255, 146, 33, 255])
+    try {
+      await openComFigura()
+      const stage = measureStage()
+      // Seleciona a FIGURA: é ela que vira a fonte do efeito que sincroniza o
+      // estilo — e uma figura não tem estilo nenhum para oferecer.
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 1,
+        clientX: 250,
+        clientY: 250,
+      })
+      fireEvent.pointerUp(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 1,
+        clientX: 250,
+        clientY: 250,
+      })
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.picker }))
+      await waitFor(() => {
+        expect(stub.decodes()).toBe(1)
+      })
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 2,
+        clientX: 250,
+        clientY: 250,
+      })
+      await waitFor(() => {
+        expect(slotName(COPY.vector.fill, '#ff9221')).toBeTruthy()
+      })
+      // Arrastar a figura COMMITA: o `styleSource` vira um objeto novo e o efeito
+      // de sincronização rodava, copiando o "nada" da figura por cima da cor.
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+      fireEvent.pointerDown(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 3,
+        clientX: 250,
+        clientY: 250,
+      })
+      fireEvent.pointerMove(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 3,
+        clientX: 262,
+        clientY: 262,
+      })
+      fireEvent.pointerUp(figuraNoPalco(stage), {
+        isPrimary: true,
+        pointerId: 3,
+        clientX: 262,
+        clientY: 262,
+      })
+      await waitFor(() => {
+        expect(stage.querySelector('image')?.getAttribute('x')).not.toBe('200')
+      })
+      expect(slotName(COPY.vector.fill, '#ff9221')).toBeTruthy()
+      expect(slotName(COPY.vector.stroke, 'preto')).toBeTruthy()
+    } finally {
+      stub.restore()
+    }
+  })
+
+  it('conta-gotas no VAZIO do palco avisa em vez de ficar mudo (nos dois modos)', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.picker }))
+    await waitFor(() => {
+      expect(pressed(COPY.tools.picker)).toBe('true')
+    })
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 400, clientY: 330 })
+    expect(await screen.findByText(COPY.vector.pickColorMiss)).toBeTruthy()
   })
 
   it('reabrir o Degradê no meio da captura e pedir a OUTRA ponta: a última pedida vence', async () => {
@@ -3067,7 +4108,7 @@ describe('arrastar formas: a revisão do lote (06/09/2026)', () => {
 })
 
 /**
- * A faixa da seleção mede o MESMO em todos os ramos (54px: `py-1` + `border-b-2`
+ * A faixa da seleção mede o MESMO em todos os ramos (53px: `py-1` + `border-b`
  * na moldura, `min-h-11` no miolo). O ramo dos pontos tinha o `min-h-11` no
  * contêiner (44px com border-box) e o palco pulava 10px ao escolher uma forma
  * sem pontos editáveis.
@@ -3085,7 +4126,7 @@ describe('a faixa da seleção: uma moldura só (06/09/2026)', () => {
   function expectSameFrame(): void {
     const { outer, inner } = frame()
     expect(outer.classList.contains('py-1')).toBe(true)
-    expect(outer.classList.contains('border-b-2')).toBe(true)
+    expect(outer.classList.contains('border-b')).toBe(true)
     expect(outer.classList.contains('min-h-11')).toBe(false)
     expect(inner.classList.contains('min-h-11')).toBe(true)
     expect(inner.classList.contains('flex')).toBe(true)
@@ -3108,7 +4149,7 @@ describe('a faixa da seleção: uma moldura só (06/09/2026)', () => {
     expectSameFrame()
   })
 
-  it('com seleção: a toolbar, na mesma moldura (e a forma sem pontos editáveis idem)', async () => {
+  it('com seleção: a toolbar, na mesma moldura, com pontos no retângulo', async () => {
     await openVectorEditor()
     const stage = measureStage()
     fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
@@ -3117,12 +4158,735 @@ describe('a faixa da seleção: uma moldura só (06/09/2026)', () => {
       expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
     })
     expectSameFrame()
-    // Ferramenta de pontos com um retângulo escolhido: a faixa explica, na mesma altura.
+    // Ferramenta de pontos com um retângulo escolhido: a faixa e os nós aparecem.
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.reshape }))
     await waitFor(() => {
       expect(screen.getByRole('toolbar', { name: COPY.vector.nodeBar })).toBeTruthy()
     })
-    expect(screen.getByText(COPY.vector.nodeUneditable)).toBeTruthy()
+    expect(stage.querySelectorAll('circle[data-node]')).toHaveLength(4)
+    expect(screen.queryByText(COPY.vector.nodeUneditable)).toBeNull()
     expectSameFrame()
+  })
+})
+
+/**
+ * 18/09/2026 — "não estou conseguindo editar um texto, quando seleciono para editar ele apaga".
+ * Eram DOIS caminhos com o mesmo sintoma: a ferramenta Texto atravessava o texto e abria a
+ * janela vazia (nascendo um segundo texto por cima), e o duplo clique num texto pequeno morria
+ * nas alças, que ainda o encolhiam com a tremida do segundo clique.
+ */
+describe('editar um texto no vetor', () => {
+  // ⚠ A alça é `rect[width="14"]` (14px de tela em zoom 1), NUNCA `rect[stroke="#00a0c8"]`:
+  // esse seletor casa PRIMEIRO com a moldura tracejada da seleção, que é `pointerEvents: none`
+  // e deixa o toque descer ao palco — virava um laço, e o solto limpava a seleção.
+  async function criarTexto(stage: HTMLElement, conteudo: string): Promise<void> {
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 120, clientY: 120 })
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.textPrompt)).toBeTruthy()
+    })
+    fireEvent.change(screen.getByPlaceholderText(COPY.vector.textPlaceholder), {
+      target: { value: conteudo },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.textContent).toBe(conteudo)
+    })
+  }
+
+  it('a ferramenta Texto sobre um texto que já existe EDITA aquele texto, com o conteúdo dentro', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage, 'Oi')
+    // O gesto intuitivo: pegar a ferramenta de escrever e tocar na palavra.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 2, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.editText)).toBeTruthy()
+    })
+    // ⚠️ O anti-vácuo desta feature: antes a janela abria com o campo VAZIO.
+    const campo = screen.getByPlaceholderText(COPY.vector.textPlaceholder) as HTMLTextAreaElement
+    expect(campo.value).toBe('Oi')
+    fireEvent.change(campo, { target: { value: 'Olá' } })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.saveText }))
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.textContent).toBe('Olá')
+    })
+    // E não nasceu um segundo texto por cima do primeiro.
+    expect(stage.querySelectorAll('text').length).toBe(1)
+  })
+
+  it('o duplo clique vale mesmo quando a ALÇA rouba o segundo clique', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage, 'Oi')
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    // 1º clique: seleciona (e é isso que faz nascerem as alças por cima do glifo).
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 3, clientX: 122, clientY: 122 })
+    fireEvent.pointerUp(textEl, { isPrimary: true, pointerId: 3, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(stage.querySelector('rect[width="14"]')).toBeTruthy()
+    })
+    // O navegador dispara o `dblclick` no ancestral comum quando os dois cliques têm alvos
+    // diferentes — ou seja, no `<svg>`, e não no `<text>`.
+    fireEvent.doubleClick(stage, { clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.editText)).toBeTruthy()
+    })
+    const campo = screen.getByPlaceholderText(COPY.vector.textPlaceholder) as HTMLTextAreaElement
+    expect(campo.value).toBe('Oi')
+  })
+
+  it('duplo clique LONGE do texto selecionado não abre a janela', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage, 'Oi')
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 4, clientX: 122, clientY: 122 })
+    fireEvent.pointerUp(textEl, { isPrimary: true, pointerId: 4, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(stage.querySelector('rect[width="14"]')).toBeTruthy()
+    })
+    fireEvent.doubleClick(stage, { clientX: 420, clientY: 330 })
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(screen.queryByText(COPY.vector.editText)).toBeNull()
+  })
+
+  it('tremida de 2px numa alça NÃO encolhe o texto: alça pede arrasto de verdade', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage, 'Oi')
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 5, clientX: 122, clientY: 122 })
+    fireEvent.pointerUp(textEl, { isPrimary: true, pointerId: 5, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(stage.querySelector('rect[width="14"]')).toBeTruthy()
+    })
+    const antes = stage.querySelector('text')?.getAttribute('font-size')
+    const alca = stage.querySelector('rect[width="14"]')
+    if (!alca) throw new Error('alça esperada')
+    fireEvent.pointerDown(alca, { isPrimary: true, pointerId: 6, clientX: 140, clientY: 140 })
+    fireEvent.pointerMove(stage, { isPrimary: true, pointerId: 6, clientX: 142, clientY: 141 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 6, clientX: 142, clientY: 141 })
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(stage.querySelector('text')?.getAttribute('font-size')).toBe(antes ?? null)
+    // ⚠ Sonda: o texto segue selecionado e a alça segue na tela (a tremida não é um "toque"
+    // que desfaz a seleção — se fosse, o anti-vácuo abaixo passaria por não achar a alça).
+    expect(stage.querySelector('rect[width="14"]')).toBeTruthy()
+  })
+
+  it('e um arrasto DE VERDADE na mesma alça continua redimensionando (anti-vácuo)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage, 'Oi')
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 8, clientX: 122, clientY: 122 })
+    fireEvent.pointerUp(textEl, { isPrimary: true, pointerId: 8, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(stage.querySelector('rect[width="14"]')).toBeTruthy()
+    })
+    const antes = stage.querySelector('text')?.getAttribute('font-size')
+    const alca = stage.querySelector('rect[width="14"]')
+    if (!alca) throw new Error('alça esperada')
+    fireEvent.pointerDown(alca, { isPrimary: true, pointerId: 9, clientX: 140, clientY: 140 })
+    fireEvent.pointerMove(stage, { isPrimary: true, pointerId: 9, clientX: 200, clientY: 200 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 9, clientX: 200, clientY: 200 })
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.getAttribute('font-size')).not.toBe(antes ?? null)
+    })
+  })
+})
+
+/**
+ * Achados do full review de 18/09/2026 sobre a edição de texto no vetor.
+ */
+describe('editar um texto no vetor: os consertos do full review', () => {
+  async function criarTexto(stage: HTMLElement): Promise<void> {
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 20, clientX: 200, clientY: 200 })
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.textPrompt)).toBeTruthy()
+    })
+    fireEvent.change(screen.getByPlaceholderText(COPY.vector.textPlaceholder), {
+      target: { value: 'Oi' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.textContent).toBe('Oi')
+    })
+  }
+
+  it('texto TRANCADO com a ferramenta Texto avisa, e NÃO cria outro por cima', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage)
+    // Tranca pelo painel Camadas (o caminho da criança).
+    fireEvent.click(screen.getByRole('button', { name: /^Trancar: Texto/ }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 22, clientX: 202, clientY: 202 })
+    await waitFor(() => {
+      expect(screen.getByText(COPY.layers.lockedShapeWarning)).toBeTruthy()
+    })
+    // ⚠️ O anti-vácuo: sem a guarda o clique ATRAVESSAVA e nascia um segundo texto por cima.
+    expect(screen.queryByText(COPY.vector.textPrompt)).toBeNull()
+    expect(stage.querySelectorAll('text').length).toBe(1)
+  })
+
+  it('e a alça de GIRAR tem o mesmo limiar: tremida não gira a forma', async () => {
+    // ⚠ O latch é lido nos DOIS ramos (redimensionar e girar), e só o primeiro tinha teste
+    // (achado do full review de 18/09/2026): tirar a linha do `rotate` era mutante sobrevivente.
+    // E a alça de girar é ainda menor que as de redimensionar.
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage)
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 30, clientX: 122, clientY: 122 })
+    fireEvent.pointerUp(textEl, { isPrimary: true, pointerId: 30, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(stage.querySelector('circle[data-rotate]')).toBeTruthy()
+    })
+    const antes = stage.querySelector('text')?.getAttribute('transform') ?? null
+    const girar = stage.querySelector('circle[data-rotate]')
+    if (!girar) throw new Error('alça de girar esperada')
+    fireEvent.pointerDown(girar, { isPrimary: true, pointerId: 31, clientX: 140, clientY: 100 })
+    fireEvent.pointerMove(stage, { isPrimary: true, pointerId: 31, clientX: 142, clientY: 101 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 31, clientX: 142, clientY: 101 })
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(stage.querySelector('text')?.getAttribute('transform') ?? null).toBe(antes)
+  })
+
+  it('e um giro DE VERDADE continua girando (anti-vácuo)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await criarTexto(stage)
+    const textEl = stage.querySelector('text')
+    if (!textEl) throw new Error('texto esperado')
+    fireEvent.pointerDown(textEl, { isPrimary: true, pointerId: 32, clientX: 122, clientY: 122 })
+    fireEvent.pointerUp(textEl, { isPrimary: true, pointerId: 32, clientX: 122, clientY: 122 })
+    await waitFor(() => {
+      expect(stage.querySelector('circle[data-rotate]')).toBeTruthy()
+    })
+    const antes = stage.querySelector('text')?.getAttribute('transform') ?? null
+    const girar = stage.querySelector('circle[data-rotate]')
+    if (!girar) throw new Error('alça de girar esperada')
+    fireEvent.pointerDown(girar, { isPrimary: true, pointerId: 33, clientX: 140, clientY: 100 })
+    fireEvent.pointerMove(stage, { isPrimary: true, pointerId: 33, clientX: 260, clientY: 260 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 33, clientX: 260, clientY: 260 })
+    await waitFor(() => {
+      expect(stage.querySelector('text')?.getAttribute('transform') ?? null).not.toBe(antes)
+    })
+  })
+})
+
+describe('desenhar formas pequenas: a régua é em px de tela', () => {
+  function undoButton(): HTMLButtonElement {
+    return screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLButtonElement
+  }
+
+  async function openSprite64(): Promise<HTMLElement> {
+    await openVectorEditor(
+      undefined,
+      async (seed) => {
+        await seed.getState().create({ kind: 'vector-sprite', name: 'heroi-v', frameSize: 64 })
+      },
+      'heroi-v',
+    )
+    // Quadro de 64 medido como se estivesse em zoom 8: os clientX/Y são px de TELA.
+    return measureStage(8, { width: 64, height: 64 })
+  }
+
+  it('uma linha de 12 px de tela nasce num quadro de 64 em zoom 8 (antes o corte era 16 px)', async () => {
+    const stage = await openSprite64()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.line }))
+    // Um ÚNICO move e o solto no mesmo turno: a forma sai do gesto, não do render.
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 92, clientY: 80 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      const line = stage.querySelector('line[x1="10"]')
+      expect(line?.getAttribute('x2')).toBe('11.5')
+      expect(line?.getAttribute('y2')).toBe('10')
+    })
+    expect(undoButton().disabled).toBe(false)
+  })
+
+  it('toque parado com a Linha não cria nada (nem entrada de undo)', async () => {
+    const stage = await openSprite64()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.line }))
+    const antes = stage.querySelectorAll('line').length
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 81, clientY: 80 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await Promise.resolve()
+    expect(stage.querySelectorAll('line').length).toBe(antes)
+    expect(undoButton().disabled).toBe(true)
+  })
+
+  it('um retângulo de 2 x 40 px de tela nasce (a caixa fina não é toque)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [30, 30], [32, 70])
+    await waitFor(() => {
+      const rect = stage.querySelector('rect[fill="#78dc52"]')
+      expect(rect?.getAttribute('width')).toBe('2')
+      expect(rect?.getAttribute('height')).toBe('40')
+    })
+  })
+
+  it('o polígono no toque parado não nasce degenerado', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.polygon }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 100 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await Promise.resolve()
+    expect(stage.querySelector('polygon')).toBeNull()
+    expect(undoButton().disabled).toBe(true)
+  })
+
+  it('com a grade ligada, um arrasto menor que meio espaçamento não colapsa a linha', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.line }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.grid }))
+    // 480×360 → grade de 16: (30,30) encaixa em (32,32) e (34,30) TAMBÉM em (32,32).
+    // O começo fica na grade; o fim escapa dela, porque a mão andou.
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 30, clientY: 30 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 34, clientY: 30 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      const line = stage.querySelector('line[x1="32"]')
+      expect(line?.getAttribute('y1')).toBe('32')
+      expect(line?.getAttribute('x2')).toBe('34')
+      expect(line?.getAttribute('y2')).toBe('30')
+    })
+  })
+
+  it('em zoom 16 um move de 4 px atualiza a prévia: a decimação é só do pincel', async () => {
+    await openVectorEditor()
+    for (let i = 0; i < 5; i += 1) {
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.zoomIn }))
+    }
+    const stage = measureStage(16)
+    await waitFor(() => expect(stage.getAttribute('width')).toBe(String(480 * 16)))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.line }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 100 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 104, clientY: 100 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      const line = stage.querySelector('line[x1="6.25"]')
+      expect(line?.getAttribute('x2')).toBe('6.5')
+    })
+  })
+
+  it('a linha pequena recém-criada não ganha alças: o próximo toque ao lado desenha OUTRA linha', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.line }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 100 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 112, clientY: 100 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => expect(stage.querySelectorAll('line[x1="100"]').length).toBe(1))
+    // Selecionada (moldura) mas sem as oito alças nem a de girar: 12 px é menor que 40.
+    expect(stage.querySelectorAll('[data-handle]').length).toBe(0)
+    expect(stage.querySelector('[data-rotate]')).toBeNull()
+    // O segundo gesto começa onde uma alça estaria (5 px abaixo do meio da linha).
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 106, clientY: 105 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 118, clientY: 105 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => expect(stage.querySelectorAll('line[y1="105"]').length).toBe(1))
+    expect(stage.querySelectorAll('line[x1="100"]').length).toBe(1)
+  })
+
+  it('uma forma grande recém-desenhada continua com as alças (ajuste na hora)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [30, 30], [130, 130])
+    await waitFor(() => expect(stage.querySelectorAll('[data-handle]').length).toBe(8))
+    expect(stage.querySelector('[data-rotate]')).toBeTruthy()
+  })
+})
+
+describe('régua do palco (só no vetor)', () => {
+  function rulerX(): Element | null {
+    return document.querySelector('[data-stage-ruler="x"]')
+  }
+
+  function labelsOf(axis: 'x' | 'y'): string[] {
+    return Array.from(
+      document.querySelectorAll(`[data-stage-ruler="${axis}"] [data-ruler-label]`),
+    ).map((node) => node.getAttribute('data-ruler-label') ?? '')
+  }
+
+  it('nasce ligada, decorativa, com um rótulo a cada 64 no cenário de 480 em zoom 1', async () => {
+    await openVectorEditor()
+    const x = rulerX()
+    expect(x?.getAttribute('aria-hidden')).toBe('true')
+    expect(document.querySelector('[data-stage-ruler="y"]')?.getAttribute('aria-hidden')).toBe(
+      'true',
+    )
+    expect(labelsOf('x')).toEqual(['0', '64', '128', '192', '256', '320', '384', '448'])
+    expect(labelsOf('y')).toEqual(['0', '64', '128', '192', '256', '320'])
+  })
+
+  it('o botão "Régua" esconde e mostra; Shift+R faz o mesmo', async () => {
+    await openVectorEditor()
+    expect(rulerX()).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rulers }))
+    await waitFor(() => expect(rulerX()).toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rulers }))
+    await waitFor(() => expect(rulerX()).toBeTruthy())
+    fireEvent.keyDown(document.body, { key: 'R', shiftKey: true })
+    await waitFor(() => expect(rulerX()).toBeNull())
+    fireEvent.keyDown(document.body, { key: 'R', shiftKey: true })
+    await waitFor(() => expect(rulerX()).toBeTruthy())
+  })
+
+  it('aproximar troca os rótulos (o passo acompanha o zoom)', async () => {
+    await openVectorEditor()
+    expect(labelsOf('x')).not.toContain('4')
+    for (let i = 0; i < 5; i += 1) {
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.zoomIn }))
+    }
+    await waitFor(() => expect(labelsOf('x').slice(0, 3)).toEqual(['0', '4', '8']))
+  })
+
+  it('a div rolável do palco mora na célula das réguas (as barras flutuantes nascem abaixo da régua)', async () => {
+    await openVectorEditor()
+    const svg = screen.getByRole('img', { name: 'Área de desenho' })
+    const scroller = svg.parentElement?.parentElement
+    expect(scroller?.className).toContain('overflow-auto')
+    expect(scroller?.parentElement?.parentElement?.className).toContain('pin-rulers')
+  })
+
+  it('na tela estreita não há régua, mesmo ligada', async () => {
+    const originalMatchMedia = window.matchMedia
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        dispatchEvent: () => true,
+      }),
+    })
+    try {
+      await openVectorEditor()
+      expect(rulerX()).toBeNull()
+      expect(document.querySelector('.pin-rulers')).toBeNull()
+    } finally {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        value: originalMatchMedia,
+      })
+    }
+  })
+})
+
+describe('guias: nascem da régua, valem só na sessão e não encaixam nada', () => {
+  function undoButton(): HTMLButtonElement {
+    return screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLButtonElement
+  }
+
+  /** Puxa uma guia HORIZONTAL da régua de cima até `y` px de tela. */
+  function pullGuideFromTop(y: number, pointerId = 1): void {
+    const ruler = document.querySelector('[data-stage-ruler="x"]') as Element
+    fireEvent.pointerDown(ruler, { isPrimary: true, pointerId, clientX: 100, clientY: 0 })
+    fireEvent.pointerMove(document, { pointerId, clientX: 100, clientY: y })
+    fireEvent.pointerUp(document, { pointerId, clientX: 100, clientY: y })
+  }
+
+  function guideLine(guide: Element): SVGLineElement {
+    return guide.querySelector('line[stroke="#d946ef"]') as SVGLineElement
+  }
+
+  async function openWithGuide(): Promise<HTMLElement> {
+    await openVectorEditor()
+    const stage = measureStage()
+    measureScroll()
+    pullGuideFromTop(80)
+    await waitFor(() => expect(stage.querySelector('[data-guide]')).toBeTruthy())
+    return stage
+  }
+
+  it('arrastar da régua de cima cria uma guia horizontal, sem entrada de undo', async () => {
+    const stage = await openWithGuide()
+    const guide = stage.querySelector('[data-guide]') as Element
+    expect(guide.getAttribute('data-guide-axis')).toBe('y')
+    expect(guideLine(guide).getAttribute('y1')).toBe('80')
+    expect(guideLine(guide).getAttribute('x2')).toBe('480')
+    expect(undoButton().disabled).toBe(true)
+    // A fantasma some ao soltar.
+    expect(stage.querySelector('[data-guide-ghost]')).toBeNull()
+  })
+
+  it('a régua da esquerda cria uma guia vertical', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    measureScroll()
+    const ruler = document.querySelector('[data-stage-ruler="y"]') as Element
+    fireEvent.pointerDown(ruler, { isPrimary: true, pointerId: 1, clientX: 0, clientY: 100 })
+    fireEvent.pointerMove(document, { pointerId: 1, clientX: 60, clientY: 100 })
+    fireEvent.pointerUp(document, { pointerId: 1, clientX: 60, clientY: 100 })
+    await waitFor(() => expect(stage.querySelector('[data-guide-axis="x"]')).toBeTruthy())
+    const guide = stage.querySelector('[data-guide-axis="x"]') as Element
+    expect(guideLine(guide).getAttribute('x1')).toBe('60')
+  })
+
+  it('soltar fora do palco cancela (nada nasce)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    measureScroll()
+    const ruler = document.querySelector('[data-stage-ruler="x"]') as Element
+    fireEvent.pointerDown(ruler, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 0 })
+    fireEvent.pointerMove(document, { pointerId: 1, clientX: 100, clientY: 80 })
+    await waitFor(() => expect(stage.querySelector('[data-guide-ghost]')).toBeTruthy())
+    fireEvent.pointerUp(document, { pointerId: 1, clientX: -50, clientY: 80 })
+    await waitFor(() => expect(stage.querySelector('[data-guide-ghost]')).toBeNull())
+    expect(stage.querySelector('[data-guide]')).toBeNull()
+  })
+
+  it('com a Selecionar a guia se move; com o Pincel o traço passa por cima dela', async () => {
+    const stage = await openWithGuide()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const guide = stage.querySelector('[data-guide]') as Element
+    fireEvent.pointerDown(guide, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 80 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 100, clientY: 110 })
+    await waitFor(() => expect(guideLine(guide).getAttribute('y1')).toBe('110'))
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    expect(stage.querySelector('[data-guide]')).toBeTruthy()
+    expect(undoButton().disabled).toBe(true)
+    // Pincel: as guias deixam de receber o ponteiro (`pointer-events: none`) e o toque QUE
+    // COMEÇA NA GUIA desce ao palco: um traço nasce em cima dela, e ela não sai do lugar.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.brush }))
+    await waitFor(() =>
+      expect(stage.querySelector('[data-guides]')?.getAttribute('pointer-events')).toBe('none'),
+    )
+    fireEvent.pointerDown(guide, { isPrimary: true, pointerId: 2, clientX: 40, clientY: 110 })
+    fireEvent.pointerMove(stage, { pointerId: 2, clientX: 200, clientY: 140 })
+    fireEvent.pointerUp(stage, { pointerId: 2 })
+    await waitFor(() => expect(stage.querySelector('path[d]')).toBeTruthy())
+    expect(guideLine(guide).getAttribute('y1')).toBe('110')
+  })
+
+  it('arrastar a guia para cima da régua apaga a guia', async () => {
+    const stage = await openWithGuide()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const guide = stage.querySelector('[data-guide]') as Element
+    fireEvent.pointerDown(guide, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 80 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 100, clientY: -10 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => expect(stage.querySelector('[data-guide]')).toBeNull())
+  })
+
+  it('travar as guias impede o arrasto; limpar apaga todas (e o botão nasce desligado)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    measureScroll()
+    const clear = screen.getByRole('button', { name: COPY.tools.guidesClear }) as HTMLButtonElement
+    expect(clear.disabled).toBe(true)
+    pullGuideFromTop(80, 1)
+    pullGuideFromTop(120, 2)
+    await waitFor(() => expect(stage.querySelectorAll('[data-guide]').length).toBe(2))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.guidesLock }))
+    await waitFor(() =>
+      expect(stage.querySelector('[data-guides]')?.getAttribute('pointer-events')).toBe('none'),
+    )
+    // Rótulo FIXO; o estado é só o `aria-pressed` (sem "Destravar as guias, pressionado").
+    expect(
+      screen.getByRole('button', { name: COPY.tools.guidesLock }).getAttribute('aria-pressed'),
+    ).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.guidesClear }))
+    await waitFor(() => expect(stage.querySelector('[data-guide]')).toBeNull())
+    expect(
+      (screen.getByRole('button', { name: COPY.tools.guidesClear }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+
+  it('o botão "Guias" e o Ctrl+; escondem e mostram', async () => {
+    const stage = await openWithGuide()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.guides }))
+    await waitFor(() => expect(stage.querySelector('[data-guides]')).toBeNull())
+    fireEvent.keyDown(document.body, { key: ';', ctrlKey: true })
+    await waitFor(() => expect(stage.querySelector('[data-guides]')).toBeTruthy())
+  })
+
+  it('as guias sobrevivem à troca de quadro (valem para o desenho inteiro)', async () => {
+    await openVectorEditor(
+      undefined,
+      async (seed) => {
+        await seed.getState().create({ kind: 'vector-sprite', name: 'heroi-v', frameSize: 64 })
+      },
+      'heroi-v',
+    )
+    const stage = measureStage(8, { width: 64, height: 64 })
+    measureScroll()
+    pullGuideFromTop(80)
+    await waitFor(() => expect(stage.querySelector('[data-guide]')).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: COPY.animation.addFrame }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'parado: quadro 2' })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'parado: quadro 2' }))
+    await waitFor(() => expect(stage.querySelector('[data-guide]')).toBeTruthy())
+  })
+
+  it('a guia NÃO encaixa a forma: é só visual', async () => {
+    const stage = await openWithGuide()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    // O retângulo acaba em 78, a 2 px da guia em 80: com encaixe viraria 80.
+    drawRect(stage, [30, 30], [93, 78])
+    await waitFor(() => {
+      const rect = stage.querySelector('rect[fill="#78dc52"]')
+      expect(rect?.getAttribute('height')).toBe('48')
+    })
+  })
+})
+
+describe('régua e guias: os consertos do full review (26/09/2026)', () => {
+  function guideLine(guide: Element): SVGLineElement {
+    return guide.querySelector('line[stroke="#d946ef"]') as SVGLineElement
+  }
+
+  function pullGuideFromTop(y: number, pointerId = 1): void {
+    const ruler = document.querySelector('[data-stage-ruler="x"]') as Element
+    fireEvent.pointerDown(ruler, { isPrimary: true, pointerId, clientX: 100, clientY: 0 })
+    fireEvent.pointerMove(document, { pointerId, clientX: 100, clientY: y })
+    fireEvent.pointerUp(document, { pointerId, clientX: 100, clientY: y })
+  }
+
+  async function openWithGuide(): Promise<HTMLElement> {
+    await openVectorEditor()
+    const stage = measureStage()
+    measureScroll()
+    pullGuideFromTop(80)
+    await waitFor(() => expect(stage.querySelector('[data-guide]')).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    return stage
+  }
+
+  it('ligar e desligar a régua não remonta a div rolável: o zoom pela rolagem sobrevive', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    const scroller = measureScroll()
+    const scrollerNow = (): HTMLElement | null | undefined =>
+      screen.getByRole('img', { name: 'Área de desenho' }).parentElement?.parentElement
+    // (Booleano, e não `toBe(nó)`: numa reprovação o bun imprimiria o DOM inteiro duas vezes.)
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rulers }))
+    await waitFor(() => expect(document.querySelector('[data-stage-ruler="x"]')).toBeNull())
+    expect(scrollerNow() === scroller).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rulers }))
+    await waitFor(() => expect(document.querySelector('[data-stage-ruler="x"]')).toBeTruthy())
+    expect(scrollerNow() === scroller).toBe(true)
+    // O `wheel` foi pendurado UMA vez, na div de sempre: continua dando zoom.
+    expect(stage.getAttribute('width')).toBe('480')
+    wheel(scroller, -100)
+    await waitFor(() => expect(stage.getAttribute('width')).toBe('960'))
+  })
+
+  it('com a ferramenta de forma e VÁRIAS selecionadas, as alças respondem (o toque nelas não desenha)', async () => {
+    const stage = await openWithShapes(maskFixture())
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    marqueeAll(stage)
+    await waitFor(() => expect(stage.querySelectorAll('[data-handle]').length).toBe(8))
+    // Trocar de ferramenta não limpa a seleção: as alças da união seguem na tela.
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    await waitFor(() => expect(stage.querySelectorAll('[data-handle]').length).toBe(8))
+    expect(stage.querySelector('[data-rotate]')).toBeTruthy()
+    const se = stage.querySelector('[data-handle="se"]') as Element
+    fireEvent.pointerDown(se, { isPrimary: true, pointerId: 1, clientX: 120, clientY: 120 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 160, clientY: 160 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    // Nenhum retângulo novo; o de sempre cresceu.
+    await waitFor(() => {
+      const rects = stage.querySelectorAll('rect[fill="#78dc52"]')
+      expect(rects.length).toBe(1)
+      expect(Number(rects[0]?.getAttribute('width'))).toBeGreaterThan(100)
+    })
+  })
+
+  it('puxar uma guia com as guias ESCONDIDAS as mostra de novo (nada nasce invisível)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    measureScroll()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.guides }))
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: COPY.tools.guides }).getAttribute('aria-pressed'),
+      ).toBe('false'),
+    )
+    pullGuideFromTop(80)
+    await waitFor(() => expect(stage.querySelector('[data-guide]')).toBeTruthy())
+    expect(
+      screen.getByRole('button', { name: COPY.tools.guides }).getAttribute('aria-pressed'),
+    ).toBe('true')
+  })
+
+  it('segurar ESPAÇO em cima de uma guia faz o pan, não move a guia', async () => {
+    const stage = await openWithGuide()
+    const guide = stage.querySelector('[data-guide]') as Element
+    fireEvent.keyDown(window, { key: ' ' })
+    await waitFor(() =>
+      expect(stage.querySelector('[data-guides]')?.getAttribute('pointer-events')).toBe('none'),
+    )
+    fireEvent.pointerDown(guide, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 80 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 100, clientY: 120 })
+    // A mão fechou (o pan começou) e a guia ficou onde estava.
+    await waitFor(() => expect(stage.getAttribute('style') ?? '').toContain('grabbing'))
+    expect(guideLine(guide).getAttribute('y1')).toBe('80')
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    fireEvent.keyUp(window, { key: ' ' })
+    expect(guideLine(guide).getAttribute('y1')).toBe('80')
+  })
+
+  it('arrastar a guia para fora avisa (tracejada) e voltar para dentro desfaz o aviso', async () => {
+    const stage = await openWithGuide()
+    const guide = stage.querySelector('[data-guide]') as Element
+    fireEvent.pointerDown(guide, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 80 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 100, clientY: -10 })
+    await waitFor(() => expect(guide.getAttribute('data-guide-leaving')).toBe('1'))
+    expect(guideLine(guide).getAttribute('stroke-dasharray')).toBeTruthy()
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 100, clientY: 120 })
+    await waitFor(() => expect(guide.getAttribute('data-guide-leaving')).toBeNull())
+    expect(guideLine(guide).getAttribute('stroke-dasharray')).toBeNull()
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    expect(stage.querySelector('[data-guide]')).toBeTruthy()
+  })
+
+  it('pointercancel com o ponteiro fora NÃO apaga: a guia volta para onde estava', async () => {
+    const stage = await openWithGuide()
+    const guide = stage.querySelector('[data-guide]') as Element
+    fireEvent.pointerDown(guide, { isPrimary: true, pointerId: 1, clientX: 100, clientY: 80 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 100, clientY: 120 })
+    await waitFor(() => expect(guideLine(guide).getAttribute('y1')).toBe('120'))
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 100, clientY: -10 })
+    fireEvent.pointerCancel(stage, { pointerId: 1 })
+    await waitFor(() => expect(guideLine(guide).getAttribute('y1')).toBe('80'))
+    expect(stage.querySelector('[data-guide]')).toBeTruthy()
+    expect(guide.getAttribute('data-guide-leaving')).toBeNull()
+  })
+
+  it('o alvo do toque da guia tem 16 px de tela (o traço visível segue com 1)', async () => {
+    const stage = await openWithGuide()
+    const guide = stage.querySelector('[data-guide]') as Element
+    const hit = guide.querySelector('line[stroke="transparent"]')
+    expect(hit?.getAttribute('stroke-width')).toBe('16')
+    expect(guideLine(guide).getAttribute('stroke-width')).toBe('1')
   })
 })

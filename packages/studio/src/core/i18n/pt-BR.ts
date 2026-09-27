@@ -10,14 +10,16 @@ export const ptBR: Record<string, string> = {
   'topbar.preview': 'Pré-visualizar',
   'topbar.save': 'Salvar',
   'topbar.saving': 'Salvando…',
-  'topbar.download': 'Baixar',
+  'topbar.download': 'Baixar o código',
   'topbar.downloading': 'Baixando…',
-  'topbar.downloadHint': 'Baixar o projeto (.zip) para continuar no VSCode',
   'topbar.extensions': 'Extensões',
-  'topbar.export': 'Exportar para publicar',
-  'topbar.exportStudio': 'Exportar para o Estúdio',
-  'topbar.cloudSync': 'Sincronizar com o enviado',
-  'topbar.convertPro': 'Promover para Pro',
+  // ⚠️ O item NÃO publica: ele baixa um .zip pronto para pôr no ar (o `ExportDialog`
+  // termina num download). "Publicar na internet" prometia o ato e competia com o
+  // Compartilhar, que é o único que de fato põe o jogo no ar.
+  'topbar.export': 'Baixar para publicar',
+  'topbar.exportStudio': 'Baixar o projeto',
+  'topbar.cloudSync': 'Trazer o que eu enviei',
+  'topbar.convertPro': 'Virar profissional',
   'topbar.ai': 'IA',
   'topbar.rename': 'Renomear projeto',
   'topbar.projects': 'Meus projetos',
@@ -25,9 +27,30 @@ export const ptBR: Record<string, string> = {
   'topbar.theme': 'Mudar tema',
   'topbar.showPreview': 'Mostrar pré-visualização',
   'topbar.hidePreview': 'Ocultar pré-visualização',
-  'topbar.group.file': 'Arquivo',
-  'topbar.group.view': 'Exibição',
-  'topbar.group.account': 'Conta',
+  // Os grupos do menu ⋯ (ver `components/layout/topbar/menuLayout.ts`): cada um é a
+  // COISA de que trata, na ordem de uso. "Arquivo"/"Exibição"/"Conta" saíram em
+  // 18/09/2026 — o primeiro era o nome do sistema de arquivos, e os outros dois
+  // viraram despejo (o gerenciador de materiais morava em "Exibição").
+  'topbar.group.myGame': 'O meu jogo',
+  'topbar.group.materials': 'Materiais',
+  'topbar.group.show': 'Mostrar',
+  'topbar.group.take': 'Levar o jogo',
+  'topbar.group.studio': 'Estúdio',
+  // A linha de apoio dos três jeitos de o jogo sair daqui: os nomes sozinhos não
+  // diziam o destino, e os três tinham o MESMO ícone.
+  'topbar.hint.exportStudio': 'um arquivo para abrir este mesmo projeto no Estúdio Completo',
+  'topbar.hint.download': 'um .zip com o código, para abrir no computador',
+  'topbar.hint.export': 'um .zip pronto para pôr no ar',
+  'topbar.hint.convertPro': 'troca os blocos por um projeto de código, sem volta',
+  'topbar.hint.cloudSync': 'troca o que está aqui pela versão que você entregou',
+  'topbar.modes': 'Modo de edição',
+  'topbar.undo': 'Desfazer',
+  'topbar.redo': 'Refazer',
+  'topbar.undoBlocks': 'Desfazer nos blocos ({keys})',
+  'topbar.redoBlocks': 'Refazer nos blocos ({keys})',
+  'topbar.undoCode': 'Desfazer no código ({keys})',
+  'topbar.redoCode': 'Refazer no código ({keys})',
+  'topbar.group.edit': 'Editar',
 
   'tab.blocks': 'Blocos',
   'tab.code': 'Código',
@@ -39,6 +62,24 @@ export const ptBR: Record<string, string> = {
   'panel.ai': 'IA',
   'panel.preview': 'Pré-visualização',
   'panel.extensions': 'Extensões oficiais',
+
+  // A janela dos materiais e as três abas (18/09/2026). Os nomes das abas são a
+  // MESMA palavra das três portas do menu ⋯ — é o que liga a porta ao que ela abre.
+  'assets.title': 'Materiais do jogo',
+  'assets.tab.images': 'Imagens',
+  'assets.tab.sounds': 'Sons',
+  'assets.tab.models3d': 'Modelos 3D',
+  // A capa do card "Meus Jogos": uma imagem do projeto vira a capa fixa, vencendo a foto
+  // automática do preview (26/09/2026).
+  'assets.cover.use': '⭐ Usar como capa',
+  'assets.cover.useAria': 'Usar {name} como capa do jogo',
+  'assets.cover.useHint': 'Esta imagem vira a capa do seu jogo na lista',
+  'assets.cover.current': 'Capa do jogo',
+  'assets.cover.reset': 'Voltar para a foto automática',
+  'assets.cover.resetAria': 'Voltar para a foto automática da capa',
+  'assets.cover.resetHint': 'A capa volta a ser uma foto do jogo rodando',
+  'assets.cover.failed':
+    'Não consegui usar essa imagem como capa. A capa continua a de antes. Tente outra imagem.',
 
   'extensions.install': 'Instalar',
   'extensions.remove': 'Remover',
@@ -101,6 +142,16 @@ export const ptBR: Record<string, string> = {
   'projects.searchCount': 'Mostrando {shown} de {total} projetos',
   'projects.searchCountOne': 'Mostrando 1 de {total} projetos',
   'projects.help': 'Precisa de ajuda para começar?',
+  // Galeria no desenho das telas-modelo (11/09/2026): o cartão "Novo projeto" no começo da
+  // grade e o cartão da faixa lilás, que diz onde os projetos estão guardados.
+  'projects.newCard.hint': 'Comece do zero no Estúdio.',
+  'projects.saved.account': '{count} projetos guardados na sua conta',
+  'projects.saved.accountOne': '1 projeto guardado na sua conta',
+  'projects.saved.device': '{count} projetos guardados neste aparelho',
+  'projects.saved.deviceOne': '1 projeto guardado neste aparelho',
+  'projects.saved.hint':
+    'Tudo é guardado sozinho enquanto você cria. A foto da capa aparece quando você sai do editor.',
+  'projects.importCta': 'Importar um jogo',
   'projects.filterMode': 'Modo',
   'projects.filterAll': 'Todos',
   'projects.filterBlocks': 'Blocos',
@@ -135,7 +186,6 @@ export const ptBR: Record<string, string> = {
   'kits.subtitle': 'Escolha um jogo pronto para abrir, jogar e mexer do seu jeito.',
   'kits.show': 'Ver os jogos prontos',
   'kits.hide': 'Esconder os jogos prontos',
-  'kits.scratch': 'Quero começar do zero',
   'kits.creating': 'Criando…',
   'kits.error': 'Não consegui criar o projeto agora. Tente de novo.',
   'kits.loading': 'Carregando jogos prontos…',
@@ -175,6 +225,8 @@ export const ptBR: Record<string, string> = {
   'pintaImport.add': 'Adicionar ao projeto',
   'pintaImport.adding': 'Trazendo…',
   'pintaImport.inProject': '✓ no projeto',
+  'pintaImport.refreshVector': 'Atualizar vetor',
+  'pintaImport.vectorTooLarge': 'Este vetor é grande demais para manter em SVG no Estúdio.',
   'pintaImport.gameBadge': 'jogo: {name}',
   'pintaImport.kind.sprite': '🧍 personagem',
   'pintaImport.kind.background': '🖼️ cenário',
@@ -192,6 +244,11 @@ export const ptBR: Record<string, string> = {
   'moldaImport.loadError': 'Não consegui abrir a sua galeria do Molda agora.',
   'moldaImport.retry': 'Tentar de novo',
   'moldaImport.importError': 'Não consegui trazer essa criação agora. Tente de novo.',
+  'moldaImport.review.title': 'O que muda nesta cópia',
+  'moldaImport.review.hint':
+    'Confira antes de adicionar. Seu projeto original continua completo no Molda.',
+  'moldaImport.review.accept': 'Aceitar mudanças e adicionar',
+  'moldaImport.review.cancel': 'Cancelar',
   'moldaImport.empty': 'Sua galeria do Molda está vazia. Monte algo lá e volte aqui!',
   'moldaImport.noResults': 'Nenhuma criação combina com essa busca.',
   'moldaImport.add': 'Adicionar ao projeto',
@@ -233,16 +290,16 @@ export const ptBR: Record<string, string> = {
   'export.zipping': 'Compactando…',
   'export.error': 'Não foi possível exportar: {reason}',
 
-  'convert.title': 'Promover este projeto para Pro?',
+  'convert.title': 'Virar profissional?',
   'convert.body':
     'No projeto profissional você programa como os profissionais de verdade: vários arquivos e pastas, editando tudo pelo Código. Os blocos ficam para trás. Esta ação não pode ser desfeita.',
   'convert.legacyTitle': 'Este projeto precisa virar profissional',
   'convert.legacyBody':
     'Este projeto tem {count} arquivo(s) além dos três básicos, que o modo Blocos e Ponte não edita. Quer transformá-lo num projeto profissional (Vite) para trabalhar com todos eles? Esta ação não pode ser desfeita.',
-  'convert.confirm': 'Promover para Pro',
+  'convert.confirm': 'Virar profissional',
   'convert.cancel': 'Cancelar',
   'convert.later': 'Agora não',
-  'convert.working': 'Promovendo…',
+  'convert.working': 'Virando profissional…',
 
   'share.action': 'Compartilhar',
   'share.title': 'Compartilhar no Mural dos Criadores',

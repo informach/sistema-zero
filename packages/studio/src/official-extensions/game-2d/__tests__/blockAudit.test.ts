@@ -219,6 +219,29 @@ describe('Auditoria Jogo 2D — inventário', () => {
       ])
     }
   })
+
+  it('mantém os nomes padrão que o roteiro do primeiro dia mostra antes dos avisos', () => {
+    for (const [type, field, expected] of [
+      ['sz_g2d_create_ship', 'NAME', 'nave'],
+      ['sz_g2d_draw_sprite', 'SPRITE', 'jogador'],
+      ['sz_g2d_arrows_x', 'SPRITE', 'nave'],
+      ['sz_g2d_clamp_to_screen', 'SPRITE', 'heroi'],
+    ]) {
+      const definition = gameTwoDBlocks.find((block) => block.type === type)
+      expect(
+        definition?.args0?.find(
+          (argument) =>
+            typeof argument === 'object' &&
+            argument !== null &&
+            'name' in argument &&
+            argument.name === field,
+        ),
+        type,
+      ).toMatchObject({
+        text: expected,
+      })
+    }
+  })
 })
 
 describe('Auditoria Jogo 2D — pipeline completo por bloco', () => {
@@ -281,6 +304,12 @@ describe('Auditoria Jogo 2D — pipeline completo por bloco', () => {
         // Degrada para blocos genéricos: exige só que nada vire rawJS.
         expect(reparsed.length).toBeGreaterThan(0)
         expect(collectTypes(reparsed).has('rawJS')).toBe(false)
+      } else if (type === 'sz_g2d_on_sprite_click' || type === 'sz_g2d_on_group_click') {
+        // O gerador dá um ID ao evento novo. Ao voltar do Código, ele é um dado
+        // semântico explícito: deve sobreviver também à próxima passagem por blocos.
+        expect(reparsed).toEqual(ir.map((statement) => ({ ...statement, eventId: 'cliqueSprite' })))
+        expect(irThroughBlocks(reparsed)).toEqual(reparsed)
+        expect(compileStatements(reparsed, 0)).toBe(code)
       } else {
         expect(reparsed).toEqual(ir)
       }

@@ -81,6 +81,41 @@ export interface GameTwoDSpriteOptions {
   image?: string | null
 }
 
+export interface GameTwoDTextAppearance {
+  text: string
+  size: number
+  color: string
+  width: number
+  align: 'left' | 'center' | 'right'
+  padding: number
+  background: string
+  font: string
+  lines: string[]
+  measuredW: number
+  measuredH: number
+  layoutKey: string
+  /** Imagem de fundo: quando ela carrega, é ELA que manda no tamanho do sprite. */
+  image: string
+  imageHandle: GameTwoDImageHandle | null
+  imageW: number
+  imageH: number
+  valign: 'top' | 'middle' | 'bottom'
+  /**
+   * O tamanho que a criança PEDIU (0 = automático, medido pelo texto ou pela
+   * imagem). É um número declarado, não uma razão recuperada por divisão: por
+   * isso a imagem chegar depois não tem como corrompê-lo.
+   */
+  sizeW: number
+  sizeH: number
+  /**
+   * O que ESTE layout escreveu por último em `sprite.w`/`sprite.h`. É a régua
+   * para saber se alguém de fora mexeu no tamanho desde a última medida, sem
+   * precisar que esse alguém avise.
+   */
+  laidOutW: number
+  laidOutH: number
+}
+
 export interface GameTwoDSprite {
   x: number
   y: number
@@ -91,7 +126,12 @@ export interface GameTwoDSprite {
   vy: number
   image: GameTwoDImageHandle | null
   anim: GameTwoDAnimation | null
+  _animState?: string | null
   skin?: GameTwoDSpriteSkin
+  textAppearance?: GameTwoDTextAppearance
+  data?: Record<string, unknown>
+  _paintEpoch?: number
+  _paintOrder?: number
   angle?: number
   facing?: number
   direction?: GameTwoDSpriteDirection
@@ -104,6 +144,10 @@ export interface GameTwoDSprite {
   _cooldowns?: Record<string, number>
   /** Dial da colisão perdoadora: fator da hitbox (1 = tamanho cheio). */
   _hitboxScale?: number
+  /** O handle com um redraw agendado, se houver (ver _scheduleSpriteImageRedraw). */
+  _hookedHandle?: GameTwoDImageHandle | null
+  /** Solta o redraw agendado (ver _scheduleSpriteImageRedraw). */
+  _cancelImageRedraw?: (() => void) | null
 }
 
 export interface GameTwoDGroup<TSprite extends GameTwoDSprite = GameTwoDSprite> {
@@ -126,7 +170,7 @@ export interface GameTwoDTileLayout {
   tileSize: number
   width: number
   height: number
-  mode: 'placed' | 'fitted' | 'legacy'
+  mode: 'placed' | 'fitted'
 }
 
 export interface GameTwoDTileMap {
@@ -212,7 +256,6 @@ export interface GameTwoDEnemyType extends GameTwoDGroup {
     w: number
     h: number
   }
-  onDefeat: ((sprite: GameTwoDSprite) => void) | null
 }
 
 export interface GameTwoDCity {
@@ -253,6 +296,8 @@ export interface GameTwoDLifecycleApi {
   gameLoop(fn: () => void, id?: string): () => void
   onStart(fn: () => void, id?: string): void
   onPointer(fn: (x: number, y: number) => void, id?: string): void
+  onSpriteClick(sprite: GameTwoDSprite, fn: () => void, id?: string): void
+  onGroupClick(group: GameTwoDGroup, fn: (sprite: GameTwoDSprite) => void, id?: string): void
   onKey(key: string, fn: () => void, id?: string): void
   /** Uma ação clássica apertada por teclado, toque ou tecnologia assistiva. */
   onActionPressed(action: GameTwoDAction, fn: () => void, id?: string): void
@@ -293,6 +338,23 @@ export interface GameTwoDStageApi {
 }
 
 export interface GameTwoDSpriteApi {
+  createTextSprite(text: unknown, x: number, y: number): GameTwoDSprite
+  spawnTextInGroup(group: GameTwoDGroup, text: unknown, x: number, y: number): GameTwoDSprite
+  setSpriteText(sprite: GameTwoDSprite, text: unknown): void
+  spriteText(sprite: GameTwoDSprite): string
+  setTextStyle(sprite: GameTwoDSprite, size: number, color: string): void
+  /** Multiplica o tamanho da letra (o irmão do scaleSprite, para o texto). */
+  scaleTextSize(sprite: GameTwoDSprite, factor: number): void
+  setTextBox(
+    sprite: GameTwoDSprite,
+    width: number,
+    align: 'left' | 'center' | 'right',
+    padding: number,
+    background: string,
+  ): void
+  setTextImage(sprite: GameTwoDSprite, image: string, valign: 'top' | 'middle' | 'bottom'): void
+  setSpriteData(sprite: GameTwoDSprite, key: string, value: unknown): void
+  spriteData(sprite: GameTwoDSprite, key: string, fallback: unknown): unknown
   createSprite(options?: GameTwoDSpriteOptions): GameTwoDSprite
   drawSprite(ctx: GameTwoDContext, sprite: GameTwoDSprite): void
   isColliding(a: GameTwoDSprite, b: GameTwoDSprite): boolean
@@ -402,7 +464,7 @@ export interface GameTwoDAudioApi {
   playSound(frequency: number, milliseconds: number): void
   playFx(name: string): void
   playMusic(name: string): void
-  stopMusic(): void
+
   playNote(note: string, milliseconds: number): void
   /**
    * Áudio de ARQUIVO (o que a criança enviou), em oposição a tudo acima, que é
@@ -414,14 +476,8 @@ export interface GameTwoDAudioApi {
   playClip(name: string): void
   stopClip(name: string): void
   playTrack(name: string): void
-  stopTrack(): void
+  stopTrack(scope?: 'all' | 'synth' | 'file'): void
   setSoundVolume(level: number): void
-  playShoot(): void
-  playExplosion(): void
-  playJump(): void
-  playDinoHurt(): void
-  playCollect(): void
-  playWhistle(): void
 }
 
 export interface GameTwoDMathAndStateApi {
@@ -454,6 +510,8 @@ export interface GameTwoDMathAndStateApi {
   randomX(): number
   randomY(): number
   cooldownReady(sprite: GameTwoDSprite, frames: number, key?: string): boolean
+  withCooldown(sprite: GameTwoDSprite, frames: number, fn: () => void, key: string): void
+  destroySprite(sprite: GameTwoDSprite): void
   pruneOld(group: GameTwoDGroup, seconds: number): void
   flipSprite(sprite: GameTwoDSprite, direction: GameTwoDSpriteDirection): void
   setOpacity(sprite: GameTwoDSprite, percent: number): void
@@ -476,7 +534,7 @@ export interface GameTwoDInputAndMotionApi {
   platformer(sprite: GameTwoDSprite, ctx: GameTwoDContext, speed: number, jump: number): void
   /** Plataforma sobre terreno real; colida com o Mundo depois de mover. */
   platformerWithTerrain(sprite: GameTwoDSprite, speed: number, jump: number): void
-  enableClassicControls(mode: 'auto' | 'always' | 'off'): void
+  enableClassicControls(mode: 'auto' | 'always' | 'off' | 'directions'): void
   actionDown(action: GameTwoDAction): boolean
   actionPressed(action: GameTwoDAction): boolean
   classicPlatformer(sprite: GameTwoDSprite, speed: number, jump: number): void
@@ -513,9 +571,9 @@ export interface GameTwoDInputAndMotionApi {
 }
 
 export interface GameTwoDWorldApi {
-  /** @deprecated Prefira a câmera configurada por `GameTwoDWorld`. */
+  /** Centraliza a câmera global no sprite e limita o deslocamento às dimensões fornecidas. */
   cameraFollow(sprite: GameTwoDSprite, worldWidth: number, worldHeight: number): void
-  /** @deprecated Prefira `configureWorldCamera` + `followCameraInWorld`. */
+  /** Posiciona diretamente a câmera global, sem exigir um objeto Mundo. */
   setCamera(x: number, y: number): void
   cameraX(): number
   cameraY(): number
@@ -561,17 +619,14 @@ export interface GameTwoDWorldApi {
   campaignValue(key: string, fallback: number): number
   fitTileMapToStage(ctx: GameTwoDContext, map: GameTwoDTileMap): void
   placeTileMap(map: GameTwoDTileMap, x: number, y: number, tileSize: number): void
-  /**
-   * Desenha o layout preparado. Os argumentos x/y/size são aceitos somente por
-   * compatibilidade; código novo deve preparar o mapa antes e passar dois argumentos.
-   */
-  drawTileMap(
+  centerTileMap(
     ctx: GameTwoDContext,
     map: GameTwoDTileMap,
-    x?: number,
-    y?: number,
-    size?: number,
+    x: number,
+    y: number,
+    size: number,
   ): void
+  drawTileMap(ctx: GameTwoDContext, map: GameTwoDTileMap): void
   collideTileMap(sprite: GameTwoDSprite, map: GameTwoDTileMap): void
   forEachTileContact(
     sprite: GameTwoDSprite,
@@ -890,7 +945,7 @@ export const GAME_TWO_D_API_KEYS = [
   'playSound',
   'playFx',
   'playMusic',
-  'stopMusic',
+
   'playNote',
   'loadSound',
   'playClip',
@@ -929,6 +984,8 @@ export const GAME_TWO_D_API_KEYS = [
   'stageHeight',
   'hasHealth',
   'cooldownReady',
+  'withCooldown',
+  'destroySprite',
   'pruneOld',
   'flipSprite',
   'setOpacity',
@@ -951,6 +1008,18 @@ export const GAME_TWO_D_API_KEYS = [
   'drawHitbox',
   'showFps',
   'onPointer',
+  'onSpriteClick',
+  'onGroupClick',
+  'createTextSprite',
+  'spawnTextInGroup',
+  'setSpriteText',
+  'spriteText',
+  'setTextStyle',
+  'scaleTextSize',
+  'setTextBox',
+  'setTextImage',
+  'setSpriteData',
+  'spriteData',
   'onKey',
   'onActionPressed',
   'onAnyInput',
@@ -1005,6 +1074,7 @@ export const GAME_TWO_D_API_KEYS = [
   'loadVectorCampaignLevel',
   'campaignValue',
   'fitTileMapToStage',
+  'centerTileMap',
   'placeTileMap',
   'drawTileMap',
   'collideTileMap',
@@ -1073,8 +1143,7 @@ export const GAME_TWO_D_API_KEYS = [
   'createShip',
   'spawnAsteroid',
   'explodeSprite',
-  'playShoot',
-  'playExplosion',
+
   'overlapSpriteGroup',
   'createEnemyType',
   'createAllEnemiesGroup',
@@ -1108,9 +1177,7 @@ export const GAME_TWO_D_API_KEYS = [
   'spawnObstacle',
   'spawnEgg',
   'drawForest',
-  'playJump',
-  'playDinoHurt',
-  'playCollect',
+
   'createCity',
   'drawCity',
   'placeThrower',
@@ -1123,7 +1190,7 @@ export const GAME_TWO_D_API_KEYS = [
   'drawBanana',
   'bananaHitThrower',
   'bananaHitCity',
-  'playWhistle',
+
   'computerTurn',
   'drawAimReadout',
   'createStickHero',

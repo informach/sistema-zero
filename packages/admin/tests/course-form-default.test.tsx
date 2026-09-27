@@ -7,8 +7,20 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator'
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 
+// `mock.module` vale para o processo inteiro do Bun, inclusive outros arquivos
+// que estejam rodando em paralelo. Preserve o contrato completo de
+// `next/navigation` e substitua somente o roteador usado por este componente.
+const nextNavigation = await import('next/navigation')
 mock.module('next/navigation', () => ({
-  useRouter: () => ({ refresh: () => {} }),
+  ...nextNavigation,
+  useRouter: () => ({
+    back: () => {},
+    forward: () => {},
+    prefetch: () => {},
+    push: () => {},
+    refresh: () => {},
+    replace: () => {},
+  }),
 }))
 
 const { act } = await import('react')
@@ -29,7 +41,7 @@ describe('cadastro de curso', () => {
           open
           editing={null}
           prefill={{ audience }}
-          careerCourses={[]}
+          journeyCourses={[]}
           onClose={() => {}}
           onSaved={() => {}}
         />,
@@ -37,6 +49,14 @@ describe('cadastro de curso', () => {
     })
 
     expect((document.querySelector('#caudience') as HTMLSelectElement | null)?.value).toBe(audience)
+    if (audience === 'kids') {
+      const role = document.querySelector('#journey-slot') as HTMLSelectElement | null
+      expect(role?.value).toBe('reward')
+      expect([...role!.options].map((option) => option.value)).toContain('extra')
+    } else {
+      const role = document.querySelector('#journey-slot') as HTMLSelectElement | null
+      expect([...role!.options].map((option) => option.value)).not.toContain('extra')
+    }
 
     await act(async () => root.unmount())
     container.remove()

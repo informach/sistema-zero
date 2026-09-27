@@ -149,11 +149,11 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     _classicTouchPointers = Object.create(null);
     _classicVirtualHeldStamp = Object.create(null);
   }
-  function _classicTouchButton(action, text) {
+  function _classicTouchButton(action, text, label) {
     var button = document.createElement('button');
     button.type = 'button';
     button.textContent = text;
-    button.setAttribute('aria-label', CLASSIC_TOUCH_LABELS[action] || action);
+    button.setAttribute('aria-label', label || CLASSIC_TOUCH_LABELS[action] || action);
     button.setAttribute('data-sz-g2d-action', action);
     button.style.cssText = 'width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:2px solid rgba(255,255,255,.8);border-radius:12px;background:rgba(8,15,35,.72);color:white;font:700 18px sans-serif;touch-action:none;user-select:none;' + (CLASSIC_TOUCH_POSITIONS[action] || '');
     var ignoreNextKeyboardClick = false;
@@ -217,9 +217,9 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     button.addEventListener('click', activate);
     return button;
   }
-  /** Liga controles de toque responsivos: auto, sempre ou desligado. */
+  /** Liga controles de toque: auto, sempre, só direções ou desligado. */
   function enableClassicControls(mode) {
-    var selected = mode === 'always' || mode === 'off' ? mode : 'auto';
+    var selected = mode === 'always' || mode === 'off' || mode === 'directions' ? mode : 'auto';
     _removeClassicControls();
     if (selected === 'off' || typeof document === 'undefined') return;
     var coarse = false;
@@ -237,15 +237,17 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     directions.style.cssText = actions.style.cssText = 'display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:6px;pointer-events:auto;';
     directions.appendChild(_classicTouchButton('left', '◀'));
     directions.appendChild(_classicTouchButton('up', '▲'));
-    directions.appendChild(_classicTouchButton('down', '▼'));
+    directions.appendChild(_classicTouchButton('down', '▼', selected === 'directions' ? 'Mover para baixo' : null));
     directions.appendChild(_classicTouchButton('right', '▶'));
-    actions.appendChild(_classicTouchButton('select', '−'));
-    actions.appendChild(_classicTouchButton('start', '+'));
-    actions.appendChild(_classicTouchButton('pause', 'Ⅱ'));
-    actions.appendChild(_classicTouchButton('action', 'B'));
-    actions.appendChild(_classicTouchButton('jump', 'A'));
     root.appendChild(directions);
-    root.appendChild(actions);
+    if (selected !== 'directions') {
+      actions.appendChild(_classicTouchButton('select', '−'));
+      actions.appendChild(_classicTouchButton('start', '+'));
+      actions.appendChild(_classicTouchButton('pause', 'Ⅱ'));
+      actions.appendChild(_classicTouchButton('action', 'B'));
+      actions.appendChild(_classicTouchButton('jump', 'A'));
+      root.appendChild(actions);
+    }
     if (document.body) document.body.appendChild(root);
     _classicControlsRoot = root;
   }
@@ -270,7 +272,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
    * agachamento, gravidade e pulo de altura variável.
    */
   function classicPlatformer(sprite, speed, jump) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _recordPreviousPosition(sprite);
     var maxWalk = _positiveFiniteNumber(speed, 2.5);
     var maxRun = maxWalk * CLASSIC_RUN_RATIO;
@@ -355,6 +357,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     _commitRecordedMotion(sprite);
   }
 
+  /** @returns {import('./runtimeContract').GameTwoDVectorTileset} */
   function createVectorTileset(tileSize) {
     return {
       _kind: 'g2d-vector-tileset',
@@ -406,7 +409,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
   }
 
   function _beginTileContacts(sprite) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     if (_runningLoopId) {
       if (sprite._tileContactsFrame !== _frameStamp) sprite._tileContacts = [];
       sprite._tileContactsFrame = _frameStamp;
@@ -416,7 +419,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     }
   }
   function _recordTileContact(sprite, map, row, col, side) {
-    if (!sprite || !map || !map.rows || !map.rows[row]) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !map || !map.rows || !map.rows[row]) return;
     var contacts = sprite._tileContacts || (sprite._tileContacts = []);
     for (var i = 0; i < contacts.length; i++) {
       var known = contacts[i];
@@ -436,7 +439,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
     });
   }
   function forEachTileContact(sprite, map, side, visit) {
-    if (!sprite || !map || typeof visit !== 'function') return;
+    if (!sprite || _isDestroyedSprite(sprite) || !map || typeof visit !== 'function') return;
     if (_runningLoopId && sprite._tileContactsFrame !== _frameStamp) return;
     // ⚠️ A régua sai da LISTA, não de uma cadeia de comparações escrita à mão. A
     // versão anterior listava head/feet/left/right e caía em "qualquer" para
@@ -483,7 +486,7 @@ export const gameTwoDClassicPlatformerRuntime = `  // ---- Plataforma clássica 
       // contato do chute dura, ele NÃO cobra vida: o casco anda 5 px/quadro e o herói
       // corre quase isso, então a sobreposição do próprio chute seguia por vários
       // quadros e o gesto que este modo existe para criar virava castigo (medido na
-      // segunda jornada do Reino Zero: fuga de 0,08 px por quadro).
+      // segunda volta do Reino Zero: fuga de 0,08 px por quadro).
       if (shell._kickedBy && !isColliding(shell, shell._kickedBy)) shell._kickedBy = null;
       var andando = !!shell._shellMoving;
       _recordPreviousPosition(shell);

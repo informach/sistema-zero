@@ -1,0 +1,496 @@
+/* A régua das cenas de aula (demonstração e experimentação).
+ *
+ * Duas coisas moram aqui: o TETO de largura da cena e a paleta dela. Antes eram 108 cores
+ * literais espalhadas por três componentes e uma cena que ocupava o cartão inteiro (1149px de
+ * largura medidos em aula real, contra os 532 do Brilliant) — larga demais para a criança
+ * varrer com os olhos e incoerente com a comunidade kids.
+ *
+ * ⚠️ Este arquivo precisa de um `@import` no globals.css de CADA app que renderiza aula
+ * (community-kids, community, admin). Só o `@source` não basta: sem o import as cores não
+ * existem, o Tailwind não gera `fill-scene-*` e a cena sai preta. Mesmo par do studio.css.
+ */
+
+@theme {
+  /* O teto da cena. `--container-*` é o que gera `max-w-scene` no Tailwind v4.
+   * ⚠️ É um TETO, não uma largura: em tela estreita (e na coluna da direita, quando a seção
+   * divide ao meio) a cena continua acompanhando o cartão. Nasceu 560px em 13/09/2026 e subiu
+   * para 680px no dia seguinte: a dona achou que tinha encolhido demais. */
+  --container-scene: 680px;
+
+  /* O papel da cena: fundo, chão e as linhas de apoio.
+   *
+   * ⭐ Desde 14/09/2026 eles SEGUEM O TEMA. Eram seis literais fixos, então no tema Pink a
+   * aula inteira ficava rosa e a cena continuava verde e bege — a única ilha da página que não
+   * acompanhava.
+   *
+   * ⚠️⚠️ A mistura e as bases são CALIBRADAS, não escolhidas no olho. A primeira versão deste
+   * lote misturava 6/10/14% sobre as bases originais e derrubou o contraste sem ninguém medir:
+   * sobre o céu o âmbar caiu de 4,91 para 4,42 e sobre a grama de 4,64 para 4,03 — os dois
+   * abaixo do 4,5 que texto pequeno exige. Foi achado no full review, com a conta refeita nos
+   * três temas (Padrão, Pink e o azul de reserva do ensaio). Os números de hoje: bases
+   * CLAREADAS (é isso que compra a margem, já que misturar sempre escurece) e mistura de 5% a
+   * 8%. O pior par do conjunto fica em 4,50. Mexeu aqui? Refaça a conta — o teste
+   * `tests/scene-contrast.test.ts` reprova a mudança que baixar disso.
+   *
+   * ⚠️ `in oklab`, NUNCA `oklch`: no espaço cilíndrico a interpolação passeia pelo matiz e um
+   * bege puxado para o azul vira ROSA. É o mesmo tropeço que já quebrou os embarcados uma vez.
+   *
+   * ⚠️ E o `var(--primary, …)` tem FALLBACK porque esta folha também é lida pelo ensaio de
+   * autoria e por qualquer superfície que não declare o tema: sem ele a cena sairia preta. */
+  --color-scene-ground: color-mix(in oklab, var(--primary, #315f92) 8%, #faf8ee);
+  --color-scene-sky: color-mix(in oklab, var(--primary, #315f92) 5%, #eef3ea);
+  --color-scene-grass: color-mix(in oklab, var(--primary, #315f92) 5%, #e9efda);
+  /* A linha do chão é TRAÇO, não texto: 3:1 basta, e ela pode puxar mais do tema. */
+  --color-scene-line: color-mix(in oklab, var(--primary, #315f92) 30%, #8ba077);
+  /* ⚠️ `grid` é a DECORAÇÃO (os pontinhos do fundo, a montanha, a borda de um cartãozinho).
+   * A RÉGUA é outra coisa: é o instrumento com que a criança mede o salto, e ela precisa se
+   * ver. As duas tinham colapsado no mesmo cinza, e a régua ficou em 1,39:1 — invisível. */
+  --color-scene-grid: #c9ceba;
+  --color-scene-rule: #7d8c78;
+
+  /* O que se lê dentro da cena. */
+  --color-scene-ink: #42503a;
+  --color-scene-ink-soft: #5b6b54;
+
+  /* A paisagem. O Dino NÃO entra aqui: ele é `currentColor` e veste o tema do app. */
+  --color-scene-leaf: #457953;
+  --color-scene-leaf-dark: #3e6a4e;
+  /* A vegetação de FUNDO. Sem ela a floresta perde profundidade: as duas fileiras de árvores
+   * ficavam a 1,22:1 uma da outra, e a cena `layers` é sobre exatamente essa diferença. */
+  --color-scene-bark: #896746;
+
+  /* O par de comparação. É a cor que carrega o sentido da descoberta: a medida A contra a
+   * medida B, o antes contra o depois. Elas têm que se distinguir à primeira vista.
+   * ⚠️⚠️ Estes NÃO seguem o tema, e é deliberado: azul e laranja aqui não são decoração, são o
+   * que diz QUAL medida é qual — no palco, na faixa de estado e na comparação guardada. Um par
+   * que mudasse de matiz com o tema desmancharia a leitura no meio da descoberta. Pelo mesmo
+   * motivo o vermelho do encosto (`alert`) fica onde está. */
+  --color-scene-a: #315f92;
+  --color-scene-b: #c67431;
+  /* ⚠️ `b-ink` é a medida B quando ela vira TEXTO. O laranja tem 3,26:1 sobre o papel da cena:
+   * serve para um traço grosso e reprova a AA de texto pequeno — que é justamente onde ele
+   * estava, nos números da altura do salto e no rótulo da saída dos cactos. O azul da medida A
+   * não precisa de irmão: ele já passa com 6,08:1. */
+  --color-scene-b-ink: #85601f;
+  --color-scene-a-wash: #315f9226;
+  --color-scene-b-wash: #c6743140;
+
+  /* O encosto: quando as áreas se tocam, a cena inteira avisa. */
+  --color-scene-alert: #ae3e2c;
+  --color-scene-alert-wash: #ae3e2c26;
+
+  /* Os cartõezinhos de medida dentro da cena (placar, cronômetro, altura). */
+  --color-scene-card: #fffdf7;
+  --color-scene-card-line: #d9dfd1;
+
+  /* ⚠️⚠️ Estes tokens NÃO pintam mais as figuras do elenco (18/09/2026). Elas são desenhadas
+   * pela ARTE DO JOGO (`@sistemazero/studio/arte`), com as cores dela — o mundo é o jogo. O que
+   * sobrou aqui pinta o que NÃO é elenco: a nave do Pinta no ateliê, as pedras do 3D, os tons do
+   * núcleo. Quatro deles (`leaf-soft`, `rock-light`, `stone-light`, `star`) saíram junto com o
+   * `FundoEspaco`, que a arte substituiu.
+   *
+   *
+   * ⚠️⚠️ Tokens PRÓPRIOS, e nunca `sky`, `ground`, `grass`, `card`, `ink` ou o par: esses são
+   * remapeados no mundo espaço (abaixo), e uma figura pintada com eles mudaria de cor quando o
+   * palco vai para o espaço — a janela da nave feita de `card` virava um buraco escuro.
+   * ⚠️ Eles não seguem o tema, como a folha e o tronco: a pedra é cinza em qualquer tema. Cada um
+   * foi medido contra o céu do espaço E contra o branco da bancada, onde as peças também
+   * aparecem (`tests/scene-contrast.test.ts`). */
+  --color-scene-rock: #a39cb3;
+  --color-scene-rock-dark: #5d566e;
+  --color-scene-stone: #ad957d;
+  --color-scene-stone-dark: #6b5645;
+  --color-scene-flame: #f58a2f;
+  --color-scene-flame-deep: #e0452f;
+  --color-scene-flame-core: #ffd65c;
+  --color-scene-fin: #e24b3b;
+  --color-scene-window: #e3f1ff;
+}
+
+/* O MUNDO ESPAÇO (Raio-X, lote 3, 16/09/2026).
+ *
+ * ⭐⭐ Com uma nave, um asteroide, uma pedra, um tiro ou uma chama no elenco (`sceneCenario` do
+ * core), o palco sai da grama e vai para um fundo escuro de estrelas. O `SceneCanvas` põe esta
+ * classe na moldura, e a paleta INTEIRA da cena é redeclarada aqui dentro: o papel vira noite, a
+ * tinta clareia e o chão vira uma linha discreta. É por isso que os palcos quase não precisam
+ * saber do mundo — eles continuam pintando `fill-scene-ink`, e é a variável que muda.
+ *
+ * ⚠️⚠️ Fora do `@theme` de propósito. O Tailwind só emite a variável de tema que alguma
+ * utilitária USA; uma receita do espaço declarada no `@theme` e lida só por este bloco poderia
+ * sumir do CSS final. Aqui ela é CSS comum e sempre existe.
+ *
+ * ⚠️⚠️ O papel SEGUE o tema (`color-mix` com o `--primary`, sempre `in oklab`: no espaço
+ * cilíndrico um azul-noite puxado para o rosa vira ROXO VIVO): no Pink o espaço é ameixa. O par
+ * de comparação e o vermelho do encosto NÃO seguem o tema, como lá em cima — eles só CLAREIAM
+ * para o escuro, com o mesmo matiz. Azul continua dizendo A e âmbar continua dizendo B; no cromo
+ * (a faixa de estado, fora da moldura) eles seguem os de sempre.
+ *
+ * Mexeu aqui? Refaça a conta: `tests/scene-contrast.test.ts` lê ESTE bloco. */
+.sz-scene-espaco {
+  /* O papel: a moldura (o mais escuro), o céu de estrelas e os painéis por cima dele. */
+  --color-scene-ground: color-mix(in oklab, var(--primary, #315f92) 12%, #080c1e);
+  --color-scene-sky: color-mix(in oklab, var(--primary, #315f92) 14%, #101734);
+  --color-scene-grass: color-mix(in oklab, var(--primary, #315f92) 18%, #1f2850);
+  --color-scene-card: color-mix(in oklab, var(--primary, #315f92) 18%, #1f2850);
+  --color-scene-card-line: #4a5690;
+  /* O chão vira REFERÊNCIA: uma linha que se vê sem virar grama. ⚠️ Clareada no review do lote 3:
+   * a #65719f dava 2,77:1 no céu do ADMIN escuro (a lima do tema clareia o papel). */
+  --color-scene-line: #7482b0;
+  --color-scene-grid: #34406e;
+  --color-scene-rule: #8390bd;
+  /* A tinta. */
+  --color-scene-ink: #f1f4ff;
+  --color-scene-ink-soft: #b7c1e3;
+  /* O par e o encosto, clareados sem trocar de matiz. */
+  --color-scene-a: #8ebcf2;
+  --color-scene-b: #f0a256;
+  --color-scene-b-ink: #f2c27b;
+  --color-scene-a-wash: #8ebcf233;
+  --color-scene-b-wash: #f0a25640;
+  /* ⚠️ Clareado no review do lote 3: a #ff8f7d dava 4,19:1 sobre o painel do espaço no admin
+   * escuro, onde o professor ensaia a cena. */
+  --color-scene-alert: #ff9a8a;
+  --color-scene-alert-wash: #ff9a8a33;
+}
+
+/* ⚠️⚠️ O personagem veste o tema pela tinta do APP (`text-primary`, o `currentColor` do Dino e do
+ * casco da nave), e o azul de ação some no céu escuro (≈2,7:1). Dentro do desenho do espaço ele
+ * clareia, com o mesmo matiz do tema. Só no `svg`: os controles HTML por cima do palco (as alças,
+ * o "Toque para começar") usam o `text-primary` sobre fundo claro e continuam como estão. */
+.sz-scene-espaco svg .text-primary {
+  color: color-mix(in oklab, var(--primary, #315f92) 45%, #ffffff);
+}
+
+/* ⭐⭐ O HALO do texto do palco, em TODA cena (18/09/2026).
+ *
+ * Nasceu no mundo espaço: as estrelinhas são sorteadas no retângulo inteiro, e uma delas caía como
+ * ponto final em "restam." e colada no "15" do placar. Um halo da cor do papel apaga a estrela que
+ * ENCOSTA na letra, sem mexer no sorteio. `paint-order` pinta o contorno POR BAIXO do
+ * preenchimento, então a letra não engorda.
+ *
+ * ⚠️⚠️ Passou a valer em todo palco quando o mundo virou a ARTE DO JOGO: antes o Corre Dino era um
+ * retângulo de cor derivada do tema, com contraste garantido por construção; hoje ele é céu
+ * degradê, morros e uma faixa de TERRA marrom, e a tinta escura da cena sobre aquele marrom mede
+ * 2,04:1 — ilegível. O halo é a resposta que este arquivo já tinha para fundo ilustrado, e agora
+ * o fundo é ilustrado em todo lugar. Medido em `tests/scene-contrast.test.ts`.
+ * ⚠️ 3px e não mais: o halo também contorna o texto que mora num PAINEL (os cérebros da
+ * `entity-state`, a pílula "As áreas se tocam" da `hitbox`), e com 4px ou 5px ele já virava uma
+ * borda escura visível. O detalhe a dois ou três pixels da letra o halo não alcança; onde isso
+ * acontece num placar, o palco tira o detalhe da zona (`semDetalhe` do `FundoDoCenario`). */
+.sz-scene-frame svg text {
+  paint-order: stroke fill;
+  stroke: var(--color-scene-sky);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+/* ⭐⭐ O CONSOLE (18/09/2026): a experiência numa peça só.
+ *
+ * Relato dela: "instrução do Zappy, cena e controles têm que parecer uma unidade só e fazer parte
+ * de um jogo". Antes eram quatro retângulos em volta de um desenho de jogo, com raios que nem
+ * conversavam. A anatomia e o porquê estão em `components/scene-console.tsx`.
+ *
+ * ⚠️⚠️ O MATERIAL segue sendo o do APLICATIVO (`--card`, `--border`, `--primary`): ela escolheu o
+ * meio-termo. O que mudou é a arrumação, não a cor — a regra "cromo é o tema" continua de pé.
+ *
+ * ⚠️ Fora de `@layer`: o member-shell pinta com UTILITÁRIAS do Tailwind, e regra dentro de
+ * `@layer components` perde para elas (a mesma lição que o `globals.css` do kids já pagou). */
+.sz-scene-console {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 1rem;
+  /* ⚠️⚠️ A MOLDURA é de 4px com um DEGRAU de 6px embaixo, e é isso que faz o bloco parecer um
+   * console em vez de mais um retângulo. Era o desenho da maquete que ela aprovou, e a primeira
+   * implantação saiu com `border: 1px` e sombra nenhuma — foi a diferença que ela viu na tela.
+   * É o mesmo relevo do 3D do Brilliant que o kids dá a botão e cartão clicável, na cor da linha
+   * do tema (no jogo a moldura é creme sobre deck escuro; aqui o material é o do aplicativo). */
+  border: 4px solid var(--color-border);
+  box-shadow: 0 6px 0 var(--color-border);
+  background: var(--color-card);
+  /* O degrau ocupa espaço: sem isto ele encosta no que vier embaixo (o rodapé). */
+  margin-bottom: 6px;
+}
+
+/* O tom da cor de ação no momento do palpite — o mesmo sinal que o cartão azulado dava antes. */
+.sz-scene-console--palpite {
+  background: color-mix(in oklab, var(--color-primary) 4%, var(--color-card));
+}
+
+/* ⚠️⚠️ O mundo vai de borda a borda, RETO: quem desenha a moldura é o console. Vale para o palco
+ * (`sz-scene-frame`) e para o retrato do palpite (`scene-prediction-preview`), que traz uma
+ * moldura própria — no palpite ela virava um cartão arredondado dentro do console, e foi o que ela
+ * viu na tela ("na cena ficou um card com borda arredondada; na maquete é reta").
+ * (Os dois ganchos seguem com a moldura deles no palco SOLTO: a galeria e a prévia de autoria.) */
+.sz-scene-console .sz-scene-frame,
+.sz-scene-console [data-scene-prediction-preview] {
+  border-radius: 0;
+  border: 0;
+}
+
+.sz-scene-console-fala {
+  padding: 0.625rem 0.875rem;
+}
+/* A faixa do alto: o respiro da maquete (0,625 × 0,875rem), não o `px-3 py-2` das utilitárias. */
+.sz-scene-console-visual > [data-lugar-reservado="faixa"] > div {
+  padding: 0.625rem 0.875rem;
+}
+/* ⚠️ O segundo balão do palpite (a pergunta) vem logo DEPOIS do mundo e encostava nele. */
+.sz-scene-console-actions > .sz-scene-console-fala:first-child {
+  padding-top: 0.75rem;
+}
+
+.sz-scene-console-mundo {
+  position: relative;
+}
+
+/* A situação vem depois da ação. O respiro preserva a leitura mesmo quando passa a duas linhas. */
+.sz-scene-console-actions > [data-lugar-reservado="situacao"] {
+  padding: 0.5rem 0.875rem 0.375rem;
+}
+
+/*
+ * As PEÇAS da bancada lado a lado, e é a régua da maquete: `auto-fit` com piso de 17rem.
+ *
+ * ⚠️⚠️ Era `grid gap-3 sm:grid-cols-2` em dez bancadas, e o `sm:` olha a JANELA, não a coluna — a
+ * armadilha que este arquivo já documenta ("lado a lado pela largura MEDIDA, nunca pelo `sm:`").
+ * Numa janela larga com a aula dividida ao meio, ou num celular, ele ligava as duas colunas e cada
+ * peça ficava com 151px: seis cenas passavam da moldura e ganhavam rolagem lateral (medido em
+ * `stage-size`, `hitbox`, `entity-state`, `camera-3d`, `pick-ray` e `world`). O `auto-fit` pergunta
+ * ao CONTÊINER: abaixo de 17rem por coluna ele empilha sozinho.
+ */
+.sz-scene-pecas {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+
+/* ⚠️ As TRÊS torres da `entity-state` são estreitas de propósito (cada uma é uma escolha de
+ * quatro palavras): o piso delas é 11rem, senão as três nunca caberiam lado a lado e a cena
+ * perderia a comparação, que é o assunto dela. */
+.sz-scene-pecas--tres {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+
+/* A largura da bancada, não a janela, decide quantas áreas cabem. A bandeja é uma linha. */
+.sz-once-controls {
+  container-type: inline-size;
+}
+.sz-once-areas {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+}
+.sz-once-area {
+  min-width: 0;
+  padding: 0.625rem;
+  border: 2px dashed var(--color-border);
+  border-radius: 0.875rem;
+  background: var(--color-card);
+}
+.sz-once-area--available {
+  grid-column: 1 / -1;
+}
+.sz-once-area-heading {
+  display: flex;
+  min-height: 2.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.375rem;
+}
+.sz-once-card {
+  height: auto;
+  min-width: 0;
+  max-width: 100%;
+  flex-shrink: 1;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  white-space: normal;
+  text-align: left;
+}
+.sz-once-card-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sz-once-card-count {
+  border-radius: 999px;
+  padding: 0.125rem 0.375rem;
+  background: color-mix(in oklab, currentColor 10%, transparent);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Uma árvore, dois layouts. Sem portal nem fullscreen nativo: a cena não reinicia. */
+.sz-scene-workspace-slot,
+.sz-scene-workspace,
+.sz-scene-workspace-body,
+.sz-scene-console-visual,
+.sz-scene-console-actions {
+  min-width: 0;
+}
+.sz-scene-workspace {
+  /* No próprio workspace, não no slot: ampliar continua relativo à janela inteira. */
+  container: scene-workspace / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.sz-scene-workspace-header {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.sz-scene-workspace-heading {
+  flex: 1 1 14rem;
+  min-width: min(100%, 14rem);
+}
+.sz-scene-workspace--expanded {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  height: 100dvh;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right))
+    max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+  background: var(--color-background);
+  color: var(--color-foreground);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.sz-scene-workspace--expanded > .sz-scene-workspace-header {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 2;
+  background: var(--color-background);
+  padding-block: 0.25rem;
+}
+
+/* A divisória muda o PAINEL, não a janela. A mesma régua serve inline e ampliado:
+ * 52rem deixam cerca de 25rem para o palco e pelo menos 26rem para a bancada.
+ * Sem altura confortável, preservamos o fluxo vertical, sem reduzir letras ou cortar ações. */
+@media (min-height: 34rem) {
+  @container scene-workspace (min-width: 52rem) {
+    .sz-scene-console {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(26rem, 0.9fr);
+      grid-template-rows: minmax(0, 1fr);
+      /* Reserva espaço para cabeçalho e navegação da aula. A bancada rola sem levar
+       * o palco junto; um painel largo não vira uma coluna interminável. */
+      height: min(40rem, calc(100dvh - 14rem));
+    }
+    .sz-scene-console-visual,
+    .sz-scene-console-actions {
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      /* A barra reserva a mesma largura dos dois lados: o palco não fica colado à esquerda. */
+      scrollbar-gutter: stable both-edges;
+    }
+    .sz-scene-console-actions {
+      border-left: 2px solid var(--color-border);
+    }
+    .sz-scene-console-visual {
+      display: flex;
+      flex-direction: column;
+    }
+    .sz-scene-console-visual > :not(.sz-scene-console-mundo) {
+      flex-shrink: 0;
+    }
+    .sz-scene-console-visual > .sz-scene-console-mundo {
+      flex: 1;
+      min-height: 0;
+      container-type: size;
+      overflow: auto;
+    }
+    /* O viewBox informa a proporção real. O observador do palco mantém os rótulos
+     * legíveis. Comparações e legendas conservam a altura natural e podem rolar. */
+    .sz-scene-console-mundo > .sz-scene-frame--fit {
+      width: min(100%, calc(100cqh * var(--sz-scene-aspect)));
+      margin-inline: auto;
+    }
+    /* No ampliado, preencher a área útil SOMENTE quando as colunas estão ativas.
+     * Um segundo limiar de viewport poderia cortar o fluxo empilhado com fontes maiores. */
+    .sz-scene-workspace--expanded .sz-scene-workspace-body,
+    .sz-scene-workspace--expanded .sz-scene-workspace-body > fieldset,
+    .sz-scene-workspace--expanded .sz-scene-workspace-body > fieldset > fieldset {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-height: 0;
+      gap: 0.75rem;
+    }
+    .sz-scene-workspace--expanded .sz-scene-workspace-body > *,
+    .sz-scene-workspace--expanded .sz-scene-workspace-body > fieldset > fieldset {
+      margin-block: 0;
+    }
+    .sz-scene-workspace--expanded .sz-scene-console {
+      flex: 1;
+      min-height: 0;
+      height: auto;
+    }
+  }
+}
+
+/* A prancha: a bandeja rebaixada que segura o gesto e a bancada. */
+.sz-scene-prancha {
+  margin: 0 0.625rem 0.625rem;
+  padding: 0.5rem;
+  border-radius: 0.875rem;
+  background: color-mix(in oklab, var(--color-foreground) 5%, transparent);
+  display: grid;
+  gap: 0.5rem;
+}
+/* ⭐ O HUD, no molde do `drawScore` do Jogo 2D (`game-2d/runtime/arcadeKitsHud.ts`): rótulo
+ * pequeno em versalete, número GORDO em Baloo, sem caixa branca por cima do mundo. Era a queixa
+ * dela: "o placar você fez de um jeito que não tem nada a ver com o estilo do jogo". */
+.sz-scene-hud-rotulo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/*
+ * O rótulo do placar DENTRO do palco: a MESMA versalete do rótulo da faixa de estado logo acima,
+ * para o placar de dentro e o de cima falarem a mesma língua.
+ *
+ * ⚠️⚠️ A caixa alta é do CSS, nunca um `.toUpperCase()` no JSX: o texto do palco é vestido pelo
+ * elenco e varrido por teste (o "o elenco veste a cena INTEIRA" do kids lê o texto visível), e um
+ * "DINO" em caixa alta no DOM escaparia da varredura. Corpo e peso ficam nos atributos do `<text>`,
+ * porque o tamanho da letra do palco passa pela régua `letra()` da cena.
+ */
+.sz-scene-frame svg text.sz-scene-placar-rotulo {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.sz-scene-hud-valor {
+  font-family: var(--font-display, var(--font-sans));
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+/* A PLACA do começo da faixa. Hoje ela diz só em que momento da atividade a criança está ("Seu
+ * palpite", "Antes de assistir"): o nome da cena já é o título do bloco, e repeti-lo aqui seria a
+ * terceira vez na mesma tela. A variante base existe para o dia em que houver outro estado. */
+.sz-scene-placa {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--color-foreground) 6%, transparent);
+  color: var(--color-muted-foreground);
+}
+.sz-scene-placa--palpite {
+  background: color-mix(in oklab, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+}
+
+/* O lugar da CONVERSA: logo abaixo do mundo, dentro do console.
+ * É onde o palpite pergunta antes e onde a conclusão responde depois.
+ * ⚠️ Margem no TOPO: sem ela o cartão encostava no mundo (ela reparou na maquete). */
+.sz-scene-console-conversa {
+  margin: 0.75rem 0.875rem 0.5rem;
+}

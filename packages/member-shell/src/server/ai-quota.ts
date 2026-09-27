@@ -83,6 +83,6 @@ export async function consumeAiQuotaStrict(
 /** Copy da recusa (tom Zappy, público inclui crianças) por escopo. */
 export function aiQuotaMessage(scope: 'day' | 'month'): string {
   return scope === 'day'
-    ? 'Por hoje a gente já pensou bastante! Amanhã tem mais 🤖'
-    : 'Uau, você usou toda a ajuda do Zappy deste mês! No mês que vem tem mais 🤖'
+    ? 'Por hoje a gente já pensou bastante! Amanhã tem mais ✨'
+    : 'Uau, você usou toda a ajuda do Zappy deste mês! No mês que vem tem mais ✨'
 }

@@ -42,6 +42,7 @@ export class AwardGamificationService {
     courseId: string
     /** Vitrine do CURSO — TODA a gamificação é segregada por audiência. */
     audience: CourseAudience
+    /** A ação fechou a unidade? Só a vitrine ADULTA premia isso aqui (ver abaixo). */
     unitCompleted: boolean
     courseCompleted: boolean
     privileged: boolean
@@ -54,7 +55,11 @@ export class AwardGamificationService {
         coins: COIN_VALUES.LESSON_COMPLETE,
       },
     ]
-    if (input.unitCompleted) {
+    // ⚠️ O XP de fim de UNIDADE saiu daqui para a vitrine KIDS em 09/2026: lá ele é
+    // o prêmio do BAÚ da trilha, que a criança abre com um clique. A vitrine ADULTA
+    // não tem trilha, não tem baú e não tem tela que resgate — então para ela o
+    // comportamento antigo FICA, senão o XP simplesmente sumiria do produto.
+    if (input.unitCompleted && input.audience === 'adult') {
       events.push({
         sourceType: 'unit_complete',
         sourceId: input.moduleId,
@@ -68,6 +73,50 @@ export class AwardGamificationService {
       events.push({ sourceType: 'course_complete', sourceId: input.courseId, amount: 0 })
     }
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
+  }
+
+  /**
+   * Prêmio do BAÚ de fim de unidade, no clique da criança. A idempotência é a do
+   * ledger: `xp_events` tem índice único por (usuário, tipo, origem), então
+   * clicar de novo (ou em outra aba) devolve `xpAwarded: 0` sem pagar duas vezes.
+   *
+   * `failOpen: false`: aqui o award é a operação inteira, e engolir o erro
+   * devolveria 200 com corpo vazio — o baú abriria na tela sem pagar nada e
+   * voltaria fechado no próximo carregamento.
+   *
+   * ⚠️ SABIDO, e não consertado nesta fatia: isto MOVE o streak, porque o `award`
+   * avança o foguinho em qualquer evento novo com XP. No modelo antigo o
+   * `unit_complete` nascia na mesma transação da aula, sempre num dia de estudo
+   * real; agora o baú fica guardado até a criança clicar. Ou seja: dá para fechar
+   * cinco unidades num domingo e manter a sequência a semana inteira abrindo um
+   * baú por dia. O teto é o número de unidades concluídas, então não é farm
+   * infinito, mas é um vetor novo. Separar streak de moeda exige cirurgia no
+   * bloco mais delicado do `gamification.repository` (freeze do mês, teto diário e
+   * marcos de streak estão entrelaçados ali), e essa cirurgia não tem como ser
+   * testada sem Postgres — fica para uma fatia própria.
+   */
+  async awardUnitChest(input: {
+    userId: string
+    accountId: string
+    moduleId: string
+    audience: CourseAudience
+    privileged: boolean
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [
+        {
+          sourceType: 'unit_complete',
+          sourceId: input.moduleId,
+          amount: XP_VALUES.UNIT_COMPLETE,
+          coins: COIN_VALUES.UNIT_COMPLETE,
+        },
+      ],
+      input.privileged,
+      false,
+    )
   }
 
   async awardQuizPassed(input: {
@@ -461,12 +510,20 @@ export class AwardGamificationService {
     )
   }
 
+  /**
+   * `failOpen` (padrão) é para quando a gamificação é EFEITO COLATERAL de outra
+   * coisa: concluir aula não pode cair porque o XP falhou. Quem chama com
+   * `failOpen: false` é o caso em que o award É a operação inteira — aí engolir o
+   * erro devolveria 200 com corpo vazio, e a criança veria o baú abrir sem ganhar
+   * nada e voltar fechado no F5.
+   */
   private async award(
     userId: string,
     accountId: string,
     audience: CourseAudience,
     events: AwardXpEventInput[],
     privileged: boolean,
+    failOpen = true,
   ): Promise<GamificationDeltaView | null> {
     const now = this.clock()
     try {
@@ -486,6 +543,7 @@ export class AwardGamificationService {
         sourceTypes: events.map((e) => e.sourceType),
         error: error instanceof Error ? error.message : String(error),
       })
+      if (!failOpen) throw error
       return null
     }
   }

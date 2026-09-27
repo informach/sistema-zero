@@ -99,7 +99,11 @@ describe('CreateSubscriptionService', () => {
 
     // A view da criação expõe o pagamento do 1º ciclo (o funil linka ao lead
     // sem esperar o webhook) e o `payment.paid` carrega o subscriptionId.
-    expect(view.firstPayment).toEqual({ id: cycle.id, status: 'PAID' })
+    expect(view.firstPayment).toEqual({
+      id: cycle.id,
+      status: 'PAID',
+      paidAt: cycle.paidAt?.toISOString() ?? null,
+    })
     const paidEvent = payments.outbox.find((e) => e.eventName === 'payment.paid')!
     expect(paidEvent.payload.subscriptionId).toBe(view.id)
   })

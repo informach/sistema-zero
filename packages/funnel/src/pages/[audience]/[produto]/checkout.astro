@@ -4,13 +4,22 @@ import { leadBelongsToFunnel } from '../../../funnels/lead-scope'
 import { getFunnel } from '../../../funnels/registry'
 import CheckoutForm from '../../../islands/CheckoutForm'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import {
+  computeFixedAccessExpiry,
+  fixedAccessFromOffer,
+  fixedAccessLabel,
+  formatSaoPauloDateTime,
+} from '../../../lib/access-period'
 import { ContactSchema } from '../../../lib/contact-schema'
+import { sanitizeLeadAttribution } from '../../../lib/lead-attribution'
 import { getLeadId, leadCookie } from '../../../lib/lead-session'
 import { formatBRLFromCents2 } from '../../../lib/money'
 import { funnelOgImage } from '../../../lib/seo'
 import { getActiveOffer } from '../../../server/catalog'
+import { resolveCouponPresentation } from '../../../server/coupon-presentation'
 import { getDeps } from '../../../server/deps'
 import { resolveOfferSlug } from '../../../server/offer'
+import { checkOfferContract } from '../../../server/offer-contract'
 
 export const prerender = false
 
@@ -23,7 +32,7 @@ const successPath = f.steps.upsell ? `${f.basePath}/upsell` : `${f.basePath}/obr
 
 Astro.response.headers.set('cache-control', 'no-store')
 
-const { repo, env, gateway } = getDeps()
+const { repo, env, gateway, log } = getDeps()
 
 // Lead da sessão (cookie). Lead já PAGO não é reaproveitado: nova compra = novo
 // lead (sem CPF/dados antigos) — defesa extra à expiração do cookie na /obrigado.
@@ -44,6 +53,15 @@ const fromQuery = {
   telefone: sp.get('telefone')?.trim() ?? '',
 }
 const queryContact = ContactSchema.safeParse(fromQuery)
+const queryAttribution = sanitizeLeadAttribution({
+  utmSource: sp.get('utm_source'),
+  utmMedium: sp.get('utm_medium'),
+  utmCampaign: sp.get('utm_campaign'),
+  utmContent: sp.get('utm_content'),
+  eventCode: sp.get('event_code') ?? sp.get('event'),
+  initialCouponCode: sp.get('coupon') ?? sp.get('cupom'),
+  landingPath: Astro.url.pathname,
+})
 
 // O checkout SEMPRE abre (o pré-checkout é só um facilitador): sem lead e sem
 // contato, o formulário abre vazio e a pessoa preenche tudo aqui, sem perder a
@@ -53,7 +71,7 @@ if (!lead && queryContact.success) {
   // Contato válido na URL (veio do pré-checkout): cria o lead já com ele
   // persistido (recupera o telefone p/ cartão/boleto, por exemplo) e a origem
   // do funil.
-  const created = await repo.createLead(f.key)
+  const created = await repo.createLead(f.key, queryAttribution)
   leadId = created.id
   Astro.response.headers.append('set-cookie', leadCookie(leadId, env.NODE_ENV === 'production'))
   await repo.updateLead(leadId, queryContact.data)
@@ -86,9 +104,32 @@ const initialContact = {
 // Preço/nome vêm do catálogo (fonte da verdade); fallback p/ rótulos do funil se fora.
 // Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout/cobrança.
 const offerSlug = resolveOfferSlug(env, f.key)
-const offer = await getActiveOffer(gateway, offerSlug)
-const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
+const offer = await getActiveOffer(gateway, offerSlug, { log })
+const contractCheck = checkOfferContract(f.offerContract, offer)
+if (!contractCheck.ok) {
+  log('checkout.offer_contract_mismatch', {
+    funnel: f.key,
+    offerSlug,
+    reason: contractCheck.reason,
+    expected: contractCheck.expected,
+    actual: contractCheck.actual,
+  })
+  return new Response('Esta oferta está temporariamente indisponível.', { status: 503 })
+}
+const initialCoupon = await resolveCouponPresentation(gateway, offerSlug, sp)
+// Uma cotação válida é mais nova e mais autoritativa que o cache curto da view.
+const priceCents =
+  initialCoupon.status === 'valid'
+    ? initialCoupon.listPriceCents
+    : (offer?.priceCents ?? env.PRODUCT_PRICE_CENTS)
 const productName = offer?.productName || f.productName
+const isCommunity = f.key === 'kids/comunidade-dos-criadores'
+const fixedAccess = fixedAccessFromOffer(offer)
+const accessLabel = fixedAccess ? fixedAccessLabel(fixedAccess) : null
+const estimatedAccessEnd = fixedAccess
+  ? formatSaoPauloDateTime(computeFixedAccessExpiry(new Date(), fixedAccess))
+  : null
+const guaranteeDays = offer?.guaranteeDays ?? 7
 
 // Assinatura: sufixo /mês|/ano no preço + oferta IRMÃ do alternador (catálogo).
 const isSubscription = offer?.pricingMode === 'subscription'
@@ -99,7 +140,9 @@ const priceNote = isSubscription
   ? interval === 12
     ? 'Assinatura anual · acesso imediato'
     : 'Assinatura mensal · acesso imediato'
-  : 'Pagamento único · acesso imediato'
+  : fixedAccess
+    ? `Pagamento único · ${accessLabel} a partir da aprovação`
+    : 'Pagamento único · acesso imediato'
 
 // Oferta irmã (alternador mensal↔anual): busca a view p/ preço/intervalo. Falha
 // do catálogo degrada SEM alternador (o checkout da principal segue funcionando).
@@ -110,7 +153,7 @@ let altOffer: {
   billingIntervalMonths: number | null
 } | null = null
 if (isSubscription && offer?.altOffer) {
-  const alt = await getActiveOffer(gateway, offer.altOffer.slug)
+  const alt = await getActiveOffer(gateway, offer.altOffer.slug, { log })
   if (alt && alt.pricingMode === 'subscription' && alt.billingIntervalMonths) {
     altOffer = {
       slug: alt.slug,
@@ -135,12 +178,42 @@ const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.sl
   htmlClass={f.theme ? `theme-${f.theme}` : undefined}
 >
   <!-- Sem header: o checkout abre direto no card do produto (estilo Hotmart). -->
-  <main class="mx-auto max-w-xl px-4 py-10 sm:py-12">
+  <main class:list={['mx-auto max-w-xl px-4 py-10 sm:py-12', { 'kids-checkout': f.theme === 'kids' }]}>
+    {
+      f.key === 'kids/desafio-primeiro-jogo' && (
+        <div class="mb-6 text-center">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-cyan">Checkout seguro</p>
+          <h1 class="mt-2 text-2xl font-extrabold text-ink sm:text-3xl">
+            Falta pouco para o primeiro jogo começar
+          </h1>
+          <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+            Revise o valor, informe os dados do responsável e escolha a forma de pagamento. Depois
+            da aprovação, seu filho terá 30 dias para criar, testar e publicar o primeiro jogo.
+          </p>
+        </div>
+      )
+    }
+    {
+      isCommunity && (
+        <div class="mb-6 text-center">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-cyan">Checkout seguro</p>
+          <h1 class="mt-2 text-2xl font-extrabold text-ink sm:text-3xl">
+            Escolha como a criação vai começar na sua família
+          </h1>
+          <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+            Revise o plano, o valor e a renovação. Os dados abaixo são do responsável. Depois, você
+            cria o perfil da criança dentro da plataforma e apresenta a Jornada do Criador.
+          </p>
+        </div>
+      )
+    }
     <!-- ── Produto ─────────────────────────────────────────────────────── -->
-    <div class="flex items-center gap-4 rounded-2xl border border-line/70 bg-card/50 p-4 sm:p-5">
+    <div class="checkout-product-card flex items-center gap-4 rounded-2xl border border-line/70 bg-card/50 p-4 sm:p-5">
       <img
         src={`${f.imagesBase}/${f.checkoutImage ?? 'produto-capa.webp'}`}
         alt={`Capa do curso ${productName}`}
+        width="80"
+        height="80"
         class="size-16 shrink-0 rounded-lg border border-line/60 object-cover sm:size-20"
         decoding="async"
       />
@@ -162,17 +235,24 @@ const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.sl
         allowCoupon={offer?.allowsCoupon === true}
         successPath={successPath}
         isKids={f.audience === 'kids'}
+        isChallenge={f.key === 'kids/desafio-primeiro-jogo'}
         installmentsMax={offer?.installmentsMax ?? null}
         pricingMode={offer?.pricingMode ?? 'one_time'}
         billingIntervalMonths={offer?.billingIntervalMonths ?? null}
         offerSlug={offerSlug}
         altOffer={altOffer}
         initialChoice={initialChoice}
+        initialCoupon={initialCoupon}
+        accessLabel={accessLabel}
+        estimatedAccessEnd={estimatedAccessEnd}
+        guaranteeDays={guaranteeDays}
+        termsHref={`/${f.audience}/termos`}
+        privacyHref={`/${f.audience}/privacidade`}
       />
     </div>
 
     <p class="mt-6 text-center text-xs text-muted">
-      Pagamento processado com segurança. Garantia de 7 dias.
+      Pagamento processado com segurança. Garantia de {guaranteeDays} dias.
     </p>
   </main>
 

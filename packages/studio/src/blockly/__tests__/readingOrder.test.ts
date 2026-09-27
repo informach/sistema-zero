@@ -1,20 +1,12 @@
 import { describe, expect, it } from 'bun:test'
-import type * as Blockly from 'blockly/core'
-import { sortTopBlocksReadingOrder } from '../buildIR'
+import { sortLegacyTopBlocks as sortTopBlocksReadingOrder } from '../../project-migrations/readingOrder'
 
-/**
- * Bloco falso com geometria — basta `id` + `getRelativeToSurfaceXY` para o
- * `sortTopBlocksReadingOrder`. (O end-to-end roda em workspace headless, sem
- * posição, então a ordenação por coluna é testada aqui isoladamente.)
- */
-function fakeBlock(id: string, x: number, y: number): Blockly.Block {
-  return {
-    id,
-    getRelativeToSurfaceXY: () => ({ x, y }),
-  } as unknown as Blockly.Block
+/** A conversão ordena a geometria serializada antes de criar as áreas atuais. */
+function fakeBlock(id: string, x: number, y: number) {
+  return { id, x, y }
 }
 
-const ids = (blocks: Blockly.Block[]): string[] => blocks.map((b) => b.id)
+const ids = (blocks: { id: string }[]): string[] => blocks.map((b) => b.id)
 
 describe('sortTopBlocksReadingOrder', () => {
   it('ordena colunas da esquerda para a direita', () => {
@@ -51,7 +43,7 @@ describe('sortTopBlocksReadingOrder', () => {
   })
 
   it('fallback: sem geometria (headless) mantém a ordem original', () => {
-    const tops = [{ id: 'x' } as unknown as Blockly.Block, { id: 'y' } as unknown as Blockly.Block]
+    const tops: { id: string; x?: number; y?: number }[] = [{ id: 'x' }, { id: 'y' }]
     expect(sortTopBlocksReadingOrder(tops)).toBe(tops)
   })
 })

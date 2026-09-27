@@ -26,7 +26,21 @@ export class ViewportThumbnail {
     private readonly background: string,
   ) {}
 
-  render(scene: Scene, bounds: Bounds, hiddenObjects: readonly Object3D[]): string | null {
+  render(
+    scene: Scene,
+    bounds: Bounds,
+    hiddenObjects: readonly Object3D[],
+    capture?: { size: number; angle: number },
+  ): string | null {
+    const size = capture?.size ?? THUMB_SIZE
+    if (
+      !Number.isInteger(size) ||
+      size < 1 ||
+      size > 1024 ||
+      (capture && !Number.isFinite(capture.angle))
+    )
+      return null
+    this.target.setSize(size, size)
     const { min, max } = bounds
     const center = new Vector3((min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2)
     const radius = Math.max(
@@ -36,8 +50,15 @@ export class ViewportThumbnail {
     const distance = (radius / Math.sin(rad(this.camera.fov) / 2)) * 1.1
     this.camera.position
       .copy(center)
-      .addScaledVector(new Vector3(1, 0.75, 1.35).normalize(), distance)
+      .addScaledVector(
+        capture
+          ? new Vector3(Math.sin(capture.angle), 0.5, Math.cos(capture.angle)).normalize()
+          : new Vector3(1, 0.75, 1.35).normalize(),
+        distance,
+      )
     this.camera.lookAt(center)
+    this.camera.near = Math.max(0.0001, distance - radius * 2)
+    this.camera.far = distance + radius * 3
     this.camera.updateProjectionMatrix()
 
     const visibility = hiddenObjects.map((object) => object.visible)
@@ -51,9 +72,9 @@ export class ViewportThumbnail {
       this.renderer.setClearColor(new Color(this.background), 1)
       this.renderer.clear()
       this.renderer.render(scene, this.camera)
-      const pixels = new Uint8Array(THUMB_SIZE * THUMB_SIZE * 4)
-      this.renderer.readRenderTargetPixels(this.target, 0, 0, THUMB_SIZE, THUMB_SIZE, pixels)
-      return encodeThumb(pixels, THUMB_SIZE)
+      const pixels = new Uint8Array(size * size * 4)
+      this.renderer.readRenderTargetPixels(this.target, 0, 0, size, size, pixels)
+      return encodeThumb(pixels, size, !!capture)
     } catch {
       return null
     } finally {
@@ -62,6 +83,7 @@ export class ViewportThumbnail {
       hiddenObjects.forEach((object, index) => {
         object.visible = visibility[index] ?? true
       })
+      if (capture) this.target.setSize(THUMB_SIZE, THUMB_SIZE)
     }
   }
 

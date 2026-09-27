@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import { normalizeBlocksStateToFrames } from '../../blockly/normalizeFrames'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
+import { normalizeLegacyBlocksStateToFrames as normalizeBlocksStateToFrames } from '../../project-migrations/legacyFrames'
 import { parseProjectFilesWithDiagnostics } from '../project'
 
 const BEFORE = `// Gerado pelo Sistema Zero Studio

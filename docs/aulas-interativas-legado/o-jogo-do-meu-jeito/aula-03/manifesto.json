@@ -1,0 +1,229 @@
+{
+  "version": 3,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-03",
+  "title": "Sua nave ganha movimento",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! Abra a mesma nave no Pinta. Com dois desenhos um pouco diferentes, seu fogo vai parecer se mexer.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "O que deve mudar entre os quadros?",
+        "instructions": "Você quer fogo pulsando, sem a nave tremer. Qual mudança tentaria primeiro? Sua primeira ideia pode mudar depois da observação.",
+        "hints": ["Compare as duas imagens: o que seus olhos conseguem perceber que mudou?"],
+        "required": true,
+        "activity": {
+          "type": "question"
+        },
+        "checkpoint": {
+          "prompt": "Você mudou só o fogo, mas quase não vê movimento. O que pode experimentar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Fazer uma diferença um pouco maior no fogo do segundo quadro."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Renomear a animação sem alterar os desenhos."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Duplicar várias vezes a mesma imagem sem mudanças."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A animação depende da diferença entre os quadros. Testar na prévia ajuda a encontrar uma mudança visível."
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Uma animação alterna imagens. Se o corpo da nave muda sem querer, ela parece tremer; se só o fogo muda, ele parece piscar enquanto a nave continua firme.\n\nA pele de cebola mostra o quadro anterior como referência, sem fazer parte do desenho exportado. O nome voando e os dois quadros serão usados na programação.\n\nVocê decide o formato e as cores do fogo; manter o corpo estável ajuda a perceber a mudança que escolheu."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### O seu fogo\n\nAbra Pinta e entre no cartão nave. Desenhe o fogo nas quatro linhas que ficaram livres.\n\nEscolha cores que você consiga reconhecer quando a nave estiver pequena no jogo."
+      }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-03-passo-01: gravar a demonstração \"o seu fogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### O segundo quadro\n\nNa faixa Spritesheet, duplique o quadro. Agora mude o fogo do segundo, preservando o corpo.\n\nRode a prévia para ver as duas imagens alternando. Se quase não houver diferença, experimente uma mudança maior no fogo."
+      }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-03-passo-02: gravar a demonstração \"o segundo quadro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### O fantasma do quadro anterior\n\nLigue a pele de cebola para ver a referência do quadro anterior. Compare o alinhamento do corpo e ajuste só o que você quer mover.\n\nDesligue a referência e olhe a prévia outra vez."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-03-passo-03: gravar a demonstração \"o fantasma do quadro anterior\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "convite-construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "**Sua vez:** Veja a prévia com e sem a pele de cebola. Ela é só uma referência; não faz parte do desenho final."
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["Procure o que mudou de posição entre um quadro e o outro."],
+        "required": true,
+        "activity": {
+          "type": "question"
+        },
+        "checkpoint": {
+          "prompt": "O fogo está animando, mas o corpo da nave treme sem você querer. O que ajuda a investigar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Comparar o alinhamento com a pele de cebola."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Mudar o nome da nave."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Criar outro desenho do zero."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A referência do quadro anterior ajuda a alinhar o corpo. Você pode mudar só o fogo e conferir a prévia de novo."
+        }
+      }
+    },
+    {
+      "key": "construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "### O nome da animação\n\nRenomeie a animação parado para voando. Confira dois quadros e mantenha a velocidade como veio nesta etapa.\n\nEspere salvar e volte à galeria para reconhecer a nave animada."
+      }
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-03-passo-04: gravar a demonstração \"o nome da animação\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "A animação voando deve ter dois quadros. O corpo fica alinhado e o fogo muda. Confira o salvamento e abra novamente o mesmo desenho.\n\nNa Aula 4, você vai desenhar o asteroide com outro jeito de construir imagens: vetor.\n\nDepois de conferir o salvamento, volte a esta aba para a pergunta final. Na próxima aula você continua o trabalho guardado na ferramenta."
+      }
+    },
+    {
+      "key": "checar-fechamento",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma decisão para continuar",
+        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
+        "hints": ["O programa procura os recursos pelo nome combinado."],
+        "required": true,
+        "activity": {
+          "type": "question"
+        },
+        "checkpoint": {
+          "prompt": "O jogo vai procurar a animação voando. Você deixou o nome parado. O que ajustar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Apagar o segundo quadro."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Renomear para voando e conferir os dois quadros."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Trocar as cores; o nome muda junto."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "O nome voando e os dois quadros serão usados na integração. Confira isso no mesmo desenho nave e espere salvar."
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "O que deve mudar entre os quadros?",
+      "objective": "Criar dois quadros de animação e usar a imagem anterior para controlar o que muda.",
+      "intent": "exploration",
+      "blockKeys": ["abertura", "descoberta", "explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
+    },
+    {
+      "key": "construir-1",
+      "title": "Faça o fogo pulsar",
+      "objective": "Variar o fogo entre quadros e usar uma referência para alinhar o corpo.",
+      "intent": "application",
+      "blockKeys": [
+        "construir-1",
+        "video-construir-1-1",
+        "construir-2",
+        "video-construir-2-1",
+        "construir-3",
+        "video-construir-3-1",
+        "convite-construir-1",
+        "checar-construir-3"
+      ],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
+    },
+    {
+      "key": "fechamento",
+      "title": "Guarde seu pequeno filme",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. A pergunta verifica compreensão, sem avaliar automaticamente o trabalho externo.",
+      "intent": "closing",
+      "blockKeys": ["construir-4", "video-construir-4-1", "fechamento", "checar-fechamento"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-fechamento"]
+      }
+    }
+  ]
+}

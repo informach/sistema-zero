@@ -8,7 +8,7 @@ import {
   type PixelSpriteAsset,
 } from '../core/project'
 import { decodeGif } from '../testing/gifDecode'
-import { DEFAULT_STYLE, makeRect } from '../vector/shapes'
+import { DEFAULT_STYLE, makeEllipse, makeRect } from '../vector/shapes'
 import {
   gifBlob,
   pixelAnimationGif,
@@ -215,6 +215,34 @@ describe('vectorAnimationGif', () => {
     expect(metadata.pageHeight).toBe(512)
   })
 
+  it('entrega ao rasterizador uma tira com o recorte vetorial completo', async () => {
+    const asset = createVectorSpriteAsset({ name: 'vagalume', frameSize: 32 })
+    const source = makeEllipse(
+      { x: 8, y: 8 },
+      { x: 24, y: 24 },
+      { fill: '#ffffff', stroke: null, opacity: 1 },
+    )
+    const content = {
+      ...makeRect({ x: 0, y: 0 }, { x: 32, y: 32 }, { fill: '#78dc52', stroke: null, opacity: 1 }),
+      maskId: source.id,
+    }
+    const animation = {
+      ...(asset.animations[0] as NonNullable<(typeof asset.animations)[0]>),
+      frames: [[content, source]],
+    }
+    let rasterSvg = ''
+    const bytes = await vectorAnimationGif(asset, animation, 1, async (svg, width, height) => {
+      rasterSvg = svg
+      const canvas = createCanvas(width, height)
+      canvas.getContext('2d').drawImage(await loadImage(Buffer.from(svg)), 0, 0, width, height)
+      return canvas as unknown as HTMLCanvasElement
+    })
+
+    expect(bytes).not.toBeNull()
+    expect(rasterSvg).toContain(`id="cell-0-0-pin-mask-${source.id}"`)
+    expect(rasterSvg).toContain(`clip-path="url(#cell-0-0-pin-mask-${source.id})"`)
+  })
+
   it('sem canvas de verdade devolve null em vez de quebrar (happy-dom)', async () => {
     const asset = createVectorSpriteAsset({ name: 'nave', frameSize: 16 })
     expect(await vectorAnimationGif(asset, asset.animations[0] as never)).toBeNull()
@@ -257,5 +285,18 @@ describe('rasterCameOutBlank (o raster falhou EM BRANCO?)', () => {
   it('tudo ESCONDIDO é vazio de verdade, não falha do raster', () => {
     // Recusar aqui seria dizer "não consegui" para algo que funcionou.
     expect(rasterCameOutBlank([[{ ...forma(), hidden: true }]], 1)).toBe(false)
+  })
+
+  it('fonte de máscara sem conteúdo visível também é vazio legítimo', () => {
+    const source = { ...forma(), id: 'janela' }
+    const hiddenContent = { ...forma(), id: 'rosto', maskId: source.id, hidden: true as const }
+    expect(rasterCameOutBlank([[hiddenContent, source]], 1)).toBe(false)
+  })
+
+  it('conteúdo totalmente fora da máscara e forma transparente são vazios legítimos', () => {
+    const source = { ...forma(), id: 'janela', x: 40, y: 40 }
+    const outside = { ...forma(), id: 'rosto', maskId: source.id }
+    expect(rasterCameOutBlank([[outside, source]], 1)).toBe(false)
+    expect(rasterCameOutBlank([[{ ...forma(), opacity: 0 }]], 1)).toBe(false)
   })
 })

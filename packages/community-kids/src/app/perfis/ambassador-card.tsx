@@ -8,8 +8,8 @@ import { apiGet, apiSend } from '@/lib/api'
 import type { AmbassadorEnrollmentView } from '@/lib/types'
 
 /**
- * Card "Indique e ganhe" da área dos pais: o responsável vira embaixador da
- * Bolsa do Primeiro Jogo com um clique (os dados já são os da conta) e recebe
+ * Card de embaixador da área dos pais: o responsável vira embaixador da
+ * indicação do curso Cadê Todo Mundo? com um clique (os dados já são os da conta) e recebe
  * o link da própria página por e-mail. Best-effort: serviço fora → card some.
  * O VALOR do bônus vem do serviço (`bonus.amountCents`) — nunca fica cravado
  * na copy, senão uma mudança de env deixaria esta tela prometendo errado.
@@ -85,13 +85,17 @@ export function AmbassadorCard() {
 
   return (
     <section className="w-full max-w-2xl">
-      <div className="rounded-2xl border-2 border-border bg-card p-4">
+      <div className="kids-carta p-5 md:p-6">
         <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <span className="kids-marca flex size-11 shrink-0 items-center justify-center rounded-xl">
             <Gift className="size-5" aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1">
-            <h2 className="sz-display text-xl text-foreground">Indique e ganhe</h2>
+            <h2 className="sz-display text-xl text-foreground">
+              {view.enrolled
+                ? 'Você é embaixador do Sistema Zero'
+                : 'Seja um embaixador do Sistema Zero'}
+            </h2>
             {paused ? (
               <p className="mt-1 text-sm text-muted-foreground">
                 Sua página de embaixador está pausada no momento, então os links de bolsa não
@@ -101,9 +105,9 @@ export function AmbassadorCard() {
             ) : view.enrolled && view.ambassador ? (
               <>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Compartilhe o seu link de bolsa e presenteie crianças que você conhece com o
-                  Desafio do Primeiro Jogo completo, de graça. Se a família depois assinar a
-                  Comunidade dos Criadores, você recebe um agradecimento
+                  Compartilhe o seu link e presenteie famílias com 7 dias de acesso ao curso Cadê
+                  Todo Mundo? sem custo, a partir do cadastro pelo link. Se a família depois assinar
+                  a Comunidade dos Criadores, você recebe um agradecimento
                   {bonusValue ? ` de ${bonusValue}` : ''} por Pix.
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -118,7 +122,7 @@ export function AmbassadorCard() {
                     chave: sem ela o pagamento fica parado esperando.
                   </p>
                 ) : null}
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2 [&_a]:rounded-full [&_button]:rounded-full">
                   {view.ambassador.shareUrl ? (
                     <Button
                       variant="outline"
@@ -160,9 +164,9 @@ export function AmbassadorCard() {
             ) : (
               <>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Vire embaixador(a) e presenteie crianças que você conhece com uma bolsa 100% do
-                  Desafio do Primeiro Jogo. E tem mais: quando uma família indicada assina a
-                  Comunidade dos Criadores, você recebe um agradecimento
+                  Como embaixador(a), você pode presentear famílias com 7 dias de acesso ao curso
+                  Cadê Todo Mundo? sem custo, a partir do cadastro pelo link. Se uma família
+                  indicada assinar a Comunidade dos Criadores, você recebe um agradecimento
                   {bonusValue ? ` de ${bonusValue}` : ''} por Pix, depois da garantia de 7 dias.
                 </p>
                 {/* Os TERMOS moram aqui, no ponto em que a pessoa se
@@ -174,7 +178,12 @@ export function AmbassadorCard() {
                   renda garantida e não cria vínculo com a plataforma.
                 </p>
                 <div className="mt-3">
-                  <Button size="sm" onClick={() => void enroll()} disabled={enrolling}>
+                  <Button
+                    size="sm"
+                    className="rounded-full px-4"
+                    onClick={() => void enroll()}
+                    disabled={enrolling}
+                  >
                     {enrolling ? 'Cadastrando…' : 'Quero ser embaixador(a)'}
                   </Button>
                 </div>

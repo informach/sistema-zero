@@ -12,6 +12,9 @@ type PintaHandle = import('@sistemazero/pinta/lesson').PintaHandle
 type PintaAsset = import('@sistemazero/pinta/lesson').PintaAsset
 
 interface Props {
+  allowTools?: readonly string[]
+  features?: import('@sistemazero/pinta/lesson').PintaLessonProps['features']
+  onChange?: (asset: PintaAsset) => void
   /** Desenho que o editor abre — já criado pelo form (tipo + tamanho) ou o do bloco salvo. */
   initialAsset: PintaAsset
   /** Handle imperativo: o pai lê `getAsset()` ao salvar o bloco. */
@@ -29,7 +32,14 @@ interface Props {
  * no tamanho é a autora (é a tela que ela está definindo), e baixar serve para reaproveitar o
  * desenho em outra aula. Na criança as duas ficam desligadas.
  */
-export function PintaEmbed({ initialAsset, handleRef, className = 'h-[36rem]' }: Props) {
+export function PintaEmbed({
+  initialAsset,
+  handleRef,
+  onChange,
+  allowTools,
+  features = { resize: true, export: true },
+  className = 'h-[36rem]',
+}: Props) {
   const [mod, setMod] = useState<PintaEmbedModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [loadAttempt, setLoadAttempt] = useState(0)
@@ -74,7 +84,9 @@ export function PintaEmbed({ initialAsset, handleRef, className = 'h-[36rem]' }:
           handleRef={handleRef}
           initialAsset={initialAsset}
           persistence="none"
-          features={{ resize: true, export: true }}
+          onChange={onChange}
+          features={features}
+          allowTools={allowTools}
         />
       ) : (
         <div className="flex h-full items-center justify-center gap-2 text-muted-foreground text-sm">

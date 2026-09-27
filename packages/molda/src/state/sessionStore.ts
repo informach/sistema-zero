@@ -29,6 +29,8 @@ export interface SessionState {
   gridVisible: boolean
   /** "Ver arestas": o contorno de todas as peças. */
   edgesVisible: boolean
+  /** Mostra apenas a seleção e seus gêmeos; não altera flags persistidas. */
+  isolateSelection: boolean
   paintTool: PaintTool
   paintColor: number
   brushSize: BrushSize
@@ -58,6 +60,7 @@ export interface SessionActions {
   setExtraIds(ids: string[]): void
   toggleGrid(): void
   toggleEdges(): void
+  toggleIsolation(): void
   setPaintTool(tool: PaintTool): void
   setPaintColor(index: number): void
   setBrushSize(size: BrushSize): void
@@ -81,6 +84,7 @@ export function createSessionStore(initial: Partial<SessionState> = {}): Session
     partsAdditive: false,
     gridVisible: true,
     edgesVisible: false,
+    isolateSelection: false,
     paintTool: 'pencil',
     paintColor: 1,
     brushSize: 1,
@@ -97,18 +101,25 @@ export function createSessionStore(initial: Partial<SessionState> = {}): Session
       set({ mode, meshEditId: null, meshSelection: [], extraIds: [], partsAdditive: false }),
     setTool: (tool) => set({ tool }),
     select: (selectedId) =>
-      set((state) =>
-        state.meshEditId && state.meshEditId !== selectedId
-          ? { selectedId, meshEditId: null, meshSelection: [], extraIds: [] }
-          : { selectedId, extraIds: [] },
-      ),
+      set((state) => ({
+        selectedId,
+        extraIds: [],
+        ...(!selectedId ? { isolateSelection: false } : {}),
+        ...(state.meshEditId && state.meshEditId !== selectedId
+          ? { meshEditId: null, meshSelection: [] }
+          : {}),
+      })),
     toggleExtra: (id) =>
       set((state) => {
         if (!state.selectedId) return { selectedId: id, extraIds: [] }
         if (state.selectedId === id) {
           // Tirar a principal: a próxima somada assume.
           const [next, ...rest] = state.extraIds
-          return { selectedId: next ?? null, extraIds: rest }
+          return {
+            selectedId: next ?? null,
+            extraIds: rest,
+            ...(!next ? { isolateSelection: false } : {}),
+          }
         }
         const extraIds = state.extraIds.includes(id)
           ? state.extraIds.filter((item) => item !== id)
@@ -136,6 +147,8 @@ export function createSessionStore(initial: Partial<SessionState> = {}): Session
     toggleMeshAdditive: () => set((state) => ({ meshAdditive: !state.meshAdditive })),
     toggleGrid: () => set((state) => ({ gridVisible: !state.gridVisible })),
     toggleEdges: () => set((state) => ({ edgesVisible: !state.edgesVisible })),
+    toggleIsolation: () =>
+      set((state) => ({ isolateSelection: Boolean(state.selectedId) && !state.isolateSelection })),
     setPaintTool: (paintTool) => set({ paintTool }),
     setPaintColor: (paintColor) => set({ paintColor }),
     setBrushSize: (brushSize) => set({ brushSize }),

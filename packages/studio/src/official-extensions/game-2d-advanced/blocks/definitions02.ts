@@ -518,11 +518,19 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     placement: 'start-only-command',
     bodyExecution: 'deferred-callback',
     bodyContext: 'map-draw',
-    message0: 'Criar o mapa-cenário %1 com %2 × %3 células',
+    message0: 'Criar o mapa-cenário %1 com %2 × %3 células e %4',
     args0: [
       { type: 'field_input', name: 'MAP', text: 'vila' },
       { type: 'input_value', name: 'COLS', check: 'JSValue' },
       { type: 'input_value', name: 'ROWS', check: 'JSValue' },
+      {
+        type: 'field_dropdown',
+        name: 'BOUNDS',
+        options: [
+          ['bordas que impedem sair', 'bounded'],
+          ['espaço sem limites', 'unbounded'],
+        ],
+      },
     ],
     message1: 'desenhar com %1 %2',
     args1: [
@@ -534,7 +542,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria o lugar onde a aventura acontece, com até 512 × 512 células. Dentro de “desenhar”, você decide a aparência com formas vetoriais, um mapa de peças feito no Pinta ou uma imagem importada. Nada é criado automaticamente.',
+      'Cria o lugar da aventura. Com bordas, largura e altura limitam o movimento (até 512 × 512 células). Sem limites, esses tamanhos não barram o herói. Desenhe aqui ou no evento “Desenhar o jogo”, usando formas, mapas do Pinta ou imagens.',
   },
 
   {

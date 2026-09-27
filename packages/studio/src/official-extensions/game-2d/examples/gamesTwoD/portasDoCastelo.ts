@@ -207,20 +207,38 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
         {
           type: 'g2d:createWorld',
           varName: 'mundoSala1',
-          width: { type: 'num', value: 480 },
-          height: { type: 'num', value: 300 },
+          width: {
+            type: 'num',
+            value: 480,
+          },
+          height: {
+            type: 'num',
+            value: 300,
+          },
         },
         {
           type: 'g2d:createWorld',
           varName: 'mundoSala2',
-          width: { type: 'num', value: 480 },
-          height: { type: 'num', value: 300 },
+          width: {
+            type: 'num',
+            value: 480,
+          },
+          height: {
+            type: 'num',
+            value: 300,
+          },
         },
         {
           type: 'g2d:createWorld',
           varName: 'mundoSala3',
-          width: { type: 'num', value: 480 },
-          height: { type: 'num', value: 300 },
+          width: {
+            type: 'num',
+            value: 480,
+          },
+          height: {
+            type: 'num',
+            value: 300,
+          },
         },
         {
           type: 'g2d:addSolidGroupToWorld',
@@ -241,22 +259,40 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
           type: 'g2d:createLevel',
           varName: 'sala1',
           worldVar: 'mundoSala1',
-          spawnX: { type: 'num', value: 60 },
-          spawnY: { type: 'num', value: 200 },
+          spawnX: {
+            type: 'num',
+            value: 60,
+          },
+          spawnY: {
+            type: 'num',
+            value: 200,
+          },
         },
         {
           type: 'g2d:createLevel',
           varName: 'sala2',
           worldVar: 'mundoSala2',
-          spawnX: { type: 'num', value: 60 },
-          spawnY: { type: 'num', value: 200 },
+          spawnX: {
+            type: 'num',
+            value: 60,
+          },
+          spawnY: {
+            type: 'num',
+            value: 200,
+          },
         },
         {
           type: 'g2d:createLevel',
           varName: 'sala3',
           worldVar: 'mundoSala3',
-          spawnX: { type: 'num', value: 60 },
-          spawnY: { type: 'num', value: 200 },
+          spawnX: {
+            type: 'num',
+            value: 60,
+          },
+          spawnY: {
+            type: 'num',
+            value: 200,
+          },
         },
         {
           type: 'g2d:createSprite',
@@ -398,7 +434,11 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
           type: 'g2d:setScene',
           name: 'inicio',
         },
-        { type: 'g2d:enterLevel', levelVar: 'sala1', spriteVar: 'rei' },
+        {
+          type: 'g2d:enterLevel',
+          levelVar: 'sala1',
+          spriteVar: 'rei',
+        },
       ],
       events: [
         {
@@ -572,13 +612,19 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
                   type: 'g2d:applyVelocity',
                   spriteVar: 'rei',
                 },
-                { type: 'g2d:collideCurrentLevel', spriteVar: 'rei' },
+                {
+                  type: 'g2d:collideCurrentLevel',
+                  spriteVar: 'rei',
+                },
                 {
                   type: 'g2d:clampToScreen',
                   spriteVar: 'rei',
                   ctxVar: 'ctx',
                 },
-                { type: 'g2d:drawCurrentLevel', ctxVar: 'ctx' },
+                {
+                  type: 'g2d:drawCurrentLevel',
+                  ctxVar: 'ctx',
+                },
                 {
                   type: 'g2d:drawSprite',
                   spriteVar: 'porta',
@@ -792,7 +838,11 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
                             },
                           },
                           then: [
-                            { type: 'g2d:enterLevel', levelVar: 'sala2', spriteVar: 'rei' },
+                            {
+                              type: 'g2d:enterLevel',
+                              levelVar: 'sala2',
+                              spriteVar: 'rei',
+                            },
                             {
                               type: 'g2d:spawnInGroup',
                               groupVar: 'blocos',
@@ -880,7 +930,11 @@ export const portasDoCasteloExample: ExtensionExample = beginnerGameExample({
                             },
                           },
                           then: [
-                            { type: 'g2d:enterLevel', levelVar: 'sala3', spriteVar: 'rei' },
+                            {
+                              type: 'g2d:enterLevel',
+                              levelVar: 'sala3',
+                              spriteVar: 'rei',
+                            },
                             {
                               type: 'g2d:spawnInGroup',
                               groupVar: 'blocos',

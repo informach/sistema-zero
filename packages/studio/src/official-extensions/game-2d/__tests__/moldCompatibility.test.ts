@@ -5,8 +5,8 @@ import type { JSStatement, SZIR } from '#ir'
 import { normalizeSZIR, SZIRV2Schema } from '#ir'
 import { parseProjectFilesWithDiagnostics } from '#parsers'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
-import { normalizeBlocksStateToFrames } from '../../../blockly/normalizeFrames'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
+import { migrateBlocksState as normalizeBlocksStateToFrames } from '../../../testing/migrateBlocksState'
 import { gameTwoDBlocks } from '../blocks'
 
 const defineEnemy: JSStatement = {
@@ -85,8 +85,8 @@ describe('compatibilidade da migração dos ajustes de inimigo', () => {
     ])
     expect(normalized.behavior.start.map((statement) => statement.type)).toEqual([
       'g2d:spawnEnemy',
-      'g2d:setEnemyTypeParamLegacyStart',
-      'g2d:enemyAddBehaviorLegacyStart',
+      'g2d:setEnemyTypeParam',
+      'g2d:enemyAddBehavior',
       'g2d:spawnEnemy',
     ])
     expect(SZIRV2Schema.safeParse(normalized).success).toBe(true)
@@ -107,8 +107,8 @@ describe('compatibilidade da migração dos ajustes de inimigo', () => {
     ])
     expect(reparsed.behavior.start.map((statement) => statement.type)).toEqual([
       'g2d:spawnEnemy',
-      'g2d:setEnemyTypeParamLegacyStart',
-      'g2d:enemyAddBehaviorLegacyStart',
+      'g2d:setEnemyTypeParam',
+      'g2d:enemyAddBehavior',
       'g2d:spawnEnemy',
     ])
     expect(SZIRV2Schema.safeParse(reparsed).success).toBe(true)
@@ -142,8 +142,8 @@ describe('compatibilidade da migração dos ajustes de inimigo', () => {
     expect(frameChildren(migrated, 'sz_frame_molds')).toEqual(['sz_g2d_define_enemy_type'])
     expect(frameChildren(migrated, 'sz_frame_start')).toEqual([
       'sz_g2d_spawn_enemy',
-      'sz_g2d_enemy_type_param_legacy_start',
-      'sz_g2d_enemy_add_behavior_legacy_start',
+      'sz_g2d_enemy_type_param',
+      'sz_g2d_enemy_add_behavior',
       'sz_g2d_spawn_enemy',
     ])
   })

@@ -15,9 +15,10 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 **área de membros** (resolve, no grant, exatamente o que a oferta incluía). Runtime: **Bun**. Linguagem: **TS (ESM)**.
 
 > Estado: **slice completo e testado** (produtos/combos/ofertas + cupons + leitura pública +
-> escrita admin + resolução de entitlements). Migrations `0000`/`0001`/`0002`/`0003`/`0004` no Postgres
+> escrita admin + resolução de entitlements). Migrations `0000`…`0007` no Postgres
 > compartilhado (cria o **schema `catalog`**; `0003` = enum `product_kind` += `'tool'`; `0004` =
-> `offers.billing_interval_months` — periodicidade da assinatura, ver Invariantes da oferta). Seed
+> `offers.billing_interval_months` — periodicidade da assinatura; `0005`…`0007` = política de acesso
+> da oferta com expand → backfill → constraints, ver Invariantes da oferta). Seed
 > (`scripts/seed.ts`): **No Comando da IA** (ebook, R$37) · **Estúdio Completo** (kids, R$97 —
 > **`kind: 'tool'`/Ferramenta**, entrega `accessType:'community'` courseRef `estudio-completo`; o seed
 > RECONCILIA o kind legado `community`→`tool` de forma idempotente) · **Pensa** (kids, R$97 —
@@ -31,7 +32,7 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > **Molda** (kids, R$97 — `kind: 'tool'`, entrega `community` courseRef `molda`, 04/09/2026; a
 > OFICINA 3D (modelos low poly `.glb`, texturas `.png`, céus `.hdr` para os jogos 3D do Estúdio),
 > quarto irmão do fluxo Pensa→Pinta→Molda→Estúdio — a chave casa com o
-> `/members/access?refs=molda` da página `/molda` (portão de carreira no Explorador(a) de Mundos
+> `/members/access?refs=molda` da página `/molda` (portão de jornada no Explorador(a) de Mundos
 > desde 05/09, `THREE_D_CREATION_MIN_LEVEL`); galeria local ao navegador + "Guardado na sua conta" pela tool
 > `molda` do members; oferta padrão `molda`; componente `sortOrder: 6` do combo abaixo — ⚠️ o seed só
 > CRIA o combo quando não existe: em staging/prod o operador adiciona o componente pelo admin E
@@ -39,16 +40,21 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > **Clube dos Criadores** e
 > **Mural dos Criadores** (kids, `kind: 'community'`, entrega `community` courseRef = slug — SEM oferta
 > no seed; o Mural é dado de BÔNUS na oferta do desafio) · **Desafio do Primeiro Jogo** (kids,
-> `kind: 'course'`, entrega `course` courseRef `desafio-primeiro-jogo`) **+ oferta ativa R$37 com o
-> Mural como item de BÔNUS** (`items`) — é a oferta que o funil `/kids/desafio-primeiro-jogo` vende
-> (env `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO=desafio-primeiro-jogo`). O **Clube** fica SEM oferta no
-> seed (preço/venda no painel) · **Todos os cursos kids** (`todos-os-cursos-kids`, 07/2026 — a
+> `kind: 'course'`, entrega `course` courseRef `desafio-primeiro-jogo`) **+ duas ofertas preservadas**:
+> a histórica `desafio-primeiro-jogo` (R$ 37, vitalícia) e a pública
+> `desafio-primeiro-jogo-30-dias` (R$ 67, `fixed`/30 dias, criada em `draft` para homologação), ambas
+> com o Mural completo como item de BÔNUS (`items`). A nova compra da oferta de 30 dias também
+> concede, no members, Mural visitante permanente após o fim do prazo; a oferta vitalícia não recebe
+> esse grant adicional. Após homologar, o funil `/kids/desafio-primeiro-jogo`
+> deve usar `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO=desafio-primeiro-jogo-30-dias`; eventos aplicam
+> cupom fixo de R$ 30 na mesma oferta. Nunca reinterprete nem exclua a oferta vitalícia. O **Clube**
+> fica SEM oferta no seed (preço/venda no painel) · **Todos os cursos kids** (`todos-os-cursos-kids`, 07/2026 — a
 > chave-mestra kids como produto-FOLHA: `kind:'course'`, **`sellable:false`**, entrega
 > `all_kids_courses` SEM courseRef; só chega ao aluno dentro do combo) · **Comunidade dos
 > Criadores** (`comunidade-dos-criadores`, 07/2026 — o 1º COMBO real do seed: `kind:'bundle'`,
 > fulfillment null, componentes = chave-mestra **`isPrimary`** + Clube + Mural + Estúdio Completo +
 > Pensa + Pinta + Molda → a compra espalha os 7 entitlements; o Desafio do Mês destrava sozinho
-> [clube+estúdio] e Quarto/Carreira/Recados são núcleo grátis do kids) **+ 2 ofertas IRMÃS de
+> [clube+estúdio] e Quarto/Jornada/Recados são núcleo grátis do kids) **+ 2 ofertas IRMÃS de
 > ASSINATURA ativas**: `comunidade-dos-criadores-mensal` (R$ 97, `billingIntervalMonths: 1`) e
 > `comunidade-dos-criadores-anual` (R$ 797, intervalo 12, compareAt R$ 1.164 = 12× o mensal),
 > ligadas por `content.altOffer` nos DOIS sentidos, ambas com `maxProfiles: 2` + `guaranteeDays: 7`
@@ -142,6 +148,16 @@ do pagamento. BFS pelos componentes armazenados; alcançar o próprio id = 400.
   assinatura **ATIVA exige o intervalo** (invariante na ATIVAÇÃO — create com status active,
   `setStatus('active')` e `updateDetails` consolidado; rascunho segue livre p/ cadastro
   progressivo). DTOs aceitam 1..24. Views pública/admin expõem `billingIntervalMonths`.
+- **Política de acesso é da OFERTA (09/2026, migrations `0005`…`0007`)**:
+  `access_mode ∈ {lifetime,fixed,billing_cycle}` + duração opcional em dias/meses. Compra única
+  aceita `lifetime` ou `fixed`; assinatura exige `billing_cycle`. Oferta `fixed` ativa exige
+  duração inteira positiva e unidade. Rascunho/pausada pode ficar `fixed` sem duração durante o
+  cadastro progressivo. O default retrocompatível de criação é `one_time → lifetime` e
+  `subscription → billing_cycle`; o backfill usa a mesma regra e não toca matrículas existentes.
+  Converter assinatura em compra única exige escolher explicitamente vitalício ou prazo fixo.
+  `Offer.restore()` continua sem validar legado; coerência é cobrada na criação/edição/ativação.
+  As views pública e admin, a cotação e o endpoint interno de entitlements expõem os três campos;
+  consumidores não devem inferir prazo pelo preço ou pelo `pricingMode`.
 - **Alternador mensal↔anual (`OfferContent.altOffer`, 07/2026, JSONB sem migração)**:
   `{slug, label?}` aponta a oferta IRMÃ (a mensal aponta a anual e vice-versa — autorado no admin
   nos DOIS sentidos). O funil VALIDA o slug escolhido no checkout contra este link (anti-forja);

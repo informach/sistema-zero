@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, mock } from 'bun:test'
+import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, render } from '@testing-library/react'
 
 /**
@@ -12,7 +12,7 @@ import { cleanup, render } from '@testing-library/react'
  *  - o ramo normal SEM o regime (páginas comuns rolam a janela, como sempre);
  *  - o PAR main ↔ frames: `md:min-h-[34rem]` do main = piso `min-h-[34rem]` dos frames + zero
  *    de padding — mexeu num, mexa no outro;
- *  - o INTERINO do Molda (calha + puxador + `36rem`), que some no lote 6b.
+ *  - o Molda no MESMO regime desde o lote 6b (11/09/2026): a calha e o puxador saíram.
  *
  * ⚠️ `mock.module` não é isolado por arquivo no bun: o mock ESPALHA o módulo atual (receita
  * do focus-mode.test.tsx) para nenhum outro arquivo perder export.
@@ -31,10 +31,15 @@ const { EMBEDDED_APP_FRAME, EMBEDDED_STUDIO_FRAME } = await import(
 )
 
 /** happy-dom não implementa `matchMedia`; o FocusModeProvider usa. */
+const matchMediaOriginal = Object.getOwnPropertyDescriptor(window, 'matchMedia')
 Object.defineProperty(window, 'matchMedia', {
   configurable: true,
   writable: true,
   value: () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} }),
+})
+afterAll(() => {
+  if (matchMediaOriginal) Object.defineProperty(window, 'matchMedia', matchMediaOriginal)
+  else Reflect.deleteProperty(window, 'matchMedia')
 })
 
 afterEach(cleanup)
@@ -53,7 +58,9 @@ function mainFor(path: string): HTMLElement {
   return main
 }
 
-const EMBEDDED = ['/pinta', '/estudio', '/estudio/pro/abc', '/pensa']
+// `/meu-avatar` entrou em 19/09/2026: o configurador saiu do `fixed inset-0` e passou a ocupar
+// a área útil como as ferramentas.
+const EMBEDDED = ['/pinta', '/estudio', '/estudio/pro/abc', '/pensa', '/molda', '/meu-avatar']
 
 describe('MainContainer: regime de altura + borda a borda dos apps embarcados', () => {
   it('rota embarcada trava a altura e fica de borda a borda (sem padding, calha ou puxador)', () => {
@@ -94,21 +101,47 @@ describe('MainContainer: regime de altura + borda a borda dos apps embarcados', 
     }
   })
 
-  it('INTERINO: o Molda ainda usa a calha + o puxador (some no lote 6b)', () => {
-    const main = mainFor('/molda')
-    const cls = main.className
-    expect(cls).toContain('md:pl-9')
-    expect(cls).toContain('md:min-h-[36rem]')
-    expect(cls).toContain('md:h-dvh')
-    expect(cls).toContain('overflow-hidden')
+  it('⚠️ o QUARTO recolhe o menu mas fica FORA do regime: as bandejas rolam', () => {
+    // A tela é de foco (`FOCUS_ONLY_PREFIXES`), mas travar a altura aqui cortaria as bandejas
+    // de móveis sem caminho de rolagem — é a razão de existirem duas réguas.
+    const main = mainFor('/quarto')
+    expect(main.className).not.toContain('overflow-hidden')
+    expect(main.className).not.toContain('md:h-dvh')
+    expect(main.className).toContain('flex-1')
   })
 
   it('página comum fica FORA do regime (a janela rola, como sempre)', () => {
     const main = mainFor('/perfil')
-    expect(main.className).toContain('max-w-5xl')
     expect(main.className).toContain('flex-1')
     expect(main.className).not.toContain('overflow-hidden')
     expect(main.className).not.toContain('md:h-dvh')
+  })
+
+  it('página comum é em FAIXAS: largura toda e ZERO padding lateral', () => {
+    // O `max-w-5xl` que travava aqui não sumiu, desceu um nível: quem centraliza
+    // na largura de leitura agora é a `KidsBand` de cada seção (mesmo
+    // `mx-auto w-full max-w-5xl px-4 md:px-8`). O <main> precisa ser mais LARGO que
+    // o texto para a cor da faixa sangrar até a borda — é a mudança estrutural do
+    // redesenho de 09/2026, e é a única razão pela qual a régua saiu daqui.
+    const main = mainFor('/perfil')
+    expect(main.className).toContain('w-full')
+    expect(main.className).not.toContain('max-w-5xl')
+    expect(main.className).not.toContain('mx-auto')
+    // Nenhum padding lateral nem de topo: só o `pb-*` que reserva a barra de abas.
+    const cls = main.className.split(' ')
+    expect(cls.filter((t) => /^(md:)?p[xytlr]?-/.test(t) && !t.includes('pb-'))).toEqual([])
+  })
+
+  it('a AULA guarda o padding: ela não foi convertida em faixas', () => {
+    const main = mainFor('/cursos/meu-curso/aulas/aula-1')
+    expect(main.className).toContain('w-full')
+    // Fundo LISO (telas-modelo de 11/09/2026): a textura de pontinhos saiu.
+    expect(main.className).not.toContain('kids-field')
+    // A PELE da aula (fundo azul-claro + cartas brancas) pende inteira deste gancho:
+    // a aula é do member-shell e o kids só a veste por CSS a partir daqui.
+    expect(main.className).toContain('kids-aula')
+    expect(main.className).toContain('px-4')
+    expect(main.className).not.toContain('max-w-5xl')
   })
 
   it('o PAR main ↔ frames: os dois frames carregam o piso min-h-[34rem] + overflow-hidden', () => {

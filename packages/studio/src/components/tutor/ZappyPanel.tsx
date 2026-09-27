@@ -11,6 +11,7 @@ import { useStudioLayout } from '../../studio/layoutContext'
 import {
   buildStudioTutorContext,
   type StudioTutorBlockReference,
+  type StudioTutorHelpReference,
   type StudioTutorHistoryMessage,
   type StudioTutorLessonReference,
   type StudioTutorResponse,
@@ -58,6 +59,9 @@ function normalizeResponse(response: StudioTutorResponse): StudioTutorResponse {
     // não achou".
     ...(response.lessonReferences !== undefined
       ? { lessonReferences: list<StudioTutorLessonReference>(response.lessonReferences) }
+      : {}),
+    ...(response.helpReferences !== undefined
+      ? { helpReferences: list<StudioTutorHelpReference>(response.helpReferences) }
       : {}),
     ...(response.suggestions !== undefined
       ? { suggestions: list<string>(response.suggestions) }
@@ -371,11 +375,13 @@ export function ZappyPanel(): JSX.Element | null {
       role="dialog"
       aria-modal={isNarrow}
       aria-labelledby={titleId}
+      // No largo o painel começa logo abaixo da barra do editor, que mede 68px (4.25rem) desde a
+      // tela-modelo de 11/09/2026; no estreito a barra tem 52px e o painel desce 16px além dela.
       className={cn(
         'absolute z-[75] flex flex-col border-sz-border bg-sz-panel text-sz-fg shadow-2xl motion-reduce:transition-none',
         isNarrow
           ? 'inset-x-2 bottom-2 top-[4.25rem] rounded-2xl border'
-          : 'bottom-0 right-0 top-[3.25rem] w-[min(26rem,42%)] border-l',
+          : 'bottom-0 right-0 top-[4.25rem] w-[min(26rem,42%)] border-l',
       )}
     >
       <header className="flex items-center gap-3 border-b border-sz-border px-4 py-3">
@@ -526,6 +532,21 @@ export function ZappyPanel(): JSX.Element | null {
                       </button>
                     ) : null,
                   )}
+                </div>
+              ) : null}
+              {config?.openHelp && message.response?.helpReferences?.length ? (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {message.response.helpReferences.map((reference) => (
+                    <button
+                      key={reference.slug}
+                      type="button"
+                      onClick={() => config.openHelp?.(reference)}
+                      className="rounded-full border border-sz-border bg-sz-surface px-2.5 py-1 font-semibold text-sz-fg-soft text-xs hover:border-sz-accent hover:text-sz-accent"
+                      title="Abrir o passo a passo em nova aba"
+                    >
+                      Passo a passo: {reference.title} ↗
+                    </button>
+                  ))}
                 </div>
               ) : null}
               {message.role === 'assistant' && message.response && !isQuota ? (

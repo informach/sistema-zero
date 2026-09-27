@@ -8,7 +8,7 @@
  *    fallback literal. Ficam FORA do bloco de tema do Tailwind de propósito: lá o v4 poda o que
  *    nenhuma utilitária usa; custom property em :root nunca é podada.
  * 2. RECEITAS na camada `components`: PERDEM para as utilitárias (a camada `utilities` vem
- *    depois), então `cn('sz-tool-btn', 'w-full')` funciona. CSS SEM camada vence qualquer
+ *    depois), então `cn('sz-tool-pill', 'w-full')` funciona. CSS SEM camada vence qualquer
  *    camada: nunca tirar as receitas daqui (memória da casa: "CSS sem layer mata as utilitárias").
  *
  * `color-mix` SEMPRE `in oklab`: o branco dos primitivos é `oklch(1 0 0)` com matiz EXPLÍCITO;
@@ -18,19 +18,28 @@
  * Derivados (color-mix) são substituídos no elemento onde são DECLARADOS: por isso o bloco
  * escuro re-declara TODOS, inclusive os derivados, com o mesmo texto. O teste exige igualdade
  * entre os conjuntos de tokens do claro e do escuro.
+ *
+ * O DESENHO (11/09/2026) é o das telas-modelo dela, medido a 1440px, na PALETA DO PEN: galerias
+ * em faixas de borda a borda sobre UM chão só (o cabeçalho e a grade no chão, o fechamento no
+ * chão alternativo), cartões brancos sem borda aparente, botões em pílula, controles de 40px no
+ * mouse e 44px no toque, e o botão do menu como um QUADRADO dentro do conteúdo (deixou de ser a
+ * aba colada na barra lateral). É a mesma régua das páginas do community-kids, que redefine os
+ * primitivos `--sz-kids-*` neutros para o Pen (temas Padrão e Pink) e dá a cor de ação em
+ * `--sz-kids-acao`.
  */
 
-/* == geometria == (não muda com o tema) */
+/* == geometria e constantes == (não mudam com o tema) */
 :root {
-  --sz-tool-control: 2.75rem; /* 44px: alvo de toque de mão pequena */
-  --sz-tool-chip: 2.25rem; /* 36px: chip de filtro numa fileira densa */
-  --sz-tool-border: 2px;
-  --sz-tool-radius-control: 0.75rem; /* = rounded-xl */
-  --sz-tool-radius-card: 1rem; /* = rounded-2xl, o --radius do kids */
+  /* O alvo das receitas NOVAS: 40px no mouse (a medida das telas-modelo) e 44px quando algum
+     ponteiro é o dedo (o bloco `any-pointer: coarse` logo abaixo). O alvo de toque da casa
+     continua 44; no mouse o desenho manda. */
+  --sz-tool-hit: 2.5rem;
+  --sz-tool-border: 2px; /* o fio do cartão `.pin-panel` do Pinta, que o lê com reserva */
+  --sz-tool-radius-control: 0.75rem; /* 12px: quadrado do menu, ladrilho, capa */
+  --sz-tool-radius-card: 1rem; /* o canto do mesmo cartão `.pin-panel` do Pinta */
+  --sz-tool-radius-card-md: 1.25rem; /* 20px: o cartão de projeto das galerias (medido) */
+  --sz-tool-radius-card-lg: 1.5rem; /* 24px: o cartão que fecha a página, o do plano */
   --sz-tool-radius-pill: 9999px;
-  /* Respiro esquerdo da barra que hospeda o botão do menu: cada barra o declara (é o padding
-     dela) e a aba usa a margem negativa para encostar na linha da barra lateral. */
-  --sz-tool-inset: 0px;
   /* Fontes do HOST: o next/font expõe --font-baloo/--font-nunito no <html> com nome hasheado.
      `sz-none` é família válida que não casa com nada: fora do kids o navegador PULA para o
      próximo item. NÃO usar var(--font-sans, ...): é token default do Tailwind v4. */
@@ -38,6 +47,29 @@
     var(--font-baloo, sz-none), "Baloo 2", "Nunito", ui-rounded, ui-sans-serif, system-ui,
     sans-serif;
   --sz-tool-font-sans: var(--font-nunito, sz-none), "Nunito", ui-sans-serif, system-ui, sans-serif;
+  /* Cor de ASSINATURA de cada oficina (11/09/2026, telas-modelo da dona: "seguir a imagem, com
+     tons que já existem"). É cor de FUNDO (cabeçalho do cartão, ladrilho do ícone): fundo não
+     segue o tema, carrega a tinta por cima nos dois, então mora aqui, entre as constantes. Fonte
+     ÚNICA: os `--tool-*` do kids leem daqui, e as galerias das ferramentas também. O Pensa é o
+     âmbar da paleta com tinta ESCURA: branco sobre âmbar reprova (~2,2:1). */
+  --sz-tool-sig-estudio: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+  --sz-tool-sig-pinta: var(--sz-kids-vermelho, #e05353);
+  --sz-tool-sig-pensa: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70));
+  --sz-tool-sig-molda: var(--sz-kids-roxo, #8b5cf6);
+  --sz-tool-on-sig: oklch(1 0 0);
+  --sz-tool-on-sig-pensa: var(--sz-kids-cta-tinta, #3a2400);
+  /* O AMARELO do "novo" (o "+" do cartão "Novo projeto", o ladrilho do cartão de fechamento):
+     é o `--sz-kids-amarelo` da marca, o mesmo ouro das páginas do kids. Fundo que não muda de
+     tema, com a tinta escura por cima nos dois (10,88:1; branco daria 1,48:1). */
+  --sz-tool-new: var(--sz-kids-amarelo, #ffce3a);
+  --sz-tool-on-new: oklch(0.25 0.05 60);
+}
+
+/* O dedo precisa de 44px (a régua da casa); com mouse o controle fica na medida da imagem. */
+@media (any-pointer: coarse) {
+  :root {
+    --sz-tool-hit: 2.75rem;
+  }
 }
 
 /* == claro == (:root + o root de toda ferramenta que se declara clara; .pensa-theme-light por
@@ -53,27 +85,57 @@
   --sz-tool-line: var(--sz-kids-linha, oklch(0.9 0.01 250)); /* = --border */
   --sz-tool-ink: var(--sz-kids-tinta, #26314a);
   --sz-tool-muted: var(--sz-kids-tinta-suave, #5c6b85);
-  --sz-tool-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* = --primary */
+  /* A cor de AÇÃO vem do host (`--sz-kids-acao`: o azul no tema Padrão do kids, o rosa no
+     Pink); sem ela, o azul da marca de sempre (playgrounds). Não é o azul de IDENTIDADE: esse
+     continua azul no Pink (o Estúdio, o nível Construtor(a)). */
+  --sz-tool-accent: var(
+    --sz-kids-acao,
+    var(--sz-kids-azul-texto, oklch(0.52 0.15 252))
+  ); /* = --primary */
   --sz-tool-on-accent: oklch(1 0 0); /* = --primary-foreground */
   --sz-tool-cta-gradient: var(
     --sz-kids-grad-cta-azul,
     linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255))
   );
-  --sz-tool-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* = --sz-cta */
+  --sz-tool-cta: var(
+    --sz-kids-acao,
+    var(--sz-kids-azul-texto, oklch(0.52 0.15 252))
+  ); /* = --sz-cta */
   --sz-tool-on-cta: oklch(1 0 0); /* = --sz-primary-fg */
+  /* Os DEGRAUS do 3D das galerias (a borda de baixo, ver "O 3D DO BRILLIANT"): o da ação
+     e o cinza dos botões claros e do cartão novo. Vêm do host (o kids dá os do Pen, que
+     viram ameixa no Pink); sem ele, um tom derivado da própria cor. */
+  --sz-tool-cta-degrau: var(
+    --sz-kids-acao-degrau,
+    color-mix(in oklab, var(--sz-tool-cta) 72%, var(--sz-tool-ink))
+  );
+  --sz-tool-degrau: var(
+    --sz-kids-degrau-cartao,
+    color-mix(in oklab, var(--sz-tool-line) 70%, var(--sz-tool-ink))
+  );
   /* Tons de status como TEXTO (14px, bold): precisam de AA sobre branco. Ancorados nos que o
      Estúdio já mede (#047857 / #b45309); os verdes/laranjas de fundo do kids não passam. */
   --sz-tool-ok: oklch(0.5 0.13 160);
   --sz-tool-warn: oklch(0.52 0.14 58);
   --sz-tool-danger: oklch(0.55 0.22 27); /* = --destructive */
+  /* As FAIXAS das galerias, na régua do Pen (11/09/2026): UM chão só (o cabeçalho e a grade),
+     e a faixa de fechamento no chão alternativo. Os nomes `creme`/`ceu`/`lilas` ficaram dos
+     tempos das faixas coloridas; o que vale é o PAPEL (cabeçalho, grade, fechamento). */
+  --sz-tool-band-creme: var(--sz-kids-ceu-suave, oklch(0.975 0.012 245));
+  --sz-tool-band-ceu: var(--sz-kids-ceu-suave, oklch(0.975 0.012 245));
+  --sz-tool-band-lilas: var(--sz-kids-ceu, #e4f2ff);
+  /* O fio do cartão: some no claro (o branco já se separa da faixa) e aparece no escuro, onde
+     cartão e faixa têm claridade parecida. É a `--borda-carta` do kids. */
+  --sz-tool-card-edge: transparent;
+  /* O fundo menta do "Guardado na sua conta" e do ladrilho de "tudo pronto" (4,96:1 com o
+     `--sz-tool-ok`). */
+  --sz-tool-ok-tint: var(--sz-kids-menta-bg, #e6f8ec);
+  /* O fundo dos controles QUIETOS (quadrado do menu, pílula branca, chip, busca): sobre barra
+     branca é o céu diluído; dentro de uma faixa colorida vira branco (`.sz-tool-band`). */
+  --sz-tool-quiet: var(--sz-tool-bg);
   /* derivados */
   --sz-tool-accent-tint: color-mix(in oklab, var(--sz-tool-accent) 15%, transparent);
   --sz-tool-accent-line: color-mix(in oklab, var(--sz-tool-accent) 45%, transparent);
-  --sz-tool-line-shade: color-mix(in oklab, var(--sz-tool-line) 45%, transparent);
-  --sz-tool-cta-shade: color-mix(in oklab, var(--sz-tool-cta) 60%, black);
-  --sz-tool-shadow-control: 0 2px 0 var(--sz-tool-line-shade);
-  --sz-tool-shadow-card: 0 3px 0 var(--sz-tool-line-shade);
-  --sz-tool-shadow-cta: 0 4px 0 var(--sz-tool-cta-shade);
 }
 
 /* == escuro == DEPOIS do claro de propósito: no <html class="dark"> os dois seletores (:root e
@@ -97,84 +159,223 @@
   );
   --sz-tool-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
   --sz-tool-on-cta: oklch(0.22 0.05 262);
+  /* No escuro o degrau é a cor puxada para o PRETO (a tinta do escuro é clara). */
+  --sz-tool-cta-degrau: color-mix(in oklab, var(--sz-tool-cta) 62%, oklch(0 0 0));
+  --sz-tool-degrau: color-mix(in oklab, var(--sz-tool-line) 60%, oklch(0 0 0));
   --sz-tool-ok: var(--sz-kids-verde-vivo, oklch(0.78 0.15 152));
   --sz-tool-warn: oklch(0.83 0.14 85);
   --sz-tool-danger: oklch(0.64 0.215 27);
+  /* As faixas do escuro em LITERAL: são os valores que o kids já mediu para as dele (o navy um
+     tom acima, com o matiz de cada faixa); não existem como primitivo. */
+  --sz-tool-band-creme: oklch(0.3 0.045 262);
+  --sz-tool-band-ceu: oklch(0.31 0.06 245);
+  --sz-tool-band-lilas: oklch(0.3 0.065 292);
+  --sz-tool-card-edge: var(--sz-tool-line);
+  --sz-tool-ok-tint: oklch(0.3 0.055 165);
+  --sz-tool-quiet: var(--sz-tool-bg);
   --sz-tool-accent-tint: color-mix(in oklab, var(--sz-tool-accent) 15%, transparent);
   --sz-tool-accent-line: color-mix(in oklab, var(--sz-tool-accent) 45%, transparent);
-  --sz-tool-line-shade: color-mix(in oklab, var(--sz-tool-line) 45%, transparent);
-  --sz-tool-cta-shade: color-mix(in oklab, var(--sz-tool-cta) 60%, black);
-  --sz-tool-shadow-control: 0 2px 0 var(--sz-tool-line-shade);
-  --sz-tool-shadow-card: 0 3px 0 var(--sz-tool-line-shade);
-  --sz-tool-shadow-cta: 0 4px 0 var(--sz-tool-cta-shade);
 }
 
 /* == receitas == */
 @layer components {
-  /* Botão SECUNDÁRIO (a receita do "Importar" do Estúdio) e o botão do MENU do host. */
-  .sz-tool-btn,
-  .sz-tool-btn-menu {
-    display: inline-flex;
+  /* ── FAIXAS ────────────────────────────────────────────────────────────────────────────
+     A galeria é uma pilha de faixas de borda a borda (creme → céu → lilás), como as páginas
+     do kids. O RESPIRO vem das telas-modelo: 64px dos lados a partir de 1024px de janela
+     (o que dá 1044px de linha útil a 1440 com o menu de 268px), 32px no tablet e 16px no
+     celular; 40px em cima e embaixo. Media query de JANELA, e não container query, de
+     propósito: containment de layout re-ancoraria os overlays `fixed` sem portal (o Dialog
+     do Pinta). */
+  .sz-tool-bands {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+  /* A ÚLTIMA faixa vai até o pé da janela quando a galeria é curta: sem isto sobrava uma
+     tira do fundo da ferramenta embaixo do lilás. */
+  .sz-tool-bands > .sz-tool-band:last-child {
+    flex: 1 0 auto;
+  }
+  /* ⚠️ A faixa não pode ser ela mesma um escopo de tema (`data-sz-theme` etc.): a declaração
+     de tema é SEM camada e venceria o `--sz-tool-quiet` daqui no mesmo elemento. */
+  .sz-tool-band {
+    width: 100%;
+    /* Dentro de uma faixa colorida os controles quietos são brancos (a imagem). */
+    --sz-tool-quiet: var(--sz-tool-surface);
+  }
+  .sz-tool-band--creme {
+    background-color: var(--sz-tool-band-creme);
+  }
+  .sz-tool-band--ceu {
+    background-color: var(--sz-tool-band-ceu);
+  }
+  .sz-tool-band--lilas {
+    background-color: var(--sz-tool-band-lilas);
+  }
+  .sz-tool-band--branco {
+    background-color: var(--sz-tool-surface);
+    --sz-tool-quiet: var(--sz-tool-bg);
+  }
+  .sz-tool-band__inner {
+    padding: 1.5rem 1rem;
+  }
+  @media (min-width: 48rem) {
+    .sz-tool-band__inner {
+      padding: 2.5rem 2rem;
+    }
+  }
+  @media (min-width: 64rem) {
+    .sz-tool-band__inner {
+      padding: 2.5rem 4rem;
+    }
+  }
+
+  /* ── CABEÇALHO de duas linhas (só layout) ─────────────────────────────────────────────
+     Linha 1 = .sz-tool-header: [menu][voltar][título+subtítulo] ... [status][ações].
+     Linha 2 = .sz-tool-toolbar: [chips] ... [busca][ordenar]. Tudo CENTRALIZA no bloco do
+     título: na imagem o quadrado do menu e as pílulas da direita ficam no meio da altura do
+     título com o subtítulo (medido, os três centros a 1px um do outro). Abaixo de md as pontas
+     direitas descem para a própria linha. */
+  .sz-tool-header {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .sz-tool-header__lead {
+    display: flex;
+    flex: 1 1 16rem;
+    min-width: 0;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  /* O grupo [menu][voltar], antes do título. */
+  .sz-tool-header__nav {
+    display: flex;
+    flex: none;
+    align-items: center;
     gap: 0.5rem;
-    min-height: var(--sz-tool-control);
-    padding-inline: 1rem;
-    border: var(--sz-tool-border) solid var(--sz-tool-line);
-    border-radius: var(--sz-tool-radius-control);
-    background: var(--sz-tool-surface);
+  }
+  .sz-tool-header__title {
+    min-width: 0;
+  }
+  .sz-tool-header__actions,
+  .sz-tool-toolbar__end {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem;
+    margin-inline-start: auto;
+  }
+  .sz-tool-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem 1rem;
+  }
+  .sz-tool-toolbar__start {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem;
+    min-width: 0;
+  }
+  @media (max-width: 47.99rem) {
+    .sz-tool-header__actions,
+    .sz-tool-toolbar__end {
+      width: 100%;
+      margin-inline-start: 0;
+    }
+  }
+
+  /* ── TIPOGRAFIA das galerias ──────────────────────────────────────────────────────────
+     O h1 é o Baloo extra-negrito de 40px da imagem (sem tracking: o Baloo 800 já é largo), o
+     subtítulo o Nunito de 15px na tinta suave. Mora aqui para as quatro galerias saírem
+     IGUAIS; o editor de cada ferramenta segue com a tipografia dele. */
+  .sz-tool-title {
+    margin: 0;
+    font-family: var(--sz-tool-font-display);
+    font-weight: 800;
+    font-size: clamp(1.75rem, 1.25rem + 1.5vw, 2.5rem);
+    line-height: 1.1;
     color: var(--sz-tool-ink);
-    font-weight: 700;
-    font-size: 1rem;
+  }
+  .sz-tool-subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--sz-tool-muted);
+  }
+  .sz-tool-section-title {
+    margin: 0;
+    font-family: var(--sz-tool-font-display);
+    font-weight: 800;
+    font-size: clamp(1.375rem, 1.1rem + 1vw, 1.875rem);
+    line-height: 1.15;
+    color: var(--sz-tool-ink);
+  }
+  .sz-tool-section-text {
+    margin: 0.375rem 0 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--sz-tool-muted);
+  }
+  /* Sobretítulo em caixa alta espaçada ("VERSÃO 1", "APROVADO"). */
+  .sz-tool-kicker {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    color: var(--sz-tool-muted);
+  }
+
+  /* ── QUADRADO de ícone: o menu do host, a seta de voltar, o "⋯" ──────────────────────
+     O botão do MENU deixou de ser a aba colada na barra lateral (11/09/2026): na imagem ele é
+     um quadrado de cantos de 12px DENTRO do conteúdo, branco sobre a faixa creme e céu diluído
+     sobre barra branca (o `--sz-tool-quiet`). A seta de voltar tem a MESMA forma, ao lado dele,
+     como na barra do editor do Pinta. */
+  .sz-tool-icon-btn,
+  .sz-tool-btn-menu,
+  .sz-tool-back {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: var(--sz-tool-hit);
+    height: var(--sz-tool-hit);
+    padding: 0;
+    border: 1px solid var(--sz-tool-card-edge);
+    border-radius: var(--sz-tool-radius-control);
+    background: var(--sz-tool-quiet);
+    color: var(--sz-tool-ink);
+    font: inherit;
     line-height: 1;
+    text-decoration: none;
     cursor: pointer;
     touch-action: manipulation;
-    box-shadow: var(--sz-tool-shadow-control);
     transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease,
+      background-color 0.12s ease,
       border-color 0.12s ease,
-      background-color 0.12s ease;
+      color 0.12s ease;
   }
-  .sz-tool-btn:hover:not(:disabled),
-  .sz-tool-btn-menu:hover:not(:disabled) {
-    border-color: var(--sz-tool-accent);
-    background: color-mix(in oklab, var(--sz-tool-line) 25%, var(--sz-tool-surface));
-  }
-  /* Afunda no clique, como a pílula 3D. */
-  .sz-tool-btn:active:not(:disabled),
-  .sz-tool-btn-menu:active:not(:disabled) {
-    transform: translateY(2px);
-    box-shadow: none;
-  }
-  .sz-tool-btn:disabled,
-  .sz-tool-btn-menu:disabled,
-  .sz-tool-btn-3d:disabled,
-  .sz-tool-chip:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-  /* Quadrado, só ícone (o menu do host, o "voltar"). */
-  .sz-tool-btn--icon,
-  .sz-tool-btn-menu {
-    min-width: var(--sz-tool-control);
-    padding-inline: 0;
-    flex-shrink: 0;
-  }
-  .sz-tool-btn--icon > svg,
-  .sz-tool-btn-menu > svg {
+  .sz-tool-icon-btn > svg,
+  .sz-tool-btn-menu > svg,
+  .sz-tool-back > svg {
     flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
   }
-  /* O botão do MENU é uma ABA da barra lateral, não uma ação da ferramenta (decisão dela,
-     07/09): cantos quadrados do lado esquerdo, sem borda esquerda, ENCOSTADO na linha da
-     sidebar pela margem negativa igual ao respiro da barra (`--sz-tool-inset`, que cada barra
-     declara). Com o menu escondido a aba fica colada na borda da tela, do lado por onde o menu
-     volta. Os 44px ficam. */
-  .sz-tool-btn-menu {
-    margin-inline-start: calc(-1 * var(--sz-tool-inset));
-    border-inline-start: 0;
-    border-start-start-radius: 0;
-    border-end-start-radius: 0;
+  .sz-tool-icon-btn:hover:not(:disabled),
+  .sz-tool-btn-menu:hover:not(:disabled),
+  .sz-tool-back:hover {
+    background: color-mix(in oklab, var(--sz-tool-quiet) 88%, var(--sz-tool-ink));
+  }
+  .sz-tool-icon-btn--round {
+    border-radius: var(--sz-tool-radius-pill);
   }
   /* Pressionado = menu ESCONDIDO: borda e tinta suave do acento. Nunca o preenchimento forte,
      que leria como ferramenta selecionada. (0,2,0) perderia para o :hover (0,3,0); por isso o
@@ -188,52 +389,112 @@
     border-color: var(--sz-tool-accent);
     background: color-mix(in oklab, var(--sz-tool-accent) 25%, transparent);
   }
+  .sz-tool-btn-menu[data-tooltip] {
+    position: relative;
+  }
+  .sz-tool-btn-menu[data-tooltip]::after {
+    position: absolute;
+    top: calc(100% + 0.375rem);
+    left: 0;
+    z-index: 100;
+    width: max-content;
+    max-width: min(15rem, 80vw);
+    padding: 0.5rem 0.625rem;
+    border-radius: 0.5rem;
+    background: var(--sz-tool-ink);
+    color: var(--sz-tool-bg);
+    content: attr(data-tooltip);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    white-space: normal;
+  }
+  .sz-tool-btn-menu[data-tooltip]:is(:hover, :focus-visible)::after {
+    opacity: 1;
+    visibility: visible;
+  }
 
-  /* Pílula 3D PRIMÁRIA (= .sz-btn-gradient do kids, .pin-btn-3d, .sz-home-btn3d). */
-  .sz-tool-btn-3d {
+  /* ── PÍLULAS chapadas ─────────────────────────────────────────────────────────────────
+     O botão das telas-modelo: pílula de 40px (44 no toque), rótulo no extra-negrito de 15px,
+     SEM gradiente e sem a sombra dura (o 3D saiu). Variantes: primária (o azul da marca),
+     quieta (branca dentro da faixa), contorno (branca com o fio, sobre barra branca) e creme
+     (o "Importar um jogo" do cartão de fechamento). */
+  .sz-tool-pill {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    min-height: var(--sz-tool-control);
-    padding-inline: 1.25rem;
-    border: 0;
+    min-height: var(--sz-tool-hit);
+    padding-inline: 1.125rem;
+    border: 1px solid transparent;
     border-radius: var(--sz-tool-radius-pill);
-    background-image: var(--sz-tool-cta-gradient);
-    color: var(--sz-tool-on-cta);
-    font-weight: 700;
-    font-size: 1rem;
+    background: var(--sz-tool-quiet);
+    color: var(--sz-tool-ink);
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 0.9375rem;
     line-height: 1;
+    white-space: nowrap;
+    text-decoration: none;
     cursor: pointer;
     touch-action: manipulation;
-    box-shadow: var(--sz-tool-shadow-cta);
     transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease,
-      filter 0.12s ease;
+      background-color 0.12s ease,
+      border-color 0.12s ease,
+      color 0.12s ease,
+      transform 0.12s ease;
   }
-  .sz-tool-btn-3d:hover:not(:disabled) {
-    transform: translateY(-1px);
-    filter: brightness(1.05);
-    box-shadow: 0 5px 0 var(--sz-tool-cta-shade);
-  }
-  .sz-tool-btn-3d:active:not(:disabled) {
-    transform: translateY(3px);
-    box-shadow: 0 1px 0 var(--sz-tool-cta-shade);
-  }
-  .sz-tool-btn-3d > svg {
+  .sz-tool-pill > svg {
     flex: none;
-    stroke: currentColor;
+    width: 1rem;
+    height: 1rem;
+  }
+  .sz-tool-pill:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .sz-tool-pill--primary {
+    background: var(--sz-tool-cta);
+    color: var(--sz-tool-on-cta);
+  }
+  .sz-tool-pill--primary:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--sz-tool-cta) 88%, var(--sz-tool-ink));
+  }
+  .sz-tool-pill--quiet {
+    border-color: var(--sz-tool-card-edge);
+    background: var(--sz-tool-quiet);
+    color: var(--sz-tool-ink);
+  }
+  .sz-tool-pill--quiet:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--sz-tool-quiet) 90%, var(--sz-tool-ink));
+  }
+  .sz-tool-pill--outline {
+    border-color: var(--sz-tool-line);
+    background: var(--sz-tool-surface);
+    color: var(--sz-tool-ink);
+  }
+  .sz-tool-pill--outline:hover:not(:disabled) {
+    background: var(--sz-tool-surface-2);
+  }
+  .sz-tool-pill--creme {
+    background: var(--sz-tool-band-creme);
+    color: var(--sz-tool-ink);
+  }
+  .sz-tool-pill--creme:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--sz-tool-band-creme) 90%, var(--sz-tool-ink));
   }
 
-  /* Chips exclusivos de filtro (fieldset + legend), 36px. A legend NÃO é "rendered legend":
-     com float ela entra no fluxo flex e fica INLINE com os chips (sem o float, o navegador a
-     desenha numa linha ACIMA, que é o que custava altura). */
+  /* ── CHIPS de filtro ──────────────────────────────────────────────────────────────────
+     Exclusivos (fieldset + legend), pílulas brancas; o ATIVO é o azul da marca cheio (o
+     "Todos" da imagem). A legend NÃO é "rendered legend": com float ela entra no fluxo flex e
+     fica INLINE com os chips (sem o float, o navegador a desenha numa linha ACIMA). */
   .sz-tool-chips {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.375rem;
+    gap: 0.625rem;
     margin: 0;
     padding: 0;
     border: 0;
@@ -253,16 +514,18 @@
   .sz-tool-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    min-height: var(--sz-tool-chip);
-    padding-inline: 0.75rem;
-    border: var(--sz-tool-border) solid var(--sz-tool-line);
+    gap: 0.4375rem;
+    min-height: var(--sz-tool-hit);
+    padding-inline: 1rem;
+    border: 1px solid var(--sz-tool-card-edge);
     border-radius: var(--sz-tool-radius-pill);
-    background: var(--sz-tool-surface);
+    background: var(--sz-tool-quiet);
     color: var(--sz-tool-ink);
-    font-weight: 700;
+    font-family: inherit;
+    font-weight: 800;
     font-size: 0.875rem;
     line-height: 1;
+    white-space: nowrap;
     cursor: pointer;
     touch-action: manipulation;
     transition:
@@ -270,32 +533,47 @@
       background-color 0.12s ease,
       color 0.12s ease;
   }
-  .sz-tool-chip:hover:not(:disabled) {
-    border-color: var(--sz-tool-accent);
+  .sz-tool-chip > svg {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
   }
-  /* Ativo: fundo do acento + texto on-accent (navy no escuro; o `text-white` do Estúdio
+  .sz-tool-chip:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--sz-tool-quiet) 90%, var(--sz-tool-ink));
+  }
+  /* Ativo: o par da marca (navy sobre o azul claro no escuro; o `text-white` antigo do Estúdio
      falhava AA sobre o azul-vivo). */
-  .sz-tool-chip[aria-pressed="true"] {
-    border-color: var(--sz-tool-accent);
-    background: var(--sz-tool-accent);
-    color: var(--sz-tool-on-accent);
+  .sz-tool-chip[aria-pressed="true"],
+  .sz-tool-chip[aria-pressed="true"]:hover:not(:disabled) {
+    border-color: var(--sz-tool-cta);
+    background: var(--sz-tool-cta);
+    color: var(--sz-tool-on-cta);
   }
 
-  /* Busca e seletor: 44px, xl, borda 2, fundo RECUADO (bg): os cartões ficam por cima. */
+  /* ── BUSCA e ORDENAR ──────────────────────────────────────────────────────────────────
+     Pílulas brancas da mesma altura dos chips. O embrulho da busca põe a lupa à esquerda; o
+     do seletor desenha a seta (o `appearance: none` tira a do sistema, que destoava). */
   .sz-tool-search,
   .sz-tool-select {
-    min-height: var(--sz-tool-control);
+    min-height: var(--sz-tool-hit);
     width: 100%;
-    border: var(--sz-tool-border) solid var(--sz-tool-line);
-    border-radius: var(--sz-tool-radius-control);
-    background: var(--sz-tool-bg);
+    border: 1px solid var(--sz-tool-card-edge);
+    border-radius: var(--sz-tool-radius-pill);
+    background: var(--sz-tool-quiet);
     color: var(--sz-tool-ink);
-    font-size: 1rem;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
     padding-inline: 1rem;
+  }
+  .sz-tool-search::placeholder {
+    color: var(--sz-tool-muted);
+    opacity: 1;
   }
   .sz-tool-select {
     width: auto;
-    padding-inline: 0.75rem;
+    font-weight: 800;
+    cursor: pointer;
   }
   .sz-tool-search:focus,
   .sz-tool-select:focus {
@@ -305,56 +583,73 @@
   .sz-tool-search::-webkit-search-cancel-button {
     appearance: none;
   }
-  /* O embrulho do campo com a lupa: `relative` + o ícone absoluto à esquerda. */
+  /* A LARGURA explícita não é enfeite: sem ela a contribuição intrínseca do campo (~180px) é
+     menor que a base de 17,5rem, a ponta direita se mede pequena demais e a quebra de linha
+     joga o ordenar para baixo da busca (medido na galeria do Estúdio). */
   .sz-tool-search-wrap {
     position: relative;
     display: flex;
-    flex: 1 1 14rem;
+    flex: 0 1 17.5rem;
+    width: 17.5rem;
     min-width: 0;
     align-items: center;
   }
   .sz-tool-search-wrap > svg {
     position: absolute;
-    left: 0.75rem;
+    left: 0.875rem;
     width: 1rem;
     height: 1rem;
     pointer-events: none;
     color: var(--sz-tool-muted);
   }
   .sz-tool-search-wrap > .sz-tool-search {
-    padding-inline-start: 2.5rem;
+    padding-inline-start: 2.375rem;
+  }
+  .sz-tool-select-wrap {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+  }
+  .sz-tool-select-wrap > .sz-tool-select {
+    appearance: none;
+    padding-inline-end: 2.25rem;
+  }
+  .sz-tool-select-wrap > svg {
+    position: absolute;
+    right: 0.875rem;
+    width: 1rem;
+    height: 1rem;
+    pointer-events: none;
+    color: var(--sz-tool-muted);
+  }
+  @media (max-width: 47.99rem) {
+    .sz-tool-search-wrap {
+      flex: 1 1 12rem;
+      width: auto;
+    }
   }
 
-  /* Card/painel (= .pin-panel / .sz-home-panel / .pensa-project-card) e o pop de hover. */
-  .sz-tool-panel {
-    border: var(--sz-tool-border) solid var(--sz-tool-line);
-    border-radius: var(--sz-tool-radius-card);
-    background: var(--sz-tool-surface);
-    box-shadow: var(--sz-tool-shadow-card);
-  }
-  .sz-tool-pop {
-    transition: transform 0.18s ease-out;
-  }
-  .sz-tool-pop:hover {
-    transform: translateY(-2px) scale(1.02);
-  }
-
-  /* Selo de nuvem em pílula ("Guardado na sua conta"). Tom por modificador. */
+  /* ── SELO da nuvem ("Guardado na sua conta") ──────────────────────────────────────────
+     Pílula da altura dos botões ao lado, tom por modificador: o menta com o verde de texto é o
+     da imagem (4,96:1). O texto QUEBRA em vez de vazar: a frase do "sem internet" é longa, e
+     num celular de 375px ela empurrava a página inteira para o lado (medido). O recado é o que
+     importa ali, então ele fica inteiro em duas linhas em vez de cortado com reticências. */
   .sz-tool-status {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
+    gap: 0.4375rem;
     min-width: 0;
-    min-height: 2rem;
-    padding-inline: 0.625rem;
-    border: var(--sz-tool-border) solid var(--sz-tool-line);
+    max-width: 100%;
+    min-height: var(--sz-tool-hit);
+    padding: 0.375rem 1rem;
+    border: 1px solid var(--sz-tool-card-edge);
     border-radius: var(--sz-tool-radius-pill);
-    background: var(--sz-tool-surface);
+    background: var(--sz-tool-quiet);
     color: var(--sz-tool-muted);
-    font-weight: 700;
+    font-weight: 800;
     font-size: 0.875rem;
-    line-height: 1;
-    white-space: nowrap;
+    line-height: 1.25;
   }
   .sz-tool-status > svg {
     flex: none;
@@ -363,77 +658,427 @@
   }
   .sz-tool-status--ok {
     color: var(--sz-tool-ok);
-    border-color: color-mix(in oklab, var(--sz-tool-ok) 35%, var(--sz-tool-line));
-    background: color-mix(in oklab, var(--sz-tool-ok) 10%, var(--sz-tool-surface));
+    border-color: color-mix(in oklab, var(--sz-tool-ok) 30%, var(--sz-tool-ok-tint));
+    background: var(--sz-tool-ok-tint);
   }
   .sz-tool-status--warn {
     color: var(--sz-tool-warn);
-    border-color: color-mix(in oklab, var(--sz-tool-warn) 45%, var(--sz-tool-line));
-    background: color-mix(in oklab, var(--sz-tool-warn) 10%, var(--sz-tool-surface));
+    border-color: color-mix(in oklab, var(--sz-tool-warn) 40%, var(--sz-tool-surface));
+    background: color-mix(in oklab, var(--sz-tool-warn) 12%, var(--sz-tool-surface));
   }
   .sz-tool-status--danger {
     color: var(--sz-tool-danger);
-    border-color: color-mix(in oklab, var(--sz-tool-danger) 45%, var(--sz-tool-line));
+    border-color: color-mix(in oklab, var(--sz-tool-danger) 40%, var(--sz-tool-surface));
     background: color-mix(in oklab, var(--sz-tool-danger) 8%, var(--sz-tool-surface));
   }
 
-  /* Cabeçalho compacto de DUAS linhas (só layout; a tipografia é de cada pacote:
-     .pin-display / .sz-ui-display / .pensa-display). Linha 1 = .sz-tool-header:
-     [menu][título+subtítulo] ... [status][ações][3D]. Linha 2 = .sz-tool-toolbar:
-     [chips] ... [busca][ordenar]. Abaixo de md as pontas direitas descem para a própria linha.
-     Sem container queries de propósito: containment de layout re-ancoraria os overlays
-     `fixed` sem portal (o Dialog do Pinta). */
-  .sz-tool-header {
+  /* ── CARTÕES ──────────────────────────────────────────────────────────────────────────
+     Brancos, cantos de 20px, sem borda aparente e sem sombra (a imagem). O conteúdo de cada
+     cartão é de cada pacote; aqui é só a casca. */
+  .sz-tool-grid {
+    display: grid;
+    gap: 1.25rem;
+    /* 4 colunas de ~245px em 1440 com o menu aberto (a imagem) e 5 com ele escondido; o
+       cartão mantém a largura e é a QUANTIDADE de colunas que acompanha a tela. `auto-fill`
+       (e não `auto-fit`) deixa as faixas vazias de pé: dois projetos numa tela larga
+       continuam do tamanho de cartão. */
+    grid-template-columns: repeat(auto-fill, minmax(13.75rem, 1fr));
+  }
+  /* ⚠️ O guia da tarefa (lá embaixo) é O MESMO cartão, e por isso divide esta regra em vez de
+     copiá-la: enquanto eram dois blocos byte a byte iguais, mudar um deixava o outro para trás
+     em silêncio (achado do full review de 19/09/2026). */
+  .sz-tool-card,
+  .sz-tool-guide {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border: 1px solid var(--sz-tool-card-edge);
+    border-radius: var(--sz-tool-radius-card-md);
+    background: var(--sz-tool-surface);
+    color: var(--sz-tool-ink);
+  }
+  /* O título de um cartão (o nome do jogo, "Novo projeto"): o Baloo extra-negrito de 15px da
+     imagem, igual nas galerias das quatro ferramentas. */
+  .sz-tool-card-title,
+  .sz-tool-guide__title {
+    font-family: var(--sz-tool-font-display);
+    font-weight: 800;
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    color: var(--sz-tool-ink);
+  }
+  /* O cartão "Novo projeto": creme com o fio amarelo e o "+" num círculo amarelo. É um botão
+     de verdade (a grade inteira é navegável pelo Tab). */
+  .sz-tool-card--new {
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 1.5rem 1rem;
+    border: 2px solid color-mix(in oklab, var(--sz-tool-new) 50%, var(--sz-tool-band-creme));
+    background: var(--sz-tool-band-creme);
+    font: inherit;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.12s ease;
+  }
+  .sz-tool-card--new:hover:not(:disabled) {
+    border-color: var(--sz-tool-new);
+  }
+  .sz-tool-new-dot {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 0.5rem;
+    border-radius: var(--sz-tool-radius-pill);
+    background: var(--sz-tool-new);
+    color: var(--sz-tool-on-new);
+  }
+  .sz-tool-new-dot > svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  /* A caixa cinza-clara da capa (a foto ou o aviso "A foto aparece quando você sai do
+     editor"). */
+  .sz-tool-cover {
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: var(--sz-tool-radius-control);
+    background: var(--sz-tool-surface-2);
+    color: var(--sz-tool-muted);
+  }
+
+  /* ── LADRILHOS de ícone ───────────────────────────────────────────────────────────────
+     48px, cantos de 12px, a cor sólida do assunto com o ícone por cima: o amarelo do novo,
+     o menta do "tudo pronto" e a assinatura de cada oficina. */
+  .sz-tool-tile {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--sz-tool-radius-control);
+  }
+  .sz-tool-tile > svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  .sz-tool-tile--new {
+    background: var(--sz-tool-new);
+    color: var(--sz-tool-on-new);
+  }
+  .sz-tool-tile--ok {
+    background: var(--sz-tool-ok-tint);
+    color: var(--sz-tool-ok);
+  }
+  .sz-tool-tile--estudio {
+    background: var(--sz-tool-sig-estudio);
+    color: var(--sz-tool-on-sig);
+  }
+  .sz-tool-tile--pinta {
+    background: var(--sz-tool-sig-pinta);
+    color: var(--sz-tool-on-sig);
+  }
+  .sz-tool-tile--molda {
+    background: var(--sz-tool-sig-molda);
+    color: var(--sz-tool-on-sig);
+  }
+  .sz-tool-tile--pensa {
+    background: var(--sz-tool-sig-pensa);
+    color: var(--sz-tool-on-sig-pensa);
+  }
+
+  /* ── CARTÃO DE FECHAMENTO (a faixa lilás) ─────────────────────────────────────────────
+     Cartão branco de cantos de 24px: ladrilho à esquerda, título e frase, e a ação à direita
+     (embaixo no celular). É o `KidsClosingCard` das páginas do kids. */
+  .sz-tool-cta-card {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 0.75rem;
+    align-items: center;
+    gap: 1rem 1.25rem;
+    padding: 1.5rem;
+    border: 1px solid var(--sz-tool-card-edge);
+    border-radius: var(--sz-tool-radius-card-lg);
+    background: var(--sz-tool-surface);
+    color: var(--sz-tool-ink);
   }
-  .sz-tool-header__lead {
-    display: flex;
+  .sz-tool-cta-card__body {
     flex: 1 1 16rem;
     min-width: 0;
-    align-items: flex-start;
-    gap: 0.75rem;
   }
-  .sz-tool-header__title {
-    min-width: 0;
+  .sz-tool-cta-card__title {
+    margin: 0;
+    font-family: var(--sz-tool-font-display);
+    font-weight: 800;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    color: var(--sz-tool-ink);
   }
-  .sz-tool-header__actions,
-  .sz-tool-toolbar__end {
+  .sz-tool-cta-card__text {
+    margin: 0.25rem 0 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--sz-tool-muted);
+  }
+
+  /* ── GUIA DA TAREFA do Pensa (19/09/2026) ─────────────────────────────────────────────
+     O painel que abre dentro da oficina quando a criança chega por um Cartão de Criação:
+     `TaskBriefPanel` (pinta), `TaskGuidePanel` (studio) e `MoldaTaskGuide` (community-kids).
+     São TRÊS componentes, em dois pacotes e no host, e até aqui cada um tinha inventado a
+     própria casca (fio de 2px no acento do Pinta, fio da marca no Molda, faixa sem canto no
+     Estúdio) — o que ela leu como "totalmente fora da identidade visual da comunidade".
+     Agora os três vestem ESTA receita: o cartão branco da família do `.sz-tool-card`, porque
+     o guia É um cartão, só que com um cabeçalho que recolhe e um pé. CHAPADO: o relevo 3D é
+     das galerias, e o guia mora no editor.
+     ⚠️ Os três só nascem com uma sessão de tarefa do Pensa, e ela só existe no community-kids
+     e nos playgrounds — os mesmos hosts que importam esta folha (o bloco de aula do Pinta, o
+     `studio-embed` do admin e a comunidade adulta nunca montam uma). Classe sem folha não
+     desenha NADA (ao contrário de token, que tem fallback): host novo que monte um guia
+     importa o `tool-chrome.css` junto.
+     ⚠️ Margem, largura e teto de altura ficam FORA daqui, como utilitária no consumidor: elas
+     variam por painel, e os testes do Pinta e do Estúdio as leem como classe literal. */
+  /* O respiro que faltava: 18px dos lados, 14px em cima e embaixo. Recolhido, o cabeçalho é o
+     ÚNICO filho, então é ele quem dá o respiro do cartão inteiro — e num canto de 20px um
+     padding menor faz o texto encostar na curva (o relato dela era o Pinta, com 12px e 8px). */
+  .sz-tool-guide__head {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
-    margin-inline-start: auto;
+    min-height: var(--sz-tool-hit);
+    padding: 0.875rem 1.125rem;
   }
-  .sz-tool-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem 1rem;
-  }
-  .sz-tool-toolbar__start {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
+  /* ⚠️ O primeiro filho (o bloco do título) come o espaço livre, senão a situação flutuaria no
+     MEIO do cabeçalho em vez de colar na seta — é o que acontecia no Molda, que tem três filhos
+     e não trazia `flex-1` no título (achado do full review de 19/09/2026). */
+  .sz-tool-guide__head > :first-child {
+    flex: 1 1 auto;
     min-width: 0;
   }
-  @media (max-width: 47.99rem) {
-    .sz-tool-header__actions,
-    .sz-tool-toolbar__end {
-      width: 100%;
-      margin-inline-start: 0;
+  /* ⚠️ O cabeçalho do Estúdio é um contêiner com o botão DENTRO (o padrão de disclosure com
+     cabeçalho, porque ali o título é um `<h2>`), e o botão já traz o próprio alvo de 44px. Sem
+     este respiro menor o cabeçalho somaria 14 + 44 + 14 = 72px, contra os ~47px dos irmãos —
+     justo no painel que vira a faixa do topo no celular. */
+  div.sz-tool-guide__head {
+    padding-block: 0.125rem;
+  }
+  /* Quando o cabeçalho INTEIRO é o botão de abrir e recolher (Pinta e Molda), e o botão de
+     dentro quando ele não é (Estúdio): as duas formas respondem igual ao ponteiro e ao foco. */
+  button.sz-tool-guide__head,
+  .sz-tool-guide__head button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 0.12s ease;
+  }
+  /* ⚠️ O raio inteiro só quando o cabeçalho é o cartão INTEIRO (recolhido). Aberto, herdar os
+     quatro cantos deixava o hover com dois entalhes arredondados flutuando sobre o corpo. */
+  button.sz-tool-guide__head {
+    border-start-start-radius: inherit;
+    border-start-end-radius: inherit;
+  }
+  button.sz-tool-guide__head:only-child {
+    border-radius: inherit;
+  }
+  button.sz-tool-guide__head:hover:not(:disabled),
+  .sz-tool-guide__head button:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--sz-tool-surface) 92%, var(--sz-tool-ink));
+  }
+  button.sz-tool-guide__head:focus-visible,
+  .sz-tool-guide__head button:focus-visible {
+    outline: 2px solid var(--sz-tool-accent);
+    outline-offset: -2px;
+  }
+  /* O sobretítulo que diz de onde veio o painel, e o nome da tarefa no Baloo de 15px do
+     `.sz-tool-card-title`. */
+  /* ⚠️ 12px, o piso da casa para criança — o mesmo do `.sz-tool-kicker` das galerias. Nasceu em
+     11px e o full review de 19/09/2026 pegou: texto para criança de 8 anos não desce disso. */
+  .sz-tool-guide__kicker {
+    display: block;
+    font-family: var(--sz-tool-font-display);
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sz-tool-muted);
+  }
+  /* A tipografia vem do `.sz-tool-card-title`, lá em cima: aqui só o que é do guia (ele vive
+     numa linha que também tem a situação e a seta, então o título é quem cede e trunca). */
+  .sz-tool-guide__title {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* A situação da tarefa (Planejada / Em andamento / Concluída), no canto do cabeçalho. Fica
+     FORA do que recolhe de propósito: é a única coisa que a criança precisa saber sem abrir. */
+  .sz-tool-guide__state {
+    flex: none;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--sz-tool-radius-pill);
+    background: var(--sz-tool-surface-2);
+    color: var(--sz-tool-muted);
+    /* ⚠️ 12px, o piso da casa para criança. Ela nasceu com os 10px que vieram de um
+       `text-[10px]` do Estúdio, e promover isso à folha teria espalhado o tamanho errado. */
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .sz-tool-guide__body {
+    padding: 0 1.125rem 1rem;
+  }
+  .sz-tool-guide__foot {
+    padding: 0.75rem 1.125rem 1.125rem;
+    border-top: 1px solid var(--sz-tool-line);
+  }
+  /* O recado de PROBLEMA, que sobrevive ao recolher (decisão dela, 19/09/2026): recolher
+     esconde conteúdo e ação de rotina, NUNCA um problema. */
+  /* ⚠️ Dentro do recado, a pílula "quieta" some: o fundo dela é o do APP (`--sz-tool-bg`) e, sobre
+     o tingido do alerta, dá 1,04:1 sem fio nenhum (o `--sz-tool-card-edge` é transparente no
+     claro). Aqui ela vira a superfície do cartão, que é o que o `--outline` já usa. */
+  .sz-tool-guide__alert .sz-tool-pill--quiet {
+    border-color: var(--sz-tool-line);
+    background: var(--sz-tool-surface);
+  }
+  .sz-tool-guide__alert {
+    margin: 0 1.125rem 0.875rem;
+    padding: 0.75rem;
+    border: 1px solid color-mix(in oklab, var(--sz-tool-danger) 40%, var(--sz-tool-surface));
+    border-radius: var(--sz-tool-radius-control);
+    background: color-mix(in oklab, var(--sz-tool-danger) 8%, var(--sz-tool-surface));
+    /* ⚠️ A tinta leva um quinto da tinta de texto, o mesmo truque da barra do Pinta: o vermelho
+       puro sobre o fundo rosado do próprio alerta dá 4,25:1 no tema ESCURO (medido no
+       playground), abaixo do piso de 4,5. Misturar escurece no claro e clareia no escuro, e os
+       dois passam. Quem consome NÃO declara cor: herda esta. */
+    color: color-mix(in oklab, var(--sz-tool-danger) 80%, var(--sz-tool-ink));
+  }
+  /* ⚠️⚠️ Vermelho é para PROBLEMA (`role="alert"`). O recado informativo — "a criação está noutro
+     aparelho", "guarde antes de sair" — usa `--warn`: para uma criança de 8 anos, vermelho o
+     tempo todo lê como "quebrou" (achado do full review de 19/09/2026). */
+  .sz-tool-guide__alert--warn {
+    border-color: color-mix(in oklab, var(--sz-tool-warn) 40%, var(--sz-tool-surface));
+    background: color-mix(in oklab, var(--sz-tool-warn) 12%, var(--sz-tool-surface));
+    color: color-mix(in oklab, var(--sz-tool-warn) 80%, var(--sz-tool-ink));
+  }
+  /* O Estúdio é o único dos três que vira COLUNA LATERAL a partir de `lg`: lá o fio em volta
+     vira o fio do lado que separa do editor (painel encaixado não tem canto solto). O fio é o
+     `--sz-tool-line`, e não o `--sz-tool-card-edge`, que é TRANSPARENTE no tema claro: uma
+     borda de cartão some de propósito, uma divisória não pode sumir. Vem DEPOIS da base, com a
+     mesma especificidade — quem decide é a ordem, sem `!important`. */
+  .sz-tool-guide--aside {
+    border: 0;
+    border-bottom: 1px solid var(--sz-tool-line);
+    border-radius: 0;
+  }
+  @media (min-width: 64rem) {
+    .sz-tool-guide--aside {
+      border-bottom: 0;
+      border-inline-end: 1px solid var(--sz-tool-line);
     }
   }
 
+  /* ── O 3D DO BRILLIANT nas GALERIAS (11/09/2026, decisão dela) ─────────────────────────
+     Dentro das faixas (`.sz-tool-bands`, ou seja, as galerias) os botões e o cartão "Novo
+     projeto" ganham o relevo do kids: a borda de baixo sólida num tom mais escuro, por
+     sombra (o layout não anda); no hover a peça sobe 1px e a borda cresce, no aperto ela
+     afunda até a borda quase sumir. Os EDITORES ficam planos (a mesma receita fora das
+     faixas não tem relevo), e os chips de filtro também (fazem papel de aba). O movimento é
+     `translate`: o `transform` do aperto da pílula base sai aqui dentro, senão somavam.
+     `--sz-3d-*` são o ESTADO de cada peça (declarados nela, nunca herdados), não tokens.
+     ⚠️ Peça cuja área clicável é esticada por um `::after` (`position: absolute; inset: 0`
+     contra um ancestral `relative`: "o cartão inteiro abre") NÃO pode andar. `translate` ou
+     `transform` fazem dela o bloco de referência do `::after`, que encolhe para o tamanho da
+     peça no meio do gesto: o hover pisca e o clique solta fora. Quem usa esse padrão desliga o
+     movimento na própria folha, fora de camada (`transform: none; translate: none` no
+     `:hover` e no `:active`); o aperto continua visível no relevo.
+     ⚠️⚠️ Hoje NENHUMA peça do produto faz isso: o Pensa era a única e DESFEZ a camada dele em
+     19/09/2026 (decisão dela — "os cards de projeto no pensa não é clicavel"). O
+     `.pensa-project-card__open` segue sem andar, mas por outra razão: é a pílula que mora na
+     moldura do cartão onde ela relatou o cursor tremendo três vezes, e 1px ali não vale o
+     risco. Antes de ressuscitar o padrão, prefira botões com alvo próprio.
+     ⚠️⚠️ **E o cartão `--new` também NÃO anda (14/09/2026).** Ele é o único CARTÃO da lista, e
+     cartão de grade tem aresta longa: com o ponteiro parado na faixa de 1px da borda de baixo,
+     o hover sobe a peça, ela sai de baixo do ponteiro, o hover cai, a transição a traz de
+     volta — e recomeça, várias vezes por segundo. É o "cursor tremendo/piscando" que ela
+     relatou no Pensa, o mesmo defeito de fundo que o `content-visibility` causava no Pinta
+     (13/09). Medido no playground do Pensa: em repouso o cartão termina em 502,15 e no hover
+     em 501,15. Um botão de barra tem borda curta e some rápido do caminho; um cartão de 271px
+     de altura fica ali embaixo do ponteiro. O relevo FICA (a sombra cresce, a borda acende):
+     só o movimento saiu. */
+  .sz-tool-bands
+  :is(.sz-tool-pill, .sz-tool-back, .sz-tool-btn-menu, .sz-tool-icon-btn, .sz-tool-card--new) {
+    --sz-3d-altura: 4px;
+    --sz-3d-degrau: var(--sz-tool-degrau);
+    box-shadow: 0 var(--sz-3d-altura) 0 var(--sz-3d-degrau);
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease,
+      color 0.12s ease,
+      translate 0.12s ease,
+      box-shadow 0.12s ease;
+  }
+  .sz-tool-bands .sz-tool-pill--primary {
+    --sz-3d-degrau: var(--sz-tool-cta-degrau);
+  }
+  .sz-tool-bands
+    :is(
+      .sz-tool-pill,
+      .sz-tool-back,
+      .sz-tool-btn-menu,
+      .sz-tool-icon-btn,
+      .sz-tool-card--new
+    ):hover:not(:disabled) {
+    --sz-3d-altura: 5px;
+    translate: 0 -1px;
+  }
+  .sz-tool-bands
+    :is(
+      .sz-tool-pill,
+      .sz-tool-back,
+      .sz-tool-btn-menu,
+      .sz-tool-icon-btn,
+      .sz-tool-card--new
+    ):active:not(:disabled) {
+    --sz-3d-altura: 1px;
+    translate: 0 3px;
+    transform: none;
+  }
+  /* O cartão não anda, nem no hover nem no aperto (ver o ⚠️⚠️ acima): dele o relevo é só
+     a sombra que cresce e a borda que acende. Mesma especificidade (0,4,0) das duas regras
+     de cima e DEPOIS delas: vence sem `!important`, que esta folha não usa. */
+  .sz-tool-bands .sz-tool-card--new:is(:hover, :active):not(:disabled) {
+    translate: none;
+    transform: none;
+  }
+
+  /* Desabilitado, igual em todo o chrome. O cartão "novo" também: no modo seleção do Pinta ele
+     fica no lugar, desligado, para a grade não andar uma casa. */
+  .sz-tool-btn-menu:disabled,
+  .sz-tool-icon-btn:disabled,
+  .sz-tool-pill:disabled,
+  .sz-tool-chip:disabled,
+  .sz-tool-card--new:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
   /* Foco: anel único de todo o chrome. Depois do :focus da busca (mesma especificidade). */
-  .sz-tool-btn:focus-visible,
   .sz-tool-btn-menu:focus-visible,
-  .sz-tool-btn-3d:focus-visible,
+  .sz-tool-icon-btn:focus-visible,
+  .sz-tool-back:focus-visible,
+  .sz-tool-pill:focus-visible,
   .sz-tool-chip:focus-visible,
+  .sz-tool-card--new:focus-visible,
   .sz-tool-search:focus-visible,
   .sz-tool-select:focus-visible {
     outline: 2px solid var(--sz-tool-accent);
@@ -441,15 +1086,28 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .sz-tool-btn,
     .sz-tool-btn-menu,
-    .sz-tool-btn-3d,
+    .sz-tool-icon-btn,
+    .sz-tool-back,
+    .sz-tool-pill,
     .sz-tool-chip,
-    .sz-tool-pop {
+    .sz-tool-card--new {
       transition: none;
     }
-    .sz-tool-pop:hover {
+    .sz-tool-pill:active:not(:disabled) {
       transform: none;
+    }
+    /* O relevo das galerias fica, e o aperto ainda achata a borda, mas nada anda. A mesma
+       especificidade do hover e do aperto (0,4,0), e depois deles no arquivo: vence sem
+       `!important`, que a folha não usa. */
+    .sz-tool-bands :is(
+        .sz-tool-pill,
+        .sz-tool-back,
+        .sz-tool-btn-menu,
+        .sz-tool-icon-btn,
+        .sz-tool-card--new
+      ):is(:hover, :active):not(:disabled) {
+      translate: none;
     }
   }
 }

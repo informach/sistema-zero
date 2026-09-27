@@ -1,0 +1,1243 @@
+{
+  "version": 5,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "dia-3",
+  "title": "A luz do farol",
+  "blocks": [
+    {
+      "key": "video-d3-condicao",
+      "plannedVideo": "Título: Quando a porta pode abrir?\n\nExplicar uma condição com exemplo próximo da criança e o objetivo do jogo. Não narrar a sequência de botões ou o resultado da experiência.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "ponte-d3-condicao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No vídeo, você ouviu falar de uma condição. Agora veja o que a chave muda na porta do farol."
+      }
+    },
+    {
+      "key": "experiencia-porta",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "A porta precisa da chave",
+        "instructions": "Teste a porta com e sem a chave. O que muda?",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "lighthouse-key",
+          "cenario": "farol"
+        }
+      }
+    },
+    {
+      "key": "video-d3-decisao",
+      "plannedVideo": "Título: Faça a porta decidir\n\nGuiar o evento de contato personagem/farol, Se temChave, ganhou verdadeiro e trocar imagem do farol. Testar sem chave e com chave; ver barco chegar, salvar e enviar.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "ponte-d3-decisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você testou duas situações na porta. Agora vai montar a pergunta que o jogo faz."
+      }
+    },
+    {
+      "key": "video-d3-fecho",
+      "plannedVideo": "Título: O barco encontrou o caminho\n\nCelebrar as três regras que a criança montou sem atribuir a ela cenário ou barco preparados. Apontar o certificado.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "projeto",
+      "content": {
+        "kind": "studio",
+        "purpose": "submission",
+        "chain": "desafio-primeiro-jogo",
+        "level": "iniciante-2d",
+        "allowedModes": ["blocks"],
+        "allowLevelReveal": false,
+        "allowBlocks": [
+          "sz_frame_start",
+          "sz_frame_events",
+          "sz_frame_loops",
+          "sz_frame_structure",
+          "sz_frame_appearance",
+          "sz_html_canvas",
+          "sz_css_rule",
+          "sz_css_decl",
+          "sz_css_body_background",
+          "sz_css_align",
+          "sz_css_justify",
+          "sz_g2d_setup_stage",
+          "sz_g2d_create_image_sprite",
+          "sz_g2d_clear",
+          "sz_g2d_draw_backdrop",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_draw_label",
+          "sz_g2d_update_each_frame",
+          "sz_g2d_enable_classic_controls",
+          "sz_g2d_top_down",
+          "sz_g2d_clamp_to_screen",
+          "sz_g2d_on_overlap",
+          "sz_g2d_destroy_sprite",
+          "sz_g2d_set_image",
+          "sz_js_var_create",
+          "sz_js_var_assign",
+          "sz_js_if_else",
+          "sz_js_member_set",
+          "sz_math_arithmetic",
+          "sz_val_bool",
+          "sz_val_compare",
+          "sz_val_member_get",
+          "sz_val_number",
+          "sz_val_text",
+          "sz_val_variable"
+        ],
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-desafio-farol",
+          "name": "A Chave do Farol",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Chave do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <canvas id=\"tela\" width=\"640\" height=\"360\"></canvas>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "body {\n  margin: 0;\n  background: #b9dfd0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 100vh;\n  padding-bottom: 108px;\n  box-sizing: border-box;\n}\n",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#b9dfd0\");\n  const personagem = SZGame2D.createSprite({ x: 170, y: 130, w: 40, h: 48, image: \"personagem\" });\n  const chave = SZGame2D.createSprite({ x: 328, y: 171, w: 40, h: 40, image: \"chave\" });\n  const farol = SZGame2D.createSprite({ x: 485, y: 72, w: 100, h: 154, image: \"farol-apagado\" });\n  const barco = SZGame2D.createSprite({ x: 655, y: 267, w: 72, h: 50, image: \"barco\" });\n  let aviso = \"Encontre a chave e vá ao farol.\";\n  let ganhou = false;\n  SZGame2D.enableClassicControls(\"directions\");\n  let temChave = false;\n  // Quando acontecer\n  SZGame2D.onOverlap(() => personagem, () => chave, () => {\n    SZGame2D.destroySprite(chave);\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  }, \"eventoDeContato\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"cenario\");\n    SZGame2D.topDown(personagem, 3);\n    SZGame2D.clampToScreen(personagem, ctx);\n    if (ganhou) {\n      if (barco.x > 530) {\n        barco.x = barco.x - 1.5;\n      }\n    }\n    SZGame2D.drawSprite(ctx, chave);\n    SZGame2D.drawSprite(ctx, farol);\n    SZGame2D.drawSprite(ctx, barco);\n    SZGame2D.drawSprite(ctx, personagem);\n    SZGame2D.drawLabel(ctx, aviso, 20, 32, \"#263a45\", 19, \"left\");\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
+          },
+          "extraFiles": [],
+          "assets": [
+            {
+              "id": "desafio-farol-cenario",
+              "name": "cenario",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NDAiIGhlaWdodD0iMzYwIiB2aWV3Qm94PSIwIDAgNjQwIDM2MCI+PHJlY3Qgd2lkdGg9IjY0MCIgaGVpZ2h0PSIzNjAiIGZpbGw9IiNiOWRmZDAiLz48cGF0aCBkPSJNMCAwSDY0MFY5M1E1NTAgODMgNDc1IDEwNFEzOTMgMTE2IDMxNiA5NFEyMDkgNzYgMTIwIDEwMFE0NCAxMTIgMCA5M1oiIGZpbGw9IiNhNmQ1ZWEiLz48cGF0aCBkPSJNMCAyNzBRMTIwIDI1OCAyNDggMjc3UTM1NCAyOTIgNDQyIDI3M1E1MzAgMjU0IDY0MCAyNzJWMzYwSDBaIiBmaWxsPSIjOTZjOThkIi8+PHBhdGggZD0iTTQ5NyAwSDY0MFYzNjBINTIzUTUzNyAzMDQgNTExIDI0NlE0ODQgMTk3IDUwNiAxNDVRNTI1IDk0IDQ5NyAwWiIgZmlsbD0iIzViYTljMSIvPjxwYXRoIGQ9Ik0wIDE2NVE4NiAxNTUgMTc4IDE3NVEyNTUgMTgxIDMxOCAxNTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2U4ZDdhOCIgc3Ryb2tlLXdpZHRoPSIyMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTMxOCAxNTdRNDA0IDE0MSA0NTYgMTc3IiBmaWxsPSJub25lIiBzdHJva2U9IiNlOGQ3YTgiIHN0cm9rZS13aWR0aD0iMjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxnIGZpbGw9IiNmZmY1Y2EiPjxjaXJjbGUgY3g9IjkyIiBjeT0iMTI4IiByPSI1Ii8+PGNpcmNsZSBjeD0iMjE0IiBjeT0iMjI5IiByPSI0Ii8+PGNpcmNsZSBjeD0iMzc3IiBjeT0iOTYiIHI9IjUiLz48L2c+PC9zdmc+",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "id": "desafio-farol-personagem",
+              "name": "personagem",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQwIDQ4Ij48ZWxsaXBzZSBjeD0iMjAiIGN5PSI0MyIgcng9IjE1IiByeT0iNCIgZmlsbD0iIzU1NzU2NCIgb3BhY2l0eT0iLjQiLz48cmVjdCB4PSI3IiB5PSIxOSIgd2lkdGg9IjI2IiBoZWlnaHQ9IjI1IiByeD0iOCIgZmlsbD0iIzZhNjhiMCIgc3Ryb2tlPSIjM2I0MjZjIiBzdHJva2Utd2lkdGg9IjIiLz48Y2lyY2xlIGN4PSIyMCIgY3k9IjE0IiByPSIxMiIgZmlsbD0iI2YyYmY5MSIgc3Ryb2tlPSIjNzE0ZjUwIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNOCAxM1E4IC0xIDIxIDFRMzMgMyAzMiAxNFoiIGZpbGw9IiM0NDNiNjEiLz48Y2lyY2xlIGN4PSIxNiIgY3k9IjE1IiByPSIxLjUiLz48Y2lyY2xlIGN4PSIyNCIgY3k9IjE1IiByPSIxLjUiLz48L3N2Zz4=",
+              "width": 40,
+              "height": 48
+            },
+            {
+              "id": "desafio-farol-chave",
+              "name": "chave",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MiIgaGVpZ2h0PSI0MiIgdmlld0JveD0iMCAwIDQyIDQyIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI4IiBmaWxsPSJub25lIiBzdHJva2U9IiNkOTkzMzUiIHN0cm9rZS13aWR0aD0iNSIvPjxwYXRoIGQ9Ik0xOCAxOEwzNiAzNk0yOSAyOUwzMyAyNU0zMyAzM0wzNyAyOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDk5MzM1IiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==",
+              "width": 42,
+              "height": 42
+            },
+            {
+              "id": "desafio-farol-farol-apagado",
+              "name": "farol-apagado",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTE5IDE1MUwzMSA0NUg2OUw4MSAxNTFaIiBmaWxsPSIjZjllZWUxIiBzdHJva2U9IiM4MTY0NzQiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yNiA4NEg3NEw3MCAxMDFIMzBaIiBmaWxsPSIjZGY2OTYyIi8+PHJlY3QgeD0iNDAiIHk9IjExMyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjM4IiByeD0iMyIgZmlsbD0iIzY3NGY2MyIvPjxwYXRoIGQ9Ik0zMCA0NVYyMEg3MFY0NVoiIGZpbGw9IiM2YzgxOTYiIHN0cm9rZT0iIzU0NjI3MyIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIzIDIwTDUwIDVMNzcgMjBaIiBmaWxsPSIjZGM2ODY0IiBzdHJva2U9IiM5ODUyNWEiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==",
+              "width": 100,
+              "height": 154
+            },
+            {
+              "id": "desafio-farol-farol-aceso",
+              "name": "farol-aceso",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTUwIDMwTDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik01MCAzMEwxMDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik0xOSAxNTFMMzEgNDVINjlMODEgMTUxWiIgZmlsbD0iI2Y5ZWVlMSIgc3Ryb2tlPSIjODE2NDc0IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjYgODRINzRMNzAgMTAxSDMwWiIgZmlsbD0iI2RmNjk2MiIvPjxyZWN0IHg9IjQwIiB5PSIxMTMiIHdpZHRoPSIyMCIgaGVpZ2h0PSIzOCIgcng9IjMiIGZpbGw9IiM2NzRmNjMiLz48cGF0aCBkPSJNMzAgNDVWMjBINzBWNDVaIiBmaWxsPSIjZmZkZTczIiBzdHJva2U9IiM5ZTc4NDYiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yMyAyMEw1MCA1TDc3IDIwWiIgZmlsbD0iI2RjNjg2NCIgc3Ryb2tlPSIjOTg1MjVhIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+              "width": 100,
+              "height": 154
+            },
+            {
+              "id": "desafio-farol-barco",
+              "name": "barco",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI1MCIgdmlld0JveD0iMCAwIDcyIDUwIj48cGF0aCBkPSJNNCAyOEg2OEw1NyA0NEgxNloiIGZpbGw9IiM5MzU5NjkiIHN0cm9rZT0iIzY1NGY2NSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTM1IDNWMjdINjFaIiBmaWxsPSIjZjllZmQ3IiBzdHJva2U9IiM4YTc4ODAiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik0zNSAzTDE2IDI2SDM1WiIgZmlsbD0iI2ZmZjdlNSIgc3Ryb2tlPSIjOGE3ODgwIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=",
+              "width": 72,
+              "height": 50
+            }
+          ],
+          "ir": {
+            "version": 2,
+            "html": [
+              {
+                "type": "canvas",
+                "id": "tela",
+                "width": 640,
+                "height": 360
+              }
+            ],
+            "css": [
+              {
+                "selector": "body",
+                "declarations": {
+                  "margin": "0",
+                  "background": "#b9dfd0",
+                  "display": "flex",
+                  "align-items": "center",
+                  "justify-content": "center",
+                  "min-height": "100vh",
+                  "padding-bottom": "108px",
+                  "box-sizing": "border-box"
+                }
+              }
+            ],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": 640,
+                  "height": 360,
+                  "bg": "#b9dfd0"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "personagem",
+                  "x": 170,
+                  "y": 130,
+                  "w": 40,
+                  "h": 48,
+                  "image": "personagem"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "chave",
+                  "x": 328,
+                  "y": 171,
+                  "w": 40,
+                  "h": 40,
+                  "image": "chave"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "farol",
+                  "x": 485,
+                  "y": 72,
+                  "w": 100,
+                  "h": 154,
+                  "image": "farol-apagado"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "barco",
+                  "x": 655,
+                  "y": 267,
+                  "w": 72,
+                  "h": 50,
+                  "image": "barco"
+                },
+                {
+                  "type": "var",
+                  "name": "aviso",
+                  "value": {
+                    "type": "str",
+                    "value": "Encontre a chave e vá ao farol."
+                  }
+                },
+                {
+                  "type": "var",
+                  "name": "ganhou",
+                  "value": {
+                    "type": "bool",
+                    "value": false
+                  }
+                },
+                {
+                  "type": "g2d:enableClassicControls",
+                  "mode": "directions"
+                },
+                {
+                  "type": "var",
+                  "name": "temChave",
+                  "value": {
+                    "type": "bool",
+                    "value": false
+                  }
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onOverlap",
+                  "aVar": "personagem",
+                  "bVar": "chave",
+                  "body": [
+                    {
+                      "type": "g2d:destroySprite",
+                      "spriteVar": "chave"
+                    },
+                    {
+                      "type": "assign",
+                      "name": "temChave",
+                      "value": {
+                        "type": "bool",
+                        "value": true
+                      }
+                    },
+                    {
+                      "type": "assign",
+                      "name": "aviso",
+                      "value": {
+                        "type": "str",
+                        "value": "Você pegou a chave! Agora vá ao farol."
+                      }
+                    }
+                  ]
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear"
+                    },
+                    {
+                      "type": "g2d:drawBackdrop",
+                      "ctxVar": "ctx",
+                      "image": "cenario"
+                    },
+                    {
+                      "type": "g2d:topDown",
+                      "spriteVar": "personagem",
+                      "speed": 3
+                    },
+                    {
+                      "type": "g2d:clampToScreen",
+                      "spriteVar": "personagem",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "var",
+                        "name": "ganhou"
+                      },
+                      "then": [
+                        {
+                          "type": "if",
+                          "cond": {
+                            "type": "binop",
+                            "op": ">",
+                            "left": {
+                              "type": "memberGet",
+                              "object": {
+                                "type": "var",
+                                "name": "barco"
+                              },
+                              "name": "x"
+                            },
+                            "right": {
+                              "type": "num",
+                              "value": 530
+                            }
+                          },
+                          "then": [
+                            {
+                              "type": "memberSet",
+                              "object": {
+                                "type": "var",
+                                "name": "barco"
+                              },
+                              "name": "x",
+                              "value": {
+                                "type": "binop",
+                                "op": "-",
+                                "left": {
+                                  "type": "memberGet",
+                                  "object": {
+                                    "type": "var",
+                                    "name": "barco"
+                                  },
+                                  "name": "x"
+                                },
+                                "right": {
+                                  "type": "num",
+                                  "value": 1.5
+                                }
+                              }
+                            }
+                          ],
+                          "else": []
+                        }
+                      ],
+                      "else": []
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "chave",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "farol",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "barco",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "personagem",
+                      "ctxVar": "ctx"
+                    },
+                    {
+                      "type": "g2d:drawLabel",
+                      "ctxVar": "ctx",
+                      "text": {
+                        "type": "var",
+                        "name": "aviso"
+                      },
+                      "x": 20,
+                      "y": 32,
+                      "color": "#263a45",
+                      "size": 19,
+                      "align": "left"
+                    }
+                  ]
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_structure",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_html_canvas",
+                        "fields": {
+                          "ID": "tela",
+                          "CLASS": "",
+                          "DESCRIPTION": ""
+                        },
+                        "data": "{\"width\":640,\"height\":360}"
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 32
+                },
+                {
+                  "type": "sz_frame_appearance",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_css_body_background",
+                        "fields": {
+                          "COLOR": "#b9dfd0"
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_css_justify",
+                            "fields": {
+                              "SELECTOR": "body",
+                              "VALUE": "center"
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_css_align",
+                                "fields": {
+                                  "SELECTOR": "body",
+                                  "VALUE": "center"
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_css_rule",
+                                    "fields": {
+                                      "SELECTOR": "body"
+                                    },
+                                    "inputs": {
+                                      "CHILDREN": {
+                                        "block": {
+                                          "type": "sz_css_decl",
+                                          "fields": {
+                                            "PROP": "margin",
+                                            "VALUE": "0"
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_css_decl",
+                                              "fields": {
+                                                "PROP": "display",
+                                                "VALUE": "flex"
+                                              },
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_css_decl",
+                                                  "fields": {
+                                                    "PROP": "min-height",
+                                                    "VALUE": "100vh"
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_css_decl",
+                                                      "fields": {
+                                                        "PROP": "padding-bottom",
+                                                        "VALUE": "108px"
+                                                      },
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_css_decl",
+                                                          "fields": {
+                                                            "PROP": "box-sizing",
+                                                            "VALUE": "border-box"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 452,
+                  "y": 32
+                },
+                {
+                  "type": "sz_frame_start",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#b9dfd0"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 640
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 360
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_create_image_sprite",
+                            "fields": {
+                              "NAME": "personagem",
+                              "IMAGE": "personagem"
+                            },
+                            "inputs": {
+                              "X": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 170
+                                  }
+                                }
+                              },
+                              "Y": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 130
+                                  }
+                                }
+                              },
+                              "W": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 40
+                                  }
+                                }
+                              },
+                              "H": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 48
+                                  }
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_image_sprite",
+                                "fields": {
+                                  "NAME": "chave",
+                                  "IMAGE": "chave"
+                                },
+                                "inputs": {
+                                  "X": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 328
+                                      }
+                                    }
+                                  },
+                                  "Y": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 171
+                                      }
+                                    }
+                                  },
+                                  "W": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 40
+                                      }
+                                    }
+                                  },
+                                  "H": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 40
+                                      }
+                                    }
+                                  }
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_create_image_sprite",
+                                    "fields": {
+                                      "NAME": "farol",
+                                      "IMAGE": "farol-apagado"
+                                    },
+                                    "inputs": {
+                                      "X": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 485
+                                          }
+                                        }
+                                      },
+                                      "Y": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 72
+                                          }
+                                        }
+                                      },
+                                      "W": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 100
+                                          }
+                                        }
+                                      },
+                                      "H": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 154
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_g2d_create_image_sprite",
+                                        "fields": {
+                                          "NAME": "barco",
+                                          "IMAGE": "barco"
+                                        },
+                                        "inputs": {
+                                          "X": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 655
+                                              }
+                                            }
+                                          },
+                                          "Y": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 267
+                                              }
+                                            }
+                                          },
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 72
+                                              }
+                                            }
+                                          },
+                                          "H": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 50
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "next": {
+                                          "block": {
+                                            "type": "sz_js_var_create",
+                                            "fields": {
+                                              "NAME": "aviso"
+                                            },
+                                            "inputs": {
+                                              "VALUE": {
+                                                "block": {
+                                                  "type": "sz_val_text",
+                                                  "fields": {
+                                                    "TEXT": "Encontre a chave e vá ao farol."
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "next": {
+                                              "block": {
+                                                "type": "sz_js_var_create",
+                                                "fields": {
+                                                  "NAME": "ganhou"
+                                                },
+                                                "inputs": {
+                                                  "VALUE": {
+                                                    "block": {
+                                                      "type": "sz_val_bool",
+                                                      "fields": {
+                                                        "VALUE": "false"
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "next": {
+                                                  "block": {
+                                                    "type": "sz_g2d_enable_classic_controls",
+                                                    "fields": {
+                                                      "MODE": "directions"
+                                                    },
+                                                    "next": {
+                                                      "block": {
+                                                        "type": "sz_js_var_create",
+                                                        "fields": {
+                                                          "NAME": "temChave"
+                                                        },
+                                                        "inputs": {
+                                                          "VALUE": {
+                                                            "block": {
+                                                              "type": "sz_val_bool",
+                                                              "fields": {
+                                                                "VALUE": "false"
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_events",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_on_overlap",
+                        "fields": {
+                          "A": "personagem",
+                          "B": "chave"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_destroy_sprite",
+                              "fields": {
+                                "SPRITE": "chave"
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "sz_js_var_assign",
+                                  "fields": {
+                                    "NAME": "temChave"
+                                  },
+                                  "inputs": {
+                                    "VALUE": {
+                                      "block": {
+                                        "type": "sz_val_bool",
+                                        "fields": {
+                                          "VALUE": "true"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_js_var_assign",
+                                      "fields": {
+                                        "NAME": "aviso"
+                                      },
+                                      "inputs": {
+                                        "VALUE": {
+                                          "block": {
+                                            "type": "sz_val_text",
+                                            "fields": {
+                                              "TEXT": "Você pegou a chave! Agora vá ao farol."
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 452,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_draw_backdrop",
+                                  "fields": {
+                                    "IMAGE": "cenario"
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_top_down",
+                                      "fields": {
+                                        "SPRITE": "personagem"
+                                      },
+                                      "inputs": {
+                                        "SPEED": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 3
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_clamp_to_screen",
+                                          "fields": {
+                                            "SPRITE": "personagem"
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_js_if_else",
+                                              "inputs": {
+                                                "THEN": {
+                                                  "block": {
+                                                    "type": "sz_js_if_else",
+                                                    "inputs": {
+                                                      "THEN": {
+                                                        "block": {
+                                                          "type": "sz_js_member_set",
+                                                          "fields": {
+                                                            "NAME": "x"
+                                                          },
+                                                          "inputs": {
+                                                            "OBJ": {
+                                                              "block": {
+                                                                "type": "sz_val_variable",
+                                                                "fields": {
+                                                                  "NAME": "barco"
+                                                                }
+                                                              }
+                                                            },
+                                                            "VALUE": {
+                                                              "block": {
+                                                                "type": "sz_math_arithmetic",
+                                                                "fields": {
+                                                                  "OP": "-"
+                                                                },
+                                                                "inputs": {
+                                                                  "A": {
+                                                                    "block": {
+                                                                      "type": "sz_val_member_get",
+                                                                      "fields": {
+                                                                        "NAME": "x"
+                                                                      },
+                                                                      "inputs": {
+                                                                        "OBJ": {
+                                                                          "block": {
+                                                                            "type": "sz_val_variable",
+                                                                            "fields": {
+                                                                              "NAME": "barco"
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "B": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 1.5
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      "COND": {
+                                                        "block": {
+                                                          "type": "sz_val_compare",
+                                                          "fields": {
+                                                            "OP": ">"
+                                                          },
+                                                          "inputs": {
+                                                            "LEFT": {
+                                                              "block": {
+                                                                "type": "sz_val_member_get",
+                                                                "fields": {
+                                                                  "NAME": "x"
+                                                                },
+                                                                "inputs": {
+                                                                  "OBJ": {
+                                                                    "block": {
+                                                                      "type": "sz_val_variable",
+                                                                      "fields": {
+                                                                        "NAME": "barco"
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            },
+                                                            "RIGHT": {
+                                                              "shadow": {
+                                                                "type": "sz_val_number",
+                                                                "fields": {
+                                                                  "NUM": 530
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    },
+                                                    "extraState": {
+                                                      "hasElse": true
+                                                    }
+                                                  }
+                                                },
+                                                "COND": {
+                                                  "block": {
+                                                    "type": "sz_val_variable",
+                                                    "fields": {
+                                                      "NAME": "ganhou"
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              "extraState": {
+                                                "hasElse": true
+                                              },
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_draw_sprite",
+                                                  "fields": {
+                                                    "SPRITE": "chave"
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g2d_draw_sprite",
+                                                      "fields": {
+                                                        "SPRITE": "farol"
+                                                      },
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_g2d_draw_sprite",
+                                                          "fields": {
+                                                            "SPRITE": "barco"
+                                                          },
+                                                          "next": {
+                                                            "block": {
+                                                              "type": "sz_g2d_draw_sprite",
+                                                              "fields": {
+                                                                "SPRITE": "personagem"
+                                                              },
+                                                              "next": {
+                                                                "block": {
+                                                                  "type": "sz_g2d_draw_label",
+                                                                  "fields": {
+                                                                    "COLOR": "#263a45",
+                                                                    "ALIGN": "left"
+                                                                  },
+                                                                  "inputs": {
+                                                                    "TEXT": {
+                                                                      "block": {
+                                                                        "type": "sz_val_variable",
+                                                                        "fields": {
+                                                                          "NAME": "aviso"
+                                                                        }
+                                                                      }
+                                                                    },
+                                                                    "X": {
+                                                                      "shadow": {
+                                                                        "type": "sz_val_number",
+                                                                        "fields": {
+                                                                          "NUM": 20
+                                                                        }
+                                                                      }
+                                                                    },
+                                                                    "Y": {
+                                                                      "shadow": {
+                                                                        "type": "sz_val_number",
+                                                                        "fields": {
+                                                                          "NUM": 32
+                                                                        }
+                                                                      }
+                                                                    },
+                                                                    "SIZE": {
+                                                                      "shadow": {
+                                                                        "type": "sz_val_number",
+                                                                        "fields": {
+                                                                          "NUM": 19
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 872,
+                  "y": 392
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "condicao",
+      "title": "O que a porta precisa?",
+      "intent": "exploration",
+      "objective": "Experimentar a mesma porta sem e com chave antes de programar a condição.",
+      "blockKeys": ["video-d3-condicao", "ponte-d3-condicao", "experiencia-porta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d3-condicao", "experiencia-porta"]
+      }
+    },
+    {
+      "key": "decisao",
+      "title": "Faça a porta conferir a chave",
+      "intent": "delivery",
+      "objective": "Criar o encontro com o farol, conferir temChave, acender a luz e concluir o jogo.",
+      "blockKeys": ["video-d3-decisao", "ponte-d3-decisao", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d3-decisao", "projeto"],
+        "projectChecks": [
+          {
+            "id": "encontro-farol",
+            "label": "Reaja ao encontro com o farol.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fields": {
+                "A": "personagem",
+                "B": "farol"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_js_var_assign",
+                      "fields": {
+                        "NAME": "ganhou"
+                      },
+                      "inputs": {
+                        "VALUE": true
+                      },
+                      "beforeBlock": "sz_g2d_set_image"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "condicao",
+            "label": "Faça o Se consultar temChave no encontro com o farol.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_if_else",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_overlap",
+              "inputBlocks": {
+                "COND": {
+                  "blockType": "sz_val_variable",
+                  "fields": {
+                    "NAME": "temChave"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "acender",
+            "label": "Troque a imagem do farol quando a condição for verdadeira.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_image",
+              "area": "events",
+              "withinBlock": "sz_js_if_else",
+              "fields": {
+                "SPRITE": "farol",
+                "IMAGE": "farol-aceso"
+              }
+            }
+          },
+          {
+            "id": "vitoria",
+            "label": "Guarde que o farol acendeu para o barco chegar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_assign",
+              "area": "events",
+              "withinBlock": "sz_js_if_else",
+              "fields": {
+                "NAME": "ganhou"
+              },
+              "inputs": {
+                "VALUE": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fecho",
+      "title": "Você guiou o barco",
+      "intent": "closing",
+      "objective": "Reconhecer as regras que construiu e seguir ao certificado.",
+      "blockKeys": ["video-d3-fecho"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d3-fecho"]
+      }
+    }
+  ]
+}

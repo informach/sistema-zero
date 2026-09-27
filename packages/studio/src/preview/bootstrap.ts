@@ -302,7 +302,7 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // Bridge de entrada: window.__szInput (teclado + ponteiro) — sempre presente,
   // para os blocos "a tecla … está apertada?" e "x/y do mouse/dedo" do caminho
   // "na mão" funcionarem em qualquer projeto, sem a extensão Jogo 2D.
-  const inputBridgeTag = trustedScriptTag(buildInputBridgeRuntime())
+  const inputBridgeTag = trustedScriptTag(buildInputBridgeRuntime(input.parentOrigin))
   // Bridge de som: window.__szAudio — mesma ideia, para os blocos da categoria
   // 🔊 Som do núcleo tocarem os arquivos que a criança enviou sem depender de
   // nenhuma extensão de jogo. Lê o mesmo __SZGAME_SOUNDS do bridge de assets.

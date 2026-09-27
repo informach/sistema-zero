@@ -1,6 +1,7 @@
 'use client'
 
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
+import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 // O CSS do Estúdio (tokens + @theme que GERA as utilitárias sz-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — um JS-import aqui só
 // traz os tokens, NÃO registra as cores p/ gerar as utilitárias (sem isso os modais e
@@ -18,15 +19,16 @@ import type {
   StudioTutorConfig,
 } from '@sistemazero/studio'
 import { RefreshCw } from 'lucide-react'
-import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { pensaStudioLinkKey, pensaStudioProjectId } from '../../lib/pensa-studio-link'
+import { resumeExistingCreation } from '../../lib/resume-creation'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
-import { openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
+import { openStudioZappyHelp, openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { StudioFullEditor } from './studio-full-editor'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
+import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
 import { useStudioTaskHandoff } from './use-pensa-task-handoff'
 
 // O package do Estúdio é pesado (Monaco/Blockly/IndexedDB) e NÃO roda no SSR — por
@@ -51,6 +53,7 @@ export function StudioFullClient({
   zappyEnabled = false,
   aiCredits = null,
   taskId = null,
+  initialProjectId = null,
   pintaOwned = false,
   moldaOwned = false,
 }: {
@@ -76,15 +79,17 @@ export function StudioFullClient({
   aiCredits?: AiCreditsView | null
   /** Cartão de Criação aberto por `/estudio?tarefa=<id>`. */
   taskId?: string | null
+  /** Resume an existing item from the creator hub; never creates a replacement. */
+  initialProjectId?: string | null
   /**
    * Posse do PINTA (a página checa `refs=pinta,estudio-completo` numa ida) —
-   * liga o "Trazer do Pinta" no painel de Imagens. Produtos vendidos à parte:
+   * liga o "Trazer do Pinta" na aba "Imagens". Produtos vendidos à parte:
    * sem posse, o adapter nem é criado e o Estúdio esconde o botão.
    */
   pintaOwned?: boolean
   /**
    * Posse do MOLDA (a mesma ida `refs=estudio-completo,pinta,molda`) — liga o "Trazer
-   * do Molda" no painel de Imagens (modelos .glb, texturas .png, céus .hdr). Sem
+   * do Molda" na aba "Modelos 3D" (modelos .glb, texturas .png, céus .hdr). Sem
    * posse, o adapter nem é criado e o Estúdio esconde o botão.
    */
   moldaOwned?: boolean
@@ -92,6 +97,9 @@ export function StudioFullClient({
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [view, setView] = useState<View>({ name: 'list' })
+  const [openingProject, setOpeningProject] = useState<'loading' | 'error' | null>(
+    initialProjectId && !taskId ? 'loading' : null,
+  )
   // "Guardado na sua conta": a fila da nuvem por perfil (o selo lê daqui) JUNTO do
   // desligar do espelho DELA — o par vive num estado só, para o cleanup de uma fila
   // nunca desligar o espelho da fila seguinte (era o que um ref compartilhado fazia).
@@ -111,16 +119,44 @@ export function StudioFullClient({
     cancelPull: () => void
   } | null>(null)
   const cloud = cloudSync?.cloud ?? null
+  useEffect(() => {
+    if (!mod || !initialProjectId || taskId) return
+    let active = true
+    setOpeningProject('loading')
+    const persistence = mod.createLocalPersistenceAdapter({ namespace: viewerId ?? '' })
+    void resumeExistingCreation(
+      initialProjectId,
+      (id) => persistence.load(id),
+      cloudSync?.restoreProject ?? null,
+    )
+      .then((project) => {
+        if (!active) return
+        if (!project) {
+          setOpeningProject('error')
+          return
+        }
+        setView({ name: 'editor', projectId: initialProjectId })
+        setOpeningProject(null)
+      })
+      .catch(() => {
+        if (active) setOpeningProject('error')
+      })
+    return () => {
+      active = false
+    }
+  }, [mod, initialProjectId, taskId, viewerId, cloudSync])
   const [taskError, setTaskError] = useState<string | null>(null)
   const [missingTaskProject, setMissingTaskProject] = useState<{
     projectId: string
     projectName: string
   } | null>(null)
   const openedTaskKeyRef = useRef<string | null>(null)
-  // O Estúdio SEGUE o tema da comunidade (next-themes) — sem toggle próprio e sem
+  // O Estúdio SEGUE a plataforma (hoje só claro) — sem toggle próprio e sem
   // destoar do app ao redor. `resolvedTheme` é undefined no 1º render → cai em claro.
-  const { resolvedTheme } = useTheme()
-  const studioTheme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
+  // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
+  // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
+  // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
+  const studioTheme: 'light' | 'dark' = 'light'
   // Só a Lenda/admin (tier.pro) E no desktop pode criar projetos PRO (modo Código):
   // o WebContainer não roda no celular/tablet, então nem oferecemos a escolha lá. É
   // um PRÉ-FILTRO; o gate real é a capacidade (`canRunProMode`) na rota /estudio/pro.
@@ -160,7 +196,12 @@ export function StudioFullClient({
           // que a do Pinta. `viewerId` vai em toda chamada (`x-sz-viewer`): o BFF recusa se
           // a sessão já trocou de perfil. A fila anterior é desligada pelo cleanup do
           // efeito `[cloudSync]` (nunca aqui dentro nem num updater).
-          const nextCloud = createCreationsCloud({ tool: 'studio', viewerId, idleMs: 10_000 })
+          const nextCloud = createCreationsCloud({
+            tool: 'studio',
+            viewerId,
+            idleMs: 10_000,
+            maxFormatVersion: STUDIO_PROJECT_FORMAT_VERSION,
+          })
           const sync = createStudioCloudSync({ studio: m, cloud: nextCloud, viewerId })
           const detach = sync.attach()
           pullCancellationRef.current = { viewerId, cancelPull: sync.cancelPull }
@@ -362,6 +403,12 @@ export function StudioFullClient({
     }
   }, [cloudSync, handoffProjectId, missingTaskProject, mod, viewerId])
 
+  // O guia do Pensa recolhido, lembrado por CRIANÇA e valendo para as três oficinas. O painel
+  // vive no PACOTE e não conhece `viewerId` nem `localStorage`, então o par desce como DADO —
+  // o mesmo idioma do `menu.hidden`/`onToggle` do `hostChrome`.
+  const { collapsed: guiaRecolhido, setCollapsed: setGuiaRecolhido } =
+    usePensaGuideCollapsed(viewerId)
+
   const taskSession = useMemo<StudioTaskSession | undefined>(
     () =>
       taskHandoff
@@ -398,9 +445,11 @@ export function StudioFullClient({
                 throw new Error(body?.error?.message ?? 'Não consegui sincronizar a tarefa.')
               updateTaskProgress(body.task.progress)
             },
+            collapsed: guiaRecolhido,
+            onCollapsedChange: setGuiaRecolhido,
           }
         : undefined,
-    [taskHandoff, updateTaskProgress, retryTaskHandoff],
+    [taskHandoff, updateTaskProgress, retryTaskHandoff, guiaRecolhido, setGuiaRecolhido],
   )
 
   // Adapter de COMPARTILHAR (Mural) — standalone (SEM aula): `describe` rascunha a
@@ -483,6 +532,7 @@ export function StudioFullClient({
         ? {
             adapter: createStudioZappyAdapter(),
             openLesson: openStudioZappyLesson,
+            openHelp: openStudioZappyHelp,
             cooldownMs: 1_500,
             credits: aiCredits,
           }
@@ -582,11 +632,22 @@ export function StudioFullClient({
           thumbDataUrl: item.thumbDataUrl,
         }))
       },
-      async import(creationId) {
+      async import(creationId, options) {
         const lib = await import('@sistemazero/molda/studio-library')
         lib.setMoldaStorageNamespace(viewerId ?? '')
-        const result = await lib.exportAssetForStudio(creationId)
+        const result = await lib.exportAssetForStudio(creationId, {
+          namespace: viewerId ?? '',
+          ...options,
+        })
         if (!result.ok) {
+          if (result.reason === 'needs-review') {
+            return {
+              ok: false,
+              code: 'needs-review',
+              error: 'Confira as mudanças nesta cópia.',
+              review: result.review,
+            }
+          }
           if (result.reason === 'not-found') {
             return {
               ok: false,
@@ -667,9 +728,9 @@ export function StudioFullClient({
     else backToList()
   }, [backToList, taskId])
 
-  // Botão do menu lateral + selo "Guardado na sua conta", desenhados DENTRO da Topbar do
-  // editor e do cabeçalho da lista (contrato `hostChrome`, 07/09/2026). UM provider cobre
-  // as duas raízes (lista e editor) — e o editor passa a ter o selo, que antes não tinha.
+  // O selo "Guardado na sua conta" fica na Topbar do editor e no cabeçalho da lista.
+  // O menu lateral é controlado pela alça do shell Kids (`hostChrome.menu` é null).
+  // UM provider cobre as duas raízes (lista e editor).
   const { chrome: hostChrome, announcement } = useHostChrome({ cloud, syncing })
 
   // O editor PREENCHE o espaço disponível: `flex-1` dentro do <main> do MainContainer
@@ -742,6 +803,31 @@ export function StudioFullClient({
             </button>
           </div>
         </div>
+      ) : openingProject === 'error' ? (
+        <div className="grid h-full place-items-center p-6 text-center">
+          <div className="flex max-w-md flex-col gap-3">
+            <h2 className="sz-display text-xl">Não conseguimos abrir este trabalho</h2>
+            <p className="text-sm text-muted-foreground">
+              Ele pode estar em outro aparelho ou aguardando conexão. Tente novamente ou procure na
+              sua galeria.
+            </p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="min-h-11 rounded-full bg-primary px-5 font-bold text-primary-foreground"
+            >
+              Tentar novamente
+            </button>
+            <a
+              href="/estudio"
+              className="inline-flex min-h-11 items-center justify-center font-bold text-primary"
+            >
+              Voltar à galeria
+            </a>
+          </div>
+        </div>
+      ) : openingProject === 'loading' ? (
+        <EmbeddedAppLoadingBody label="Abrindo seu trabalho…" />
       ) : // Espera do guia da tarefa (deep link do Pensa) e espera do pacote viram
       // UMA só: os dois correm em paralelo, e mostrar dois textos diferentes em
       // sequência fazia `/estudio?tarefa=` ter uma tela a mais.

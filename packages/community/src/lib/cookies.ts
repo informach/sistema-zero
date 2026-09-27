@@ -6,6 +6,7 @@
  * de propósito: cookies não escopam por porta em dev).
  */
 import { sessionCookieNames } from '@sistemazero/member-shell/lib/cookies'
+import { paletteCookieName } from '@sistemazero/member-shell/lib/palette-cookie'
 
 export {
   expireCookieOptions,
@@ -17,3 +18,5 @@ const PROD = process.env.NODE_ENV === 'production'
 const names = sessionCookieNames('sz_member', PROD)
 export const ACCESS_COOKIE = names.accessCookie
 export const REFRESH_COOKIE = names.refreshCookie
+/** Espelho da cor escolhida (o proxy hidrata; o layout raiz lê). */
+export const PALETTE_COOKIE = paletteCookieName('sz_member', PROD)

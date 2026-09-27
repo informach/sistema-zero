@@ -210,4 +210,20 @@ describe('⭐⭐ a rotação é ASSADA, com o pivô do render', () => {
       { x: 5, y: 1 },
     ])
   })
+
+  it('assa a rotação em torno da âncora explícita', () => {
+    const shape: VectorShape = {
+      ...base,
+      type: 'rect',
+      x: 10,
+      y: 0,
+      w: 10,
+      h: 10,
+      rx: 0,
+      rotation: 90,
+      rotationPivot: { x: 0, y: 0 },
+    }
+    expect(ok(shape)[0]?.[0]?.x).toBeCloseTo(0, 6)
+    expect(ok(shape)[0]?.[0]?.y).toBeCloseTo(10, 6)
+  })
 })

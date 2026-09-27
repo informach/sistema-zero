@@ -2,7 +2,7 @@
 
 import type { UploadedAttachment } from '@sistemazero/member-shell/components/attachment-uploader'
 import {
-  minCareerLevelForRemix,
+  minJourneyLevelForRemix,
   remixRequirementFromSnapshot,
   type StudioRemixCapability,
   type StudioRemixRequirement,
@@ -25,9 +25,11 @@ import type {
 } from '@/lib/types'
 import { KidsLockedSpace } from './kids-locked-space'
 import { KidsSpaceContent, type KidsSpaceContentProps } from './kids-space-content'
+import { type MuralSort, sortQuery } from './mural-sort'
 import { AuthorBadge, type AuthorItem, displayAuthor, toggleReaction } from './space-author'
 import { pickInitialChannel } from './space-channel'
 import { useKidsSpaceReport } from './use-kids-space-report'
+import { useThreadPages } from './use-thread-pages'
 
 /** Modo de apresentação: fórum (Clube — conversa) ou vitrine (Mural — cards de projeto). */
 export type SpaceViewMode = 'forum' | 'wall'
@@ -99,7 +101,6 @@ export function KidsSpaceViewClient({
   const [space, setSpace] = useState<HubSpaceView | null>(null)
   const [channels, setChannels] = useState<HubChannelView[]>([])
   const [channel, setChannel] = useState<HubChannelView | null>(null)
-  const [threads, setThreads] = useState<HubThreadView[]>([])
   // Prateleira do Desafio do mês: busca DEDICADA (`?challenge=<key>`) → TODAS as
   // entradas do mês, independente da paginação da grade. Best-effort (falha/vazio →
   // cai no filtro client-side das threads já carregadas).
@@ -127,9 +128,10 @@ export function KidsSpaceViewClient({
   const [replyAttachments, setReplyAttachments] = useState<UploadedAttachment[]>([])
 
   // Paginação por cursor — espaços acumulam conversas/respostas além da 1ª página.
-  const [threadsCursor, setThreadsCursor] = useState<string | null>(null)
-  const [threadsHasMore, setThreadsHasMore] = useState(false)
-  const [loadingMoreThreads, setLoadingMoreThreads] = useState(false)
+  const [sort, setSort] = useState<MuralSort>('activity') // filtros do Mural; recarrega a lista
+  // A lista de tópicos: cada recarga (canal, filtro) é uma VEZ nova (ver `useThreadPages`).
+  const threadPages = useThreadPages(channel?.id ?? null, sort)
+  const { threads, restart: restartThreads, isTurn, showFirstPage } = threadPages
   const [commentsCursor, setCommentsCursor] = useState<string | null>(null)
   const [commentsHasMore, setCommentsHasMore] = useState(false)
   const [loadingMoreComments, setLoadingMoreComments] = useState(false)
@@ -156,17 +158,17 @@ export function KidsSpaceViewClient({
     [viewerId],
   )
 
-  const canRemix = remixTier !== null
+  const canRemix = remixTier !== null && space?.canInteract === true
 
   // Recado gentil quando o jogo usa ferramentas ALÉM do degrau do viewer — nomeia o
   // nível que destrava (a mesma régua do selo do card). Sem nível resolvível
   // (metadado desconhecido) → copy genérica; nunca destrava nada.
   const remixBlockedMessage = useCallback((req: StudioRemixRequirement): string => {
-    const slug = minCareerLevelForRemix(req)
+    const slug = minJourneyLevelForRemix(req)
     const label = slug ? levelInfo(slug).label : null
     return label
       ? `Esse jogo usa ferramentas do nível ${label}. Continue a sua jornada de criador para fazer a sua versão! 🚀`
-      : 'Esse jogo usa ferramentas que você ainda vai conquistar na sua carreira. 🚀'
+      : 'Esse jogo usa ferramentas que você ainda vai conquistar na sua jornada. 🚀'
   }, [])
 
   // Selo do card: o `studioMeta` do post (snapshot no publish) diz as ferramentas do
@@ -174,12 +176,12 @@ export function KidsSpaceViewClient({
   // APRESENTAÇÃO — a checagem autoritativa do clique roda sobre o snapshot baixado.
   const remixLockFor = useCallback(
     (t: HubThreadView): { levelLabel: string | null } | null => {
-      if (!remixTier || !t.studioMeta) return null
+      if (!canRemix || !remixTier || !t.studioMeta) return null
       if (studioRemixCovered(remixTier, t.studioMeta)) return null
-      const slug = minCareerLevelForRemix(t.studioMeta)
+      const slug = minJourneyLevelForRemix(t.studioMeta)
       return { levelLabel: slug ? levelInfo(slug).label : null }
     },
-    [remixTier],
+    [remixTier, canRemix],
   )
 
   // Remix ("Fazer a minha versão"): baixa o snapshot PÚBLICO do jogo e o importa
@@ -189,7 +191,7 @@ export function KidsSpaceViewClient({
   const remixBusyRef = useRef(false)
   const handleRemix = useCallback(
     async (t: HubThreadView) => {
-      if (!t.playId || remixBusyRef.current) return
+      if (!canRemix || !t.playId || remixBusyRef.current) return
       remixBusyRef.current = true
       try {
         // Selo do post já diz que falta nível → recado gentil sem nem baixar o jogo.
@@ -227,7 +229,7 @@ export function KidsSpaceViewClient({
         remixBusyRef.current = false
       }
     },
-    [viewerId, router, remixTier, remixBlockedMessage],
+    [viewerId, router, remixTier, remixBlockedMessage, canRemix],
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `reloadNonce` é só o gatilho do retry — bump força a re-carga sem ser lido no corpo.
@@ -285,23 +287,28 @@ export function KidsSpaceViewClient({
 
   // `isCurrent` evita a corrida de troca de canal: clicar A→B deixa os dois fetches
   // em voo; sem a guarda, se A resolve por último, as threads de A renderizam sob B.
-  const loadThreads = useCallback(async (channelId: string, isCurrent?: () => boolean) => {
-    try {
-      const page = await apiGet<HubPage<HubThreadView>>(
-        `/api/hub/channels/${enc(channelId)}/threads`,
-      )
-      if (isCurrent && !isCurrent()) return
-      setThreads(page.items)
-      setThreadsCursor(page.nextCursor)
-      setThreadsHasMore(page.hasMore)
-      // Marca como visto só depois de uma carga bem-sucedida.
-      apiSend(`/api/hub/channels/${enc(channelId)}/seen`, 'POST', {}).catch(() => {})
-      setChannels((prev) => prev.map((c) => (c.id === channelId ? { ...c, hasUnread: false } : c)))
-    } catch (err) {
-      if (isCurrent && !isCurrent()) return
-      toast.error((err as ApiError).message ?? 'Falha ao carregar.')
-    }
-  }, [])
+  const loadThreads = useCallback(
+    async (channelId: string, isCurrent?: () => boolean) => {
+      const turn = restartThreads()
+      const stale = () => (isCurrent ? !isCurrent() : false) || !isTurn(turn)
+      try {
+        const page = await apiGet<HubPage<HubThreadView>>(
+          `/api/hub/channels/${enc(channelId)}/threads${sortQuery(sort, '?')}`,
+        )
+        if (stale()) return
+        showFirstPage(page)
+        // Marca como visto só depois de uma carga bem-sucedida.
+        apiSend(`/api/hub/channels/${enc(channelId)}/seen`, 'POST', {}).catch(() => {})
+        setChannels((prev) =>
+          prev.map((c) => (c.id === channelId ? { ...c, hasUnread: false } : c)),
+        )
+      } catch (err) {
+        if (stale()) return
+        toast.error((err as ApiError).message ?? 'Falha ao carregar.')
+      }
+    },
+    [sort, restartThreads, isTurn, showFirstPage],
+  )
 
   // Busca DEDICADA da prateleira do Desafio: `?challenge=<key>` faz o hub devolver SÓ
   // os posts do mês (independente da paginação da grade). Best-effort — sem toast: se
@@ -323,23 +330,6 @@ export function KidsSpaceViewClient({
     },
     [isWall, challengeKey],
   )
-
-  async function loadMoreThreads() {
-    if (!channel || !threadsCursor || loadingMoreThreads) return
-    setLoadingMoreThreads(true)
-    try {
-      const page = await apiGet<HubPage<HubThreadView>>(
-        `/api/hub/channels/${enc(channel.id)}/threads?cursor=${enc(threadsCursor)}`,
-      )
-      setThreads((prev) => [...prev, ...page.items])
-      setThreadsCursor(page.nextCursor)
-      setThreadsHasMore(page.hasMore)
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar mais.')
-    } finally {
-      setLoadingMoreThreads(false)
-    }
-  }
 
   useEffect(() => {
     if (!channel) return
@@ -392,7 +382,8 @@ export function KidsSpaceViewClient({
 
   // Canal `staff_only` (ex.: Recados da equipe): só a EQUIPE compõe tópico; `geral`
   // e demais canais `members` seguem livres (no Mural o composer nem aparece).
-  const canComposeInChannel = channel?.postingPolicy !== 'staff_only' || isStaff
+  const canComposeInChannel =
+    space?.canInteract === true && (channel?.postingPolicy !== 'staff_only' || isStaff)
   // Ids dos canais DESTE servidor → o sino só mostra conversas daqui (não do Mural).
   const spaceChannelIds = useMemo(() => channels.map((c) => c.id), [channels])
 
@@ -548,6 +539,7 @@ export function KidsSpaceViewClient({
   const contentProps: KidsSpaceContentProps = {
     context: {
       isWall,
+      isStaff,
       space,
       viewerId,
       spaceChannelIds,
@@ -566,13 +558,14 @@ export function KidsSpaceViewClient({
       onLoadMoreComments: loadMoreComments,
       onBackFromThread: () => setThread(null),
       onSendReply: sendReply,
-      onReact: react,
+      onReact: space.canInteract ? react : null,
       onReport,
       authorLabel,
       onRemix: canRemix ? handleRemix : null,
       remixLockFor,
       canReply: Boolean(
         thread &&
+          space.canInteract &&
           (isStaff ||
             thread.isShowcase ||
             channels.find((item) => item.id === thread.channelId)?.postingPolicy !== 'staff_only'),
@@ -599,10 +592,12 @@ export function KidsSpaceViewClient({
       threads,
       challengeThreads,
       challenge,
+      sort,
+      onSortChange: setSort,
       onOpenThread: openThread,
-      threadsHasMore,
-      loadingMoreThreads,
-      onLoadMoreThreads: loadMoreThreads,
+      threadsHasMore: threadPages.hasMore,
+      loadingMoreThreads: threadPages.loadingMore,
+      onLoadMoreThreads: threadPages.loadMore,
     },
     report: reportProps,
     busy,

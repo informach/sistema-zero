@@ -10,17 +10,12 @@ import type {
   StatementContext,
   UserGestureActivation,
 } from './blocks/types'
-import {
-  FRAME_BEHAVIOR_LEGACY,
-  PROJECT_AREA_BY_FRAME,
-  PROJECT_AREA_FRAME_TYPES,
-} from './projectAreas'
+import { PROJECT_AREA_BY_FRAME, PROJECT_AREA_FRAME_TYPES } from './projectAreas'
 
 export type { ProjectAreaKind } from '../core/behaviorAreas'
 export type { BlockMigration } from './blocks/types'
 export {
   FRAME_APPEARANCE,
-  FRAME_BEHAVIOR_LEGACY,
   FRAME_EVENTS,
   FRAME_LOOPS,
   FRAME_MOLDS,
@@ -201,10 +196,7 @@ export const ACTION_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
   role: 'command',
 })
 
-export const PROJECT_AREA_TYPES = new Set<string>([
-  ...PROJECT_AREA_FRAME_TYPES,
-  FRAME_BEHAVIOR_LEGACY,
-])
+export const PROJECT_AREA_TYPES = new Set<string>([...PROJECT_AREA_FRAME_TYPES])
 
 export function isProjectAreaType(type: string): boolean {
   return PROJECT_AREA_TYPES.has(type)
@@ -270,7 +262,7 @@ export const ADVANCED_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
  * para quem está no MOLD_ONLY.
  */
 export const MOLD_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
-  root: ['molds'] as const,
+  root: ['start', 'molds'] as const,
   nested: BODY_CONTEXTS,
   role: 'command',
 })
@@ -542,7 +534,7 @@ export function materializeBlockDefinition(definition: BlockDefinition): BlockDe
 export function areasForBlockType(type: string): readonly ProjectAreaKind[] | undefined {
   const frameArea = PROJECT_AREA_BY_FRAME.get(type)
   if (frameArea) return [frameArea]
-  if (type === FRAME_BEHAVIOR_LEGACY) return ['start']
+
   const contract = contracts.get(type)
   if (!contract) return undefined
   if (contract.domain === 'html') return ['structure']

@@ -16,6 +16,7 @@ import { MOLDA_LIMITS } from '../core/limits'
 import type {
   MeshFace,
   MeshFaceKey,
+  MeshLooseEdge,
   MoldaMesh,
   MoldaModelAsset,
   MoldaPart,
@@ -46,7 +47,7 @@ import {
 import { faceSkinSize } from './shapes'
 import { flipSkinH } from './skinOps'
 import { reprojectSkin } from './skinReproject'
-import { add, cross, dot, scale, sub } from './vec'
+import { add, cross, dot, length, normalize, scale, sub } from './vec'
 
 export interface MeshToolResult {
   model: MoldaModelAsset
@@ -123,7 +124,8 @@ function finish(
 ): MeshToolResult | null {
   if (
     Object.keys(mesh.vertices).length > MOLDA_LIMITS.maxMeshVertices ||
-    Object.keys(mesh.faces).length > MOLDA_LIMITS.maxMeshFaces
+    Object.keys(mesh.faces).length > MOLDA_LIMITS.maxMeshFaces ||
+    (mesh.looseEdges?.length ?? 0) > MOLDA_LIMITS.maxMeshLooseEdges
   ) {
     return null
   }
@@ -199,7 +201,7 @@ export function extrudeFaces(
   return finish(
     model,
     part,
-    { vertices, faces: nextFaces },
+    { ...mesh, vertices, faces: nextFaces },
     [...lifted.values()],
     undefined,
     faces.map((key) => ({ kind: 'face', key })),
@@ -211,11 +213,72 @@ export function extrudeFaces(
  * normal média das faces em volta; vértice compartilhado por duas arestas sobe uma
  * vez só. A orientação segue a face vizinha em que a aresta aparece como `a → b`.
  */
+export type MeshExtrudeDirection = 'auto' | 'x' | '-x' | 'y' | '-y' | 'z' | '-z'
+
+const EXTRUDE_AXIS: Record<Exclude<MeshExtrudeDirection, 'auto'>, Vec3> = {
+  x: [1, 0, 0],
+  '-x': [-1, 0, 0],
+  y: [0, 1, 0],
+  '-y': [0, -1, 0],
+  z: [0, 0, 1],
+  '-z': [0, 0, -1],
+}
+
+function edgeVector(mesh: MoldaMesh, [a, b]: MeshEdge): Vec3 | null {
+  const first = mesh.vertices[a]
+  const second = mesh.vertices[b]
+  return first && second ? sub(second, first) : null
+}
+
+function extrudeDirection(
+  mesh: MoldaMesh,
+  edges: readonly MeshEdge[],
+  direction: MeshExtrudeDirection,
+): Vec3 | null {
+  const vectors = edges.flatMap((edge) => {
+    const vector = edgeVector(mesh, edge)
+    return vector && length(vector) > 1e-9 ? [normalize(vector)] : []
+  })
+  if (vectors.length !== edges.length) return null
+  if (direction !== 'auto') {
+    const axis = EXTRUDE_AXIS[direction]
+    return vectors.some((vector) => length(cross(vector, axis)) < 1e-9) ? null : axis
+  }
+  const surfaceNormal = selectionNormal(
+    mesh,
+    edges.map((keys) => ({ kind: 'edge', keys })),
+  )
+  if (surfaceNormal) return surfaceNormal
+  // Aresta totalmente solta: escolha o eixo menos paralelo. A ordem desempata
+  // de forma previsível para crianças: para cima, depois X, depois Z.
+  const candidates: Vec3[] = [
+    [0, 1, 0],
+    [1, 0, 0],
+    [0, 0, 1],
+  ]
+  return candidates.reduce((best, candidate) => {
+    const score = Math.max(...vectors.map((vector) => Math.abs(dot(vector, candidate))))
+    const bestScore = Math.max(...vectors.map((vector) => Math.abs(dot(vector, best))))
+    return score < bestScore - 1e-9 ? candidate : best
+  })
+}
+
+export function canExtrudeEdgesInDirection(
+  mesh: MoldaMesh,
+  edgeKeys: readonly MeshEdge[],
+  direction: MeshExtrudeDirection,
+): boolean {
+  const selection = edgeKeys.map((keys) => ({ kind: 'edge' as const, keys }))
+  const edges = selectedEdges(mesh, selection)
+  return edges.length > 0 && extrudeDirection(mesh, edges, direction) !== null
+}
+
 export function extrudeEdges(
   model: MoldaModelAsset,
   partId: string,
   edgeKeys: readonly MeshEdge[],
   distance: number,
+  direction: MeshExtrudeDirection = 'auto',
 ): MeshToolResult | null {
   const source = sourceMesh(model, partId)
   if (!source) return null
@@ -223,7 +286,7 @@ export function extrudeEdges(
   const selection: MeshPick[] = edgeKeys.map((keys) => ({ kind: 'edge', keys }))
   const edges = selectedEdges(mesh, selection)
   if (edges.length === 0 || !(distance > 0)) return null
-  const normal = selectionNormal(mesh, selection)
+  const normal = extrudeDirection(mesh, edges, direction)
   if (!normal) return null
   const offset = snapOffset(scale(normal, distance), model.snap)
   const taken = new Set(Object.keys(mesh.vertices))
@@ -261,10 +324,12 @@ export function extrudeEdges(
     // (duas faces coerentes atravessam a aresta que dividem em sentidos opostos).
     nextFaces[key] = { v: [b, a, lift(a), lift(b)] }
   }
+  const selectedKeys = new Set(edges.map(([a, b]) => pairKey(a, b)))
+  const looseEdges = (mesh.looseEdges ?? []).filter(([a, b]) => !selectedKeys.has(pairKey(a, b)))
   return finish(
     model,
     part,
-    { vertices, faces: nextFaces },
+    { ...mesh, vertices, faces: nextFaces, looseEdges },
     [...lifted.values()],
     undefined,
     edges.map(([a, b]) => ({
@@ -281,6 +346,13 @@ export interface LoopCutResult extends MeshToolResult {
   offGrid: boolean
 }
 
+export interface LoopCutOptions {
+  /** Quantos cortes paralelos criar. */
+  cuts?: number
+  /** Posição do corte único, em porcentagem da aresta escolhida. */
+  position?: number
+}
+
 /**
  * CORTAR NO MEIO: divide a aresta ao meio e atravessa os quads vizinhos, sempre
  * pela aresta oposta, até fechar o anel ou bater num triângulo/borda. Cada quad
@@ -291,173 +363,254 @@ export function loopCut(
   model: MoldaModelAsset,
   partId: string,
   edge: [string, string],
+  options: LoopCutOptions = {},
 ): LoopCutResult | null {
   const source = sourceMesh(model, partId)
   if (!source) return null
   const { part, mesh } = source
-  if (!(edge[0] in mesh.vertices) || !(edge[1] in mesh.vertices)) return null
+  const cuts = options.cuts ?? 1
+  const position = options.position ?? 50
+  if (!Number.isInteger(cuts) || cuts < 1 || cuts > 8) return null
+  if (cuts === 1 && (!Number.isFinite(position) || position < 10 || position > 90)) return null
+  if (!meshEdges(mesh).some(([a, b]) => pairKey(a, b) === pairKey(edge[0], edge[1]))) {
+    return null
+  }
+  const fractions = Array.from({ length: cuts }, (_unused, index) =>
+    cuts === 1 ? position / 100 : (index + 1) / (cuts + 1),
+  )
   const taken = new Set(Object.keys(mesh.vertices))
-  const faceTaken = new Set(Object.keys(mesh.faces))
   const vertices: Record<string, Vec3> = { ...mesh.vertices }
   const occupiedPoints = new Set(
     Object.values(vertices).map((point) => pointKey(roundedPoint(point))),
   )
-  const midpoints = new Map<string, string>()
-  const midpointOf = (a: string, b: string): string | null => {
-    const key = pairKey(a, b)
-    let mid = midpoints.get(key)
-    if (!mid) {
-      const point = roundedPoint(
-        scale(add(mesh.vertices[a] as Vec3, mesh.vertices[b] as Vec3), 0.5),
-      )
-      const occupiedKey = pointKey(point)
-      // A normalização grava a malha nesta mesma precisão. Se o meio arredondado
-      // cair numa extremidade/outro ponto, qualquer face criada aqui degeneraria
-      // e seria descartada silenciosamente no commit.
-      if (occupiedPoints.has(occupiedKey)) return null
-      mid = newVertexKey(taken)
-      taken.add(mid)
-      midpoints.set(key, mid)
-      vertices[mid] = point
-      occupiedPoints.add(occupiedKey)
+  const created: string[] = []
+  const makePoints = (a: string, b: string): string[] | null => {
+    const start = mesh.vertices[a]
+    const end = mesh.vertices[b]
+    if (!start || !end) return null
+    const keys: string[] = []
+    for (const fraction of fractions) {
+      const point = roundedPoint(add(scale(start, 1 - fraction), scale(end, fraction)))
+      const occupied = pointKey(point)
+      if (occupiedPoints.has(occupied)) return null
+      const key = newVertexKey(taken)
+      taken.add(key)
+      occupiedPoints.add(occupied)
+      vertices[key] = point
+      keys.push(key)
+      created.push(key)
     }
-    return mid
+    return keys
   }
-  const nextFaces: Record<MeshFaceKey, MeshFace> = { ...mesh.faces }
-  /** De qual face antiga cada face nova nasceu (para reprojetar a pele). */
-  const parentOf = new Map<MeshFaceKey, MeshFaceKey>()
+  const finishCut = (
+    nextMesh: MoldaMesh,
+    selection: MeshPick[],
+    skins?: MoldaPart['faces'],
+  ): LoopCutResult | null => {
+    const offWholeGrid = created.some((key) =>
+      (vertices[key] as Vec3).some((value) => Math.abs(value - Math.round(value)) > 1e-9),
+    )
+    const snapChanged = model.snap === 1 && offWholeGrid
+    const base = snapChanged ? { ...model, snap: 0.5 as const } : model
+    const offGrid = created.some((key) =>
+      (vertices[key] as Vec3).some(
+        (value) => Math.abs(value / base.snap - Math.round(value / base.snap)) > 1e-9,
+      ),
+    )
+    const result = finish(base, part, nextMesh, created, skins, selection)
+    return result && result.vertices.length === created.length
+      ? { ...result, snapChanged, offGrid }
+      : null
+  }
+
+  const looseIndex = (mesh.looseEdges ?? []).findIndex(
+    ([a, b]) => pairKey(a, b) === pairKey(edge[0], edge[1]),
+  )
+  if (looseIndex >= 0) {
+    const points = makePoints(edge[0], edge[1])
+    if (!points) return null
+    const chain = [edge[0], ...points, edge[1]]
+    const segments = chain
+      .slice(0, -1)
+      .map((a, index) => [a, chain[index + 1] as string] as [string, string])
+    const looseEdges = (mesh.looseEdges ?? []).filter((_item, index) => index !== looseIndex)
+    looseEdges.push(...segments)
+    return finishCut(
+      { ...mesh, vertices, looseEdges },
+      segments.map((keys) => ({ kind: 'edge', keys })),
+    )
+  }
+
+  type OrientedEdge = [string, string]
+  const oriented = new Map<string, OrientedEdge>()
+  const queue: OrientedEdge[] = [[edge[0], edge[1]]]
+  oriented.set(pairKey(edge[0], edge[1]), [edge[0], edge[1]])
   const visited = new Set<MeshFaceKey>()
-  const queue: Array<[string, string]> = [edge]
+  const cutFaces = new Map<MeshFaceKey, { first: OrientedEdge; opposite: OrientedEdge }>()
   while (queue.length > 0) {
-    const [p, q] = queue.pop() as [string, string]
+    const current = queue.pop() as OrientedEdge
     for (const [key, face] of Object.entries(mesh.faces) as Array<[MeshFaceKey, MeshFace]>) {
       if (visited.has(key) || face.v.length !== 4) continue
-      const i = face.v.indexOf(p)
-      if (i < 0) continue
-      const next = face.v[(i + 1) % 4]
-      const prev = face.v[(i + 3) % 4]
-      if (next !== q && prev !== q) continue
+      const at = face.v.indexOf(current[0])
+      if (at < 0) continue
+      const forward = face.v[(at + 1) % 4] === current[1]
+      const backward = face.v[(at + 3) % 4] === current[1]
+      if (!forward && !backward) continue
+      const c = face.v[(at + 2) % 4] as string
+      const d = face.v[forward ? (at + 3) % 4 : (at + 1) % 4] as string
+      const opposite: OrientedEdge = [d, c]
+      const oppositeKey = pairKey(opposite[0], opposite[1])
+      const known = oriented.get(oppositeKey)
+      if (known && (known[0] !== opposite[0] || known[1] !== opposite[1])) return null
       visited.add(key)
-      // Reordena o ciclo para começar na aresta cortada: e0 → e1 → o0 → o1.
-      const start = next === q ? i : (i + 3) % 4
-      const e0 = face.v[start] as string
-      const e1 = face.v[(start + 1) % 4] as string
-      const o0 = face.v[(start + 2) % 4] as string
-      const o1 = face.v[(start + 3) % 4] as string
-      const m1 = midpointOf(e0, e1)
-      const m2 = midpointOf(o0, o1)
-      if (!m1 || !m2) return null
-      nextFaces[key] = { v: [e0, m1, m2, o1] }
-      const half = newFaceKey(faceTaken)
-      faceTaken.add(half)
-      nextFaces[half] = { v: [m1, e1, o0, m2] }
-      parentOf.set(half, key)
-      queue.push([o0, o1])
+      cutFaces.set(key, { first: current, opposite })
+      if (!known) {
+        oriented.set(oppositeKey, opposite)
+        queue.push(opposite)
+      }
     }
   }
-  if (midpoints.size === 0) return null
-  // Faces terminais que tocam arestas já cortadas precisam consumir TODOS os
-  // midpoints. Um triângulo com dois cortes vira um quad + um triângulo; com
-  // três, vira o triângulo central + três cantos. Assim nenhuma metade de
-  // aresta termina no meio da face vizinha (T-junction).
+  if (cutFaces.size === 0) return null
+
+  const pointsByEdge = new Map<string, string[]>()
+  for (const [key, [a, b]] of oriented) {
+    const points = makePoints(a, b)
+    if (!points) return null
+    pointsByEdge.set(key, points)
+  }
+  const pointsAlong = (a: string, b: string): string[] | null => {
+    const direction = oriented.get(pairKey(a, b))
+    const points = pointsByEdge.get(pairKey(a, b))
+    if (!direction || !points) return null
+    return direction[0] === a && direction[1] === b ? [...points] : [...points].reverse()
+  }
+
+  const nextFaces: Record<MeshFaceKey, MeshFace> = { ...mesh.faces }
+  const faceTaken = new Set(Object.keys(mesh.faces))
+  const derived = new Map<MeshFaceKey, MeshFaceKey[]>()
+  const selectedCrossEdges: MeshEdge[] = []
+  const addPiece = (parent: MeshFaceKey, cycle: string[], reuse: boolean): MeshFaceKey => {
+    const key = reuse ? parent : newFaceKey(faceTaken)
+    faceTaken.add(key)
+    nextFaces[key] = { v: cycle }
+    const targets = derived.get(parent) ?? []
+    targets.push(key)
+    derived.set(parent, targets)
+    return key
+  }
+  for (const [key, face] of Object.entries(mesh.faces) as Array<[MeshFaceKey, MeshFace]>) {
+    if (!cutFaces.has(key)) continue
+    const firstKey = pairKey(
+      (cutFaces.get(key) as { first: OrientedEdge }).first[0],
+      (cutFaces.get(key) as { first: OrientedEdge }).first[1],
+    )
+    const start = face.v.findIndex(
+      (vertex, index) => pairKey(vertex, face.v[(index + 1) % 4] as string) === firstKey,
+    )
+    if (start < 0) return null
+    const a = face.v[start] as string
+    const b = face.v[(start + 1) % 4] as string
+    const c = face.v[(start + 2) % 4] as string
+    const d = face.v[(start + 3) % 4] as string
+    const left = pointsAlong(a, b)
+    const right = pointsAlong(d, c)
+    if (!left || !right || left.length !== cuts || right.length !== cuts) return null
+    const leftBoundary = [a, ...left, b]
+    const rightBoundary = [d, ...right, c]
+    for (let index = 0; index <= cuts; index += 1) {
+      addPiece(
+        key,
+        [
+          leftBoundary[index] as string,
+          leftBoundary[index + 1] as string,
+          rightBoundary[index + 1] as string,
+          rightBoundary[index] as string,
+        ],
+        index === 0,
+      )
+      if (index < cuts) {
+        selectedCrossEdges.push([
+          leftBoundary[index + 1] as string,
+          rightBoundary[index + 1] as string,
+        ])
+      }
+    }
+  }
+
+  // Uma face triangular terminal consome os pontos para não deixar T-junction.
+  // Com vários cortes em mais de uma aresta, a divisão deixaria de ser uma faixa
+  // simples; nesse caso recusamos a transação inteira.
   for (const [key, face] of Object.entries(mesh.faces) as Array<[MeshFaceKey, MeshFace]>) {
     if (visited.has(key)) continue
-    const cuts = face.v
-      .map((vertex, index) => ({
-        index,
-        midpoint: midpoints.get(pairKey(vertex, face.v[(index + 1) % face.v.length] as string)),
-      }))
-      .filter((cut): cut is { index: number; midpoint: string } => Boolean(cut.midpoint))
-    if (cuts.length === 0) continue
-    // Todo quad conectado deveria ter sido atravessado pelo laço acima. Se a
-    // topologia não permitir isso, recuse a operação inteira em vez de criar
-    // um pentágono inválido ou uma rachadura.
-    if (face.v.length !== 3) return null
-    visited.add(key)
-    if (cuts.length === 1) {
-      const cut = cuts[0] as { index: number; midpoint: string }
-      const cycle = [...face.v]
-      cycle.splice(cut.index + 1, 0, cut.midpoint)
-      nextFaces[key] = { v: cycle }
+    const touched = face.v.flatMap((a, index) => {
+      const b = face.v[(index + 1) % face.v.length] as string
+      const points = pointsAlong(a, b)
+      return points ? [{ index, points }] : []
+    })
+    if (touched.length === 0) continue
+    if (face.v.length !== 3 || (cuts > 1 && touched.length > 1)) return null
+    if (touched.length === 1) {
+      const touch = touched[0] as { index: number; points: string[] }
+      const a = face.v[touch.index] as string
+      const b = face.v[(touch.index + 1) % 3] as string
+      const c = face.v[(touch.index + 2) % 3] as string
+      const boundary = [a, ...touch.points, b]
+      for (let index = 0; index <= cuts; index += 1) {
+        addPiece(key, [boundary[index] as string, boundary[index + 1] as string, c], index === 0)
+      }
       continue
     }
-    if (cuts.length === 2) {
-      const cutByEdge = new Map(cuts.map((cut) => [cut.index, cut.midpoint]))
-      const corner = face.v.findIndex((_vertex, index) => {
-        const previousEdge = (index + face.v.length - 1) % face.v.length
-        return cutByEdge.has(previousEdge) && cutByEdge.has(index)
-      })
+    const midpointByEdge = new Map(touched.map((touch) => [touch.index, touch.points[0] as string]))
+    if (touched.length === 2) {
+      const corner = face.v.findIndex(
+        (_vertex, index) => midpointByEdge.has((index + 2) % 3) && midpointByEdge.has(index),
+      )
       if (corner < 0) return null
       const previous = face.v[(corner + 2) % 3] as string
       const current = face.v[corner] as string
       const next = face.v[(corner + 1) % 3] as string
-      const previousMidpoint = cutByEdge.get((corner + 2) % 3)
-      const nextMidpoint = cutByEdge.get(corner)
+      const previousMidpoint = midpointByEdge.get((corner + 2) % 3)
+      const nextMidpoint = midpointByEdge.get(corner)
       if (!previousMidpoint || !nextMidpoint) return null
-      nextFaces[key] = { v: [previous, previousMidpoint, nextMidpoint, next] }
-      const cornerFace = newFaceKey(faceTaken)
-      faceTaken.add(cornerFace)
-      nextFaces[cornerFace] = { v: [previousMidpoint, current, nextMidpoint] }
-      parentOf.set(cornerFace, key)
+      addPiece(key, [previous, previousMidpoint, nextMidpoint, next], true)
+      addPiece(key, [previousMidpoint, current, nextMidpoint], false)
       continue
     }
-    if (cuts.length !== 3) return null
-    const midpointAfter = cuts.map((cut) => cut.midpoint)
-    nextFaces[key] = { v: midpointAfter }
+    if (touched.length !== 3) return null
+    const midpointAfter = [0, 1, 2].map((index) => midpointByEdge.get(index) as string)
+    addPiece(key, midpointAfter, true)
     for (let index = 0; index < 3; index += 1) {
-      const cornerFace = newFaceKey(faceTaken)
-      faceTaken.add(cornerFace)
-      nextFaces[cornerFace] = {
-        v: [
+      addPiece(
+        key,
+        [
           face.v[index] as string,
           midpointAfter[index] as string,
           midpointAfter[(index + 2) % 3] as string,
         ],
-      }
-      parentOf.set(cornerFace, key)
+        false,
+      )
     }
   }
-  const nextMesh = { vertices, faces: nextFaces }
-  const skins: MoldaPart['faces'] = { ...part.faces }
-  for (const [key, parent] of [...visited].map((k) => [k, k] as const).concat([...parentOf])) {
-    const oldSkin = part.faces[parent]
-    if (!oldSkin) {
-      delete skins[key]
-      continue
-    }
-    const size = faceSkinSize(
-      { shape: 'mesh', from: part.from, to: part.to, mesh: nextMesh },
-      key,
-      model.texelsPerUnit,
-    )
-    const projected = size ? reprojectSkin(mesh, parent, oldSkin, nextMesh, key, size) : undefined
-    if (projected) skins[key] = projected
-    else delete skins[key]
-  }
-  const midKeys = [...midpoints.values()]
-  const offGrid = midKeys.some((key) =>
-    (vertices[key] as Vec3).some((value) => Math.abs(value - Math.round(value)) > 1e-9),
+
+  const nextMesh: MoldaMesh = { ...mesh, vertices, faces: nextFaces }
+  const skins = reprojectDerivedSkins(
+    model,
+    part,
+    mesh,
+    nextMesh,
+    [...derived].map(([source, targets]) => ({ source, targets })),
   )
-  const snapChanged = model.snap === 1 && offGrid
-  const base = snapChanged ? { ...model, snap: 0.5 as const } : model
-  const offGridAfter = midKeys.some((key) =>
-    (vertices[key] as Vec3).some(
-      (value) => Math.abs(value / base.snap - Math.round(value / base.snap)) > 1e-9,
-    ),
+  const result = finishCut(
+    nextMesh,
+    selectedCrossEdges.map((keys) => ({ kind: 'edge', keys })),
+    skins,
   )
-  const result = finish(base, part, nextMesh, midKeys, skins)
-  if (!result || result.vertices.length !== midKeys.length) return null
-  const committed = result.model.parts.find((item) => item.id === part.id)?.mesh
-  if (!committed || Object.keys(committed.faces).length !== Object.keys(nextFaces).length)
-    return null
-  const mids = new Set(midKeys)
-  const cut = meshEdges(committed).filter(([a, b]) => mids.has(a) && mids.has(b))
-  return {
-    ...result,
-    selection: cut.map((keys) => ({ kind: 'edge', keys })),
-    snapChanged,
-    offGrid: offGridAfter,
-  }
+  const committed = result?.model.parts.find((item) => item.id === part.id)?.mesh
+  return result &&
+    committed &&
+    Object.keys(committed.faces).length === Object.keys(nextFaces).length
+    ? result
+    : null
 }
 
 /** JUNTAR PONTOS: os vértices escolhidos viram UM (no centro deles); face que degenera cai. */
@@ -491,7 +644,12 @@ export function mergeVertices(
     emitted.add(setKey)
     faces[key] = { v: cycle }
   }
-  return finish(model, part, { vertices, faces }, [survivor])
+  const looseEdges: MeshLooseEdge[] = (mesh.looseEdges ?? []).flatMap(([a, b]) => {
+    const first = merged.has(a) ? survivor : a
+    const second = merged.has(b) ? survivor : b
+    return first === second ? [] : [[first, second] as const]
+  })
+  return finish(model, part, { vertices, faces, looseEdges }, [survivor])
 }
 
 /**
@@ -535,12 +693,93 @@ export function createFace(
     if (dot(normal, sub(faceCenter(ordered), meshCenter(mesh))) < 0) cycle = [...cycle].reverse()
   }
   const key = newFaceKey(Object.keys(mesh.faces))
-  const nextMesh = { vertices: mesh.vertices, faces: { ...mesh.faces, [key]: { v: cycle } } }
+  const nextMesh = {
+    ...mesh,
+    vertices: mesh.vertices,
+    faces: { ...mesh.faces, [key]: { v: cycle } },
+  }
   if (faceGeometryIssue(nextMesh, key) === 'degenerate') return null
   const result = finish(model, part, nextMesh, keys)
   const committed = result?.model.parts.find((item) => item.id === part.id)?.mesh
   if (!result || !committed?.faces[key]) return null
   return result
+}
+
+/** Existe uma aresta de superfície ou de construção entre os dois pontos. */
+export function meshHasEdge(mesh: MoldaMesh, a: string, b: string): boolean {
+  const wanted = pairKey(a, b)
+  return meshEdges(mesh).some(([x, y]) => pairKey(x, y) === wanted)
+}
+
+function selectedQuadDiagonal(
+  mesh: MoldaMesh,
+  vertices: readonly string[],
+): [string, string] | null {
+  if (vertices.length !== 3) return null
+  const selected = new Set(vertices)
+  const matches: Array<[string, string]> = []
+  for (const face of Object.values(mesh.faces)) {
+    if (face.v.length !== 4 || !vertices.every((key) => face.v.includes(key))) continue
+    const missing = face.v.findIndex((key) => !selected.has(key))
+    if (missing < 0) continue
+    matches.push([face.v[(missing + 3) % 4] as string, face.v[(missing + 1) % 4] as string])
+  }
+  return matches.length === 1 ? (matches[0] as [string, string]) : null
+}
+
+export function canCreateFaceOrEdge(mesh: MoldaMesh, selection: readonly string[]): boolean {
+  const keys = [...new Set(selection.filter((key) => key in mesh.vertices))]
+  if (keys.length < 2 || keys.length > 4) return false
+  if (keys.length === 2) {
+    return (
+      canConnectVertices(mesh, keys) || !meshHasEdge(mesh, keys[0] as string, keys[1] as string)
+    )
+  }
+  const wanted = new Set(keys)
+  return !Object.values(mesh.faces).some(
+    (face) => face.v.length === keys.length && face.v.every((key) => wanted.has(key)),
+  )
+}
+
+/**
+ * CRIAR FACE OU ARESTA: dois pontos dividem um quad ou criam uma aresta solta;
+ * três pontos de um quad o dividem; três/quatro pontos livres fecham uma face.
+ */
+export function createFaceOrEdge(
+  model: MoldaModelAsset,
+  partId: string,
+  selection: readonly string[],
+): MeshToolResult | null {
+  const source = sourceMesh(model, partId)
+  if (!source) return null
+  const { part, mesh } = source
+  const keys = [...new Set(selection.filter((key) => key in mesh.vertices))]
+  if (!canCreateFaceOrEdge(mesh, keys)) return null
+  if (keys.length === 2) {
+    if (canConnectVertices(mesh, keys)) return connectVertices(model, partId, keys)
+    const edge = [keys[0] as string, keys[1] as string] as const
+    return finish(
+      model,
+      part,
+      { ...mesh, looseEdges: [...(mesh.looseEdges ?? []), edge] },
+      [...keys],
+      undefined,
+      [{ kind: 'edge', keys: [edge[0], edge[1]] }],
+    )
+  }
+  const diagonal = selectedQuadDiagonal(mesh, keys)
+  if (diagonal) {
+    const result = connectVertices(model, partId, diagonal)
+    const committed = result?.model.parts.find((item) => item.id === partId)?.mesh
+    if (!result || !committed) return null
+    const wanted = new Set(keys)
+    const face = (Object.keys(committed.faces) as MeshFaceKey[]).find((key) => {
+      const cycle = committed.faces[key]?.v ?? []
+      return cycle.length === keys.length && cycle.every((vertex) => wanted.has(vertex))
+    })
+    return face ? { ...result, vertices: keys, selection: [{ kind: 'face', key: face }] } : null
+  }
+  return createFace(model, partId, keys)
 }
 
 /** Uma face reta e convexa pode receber um miolo sem gerar faces quebradas. */
@@ -599,7 +838,7 @@ export function insetFace(
       ],
     }
   }
-  const nextMesh = { vertices, faces }
+  const nextMesh = { ...mesh, vertices, faces }
   // O arredondamento de uma face muito pequena pode colapsar o miolo ou o anel.
   if ([faceKey, ...ring].some((key) => faceGeometryIssue(nextMesh, key))) return null
 
@@ -631,7 +870,7 @@ export function flipFaces(
   return finish(
     model,
     part,
-    { vertices: mesh.vertices, faces },
+    { ...mesh, vertices: mesh.vertices, faces },
     vertices,
     skins,
     targets.map((key) => ({ kind: 'face', key })),
@@ -742,7 +981,7 @@ export function connectVertices(
     [target.key]: { v: split.first },
     [other]: { v: split.second },
   }
-  const nextMesh = { vertices: mesh.vertices, faces }
+  const nextMesh = { ...mesh, vertices: mesh.vertices, faces }
   const skins = reprojectDerivedSkins(model, part, mesh, nextMesh, [
     { source: target.key, targets: [target.key, other] },
   ])
@@ -775,7 +1014,7 @@ export function splitQuads(
     halves.push([key, other])
   }
   if (halves.length === 0) return null
-  const nextMesh = { vertices: mesh.vertices, faces }
+  const nextMesh = { ...mesh, vertices: mesh.vertices, faces }
   const skins = reprojectDerivedSkins(
     model,
     part,

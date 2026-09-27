@@ -1,3 +1,4 @@
+import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 /**
  * "Guardado na sua conta" — os casos de uso do ÍNDICE das criações (Estúdio
  * Completo e Pinta). O blob nunca passa por aqui: o BFF assina PUT/GET no R2 UGC
@@ -48,6 +49,8 @@ export interface CreationPartTicket extends CreationPartRef {
 /** O que o `reserve` devolve ao BFF: a revisão, a chave que ele vai assinar e as partes FALTANTES. */
 export interface CreationUploadTicket {
   revision: number
+  /** Native format validated and reserved, independent of the upload revision. */
+  formatVersion: number
   storageKey: string
   /** Eco dos tetos, para o BFF assinar `Content-Length` = bytes e negar o resto. */
   bytes: number
@@ -219,6 +222,10 @@ export class ReserveCreationUploadService {
     if (!Number.isInteger(formatVersion) || formatVersion < 1 || formatVersion > 65_535) {
       throw new ValidationError('Versão de formato inválida')
     }
+    if (input.tool === 'studio' && formatVersion < STUDIO_PROJECT_FORMAT_VERSION)
+      throw new CreationClientOutdatedError(STUDIO_PROJECT_FORMAT_VERSION)
+    if (input.tool === 'studio' && formatVersion > STUDIO_PROJECT_FORMAT_VERSION)
+      throw new ValidationError('Esta versão do servidor ainda não aceita esse formato de projeto')
     if (!Number.isInteger(input.bytes) || input.bytes <= 0) {
       throw new ValidationError('Tamanho do arquivo inválido')
     }
@@ -320,6 +327,7 @@ export class ReserveCreationUploadService {
     }
     return {
       revision: reservation.revision,
+      formatVersion,
       storageKey: creationStorageKey(input.userId, input.tool, input.itemId, reservation.revision),
       bytes: input.bytes,
       parts: reservation.missingParts.map((part) => ({
@@ -353,11 +361,23 @@ export class CommitCreationUploadService {
     revision: number
     /** Hashes das partes que o cliente PUTou nesta reserva (as faltantes). */
     uploadedParts?: readonly string[]
+    verifiedPartHashes?: readonly string[]
   }): Promise<CreationCommitOutcome> {
     if (!Number.isInteger(input.revision) || input.revision <= 0) {
       throw new ValidationError('Revisão inválida')
     }
     const uploadedParts = input.uploadedParts ?? []
+    if (input.tool === 'studio' && !input.verifiedPartHashes)
+      throw new ValidationError(
+        'O serviço precisa conferir o manifesto antes de confirmar o projeto',
+      )
+    if (
+      input.verifiedPartHashes &&
+      (input.verifiedPartHashes.length > CREATION_LIMITS.maxPartsPerItem ||
+        new Set(input.verifiedPartHashes).size !== input.verifiedPartHashes.length ||
+        input.verifiedPartHashes.some((hash) => !isCreationPartHash(hash)))
+    )
+      throw new ValidationError('Lista de recursos do manifesto inválida')
     if (uploadedParts.length > CREATION_LIMITS.maxPartsPerItem) {
       throw new ValidationError('Partes demais para um item')
     }
@@ -371,6 +391,7 @@ export class CommitCreationUploadService {
       revision: input.revision,
       storageRef: creationStorageKey(input.userId, input.tool, input.itemId, input.revision),
       ...(uploadedParts.length > 0 ? { uploadedParts } : {}),
+      ...(input.verifiedPartHashes ? { verifiedPartHashes: input.verifiedPartHashes } : {}),
       now: this.clock(),
       limits: {
         maxItemBytes: CREATION_LIMITS.maxItemBytes,
@@ -383,6 +404,8 @@ export class CommitCreationUploadService {
         throw new CreationClientOutdatedError(result.requiredVersion)
       }
       if (result.reason === 'parts-missing') throw new CreationPartMissingError(result.hashes)
+      if (result.reason === 'manifest-mismatch')
+        throw new ValidationError('Os recursos do manifesto não correspondem à revisão reservada')
       if (result.reason === 'palette-library-identity') {
         throw new ValidationError('Identidade reservada da biblioteca de paletas inválida')
       }
@@ -451,6 +474,7 @@ export class DeleteCreationService {
     tool: CreationTool,
     itemId: string,
     baseRevision: number,
+    maxFormatVersion = 1,
   ): Promise<{
     deleted: boolean
     storageKey: string | null
@@ -461,7 +485,20 @@ export class DeleteCreationService {
     if (!Number.isInteger(baseRevision) || baseRevision < 0) {
       throw new ValidationError('Revisão-base inválida')
     }
-    const result = await this.creations.softDelete(userId, tool, itemId, baseRevision, this.clock())
+    if (!Number.isInteger(maxFormatVersion) || maxFormatVersion < 1 || maxFormatVersion > 65_535) {
+      throw new ValidationError('Capacidade de formato inválida')
+    }
+    const result = await this.creations.softDelete(
+      userId,
+      tool,
+      itemId,
+      baseRevision,
+      this.clock(),
+      maxFormatVersion,
+    )
+    if (!result.ok && result.reason === 'client-outdated') {
+      throw new CreationClientOutdatedError(result.requiredVersion)
+    }
     if (!result.ok) throw new CreationStaleBaseError(result.currentRevision)
     return {
       deleted: result.deleted,

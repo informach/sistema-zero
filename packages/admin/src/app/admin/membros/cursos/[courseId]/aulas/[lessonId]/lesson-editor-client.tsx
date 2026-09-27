@@ -10,6 +10,19 @@ import {
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import {
+  type InteractiveBlock,
+  isInteractiveBlock,
+  isPdfAttachment,
+  LESSON_SECTION_TEMPLATES,
+  type LessonDraftIssue,
+} from '@sistemazero/core/learning'
+import {
+  reconciliarVozesDoZappy,
+  roteiroDoZappy,
+  type SceneVozes,
+  type ZappySpeechOverride,
+} from '@sistemazero/core/learning/scene'
+import {
   createLessonAsset,
   PINTA_LESSON_ASSET_OPTIONS,
   PINTA_TOOL_PRESETS,
@@ -23,6 +36,7 @@ import {
   BLOCK_LEVEL_OPTIONS,
   type BlockLevel,
   CORE_CATEGORY_OPTIONS,
+  createEmptyProject,
   type IDEMode,
   type LessonActivity,
   normalizeBlockLevel,
@@ -40,16 +54,33 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { ArrowLeft, ChevronDown, ExternalLink, GripVertical, Pencil, Plus } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { HtmlCodeEditor } from '@/components/editor/html-code-editor'
+import { EMPTY_LEARNING, LearningBuilder } from '@/components/editor/learning-builder'
+import { LessonBlockKindBadge } from '@/components/editor/lesson-block-kind'
+import { LessonContentCatalog } from '@/components/editor/lesson-content-catalog'
+import { lessonEditorialWarnings } from '@/components/editor/lesson-editorial-warnings'
+import { LessonManifestExport } from '@/components/editor/lesson-manifest-export'
+import { LessonManifestImport } from '@/components/editor/lesson-manifest-import'
+import { LessonPublishedCompare } from '@/components/editor/lesson-published-compare'
+import { LessonStructureEditor } from '@/components/editor/lesson-structure-editor'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
+import { useLessonDraft } from '@/components/editor/use-lesson-draft'
+import { VozZappyButton } from '@/components/editor/voz-zappy-button'
+import { ZappySpeechEditor } from '@/components/editor/zappy-speech-editor'
 import { AudioUploader } from '@/components/media/audio-uploader'
 import { FileUploader, type UploadedFile } from '@/components/media/file-uploader'
 import { ImageUploader } from '@/components/media/image-uploader'
+import {
+  LessonVideoUploadRegistry,
+  LessonVideoUploads,
+  videoUploadStatusLabels,
+} from '@/components/media/lesson-video-uploads'
+import type { ReadyVideo } from '@/components/media/use-video-upload'
 import { VideoThumbnailUploader } from '@/components/media/video-thumbnail-uploader'
 import { VideoUploader } from '@/components/media/video-uploader'
 import { PintaEmbed } from '@/components/pinta/pinta-embed'
@@ -57,46 +88,43 @@ import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
 import { StudioConfigClipboard } from '@/components/studio/studio-config-clipboard'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
-import { fetchSubmissionCountsSafe, submissionCountWarning } from '@/lib/submission-counts'
+import {
+  appendLessonSection,
+  newAuthoringSection,
+  type SectionStarterOptions,
+} from '@/lib/lesson-authoring'
 import {
   type AttachmentView,
   type BlockView,
   type CourseTreeView,
-  LESSON_BLOCK_KINDS,
+  DIALOGUE_MAX_LENGTH,
+  DIALOGUE_POSES,
+  type DialoguePose,
+  LESSON_BLOCK_KIND_LABELS,
   type LessonBlockContent,
   type LessonBlockKind,
   type LessonContentView,
 } from '@/lib/types'
 import { ActivityBuilder, EMPTY_ACTIVITY, validateStudioActivity } from './activity-builder'
+import {
+  EMPTY_MATERIALS,
+  MaterialsBuilder,
+  type MaterialsValue,
+  materialsFromContent,
+  validateMaterials,
+} from './materials-builder'
 import { QuizBuilder, type QuizValue, validateQuiz } from './quiz-builder'
 
-// `Record<LessonBlockKind, …>` (não `Record<string, …>`): assim o COMPILADOR cobra o
-// rótulo de todo tipo novo. Sem isso o `<select>` mostraria o slug cru — e o editor é
-// cheio de `default` silencioso (o `buildContent` grava QUIZ para kind sem case), então
-// vale prender o que dá para prender em tempo de compilação.
-const KIND_LABELS: Record<LessonBlockKind, string> = {
-  rich_text: 'Texto',
-  video: 'Vídeo',
-  image: 'Imagem',
-  audio: 'Áudio',
-  quiz: 'Quiz',
-  embed: 'Interativo',
-  ebook: 'E-book (livro 3D)',
-  studio: 'Estúdio',
-  pinta: 'Pinta (desenho)',
-  certificate: 'Certificado',
-  coming_soon: 'Em breve (aula em produção)',
-}
+// O mapa vive em `lib/types.ts` desde a exportação de manifesto: a lista do que o formato
+// NÃO carrega nomeia os blocos pelos MESMOS rótulos, e duas cópias divergiriam.
+const KIND_LABELS = LESSON_BLOCK_KIND_LABELS
 
-/** `BlockView.kind` vem como `string` da API — bloco de um deploy mais novo cai no slug. */
-const kindLabel = (kind: string): string => (KIND_LABELS as Record<string, string>)[kind] ?? kind
-
-// Largura do modal de bloco por tipo: só os que embutem editor PESADO fogem do `max-w-lg` padrão
-// (o Estúdio = IDE blocos/código/preview; o quiz = editores de texto rico por pergunta/opção).
-const BLOCK_DIALOG_WIDTH: Record<string, string> = {
-  studio: 'max-w-7xl',
-  pinta: 'max-w-7xl',
-  quiz: 'max-w-4xl',
+/** Nome de cada pose, só para o `alt` do seletor (a autora escolhe pela cara). */
+const DIALOGUE_POSE_LABELS: Record<DialoguePose, string> = {
+  speaking: 'Zappy acenando e falando',
+  happy: 'Zappy feliz',
+  thinking: 'Zappy pensativo',
+  celebrating: 'Zappy comemorando',
 }
 
 // Os 6 degraus (dificuldade × eixo 2D/3D) vêm do PACOTE (`BLOCK_LEVEL_OPTIONS`,
@@ -111,12 +139,23 @@ const STUDIO_MODES: { value: IDEMode; label: string }[] = [
   { value: 'code', label: 'Código' },
 ]
 
-interface BlockForm {
+export interface BlockForm {
+  galleryEnabled: boolean
+  galleryMin: number
+  galleryMax: number
+  interactive: InteractiveBlock
+  toolPurpose: 'experiment' | 'submission'
   kind: LessonBlockKind
+  /** Diálogo: pose do mascote e a fala (texto simples, sem markdown). */
+  dialoguePose: DialoguePose
+  dialogueText: string
+  dialogueZappySpeech?: ZappySpeechOverride
+  dialogueVozes?: SceneVozes
   markdown: string
   html: string
   /** Embed URL do vídeo (preenchida pelo uploader Vimeo — sem campo manual). */
   src: string
+  posterUrl: string
   /** URL da imagem/áudio (preenchida pelos uploaders — sem campo manual). */
   url: string
   /**
@@ -131,10 +170,9 @@ interface BlockForm {
   quiz: QuizValue
   /** Legendas/transcrição do vídeo (preenchidas pelo uploader Vimeo). */
   captions: { lang: string; url: string }[]
-  /** E-book: referência `r2priv:<key>` do PDF + título opcional. */
-  pdfUrl: string
+  /** E-book: PDF escolhido nos arquivos da aula. */
+  ebookAttachmentId: string
   title: string
-  zappyStudentNotebook: boolean
   /** Estúdio: nível fixado (paleta por dificuldade). */
   studioLevel: BlockLevel
   /** Estúdio: categorias de blocos sempre visíveis. */
@@ -179,13 +217,26 @@ interface BlockForm {
   pintaToolPreset: 'essencial' | 'livre' | 'tudo'
   /** Pinta: nome do desenho contínuo (cadeia). Vazio = aula independente. */
   pintaChain: string
+  /** Materiais complementares: o nome do bloco e a lista ordenada de itens. */
+  materials: MaterialsValue
+  /** Exibe o primeiro PDF em um leitor ao lado do vídeo quando couber. */
+  materialsBookPreview: boolean
 }
 
-const EMPTY_BLOCK: BlockForm = {
+/** Exportados para o teste de conformidade dos tipos de bloco (ver tests/). */
+export const EMPTY_BLOCK: BlockForm = {
+  galleryEnabled: false,
+  galleryMin: 1,
+  galleryMax: 6,
+  interactive: EMPTY_LEARNING,
+  toolPurpose: 'submission',
   kind: 'rich_text',
+  dialoguePose: 'speaking',
+  dialogueText: '',
   markdown: '',
   html: '',
   src: '',
+  posterUrl: '',
   url: '',
   provider: 'vimeo',
   durationSeconds: '',
@@ -193,9 +244,8 @@ const EMPTY_BLOCK: BlockForm = {
   caption: '',
   quiz: { questions: [], passingScore: 70 },
   captions: [],
-  pdfUrl: '',
+  ebookAttachmentId: '',
   title: '',
-  zappyStudentNotebook: false,
   studioLevel: 'iniciante-2d',
   studioCategories: [],
   // Default NOVO (24/07): o aluno vê SÓ Blocos; Ponte é opt-in do autor; Código é
@@ -229,6 +279,8 @@ const EMPTY_BLOCK: BlockForm = {
   // curadoria). Quem quiser a caixa inteira escolhe "Tudo" de propósito.
   pintaToolPreset: 'essencial',
   pintaChain: '',
+  materials: EMPTY_MATERIALS,
+  materialsBookPreview: false,
 }
 
 /**
@@ -254,7 +306,7 @@ const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined
 const opt = (s: string): string | undefined => (s.trim() ? s.trim() : undefined)
 
 /** Monta o conteúdo do bloco a partir do form. `studioProject` = snapshot do editor embutido. */
-function buildContent(
+export function buildContent(
   f: BlockForm,
   studioProject?: Project,
   previousContent?: LessonBlockContent,
@@ -262,7 +314,16 @@ function buildContent(
 ): LessonBlockContent {
   const dur = num(f.durationSeconds)
   switch (f.kind) {
+    case 'interactive':
+      return f.interactive
     case 'studio': {
+      if (f.galleryEnabled && studioProject)
+        return {
+          kind: 'studio',
+          purpose: 'submission',
+          initialProject: studioProject,
+          gallery: { minItems: 1, maxItems: 1 },
+        }
       // `studioProject` é garantido não-nulo no saveBlock (validação antes de chamar).
       // Atividade só entra se tiver checagens OU enunciado (atividade vazia = omitida).
       const hasActivity =
@@ -272,6 +333,7 @@ function buildContent(
       const isPro = (studioProject as Project & { kind?: string }).kind === 'pro'
       return {
         kind: 'studio',
+        purpose: f.toolPurpose,
         initialProject: studioProject as Project,
         level: f.studioLevel,
         ...(f.studioCategories.length > 0 ? { allowCategories: f.studioCategories } : {}),
@@ -305,6 +367,21 @@ function buildContent(
         kind: 'coming_soon',
         ...(opt(f.comingSoonMessage) ? { message: f.comingSoonMessage.trim() } : {}),
       }
+    case 'materials':
+      return {
+        kind: 'materials',
+        ...(opt(f.materials.title) ? { title: f.materials.title.trim() } : {}),
+        ...(f.materialsBookPreview ? { bookPreview: true } : {}),
+        items: f.materials.items,
+      }
+    case 'dialogue':
+      return {
+        kind: 'dialogue',
+        pose: f.dialoguePose,
+        text: f.dialogueText.trim(),
+        ...(f.dialogueZappySpeech ? { zappySpeech: f.dialogueZappySpeech } : {}),
+        ...(f.dialogueVozes ? { vozes: f.dialogueVozes } : {}),
+      }
     case 'rich_text':
       return {
         kind: 'rich_text',
@@ -313,11 +390,13 @@ function buildContent(
       }
     case 'video':
       return {
+        ...(previousContent?.kind === 'video' ? previousContent : {}),
         kind: 'video',
         provider: f.provider as 'mux' | 'youtube' | 'vimeo' | 'file',
         src: f.src.trim(),
-        ...(dur != null ? { durationSeconds: dur } : {}),
-        ...(f.captions.length > 0 ? { captions: f.captions } : {}),
+        posterUrl: opt(f.posterUrl),
+        durationSeconds: dur,
+        captions: f.captions.length > 0 ? f.captions : undefined,
       }
     case 'image':
       return {
@@ -334,9 +413,8 @@ function buildContent(
     case 'ebook':
       return {
         kind: 'ebook',
-        url: f.pdfUrl.trim(),
+        attachmentId: f.ebookAttachmentId,
         ...(opt(f.title) ? { title: f.title.trim() } : {}),
-        ...(f.zappyStudentNotebook ? { zappyStudentNotebook: true } : {}),
       }
     case 'certificate': {
       const previousCertificate =
@@ -374,8 +452,16 @@ function buildContent(
       }
     }
     case 'pinta':
+      if (f.galleryEnabled)
+        return {
+          kind: 'pinta',
+          purpose: 'submission',
+          initialAsset: null,
+          gallery: { minItems: f.galleryMin, maxItems: f.galleryMax },
+        }
       return {
         kind: 'pinta',
+        purpose: f.toolPurpose,
         // O desenho vem do editor embutido (o `saveBlock` já barrou o caso sem handle).
         initialAsset: pintaAsset,
         // "tudo" = SEM curadoria; o campo some do payload em vez de virar lista vazia (o
@@ -398,16 +484,25 @@ function buildContent(
 /** Campo obrigatório faltando → mensagem amigável (null = válido). */
 function validateBlock(f: BlockForm): string | null {
   switch (f.kind) {
+    case 'dialogue': {
+      const fala = f.dialogueText.trim()
+      if (!fala) return 'Escreva a fala do Zappy.'
+      if (fala.length > DIALOGUE_MAX_LENGTH)
+        return `A fala do Zappy passa de ${DIALOGUE_MAX_LENGTH} caracteres.`
+      return null
+    }
     case 'video':
-      return f.src.trim() ? null : 'Envie o vídeo antes de salvar.'
+      return f.src.trim() ? null : 'Envie o vídeo antes de publicar.'
     case 'image':
-      return f.url.trim() ? null : 'Envie a imagem antes de salvar.'
+      return f.url.trim() ? null : 'Envie a imagem antes de publicar.'
     case 'audio':
-      return f.url.trim() ? null : 'Envie o áudio antes de salvar.'
+      return f.url.trim() ? null : 'Envie o áudio antes de publicar.'
     case 'embed':
       return f.html.trim() ? null : 'Escreva o HTML do conteúdo interativo.'
     case 'ebook':
-      return f.pdfUrl.trim() ? null : 'Envie o PDF do e-book antes de salvar.'
+      return f.ebookAttachmentId ? null : 'Escolha um PDF dos arquivos da aula.'
+    case 'materials':
+      return validateMaterials(f.materials)
     case 'studio': {
       // O projeto inicial vem do editor embutido (validado no saveBlock). Aqui só
       // barramos "zero modos" — que, omitido no payload, viraria "todos liberados"
@@ -433,56 +528,104 @@ function validateBlock(f: BlockForm): string | null {
   }
 }
 
-/** Resumo de uma linha p/ a lista de blocos. */
-function blockSummary(b: BlockView): string {
-  const c = b.content
-  switch (c.kind) {
-    case 'rich_text':
-      return (c.markdown ?? c.html ?? '').slice(0, 80) || '—'
-    case 'video':
-      return `${c.provider}: ${c.src}`
-    case 'image':
-      return c.url
-    case 'audio':
-      return c.url
-    case 'embed':
-      return c.html ? 'HTML interativo (iframe sandbox)' : (c.src ?? '—')
-    case 'ebook':
-      return c.title ?? c.url
-    case 'quiz':
-      return `${c.questions.length} pergunta(s)`
-    case 'studio':
-      return (c.initialProject as { name?: string })?.name ?? 'Atividade do Estúdio'
-    case 'pinta': {
-      const asset = c.initialAsset as { kind?: string } | undefined
-      const label = PINTA_LESSON_ASSET_OPTIONS.find((o) => o.kind === asset?.kind)?.label
-      return label ?? 'Desenho no Pinta'
-    }
-    case 'certificate':
-      return c.coursePhrase?.trim() || 'Certificado de conclusão'
-    case 'coming_soon':
-      return c.message?.trim() || 'A aula fica escondida até você tirar este bloco'
-    default:
-      return '—'
-  }
+export function LessonEditorClient(props: Parameters<typeof LessonEditorSession>[0]) {
+  return (
+    <LessonEditorSession key={`${props.authorId}:${props.courseId}:${props.lessonId}`} {...props} />
+  )
 }
 
-export function LessonEditorClient({
+function LessonEditorSession({
   courseId,
   lessonId,
   currentRole,
+  authorId,
   studentAppUrls,
 }: {
   courseId: string
   lessonId: string
   currentRole: string
+  authorId: string
   /** URLs públicas dos apps de aluno ("Ver como aluno") — ausentes → botão oculto. */
   studentAppUrls?: { adult?: string; kids?: string }
 }) {
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
-
-  const [lesson, setLesson] = useState<LessonContentView | null>(null)
-  const [loading, setLoading] = useState(true)
+  const draftState = useLessonDraft(lessonId, authorId)
+  const { session, draft } = draftState
+  const loading = draftState.status === 'loading'
+  const [preview, setPreview] = useState(false)
+  const [reviewResult, setReviewResult] = useState<{
+    document: NonNullable<typeof draft>['document']
+    issues: LessonDraftIssue[]
+  } | null>(null)
+  const issues = reviewResult?.document === draft?.document ? (reviewResult?.issues ?? []) : []
+  const [blockId, setBlockId] = useState('')
+  const [blockSectionId, setBlockSectionId] = useState<string | null>(null)
+  const [attachmentId, setAttachmentId] = useState('')
+  const [editorVersion, setEditorVersion] = useState(0)
+  const [area, setArea] = useState<'sections' | 'materials' | 'data'>('sections')
+  const [catalogOpen, setCatalogOpen] = useState(false)
+  const [compareOpen, setCompareOpen] = useState(false)
+  const [reviewOpen, setReviewOpen] = useState(false)
+  const [focusRequest, setFocusRequest] = useState<{
+    sectionId: string
+    target?: 'completion' | 'settings'
+    sequence: number
+  }>()
+  const blockReturnFocus = useRef<HTMLElement | null>(null)
+  const blockReturnScroll = useRef(0)
+  const blockHeadingRef = useRef<HTMLHeadingElement>(null)
+  const [uploads] = useState(() => new LessonVideoUploadRegistry())
+  const uploadStates = useSyncExternalStore(
+    uploads.subscribe,
+    uploads.getSnapshot,
+    uploads.getSnapshot,
+  )
+  const activeUpload = Object.values(uploadStates).some((state) =>
+    ['requesting-ticket', 'uploading', 'processing'].includes(state.phase),
+  )
+  const lesson = useMemo<LessonContentView | null>(
+    () =>
+      draft
+        ? {
+            id: lessonId,
+            courseId,
+            moduleId: '',
+            sortOrder: 0,
+            isPublished: draft.isPublished,
+            title: draft.document.title,
+            slug: draft.document.slug,
+            estimatedMinutes: draft.document.estimatedMinutes,
+            blocks: draft.document.blocks.map((b, sortOrder) => ({
+              ...b,
+              kind: b.content.kind,
+              lessonId,
+              sortOrder,
+              blockRevision: b.id.replaceAll('-', ''),
+            })),
+            attachments: draft.document.attachments.map((a, sortOrder) => ({
+              ...a,
+              zappyStudentNotebook: a.zappyStudentNotebook ?? false,
+              lessonId,
+              sortOrder,
+            })),
+          }
+        : null,
+    [draft, lessonId, courseId],
+  )
+  /** Um arquivo pode ser usado como livro, download, fonte do Zappy ou combinado. */
+  const attachmentUses = useMemo(() => {
+    const uses = new Map<string, string[]>()
+    const add = (id: string, use: string) => uses.set(id, [...(uses.get(id) ?? []), use])
+    for (const block of draft?.document.blocks ?? []) {
+      if (block.content.kind === 'ebook') add(block.content.attachmentId, 'Livro 3D')
+      if (block.content.kind === 'materials')
+        for (const item of block.content.items)
+          if (item.kind === 'file') add(item.attachmentId, 'Material para baixar')
+    }
+    for (const attachment of draft?.document.attachments ?? [])
+      if (attachment.zappyStudentNotebook) add(attachment.id, 'Caderno do Zappy')
+    return uses
+  }, [draft])
   /** Slug/audience/status do curso + publicação DESTA aula (p/ o "Ver como aluno"). */
   const [courseInfo, setCourseInfo] = useState<{
     slug: string
@@ -496,6 +639,78 @@ export function LessonEditorClient({
   const [blockOpen, setBlockOpen] = useState(false)
   const [editingBlock, setEditingBlock] = useState<BlockView | null>(null)
   const [blockForm, setBlockForm] = useState<BlockForm>(EMPTY_BLOCK)
+  const currentBlockEditor = useRef({ id: blockId, open: blockOpen })
+  currentBlockEditor.current = { id: blockId, open: blockOpen }
+  useEffect(() => {
+    if (blockOpen) blockHeadingRef.current?.focus()
+  }, [blockOpen])
+  /**
+   * Grava o dicionário da voz do Zappy no bloco.
+   *
+   * ⚠⚠ O dicionário é SUBSTITUÍDO, nunca fundido com o anterior: a chave é o texto falado, então
+   * fundir manteria para sempre a entrada da frase ANTIGA — lixo que conta no teto de 40 entradas e
+   * que um dia faria o bloco ser recusado por um áudio que ninguém mais ouve.
+   *
+   * ⚠ Na cena o dicionário mora na ATIVIDADE; no balão do Zappy, no próprio bloco.
+   */
+  const aplicarVozes = useCallback(
+    (id: string, vozes: SceneVozes) => {
+      const bloco = session.getSnapshot().draft?.document.blocks.find((b) => b.id === id)
+      if (!bloco) return
+      const atual = bloco.content
+      const content: LessonBlockContent =
+        atual.kind === 'dialogue'
+          ? { ...atual, vozes }
+          : atual.kind === 'interactive' && atual.activity?.type === 'experimentation'
+            ? { ...atual, activity: { ...atual.activity, vozes } }
+            : atual
+      if (content === atual) return
+      session.enqueue({ type: 'block', block: { id, content } }, true)
+    },
+    [session],
+  )
+  const receiveVideo = useCallback(
+    (id: string, video: ReadyVideo) => {
+      const current = session.getSnapshot().draft
+      const block = current?.document.blocks.find((b) => b.id === id)
+      if (!current || block?.content.kind !== 'video') return
+      const same = block.content.src === video.embedUrl
+      const content: LessonBlockContent = {
+        ...block.content,
+        provider: 'vimeo',
+        src: video.embedUrl,
+        posterUrl: same ? block.content.posterUrl : undefined,
+        durationSeconds:
+          video.durationSeconds ?? (same ? block.content.durationSeconds : undefined),
+        captions: video.captions.length
+          ? video.captions
+          : same
+            ? block.content.captions
+            : undefined,
+      }
+      session.enqueue({ type: 'block', block: { id, content } }, true)
+      const planned = current.document.plannedVideos
+      session.enqueue(
+        {
+          type: 'planned-videos',
+          plannedVideos: planned.some((v) => v.blockId === id)
+            ? planned.map((v) => (v.blockId === id ? { ...v, videoId: video.vimeoVideoId } : v))
+            : [...planned, { blockId: id, instructions: '', videoId: video.vimeoVideoId }],
+        },
+        true,
+      )
+      if (currentBlockEditor.current.open && currentBlockEditor.current.id === id)
+        setBlockForm((form) => ({
+          ...form,
+          provider: 'vimeo',
+          src: content.src,
+          posterUrl: content.posterUrl ?? '',
+          durationSeconds: content.durationSeconds == null ? '' : String(content.durationSeconds),
+          captions: content.captions ?? [],
+        }))
+    },
+    [session],
+  )
   // Tipo de atividade do bloco Estúdio (redesenho 24/07): controla o segmented do
   // TOPO do form e o que aparece (Pro esconde a curadoria de blocos). NÃO entra no
   // payload — o kind REAL vive no projeto (o embed sincroniza via onKindResolved).
@@ -504,6 +719,10 @@ export function LessonEditorClient({
   const [advancedOpen, setAdvancedOpen] = useState(false)
   // Handle do Estúdio embutido na autoria — lido no saveBlock (snapshot do projeto inicial).
   const studioHandleRef = useRef<StudioHandle | null>(null)
+  const galleryStudioSeed = useMemo(
+    () => createEmptyProject(blockId ?? 'gallery', 'Entrega da galeria'),
+    [blockId],
+  )
   // Handle do Pinta embutido — lido no saveBlock (snapshot do desenho inicial).
   const pintaHandleRef = useRef<PintaHandle | null>(null)
   /**
@@ -512,7 +731,7 @@ export function LessonEditorClient({
    * em bloco NOVO, antes de haver traço para perder.
    */
   const pintaSeed = useMemo<PintaAsset | null>(() => {
-    if (editingBlock?.content.kind === 'pinta') {
+    if (editingBlock?.content.kind === 'pinta' && !editingBlock.content.gallery) {
       // Vem do jsonb: sanea na borda. Malformado → o embed não monta e o save avisa, em vez de
       // abrir um editor com um desenho que sumiria no próximo load.
       return sanitizePintaAsset(editingBlock.content.initialAsset)
@@ -523,20 +742,19 @@ export function LessonEditorClient({
 
   const [attOpen, setAttOpen] = useState(false)
   const [editingAtt, setEditingAtt] = useState<AttachmentView | null>(null)
-  const [attForm, setAttForm] = useState({ label: '', url: '', fileType: '', sizeBytes: '' })
+  const [attForm, setAttForm] = useState({
+    label: '',
+    url: '',
+    fileType: '',
+    sizeBytes: '',
+    zappyStudentNotebook: false,
+  })
 
   // Arrastar só após 5px (deixa o clique nos botões do card livre).
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      setLesson(await apiGet<LessonContentView>(`/api/members/lessons/${lessonId}/content`))
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar a aula.')
-    } finally {
-      setLoading(false)
-    }
+    await session.load()
     // "Ver como aluno": a árvore traz slug/audience/status + a publicação da aula
     // (o LessonContentView não os carrega). Best-effort — sem ela o botão só some.
     try {
@@ -551,42 +769,81 @@ export function LessonEditorClient({
     } catch {
       setCourseInfo(null)
     }
-  }, [lessonId, courseId])
+  }, [lessonId, courseId, session])
 
   useEffect(() => {
-    load()
-  }, [load])
-
-  async function run(fn: () => Promise<unknown>, okMsg?: string) {
-    setBusy(true)
-    try {
-      await fn()
-      if (okMsg) toast.success(okMsg)
-      await load()
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Operação falhou.')
-    } finally {
-      setBusy(false)
+    let active = true
+    void apiGet<CourseTreeView>(`/api/members/courses/${courseId}`)
+      .then((tree) => {
+        if (!active) return
+        const treeLesson = tree.modules.flatMap((m) => m.lessons).find((l) => l.id === lessonId)
+        setCourseInfo({
+          slug: tree.slug,
+          audience: tree.audience === 'kids' ? 'kids' : 'adult',
+          status: tree.status,
+          lessonPublished: treeLesson?.isPublished ?? false,
+        })
+      })
+      .catch((error) => {
+        if (active) toast.error(error.message ?? 'Não foi possível carregar o curso.')
+      })
+    return () => {
+      active = false
     }
-  }
+  }, [lessonId, courseId])
 
   // ── Blocos ──
-  function openCreateBlock() {
+  function openCreateBlock(sectionId: string | null) {
+    blockReturnFocus.current = window.document.activeElement as HTMLElement
+    blockReturnScroll.current = window.scrollY
+    setBlockSectionId(sectionId)
+    setCatalogOpen(true)
+  }
+  function createBlock(kind: LessonBlockKind) {
+    setBlockId(crypto.randomUUID())
     setEditingBlock(null)
-    setBlockForm(EMPTY_BLOCK)
+    setBlockForm({
+      ...EMPTY_BLOCK,
+      kind,
+      toolPurpose: ['delivery', 'closing'].includes(
+        session.getSnapshot().draft?.document.sections.find((s) => s.id === blockSectionId)
+          ?.intent ?? '',
+      )
+        ? 'submission'
+        : 'experiment',
+    })
     setStudioKind('blocks')
     setAdvancedOpen(false)
     setBlockOpen(true)
+    setCatalogOpen(false)
   }
   function openEditBlock(b: BlockView) {
+    blockReturnFocus.current = window.document.activeElement as HTMLElement
+    blockReturnScroll.current = window.scrollY
+    setBlockId(b.id)
+    setBlockSectionId(
+      session.getSnapshot().draft?.document.sections.find((s) => s.blockIds.includes(b.id))?.id ??
+        null,
+    )
     setEditingBlock(b)
     const c = b.content
     setBlockForm({
       ...EMPTY_BLOCK,
       kind: c.kind,
+      galleryEnabled: (c.kind === 'studio' || c.kind === 'pinta') && !!c.gallery,
+      galleryMin: c.kind === 'studio' || c.kind === 'pinta' ? (c.gallery?.minItems ?? 1) : 1,
+      galleryMax: c.kind === 'studio' || c.kind === 'pinta' ? (c.gallery?.maxItems ?? 6) : 6,
+      interactive: c.kind === 'interactive' ? c : EMPTY_LEARNING,
+      toolPurpose:
+        c.kind === 'studio' || c.kind === 'pinta' ? (c.purpose ?? 'submission') : 'submission',
+      dialoguePose: c.kind === 'dialogue' ? (c.pose ?? 'speaking') : 'speaking',
+      dialogueText: c.kind === 'dialogue' ? c.text : '',
+      dialogueZappySpeech: c.kind === 'dialogue' ? c.zappySpeech : undefined,
+      dialogueVozes: c.kind === 'dialogue' ? c.vozes : undefined,
       markdown: c.kind === 'rich_text' ? (c.markdown ?? '') : '',
       html: c.kind === 'rich_text' ? (c.html ?? '') : c.kind === 'embed' ? (c.html ?? '') : '',
       src: c.kind === 'video' ? c.src : '',
+      posterUrl: c.kind === 'video' ? (c.posterUrl ?? '') : '',
       url: c.kind === 'image' || c.kind === 'audio' ? c.url : '',
       // Preserva o provider legado (youtube/file) — salvar sem trocar o vídeo não corrompe.
       provider: c.kind === 'video' ? c.provider : 'vimeo',
@@ -601,9 +858,8 @@ export function LessonEditorClient({
           ? { questions: c.questions, passingScore: c.passingScore }
           : EMPTY_BLOCK.quiz,
       captions: c.kind === 'video' ? (c.captions ?? []) : [],
-      pdfUrl: c.kind === 'ebook' ? c.url : '',
+      ebookAttachmentId: c.kind === 'ebook' ? c.attachmentId : '',
       title: c.kind === 'ebook' ? (c.title ?? '') : '',
-      zappyStudentNotebook: c.kind === 'ebook' ? (c.zappyStudentNotebook ?? false) : false,
       // Aula salva antes da reforma 2D/3D guarda o valor LEGADO → normaliza.
       studioLevel:
         c.kind === 'studio' ? (normalizeBlockLevel(c.level) ?? 'iniciante-2d') : 'iniciante-2d',
@@ -629,6 +885,8 @@ export function LessonEditorClient({
       certSig2Url: c.kind === 'certificate' ? (c.signatures?.[1]?.imageUrl ?? '') : '',
       certSig2Name: c.kind === 'certificate' ? (c.signatures?.[1]?.name ?? '') : '',
       comingSoonMessage: c.kind === 'coming_soon' ? (c.message ?? '') : '',
+      materials: c.kind === 'materials' ? materialsFromContent(c) : EMPTY_MATERIALS,
+      materialsBookPreview: c.kind === 'materials' && c.bookPreview === true,
       // Tipo/tamanho não são re-hidratados: na EDIÇÃO quem manda é o desenho salvo (o editor
       // abre com ele e o botão "Tamanho" dele resolve o resto). Os selects ficam escondidos.
       pintaAssetKind: EMPTY_BLOCK.pintaAssetKind,
@@ -663,1235 +921,2234 @@ export function LessonEditorClient({
     }
     setBlockOpen(true)
   }
-  async function saveBlock() {
-    if (blockForm.kind === 'quiz') {
-      const error = validateQuiz(blockForm.quiz)
-      if (error) {
-        toast.error(error)
-        return
+  const captureBlock = useCallback(
+    (immediate = false) => {
+      if (!blockId || !blockOpen) return
+      const project = blockForm.galleryEnabled
+        ? editingBlock?.content.kind === 'studio'
+          ? editingBlock.content.initialProject
+          : galleryStudioSeed
+        : (studioHandleRef.current?.getProject() ?? undefined)
+      if (blockForm.kind === 'studio' && !project) return
+      const asset =
+        blockForm.kind === 'pinta' ? (pintaHandleRef.current?.getAsset() ?? pintaSeed) : null
+      const content = buildContent(
+        blockForm,
+        project,
+        editingBlock?.content,
+        asset ? pintaAssetToWire(asset) : undefined,
+      )
+      const before = session.getSnapshot().draft?.document
+      const isNew = before && !before.blocks.some((b) => b.id === blockId)
+      session.enqueue(
+        { type: 'block', block: { id: blockId, content }, sectionId: blockSectionId },
+        immediate,
+      )
+      if (
+        isNew &&
+        (content.kind === 'studio' || content.kind === 'pinta') &&
+        !content.gallery &&
+        blockSectionId
+      ) {
+        const section = before.sections.find((s) => s.id === blockSectionId)
+        if (
+          section &&
+          !section.workspaceBlockId &&
+          !section.externalTool &&
+          !before.blocks.some(
+            (b) =>
+              section.blockIds.includes(b.id) &&
+              (b.content.kind === 'studio' || b.content.kind === 'pinta'),
+          )
+        ) {
+          const current = session.getSnapshot().draft?.document
+          if (current)
+            session.enqueue(
+              {
+                type: 'structure',
+                sections: current.sections.map((s) =>
+                  s.id === blockSectionId ? { ...s, workspaceBlockId: blockId } : s,
+                ),
+              },
+              immediate,
+            )
+        }
+      }
+      if ((content.kind === 'studio' || content.kind === 'pinta') && content.gallery) {
+        const current = session.getSnapshot().draft?.document
+        if (current?.sections.some((s) => s.workspaceBlockId === blockId))
+          session.enqueue(
+            {
+              type: 'structure',
+              sections: current.sections.map((s) =>
+                s.workspaceBlockId === blockId ? { ...s, workspaceBlockId: null } : s,
+              ),
+            },
+            immediate,
+          )
+      }
+      if (content.kind === 'video' && content.provider === 'vimeo') {
+        const current = session.getSnapshot().draft
+        const plan = current?.document.plannedVideos.find((v) => v.blockId === blockId)
+        const videoId = content.src.match(/vimeo\.com\/(?:video\/)?(\d{6,12})/)?.[1] ?? null
+        if (current && (!plan || plan.videoId !== videoId))
+          session.enqueue(
+            {
+              type: 'planned-videos',
+              plannedVideos: plan
+                ? current.document.plannedVideos.map((v) =>
+                    v.blockId === blockId ? { ...v, videoId } : v,
+                  )
+                : [
+                    ...current.document.plannedVideos,
+                    { blockId, instructions: 'Vídeo desta seção', videoId },
+                  ],
+            },
+            immediate,
+          )
+      }
+    },
+    [
+      blockId,
+      blockOpen,
+      blockForm,
+      editingBlock,
+      pintaSeed,
+      session,
+      blockSectionId,
+      galleryStudioSeed,
+    ],
+  )
+  useEffect(() => {
+    void editorVersion
+    captureBlock()
+  }, [captureBlock, editorVersion])
+
+  async function captureEditors() {
+    if (blockOpen && blockForm.kind === 'studio' && !blockForm.galleryEnabled)
+      await studioHandleRef.current?.save()
+    if (
+      blockOpen &&
+      blockForm.kind === 'pinta' &&
+      !blockForm.galleryEnabled &&
+      pintaHandleRef.current &&
+      !(await pintaHandleRef.current.save())
+    )
+      throw new Error('Não foi possível capturar os últimos traços do Pinta.')
+    captureBlock(true)
+  }
+  async function changeGalleryMode(galleryEnabled: boolean) {
+    if (galleryEnabled === blockForm.galleryEnabled) return
+    const apply = async () => {
+      setBusy(true)
+      try {
+        if (!blockForm.galleryEnabled) {
+          await captureEditors()
+          const block = session.getSnapshot().draft?.document.blocks.find((b) => b.id === blockId)
+          if (!block || (block.content.kind !== 'studio' && block.content.kind !== 'pinta'))
+            throw new Error('Aguarde o projeto carregar antes de mudar o tipo de entrega.')
+          // Keep the latest embedded seed while the gallery fields are open, including new blocks.
+          setEditingBlock({
+            ...block,
+            kind: block.content.kind,
+            lessonId,
+            sortOrder: 0,
+            blockRevision: block.id.replaceAll('-', ''),
+          })
+        }
+        setBlockForm((form) => ({
+          ...form,
+          galleryEnabled,
+          toolPurpose: galleryEnabled ? 'submission' : form.toolPurpose,
+        }))
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Não foi possível preparar a entrega.')
+      } finally {
+        setBusy(false)
       }
     }
-    // Estúdio: captura o snapshot do editor embutido (nome/tipo/código de partida).
-    let studioProject: Project | undefined
-    if (blockForm.kind === 'studio') {
-      const p = studioHandleRef.current?.getProject()
-      if (!p) {
-        toast.error('Monte o projeto inicial no Estúdio antes de salvar.')
-        return
-      }
-      studioProject = p
+    const shared =
+      session
+        .getSnapshot()
+        .draft?.document.sections.filter(
+          (s) => s.workspaceBlockId === blockId && s.id !== blockSectionId,
+        ) ?? []
+    if (galleryEnabled && shared.length)
+      confirm({
+        title: 'Trocar projeto compartilhado por entrega da galeria',
+        message: `Este projeto é usado por ${shared.length} outra(s) seção(ões). A galeria não é um editor incorporado: os vínculos serão retirados e os objetivos deverão ser associados a outro projeto. O projeto inicial será preservado.`,
+        confirmText: 'Trocar e revisar vínculos',
+        onConfirm: apply,
+      })
+    else await apply()
+  }
+  async function closeBlock() {
+    try {
+      await captureEditors()
+      setBlockOpen(false)
+      requestAnimationFrame(() => {
+        blockReturnFocus.current?.focus({ preventScroll: true })
+        window.scrollTo({ top: blockReturnScroll.current })
+      })
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível capturar o projeto.')
     }
-    // Pinta: captura o desenho do editor embutido. `save()` ANTES de ler — o autosave do Pinta é
-    // debounced e sem isso os últimos traços dela ficariam de fora.
-    let pintaAsset: unknown
-    if (blockForm.kind === 'pinta') {
-      const handle = pintaHandleRef.current
-      if (!handle) {
-        toast.error('Espere o Pinta abrir antes de salvar.')
-        return
-      }
-      if (!(await handle.save())) {
-        toast.error('Não foi possível salvar os últimos traços do Pinta. Tente novamente.')
-        return
-      }
-      pintaAsset = pintaAssetToWire(handle.getAsset())
+  }
+  /**
+   * Restaurar e desfazer encerram os formularios e as transferencias abertos ANTES de recarregar:
+   * um editor de bloco aberto sobre um documento que acabou de mudar gravaria o estado velho por
+   * cima (a mesma limpeza do aviso de conflito).
+   */
+  function fecharTrabalhoLocal() {
+    currentBlockEditor.current = { id: '', open: false }
+    uploads.clear()
+    setBlockOpen(false)
+    setEditingBlock(null)
+    setAttOpen(false)
+    setCatalogOpen(false)
+    setPreview(false)
+    setFocusRequest(undefined)
+    setReviewResult(null)
+  }
+  // ⚠️ `busy` trava o resto do cabeçalho enquanto a restauração está em voo: sem ele, um
+  // "Revisar para publicar" no meio do caminho validaria um documento que já mudou.
+  async function restaurarDoPublicado(ids?: string[]) {
+    setBusy(true)
+    try {
+      await beforePublish()
+      const current = session.getSnapshot().draft
+      if (!current) return
+      await apiSend(`/api/members/lessons/${lessonId}/draft/restore-published`, 'POST', {
+        expectedRevision: current.revision,
+        operationId: crypto.randomUUID(),
+        ...(ids ? { ids } : {}),
+      })
+      fecharTrabalhoLocal()
+      await load()
+      toast.success(
+        ids ? 'Conteúdo trazido de volta.' : 'Rascunho restaurado da versão publicada.',
+        {
+          action: { label: 'Desfazer', onClick: () => void desfazerRestauracao() },
+          duration: 12000,
+        },
+      )
+    } finally {
+      setBusy(false)
     }
-    const missing = validateBlock(blockForm)
-    if (missing) {
-      toast.error(missing)
+  }
+  async function desfazerRestauracao() {
+    setBusy(true)
+    try {
+      const current = session.getSnapshot().draft
+      if (!current) return
+      await apiSend(`/api/members/lessons/${lessonId}/draft/undo-restore`, 'POST', {
+        expectedRevision: current.revision,
+        operationId: crypto.randomUUID(),
+      })
+      fecharTrabalhoLocal()
+      await load()
+      toast.success('Restauração desfeita.')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível desfazer.')
+    } finally {
+      setBusy(false)
+    }
+  }
+  async function beforePublish() {
+    await captureEditors()
+    await session.flush()
+  }
+  async function reviewLesson() {
+    setBusy(true)
+    try {
+      await beforePublish()
+      const current = session.getSnapshot().draft
+      if (!current) return
+      const found = await apiSend<LessonDraftIssue[]>(
+        `/api/members/lessons/${lessonId}/draft/validate`,
+        'POST',
+        { expectedRevision: current.revision, operationId: crypto.randomUUID() },
+      )
+      setReviewResult({ document: current.document, issues: found })
+      setReviewOpen(true)
+    } catch (error) {
+      toast.error((error as ApiError).message ?? 'Não foi possível revisar a aula.')
+    } finally {
+      setBusy(false)
+    }
+  }
+  function createStructure(intent: string, options?: SectionStarterOptions) {
+    const current = session.getSnapshot().draft
+    if (!current || current.document.sections.length >= 60) return
+    const template = LESSON_SECTION_TEMPLATES.find((t) => t.intent === intent)
+    const section = {
+      ...newAuthoringSection(),
+      title: template?.title ?? 'Conheça a plataforma',
+      intent: template?.intent ?? 'presentation',
+    }
+    const created: { id: string; content: LessonBlockContent }[] = []
+    const add = (content: LessonBlockContent) => {
+      const block = { id: crypto.randomUUID(), content }
+      created.push(block)
+      return block.id
+    }
+    const seed = (kind: LessonBlockKind, gallery = false) =>
+      buildContent(
+        {
+          ...EMPTY_BLOCK,
+          kind,
+          toolPurpose: gallery ? 'submission' : 'experiment',
+          galleryEnabled: gallery,
+        },
+        kind === 'studio' ? createEmptyProject(crypto.randomUUID(), 'Meu projeto') : undefined,
+        undefined,
+        kind === 'pinta' && !gallery
+          ? pintaAssetToWire(createLessonAsset('pixel-sprite', 32))
+          : undefined,
+      )
+    let sections = current.document.sections
+    if (intent === 'application' || intent === 'delivery') {
+      if (!options) return
+      const existing = current.document.blocks.find((b) => b.id === options.workspaceBlockId)
+      if (
+        options.project === 'existing' &&
+        (!existing || !['studio', 'pinta'].includes(existing.content.kind))
+      )
+        return
+      add(
+        seed(
+          intent === 'application'
+            ? 'video'
+            : courseInfo?.audience === 'adult'
+              ? 'rich_text'
+              : 'dialogue',
+        ),
+      )
+      if (intent === 'application') {
+        if (options.project === 'existing') section.workspaceBlockId = options.workspaceBlockId
+        else if (options.project === 'external')
+          section.externalTool = options.tool === 'studio' ? 'estudio' : 'pinta'
+        else section.workspaceBlockId = add(seed(options.tool))
+      } else if (
+        options.project === 'existing' &&
+        existing &&
+        (existing.content.kind === 'studio' || existing.content.kind === 'pinta')
+      ) {
+        // Delivery moves the existing block; all references to that workspace stay intact.
+        created.push({ id: existing.id, content: { ...existing.content, purpose: 'submission' } })
+        sections = sections.map((s) => ({
+          ...s,
+          blockIds: s.blockIds.filter((id) => id !== existing.id),
+          ...(s.completion
+            ? {
+                completion: {
+                  ...s.completion,
+                  blockIds: s.completion.blockIds.filter((id) => id !== existing.id),
+                },
+              }
+            : {}),
+        }))
+      } else add(seed(options.tool, true))
+    } else if (intent === 'exploration') {
+      add({
+        ...EMPTY_LEARNING,
+        activity: { type: 'experimentation', scene: 'world' },
+      })
+    } else
+      add(
+        seed(
+          intent === 'presentation'
+            ? 'video'
+            : intent === 'closing'
+              ? 'quiz'
+              : intent === 'material'
+                ? 'ebook'
+                : courseInfo?.audience === 'adult'
+                  ? 'rich_text'
+                  : 'dialogue',
+        ),
+      )
+    try {
+      for (const change of appendLessonSection(current.document, section, created, sections))
+        session.enqueue(change, true)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível criar a seção.')
       return
     }
-    const content = buildContent(
-      blockForm,
-      studioProject,
-      editingBlock?.content as LessonBlockContent | undefined,
-      pintaAsset,
-    )
-    await run(async () => {
-      let result: { zappyKnowledgeStatus?: 'ready' | 'pending' }
-      if (editingBlock)
-        result = await apiSend(`/api/members/blocks/${editingBlock.id}`, 'PATCH', { content })
-      else result = await apiSend(`/api/members/lessons/${lessonId}/blocks`, 'POST', { content })
-      if (result.zappyKnowledgeStatus === 'pending') {
-        toast.warning('Bloco salvo, mas a base do Zappy aguarda reindexação.')
-      }
-      setBlockOpen(false)
-    }, 'Bloco salvo.')
-  }
-  async function deleteBlock(b: BlockView) {
-    // A contagem vem ANTES do confirm (o `message` do useConfirm é fixo): as FKs em
-    // cascata apagam as entregas dos alunos junto com o bloco, e o professor precisa
-    // ver o custo. Best-effort — members fora → confirm de sempre, exclusão livre.
-    const counts = await fetchSubmissionCountsSafe(courseId)
-    const warning = submissionCountWarning(counts?.byBlock[b.id] ?? 0)
-    confirm({
-      title: 'Excluir bloco',
-      message: (
-        <>
-          Tem certeza que deseja excluir este bloco? Esta ação não pode ser desfeita.
-          {warning ? (
-            <>
-              {' '}
-              <strong className="text-destructive">{warning}</strong>
-            </>
-          ) : null}
-        </>
-      ),
-      confirmText: 'Excluir',
-      confirmVariant: 'destructive',
-      onConfirm: () =>
-        run(async () => {
-          const result = await apiSend<{ zappyKnowledgeStatus?: 'ready' | 'pending' }>(
-            `/api/members/blocks/${b.id}`,
-            'DELETE',
-          )
-          if (result.zappyKnowledgeStatus === 'pending') {
-            toast.warning('Bloco excluído; a limpeza do Zappy aguarda reindexação.')
-          }
-        }, 'Bloco excluído.'),
+    const next = session.getSnapshot().draft?.document
+    if (!next) return
+    const videos = created.filter((b) => b.content.kind === 'video')
+    if (videos.length)
+      session.enqueue(
+        {
+          type: 'planned-videos',
+          plannedVideos: [
+            ...next.plannedVideos,
+            ...videos.map((b) => ({ blockId: b.id, instructions: '', videoId: null })),
+          ],
+        },
+        true,
+      )
+    setFocusRequest({
+      sectionId: section.id,
+      target: intent === 'platform' ? 'completion' : 'settings',
+      sequence: Date.now(),
     })
+    setArea('sections')
+    const first = created[0]
+    if (first && !['application', 'delivery', 'platform'].includes(intent))
+      openEditBlock({
+        ...first,
+        kind: first.content.kind,
+        lessonId,
+        sortOrder: 0,
+        blockRevision: first.id.replaceAll('-', ''),
+      })
   }
-
-  // ── Reordenação (drag-and-drop, otimista; falhou → toast + reload) ─────────
-  async function persistOrder(url: string, orderedIds: string[]) {
+  const publication = useRef<{ expectedRevision: string; operationId: string } | null>(null)
+  async function publish(): Promise<boolean> {
+    if (activeUpload) {
+      toast.error('Aguarde o envio e o processamento dos vídeos antes de publicar.')
+      return false
+    }
+    setBusy(true)
+    setReviewResult(null)
     try {
-      await apiSend(url, 'POST', { orderedIds })
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao reordenar.')
+      await beforePublish()
+      const current = session.getSnapshot().draft
+      if (!current) return false
+      const retry = publication.current?.expectedRevision === current.revision
+      const command =
+        retry && publication.current
+          ? publication.current
+          : { expectedRevision: current.revision, operationId: crypto.randomUUID() }
+      const found = retry
+        ? []
+        : await apiSend<LessonDraftIssue[]>(
+            `/api/members/lessons/${lessonId}/draft/validate`,
+            'POST',
+            command,
+          )
+      setReviewResult({ document: current.document, issues: found })
+      if (found.length) {
+        toast.error('Confira as pendências indicadas nos blocos antes de publicar.')
+        return false
+      }
+      publication.current = command
+      await apiSend(`/api/members/lessons/${lessonId}/draft/publish`, 'POST', command)
+      publication.current = null
       await load()
+      toast.success('Aula publicada. A base do Zappy será atualizada com esta versão.')
+      return true
+    } catch (error) {
+      toast.error((error as ApiError).message ?? 'Não foi possível publicar.')
+      return false
+    } finally {
+      setBusy(false)
     }
   }
-
-  function handleBlockDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    if (!lesson || !over || active.id === over.id) return
-    const oldIdx = lesson.blocks.findIndex((b) => b.id === active.id)
-    const newIdx = lesson.blocks.findIndex((b) => b.id === over.id)
-    if (oldIdx === -1 || newIdx === -1) return
-    const blocks = arrayMove(lesson.blocks, oldIdx, newIdx)
-    setLesson({ ...lesson, blocks })
-    void persistOrder(
-      `/api/members/lessons/${lessonId}/blocks/reorder`,
-      blocks.map((b) => b.id),
-    )
+  function deleteBlock(b: BlockView) {
+    confirm({
+      title: 'Retirar bloco do percurso',
+      message:
+        'O bloco será retirado ao publicar. Os envios e o histórico dos alunos serão preservados.',
+      confirmText: 'Retirar bloco',
+      confirmVariant: 'destructive',
+      onConfirm: async () => {
+        uploads.remove(b.id)
+        session.enqueue({ type: 'remove-block', blockId: b.id }, true)
+      },
+    })
   }
-
   function handleAttachmentDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (!lesson || !over || active.id === over.id) return
-    const oldIdx = lesson.attachments.findIndex((a) => a.id === active.id)
-    const newIdx = lesson.attachments.findIndex((a) => a.id === over.id)
-    if (oldIdx === -1 || newIdx === -1) return
-    const attachments = arrayMove(lesson.attachments, oldIdx, newIdx)
-    setLesson({ ...lesson, attachments })
-    void persistOrder(
-      `/api/members/lessons/${lessonId}/attachments/reorder`,
-      attachments.map((a) => a.id),
+    const from = lesson.attachments.findIndex((a) => a.id === active.id)
+    const to = lesson.attachments.findIndex((a) => a.id === over.id)
+    if (from < 0 || to < 0) return
+    session.enqueue(
+      { type: 'attachments', attachments: arrayMove(lesson.attachments, from, to) },
+      true,
     )
   }
 
   // ── Anexos ──
   function openCreateAtt() {
+    setAttachmentId(crypto.randomUUID())
     setEditingAtt(null)
-    setAttForm({ label: '', url: '', fileType: '', sizeBytes: '' })
+    setAttForm({ label: '', url: '', fileType: '', sizeBytes: '', zappyStudentNotebook: false })
     setAttOpen(true)
   }
   function openEditAtt(a: AttachmentView) {
+    setAttachmentId(a.id)
     setEditingAtt(a)
     setAttForm({
       label: a.label,
       url: a.url,
       fileType: a.fileType ?? '',
       sizeBytes: a.sizeBytes == null ? '' : String(a.sizeBytes),
+      zappyStudentNotebook: a.zappyStudentNotebook,
     })
     setAttOpen(true)
   }
-  async function saveAtt() {
-    if (!attForm.label.trim() || !attForm.url.trim()) {
-      toast.error('Informe rótulo e URL.')
+  function saveAtt() {
+    if (!attachmentId || !attForm.url || !attForm.label.trim()) {
+      toast.error('Envie o arquivo e informe o nome antes de salvar.')
       return
     }
-    const payload = {
-      label: attForm.label.trim(),
-      url: attForm.url.trim(),
-      fileType: attForm.fileType.trim() || null,
-      sizeBytes: attForm.sizeBytes.trim() ? Number(attForm.sizeBytes) : null,
+    if (attForm.zappyStudentNotebook && !isPdfAttachment(attForm)) {
+      toast.error('O Caderno do aluno para o Zappy precisa ser um PDF.')
+      return
     }
-    await run(async () => {
-      if (editingAtt) await apiSend(`/api/members/attachments/${editingAtt.id}`, 'PATCH', payload)
-      else await apiSend(`/api/members/lessons/${lessonId}/attachments`, 'POST', payload)
-      setAttOpen(false)
-    }, 'Anexo salvo.')
+    const current = session.getSnapshot().draft
+    if (!current) return
+    const attachment = {
+      id: attachmentId,
+      label: attForm.label,
+      url: attForm.url,
+      fileType: attForm.fileType || null,
+      sizeBytes: attForm.sizeBytes ? Number(attForm.sizeBytes) : null,
+      zappyStudentNotebook: attForm.zappyStudentNotebook,
+    }
+    const attachments = current.document.attachments.some((a) => a.id === attachmentId)
+      ? current.document.attachments.map((a) => (a.id === attachmentId ? attachment : a))
+      : [...current.document.attachments, attachment]
+    session.enqueue({ type: 'attachments', attachments }, true)
+    setAttOpen(false)
   }
   function deleteAtt(a: AttachmentView) {
-    confirm({
-      title: 'Excluir anexo',
-      message: (
-        <>
-          Excluir o anexo <strong className="text-foreground">{a.label}</strong>?
-        </>
-      ),
-      confirmText: 'Excluir',
-      confirmVariant: 'destructive',
-      onConfirm: () =>
-        run(() => apiSend(`/api/members/attachments/${a.id}`, 'DELETE'), 'Anexo excluído.'),
-    })
+    const usages = attachmentUses.get(a.id)
+    if (usages?.length) {
+      toast.error(
+        `Este arquivo está em uso: ${[...new Set(usages)].join(', ')}. Remova o vínculo antes de excluí-lo.`,
+      )
+      return
+    }
+    const current = session.getSnapshot().draft
+    if (current)
+      session.enqueue(
+        {
+          type: 'attachments',
+          attachments: current.document.attachments.filter((item) => item.id !== a.id),
+        },
+        true,
+      )
   }
 
   /**
-   * E-book: além do bloco (livro 3D), o PDF entra nos materiais da aula p/ download.
-   * Trocar o PDF ATUALIZA o anexo do PDF anterior in-place (`previousUrl` — preserva a
-   * posição na lista e não deixa material órfão). Edge-cases aceitos: casar por URL
-   * pode sobrescrever um rótulo editado à mão (é o anexo daquele PDF); o OBJETO antigo
-   * no R2 fica (lixo de storage é dívida documentada da fatia de mídia).
+   * O item de ARQUIVO de um bloco de materiais: sobe o arquivo, cria (ou reaproveita) o ANEXO da
+   * aula e devolve o id dele, que é o que o bloco guarda.
+   *
+   * ⚠️⚠️ O bloco nunca guarda a URL. O anexo é quem tem a entrega privada por trás — R2
+   * privado, `storageRef` que não chega ao navegador, marca d'água por aluno no PDF —, e o
+   * `content` de um bloco viaja CRU para o aluno: um `r2priv:<key>` aqui vazaria a chave do bucket
+   * e passaria por fora da marca d'água.
+   *
+   * ⚠️ Mesmo arquivo já anexado = mesmo anexo (dedupe por URL). Sem isso, trocar o arquivo de um
+   * item duas vezes deixaria anexos órfãos na aula, que a autora veria na lista sem saber de onde
+   * vieram.
    */
-  async function addEbookAttachment(file: UploadedFile, previousUrl?: string) {
-    if (lesson?.attachments.some((a) => a.url === file.url)) return
-    const payload = {
-      label: file.filename.replace(/\.pdf$/i, ''),
+  function addMaterialAttachment(file: UploadedFile): string {
+    const current = session.getSnapshot().draft
+    if (!current) return ''
+    const existente = current.document.attachments.find((a) => a.url === file.url)
+    if (existente) return existente.id
+    const attachment = {
+      id: crypto.randomUUID(),
+      label: file.filename,
       url: file.url,
-      fileType: file.fileType || 'pdf',
+      fileType: file.fileType || null,
       sizeBytes: file.sizeBytes ?? null,
     }
-    const previous =
-      previousUrl && previousUrl !== file.url
-        ? lesson?.attachments.find((a) => a.url === previousUrl)
-        : undefined
-    try {
-      if (previous) {
-        await apiSend(`/api/members/attachments/${previous.id}`, 'PATCH', payload)
-        await load()
-        toast.success('Material da aula atualizado para o novo PDF.')
-        return
-      }
-      await apiSend(`/api/members/lessons/${lessonId}/attachments`, 'POST', payload)
-      await load()
-      toast.success('E-book adicionado aos materiais da aula.')
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao adicionar o e-book aos materiais.')
-    }
+    session.enqueue(
+      { type: 'attachments', attachments: [...current.document.attachments, attachment] },
+      true,
+    )
+    return attachment.id
   }
 
   return (
-    <div className="space-y-6">
-      {confirmDialog}
-      <Link
-        href={`/admin/membros/cursos/${courseId}`}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" /> Conteúdo do curso
-      </Link>
+    <LessonVideoUploads registry={uploads} onReady={receiveVideo}>
+      <div className="space-y-6">
+        {confirmDialog}
+        <Link
+          href={`/admin/membros/cursos/${courseId}`}
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" /> Conteúdo do curso
+        </Link>
 
-      <AdminHeader
-        title={lesson?.title ?? 'Aula'}
-        description={lesson ? lesson.slug : lessonId}
-        action={
-          <div className="flex flex-wrap gap-2">
-            {(() => {
-              // "Ver como aluno": abre a aula no app do aluno (pela audience) com a
-              // PRÓPRIA conta de equipe (passe livre). Rascunho → 404 na visão do
-              // aluno (o filtro roda antes do bypass), por isso só habilita publicado.
-              if (!courseInfo) return null
-              const base =
-                courseInfo.audience === 'kids' ? studentAppUrls?.kids : studentAppUrls?.adult
-              if (!base) return null
-              const publishedBoth = courseInfo.status === 'published' && courseInfo.lessonPublished
-              const url = `${base.replace(/\/+$/, '')}/cursos/${encodeURIComponent(courseInfo.slug)}/aulas/${encodeURIComponent(lessonId)}`
-              return (
+        <AdminHeader
+          title={lesson?.title ?? 'Aula'}
+          description={lesson ? lesson.slug : lessonId}
+          acoesAbaixo
+          action={
+            <div className="flex flex-wrap gap-2">
+              {(() => {
+                // "Ver como aluno": abre a aula no app do aluno (pela audience) com a
+                // PRÓPRIA conta de equipe (passe livre). Rascunho → 404 na visão do
+                // aluno (o filtro roda antes do bypass), por isso só habilita publicado.
+                if (!courseInfo) return null
+                const base =
+                  courseInfo.audience === 'kids' ? studentAppUrls?.kids : studentAppUrls?.adult
+                if (!base) return null
+                const publishedBoth =
+                  courseInfo.status === 'published' && courseInfo.lessonPublished
+                const url = `${base.replace(/\/+$/, '')}/cursos/${encodeURIComponent(courseInfo.slug)}/aulas/${encodeURIComponent(lessonId)}`
+                return (
+                  <Button
+                    variant="outline"
+                    disabled={!publishedBoth}
+                    title={
+                      publishedBoth
+                        ? 'Você verá com o passe da equipe — travas e gamificação de um aluno real não são simuladas.'
+                        : 'Publique a aula (e o curso) para vê-la como aluno — rascunho dá 404 na visão do aluno.'
+                    }
+                    onClick={() => window.open(url, '_blank', 'noopener')}
+                  >
+                    <ExternalLink className="size-4" /> Ver aula publicada
+                  </Button>
+                )
+              })()}
+              <Button
+                variant="outline"
+                disabled={busy || loading || !draft}
+                onClick={() => setCompareOpen(true)}
+                title="O que está publicado continua inteiro, mesmo o que você apagou no rascunho."
+              >
+                Comparar com a versão publicada
+              </Button>
+              {canWrite && draft?.canUndoRestore ? (
                 <Button
                   variant="outline"
-                  disabled={!publishedBoth}
-                  title={
-                    publishedBoth
-                      ? 'Você verá com o passe da equipe — travas e gamificação de um aluno real não são simuladas.'
-                      : 'Publique a aula (e o curso) para vê-la como aluno — rascunho dá 404 na visão do aluno.'
-                  }
-                  onClick={() => window.open(url, '_blank', 'noopener')}
+                  disabled={busy || loading}
+                  onClick={() => void desfazerRestauracao()}
                 >
-                  <ExternalLink className="size-4" /> Ver como aluno
+                  Desfazer a restauração
                 </Button>
-              )
-            })()}
-            {canWrite ? (
-              <Button onClick={openCreateBlock}>
-                <Plus className="size-4" /> Adicionar bloco
-              </Button>
+              ) : null}
+              {canWrite && draft?.isPublished && (
+                <Button
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() =>
+                    confirm({
+                      title: 'Despublicar aula',
+                      message:
+                        'A aula deixará de aparecer para os alunos. O conteúdo e o histórico serão preservados.',
+                      confirmText: 'Despublicar',
+                      onConfirm: async () => {
+                        await beforePublish()
+                        const current = session.getSnapshot().draft
+                        if (!current) return
+                        await apiSend(`/api/members/lessons/${lessonId}/draft/unpublish`, 'POST', {
+                          expectedRevision: current.revision,
+                          operationId: crypto.randomUUID(),
+                          readyVideoIds: [],
+                        })
+                        await load()
+                      },
+                    })
+                  }
+                >
+                  Despublicar aula
+                </Button>
+              )}
+              {canWrite ? (
+                <VozZappyButton
+                  blocos={draft?.document.blocks ?? []}
+                  disabled={busy || loading || draftState.status === 'conflict'}
+                  onVozes={aplicarVozes}
+                />
+              ) : null}
+              {canWrite ? (
+                <Button
+                  onClick={() => void reviewLesson()}
+                  disabled={busy || loading || draftState.status === 'conflict'}
+                >
+                  {busy ? <Spinner /> : null}Revisar para publicar
+                </Button>
+              ) : null}
+            </div>
+          }
+        />
+
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <p role="status" className="text-sm">
+              {draftState.status === 'saved'
+                ? 'Rascunho salvo'
+                : draftState.status === 'saving'
+                  ? 'Salvando…'
+                  : draftState.status === 'loading'
+                    ? 'Carregando rascunho…'
+                    : draftState.error}
+            </p>
+            {draft ? (
+              <Badge variant={draft.isPublished ? 'success' : 'muted'}>
+                {draft.isPublished ? 'Aula publicada' : 'Aula ainda não publicada'}
+              </Badge>
             ) : null}
           </div>
-        }
-      />
-
-      {loading ? (
-        <Card className="py-10 text-center text-muted-foreground">
-          <Spinner className="mx-auto" />
-        </Card>
-      ) : !lesson ? (
-        <Card className="py-10 text-center text-muted-foreground">Aula não encontrada.</Card>
-      ) : (
-        <>
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-muted-foreground">Blocos</h3>
-            {lesson.blocks.length === 0 ? (
-              <Card className="py-8 text-center text-sm text-muted-foreground">
-                Nenhum bloco. Adicione texto, vídeo, imagem, quiz ou conteúdo interativo.
-              </Card>
-            ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleBlockDragEnd}
+          {draftState.status === 'error' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                void (draft ? session.flush() : session.load()).catch((error) =>
+                  toast.error(error.message),
+                )
+              }}
+            >
+              Tentar novamente
+            </Button>
+          )}
+        </div>
+        {draftState.status === 'conflict' && (
+          <div
+            role="alert"
+            className="space-y-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4"
+          >
+            <p>Há uma versão diferente no servidor. Sua edição local foi preservada.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const blob = new Blob([JSON.stringify(draftState.recovery, null, 2)], {
+                    type: 'application/json',
+                  })
+                  const url = URL.createObjectURL(blob)
+                  const link = window.document.createElement('a')
+                  link.href = url
+                  link.download = `aula-${lessonId}-copia-local.json`
+                  link.click()
+                  URL.revokeObjectURL(url)
+                }}
               >
-                <SortableContext
-                  items={lesson.blocks.map((b) => b.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {lesson.blocks.map((b) => (
-                    <SortableBlockItem
-                      key={b.id}
-                      block={b}
-                      canWrite={canWrite}
-                      onEdit={() => openEditBlock(b)}
-                      onDelete={() => void deleteBlock(b)}
-                    />
-                  ))}
-                </SortableContext>
-              </DndContext>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-muted-foreground">Anexos</h3>
-              {canWrite ? (
-                <Button variant="outline" size="sm" onClick={openCreateAtt}>
-                  <Plus className="size-4" /> Adicionar anexo
-                </Button>
-              ) : null}
+                Baixar minha cópia local
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  // Descartar a edição local explicitamente também descarta formulários e transferências.
+                  fecharTrabalhoLocal()
+                  void session.restoreServerVersion().catch((error) => toast.error(error.message))
+                }}
+              >
+                Abrir versão do servidor e arquivar cópia local
+              </Button>
             </div>
-            {lesson.attachments.length === 0 ? (
-              <Card className="py-6 text-center text-sm text-muted-foreground">Nenhum anexo.</Card>
-            ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleAttachmentDragEnd}
-              >
-                <SortableContext
-                  items={lesson.attachments.map((a) => a.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {lesson.attachments.map((a) => (
-                    <SortableAttachmentItem
-                      key={a.id}
-                      attachment={a}
-                      canWrite={canWrite}
-                      onEdit={() => openEditAtt(a)}
-                      onDelete={() => deleteAtt(a)}
-                    />
-                  ))}
-                </SortableContext>
-              </DndContext>
-            )}
+            <details>
+              <summary className="cursor-pointer text-sm">Comparar minha cópia local</summary>
+              <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap text-xs">
+                {JSON.stringify(draftState.recovery?.document, null, 2)}
+              </pre>
+            </details>
           </div>
-        </>
-      )}
-
-      <Dialog
-        open={blockOpen}
-        onClose={() => setBlockOpen(false)}
-        title={editingBlock ? 'Editar bloco' : 'Adicionar bloco'}
-        // Estúdio (IDE) e quiz (editores de texto rico) precisam de mais largura que os blocos
-        // simples (texto/imagem/etc.), que seguem no `max-w-lg` padrão do Dialog.
-        className={BLOCK_DIALOG_WIDTH[blockForm.kind]}
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setBlockOpen(false)} disabled={busy}>
-              Cancelar
-            </Button>
-            <Button onClick={saveBlock} disabled={busy}>
-              {busy ? <Spinner /> : null}
-              Salvar
-            </Button>
-          </>
-        }
-      >
-        <div className="flex flex-col gap-4">
-          <Field label="Tipo" htmlFor="bkind">
-            <Select
-              id="bkind"
-              value={blockForm.kind}
-              disabled={!!editingBlock}
-              onChange={(e) =>
-                setBlockForm((f) => ({ ...f, kind: e.target.value as LessonBlockKind }))
-              }
-            >
-              {LESSON_BLOCK_KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {KIND_LABELS[k]}
-                </option>
-              ))}
-            </Select>
-          </Field>
-
-          {blockForm.kind === 'rich_text' ? (
-            <Field label="Conteúdo" hint="Salvo como markdown — renderiza igual na área do aluno.">
-              <RichTextEditor
-                content={blockForm.markdown}
-                onChange={(markdown) => setBlockForm((f) => ({ ...f, markdown }))}
-              />
-            </Field>
-          ) : null}
-
-          {blockForm.kind === 'coming_soon' ? (
-            <>
-              <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm">
-                Enquanto este bloco estiver aqui, o aluno vê <strong>só este recado</strong>. Os
-                outros blocos e os anexos da aula ficam escondidos e ele não consegue concluí-la.
-                Com a trava sequencial ligada,{' '}
-                <strong>as aulas seguintes também ficam bloqueadas</strong> até você tirar o bloco.
-                Você continua vendo a aula inteira, inclusive no “Ver como aluno”. Terminou de
-                montar? Apague o bloco e a aula volta ao normal.
-              </p>
-              <Field
-                label="Recado (opcional)"
-                hint="Em branco usa o recado padrão de cada plataforma (o do kids é escrito para crianças)."
+        )}
+        {draft && (
+          <div
+            hidden={blockOpen}
+            className="flex flex-wrap gap-2 border-b border-border pb-3"
+            role="group"
+            aria-label="Áreas de edição da aula"
+          >
+            {(
+              [
+                { id: 'sections', label: 'Seções' },
+                { id: 'materials', label: 'Arquivos da aula' },
+                { id: 'data', label: 'Dados da aula' },
+              ] as const
+            ).map((item) => (
+              <Button
+                key={item.id}
+                variant={area === item.id ? 'default' : 'ghost'}
+                aria-pressed={area === item.id}
+                onClick={() => {
+                  setArea(item.id)
+                  setPreview(false)
+                }}
               >
-                <Textarea
-                  value={blockForm.comingSoonMessage}
-                  maxLength={500}
-                  placeholder="Ex.: esta aula chega na semana que vem."
+                {item.label}
+              </Button>
+            ))}
+          </div>
+        )}
+        {draft && (
+          <section
+            hidden={area !== 'data' || blockOpen}
+            className="rounded-xl border border-border bg-card p-4"
+          >
+            <h2 className="font-medium">Dados da aula</h2>
+            <fieldset
+              disabled={!canWrite || busy || draftState.status === 'conflict'}
+              className="mt-4 grid gap-4 sm:grid-cols-2"
+            >
+              <Field label="Título">
+                <Input
+                  value={draft.document.title}
+                  maxLength={200}
                   onChange={(e) =>
-                    setBlockForm((f) => ({ ...f, comingSoonMessage: e.target.value }))
+                    session.enqueue({
+                      type: 'metadata',
+                      title: e.target.value,
+                      slug: draft.document.slug,
+                      estimatedMinutes: draft.document.estimatedMinutes,
+                    })
                   }
                 />
               </Field>
-            </>
-          ) : null}
-
-          {blockForm.kind === 'video' ? (
-            <>
-              <Field
-                label="Vídeo (Vimeo)"
-                hint="Sobe direto pro Vimeo (resumável); duração e transcrição entram sozinhas."
-              >
-                <VideoUploader
-                  currentSrc={blockForm.src || undefined}
-                  onReady={(v) =>
-                    setBlockForm((f) => ({
-                      ...f,
-                      provider: 'vimeo',
-                      src: v.embedUrl,
-                      durationSeconds:
-                        v.durationSeconds != null ? String(v.durationSeconds) : f.durationSeconds,
-                      captions: v.captions.length > 0 ? v.captions : f.captions,
-                    }))
+              <Field label="Slug">
+                <Input
+                  value={draft.document.slug}
+                  maxLength={200}
+                  onChange={(e) =>
+                    session.enqueue({
+                      type: 'metadata',
+                      title: draft.document.title,
+                      slug: e.target.value,
+                      estimatedMinutes: draft.document.estimatedMinutes,
+                    })
                   }
                 />
               </Field>
-              {/vimeo\.com\/(?:video\/)?\d{6,12}/.test(blockForm.src) ? (
-                <Field
-                  label="Capa do vídeo"
-                  hint="Envia direto pro Vimeo (o player usa essa capa)."
-                >
-                  <VideoThumbnailUploader
-                    videoId={
-                      blockForm.src.match(/vimeo\.com\/(?:video\/)?(\d{6,12})/)?.[1] as string
-                    }
-                  />
-                </Field>
-              ) : null}
-              {blockForm.durationSeconds || blockForm.captions.length > 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  {blockForm.durationSeconds
-                    ? `Duração: ${blockForm.durationSeconds}s (automática do Vimeo)`
-                    : null}
-                  {blockForm.durationSeconds && blockForm.captions.length > 0 ? ' · ' : null}
-                  {blockForm.captions.length > 0
-                    ? `Transcrição: ${blockForm.captions.map((c) => c.lang).join(', ')}`
-                    : null}
-                </p>
-              ) : null}
-            </>
-          ) : null}
-
-          {blockForm.kind === 'image' ? (
-            <>
-              <Field label="Imagem" hint="Otimizada (WebP) e hospedada no R2 automaticamente.">
-                <ImageUploader
-                  scope="block"
-                  allowManualUrl={false}
-                  value={blockForm.url}
-                  onChange={(url) => setBlockForm((f) => ({ ...f, url }))}
-                />
-              </Field>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Texto alternativo" htmlFor="balt" hint="Opcional.">
-                  <Input
-                    id="balt"
-                    value={blockForm.alt}
-                    onChange={(e) => setBlockForm((f) => ({ ...f, alt: e.target.value }))}
-                  />
-                </Field>
-                <Field label="Legenda" htmlFor="bcap" hint="Opcional.">
-                  <Input
-                    id="bcap"
-                    value={blockForm.caption}
-                    onChange={(e) => setBlockForm((f) => ({ ...f, caption: e.target.value }))}
-                  />
-                </Field>
-              </div>
-            </>
-          ) : null}
-
-          {blockForm.kind === 'audio' ? (
-            <>
-              <Field label="Áudio" hint="Hospedado no R2; a duração é detectada do arquivo.">
-                <AudioUploader
-                  value={blockForm.url || undefined}
-                  onUploaded={({ url, durationSeconds }) =>
-                    setBlockForm((f) => ({
-                      ...f,
-                      url,
-                      durationSeconds:
-                        durationSeconds != null ? String(durationSeconds) : f.durationSeconds,
-                    }))
+              <Field label="Duração estimada (minutos)">
+                <Input
+                  type="number"
+                  min={0}
+                  max={10000}
+                  value={draft.document.estimatedMinutes ?? ''}
+                  onChange={(e) =>
+                    session.enqueue({
+                      type: 'metadata',
+                      title: draft.document.title,
+                      slug: draft.document.slug,
+                      estimatedMinutes: e.target.value ? Number(e.target.value) : null,
+                    })
                   }
                 />
               </Field>
-              {blockForm.durationSeconds ? (
-                <p className="text-xs text-muted-foreground">
-                  Duração: {blockForm.durationSeconds}s (automática do arquivo)
-                </p>
-              ) : null}
-            </>
-          ) : null}
-
-          {blockForm.kind === 'embed' ? (
-            <Field
-              label="HTML"
-              hint="Roda em iframe sandbox na área do aluno — largura total, proporção 16:9."
-            >
-              <HtmlCodeEditor
-                value={blockForm.html}
-                onChange={(html) => setBlockForm((f) => ({ ...f, html }))}
+            </fieldset>
+          </section>
+        )}
+        {issues
+          .filter((issue) => !issue.blockId && !issue.sectionId)
+          .map((issue) => (
+            <p key={issue.message} role="alert" className="text-sm text-destructive">
+              {issue.message}
+            </p>
+          ))}
+        {loading ? (
+          <Card className="py-10 text-center text-muted-foreground">
+            <Spinner className="mx-auto" />
+          </Card>
+        ) : !lesson ? (
+          <Card className="py-10 text-center text-muted-foreground">Aula não encontrada.</Card>
+        ) : (
+          <>
+            {canWrite && courseInfo && area === 'data' && !blockOpen && (
+              <LessonManifestImport
+                lessonId={lessonId}
+                lessonSlug={lesson.slug}
+                courseSlug={courseInfo.slug}
+                disabled={busy || draftState.status === 'conflict'}
+                beforeImport={beforePublish}
+                onImported={load}
               />
-            </Field>
-          ) : null}
-
-          {blockForm.kind === 'ebook' ? (
-            <>
-              <Field
-                label="E-book (PDF)"
-                hint="Bucket privado; o aluno vê como livro 3D interativo com marca d'água. O PDF também entra automaticamente nos materiais da aula para download."
-              >
-                <FileUploader
-                  accept="application/pdf,.pdf"
-                  label="Clique para enviar o PDF do e-book (até 200 MB)"
-                  onUploaded={(file) => {
-                    // Captura o PDF ANTERIOR antes de sobrescrever — o anexo dele é
-                    // atualizado in-place (sem material órfão na aula).
-                    const previousUrl = blockForm.pdfUrl.trim() || undefined
-                    setBlockForm((f) => ({
-                      ...f,
-                      pdfUrl: file.url,
-                      title: f.title.trim() ? f.title : file.filename.replace(/\.pdf$/i, ''),
-                    }))
-                    void addEbookAttachment(file, previousUrl)
+            )}
+            {/* Exportar é LEITURA: quem só pode ver a aula também pode levar o roteiro embora. */}
+            {courseInfo && draft && area === 'data' && !blockOpen && (
+              <LessonManifestExport document={draft.document} courseSlug={courseInfo.slug} />
+            )}
+            {draft && (
+              <div hidden={area === 'data' || blockOpen}>
+                <LessonStructureEditor
+                  authorId={authorId}
+                  // A prévia e o ensaio montam a aula no layout do app de destino: os
+                  // dois divergem desde 13/09/2026 (o kids não tem a barra do topo e
+                  // leva o índice para o cabeçalho da seção).
+                  // ⚠️ O fallback é 'adult', NÃO o 'kids' do catálogo de conteúdo aqui
+                  // embaixo. A árvore do curso é best-effort: se ela falhar (sessão
+                  // expirada, 502) o `courseInfo` fica null PARA SEMPRE, e um default
+                  // kids montaria um curso ADULTO na tela da criança — o mesmo bug ao
+                  // contrário. 'adult' é o layout de sempre, então o pior caso aqui é
+                  // o comportamento anterior a esta mudança. Casa com a leitura da
+                  // árvore, que já resolve audiência ausente como 'adult'.
+                  audience={courseInfo?.audience ?? 'adult'}
+                  area={area === 'materials' ? 'materials' : 'sections'}
+                  focusRequest={focusRequest}
+                  uploadStatus={videoUploadStatusLabels(uploadStates)}
+                  onCreateStructure={createStructure}
+                  lesson={lesson}
+                  document={draft.document}
+                  canWrite={canWrite && !busy && draftState.status !== 'conflict'}
+                  onChange={(change, immediate) => session.enqueue(change, immediate)}
+                  onAddBlock={openCreateBlock}
+                  onEditBlock={openEditBlock}
+                  onRemoveBlock={deleteBlock}
+                  issues={issues}
+                  preview={preview}
+                  onPreviewChange={(value) => {
+                    void captureEditors()
+                      .then(() => setPreview(value))
+                      .catch((error) => toast.error(error.message))
                   }}
                 />
-              </Field>
-              {blockForm.pdfUrl ? (
-                <p className="truncate text-xs text-muted-foreground">
-                  PDF enviado: {blockForm.pdfUrl}
-                </p>
-              ) : null}
-              <Field label="Título" htmlFor="btitle" hint="Opcional — aparece junto ao livro.">
-                <Input
-                  id="btitle"
-                  value={blockForm.title}
-                  onChange={(e) => setBlockForm((f) => ({ ...f, title: e.target.value }))}
-                />
-              </Field>
-              <label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
-                <input
-                  type="checkbox"
-                  checked={blockForm.zappyStudentNotebook}
-                  onChange={(event) =>
-                    setBlockForm((form) => ({
-                      ...form,
-                      zappyStudentNotebook: event.target.checked,
-                    }))
-                  }
-                  className="mt-0.5 size-4 accent-primary"
-                />
-                <span>
-                  <strong className="block">Caderno do aluno</strong>
-                  <span className="text-muted-foreground">
-                    Autoriza extrair o texto deste PDF para as respostas do Zappy.
-                  </span>
-                </span>
-              </label>
-            </>
-          ) : null}
-
-          {blockForm.kind === 'quiz' ? (
-            <QuizBuilder
-              value={blockForm.quiz}
-              onChange={(quiz) => setBlockForm((f) => ({ ...f, quiz }))}
-            />
-          ) : null}
-
-          {blockForm.kind === 'pinta' ? (
-            <div className="flex flex-col gap-4">
-              {/* Tipo e tamanho só na CRIAÇÃO: trocá-los recria o desenho, e na edição isso
-                  apagaria o que a professora já fez. Depois de criado, o botão "Tamanho" DENTRO
-                  do editor é quem muda a tela (sem perder o traço). */}
-              {editingBlock ? null : (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Field label="O que a criança vai desenhar">
-                    <Select
-                      value={blockForm.pintaAssetKind}
-                      onChange={(e) => {
-                        const kind = e.target.value as PintaLessonAssetKind
-                        const sizes: readonly number[] =
-                          PINTA_LESSON_ASSET_OPTIONS.find((o) => o.kind === kind)?.sizes ?? []
-                        setBlockForm((f) => ({
-                          ...f,
-                          pintaAssetKind: kind,
-                          // O tamanho atual pode não existir no tipo novo → cai no 1º dele.
-                          pintaSize: sizes.includes(f.pintaSize) ? f.pintaSize : (sizes[0] ?? 32),
-                        }))
-                      }}
-                    >
-                      {PINTA_LESSON_ASSET_OPTIONS.map((o) => (
-                        <option key={o.kind} value={o.kind}>
-                          {o.label}
-                        </option>
-                      ))}
-                    </Select>
-                  </Field>
-                  <Field
-                    label="Tamanho da tela"
-                    hint="Telas maiores viram desenhos mais pesados de enviar — por isso a lista para em 256."
+              </div>
+            )}
+            <div hidden={area !== 'materials' || blockOpen} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-muted-foreground">Arquivos da aula</h3>
+                {canWrite ? (
+                  <Button variant="outline" size="sm" onClick={openCreateAtt}>
+                    <Plus className="size-4" /> Adicionar arquivo
+                  </Button>
+                ) : null}
+              </div>
+              {lesson.attachments.length === 0 ? (
+                <Card className="py-6 text-center text-sm text-muted-foreground">
+                  Nenhum arquivo enviado para esta aula.
+                </Card>
+              ) : (
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleAttachmentDragEnd}
+                >
+                  <SortableContext
+                    items={lesson.attachments.map((a) => a.id)}
+                    strategy={verticalListSortingStrategy}
                   >
-                    <Select
-                      value={String(blockForm.pintaSize)}
-                      onChange={(e) =>
-                        setBlockForm((f) => ({ ...f, pintaSize: Number(e.target.value) }))
-                      }
-                    >
-                      {(
-                        PINTA_LESSON_ASSET_OPTIONS.find((o) => o.kind === blockForm.pintaAssetKind)
-                          ?.sizes ?? []
-                      ).map((s) => (
-                        <option key={s} value={s}>
-                          {s} x {s}
-                        </option>
-                      ))}
-                    </Select>
-                  </Field>
-                </div>
+                    {lesson.attachments.map((a) => (
+                      <SortableAttachmentItem
+                        key={a.id}
+                        attachment={a}
+                        canWrite={canWrite}
+                        usages={attachmentUses.get(a.id) ?? []}
+                        onEdit={() => openEditAtt(a)}
+                        onDelete={() => deleteAtt(a)}
+                      />
+                    ))}
+                  </SortableContext>
+                </DndContext>
               )}
-              <Field
-                label="Desenho inicial"
-                hint="Desenhe o ponto de partida da criança. Pode deixar em branco — ela começa do zero na tela que você escolheu."
-              >
-                {pintaSeed ? (
-                  <PintaEmbed
-                    key={
-                      editingBlock?.id ??
-                      `new-pinta-${blockForm.pintaAssetKind}-${blockForm.pintaSize}`
-                    }
-                    initialAsset={pintaSeed}
-                    handleRef={pintaHandleRef}
-                  />
-                ) : (
-                  <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
-                    Este bloco guardou um desenho que não consigo abrir. Crie um bloco novo — o
-                    conteúdo antigo não é recuperável por aqui.
+            </div>
+          </>
+        )}
+
+        <Dialog
+          open={catalogOpen}
+          onClose={() => setCatalogOpen(false)}
+          title="Adicionar conteúdo"
+          className="max-w-3xl"
+        >
+          <LessonContentCatalog audience={courseInfo?.audience ?? 'kids'} onSelect={createBlock} />
+        </Dialog>
+        {compareOpen && draft ? (
+          <LessonPublishedCompare
+            lessonId={lessonId}
+            draft={draft.document}
+            canWrite={canWrite}
+            onClose={() => setCompareOpen(false)}
+            onRestore={restaurarDoPublicado}
+          />
+        ) : null}
+        {blockOpen && (
+          <section className="space-y-5 rounded-2xl border border-border bg-card p-4 sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs text-muted-foreground">
+                  {lesson?.title} →{' '}
+                  {draft?.document.sections.find((s) => s.id === blockSectionId)?.title ??
+                    'Materiais de apoio'}
+                </p>
+                <h2
+                  ref={blockHeadingRef}
+                  tabIndex={-1}
+                  className="mt-1 text-xl font-semibold outline-none"
+                >
+                  {KIND_LABELS[blockForm.kind]}
+                </h2>
+              </div>
+              <Button variant="outline" onClick={() => void closeBlock()}>
+                <ArrowLeft className="size-4" />
+                Voltar ao percurso
+              </Button>
+            </div>
+            <fieldset disabled={!canWrite || busy || draftState.status === 'conflict'}>
+              <div className="flex flex-col gap-4">
+                {(validateBlock(blockForm) ||
+                  (blockForm.kind === 'interactive' &&
+                    !isInteractiveBlock(blockForm.interactive)) ||
+                  (blockForm.kind === 'quiz' && validateQuiz(blockForm.quiz))) && (
+                  <p className="text-sm text-muted-foreground">
+                    {validateBlock(blockForm) ??
+                      (blockForm.kind === 'quiz'
+                        ? validateQuiz(blockForm.quiz)
+                        : 'Complete os campos da descoberta antes de publicar.')}
                   </p>
                 )}
-              </Field>
-              <Field
-                label="Ferramentas liberadas"
-                hint="A tela da criança não precisa vir cheia. Comece pelo essencial e libere mais quando a aula pedir."
-              >
-                <Select
-                  value={blockForm.pintaToolPreset}
-                  onChange={(e) =>
-                    setBlockForm((f) => ({
-                      ...f,
-                      pintaToolPreset: e.target.value as BlockForm['pintaToolPreset'],
-                    }))
-                  }
-                >
-                  <option value="essencial">Só o essencial (desenhar, apagar, pintar, cor)</option>
-                  <option value="livre">Desenho livre (formas, seleção e ajustes)</option>
-                  <option value="tudo">Tudo (a caixa inteira)</option>
-                </Select>
-              </Field>
-              <Field
-                label="Desenho contínuo (nome)"
-                hint="Dê o MESMO nome nas aulas que constroem um único desenho — a criança abre cada aula com o que enviou na anterior. Vazio = aula independente. ⚠️ Todas as aulas da cadeia precisam ser do MESMO tipo de desenho (o salvamento recusa e diz qual aula já usa o nome): quando a criança traz o desenho da aula anterior, é ele que abre, e o tipo e o tamanho vêm dele, não daqui."
-              >
-                <Input
-                  value={blockForm.pintaChain}
-                  maxLength={80}
-                  onChange={(e) => setBlockForm((f) => ({ ...f, pintaChain: e.target.value }))}
-                  placeholder="ex.: heroi-do-jogo"
-                />
-              </Field>
-            </div>
-          ) : null}
+                <LessonBlockKindBadge kind={blockForm.kind} />
+                {blockForm.kind === 'interactive' && (
+                  <LearningBuilder
+                    sectionCriteria={draft?.document.sections.some(
+                      (s) => s.completion !== undefined,
+                    )}
+                    value={blockForm.interactive}
+                    onChange={(interactive) => setBlockForm((form) => ({ ...form, interactive }))}
+                  />
+                )}
+                {(blockForm.kind === 'studio' || blockForm.kind === 'pinta') && (
+                  <Field label="Onde a criança faz este trabalho?" htmlFor="gallery-mode">
+                    <Select
+                      id="gallery-mode"
+                      value={blockForm.galleryEnabled ? 'gallery' : 'embedded'}
+                      onChange={(event) => void changeGalleryMode(event.target.value === 'gallery')}
+                    >
+                      <option value="embedded">Dentro da aula</option>
+                      <option value="gallery">
+                        Na ferramenta completa, com entrega pela galeria
+                      </option>
+                    </Select>
+                    {blockForm.galleryEnabled && (
+                      <p className="text-sm text-muted-foreground">
+                        A seção avança depois de enviar ao professor. Selecione este bloco no
+                        critério de conclusão da seção.
+                      </p>
+                    )}
+                  </Field>
+                )}
+                {blockForm.galleryEnabled && blockForm.kind === 'pinta' && (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Mínimo de desenhos" htmlFor="gallery-min">
+                      <Input
+                        id="gallery-min"
+                        type="number"
+                        min={1}
+                        max={blockForm.galleryMax}
+                        value={blockForm.galleryMin}
+                        onChange={(event) =>
+                          setBlockForm((form) => ({
+                            ...form,
+                            galleryMin: Math.max(
+                              1,
+                              Math.min(form.galleryMax, Number(event.target.value) || 1),
+                            ),
+                          }))
+                        }
+                      />
+                    </Field>
+                    <Field label="Máximo de desenhos" htmlFor="gallery-max">
+                      <Input
+                        id="gallery-max"
+                        type="number"
+                        min={blockForm.galleryMin}
+                        max={12}
+                        value={blockForm.galleryMax}
+                        onChange={(event) =>
+                          setBlockForm((form) => ({
+                            ...form,
+                            galleryMax: Math.max(
+                              form.galleryMin,
+                              Math.min(12, Number(event.target.value) || 1),
+                            ),
+                          }))
+                        }
+                      />
+                    </Field>
+                    <p className="text-sm text-muted-foreground sm:col-span-2">
+                      Personagens, cenários e peças em pixel ou vetor. Mapas com peças vinculadas
+                      não entram nesta seleção.
+                    </p>
+                  </div>
+                )}
+                {(blockForm.kind === 'studio' || blockForm.kind === 'pinta') &&
+                  !blockForm.galleryEnabled && (
+                    <Field label="Papel desta ferramenta" htmlFor="tool-purpose">
+                      <Select
+                        id="tool-purpose"
+                        value={blockForm.toolPurpose}
+                        onChange={(e) =>
+                          setBlockForm((form) => ({
+                            ...form,
+                            toolPurpose:
+                              e.target.value === 'experiment' ? 'experiment' : 'submission',
+                          }))
+                        }
+                      >
+                        <option value="submission">Criação com entrega ao professor</option>
+                        <option value="experiment">Experimento independente, sem entrega</option>
+                      </Select>
+                    </Field>
+                  )}
+                {blockForm.kind === 'dialogue' ? (
+                  <>
+                    {/* A escolha é pela CARA, não pelo nome: quem monta a aula está
+                  decidindo a expressão, e nome de pose não desenha nada. */}
+                    <fieldset className="space-y-2">
+                      <legend className="font-medium text-sm">Pose do Zappy</legend>
+                      <div className="flex flex-wrap gap-3">
+                        {DIALOGUE_POSES.map((pose) => (
+                          <label key={pose} className="cursor-pointer">
+                            <input
+                              type="radio"
+                              name="dialogue-pose"
+                              value={pose}
+                              checked={blockForm.dialoguePose === pose}
+                              onChange={() => setBlockForm((f) => ({ ...f, dialoguePose: pose }))}
+                              className="peer sr-only"
+                            />
+                            <img
+                              src={`/zappy/${pose}.webp`}
+                              alt={DIALOGUE_POSE_LABELS[pose]}
+                              width={64}
+                              height={64}
+                              className="size-16 rounded-xl border-2 border-transparent bg-muted/40 object-contain peer-checked:border-primary peer-focus-visible:outline-2 peer-focus-visible:outline-ring"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                    <Field
+                      label="Fala do Zappy"
+                      htmlFor="dialogue-text"
+                      hint="Texto simples e curto: o balão existe para não ser parede de texto. As quebras de linha são preservadas. Na comunidade adulta o mesmo bloco vira um recado destacado, sem o personagem."
+                    >
+                      <Textarea
+                        id="dialogue-text"
+                        value={blockForm.dialogueText}
+                        maxLength={DIALOGUE_MAX_LENGTH}
+                        rows={3}
+                        placeholder="Ex.: Agora a gente vai fazer o dinossauro pular! Toque no bloco verde."
+                        onChange={(e) =>
+                          setBlockForm((f) => ({
+                            ...f,
+                            dialogueText: e.target.value,
+                            // A exceção pertence ao texto exibido. Ao reescrever a fala, ela não
+                            // pode sobreviver escondida e trocar a voz de uma frase nova.
+                            dialogueZappySpeech: undefined,
+                            dialogueVozes: undefined,
+                          }))
+                        }
+                      />
+                      <p className="text-muted-foreground text-xs">
+                        {blockForm.dialogueText.trim().length} de {DIALOGUE_MAX_LENGTH} caracteres
+                      </p>
+                    </Field>
+                    {blockForm.dialogueText.trim() ? (
+                      <ZappySpeechEditor
+                        rows={[
+                          {
+                            id: 'dialogue',
+                            label: 'Fala do balão',
+                            visibleText: blockForm.dialogueText.trim(),
+                            override: blockForm.dialogueZappySpeech,
+                          },
+                        ]}
+                        onChange={(_id, dialogueZappySpeech) =>
+                          setBlockForm((f) => {
+                            const roteiro = roteiroDoZappy(
+                              f.dialogueText.trim(),
+                              dialogueZappySpeech,
+                            )
+                            return {
+                              ...f,
+                              dialogueZappySpeech,
+                              dialogueVozes: reconciliarVozesDoZappy([roteiro], f.dialogueVozes),
+                            }
+                          })
+                        }
+                        onPreviewVoice={(_id, dialogueZappySpeech, novasVozes) =>
+                          setBlockForm((f) => {
+                            const roteiro = roteiroDoZappy(
+                              f.dialogueText.trim(),
+                              dialogueZappySpeech,
+                            )
+                            return {
+                              ...f,
+                              dialogueZappySpeech,
+                              dialogueVozes: reconciliarVozesDoZappy(
+                                [roteiro],
+                                f.dialogueVozes,
+                                novasVozes,
+                              ),
+                            }
+                          })
+                        }
+                      />
+                    ) : null}
+                  </>
+                ) : null}
 
-          {blockForm.kind === 'studio' ? (
-            <div className="flex flex-col gap-4">
-              {/* ── ESSENCIAL (redesenho 24/07): tipo → projeto → blocos visíveis →
-                  projeto contínuo + última aula. O resto vive em "Configurações
-                  avançadas" (colapsada — abre sozinha na edição fora do default). ── */}
-              <Field
-                label="Tipo de atividade"
-                hint="Blocos e Ponte é o Estúdio clássico; Código Pro é o projeto profissional (o modo Código é automático)."
-              >
-                <div className="flex gap-2 pt-1">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={studioKind === 'blocks' ? 'default' : 'outline'}
-                    aria-pressed={studioKind === 'blocks'}
-                    onClick={() => setStudioKind('blocks')}
+                {blockForm.kind === 'rich_text' ? (
+                  <Field
+                    label="Conteúdo"
+                    hint="Salvo como markdown — renderiza igual na área do aluno."
                   >
-                    Blocos e Ponte
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={studioKind === 'pro' ? 'default' : 'outline'}
-                    aria-pressed={studioKind === 'pro'}
-                    onClick={() => setStudioKind('pro')}
-                  >
-                    Código Pro
-                  </Button>
-                </div>
-              </Field>
-              <Field
-                label="Projeto inicial"
-                hint="Monte o código de partida, instale as extensões e dê o nome do projeto — é o que o aluno abre na aula."
-              >
-                <StudioEmbed
-                  key={editingBlock?.id ?? 'new-studio'}
-                  initialProject={
-                    editingBlock && editingBlock.content.kind === 'studio'
-                      ? (editingBlock.content.initialProject as Project)
-                      : null
-                  }
-                  handleRef={studioHandleRef}
-                  professionalAuthoring
-                  hideKindChooser
-                  requestedKind={studioKind}
-                  onKindResolved={setStudioKind}
-                  features={{ terminal: false, ai: false, professional: true, export: false }}
-                />
-              </Field>
-              {studioKind === 'blocks' ? (
-                <Field
-                  label="Blocos visíveis para o aluno"
-                  hint="Vazio = a paleta curada pelo nível (em Configurações avançadas). Preenchido = o aluno vê SÓ estes blocos (+ as Áreas do projeto). Bom para aulas bem guiadas."
-                >
-                  <StudioBlocksPicker
-                    value={blockForm.studioAllowBlocks}
-                    onChange={(studioAllowBlocks) =>
-                      setBlockForm((f) => ({ ...f, studioAllowBlocks }))
-                    }
-                  />
-                </Field>
-              ) : null}
-              <Field
-                label="Projeto contínuo (nome)"
-                hint="Opcional. Dê o MESMO nome às aulas que constroem um único projeto (ex.: 'jogo-da-cobrinha'): o aluno abre cada aula com o código que enviou na anterior da cadeia. Vazio = aula independente."
-              >
-                <Input
-                  value={blockForm.studioChain}
-                  maxLength={80}
-                  placeholder="ex.: jogo-da-cobrinha"
-                  onChange={(e) => setBlockForm((f) => ({ ...f, studioChain: e.target.value }))}
-                />
-              </Field>
-              <div className="flex flex-col gap-1">
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    className="size-4 accent-primary"
-                    checked={blockForm.studioShowcaseEnabled}
-                    onChange={(e) =>
-                      setBlockForm((f) => ({ ...f, studioShowcaseEnabled: e.target.checked }))
-                    }
-                  />
-                  Última aula do projeto — libera o "Compartilhar" no Mural
-                </label>
-                <p className="text-xs text-muted-foreground">
-                  Ligue SÓ no bloco da última aula: aí a criança ganha o botão "Compartilhar" pra
-                  publicar o jogo no Mural (+ link público de jogar). O texto do post (título/
-                  resumo/capa) fica em Configurações avançadas — em branco, a IA escreve.
-                </p>
-              </div>
+                    <RichTextEditor
+                      content={blockForm.markdown}
+                      onChange={(markdown) => setBlockForm((f) => ({ ...f, markdown }))}
+                    />
+                  </Field>
+                ) : null}
 
-              {/* ── AVANÇADO (colapsada) ── */}
-              <div className="rounded-lg border border-border">
-                <button
-                  type="button"
-                  onClick={() => setAdvancedOpen((v) => !v)}
-                  aria-expanded={advancedOpen}
-                  className="flex w-full items-center justify-between px-3 py-2.5 text-sm font-medium"
-                >
-                  Configurações avançadas
-                  <ChevronDown
-                    className={`size-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`}
-                  />
-                </button>
-                {advancedOpen ? (
-                  <div className="flex flex-col gap-4 border-t border-border p-3">
-                    {studioKind === 'blocks' ? (
-                      <>
-                        <StudioConfigClipboard
-                          current={{
-                            level: blockForm.studioLevel,
-                            modes: blockForm.studioModes,
-                            categories: blockForm.studioCategories,
-                            allowReveal: blockForm.studioAllowReveal,
-                            allowBlocks: blockForm.studioAllowBlocks,
-                          }}
-                          onPaste={(snap) =>
+                {blockForm.kind === 'coming_soon' ? (
+                  <>
+                    <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm">
+                      Enquanto este bloco estiver aqui, o aluno vê <strong>só este recado</strong>.
+                      Os outros blocos e os anexos da aula ficam escondidos e ele não consegue
+                      concluí-la. Com a trava sequencial ligada,{' '}
+                      <strong>as aulas seguintes também ficam bloqueadas</strong> até você tirar o
+                      bloco. Você continua vendo a aula inteira, inclusive no “Ver como aluno”.
+                      Terminou de montar? Apague o bloco e a aula volta ao normal.
+                    </p>
+                    <Field
+                      label="Recado (opcional)"
+                      hint="Em branco usa o recado padrão de cada plataforma (o do kids é escrito para crianças)."
+                    >
+                      <Textarea
+                        value={blockForm.comingSoonMessage}
+                        maxLength={500}
+                        placeholder="Ex.: esta aula chega na semana que vem."
+                        onChange={(e) =>
+                          setBlockForm((f) => ({ ...f, comingSoonMessage: e.target.value }))
+                        }
+                      />
+                    </Field>
+                  </>
+                ) : null}
+
+                {blockForm.kind === 'materials' ? (
+                  <>
+                    <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm">
+                      Este bloco aparece <strong>no ponto em que você o colocar</strong> na seção,
+                      na ordem que você montar — inclusive embaixo do vídeo, na coluna do conteúdo.
+                      Arquivos só são obrigatórios se você marcar o download em Configurar avanço.
+                      Imagens, recados, links e vídeos incorporados continuam opcionais neste bloco.
+                    </p>
+                    <label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={blockForm.materialsBookPreview}
+                        onChange={(event) =>
+                          setBlockForm((form) => ({
+                            ...form,
+                            materialsBookPreview: event.target.checked,
+                          }))
+                        }
+                        className="mt-1 size-4"
+                      />
+                      <span>
+                        <strong>Mostrar o PDF como livro na aula</strong>
+                        <span className="mt-1 block text-muted-foreground">
+                          O primeiro PDF deste bloco aparece para leitura ao lado do vídeo quando
+                          houver espaço. O download continua abaixo do vídeo.
+                        </span>
+                      </span>
+                    </label>
+                    <MaterialsBuilder
+                      value={blockForm.materials}
+                      onChange={(materials) => setBlockForm((f) => ({ ...f, materials }))}
+                      onUploadFile={addMaterialAttachment}
+                      attachments={lesson?.attachments ?? []}
+                      attachmentLabel={(id) =>
+                        session.getSnapshot().draft?.document.attachments.find((a) => a.id === id)
+                          ?.label ?? null
+                      }
+                    />
+                  </>
+                ) : null}
+
+                {blockForm.kind === 'video' ? (
+                  <>
+                    <div className="grid items-start gap-5 xl:grid-cols-2">
+                      <Field
+                        label="Vídeo (Vimeo)"
+                        hint="Sobe direto pro Vimeo (resumável); duração e transcrição entram sozinhas."
+                      >
+                        <VideoUploader
+                          blockId={blockId}
+                          currentSrc={blockForm.src || undefined}
+                          autoCheckStatus
+                          onReady={(v) =>
                             setBlockForm((f) => ({
                               ...f,
-                              studioLevel: snap.level,
-                              studioModes: snap.modes,
-                              studioCategories: snap.categories,
-                              studioAllowReveal: snap.allowReveal,
-                              studioAllowBlocks: snap.allowBlocks,
+                              provider: 'vimeo',
+                              src: v.embedUrl,
+                              durationSeconds:
+                                v.durationSeconds != null
+                                  ? String(v.durationSeconds)
+                                  : f.durationSeconds,
+                              captions: v.captions.length > 0 ? v.captions : f.captions,
                             }))
                           }
                         />
-                        <div className="grid gap-4 sm:grid-cols-2">
-                          <Field
-                            label="Nível"
-                            htmlFor="slevel"
-                            hint="Cura a paleta de blocos por dificuldade (vale quando a lista de blocos visíveis está vazia)."
+                      </Field>
+                      <Field
+                        label="Capa do vídeo"
+                        hint={
+                          blockForm.provider === 'vimeo'
+                            ? 'A capa é aplicada ao vídeo no Vimeo e também aparece nas aulas que reutilizam esse vídeo.'
+                            : undefined
+                        }
+                      >
+                        {/vimeo\.com\/(?:video\/)?\d{6,12}/.test(blockForm.src) ? (
+                          <VideoThumbnailUploader
+                            key={blockForm.src}
+                            videoId={
+                              blockForm.src.match(
+                                /vimeo\.com\/(?:video\/)?(\d{6,12})/,
+                              )?.[1] as string
+                            }
+                          />
+                        ) : blockForm.provider === 'file' ? (
+                          <ImageUploader
+                            scope="block"
+                            value={blockForm.posterUrl}
+                            onChange={(posterUrl) => setBlockForm((f) => ({ ...f, posterUrl }))}
+                          />
+                        ) : (
+                          <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+                            {blockForm.src
+                              ? 'Este player usa a capa configurada no provedor. A capa legada será preservada ao salvar.'
+                              : 'Envie o vídeo para visualizar e personalizar sua capa.'}
+                          </p>
+                        )}
+                      </Field>
+                    </div>
+                    {blockForm.durationSeconds || blockForm.captions.length > 0 ? (
+                      <p className="text-xs text-muted-foreground">
+                        {blockForm.durationSeconds
+                          ? `Duração: ${blockForm.durationSeconds}s (automática do Vimeo)`
+                          : null}
+                        {blockForm.durationSeconds && blockForm.captions.length > 0 ? ' · ' : null}
+                        {blockForm.captions.length > 0
+                          ? `Transcrição: ${blockForm.captions.map((c) => c.lang).join(', ')}`
+                          : null}
+                      </p>
+                    ) : null}
+                    <details className="rounded-xl border border-border p-4">
+                      <summary className="cursor-pointer text-sm font-medium">
+                        Orientação de produção e detalhes do vídeo
+                      </summary>
+                      <div className="mt-3 space-y-3">
+                        <Field label="Orientação para gravar este vídeo">
+                          <Textarea
+                            maxLength={5000}
+                            value={
+                              draft?.document.plannedVideos.find((v) => v.blockId === blockId)
+                                ?.instructions ?? ''
+                            }
+                            onChange={(e) => {
+                              const current = session.getSnapshot().draft
+                              if (!current) return
+                              const plans = current.document.plannedVideos
+                              session.enqueue({
+                                type: 'planned-videos',
+                                plannedVideos: plans.some((v) => v.blockId === blockId)
+                                  ? plans.map((v) =>
+                                      v.blockId === blockId
+                                        ? { ...v, instructions: e.target.value }
+                                        : v,
+                                    )
+                                  : [
+                                      ...plans,
+                                      { blockId, instructions: e.target.value, videoId: null },
+                                    ],
+                              })
+                            }}
+                          />
+                        </Field>
+                        {blockForm.src && (
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              uploads.remove(blockId)
+                              setBlockForm((f) => ({
+                                ...f,
+                                src: '',
+                                posterUrl: '',
+                                durationSeconds: '',
+                                captions: [],
+                                provider: 'vimeo',
+                              }))
+                            }}
                           >
-                            <Select
-                              id="slevel"
-                              value={blockForm.studioLevel}
-                              onChange={(e) =>
-                                setBlockForm((f) => ({
-                                  ...f,
-                                  studioLevel: e.target.value as BlockLevel,
-                                }))
-                              }
-                            >
-                              {STUDIO_LEVELS.map((l) => (
-                                <option key={l.value} value={l.value}>
-                                  {l.label}
-                                </option>
-                              ))}
-                            </Select>
-                          </Field>
-                          <Field
-                            label="Modos do aluno"
-                            hint="Por padrão só Blocos; ligue a Ponte p/ o aluno alternar blocos ⇄ código."
+                            Retirar vídeo vinculado
+                          </Button>
+                        )}
+                      </div>
+                    </details>
+                  </>
+                ) : null}
+
+                {blockForm.kind === 'image' ? (
+                  <>
+                    <Field
+                      label="Imagem"
+                      hint="Otimizada (WebP) e hospedada no R2 automaticamente."
+                    >
+                      <ImageUploader
+                        scope="block"
+                        allowManualUrl={false}
+                        value={blockForm.url}
+                        onChange={(url) => setBlockForm((f) => ({ ...f, url }))}
+                      />
+                    </Field>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field label="Texto alternativo" htmlFor="balt" hint="Opcional.">
+                        <Input
+                          id="balt"
+                          value={blockForm.alt}
+                          onChange={(e) => setBlockForm((f) => ({ ...f, alt: e.target.value }))}
+                        />
+                      </Field>
+                      <Field label="Legenda" htmlFor="bcap" hint="Opcional.">
+                        <Input
+                          id="bcap"
+                          value={blockForm.caption}
+                          onChange={(e) => setBlockForm((f) => ({ ...f, caption: e.target.value }))}
+                        />
+                      </Field>
+                    </div>
+                  </>
+                ) : null}
+
+                {blockForm.kind === 'audio' ? (
+                  <>
+                    <Field label="Áudio" hint="Hospedado no R2; a duração é detectada do arquivo.">
+                      <AudioUploader
+                        value={blockForm.url || undefined}
+                        onUploaded={({ url, durationSeconds }) =>
+                          setBlockForm((f) => ({
+                            ...f,
+                            url,
+                            durationSeconds:
+                              durationSeconds != null ? String(durationSeconds) : f.durationSeconds,
+                          }))
+                        }
+                      />
+                    </Field>
+                    {blockForm.durationSeconds ? (
+                      <p className="text-xs text-muted-foreground">
+                        Duração: {blockForm.durationSeconds}s (automática do arquivo)
+                      </p>
+                    ) : null}
+                  </>
+                ) : null}
+
+                {blockForm.kind === 'embed' ? (
+                  <Field
+                    label="HTML"
+                    hint="Roda em iframe sandbox na área do aluno — largura total, proporção 16:9."
+                  >
+                    <HtmlCodeEditor
+                      value={blockForm.html}
+                      onChange={(html) => setBlockForm((f) => ({ ...f, html }))}
+                    />
+                  </Field>
+                ) : null}
+
+                {blockForm.kind === 'ebook' ? (
+                  <>
+                    <Field
+                      label="E-book (PDF)"
+                      hint="Escolha um PDF dos arquivos desta aula. O livro não cria um item de download nos materiais."
+                    >
+                      <Select
+                        value={blockForm.ebookAttachmentId}
+                        onChange={(event) =>
+                          setBlockForm((form) => ({
+                            ...form,
+                            ebookAttachmentId: event.target.value,
+                          }))
+                        }
+                      >
+                        <option value="">Selecione um PDF</option>
+                        {lesson?.attachments.filter(isPdfAttachment).map((attachment) => (
+                          <option key={attachment.id} value={attachment.id}>
+                            {attachment.label}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                    <Field
+                      label="Enviar outro PDF"
+                      hint="O arquivo fica disponível na biblioteca desta aula."
+                    >
+                      <FileUploader
+                        accept="application/pdf,.pdf"
+                        label="Enviar PDF (até 200 MB)"
+                        onUploaded={(file) => {
+                          const id = addMaterialAttachment(file)
+                          if (!id) return
+                          setBlockForm((form) => ({
+                            ...form,
+                            ebookAttachmentId: id,
+                            title: form.title.trim()
+                              ? form.title
+                              : file.filename.replace(/\.pdf$/i, ''),
+                          }))
+                        }}
+                      />
+                    </Field>
+                    <p className="text-xs text-muted-foreground">
+                      Para usar o texto deste PDF nas respostas do Zappy, marque “Caderno do aluno
+                      para o Zappy” em Arquivos da aula.
+                    </p>
+                    <Field
+                      label="Título"
+                      htmlFor="btitle"
+                      hint="Opcional — aparece junto ao livro."
+                    >
+                      <Input
+                        id="btitle"
+                        value={blockForm.title}
+                        onChange={(e) => setBlockForm((f) => ({ ...f, title: e.target.value }))}
+                      />
+                    </Field>
+                  </>
+                ) : null}
+
+                {blockForm.kind === 'quiz' ? (
+                  <QuizBuilder
+                    value={blockForm.quiz}
+                    onChange={(quiz) => setBlockForm((f) => ({ ...f, quiz }))}
+                  />
+                ) : null}
+
+                {blockForm.kind === 'pinta' && !blockForm.galleryEnabled ? (
+                  <div className="flex flex-col gap-4">
+                    {/* Tipo e tamanho só na CRIAÇÃO: trocá-los recria o desenho, e na edição isso
+                  apagaria o que a professora já fez. Depois de criado, o botão "Tamanho" DENTRO
+                  do editor é quem muda a tela (sem perder o traço). */}
+                    {editingBlock ? null : (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Field label="O que a criança vai desenhar">
+                          <Select
+                            value={blockForm.pintaAssetKind}
+                            onChange={(e) => {
+                              const kind = e.target.value as PintaLessonAssetKind
+                              const sizes: readonly number[] =
+                                PINTA_LESSON_ASSET_OPTIONS.find((o) => o.kind === kind)?.sizes ?? []
+                              setBlockForm((f) => ({
+                                ...f,
+                                pintaAssetKind: kind,
+                                // O tamanho atual pode não existir no tipo novo → cai no 1º dele.
+                                pintaSize: sizes.includes(f.pintaSize)
+                                  ? f.pintaSize
+                                  : (sizes[0] ?? 32),
+                              }))
+                            }}
                           >
-                            <div className="flex flex-wrap gap-3 pt-1.5">
-                              {(
-                                [
-                                  { value: 'blocks', label: 'Blocos' },
-                                  { value: 'bridge', label: 'Ponte (blocos ⇄ código)' },
-                                ] as { value: IDEMode; label: string }[]
-                              ).map((m) => (
-                                <label key={m.value} className="flex items-center gap-1.5 text-sm">
-                                  <input
-                                    type="checkbox"
-                                    className="size-4 accent-primary"
-                                    checked={blockForm.studioModes.includes(m.value)}
+                            {PINTA_LESSON_ASSET_OPTIONS.map((o) => (
+                              <option key={o.kind} value={o.kind}>
+                                {o.label}
+                              </option>
+                            ))}
+                          </Select>
+                        </Field>
+                        <Field
+                          label="Tamanho da tela"
+                          hint="Telas maiores viram desenhos mais pesados de enviar — por isso a lista para em 256."
+                        >
+                          <Select
+                            value={String(blockForm.pintaSize)}
+                            onChange={(e) =>
+                              setBlockForm((f) => ({ ...f, pintaSize: Number(e.target.value) }))
+                            }
+                          >
+                            {(
+                              PINTA_LESSON_ASSET_OPTIONS.find(
+                                (o) => o.kind === blockForm.pintaAssetKind,
+                              )?.sizes ?? []
+                            ).map((s) => (
+                              <option key={s} value={s}>
+                                {s} x {s}
+                              </option>
+                            ))}
+                          </Select>
+                        </Field>
+                      </div>
+                    )}
+                    <Field
+                      label="Desenho inicial"
+                      hint="Desenhe o ponto de partida da criança. Pode deixar em branco — ela começa do zero na tela que você escolheu."
+                    >
+                      {pintaSeed ? (
+                        <PintaEmbed
+                          key={
+                            editingBlock?.id ??
+                            `new-pinta-${blockForm.pintaAssetKind}-${blockForm.pintaSize}`
+                          }
+                          initialAsset={pintaSeed}
+                          handleRef={pintaHandleRef}
+                          onChange={() => setEditorVersion((v) => v + 1)}
+                        />
+                      ) : (
+                        <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
+                          Este bloco guardou um desenho que não consigo abrir. Crie um bloco novo —
+                          o conteúdo antigo não é recuperável por aqui.
+                        </p>
+                      )}
+                    </Field>
+                    <Field
+                      label="Ferramentas liberadas"
+                      hint="A tela da criança não precisa vir cheia. Comece pelo essencial e libere mais quando a aula pedir."
+                    >
+                      <Select
+                        value={blockForm.pintaToolPreset}
+                        onChange={(e) =>
+                          setBlockForm((f) => ({
+                            ...f,
+                            pintaToolPreset: e.target.value as BlockForm['pintaToolPreset'],
+                          }))
+                        }
+                      >
+                        <option value="essencial">
+                          Só o essencial (desenhar, apagar, pintar, cor)
+                        </option>
+                        <option value="livre">Desenho livre (formas, seleção e ajustes)</option>
+                        <option value="tudo">Tudo (a caixa inteira)</option>
+                      </Select>
+                    </Field>
+                    <Field
+                      label="Desenho contínuo (nome)"
+                      hint="Dê o MESMO nome nas aulas que constroem um único desenho — a criança abre cada aula com o que enviou na anterior. Vazio = aula independente. ⚠️ Todas as aulas da cadeia precisam ser do MESMO tipo de desenho (o salvamento recusa e diz qual aula já usa o nome): quando a criança traz o desenho da aula anterior, é ele que abre, e o tipo e o tamanho vêm dele, não daqui."
+                    >
+                      <Input
+                        value={blockForm.pintaChain}
+                        maxLength={80}
+                        onChange={(e) =>
+                          setBlockForm((f) => ({ ...f, pintaChain: e.target.value }))
+                        }
+                        placeholder="ex.: heroi-do-jogo"
+                      />
+                    </Field>
+                  </div>
+                ) : null}
+
+                {blockForm.kind === 'studio' && !blockForm.galleryEnabled ? (
+                  <div className="flex flex-col gap-4">
+                    {/* ── ESSENCIAL (redesenho 24/07): tipo → projeto → blocos visíveis →
+                  projeto contínuo + última aula. O resto vive em "Configurações
+                  avançadas" (colapsada — abre sozinha na edição fora do default). ── */}
+                    <Field
+                      label="Tipo de atividade"
+                      hint="Blocos e Ponte é o Estúdio clássico; Código Pro é o projeto profissional (o modo Código é automático)."
+                    >
+                      <div className="flex gap-2 pt-1">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={studioKind === 'blocks' ? 'default' : 'outline'}
+                          aria-pressed={studioKind === 'blocks'}
+                          onClick={() => setStudioKind('blocks')}
+                        >
+                          Blocos e Ponte
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={studioKind === 'pro' ? 'default' : 'outline'}
+                          aria-pressed={studioKind === 'pro'}
+                          onClick={() => setStudioKind('pro')}
+                        >
+                          Código Pro
+                        </Button>
+                      </div>
+                    </Field>
+                    <Field
+                      label="Projeto inicial"
+                      hint="Monte o código de partida, instale as extensões e dê o nome do projeto — é o que o aluno abre na aula."
+                    >
+                      <StudioEmbed
+                        key={editingBlock?.id ?? 'new-studio'}
+                        initialProject={
+                          editingBlock && editingBlock.content.kind === 'studio'
+                            ? (editingBlock.content.initialProject as Project)
+                            : null
+                        }
+                        handleRef={studioHandleRef}
+                        onChange={() => setEditorVersion((v) => v + 1)}
+                        professionalAuthoring
+                        hideKindChooser
+                        requestedKind={studioKind}
+                        onKindResolved={(kind) => {
+                          setStudioKind(kind)
+                          setEditorVersion((v) => v + 1)
+                        }}
+                        features={{ terminal: false, ai: false, professional: true, export: false }}
+                      />
+                    </Field>
+                    {studioKind === 'blocks' ? (
+                      <Field
+                        label="Blocos visíveis para o aluno"
+                        hint="Vazio = a paleta curada pelo nível (em Configurações avançadas). Preenchido = o aluno vê SÓ estes blocos (+ as Áreas do projeto). Bom para aulas bem guiadas."
+                      >
+                        <StudioBlocksPicker
+                          value={blockForm.studioAllowBlocks}
+                          onChange={(studioAllowBlocks) =>
+                            setBlockForm((f) => ({ ...f, studioAllowBlocks }))
+                          }
+                        />
+                      </Field>
+                    ) : null}
+                    <Field
+                      label="Projeto contínuo (nome)"
+                      hint="Opcional. Dê o MESMO nome às aulas que constroem um único projeto (ex.: 'jogo-da-cobrinha'): o aluno abre cada aula com o código que enviou na anterior da cadeia. Vazio = aula independente."
+                    >
+                      <Input
+                        value={blockForm.studioChain}
+                        maxLength={80}
+                        placeholder="ex.: jogo-da-cobrinha"
+                        onChange={(e) =>
+                          setBlockForm((f) => ({ ...f, studioChain: e.target.value }))
+                        }
+                      />
+                    </Field>
+                    <div className="flex flex-col gap-1">
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          className="size-4 accent-primary"
+                          checked={blockForm.studioShowcaseEnabled}
+                          onChange={(e) =>
+                            setBlockForm((f) => ({ ...f, studioShowcaseEnabled: e.target.checked }))
+                          }
+                        />
+                        Última aula do projeto — libera o "Compartilhar" no Mural
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        Ligue SÓ no bloco da última aula: aí a criança ganha o botão "Compartilhar"
+                        pra publicar o jogo no Mural (+ link público de jogar). O texto do post
+                        (título/ resumo/capa) fica em Configurações avançadas — em branco, a IA
+                        escreve.
+                      </p>
+                    </div>
+
+                    {/* ── AVANÇADO (colapsada) ── */}
+                    <div className="rounded-lg border border-border">
+                      <button
+                        type="button"
+                        onClick={() => setAdvancedOpen((v) => !v)}
+                        aria-expanded={advancedOpen}
+                        className="flex w-full items-center justify-between px-3 py-2.5 text-sm font-medium"
+                      >
+                        Configurações avançadas
+                        <ChevronDown
+                          className={`size-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`}
+                        />
+                      </button>
+                      {advancedOpen ? (
+                        <div className="flex flex-col gap-4 border-t border-border p-3">
+                          {studioKind === 'blocks' ? (
+                            <>
+                              <StudioConfigClipboard
+                                current={{
+                                  level: blockForm.studioLevel,
+                                  modes: blockForm.studioModes,
+                                  categories: blockForm.studioCategories,
+                                  allowReveal: blockForm.studioAllowReveal,
+                                  allowBlocks: blockForm.studioAllowBlocks,
+                                }}
+                                onPaste={(snap) =>
+                                  setBlockForm((f) => ({
+                                    ...f,
+                                    studioLevel: snap.level,
+                                    studioModes: snap.modes,
+                                    studioCategories: snap.categories,
+                                    studioAllowReveal: snap.allowReveal,
+                                    studioAllowBlocks: snap.allowBlocks,
+                                  }))
+                                }
+                              />
+                              <div className="grid gap-4 sm:grid-cols-2">
+                                <Field
+                                  label="Nível"
+                                  htmlFor="slevel"
+                                  hint="Cura a paleta de blocos por dificuldade (vale quando a lista de blocos visíveis está vazia)."
+                                >
+                                  <Select
+                                    id="slevel"
+                                    value={blockForm.studioLevel}
                                     onChange={(e) =>
                                       setBlockForm((f) => ({
                                         ...f,
-                                        studioModes: e.target.checked
-                                          ? [...f.studioModes, m.value]
-                                          : f.studioModes.filter((x) => x !== m.value),
+                                        studioLevel: e.target.value as BlockLevel,
                                       }))
                                     }
-                                  />
-                                  {m.label}
-                                </label>
-                              ))}
-                              {/* Bloco LEGADO que já libera o modo Código: dá pra remover,
+                                  >
+                                    {STUDIO_LEVELS.map((l) => (
+                                      <option key={l.value} value={l.value}>
+                                        {l.label}
+                                      </option>
+                                    ))}
+                                  </Select>
+                                </Field>
+                                <Field
+                                  label="Modos do aluno"
+                                  hint="Por padrão só Blocos; ligue a Ponte p/ o aluno alternar blocos ⇄ código."
+                                >
+                                  <div className="flex flex-wrap gap-3 pt-1.5">
+                                    {(
+                                      [
+                                        { value: 'blocks', label: 'Blocos' },
+                                        { value: 'bridge', label: 'Ponte (blocos ⇄ código)' },
+                                      ] as { value: IDEMode; label: string }[]
+                                    ).map((m) => (
+                                      <label
+                                        key={m.value}
+                                        className="flex items-center gap-1.5 text-sm"
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          className="size-4 accent-primary"
+                                          checked={blockForm.studioModes.includes(m.value)}
+                                          onChange={(e) =>
+                                            setBlockForm((f) => ({
+                                              ...f,
+                                              studioModes: e.target.checked
+                                                ? [...f.studioModes, m.value]
+                                                : f.studioModes.filter((x) => x !== m.value),
+                                            }))
+                                          }
+                                        />
+                                        {m.label}
+                                      </label>
+                                    ))}
+                                    {/* Bloco LEGADO que já libera o modo Código: dá pra remover,
                                   mas bloco novo nunca vê este checkbox (Código é do Pro). */}
-                              {blockForm.studioModes.includes('code') ? (
-                                <label className="flex items-center gap-1.5 text-sm">
-                                  <input
-                                    type="checkbox"
-                                    className="size-4 accent-primary"
-                                    checked
-                                    onChange={() =>
-                                      setBlockForm((f) => ({
-                                        ...f,
-                                        studioModes: f.studioModes.filter((x) => x !== 'code'),
-                                      }))
-                                    }
-                                  />
-                                  Código (legado)
-                                </label>
-                              ) : null}
-                            </div>
-                          </Field>
-                        </div>
-                        <Field
-                          label="Bloquinhos sempre visíveis"
-                          hint="Categorias liberadas independente do nível (opcional)."
-                        >
-                          <div className="flex flex-wrap gap-3 pt-1.5">
-                            {CORE_CATEGORY_OPTIONS.map((cat) => (
-                              <label key={cat.value} className="flex items-center gap-1.5 text-sm">
+                                    {blockForm.studioModes.includes('code') ? (
+                                      <label className="flex items-center gap-1.5 text-sm">
+                                        <input
+                                          type="checkbox"
+                                          className="size-4 accent-primary"
+                                          checked
+                                          onChange={() =>
+                                            setBlockForm((f) => ({
+                                              ...f,
+                                              studioModes: f.studioModes.filter(
+                                                (x) => x !== 'code',
+                                              ),
+                                            }))
+                                          }
+                                        />
+                                        Código (legado)
+                                      </label>
+                                    ) : null}
+                                  </div>
+                                </Field>
+                              </div>
+                              <Field
+                                label="Bloquinhos sempre visíveis"
+                                hint="Categorias liberadas independente do nível (opcional)."
+                              >
+                                <div className="flex flex-wrap gap-3 pt-1.5">
+                                  {CORE_CATEGORY_OPTIONS.map((cat) => (
+                                    <label
+                                      key={cat.value}
+                                      className="flex items-center gap-1.5 text-sm"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        className="size-4 accent-primary"
+                                        checked={blockForm.studioCategories.includes(cat.value)}
+                                        onChange={(e) =>
+                                          setBlockForm((f) => ({
+                                            ...f,
+                                            studioCategories: e.target.checked
+                                              ? [...f.studioCategories, cat.value]
+                                              : f.studioCategories.filter((x) => x !== cat.value),
+                                          }))
+                                        }
+                                      />
+                                      {cat.label}
+                                    </label>
+                                  ))}
+                                </div>
+                              </Field>
+                              <label className="flex items-center gap-2 text-sm">
                                 <input
                                   type="checkbox"
                                   className="size-4 accent-primary"
-                                  checked={blockForm.studioCategories.includes(cat.value)}
+                                  checked={blockForm.studioAllowReveal}
                                   onChange={(e) =>
                                     setBlockForm((f) => ({
                                       ...f,
-                                      studioCategories: e.target.checked
-                                        ? [...f.studioCategories, cat.value]
-                                        : f.studioCategories.filter((x) => x !== cat.value),
+                                      studioAllowReveal: e.target.checked,
                                     }))
                                   }
                                 />
-                                {cat.label}
+                                Aluno pode revelar blocos avançados
                               </label>
-                            ))}
-                          </div>
-                        </Field>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            className="size-4 accent-primary"
-                            checked={blockForm.studioAllowReveal}
-                            onChange={(e) =>
-                              setBlockForm((f) => ({ ...f, studioAllowReveal: e.target.checked }))
-                            }
-                          />
-                          Aluno pode revelar blocos avançados
-                        </label>
-                      </>
-                    ) : null}
+                            </>
+                          ) : null}
+                          <Field
+                            label="Atividade (auto-correção)"
+                            hint="Opcional. Defina checagens que o editor corrige na hora; com nota de corte, viram gate da aula. Só 'estrutura' é reverificada no servidor."
+                          >
+                            <ActivityBuilder
+                              value={blockForm.studioActivity}
+                              onChange={(studioActivity) =>
+                                setBlockForm((f) => ({ ...f, studioActivity }))
+                              }
+                            />
+                          </Field>
+                          <fieldset className="rounded-lg border border-border p-3">
+                            <legend className="px-1 text-xs text-muted-foreground">
+                              Vitrine do Mural — texto do post
+                            </legend>
+                            {blockForm.studioShowcaseEnabled ? (
+                              <div className="flex flex-col gap-3">
+                                <p className="text-xs text-muted-foreground">
+                                  Texto INICIAL do post (a criança ajusta ao publicar) — em branco,
+                                  a IA escreve a descrição. A capa padrão é a reserva quando o print
+                                  falha.
+                                </p>
+                                <Field label="Título do post" htmlFor="bk-showcase-title">
+                                  <Input
+                                    id="bk-showcase-title"
+                                    value={blockForm.studioShowcaseTitle}
+                                    maxLength={300}
+                                    placeholder="Ex.: Meu jogo da cobrinha"
+                                    onChange={(e) =>
+                                      setBlockForm((f) => ({
+                                        ...f,
+                                        studioShowcaseTitle: e.target.value,
+                                      }))
+                                    }
+                                  />
+                                </Field>
+                                <Field
+                                  label="Resumo do projeto"
+                                  hint="Texto inicial do post (a criança pode ajustar ao publicar). Em branco → a IA gera a descrição."
+                                >
+                                  <Textarea
+                                    value={blockForm.studioShowcaseSummary}
+                                    maxLength={2000}
+                                    placeholder="Um breve resumo do que se trata o projeto."
+                                    onChange={(e) =>
+                                      setBlockForm((f) => ({
+                                        ...f,
+                                        studioShowcaseSummary: e.target.value,
+                                      }))
+                                    }
+                                  />
+                                </Field>
+                                <Field
+                                  label="Capa padrão"
+                                  hint="Usada em projetos web (e como reserva quando o print do jogo falha)."
+                                >
+                                  <ImageUploader
+                                    scope="block"
+                                    allowManualUrl={false}
+                                    value={blockForm.studioShowcaseCover}
+                                    onChange={(url) =>
+                                      setBlockForm((f) => ({ ...f, studioShowcaseCover: url }))
+                                    }
+                                  />
+                                </Field>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-muted-foreground">
+                                Ligue "Última aula do projeto" (acima, no essencial) para configurar
+                                o texto do post.
+                              </p>
+                            )}
+                          </fieldset>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
+
+                {blockForm.kind === 'certificate' ? (
+                  <div className="flex flex-col gap-4">
+                    <p className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                      Pode ficar em <strong>qualquer aula</strong> — o aluno libera o botão de
+                      emitir quando <strong>todas as aulas antes dela</strong> estão concluídas
+                      (aulas depois não contam), então precisa existir{' '}
+                      <strong>ao menos uma aula antes</strong>: na 1ª aula do curso ele nunca
+                      libera. Sai um PDF com número de série e QR de validação pública. ⚠️ A aula do
+                      certificado pode ter conteúdo livre (vídeo/texto de parabéns), mas{' '}
+                      <strong>não</strong> pode ter quiz com nota de corte nem Estúdio (travam a
+                      conclusão e seriam pulados na emissão).
+                    </p>
                     <Field
-                      label="Atividade (auto-correção)"
-                      hint="Opcional. Defina checagens que o editor corrige na hora; com nota de corte, viram gate da aula. Só 'estrutura' é reverificada no servidor."
+                      label="Imagem base do certificado"
+                      hint="Fundo A4 paisagem do curso (logo, título e decoração já desenhados). O conteúdo abaixo é escrito POR CIMA dela — deixe o miolo central livre."
                     >
-                      <ActivityBuilder
-                        value={blockForm.studioActivity}
-                        onChange={(studioActivity) =>
-                          setBlockForm((f) => ({ ...f, studioActivity }))
+                      <ImageUploader
+                        scope="block"
+                        value={blockForm.certBaseImageUrl}
+                        onChange={(certBaseImageUrl) =>
+                          setBlockForm((f) => ({ ...f, certBaseImageUrl }))
+                        }
+                      />
+                    </Field>
+                    <Field
+                      label="Linha de abertura"
+                      htmlFor="cert-intro"
+                      hint='Acima do nome. Vazio usa "Certificamos que o aluno".'
+                    >
+                      <Input
+                        id="cert-intro"
+                        value={blockForm.certIntroLine}
+                        maxLength={200}
+                        placeholder="Certificamos que o aluno"
+                        onChange={(e) =>
+                          setBlockForm((f) => ({ ...f, certIntroLine: e.target.value }))
+                        }
+                      />
+                    </Field>
+                    <p className="text-xs text-muted-foreground">
+                      O <strong>nome do aluno</strong> entra sozinho na emissão (perfil da criança
+                      no Kids, conta no adulto). Logo abaixo dele vai a <strong>mensagem</strong>{' '}
+                      (frase e/ou parágrafo) — <strong>obrigatória</strong>.
+                    </p>
+                    <Field
+                      label="Frase do curso"
+                      htmlFor="cert-phrase"
+                      hint="Logo abaixo do nome — o que o aluno concluiu (ex.: 'concluiu o Desafio do Primeiro Jogo em 5 dias')."
+                    >
+                      <Input
+                        id="cert-phrase"
+                        value={blockForm.certCoursePhrase}
+                        maxLength={300}
+                        placeholder="concluiu o Desafio do Primeiro Jogo em 5 dias"
+                        onChange={(e) =>
+                          setBlockForm((f) => ({ ...f, certCoursePhrase: e.target.value }))
+                        }
+                      />
+                    </Field>
+                    <Field
+                      label="Parágrafo"
+                      hint="Abaixo da frase — explica o que o aluno fez (até ~4 linhas no PDF)."
+                    >
+                      <Textarea
+                        value={blockForm.certBodyText}
+                        maxLength={2000}
+                        placeholder="Durante o desafio, criou seu primeiro jogo do zero, aprendeu lógica de programação e publicou o projeto."
+                        onChange={(e) =>
+                          setBlockForm((f) => ({ ...f, certBodyText: e.target.value }))
                         }
                       />
                     </Field>
                     <fieldset className="rounded-lg border border-border p-3">
                       <legend className="px-1 text-xs text-muted-foreground">
-                        Vitrine do Mural — texto do post
+                        Assinaturas (até 2)
                       </legend>
-                      {blockForm.studioShowcaseEnabled ? (
-                        <div className="flex flex-col gap-3">
-                          <p className="text-xs text-muted-foreground">
-                            Texto INICIAL do post (a criança ajusta ao publicar) — em branco, a IA
-                            escreve a descrição. A capa padrão é a reserva quando o print falha.
-                          </p>
-                          <Field label="Título do post" htmlFor="bk-showcase-title">
-                            <Input
-                              id="bk-showcase-title"
-                              value={blockForm.studioShowcaseTitle}
-                              maxLength={300}
-                              placeholder="Ex.: Meu jogo da cobrinha"
-                              onChange={(e) =>
-                                setBlockForm((f) => ({ ...f, studioShowcaseTitle: e.target.value }))
-                              }
-                            />
-                          </Field>
-                          <Field
-                            label="Resumo do projeto"
-                            hint="Texto inicial do post (a criança pode ajustar ao publicar). Em branco → a IA gera a descrição."
-                          >
-                            <Textarea
-                              value={blockForm.studioShowcaseSummary}
-                              maxLength={2000}
-                              placeholder="Um breve resumo do que se trata o projeto."
-                              onChange={(e) =>
-                                setBlockForm((f) => ({
-                                  ...f,
-                                  studioShowcaseSummary: e.target.value,
-                                }))
-                              }
-                            />
-                          </Field>
-                          <Field
-                            label="Capa padrão"
-                            hint="Usada em projetos web (e como reserva quando o print do jogo falha)."
-                          >
-                            <ImageUploader
-                              scope="block"
-                              allowManualUrl={false}
-                              value={blockForm.studioShowcaseCover}
-                              onChange={(url) =>
-                                setBlockForm((f) => ({ ...f, studioShowcaseCover: url }))
-                              }
-                            />
-                          </Field>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-muted-foreground">
-                          Ligue "Última aula do projeto" (acima, no essencial) para configurar o
-                          texto do post.
-                        </p>
-                      )}
+                      <p className="mb-2 text-xs text-muted-foreground">
+                        A data de conclusão é automática (a da emissão). A <strong>imagem</strong> é
+                        a assinatura (o rabisco, acima da linha); o <strong>nome</strong> aparece
+                        abaixo da linha como rótulo.
+                      </p>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {([1, 2] as const).map((n) => {
+                          const urlKey = n === 1 ? 'certSig1Url' : 'certSig2Url'
+                          const nameKey = n === 1 ? 'certSig1Name' : 'certSig2Name'
+                          return (
+                            <div key={n} className="flex flex-col gap-2">
+                              <Field
+                                label={`Assinatura ${n}`}
+                                hint="PNG/JPG (fundo transparente fica melhor)."
+                              >
+                                <ImageUploader
+                                  scope="block"
+                                  value={blockForm[urlKey]}
+                                  onChange={(url) => setBlockForm((f) => ({ ...f, [urlKey]: url }))}
+                                />
+                              </Field>
+                              <Input
+                                value={blockForm[nameKey]}
+                                maxLength={120}
+                                placeholder={
+                                  n === 1
+                                    ? 'Nome (ex.: Helena Oliveira)'
+                                    : 'Nome (ex.: Julio Felipe)'
+                                }
+                                onChange={(e) =>
+                                  setBlockForm((f) => ({ ...f, [nameKey]: e.target.value }))
+                                }
+                              />
+                            </div>
+                          )
+                        })}
+                      </div>
                     </fieldset>
                   </div>
                 ) : null}
               </div>
-            </div>
-          ) : null}
-
-          {blockForm.kind === 'certificate' ? (
-            <div className="flex flex-col gap-4">
-              <p className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-                Pode ficar em <strong>qualquer aula</strong> — o aluno libera o botão de emitir
-                quando <strong>todas as aulas antes dela</strong> estão concluídas (aulas depois não
-                contam), então precisa existir <strong>ao menos uma aula antes</strong>: na 1ª aula
-                do curso ele nunca libera. Sai um PDF com número de série e QR de validação pública.
-                ⚠️ A aula do certificado pode ter conteúdo livre (vídeo/texto de parabéns), mas{' '}
-                <strong>não</strong> pode ter quiz com nota de corte nem Estúdio (travam a conclusão
-                e seriam pulados na emissão).
-              </p>
-              <Field
-                label="Imagem base do certificado"
-                hint="Fundo A4 paisagem do curso (logo, título e decoração já desenhados). O conteúdo abaixo é escrito POR CIMA dela — deixe o miolo central livre."
-              >
-                <ImageUploader
-                  scope="block"
-                  value={blockForm.certBaseImageUrl}
-                  onChange={(certBaseImageUrl) => setBlockForm((f) => ({ ...f, certBaseImageUrl }))}
-                />
-              </Field>
-              <Field
-                label="Linha de abertura"
-                htmlFor="cert-intro"
-                hint='Acima do nome. Vazio usa "Certificamos que o aluno".'
-              >
-                <Input
-                  id="cert-intro"
-                  value={blockForm.certIntroLine}
-                  maxLength={200}
-                  placeholder="Certificamos que o aluno"
-                  onChange={(e) => setBlockForm((f) => ({ ...f, certIntroLine: e.target.value }))}
-                />
-              </Field>
-              <p className="text-xs text-muted-foreground">
-                O <strong>nome do aluno</strong> entra sozinho na emissão (perfil da criança no
-                Kids, conta no adulto). Logo abaixo dele vai a <strong>mensagem</strong> (frase e/ou
-                parágrafo) — <strong>obrigatória</strong>.
-              </p>
-              <Field
-                label="Frase do curso"
-                htmlFor="cert-phrase"
-                hint="Logo abaixo do nome — o que o aluno concluiu (ex.: 'concluiu o Desafio do Primeiro Jogo em 5 dias')."
-              >
-                <Input
-                  id="cert-phrase"
-                  value={blockForm.certCoursePhrase}
-                  maxLength={300}
-                  placeholder="concluiu o Desafio do Primeiro Jogo em 5 dias"
-                  onChange={(e) =>
-                    setBlockForm((f) => ({ ...f, certCoursePhrase: e.target.value }))
-                  }
-                />
-              </Field>
-              <Field
-                label="Parágrafo"
-                hint="Abaixo da frase — explica o que o aluno fez (até ~4 linhas no PDF)."
-              >
-                <Textarea
-                  value={blockForm.certBodyText}
-                  maxLength={2000}
-                  placeholder="Durante o desafio, criou seu primeiro jogo do zero, aprendeu lógica de programação e publicou o projeto."
-                  onChange={(e) => setBlockForm((f) => ({ ...f, certBodyText: e.target.value }))}
-                />
-              </Field>
-              <fieldset className="rounded-lg border border-border p-3">
-                <legend className="px-1 text-xs text-muted-foreground">Assinaturas (até 2)</legend>
-                <p className="mb-2 text-xs text-muted-foreground">
-                  A data de conclusão é automática (a da emissão). A <strong>imagem</strong> é a
-                  assinatura (o rabisco, acima da linha); o <strong>nome</strong> aparece abaixo da
-                  linha como rótulo.
-                </p>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {([1, 2] as const).map((n) => {
-                    const urlKey = n === 1 ? 'certSig1Url' : 'certSig2Url'
-                    const nameKey = n === 1 ? 'certSig1Name' : 'certSig2Name'
-                    return (
-                      <div key={n} className="flex flex-col gap-2">
-                        <Field
-                          label={`Assinatura ${n}`}
-                          hint="PNG/JPG (fundo transparente fica melhor)."
-                        >
-                          <ImageUploader
-                            scope="block"
-                            value={blockForm[urlKey]}
-                            onChange={(url) => setBlockForm((f) => ({ ...f, [urlKey]: url }))}
-                          />
-                        </Field>
-                        <Input
-                          value={blockForm[nameKey]}
-                          maxLength={120}
-                          placeholder={
-                            n === 1 ? 'Nome (ex.: Helena Oliveira)' : 'Nome (ex.: Julio Felipe)'
-                          }
-                          onChange={(e) =>
-                            setBlockForm((f) => ({ ...f, [nameKey]: e.target.value }))
-                          }
-                        />
-                      </div>
-                    )
-                  })}
-                </div>
-              </fieldset>
-            </div>
-          ) : null}
-        </div>
-      </Dialog>
-
-      <Dialog
-        open={attOpen}
-        onClose={() => setAttOpen(false)}
-        title={editingAtt ? 'Editar anexo' : 'Adicionar anexo'}
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setAttOpen(false)} disabled={busy}>
-              Cancelar
+            </fieldset>
+            <Button variant="outline" onClick={() => void closeBlock()}>
+              Voltar ao percurso
             </Button>
-            <Button onClick={saveAtt} disabled={busy}>
-              {busy ? <Spinner /> : null}
-              Salvar
-            </Button>
-          </>
-        }
-      >
-        <div className="flex flex-col gap-4">
-          <Field
-            label="Arquivo"
-            hint="Envie o arquivo (preenche URL/tipo/tamanho) ou informe a URL."
-          >
-            <FileUploader
-              onUploaded={({ url, fileType, sizeBytes, filename }) =>
-                setAttForm((f) => ({
-                  ...f,
-                  url,
-                  fileType,
-                  sizeBytes: String(sizeBytes),
-                  label: f.label.trim() ? f.label : filename,
-                }))
+          </section>
+        )}
+
+        <Dialog
+          open={reviewOpen}
+          onClose={() => setReviewOpen(false)}
+          title="Revisar para publicar"
+          className="max-w-3xl"
+          footer={
+            <Button
+              disabled={
+                busy || activeUpload || issues.length > 0 || draftState.status === 'conflict'
               }
-            />
-          </Field>
-          <Field label="Rótulo" htmlFor="alabel">
-            <Input
-              id="alabel"
-              value={attForm.label}
-              onChange={(e) => setAttForm((f) => ({ ...f, label: e.target.value }))}
-            />
-          </Field>
-          <Field label="URL" htmlFor="aurl">
-            <Input
-              id="aurl"
-              value={attForm.url}
-              onChange={(e) => setAttForm((f) => ({ ...f, url: e.target.value }))}
-            />
-          </Field>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Tipo do arquivo" htmlFor="aft" hint="Opcional (ex.: application/pdf).">
-              <Input
-                id="aft"
-                value={attForm.fileType}
-                onChange={(e) => setAttForm((f) => ({ ...f, fileType: e.target.value }))}
-              />
-            </Field>
-            <Field label="Tamanho (bytes)" htmlFor="asz" hint="Opcional.">
-              <Input
-                id="asz"
-                type="number"
-                min={0}
-                value={attForm.sizeBytes}
-                onChange={(e) => setAttForm((f) => ({ ...f, sizeBytes: e.target.value }))}
-              />
-            </Field>
+              onClick={() => {
+                void (async () => {
+                  if (await publish()) setReviewOpen(false)
+                })()
+              }}
+            >
+              {busy && <Spinner />}Publicar aula
+            </Button>
+          }
+        >
+          <div className="space-y-4">
+            <p className="text-sm">
+              {activeUpload && (
+                <span className="mb-2 block">
+                  Há vídeos sendo enviados ou processados. Você pode continuar editando e publicar
+                  quando terminarem.
+                </span>
+              )}
+              {issues.length
+                ? `${issues.length} pendência(s) impedem a publicação.`
+                : 'Sem pendências detectadas na configuração. Confira também a prévia da aula.'}
+            </p>
+            {issues.map((issue) => (
+              <div
+                key={`${issue.sectionId ?? issue.blockId ?? 'lesson'}-${issue.message}`}
+                className="rounded-xl border border-destructive/20 p-3"
+              >
+                <p className="text-xs text-muted-foreground">
+                  {draft?.document.sections.find(
+                    (s) =>
+                      s.id === issue.sectionId ||
+                      Boolean(issue.blockId && s.blockIds.includes(issue.blockId)),
+                  )?.title ?? 'Dados ou materiais da aula'}
+                </p>
+                <p className="my-2 text-sm">{issue.message}</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setReviewOpen(false)
+                    if (issue.blockId) {
+                      const block = lesson?.blocks.find((b) => b.id === issue.blockId)
+                      if (block) {
+                        openEditBlock(block)
+                        return
+                      }
+                    }
+                    if (issue.sectionId) {
+                      setArea('sections')
+                      setFocusRequest({ sectionId: issue.sectionId, sequence: Date.now() })
+                    } else setArea('data')
+                  }}
+                >
+                  Revisar este item
+                </Button>
+              </div>
+            ))}
+            {draft && lessonEditorialWarnings(draft.document).length > 0 && (
+              <details>
+                <summary className="cursor-pointer text-sm font-medium">
+                  Sugestões didáticas (não impedem publicar)
+                </summary>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm">
+                  {lessonEditorialWarnings(draft.document).map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              </details>
+            )}
           </div>
-        </div>
-      </Dialog>
-    </div>
+        </Dialog>
+        <Dialog
+          open={attOpen}
+          onClose={() => setAttOpen(false)}
+          title={editingAtt ? 'Editar arquivo da aula' : 'Adicionar arquivo da aula'}
+          footer={
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setAttOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={saveAtt}>Salvar arquivo</Button>
+            </div>
+          }
+        >
+          <div className="flex flex-col gap-4">
+            <Field
+              label="Arquivo"
+              hint="Envie uma vez e escolha onde usar nesta aula. PDFs são entregues com marca d’água."
+            >
+              <FileUploader
+                onUploaded={({ url, fileType, sizeBytes, filename }) =>
+                  setAttForm((f) => ({
+                    ...f,
+                    url,
+                    fileType,
+                    sizeBytes: String(sizeBytes),
+                    label: f.label.trim() ? f.label : filename,
+                    zappyStudentNotebook:
+                      f.zappyStudentNotebook && isPdfAttachment({ label: filename, url, fileType }),
+                  }))
+                }
+              />
+            </Field>
+            <Field label="Rótulo" htmlFor="alabel">
+              <Input
+                id="alabel"
+                value={attForm.label}
+                onChange={(e) => setAttForm((f) => ({ ...f, label: e.target.value }))}
+              />
+            </Field>
+            {attForm.url ? (
+              <p className="truncate text-xs text-muted-foreground">
+                Arquivo enviado: {attForm.url}
+              </p>
+            ) : null}
+            {isPdfAttachment(attForm) ? (
+              <label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={attForm.zappyStudentNotebook}
+                  onChange={(event) =>
+                    setAttForm((form) => ({ ...form, zappyStudentNotebook: event.target.checked }))
+                  }
+                  className="mt-0.5 size-4 accent-primary"
+                />
+                <span>
+                  <strong className="block">Caderno do aluno para o Zappy</strong>
+                  <span className="text-muted-foreground">
+                    Autoriza o Zappy a usar o texto deste PDF nas respostas. Não obriga o aluno a
+                    baixá-lo.
+                  </span>
+                </span>
+              </label>
+            ) : null}
+          </div>
+        </Dialog>
+      </div>
+    </LessonVideoUploads>
   )
 }
 
-// ── Bloco arrastável (card com handle, tipo e resumo) ────────────────────────
-function SortableBlockItem({
-  block,
-  canWrite,
-  onEdit,
-  onDelete,
-}: {
-  block: BlockView
-  canWrite: boolean
-  onEdit: () => void
-  onDelete: () => void
-}) {
-  const { attributes, listeners, setNodeRef, style } = useSortableItem(block.id)
-
-  return (
-    <Card ref={setNodeRef} style={style} className="flex items-center justify-between gap-3 p-3">
-      <div className="flex min-w-0 items-center gap-3">
-        {canWrite ? (
-          <button
-            type="button"
-            className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
-            aria-label="Arrastar bloco"
-            {...attributes}
-            {...listeners}
-          >
-            <GripVertical className="size-4" />
-          </button>
-        ) : null}
-        <Badge variant="outline">{kindLabel(block.kind)}</Badge>
-        <span className="truncate text-sm text-muted-foreground">{blockSummary(block)}</span>
-      </div>
-      <div className="flex shrink-0 items-center gap-1">
-        {canWrite ? (
-          <>
-            <Button variant="ghost" size="sm" onClick={onEdit}>
-              <Pencil className="size-4" /> Editar
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onDelete}>
-              Excluir
-            </Button>
-          </>
-        ) : null}
-      </div>
-    </Card>
-  )
-}
-
-// ── Anexo arrastável (card com handle, rótulo e URL) ─────────────────────────
+// ── Arquivo arrastável (card com handle, rótulo e usos) ───────────────────────
 function SortableAttachmentItem({
   attachment,
   canWrite,
+  usages,
   onEdit,
   onDelete,
 }: {
   attachment: AttachmentView
   canWrite: boolean
+  usages: string[]
   onEdit: () => void
   onDelete: () => void
 }) {
@@ -1914,6 +3171,17 @@ function SortableAttachmentItem({
         <div className="min-w-0">
           <div className="truncate text-sm font-medium">{attachment.label}</div>
           <div className="truncate text-xs text-muted-foreground">{attachment.url}</div>
+          <div className="mt-1 flex flex-wrap gap-1">
+            {usages.length ? (
+              [...new Set(usages)].map((use) => (
+                <Badge key={use} variant="muted">
+                  {use}
+                </Badge>
+              ))
+            ) : (
+              <span className="text-xs text-muted-foreground">Ainda sem uso nesta aula</span>
+            )}
+          </div>
         </div>
       </div>
       {canWrite ? (

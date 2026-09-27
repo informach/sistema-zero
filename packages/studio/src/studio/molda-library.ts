@@ -3,7 +3,7 @@ import { createContext, useContext } from 'react'
 /**
  * TRAZER DO MOLDA — capacidade OPCIONAL do host (community-kids) para o Estúdio
  * Completo: listar TODAS as criações da galeria do Molda (modelos `.glb`, texturas
- * `.png` e céus `.hdr`) e importar uma por id, direto do painel de Imagens. É o
+ * `.png` e céus `.hdr`) e importar uma por id, direto da aba "Modelos 3D". É o
  * mesmo fluxo PULL do "Trazer do Pinta": a criança não precisa lembrar o que já
  * "enviou" — ela abre a galeria de lá daqui.
  *
@@ -63,14 +63,18 @@ export type StudioMoldaImportResult =
       ok: false
       error: string
       /** Razão tipada opcional — `not-found` faz a modal remover o card. */
-      code?: 'not-found' | 'too-big' | 'encode-failed'
+      code?: 'not-found' | 'too-big' | 'encode-failed' | 'needs-review'
+      review?: { token: string; losses: string[] }
     }
 
 export interface StudioMoldaLibraryAdapter {
   /** Todas as criações do perfil, mais recente primeiro. Rejeição → erro na modal. */
   list(): Promise<StudioMoldaCreationSummary[]>
   /** Exporta + grava na biblioteca pessoal; o Studio faz o `addAsset` com o retorno. */
-  import(creationId: string): Promise<StudioMoldaImportResult>
+  import(
+    creationId: string,
+    options?: { acceptedReview?: string },
+  ): Promise<StudioMoldaImportResult>
 }
 
 const StudioMoldaLibraryContext = createContext<StudioMoldaLibraryAdapter | null>(null)

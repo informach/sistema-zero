@@ -31,21 +31,295 @@ entrou nos DOIS cabeçalhos (home e detalhe do plano). Ele é a receita COMPARTI
 `.sz-tool-btn-menu` de **`@sistemazero/ui/tool-chrome.css`** (44px, borda 2px, fundo de painel,
 sombra dura; "menu escondido" = borda e tinta suaves do acento via `[aria-pressed="true"]`), a
 MESMA do Pinta e do Estúdio (o círculo de 46px `.pensa-round-btn` da primeira versão SAIU no lote
-do mesmo dia: ela reclamou que os três tinham saído diferentes). É uma **ABA colada na linha da
-sidebar** (cantos quadrados à esquerda, sem borda esquerda, margem negativa `--sz-tool-inset`):
-`.pensa-home-header` e `.pensa-project-header` declaram `--sz-tool-inset: 24px` (16px no
-contêiner ≤ 560px), o respiro lateral deles. O
-"voltar" do detalhe usa `.sz-tool-btn.sz-tool-btn--icon` (`ArrowLeftIcon` inline) para não
-destoar do menu ao lado. ⚠️ Nenhuma regra SEM camada pode alcançar esses botões (a antiga
+do mesmo dia: ela reclamou que os três tinham saído diferentes). ⚠️ Foi uma **ABA colada na linha
+da sidebar** até 11/09/2026; desde as telas-modelo é o QUADRADO de cantos de 12px dentro do
+conteúdo (40px no mouse, 44px no toque), e o `--sz-tool-inset` saiu dos dois cabeçalhos. O
+"voltar" do detalhe usa o quadrado `.sz-tool-icon-btn` (`ArrowLeftIcon` inline; até 11/09/2026 era
+o `.sz-tool-btn.sz-tool-btn--icon`, que saiu da folha na limpeza do lote) para não destoar do menu
+ao lado. ⚠️ Nenhuma regra SEM camada pode alcançar esses botões (a antiga
 `.pensa-project-header > button` morreu, e o `:focus-visible` global tem `:not(.sz-tool-*)`),
 senão ela vence a receita em `@layer components`. O contrato é `PensaHostChrome` (`core/types.ts`,
 só `menu: {hidden, label, onToggle} | null` — o Pensa persiste no servidor, então não há selo de
 nuvem) e chega pelo **`PensaHostChromeProvider`** (exportado no index, com `usePensaHostChrome`),
-que o kids renderiza em volta do `<PensaApp>`; sem Provider (não há playground) nada aparece. Na
-home o botão mora no `.pensa-home-lead` (âncora do teste do host), antes do h1; no detalhe ele vem
-antes do "voltar" e o bloco do título é `.pensa-project-title` (por classe, não por `nth-child`).
+que o kids renderiza em volta do `<PensaApp>`; sem Provider (os testes, o playground sem
+`?host=1`) nada aparece. Desde 11/09/2026 o contrato também traz `back` ("Voltar para Criar"):
+a home desenha o `HostBackLink` (o quadrado `.sz-tool-back`, `<a href>`: clique simples chama
+`onNavigate`, com Ctrl/Cmd/Shift/Alt fica com o navegador) logo DEPOIS do menu, e o detalhe o
+ignora (lá o "voltar" leva à home). Na home os dois moram no `.sz-tool-header__nav` dentro do
+`.pensa-home-lead` (âncora do teste do host), antes do h1; no detalhe o menu vem antes do
+"voltar" e o bloco do título é `.pensa-project-title` (por classe, não por `nth-child`).
 Os cabeçalhos rolam com o conteúdo, como nas galerias do Pinta/Molda. Testes:
 `components/PensaApp.hostChrome.test.tsx`, `styles/tokens.test.ts`.
+
+## A home das telas-modelo (11/09/2026)
+
+A home "Meus projetos" segue a imagem-modelo dela (plano `o-design-da-plataforma-composed-gray.md`,
+lote 7, passo 7), no MESMO desenho das galerias do Estúdio e do Pinta: três FAIXAS de borda a borda
+(`.pensa-home.sz-tool-bands`, receitas de `@sistemazero/ui/tool-chrome.css`) que rolam juntas dentro
+do `.pensa-planner`.
+- **creme** (`<header>`): [menu][voltar] + o selo amarelo **"Pensa · sua oficina de planos"**
+  (`.pensa-home-chip`, lâmpada) em cima do h1 `.sz-tool-title` "Meus projetos" e do subtítulo;
+  à direita a pílula primária **"+ Novo plano"** (nome exato mantido para os testes). O campo de
+  criar sob demanda mora nesta faixa, 28px abaixo, como pílula branca; "Criar meu plano" e
+  "Cancelar" viraram pílulas. No celular (`@container 560`) o [menu][voltar] fica numa linha só
+  dele (ao lado deles o selo quebrava em duas linhas).
+- **céu** (região "Meus planos", h2 `.pensa-sr-only`): a grade `.pensa-project-grid` em **3
+  colunas, 2 no `@container 820` e 1 no `560`** (o `auto-fill` de 240px saiu), com o **cartão do
+  plano** (`PlanCard`, um `<article>`): alvo + nome (h3 `.pensa-project-card__name` com
+  `.sz-tool-card-title`, 22px), selos "Versão N" e "Plano aprovado" (menta) ou "Etapa X" (âmbar do
+  aviso, a tinta que passa no contraste), a **trilha Z-E-R-O** em ladrilhos (`.pensa-zero-track`:
+  vencida = azul cheio, atual = fio azul, futura = apagada; o nome de cada etapa em `sr-only`), a
+  linha do andamento com a bandeirinha ("Etapa atual: …" azul / "Todas as 4 etapas concluídas"
+  verde), "Editado há…" (`core/relativeTime.ts`, `Intl.RelativeTimeFormat` pt-BR: "agora" e "ontem"
+  como palavra, o resto em número; nada de "anteontem"/"semana passada") e o **"Continuar"** em
+  pílula primária; o nome acessível é "Continuar o plano <nome>" (os testes acham o plano por ele).
+  ⭐⭐ **O cartão NÃO é clicável (19/09/2026, decisão dela).** O "Continuar" tinha um `::after` de
+  `inset: -1px` que esticava a área clicável até a borda do cartão, e o `<article>` declarava
+  `cursor: pointer` para o ponteiro não alternar dentro dela. Ela relatou o contrário do que o
+  código dizia — *"estou clicando no card e não está acontecendo nada; só quando clico em
+  continuar que abre o plano"* — e pediu a mãozinha só nos botões de ação. Saíram os três de uma
+  vez: a camada, o `cursor` do cartão e o `position`/`z-index` da lixeira (que existiam só para
+  ela escapar da camada). Hoje quem abre é o botão e quem apaga é a lixeira.
+  ⚠️⚠️ **Isto REVOGA as duas correções anteriores do "cursor tremendo"** (o `inset: -1px` de 17/09
+  e o `cursor` no ancestral de 18/09), e o conserto novo mata a classe por um caminho mais forte:
+  sem camada esticada não existem duas fronteiras arredondadas para o ponteiro atravessar, então a
+  alternância seta↔mãozinha deixa de ter CAUSA em vez de ser compensada. Quem voltar a esticar a
+  área clicável reabre as três coisas juntas.
+  ⭐ **Medido no playground (:5201) antes e depois**, com `elementFromPoint` + `getComputedStyle`:
+  hoje o corpo do cartão responde `.pensa-project-card` com `cursor: auto` em todos os pontos
+  (centro, nome, as quatro bordas) e clicar no meio não abre nada; reinjetando a folha de ontem
+  (a camada mais o cursor), o MESMO ponto responde o botão, `pointer`, e o clique ABRE o plano.
+  Ou seja: a camada estava VIVA no código, e o que ela via era um chunk velho ou um ambiente
+  atrás. O `PensaApp.home.test.tsx` passou a travar o comportamento (clicar no `<article>` não
+  navega), que até aqui não tinha rede nenhuma.
+  ⚠️ O "Continuar" continua SEM andar no hover e no aperto, agora por outro motivo: ele vive nas
+  faixas, onde a receita sobe a peça 1px, e 1px numa borda longa é o que faz o ponteiro parado
+  nela entrar e sair do hover (a mesma razão do cartão "Novo plano", no `tool-chrome.css`).
+  O **cartão "Novo plano"**
+  (`.sz-tool-card--new`) FECHA a grade: abre o mesmo campo lá em cima e o foco volta a QUEM abriu
+  (`openerRef`); com o campo já aberto só leva o foco até ele. Rodapé "Mostrando N planos". Sem
+  planos: o convite `.pensa-empty` em cartão branco e o campo já aberto (sem o cartão "Novo plano").
+- **lilás**: "Cada Cartão de Criação vai para o lugar certo" (`.sz-tool-section-title`) + as três
+  oficinas (Estúdio, Pinta, Molda) em cartões INFORMATIVOS com o ladrilho da assinatura
+  (`.sz-tool-tile--estudio|pinta|molda`), sem link nem o selo "N cartões" da imagem (a lista não
+  traz a contagem).
+- ⚠️⚠️ **As regras de ELEMENTO do `pensa.css` não têm camada e venciam as receitas**: `font:
+  inherit` (apagava o peso das pílulas), `button { min-height: 44px }` (o quadrado do menu saía
+  40x44), a regra dos títulos (tirava o 800 do `.sz-tool-title`) e o anel de foco. Todas agora
+  deixam de fora `:where(:not([class*="sz-tool-"]))`, sem somar especificidade; o `tokens.test.ts`
+  trava que nenhuma regra de botão/título/foco nova apareça sem a exclusão. Os títulos PRÓPRIOS do
+  Pensa seguem em 700; os das telas-modelo vêm da receita em 800 (o `headingFont.test.ts` foi
+  reescrito para isso). Ícones de traço inline em `components/icons.tsx` (o pacote não depende do
+  `lucide-react`).
+- **Playground** (`packages/pensa/playground`, `bun run dev` = Vite em **:5201**, entrada
+  `pensa-playground` no `.claude/launch.json`): monta o `<PensaApp>` com um SERVIDOR EM MEMÓRIA
+  (o "Runo" aprovado com cartões para as três oficinas e o "Guardiões da Lua" na etapa R; criar
+  funciona e o chat do Zappy responde em pedaços); `?host=1` liga o menu e a seta, `?theme=dark` o
+  escuro e `?vazio=1` o primeiro uso. O que ele não simula responde com erro legível. As folhas
+  entram na ordem do host (theme-kids, tool-chrome, pensa.css; o teste de ordem do `@sistemazero/ui`
+  lê o arquivo) e não há Tailwind (o Pensa não usa). Deps de dev: `vite` e `@vitejs/plugin-react`.
+- Medido no playground a 1172px (= 1440 com o menu de 268): faixa creme de 189px (a imagem tem
+  ~200), cartões de 327x267 (332x273), quadrados de 40px; escuro, 375px e o vazio conferidos.
+- Testes: `components/PensaApp.home.test.tsx` (as faixas, o cartão do plano, o "Continuar", o
+  cartão "Novo plano" e o foco, o vazio), `core/relativeTime.test.ts`,
+  `components/PensaApp.hostChrome.test.tsx` (a seta), `styles/tokens.test.ts` e
+  `styles/headingFont.test.ts`.
+
+## Renomear o plano (26/09/2026)
+
+Pedido dela: editar o nome do projeto. O servidor já aceitava `PATCH /projects/:id {name}`
+(2..120, trim) nas cinco camadas; só faltava a tela. Só o DONO renomeia (quem entra em equipe
+não vê o lápis, ver "Equipe").
+
+- **Onde:** no cabeçalho do detalhe (`ProjectHeader` → `ProjectNameTitle`), o lápis
+  (`PencilIcon`, inline como os outros) ao lado do `<h1>`, no quadrado compartilhado
+  `.sz-tool-icon-btn` (`aria-label` "Renomear o plano <nome>"). Molde do `ProjectNameField` do
+  Estúdio: clicar troca o título pelo campo "Nome do plano" com o texto selecionado; Enter ou
+  sair do campo grava, Esc desiste (`cancelledRef` segura o `blur` tardio), e o foco volta ao
+  lápis (`returnFocusRef`). Nome com menos de 2 letras ou igual ao atual só fecha, sem chamada.
+  ⚠️ O lápis é IRMÃO do h1, nunca filho: dentro dele entraria no nome acessível do título e os
+  `getByRole('heading', { name })` dos testes quebrariam.
+- **Otimista:** `renameProject` troca o `detail.name` na hora, manda o PATCH fora do `run` (não
+  trava o `busy` global) e, em erro, devolve o nome anterior com o `<Alert>` da faixa creme.
+  ⚠️ O lápis NÃO some nem trava enquanto grava: é para onde o foco volta, e um botão escondido
+  ou desabilitado não recebe foco (a primeira versão escondia e o foco se perdia).
+- **CSS:** `.pensa-project-title__row` (flex, gap 8) e `.pensa-planner .pensa-title-input`
+  (a receita do título das telas-modelo: família de exibição em 800, 44px, teto de 32rem para
+  não engolir os créditos e a pílula). Nenhuma regra de elemento nova; nenhum `cursor`.
+  ⚠️ A cor cai em `var(--sz-tool-ink, var(--pz-ink))`: a primeira versão caía em `--pz-text`,
+  um token que NUNCA existiu (full review de 26/09/2026); o `tokens.test.ts` trava o nome.
+- Playground: `PATCH /projects/:id` simulado. Testes: `components/PensaApp.rename.test.tsx`.
+
+## Equipe do plano (26/09/2026)
+
+Pedido dela: planejar em parceria. Um plano pode ser dividido com outro perfil pelo **código do
+projeto** (decisões dela: convite por código, e os dois precisam ter o Pensa). Quem entra vê e
+mexe em TUDO do plano; só o dono renomeia, apaga, gera o código e tira gente. As regras (tetos,
+erros, quem é dono) são do members; o contrato está em `docs/pensa-planner.md` §Equipe. Aqui:
+
+- **Tipos** (`core/types.ts`): `PensaProjectRole`, `role?`/`team?` nas views de lista
+  (`{memberCount, ownerFirstName}`) e detalhe (`{memberCount, shareEnabled}`),
+  `PensaTeamPersonView`, `PensaProjectMembersView` (o `shareCode` vem CRU, só para o dono) e
+  `PensaShareView`. ⚠️ `role`/`team` são OPCIONAIS de propósito: members antigo = plano só meu
+  (lápis, lixeira, sem chip). As palavras moram em `core/teamCopy.ts` (`TEAM_COPY`,
+  `displayShareCode` = `ZAP-XXXXXX`, `personName` = 1º nome ou "Colega").
+- **Home:** o chip `.pensa-chip.is-team` no cartão ("Em equipe · N" no meu plano com gente; "De
+  <dono>" no plano em que entrei, que NÃO tem lixeira: apagar é do dono) e o **"Entrar com um
+  código"** (`sz-tool-pill--outline`, `aria-controls="pensa-join"`) ao lado do "+ Novo plano".
+  O formulário `#pensa-join` é a mesma `.pensa-create` da faixa creme; abrir um fecha o outro;
+  o código vai como a criança digitou (quem normaliza é o members); o erro do servidor fica ao
+  lado do campo (`role="alert"`, a frase dele); Esc/Cancelar devolvem o foco ao botão; entrar
+  abre o plano (`POST /projects/join` → `loadProject`). O Esc mora no **`<form>`** (do código E
+  do criar): vale com o foco nos botões, não só no campo. No primeiro uso (0 planos) cancelar o
+  código REABRE o criar, senão o vazio "Dê um nome ao jogo…" ficava sem campo à vista.
+- **Detalhe:** o **"Equipe · N"** (`.pensa-team-button`, `aria-haspopup="dialog"`) nas ações do
+  `ProjectHeader` abre a **`TeamDialog`** (`components/TeamDialog.tsx`), irmã das faixas como a
+  janela de apagar. ⚠️ O nome acessível é **"Equipe, N na equipe"**: o "Equipe · N" visível fica
+  em `aria-hidden` (o leitor falaria "ponto médio") e o nome vem inteiro de um `.pensa-sr-only`;
+  os testes acham o botão por `/^Equipe, \d+ na equipe$/`. Dono: o código
+  (`<output class="pensa-team-code" aria-labelledby={h3}>` + "Copiar" com
+  `navigator.clipboard`; sem clipboard o recado é honesto e o código fica selecionado, nunca
+  `window.prompt`; "Gerar outro código" e "Desligar o código"), a lista (rosto ou inicial, 1º
+  nome, "você"/"dono do plano") com **"Tirar" em dois passos NA LINHA** ("Tirar mesmo"/"Deixar")
+  e "N de 5 lugares". Dois colegas com o mesmo 1º nome: o `aria-label` do "Tirar" leva a posição
+  ("Tirar João (2º da lista) da equipe"). Membro: "Este plano é de X. Vocês mexem no mesmo plano."
+  ("vocês", não "vocês dois": pode ter mais gente), a lista e **"Sair da equipe"** em dois passos
+  (→ `DELETE …/members/me` → a home, que nasce com o FOCO no h1 "Meus projetos" (`tabIndex=-1`,
+  bandeira `homeFocusRef` consumida ao montar): o "Equipe" e a janela já se foram). Erro fica na
+  janela (`role="alert"`). `canRename` é `detail.role !== 'member'`.
+  ⭐ **O foco dos dois passos** é um efeito sobre `pending`: armar foca o "Tirar mesmo"/"Sair
+  mesmo"; desarmar ("Deixar"/"Ficar") devolve ao "Tirar" da linha/"Sair da equipe" (botões
+  NOVOS: refs por `profileId`); tirou alguém = a linha sumiu, o foco pousa no
+  `.pensa-team__seats` (`tabIndex=-1`). Sem isso Enter no "Tirar" jogava o foco no `body`.
+  ⭐ **`load` tem token de pedido** (`loadSeq`) e abrir faz `setView(null)`: a resposta atrasada
+  de uma abertura anterior (ou de uma janela já fechada) não repõe a lista velha.
+  ⭐⭐ **`onTeamChanged` espelha `memberCount`/`shareEnabled` E chama `syncDetail`**: o members
+  grava o `updatedAt` do projeto ao gerar/desligar o código e ao tirar alguém, então o app puxa
+  `GET /projects/:id` SÓ para o `detail` (sem `loading`, sem recarregar a etapa: o
+  `StageWorkspace` não desmonta e o rascunho fica). Sem isso o compasso acusava a própria
+  criança em até 30 s.
+- ⭐ **`useDialogFocus`** (`components/dialogFocus.ts`) saiu do `ConfirmDialog` e serve às DUAS
+  janelas: foco no card ao abrir, Tab preso, Esc fecha (nunca gravando), foco de volta a quem
+  abriu (`returnFocusTo`, lido no fechamento). Duas janelas com dois focos era como uma ia
+  apodrecer.
+- **"Alguém da equipe mexeu no plano."** (`.pensa-changed-banner`, `role="status"`, o cartão
+  branco do aviso de "revendo"): com `memberCount > 0` um compasso (`teamPollMs`, 30 s; a prop
+  existe para o teste injetar um curto e `0` desliga) pergunta `GET /projects/:id` com a aba
+  visível e sem ação em voo, e compara o `updatedAt`. Mudou = a faixa com **"Atualizar"**
+  (`refresh()`), em vez de recarregar por cima do que a criança escreve. ⚠️ Toda ação própria
+  termina em `refresh` (o chat inclusive), o renomear copia o `updatedAt` da resposta e a janela
+  da equipe passa pelo `syncDetail`, senão o compasso acusaria a própria criança.
+  ⭐ **"Atualizar" pergunta antes com coisa sem guardar**: `refresh` = `loadProject` →
+  `loading` → o `StageWorkspace` inteiro DESMONTA (rascunho do chat, cartão em edição, tarefa em
+  edição). O `useUnsavedChanges` (agora UM só, em `components/unsavedChanges.ts`; o `TaskPlan`
+  usa o mesmo) registra a posse no **`DirtyContext`** do `PensaApp` além do `beforeunload`, o
+  rascunho do chat da etapa Z também conta, e o botão confere `isDirty()`: sujo abre o
+  `ConfirmDialog` "Atualizar o plano?" / "Você tem coisa sem guardar. Atualizar mesmo?"
+  ("Atualizar" / "Continuar aqui", foco de volta ao botão da faixa); limpo recarrega direto.
+- **CSS:** seção "EQUIPE DO PLANO" no fim do `pensa.css`, por classe; o único `cursor` é o do
+  "Tirar"/"Deixar" (`.pensa-planner .pensa-team-member__remove`, com o `.pensa-planner` na frente
+  pelo motivo da lixeira). Os chips `.is-team`/`.is-you` levam o acento a **8%** (era 12%: tinta
+  do acento em 12px/700 ficava em ≈4,5:1, no limite; 8% é o do `.pensa-map-node`) e a inicial
+  `.pensa-team-member__initial` a 10%; o "você" não tem `margin-left` (o `gap` do nome separa).
+  O `tokens.test.ts` trava os três.
+- **Playground:** `?equipe=1` põe a Bia no "Runo" (meu, com código ligado) e me põe no
+  "Guardiões da Lua" (dela); join/share/members/tirar/sair simulados (share e tirar gravam o
+  `updatedAt` do plano, `touchPlan`, como o members: é o que o `syncDetail` puxa), e 40 s
+  depois de abrir a Bia "mexe" no Runo para a faixa aparecer.
+- ⚠️ Estúdio, Pinta e Molda seguem por perfil (a copy da janela diz: cada um constrói no seu);
+  a conversa Z não tem trava (último-vence).
+- Testes: `components/PensaApp.team.test.tsx` (janela do dono e do membro, código, copiar,
+  tirar, sair, Esc/foco, erro, o compasso; full review 26/09: o foco dos dois passos, nomes
+  repetidos, a corrida ao reabrir (`defer`/`release` no harness), mexer na equipe sem acusar a
+  criança e sem remontar a etapa, "Atualizar" sujo/limpo, aba escondida e `busy`),
+  `components/PensaApp.join.test.tsx` (chips, lixeira por papel, o formulário do código, Esc nos
+  botões, o primeiro uso) e `components/PensaApp.create.test.tsx` (Esc nos botões do criar).
+
+## Apagar um plano (14/09/2026)
+
+A criança apaga o plano pelo próprio cartão, e some **de vez** — decisão dela: sem lixeira, com
+uma janela que pergunta antes. O `DELETE /projects/:id` nasceu nesta leva em TODAS as camadas
+(members → gateway → BFF → shim do kids), espelhando o `DELETE /tasks/:taskId` que já existia; no
+banco, um só DELETE leva ciclos, conversas, artefatos e cartões pelas FKs em cascata. O XP e as
+medalhas FICAM (o ledger guarda snapshot sem FK): ela fez o trabalho.
+
+- **A lixeira** (`.pensa-project-card__remove`, `TrashIcon`) fica no rodapé do cartão, à esquerda
+  do "Continuar", com o nome do plano no `aria-label` ("Apagar o plano X" — "Apagar" repetido na
+  grade não diria qual).
+- ⚠️ Ela **teve** `position: relative` + `z-index: 1` entre 14 e 19/09/2026, e a razão morreu
+  junto com a camada do "Continuar": enquanto um `::after` cobria o cartão inteiro, a lixeira
+  aparecia e NUNCA recebia o clique (quem recebia era a camada invisível, e a criança abria o
+  plano ao tentar apagá-lo). Sem a camada ela é um botão como outro qualquer. Quem voltar a
+  esticar a área clicável do cartão tem de devolver as duas declarações. Ela também não anda no
+  hover — hoje pelo motivo dos irmãos, o relevo das faixas.
+- ⚠️ A regra leva **`.pensa-planner` na frente**, como os três CTAs: a regra de ELEMENTO deste
+  arquivo (`.pensa-planner button:where(…)`, 0-1-1) dá 44px de altura a todo botão e venceria a
+  classe sozinha — a lixeira saía 40x44. Os 44px do TOQUE seguem garantidos pelo `--sz-tool-hit`.
+- **`ConfirmDialog`** (`components/ConfirmDialog.tsx`) é a janela da casa, no molde do Molda (que
+  veio do Pinta): `role="dialog"` + `aria-modal`, foco no card ao abrir, Tab preso, Esc fecha
+  (nunca durante a gravação) e o foco volta a **quem abriu** — `returnFocusTo` é lido no
+  FECHAMENTO, nunca `document.activeElement` na abertura (clicar num botão nem sempre o foca, e
+  em teste nunca). Quando o alvo some junto com o cartão, quem abriu vira o "+ Novo plano".
+  Erro NÃO fecha a janela: ela fica com o recado (`role="alert"`) para tentar de novo.
+- ⚠️ Apagar **não** chama `loadProjects()`: ele acende o "Preparando seu mapa de criação…", que
+  desmonta a lista (e a janela) no meio do gesto. O servidor já confirmou — tirar o cartão da
+  lista basta.
+- A janela é irmã das faixas, **fora** do `.sz-tool-bands`: lá dentro as pílulas ganhariam o
+  relevo 3D das galerias, que é desenho de grade, não de diálogo. Ela cobre a TELA inteira, como
+  as do Pinta e do Molda. ⚠️ **Medido, não deduzido:** o `container-type: inline-size` do
+  `.pensa-planner` NÃO ancora este `fixed` nele (o Chrome dá `contain: none`; o container de
+  tamanho inline não liga o containment de layout). Com a página rolada 900px o planner sai da
+  tela e o escurecido continua colado na janela — nada de diálogo nascendo fora da vista se um
+  dia o host deixar o planner crescer. Contraste medido: "Apagar" 4,66:1 e o corpo 5,39:1 nos
+  dois temas.
+- O `window.confirm` do "Apagar cartão" (`TaskPlan.tsx`) virou a mesma janela. Sobraram os dois
+  de "Descartar as mudanças deste cartão?", que são outro fluxo.
+- ⭐ **A copy diz o que NÃO some.** "Tudo que você criou nele" fazia a criança entender que o
+  jogo do Estúdio e os desenhos do Pinta iam junto — e eles ficam: o vínculo com o Estúdio é um
+  projeto LOCAL de id `pensa-<id>` (`community-kids/src/lib/pensa-studio-link.ts`) que continua
+  na galeria dela. A frase agora separa as duas coisas, senão ela não apaga por medo (ou apaga
+  achando que limpou tudo). Sobram no navegador uma chave de localStorage e o projeto local
+  órfãos, inertes: o Pensa não conhece o IndexedDB do host, e o Estúdio é vendido à parte.
+- ⭐ **Apagar o ÚLTIMO plano abre o campo de criar**, como no primeiro acesso: o `creating` só
+  olhava a lista na primeira renderização, então o vazio aparecia com o convite "dê um nome ao
+  jogo" e nenhum campo à vista.
+- Testes: `PensaApp.home.test.tsx` (a lixeira por plano, a janela, o cancelar, o erro, o foco).
+  ⚠️ Os testes que achavam o cartão por "botão com o nome do plano" agora dizem qual: com a
+  lixeira existem DOIS ("Continuar o plano X" e "Apagar o plano X").
+
+## A tela do plano das telas-modelo (11/09/2026)
+
+O detalhe de um plano segue a segunda imagem-modelo dela (lote 7, passo 8), nas faixas
+(`.pensa-plan.sz-tool-bands`):
+- **creme** (`.pensa-plan-top`): o `ProjectHeader` no `.sz-tool-header` das galerias ([menu][voltar]
+  com o "voltar" no quadrado `.sz-tool-icon-btn`, nome "Voltar aos meus planos"; "VERSÃO N" em
+  `.sz-tool-kicker` e o nome no h1 `.sz-tool-title`; à direita os créditos e a pílula do andamento
+  `.sz-tool-status`, menta com `--ok` quando aprovado); o **mapa ZERO** em quatro cartões brancos
+  (vencida = visto no ladrilho verde e botão de rever, atual = fio azul, revista = fio e halo; a
+  descrição quebra em até duas linhas); e o **aviso de "revendo"** (`PeekBanner`, que saiu de
+  dentro do `StagePeek`) como o cartão branco que fecha a faixa, com o MESMO `role="status"`, o
+  mesmo texto e o mesmo nome do botão ("Voltar para o meu plano" / "Voltar para a etapa atual"),
+  agora em pílula de contorno azul.
+- **céu**: a etapa (`StageTitle`: o ladrilho AZUL chapado com a letra, sem o degradê 3D, e o h2
+  `.sz-tool-section-title`), a conversa em cartão branco (a fala da criança no azul da marca, a do
+  Zappy no cinza, "VOCÊ"/"ZAPPY" em sobretítulo), o artefato em cartão branco com o `dl` em
+  cartõezinhos cinza de duas colunas; ou o "Meu plano" (o `.pensa-approved` virou cartão branco com
+  o visto no ladrilho menta). Os cartões da etapa e das tarefas perderam a borda de 2px (o fio só
+  aparece no escuro e na próxima tarefa, verde); os botões de ação (`.pensa-generate`,
+  `.pensa-primary-action`, `.pensa-new-version`) viraram a pílula chapada azul, e os de tarefa e
+  artefato, pílulas. ⚠️ Esses três levam `.pensa-planner` na frente: o `font: inherit` dos botões
+  (0,1,1) vencia o peso deles, e o rótulo saía no peso do corpo (defeito antigo).
+- **lilás** (só com as quatro etapas vencidas, `ApprovedBand`): "Plano aprovado! Agora é só
+  construir.", quantos cartões foram para cada oficina (`Estúdio · N`, `Pinta · N`, `Molda · N`,
+  contados de `tasks[].destination`; oficina sem cartão não aparece; "cartões" em `sr-only`) e o
+  **"Ver os Cartões de Criação"**, que fecha o peek e, depois que o "Meu plano" volta, rola até a
+  lista (`scrollIntoView`, `auto` com `prefers-reduced-motion`) e leva o FOCO até ela (a âncora
+  `.pensa-cards-anchor`, `tabIndex={-1}`, fora da ordem do Tab). O pedido é um contador de estado
+  (`cardsRequest`) e o efeito roda depois da renderização que remonta a lista.
+- A regra de largura contida do detalhe (`width: calc(100% - 48px)`) saiu, como a da home: o
+  respiro vem do `.sz-tool-band__inner`. O `.pensa-alert` perdeu a largura própria.
+- Testes: `components/PensaApp.plan.test.tsx` (as faixas, o cabeçalho, o aviso na faixa creme, a
+  contagem por oficina e o foco na lista) e os de peek do `PensaApp.test.tsx`, que seguem iguais.
 
 ## Cartão de Criação
 
@@ -130,7 +404,8 @@ apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
   `text-base` nos componentes do kids; o Pinta na mesma proporção). Para um produto infantil o
   piso é 12px e o texto de corpo é 14px; nada de valores intermediários "quase iguais" que somados
   fazem o app inteiro ler menor que os irmãos ao lado.
-- Arranjo da home, pareado com `ProjectList.tsx`/`GalleryScreen.tsx`: `.pensa-create` **sem
+- (⚠️ HISTÓRICO: a home de 11/09/2026 está na seção "A home das telas-modelo"; a grade de 240px,
+  o cabeçalho de 1.875rem e a faixa de criar abaixo do cabeçalho mudaram.) Arranjo da home, pareado com `ProjectList.tsx`/`GalleryScreen.tsx`: `.pensa-create` **sem
   painel** (faixa solta; embrulhá-lo dava a ele o peso dos planos já criados), campo de ~440px ao
   lado do botão, 44px de respiro do subtítulo até a label; `.pensa-section-heading` h2 em
   **1.125rem** (`text-lg`) com `margin: 40px 0 24px` (`mb-6`); grade
@@ -147,7 +422,8 @@ apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
 - ⭐⭐ **07/09/2026, cabeçalho compacto ("o cabeçalho ocupa espaço demais"):** o que mudou das
   decisões acima, por pedido dela: (a) o **Zappy pequeno SAIU do cabeçalho** (segue no vazio, no
   chat e no aprovado); (b) `.pensa-create` deixou de ser faixa sempre visível e virou linha 2 SOB
-  DEMANDA: o **"+ Novo plano"** (`.sz-tool-btn-3d`, à direita do título, `aria-expanded` +
+  DEMANDA: o **"+ Novo plano"** (`.sz-tool-btn-3d` naquela época; desde 11/09/2026 a pílula chapada
+  `.sz-tool-pill--primary`, à direita do título, `aria-expanded` +
   `aria-controls="pensa-create"`) abre o campo "Nome do novo jogo" logo abaixo (com foco), Esc/
   "Cancelar" fecham e devolvem o foco ao botão, criar navega, erro mantém o campo com o nome; a
   home nasce com ele ABERTO só no primeiro uso (0 planos); (c) `.pensa-section-heading` ("Meus
@@ -167,3 +443,11 @@ apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
 ## Verificação
 
 Execute `bun run typecheck`, `bun test src` e `bun run check`. Os testes devem cobrir o mapa ZERO, os cinco artefatos, ordem/dependências, próxima tarefa, entitlement e abertura da ferramenta de destino.
+
+## Destino Molda — 07/09/2026
+
+Cartões também aceitam `destination: molda`. Contexto: `assetId` do inventário visual,
+`artKind` model/texture/sky, aparência, uso e paleta. Saída `molda_asset` referencia o ID da
+criação real, sem substituir o ID do inventário. O adapter recebe `moldaOwned` opcional;
+false/ausente preserva o plano e desabilita o envio. O host resolve posse + jornada.
+Pensa continua apenas planejador: não incorpora editor, IndexedDB ou navegação do Molda.

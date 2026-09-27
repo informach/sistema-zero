@@ -31,8 +31,9 @@ export interface CourseView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
-  /** Posição na etapa da carreira; `null` = curso bônus. */
+  /** Posição na etapa da jornada; `null` = bônus ou extra. */
   careerSlot: number | null
+  journeyRole: string
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   /**
@@ -42,9 +43,8 @@ export interface CourseView {
    */
   studioUnlockBlocks: string[]
   /**
-   * SÓ na listagem e SÓ p/ curso-base kids (careerSlot 1): tem ≥1 aula publicada
-   * com bloco de Estúdio de vitrine (`showcase.enabled`)? `false` = o slot 1
-   * nunca qualifica e a etapa não destrava — o painel avisa o operador.
+   * Na listagem, para toda posição obrigatória Kids: tem aula publicada com
+   * bloco de Estúdio de vitrine (`showcase.enabled`)? Ausente = não verificado.
    */
   hasShowcaseBlock?: boolean
   createdAt: string
@@ -71,6 +71,7 @@ export function toCourseView(c: Course, hasShowcaseBlock?: boolean): CourseView 
     level: c.level,
     track: c.track,
     careerSlot: c.careerSlot,
+    journeyRole: c.journeyRole,
     sequentialLock: c.sequentialLock,
     studioUnlockBlocks: resolveStudioUnlockBlocks(c),
     clonedFrom: resolveClonedFrom(c),
@@ -85,6 +86,7 @@ export interface ModuleView {
   courseId: string
   title: string
   summary: string | null
+  riveUrl: string | null
   sortOrder: number
 }
 
@@ -94,6 +96,7 @@ export function toModuleView(m: Module): ModuleView {
     courseId: m.courseId,
     title: m.title,
     summary: m.summary,
+    riveUrl: m.riveUrl ?? null,
     sortOrder: m.sortOrder,
   }
 }
@@ -150,6 +153,7 @@ export interface AttachmentView {
   url: string
   fileType: string | null
   sizeBytes: number | null
+  zappyStudentNotebook: boolean
   sortOrder: number
 }
 
@@ -161,6 +165,7 @@ export function toAttachmentView(a: LessonAttachment): AttachmentView {
     url: a.url,
     fileType: a.fileType,
     sizeBytes: a.sizeBytes,
+    zappyStudentNotebook: a.zappyStudentNotebook,
     sortOrder: a.sortOrder,
   }
 }

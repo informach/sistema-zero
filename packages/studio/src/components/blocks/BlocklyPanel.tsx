@@ -12,7 +12,6 @@ import {
   ensureBlocklyInitialized,
   HTMLConnectionChecker,
   markLifecycleBlocksState,
-  normalizeBlocksStateToFrames,
   type PasteTargetHandlers,
   registerClassesFlyout,
   registerFunctionsFlyout,
@@ -28,7 +27,8 @@ import { extensionMinLevel } from '#extensions'
 import { generateProjectFilesWithMap } from '#generators'
 import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
-import { isPureWorkspaceLayoutMove } from '../../blockly/changeSemantics'
+import { SERVER_BLOCK_CATALOG } from '../../blockly/blockCatalog'
+import { isProgramStructureChange, isPureWorkspaceLayoutMove } from '../../blockly/changeSemantics'
 import {
   attachAnimationNameWatcher,
   refreshAnimationNames,
@@ -38,7 +38,9 @@ import {
   refreshSpriteThumbs,
 } from '../../blockly/fields/FieldSpritePicker'
 import { SearchAwareHorizontalFlyout } from '../../blockly/searchHorizontalFlyout'
+import { projectBlockTypes } from '../../core/projectDocument'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
+import { useHostAppearanceRevision } from '../../hooks/useHostAppearanceRevision'
 import { primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
 import { useDiagnosticsStoreApi } from '../../state/diagnosticsStore'
 import { installExtension, reregisterInstalledExtensions } from '../../state/extensionsAdapter'
@@ -46,11 +48,12 @@ import { useHighlightStore } from '../../state/highlightStore'
 import { isBlockTypeKnown, useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
-import { usePendingEditorEdits } from '../../state/studioStores'
+import { useEditorHistory, usePendingEditorEdits } from '../../state/studioStores'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioTheme } from '../../studio/theme'
 import { Spinner } from '../layout/LoadingViews'
 import { STUDIO_COMPACT_MAX_PX } from '../layout/layoutBreakpoints'
+import { createBlocklyHistory, forgetBlocklyHistory } from './blocklyHistory'
 import { openTutorCategory } from './tutorCategory'
 
 ensureBlocklyInitialized()
@@ -301,19 +304,25 @@ export interface BlocklyPanelProps {
 }
 
 export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps): JSX.Element {
-  const { blocksState, installedExtensions, projectMode, blocksHydration } = useProjectStore(
-    useShallow((s) => ({
-      blocksState: s.project?.blocksState ?? null,
-      installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
-      projectMode: s.project?.mode ?? 'blocks',
-      blocksHydration: s.blocksHydration,
-    })),
-  )
+  const { blocksState, installedExtensions, projectMode, blocksHydration, projectToolsKey } =
+    useProjectStore(
+      useShallow((s) => ({
+        blocksState: s.project?.blocksState ?? null,
+        projectToolsKey: s.project?.projectTools?.join('\n') ?? '',
+        installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+        projectMode: s.project?.mode ?? 'blocks',
+        blocksHydration: s.blocksHydration,
+      })),
+    )
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
   const projectStoreApi = useProjectStoreApi()
   const diagnosticsStoreApi = useDiagnosticsStoreApi()
   const pendingEditorEdits = usePendingEditorEdits()
+  const editorHistory = useEditorHistory()
   const studioTheme = useStudioTheme()
+  // Sobe quando o HOST troca de aparência (Padrão ⇄ Pink no kids e no adulto): os dois temas são
+  // "claro" para o Estúdio, então só isto manda o canvas reler a paleta.
+  const hostAppearance = useHostAppearanceRevision()
   // Ref para a injeção (efeito de mount único) usar o tema vigente sem re-injetar.
   const studioThemeRef = useRef(studioTheme)
   studioThemeRef.current = studioTheme
@@ -401,14 +410,30 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // revelar o avançado (settings), se o professor permitir.
   const learning = useStudioConfig().learning
   const revealAdvanced = useSettingsStore((s) => s.revealAdvanced)
+  const projectTools = useMemo(() => {
+    const requested = new Set(projectToolsKey.split('\n'))
+    const installed = new Set(installedIdsKey.split('\n'))
+    return SERVER_BLOCK_CATALOG.filter(
+      (entry) => requested.has(entry.type) && (!entry.extension || installed.has(entry.extension)),
+    ).map((entry) => entry.type)
+  }, [projectToolsKey, installedIdsKey])
+  // A categoria "Blocos deste jogo" espelha o programa salvo, não o histórico
+  // de ferramentas. A chave de conteúdo evita reconstruir a toolbox ao mover
+  // blocos sem mudar seus tipos (o que fecharia o flyout aberto).
+  const currentBlockTypesKey = useMemo(
+    () => projectBlockTypes(blocksState).join('\n'),
+    [blocksState],
+  )
   const profile = useMemo<LearningProfile>(
     () => ({
       level: learning.level,
       revealed: learning.allowLevelReveal && revealAdvanced,
       allowBlocks: learning.allowBlocks,
+      projectTools,
+      currentBlockTypes: currentBlockTypesKey ? currentBlockTypesKey.split('\n') : [],
       allowCategories: learning.allowCategories,
     }),
-    [learning, revealAdvanced],
+    [learning, revealAdvanced, projectTools, currentBlockTypesKey],
   )
 
   const toolbox = useMemo(() => {
@@ -551,6 +576,30 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     return pendingEditorEdits.register(flushScheduledRegeneration)
   }, [pendingEditorEdits, flushScheduledRegeneration])
 
+  // Desfazer/refazer da barra do editor: a pilha dos blocos entra no registro da instância, e
+  // tocar (ou focar) o canvas faz dos blocos o alvo da Ponte. Um gesto na barra ou uma mudança
+  // feita por programa não passa por aqui, então não troca o alvo.
+  useEffect(() => {
+    if (!workspace || !editorHistory) return
+    const adapter = createBlocklyHistory(workspace)
+    const unregister = editorHistory.register('blocks', adapter)
+    return () => {
+      unregister()
+      adapter.dispose()
+    }
+  }, [workspace, editorHistory])
+  useEffect(() => {
+    const container = blocklyRef.current
+    if (!container || !editorHistory) return
+    const markBlocks = () => editorHistory.markActive('blocks')
+    container.addEventListener('pointerdown', markBlocks, true)
+    container.addEventListener('focusin', markBlocks)
+    return () => {
+      container.removeEventListener('pointerdown', markBlocks, true)
+      container.removeEventListener('focusin', markBlocks)
+    }
+  }, [editorHistory])
+
   const persistWorkspaceLayout = useCallback(
     (targetWorkspace: Blockly.Workspace) => {
       // ⚠️⚠️ Uma regeneração JÁ agendada é superconjunto disto: ela grava
@@ -618,15 +667,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       queueMicrotask(refresh)
     }
     const listener = (event: Blockly.Events.Abstract) => {
-      if (
-        event.type === Blockly.Events.FINISHED_LOADING ||
-        event.type === Blockly.Events.BLOCK_CREATE ||
-        event.type === Blockly.Events.BLOCK_DELETE ||
-        (event.type === Blockly.Events.BLOCK_MOVE &&
-          !isPureWorkspaceLayoutMove(event as Blockly.Events.BlockMove))
-      ) {
-        scheduleRefresh()
-      }
+      if (isProgramStructureChange(event as Blockly.Events.BlockMove)) scheduleRefresh()
     }
     refresh()
     workspace.addChangeListener(listener)
@@ -881,6 +922,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // Cerca de carga: `clear()` emite um BLOCK_DELETE por bloco; sem a cerca,
       // cada bloco-mutador varreria o workspace a cada remoção (O(N·M)).
       withWorkspaceLoad(() => workspace.clear())
+      // O canvas foi trocado POR FORA: a pilha de desfazer de antes não vale mais.
+      forgetBlocklyHistory(workspace)
       lastAppliedBlocksStateRef.current = JSON.stringify(
         markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
       )
@@ -890,11 +933,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       })
       return
     }
-    // Migração transparente p/ o modelo CONTAINER: um projeto LEGADO (blocos
-    // soltos, sem áreas) é distribuído pelas seis áreas preservando a saída.
-    // Idempotente (no-op se já tem frame). As extensões já foram re-registradas no
-    // efeito acima, então o load headless da migração enxerga os blocos delas.
-    const stateToLoad = normalizeBlocksStateToFrames(blocksState)
+    // A fronteira de abertura já entregou o documento atual.
+    const stateToLoad = blocksState
     const serialized = JSON.stringify(stateToLoad)
     if (serialized === lastAppliedBlocksStateRef.current) return
     setIsLoadingWorkspace(true)
@@ -927,6 +967,9 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         withWorkspaceLoad(() =>
           Blockly.serialization.workspaces.load(stateToLoad as Record<string, unknown>, workspace),
         )
+        // Esta carga veio de FORA do canvas (a Ponte reconstruindo os blocos a partir do código,
+        // outro projeto): "Desfazer nos blocos" não pode repetir passos de antes dela.
+        forgetBlocklyHistory(workspace)
         scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
         // `FINISHED_LOADING` é quem normalmente zera o guard e ressincroniza o
         // snapshot com o estado REAL salvo. O microtask é só um fallback (caso o
@@ -996,7 +1039,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       projectStoreApi.getState().project?.assets ?? []
     // Miniaturas de sprite NO BLOCO: refresh automático quando um declarador de
     // sprite muda (watcher de eventos do workspace) e quando os ASSETS do projeto
-    // mudam (renomear/trocar imagem no painel Imagens não gera evento Blockly —
+    // mudam (renomear/trocar imagem na aba "Imagens" não gera evento Blockly —
     // observa a identidade de project.assets no store da instância).
     const detachSpriteThumbs = attachSpriteThumbWatcher(injected)
     // Nome da animação no bloco "Animar sprite": campo de exibição NÃO
@@ -1089,10 +1132,14 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
 
   // Troca de tema ao vivo (toggle do Topbar/host): o Theme cobre workspace,
   // toolbox e flyout; só a cor da grade fica da injeção inicial (detalhe sutil).
+  // A troca de aparência do HOST (`hostAppearance`) também relê; `szThemeFor` devolve o MESMO
+  // objeto para a mesma paleta, então só re-pinta quando a cor de fato mudou.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `hostAppearance` é o GATILHO da releitura (o valor não entra na conta)
   useEffect(() => {
     if (!workspace) return
-    workspace.setTheme(szThemeFor(studioTheme, blocklyRef.current))
-  }, [workspace, studioTheme])
+    const proximo = szThemeFor(studioTheme, blocklyRef.current)
+    if (workspace.getTheme() !== proximo) workspace.setTheme(proximo)
+  }, [workspace, studioTheme, hostAppearance])
 
   // Enquanto a partição de blocos hidrata em 2º plano (reabertura rápida), o
   // canvas está VAZIO mas os blocos salvos estão a caminho: cobre com o overlay

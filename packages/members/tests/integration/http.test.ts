@@ -1,8 +1,14 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  MURAL_VISITOR_PRODUCT_ID,
+  MURAL_VISITOR_REF,
+} from '../../src/domain/entitlement/mural-visitor'
+import {
   buildApp,
+  grantAllKidsCourses,
   grantLifetime,
   offerWithCourse,
+  offerWithMural,
   seedSampleCourse,
   signedWebhookHeaders,
 } from '../helpers'
@@ -116,6 +122,36 @@ describe('Members HTTP — consumo do aluno', () => {
       }),
     )
     expect((await readJson(r2)).completedLessons).toBe(1)
+  })
+
+  test('fim do prazo preserva progresso e a chave-mestra kids mantém o curso acessível', async () => {
+    const { app, courses, entitlements, clockRef } = buildApp()
+    const course = seedSampleCourse(courses, 'desafio-temporario', 'published', 'kids')
+    grantLifetime(entitlements, {
+      userId: USER,
+      courseRef: course.slug,
+      expiresAt: new Date('2026-06-03T00:00:00.000Z'),
+      key: 'payment:temporary',
+    })
+    const completed = await app.handle(
+      new Request(`http://localhost/members/lessons/${course.lessonIds[0]}/complete`, {
+        method: 'POST',
+        headers: authHeaders(),
+      }),
+    )
+    expect(completed.status).toBe(200)
+
+    clockRef.now = new Date('2026-06-04T00:00:00.000Z')
+    expect((await get(app, `/members/courses/${course.slug}`, authHeaders())).status).toBe(403)
+
+    grantAllKidsCourses(entitlements, { userId: USER, now: clockRef.now })
+    const detail = await get(app, `/members/courses/${course.slug}`, authHeaders())
+    expect(detail.status).toBe(200)
+    expect((await readJson(detail)).progress).toMatchObject({
+      completedLessons: 1,
+      totalLessons: 2,
+      percent: 50,
+    })
   })
 
   test('curso archived: quem já tem matrícula mantém acesso (draft → 404)', async () => {
@@ -259,6 +295,84 @@ describe('Members HTTP — consumo do aluno', () => {
 })
 
 describe('Members HTTP — webhooks', () => {
+  test('assinatura com Mural preserva visitante após cancelamento pelo webhook', async () => {
+    const { app, catalog, entitlements } = buildApp()
+    const offerSlug = 'comunidade-dos-criadores-mensal'
+    catalog.set(offerSlug, offerWithMural(offerSlug, 'desafio-primeiro-jogo'))
+    const grantBody = JSON.stringify({
+      userId: USER,
+      offerRef: offerSlug,
+      paymentId: 'pay-sub-http',
+      paidAt: '2026-09-16T15:00:00Z',
+      subscription: { subscriptionId: 'sub-http', intervalMonths: 1 },
+      accessPolicy: { mode: 'billing_cycle', durationValue: null, durationUnit: null },
+    })
+    const granted = await app.handle(
+      new Request('http://localhost/members/webhooks/grant', {
+        method: 'POST',
+        headers: signedWebhookHeaders('/members/webhooks/grant', grantBody, 'd-sub-grant'),
+        body: grantBody,
+      }),
+    )
+    expect(granted.status).toBe(200)
+    expect((await readJson(granted)).granted).toBe(3)
+    expect(
+      (await entitlements.listByUserId(USER)).find(
+        (e) => e.toSnapshot().productId === MURAL_VISITOR_PRODUCT_ID,
+      )?.subscriptionId,
+    ).toBeNull()
+
+    const cancelBody = JSON.stringify({ event: 'canceled', subscriptionId: 'sub-http' })
+    const canceled = await app.handle(
+      new Request('http://localhost/members/webhooks/subscription', {
+        method: 'POST',
+        headers: signedWebhookHeaders('/members/webhooks/subscription', cancelBody, 'd-sub-cancel'),
+        body: cancelBody,
+      }),
+    )
+    expect(canceled.status).toBe(200)
+    expect((await readJson(canceled)).affected).toBe(2)
+    expect(
+      (await entitlements.listActiveByUser(USER, new Date('2026-09-20T00:00:00Z'))).map(
+        (e) => e.courseRef,
+      ),
+    ).toEqual([MURAL_VISITOR_REF])
+  })
+
+  test('compra do Desafio de 30 dias concede Mural pleno temporário e visitante permanente', async () => {
+    const { app, catalog, entitlements, hubCalls } = buildApp()
+    const offerSlug = 'desafio-primeiro-jogo-30-dias'
+    catalog.set(offerSlug, offerWithMural(offerSlug, 'desafio-primeiro-jogo'))
+    const body = JSON.stringify({
+      userId: USER,
+      offerRef: offerSlug,
+      paymentId: 'pay-desafio-30',
+      paidAt: '2026-09-16T15:00:00Z',
+      accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' },
+    })
+
+    const res = await app.handle(
+      new Request('http://localhost/members/webhooks/grant', {
+        method: 'POST',
+        headers: signedWebhookHeaders('/members/webhooks/grant', body, 'd-desafio-30'),
+        body,
+      }),
+    )
+    expect(res.status).toBe(200)
+    expect((await readJson(res)).granted).toBe(3)
+    const all = await entitlements.listByUserId(USER)
+    expect(all).toHaveLength(3)
+    expect(all.find((e) => e.toSnapshot().productId === MURAL_VISITOR_PRODUCT_ID)?.courseRef).toBe(
+      MURAL_VISITOR_REF,
+    )
+    expect(
+      (await entitlements.listActiveByUser(USER, new Date('2026-10-16T15:00:00Z'))).map(
+        (e) => e.courseRef,
+      ),
+    ).toEqual([MURAL_VISITOR_REF])
+    expect(hubCalls).toEqual([{ userId: USER, event: 'grant' }])
+  })
+
   test('grant assinado concede acesso; reentrega (mesmo delivery) deduplica', async () => {
     const { app, courses, catalog, hubCalls } = buildApp()
     const course = seedSampleCourse(courses)
@@ -324,6 +438,29 @@ describe('Members HTTP — webhooks', () => {
     expect((await readJson(res)).error).toBe('OFFER_EMPTY')
     // Sem marcar a entrega: a falha repetida na re-entrega é o alarme.
     expect(await processed.isProcessed('d-empty')).toBe(false)
+  })
+
+  test('política de compra incoerente → 422 antes de escrever ou deduplicar', async () => {
+    const { app, catalog, entitlements, processed } = buildApp()
+    catalog.set('offer-x', offerWithCourse('offer-x', 'curso-demo'))
+    const body = JSON.stringify({
+      userId: USER,
+      offerRef: 'offer-x',
+      paymentId: 'pay-policy-invalid',
+      accessPolicy: { mode: 'billing_cycle', durationValue: null, durationUnit: null },
+    })
+
+    const res = await app.handle(
+      new Request('http://localhost/members/webhooks/grant', {
+        method: 'POST',
+        headers: signedWebhookHeaders('/members/webhooks/grant', body, 'd-policy-invalid'),
+        body,
+      }),
+    )
+
+    expect(res.status).toBe(422)
+    expect(entitlements.byId.size).toBe(0)
+    expect(await processed.isProcessed('d-policy-invalid')).toBe(false)
   })
 
   test('grant com assinatura inválida → 401', async () => {

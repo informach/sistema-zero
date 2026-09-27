@@ -1,6 +1,6 @@
 export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
   // Um TIPO de inimigo é um GRUPO estendido: { items, bullets: {items}, config,
-  // onDefeat }. Como todos os helpers de grupo leem só .items, os blocos de
+  // callbacks de derrota }. Como todos os helpers de grupo leem só .items, os blocos de
   // grupo (para cada / contar / colisões / tirar) funcionam direto no tipo.
   //
   // "Criar tipo de inimigo" DENTRO do "a cada quadro" recria o tipo (e ZERA a
@@ -117,10 +117,11 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     var cache = [];
     var protegida = _protegerListaDaVista(cache);
     var seloDoCache = -1;
-    var group = { _revision: 0, _enemyMirror: true };
+    var group = { _revision: 0, _enemyMirror: true, items: [] };
     _managedGroups.add(group);
     Object.defineProperty(group, 'items', {
       enumerable: true,
+      configurable: false,
       get: function () {
         var selo = _enemySelo();
         if (seloDoCache !== selo) {
@@ -208,9 +209,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
         'SZGame2D: "Criar tipo de inimigo" (o normal ou o "com inteligência") está rodando sem parar: ele provavelmente está DENTRO do "A cada quadro do jogo". Monte esse bloco FORA do laço (ele roda uma vez só); dentro do laço a lista é recriada a cada quadro e os inimigos soltos somem da tela.'
       );
     }
-    var type = createGroup();
-    type.bullets = createGroup();
-    type.config = {
+    var config = {
         behavior: options.behavior || 'patrulha',
         // Lista de comportamentos JUNTADOS (bloco "O tipo de inimigo ... também e ...").
         // O campo 'behavior' acima guarda o de NASCENÇA e nunca muda; esta lista
@@ -235,7 +234,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
         beamFrames: 180,
         animStates: null
     };
-    type.onDefeat = null;
+    var type = Object.assign(createGroup(), { bullets: createGroup(), config: config });
     type._defeatHandlers = Object.create(null);
     type._defeatOrder = [];
     type._hurtHandlers = Object.create(null);
@@ -955,7 +954,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     var generation = _driverGeneration;
     var sprite = _invokeProjectCallback(getSprite, undefined, []);
     if (_runGenerationChanged(generation)) return;
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     // Snapshot + pertencimento (o padrão do overlapGroups): remover OUTRO
     // inimigo dentro do corpo desloca os índices e faria o mesmo raio acertar
     // duas vezes no mesmo quadro.
@@ -1489,20 +1488,14 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     if (!type) return;
     var generation = _driverGeneration;
     var order = type._defeatOrder ? type._defeatOrder.slice() : [];
-    // Compatibilidade com código antigo que atribuía type.onDefeat diretamente.
-    if (!order.length && typeof type.onDefeat === 'function') order.push('__legacy__');
     for (var i = 0; i < order.length; i++) {
       var id = order[i];
-      var handler = id === '__legacy__' ? type.onDefeat : type._defeatHandlers[id];
+      var handler = type._defeatHandlers[id];
       if (typeof handler !== 'function') continue;
       try { _invokeProjectCallback(handler, undefined, [sprite]); }
       catch (error) {
         _reportHandlerError('“Quando um inimigo for derrotado”', id, error);
-        if (id === '__legacy__') {
-          if (type.onDefeat === handler) type.onDefeat = null;
-        } else {
-          _removeOrderedIfCurrent(type._defeatHandlers, type._defeatOrder, id, handler);
-        }
+        _removeOrderedIfCurrent(type._defeatHandlers, type._defeatOrder, id, handler);
       }
       if (_runGenerationChanged(generation)) return;
     }
@@ -1558,7 +1551,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
     var generation = _driverGeneration;
     var sprite = _invokeProjectCallback(getSprite, undefined, []);
     if (_runGenerationChanged(generation)) return;
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var items = type.bullets.items;
     for (var i = items.length - 1; i >= 0; i--) {
       var shot = items[i];
@@ -1607,7 +1600,8 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
    * drenaria a vida a cada quadro.
    */
   function hurtByEnemy(sprite, enemy) {
-    if (!sprite || !enemy) return;
+    if (_isDestroyedSprite(enemy)) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !enemy) return;
     // ⭐ Encostar num casco PARADO o CHUTA, não machuca. É o gesto do gênero, e é o
     // que dá sentido ao casco: pisar recolhe, encostar lança. Casco em movimento cai
     // no dano normal logo abaixo, com o dano que o inimigo tinha em vida.
@@ -1627,7 +1621,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
    * dano de contato".
    */
   function stompEnemyType(sprite, type, bounce) {
-    if (!sprite || !type || !type.items) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !type || !type.items) return;
     var up = _gravityPullsUp(world.gravity);
     var b = Math.abs(_finiteNumber(bounce, 8));
     for (var i = type.items.length - 1; i >= 0; i--) {

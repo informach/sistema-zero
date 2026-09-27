@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 // Import RELATIVO do módulo PURO do referrals (precedente do
-// career-tier-conformance com o core): sem dependência de workspace nova.
+// journey-tier-conformance com o core): sem dependência de workspace nova.
 import { CONVERSION_STATUSES } from '../../referrals/src/domain/ports/referral-repository.port'
 import { CONVERSION_STATUS_LABEL } from '../src/app/admin/embaixadores/embaixadores-client'
 

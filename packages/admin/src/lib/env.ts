@@ -44,6 +44,14 @@ const EnvSchema = z
     R2_PRIVATE_BUCKET: z.string().optional(),
     // Bucket PRIVADO de UGC da comunidade (anexos de tópicos/comentários).
     R2_UGC_BUCKET: z.string().optional(),
+    // A voz do Zappy (ElevenLabs): geração do áudio das falas na AUTORIA.
+    // ⚠⚠ A chave vive SÓ no admin. O community/kids nunca fala com o ElevenLabs: o que chega
+    // na criança é MP3 no R2. Sem a chave, o botão de gerar responde 503 e a cena continua na
+    // voz do navegador — nada quebra, só não gera.
+    ELEVENLABS_API_KEY: z.string().optional(),
+    // A voz do Zappy. O padrão é a voz que a dona criou no ElevenLabs; a env só existe para
+    // trocar sem deploy (uma voz nova, um teste).
+    ELEVENLABS_VOICE_ID: z.string().optional(),
     // Vimeo (vídeos das aulas: upload TUS + capa + transcrição).
     VIMEO_ACCESS_TOKEN: z.string().optional(),
     VIMEO_WHITELIST_DOMAINS: z.string().optional(),

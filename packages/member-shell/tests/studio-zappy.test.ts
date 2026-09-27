@@ -42,7 +42,7 @@ describe('Acesso ao Zappy', () => {
     expect(isStudioZappyAllowed(STAFF, undefined, { enabled: false })).toBe(true)
   })
 
-  test('flag desligada barra o aluno mesmo no topo da carreira', () => {
+  test('flag desligada barra o aluno mesmo no topo da jornada', () => {
     expect(isStudioZappyAllowed(KID, 'god', { ...OPEN, enabled: false })).toBe(false)
   })
 
@@ -329,7 +329,7 @@ describe('Zappy do Studio — limites determinísticos', () => {
     expect(deterministicZappyReply('Como fazer um jogo de futebol?')).toBeNull()
   })
 
-  test('o catálogo do tutor respeita a allowlist estrita da carreira', () => {
+  test('o catálogo do tutor respeita a allowlist estrita da jornada', () => {
     const tier = resolveStudioTier('coder', 'student')
     expect(tier.allowBlocks?.length).toBeGreaterThan(0)
     const prompt = buildStudioZappyPrompt({
@@ -525,6 +525,49 @@ describe('Validação da resposta do modelo (invalidStudioZappyAnswerReason)', (
     expect(response.lessonReferences).toBeUndefined()
     // As sugestões de continuação sobrevivem (chips que preenchem o campo).
     expect(response.suggestions).toEqual(['Como faço ele atirar?'])
+  })
+
+  test('"Como fazer": só o slug que ESTAVA nos hits vira helpReferences; o resto cai', () => {
+    const raw = {
+      text: 'Toque em Pré-visualização no alto da área de trabalho.',
+      scope: 'block' as const,
+      blockReferences: [],
+      lessonReferences: [],
+      helpReferences: [{ slug: 'estudio-pre-visualizacao' }, { slug: 'slug-inventado' }],
+      suggestions: [],
+    }
+    expect(reason(raw)).toBeNull()
+    const response = validatedStudioZappyResponse(
+      raw,
+      'criador',
+      byType,
+      instances,
+      'blocks',
+      'classic',
+      [
+        {
+          kind: 'help-tutorial',
+          slug: 'estudio-pre-visualizacao',
+          title: 'Como ver meu jogo na Pré-visualização',
+          collectionTitle: 'Estúdio',
+          content: 'Onde o jogo aparece. 1. Abra a aba.',
+        },
+      ],
+    )
+    expect(response.helpReferences).toEqual([
+      { slug: 'estudio-pre-visualizacao', title: 'Como ver meu jogo na Pré-visualização' },
+    ])
+    // Sem hit de ajuda, nada de chip (nem campo vazio).
+    const semHit = validatedStudioZappyResponse(
+      raw,
+      'criador',
+      byType,
+      instances,
+      'blocks',
+      'classic',
+      [],
+    )
+    expect(semHit.helpReferences).toBeUndefined()
   })
 
   test('a regra do prompt pede o CAMINHO da paleta em texto corrido, sem crases', () => {

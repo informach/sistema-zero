@@ -1,0 +1,242 @@
+{
+  "version": 4,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-08",
+  "title": "Um convite para jogar",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "checar-construir-2",
+    "construir-3",
+    "fechamento"
+  ],
+  "blocks": [
+    {
+      "key": "video-missao",
+      "plannedVideo": "Clipe de 20 a 45 segundos. Mostre o convite Toque ou Enter. “Este convite promete dois jeitos de começar. Será que os dois funcionam?” Convide primeiro ao toque real. Depois apresente os fios de controle. A criança conecta o caminho ausente, inicia, volta ao início e testa Enter. Não troque o controle num seletor para representar uma ação."
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "required": false,
+        "title": "Faça o convite funcionar",
+        "instructions": "A tela diz Toque ou Enter. Experimente tocar para começar.",
+        "hints": [
+          "O convite promete dois caminhos. Os dois funcionam?",
+          "Olhe qual entrada está ligada a Começar.",
+          "Ligue Toque a Começar. Teste os dois caminhos, voltando ao início."
+        ],
+        "activity": {
+          "type": "experimentation",
+          "scene": "controls"
+        }
+      }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: Desenhar a tela de início. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No Se grande, clique em mais senão se. Na pergunta nova, coloque a tela atual é inicio.\n\nEm Telas e cenas, encaixe Mostrar tela. Edite os textos dentro das peças de texto e escolha o título e a cor do seu jogo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-1",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No Se grande, clique em mais senão se. Na pergunta nova, coloque a tela atual é inicio."
+      }
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: O jogo começa quando o jogador manda. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Controles, crie primeiro o evento Enter com Se a tela é inicio e Ir para a tela jogando. Teste Enter e clique.\n\nDepois troque pelo evento Quando apertar qualquer tecla ou tocar na tela, preservando o Se. Ajuste a dica da tela. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-2",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Controles, crie primeiro o evento Enter com Se a tela é inicio e Ir para a tela jogando. Teste Enter e clique."
+      }
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar e deixar com a sua cara. Narração: “Agora vamos cuidar desta parte do seu projeto. Veja onde mexer.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Recarregue e comece clicando. Recarregue outra vez e comece com Enter.\n\nOs dois caminhos devem funcionar. Personalize título, subtítulo e cor, mantendo a dica fiel aos controles. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
+    },
+    {
+      "key": "zappy-construir-3",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Recarregue e comece clicando. Recarregue outra vez e comece com Enter."
+      }
+    },
+    {
+      "key": "zappy-convite-construir-1",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Personalize o título. Depois confira o evento para que a dica prometa somente os controles que funcionam."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! Vamos conferir antes de enviar.” Demonstre os testes desta aula: Leia a dica como alguém que nunca viu o jogo. Teste cada controle que ela promete e confirme que a partida só começa quando você manda. Envie. Mostre o botão Enviar ao professor e a confirmação do envio.  Termine: “Depois de enviar, tem um quiz curtinho sobre o que você descobriu.”"
+    },
+    {
+      "key": "zappy-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!"
+      }
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "A dica diz “toque para jogar”, mas só Enter funciona. O que ajustar?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "O evento, para aceitar toque também."
+              },
+              {
+                "id": "b",
+                "label": "Só a cor da dica."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A instrução precisa corresponder aos controles que realmente funcionam."
+          },
+          {
+            "id": "q2",
+            "prompt": "Como conferir se o convite funciona no computador e no celular?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Testar apenas Enter uma vez."
+              },
+              {
+                "id": "b",
+                "label": "Testar teclado e toque, recomeçando cada teste."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Cada controle prometido precisa ser testado."
+          }
+        ]
+      }
+    },
+    {
+      "key": "zappy-revisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "Faça o convite funcionar",
+      "objective": "Toque ainda não conectado; Partida iniciada por toque; Partida iniciada por Enter",
+      "intent": "exploration",
+      "blockKeys": ["video-missao", "descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
+    },
+    {
+      "key": "construir-1",
+      "title": "Um convite que funciona",
+      "objective": "Fazer a instrução da tela corresponder aos controles implementados.",
+      "intent": "application",
+      "blockKeys": [
+        "video-construir-1-1",
+        "zappy-construir-1",
+        "video-construir-2-1",
+        "zappy-construir-2",
+        "video-construir-3-1",
+        "zappy-construir-3",
+        "zappy-convite-construir-1"
+      ],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "aceitar-entrada",
+            "label": "Aceite qualquer tecla ou toque em Quando acontecer.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_any_input",
+              "area": "events"
+            }
+          },
+          {
+            "id": "iniciar-partida",
+            "label": "Mude para jogando dentro do evento de entrada.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_any_input",
+              "fields": {
+                "SCENE": "jogando"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "fechamento",
+      "title": "Mostre sua criação",
+      "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
+      "intent": "delivery",
+      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "O que você descobriu?",
+      "objective": "Retomar o conceito depois de explorar, criar e entregar.",
+      "intent": "closing",
+      "blockKeys": ["zappy-revisao", "quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
+      }
+    }
+  ]
+}

@@ -228,6 +228,8 @@ export const ThreadListQuery = t.Object({
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   /** Prateleira do desafio mensal: só posts com este `challenge_key` (`m:YYYY-MM`). */
   challenge: t.Optional(t.String({ pattern: '^m:\\d{4}-\\d{2}$' })),
+  /** Ordem (filtros do Mural): ausente = `activity`, a de sempre. */
+  sort: t.Optional(t.Union([t.Literal('activity'), t.Literal('recent'), t.Literal('plays')])),
 })
 
 /** Query do resolve do /jogar: `count=1` = conta a jogada (hit fundido no UPDATE). */

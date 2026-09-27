@@ -1,12 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
 /**
- * O "modo foco" (esconder o menu lateral) nasceu só para a página de aula e passou
- * a valer TAMBÉM nos apps de criação (Estúdio/Pensa/Pinta) — as telas que mais
- * pedem área útil. Não havia teste nenhum dele; este fecha a lacuna nas duas
- * derivações que quebram em silêncio: ONDE o botão é oferecido (`navAvailable`) e
- * a preferência ser lembrada POR PERFIL.
+ * O "modo foco" esconde o menu lateral ao entrar nas aulas e ferramentas de
+ * criação. Estes testes verificam onde o controle aparece e se cada entrada
+ * começa recolhida, sem afetar o menu das demais páginas.
  *
  * ⚠️ `mock.module` NÃO é isolado por arquivo no bun: o último registro vale para
  * TODO import seguinte, em qualquer arquivo. Por isso o mock ESPALHA o módulo atual
@@ -28,26 +26,39 @@ mock.module('next/navigation', () => ({
 const { FocusModeProvider } = await import('../src/components/kids/focus-mode')
 const { FocusModeToggle } = await import('../src/components/kids/focus-mode-toggle')
 
-/** happy-dom não implementa `matchMedia`; o `useMinWidth` depende dele. */
+/**
+ * A largura da janela na mão: o `useMinWidth` lê `matchMedia`.
+ *
+ * ⚠️⚠️ Só responde às consultas de `min-width`; qualquer outra (`prefers-reduced-motion`, por exemplo) é
+ * `false`, e o original volta no `afterAll` (full review de 16/09/2026). O falso respondia `true` a
+ * toda consulta sem `min-width` e nunca era desfeito: como o bun roda os arquivos no mesmo processo,
+ * o player de cena de TODO arquivo seguinte rodava com "menos movimento" ligado sem saber, e o teste
+ * da barra do quadro em andamento (`lesson-scene-design`) reprovava conforme a ordem dos arquivos.
+ */
+const matchMediaOriginal = Object.getOwnPropertyDescriptor(window, 'matchMedia')
 function setViewportWidth(width: number): void {
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     writable: true,
     value: (query: string) => {
-      const min = Number(/\(min-width:\s*(\d+)px\)/.exec(query)?.[1] ?? '0')
+      const min = /\(min-width:\s*(\d+)px\)/.exec(query)?.[1]
       return {
-        matches: width >= min,
+        matches: min !== undefined && width >= Number(min),
         addEventListener: () => {},
         removeEventListener: () => {},
       }
     },
   })
 }
+afterAll(() => {
+  if (matchMediaOriginal) Object.defineProperty(window, 'matchMedia', matchMediaOriginal)
+  else Reflect.deleteProperty(window, 'matchMedia')
+})
 
 function renderNav(viewerId = 'perfil-1') {
   return render(
     <FocusModeProvider viewerId={viewerId}>
-      <FocusModeToggle target="nav" variant="edge" />
+      <FocusModeToggle target="nav" />
     </FocusModeProvider>,
   )
 }
@@ -61,15 +72,29 @@ afterEach(cleanup)
 
 const { useFocusMode } = await import('../src/components/kids/focus-mode')
 
-/** Sonda do que as FERRAMENTAS leem (desde 07/09 o botão vive na barra delas). */
+/** Sonda do estado que o shell usa para decidir se a alça aparece. */
 function Probe() {
-  const { navAvailable, outlineAvailable } = useFocusMode()
-  return <output data-nav={String(navAvailable)} data-outline={String(outlineAvailable)} />
+  const { navAvailable, outlineAvailable, navCollapsed } = useFocusMode()
+  return (
+    <output
+      data-nav={String(navAvailable)}
+      data-outline={String(outlineAvailable)}
+      data-collapsed={String(navCollapsed)}
+    />
+  )
 }
 
 describe('modo foco — o que as ferramentas leem (`navAvailable`)', () => {
-  it('é oferecido nos QUATRO apps de criação e no Estúdio Pro, a partir de 768px', () => {
-    for (const route of ['/estudio', '/pensa', '/pinta', '/molda', '/estudio/pro/abc123']) {
+  it('é oferecido nas galerias de criação, no avatar e no quarto, a partir de 768px', () => {
+    for (const route of [
+      '/estudio',
+      '/pensa',
+      '/pinta',
+      '/molda',
+      // 19/09/2026: as duas telas de criação que ocupavam a tela sem oferecer volta ao menu.
+      '/meu-avatar',
+      '/quarto',
+    ]) {
       pathname = route
       const { container, unmount } = render(
         <FocusModeProvider viewerId="perfil-1">
@@ -84,20 +109,21 @@ describe('modo foco — o que as ferramentas leem (`navAvailable`)', () => {
     }
   })
 
-  it('não é oferecido abaixo de 768px nem fora das telas (mesmo com a preferência salva)', () => {
-    pathname = '/estudio'
+  it('não é oferecido abaixo de 768px nem fora das telas de foco', () => {
     setViewportWidth(500)
-    const narrow = render(
-      <FocusModeProvider viewerId="perfil-1">
-        <Probe />
-      </FocusModeProvider>,
-    )
-    expect(narrow.container.querySelector('output')?.getAttribute('data-nav')).toBe('false')
-    narrow.unmount()
+    for (const route of ['/estudio', '/meu-avatar', '/quarto']) {
+      pathname = route
+      const narrow = render(
+        <FocusModeProvider viewerId="perfil-1">
+          <Probe />
+        </FocusModeProvider>,
+      )
+      expect(narrow.container.querySelector('output')?.getAttribute('data-nav')).toBe('false')
+      narrow.unmount()
+    }
 
     setViewportWidth(1280)
-    localStorage.setItem('sz:kids:hide-nav:perfil-1', '1')
-    for (const route of ['/cursos', '/perfil', '/']) {
+    for (const route of ['/criar', '/cursos', '/perfil', '/']) {
       pathname = route
       const { container, unmount } = render(
         <FocusModeProvider viewerId="perfil-1">
@@ -105,22 +131,23 @@ describe('modo foco — o que as ferramentas leem (`navAvailable`)', () => {
         </FocusModeProvider>,
       )
       expect(container.querySelector('output')?.getAttribute('data-nav')).toBe('false')
+      expect(container.querySelector('output')?.getAttribute('data-collapsed')).toBe('false')
       unmount()
     }
   })
 })
 
 describe('modo foco — onde o botão do menu é oferecido', () => {
-  it('aparece nos apps de criação (e no Estúdio Pro) — interino do Molda inclusive', () => {
-    for (const route of ['/estudio', '/pensa', '/pinta', '/molda', '/estudio/pro/abc123']) {
+  it('está disponível nos apps de criação, avatar e quarto pelo shell', () => {
+    for (const route of ['/estudio', '/pensa', '/pinta', '/molda', '/meu-avatar', '/quarto']) {
       pathname = route
       const { unmount } = renderNav()
-      expect(screen.getByRole('button', { name: 'Esconder menu' })).toBeDefined()
+      expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
       unmount()
     }
   })
 
-  it('aparece na página de aula, na roupa de cabeçalho (sem regressão)', () => {
+  it('recolhe as duas barras por padrão na aula de notebook e permite reabrir', () => {
     pathname = '/cursos/meu-curso/aulas/abc123'
     const { container } = render(
       <FocusModeProvider viewerId="perfil-1">
@@ -128,15 +155,71 @@ describe('modo foco — onde o botão do menu é oferecido', () => {
         <FocusModeToggle target="outline" />
       </FocusModeProvider>,
     )
-    expect(screen.getByRole('button', { name: 'Esconder menu' })).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
     // A lista de aulas segue EXCLUSIVA da aula.
-    expect(screen.getByRole('button', { name: 'Esconder lista de aulas' })).toBeDefined()
-    expect(container.querySelector('button.size-11')).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Mostrar lista de aulas' })).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
+    expect(screen.getByRole('button', { name: 'Esconder menu' })).toBeDefined()
+    expect(localStorage.getItem('sz:kids:hide-nav:perfil-1')).toBeNull()
+    expect(container.querySelector('button[data-side="left"]')).not.toBeNull()
+    expect(container.querySelector('button[data-side="right"]')).not.toBeNull()
   })
 
-  it('não aparece nas demais telas (a preferência salva nunca some o menu fora delas)', () => {
-    localStorage.setItem('sz:kids:hide-nav:perfil-1', '1')
-    for (const route of ['/cursos', '/perfil', '/']) {
+  it('entra em cada aula com os menus recolhidos também em monitor largo', () => {
+    pathname = '/cursos/meu-curso/aulas/primeira'
+    setViewportWidth(1800)
+    const { rerender } = render(
+      <FocusModeProvider viewerId="perfil-1">
+        <FocusModeToggle target="nav" />
+        <FocusModeToggle target="outline" />
+      </FocusModeProvider>,
+    )
+    expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Mostrar lista de aulas' })).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
+    pathname = '/cursos/meu-curso/aulas/segunda'
+    rerender(
+      <FocusModeProvider viewerId="perfil-1">
+        <FocusModeToggle target="nav" />
+        <FocusModeToggle target="outline" />
+      </FocusModeProvider>,
+    )
+    expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
+  })
+
+  it('no celular permite abrir a lista de aulas sem exibir o controle do menu global', () => {
+    pathname = '/cursos/meu-curso/aulas/primeira'
+    setViewportWidth(390)
+    render(
+      <FocusModeProvider viewerId="perfil-1">
+        <FocusModeToggle target="nav" />
+        <FocusModeToggle target="outline" />
+      </FocusModeProvider>,
+    )
+    expect(screen.queryByRole('button', { name: /menu/i })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar lista de aulas' }))
+    expect(screen.getByRole('button', { name: 'Esconder lista de aulas' })).toBeDefined()
+  })
+
+  it('ao trocar de perfil, a aula volta ao estado recolhido', () => {
+    pathname = '/cursos/meu-curso/aulas/primeira'
+    const { rerender } = render(
+      <FocusModeProvider viewerId="perfil-1">
+        <FocusModeToggle target="nav" />
+      </FocusModeProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
+    expect(screen.getByRole('button', { name: 'Esconder menu' })).toBeDefined()
+    rerender(
+      <FocusModeProvider viewerId="perfil-2">
+        <FocusModeToggle target="nav" />
+      </FocusModeProvider>,
+    )
+    expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
+  })
+
+  it('não aparece nas demais telas, inclusive na página Criar', () => {
+    for (const route of ['/criar', '/cursos', '/perfil', '/']) {
       pathname = route
       const { unmount } = renderNav()
       expect(screen.queryByRole('button', { name: /menu/i })).toBeNull()
@@ -166,68 +249,149 @@ describe('modo foco — o controle em si', () => {
   it('NÃO tem `title` (com aria-label ele viraria descrição e o leitor repetiria)', () => {
     pathname = '/estudio'
     renderNav()
-    expect(screen.getByRole('button', { name: 'Esconder menu' }).getAttribute('title')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Mostrar menu' }).getAttribute('title')).toBeNull()
   })
 
-  it('o puxador tem anel de foco INSET (a borda de recorte do main cortaria o de fora)', () => {
-    pathname = '/estudio'
-    const { container } = renderNav()
-    const tab = container.querySelector('button')
-    // O `<main>` é `overflow-hidden` e o puxador encosta na borda de recorte.
-    expect(tab?.className).toContain('focus-visible:shadow-[inset_0_0_0_3px_var(--ring)')
-    // A sombra dura cresce p/ a direita/baixo — o lado que o recorte não come.
-    expect(tab?.className).toContain('shadow-[2px_2px_0_var(--border)]')
-  })
-
-  it('o puxador não usa o círculo do cabeçalho (as roupas não se misturam)', () => {
-    pathname = '/estudio'
-    const { container, unmount } = renderNav()
-    expect(container.querySelector('button.size-11')).toBeNull()
-    expect(container.querySelector('button.absolute.left-0')).not.toBeNull()
-    unmount()
-
+  it('é uma alça presa à borda, não um quadrado no cabeçalho', () => {
     pathname = '/cursos/meu-curso/aulas/abc123'
-    const header = render(
-      <FocusModeProvider viewerId="perfil-1">
-        <FocusModeToggle target="nav" />
-      </FocusModeProvider>,
-    )
-    expect(header.container.querySelector('button.size-11')).not.toBeNull()
-    expect(header.container.querySelector('button.absolute')).toBeNull()
+    const { container } = renderNav()
+    const handle = container.querySelector('button[data-side="left"]')
+    expect(handle?.classList.contains('fixed')).toBe(true)
+    expect(handle?.getAttribute('style')).toContain('left: 0')
+    expect(handle?.getAttribute('aria-controls')).toBe('kids-app-sidebar')
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
+    expect(handle?.getAttribute('style')).toContain('var(--kids-menu-width)')
   })
 })
 
-describe('modo foco — preferência por perfil', () => {
-  it('o clique alterna o estado e grava na chave do PERFIL', () => {
+function WorkspaceProbe() {
+  const { navCollapsed, setWorkspaceActive } = useFocusMode()
+  return (
+    <>
+      <output data-testid="nav-collapsed">{String(navCollapsed)}</output>
+      <button type="button" onClick={() => setWorkspaceActive(true)}>
+        Abrir projeto
+      </button>
+      <button type="button" onClick={() => setWorkspaceActive(false)}>
+        Voltar à galeria
+      </button>
+    </>
+  )
+}
+
+describe('modo foco — projeto aberto', () => {
+  it('retira a alça e recolhe o menu sem esquecer que ele estava aberto na galeria', () => {
+    pathname = '/pinta'
+    render(
+      <FocusModeProvider viewerId="perfil-1">
+        <FocusModeToggle target="nav" />
+        <WorkspaceProbe />
+      </FocusModeProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
+    expect(screen.getByRole('button', { name: 'Esconder menu' })).toBeDefined()
+    expect(screen.getByTestId('nav-collapsed').textContent).toBe('false')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir projeto' }))
+    expect(screen.queryByRole('button', { name: /menu/i })).toBeNull()
+    expect(screen.getByTestId('nav-collapsed').textContent).toBe('true')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar à galeria' }))
+    expect(screen.getByRole('button', { name: 'Esconder menu' })).toBeDefined()
+    expect(screen.getByTestId('nav-collapsed').textContent).toBe('false')
+  })
+
+  it('o Estúdio Pro já nasce sem alça; avatar, quarto e aula não perdem a sua', () => {
+    for (const route of ['/estudio/pro/abc123', '/meu-avatar', '/quarto', '/cursos/a/aulas/b']) {
+      pathname = route
+      const { unmount } = renderNav()
+      if (route.startsWith('/estudio/pro/')) {
+        expect(screen.queryByRole('button', { name: /menu/i })).toBeNull()
+      } else {
+        expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
+      }
+      unmount()
+    }
+  })
+})
+
+describe('modo foco — estado por visita', () => {
+  it('começa recolhido e o clique alterna o menu sem gravar preferência', () => {
     pathname = '/estudio'
     renderNav('perfil-1')
 
-    const button = screen.getByRole('button', { name: 'Esconder menu' })
-    expect(button.getAttribute('aria-pressed')).toBe('false')
+    const button = screen.getByRole('button', { name: 'Mostrar menu' })
+    expect(button.getAttribute('aria-pressed')).toBe('true')
 
     fireEvent.click(button)
 
-    const pressed = screen.getByRole('button', { name: 'Mostrar menu' })
-    expect(pressed.getAttribute('aria-pressed')).toBe('true')
-    expect(localStorage.getItem('sz:kids:hide-nav:perfil-1')).toBe('1')
+    const pressed = screen.getByRole('button', { name: 'Esconder menu' })
+    expect(pressed.getAttribute('aria-pressed')).toBe('false')
+    expect(localStorage.getItem('sz:kids:hide-nav:perfil-1')).toBeNull()
 
     fireEvent.click(pressed)
-    expect(localStorage.getItem('sz:kids:hide-nav:perfil-1')).toBe('0')
+    expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
+    expect(localStorage.getItem('sz:kids:hide-nav:perfil-1')).toBeNull()
   })
 
-  it('lembra a preferência salva do perfil e ignora a do irmão', () => {
+  it('ignora preferências antigas e recolhe novamente ao trocar de perfil', () => {
     localStorage.setItem('sz:kids:hide-nav:perfil-1', '1')
     pathname = '/pinta'
 
-    const { unmount } = renderNav('perfil-1')
+    const { rerender } = renderNav('perfil-1')
     expect(screen.getByRole('button', { name: 'Mostrar menu' }).getAttribute('aria-pressed')).toBe(
       'true',
     )
-    unmount()
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
 
-    renderNav('perfil-2')
-    expect(screen.getByRole('button', { name: 'Esconder menu' }).getAttribute('aria-pressed')).toBe(
-      'false',
+    rerender(
+      <FocusModeProvider viewerId="perfil-2">
+        <FocusModeToggle target="nav" />
+      </FocusModeProvider>,
     )
+    expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
+  })
+
+  it('abre o menu em Criar e recolhe ao entrar de novo em uma ferramenta', () => {
+    pathname = '/pinta'
+    const { rerender, container } = render(
+      <FocusModeProvider viewerId="perfil-1">
+        <Probe />
+        <FocusModeToggle target="nav" />
+      </FocusModeProvider>,
+    )
+    expect(container.querySelector('output')?.getAttribute('data-collapsed')).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
+    expect(container.querySelector('output')?.getAttribute('data-collapsed')).toBe('false')
+
+    pathname = '/criar'
+    rerender(
+      <FocusModeProvider viewerId="perfil-1">
+        <Probe />
+        <FocusModeToggle target="nav" />
+      </FocusModeProvider>,
+    )
+    expect(container.querySelector('output')?.getAttribute('data-collapsed')).toBe('false')
+    expect(screen.queryByRole('button', { name: /menu/i })).toBeNull()
+
+    pathname = '/molda'
+    rerender(
+      <FocusModeProvider viewerId="perfil-1">
+        <Probe />
+        <FocusModeToggle target="nav" />
+      </FocusModeProvider>,
+    )
+    expect(container.querySelector('output')?.getAttribute('data-collapsed')).toBe('true')
+    expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
+    pathname = '/pinta'
+    rerender(
+      <FocusModeProvider viewerId="perfil-1">
+        <Probe />
+        <FocusModeToggle target="nav" />
+      </FocusModeProvider>,
+    )
+    expect(container.querySelector('output')?.getAttribute('data-collapsed')).toBe('true')
   })
 })

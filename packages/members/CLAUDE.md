@@ -1,5 +1,62 @@
 # CLAUDE.md — @sistemazero/members
 
+> **Contrato vigente das aulas (26/09/2026):** rascunho e publicação aceitam
+> `experimentation`, `html` e `project-play` como atividades interativas. O DTO preserva o
+> snapshot do jogo, o palco, os alvos e `completion?: 'participation' | 'targets'`;
+> o core valida a combinação e avalia a tentativa. Campo ausente mantém a conclusão por alvos
+> dos manifestos existentes. Participação admite zero alvos, sem exigir Jogo 2D; o modo por
+> alvos exige a extensão e pelo menos um alvo válido. Perguntas isoladas usam o bloco
+> `quiz`. Sessões de cena só têm comandos e avaliação de experimentação; não há migração de
+> demonstrações antigas. Notas históricas abaixo sobre esses formatos não se aplicam.
+
+## A cor do perfil — 17/09/2026
+
+O alternador de dois temas (`padrao` ⇄ `pink`) virou um CATÁLOGO de cores escolhido pela pessoa.
+O vocabulário (ids, rótulos em português, cor da casa) mora em **`@sistemazero/core/palette`**; o
+Members guarda a escolha e serve a rota.
+
+- **Migração `0088_profile_palette`** (escrita À MÃO — `db:generate` proporia DROP + ADD no lugar
+  do rename, e o RENAME pede prompt interativo): dropa o CHECK antigo, `RENAME COLUMN kids_theme →
+  palette`, `varchar(32)` ANULÁVEL sem default, `UPDATE … SET palette = NULL WHERE palette =
+  'padrao'` e só ENTÃO um CHECK **de forma** (`palette is null or palette ~ '^[a-z0-9-]{1,32}$'`).
+  ⚠️⚠️ O CHECK vem DEPOIS do UPDATE de propósito: todas as migrações pendentes correm numa
+  transação só, e um `ADD CONSTRAINT CHECK` valida as linhas existentes.
+- ⚠️ **A régua de quais cores existem NÃO está no banco.** Ela é de forma, então uma cor nova é
+  uma linha no core — nunca uma migração — e um seletor livre um dia só afrouxa o que já existe.
+- ⚠️⚠️ **`'padrao'` é ANULADO, nunca apagado.** Ele era o "desligado", não uma escolha; a LINHA
+  guarda a relação perfil↔conta, lida em SQL cru pelo `challenge-lifecycle.repository`. Pelo mesmo
+  motivo a tabela `profile_preferences` NÃO pode ser renomeada. Coberto em
+  `tests/db/profile-palette-migration.test.ts`, que roda o DDL de verdade sobre dados de verdade.
+- **Rota `GET|PUT /members/preferences`** (`learning.routes.ts`), união derivada de `PALETTES`.
+  ⚠️ A rota LEGADA `/members/preferences/kids` — que mapeava `padrao ↔ null` — foi REMOVIDA em
+  17/09/2026, uma release depois dos apps. **Ordem de deploy: members → gateway → apps**; uma
+  versão antiga de app apontando para a rota morta recebe 404 no alternador de tema.
+- **Critério de aula:** a ação de plataforma `change-theme` passou a valer por `palette !== null`
+  ("escolheu uma cor"). ⚠️ O ID `change-theme` NÃO muda — ele viaja dentro de conteúdo de aula
+  publicado; o que mudou foi o rótulo ("Escolher a minha cor").
+
+## Recados e evidências Kids — 11/09/2026
+
+Migrações `0084_kids_recados_evidence` e `0085_explicit_section_criteria`: envios com destinatários
+persistidos, workflow de conversas, contexto de ajuda e evidências por revisão. O worker de recados
+retoma lotes confirmados a cada 5s, com entrega transacional/idempotente e conversa privada por perfil.
+Prévia expira em 30min; público vem do Auth + acesso efetivo no Members, nunca da lista de conversas.
+Exclusão de conta coordena as entregas e limpa snapshots/evidências usando o mesmo advisory lock.
+Critérios de seção são explícitos; a migração incorpora exigências anteriores e mantém rascunhos
+publicáveis por uma revisão alternativa válida somente para a transformação exata da migração.
+`lesson_evidence` preserva projetos/resultados de quiz, Estúdio e checkpoints através da publicação;
+relatório lista resumos e o endpoint admin de evidência individual recupera o snapshot completo.
+Verificador estrutural é compartilhado no Core. Quiz obrigatório da seção permite nova tentativa
+imediata; quiz avulso mantém cooldown. Detalhes: [plano](../../docs/plans/2026-09-11-kids-recados-progresso-implementacao.md).
+
+Correções da revisão (12/09): checkpoint, quiz e entrega obtêm `lockLearningOwner` antes dos
+locks de bloco/aula. A purga obtém os locks dos perfis antes de apagar evidências; novas gravações
+exigem a conta responsável e verificam a cerca de exclusão. Restrições de autoria são aplicadas
+na publicação, preservando a correção híbrida das aulas existentes durante a leitura do aluno.
+O Members consome `@sistemazero/studio/server-project-checks`, composto somente por contratos
+JSON e pelo avaliador Core, sem Blockly/React/DOM. O histórico admin tem páginas de 100 registros,
+cursor por evidência (ordenação data + id) e snapshot completo sob demanda.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, jose,
 > Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,
@@ -109,7 +166,7 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > à vista, ver §Fluxo de integração) **APLICADA — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)** e
 > **`0043`** (`0043_bouncy_the_renegades`: `challenge_custom_themes` + `challenge_month_overrides`
 > — Desafio do mês gerenciável pelo admin, ver §Desafio do mês GERENCIÁVEL) e **`0044`**
-> (`0044_huge_ezekiel`: **eixo 2D/3D — reforma da carreira 07/2026** — enum `course_track`
+> (`0044_huge_ezekiel`: **eixo 2D/3D — reforma da jornada 07/2026** — enum `course_track`
 > [`2d`|`3d`] + `courses.track` NOT NULL DEFAULT `2d` + `xp_events.source_track` NULLABLE
 > **SEM backfill DE PROPÓSITO** — a contagem usa `coalesce(source_track, courses.track, '2d')`,
 > então re-taggear um curso 3D no admin corrige os marcos legados sozinho; congelar '2d' no
@@ -536,17 +593,17 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    opcional — ausente no CREATE → `true`; no UPDATE **PRESERVA a atual** (régua do `audience`).
    `false` é mantido. Os fronts (community + community-kids) leem `locked` por aula e renderizam
    o nó/linha travado (cadeado, não clicável) + página de "aula bloqueada" no 423.
-11. **DEGRAU do CURSO + carreira do ALUNO (rank; posições na migration `0047`, normalização
+11. **DEGRAU do CURSO + jornada do ALUNO (rank; posições na migration `0047`, normalização
    `0048` e restrição final `0049`):** o curso tem `courses.level`
    (`primeiros-passos`|`iniciante`|`intermediario`|`avancado`|`lenda`, default
    `iniciante`) **+ `courses.track`** (`2d`|`3d`, default `2d`) — o PAR é o DEGRAU pedagógico
    ("Iniciante 2D" … "Avançado 3D"). Colunas dedicadas, autoradas no admin (régua do
    `audience`/`sequentialLock`: ausentes no CREATE → defaults, no UPDATE **PRESERVAM** as atuais).
    Expostas em `CourseView` (admin) + `Catalog/My/Detail` (aluno). Com isso o ALUNO tem uma
-   **carreira de 8 níveis** (`noob`→`coder`→`hacker`→`explorer`→`elite`→`architect`→`champion`→`god`
+   **jornada de 8 níveis** (`noob`→`coder`→`hacker`→`explorer`→`elite`→`architect`→`champion`→`god`
    = Faísca→Construtor(a)→Inventor(a)→Explorador(a) de Mundos→Mestre dos Jogos→Arquiteto(a) de
    Mundos→Gênio da Criação→Lenda) **DERIVADA na leitura** (sem coluna/backfill, como o
-   ranking/missões): catálogo central em `@sistemazero/core/career`, espelhado por
+   ranking/missões): catálogo central em `@sistemazero/core/journey`, espelhado por
    `domain/gamification/levels.ts`. A régua usa POSIÇÕES ESPECÍFICAS: slot 1 de **Primeiros Passos** →
    + slots 1..8 ini-2d → + slots 1..8 ini-3d → +1..8 int-2d → +1..8 int-3d → +1..8 av-2d →
    +1..8 av-3d (**49 obrigatórios**; eram 48 enquanto o ini-2d teve 7, entre 14/08 e 15/08).
@@ -556,7 +613,7 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    O número de posições tem UMA exceção: use `careerSlotsForTier(tier)` do core (1 na entrada, 8 nos
    demais), nunca um 8 solto — o degrau de entrada tem 1. `courseTier(level, track)` passou a devolver `CourseTier | null` — nem todo par
    é degrau (só existe `primeiros-passos-2d`, nunca o `-3d`), e quem chama trata `null` como fora da
-   carreira, igual ao `lenda`.
+   jornada, igual ao `lenda`.
    🚨 **O rollout exige MANUTENÇÃO.** Os marcos guardam um retrato congelado do degrau, e o
    retrato de quem já concluiu o curso-base aponta `iniciante-2d` slot 1 — a régua nova exige
    `primeiros-passos-2d`, então a criança CAIRIA para Faísca. A `0063` solta esse retrato (os três
@@ -569,8 +626,8 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    <slug> --confirm`. O comando move o curso e RECONGELA os dois marcos na mesma transação; não use o
    admin para separar as duas operações. Sem a finalização, o curso-base vira etapa futura e pode dar
    423, portanto a janela não é cosmética. Provado contra Postgres em
-   `tests/db/career-snapshot-release.test.ts`; runbook completo em `docs/carreira-do-criador.md`.
-   Não é contagem genérica: um slot repetido ou fora da carreira não substitui outro.
+   `tests/db/journey-snapshot-release.test.ts`; runbook completo em `docs/jornada-do-criador.md`.
+   Não é contagem genérica: um slot repetido ou fora da jornada não substitui outro.
    🚨 **RETRATO LEGADO É PARCIAL — não teste o trio, teste campo a campo (14/08, achado no banco
    de staging).** Os três campos nasceram em migrations diferentes (`source_level` na `0030`,
    `source_track` na `0044` — que deliberadamente NÃO fez backfill — e `source_career_slot` na
@@ -585,8 +642,8 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    escrever SQL contra colunas de snapshot adicionadas em épocas distintas, assuma a combinação
    parcial — o `is not distinct from` sobre um trio é um filtro bem mais estreito do que parece.
    ⭐ **Os mesmos dois marcos SEM cruzar, por curso (15/08):**
-   `GamificationRepository.listCareerCourseState(userId, audience)` devolve, numa ÚNICA consulta ao
-   ledger, a qualificação da carreira e um `Map<courseId, {completed, showcased}>` no mesmo
+   `GamificationRepository.listJourneyCourseState(userId, audience)` devolve, numa ÚNICA consulta ao
+   ledger, a qualificação da jornada e um `Map<courseId, {completed, showcased}>` no mesmo
    snapshot. O mapa alimenta `CatalogCourseView.milestones`/`MyCourseView.milestones` (kids-only —
    não há Mural no adulto), e com isso o kids monta o SELO do card ("Publique no Mural" × pronta) e
    o contador da trilha. Não existe uma segunda API para os marcos: duas implementações da mesma
@@ -600,9 +657,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    "publicou sem concluir").
    Um curso "qualificado" = tem AMBOS os
    marcos no ledger `xp_events` — `course_complete` ∩ `course_showcased` (gravado pelo webhook
-   abaixo) — agrupado pelo DEGRAU e pela posição (`listQualifyingCareerSlots`, INTERSEÇÃO via
+   abaixo) — agrupado pelo DEGRAU e pela posição (`listQualifyingJourneySlots`, INTERSEÇÃO via
    self-join no ledger, GROUP BY level+track+careerSlot). A versão em lote é
-   `listQualifyingCareerSlotsForProfiles`. ⚠️ **RANK NUNCA REGRIDE POR RE-NIVELAMENTO (migrations
+   `listQualifyingJourneySlotsForProfiles`. ⚠️ **RANK NUNCA REGRIDE POR RE-NIVELAMENTO (migrations
    `0030`/`0044`):** o degrau contado vem do **SNAPSHOT congelado** `xp_events.source_level` +
    `source_track` + `source_career_slot` (gravados nos marcos de curso no momento do award),
    NÃO do curso ao vivo. O `courses` entra só como **LEFT join** p/
@@ -629,18 +686,18 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    de cara: destrava quando a etapa do bônus COMPLETA (todos os slots dela qualificados = o momento
    do level-up; reason `tier-reward`, com `requiredLevel` = o nível que completa a etapa). Bônus
    segue FORA da contagem de nível. A política PURA é
-   `resolveCareerCourseLock(qualified, tier, slot, foundationAvailable)` (core `@sistemazero/core/career`):
+   `resolveJourneyCourseLock(qualified, tier, slot, foundationAvailable)` (core `@sistemazero/core/journey`):
    curso de etapa FUTURA → `future-tier`; na etapa atual, se não é o slot 1 e o slot 1 ainda não
    qualificou → `foundation-first`. ⚠️ **Fail-open (fix 23/07; estendido ao bônus 24/07):** sem um
    curso-base PUBLICADO na etapa não há como destravar (concluir+publicar os obrigatórios é a única
    chave), então tanto `foundation-first` quanto `tier-reward` são IGNORADOS — senão a etapa inteira
-   (e, no Iniciante 2D, a carreira toda) congelaria; no bônus isso também protege o ROLLOUT em prod
+   (e, no Iniciante 2D, a jornada toda) congelaria; no bônus isso também protege o ROLLOUT em prod
    (catálogo nasce todo-bônus antes de as etapas serem montadas → nada tranca no deploy). `foundationAvailable` = `foundationByTier.has(tier)` na projeção da listagem
    (`careerLocksForCourses`) e `CourseRepository.hasPublishedFoundationCourse(audience, level, track)`
-   no gate em profundidade (`CheckAccessService`, que lança `CourseCareerLockedError` → **423
+   no gate em profundidade (`CheckAccessService`, que lança `CourseJourneyLockedError` → **423
    `COURSE_CAREER_LOCKED`**). LISTA e gate usam a MESMA política (mesmo `qualified` do PERFIL). Flag
    liga só p/ `audience==='kids' && !privileged` (equipe ignora). Autoria admin valida o slot em
-   `assertCareerSlot` (kids-only, máximo POR DEGRAU via `careerSlotsForTier` — CHECK da migration
+   `assertJourneySlot` (kids-only, máximo POR DEGRAU via `careerSlotsForTier` — CHECK da migration
    `0063`; conflito → 409 `CAREER_SLOT_CONFLICT`).
    ⚠️ **Armadilha:** curso-base sem bloco de Estúdio com vitrine (`showcase.enabled`) conclui mas
    nunca publica → slot 1 nunca qualifica → demais da etapa presos. **Aviso automático (24/07):** a
@@ -648,7 +705,7 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    (`ContentAdminRepository.listCourseIdsWithShowcaseBlock` — EXISTS de aula PUBLICADA com bloco
    `studio` `showcase.enabled`) e o painel do admin mostra ⚠️ "Sem vitrine". O 423 `foundation-first`
    NÃO carrega `requiredLevel` (a chave é o curso-base, não um nível — só `future-tier` o traz).
-   Doc: `docs/carreira-do-criador.md`.
+   Doc: `docs/jornada-do-criador.md`.
 
 ## Arquitetura (DDD + Hexagonal — espelha auth/catalog)
 
@@ -697,7 +754,7 @@ scripts/seed-course.ts   # curso publicado (aula composta + quiz + anexo); --gra
 COMPRA: payments emite payment.paid → gateway → funil /api/webhooks/payments
   funil: markPaid → registra comprador no auth (obtém userId) → DEPOIS chama:
   funil → gateway POST /members/webhooks/grant (HMAC borda 'funnel' + resign 'gateway')
-          { userId, offerRef, paymentId, paidAt, subscription? }
+          { userId, offerRef, paymentId, paidAt, accessPolicy?, subscription? }
   members: resolve snapshot no catálogo (offerRef) → upsert matrícula(s)
 
 ACESSO: browser logado → Bearer JWT → gateway (injeta x-auth-user-id) → members
@@ -740,19 +797,34 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   no parse do gateway do catálogo) → **502 `OFFER_EMPTY`**, mesma régua. `granted:0`
   por idempotência (já concedido) continua sendo **200** (sucesso) — o sinal é
   `offerFound`/`itemsResolved`, não a contagem.
-- **Grant por PERÍODO (`accessPeriodMonths`, 07/2026 — anual à vista Pix/boleto):** o
-  `GrantWebhookBody` aceita `accessPeriodMonths?` (1..120). Presente (e SEM
-  `subscription`) → ramo `grantOneTime` com validade: `expiresAt =
-  computeExpiry(grantedAt, N, graceDays)`, key `payment:<paymentId>:<productId>`,
-  `subscriptionId: null` (NADA de assinatura sintética — a revogação por
-  subscriptionId nunca a alcança; expira sozinha). Renovar = NOVA compra (paymentId
-  novo → linha nova; o acesso efetivo é o mais forte). `subscription` presente VENCE
-  o período (nunca chegam juntos do funil). Ausentes os dois → vitalícia (como sempre).
-- **`POST /members/webhooks/grant-manual` (08/2026 — bolsa do @sistemazero/referrals):**
-  concessão manual S2S SEM pagamento (o catálogo rejeita oferta R$ 0 — grant direto é o
-  único caminho da bolsa). `GrantManualWebhookBody` = `{userId, mode: 'offer' (literal —
-  v1 restrita; os demais modos seguem SÓ no admin JWT), offerRef, expiresAt?: ISO|null,
-  sourceId?}`. Reusa o `GrantManualEntitlementService`, que ganhou `sourceId?` em TODOS os
+- **Política comprada (`accessPolicy`, 09/2026):** o contrato imutável da cobrança tem
+  precedência sobre os campos legados: `lifetime` → validade nula; `fixed/days` → blocos
+  exatos de 24h desde a aprovação; `fixed/months` → mês-calendário UTC; `billing_cycle`
+  → intervalo da assinatura + carência. Compra única fixa NÃO recebe a carência da
+  assinatura. A política fica congelada também no `EntitlementSnapshot` (campo opcional
+  para snapshots antigos). Combinação incoerente responde 422 antes de persistir.
+  `accessPeriodMonths` permanece temporariamente para eventos antigos e vira
+  `fixed/months`; `subscription` sem política continua no caminho legado; sem nenhum dos
+  três campos continua sendo vitalício. Renovar compra fixa = NOVO paymentId/matrícula,
+  sem encurtar uma matrícula vitalícia ou com validade mais distante já existente.
+- **Desafio de 30 dias + Mural visitante:** no grant pago da oferta resolvida
+  `desafio-primeiro-jogo-30-dias`, com política comprada explícita `fixed/30/days` e item de Mural
+  pleno, concede também uma matrícula permanente de visitante (`product_id` sintético
+  `00000000-0000-0000-0000-000000000002`, `courseRef: mural-dos-criadores-visitante`,
+  `sourceKind: payment`). A matrícula usa a chave de idempotência pagamento+produto e snapshot
+  vitalício; falha parcial retorna erro para o webhook reentregar. `itemsResolved` continua sendo a
+  quantidade de itens do catálogo. No vencimento, a matrícula plena deixa de estar ativa e a de
+  visitante permanece: não há job de rebaixamento. A oferta histórica vitalícia e outras ofertas
+  não recebem esse direito adicional.
+- **`POST /members/webhooks/grant-manual` (bolsa do @sistemazero/referrals):**
+  concessão manual S2S SEM pagamento. `GrantManualWebhookBody` aceita a oferta legada
+  `{userId, mode:'offer', offerRef, expiresAt?, sourceId?}` ou o presente novo
+  `{userId, mode:'course', courseRef, expiresAt?, sourceId?}`; os demais modos seguem
+  SÓ no admin JWT. No braço S2S de curso, o members exige curso kids `published`
+  (caso contrário, 503 `COURSE_UNAVAILABLE` sem marcar a entrega). A leitura assinada
+  `GET /members/webhooks/gift-course/:slug` devolve `{available:boolean}` com a mesma
+  regra, para o referrals bloquear o resgate antes de criar conta. Reusa o
+  `GrantManualEntitlementService`, que ganhou `sourceId?` em TODOS os
   braços do command: `sourceKind` FICA `'manual'` (enum INTOCADO — regra do monorepo) e a
   procedência vai em `sourceId` (ex.: `scholarship:<redemptionId>`); ausente → `'manual'`
   (admin como sempre). Idempotência: `manual:userId:productId` — e com `sourceId` próprio
@@ -768,8 +840,9 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   retry pós-conserto → `{ok:true, deduped}` SEM conceder nada — sucesso FALSO no chamador.
   Sucesso marca + notifica o hub (mesma régua do `/grant`). Mesmo HMAC + `x-delivery-id`
   obrigatório do router.
-  Gateway: rota `members-webhook-grant-manual` (hmac + `upstreamAuth: 'resign'`, espelho
-  da `members-webhook-grant`). Testes: `tests/integration/grant-manual-webhook.test.ts`.
+  Gateway: rotas `members-webhook-grant-manual` e `members-webhook-gift-course` (HMAC
+  restrito ao consumer `referrals` + `upstreamAuth: 'resign'`). Testes:
+  `tests/integration/grant-manual-webhook.test.ts`.
 - **Extensão de assinatura re-tenta sob conflito otimista** (até 3×, recarregando a
   matrícula): sem isso, a renovação que perdesse a corrida p/ um cancel/ação admin
   respondia 200 e a extensão do ciclo se perdia de vez. Conflito persistente → lança
@@ -834,8 +907,8 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   marcos → nível `noob`). Serve o BFF do **Clube/Mural kids** para pintar rosto+aura de cada
   autor de tópico/comentário numa ida (sem N+1). `GetAvatarsByProfilesService` (avatar +
   gamification) roda 2 queries em `Promise.all`: `AvatarRepository.listPhotoUrlsByProfileIds
-  (profileIds, audience)` + `GamificationRepository.listQualifyingCareerSlotsForProfiles
-  (profileIds, audience)` (versão em LOTE do `listQualifyingCareerSlots`, com o mesmo self-join
+  (profileIds, audience)` + `GamificationRepository.listQualifyingJourneySlotsForProfiles
+  (profileIds, audience)` (versão em LOTE do `listQualifyingJourneySlots`, com o mesmo self-join
   de marcos e posições) → `computeStudentLevel` por perfil. DTO `AvatarsBatchQuery`
   (`ids` csv, cap **50** via `parseProfileIds` — uuid validado na borda; `audience` ausente →
   **`kids`**, único consumidor é a vitrine kids). **SEM migração** (`avatar_configs.photo_url`
@@ -932,6 +1005,20 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   dedupe do messaging por `renewal-reminder:<entitlementId>:<expiresOn>` absorve o
   retry). Keyar na DATA faz um EXTEND admin gerar lembrete novo (desejado). O
   anti-join do "ainda sem lembrete" é no SQL (`DrizzleRenewalReminderRepository`).
+- **Ciclo do Desafio de 30 dias (09/2026, migration `0087`):**
+  `entitlement_lifecycle_messages_sent(entitlement_id, expires_on, message_kind)` permite avisos
+  independentes de 7 dias, 3 dias, expiração, ativação e progresso. `fixed/days` usa templates
+  `challenge-*`; `fixed/months` continua no lembrete anual e vitalício é ignorado. Outra matrícula
+  específica ou `all_kids_courses` que cubra o mesmo curso até pelo menos o fim do Desafio suprime
+  os avisos de prazo. O serviço comportamental usa `AccountIdentity.activated` (booleano do Auth) e
+  só atribui progresso a perfis ligados à conta por colunas `account_id` do próprio Members; uma
+  relação ambígua é descartada. Envia: 24h sem ativar, 48h ativado sem começar, Dia 1 concluído e
+  curso concluído. Envio e marcação são mark-after-send; o idempotency key do Messaging absorve o
+  crash intermediário. O mesmo timer/advisory lock do lembrete anual executa os dois serviços.
+  Quando `FUNNEL_URL` e `FUNNEL_INTERNAL_TOKEN` estão configurados, esses quatro marcos também são
+  enviados em lote para `POST /api/internal/challenge-events`; falha de analytics é best-effort e
+  nunca bloqueia acesso ou mensagem. O token deve ser o mesmo do Funnel e é opcional apenas quando
+  a integração está deliberadamente desligada em desenvolvimento.
 - **Retenção de `processed_webhooks` roda SOZINHA** (06/2026): `setInterval` no
   composition-root (`RETENTION_CLEANUP_INTERVAL_MS`, default 6h) chama
   `pruneProcessedBefore(now - PROCESSED_WEBHOOKS_RETENTION_DAYS)` gateado por
@@ -1009,7 +1096,10 @@ user+audience+slug — a "1ª aula" do kids é independente da do adult). Domain
 `domain/gamification/` (XP_VALUES, `quizPassedXp`, `localDateSaoPaulo`/`advanceStreak`/
 `effectiveStreak` — timezone FIXA America/Sao_Paulo, cálculo SEMPRE no backend; o "dia"
 vira às 03:00Z). Decisões travadas com o usuário (06/2026): **SEM corações/vidas**;
-XP = aula 10 · quiz aprovado 20 + bônus `round(score/10)` cap +10 · baú de unidade 25;
+XP = aula 10 · quiz aprovado 20 + bônus `round(score/10)` cap +10 · baú de unidade 25
+(⚠️ esses números aparecem na página do Ranking kids, `community-kids/src/lib/xp-sources.ts`,
+junto com o `STUDIO_PUBLISH_DAY`; o `community-kids/tests/xp-conformance.test.ts` lê o
+`gamification.ts` PELO CAMINHO — mudou um valor, mude lá; moveu o arquivo, o teste quebra);
 **catálogo de badges EM CÓDIGO** (`BADGE_SLUGS`, **30** com as expansões: first-lesson,
 **first-showcase** (1º jogo publicado no Mural — universal, ledger `course_showcased`, Fase 5),
 **plays-10/plays-100** (jogadas recebidas, ledgers `play_milestone_*`),
@@ -1383,7 +1473,7 @@ declara `metadata.studioUnlockBlocks` (jsonb, **sem migração** — mesma régu
 **AUSENTE PRESERVA** como `audience`/`level`, para um PATCH de build antigo não apagar currículo) e o
 aluno recebe a UNIÃO dos cursos ELEGÍVEIS. O critério usa o `careerSlot` VIVO: bônus Kids (`null`)
 exige só `course_complete`; curso Kids com posição e curso Adult exigem também `course_showcased`.
-O NÍVEL segue decidindo o MODO (livre/Ponte/Pro), e a carreira continua usando exclusivamente a
+O NÍVEL segue decidindo o MODO (livre/Ponte/Pro), e a jornada continua usando exclusivamente a
 interseção dos dois marcos.
 
 - **A lista é dos blocos que o curso USA** (fluxo da autora), então repetir fundamentos de cursos
@@ -1397,7 +1487,7 @@ interseção dos dois marcos.
 - **Ao vivo** = `GamificationRepository.listStudioUnlocksByCourse` (`course_complete` como origem +
   LEFT join do Mural + `courses.metadata`, com INNER join no curso vivo **da mesma audiência**).
   Bônus e `lenda` Kids entram só pela conclusão; cursos com posição e Adult entram pela
-  interseção. Só a CARREIRA ignora bônus e `lenda`.
+  interseção. Só a JORNADA ignora bônus e `lenda`.
 - ⭐⭐ **`studio_block_grants` (migration `0062`) = o "não revoga".** Regra da usuária: bloco liberado
   nunca é retirado. A união ao vivo sozinha NÃO garante isso (editar o JSON, despublicar ou apagar o
   curso tiraria a ferramenta de quem já a tinha, inclusive de projetos que a usam). O snapshot é
@@ -1479,6 +1569,84 @@ progresso `planned | in_progress | completed`.
 - Todos os acessos resolvem `user_id` + `audience`; mismatch retorna 404. O gate de produto
   continua no create. As cotas e os limites de conversa/artefato permanecem nos use cases.
 - A gamificação do avanço preserva os source IDs determinísticos existentes.
+- **`DELETE /members/pensa/projects/:projectId` (14/09/2026)** apaga o plano DE VEZ (decisão da
+  usuária: sem lixeira; quem pergunta antes é a tela). `DeletePensaProjectService` confere a posse
+  pelo `findProject` (plano de outro perfil/vitrine = 404, nunca "apagado com sucesso") e o
+  repositório faz UM `delete` com o mesmo `ownedProject` no WHERE — ciclos, conversas, artefatos e
+  cartões caem pelas FKs `on delete cascade` da `0060`. **Sem migration.** ⚠️ O ledger NÃO é
+  tocado: `xp_events` guarda `source_id` derivado, sem FK, então apagar o plano não tira XP nem
+  badge de quem o fez. Gateway: o DELETE entrou nos `methods` da rota `members-pensa-project`, que
+  já existia. O fake `tests/fakes/pensa-in-memory.ts` espelha a cascata (é ele que os testes de
+  integração exercitam). A mensagem do 404 é a frase que a CRIANÇA lê ("Esse plano não está mais
+  aqui.") — o BFF repassa `error.message` inteiro, e o padrão "Recurso do Pensa não encontrado"
+  é recado de servidor; o caso real é apagar o mesmo plano em duas abas. Um teste prova que o
+  ledger de XP/badges sobrevive ao DELETE.
+- **`DELETE /members/pensa/projects/:projectId` (14/09/2026)** apaga o plano DE VEZ (decisão da
+  usuária: sem lixeira; quem pergunta antes é a tela). `DeletePensaProjectService` confere a posse
+  pelo `findProject` (plano de outro perfil/vitrine = 404, nunca "apagado com sucesso") e o
+  repositório faz UM `delete` com o mesmo `ownedProject` do WHERE — ciclos, conversas, artefatos e
+  cartões caem pelas FKs `on delete cascade` da `0060`. **Sem migration.** ⚠️ O ledger NÃO é
+  tocado: `xp_events` guarda `source_id` derivado, sem FK, então apagar o plano não tira XP nem
+  badge de quem o fez — e é assim que tem que ser. Gateway: o DELETE entrou nos `methods` da rota
+  `members-pensa-project` que já existia. O fake `tests/fakes/pensa-in-memory.ts` espelha a
+  cascata (é ele que os testes de integração exercitam).
+
+- **Plano em EQUIPE (26/09/2026, migration gerada `0098_pensa_project_members`):** decisão da
+  dona: a criança compartilha o plano com outro perfil pelo **código do projeto** e os dois
+  precisam ter o Pensa. Modelo: `pensa_projects.share_code` (varchar 8, nulo = convite desligado,
+  índice único PARCIAL `pensa_projects_share_code_uq`) + a tabela `pensa_project_members`
+  (PK `project_id + profile_id`, FK `on delete cascade`, índice por perfil; `account_id` e
+  `invited_by` só para auditoria). **Sem coluna `role`**: dono = `pensa_projects.user_id`.
+  - **O acesso virou "dono OU membro"** (`accessibleProject` no repositório, usado por
+    `findProject`/`findCycleWithProject`/`findTaskWithProject`/`listActiveProjects`), e toda leitura
+    devolve `PensaProjectAccess` = projeto + `role: 'owner' | 'member'` + `memberCount`. As
+    MUTAÇÕES do plano (renomear, arquivar, apagar, gerar/desligar código, tirar membro) exigem o
+    dono → **403 `PENSA_NOT_OWNER`**; perfil de fora segue 404. `countActiveProjects` (o teto de
+    planos) conta só os do dono; plano compartilhado não gasta a cota de quem entrou.
+  - **O código** (`domain/pensa/share-code.ts`, puro): 6 letras do alfabeto sem `0/O/1/I/L`,
+    exibido `ZAP-XXXXXX`; `normalizeShareCode` aceita minúsculas, espaços, hífen e o prefixo.
+    Gerar de novo SOBRESCREVE (o antigo morre na hora), desligar = `NULL`; colisão = 5 tentativas
+    contra o índice único. ⚠️ O código nunca vai no `detail`: só o `GET …/members` do DONO o traz.
+  - **Entrar (`POST /members/pensa/projects/join`, declarado ANTES de `/projects/:projectId` — o
+    literal `join` tem de vencer o param):** exige o produto (`assertPensaProduct`, o mesmo do
+    create); código inválido, plano arquivado ou convite desligado → **404
+    `PENSA_INVITE_INVALID`** (uma mensagem só, para não confirmar que o código existe); o próprio
+    dono → 409 `PENSA_ALREADY_MEMBER` ("Esse plano já é seu."); já membro → 409; equipe com
+    `MAX_PROJECT_MEMBERS` (5) → 409 `PENSA_TEAM_FULL`; quem já entrou em `MAX_JOINED_PROJECTS` (20)
+    → 409 `PENSA_JOIN_LIMIT`. Entrar toca o `updatedAt` do plano (o dono vê "alguém mexeu").
+  - **Sair/tirar (`DELETE …/:projectId/members/:profileId`)**: `me` = sair (o dono não sai: 409
+    `PENSA_OWNER_CANNOT_LEAVE`; ele apaga); id explícito só o dono. Apagar o plano leva os membros
+    pela FK. **`GET …/:projectId/members`** = lista (1º nome pelo auth + rosto pelo
+    `GetAvatarsByProfilesService`, os dois best-effort) para dono e membros.
+  - **XP/cota:** quem avança a etapa ganha o XP (o `source_id` já carrega o ator); a cota de IA é
+    da CONTA de quem chama; a geração do `task_plan` usa posse/nível do chamador (aceito).
+  - ⚠️ Sem trava na conversa Z: dois na mesma etapa fazem último-vence (follow-up
+    `expectedMessageCount`). Estúdio/Pinta/Molda seguem locais por perfil: a colaboração é no
+    PLANO, cada um constrói no seu.
+  - **Full review do lote (26/09/2026), o que ficou de contrato:** (a) **nova versão (`POST
+    …/cycles`) é do DONO** (403 para membro): ela vira o ciclo corrente de toda a equipe e gasta
+    a cota do plano; (b) **`addMember` é uma transação que TRANCA o projeto** (`select … for
+    update`) e devolve `'added' | 'duplicate' | 'full'`: a vaga e a duplicidade são conferidas
+    DENTRO dela, então dois convidados no mesmo instante não passam de 5 e duas abas do mesmo
+    perfil viram 409, não 500 na chave primária (as checagens do serviço antes disso são só a UX);
+    (c) **`setShareCode` devolve `false` na colisão do índice único** (23505 caminhando a cadeia
+    de `cause`, como o content-admin) e o serviço sorteia outro, em vez de 500; (d) **o MEMBRO só
+    alcança plano ATIVO** (`accessibleProject` exige `status='active'` no ramo do membro; o dono
+    alcança sempre): arquivar é como o dono "fecha" o plano; (e) `DELETE …/members/<meu uuid>`
+    por um membro é sair, como `me`; (f) identidades/rostos indisponíveis passam a logar
+    (`console.warn('[pensa] …')`) em vez de virar "Colega" mudo. ⚠️ Aceitos e registrados:
+    `POST …/share` SEMPRE rotaciona (o código atual vive só no `GET …/members` do dono; a UI só
+    chama o POST em "Criar"/"Gerar outro"); um membro que reabre O (editar/apagar tarefa depois de
+    `done`) e fecha de novo ganha o XP do ciclo uma vez por perfil (teto 6× por ciclo); o membro
+    pode substituir o plano de tarefas e escrever na conversa (a lente infantil confia no código
+    passado de mão, e o dono tira quem abusar).
+  - Testes: `tests/unit/pensa-share-code.test.ts`, `tests/integration/pensa-team.test.ts` (perfis
+    A/B/C, `x-auth-account-id` distintos; o helper dá códigos determinísticos `AAAAAB`, …),
+    `tests/db/pensa-team-migration.test.ts` (cascata + índice parcial, contra Postgres) e
+    **`tests/db/pensa-team-repository.test.ts`** (o `DrizzlePensaRepository` de verdade contra
+    Postgres: dono/membro/estranho em `findProject`, `findCycleWithProject` e
+    `listActiveProjects`, arquivado, `addMember` trancado, colisão do código, cascata; até aqui só
+    o fake exercitava o SQL que decide a autorização).
 
 Camadas: `domain/pensa/*`, port `pensa-repository.port.ts`, use cases em `application/pensa/*`,
 `DrizzlePensaRepository`, mappers e rotas HTTP. Contrato transversal:
@@ -1494,8 +1662,19 @@ formato menor que o confirmado OU pendente. Commit revalida formato e mata reser
 legada incompatível sem tocar no blob corrente. Erro HTTP 409
 `CREATION_CLIENT_OUTDATED`, `details.requiredVersion`; retry não resolve.
 Listas/download/commit expõem o formato do documento confirmado. Aplicar migration
-antes do backend e terminar o rollout dos guards antes de novos escritores;
-rollback da UI não remove essas colunas. Plano: `../../docs/plans/2026-09-06-molda-evolution.md`.
+antes do backend e terminar o rollout dos guards antes de novos escritores.
+Rollback da UI não remove essas colunas. Plano: `../../docs/plans/2026-09-06-molda-evolution.md`.
+
+**Reserva (07/09):** ticket inclui `formatVersion` validada, independente da revisão.
+BFF e cliente conferem essa confirmação antes de PUT; omissão confirma só legado 1.
+Essa confirmação não substitui o rollout de todos os guards.
+
+**Exclusão (07/09):** `maxFormatVersion` opcional, default 1, número inteiro real
+1..65535. Sob o lock da revisão, compara máximo confirmado/pendente e devolve
+`CREATION_CLIENT_OUTDATED` antes de qualquer mutação incompatível. Repetir delete
+cancela restauro pendente compatível, mantendo `deletedAt` original e `deleted: false`.
+DTO de versões usa `t.Number({ multipleOf: 1, ... })`: `t.Integer` do Elysia instalado
+converte strings e não satisfaz o contrato estrito de número no corpo JSON.
 
 ⭐ **Ferramenta nova = `CREATION_TOOLS` + enum + migration própria (04/09/2026, `molda`).** O
 union vive em `domain/creations/creation.ts` (`CREATION_TOOLS`, `CREATION_ACCESS_REF`,
@@ -1749,7 +1928,7 @@ implementa as DUAS sobre os mesmos arrays. 5 serviços (`content-admin/content-a
   Clonar p/ **adult** remove `metadata.studioUnlockBlocks` (currículo do Estúdio é conceito
   kids); p/ kids preserva. Decisão da usuária (24/08): clone em vez de audiência "ambas" — o
   enum `course_audience` é compartilhado por ~15 colunas (NUNCA adicionar 'both') e um curso
-  fora da carreira "não vale a pena pro Kids". ⚠️ A rota usa `:courseId` (não `:id`): o Elysia
+  fora da jornada "não vale a pena pro Kids". ⚠️ A rota usa `:courseId` (não `:id`): o Elysia
   exige o MESMO nome de param quando o segmento tem filhos (`/courses/:courseId/modules`).
   A transação revalida versão e audiência da origem antes de copiar; mudança concorrente devolve
   `409 CONCURRENCY_CONFLICT`, impedindo clone de snapshot diferente do que o serviço validou.
@@ -2006,3 +2185,229 @@ nada de DDL. Três mudanças de contrato:
 A busca da base didática (`zappy-knowledge.repository.ts`) passou a juntar os termos com `or`
 antes do `websearch_to_tsquery` — o `ts_rank` vira rank-merge natural em vez do AND implícito,
 que devolvia zero aula sempre que a criança escrevia uma frase inteira.
+
+## Evolução da Jornada do Criador — 07/09/2026
+
+Contrato e implantação: `../../docs/plans/2026-09-07-creator-journey-evolution.md` e
+`../../docs/plans/creator-journey-rollout.md`. A política de ferramentas/próxima ação
+vive em `@sistemazero/core/journey`; os oito ranks e 49 posições permanecem.
+
+- `GetMyCourse` inclui ID, marcos permanentes e `showcaseLessonId` alcançável.
+- Autoria impede perder a última atividade publicada de vitrine nos cursos obrigatórios;
+  alterações de bloco/aula/módulo tomam o lock do curso na mesma transação.
+- `award` congela concessões de blocos junto ao marco; leitura ainda concilia o legado.
+- Missões Kids filtram DEPOIS da atribuição, por ferramenta liberada e eventos de conteúdo
+  ainda possíveis nos cursos acessíveis. Aulas em breve e barreiras sequenciais são excluídas;
+  eventos já premiados não viram novas oportunidades. Prêmios completos/recebidos permanecem.
+- Pensa aceita `destination=molda`, contexto `molda` e saída `molda_asset` para model/texture/sky.
+  Handoff e atualização revalidam posse da conta e rank do perfil em cada destino. Migration
+  `0077` apenas acrescenta o valor ao enum. Não apagar/recriar planos para migrar.
+
+## Sessão e tentativa de cena
+
+O members não confia no que o player diz ter visto: ele rejoga os comandos da cena com o motor do
+core e avalia a tentativa pelo que ELE guardou (`learning.service.ts`). ⭐⭐ Player e servidor rodam o
+MESMO motor, e a funcionalidade nasce na PRIMEIRA versão (decisão da dona, 17/09/2026): não há marcador
+de versão das regras, flag de compatibilidade nem tolerância a player anterior — a única precaução é a
+ORDEM de deploy (members antes de kids e community), em
+[`docs/aulas-interativas-legado/raio-x-implantacao.md`](../../docs/aulas-interativas-legado/raio-x-implantacao.md),
+e só lá.
+
+- ⚠️⚠️ **A cena abre no CASO do professor também aqui** (`sceneStartOf` usa `sceneStart` do core, a
+  mesma régua do player). A versão montada à mão esquecia o `setup`, e o servidor rejogava a
+  experimentação no mundo de fábrica enquanto a criança via o caso (Dia 1 do Desafio: concluía na
+  tela e gravava `passed:false`). Trava: `tests/integration/learning-scene-setup.test.ts` (todo bloco
+  com caso dos manifestos v6 abre igual no servidor e no player).
+- **O segmento** chega achatado nas respostas (`readSceneSegment`) e é validado ANTES de aplicar: a
+  demonstração só aceita `isDemonstrationCommand`, a experimentação só `isExperimentCommand`. Comando
+  que a cena não aceita é pedido mal formado (400). O mesmo `segmentId` reenviado devolve o que já foi gravado
+  (`segmentHash`); hash diferente, ou `baseSequence` que não é a guardada, é 409 `LEARNING_CONFLICT`
+  (duas abas, pedido fora de ordem).
+- ⚠️⚠️ **A linha guardada que NÃO hidrata vale como sessão INEXISTENTE** (17/09/2026): a cena recomeça
+  limpa e a gravação nova substitui a linha, presa por `expectedExperienceSequence` à sequência que ESTE
+  pedido leu. Antes ela era conflito (`saved && !guardado` → 409), e isso trancava o bloco para sempre:
+  recarregar não adiantava, a linha continuava no banco e reimportar o mesmo manifesto não muda a revisão.
+  O conflito de VERDADE (sessão válida de outra aba) continua 409. Trava:
+  `tests/integration/learning-scene-sessao-ilegivel.test.ts`.
+- ⚠️⚠️ **O `advance` da criança pede no máximo 1 s e 30 quadros** (`SESSION_LIMITS.advanceSeconds` e
+  `advanceFrames`, no `isExperimentCommand` do core): com o relógio de quadro fixo, um segmento hostil
+  de 100 × 30 s custava ~0,25 s de CPU por requisição na `spawn`. O caso e o roteiro do professor
+  seguem com `SCENE_LIMITS`.
+- ⚠️⚠️ **A tentativa usa a sessão do SERVIDOR e a resposta da CRIANÇA.** `sceneSequence`,
+  `sceneSessionId` e `sceneSegmentId` do corpo têm de bater com o guardado (senão 409), e o avaliador
+  recebe as respostas guardadas com, por cima, só `checkpoint` e `prediction` do corpo. Trocar o objeto
+  inteiro jogava fora a escolha da pergunta anexa, e nenhuma cena com pergunta fecharia. ⚠️ A lista é
+  explícita: aceitar tudo o que vier do corpo devolveria ao cliente o poder de reescrever a sessão.
+
+## O DTO das cenas (`learning.dtos.ts`)
+
+A borda é a porta de entrada, não o juiz: quem decide se uma ação vale NESTA cena, se o caso é legal ou
+se o `revealOn` é meta da cena é o core na publicação (`isSceneAction`, `isSceneSetup`,
+`isInteractiveBlock`). O contrato entre os dois está em `tests/unit/learning-dto-conformance.test.ts`: a
+borda TEM de aceitar tudo o que o domínio aceita, e o que ela deixa passar e o domínio recusa fica
+listado ali.
+
+- ⚠️ **Limites e listas vêm do core, nunca literais**: `SCENE_LIMITS`, `SCENE_PORTS`, `SETUP_LIMITS`,
+  `SCENE_IDS`, `MAP_TILES`, `MIRROR_MODES`, `SYMMETRY_PIECES`, `SHEET_CROP_WIDTHS`, `MESH_LEVELS`,
+  `SCENE_FIGURES`. Já houve três cópias da mesma regra (motor, editor e DTO) e elas divergiram. O
+  `place` usa `addressX`/`addressY` (a maior tela de um caso, 800 × 480), e não `placeX`/`placeY`.
+- ⚠️ **Ação que entra ou SAI do core mexe no `SceneActionSchema` no mesmo commit.** A ficha `panel` da
+  `once-vs-always`, por exemplo, precisa atravessar tanto a ação quanto as uniões `id`/`kind` do preset no
+  `SceneSetupSchema`. Porta nova entra sozinha (`SCENE_PORTS`); tipo ou ficha nova não. Sem isso o members
+  recusa a gravação do player ou a importação do manifesto novo, e é por isso que o members sobe antes do
+  kids (ordem no `raio-x-implantacao.md`).
+- ⚠️⚠️ **Campo que o `normalize` do Elysia apagaria fica DECLARADO**, porque numa rota de corpo tipado o
+  campo não declarado some em silêncio (o bloco salva e o campo nunca mais existe): `figure` do elenco
+  (`SceneActorSchema`); `revealOn` e o `shows` de cada escolha da previsão (schema PRÓPRIO, não o
+  `Choices` da pergunta); e o `setup` inteiro também na demonstração, com `goals`, para quem recusa a
+  missão ser o `isSceneSetup(..., { goals: false })` com a mensagem certa. Hoje nenhuma rota tipa o
+  corpo com o `InteractiveBlockSchema` (importação `t.Unknown()`, rascunho com propriedade a mais,
+  publicação por `safeParse`): a declaração guarda o dia em que uma tipar, e o teste mede por uma rota
+  tipada de verdade (o `Check` aceita propriedade a mais e não prova nada).
+
+## Aulas por seções (09/2026)
+
+`lesson_structures` organiza os blocos existentes da aula. Progresso e tentativas são por perfil, conta, bloco e revisão; gabaritos nunca entram na view do aluno. Conclusão exige atividades essenciais e entregas, mantendo jornada e quizzes. Experimentos não produzem entregas. Importação é transacional em rascunhos, com prévia e controle de concorrência. `mode: preserve` continua sendo o padrão e recoloca no fechamento os blocos omitidos; `mode: replace` trata o manifesto como o documento completo, enumera blocos e seções removidos na prévia e não conserva conteúdo omitido. Nos dois modos, chaves mantidas preservam IDs; o `initialProject` do Estúdio vem sempre do manifesto, sem alterar entregas ou rascunhos dos alunos, e a versão publicada não muda. Mídias pendentes impedem publicação. As migrations 0078–0080 acrescentam o modelo, removem a antiga prática e agrupam aulas legadas em uma seção sem mudar IDs. A migration histórica 0076 permanece aplicada.
+
+## Materiais complementares (19/09/2026, migrations `0090` e `0091`)
+
+O kind **`materials`** — o 14º — e o FIM do `support_block_ids`. O que era um LUGAR fora das
+seções (em posição fixa no pé de toda seção, e cuja ordem NUNCA chegava ao aluno) virou um bloco
+com uma lista ordenada de itens: `file`, `image`, `text`, `link` e `video`. Decisão da dona:
+substituir na raiz, sem compatibilidade.
+
+- **`validateLessonSections` ficou mais simples:** todo bloco pertence a UMA seção, ponto. A
+  checagem "atividade obrigatória no apoio" saiu junto com o lugar. O bloco não entra em
+  `isCompletionGatingBlock` por si: somente arquivos explicitamente selecionados em
+  `SectionCompletion.materialItems` exigem download para avançar.
+- A seleção por item é cumulativa com vídeo a 90%. A evidência do arquivo nasce após a rota do
+  BFF preparar a entrega válida (incluindo marca d'água), passa pela rota HMAC exclusiva do
+  `member-shell` e é salva em `lesson_block_progress.answers.downloadedMaterialItemIds` sob lock
+  de perfil e revisão. O POST genérico de progresso não aceita bloco `materials`.
+- ⚠️⚠️ **O item de arquivo guarda `attachmentId`, nunca a URL.** Quem preenche rótulo, tipo e
+  tamanho é o `toLessonDetailView`, lendo `lesson_attachments`; o `storageRef` continua sem sair do
+  servidor e o download segue pela rota de anexo, que é quem aplica a marca d'água. O
+  `LessonBlockContentSchema` do DTO **não declara** `fileType`/`sizeBytes` de propósito — o
+  `normalize` do Elysia os descarta, então eles nunca envelhecem gravados no banco. Item cujo anexo
+  foi apagado SOME da projeção, e o `inspect` do rascunho NOMEIA o bloco antes de publicar.
+- ⚠️⚠️ **As duas migrations sobem em RELEASES SEPARADAS.** A `0090` acrescenta o valor do enum e
+  faz o backfill (cada id de `support_block_ids` vai para o fim da última seção, dentro do jsonb
+  `sections`) e **deixa a coluna viva**; a `0091` a derruba. **A `0091` foi retirada do journal e
+  dos artefatos desta primeira release para não ser aplicada junto com a `0090` em produção.**
+  Seus artefatos originais estão recuperáveis no commit `77195b9f` e só devem voltar ao journal
+  na segunda release, após o Members novo estar estável em produção. O `getStructure` do código ANTIGO lê
+  essa coluna em TODA carga de aula, e durante a troca de pods os dois códigos convivem — derrubar
+  junto quebraria a leitura de aula na janela do deploy (mesma classe do incidente de 03/08).
+- ⚠️ A `0090` muda a `revision` da estrutura das aulas afetadas. Isso é correto e não perde
+  progresso: a conclusão de seção é reavaliada a cada leitura a partir de `completion.blockIds`
+  (que o backfill não toca) e volta a ser gravada sozinha.
+- **`bun run materials:backfill`** (`--dry-run` por padrão, `-- --apply` para valer) cria, em cada
+  aula PUBLICADA com anexo e sem bloco de materiais, um "Materiais da aula" no fim da última seção
+  com um item por anexo. Sem ele, os anexos das aulas que já existem sumiriam da tela junto com o
+  card do pé — o arquivo continuaria íntegro no R2, só invisível. É idempotente (aula que já tem
+  bloco de materiais é pulada) e só mexe no PUBLICADO; aula sem seção é NOMEADA no log e sai com
+  código 1, em vez de ganhar uma seção inventada.
+
+**Ordem de implantação:** migration `0090` → members → gateway → admin/community/kids →
+`materials:backfill --apply` → `drafts:rebase-revisions` se necessário → (release seguinte)
+migration `0091`. Procedimento completo: `docs/runbooks/promocao-producao-aulas-2026-09-19.md`.
+
+**Reconciliação das revisões de rascunho após a primeira release (19/09/2026):** retirar
+`supportBlockIds` do código também mudou o hash do publicado; não depende do DROP físico da `0091`.
+Rascunhos abertos antes da mudança
+continuavam com o hash antigo e `draft/publish` respondia 409, mesmo sem outra aba. Rode
+`bun run drafts:rebase-revisions` para conferir e `bun run drafts:rebase-revisions -- --apply`
+para atualizar somente as linhas cujo hash antigo confere exatamente com o publicado atual
+mais o campo removido vazio. Não mexe no documento nem na revisão de edição; hash inesperado
+é conflito real ou caso para análise individual e não sofre rebase automático. Repita o dry-run:
+o esperado é zero pendentes e zero conflitos.
+
+## Trazer a versão publicada de volta para o rascunho (18/09/2026, migration `0089`)
+
+O rascunho (`lesson_drafts.document`) e o publicado (`lesson_blocks`/`lesson_structures`) sempre
+foram documentos separados — apagar um bloco no percurso da edição nunca tocou a aula no ar —, mas
+faltava o caminho de volta: quem apagava sem querer só tinha como refazer à mão.
+
+- **A regra é PURA e mora no core**: `restoreFromPublished(rascunho, publicado, ids | 'all')`
+  (`@sistemazero/core/learning`). O servidor decide com ela e o painel do admin a espelha só para
+  MOSTRAR o que vai mudar. `'all'` devolve o publicado inteiro; com a lista, cada peça (bloco ou
+  material) volta sozinha: para a seção e a posição de onde saiu, para o fim da ÚLTIMA seção se a
+  de origem não existir mais (não há mais lugar fora das seções), e o vínculo da seção (critério,
+  oficina) só volta quando o rascunho ainda não tem um — a autora pode ter escrito outro depois.
+- **Rotas** (admin, `learning.routes.ts`): `GET /members/admin/lessons/:id/draft/published` (o
+  publicado no formato do rascunho — a MESMA conversão que nasce um rascunho do zero,
+  `initialDocument`), `POST …/draft/restore-published` `{expectedRevision, operationId, ids?}` e
+  `POST …/draft/undo-restore`. **Gateway:** os dois POST caem na
+  `members-admin-lesson-draft-publication` (`:action`, já com audit); o GET tem entrada PRÓPRIA
+  (`members-admin-lesson-draft-published`) porque o matcher exige o número EXATO de segmentos.
+- **Migration `0089`**: `lesson_drafts.previous_document` (o "Desfazer"). Uma coluna só — a data
+  do guardado seria redundante com o `updated_at` da própria linha, que é o da restauração.
+  ⚠️ **O desfazer vale só até a PRÓXIMA alteração**: o `write` grava a coluna na restauração e a
+  LIMPA em qualquer outra operação (change/replace/publish/unpublish/import).
+  Desfazer horas depois devolveria um documento velho por cima de trabalho novo — o acidente que
+  esta rede existe para consertar. `LessonDraft.canUndoRestore` é o que a UI lê.
+- ⚠️ A restauração ALINHA `publishedRevision` ao snapshot atual (como publish/unpublish). Sem
+  isso o rascunho restaurado nasceria "em conflito" e o publish seguinte falharia.
+- ⚠️⚠️ **O limite real da rede**: o `publish` ARQUIVA (`archivedAt`) o que não está no documento e
+  a leitura do publicado usa a view `active_lesson_blocks` — depois de publicar o rascunho
+  quebrado, o bloco apagado não volta mais por aqui. (Uma "lixeira da aula" lendo `archived_at`
+  resolveria esse caso; fora do escopo por ora.) A UI do admin diz isso no painel.
+- Testes: `tests/integration/lesson-draft-restore.test.ts` (7 casos HTTP sobre o fake) e, contra
+  Postgres REAL, dois casos em `tests/db/lesson-draft-cases.ts` — as colunas novas e o UPDATE que
+  as grava e limpa só existem lá (o fake os reimplementa em JS).
+
+## "Como fazer": a biblioteca de ajuda do Kids (26/09/2026, migration `0097`)
+
+⭐⭐ Tutoriais curtos por tarefa, FORA dos cursos: `members.help_collections` e
+`members.help_tutorials` (`src/domain/help`, `application/help/help.service.ts`,
+`infrastructure/persistence/drizzle/help.repository.ts`, `interfaces/http/routes/help.routes.ts`).
+O modelo é separado de `lessons` de propósito: guardar como aula puxaria XP, contagem de aulas,
+trava de matrícula e a reconciliação do Zappy. Regras de documento, busca e validação moram no
+core (`@sistemazero/core/help`), e o `publish` roda o MESMO `validateHelpTutorial` que o admin
+mostra na revisão.
+
+- **Leitura da criança** em `/members/help` (`GET /collections`, `GET /tutorials`,
+  `GET /tutorials/:slug`): só o PUBLICADO, para qualquer conta ativa com JWT, sem
+  `CheckAccessService`. Ler nunca toca progresso, XP nem entitlements. O gateway limita a 120/min.
+- **Admin** em `/members/admin/help` (`requireAdmin`): coleções (CRUD, `PUT /collections/order`,
+  archive/restore, ⚠️ arquivar coleção com tutorial publicado → 409 `HELP_COLLECTION_IN_USE`) e
+  tutoriais (`GET|POST /tutorials`, `GET /tutorials/export`, `POST /tutorials/import` ANTES de
+  `:id`, `GET|PATCH /tutorials/:id`, `POST /tutorials/:id/publish|unpublish|archive`).
+  ⚠️ **Todo write leva `expectedRevision`**: defasado → 409 `HELP_TUTORIAL_CONFLICT` com
+  `details.currentRevision` (o serviço relê a revisão atual antes de responder). Publicar com
+  documento inválido → 400 `HELP_TUTORIAL_INVALID` com `details.issues`.
+- **Rascunho × publicado** são duas colunas JSON na mesma linha. `publish` copia `draft` →
+  `published` e grava `published_search_text` (`buildHelpSearchText`), que alimenta o índice GIN
+  `help_tutorials_fts_idx` (`to_tsvector('portuguese', …)`, escrito à mão na `0097`) e a lista
+  da criança (`searchText` pré-achatado, a busca é no cliente). CHECK
+  `help_tutorials_published_pair`: `status='published'` ⇔ `published IS NOT NULL`.
+- **Import/export** (`HelpImportBody`): upsert por SLUG, coleções antes dos tutoriais, e SÓ no
+  rascunho (`upsertDraftsBySlug`) — nada é publicado pelo import; `rejected[]` nomeia o que não
+  entrou. O lote inicial e o formato estão em `docs/como-fazer/`.
+- ⚠️ `HelpDocumentSchema` declara TODO campo do documento (`additionalProperties: false`): o
+  `normalize` do Elysia apaga campo não declarado, e um campo novo no core sem espelho aqui some
+  em silêncio no PATCH.
+- **Zappy**: `ZappyKnowledgeService.search` devolve `[...hitsDeAula, ...hitsDeTutorial]`
+  (`HELP_HITS_MAX = 3`, best-effort, SEM gate de matrícula: o tutorial é de todo mundo). O hit é
+  `{ kind: 'help-tutorial', slug, title, collectionTitle, content }` (`buildHelpZappyText`, ≤ 1500
+  chars) e a resposta guardada ganhou `helpReferences?: [{ slug, title }]` (DTO + repositório).
+  `zappy_knowledge_sources` NÃO foi tocada (FK em aula, índice único, reconciliação).
+- **Links de aula**: o item `link` do bloco `materials` aceita `/como-fazer/<slug>`
+  (`LESSON_LINK_URL_PATTERN`); o member-shell abre em nova aba com `?voltar=<aula>`.
+- Testes: `tests/unit/help.service.test.ts`, `tests/integration/help.test.ts`,
+  `tests/db/help.repository.test.ts` (skipIf sem Postgres), fakes em `tests/fakes/help-in-memory.ts`.
+- ⚠️⚠️ **`tests/db`: NUNCA `await expect(repo.x()).rejects.toBeInstanceOf(...)` com o driver
+  `postgres`** (full review 26/09/2026): o servidor devolve o 23505 e fica em `ClientRead`
+  esperando um `Sync` que o driver não manda; o teste morre no timeout com `CONNECTION_DESTROYED`.
+  A MESMA chamada num try/catch (`lanca()` em `help.repository.test.ts`) ou num `bun -e` lança o
+  erro de domínio em 12 ms. Medido com `pg_stat_activity`. `rejects.toThrow`, que os outros
+  arquivos usam, não trava.
+- **Regras que o full review fechou (26/09/2026):** o `PATCH` recusa slug reservado/inválido
+  (400) e **slug de tutorial PUBLICADO (409 `HELP_SLUG_LOCKED`)**: `/como-fazer/<slug>` é contrato
+  de URL das aulas e do `helpReferences` do Zappy; despublique para trocar. O `export` NÃO leva
+  arquivados (coleção arquivada nasceria ativa no destino). O `import` valida o lote inteiro antes
+  de gravar coleção alguma, recusa slug repetido no lote, coleção arquivada/inexistente e tutorial
+  arquivado (`rejected[]` nomeia o motivo), e 23505 dentro da transação vira 409. A busca do
+  Zappy é SÓ tsquery (o `OR ilike` anulava o GIN). A data do `HelpTutorialEntry` é a do
+  PUBLICADO. ⚠️ Pende: corrida arquivar-coleção × publicar (check-then-act sem lock) e
+  `helpReferences` guardadas em respostas antigas do Zappy apontando para tutorial despublicado.

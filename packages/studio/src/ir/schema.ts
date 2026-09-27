@@ -8,6 +8,17 @@ import { isCSSKeyframeSelector, isCSSKeyframesName } from '../css/keyframes'
 import { CSS_MEDIA_SIZE_FEATURES, type CSSMediaSizeFeature } from '../css/mediaQueries'
 import { isGuidedDomElementTag } from '../domSafety'
 import { HTML_TAGS, isHTMLElementChildAllowed } from '../html/catalog'
+import {
+  GAME_TWO_D_ACTION_STATEMENTS,
+  type GameTwoDActionExpression,
+  type GameTwoDActionStatement,
+  gameTwoDActionExpressionSchemas,
+  gameTwoDActionStatementSchemas,
+} from '../official-extensions/game-2d/actionIR'
+import {
+  type GameTwoDAudioStatement,
+  gameTwoDAudioSchemas,
+} from '../official-extensions/game-2d/audioIR'
 import type {
   GameTwoDTileContactFilter,
   GameTwoDVectorTileRole,
@@ -18,6 +29,16 @@ import {
   classicGameTwoDExpressionSchemas,
   classicGameTwoDStatementSchemas,
 } from '../official-extensions/game-2d/classicIR'
+import {
+  TEXT_SPRITE_DECLARATION_FIELDS,
+  TEXT_SPRITE_EVENT_TYPES,
+  TEXT_SPRITE_STATEMENT_TYPES,
+  type TextLabelStatement,
+  type TextSpriteExpression,
+  type TextSpriteStatement,
+  textSpriteExpressionSchemas,
+  textSpriteStatementSchemas,
+} from '../official-extensions/game-2d/textIR'
 import {
   GAME_KIT_CAMPAIGN_STATEMENT_TYPES,
   type GameKitCampaignExpression,
@@ -58,6 +79,7 @@ import {
   validateLifecycleSemantics,
 } from './lifecycle'
 import { cssCommentRejectionReason, cssSelectorRejectionReason } from './outputSafety'
+import { functionScopedVariableNames } from './programmingExecution'
 import {
   type Canvas3DStatementContextIndex,
   validateProgrammingReferences as collectProgrammingReferenceIssues,
@@ -217,6 +239,8 @@ export type JSExpr =
     })
   | (JSExprCommon & { type: 'g2d:campaignValue'; key: string; fallback: JSExpr })
   // A largura e a altura LÓGICAS da tela; os tipos moram na extensão.
+  | GameTwoDActionExpression
+  | TextSpriteExpression
   | ClassicGameTwoDStageValue
   | (JSExprCommon & { type: 'g2d:touches'; aVar: string; bVar: string })
   // Game 2D — quantidade de sprites num grupo (valor numérico).
@@ -708,6 +732,8 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g2d:keyDown'), key: irText(), ...idField }),
+    ...gameTwoDActionExpressionSchemas(irText, idField),
+    ...textSpriteExpressionSchemas(JSExprSchema, irText, idField),
     ...classicGameTwoDExpressionSchemas(JSExprSchema, irText, idField),
     z.object({
       type: z.literal('g2d:touches'),
@@ -2201,8 +2227,6 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:drawSprite'; spriteVar: string; ctxVar: string })
   | (JSStatementCommon & { type: 'g2d:setPosition'; spriteVar: string; x: JSExpr; y: JSExpr })
   | (JSStatementCommon & { type: 'g2d:setVelocity'; spriteVar: string; vx: JSExpr; vy: JSExpr })
-  | (JSStatementCommon & { type: 'g2d:collides'; aVar: string; bVar: string; varName: string })
-  | (JSStatementCommon & { type: 'g2d:score'; varName: string; initial: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:gameOver'; ctxVar: string; text: ScreenText })
   // Palco implícito: limpa a tela do runtime (sem o aluno carregar o "pincel").
   | (JSStatementCommon & { type: 'g2d:clear' })
@@ -2230,30 +2254,7 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:setGravity'; value: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:applyVelocity' | 'g2d:applyGravity'; spriteVar: string })
   | (JSStatementCommon & { type: 'g2d:bounceOnEdges'; spriteVar: string; ctxVar: string })
-  | (JSStatementCommon & {
-      type: 'g2d:circleCollides'
-      aVar: string
-      bVar: string
-      varName: string
-    })
-  // Áudio: toca um tom (Web Audio, sem assets).
-  | (JSStatementCommon & {
-      type: 'g2d:playSound'
-      freq: number | JSExpr
-      durationMs: number | JSExpr
-    })
-  // Áudio: efeito sonoro pronto (sintetizado), escolhido por nome.
-  | (JSStatementCommon & { type: 'g2d:playFx'; fx: string })
-  // Áudio: música de fundo em loop (sintetizada), escolhida por nome.
-  | (JSStatementCommon & { type: 'g2d:playMusic'; tune: string })
-  // Áudio: para a música de fundo.
-  | (JSStatementCommon & { type: 'g2d:stopMusic' })
-  | (JSStatementCommon & { type: 'g2d:loadSound'; name: string; asset: string })
-  | (JSStatementCommon & { type: 'g2d:playClip' | 'g2d:stopClip' | 'g2d:playTrack'; name: string })
-  | (JSStatementCommon & { type: 'g2d:stopTrack' })
-  | (JSStatementCommon & { type: 'g2d:setVolume'; level: number | JSExpr })
-  // Áudio: toca uma nota musical (dó ré mi…) por uma duração em ms.
-  | (JSStatementCommon & { type: 'g2d:playNote'; note: string; ms: number | JSExpr })
+  | GameTwoDAudioStatement
   // Tier 1 — mira/movimento, vida, aparência, mundo e pausa (comandos).
   | (JSStatementCommon & { type: 'g2d:aimAt'; spriteVar: string; targetVar: string })
   | (JSStatementCommon & {
@@ -2288,13 +2289,6 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:pauseGame' })
   | (JSStatementCommon & { type: 'g2d:resumeGame' })
   // Tier 2 — câmera, mapa destrutível, ordem de desenho e depuração (comandos).
-  | (JSStatementCommon & {
-      type: 'g2d:cameraFollow'
-      spriteVar: string
-      worldW: number | JSExpr
-      worldH: number | JSExpr
-    })
-  | (JSStatementCommon & { type: 'g2d:setCamera'; x: number | JSExpr; y: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:breakTile'; mapVar: string; spriteVar: string })
   | (JSStatementCommon & {
       type: 'g2d:setTile'
@@ -2446,13 +2440,13 @@ export type JSStatement =
       fps: number | JSExpr
     })
   | (JSStatementCommon & {
-      type: 'g2d:setEnemyTypeParam' | 'g2d:setEnemyTypeParamLegacyStart'
+      type: 'g2d:setEnemyTypeParam'
       typeVar: string
       param: string
       value: number | JSExpr
     })
   | (JSStatementCommon & {
-      type: 'g2d:enemyAddBehavior' | 'g2d:enemyAddBehaviorLegacyStart'
+      type: 'g2d:enemyAddBehavior'
       typeVar: string
       behavior: string
     })
@@ -2551,7 +2545,10 @@ export type JSStatement =
       speed: number | JSExpr
       jump: number | JSExpr
     })
-  | (JSStatementCommon & { type: 'g2d:enableClassicControls'; mode: 'auto' | 'always' | 'off' })
+  | (JSStatementCommon & {
+      type: 'g2d:enableClassicControls'
+      mode: 'auto' | 'always' | 'off' | 'directions'
+    })
   | (JSStatementCommon & {
       type: 'g2d:classicPlatformer'
       spriteVar: string
@@ -2647,16 +2644,6 @@ export type JSStatement =
       size: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g2d:drawPreparedTileMap'; mapVar: string; ctxVar: string })
-  | (JSStatementCommon & {
-      type: 'g2d:drawTileMap'
-      mapVar: string
-      ctxVar: string
-      x: number | JSExpr
-      y: number | JSExpr
-      // Tamanho do tile NA TELA (px); 0/ausente = encaixar sozinho no canvas.
-      // Opcional para aceitar IR salvo antes do campo existir.
-      size?: number | JSExpr
-    })
   | (JSStatementCommon & { type: 'g2d:tileMapCollide'; spriteVar: string; mapVar: string })
   // Mundo = limites + terreno + câmera. Não implica Fase nem gênero de jogo.
   | (JSStatementCommon & {
@@ -2799,15 +2786,17 @@ export type JSStatement =
       groupVar: string
     })
   // Temporizadores: "a cada N quadros/segundos" — vira if (SZGame2D.everyX(...)).
-  | (JSStatementCommon & { type: 'g2d:everyFrames'; n: JSExpr; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'g2d:everyFrames'; n: JSExpr; body: JSStatement[]; key?: string })
   | (JSStatementCommon & {
       type: 'g2d:everySeconds'
+      key?: string
       seconds: number | JSExpr
       body: JSStatement[]
     })
   // Temporizador one-shot: "depois de N segundos, fazer" — roda UMA vez por partida.
   | (JSStatementCommon & {
       type: 'g2d:afterSeconds'
+      key?: string
       seconds: number | JSExpr
       body: JSStatement[]
     })
@@ -2828,27 +2817,11 @@ export type JSStatement =
       color: string
       size: number | JSExpr
     })
-  | (JSStatementCommon & {
-      type: 'g2d:drawLabel'
-      ctxVar: string
-      text: string
-      x: number | JSExpr
-      y: number | JSExpr
-      color: string
-      size: number | JSExpr
-      align: 'left' | 'center' | 'right'
-    })
+  | TextLabelStatement
   // Desenho de texto/placar em pixel e o esmaecer: os tipos moram na extensão.
+  | GameTwoDActionStatement
+  | TextSpriteStatement
   | ClassicGameTwoDStatement
-  | (JSStatementCommon & {
-      type: 'g2d:drawHearts'
-      ctxVar: string
-      count: JSExpr
-      x: number | JSExpr
-      y: number | JSExpr
-      size: number | JSExpr
-      color: string
-    })
   | (JSStatementCommon & {
       type: 'g2d:drawSpriteHealth'
       ctxVar: string
@@ -2937,8 +2910,6 @@ export type JSStatement =
       vy: JSExpr
     })
   | (JSStatementCommon & { type: 'g2d:explode'; spriteVar: string; color: string })
-  | (JSStatementCommon & { type: 'g2d:playShoot' })
-  | (JSStatementCommon & { type: 'g2d:playExplosion' })
   | (JSStatementCommon & {
       type: 'g2d:onSpriteGroupOverlap'
       spriteVar: string
@@ -3068,9 +3039,7 @@ export type JSStatement =
       vx: JSExpr
     })
   | (JSStatementCommon & { type: 'g2d:forest'; ctxVar: string; speed: number | JSExpr })
-  | (JSStatementCommon & { type: 'g2d:playJump' })
-  | (JSStatementCommon & { type: 'g2d:playDinoHurt' })
-  | (JSStatementCommon & { type: 'g2d:playCollect' })
+
   // ---- Kit gorilas: batalha de bananas (artilharia) ----
   | (JSStatementCommon & { type: 'g2d:createCity'; varName: string })
   | (JSStatementCommon & { type: 'g2d:drawCity'; cityVar: string; ctxVar: string })
@@ -3087,8 +3056,6 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:throwBanana'; throwerVar: string; cityVar: string })
   | (JSStatementCommon & { type: 'g2d:updateBanana'; cityVar: string })
   | (JSStatementCommon & { type: 'g2d:drawBanana'; cityVar: string; ctxVar: string })
-  | (JSStatementCommon & { type: 'g2d:playWhistle' })
-  | (JSStatementCommon & { type: 'g2d:playBoom' })
   | (JSStatementCommon & {
       type: 'g2d:computerTurn'
       throwerVar: string
@@ -3579,6 +3546,7 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'gk:rpgGoMap' | 'gk:rpgSetStartMap'; map: string })
   | (JSStatementCommon & {
       type: 'gk:rpgCreateMap'
+      bounds?: 'bounded' | 'unbounded'
       map: string
       cols: number | JSExpr
       rows: number | JSExpr
@@ -6213,19 +6181,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       vy: JSExprSchema,
       ...idField,
     }),
-    z.object({
-      type: z.literal('g2d:collides'),
-      aVar: irText(),
-      bVar: irText(),
-      varName: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:score'),
-      varName: irText(),
-      initial: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
+
     z.object({
       type: z.literal('g2d:gameOver'),
       ctxVar: irText(),
@@ -6239,6 +6195,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       body: z.array(JSStatementSchema),
       ...idField,
     }),
+    ...gameTwoDActionStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
+    ...textSpriteStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     ...classicGameTwoDStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     z.object({
       type: z.literal('g2d:onOverlap'),
@@ -6271,54 +6229,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ctxVar: irText(),
       ...idField,
     }),
-    z.object({
-      type: z.literal('g2d:circleCollides'),
-      aVar: irText(),
-      bVar: irText(),
-      varName: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:playSound'),
-      freq: z.union([JSExprSchema, z.number()]),
-      durationMs: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:playFx'),
-      fx: z.string(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:playMusic'),
-      tune: z.string(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:stopMusic'),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:playNote'),
-      note: z.string(),
-      ms: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:loadSound'),
-      name: irText(),
-      asset: irText(),
-      ...idField,
-    }),
-    z.object({ type: z.literal('g2d:playClip'), name: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:stopClip'), name: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:playTrack'), name: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:stopTrack'), ...idField }),
-    z.object({
-      type: z.literal('g2d:setVolume'),
-      level: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
+
+    ...gameTwoDAudioSchemas(JSExprSchema, irText, idField),
     z.object({
       type: z.literal('g2d:aimAt'),
       spriteVar: irText(),
@@ -6389,19 +6301,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({ type: z.literal('g2d:pauseGame'), ...idField }),
     z.object({ type: z.literal('g2d:resumeGame'), ...idField }),
-    z.object({
-      type: z.literal('g2d:cameraFollow'),
-      spriteVar: irText(),
-      worldW: z.union([JSExprSchema, z.number()]),
-      worldH: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:setCamera'),
-      x: z.union([JSExprSchema, z.number()]),
-      y: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
+
     z.object({
       type: z.literal('g2d:breakTile'),
       mapVar: irText(),
@@ -6597,14 +6497,14 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
-      type: z.enum(['g2d:setEnemyTypeParam', 'g2d:setEnemyTypeParamLegacyStart']),
+      type: z.literal('g2d:setEnemyTypeParam'),
       typeVar: irText(),
       param: z.enum(G2D_ENEMY_PARAMS),
       value: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
-      type: z.enum(['g2d:enemyAddBehavior', 'g2d:enemyAddBehaviorLegacyStart']),
+      type: z.literal('g2d:enemyAddBehavior'),
       typeVar: irText(),
       behavior: z.enum(G2D_ENEMY_BEHAVIORS),
       ...idField,
@@ -6808,16 +6708,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ctxVar: irText(),
       ...idField,
     }),
-    z.object({
-      type: z.literal('g2d:drawTileMap'),
-      mapVar: irText(),
-      ctxVar: irText(),
-      x: z.union([JSExprSchema, z.number()]),
-      y: z.union([JSExprSchema, z.number()]),
-      // Opcional: IR salvo antes do campo "tamanho do tile" não o tem.
-      size: z.union([JSExprSchema, z.number()]).optional(),
-      ...idField,
-    }),
+
     z.object({
       type: z.literal('g2d:tileMapCollide'),
       spriteVar: irText(),
@@ -7043,18 +6934,21 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({
       type: z.literal('g2d:everyFrames'),
+      key: irText().optional(),
       n: JSExprSchema,
       body: z.array(JSStatementSchema),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:everySeconds'),
+      key: irText().optional(),
       seconds: z.union([JSExprSchema, z.number()]),
       body: z.array(JSStatementSchema),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:afterSeconds'),
+      key: irText().optional(),
       seconds: z.union([JSExprSchema, z.number()]),
       body: z.array(JSStatementSchema),
       ...idField,
@@ -7076,27 +6970,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       size: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
-    z.object({
-      type: z.literal('g2d:drawLabel'),
-      ctxVar: irText(),
-      text: irText(),
-      x: z.union([JSExprSchema, z.number()]),
-      y: z.union([JSExprSchema, z.number()]),
-      color: irText(),
-      size: z.union([JSExprSchema, z.number()]),
-      align: z.enum(['left', 'center', 'right']),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:drawHearts'),
-      ctxVar: irText(),
-      count: JSExprSchema,
-      x: z.union([JSExprSchema, z.number()]),
-      y: z.union([JSExprSchema, z.number()]),
-      size: z.union([JSExprSchema, z.number()]),
-      color: irText(),
-      ...idField,
-    }),
+
     z.object({
       type: z.literal('g2d:drawSpriteHealth'),
       ctxVar: irText(),
@@ -7219,8 +7093,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g2d:explode'), spriteVar: irText(), color: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:playShoot'), ...idField }),
-    z.object({ type: z.literal('g2d:playExplosion'), ...idField }),
+
     z.object({
       type: z.literal('g2d:onSpriteGroupOverlap'),
       spriteVar: irText(),
@@ -7405,9 +7278,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
-    z.object({ type: z.literal('g2d:playJump'), ...idField }),
-    z.object({ type: z.literal('g2d:playDinoHurt'), ...idField }),
-    z.object({ type: z.literal('g2d:playCollect'), ...idField }),
+
     z.object({ type: z.literal('g2d:createCity'), varName: irText(), ...idField }),
     z.object({ type: z.literal('g2d:drawCity'), cityVar: irText(), ctxVar: irText(), ...idField }),
     z.object({
@@ -7439,8 +7310,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ctxVar: irText(),
       ...idField,
     }),
-    z.object({ type: z.literal('g2d:playWhistle'), ...idField }),
-    z.object({ type: z.literal('g2d:playBoom'), ...idField }),
+
     z.object({
       type: z.literal('g2d:computerTurn'),
       throwerVar: irText(),
@@ -8216,6 +8086,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({ type: z.literal('gk:rpgSetStartMap'), map: irText(), ...idField }),
     z.object({
       type: z.literal('gk:rpgCreateMap'),
+      bounds: z.enum(['bounded', 'unbounded']).optional(),
       map: irText(),
       cols: z.union([JSExprSchema, z.number()]),
       rows: z.union([JSExprSchema, z.number()]),
@@ -11250,6 +11121,7 @@ export type SZIRInput = SZIR | SZIRV2
 const GK_MAP_VISUAL_STATEMENTS = new Set(['gk:drawBackground', 'gk:drawTilemap'])
 
 const G2D_REGISTERED_EVENT_TYPES = new Set([
+  ...TEXT_SPRITE_EVENT_TYPES,
   'g2d:onPointer',
   'g2d:onKey',
   'g2d:onActionPressed',
@@ -11260,13 +11132,12 @@ const G2D_REGISTERED_EVENT_TYPES = new Set([
 ])
 
 const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
+  ...TEXT_SPRITE_DECLARATION_FIELDS,
   var: 'name',
   'g2d:createSprite': 'varName',
   'g2d:createImageSprite': 'varName',
   'g2d:createShapeSprite': 'varName',
-  'g2d:score': 'varName',
-  'g2d:collides': 'varName',
-  'g2d:circleCollides': 'varName',
+
   'g2d:createGroup': 'varName',
   'g2d:allEnemiesGroup': 'varName',
   // Opcionais: só declaram quando a criança preencheu o nome (o coletor de
@@ -11567,6 +11438,7 @@ function g2dLocalNames(statement: JSStatement): string[] {
       return [record.xName, record.yName].filter((name): name is string => typeof name === 'string')
     case 'g2d:onGroupOverlap':
       return [record.aName, record.bName].filter((name): name is string => typeof name === 'string')
+    case 'g2d:onGroupClick':
     case 'g2d:forEachInGroup':
     case 'g2d:pruneOffscreen':
     case 'g2d:onSpriteGroupOverlap':
@@ -11621,7 +11493,7 @@ function validateG2DReferences(
   path: (string | number)[],
   inherited: ReadonlySet<string> = G2D_IMPLICIT_NAMES,
 ): void {
-  const symbols = new Set(inherited)
+  const symbols = new Set([...inherited, ...functionScopedVariableNames(statements)])
   for (const statement of statements) {
     const field = G2D_DECLARATION_FIELDS[statement.type]
     const name = field ? (statement as unknown as Record<string, unknown>)[field] : undefined
@@ -11648,7 +11520,7 @@ function validateG2DReferences(
 
 /** Os nomes que estes statements CRIAM, no nível de topo da área. */
 function declaredNamesInArea(statements: readonly JSStatement[]): Set<string> {
-  const names = new Set<string>()
+  const names = functionScopedVariableNames(statements)
   for (const statement of statements) {
     const field = G2D_DECLARATION_FIELDS[statement.type]
     const name = field ? (statement as unknown as Record<string, unknown>)[field] : undefined
@@ -11669,6 +11541,9 @@ function referencedNames(value: unknown, into = new Set<string>()): Set<string> 
   if (typeof value !== 'object' || value === null) return into
   const record = value as Record<string, unknown>
   const type = typeof record.type === 'string' ? record.type : ''
+  // Declarar uma função não executa seu corpo. Parâmetros e referências da
+  // chamada são conferidos pela validação de escopo, não pela ordem dos moldes.
+  if (type === 'funcDecl') return into
   for (const [key, child] of Object.entries(record)) {
     if (key === '__id' || key === 'type') continue
     if (G2D_REFERENCE_FIELDS.has(key) && typeof child === 'string' && child.trim()) {
@@ -11930,14 +11805,15 @@ export function isAdvancedJS(stmt: JSStatement): stmt is Extract<JSStatement, { 
 }
 
 export const G2D_STATEMENT_TYPES = new Set([
+  ...GAME_TWO_D_ACTION_STATEMENTS,
+  ...TEXT_SPRITE_STATEMENT_TYPES,
   'g2d:onStart',
   'g2d:onActionPressed',
   'g2d:createSprite',
   'g2d:drawSprite',
   'g2d:setPosition',
   'g2d:setVelocity',
-  'g2d:collides',
-  'g2d:score',
+
   'g2d:gameOver',
   'g2d:updateEachFrame',
   'g2d:setGravity',
@@ -11946,11 +11822,11 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:onJump',
   'g2d:onAnyInput',
   'g2d:bounceOnEdges',
-  'g2d:circleCollides',
+
   'g2d:playSound',
   'g2d:playFx',
   'g2d:playMusic',
-  'g2d:stopMusic',
+
   'g2d:loadSound',
   'g2d:playClip',
   'g2d:stopClip',
@@ -11971,8 +11847,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:pruneOld',
   'g2d:pauseGame',
   'g2d:resumeGame',
-  'g2d:cameraFollow',
-  'g2d:setCamera',
+
   'g2d:breakTile',
   'g2d:setTile',
   'g2d:bringToFront',
@@ -12000,9 +11875,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:defineEnemyType',
   'g2d:enemyStateAnim',
   'g2d:setEnemyTypeParam',
-  'g2d:setEnemyTypeParamLegacyStart',
   'g2d:enemyAddBehavior',
-  'g2d:enemyAddBehaviorLegacyStart',
   'g2d:defineEnemySmart',
   'g2d:onEnemyHurt',
   'g2d:onEnemyBeamHit',
@@ -12042,7 +11915,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:fitTileMapToStage',
   'g2d:placeTileMap',
   'g2d:drawPreparedTileMap',
-  'g2d:drawTileMap',
+
   'g2d:tileMapCollide',
   'g2d:createWorld',
   'g2d:createWorldFromTileMap',
@@ -12090,7 +11963,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:drawPixelText',
   'g2d:drawPixelScore',
   'g2d:drawFade',
-  'g2d:drawHearts',
+
   'g2d:drawSpriteHealth',
   'g2d:drawBar',
   'g2d:setStageDescription',
@@ -12116,8 +11989,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:createShip',
   'g2d:spawnAsteroid',
   'g2d:explode',
-  'g2d:playShoot',
-  'g2d:playExplosion',
+
   'g2d:onSpriteGroupOverlap',
   'g2d:steerThrust',
   'g2d:rotateSprite',
@@ -12132,9 +12004,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:spawnObstacle',
   'g2d:spawnEgg',
   'g2d:forest',
-  'g2d:playJump',
-  'g2d:playDinoHurt',
-  'g2d:playCollect',
+
   'g2d:createCity',
   'g2d:drawCity',
   'g2d:placeThrower',
@@ -12144,8 +12014,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:throwBanana',
   'g2d:updateBanana',
   'g2d:drawBanana',
-  'g2d:playWhistle',
-  'g2d:playBoom',
+
   'g2d:computerTurn',
   'g2d:drawAimReadout',
   'g2d:createStickHero',

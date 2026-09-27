@@ -11,7 +11,7 @@
  *   - `.tom(onda, hz, ms, volume)` / `.ruido(ms, volume)` → efeitos sintetizados.
  *
  * ⚠️ Existe porque o núcleo não tinha ÁUDIO NENHUM: nem bipe, nem arquivo. A
- * criança podia enviar um mp3 no painel "Imagens e sons" e não havia bloco para
+ * criança podia enviar um mp3 na janela dos materiais e não havia bloco para
  * usá-lo fora das extensões de jogo. O manifesto `window.__SZGAME_SOUNDS` já era
  * semeado em TODO projeto que tenha um asset de áudio (ver `preview/bootstrap`),
  * então só faltava este lado do fio.
@@ -69,7 +69,7 @@ export function buildAudioRuntime(): string {
     var sons = manifesto();
     var src = sons[quer] || (quer.indexOf('data:audio/') === 0 ? quer : null);
     if (!src) {
-      avisar('ausente:' + quer, 'o som "' + quer + '" não está no projeto. Envie o arquivo em "Imagens e sons".');
+      avisar('ausente:' + quer, 'o som "' + quer + '" não está no projeto. Envie o arquivo em "Sons" (no menu ⋯).');
       return;
     }
     if (carregados[apelido] && fontes[apelido] === src) return;

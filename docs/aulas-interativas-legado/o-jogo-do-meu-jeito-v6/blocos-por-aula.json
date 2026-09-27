@@ -1,0 +1,1666 @@
+{
+  "edition": "jogo-2d-1.0-documento-2",
+  "course": "o-jogo-do-meu-jeito",
+  "scope": "Uso completo durante a aula, incluindo programa herdado e peças transitórias; não representa apenas concessões novas.",
+  "prerequisite": "desafio-primeiro-jogo/dia-5",
+  "lessons": [
+    {
+      "lesson": "aula-01",
+      "title": "Seu jogo no Estúdio Completo",
+      "blocks": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_arrows_x",
+        "sz_g2d_center_x",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_group",
+        "sz_g2d_create_ship",
+        "sz_g2d_damage_sprite",
+        "sz_g2d_draw_group",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_draw_sprite_health",
+        "sz_g2d_every_frames",
+        "sz_g2d_explode",
+        "sz_g2d_health_depleted",
+        "sz_g2d_on_group_overlap",
+        "sz_g2d_on_key",
+        "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_play_fx",
+        "sz_g2d_prune_offscreen",
+        "sz_g2d_random_x",
+        "sz_g2d_remove_from_group",
+        "sz_g2d_restart",
+        "sz_g2d_scene_is",
+        "sz_g2d_set_health",
+        "sz_g2d_set_scene",
+        "sz_g2d_setup_stage",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet",
+        "sz_g2d_sprite_y",
+        "sz_g2d_starfield",
+        "sz_g2d_update_each_frame",
+        "sz_g2d_update_group",
+        "sz_js_const_create",
+        "sz_js_if_else",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "introduced": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_arrows_x",
+        "sz_g2d_center_x",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_group",
+        "sz_g2d_create_ship",
+        "sz_g2d_damage_sprite",
+        "sz_g2d_draw_group",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_draw_sprite_health",
+        "sz_g2d_every_frames",
+        "sz_g2d_explode",
+        "sz_g2d_health_depleted",
+        "sz_g2d_on_group_overlap",
+        "sz_g2d_on_key",
+        "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_play_fx",
+        "sz_g2d_prune_offscreen",
+        "sz_g2d_random_x",
+        "sz_g2d_remove_from_group",
+        "sz_g2d_restart",
+        "sz_g2d_scene_is",
+        "sz_g2d_set_health",
+        "sz_g2d_set_scene",
+        "sz_g2d_setup_stage",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet",
+        "sz_g2d_sprite_y",
+        "sz_g2d_starfield",
+        "sz_g2d_update_each_frame",
+        "sz_g2d_update_group",
+        "sz_js_const_create",
+        "sz_js_if_else",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "edition": "jogo-2d-1.0-documento-2",
+      "documentFormatVersion": 2,
+      "extensionVersion": "1.0.0",
+      "recordingStatus": "regravar-e-validar-em-staging",
+      "catalog": [
+        {
+          "type": "sz_frame_events",
+          "label": "⚡ Quando acontecer",
+          "palettePath": ["🗂️ Áreas do projeto"],
+          "area": "events",
+          "tooltip": "Roda quando alguma coisa acontece."
+        },
+        {
+          "type": "sz_frame_loops",
+          "label": "🔁 Enquanto estiver rodando",
+          "palettePath": ["🗂️ Áreas do projeto"],
+          "area": "loops",
+          "tooltip": "Repete enquanto o projeto estiver rodando."
+        },
+        {
+          "type": "sz_frame_start",
+          "label": "⚙️ Ao iniciar",
+          "palettePath": ["🗂️ Áreas do projeto"],
+          "area": "start",
+          "tooltip": "Roda ao abrir ou a cada nova partida."
+        },
+        {
+          "type": "sz_g2d_arrows_x",
+          "label": "Mover o sprite com as setas <- -> (velocidade )",
+          "palettePath": ["Jogo 2D", "Movimento", "Movimentos prontos"],
+          "area": "start",
+          "tooltip": "Move o sprite só na horizontal com as setas esquerda/direita. Combine com \"prender o sprite na tela\"."
+        },
+        {
+          "type": "sz_g2d_center_x",
+          "label": "o centro x do sprite",
+          "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+          "area": "value",
+          "tooltip": "O x do MEIO do sprite (já soma metade da largura). Ótimo pra atirar/mirar do centro da nave."
+        },
+        {
+          "type": "sz_g2d_clamp_to_screen",
+          "label": "Manter o sprite dentro da tela",
+          "palettePath": ["Jogo 2D", "Movimento", "Bordas e rebatidas"],
+          "area": "start",
+          "tooltip": "Impede o sprite de sair pelas bordas da tela (gruda na borda em vez de sumir)."
+        },
+        {
+          "type": "sz_g2d_clear",
+          "label": "Limpar a tela",
+          "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+          "area": "start",
+          "tooltip": "Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo."
+        },
+        {
+          "type": "sz_g2d_create_group",
+          "label": "Criar grupo de sprites",
+          "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+          "area": "start",
+          "tooltip": "Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas)."
+        },
+        {
+          "type": "sz_g2d_create_ship",
+          "label": "Criar nave em x y largura altura , cor do corpo cor das asas",
+          "palettePath": ["Jogo 2D", "Kits prontos", "Espaço"],
+          "area": "start",
+          "tooltip": "Cria uma nave desenhada (corpo + asas com as cores que você escolher, cabine e foguinho que pulsa sozinho). O foguinho já vem animado."
+        },
+        {
+          "type": "sz_g2d_damage_sprite",
+          "label": "Machucar o sprite em e deixá-lo invencível por quadros",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "start",
+          "tooltip": "Tira vida uma vez e ignora novos danos enquanto o sprite pisca. Evita perder todas as vidas num contato contínuo."
+        },
+        {
+          "type": "sz_g2d_draw_group",
+          "label": "Desenhar o grupo",
+          "palettePath": ["Jogo 2D", "Grupos", "Desenho e ordem"],
+          "area": "start",
+          "tooltip": "Desenha todos os sprites do grupo. Use a cada quadro, depois de mover."
+        },
+        {
+          "type": "sz_g2d_draw_score",
+          "label": "Mostrar placar valor em x y cor tamanho",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Indicadores e texto na tela"],
+          "area": "start",
+          "tooltip": "Escreve \"rótulo valor\" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar."
+        },
+        {
+          "type": "sz_g2d_draw_sprite",
+          "label": "Desenhar o sprite",
+          "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+          "area": "start",
+          "tooltip": "Desenha o sprite na tela do jogo. Use a cada quadro, depois de \"Limpar a tela\"."
+        },
+        {
+          "type": "sz_g2d_draw_sprite_health",
+          "label": "Desenhar as vidas do sprite como em x y tamanho cor",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "start",
+          "tooltip": "Lê a vida do sprite automaticamente. Em corações, tamanho é o diâmetro; em barra, é a largura."
+        },
+        {
+          "type": "sz_g2d_every_frames",
+          "label": "A cada quadros",
+          "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+          "area": "loops",
+          "tooltip": "Roda o “fazer” de tempos em tempos, a cada N quadros. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”."
+        },
+        {
+          "type": "sz_g2d_explode",
+          "label": "Soltar explosão no sprite cor",
+          "palettePath": ["Jogo 2D", "Desenho e efeitos", "Partículas"],
+          "area": "start",
+          "tooltip": "Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite."
+        },
+        {
+          "type": "sz_g2d_health_depleted",
+          "label": "as vidas do sprite acabaram?",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "value",
+          "tooltip": "Verdadeiro quando a vida foi preparada e chegou a zero. Assim você não precisa usar o bloco “não”."
+        },
+        {
+          "type": "sz_g2d_on_group_overlap",
+          "label": "Para cada colisão entre os grupos e",
+          "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+          "area": "start",
+          "tooltip": "Para cada par de sprites (um de cada grupo) que se encostam, roda o \"fazer\" com os dois sprites. Use dentro do \"a cada quadro\"."
+        },
+        {
+          "type": "sz_g2d_on_key",
+          "label": "Quando apertar a tecla",
+          "palettePath": ["Jogo 2D", "Controles", "Teclado, ações e toque"],
+          "area": "events",
+          "tooltip": "Roda o que está dentro toda vez que a tecla é apertada (ex.: pular, atirar)."
+        },
+        {
+          "type": "sz_g2d_on_sprite_group_overlap",
+          "label": "Para cada sprite do grupo que colidir com o sprite",
+          "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+          "area": "start",
+          "tooltip": "Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o \"fazer\" com aquele sprite. Use dentro do \"a cada quadro\"."
+        },
+        {
+          "type": "sz_g2d_play_fx",
+          "label": "Tocar efeito",
+          "palettePath": ["Jogo 2D", "Som", "Efeitos prontos"],
+          "area": "start",
+          "tooltip": "Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu."
+        },
+        {
+          "type": "sz_g2d_prune_offscreen",
+          "label": "Tirar do grupo quem sair da tela, para cada um (chamado )",
+          "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+          "area": "start",
+          "tooltip": "Remove do grupo os sprites que saíram da tela e roda o \"fazer\" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo."
+        },
+        {
+          "type": "sz_g2d_random_x",
+          "label": "um x aleatório na tela",
+          "palettePath": ["Jogo 2D", "Sorteios", "Números e posições"],
+          "area": "value",
+          "tooltip": "Sorteia uma posição x em qualquer lugar da largura da tela. Ótimo para um sprite nascer num x aleatório (asteroides, estrelas…)."
+        },
+        {
+          "type": "sz_g2d_remove_from_group",
+          "label": "Tirar o sprite do grupo",
+          "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+          "area": "start",
+          "tooltip": "Tira um sprite do grupo (ex.: o asteroide que foi atingido). Use o nome do sprite da vez."
+        },
+        {
+          "type": "sz_g2d_restart",
+          "label": "Reiniciar o jogo",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "start",
+          "tooltip": "Use dentro de um evento, laço ou função. Limpa a partida e executa novamente as três áreas do projeto."
+        },
+        {
+          "type": "sz_g2d_scene_is",
+          "label": "o estado do jogo é ?",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "value",
+          "tooltip": "Verdadeiro se o jogo está naquela tela. Use dentro de um \"se\"."
+        },
+        {
+          "type": "sz_g2d_set_health",
+          "label": "Dar ao sprite de vida",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "start",
+          "tooltip": "Define a vida atual e a vida máxima do sprite. Coloque em “Ao iniciar” para não restaurar a vida a cada quadro."
+        },
+        {
+          "type": "sz_g2d_set_scene",
+          "label": "Mudar o estado do jogo para",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "start",
+          "tooltip": "Guarda o estado atual, como início, jogando ou vitória. Use a pergunta sobre o estado para escolher o que desenhar e mover. A mudança não pausa o motor nem desenha uma tela."
+        },
+        {
+          "type": "sz_g2d_setup_stage",
+          "label": "Preparar o jogo em tela cheia, tela × , fundo",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Preparar a área do jogo"],
+          "area": "start",
+          "tooltip": "Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”."
+        },
+        {
+          "type": "sz_g2d_shake",
+          "label": "Tremer a tela com intensidade",
+          "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+          "area": "start",
+          "tooltip": "Sacode a tela e para sozinho (o tremor vai diminuindo). Chame uma vez, ex.: numa colisão ou explosão."
+        },
+        {
+          "type": "sz_g2d_show_screen",
+          "label": "Mostrar tela com título subtítulo dica fundo",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "start",
+          "tooltip": "Cobre a tela com um aviso central (título + subtítulo + dica). Ótimo para as telas de início, vitória e derrota."
+        },
+        {
+          "type": "sz_g2d_spawn_asteroid",
+          "label": "No grupo criar um asteroide em x y tamanho cor com vx vy",
+          "palettePath": ["Jogo 2D", "Kits prontos", "Espaço"],
+          "area": "start",
+          "tooltip": "Cria um asteroide já desenhado (pedra irregular que gira, com crateras) e coloca no grupo. Cada um nasce com um formato único."
+        },
+        {
+          "type": "sz_g2d_spawn_bullet",
+          "label": "Criar tiro no grupo em x y raio cor vx vy",
+          "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+          "area": "start",
+          "tooltip": "Cria um tiro (bolinha brilhante) no grupo, no ponto x/y, indo na velocidade vx/vy (vy negativo = sobe)."
+        },
+        {
+          "type": "sz_g2d_sprite_y",
+          "label": "a posição y do sprite",
+          "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+          "area": "value",
+          "tooltip": "A posição y (borda de cima) do sprite. Use numa conta ou pra posicionar outra coisa."
+        },
+        {
+          "type": "sz_g2d_starfield",
+          "label": "Desenhar fundo de estrelas (velocidade )",
+          "palettePath": ["Jogo 2D", "Cenários", "Fundos"],
+          "area": "start",
+          "tooltip": "Desenha um céu de estrelas que rola para baixo (fundo de jogo espacial). Use no começo do \"a cada quadro\", depois de limpar a tela."
+        },
+        {
+          "type": "sz_g2d_update_each_frame",
+          "label": "A cada quadro do jogo",
+          "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+          "area": "loops",
+          "tooltip": "Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo."
+        },
+        {
+          "type": "sz_g2d_update_group",
+          "label": "Mover os sprites do grupo usando suas velocidades",
+          "palettePath": ["Jogo 2D", "Grupos", "Movimento"],
+          "area": "start",
+          "tooltip": "Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro."
+        },
+        {
+          "type": "sz_js_const_create",
+          "label": "Criar constante com valor",
+          "palettePath": ["Programação", "🏷️ Variáveis"],
+          "area": "start",
+          "tooltip": "Cria uma constante: um valor que não muda depois de criado."
+        },
+        {
+          "type": "sz_js_if_else",
+          "label": "Condição se, senão se e senão",
+          "palettePath": ["Programação", "❓ Lógica & Se"],
+          "area": "start",
+          "tooltip": "Executa o \"então\" quando a condição for verdadeira. Use + para juntar \"senão se\" e \"senão\"."
+        },
+        {
+          "type": "sz_js_var_create",
+          "label": "Criar variável com valor",
+          "palettePath": ["Programação", "🏷️ Variáveis"],
+          "area": "start",
+          "tooltip": "Cria uma variável e guarda nela um valor: número, conta, aleatório, etc."
+        },
+        {
+          "type": "sz_js_var_increment",
+          "label": "Somar em variável",
+          "palettePath": ["Programação", "🏷️ Variáveis"],
+          "area": "start",
+          "tooltip": "Soma ou tira uma quantidade do valor atual de uma variável."
+        },
+        {
+          "type": "sz_val_compare",
+          "label": "Comparar dois valores",
+          "palettePath": ["Programação", "❓ Lógica & Se"],
+          "area": "value",
+          "tooltip": "Compara dois valores e devolve verdadeiro ou falso."
+        },
+        {
+          "type": "sz_val_number",
+          "label": "Número",
+          "palettePath": ["Programação", "🔣 Valores"],
+          "area": "value",
+          "tooltip": "Um valor numérico."
+        },
+        {
+          "type": "sz_val_text",
+          "label": "texto",
+          "palettePath": ["Programação", "🔣 Valores"],
+          "area": "value",
+          "tooltip": "Um valor de texto."
+        },
+        {
+          "type": "sz_val_variable",
+          "label": "valor da variável",
+          "palettePath": ["Programação", "🔣 Valores"],
+          "area": "value",
+          "tooltip": "Usa o conteúdo de uma variável já criada como valor."
+        }
+      ]
+    },
+    {
+      "lesson": "aula-02",
+      "title": "Desenhe a sua nave no Pinta",
+      "blocks": [],
+      "introduced": [],
+      "edition": "jogo-2d-1.0-documento-2",
+      "documentFormatVersion": 2,
+      "extensionVersion": "1.0.0",
+      "recordingStatus": "revisar-midia-da-ferramenta",
+      "catalog": []
+    },
+    {
+      "lesson": "aula-03",
+      "title": "O motor da nave ganha movimento",
+      "blocks": [],
+      "introduced": [],
+      "edition": "jogo-2d-1.0-documento-2",
+      "documentFormatVersion": 2,
+      "extensionVersion": "1.0.0",
+      "recordingStatus": "revisar-midia-da-ferramenta",
+      "catalog": []
+    },
+    {
+      "lesson": "aula-04",
+      "title": "Desenhe seu asteroide em vetor",
+      "blocks": [],
+      "introduced": [],
+      "edition": "jogo-2d-1.0-documento-2",
+      "documentFormatVersion": 2,
+      "extensionVersion": "1.0.0",
+      "recordingStatus": "revisar-midia-da-ferramenta",
+      "catalog": []
+    },
+    {
+      "lesson": "aula-05",
+      "title": "O asteroide ganha chama e animação",
+      "blocks": [],
+      "introduced": [],
+      "edition": "jogo-2d-1.0-documento-2",
+      "documentFormatVersion": 2,
+      "extensionVersion": "1.0.0",
+      "recordingStatus": "revisar-midia-da-ferramenta",
+      "catalog": []
+    },
+    {
+      "lesson": "aula-06",
+      "title": "A sua nave entra no jogo",
+      "blocks": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_animate_sprite",
+        "sz_g2d_arrows_x",
+        "sz_g2d_center_x",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_group",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_create_ship",
+        "sz_g2d_damage_sprite",
+        "sz_g2d_draw_group",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_draw_sprite_health",
+        "sz_g2d_every_frames",
+        "sz_g2d_explode",
+        "sz_g2d_health_depleted",
+        "sz_g2d_load_spritesheet",
+        "sz_g2d_on_group_overlap",
+        "sz_g2d_on_key",
+        "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_play_fx",
+        "sz_g2d_prune_offscreen",
+        "sz_g2d_random_x",
+        "sz_g2d_remove_from_group",
+        "sz_g2d_restart",
+        "sz_g2d_scene_is",
+        "sz_g2d_set_health",
+        "sz_g2d_set_scene",
+        "sz_g2d_setup_stage",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet",
+        "sz_g2d_sprite_y",
+        "sz_g2d_starfield",
+        "sz_g2d_update_each_frame",
+        "sz_g2d_update_group",
+        "sz_js_const_create",
+        "sz_js_if_else",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "introduced": [
+        "sz_g2d_animate_sprite",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_load_spritesheet"
+      ],
+      "edition": "jogo-2d-1.0-documento-2",
+      "documentFormatVersion": 2,
+      "extensionVersion": "1.0.0",
+      "recordingStatus": "regravar-e-validar-em-staging",
+      "catalog": [
+        {
+          "type": "sz_frame_events",
+          "label": "⚡ Quando acontecer",
+          "palettePath": ["🗂️ Áreas do projeto"],
+          "area": "events",
+          "tooltip": "Roda quando alguma coisa acontece."
+        },
+        {
+          "type": "sz_frame_loops",
+          "label": "🔁 Enquanto estiver rodando",
+          "palettePath": ["🗂️ Áreas do projeto"],
+          "area": "loops",
+          "tooltip": "Repete enquanto o projeto estiver rodando."
+        },
+        {
+          "type": "sz_frame_start",
+          "label": "⚙️ Ao iniciar",
+          "palettePath": ["🗂️ Áreas do projeto"],
+          "area": "start",
+          "tooltip": "Roda ao abrir ou a cada nova partida."
+        },
+        {
+          "type": "sz_g2d_animate_sprite",
+          "label": "Animar sprite com a folha na animação , do quadro ao a fps",
+          "palettePath": ["Jogo 2D", "Sprites", "Animação"],
+          "area": "start",
+          "tooltip": "Escolha a animação pelo NOME (vem da sua folha do Pinta) e os quadros/velocidade se preenchem sozinhos. Sem animação nomeada, escreva os números dos quadros (do primeiro ao último)."
+        },
+        {
+          "type": "sz_g2d_arrows_x",
+          "label": "Mover o sprite com as setas <- -> (velocidade )",
+          "palettePath": ["Jogo 2D", "Movimento", "Movimentos prontos"],
+          "area": "start",
+          "tooltip": "Move o sprite só na horizontal com as setas esquerda/direita. Combine com \"prender o sprite na tela\"."
+        },
+        {
+          "type": "sz_g2d_center_x",
+          "label": "o centro x do sprite",
+          "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+          "area": "value",
+          "tooltip": "O x do MEIO do sprite (já soma metade da largura). Ótimo pra atirar/mirar do centro da nave."
+        },
+        {
+          "type": "sz_g2d_clamp_to_screen",
+          "label": "Manter o sprite dentro da tela",
+          "palettePath": ["Jogo 2D", "Movimento", "Bordas e rebatidas"],
+          "area": "start",
+          "tooltip": "Impede o sprite de sair pelas bordas da tela (gruda na borda em vez de sumir)."
+        },
+        {
+          "type": "sz_g2d_clear",
+          "label": "Limpar a tela",
+          "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+          "area": "start",
+          "tooltip": "Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo."
+        },
+        {
+          "type": "sz_g2d_create_group",
+          "label": "Criar grupo de sprites",
+          "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+          "area": "start",
+          "tooltip": "Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas)."
+        },
+        {
+          "type": "sz_g2d_create_image_sprite",
+          "label": "Criar sprite em x y largura altura com imagem",
+          "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+          "area": "start",
+          "tooltip": "Cria um sprite que mostra uma imagem da sua biblioteca. Em \"imagem\", use o nome do asset (ex.: heroi). Se a imagem ainda não existe, aparece um retângulo até ela carregar."
+        },
+        {
+          "type": "sz_g2d_create_ship",
+          "label": "Criar nave em x y largura altura , cor do corpo cor das asas",
+          "palettePath": ["Jogo 2D", "Kits prontos", "Espaço"],
+          "area": "start",
+          "tooltip": "Cria uma nave desenhada (corpo + asas com as cores que você escolher, cabine e foguinho que pulsa sozinho). O foguinho já vem animado."
+        },
+        {
+          "type": "sz_g2d_damage_sprite",
+          "label": "Machucar o sprite em e deixá-lo invencível por quadros",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "start",
+          "tooltip": "Tira vida uma vez e ignora novos danos enquanto o sprite pisca. Evita perder todas as vidas num contato contínuo."
+        },
+        {
+          "type": "sz_g2d_draw_group",
+          "label": "Desenhar o grupo",
+          "palettePath": ["Jogo 2D", "Grupos", "Desenho e ordem"],
+          "area": "start",
+          "tooltip": "Desenha todos os sprites do grupo. Use a cada quadro, depois de mover."
+        },
+        {
+          "type": "sz_g2d_draw_score",
+          "label": "Mostrar placar valor em x y cor tamanho",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Indicadores e texto na tela"],
+          "area": "start",
+          "tooltip": "Escreve \"rótulo valor\" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar."
+        },
+        {
+          "type": "sz_g2d_draw_sprite",
+          "label": "Desenhar o sprite",
+          "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+          "area": "start",
+          "tooltip": "Desenha o sprite na tela do jogo. Use a cada quadro, depois de \"Limpar a tela\"."
+        },
+        {
+          "type": "sz_g2d_draw_sprite_health",
+          "label": "Desenhar as vidas do sprite como em x y tamanho cor",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "start",
+          "tooltip": "Lê a vida do sprite automaticamente. Em corações, tamanho é o diâmetro; em barra, é a largura."
+        },
+        {
+          "type": "sz_g2d_every_frames",
+          "label": "A cada quadros",
+          "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+          "area": "loops",
+          "tooltip": "Roda o “fazer” de tempos em tempos, a cada N quadros. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”."
+        },
+        {
+          "type": "sz_g2d_explode",
+          "label": "Soltar explosão no sprite cor",
+          "palettePath": ["Jogo 2D", "Desenho e efeitos", "Partículas"],
+          "area": "start",
+          "tooltip": "Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite."
+        },
+        {
+          "type": "sz_g2d_health_depleted",
+          "label": "as vidas do sprite acabaram?",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "value",
+          "tooltip": "Verdadeiro quando a vida foi preparada e chegou a zero. Assim você não precisa usar o bloco “não”."
+        },
+        {
+          "type": "sz_g2d_load_spritesheet",
+          "label": "Carregar folha de quadros da imagem com quadros de x px",
+          "palettePath": ["Jogo 2D", "Sprites", "Animação"],
+          "area": "start",
+          "tooltip": "Prepara uma folha de sprites (vários quadros numa única imagem) para animar. Informe o tamanho de CADA quadro em pixels."
+        },
+        {
+          "type": "sz_g2d_on_group_overlap",
+          "label": "Para cada colisão entre os grupos e",
+          "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+          "area": "start",
+          "tooltip": "Para cada par de sprites (um de cada grupo) que se encostam, roda o \"fazer\" com os dois sprites. Use dentro do \"a cada quadro\"."
+        },
+        {
+          "type": "sz_g2d_on_key",
+          "label": "Quando apertar a tecla",
+          "palettePath": ["Jogo 2D", "Controles", "Teclado, ações e toque"],
+          "area": "events",
+          "tooltip": "Roda o que está dentro toda vez que a tecla é apertada (ex.: pular, atirar)."
+        },
+        {
+          "type": "sz_g2d_on_sprite_group_overlap",
+          "label": "Para cada sprite do grupo que colidir com o sprite",
+          "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+          "area": "start",
+          "tooltip": "Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o \"fazer\" com aquele sprite. Use dentro do \"a cada quadro\"."
+        },
+        {
+          "type": "sz_g2d_play_fx",
+          "label": "Tocar efeito",
+          "palettePath": ["Jogo 2D", "Som", "Efeitos prontos"],
+          "area": "start",
+          "tooltip": "Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu."
+        },
+        {
+          "type": "sz_g2d_prune_offscreen",
+          "label": "Tirar do grupo quem sair da tela, para cada um (chamado )",
+          "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+          "area": "start",
+          "tooltip": "Remove do grupo os sprites que saíram da tela e roda o \"fazer\" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo."
+        },
+        {
+          "type": "sz_g2d_random_x",
+          "label": "um x aleatório na tela",
+          "palettePath": ["Jogo 2D", "Sorteios", "Números e posições"],
+          "area": "value",
+          "tooltip": "Sorteia uma posição x em qualquer lugar da largura da tela. Ótimo para um sprite nascer num x aleatório (asteroides, estrelas…)."
+        },
+        {
+          "type": "sz_g2d_remove_from_group",
+          "label": "Tirar o sprite do grupo",
+          "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+          "area": "start",
+          "tooltip": "Tira um sprite do grupo (ex.: o asteroide que foi atingido). Use o nome do sprite da vez."
+        },
+        {
+          "type": "sz_g2d_restart",
+          "label": "Reiniciar o jogo",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "start",
+          "tooltip": "Use dentro de um evento, laço ou função. Limpa a partida e executa novamente as três áreas do projeto."
+        },
+        {
+          "type": "sz_g2d_scene_is",
+          "label": "o estado do jogo é ?",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "value",
+          "tooltip": "Verdadeiro se o jogo está naquela tela. Use dentro de um \"se\"."
+        },
+        {
+          "type": "sz_g2d_set_health",
+          "label": "Dar ao sprite de vida",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "start",
+          "tooltip": "Define a vida atual e a vida máxima do sprite. Coloque em “Ao iniciar” para não restaurar a vida a cada quadro."
+        },
+        {
+          "type": "sz_g2d_set_scene",
+          "label": "Mudar o estado do jogo para",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "start",
+          "tooltip": "Guarda o estado atual, como início, jogando ou vitória. Use a pergunta sobre o estado para escolher o que desenhar e mover. A mudança não pausa o motor nem desenha uma tela."
+        },
+        {
+          "type": "sz_g2d_setup_stage",
+          "label": "Preparar o jogo em tela cheia, tela × , fundo",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Preparar a área do jogo"],
+          "area": "start",
+          "tooltip": "Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”."
+        },
+        {
+          "type": "sz_g2d_shake",
+          "label": "Tremer a tela com intensidade",
+          "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+          "area": "start",
+          "tooltip": "Sacode a tela e para sozinho (o tremor vai diminuindo). Chame uma vez, ex.: numa colisão ou explosão."
+        },
+        {
+          "type": "sz_g2d_show_screen",
+          "label": "Mostrar tela com título subtítulo dica fundo",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "start",
+          "tooltip": "Cobre a tela com um aviso central (título + subtítulo + dica). Ótimo para as telas de início, vitória e derrota."
+        },
+        {
+          "type": "sz_g2d_spawn_asteroid",
+          "label": "No grupo criar um asteroide em x y tamanho cor com vx vy",
+          "palettePath": ["Jogo 2D", "Kits prontos", "Espaço"],
+          "area": "start",
+          "tooltip": "Cria um asteroide já desenhado (pedra irregular que gira, com crateras) e coloca no grupo. Cada um nasce com um formato único."
+        },
+        {
+          "type": "sz_g2d_spawn_bullet",
+          "label": "Criar tiro no grupo em x y raio cor vx vy",
+          "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+          "area": "start",
+          "tooltip": "Cria um tiro (bolinha brilhante) no grupo, no ponto x/y, indo na velocidade vx/vy (vy negativo = sobe)."
+        },
+        {
+          "type": "sz_g2d_sprite_y",
+          "label": "a posição y do sprite",
+          "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+          "area": "value",
+          "tooltip": "A posição y (borda de cima) do sprite. Use numa conta ou pra posicionar outra coisa."
+        },
+        {
+          "type": "sz_g2d_starfield",
+          "label": "Desenhar fundo de estrelas (velocidade )",
+          "palettePath": ["Jogo 2D", "Cenários", "Fundos"],
+          "area": "start",
+          "tooltip": "Desenha um céu de estrelas que rola para baixo (fundo de jogo espacial). Use no começo do \"a cada quadro\", depois de limpar a tela."
+        },
+        {
+          "type": "sz_g2d_update_each_frame",
+          "label": "A cada quadro do jogo",
+          "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+          "area": "loops",
+          "tooltip": "Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo."
+        },
+        {
+          "type": "sz_g2d_update_group",
+          "label": "Mover os sprites do grupo usando suas velocidades",
+          "palettePath": ["Jogo 2D", "Grupos", "Movimento"],
+          "area": "start",
+          "tooltip": "Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro."
+        },
+        {
+          "type": "sz_js_const_create",
+          "label": "Criar constante com valor",
+          "palettePath": ["Programação", "🏷️ Variáveis"],
+          "area": "start",
+          "tooltip": "Cria uma constante: um valor que não muda depois de criado."
+        },
+        {
+          "type": "sz_js_if_else",
+          "label": "Condição se, senão se e senão",
+          "palettePath": ["Programação", "❓ Lógica & Se"],
+          "area": "start",
+          "tooltip": "Executa o \"então\" quando a condição for verdadeira. Use + para juntar \"senão se\" e \"senão\"."
+        },
+        {
+          "type": "sz_js_var_create",
+          "label": "Criar variável com valor",
+          "palettePath": ["Programação", "🏷️ Variáveis"],
+          "area": "start",
+          "tooltip": "Cria uma variável e guarda nela um valor: número, conta, aleatório, etc."
+        },
+        {
+          "type": "sz_js_var_increment",
+          "label": "Somar em variável",
+          "palettePath": ["Programação", "🏷️ Variáveis"],
+          "area": "start",
+          "tooltip": "Soma ou tira uma quantidade do valor atual de uma variável."
+        },
+        {
+          "type": "sz_val_compare",
+          "label": "Comparar dois valores",
+          "palettePath": ["Programação", "❓ Lógica & Se"],
+          "area": "value",
+          "tooltip": "Compara dois valores e devolve verdadeiro ou falso."
+        },
+        {
+          "type": "sz_val_number",
+          "label": "Número",
+          "palettePath": ["Programação", "🔣 Valores"],
+          "area": "value",
+          "tooltip": "Um valor numérico."
+        },
+        {
+          "type": "sz_val_text",
+          "label": "texto",
+          "palettePath": ["Programação", "🔣 Valores"],
+          "area": "value",
+          "tooltip": "Um valor de texto."
+        },
+        {
+          "type": "sz_val_variable",
+          "label": "valor da variável",
+          "palettePath": ["Programação", "🔣 Valores"],
+          "area": "value",
+          "tooltip": "Usa o conteúdo de uma variável já criada como valor."
+        }
+      ]
+    },
+    {
+      "lesson": "aula-07",
+      "title": "Os seus asteroides entram no jogo",
+      "blocks": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_animate_sprite",
+        "sz_g2d_arrows_x",
+        "sz_g2d_center_x",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_group",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_damage_sprite",
+        "sz_g2d_draw_group",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_draw_sprite_health",
+        "sz_g2d_every_frames",
+        "sz_g2d_explode",
+        "sz_g2d_health_depleted",
+        "sz_g2d_load_spritesheet",
+        "sz_g2d_on_group_overlap",
+        "sz_g2d_on_key",
+        "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_play_fx",
+        "sz_g2d_prune_offscreen",
+        "sz_g2d_random_x",
+        "sz_g2d_remove_from_group",
+        "sz_g2d_restart",
+        "sz_g2d_scene_is",
+        "sz_g2d_set_health",
+        "sz_g2d_set_scene",
+        "sz_g2d_setup_stage",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet",
+        "sz_g2d_spawn_image_in_group",
+        "sz_g2d_sprite_y",
+        "sz_g2d_starfield",
+        "sz_g2d_update_each_frame",
+        "sz_g2d_update_group",
+        "sz_js_const_create",
+        "sz_js_if_else",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "introduced": ["sz_g2d_spawn_image_in_group"],
+      "edition": "jogo-2d-1.0-documento-2",
+      "documentFormatVersion": 2,
+      "extensionVersion": "1.0.0",
+      "recordingStatus": "regravar-e-validar-em-staging",
+      "catalog": [
+        {
+          "type": "sz_frame_events",
+          "label": "⚡ Quando acontecer",
+          "palettePath": ["🗂️ Áreas do projeto"],
+          "area": "events",
+          "tooltip": "Roda quando alguma coisa acontece."
+        },
+        {
+          "type": "sz_frame_loops",
+          "label": "🔁 Enquanto estiver rodando",
+          "palettePath": ["🗂️ Áreas do projeto"],
+          "area": "loops",
+          "tooltip": "Repete enquanto o projeto estiver rodando."
+        },
+        {
+          "type": "sz_frame_start",
+          "label": "⚙️ Ao iniciar",
+          "palettePath": ["🗂️ Áreas do projeto"],
+          "area": "start",
+          "tooltip": "Roda ao abrir ou a cada nova partida."
+        },
+        {
+          "type": "sz_g2d_animate_sprite",
+          "label": "Animar sprite com a folha na animação , do quadro ao a fps",
+          "palettePath": ["Jogo 2D", "Sprites", "Animação"],
+          "area": "start",
+          "tooltip": "Escolha a animação pelo NOME (vem da sua folha do Pinta) e os quadros/velocidade se preenchem sozinhos. Sem animação nomeada, escreva os números dos quadros (do primeiro ao último)."
+        },
+        {
+          "type": "sz_g2d_arrows_x",
+          "label": "Mover o sprite com as setas <- -> (velocidade )",
+          "palettePath": ["Jogo 2D", "Movimento", "Movimentos prontos"],
+          "area": "start",
+          "tooltip": "Move o sprite só na horizontal com as setas esquerda/direita. Combine com \"prender o sprite na tela\"."
+        },
+        {
+          "type": "sz_g2d_center_x",
+          "label": "o centro x do sprite",
+          "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+          "area": "value",
+          "tooltip": "O x do MEIO do sprite (já soma metade da largura). Ótimo pra atirar/mirar do centro da nave."
+        },
+        {
+          "type": "sz_g2d_clamp_to_screen",
+          "label": "Manter o sprite dentro da tela",
+          "palettePath": ["Jogo 2D", "Movimento", "Bordas e rebatidas"],
+          "area": "start",
+          "tooltip": "Impede o sprite de sair pelas bordas da tela (gruda na borda em vez de sumir)."
+        },
+        {
+          "type": "sz_g2d_clear",
+          "label": "Limpar a tela",
+          "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+          "area": "start",
+          "tooltip": "Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo."
+        },
+        {
+          "type": "sz_g2d_create_group",
+          "label": "Criar grupo de sprites",
+          "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+          "area": "start",
+          "tooltip": "Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas)."
+        },
+        {
+          "type": "sz_g2d_create_image_sprite",
+          "label": "Criar sprite em x y largura altura com imagem",
+          "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+          "area": "start",
+          "tooltip": "Cria um sprite que mostra uma imagem da sua biblioteca. Em \"imagem\", use o nome do asset (ex.: heroi). Se a imagem ainda não existe, aparece um retângulo até ela carregar."
+        },
+        {
+          "type": "sz_g2d_damage_sprite",
+          "label": "Machucar o sprite em e deixá-lo invencível por quadros",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "start",
+          "tooltip": "Tira vida uma vez e ignora novos danos enquanto o sprite pisca. Evita perder todas as vidas num contato contínuo."
+        },
+        {
+          "type": "sz_g2d_draw_group",
+          "label": "Desenhar o grupo",
+          "palettePath": ["Jogo 2D", "Grupos", "Desenho e ordem"],
+          "area": "start",
+          "tooltip": "Desenha todos os sprites do grupo. Use a cada quadro, depois de mover."
+        },
+        {
+          "type": "sz_g2d_draw_score",
+          "label": "Mostrar placar valor em x y cor tamanho",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Indicadores e texto na tela"],
+          "area": "start",
+          "tooltip": "Escreve \"rótulo valor\" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar."
+        },
+        {
+          "type": "sz_g2d_draw_sprite",
+          "label": "Desenhar o sprite",
+          "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+          "area": "start",
+          "tooltip": "Desenha o sprite na tela do jogo. Use a cada quadro, depois de \"Limpar a tela\"."
+        },
+        {
+          "type": "sz_g2d_draw_sprite_health",
+          "label": "Desenhar as vidas do sprite como em x y tamanho cor",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "start",
+          "tooltip": "Lê a vida do sprite automaticamente. Em corações, tamanho é o diâmetro; em barra, é a largura."
+        },
+        {
+          "type": "sz_g2d_every_frames",
+          "label": "A cada quadros",
+          "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+          "area": "loops",
+          "tooltip": "Roda o “fazer” de tempos em tempos, a cada N quadros. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”."
+        },
+        {
+          "type": "sz_g2d_explode",
+          "label": "Soltar explosão no sprite cor",
+          "palettePath": ["Jogo 2D", "Desenho e efeitos", "Partículas"],
+          "area": "start",
+          "tooltip": "Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite."
+        },
+        {
+          "type": "sz_g2d_health_depleted",
+          "label": "as vidas do sprite acabaram?",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "value",
+          "tooltip": "Verdadeiro quando a vida foi preparada e chegou a zero. Assim você não precisa usar o bloco “não”."
+        },
+        {
+          "type": "sz_g2d_load_spritesheet",
+          "label": "Carregar folha de quadros da imagem com quadros de x px",
+          "palettePath": ["Jogo 2D", "Sprites", "Animação"],
+          "area": "start",
+          "tooltip": "Prepara uma folha de sprites (vários quadros numa única imagem) para animar. Informe o tamanho de CADA quadro em pixels."
+        },
+        {
+          "type": "sz_g2d_on_group_overlap",
+          "label": "Para cada colisão entre os grupos e",
+          "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+          "area": "start",
+          "tooltip": "Para cada par de sprites (um de cada grupo) que se encostam, roda o \"fazer\" com os dois sprites. Use dentro do \"a cada quadro\"."
+        },
+        {
+          "type": "sz_g2d_on_key",
+          "label": "Quando apertar a tecla",
+          "palettePath": ["Jogo 2D", "Controles", "Teclado, ações e toque"],
+          "area": "events",
+          "tooltip": "Roda o que está dentro toda vez que a tecla é apertada (ex.: pular, atirar)."
+        },
+        {
+          "type": "sz_g2d_on_sprite_group_overlap",
+          "label": "Para cada sprite do grupo que colidir com o sprite",
+          "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+          "area": "start",
+          "tooltip": "Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o \"fazer\" com aquele sprite. Use dentro do \"a cada quadro\"."
+        },
+        {
+          "type": "sz_g2d_play_fx",
+          "label": "Tocar efeito",
+          "palettePath": ["Jogo 2D", "Som", "Efeitos prontos"],
+          "area": "start",
+          "tooltip": "Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu."
+        },
+        {
+          "type": "sz_g2d_prune_offscreen",
+          "label": "Tirar do grupo quem sair da tela, para cada um (chamado )",
+          "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+          "area": "start",
+          "tooltip": "Remove do grupo os sprites que saíram da tela e roda o \"fazer\" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo."
+        },
+        {
+          "type": "sz_g2d_random_x",
+          "label": "um x aleatório na tela",
+          "palettePath": ["Jogo 2D", "Sorteios", "Números e posições"],
+          "area": "value",
+          "tooltip": "Sorteia uma posição x em qualquer lugar da largura da tela. Ótimo para um sprite nascer num x aleatório (asteroides, estrelas…)."
+        },
+        {
+          "type": "sz_g2d_remove_from_group",
+          "label": "Tirar o sprite do grupo",
+          "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+          "area": "start",
+          "tooltip": "Tira um sprite do grupo (ex.: o asteroide que foi atingido). Use o nome do sprite da vez."
+        },
+        {
+          "type": "sz_g2d_restart",
+          "label": "Reiniciar o jogo",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "start",
+          "tooltip": "Use dentro de um evento, laço ou função. Limpa a partida e executa novamente as três áreas do projeto."
+        },
+        {
+          "type": "sz_g2d_scene_is",
+          "label": "o estado do jogo é ?",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "value",
+          "tooltip": "Verdadeiro se o jogo está naquela tela. Use dentro de um \"se\"."
+        },
+        {
+          "type": "sz_g2d_set_health",
+          "label": "Dar ao sprite de vida",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "start",
+          "tooltip": "Define a vida atual e a vida máxima do sprite. Coloque em “Ao iniciar” para não restaurar a vida a cada quadro."
+        },
+        {
+          "type": "sz_g2d_set_scene",
+          "label": "Mudar o estado do jogo para",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "start",
+          "tooltip": "Guarda o estado atual, como início, jogando ou vitória. Use a pergunta sobre o estado para escolher o que desenhar e mover. A mudança não pausa o motor nem desenha uma tela."
+        },
+        {
+          "type": "sz_g2d_setup_stage",
+          "label": "Preparar o jogo em tela cheia, tela × , fundo",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Preparar a área do jogo"],
+          "area": "start",
+          "tooltip": "Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”."
+        },
+        {
+          "type": "sz_g2d_shake",
+          "label": "Tremer a tela com intensidade",
+          "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+          "area": "start",
+          "tooltip": "Sacode a tela e para sozinho (o tremor vai diminuindo). Chame uma vez, ex.: numa colisão ou explosão."
+        },
+        {
+          "type": "sz_g2d_show_screen",
+          "label": "Mostrar tela com título subtítulo dica fundo",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "start",
+          "tooltip": "Cobre a tela com um aviso central (título + subtítulo + dica). Ótimo para as telas de início, vitória e derrota."
+        },
+        {
+          "type": "sz_g2d_spawn_asteroid",
+          "label": "No grupo criar um asteroide em x y tamanho cor com vx vy",
+          "palettePath": ["Jogo 2D", "Kits prontos", "Espaço"],
+          "area": "start",
+          "tooltip": "Cria um asteroide já desenhado (pedra irregular que gira, com crateras) e coloca no grupo. Cada um nasce com um formato único."
+        },
+        {
+          "type": "sz_g2d_spawn_bullet",
+          "label": "Criar tiro no grupo em x y raio cor vx vy",
+          "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+          "area": "start",
+          "tooltip": "Cria um tiro (bolinha brilhante) no grupo, no ponto x/y, indo na velocidade vx/vy (vy negativo = sobe)."
+        },
+        {
+          "type": "sz_g2d_spawn_image_in_group",
+          "label": "No grupo criar um sprite chamado em x y largura altura com imagem vx vy",
+          "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+          "area": "start",
+          "tooltip": "Como \"criar no grupo\", mas o sprite mostra uma imagem da sua biblioteca (use o nome do asset). O nome é opcional: preencha quando quiser animar ou mexer nesse sprite logo depois."
+        },
+        {
+          "type": "sz_g2d_sprite_y",
+          "label": "a posição y do sprite",
+          "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+          "area": "value",
+          "tooltip": "A posição y (borda de cima) do sprite. Use numa conta ou pra posicionar outra coisa."
+        },
+        {
+          "type": "sz_g2d_starfield",
+          "label": "Desenhar fundo de estrelas (velocidade )",
+          "palettePath": ["Jogo 2D", "Cenários", "Fundos"],
+          "area": "start",
+          "tooltip": "Desenha um céu de estrelas que rola para baixo (fundo de jogo espacial). Use no começo do \"a cada quadro\", depois de limpar a tela."
+        },
+        {
+          "type": "sz_g2d_update_each_frame",
+          "label": "A cada quadro do jogo",
+          "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+          "area": "loops",
+          "tooltip": "Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo."
+        },
+        {
+          "type": "sz_g2d_update_group",
+          "label": "Mover os sprites do grupo usando suas velocidades",
+          "palettePath": ["Jogo 2D", "Grupos", "Movimento"],
+          "area": "start",
+          "tooltip": "Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro."
+        },
+        {
+          "type": "sz_js_const_create",
+          "label": "Criar constante com valor",
+          "palettePath": ["Programação", "🏷️ Variáveis"],
+          "area": "start",
+          "tooltip": "Cria uma constante: um valor que não muda depois de criado."
+        },
+        {
+          "type": "sz_js_if_else",
+          "label": "Condição se, senão se e senão",
+          "palettePath": ["Programação", "❓ Lógica & Se"],
+          "area": "start",
+          "tooltip": "Executa o \"então\" quando a condição for verdadeira. Use + para juntar \"senão se\" e \"senão\"."
+        },
+        {
+          "type": "sz_js_var_create",
+          "label": "Criar variável com valor",
+          "palettePath": ["Programação", "🏷️ Variáveis"],
+          "area": "start",
+          "tooltip": "Cria uma variável e guarda nela um valor: número, conta, aleatório, etc."
+        },
+        {
+          "type": "sz_js_var_increment",
+          "label": "Somar em variável",
+          "palettePath": ["Programação", "🏷️ Variáveis"],
+          "area": "start",
+          "tooltip": "Soma ou tira uma quantidade do valor atual de uma variável."
+        },
+        {
+          "type": "sz_val_compare",
+          "label": "Comparar dois valores",
+          "palettePath": ["Programação", "❓ Lógica & Se"],
+          "area": "value",
+          "tooltip": "Compara dois valores e devolve verdadeiro ou falso."
+        },
+        {
+          "type": "sz_val_number",
+          "label": "Número",
+          "palettePath": ["Programação", "🔣 Valores"],
+          "area": "value",
+          "tooltip": "Um valor numérico."
+        },
+        {
+          "type": "sz_val_text",
+          "label": "texto",
+          "palettePath": ["Programação", "🔣 Valores"],
+          "area": "value",
+          "tooltip": "Um valor de texto."
+        },
+        {
+          "type": "sz_val_variable",
+          "label": "valor da variável",
+          "palettePath": ["Programação", "🔣 Valores"],
+          "area": "value",
+          "tooltip": "Usa o conteúdo de uma variável já criada como valor."
+        }
+      ]
+    },
+    {
+      "lesson": "aula-08",
+      "title": "Publique o jogo do seu jeito",
+      "blocks": [
+        "sz_frame_events",
+        "sz_frame_loops",
+        "sz_frame_start",
+        "sz_g2d_animate_sprite",
+        "sz_g2d_arrows_x",
+        "sz_g2d_center_x",
+        "sz_g2d_clamp_to_screen",
+        "sz_g2d_clear",
+        "sz_g2d_create_group",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_damage_sprite",
+        "sz_g2d_draw_group",
+        "sz_g2d_draw_score",
+        "sz_g2d_draw_sprite",
+        "sz_g2d_draw_sprite_health",
+        "sz_g2d_every_frames",
+        "sz_g2d_explode",
+        "sz_g2d_health_depleted",
+        "sz_g2d_load_spritesheet",
+        "sz_g2d_on_group_overlap",
+        "sz_g2d_on_key",
+        "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_play_fx",
+        "sz_g2d_prune_offscreen",
+        "sz_g2d_random_x",
+        "sz_g2d_remove_from_group",
+        "sz_g2d_restart",
+        "sz_g2d_scene_is",
+        "sz_g2d_set_health",
+        "sz_g2d_set_scene",
+        "sz_g2d_setup_stage",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet",
+        "sz_g2d_spawn_image_in_group",
+        "sz_g2d_sprite_y",
+        "sz_g2d_starfield",
+        "sz_g2d_update_each_frame",
+        "sz_g2d_update_group",
+        "sz_js_const_create",
+        "sz_js_if_else",
+        "sz_js_var_create",
+        "sz_js_var_increment",
+        "sz_val_compare",
+        "sz_val_number",
+        "sz_val_text",
+        "sz_val_variable"
+      ],
+      "introduced": [],
+      "edition": "jogo-2d-1.0-documento-2",
+      "documentFormatVersion": 2,
+      "extensionVersion": "1.0.0",
+      "recordingStatus": "regravar-e-validar-em-staging",
+      "catalog": [
+        {
+          "type": "sz_frame_events",
+          "label": "⚡ Quando acontecer",
+          "palettePath": ["🗂️ Áreas do projeto"],
+          "area": "events",
+          "tooltip": "Roda quando alguma coisa acontece."
+        },
+        {
+          "type": "sz_frame_loops",
+          "label": "🔁 Enquanto estiver rodando",
+          "palettePath": ["🗂️ Áreas do projeto"],
+          "area": "loops",
+          "tooltip": "Repete enquanto o projeto estiver rodando."
+        },
+        {
+          "type": "sz_frame_start",
+          "label": "⚙️ Ao iniciar",
+          "palettePath": ["🗂️ Áreas do projeto"],
+          "area": "start",
+          "tooltip": "Roda ao abrir ou a cada nova partida."
+        },
+        {
+          "type": "sz_g2d_animate_sprite",
+          "label": "Animar sprite com a folha na animação , do quadro ao a fps",
+          "palettePath": ["Jogo 2D", "Sprites", "Animação"],
+          "area": "start",
+          "tooltip": "Escolha a animação pelo NOME (vem da sua folha do Pinta) e os quadros/velocidade se preenchem sozinhos. Sem animação nomeada, escreva os números dos quadros (do primeiro ao último)."
+        },
+        {
+          "type": "sz_g2d_arrows_x",
+          "label": "Mover o sprite com as setas <- -> (velocidade )",
+          "palettePath": ["Jogo 2D", "Movimento", "Movimentos prontos"],
+          "area": "start",
+          "tooltip": "Move o sprite só na horizontal com as setas esquerda/direita. Combine com \"prender o sprite na tela\"."
+        },
+        {
+          "type": "sz_g2d_center_x",
+          "label": "o centro x do sprite",
+          "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+          "area": "value",
+          "tooltip": "O x do MEIO do sprite (já soma metade da largura). Ótimo pra atirar/mirar do centro da nave."
+        },
+        {
+          "type": "sz_g2d_clamp_to_screen",
+          "label": "Manter o sprite dentro da tela",
+          "palettePath": ["Jogo 2D", "Movimento", "Bordas e rebatidas"],
+          "area": "start",
+          "tooltip": "Impede o sprite de sair pelas bordas da tela (gruda na borda em vez de sumir)."
+        },
+        {
+          "type": "sz_g2d_clear",
+          "label": "Limpar a tela",
+          "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+          "area": "start",
+          "tooltip": "Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo."
+        },
+        {
+          "type": "sz_g2d_create_group",
+          "label": "Criar grupo de sprites",
+          "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+          "area": "start",
+          "tooltip": "Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas)."
+        },
+        {
+          "type": "sz_g2d_create_image_sprite",
+          "label": "Criar sprite em x y largura altura com imagem",
+          "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+          "area": "start",
+          "tooltip": "Cria um sprite que mostra uma imagem da sua biblioteca. Em \"imagem\", use o nome do asset (ex.: heroi). Se a imagem ainda não existe, aparece um retângulo até ela carregar."
+        },
+        {
+          "type": "sz_g2d_damage_sprite",
+          "label": "Machucar o sprite em e deixá-lo invencível por quadros",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "start",
+          "tooltip": "Tira vida uma vez e ignora novos danos enquanto o sprite pisca. Evita perder todas as vidas num contato contínuo."
+        },
+        {
+          "type": "sz_g2d_draw_group",
+          "label": "Desenhar o grupo",
+          "palettePath": ["Jogo 2D", "Grupos", "Desenho e ordem"],
+          "area": "start",
+          "tooltip": "Desenha todos os sprites do grupo. Use a cada quadro, depois de mover."
+        },
+        {
+          "type": "sz_g2d_draw_score",
+          "label": "Mostrar placar valor em x y cor tamanho",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Indicadores e texto na tela"],
+          "area": "start",
+          "tooltip": "Escreve \"rótulo valor\" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar."
+        },
+        {
+          "type": "sz_g2d_draw_sprite",
+          "label": "Desenhar o sprite",
+          "palettePath": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
+          "area": "start",
+          "tooltip": "Desenha o sprite na tela do jogo. Use a cada quadro, depois de \"Limpar a tela\"."
+        },
+        {
+          "type": "sz_g2d_draw_sprite_health",
+          "label": "Desenhar as vidas do sprite como em x y tamanho cor",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "start",
+          "tooltip": "Lê a vida do sprite automaticamente. Em corações, tamanho é o diâmetro; em barra, é a largura."
+        },
+        {
+          "type": "sz_g2d_every_frames",
+          "label": "A cada quadros",
+          "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+          "area": "loops",
+          "tooltip": "Roda o “fazer” de tempos em tempos, a cada N quadros. É uma raiz de “🔁 Enquanto estiver rodando”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”."
+        },
+        {
+          "type": "sz_g2d_explode",
+          "label": "Soltar explosão no sprite cor",
+          "palettePath": ["Jogo 2D", "Desenho e efeitos", "Partículas"],
+          "area": "start",
+          "tooltip": "Solta um jato de partículas (da cor escolhida + estilhaços cinza) no centro do sprite."
+        },
+        {
+          "type": "sz_g2d_health_depleted",
+          "label": "as vidas do sprite acabaram?",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "value",
+          "tooltip": "Verdadeiro quando a vida foi preparada e chegou a zero. Assim você não precisa usar o bloco “não”."
+        },
+        {
+          "type": "sz_g2d_load_spritesheet",
+          "label": "Carregar folha de quadros da imagem com quadros de x px",
+          "palettePath": ["Jogo 2D", "Sprites", "Animação"],
+          "area": "start",
+          "tooltip": "Prepara uma folha de sprites (vários quadros numa única imagem) para animar. Informe o tamanho de CADA quadro em pixels."
+        },
+        {
+          "type": "sz_g2d_on_group_overlap",
+          "label": "Para cada colisão entre os grupos e",
+          "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+          "area": "start",
+          "tooltip": "Para cada par de sprites (um de cada grupo) que se encostam, roda o \"fazer\" com os dois sprites. Use dentro do \"a cada quadro\"."
+        },
+        {
+          "type": "sz_g2d_on_key",
+          "label": "Quando apertar a tecla",
+          "palettePath": ["Jogo 2D", "Controles", "Teclado, ações e toque"],
+          "area": "events",
+          "tooltip": "Roda o que está dentro toda vez que a tecla é apertada (ex.: pular, atirar)."
+        },
+        {
+          "type": "sz_g2d_on_sprite_group_overlap",
+          "label": "Para cada sprite do grupo que colidir com o sprite",
+          "palettePath": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
+          "area": "start",
+          "tooltip": "Para cada sprite do grupo que encostar no seu sprite (ex.: a nave), roda o \"fazer\" com aquele sprite. Use dentro do \"a cada quadro\"."
+        },
+        {
+          "type": "sz_g2d_play_fx",
+          "label": "Tocar efeito",
+          "palettePath": ["Jogo 2D", "Som", "Efeitos prontos"],
+          "area": "start",
+          "tooltip": "Toca um efeito sonoro pronto (sintetizado, sem arquivo). Escolha um no menu."
+        },
+        {
+          "type": "sz_g2d_prune_offscreen",
+          "label": "Tirar do grupo quem sair da tela, para cada um (chamado )",
+          "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+          "area": "start",
+          "tooltip": "Remove do grupo os sprites que saíram da tela e roda o \"fazer\" para cada um (ex.: perder uma vida quando um asteroide escapa). Só tira quem já foi embora de verdade: o que nasce fora da tela e ainda está vindo continua no jogo."
+        },
+        {
+          "type": "sz_g2d_random_x",
+          "label": "um x aleatório na tela",
+          "palettePath": ["Jogo 2D", "Sorteios", "Números e posições"],
+          "area": "value",
+          "tooltip": "Sorteia uma posição x em qualquer lugar da largura da tela. Ótimo para um sprite nascer num x aleatório (asteroides, estrelas…)."
+        },
+        {
+          "type": "sz_g2d_remove_from_group",
+          "label": "Tirar o sprite do grupo",
+          "palettePath": ["Jogo 2D", "Grupos", "Participação e limpeza"],
+          "area": "start",
+          "tooltip": "Tira um sprite do grupo (ex.: o asteroide que foi atingido). Use o nome do sprite da vez."
+        },
+        {
+          "type": "sz_g2d_restart",
+          "label": "Reiniciar o jogo",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "start",
+          "tooltip": "Use dentro de um evento, laço ou função. Limpa a partida e executa novamente as três áreas do projeto."
+        },
+        {
+          "type": "sz_g2d_scene_is",
+          "label": "o estado do jogo é ?",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "value",
+          "tooltip": "Verdadeiro se o jogo está naquela tela. Use dentro de um \"se\"."
+        },
+        {
+          "type": "sz_g2d_set_health",
+          "label": "Dar ao sprite de vida",
+          "palettePath": ["Jogo 2D", "Vida e placar", "Vida"],
+          "area": "start",
+          "tooltip": "Define a vida atual e a vida máxima do sprite. Coloque em “Ao iniciar” para não restaurar a vida a cada quadro."
+        },
+        {
+          "type": "sz_g2d_set_scene",
+          "label": "Mudar o estado do jogo para",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "start",
+          "tooltip": "Guarda o estado atual, como início, jogando ou vitória. Use a pergunta sobre o estado para escolher o que desenhar e mover. A mudança não pausa o motor nem desenha uma tela."
+        },
+        {
+          "type": "sz_g2d_setup_stage",
+          "label": "Preparar o jogo em tela cheia, tela × , fundo",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Preparar a área do jogo"],
+          "area": "start",
+          "tooltip": "Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”."
+        },
+        {
+          "type": "sz_g2d_shake",
+          "label": "Tremer a tela com intensidade",
+          "palettePath": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
+          "area": "start",
+          "tooltip": "Sacode a tela e para sozinho (o tremor vai diminuindo). Chame uma vez, ex.: numa colisão ou explosão."
+        },
+        {
+          "type": "sz_g2d_show_screen",
+          "label": "Mostrar tela com título subtítulo dica fundo",
+          "palettePath": ["Jogo 2D", "Jogo e telas", "Telas e partida"],
+          "area": "start",
+          "tooltip": "Cobre a tela com um aviso central (título + subtítulo + dica). Ótimo para as telas de início, vitória e derrota."
+        },
+        {
+          "type": "sz_g2d_spawn_asteroid",
+          "label": "No grupo criar um asteroide em x y tamanho cor com vx vy",
+          "palettePath": ["Jogo 2D", "Kits prontos", "Espaço"],
+          "area": "start",
+          "tooltip": "Cria um asteroide já desenhado (pedra irregular que gira, com crateras) e coloca no grupo. Cada um nasce com um formato único."
+        },
+        {
+          "type": "sz_g2d_spawn_bullet",
+          "label": "Criar tiro no grupo em x y raio cor vx vy",
+          "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+          "area": "start",
+          "tooltip": "Cria um tiro (bolinha brilhante) no grupo, no ponto x/y, indo na velocidade vx/vy (vy negativo = sobe)."
+        },
+        {
+          "type": "sz_g2d_spawn_image_in_group",
+          "label": "No grupo criar um sprite chamado em x y largura altura com imagem vx vy",
+          "palettePath": ["Jogo 2D", "Grupos", "Criar e percorrer"],
+          "area": "start",
+          "tooltip": "Como \"criar no grupo\", mas o sprite mostra uma imagem da sua biblioteca (use o nome do asset). O nome é opcional: preencha quando quiser animar ou mexer nesse sprite logo depois."
+        },
+        {
+          "type": "sz_g2d_sprite_y",
+          "label": "a posição y do sprite",
+          "palettePath": ["Jogo 2D", "Movimento", "Posição e tamanho"],
+          "area": "value",
+          "tooltip": "A posição y (borda de cima) do sprite. Use numa conta ou pra posicionar outra coisa."
+        },
+        {
+          "type": "sz_g2d_starfield",
+          "label": "Desenhar fundo de estrelas (velocidade )",
+          "palettePath": ["Jogo 2D", "Cenários", "Fundos"],
+          "area": "start",
+          "tooltip": "Desenha um céu de estrelas que rola para baixo (fundo de jogo espacial). Use no começo do \"a cada quadro\", depois de limpar a tela."
+        },
+        {
+          "type": "sz_g2d_update_each_frame",
+          "label": "A cada quadro do jogo",
+          "palettePath": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
+          "area": "loops",
+          "tooltip": "Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo."
+        },
+        {
+          "type": "sz_g2d_update_group",
+          "label": "Mover os sprites do grupo usando suas velocidades",
+          "palettePath": ["Jogo 2D", "Grupos", "Movimento"],
+          "area": "start",
+          "tooltip": "Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro."
+        },
+        {
+          "type": "sz_js_const_create",
+          "label": "Criar constante com valor",
+          "palettePath": ["Programação", "🏷️ Variáveis"],
+          "area": "start",
+          "tooltip": "Cria uma constante: um valor que não muda depois de criado."
+        },
+        {
+          "type": "sz_js_if_else",
+          "label": "Condição se, senão se e senão",
+          "palettePath": ["Programação", "❓ Lógica & Se"],
+          "area": "start",
+          "tooltip": "Executa o \"então\" quando a condição for verdadeira. Use + para juntar \"senão se\" e \"senão\"."
+        },
+        {
+          "type": "sz_js_var_create",
+          "label": "Criar variável com valor",
+          "palettePath": ["Programação", "🏷️ Variáveis"],
+          "area": "start",
+          "tooltip": "Cria uma variável e guarda nela um valor: número, conta, aleatório, etc."
+        },
+        {
+          "type": "sz_js_var_increment",
+          "label": "Somar em variável",
+          "palettePath": ["Programação", "🏷️ Variáveis"],
+          "area": "start",
+          "tooltip": "Soma ou tira uma quantidade do valor atual de uma variável."
+        },
+        {
+          "type": "sz_val_compare",
+          "label": "Comparar dois valores",
+          "palettePath": ["Programação", "❓ Lógica & Se"],
+          "area": "value",
+          "tooltip": "Compara dois valores e devolve verdadeiro ou falso."
+        },
+        {
+          "type": "sz_val_number",
+          "label": "Número",
+          "palettePath": ["Programação", "🔣 Valores"],
+          "area": "value",
+          "tooltip": "Um valor numérico."
+        },
+        {
+          "type": "sz_val_text",
+          "label": "texto",
+          "palettePath": ["Programação", "🔣 Valores"],
+          "area": "value",
+          "tooltip": "Um valor de texto."
+        },
+        {
+          "type": "sz_val_variable",
+          "label": "valor da variável",
+          "palettePath": ["Programação", "🔣 Valores"],
+          "area": "value",
+          "tooltip": "Usa o conteúdo de uma variável já criada como valor."
+        }
+      ]
+    }
+  ]
+}

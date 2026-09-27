@@ -1,0 +1,480 @@
+import { expect, spyOn, test } from 'bun:test'
+import { GlobalRegistrator } from '@happy-dom/global-registrator'
+import {
+  blockCheckpoint,
+  blockPrediction,
+  defaultLessonSection,
+  type InteractiveBlock,
+  type LessonDraftDocument,
+} from '@sistemazero/core/learning'
+import { SCENE_MODELS } from '@sistemazero/core/learning/scene'
+import type { LessonDetailView } from '@sistemazero/member-shell/lib/types'
+import { createEmptyProject } from '@sistemazero/studio/project'
+import type { LessonBlockContent } from '../src/lib/types'
+
+if (typeof document === 'undefined') GlobalRegistrator.register()
+Object.defineProperty(globalThis, 'IS_REACT_ACT_ENVIRONMENT', {
+  value: true,
+  writable: true,
+  configurable: true,
+})
+const { act } = await import('react')
+const { createRoot } = await import('react-dom/client')
+const { InteractiveLessonBlock } = await import(
+  '@sistemazero/member-shell/components/learning-activity'
+)
+const { useLessonPreview } = await import(
+  '@sistemazero/member-shell/components/lesson-preview-context'
+)
+const { LessonRehearsal } = await import('../src/components/editor/lesson-rehearsal')
+
+/**
+ * O palpite que abre a cena, quando ela tem previsão.
+ *
+ * ⚠️⚠️ Mudou de propósito (consertos do review do lote 2 do Raio-X): o `<fieldset disabled>` do
+ * palpite nunca travou o clique no happy-dom, e este teste apertava "Depois" com o palpite pendente.
+ * Desde os consertos a trava mora também no ponto único dos gestos (o gesto DIRETO no desenho
+ * passava pelo véu no navegador de verdade), e o ensaio passa pelo palpite como a criança.
+ */
+/**
+ * O gesto da `layers` até a conclusão.
+ *
+ * ⚠️ Mudou de propósito (lote 5 do Raio-X): os cartões Antes/Depois viraram a pilha "A ordem de
+ * desenhar", com Descer e Subir em cada peça. E a cena passou a pedir DUAS descobertas (o Dino na
+ * frente e, só trocando a ordem, escondido de novo) com a montagem assentada no fim: três trocas.
+ */
+async function trocarOrdem(container: HTMLElement, vezes = 3) {
+  for (let i = 0; i < vezes; i++) {
+    const descer = container.querySelector<HTMLButtonElement>('button[aria-label^="Descer "]')
+    if (!descer) throw new Error('Missing Descer')
+    await act(async () => descer.click())
+  }
+}
+
+async function palpitar(container: HTMLElement, content: InteractiveBlock) {
+  const rotulo = blockPrediction(content)?.choices[0]?.label
+  const opcao = [...container.querySelectorAll('button')].find(
+    (b) => b.textContent?.trim() === rotulo,
+  )
+  if (opcao) await act(async () => opcao.click())
+}
+
+test('external confirmations do not bypass discoveries or unfinished section criteria', async () => {
+  const content: InteractiveBlock = {
+    kind: 'interactive',
+    title: 'Camadas',
+    instructions: 'Mude a ordem.',
+    hints: [],
+    required: false,
+    activity: { type: 'experimentation', scene: 'layers' },
+  }
+  const documentValue: LessonDraftDocument<LessonBlockContent> = {
+    title: 'Ensaio',
+    slug: 'ensaio',
+    estimatedMinutes: null,
+    attachments: [],
+    plannedVideos: [],
+    blocks: [
+      {
+        id: 'video',
+        content: { kind: 'video', provider: 'file', src: 'https://example.com/video.mp4' },
+      },
+      { id: 'discovery', content },
+    ],
+    sections: [
+      {
+        ...defaultLessonSection('a', 'Vídeo e descoberta', ['video', 'discovery']),
+        completion: { version: 1, blockIds: ['video', 'discovery'] },
+      },
+      {
+        ...defaultLessonSection('b', 'Avatar', []),
+        completion: { version: 1, blockIds: [], platformAction: 'customize-avatar' },
+      },
+      {
+        ...defaultLessonSection('unfinished', 'Seção ainda em edição', []),
+        completion: { version: 1, blockIds: [] },
+      },
+    ],
+  }
+  const lesson: LessonDetailView = {
+    id: 'lesson',
+    slug: 'ensaio',
+    title: 'Ensaio',
+    courseSlug: '',
+    moduleId: '',
+    completed: false,
+    estimatedMinutes: null,
+    positionSeconds: null,
+    sections: documentValue.sections,
+    attachments: [],
+    blocks: documentValue.blocks.map((b, i) => ({
+      id: b.id,
+      content: b.content,
+      kind: b.content.kind,
+      sortOrder: i,
+    })),
+  }
+  const container = document.createElement('div')
+  document.body.append(container)
+  const root = createRoot(container)
+  const button = (name: string) => {
+    const result = [...container.querySelectorAll('button')].find(
+      (b) => b.textContent?.trim() === name,
+    )
+    if (!result) throw new Error(`Missing ${name}`)
+    return result
+  }
+  try {
+    await act(async () =>
+      root.render(
+        <LessonRehearsal
+          lesson={lesson}
+          document={documentValue}
+          renderBlocks={(blocks) =>
+            blocks
+              .filter((b) => b.kind === 'interactive')
+              .map((block) => (
+                <InteractiveLessonBlock key={block.id} block={block} previewContent={content} />
+              ))
+          }
+        />,
+      ),
+    )
+    /**
+     * A frase que explica o que aconteceu — o terceiro tempo do ciclo.
+     *
+     * ⚠⚠ Desde 15/09/2026 toda experimentação HERDA a pergunta do modelo da cena, e é ela
+     * que dá a palavra final sobre a conclusão. O ensaio do professor passa pelo mesmo
+     * caminho da criança: descobrir deixou de bastar. O gabarito vem do resolvedor, e não de
+     * uma letra copiada aqui — reescrever a pergunta da cena não pode apagar este teste.
+     */
+    const explicar = async () => {
+      const pergunta = blockCheckpoint(content)
+      if (!pergunta) throw new Error('a experimentação deveria herdar a pergunta da cena')
+      // ⚠️ Mudou de propósito (consertos do review do lote 2): as opções são BOTÕES, não rádios.
+      const escolha = container.querySelector<HTMLButtonElement>(
+        `button[id$="-pergunta-${pergunta.correctChoiceId}"]`,
+      )
+      if (!escolha) throw new Error('a pergunta herdada não está na tela')
+      await act(async () => escolha.click())
+    }
+    expect(button('Próxima seção').disabled).toBe(true)
+    await act(async () => button('Simular confirmação da ação externa').click())
+    expect(button('Próxima seção').disabled).toBe(true)
+    await palpitar(container, content)
+    await trocarOrdem(container)
+    // A descoberta aconteceu, e o bloco ainda não fechou: falta enunciar a regra.
+    expect(button('Próxima seção').disabled).toBe(true)
+    await explicar()
+    expect(button('Próxima seção').disabled).toBe(false)
+    await act(async () => button('Próxima seção').click())
+    expect(button('Próxima seção').disabled).toBe(true)
+    await act(async () => button('Simular confirmação da ação externa').click())
+    await act(async () => button('Próxima seção').click())
+    expect(container.textContent).toContain('Configure um critério de conclusão na autoria.')
+  } finally {
+    await act(async () => root.unmount())
+    container.remove()
+  }
+})
+
+test('rehearsal interleaves two discoveries and two independent goals in one project, with retry and recovery and no requests', async () => {
+  const fetch = spyOn(globalThis, 'fetch').mockImplementation(
+    Object.assign(
+      async () => {
+        throw new Error('A rehearsal must not request authenticated services')
+      },
+      { preconnect: globalThis.fetch.preconnect },
+    ),
+  )
+  const container = document.createElement('div')
+  document.body.append(container)
+  const root = createRoot(container)
+  const d = SCENE_MODELS.layers
+  const content: InteractiveBlock = {
+    kind: 'interactive',
+    title: d.title,
+    instructions: d.instruction,
+    hints: [...d.hints],
+    required: false,
+    activity: { type: 'experimentation', scene: 'layers' },
+  }
+  const seed = createEmptyProject('same-dino', 'Meu Dino')
+  const documentValue: LessonDraftDocument<LessonBlockContent> = {
+    title: 'Dino',
+    slug: 'dino',
+    estimatedMinutes: null,
+    attachments: [],
+    plannedVideos: [],
+    blocks: [
+      { id: 'a', content },
+      { id: 'b', content },
+      { id: 'project', content: { kind: 'studio', initialProject: seed } },
+    ],
+    sections: [
+      {
+        ...defaultLessonSection('a', 'Descoberta A', ['a']),
+        completion: { version: 1, blockIds: ['a'] },
+      },
+      {
+        ...defaultLessonSection('create-a', 'Criação A', ['project']),
+        intent: 'application',
+        workspaceBlockId: 'project',
+        completion: {
+          version: 1,
+          blockIds: [],
+          projectChecks: [{ id: 'loop', label: 'Repetição', rule: { type: 'usesLoop' } }],
+        },
+      },
+      {
+        ...defaultLessonSection('b', 'Descoberta B', ['b']),
+        completion: { version: 1, blockIds: ['b'] },
+      },
+      {
+        ...defaultLessonSection('create-b', 'Criação B', []),
+        intent: 'application',
+        workspaceBlockId: 'project',
+        completion: {
+          version: 1,
+          blockIds: [],
+          projectChecks: [
+            { id: 'variable', label: 'Pontos', rule: { type: 'declaresVariable', name: 'pontos' } },
+          ],
+        },
+      },
+    ],
+  }
+  const lesson: LessonDetailView = {
+    id: 'dino',
+    slug: 'dino',
+    title: 'Dino',
+    courseSlug: 'dino',
+    moduleId: 'module',
+    completed: false,
+    positionSeconds: null,
+    estimatedMinutes: null,
+    attachments: [],
+    sections: documentValue.sections,
+    blocks: documentValue.blocks.map((block, i) => ({
+      id: block.id,
+      sortOrder: i,
+      kind: block.content.kind,
+      content: block.content,
+    })),
+  }
+  let identity = ''
+  function Workspace() {
+    const rehearsal = useLessonPreview()
+    const project = rehearsal?.workspaces.project ?? seed
+    identity = project.id
+    return (
+      <div>
+        <input
+          aria-label="Nome do projeto"
+          value={project.name}
+          onChange={(event) =>
+            rehearsal?.onWorkspaceChange('project', { ...project, name: event.target.value })
+          }
+        />
+        <button
+          type="button"
+          onClick={() => rehearsal?.onWorkspaceChange('project', { ...project, name: 'Dino azul' })}
+        >
+          Mudar projeto
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            void rehearsal?.onProjectCheck('project', {
+              ir: {
+                version: 2,
+                html: [],
+                css: [],
+                extensions: [],
+                behavior: {
+                  start: [],
+                  molds: [],
+                  events: [],
+                  loops: [{ type: 'repeat', times: { type: 'num', value: 2 }, body: [] }],
+                },
+              },
+            })
+          }}
+        >
+          Conferir repetição
+        </button>
+      </div>
+    )
+  }
+  const button = (name: string) => {
+    const found = [...container.querySelectorAll('button')].find(
+      (item) => item.textContent?.trim() === name,
+    )
+    if (!found)
+      throw new Error(
+        `Missing button ${name}; available: ${[...container.querySelectorAll('button')].map((item) => item.textContent).join(', ')}`,
+      )
+    return found
+  }
+  const click = (name: string) => act(async () => button(name).click())
+  /** A frase que explica — ver o comentário do teste anterior. */
+  const explicar = async () => {
+    const pergunta = blockCheckpoint(content)
+    if (!pergunta) throw new Error('a experimentação deveria herdar a pergunta da cena')
+    // ⚠️ Mudou de propósito (consertos do review do lote 2): as opções são BOTÕES, não rádios.
+    const escolha = container.querySelector<HTMLButtonElement>(
+      `button[id$="-pergunta-${pergunta.correctChoiceId}"]`,
+    )
+    if (!escolha) throw new Error('a pergunta herdada não está na tela')
+    await act(async () => escolha.click())
+  }
+  try {
+    await act(async () =>
+      root.render(
+        <LessonRehearsal
+          document={documentValue}
+          lesson={lesson}
+          renderBlocks={(blocks) =>
+            blocks.map((block) =>
+              block.kind === 'studio' ? (
+                <Workspace key={block.id} />
+              ) : (
+                <InteractiveLessonBlock key={block.id} block={block} previewContent={content} />
+              ),
+            )
+          }
+        />,
+      ),
+    )
+    expect(button('Próxima seção').disabled).toBe(true)
+    await click('Falhar na próxima confirmação')
+    await palpitar(container, content)
+    await trocarOrdem(container)
+    // ⚠️⚠️ A descoberta sozinha não manda mais tentativa nenhuma: a experimentação herda a
+    // pergunta do modelo da cena, e a tentativa só sai com a frase escolhida. Quem tropeça na
+    // falha de gravação é a RESPOSTA, e é depois dela que o "Tentar salvar" tem o que repetir.
+    expect(button('Próxima seção').disabled).toBe(true)
+    await explicar()
+    expect(container.textContent).toContain('Falha de salvamento simulada')
+    expect(button('Próxima seção').disabled).toBe(true)
+    await click('Tentar salvar')
+    expect(button('Próxima seção').disabled).toBe(false)
+    await click('Próxima seção')
+    // ⚠️ Sem "Criar" (14/09/2026): as duas seções de criação têm o Estúdio como ÚNICO bloco,
+    // e seção assim não divide mais a tela — ela ocupa a largura toda, então o editor já está
+    // à vista. As abas "Ver exemplo"/"Criar" só existem quando há conteúdo do outro lado.
+    await click('Mudar projeto')
+    const original = identity
+    await click('Conferir repetição')
+    await click('Próxima seção')
+    await palpitar(container, content)
+    await trocarOrdem(container)
+    await explicar()
+    await click('Próxima seção')
+    expect(identity).toBe(original)
+    expect(
+      container.querySelector<HTMLInputElement>('input[aria-label="Nome do projeto"]')?.value,
+    ).toBe('Dino azul')
+    expect(container.textContent).toContain('Confira o objetivo no projeto desta seção.')
+    await click('Conferir repetição')
+    expect(container.textContent).toContain('Confira o objetivo no projeto desta seção.')
+    await click('Ensaiar retomada')
+    expect(identity).toBe(original)
+    expect(
+      container.querySelector<HTMLInputElement>('input[aria-label="Nome do projeto"]')?.value,
+    ).toBe('Dino azul')
+    expect(fetch).not.toHaveBeenCalled()
+  } finally {
+    await act(async () => root.unmount())
+    container.remove()
+    fetch.mockRestore()
+  }
+})
+
+test('o ensaio segue a plataforma do curso: no kids a aula monta sem a barra do topo', async () => {
+  // ⚠️ Os dois layouts divergem desde 13/09/2026: no kids a barra "O que falta para
+  // concluir / Índice da aula" não existe e o índice mora no cabeçalho da seção. Sem
+  // a audiência chegando até aqui, o professor ensaiava uma aula infantil na tela do
+  // adulto — uma prévia fiel de nada. Nenhum CSS prova isto (o admin não carrega o do
+  // kids), então a ESTRUTURA é o que dá para travar.
+  const documentValue: LessonDraftDocument<LessonBlockContent> = {
+    title: 'Ensaio',
+    slug: 'ensaio',
+    estimatedMinutes: null,
+    attachments: [],
+    plannedVideos: [],
+    blocks: [],
+    sections: [
+      { ...defaultLessonSection('a', 'Preparar', []), completion: { version: 1, blockIds: [] } },
+      { ...defaultLessonSection('b', 'Observar', []), completion: { version: 1, blockIds: [] } },
+    ],
+  }
+  const lesson: LessonDetailView = {
+    id: 'lesson',
+    slug: 'ensaio',
+    title: 'Ensaio',
+    courseSlug: '',
+    moduleId: '',
+    completed: false,
+    estimatedMinutes: null,
+    positionSeconds: null,
+    sections: documentValue.sections,
+    attachments: [],
+    blocks: [],
+  }
+  const montar = async (kids: boolean) => {
+    const container = document.createElement('div')
+    document.body.append(container)
+    const root = createRoot(container)
+    await act(async () =>
+      root.render(
+        <LessonRehearsal
+          lesson={lesson}
+          document={documentValue}
+          renderBlocks={() => null}
+          kids={kids}
+        />,
+      ),
+    )
+    const indice = [...container.querySelectorAll('summary')].find((s) =>
+      s.textContent?.includes('Índice da aula'),
+    )
+    return {
+      container,
+      root,
+      temBarra: container.querySelector('.sz-lesson-toolbar') !== null,
+      // ⚠️ Sinal que DISCRIMINA: o gancho de tema do kids. O `indiceNoCabecalho`
+      // deixou de separar os dois em 18/09/2026 (o índice mora no cabeçalho nos
+      // dois), e sem um substituto o ensaio poderia montar a criança na tela do
+      // adulto — o bug que este arquivo existe para impedir — sem nada acusar.
+      temTemaKids: container.querySelector('.sz-lesson-sections') !== null,
+      pedePendencias: container.textContent?.includes('O que falta para concluir') ?? false,
+      indiceNoCabecalho:
+        indice?.closest('header')?.classList.contains('sz-lesson-section-head') ?? false,
+    }
+  }
+  const kids = await montar(true)
+  try {
+    expect(kids.temBarra).toBe(false)
+    expect(kids.pedePendencias).toBe(false)
+    expect(kids.indiceNoCabecalho).toBe(true)
+    expect(kids.temTemaKids).toBe(true)
+  } finally {
+    await act(async () => kids.root.unmount())
+    kids.container.remove()
+  }
+  // E o contrário também: ensaiar um curso ADULTO não pode virar a tela do kids.
+  // ⚠️ O que separa os dois é a BARRA do topo e o "O que falta para concluir". O
+  // ÍNDICE deixou de ser diferença em 18/09/2026: ele mora no cabeçalho da seção
+  // nos dois, ao lado do nome, quando o título da aula desceu para lá.
+  const adulto = await montar(false)
+  try {
+    expect(adulto.temBarra).toBe(true)
+    expect(adulto.pedePendencias).toBe(true)
+    expect(adulto.indiceNoCabecalho).toBe(true)
+    expect(adulto.temTemaKids).toBe(false)
+  } finally {
+    await act(async () => adulto.root.unmount())
+    adulto.container.remove()
+  }
+})

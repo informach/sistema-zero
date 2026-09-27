@@ -85,6 +85,71 @@ function runtimeHarness(devicePixelRatio = 1) {
 }
 
 describe('gameTwoDRuntime — ciclo de vida didático', () => {
+  it('destruir um sprite encerra clique e remove o texto do leitor de tela', async () => {
+    document.body.innerHTML = ''
+    const { api, fire, setTime } = runtimeHarness()
+    api.setupStage(320, 200, '#000000')
+    const canvas = document.querySelector('canvas')
+    if (!canvas) throw new Error('Canvas do ensaio não foi criado')
+    // Happy DOM não rasteriza Canvas. O ensaio cobre eventos e HUD; pixels são verificados no navegador.
+    const ctx = {
+      canvas,
+      globalAlpha: 1,
+      save() {},
+      restore() {},
+      fillText() {},
+      translate() {},
+      rotate() {},
+      scale() {},
+    } as unknown as CanvasRenderingContext2D
+    const sprite = api.createTextSprite('Resposta 42', 10, 10)
+    let clicks = 0
+    api.onSpriteClick(
+      sprite,
+      () => {
+        clicks += 1
+      },
+      'resposta',
+    )
+    api.drawSprite(ctx, sprite)
+    fire('pointerdown', { clientX: 15, clientY: 15, target: canvas })
+    expect(clicks).toBe(1)
+    fire('pointerup', { clientX: 15, clientY: 15, target: canvas })
+    await Promise.resolve()
+    setTime(500)
+    expect(document.getElementById('sz-game-hud-status')?.textContent).toContain('Resposta 42')
+    api.destroySprite(sprite)
+    api.drawSprite(ctx, sprite)
+    fire('pointerdown', { clientX: 15, clientY: 15, target: canvas })
+    expect(clicks).toBe(1)
+    await Promise.resolve()
+    setTime(1000)
+    expect(document.getElementById('sz-game-hud-status')?.textContent).not.toContain('Resposta 42')
+  })
+  it('ação com recarga conta quadros, congela na pausa e nunca agenda execução', () => {
+    const { api, flushFrame, setTime } = runtimeHarness()
+    const sprite = api.createSprite({})
+    let calls = 0
+    const action = () => {
+      calls += 1
+    }
+    api.gameLoop(() => {}, 'relogio')
+    api.withCooldown(sprite, 3, action, 'acao')
+    expect(calls).toBe(1)
+    flushFrame(0)
+    api.pauseGame()
+    setTime(60_000)
+    api.withCooldown(sprite, 3, action, 'acao')
+    expect(calls).toBe(1)
+    api.resumeGame()
+    flushFrame(60_000)
+    api.withCooldown(sprite, 3, action, 'acao')
+    expect(calls).toBe(1)
+    flushFrame(60_000 + 1000 / 60)
+    expect(calls).toBe(1)
+    api.withCooldown(sprite, 3, action, 'acao')
+    expect(calls).toBe(2)
+  })
   it('mantém dois blocos “a cada quadro” ativos ao mesmo tempo', () => {
     const { api, flushFrame } = runtimeHarness()
     let first = 0

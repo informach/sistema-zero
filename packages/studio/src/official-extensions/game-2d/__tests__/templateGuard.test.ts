@@ -160,7 +160,7 @@ describe('Guarda dos template literals do Jogo 2D', () => {
 
   it('docs.ts: o manual escapa a crase (é markdown — a tentação é grande)', () => {
     const src = readFileSync(join(DIR, 'docs.ts'), 'utf8')
-    expect(rawTemplateHazardsInside(src, 'gameTwoDDocs =')).toEqual([])
+    expect(composedTemplateHazards(src, 'gameTwoDDocs =', 4).interpolations).toEqual([])
   })
 
   it('os três módulos avaliam e entregam string não-vazia (a prova final)', () => {

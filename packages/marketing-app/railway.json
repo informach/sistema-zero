@@ -6,6 +6,7 @@
     "watchPatterns": [
       "/packages/marketing-app/**",
       "/packages/ui/**",
+      "/packages/core/**",
       "/bun.lock",
       "/package.json",
       "/.dockerignore"

@@ -46,6 +46,7 @@ export const ROOM_GRID = { cols: 12, rows: 8 } as const
 /** Teto de itens posicionados (anti-abuso/perf). */
 export const ROOM_MAX_PLACED = 40
 export const DEFAULT_ROOM_THEME = 'aconchego'
+export const DEFAULT_ROOM_WALL_COLORS = { left: '#f7c9a6', right: '#f9d9c6' } as const
 
 /** Altura útil das paredes em células (itens de parede sobem até aqui). */
 export const WALL_H_CELLS = 4

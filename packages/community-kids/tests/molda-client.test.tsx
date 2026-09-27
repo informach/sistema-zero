@@ -1,12 +1,21 @@
-import { afterAll, expect, mock, test } from 'bun:test'
+import { afterAll, afterEach, expect, mock, test } from 'bun:test'
 import type { MoldaHostAdapter } from '@sistemazero/molda'
-import { render, screen, waitFor } from '@testing-library/react'
+import { createModelAsset, type MoldaAsset } from '@sistemazero/molda/assets'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { type ReactNode, useState } from 'react'
 
 const actualNavigation = await import('next/navigation')
 const actualMolda = await import('@sistemazero/molda')
 const actualPersonal = await import('@sistemazero/studio/personal-assets')
 const namespaces: string[] = []
+const originalFetch = globalThis.fetch
+let query = new URLSearchParams()
+let localAssets: MoldaAsset[] = []
+afterEach(() => {
+  globalThis.fetch = originalFetch
+  query = new URLSearchParams()
+  localAssets = []
+})
 /** O adapter que o host entregou ao último `<MoldaApp>` montado. */
 let lastAdapter: MoldaHostAdapter | undefined
 /** A biblioteca pessoal do Estúdio, falsa: o que existe e o que foi regravado. */
@@ -27,8 +36,8 @@ const router = {
 function localPersistence(namespace: string) {
   return {
     namespace,
-    loadAll: async () => [],
-    load: async () => null,
+    loadAll: async () => localAssets,
+    load: async (id: string) => localAssets.find((asset) => asset.id === id) ?? null,
     save: async () => {},
     saveMany: async () => {},
     remove: async () => {},
@@ -41,28 +50,45 @@ function localPersistence(namespace: string) {
 function ObservedMoldaApp({
   persistence,
   adapter,
+  onWorkspaceChange,
 }: {
   persistence?: object
   adapter?: MoldaHostAdapter
+  onWorkspaceChange?: (active: boolean) => void
 }): ReactNode {
   lastAdapter = adapter
   const [initialPersistence] = useState(persistence)
+  // The public adapter consumes initialAssetId once per app instance.
+  const [openedId, setOpenedId] = useState(adapter?.initialAssetId ?? null)
   const namespace = initialPersistence ? Reflect.get(initialPersistence, 'namespace') : undefined
   return (
-    <output data-testid="molda-persistence">
-      {typeof namespace === 'string'
-        ? `local:${namespace}`
-        : initialPersistence
-          ? 'wrapped'
-          : 'default'}
-    </output>
+    <>
+      <output data-testid="molda-persistence">
+        {typeof namespace === 'string'
+          ? `local:${namespace}`
+          : initialPersistence
+            ? 'wrapped'
+            : 'default'}
+      </output>
+      <output data-testid="molda-opened">{openedId ?? 'gallery'}</output>
+      <button type="button" onClick={() => setOpenedId(null)}>
+        Voltar à galeria
+      </button>
+      <button type="button" onClick={() => onWorkspaceChange?.(true)}>
+        Abrir modelo de teste
+      </button>
+      <button type="button" onClick={() => onWorkspaceChange?.(false)}>
+        Sair do modelo de teste
+      </button>
+    </>
   )
 }
 
 mock.module('next/navigation', () => ({
   ...actualNavigation,
+  usePathname: () => '/molda',
   useRouter: () => router,
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => query,
 }))
 
 mock.module('@sistemazero/molda', () => ({
@@ -91,6 +117,35 @@ mock.module('@sistemazero/studio/personal-assets', () => ({
 }))
 
 const { MoldaClient } = await import('../src/components/kids/molda-client')
+const { FocusModeProvider, useFocusMode } = await import('../src/components/kids/focus-mode')
+
+function NavProbe() {
+  const { navCollapsed, toggleNav } = useFocusMode()
+  return (
+    <>
+      <output data-testid="nav-collapsed">{String(navCollapsed)}</output>
+      <button type="button" onClick={toggleNav}>
+        Abrir menu de teste
+      </button>
+    </>
+  )
+}
+
+test('o Molda comunica a abertura do modelo ao menu do shell', async () => {
+  render(
+    <FocusModeProvider viewerId="perfil-molda">
+      <MoldaClient viewerId="perfil-molda" studioAvailable />
+      <NavProbe />
+    </FocusModeProvider>,
+  )
+  await screen.findByTestId('molda-opened')
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir menu de teste' }))
+  expect(screen.getByTestId('nav-collapsed').textContent).toBe('false')
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir modelo de teste' }))
+  expect(screen.getByTestId('nav-collapsed').textContent).toBe('true')
+  fireEvent.click(screen.getByRole('button', { name: 'Sair do modelo de teste' }))
+  expect(screen.getByTestId('nav-collapsed').textContent).toBe('false')
+})
 
 afterAll(() => {
   mock.module('next/navigation', () => actualNavigation)
@@ -146,4 +201,109 @@ test('a volta da ponte só regrava a criação que JÁ está na biblioteca do Es
     reason: 'failed',
     error: 'A biblioteca está cheia.',
   })
+})
+
+test('o guia reabre a mesma criação depois de voltar à galeria, inclusive após um deep link', async () => {
+  const asset = createModelAsset({ name: 'Rocha do plano' })
+  localAssets = [asset]
+  query = new URLSearchParams({ criacao: asset.id, tarefa: 'task-a' })
+  globalThis.fetch = Object.assign(
+    mock(async () =>
+      Response.json({
+        project: { id: 'plan-a', name: 'Lua' },
+        cycle: { id: 'cycle-a', number: 1, goal: null },
+        capability: { owned: true, blockedReason: null },
+        task: {
+          id: 'task-a',
+          title: 'Rocha',
+          summary: null,
+          destination: 'molda',
+          category: 'art',
+          estimatedMinutes: 10,
+          position: 0,
+          dependencies: [],
+          revision: 1,
+          supersedesTaskId: null,
+          guide: { steps: [], criteria: [] },
+          context: {
+            kind: 'molda',
+            assetId: 'inventory-rock',
+            artKind: 'model',
+            appearance: 'Azul',
+            usage: 'Cenário',
+            palette: [],
+          },
+          progress: {
+            status: 'in_progress',
+            completedStepIds: [],
+            completedCriteriaIds: [],
+            startedAt: null,
+            completedAt: null,
+            updatedAt: null,
+            outputRef: {
+              kind: 'molda_asset',
+              assetId: asset.id,
+              assetName: asset.name,
+              assetKind: 'model',
+            },
+          },
+        },
+      }),
+    ),
+    { preconnect: originalFetch.preconnect },
+  )
+  render(<MoldaClient viewerId={null} studioAvailable />)
+  await waitFor(() => expect(screen.getByTestId('molda-opened').textContent).toBe(asset.id))
+  for (let attempt = 0; attempt < 2; attempt++) {
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar à galeria' }))
+    expect(screen.getByTestId('molda-opened').textContent).toBe('gallery')
+    fireEvent.click(await screen.findByRole('button', { name: 'Abrir criação vinculada' }))
+    await waitFor(() => expect(screen.getByTestId('molda-opened').textContent).toBe(asset.id))
+  }
+})
+
+test('o portão do posto chega ao adapter; sem ele, nada trancado', async () => {
+  const access = {
+    allow: ['model.pieces', 'paint.brush'],
+    upcoming: [{ when: 'Abrem no nível Lenda', families: ['model.skin'] }],
+  }
+  const view = render(<MoldaClient viewerId={null} studioAvailable={false} toolAccess={access} />)
+  await waitFor(() => expect(lastAdapter?.toolAccess).toEqual(access))
+  view.rerender(<MoldaClient viewerId={null} studioAvailable={false} toolAccess={null} />)
+  await waitFor(() => expect(lastAdapter && 'toolAccess' in lastAdapter).toBe(false))
+})
+
+test('o mesmo portão num objeto novo (outro render do servidor) não troca o adapter', async () => {
+  const access = () => ({
+    allow: ['model.pieces', 'paint.brush'],
+    upcoming: [{ when: 'Abrem no nível Lenda', families: ['model.skin'] }],
+  })
+  const view = render(<MoldaClient viewerId={null} studioAvailable={false} toolAccess={access()} />)
+  await waitFor(() => expect(lastAdapter?.toolAccess).toEqual(access()))
+  const first = lastAdapter
+  view.rerender(<MoldaClient viewerId={null} studioAvailable={false} toolAccess={access()} />)
+  expect(lastAdapter).toBe(first)
+  view.rerender(
+    <MoldaClient
+      viewerId={null}
+      studioAvailable={false}
+      toolAccess={{ ...access(), allow: ['model.pieces'] }}
+    />,
+  )
+  await waitFor(() => expect(lastAdapter?.toolAccess?.allow).toEqual(['model.pieces']))
+  expect(lastAdapter).not.toBe(first)
+})
+
+test('limpar o deep link mantém a prévia da equipe (`?nivel=`) e a tarefa', async () => {
+  const asset = createModelAsset({ name: 'Carro da prévia' })
+  localAssets = [asset]
+  router.replace.mockClear()
+  query = new URLSearchParams({ criacao: asset.id, nivel: 'explorer' })
+  const view = render(<MoldaClient viewerId={null} studioAvailable={false} />)
+  await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/molda?nivel=explorer'))
+  view.unmount()
+  router.replace.mockClear()
+  query = new URLSearchParams({ criacao: asset.id })
+  render(<MoldaClient viewerId={null} studioAvailable={false} />)
+  await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/molda'))
 })

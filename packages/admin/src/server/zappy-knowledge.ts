@@ -1,4 +1,6 @@
 import 'server-only'
+import { createHash } from 'node:crypto'
+import { isPdfAttachment } from '@sistemazero/core/learning'
 import {
   ZAPPY_KNOWLEDGE_BACKFILL_BATCH_SIZE,
   ZAPPY_SOURCE_CONTENT_MAX_BYTES,
@@ -6,7 +8,7 @@ import {
   zappyVimeoVideoId,
 } from '@sistemazero/core/zappy'
 import { getEnv } from '@/lib/env'
-import type { BlockView, EbookBlock, RichTextBlock, VideoBlock } from '@/lib/types'
+import type { AttachmentView, BlockView, VideoBlock } from '@/lib/types'
 import { type GatewayResponse, gatewayFetch } from './gateway'
 import { syncVimeoTranscript } from './media'
 import { r2ReadPrivateObject } from './r2'
@@ -159,14 +161,15 @@ async function syncPending(input: PendingExtraction): Promise<void> {
 /** Sincroniza a fonte correspondente ao bloco recém-salvo. */
 export async function syncZappyKnowledgeForBlock(block: BlockView): Promise<void> {
   const ref = sourceRef(block.id)
-  if (block.content.kind === 'rich_text') {
-    const content = block.content as RichTextBlock
+  if (block.content.kind === 'rich_text' || block.content.kind === 'dialogue') {
+    const content = block.content
     await postSource({
       lessonId: block.lessonId,
       sourceType: 'rich-text',
       sourceRef: ref,
       expectedBlockRevision: block.blockRevision,
-      content: content.markdown ?? content.html ?? '',
+      content:
+        content.kind === 'dialogue' ? content.text : (content.markdown ?? content.html ?? ''),
     })
     return
   }
@@ -188,26 +191,33 @@ export async function syncZappyKnowledgeForBlock(block: BlockView): Promise<void
     })
     return
   }
-  if (block.content.kind === 'ebook') {
-    const content = block.content as EbookBlock
-    if (content.zappyStudentNotebook) {
-      await syncPending({
-        courseId: '',
-        lessonId: block.lessonId,
-        sourceType: 'student-notebook',
-        sourceRef: ref,
-        expectedBlockRevision: block.blockRevision,
-        extraction: { kind: 'private-pdf', location: content.url },
-      })
-      return
-    }
-  }
   await deleteZappyKnowledgeForBlock(block.id)
 }
 
+export async function syncZappyKnowledgeForAttachment(attachment: AttachmentView): Promise<void> {
+  const ref = `attachment:${attachment.id}`
+  if (!attachment.zappyStudentNotebook) {
+    await deleteZappyKnowledgeByRef(ref)
+    return
+  }
+  if (!isPdfAttachment(attachment)) throw new Error('O caderno do Zappy precisa ser um PDF.')
+  await syncPending({
+    courseId: '',
+    lessonId: attachment.lessonId,
+    sourceType: 'student-notebook',
+    sourceRef: ref,
+    expectedBlockRevision: createHash('md5').update(attachment.url).digest('hex'),
+    extraction: { kind: 'private-pdf', location: attachment.url },
+  })
+}
+
 export async function deleteZappyKnowledgeForBlock(blockId: string): Promise<void> {
+  return deleteZappyKnowledgeByRef(sourceRef(blockId))
+}
+
+export async function deleteZappyKnowledgeByRef(ref: string): Promise<void> {
   const result = await gatewayFetch(
-    `/members/admin/zappy/knowledge/sources/${encodeURIComponent(sourceRef(blockId))}`,
+    `/members/admin/zappy/knowledge/sources/${encodeURIComponent(ref)}`,
     { method: 'DELETE' },
   )
   if (result.status !== 200 && result.status !== 404) {

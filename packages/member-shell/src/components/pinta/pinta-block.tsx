@@ -219,16 +219,24 @@ export function PintaBlockView({
           {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
           {expanded ? 'Reduzir' : 'Expandir'}
         </Button>
-        <Button size="sm" onClick={() => setConfirmOpen(true)} disabled={submitting || !ready}>
-          {submitting ? <Spinner /> : <Send className="size-4" />}
-          {submitted ? 'Enviar de novo' : 'Enviar para o professor'}
-        </Button>
+        {content.purpose !== 'experiment' &&
+          (!player?.submissionAllowedBlockIds ||
+            player.submissionAllowedBlockIds.includes(blockId)) && (
+            <Button size="sm" onClick={() => setConfirmOpen(true)} disabled={submitting || !ready}>
+              {submitting ? <Spinner /> : <Send className="size-4" />}
+              {submitted ? 'Enviar de novo' : 'Enviar para o professor'}
+            </Button>
+          )}
       </div>
 
       <div
         className={cn(
           'isolate overflow-hidden rounded-lg border border-border bg-muted',
-          expanded || fillHeight ? 'min-h-0 flex-1' : 'h-[40rem] lg:h-[52rem]',
+          // Um degrau abaixo do Estúdio, como sempre foi. Encolheu junto com ele
+          // (09/2026): com as seções, o ateliê mora numa coluna de metade da tela e
+          // 832px de altura ali viravam um retângulo comprido. O piso do mobile é
+          // 34rem — o mesmo que o app embarcado usa como mínimo utilizável.
+          expanded || fillHeight ? 'min-h-0 flex-1' : 'h-[34rem] lg:h-[36rem]',
         )}
       >
         {loadError ? (
@@ -274,7 +282,9 @@ export function PintaBlockView({
         </div>
       ) : (
         <p className="text-xs text-muted-foreground">
-          Envie o seu desenho ao professor para poder concluir a aula.
+          {player?.submissionAllowedBlockIds && !player.submissionAllowedBlockIds.includes(blockId)
+            ? 'Continue desenhando. A entrega fica no fechamento.'
+            : 'Envie o seu desenho ao professor para poder concluir a aula.'}
         </p>
       )}
 

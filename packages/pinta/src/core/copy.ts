@@ -12,8 +12,32 @@ export const COPY = {
     title: 'Meus desenhos',
     subtitle: 'Crie os personagens, cenários e peças dos seus jogos.',
     create: 'Criar novo',
+    /**
+     * O cartão "Criar novo" que abre a grade (11/09/2026, a imagem-modelo): o título é o mesmo do
+     * botão do cabeçalho e a dica é o que dá a ele um NOME próprio (os testes acham o botão do
+     * cabeçalho pelo nome exato).
+     */
+    newCardHint: 'Comece um desenho do zero.',
     empty: 'Nada por aqui ainda. Toque em "Criar novo" para começar o seu primeiro desenho!',
-    emptyCta: 'Começar meu primeiro desenho',
+    /**
+     * O cartão de fechamento (faixa lilás): ONDE os desenhos estão. "Na sua conta" só com a nuvem
+     * da conta ligada (o host diz); sem ela, "neste aparelho", nunca a promessa de uma nuvem que
+     * não existe. Com a galeria vazia ele também aparece (é onde mora o "Trazer de volta").
+     */
+    savedAccount: (count: number) =>
+      count === 0
+        ? 'Nenhum desenho na sua conta ainda'
+        : count === 1
+          ? '1 desenho guardado na sua conta'
+          : `${count} desenhos guardados na sua conta`,
+    savedDevice: (count: number) =>
+      count === 0
+        ? 'Nenhum desenho neste aparelho ainda'
+        : count === 1
+          ? '1 desenho guardado neste aparelho'
+          : `${count} desenhos guardados neste aparelho`,
+    savedHint:
+      'Tudo é guardado sozinho enquanto você desenha. Tem um arquivo do Pinta? Traga os desenhos de volta por aqui.',
     loading: 'Abrindo a sua galeria...',
     loadError: 'Não consegui abrir a sua galeria. Tente de novo daqui a pouco.',
     /** Bloco de aula: não há galeria por trás, então a copy fala do DESENHO. */
@@ -290,6 +314,32 @@ export const COPY = {
       done: 'Pronto, o tamanho mudou',
     },
   },
+  /** Painel do brief da tarefa do Pensa (galeria e editor). */
+  task: {
+    /**
+     * O MESMO rótulo do Molda (decisão da dona): uma frase só para a mesma ação
+     * nas duas ferramentas. Ele não muda enquanto guarda: trocar o texto mudaria
+     * o nome acessível no meio da ação.
+     *
+     * ⚠️ A DIFERENÇA para o Molda é o comportamento, não o rótulo: lá o botão RECUSA
+     * sair com a criação aberta e manda usar o "Voltar" da barra; aqui ele guarda e
+     * sai sozinho, que é o que ela pediu. O Molda é que fica devendo, então não
+     * "conserte" o Pinta para o lado de lá.
+     */
+    back: 'Voltar ao plano',
+    /** Enquanto guarda, na região viva abaixo do botão (o botão não muda de rótulo). */
+    backBusy: 'Guardando seu desenho…',
+    /**
+     * ⚠️⚠️ É SEMPRE esta frase que a criança lê quando a volta falha, nunca a mensagem
+     * do erro. A do caso comum é `editor.saveError` ("Não consegui salvar"), que é o
+     * rótulo de três palavras do SELO da barra: não diz o que aconteceu com o desenho,
+     * nem que ela continua no Pinta, nem o que fazer. A técnica vai para o console.
+     * ⚠️ E nada de "confira a internet": esta gravação é LOCAL (IndexedDB), então o
+     * conselho mandaria a criança olhar para o lugar errado.
+     */
+    backError:
+      'Não consegui guardar seu desenho, então você continua aqui no Pinta. Tente de novo daqui a pouquinho.',
+  },
   tools: {
     pencil: 'Lápis',
     eraser: 'Borracha',
@@ -303,6 +353,12 @@ export const COPY = {
     mirror: 'Espelho lado a lado',
     mirrorV: 'Espelho de cima e de baixo',
     grid: 'Grade',
+    rulers: 'Régua',
+    /** Linhas-guia do vetor (puxadas da régua). */
+    guides: 'Guias',
+    guidesLock: 'Travar as guias',
+    guidesClear: 'Limpar as guias',
+    guideLimit: 'Já tem guias demais. Apague alguma para criar outra.',
     filled: 'Preencher formas',
     brushSize: 'Tamanho do traço',
     flipH: 'Espelhar na horizontal',
@@ -377,6 +433,8 @@ export const COPY = {
       zoomReset: 'Zoom normal',
       zoomFit: 'Ajustar na tela',
       grid: 'Mostrar ou esconder a grade',
+      rulers: 'Mostrar ou esconder a régua',
+      guides: 'Mostrar ou esconder as guias',
       mirrorH: 'Espelho lado a lado (ligar/desligar)',
       mirrorV: 'Espelho de cima e de baixo (ligar/desligar)',
       onion: 'Fantasma do quadro anterior (ligar/desligar)',
@@ -619,6 +677,25 @@ export const COPY = {
     selMinusFront: 'Tirar a forma da frente',
     selIntersect: 'Ficar só com o pedaço em comum',
     selExclude: 'Tirar o pedaço em comum',
+    selCreateMask: 'Criar máscara',
+    selEditMask: 'Editar máscara',
+    selReleaseMask: 'Soltar máscara',
+    selCenterPivot: 'Centralizar âncora',
+    maskEditMode: 'Editando a máscara',
+    maskEditDone: 'Concluir',
+    rotationPivot: 'Âncora de rotação',
+    rotationPivotKeyboard:
+      'Arraste para mudar o ponto de giro. Use as setas para mover e Shift para andar dez passos.',
+    maskLayer: 'Máscara',
+    maskNeedsTwo: 'Escolha pelo menos duas formas para criar uma máscara.',
+    maskLocked: 'Destranque todas as formas antes de criar a máscara.',
+    maskUnsupportedSource:
+      'A forma da frente precisa ser fechada, como um círculo, quadrado ou polígono.',
+    maskAlreadyMasked:
+      'Uma destas formas já usa uma máscara. Solte a máscara antes de criar outra.',
+    maskNestedMask: 'Uma máscara não pode ficar dentro de outra. Solte a máscara primeiro.',
+    maskReleaseBeforeGeometry:
+      'Solte a máscara antes de misturar ou editar os pontos destas formas.',
     /** Recusas da mistura: cada uma diz o que houve E o que fazer a seguir. */
     pathfinderNeedsTwo: 'Escolha duas formas fechadas, como um quadrado ou um círculo.',
     pathfinderSkips: 'Linhas, textos e figuras não entram na mistura. Escolha só formas fechadas.',
@@ -649,10 +726,11 @@ export const COPY = {
     nodeCutTooBig: 'Este desenho está grande demais para cortar aqui.',
     nodeHint: 'Toque no traço para acrescentar um ponto',
     /**
-     * Forma sem pontos editáveis: retângulo, círculo, texto, figura, ou uma
-     * mistura que virou mais de um pedaço. A faixa DIZ isso em vez de sumir.
+     * Texto, figura ou mistura com vários pedaços não expõem pontos para o
+     * editor. A faixa DIZ isso em vez de sumir.
      */
-    nodeUneditable: 'Esta forma não se edita por pontos. Dá para mudar a cor, o tamanho e o lugar.',
+    nodeUneditable:
+      'Não dá para editar os pontos desta forma. Use Selecionar para mover, girar ou mudar o tamanho.',
     nodeToCurve: 'Transformar em curva',
     nodeToLine: 'Transformar em reta',
     nodeSmooth: 'Ponto suave',
@@ -678,6 +756,8 @@ export const COPY = {
     alignTop: 'Alinhar em cima',
     alignMiddleV: 'Centralizar na altura',
     alignBottom: 'Alinhar embaixo',
+    distributeCentersH: 'Distribuir centros na horizontal',
+    distributeCentersV: 'Distribuir centros na vertical',
     pen: 'Caneta (clique para marcar os pontos)',
     cornerRadius: 'Cantos arredondados',
     fontSize: 'Tamanho da letra',
@@ -710,6 +790,16 @@ export const COPY = {
     gradientRadial: 'Degradê redondo (do meio)',
     gradientFrom: 'Cor do começo',
     gradientTo: 'Cor do fim',
+    gradientAdjust: 'Ajustar no desenho',
+    gradientAdjustMode: 'Ajustando o degradê',
+    gradientAdjustDone: 'Concluir',
+    gradientAdjustSelectOne:
+      'Selecione uma forma livre com degradê por vez para ajustar no desenho.',
+    gradientHandleStart: 'Mover cor do começo',
+    gradientHandleEnd: 'Mover cor do fim',
+    gradientHandleCenter: 'Mover brilho',
+    gradientHandleRadius: 'Ajustar alcance do brilho',
+    gradientHandleKeyboard: 'Arraste ou use as setas do teclado para ajustar.',
     gradientOff: 'Tirar o degradê',
     /**
      * Modo de captura do conta-gotas (a janelinha de cor fecha e a criança toca
@@ -724,7 +814,38 @@ export const COPY = {
     pickColorTake: 'Pegar esta cor',
     /** "Sem cor" tocado na captura: não é uma cor, e clique mudo não ensina nada. */
     pickColorNone: 'Sem cor não vale aqui! Toque numa cor ou numa forma.',
-    pickColorNoColor: 'Essa figura tem muitas cores. Toque numa forma de uma cor só.',
+    /**
+     * Conta-gotas no vazio do palco: antes o clique era mudo. ⚠️ Fala em FORMA,
+     * como os vizinhos: "desenho" é o asset da galeria, não o que está no palco.
+     */
+    pickColorMiss: 'Aqui não tem cor para pegar! Toque em cima de uma forma.',
+    /**
+     * A figura AINDA está abrindo — o toque já mandou abrir, então tocar de novo
+     * de fato funciona. Só este recado promete o retry; o de baixo não.
+     */
+    pickColorFigureLoading: 'Ainda estou abrindo essa figura! Toque de novo daqui a pouquinho.',
+    /** A figura NÃO abre (PNG quebrado, aparelho sem canvas): insistir não adianta. */
+    pickColorFigureFailed: 'Não consegui abrir essa figura! Escolha a cor ali em Cores.',
+    /**
+     * Pixel VAZIO da figura com a ferramenta solta: o quadradinho vira "sem cor"
+     * e isso precisa ser dito — calado, fica igual ao defeito que a figura tinha
+     * (o conta-gotas apagando a cor sozinho).
+     */
+    pickColorFigureHole: 'Aqui a figura é vazia! O quadradinho ficou sem cor.',
+    /** Pixel vazio da figura na CAPTURA: uma ponta de degradê precisa de cor. */
+    pickColorFigureHoleTake:
+      'Aqui a figura é vazia, e o degradê precisa de cor! Toque numa parte colorida dela.',
+    /**
+     * Cor de fora da paleta para quem não enxerga: um hex é lido letra a letra.
+     * Ver `core/colorName.ts`.
+     */
+    colorApprox: (name: string) => `parecido com ${name}`,
+    /**
+     * Leitor de tela: pegar a cor de uma figura só mudava o rótulo de um botão
+     * que ninguém estava focando — o sucesso era MUDO.
+     */
+    pickedColorAnnounce: (channel: string, color: string) =>
+      `Peguei ${color} para o ${channel.toLowerCase()}.`,
     forward: 'Uma camada para a frente',
     backward: 'Uma camada para trás',
     toFront: 'Trazer bem para a frente',
@@ -782,6 +903,33 @@ export const COPY = {
     gifHint:
       'O GIF leva todos os quadros da animação e roda sozinho: dá para mandar para alguém, anexar numa publicação da comunidade ou usar onde quiser.',
     gifEmpty: 'Esta animação ainda não tem quadros. Desenhe um quadro para poder baixar o GIF.',
+    animatedSvgTitle: (name: string) => `Animação “${name}” em SVG`,
+    animatedSvgDownload: 'Baixar animação em SVG',
+    animatedSvgPreview: 'Prévia da animação em SVG',
+    animatedSvgHint:
+      'Arquivo vetorial otimizado, com um quadro estático para quem reduz movimento.',
+    smoothMotion: 'Movimento mais suave',
+    smoothMotionHint:
+      'O Pinta suaviza posição, tamanho, giro e transparência quando reconhece a mesma forma nos quadros. O restante continua quadro a quadro.',
+    animatedSvgStats: (size: string, smooth: number, compacted: number) =>
+      `${size} · ${smooth} movimento${smooth === 1 ? '' : 's'} suavizado${smooth === 1 ? '' : 's'}${
+        compacted > 0
+          ? ` · ${compacted} quadro${compacted === 1 ? '' : 's'} repetido${
+              compacted === 1 ? '' : 's'
+            } compactado${compacted === 1 ? '' : 's'}`
+          : ''
+      }`,
+    animatedSvgEmpty: 'Desenhe pelo menos uma forma visível para baixar esta animação.',
+    animatedSvgText:
+      'Esta animação tem texto. Transforme o texto em formas ou remova-o para baixar o SVG.',
+    animatedSvgImage:
+      'Esta animação tem uma figura de pixel inserida. Remova-a para criar um SVG só de vetores.',
+    // ⚠️ 2 MB era o teto do Admin, quando a trilha Kids era alimentada por este
+    // exportador. Desde 09/2026 a trilha usa Rive (.riv) e o SVG não vai mais para
+    // os módulos — o teto continua, agora como limite do próprio Pinta (arquivo
+    // gigante trava o navegador da criança), e não espelha mais nada.
+    animatedSvgTooLarge:
+      'O SVG passou de 2 MB. Simplifique alguns traços ou reduza a quantidade de quadros.',
     tilesetSheet: 'Folha de peças (PNG)',
     tilesetSheetSvg: 'Folha de peças (SVG)',
     tilemapImage: 'Imagem do mapa (PNG)',

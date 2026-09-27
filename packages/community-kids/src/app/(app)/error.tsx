@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { KidsRecado } from '@/components/kids/kids-recado'
 import { KidsMascot } from '@/components/kids/mascot'
 import { reportClientError } from '@/lib/report-error'
 
@@ -25,18 +26,19 @@ export default function AppError({
     reportClientError(error)
   }, [error])
 
+  // No molde das telas de recado, sem a pílula do motivo: foi a gente que tropeçou,
+  // como no `KidsAccessUnavailable`.
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
-      <KidsMascot expression="thinking" className="size-24" />
-      <div>
-        <h1 className="sz-display text-2xl">Ops! Algo deu errado</h1>
-        <p className="mt-1 text-muted-foreground">
-          A gente tropeçou aqui. Tenta de novo? Costuma funcionar na segunda. 😊
-        </p>
-      </div>
-      <button type="button" onClick={() => reset()} className="sz-btn-gradient h-11 px-6 text-base">
-        Tentar de novo
-      </button>
-    </div>
+    <KidsRecado
+      art={<KidsMascot expression="thinking" className="kid-float size-24" />}
+      title="Ops! Algo deu errado"
+      actions={
+        <button type="button" onClick={() => reset()} className="sz-btn-gradient px-6">
+          Tentar de novo
+        </button>
+      }
+    >
+      <p>A gente tropeçou aqui. Tenta de novo? Costuma funcionar na segunda. 😊</p>
+    </KidsRecado>
   )
 }

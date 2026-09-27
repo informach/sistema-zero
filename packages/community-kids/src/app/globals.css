@@ -7,6 +7,10 @@
    do menu, em @layer components. DEPOIS dos primitivos e ANTES dos CSS dos pacotes, que
    apontam seus tokens para os --sz-tool-* (teste de contrato em packages/ui/tests). */
 @import "@sistemazero/ui/tool-chrome.css";
+/* Régua das cenas de aula (--container-scene + --color-scene-…): MESMO gotcha do Estúdio —
+   sem este @import o @source não acha as cores e as utilitárias fill-scene-* somem. */
+@import "../../../member-shell/src/styles/scene.css";
+@import "../../../member-shell/src/styles/help.css";
 /* Tokens + @theme do Estúdio DENTRO do pipeline Tailwind do kids: registra as cores
    sz (--color-sz-…) para o @source conseguir GERAR as utilitárias (bg-sz, text-sz,
    border-sz, etc.). Sem este @import (só o @source) as classes do Studio ficam NO-OP
@@ -34,9 +38,13 @@
 @source "../../../pensa/src";
 /* Editor de assets embarcável (@sistemazero/pinta) — idem. */
 @source "../../../pinta/src";
-/* Oficina 3D embarcável (@sistemazero/molda) — idem. */
-@source "../../../molda/src";
+/* O stylesheet do Molda registra apenas suas fontes de UI, excluindo testes. */
 
+/* O tema escuro deixou de existir (11/09/2026: temas Padrão e Pink), mas o `@sistemazero/ui`,
+   o member-shell e alguns componentes daqui ainda trazem `dark:` nas classes. Esta variante
+   FICA: sem ela o Tailwind v4 volta ao padrão dele (`prefers-color-scheme`) e esses `dark:`
+   passariam a seguir o modo escuro do sistema operacional. Com ela, e sem `.dark` em lugar
+   nenhum, eles não fazem nada. */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -81,14 +89,56 @@
 }
 
 /* ============================================================
-   SISTEMA ZERO KIDS — LIGHT MODE (default)
-   PALETA DA MARCA KIDS (a mesma do Funil Kids, para o aluno sentir
-   que continua no MESMO lugar da oferta → comunidade): azul-céu +
-   azul #1E88E5 · laranja CTA #FF9A1F · acentos rosa/verde/amarelo ·
-   vermelho hot. No light os sólidos são versões ESCURECIDAS (AA
-   sobre branco); os vivos ficam para o .dark. A vibe kids
-   (Duolingo×Brilliant) segue vindo do USO: tints, gradientes,
-   sombras duras 3D, radius 1rem.
+   PALETA PEN — aliases semânticos da plataforma
+
+   Os valores canônicos moram em `@sistemazero/ui/community-kids-theme.css`,
+   importado por `theme-kids.css`. O funil kids consome a mesma fonte. Este
+   bloco apenas preserva os nomes históricos usados dentro da plataforma.
+   ============================================================ */
+:root {
+  --pen-chao: var(--sz-community-ground);
+  --pen-chao-alt: var(--sz-community-ground-alt);
+  --pen-cartao: var(--sz-community-card);
+  --pen-sup2: var(--sz-community-surface-2);
+  --pen-linha: var(--sz-community-line);
+  --pen-tinta: var(--sz-community-ink);
+  --pen-tinta-suave: var(--sz-community-ink-muted);
+  --pen-campo: var(--sz-community-field);
+  --pen-acao: var(--sz-community-action);
+  --pen-acao-degrau: var(--sz-community-action-step);
+  --pen-acao-clara: var(--sz-community-action-light);
+  --pen-sobre-acao: var(--sz-community-over-action);
+  --pen-degrau-branco: var(--sz-community-white-step);
+  --pen-degrau-cartao: var(--sz-community-card-step);
+  --menu: var(--sz-community-menu);
+  --menu-2: var(--sz-community-menu-2);
+  --menu-texto: var(--sz-community-menu-text);
+  --menu-icone: var(--sz-community-menu-icon);
+  --menu-vidro: var(--sz-community-menu-glass);
+  --logo-zero: var(--sz-community-logo-zero);
+  --chao: var(--pen-chao);
+  --chao-alt: var(--pen-chao-alt);
+  --sz-kids-grad-cta-azul: linear-gradient(90deg, var(--pen-acao), var(--pen-acao));
+  --sz-tool-sig-pensa: var(--sz-community-amber);
+}
+
+/* Ajustes próprios das ferramentas na paleta Rosa; a paleta-base vem do arquivo gerado.
+   ⚠️ Rechaveado de `data-tema` para `data-sz-palette` em 17/09/2026: o atributo antigo deixou de
+   ser emitido, e sem isto estes três ajustes viravam código morto EM SILÊNCIO — o Estúdio
+   voltaria à cor que não passa AA sobre o chão rosado. */
+:root[data-sz-palette="pink"] {
+  --sz-tool-sig-estudio: #0e7c86;
+  /* O Estúdio como TEXTO (link e selo sobre o branco e o chão rosado): o verde-azulado
+     escurecido até passar AA nos dois (6,3:1 no branco, 5,4:1 no chão). */
+  --tool-estudio-texto: #0b6a73;
+  --tool-estudio-selo: #0b6a73;
+}
+
+/* ============================================================
+   SISTEMA ZERO KIDS — os tokens semânticos
+   Os nomes são os de sempre (o ui e o member-shell os leem); os valores apontam para
+   a paleta do Pen acima. As cores das unidades da trilha, dos níveis, das portas e
+   das medalhas são identidade e continuam as mesmas nos dois temas.
    ============================================================ */
 :root {
   color-scheme: light;
@@ -101,25 +151,142 @@
   --kids-lime: var(--sz-kids-laranja-profunda); /* laranja profundo */
   --kids-rosa: var(--sz-kids-rosa-funda); /* rosa */
   --kids-verde: var(--sz-kids-verde-profundo); /* verde */
-  --kids-cyan-tint: oklch(0.52 0.15 252 / 0.1);
+  /* O azul e o verde passaram aos valores do Pen: o tinto mistura o próprio sólido. */
+  --kids-cyan-tint: color-mix(in oklab, var(--kids-cyan) 10%, transparent);
   --kids-lime-tint: oklch(0.58 0.15 55 / 0.12);
   --kids-rosa-tint: oklch(0.6 0.19 356 / 0.1);
-  --kids-verde-tint: oklch(0.55 0.15 152 / 0.1);
+  --kids-verde-tint: color-mix(in oklab, var(--kids-verde) 10%, transparent);
+  /* OURO = recompensa (baú, moeda, certificado). NÃO é cor nova: é o
+     `--sz-kids-amarelo` da marca, que estava documentado como "estrelas,
+     decorações" e não aparecia em lugar nenhum do app. O que muda é o EMPREGO.
+     ⚠️ A tinta por cima é escura, não branca: sobre esse amarelo o branco dá
+     1,48:1 e reprova AA; a tinta escura dá 10,88:1 — e amarelo com traço escuro é
+     como um baú de verdade se parece. */
+  --kids-ouro: var(--sz-kids-amarelo);
+  --kids-ouro-fg: oklch(0.25 0.05 60);
+  --kids-ouro-tint: oklch(0.85 0.15 88 / 0.14);
+  /* O MESMO amarelo escurecido para servir de TRAÇO sobre superfície clara
+     (ícone, rótulo): o amarelo de fundo tem 1,48:1 contra o branco e some; este
+     tem 4,98:1. Segue a convenção de nomes da marca, em que `-texto` quer dizer
+     "passa AA sobre claro". */
+  --kids-ouro-texto: oklch(0.55 0.13 70);
 
-  /* Fundo com um sopro de azul-céu (o céu do funil, bem diluído). */
-  --background: var(--sz-kids-ceu-suave);
-  --foreground: oklch(0.105 0.01 265);
+  /* ── TONS DE APOIO (eram as FAIXAS de seção) ──────────────────────────────
+     Desde a paleta do Pen (11/09/2026) a página tem UM fundo: toda faixa é o chão
+     (`--chao`) e a de fechamento, o chão alternativo (quem decide é o `KidsBand`).
+     Estes nomes ficaram para as pílulas, os chips e os ladrilhos tintados que já os
+     usam, agora com os tons de apoio do Pen: o "creme" é o botão suave (a superfície
+     2), o céu é o chão alternativo, e menta e lilás são os tons do Pen, iguais nos
+     dois temas. ⚠️ Não use estes nomes para pintar faixa: use o `KidsBand`. */
+  --band-creme: var(--pen-sup2);
+  --band-menta: var(--sz-kids-menta-bg); /* #dcf0e4 */
+  --band-ceu: var(--pen-chao-alt);
+  --band-lilas: var(--sz-kids-lilas-bg); /* #e5e0f7 */
+  --band-rosa: var(--sz-kids-rosa-bg); /* #fff0f7 */
+  --band-amarelo: var(--sz-kids-amarelo-bg); /* #fff6dc */
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.105 0.01 265);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.105 0.01 265);
+  /* ── TINTA do texto ───────────────────────────────────────────────────────
+     A tinta forte do Pen (`$ink`), a mesma do `--foreground`: o apelido ficou porque
+     os componentes do kids já o usam. */
+  --tinta: var(--pen-tinta);
 
-  --primary: var(--sz-kids-azul-texto);
+  /* ── CARTA das páginas de oferta ─────────────────────────────────────────
+     O canto e a sombra do cartão do funil. O canto é bem maior que o `--radius`
+     do app (10px) porque no funil o cartão é o objeto principal da tela; a
+     sombra é larga e fraca, o oposto do degrau duro do `.kids-card` do catálogo.
+     Fica aqui, e não nos primitivos de `@sistemazero/ui`, porque as quatro
+     ferramentas embarcadas compartilham aquele arquivo e não vestem esta carta. */
+  --raio-carta: 24px;
+  /* A linha do Pen: divisórias e contornos DENTRO das faixas. Não é a borda do
+     cartão, ver `--borda-carta`. */
+  --linha-carta: var(--pen-linha);
+  /* O cartão do Pen é branco LISO, sem borda e sem sombra. */
+  --borda-carta: transparent;
+  --sombra-carta-sm: 0 8px 22px rgba(28, 48, 90, 0.1);
+  /* O herói é a ÚNICA peça com sombra no Pen: `0 10 24` na própria cor de ação a 20%. */
+  --sombra-heroi: 0 10px 24px color-mix(in oklab, var(--pen-acao) 20%, transparent);
+
+  /* ── COR DE ASSINATURA por oficina ───────────────────────────────────────
+     Cada oficina tem a sua, como nas telas-modelo. A FONTE é única e mora no
+     `tool-chrome.css` (`--sz-tool-sig-*`), porque as galerias das ferramentas usam
+     as mesmas cores: um lado mudando sem o outro abriria emenda entre o Criar e a
+     galeria. Estúdio no azul da marca, Pensa no âmbar (decisão dela, 11/09/2026). */
+  --tool-estudio: var(--sz-tool-sig-estudio);
+  --tool-pinta: var(--sz-tool-sig-pinta);
+  --tool-pensa: var(--sz-tool-sig-pensa);
+  --tool-molda: var(--sz-tool-sig-molda);
+  /* A tinta que vai POR CIMA do fundo (ícone do ladrilho, número do passo). Branca
+     em três e ESCURA no Pensa: branco sobre o âmbar dá ~2,2:1 e o ícone sumiria. */
+  --tool-estudio-fg: var(--sz-tool-on-sig);
+  --tool-pinta-fg: var(--sz-tool-on-sig);
+  --tool-pensa-fg: var(--sz-tool-on-sig-pensa);
+  --tool-molda-fg: var(--sz-tool-on-sig);
+  /* ⚠️ As quatro do topo são cor de FUNDO, e o branco miúdo por cima reprova AA em
+     três delas. Quando a cor precisa VIRAR TEXTO (o "Abrir minha oficina"), use o
+     par `-texto`, que é o mesmo matiz escurecido até passar sobre branco E sobre o
+     creme das faixas (5,1 a 5,7:1). É a convenção da marca: `-texto` quer dizer
+     "passa AA no claro". */
+  --tool-estudio-texto: oklch(0.52 0.16 250);
+  --tool-pinta-texto: oklch(0.52 0.16 25);
+  --tool-pensa-texto: oklch(0.52 0.17 50);
+  --tool-molda-texto: oklch(0.52 0.2 295);
+  /* A tinta do SELO branco no canto do cabeçalho ("Liberado", "4 conversas novas").
+     A pílula é branca nos DOIS temas, então esta tinta também não muda: é o valor
+     claro do `-texto`. Usar o `-texto` cru aqui clareava no escuro e sumia no branco. */
+  --tool-estudio-selo: oklch(0.52 0.16 250);
+  --tool-pinta-selo: oklch(0.52 0.16 25);
+  --tool-pensa-selo: oklch(0.52 0.17 50);
+  --tool-molda-selo: oklch(0.52 0.2 295);
+
+  /* ── COR DE ASSINATURA por PORTA da Comunidade ───────────────────────────
+     Mesmo contrato dos `--tool-*`: o FUNDO não muda de tema (cor de fundo carrega
+     o branco por cima nos dois), e só a TINTA clareia no escuro. As quatro portas
+     eram o mesmo azul, e a criança tinha de ler o título para saber onde estava.
+     ⚠️ NÃO uso os `--kids-*` das unidades aqui: aqueles INVERTEM no tema escuro
+     (viram as variantes vivas), que é exatamente o que não pode acontecer com
+     fundo. Croma já limitado ao que cabe no sRGB — fora do gamute o browser
+     recorta e a cor pintada deixa de ser a que foi medida.
+     Medido: branco sobre o fundo 4,00 a 4,12:1 (ícone e título de 20px em negrito,
+     régua 3:1); tinta clara 5,17 a 6,13:1 no branco e 4,86 a 5,76:1 no creme;
+     tinta escura 4,62 a 4,68:1 sobre o navy. */
+  --porta-mural: oklch(0.62 0.19 355);
+  --porta-clube: oklch(0.58 0.1 212);
+  --porta-recados: oklch(0.58 0.15 152);
+  --porta-ranking: oklch(0.6 0.13 70);
+  --porta-mural-texto: oklch(0.52 0.19 355);
+  --porta-clube-texto: oklch(0.52 0.09 212);
+  --porta-recados-texto: oklch(0.52 0.135 152);
+  --porta-ranking-texto: oklch(0.52 0.11 70);
+
+  /* Medalhas do pódio do ranking. Não são cor de marca: são metal, e todo mundo
+     lê ouro/prata/bronze sem legenda. */
+  --medal-ouro: var(--sz-kids-amarelo);
+  /* L 0.56, e não 0.62: com 0.62 o número branco do pódio dava 3,64:1. */
+  --medal-prata: oklch(0.56 0.02 255);
+  --medal-bronze: oklch(0.53 0.09 55);
+  /* ⚠️ A TINTA de cada medalha vem em par, e não é a mesma nas três. O ouro é
+     claro e pede tinta escura (8,73:1; branco nele dá 1,48 e some); a prata e o
+     bronze são médios e pedem BRANCO (4,65 e 4,7:1) — tinta escura neles dava
+     2,78 e 2,39:1, que foi como o "2º" e o "3º" do pódio saíram na primeira
+     versão, com a mesma tinta das três. */
+  --medal-ouro-fg: var(--sz-kids-tinta);
+  --medal-prata-fg: oklch(1 0 0);
+  --medal-bronze-fg: oklch(1 0 0);
+
+  /* O chão único do Pen. */
+  --background: var(--chao);
+  --foreground: var(--pen-tinta);
+
+  --card: var(--pen-cartao);
+  --card-foreground: var(--pen-tinta);
+  --popover: var(--pen-cartao);
+  --popover-foreground: var(--pen-tinta);
+
+  --primary: var(--pen-acao);
   --primary-foreground: oklch(1 0 0);
 
-  --link: oklch(0.46 0.14 255);
-  --link-hover: oklch(0.4 0.15 255);
+  --link: var(--pen-acao);
+  --link-hover: color-mix(in oklab, var(--pen-acao) 82%, var(--pen-tinta));
   --interactive-text: var(--link);
   --interactive-text-hover: var(--link-hover);
 
@@ -127,31 +294,40 @@
   --brand-gradient-start: var(--brand-cyan);
   --brand-gradient-end: var(--kids-cyan);
 
-  --secondary: oklch(0.955 0.006 250);
-  --secondary-foreground: oklch(0.145 0.01 265);
+  /* Apontam para os PRIMITIVOS, e não para cópias literais deles: os quatro
+     editores embarcados vestem os mesmos tokens (tool-chrome.css), e um lado
+     mudando sem o outro abre emenda entre o app e o Estúdio. */
+  --secondary: var(--pen-sup2);
+  --secondary-foreground: var(--pen-tinta);
 
-  --muted: oklch(0.955 0.006 250);
-  --muted-foreground: oklch(0.5 0.01 255);
+  --muted: var(--pen-sup2);
+  --muted-foreground: var(--pen-tinta-suave);
 
-  --accent: var(--sz-kids-azul); /* azul vivo em detalhes (hierarquia: azul manda) */
+  /* `accent` só aparece nos blocos compartilhados do member-shell, marcando SUCESSO (a
+     entrega aprovada do Estúdio, o desenho enviado do Pinta): é o `$sucesso` do Pen,
+     estado, então não segue o tema. */
+  --accent: #0b7a54;
   --accent-foreground: oklch(1 0 0);
 
-  --destructive: oklch(0.55 0.22 27);
+  /* O `$alerta` do Pen (branco por cima dá 4,8:1). */
+  --destructive: #d92d34;
   --destructive-foreground: oklch(1 0 0);
 
-  /* Sucesso (badge `success` do @sistemazero/ui) — igual community/admin. */
-  --success: oklch(0.45 0.13 150);
-  --success-foreground: oklch(0.4 0.13 150);
+  /* Sucesso (badge `success` do @sistemazero/ui): o `$sucesso` do Pen, e a tinta do
+     selo um tom abaixo, porque sobre o menta o próprio #0B7A54 dava 4,49:1. */
+  --success: #0b7a54;
+  --success-foreground: #096b4a;
 
-  --border: oklch(0.9 0.01 250);
-  --input: oklch(0.92 0.01 250);
-  --ring: var(--sz-kids-azul-texto);
+  --border: var(--pen-linha);
+  /* A borda de campo tem de dar 3:1 contra o fundo (WCAG 1.4.11): 3,72:1 no branco. */
+  --input: var(--pen-campo);
+  --ring: var(--pen-acao);
 
   --chart-1: var(--sz-kids-azul-texto);
   --chart-2: var(--sz-kids-verde-profundo);
   --chart-3: var(--sz-kids-rosa-funda);
-  --chart-4: oklch(0.55 0.22 27);
-  --chart-5: oklch(0.5 0.01 255);
+  --chart-4: #d92d34;
+  --chart-5: var(--pen-tinta-suave);
 
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -163,21 +339,18 @@
   /* Cards bem arredondados (os --radius-sm/md/lg/xl derivam daqui). */
   --radius: 1rem;
 
-  /* Signature meta-tokens (gradiente CTA, hot badge) — nomes preservados.
-     Hierarquia (diretriz 07/2026): o CTA e a identidade do app são AZUIS
-     (o papel que era do verde-lima); verde é sinal de progresso/conclusão;
-     laranja e amarelo são só pontos de alegria. Pontas do gradiente
-     ESCURECIDAS no light p/ texto branco AA. `--sz-cta` é a cor sólida
-     representativa do CTA (sombra dura 3D e nó gradiente da trilha). */
-  --sz-primary: var(--sz-kids-azul-texto);
+  /* Os meta-tokens da marca (nomes preservados: o member-shell os lê). O botão da
+     marca é a cor de AÇÃO do Pen, chapada (`--sz-gradient` virou a cor lisa); o 3D do
+     Brilliant vem do degrau `--pen-acao-degrau`, não de gradiente. */
+  --sz-primary: var(--pen-acao);
   --sz-primary-fg: oklch(1 0 0);
   --sz-accent: var(--sz-kids-azul-vivo);
-  --sz-hot: oklch(0.55 0.22 27);
-  --sz-hot-tint: oklch(0.55 0.22 27 / 0.1);
-  /* Texto sobre o sólido --sz-hot (botões "Resgatar"/"Tirar"): branco passa AA no
-     vermelho escuro do tema claro. No dark o hot é mais claro → texto navy (ver .dark). */
+  /* O vermelho quente (fogo da sequência, "Resgatar", "Tirar"): o `$alerta` do Pen. */
+  --sz-hot: #d92d34;
+  --sz-hot-tint: color-mix(in oklab, #d92d34 10%, transparent);
+  /* Texto sobre o sólido --sz-hot: branco (4,8:1). */
   --sz-hot-fg: oklch(1 0 0);
-  --sz-cta: var(--sz-kids-azul-texto);
+  --sz-cta: var(--pen-acao);
   --sz-gradient: var(--sz-kids-grad-cta-azul);
 
   /* Console da página pública de jogar: a FORMA é a do Super Nintendo (cruz à
@@ -204,9 +377,9 @@
   --snes-x: var(--kids-cyan);
   --snes-y: var(--kids-verde);
 
-  /* Níveis do aluno (carreira de 8, reforma 2D/3D) — cor da AURA + insígnia.
-     Versões AA p/ texto branco no light; o dark clareia (ver .dark). Cada nível
-     tem sua cor, na ordem da escada. */
+  /* Níveis do aluno (jornada de 8, reforma 2D/3D) — cor da AURA + insígnia.
+     Versões AA p/ texto branco. Cada nível tem sua cor, na ordem da escada, e ela é
+     identidade: não muda no Pink. */
   --level-noob: oklch(0.55 0.02 255); /* cinza neutro (começo) */
   --level-coder: var(--sz-kids-azul-texto); /* azul da marca */
   --level-hacker: var(--sz-kids-laranja-profunda); /* laranja */
@@ -215,102 +388,6 @@
   --level-architect: oklch(0.48 0.16 356); /* rosa profundo (constrói mundos) */
   --level-champion: oklch(0.45 0.19 265); /* índigo (quase Lenda) */
   --level-god: oklch(0.66 0.16 75); /* dourado */
-}
-
-/* ============================================================
-   SISTEMA ZERO KIDS — DARK MODE (a NOITE do tema kids: navy
-   #0C1E3E do funil, laranja vivo como primary, azul claro como
-   acento; o toggle continua no menu do avatar)
-   ============================================================ */
-.dark {
-  color-scheme: dark;
-  /* No dark os sólidos kids SÃO os vivos da marca (texto navy por cima). */
-  --kids-cyan: var(--brand-cyan);
-  --kids-lime: var(--brand-lime);
-  --kids-rosa: var(--sz-kids-rosa-viva);
-  --kids-verde: var(--sz-kids-verde-vivo);
-  --kids-cyan-tint: oklch(0.72 0.13 245 / 0.15);
-  --kids-lime-tint: oklch(0.8 0.15 70 / 0.15);
-  --kids-rosa-tint: oklch(0.75 0.16 356 / 0.15);
-  --kids-verde-tint: oklch(0.78 0.15 152 / 0.15);
-
-  --background: var(--sz-kids-navy);
-  --foreground: oklch(0.975 0.005 250);
-
-  --card: oklch(0.28 0.05 260);
-  --card-foreground: oklch(0.975 0.005 250);
-  --popover: oklch(0.31 0.05 260);
-  --popover-foreground: oklch(0.975 0.005 250);
-
-  --primary: var(--brand-cyan);
-  --primary-foreground: oklch(0.22 0.05 262);
-
-  --link: var(--sz-kids-azul-vivo);
-  --link-hover: oklch(0.8 0.11 240);
-  --interactive-text: var(--link);
-  --interactive-text-hover: var(--link-hover);
-
-  /* Gradiente de TEXTO da marca — tons de azul também na noite. */
-  --brand-gradient-start: var(--brand-cyan);
-  --brand-gradient-end: oklch(0.85 0.09 235);
-
-  --secondary: oklch(0.3 0.045 260);
-  --secondary-foreground: oklch(0.975 0.005 250);
-
-  --muted: oklch(0.3 0.045 260);
-  --muted-foreground: oklch(0.7 0.03 250);
-
-  --accent: oklch(0.33 0.05 260);
-  --accent-foreground: var(--brand-cyan);
-
-  --destructive: oklch(0.64 0.215 27);
-  --destructive-foreground: oklch(0.975 0.005 250);
-
-  --success: oklch(0.33 0.05 260);
-  --success-foreground: oklch(0.8 0.14 155);
-
-  --border: oklch(0.34 0.05 260);
-  --input: oklch(0.36 0.05 260);
-  --ring: var(--sz-kids-azul-vivo);
-
-  --chart-1: var(--sz-kids-azul-vivo);
-  --chart-2: var(--sz-kids-verde-vivo);
-  --chart-3: var(--sz-kids-rosa-viva);
-  --chart-4: oklch(0.64 0.215 27);
-  --chart-5: oklch(0.65 0.03 250);
-
-  --sz-primary: var(--sz-kids-azul-vivo);
-  --sz-primary-fg: oklch(0.22 0.05 262);
-  --sz-accent: oklch(0.8 0.11 240);
-  --sz-hot: oklch(0.704 0.191 22);
-  --sz-hot-tint: oklch(0.704 0.191 22 / 0.15);
-  /* Hot mais CLARO no dark → texto branco falharia; usa navy escuro (contraste ~5:1). */
-  --sz-hot-fg: oklch(0.18 0.04 262);
-  --sz-cta: var(--sz-kids-azul-vivo);
-  --sz-gradient: var(--sz-kids-grad-cta-azul-suave);
-
-  /* Console de jogar no dark: o corpo vira navy-noite e a cruz clareia, senão
-     ela some no fundo. As quatro casas já são as versões vivas do dark. */
-  --snes-body: color-mix(in oklab, var(--background) 72%, var(--brand-cyan));
-  --snes-body-deep: color-mix(in oklab, var(--background) 88%, black);
-  --snes-body-edge: color-mix(in oklab, var(--background) 55%, black);
-  --snes-cross: color-mix(in oklab, var(--background) 40%, var(--brand-cyan));
-  /* No escuro a cruz CLAREIA, então a seta escurece — o contraste vem do par,
-     não de uma cor fixa. */
-  --snes-cross-ink: oklch(0.2 0.04 258);
-  --snes-cross-edge: color-mix(in oklab, var(--background) 78%, black);
-  --snes-strip: color-mix(in oklab, var(--background) 45%, var(--brand-cyan));
-  --snes-ink: oklch(0.96 0.01 255);
-
-  /* Níveis no dark: vivos/claros (a aura aparece sobre o navy-noite). */
-  --level-noob: oklch(0.72 0.02 255);
-  --level-coder: var(--brand-cyan);
-  --level-hacker: var(--brand-lime);
-  --level-explorer: oklch(0.78 0.13 195);
-  --level-elite: oklch(0.7 0.18 300);
-  --level-architect: oklch(0.75 0.16 356);
-  --level-champion: oklch(0.72 0.15 265);
-  --level-god: oklch(0.82 0.15 82);
 }
 
 @layer base {
@@ -329,7 +406,9 @@
       var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
       "Liberation Mono", "Courier New", monospace;
     font-family: var(--font-sans);
-    @apply bg-background text-foreground;
+    @apply bg-background;
+    /* A tinta navy das telas-modelo (ver `--tinta`); no escuro é o `--foreground`. */
+    color: var(--tinta);
   }
   a[href],
   button:not(:disabled),
@@ -354,41 +433,77 @@
   background-clip: text;
 }
 
-/* Glow da marca p/ elevação em dark mode (portado do community). */
-.dark .brand-glow {
-  box-shadow:
-    0 0 12px color-mix(in oklch, var(--brand-lime) 35%, transparent),
-    0 0 24px color-mix(in oklch, var(--brand-lime) 15%, transparent);
-}
-.dark .brand-glow-cyan {
-  box-shadow:
-    0 0 12px color-mix(in oklch, var(--brand-cyan) 35%, transparent),
-    0 0 24px color-mix(in oklch, var(--brand-cyan) 15%, transparent);
-}
-
-/* Button variant="default" vira o CTA "3D" kids (sombra dura + afunda no clique).
-   A sombra deriva de --sz-cta (o sólido do gradiente azul do CTA). */
+/* Button variant="default" = a PÍLULA na cor de ação, chapada e com o 3D do Brilliant
+   (11/09/2026): a borda de baixo sólida no degrau da cor (`--pen-acao-degrau`), por
+   sombra, que sobe com o hover e some no aperto (ver "O 3D DO BRILLIANT", abaixo). Sem
+   gradiente: a cor lisa dá mais contraste que o degrau claro de um gradiente (4,55:1).
+   O hover mistura a cor com o TEXTO do tema, e a tinta por cima continua passando.
+   ⚠️ FORA de camada para vencer as utilitárias do `Button`, que também traz `outline-none`
+   e o anel de foco em `box-shadow` (que esta sombra apagaria): o foco é o contorno daqui. */
 button.bg-primary.text-primary-foreground,
 a.bg-primary.text-primary-foreground {
-  background-image: var(--sz-gradient);
-  background-color: transparent;
+  background-image: none;
+  background-color: var(--sz-primary);
   color: var(--sz-primary-fg);
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
+  border-radius: 9999px;
+  /* Declarada AQUI, e não herdada: um cartão 3D em volta (hover, aperto) mexe na dele. */
+  --k3d-altura: 4px;
+  box-shadow: 0 var(--k3d-altura) 0 var(--pen-acao-degrau);
+  /* O mesmo extra-negrito do `.sz-btn-gradient`: os dois são o botão da marca. */
+  font-weight: 800;
   transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease,
-    filter 0.12s ease;
+    background-color 0.12s ease,
+    translate 0.12s ease,
+    box-shadow 0.12s ease;
 }
 button.bg-primary.text-primary-foreground:hover:not(:disabled),
 a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow: 0 5px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
+  background-color: color-mix(in oklab, var(--sz-primary) 88%, var(--foreground));
+  --k3d-altura: 5px;
+  translate: 0 -1px;
 }
 button.bg-primary.text-primary-foreground:active:not(:disabled),
 a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
+  --k3d-altura: 1px;
+  translate: 0 3px;
+}
+button.bg-primary.text-primary-foreground:focus-visible,
+a.bg-primary.text-primary-foreground:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+/* Os outros botões do `Button` do ui no kids (contorno, secundário e o de apagar, que se
+   reconhecem pelas classes da variante): o mesmo relevo, com o degrau cinza, e o de apagar
+   na própria cor. FORA de camada pelo mesmo motivo do botão da marca, e o foco também vira
+   contorno. O fantasma e o link ficam planos: são texto clicável, não peça. */
+button[data-slot="button"]:is(.bg-background, .bg-secondary, .text-destructive) {
+  --k3d-altura: 4px;
+  --k3d-degrau: var(--pen-degrau-cartao);
+  box-shadow: 0 var(--k3d-altura) 0 var(--k3d-degrau);
+  transition:
+    background-color 0.12s ease,
+    translate 0.12s ease,
+    box-shadow 0.12s ease;
+}
+button[data-slot="button"].text-destructive {
+  --k3d-degrau: color-mix(in oklab, var(--destructive) 45%, var(--pen-degrau-cartao));
+}
+button[data-slot="button"]:is(.bg-background, .bg-secondary, .text-destructive):hover:not(
+  :disabled
+) {
+  --k3d-altura: 5px;
+  translate: 0 -1px;
+}
+button[data-slot="button"]:is(.bg-background, .bg-secondary, .text-destructive):active:not(
+  :disabled
+) {
+  --k3d-altura: 1px;
+  translate: 0 3px;
+}
+button[data-slot="button"]:is(.bg-background, .bg-secondary, .text-destructive):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
 }
 
 /* CTA gradiente standalone — mesmo visual do Button default, fora do Button.
@@ -402,43 +517,111 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
  * Regra para as classes DESTE arquivo: se ela existe para ser ajustada no call site
  * (tamanho, espaçamento, tipografia), ela pertence a `@layer components`. */
 @layer components {
+  /* ⚠️ O NOME ficou do tempo do gradiente (24 arquivos o usam); o visual agora é a
+     pílula azul CHAPADA das telas-modelo. Renomear seria mexer em todo call site
+     sem ganho nenhum para a criança. */
   .sz-btn-gradient {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     font-family: inherit;
-    font-weight: 700;
-    font-size: 0.875rem;
-    padding: 0 1.125rem;
+    /* 800: o rótulo dos botões das telas-modelo é o extra-negrito do Nunito (medido:
+       "Explorar mural" com 113px no modelo contra 110px no 700, no mesmo corpo). */
+    font-weight: 800;
+    font-size: 0.9375rem;
+    padding: 0 1.375rem;
     /* Default de 44px = alvo de toque mínimo para mão de criança (a mesma régua do
        `size-11` dos botões do avatar/quarto). Call site sem `h-*` já nasce acessível. */
     height: 2.75rem;
     border-radius: 9999px;
     border: 0;
-    background-image: var(--sz-gradient);
+    background-color: var(--sz-primary);
+    background-image: none;
     color: var(--sz-primary-fg);
     cursor: pointer;
-    box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
+    /* O 3D do Brilliant (ver "O 3D DO BRILLIANT"): o degrau da cor embaixo, por sombra.
+       As variantes trocam só o degrau e o fio; a altura é declarada aqui, e não herdada. */
+    --k3d-altura: 4px;
+    --k3d-degrau: var(--pen-acao-degrau);
+    --k3d-fio: 0 0 #0000;
+    box-shadow:
+      var(--k3d-fio),
+      0 var(--k3d-altura) 0 var(--k3d-degrau);
     transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease,
-      filter 0.12s ease;
+      background-color 0.12s ease,
+      translate 0.12s ease,
+      box-shadow 0.12s ease;
   }
+  /* A cor do hover numa regra (0,2,0) só dela: com o `:not()` do movimento ela subiria
+     para (0,3,0) e venceria o hover das variantes abaixo, que vêm depois no arquivo. */
   .sz-btn-gradient:hover {
-    transform: translateY(-1px);
-    filter: brightness(1.05);
+    background-color: color-mix(in oklab, var(--sz-primary) 88%, var(--foreground));
+  }
+  .sz-btn-gradient:hover:not(:disabled, [aria-disabled="true"]) {
+    --k3d-altura: 5px;
+    translate: 0 -1px;
+  }
+  .sz-btn-gradient:active:not(:disabled, [aria-disabled="true"]) {
+    --k3d-altura: 1px;
+    translate: 0 3px;
+  }
+  .sz-btn-gradient:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
   }
   .sz-btn-gradient svg {
     stroke: currentColor;
   }
+
+  /* As três variantes abaixo vão JUNTO com o `.sz-btn-gradient` (herdam a forma)
+     e DEPOIS dele no arquivo: é o que faz o fundo delas vencer dentro da mesma
+     camada. */
+
+  /* A pílula BRANCA com o rótulo na ação. Inverte o par do tema, então vale nos dois
+     temas. O degrau depende de onde ela pousa: no chão é o cinza dos botões claros; no
+     herói (a cor de ação por trás, `.kids-marca`) é o da ação, mais fundo. */
+  .sz-btn-inverso {
+    background-color: var(--sz-primary-fg);
+    color: var(--sz-primary);
+    --k3d-degrau: var(--pen-degrau-cartao);
+  }
+  .kids-marca .sz-btn-inverso {
+    --k3d-degrau: var(--pen-degrau-branco);
+  }
+  .sz-btn-inverso:hover {
+    background-color: color-mix(in oklab, var(--sz-primary-fg) 90%, var(--sz-primary));
+  }
+
+  /* SUAVE: a pílula na superfície 2 do Pen com a tinta do texto ("Fazer a minha
+     versão", "Começar agora", "Anterior"), com o degrau cinza dos cartões. */
+  .sz-btn-suave {
+    background-color: var(--band-creme);
+    color: var(--tinta);
+    --k3d-degrau: var(--pen-degrau-cartao);
+  }
+  .sz-btn-suave:hover {
+    background-color: color-mix(in oklab, var(--band-creme) 90%, var(--foreground));
+  }
+
+  /* CONTORNO: branca com o fio de 2px da linha do Pen ("Copiar link") e o degrau cinza.
+     O fio é sombra INTERNA, e não `border`, para a pílula ter a mesma altura das irmãs. */
+  .sz-btn-contorno {
+    background-color: var(--card);
+    color: var(--tinta);
+    --k3d-degrau: var(--pen-degrau-cartao);
+    --k3d-fio: inset 0 0 0 2px var(--pen-linha);
+  }
+  .sz-btn-contorno:hover {
+    background-color: var(--muted);
+  }
 }
 
-/* Variante em BLOCO do CTA gradiente: largura total, altura AUTOMÁTICA e duas
-   linhas (legenda + destino). O `.sz-btn-gradient` é pílula de linha única e
-   altura fixa (2.5rem, sem padding vertical) — enfiar duas linhas nela deixa um
-   vão no meio e o texto colado nas bordas. Usada no CTA "Comece por este:
-   <nome>" dos cards bloqueados pela carreira. */
+/* Variante em BLOCO do CTA: largura total, altura AUTOMÁTICA e duas linhas
+   (legenda + destino). O `.sz-btn-gradient` é pílula de linha única e altura fixa
+   — enfiar duas linhas nela deixa um vão no meio e o texto colado nas bordas.
+   Usada no CTA "Comece por este: <nome>" dos cards bloqueados pela jornada.
+   Chapada, como o botão da marca. */
 .sz-btn-gradient-block {
   display: flex;
   flex-direction: column;
@@ -447,21 +630,392 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   padding: 0.625rem 1rem;
   border-radius: 1rem;
   border: 0;
-  background-image: var(--sz-gradient);
+  background-color: var(--sz-primary);
   color: var(--sz-primary-fg);
   font-family: inherit;
   text-align: left;
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
+  /* O 3D do Brilliant, como o `.sz-btn-gradient`. */
+  --k3d-altura: 4px;
+  box-shadow: 0 var(--k3d-altura) 0 var(--pen-acao-degrau);
   transition:
-    transform 0.12s ease,
-    filter 0.12s ease;
+    background-color 0.12s ease,
+    translate 0.12s ease,
+    box-shadow 0.12s ease;
 }
 .sz-btn-gradient-block:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
+  background-color: color-mix(in oklab, var(--sz-primary) 88%, var(--foreground));
+}
+.sz-btn-gradient-block:hover:not(:disabled, [aria-disabled="true"]) {
+  --k3d-altura: 5px;
+  translate: 0 -1px;
+}
+.sz-btn-gradient-block:active:not(:disabled, [aria-disabled="true"]) {
+  --k3d-altura: 1px;
+  translate: 0 3px;
 }
 .sz-btn-gradient-block svg {
   stroke: currentColor;
+}
+
+/* ============================================================
+   TRILHA (estilo Duolingo) — unidades coloridas + nós serpenteantes.
+   Temas de unidade por INDIREÇÃO (--unit/--unit-fg/--unit-bg):
+   banner, nós e balão herdam a cor da seção. Classes aplicadas via
+   mapa literal no course-trail.tsx (scanner do Tailwind à parte —
+   isto é CSS plano, mas o mapa evita template strings dinâmicas).
+   ============================================================ */
+:root {
+  --trail-step: 4.25rem; /* deslocamento horizontal por coluna do serpenteado */
+  --trail-row: 7.5rem; /* altura da linha (nó + legenda + respiro) */
+  --trail-node: 4.5rem; /* diâmetro do nó */
+}
+@media (max-width: 640px) {
+  :root {
+    --trail-step: 2.25rem;
+    --trail-row: 6.5rem;
+    --trail-node: 3.75rem;
+  }
+}
+
+/* ============================================================
+   MAPA DA JORNADA (/cursos) — serpentina de 8 níveis: fita
+   curva CONTÍNUA (SVG) atrás de medalhões grandes. A fita e os
+   nós compartilham o espaço normalizado (ver lib/journey-path.ts):
+   nós em top/left %, <svg> com preserveAspectRatio=none e traço
+   `non-scaling-stroke` (espessura constante, sem distorção). A cor
+   da fita percorrida e da borda dos medalhões = --level-<slug>
+   (herda o tema claro/escuro).
+   ============================================================ */
+:root {
+  /* Encolhido em 09/2026: com 11rem/16rem os 8 níveis somavam ~2000px de rolagem
+     e a criança perdia o mapa de vista. Infantil vem da COR, não do tamanho.
+     ⚠️ A LEGENDA vive no vão `row - node`, e ela não pode encolher junto: o vão
+     fica nos mesmos 5rem de antes (era 16-11), então o corte de 2rem por nível
+     sai todo do medalhão. Encolher `row` além disso enfia a legenda embaixo do
+     medalhão seguinte. */
+  --journey-node: 9rem; /* diâmetro do medalhão */
+  --journey-row: 14rem; /* altura por nível (medalhão + legenda + respiro) */
+}
+@media (max-width: 640px) {
+  :root {
+    --journey-node: 7.5rem;
+    /* Mesmo raciocínio: o vão de 4.5rem da legenda (era 13-8.5) fica de pé. */
+    --journey-row: 12rem;
+  }
+}
+.journey-ribbon {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.journey-ribbon__track,
+.journey-ribbon__fill {
+  fill: none;
+  stroke-width: 16;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Trilha completa (o caminho à frente): discreta, mas é CAMINHO, não fio morto. */
+.journey-ribbon__track {
+  stroke: color-mix(in oklab, var(--sz-primary) 22%, var(--border));
+  opacity: 0.7;
+}
+@media (max-width: 640px) {
+  .journey-ribbon__track,
+  .journey-ribbon__fill {
+    stroke-width: 11;
+  }
+}
+.journey-medal {
+  width: var(--journey-node);
+  height: var(--journey-node);
+}
+
+/* Default do tema de unidade. Sem ele, um `.kids-card` fora de um `.kids-unit-*`
+   herda `currentColor` na borda e a sombra some: o componente parece quebrado sem
+   que ninguém erre nada. */
+:root {
+  --unit: var(--border);
+  --unit-fg: var(--foreground);
+  --unit-bg: var(--card);
+  --unit-bg-image: none;
+}
+
+.kids-unit-cyan {
+  --unit: var(--kids-cyan);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+  --unit-bg-image: none;
+}
+.kids-unit-lime {
+  --unit: var(--kids-lime);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+  --unit-bg-image: none;
+}
+.kids-unit-rosa {
+  --unit: var(--kids-rosa);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+  --unit-bg-image: none;
+}
+.kids-unit-verde {
+  --unit: var(--kids-verde);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+  --unit-bg-image: none;
+}
+/* Tesouro: NÃO rotaciona com as unidades. Ouro quer dizer recompensa, e a criança
+   aprende a ler o baú pela cor. */
+.kids-unit-tesouro {
+  --unit: var(--kids-ouro);
+  --unit-fg: var(--kids-ouro-fg);
+  --unit-bg: var(--unit);
+  --unit-bg-image: none;
+}
+.kids-unit-grad {
+  --unit: var(--sz-cta);
+  --unit-fg: var(--sz-primary-fg);
+  --unit-bg: transparent;
+  --unit-bg-image: var(--sz-gradient);
+}
+/* Tema NEUTRO: o estado "em obras" (bloco Em breve), onde não há nada a fazer. Os
+   temas coloridos são todos de ação — usar um deles ali daria ao vazio a ênfase
+   máxima do sistema, e o gradiente ainda colidiria com a pílula "AULA N DE M". */
+.kids-unit-muted {
+  --unit: var(--border);
+  --unit-fg: var(--muted-foreground);
+  --unit-bg: var(--muted);
+  --unit-bg-image: none;
+}
+
+/* ============================================================
+   ILUSTRAÇÃO EM CSS — nada de asset novo.
+   ============================================================ */
+@layer components {
+  /* (A `.kids-field`, a textura de pontinhos do fundo da aula, saiu em 11/09/2026: as
+     telas-modelo têm o azul-claro liso.) */
+
+  /* (A `.kids-cover-fallback`, a capa sem imagem na cor da unidade, saiu em 11/09/2026:
+     as telas-modelo pedem a caixa clara com o livro cinza, e os três cartões de curso
+     passaram a desenhá-la com `bg-muted` + o ícone.) */
+
+  /* Tema kids da aula por SEÇÕES. O `LessonSections` do member-shell já aplicava
+     esta classe sob a flag `kids`, mas ela não existia em lugar nenhum do
+     repositório: era um gancho pronto e órfão. A comunidade adulta não importa
+     este arquivo, então o que entra aqui não vaza para lá. */
+  /* ⚠️ NÃO pinte o `h2` daqui com `--unit`: fora de um `.kids-unit-*` ele cai no
+     default do `:root`, que é a cor de BORDA, e o título da seção sai a 1,25:1 —
+     invisível. O título herda `--foreground` e está certo assim.
+     O alvo é a barra do índice, por CLASSE e não por posição: o
+     `LessonProgress` entrou antes dela e roubaria um `:first-of-type` (e voltaria
+     a soltá-lo em aula de uma seção só, que é quando ele não renderiza). */
+  /* ── A PELE DA AULA (referência de 10/09/2026) ─────────────────────────────
+     A aula vive no `member-shell` e é compartilhada com a comunidade ADULTA, então
+     nada disto pode virar prop de componente: entra por CSS a partir do `.kids-aula`
+     que o `MainContainer` carimba no <main>, e do `.sz-lesson-sections` que o
+     próprio member-shell já aplica sob a flag `kids`. O adulto não importa este
+     arquivo, então nada vaza para lá.
+
+     A ideia é a da referência: a PÁGINA fica azul-clara e o conteúdo vira cartas
+     brancas boiando nela, no lugar do bloco branco contínuo. */
+  .kids-aula {
+    background-color: var(--band-ceu);
+  }
+
+  /* (Os cartões da barra do índice, das seções e do rodapé saíram daqui para o bloco
+     SEM camada "A AULA NO DESENHO DAS TELAS-MODELO", mais abaixo: dentro de
+     `@layer components` eles perdiam para as utilitárias do member-shell.) */
+}
+
+/* ============================================================
+   KIT DAS PÁGINAS DE OFERTA (09/2026) — as receitas de superfície do funil.
+   Nada aqui reescreve peça existente: `.kids-card` (borda de unidade + sombra
+   dura) continua sendo o card do CATÁLOGO. O que entra é a carta CLARA das
+   páginas de venda, que é o que dá o ar de página feita para criança: fundo
+   branco, canto bem redondo, borda de AREIA (o cinza some sobre o creme) e uma
+   sombra larga e fraca em vez do degrau.
+   ============================================================ */
+@layer components {
+  /* Branco liso das telas-modelo: canto de 24px, sem sombra, borda só no escuro. */
+  .kids-carta {
+    border-radius: var(--raio-carta);
+    border: 1px solid var(--borda-carta);
+    background: var(--card);
+  }
+
+  /* (As bolhas, o brilho e as estrelas flutuando das faixas saíram em 11/09/2026:
+     as telas-modelo não têm decoração nenhuma no fundo. As bolhas do login também, no
+     lote 9: o painel de marca virou o herói `.kids-marca`.) */
+
+  /* HERÓI e PÍLULA CHEIA da marca.
+     ⚠️ Existem porque `text-white` sobre `--sz-primary` está ERRADO metade do
+     tempo: a marca tem PAR (`--sz-primary` + `--sz-primary-fg`), e no escuro o
+     azul vira o CLARO (#56acf0) com tinta ESCURA. Medido: branco sobre ele dá
+     2,45:1 — o herói inteiro reprovava no tema escuro, título, texto e botão.
+     Com o par, dá 5,5:1 no claro e 7:1 no escuro, sem tocar em cor nenhuma. */
+  .kids-marca {
+    background-color: var(--sz-primary);
+    color: var(--sz-primary-fg);
+  }
+  /* Texto de apoio dentro do herói: 12% da própria cor de fundo misturada na
+     tinta, no lugar de um `/90` que só funciona quando a tinta é branca. */
+  .kids-marca-suave {
+    color: color-mix(in oklab, var(--sz-primary-fg) 88%, var(--sz-primary));
+  }
+  /* Ladrilho translúcido do herói: a tinta a 20%, e não `bg-white/20`. */
+  .kids-marca-tile {
+    background-color: color-mix(in oklab, var(--sz-primary-fg) 20%, transparent);
+  }
+  /* Pílula de VIDRO com TEXTO dentro do herói ("Editar perfil", o chip do ranking do
+     Meu perfil). A tinta a 10%, e não os 20% do ladrilho: com 20% o rótulo branco caía
+     para 3,7:1; com 10% fica em 4,58:1 no claro e 5,87:1 no escuro (medido com a
+     mistura). O fio de 35% é o que desenha a pílula sobre o azul. */
+  .kids-marca-vidro {
+    background-color: color-mix(in oklab, var(--sz-primary-fg) 10%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--sz-primary-fg) 35%, transparent);
+  }
+  /* Botão INVERTIDO dentro do herói (o "Continuar" branco da referência). */
+  .kids-marca-inverso {
+    background-color: var(--sz-primary-fg);
+    color: var(--sz-primary);
+  }
+
+  /* Recorte de ilustração: NUNCA canto arredondado nem `box-shadow` (a sombra
+     retangular entrega que a figura é uma caixa). Só `drop-shadow`, que segue o
+     contorno do PNG. Regra de acabamento herdada do funil. */
+  .kids-recorte {
+    filter: drop-shadow(0 18px 26px rgba(12, 30, 62, 0.22));
+  }
+}
+
+/* ⚠️ `.kids-card` fica FORA de camada de propósito, ao contrário das irmãs.
+   A regra da casa ("classe ajustável no call site vai em `@layer components`")
+   vale para classe que precisa PERDER da utilitária. Esta precisa GANHAR: ela é
+   aplicada no `<Card>` do @sistemazero/ui, que assa `border border-border
+   shadow-sm` na própria classe. Dentro da camada ela perdia dessas utilitárias
+   e a borda colorida sumia do catálogo inteiro (medido no CSS compilado:
+   `.kids-card` no byte 25200, `.border-border` no 53915). Nenhum call site
+   ajusta borda ou sombra por cima dela, então ganhar aqui não mente para
+   ninguém. */
+.kids-card {
+  border: 2px solid var(--unit);
+  box-shadow: 0 4px 0 color-mix(in oklab, var(--unit) 35%, transparent);
+}
+
+/* ============================================================
+   O 3D DO BRILLIANT (11/09/2026) — decisão dela: no kids, todo botão e todo cartão
+   clicável ganha um leve relevo, como no Brilliant. A borda de baixo é uma SOMBRA dura
+   num tom mais escuro da própria cor (o layout não anda): no hover a peça sobe 1px e a
+   borda cresce, no aperto ela afunda até a borda quase sumir. A base da borda fica
+   sempre no mesmo lugar (-1 + 5 = 3 + 1 = 4), então nada embaixo é coberto a mais.
+   Planos de propósito: o menu da esquerda, as abas e os chips de filtro (decisão dela),
+   e o nó travado da trilha. O baú mantém o volume nos três estados porque é um marco
+   físico da trilha; somente o estado liberado recebe movimento de botão.
+   Onde mora cada um: os botões (`button.bg-primary…`, `.sz-btn-*`) trazem o 3D na
+   própria regra; os nós da trilha, na seção da trilha; os CARTÕES clicáveis, por
+   seletor, aqui; e o resto usa `.kids-3d` na peça que aparece, com o movimento vindo do
+   link ou do botão em volta dela. O movimento é `translate`, e não `transform`, para
+   compor com o que já gira ou flutua (o balão, o baú, o `kid-float`).
+   ⚠️ As variáveis `--k3d-*` são declaradas em CADA peça, nunca herdadas: um cartão em
+   hover em volta de um botão mexeria no degrau do botão.
+   ============================================================ */
+
+/* A receita genérica: a peça que aparece ganha `.kids-3d`, e o degrau padrão é o cinza
+   dos cartões (o dos botões claros); quem tem cor própria troca `--k3d-degrau`. */
+.kids-3d {
+  --k3d-altura: 4px;
+  --k3d-degrau: var(--pen-degrau-cartao);
+  --k3d-fio: 0 0 #0000;
+  --k3d-largura: 0px;
+}
+
+/* CARTÕES clicáveis: o cartão branco (`.kids-carta`) que É, ou está direto dentro de, um
+   link ou botão. Fio de 2px na linha do Pen e o degrau cinza por baixo, com a mesma
+   largura do fio (a sombra acompanha o raio do cartão). FORA de camada de propósito: o
+   `hover:ring-*` de quem chama também é sombra, e numa camada ele apagaria o relevo. */
+a.kids-carta,
+button.kids-carta,
+a.kid-pop > .kids-carta {
+  --k3d-altura: 4px;
+  --k3d-degrau: var(--pen-degrau-cartao);
+  --k3d-fio: 0 0 0 2px var(--pen-linha);
+  --k3d-largura: 2px;
+}
+
+/* Peça 3D com a cara de CARTÃO (branca, com o fio): a pílula do "voltar", por exemplo. */
+.kids-3d--carta {
+  --k3d-fio: 0 0 0 2px var(--pen-linha);
+  --k3d-largura: 2px;
+}
+/* Peça 3D na cor de AÇÃO (a carta de resposta escolhida no quiz). */
+.kids-3d--acao {
+  --k3d-degrau: var(--pen-acao-degrau);
+}
+/* Peça 3D AMARELA (o "Avalie este curso"): o degrau é o âmbar escuro do Pen. */
+.kids-3d--sol {
+  --k3d-degrau: color-mix(in oklab, var(--sz-kids-amarelo) 50%, #8f5a02);
+}
+
+.kids-3d,
+a.kids-carta,
+button.kids-carta,
+a.kid-pop > .kids-carta {
+  box-shadow:
+    var(--k3d-fio),
+    0 var(--k3d-altura) 0 var(--k3d-largura) var(--k3d-degrau);
+  /* As cores e o brilho também: fora de camada, esta transição vence a de quem chama. */
+  transition:
+    translate 0.12s ease,
+    box-shadow 0.12s ease,
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease,
+    filter 0.12s ease;
+}
+
+/* O movimento vem do próprio elemento interativo ou do link/botão em volta da peça
+   (link dentro de link não existe, então "o 3D dentro do link em hover" é a peça dele). */
+a.kids-carta:hover,
+button.kids-carta:hover:not(:disabled),
+a.kid-pop:hover > .kids-carta,
+.kids-3d:is(a[href], button:not(:disabled)):hover,
+:is(a[href], button:not(:disabled)):hover .kids-3d {
+  --k3d-altura: 5px;
+  translate: 0 -1px;
+}
+a.kids-carta:active,
+button.kids-carta:active:not(:disabled),
+a.kid-pop:active > .kids-carta,
+.kids-3d:is(a[href], button:not(:disabled)):active,
+:is(a[href], button:not(:disabled)):active .kids-3d {
+  --k3d-altura: 1px;
+  translate: 0 3px;
+}
+
+/* O pulo do `kid-pop` (sobe 2px e cresce 2%) sai dos cartões com relevo: o 3D já é o
+   retorno do toque, e os dois juntos davam 3px de subida com zoom. */
+a.kids-carta.kid-pop:hover,
+a.kid-pop:has(> .kids-carta):hover {
+  transform: none;
+}
+
+/* Menos movimento: o relevo fica e o aperto ainda achata a borda, mas nada anda. */
+@media (prefers-reduced-motion: reduce) {
+  .kids-3d,
+  a.kids-carta,
+  button.kids-carta,
+  a.kid-pop > .kids-carta,
+  button.bg-primary.text-primary-foreground,
+  a.bg-primary.text-primary-foreground,
+  button[data-slot="button"],
+  .sz-btn-gradient,
+  .sz-btn-gradient-block,
+  .kids-node {
+    translate: none !important;
+  }
 }
 
 /* Hot badge — vermelho da marca com pulso sutil */
@@ -544,11 +1098,16 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   margin: 1.5rem 0;
 }
 
-/* Display text — Baloo 2 (arredondada/amigável) p/ títulos e números */
+/* Display text — Baloo 2 (arredondada/amigável) p/ títulos e números.
+   Peso 800 desde 11/09/2026: nas telas-modelo TODO título em Baloo é o extra-negrito
+   (medido a 1440px: "Onde a turma se encontra" sai com 371px no modelo contra 336px
+   no 700 de antes, no mesmo corpo). E sem o espaçamento negativo de antes: com ele
+   todo título saía uns 2% mais estreito que o do modelo, sempre na conta exata de
+   -0,01em por letra. ⚠️ A classe fica FORA de camada, então `font-*`, `tracking-*` e
+   `leading-*` no call site continuam sem efeito sobre ela. */
 .sz-display {
   font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-weight: 800;
   line-height: 1.1;
 }
 .sz-display-grad {
@@ -593,263 +1152,228 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   animation: kids-float 4s ease-in-out infinite;
 }
 
-/* ============================================================
-   TRILHA (estilo Duolingo) — unidades coloridas + nós serpenteantes.
-   Temas de unidade por INDIREÇÃO (--unit/--unit-fg/--unit-bg):
-   banner, nós e balão herdam a cor da seção. Classes aplicadas via
-   mapa literal no course-trail.tsx (scanner do Tailwind à parte —
-   isto é CSS plano, mas o mapa evita template strings dinâmicas).
-   ============================================================ */
-:root {
-  --trail-step: 4.25rem; /* deslocamento horizontal por coluna do serpenteado */
-  --trail-row: 7.5rem; /* altura da linha (nó + legenda + respiro) */
-  --trail-node: 4.5rem; /* diâmetro do nó */
-}
-@media (max-width: 640px) {
-  :root {
-    --trail-step: 2.25rem;
-    --trail-row: 6.5rem;
-    --trail-node: 3.75rem;
+/* Classes de COMPONENTE da trilha e dos cards. Ficam em `@layer components` de
+   propósito: CSS sem camada vence QUALQUER camada, inclusive as utilitárias do
+   Tailwind, e então `cn("kids-card", "border-4")` do call site viraria letra
+   morta em silêncio. Foi o mesmo defeito que o `.sz-btn-gradient` já teve. */
+@layer components {
+  /* Chapada desde 11/09/2026: a sombra dura de 4px embaixo era o relevo 3D do
+     Duolingo, e as telas-modelo trocaram o relevo por cor (o mesmo que saiu dos botões). */
+  .kids-unit-banner {
+    border-radius: calc(var(--radius) + 4px);
+    background-color: var(--unit-bg);
+    background-image: var(--unit-bg-image);
+    color: var(--unit-fg);
   }
-}
 
-/* ============================================================
-   MAPA DA CARREIRA (/cursos) — serpentina de 8 níveis: fita
-   curva CONTÍNUA (SVG) atrás de medalhões grandes. A fita e os
-   nós compartilham o espaço normalizado (ver lib/career-path.ts):
-   nós em top/left %, <svg> com preserveAspectRatio=none e traço
-   `non-scaling-stroke` (espessura constante, sem distorção). A cor
-   da fita percorrida e da borda dos medalhões = --level-<slug>
-   (herda o tema claro/escuro).
-   ============================================================ */
-:root {
-  --career-node: 11rem; /* diâmetro do medalhão */
-  --career-row: 16rem; /* altura por nível (medalhão + legenda + respiro) */
-}
-@media (max-width: 640px) {
-  :root {
-    --career-node: 8.5rem;
-    --career-row: 13rem;
+  .kids-trail-art {
+    position: absolute;
+    /* O `top` vem do trecho de nós mais livre, calculado no course-trail.tsx. */
+    z-index: 0;
+    /* ~92px no celular estreito, ~104px no comum e até 176px no desktop.
+       Cresce junto da tela sem um salto brusco no breakpoint. */
+    width: clamp(5.75rem, 26vw, 11rem);
+    /* ⚠️ O <canvas> do Rive NÃO tem proporção intrínseca: com `height: auto` o
+       navegador cai nos 150px de fábrica dos elementos substituíveis. Quem manda
+       na altura agora é a caixa, e 9/8 é exatamente o 180x160 do <Image> que o
+       Rive substituiu — a trilha não se mexe um pixel. */
+    aspect-ratio: 9 / 8;
+    pointer-events: none;
+    user-select: none;
   }
-}
-.career-ribbon {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-.career-ribbon__track,
-.career-ribbon__fill {
-  fill: none;
-  stroke-width: 16;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-/* Trilha completa (o caminho à frente): neutra e apagada. */
-.career-ribbon__track {
-  stroke: var(--border);
-  opacity: 0.6;
-}
-@media (max-width: 640px) {
-  .career-ribbon__track,
-  .career-ribbon__fill {
-    stroke-width: 11;
+  .kids-trail-art--left {
+    left: 0;
   }
-}
-.career-medal {
-  width: var(--career-node);
-  height: var(--career-node);
-}
-
-.kids-unit-cyan {
-  --unit: var(--kids-cyan);
-  --unit-fg: oklch(1 0 0);
-  --unit-bg: var(--unit);
-  --unit-bg-image: none;
-}
-.kids-unit-lime {
-  --unit: var(--kids-lime);
-  --unit-fg: oklch(1 0 0);
-  --unit-bg: var(--unit);
-  --unit-bg-image: none;
-}
-.kids-unit-rosa {
-  --unit: var(--kids-rosa);
-  --unit-fg: oklch(1 0 0);
-  --unit-bg: var(--unit);
-  --unit-bg-image: none;
-}
-.kids-unit-verde {
-  --unit: var(--kids-verde);
-  --unit-fg: oklch(1 0 0);
-  --unit-bg: var(--unit);
-  --unit-bg-image: none;
-}
-.kids-unit-grad {
-  --unit: var(--sz-cta);
-  --unit-fg: var(--sz-primary-fg);
-  --unit-bg: transparent;
-  --unit-bg-image: var(--sz-gradient);
-}
-/* Tema NEUTRO: o estado "em obras" (bloco Em breve), onde não há nada a fazer. Os
-   temas coloridos são todos de ação — usar um deles ali daria ao vazio a ênfase
-   máxima do sistema, e o gradiente ainda colidiria com a pílula "AULA N DE M". */
-.kids-unit-muted {
-  --unit: var(--border);
-  --unit-fg: var(--muted-foreground);
-  --unit-bg: var(--muted);
-  --unit-bg-image: none;
-}
-/* No dark os sólidos são vivos → texto navy por cima. */
-.dark .kids-unit-cyan,
-.dark .kids-unit-lime,
-.dark .kids-unit-rosa,
-.dark .kids-unit-verde {
-  --unit-fg: oklch(0.2 0.04 262);
-}
-
-.kids-unit-banner {
-  border-radius: calc(var(--radius) + 4px);
-  background-color: var(--unit-bg);
-  background-image: var(--unit-bg-image);
-  color: var(--unit-fg);
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--unit) 55%, black);
-}
-
-/* Card de curso vestindo o tema da unidade (borda + sombra dura coloridas). */
-.kids-card {
-  border: 2px solid var(--unit);
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--unit) 35%, transparent);
-}
-
-.kids-node {
-  width: var(--trail-node);
-  height: var(--trail-node);
-  border-radius: 9999px;
-  display: grid;
-  place-items: center;
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease;
-}
-.kids-node--done {
-  background-color: var(--unit-bg);
-  background-image: var(--unit-bg-image);
-  color: var(--unit-fg);
-  --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
-  box-shadow: 0 5px 0 var(--node-shadow);
-}
-.kids-node--current {
-  background-color: var(--unit-bg);
-  background-image: var(--unit-bg-image);
-  color: var(--unit-fg);
-  --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
-  box-shadow: 0 5px 0 var(--node-shadow);
-  animation: kids-ring 1.8s ease-out infinite;
-}
-.kids-node--todo {
-  background-color: var(--card);
-  color: var(--muted-foreground);
-  border: 2px solid var(--border);
-  --node-shadow: var(--border);
-  box-shadow: 0 5px 0 var(--node-shadow);
-}
-/* Aula travada (trava sequencial estilo Duolingo): cadeado neutro tracejado,
-   sem brilho — sinaliza "ainda não liberada"; o nó não é clicável. */
-.kids-node--locked {
-  background-color: var(--muted);
-  color: var(--muted-foreground);
-  border: 2px dashed var(--border);
-  --node-shadow: var(--border);
-  box-shadow: 0 5px 0 var(--node-shadow);
-  opacity: 0.85;
-}
-/* Baú de fim de unidade (gamificação): fechado = tracejado neutro;
-   aberto = veste o tema da unidade (mesmos tokens dos nós done). */
-.kids-node--chest-closed {
-  background-color: var(--card);
-  color: var(--muted-foreground);
-  border: 2px dashed var(--border);
-  --node-shadow: var(--border);
-  box-shadow: 0 5px 0 var(--node-shadow);
-}
-.kids-node--chest-open {
-  background-color: var(--unit-bg);
-  background-image: var(--unit-bg-image);
-  color: var(--unit-fg);
-  --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
-  box-shadow: 0 5px 0 var(--node-shadow);
-}
-/* O alvo de clique é o <Link> ao redor; o nó afunda junto. */
-.kids-node-link:active .kids-node {
-  transform: translateY(4px);
-  box-shadow: 0 1px 0 var(--node-shadow);
-}
-@keyframes kids-ring {
-  0% {
-    outline: 4px solid color-mix(in oklch, var(--unit) 45%, transparent);
-    outline-offset: 2px;
+  .kids-trail-art--right {
+    right: 0;
   }
-  70%,
-  100% {
-    outline: 4px solid transparent;
-    outline-offset: 12px;
+  .kids-node {
+    width: var(--trail-node);
+    height: var(--trail-node);
+    border-radius: 9999px;
+    display: grid;
+    place-items: center;
+    transition: transform 0.12s ease;
   }
-}
+  .kids-node--done {
+    background-color: var(--unit-bg);
+    background-image: var(--unit-bg-image);
+    color: var(--unit-fg);
+  }
+  .kids-node--current {
+    background-color: var(--unit-bg);
+    background-image: var(--unit-bg-image);
+    color: var(--unit-fg);
+    animation: kids-ring 1.8s ease-out infinite;
+  }
+  .kids-node--todo {
+    background-color: var(--card);
+    color: var(--muted-foreground);
+    border: 2px solid var(--border);
+  }
+  /* Aula travada (trava sequencial estilo Duolingo): cadeado neutro tracejado,
+     sem brilho — sinaliza "ainda não liberada"; o nó não é clicável. */
+  .kids-node--locked {
+    background-color: var(--muted);
+    color: var(--muted-foreground);
+    border: 2px dashed var(--border);
+    opacity: 0.85;
+  }
+  /* Baú de fim de unidade (gamificação): os três estados compartilham o mesmo
+     molde volumétrico. Fechado e aberto ficam estáticos; apenas o liberado afunda. */
+  .kids-node--chest {
+    box-shadow:
+      inset 0 3px 0 color-mix(in oklab, white 34%, transparent),
+      0 var(--k3d-altura) 0 var(--k3d-degrau);
+  }
+  .kids-chest-label {
+    margin-top: 2px;
+  }
+  /* A arte do Rive aproveita quase todo o artboard; deixá-la preencher o nó
+     esconderia a borda e o degrau 3D. O botão e sua área de toque continuam
+     com `--trail-node`; só a ilustração fica mais confortável dentro dele. */
+  .kids-chest-rive {
+    width: 72%;
+    height: 72%;
+  }
+  .kids-node--chest-closed {
+    background-color: var(--card);
+    color: var(--muted-foreground);
+    border: 2px dashed var(--border);
+    --k3d-altura: 6px;
+    --k3d-degrau: color-mix(in oklab, var(--pen-degrau-cartao) 72%, var(--pen-tinta));
+  }
+  .kids-node--chest-open {
+    background-color: var(--card);
+    color: var(--kids-ouro-fg);
+    border: 2px solid var(--kids-ouro-texto);
+    --k3d-altura: 8px;
+    --k3d-degrau: color-mix(in oklab, var(--kids-ouro) 58%, var(--pen-tinta));
+  }
+  /* O branco preserva o contraste da arte amarela do Rive em qualquer unidade.
+     Borda sólida e anel dourados distinguem o liberado do bloqueado tracejado. */
+  .kids-node--chest-ready {
+    background-color: var(--card);
+    color: var(--kids-ouro-fg);
+    border: 2px solid var(--kids-ouro-texto);
+    animation: kids-ring 2.4s ease-out infinite;
+  }
+  /* Queda segura sem Rive: uma sacudida curta antes de revelar o estado aberto.
+     O SVG ilustrado é um único arquivo, então a tampa não é animada isoladamente. */
+  @keyframes kids-chest-shake {
+    0%,
+    100% {
+      transform: none;
+    }
+    20% {
+      transform: rotate(-7deg) scale(1.04);
+    }
+    45% {
+      transform: rotate(7deg) scale(1.08);
+    }
+    70% {
+      transform: rotate(-3deg) scale(1.12);
+    }
+  }
+  .kids-chest-opening {
+    animation: kids-chest-shake 0.52s ease-in-out;
+  }
 
-/* Balão "COMEÇAR/CONTINUAR" sobre o nó atual (o transform é DONO do
-   centering — keyframes incluem o translateX(-50%)). */
-.kids-balloon {
-  position: absolute;
-  top: -2.5rem;
-  left: 50%;
-  z-index: 10;
-  font-family: var(--font-display);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  background: var(--card);
-  color: var(--unit);
-  border: 2px solid var(--unit);
-  border-radius: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  animation: kids-bob 1.4s ease-in-out infinite;
-}
-.kids-balloon::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -0.4rem;
-  width: 0.65rem;
-  height: 0.65rem;
-  transform: translateX(-50%) rotate(45deg);
-  background: var(--card);
-  border-right: 2px solid var(--unit);
-  border-bottom: 2px solid var(--unit);
-}
-@keyframes kids-bob {
-  0%,
-  100% {
-    transform: translate(-50%, 0);
+  /* O 3D do Brilliant (11/09/2026) nos nós que ABREM aula (feita, atual, a fazer) e no
+     baú liberado: a borda de baixo acompanha a cor da superfície, por sombra. Tanto os
+     links de aula quanto o botão do baú compartilham `.kids-node-link`, e o nó afunda
+     junto. O nó TRAVADO fica plano; o baú fechado e o aberto usam o molde estático
+     acima. O travado também leva a classe (é o mesmo molde, sem o link), daí o `:not`. */
+  .kids-node-link .kids-node:where(:not(.kids-node--locked):not(.kids-node--chest)) {
+    --k3d-altura: 5px;
+    --k3d-degrau: color-mix(in oklab, var(--unit) 70%, var(--pen-tinta));
+    box-shadow: 0 var(--k3d-altura) 0 var(--k3d-degrau);
+    transition:
+      translate 0.12s ease,
+      box-shadow 0.12s ease;
   }
-  50% {
-    transform: translate(-50%, -6px);
+  .kids-node-link .kids-node--todo {
+    --k3d-degrau: var(--pen-degrau-cartao);
   }
-}
+  .kids-node-link:hover .kids-node:not(.kids-node--locked):not(.kids-node--chest) {
+    --k3d-altura: 6px;
+    translate: 0 -1px;
+  }
+  .kids-node-link:active .kids-node:not(.kids-node--locked):not(.kids-node--chest) {
+    --k3d-altura: 1px;
+    translate: 0 4px;
+  }
+  /* Degrau âmbar no baú liberado: contrasta com o disco branco e distingue
+     o botão da sombra cinza do baú bloqueado. */
+  .kids-node-link .kids-node.kids-node--chest-ready {
+    --k3d-altura: 8px;
+    --k3d-degrau: color-mix(in oklab, var(--kids-ouro) 58%, var(--pen-tinta));
+    transition: translate 0.12s ease;
+  }
+  .kids-node-link:hover .kids-node.kids-node--chest-ready {
+    --k3d-altura: 9px;
+  }
+  .kids-node-link:active .kids-node.kids-node--chest-ready {
+    --k3d-altura: 2px;
+    translate: 0 6px;
+  }
+  .kids-node-link:has(.kids-chest-hit-area:active) .kids-node.kids-node--chest-ready {
+    --k3d-altura: 2px;
+    translate: 0 6px;
+  }
+  @keyframes kids-ring {
+    0% {
+      outline: 4px solid color-mix(in oklch, var(--unit) 45%, transparent);
+      outline-offset: 2px;
+    }
+    70%,
+    100% {
+      outline: 4px solid transparent;
+      outline-offset: 12px;
+    }
+  }
 
-/* Conectores pontilhados entre nós consecutivos (posição inline). */
-.kids-trail-dot {
-  position: absolute;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 9999px;
-  background: var(--border);
-}
-.kids-trail-dot--done {
-  background: color-mix(in oklch, var(--unit) 55%, transparent);
+  /* Balão "COMEÇAR/CONTINUAR" sobre o nó atual (o transform é DONO do
+     centering — keyframes incluem o translateX(-50%)). */
+  .kids-balloon {
+    position: absolute;
+    top: -2.5rem;
+    left: 50%;
+    z-index: 10;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    background: var(--card);
+    color: var(--unit);
+    border: 2px solid var(--unit);
+    border-radius: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    animation: kids-bob 1.4s ease-in-out infinite;
+  }
+  .kids-balloon::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -0.4rem;
+    width: 0.65rem;
+    height: 0.65rem;
+    transform: translateX(-50%) rotate(45deg);
+    background: var(--card);
+    border-right: 2px solid var(--unit);
+    border-bottom: 2px solid var(--unit);
+  }
+  @keyframes kids-bob {
+    0%,
+    100% {
+      transform: translate(-50%, 0);
+    }
+    50% {
+      transform: translate(-50%, -6px);
+    }
+  }
 }
 
 /* ============================================================
@@ -877,18 +1401,6 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
     transform: translateY(110vh) rotate(720deg);
     opacity: 0;
   }
-}
-
-/* Blobs decorativos do auth (fundo lúdico em cores da marca). */
-.kids-blob {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(60px);
-  opacity: 0.25;
-  pointer-events: none;
-}
-.dark .kids-blob {
-  opacity: 0.18;
 }
 
 /* Esconde o reveal nativo de senha (usamos o toggle próprio Eye/EyeOff) */
@@ -991,6 +1503,411 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   margin-bottom: 0;
 }
 
+/* ── A AULA NO DESENHO DAS TELAS-MODELO (11/09/2026) ───────────────────────────
+   FORA de camada, de propósito: o `LessonSections` do member-shell pinta estes
+   elementos com UTILITÁRIAS (`rounded-2xl border bg-card`, o `space-y-6` do painel,
+   o tamanho do título), e regra dentro de `@layer components` perde para elas. Tudo
+   mira os GANCHOS estáveis (`sz-lesson-*`, criados no member-shell sem regra
+   nenhuma lá) sob o `.sz-lesson-sections`, que o member-shell só aplica com a flag
+   `kids`: a comunidade adulta não carrega este arquivo, então nada vaza para ela.
+
+   A régua: a página é azul-clara e cada pedaço da aula é um cartão branco de 20px.
+   A borda é a `--borda-carta` (transparente no claro, o fio no escuro, onde cartão e
+   faixa têm claridade parecida). Borda, e não sombra: o bloco usa o anel de foco em
+   `box-shadow`, e uma sombra aqui fora de camada o apagaria. */
+/* O cabeçalho visual e o índice permanecem apenas no ensaio do admin. */
+.sz-lesson-sections:not(.sz-lesson-immersive) .sz-lesson-section-head {
+  padding-block-end: 0.25rem;
+}
+/* `:is(h1, h2)`: o cabeçalho é `h1` na página de aula (onde o player passa o
+   título) e `h2` no ensaio do admin. Mirando só `h2`, a regra virava letra morta
+   na página real e o corpo do título mudava sozinho — 24px no celular em vez de
+   26px, 30px no desktop. */
+.sz-lesson-sections:not(.sz-lesson-immersive) .sz-lesson-section-head :is(h1, h2) {
+  font-size: 1.625rem;
+}
+.sz-lesson-sections:not(.sz-lesson-immersive) .sz-lesson-section-head summary {
+  font-weight: 800;
+}
+.sz-lesson-sections .sz-lesson-block {
+  border: 1px solid var(--borda-carta);
+  border-radius: 1.25rem;
+  background: var(--card);
+  padding: 1.25rem;
+}
+
+/* O chip dos blocos INTERATIVOS (cena de experimentação e de demonstração, pergunta curta,
+   experiência em HTML). ⚠️ Eles não passam pelo renderizador do kids — o `LessonSections`
+   manda `kind: 'interactive'` direto ao `InteractiveLessonBlock` do member-shell —, então
+   este NÃO é o `BlockChip` do `kids-lesson-blocks`: é o gancho `sz-lesson-chip` vestido aqui
+   com a MESMA pílula (mexeu num, mexa no outro). O member-shell só põe a classe, o ícone e o
+   rótulo; a forma e a cor são daqui, como manda a invariante 8 de lá. */
+.sz-lesson-sections .sz-lesson-chip {
+  border-radius: 9999px;
+  padding: 0.375rem 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background-color: var(--unit-bg);
+  color: var(--unit-fg);
+}
+/* Experimentar e brincar usam a mesma família visual do tema Kids. */
+.sz-lesson-sections .sz-lesson-chip[data-chip="experimentation"],
+.sz-lesson-sections .sz-lesson-chip[data-chip="html"],
+.sz-lesson-sections .sz-lesson-chip[data-chip="project-play"] {
+  --unit: var(--kids-verde);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+}
+.sz-lesson-sections .sz-lesson-chip[data-chip="book"] {
+  --unit: var(--kids-cyan);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+}
+
+/* MATERIAIS COMPLEMENTARES. O desenho é UM só no member-shell (`MaterialsBlockView`, que não
+   tem cor nenhuma por dentro) e cada app o veste por estes ganchos — a mesma receita da
+   invariante 8. Aqui a linha de arquivo ganha o relevo 3D e a bolinha da marca, como o card de
+   anexos que ela substituiu; no adulto ela sai sóbria. */
+.sz-lesson-sections .sz-lesson-materials {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.sz-lesson-sections .sz-lesson-materials-title {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+.sz-lesson-sections .sz-lesson-materials-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+.sz-lesson-sections .sz-lesson-material {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  /* ⚠️ O rótulo do arquivo usa `truncate`; sem isto um nome comprido empurra a linha inteira
+     e a aula rola de lado no celular. */
+  min-width: 0;
+}
+/* A linha clicável: arquivo, link e vídeo não embutido usam a MESMA forma, porque para a
+   criança as três são "toque aqui e abre". */
+.sz-lesson-sections .sz-lesson-material-action {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.625rem 0.75rem;
+  border: 2px solid var(--linha-carta);
+  border-radius: 1rem;
+  background: var(--card);
+  text-align: left;
+  box-shadow: 0 3px 0 var(--linha-carta);
+  transition: translate 0.1s ease;
+}
+.sz-lesson-sections .sz-lesson-material-action:active {
+  translate: 0 2px;
+  box-shadow: 0 1px 0 var(--linha-carta);
+}
+.sz-lesson-sections .sz-lesson-material-action:disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.sz-lesson-sections .sz-lesson-material-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  background: var(--pen-acao);
+  color: oklch(1 0 0);
+}
+.sz-lesson-sections .sz-lesson-material-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.125rem;
+}
+.sz-lesson-sections .sz-lesson-material-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+.sz-lesson-sections .sz-lesson-material-required {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--pen-acao);
+}
+.sz-lesson-sections .sz-lesson-material-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted-foreground);
+}
+.sz-lesson-sections .sz-lesson-material-cta {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  min-width: 4.75rem;
+  min-height: 2rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 9999px;
+  background: var(--pen-acao);
+  color: oklch(1 0 0);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.sz-lesson-sections .sz-lesson-material-note {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+.sz-lesson-sections .sz-lesson-material-figure img {
+  width: 100%;
+  border-radius: 1rem;
+  border: 2px solid var(--linha-carta);
+}
+.sz-lesson-sections .sz-lesson-material-figure figcaption {
+  margin-top: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+/* ⚠️ A caixa reserva a altura ANTES de o iframe carregar; sem a proporção a aula pula quando
+   o vídeo entra. */
+.sz-lesson-sections .sz-lesson-material-video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 2px solid var(--linha-carta);
+  background: var(--muted);
+}
+.sz-lesson-sections .sz-lesson-material-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* "Atividade concluída" em verde, com o ✓ desenhado (máscara, e não texto: um "✓"
+   no `content` seria lido pelo leitor de tela). A obrigatória fica no cinza. */
+.sz-lesson-sections .sz-lesson-requirement[data-done] {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--success-foreground);
+}
+.sz-lesson-sections .sz-lesson-requirement[data-done]::before {
+  content: "";
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  background-color: currentColor;
+  mask:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+/* O rodapé das seções: cartão com "Anterior" na pílula creme, "Preciso de ajuda" como
+   texto e "Próxima seção" na pílula azul da marca, todos com 44px (eram 32). */
+.sz-lesson-sections .sz-lesson-nav {
+  border: 1px solid var(--borda-carta);
+  border-radius: 1.25rem;
+  background: var(--card);
+  padding: 0.75rem 1rem;
+}
+.sz-lesson-sections
+  .sz-lesson-nav
+  :is(.sz-lesson-nav-prev, .sz-lesson-nav-help, .sz-lesson-nav-next) {
+  height: 2.75rem;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding-inline: 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 800;
+}
+.sz-lesson-sections .sz-lesson-nav .sz-lesson-nav-prev {
+  border: 0;
+  background: var(--band-creme);
+  color: var(--tinta);
+}
+.sz-lesson-sections .sz-lesson-nav .sz-lesson-nav-prev:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--band-creme) 90%, var(--foreground));
+}
+.sz-lesson-sections .sz-lesson-nav .sz-lesson-nav-help {
+  color: var(--muted-foreground);
+  font-weight: 700;
+}
+
+/* A navegação da aula real ocupa a base da viewport; o ensaio do admin segue com
+   o cartão original. No celular fica acima da barra global de abas. */
+.kids-shell-row {
+  --kids-menu-width: 16.75rem;
+  /* A gaveta usa min(20rem, 90vw) antes do desktop. A alça lê a MESMA largura. */
+  --lesson-outline-width: min(20rem, 90vw);
+}
+.sz-lesson-sections .sz-lesson-nav-immersive {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(3.5rem + env(safe-area-inset-bottom));
+  z-index: 30;
+  max-height: calc(100dvh - 3.5rem - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  border: 0;
+  border-top: 1px solid var(--linha-carta);
+  border-radius: 0;
+  background: var(--card);
+  padding: 0.75rem 1rem;
+}
+.sz-lesson-sections .sz-lesson-nav-immersive .sz-lesson-nav-inner {
+  gap: 0.5rem;
+}
+.sz-lesson-sections .sz-lesson-nav-immersive .sz-lesson-nav-message {
+  text-align: right;
+}
+@media (min-width: 768px) {
+  .sz-lesson-sections .sz-lesson-nav-immersive {
+    bottom: 0;
+    max-height: 100dvh;
+    transition:
+      left 0.3s ease-in-out,
+      right 0.3s ease-in-out;
+  }
+  .kids-shell-row:has(aside.kids-menu:not([aria-hidden="true"])) .sz-lesson-nav-immersive {
+    left: var(--kids-menu-width);
+  }
+}
+
+/* A FAIXA DE FOCO aproveita o espaço que o menu recolhido devolveu.
+   A `KidsBand` mede 73.25rem, que é a coluna à direita do menu a 1440px — então, sem isto,
+   esconder o menu só CENTRALIZA o conteúdo em vez de dar espaço a ele, e o pedido era "adequar
+   o layout". Vale só onde a peça cresce de verdade (hoje o palco 3D do Quarto).
+   ⚠️ O estado vem do `aria-hidden` que o `FocusModeProvider` já põe na barra: o CSS lê o
+   contexto por `:has()`, sem prop nova nem um client component a mais — a mesma receita do
+   rodapé imersivo da aula, logo acima. */
+@media (min-width: 768px) {
+  /* Sem par `prefers-reduced-motion` aqui de propósito: o reset global no fim deste arquivo já
+     zera toda transição, e vem depois. */
+  .kids-band-foco > div {
+    transition: max-width 0.3s ease-in-out;
+  }
+  .kids-shell-row:has(aside.kids-menu[aria-hidden="true"]) .kids-band-foco > div {
+    max-width: calc(73.25rem + var(--kids-menu-width));
+  }
+}
+@media (min-width: 1024px) {
+  .kids-shell-row {
+    --lesson-outline-width: 18rem;
+  }
+  .kids-aula {
+    transition: padding-right 0.3s ease-in-out;
+  }
+  .kids-aula:has(#kids-lesson-outline:not([aria-hidden="true"])) {
+    padding-right: calc(2rem + var(--lesson-outline-width));
+  }
+  .kids-aula:has(#kids-lesson-outline:not([aria-hidden="true"])) .sz-lesson-nav-immersive {
+    right: var(--lesson-outline-width);
+  }
+}
+@media (min-width: 768px) and (prefers-reduced-motion: reduce) {
+  .sz-lesson-sections .sz-lesson-nav-immersive {
+    transition: none;
+  }
+}
+@media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
+  .kids-aula {
+    transition: none;
+  }
+}
+
+/* ── A DIVISÓRIA DO MEIO (a criança arrasta o espaço dos dois lados) ───────────
+   Ganchos `sz-lesson-split-handle`/`-grip` do member-shell (sem regra nenhuma lá).
+   ⚠️⚠️ NADA aqui pode criar contexto de contenção: `contain`, `container-type`,
+   `transform`, `filter`, `backdrop-filter`, `perspective`. Foi isso que prendeu o
+   `position: fixed` do "Expandir" do Estúdio e derrubou o `@container` em
+   `c21f576d`. As regras abaixo tocam só a PRÓPRIA divisória e o que está dentro
+   dela, que não é ancestral de nada. */
+
+/* 44px no ELEMENTO, não só na folga da lib: a `hitAreaMargins` cobre o ponteiro,
+   mas não o `:hover` do CSS nem o anel de foco. Custa 10px de cada painel. */
+.sz-lesson-sections .sz-lesson-split-handle {
+  width: 2.75rem;
+  border-radius: 1rem;
+}
+
+/* Em REPOUSO já se enxerga: o fio na cor de linha das cartas, de alto a baixo.
+   ⚠️ `--linha-carta`, NUNCA `--borda-carta`: esta é `transparent` no tema Padrão
+   (só existe no escuro) e o fio sumiria de novo. */
+.sz-lesson-sections .sz-lesson-split-grip {
+  width: 0.25rem;
+  background: var(--linha-carta);
+}
+
+/* A PEGA: pastilha branca com três pontinhos, PARADA no meio dos painéis.
+   ⚠️ Ela já foi `sticky` no meio da viewport, para nunca sumir numa coluna alta, e a
+   dona reprovou: a pega deslizava pela divisória a cada rolagem. Quem garante que o
+   controle segue alcançável ao rolar é o FIO de alto a baixo, que é a zona de arrasto
+   inteira (com o cursor de redimensionar e acendendo na folga da lib). */
+.sz-lesson-sections .sz-lesson-split-handle::after {
+  content: "";
+  /* ⚠️ `relative` SEM deslocamento nenhum, só para a camada de pintura: o fio
+     (`-grip`) é `absolute`, e elemento posicionado pinta ACIMA de um item de fluxo.
+     O `sticky` de antes já era posicionado e, vindo depois no DOM, cobria o fio —
+     tirando-o, o fio passava a CORTAR a pastilha ao meio. `relative` devolve a
+     ordem sem devolver o movimento. */
+  position: relative;
+  /* Centra por margem AUTO, e não pelo `items-center`/`justify-center` que o
+     member-shell põe no handle: tirando o `sticky`, a pega passaria a depender de
+     duas utilitárias de outro pacote para não encostar no canto. Com `auto` a regra
+     se basta (em flex, margem auto vence o alinhamento do container). */
+  margin: auto;
+  width: 1.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 50% calc(50% - 0.5rem), var(--pen-tinta-suave) 2px, transparent 2.5px),
+    radial-gradient(circle at 50% 50%, var(--pen-tinta-suave) 2px, transparent 2.5px),
+    radial-gradient(circle at 50% calc(50% + 0.5rem), var(--pen-tinta-suave) 2px, transparent 2.5px),
+    var(--pen-cartao);
+  /* ⚠️ O anel é a TINTA SUAVE, não a cor de linha: medido, a linha sobre o chão da aula
+     dá 1,07:1 e o WCAG 1.4.11 pede 3:1 para componente de interface — em repouso a pega
+     sumia de novo, que é justamente o defeito que este lote existe para consertar. A
+     tinta suave dá 6,07:1 no Padrão e 6,42:1 no Pink. (O fio de alto a baixo fica
+     discreto de propósito: quem identifica o controle é a PEGA, e escurecer a linha
+     inteira cortaria a página no meio, contra o "um fundo só" do desenho.) */
+  box-shadow: inset 0 0 0 2px var(--pen-tinta-suave);
+}
+
+/* ⚠️ `[data-resize-handle-state]` e não `:hover`: a lib marca "hover" quando o
+   ponteiro entra na FOLGA (6px no mouse, 20px no toque), então a divisória acende
+   antes de o dedo encostar nela. O `:hover` do CSS só acenderia em cima dos 44px. */
+.sz-lesson-sections .sz-lesson-split-handle:is(
+    [data-resize-handle-state="hover"],
+    [data-resize-handle-state="drag"]
+  )
+  .sz-lesson-split-grip {
+  background: var(--sz-kids-acao);
+}
+.sz-lesson-sections
+  .sz-lesson-split-handle:is(
+    [data-resize-handle-state="hover"],
+    [data-resize-handle-state="drag"]
+  )::after {
+  box-shadow: inset 0 0 0 2px var(--sz-kids-acao);
+}
+
 /* Modal — backdrop + entrada */
 @keyframes sz-fade-in {
   from {
@@ -1017,24 +1934,93 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   animation: sz-zoom-in 0.15s ease;
 }
 
-/* Scrollbar discreta */
-.scrollbar-subtle {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
+/* ============================================================================
+   AS BARRAS DE ROLAGEM
+
+   A rolagem padrão do navegador — a cinza grossa e escura — aparecia em qualquer área que
+   rolasse, sem relação nenhuma com o tema. O caso que se via primeiro era o MENU da esquerda
+   numa tela baixa, com a barra cinza cortando o navy.
+
+   ⚠️ A regra é GLOBAL, não uma classe a pedido. A `.scrollbar-subtle` existia desde sempre e
+   estava em SEIS lugares do app inteiro: opt-in não veste uma plataforma. Isto alcança também
+   as ferramentas embarcadas (Estúdio, Pinta, Pensa, Molda), que vivem no MESMO documento.
+
+   ⚠️⚠️ OS DOIS MECANISMOS NÃO CONVIVEM. Declarar `scrollbar-width` ou `scrollbar-color` faz o
+   Chromium trocar para a barra PADRÃO e IGNORAR todo o bloco `::-webkit-scrollbar` — medido:
+   com `scrollbar-width: thin` a largura, o raio e o `:hover` do polegar viram letra morta, e a
+   calha cai para 10px (o "thin" do Chromium), quando o padrão do Chrome no Windows é 15px. A
+   primeira versão desta seção declarava os dois e perdeu o hover e 5px de alvo de arrasto sem
+   ninguém ver. Por isso cada motor tem o SEU bloco, e eles não se cruzam.
+
+   ⚠️ A barra é um COMPONENTE de interface: a WCAG 1.4.11 pede 3:1 contra o que está atrás, e a
+   exceção de "aparência do agente do usuário" não vale quando o autor muda a aparência. Medido
+   no navegador, a primeira versão dava 1,58:1 na página e 2,06:1 no menu. As porcentagens
+   abaixo são o mínimo que alcança 3:1 em cada fundo, com folga de um ponto.
+
+   ⚠️ `color-mix` em `oklab`, nunca em `oklch`: no espaço cilíndrico a interpolação passeia pelo
+   matiz e um cinza vira ROSA. Foi assim que os embarcados já quebraram uma vez.
+   ============================================================================ */
+
+:root {
+  --rolagem: color-mix(in oklab, var(--foreground) 60%, transparent);
+  --rolagem-hover: color-mix(in oklab, var(--foreground) 78%, transparent);
 }
-.scrollbar-subtle:hover {
-  scrollbar-color: color-mix(in oklch, var(--foreground) 18%, transparent) transparent;
+
+/* O menu é a âncora ESCURA da plataforma, e a barra do chão claro sumiria dentro dele. O mesmo
+   vale para os overlays de comemoração, que rolam sobre um véu preto. */
+.kids-menu,
+.kids-sobre-escuro {
+  --rolagem: color-mix(in oklab, var(--menu-texto, white) 48%, transparent);
+  --rolagem-hover: color-mix(in oklab, var(--menu-texto, white) 70%, transparent);
 }
-.scrollbar-subtle::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+
+/* == Chromium e WebKit == o bloco `::-webkit-scrollbar`, com largura, raio e hover de verdade.
+   Nada de `scrollbar-width`/`scrollbar-color` aqui: qualquer um dos dois desliga tudo isto. */
+*::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
 }
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: var(--rolagem);
+  /* A borda transparente afina o traço sem estreitar a ÁREA de arrasto: o alvo continua com os
+     14px, perto dos 15px que o Chrome no Windows dá por padrão. */
+  border: 4px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--rolagem-hover);
+}
+
+/* == Firefox == as propriedades padrão, e SÓ onde o bloco de cima não existe. Aqui não há
+   hover nem raio: é o que o motor oferece. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rolagem) transparent;
+  }
+}
+
+/* A variante discreta some em repouso e aparece ao passar o ponteiro. Fica para as áreas densas
+   que já a pediam (a mini-trilha da aula, as fileiras do configurador de avatar, as tabelas do
+   ui) — mesma paleta, só mais quieta. */
 .scrollbar-subtle::-webkit-scrollbar-thumb {
   background-color: transparent;
-  border-radius: 9999px;
 }
 .scrollbar-subtle:hover::-webkit-scrollbar-thumb {
-  background: color-mix(in oklch, var(--foreground) 18%, transparent);
+  background-color: var(--rolagem);
+}
+@supports not selector(::-webkit-scrollbar) {
+  .scrollbar-subtle {
+    scrollbar-color: transparent transparent;
+  }
+  .scrollbar-subtle:hover {
+    scrollbar-color: var(--rolagem) transparent;
+  }
 }
 
 /* Toast — contraste garantido em ambos os modos */

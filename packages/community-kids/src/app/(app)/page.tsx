@@ -1,4 +1,5 @@
-import { ArrowRight } from 'lucide-react'
+import { courseJourneyState, creativeToolAvailability } from '@sistemazero/core/journey'
+import { ArrowRight, BookOpen, Map as MapIcon, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { ChallengeCard } from '@/components/kids/challenge-card'
 import { ChildGuide } from '@/components/kids/child-guide'
@@ -8,12 +9,14 @@ import {
   pickContinueCourse,
 } from '@/components/kids/continue-hero'
 import { CourseCard } from '@/components/kids/course-card'
-import { CreatorCareerCard } from '@/components/kids/creator-career-card'
+import { CreatorJourneyCard } from '@/components/kids/creator-journey-card'
 import { FocusRefresh } from '@/components/kids/focus-refresh'
-import { KidsMascot } from '@/components/kids/mascot'
+import { KidsBand } from '@/components/kids/kids-band'
+import { KidsEmptyState } from '@/components/kids/kids-empty-state'
+import { KidsSectionHeader } from '@/components/kids/kids-section-header'
+import { KidsMascotAnimated } from '@/components/kids/mascot-rive'
 import { MissionsPanel } from '@/components/kids/missions-panel'
-import { unitThemeAt } from '@/components/kids/unit-theme'
-import { nextLevelHintWithin } from '@/lib/career-horizon'
+import { nextLevelHintWithin } from '@/lib/journey-horizon'
 import {
   checkChallengeAccessReadonly,
   getAvatarReadonly,
@@ -43,7 +46,7 @@ export default async function HomePage() {
       listMyCourses(),
       getGamificationReadonly({ withRanking: true }),
       getMissionsReadonly(),
-      // Foto do avatar p/ a aura da Carreira de Criador (React.cache deduplica
+      // Foto do avatar p/ a aura da Jornada do Criador (React.cache deduplica
       // com a busca do layout — segue 1 ida ao gateway por render).
       getAvatarReadonly(),
       // "Seus jogos já foram jogados N vezes" (Mural) — best-effort, linha some no erro.
@@ -57,14 +60,19 @@ export default async function HomePage() {
     ])
   if (status !== 200) throw new Error('Falha ao carregar os cursos')
   const courses = body?.courses ?? []
-  // Home = superfície de AÇÃO: só cursos LIBERADOS pela carreira (os travados —
-  // futuro/recompensa — vivem no Mapa da Carreira em /cursos). Ordenação
+  // Home = superfície de AÇÃO: só cursos LIBERADOS pela jornada (os travados —
+  // futuro/recompensa — vivem no Mapa da Jornada em /cursos). Ordenação
   // ação-primeiro: em andamento → não começados → concluídos (revisão) por último.
   const courseRank = (c: (typeof courses)[number]) => {
-    const done =
-      c.progress.totalLessons > 0 && c.progress.completedLessons >= c.progress.totalLessons
-    if (done) return 2
-    return c.progress.completedLessons > 0 ? 0 : 1
+    const order = {
+      publish: 0,
+      continue: 1,
+      start: 2,
+      review: 3,
+      'content-unavailable': 4,
+      locked: 5,
+    }
+    return order[courseJourneyState(c)]
   }
   const unlocked = courses
     .filter((c) => c.careerLock?.locked !== true)
@@ -81,6 +89,11 @@ export default async function HomePage() {
   const avatarPhotoUrl = avatarState?.photoUrl ?? null
   const showcaseStats = showcaseRes?.status === 200 ? (showcaseRes.body ?? null) : null
   const challengeEligible =
+    creativeToolAvailability({
+      tool: 'estudio-completo',
+      owned: true,
+      level: gamification?.level?.slug ?? null,
+    }) === 'available' &&
     challengeAccess?.status === 200 &&
     challengeAccess.body?.access?.['clube-dos-criadores'] === true &&
     challengeAccess.body?.access?.['estudio-completo'] === true
@@ -91,98 +104,143 @@ export default async function HomePage() {
   const challengeRes = challengeEligible ? await getChallengeReadonly().catch(() => null) : null
   const challengeData = challengeRes?.status === 200 ? (challengeRes.body ?? null) : null
 
+  // A saudação das telas-modelo (11/09/2026): o Zappy num ladrilho amarelo, o "Olá" em
+  // Baloo e a frase. Com o guia ligado, o "Como funciona?" fica à direita dela.
+  const saudacao = (
+    <div className="flex items-center gap-4 md:gap-5">
+      <span
+        aria-hidden="true"
+        className="grid size-16 shrink-0 place-items-center rounded-[1.25rem] bg-(--sz-kids-amarelo) md:size-[4.5rem] md:rounded-[1.375rem]"
+      >
+        {/* ⚠️ A home é quem PAGA o runtime do Rive (~676 KB) para o resto do app:
+            toda criança passa por aqui, e a partir daqui o WASM está em cache por
+            um dia (header em `next.config.ts`), o que torna de graça animar o
+            Zappy nas outras telas. Mudo — saudação é presença, não evento. */}
+        <KidsMascotAnimated
+          expression={courses.length === 0 ? 'thinking' : 'happy'}
+          className="size-12 md:size-14"
+        />
+      </span>
+      <div className="min-w-0">
+        <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">
+          Olá{greetName ? `, ${greetName}` : ''}!
+        </h1>
+        <p className="mt-1.5 font-medium text-[1.0625rem] text-muted-foreground">
+          Vamos dar o próximo passo na sua criação?
+        </p>
+      </div>
+    </div>
+  )
+
   return (
-    <div className="flex flex-col gap-8">
+    <>
       {/* Re-sincroniza ranking/nível/foguinho ao voltar pra tela (sem deslogar). */}
       <FocusRefresh />
-      <div className="flex items-center gap-4">
-        <KidsMascot
-          expression={courses.length === 0 ? 'thinking' : 'happy'}
-          className="size-14 md:size-20"
-        />
-        <div>
-          <h1 className="sz-display text-3xl md:text-4xl">
-            Olá{greetName ? `, ${greetName}` : ''}!
-          </h1>
-          <p className="mt-1 text-muted-foreground text-sm md:text-base">
-            Bora aprender mais um pouquinho hoje?
-          </p>
-        </div>
-      </div>
-
-      {/* Tutorial guiado da CRIANÇA (fase 2): boas-vindas 1×, convite ao avatar e o
+      <KidsBand tone="creme">
+        {/* Tutorial guiado da CRIANÇA (fase 2): boas-vindas 1×, convite ao avatar e o
           aponte do "Começar" logo abaixo — tudo derivado do estado que a página já
           buscou (zero fetch novo). A home roda sempre em sessão de perfil (o proxy
           manda conta sem `pfl` p/ /perfis), então `user.id` é o PERFIL. */}
-      {childGuideEnabled && user?.id ? (
-        <ChildGuide
-          profileKey={user.id}
-          childName={greetName ?? null}
-          hasAvatar={avatarState === null ? null : avatarPhotoUrl !== null}
-          hasCourseActivity={hasCourseActivity}
-          startAvailable={startAvailable}
-        >
-          <ContinueHero courses={courses} />
-        </ChildGuide>
-      ) : (
-        <ContinueHero courses={courses} />
-      )}
+        {childGuideEnabled && user?.id ? (
+          <ChildGuide
+            profileKey={user.id}
+            childName={greetName ?? null}
+            hasAvatar={avatarState === null ? null : avatarPhotoUrl !== null}
+            hasCourseActivity={hasCourseActivity}
+            startAvailable={startAvailable}
+            header={saudacao}
+          >
+            <ContinueHero courses={courses} />
+          </ChildGuide>
+        ) : (
+          <>
+            <div className="mb-6 md:mb-7">{saudacao}</div>
+            <ContinueHero courses={courses} />
+          </>
+        )}
 
-      {/* Gamificação fora → os cards mostram placeholder gentil (não somem em silêncio). */}
+        {/* Gamificação fora → os cards mostram placeholder gentil (não somem em silêncio). */}
+        {!startAvailable && courses.length > 0 ? (
+          <section className="kids-carta mt-6 p-6 md:p-7">
+            <h2 className="sz-display text-xl md:text-[1.625rem]">Espaço para sua próxima ideia</h2>
+            <p className="mt-2 font-medium text-[0.9375rem] text-muted-foreground">
+              Explore as ferramentas liberadas na sua oficina ou revisite um projeto dos cursos.
+            </p>
+            <Link href="/criar" prefetch={false} className="sz-btn-gradient mt-4 px-6">
+              Abrir minha oficina
+            </Link>
+          </section>
+        ) : null}
+      </KidsBand>
+
       {courses.length > 0 ? (
-        <CreatorCareerCard
-          gamification={gamification}
-          levelHint={levelHint}
-          avatarPhotoUrl={avatarPhotoUrl}
-          showcaseStats={showcaseStats}
-        />
+        <KidsBand tone="menta">
+          <CreatorJourneyCard
+            gamification={gamification}
+            levelHint={levelHint}
+            avatarPhotoUrl={avatarPhotoUrl}
+            name={greetName ?? null}
+            showcaseStats={showcaseStats}
+          />
+        </KidsBand>
       ) : null}
 
-      {/* Desafio do mês (game jam) — só com posse de Clube+Estúdio. */}
-      {challengeData ? <ChallengeCard data={challengeData} /> : null}
+      {/* Desafio do mês (game jam, só com posse de Clube+Estúdio) e missões. A faixa
+          só existe quando há o que pôr dentro dela: faixa vazia é uma tarja de cor
+          sem conteúdo, que fica pior do que não ter faixa nenhuma. */}
+      {challengeData || courses.length > 0 ? (
+        <KidsBand tone="ceu">
+          {challengeData ? <ChallengeCard data={challengeData} /> : null}
+          {courses.length > 0 ? (
+            <MissionsPanel initial={missionsData} className={challengeData ? 'mt-8' : undefined} />
+          ) : null}
+        </KidsBand>
+      ) : null}
 
-      {/* Missões diárias/semanais (dados do servidor). */}
-      {courses.length > 0 ? <MissionsPanel initial={missionsData} /> : null}
-
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="sz-display text-xl">Meus cursos</h2>
-          <Link
-            href="/cursos"
-            className="inline-flex items-center gap-1 font-semibold text-muted-foreground text-sm transition-colors hover:text-foreground"
-          >
-            Ver o mapa da carreira <ArrowRight className="size-4" />
-          </Link>
-        </div>
-        {courses.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 rounded-3xl border-2 border-border border-dashed py-16 text-center">
-            <KidsMascot expression="sleeping" className="size-20" />
-            <div>
-              <p className="sz-display text-lg">Nenhum curso liberado ainda</p>
-              <p className="mt-1 text-muted-foreground text-sm">
-                Assim que sua compra for confirmada, seu acesso aparece aqui.
-              </p>
+      <KidsBand tone="lilas">
+        <section aria-labelledby="meus-cursos">
+          <KidsSectionHeader
+            id="meus-cursos"
+            title="Meus cursos"
+            actions={
+              <Link
+                href="/cursos"
+                prefetch={false}
+                className="sz-btn-gradient sz-btn-inverso h-10 gap-1.5 px-5 text-sm"
+              >
+                Ver o mapa da jornada <ArrowRight className="size-4" aria-hidden />
+              </Link>
+            }
+          />
+          {courses.length === 0 ? (
+            <KidsEmptyState
+              icon={BookOpen}
+              title="Nenhum curso liberado ainda"
+              description="Assim que sua compra for confirmada, seu acesso aparece aqui."
+            />
+          ) : unlocked.length === 0 ? (
+            // Defensivo (tudo travado pela jornada): aponta o mapa em vez de sumir.
+            <KidsEmptyState
+              icon={MapIcon}
+              title="Seus próximos cursos estão no mapa!"
+              description="Abra o Mapa da Jornada para ver o que vem pela frente."
+              action={
+                <Link href="/cursos" prefetch={false} className="sz-btn-gradient px-6">
+                  <Sparkles className="size-4" aria-hidden /> Abrir o mapa
+                </Link>
+              }
+            />
+          ) : (
+            // Quatro colunas só a partir de 1280px: com o menu de 268px, a 1024 cada
+            // cartão ficaria com 140px.
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {unlocked.map((course) => (
+                <CourseCard key={course.courseSlug} course={course} />
+              ))}
             </div>
-          </div>
-        ) : unlocked.length === 0 ? (
-          // Defensivo (tudo travado pela carreira): aponta o mapa em vez de sumir.
-          <div className="flex flex-col items-center gap-4 rounded-3xl border-2 border-border border-dashed py-16 text-center">
-            <KidsMascot expression="thinking" className="size-20" />
-            <div>
-              <p className="sz-display text-lg">Seus próximos cursos estão no mapa!</p>
-              <p className="mt-1 text-muted-foreground text-sm">
-                Abra o Mapa da Carreira para ver o que vem pela frente.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {unlocked.map((course, i) => (
-              <CourseCard key={course.courseSlug} course={course} theme={unitThemeAt(i)} />
-            ))}
-          </div>
-        )}
-      </section>
-    </div>
+          )}
+        </section>
+      </KidsBand>
+    </>
   )
 }

@@ -21,6 +21,8 @@ export type {
   PintaExportedAsset,
   PintaHostAdapter,
   PintaHostChrome,
+  PintaHostChromeAccount,
+  PintaHostChromeBack,
   PintaHostChromeMenu,
   PintaHostChromeStatus,
   PintaInitialIntent,

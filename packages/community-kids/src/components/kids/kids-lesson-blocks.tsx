@@ -1,17 +1,16 @@
 'use client'
 
 import { CertificateBlockView } from '@sistemazero/member-shell/components/certificate-block'
+import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
 import { EbookBlockView } from '@sistemazero/member-shell/components/ebook/ebook-block'
-import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-player-context'
+import { LessonVideo } from '@sistemazero/member-shell/components/lesson-video'
+import { MaterialsBlockView } from '@sistemazero/member-shell/components/materials-block'
 import { PintaBlockView } from '@sistemazero/member-shell/components/pinta/pinta-block'
 import { StudioBlockView } from '@sistemazero/member-shell/components/studio/studio-block'
-import { VimeoPlayer } from '@sistemazero/member-shell/components/vimeo-player'
-import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
 import type { StudioShareResult } from '@sistemazero/studio'
-import { Button } from '@sistemazero/ui/button'
 import {
-  ArrowLeft,
   Award,
+  Backpack,
   BookOpenText,
   Clapperboard,
   Code2,
@@ -20,13 +19,14 @@ import {
   Headphones,
   ListChecks,
   type LucideIcon,
+  MessageCircle,
   Palette,
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { cn } from '@/lib/cn'
 import { parseLessonBlock } from '@/lib/lesson-block-content'
+import { isLessonPath } from '@/lib/lesson-path'
 import { renderMarkdown } from '@/lib/markdown'
 import type {
   AudioBlock,
@@ -34,12 +34,14 @@ import type {
   EmbedBlock,
   ImageBlock,
   LessonBlockView,
+  MaterialsBlock,
   RichTextBlock,
   StudioBlock,
   VideoBlock,
 } from '@/lib/types'
 import { KidsQuiz } from './kids-quiz'
 import { KidsMascot } from './mascot'
+import { KidsMascotAnimated } from './mascot-rive'
 import { MuralCelebration } from './mural-celebration'
 
 /**
@@ -64,85 +66,10 @@ export function KidsLessonBlocks({ blocks }: { blocks: LessonBlockView[] }) {
 }
 
 /**
- * A aula suporta o "modo criação guiada"? (tem um bloco de VÍDEO **e** um de ESTÚDIO).
- * Só então o botão de ativar aparece — o modo é vídeo à esquerda + estúdio à direita.
+ * Chip de atividade (cores da marca via temas de unidade — mapa literal). Desenho das
+ * telas-modelo (11/09/2026): cor SÓLIDA por tipo de atividade (Assista azul, Responda
+ * laranja, Crie verde), sem o gradiente que o "Crie" usava, e o rótulo em Nunito.
  */
-export function lessonSupportsGuided(blocks: LessonBlockView[]): boolean {
-  return blocks.some((b) => b.kind === 'video') && blocks.some((b) => b.kind === 'studio')
-}
-
-/**
- * MODO CRIAÇÃO GUIADA: tela limpa em overlay — botão "voltar ao modo normal" + o VÍDEO da
- * aula à esquerda e o ESTÚDIO à direita (lado a lado no desktop), pra a criança assistir e ir
- * fazendo junto. Usa o 1º bloco de vídeo + o 1º de estúdio (o estúdio é o MESMO bloco — mesmo
- * rascunho/entrega/Compartilhar). No mobile empilha (vídeo em cima). Renderizado DENTRO do
- * `LessonPlayerProvider` (precisa do contexto do player: viewerId, posição do vídeo etc.).
- *
- * No desktop o split é ARRASTÁVEL (react-resizable-panels, o mesmo divisor de dentro do
- * Estúdio): a criança aumenta o estúdio e encolhe o vídeo (ou o contrário) puxando o
- * divisor; a posição persiste no localStorage (`autoSaveId`). O estúdio tem piso maior
- * (minSize 35) — Blockly fica inusável estreito demais. Cruzar o limiar desktop↔mobile
- * remonta o StudioBlockKids (re-semeia do rascunho local, sem perda — mesmo custo aceito
- * da alternância guiada↔normal); os DOIS layouts nunca montam juntos (mesma chave de
- * rascunho no IndexedDB, ver comentário do modo).
- */
-export function GuidedCreationMode({
-  blocks,
-  lessonTitle,
-  onExit,
-}: {
-  blocks: LessonBlockView[]
-  lessonTitle: string
-  onExit: () => void
-}) {
-  const isDesktop = useIsDesktop()
-  let videoBlock: ReturnType<typeof parseLessonBlock> = null
-  let studioBlock: ReturnType<typeof parseLessonBlock> = null
-  for (const block of blocks) {
-    const parsed = parseLessonBlock(block)
-    if (!videoBlock && parsed?.content.kind === 'video') videoBlock = parsed
-    if (!studioBlock && parsed?.content.kind === 'studio') studioBlock = parsed
-  }
-  if (!videoBlock || !studioBlock) return null
-  if (videoBlock.content.kind !== 'video' || studioBlock.content.kind !== 'studio') return null
-  const video = <Video content={videoBlock.content} />
-  const studio = (
-    <StudioBlockKids block={studioBlock.block} content={studioBlock.content} fillHeight />
-  )
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      <div className="flex shrink-0 items-center gap-3 border-border border-b px-3 py-2">
-        <Button variant="outline" onClick={onExit} className="rounded-full">
-          <ArrowLeft className="size-4" />
-          Voltar ao modo normal
-        </Button>
-        <span className="sz-display truncate text-sm">{lessonTitle}</span>
-      </div>
-      {isDesktop ? (
-        <PanelGroup
-          direction="horizontal"
-          autoSaveId="kids-guided-creation"
-          className="min-h-0 flex-1 overflow-hidden p-3"
-        >
-          <Panel defaultSize={50} minSize={20}>
-            <div className="scrollbar-subtle h-full min-h-0 overflow-y-auto pr-3">{video}</div>
-          </Panel>
-          <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
-          <Panel defaultSize={50} minSize={35}>
-            <div className="flex h-full min-h-0 flex-col pl-3">{studio}</div>
-          </Panel>
-        </PanelGroup>
-      ) : (
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden p-3">
-          <div className="scrollbar-subtle min-h-0 overflow-y-auto">{video}</div>
-          <div className="flex min-h-0 flex-col">{studio}</div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-/** Chip de atividade (cores da marca via temas de unidade — mapa literal). */
 function BlockChip({
   icon: Icon,
   label,
@@ -150,17 +77,17 @@ function BlockChip({
 }: {
   icon: LucideIcon
   label: string
-  themeClass: 'kids-unit-cyan' | 'kids-unit-lime' | 'kids-unit-grad' | 'kids-unit-muted'
+  themeClass: 'kids-unit-cyan' | 'kids-unit-lime' | 'kids-unit-verde' | 'kids-unit-muted'
 }) {
   return (
     <span
       className={cn(
         themeClass,
-        'inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1 font-bold text-xs uppercase tracking-wide',
-        '[font-family:var(--font-display)] [background-color:var(--unit-bg)] [background-image:var(--unit-bg-image)] text-(--unit-fg)',
+        'inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1.5 font-extrabold text-xs uppercase tracking-[0.08em]',
+        '[background-color:var(--unit-bg)] text-(--unit-fg)',
       )}
     >
-      <Icon className="size-3.5" />
+      <Icon className="size-3.5" aria-hidden />
       {label}
     </span>
   )
@@ -174,6 +101,27 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
   switch (content.kind) {
     case 'rich_text':
       return <RichText content={content} />
+    case 'dialogue':
+      return (
+        <div className="kids-unit-cyan flex flex-col gap-3">
+          <BlockChip icon={MessageCircle} label="O Zappy fala" themeClass="kids-unit-cyan" />
+          <DialogueBlockView
+            content={content}
+            mascot={
+              /* ⚠️ MUDO, sempre, seja qual for a pose que a autora escolher. Este
+                 balão é ESTADO: o texto fica na tela enquanto a criança lê, e uma
+                 aula tem vários. Com som, avançar de seção viraria um chime atrás
+                 do outro — e a autora pode marcar a pose `celebrating` aqui, que
+                 na régua geral toca. O movimento fica; o barulho não. */
+              <KidsMascotAnimated
+                expression={content.pose ?? 'speaking'}
+                className="size-16 sm:size-24"
+                sound={false}
+              />
+            }
+          />
+        </div>
+      )
     case 'video':
       return <Video content={content} />
     case 'image':
@@ -207,8 +155,8 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       return <StudioBlockKids block={block} content={content} />
     case 'pinta':
       return (
-        <div className="kids-unit-grad flex flex-col gap-3">
-          <BlockChip icon={Palette} label="Desenhe" themeClass="kids-unit-grad" />
+        <div className="kids-unit-verde flex flex-col gap-3">
+          <BlockChip icon={Palette} label="Desenhe" themeClass="kids-unit-verde" />
           <PintaBlockView
             blockId={block.id}
             content={content}
@@ -218,9 +166,38 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       )
     case 'coming_soon':
       return <ComingSoon content={content} />
+    case 'materials':
+      return <Materials blockId={block.id} blockRevision={block.blockRevision} content={content} />
     default:
       return null
   }
+}
+
+/**
+ * **Materiais complementares.** O que era o `<details>` "Materiais de apoio", pregado no pé de
+ * toda seção, virou um bloco: ele aparece no ponto em que a autora o colocou e a ordem dos
+ * itens é a que ela montou.
+ *
+ * ⚠️ O DESENHO vem do `MaterialsBlockView` do member-shell (um só, para os dois apps) e quem
+ * o veste é o `globals.css` daqui, pelos ganchos `sz-lesson-materials*`. Aqui só entra o chip,
+ * como em todo bloco do kids. O chip é um SUBSTANTIVO (como "Em breve"), não um verbo: material
+ * complementar não é uma atividade a fazer, e prometer uma seria mentira.
+ */
+function Materials({
+  blockId,
+  blockRevision,
+  content,
+}: {
+  blockId: string
+  blockRevision?: string
+  content: MaterialsBlock
+}) {
+  return (
+    <div className="kids-unit-cyan flex flex-col gap-3">
+      <BlockChip icon={Backpack} label="Materiais" themeClass="kids-unit-cyan" />
+      <MaterialsBlockView blockId={blockId} blockRevision={blockRevision} content={content} />
+    </div>
+  )
 }
 
 /**
@@ -232,13 +209,14 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
 function ComingSoon({ content }: { content: ComingSoonBlock }) {
   return (
     <div className="kids-unit-muted flex flex-col gap-3">
-      {/* Chip NEUTRO de propósito: `kids-unit-grad` é o gradiente de "Crie"/"Brinque"
-          (os blocos mais empolgantes) e é o mesmo da pílula "AULA N DE M" logo acima —
-          duas pílulas gêmeas na mesma dobra, com o visual de maior ênfase do sistema
-          num estado em que não há nada a fazer. A moldura tracejada já diz "em obras". */}
+      {/* Chip NEUTRO de propósito: os coloridos são de ATIVIDADE (Assista, Responda,
+          Crie), e dar a um deles o estado em que não há nada a fazer seria prometer
+          uma. A moldura tracejada já diz "em obras". */}
       <BlockChip icon={Hammer} label="Em breve" themeClass="kids-unit-muted" />
-      <div className="flex flex-col items-center gap-3 rounded-3xl border-(--unit) border-4 border-dashed bg-card px-6 py-10 text-center">
-        <KidsMascot expression="thinking" className="size-20" />
+      <div className="flex flex-col items-center gap-3 rounded-2xl border-(--unit) border-2 border-dashed bg-card px-6 py-10 text-center">
+        {/* Dormindo, não pensativo: aqui não há dúvida a resolver, a aula ainda
+            não existe. Pensativo é para erro e carregamento. */}
+        <KidsMascot expression="sleeping" className="size-20" />
         {/* O título precisa ser verdade mesmo quando a autora escreve o recado dela
             ("essa aula chega em setembro") — por isso não promete "quase pronta". */}
         <p className="sz-display text-lg">Essa aula ainda está sendo preparada</p>
@@ -280,8 +258,8 @@ function StudioBlockKids({
     router.refresh()
   }
   return (
-    <div className={cn('kids-unit-grad flex flex-col gap-3', fillHeight && 'min-h-0 flex-1')}>
-      <BlockChip icon={Code2} label="Crie" themeClass="kids-unit-grad" />
+    <div className={cn('kids-unit-verde flex flex-col gap-3', fillHeight && 'min-h-0 flex-1')}>
+      <BlockChip icon={Code2} label="Crie" themeClass="kids-unit-verde" />
       <StudioBlockView
         blockId={block.id}
         content={content}
@@ -297,95 +275,39 @@ function StudioBlockKids({
 
 // ── rich_text: markdown SIMPLES renderizado de forma controlada (sem HTML cru) ─
 function RichText({ content }: { content: RichTextBlock }) {
+  // Um link para o "Como fazer" escrito no texto da aula leva o caminho DESTA aula de volta
+  // (`?voltar=`), para o tutorial oferecer "Voltar para a aula". Fora de aula, sem `voltar`.
+  const pathname = usePathname()
   const markdown = content.markdown ?? ''
   if (!markdown) return null
-  return <div className="lesson-prose">{renderMarkdown(markdown)}</div>
+  return (
+    <div className="lesson-prose">
+      {renderMarkdown(markdown, {
+        ...(isLessonPath(pathname) ? { helpReturnPath: pathname } : {}),
+      })}
+    </div>
+  )
 }
 
 // ── video: URL canônica por provider (nunca interpola o src cru em iframe) ────
-function youtubeId(src: string): string | null {
-  const m = src.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,20})/,
-  )
-  return m?.[1] ?? null
-}
-
-function vimeoId(src: string): string | null {
-  const m = src.match(/vimeo\.com\/(?:video\/)?(\d{6,12})/)
-  return m?.[1] ?? null
-}
-
-/** Moldura kids dos players (borda grossa colorida + cantos bem redondos). */
+/** Moldura kids dos players: só os cantos redondos. O vídeo já mora num cartão
+ *  branco (telas-modelo de 11/09/2026), e o fio colorido com a sombra dura de antes
+ *  sobrava ali dentro; a largura que ele comia volta para o vídeo. */
 function VideoFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className="kids-unit-cyan flex flex-col gap-3">
       <BlockChip icon={Clapperboard} label="Assista" themeClass="kids-unit-cyan" />
-      <div className="overflow-hidden rounded-3xl border-(--unit) border-4 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
-        {children}
-      </div>
+      <div className="overflow-hidden rounded-2xl">{children}</div>
     </div>
   )
 }
 
 function Video({ content }: { content: VideoBlock }) {
   if (!content.src) return null
-  if (content.provider === 'youtube') {
-    const id = youtubeId(content.src)
-    if (!id) return <UnsupportedBlock label="Vídeo indisponível" />
-    return (
-      <VideoFrame>
-        <div className="aspect-video w-full bg-black">
-          <iframe
-            src={`https://www.youtube-nocookie.com/embed/${id}`}
-            title="Vídeo da aula"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="h-full w-full"
-          />
-        </div>
-      </VideoFrame>
-    )
-  }
-  if (content.provider === 'vimeo') {
-    const id = vimeoId(content.src)
-    if (!id) return <UnsupportedBlock label="Vídeo indisponível" />
-    return (
-      <VideoFrame>
-        <VimeoLessonVideo vimeoId={id} />
-      </VideoFrame>
-    )
-  }
-  // `file`/`mux` (URL direta de vídeo) → player nativo.
   return (
     <VideoFrame>
-      <video
-        controls
-        preload="metadata"
-        poster={content.posterUrl}
-        className="aspect-video w-full bg-black"
-      >
-        <source src={content.src} />
-        <track kind="captions" />
-      </video>
+      <LessonVideo content={content} />
     </VideoFrame>
-  )
-}
-
-/**
- * Vimeo com o player rico (SDK): watermark do aluno, fullscreen custom, retomar
- * posição e auto-conclusão por % assistido — tudo vindo do LessonPlayerContext.
- */
-function VimeoLessonVideo({ vimeoId }: { vimeoId: string }) {
-  const player = useLessonPlayer()
-  return (
-    <VimeoPlayer
-      vimeoId={vimeoId}
-      watermark={player?.viewerWatermark ?? null}
-      initialPositionSeconds={player?.initialPositionSeconds ?? null}
-      onProgress={player?.onVideoProgress}
-      onFlush={player?.onVideoFlush}
-      onReachedThreshold={player?.onVideoReachedThreshold}
-    />
   )
 }
 
@@ -395,7 +317,7 @@ function ImageView({ content }: { content: ImageBlock }) {
     <figure className="kids-unit-lime">
       {/* aspect-ratio reserva a altura ANTES do load → sem layout shift (CLS) empurrando
           o texto/botão "Concluir aula" enquanto a imagem baixa no tablet da criança. */}
-      <div className="aspect-[4/3] w-full overflow-hidden rounded-3xl border-(--unit) border-4 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
+      <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={content.url}
@@ -417,7 +339,7 @@ function ImageView({ content }: { content: ImageBlock }) {
 function Audio({ content }: { content: AudioBlock }) {
   if (!content.url) return null
   return (
-    <div className="kids-unit-lime flex flex-col gap-3 rounded-3xl border-2 border-border bg-card p-4 shadow-[0_4px_0_var(--border)]">
+    <div className="kids-unit-lime flex flex-col gap-3">
       <BlockChip icon={Headphones} label="Escute" themeClass="kids-unit-lime" />
       {/* biome-ignore lint/a11y/useMediaCaption: áudio de aula sem faixa de legenda disponível */}
       <audio controls preload="metadata" src={content.url} className="w-full" />
@@ -432,9 +354,9 @@ function Audio({ content }: { content: AudioBlock }) {
 function Embed({ content }: { content: EmbedBlock }) {
   if (!content.html) return <UnsupportedBlock label="Conteúdo interativo não suportado" />
   return (
-    <div className="kids-unit-grad flex flex-col gap-3">
-      <BlockChip icon={Gamepad2} label="Brinque" themeClass="kids-unit-grad" />
-      <div className="overflow-hidden rounded-3xl border-(--unit) border-4 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
+    <div className="kids-unit-verde flex flex-col gap-3">
+      <BlockChip icon={Gamepad2} label="Brinque" themeClass="kids-unit-verde" />
+      <div className="overflow-hidden rounded-2xl">
         <iframe
           srcDoc={content.html}
           title="Conteúdo interativo"
@@ -448,7 +370,7 @@ function Embed({ content }: { content: EmbedBlock }) {
 
 function UnsupportedBlock({ label }: { label: string }) {
   return (
-    <div className="flex items-center justify-center rounded-3xl border-2 border-border border-dashed py-10 text-muted-foreground text-sm">
+    <div className="flex items-center justify-center rounded-2xl border-2 border-border border-dashed py-10 text-muted-foreground text-sm">
       {label}
     </div>
   )

@@ -54,8 +54,11 @@ const EnvSchema = z
     S2S_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
     // ── Produto / links públicos ─────────────────────────────────────────────
-    /** Oferta (catálogo) concedida pela bolsa — a MESMA do comprador. */
-    SCHOLARSHIP_OFFER_SLUG: z.string().min(1).default('desafio-primeiro-jogo'),
+    /** Curso kids concedido exclusivamente por indicação válida. */
+    SCHOLARSHIP_COURSE_SLUG: z
+      .string()
+      .regex(/^[a-z0-9-]{1,100}$/)
+      .default('cade-todo-mundo'),
     /** Base pública do funil (landings /bolsa/<code> e /embaixador/<token>). */
     FUNNEL_PUBLIC_URL: z.string().url().default('http://localhost:4321'),
     /** Base do app kids (link de definir senha do bolsista — a bolsa v1 é kids). */

@@ -1,5 +1,6 @@
 import type { FunnelRepo, Lead } from '../db/repo'
 import type { GatewayClient, GrantMembersInput } from '../lib/gateway-client'
+import { parsePurchasedOfferSnapshot } from './purchased-offer-snapshot'
 
 export interface GrantMembersDeps {
   gateway: GatewayClient
@@ -11,7 +12,7 @@ export interface GrantMembersDeps {
    */
   resolveOffer: (funnel: string | null) => { offerSlug: string }
   /** Marca a concessão concluída (one-shot) — poll repetido após pago não re-chama o members. */
-  repo: Pick<FunnelRepo, 'setMembersGranted' | 'accessPeriodForPayment'>
+  repo: Pick<FunnelRepo, 'setMembersGranted' | 'accessPeriodForPayment' | 'paymentContext'>
   log?: (msg: string, meta?: Record<string, unknown>) => void
 }
 
@@ -42,6 +43,18 @@ async function buildGrantInput(
     paymentId,
     paidAt: paidAtIso === null ? undefined : (paidAtIso ?? leadPaidAt),
   }
+  const paymentContext = await deps.repo.paymentContext(paymentId)
+  const rawSnapshot = paymentContext?.offerSnapshot ?? null
+  const purchased = parsePurchasedOfferSnapshot(rawSnapshot)
+  if (rawSnapshot !== null && !purchased) throw new GrantRetryError(502)
+  if (purchased) {
+    input.offerRef = purchased.offerSlug
+    input.accessPolicy = {
+      mode: purchased.accessMode,
+      durationValue: purchased.accessDurationValue,
+      durationUnit: purchased.accessDurationUnit,
+    }
+  }
   if (lead.subscriptionId) {
     // ASSINATURA recorrente: o members cria/estende com validade = ciclo + carência.
     input.subscription = {
@@ -50,7 +63,8 @@ async function buildGrantInput(
     }
     return input
   }
-  // Compra por PERÍODO (anual à vista via Pix/boleto): validade fixa + carência.
+  // Compatibilidade para cobranças anteriores ao snapshot comercial versionado.
+  if (purchased) return input
   const months = await deps.repo.accessPeriodForPayment(paymentId)
   if (months && months > 0) input.accessPeriodMonths = months
   return input

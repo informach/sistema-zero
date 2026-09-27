@@ -38,9 +38,17 @@ const isDev = process.env.NODE_ENV !== 'production'
  * mantém a CSP estrita e SEM WASM. `connect-src https:`/`worker-src blob:` já cobrem.
  */
 function buildCsp({ pro }: { pro: boolean }): string {
+  // ⚠️ `'wasm-unsafe-eval'` também na CSP ESTRITA (09/2026): o mascote Zappy animado
+  // (Rive) é WebAssembly, e sem esta keyword o Chrome recusa a COMPILAÇÃO do módulo —
+  // `https:` no script-src não cobre WASM, é keyword à parte. A recusa é SILENCIOSA:
+  // sem ela o Zappy simplesmente nunca sai do WebP e nada acusa no lugar. É o
+  // afrouxamento mais barato que existe (deixa compilar WASM, NÃO libera `eval` de
+  // JS), mas o `iframe srcDoc` dos blocos interativos HERDA a CSP: o conteúdo autoral
+  // ganha WASM junto. Aceito porque a fronteira real do embed é o sandbox SEM
+  // allow-same-origin, e o script-src já carrega `'unsafe-inline'` + `https:`.
   const scriptSrc = pro
     ? "script-src 'self' 'unsafe-inline' data: https: 'unsafe-eval' 'wasm-unsafe-eval' blob:"
-    : `script-src 'self' 'unsafe-inline' data: https:${isDev ? " 'unsafe-eval'" : ''}`
+    : `script-src 'self' 'unsafe-inline' data: https: 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ''}`
   // `blob:` p/ o preview/iframe do bloco `studio`; no pro, + os iframes do WebContainer:
   // o dev-server (`*.webcontainer-api.io`) E o iframe de BOOT (`stackblitz.com`/
   // `*.staticblitz.com`) — sem este último o WebContainer nunca boota (o console
@@ -192,6 +200,22 @@ const nextConfig: NextConfig = {
         // hashados. Um TTL curto reduz revalidações repetidas sem prender uma correção de arte por
         // um ano no browser da criança. (Segurança + CSP estrita já vêm das regras acima.)
         source: '/avatar3d/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
+      },
+      {
+        // ⚠️ O WASM do Rive (mascote Zappy animado) tem 1,8 MB. Sem esta linha o Next
+        // serve `public/` sem cache útil e a criança rebaixa tudo A CADA VISITA — o
+        // que anularia o prefetch ocioso do player de aula, que existe justamente
+        // para o download não atrasar a celebração. Nome estável e não hashado, então
+        // o TTL é o mesmo dia do avatar 3D, pelo mesmo motivo: um bump do pacote
+        // reescreve o arquivo no lugar, e um ano de cache prenderia a versão velha.
+        source: '/rive/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
+      },
+      {
+        // As poses do Zappy (WebP + os `.riv`, que carregam o áudio embutido) mudam
+        // de conteúdo sem mudar de nome quando ela reexporta do editor — mesmo TTL.
+        source: '/zappy/:path*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
       },
     ]

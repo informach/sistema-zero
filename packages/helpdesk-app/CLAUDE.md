@@ -73,6 +73,13 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 3. **Réplica única**: single-flight do refresh em `globalThis` — não escalar horizontalmente.
 4. Primitivos de UI vêm de **`@sistemazero/ui`** (exige `transpilePackages` +
    `@source "../../../ui/src"` no globals.css). Nunca copiar primitivo localmente.
+   ⭐ **As CORES também (17/09/2026):** o `globals.css` importa `@sistemazero/ui/console.css` e
+   NÃO tem bloco `:root`/`.dark` próprio — os três consoles (admin, helpdesk-app, marketing-app)
+   carregavam as mesmas ~330 linhas copiadas. Token de console novo nasce no
+   `packages/ui/src/tokens/console.ts` e sai de `bun run tokens:gen`. ⚠️ UM tema só: sem cor por
+   pessoa e **sem claro/escuro** (o `next-themes` saiu). O `@custom-variant dark` FICA no
+   `globals.css`, senão os `dark:` que o `@sistemazero/ui` ainda traz passariam a seguir o
+   sistema operacional.
 5. **Copy da UI na voz sistemazero**: sem travessão, sem exclamação, sem jargão de IA.
 6. Enums, views e parser de citações vêm de **`@sistemazero/helpdesk-contracts`**. Labels e cores
    específicas do console permanecem em `lib/categories.ts`; não replique contratos localmente.
@@ -83,7 +90,7 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 ```
 src/
   app/
-    layout.tsx · globals.css (tokens + @source ui) · not-found.tsx
+    layout.tsx · globals.css (@import @sistemazero/ui/console.css + @source ui) · not-found.tsx
     login/                     página + form (client)
     (app)/                     shell autenticado: layout gate + Topbar + AppSidebar
       page.tsx + painel-client.tsx + volume-chart.tsx   Painel (stats via

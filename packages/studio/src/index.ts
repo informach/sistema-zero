@@ -48,7 +48,6 @@ export {
   SERVER_BLOCK_CATALOG,
   type ServerBlockCatalogEntry,
 } from './blockly/blockCatalog'
-export { ESSENTIAL_2D_ALLOW_BLOCKS, ESSENTIAL_2D_BLOCK_TYPES } from './career/blockProfiles'
 export {
   createProProject,
   listProTemplates,
@@ -71,7 +70,8 @@ export {
   type CaptureCoverOptions,
   captureCoverFromProject,
 } from './cover/coverCapture'
-export { createLocalPersistenceAdapter } from './persistence/local'
+export { ESSENTIAL_2D_ALLOW_BLOCKS, ESSENTIAL_2D_BLOCK_TYPES } from './journey/blockProfiles'
+export { replaceLocalProject } from './persistence/local'
 export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/types'
 export type { PreviewSecurityProfile } from './preview/csp'
 export {
@@ -80,12 +80,14 @@ export {
   renderProjectToPreviewDocAsync,
 } from './preview/renderProject'
 export {
+  adoptCloudProjectThumbs,
   discardImportedProjectSnapshot,
   importProjectSnapshot,
   listProjectSummariesLightForCloud,
   loadProjectAssetsSnapshotForCloud,
   loadProjectSnapshotForCloud,
   loadProjectSummaryForCloud,
+  loadProjectThumbForCloud,
   restoreProjectFromCloud,
   validateCloudProjectSnapshot,
 } from './projects/importSnapshot'
@@ -108,6 +110,11 @@ export {
   setStudioCloudMirror,
 } from './state/persistence'
 export type { StudioLimits } from './state/projectStore'
+export {
+  createLocalPersistenceAdapter,
+  prepareProjectForHost,
+  sanitizeProjectForHost,
+} from './state/projectStore'
 export type {
   ActivityCheck,
   ActivityCheckBase,
@@ -126,9 +133,12 @@ export type {
 } from './studio/activity'
 export type { StudioAIConfig, StudioFeatures } from './studio/config'
 // Chrome do HOST na Topbar/lista (07/09/2026): o kids embrulha `<ProjectList>`, `<StudioEditor>`
-// e o editor PRO neste Provider com o botão do menu lateral + o selo "Guardado na sua conta".
+// e o editor PRO neste Provider com o botão do menu lateral + o selo "Guardado na sua conta"
+// (e, desde 11/09, a seta "← Criar" e a nuvem da conta, que só a lista desenha).
 export {
   type StudioHostChrome,
+  type StudioHostChromeAccount,
+  type StudioHostChromeBack,
   type StudioHostChromeMenu,
   StudioHostChromeProvider,
   type StudioHostChromeStatus,
@@ -169,6 +179,7 @@ export type {
   StudioTutorBlockReference,
   StudioTutorConfig,
   StudioTutorFeedbackInput,
+  StudioTutorHelpReference,
   StudioTutorHistoryMessage,
   StudioTutorLessonReference,
   StudioTutorProjectContext,

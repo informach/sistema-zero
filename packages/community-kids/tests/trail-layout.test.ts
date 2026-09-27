@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { balloonLabel, buildTrail } from '../src/components/kids/trail-layout'
+import { balloonLabel, buildTrail, trailArtPlacement } from '../src/components/kids/trail-layout'
 import type { CourseDetailView, LessonOutlineView, ModuleOutlineView } from '../src/lib/types'
 
 function lesson(id: string, completed: boolean, locked = false): LessonOutlineView {
@@ -15,7 +15,21 @@ function lesson(id: string, completed: boolean, locked = false): LessonOutlineVi
 }
 
 function moduleOf(id: string, lessons: LessonOutlineView[]): ModuleOutlineView {
-  return { id, title: `Módulo ${id}`, summary: null, sortOrder: 0, lessons }
+  return {
+    id,
+    title: `Módulo ${id}`,
+    summary: null,
+    sortOrder: 0,
+    lessons,
+    // O estado do baú vem do SERVIDOR desde 09/2026 (a criança abre com um
+    // clique). Aqui a fixture só precisa dizer que ele existe.
+    chest: {
+      unlocked: lessons.length > 0 && lessons.every((l) => l.completed),
+      claimed: false,
+      xp: 25,
+      coins: 15,
+    },
+  }
 }
 
 function course(modules: ModuleOutlineView[]): CourseDetailView {
@@ -42,7 +56,30 @@ function course(modules: ModuleOutlineView[]): CourseDetailView {
 }
 
 describe('buildTrail', () => {
-  test('offsets seguem o padrão cíclico com índice GLOBAL (aulas E baús na sequência)', () => {
+  test('arte escolhe lado E linha com mais espaço; alternância só desempata', () => {
+    const units = buildTrail(
+      course([
+        moduleOf('m1', [lesson('a', false), lesson('b', false)]),
+        moduleOf('m2', [lesson('c', false), lesson('d', false)]),
+        moduleOf('m3', [lesson('e', false), lesson('f', false), lesson('g', false)]),
+      ]),
+    )
+
+    expect(trailArtPlacement(units[0]!, 'left')).toEqual({ side: 'left', row: 1 })
+    // Mesmo preferindo a direita, esta unidade tem os nós todos à direita: a
+    // arte deve repetir o lado esquerdo, não obedecer a uma alternância cega.
+    expect(trailArtPlacement(units[1]!, 'right')).toEqual({ side: 'left', row: 0 })
+    expect(trailArtPlacement(units[2]!, 'left')).toEqual({ side: 'right', row: 2 })
+
+    const symmetric = {
+      ...units[0]!,
+      nodes: [{ ...units[0]!.nodes[0]!, offset: 1 }],
+      chest: { offset: -1 },
+    }
+    expect(trailArtPlacement(symmetric, 'right')).toEqual({ side: 'right', row: 0 })
+  })
+
+  test('offsets formam uma senoide contínua com índice GLOBAL (aulas E baús)', () => {
     const c = course([
       moduleOf('m1', [lesson('a', true), lesson('b', true), lesson('c', false)]),
       moduleOf('m2', [
@@ -52,25 +89,28 @@ describe('buildTrail', () => {
         lesson('g', false),
         lesson('h', false),
         lesson('i', false),
+        lesson('j', false),
+        lesson('k', false),
       ]),
     ])
     // O baú de fim de unidade TAMBÉM avança o índice do serpenteado.
     const offsets = buildTrail(c).flatMap((u) => [...u.nodes.map((n) => n.offset), u.chest.offset])
-    expect(offsets).toEqual([0, 1, 2, 1, 0, -1, -2, -1, 0, 1, 2])
-    // Colunas consecutivas sempre diferem de 1 (conectores diagonais).
-    for (let i = 1; i < offsets.length; i++) {
-      expect(Math.abs((offsets[i] as number) - (offsets[i - 1] as number))).toBe(1)
-    }
+    expect(offsets).toEqual([0, 1, 1.73, 2, 1.73, 1, 0, -1, -1.73, -2, -1.73, -1, 0])
+    expect(offsets.every((offset) => Math.abs(offset) <= 2)).toBe(true)
   })
 
-  test('baú abre só com TODAS as aulas do módulo concluídas', () => {
+  test('o baú tem POSIÇÃO no serpenteado; abrir ou não é assunto do servidor', () => {
+    // Antes o layout derivava `opened` do outline. Desde que o baú virou clicável
+    // isso vem do servidor (`module.chest`): derivar aqui não sobreviveria ao F5,
+    // porque o cliente não tem como saber que a criança já abriu.
     const c = course([
       moduleOf('m1', [lesson('a', true), lesson('b', true)]),
       moduleOf('m2', [lesson('c', true), lesson('d', false)]),
     ])
     const units = buildTrail(c)
-    expect(units[0]?.chest).toMatchObject({ opened: true })
-    expect(units[1]?.chest).toMatchObject({ opened: false })
+    expect(Object.keys(units[0]?.chest ?? {})).toEqual(['offset'])
+    expect(units[0]?.module.chest?.unlocked).toBe(true)
+    expect(units[1]?.module.chest?.unlocked).toBe(false)
   })
 
   test('módulo SEM aula publicada não vira unidade (nem banner, nem baú)', () => {
@@ -94,9 +134,9 @@ describe('buildTrail', () => {
     const units = buildTrail(c)
     // Tema pelo índice do que APARECE: a 2ª unidade visível é a 2ª cor, não a 3ª.
     expect(units.map((u) => u.theme)).toEqual(['cyan', 'lime'])
-    // E as colunas seguem contíguas: aulas + baú de m1, depois m3.
+    // E a curva segue contínua: aulas + baú de m1, depois m3.
     const offsets = units.flatMap((u) => [...u.nodes.map((n) => n.offset), u.chest.offset])
-    expect(offsets).toEqual([0, 1, 2, 1, 0])
+    expect(offsets).toEqual([0, 1, 1.73, 2, 1.73])
   })
 
   test('curso inteiro sem aula publicada não desenha trilha nenhuma', () => {

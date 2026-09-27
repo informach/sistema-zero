@@ -34,4 +34,11 @@ describe('journal de migrations', () => {
       [...entries].sort((a, b) => a.when - b.when).map((e) => e.idx),
     )
   })
+
+  it('não agenda a remoção prematura da coluna antiga', () => {
+    // A última migração pode avançar; a trava recai sobre a migração destrutiva.
+    // Remover esta trava só depois que o Members com a 0090 estiver estável
+    // em produção e os pods antigos tiverem saído.
+    expect(entries.some((entry) => entry.tag === '0091_sai_o_apoio_das_secoes')).toBe(false)
+  })
 })

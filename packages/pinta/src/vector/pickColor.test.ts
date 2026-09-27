@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { shapeBounds } from './geometry'
 import type { VectorGradient, VectorShape } from './model'
-import { colorAtPoint, hitShapeAt, pickColorAt } from './pickColor'
+import { colorAtPoint, hitShapeAt, imageUvAt, pickColorAt } from './pickColor'
 
 type Rect = Extract<VectorShape, { type: 'rect' }>
 
@@ -97,6 +97,33 @@ describe('hitShapeAt (a forma sob o toque)', () => {
     expect(hitShapeAt([girado], { x: 50, y: -30 })?.id).toBe('g')
     expect(hitShapeAt([girado], { x: 90, y: 10 })).toBeNull()
   })
+
+  it('forma com âncora livre é tocada onde gira em torno dela', () => {
+    const girado = rect('g-pivo', [10, 0, 10, 10], {
+      rotation: 90,
+      rotationPivot: { x: 0, y: 0 },
+    })
+    expect(hitShapeAt([girado], { x: -5, y: 15 })?.id).toBe('g-pivo')
+    expect(hitShapeAt([girado], { x: 15, y: 5 })).toBeNull()
+  })
+
+  it('ignora a fonte da máscara e respeita o recorte ao pegar cor', () => {
+    const rosto = rect('rosto', [0, 0, 100, 100], { maskId: 'janela' })
+    const janela: VectorShape = {
+      id: 'janela',
+      type: 'ellipse',
+      cx: 50,
+      cy: 50,
+      rx: 10,
+      ry: 10,
+      fill: '#00a0c8',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    }
+    expect(pickColorAt([rosto, janela], { x: 50, y: 50 })?.shape.id).toBe('rosto')
+    expect(pickColorAt([rosto, janela], { x: 10, y: 10 })).toBeNull()
+  })
 })
 
 describe('colorAtPoint (qual cor sai da forma)', () => {
@@ -134,7 +161,7 @@ describe('colorAtPoint (qual cor sai da forma)', () => {
     expect(colorAtPoint(pincel, { x: 5, y: 5 })).toBe('#78dc52')
   })
 
-  it('figura de pixel art não tem uma cor só (o toque acha a forma, mas não a cor)', () => {
+  it('figura de pixel art não tem uma cor só AQUI (sem DOM não se lê pixel)', () => {
     const figura: VectorShape = {
       id: 'i',
       type: 'image',
@@ -209,6 +236,22 @@ describe('colorAtPoint (qual cor sai da forma)', () => {
     expect(colorAtPoint(forma, { x: 5, y: 5 })).toBe('#eeeeee')
   })
 
+  it('conta-gotas acompanha o brilho redondo deslocado e o novo alcance', () => {
+    const forma = rect('offset', [0, 0, 100, 100], {
+      fill: { ...radial, center: { x: 0.2, y: 0.2 }, radius: 0.3 },
+    })
+    expect(colorAtPoint(forma, { x: 20, y: 20 })).toBe('#111111')
+    expect(colorAtPoint(forma, { x: 50, y: 50 })).toBe('#eeeeee')
+  })
+
+  it('conta-gotas acompanha as pontas reposicionadas do linear', () => {
+    const forma = rect('endpoints', [0, 0, 100, 100], {
+      fill: { ...linear(0), start: { x: 0.5, y: 0 }, end: { x: 0.5, y: 1 } },
+    })
+    expect(colorAtPoint(forma, { x: 50, y: 10 })).toBe('#111111')
+    expect(colorAtPoint(forma, { x: 50, y: 90 })).toBe('#eeeeee')
+  })
+
   it('degradê numa forma GIRADA segue o que a criança vê', () => {
     // Deitado (0°) num retângulo girado 90°: na tela o começo fica EM CIMA e o
     // fim EMBAIXO. Sem desfazer a rotação, o ponto de cima cairia no meio (0,5)
@@ -240,5 +283,64 @@ describe('hitShapeAt: traço vazado do pincel', () => {
     expect(hitShapeAt([traco], { x: 50, y: 12 })).toBe(traco)
     expect(hitShapeAt([traco], { x: 50, y: 16 }, 3)).toBe(traco)
     expect(hitShapeAt([traco], { x: 50, y: 20 }, 3)).toBeNull()
+  })
+})
+
+describe('onde o dedo caiu DENTRO da figura (imageUvAt)', () => {
+  /** Caixa 100..180 × 50..90: RETANGULAR de propósito (80 × 40), senão trocar
+   *  os eixos passaria em todas as asserções. */
+  const figura = (over: Record<string, unknown> = {}): Extract<VectorShape, { type: 'image' }> =>
+    ({
+      id: 'i',
+      type: 'image',
+      x: 100,
+      y: 50,
+      w: 80,
+      h: 40,
+      src: 'data:image/png;base64,AAAA',
+      fill: 'none',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+      ...over,
+    }) as Extract<VectorShape, { type: 'image' }>
+
+  it('regra de três simples: a imagem PREENCHE a caixa', () => {
+    expect(imageUvAt(figura(), { x: 100, y: 50 })).toEqual({ x: 0, y: 0 })
+    expect(imageUvAt(figura(), { x: 140, y: 70 })).toEqual({ x: 0.5, y: 0.5 })
+    expect(imageUvAt(figura(), { x: 180, y: 90 })).toEqual({ x: 1, y: 1 })
+  })
+
+  it('⭐ os dois EIXOS não se confundem (a asserção fora da diagonal)', () => {
+    // Trocar u por v devolveria { x: 0.75, y: 0.25 } e passaria em todo o resto
+    // deste describe, que cai inteiro na diagonal.
+    expect(imageUvAt(figura(), { x: 120, y: 80 })).toEqual({ x: 0.25, y: 0.75 })
+  })
+
+  it('fora da caixa é null (o vazio em volta não é pixel da figura)', () => {
+    expect(imageUvAt(figura(), { x: 99, y: 70 })).toBeNull()
+    expect(imageUvAt(figura(), { x: 140, y: 91 })).toBeNull()
+  })
+
+  it('a FOLGA do toque entra e o resultado é CLAMPADO na borda', () => {
+    // O `hitShapeAt` acerta a figura num anel de `10/zoom` em volta dela; sem a
+    // mesma folga aqui, mirar a beirada respondia "fora da figura".
+    expect(imageUvAt(figura(), { x: 94, y: 70 }, 10)).toEqual({ x: 0, y: 0.5 })
+    expect(imageUvAt(figura(), { x: 186, y: 95 }, 10)).toEqual({ x: 1, y: 1 })
+    // A folga não é infinita.
+    expect(imageUvAt(figura(), { x: 94, y: 70 }, 2)).toBeNull()
+  })
+
+  it('figura GIRADA: o ponto volta ao espaço local antes da conta', () => {
+    // 90° em torno do centro (140, 70): o canto de cima à esquerda da imagem
+    // está em cima à direita da caixa.
+    expect(imageUvAt(figura({ rotation: 90 }), { x: 160, y: 30 })).toEqual({ x: 0, y: 0 })
+  })
+
+  it('caixa degenerada não estoura a conta (guarda defensiva)', () => {
+    // ⚠️ `w <= 0` é INALCANÇÁVEL pelo produto: o `sanitizeVectorShape` descarta a
+    // figura, o `clampFactor` do resize usa a magnitude e o espelhar reposiciona
+    // o `x`. A guarda existe para um `.pinta.json` estranho não virar NaN.
+    expect(imageUvAt(figura({ w: 0 }), { x: 100, y: 50 })).toBeNull()
   })
 })

@@ -14,17 +14,24 @@ import {
   entitlements,
   gamificationProfiles,
   leagueMembership,
+  learningAttempts,
+  lessonBlockProgress,
   lessonCompletions,
+  lessonEvidence,
+  lessonNavigation,
   lessonProgress,
+  lessonSectionProgress,
   missionClaims,
   parentReportPrefs,
   parentReportsSent,
   pensaProjects,
+  profilePreferences,
   quizAttempts,
   renewalRemindersSent,
   roomInventory,
   roomState,
   studioSubmissions,
+  teacherBroadcastRecipients,
   teacherThreads,
   userBadges,
   xpEvents,
@@ -64,6 +71,17 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
   }): Promise<void> {
     if (userIds.length === 0) return
     await this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`members-account:${accountId}`}, 0))`,
+      )
+      await tx
+        .delete(teacherBroadcastRecipients)
+        .where(
+          or(
+            eq(teacherBroadcastRecipients.accountId, accountId),
+            inArray(teacherBroadcastRecipients.profileId, userIds),
+          ),
+        )
       // Usa o mesmo lock das reservas/commits, em ordem estável para evitar
       // deadlock entre duas purgas. Assim uma operação que já começou termina
       // antes do DELETE; as seguintes só prosseguem depois de enxergar a cerca.
@@ -72,6 +90,9 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
           sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${ownerId}`}, 0))`,
         )
       }
+      await tx
+        .delete(lessonEvidence)
+        .where(or(eq(lessonEvidence.accountId, accountId), inArray(lessonEvidence.userId, userIds)))
       // Cerca novas reservas e agenda a limpeza final antes de apagar o índice.
       // Tudo commita junto: nunca perdemos as chaves sem deixar um job durável.
       await tx
@@ -113,6 +134,32 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
           .where(inArray(renewalRemindersSent.entitlementId, entitlementIds))
       }
 
+      await tx
+        .delete(lessonSectionProgress)
+        .where(
+          or(
+            inArray(lessonSectionProgress.userId, userIds),
+            eq(lessonSectionProgress.accountId, accountId),
+          ),
+        )
+      await tx
+        .delete(lessonNavigation)
+        .where(
+          or(inArray(lessonNavigation.userId, userIds), eq(lessonNavigation.accountId, accountId)),
+        )
+      await tx
+        .delete(lessonBlockProgress)
+        .where(
+          or(
+            inArray(lessonBlockProgress.userId, userIds),
+            eq(lessonBlockProgress.accountId, accountId),
+          ),
+        )
+      await tx
+        .delete(learningAttempts)
+        .where(
+          or(inArray(learningAttempts.userId, userIds), eq(learningAttempts.accountId, accountId)),
+        )
       // Tabelas só com `user_id`.
       await tx.delete(entitlements).where(inArray(entitlements.userId, userIds))
       await tx.delete(lessonCompletions).where(inArray(lessonCompletions.userId, userIds))
@@ -125,6 +172,14 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx.delete(avatarInventory).where(inArray(avatarInventory.userId, userIds))
       await tx.delete(missionClaims).where(inArray(missionClaims.userId, userIds))
       await tx.delete(roomInventory).where(inArray(roomInventory.userId, userIds))
+      await tx
+        .delete(profilePreferences)
+        .where(
+          or(
+            inArray(profilePreferences.userId, userIds),
+            eq(profilePreferences.accountId, accountId),
+          ),
+        )
       // Projetos Pensa e conversas do professor pertencem ao perfil. Seus filhos
       // têm FK CASCADE (ciclos/artefatos/tarefas e mensagens, respectivamente).
       await tx

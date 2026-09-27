@@ -13,8 +13,10 @@ if (audience !== 'pro' && audience !== 'kids') return new Response(null, { statu
 const funis = Object.values(FUNNELS).filter((x) => x.audience === audience)
 const first = funis[0]
 if (first) {
-  const entry = first.steps.quiz ? `${first.basePath}/quiz` : `${first.basePath}/oferta`
-  return Astro.redirect(entry, 302)
+  return Astro.redirect(
+    first.steps.quiz ? `${first.basePath}/quiz` : `${first.basePath}/oferta`,
+    302,
+  )
 }
 
 // Área ainda sem produto → placeholder "em breve" (defensivo: hoje pro e kids têm funil).

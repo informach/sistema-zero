@@ -11,6 +11,7 @@ import {
 import { AdminLoginSchema } from '../lib/admin-schema'
 import type { AuthTokens, AuthUser, GatewayClient } from '../lib/gateway-client'
 import { json, jsonError, safeJson } from '../lib/http'
+import { sanitizeEventCode } from '../lib/lead-attribution'
 
 export interface AdminDeps {
   repo: FunnelRepo
@@ -57,6 +58,19 @@ function funnelParam(params: URLSearchParams): string | undefined {
   const raw = params.get('funnel')?.trim()
   return raw && isFunnelKey(raw) ? raw : undefined
 }
+
+const EVENT_REPORT_STEPS = [
+  ['view_landing', 'QR/visitas'],
+  ['complete_quiz', 'Quiz concluído'],
+  ['view_offer', 'Oferta vista'],
+  ['start_checkout', 'Checkout iniciado'],
+  ['payment_approved', 'Pagamento aprovado'],
+  ['account_activated', 'Conta ativada'],
+  ['challenge_started', 'Desafio iniciado'],
+  ['challenge_day_completed', 'Dia 1 concluído'],
+  ['challenge_completed', 'Desafio concluído'],
+  ['community_subscription_approved', 'Comunidade assinada'],
+] as const
 
 /**
  * POST /api/admin/login — autentica no auth (IdP) via gateway e abre a sessão. Só
@@ -130,13 +144,28 @@ export async function adminLeads(request: Request, deps: AdminDeps): Promise<Res
   const q = params.get('q')?.trim().slice(0, 100) || undefined
   const sort = params.get('sort') === 'asc' ? 'asc' : 'desc'
   const funnel = funnelParam(params)
+  const eventCode = sanitizeEventCode(params.get('event_code')) ?? undefined
 
-  const [leads, total] = await Promise.all([
-    deps.repo.listLeads(limit, offset, { q, sort, funnel }),
-    deps.repo.countLeads({ q, funnel }),
+  const [leads, total, eventCounts, priceCounts] = await Promise.all([
+    deps.repo.listLeads(limit, offset, { q, sort, funnel, eventCode }),
+    deps.repo.countLeads({ q, funnel, eventCode }),
+    eventCode ? deps.repo.attributedEventCounts(eventCode, funnel) : Promise.resolve([]),
+    eventCode ? deps.repo.attributedPriceCounts(eventCode, funnel) : Promise.resolve([]),
   ])
+  const byName = new Map(eventCounts.map((row) => [row.eventName, row.leads]))
+  const eventReport = eventCode
+    ? {
+        eventCode,
+        steps: EVENT_REPORT_STEPS.map(([name, label]) => ({
+          name,
+          label,
+          leads: byName.get(name) ?? 0,
+        })),
+        prices: priceCounts,
+      }
+    : null
   return json(
-    { leads, total, limit, offset },
+    { leads, total, limit, offset, eventReport },
     200,
     withSession({ 'cache-control': 'no-store' }, auth.setCookies),
   )

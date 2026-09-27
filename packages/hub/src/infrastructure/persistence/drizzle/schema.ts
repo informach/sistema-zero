@@ -188,6 +188,21 @@ export const threads = hub.table(
     index('threads_channel_challenge_idx')
       .on(t.channelId, t.challengeKey)
       .where(sql`${t.challengeKey} is not null`),
+    // Filtros do Mural (09/2026): "Novidades" e "Mais jogados", na mesma chave total do
+    // cursor. Parciais: só vitrine usa essas ordens (o fórum lista pela atividade).
+    // `nullsFirst` é o padrão do DESC no Postgres e casa com o `desc()` das consultas;
+    // o `.desc()` sozinho do drizzle emite NULLS LAST, e aí o índice não serve a ordem.
+    index('threads_showcase_recent_idx')
+      .on(t.channelId, t.createdAt.desc().nullsFirst(), t.id.desc().nullsFirst())
+      .where(sql`${t.isShowcase} = true`),
+    index('threads_showcase_plays_idx')
+      .on(
+        t.channelId,
+        t.playsCount.desc().nullsFirst(),
+        t.createdAt.desc().nullsFirst(),
+        t.id.desc().nullsFirst(),
+      )
+      .where(sql`${t.isShowcase} = true`),
   ],
 )
 
@@ -357,6 +372,29 @@ export const accountDeletionFences = hub.table('account_deletion_fences', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
+/** At-least-once delivery; successful notifications remain as dedupe records. */
+export const showcaseDeliveries = hub.table(
+  'showcase_deliveries',
+  {
+    threadId: uuid('thread_id')
+      .primaryKey()
+      .references(() => threads.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    courseId: uuid('course_id').notNull(),
+    audience: audienceEnum('audience').notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull().defaultNow(),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('showcase_deliveries_pending_idx')
+      .on(t.nextAttemptAt)
+      .where(sql`${t.deliveredAt} is null`),
+    index('showcase_deliveries_owner_course_idx').on(t.userId, t.accountId, t.courseId),
+  ],
+)
+
 export const schema = {
   spaces,
   channels,
@@ -370,6 +408,7 @@ export const schema = {
   mutesBans,
   processedWebhooks,
   accountDeletionFences,
+  showcaseDeliveries,
 }
 
 export type SpaceRow = typeof spaces.$inferSelect

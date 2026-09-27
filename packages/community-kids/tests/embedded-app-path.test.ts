@@ -2,10 +2,13 @@ import { describe, expect, test } from 'bun:test'
 import { EMBEDDED_APP_PREFIXES, isEmbeddedAppPath } from '../src/lib/embedded-app-path'
 
 describe('isEmbeddedAppPath', () => {
-  test('aceita as três rotas dos apps de criação', () => {
+  test('aceita as rotas dos apps que ocupam a área útil inteira', () => {
     expect(isEmbeddedAppPath('/estudio')).toBe(true)
     expect(isEmbeddedAppPath('/pensa')).toBe(true)
     expect(isEmbeddedAppPath('/pinta')).toBe(true)
+    expect(isEmbeddedAppPath('/molda')).toBe(true)
+    // O configurador de avatar entrou em 19/09/2026, ao sair da tela cheia solta.
+    expect(isEmbeddedAppPath('/meu-avatar')).toBe(true)
   })
 
   test('aceita sub-rotas (o Estúdio Pro entra de graça)', () => {
@@ -20,6 +23,9 @@ describe('isEmbeddedAppPath', () => {
   })
 
   test('recusa as demais rotas do app', () => {
+    // ⚠️ O Quarto é tela de FOCO, mas não entra aqui: este regime trava a altura na janela e
+    // cortaria as bandejas de móveis, que rolam. Ver `tests/focus-route.test.ts`.
+    expect(isEmbeddedAppPath('/quarto')).toBe(false)
     expect(isEmbeddedAppPath('/cursos')).toBe(false)
     expect(isEmbeddedAppPath('/cursos/meu-curso/aulas/abc123')).toBe(false)
     expect(isEmbeddedAppPath('/perfil')).toBe(false)
@@ -33,6 +39,12 @@ describe('isEmbeddedAppPath', () => {
   })
 
   test('a lista de prefixos é a fonte única do MainContainer e do modo foco', () => {
-    expect([...EMBEDDED_APP_PREFIXES]).toEqual(['/estudio', '/pensa', '/pinta', '/molda'])
+    expect([...EMBEDDED_APP_PREFIXES]).toEqual([
+      '/estudio',
+      '/pensa',
+      '/pinta',
+      '/molda',
+      '/meu-avatar',
+    ])
   })
 })

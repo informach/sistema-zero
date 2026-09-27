@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 import realConfig from '../../gateway.config'
 import { loadEnv } from '../../src/infrastructure/config/env'
+import { routeConfigSchema } from '../../src/infrastructure/config/gateway-config.schema'
 import { loadGatewayConfig } from '../../src/infrastructure/config/load-gateway-config'
+import { RouteRegistry } from '../../src/infrastructure/routing/route-registry'
 
 const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
@@ -28,6 +30,31 @@ describe('loadGatewayConfig', () => {
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
     })
     expect(route?.auth).not.toBe('public')
+  })
+
+  test('"Como fazer": a criança lê com qualquer conta ativa; a escrita é admin+ com auditoria', () => {
+    const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
+    expect(byId.get('members-help-read')).toMatchObject({
+      methods: ['GET'],
+      pathPattern: '/members/help/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+    })
+    // Sem `roles`: perfil só com o gratuito ou o Desafio também lê.
+    expect(byId.get('members-help-read')?.authorize).not.toHaveProperty('roles')
+    expect(byId.get('members-admin-help-read')).toMatchObject({
+      methods: ['GET'],
+      pathPattern: '/members/admin/help/*',
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+    })
+    expect(byId.get('members-admin-help-write')).toMatchObject({
+      methods: ['POST', 'PATCH', 'PUT'],
+      pathPattern: '/members/admin/help/*',
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      audit: {},
+    })
+    expect(byId.get('members-admin-help-write')?.maxBodyBytes).toBeGreaterThan(64 * 1024)
   })
 
   test('valida e aplica defaults', async () => {
@@ -354,6 +381,98 @@ describe('loadGatewayConfig', () => {
 // invariantes que valem só sobre as rotas REAIS (audit em rota mutante, ids únicos, novas
 // rotas presentes) ficavam sem rede. Asserimos direto sobre o objeto exportado (estático).
 describe('gateway.config.ts (configuração real)', () => {
+  test('consulta do curso-presente é exclusiva do referrals e re-assinada para members', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    const matched = registry.resolve('GET', '/members/webhooks/gift-course/cade-todo-mundo', 'v1')
+    expect(matched?.route).toMatchObject({
+      id: 'members-webhook-gift-course',
+      service: 'members',
+      auth: { strategies: ['hmac'], allowedConsumers: ['referrals'] },
+      upstreamAuth: 'resign',
+    })
+    expect(matched?.params.slug).toBe('cade-todo-mundo')
+  })
+
+  test('gallery preparation belongs to the active student; confirmation requires a signed actor', () => {
+    const prepare = realConfig.routes.find((route) => route.id === 'members-gallery-prepare')
+    const commit = realConfig.routes.find((route) => route.id === 'members-gallery-commit')
+    expect(prepare).toMatchObject({
+      methods: ['POST'],
+      auth: { strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+    })
+    expect(commit).toMatchObject({
+      methods: ['POST'],
+      auth: { strategies: ['hmac'] },
+      rateLimit: { by: 'json-field', field: 'actor.userId' },
+    })
+    expect(commit?.maxBodyBytes).toBeGreaterThanOrEqual(1_500_000)
+  })
+  test('project checks reach members through the real route registry with a project-sized body', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    const matched = registry.resolve(
+      'POST',
+      '/members/lessons/lesson/sections/section/project-check',
+      'v1',
+    )
+    expect(matched?.route).toMatchObject({
+      service: 'members',
+      auth: { required: true, strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      maxBodyBytes: 2 * 1024 * 1024,
+      rateLimit: { by: 'principal' },
+    })
+  })
+  /**
+   * A cor do perfil. O teto de 60/min por principal é CIRCUITO DE SEGURANÇA — foi ele que pegou o
+   * laço de `setTheme` martelando a rota antiga. Quem junta os cliques é o cliente.
+   */
+  test('a cor do perfil atende GET e PUT em /members/preferences, com token interno', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    for (const metodo of ['GET', 'PUT'] as const) {
+      const casado = registry.resolve(metodo, '/members/preferences', 'v1')
+      expect({ metodo, id: casado?.route.id }).toEqual({ metodo, id: 'members-profile-palette' })
+      expect(casado?.route).toMatchObject({
+        service: 'members',
+        auth: { required: true, strategies: ['jwt'] },
+        authorize: { statuses: ['active'] },
+        rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      })
+    }
+    // Sem o `x-internal-token` o members recusa — e os `x-auth-user-*` seriam forjáveis. A lista
+    // é condicional à env (vazia em dev), então o que se cobra é ser a MESMA das outras rotas de
+    // aluno, não o conteúdo dela.
+    const paleta = realConfig.routes.find((r) => r.id === 'members-profile-palette')
+    const vizinha = realConfig.routes.find((r) => r.id === 'members-section-help')
+    expect(paleta?.transforms).toBe(vizinha?.transforms)
+    // ⚠️ A rota LEGADA morreu na etapa 7. Se ela voltar, volta junto o mapeamento `padrao ↔ null`
+    // que o catálogo de cores aposentou.
+    expect(registry.resolve('PUT', '/members/preferences/kids', 'v1')).toBeUndefined()
+  })
+
+  test('seções e atividades preservam JWT ativo, token interno e limites nas rotas explícitas', () => {
+    const routes = realConfig.routes.filter(
+      (route) => route.id.startsWith('members-learning-') || route.id === 'members-section-help',
+    )
+    expect(routes).toHaveLength(4)
+    for (const route of routes) {
+      expect(route).toMatchObject({
+        service: 'members',
+        auth: { required: true, strategies: ['jwt'] },
+        authorize: { statuses: ['active'] },
+        rateLimit: { by: 'principal' },
+      })
+      expect(route.transforms).toBeDefined()
+      expect(route.pathPattern).not.toContain('*')
+      expect(route.maxBodyBytes).toBeLessThanOrEqual(64 * 1024)
+    }
+  })
   const MUTATING = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
   test('toda rota audit-marcada declara SÓ métodos mutantes', () => {
@@ -463,6 +582,18 @@ describe('gateway.config.ts (configuração real)', () => {
         field: 'actor.userId',
       })
     }
+  })
+
+  test('registro de download obrigatório só aceita o BFF autenticado por HMAC', () => {
+    const route = realConfig.routes.find(
+      (candidate) => candidate.id === 'members-internal-material-downloads',
+    )
+    expect(route).toMatchObject({
+      methods: ['POST'],
+      pathPattern: '/members/internal/material-downloads',
+      auth: { required: true, strategies: ['hmac'], allowedConsumers: ['member-shell'] },
+      rateLimit: { by: 'json-field', field: 'actor.userId' },
+    })
   })
 
   test('backfill usa lotes suficientes para não esgotar o limite com bases pequenas', () => {

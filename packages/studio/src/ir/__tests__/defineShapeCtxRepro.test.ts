@@ -20,6 +20,22 @@ const fillRect = (ctxVar: string): JSStatement =>
  * (Desenhar a figura). O ferramental agora ENXERGA os dois.
  */
 describe('canvas do núcleo × ctx do Jogo 2D', () => {
+  it('pincel fornecido pelo motor também pode ser passado como valor a uma função', () => {
+    const js: JSStatement[] = [
+      {
+        type: 'memberCall',
+        object: { type: 'var', name: 'SZGame2D' },
+        method: 'drawHearts',
+        args: [{ type: 'var', name: 'ctx' }],
+      },
+    ]
+    expect(validateProgrammingReferences(js, ['js'], { providedCanvasContexts: ['ctx'] })).toEqual(
+      [],
+    )
+    expect(validateProgrammingReferences(js).some((issue) => issue.message.includes('ctx'))).toBe(
+      true,
+    )
+  })
   it('dentro da figura (defineShape): ctx é parâmetro — sem issue de referência', () => {
     const js: JSStatement[] = [
       {

@@ -1,0 +1,67 @@
+{
+  "producer": "Molda animated paint GLB, evolution lot 225",
+  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAAgCAAA5AYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJNb2xkYSJ9LCJleHRlbnNpb25zVXNlZCI6WyJLSFJfdGV4dHVyZV90cmFuc2Zvcm0iXSwiZXh0ZW5zaW9uc1JlcXVpcmVkIjpbIktIUl90ZXh0dXJlX3RyYW5zZm9ybSJdLCJzY2VuZSI6MCwic2NlbmVzIjpbeyJuYW1lIjoiUGludHVyYSBhbmltYWRhIiwibm9kZXMiOlswXX1dLCJub2RlcyI6W3sibmFtZSI6ImNvcnBvIiwidHJhbnNsYXRpb24iOlswLDEsMF0sInJvdGF0aW9uIjpbMCwwLDAsMV0sInNjYWxlIjpbMSwxLDFdLCJleHRyYXMiOnsibW9sZGEiOnsic291cmNlSWQiOiJwYXJ0LTAiLCJyb2xlIjoibm9kZSJ9fSwibWVzaCI6MH1dLCJtZXNoZXMiOlt7Im5hbWUiOiJjb3JwbyIsInByaW1pdGl2ZXMiOlt7ImF0dHJpYnV0ZXMiOnsiUE9TSVRJT04iOjAsIk5PUk1BTCI6MSwiVEVYQ09PUkRfMCI6Mn0sImluZGljZXMiOjMsIm1hdGVyaWFsIjowLCJtb2RlIjo0fV19XSwibWF0ZXJpYWxzIjpbeyJuYW1lIjoiTWF0ZXJpYWwiLCJwYnJNZXRhbGxpY1JvdWdobmVzcyI6eyJiYXNlQ29sb3JGYWN0b3IiOlsxLDEsMSwxXSwibWV0YWxsaWNGYWN0b3IiOjAsInJvdWdobmVzc0ZhY3RvciI6MSwiYmFzZUNvbG9yVGV4dHVyZSI6eyJpbmRleCI6MCwiZXh0ZW5zaW9ucyI6eyJLSFJfdGV4dHVyZV90cmFuc2Zvcm0iOnsib2Zmc2V0IjpbMC41LDBdLCJzY2FsZSI6WzAuNSwwLjVdfX19fSwiYWxwaGFNb2RlIjoiT1BBUVVFIiwiZG91YmxlU2lkZWQiOmZhbHNlLCJleHRyYXMiOnsibW9sZGEiOnsiZmxpcGJvb2siOnsiY29udHJhY3QiOjEsInNvdXJjZUlkIjoicGFpbnQiLCJjb2x1bW5zIjoyLCJyb3dzIjoyLCJmcmFtZXMiOlsxLDMsMCwzXSwiZnBzIjo4LCJsb29wIjp0cnVlfX19fV0sImltYWdlcyI6W3siYnVmZmVyVmlldyI6NCwibWltZVR5cGUiOiJpbWFnZS9wbmcifV0sInRleHR1cmVzIjpbeyJzb3VyY2UiOjAsInNhbXBsZXIiOjB9XSwic2FtcGxlcnMiOlt7Im1hZ0ZpbHRlciI6OTcyOCwibWluRmlsdGVyIjo5NzI4LCJ3cmFwUyI6MzMwNzEsIndyYXBUIjozMzA3MX1dLCJhY2Nlc3NvcnMiOlt7ImJ1ZmZlclZpZXciOjAsImNvbXBvbmVudFR5cGUiOjUxMjYsInR5cGUiOiJWRUMzIiwiY291bnQiOjYsIm1pbiI6WzAsMCwwXSwibWF4IjpbMC4yNSwwLjI1LDBdfSx7ImJ1ZmZlclZpZXciOjEsImNvbXBvbmVudFR5cGUiOjUxMjYsInR5cGUiOiJWRUMzIiwiY291bnQiOjZ9LHsiYnVmZmVyVmlldyI6MiwiY29tcG9uZW50VHlwZSI6NTEyNiwidHlwZSI6IlZFQzIiLCJjb3VudCI6Nn0seyJidWZmZXJWaWV3IjozLCJjb21wb25lbnRUeXBlIjo1MTIzLCJ0eXBlIjoiU0NBTEFSIiwiY291bnQiOjZ9XSwiYnVmZmVyVmlld3MiOlt7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MCwiYnl0ZUxlbmd0aCI6NzIsInRhcmdldCI6MzQ5NjJ9LHsiYnVmZmVyIjowLCJieXRlT2Zmc2V0Ijo3MiwiYnl0ZUxlbmd0aCI6NzIsInRhcmdldCI6MzQ5NjJ9LHsiYnVmZmVyIjowLCJieXRlT2Zmc2V0IjoxNDQsImJ5dGVMZW5ndGgiOjQ4LCJ0YXJnZXQiOjM0OTYyfSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MTkyLCJieXRlTGVuZ3RoIjoxMiwidGFyZ2V0IjozNDk2M30seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjIwNCwiYnl0ZUxlbmd0aCI6ODJ9XSwiYnVmZmVycyI6W3siYnl0ZUxlbmd0aCI6Mjg4fV0sImV4dHJhcyI6eyJtb2xkYSI6eyJzb3VyY2VJZCI6Im1vbGRhLXN0dWRpby1mbGlwYm9vay1jb250cmFjdCIsImZvcm1hdFZlcnNpb24iOjJ9fX0gICAgAQAAQklOAAAAAAAAAAAAAAAAAAAAgD4AAAAAAAAAAAAAgD4AAIA+AAAAAAAAAAAAAAAAAAAAAAAAgD4AAIA+AAAAAAAAAAAAAIA+AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAIA/AACAPwAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAAAAAAAAAQACAAMABAAFAIlQTkcNChoKAAAADUlIRFIAAAAEAAAABAgGAAAAqfGefgAAABlJREFUeJxj+M/A8B+EkSCaAJQPBCACiwAAZhYj3bpLaNwAAAAASUVORK5CYIIAAA==",
+  "stats": {
+    "nodes": 1,
+    "bones": 0,
+    "meshes": 1,
+    "materials": 1,
+    "textures": 1,
+    "pixelBytes": 64,
+    "triangles": 2,
+    "drawCalls": 1,
+    "renderedParts": 1,
+    "animatedPaints": 1,
+    "clips": 0,
+    "animationKeys": 0,
+    "animationChannels": 0
+  },
+  "materialName": "Material",
+  "sheet": {
+    "width": 4,
+    "height": 4
+  },
+  "flipbook": {
+    "contract": 1,
+    "sourceId": "paint",
+    "columns": 2,
+    "rows": 2,
+    "frames": [1, 3, 0, 3],
+    "fps": 8,
+    "loop": true
+  },
+  "steps": [
+    {
+      "step": 0,
+      "frame": 1,
+      "seconds": 0,
+      "offset": [0.5, 0],
+      "scale": [0.5, 0.5],
+      "rgba": [0, 255, 0, 255]
+    },
+    {
+      "step": 1,
+      "frame": 3,
+      "seconds": 0.125,
+      "offset": [0.5, 0.5],
+      "scale": [0.5, 0.5],
+      "rgba": [255, 255, 0, 255]
+    },
+    {
+      "step": 2,
+      "frame": 0,
+      "seconds": 0.25,
+      "offset": [0, 0],
+      "scale": [0.5, 0.5],
+      "rgba": [255, 0, 0, 255]
+    },
+    {
+      "step": 3,
+      "frame": 3,
+      "seconds": 0.375,
+      "offset": [0.5, 0.5],
+      "scale": [0.5, 0.5],
+      "rgba": [255, 255, 0, 255]
+    }
+  ]
+}

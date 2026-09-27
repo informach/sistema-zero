@@ -1,8 +1,8 @@
 /*
  * Tokens + estilos do componente <MoldaApp>. Este arquivo é exportado como
  * `@sistemazero/molda/styles.css` e deve ser importado DENTRO do pipeline
- * Tailwind do consumer (depois do `@import "tailwindcss"` dele), junto com
- * `@source` apontando para packages/molda/src.
+ * Tailwind do consumer (depois do `@import "tailwindcss"` dele). As fontes
+ * da interface são registradas aqui; o consumidor não precisa varrer src.
  *
  * NÃO importa tailwindcss aqui (duplicaria preflight/utilities no consumer) e
  * NÃO define `@custom-variant dark` (sobrescreveria a variant dark do app
@@ -15,19 +15,29 @@
  * kids). O escuro é ativado por `[data-molda-theme="dark"]` no ROOT do
  * componente — nunca no <html> do host. Os diálogos permanecem dentro do root.
  */
+@source "../components";
+@source not "../components/**/*.test.{ts,tsx}";
+
 @theme {
   /* SUPERFÍCIES: o Molda é uma SEÇÃO da comunidade kids, não um app à parte —
      fundo, painel, borda e texto vêm dos primitivos do host (o fundo é o mesmo
      azul-céu da página). O fallback literal é o creme MakeCode, que mantém o
      playground standalone funcionando igual. */
-  --color-mld-bg: var(--sz-kids-ceu-suave, oklch(0.975 0.012 85));
-  --color-mld-surface: var(--sz-kids-branco, oklch(0.995 0.006 85));
-  --color-mld-border: var(--sz-kids-linha, oklch(0.89 0.018 80));
-  --color-mld-text: var(--sz-kids-tinta, oklch(0.145 0.012 262));
-  --color-mld-muted: var(--sz-kids-tinta-suave, oklch(0.5 0.012 255));
-  --color-mld-text-soft: var(--sz-kids-tinta-suave, oklch(0.5 0.012 255));
-  --color-mld-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
-  --color-mld-accent-fg: var(--sz-kids-branco, oklch(0.995 0.006 85));
+  --color-mld-bg: var(--sz-tool-bg, var(--sz-kids-ceu-suave, oklch(0.975 0.012 85)));
+  --color-mld-surface: var(--sz-tool-surface, var(--sz-kids-branco, oklch(0.995 0.006 85)));
+  --color-mld-border: var(--sz-tool-line, var(--sz-kids-linha, oklch(0.89 0.018 80)));
+  --color-mld-text: var(--sz-tool-ink, var(--sz-kids-tinta, oklch(0.145 0.012 262)));
+  --color-mld-muted: var(--sz-tool-muted, var(--sz-kids-tinta-suave, oklch(0.5 0.012 255)));
+  --color-mld-text-soft: var(--sz-tool-muted, var(--sz-kids-tinta-suave, oklch(0.5 0.012 255)));
+  --color-mld-accent: var(--sz-tool-accent, var(--sz-kids-azul-texto, oklch(0.52 0.15 252)));
+  --color-mld-accent-fg: var(--sz-tool-on-accent, var(--sz-kids-branco, oklch(0.995 0.006 85)));
+  /*
+   * ⚠️ `ok`/`warn`/`danger` NÃO passam pelo `--sz-tool-*` de propósito, por ora. Os três da
+   * plataforma são valores ajustados para contraste AA e são DIFERENTES destes: encadear
+   * mudaria a cor de aviso e de erro na tela da criança, e isso é mudança visível que quer
+   * conferência de contraste no navegador, não uma troca de cadeia feita no escuro. Fica
+   * registrado aqui em vez de escondido; alinhar é lote próprio, com a medida junto.
+   */
   --color-mld-ok: oklch(0.55 0.14 155);
   --color-mld-warn: oklch(0.6 0.14 65);
   --color-mld-danger: oklch(0.55 0.19 25);
@@ -41,14 +51,20 @@
 
 /* Tema escuro — override por atributo data-molda-theme="dark" no root. */
 [data-molda-theme="dark"] {
-  --color-mld-bg: var(--sz-kids-navy, oklch(0.17 0.014 262));
-  --color-mld-surface: var(--sz-kids-navy-superficie, oklch(0.215 0.015 262));
-  --color-mld-border: var(--sz-kids-navy-linha, oklch(0.32 0.02 262));
-  --color-mld-text: var(--sz-kids-navy-tinta, oklch(0.965 0.005 250));
-  --color-mld-muted: var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250));
-  --color-mld-text-soft: var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250));
-  --color-mld-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
-  --color-mld-accent-fg: var(--sz-kids-navy, oklch(0.17 0.014 262));
+  --color-mld-bg: var(--sz-tool-bg, var(--sz-kids-navy, oklch(0.17 0.014 262)));
+  --color-mld-surface: var(
+    --sz-tool-surface,
+    var(--sz-kids-navy-superficie, oklch(0.215 0.015 262))
+  );
+  --color-mld-border: var(--sz-tool-line, var(--sz-kids-navy-linha, oklch(0.32 0.02 262)));
+  --color-mld-text: var(--sz-tool-ink, var(--sz-kids-navy-tinta, oklch(0.965 0.005 250)));
+  --color-mld-muted: var(--sz-tool-muted, var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250)));
+  --color-mld-text-soft: var(
+    --sz-tool-muted,
+    var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250))
+  );
+  --color-mld-accent: var(--sz-tool-accent, var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)));
+  --color-mld-accent-fg: var(--sz-tool-on-accent, var(--sz-kids-navy, oklch(0.17 0.014 262)));
   --color-mld-ok: oklch(0.8 0.16 155);
   --color-mld-warn: oklch(0.83 0.14 85);
   --color-mld-danger: oklch(0.72 0.17 25);
@@ -65,11 +81,14 @@
  * botões "3D" de sombra dura. Nenhuma var do kids é referenciada sem fallback.
  */
 [data-molda-theme] {
+  /* A cor de AÇÃO do host (`--sz-tool-*`, do tool-chrome.css): no kids ela segue o tema
+     (azul no Padrão, rosa no Pink). O azul de identidade fica só como reserva, para o
+     playground sem o chrome. */
   --mld-gradient: var(
-    --sz-kids-grad-cta-azul,
-    linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255))
+    --sz-tool-cta-gradient,
+    var(--sz-kids-grad-cta-azul, linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255)))
   );
-  --mld-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+  --mld-cta: var(--sz-tool-cta, var(--sz-kids-azul-texto, oklch(0.52 0.15 252)));
   /* Barra de título dos painéis. ⚠️ Vive AQUI, e não no @theme: o Tailwind v4
      PODA do @theme os tokens que nenhuma utilitária usa. ⚠️ `in oklab`, NUNCA
      `in oklch`: oklch é polar e interpola o MATIZ (azul + branco = rosa). */
@@ -77,10 +96,13 @@
 }
 [data-molda-theme="dark"] {
   --mld-gradient: var(
-    --sz-kids-grad-cta-azul-suave,
-    linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+    --sz-tool-cta-gradient,
+    var(
+      --sz-kids-grad-cta-azul-suave,
+      linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+    )
   );
-  --mld-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --mld-cta: var(--sz-tool-cta, var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)));
   --mld-panel-head: color-mix(in oklab, var(--color-mld-accent) 16%, var(--color-mld-surface));
 }
 
@@ -210,11 +232,15 @@
   display: none;
 }
 
-/* Cards da galeria: o navegador só mede/pinta os cards perto da janela. */
-[data-molda-theme] .mld-gallery-card {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 164px 232px;
-}
+/* ⚠️⚠️ O cartão da galeria NÃO usa `content-visibility: auto` (13/09/2026), pelo mesmo motivo
+   do Pinta — lá o sintoma foi visto: o cursor pisca ao passar por cima do cartão. A altura
+   reservada e a real discordam, o elemento entra e sai da relevância em laço, e o ponteiro
+   alterna entre a caixa do cartão (seta) e o botão de dentro (mão), porque conteúdo pulado
+   não participa do teste de acerto. A miniatura é `aspect-[4/3] w-full`: a altura do cartão
+   vem da LARGURA dele, que vem do número de colunas, então ela não tem como casar com um
+   número fixo em toda janela — e o `auto` do `contain-intrinsic-size` não resolve, no Pinta
+   ele estava lá. A técnica só fica de pé com altura FIXA (no Estúdio, `.sz-project-card` tem
+   `h-72` e reserva 288px). O comentário longo, com a mecânica inteira, está no `pinta.css`. */
 
 /* A viewport 3D ocupa a caixa inteira e não deixa o navegador rolar/zoomar por
    baixo do gesto de orbitar (um dedo orbita, dois fazem pan/zoom). */
@@ -237,4 +263,209 @@
 [data-molda-theme] .mld-scroll-y::-webkit-scrollbar-thumb {
   background: var(--color-mld-border);
   border-radius: 999px;
+}
+
+/*
+ * ── A CASCA DA OFICINA (11/09/2026, as telas-modelo do Modelar e do Animar) ────────────────
+ * Duas barras brancas em cima (a do projeto e a da aba), a coluna de ladrilhos à esquerda, o
+ * palco, o painel da direita e a faixa de baixo. As receitas moram em `@layer components`: o
+ * call site ajusta tamanho e espaçamento com utilitárias, e CSS sem camada venceria todas elas.
+ *
+ * As cores das formas são as da paleta da casa: a TINTA do ícone muda com o tema (ícone de
+ * linha sobre ladrilho claro no claro, a versão viva sobre o navy no escuro) e o FUNDO do
+ * ladrilho cheio da lista de peças não muda (fundo não segue o tema, só a tinta).
+ */
+[data-molda-theme] {
+  --mld-shape-box: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+  --mld-shape-wedge: var(--sz-kids-rosa-funda, oklch(0.6 0.19 356));
+  --mld-shape-cylinder: var(--sz-kids-laranja-texto, oklch(0.6 0.15 55));
+  --mld-shape-sphere: var(--sz-kids-verde-profundo, oklch(0.55 0.15 152));
+  --mld-shape-special: var(--sz-kids-roxo, #8b5cf6);
+  --mld-shape-group: var(--sz-kids-tinta-suave, #5c6b85);
+  /* Os fundos cheios da lista de peças: os mesmos nos dois temas, com o ícone branco. */
+  --mld-fill-box: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+  --mld-fill-wedge: var(--sz-kids-rosa-funda, oklch(0.6 0.19 356));
+  --mld-fill-cylinder: var(--sz-kids-laranja-texto, oklch(0.6 0.15 55));
+  --mld-fill-sphere: var(--sz-kids-verde-profundo, oklch(0.55 0.15 152));
+  --mld-fill-special: var(--sz-kids-roxo, #8b5cf6);
+  --mld-fill-group: var(--sz-kids-tinta-suave, #5c6b85);
+  --mld-stage-shadow: 0 10px 28px -14px color-mix(in oklab, var(--color-mld-text) 45%, transparent);
+}
+[data-molda-theme="dark"] {
+  --mld-shape-box: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --mld-shape-wedge: var(--sz-kids-rosa-viva, oklch(0.75 0.16 356));
+  --mld-shape-cylinder: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70));
+  --mld-shape-sphere: var(--sz-kids-verde-vivo, oklch(0.78 0.15 152));
+  --mld-shape-special: oklch(0.76 0.14 295);
+  --mld-shape-group: var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250));
+  --mld-stage-shadow: 0 10px 28px -14px oklch(0 0 0 / 0.7);
+}
+
+@layer components {
+  /* As barras de cima e a faixa de baixo: brancas, com o fio da linha. */
+  [data-molda-theme] .mld-bar {
+    background: var(--color-mld-surface);
+    border-color: var(--color-mld-border);
+    /* Pílulas e quadrados quietos sobre barra branca: o céu diluído (o `--sz-tool-quiet`). */
+    --sz-tool-quiet: var(--color-mld-bg);
+  }
+
+  /* Rótulo de seção em caixa alta ("FERRAMENTAS", "PEÇAS E GRUPOS"). */
+  [data-molda-theme] .mld-kicker {
+    margin: 0;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    color: var(--color-mld-muted);
+  }
+
+  /* O SEGMENTADO das abas: trilho claro e a aba escolhida em pílula azul cheia. */
+  [data-molda-theme] .mld-seg {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0.25rem;
+    border: 0;
+    border-radius: 9999px;
+    background: var(--color-mld-bg);
+    min-inline-size: auto;
+  }
+  [data-molda-theme] .mld-seg > button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    min-height: var(--sz-tool-hit, 2.5rem);
+    padding-inline: 1rem;
+    border-radius: 9999px;
+    color: var(--color-mld-muted);
+    font-weight: 800;
+    font-size: 0.9375rem;
+    line-height: 1;
+    white-space: nowrap;
+    transition:
+      background-color 0.12s ease,
+      color 0.12s ease;
+  }
+  [data-molda-theme] .mld-seg svg {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+  }
+  [data-molda-theme] .mld-seg > button:hover:not([aria-pressed="true"]) {
+    color: var(--color-mld-text);
+    background: color-mix(in oklab, var(--color-mld-bg) 85%, var(--color-mld-text));
+  }
+  [data-molda-theme] .mld-seg > button[aria-pressed="true"] {
+    background: var(--color-mld-accent);
+    color: var(--color-mld-accent-fg);
+  }
+
+  /* O LADRILHO: o ícone em cima e o nome embaixo (a coluna de ferramentas e as formas). */
+  [data-molda-theme] .mld-tile {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3125rem;
+    min-height: 3.5rem;
+    padding: 0.5rem 0.25rem;
+    border: 1px solid var(--sz-tool-card-edge, transparent);
+    border-radius: 0.75rem;
+    background: var(--color-mld-bg);
+    color: var(--color-mld-text);
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1.15;
+    text-align: center;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      background-color 0.12s ease,
+      color 0.12s ease,
+      border-color 0.12s ease;
+  }
+  [data-molda-theme] .mld-tile > svg {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--mld-tile-ink, currentColor);
+  }
+  [data-molda-theme] .mld-tile:hover:not(:disabled):not([aria-pressed="true"]) {
+    background: color-mix(in oklab, var(--color-mld-bg) 88%, var(--color-mld-text));
+  }
+  [data-molda-theme] .mld-tile[aria-pressed="true"] {
+    background: var(--color-mld-accent);
+    color: var(--color-mld-accent-fg);
+  }
+  [data-molda-theme] .mld-tile[aria-pressed="true"] > svg {
+    color: inherit;
+  }
+  [data-molda-theme] .mld-tile:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+  [data-molda-theme] .mld-tile:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+
+  /* O botão de ligar e desligar das barras ("Mostrar grade"): contorno; ligado, em azul. */
+  [data-molda-theme] .mld-toggle[aria-pressed="true"] {
+    border-color: var(--color-mld-accent);
+    background: color-mix(in oklab, var(--color-mld-accent) 8%, var(--color-mld-surface));
+    color: var(--color-mld-accent);
+  }
+
+  /* O amarelo da ação que ajuda a olhar ("Enquadrar seleção"): o ouro da marca com tinta escura. */
+  [data-molda-theme] .mld-pill-sun {
+    background: var(--sz-tool-new, #ffce3a);
+    color: var(--sz-tool-on-new, oklch(0.25 0.05 60));
+  }
+  [data-molda-theme] .mld-pill-sun:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--sz-tool-new, #ffce3a) 88%, oklch(0.25 0.05 60));
+  }
+
+  /* O menu que desce de uma barra (`<details>` com o `<summary>` em pílula). */
+  [data-molda-theme] .mld-drop {
+    position: absolute;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    width: 15rem;
+    max-width: calc(100vw - 1.5rem);
+    padding: 0.5rem;
+    border: 1px solid var(--color-mld-border);
+    border-radius: 1rem;
+    background: var(--color-mld-surface);
+    box-shadow: var(--mld-stage-shadow);
+  }
+
+  /* O CARTÃO que flutua no palco (a dica, a pose): branco, cantos de 16px e a sombra suave. */
+  [data-molda-theme] .mld-stage-card {
+    border: 1px solid var(--sz-tool-card-edge, transparent);
+    border-radius: 1rem;
+    background: var(--color-mld-surface);
+    box-shadow: var(--mld-stage-shadow);
+  }
+
+  /* Uma linha da lista de peças: cartão claro; a escolhida ganha o contorno azul. */
+  [data-molda-theme] .mld-piece {
+    border: 2px solid transparent;
+    border-radius: 0.875rem;
+    background: var(--color-mld-bg);
+  }
+  [data-molda-theme] .mld-piece:hover:not([aria-pressed="true"]) {
+    border-color: var(--color-mld-border);
+  }
+  [data-molda-theme] .mld-piece[aria-pressed="true"] {
+    border-color: var(--color-mld-accent);
+    background: var(--color-mld-surface);
+  }
 }

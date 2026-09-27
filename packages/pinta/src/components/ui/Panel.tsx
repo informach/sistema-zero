@@ -6,8 +6,35 @@ import type {
   ReactNode,
   Ref,
 } from 'react'
-import { useId } from 'react'
+import { createContext, useContext, useId } from 'react'
 import { ChevronDown } from './icons'
+
+/**
+ * O VISUAL do painel, escolhido por quem monta a coluna (11/09/2026, a área da ferramenta da
+ * tela-modelo): `card` é o cartão de sempre (`.pin-panel`: borda, cantos, sombra), que vale na
+ * tela estreita e fora do editor; `flat` é a SEÇÃO das colunas brancas (sem moldura, faixa de
+ * título clara em caixa alta, divisória embaixo); `band` é a seção da faixa azul de baixo (o
+ * nome direto no azul, sem faixa de título). Contexto, e não prop, porque o mesmo painel (Prévia,
+ * Camadas, Cores) aparece na coluna do desktop E na fileira da tela estreita, e os painéis de
+ * dentro de outro (as sub-seções da Aparência) herdam o visual de quem os contém.
+ */
+export type PanelLookValue = 'card' | 'flat' | 'band'
+const PanelLookContext = createContext<PanelLookValue>('card')
+
+export function PanelLook({
+  value,
+  children,
+}: {
+  value: PanelLookValue
+  children: ReactNode
+}): JSX.Element {
+  return <PanelLookContext.Provider value={value}>{children}</PanelLookContext.Provider>
+}
+
+/** O visual dos painéis aqui dentro (para quem empilha vários, como a Aparência). */
+export function usePanelLook(): PanelLookValue {
+  return useContext(PanelLookContext)
+}
 
 export interface PanelDisclosure {
   open: boolean
@@ -68,6 +95,8 @@ export interface PanelProps {
 
 const TITLE_CLASS =
   'pin-display min-w-0 flex-1 truncate text-left text-xs uppercase tracking-wide text-pin-text'
+/** A seção das colunas e da faixa: o nome em caixa alta, pequeno e espaçado (`.pin-section-title`). */
+const SECTION_TITLE_CLASS = 'pin-section-title min-w-0 flex-1 truncate text-left'
 const TITLE_BUTTON_CLASS =
   'flex min-h-11 items-center gap-1 rounded-lg px-1 hover:bg-pin-border/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-pin-accent'
 
@@ -86,6 +115,8 @@ export function Panel({
   children,
 }: PanelProps): JSX.Element {
   const bodyId = useId()
+  const look = useContext(PanelLookContext)
+  const titleClass = look === 'card' ? TITLE_CLASS : SECTION_TITLE_CLASS
   const collapsed = disclosure ? !disclosure.open : false
   // O menu próprio do título (paleta) só com o painel ABERTO; com disclosure o
   // título vira o botão de abrir/recolher; sem nada, texto.
@@ -102,16 +133,21 @@ export function Panel({
       // o painel tem a altura do conteúdo; quem não cabe ROLA, e quem rola é a
       // coluna. Quem precisar de um painel que encolhe não passa `className`:
       // tira daqui, de propósito.
-      className={clsx('pin-panel flex min-h-0 shrink-0 flex-col overflow-hidden', className)}
+      className={clsx(
+        look === 'card' ? 'pin-panel' : 'pin-section',
+        look === 'band' && 'pin-section--band',
+        'flex min-h-0 shrink-0 flex-col overflow-hidden',
+        className,
+      )}
     >
-      <div className="pin-panel-head">
+      <div className={look === 'card' ? 'pin-panel-head' : 'pin-section-head'}>
         {titleAsMenu ? (
           <button
             type="button"
             ref={titleRef}
             onClick={onTitleClick}
             {...titleProps}
-            className={clsx(TITLE_CLASS, TITLE_BUTTON_CLASS)}
+            className={clsx(titleClass, TITLE_BUTTON_CLASS)}
           >
             <span className="truncate">{title}</span>
             {titleSuffix}
@@ -124,13 +160,13 @@ export function Panel({
             type="button"
             aria-expanded={disclosure.open}
             onClick={() => disclosure.onOpenChange(!disclosure.open)}
-            className={clsx(TITLE_CLASS, TITLE_BUTTON_CLASS)}
+            className={clsx(titleClass, TITLE_BUTTON_CLASS)}
           >
             <span className="truncate">{shownTitle}</span>
             {collapsed ? null : titleSuffix}
           </button>
         ) : (
-          <span className={clsx(TITLE_CLASS, 'px-1')}>
+          <span className={clsx(titleClass, 'px-1')}>
             {title}
             {titleSuffix}
           </span>

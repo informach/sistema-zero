@@ -1,10 +1,11 @@
 import { isPrivilegedRole, resolveStudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { extensionsForBlocks } from '@sistemazero/member-shell/server/studio-unlocks'
 import { isStudioZappyAllowed } from '@sistemazero/member-shell/server/zappy-access'
-import { KidsCareerLockedStudio } from '@/components/kids/kids-career-locked-studio'
+import { KidsJourneyLockedStudio } from '@/components/kids/kids-journey-locked-studio'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
+import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import {
   checkChallengeAccessReadonly,
   checkCreativeToolsAccessReadonly,
@@ -31,9 +32,9 @@ export const dynamic = 'force-dynamic'
 export default async function EstudioPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tarefa?: string }>
+  searchParams: Promise<{ tarefa?: string; projeto?: string }>
 }) {
-  const { tarefa } = await searchParams
+  const { tarefa, projeto } = await searchParams
   // `session.id` = o PERFIL ativo (kids) → isola os projetos do Estúdio por criança no
   // IndexedDB (irmãos no mesmo navegador não compartilham a lista). Resolve junto do gate.
   // A posse do DESAFIO (Clube+Estúdio, best-effort) liga o checkbox do Compartilhar.
@@ -57,19 +58,20 @@ export default async function EstudioPage({
     // Rank do aluno → modos+perfil do editor. `withRanking:true` casa a chave do
     // React.cache com a da (app)/layout (dedup, sem ida extra). Best-effort.
     getGamificationReadonly({ withRanking: true }).catch(() => null),
-    // Paleta pelo CURRÍCULO: bônus concluídos + cursos da carreira concluídos e publicados.
+    // Paleta pelo CURRÍCULO: bônus concluídos + cursos da jornada concluídos e publicados.
     // Best-effort — falhar aqui NÃO pode esvaziar a caixa de ferramentas: o
     // `resolveStudioTier` cai no perfil do NÍVEL quando a lista vem vazia.
     getStudioUnlocksReadonly().catch(() => null),
   ])
-  if (res.status !== 200) return <KidsStudioUnavailable />
+  // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
+  if (res.status !== 200) return <ToolRouteRecado screen={KidsStudioUnavailable} />
   const hasAccess = res.body?.access?.['estudio-completo'] === true
-  if (!hasAccess) return <KidsLockedStudio />
+  if (!hasAccess) return <ToolRouteRecado screen={KidsLockedStudio} />
   const pintaOwned = res.body?.access?.pinta === true
   const moldaOwned = res.body?.access?.molda === true
   // Falha ao consultar o rank não pode virar Faísca: isso esconderia ferramentas de
   // uma criança que já as conquistou. Mantemos o mesmo estado honesto de indisponibilidade.
-  if (gam?.status !== 200) return <KidsStudioUnavailable />
+  if (gam?.status !== 200) return <ToolRouteRecado screen={KidsStudioUnavailable} />
   const levelSlug = gam.body?.level?.slug ?? 'noob'
   // A paleta vem do CURRÍCULO (08/2026): o nível decide o MODO (livre/Ponte/Pro) e os
   // cursos conquistados decidem os BLOCOS. As extensões saem dos próprios blocos.
@@ -80,7 +82,7 @@ export default async function EstudioPage({
   })
   // O produto pode estar comprado pela conta, mas a criação livre só começa após
   // concluir+publicar o primeiro curso. Dentro das aulas, o Estúdio segue disponível.
-  if (!tier.freeStudio) return <KidsCareerLockedStudio />
+  if (!tier.freeStudio) return <ToolRouteRecado screen={KidsJourneyLockedStudio} />
   const challengeEligible =
     challengeAccess?.status === 200 &&
     challengeAccess.body?.access?.['clube-dos-criadores'] === true &&
@@ -110,10 +112,11 @@ export default async function EstudioPage({
       tier={tier}
       showExamples={showExamples}
       // O tutor abre por MÉRITO: equipe sempre, aluno a partir do degrau mínimo
-      // da carreira (Inventor). O rank já veio na gamificação acima.
+      // da jornada (Inventor). O rank já veio na gamificação acima.
       zappyEnabled={zappyEnabled}
       aiCredits={creditsRes?.status === 200 ? (creditsRes.body ?? null) : null}
       taskId={tarefa ?? null}
+      initialProjectId={projeto ?? null}
       pintaOwned={pintaOwned}
       moldaOwned={moldaOwned}
     />

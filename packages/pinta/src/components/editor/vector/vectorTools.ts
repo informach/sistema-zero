@@ -7,12 +7,15 @@ import { COPY } from '../../../core/copy'
 import { newId } from '../../../core/id'
 import { getPalette, type PaletteId, TRANSPARENT_INDEX } from '../../../core/palette'
 import {
+  type AlignEdge,
   type Bounds,
   boundsUnion,
+  type DistributionAxis,
   scaleShape,
   shapeBounds,
   translateShape,
 } from '../../../vector/geometry'
+import { maskMembers, remapMaskIds } from '../../../vector/mask'
 import type { Vec2, VectorGradient, VectorShape } from '../../../vector/model'
 import {
   Brush,
@@ -231,10 +234,10 @@ export function occupiedBoundsOf(shapes: readonly VectorShape[]): Bounds[] {
 }
 
 /** Expande ids para incluir TODOS os shapes dos mesmos grupos (seleção junta). */
-export function expandToGroups(shapes: VectorShape[], ids: string[]): string[] {
+export function expandToGroups(shapes: readonly VectorShape[], ids: readonly string[]): string[] {
   const groups = new Set<string>()
   for (const s of shapes) if (ids.includes(s.id) && s.groupId) groups.add(s.groupId)
-  if (groups.size === 0) return ids
+  if (groups.size === 0) return [...ids]
   const result = new Set(ids)
   // A EXPANSÃO pula membros trancados (mover o grupo não arrasta a trancada
   // junto); id EXPLÍCITO permanece — o painel seleciona trancada de propósito,
@@ -243,6 +246,130 @@ export function expandToGroups(shapes: VectorShape[], ids: string[]): string[] {
     if (s.groupId && groups.has(s.groupId) && s.locked !== true) result.add(s.id)
   }
   return [...result]
+}
+
+/**
+ * Fecha a seleção por todas as relações estruturais. Grupo implícito continua
+ * pulando membros trancados; máscara inclui a unidade inteira para que o guard
+ * central possa recusar uma transformação parcial.
+ */
+export function expandToSelectionUnits(
+  shapes: readonly VectorShape[],
+  ids: readonly string[],
+): string[] {
+  const result = new Set(ids)
+  let changed = true
+  while (changed) {
+    const before = result.size
+    for (const id of expandToGroups(shapes, [...result])) result.add(id)
+    for (const id of [...result]) {
+      for (const member of maskMembers(shapes, id)) result.add(member.id)
+    }
+    changed = result.size !== before
+  }
+  return [...result]
+}
+
+/** Componentes relacionais selecionados, na ordem do documento. */
+export function selectedShapeUnits(
+  shapes: readonly VectorShape[],
+  ids: readonly string[],
+): string[][] {
+  const selected = new Set(ids)
+  const visited = new Set<string>()
+  const units: string[][] = []
+  for (const shape of shapes) {
+    if (!selected.has(shape.id) || visited.has(shape.id)) continue
+    const unit = expandToSelectionUnits(shapes, [shape.id]).filter((id) => selected.has(id))
+    for (const id of unit) visited.add(id)
+    if (unit.length > 0) units.push(unit)
+  }
+  return units
+}
+
+function boundsForIds(shapes: readonly VectorShape[], ids: readonly string[]): Bounds {
+  const chosen = new Set(ids)
+  return boundsUnion(shapes.filter((shape) => chosen.has(shape.id)).map(shapeBounds))
+}
+
+function alignmentDelta(bounds: Bounds, target: Bounds, edge: AlignEdge): Vec2 {
+  switch (edge) {
+    case 'left':
+      return { x: target.x - bounds.x, y: 0 }
+    case 'centerH':
+      return {
+        x: target.x + target.width / 2 - (bounds.x + bounds.width / 2),
+        y: 0,
+      }
+    case 'right':
+      return { x: target.x + target.width - (bounds.x + bounds.width), y: 0 }
+    case 'top':
+      return { x: 0, y: target.y - bounds.y }
+    case 'middleV':
+      return {
+        x: 0,
+        y: target.y + target.height / 2 - (bounds.y + bounds.height / 2),
+      }
+    case 'bottom':
+      return { x: 0, y: target.y + target.height - (bounds.y + bounds.height) }
+  }
+}
+
+/** Alinha cada unidade relacional sem separar sua fonte de máscara do conteúdo. */
+export function alignSelectedUnits(
+  shapes: VectorShape[],
+  units: readonly (readonly string[])[],
+  edge: AlignEdge,
+  target: Bounds,
+): VectorShape[] {
+  const deltas = new Map<string, Vec2>()
+  for (const unit of units) {
+    const delta = alignmentDelta(boundsForIds(shapes, unit), target, edge)
+    if (delta.x === 0 && delta.y === 0) continue
+    for (const id of unit) deltas.set(id, delta)
+  }
+  if (deltas.size === 0) return shapes
+  return shapes.map((shape) => {
+    const delta = deltas.get(shape.id)
+    return delta ? translateShape(shape, delta.x, delta.y) : shape
+  })
+}
+
+export function canDistributeSelectedUnits(units: readonly (readonly string[])[]): boolean {
+  return units.length >= 3
+}
+
+/** Distribui os centros das unidades, preservando os offsets de cada composição. */
+export function distributeSelectedUnits(
+  shapes: VectorShape[],
+  units: readonly (readonly string[])[],
+  axis: DistributionAxis,
+): VectorShape[] {
+  if (!canDistributeSelectedUnits(units)) return shapes
+  const center = (bounds: Bounds) =>
+    axis === 'horizontal' ? bounds.x + bounds.width / 2 : bounds.y + bounds.height / 2
+  const ordered = units
+    .map((ids, index) => ({ ids, index, center: center(boundsForIds(shapes, ids)) }))
+    .sort((a, b) => a.center - b.center || a.index - b.index)
+  const first = ordered[0]
+  const last = ordered.at(-1)
+  if (!first || !last) return shapes
+  const step = (last.center - first.center) / (ordered.length - 1)
+  const deltas = new Map<string, number>()
+  for (let index = 1; index < ordered.length - 1; index += 1) {
+    const unit = ordered[index]
+    if (!unit) continue
+    const delta = first.center + step * index - unit.center
+    if (Math.abs(delta) < 1e-9) continue
+    for (const id of unit.ids) deltas.set(id, delta)
+  }
+  if (deltas.size === 0) return shapes
+  return shapes.map((shape) => {
+    const delta = deltas.get(shape.id)
+    return delta === undefined
+      ? shape
+      : translateShape(shape, axis === 'horizontal' ? delta : 0, axis === 'vertical' ? delta : 0)
+  })
 }
 
 /**
@@ -255,17 +382,23 @@ export function cloneShapesWithNewIds(
   dx: number,
   dy: number,
 ): VectorShape[] {
+  const shapeIds = new Map(shapes.map((shape) => [shape.id, newId()]))
   const groupIds = new Map<string, string>()
-  return shapes.map((shape) => {
+  const copies = shapes.map((shape) => {
     // A cópia nasce DESTRANCADA (é material novo — duplicar uma trancada é
     // justamente o jeito de mexer numa variação sem tocar no original).
     const { locked: _locked, ...clone } = structuredClone(shape)
-    const moved = translateShape({ ...clone, id: newId() }, dx, dy)
+    const moved = translateShape(
+      { ...clone, id: shapeIds.get(shape.id) as string, motionId: newId() } as VectorShape,
+      dx,
+      dy,
+    )
     if (!shape.groupId) return moved
     const groupId = groupIds.get(shape.groupId) ?? newId()
     groupIds.set(shape.groupId, groupId)
     return { ...moved, groupId }
   })
+  return remapMaskIds(copies, shapeIds)
 }
 
 /**

@@ -54,6 +54,7 @@ export function createAuthHttpGateway(opts: AuthHttpGatewayOptions): AuthGateway
           id: typeof u.id === 'string' ? u.id : '',
           email: typeof u.email === 'string' ? u.email : '',
           firstName: typeof u.firstName === 'string' ? u.firstName : '',
+          activated: typeof u.activated === 'boolean' ? u.activated : null,
         }))
         .filter((u) => u.id !== '' && u.email !== '')
     },

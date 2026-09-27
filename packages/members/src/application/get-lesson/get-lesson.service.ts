@@ -1,11 +1,15 @@
+import { lessonCompletionRequirements } from '@sistemazero/core/learning'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
+import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import { computeRetryAvailableAt } from '../../domain/course/quiz'
+import { LearningConflictError } from '../../domain/learning/learning.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
+import type { LearningService } from '../learning/learning.service'
 import { assertLessonUnlockedFromState } from '../lesson-locking/lesson-locking'
 import {
   type LessonDetailView,
@@ -24,6 +28,7 @@ export class GetLessonService {
     private readonly quizAttempts: QuizAttemptRepository,
     private readonly studioSubmissions: StudioSubmissionRepository,
     private readonly clock: () => Date,
+    private readonly learning: LearningService,
   ) {}
 
   async execute(
@@ -108,7 +113,7 @@ export class GetLessonService {
       })
     }
 
-    return toLessonDetailView(
+    const view = toLessonDetailView(
       lesson,
       course.slug,
       completedIds.includes(lessonId),
@@ -119,5 +124,74 @@ export class GetLessonService {
       // (é assim que a autoria confere a aula pelo "Ver como aluno").
       privileged,
     )
+    if (hasComingSoonBlock(lesson.blocks) && !privileged)
+      return { ...view, requirements: lessonCompletionRequirements(view) }
+    const structure = await this.learning.read({ userId, accountId: accountId ?? userId }, lesson)
+    for (const block of view.blocks) {
+      if (
+        block.quizState &&
+        !structure.legacyLayout &&
+        structure.sections.some((section) => section.completion?.blockIds.includes(block.id))
+      )
+        block.quizState.retryAvailableAt = null
+    }
+    const owner = { userId, accountId: accountId ?? userId }
+    const sectionProgress = privileged
+      ? undefined
+      : await this.learning.sections.read(owner, lesson)
+    if (sectionProgress && structure.revision !== sectionProgress.revision)
+      throw new LearningConflictError()
+    const accessible =
+      sectionProgress && !privileged
+        ? await this.learning.sections.accessibleBlockIds(lesson, sectionProgress)
+        : null
+    const sectionState = (id: string) => sectionProgress?.sections.find((s) => s.id === id)
+    const savedSection = structure.progress.sectionId
+    const sectionId =
+      sectionProgress && (!savedSection || sectionState(savedSection)?.status === 'locked')
+        ? (sectionProgress.sections.find((s) => s.status === 'available')?.id ??
+          sectionProgress.sections[0]?.id ??
+          null)
+        : savedSection
+    return {
+      ...view,
+      ...(sectionProgress ? { sectionProgress } : {}),
+      blocks: accessible ? view.blocks.filter((b) => accessible.has(b.id)) : view.blocks,
+      sections: structure.sections.map(
+        ({ id, title, blockIds, workspaceBlockId, externalTool, completion }) => ({
+          id,
+          title,
+          blockIds: !privileged && sectionState(id)?.status === 'locked' ? [] : blockIds,
+          workspaceBlockId:
+            !privileged && sectionState(id)?.status === 'locked' ? null : workspaceBlockId,
+          externalTool: !privileged && sectionState(id)?.status === 'locked' ? null : externalTool,
+          ...(completion &&
+          (!sectionProgress || privileged || sectionState(id)?.status !== 'locked')
+            ? { completion }
+            : {}),
+        }),
+      ),
+      structureRevision: structure.revision,
+      legacyLayout: structure.legacyLayout,
+      requirements: lessonCompletionRequirements({
+        ...view,
+        sections: structure.sections,
+        learningProgress: {
+          ...structure.progress,
+          sectionId,
+          blocks: accessible
+            ? structure.progress.blocks.filter((b) => accessible.has(b.blockId))
+            : structure.progress.blocks,
+        },
+        sectionProgress,
+      }),
+      learningProgress: {
+        ...structure.progress,
+        sectionId,
+        blocks: accessible
+          ? structure.progress.blocks.filter((b) => accessible.has(b.blockId))
+          : structure.progress.blocks,
+      },
+    }
   }
 }

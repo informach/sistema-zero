@@ -1,15 +1,48 @@
+import { GAME_TWO_D_PALETTE } from './palette'
 import { withGameTwoDLifecycleGuidance } from './pedagogy'
 
-export const gameTwoDDocs = withGameTwoDLifecycleGuidance(`## Jogo 2D
+export const gameTwoDDocs = withGameTwoDLifecycleGuidance(
+  `## Jogo 2D
 
-Esta extensão adiciona um pequeno runtime didático em \`window.SZGame2D\`
-que ajuda a montar jogos 2D simples sobre Canvas API. O código gerado é
-  intencionalmente legível. Quando você abrir a Ponte vai ver
-chamadas explícitas para \`SZGame2D.createSprite(...)\` e \`SZGame2D.gameLoop(...)\`.
-Os HUDs, placares e telas dos kits usam a letra que você escolher no bloco
-**Usar a fonte**; sem ele, vem a arredondada Baloo 2. A letra escolhida viaja
-junto com o jogo, então funciona offline. Fontes escolhidas por você nos
-blocos de Canvas continuam sendo respeitadas.
+Crie jogos com sprites, teclado, toque, mapas e sons. Na Ponte, os blocos aparecem
+como chamadas de código. A fonte escolhida acompanha o jogo e funciona offline.
+
+### Onde encontrar os blocos
+
+A paleta tem 14 famílias, nesta ordem: ` +
+    GAME_TWO_D_PALETTE.map((family) => family.name).join('; ') +
+    `.
+Dentro de cada família, as subseções aproximam as ações relacionadas. A busca também
+reconhece nomes usados nos cursos anteriores. “Blocos deste jogo” conserva as ferramentas
+necessárias para modificar o projeto, mesmo depois de apagar o último bloco de um tipo.
+
+### Contato, recarga e destruição
+
+- Em **Colisões**, a pergunta circular consulta o contato sem alterar os sprites.
+- Em **Tempo > Recarga de ações**, “fazer no máximo uma vez a cada … quadros” tenta a ação agora.
+  Cada bloco mantém uma recarga independente por sprite; 60 quadros são 1 segundo de jogo.
+  A pausa congela a contagem. Repetir a tentativa não faz a ação ficar agendada.
+- Em **Sprites**, “Destruir o sprite” retira todos os vínculos com grupos e encerra desenho,
+  contato e clique. Retirar de um grupo permite reutilizar o objeto. Destruir é permanente.
+- Em **Som**, “Parar” escolhe todas as músicas, só a melodia pronta ou só a música de arquivo.
+
+### Sprites de texto e números
+
+Em **Sprites** e **Grupos**, crie texto ou números a partir de variáveis, contas e
+listas. Use movimento, desenho e colisão normalmente. Ajuste letra, cor, largura,
+alinhamento, margem e fundo; largura 0 ajusta ao conteúdo. No fundo, escolha a cor e
+suba a opacidade para ela aparecer. O fundo também pode ser uma **imagem**: aí é
+ela que manda no tamanho do sprite, sem deformar, e o texto é escrito por cima,
+quebrando linha na margem. É assim que se faz placa, botão e balão de fala com um
+desenho do Pinta. Para a placa ficar de outro tamanho, use o
+**Definir o tamanho do sprite** (em **Posição e tamanho**): a moldura acompanha e
+a letra fica no tamanho que você escolheu. Sem imagem, quem muda a letra é o
+**Multiplicar o tamanho do texto do sprite**, e a caixa acompanha sozinha.
+Guarde dados por sprite.
+**Controles** oferece clique/toque individual ou em grupo. Textos visíveis entram
+no HUD acessível; **Escrever** também aceita variáveis. Veja **Chuva de números**
+e **Quiz de números**: no quiz, responda com 1, 2 ou 3 e use Enter para avançar ou
+reiniciar.
 
 ### Comece um projeto
 
@@ -18,17 +51,9 @@ blocos de Canvas continuam sendo respeitadas.
 - [[G2D_LIFECYCLE_EVENTS]]
 - [[G2D_LIFECYCLE_LOOP]]
 
-Esses são os destinos no projeto. Na paleta, os blocos ficam organizados pelo que
-fazem: **🎮 Sprites** reúne criar e desenhar os personagens; **📐 Posição & tamanho**
-e **💨 Velocidade** reúnem os bloquinhos de VALOR que leem onde o sprite está e o quão
-rápido ele vai; **🎛️ Controles** reúne teclado e clique/toque; **💥 Colisões** reúne
-contato entre sprites e grupos; **⏱️ Tempo e repetição** reúne os três “A cada…”, recarga
-e tempo de vida; **🏆 Placar e HUD** reúne pontos, textos e barras na tela. Assim você
-procura pelo assunto e usa as aulas para aprender em qual área colocar cada bloco.
-
-- **Preparar o jogo em tela cheia**. Atalho para começar: prepara a tela (largura × altura) ocupando a janela, responsiva (mantém a proporção e redimensiona sozinha), **centralizada**, com uma **cor de fundo** que combina com o jogo (vai no canvas e na sobra ao redor). Não precisa criar o canvas no HTML. Os blocos individuais continuam disponíveis para montar na mão.
-- **Preparar o jogo para ocupar a tela toda**. Como o de cima, mas **sem dimensões**: o canvas preenche a tela INTEIRA (sem barras nas laterais) e a área do jogo **acompanha** o tamanho da janela. A resolução do jogo passa a ser o tamanho da tela. Aqui "a largura/altura da tela" mudam com a janela, então centralize por eles (não por números fixos). Combine com "entrar em tela cheia" para o jogo tomar o monitor todo. Use UM dos dois "Preparar", no começo.
-- **Pôr o cenário atrás de tudo**. Escolhe um desenho seu (do Pinta ou das Imagens) como fundo do jogo. Ele **cobre** a tela inteira sem deformar: se a proporção do desenho for diferente da tela, sobra um pouco para fora, em cima e embaixo ou nas laterais. Um desenho de 960 por 540 cabe exatinho numa tela larga. Ponha UMA vez em **⚙️ Ao iniciar** e o jogo repinta sozinho a cada quadro, antes de tudo o mais.
+- **Preparar o jogo em tela cheia**. Escolha largura, altura e fundo. O jogo fica centralizado e se ajusta à janela mantendo a proporção. O canvas é criado automaticamente.
+- **Preparar o jogo para ocupar a tela toda**. Preenche a janela sem barras; largura e altura acompanham a tela. Use esses valores para centralizar objetos. Combine com “entrar em tela cheia” para ocupar o monitor. Use um dos dois blocos de preparação no começo.
+- **Pôr o cenário atrás de tudo**. Escolha uma imagem do Pinta ou do projeto. Ela cobre a tela sem deformar, cortando as sobras. Coloque uma vez em **⚙️ Ao iniciar**; o fundo será repintado antes dos demais desenhos.
 - **Desenhar o cenário**. O irmão do de cima, para quem quer mandar na ordem das camadas: desenha o cenário AGORA, neste quadro. Vai dentro do **🔁 Enquanto estiver rodando**, logo depois de limpar a tela. Use um OU o outro.
 - **Descrever o jogo para leitor de tela**. Conte o objetivo e os controles em uma frase, por exemplo: “Pegue as moedas. Use as setas para andar.” Coloque em **⚙️ Ao iniciar**; pode vir antes ou depois do bloco de preparação.
 - **Criar sprite**. Define um objeto com \`x\`, \`y\`, \`largura\`, \`altura\`, \`cor\`.
@@ -36,14 +61,13 @@ procura pelo assunto e usa as aulas para aprender em qual área colocar cada blo
 - **Mover sprite … em 4 direções com setas**. Move o sprite com as setas do teclado (ver
   "Movimento" abaixo).
 - **Mudar a posição do sprite** / **Mudar a velocidade do sprite**. Atualiza x/y e vx/vy.
-- **Guardar em X se o sprite A colide com o sprite B**. Devolve sim/não por interseção retangular.
-- **Criar pontuação**. Declara a variável de pontos.
+- **o sprite A está tocando o sprite B ?**. Pergunta sobre contato retangular. Use o resultado num “se” ou numa variável.
+- Em **Programação > Variáveis**, crie a variável de pontos com o valor inicial desejado.
 - **Mostrar fim de jogo com o texto**. Escreve a mensagem em vermelho no canvas.
 - **A cada quadro do jogo...**. Registra uma atualização no agendador do motor, em
   passos fixos de 60 Hz. Vários blocos desse tipo coexistem sem cancelar um ao outro.
 
-O Estúdio liga o motor automaticamente. O antigo bloco “Quando o jogo começar”
-existe apenas para migrar projetos salvos e não aparece na paleta.
+O Estúdio liga o motor automaticamente a partir das Áreas do projeto.
 
 ### Faça o jogo reagir
 
@@ -98,7 +122,7 @@ existe apenas para migrar projetos salvos e não aparece na paleta.
 
 ### Dê aparência aos personagens
 
-Use o painel **Imagens e sons** (no menu ⋯ da barra de cima) para enviar imagens do
+Use o menu ⋯ → **Materiais** (Imagens, Sons ou Modelos 3D) para enviar imagens do
 computador ou escolher da biblioteca;
 depois é só usar o **nome** da imagem nos blocos.
 
@@ -122,7 +146,8 @@ pronta. Se o nome não existir ou a carga falhar, o sprite usa um retângulo da 
 - **Ativar controles clássicos** prepara ações semânticas para teclado e botões de toque
   acessíveis. As perguntas **a ação está sendo segurada?** e **acabou de ser apertada?**
   combinam setas/WASD, Z/Espaço, X, Backspace (selecionar), Enter, Escape e multitoque sem
-  duplicar lógica. Coloque
+  duplicar lógica. A opção **só as quatro direções** oculta os outros botões na tela;
+  o teclado não muda. Coloque
   este bloco uma vez em **⚙️ Ao iniciar**.
 - **Quando a ação for apertada** fica em **⚡ Quando acontecer** e reúne teclado, botões de
   toque, botão focado pelo teclado e tecnologia assistiva. Use a ação **pausar** para alternar
@@ -162,7 +187,7 @@ Use os demais blocos abaixo dentro do **"A cada quadro do jogo"**:
 ### Construa o cenário com mapas
 
 Tiles montam cenários (chão, paredes, plataformas) a partir de UMA imagem com vários
-quadros (o **tileset**). Escolha um no painel **Imagens e sons** (ex.: \`tileset\`).
+quadros (o **tileset**). Escolha um na aba **Imagens** (ex.: \`tileset\`).
 
 - **Conjunto e mapa de tiles vetoriais** usam Figuras desenhadas no próprio projeto como
   peças sólidas, plataformas, decoração ou **atravessa e avisa**. Assim um jogo inteiro
@@ -170,7 +195,7 @@ quadros (o **tileset**). Escolha um no painel **Imagens e sons** (ex.: \`tileset
 - **Carregar fase de campanha vetorial** é a versão compacta para campanhas grandes. Ela
   guarda as grades e os metadados em uma receita JSON, mas cria somente o Mapa, o Mundo e a
   Fase escolhidos naquele momento. Também pode guardar um elenco autoral por fase e reforços
-  próprios da segunda jornada, usando a lista de tipos indicada no bloco. Use **valor da fase
+  próprios da segunda volta, usando a lista de tipos indicada no bloco. Use **valor da fase
   atual** para ler mundo, etapa, pontos de nascimento e outras propriedades numéricas da
   receita. Isso evita que dezenas de mapas e inimigos inativos virem milhares de blocos SVG.
 - **atravessa e avisa** (só no mapa VETORIAL) é a peça que o herói ATRAVESSA e que mesmo assim
@@ -197,13 +222,13 @@ quadros (o **tileset**). Escolha um no painel **Imagens e sons** (ex.: \`tileset
 - **Colidir com os sólidos e plataformas do mapa**. É a opção direta para a receita de
   uma tela sem Mundo. Sólidos são chão e paredes; plataformas seguram em uma face só.
   Use a cada quadro, depois de mover o sprite.
-- **Impedir de atravessar os sprites de um grupo** (em **💥 Colisões**). Mesma colisão, mas
+- **Impedir de atravessar os sprites de um grupo** (em **Colisões**). Mesma colisão, mas
   contra obstáculos SEM mapa: jogue as pedras/casas (até desenhadas por figura) num grupo
   e o sprite não atravessa nenhuma delas, deslizando pela beirada.
-- **Impedir de atravessar o sprite** (em **💥 Colisões**). A mesma ideia, mas contra UM sprite
+- **Impedir de atravessar o sprite** (em **Colisões**). A mesma ideia, mas contra UM sprite
   só, como chão ou parede, sem precisar montar um grupo.
 - **Fazer o sprite pousar na plataforma** / **nas plataformas do grupo** (em
-  **💥 Colisões**). Transforma figuras em plataformas de uma face: atravessa por baixo e
+  **Colisões**). Transforma figuras em plataformas de uma face: atravessa por baixo e
   pelos lados, pousa na face atraída pela gravidade.
 - Uma figura-chão móvel transporta quem estiver apoiado. A ordem é: **mover as
   plataformas → mover o jogador → resolver as colisões → desenhar**. O movimento do
@@ -234,7 +259,7 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
   para baixo na frente: o herói passa ATRÁS da árvore.
 - **Colisões com grupos**. \`Quando um sprite do grupo A encostar num do grupo B\` roda o
   "fazer" com os dois sprites; \`Para cada sprite do grupo que encostar no sprite\`
-  compara um sprite com qualquer grupo. Os dois ficam em **💥 Colisões** e são usados dentro
+  compara um sprite com qualquer grupo. Os dois ficam em **Colisões** e são usados dentro
   do "a cada quadro".
 - **Temporizadores**. \`A cada N quadros/segundos fazer\` (ótimo para criar inimigos) e
   \`Depois de N segundos fazer\` (roda UMA vez por partida: mensagem de abertura, chegada
@@ -242,7 +267,7 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
 - **HUD no canvas**. \`Mostrar placar\`, \`Escrever placar pixel\`, \`Escrever\` e \`Barra de … / …\`.
   O **Escrever placar pixel** é o campo no estilo dos jogos clássicos (o nome em cima, o número
   embaixo) e tem letra PRÓPRIA, desenhada ponto a ponto: ele não muda com o "Usar a fonte". Os
-  outros seguem a letra escolhida, então misturar os dois deixa o jogo com duas tipografias. Esses textos também são anunciados por leitores de tela, e a troca de cena limpa os valores da tela anterior. Para vidas, prefira **Desenhar as vidas do sprite** em **❤️ Vida**: escolha corações ou barra e o bloco lê o sprite sozinho.
+  outros seguem a letra escolhida, então misturar os dois deixa o jogo com duas tipografias. Esses textos também são anunciados por leitores de tela, e a troca de cena limpa os valores da tela anterior. Para vidas, prefira **Desenhar as vidas do sprite** em **Vida e placar > Vida**: escolha corações ou barra e o bloco lê o sprite sozinho.
 - **Telas/cenas**. \`Ir para a tela\` e \`a tela atual é … ?\` aceitam tanto os
   nomes prontos quanto nomes inventados (como \`ganhou1\`); \`Mostrar tela (título/subtítulo/dica)\`,
   \`Reiniciar o jogo\`. Prepare grupos, sprites, variáveis e a tela inicial em **⚙️ Ao iniciar**;
@@ -254,7 +279,7 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
 
 ### Monte um jogo espacial
 
-A categoria **🚀 Kit espaço** reúne atalhos PRONTOS (não genéricos) para jogos de nave
+A categoria **Kits prontos > Espaço** reúne atalhos PRONTOS (não genéricos) para jogos de nave
 espacial. Os desenhos, efeitos e sons já vêm feitos: criar nave (cabine + foguinho animado,
 cores do corpo e das asas escolhidas), criar asteroide no grupo (pedra que gira), desenhar
 fundo de estrelas (céu com gradiente e estrelas que cintilam), soltar
@@ -290,7 +315,7 @@ girada na direção apontada.
 
 O bloco **Fazer a tela preencher N% da janela** (genérico) deixa o canvas grande, nítido e responsivo: ocupa quase toda a janela e se reajusta sozinho quando ela muda de tamanho, mantendo a proporção. As coordenadas do jogo continuam as mesmas, mas o desenho passa a ser feito na resolução REAL da tela. Fica grande E nítido (sem borrar), em qualquer tamanho.
 
-Para começar rápido, o bloco **Preparar o jogo em tela cheia** (no grupo ✨ Aparência) já faz tudo isso de uma vez. Cria a tela com o tamanho escolhido, centraliza na janela e pinta o fundo (canvas e a sobra ao redor) com a cor do jogo. Sem precisar criar o canvas no HTML. Os blocos individuais (criar a tela, preencher %) continuam disponíveis para quem quer montar na mão.
+Para começar rápido, o bloco **Preparar o jogo em tela cheia** (no grupo Sprites > Aparência) já faz tudo isso de uma vez. Cria a tela com o tamanho escolhido, centraliza na janela e pinta o fundo (canvas e a sobra ao redor) com a cor do jogo. Sem precisar criar o canvas no HTML. Os blocos individuais (criar a tela, preencher %) continuam disponíveis para quem quer montar na mão.
 
 ### Monte um jogo de corrida e pulo
 
@@ -299,7 +324,7 @@ Para jogos de **corrida** (estilo "Dino Run"), em que o personagem não anda par
 - **Fazer o sprite … pular na tela (a borda é chão)** (genérico, em Movimento). Pouso na borda +
   pulo com ↑/Espaço/W ou um toque. Aplique a gravidade ao sprite logo acima. Serve a
   qualquer jogo de pulo.
-- A categoria **🦕 Kit dino** reúne atalhos PRONTOS: **criar dinossauro** (desenhado, com perninhas que
+- A categoria **Kits prontos > Dino** reúne atalhos PRONTOS: **criar dinossauro** (desenhado, com perninhas que
   correm sozinhas), **controlar o dinossauro** (pula e abaixa, com chão/poeira; aplique a gravidade logo acima),
   **criar obstáculo no grupo** (cacto/pedra no chão para pular, pássaro no alto para abaixar, ou sorteado),
   **criar ovo de bônus no grupo** (item para coletar), **desenhar fundo de floresta** (céu, sol, nuvens,
@@ -311,7 +336,7 @@ Veja o exemplo **"Nave contra Asteroides"** para um jogo de tiro e **"Dino Run"*
 
 ### Monte uma batalha de bananas
 
-A categoria **🦍 Kit gorilas** monta um jogo de artilharia por turnos (estilo "Gorillas") para **2 jogadores** no mesmo aparelho. Cidade, física e crateras já vêm prontas: **Criar/Desenhar a cidade**, **Pôr o gorila no lado**, **Sortear/Desenhar o vento**, **Mirar arrastando** (mais longe = mais forte) + **soltou a mira?** → **Jogar a banana**, **Mover/Desenhar a banana** (gravidade + vento entortam), **a banana acertou o gorila?** (vitória) / **bateu num prédio?** (abre cratera, troca de turno), e **sons** de queda/explosão. Tem também blocos genéricos de canvas em ✏️ Traçado (retângulo ao traçado, recortar/clip, ponto dentro do traçado?) e os eventos apertar/soltar o mouse. Veja o exemplo **"Guerra de Gorilas"**.
+A categoria **Kits prontos > Gorilas** monta um jogo de artilharia por turnos (estilo "Gorillas") para **2 jogadores** no mesmo aparelho. Cidade, física e crateras já vêm prontas: **Criar/Desenhar a cidade**, **Pôr o gorila no lado**, **Sortear/Desenhar o vento**, **Mirar arrastando** (mais longe = mais forte) + **soltou a mira?** → **Jogar a banana**, **Mover/Desenhar a banana** (gravidade + vento entortam), **a banana acertou o gorila?** (vitória) / **bateu num prédio?** (abre cratera, troca de turno), e **sons** de queda/explosão. Tem também blocos genéricos de canvas em ✏️ Traçado (retângulo ao traçado, recortar/clip, ponto dentro do traçado?) e os eventos apertar/soltar o mouse. Veja o exemplo **"Guerra de Gorilas"**.
 
 ### Adicione um robô adversário
 
@@ -320,30 +345,23 @@ A categoria **🦍 Kit gorilas** monta um jogo de artilharia por turnos (estilo 
 
 ### Faça jogos parecidos sem os kits
 
-Dá pra montar jogos deste estilo **só com blocos genéricos** (HTML + CSS + Programação/Canvas), sem a extensão. Para isso entraram blocos novos no núcleo:
-
-- **Mudar o estilo do elemento por código** (elemento.style.x = …) e **Definir atributo**. Posicionar/mover/mostrar/esconder painéis e formas, ou mudar stroke/fill/etc. De um SVG por código.
-- **Blocos de SVG** (categoria **🎨 SVG**): caixa SVG, grupo, caminho (d), círculo, retângulo, linha e "reusar". Bom para um **moinho/cata-vento que gira por CSS** (@keyframes).
-- **o sistema está no modo escuro?** (lê prefers-color-scheme) e **densidade de pixels da tela** (devicePixelRatio). Para temas claro/escuro e canvas nítido.
-- A **tela cheia** já existia (entrar/sair/alternar e "está em tela cheia?").
-
-Veja o exemplo clássico **"Cidade & Moinho (na mão)"** (no painel de Extensões → "Exemplos clássicos"). Um mini-Gorillas montado SÓ com esses blocos: arrastar a bomba, vento, moinho SVG girando, painel de HTML e botão de tela cheia.
+Use HTML, CSS, Programação e **🎨 SVG** para montar regras próprias. Estilos e atributos controlam painéis e desenhos; SVG oferece formas e caminhos. O exemplo **"Cidade & Moinho (na mão)"** combina bomba, vento, animação e tela cheia. Ele fica em Extensões → Exemplos clássicos.
 
 ### Monte um jogo de equilibrista
 
-Categoria **🤸 Kit equilibrista**. Um jogo estilo "Stick Hero" que VOCÊ monta: estique
+Categoria **Kits prontos > Equilibrista**. Um jogo estilo "Stick Hero" que VOCÊ monta: estique
 o bastão do tamanho certo e atravesse para a próxima plataforma. O EQUILIBRISTA é um
 **sprite comum** (os blocos de sprite funcionam nele) e as regras moram no **caminho**.
-Melhor num canvas **em pé** (ex.: 360×480). Estes kits não combinam com 🌍 Mundos com câmera
+Melhor num canvas **em pé** (ex.: 360×480). Estes kits não combinam com Cenários > Mundos e câmera com câmera
 (o mundo já desliza sozinho).
 
 - **Criar equilibrista** (largura, altura e cor). É um sprite: dá para trocar a figura
-  ou a imagem dele com os blocos de 🎮 Sprites (ex.: um desenho seu do Pinta) e
+  ou a imagem dele com os blocos de Sprites (ex.: um desenho seu do Pinta) e
   desenhá-lo com "Desenhar o sprite". Faça UMA vez, no começo.
 - **Criar o caminho de plataformas** (cores das plataformas e do bastão). Guarda as
   plataformas, o bastão e as árvores do fundo. Faça UMA vez, no começo.
 - Monte a REGRA DO MOUSE você mesmo, dentro do "a cada quadro do jogo", com um
-  se/senão: se **o mouse ou dedo está segurado?** (em 🎛️ Controles) então **Crescer o
+  se/senão: se **o mouse ou dedo está segurado?** (em Controles) então **Crescer o
   bastão do caminho**, senão **Derrubar o bastão do caminho**.
 - **Fazer o equilibrista andar pelo caminho**. A física: o bastão derrubado gira, o
   herói anda, atravessa ou cai; também posiciona o sprite. Como o andar reposiciona o
@@ -362,7 +380,7 @@ os pontos por variável e as telas de início e fim.
 
 ### Monte um jogo de balão
 
-Categoria **🎈 Kit balão**. Um jogo estilo balão de ar quente que VOCÊ monta: suba
+Categoria **Kits prontos > Balão**. Um jogo estilo balão de ar quente que VOCÊ monta: suba
 segurando o ponteiro (gasta combustível), voe baixo para economizar e desvie das
 árvores. O BALÃO é um **sprite comum** com combustível próprio (começa com 100); as
 árvores moram no **caminho**. Melhor num canvas **deitado** (ex.: 560×360).
@@ -388,7 +406,7 @@ combustível, o evento da árvore e as telas de início e fim.
 
 ### Adicione efeitos, notas e música
 
-A categoria **🔊 Som** ganhou uma biblioteca de sons PRONTOS. Tudo sintetizado (Web Audio), sem
+A categoria **Som** ganhou uma biblioteca de sons PRONTOS. Tudo sintetizado (Web Audio), sem
 precisar de arquivos:
 
 - **Tocar efeito**. Um menu com dezenas de efeitos típicos de jogo: moeda, joia, vida, power-up,
@@ -405,7 +423,7 @@ precisar de arquivos:
 ### Toque os SEUS sons
 
 Os blocos acima inventam o som na hora. Estes tocam um arquivo que **você** enviou: use o botão
-**Enviar som** (o do alto-falante) em "Imagens e sons", na barra de cima. Serve mp3, wav e ogg.
+**Enviar som** (o do alto-falante) em "Sons", no menu ⋯. Serve mp3, wav e ogg.
 
 - **Carregar o som … do arquivo …**. Prepara o arquivo e dá um apelido a ele ("moeda", "risada").
   Vai em **⚙️ Ao iniciar**, porque ele não toca nada: só deixa pronto.
@@ -425,16 +443,16 @@ calado.
 
 Tijolinhos que faltavam para montar mais tipos de jogo, em categorias novas e existentes:
 
-- **🎯 Mira e contas**: **Apontar para** e **Mover na direção de** (perseguição/IA), **a distância entre** e
+- **Movimento > Direção e distância**: **Apontar para** e **Mover na direção de** (perseguição/IA), **a distância entre** e
   **o ângulo até** dois sprites, **um número de … a …** (sorteia sempre um inteiro, incluindo as pontas) e
   **tem chance de … %?** (evento aleatório; valores abaixo de 0 nunca acontecem e acima de 100 sempre acontecem).
-- **❤️ Vida**: use **Dar ao sprite … de vida** uma vez em **⚙️ Ao iniciar**. Durante a partida, **Mudar a vida** cura ou tira pontos; **Machucar o sprite … e deixá-lo invencível** é a opção segura para contatos repetidos. Pergunte **a vida do sprite**, **a vida máxima**, **ainda tem vida?**, **as vidas acabaram?** ou **o sprite está invencível?**. Combine a última pergunta com **não** para disparar tremor, explosão ou som somente quando o dano puder acontecer. Para o HUD, **Desenhar as vidas do sprite** lê a vida automaticamente e oferece **corações** ou **barra**. Uma vida nunca fica negativa nem passa do máximo.
-- **⏱️ Tempo e repetição**: **pode agir? (recarga de N quadros)** (cadência de tiro por sprite) e
+- **Vida e placar > Vida**: use **Dar ao sprite … de vida** uma vez em **⚙️ Ao iniciar**. Durante a partida, **Mudar a vida** cura ou tira pontos; **Machucar o sprite … e deixá-lo invencível** é a opção segura para contatos repetidos. Pergunte **a vida do sprite**, **a vida máxima**, **ainda tem vida?**, **as vidas acabaram?** ou **o sprite está invencível?**. Combine a última pergunta com **não** para disparar tremor, explosão ou som somente quando o dano puder acontecer. Para o HUD, **Desenhar as vidas do sprite** lê a vida automaticamente e oferece **corações** ou **barra**. Uma vida nunca fica negativa nem passa do máximo.
+- **Tempo**: **pode agir? (recarga de N quadros)** (cadência de tiro por sprite) e
   **Tirar do grupo quem viveu mais de N segundos** (tiros somem sozinhos), junto dos blocos **A cada…**.
-- **✨ Aparência**: **Virar** (esquerda/direita/cima/baixo), **Mudar a transparência**, **Mudar o tamanho** e
+- **Sprites > Aparência**: **Virar** (esquerda/direita/cima/baixo), **Mudar a transparência**, **Mudar o tamanho** e
   **Multiplicar o tamanho** do sprite.
-- **🕹️ Movimento**: **Dar a volta na tela** (sai de um lado, reaparece no outro. Estilo Pac-Man/Asteroids).
-- **📺 Telas e cenas**: **Descrever o jogo para leitor de tela** torna objetivo e controles acessíveis. **Pausar o jogo** CONGELA tudo (o "a cada quadro" para de rodar, e o "quando
+- **Movimento**: **Dar a volta na tela** (sai de um lado, reaparece no outro. Estilo Pac-Man/Asteroids).
+- **Jogo e telas**: **Descrever o jogo para leitor de tela** torna objetivo e controles acessíveis. **Pausar o jogo** CONGELA tudo (o "a cada quadro" para de rodar, e o "quando
   encostar" também), **Continuar o jogo** descongela e **o jogo está pausado?** lê o estado. Os eventos de
   toque **"Quando apertar a tecla"**, **"Quando a ação for apertada"** e **"Quando clicar/tocar"**
   continuam funcionando na pausa DE PROPÓSITO;
@@ -447,36 +465,36 @@ Tijolinhos que faltavam para montar mais tipos de jogo, em categorias novas e ex
 
 Um Mundo pode ser maior que a tela, caber exatamente nela ou nem usar câmera:
 
-- **🌍 Mundos**: crie uma área jogável, cadastre mapas e grupos como terreno, escolha as bordas e
+- **Cenários > Mundos e câmera**: crie uma área jogável, cadastre mapas e grupos como terreno, escolha as bordas e
   configure a câmera. Os inimigos que andam no chão precisam do bloco **os inimigos do tipo … andam
   no terreno**, senão eles pousam na borda da tela, que anda junto com a câmera. A câmera rola só o MUNDO. Desenhe o HUD (placar, vidas, textos) DEPOIS do mundo
   para ele ficar fixo na tela. ⚠️ Cliques/toques continuam em coordenadas de tela; com câmera, a
   posição no mundo é tela + câmera.
-- **🗺️ Mapas** (destrutíveis): prepare a geometria uma vez; depois use **Quebrar o tile** onde está um
+- **Cenários > Mapas** (destrutíveis): prepare a geometria uma vez; depois use **Quebrar o tile** onde está um
   sprite (mineração/destruição), **pôr um tile** e **o número do tile** onde está o sprite
   (ler/construir em tempo real).
-- **🚩 Fases**: agrupe um Mundo e um ponto de entrada quando o jogo tiver progressão. **Entrar**
+- **Cenários > Fases e campanha**: agrupe um Mundo e um ponto de entrada quando o jogo tiver progressão. **Entrar**
   preserva tiles, itens e inimigos já alterados; **Reiniciar** restaura os tiles e esvazia os grupos
   registrados para a Fase. Os dois posicionam o jogador e disparam o evento próprio. Jogos de uma
   área só não precisam desse conceito.
-- **📦 Muitos**: **Trazer para a frente** / **Mandar para trás**. Controla quem é desenhado por
+- **Grupos**: **Trazer para a frente** / **Mandar para trás**. Controla quem é desenhado por
   cima de quem dentro de um grupo.
-- **✨ Aparência** (depuração): **Mostrar a caixa de colisão** de um sprite e **Mostrar os FPS**. Para
+- **Sprites > Aparência** (depuração): **Mostrar a caixa de colisão** de um sprite e **Mostrar os FPS**. Para
   enxergar colisões e a performance enquanto cria.
-- **✨ Aparência**: **Mostrar a borda da tela**, com cor e espessura. Põe uma moldura em volta do
+- **Sprites > Aparência**: **Mostrar a borda da tela**, com cor e espessura. Põe uma moldura em volta do
   palco para todo mundo ver onde começa e onde termina a área do jogo. Ótimo para explicar o palco
   a alguém. Ponha em **⚙️ Ao iniciar**; para tirar, apague o bloco. A moldura fica na beirada da
   tela, então ela não atrapalha o desenho nem é apagada pelo jogo.
-- **✨ Aparência**: **Usar a fonte**, com cinco letras para escolher: Baloo 2 (arredondada),
+- **Sprites > Aparência**: **Usar a fonte**, com cinco letras para escolher: Baloo 2 (arredondada),
   Nunito (limpa), Press Start 2P (de pixel), Bungee (grossa) e Fredoka (gordinha). A escolha vale
   para **todo** texto do jogo: placar, telas e mensagens. Ponha em **⚙️ Ao iniciar** e use **um
   bloco só**: a fonte é decidida **antes** de o jogo começar, então, se houver dois, vale o último
   e o jogo avisa. ⚠️ O **Escrever texto pixel** e o **Escrever placar pixel** têm letras próprias,
   desenhadas ponto a ponto, e não mudam. Os outros blocos de placar seguem a letra escolhida.
-- **✨ Aparência**: **Cobrir a tela com fade de N por cento na cor**. Um véu por cima de tudo, para escurecer
+- **Sprites > Aparência**: **Cobrir a tela com fade de N por cento na cor**. Um véu por cima de tudo, para escurecer
   a cena numa pausa ou fechar a fase apagando aos poucos. Vai no **🔁 Enquanto estiver rodando**,
   depois de tudo o que você desenhou.
-- **📺 Telas e cenas**: **Mostrar a tela com a imagem**. Cobre o palco inteiro com um desenho seu:
+- **Jogo e telas**: **Mostrar a tela com a imagem**. Cobre o palco inteiro com um desenho seu:
   a tela de abertura, a de vitória, a de fim de jogo. Cobre sem deformar, como o cenário, e ainda
   **anuncia** a tela para quem joga com leitor de tela.
   Vai dentro do **🔁 Enquanto estiver rodando**, no lugar em que você mostraria a tela escrita.
@@ -552,7 +570,7 @@ sem Fases, Fases sem rolagem ou as duas coisas juntas.
 
 ### Leia a posição e o tamanho do sprite
 
-Bloquinhos de VALOR (na categoria **📐 Posição & tamanho**) que poupam a criança de fazer as contas na
+Bloquinhos de VALOR (na categoria **Movimento > Posição e tamanho**) que poupam a criança de fazer as contas na
 mão. Em vez de \`x + largura / 2\`, ela encaixa um bloco pronto:
 
 - **a posição x / y do sprite**. Onde o sprite está (borda esquerda / borda de cima).
@@ -562,7 +580,7 @@ mão. Em vez de \`x + largura / 2\`, ela encaixa um bloco pronto:
 
 ### Leia a velocidade do sprite
 
-Bloquinhos de VALOR (na categoria **💨 Velocidade**) para ler o quão rápido o sprite se move, sem a
+Bloquinhos de VALOR (na categoria **Movimento > Velocidade e gravidade**) para ler o quão rápido o sprite se move, sem a
 criança fazer as contas na mão:
 
 - **a velocidade x / y do sprite**. A velocidade horizontal (vx) e vertical (vy) do sprite.
@@ -573,7 +591,7 @@ criança fazer as contas na mão:
 
 ### Sorteie posições na tela
 
-Na categoria **🎯 Mira e contas**, dois valores para um sprite nascer num lugar SORTEADO sem a criança
+Na categoria **Movimento > Direção e distância**, dois valores para um sprite nascer num lugar SORTEADO sem a criança
 montar a continha \`Math.random() * largura\` na mão:
 
 - **um x aleatório na tela** / **um y aleatório na tela**. Sorteia uma posição em qualquer lugar da
@@ -582,7 +600,7 @@ montar a continha \`Math.random() * largura\` na mão:
 
 ### Anime o personagem pelo estado
 
-Na categoria **🎬 Animação**, o jeito FÁCIL de o personagem trocar de animação sozinho:
+Na categoria **Sprites > Animação**, o jeito FÁCIL de o personagem trocar de animação sozinho:
 
 - **Quando o sprite estiver … tocar a animação …**. Guarda a animação de UM estado do sprite:
   parado, andando (para os lados), andando (cima/baixo), pulando, caindo ou tomando dano. Use um
@@ -600,7 +618,7 @@ Na categoria **🎬 Animação**, o jeito FÁCIL de o personagem trocar de anima
 
 ### Use um mapa pronto do Pinta
 
-- **Criar mapa do meu desenho** (🗺️ Mapas). Desenhe o MAPA no Pinta, toque no 🚀 e escolha o
+- **Criar mapa do meu desenho** (Cenários > Mapas). Desenhe o MAPA no Pinta, toque no 🚀 e escolha o
   desenho neste bloco: grade, peças e sólidos vêm JUNTOS, nada de colar texto.
 - No **Criar mapa de tiles** (o clássico, para montar/editar na mão), a GRADE agora abre um
   mini-editor visual: escolha uma peça e PINTE as células (borracha apaga, dá para mudar
@@ -608,7 +626,7 @@ Na categoria **🎬 Animação**, o jeito FÁCIL de o personagem trocar de anima
 
 ### Crie tipos de inimigo
 
-Na categoria **😈 Inimigos**, CLASSES de inimigo prontas (como o Goomba e o Koopa do Mario).
+Na categoria **Inimigos**, CLASSES de inimigo prontas (como o Goomba e o Koopa do Mario).
 
 **Onde cada bloco fica.** O que o inimigo É mora em **🧩 Meus moldes**: criar o tipo, somar
 comportamento, ajustar os valores e criar o grupo com todos os inimigos. O que a PARTIDA faz com ele
@@ -711,7 +729,7 @@ tempo acabar.
 - **Para cada tiro do tipo … que acertar o sprite …** e **Para cada raio do tipo … que acertar o
   sprite …**. Dois dos TRÊS jeitos de o ataque do inimigo alcançar você. O terceiro é encostar no
   corpo dele, que você pega com o **Para cada sprite do grupo … que colidir com o sprite …**
-  (em **💥 Colisões**), porque o tipo de inimigo é um grupo.
+  (em **Colisões**), porque o tipo de inimigo é um grupo.
 - **Machucar o sprite com o dano de contato do inimigo**. Tira a vida e faz o sprite piscar;
   enquanto pisca ele não leva dano de novo, então ficar encostado não acaba com a vida dele de uma
   vez. Este é o dano do TIPO, o mesmo nos três jeitos; para cada ataque doer um tanto diferente,
@@ -738,7 +756,7 @@ tempo acabar.
   ⚠️ O molde roda ANTES de tudo, então um ajuste que está lá vale para o jogo inteiro. Para endurecer
   só a onda seguinte, ponha o "Ajustar" dentro de um evento ou de um "A cada N segundos": aí ele
   acontece no meio da partida, e quem já nasceu fica como estava.
-- O tipo É um grupo: os blocos de **Muitos (grupos)** funcionam nele. Patrulha em mapa de tiles:
+- O tipo É um grupo: os blocos de **Grupos** funcionam nele. Patrulha em mapa de tiles:
   some o "Impedir de atravessar" num "Para cada" que o inimigo vira sozinho na parede.
 
 #### Um bloco só para VÁRIOS tipos de inimigo
@@ -772,7 +790,7 @@ tem o seu jeito de se mexer e os seus tiros. É só a parte repetida que sai.
   e para os tirinhos. Mas quem tira a vida do jogador é sempre um bloco que você põe, e é ali que
   cada ataque ganha o número dele. Em vez do "Machucar o sprite com o dano de contato do inimigo",
   use o **Machucar o sprite ⟨nave⟩ em ⟨2⟩ e deixá-lo invencível por ⟨45⟩ quadros** (categoria
-  ❤️ Vida) dentro de cada bloco de acerto: no **Para cada sprite do grupo ⟨rei⟩ que colidir com o
+  Vida e placar > Vida) dentro de cada bloco de acerto: no **Para cada sprite do grupo ⟨rei⟩ que colidir com o
   sprite ⟨nave⟩** o encostão, no **Para cada tiro do tipo ⟨rei⟩ que acertar o sprite ⟨nave⟩** o tiro,
   e no **Para cada raio do tipo ⟨rei⟩ que acertar o sprite ⟨nave⟩** o raio. Aí é só escolher três
   números, tipo 1, 2 e 4.
@@ -794,7 +812,7 @@ tem o seu jeito de se mexer e os seus tiros. É só a parte repetida que sai.
 
 ### Desenhe personagens por código
 
-Na categoria **🎨 Desenho**, faça o visual do sprite com formas, sem imagem nenhuma:
+Na categoria **Desenho e efeitos**, faça o visual do sprite com formas, sem imagem nenhuma:
 
 - **Desenhar a figura … assim**. Monte um desenho com **retângulo, círculo, oval, triângulo, linha** e dê um nome. Você desenha DENTRO do quadro do sprite: x/y começam no cantinho (0,0). Dá para usar os blocos de **Canvas** aqui dentro também (gradiente, curvas…).
 - **Pintar receita de formas** guarda muitos retângulos e círculos em um único campo JSON.
@@ -802,4 +820,5 @@ Na categoria **🎨 Desenho**, faça o visual do sprite com formas, sem imagem n
   transforma cada pequeno detalhe em vários blocos SVG na área de programação.
 - **Criar sprite … com a figura**. Cria um sprite que usa esse desenho; ele anda, gira, vira, anima e colide como qualquer outro. **Trocar a figura** muda o desenho de um sprite.
 - **a largura / a altura da figura**. O tamanho do sprite que está sendo desenhado (para centralizar). Veja o exemplo **"Jogo desenhado por código"**.
-`)
+`,
+)

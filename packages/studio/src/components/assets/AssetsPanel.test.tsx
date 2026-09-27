@@ -1,8 +1,11 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import type { JSX } from 'react'
 import { createEmptyProject } from '#core'
 import { useProjectStore } from '../../state/projectStore'
+import { useUIStore } from '../../state/uiStore'
 import { AssetsPanel } from './AssetsPanel'
+import { useAssetsPanelWiring } from './useAssetsPanel'
 
 /**
  * Upload de binários 3D (modelo .glb / céu .hdr) — a porta que faltava: o motor
@@ -42,6 +45,7 @@ function seedProject(opts: { with3DExtension?: boolean } = {}): void {
 afterEach(() => {
   cleanup()
   useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  useUIStore.setState({ showAssets: false, assetsTab: 'images' })
 })
 
 describe('addAsset — kinds 3D (model3d/environment3d)', () => {
@@ -116,7 +120,112 @@ describe('addAsset — kinds 3D (model3d/environment3d)', () => {
   })
 })
 
-describe('AssetsPanel — seção "Modelos 3D"', () => {
+/**
+ * A janela "Materiais do jogo" em abas (18/09/2026). Antes era uma rolagem só, com
+ * as seções de som e de 3D aparecendo apenas QUANDO JÁ HAVIA arquivo daquele tipo
+ * — quem não tinha nenhum não via nada sobre eles em lugar nenhum, e o caminho
+ * para importar um som era clicar em "Imagens".
+ */
+describe('Materiais do jogo — as abas', () => {
+  /** Abre a janela e vai para a aba pedida pelo GESTO (clicando nela). */
+  function abrir(tab?: 'Sons' | 'Modelos 3D') {
+    const view = render(<AssetsPanel open onClose={() => {}} />)
+    if (tab) fireEvent.click(screen.getByRole('tab', { name: tab }))
+    return view
+  }
+
+  it('imagens e sons têm aba SEMPRE; a de 3D só com quem consuma 3D', () => {
+    seedProject()
+    abrir()
+    // Pelo NOME acessível, não pelo `textContent`: o emoji é `aria-hidden` e não é
+    // contrato — travá-lo quebraria o teste em qualquer mudança de markup.
+    expect(
+      screen.getAllByRole('tab').map((t) => t.getAttribute('aria-label') ?? t.textContent),
+    ).toEqual(['🖼️Imagens', '🔊Sons'])
+  })
+
+  it('a aba ativa é a única que aponta para um painel (aria-controls não fica pendurado)', () => {
+    seedProject()
+    abrir('Sons')
+    const [imagens, sons] = screen.getAllByRole('tab')
+    const alvo = sons?.getAttribute('aria-controls')
+    expect(alvo).toBeTruthy()
+    expect(document.getElementById(alvo as string)).toBeTruthy()
+    // A inativa não pode apontar para um id que não existe no DOM.
+    expect(imagens?.getAttribute('aria-controls')).toBeNull()
+  })
+
+  it('a tira de abas anda pelo teclado (setas, Home e End)', () => {
+    seedProject({ with3DExtension: true })
+    abrir()
+    const primeira = screen.getByRole('tab', { name: 'Imagens' })
+    primeira.focus()
+    fireEvent.keyDown(primeira, { key: 'ArrowRight' })
+    expect(screen.getByRole('tab', { name: 'Sons' }).getAttribute('aria-selected')).toBe('true')
+    fireEvent.keyDown(screen.getByRole('tab', { name: 'Sons' }), { key: 'End' })
+    expect(screen.getByRole('tab', { name: 'Modelos 3D' }).getAttribute('aria-selected')).toBe(
+      'true',
+    )
+    fireEvent.keyDown(screen.getByRole('tab', { name: 'Modelos 3D' }), { key: 'Home' })
+    expect(screen.getByRole('tab', { name: 'Imagens' }).getAttribute('aria-selected')).toBe('true')
+  })
+
+  it('sem permissão de envio, nenhuma aba oferece o botão de enviar', () => {
+    seedProject({ with3DExtension: true })
+    render(<AssetsPanel open onClose={() => {}} allowUpload={false} />)
+    expect(screen.queryByText('Enviar imagem')).toBeNull()
+    fireEvent.click(screen.getByRole('tab', { name: 'Sons' }))
+    expect(screen.queryByText('🔊 Enviar som')).toBeNull()
+    fireEvent.click(screen.getByRole('tab', { name: 'Modelos 3D' }))
+    expect(screen.queryByText('📦 Enviar modelo 3D')).toBeNull()
+  })
+
+  it('a aba de som ensina o próximo passo mesmo sem nenhum som (era o buraco)', () => {
+    seedProject()
+    abrir('Sons')
+    expect(screen.getByText('🔊 Enviar som')).not.toBeNull()
+    expect(screen.getByText(/Nenhum som ainda/)).not.toBeNull()
+    // E diz QUAL bloco usa o que ela acabou de enviar.
+    expect(screen.getByText(/Carregar o som/)).not.toBeNull()
+  })
+
+  it('o som fica na aba dele, e não na de imagens', () => {
+    seedProject()
+    useProjectStore.getState().addAsset({
+      name: 'pulo',
+      dataUrl: 'data:audio/mpeg;base64,//uQx',
+      kind: 'audio',
+      source: 'upload',
+    })
+    abrir()
+    expect(screen.queryByLabelText('Nome do som pulo')).toBeNull()
+    fireEvent.click(screen.getByRole('tab', { name: 'Sons' }))
+    expect(screen.getByLabelText('Nome do som pulo')).not.toBeNull()
+  })
+
+  it('a aba ativa é a única com aria-selected, e o painel aponta para ela', () => {
+    seedProject()
+    abrir('Sons')
+    const sons = screen.getByRole('tab', { name: 'Sons' })
+    expect(sons.getAttribute('aria-selected')).toBe('true')
+    expect(screen.getByRole('tab', { name: 'Imagens' }).getAttribute('aria-selected')).toBe('false')
+    const painel = screen.getByRole('tabpanel')
+    expect(painel.getAttribute('aria-labelledby')).toBe(sons.id)
+  })
+
+  it('a cota do projeto fica FORA das abas (ela é do projeto, não de um tipo)', () => {
+    seedProject()
+    abrir('Sons')
+    expect(screen.getByText(/0\/128 arquivos/)).not.toBeNull()
+  })
+})
+
+describe('Materiais do jogo — a aba "Modelos 3D"', () => {
+  function abrir3D() {
+    render(<AssetsPanel open onClose={() => {}} />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Modelos 3D' }))
+  }
+
   it('mostra o botão de upload 3D, lista o modelo FORA da grade de imagens e renomeia', () => {
     seedProject({ with3DExtension: true })
     useProjectStore.getState().addAsset({
@@ -126,10 +235,9 @@ describe('AssetsPanel — seção "Modelos 3D"', () => {
       originalFileName: 'nave.glb',
       source: 'upload',
     })
-    render(<AssetsPanel open onClose={() => {}} />)
+    abrir3D()
 
     expect(screen.getByText('📦 Enviar modelo 3D')).not.toBeNull()
-    expect(screen.getByText('Modelos 3D')).not.toBeNull()
     expect(screen.getByText('nave.glb')).not.toBeNull()
     // NÃO vira <img> quebrado na grade de imagens (a grade usa alt={name}).
     expect(screen.queryByAltText('nave')).toBeNull()
@@ -140,30 +248,31 @@ describe('AssetsPanel — seção "Modelos 3D"', () => {
     expect(useProjectStore.getState().project?.assets?.[0]?.name).toBe('nave-mae')
   })
 
-  it('sem assets 3D a seção não aparece', () => {
+  it('com a extensão e sem arquivo nenhum, a aba existe e ensina o caminho', () => {
     seedProject({ with3DExtension: true })
-    render(<AssetsPanel open onClose={() => {}} />)
-    expect(screen.queryByText('Modelos 3D')).toBeNull()
+    abrir3D()
+    expect(screen.getByText(/Nenhum modelo 3D ainda/)).not.toBeNull()
   })
 
-  it('SEM a extensão Jogo 3D Avançado o botão de upload 3D não existe (curadoria)', () => {
+  it('SEM quem consuma 3D e sem arquivo 3D, a aba nem existe (curadoria)', () => {
     seedProject()
     render(<AssetsPanel open onClose={() => {}} />)
-    expect(screen.getByText('Enviar imagem')).not.toBeNull() // os demais seguem
-    expect(screen.queryByText('📦 Enviar modelo 3D')).toBeNull()
+    expect(screen.queryByRole('tab', { name: 'Modelos 3D' })).toBeNull()
+    // A de imagens segue inteira.
+    expect(screen.getByText('Enviar imagem')).not.toBeNull()
   })
 
-  it('o kit Jogo 3D (iniciante) também consome .glb/.hdr desde os blocos do Molda: botão presente', () => {
+  it('o kit Jogo 3D (iniciante) também consome .glb/.hdr desde os blocos do Molda', () => {
     const project = createEmptyProject('p1', 'Meu Jogo')
     project.installedExtensions = [{ id: 'game-3d', version: '0.30.0', installedAt: 0 }]
     useProjectStore.setState({ project, isDirty: false, saveError: null })
-    render(<AssetsPanel open onClose={() => {}} />)
+    abrir3D()
     expect(screen.getByText('📦 Enviar modelo 3D')).not.toBeNull()
   })
 
-  it('asset 3D ÓRFÃO continua listado e só é excluído após confirmação', () => {
-    // O gate é só da porta de ENTRADA: esconder a seção criaria um órfão
-    // invisível comendo a cota, sem como a criança excluir.
+  it('asset 3D ÓRFÃO mantém a aba viva, sem a porta de entrada, e dá para excluir', () => {
+    // O gate é só da porta de ENTRADA: sem a aba, o órfão ficaria invisível
+    // comendo a cota, e a criança não teria como excluí-lo.
     seedProject()
     useProjectStore.getState().addAsset({
       name: 'orfao',
@@ -172,13 +281,234 @@ describe('AssetsPanel — seção "Modelos 3D"', () => {
       originalFileName: 'orfao.glb',
       source: 'upload',
     })
-    render(<AssetsPanel open onClose={() => {}} />)
+    abrir3D()
     expect(screen.queryByText('📦 Enviar modelo 3D')).toBeNull()
-    expect(screen.getByText('Modelos 3D')).not.toBeNull()
+    expect(screen.getByText('orfao.glb')).not.toBeNull()
     fireEvent.click(screen.getByText('Excluir'))
     expect(useProjectStore.getState().project?.assets ?? []).toHaveLength(1)
     const confirmation = screen.getByRole('dialog', { name: 'Excluir do projeto?' })
     fireEvent.click(within(confirmation).getByRole('button', { name: 'Excluir' }))
     expect(useProjectStore.getState().project?.assets ?? []).toHaveLength(0)
+  })
+})
+
+/**
+ * ⚠️ O elo entre a janela e a store, que é onde o defeito de verdade morava:
+ * clicar na aba JÁ ativa fechava a janela inteira. O painel isolado não pegava
+ * isso (ele não sabe fechar nada) e a store isolada também não (ninguém chamava
+ * a ação errada) — só a LIGAÇÃO dos dois, que é o que este hospedeiro imita, do
+ * mesmo jeito que o `Shell` a faz. Achado no navegador, com a janela aberta.
+ */
+describe('Materiais do jogo — a janela ligada à store, como no Shell', () => {
+  function Hospedeiro(): JSX.Element | null {
+    // ⚠️ A fiação vem do MESMO hook que o `Shell` usa. Refazê-la à mão aqui seria
+    // testar a própria cópia: o defeito morava no fio, e reverter o `Shell` para
+    // `openAssetsTab` passaria verde.
+    const wiring = useAssetsPanelWiring()
+    if (!wiring.open) return null
+    return <AssetsPanel {...wiring} />
+  }
+
+  it('clicar na aba que JÁ está ativa não fecha a janela', () => {
+    seedProject()
+    act(() => {
+      useUIStore.getState().openAssetsTab('sounds')
+    })
+    render(<Hospedeiro />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Sons' }))
+    expect(useUIStore.getState().showAssets).toBe(true)
+    expect(screen.getByRole('tabpanel')).toBeTruthy()
+  })
+
+  it('a porta do menu continua sendo a entrada E a saída', () => {
+    seedProject()
+    act(() => {
+      useUIStore.getState().openAssetsTab('images')
+    })
+    render(<Hospedeiro />)
+    expect(screen.getByRole('tabpanel')).toBeTruthy()
+    act(() => {
+      useUIStore.getState().openAssetsTab('images')
+    })
+    expect(useUIStore.getState().showAssets).toBe(false)
+  })
+
+  it('trocar de aba na janela deixa a porta do menu certa (o estado vive na store)', () => {
+    seedProject()
+    act(() => {
+      useUIStore.getState().openAssetsTab('images')
+    })
+    render(<Hospedeiro />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Sons' }))
+    expect(useUIStore.getState().assetsTab).toBe('sounds')
+    expect(useUIStore.getState().showAssets).toBe(true)
+  })
+
+  it('uma porta NOVA do menu manda na janela que já está aberta', () => {
+    // O espelho de prop: sem ele, pedir outra aba com a janela aberta não mexeria
+    // em nada (e o clique na porta do menu não tem outro jeito de chegar aqui).
+    seedProject()
+    act(() => {
+      useUIStore.getState().openAssetsTab('images')
+    })
+    render(<Hospedeiro />)
+    act(() => {
+      useUIStore.getState().openAssetsTab('sounds')
+    })
+    expect(screen.getByRole('tab', { name: 'Sons' }).getAttribute('aria-selected')).toBe('true')
+  })
+
+  it('a aba que SOME com a janela aberta devolve a escolha à store', () => {
+    // Excluir o último arquivo 3D de um projeto sem extensão 3D apaga a aba em que
+    // a criança está. Sem devolver a escolha, a store ficava em 'models3d': nenhuma
+    // porta do menu aparecia ligada e "Imagens" precisava de dois cliques para
+    // fechar a janela, contrariando a regra da própria store.
+    seedProject()
+    useProjectStore.getState().addAsset({
+      name: 'orfao',
+      dataUrl: GLB_OK,
+      kind: 'model3d',
+      originalFileName: 'orfao.glb',
+      source: 'upload',
+    })
+    act(() => {
+      useUIStore.getState().openAssetsTab('models3d')
+    })
+    render(<Hospedeiro />)
+    fireEvent.click(screen.getByText('Excluir'))
+    const confirmation = screen.getByRole('dialog', { name: 'Excluir do projeto?' })
+    act(() => {
+      fireEvent.click(within(confirmation).getByRole('button', { name: 'Excluir' }))
+    })
+    expect(screen.queryByRole('tab', { name: 'Modelos 3D' })).toBeNull()
+    expect(screen.getByRole('tab', { name: 'Imagens' }).getAttribute('aria-selected')).toBe('true')
+    expect(useUIStore.getState().assetsTab).toBe('images')
+    expect(useUIStore.getState().showAssets).toBe(true)
+  })
+})
+
+/** A capa do card escolhida na aba Imagens (26/09/2026). */
+describe('Materiais do jogo — "Usar como capa"', () => {
+  function seedWithImages(): void {
+    seedProject()
+    for (const name of ['tela-inicial', 'heroi']) {
+      const err = useProjectStore.getState().addAsset({
+        name,
+        dataUrl: 'data:image/png;base64,AAA',
+        kind: 'image',
+        source: 'upload',
+      })
+      expect(err).toBeNull()
+    }
+  }
+
+  it('cada imagem tem "Usar como capa"; escolher grava o nome e mostra o selo com o "Voltar"', () => {
+    seedWithImages()
+    // O happy-dom não tem canvas: a derivação é injetada como "gravou".
+    render(<AssetsPanel open onClose={() => {}} captureThumb={async () => true} />)
+    const painel = screen.getByRole('tabpanel')
+    fireEvent.click(
+      within(painel).getByRole('button', { name: 'Usar tela-inicial como capa do jogo' }),
+    )
+    expect(useProjectStore.getState().project?.coverAssetName).toBe('tela-inicial')
+    expect(within(painel).getByText('Capa do jogo')).toBeTruthy()
+    expect(
+      within(painel).queryByRole('button', { name: 'Usar tela-inicial como capa do jogo' }),
+    ).toBeNull()
+    // A outra imagem continua oferecendo virar capa.
+    expect(
+      within(painel).getByRole('button', { name: 'Usar heroi como capa do jogo' }),
+    ).toBeTruthy()
+    fireEvent.click(
+      within(painel).getByRole('button', { name: 'Voltar para a foto automática da capa' }),
+    )
+    const project = useProjectStore.getState().project
+    expect(project && 'coverAssetName' in project).toBe(false)
+    expect(within(painel).queryByText('Capa do jogo')).toBeNull()
+  })
+})
+
+/** B5 (full review 26/09/2026): a escolha de capa que não vira miniatura é DESFEITA e avisada. */
+describe('Materiais do jogo — a capa que não dá miniatura', () => {
+  function seedWithImages(): void {
+    seedProject()
+    for (const name of ['tela-inicial', 'heroi']) {
+      const err = useProjectStore.getState().addAsset({
+        name,
+        dataUrl: 'data:image/png;base64,AAA',
+        kind: 'image',
+        source: 'upload',
+      })
+      expect(err).toBeNull()
+    }
+  }
+  const usar = (painel: HTMLElement, name: string) =>
+    within(painel).getByRole('button', { name: `Usar ${name} como capa do jogo` })
+
+  it('a derivação falha: a escolha é desfeita (sem "Capa do jogo"), a aba avisa sem travessão e o botão volta', async () => {
+    seedWithImages()
+    render(<AssetsPanel open onClose={() => {}} captureThumb={async () => false} />)
+    const painel = screen.getByRole('tabpanel')
+    fireEvent.click(usar(painel, 'tela-inicial'))
+    await waitFor(() => {
+      const project = useProjectStore.getState().project
+      expect(project && 'coverAssetName' in project).toBe(false)
+    })
+    const alerta = screen.getByRole('alert')
+    expect(alerta.textContent).toContain('Não consegui usar essa imagem como capa')
+    expect(alerta.textContent).not.toContain('—')
+    expect(within(painel).queryByText('Capa do jogo')).toBeNull()
+    expect(usar(painel, 'tela-inicial')).toBeTruthy()
+  })
+
+  it('voltar à foto automática nunca é desfeito, mesmo sem foto para gravar', async () => {
+    seedWithImages()
+    const project = useProjectStore.getState().project
+    const asset = project?.assets?.find((a) => a.name === 'heroi')
+    if (!asset) throw new Error('asset não criado')
+    expect(useProjectStore.getState().setCoverAsset(asset.id)).toBeNull()
+    render(<AssetsPanel open onClose={() => {}} captureThumb={async () => false} />)
+    const painel = screen.getByRole('tabpanel')
+    fireEvent.click(
+      within(painel).getByRole('button', { name: 'Voltar para a foto automática da capa' }),
+    )
+    await act(async () => {
+      await Promise.resolve()
+    })
+    const depois = useProjectStore.getState().project
+    expect(depois && 'coverAssetName' in depois).toBe(false)
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  it('a falha de uma escolha ANTIGA não desfaz a escolha mais nova', async () => {
+    seedWithImages()
+    const pendentes: Array<(stored: boolean) => void> = []
+    render(
+      <AssetsPanel
+        open
+        onClose={() => {}}
+        captureThumb={() =>
+          new Promise<boolean>((resolve) => {
+            pendentes.push(resolve)
+          })
+        }
+      />,
+    )
+    const painel = screen.getByRole('tabpanel')
+    fireEvent.click(usar(painel, 'tela-inicial'))
+    fireEvent.click(usar(painel, 'heroi'))
+    expect(useProjectStore.getState().project?.coverAssetName).toBe('heroi')
+    // A primeira derivação (da tela-inicial) falha DEPOIS de a criança já ter escolhido o herói.
+    await act(async () => {
+      pendentes[0]?.(false)
+      await Promise.resolve()
+    })
+    expect(useProjectStore.getState().project?.coverAssetName).toBe('heroi')
+    expect(screen.queryByRole('alert')).toBeNull()
+    await act(async () => {
+      pendentes[1]?.(true)
+      await Promise.resolve()
+    })
+    expect(useProjectStore.getState().project?.coverAssetName).toBe('heroi')
   })
 })

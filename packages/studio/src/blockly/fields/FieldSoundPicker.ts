@@ -42,7 +42,7 @@ export class FieldSoundPicker extends Blockly.FieldTextInput {
     if (sounds.length === 0) {
       const empty = document.createElement('div')
       empty.textContent =
-        'Nenhum som no projeto ainda. Abra "Imagens e sons" na barra de cima e toque em "Enviar som".'
+        'Nenhum som no projeto ainda. Abra "Sons" no menu ⋯ da barra de cima e toque em "Enviar som".'
       empty.style.cssText =
         'font-size:12px;color:var(--color-sz-fg-soft);padding:2px 2px 8px;line-height:1.4;'
       wrap.appendChild(empty)

@@ -11,8 +11,6 @@ import { useStore } from 'zustand'
 import { normalizeHex } from '../../../core/color'
 import { COPY } from '../../../core/copy'
 import type { MoldaSkyAsset } from '../../../core/model'
-import { triggerDownload } from '../../../export/download'
-import { exportSkyHdr, HDR_MIME } from '../../../export/skyHdr'
 import {
   SKY_PRESET_IDS,
   SKY_RANGES,
@@ -29,42 +27,13 @@ import { SkyThumb } from '../../gallery/thumbs'
 import { Button } from '../../ui/Button'
 import { Download, Sparkles } from '../../ui/icons'
 import { Panel } from '../../ui/Panel'
-import { useToast } from '../../ui/Toast'
 import { useMediaQuery } from '../../ui/useMediaQuery'
+import { usePanelGroup } from '../../ui/usePanelGroup'
 import { EditorTopBar } from '../EditorTopBar'
+import { useEditorGesture } from '../useEditorGesture'
+import { useSkyDownload } from './useSkyDownload'
 
 const PREVIEW_DELAY_MS = 40
-
-/** Um gesto de edição: `begin` guarda o antes, `update` mostra ao vivo, `end` commita. */
-function useSkyGesture(editor: EditorStore): {
-  begin(): void
-  update(next: MoldaSkyAsset): void
-  end(): void
-  commit(next: MoldaSkyAsset): void
-} {
-  const before = useRef<MoldaSkyAsset | null>(null)
-  const current = useCallback(() => editor.getState().asset as MoldaSkyAsset, [editor])
-  return {
-    begin: () => {
-      if (!before.current) before.current = current()
-    },
-    update: (next) => {
-      if (!before.current) before.current = current()
-      editor.getState().replace(next)
-    },
-    end: () => {
-      const start = before.current
-      before.current = null
-      if (!start) return
-      const after = current()
-      if (after !== start) editor.getState().commitGesture(start, after)
-    },
-    commit: (next) => {
-      before.current = null
-      if (next !== current()) editor.getState().commit(next)
-    },
-  }
-}
 
 function withParams(asset: MoldaSkyAsset, patch: Partial<SkyParams>): MoldaSkyAsset {
   return { ...asset, params: { ...asset.params, ...patch, preset: 'custom' } }
@@ -80,6 +49,7 @@ function SkySlider({
   onBegin,
   onChange,
   onEnd,
+  onCancel,
 }: {
   label: string
   value: number
@@ -90,6 +60,7 @@ function SkySlider({
   onBegin: () => void
   onChange: (value: number) => void
   onEnd: () => void
+  onCancel: () => void
 }): JSX.Element {
   return (
     <label className="flex flex-col gap-1">
@@ -106,9 +77,28 @@ function SkySlider({
         max={max}
         step={step}
         onPointerDown={onBegin}
-        onKeyDown={onBegin}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') {
+            event.preventDefault()
+            onCancel()
+          } else if (
+            [
+              'ArrowLeft',
+              'ArrowRight',
+              'ArrowUp',
+              'ArrowDown',
+              'Home',
+              'End',
+              'PageUp',
+              'PageDown',
+            ].includes(event.key)
+          ) {
+            onBegin()
+          }
+        }}
         onChange={(event) => onChange(Number(event.target.value))}
         onPointerUp={onEnd}
+        onPointerCancel={onCancel}
         onKeyUp={onEnd}
         onBlur={onEnd}
         className="h-11 w-full cursor-pointer accent-mld-accent"
@@ -123,12 +113,14 @@ function ColorField({
   onBegin,
   onChange,
   onEnd,
+  onCancel,
 }: {
   label: string
   value: string
   onBegin: () => void
   onChange: (hex: string) => void
   onEnd: () => void
+  onCancel: () => void
 }): JSX.Element {
   return (
     <label className="flex items-center justify-between gap-2 text-xs font-bold text-mld-muted">
@@ -144,6 +136,12 @@ function ColorField({
           if (hex) onChange(hex)
         }}
         onBlur={onEnd}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') {
+            event.preventDefault()
+            onCancel()
+          }
+        }}
         className="h-11 w-14 cursor-pointer rounded-lg border-2 border-mld-border bg-mld-surface"
       />
     </label>
@@ -185,12 +183,21 @@ export function SkyEditor({
   onBack: () => void
 }): JSX.Element {
   const asset = useStore(editor, (state) => state.asset) as MoldaSkyAsset
-  const { showToast } = useToast()
-  const gesture = useSkyGesture(editor)
+  const download = useSkyDownload(editor)
+  const current = useCallback(() => editor.getState().asset as MoldaSkyAsset, [editor])
+  const gesture = useEditorGesture(editor, current)
   const wide = useMediaQuery('(min-width: 768px)')
   const { canvasRef, preview, unsupported } = useSkyPreviewCanvas()
   const copy = COPY.editor.sky
   const params = asset.params
+  const downloadButton = useRef<HTMLButtonElement>(null)
+  const restoreDownloadFocus = useRef(false)
+  useEffect(() => {
+    if (download.progress === null && restoreDownloadFocus.current) {
+      restoreDownloadFocus.current = false
+      downloadButton.current?.focus()
+    }
+  }, [download.progress])
 
   // A prévia acompanha os parâmetros com um atraso curto (o render é na CPU).
   useEffect(() => {
@@ -201,7 +208,6 @@ export function SkyEditor({
     return () => clearTimeout(timer)
   }, [preview, params])
 
-  const current = useCallback(() => editor.getState().asset as MoldaSkyAsset, [editor])
   const patch = (next: Partial<SkyParams>): void => gesture.update(withParams(current(), next))
   const cloudPatch = (next: Partial<SkyParams['clouds']>): void =>
     gesture.update(withParams(current(), { clouds: { ...current().params.clouds, ...next } }))
@@ -216,26 +222,24 @@ export function SkyEditor({
     gesture.commit(withParams(current(), { clouds: { ...current().params.clouds, seed } }))
   }
 
-  function download(): void {
-    showToast(copy.download.preparing)
-    setTimeout(() => {
-      const result = exportSkyHdr(current())
-      if (!result.ok) {
-        showToast(copy.download.tooBig)
-        return
-      }
-      const blob = new Blob([result.bytes as BlobPart], { type: HDR_MIME })
-      showToast(
-        triggerDownload(blob, `${current().name}.hdr`, HDR_MIME)
-          ? copy.download.ready
-          : copy.download.failed,
-      )
-    }, 0)
-  }
+  /**
+   * A hierarquização do céu, por FREQUÊNCIA e DIFICULDADE (redesenho, 10/09/2026).
+   *
+   * Nascem ABERTOS os dois por onde uma criança de 9 anos começa e que ela entende sozinha:
+   * escolher um céu pronto (um toque e a tela inteira muda) e o Sol (arrastar move a luz, a
+   * relação é imediata). Nascem RECOLHIDOS os quatro de ajuste fino: cores, nuvens, estrelas
+   * (que só fazem sentido de noite) e exposição, que é conceito de fotografia e o mais
+   * abstrato da tela. Nada saiu do editor: tudo continua a um toque.
+   */
+  const panels = usePanelGroup(['presets', 'sun'])
 
   const controls = (
     <>
-      <Panel title={copy.presetsPanel} className="shrink-0">
+      <Panel
+        title={copy.presetsPanel}
+        className="shrink-0"
+        disclosure={panels.disclosureFor('presets', copy.presetsPanel)}
+      >
         <div className="flex flex-wrap gap-2">
           {SKY_PRESET_IDS.map((id) => {
             const active = params.preset === id
@@ -263,7 +267,11 @@ export function SkyEditor({
           <p className="px-1 text-xs text-mld-muted">{COPY.skyPresets.custom}</p>
         ) : null}
       </Panel>
-      <Panel title={copy.sun} className="shrink-0">
+      <Panel
+        title={copy.sun}
+        className="shrink-0"
+        disclosure={panels.disclosureFor('sun', copy.sun)}
+      >
         <SkySlider
           label={copy.elevation}
           value={params.sunElevation}
@@ -274,6 +282,7 @@ export function SkyEditor({
           onBegin={gesture.begin}
           onChange={(value) => patch({ sunElevation: value })}
           onEnd={gesture.end}
+          onCancel={gesture.cancel}
         />
         <SkySlider
           label={copy.azimuth}
@@ -285,6 +294,7 @@ export function SkyEditor({
           onBegin={gesture.begin}
           onChange={(value) => patch({ sunAzimuth: value })}
           onEnd={gesture.end}
+          onCancel={gesture.cancel}
         />
         <SkySlider
           label={copy.size}
@@ -296,6 +306,7 @@ export function SkyEditor({
           onBegin={gesture.begin}
           onChange={(value) => patch({ sunSize: value })}
           onEnd={gesture.end}
+          onCancel={gesture.cancel}
         />
         <SkySlider
           label={copy.intensity}
@@ -306,15 +317,21 @@ export function SkyEditor({
           onBegin={gesture.begin}
           onChange={(value) => patch({ sunIntensity: value })}
           onEnd={gesture.end}
+          onCancel={gesture.cancel}
         />
       </Panel>
-      <Panel title={copy.colors} className="shrink-0">
+      <Panel
+        title={copy.colors}
+        className="shrink-0"
+        disclosure={panels.disclosureFor('colors', copy.colors)}
+      >
         <ColorField
           label={copy.top}
           value={params.topColor}
           onBegin={gesture.begin}
           onChange={(hex) => patch({ topColor: hex })}
           onEnd={gesture.end}
+          onCancel={gesture.cancel}
         />
         <ColorField
           label={copy.horizon}
@@ -322,6 +339,7 @@ export function SkyEditor({
           onBegin={gesture.begin}
           onChange={(hex) => patch({ horizonColor: hex })}
           onEnd={gesture.end}
+          onCancel={gesture.cancel}
         />
         <ColorField
           label={copy.ground}
@@ -329,11 +347,13 @@ export function SkyEditor({
           onBegin={gesture.begin}
           onChange={(hex) => patch({ groundColor: hex })}
           onEnd={gesture.end}
+          onCancel={gesture.cancel}
         />
       </Panel>
       <Panel
         title={copy.clouds}
         className="shrink-0"
+        disclosure={panels.disclosureFor('clouds', copy.clouds)}
         actions={
           <Button variant="ghost" onClick={shuffleClouds} className="min-h-11 px-2 text-xs">
             <Sparkles aria-hidden="true" className="size-4" />
@@ -351,6 +371,7 @@ export function SkyEditor({
           onBegin={gesture.begin}
           onChange={(value) => cloudPatch({ amount: value })}
           onEnd={gesture.end}
+          onCancel={gesture.cancel}
         />
         <SkySlider
           label={copy.softness}
@@ -362,9 +383,14 @@ export function SkyEditor({
           onBegin={gesture.begin}
           onChange={(value) => cloudPatch({ softness: value })}
           onEnd={gesture.end}
+          onCancel={gesture.cancel}
         />
       </Panel>
-      <Panel title={copy.stars} className="shrink-0">
+      <Panel
+        title={copy.stars}
+        className="shrink-0"
+        disclosure={panels.disclosureFor('stars', copy.stars)}
+      >
         <SkySlider
           label={copy.stars}
           value={params.stars}
@@ -375,9 +401,14 @@ export function SkyEditor({
           onBegin={gesture.begin}
           onChange={(value) => patch({ stars: value })}
           onEnd={gesture.end}
+          onCancel={gesture.cancel}
         />
       </Panel>
-      <Panel title={copy.exposure} className="shrink-0">
+      <Panel
+        title={copy.exposure}
+        className="shrink-0"
+        disclosure={panels.disclosureFor('exposure', copy.exposure)}
+      >
         <SkySlider
           label={copy.exposure}
           value={params.exposure}
@@ -388,6 +419,7 @@ export function SkyEditor({
           onBegin={gesture.begin}
           onChange={(value) => patch({ exposure: value })}
           onEnd={gesture.end}
+          onCancel={gesture.cancel}
         />
       </Panel>
     </>
@@ -401,7 +433,9 @@ export function SkyEditor({
         actions={
           <Button
             variant="outline"
-            onClick={download}
+            ref={downloadButton}
+            onClick={download.start}
+            disabled={download.progress !== null}
             aria-label={copy.download.hdr}
             title={copy.download.hdr}
             className="min-h-11 px-3 text-sm"
@@ -411,6 +445,25 @@ export function SkyEditor({
           </Button>
         }
       />
+      <div aria-live="polite" aria-atomic="true">
+        {download.progress ? (
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-mld-border bg-mld-surface px-3 py-2">
+            <p className="text-sm text-mld-text">
+              {download.progress === 'rendering' ? copy.download.preparing : copy.download.encoding}
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                restoreDownloadFocus.current = true
+                download.cancel()
+              }}
+              className="text-sm"
+            >
+              {copy.download.cancel}
+            </Button>
+          </div>
+        ) : null}
+      </div>
       <div className="flex min-h-0 flex-1">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <div className="relative min-h-0 flex-1 overflow-hidden bg-mld-bg">

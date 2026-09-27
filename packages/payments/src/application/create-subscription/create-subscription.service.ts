@@ -218,7 +218,13 @@ export class CreateSubscriptionService {
     // na própria resposta do checkout (sem esperar o webhook `payment.paid`).
     return toSubscriptionView(
       subscription,
-      cyclePayment ? { id: cyclePayment.id, status: cyclePayment.status } : null,
+      cyclePayment
+        ? {
+            id: cyclePayment.id,
+            status: cyclePayment.status,
+            paidAt: cyclePayment.paidAt?.toISOString() ?? null,
+          }
+        : null,
     )
   }
 }

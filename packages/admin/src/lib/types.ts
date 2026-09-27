@@ -1,3 +1,5 @@
+import type { InteractiveBlock } from '@sistemazero/core/learning'
+import type { SceneVozes, ZappySpeechOverride } from '@sistemazero/core/learning/scene'
 /**
  * Contratos compartilhados entre o BFF e os componentes do painel. Espelham as
  * views do @sistemazero/catalog e o UserView do @sistemazero/auth (type-only —
@@ -327,7 +329,7 @@ export const AUDIENCE_LABELS: Record<CourseAudience, string> = {
 
 /**
  * Dificuldade do curso. As 3 primeiras alimentam o nível do ALUNO (degraus da
- * carreira). `lenda` é uma categoria À PARTE, FORA da carreira: cursos bônus "de
+ * jornada). `lenda` é uma categoria À PARTE, FORA da jornada: cursos bônus "de
  * formatura" que aparecem só na trilha da Lenda (kids) — NÃO é degrau, por isso NÃO
  * entra em `COURSE_TIER_OPTIONS` (travado por conformance com o core).
  */
@@ -352,10 +354,10 @@ export const COURSE_TRACKS = ['2d', '3d'] as const
 export type CourseTrack = (typeof COURSE_TRACKS)[number]
 
 /**
- * Os 7 degraus do select "Nível do curso" — a ordem é a escada da carreira do aluno
+ * Os 7 degraus do select "Nível do curso" — a ordem é a escada da jornada do aluno
  * (entrada primeiro; 2D antes de 3D em cada dificuldade). Duplicação INTENCIONAL do
  * member-shell/members (o admin não importa dos apps de aluno) — manter em lockstep com
- * `COURSE_TIERS` de lá, o que o `career-tier-conformance.test.ts` trava.
+ * `COURSE_TIERS` de lá, o que o `journey-tier-conformance.test.ts` trava.
  *
  * ⚠️ **Primeiros Passos** (14/08) é o degrau de ENTRADA: uma posição só, o curso que a
  * Faísca faz, mais os bônus dela. Ele existe porque antes o curso-base morava no Iniciante
@@ -399,8 +401,10 @@ export interface CourseView {
   level: CourseLevel
   /** Eixo 2D/3D (par com `level` = degrau). Opcional p/ tolerar members antigo. */
   track?: CourseTrack
-  /** Posição na etapa da carreira; `null` = curso bônus. */
+  /** Posição na etapa da jornada; `null` = curso bônus. */
   careerSlot: number | null
+  /** Papel do curso na etapa: posição, recompensa ou extra por matrícula. */
+  journeyRole?: 'positioned' | 'reward' | 'extra'
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   /**
@@ -413,9 +417,8 @@ export interface CourseView {
   /** Slug do curso de ORIGEM quando este é um clone; `null`/ausente senão. */
   clonedFrom?: string | null
   /**
-   * SÓ na listagem e SÓ no curso-base kids (posição 1): tem aula publicada com
-   * bloco de Estúdio de vitrine? `false` = o aluno nunca publica no Mural → o
-   * slot 1 nunca qualifica e a etapa não destrava (aviso "Sem vitrine").
+   * Na listagem, para toda posição obrigatória Kids: existe aula publicada com
+   * bloco de Estúdio de vitrine? Ausente = verificação não disponível.
    */
   hasShowcaseBlock?: boolean
   /** Concorrência otimista: enviar de volta no PATCH do curso (o members exige). */
@@ -429,6 +432,8 @@ export interface ModuleView {
   courseId: string
   title: string
   summary: string | null
+  /** Animação Rive (.riv) da trilha Kids enviada no módulo. */
+  riveUrl?: string | null
   sortOrder: number
 }
 
@@ -451,6 +456,7 @@ export interface CourseTreeView extends CourseView {
 // Blocos: união discriminada por `kind` (espelha o domínio do members).
 export const LESSON_BLOCK_KINDS = [
   'rich_text',
+  'dialogue',
   'video',
   'image',
   'audio',
@@ -459,10 +465,61 @@ export const LESSON_BLOCK_KINDS = [
   'ebook',
   'studio',
   'pinta',
+  'interactive',
   'certificate',
   'coming_soon',
+  'materials',
 ] as const
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
+
+/**
+ * O nome de cada tipo de bloco na língua da autora. `Record<LessonBlockKind, …>` (não
+ * `Record<string, …>`): assim o COMPILADOR cobra o rótulo de todo tipo novo. Sem isso o
+ * `<select>` do editor mostraria o slug cru — e o editor é cheio de `default` silencioso
+ * (o `buildContent` grava QUIZ para kind sem case), então vale prender o que dá para
+ * prender em tempo de compilação.
+ *
+ * ⚠️ Mora AQUI, e não no editor, porque a exportação do manifesto
+ * (`lib/lesson-manifest-export.ts`) nomeia por este mesmo mapa os blocos que o formato não
+ * carrega. Duas listas de rótulo divergiriam, e a de lá é justamente a que a autora lê para
+ * saber o que recadastrar no destino.
+ */
+export const LESSON_BLOCK_KIND_LABELS: Record<LessonBlockKind, string> = {
+  interactive: 'Descoberta interativa',
+  rich_text: 'Texto',
+  dialogue: 'Diálogo do Zappy',
+  video: 'Vídeo',
+  image: 'Imagem',
+  audio: 'Áudio',
+  quiz: 'Quiz',
+  embed: 'HTML livre (sem progresso)',
+  ebook: 'E-book (livro 3D)',
+  studio: 'Estúdio',
+  pinta: 'Pinta (desenho)',
+  certificate: 'Certificado',
+  coming_soon: 'Em breve (aula em produção)',
+  materials: 'Materiais complementares',
+}
+
+/** Poses que o balão de fala oferece (subconjunto do elenco do mascote). */
+export const DIALOGUE_POSES = ['speaking', 'happy', 'thinking', 'celebrating'] as const
+export type DialoguePose = (typeof DIALOGUE_POSES)[number]
+/** Régua editorial da fala: o balão existe para não ser parede de texto. */
+export const DIALOGUE_MAX_LENGTH = 400
+
+/** Fala do mascote num balão, no lugar de contexto corrido. Texto SIMPLES. */
+export interface DialogueBlock {
+  kind: 'dialogue'
+  pose?: DialoguePose
+  text: string
+  /**
+   * A voz do Zappy: `texto falado → MP3`, gravada pelo botão "Gerar a voz do Zappy". Mirror do
+   * members. ⚠️ Sem ela o balão não ganha botão de ouvir no app da criança.
+   */
+  vozes?: SceneVozes
+  /** Pronúncia particular desta fala, presa ao texto que a criança vê. */
+  zappySpeech?: ZappySpeechOverride
+}
 
 export interface RichTextBlock {
   kind: 'rich_text'
@@ -513,13 +570,11 @@ export interface EmbedBlock {
   /** @deprecated legado da autoria v2 */
   height?: number
 }
-/** E-book (PDF no bucket R2 privado) → livro 3D na área do aluno. */
+/** E-book seleciona um PDF da biblioteca de arquivos desta aula. */
 export interface EbookBlock {
   kind: 'ebook'
-  /** Referência `r2priv:<key>` (não navegável). */
-  url: string
+  attachmentId: string
   title?: string
-  zappyStudentNotebook?: boolean
 }
 /**
  * Bloco Estúdio: editor @sistemazero/studio pré-configurado pelo admin. `initialProject`
@@ -527,6 +582,8 @@ export interface EbookBlock {
  * campos são a config de aprendizado (nível, allowlist de blocos, modos).
  */
 export interface StudioBlock {
+  gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
+  purpose?: 'experiment' | 'submission'
   kind: 'studio'
   initialProject: Project
   /** Aceita a escala LEGADA (aulas pré-reforma 2D/3D); o editor normaliza no load. */
@@ -596,6 +653,8 @@ export interface ComingSoonBlock {
  * do pacote, que o sanea nas duas pontas).
  */
 export interface PintaBlock {
+  gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
+  purpose?: 'experiment' | 'submission'
   kind: 'pinta'
   initialAsset: unknown
   /** Ferramentas liberadas (vazia/ausente = a caixa inteira). */
@@ -604,8 +663,35 @@ export interface PintaBlock {
   chain?: string
 }
 
+/** Os tipos de item que cabem num bloco de materiais complementares. */
+export const MATERIAL_ITEM_KINDS = ['file', 'image', 'text', 'link', 'video'] as const
+export type MaterialItemKind = (typeof MATERIAL_ITEM_KINDS)[number]
+export const MATERIALS_MAX_ITEMS = 20
+
+/**
+ * ⚠️⚠️ O item de ARQUIVO aponta para um anexo da aula pelo id, NUNCA carrega a URL: é o anexo
+ * que tem a entrega privada por trás (R2 privado, marca d'água por aluno, nada de `storageRef` no
+ * navegador). `fileType`/`sizeBytes` são preenchidos pelo SERVIDOR na projeção do aluno.
+ */
+export type MaterialItem =
+  | { id: string; kind: 'file'; attachmentId: string; label?: string; note?: string }
+  | { id: string; kind: 'image'; url: string; alt?: string; caption?: string }
+  | { id: string; kind: 'text'; markdown: string }
+  | { id: string; kind: 'link'; url: string; label: string; note?: string }
+  | { id: string; kind: 'video'; url: string; label?: string }
+
+/** Materiais complementares: uma lista ordenada de itens dentro de UM bloco. */
+export interface MaterialsBlock {
+  kind: 'materials'
+  bookPreview?: boolean
+  title?: string
+  items: MaterialItem[]
+}
+
 export type LessonBlockContent =
+  | InteractiveBlock
   | RichTextBlock
+  | DialogueBlock
   | VideoBlock
   | ImageBlock
   | AudioBlock
@@ -616,6 +702,7 @@ export type LessonBlockContent =
   | PintaBlock
   | CertificateBlock
   | ComingSoonBlock
+  | MaterialsBlock
 
 /** Resumo de UMA entrega do Estúdio (admin), com identidade hidratada do auth. */
 export interface StudioSubmissionRow {
@@ -722,10 +809,22 @@ export interface StudioSubmissionQueueRow {
 }
 
 // ── Conversas com o aluno (canal de retorno) ────────────────────────────────
-export type TeacherThreadContext = 'studio_submission' | 'mural_publication' | 'general'
+export type TeacherThreadContext =
+  | 'studio_submission'
+  | 'mural_publication'
+  | 'general'
+  | 'lesson_section'
 export type TeacherMessageRole = 'teacher' | 'student'
 
 export interface TeacherMessageView {
+  helpContext?: {
+    courseSlug: string
+    lessonId: string
+    sectionId: string
+    sectionTitle: string
+    revision: string | null
+    pending: string[]
+  } | null
   id: string
   authorRole: TeacherMessageRole
   authorId: string | null
@@ -735,6 +834,7 @@ export interface TeacherMessageView {
 }
 
 export interface TeacherThreadView {
+  workflowStatus?: 'waiting_teacher' | 'waiting_student' | 'resolved'
   id: string
   userId: string
   accountId: string | null
@@ -752,6 +852,7 @@ export interface TeacherThreadView {
 
 /** Resumo de conversa na caixa de entrada do PROFESSOR (espelha o members). */
 export interface TeacherThreadSummaryView {
+  workflowStatus?: 'waiting_teacher' | 'waiting_student' | 'resolved'
   id: string
   userId: string
   accountId: string | null
@@ -793,6 +894,7 @@ export interface AttachmentView {
   url: string
   fileType: string | null
   sizeBytes: number | null
+  zappyStudentNotebook: boolean
   sortOrder: number
 }
 
@@ -816,6 +918,8 @@ export type ProductKind =
   | 'bundle'
   | 'other'
 export type PricingMode = 'one_time' | 'subscription'
+export type AccessMode = 'lifetime' | 'fixed' | 'billing_cycle'
+export type AccessDurationUnit = 'days' | 'months'
 export type CouponType = 'percent' | 'fixed'
 
 // Fulfillment (entrega/acesso): espelha `domain/product/fulfillment.ts` do catalog.
@@ -896,7 +1000,10 @@ export interface OfferListItem {
   priceCents: number
   compareAtPriceCents: number | null
   currency: string
-  pricingMode: string
+  pricingMode: PricingMode
+  accessMode: AccessMode
+  accessDurationValue: number | null
+  accessDurationUnit: AccessDurationUnit | null
   /** Periodicidade da assinatura em meses (mensal=1, anual=12); null em one_time. */
   billingIntervalMonths: number | null
   installmentsMax: number | null
@@ -1259,7 +1366,7 @@ export interface AmbassadorRedemptionView {
   attemptCount?: number
   createdAt: string
   completedAt: string | null
-  /** Jornada do bolsista: `null` = ficou só no Desafio; presente = assinou a Comunidade. */
+  /** Etapa do bolsista: `null` = ficou só no Desafio; presente = assinou a Comunidade. */
   conversion?: {
     status: ConversionStatus
     bonusCents: number
@@ -1290,4 +1397,57 @@ export interface ConversionAdminView {
 export interface AmbassadorDetailView {
   ambassador: AmbassadorView
   redemptions: AmbassadorRedemptionView[]
+}
+
+// ── "Como fazer" (biblioteca de ajuda do Kids, 26/09/2026) ──────────────────
+// Espelha as views admin do members (`application/mappers/help-views.ts`). O DOCUMENTO e as
+// views da criança vêm do core (`@sistemazero/core/help`), a fonte única dos dois lados.
+export type {
+  HelpCollectionDocument,
+  HelpCollectionView,
+  HelpTutorialDocument,
+  HelpTutorialStatus,
+  HelpValidationIssue,
+} from '@sistemazero/core/help'
+
+export interface HelpTutorialAdminSummaryView {
+  id: string
+  slug: string
+  collectionId: string
+  status: 'draft' | 'published' | 'archived'
+  title: string
+  summary: string
+  toolRef: string | null
+  revision: number
+  position: number
+  /** O rascunho mudou depois da última publicação. */
+  hasUnpublishedChanges: boolean
+  updatedAt: string
+  publishedAt: string | null
+}
+
+export interface HelpTutorialAdminView extends HelpTutorialAdminSummaryView {
+  draft: import('@sistemazero/core/help').HelpTutorialDocument
+  published: import('@sistemazero/core/help').HelpTutorialDocument | null
+  createdAt: string
+}
+
+export interface HelpImportResultView {
+  collections: { created: number; updated: number }
+  tutorials: { created: number; updated: number }
+  rejected: Array<{ slug: string; reason: string }>
+}
+
+/** O arquivo de import/export (`docs/como-fazer/como-fazer.json` segue este formato). */
+export interface HelpImportFile {
+  collections?: Array<
+    import('@sistemazero/core/help').HelpCollectionDocument & { position?: number }
+  >
+  tutorials: Array<{
+    slug: string
+    /** Slug da coleção (o JSON viaja entre ambientes; ids não). */
+    collection: string
+    position?: number
+    draft: import('@sistemazero/core/help').HelpTutorialDocument
+  }>
 }

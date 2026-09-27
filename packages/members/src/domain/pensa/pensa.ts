@@ -6,6 +6,7 @@ import type { CourseAudience } from '../course/course'
 
 export const PENSA_ACCESS_REF = 'pensa'
 export const PENSA_PINTA_ACCESS_REF = 'pinta'
+export const PENSA_MOLDA_ACCESS_REF = 'molda'
 export const PENSA_STUDIO_ACCESS_REF = 'estudio-completo'
 
 export type PensaStage = 'z' | 'e' | 'r' | 'o' | 'done'
@@ -21,12 +22,16 @@ export type PensaArtifactType =
 export type PensaArtifactStatus = 'draft' | 'validated'
 
 export type PensaGameDimension = '2d' | '3d'
-export type PensaTaskDestination = 'pinta' | 'studio'
+export type PensaTaskDestination = 'pinta' | 'studio' | 'molda'
 export type PensaTaskStatus = 'planned' | 'in_progress' | 'completed'
 export type PensaTaskCategory = 'art' | 'setup' | 'gameplay' | 'scene' | 'ui' | 'polish'
 export type PensaArtKind = 'sprite' | 'background' | 'tileset' | 'tilemap'
 
 export const MAX_ACTIVE_PROJECTS = 20
+/** Equipe (26/09/2026): até 5 convidados por plano (dono + 5 = 6 pessoas). */
+export const MAX_PROJECT_MEMBERS = 5
+/** Equipes em que um perfil pode ENTRAR (o mesmo teto dos projetos próprios). */
+export const MAX_JOINED_PROJECTS = 20
 export const MAX_CYCLES_PER_PROJECT = 20
 export const MAX_TASKS_PER_CYCLE = 80
 export const MAX_CONVERSATION_MESSAGES = 80
@@ -35,14 +40,37 @@ export const MAX_ARTIFACT_CONTENT_CHARS = 262_144
 
 export interface PensaProject {
   id: string
+  /** O DONO (o perfil da criança). Os membros da equipe vivem em `pensa_project_members`. */
   userId: string
   accountId: string
   audience: CourseAudience
   kind: PensaProjectKind
   name: string
   status: PensaProjectStatus
+  /** O código do plano (equipe); `null` = ninguém entra por código. Ver `share-code.ts`. */
+  shareCode: string | null
   createdAt: Date
   updatedAt: Date
+}
+
+export type PensaProjectRole = 'owner' | 'member'
+
+/**
+ * Um projeto visto por QUEM pediu: dono ou membro da equipe. É o que os `find*` do
+ * repositório devolvem — o papel decide o que a pessoa pode fazer (renomear, apagar, gerar
+ * código e tirar gente são só do dono).
+ */
+export interface PensaProjectAccess extends PensaProject {
+  role: PensaProjectRole
+  memberCount: number
+}
+
+export interface PensaProjectMember {
+  projectId: string
+  profileId: string
+  accountId: string
+  invitedBy: string
+  joinedAt: Date
 }
 
 export interface PensaCycle {
@@ -145,9 +173,27 @@ export interface PensaStudioTaskContext {
   extensionIds: string[]
 }
 
-export type PensaTaskContext = PensaPintaTaskContext | PensaStudioTaskContext
+export interface PensaMoldaTaskContext {
+  kind: 'molda'
+  /** Inventory reference; the finished creation keeps its own stable ID. */
+  assetId: string
+  artKind: 'model' | 'texture' | 'sky'
+  appearance: string
+  usage: string
+  palette: Array<{ role: string; color: string }>
+}
+export type PensaTaskContext =
+  | PensaPintaTaskContext
+  | PensaStudioTaskContext
+  | PensaMoldaTaskContext
 
 export type PensaTaskOutputRef =
+  | {
+      kind: 'molda_asset'
+      assetId: string
+      assetName?: string
+      assetKind: 'model' | 'texture' | 'sky'
+    }
   | {
       kind: 'pinta_asset'
       assetId: string

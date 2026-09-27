@@ -11,6 +11,9 @@ const r = (p: string) => resolve(here, p).replace(/\\/g, '/')
 export default defineConfig({
   root: here,
   plugins: [react(), tailwindcss()],
+  // WebKit retains failed modulepreloads across reloads (WebKit bug 270357).
+  // Ordinary imports preserve the workshop's explicit reload recovery path.
+  build: { modulePreload: false },
   resolve: {
     alias: {
       '@sistemazero/molda/styles.css': r('../src/styles/molda.css'),

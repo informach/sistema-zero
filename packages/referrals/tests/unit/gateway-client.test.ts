@@ -4,7 +4,7 @@ import { createReferralsGatewayClient } from '../../src/infrastructure/gateways/
 /**
  * Serialização REAL do cliente (fetch capturado) — o achado do full review: o
  * fake dos testes de aplicação valida o FLUXO, mas quem fala com o members é
- * este cliente, e um campo obrigatório ausente no corpo (o `mode: 'offer'`)
+ * este cliente, e um campo obrigatório ausente no corpo (o `mode: 'course'`)
  * passaria batido por todos os fakes e reprovaria TODA bolsa em produção.
  */
 describe('createReferralsGatewayClient — corpo e headers no fio', () => {
@@ -23,11 +23,23 @@ describe('createReferralsGatewayClient — corpo e headers no fio', () => {
     return { client, seen }
   }
 
-  test('grantManualOffer envia mode:"offer" no corpo (DTO do members exige)', async () => {
+  test('consulta disponibilidade assina GET no caminho exato do curso', async () => {
     const { client, seen } = capture()
-    const res = await client.grantManualOffer({
+    await client.getGiftAvailability('cade-todo-mundo')
+    const call = seen[0]!
+    expect(call.url).toBe('http://gateway.test/members/webhooks/gift-course/cade-todo-mundo')
+    expect(call.init.method).toBe('GET')
+    expect(call.init.body).toBeUndefined()
+    const headers = call.init.headers as Record<string, string>
+    expect(headers['x-consumer-id']).toBe('referrals')
+    expect(headers['x-signature']).toMatch(/^t=\d+,v1=[0-9a-f]{64}$/)
+  })
+
+  test('grantManualCourse envia mode:"course" no corpo (DTO do members exige)', async () => {
+    const { client, seen } = capture()
+    const res = await client.grantManualCourse({
       userId: 'u-1',
-      offerRef: 'desafio-primeiro-jogo',
+      courseRef: 'cade-todo-mundo',
       sourceId: 'scholarship:r-1',
       expiresAt: null,
       deliveryId: 'scholarship:r-1',
@@ -38,9 +50,9 @@ describe('createReferralsGatewayClient — corpo e headers no fio', () => {
     expect(call.url).toBe('http://gateway.test/members/webhooks/grant-manual')
 
     const body = JSON.parse(String(call.init.body)) as Record<string, unknown>
-    expect(body.mode).toBe('offer')
+    expect(body.mode).toBe('course')
     expect(body.userId).toBe('u-1')
-    expect(body.offerRef).toBe('desafio-primeiro-jogo')
+    expect(body.courseRef).toBe('cade-todo-mundo')
     expect(body.sourceId).toBe('scholarship:r-1')
     expect(body.expiresAt).toBeNull()
     // deliveryId vai no HEADER, nunca no corpo (o canônico HMAC o cobre à parte).
@@ -51,6 +63,27 @@ describe('createReferralsGatewayClient — corpo e headers no fio', () => {
     expect(headers['x-consumer-id']).toBe('referrals')
     expect(headers['x-signature']).toMatch(/^t=\d+,v1=[0-9a-f]{64}$/)
     expect(headers['idempotency-key']).toBeUndefined()
+  })
+
+  test('grantMuralVisitor usa modo próprio e delivery-id independente', async () => {
+    const { client, seen } = capture()
+    const res = await client.grantMuralVisitor({
+      userId: 'u-1',
+      sourceId: 'scholarship:r-1',
+      deliveryId: 'scholarship:mural-visitor:r-1',
+    })
+    expect(res.status).toBe(200)
+    expect(seen).toHaveLength(1)
+    const call = seen[0]!
+    expect(call.url).toBe('http://gateway.test/members/webhooks/grant-manual')
+    expect(JSON.parse(String(call.init.body))).toEqual({
+      mode: 'mural_visitor',
+      userId: 'u-1',
+      sourceId: 'scholarship:r-1',
+    })
+    const headers = call.init.headers as Record<string, string>
+    expect(headers['x-delivery-id']).toBe('scholarship:mural-visitor:r-1')
+    expect(headers['x-signature']).toMatch(/^t=\d+,v1=[0-9a-f]{64}$/)
   })
 
   test('sendEmail leva Idempotency-Key e o envelope de canal', async () => {

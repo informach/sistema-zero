@@ -2,7 +2,6 @@
 
 import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-player-context'
 import { renderInline, renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
-import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { ArrowLeft, Check, Sparkles, Timer, Trophy } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
@@ -12,6 +11,7 @@ import type { QuizAttemptResultView, QuizBlock, QuizQuestion, QuizStateView } fr
 import { badgeInfo } from './badges'
 import { QuizReview, useQuizCooldown } from './kids-quiz-review'
 import { KidsMascot } from './mascot'
+import { KidsMascotAnimated } from './mascot-rive'
 
 interface Props {
   blockId: string
@@ -116,18 +116,30 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
   if (passed) {
     return (
       <div className="flex flex-col gap-4" role="status" aria-live="polite">
-        <Card className="flex flex-col items-center gap-3 p-6 text-center [background-image:var(--sz-gradient)] text-(--sz-primary-fg)">
+        {/* O azul chapado da marca (telas-modelo de 11/09/2026), sem o gradiente: o
+            quiz já mora num cartão branco da aula, e este é o recado de vitória dele. */}
+        <div className="kids-marca flex flex-col items-center gap-3 rounded-[1.25rem] p-6 text-center md:p-8">
           <span className="grid place-items-center rounded-full bg-card p-3">
-            <KidsMascot
-              expression="celebrating"
-              className={cn('size-16', result && 'kid-wiggle')}
-            />
+            {/* ⚠️ Só festeja quem ACABOU de passar. Esta tela também é o que a
+                criança vê ao reabrir uma aula aprovada semanas atrás (`result`
+                nulo), e ali o Zappy animado com chime comemoraria de novo, do
+                nada, uma conquista velha — o caso exato que a régua evento ×
+                estado existe para evitar. */}
+            {result ? (
+              <KidsMascotAnimated
+                expression="celebrating"
+                className="size-16"
+                stillClassName="kid-wiggle"
+              />
+            ) : (
+              <KidsMascot expression="celebrating" className="size-16" />
+            )}
           </span>
           <p className="sz-display inline-flex items-center gap-2 text-2xl">
             <Trophy className="size-6" />
             Quiz concluído{lastScore !== null ? ` com ${lastScore}%` : ''}!
           </p>
-          {result ? <p className="text-sm opacity-90">Mandou bem demais!</p> : null}
+          {result ? <p className="text-sm">Mandou bem demais!</p> : null}
           {/* Recompensas REAIS do backend (vêm na resposta do submit aprovado). */}
           {result?.gamification ? (
             <div className="flex flex-wrap items-center justify-center gap-2">
@@ -152,7 +164,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
               })}
             </div>
           ) : null}
-        </Card>
+        </div>
         {result ? <QuizReview questions={questions} result={result} answers={answers} /> : null}
       </div>
     )
@@ -161,7 +173,11 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
   // ── Reprovado NESTA visita: nota + correção + retry/cooldown ───────────────
   if (result) {
     return (
-      <Card className="flex flex-col gap-5 p-5 md:p-6" role="status" aria-live="polite">
+      <div
+        className="flex flex-col gap-5 rounded-[1.25rem] bg-background p-5 md:p-6"
+        role="status"
+        aria-live="polite"
+      >
         <div className="flex items-center gap-4">
           <KidsMascot expression="thinking" className="size-16" />
           <div>
@@ -189,14 +205,18 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
             Tentar de novo!
           </button>
         )}
-      </Card>
+      </div>
     )
   }
 
   // ── Cooldown hidratado do GET (reprovou em visita anterior) ────────────────
   if (cooldownLeft !== null) {
     return (
-      <Card className="flex items-center gap-4 p-5 md:p-6" role="status" aria-live="polite">
+      <div
+        className="flex items-center gap-4 rounded-[1.25rem] bg-background p-5 md:p-6"
+        role="status"
+        aria-live="polite"
+      >
         <KidsMascot expression="sleeping" className="size-16 shrink-0" />
         <div className="flex flex-col gap-1">
           <p className="sz-display text-lg">Pausa rápida!</p>
@@ -212,14 +232,14 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
             Você pode tentar de novo em {cooldownLeft}.
           </p>
         </div>
-      </Card>
+      </div>
     )
   }
 
   // ── Intro: mascote + chips de info + COMEÇAR ───────────────────────────────
   if (phase === 'intro') {
     return (
-      <Card className="flex flex-col items-center gap-4 p-6 text-center md:p-8">
+      <div className="flex flex-col items-center gap-4 rounded-[1.25rem] bg-background p-6 text-center md:p-8">
         <KidsMascot expression="thinking" className="size-20" />
         <div>
           <h3 className="sz-display text-2xl">Hora do desafio!</h3>
@@ -247,7 +267,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
         >
           Começar!
         </button>
-      </Card>
+      </div>
     )
   }
 
@@ -295,7 +315,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
   }
 
   return (
-    <Card className="flex flex-col gap-5 p-5 md:p-6">
+    <div className="flex flex-col gap-5 rounded-[1.25rem] bg-background p-5 md:p-6">
       {/* Segmentos de progresso (um por pergunta, estilo Duolingo). */}
       <div className="flex items-center gap-1.5" aria-hidden="true">
         {questions.map((q, i) => (
@@ -304,7 +324,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
             className={cn(
               'h-2 flex-1 rounded-full transition-colors',
               i < step && 'bg-(--kids-lime)',
-              i === step && '[background-image:var(--sz-gradient)]',
+              i === step && 'bg-primary',
               i > step && 'bg-muted',
             )}
           />
@@ -335,11 +355,14 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
               tabIndex={ci === rovingIndex ? 0 : -1}
               disabled={submitting}
               onClick={() => setAnswers((a) => ({ ...a, [question.id]: choice.id }))}
+              // A carta de resposta tem o 3D do Brilliant (`.kids-3d`): a borda de baixo
+              // cinza, e na cor de ação quando escolhida. O ✓ e o quadradinho cheio da letra
+              // seguem sendo o sinal da escolha sem depender da cor (WCAG 1.4.1).
               className={cn(
-                'flex items-center gap-3 rounded-2xl border-2 px-4 py-3.5 text-left font-semibold text-base transition-[color,background-color,border-color,box-shadow,transform]',
+                'kids-3d flex items-center gap-3 rounded-2xl border-2 px-4 py-3.5 text-left font-semibold text-base',
                 selected
-                  ? 'border-primary bg-(--kids-cyan-tint) text-primary shadow-[0_4px_0_color-mix(in_oklch,var(--primary)_45%,transparent)]'
-                  : 'border-border bg-card shadow-[0_4px_0_var(--border)] hover:border-ring/60 active:translate-y-[2px] active:shadow-[0_2px_0_var(--border)]',
+                  ? 'kids-3d--acao border-primary bg-(--kids-cyan-tint) text-primary'
+                  : 'border-border bg-card hover:border-ring/60',
               )}
             >
               <span
@@ -394,6 +417,6 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
           {isLast ? 'Responder!' : 'Próxima'}
         </button>
       </div>
-    </Card>
+    </div>
   )
 }

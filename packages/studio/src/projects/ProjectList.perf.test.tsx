@@ -7,6 +7,7 @@
  */
 import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 
 type KV = Map<IDBValidKey, unknown>
 const dbs = new Map<string, KV>()
@@ -22,7 +23,7 @@ const kvOf = (store?: { name?: string }): KV => {
 }
 
 mock.module('idb-keyval', () => ({
-  createStore: (dbName: string) => ({ name: dbName }),
+  createStore: (dbName: string) => fakeUseStore(dbName),
   get: async (key: IDBValidKey, store?: { name?: string }) => {
     stats.get += 1
     return kvOf(store).get(key)

@@ -18,6 +18,7 @@ import {
   insertPlanFor,
   shapesForInsert,
 } from './insertAsset'
+import { maskedShapeBounds, resolveMaskScene } from './mask'
 import { sanitizeVectorShape, type VectorShape } from './model'
 
 const style = { fill: '#ff0000', stroke: null, opacity: 1, rotation: 0 }
@@ -73,6 +74,18 @@ describe('insertPlanFor (o que cada tipo de desenho vira)', () => {
     expect(plano?.kind).toBe('shapes')
     expect(plano && plano.kind === 'shapes' && plano.shapes.length).toBe(0)
   })
+
+  it('conserva a fonte escondida que uma miniatura mascarada ainda precisa', () => {
+    const source = { ...quadrado('janela', 20, 20), hidden: true as const }
+    const content = { ...quadrado('rosto', 0, 0), maskId: source.id }
+    const plan = insertPlanFor(cenarioVetorial([content, source]))
+
+    expect(plan?.kind).toBe('shapes')
+    expect(plan?.kind === 'shapes' ? plan.shapes.map((shape) => shape.id) : []).toEqual([
+      'rosto',
+      'janela',
+    ])
+  })
 })
 
 describe('shapesForInsert (vetor vira formas)', () => {
@@ -83,11 +96,18 @@ describe('shapesForInsert (vetor vira formas)', () => {
     shapes: [quadrado('a', 0, 0), quadrado('b', 160, 160)],
   }
 
-  it('ids NOVOS e um grupo ÚNICO (a inserção anda junta)', () => {
-    const out = shapesForInsert(origem, { width: 400, height: 400 })
+  it('ids de forma/movimento NOVOS e um grupo ÚNICO (a inserção anda junta)', () => {
+    const withMotion = {
+      ...origem,
+      shapes: origem.shapes.map((shape, index) => ({ ...shape, motionId: `mov-${index}` })),
+    }
+    const out = shapesForInsert(withMotion, { width: 400, height: 400 })
     expect(out).toHaveLength(2)
     expect(out.map((s) => s.id)).not.toContain('a')
     expect(out.map((s) => s.id)).not.toContain('b')
+    expect(out.map((s) => s.motionId)).not.toContain('mov-0')
+    expect(out.map((s) => s.motionId)).not.toContain('mov-1')
+    expect(out.every((shape) => Boolean(shape.motionId))).toBe(true)
     expect(new Set(out.map((s) => s.groupId)).size).toBe(1)
     expect(out[0]?.groupId).toBeTruthy()
   })
@@ -127,6 +147,39 @@ describe('shapesForInsert (vetor vira formas)', () => {
       height: 30,
     })
   })
+
+  it('leva a fonte escondida da máscara e remapeia a relação para os ids inseridos', () => {
+    const source = { ...quadrado('janela', 20, 20), hidden: true as const }
+    const content = { ...quadrado('rosto', 0, 0), maskId: source.id }
+    const out = shapesForInsert(
+      { ...origem, shapes: [content, source] },
+      { width: 400, height: 300 },
+    )
+    const copiedContent = out.find((shape) => shape.maskId)
+    const copiedSource = out.find((shape) => shape.id === copiedContent?.maskId)
+
+    expect(out).toHaveLength(2)
+    expect(copiedContent?.maskId).not.toBe(source.id)
+    expect(copiedSource?.hidden).toBe(true)
+  })
+
+  it('centraliza pela parte realmente visível da composição mascarada', () => {
+    const source = { ...quadrado('janela', 20, 20), w: 20, h: 20, hidden: true as const }
+    const content = { ...quadrado('rosto', -1_000, 20), w: 1_040, maskId: source.id }
+    const out = shapesForInsert(
+      { ...origem, shapes: [content, source] },
+      { width: 400, height: 300 },
+    )
+    const scene = resolveMaskScene(out)
+    const visible = scene.painted.flatMap((shape) => {
+      const bounds = maskedShapeBounds(scene, shape)
+      return bounds ? [bounds] : []
+    })
+    const box = boundsUnion(visible)
+
+    expect(box.x + box.width / 2).toBeCloseTo(200, 6)
+    expect(box.y + box.height / 2).toBeCloseTo(150, 6)
+  })
 })
 
 describe('imageShapeForInsert (pixel vira figura)', () => {
@@ -138,6 +191,7 @@ describe('imageShapeForInsert (pixel vira figura)', () => {
     const shape = imageShapeForInsert(origem, alvo)
     if (shape.type !== 'image') throw new Error('tipo')
     expect(shape.pixelated).toBe(true)
+    expect(shape.motionId).toBeTruthy()
     expect(shape.src).toBe(src)
     const caixa = shapeBounds(shape)
     // Folga de 1px: a figura assenta em pixel INTEIRO de propósito (meio pixel

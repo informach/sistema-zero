@@ -24,16 +24,20 @@ export function CatalogFilterBar({ filters, onChange, onClear, hasActiveFilters 
           placeholder="Buscar curso..."
           value={filters.q}
           onChange={(e) => onChange('q', e.target.value)}
-          className="pl-9"
+          // Em cima do chão da página o campo precisa do branco do cartão (senão some nele).
+          className="bg-card pl-9"
           aria-label="Buscar curso"
         />
       </div>
-      <div className="flex items-center gap-3">
+      {/* A ordem mais longa ("Mais recentes primeiro") pede 145 px de texto, e o seletor gasta 44
+          de respiro: com 176 px ela saía cortada. No celular os dois dividem a linha em 2:3 (com
+          larguras fixas eles passavam dos 343 px da tela); do `sm` em diante voltam ao fixo. */}
+      <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-center gap-3 sm:flex">
         <Select
           value={filters.acesso}
           onChange={(e) => onChange('acesso', e.target.value)}
           aria-label="Filtrar por acesso"
-          className="w-36"
+          className="bg-card sm:w-36"
         >
           <option value="todos">Todos</option>
           <option value="liberados">Liberados</option>
@@ -43,7 +47,7 @@ export function CatalogFilterBar({ filters, onChange, onClear, hasActiveFilters 
           value={filters.ordem}
           onChange={(e) => onChange('ordem', e.target.value)}
           aria-label="Ordenar"
-          className="w-44"
+          className="bg-card sm:w-52"
         >
           <option value="antigos">Mais antigos primeiro</option>
           <option value="recentes">Mais recentes primeiro</option>
@@ -51,7 +55,7 @@ export function CatalogFilterBar({ filters, onChange, onClear, hasActiveFilters 
           <option value="za">Z → A</option>
         </Select>
         {hasActiveFilters ? (
-          <Button variant="ghost" onClick={onClear} className="shrink-0">
+          <Button variant="ghost" onClick={onClear} className="shrink-0 justify-self-start">
             <X className="size-4" />
             Limpar
           </Button>

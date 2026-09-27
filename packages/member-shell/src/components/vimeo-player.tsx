@@ -1,8 +1,10 @@
 'use client'
 
+import type { VideoWatchCoverage } from '@sistemazero/core/learning'
 import Player from '@vimeo/player'
 import { Maximize2, Minimize2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-media-focus'
 
 interface VimeoPlayerProps {
   /** ID numérico já extraído da URL (nunca o `src` cru). */
@@ -17,6 +19,7 @@ interface VimeoPlayerProps {
   onProgress?: (seconds: number, percent: number) => void
   /** Pause/fim → flush imediato da posição. */
   onFlush?: (seconds: number) => void
+  onCoverage?: (coverage: VideoWatchCoverage) => void
   /** Disparado UMA vez ao cruzar o limiar de % assistido. */
   onReachedThreshold?: () => void
   /** Vídeo TERMINOU (evento `ended` do SDK) — p/ o host celebrar no fim de verdade. */
@@ -45,17 +48,21 @@ export function VimeoPlayer({
   initialPositionSeconds,
   onProgress,
   onFlush,
+  onCoverage,
   onReachedThreshold,
   onEnded,
   thresholdPercent = 0.9,
 }: VimeoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const hostRef = useRef<HTMLDivElement>(null)
+  // A instância viva do SDK: o efeito da tela cheia precisa falar com ela.
+  const playerRef = useRef<Player | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [trackingFailed, setTrackingFailed] = useState(false)
 
   // Callbacks em refs: o Player é criado uma vez por vídeo; sem stale closures.
-  const callbacksRef = useRef({ onProgress, onFlush, onReachedThreshold, onEnded })
-  callbacksRef.current = { onProgress, onFlush, onReachedThreshold, onEnded }
+  const callbacksRef = useRef({ onProgress, onFlush, onCoverage, onReachedThreshold, onEnded })
+  callbacksRef.current = { onProgress, onFlush, onCoverage, onReachedThreshold, onEnded }
   const reachedRef = useRef(false)
   const lastSecondsRef = useRef(0)
 
@@ -80,7 +87,47 @@ export function VimeoPlayer({
       portrait: false,
       dnt: true,
       playsinline: true,
+      // ⚠️ NÃO ponha `min_quality` aqui. Piso de qualidade parece proteger a
+      // criança de imagem ruim, mas faz o contrário do que o nome sugere: ele
+      // PROÍBE o adaptativo de cair, e quem está no 4G congestionado da escola
+      // troca "um pouco borrado" por "travando a cada dois segundos". O tamanho
+      // pequeno do player era o problema real, e quem resolve isso é a largura
+      // (a divisória arrastável) mais o pedido de qualidade na tela cheia.
     })
+    playerRef.current = player
+    const audioOwner = Symbol('vimeo')
+    const unregisterAudio = registerLessonMedia(audioOwner, () => player.pause())
+    player.on('play', () => {
+      void requestLessonMediaFocus(audioOwner)
+    })
+    let disposed = false
+    let sampledAt = 0
+    let pendingSample = false
+    async function sampleCoverage(flush?: number) {
+      if (!callbacksRef.current.onCoverage || (pendingSample && flush === undefined)) return
+      pendingSample = true
+      sampledAt = Date.now()
+      try {
+        const [duration, played] = await Promise.all([player.getDuration(), player.getPlayed()])
+        if (disposed || duration <= 0) return
+        const ranges: VideoWatchCoverage['ranges'] = []
+        // SDK versions describe these as objects; the iframe also sends tuple arrays.
+        for (const range of played) {
+          if (Array.isArray(range) && typeof range[0] === 'number' && typeof range[1] === 'number')
+            ranges.push([range[0], range[1]])
+          else if (typeof range.start === 'number' && typeof range.end === 'number')
+            ranges.push([range.start, range.end])
+          else throw new Error('Trechos do Vimeo inválidos.')
+        }
+        callbacksRef.current.onCoverage?.({ duration, ranges })
+        setTrackingFailed(false)
+      } catch {
+        if (!disposed) setTrackingFailed(true)
+      } finally {
+        pendingSample = false
+        if (!disposed && flush !== undefined) callbacksRef.current.onFlush?.(flush)
+      }
+    }
 
     const initial = initialPositionSeconds ?? 0
     if (initial > 2) {
@@ -94,6 +141,7 @@ export function VimeoPlayer({
     player.on('timeupdate', (data: { seconds: number; percent: number }) => {
       lastSecondsRef.current = data.seconds
       callbacksRef.current.onProgress?.(data.seconds, data.percent)
+      if (Date.now() - sampledAt >= 1000) void sampleCoverage()
       if (!reachedRef.current && data.percent >= thresholdPercent) {
         reachedRef.current = true
         callbacksRef.current.onReachedThreshold?.()
@@ -101,22 +149,54 @@ export function VimeoPlayer({
     })
     player.on('pause', (data: { seconds: number }) => {
       callbacksRef.current.onFlush?.(data.seconds)
+      void sampleCoverage(data.seconds)
     })
     player.on('ended', (data: { duration: number }) => {
       callbacksRef.current.onFlush?.(data.duration)
+      void sampleCoverage(data.duration)
       callbacksRef.current.onEnded?.()
     })
 
     return () => {
+      disposed = true
+      unregisterAudio()
       // `destroy()` remove o iframe que o PRÓPRIO SDK criou dentro do host —
       // o React nunca soube dele, então o próximo run cria um novo limpo.
+      if (playerRef.current === player) playerRef.current = null
       player.destroy().catch(() => {})
     }
   }, [vimeoId, vimeoHash, thresholdPercent])
 
-  // Sincroniza o estado do botão com a Fullscreen API (Esc, F11, etc.).
+  // Sincroniza o estado do botão com a Fullscreen API (Esc, F11, etc.) e avisa o
+  // player que o tamanho mudou.
+  //
+  // A tela cheia é do CONTAINER, não do iframe, de propósito: é o que mantém o
+  // watermark visível (ver o cabeçalho). O efeito colateral é que, para o player
+  // lá dentro, entrar em tela cheia é só um resize — o atalho interno do Vimeo
+  // "tela cheia logo a melhor qualidade" nunca dispara, e o adaptativo sobe
+  // devagar a partir do que já estava em buffer. Então a gente pede na mão.
   useEffect(() => {
-    const sync = () => setIsFullscreen(document.fullscreenElement === containerRef.current)
+    const sync = () => {
+      const cheia = document.fullscreenElement === containerRef.current
+      setIsFullscreen(cheia)
+      const player = playerRef.current
+      if (!player) return
+      // Melhor esforço: `setQuality` é restrito a contas Plus/PRO/Business, e
+      // numa conta sem ele a promessa só rejeita. Nunca pode derrubar a aula.
+      if (!cheia) {
+        player.setQuality('auto').catch(() => {})
+        return
+      }
+      player
+        .getQualities()
+        .then((qualidades: Array<{ id: string }>) => {
+          // A lista vem da melhor para a pior, com 'auto' junto; queremos a
+          // melhor CONCRETA.
+          const melhor = qualidades.find((q) => q.id !== 'auto')
+          if (melhor) return player.setQuality(melhor.id)
+        })
+        .catch(() => {})
+    }
     document.addEventListener('fullscreenchange', sync)
     return () => document.removeEventListener('fullscreenchange', sync)
   }, [])
@@ -137,6 +217,15 @@ export function VimeoPlayer({
     >
       {/* Host do iframe do SDK (o title/allow do iframe vêm do oEmbed). */}
       <div ref={hostRef} className="h-full w-full [&>iframe]:h-full [&>iframe]:w-full" />
+      {trackingFailed && (
+        <p
+          role="alert"
+          className="absolute bottom-12 inset-x-3 rounded-lg bg-black/80 p-3 text-sm text-white"
+        >
+          Não conseguimos acompanhar os trechos assistidos. Confira sua conexão; tentaremos
+          novamente durante a reprodução.
+        </p>
+      )}
       {watermark ? (
         <span
           aria-hidden

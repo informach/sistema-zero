@@ -15,28 +15,35 @@
  */
 import type { JSX, ReactNode } from 'react'
 import { COPY } from '../../../core/copy'
+import { maskSourceIds } from '../../../vector/mask'
 import { ToolButton } from '../../ui/Button'
 import {
   AlignCenterHorizontal,
   AlignCenterVertical,
   AlignEndHorizontal,
   AlignEndVertical,
+  AlignHorizontalDistributeCenter,
   AlignStartHorizontal,
   AlignStartVertical,
+  AlignVerticalDistributeCenter,
   BringToFront,
   ChevronsDown,
   ChevronsUp,
+  CircleDot,
   Copy,
   FlipHorizontal2,
   FlipVertical2,
   Group,
   SendToBack,
+  SquareDashed,
+  SquarePen,
   SquaresExclude,
   SquaresIntersect,
   SquaresSubtract,
   SquaresUnite,
   Trash2,
   Ungroup,
+  Unlink2,
 } from '../../ui/icons'
 import { useVectorEditor } from './VectorEditorScope'
 import { VectorNodeActions } from './VectorNodeActions'
@@ -54,7 +61,8 @@ const Divider = (): JSX.Element => (
  * dica de como usá-la, na MESMA altura.
  *
  * ⚠️ UMA moldura para TODOS os ramos, e a altura mora no MIOLO (`min-h-11`), nunca
- * no contêiner: a moldura soma `py-1` + `border-b-2` (54px em qualquer ramo). O
+ * no contêiner: a moldura soma `py-1` + `border-b` (53px em qualquer ramo; o fio de 1px é
+ * o da barra de cima e das colunas desde a tela-modelo, 11/09/2026). O
  * ramo dos pontos tinha o `min-h-11` no contêiner (44px com border-box) e o palco
  * pulava 10px ao escolher uma forma sem pontos editáveis. `data-pin-selection-bar`
  * é o gancho do teste que mede a estrutura dos ramos.
@@ -71,7 +79,7 @@ function SelectionBarFrame({
     <div
       data-pin-selection-bar=""
       {...(toolbar ? { role: 'toolbar', 'aria-label': toolbar } : {})}
-      className="shrink-0 border-b-2 border-pin-border bg-pin-surface px-3 py-1"
+      className="shrink-0 border-b border-pin-border bg-pin-surface px-3 py-1"
     >
       <div className="flex min-h-11 items-center gap-1 pin-scroll-x overflow-x-auto">
         {children}
@@ -94,7 +102,12 @@ export function VectorSelectionBar(): JSX.Element | null {
     nodeTarget,
     nodePath,
     selected,
+    doc,
+    gradientAdjustShapeId,
+    maskEditId,
     alignSelected,
+    canDistributeSelected,
+    distributeSelected,
     flipSelected,
     moveOrder,
     groupSelected,
@@ -102,7 +115,13 @@ export function VectorSelectionBar(): JSX.Element | null {
     pathfinderSelected,
     duplicateSelected,
     removeSelected,
+    createMaskSelected,
+    beginMaskEdit,
+    releaseMaskSelected,
+    centerSelectionPivot,
   } = useVectorEditor()
+
+  if (gradientAdjustShapeId || maskEditId) return null
 
   // Com a ferramenta de PONTOS ligada a faixa troca de conteudo, no mesmo lugar
   // e na mesma altura: as acoes de forma inteira (alinhar/ordem/agrupar) nao
@@ -111,8 +130,8 @@ export function VectorSelectionBar(): JSX.Element | null {
     if (!nodeTarget) return <SelectionBarPlaceholder hint={COPY.vector.nodeBarEmpty} />
     return (
       <SelectionBarFrame toolbar={COPY.vector.nodeBar}>
-        {/* ⚠️ Sem pontos editáveis (retângulo, círculo, texto, figura, ou uma
-            mistura que virou mais de um pedaço) a faixa DIZ isso. Sumir sem
+        {/* ⚠️ Sem pontos editáveis (texto, figura ou uma mistura que virou
+            mais de um pedaço) a faixa DIZ isso. Sumir sem
             explicação lia como "quebrou", e depois do Misturar isso deixou de
             ser raro: um resultado com furo tem dois sub-caminhos, e o
             `toEditablePath` recusa vários `M` de propósito. A altura da frase é
@@ -127,6 +146,10 @@ export function VectorSelectionBar(): JSX.Element | null {
   }
 
   if (selected.length === 0) return <SelectionBarPlaceholder hint={COPY.vector.selectionBarEmpty} />
+
+  const sourceIds = maskSourceIds(doc.shapes)
+  const hasMask = selected.some((shape) => shape.maskId || sourceIds.has(shape.id))
+  const hasCustomPivot = selected.some((shape) => shape.rotationPivot !== undefined)
 
   return (
     <SelectionBarFrame toolbar={COPY.vector.selectionBar}>
@@ -164,6 +187,18 @@ export function VectorSelectionBar(): JSX.Element | null {
         label={COPY.vector.alignBottom}
         onClick={() => alignSelected('bottom')}
       />
+      <ToolButton
+        icon={AlignHorizontalDistributeCenter}
+        label={COPY.vector.distributeCentersH}
+        disabled={!canDistributeSelected}
+        onClick={() => distributeSelected('horizontal')}
+      />
+      <ToolButton
+        icon={AlignVerticalDistributeCenter}
+        label={COPY.vector.distributeCentersV}
+        disabled={!canDistributeSelected}
+        onClick={() => distributeSelected('vertical')}
+      />
 
       <Divider />
 
@@ -191,6 +226,33 @@ export function VectorSelectionBar(): JSX.Element | null {
       <ToolButton icon={ChevronsUp} label={COPY.vector.forward} onClick={() => moveOrder(1)} />
       <ToolButton icon={ChevronsDown} label={COPY.vector.backward} onClick={() => moveOrder(-1)} />
       <ToolButton icon={SendToBack} label={COPY.vector.toBack} onClick={() => moveOrder('back')} />
+
+      <Divider />
+
+      {selected.length >= 2 ? (
+        <ToolButton
+          icon={SquareDashed}
+          label={COPY.vector.selCreateMask}
+          onClick={createMaskSelected}
+        />
+      ) : null}
+      {hasMask ? (
+        <>
+          <ToolButton icon={SquarePen} label={COPY.vector.selEditMask} onClick={beginMaskEdit} />
+          <ToolButton
+            icon={Unlink2}
+            label={COPY.vector.selReleaseMask}
+            onClick={releaseMaskSelected}
+          />
+        </>
+      ) : null}
+      {hasCustomPivot ? (
+        <ToolButton
+          icon={CircleDot}
+          label={COPY.vector.selCenterPivot}
+          onClick={centerSelectionPivot}
+        />
+      ) : null}
 
       {/* MISTURAR (o pathfinder). O bloco INTEIRO é gated pelo mesmo gatilho do
           Agrupar logo abaixo, e não cada botão: um gatilho só significa UMA

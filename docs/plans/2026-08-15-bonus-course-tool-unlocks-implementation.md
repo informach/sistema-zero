@@ -115,7 +115,7 @@ Não é necessário criar uma nova opção no formulário ou alterar o DTO do Ad
 
 **Arquivos:**
 
-- `docs/carreira-do-criador.md`
+- `docs/jornada-do-criador.md`
 - `packages/members/CLAUDE.md`
 - `packages/community-kids/src/lib/career-rewards.ts`
 - `packages/community-kids/src/components/kids/my-tools.tsx`

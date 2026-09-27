@@ -1,7 +1,7 @@
 import { MOLDA_LIMITS } from '../core/limits'
 
 /** Converte o RGBA invertido do WebGL em JPEG dentro do teto persistido. */
-export function encodeThumb(pixels: Uint8Array, size: number): string | null {
+export function encodeThumb(pixels: Uint8Array, size: number, png = false): string | null {
   const canvas = document.createElement('canvas')
   canvas.width = size
   canvas.height = size
@@ -14,6 +14,10 @@ export function encodeThumb(pixels: Uint8Array, size: number): string | null {
     image.data.set(pixels.subarray(source, source + row), y * row)
   }
   context.putImageData(image, 0, 0)
+  if (png) {
+    const url = canvas.toDataURL('image/png')
+    return url.startsWith('data:image/png;base64,') && url.length <= 8 * 1024 * 1024 ? url : null
+  }
   for (const quality of [0.72, 0.5, 0.35]) {
     const url = canvas.toDataURL('image/jpeg', quality)
     if (url.length <= MOLDA_LIMITS.maxThumbChars) return url

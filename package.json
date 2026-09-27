@@ -87,5 +87,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16"
+  },
+  "patchedDependencies": {
+    "three@0.184.0": "patches/three@0.184.0.patch"
   }
 }

@@ -174,11 +174,15 @@ export function createHubRoutes(deps: {
       // `challenge` = prateleira do Desafio do mês (`m:YYYY-MM`); lixo → ignorado
       // (lista completa) — o hub também valida no DTO.
       const rawChallenge = url.searchParams.get('challenge') ?? ''
+      // `sort` = filtros do Mural; valor fora da lista cai na ordem padrão (o hub
+      // recusaria com 400, e um filtro não pode derrubar a página).
+      const rawSort = url.searchParams.get('sort')
       const [r, vid] = await Promise.all([
         hub.listThreads(id, {
           cursor: url.searchParams.get('cursor') ?? undefined,
           limit: num(url.searchParams.get('limit')),
           challenge: /^m:\d{4}-\d{2}$/.test(rawChallenge) ? rawChallenge : undefined,
+          sort: rawSort === 'recent' || rawSort === 'plays' ? rawSort : undefined,
         }),
         viewerId(),
       ])

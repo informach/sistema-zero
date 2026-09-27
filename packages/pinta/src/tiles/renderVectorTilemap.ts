@@ -7,7 +7,7 @@
 import type { TilemapAsset, VectorTilesetAsset } from '../core/project'
 import { embedVectorFonts } from '../vector/portableSvg'
 import { svgToPngDataUrl } from '../vector/rasterize'
-import { gradientDefsMarkup, shapesToMarkup } from '../vector/svg'
+import { sceneDefsMarkup, shapesToMarkup } from '../vector/svg'
 import { flattenLayers } from './tilemapOps'
 
 export function vectorTilemapSvg(tilemap: TilemapAsset, tileset: VectorTilesetAsset): string {
@@ -26,7 +26,7 @@ export function vectorTilemapSvg(tilemap: TilemapAsset, tileset: VectorTilesetAs
     .map((index) => {
       const shapes = tileset.tiles[index] ?? []
       const idPrefix = `tile-${index}-`
-      const defs = gradientDefsMarkup(shapes, idPrefix)
+      const defs = sceneDefsMarkup(shapes, idPrefix)
       const content = [
         defs ? `      ${defs.replace(/\n/g, '\n      ')}` : '',
         shapesToMarkup(shapes, '      ', idPrefix),

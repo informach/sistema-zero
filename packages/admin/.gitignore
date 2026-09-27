@@ -22,3 +22,8 @@ next-env.d.ts
 # misc
 .DS_Store
 *.pem
+
+# WASM do runtime do Rive (prévia da animação da trilha no editor de curso):
+# DERIVADO do node_modules pelo `scripts/sync-rive-wasm.ts`, que roda no `dev` e
+# no `build`. Commitar 1,8 MB a cada bump do pacote engordaria o histórico à toa.
+/public/rive/

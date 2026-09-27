@@ -1,14 +1,14 @@
 import type { MoldaPart, Vec3 } from '../core/model'
 import { partSize } from '../model/shapes'
 import { partPivot } from '../model/transform'
-import type { ViewName } from './types'
+import type { CameraView } from './types'
 
-export const VIEW_DIRECTIONS: Record<Exclude<ViewName, 'frame'>, Vec3> = {
-  front: [0, 0.18, 1],
-  back: [0, 0.18, -1],
-  left: [-1, 0.18, 0],
-  right: [1, 0.18, 0],
-  top: [0, 1, 0.001],
+export const VIEW_DIRECTIONS: Record<Exclude<CameraView, 'free'>, Vec3> = {
+  front: [0, 0, 1],
+  back: [0, 0, -1],
+  left: [-1, 0, 0],
+  right: [1, 0, 0],
+  top: [0, 1, 0],
 }
 
 export function rad(degrees: number): number {
@@ -41,7 +41,8 @@ function meshIdentity(mesh: object | undefined): string {
   return String(id)
 }
 
-export function geometryHash(part: MoldaPart, layoutVersion: number): string {
+/** Only local spatial geometry. UV/color/atlas updates have a separate lifetime. */
+export function spatialGeometryHash(part: MoldaPart): string {
   const pivot = partPivot(part)
   const size = partSize(part)
   return [
@@ -49,8 +50,7 @@ export function geometryHash(part: MoldaPart, layoutVersion: number): string {
     meshIdentity(part.mesh),
     size.join(','),
     [part.from[0] - pivot[0], part.from[1] - pivot[1], part.from[2] - pivot[2]].join(','),
-    part.color,
+    // Changing derived ownership can replace a mirrored primitive even at the same size.
     part.mirrorOf ?? '',
-    layoutVersion,
   ].join('|')
 }

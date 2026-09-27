@@ -105,7 +105,7 @@ export function moveMeshVertices(
     const v = part.mesh.vertices[key] as Vec3
     moved[key] = [v[0] + snapped[0], v[1] + snapped[1], v[2] + snapped[2]]
   }
-  const nextMesh: MoldaMesh = { vertices: moved, faces: part.mesh.faces }
+  const nextMesh: MoldaMesh = { ...part.mesh, vertices: moved, faces: part.mesh.faces }
   const box = meshBox(nextMesh)
   if (!box) return model
   for (let i = 0; i < 3; i += 1) {
@@ -135,14 +135,14 @@ export function moveMeshVertices(
 
 export type DeleteMeshResult =
   | { kind: 'updated'; model: MoldaModelAsset }
-  /** A malha ficaria sem face nenhuma: quem chama decide apagar a peça. */
+  /** A malha ficaria sem face nem aresta de construção: quem chama apaga a peça. */
   | { kind: 'empty' }
   | { kind: 'unchanged' }
 
 /**
  * Apaga a seleção. Pontos: os vértices e toda face que os usa. Arestas: as
- * faces que contêm alguma aresta selecionada (os vértices ficam se outra face os
- * usa). Faces: as faces inteiramente selecionadas. Vértice que fica sem face cai.
+ * faces que contêm alguma aresta de superfície selecionada; uma aresta de construção
+ * apaga só a si mesma. Faces: as faces inteiramente selecionadas. Vértice órfão cai.
  */
 export function deleteMeshSelection(
   model: MoldaModelAsset,
@@ -158,6 +158,9 @@ export function deleteMeshSelection(
     ),
   )
   const edges = new Set(selectedEdges(mesh, selection).map(([a, b]) => `${a} ${b}`))
+  const looseBefore = new Set(
+    (mesh.looseEdges ?? []).map(([a, b]) => (a < b ? `${a} ${b}` : `${b} ${a}`)),
+  )
   const faceKeys = new Set(selectedFaces(mesh, selection))
   if (vertices.size === 0 && edges.size === 0 && faceKeys.size === 0) {
     return { kind: 'unchanged' }
@@ -173,13 +176,19 @@ export function deleteMeshSelection(
         const a = face.v[i] as string
         const b = face.v[(i + 1) % face.v.length] as string
         const edge = a < b ? `${a} ${b}` : `${b} ${a}`
-        if (edges.has(edge)) removed = true
+        if (edges.has(edge) && !looseBefore.has(edge)) removed = true
       }
     }
     if (!removed) faces[key] = face
   }
-  if (Object.keys(faces).length === Object.keys(mesh.faces).length) return { kind: 'unchanged' }
-  if (Object.keys(faces).length === 0) return { kind: 'empty' }
+  const looseEdges = (mesh.looseEdges ?? []).filter(([a, b]) => {
+    const key = a < b ? `${a} ${b}` : `${b} ${a}`
+    return !vertices.has(a) && !vertices.has(b) && !edges.has(key)
+  })
+  const facesChanged = Object.keys(faces).length !== Object.keys(mesh.faces).length
+  const looseChanged = looseEdges.length !== (mesh.looseEdges?.length ?? 0)
+  if (!facesChanged && !looseChanged) return { kind: 'unchanged' }
+  if (Object.keys(faces).length === 0 && looseEdges.length === 0) return { kind: 'empty' }
   const remaining: Record<string, Vec3> = {}
   for (const face of Object.values(faces)) {
     for (const key of face.v) {
@@ -187,5 +196,14 @@ export function deleteMeshSelection(
       if (v) remaining[key] = v
     }
   }
-  return { kind: 'updated', model: withMesh(model, part, { vertices: remaining, faces }) }
+  for (const [a, b] of looseEdges) {
+    const first = mesh.vertices[a]
+    const second = mesh.vertices[b]
+    if (first) remaining[a] = first
+    if (second) remaining[b] = second
+  }
+  return {
+    kind: 'updated',
+    model: withMesh(model, part, { vertices: remaining, faces, looseEdges }),
+  }
 }

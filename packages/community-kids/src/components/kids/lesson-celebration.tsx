@@ -10,12 +10,15 @@ import { TROPHY_BADGE_SLUGS } from '@/lib/room-catalog'
 import type { CourseProgressView, GamificationDelta } from '@/lib/types'
 import { badgeInfo } from './badges'
 import { KidsConfetti } from './kids-confetti'
-import { KidsMascot } from './mascot'
+import { KidsMascotAnimated } from './mascot-rive'
 import { ZappyCoin } from './zappy-coin'
 
 interface LessonCelebrationProps {
   /** Snapshot do progresso ANTES do router.refresh() (as props mudam depois). */
   progressBefore: CourseProgressView
+  /** Authoritative completion response; do not guess a new completion during retries. */
+  progressAfter: CourseProgressView
+  publicationPending: boolean
   /** Delta de XP/streak/badges vindo NA resposta do complete; `null` = sem gamificação. */
   gamification: GamificationDelta | null
   nextHref: string | null
@@ -34,18 +37,14 @@ interface LessonCelebrationProps {
  */
 export function LessonCelebration({
   progressBefore,
+  progressAfter,
+  publicationPending,
   gamification,
   nextHref,
   courseHref,
   onClose,
 }: LessonCelebrationProps) {
-  const percentAfter =
-    progressBefore.totalLessons > 0
-      ? Math.min(
-          100,
-          Math.round(((progressBefore.completedLessons + 1) / progressBefore.totalLessons) * 100),
-        )
-      : progressBefore.percent
+  const percentAfter = progressAfter.percent
 
   const [percent, setPercent] = useState(progressBefore.percent)
   const cardRef = useModalA11y<HTMLDivElement>({ open: true, onClose })
@@ -73,9 +72,17 @@ export function LessonCelebration({
         onClick={(e) => e.stopPropagation()}
         className="sz-modal w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-xl outline-none md:p-8"
       >
-        <KidsMascot expression="celebrating" className="kid-wiggle mx-auto size-24" />
+        <KidsMascotAnimated
+          expression="celebrating"
+          className="mx-auto size-24"
+          stillClassName="kid-wiggle"
+        />
         <h2 className="sz-display mt-3 text-2xl">Aula concluída!</h2>
-        <p className="mt-1 text-muted-foreground text-sm">Mandou muito bem!</p>
+        <p className="mt-1 text-muted-foreground text-sm">
+          {publicationPending
+            ? 'As aulas deste curso estão concluídas. Confira a publicação do projeto para registrar a conquista na jornada.'
+            : 'Seu progresso está guardado. Você pode continuar ou fazer uma pausa.'}
+        </p>
 
         {gamification && gamification.xpAwarded > 0 ? (
           <GamificationDeltaPanel gamification={gamification} />
@@ -87,8 +94,15 @@ export function LessonCelebration({
         </div>
 
         <div className="mt-7 flex flex-col items-stretch gap-3">
-          <Link href={nextHref ?? courseHref} className="sz-btn-gradient h-12 text-base">
-            {nextHref ? 'Próxima aula' : 'Voltar ao curso'}
+          <Link
+            href={publicationPending ? `${courseHref}#publicar` : (nextHref ?? courseHref)}
+            className="sz-btn-gradient min-h-12 text-base"
+          >
+            {publicationPending
+              ? 'Conferir publicação do projeto'
+              : nextHref
+                ? 'Próxima aula'
+                : 'Voltar ao curso'}
           </Link>
           {nextHref ? (
             <Link
@@ -153,10 +167,12 @@ function GamificationDeltaPanel({ gamification }: { gamification: GamificationDe
         </p>
       ) : null}
 
+      {/* Desde 09/2026 quem abre o baú é a CRIANÇA, na trilha. Aqui não cabe mais
+          dizer "você abriu": isto virou convite, não recibo. */}
       {unitCompleted ? (
         <p className="inline-flex items-center gap-1.5 font-semibold text-sm">
-          <Gift className="size-4 text-primary" />
-          Você abriu o baú da unidade!
+          <Gift className="size-4 text-(--kids-ouro-texto)" />
+          Você terminou a unidade! Tem um baú te esperando na trilha.
         </p>
       ) : null}
 

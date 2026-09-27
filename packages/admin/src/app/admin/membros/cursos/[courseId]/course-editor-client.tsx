@@ -16,7 +16,6 @@ import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { Switch } from '@sistemazero/ui/switch'
 import { Textarea } from '@sistemazero/ui/textarea'
 import {
   ArrowLeft,
@@ -33,6 +32,7 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
+import { ModuleRiveUploader } from '@/components/media/module-rive-uploader'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { slugify } from '@/lib/slug'
@@ -76,19 +76,17 @@ export function CourseEditorClient({
 
   const [moduleOpen, setModuleOpen] = useState(false)
   const [editingModule, setEditingModule] = useState<ModuleView | null>(null)
-  const [moduleForm, setModuleForm] = useState({ title: '', summary: '' })
+  const [moduleForm, setModuleForm] = useState({ title: '', summary: '', riveUrl: '' })
+  const [moduleRiveUploading, setModuleRiveUploading] = useState(false)
 
   const [lessonOpen, setLessonOpen] = useState(false)
-  const [editingLesson, setEditingLesson] = useState<LessonView | null>(null)
   const [lessonModuleId, setLessonModuleId] = useState<string>('')
   const [lessonForm, setLessonForm] = useState({
     slug: '',
     title: '',
     estimatedMinutes: '',
-    isPublished: false,
   })
-  // Slug da aula = auto do título até o autor editar o slug à mão (dirty) — só na
-  // CRIAÇÃO (igual a produto/oferta/curso); na edição o slug é estável.
+  // Slug da nova aula = auto do título até o autor editar o slug à mão (dirty).
   const [lessonSlugDirty, setLessonSlugDirty] = useState(false)
 
   // Arrastar só após 5px (deixa o clique nos botões do card livre).
@@ -175,12 +173,12 @@ export function CourseEditorClient({
   // ── Módulos ──
   function openCreateModule() {
     setEditingModule(null)
-    setModuleForm({ title: '', summary: '' })
+    setModuleForm({ title: '', summary: '', riveUrl: '' })
     setModuleOpen(true)
   }
   function openEditModule(m: ModuleView) {
     setEditingModule(m)
-    setModuleForm({ title: m.title, summary: m.summary ?? '' })
+    setModuleForm({ title: m.title, summary: m.summary ?? '', riveUrl: m.riveUrl ?? '' })
     setModuleOpen(true)
   }
   async function saveModule() {
@@ -188,7 +186,11 @@ export function CourseEditorClient({
       toast.error('Informe o título do módulo.')
       return
     }
-    const payload = { title: moduleForm.title.trim(), summary: moduleForm.summary.trim() || null }
+    const payload = {
+      title: moduleForm.title.trim(),
+      summary: moduleForm.summary.trim() || null,
+      riveUrl: moduleForm.riveUrl || null,
+    }
     await run(async () => {
       if (editingModule) await apiSend(`/api/members/modules/${editingModule.id}`, 'PATCH', payload)
       else await apiSend(`/api/members/courses/${courseId}/modules`, 'POST', payload)
@@ -224,56 +226,16 @@ export function CourseEditorClient({
 
   // ── Aulas ──
   function openCreateLesson(moduleId: string) {
-    setEditingLesson(null)
     setLessonModuleId(moduleId)
     // Aula nova nasce RASCUNHO — o autor publica quando o conteúdo estiver pronto.
-    setLessonForm({ slug: '', title: '', estimatedMinutes: '', isPublished: false })
+    setLessonForm({ slug: '', title: '', estimatedMinutes: '' })
     setLessonSlugDirty(false) // slug em branco → autogera do título
-    setLessonOpen(true)
-  }
-  function openEditLesson(l: LessonView) {
-    setEditingLesson(l)
-    setLessonModuleId(l.moduleId)
-    setLessonForm({
-      slug: l.slug,
-      title: l.title,
-      estimatedMinutes: l.estimatedMinutes === null ? '' : String(l.estimatedMinutes),
-      isPublished: l.isPublished,
-    })
-    setLessonSlugDirty(true) // edição: slug existente é estável, não regenerar
     setLessonOpen(true)
   }
   async function saveLesson() {
     if (!lessonForm.title.trim() || !lessonForm.slug.trim()) {
       toast.error('Informe slug e título da aula.')
       return
-    }
-    // Checklist leve na TRANSIÇÃO p/ publicada: aula sem bloco = aula VAZIA pro
-    // aluno (permitido — só informa). Edição checa o conteúdo real (1 GET
-    // on-demand); criação com publicar ligado nasce sem blocos por definição.
-    const publishing = lessonForm.isPublished && !editingLesson?.isPublished
-    if (publishing) {
-      let empty = !editingLesson
-      if (editingLesson) {
-        try {
-          const content = await apiGet<{ blocks: unknown[] }>(
-            `/api/members/lessons/${editingLesson.id}/content`,
-          )
-          empty = content.blocks.length === 0
-        } catch {
-          empty = false // conteúdo indisponível → não atrapalha o salvar
-        }
-      }
-      if (empty) {
-        confirm({
-          title: 'Publicar aula vazia?',
-          message:
-            'Esta aula ainda não tem nenhum bloco de conteúdo — o aluno verá uma aula vazia. Publicar mesmo assim?',
-          confirmText: 'Publicar mesmo assim',
-          onConfirm: () => submitLesson(),
-        })
-        return
-      }
     }
     await submitLesson()
   }
@@ -284,11 +246,10 @@ export function CourseEditorClient({
       slug: lessonForm.slug.trim(),
       title: lessonForm.title.trim(),
       estimatedMinutes: mins ? Number(mins) : null,
-      isPublished: lessonForm.isPublished,
+      isPublished: false,
     }
     await run(async () => {
-      if (editingLesson) await apiSend(`/api/members/lessons/${editingLesson.id}`, 'PATCH', payload)
-      else await apiSend(`/api/members/modules/${lessonModuleId}/lessons`, 'POST', payload)
+      await apiSend(`/api/members/modules/${lessonModuleId}/lessons`, 'POST', payload)
       setLessonOpen(false)
     }, 'Aula salva.')
   }
@@ -407,7 +368,6 @@ export function CourseEditorClient({
                   onEditModule={() => openEditModule(mod)}
                   onDeleteModule={() => void deleteModule(mod)}
                   onCreateLesson={() => openCreateLesson(mod.id)}
-                  onEditLesson={openEditLesson}
                   onDeleteLesson={(l) => void deleteLesson(l)}
                   onLessonDragEnd={(e) => handleLessonDragEnd(mod, e)}
                 />
@@ -428,14 +388,20 @@ export function CourseEditorClient({
 
       <Dialog
         open={moduleOpen}
-        onClose={() => setModuleOpen(false)}
+        onClose={() => {
+          if (!moduleRiveUploading) setModuleOpen(false)
+        }}
         title={editingModule ? 'Editar módulo' : 'Novo módulo'}
         footer={
           <>
-            <Button variant="outline" onClick={() => setModuleOpen(false)} disabled={busy}>
+            <Button
+              variant="outline"
+              onClick={() => setModuleOpen(false)}
+              disabled={busy || moduleRiveUploading}
+            >
               Cancelar
             </Button>
-            <Button onClick={saveModule} disabled={busy}>
+            <Button onClick={saveModule} disabled={busy || moduleRiveUploading}>
               {busy ? <Spinner /> : null}
               Salvar
             </Button>
@@ -457,13 +423,26 @@ export function CourseEditorClient({
               onChange={(e) => setModuleForm((f) => ({ ...f, summary: e.target.value }))}
             />
           </Field>
+          {tree?.audience === 'kids' ? (
+            <Field
+              label="Animação da trilha"
+              htmlFor="mrive-file"
+              hint="Opcional. A animação aparece ao lado das aulas deste módulo."
+            >
+              <ModuleRiveUploader
+                value={moduleForm.riveUrl}
+                onChange={(riveUrl) => setModuleForm((f) => ({ ...f, riveUrl }))}
+                onUploadingChange={setModuleRiveUploading}
+              />
+            </Field>
+          ) : null}
         </div>
       </Dialog>
 
       <Dialog
         open={lessonOpen}
         onClose={() => setLessonOpen(false)}
-        title={editingLesson ? 'Editar aula' : 'Nova aula'}
+        title="Nova aula"
         footer={
           <>
             <Button variant="outline" onClick={() => setLessonOpen(false)} disabled={busy}>
@@ -508,24 +487,14 @@ export function CourseEditorClient({
                   ...f,
                   title,
                   // Autogera o slug do título até o autor editá-lo à mão (dirty).
-                  ...(!editingLesson && !lessonSlugDirty ? { slug: slugify(title) } : {}),
+                  ...(!lessonSlugDirty ? { slug: slugify(title) } : {}),
                 }))
               }}
             />
           </Field>
-          <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5">
-            <div>
-              <div className="text-sm font-medium">Aula publicada</div>
-              <div className="text-xs text-muted-foreground">
-                Rascunho fica invisível para o aluno até você publicar.
-              </div>
-            </div>
-            <Switch
-              checked={lessonForm.isPublished}
-              onCheckedChange={(v) => setLessonForm((f) => ({ ...f, isPublished: v }))}
-              disabled={busy}
-            />
-          </div>
+          <p className="text-sm text-muted-foreground">
+            A aula será criada em rascunho. Organize seu conteúdo e publique pelo editor da aula.
+          </p>
         </div>
       </Dialog>
     </div>
@@ -542,7 +511,6 @@ function SortableModuleItem({
   onEditModule,
   onDeleteModule,
   onCreateLesson,
-  onEditLesson,
   onDeleteLesson,
   onLessonDragEnd,
 }: {
@@ -554,7 +522,6 @@ function SortableModuleItem({
   onEditModule: () => void
   onDeleteModule: () => void
   onCreateLesson: () => void
-  onEditLesson: (l: LessonView) => void
   onDeleteLesson: (l: LessonView) => void
   onLessonDragEnd: (event: DragEndEvent) => void
 }) {
@@ -593,6 +560,9 @@ function SortableModuleItem({
             <div className="font-semibold">{mod.title}</div>
             {mod.summary ? (
               <div className="text-sm text-muted-foreground">{mod.summary}</div>
+            ) : null}
+            {mod.riveUrl ? (
+              <div className="text-xs text-muted-foreground">Animação enviada</div>
             ) : null}
             <div className="mt-0.5 text-xs text-muted-foreground">
               {published} de {mod.lessons.length}{' '}
@@ -634,7 +604,6 @@ function SortableModuleItem({
                       lesson={lesson}
                       courseId={courseId}
                       canWrite={canWrite}
-                      onEdit={() => onEditLesson(lesson)}
                       onDelete={() => onDeleteLesson(lesson)}
                     />
                   ))}
@@ -661,13 +630,11 @@ function SortableLessonItem({
   lesson,
   courseId,
   canWrite,
-  onEdit,
   onDelete,
 }: {
   lesson: LessonView
   courseId: string
   canWrite: boolean
-  onEdit: () => void
   onDelete: () => void
 }) {
   const { attributes, listeners, setNodeRef, style } = useSortableItem(lesson.id)
@@ -711,14 +678,9 @@ function SortableLessonItem({
           <SquarePen className="size-4" /> Conteúdo
         </Link>
         {canWrite ? (
-          <>
-            <Button variant="ghost" size="sm" onClick={onEdit}>
-              <Pencil className="size-4" /> Editar
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onDelete}>
-              Excluir
-            </Button>
-          </>
+          <Button variant="ghost" size="sm" onClick={onDelete}>
+            Excluir
+          </Button>
         ) : null}
       </div>
     </div>

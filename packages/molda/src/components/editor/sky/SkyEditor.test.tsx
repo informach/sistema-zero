@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../../core/copy'
 import type { MoldaAsset, MoldaSkyAsset } from '../../../core/model'
 import { createMemoryPersistence } from '../../../state/memoryPersistence'
 import { resetMoldaPersistenceForTests } from '../../../state/persistence'
+import { openEveryDisclosure } from '../../../testing/domContract'
 import { installFakeSkyPreview } from '../../../testing/fakeSkyPreview'
 import { makeSky } from '../../../testing/fixtures'
 import { MoldaApp } from '../../MoldaApp'
@@ -32,6 +33,76 @@ async function openSky(): Promise<ReturnType<typeof createMemoryPersistence>> {
 }
 
 describe('SkyEditor', () => {
+  test('download can be cancelled without changing the document or history', async () => {
+    const persistence = await openSky()
+    const before = persistence.snapshot()
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.sky.download.hdr }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.sky.download.cancel }))
+    expect(await screen.findByText(COPY.editor.sky.download.cancelled)).toBeDefined()
+    expect(screen.queryByRole('button', { name: COPY.editor.sky.download.cancel })).toBeNull()
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: COPY.editor.sky.download.hdr }),
+    )
+    expect(persistence.snapshot()).toEqual(before)
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+
+  test('editing invalidates an in-flight export instead of downloading the old revision', async () => {
+    await openSky()
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.sky.download.hdr }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.noite }))
+    expect(await screen.findByText(COPY.editor.sky.download.changed)).toBeDefined()
+    expect(screen.queryByRole('button', { name: COPY.editor.sky.download.cancel })).toBeNull()
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.sky.download.hdr }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(false)
+  })
+
+  test.each([
+    'Escape',
+    'pointercancel',
+  ])('%s cancels a live slider without an undo step', async (reason) => {
+    const persistence = await openSky()
+    const slider = screen.getByRole('slider', {
+      name: COPY.editor.sky.intensity,
+    }) as HTMLInputElement
+    fireEvent.pointerDown(slider)
+    fireEvent.change(slider, { target: { value: '70' } })
+    expect(slider.value).toBe('70')
+    if (reason === 'Escape') fireEvent.keyDown(slider, { key: 'Escape' })
+    else fireEvent.pointerCancel(slider)
+    fireEvent.pointerUp(slider)
+    fireEvent.blur(slider)
+    expect(slider.value).toBe('30')
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+    expect(skyOf(persistence.snapshot()[0]).params.sunIntensity).toBe(30)
+  })
+
+  test('a late slider release cannot replace an intervening preset', async () => {
+    await openSky()
+    const slider = screen.getByRole('slider', {
+      name: COPY.editor.sky.intensity,
+    }) as HTMLInputElement
+    fireEvent.pointerDown(slider)
+    fireEvent.change(slider, { target: { value: '70' } })
+    fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.noite }))
+    const intensity = slider.value
+    fireEvent.pointerUp(slider)
+    expect(slider.value).toBe(intensity)
+    expect(
+      screen.getByRole('button', { name: COPY.skyPresets.noite }).getAttribute('aria-pressed'),
+    ).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(slider.value).toBe('70')
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(slider.value).toBe('30')
+  })
+
   test('a prévia recebe a imagem do render e acompanha os controles', async () => {
     await openSky()
     await waitFor(() => expect(fake.instances[0]?.images.length).toBeGreaterThan(0), {
@@ -84,6 +155,17 @@ describe('SkyEditor', () => {
 
   test('preset, cores, sortear nuvens e download', async () => {
     const persistence = await openSky()
+    // ⚠️ ATUALIZAÇÃO DELIBERADA (redesenho, 10/09/2026): Cores, Nuvens, Estrelas e Exposição
+    // passaram a NASCER RECOLHIDOS, porque são o ajuste fino do céu; abertos ficam só o céu
+    // pronto e o Sol. Recolhido, o `Panel` esconde as `actions` de propósito (elas agiriam
+    // num corpo fora de alcance), e é por isso que "Sortear nuvens" some daqui.
+    //
+    // Esta asserção descrevia ONDE o controle estava, não o que ele faz: é acoplamento de
+    // layout, e é o que o plano manda migrar. O que o teste prova continua igual, ele só
+    // abre os painéis antes, como a criança abre.
+    act(() => {
+      openEveryDisclosure(document.body)
+    })
     fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.noite }))
     await waitFor(() => expect(skyOf(persistence.snapshot()[0]).params.preset).toBe('noite'), {
       timeout: 3000,
@@ -116,6 +198,9 @@ describe('SkyEditor', () => {
     await openSky()
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.backToGallery }))
     await screen.findByRole('heading', { level: 1, name: COPY.gallery.title })
-    expect(fake.instances[0]?.disposed).toBe(true)
+    // ⚠️ O `dispose()` mora na LIMPEZA de um efeito, que é passiva: a galeria já
+    // está no DOM enquanto a fila de efeitos ainda não andou. Assertar aqui
+    // direto passava na máquina rápida e falhava no CI.
+    await waitFor(() => expect(fake.instances[0]?.disposed).toBe(true))
   })
 })

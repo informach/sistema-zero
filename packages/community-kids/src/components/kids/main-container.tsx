@@ -4,18 +4,26 @@ import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { isEmbeddedAppPath } from '@/lib/embedded-app-path'
 import { isLessonPath } from '@/lib/lesson-path'
-import { FocusModeToggle } from './focus-mode-toggle'
 
 /**
- * Container do conteúdo da área do aluno. A maioria das páginas usa uma largura
- * confortável de leitura (`max-w-5xl` centralizado). Dois grupos ocupam TODA a
- * largura disponível depois da sidebar:
- *  - **Apps de criação** (`isEmbeddedAppPath`: Estúdio, Pensa, Pinta e Molda): largura E
- *    altura totais (`flex flex-col` para o editor preencher via `flex-1`), de BORDA A
- *    BORDA — o botão do menu e o selo da nuvem vivem na barra da ferramenta.
+ * Container do conteúdo da área do aluno. TRÊS regimes:
+ *  - **Apps de criação** (`isEmbeddedAppPath`: Estúdio, Pensa, Pinta, Molda e o configurador
+ *    de avatar): largura E altura totais (`flex flex-col` para o editor preencher via
+ *    `flex-1`), de BORDA A BORDA — a alça do menu vive no shell; o selo da nuvem, na barra do app.
+ *    ⚠️ Esta lista é "a altura é travada", NÃO "o menu começa recolhido": a régua do foco é o
+ *    `isFocusRoutePath`, que inclui telas que ROLAM (o Quarto).
  *  - **Página de aula** (`/cursos/.../aulas/...`): o conteúdo (vídeo, livro 3D,
  *    imagens) dividia espaço com o card de aulas à direita e ficava apertado num
- *    `max-w-5xl` — aqui ganha a largura inteira, em fluxo vertical normal.
+ *    `max-w-5xl` — aqui ganha a largura inteira, com o padding de sempre.
+ *  - **Página em FAIXAS** (o resto, 09/2026): largura total e ZERO padding, porque
+ *    quem centraliza e espaça agora é a `KidsBand` de cada seção. É o regime PADRÃO
+ *    da área da criança desde o redesenho.
+ *
+ * ⚠️ O `max-w-5xl` que vivia aqui não sumiu: ele desceu para dentro da faixa
+ * (`KidsBand`), que é o mesmo `mx-auto w-full max-w-5xl px-4 md:px-8`. A largura de
+ * LEITURA é idêntica à de antes; o que mudou é que a COR passa a sangrar até a borda,
+ * e para isso o fundo precisa ser mais largo que o texto. Uma página que ainda não
+ * foi convertida fica com o conteúdo colado na borda até ganhar as suas faixas.
  */
 export function MainContainer({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? ''
@@ -48,27 +56,13 @@ export function MainContainer({ children }: { children: ReactNode }) {
     // desse limiar; acima dele, nada muda.
     //
     // ⭐ BORDA A BORDA (07/09/2026): sem padding lateral/superior nem a calha do
-    // puxador. O botão de esconder o menu e o selo "Guardado na sua conta" moram
-    // DENTRO da barra de cada ferramenta (contrato `hostChrome`, ver
-    // `use-host-chrome.tsx`) — o app ganha 52px de largura e 32px de altura no
+    // puxador. A alça do menu é irmã da sidebar no shell, sem calha permanente;
+    // o selo "Guardado na sua conta" mora na barra de cada ferramenta (contrato
+    // `hostChrome`, ver `use-host-chrome.tsx`) — o app mantém a largura e altura no
     // desktop. O `pb-24` do mobile fica: a tab bar é `fixed` por cima. Os fundos
     // do app e das ferramentas são os MESMOS primitivos, então não há emenda.
     //
-    // ⚠️ INTERINO: o Molda ainda usa o puxador na calha + o selo acima (o pacote está
-    // em obra em outra sessão); some no lote 6b, quando o `molda-client` ganhar o
-    // `useHostChrome`.
-    if (pathname.startsWith('/molda')) {
-      return (
-        <main
-          id="main-content"
-          tabIndex={-1}
-          className="relative flex h-[calc(100dvh-3.5rem)] min-h-0 w-full flex-col overflow-hidden px-2 pt-4 pb-24 md:h-dvh md:min-h-[36rem] md:flex-none md:py-4 md:pr-4 md:pb-4 md:pl-9"
-        >
-          <FocusModeToggle target="nav" variant="edge" />
-          {children}
-        </main>
-      )
-    }
+    // O Molda segue o mesmo regime; a calha antiga do puxador não volta.
     return (
       <main
         id="main-content"
@@ -79,15 +73,31 @@ export function MainContainer({ children }: { children: ReactNode }) {
       </main>
     )
   }
+  // A aula guarda o padding (não virou faixas) e o fundo azul-claro liso das
+  // telas-modelo de 11/09/2026: a textura de pontinhos (`kids-field`) saiu com o resto
+  // da decoração de fundo.
+  if (isLessonPath(pathname)) {
+    return (
+      <main
+        id="main-content"
+        tabIndex={-1}
+        // `kids-aula`: gancho da PELE da aula (fundo azul-claro + cartas brancas
+        // por cima). A aula é do member-shell, compartilhada com a comunidade
+        // adulta, então tudo o que é kids ali entra por CSS a partir daqui.
+        className="kids-aula w-full flex-1 px-4 pt-6 pb-40 md:px-8 md:pt-8 md:pb-32"
+      >
+        {children}
+      </main>
+    )
+  }
   return (
     <main
       id="main-content"
       tabIndex={-1}
-      className={
-        isLessonPath(pathname)
-          ? 'w-full flex-1 px-4 py-6 pb-24 md:px-8 md:py-8 md:pb-8'
-          : 'mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 md:px-8 md:py-8 md:pb-8'
-      }
+      // O `pb-24` fica: a barra de abas do celular é `fixed` por cima do conteúdo.
+      // `flex-col`: a última `KidsBand` cresce (`last:grow`) até o pé da janela, então
+      // página curta termina na cor da última faixa, e não numa tira do fundo.
+      className="flex w-full flex-1 flex-col pb-24 md:pb-0"
     >
       {children}
     </main>

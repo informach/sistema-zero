@@ -41,7 +41,7 @@ export function register(): void {
     }
     const memberShellSecret = process.env.MEMBER_SHELL_HMAC_SECRET?.trim()
     if (!memberShellSecret || memberShellSecret.length < 16) {
-      problems.push('MEMBER_SHELL_HMAC_SECRET com pelo menos 16 chars (persistência do Zappy)')
+      problems.push('MEMBER_SHELL_HMAC_SECRET com pelo menos 16 chars (Zappy e downloads de aula)')
     }
     const cleanupSecret = process.env.CREATION_CLEANUP_CRON_SECRET?.trim()
     if (!cleanupSecret || cleanupSecret.length < 24) {

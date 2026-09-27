@@ -45,6 +45,11 @@ export interface RedemptionRecord {
   lastError: string | null
   attemptCount: number
   completedAt: Date | null
+  /** Null identifica resgates anteriores à política de sete dias. */
+  accessDurationDays: number | null
+  /** Null identifica resgates anteriores à visita permanente ao Mural. */
+  muralVisitorPolicy: string | null
+  muralVisitorGrantedAt: Date | null
   createdAt: Date
 }
 
@@ -219,6 +224,8 @@ export interface ReferralRepository {
   acquireRedemptionLease(id: string, until: Date, now: Date): Promise<RedemptionRecord | null>
   releaseRedemptionLease(id: string): Promise<void>
   setRedemptionBuyer(id: string, userId: string, buyerCreated: boolean): Promise<void>
+  markCourseGranted(id: string, when: Date): Promise<void>
+  markMuralVisitorGranted(id: string, when: Date): Promise<void>
   /** granted_at + status completed + completed_at (o acesso é o produto). */
   markRedemptionGranted(id: string, when: Date): Promise<void>
   markRedemptionFailed(id: string, reason: string, lastError: string | null): Promise<void>
@@ -291,7 +298,7 @@ export interface ReferralRepository {
   markConversionPaid(id: string, by: string, note: string | null): Promise<boolean>
   /** Staging/e2e: antecipa a maturação (`pending` → matures_at = now). */
   setConversionMaturesNow(id: string): Promise<boolean>
-  /** Conversões dos resgates de um código (estágio da jornada no admin). */
+  /** Conversões dos resgates de um código (estágio no admin). */
   listConversionsByCode(codeId: string, limit: number): Promise<ConversionRecord[]>
 
   // ── Métricas ──────────────────────────────────────────────────────────────

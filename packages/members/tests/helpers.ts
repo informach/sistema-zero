@@ -15,8 +15,6 @@ import { GetAvatarsByProfilesService } from '../src/application/avatar/get-avata
 import { SetAvatarPhotoService } from '../src/application/avatar/set-avatar-photo.service'
 import { GetChildrenStatsService } from '../src/application/children-stats/get-children-stats.service'
 import {
-  AttachmentAdminService,
-  BlockAdminService,
   CourseAdminService,
   LessonAdminService,
   ModuleAdminService,
@@ -34,6 +32,7 @@ import { AwardGamificationService } from '../src/application/gamification/award-
 import { BuyStreakFreezeService } from '../src/application/gamification/buy-streak-freeze.service'
 import { ChallengeAdminService } from '../src/application/gamification/challenge-admin.service'
 import { ClaimMissionService } from '../src/application/gamification/claim-mission.service'
+import { ClaimUnitChestService } from '../src/application/gamification/claim-unit-chest.service'
 import { GetChallengeService } from '../src/application/gamification/get-challenge.service'
 import { GetGamificationService } from '../src/application/gamification/get-gamification.service'
 import { GetLeagueService } from '../src/application/gamification/get-league.service'
@@ -44,6 +43,7 @@ import { RecordStudioActivityDayService } from '../src/application/gamification/
 import { RecordStudioRemixService } from '../src/application/gamification/record-studio-remix.service'
 import { SetVacationService } from '../src/application/gamification/set-vacation.service'
 import { GetAttachmentDownloadService } from '../src/application/get-attachment-download/get-attachment-download.service'
+import { RecordMaterialDownloadService } from '../src/application/get-attachment-download/record-material-download.service'
 import { GetCertificateService } from '../src/application/get-certificate/get-certificate.service'
 import { GetCourseProgressService } from '../src/application/get-course-progress/get-course-progress.service'
 import { GetCourseRatingService } from '../src/application/get-course-rating/get-course-rating.service'
@@ -57,7 +57,11 @@ import { GetShowcasePayloadService } from '../src/application/get-showcase-paylo
 import { GetStudioCarryoverService } from '../src/application/get-studio-carryover/get-studio-carryover.service'
 import { GrantEntitlementService } from '../src/application/grant-entitlement/grant-entitlement.service'
 import { GrantManualEntitlementService } from '../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
+import { HelpService } from '../src/application/help/help.service'
 import { IssueCertificateService } from '../src/application/issue-certificate/issue-certificate.service'
+import { LearningService } from '../src/application/learning/learning.service'
+import { LearningImportService } from '../src/application/learning/learning-import.service'
+import { SectionProgressionService } from '../src/application/learning/section-progression.service'
 import { ListCatalogService } from '../src/application/list-catalog/list-catalog.service'
 import { ListMemberCertificatesService } from '../src/application/list-member-certificates/list-member-certificates.service'
 import { ListMemberRatingsService } from '../src/application/list-member-ratings/list-member-ratings.service'
@@ -71,13 +75,21 @@ import { AppendPensaConversationTurnService } from '../src/application/pensa/app
 import { AppendPensaTasksService } from '../src/application/pensa/append-tasks.service'
 import { CreatePensaCycleService } from '../src/application/pensa/create-cycle.service'
 import { CreatePensaProjectService } from '../src/application/pensa/create-project.service'
+import { DeletePensaProjectService } from '../src/application/pensa/delete-project.service'
 import { DeletePensaTaskService } from '../src/application/pensa/delete-task.service'
 import { GetPensaProjectService } from '../src/application/pensa/get-project.service'
 import { GetPensaStageService } from '../src/application/pensa/get-stage.service'
 import { GetPensaTaskHandoffService } from '../src/application/pensa/get-task-handoff.service'
+import { JoinPensaProjectService } from '../src/application/pensa/join-project.service'
+import { ListPensaProjectMembersService } from '../src/application/pensa/list-project-members.service'
 import { ListPensaProjectsService } from '../src/application/pensa/list-projects.service'
+import { RemovePensaProjectMemberService } from '../src/application/pensa/remove-project-member.service'
 import { ReplacePensaTasksService } from '../src/application/pensa/replace-tasks.service'
 import { SavePensaArtifactService } from '../src/application/pensa/save-artifact.service'
+import {
+  SharePensaProjectService,
+  UnsharePensaProjectService,
+} from '../src/application/pensa/share-project.service'
 import { UpdatePensaProjectService } from '../src/application/pensa/update-project.service'
 import { UpdatePensaTaskService } from '../src/application/pensa/update-task.service'
 import { UpdatePensaTaskProgressService } from '../src/application/pensa/update-task-progress.service'
@@ -109,6 +121,7 @@ import type {
   CourseTrack,
 } from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
+import { SHARE_CODE_ALPHABET } from '../src/domain/pensa/share-code'
 import type { AuthGateway } from '../src/domain/ports/auth-gateway.port'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
 import type { HubAuthorActivity, HubGateway } from '../src/domain/ports/hub-gateway.port'
@@ -118,6 +131,10 @@ import { createServer } from '../src/interfaces/http/server'
 import { InMemoryAiUsageRepository } from './fakes/ai-usage-in-memory'
 import { InMemoryChallengeConfigRepository } from './fakes/challenge-config-in-memory'
 import { InMemoryCreationsRepository } from './fakes/creations-in-memory'
+import {
+  InMemoryHelpCollectionRepository,
+  InMemoryHelpTutorialRepository,
+} from './fakes/help-in-memory'
 import {
   FakeCatalogGateway,
   InMemoryAnalyticsRepository,
@@ -138,6 +155,8 @@ import {
   InMemoryVideoPositionRepository,
   silentLogger,
 } from './fakes/in-memory'
+import { InMemoryLearningRepository } from './fakes/learning-in-memory'
+import { InMemoryLessonDraftRepository } from './fakes/lesson-draft-in-memory'
 import { InMemoryPensaRepository } from './fakes/pensa-in-memory'
 import { InMemoryToolUsageRepository } from './fakes/tool-usage-in-memory'
 
@@ -182,11 +201,22 @@ export function buildApp(
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
   const pensa = new InMemoryPensaRepository()
+  // Códigos de plano DETERMINÍSTICOS (a sequência é previsível nos testes; o índice único
+  // do fake continua valendo).
+  let shareCodeSeq = 0
+  const nextShareCode = () => {
+    shareCodeSeq += 1
+    const a = SHARE_CODE_ALPHABET
+    return `AAAA${a[Math.floor(shareCodeSeq / a.length) % a.length]}${a[shareCodeSeq % a.length]}`
+  }
   const creations = new InMemoryCreationsRepository()
   const teacherThreadsRepo = new InMemoryTeacherThreadRepository()
   const teacherThreads = new TeacherThreadsService(teacherThreadsRepo, clock)
   const aiUsage = new InMemoryAiUsageRepository()
   const challengeConfig = new InMemoryChallengeConfigRepository()
+  const helpCollections = new InMemoryHelpCollectionRepository()
+  const helpTutorials = new InMemoryHelpTutorialRepository(helpCollections)
+  const help = new HelpService(helpCollections, helpTutorials, clock)
   const consumeAiUsage = new ConsumeAiUsageService({
     aiUsage,
     dailyLimit: opts.aiLimits?.daily ?? 50,
@@ -304,7 +334,57 @@ export function buildApp(
     MAX_STUDIO_BODY_BYTES: 2 * 1024 * 1024,
   } as unknown as Env
 
+  const learningRepository = new InMemoryLearningRepository()
+  const preferencesRepository = new InMemoryProfilePreferencesRepository()
+  const sectionProgression = new SectionProgressionService(
+    learningRepository,
+    progress,
+    quizAttempts,
+    studioSubmissions,
+    clock,
+    new PlatformActionService(avatar, room, preferencesRepository),
+    certificates,
+  )
+  const learning = new LearningService(
+    learningRepository,
+    courses,
+    checkAccess,
+    progress,
+    clock,
+    teacherThreads,
+    sectionProgression,
+  )
+  const drafts = new InMemoryLessonDraftRepository(courses, learningRepository)
+  const submitStudio = new SubmitStudioProjectService(
+    checkAccess,
+    courses,
+    progress,
+    studioSubmissions,
+    awardGamification,
+    teacherThreads,
+    silentLogger,
+    () => randomUUID(),
+    clock,
+    sectionProgression,
+  )
   const app = createServer({
+    learning: {
+      gallery: new GalleryDeliveryService(
+        courses,
+        checkAccess,
+        progress,
+        sectionProgression,
+        creations,
+        studioSubmissions,
+        submitStudio,
+      ),
+      preferences: new ProfilePreferencesService(preferencesRepository, clock),
+      learning,
+      imports: new LearningImportService(drafts, courses),
+      drafts,
+      internalToken: opts.internalToken,
+      requireAdminEnabled: true,
+    },
     env,
     logger: silentLogger,
     accountDeletionFence: {
@@ -322,7 +402,14 @@ export function buildApp(
       ),
       listCatalog: new ListCatalogService(courses, entitlements, gamification, clock),
       accessCheck: new AccessCheckService(entitlements, clock),
-      getMyCourse: new GetMyCourseService(checkAccess, courses, progress, positions, ratings),
+      getMyCourse: new GetMyCourseService(
+        checkAccess,
+        courses,
+        progress,
+        positions,
+        ratings,
+        gamification,
+      ),
       getLesson: new GetLessonService(
         checkAccess,
         courses,
@@ -331,9 +418,17 @@ export function buildApp(
         quizAttempts,
         studioSubmissions,
         clock,
+        learning,
       ),
       resolveAttachment: new GetAttachmentDownloadService(checkAccess, courses, progress),
-      resolveEbook: new GetEbookDownloadService(checkAccess, courses, progress),
+      recordMaterialDownload: new RecordMaterialDownloadService(
+        new GetAttachmentDownloadService(checkAccess, courses, progress),
+        courses,
+        learningRepository,
+        sectionProgression,
+        clock,
+      ),
+      resolveEbook: new GetEbookDownloadService(checkAccess, courses, progress, sectionProgression),
       markComplete: new MarkLessonCompleteService(
         checkAccess,
         courses,
@@ -342,6 +437,7 @@ export function buildApp(
         studioSubmissions,
         awardGamification,
         clock,
+        learning,
       ),
       getProgress: new GetCourseProgressService(checkAccess, courses, progress),
       savePosition: new SaveVideoPositionService(checkAccess, courses, progress, positions, clock),
@@ -355,29 +451,22 @@ export function buildApp(
         awardGamification,
         () => randomUUID(),
         clock,
+        sectionProgression,
       ),
-      submitStudio: new SubmitStudioProjectService(
-        checkAccess,
-        courses,
-        progress,
-        studioSubmissions,
-        awardGamification,
-        teacherThreads,
-        silentLogger,
-        () => randomUUID(),
-        clock,
-      ),
+      submitStudio,
       getStudioCarryover: new GetStudioCarryoverService(
         checkAccess,
         courses,
         progress,
         studioSubmissions,
+        sectionProgression,
       ),
       getOwnStudioSubmission: new GetOwnStudioSubmissionService(
         checkAccess,
         courses,
         progress,
         studioSubmissions,
+        sectionProgression,
       ),
       teacherThreads,
       getShowcasePayload: new GetShowcasePayloadService(
@@ -385,6 +474,7 @@ export function buildApp(
         courses,
         progress,
         studioSubmissions,
+        sectionProgression,
       ),
       profileAllowance: new GetProfileAllowanceService(entitlements, clock, {
         defaultMaxProfiles: 1,
@@ -400,12 +490,19 @@ export function buildApp(
         certificates,
         awardGamification,
         clock,
+        learningRepository,
       ),
       getGamification: new GetGamificationService(gamification, clock),
       getChallenge: new GetChallengeService(gamification, challengeConfig, clock),
       getStudioUnlocks: new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger),
-      getMissions: new GetMissionsService(gamification, accessCheck, clock),
+      getMissions: new GetMissionsService(
+        gamification,
+        accessCheck,
+        clock,
+        new ListMyCoursesService(entitlements, courses, progress, positions, gamification, clock),
+      ),
       claimMission: new ClaimMissionService(gamification, accessCheck, clock),
+      claimUnitChest: new ClaimUnitChestService(checkAccess, courses, progress, awardGamification),
       recordRemix: new RecordStudioRemixService(accessCheck, hub, awardGamification),
       recordStudioActivity: new RecordStudioActivityDayService(accessCheck, awardGamification),
       buyStreakFreeze: new BuyStreakFreezeService(gamification, () => randomUUID(), clock),
@@ -417,6 +514,8 @@ export function buildApp(
         courses,
         progress,
         studioSubmissions,
+        new AccessCheckService(entitlements, clock),
+        learningRepository,
         clock,
         hub,
       ),
@@ -433,10 +532,11 @@ export function buildApp(
       internalToken: opts.internalToken,
     },
     pensa: {
-      listProjects: new ListPensaProjectsService(pensa),
+      listProjects: new ListPensaProjectsService(pensa, authGateway),
       createProject: new CreatePensaProjectService(pensa, () => randomUUID(), clock),
       getProject: new GetPensaProjectService(pensa),
       updateProject: new UpdatePensaProjectService(pensa, clock),
+      deleteProject: new DeletePensaProjectService(pensa),
       createCycle: new CreatePensaCycleService(pensa, () => randomUUID(), clock),
       getStage: new GetPensaStageService(pensa),
       appendConversationTurn: new AppendPensaConversationTurnService(pensa, clock),
@@ -449,6 +549,11 @@ export function buildApp(
       deleteTask: new DeletePensaTaskService(pensa, clock),
       getTaskHandoff: new GetPensaTaskHandoffService(pensa),
       updateTaskProgress: new UpdatePensaTaskProgressService(pensa, clock),
+      shareProject: new SharePensaProjectService(pensa, clock, () => nextShareCode()),
+      unshareProject: new UnsharePensaProjectService(pensa, clock),
+      joinProject: new JoinPensaProjectService(pensa, clock),
+      listProjectMembers: new ListPensaProjectMembersService(pensa, authGateway, avatarsByProfiles),
+      removeProjectMember: new RemovePensaProjectMemberService(pensa, clock),
       accessCheck: new AccessCheckService(entitlements, clock),
       getGamification: new GetGamificationService(gamification, clock),
       internalToken: opts.internalToken,
@@ -539,9 +644,7 @@ export function buildApp(
       // O fake InMemoryCourseRepository implementa CourseRepository E ContentAdminRepository.
       courses: new CourseAdminService(courses, courses),
       modules: new ModuleAdminService(courses, courses),
-      lessons: new LessonAdminService(courses, courses),
-      blocks: new BlockAdminService(courses),
-      attachments: new AttachmentAdminService(courses),
+      lessons: new LessonAdminService(courses, courses, learning),
       studioSubmissions: new StudioSubmissionsAdminService(studioSubmissions, clock),
     },
     internal: {
@@ -558,13 +661,21 @@ export function buildApp(
         courses,
         progress,
         studioSubmissions,
+        sectionProgression,
       ),
       validateCertificate: new ValidateCertificateService(certificates),
       internalToken: opts.internalToken,
     },
+    help: {
+      help,
+      internalToken: opts.internalToken,
+      requireAdminEnabled: opts.requireAdmin ?? false,
+    },
   })
 
   return {
+    learning,
+    learningRepository,
     app,
     entitlements,
     courses,
@@ -591,6 +702,9 @@ export function buildApp(
     authProfiles,
     aiUsage,
     challengeConfig,
+    help,
+    helpCollections,
+    helpTutorials,
   }
 }
 
@@ -607,6 +721,7 @@ export function seedSampleCourse(
   level: CourseLevel = 'iniciante',
   track: CourseTrack = '2d',
   careerSlot: number | null = null,
+  journeyRole: 'positioned' | 'reward' | 'extra' = careerSlot === null ? 'reward' : 'positioned',
 ) {
   const now = new Date('2026-06-01T00:00:00.000Z')
   const courseId = randomUUID()
@@ -628,6 +743,7 @@ export function seedSampleCourse(
     level,
     track,
     careerSlot,
+    journeyRole,
     metadata: null,
     createdAt: now,
     updatedAt: now,
@@ -653,6 +769,7 @@ export function seedSampleCourse(
     estimatedMinutes: 7,
     isPublished: true,
   })
+  const ebookAttachmentId = randomUUID()
   courses.blocks.push(
     {
       id: randomUUID(),
@@ -680,16 +797,17 @@ export function seedSampleCourse(
       lessonId: lesson1,
       kind: 'ebook',
       sortOrder: 3,
-      content: { kind: 'ebook', url: 'r2priv:admin/attachments/ebook-demo.pdf', title: 'Guia' },
+      content: { kind: 'ebook', attachmentId: ebookAttachmentId, title: 'Guia' },
     },
   )
   courses.attachments.push({
-    id: randomUUID(),
+    id: ebookAttachmentId,
     lessonId: lesson1,
-    label: 'Slides (PDF)',
-    url: 'https://x/a.pdf',
+    label: 'Guia',
+    url: 'r2priv:admin/attachments/ebook-demo.pdf',
     fileType: 'application/pdf',
     sizeBytes: null,
+    zappyStudentNotebook: false,
     sortOrder: 0,
   })
   return { courseId, slug, moduleId, lessonIds: [lesson1, lesson2] as const, ebookBlockId }
@@ -950,6 +1068,20 @@ export function offerWithCourse(offerSlug: string, courseRef: string): ResolvedO
   }
 }
 
+/** Oferta de curso que também entrega o Mural completo. */
+export function offerWithMural(offerSlug: string, courseRef: string): ResolvedOffer {
+  const offer = offerWithCourse(offerSlug, courseRef)
+  offer.items.push({
+    productId: randomUUID(),
+    sku: 'mural-dos-criadores',
+    name: 'Mural dos Criadores',
+    kind: 'community',
+    isPrimary: false,
+    fulfillment: { accessType: 'community', courseRef: 'mural-dos-criadores' },
+  })
+  return offer
+}
+
 /** Headers assinados (HMAC resign do gateway) para um webhook de entrada.
  *  Mensagem canônica: "POST.<path>.<corpo>" (método+path = anti replay cross-endpoint). */
 export function signedWebhookHeaders(
@@ -970,3 +1102,8 @@ export function signedWebhookHeaders(
   if (deliveryId) headers['x-delivery-id'] = deliveryId
   return headers
 }
+
+import { GalleryDeliveryService } from '../src/application/learning/gallery-delivery.service'
+import { PlatformActionService } from '../src/application/learning/platform-action.service'
+import { ProfilePreferencesService } from '../src/application/profile-preferences/profile-preferences.service'
+import { InMemoryProfilePreferencesRepository } from './fakes/profile-preferences-in-memory'

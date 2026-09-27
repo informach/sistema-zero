@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { strToU8, zipSync } from 'fflate'
 import { COPY } from '../core/copy'
 import { createPixelBackgroundAsset } from '../core/project'
+import type { PintaTaskSession } from '../core/types'
 import { galleryToPintaJson } from '../export/projectJson'
 import { clearIdbMock } from '../testing/idbMock'
 
@@ -106,10 +107,8 @@ describe('PintaApp — galeria', () => {
 
     fireEvent.change(input, { target: { files: [file] } })
 
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Abrir ceu-restaurado/ })).toBeTruthy()
-    })
-    expect(screen.getByText(COPY.gallery.restoredOne)).toBeTruthy()
+    await screen.findByText(COPY.gallery.restoredOne)
+    expect(screen.getByRole('button', { name: /Abrir ceu-restaurado/ })).toBeTruthy()
   })
 
   it('explica quando a foto passa do limite de 20 MB', async () => {
@@ -131,13 +130,14 @@ describe('PintaApp — galeria', () => {
   })
 
   it('cria um personagem (estilo → tipo → tamanho → nome) e abre o editor; voltar mostra o card', async () => {
-    render(<PintaApp />)
+    const workspaceStates: boolean[] = []
+    render(<PintaApp onWorkspaceChange={(active) => workspaceStates.push(active)} />)
     await waitFor(() => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
     })
 
     // Passo 1: ESTILO (pixel art | vetor).
-    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.gallery.create) }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
     expect(screen.getByText(COPY.newAsset.styleTitle)).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.pixel.title) }))
 
@@ -162,12 +162,14 @@ describe('PintaApp — galeria', () => {
     })
     expect(screen.getByRole('toolbar', { name: 'Ferramentas' })).toBeTruthy()
     expect(screen.getByText(COPY.editor.saved).getAttribute('role')).toBe('status')
+    expect(workspaceStates.at(-1)).toBe(true)
 
     // Voltar → galeria com o card.
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.back }))
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Abrir meu-heroi/ })).toBeTruthy()
     })
+    expect(workspaceStates.at(-1)).toBe(false)
   })
 
   it('cria um cenário com tamanho PERSONALIZADO (card não avança; faixa valida; 300×200 nasce)', async () => {
@@ -176,7 +178,7 @@ describe('PintaApp — galeria', () => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.gallery.create) }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
     fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.pixel.title) }))
     fireEvent.click(
       screen.getByRole('button', { name: new RegExp(COPY.kinds['pixel-background'].title) }),
@@ -230,7 +232,7 @@ describe('PintaApp — galeria', () => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.gallery.create) }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
     fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.pixel.title) }))
     fireEvent.click(
       screen.getByRole('button', { name: new RegExp(COPY.kinds['pixel-sprite'].title) }),
@@ -271,7 +273,7 @@ describe('PintaApp — galeria', () => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.gallery.create) }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
     // 3º cartão do passo de estilo: Modelos prontos.
     fireEvent.click(
       screen.getByRole('button', { name: new RegExp(COPY.templates.styleCard.title) }),
@@ -339,7 +341,7 @@ describe('PintaApp — galeria', () => {
     await waitFor(() => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
     })
-    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.gallery.create) }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
     fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.vector.title) }))
     const tilemapCard = screen.getByRole('button', {
       name: new RegExp(COPY.kinds.tilemap.title),
@@ -500,5 +502,173 @@ describe('PintaApp — galeria', () => {
       expect(screen.getByRole('img', { name: COPY.a11y.drawArea })).toBeTruthy()
     })
     expect(screen.queryByText(COPY.gallery.drawingGone)).toBeNull()
+  })
+})
+
+/**
+ * "Voltar ao plano" (09/2026): o painel do brief pede a saída, o `PintaApp` GRAVA o
+ * desenho aberto e só então chama o host. A ordem é o que importa — por isso ela é
+ * REGISTRADA numa lista compartilhada, e não deduzida de um `await` cego (a gravação
+ * que demora, e a que falha, são justamente os casos que um `await` cego esconde).
+ */
+describe('PintaApp — Voltar ao plano', () => {
+  function tarefa(onReturnToPlan: () => void | Promise<void>): PintaTaskSession {
+    return {
+      taskId: 'tarefa-1',
+      project: { id: 'plano-1', name: 'Bosque' },
+      cycle: { id: 'ciclo-1', number: 1, goal: null },
+      title: 'Desenhar a nave',
+      summary: null,
+      brief: {
+        assetId: 'nave',
+        artKind: 'sprite',
+        style: 'pixel',
+        palette: [],
+        appearance: 'Uma nave comprida',
+        animations: [],
+        states: [],
+        usage: 'Personagem principal',
+        requiresStudioUse: false,
+      },
+      guide: { steps: [], criteria: [] },
+      progress: {
+        status: 'in_progress',
+        completedStepIds: [],
+        completedCriteriaIds: [],
+        startedAt: null,
+        completedAt: null,
+        updatedAt: null,
+        outputRef: null,
+      },
+      onProgress: async () => undefined,
+      onReturnToPlan,
+    }
+  }
+
+  async function abrirNave(): Promise<void> {
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir nave/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Abrir nave/ }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.editor.resize.button(32, 32) })).toBeTruthy()
+    })
+  }
+
+  /** Uma edição pendente e determinística: crescer o quadro pelo diálogo de tamanho. */
+  function editarPendente(): void {
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.resize.button(32, 32) }))
+    fireEvent.change(screen.getByLabelText(COPY.newAsset.customSize.width), {
+      target: { value: '128' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.resize.apply }))
+  }
+
+  it('🚨 com o editor aberto e uma edição pendente, GRAVA antes de navegar', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const eventos: string[] = []
+    const memoria = createMemoryPersistence([nave])
+    const persistence = {
+      ...memoria,
+      // A gravação DEMORA: navegar antes dela terminar apareceria na lista.
+      persistAssets: async (assets: Parameters<typeof memoria.persistAssets>[0]) => {
+        await Bun.sleep(5)
+        eventos.push('gravou')
+        await memoria.persistAssets(assets)
+      },
+    }
+
+    render(
+      <PintaApp
+        adapter={{ taskSession: tarefa(() => void eventos.push('navegou')) }}
+        persistence={persistence}
+      />,
+    )
+    await abrirNave()
+    // O autosave é debounced (~1 s): o clique acontece ANTES de ele disparar sozinho.
+    editarPendente()
+    fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))
+
+    await waitFor(() => expect(eventos).toEqual(['gravou', 'navegou']), { timeout: 5000 })
+  })
+
+  it('🚨 gravação que REJEITA não navega e mostra o recado no painel', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const eventos: string[] = []
+    const persistence = {
+      ...createMemoryPersistence([nave]),
+      persistAssets: async () => {
+        throw new Error('sem espaço')
+      },
+    }
+
+    render(
+      <PintaApp
+        adapter={{ taskSession: tarefa(() => void eventos.push('navegou')) }}
+        persistence={persistence}
+      />,
+    )
+    await abrirNave()
+    editarPendente()
+    fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))
+
+    // A criança lê a frase DESTA tela, nunca a mensagem crua do armazenamento.
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe(COPY.task.backError), {
+      timeout: 5000,
+    })
+    expect(eventos).toEqual([])
+  })
+
+  it('🚨 pela GALERIA (editor fechado) navega SEM gravar nada', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const eventos: string[] = []
+    const memoria = createMemoryPersistence([nave])
+    const persistence = {
+      ...memoria,
+      persistAssets: async (assets: Parameters<typeof memoria.persistAssets>[0]) => {
+        eventos.push('gravou')
+        await memoria.persistAssets(assets)
+      },
+    }
+
+    render(
+      <PintaApp
+        adapter={{ taskSession: tarefa(() => void eventos.push('navegou')) }}
+        persistence={persistence}
+      />,
+    )
+    // O painel do brief aparece nas DUAS telas, e este é o caminho mais comum: nenhum
+    // desenho aberto, `editorRef.current === null`, nada a gravar antes de sair.
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir nave/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.task.back }))
+
+    await waitFor(() => expect(eventos).toEqual(['navegou']), { timeout: 5000 })
+  })
+
+  it('sem o `onReturnToPlan` do host o botão não existe (playground, aula, Pinta solto)', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const semVolta = tarefa(() => undefined)
+    delete semVolta.onReturnToPlan
+
+    render(
+      <PintaApp
+        adapter={{ taskSession: semVolta }}
+        persistence={createMemoryPersistence([nave])}
+      />,
+    )
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir nave/ })).toBeTruthy()
+    })
+    expect(screen.queryByRole('button', { name: COPY.task.back })).toBeNull()
   })
 })

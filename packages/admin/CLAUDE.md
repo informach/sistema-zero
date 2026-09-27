@@ -1,5 +1,406 @@
 # CLAUDE.md — @sistemazero/admin
 
+> **Contrato vigente das aulas (26/09/2026):** o editor de bloco interativo oferece
+> **Jogo pronto para jogar**, **Experimentação** e **HTML personalizado**. Cena pronta é experimentação conduzida pela
+> criança. O palpite e a pergunta final são partes opcionais da experiência; pergunta isolada
+> pertence ao quiz. O roteiro e o editor de demonstração foram removidos. Os detalhes históricos
+> sobre quatro tipos e demonstração abaixo não devem orientar novas edições.
+> `ProjectPlayEditor` importa um snapshot clássico ou edita uma cópia no `StudioEmbed`;
+> aplicar valida antes de substituir o jogo e cancelar preserva o anterior. Novos jogos usam
+> conclusão por participação; alvos continuam configuráveis. A troca de tipo guarda o projeto
+> e as perguntas em memória enquanto o editor permanece aberto. O limite é 1.500.000 caracteres;
+> projetos Pro não são suportados. Manifestos e cadastro manual usam o mesmo contrato.
+> A escolha “sem a pergunta do fim” também volta ao retornar à cena; uma pergunta escrita
+> depois, no HTML, prevalece sobre essa dispensa guardada para evitar campos contraditórios.
+>
+> **Palpite seletivo (21/09/2026):** uma cena nova começa sem palpite. O catálogo oferece um modelo
+> que o autor pode incluir explicitamente quando a hipótese combate uma concepção comum ou prepara
+> um resultado contraintuitivo. A pergunta trata do conceito, nunca do botão ou controle.
+
+## Atividades interativas e cenas no editor
+
+⭐⭐ **A atividade interativa tem QUATRO tipos, escolhidos em cartões**: **Experimentação**,
+**Demonstração**, **Pergunta curta** e **Experiência em HTML**. Demonstração e experimentação são
+irmãs, e trocar entre elas PRESERVA a cena. Os tipos antigos (`simulation`, `prediction`,
+`comparison`, `sequence`, `experiment`) e os seletores de versão e de modo não voltam. ⚠️ `intent` da
+SEÇÃO e `type` da ATIVIDADE são eixos diferentes com nomes parecidos
+(`demonstration`/`exploration` × `demonstration`/`experimentation`); `lesson-editorial-warnings.ts`
+cruza os dois.
+
+### Escolher a cena e trocar sem perder trabalho
+
+- **A cena sai de uma grade de cartões** (`editor/scene-picker.tsx`), agrupada por `SCENE_GROUPS` do
+  core (rótulos em `GRUPOS`), com o que a criança pode MEXER e o que FECHA a cena à vista antes da
+  escolha.
+- ⭐ **As trocas de tipo e de cena são réguas PURAS** em `lib/scene-authoring-rules.ts` (`trocarCena`,
+  `trocarTipo`), porque cada uma já apagou trabalho sem avisar. Trava:
+  `tests/scene-authoring-rules.test.ts` e `tests/learning-builder.test.tsx`.
+  - `textoAoTrocarCena`: o texto do modelo só entra onde o professor não escreveu nada, ou onde o
+    escrito é, palavra por palavra, o do modelo anterior.
+  - `roteiroAoTrocarCena`: o roteiro autoral sobrevive quando ainda vale na cena nova; senão sai COM
+    aviso. ⚠️ Recebe o caso já APARADO: o domínio toca o roteiro a partir do caso
+    (`isSceneScript(script, scene, setup)`), e conferir contra o mundo de fábrica guardava sem aviso um
+    roteiro que a publicação recusava.
+  - ⚠️⚠️ `casoAoTrocarCena`: as `actions` são da cena e as `goals` são ids do modelo DELA. Carregados
+    para outra cena, o bloco ficava recusado com o recado genérico e sem caminho de volta (o editor do
+    caso só desenha as metas da cena nova). A metade que vale sobrevive, com aviso; só a MISSÃO sai ao
+    virar demonstração. O caso ACOMPANHA a troca de tipo entre as irmãs.
+  - ⚠️⚠️ `previsaoNaCena`: o `revealOn` que não é meta da cena de chegada SAI, com aviso. A previsão
+    própria nasce copiada da cena com o `revealOn` dela, e o editor não tem campo para ele.
+  - `MemoriaDaAutoria`: os cartões e as cenas são grupos de rádio, e a seta seleciona ao passar. O
+    editor lembra roteiro, caso, impulso, áudio e HTML enquanto está aberto, e voltar ao cartão de
+    origem devolve tudo.
+- ⚠️ `learning-builder.tsx` importa `lib/scene-authoring-rules` por CAMINHO RELATIVO, não pelo alias
+  `@/`: o ensaio visual do kids (`community-kids/tests/visual/experience-preview.tsx`) compila este
+  arquivo pelo caminho, e lá o alias do admin não existe.
+
+### O caso da atividade (`editor/scene-setup-editor.tsx`)
+
+⭐⭐ Um passo do fluxo, "O caso desta atividade", FORA de qualquer `<details>`: é a alavanca que faz
+uma cena render dezenas de exercícios, e atrás de um triângulo fechado quase nenhum bloco o usava. Tem
+(a) as ações que acontecem ANTES de a criança entrar, no mesmo editor de ações do roteiro, e (b) as
+descobertas que ESTA atividade cobra (sem marcar nenhuma, valem as do modelo).
+- ⚠️ Missão só na experimentação: a demonstração não cobra meta, e o core recusa.
+- ⚠️ O editor de ações serve DOIS donos com réguas diferentes: o passo do roteiro (mínimo 1 ação,
+  teto `SCRIPT_LIMITS`, com "Restaurar a cena") e o caso (pode ficar vazio, e aí some; teto
+  `SETUP_LIMITS`; sem `reset`, que o domínio recusa no caso). Com a régua do roteiro, quem adicionasse
+  uma ação por engano ficava com ela para sempre.
+- O editor AVISA um caso que termina com um salto que não saiu do chão (`saltoParadoNoCaso`): o motor
+  abre esse caso sem o salto. Trava: `tests/scene-authoring.test.tsx`.
+- ⚠️⚠️ **Objetivo que a cena não tem é NOMEADO, nunca tolerado em silêncio** (`sceneUnknownSetupGoals`
+  do core): o aviso lista cada id, diz que o rascunho guarda mas a aula não publica enquanto ele
+  estiver ali, e oferece "Tirar do caso" — que só REMOVE, nunca escolhe outro objetivo no lugar. A
+  publicação repete a mesma frase e NOMEIA os ids (`assertBlockCoherent` no members), porque é ela
+  quem recusa. Quem autora é a dona: ela precisa ver o erro. Para a criança a leitura do core descarta o id, então a aula não some. Trava:
+  `tests/scene-setup-metas-removidas.test.tsx`.
+
+### O roteiro da demonstração (`editor/scene-authoring.tsx`)
+
+- Lista de etapas com fala, destaque e ações escolhidas de lista. ⚠️ A caixa "Importar ou editar
+  roteiro em JSON" **não volta**: era o único caminho para algumas edições e devolvia "JSON inválido",
+  que não diz o que consertar. Editar o roteiro que vem com a cena cria o roteiro AUTORAL
+  (`activity.script`); "Voltar ao roteiro da cena" desfaz.
+- **Destaque "Comparação"** só nas cenas de `SCENE_COMPARISONS` (`sceneShowsComparison`, core
+  `catalog.ts`), a MESMA lista que decide a comparação no player: duas listas já divergiram, e o
+  professor escolhia uma comparação que a criança nunca via. Uma etapa antiga com `compare` noutra cena
+  continua abrindo (o `isSceneScript` aceita) e o editor avisa "Esta cena não mostra comparação lado a
+  lado".
+- **Como a demonstração aparece** (só nela): "Guiada" (etapas à vista) × "Animação curta"
+  (`presentation: 'inline'`, um ▶ e o roteiro inteiro, para ficar no meio da explicação).
+
+### O editor de ações da cena (`editor/scene-action-editor.tsx`)
+
+- **`TODAS`** é a lista de todas as ações com o nome da BANCADA (o professor lê no roteiro o que a
+  criança lê no botão; os fios em `PORTAS`). `sceneActionChoices(cena)` filtra pelo `isSceneAction` do
+  core: a legalidade é do domínio, nunca de uma lista daqui. É assim que `stage` aparece no caso da
+  `coordinates` e `stride` ("Andar 1 segundo") só na `diagonal`. A ficha `panel` da
+  `once-vs-always` também pertence a esta lista e ao `SceneActionSchema` do members; ela torna uma ação
+  inicial visível sem misturar os conceitos de criar e desenhar.
+- ⚠️⚠️ **A identidade de uma opção é uma TABELA** (`identidade` = o tipo + os campos de `DISTINGUE`),
+  não uma escada de ternários. Duas opções com a mesma identidade é defeito silencioso: o `value` do
+  `<select>` deixa de escolher uma delas (clicar em "Desligar a sombra" selecionava "Ligar a sombra") e
+  o React avisa só no console. Par novo de irmãs entra no `DISTINGUE`. O `inspect` fica sem `kind` de
+  propósito: a lupa vale para as duas pedras e um roteiro antigo com a de vetor casa com a única opção.
+- ⚠️⚠️ **Nomes por cena: `POR_CENA.<cena>.rotulos`**, onde a bancada da cena fala outra língua
+  (`acceleration` "Passar 5 segundos", `restart` "Tocar na tela", `hitbox` "Mudar o tamanho da área do
+  Dino", com o campo dizendo a porcentagem do Dino, como a bancada). ⚠️⚠️ **Não existe lista de ações
+  escondidas**: ação que sai da bancada sai do CORE (a funcionalidade nasceu na primeira versão e não
+  carrega gesto de antes), e quem filtra é o `isSceneAction`. Um passo que use uma ação que a cena não
+  aceita aparece "<nome> · não vale nesta cena" (`rotuloDaAcaoIncompativel`) — o motor trata ilegal como
+  no-op, então sem o rótulo o passo parecia certo e não fazia nada; "Ação incompatível · revisar" é para
+  a que não está na lista `TODAS`. Trava: `tests/scene-action-fields.test.tsx`.
+- ⚠️ **O nome não entrega a resposta**: na `mesh` o `see-points` é "A pele: inteira / transparente /
+  sem pele" (o "Ver os pontos" respondia a previsão da cena).
+- **Valor de fábrica que não quebra o roteiro**: o `approach` nasce em 0 (encostados), porque na
+  `contact` o encosto é a distância 0 e com 20 escolher de novo a ação quebrava o `waitFor` (pego pelo
+  `tests/scene-authoring.test.tsx`, que reescolhe a ação em todas as cenas); o `place3d` nasce em z
+  −80 (z negativo é o fundo, como no Jogo 3D do Estúdio).
+- ⚠️⚠️ **Ação com número precisa de CAMPO, de OPÇÕES, ou de o domínio travar o valor.** Sem nenhum dos
+  três, ela fica cravada no valor de fábrica (aconteceu com dezessete tipos, e em `camera-3d`,
+  `circle-collision` e `axis-z` o valor de fábrica era o próprio estado inicial, o que tornava o caso
+  inútil). `campoNumerico` monta o número solto e `camposDoEndereco(acao, cena)` os grupos (endereço,
+  tela, eixos; recebe a cena porque a altura do `orbit` não existe na `mesh`). A varredura de todas as
+  cenas deriva a régua do `isSceneAction`: `tests/scene-action-fields.test.tsx`.
+- ⚠️ **Os limites vêm de `SCENE_LIMITS`, nunca reescritos**: três cópias da regra (motor, editor e DTO)
+  já divergiram, e campo que aceita o que o servidor recusa é aula que não salva sem dizer por quê. O
+  `place` usa `addressX`/`addressY` (a maior tela de um caso). Exceção documentada: `direction` (−1..1
+  é a forma da ação, não faixa). ⚠️ O `advance` tem dois tetos: `scriptAdvance` na etapa do roteiro e
+  `advance` no CASO.
+- ⚠️ **O campo ARREDONDA e prende na faixa** (`numeroNaFaixa`): o domínio exige inteiro em quase toda
+  ação com número, e limpar o campo dava 0, que o `change` recusa.
+- **O tempo fora do quadro** (`avisoDoTempo(cena, segundos, noCaso)`): o motor conta QUADROS no ritmo
+  da cena (`sceneFrameRate`). Menos de um quadro não mostra nada; fora do quadro inteiro, o resto passa
+  para a ação seguinte no roteiro e se perde no caso. O editor AVISA embaixo do campo com os dois tempos
+  certos mais perto, e não recusa. Nenhum roteiro de modelo dispara o aviso (travado em
+  `tests/scene-action-fields.test.tsx`, com a `entity-state`); o render está em
+  `tests/scene-authoring.test.tsx`.
+
+### O elenco e o CENÁRIO (`editor/scene-cast-editor.tsx`)
+
+- ⭐⭐ **"Qual jogo esta cena mostra"** é a pergunta mais alta do painel (18/09/2026): ela grava
+  `activity.cenario` e decide o FUNDO e o elenco de fábrica do palco — *Corre Dino*, *Nave*,
+  *Gorilas* ou *O jogo do meu jeito*. Em branco, o core deriva do elenco (`sceneCenario` sem o 3º
+  argumento), que é o que mantém de pé tudo o que já foi publicado. Voltar para "Pelo elenco" TIRA o
+  campo, nunca grava o derivado: é o que deixa o manifesto igual ao publicado quando o professor só
+  olhou o seletor.
+- ⚠️⚠️ **O rótulo da opção em branco mostra o DERIVADO, não o cenário resolvido.** Lendo o
+  resolvido, uma cena que declara `nave` anunciava "Pelo elenco (Nave)" e prometia que apagar a
+  escolha não mudaria nada — quando o elenco de fábrica do Corre Dino a levaria de volta à floresta.
+  Como os 38 blocos de cena dos três cursos v6 JÁ declaram o campo, esse é o estado NORMAL do
+  seletor. Travado em `tests/scene-cast-editor.test.tsx` (a asserção é sobre `options[0]`, a opção em
+  branco — `selectedOptions[0]` é outra coisa assim que algo é declarado).
+- ⚠️ **Colisão de nome conhecida, e o rótulo do seletor existe para contorná-la:** o PAPEL `scenery`
+  se chama **"Cenário"** no painel (a figura que entra na conta das camadas, de fábrica a floresta) e
+  o campo novo se chama `cenario` no código. Por isso o seletor é rotulado **"Qual jogo esta cena
+  mostra"**, nunca "Cenário". Quem mexer nos dois rótulos precisa manter essa separação — renomear o
+  seletor para "Cenário" põe duas coisas diferentes com o mesmo nome a dois centímetros uma da outra.
+- ⚠️⚠️ **O nome é guardado COMO DIGITADO e só é aparado ao SAIR do campo** (`aparar`, também no
+  plural): aparar a cada tecla comia o espaço antes da letra seguinte e "nave espacial" virava
+  "naveespacial", que não diz figura nenhuma. O `castText` do core também apara.
+- ⭐ A prévia lista só os papéis que a cena DESENHA (`SCENE_ROLES`) e diz "Esta cena não desenha o
+  elenco" nas abstratas. ⭐ **Aviso âmbar** quando o elenco leva a cena ao espaço e um papel desenhado
+  ficou com figura da terra: o palco não resolve sozinho, porque o texto segue dizendo "cacto". A nota
+  "de onde a figura sai" é montada de `SCENE_FIGURE_NAMES` do core; os rótulos das figuras em
+  `NOME_DA_FIGURA` (um `Record`: figura nova do core reprova aqui). Trava:
+  `tests/scene-cast-editor.test.tsx` (digitação letra a letra).
+
+### A previsão e a pergunta
+
+- ⭐⭐ **A pergunta final pode vir da cena; o palpite, não.** Toda experimentação pode usar a pergunta
+  final de `SCENE_QUESTIONS`, salvo `semPerguntaFinal`. Já a experiência nova começa sem palpite.
+  "Incluir um palpite antes da experiência" copia o modelo do catálogo para o bloco, para então ser
+  editado. Desmarcar remove o palpite da experiência que a criança recebe.
+- ⭐ **A previsão** só entra quando a hipótese ajuda a confrontar uma concepção comum ou um efeito
+  contraintuitivo. Não vale nota e NÃO reusa a pergunta de verificação, que alimenta o `passed`.
+  A retomada compara de modo neutro "Seu palpite: X. Ao testar: Y.", sem acerto ou erro. O campo da
+  pergunta mostra o erro nele quando fica vazio.
+- ⚠️ A demonstração `inline` não herda previsão (ela trava o palco até a escolha), e o editor diz por
+  quê; escrever a sua continua valendo.
+- ⚠️ `revealOn` e `shows` não têm campo no editor: chegam pelo manifesto ou pelo modelo copiado ao
+  incluir explicitamente o palpite.
+- ⚠️⚠️ **Aviso editorial** (`lesson-editorial-warnings.ts`): experimentação cuja missão cobra parte
+  das descobertas da cena e usa a pergunta de FÁBRICA, escrita contra a história inteira. Avisa e não
+  bloqueia: só quem escreveu o caso sabe se a ideia central sobreviveu ao recorte.
+
+### A prévia e o painel do professor
+
+- **"Experimentar a prévia" corrige de verdade** (`learning-builder.tsx`): o bloco monta dentro de um
+  `LessonPreviewProvider` mínimo (`ENSAIO_DA_PREVIA`, constante de módulo, sem estado) cujo
+  `onAttempt` é o `evaluateLearning`. Sem ensaio em volta, qualquer resposta concluía sem recado. O
+  rodapé da cena diz "Prévia: nada é guardado.". As opções do palpite e da pergunta são BOTÕES, e
+  `tests/lesson-rehearsal.test.tsx` passa pelo palpite antes de mexer (o `fieldset disabled` nunca
+  travou o clique no happy-dom). Trava: `tests/learning-builder.test.tsx` ("CORRIGE de verdade").
+- **O painel de evidências** (`components/professor/lesson-learning-panel.tsx`) fala a língua das
+  cenas: metas descobertas e pendentes pelo nome, a montagem que ficou, e "ainda não abriu" separado
+  de "registro não confere com esta cena" (informação sobre a criança × alarme sobre o sistema). O
+  resumo de cada cena usa as réguas do core (`onionFireLength`, `scenePickLetter`) e o que o estado
+  guarda (o espelho conta os gestos em `mirror.strokes` e `mirror.copies`). Na `contact` ele não fala
+  de "pergunta contínua / por acontecimento": é uma regra que saiu da cena.
+- ⚠️ **A frase escolhida na pergunta anexa aparece nos QUATRO tipos** (`conclusaoLines`, somada às
+  linhas de cada ramo): os ramos de cena fazem `return` com as próprias linhas, e a conclusão ficava
+  invisível justamente onde ela passou a decidir o `passed`.
+
+## A voz do Zappy nas aulas (17/09/2026)
+
+⭐⭐ As falas do Zappy e as instruções das cenas saem na voz DELE (ElevenLabs), e não na voz do
+sistema operacional da criança. **O áudio é gerado AQUI, na autoria** — nunca no navegador de quem
+assiste: o texto da aula é fixo, então uma frase gerada uma vez vale para todas as crianças, para
+sempre. Gerar no cliente seria pagar por clique, expor a chave e trocar 50 ms de CDN por segundos de
+síntese. Guia operacional (custo, licença, diagnóstico): **`docs/voz-do-zappy.md`**.
+
+- **Botão "Gerar a voz do Zappy"** (`components/editor/voz-zappy-button.tsx`), ao lado de "Revisar
+  para publicar": cuida da AULA INTEIRA num clique — reaproveita o que já tem voz, regera o que teve
+  o texto alterado e gera o que falta. ⭐ Não precisa saber o que mudou: a key do MP3 no R2 é o HASH
+  do texto falado (`keyDaVoz`), então frase intocada é achada por HEAD no bucket (zero crédito) e
+  frase editada tem key nova. O rótulo diz o ESTADO ("Gerar a voz do Zappy (3)" × "Voz do Zappy: em
+  dia"), que é o que responde "preciso clicar de novo?".
+- ⚠⚠ **Os textos saem da PROJEÇÃO PÚBLICA do bloco** (`publicInteractiveBlock`), que é o que o
+  navegador da criança recebe: é ela que resolve o palpite explicitamente gravado e a pergunta
+  final do MODELO da cena. Gerar do rascunho cru ignoraria essa resolução e as trocas de elenco,
+  deixando mudas falas que realmente chegam à criança.
+- **Rota** `POST /api/media/voz-zappy` (`server/voz-zappy.ts` + `app/api/media/voz-zappy/route.ts`):
+  recebe TEXTOS e devolve `{vozes, geradas, reaproveitadas, caracteres}`. Como as outras rotas de
+  mídia, NÃO passa pelo gateway → `requireMediaSession()` obrigatório (é uma rota que gasta crédito
+  de serviço pago; sem sessão seria torneira aberta). ⚠⚠ O cliente manda TEXTO, nunca a key: quem
+  decide onde o arquivo mora é o servidor. Teto de 24 falas por pedido — o botão loteia sozinho.
+- **Onde o dicionário é gravado**: na cena, em `activity.vozes`; no balão do Zappy, em
+  `content.vozes` do próprio bloco. ⚠⚠ O `aplicarVozes` do `lesson-editor-client` SUBSTITUI o
+  dicionário, nunca funde: a chave é o texto, então fundir guardaria para sempre a entrada da frase
+  ANTIGA — lixo que conta no teto de 40 entradas do core.
+- **Envs (só no admin)**: `ELEVENLABS_API_KEY` e `ELEVENLABS_VOICE_ID` (opcional; o padrão já é a voz
+  da dona). Ausentes → 503 amigável e a aula segue na voz do navegador. ⚠⚠ A chave NÃO vai para o
+  community/kids: a criança recebe URL de MP3 público, como qualquer mídia de aula.
+- ⚠ **Reimportar um manifesto apaga o dicionário daquela aula** (o manifesto não o carrega). Basta
+  clicar no botão de novo: o áudio continua no R2 e é reaproveitado sem custo.
+
+## Importar e substituir o rascunho (21/09/2026)
+
+`LessonManifestImport` oferece dois modos explícitos. **Atualizar e preservar** é o padrão e mantém
+o comportamento seguro anterior. **Substituir o rascunho pelo manifesto** trata o arquivo como a
+aula completa: a prévia lista todas as seções e todos os blocos omitidos, a autora confirma a
+remoção e só então o Admin envia `mode: replace` na aplicação. Trocar o modo ou o JSON invalida a
+prévia e gera outro `operationId`.
+
+A substituição continua sendo uma única escrita concorrente no rascunho. Blocos que reaparecem com
+a mesma chave preservam ID e vídeo vinculado; o projeto inicial do Estúdio é atualizado pelo
+manifesto nos dois modos, sem apagar entregas ou rascunhos dos alunos. Blocos omitidos saem
+independentemente do tipo. A versão publicada não é alterada. Não existe botão separado para
+“apagar tudo”, porque criaria um rascunho vazio entre duas operações e perderia a prévia do que sai.
+
+## Exportar o manifesto da aula (19/09/2026)
+
+⭐⭐ A metade que faltava do `LessonManifestImport`: **"Exportar roteiro com seções"**, o
+`<details>` irmão na aba "Dados da aula". Nasceu do caso real — montar a aula no staging e levar
+para produção sem remontar tudo à mão. É **puro e 100% no cliente** (`lib/lesson-manifest-export.ts`
++ `components/editor/lesson-manifest-export.tsx`): o editor já tem o `draft.document` em memória,
+então não há rota nova, gateway nem migration. O download é o `lib/download-json.ts`, extraído do
+`json-import-panel.tsx` para os dois usarem. ⚠️ Exportar é LEITURA: a tela não exige `canWrite`.
+
+⚠️⚠️ **O formato não carrega a aula inteira — isso é do `LearningManifest`, não do exportador.**
+Viajam com o conteúdo dentro: cenas `interactive`, `quiz` (como `ManifestQuiz`), `rich_text` (só
+com `markdown`; bloco legado só com `html` vira referência) e `dialogue`. `video` vira
+**`plannedVideo`** com as instruções de produção + o link de origem. Todo o resto — imagem, áudio,
+HTML, e-book, Estúdio, Pinta, certificado, "Em breve" e materiais — sai como
+**`{existing:{kind,index}}`**, e o serviço de importação RECUSA a importação inteira quando a
+referência não existe no destino. Por isso a tela lista **"Cadastre estes blocos no destino antes
+de importar"**, com o tipo e a posição: sem ela, a autora descobriria um bloco por vez, pela
+mensagem de erro do outro ambiente.
+
+⚠️⚠️ **A KEY SAI DO ID DE ORIGEM** (`<prefixo do tipo>-<8 hex do uuid>`), nunca da posição. O
+serviço deriva o id do destino de `sha256('sz-learning-v1:<lessonId>:block:<key>')`, então
+exportar de novo a MESMA aula de origem dá as mesmas keys e a reimportação no mesmo destino
+ATUALIZA no lugar (`preserve`/`update`) em vez de duplicar. Uma key por posição (`cena-1`,
+`cena-2`) seria mais bonita e mapearia ERRADO assim que a autora reordenasse ou apagasse blocos na
+origem entre um export e o seguinte — o conteúdo de uma cena cairia sobre outra, levando junto o
+progresso das crianças naquele id.
+⚠️⚠️ **O limite disso: a origem tem que ser sempre a MESMA aula.** Não existe ponto fixo — no
+destino os ids já são os derivados, então um export feito LÁ gera keys novas, e reimportar esse
+arquivo no próprio destino criaria blocos novos ao lado dos antigos (que o serviço preserva e
+empilha no fim do fechamento). O fluxo real é de mão única: o staging manda, a produção recebe.
+`tests/lesson-manifest-export.test.ts` CONGELA esse limite, para ninguém prometer o contrário.
+
+Outras regras load-bearing, todas travadas em `tests/lesson-manifest-export.test.ts` (que inclui
+uma IDA E VOLTA com um manifesto v6 real do repositório):
+- **Cada teto do manifesto tem mensagem que NOMEIA o bloco e o número.** O rascunho e a
+  publicação aceitam mais que o formato em vários campos (markdown 200k × 50k, 60 × 59 seções,
+  quiz sem limite de perguntas). Cair na frase genérica mandaria a autora para o "Revisar para
+  publicar", que não conhece nenhum desses limites. A orientação de vídeo longa demais é cortada
+  no fim, preservando o LINK — sem ele ninguém sabe qual vídeo reenviar.
+- **`pendingMedia` da seção sai VAZIO**: os vídeos já vão como blocos `plannedVideo`, e o serviço
+  converte cada `pendingMedia` num bloco novo — repetir criaria um vídeo a mais por importação.
+- ⚠️⚠️ **Nenhum ENDEREÇO DE ÁUDIO viaja, nem no balão nem na cena.** O `dialogue` sai sem
+  `vozes` e a cena sai sem `activity.vozes` **e sem `activity.instructionAudioUrl`** (`semAudioDoAmbiente`).
+  O dicionário aponta para o bucket R2 deste ambiente, e levá-lo faz duas coisas ruins de uma vez:
+  a produção passa a servir áudio do staging (que some quando ele for limpo, e que a CSP de lá
+  pode recusar em silêncio) e o botão "Gerar a voz do Zappy" do destino diz **"em dia"** — ele
+  considera pronta toda fala que já tem entrada no dicionário, então ninguém clica e o erro nunca
+  aparece. No destino é um clique no botão; a chave é o hash do TEXTO, então nem custa crédito
+  onde o áudio já existe. A narração escolhida à mão (`instructionAudioUrl`) é PERDA de autoria e
+  por isso vira aviso na tela. O `zappySpeech` (pronúncia escrita pela autora) VIAJA: é texto.
+- ⚠️⚠️ **Um TIPO não pode ficar partido entre conteúdo e referência, e o export RECUSA quando
+  fica.** O destino resolve `existing` contando os blocos daquele tipo que já existem lá — e os
+  que viajam por conteúdo ainda não existem (é o import que os cria). Com um quiz viajando e
+  outro como referência, a referência sai com índice 1, o destino tem um quiz só e recusa tudo;
+  numa reimportação, pior, resolve para o quiz ERRADO em silêncio. Os dois casos que criam a
+  mistura são quiz sem nota de corte e texto legado guardado só em HTML, e a mensagem diz qual
+  consertar. Por isso o índice conta **só entre as referências**.
+- **A versão é 4, e cai para 2 quando alguma seção não tem `completion`** (v3/v4 o exigem) — e na
+  v2 o quiz não cabe, então ele vira referência, com aviso.
+- **`isLearningManifest` é a última rede, antes de baixar**: o mesmo validador que o import roda.
+- Os rótulos de tipo de bloco viraram **`LESSON_BLOCK_KIND_LABELS`** em `lib/types.ts` (saíram do
+  `lesson-editor-client.tsx`): a lista do que recadastrar nomeia pelos MESMOS rótulos do `<select>`
+  do editor, e duas cópias divergiriam.
+
+## Autoria de aulas — 12/09/2026
+
+O cadastro prioriza criação do zero. `LessonSectionAuthoring` apresenta seções recolhíveis,
+resumos de conteúdo/projeto/avanço e menus de organização. Preferências de abertura ficam no
+localStorage por professor/aula; não pertencem ao documento publicado. As áreas Seções,
+Materiais e anexos e Dados da aula compartilham a mesma `LessonDraftSession`.
+
+O catálogo conserva os 13 tipos de bloco. O editor de conteúdo ocupa a largura da página,
+com retorno ao ponto de origem; não usa mais `BLOCK_DIALOG_WIDTH`. Estruturas iniciais e cópias
+são opcionais. Novo projeto, projeto existente e ferramenta externa exigem escolha explícita.
+`appendLessonSection` mantém cada bloco existente associado exatamente uma vez em **cada**
+operação salva, inclusive ao mover um projeto para a seção de entrega. Não altere vínculos ou
+critérios silenciosamente para passar pela publicação; incompatibilidades aparecem na revisão.
+
+Avanços usam os validadores compartilhados. Objetivos estruturais mantêm todos os detalhes e
+a simulação.
+
+As atividades interativas de cena (tipos, caso, roteiro, editor de ações, elenco, previsão, prévia e
+painel do professor) estão em §"Atividades interativas e cenas no editor", no topo deste arquivo.
+
+`Revisar para publicar` reúne bloqueios e sugestões separadamente, com atalhos aos editores.
+Uma falha de publicação mantém o diálogo de revisão aberto; ele só fecha após confirmação do
+servidor. Na árvore do curso há um único atalho `Conteúdo` por aula: título, slug e duração
+ficam em `Dados da aula`, e publicar/despublicar fica no editor. O diálogo da árvore cria aulas
+em rascunho; não existe status `arquivada` para aula (esse status pertence ao curso).
+
+⭐ **O cabeçalho da aula é EMPILHADO (18/09/2026).** O `AdminHeader` é uma linha só a partir de
+`sm:` e o bloco de ação tem `shrink-0` — quem encolhe é sempre o título. Na aula esse bloco
+carrega até SEIS botões (ver aula publicada, comparar com a publicada, desfazer a restauração,
+despublicar, voz do Zappy, revisar para publicar), então um título comum quebrava em várias linhas.
+A prop nova **`acoesAbaixo`** põe título e slug na primeira linha e as ações na de baixo, na
+largura toda (os chamadores já entregam os botões num `flex flex-wrap gap-2`, então nada muda do
+lado deles). ⚠ Só o editor de aula passa a prop: as outras ~24 telas que usam o componente ficam
+idênticas. De quebra o bloco do título ganhou `min-w-0` nos DOIS modos. Trava:
+`tests/admin-header.test.tsx` (o modo padrão mantém o `shrink-0` NO LADO DAS AÇÕES e o empilhado
+não o tem — é ele que espremia o título; a trava NOMEIA o elemento, porque um
+`querySelector('.shrink-0')` solto ficaria verde se alguém movesse a classe para o bloco do
+título e INVERTESSE o invariante). ⚠ A descrição ganhou `break-words` junto do `min-w-0`:
+sozinho, o `min-w-0` só muda ONDE o estouro aparece, e uma descrição de token ÚNICO (o slug da
+aula, o e-mail na ficha do aluno) passava a vazar por cima do bloco de ações em vez de empurrar
+a linha.
+
+⭐ **Comparar com a versão publicada (18/09/2026).** O botão do cabeçalho abre
+`editor/lesson-published-compare.tsx`, que busca `GET /api/members/lessons/:id/draft/published` e
+compara com o rascunho pela lib PURA `lib/lesson-published-diff.ts` (`compararComOPublicado`:
+sumiram · mudaram · só no rascunho, com a seção de origem e o aviso de seção que não existe mais).
+Dali a autora traz de volta uma peça, várias ou tudo. Restaurar e desfazer passam por
+`beforePublish()` (flush da fila), ENCERRAM formulários e transferências abertos — a mesma limpeza
+do aviso de conflito — e então recarregam. O "Desfazer a restauração" aparece no toast e no
+cabeçalho enquanto `draft.canUndoRestore`; ⚠️ ele vale só até a próxima alteração do rascunho (o
+members limpa o guardado). ⚠️ O painel diz, e é verdade, que ele mostra o que está publicado
+AGORA: publicar o rascunho arquiva o que não estiver nele.
+
+Vídeo tem um único editor com capa. `LessonVideoUploads` mantém os workers acima dos campos:
+fechar um editor ou recolher uma seção não desmonta a transferência. Callbacks atualizam o ID
+original e ignoram blocos removidos. Publicação aguarda vídeos em envio/processamento.
+`/api/media/videos/[id]/thumbnail` mantém o guard de mídia: GET consulta capa atual/páginas;
+POST aplica imagem e retorna `{ok:true,pictureId}`; PATCH seleciona uma capa ou gera o primeiro
+quadro. Só apresentar confirmação quando a leitura devolver a imagem esperada. Capas Vimeo
+são compartilhadas por todas as aulas que usam o vídeo. Vídeo legado mantém provider,
+`posterUrl`, duração e legendas; arquivo direto oferece capa própria.
+
+Registro de entrega e limites da verificação:
+[implementação](../../docs/plans/2026-09-12-admin-autoria-aulas-implementacao.md).
+
+Full review de 12/09: o estado do editor/upload é isolado por professor/curso/aula; restaurar a
+versão do servidor encerra formulários e jobs locais antes de recarregar. Resultados de revisão
+pertencem ao documento validado e não sobrevivem a alterações. Trocar uma ferramenta incorporada
+para galeria captura o projeto atual antes de desmontar; dependências compartilhadas são
+confirmadas. Aula de certificado oferece o fluxo próprio, com remoção explícita dos critérios
+por seção. Vídeo processando conserva verificação manual. Compatibilidade: 54 manifestos válidos
+e 16 testes de importação/reimportação passaram. [Review](../../docs/plans/2026-09-12-admin-autoria-aulas-full-review.md).
+
+## Recados e critérios de seção — 11/09/2026
+
+No Kids, `BroadcastPanel` oferece Novo recado para perfil, curso ou todos, prévia de destinatários
+resolvidos no servidor e Enviados com entregas/leitura/retry. A prévia fixa o público e só a confirmação
+inicia o processamento. BFF próprio `/api/members/teacher-broadcasts` usa o gateway. Cada destinatário
+tem conversa privada; respostas entram na caixa. `workflowStatus` é da equipe, separado da leitura
+pessoal. `read-all` deve receber o mesmo aluno/busca/contexto/curso/plataforma/status da listagem.
+O editor de seção usa critérios explícitos, catálogo visual e simulação do avaliador compartilhado.
+O acompanhamento consulta resumos de evidências e baixa o projeto completo apenas sob demanda.
+Detalhes e validação: [plano](../../docs/plans/2026-09-11-kids-recados-progresso-implementacao.md).
+
+Correções da revisão (12/09): o editor valida objetivos contra capacidades, conexões e parâmetros
+do workspace pelo contrato server-safe do Studio; a simulação deriva do projeto carregado e dos
+critérios atuais, com proteção contra leituras fora de ordem. Enviados revalida todas as páginas
+de destinatários abertas, descartando respostas de detalhes fechados. `LessonEvidenceHistory`
+lista evidências independentemente das seções atuais e permite paginar e baixar versões antigas.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Next.js, React, Tailwind,
 > jose, Zod, etc.) — não confie só na memória; APIs mudam (ex.: `middleware`→`proxy` no Next 16). Para
@@ -18,10 +419,20 @@ Guia operacional do **painel administrativo** (full-stack). Leia antes de editar
 Painel para o dono operar a plataforma: **usuários, pagamentos, produtos, ofertas, cupons e membros**.
 Front-end **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um **BFF agregador** que
 **chama o API Gateway** (NUNCA os serviços direto). Espelha o design do projeto de referência
-`comunidade-sistema-zero` (tokens OKLch dual light/dark, Base UI-like + lucide + sonner; **logo
-dual-theme** `public/logo_dark.svg`⇄`logo_white.svg` na sidebar/login — `dark:block`/`dark:hidden` —
-e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch via
-`metadata.icons`, mesmos assets do community). Porta **3005**.
+`comunidade-sistema-zero` (Base UI-like + lucide + sonner; **logo**
+`public/logo_dark.svg` na sidebar/login e **favicon** completo: `src/app/favicon.ico` + PNGs
+16/32/192/512 + apple-touch via `metadata.icons`, mesmos assets do community). Porta **3005**.
+
+⭐ **Os tokens de cor NÃO moram mais aqui (17/09/2026).** O `globals.css` não tem bloco
+`:root`/`.dark` próprio: ele importa **`@sistemazero/ui/console.css`**, o chassi das ferramentas
+internas (admin, helpdesk-app e marketing-app carregavam as MESMAS ~330 linhas copiadas). Essa
+folha é GERADA de `packages/ui/src/tokens/console.ts` a partir da paleta do Pen — token de console
+novo nasce LÁ, e `bun run tokens:gen` no `packages/ui` reescreve o arquivo.
+⚠️ **UM tema só: sem cor por pessoa** (o público é o time interno, não há seletor de paleta) **e
+sem claro/escuro** — o modo escuro saiu junto com o das comunidades, e o `next-themes` foi
+removido dos três apps. O `@custom-variant dark` FICA no `globals.css`: sem ele os `dark:` que o
+`@sistemazero/ui` e o `member-shell` ainda trazem passariam a seguir o sistema operacional; com
+ele, e sem `.dark` em lugar nenhum, eles não fazem nada.
 
 **Navegação (reorganização 07/2026 — SIDEBAR em 3 áreas por natureza do trabalho):** a topbar
 plana virou sidebar com grupos — **Sala do Professor** (dia a dia: Entregas `/admin/professor/
@@ -70,7 +481,7 @@ snapshot [mismatch = stale] e re-busca via `subscribePlatform` — assinatura m�
 acoplar React); o BFF `professor-overview` repassa `audience` a entregas/recados/unread-count
 (members ganhou `?audience=` no `GET /members/admin/teacher-threads/unread-count`) e o hub filtra
 fila/denúncias por audiência **antes** de paginar; Cursos filtra a listagem por
-`audience=<plataforma>` (a rota admin do members já aceitava) e o painel Carreira do Criador só
+`audience=<plataforma>` (a rota admin do members já aceitava) e o painel Jornada do Criador só
 renderiza no modo Kids; Análises e Moderação reiniciam seleção, paginação e requests em voo ao
 trocar de plataforma, sem publicar resposta obsoleta; Desafio do mês mostra um banner informativo
 no modo Adultos (conteúdo visível). Rotas fixas do editor de curso são globais: exibem a audiência
@@ -248,7 +659,8 @@ themes/[id]}` (adapters em `server/challenge.ts`, arquivo próprio); `apiSend` g
 > `BlockForm.provider` interno preserva blocos legados youtube/file na edição), áudio via
 > `AudioUploader` (bucket público + duração auto), interativo = **só HTML** (CodeMirror 6 —
 > `components/editor/html-code-editor{,.impl}.tsx`, `@uiw/react-codemirror`+`@codemirror/lang-html`,
-> dynamic ssr:false, tema via next-themes; renderiza iframe sandbox 16:9 no aluno) e **ebook** =
+> dynamic ssr:false, `theme="light"` fixo desde a saída do modo escuro; renderiza iframe sandbox
+> 16:9 no aluno) e **ebook** =
 > PDF via `FileUploader` (bucket privado, `r2priv:`, ≤200MB) + título → livro 3D no community;
 > o upload do PDF do e-book também cria AUTOMATICAMENTE o anexo da aula (material p/ download,
 > `addEbookAttachment` com dedupe por URL; trocar o PDF deixa o material antigo — excluir manual); bloco
@@ -328,10 +740,11 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   p/ prod, sessões abertas (cookies sem prefixo) deixam de ser lidas → 1 re-login regrava.
 - **Refresh (`src/server/gateway.ts`):** `gatewayFetch` em 401 chama `/auth/refresh`, regrava os
   cookies e re-tenta UMA vez. **Só** roda em Route Handlers/Server Actions (lá pode escrever cookies).
-  A rotação é **single-flight por refresh token**: chamadas paralelas (`Promise.all` no BFF, fetches
-  concorrentes do dashboard) compartilham UMA rotação — sem isso o claim atômico do auth derruba a
-  2ª e o `clearSessionCookies` dela apagaria os cookies recém-gravados (logout aleatório). ⚠️ O mapa
-  vive em **`globalThis`**, NÃO em escopo de módulo: o Turbopack separa route handlers (e o proxy)
+  A rotação compartilha o resultado por refresh token por 60 segundos: chamadas paralelas e uma
+  chamada que chega logo após a primeira recebem os mesmos tokens, sem reapresentar ao auth o
+  refresh já consumido (isso revogava a família e deslogava o operador ativo). **Cada resposta**
+  regrava os cookies novos; só a primeira rotação não basta se sua resposta não chegar ao navegador.
+  ⚠️ O mapa vive em **`globalThis`**, NÃO em escopo de módulo: o Turbopack separa route handlers (e o proxy)
   em BUNDLES distintos com cópias próprias do módulo — um Map de módulo daria uma rotação concorrente
   POR bundle, mesmo em UM processo, reabrindo o logout aleatório (lição verificada no community).
   ⚠️ Mesmo no `globalThis`, o single-flight é **POR PROCESSO → só cobre 1 réplica** (ver §Deploy).
@@ -397,7 +810,8 @@ prod (fica no log) e **espelha o erro p/ o Sentry** (`captureServerException`, c
   `FileUploader` NÃO a usa mais (usa o presign acima). O aluno baixa pela rota autenticada do
   community, que resolve a key, aplica a **marca d'água com o e-mail do aluno** (PDF: rodapé em
   todas as páginas; imagem: selo no canto) e seta o Content-Disposition. URL http(s) colada
-  manualmente no dialog de anexo segue suportada (o community faz redirect — sem marca).
+  manualmente no dialog de anexo segue suportada para formatos não protegidos (redirect). PDF e
+  imagem externos são recusados no download: sem acesso aos bytes não há como estampar a marca.
 - `POST /api/media/videos/ticket` (`{filename,sizeBytes,mimeType}` ≤5GB mp4/mov/webm) → Vimeo
   `POST /me/videos` approach tus + privacy `view=disable, embed=whitelist` (+ domínios da env) →
   `{vimeoVideoId,uploadLink,embedUrl}`. O vídeo sobe DIRETO do browser (tus-js-client, chunk 128MB).
@@ -409,7 +823,7 @@ prod (fica no log) e **espelha o erro p/ o Sentry** (`captureServerException`, c
   Quando ready, baixa o VTT do Vimeo (link assinado, **EXPIRA**) e **re-hospeda no R2**
   (`admin/captions/<id>-<lang>.vtt`) → `captions[].url` estável p/ o bloco do members.
 - `POST /api/media/videos/:id/thumbnail` (multipart jpg/png ≤5MB) → **SÓ Vimeo pictures** →
-  `{ok:true}`. O player do aluno usa a capa do próprio Vimeo; a cópia WebP no R2 + `posterUrl`
+  `{ok:true,pictureId}`. O player do aluno usa a capa do próprio Vimeo; a cópia WebP no R2 + `posterUrl`
   da v2 foram removidas (decisão do usuário: capa direto no Vimeo, sem R2).
 
 **Decisões load-bearing:** `src` do bloco vídeo = **embed URL** `player.vimeo.com/video/<id>?h=…`
@@ -750,7 +1164,17 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   Body de curso também aceita **`audience`** (`adult`|`kids`, 06/2026 — plataforma Kids): select
   "Audiência" no dialog, **Kids por padrão no curso novo**, sempre enviado (o members PRESERVA
   quando ausente — ≠ salesPageUrl; o default legado do endpoint segue Adult);
-  `CourseView.audience` devolvido; badge "Kids" na listagem. Curso `kids` fica FORA da chave-mestra
+  `CourseView.audience` devolvido; badge "Kids" na listagem.
+  ⭐ A `audience` também desce até a **prévia e o ensaio da aula** (`LessonStructureEditor` →
+  "Conferir livremente" e `LessonRehearsal` → "Ensaiar como aluno"), que passam `kids` ao
+  `LessonSections`: desde 13/09/2026 os dois layouts DIVERGEM de verdade (no kids não existe a
+  barra "O que falta para concluir"), então ensaiar sempre no layout adulto mostrava ao professor
+  uma tela que a criança não tem. ⚠️ Desde 18/09/2026 o índice NÃO é mais uma dessas diferenças —
+  ele mora no cabeçalho da seção nos dois —, e os dois pontos de entrada passam `lessonTitle` para
+  o cabeçalho sair como na página de aula ("nome da aula · nome da seção"); sem isso o ensaio
+  mostraria justamente o elemento que mudou diferente do que o aluno vê. ⚠️ O admin
+  não carrega o `globals.css` do kids: aqui sai a ESTRUTURA certa, sem a pele (cartões brancos).
+  Travado por `tests/lesson-rehearsal.test.tsx`, que monta o ensaio nas DUAS audiências. Curso `kids` fica FORA da chave-mestra
   `all_courses` (copy do GrantAccessDialog = "todos os cursos ADULTOS"; option de curso kids ganha
   sufixo `[Kids]`). Body de curso também aceita **`sequentialLock`** (boolean, 06/2026 — trava
   sequencial estilo Duolingo): checkbox "Trava sequencial das aulas" no dialog, **sempre enviado**
@@ -760,7 +1184,7 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   (`2d`|`3d`, reforma 2D/3D 07/2026 — o PAR é o DEGRAU pedagógico): o select "Nível do curso" no
   dialog virou UM select de **6 opções** ("Iniciante 2D"…"Avançado 3D", value composto
   `level:track` que escreve os DOIS campos), **sempre enviados** (members PRESERVA quando ausentes;
-  defaults `iniciante`/`2d`); `CourseView.level`/`track` devolvidos. Alimenta a CARREIRA DE 8 do
+  defaults `iniciante`/`2d`); `CourseView.level`/`track` devolvidos. Alimenta a JORNADA DE 8 do
   aluno no community-kids (concluir + publicar no Mural cursos de cada degrau, na ordem da escada →
   Faísca→…→Lenda; `STUDENT_RANK_LABELS` do member-detail tem os 8, incl. Explorador(a) de
   Mundos/Arquiteto(a) de Mundos/Gênio da Criação). `COURSE_TIER_OPTIONS`/`courseTierLabel` em
@@ -768,7 +1192,7 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   bloco Estúdio no editor de aula usa `BLOCK_LEVEL_OPTIONS` do `@sistemazero/studio` (6 degraus de
   BLOCOS; aula legada normaliza no load via `normalizeBlockLevel`, e o clipboard de config normaliza
   no paste — localStorage guarda legado p/ sempre).
-  **Posição na carreira (curso-base):** `careerSlot` é opcional. Só curso Kids pode ocupá-la;
+  **Posição na jornada (curso-base):** `careerSlot` é opcional. Só curso Kids pode ocupá-la;
   O número de posições é POR ETAPA (**Primeiros Passos** = 1, todas as demais = 8 — `slotsForTier`; o Iniciante 2D teve 7 entre 14/08 e 15/08 e a usuária desfez); **posição 1 = curso-base** (destrava as demais
   da etapa); **sem posição = bônus-RECOMPENSA da etapa (24/07)** — abre quando o aluno completa os
   cursos com posição da etapa do bônus (a listagem rotula "Bônus — recompensa da etapa X"; etapa
@@ -779,9 +1203,9 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   só criar"). O campo posição é um **`Select` com rótulos** ("Nenhuma — bônus (recompensa…)", "1 —
   Curso-base…", 2…) que mostra a OCUPAÇÃO da etapa selecionada e desabilita posição ocupada por
   OUTRO curso (evita o 409 `CAREER_SLOT_CONFLICT` do members); trocar de etapa (6→5) faz clamp.
-  O `CourseFormDialog` busca os cursos Kids sozinho (`careerCourses` opcional) p/ a ocupação e
+  O `CourseFormDialog` busca os cursos Kids sozinho (`journeyCourses` opcional) p/ a ocupação e
   **envia o payload COMPLETO sempre** (o members preserva ausentes no PATCH, mas `salesPageUrl`
-  ausente LIMPA a chave — mandar tudo é o contrato seguro). O card de prontidão `CareerReadiness`
+  ausente LIMPA a chave — mandar tudo é o contrato seguro). O card de prontidão `JourneyReadiness`
   é **CLICÁVEL** (`canWrite`): posição vazia → cria já mirando etapa+posição (`prefill`); ocupada →
   edita o curso. Ele carrega TODAS as páginas Kids com `loadAllPages` (as 49 posições, sem cortar
   nos primeiros 100). **Aviso "Sem vitrine" (24/07):** curso-base PUBLICADO sem aula publicada com
@@ -789,13 +1213,13 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   members) aparece ⚠️ "Sem vitrine" no painel (NÃO conta como pronto) e o `CourseFormDialog` mostra
   um alerta ao editar — sem isso o slot 1 nunca qualifica e a etapa não destrava (Armadilha do
   Mural). A matriz operacional, o fail-open (etapa sem base publicada não trava) e as
-  migrations `0048`/`0049` estão em `docs/carreira-do-criador.md`.
+  migrations `0048`/`0049` estão em `docs/jornada-do-criador.md`.
   **Hardening da autoria (full review 24/07):**
   - O members agora **BLOQUEIA** a transição p/ o estado-armadilha: PATCH que publica (ou dá
     slot 1 a curso já publicado) curso kids slot-1 SEM vitrine → **409 `NO_SHOWCASE_BLOCK`**
     (transição-only: curso JÁ preso segue editável). O dialog mapeia via
     **`lib/course-errors.ts`** (`courseSaveError`, puro/testado): `CAREER_SLOT_CONFLICT` →
-    mensagem + **refetch da ocupação** (`refreshOccupancy` — a prop `careerCourses` virou só
+    mensagem + **refetch da ocupação** (`refreshOccupancy` — a prop `journeyCourses` virou só
     SEED); `CONCURRENCY_CONFLICT` → "feche e reabra" (NUNCA rebasear silencioso);
     `NO_SHOWCASE_BLOCK` → toast com action "Abrir conteúdo do curso". O alerta ⚠️ preventivo
     também dispara quando o status VAI virar published.
@@ -816,10 +1240,10 @@ Dockerfile: valida e só então importa o `server.js` standalone).
     (rascunho → 404 na visão do aluno — o filtro roda ANTES do bypass de equipe); tooltip
     avisa que travas/gamificação de aluno real não são simuladas. O editor busca a árvore do
     curso no load (slug/audience/status + isPublished da aula).
-  - **Conformance admin×core**: `tests/career-tier-conformance.test.ts` trava
-    `COURSE_TIER_OPTIONS` ≡ `CAREER_COURSE_TIERS` (conjunto E ORDEM) e `slotsForTier`
+  - **Conformance admin×core**: `tests/journey-tier-conformance.test.ts` trava
+    `COURSE_TIER_OPTIONS` ≡ `JOURNEY_COURSE_TIERS` (conjunto E ORDEM) e `slotsForTier`
     (exportada do course-form-dialog, que deriva o nº de posições POR degrau) ≡
-    `CREATOR_CAREER_LEVELS.at(-1).requiredSlots` — import RELATIVO do core (precedente
+    `CREATOR_JOURNEY_LEVELS.at(-1).requiredSlots` — import RELATIVO do core (precedente
     badge-conformance do kids; sem dependência nova).
   **Convite multi-plataforma**: `POST /auth/admin/users` aceita
   `platform: 'main'|'kids'` (select "Plataforma do convite" no dialog — decide a base do link do
@@ -916,7 +1340,7 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   do projeto seguem carregando.
 
 - **Bloco `pinta` — o ateliê de DESENHO na aula (15/08/2026):** o irmão do `studio`. O form
-  (`lesson-editor-client.tsx`: `KIND_LABELS.pinta`, `BLOCK_DIALOG_WIDTH.pinta = 'max-w-7xl'`,
+  (`lesson-editor-client.tsx`: `KIND_LABELS.pinta`, editor contextual amplo,
   campos `pinta*`) tem **Tipo do desenho** + **Tamanho** (`PINTA_LESSON_ASSET_OPTIONS` do pacote —
   personagem/cenário × pixel/formas; cenário para em **256** de propósito: acima disso o JSON não
   cabe no teto de corpo do gateway), o **Pinta embutido** (`components/pinta/pinta-embed.tsx`,
@@ -954,8 +1378,8 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   aluno e a DATA entram sozinhos na emissão (não há campo). A **mensagem** (frase E/OU parágrafo, abaixo do
   nome) é **OBRIGATÓRIA** (`validateBlock` exige ≥1 das duas); o resto é opcional. `buildContent` PRESERVA os
   campos legados (`title`/`issuerName`/`logoUrl`/`signatureImageUrl`/`message`) via `previousContent` ao
-  editar um bloco antigo. Sem `baseImageUrl` o BFF cai no layout "marca" antigo. Sem editor pesado →
-  `max-w-lg` padrão. Validação client de URLs `^https?://` (imagem base/assinaturas; o `ImageUploader`
+  editar um bloco antigo. Sem `baseImageUrl` o BFF cai no layout "marca" antigo. O formulário usa o
+  editor contextual da aula. Validação client de URLs `^https?://` (imagem base/assinaturas; o `ImageUploader`
   do admin sobe WebP no R2 — o renderizador do BFF converte WebP→PNG via sharp). ⚠️ **A aula do
   certificado NÃO pode ter blocos que TRAVAM a conclusão** (quiz com nota de corte / Estúdio) — o
   members recusa (`VALIDATION_ERROR`→400, `lessonHasGatingBlock`); conteúdo livre (vídeo/texto de
@@ -983,7 +1407,7 @@ Dockerfile: valida e só então importa o `server.js` standalone).
 ## Embaixadores (indicações/bolsas — 08/2026, Fase 1)
 
 Item "Embaixadores" no grupo **Gestão** (ícone `Gift`) → `/admin/embaixadores`
-(`embaixadores-client.tsx`): gestão de quem distribui bolsas 100% do Desafio do Primeiro Jogo
+(`embaixadores-client.tsx`): gestão de quem distribui acesso ao curso **Cadê Todo Mundo?** por indicação
 (pessoas COM ou SEM conta). Criar = nome + e-mail → o **@sistemazero/referrals** gera o código +
 a página (capability-URL) e envia o magic-link por e-mail (`emailSent:false` = copie o link no
 detalhe e mande por fora). Tabela: nome/código/bolsas resgatadas/convites/status; ações: detalhe
@@ -1007,7 +1431,7 @@ deriva de `AmbassadorRedemptionView.conversion`). ⚠️ **Apresentação por st
 EXAUSTIVOS** (`CONVERSION_STATUS_LABEL`/`CONVERSION_STATUS_BADGE`/`JOURNEY_LABEL` — status novo
 no referrals reprova a compilação em vez de cair num rótulo errado sobre dinheiro), travados
 contra a fonte por `tests/conversion-status-conformance.test.ts` (import RELATIVO do port puro do
-referrals, precedente do career-tier-conformance). O badge "Pago" carrega no title quem/quando
+referrals, precedente do journey-tier-conformance). O badge "Pago" carrega no title quem/quando
 marcou + a `note` quando houver, e as DATAS (libera em / pago em + operador) saem também em texto
 VISÍVEL — tooltip não existe no toque nem por teclado, e é justamente o que se usa para programar
 os Pix da semana e auditar quem pagou. O `load` da BonusSection tem guarda última-vence (trocar o
@@ -1019,6 +1443,53 @@ nem aparece. Tipos `ConversionStatus`/`ConversionAdminView`;
 adapter `listConversions`/`markConversionPaid`/`matureConversionNow`; shims
 `app/api/admin/referrals/conversions/{route,[id]/mark-paid/route,[id]/mature-now/route}.ts`
 (cabem nos wildcards `referrals-admin-*` do gateway — nenhuma rota nova lá).
+
+## Animação Rive por módulo (trilha Kids) — 21/09/2026
+
+Substituiu o upload de SVG animado de 20/09, e a troca ENCOLHEU o problema de
+segurança em vez de mover: um SVG público EXECUTA se aberto direto pela URL, e o que
+segurava isso era o `module-illustration-svg.ts` — 249 linhas de allowlist XML à mão,
+exposto a divergência entre o parser do `@xmldom/xmldom` e o do navegador. Um `.riv`
+é binário opaco servido como `application/octet-stream`. Foram deletados o validador,
+o teste dele, a rota `/api/media/module-illustrations` e a dependência
+`@xmldom/xmldom` (o `packages/fiscal` ainda usa — removida SÓ daqui).
+
+- **Validação** (`lib/riv-file.ts`, puro): extensão `.riv` + assinatura `RIVE` nos 4
+  primeiros bytes + major de formato. ⚠️ **Não olhamos `file.type`**: não há MIME
+  registrado para `.riv`, então o navegador manda `application/octet-stream` ou string
+  vazia, e checar o tipo só recusaria arquivo bom. ⚠️ O **MINOR** não pode ser preso
+  (os `.riv` do Zappy são `07 03` e `07 04`, mesmo editor, datas diferentes); o
+  **MAJOR** é preso de propósito — major diferente é formato que o runtime não lê, e o
+  sintoma seria canvas vazio no navegador da criança, sem erro nenhum.
+- **Armazenamento**: bucket PÚBLICO, `admin/module-rive/<uuid>.riv`, 5 MB.
+  UUID novo por upload é o que torna seguro o `immutable` do `r2PutObject`.
+- **Prévia RODANDO no diálogo de módulo, e ela não é enfeite.** Nenhum teste prova que
+  um `.riv` anima (happy-dom não tem WebGL; o guarda de bytes só vê nomes). Ver a
+  animação aqui, antes de salvar, é a ÚNICA verificação de que ela não vai chegar
+  congelada na tela da criança — por isso a prévia escolhe a timeline pela mesma regra
+  do app do aluno.
+- ⚠️ A prévia recebe `buffer`, e os bytes vêm da rota-proxy
+  `/api/media/module-rive/preview` — nunca do CDN direto. Isso mantém o `connect-src`
+  estreito (`'self'` + três hosts nomeados, sem `https:`) e dispensa CORS. Derivar o
+  host de `R2_PUBLIC_URL` no `next.config.ts` NÃO serviria: o `headers()` é serializado
+  no `routes-manifest.json` em BUILD TIME. O guarda anti-SSRF da rota é o prefixo
+  exato contra `R2_PUBLIC_URL`.
+- ⚠️ A CSP ganhou `'wasm-unsafe-eval'` no `script-src` — KEYWORD à parte, que nem
+  `https:` nem `'unsafe-inline'` cobrem, e cuja recusa no Chrome é SILENCIOSA.
+  `tests/csp-wasm.test.ts` trava isso. O WASM é servido da nossa origem
+  (`scripts/sync-rive-wasm.ts` no `dev` e no `build`, `public/rive/` no gitignore).
+- ⚠️ **O CORS público do Rive é uma BARREIRA automática do `deploy-staging`.** O job executa
+  `r2:cors:public:ensure` via Railway CLI com as envs do Admin ANTES de disparar qualquer serviço.
+  `scripts/r2-cors-public.ts` faz GET→MESCLA→PUT apenas quando necessário, relê a regra inteira e
+  prova o data plane: cria um objeto temporário, faz GET no `R2_PUBLIC_URL` com o `Origin` do Kids e
+  exige `Access-Control-Allow-Origin` correto; remove o objeto em seguida. Falha nessa prova deixa o
+  deploy vermelho. `--check` não altera a configuração, mas repete a prova pública. O `<img>` de antes
+  não fazia CORS; o runtime do Rive faz.
+- ⚠️ **Testes:** os mocks parciais de `@/server/media`/`@/server/r2` em
+  `zappy-backfill` e `hub-route-handlers` passaram a ESPALHAR o módulo real. O
+  `mock.module` do bun é global ao run, e manter à mão "a superfície que as outras
+  suítes importam" não escala — foi assim que este trabalho quebrou o
+  `user-deletion.test.ts`, num arquivo distante e só na suíte completa.
 
 ## Checklist antes de finalizar
 
@@ -1046,3 +1517,56 @@ adapter `listConversions`/`markConversionPaid`/`matureConversionNow`; shims
   ganharam o bucket **reprovadas** (`ZappyMetricsView.rejected?`, opcional para tolerar members
   antigo).
 ```
+
+## Avanço por vídeo e arquivos
+
+O editor `SectionCompletionEditor` permite escolher arquivos `file` individualmente em um bloco
+`materials`. Selecionar o primeiro item inclui o bloco em `blockIds`; desmarcar o último o remove.
+`materialItems` guarda apenas IDs de itens exigidos e pode coexistir com o vídeo a 90%; arquivos
+restantes são opcionais. `suggestedCompletion` nunca ativa downloads obrigatórios sozinho. A
+publicação valida a seleção pelo `sectionCompletionIssues` compartilhado com o members.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
+
+## Como fazer: a biblioteca de ajuda do Kids (26/09/2026)
+
+Item **Como fazer** no grupo Configuração (`LifeBuoy`) → `/admin/como-fazer`
+(`como-fazer-client.tsx`: abas **Tutoriais** (lista com filtros e "Novo tutorial"), **Coleções**
+(criar/editar/subir/descer/arquivar/restaurar; ícone e cor vêm das allowlists do core) e
+**Importar** (`JsonImportPanel`, o formato de `docs/como-fazer/como-fazer.json`); "Exportar JSON"
+gera o mesmo arquivo para levar de staging a produção) e `/admin/como-fazer/[id]`
+(`help-editor-client.tsx`). A criança só vê o PUBLICADO; o Zappy passa a citar o tutorial na hora.
+
+- **BFF**: um catch-all `app/api/members/help/[[...path]]/route.ts` com **allowlist explícita**
+  (molde do teacher-broadcasts), adapters em `server/help.ts`; sem DELETE. Trava:
+  `tests/help-route-handlers.test.ts`.
+- **O editor não tem autosave, de propósito**: "Salvar rascunho" manda `expectedRevision`; 409
+  `HELP_TUTORIAL_CONFLICT` → "recarregue". "Revisar e publicar" repete o diálogo da aula:
+  bloqueios de `validateHelpTutorial` (a MESMA função que o members roda) + `<details>` com
+  `helpEditorialWarnings` (sem keywords, passo longo, sem imagem/vídeo, pitch comercial). A prévia
+  é o `HelpTutorialView` REAL do member-shell (sem marca d'água aqui). Vídeo por `VideoUploader`
+  (sem `blockId`) ou URL Vimeo/YouTube; imagem do passo por `ImageUploader scope="block"` e o
+  alt é obrigatório quando há imagem. Slug trava depois de publicado (os links das aulas apontam
+  para ele). Trava: `tests/help-editor-client.test.tsx` (o TipTap é substituído por um
+  `<textarea>` no mock, preservando a superfície do módulo).
+- ⚠️ O import só mexe no RASCUNHO: depois de importar, cada tutorial passa por "Revisar e
+  publicar". Regras de escrita e o lote inicial: `docs/como-fazer/README.md`.
+- **Full review 26/09/2026 (o que mudou no editor):** "Revisar e publicar" publica a revisão
+  que está NA TELA (`record.revision`, atualizada pelo save), nunca uma revisão "fresca" do
+  servidor (isso publicava o rascunho de outra pessoa sem revisão); defasado → 409 com "recarregue".
+  O `save()` só limpa o `dirty` se ninguém digitou durante o request (refs do draft/meta). O slug
+  fica travado com o tutorial publicado e o members recusa a troca (409 `HELP_SLUG_LOCKED`). O
+  `parseImport` confere chaves fora do contrato (`additionalProperties: false` do members) e lista
+  por tutorial o que "Revisar e publicar" cobraria; o `JsonImportPanel` ganhou `onApply` assíncrono
+  (o toast de sucesso espera o servidor) e `confirmMessage` (o texto padrão falava de um "Salvar"
+  que aqui não existe). A pele do `HelpTutorialView` mora em `member-shell/src/styles/help.css`,
+  importada pelo `globals.css` do admin e do kids (sem ela a prévia saía sem numeração).
+  `/admin/como-fazer/<não-uuid>` → `notFound()`.

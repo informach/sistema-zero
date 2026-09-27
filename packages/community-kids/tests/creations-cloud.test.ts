@@ -8,6 +8,7 @@
 import { describe, expect, test } from 'bun:test'
 import {
   CLOUD_MESSAGES,
+  CloudListTimeoutError,
   type CloudPart,
   type CloudSyncState,
   canonicalJson,
@@ -340,6 +341,167 @@ describe('gzip de ida e volta', () => {
 })
 
 describe('createCreationsCloud', () => {
+  test('delete usa capacidade da instância e uma recusa futura não confirma nem resolve como conflito', async () => {
+    const requests: unknown[] = []
+    let removed = false
+    let stale = false
+    const cloud = createCreationsCloud({
+      tool: 'molda',
+      maxFormatVersion: 2,
+      idleMs: 0,
+      wait: noWait,
+      fetch: async (_input, init) => {
+        requests.push(JSON.parse(String(init?.body)))
+        return Response.json(
+          {
+            error: { code: 'CREATION_CLIENT_OUTDATED', message: 'raw' },
+            details: { requiredVersion: 3 },
+          },
+          { status: 409 },
+        )
+      },
+    })
+    try {
+      cloud.enqueueRemove(
+        'model',
+        7,
+        () => {
+          removed = true
+        },
+        () => {
+          stale = true
+        },
+      )
+      await cloud.flush()
+      expect(requests).toEqual([{ baseRevision: 7, maxFormatVersion: 2 }])
+      expect(removed).toBe(false)
+      expect(stale).toBe(false)
+      expect(cloud.getState()).toMatchObject({
+        status: 'error',
+        pending: 0,
+        lastError: CLOUD_MESSAGES.clientOutdated,
+      })
+    } finally {
+      cloud.dispose()
+    }
+  })
+
+  test('ticket incompatível esgota retry sem PUT nem confirmação e o próximo envio pode recuperar', async () => {
+    const server = fakeServer()
+    let acceptsFormat = false
+    let confirmed = 0
+    const cloud = createCreationsCloud({
+      tool: 'molda',
+      idleMs: 0,
+      wait: noWait,
+      fetch: async (input, init) => {
+        const response = await server.fetchImpl(input, init)
+        if (!String(input).endsWith('/upload') || !response.ok || !acceptsFormat) return response
+        return Response.json({ ...((await response.json()) as object), formatVersion: 2 })
+      },
+    })
+    const enqueue = () =>
+      cloud.enqueueUpload(
+        'model',
+        async () => ({
+          json: '{}',
+          meta: { name: 'Modelo', kind: 'model', formatVersion: 2 },
+        }),
+        () => {
+          confirmed += 1
+        },
+      )
+    try {
+      enqueue()
+      await cloud.flush()
+      expect(server.calls.filter((call) => call.url.endsWith('/upload'))).toHaveLength(3)
+      expect(server.calls.filter((call) => call.method === 'PUT')).toEqual([])
+      expect(confirmed).toBe(0)
+      expect(cloud.getState()).toMatchObject({ status: 'error', pending: 0 })
+      acceptsFormat = true
+      enqueue()
+      await cloud.flush()
+      expect(confirmed).toBe(1)
+      expect(cloud.getState()).toMatchObject({ status: 'saved', pending: 0 })
+      expect(server.calls.filter((call) => call.method === 'PUT')).toHaveLength(1)
+    } finally {
+      cloud.dispose()
+    }
+  })
+
+  test.each([
+    undefined,
+    null,
+    0,
+    1,
+    '2',
+    3,
+  ])('não envia manifesto nem partes sem confirmação exata do formato: %s', async (formatVersion) => {
+    const server = fakeServer()
+    const cloud = createCreationsCloud({
+      tool: 'molda',
+      fetch: async (input, init) => {
+        const response = await server.fetchImpl(input, init)
+        if (!String(input).endsWith('/upload') || !response.ok) return response
+        return Response.json({ ...((await response.json()) as object), formatVersion })
+      },
+    })
+    try {
+      const part = await partOf({ id: 'skin', pixels: [1, 2] })
+      await expect(
+        cloud.upload(
+          {
+            itemId: 'model',
+            name: 'Modelo',
+            kind: 'model',
+            updatedAt: 1,
+            formatVersion: 2,
+          },
+          '{}',
+          [part],
+        ),
+      ).rejects.toMatchObject({ status: 503, code: 'CLOUD_FORMAT_UNSUPPORTED' })
+      expect(server.calls.filter((call) => call.method === 'PUT')).toEqual([])
+      expect(server.calls.some((call) => call.url.endsWith('/commit'))).toBe(false)
+    } finally {
+      cloud.dispose()
+    }
+  })
+
+  test.each([
+    undefined,
+    1,
+    2,
+  ])('compatibilidade do ticket confirma a versão certa: %s', async (formatVersion) => {
+    const server = fakeServer()
+    const cloud = createCreationsCloud({
+      tool: 'molda',
+      fetch: async (input, init) => {
+        const response = await server.fetchImpl(input, init)
+        if (!String(input).endsWith('/upload') || !response.ok) return response
+        return Response.json({ ...((await response.json()) as object), formatVersion })
+      },
+    })
+    try {
+      const expected = formatVersion ?? 1
+      const result = await cloud.upload(
+        {
+          itemId: 'model',
+          name: 'Modelo',
+          kind: 'model',
+          updatedAt: 1,
+          formatVersion: expected,
+        },
+        '{}',
+      )
+      expect(result.revision).toBe(1)
+      expect(server.calls.filter((call) => call.method === 'PUT')).toHaveLength(1)
+      expect(server.calls.filter((call) => call.url.endsWith('/commit'))).toHaveLength(1)
+    } finally {
+      cloud.dispose()
+    }
+  })
+
   test('fila envia versão do documento e recusa de editor antigo não dispara PUT, retry ou confirmação', async () => {
     const calls: string[] = []
     let sent: unknown
@@ -1408,6 +1570,94 @@ describe('createCreationsCloud', () => {
     await cloud.flush()
     expect(server.calls).toHaveLength(0)
     expect(cloud.getState().status).toBe('saved')
+    cloud.dispose()
+  })
+})
+
+describe('list com prazo POR PÁGINA (26/09/2026)', () => {
+  const pagina = (items: unknown[], nextCursor: string | null) =>
+    new Response(JSON.stringify({ items, nextCursor }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })
+  const item = (id: string) => ({
+    itemId: id,
+    name: id,
+    kind: 'classic',
+    itemUpdatedAt: '2026-08-18T12:00:00.000Z',
+    revision: 1,
+    bytes: 1,
+    thumb: null,
+    syncedAt: '2026-08-18T12:00:01.000Z',
+  })
+  const numeroDaPagina = (url: string) => Number(url.match(/cursor=(\d+)/)?.[1] ?? 0)
+
+  test('o prazo é de cada página: três páginas de 15 ms descem com 40 ms por página, embora somem mais que isso', async () => {
+    const cloud = createCreationsCloud({
+      tool: 'studio',
+      wait: noWait,
+      fetch: async (input) => {
+        await new Promise((resolve) => setTimeout(resolve, 15))
+        const n = numeroDaPagina(String(input))
+        return pagina([item(`i${n}`)], n < 2 ? String(n + 1) : null)
+      },
+    })
+    const items = await cloud.list({ pageTimeoutMs: 40 })
+    expect(items.map((i) => i.itemId)).toEqual(['i0', 'i1', 'i2'])
+    cloud.dispose()
+  })
+
+  test('a página que não chega no prazo tem o fetch dela abortado e a lista lança `CloudListTimeoutError` com o número da página', async () => {
+    const abortadas: number[] = []
+    const cloud = createCreationsCloud({
+      tool: 'studio',
+      wait: noWait,
+      fetch: (input, init) => {
+        const n = numeroDaPagina(String(input))
+        if (n === 0) return Promise.resolve(pagina([item('i0')], '1'))
+        // A segunda página nunca responde: só o aborto a tira do caminho.
+        return new Promise((_, reject) => {
+          init?.signal?.addEventListener('abort', () => {
+            abortadas.push(n)
+            reject(init.signal?.reason ?? new DOMException('Abortado', 'AbortError'))
+          })
+        })
+      },
+    })
+    let erro: unknown = null
+    try {
+      await cloud.list({ pageTimeoutMs: 20 })
+    } catch (error) {
+      erro = error
+    }
+    expect(erro).toBeInstanceOf(CloudListTimeoutError)
+    expect((erro as CloudListTimeoutError).page).toBe(1)
+    expect((erro as CloudListTimeoutError).timeoutMs).toBe(20)
+    expect(abortadas).toEqual([1])
+    cloud.dispose()
+  })
+
+  test('o sinal de fora que aborta no meio segue lançando o aborto, não o prazo (e sem `pageTimeoutMs` a lista espera o que precisar)', async () => {
+    const controller = new AbortController()
+    const cloud = createCreationsCloud({
+      tool: 'studio',
+      wait: noWait,
+      fetch: (_input, init) =>
+        new Promise((_, reject) => {
+          init?.signal?.addEventListener('abort', () =>
+            reject(init.signal?.reason ?? new DOMException('Abortado', 'AbortError')),
+          )
+        }),
+    })
+    setTimeout(() => controller.abort(), 5)
+    let erro: unknown = null
+    try {
+      await cloud.list({ signal: controller.signal, pageTimeoutMs: 1_000 })
+    } catch (error) {
+      erro = error
+    }
+    expect(erro).not.toBeNull()
+    expect(erro instanceof CloudListTimeoutError).toBe(false)
     cloud.dispose()
   })
 })

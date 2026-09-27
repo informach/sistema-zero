@@ -40,6 +40,8 @@ export interface ZappyStoredResponse {
     lessonId: string
     title: string
   }>
+  /** Tutoriais do "Como fazer" citados (o painel abre `/como-fazer/<slug>`). */
+  helpReferences?: Array<{ slug: string; title: string }>
   /** Continuações prováveis da criança (chips que preenchem o campo, ≤3). */
   suggestions?: string[]
   createdAt: string

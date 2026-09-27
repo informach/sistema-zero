@@ -32,10 +32,10 @@ describe('Resolução de download de anexo (server↔server, BFF do community)',
     )
     expect(res.status).toBe(200)
     expect(await readJson(res)).toEqual({
-      label: 'Slides (PDF)',
-      fileType: 'application/pdf',
-      sizeBytes: null,
-      storageRef: 'https://x/a.pdf',
+      label: attachment.label,
+      fileType: attachment.fileType,
+      sizeBytes: attachment.sizeBytes,
+      storageRef: attachment.url,
     })
   })
 

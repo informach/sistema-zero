@@ -1,4 +1,5 @@
 import { and, count, desc, eq, gte, ilike, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm'
+import { SCHOLARSHIP_ACCESS_DURATION_DAYS } from '../../../domain/gift-policy'
 import type {
   AmbassadorListItem,
   AmbassadorRecord,
@@ -100,6 +101,9 @@ function toRedemption(row: RedemptionRow): RedemptionRecord {
     lastError: row.lastError,
     attemptCount: row.attemptCount,
     completedAt: row.completedAt,
+    accessDurationDays: row.accessDurationDays,
+    muralVisitorPolicy: row.muralVisitorPolicy,
+    muralVisitorGrantedAt: row.muralVisitorGrantedAt,
     createdAt: row.createdAt,
   }
 }
@@ -476,6 +480,8 @@ export class DrizzleReferralRepository implements ReferralRepository {
         email: input.email,
         name: input.name,
         phone: input.phone,
+        accessDurationDays: SCHOLARSHIP_ACCESS_DURATION_DAYS,
+        muralVisitorPolicy: 'visitor',
       })
       .onConflictDoNothing({ target: scholarshipRedemptions.email })
       .returning()
@@ -525,11 +531,25 @@ export class DrizzleReferralRepository implements ReferralRepository {
       .where(eq(scholarshipRedemptions.id, id))
   }
 
+  async markCourseGranted(id: string, when: Date): Promise<void> {
+    await this.db
+      .update(scholarshipRedemptions)
+      .set({ grantedAt: when, lastError: null, updatedAt: sql`now()` })
+      .where(eq(scholarshipRedemptions.id, id))
+  }
+
+  async markMuralVisitorGranted(id: string, when: Date): Promise<void> {
+    await this.db
+      .update(scholarshipRedemptions)
+      .set({ muralVisitorGrantedAt: when, lastError: null, updatedAt: sql`now()` })
+      .where(eq(scholarshipRedemptions.id, id))
+  }
+
   async markRedemptionGranted(id: string, when: Date): Promise<void> {
     await this.db
       .update(scholarshipRedemptions)
       .set({
-        grantedAt: when,
+        grantedAt: sql`coalesce(${scholarshipRedemptions.grantedAt}, ${when.toISOString()}::timestamptz)`,
         status: 'completed',
         completedAt: when,
         failedReason: null,

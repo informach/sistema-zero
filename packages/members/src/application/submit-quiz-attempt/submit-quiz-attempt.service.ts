@@ -16,6 +16,7 @@ import type { ProgressRepository } from '../../domain/ports/progress-repository.
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
+import type { SectionProgressionService } from '../learning/section-progression.service'
 import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
 import type { GamificationDeltaView } from '../mappers/views'
 
@@ -46,6 +47,7 @@ export class SubmitQuizAttemptService {
     private readonly gamification: AwardGamificationService,
     private readonly newId: () => string,
     private readonly clock: () => Date,
+    private readonly sections: SectionProgressionService,
   ) {}
 
   async execute(
@@ -68,6 +70,12 @@ export class SubmitQuizAttemptService {
       userId,
     )
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
+    await this.sections.assertBlock(
+      { userId, accountId: accountId ?? userId },
+      lesson,
+      blockId,
+      privileged,
+    )
 
     // Aula EM PRODUÇÃO ("em breve"): o quiz não vai mais ao aluno, mas o id antigo
     // ainda resolveria — e a resposta do submit carrega o GABARITO
@@ -79,8 +87,9 @@ export class SubmitQuizAttemptService {
     if (block?.content.kind !== 'quiz') throw new QuizBlockNotFoundError()
 
     const now = this.clock()
+    const formative = await this.sections.isCriterion(lessonId, blockId)
     const summary = (await this.attempts.summarizeByBlockIds(userId, [blockId])).get(blockId)
-    const blockedUntil = computeRetryAvailableAt(summary ?? null, now)
+    const blockedUntil = formative ? null : computeRetryAvailableAt(summary ?? null, now)
     if (blockedUntil) throw new QuizCooldownError(blockedUntil)
 
     const grade = gradeQuizAttempt(block.content, answers)
@@ -91,6 +100,7 @@ export class SubmitQuizAttemptService {
       {
         id: this.newId(),
         userId,
+        accountId: accountId ?? userId,
         lessonId,
         blockId,
         courseId: lesson.courseId,
@@ -99,7 +109,7 @@ export class SubmitQuizAttemptService {
         answers,
         createdAt: now,
       },
-      { cooldownMs: QUIZ_RETRY_COOLDOWN_MS },
+      { cooldownMs: formative ? 0 : QUIZ_RETRY_COOLDOWN_MS, revision: block.contentRevision },
     )
     if (!saved) {
       const fresh = (await this.attempts.summarizeByBlockIds(userId, [blockId])).get(blockId)
@@ -133,7 +143,9 @@ export class SubmitQuizAttemptService {
       passed: grade.passed,
       passingScore: grade.passingScore,
       attemptsCount: after?.attemptsCount ?? 1,
-      retryAvailableAt: computeRetryAvailableAt(after, now)?.toISOString() ?? null,
+      retryAvailableAt: formative
+        ? null
+        : (computeRetryAvailableAt(after, now)?.toISOString() ?? null),
       questions: grade.questions,
       gamification,
     }

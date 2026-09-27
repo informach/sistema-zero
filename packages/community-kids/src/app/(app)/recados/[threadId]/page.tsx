@@ -7,7 +7,8 @@ export const dynamic = 'force-dynamic'
 /**
  * Uma conversa com o professor. A carga + a resposta + o "marcar lido" são do CLIENT
  * (apiGet/apiSend nos shims) — evita escrita de cookie em Server Component e mantém a
- * troca de mensagens interativa.
+ * troca de mensagens interativa. As faixas moram no client porque o cabeçalho mostra
+ * o título e o tipo da conversa, que só chegam com a carga.
  */
 export default async function RecadoThreadPage({
   params,

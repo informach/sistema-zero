@@ -92,12 +92,20 @@ export interface StudioTutorLessonReference {
   title: string
 }
 
+/** Um tutorial do "Como fazer" (biblioteca de ajuda do Kids) que a resposta cita. */
+export interface StudioTutorHelpReference {
+  slug: string
+  title: string
+}
+
 export interface StudioTutorResponse {
   id: string
   text: string
   scope: StudioTutorScope
   blockReferences: StudioTutorBlockReference[]
   lessonReferences?: StudioTutorLessonReference[]
+  /** Chips "Passo a passo: …"; o host abre `/como-fazer/<slug>`. */
+  helpReferences?: StudioTutorHelpReference[]
   /** Continuações prováveis da criança (chips que preenchem o campo, ≤3). */
   suggestions?: string[]
   createdAt: string
@@ -153,6 +161,8 @@ export interface StudioTutorConfig {
   adapter: StudioTutorAdapter
   /** Navegação provida pelo host; o Studio não conhece as rotas da comunidade. */
   openLesson?: (reference: StudioTutorLessonReference) => void
+  /** Abre um tutorial do "Como fazer" (o host conhece a rota; abre em outra aba). */
+  openHelp?: (reference: StudioTutorHelpReference) => void
   /** Cooldown visual local; o rate limit autoritativo continua no BFF. */
   cooldownMs?: number
   /**

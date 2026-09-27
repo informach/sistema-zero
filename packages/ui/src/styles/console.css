@@ -1,0 +1,65 @@
+/*
+ * CHASSI CONSOLE — ARQUIVO GERADO. NÃO EDITE À MÃO.
+ *
+ * Os tokens das ferramentas internas (admin, helpdesk-app, marketing-app), vestidos com a paleta
+ * do Pen. Fonte: `packages/ui/src/tokens/console.ts`; para mudar, mexa lá e rode
+ * `bun run tokens:gen`.
+ *
+ * ⚠️ UM tema só: sem cor por pessoa (o público é o time interno) e sem claro/escuro — o modo
+ * escuro saiu em 17/09/2026, como já tinha saído das comunidades. Por isso não há `.dark` aqui.
+ * O `@custom-variant dark` FICA nos globals.css dos três: sem ele os `dark:` que o ui e o
+ * member-shell ainda trazem passariam a seguir o modo escuro do sistema operacional.
+ *
+ * ⚠️ O degradê do ZERO da logo (`--logo-zero-*`) SEGUE a cor da casa, como na comunidade: a
+ * wordmark é o mesmo componente (`@sistemazero/ui/brand-logo`) nos dois lados.
+ */
+
+:root {
+  /* A paleta do Pen, na cor da casa. */
+  --background: #e9eef6;
+  --foreground: #0f1a33;
+  --card: #ffffff;
+  --card-foreground: #0f1a33;
+  --popover: #ffffff;
+  --popover-foreground: #0f1a33;
+  --primary: #1b5cf3;
+  --primary-foreground: #ffffff;
+  --primary-hover: #164cca;
+  --link: #1b5cf3;
+  --link-hover: #164cca;
+  --secondary: #eff3f9;
+  --secondary-foreground: #0f1a33;
+  --muted: #eff3f9;
+  --muted-foreground: #46536e;
+  --accent: #0b7a54;
+  --accent-foreground: #ffffff;
+  --success: #00724d;
+  --success-foreground: #00724d;
+  --destructive: #cf3f36;
+  --destructive-foreground: #ffffff;
+  --border: #d6deea;
+  --input: #74829f;
+  --ring: #1b5cf3;
+  --chart-1: #1b5cf3;
+  --chart-2: #6d3bf5;
+  --chart-3: #0b7a54;
+  --chart-4: #cf3f36;
+  --chart-5: #46536e;
+  --sz-primary: #1b5cf3;
+  --sz-primary-fg: #ffffff;
+  --sz-accent: #0b7a54;
+  --sz-hot: #cf3f36;
+  --sz-hot-tint: rgb(207 63 54 / 0.1);
+  --logo-zero-escuro-de: #6e9bff;
+  --logo-zero-escuro-ate: #0074fc;
+  --logo-zero-claro-de: #1b5cf3;
+  --logo-zero-claro-ate: #0074fc;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+  --radius: 1.25rem;
+}

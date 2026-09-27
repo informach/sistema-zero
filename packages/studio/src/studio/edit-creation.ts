@@ -6,7 +6,7 @@ import { createContext, useContext } from 'react'
  * (modelo `.glb`, céu `.hdr` ou textura `.png`).
  *
  * Gêmeo do {@link useStudioEditDrawing} (o Pinta): o Studio só expõe o botão (no
- * painel de Imagens, nos assets trazidos do Molda) e entrega o id da criação;
+ * janela dos materiais, nos assets trazidos do Molda) e entrega o id da criação;
  * navegar entre os apps é assunto do host. Default `null` → sem botão, que é o
  * certo no embed do admin e no bloco de aula.
  *

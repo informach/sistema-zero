@@ -9,6 +9,7 @@ import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { StudioLayoutProvider, useStudioWidth } from '../../studio/layoutContext'
 import { DrawingSyncWatcher } from '../assets/DrawingSyncWatcher'
+import { useAssetsPanelWiring } from '../assets/useAssetsPanel'
 import { ZappyPanelBoundary } from '../tutor/ZappyPanelBoundary'
 import { ActivityPanel } from './ActivityPanel'
 import { BottomPanel } from './BottomPanel'
@@ -53,7 +54,8 @@ export function Shell({
   const showExtensions = useUIStore((s) => s.showExtensions)
   const setShowExtensions = useUIStore((s) => s.setShowExtensions)
   const showAssets = useUIStore((s) => s.showAssets)
-  const setShowAssets = useUIStore((s) => s.setShowAssets)
+  // A fiação da janela dos materiais mora num lugar só (ver `useAssetsPanelWiring`).
+  const assetsPanel = useAssetsPanelWiring()
   const config = useStudioConfig()
   // A barra inferior (wide) só existe quando há ALGUMA aba inferior visível — as
   // features do host cruzadas com o contexto de modo e com as preferências de
@@ -148,14 +150,14 @@ export function Shell({
             )}
             {showAssets && (
               <ErrorBoundary
-                label="imagens"
+                label="materiais"
                 resetKeys={[showAssets]}
                 fallback={(p) => (
-                  <SectionErrorFallback {...p} title="Não foi possível abrir as imagens" />
+                  <SectionErrorFallback {...p} title="Não foi possível abrir os materiais" />
                 )}
               >
                 <Suspense fallback={null}>
-                  <AssetsPanel open={showAssets} onClose={() => setShowAssets(false)} />
+                  <AssetsPanel {...assetsPanel} />
                 </Suspense>
               </ErrorBoundary>
             )}

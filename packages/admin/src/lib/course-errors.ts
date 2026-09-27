@@ -1,7 +1,7 @@
 /**
  * Mensagens ESPECÍFICAS para os 409 do salvar curso (antes: toast genérico com a
  * mensagem crua do upstream). O `hint` diz à UI o que fazer além do toast:
- * `occupancy` → recarregar a ocupação das posições da carreira; `reload` → o curso
+ * `occupancy` → recarregar a ocupação das posições da jornada; `reload` → o curso
  * mudou em outra aba (reabrir o form sobre a versão fresca — NUNCA rebasear as
  * edições em silêncio, isso anularia a concorrência otimista); `showcase` → CTA
  * "abrir o conteúdo do curso" (a correção é adicionar a vitrine numa AULA).
@@ -16,7 +16,7 @@ export function courseSaveError(code: string, fallbackMessage: string): CourseSa
     case 'CAREER_SLOT_CONFLICT':
       return {
         message:
-          'Esta posição da carreira acabou de ser ocupada por outro curso. A ocupação foi recarregada — escolha outra posição.',
+          'Esta posição da jornada acabou de ser ocupada por outro curso. A ocupação foi recarregada — escolha outra posição.',
         hint: 'occupancy',
       }
     case 'CONCURRENCY_CONFLICT':

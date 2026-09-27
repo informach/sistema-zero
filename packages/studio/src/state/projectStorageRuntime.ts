@@ -66,28 +66,48 @@ export function scopedProjectIdentity(scope: ProjectStorageScope, projectId: str
   return `${scope.identity}\u0000${projectId}`
 }
 
-// Todas as origens de escrita (editor, lista, capa e storage do jogo) passam
-// pela mesma fila POR BANCO + projeto. Perfis com ids iguais nunca se bloqueiam.
+/**
+ * O que uma operação de escrita devolve à fila quando termina de PEDIR as suas transações: a
+ * promessa de que elas chegaram ao disco. `undefined` quando a operação decidiu não gravar nada
+ * (o projeto já tinha sido apagado, por exemplo).
+ */
+export interface RequestedProjectWrite {
+  readonly done: Promise<void>
+}
+
+// Todas as origens de escrita (editor, lista, capa e storage do jogo) passam pela mesma fila
+// POR BANCO + projeto. Perfis com ids iguais nunca se bloqueiam.
+//
+// ⭐ A fila anda quando a operação da frente termina de PEDIR as suas transações, e não quando
+// o disco confirma (11/09/2026). A ordem de gravação não precisa dessa espera: o IndexedDB
+// executa as transações readwrite do mesmo store na ordem em que nascem, e uma leitura nascida
+// depois de uma escrita espera por ela. O que a fila protege é o intervalo de quem LÊ para
+// decidir o que gravar (renomear, a capa, a troca de desenho): até a escrita dessa operação ser
+// pedida, nenhuma outra do mesmo projeto passa, então ninguém grava por cima de uma leitura que
+// ficou velha. Esperar o disco confirmar deixava o flush de saída (`pagehide`/`beforeunload`)
+// preso atrás de um autosave em voo, e na troca de página esse "depois" nunca chega.
 const writeChains = new Map<string, Promise<void>>()
 
 export function runSerializedProjectWrite(
   scope: ProjectStorageScope,
   projectId: string,
-  task: () => Promise<void>,
+  task: () => Promise<RequestedProjectWrite | undefined>,
 ): Promise<void> {
   const identity = scopedProjectIdentity(scope, projectId)
   const previous = writeChains.get(identity)
-  const next = previous ? previous.then(task, task) : task()
-  const settled = next.then(
-    () => {
-      if (writeChains.get(identity) === settled) writeChains.delete(identity)
-    },
-    () => {
-      if (writeChains.get(identity) === settled) writeChains.delete(identity)
-    },
+  // Sem ninguém à frente, roda JÁ (síncrono até o primeiro await): o flush de saída pede a
+  // transação dele no mesmo turno do evento.
+  const requested = previous ? previous.then(task, task) : task()
+  // Liberada quando esta operação terminou de pedir (ou falhou antes disso). Nunca rejeita.
+  const released = requested.then(
+    () => undefined,
+    () => undefined,
   )
-  writeChains.set(identity, settled)
-  return next
+  writeChains.set(identity, released)
+  void released.then(() => {
+    if (writeChains.get(identity) === released) writeChains.delete(identity)
+  })
+  return requested.then((write) => write?.done)
 }
 
 const GAME_STORAGE_FENCE_GRACE_MS = 60_000

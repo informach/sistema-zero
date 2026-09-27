@@ -10,6 +10,7 @@ import type { SetAvatarPhotoService } from '../../../application/avatar/set-avat
 import type { GetChildrenStatsService } from '../../../application/children-stats/get-children-stats.service'
 import type { BuyStreakFreezeService } from '../../../application/gamification/buy-streak-freeze.service'
 import type { ClaimMissionService } from '../../../application/gamification/claim-mission.service'
+import type { ClaimUnitChestService } from '../../../application/gamification/claim-unit-chest.service'
 import type { GetChallengeService } from '../../../application/gamification/get-challenge.service'
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { GetLeagueService } from '../../../application/gamification/get-league.service'
@@ -19,6 +20,7 @@ import type { RecordStudioActivityDayService } from '../../../application/gamifi
 import type { RecordStudioRemixService } from '../../../application/gamification/record-studio-remix.service'
 import type { SetVacationService } from '../../../application/gamification/set-vacation.service'
 import type { GetAttachmentDownloadService } from '../../../application/get-attachment-download/get-attachment-download.service'
+import type { RecordMaterialDownloadService } from '../../../application/get-attachment-download/record-material-download.service'
 import type { GetCertificateService } from '../../../application/get-certificate/get-certificate.service'
 import type { GetCourseProgressService } from '../../../application/get-course-progress/get-course-progress.service'
 import type { GetCourseRatingService } from '../../../application/get-course-rating/get-course-rating.service'
@@ -51,7 +53,7 @@ import { AccessDeniedError } from '../../../domain/entitlement/entitlement.error
 import type { RoomState } from '../../../domain/room/room-catalog'
 import {
   assertInternalCaller,
-  assertZappyBffConsumer,
+  assertMemberShellConsumer,
   isPrivilegedActor,
   resolveAccountId,
   resolveStudentName,
@@ -73,6 +75,7 @@ import {
   GamificationQuery,
   IdParams,
   LessonIdParams,
+  MaterialDownloadBody,
   MissionSlugParams,
   ParentReportPrefsBody,
   PintaSubmissionBody,
@@ -95,6 +98,7 @@ import {
   TeacherThreadPageQuery,
   TeacherThreadReplyBody,
   TeacherThreadsQuery,
+  UnitChestParams,
   VacationBody,
   VideoPositionBody,
   ZappyFeedbackBody,
@@ -115,6 +119,7 @@ export interface MembersRoutesDeps {
   getMyCourse: GetMyCourseService
   getLesson: GetLessonService
   resolveAttachment: GetAttachmentDownloadService
+  recordMaterialDownload: RecordMaterialDownloadService
   resolveEbook: GetEbookDownloadService
   markComplete: MarkLessonCompleteService
   getProgress: GetCourseProgressService
@@ -139,6 +144,7 @@ export interface MembersRoutesDeps {
   getStudioUnlocks: GetStudioUnlocksService
   getMissions: GetMissionsService
   claimMission: ClaimMissionService
+  claimUnitChest: ClaimUnitChestService
   recordRemix: RecordStudioRemixService
   recordStudioActivity: RecordStudioActivityDayService
   buyStreakFreeze: BuyStreakFreezeService
@@ -334,7 +340,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       .post(
         '/internal/zappy/questions',
         async ({ headers, body }) => {
-          assertZappyBffConsumer(headers['x-consumer-id'])
+          assertMemberShellConsumer(headers['x-consumer-id'])
           await zappyActorAccess(body.actor)
           return zappy().reserve({
             userId: body.actor.userId,
@@ -349,7 +355,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       .put(
         '/internal/zappy/questions/:id/response',
         async ({ headers, params, body }) => {
-          assertZappyBffConsumer(headers['x-consumer-id'])
+          assertMemberShellConsumer(headers['x-consumer-id'])
           await zappyActorAccess(body.actor)
           return zappy().complete({
             userId: body.actor.userId,
@@ -464,6 +470,21 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             isPrivilegedActor(headers),
           ),
         { params: MissionSlugParams, query: AudienceQuery },
+      )
+      // Abre o BAÚ de fim de unidade e paga o prêmio (idempotente; 409 se a unidade
+      // ainda não fechou). Até 09/2026 esse XP caía sozinho ao concluir a última
+      // aula — agora é a criança que abre.
+      .post(
+        '/courses/:slug/units/:moduleId/chest/claim',
+        async ({ headers, params }) =>
+          deps.claimUnitChest.execute(
+            resolveUserId(headers),
+            resolveAccountId(headers),
+            params.slug,
+            params.moduleId,
+            isPrivilegedActor(headers),
+          ),
+        { params: UnitChestParams },
       )
       // Registra o REMIX de um jogo do Mural ("Fazer a minha versão") — marco de missão
       // gated por estudio-completo. O service valida posse + playId no hub + não-self.
@@ -793,6 +814,24 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           )
         },
         { params: AttachmentResolveParams },
+      )
+      .post(
+        '/internal/material-downloads',
+        async ({ headers, body }) => {
+          assertMemberShellConsumer(headers['x-consumer-id'])
+          return deps.recordMaterialDownload.execute({
+            userId: body.actor.userId,
+            accountId: body.actor.accountId,
+            courseSlug: body.courseSlug,
+            lessonId: body.lessonId,
+            attachmentId: body.attachmentId,
+            blockId: body.blockId,
+            itemId: body.itemId,
+            expectedRevision: body.expectedRevision,
+            expectedStorageRefHash: body.expectedStorageRefHash,
+          })
+        },
+        { body: MaterialDownloadBody },
       )
       // Resolução do PDF do bloco e-book (mesmo perfil do resolve de anexo:
       // consumida SÓ pelo servidor do community; storageRef nunca vai ao browser).

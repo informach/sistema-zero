@@ -5,6 +5,8 @@
  * (zero import entre as ferramentas).
  */
 
+import { srgbUnitToLinear } from './colorTransfer'
+
 const HEX6 = /^#?([0-9a-f]{6})$/i
 const HEX3 = /^#?([0-9a-f]{3})$/i
 
@@ -40,5 +42,5 @@ export function rgbToHex(r: number, g: number, b: number): string {
 /** Canal sRGB (0..255) → linear (0..1), pela curva exata (não a aproximação 2.2). */
 export function srgbToLinear(channel: number): number {
   const c = Math.min(1, Math.max(0, channel / 255))
-  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  return srgbUnitToLinear(c)
 }

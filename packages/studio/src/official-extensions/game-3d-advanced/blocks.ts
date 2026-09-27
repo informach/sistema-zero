@@ -1,6 +1,6 @@
-import type { ExtensionToolboxCategory } from '#extensions'
 import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
+import type { ExtensionToolboxCategory } from '../../extensions/toolboxTypes'
 
 // Jogo 3D Avançado = UMA cor da categoria: ÍNDIGO. As sub-categorias são TONS
 // dela (derivados por categoryShades mais abaixo). Distinta do rosa (Jogo 2D),
@@ -1958,7 +1958,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Prepara um som que você importou (em "Imagens e sons"). Dê um nome; é ele que você usa em "Tocar o som". Use no comecinho, antes de o jogo começar automaticamente.',
+      'Prepara um som que você importou (em "Sons", no menu ⋯). Dê um nome; é ele que você usa em "Tocar o som". Use no comecinho, antes de o jogo começar automaticamente.',
   },
   {
     type: 'sz_g3k_play_sound',

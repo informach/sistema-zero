@@ -10,6 +10,10 @@ import type {
 
 /** Leitura da árvore de conteúdo (Fatia 1 = só leitura; autoria é fatia seguinte). */
 export interface CourseRepository {
+  /** Published lessons containing a showcase, in course order; never returns block payloads. */
+  /** Published material lessons; references only, never private PDF locations. */
+  listMaterialLessonIds(courseId: string): Promise<string[]>
+  listShowcaseLessonIds(courseId: string): Promise<string[]>
   findCourseBySlug(slug: string): Promise<Course | null>
   findCourseById(id: string): Promise<Course | null>
   /** Aula sem o conteúdo dos blocos (para checagem de acesso / mark-complete). */
@@ -28,7 +32,7 @@ export interface CourseRepository {
   /**
    * Existe um curso-base (`careerSlot=1`) PUBLICADO nesta etapa (audiência+nível+
    * eixo)? A trava `foundation-first` só vale quando há base alcançável — senão a
-   * etapa inteira (e a carreira) ficaria presa. Usado pelo gate em profundidade.
+   * etapa inteira (e a jornada) ficaria presa. Usado pelo gate em profundidade.
    */
   hasPublishedFoundationCourse(
     audience: CourseAudience,

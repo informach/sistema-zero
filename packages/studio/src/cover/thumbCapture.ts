@@ -1,10 +1,8 @@
 import type { Project } from '#core'
 import { perfSpanAsync } from '../core/perf'
-import {
-  MAX_PROJECT_THUMB_CHARS,
-  PROJECT_THUMB_UPDATED_EVENT,
-  writeProjectThumb,
-} from '../state/persistence'
+import { MAX_PROJECT_THUMB_CHARS, writeProjectThumb } from '../state/persistence'
+import type { ProjectStorageScope } from '../state/projectStorageRuntime'
+import { resolveCoverAsset } from './coverAsset'
 import { captureCoverFromProject } from './coverCapture'
 import { consumeProjectSnapshot, type ProjectSnapshot, peekProjectSnapshot } from './latestSnapshot'
 
@@ -78,6 +76,13 @@ interface ResolvedThumb {
 }
 
 async function resolveThumb(project: Project): Promise<ResolvedThumb | null> {
+  // ⭐ A capa ESCOLHIDA vence tudo: derivada da própria imagem, nunca da foto do preview nem
+  // da reserva. `null` (sem canvas) não grava nada: a capa anterior fica, como sempre.
+  const chosen = resolveCoverAsset(project)
+  if (chosen) {
+    const dataUrl = await downscaleToThumb(chosen.dataUrl)
+    return dataUrl ? { dataUrl } : null
+  }
   const doPreview = peekProjectSnapshot(project.id)
   if (doPreview) return { dataUrl: doPreview.dataUrl, snapshot: doPreview }
   const cover = await captureCoverFromProject(project)
@@ -92,22 +97,45 @@ async function resolveThumb(project: Project): Promise<ResolvedThumb | null> {
  * num iframe próprio no document.body — que sobrevive ao unmount do Studio. Avisa
  * a lista pelo evento `PROJECT_THUMB_UPDATED_EVENT` quando a gravação termina.
  * Best-effort: sem canvas/print/quota, o card só fica sem capa. NUNCA lança.
+ * Devolve se uma miniatura NOVA foi gravada (`false` = a capa anterior ficou como
+ * estava): é o retorno que a escolha de capa usa para não deixar o selo mentir.
  */
-export function captureAndStoreProjectThumb(project: Project): Promise<void> {
+export function captureAndStoreProjectThumb(project: Project): Promise<boolean> {
   return perfSpanAsync('studio:thumb:capture', () => captureAndStoreUnmeasured(project))
 }
 
-async function captureAndStoreUnmeasured(project: Project): Promise<void> {
+async function captureAndStoreUnmeasured(project: Project): Promise<boolean> {
   try {
     const thumb = await resolveThumb(project)
-    if (!thumb) return
+    if (!thumb) return false
+    // O `writeProjectThumb` avisa a lista (`PROJECT_THUMB_UPDATED_EVENT`) e o espelho da nuvem.
     const stored = await writeProjectThumb(project.id, thumb.dataUrl)
-    if (!stored) return
+    if (!stored) return false
     if (thumb.snapshot) consumeProjectSnapshot(thumb.snapshot)
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent(PROJECT_THUMB_UPDATED_EVENT, { detail: project.id }))
-    }
+    return true
   } catch {
     // Best-effort de ponta a ponta.
+    return false
+  }
+}
+
+/**
+ * Grava a miniatura da capa ESCOLHIDA de um projeto que acabou de DESCER da nuvem sem
+ * miniatura (o cliente que subiu não conseguiu reduzi-la, ou é antigo). Silencioso para o
+ * espelho: nada aqui é novidade para a nuvem. `false` = sem capa escolhida, sem canvas ou
+ * gravação recusada. NUNCA lança.
+ */
+export async function storeChosenCoverThumb(
+  project: Project,
+  options: { storageScope?: ProjectStorageScope } = {},
+): Promise<boolean> {
+  try {
+    const chosen = resolveCoverAsset(project)
+    if (!chosen) return false
+    const dataUrl = await downscaleToThumb(chosen.dataUrl)
+    if (!dataUrl) return false
+    return await writeProjectThumb(project.id, dataUrl, { silent: true }, options.storageScope)
+  } catch {
+    return false
   }
 }

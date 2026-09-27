@@ -69,6 +69,11 @@ const TARGET_PRECEDENCE = [
   'game-2d',
 ] as const
 
+export function runtimeExtensionForGlobal(globalName: string): string | undefined {
+  for (const [extensionId, contract] of CONTRACT_BY_EXTENSION)
+    if (contract.globalName === globalName) return extensionId
+}
+
 export function lifecycleContractForExtensions(
   extensions: readonly { extensionId: string }[],
 ): RuntimeLifecycleContract {

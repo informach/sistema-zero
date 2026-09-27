@@ -54,7 +54,7 @@ SZGame2D.onKey("Enter", function () {
 SZGame2D.onKey("Space", function () {
   if (SZGame2D.sceneIs("jogando")) {
     SZGame2D.spawnBullet(tiros, { x: SZGame2D.centerX(nave), y: SZGame2D.spriteY(nave), radius: 4, color: "#9cff57", vx: 0, vy: -6 });
-    SZGame2D.playShoot();
+    SZGame2D.playFx("shoot");
   }
   if (SZGame2D.sceneIs("inicio")) {
     SZGame2D.setScene("jogando");
@@ -79,7 +79,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.drawGroup(ctx, meteoros);
     SZGame2D.overlapGroups(tiros, meteoros, (tiro, pedra) => {
       SZGame2D.explodeSprite(pedra, "#ffb347");
-      SZGame2D.playExplosion();
+      SZGame2D.playFx("explosion");
       SZGame2D.removeFromGroup(tiros, tiro);
       SZGame2D.removeFromGroup(meteoros, pedra);
       pontos = pontos + 2;
@@ -98,16 +98,21 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "A nave explodiu!", "Você fez " + pontos + " pontos. Tente voar por mais tempo!", "Aperte Enter ou espaço para decolar de novo", "#5a2a2a");
   }
 });
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("nasce-meteoro", 0.5)) {
   if (SZGame2D.sceneIs("jogando")) {
     SZGame2D.spawnAsteroid(meteoros, { x: SZGame2D.randomX(), y: -40, size: SZGame2D.randomBetween(22, 40), color: "#b08968", vx: SZGame2D.randomBetween(-1, 1), vy: velocidade + SZGame2D.randomBetween(0, 2) });
   }
 }
+});
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("ponto-por-segundo", 1)) {
   if (SZGame2D.sceneIs("jogando")) {
     pontos = pontos + 1;
   }
 }
+});
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("acelera", 6)) {
   if (SZGame2D.sceneIs("jogando")) {
     if (velocidade < 4) {
@@ -115,6 +120,7 @@ if (SZGame2D.everySeconds("acelera", 6)) {
     }
   }
 }
+});
 `.trim()
 
 // Só gera quando RODADO direto (o drift test importa o SOURCE daqui).

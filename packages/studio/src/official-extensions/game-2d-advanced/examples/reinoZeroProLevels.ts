@@ -13,7 +13,7 @@ import type { GameKitCampaignStage } from '../campaignSchema'
  * ⭐⭐ O TEMA sai do TIPO da fase, não do mundo. Era o mundo que decidia, então
  * 1-1, 1-2, 1-3 e 1-4 dividiam o mesmo céu — o mesmo defeito que o irmão g2d
  * corrigiu em 12/08. São os MESMOS oito nomes de tema de antes (quatro tipos ×
- * duas metades da jornada), então a IR não cresce um byte.
+ * duas metades da volta), então a IR não cresce um byte.
  *
  * ⚠️ O `y` de TODA entidade de chão é DERIVADO (`groundRowAt`), nunca autorado.
  * É o maior anteparo contra a classe de defeito que a planta sorteada tinha:
@@ -130,7 +130,7 @@ const FUNDO_DO_POCO: Readonly<Record<ProStageKind, string>> = {
 }
 
 /**
- * O tema sai do TIPO e da METADE da jornada — nunca do mundo.
+ * O tema sai do TIPO e da METADE da volta — nunca do mundo.
  *
  * ⚠️ São exatamente os oito nomes que `proThemeColors` conhece. Um nome novo
  * aqui cai no `campo` em silêncio, e é por isso que existe drift cruzando as
@@ -809,7 +809,7 @@ export const PRO_STAGE_PLANS: ReadonlyArray<ReadonlyArray<StagePlan>> = [
       checkpoint: 42,
     },
   ],
-  // ── Mundo 4 — a metade da jornada, o deserto começa ──────────────────────
+  // ── Mundo 4 — a metade da volta, o deserto começa ──────────────────────
   [
     {
       kind: 'superficie',

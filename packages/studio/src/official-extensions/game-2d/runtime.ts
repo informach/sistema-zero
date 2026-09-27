@@ -9,6 +9,7 @@ import { gameTwoDLifecycleRuntime } from './runtime/lifecycle'
 import { gameTwoDPhysicsRuntime } from './runtime/physics'
 import { gameTwoDSpritesRuntime } from './runtime/sprites'
 import { gameTwoDStageRuntime } from './runtime/stage'
+import { gameTwoDTextSpritesRuntime } from './runtime/textSprites'
 import { gameTwoDUtilitiesRuntime } from './runtime/utilities'
 import { gameTwoDWorldRuntime } from './runtime/world'
 import { buildGameTwoDRuntimeApiSource } from './runtimeContract'
@@ -101,6 +102,7 @@ export const gameTwoDRuntime =
 
 ` +
   gameTwoDSpritesRuntime +
+  gameTwoDTextSpritesRuntime +
   gameTwoDLifecycleRuntime +
   gameTwoDPhysicsRuntime +
   gameTwoDAudioRuntime +

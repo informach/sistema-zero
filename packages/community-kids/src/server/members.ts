@@ -34,4 +34,8 @@ export const {
   getRankingReadonly,
   listTeacherThreadsReadonly,
   getTeacherThreadsUnreadReadonly,
+  // "Como fazer" (biblioteca de ajuda): só o publicado, qualquer perfil, sem progresso.
+  listHelpCollectionsReadonly,
+  listHelpTutorialsReadonly,
+  getHelpTutorialReadonly,
 } = shell.members

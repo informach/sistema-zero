@@ -19,27 +19,38 @@ export function TemplatePicker({
     [],
   )
   return (
-    <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-      {entries.map(({ template, built }) => {
-        const info = COPY.templates.items[template.id]
-        return (
-          <button
-            key={template.id}
-            type="button"
-            onClick={() => onPick(template)}
-            aria-label={COPY.a11y.templateCard(info.title)}
-            className="mld-pop flex min-h-11 flex-col items-stretch gap-2 rounded-2xl border-2 border-mld-border bg-mld-surface p-3 text-left transition hover:border-mld-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
-          >
-            <span className="flex h-24 w-full items-center justify-center overflow-hidden rounded-xl bg-mld-bg p-1">
-              <IsoModelThumb model={built} label={info.title} />
-            </span>
-            <span className="mld-display block text-base leading-tight text-mld-text">
-              {info.title}
-            </span>
-            <span className="block text-xs text-mld-text-soft">{info.description}</span>
-          </button>
-        )
-      })}
+    <div className="mt-4 space-y-4">
+      <p className="text-sm text-mld-muted">{COPY.templates.practiceHint}</p>
+      {([1, 2, 3] as const).map((level) => (
+        <section key={level} className="space-y-2">
+          <h3 className="font-bold">{COPY.templates.levels[level]}</h3>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {entries
+              .filter(({ template }) => COPY.templates.items[template.id].level === level)
+              .map(({ template, built }) => {
+                const info = COPY.templates.items[template.id]
+                return (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => onPick(template)}
+                    aria-label={COPY.a11y.templateCard(info.title)}
+                    className="mld-pop flex min-h-11 flex-col items-stretch gap-2 rounded-2xl border-2 border-mld-border bg-mld-surface p-3 text-left transition hover:border-mld-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
+                  >
+                    <span className="flex h-24 w-full items-center justify-center overflow-hidden rounded-xl bg-mld-bg p-1">
+                      <IsoModelThumb model={built} label={info.title} />
+                    </span>
+                    <span className="mld-display block text-base leading-tight text-mld-text">
+                      {info.title}
+                    </span>
+                    <span className="block text-xs text-mld-text-soft">{info.description}</span>
+                    <span className="block text-xs text-mld-muted">{info.challenge}</span>
+                  </button>
+                )
+              })}
+          </div>
+        </section>
+      ))}
     </div>
   )
 }

@@ -76,9 +76,18 @@ export function rasterFaceRegion(
   })
 }
 
-/** O atlas inteiro. */
-export function rasterAtlas(model: MoldaModelAsset, layout: AtlasLayout): Uint8Array {
-  const pixels = new Uint8Array(layout.size * layout.size * 4)
+/** O atlas inteiro. Optional target is an exclusively-owned derived buffer, never document pixels. */
+export function rasterAtlas(
+  model: MoldaModelAsset,
+  layout: AtlasLayout,
+  target?: Uint8Array,
+): Uint8Array {
+  const length = layout.size * layout.size * 4
+  if (target && target.length !== length)
+    throw new RangeError('Atlas buffer dimensions do not match')
+  const pixels = target ?? new Uint8Array(length)
+  // Relayout/removal can vacate old regions; clear their bytes as a fresh allocation would.
+  if (target) pixels.fill(0)
   const colors = resolvePaletteColors(model)
   colors.forEach((hex, index) => {
     rasterSwatch(pixels, layout, index, hex || '#000000')

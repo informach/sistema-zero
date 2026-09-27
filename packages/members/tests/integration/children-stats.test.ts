@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import type { ParentJourneyView } from '@sistemazero/core/journey'
 import { buildApp, grantAllKidsCourses, grantLifetime, seedSampleCourse } from '../helpers'
 
 const TOKEN = 'internal-token-16-chars!!'
@@ -14,6 +15,7 @@ type ChildStats = {
   projectsCount: number
   submissionsCount: number
   rankingPosition: number | null
+  career?: ParentJourneyView
 }
 
 // A CONTA vem do header confiável `x-auth-user-id` (o gateway o injeta após o JWT) —
@@ -32,6 +34,73 @@ const today = '2026-06-18'
 const now = new Date('2026-06-18T12:00:00.000Z')
 
 describe('GET /members/internal/children-stats', () => {
+  test('shared ownership keeps journey, tools and pending publications separate between siblings', async () => {
+    const ctx = buildApp({ internalToken: TOKEN })
+    const account = randomUUID()
+    const first = randomUUID()
+    const second = randomUUID()
+    const foundation = seedSampleCourse(
+      ctx.courses,
+      'family-foundation',
+      'published',
+      'kids',
+      false,
+      'primeiros-passos',
+      '2d',
+      1,
+    )
+    grantAllKidsCourses(ctx.entitlements, { userId: account })
+    grantLifetime(ctx.entitlements, { userId: account, courseRef: 'estudio-completo' })
+    for (const userId of [first, second])
+      await ctx.gamification.award({
+        userId,
+        accountId: account,
+        audience: 'kids',
+        events: [
+          { sourceType: 'lesson_complete', sourceId: foundation.lessonIds[0], amount: 10 },
+          { sourceType: 'course_complete', sourceId: foundation.courseId, amount: 0 },
+        ],
+        today,
+        now,
+        privileged: false,
+      })
+    await ctx.gamification.award({
+      userId: first,
+      accountId: account,
+      audience: 'kids',
+      events: [{ sourceType: 'course_showcased', sourceId: foundation.courseId, amount: 0 }],
+      today,
+      now,
+      privileged: false,
+    })
+    const response = await ctx.app.handle(statsRequest(account, [first, second]))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      children: expect.arrayContaining([
+        expect.objectContaining({
+          profileId: first,
+          career: expect.objectContaining({
+            level: 'coder',
+            pendingPublications: [],
+            tools: expect.arrayContaining([
+              expect.objectContaining({ id: 'estudio-completo', state: 'available' }),
+              expect.objectContaining({ id: 'molda', state: 'not-included' }),
+            ]),
+          }),
+        }),
+        expect.objectContaining({
+          profileId: second,
+          career: expect.objectContaining({
+            level: 'noob',
+            pendingPublications: [{ courseSlug: foundation.slug, title: 'Curso Demo' }],
+            tools: expect.arrayContaining([
+              expect.objectContaining({ id: 'estudio-completo', state: 'career-locked' }),
+            ]),
+          }),
+        }),
+      ]),
+    })
+  })
   test('resume cada filho da CONTA; perfil de outra conta NÃO vaza', async () => {
     const ctx = buildApp({ internalToken: TOKEN })
     const account = randomUUID()
@@ -81,6 +150,7 @@ describe('GET /members/internal/children-stats', () => {
       await ctx.studioSubmissions.upsert({
         id: randomUUID(),
         userId: profileA,
+        accountId: account,
         blockId,
         lessonId: randomUUID(),
         courseId: kidsCourse.courseId,
@@ -210,6 +280,7 @@ describe('GET /members/internal/children-stats', () => {
     await ctx.studioSubmissions.upsert({
       id: randomUUID(),
       userId: profile,
+      accountId: account,
       blockId: randomUUID(),
       lessonId: randomUUID(),
       courseId: kids.courseId,
@@ -219,6 +290,7 @@ describe('GET /members/internal/children-stats', () => {
     await ctx.studioSubmissions.upsert({
       id: randomUUID(),
       userId: profile,
+      accountId: account,
       blockId: randomUUID(),
       lessonId: randomUUID(),
       courseId: adult.courseId,

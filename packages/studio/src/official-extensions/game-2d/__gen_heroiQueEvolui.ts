@@ -146,6 +146,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "O herói caiu!", "Você chegou ao nível " + nivel + ". Treine para evoluir mais!", "Aperte Enter para tentar de novo", "#5a2a2a");
   }
 });
+SZGame2D.gameLoop(() => {
 if (SZGame2D.everySeconds("nasce-monstro", 1.4)) {
   if (SZGame2D.sceneIs("jogando")) {
     let bx = SZGame2D.randomBetween(30, 450);
@@ -156,6 +157,7 @@ if (SZGame2D.everySeconds("nasce-monstro", 1.4)) {
     SZGame2D.spawnEnemy(inimigos, bx, by);
   }
 }
+});
 `.trim()
 
 // Só gera quando RODADO direto (o drift test importa o SOURCE daqui).

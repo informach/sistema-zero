@@ -2,11 +2,12 @@
 
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import type { CSSProperties } from 'react'
+import { cn } from '@/lib/cn'
 import { levelInfo } from '@/lib/level-info'
 import { type ToolsGain, toolsGainInline } from '@/lib/tools-gain'
 import type { StudentLevelSlug } from '@/lib/types'
 import { KidsConfetti } from './kids-confetti'
-import { KidsMascot } from './mascot'
+import { KidsMascotAnimated } from './mascot-rive'
 
 /**
  * Comemoração de SUBIU DE NÍVEL (Faísca até Lenda) — overlay com o Zappy, confete e a
@@ -22,11 +23,17 @@ import { KidsMascot } from './mascot'
 export function LevelUpCelebration({
   level,
   tools = null,
+  molda = null,
   onClose,
 }: {
   level: StudentLevelSlug
   /** Ferramenta ganha no MESMO momento; `null` = só subiu de nível. */
   tools?: ToolsGain | null
+  /**
+   * O que o Molda ganhou neste posto (`moldaLevelGain`), só para quem tem o produto;
+   * `null` = nada a dizer do Molda.
+   */
+  molda?: string | null
   onClose: () => void
 }) {
   const info = levelInfo(level)
@@ -42,7 +49,7 @@ export function LevelUpCelebration({
       /* Espelha o `Dialog` do ui: conteúdo alto ROLA em vez de sangrar para fora da tela. O
          ganho de ferramenta entra aqui como UMA linha curta (`toolsGainInline`), então a altura
          é estável; a rede de segurança fica para fonte grande do sistema ou janela muito baixa. */
-      className="sz-overlay fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:items-center"
+      className="kids-sobre-escuro sz-overlay fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:items-center"
       onClick={onClose}
       role="presentation"
     >
@@ -59,7 +66,11 @@ export function LevelUpCelebration({
       >
         {/* Medalhão do nível: ícone grande com aura na cor do nível. */}
         <div className="relative mx-auto flex size-28 items-center justify-center">
-          <KidsMascot expression="celebrating" className="kid-wiggle size-28" />
+          <KidsMascotAnimated
+            expression="celebrating"
+            className="size-28"
+            stillClassName="kid-wiggle"
+          />
           <span
             className="-bottom-1 -right-1 absolute flex size-12 items-center justify-center rounded-full bg-card"
             style={{
@@ -80,6 +91,16 @@ export function LevelUpCelebration({
         {tools ? (
           <p className="mt-4 rounded-2xl bg-primary/10 px-4 py-3 font-bold text-primary text-sm">
             🛠️ E tem mais: {toolsGainInline(tools)}
+          </p>
+        ) : null}
+        {molda ? (
+          <p
+            className={cn(
+              tools ? 'mt-3' : 'mt-4',
+              'rounded-2xl bg-primary/10 px-4 py-3 font-bold text-primary text-sm',
+            )}
+          >
+            🧊 No Molda: {molda}
           </p>
         ) : null}
 

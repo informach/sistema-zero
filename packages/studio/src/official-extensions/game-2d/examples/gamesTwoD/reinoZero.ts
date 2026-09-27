@@ -1619,7 +1619,7 @@ function enemyLineup(
   ]
   return {
     enemies: cast.map(spawn),
-    // A segunda jornada muda o elenco, não só a velocidade. O primeiro nível já
+    // A segunda volta muda o elenco, não só a velocidade. O primeiro nível já
     // ganha casco e espinho, contrato aferido pelo playthrough.
     journey2Enemies: journey2Cast.map(spawn),
   }
@@ -1698,7 +1698,7 @@ function activateLevel(): JSStatement[] {
       worldVar: 'areaAtual',
       levelVar: 'faseAtual',
       enemyTypeVars: [...CAMPAIGN_ENEMY_TYPE_VARS],
-      journey: variable('jornada'),
+      journey: variable('volta'),
     },
     ...['mundo', 'etapa', 'faseAquatica', 'temAtalho', 'larguraFase', 'atalhoDestino'].map(
       (name): JSStatement => ({
@@ -1714,7 +1714,7 @@ function activateLevel(): JSStatement[] {
     },
     {
       type: 'if',
-      cond: equals(variable('jornada'), 2),
+      cond: equals(variable('volta'), 2),
       then: [
         {
           type: 'assign',
@@ -1773,9 +1773,9 @@ function nextLevel(): JSStatement[] {
       then: [
         {
           type: 'if',
-          cond: equals(variable('jornada'), 1),
+          cond: equals(variable('volta'), 1),
           then: [
-            { type: 'assign', name: 'jornada', value: n(2) },
+            { type: 'assign', name: 'volta', value: n(2) },
             { type: 'assign', name: 'fase', value: n(1) },
             { type: 'assign', name: 'velocidade', value: n(3) },
             loadActiveLevel(),
@@ -1910,7 +1910,7 @@ const ACTIVE_PLAYER_STATE = [
   ['pontos', 'pontosJ'],
   ['moedas', 'moedasJ'],
   ['fase', 'faseJ'],
-  ['jornada', 'jornadaJ'],
+  ['volta', 'voltaJ'],
 ] as const
 
 function savePlayerState(slot: 1 | 2): JSStatement[] {
@@ -1946,7 +1946,7 @@ function loadPlayerState(slot: 1 | 2): JSStatement[] {
       name: 'velocidade',
       value: {
         type: 'ternary',
-        condition: equals(variable('jornada'), 2),
+        condition: equals(variable('volta'), 2),
         whenTrue: n(3),
         whenFalse: n(2.35),
       },
@@ -2502,7 +2502,7 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
   name: 'Reino Zero',
   experience: 'game',
   description:
-    'Aventura de plataforma autoral com 8 mundos e 32 fases, 1 ou 2 jogadores alternados, segredos, inimigos, chefes e segunda jornada difícil. Setas/WASD movem, Z/Espaço pula, X corre, Backspace seleciona 1 ou 2 jogadores, Enter inicia e Esc pausa.',
+    'Aventura de plataforma autoral com 8 mundos e 32 fases, 1 ou 2 jogadores alternados, segredos, inimigos, chefes e segunda volta difícil. Setas/WASD movem, Z/Espaço pula, X corre, Backspace seleciona 1 ou 2 jogadores, Enter inicia e Esc pausa.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 256, height: 240 }],
     css: [
@@ -2647,7 +2647,7 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
         { type: 'var', name: 'faseAquatica', value: n(0) },
         { type: 'var', name: 'temAtalho', value: n(0) },
         { type: 'var', name: 'larguraFase', value: n(DEFAULT_COLS * TILE) },
-        { type: 'var', name: 'jornada', value: n(1) },
+        { type: 'var', name: 'volta', value: n(1) },
         { type: 'var', name: 'jogadores', value: n(1) },
         { type: 'var', name: 'jogador', value: n(1) },
         { type: 'var', name: 'vidas1', value: n(3) },
@@ -2660,8 +2660,8 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
         { type: 'var', name: 'moedasJ2', value: n(0) },
         { type: 'var', name: 'faseJ1', value: n(1) },
         { type: 'var', name: 'faseJ2', value: n(1) },
-        { type: 'var', name: 'jornadaJ1', value: n(1) },
-        { type: 'var', name: 'jornadaJ2', value: n(1) },
+        { type: 'var', name: 'voltaJ1', value: n(1) },
+        { type: 'var', name: 'voltaJ2', value: n(1) },
         { type: 'var', name: 'poderJ1', value: n(1) },
         { type: 'var', name: 'poderJ2', value: n(1) },
         { type: 'var', name: 'tempo', value: n(300) },
@@ -2924,7 +2924,7 @@ export const reinoZeroExample: ExtensionExample = beginnerGameExample({
                 {
                   type: 'g2d:drawPixelText',
                   ctxVar: 'ctx',
-                  text: '32 FASES / 2 JORNADAS',
+                  text: '32 FASES / 2 VOLTAS',
                   x: n(128),
                   y: n(116),
                   size: n(1),

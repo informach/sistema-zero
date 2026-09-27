@@ -35,7 +35,12 @@ interface CourseAccess {
 export interface SpaceAccessDecision {
   accessible: boolean
   unavailable: boolean
+  canInteract: boolean
 }
+
+const MURAL_SLUG = 'mural-dos-criadores'
+const MURAL_FULL_ACCESS = 'mural-dos-criadores'
+const MURAL_VISITOR_ACCESS = 'mural-dos-criadores-visitante'
 
 type AccessRefs = {
   courseRefs: string[]
@@ -78,6 +83,18 @@ export class AccessResolutionService {
     return { courseRefs: [...courseRefs], communityRefs: [...communityRefs] }
   }
 
+  /** O presente de indicação amplia apenas a LEITURA do Mural, nunca a escrita. */
+  private readConfig(space: Space): AccessConfig {
+    const config = space.accessConfig
+    if (
+      space.slug !== MURAL_SLUG ||
+      config.visibility !== 'community_gated' ||
+      !config.communities?.includes(MURAL_FULL_ACCESS)
+    )
+      return config
+    return { ...config, communities: [...config.communities, MURAL_VISITOR_ACCESS] }
+  }
+
   /**
    * Anota cada servidor com `accessible` numa só ida ao members (batch dos
    * courseRefs) — SEM filtrar. A listagem decide se mostra um inacessível como
@@ -86,9 +103,12 @@ export class AccessResolutionService {
   async resolveSpaceVisibility(
     actor: Actor,
     spaces: Space[],
-  ): Promise<{ space: Space; accessible: boolean }[]> {
-    if (actor.privileged) return spaces.map((space) => ({ space, accessible: true }))
-    const { courseRefs, communityRefs } = this.collectAccessRefs(spaces.map((s) => s.accessConfig))
+  ): Promise<{ space: Space; accessible: boolean; canInteract: boolean }[]> {
+    if (actor.privileged)
+      return spaces.map((space) => ({ space, accessible: true, canInteract: true }))
+    const { courseRefs, communityRefs } = this.collectAccessRefs(
+      spaces.map((s) => this.readConfig(s)),
+    )
     // Espaços community_gated também precisam do access-check (ele devolve as
     // `communities` do ator; `courseRefs` pode ficar vazio nesse caso).
     const needsAccess = spaces.some(
@@ -101,7 +121,8 @@ export class AccessResolutionService {
       : NO_COURSE_ACCESS
     return spaces.map((space) => ({
       space,
-      accessible: this.evaluate(space.accessConfig, actor, space.audience, access),
+      accessible: this.evaluate(this.readConfig(space), actor, space.audience, access),
+      canInteract: this.evaluate(space.accessConfig, actor, space.audience, access),
     }))
   }
 
@@ -113,6 +134,11 @@ export class AccessResolutionService {
 
   async canAccessSpace(actor: Actor, space: Space): Promise<boolean> {
     if (actor.privileged) return true
+    return this.evaluateWithFetch(this.readConfig(space), actor, space.audience)
+  }
+
+  async canInteractSpace(actor: Actor, space: Space): Promise<boolean> {
+    if (actor.privileged) return true
     return this.evaluateWithFetch(space.accessConfig, actor, space.audience)
   }
 
@@ -121,8 +147,26 @@ export class AccessResolutionService {
    * verificar". A listagem segue fail-closed para não derrubar espaços públicos.
    */
   async decideSpaceAccess(actor: Actor, space: Space): Promise<SpaceAccessDecision> {
-    if (actor.privileged) return { accessible: true, unavailable: false }
-    return this.evaluateWithFetchDecision(space.accessConfig, actor, space.audience)
+    if (actor.privileged) return { accessible: true, unavailable: false, canInteract: true }
+    const readConfig = this.readConfig(space)
+    if (readConfig.visibility === 'course_gated' || readConfig.visibility === 'community_gated') {
+      try {
+        const access = await this.resolveCourseAccess(
+          actor.accountId,
+          readConfig.visibility === 'course_gated' ? readConfig.courses : [],
+          readConfig.visibility === 'community_gated' ? (readConfig.communities ?? []) : [],
+        )
+        return {
+          accessible: this.evaluate(readConfig, actor, space.audience, access),
+          canInteract: this.evaluate(space.accessConfig, actor, space.audience, access),
+          unavailable: false,
+        }
+      } catch {
+        return { accessible: false, canInteract: false, unavailable: true }
+      }
+    }
+    const accessible = this.evaluate(readConfig, actor, space.audience, NO_COURSE_ACCESS)
+    return { accessible, canInteract: accessible, unavailable: false }
   }
 
   async canAccessChannel(actor: Actor, space: Space, channel: Channel): Promise<boolean> {
@@ -130,6 +174,12 @@ export class AccessResolutionService {
     if (actor.privileged) return true
     // Canal sem accessConfig herda o space (já aprovado acima).
     if (!channel.accessConfig) return true
+    return this.evaluateWithFetch(channel.accessConfig, actor, space.audience)
+  }
+
+  async canInteractChannel(actor: Actor, space: Space, channel: Channel): Promise<boolean> {
+    if (!(await this.canInteractSpace(actor, space))) return false
+    if (actor.privileged || !channel.accessConfig) return true
     return this.evaluateWithFetch(channel.accessConfig, actor, space.audience)
   }
 
@@ -172,32 +222,6 @@ export class AccessResolutionService {
       return this.evaluate(access, actor, audience, ca)
     }
     return this.evaluate(access, actor, audience, NO_COURSE_ACCESS)
-  }
-
-  private async evaluateWithFetchDecision(
-    access: AccessConfig,
-    actor: Actor,
-    audience: Audience,
-  ): Promise<SpaceAccessDecision> {
-    if (access.visibility === 'course_gated' || access.visibility === 'community_gated') {
-      try {
-        const ca = await this.resolveCourseAccess(
-          actor.accountId,
-          access.visibility === 'course_gated' ? access.courses : [],
-          access.visibility === 'community_gated' ? (access.communities ?? []) : [],
-        )
-        return {
-          accessible: this.evaluate(access, actor, audience, ca),
-          unavailable: false,
-        }
-      } catch {
-        return { accessible: false, unavailable: true }
-      }
-    }
-    return {
-      accessible: this.evaluate(access, actor, audience, NO_COURSE_ACCESS),
-      unavailable: false,
-    }
   }
 
   /** Avaliação PURA dado o resultado de acesso a cursos já carregado. */

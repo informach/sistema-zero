@@ -102,8 +102,8 @@ describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
     // Trava p/ não floodar de ids — se crescer, melhor revisar o rótulo do que mostrar id.
     expect(dups.length).toBeLessThanOrEqual(3)
     for (const ids of dups) expect(new Set(ids).size).toBe(ids.length) // ids distintos
-    const boom = byKey.get('Jogo 2D\nTocar som de explosão')
-    expect(boom?.length).toBeGreaterThanOrEqual(2)
+    expect(BLOCK_CATALOG.some((entry) => entry.type === 'sz_g2d_play_boom')).toBe(false)
+    expect(BLOCK_CATALOG.some((entry) => entry.type === 'sz_g2d_play_fx')).toBe(true)
   })
 
   it('blocos com texto nos soquetes ganham rótulo amigável (não "de"/"Alterar para")', () => {

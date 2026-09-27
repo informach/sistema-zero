@@ -1,17 +1,19 @@
-import type { JSX, ReactNode } from 'react'
-import { useContext, useEffect, useState } from 'react'
+import type { JSX } from 'react'
+import { useContext, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { modesForKind, type Project } from '#core'
 import {
-  Badge,
   ConfirmDialog,
   cn,
-  IconDownload,
+  IconBox,
   IconEye,
   IconEyeOff,
+  IconFileOutput,
+  IconGlobe,
   IconGraduation,
   IconGrid,
   IconImage,
+  IconLaptop,
   IconMessageSquare,
   IconMoon,
   IconMore,
@@ -20,6 +22,7 @@ import {
   IconSave,
   IconShare,
   IconSparkles,
+  IconSpeaker,
   IconSun,
   IconTerminal,
   Menu,
@@ -35,19 +38,41 @@ import { useStudioPersistence } from '../../state/studioStores'
 import { resolveConsoleVisibility, useUIStore } from '../../state/uiStore'
 import { useStudioCloudSync } from '../../studio/cloud-sync'
 import { useStudioConfig } from '../../studio/config'
-import {
-  HOST_STATUS_BADGE_TONE,
-  HOST_STATUS_DOT_CLASS,
-  useStudioHostChrome,
-} from '../../studio/host-chrome'
+import { useStudioHostChrome } from '../../studio/host-chrome'
 import { useT } from '../../studio/i18n'
 import { useStudioLayout } from '../../studio/layoutContext'
+import { useStudioMoldaLibrary } from '../../studio/molda-library'
 import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share'
 import { useStudioTheme } from '../../studio/theme'
 import { useStudioTutor } from '../../studio/tutor'
+import { projectHas3DMaterials } from '../assets/has3DConsumer'
 import { ExportDialog } from './ExportDialog'
 import { HostMenuButton } from './HostMenuButton'
+import {
+  STUDIO_BAR_COMPACT_MAX_PX,
+  STUDIO_BAR_LABELS_MIN_PX,
+  STUDIO_BAR_UNDO_MIN_PX,
+  STUDIO_BRAND_MIN_PX,
+} from './layoutBreakpoints'
 import { ShareDialog } from './ShareDialog'
+import { BackBrand } from './topbar/BackBrand'
+import { BarIconButton } from './topbar/BarIconButton'
+import { HostStatusSeal } from './topbar/HostStatusSeal'
+import { ModeSegment } from './topbar/ModeSegment'
+import { STUDIO_MENU_LAYOUT, type StudioMenuItemId } from './topbar/menuLayout'
+import { ProjectNameField } from './topbar/ProjectNameField'
+import { SavePill, type SaveTone } from './topbar/SavePill'
+import { UndoRedo, undoRedoMenuItems, useUndoRedo } from './topbar/UndoRedo'
+
+/** O que cada item do menu "⋯" FAZ. O nome, o grupo e a ordem vêm da árvore editorial. */
+interface MenuItemBehavior {
+  icon: MenuItem['icon']
+  onSelect: () => void
+  /** Sobrepõe o rótulo da árvore quando ele é dinâmico ("Salvando…", "Baixando…"). */
+  label?: string
+  active?: boolean
+  disabled?: boolean
+}
 
 export interface TopbarProps {
   /** Sai do editor (host decide o destino). Sem ela, logo vira estático e o item "Projetos" some. */
@@ -59,57 +84,32 @@ export interface TopbarProps {
 }
 
 /**
- * A marca escrita (nome próprio, não traduzido). O logo saiu de propósito: com
- * ele o Estúdio parecia outro produto dentro da comunidade.
+ * A barra do editor no desenho da tela-modelo do Estúdio (11/09/2026): TRÊS grupos numa linha.
+ * À esquerda [menu do host][← marca][nome ✎][Salvo][nuvem]; no MEIO o segmentado dos modos; à
+ * direita [Zappy][desfazer][refazer][olho da prévia][⋯][Compartilhar] (no compacto desfazer e
+ * refazer moram no "⋯"). As regras visuais são as `.sz-bar-*` do
+ * `studio.css`: é o MESMO componente do Estúdio Completo, do bloco de aula, do admin e da
+ * comunidade adulta, e só o kids importa o `tool-chrome.css`.
+ *
+ * Largo (a partir de 1024px) = 68px; estreito e compacto = 52px, com o segmentado e as pílulas
+ * da direita só no ícone (o nome acessível não muda). O segmentado fica no meio do espaço livre
+ * entre as pontas (como na tela-modelo); quando não sobra espaço, quem encolhe é o NOME do
+ * projeto (reticências), nunca um botão.
  */
-const BRAND_NAME = 'Sistema Zero Studio'
-/** Na barra compacta (<440px) só o essencial cabe. */
-const BRAND_SHORT = 'Studio'
-
-/**
- * Botão de ação só-ícone, com tooltip — o padrão da Topbar compacta. (O botão do menu do
- * host NÃO passa por aqui: é o `HostMenuButton`, a receita compartilhada das ferramentas.)
- */
-function IconButton({
-  label,
-  onClick,
-  active,
-  disabled,
-  children,
-}: {
-  label: string
-  onClick: () => void
-  active?: boolean
-  disabled?: boolean
-  children: ReactNode
-}): JSX.Element {
-  return (
-    <button
-      type="button"
-      title={label}
-      aria-label={label}
-      aria-pressed={active}
-      disabled={disabled}
-      onClick={onClick}
-      style={{ touchAction: 'manipulation' }}
-      className={cn(
-        'sz-touch-target inline-flex h-9 w-9 items-center justify-center rounded-xl text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60 disabled:cursor-not-allowed disabled:opacity-50',
-        active && 'bg-sz-accent/15 text-sz-accent hover:bg-sz-accent/20',
-      )}
-    >
-      {children}
-    </button>
-  )
-}
-
 export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps): JSX.Element {
   const t = useT()
-  const { hasProject, projectName, projectMode, projectKind } = useProjectStore(
+  const { hasProject, projectName, projectMode, projectKind, has3DInProject } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
       projectName: s.project?.name ?? '',
       projectMode: s.project?.mode ?? 'blocks',
       projectKind: s.project?.kind,
+      // ⚠️ Um BOOLEAN, nunca a referência do projeto: o `useShallow` compara o que
+      // sai daqui, e devolver `s.project` re-renderizaria a barra inteira a cada
+      // tecla. A régua em si é memoizada por identidade do `blocksState` (ver
+      // `has3DConsumer.ts`) — sem isso, este seletor faria um `JSON.stringify` do
+      // estado dos blocos a cada `set()` da store.
+      has3DInProject: projectHas3DMaterials(s.project, false),
     })),
   )
   const isDirty = useProjectStore((s) => s.isDirty)
@@ -121,7 +121,8 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const showExtensions = useUIStore((s) => s.showExtensions)
   const setShowExtensions = useUIStore((s) => s.setShowExtensions)
   const showAssets = useUIStore((s) => s.showAssets)
-  const setShowAssets = useUIStore((s) => s.setShowAssets)
+  const assetsTab = useUIStore((s) => s.assetsTab)
+  const openAssetsTab = useUIStore((s) => s.openAssetsTab)
   const showPreview = useUIStore((s) => s.showPreview)
   const setShowPreview = useUIStore((s) => s.setShowPreview)
   const consoleVisibilityOverride = useUIStore((s) => s.consoleVisibilityOverride)
@@ -132,24 +133,31 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const setShowAI = useUIStore((s) => s.setShowAI)
   const config = useStudioConfig()
   const showConsole = resolveConsoleVisibility(projectMode, consoleVisibilityOverride)
-  const { isNarrow, isCompact } = useStudioLayout()
+  const { width, isNarrow, isCompact } = useStudioLayout()
   const theme = useStudioTheme()
   const setTheme = useSettingsStore((s) => s.setTheme)
   const share = useStudioShare()
   const tutor = useStudioTutor()
   // Motivo p/ desabilitar o Compartilhar (ex.: "envie ao professor primeiro"); null = ok.
   const shareDisabledReason = useStudioShareDisabledReason()
-  // "Sincronizar com o enviado" (Estúdio da aula) — null = host não passou o callback.
+  // "Trazer o que eu enviei" (Estúdio da aula) — null = host não passou o callback.
   const onCloudSync = useStudioCloudSync()
   // Botão do menu lateral + selo "Guardado na sua conta" do host (community-kids); null fora dele.
   const hostChrome = useStudioHostChrome()
+  // "Trazer do Molda" — null quando o host não passa o adapter.
+  // ⚠️ Em linha PRÓPRIA: dentro de um `||` o curto-circuito pularia a chamada
+  // quando o lado esquerdo já fosse verdadeiro, e a ordem dos hooks mudaria de
+  // um render para o outro (o biome pegou).
+  const moldaLibrary = useStudioMoldaLibrary()
+  // A porta "Modelos 3D" acompanha a ABA da janela pela FONTE ÚNICA da régua.
+  const has3DMaterials = has3DInProject || Boolean(moldaLibrary)
   // Stores da INSTÂNCIA: usados só para LER o projeto sob demanda (no clique do
   // Baixar), sem assinar re-render a cada edição. Fora de um <Studio> (null), o
   // fallback lê a store default via a estática. Ver storesContext.ts.
   const stores = useContext(StudioStoresContext)
+  // Desfazer/refazer do editor em uso (os blocos, o código ou, na Ponte, o último tocado).
+  const undoRedo = useUndoRedo(projectMode)
 
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(projectName)
   const [saving, setSaving] = useState(false)
   const [downloading, setDownloading] = useState(false)
   const [showShare, setShowShare] = useState(false)
@@ -160,10 +168,6 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const availableModes = modesForKind(projectKind).filter(
     (m) => projectKind === 'pro' || config.allowedModes.includes(m),
   )
-
-  useEffect(() => {
-    if (!editing) setDraft(projectName)
-  }, [editing, projectName])
 
   if (!hasProject) return <div />
 
@@ -237,301 +241,188 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
     }
   }
 
-  // Menu "⋯" agrupado: Arquivo / Exibição / Conta. Cada item dispara a MESMA
-  // ação de store dos botões antigos. (Preview NÃO entra: no wide é ícone
-  // primário; no narrow vira aba no NarrowLayout.)
-  // Salvar e Baixar VIVEM aqui (no menu) — só o "Compartilhar" fica solto na Topbar
-  // (decisão de UX: a Topbar do estúdio-produto exibe só a ação principal). O badge
-  // de status ("Salvo"/"Não salvo") continua na Topbar comunicando o estado.
-  const fileItems: MenuItem[] = [
-    {
-      id: 'save',
-      label: saving ? t('topbar.saving') : t('topbar.save'),
-      icon: <IconSave />,
-      onSelect: () => {
-        if (!saving) void handleSave()
-      },
+  // Menu "⋯": o comportamento de CADA item, indexado pelo id da árvore editorial
+  // (`topbar/menuLayout.ts`). A lista que aparece é DERIVADA dali — é o mesmo par
+  // dado-puro + derivação da paleta do Jogo 2D (`palette.ts` × `blocks.ts`), e é
+  // o que permite o drift cobrar que nada apareça fora da árvore nem se perca dela.
+  // Item AUSENTE deste mapa não aparece: é assim que as features desligadas pelo
+  // host (aula, admin) somem, e por isso não há nenhum `if` de exibição abaixo.
+  // (O Preview NÃO entra: no wide é ícone primário; no narrow vira aba no
+  // NarrowLayout. Salvar e Baixar VIVEM aqui — só o "Compartilhar" fica solto na
+  // Topbar, que exibe apenas a ação principal; o badge "Salvo"/"Não salvo" segue
+  // na barra comunicando o estado.)
+  const behaviors: Partial<Record<StudioMenuItemId, MenuItemBehavior>> = {}
+
+  // Abaixo de `STUDIO_BAR_UNDO_MIN_PX` desfazer e refazer não cabem na barra: moram no "⋯".
+  const undoInMenu = width < STUDIO_BAR_UNDO_MIN_PX
+  if (undoRedo && undoInMenu) {
+    for (const item of undoRedoMenuItems(undoRedo, t)) {
+      behaviors[item.id] = {
+        icon: item.icon,
+        disabled: item.disabled,
+        onSelect: item.onSelect,
+      }
+    }
+  }
+
+  behaviors.save = {
+    label: saving ? t('topbar.saving') : undefined,
+    icon: <IconSave />,
+    onSelect: () => {
+      if (!saving) void handleSave()
     },
-  ]
-  // "Sincronizar com o enviado" (só na aula — o host passa o callback). Logo após
-  // Salvar: é uma ação de "recuperar do servidor" do mesmo grupo Arquivo.
-  if (onCloudSync) {
-    fileItems.push({
-      id: 'sync',
-      label: t('topbar.cloudSync'),
-      icon: <IconRefresh />,
-      onSelect: () => onCloudSync(),
-    })
   }
-  // "Exportar para o Estúdio" (.szproject.json) — SEM gate: vale no editor da aula
-  // E no Estúdio Completo (a criança leva o projeto para importar no Completo).
-  fileItems.push({
-    id: 'exportStudio',
-    label: t('topbar.exportStudio'),
-    icon: <IconDownload />,
-    onSelect: handleExportStudio,
-  })
-  if (config.download) {
-    fileItems.push({
-      id: 'download',
-      label: downloading ? t('topbar.downloading') : t('topbar.download'),
-      icon: <IconDownload />,
-      onSelect: () => {
-        if (!downloading) void handleDownload()
-      },
-    })
+  // "Trazer o que eu enviei" (só na aula — o host passa o callback). Logo após
+  // Salvar: é a ação de "recuperar do servidor" do mesmo grupo.
+  if (onCloudSync) behaviors.sync = { icon: <IconRefresh />, onSelect: () => onCloudSync() }
+  if (config.extensions) {
+    behaviors.extensions = {
+      icon: <IconPuzzle />,
+      active: showExtensions,
+      onSelect: () => setShowExtensions(!showExtensions),
+    }
   }
-  if (config.export) {
-    fileItems.push({
-      id: 'export',
-      label: t('topbar.export'),
-      icon: <IconDownload />,
-      onSelect: () => setShowExport(true),
-    })
-  }
-  if (config.professional && projectKind !== 'pro') {
-    fileItems.push({
-      id: 'convert',
-      label: t('topbar.convertPro'),
-      icon: <IconGraduation />,
-      onSelect: () => setShowConvert(true),
-    })
+
+  // As três portas dos materiais: a MESMA janela, cada uma na sua aba. Só no
+  // editor básico (jogos) — o Pro gerencia arquivos direto na árvore e não
+  // precisa da janela. Ligada fica só a porta da aba que está ABERTA: marcar as
+  // três diria que há três janelas.
+  if (projectMode !== 'code') {
+    behaviors.assetsImages = {
+      icon: <IconImage />,
+      active: showAssets && assetsTab === 'images',
+      onSelect: () => openAssetsTab('images'),
+    }
+    behaviors.assetsSounds = {
+      icon: <IconSpeaker />,
+      active: showAssets && assetsTab === 'sounds',
+      onSelect: () => openAssetsTab('sounds'),
+    }
+    // A porta do 3D acompanha a ABA: ela existe com um consumidor 3D instalado
+    // OU com algum arquivo 3D no projeto (um órfão precisa continuar gerenciável).
+    if (has3DMaterials) {
+      behaviors.assetsModels = {
+        icon: <IconBox />,
+        active: showAssets && assetsTab === 'models3d',
+        onSelect: () => openAssetsTab('models3d'),
+      }
+    }
   }
 
   // Mostrar/esconder cada painel. O Console deriva do modo até a primeira ação
   // manual; depois, a preferência desta instância prevalece. As escolhas valem
   // nos dois layouts (no wide a barra inferior some quando tudo é escondido; no
   // narrow a aba some). O Preview tem ainda o ícone dedicado na própria Topbar.
-  const viewItems: MenuItem[] = []
   if (config.console) {
-    viewItems.push({
-      id: 'console',
-      label: t('panel.console'),
+    behaviors.console = {
       icon: <IconMessageSquare />,
       active: showConsole,
       onSelect: () => setConsoleVisibilityOverride(!showConsole),
-    })
+    }
   }
   if (projectMode === 'code' && config.terminal) {
-    viewItems.push({
-      id: 'terminal',
-      label: t('panel.terminal'),
+    behaviors.terminal = {
       icon: <IconTerminal />,
       active: showTerminal,
       onSelect: () => setShowTerminal(!showTerminal),
-    })
+    }
   }
   if (projectMode === 'code' && config.ai) {
-    viewItems.push({
-      id: 'ai',
-      label: t('panel.ai'),
-      icon: <IconSparkles />,
-      active: showAI,
-      onSelect: () => setShowAI(!showAI),
-    })
-  }
-  if (config.extensions) {
-    viewItems.push({
-      id: 'extensions',
-      label: t('topbar.extensions'),
-      icon: <IconPuzzle />,
-      active: showExtensions,
-      onSelect: () => setShowExtensions(!showExtensions),
-    })
-  }
-  // Gerenciador de imagens (assets) — disponível no editor básico (jogos). Pro
-  // gerencia arquivos direto na árvore, não precisa do painel.
-  if (projectMode !== 'code') {
-    viewItems.push({
-      id: 'assets',
-      label: 'Imagens',
-      icon: <IconImage />,
-      active: showAssets,
-      onSelect: () => setShowAssets(!showAssets),
-    })
+    behaviors.ai = { icon: <IconSparkles />, active: showAI, onSelect: () => setShowAI(!showAI) }
   }
 
-  const accountItems: MenuItem[] = []
+  // "Levar para o Estúdio" (.szproject.json) — SEM gate: vale no editor da aula E
+  // no Estúdio Completo (a criança leva o projeto para importar no Completo).
+  behaviors.exportStudio = { icon: <IconFileOutput />, onSelect: handleExportStudio }
+  if (config.download) {
+    behaviors.download = {
+      label: downloading ? t('topbar.downloading') : undefined,
+      icon: <IconLaptop />,
+      onSelect: () => {
+        if (!downloading) void handleDownload()
+      },
+    }
+  }
+  if (config.export) behaviors.export = { icon: <IconGlobe />, onSelect: () => setShowExport(true) }
+  if (config.professional && projectKind !== 'pro') {
+    behaviors.convert = { icon: <IconGraduation />, onSelect: () => setShowConvert(true) }
+  }
+
   if (canToggleTheme) {
-    accountItems.push({
-      id: 'theme',
-      label: t('topbar.theme'),
+    behaviors.theme = {
       icon: theme === 'dark' ? <IconSun /> : <IconMoon />,
       onSelect: () => void setTheme(theme === 'dark' ? 'light' : 'dark'),
-    })
+    }
   }
-  if (onExit) {
-    accountItems.push({
-      id: 'projects',
-      label: t('topbar.projects'),
-      icon: <IconGrid />,
-      onSelect: () => void exitToProjects(),
-    })
-  }
+  if (onExit) behaviors.projects = { icon: <IconGrid />, onSelect: () => void exitToProjects() }
 
-  const sections: MenuSection[] = [
-    { id: 'file', label: t('topbar.group.file'), items: fileItems },
-    { id: 'view', label: t('topbar.group.view'), items: viewItems },
-    { id: 'account', label: t('topbar.group.account'), items: accountItems },
-  ].filter((s) => s.items.length > 0)
+  const sections: MenuSection[] = STUDIO_MENU_LAYOUT.map((group) => ({
+    id: group.id,
+    label: t(group.labelKey),
+    items: group.items.flatMap((entry): MenuItem[] => {
+      const behavior = behaviors[entry.id]
+      if (!behavior) return []
+      return [
+        {
+          id: entry.id,
+          label: behavior.label ?? t(entry.labelKey),
+          hint: 'hintKey' in entry ? t(entry.hintKey) : undefined,
+          icon: behavior.icon,
+          active: behavior.active,
+          disabled: behavior.disabled,
+          onSelect: behavior.onSelect,
+        },
+      ]
+    }),
+  })).filter((section) => section.items.length > 0)
 
-  const nameMaxW = isCompact ? 'max-w-[7rem]' : isNarrow ? 'max-w-[12rem]' : 'max-w-[20rem]'
+  const saveTone: SaveTone = saveError ? 'danger' : isDirty ? 'warn' : 'ok'
   const saveStatusLabel = saveError
     ? 'Erro ao salvar'
     : isDirty
       ? t('project.unsaved')
       : t('project.saved')
+  // A marca escrita só quando sobra espaço para o NOME do projeto (ver `STUDIO_BRAND_MIN_PX`);
+  // abaixo disso fica o círculo da seta, com a marca no nome acessível.
+  const showBrand = width >= STUDIO_BRAND_MIN_PX
+  // A barra de 52px (estreito e compacto). As pílulas da direita e o segmentado também ficam só
+  // no ícone no largo apertado (`STUDIO_BAR_LABELS_MIN_PX`), sem mudar a altura da barra.
+  const tight = isNarrow || isCompact
+  // O jeito compacto da BARRA começa antes do compacto do Studio (ver `STUDIO_BAR_COMPACT_MAX_PX`).
+  const compactBar = isCompact || width < STUDIO_BAR_COMPACT_MAX_PX
+  const iconOnly = tight || width < STUDIO_BAR_LABELS_MIN_PX
 
   return (
     <>
-      <header
-        className={cn(
-          // `min-h-13` (52px) + `py-1`: a barra mede o MESMO com e sem o botão do menu do
-          // host (44px); com `py-2` ela cresceria para 60px só dentro do kids. O `--sz-tool-inset`
-          // é o padding esquerdo: a ABA do menu o desconta para encostar na linha da sidebar.
-          'flex min-h-13 items-center border-sz-border border-b-2 bg-sz-panel text-sm',
-          isCompact
-            ? 'gap-1.5 px-2 py-1 [--sz-tool-inset:0.5rem]'
-            : 'gap-3 px-4 py-1 [--sz-tool-inset:1rem]',
-        )}
-      >
-        {/* Esconder/mostrar o menu da comunidade (host): PRIMEIRO da barra, no canto mais
-            perto do painel que ele controla, na receita compartilhada das ferramentas. */}
-        {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
-        {/* A marca é TEXTO, não logo (pedido da dona): o Estúdio é uma seção da
-            comunidade e o wordmark o fazia parecer outro produto. Na barra
-            compacta cabe só "Studio" — o nome do projeto é o que importa lá. */}
-        {onExit ? (
-          <button
-            type="button"
-            onClick={() => void exitToProjects()}
-            className="sz-touch-target sz-ui-display flex shrink-0 items-center gap-1.5 rounded-lg px-1.5 py-1 text-base text-sz-fg hover:bg-sz-panel-soft hover:opacity-80"
-            title="Voltar à lista de projetos"
-          >
-            {/* ⚠️ O ícone existe para o botão PARECER um botão. Quando a marca
-                virou texto puro (08/2026), o canto superior esquerdo deixou de
-                ler como clicável — e como é ele que dispara a captura da capa do
-                card, a miniatura parou de ser tirada junto. */}
-            <IconGrid size={16} />
-            {isCompact ? BRAND_SHORT : BRAND_NAME}
-          </button>
-        ) : (
-          <span className="sz-ui-display flex shrink-0 items-center text-base text-sz-fg">
-            {isCompact ? BRAND_SHORT : BRAND_NAME}
-          </span>
-        )}
-        {!isCompact && <span className="shrink-0 text-sz-fg-mute">/</span>}
-        {editing ? (
-          <input
-            name="project-name"
-            aria-label="Nome do projeto"
-            autoComplete="off"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={() => {
-              rename(draft.trim() || 'Sem título')
-              setEditing(false)
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-              if (e.key === 'Escape') {
-                setDraft(projectName)
-                setEditing(false)
-              }
-            }}
-            className={cn(
-              'sz-touch-target min-w-0 rounded-lg border border-sz-border bg-sz-bg px-2.5 py-1 text-sm text-sz-fg',
-              nameMaxW,
-            )}
+      <header className={cn('sz-bar', tight && 'sz-bar--tight', compactBar && 'sz-bar--compact')}>
+        <div className="sz-bar__start">
+          {/* Esconder/mostrar o menu da comunidade (host): PRIMEIRO da barra, no canto mais
+              perto do painel que ele controla, na receita compartilhada das ferramentas. */}
+          {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
+          <BackBrand
+            onExit={onExit ? () => void exitToProjects() : undefined}
+            showName={showBrand}
           />
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setDraft(projectName)
-              setEditing(true)
-            }}
-            className={cn('sz-touch-target min-w-0 truncate text-sz-fg hover:underline', nameMaxW)}
-            title={t('topbar.rename')}
-          >
-            {projectName}
-          </button>
-        )}
-        {isCompact ? (
-          <span
-            role="status"
-            aria-label={saveStatusLabel}
-            title={saveError ?? saveStatusLabel}
-            className={cn(
-              'inline-block h-2.5 w-2.5 shrink-0 rounded-full',
-              saveError ? 'bg-sz-error' : isDirty ? 'bg-sz-warn' : 'bg-sz-success',
-            )}
-          />
-        ) : (
-          <span className="shrink-0" title={saveError ?? undefined}>
-            <Badge tone={saveError ? 'error' : isDirty ? 'warn' : 'success'}>
-              {saveStatusLabel}
-            </Badge>
-          </span>
-        )}
-        {/* "Guardado na sua conta" (host), ao lado do "Salvo" local. Fora do tier wide
-            vira bolinha, como o próprio "Salvo": a Topbar não tem wrap e o selo do host
-            cede espaço primeiro. Quem ANUNCIA offline/erro é a região viva do host. */}
-        {hostChrome?.status ? (
-          isNarrow || isCompact ? (
-            <span
-              role="status"
-              aria-live="off"
-              aria-label={hostChrome.status.text}
-              title={hostChrome.status.text}
-              className={cn(
-                'inline-block h-2.5 w-2.5 shrink-0 rounded-full',
-                HOST_STATUS_DOT_CLASS[hostChrome.status.tone],
-              )}
+          {showBrand ? <span aria-hidden="true" className="sz-bar-divider" /> : null}
+          <ProjectNameField name={projectName} onRename={rename} showPencil={!compactBar} />
+          <SavePill tone={saveTone} label={saveStatusLabel} error={saveError} dot={compactBar} />
+          {/* "Guardado na sua conta" (host), ao lado do "Salvo" local: só a nuvem em repouso,
+              a frase curta quando algo acontece, a bolinha abaixo do largo. */}
+          {hostChrome?.status ? <HostStatusSeal status={hostChrome.status} dot={iconOnly} /> : null}
+        </div>
+
+        {availableModes.length > 0 ? (
+          <div className="sz-bar__center">
+            <ModeSegment
+              modes={availableModes}
+              active={projectMode}
+              onSelect={setMode}
+              iconOnly={iconOnly}
             />
-          ) : (
-            <span role="status" aria-live="off" className="shrink-0" title={hostChrome.status.text}>
-              <Badge tone={HOST_STATUS_BADGE_TONE[hostChrome.status.tone]}>
-                {hostChrome.status.label}
-              </Badge>
-            </span>
-          )
+          </div>
         ) : null}
 
-        {availableModes.length > 0 && (
-          <div
-            className={cn(
-              'flex shrink-0 rounded-xl border border-sz-border bg-sz-bg p-0.5',
-              isCompact ? 'ml-0.5' : 'ml-4',
-            )}
-          >
-            {availableModes.map((m) => {
-              const active = projectMode === m
-              return (
-                <button
-                  key={m}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setMode(m)}
-                  style={{ touchAction: 'manipulation' }}
-                  className={cn(
-                    'sz-touch-target rounded-lg text-sm leading-none transition-colors',
-                    isCompact ? 'px-2.5 py-1.5' : 'px-4 py-1.5',
-                    active
-                      ? 'bg-sz-accent font-bold text-sz-bg shadow-sm'
-                      : 'font-medium text-sz-fg-soft hover:bg-sz-bg/60 hover:text-sz-fg',
-                  )}
-                >
-                  {t(`mode.${m}`)}
-                </button>
-              )
-            })}
-          </div>
-        )}
-
-        <div
-          className={cn('ml-auto flex shrink-0 items-center', isCompact ? 'gap-0.5' : 'gap-1.5')}
-        >
+        <div className="sz-bar__end">
           {tutor.config ? (
             <button
               type="button"
@@ -539,18 +430,35 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
               aria-expanded={tutor.open}
               aria-controls="sz-zappy-panel"
               onClick={() => tutor.setOpen(!tutor.open)}
-              className={cn(
-                'sz-touch-target inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 font-bold text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
-                tutor.open
-                  ? 'bg-sz-accent text-sz-bg'
-                  : 'bg-sz-accent/10 text-sz-accent hover:bg-sz-accent/20',
-              )}
+              className={cn('sz-bar-pill sz-bar-pill--soft', iconOnly && 'sz-bar-pill--icon')}
             >
               <IconSparkles />
-              {!isCompact ? <span>Zappy</span> : null}
+              {!iconOnly ? <span>Zappy</span> : null}
             </button>
           ) : null}
-          {share && (
+          {undoRedo && !undoInMenu ? <UndoRedo state={undoRedo} /> : null}
+          {/* No ESTREITO o preview é uma ABA, não um painel ao lado: o olhinho não
+              teria o que esconder e a criança clicaria achando que o app quebrou.
+              Some. Quem garante que a aba continua lá é o `previewAvailable` dos
+              modos, que ignora a preferência de desktop no ramo NarrowPanels. */}
+          {config.preview && !isNarrow ? (
+            <BarIconButton
+              label={showPreview ? t('topbar.hidePreview') : t('topbar.showPreview')}
+              pressed={showPreview}
+              onClick={() => setShowPreview(!showPreview)}
+            >
+              {showPreview ? <IconEye /> : <IconEyeOff />}
+            </BarIconButton>
+          ) : null}
+          {sections.length > 0 ? (
+            <Menu
+              trigger={<IconMore size={18} />}
+              label={t('topbar.more')}
+              sections={sections}
+              triggerVariant="bar"
+            />
+          ) : null}
+          {share ? (
             // Wrapper `group` recebe hover/foco MESMO com o botão inerte (botão
             // `disabled` engole os eventos → a dica nunca aparecia, e nunca no toque).
             <span className="group relative inline-flex">
@@ -563,18 +471,12 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
                 // mantém o botão focável/tocável p/ revelar a bolha de dica.
                 aria-disabled={Boolean(shareDisabledReason)}
                 aria-label={shareDisabledReason ?? t('share.action')}
-                style={{ touchAction: 'manipulation' }}
-                className={cn(
-                  'sz-touch-target inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
-                  shareDisabledReason
-                    ? 'cursor-not-allowed text-sz-fg-mute opacity-50'
-                    : 'text-sz-accent hover:bg-sz-accent/15',
-                )}
+                className={cn('sz-bar-pill sz-bar-pill--primary', iconOnly && 'sz-bar-pill--icon')}
               >
                 <IconShare />
-                {!isCompact && <span className="text-sm font-medium">{t('share.action')}</span>}
+                {!iconOnly ? <span>{t('share.action')}</span> : null}
               </button>
-              {shareDisabledReason && (
+              {shareDisabledReason ? (
                 // Bolha visível (não depende do `title` nativo): aparece no hover/foco/toque.
                 <span
                   role="tooltip"
@@ -582,21 +484,9 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
                 >
                   {shareDisabledReason}
                 </span>
-              )}
+              ) : null}
             </span>
-          )}
-          {config.preview && (
-            <IconButton
-              label={showPreview ? t('topbar.hidePreview') : t('topbar.showPreview')}
-              active={showPreview}
-              onClick={() => setShowPreview(!showPreview)}
-            >
-              {showPreview ? <IconEye /> : <IconEyeOff />}
-            </IconButton>
-          )}
-          {sections.length > 0 && (
-            <Menu trigger={<IconMore size={18} />} label={t('topbar.more')} sections={sections} />
-          )}
+          ) : null}
         </div>
       </header>
       <ShareDialog open={showShare} onClose={() => setShowShare(false)} adapter={share} />

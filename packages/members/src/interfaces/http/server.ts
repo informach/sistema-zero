@@ -14,12 +14,15 @@ import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
 import { creationCleanupRoutes } from './routes/creation-cleanup.routes'
 import { type CreationsRoutesDeps, creationsRoutes } from './routes/creations.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
+import { type HelpRoutesDeps, helpRoutes } from './routes/help.routes'
 import { type InternalRoutesDeps, internalRoutes } from './routes/internal.routes'
+import { type LearningRoutesDeps, learningRoutes } from './routes/learning.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
+  learning: LearningRoutesDeps
   env: Env
   logger: Logger
   accountDeletionFence: AccountDeletionFence
@@ -32,12 +35,14 @@ export interface HttpDeps {
   admin: AdminRoutesDeps
   content: ContentRoutesDeps
   internal: InternalRoutesDeps
+  /** "Como fazer": a biblioteca de ajuda do Kids (leitura da criança + autoria do admin). */
+  help: HelpRoutesDeps
 }
 
 // Rotas que carregam o projeto do Estúdio (entrega do aluno + autoria do bloco):
 // corpo muito maior que os JSONs normais. Recebem o teto `MAX_STUDIO_BODY_BYTES`;
 // o resto fica no teto pequeno (anti-DoS por rota, espelha o `maxBodyBytes` da borda).
-const STUDIO_SUBMISSION_PATH = /\/studio-submission$/
+const STUDIO_SUBMISSION_PATH = /\/(studio-submission|project-check|gallery-commit)$/
 const ADMIN_BLOCK_CREATE_PATH = /\/members\/admin\/lessons\/[^/]+\/blocks$/
 const ADMIN_BLOCK_UPDATE_PATH = /\/members\/admin\/blocks\/[^/]+$/
 
@@ -63,7 +68,11 @@ function bodyLimitForPath(pathname: string, env: Env): number {
     PINTA_SUBMISSION_PATH.test(pathname) ||
     STUDIO_SUBMISSION_PATH.test(pathname) ||
     ADMIN_BLOCK_CREATE_PATH.test(pathname) ||
-    ADMIN_BLOCK_UPDATE_PATH.test(pathname)
+    ADMIN_BLOCK_UPDATE_PATH.test(pathname) ||
+    /^\/members\/admin\/lessons\/[^/]+\/draft$/.test(pathname) ||
+    /^\/members\/admin\/lessons\/[^/]+\/import-(preview|learning)$/.test(pathname) ||
+    // "Como fazer": rascunho com passos em markdown e o import em lote passam de 64 KB.
+    /^\/members\/admin\/help\/tutorials(?:\/[^/]+|\/import)?$/.test(pathname)
   ) {
     return Math.max(env.MAX_STUDIO_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)
   }
@@ -150,6 +159,7 @@ export function createServer(deps: HttpDeps) {
   return app
     .use(healthRoutes(deps.readiness))
     .use(membersRoutes(deps.members))
+    .use(learningRoutes(deps.learning))
     .use(pensaRoutes(deps.pensa))
     .use(creationsRoutes(deps.creations))
     .use(
@@ -162,4 +172,5 @@ export function createServer(deps: HttpDeps) {
     .use(adminRoutes(deps.admin))
     .use(contentRoutes(deps.content))
     .use(internalRoutes(deps.internal))
+    .use(helpRoutes(deps.help))
 }

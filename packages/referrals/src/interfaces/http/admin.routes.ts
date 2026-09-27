@@ -34,7 +34,7 @@ function toRedemptionView(r: RedemptionRecord, conversion?: ConversionRecord) {
     attemptCount: r.attemptCount,
     createdAt: r.createdAt.toISOString(),
     completedAt: r.completedAt?.toISOString() ?? null,
-    // Jornada do bolsista: ficou só no Desafio (null) ou assinou a Comunidade.
+    // Etapa do bolsista: ficou só no Desafio (null) ou assinou a Comunidade.
     conversion: conversion
       ? {
           status: conversion.status,

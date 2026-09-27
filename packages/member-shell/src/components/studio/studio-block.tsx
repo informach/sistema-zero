@@ -8,13 +8,13 @@ import type {
   StudioShareAdapter,
   StudioShareResult,
 } from '@sistemazero/studio'
-import { STUDIO_PRO_BUILD_LIMITS } from '@sistemazero/studio'
+import { replaceLocalProject, STUDIO_PRO_BUILD_LIMITS } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { CheckCheck, CheckCircle2, Maximize2, Minimize2, Send } from 'lucide-react'
+import { CheckCheck, CheckCircle2, Maximize2, Minimize2, RotateCcw, Send } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
@@ -24,6 +24,7 @@ import { lessonStudioProjectId } from '../../lib/studio-project-id'
 import { isInitialTemplateProject } from '../../lib/studio-template'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
+import { SectionProjectCheck } from './section-project-check'
 
 // "Compartilhar" da AULA = UMA vez só. O projeto da aula tem começo/meio/fim: a
 // criança termina, publica no Mural, pronto — não fica republicando (cada republish
@@ -112,6 +113,7 @@ export function StudioBlockView({
 
   const [StudioLesson, setStudioLesson] = useState<StudioComponent | null>(null)
   const [seed, setSeed] = useState<Project | null>(null)
+  const [studioVersion, setStudioVersion] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(studioState?.submitted ?? false)
   const [submittedAt, setSubmittedAt] = useState<string | null>(studioState?.submittedAt ?? null)
@@ -134,12 +136,15 @@ export function StudioBlockView({
   // Recado OPCIONAL do aluno ao professor, digitado no modal de confirmação.
   const [message, setMessage] = useState('')
   const MESSAGE_MAX = 1000
-  // "Sincronizar com o enviado": puxa do servidor o projeto que o aluno enviou e
+  // "Trazer o que eu enviei": puxa do servidor o projeto que o aluno enviou e
   // substitui o editor (o editor semeia do rascunho LOCAL — defasa se terminou em
   // outro PC). Confirmação porque SUBSTITUI o que está aberto aqui.
   const [syncOpen, setSyncOpen] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [syncNote, setSyncNote] = useState<string | null>(null)
+  const [restartOpen, setRestartOpen] = useState(false)
+  const [restarting, setRestarting] = useState(false)
+  const [restartNote, setRestartNote] = useState<string | null>(null)
 
   const activity = content.activity
   const passingScore = activity?.passingScore
@@ -321,7 +326,7 @@ export function StudioBlockView({
     }
   }, [lessonId, blockId, player, activity, message])
 
-  // Abre a confirmação de "Sincronizar com o enviado" (item do menu ⋯ do Estúdio).
+  // Abre a confirmação de "Trazer o que eu enviei" (item do menu ⋯ do Estúdio).
   // Estável (o Studio latcha este callback no mount).
   const openSync = useCallback(() => {
     setSyncNote(null)
@@ -350,6 +355,29 @@ export function StudioBlockView({
       setSyncing(false)
     }
   }, [lessonId, blockId, projectId])
+
+  const doRestart = useCallback(async () => {
+    const handle = handleRef.current
+    if (!handle) return
+    setRestarting(true)
+    setRestartNote(null)
+    try {
+      // Drena qualquer autosave antigo antes da substituição. A gravação de reposição
+      // apaga também partições de blocos/capa que o projeto inicial não possui.
+      await handle.save()
+      const initial: Project = { ...(content.initialProject as Project), id: projectId }
+      await replaceLocalProject(initial)
+      // Uma nova instância também encerra qualquer leitura tardia dos blocos do
+      // rascunho antigo, que usa o mesmo id local do projeto inicial.
+      setSeed(initial)
+      setStudioVersion((version) => version + 1)
+      setRestartOpen(false)
+    } catch {
+      setRestartNote('Não consegui recomeçar agora. Seu projeto continua como estava.')
+    } finally {
+      setRestarting(false)
+    }
+  }, [content.initialProject, projectId])
 
   // O Studio LATCHA o adapter uma vez (memoizado por lessonId/blockId), mas `onShared` pode
   // mudar por render — lê via ref pra manter o adapter estável e ainda chamar o handler ATUAL.
@@ -437,24 +465,43 @@ export function StudioBlockView({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="sz-display text-base">Atividade no Estúdio</h3>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setRestartNote(null)
+              setRestartOpen(true)
+            }}
+            disabled={!ready || restarting}
+          >
+            <RotateCcw className="size-4" />
+            Recomeçar
+          </Button>
           <Button variant="outline" size="sm" onClick={toggleExpanded} disabled={!ready}>
             {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
             {expanded ? 'Reduzir' : 'Expandir'}
           </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              setTemplateWarning(
-                submitted &&
-                  isInitialTemplateProject(handleRef.current?.getProject(), content.initialProject),
-              )
-              setConfirmOpen(true)
-            }}
-            disabled={submitting || !ready}
-          >
-            {submitting ? <Spinner /> : <Send className="size-4" />}
-            {submitted ? 'Reenviar ao professor' : 'Enviar para o professor'}
-          </Button>
+          {content.purpose !== 'experiment' &&
+            (!player?.submissionAllowedBlockIds ||
+              player.submissionAllowedBlockIds.includes(blockId)) && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setTemplateWarning(
+                    submitted &&
+                      isInitialTemplateProject(
+                        handleRef.current?.getProject(),
+                        content.initialProject,
+                      ),
+                  )
+                  setConfirmOpen(true)
+                }}
+                disabled={submitting || !ready}
+              >
+                {submitting ? <Spinner /> : <Send className="size-4" />}
+                {submitted ? 'Reenviar ao professor' : 'Enviar para o professor'}
+              </Button>
+            )}
         </div>
       </div>
 
@@ -465,17 +512,20 @@ export function StudioBlockView({
           // têm z-index alto e VAZAVAM por cima do overlay de modais — ex.: o "Enviar ao
           // professor?"); isolando o container, o overlay de modal (z-50) cobre tudo atrás.
           'isolate overflow-hidden rounded-lg border border-border bg-muted',
-          // Expandido/guiada: o editor cresce e ocupa todo o pai; normal: altura FIXA e
-          // GENEROSA (mobile 44rem; desktop 60rem = bem mais espaço pra programar). Fixo de
-          // propósito: `vh` dependia da altura da janela e em notebook ficava ≈ 44rem (sem
-          // mudança visível) — rem garante o aumento em qualquer tela.
-          expanded || fillHeight ? 'min-h-0 flex-1' : 'h-[44rem] lg:h-[60rem]',
+          // Expandido: o editor cresce e ocupa todo o pai; normal: altura FIXA. ⚠️ Ela
+          // era 44/60rem, de quando o editor pegava a LARGURA inteira da aula. Com as
+          // seções, ele mora numa coluna de metade da tela, e 960px de altura ali viram
+          // um retângulo estreito e comprido (relato da dona, 09/2026). Quem precisa de
+          // mais espaço usa o "Expandir", que é tela cheia. Fixo em `rem` de propósito:
+          // `vh` dependia da altura da janela e mudava de notebook para notebook.
+          expanded || fillHeight ? 'min-h-0 flex-1' : 'h-[36rem] lg:h-[40rem]',
         )}
       >
         {ready ? (
           // StudioLesson já desliga terminal/IA/profissional/export; aqui o
           // aluno corta também as extensões (editor enxuto na aula).
           <StudioLesson
+            key={studioVersion}
             ref={handleRef}
             initialProject={seed as Project}
             persistence="local"
@@ -502,7 +552,7 @@ export function StudioBlockView({
                     : undefined
                 : undefined
             }
-            // Item ⋯ → "Sincronizar com o enviado" (só na aula; abre a confirmação).
+            // Item ⋯ → "Trazer o que eu enviei" (só na aula; abre a confirmação).
             onCloudSync={lessonId ? openSync : undefined}
             blockUnloadWhenDirty={false}
           />
@@ -513,6 +563,7 @@ export function StudioBlockView({
         )}
       </div>
 
+      <SectionProjectCheck blockId={blockId} handleRef={handleRef} />
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
       {/* Nota da auto-correção (quando o bloco tem atividade). O feedback POR
@@ -549,7 +600,10 @@ export function StudioBlockView({
         <p className="text-xs text-muted-foreground">
           {passingScore !== undefined
             ? 'Use "Verificar" no editor e envie ao professor. Atinja a nota mínima para concluir a aula.'
-            : 'Envie seu projeto ao professor para poder concluir a aula.'}
+            : player?.submissionAllowedBlockIds &&
+                !player.submissionAllowedBlockIds.includes(blockId)
+              ? 'Continue construindo. A entrega do projeto fica no fechamento.'
+              : 'Envie seu projeto ao professor para poder concluir a aula.'}
         </p>
       )}
 
@@ -593,7 +647,7 @@ export function StudioBlockView({
         {templateWarning ? (
           <p className="mt-3 text-sm font-medium text-destructive">
             Atenção: você está enviando o projeto inicial da aula por cima do que você já entregou.
-            Se terminou em outro computador, use o menu ⋯ e escolha Sincronizar com o enviado antes.
+            Se terminou em outro computador, use o menu ⋯ e escolha Trazer o que eu enviei antes.
           </p>
         ) : null}
         <div className="mt-4 flex flex-col gap-1.5">
@@ -616,7 +670,7 @@ export function StudioBlockView({
       <Dialog
         open={syncOpen}
         onClose={() => setSyncOpen(false)}
-        title="Sincronizar com o enviado?"
+        title="Trazer o que você enviou?"
         footer={
           <>
             <Button
@@ -629,7 +683,7 @@ export function StudioBlockView({
             </Button>
             <Button size="sm" onClick={() => void doSync()} disabled={syncing}>
               {syncing ? <Spinner /> : null}
-              Sincronizar
+              Trazer
             </Button>
           </>
         }
@@ -639,6 +693,34 @@ export function StudioBlockView({
           professor. Use se você terminou em outro computador.
         </p>
         {syncNote ? <p className="mt-2 text-sm text-destructive">{syncNote}</p> : null}
+      </Dialog>
+
+      <Dialog
+        open={restartOpen}
+        onClose={() => setRestartOpen(false)}
+        title="Recomeçar do projeto inicial?"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setRestartOpen(false)}
+              disabled={restarting}
+            >
+              Cancelar
+            </Button>
+            <Button size="sm" onClick={() => void doRestart()} disabled={restarting}>
+              {restarting ? <Spinner /> : <RotateCcw className="size-4" />}
+              Recomeçar
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-muted-foreground">
+          O Estúdio vai abrir o projeto inicial mais recente desta aula. O que você mudou neste
+          aparelho será substituído. Se já enviou um projeto ao professor, o envio continuará salvo.
+        </p>
+        {restartNote ? <p className="mt-2 text-sm text-destructive">{restartNote}</p> : null}
       </Dialog>
     </div>
   )

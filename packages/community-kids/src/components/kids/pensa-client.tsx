@@ -3,9 +3,9 @@
 import type { PensaHostAdapter, PensaTransport } from '@sistemazero/pensa'
 import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from '@/components/kids/embedded-app-loading'
+import { useFocusMode } from '@/components/kids/focus-mode'
 import { useHostChrome } from '@/components/kids/use-host-chrome'
 
 type PensaModule = typeof import('@sistemazero/pensa')
@@ -14,15 +14,22 @@ type PensaModule = typeof import('@sistemazero/pensa')
 export function PensaClient({
   pintaOwned,
   studioAvailable,
+  moldaAvailable = false,
+  initialProjectId = null,
 }: {
   pintaOwned: boolean
   studioAvailable: boolean
+  moldaAvailable?: boolean
+  initialProjectId?: string | null
 }) {
   const [mod, setMod] = useState<PensaModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const router = useRouter()
-  const { resolvedTheme } = useTheme()
-  const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
+  const { setWorkspaceActive } = useFocusMode()
+  // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
+  // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
+  // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
+  const theme: 'light' | 'dark' = 'light'
 
   const loadPensa = useCallback(async () => {
     setMod(null)
@@ -60,8 +67,8 @@ export function PensaClient({
       mode: 'kids',
       theme,
       // O pacote chama a capability de `studioOwned`, mas o host fornece a
-      // disponibilidade efetiva: produto comprado + carreira liberada.
-      capabilities: { pintaOwned, studioOwned: studioAvailable },
+      // disponibilidade efetiva: produto comprado + jornada liberada.
+      capabilities: { pintaOwned, studioOwned: studioAvailable, moldaOwned: moldaAvailable },
       mascotImages: {
         happy: '/zappy/happy.webp',
         thinking: '/zappy/thinking.webp',
@@ -70,14 +77,15 @@ export function PensaClient({
       },
       onOpenTask: ({ taskId, destination }) =>
         router.push(
-          `/${destination === 'pinta' ? 'pinta' : 'estudio'}?tarefa=${encodeURIComponent(taskId)}`,
+          `/${destination === 'studio' ? 'estudio' : destination}?tarefa=${encodeURIComponent(taskId)}`,
         ),
     }),
-    [transport, theme, pintaOwned, studioAvailable, router],
+    // ⚠️ `theme` saiu do dep array: virou constante (sem tema escuro nesta plataforma).
+    [transport, pintaOwned, studioAvailable, moldaAvailable, router],
   )
 
-  // Só o botão do menu lateral (o Pensa persiste no servidor: sem selo de nuvem), desenhado
-  // pelo próprio Pensa nos cabeçalhos dele (contrato `hostChrome`, 07/09/2026).
+  // O Pensa persiste no servidor (sem selo de nuvem). O menu lateral pertence à alça
+  // do shell Kids, portanto o contrato `hostChrome` não fornece um botão duplicado.
   const { chrome: hostChrome } = useHostChrome({ cloud: null })
 
   return (
@@ -101,7 +109,11 @@ export function PensaClient({
         </div>
       ) : mod ? (
         <mod.PensaHostChromeProvider value={hostChrome}>
-          <mod.PensaApp adapter={adapter} />
+          <mod.PensaApp
+            adapter={adapter}
+            initialProjectId={initialProjectId}
+            onWorkspaceChange={setWorkspaceActive}
+          />
         </mod.PensaHostChromeProvider>
       ) : (
         <EmbeddedAppLoadingBody label="Carregando o Pensa…" />

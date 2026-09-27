@@ -1,0 +1,428 @@
+{
+  "version": 4,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-04",
+  "title": "Desenhe seu asteroide em vetor",
+  "retireBlockKeys": [
+    "abertura",
+    "descoberta",
+    "explicacao",
+    "construir-1",
+    "video-construir-1-1",
+    "construir-2",
+    "video-construir-2-1",
+    "construir-3",
+    "video-construir-3-1",
+    "convite-construir-1",
+    "checar-construir-3",
+    "construir-4",
+    "video-construir-4-1",
+    "fechamento",
+    "checar-fechamento"
+  ],
+  "blocks": [
+    {
+      "key": "video-abertura-v6",
+      "plannedVideo": "roteiro-aula-04-o-jogo-do-meu-jeito.md → Abertura. Entrada: “Oi de novo! Nas duas aulas passadas você fez a sua nave em pixel art, quadradinho por quadradinho, e”. Saída: “ você põe os seus dois desenhos lado a lado, agora que já fez um de cada jeito. Vamos pro primeiro.\"”. Preservar a retomada e a vitória do dia; substituir a contagem antiga de passos pela fala de abertura revisada. Remover promessas de desbloqueios específicos não confirmados no perfil. Complemento: “Hoje o Júlio vai desenhar uma pedra usando pontos e formas. Você vai fazer a sua: escolher a cor, traçar, arredondar e pôr crateras. No final vamos comparar a borda do vetor com a dos pixels que você já conhece.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-novo-vetor",
+      "plannedVideo": "roteiro-aula-04-o-jogo-do-meu-jeito.md → Parte 1. Passo 1: começar o desenho novo. Entrada: “Abre o Pinta ali no menu da esquerda. A sua galeria não está mais vazia: o cartão da nave está lá. C”. Saída: “ica em Começar a desenhar. A sua tela abriu, e ela é maior que a da nave. Primeiro passo concluído.\"”. Manter o assistente inteiro. Corrigir “quadro maior facilita pegar pontos” como conveniência do exemplo, não garantia de zoom maior na tela. Complemento: “No Pinta, escolha Criar novo → Vetor → Personagem → Médio, 64 × 64. Escreva asteroide. A nave continua no cartão dela; hoje estamos criando outra arte.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-novo-vetor",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "No Pinta, escolha Criar novo → Vetor → Personagem → Médio, 64 × 64. Escreva asteroide. A nave continua no cartão dela; hoje estamos criando outra arte.\n\n**Antes de voltar à aula, confira:**\n\n- Vetor, Personagem, 64 × 64.\n- Nome asteroide; nave preservada.\n\nNão reutilize o tamanho Médio do pixel por memória: leia os números do cartão.\n\nPause o vídeo e use **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-novo-vetor",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Médio sempre significa 32 × 32?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Sim; o número vale para todos os estilos."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Não; no personagem em vetor desta aula, Médio é 64 × 64."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "A lista de tamanhos muda com o estilo. Confira largura e altura.\n\nNão reutilize o tamanho Médio do pixel por memória: leia os números do cartão."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-cores-vetor",
+      "plannedVideo": "roteiro-aula-04-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: traçar a pedra e arredondar. Entrada: “A primeira parte é a cor, e ela vem antes do traço, pra forma já nascer da cor certa. Olha lá no pé ”. Saída: “limpa. Mas isso é gosto dele: se você quiser a sua com linha em volta, deixa uma cor aí no Contorno.”. Usar os slots e exemplo de Sem cor. A janela Nova cor é um caminho opcional mostrado brevemente para escolher a cor; não criar uma tarefa extra de catálogo de cores. Complemento: “O Preenchimento muda o interior; o Contorno muda a linha da borda. Observe a mesma forma com e sem contorno. Sem cor deixa aquela parte transparente, não pinta de branco.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "video-traco",
+      "plannedVideo": "roteiro-aula-04-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: traçar a pedra e arredondar. Entrada: “A segunda parte é o traço. Vai na caixa de ferramentas e clica na Caneta, aquela que diz clique para”. Saída: “es ela sai angulosa, com jeitão de rocha lascada, e com muitos ela sai cheia de bicos pequenininhos.”. Preservar clique, sem arrastar, e fechamento no primeiro ponto. Acrescentar reserva visual superior que faltava no original. Não dizer que pedra real nunca tem cantos. Complemento: “Escolha o Preenchimento e se quer Contorno. Com Caneta, clique em alguns pontos formando uma pedra irregular. Termine clicando no primeiro ponto. Deixe espaço acima da pedra: a próxima aula usa esse espaço para a chama.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-traco",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Escolha o Preenchimento e se quer Contorno. Com Caneta, clique em alguns pontos formando uma pedra irregular. Termine clicando no primeiro ponto. Deixe espaço acima da pedra: a próxima aula usa esse espaço para a chama.\n\n**Antes de voltar à aula, confira:**\n\n- Forma fechada, preenchida e com contorno conforme a escolha.\n- Espaço dentro do quadro acima da pedra para a futura chama.\n\nSe não fechou, localize o primeiro ponto maior e clique nele. Não confundir Caneta com Pincel.\n\nPause o vídeo e use **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-traco",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Como fechar a forma com a Caneta?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Arrastar a tela para fora da borda."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Clicar no primeiro ponto."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "O clique no início fecha o caminho para formar a pedra.\n\nSe não fechou, localize o primeiro ponto maior e clique nele. Não confundir Caneta com Pincel."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-curvas",
+      "plannedVideo": "roteiro-aula-04-o-jogo-do-meu-jeito.md → Parte 2. Passo 2: traçar a pedra e arredondar. Entrada: “A terceira parte é o arredondamento. Toda vez que o Júlio desenha uma coisa que não tem canto na vid”. Saída: “lheu. Achou alguma coisa? Arruma agora, que os pontos ainda estão à vista. Segundo passo concluído.\"”. Manter seleção por retângulo e Ponto suave; remover generalização de que toda pedra deve ser completamente arredondada. Complemento: “Com Editar os pontos, selecione os cantos que quer arredondar e use Ponto suave. Pode deixar alguns cantos. Confira se a pedra e o espaço da chama continuam dentro do quadro.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-curvas",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Com Editar os pontos, selecione os cantos que quer arredondar e use Ponto suave. Pode deixar alguns cantos. Confira se a pedra e o espaço da chama continuam dentro do quadro.\n\n**Antes de voltar à aula, confira:**\n\n- Pelo menos uma curva intencional.\n- Não perdeu o espaço superior nem cortou a pedra.\n\nO botão de pontos aparece quando a ferramenta e a seleção corretas estão ativas.\n\nPause o vídeo e use **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-curvas",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Só alguns cantos devem virar curvas. O que selecionar?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "Apenas os pontos que quer suavizar."
+              },
+              {
+                "id": "opcao-2",
+                "label": "Todas as formas da galeria."
+              }
+            ],
+            "correctChoiceIds": ["opcao-1"],
+            "explanation": "Ponto suave modifica os pontos selecionados no desenho aberto.\n\nO botão de pontos aparece quando a ferramenta e a seleção corretas estão ativas."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-crateras",
+      "plannedVideo": "roteiro-aula-04-o-jogo-do-meu-jeito.md → Parte 3. Passo 3: as crateras. Entrada: “Com a pedra arredondada, entram as crateras: aqueles buracos que toda pedra do espaço tem, de quando”. Saída: “lecionar ainda está na sua mão. Olha a sua pedra agora. Ela ficou pronta! Terceiro passo concluído.\"”. Preservar desseleção antes de trocar cor, círculo, alças e duplicação. Substituir “buraco sempre mais escuro” por escolha de contraste desta ilustração; não exigir quatro crateras. Complemento: “Com Selecionar, clique num lugar vazio para soltar a pedra. Escolha um preenchimento mais escuro, faça um Círculo e achate um pouco. Duplique para fazer outra cratera; mude tamanho e lugar, mantendo as duas dentro da pedra.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "orientacao-crateras",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Com Selecionar, clique num lugar vazio para soltar a pedra. Escolha um preenchimento mais escuro, faça um Círculo e achate um pouco. Duplique para fazer outra cratera; mude tamanho e lugar, mantendo as duas dentro da pedra.\n\n**Antes de voltar à aula, confira:**\n\n- Crateras distinguíveis do corpo da pedra.\n- Cópias com posições ou tamanhos diferentes, sem cortar a borda da pedra.\n- Cor original da pedra preservada.\n\nSe a pedra inteira mudou de cor, desfaça, solte a seleção e escolha a cor novamente.\n\nPause o vídeo e use **Abrir meu Pinta**. Continue na mesma aba da ferramenta e volte a esta aba quando terminar."
+      }
+    },
+    {
+      "key": "conferir-crateras",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você trocou a cor para fazer uma cratera e a pedra inteira mudou. Por quê?",
+            "choices": [
+              {
+                "id": "opcao-1",
+                "label": "O Pinta só permite uma cor por desenho."
+              },
+              {
+                "id": "opcao-2",
+                "label": "A pedra ainda estava selecionada."
+              }
+            ],
+            "correctChoiceIds": ["opcao-2"],
+            "explanation": "A cor aplica-se à forma selecionada. Solte a seleção antes de preparar outra forma.\n\nSe a pedra inteira mudou de cor, desfaça, solte a seleção e escolha a cor novamente."
+          }
+        ]
+      }
+    },
+    {
+      "key": "experimento-bordas",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "De perto, a borda conta",
+        "instructions": "Aproxime as duas pedras bem devagar. Olhe a borda de cada uma.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "pixel-vector",
+          "cenario": "meu-jeito"
+        },
+        "checkpoint": {
+          "prompt": "Com a lupa bem perto, por que a pedra de vetor continua lisa?",
+          "choices": [
+            {
+              "id": "b",
+              "label": "Ela é feita de quadradinhos bem menores."
+            },
+            {
+              "id": "a",
+              "label": "Ela é refeita a partir dos pontos e das curvas."
+            }
+          ],
+          "correctChoiceId": "a",
+          "explanation": "O vetor guarda a forma, então refaz a curva em qualquer tamanho. O pixel guarda quadradinhos, e de perto eles aparecem."
+        },
+        "prediction": {
+          "context": {
+            "label": "A lupa das pedras",
+            "explanation": "Nesta experiência, vamos aproximar duas pedras para comparar como cada uma fica de perto."
+          },
+          "prompt": "Se você aproximar muito, o que acontece com as bordas?",
+          "choices": [
+            {
+              "id": "so-pixel",
+              "label": "Só a de pixel vira degraus"
+            },
+            {
+              "id": "as-duas",
+              "label": "As duas viram degraus",
+              "shows": "De perto, a borda da pedra de vetor continuou lisa."
+            }
+          ],
+          "correctChoiceId": "so-pixel",
+          "revealOn": "stairs"
+        }
+      }
+    },
+    {
+      "key": "orientacao-entrega-v6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Envie asteroide pela galeria do Pinta. Hoje ele pode continuar com a animação parado e um quadro; o movimento vem na aula 5.\n\n**Confira na sua criação:**\n\n- Personagem vetor 64 × 64 chamado asteroide.\n- Forma fechada, curva intencional, crateras e espaço para a chama acima.\n- Cores, contorno e número de crateras são escolhas; avaliar legibilidade e uso das ferramentas.\n- Nave da aula 3 continua na galeria, sem alterações.\n\nEspere **Guardado na sua conta**, escolha a criação abaixo e envie ao professor. Se ainda não estiver na lista, confira o salvamento e tente carregar a lista novamente. O envio guarda uma cópia deste momento; você continua criando na ferramenta."
+      }
+    },
+    {
+      "key": "entrega-galeria-v6",
+      "existing": {
+        "kind": "pinta",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-fecho-v6",
+      "plannedVideo": "roteiro-aula-04-o-jogo-do-meu-jeito.md → Fecho. Entrada: “Parabéns, você terminou a Aula 4. Olha a sua pedra: o formato é seu, o arredondamento é seu, e as cr”. Saída: “cende esse fogo, com uma chama dentro da outra. E no fim ela vai estar rolando enquanto cai. Até já.”. Reaproveitar a recapitulação, ajustando: Acrescentar espaço superior para o fogo da aula 5: formas fora do quadro são cortadas na exportação. Caneta usa clique para marcar pontos; Pincel não substitui esse gesto. Soltar a seleção antes de escolher a cor de outra forma. O vetor pode ser redesenhado em outra escala no editor; o jogo recebe a folha rasterizada. Não prometer ampliação infinita do PNG no Estúdio. Retirar perguntas abertas de próximos projetos durante a tarefa atual. Trocar o encerramento pela fala revisada; não acrescentar tarefas extras para passar. Complemento: “Sua pedra nasceu de pontos, ganhou curvas e crateras. Você também comparou os dois jeitos de desenhar. A nave guarda pixels; a pedra guarda formas que o Pinta redesenha. Na próxima aula vamos pôr a chama no espaço que ficou livre. Agora, duas perguntas.” Ver montagem.json para imagem, cortes e substituições. Timecodes a conferir no vídeo gravado."
+    },
+    {
+      "key": "quiz-v6",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Sem cor no Contorno faz o quê?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Retira a linha de fora e conserva o preenchimento."
+              },
+              {
+                "id": "b",
+                "label": "Apaga todas as formas do desenho."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Preenchimento e contorno são propriedades separadas."
+          },
+          {
+            "id": "q2",
+            "prompt": "Você copiou uma cratera para outra região. Precisa ficar idêntica à primeira?",
+            "choices": [
+              {
+                "id": "b",
+                "label": "Sim; copiar impede qualquer mudança na nova forma."
+              },
+              {
+                "id": "a",
+                "label": "Não; pode variar tamanho e posição para compor a pedra."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A cópia é outra forma selecionável e editável."
+          }
+        ]
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura-v6",
+      "title": "O que vamos criar hoje",
+      "intent": "presentation",
+      "objective": "A nave está animada na galeria. Vamos criar outro desenho, usando formas e pontos.",
+      "blockKeys": ["video-abertura-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-abertura-v6"]
+      }
+    },
+    {
+      "key": "novo-vetor",
+      "title": "Prepare o quadro do asteroide",
+      "intent": "application",
+      "objective": "Criar personagem vetorial de 64 × 64 com o nome asteroide.",
+      "blockKeys": ["video-novo-vetor", "orientacao-novo-vetor", "conferir-novo-vetor"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-novo-vetor"]
+      }
+    },
+    {
+      "key": "cores-vetor",
+      "title": "Observe: a cor de dentro e a linha de fora",
+      "intent": "presentation",
+      "objective": "Distinguir preenchimento, contorno e Sem cor.",
+      "blockKeys": ["video-cores-vetor"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-cores-vetor"]
+      }
+    },
+    {
+      "key": "traco",
+      "title": "Marque os pontos e feche a pedra",
+      "intent": "application",
+      "objective": "Criar forma fechada com Caneta e reservar espaço superior.",
+      "blockKeys": ["video-traco", "orientacao-traco", "conferir-traco"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-traco"]
+      }
+    },
+    {
+      "key": "curvas",
+      "title": "Transforme alguns cantos em curvas",
+      "intent": "application",
+      "objective": "Editar os pontos e aplicar Ponto suave na seleção desejada.",
+      "blockKeys": ["video-curvas", "orientacao-curvas", "conferir-curvas"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-curvas"]
+      }
+    },
+    {
+      "key": "crateras",
+      "title": "Crie uma cratera e aproveite a cópia",
+      "intent": "application",
+      "objective": "Desselecionar a pedra, criar uma elipse e duplicar variando tamanho e posição.",
+      "blockKeys": ["video-crateras", "orientacao-crateras", "conferir-crateras"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["conferir-crateras"]
+      }
+    },
+    {
+      "key": "bordas",
+      "title": "Experimente: aproxime as duas bordas",
+      "intent": "exploration",
+      "objective": "Comparar a mesma silhueta em pixels e em vetor em duas ampliações.",
+      "blockKeys": ["experimento-bordas"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["experimento-bordas"]
+      }
+    },
+    {
+      "key": "entrega-v6",
+      "title": "Confira e envie sua criação",
+      "intent": "delivery",
+      "objective": "Asteroide vetorial 64 × 64, nome asteroide, com forma fechada, curvas intencionais, crateras e espaço superior para a chama.",
+      "blockKeys": ["orientacao-entrega-v6", "entrega-galeria-v6"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["entrega-galeria-v6"]
+      }
+    },
+    {
+      "key": "fecho-v6",
+      "title": "Veja o que você aprendeu",
+      "intent": "closing",
+      "objective": "Asteroide vetorial 64 × 64, nome asteroide, com forma fechada, curvas intencionais, crateras e espaço superior para a chama.",
+      "blockKeys": ["video-fecho-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fecho-v6"]
+      }
+    },
+    {
+      "key": "quiz-v6",
+      "title": "Duas ideias para guardar",
+      "intent": "closing",
+      "objective": "Aplicar as ideias da aula em duas situações curtas. Pode consultar as pistas e tentar novamente.",
+      "blockKeys": ["quiz-v6"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-v6"]
+      }
+    }
+  ]
+}

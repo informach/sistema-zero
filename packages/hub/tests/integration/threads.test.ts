@@ -99,6 +99,81 @@ describe('tópicos e comentários', () => {
     expect(((await list.json()) as { items: unknown[] }).items).toHaveLength(1)
   })
 
+  test('visitante do Mural lê jogos, mas só acesso completo comenta e reage', async () => {
+    const ctx = buildApp()
+    const { channelId } = await seedChannel(ctx, {
+      space: {
+        slug: 'mural-dos-criadores',
+        audience: 'kids',
+        accessConfig: {
+          visibility: 'community_gated',
+          courses: [],
+          communities: ['mural-dos-criadores'],
+          roles: [],
+        },
+      },
+    })
+    const staff = randomUUID()
+    const created = await ctx.app.handle(
+      jsonRequest('POST', `/hub/channels/${channelId}/threads`, {
+        headers: studentHeaders(staff, { 'x-auth-user-role': 'admin' }),
+        body: { title: 'Jogo publicado', body: 'Venha jogar' },
+      }),
+    )
+    expect(created.status).toBe(201)
+    const { id } = (await created.json()) as { id: string }
+
+    const visitor = randomUUID()
+    ctx.members.communitiesByUser.set(visitor, new Set(['mural-dos-criadores-visitante']))
+    const headers = studentHeaders(visitor)
+    expect(
+      (await ctx.app.handle(jsonRequest('GET', `/hub/threads/${id}`, { headers }))).status,
+    ).toBe(200)
+    expect(
+      (
+        await ctx.app.handle(
+          jsonRequest('POST', `/hub/threads/${id}/comments`, {
+            headers,
+            body: { body: 'Que legal' },
+          }),
+        )
+      ).status,
+    ).toBe(403)
+    expect(
+      (
+        await ctx.app.handle(
+          jsonRequest('POST', `/hub/threads/${id}/reactions`, {
+            headers,
+            body: { emoji: '👍' },
+          }),
+        )
+      ).status,
+    ).toBe(403)
+
+    const subscriber = randomUUID()
+    ctx.members.communitiesByUser.set(subscriber, new Set(['mural-dos-criadores']))
+    expect(
+      (
+        await ctx.app.handle(
+          jsonRequest('POST', `/hub/threads/${id}/comments`, {
+            headers: studentHeaders(subscriber),
+            body: { body: 'Adorei' },
+          }),
+        )
+      ).status,
+    ).toBe(201)
+    expect(
+      (
+        await ctx.app.handle(
+          jsonRequest('POST', `/hub/threads/${id}/reactions`, {
+            headers: studentHeaders(subscriber),
+            body: { emoji: '👍' },
+          }),
+        )
+      ).status,
+    ).toBe(200)
+  })
+
   test('canal staff_only: aluno não abre tópico (403), staff abre', async () => {
     const ctx = buildApp()
     const { channelId } = await seedChannel(ctx, { channel: { postingPolicy: 'staff_only' } })

@@ -5,6 +5,13 @@ import { parseJS } from '../../../parsers/js'
 import { gameTwoDBlocks } from '../blockCatalog'
 
 describe('codec das primitivas clássicas', () => {
+  it('preserva o modo com somente quatro direções e oferece a opção no bloco', () => {
+    const statement: JSStatement = { type: 'g2d:enableClassicControls', mode: 'directions' }
+    expect(parseJS(compileStatements([statement], 0))).toEqual([statement])
+    const block = gameTwoDBlocks.find((item) => item.type === 'sz_g2d_enable_classic_controls')
+    expect(JSON.stringify(block)).toContain('directions')
+  })
+
   it('mantém geração e parse em ponto fixo para toda a cadeia nova', () => {
     const statements: JSStatement[] = [
       {

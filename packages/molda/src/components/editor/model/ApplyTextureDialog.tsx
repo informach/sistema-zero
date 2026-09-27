@@ -6,33 +6,76 @@
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { MoldaTextureAsset } from '../../../core/model'
+import { createGalleryPreviews } from '../../../state/galleryPreviews'
 import type { ApplyMode } from '../../../texture/ops'
-import { useGallery } from '../../appContext'
-import { TextureThumb } from '../../gallery/thumbs'
+import { useGallery, useMoldaApp } from '../../appContext'
+import { ProgressiveThumb } from '../../gallery/ProgressiveThumb'
 import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
+
+interface ApplyTextureDialogProps {
+  open: boolean
+  onClose: () => void
+  onApply: (texture: MoldaTextureAsset, mode: ApplyMode) => void
+}
 
 export function ApplyTextureDialog({
   open,
   onClose,
   onApply,
-}: {
-  open: boolean
-  onClose: () => void
-  onApply: (texture: MoldaTextureAsset, mode: ApplyMode) => void
-}): JSX.Element | null {
+}: ApplyTextureDialogProps): JSX.Element {
+  return (
+    <Dialog open={open} onClose={onClose} title={COPY.editor.model.paint.apply.title} wide>
+      {open && <TextureChooser onClose={onClose} onApply={onApply} />}
+    </Dialog>
+  )
+}
+
+function TextureChooser({ onClose, onApply }: Omit<ApplyTextureDialogProps, 'open'>): JSX.Element {
+  const { persistence } = useMoldaApp()
   const assets = useGallery((state) => state.assets)
-  const textures = assets.filter((asset): asset is MoldaTextureAsset => asset.kind === 'texture')
+  const textures = assets.filter((asset) => asset.kind === 'texture')
+  const [previews] = useState(() => createGalleryPreviews(persistence))
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(false)
+  const generation = useRef(0)
+  useEffect(
+    () => () => {
+      generation.current += 1
+      previews.clear()
+    },
+    [previews],
+  )
   const [mode, setMode] = useState<ApplyMode>('tile')
   const copy = COPY.editor.model.paint.apply
   const selected = textures.find((texture) => texture.id === selectedId) ?? null
 
+  async function apply(): Promise<void> {
+    if (!selected || busy) return
+    const request = ++generation.current
+    setBusy(true)
+    setError(false)
+    try {
+      const texture = await persistence.load(selected.id)
+      if (generation.current !== request) return
+      if (texture?.kind !== 'texture') {
+        setError(true)
+        return
+      }
+      onApply(texture, mode)
+    } catch {
+      if (generation.current === request) setError(true)
+    } finally {
+      if (generation.current === request) setBusy(false)
+    }
+  }
+
   return (
-    <Dialog open={open} onClose={onClose} title={copy.title} wide>
+    <>
       {textures.length === 0 ? (
         <p className="text-base text-mld-text-soft">{copy.empty}</p>
       ) : (
@@ -49,6 +92,7 @@ export function ApplyTextureDialog({
                     type="button"
                     aria-pressed={active}
                     aria-label={texture.name}
+                    disabled={busy}
                     onClick={() => setSelectedId(texture.id)}
                     className={clsx(
                       'flex w-full flex-col items-center gap-1 rounded-xl border-2 p-2 text-xs font-bold transition',
@@ -59,7 +103,7 @@ export function ApplyTextureDialog({
                     )}
                   >
                     <span className="mld-checkerboard size-16 overflow-hidden rounded-lg">
-                      <TextureThumb asset={texture} />
+                      <ProgressiveThumb summary={texture} previews={previews} />
                     </span>
                     <span className="w-full truncate text-mld-text">{texture.name}</span>
                   </button>
@@ -74,6 +118,7 @@ export function ApplyTextureDialog({
                 key={item}
                 type="button"
                 aria-pressed={mode === item}
+                disabled={busy}
                 onClick={() => setMode(item)}
                 className={clsx(
                   'min-h-11 rounded-full border-2 px-4 text-sm font-bold transition',
@@ -88,20 +133,19 @@ export function ApplyTextureDialog({
           </fieldset>
         </>
       )}
+      {error && (
+        <p role="alert" className="mt-3 text-sm text-mld-danger">
+          {copy.loadFailed}
+        </p>
+      )}
       <div className="mt-5 flex justify-end gap-2">
         <Button variant="ghost" onClick={onClose}>
           {COPY.gallery.cancel}
         </Button>
-        <Button
-          variant="primary"
-          disabled={!selected}
-          onClick={() => {
-            if (selected) onApply(selected, mode)
-          }}
-        >
+        <Button variant="primary" disabled={!selected || busy} onClick={() => void apply()}>
           {copy.apply}
         </Button>
       </div>
-    </Dialog>
+    </>
   )
 }

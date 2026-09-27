@@ -57,9 +57,9 @@ describe('game-2d — todos os exemplos da vitrine', () => {
     registerExtensionBlocks(gameTwoDBlocks)
   })
 
-  it('a vitrine tem os 33 exemplos (anti-vácuo)', () => {
-    expect(gameTwoDExamples.length).toBe(33)
-    expect(gameTwoDExtension.examples.count).toBe(33)
+  it('a vitrine tem os 35 exemplos (anti-vácuo)', () => {
+    expect(gameTwoDExamples.length).toBe(35)
+    expect(gameTwoDExtension.examples.count).toBe(35)
   })
 
   it('todos ensinam início e preparo explícitos, sem canvas escondido no HTML', () => {
@@ -73,10 +73,10 @@ describe('game-2d — todos os exemplos da vitrine', () => {
     }
   })
 
-  it('mantém a classificação prometida: 27 jogos, 5 demonstrações e 1 exploração', () => {
+  it('mantém a classificação prometida: 29 jogos, 5 demonstrações e 1 exploração', () => {
     const counts = { game: 0, demo: 0, exploration: 0 }
     for (const example of gameTwoDExamples) counts[example.experience] += 1
-    expect(counts).toEqual({ game: 27, demo: 5, exploration: 1 })
+    expect(counts).toEqual({ game: 29, demo: 5, exploration: 1 })
   })
 
   it('não ensina os blocos ambíguos de câmera e desenho mantidos só para projetos antigos', () => {
@@ -361,8 +361,8 @@ describe('dinoRunExample (game-2d) — Kit dino', () => {
     expect(code).toContain('SZGame2D.spawnObstacle(obstaculos, ctx,')
     expect(code).toContain('SZGame2D.spawnEgg(ovos,')
     expect(code).toContain('SZGame2D.drawForest(ctx, 5)')
-    expect(code).toContain('SZGame2D.playDinoHurt()')
-    expect(code).toContain('SZGame2D.playCollect()')
+    expect(code).toContain('SZGame2D.playFx("hurt")')
+    expect(code).toContain('SZGame2D.playFx("collect")')
     // recorde persiste com os blocos genéricos de armazenamento (sem bloco novo).
     expect(code).toContain('localStorage.getItem("dinoRecorde")')
     expect(code).toContain('localStorage.setItem("dinoRecorde"')
@@ -393,8 +393,8 @@ describe('gorilasExample (game-2d) — Kit gorilas', () => {
     expect(code).toContain('SZGame2D.drawBanana(ctx, cidade)')
     expect(code).toContain('SZGame2D.bananaHitThrower(cidade, gorila2)')
     expect(code).toContain('SZGame2D.bananaHitCity(cidade)')
-    expect(code).toContain('SZGame2D.playWhistle()')
-    expect(code).toContain('SZGame2D.playExplosion()')
+    expect(code).toContain('SZGame2D.playFx("whistle")')
+    expect(code).toContain('SZGame2D.playFx("explosion")')
   })
 })
 

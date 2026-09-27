@@ -24,7 +24,7 @@ const ACTIONS = new Set([
   'start',
   'pause',
 ])
-const CONTROL_MODES = new Set(['auto', 'always', 'off'])
+const CONTROL_MODES = new Set(['auto', 'always', 'off', 'directions'])
 // ⚠️ Derivados do contrato, não copiados: o lado "dentro" entrou no contrato e
 // ficou de fora da régua do runtime, que era a QUINTA cópia literal desta lista.
 const VECTOR_ROLES: ReadonlySet<string> = new Set(GAME_TWO_D_VECTOR_TILE_ROLES)

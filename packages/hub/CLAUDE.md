@@ -7,6 +7,18 @@
 
 Guia operacional para trabalhar neste package. Leia antes de editar.
 
+**Mural visitante (09/2026):** o entitlement `mural-dos-criadores-visitante` concede
+somente leitura do space `mural-dos-criadores` (canais, jogos, comentários e anexos
+visíveis). `AccessResolutionService` expõe `canInteract` no detalhe/listagem do
+space. Publicar, editar, comentar e reagir exigem a chave completa
+`mural-dos-criadores`; a checagem é feita nas rotas de escrita, não só na UI.
+As três rotas de publicação de vitrine (automática, kid-driven e Estúdio livre)
+também recusam a conta que tenha somente a chave visitante, mesmo que conclua um
+curso elegível ou possua o Estúdio separadamente.
+Assinantes com ambas as chaves interagem normalmente; após perder a assinatura,
+voltam à leitura. Não adicionar a chave visitante ao `accessConfig` persistido:
+isso ampliaria a autorização de escrita por acidente.
+
 ## O que é
 
 **Comunidade em FÓRUM** (só back-end/API; os front-ends são o **[@sistemazero/community](../community)**
@@ -128,7 +140,7 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    autor do header de perfil, capa https-only). Idempotência = `autor:studio-standalone:clientKey`
    (sem curso/cadeia; republicar = post novo). Gateway `hub-showcase-create-studio-standalone` (segmento
    literal distinto de `showcase-thread-studio` — sem colisão de prefixo).
-12. **Plays + carreira + Desafio do mês (Fase 5, 07/2026):**
+12. **Plays + jornada + Desafio do mês (Fase 5, 07/2026):**
    - **Contador de jogadas:** `threads.plays_count` (vaidade, best-effort). O incremento é
      FUNDIDO no resolve do link público: `GET /hub/internal/studio-play/:playId?count=1` vira
      `UPDATE ... SET plays_count = plays_count + 1 WHERE play_id AND is_showcase AND
@@ -148,7 +160,7 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
      (`internal.routes.ts`, HMAC — members→hub): `{playId}` → `{visible, authorId}` — validação
      anti-farm do marco de REMIX do members (SELECT puro, validar não é jogar; `authorId` NUNCA sai
      na rota pública do /jogar, que segue projetando só visible+1º nome).
-   - **Carreira:** `GET /hub/my-showcase-stats` (rota de ALUNO, JWT no gateway) →
+   - **Jornada:** `GET /hub/my-showcase-stats` (rota de ALUNO, JWT no gateway) →
      `{published, plays}` agregado NO banco (`showcaseStatsByAuthor`, usa o
      `threads_author_status_idx`) — "seus jogos já foram jogados N vezes" do kids.
    - **Limpeza de R2 na moderação (07/2026):** ocultar/apagar um post do Mural já revoga o
@@ -319,7 +331,7 @@ os do gateway (`gateway.config.ts`).
 | GET | `/hub/spaces` | lista servidores visíveis (`?audience=adult\|kids`) | 300/min |
 | GET | `/hub/spaces/:slug` | detalhe do servidor | 300/min |
 | GET | `/hub/spaces/:slug/channels` | canais do servidor (com badge de novidades) | 300/min |
-| GET | `/hub/channels/:id/threads` | tópicos do canal (cursor `?cursor=&limit=`) | 300/min |
+| GET | `/hub/channels/:id/threads` | tópicos do canal (cursor `?cursor=&limit=`; ordem `?sort=activity\|recent\|plays`, ver "Filtros do Mural") | 300/min |
 | POST | `/hub/channels/:id/threads` | cria tópico `{title, body, playId?}` (pré-moderação; `playId` = cross-link Mural↔Clube, valida vitrine visível) | 60/min · 64KB |
 | GET | `/hub/threads/:id` | detalhe do tópico | 300/min |
 | PATCH | `/hub/threads/:id` | edita tópico (autor ou staff) `{body}` | 60/min · 64KB |
@@ -523,8 +535,32 @@ reescrita à mão com `IF NOT EXISTS` em tudo (no-op em banco vivo, cria em banc
 0009 cura a linhagem. **Regra, de novo e com mais força:** depois de `db:generate`, LEIA o SQL e
 compare com o banco de prod ANTES de commitar — o teste de DB pega num banco que já tem as colunas
 (`column already exists`), mas só se for rodado.
+**`0013_mural_sort_indexes` (filtros do Mural, 11/09/2026 — gerada e REESCRITA à mão com `IF NOT
+EXISTS`, journaled):** dois índices parciais `WHERE is_showcase = true` na chave total de cada ordem
+nova (`threads_showcase_recent_idx` e `threads_showcase_plays_idx`, ver "Filtros do Mural"). O
+`db:generate` desta vez NÃO trouxe drift (o snapshot 0009 curou a linhagem), mas a regra de ler o SQL
+vale igual. ⚠️ No `schema.ts` as colunas vão com `.desc().nullsFirst()`: o `.desc()` sozinho do
+drizzle emite `DESC NULLS LAST`, que não casa com o `ORDER BY ... desc` das consultas.
 `db:migrate` aplica tudo de forma idempotente (gateado pelo `when` do journal). Ao adicionar migration
 nova, CONFIRA o journal antes de gerar.
+
+## Filtros do Mural — ordem da listagem de tópicos (11/09/2026)
+
+`GET /hub/channels/:id/threads?sort=` aceita `activity` (padrão: fixados primeiro na página 1,
+depois `last_activity_at`), `recent` ("Novidades": `created_at`) e `plays` ("Mais jogados":
+`plays_count`, empate por `created_at`). As duas ordens novas NÃO puxam fixados para o topo e têm
+chave TOTAL (desempate final pelo `id`), então a paginação não pula nem repete. O cursor opaco
+carrega a ordem (`s`) e, em `plays`, as jogadas (`n`); a ordem padrão segue sem `s`, byte a byte o
+formato antigo. Cursor de uma ordem pedido em outra → **400 `VALIDATION_ERROR`**
+(`CursorSortMismatchError`), nunca uma página errada. Contrato em
+`tests/integration/thread-sort.test.ts` (fakes) e `tests/db/thread-sort-repository.test.ts`
+(Postgres real: a comparação de linha de três colunas e os casts).
+
+⚠️⚠️ **O teste SQL pegou um defeito ANTIGO:** a comparação de cursor da ordem padrão e a das
+respostas bindavam o `Date` cru dentro do `sql` (`… < (${cursor.t}, …)`), e o postgres.js recusa
+("Received an instance of Date") — reproduz LOCAL, ao contrário do que o gotcha 9 dizia. Ou seja:
+a 2ª página do Clube/Mural ("Carregar mais") e a das respostas morriam desde sempre. Consertado com
+ISO + cast explícito (`${t.toISOString()}::timestamptz`, `${id}::uuid`) nos dois lugares.
 Boot: `loadEnv` (fail-fast) → `createApplication` → `start` (listen `::`), com retenção do
 `processed_webhooks` num ciclo de 6h sob **advisory xact-lock `51020304050607081`** (único no banco
 compartilhado — members=`30792297…`, payments=`8103081227979411315`; nunca reusar a chave). `/readyz`
@@ -592,3 +628,14 @@ in-memory das portas em `tests/fakes/in-memory.ts`; montagem via `tests/helpers.
    `retention.cleanup.failed` a cada 6h (a poda de `processed_webhooks` NUNCA rodava). NÃO reproduz
    local. Fix: passar `date.toISOString()` (texto ISO vs `timestamptz` é comparado direto). Regra
    geral: em `db.execute`/`sql` cru, coaja `Date`→ISO na escrita e string→`Date` na leitura.
+
+## Entrega recuperável da publicação — 07/09/2026
+
+Migrations `0011_creator_showcase_delivery` e `0012_showcase_delivery_owner`: a transação
+que cria/recupera uma thread de curso também grava `showcase_deliveries`, com deduplicação.
+O worker reenvia o mesmo marco idempotente para Members e confirma recebimento; lease e
+backoff permitem retomar após falha/reinício. Não apagar pendências ao reverter a interface.
+`GET /hub/my-showcase-delivery/:courseId` retorna none/pending/delivered pelo userId+accountId
+injetados pelo gateway. Não recebe o dono por query. O status não substitui o ledger de Members.
+Entregas anteriores ao outbox não foram retroativamente inventadas: conciliação histórica
+exige referências reais. Ver `../../docs/plans/creator-journey-rollout.md`.

@@ -46,8 +46,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   }
 
   /**
-   * Desenha com nitidez de pixel art quando AMPLIA (nearest, sem o borrão
-   * bilinear do navegador) e suave quando REDUZ (vetor/foto não serrilham).
+   * Amplia pixel art com nearest e reduz imagens com suavização. Quem chama passa
+   * srcW=0 para SVG: o vetor continua suave em qualquer tamanho.
    * Sempre restaura o smoothing: setupStage/_resizeBacking reatribuem c.width
    * (que reseta o estado do ctx), então o ajuste é POR DESENHO, nunca global.
    * Devolve false se o desenho lançou (o chamador cai no placeholder).
@@ -93,6 +93,12 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * em vez de duas por célula.
    */
   var _smoothBatchCtx = null, _smoothBatchOn = true, _smoothBatchRestore = true;
+  function _isVectorImage(image) {
+    var source = image && (image.url || image.src || (image.img && image.img.src));
+    if (typeof source !== 'string') return false;
+    var lower = source.toLowerCase();
+    return lower.slice(0, 18) === 'data:image/svg+xml' || lower.split(/[?#]/)[0].endsWith('.svg');
+  }
   function _crispBatch(ctx, srcW, dw) {
     _smoothBatchRestore = _readSmoothing(ctx);
     _smoothBatchOn = !(_isFiniteNumber(srcW) && srcW > 0 && dw * _deviceScale(ctx) >= srcW);
@@ -128,7 +134,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     // Nome que não é asset do projeto NEM parece um endereço (sem "/" nem ":") =
     // provável erro de digitação. Avisa uma vez; segue tentando como URL.
     if (!known && source.indexOf('/') === -1 && source.indexOf(':') === -1) {
-      warnOnce('img:' + source, 'a imagem "' + source + '" não está no projeto. Confira o nome no painel Imagens (maiúsculas e espaços contam).');
+      warnOnce('img:' + source, 'a imagem "' + source + '" não está no projeto. Confira o nome em "Imagens" (maiúsculas e espaços contam).');
     }
     if (imageCache[url]) return imageCache[url];
     /** @type {{ img: HTMLImageElement | null, loaded: boolean, failed: boolean, url: string }} */
@@ -175,7 +181,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   }
   /** Liga (ou desliga) a caixa do desenho no sprite. */
   function _applyArtHitbox(sprite, name) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     sprite._hitboxArt = _artHitboxOf(name);
   }
   /**
@@ -218,7 +224,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     if (!sprite) return;
     var cancel = sprite._cancelImageRedraw;
     sprite._cancelImageRedraw = null;
-    sprite._imgHooked = false;
+    sprite._hookedHandle = null;
     if (typeof cancel === 'function') cancel();
   }
 
@@ -227,15 +233,43 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     _cancelSpriteImageRedraw(sprite);
   }
 
+  var _destroyedSprites = new WeakSet();
+  /** @param {import('./runtimeContract').GameTwoDSprite} sprite */
+  function _isDestroyedSprite(sprite) { return _destroyedSprites.has(sprite); }
+  /** Destruição explícita é permanente; sair de um grupo apenas remove um vínculo.
+   * @param {import('./runtimeContract').GameTwoDSprite} sprite */
+  function destroySprite(sprite) {
+    if (!sprite || typeof sprite !== 'object' || _isDestroyedSprite(sprite)) return;
+    _destroyedSprites.add(sprite);
+    var owners = _spriteGroupOwners.get(sprite);
+    if (owners) Array.from(owners).forEach(function (group) {
+      for (var i = group.items.length - 1; i >= 0; i--) {
+        if (group.items[i] === sprite) _removeGroupItemAt(group, i);
+      }
+    });
+    _spriteGroupOwners.delete(sprite);
+    _removeSpriteClickHandlers(sprite);
+    _disposeSprite(sprite);
+    delete sprite._cooldowns;
+    sprite._paintEpoch = -1;
+    sprite._paintOrder = 0;
+    sprite.anim = null;
+    sprite._animState = null;
+    sprite.image = null;
+    delete sprite.skin;
+    delete sprite.textAppearance;
+    sprite.vx = 0;
+    sprite.vy = 0;
+  }
+
   /** Troca a imagem fixa do sprite (e cancela a animação atual). */
   function setImage(sprite, name) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _cancelSpriteImageRedraw(sprite);
     sprite.skin = null;
     sprite.image = name ? loadImage(name) : null;
     sprite.anim = null;
     sprite._animState = null;
-    sprite._imgHooked = false;
     _applyArtHitbox(sprite, name);
   }
 
@@ -254,7 +288,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
 
   /** Faz o sprite usar uma figura (cancela imagem/animacao — uma coisa por vez). */
   function setShape(sprite, name) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     _cancelSpriteImageRedraw(sprite);
     sprite.skin = { kind: 'custom', shape: name };
     sprite.image = null;
@@ -391,7 +425,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     _startAnimation(sprite, sheet, from, to, fps, true);
   }
   function _startAnimation(sprite, sheet, from, to, fps, once) {
-    if (!sprite || !sheet) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !sheet) return;
     _applyArtHitbox(sprite, sheet.assetName);
     var f = Math.max(0, Math.floor(_finiteNumber(from, 0)));
     var t = Math.max(0, Math.floor(_finiteNumber(to, f)));
@@ -426,7 +460,6 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     _cancelSpriteImageRedraw(sprite);
     sprite.skin = null;
     sprite.image = null;
-    sprite._imgHooked = false;
     var loopRequests = Object.create(null);
     if (_runningLoopId) loopRequests[_runningLoopId] = _frameStamp;
     sprite.anim = {
@@ -477,7 +510,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * caindo/dano). Quem troca sozinho é o autoAnimate, no "a cada quadro".
    */
   function setStateAnimation(sprite, state, sheet, from, to, fps) {
-    if (!sprite || !sheet || !state) return;
+    if (!sprite || _isDestroyedSprite(sprite) || !sheet || !state) return;
     if (!sprite.animStates) sprite.animStates = {};
     var f = _finiteNumber(from, 0);
     var t = _finiteNumber(to, f);
@@ -510,7 +543,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * setAnimation todo quadro reiniciaria o tempo e congelaria no 1º quadro.
    */
   function autoAnimate(sprite) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     if ((sprite.hurtFrames || 0) > 0 && (_loopOrder.length === 0 || sprite._hurtStamp !== _frameStamp)) {
       sprite.hurtFrames--;
       sprite._hurtStamp = _frameStamp;
@@ -573,22 +606,24 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     var sy = Math.floor(i / cols) * fh;
     var dw = _finiteNumber(width, fw);
     var dh = _finiteNumber(height, fh);
-    _crispDraw(ctx, fw, dw, function () { ctx.drawImage(img, sx, sy, fw, fh, dx, dy, dw, dh); });
+    _crispDraw(ctx, _isVectorImage(sheet.image) ? 0 : fw, dw, function () { ctx.drawImage(img, sx, sy, fw, fh, dx, dy, dw, dh); });
   }
 
   /**
    * Desenha o sprite no contexto 2d. Prioridade: animação de spritesheet →
-   * imagem fixa → placeholder (retângulo da cor, se a carga falhar ou se não
-   * houver imagem). Mantém o comportamento antigo (só fillRect) para sprites
-   * sem imagem — retrocompatível.
+   * imagem fixa → retângulo da cor, se a carga falhar ou se não houver imagem.
+   * Texto e formas usam seus renderizadores próprios em _drawSpriteRaw.
    */
   // Wrapper público: aplica o "piscar" (invencibilidade) e delega o desenho real.
   function drawSprite(ctx, sprite) {
-    if (!ctx || !sprite) return;
+    if (!ctx || !sprite || _isDestroyedSprite(sprite)) return;
+    _layoutSpriteText(sprite);
+    sprite._paintEpoch = _spritePaintEpoch;
+    sprite._paintOrder = ++_spritePaintOrder;
     var op = _finiteNumber(sprite.opacity, 1);
     if (sprite.blinkFrames > 0) {
       // Decai 1× por quadro do jogo (carimbo) — não por desenho. Sem "a cada quadro
-      // do jogo" ativo (aluno desenhando no rAF do núcleo), cai no modo antigo.
+      // do jogo" ativo (aluno desenhando no rAF do núcleo), decai a cada desenho.
       if (_loopOrder.length === 0 || sprite._blinkStamp !== _frameStamp) {
         sprite.blinkFrames--;
         sprite._blinkStamp = _frameStamp;
@@ -603,7 +638,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     finally { ctx.globalAlpha = pa; }
   }
   function _drawSpriteRaw(ctx, sprite) {
-    if (!ctx || !sprite) return;
+    if (!ctx || !sprite || _isDestroyedSprite(sprite)) return;
     var direction = sprite.direction;
     var directionAngle = direction === 'up' ? -Math.PI / 2 : direction === 'down' ? Math.PI / 2 : 0;
     var ang = _finiteNumber(sprite.angle, 0) + directionAngle;
@@ -621,7 +656,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     finally { ctx.restore(); }
   }
   function _drawSpriteBody(ctx, sprite) {
-    if (!ctx || !sprite) return;
+    if (!ctx || !sprite || _isDestroyedSprite(sprite)) return;
+    if (sprite.skin && sprite.skin.kind === 'text') { _drawTextSprite(ctx, sprite); return; }
     // Desenhos prontos (skins): nave, asteroide e tiro têm forma própria.
     if (sprite.skin) {
       if (sprite.skin.kind === 'ship') { drawShip(ctx, sprite); return; }
@@ -649,56 +685,88 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     }
     if (sprite.image && sprite.image.loaded && sprite.image.img) {
       var fimg = sprite.image.img;
-      var okDraw = _crispDraw(ctx, fimg.naturalWidth || sprite.w, sprite.w, function () {
+      var okDraw = _crispDraw(ctx, _isVectorImage(sprite.image) ? 0 : (fimg.naturalWidth || sprite.w), sprite.w, function () {
         ctx.drawImage(fimg, sprite.x, sprite.y, sprite.w, sprite.h);
       });
       if (okDraw) return;
     }
-    // Imagem ainda CARREGANDO: agenda UM redraw para quando ela chegar. Assim um
-    // desenho ÚNICO (fora do "a cada frame") também mostra a imagem assim que ela
-    // termina de carregar — senão o aluno via só o retângulo (placeholder) para
-    // sempre. Num loop, isto dispara uma vez e o loop segue desenhando normalmente.
+    // Imagem ainda CARREGANDO: agenda UM redraw para quando ela chegar (ver
+    // _scheduleSpriteImageRedraw, logo abaixo).
     var fixed = sprite.image;
-    if (fixed && fixed.img && !fixed.loaded && !sprite._imgHooked) {
-      sprite._imgHooked = true;
-      var generation = _driverGeneration;
-      var redrawFinishedImage = null;
-      var detachFinishedImage = function () {
-        if (fixed.img && typeof fixed.img.removeEventListener === 'function' && redrawFinishedImage) {
-          fixed.img.removeEventListener('load', redrawFinishedImage);
-          fixed.img.removeEventListener('error', redrawFinishedImage);
-        }
-        _pendingImageRedraws.delete(detachFinishedImage);
-        if (sprite._cancelImageRedraw === detachFinishedImage) sprite._cancelImageRedraw = null;
-      };
-      redrawFinishedImage = function () {
-        detachFinishedImage();
-        if (_runGenerationChanged(generation)) return;
-        // O sprite pode ter trocado de imagem enquanto esta carga estava pendente.
-        if (sprite.image !== fixed) return;
-        try {
-          _camWrap(function (redrawCtx, redrawSprite) {
-            drawSprite(redrawCtx, redrawSprite);
-          })(ctx, sprite);
-        } catch (e) {
-          warnOnce('imgredraw:' + fixed.url, 'não consegui redesenhar a imagem que terminou de carregar.');
-        }
-      };
-      sprite._cancelImageRedraw = detachFinishedImage;
-      _pendingImageRedraws.add(detachFinishedImage);
-      try {
-        fixed.img.addEventListener('load', redrawFinishedImage, { once: true });
-        fixed.img.addEventListener('error', redrawFinishedImage, { once: true });
-      } catch (e) {
-        detachFinishedImage();
-        warnOnce('imghook:' + fixed.url, 'não consegui acompanhar o carregamento da imagem.');
-      }
+    // ⚠️ A guarda fica AQUI, e não só dentro do agendador: o callback é uma closure
+    // NOVA a cada chamada, e este caminho roda para todo sprite desenhado, 60× por
+    // segundo. Lixo de GC é o custo que este runtime menos pode pagar; no caso
+    // comum (sem imagem, ou já carregada) não se aloca nada.
+    if (fixed && fixed.img && !fixed.loaded) {
+      _scheduleSpriteImageRedraw(ctx, sprite, fixed, function () { return sprite.image === fixed; });
     }
     // Enquanto carrega, não pinta um retângulo por cima do cenário. Se a carga
     // falhar, o retângulo colorido continua sendo um fallback claro e seguro.
     if (fixed && !fixed.loaded && !fixed.failed) return;
     ctx.fillStyle = sprite.color;
     ctx.fillRect(sprite.x, sprite.y, sprite.w, sprite.h);
+  }
+
+  /**
+   * Agenda UM redraw para quando a imagem chegar. Assim um desenho ÚNICO (fora do
+   * "a cada quadro") também mostra a imagem assim que ela termina de carregar —
+   * senão o aluno via só o retângulo (placeholder) para sempre. Num loop, isto
+   * dispara uma vez e o loop segue desenhando normalmente.
+   *
+   * ⭐ Vale para os DOIS donos de imagem que um sprite pode ter: a imagem fixa
+   * (sprite.image) e o fundo do sprite de TEXTO (textAppearance.imageHandle). Cada
+   * um diz, pelo stillCurrent, se ainda é ele que manda quando a carga termina —
+   * duplicar este bloco deixaria um dos dois para trás no próximo conserto.
+   *
+   * ⚠️⚠️ O que marca "já agendei" é o HANDLE, não um booleano do sprite. Com um
+   * booleano só, dois donos dividem um estado: trocar de placa enquanto a primeira
+   * carregava deixava a SEGUNDA sem agendamento nenhum (o booleano ainda estava
+   * ligado pela primeira), e num jogo sem laço ela não aparecia nunca. Derivar a
+   * função sem derivar o estado só muda o lugar do defeito.
+   *
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {import('./runtimeContract').GameTwoDSprite} sprite
+   * @param {import('./runtimeContract').GameTwoDImageHandle | null} handle
+   * @param {() => boolean} stillCurrent
+   */
+  function _scheduleSpriteImageRedraw(ctx, sprite, handle, stillCurrent) {
+    if (!handle || !handle.img || handle.loaded) return;
+    if (sprite._hookedHandle === handle) return;
+    // Outro handle estava agendado: solta o dele antes de tomar a vez.
+    _cancelSpriteImageRedraw(sprite);
+    sprite._hookedHandle = handle;
+    var generation = _driverGeneration;
+    var redrawFinishedImage = null;
+    var detachFinishedImage = function () {
+      if (handle.img && typeof handle.img.removeEventListener === 'function' && redrawFinishedImage) {
+        handle.img.removeEventListener('load', redrawFinishedImage);
+        handle.img.removeEventListener('error', redrawFinishedImage);
+      }
+      _pendingImageRedraws.delete(detachFinishedImage);
+      if (sprite._cancelImageRedraw === detachFinishedImage) sprite._cancelImageRedraw = null;
+    };
+    redrawFinishedImage = function () {
+      detachFinishedImage();
+      if (_runGenerationChanged(generation)) return;
+      // O sprite pode ter trocado de imagem enquanto esta carga estava pendente.
+      if (!stillCurrent()) return;
+      try {
+        _camWrap(function (redrawCtx, redrawSprite) {
+          drawSprite(redrawCtx, redrawSprite);
+        })(ctx, sprite);
+      } catch (e) {
+        warnOnce('imgredraw:' + handle.url, 'não consegui redesenhar a imagem que terminou de carregar.');
+      }
+    };
+    sprite._cancelImageRedraw = detachFinishedImage;
+    _pendingImageRedraws.add(detachFinishedImage);
+    try {
+      handle.img.addEventListener('load', redrawFinishedImage, { once: true });
+      handle.img.addEventListener('error', redrawFinishedImage, { once: true });
+    } catch (e) {
+      detachFinishedImage();
+      warnOnce('imghook:' + handle.url, 'não consegui acompanhar o carregamento da imagem.');
+    }
   }
 
   /**
@@ -709,7 +777,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * fator de propósito — hitbox menor afundaria o sprite em chão e paredes.
    */
   function setHitboxScale(sprite, percent) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     var p = _finiteNumber(percent, 100);
     sprite._hitboxScale = Math.min(3, Math.max(0.1, p / 100));
     // ⚠️ A MARCA, e nao o numero, e o que diz "a crianca escolheu". Com 100% o
@@ -748,6 +816,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * crianca sem jeito de voltar ao quadro inteiro).
    */
   function _hitboxOf(s) {
+    _layoutSpriteText(s);
     var scale = _positiveFiniteNumber(s._hitboxScale, 1);
     if (!s._hitboxManual && s._hitboxArt) return _artBoxOf(s, s._hitboxArt);
     if (scale === 1) return s;
@@ -765,7 +834,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * de "usar área de colisão de N%").
    */
   function isColliding(a, b) {
-    if (!a || !b) return false;
+    if (!a || !b || _isDestroyedSprite(a) || _isDestroyedSprite(b)) return false;
     var ea = _hitboxOf(a);
     var eb = _hitboxOf(b);
     return ea.x < eb.x + eb.w && ea.x + ea.w > eb.x && ea.y < eb.y + eb.h && ea.y + ea.h > eb.y;
@@ -779,6 +848,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       _shapes = Object.create(null);
       _shapeW = 0;
       _shapeH = 0;
+      _spritePaintEpoch++;
+      _spritePaintOrder = 0;
     }
   });
 

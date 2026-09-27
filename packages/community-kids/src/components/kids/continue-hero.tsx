@@ -1,4 +1,6 @@
+import { courseJourneyState, nextJourneyCourse } from '@sistemazero/core/journey'
 import { ContinueHeroLink } from '@/components/kids/continue-hero-link'
+import { KidsHero } from '@/components/kids/kids-hero'
 import type { MyCourseView } from '@/lib/types'
 
 interface CourseActivityView {
@@ -15,64 +17,97 @@ export function hasAnyCourseActivity(courses: readonly CourseActivityView[]): bo
   return courses.some(courseHasActivity)
 }
 
-/** Curso do herói: 1º com "continuar" pendente; senão o 1º da lista. */
+/** Mesma prioridade pedagógica usada pelo restante da jornada. */
 export function pickContinueCourse(courses: MyCourseView[]): MyCourseView | null {
-  const unlocked = courses.filter((course) => course.careerLock?.locked !== true)
-  return (
-    unlocked.find((c) => c.continueLessonId !== null && c.progress.percent < 100) ??
-    unlocked[0] ??
-    null
-  )
+  return nextJourneyCourse(courses)
 }
 
 /**
- * Card-herói "Continuar de onde parei" (estilo Duolingo): gradiente da
- * marca em largura total, progresso grande e CTA 3D direto pra aula-alvo.
+ * Card-herói "Continuar de onde parei" (estilo Duolingo): azul da marca em largura
+ * total, progresso grande e CTA 3D direto pra aula-alvo. Abre a home E o Criar.
+ *
+ * Era um card BRANCO com um fio azul em volta — o mesmo tom de todo o resto da
+ * página, e por isso a coisa mais importante da tela não parecia a mais
+ * importante. Agora ele é o bloco azul da referência, com a capa do curso à
+ * direita em vez de escondida no `md:`.
+ *
+ * Desenho das telas-modelo (11/09/2026): a capa fica à direita SEM rotação, no
+ * formato 5:3 de cantos redondos da imagem, e o botão é a pílula BRANCA com o rótulo
+ * azul (`sz-btn-inverso`), porque sobre o azul o botão da marca sumiria.
  */
 export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
   const course = pickContinueCourse(courses)
   if (!course) return null
 
+  const publishing = courseJourneyState(course) === 'publish'
   const courseHref = `/cursos/${encodeURIComponent(course.courseSlug)}`
-  const href = course.continueLessonId
-    ? `${courseHref}/aulas/${encodeURIComponent(course.continueLessonId)}`
-    : // Sem aula-alvo o herói cai na página do curso: marca a origem p/ a setinha
-      // de lá voltar PRA HOME (ver `lib/course-return.ts`).
-      `${courseHref}?de=inicio`
+  const href = publishing
+    ? `${courseHref}?de=inicio#publicar`
+    : course.continueLessonId
+      ? `${courseHref}/aulas/${encodeURIComponent(course.continueLessonId)}`
+      : // Sem aula-alvo o herói cai na página do curso: marca a origem p/ a setinha
+        // de lá voltar PRA HOME (ver `lib/course-return.ts`).
+        `${courseHref}?de=inicio`
   const started = courseHasActivity(course)
 
   return (
-    <section className="kids-unit-grad relative overflow-hidden rounded-3xl p-6 [background-image:var(--sz-gradient)] text-(--sz-primary-fg) shadow-[0_5px_0_color-mix(in_oklch,var(--sz-primary)_55%,black)] md:p-8">
-      <div className="flex items-center gap-6">
-        <div className="min-w-0 flex-1">
-          <p className="[font-family:var(--font-display)] font-bold text-xs uppercase tracking-widest opacity-80">
-            {started ? 'Continue de onde parou' : 'Comece sua aventura'}
-          </p>
-          <h2 className="sz-display mt-1 truncate text-2xl md:text-3xl">{course.title}</h2>
-          <div className="mt-4 flex items-center gap-3">
-            <div className="h-2.5 max-w-72 flex-1 overflow-hidden rounded-full bg-current/20">
-              <span
-                className="block h-full rounded-full bg-current transition-[width] duration-500"
-                style={{ width: `${course.progress.percent}%` }}
-              />
-            </div>
-            <span className="sz-display text-sm">{course.progress.percent}%</span>
+    <KidsHero
+      variant="alto"
+      eyebrow={
+        publishing
+          ? 'Seu próximo passo: publicar'
+          : started
+            ? 'Continue sua criação'
+            : 'Sua primeira criação começa aqui'
+      }
+      title={course.title}
+      description={
+        publishing
+          ? 'Você concluiu este curso. Publique o projeto no Mural para registrar essa conquista na jornada.'
+          : undefined
+      }
+      footer={
+        <div className="flex items-center gap-3">
+          <div
+            className="h-2 max-w-[26rem] flex-1 overflow-hidden rounded-full"
+            // Trilho e enchimento saem da TINTA do herói e do ouro da marca, e não
+            // de `bg-muted`/`bg-primary`: aqui o fundo é o azul, e os dois somem
+            // nele. O ouro é a cor de maior contraste que a paleta tem sobre azul.
+            style={{
+              backgroundColor: 'color-mix(in oklab, var(--sz-primary-fg) 25%, transparent)',
+            }}
+          >
+            <span
+              className="block h-full rounded-full bg-(--sz-kids-amarelo) transition-[width] duration-500 motion-reduce:transition-none"
+              style={{ width: `${course.progress.percent}%` }}
+            />
           </div>
-          <ContinueHeroLink href={href} started={started} />
+          <span className="kids-marca-suave shrink-0 font-bold text-sm">
+            {course.progress.completedLessons}/{course.progress.totalLessons} aulas
+          </span>
         </div>
-        {course.coverImageUrl ? (
-          <div className="hidden w-56 shrink-0 rotate-2 overflow-hidden rounded-2xl shadow-lg md:block">
+      }
+      actions={
+        <ContinueHeroLink
+          href={href}
+          started={started}
+          label={publishing ? 'Preparar publicação' : undefined}
+        />
+      }
+      art={
+        course.coverImageUrl ? (
+          <div className="w-full max-w-[22.5rem] overflow-hidden rounded-2xl md:w-[22.5rem]">
             {/* Capa pode ser URL externa arbitrária (autoria) → <img> simples. */}
             <img
               src={course.coverImageUrl}
               alt=""
-              width={224}
-              height={126}
-              className="aspect-video w-full object-cover"
+              width={360}
+              height={216}
+              className="aspect-[5/3] w-full object-cover"
             />
           </div>
-        ) : null}
-      </div>
-    </section>
+        ) : undefined
+      }
+    />
   )
 }

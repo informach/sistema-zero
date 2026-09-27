@@ -1,19 +1,11 @@
 /**
- * Miniaturas por tipo. Só o MODELO precisa de WebGL, então ele guarda a foto
- * pronta no asset (`thumb`) e aqui só se mostra; sem a foto (modelo que desceu
- * da nuvem e nunca abriu aqui, modelo pronto do catálogo) entra a projeção
- * isométrica PURA (`model/isoThumb.ts`), e só um modelo pesado demais cai no
- * emoji. A textura desenha os pixels num canvas 2D (sem canvas, emoji); o céu
- * é um gradiente CSS puro derivado dos parâmetros (sol posicionado pela altura
- * e pela direção).
+ * Prévia isométrica de templates e céu em CSS. Cards da galeria usam ProgressiveThumb
+ * para buscar e descartar documentos individualmente, sem reter pixels/geometria na lista.
  */
 import { clsx } from 'clsx'
 import type { CSSProperties, JSX } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { hexToRgb } from '../../core/color'
+import { useMemo } from 'react'
 import { COPY } from '../../core/copy'
-import type { MoldaModelAsset, MoldaTextureAsset } from '../../core/model'
-import { resolvePaletteColors } from '../../core/sanitize'
 import { projectModelThumb, type ThumbModel } from '../../model/isoThumb'
 import type { SkyParams } from '../../sky/params'
 
@@ -46,130 +38,6 @@ export function IsoModelThumb({
         />
       ))}
     </svg>
-  )
-}
-
-export function ModelThumb({
-  asset,
-  className,
-}: {
-  asset: MoldaModelAsset
-  className?: string
-}): JSX.Element {
-  const projection = useMemo(() => (asset.thumb ? null : projectModelThumb(asset)), [asset])
-  if (asset.thumb) {
-    return (
-      <img
-        src={asset.thumb}
-        alt={COPY.a11y.modelThumb}
-        className={clsx('size-full object-cover', className)}
-        draggable={false}
-      />
-    )
-  }
-  if (projection) {
-    return (
-      <div className={clsx('flex size-full items-center justify-center bg-mld-bg p-2', className)}>
-        <svg
-          viewBox={projection.viewBox}
-          preserveAspectRatio="xMidYMid meet"
-          role="img"
-          aria-label={COPY.a11y.modelThumb}
-          className="size-full"
-        >
-          {projection.polygons.map((polygon, index) => (
-            <polygon
-              // biome-ignore lint/suspicious/noArrayIndexKey: os polígonos não têm id; a ordem É a profundidade
-              key={index}
-              points={polygon.points}
-              fill={polygon.fill}
-            />
-          ))}
-        </svg>
-      </div>
-    )
-  }
-  return (
-    <div
-      role="img"
-      aria-label={COPY.a11y.modelThumb}
-      className={clsx(
-        'flex size-full flex-col items-center justify-center gap-1 bg-mld-kind-model/10 text-mld-kind-model',
-        className,
-      )}
-    >
-      <span aria-hidden="true" className="text-4xl">
-        {COPY.kinds.model.emoji}
-      </span>
-      <span className="text-xs font-bold">{COPY.editor.modelSummary(asset.parts.length)}</span>
-    </div>
-  )
-}
-
-export function TextureThumb({
-  asset,
-  className,
-}: {
-  asset: MoldaTextureAsset
-  className?: string
-}): JSX.Element {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [fallback, setFallback] = useState(false)
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    let context: CanvasRenderingContext2D | null = null
-    try {
-      context = typeof canvas.getContext === 'function' ? canvas.getContext('2d') : null
-    } catch {
-      context = null
-    }
-    if (!context || typeof context.createImageData !== 'function') {
-      setFallback(true)
-      return
-    }
-    const { width, height, data } = asset.bitmap
-    canvas.width = width
-    canvas.height = height
-    const colors = resolvePaletteColors(asset)
-    const image = context.createImageData(width, height)
-    for (let i = 0; i < data.length; i += 1) {
-      const index = data[i] ?? 0
-      const offset = i * 4
-      if (index === 0) continue
-      const [r, g, b] = hexToRgb(colors[index] ?? '#000000')
-      image.data[offset] = r
-      image.data[offset + 1] = g
-      image.data[offset + 2] = b
-      image.data[offset + 3] = 255
-    }
-    context.putImageData(image, 0, 0)
-  }, [asset])
-
-  if (fallback) {
-    return (
-      <div
-        role="img"
-        aria-label={COPY.a11y.textureThumb}
-        className={clsx(
-          'flex size-full items-center justify-center bg-mld-kind-texture/10 text-4xl',
-          className,
-        )}
-      >
-        <span aria-hidden="true">{COPY.kinds.texture.emoji}</span>
-      </div>
-    )
-  }
-  return (
-    <div className={clsx('mld-checkerboard flex size-full items-center justify-center', className)}>
-      <canvas
-        ref={canvasRef}
-        role="img"
-        aria-label={COPY.a11y.textureThumb}
-        className="mld-pixelated size-full object-contain"
-      />
-    </div>
   )
 }
 

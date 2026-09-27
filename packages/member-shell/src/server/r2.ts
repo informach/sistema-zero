@@ -1,5 +1,7 @@
 import 'server-only'
+import { gunzipSync } from 'node:zlib'
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
@@ -396,6 +398,28 @@ export async function r2PresignGetUgc(
 }
 
 /** Sobe um objeto no bucket UGC (caminho de IMAGEM: o BFF re-encoda antes de subir). */
+export async function r2CopyObjectUgc(source: string, destination: string): Promise<void> {
+  const cfg = requireUgcR2Config()
+  await getClient(cfg).send(
+    new CopyObjectCommand({
+      Bucket: cfg.bucket,
+      CopySource: `${cfg.bucket}/${normalizeKey(source).split('/').map(encodeURIComponent).join('/')}`,
+      Key: normalizeKey(destination),
+    }),
+  )
+}
+
+export async function r2ReadCreationJson(key: string): Promise<unknown> {
+  const cfg = requireUgcR2Config()
+  const object = await getClient(cfg).send(
+    new GetObjectCommand({ Bucket: cfg.bucket, Key: normalizeKey(key) }),
+  )
+  if (!object.Body) throw new Error('O trabalho não está disponível. Atualize a galeria.')
+  const compressed = await bufferFromStream(object.Body.transformToWebStream(), 40 * 1024 * 1024)
+  const json = gunzipSync(compressed, { maxOutputLength: 128 * 1024 * 1024 }).toString('utf8')
+  return JSON.parse(json)
+}
+
 export async function r2PutObjectUgc(input: R2PutObjectInput): Promise<void> {
   const cfg = requireUgcR2Config()
   const key = normalizeKey(input.key)

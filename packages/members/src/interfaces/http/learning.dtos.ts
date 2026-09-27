@@ -1,0 +1,728 @@
+import { PLATFORM_ACTIONS } from '@sistemazero/core/learning'
+import {
+  MAP_TILES,
+  MESH_LEVELS,
+  MIRROR_MODES,
+  SCENE_CENARIO_IDS,
+  SCENE_FIGURES,
+  SCENE_IDS,
+  SCENE_LIMITS,
+  SCENE_PILHAS,
+  SCENE_PORTS,
+  SETUP_LIMITS,
+  SHEET_CROP_WIDTHS,
+  SYMMETRY_PIECES,
+} from '@sistemazero/core/learning/scene'
+import { t } from 'elysia'
+import { ProjectBlockRelationshipsSchema } from './project-pattern.schema'
+
+const Id = t.String({ format: 'uuid' })
+const Label = t.String({ minLength: 1, maxLength: 2000 })
+const Choices = t.Array(t.Object({ id: t.String({ minLength: 1, maxLength: 80 }), label: Label }), {
+  minItems: 2,
+  maxItems: 20,
+})
+/**
+ * As ações de cena, em TypeBox.
+ *
+ * ⚠️ Os limites vêm de `SCENE_LIMITS` e as portas de `SCENE_PORTS`, em vez de repetidos aqui.
+ * Quando eram duas listas, elas divergiram: o `interval` daqui não tinha teto nenhum enquanto
+ * o editor do admin oferecia de 0,5 a 2.
+ */
+const L = SCENE_LIMITS
+const SceneActionSchema = t.Union([
+  t.Object({
+    type: t.Literal('place-in-area'),
+    card: t.Union([
+      t.Literal('paint'),
+      t.Literal('create'),
+      t.Literal('move'),
+      t.Literal('event'),
+      t.Literal('lives'),
+      t.Literal('panel'),
+    ]),
+    area: t.Union([
+      t.Literal('outside'),
+      t.Literal('start'),
+      t.Literal('loop'),
+      t.Literal('event'),
+    ]),
+  }),
+  t.Object({ type: t.Literal('trigger') }),
+  t.Object({ type: t.Literal('key-state'), hasKey: t.Boolean() }),
+  t.Object({ type: t.Literal('try-lighthouse-door') }),
+  t.Object({
+    type: t.Literal('find-character'),
+    id: t.Union([t.Literal(0), t.Literal(1), t.Literal(2)]),
+  }),
+  t.Object({ type: t.Literal('look-around') }),
+  t.Object({ type: t.Literal('restart-search') }),
+  t.Object({
+    type: t.Literal('value-source'),
+    source: t.Union([t.Literal('fixed'), t.Literal('read')]),
+  }),
+  t.Object({ type: t.Literal('box-marks'), on: t.Boolean() }),
+  t.Object({ type: t.Literal('clear-marks') }),
+  t.Object({
+    type: t.Literal('command-target'),
+    subject: t.Union([t.Literal('shot'), t.Literal('rock')]),
+    target: t.Union([t.Literal('group'), t.Literal('alias')]),
+  }),
+  t.Object({
+    type: t.Literal('shield'),
+    frames: t.Union([t.Literal(0), t.Literal(15), t.Literal(45), t.Literal(90)]),
+  }),
+  t.Object({ type: t.Literal('advance-to') }),
+  t.Object({ type: t.Literal('step-value'), value: t.Integer({ minimum: -12, maximum: 0 }) }),
+  t.Object({ type: t.Literal('sum-minus-one') }),
+  t.Object({
+    type: t.Literal('compare-op'),
+    operator: t.Union([t.Literal('>'), t.Literal('='), t.Literal('<')]),
+  }),
+  t.Object({ type: t.Literal('toggle-block'), present: t.Boolean() }),
+  t.Object({
+    type: t.Literal('name-field'),
+    name: t.Union([t.Literal(''), t.Literal('nave'), t.Literal('folha-nave'), t.Literal('nave2')]),
+  }),
+  t.Object({
+    type: t.Literal('nudge'),
+    piece: t.Union([t.Literal('crater'), t.Literal('body')]),
+    amount: t.Integer({ minimum: 0, maximum: 12 }),
+  }),
+  t.Object({
+    type: t.Literal('birth-every'),
+    frames: t.Union([t.Literal(20), t.Literal(40), t.Literal(80)]),
+  }),
+  t.Object({
+    type: t.Union([
+      t.Literal('export-file'),
+      t.Literal('import-file'),
+      t.Literal('publish'),
+      t.Literal('open-mural'),
+    ]),
+  }),
+  t.Object({
+    type: t.Literal('recolor'),
+    side: t.Union([t.Literal('lesson'), t.Literal('studio'), t.Literal('project')]),
+    color: t.Union([
+      t.Literal('azul'),
+      t.Literal('rosa'),
+      t.Literal('verde'),
+      t.Literal('laranja'),
+    ]),
+  }),
+  t.Object({
+    type: t.Literal('skin'),
+    theme: t.Union([t.Literal('space'), t.Literal('road'), t.Literal('sea')]),
+  }),
+  t.Object({ type: t.Literal('rule-toggle'), enabled: t.Boolean() }),
+  t.Object({ type: t.Literal('play-move'), direction: t.Union([t.Literal(-1), t.Literal(1)]) }),
+  t.Object({ type: t.Literal('play-shoot') }),
+  t.Object({ type: t.Literal('create') }),
+  t.Object({
+    type: t.Literal('connect'),
+    port: t.Union(SCENE_PORTS.map((p) => t.Literal(p))),
+    enabled: t.Boolean(),
+  }),
+  t.Object({ type: t.Literal('layer'), front: t.Boolean() }),
+  t.Object({
+    type: t.Union([t.Literal('jump'), t.Literal('start')]),
+    input: t.Union([t.Literal('key'), t.Literal('tap')]),
+  }),
+  t.Object({
+    type: t.Literal('impulse'),
+    force: t.Number({ minimum: L.impulse.min, maximum: L.impulse.max }),
+  }),
+  t.Object({
+    type: t.Literal('advance'),
+    seconds: t.Number({ minimum: L.advance.min, maximum: L.advance.max }),
+  }),
+  t.Object({
+    type: t.Literal('move'),
+    distance: t.Number({ minimum: L.move.min, maximum: L.move.max }),
+  }),
+  t.Object({
+    type: t.Literal('resize'),
+    width: t.Number({ minimum: L.resize.min, maximum: L.resize.max }),
+  }),
+  t.Object({
+    type: t.Union([
+      t.Literal('collide'),
+      t.Literal('home'),
+      t.Literal('restart'),
+      t.Literal('reset'),
+    ]),
+  }),
+  t.Object({
+    type: t.Literal('interval'),
+    seconds: t.Number({ minimum: L.interval.min, maximum: L.interval.max }),
+  }),
+  t.Object({
+    type: t.Literal('sample'),
+    kind: t.Union([t.Literal('position'), t.Literal('velocity')]),
+    unit: t.Number({ minimum: L.sample.min, maximum: L.sample.max }),
+    guided: t.Boolean(),
+  }),
+  t.Object({
+    type: t.Literal('hint'),
+    level: t.Number({ minimum: L.hint.min, maximum: L.hint.max }),
+  }),
+  // As duas cenas de 14/09/2026. ⚠️ Os limites vêm do core (`SCENE_LIMITS`), nunca reescritos
+  // aqui: já houve três cópias desta regra e elas divergiram.
+  // ⚠️ Lote 5 do Raio-X: o endereço vai até a MAIOR tela de um caso (`addressX`/`addressY`, 800 ×
+  // 480); quem prende na tela do caso é o motor. Com `placeX` a borda recusava o Desafio.
+  t.Object({
+    type: t.Literal('place'),
+    x: t.Integer({ minimum: L.addressX.min, maximum: L.addressX.max }),
+    y: t.Integer({ minimum: L.addressY.min, maximum: L.addressY.max }),
+  }),
+  t.Object({ type: t.Literal('describe'), text: t.String({ maxLength: L.describe.max }) }),
+  t.Object({ type: t.Literal('listen') }),
+  t.Object({
+    type: t.Literal('stage'),
+    width: t.Integer({ minimum: L.stageWidth.min, maximum: L.stageWidth.max }),
+    height: t.Integer({ minimum: L.stageHeight.min, maximum: L.stageHeight.max }),
+  }),
+  t.Object({ type: t.Literal('border'), visible: t.Boolean() }),
+  t.Object({ type: t.Literal('loop'), on: t.Boolean() }),
+  t.Object({ type: t.Literal('erase'), on: t.Boolean() }),
+  // As seis cenas do lote 4 (desenho e vidas). Mesma regra: faixa do core, nunca literal aqui.
+  t.Object({ type: t.Literal('frame'), index: t.Union([t.Literal(1), t.Literal(2)]) }),
+  t.Object({ type: t.Literal('play'), on: t.Boolean() }),
+  t.Object({
+    type: t.Literal('rate'),
+    perSecond: t.Number({ minimum: L.rate.min, maximum: Math.max(L.rate.max, 16) }),
+  }),
+  t.Object({ type: t.Literal('onion'), on: t.Boolean() }),
+  t.Object({
+    type: t.Literal('shift'),
+    offset: t.Integer({ minimum: L.shift.min, maximum: L.shift.max }),
+  }),
+  t.Object({
+    type: t.Literal('inspect'),
+    kind: t.Union([t.Literal('pixel'), t.Literal('vector')]),
+    zoom: t.Integer({ minimum: L.zoom.min, maximum: L.zoom.max }),
+  }),
+  t.Object({
+    type: t.Literal('cut'),
+    cell: t.Integer({ minimum: L.cell.min, maximum: L.cell.max }),
+  }),
+  t.Object({
+    type: t.Literal('sprite'),
+    size: t.Integer({ minimum: L.sprite.min, maximum: L.sprite.max }),
+  }),
+  // O ateliê do lote 5 do Raio-X (G4): os dois espelhos do Pinta, os traços da nave na grade 16 × 16 e
+  // a largura do recorte da folha. Mesma regra: as listas vêm do core, nunca literais aqui.
+  t.Object({
+    type: t.Literal('mirror-mode'),
+    mode: t.Union(MIRROR_MODES.map((m) => t.Literal(m))),
+  }),
+  t.Object({
+    type: t.Literal('trace'),
+    piece: t.Union(SYMMETRY_PIECES.map((p) => t.Literal(p))),
+  }),
+  t.Object({
+    type: t.Literal('dot'),
+    x: t.Integer({ minimum: L.paperCell.min, maximum: L.paperCell.max }),
+    y: t.Integer({ minimum: L.paperCell.min, maximum: L.paperCell.max }),
+  }),
+  t.Object({ type: t.Literal('clear-paper') }),
+  t.Object({
+    type: t.Literal('score-place'),
+    clock: t.Union([t.Literal('loose'), t.Literal('frame'), t.Literal('second')]),
+    guarded: t.Boolean(),
+  }),
+  t.Object({ type: t.Literal('same-frames'), on: t.Boolean() }),
+  t.Object({ type: t.Literal('fill') }),
+  t.Object({
+    type: t.Literal('crop'),
+    width: t.Union(SHEET_CROP_WIDTHS.map((w) => t.Literal(w))),
+  }),
+  // As onze cenas do núcleo do Iniciante 2D (15/09/2026). Mesma regra: faixa do core.
+  t.Object({
+    type: t.Literal('velocity'),
+    vx: t.Integer({ minimum: L.velocity.min, maximum: L.velocity.max }),
+    vy: t.Integer({ minimum: L.velocity.min, maximum: L.velocity.max }),
+  }),
+  t.Object({ type: t.Literal('press') }),
+  t.Object({ type: t.Literal('hold'), on: t.Boolean() }),
+  t.Object({
+    type: t.Literal('store'),
+    value: t.Integer({ minimum: L.boxValue.min, maximum: L.boxValue.max }),
+  }),
+  t.Object({
+    type: t.Literal('change'),
+    by: t.Integer({ minimum: L.boxChange.min, maximum: L.boxChange.max }),
+  }),
+  t.Object({ type: t.Literal('show'), on: t.Boolean() }),
+  t.Object({
+    type: t.Union([t.Literal('look'), t.Literal('choose')]),
+    id: t.Integer({ minimum: L.targetId.min, maximum: L.targetId.max }),
+  }),
+  t.Object({
+    type: t.Literal('define'),
+    field: t.Union([t.Literal('speed'), t.Literal('life')]),
+    // ⚠️ A faixa POR CAMPO é do core (`isSceneSetup`/`isSceneAction`): aqui vale a mais larga
+    // das duas, e o guard do domínio aperta a certa na publicação.
+    value: t.Integer({ minimum: L.typeLife.min, maximum: L.typeSpeed.max }),
+  }),
+  t.Object({ type: t.Literal('spawnOne') }),
+  t.Object({
+    type: t.Literal('walk'),
+    x: t.Integer({ minimum: L.worldX.min, maximum: L.worldX.max }),
+  }),
+  t.Object({
+    type: t.Literal('approach'),
+    distance: t.Integer({ minimum: L.approach.min, maximum: L.approach.max }),
+  }),
+  t.Object({ type: t.Literal('shoot') }),
+  t.Object({
+    type: t.Literal('recharge'),
+    seconds: t.Number({ minimum: L.recharge.min, maximum: L.recharge.max }),
+  }),
+  t.Object({
+    type: t.Literal('target'),
+    x: t.Integer({ minimum: L.aimX.min, maximum: L.aimX.max }),
+    y: t.Integer({ minimum: L.aimY.min, maximum: L.aimY.max }),
+  }),
+  t.Object({
+    type: t.Literal('direction'),
+    x: t.Integer({ minimum: -1, maximum: 1 }),
+    y: t.Integer({ minimum: -1, maximum: 1 }),
+  }),
+  // Lote 5 do Raio-X (G5): "Andar 1 segundo" na `diagonal`, o gesto que tomou o lugar do relógio.
+  t.Object({ type: t.Literal('stride') }),
+  t.Object({
+    type: t.Literal('paint-tile'),
+    row: t.Integer({ minimum: L.mapRow.min, maximum: L.mapRow.max }),
+    col: t.Integer({ minimum: L.mapCol.min, maximum: L.mapCol.max }),
+    tile: t.Union(MAP_TILES.map((t2) => t.Literal(t2))),
+  }),
+  /* ── O motor, o 3D e o ateliê (15/09/2026) ─────────────────────────────────────────────── */
+  t.Object({
+    type: t.Literal('brain'),
+    id: t.Integer({ minimum: L.brainId.min, maximum: L.brainId.max }),
+    state: t.Union([
+      t.Literal('parado'),
+      t.Literal('mirar'),
+      t.Literal('atirar'),
+      t.Literal('recarregar'),
+    ]),
+  }),
+  t.Object({
+    type: t.Literal('count'),
+    kind: t.Union([t.Literal('frames'), t.Literal('seconds')]),
+  }),
+  t.Object({
+    type: t.Literal('radius'),
+    which: t.Union([t.Literal('a'), t.Literal('b')]),
+    value: t.Integer({ minimum: L.radius.min, maximum: L.radius.max }),
+  }),
+  t.Object({
+    type: t.Literal('place3d'),
+    x: t.Integer({ minimum: L.spaceX.min, maximum: L.spaceX.max }),
+    // ⚠️ O y do 3D cresce para CIMA e o piso é ZERO: a faixa não é a da tela 2D.
+    y: t.Integer({ minimum: L.spaceY.min, maximum: L.spaceY.max }),
+    z: t.Integer({ minimum: L.spaceZ.min, maximum: L.spaceZ.max }),
+  }),
+  t.Object({
+    type: t.Literal('orbit'),
+    yaw: t.Integer({ minimum: L.yaw.min, maximum: L.yaw.max }),
+    pitch: t.Integer({ minimum: L.pitch.min, maximum: L.pitch.max }),
+  }),
+  t.Object({ type: t.Literal('recenter') }),
+  // Lote 5 do Raio-X (G6): "Ver os pontos" em três degraus (`mesh`) e onde o estado das torres mora
+  // (`entity-state`). Os degraus vêm do core, como as letras do mapa.
+  t.Object({
+    type: t.Literal('see-points'),
+    level: t.Union(MESH_LEVELS.map((nivel) => t.Literal(nivel))),
+  }),
+  t.Object({ type: t.Literal('brain-scope'), shared: t.Boolean() }),
+  t.Object({
+    type: t.Literal('point'),
+    x: t.Integer({ minimum: L.pointX.min, maximum: L.pointX.max }),
+    y: t.Integer({ minimum: L.pointY.min, maximum: L.pointY.max }),
+  }),
+  t.Object({
+    type: t.Literal('ink'),
+    part: t.Union([t.Literal('fill'), t.Literal('stroke')]),
+    on: t.Boolean(),
+  }),
+  t.Object({
+    type: t.Literal('light'),
+    side: t.Union([t.Literal('left'), t.Literal('right')]),
+  }),
+  t.Object({ type: t.Literal('shade'), on: t.Boolean() }),
+])
+const SceneId = t.Union(SCENE_IDS.map((id) => t.Literal(id)))
+/**
+ * Quem está no palco: a mesma cena servindo outro curso.
+ *
+ * ⚠️ O nome é TEXTO que a criança lê dentro da frase da cena, então ele é limitado aqui e
+ * conferido de novo pelo `isSceneCast` do core na hora de publicar. O gênero não é enfeite: é
+ * ele que decide o artigo em português.
+ */
+const SceneActorSchema = t.Object({
+  name: t.String({ minLength: 1, maxLength: 24 }),
+  gender: t.Union([t.Literal('m'), t.Literal('f')]),
+  plural: t.Optional(t.String({ maxLength: 28 })),
+  // ⚠️ O que o palco DESENHA (Raio-X, lote 3). Sem ele no schema, o `normalize` do Elysia apagaria
+  // a figura escolhida no admin numa rota de corpo tipado, e a nave voltaria a ser desenhada pelo
+  // nome (ou como o Dino). Ausente = "pelo nome", que é o caso dos manifestos já publicados.
+  figure: t.Optional(t.Union(SCENE_FIGURES.map((f) => t.Literal(f)))),
+})
+/**
+ * Como a pilha da `layers` se apresenta (full review de experiência do conjunto, A1): a lista de blocos
+ * do Estúdio (padrão) ou o painel Camadas do Pinta. Derivado de `SCENE_PILHAS`; quem recusa a pilha
+ * fora da `layers` é o `isSceneActivity` do core, na publicação.
+ */
+const ScenePilhaSchema = t.Union(SCENE_PILHAS.map((p) => t.Literal(p)))
+/**
+ * O CENÁRIO: qual jogo a cena retrata (`cenario.ts` do core).
+ *
+ * ⚠️⚠️ Sem ele no schema, o `normalize` do Elysia APAGARIA o campo numa rota de corpo tipado — o
+ * professor escolheria o jogo no admin, o campo sumiria a caminho do banco e a cena voltaria a
+ * derivar o cenário pelo elenco, sem erro nenhum. É a mesma armadilha que já comeu a `figure` do
+ * elenco. Ausente = derivar, que é o caso dos manifestos já publicados.
+ */
+const SceneCenarioSchema = t.Union(SCENE_CENARIO_IDS.map((c) => t.Literal(c)))
+const SceneCastSchema = t.Object({
+  hero: t.Optional(SceneActorSchema),
+  obstacle: t.Optional(SceneActorSchema),
+  scenery: t.Optional(SceneActorSchema),
+})
+/**
+ * O CASO da atividade: por onde a cena começa e o que ela cobra.
+ *
+ * ⚠️ Os tetos vêm de `SETUP_LIMITS`, e o conteúdo é conferido de novo pelo `isSceneSetup` do
+ * core na publicação — é lá que mora a régua que recusa ação de outra cena, `reset` dentro do
+ * caso e meta que não existe no modelo. Aqui é a porta de entrada, não o juiz.
+ */
+const SceneSetupActions = t.Array(SceneActionSchema, {
+  minItems: 1,
+  maxItems: SETUP_LIMITS.actions,
+})
+const SceneSetupSchema = t.Object({
+  actions: t.Optional(SceneSetupActions),
+  preset: t.Optional(
+    t.Union([
+      t.Object({
+        id: t.Union([
+          t.Literal('duas-caixas-nave'),
+          t.Literal('tres-caixas-tiro'),
+          t.Literal('uma-ficha-vidas'),
+          t.Literal('duas-caixas-dino'),
+          t.Literal('tres-caixas-som'),
+        ]),
+        areas: t.Array(t.Union([t.Literal('start'), t.Literal('loop'), t.Literal('event')]), {
+          minItems: 2,
+          maxItems: 3,
+        }),
+        cards: t.Array(
+          t.Object({
+            id: t.Union([
+              t.Literal('paint'),
+              t.Literal('create'),
+              t.Literal('move'),
+              t.Literal('event'),
+              t.Literal('lives'),
+              t.Literal('panel'),
+            ]),
+            kind: t.Union([
+              t.Literal('paint'),
+              t.Literal('create'),
+              t.Literal('move'),
+              t.Literal('shot'),
+              t.Literal('sound'),
+              t.Literal('lives'),
+              t.Literal('panel'),
+            ]),
+            label: t.String({ minLength: 1, maxLength: 80 }),
+          }),
+          { minItems: 1, maxItems: 4 },
+        ),
+        hitEveryFrames: t.Optional(t.Integer({ minimum: 1, maximum: 30 })),
+      }),
+      t.Object({
+        id: t.Union([t.Literal('cacto-direita'), t.Literal('pedra-acima')]),
+        axis: t.Union([t.Literal('right'), t.Literal('above')]),
+        speedModule: t.Boolean(),
+      }),
+      t.Object({
+        id: t.Union([t.Literal('cacto-segundos'), t.Literal('pedra-quadros')]),
+        unit: t.Union([t.Literal('seconds'), t.Literal('frames')]),
+        intervals: t.Array(t.Number(), { minItems: 3, maxItems: 4 }),
+        falling: t.Boolean(),
+      }),
+      t.Object({
+        id: t.Union([t.Literal('cacto-esquerda'), t.Literal('tiro-cima')]),
+        exit: t.Union([t.Literal('left'), t.Literal('top')]),
+        incoming: t.Boolean(),
+      }),
+      t.Object({
+        id: t.Union([t.Literal('cacto-18-quadros'), t.Literal('pedra-40-quadros')]),
+        clockFrames: t.Union([t.Literal(18), t.Literal(40)]),
+        waitingSeconds: t.Union([t.Literal(2), t.Literal(4)]),
+        moment: t.Union([t.Literal('state'), t.Literal('screen')]),
+      }),
+    ]),
+  ),
+  goalCopy: t.Optional(
+    t.Record(
+      t.String({ minLength: 1, maxLength: 80 }),
+      t.Object({
+        label: t.Optional(t.String({ minLength: 1, maxLength: 160 })),
+        pedido: t.Optional(t.String({ minLength: 1, maxLength: 300 })),
+      }),
+    ),
+  ),
+  goals: t.Optional(
+    t.Array(t.String({ minLength: 1, maxLength: 80 }), {
+      minItems: 1,
+      maxItems: SETUP_LIMITS.goals,
+    }),
+  ),
+})
+export const InteractiveBlockSchema = t.Object({
+  kind: t.Literal('interactive'),
+  title: t.String({ minLength: 1, maxLength: 200 }),
+  instructions: t.String({ minLength: 1, maxLength: 10000 }),
+  hints: t.Array(t.String({ maxLength: 10000 }), { maxItems: 10 }),
+  required: t.Boolean(),
+  /**
+   * As atividades. ⚠️ Mexer aqui vem ANTES de mexer no admin, nunca depois: um campo
+   * que o editor mande sem estar declarado só é aceito por acidente.
+   *
+   * ⚠️ E o comportamento é diferente em cada nível, MEDIDO no fluxo real de rascunho →
+   * publicação: campo não declarado no nível do BLOCO é RECUSADO alto (400 `VALIDATION_ERROR`);
+   * campo não declarado DENTRO de `activity` não é recusado nem apagado — é gravado tal e
+   * qual, porque o rascunho usa `additionalProperties: true` e o `t.Object` aninhado do
+   * TypeBox não fecha as extras. Quem protege a criança disso é o `publicInteractiveBlock`,
+   * que poda por ALLOWLIST (`PUBLIC_ACTIVITY_FIELDS`) antes de o bloco chegar nela.
+   *
+   * Saíram `simulation` (a geração 1), `experiment`, `comparison`, `prediction` e `sequence`:
+   * nenhum curso usava os três primeiros, e os dois últimos foram reescritos no conteúdo.
+   */
+  activity: t.Union([
+    t.Object({
+      type: t.Literal('experimentation'),
+      scene: SceneId,
+      instructionAudioUrl: t.Optional(t.String({ maxLength: 4000 })),
+      /**
+       * A voz do Zappy: `texto falado → MP3`. ⚠⚠ PRECISA estar aqui: campo fora do DTO some
+       * no `normalize` do Elysia, e a publicação gravaria o bloco sem o dicionário — aceita,
+       * sem erro, e a cena muda no ar. Quem recusa um dicionário malformado é o core
+       * (`isSceneVozes`), que tem a régua e a mensagem certa.
+       */
+      vozes: t.Optional(t.Record(t.String(), t.String({ maxLength: 4000 }))),
+      /**
+       * Pronúncia particular de uma fala estática. Declaração frouxa de propósito: o core valida
+       * slots, texto de origem e roteiro; aqui ela impede que o normalize apague a correção antes
+       * de o bloco chegar a essa régua.
+       */
+      zappySpeech: t.Optional(
+        t.Record(
+          t.String({ maxLength: 80 }),
+          t.Object({
+            sourceText: t.String({ minLength: 1, maxLength: 6000 }),
+            speechText: t.String({ minLength: 1, maxLength: 6000 }),
+          }),
+        ),
+      ),
+      initialImpulse: t.Optional(t.Integer({ minimum: L.impulse.min, maximum: L.impulse.max })),
+      cast: t.Optional(SceneCastSchema),
+      cenario: t.Optional(SceneCenarioSchema),
+      setup: t.Optional(SceneSetupSchema),
+      pilha: t.Optional(ScenePilhaSchema),
+    }),
+    t.Object({ type: t.Literal('html'), html: t.String({ minLength: 1, maxLength: 500000 }) }),
+    t.Object({
+      type: t.Literal('project-play'),
+      completion: t.Optional(t.Union([t.Literal('participation'), t.Literal('targets')])),
+      // O domínio valida o snapshot; a borda preserva inclusive recursos embutidos.
+      project: t.Record(t.String(), t.Unknown()),
+      stage: t.Object({
+        width: t.Integer({ minimum: 1, maximum: 8192 }),
+        height: t.Integer({ minimum: 1, maximum: 8192 }),
+      }),
+      targets: t.Array(
+        t.Object({
+          id: t.String({ minLength: 1, maxLength: 80 }),
+          label: t.String({ minLength: 1, maxLength: 100 }),
+          x: t.Number({ minimum: 0, maximum: 8192 }),
+          y: t.Number({ minimum: 0, maximum: 8192 }),
+          width: t.Number({ exclusiveMinimum: 0, maximum: 8192 }),
+          height: t.Number({ exclusiveMinimum: 0, maximum: 8192 }),
+        }),
+        { minItems: 0, maxItems: 12 },
+      ),
+    }),
+  ]),
+  checkpoint: t.Optional(
+    t.Object({
+      prompt: t.String({ minLength: 1, maxLength: 5000 }),
+      choices: Choices,
+      correctChoiceId: t.String({ maxLength: 80 }),
+      explanation: t.String({ minLength: 1, maxLength: 5000 }),
+    }),
+  ),
+  /**
+   * A pergunta de ANTES de mexer. ⚠️ O gabarito é opcional e não avalia nada: previsão errada
+   * é caminho de aprendizado, e reprovar por ela ensinaria a criança a não arriscar.
+   */
+  prediction: t.Optional(
+    t.Object({
+      context: t.Object({
+        label: t.String({ minLength: 1, maxLength: 180 }),
+        explanation: t.String({ minLength: 1, maxLength: 2000 }),
+      }),
+      prompt: t.String({ minLength: 1, maxLength: 5000 }),
+      /**
+       * ⚠️ As escolhas da previsão têm `shows` (para onde olhar quando a criança escolheu esta e a
+       * cena mostrou outra coisa). Com o `Choices` da pergunta, o `normalize` do Elysia APAGARIA o
+       * campo em silêncio: o bloco salvava e o player nunca mais tinha a frase.
+       */
+      choices: t.Array(
+        t.Object({
+          id: t.String({ minLength: 1, maxLength: 80 }),
+          label: Label,
+          shows: t.Optional(t.String({ minLength: 1, maxLength: 2000 })),
+        }),
+        { minItems: 2, maxItems: 20 },
+      ),
+      correctChoiceId: t.Optional(t.String({ maxLength: 80 })),
+      /** A meta cuja queda responde o palpite. Quem confere que ela existe na cena é o core. */
+      revealOn: t.Optional(t.String({ minLength: 1, maxLength: 80 })),
+    }),
+  ),
+  /**
+   * "Esta experimentação entra SEM a pergunta do fim."
+   *
+   * ⚠️⚠️ Precisa estar declarado AQUI, e não só no core: campo não declarado no nível do BLOCO é
+   * recusado alto (400 `VALIDATION_ERROR`), então o editor mandaria a escolha da professora e a
+   * gravação inteira falharia. Quem confere que ela só aparece onde tem efeito (experimentação de
+   * cena, sem pergunta escrita no bloco) é o `isInteractiveBlock` do core, na publicação.
+   */
+  semPerguntaFinal: t.Optional(t.Literal(true)),
+})
+const SectionRule = t.Union([
+  t.Object({ type: t.Literal('usesLoop') }),
+  t.Object({
+    type: t.Literal('usesBlock'),
+    blockType: t.String({ maxLength: 200 }),
+    area: t.Optional(
+      t.Union(
+        (['structure', 'appearance', 'molds', 'start', 'events', 'loops'] as const).map((area) =>
+          t.Literal(area),
+        ),
+      ),
+    ),
+    withinBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+    ...ProjectBlockRelationshipsSchema,
+    fields: t.Optional(
+      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
+        maxProperties: 20,
+      }),
+    ),
+    inputs: t.Optional(
+      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
+        maxProperties: 20,
+      }),
+    ),
+  }),
+  ...(['declaresVariable', 'definesFunction', 'callsFunction'] as const).map((type) =>
+    t.Object({ type: t.Literal(type), name: t.String({ maxLength: 200 }) }),
+  ),
+])
+export const SectionCompletionSchema = t.Object({
+  version: t.Literal(1),
+  blockIds: t.Array(Id, { maxItems: 200 }),
+  materialItems: t.Optional(
+    t.Array(
+      t.Object({
+        blockId: Id,
+        itemIds: t.Array(Id, { minItems: 1, maxItems: 20 }),
+      }),
+      { maxItems: 20 },
+    ),
+  ),
+  platformAction: t.Optional(t.Union(PLATFORM_ACTIONS.map((action) => t.Literal(action)))),
+  projectChecks: t.Optional(
+    t.Array(
+      t.Object({
+        id: t.String({ minLength: 1, maxLength: 200 }),
+        label: t.String({ maxLength: 200 }),
+        rule: SectionRule,
+      }),
+      { maxItems: 20 },
+    ),
+  ),
+})
+export const SectionProjectParams = t.Object({ lessonId: Id, sectionId: Id })
+export const SectionProjectBody = t.Object({ revision: Id, project: t.Unknown() })
+export const LessonSectionSchema = t.Object({
+  id: Id,
+  title: t.String({ minLength: 1, maxLength: 200 }),
+  objective: t.String({ maxLength: 2000 }),
+  intent: t.Union([
+    t.Literal('presentation'),
+    t.Literal('exploration'),
+    t.Literal('explanation'),
+    t.Literal('application'),
+    t.Literal('delivery'),
+    t.Literal('material'),
+    t.Literal('closing'),
+  ]),
+  blockIds: t.Array(Id, { maxItems: 200 }),
+  workspaceBlockId: t.Nullable(Id),
+  externalTool: t.Nullable(t.Union([t.Literal('estudio'), t.Literal('pinta')])),
+  completion: t.Optional(SectionCompletionSchema),
+  pendingMedia: t.Array(t.String({ minLength: 1, maxLength: 2000 }), { maxItems: 20 }),
+})
+export const LearningStructureBody = t.Object({
+  expectedRevision: t.Nullable(Id),
+  sections: t.Array(LessonSectionSchema, { minItems: 1, maxItems: 60 }),
+})
+export const LearningLessonParams = t.Object({ lessonId: Id })
+export const LearningBlockParams = t.Object({ lessonId: Id, blockId: Id })
+export const LearningNavigationBody = t.Object({ sectionId: Id })
+export const LearningHelpBody = t.Object({
+  requestId: t.Optional(t.String({ format: 'uuid' })),
+  sectionId: Id,
+  body: t.String({ minLength: 1, maxLength: 8000 }),
+})
+const Answers = t.Record(
+  t.String({ pattern: '^[a-zA-Z][\\w-]{0,79}$' }),
+  t.Union([
+    t.String({ maxLength: 8000 }),
+    t.Number(),
+    t.Boolean(),
+    t.Null(),
+    t.Array(t.String({ maxLength: 10000 }), { maxItems: 100 }),
+    t.Record(t.String(), t.Number(), { maxProperties: 20 }),
+  ]),
+  { maxProperties: 40 },
+)
+const ProgressFields = {
+  revision: t.String({ minLength: 1, maxLength: 32 }),
+  answers: Answers,
+  hintsUsed: t.Integer({ minimum: 0, maximum: 10 }),
+}
+export const LearningProgressBody = t.Object({
+  ...ProgressFields,
+  positionSeconds: t.Nullable(t.Integer({ minimum: 0, maximum: 86400 })),
+})
+export const LearningAttemptBody = t.Object({ ...ProgressFields, id: Id })
+export const LearningReportQuery = t.Object({ userId: Id, accountId: Id })
+const LearningImportModeSchema = t.Optional(t.Union([t.Literal('preserve'), t.Literal('replace')]))
+export const LearningImportPreviewBody = t.Object({
+  document: t.Unknown(),
+  mode: LearningImportModeSchema,
+})
+export const LearningImportApplyBody = t.Object({
+  operationId: Id,
+  document: t.Unknown(),
+  mode: LearningImportModeSchema,
+  // Import preview returns the same UUID revision used by draft writes/publication.
+  expectedFingerprint: Id,
+})

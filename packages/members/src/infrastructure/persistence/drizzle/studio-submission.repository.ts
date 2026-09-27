@@ -1,6 +1,9 @@
+import { randomUUID } from 'node:crypto'
+import { isGallerySubmission } from '@sistemazero/core/learning'
 import { and, asc, count, desc, eq, gte, inArray, isNotNull, lt, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { StudioCheckResult } from '../../../domain/course/studio-activity'
+import { LearningConflictError } from '../../../domain/learning/learning.errors'
 import type {
   RecentStudioSubmission,
   StudioSubmissionCourseRow,
@@ -13,9 +16,11 @@ import type {
   StudioSubmissionSummary,
 } from '../../../domain/ports/studio-submission-repository.port'
 import type { Database } from './db'
+import { lockLearningOwner } from './learning-owner-lock'
 import {
   courses,
   lessonBlocks,
+  lessonEvidence,
   lessons,
   modules,
   studioSubmissions,
@@ -27,8 +32,8 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
   constructor(private readonly db: Database) {}
 
   async upsert(
-    submission: StudioSubmissionRecord,
-    options?: { preservePassedAt?: boolean },
+    submission: StudioSubmissionRecord & { accountId: string },
+    options?: { preservePassedAt?: boolean; revision?: string; galleryRequestId?: string },
   ): Promise<void> {
     // Reenvio = último vence: atualiza projeto + data + correção, preservando a
     // linha (e o id). `passed_at` é STICKY — o service já calcula o valor a
@@ -52,34 +57,15 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       previousSubmittedAt: sql`${studioSubmissions.submittedAt}`,
     }
 
-    if (!options?.preservePassedAt) {
-      await this.db
-        .insert(studioSubmissions)
-        .values(values)
-        .onConflictDoUpdate({
-          target: [studioSubmissions.userId, studioSubmissions.blockId],
-          set: {
-            ...previousBackupSet,
-            project: values.project,
-            submittedAt: values.submittedAt,
-            score: values.score,
-            results: values.results,
-            checkedAt: values.checkedAt,
-            passedAt: values.passedAt,
-            message: values.message,
-          },
-        })
-      return
-    }
-
     await this.db.transaction(async (tx) => {
+      await lockLearningOwner(tx, submission)
       // serializa concorrência de submit por aluno+bloco; evita perda de `passedAt` sticky.
       await tx.execute(
         sql`select pg_advisory_xact_lock(hashtextextended(${`${submission.userId}:${submission.blockId}`}, 0))`,
       )
 
       const rows = await tx
-        .select({ passedAt: studioSubmissions.passedAt })
+        .select({ passedAt: studioSubmissions.passedAt, project: studioSubmissions.project })
         .from(studioSubmissions)
         .where(
           and(
@@ -89,7 +75,52 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         )
         .limit(1)
 
-      const nextPassedAt = rows[0]?.passedAt ?? values.passedAt ?? null
+      if (options?.galleryRequestId) {
+        const current = rows[0]?.project
+        if (isGallerySubmission(current) && current.requestId === options.galleryRequestId) return
+        const [alreadySubmitted] = await tx
+          .select({ id: lessonEvidence.id })
+          .from(lessonEvidence)
+          .where(
+            and(
+              eq(lessonEvidence.userId, submission.userId),
+              eq(lessonEvidence.blockId, submission.blockId),
+              sql`${lessonEvidence.payload}->'project'->>'requestId' = ${options.galleryRequestId}`,
+            ),
+          )
+          .limit(1)
+        if (alreadySubmitted) throw new LearningConflictError()
+      }
+      const nextPassedAt = options?.preservePassedAt
+        ? (rows[0]?.passedAt ?? values.passedAt ?? null)
+        : values.passedAt
+      const [block] = await tx
+        .select()
+        .from(lessonBlocks)
+        .where(eq(lessonBlocks.id, submission.blockId))
+        .for('share')
+      if (
+        options?.revision &&
+        (!block || block.archivedAt || block.contentRevision !== options.revision)
+      )
+        throw new LearningConflictError()
+      if (block)
+        await tx.insert(lessonEvidence).values({
+          id: randomUUID(),
+          userId: submission.userId,
+          accountId: submission.accountId,
+          lessonId: block.lessonId,
+          blockId: block.id,
+          kind: 'studio',
+          revision: block.contentRevision,
+          createdAt: submission.submittedAt,
+          payload: {
+            project: submission.project,
+            score: values.score,
+            results: values.results,
+            definition: block.content,
+          },
+        })
 
       await tx
         .insert(studioSubmissions)

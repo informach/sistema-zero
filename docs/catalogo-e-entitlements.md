@@ -14,7 +14,7 @@
 | Conceito | O que é | O que carrega |
 |---|---|---|
 | **Produto** | O *entregável* — o curso, o e-book, o combo. **Não tem preço.** | O conteúdo e **a entrega** (o que a compra libera) |
-| **Oferta** | A *unidade de venda* — um link de checkout | O **preço**, parcelas, garantia, janela, bônus de campanha |
+| **Oferta** | A *unidade de venda* — um link de checkout | O **preço**, prazo de acesso, parcelas, garantia, janela, bônus de campanha |
 | **Matrícula** (entitlement) | O *acesso de UM aluno* a UM produto, gravado na compra | Status, validade, snapshot congelado do que foi vendido |
 
 A regra de bolso para operar:
@@ -108,7 +108,9 @@ compra confirmada (Pix/cartão/boleto)
   → o aluno acessa: checagem local "tem chave do curso OU chave-mestra ativa?"
 ```
 
-- Compra única → matrícula **vitalícia** (sem validade).
+- Compra única vitalícia → matrícula **sem validade**.
+- Compra única com prazo fixo → matrícula válida pela duração da oferta (dias ou meses), contada
+  a partir da aprovação do pagamento.
 - Assinatura → matrícula com validade = ciclo + carência, **estendida a cada ciclo
   pago**; cancelou/expirou → todas as matrículas daquela assinatura caem juntas.
 
@@ -127,18 +129,32 @@ O rascunho é livre (cadastro progressivo). **Ativar** um produto exige ele pron
 - Oferta de **assinatura** ativa → além do acima, exige o **intervalo de cobrança**
   (mensal ou anual). Sem ele a ativação é bloqueada (o checkout não teria como montar o
   plano recorrente no provedor).
+- Oferta de compra única com **prazo fixo** ativa → exige duração inteira positiva e unidade
+  (dias ou meses). Rascunhos e ofertas pausadas podem ficar incompletos durante o cadastro.
 
 O formulário bloqueia com aviso e o backend valida de novo (defesa em profundidade).
 
-## Assinaturas (mensal e anual)
+## Cobrança e prazo de acesso
 
 Toda oferta tem um **modo de cobrança**, escolhido no cadastro da oferta:
 
-- **Compra única** — o cliente paga uma vez e a matrícula é **vitalícia** (sem validade).
-  É o padrão.
+- **Compra única vitalícia** — o cliente paga uma vez e o acesso não vence. Essa opção continua
+  disponível para ofertas atuais e futuras.
+- **Compra única com prazo fixo** — o cliente paga uma vez e acessa pelo número de dias ou meses
+  definido na oferta. O prazo começa na aprovação do pagamento, não no primeiro login.
 - **Assinatura** — cobrança **recorrente**; a matrícula vale por um ciclo e **renova a cada
   pagamento**. Cancelou, ou a cobrança falhou até o fim da carência → as matrículas daquela
   assinatura caem juntas (ver "O que acontece na compra").
+
+Preço e acesso são decisões separadas. Alterar apenas o preço não transforma uma oferta vitalícia
+em temporária (nem o contrário). A mudança vale para novas compras; acessos já concedidos conservam
+o snapshot da compra.
+
+O mesmo vale para assinaturas: editar o preço no catálogo muda a condição oferecida a **novos
+assinantes**, mas não reajusta em massa os contratos recorrentes que já estão ativos no provedor.
+Um reajuste da base, como os praticados por serviços de streaming, é uma operação própria: exige
+definir a data, comunicar os assinantes e migrar/recriar os planos no provedor. Não use a simples
+edição da oferta como se ela executasse esse processo.
 
 Na oferta de assinatura você ainda escolhe a **periodicidade**:
 
@@ -157,7 +173,7 @@ comprou (snapshot congelado): editar ou trocar as ofertas não mexe em assinante
 
 ## A oferta no funil de vendas (o que muda onde)
 
-O funil aponta para **uma oferta "base"** (env **`CATALOG_OFFER_SLUG`** do host do funil) e
+Cada funil aponta para **uma oferta "base"** pela env **`FUNNEL_OFFER_<CHAVE_DO_FUNIL>`** e
 **não tem preço próprio** — busca a oferta no catálogo em runtime (cache ~60s) e cobra sempre
 pela cotação do servidor. Quando a oferta-base tem uma **irmã ligada** (o par mensal↔anual acima),
 o checkout mostra o **alternador** e pode cobrar pela irmã que o cliente escolher; fora esse par,
@@ -165,20 +181,52 @@ o funil vende só a oferta-base. Três camadas:
 
 | Quero mudar… | Onde | Precisa deploy? |
 |---|---|---|
-| Preço, preço "de", parcelas, garantia, janela, cupom on/off, bônus, cupons | **Painel → Catálogo** (Ofertas/Cupons) | Não — reflete em ~1 min |
+| Preço, prazo de acesso, preço "de", parcelas, garantia, janela, cupom on/off, bônus, cupons | **Painel → Catálogo** (Ofertas/Cupons) | Não — reflete em ~1 min |
 | **Parar a venda** (emergência) | Oferta → status `paused` (checkout passa a responder "oferta não disponível") | Não |
-| QUAL oferta o funil vende | env `CATALOG_OFFER_SLUG` no host do funil | Restart |
+| QUAL oferta o funil vende | env `FUNNEL_OFFER_<CHAVE_DO_FUNIL>` no host do funil | Restart |
 | Copy/layout/imagens da página de vendas | Código do funil (`src/content/`) | Sim |
 
 Promoção do dia a dia = editar o preço da oferta ou criar **cupom** (quem já comprou mantém o
-acesso — snapshot congelado). Trocar a env é só quando o funil muda de **produto**.
+acesso — snapshot congelado). Para uma campanha com prazo diferente, prefira outra oferta do mesmo
+produto; assim preço, copy, métricas e promessa não se misturam. Trocar a env é só quando o funil
+muda de **oferta/produto**.
 
-> ⚠️ **Plataforma Kids não tem funil (hoje).** Produtos kids — como o **Estúdio Completo** — são
-> cadastrados normalmente no catálogo (produto + oferta), mas o acesso é liberado por **concessão
-> manual no admin** (Membros → aluno → conceder, ou Usuários → "Conceder acesso"), já que não há
-> checkout kids. A oferta existe no catálogo para guardar preço/condição comercial e para quando
-> houver um funil kids. O recado de "ainda não liberado" no app **não leva a uma página de vendas**
-> (não há `FUNNEL_URL` no kids) — orienta a criança a pedir para um responsável.
+Os funis Kids do **Desafio do Primeiro Jogo** e da **Comunidade dos Criadores** já possuem checkout.
+No Desafio, `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO` deve apontar para a oferta pública de 30 dias;
+na Comunidade, `FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES` aponta para a mensal e o alternador
+permite escolher a anual. Produtos Kids sem funil próprio ainda podem ser concedidos manualmente no
+admin.
+
+### Contrato comercial do Desafio do Primeiro Jogo
+
+- **Oferta pública:** `desafio-primeiro-jogo-30-dias`, compra única, R$ 67. O curso e o Mural
+  completo duram 30 dias exatos desde a aprovação. Na mesma compra, o aluno recebe também acesso
+  permanente de **visitante do Mural**: depois do prazo, pode ver e jogar os jogos, mas não
+  publicar, copiar ou usar as ações exclusivas de membro pleno.
+- **Evento presencial:** a mesma oferta, com um cupom de desconto fixo de R$ 30 e escopo restrito à
+  oferta; o total exibido e cobrado fica em R$ 37.
+- **Oferta histórica:** `desafio-primeiro-jogo`, compra única vitalícia. Ela continua no sistema e
+  não deve ser excluída nem convertida em prazo fixo. Pode permanecer fora do funil público e ser
+  reutilizada no futuro em uma campanha específica. Não recebe a matrícula adicional de visitante,
+  pois seu acesso completo ao Mural já é vitalício.
+- **Comunidade:** mensal e anual continuam sendo assinaturas. Uma matrícula válida da Comunidade
+  que cubra o curso é mais forte que o vencimento do Desafio; o aluno não perde acesso nem recebe
+  avisos de expiração indevidos. Enquanto a assinatura estiver ativa, o Mural também permanece
+  completo. Em um **novo pagamento confirmado** de assinatura cuja oferta inclui o Mural completo,
+  a conta recebe também Mural visitante permanente. Renovar a mesma assinatura não duplica esse
+  direito; cancelar ou deixar a assinatura expirar retira o acesso completo, mas preserva a visita
+  para ver e jogar sem publicar ou copiar.
+
+O visitante permanente é uma regra da **nova compra desta oferta específica**, com política explícita
+de 30 dias e Mural completo entre os itens. Alterar só a duração de outra oferta no painel não
+concede automaticamente esse direito. Matrículas existentes não são alteradas retroativamente.
+Da mesma forma, assinaturas pagas antes da implantação dessa regra não recebem visitante
+retroativamente, inclusive se já estiverem canceladas.
+
+Use **cupom, e não uma segunda oferta de evento**, quando a única diferença for o preço. Assim o
+mesmo contrato de 30 dias, a mesma página e a mesma mensuração servem para todos; o código do evento
+e o cupom identificam a origem e o preço efetivamente pago. Crie outra oferta apenas quando prazo,
+entrega, garantia ou outra promessa comercial também forem diferentes.
 
 ## A página de vendas do curso (o cadeado do catálogo)
 

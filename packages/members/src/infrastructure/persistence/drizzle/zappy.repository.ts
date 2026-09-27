@@ -21,6 +21,7 @@ interface StoredResponseJson extends Record<string, unknown> {
   scope: ZappyStoredResponse['scope']
   blockReferences: ZappyStoredResponse['blockReferences']
   lessonReferences?: ZappyStoredResponse['lessonReferences']
+  helpReferences?: ZappyStoredResponse['helpReferences']
   suggestions?: ZappyStoredResponse['suggestions']
   /** Motivo da reprova (auditoria) — NUNCA re-exposto pelo toResponse. */
   rejection?: string
@@ -41,6 +42,7 @@ function toResponse(row: {
     scope: value.scope,
     blockReferences: Array.isArray(value.blockReferences) ? value.blockReferences : [],
     ...(Array.isArray(value.lessonReferences) ? { lessonReferences: value.lessonReferences } : {}),
+    ...(Array.isArray(value.helpReferences) ? { helpReferences: value.helpReferences } : {}),
     ...(Array.isArray(value.suggestions) ? { suggestions: value.suggestions } : {}),
     createdAt: row.createdAt.toISOString(),
   }
@@ -311,6 +313,7 @@ export class DrizzleZappyRepository implements ZappyRepository {
         ...(input.response.lessonReferences
           ? { lessonReferences: input.response.lessonReferences }
           : {}),
+        ...(input.response.helpReferences ? { helpReferences: input.response.helpReferences } : {}),
         ...(input.response.suggestions ? { suggestions: input.response.suggestions } : {}),
         ...(input.rejection ? { rejection: input.rejection } : {}),
       }

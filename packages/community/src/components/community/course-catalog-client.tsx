@@ -27,7 +27,7 @@ export function CourseCatalogClient({ courses, fallbackSalesUrl }: Props) {
         hasActiveFilters={hasActiveFilters}
       />
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-border border-dashed px-6 py-16 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-[1.75rem] border-2 border-border border-dashed bg-card px-6 py-16 text-center">
           <SearchX className="size-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
             Nenhum curso encontrado com esses filtros.

@@ -1,8 +1,9 @@
 import { meetsFreeCreationLevel } from '@sistemazero/member-shell/server/creative-apps-access'
-import { KidsCareerLockedPinta } from '@/components/kids/kids-career-locked-pinta'
+import { KidsJourneyLockedPinta } from '@/components/kids/kids-journey-locked-pinta'
 import { KidsLockedPinta } from '@/components/kids/kids-locked-pinta'
 import { KidsPintaUnavailable } from '@/components/kids/kids-pinta-unavailable'
 import { PintaClient } from '@/components/kids/pinta-client'
+import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import { canOpenPensaStudioTask } from '@/lib/pensa-capabilities'
 import { checkPintaAccessReadonly, getGamificationReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
@@ -15,7 +16,7 @@ export const dynamic = 'force-dynamic'
  * O gate é resolvido no SERVIDOR (sem acesso → o app nem carrega); os DADOS são
  * locais ao navegador (IndexedDB por perfil) — zero backend próprio.
  *
- * São 4 estados: indisponível, sem o produto, produto comprado mas carreira abaixo
+ * São 4 estados: indisponível, sem o produto, produto comprado mas jornada abaixo
  * de Construtor(a), e acesso completo. A mesma ida também resolve o Estúdio.
  *
  * ⚠️ O Pinta abre junto com o Estúdio livre (Construtor(a)), NÃO com o Pensa/Zappy
@@ -29,12 +30,13 @@ export default async function PintaPage() {
     getSession(),
     getGamificationReadonly().catch(() => null),
   ])
-  if (res.status !== 200) return <KidsPintaUnavailable />
+  // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
+  if (res.status !== 200) return <ToolRouteRecado screen={KidsPintaUnavailable} />
   const hasAccess = res.body?.access?.pinta === true
-  if (!hasAccess) return <KidsLockedPinta />
-  if (gam?.status !== 200) return <KidsPintaUnavailable />
+  if (!hasAccess) return <ToolRouteRecado screen={KidsLockedPinta} />
+  if (gam?.status !== 200) return <ToolRouteRecado screen={KidsPintaUnavailable} />
   if (!meetsFreeCreationLevel(gam.body?.level?.slug, session?.role)) {
-    return <KidsCareerLockedPinta />
+    return <ToolRouteRecado screen={KidsJourneyLockedPinta} />
   }
   const studioAvailable = canOpenPensaStudioTask({
     studioProductOwned: res.body?.access?.['estudio-completo'] === true,

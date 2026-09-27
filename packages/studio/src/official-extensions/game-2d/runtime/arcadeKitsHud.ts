@@ -99,7 +99,7 @@ export const gameTwoDArcadeHudRuntime = `  // ---- HUD no canvas: placar, texto,
   }
   /** HUD de vidas ligado ao sprite: corações ou barra, sem variável intermediária. */
   function drawSpriteHealth(ctx, sprite, style, x, y, size, color) {
-    if (!ctx || !sprite) return;
+    if (!ctx || !sprite || _isDestroyedSprite(sprite)) return;
     if (!_hasInitializedHealth(sprite)) { _warnHealthNotInitialized(); return; }
     var visual = style === 'bar' ? 'bar' : 'hearts';
     if (visual === 'bar') {
@@ -196,12 +196,8 @@ export const gameTwoDArcadeHudRuntime = `  // ---- HUD no canvas: placar, texto,
    */
   function restart() {
     if (_restarting) return;
-    // Projeto legado, criado antes do bloco de início: não há callback que possa
-    // reconstruir suas variáveis léxicas. Mantém a compatibilidade por recarga,
-    // mas todo projeto novo e todos os exemplos usam o reinício em memória.
     if (!_startOrder.length) {
-      warnOnce('reinicio-legado', 'este projeto antigo ainda não usa as Áreas do projeto; vou recarregar o preview para recomeçar.');
-      try { location.reload(); } catch (error) { _reportHandlerError('de reinício', 'legado', error); }
+      warnOnce('reinicio-sem-inicio', 'registre a preparação em onStart antes de reiniciar a partida.');
       return;
     }
     _restarting = true;
@@ -276,7 +272,7 @@ export const gameTwoDArcadeHudRuntime = `  // ---- HUD no canvas: placar, texto,
   }
   /** Faz o sprite seguir o dedo/mouse SÓ na horizontal (ótimo p/ nave no celular). */
   function dragX(sprite) {
-    if (!sprite) return;
+    if (!sprite || _isDestroyedSprite(sprite)) return;
     sprite.x = pointer.x + camera.x - sprite.w / 2;
   }
 

@@ -16,7 +16,7 @@ function buildApp(opts: { internalToken?: string; metricsToken?: string } = {}) 
     repo,
     gateway,
     {
-      offerSlug: 'desafio-primeiro-jogo',
+      courseSlug: 'cade-todo-mundo',
       kidsCommunityUrl: 'https://kids.sistemazero.com.br',
       leaseMs: 90_000,
     },
@@ -277,6 +277,7 @@ describe('borda HTTP do referrals', () => {
         code: ambassador.code,
         ownerKind: 'ambassador',
         displayName: 'Vó Cida',
+        giftAvailable: true,
       })
 
       const missing = await app.handle(req('/referrals/internal/codes/nao-existe', { headers }))
@@ -294,6 +295,35 @@ describe('borda HTTP do referrals', () => {
       )
       expect(disabled.status).toBe(404)
       expect(await disabled.json()).toEqual(await missing.json()) // mesmíssimo envelope
+    })
+
+    test('curso em preparação aparece no link e recusa resgate antes de criar conta', async () => {
+      const { app, repo, gateway } = buildApp({ internalToken: INTERNAL_TOKEN })
+      const { ambassador } = await seed(app)
+      gateway.availabilityResult = { status: 200, body: { available: false } }
+      const headers = { 'x-internal-token': INTERNAL_TOKEN, 'content-type': 'application/json' }
+
+      const page = await app.handle(
+        req(`/referrals/internal/codes/${ambassador.code}`, { headers }),
+      )
+      expect(page.status).toBe(200)
+      expect(await page.json()).toMatchObject({ giftAvailable: false })
+
+      const res = await app.handle(
+        req('/referrals/internal/redemptions', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            code: ambassador.code,
+            name: 'Paula Prado',
+            email: 'paula@example.com',
+          }),
+        }),
+      )
+      expect(res.status).toBe(503)
+      expect(await res.json()).toMatchObject({ error: { code: 'GIFT_UNAVAILABLE' } })
+      expect(repo.redemptions).toHaveLength(0)
+      expect(gateway.callsOf('ensureBuyer')).toHaveLength(0)
     })
 
     test('resgate ponta a ponta: 201 completed; repetir o e-mail → 409', async () => {

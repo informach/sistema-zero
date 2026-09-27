@@ -1,15 +1,17 @@
 'use client'
 
+import { gradeLearningQuiz, isManifestQuiz } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { CheckCircle2, Timer, Trophy, XCircle } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiSend } from '../lib/api'
 import { cn } from '../lib/cn'
 import { renderMarkdown } from '../lib/markdown'
 import type { QuizAttemptResultView, QuizBlock, QuizStateView } from '../lib/types'
 import { useLessonPlayer } from './lesson-player-context'
+import { useLessonPreview } from './lesson-preview-context'
 
 interface Props {
   blockId: string
@@ -26,6 +28,19 @@ interface Props {
  */
 export function QuizBlockView({ blockId, content, quizState }: Props) {
   const player = useLessonPlayer()
+  return (
+    <QuizSession
+      key={`${player?.viewerId ?? 'preview'}:${player?.lessonId ?? ''}:${blockId}:${JSON.stringify(content)}`}
+      blockId={blockId}
+      content={content}
+      quizState={quizState}
+    />
+  )
+}
+
+function QuizSession({ blockId, content, quizState }: Props) {
+  const player = useLessonPlayer()
+  const rehearsal = useLessonPreview()
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<QuizAttemptResultView | null>(null)
@@ -34,6 +49,52 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
   const [cooldownUntil, setCooldownUntil] = useState<string | null>(null)
 
   const questions = content.questions ?? []
+  const draftKey = player ? `sz:quiz-draft:${player.viewerId}:${player.lessonId}:${blockId}` : null
+  const signature = JSON.stringify(content)
+  const initialRehearsalAnswers = useRef(rehearsal?.answers[blockId])
+  useEffect(() => {
+    let stored: unknown = initialRehearsalAnswers.current
+    if (draftKey) {
+      try {
+        const value: unknown = JSON.parse(localStorage.getItem(draftKey) ?? 'null')
+        if (
+          value &&
+          typeof value === 'object' &&
+          'signature' in value &&
+          value.signature === signature &&
+          'answers' in value
+        )
+          stored = value.answers
+      } catch {
+        /* A quiz remains usable when local storage is unavailable. */
+      }
+    }
+    if (!stored || typeof stored !== 'object') return
+    const valid: Record<string, string> = {}
+    for (const [id, selected] of Object.entries(stored)) {
+      if (
+        typeof selected === 'string' &&
+        content.questions?.some(
+          (q) => q.id === id && q.choices.some((choice) => choice.id === selected),
+        )
+      )
+        valid[id] = selected
+    }
+    setAnswers(valid)
+    // This keyed session restores once; changes in the preview provider are live edits.
+  }, [draftKey, signature, content.questions])
+
+  function choose(id: string, choice: string) {
+    const next = { ...answers, [id]: choice }
+    setAnswers(next)
+    rehearsal?.onChange(blockId, next, 0)
+    if (draftKey)
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({ signature, answers: next }))
+      } catch {
+        /* Submission remains available. */
+      }
+  }
   const passed = result?.passed ?? quizState?.passed ?? false
   const lastScore = result?.score ?? quizState?.lastScore ?? null
   const passingScore = result?.passingScore ?? content.passingScore ?? 100
@@ -58,10 +119,27 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
     setError(null)
     try {
       const body = Object.fromEntries(questions.map((q) => [q.id, [answers[q.id] ?? '']]))
+      if (!player) {
+        const authored = { ...content, passingScore: content.passingScore ?? 100 }
+        if (!isManifestQuiz(authored))
+          throw new Error('Complete o gabarito na autoria para ensaiar o quiz.')
+        const grade = gradeLearningQuiz(
+          { ...authored, passingScore: content.passingScore ?? undefined },
+          body,
+        )
+        await rehearsal?.onQuiz(blockId, grade)
+        setResult({
+          ...grade,
+          attemptsCount: (result?.attemptsCount ?? 0) + 1,
+          retryAvailableAt: null,
+        })
+        return
+      }
       const res = await apiSend<QuizAttemptResultView>(
         `/api/members/lessons/${encodeURIComponent(player?.lessonId ?? '')}/blocks/${encodeURIComponent(blockId)}/quiz-attempts`,
         'POST',
         { answers: body },
+        { 'x-sz-viewer': player.viewerId ?? '' },
       )
       setResult(res)
       if (res.passed) {
@@ -74,7 +152,11 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
         if (apiErr.retryAvailableAt) setCooldownUntil(apiErr.retryAvailableAt)
         setError('Aguarde o tempo de espera para refazer o quiz.')
       } else {
-        setError('Não foi possível enviar as respostas. Tente de novo.')
+        setError(
+          !player && err instanceof Error
+            ? err.message
+            : 'Não foi possível enviar as respostas. Tente de novo.',
+        )
       }
     } finally {
       setSubmitting(false)
@@ -96,7 +178,11 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
         const chosen = answers[q.id]
         const correction = corrections.get(q.id)
         return (
-          <fieldset key={q.id} className="flex flex-col gap-2">
+          <fieldset
+            key={q.id}
+            className="flex flex-col gap-2"
+            disabled={formDisabled || correction?.correct === true}
+          >
             <legend className="flex gap-1.5 text-sm font-medium text-foreground">
               <span className="shrink-0">{qi + 1}.</span>
               {/* Enunciado em markdown (negrito/títulos/listas/imagens) — renderer puro/XSS-safe. */}
@@ -126,8 +212,8 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
                     name={`${blockId}-${q.id}`}
                     value={choice.id}
                     checked={selected}
-                    disabled={formDisabled}
-                    onChange={() => setAnswers((a) => ({ ...a, [q.id]: choice.id }))}
+                    disabled={formDisabled || correction?.correct === true}
+                    onChange={() => choose(q.id, choice.id)}
                     className="size-4 shrink-0 accent-primary"
                   />
                   {/* Texto da opção em markdown (formatação rica + imagens). */}
@@ -163,6 +249,11 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
       })}
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {result && !result.passed && result.questions.some((q) => q.correct) && (
+        <p className="text-sm text-muted-foreground">
+          Suas respostas certas estão guardadas. Reveja somente as que faltam.
+        </p>
+      )}
 
       {passed ? (
         <p className="inline-flex items-center gap-2 text-sm text-accent dark:text-primary">

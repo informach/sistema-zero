@@ -28,6 +28,7 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
         options: [
           ['automáticos no celular', 'auto'],
           ['sempre visíveis', 'always'],
+          ['só as quatro direções', 'directions'],
           ['sem botões na tela', 'off'],
         ],
       },
@@ -159,7 +160,7 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
       { type: 'field_name_picker', name: 'WORLD', text: 'mundoAtual', kind: 'variable' },
       { type: 'field_name_picker', name: 'LEVEL', text: 'faseAtual', kind: 'variable' },
     ],
-    message3: 'soltar inimigos dos tipos %1 na jornada %2',
+    message3: 'soltar inimigos dos tipos %1 na volta %2',
     args3: [
       { type: 'field_input', name: 'ENEMIES', text: '' },
       { type: 'input_value', name: 'JOURNEY', check: 'JSValue' },

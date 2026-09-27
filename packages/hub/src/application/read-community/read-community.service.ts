@@ -35,7 +35,7 @@ export class ReadCommunityService {
     // demais somem (comportamento clássico — zero regressão na vitrine adulta).
     const items = annotated
       .filter((a) => a.accessible || a.space.teaserWhenLocked)
-      .map((a) => toSpacePublicView(a.space, !a.accessible))
+      .map((a) => toSpacePublicView(a.space, !a.accessible, a.canInteract))
     return { items }
   }
 
@@ -49,7 +49,7 @@ export class ReadCommunityService {
       if (space.teaserWhenLocked) return toSpacePublicView(space, true)
       throw new AccessDeniedError()
     }
-    return toSpacePublicView(space, false)
+    return toSpacePublicView(space, false, decision.canInteract)
   }
 
   async listChannels(actor: Actor, slug: string): Promise<{ items: ChannelPublicView[] }> {

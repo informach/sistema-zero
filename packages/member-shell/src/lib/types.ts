@@ -1,3 +1,19 @@
+import type {
+  LessonLearningProgress,
+  LessonRequirement,
+  LessonSection,
+  SectionProgressView,
+} from '@sistemazero/core/learning'
+import type { SceneVozes, ZappySpeechOverride } from '@sistemazero/core/learning/scene'
+
+// "Como fazer" (biblioteca de ajuda do Kids): as views nascem no core e valem nos dois lados.
+export type {
+  HelpCollectionView,
+  HelpTutorialDocument,
+  HelpTutorialEntry,
+  HelpTutorialView,
+} from '@sistemazero/core/help'
+
 /**
  * Tipos compartilhados client/server do app do aluno. SEM lógica e SEM imports de
  * `server/*` — Client Components importam daqui com segurança. Espelham as views
@@ -90,13 +106,13 @@ export interface UserView {
 // ── Members (área do aluno) ─────────────────────────────────────────────────
 export interface AccessView {
   accessType: string
-  /** ISO-8601 ou null (vitalício). */
+  /** ISO-8601 ou null quando não há uma data de término exibível. */
   expiresAt: string | null
 }
 
 /**
  * Dificuldade do curso (espelha o enum `course_level` do members). `lenda` é uma
- * categoria FORA da carreira (bônus da formatura, só na trilha da Lenda no kids) —
+ * categoria FORA da jornada (bônus da formatura, só na trilha da Lenda no kids) —
  * NÃO é degrau: `courseTierOf` devolve `undefined` p/ ela.
  */
 export type CourseLevelSlug =
@@ -123,7 +139,7 @@ export interface CourseProgressView extends CourseProgress {
  * Os marcos do aluno num curso (mirror do members) — concluir e publicar no Mural
  * são passos DISTINTOS, e é a diferença entre eles que o selo do card mostra.
  * ⚠️ NÃO é o `progress`: este regride quando a autora publica uma aula nova; o marco
- * é congelado no ledger e é dele que a carreira e o contador da trilha vivem.
+ * é congelado no ledger e é dele que a jornada e o contador da trilha vivem.
  * Vitrine adulta vem sempre zerado (não há Mural lá).
  */
 export interface CourseMilestonesView {
@@ -145,10 +161,12 @@ export interface CatalogCourseView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
-  /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
+  /** Posição na etapa da jornada; `null`/ausente = bônus ou extra. */
   careerSlot?: number | null
-  /** Trava pedagógica da carreira, separada da posse comercial. */
-  careerLock?: CareerCourseLockView
+  /** Papel explícito; ausente em versões antigas do members. */
+  journeyRole?: 'positioned' | 'reward' | 'extra'
+  /** Trava pedagógica da jornada, separada da posse comercial. */
+  careerLock?: JourneyCourseLockView
   /** Marcos do aluno neste curso; ausente = members antigo (trate como nenhum). */
   milestones?: CourseMilestonesView
   /** URL da página de vendas (funil); `null` → fallback FUNNEL_URL no server. */
@@ -248,10 +266,12 @@ export interface MyCourseView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
-  /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
+  /** Posição na etapa da jornada; `null`/ausente = bônus ou extra. */
   careerSlot?: number | null
-  /** Trava pedagógica da carreira, separada da posse comercial. */
-  careerLock?: CareerCourseLockView
+  /** Papel explícito; ausente em versões antigas do members. */
+  journeyRole?: 'positioned' | 'reward' | 'extra'
+  /** Trava pedagógica da jornada, separada da posse comercial. */
+  careerLock?: JourneyCourseLockView
   /** Marcos do aluno neste curso; ausente = members antigo (trate como nenhum). */
   milestones?: CourseMilestonesView
   access: AccessView
@@ -260,7 +280,7 @@ export interface MyCourseView {
   continueLessonId: string | null
 }
 
-export interface CareerCourseLockView {
+export interface JourneyCourseLockView {
   locked: boolean
   reason?: 'future-tier' | 'foundation-first' | 'tier-reward'
   requiredLevel?: StudentLevelSlug
@@ -282,12 +302,29 @@ export interface LessonOutlineView {
   locked: boolean
 }
 
+/**
+ * Baú de fim de unidade na trilha kids. `null` no curso adulto (não tem trilha).
+ * O estado vem do SERVIDOR: derivar no cliente não sobrevive a um F5.
+ */
+export interface ModuleChestView {
+  /** Todas as aulas publicadas da unidade concluídas: dá para abrir. */
+  unlocked: boolean
+  /** Já aberto (e pago). */
+  claimed: boolean
+  /** O prêmio, para a criança ver ANTES de abrir. */
+  xp: number
+  coins: number
+}
+
 export interface ModuleOutlineView {
   id: string
   title: string
   summary: string | null
+  /** Animação Rive (.riv) da trilha, enviada no Admin; APIs antigas omitem o campo. */
+  riveUrl?: string | null
   sortOrder: number
   lessons: LessonOutlineView[]
+  chest: ModuleChestView | null
 }
 
 // ── Classificação do curso (estilo Udemy) ───────────────────────────────────
@@ -316,6 +353,13 @@ export interface CourseRatingView {
 
 /** `GET /members/courses/:slug` — detalhe com módulos/aulas (outline). */
 export interface CourseDetailView {
+  /** Stable catalog ID; optional while rolling out the Members upgrade. */
+  id?: string
+  /** Permanent course milestones; independent of newly added lessons. */
+  milestones?: CourseMilestonesView
+  /** Published, unlocked lesson containing the course publication action. */
+  showcaseLessonId?: string | null
+  materialLessonIds?: string[]
   slug: string
   title: string
   subtitle: string | null
@@ -325,7 +369,7 @@ export interface CourseDetailView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
-  /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
+  /** Posição na etapa da jornada; `null`/ausente = curso bônus. */
   careerSlot?: number | null
   access: AccessView
   progress: CourseProgressView
@@ -344,6 +388,22 @@ export interface RichTextBlock {
   html?: string
   markdown?: string
   codeLanguageHints?: string[]
+}
+/** Poses que o balão de fala oferece (subconjunto do elenco do mascote). */
+export type DialoguePose = 'speaking' | 'happy' | 'thinking' | 'celebrating'
+/** Fala do mascote num balão, no lugar de contexto corrido. Texto SIMPLES. */
+export interface DialogueBlock {
+  kind: 'dialogue'
+  pose?: DialoguePose
+  text: string
+  /**
+   * A voz do Zappy: `texto falado → MP3`, gerado na autoria (core `voz.ts`). Mirror do members.
+   * ⚠️ Sem ele o balão não ganha botão de ouvir — aqui NÃO há queda para a voz do sistema, que
+   * seria outro personagem falando no lugar do Zappy.
+   */
+  vozes?: SceneVozes
+  /** Pronúncia particular desta fala, presa ao texto que a criança vê. */
+  zappySpeech?: ZappySpeechOverride
 }
 export interface VideoBlock {
   kind: 'video'
@@ -410,6 +470,8 @@ export interface EbookBlock {
  * conclusão da aula até ser enviada — `studioState` reflete se já enviou.
  */
 export interface StudioBlock {
+  gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
+  purpose?: 'experiment' | 'submission'
   kind: 'studio'
   initialProject: Project
   /**
@@ -452,6 +514,8 @@ export interface StudioBlock {
  * do tipo. Quem sanea é o `<PintaLesson>`, na borda.
  */
 export interface PintaBlock {
+  gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
+  purpose?: 'experiment' | 'submission'
   kind: 'pinta'
   initialAsset: unknown
   /** Ferramentas liberadas pelo professor. Vazia/ausente = a caixa inteira. */
@@ -469,8 +533,40 @@ export interface ComingSoonBlock {
   kind: 'coming_soon'
   message?: string
 }
+/**
+ * Um item da lista de materiais complementares (espelho do members).
+ *
+ * ⚠️⚠️ O item de ARQUIVO nunca traz a URL: ele aponta para um anexo da aula pelo id, e o
+ * servidor preenche `label`/`fileType`/`sizeBytes` na projeção. O download é pela rota
+ * autenticada de anexo, que é quem resolve a localização real e aplica a marca d'água.
+ */
+export type MaterialItem =
+  | {
+      id: string
+      kind: 'file'
+      attachmentId: string
+      label?: string
+      note?: string
+      fileType?: string | null
+      sizeBytes?: number | null
+    }
+  | { id: string; kind: 'image'; url: string; alt?: string; caption?: string }
+  | { id: string; kind: 'text'; markdown: string }
+  | { id: string; kind: 'link'; url: string; label: string; note?: string }
+  | { id: string; kind: 'video'; url: string; label?: string }
+/**
+ * **Materiais complementares.** Um bloco como qualquer outro: mora numa seção e aparece no
+ * ponto em que a autora o colocou. Nunca trava a conclusão.
+ */
+export interface MaterialsBlock {
+  kind: 'materials'
+  title?: string
+  bookPreview?: boolean
+  items: MaterialItem[]
+}
 export type LessonBlockContent =
   | RichTextBlock
+  | DialogueBlock
   | VideoBlock
   | ImageBlock
   | AudioBlock
@@ -481,6 +577,7 @@ export type LessonBlockContent =
   | PintaBlock
   | CertificateBlock
   | ComingSoonBlock
+  | MaterialsBlock
 
 /** Estado das tentativas do aluno num bloco de quiz (vem no GET da aula). */
 export interface QuizStateView {
@@ -564,6 +661,8 @@ export interface CreationPartTicketView {
 /** `POST /members/creations/:tool/:itemId/upload` — a reserva que o BFF assina (+ as partes FALTANTES). */
 export interface CreationUploadTicketView {
   revision: number
+  /** Missing only from old servers; confirms legacy format 1, never a newer format. */
+  formatVersion?: number
   storageKey: string
   bytes: number
   parts: CreationPartTicketView[]
@@ -1078,6 +1177,8 @@ export interface ChildWeekGameView {
 
 /** Resumo de progresso de UM filho (perfil) — espelha a view do members. */
 export interface ChildStatsView {
+  learningTopics?: import('@sistemazero/core/learning').LearningTopicSummary[]
+  career?: import('@sistemazero/core/journey').ParentJourneyView
   profileId: string
   xp: number
   streak: { current: number; best: number }
@@ -1190,6 +1291,8 @@ export interface ZappyStoredResponseView {
     lessonId: string
     title: string
   }>
+  /** Tutoriais do "Como fazer" citados: o painel mostra "Passo a passo: …" e abre `/como-fazer/<slug>`. */
+  helpReferences?: Array<{ slug: string; title: string }>
   /** Continuações prováveis da criança (chips que preenchem o campo, ≤3). */
   suggestions?: string[]
   createdAt: string
@@ -1208,7 +1311,8 @@ export interface ZappyHistoryPageView {
   nextCursor: string | null
 }
 
-export interface ZappyKnowledgeHitView {
+export interface ZappyLessonKnowledgeHitView {
+  kind?: 'lesson'
   courseId: string
   courseSlug: string
   courseTitle: string
@@ -1216,6 +1320,25 @@ export interface ZappyKnowledgeHitView {
   lessonTitle: string
   sourceType: 'video-vtt' | 'rich-text' | 'student-notebook'
   content: string
+}
+
+/** Um tutorial publicado do "Como fazer" que casou com a pergunta (sem curso, sem gate). */
+export interface ZappyHelpKnowledgeHitView {
+  kind: 'help-tutorial'
+  slug: string
+  title: string
+  collectionTitle: string
+  content: string
+}
+
+export type ZappyKnowledgeHitView = ZappyLessonKnowledgeHitView | ZappyHelpKnowledgeHitView
+
+export function isZappyHelpHit(hit: ZappyKnowledgeHitView): hit is ZappyHelpKnowledgeHitView {
+  return hit.kind === 'help-tutorial'
+}
+
+export function isZappyLessonHit(hit: ZappyKnowledgeHitView): hit is ZappyLessonKnowledgeHitView {
+  return hit.kind !== 'help-tutorial'
 }
 
 /** Card do filho na área dos pais: stats do members + identidade do perfil (auth). */
@@ -1253,6 +1376,7 @@ export interface QuizAttemptResultView {
 
 /** Bloco como chega da API (`content` é `unknown` na borda — narrowing por `kind`). */
 export interface LessonBlockView {
+  blockRevision?: string
   id: string
   kind: string
   sortOrder: number
@@ -1301,6 +1425,16 @@ export interface EbookDownloadView {
 
 /** `GET /members/courses/:slug/lessons/:lessonId` (busca por ID, não slug). */
 export interface LessonDetailView {
+  requirements?: LessonRequirement[]
+  sections?: Pick<
+    LessonSection,
+    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool' | 'completion'
+  >[]
+  /** Presentation of an unconfigured lesson; completion still uses its original gates. */
+  legacyLayout?: boolean
+  structureRevision?: string | null
+  sectionProgress?: SectionProgressView
+  learningProgress?: LessonLearningProgress
   id: string
   slug: string
   title: string
@@ -1405,6 +1539,8 @@ export interface HubSpaceView {
   audience: 'adult' | 'kids'
   /** Aparece BLOQUEADO no menu (sem acesso): a UI mostra um recado e NÃO carrega canais. */
   locked: boolean
+  /** Full community membership enables social actions; visitor entitlement is read-only. */
+  canInteract: boolean
 }
 
 /** Canal (fórum) visto pelo aluno. `requiresApproval` é o efetivo (canal ?? space). */
@@ -1528,11 +1664,23 @@ export interface ShowcasePayloadView {
 }
 
 // ── Recados (conversas com o professor — canal de retorno) ──────────────────
-export type TeacherThreadContext = 'studio_submission' | 'mural_publication' | 'general'
+export type TeacherThreadContext =
+  | 'studio_submission'
+  | 'mural_publication'
+  | 'general'
+  | 'lesson_section'
 export type TeacherMessageRole = 'teacher' | 'student'
 
 /** Um turno da conversa (mirror do members). */
 export interface TeacherMessageView {
+  helpContext?: {
+    courseSlug: string
+    lessonId: string
+    sectionId: string
+    sectionTitle: string
+    revision: string | null
+    pending: string[]
+  } | null
   id: string
   authorRole: TeacherMessageRole
   authorId: string | null
@@ -1544,6 +1692,7 @@ export interface TeacherMessageView {
 
 /** Uma conversa aberta (cabeçalho + turnos). */
 export interface TeacherThreadView {
+  workflowStatus?: 'waiting_teacher' | 'waiting_student' | 'resolved'
   id: string
   userId: string
   accountId: string | null
@@ -1562,6 +1711,7 @@ export interface TeacherThreadView {
 
 /** Resumo p/ a caixa de entrada + badge (mirror do members). */
 export interface TeacherThreadSummaryView {
+  workflowStatus?: 'waiting_teacher' | 'waiting_student' | 'resolved'
   id: string
   userId: string
   accountId: string | null
@@ -1611,6 +1761,13 @@ export interface HubPage<T> {
   hasMore: boolean
 }
 
+/**
+ * Ordens ALTERNATIVAS da listagem de tópicos (filtros do Mural, 09/2026): `recent` =
+ * "Novidades", `plays` = "Mais jogados". A padrão (atividade, fixados primeiro) é a
+ * AUSÊNCIA do parâmetro. O cursor carrega a ordem: trocar de ordem = recomeçar a lista.
+ */
+export type HubThreadSort = 'recent' | 'plays'
+
 // ── Pensa (planejador de jogos — metodologia ZERO) ──────────────────────────
 // Mirror do contrato público de `members`. O Pensa descreve e audita o plano;
 // Pinta e Estúdio são os únicos donos da execução e do progresso.
@@ -1624,7 +1781,7 @@ export type PensaArtifactType =
   | 'task_plan'
   | 'plan_review'
 export type PensaArtifactStatus = 'draft' | 'validated'
-export type PensaTaskDestination = 'pinta' | 'studio'
+export type PensaTaskDestination = 'pinta' | 'studio' | 'molda'
 export type PensaTaskStatus = 'planned' | 'in_progress' | 'completed'
 export type PensaTaskCategory = 'art' | 'setup' | 'gameplay' | 'scene' | 'ui' | 'polish'
 export type PensaArtKind = 'sprite' | 'background' | 'tileset' | 'tilemap'
@@ -1640,6 +1797,9 @@ export interface PensaCycleView {
   oCompletedAt: string | null
 }
 
+/** `owner` = meu plano; `member` = entrei pelo código de um colega (equipe, 26/09/2026). */
+export type PensaProjectRole = 'owner' | 'member'
+
 export interface PensaProjectListView {
   id: string
   name: string
@@ -1649,6 +1809,13 @@ export interface PensaProjectListView {
   stage: PensaStage
   createdAt: string
   updatedAt: string
+  role: PensaProjectRole
+  team: {
+    /** Quantos convidados a equipe tem (o dono não conta). */
+    memberCount: number
+    /** 1º nome do dono, só para `member` (best-effort: `null` = "um colega"). */
+    ownerFirstName: string | null
+  }
 }
 
 export interface PensaArtifactIndexEntry {
@@ -1670,6 +1837,34 @@ export interface PensaProjectDetailView {
   currentCycle: PensaCycleView
   /** Latest por type, do ciclo CORRENTE. */
   artifactsIndex: PensaArtifactIndexEntry[]
+  role: PensaProjectRole
+  /** O CÓDIGO não vem aqui (só na rota de membros, para o dono): só se está ligado. */
+  team: { memberCount: number; shareEnabled: boolean }
+}
+
+/** Uma pessoa da equipe do plano: 1º nome e foto best-effort (sem nome = "Colega"). */
+export interface PensaTeamPersonView {
+  profileId: string
+  firstName: string | null
+  photoUrl: string | null
+  /** `null` para o dono (ele não "entrou"). */
+  joinedAt: string | null
+}
+
+export interface PensaProjectMembersView {
+  role: PensaProjectRole
+  viewerProfileId: string
+  /** Só para o dono; `null` para membro ou com o código desligado. */
+  shareCode: string | null
+  maxMembers: number
+  owner: PensaTeamPersonView
+  members: PensaTeamPersonView[]
+}
+
+/** O código gerado (`code`) e como ele aparece na tela (`display`, com o prefixo). */
+export interface PensaShareView {
+  code: string
+  display: string
 }
 
 export interface PensaChatMessage {
@@ -1756,8 +1951,26 @@ export interface PensaStudioTaskContext {
   extensionIds: string[]
 }
 
-export type PensaTaskContext = PensaPintaTaskContext | PensaStudioTaskContext
+export interface PensaMoldaTaskContext {
+  kind: 'molda'
+  /** Inventory reference; the finished creation keeps its own stable ID. */
+  assetId: string
+  artKind: 'model' | 'texture' | 'sky'
+  appearance: string
+  usage: string
+  palette: Array<{ role: string; color: string }>
+}
+export type PensaTaskContext =
+  | PensaPintaTaskContext
+  | PensaStudioTaskContext
+  | PensaMoldaTaskContext
 export type PensaTaskOutputRef =
+  | {
+      kind: 'molda_asset'
+      assetId: string
+      assetName?: string
+      assetKind: 'model' | 'texture' | 'sky'
+    }
   | { kind: 'pinta_asset'; assetId: string; assetName?: string; usedInStudioAt?: string }
   | { kind: 'studio_project'; projectId: string; saveRevision?: string }
 

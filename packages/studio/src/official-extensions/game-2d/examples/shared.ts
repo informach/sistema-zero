@@ -1,41 +1,5 @@
 import type { ExtensionExample } from '#extensions'
-import { cssDeclarationsRecord, type JSStatement } from '#ir'
-
-function isBeginnerPeriodicLoop(
-  statement: JSStatement,
-): statement is Extract<JSStatement, { type: 'g2d:everyFrames' | 'g2d:everySeconds' }> {
-  return statement.type === 'g2d:everyFrames' || statement.type === 'g2d:everySeconds'
-}
-
-/**
- * Migra os exemplos antigos em que “A cada N” vivia dentro do quadro principal.
- * A cadência vira uma raiz própria; quando estava dentro de um `se`, o corpo
- * conserva essa condição (por exemplo, só criar asteroide durante “jogando”).
- */
-function liftBeginnerPeriodicLoops(loops: JSStatement[]): JSStatement[] {
-  const lifted: JSStatement[] = []
-  const roots = loops.map((root) => {
-    if (root.type !== 'g2d:updateEachFrame') return root
-    const body = root.body.flatMap((statement): JSStatement[] => {
-      if (isBeginnerPeriodicLoop(statement)) {
-        lifted.push(statement)
-        return []
-      }
-      if (statement.type !== 'if') return [statement]
-      const then = statement.then.flatMap((child): JSStatement[] => {
-        if (!isBeginnerPeriodicLoop(child)) return [child]
-        lifted.push({
-          ...child,
-          body: [{ type: 'if', cond: structuredClone(statement.cond), then: child.body }],
-        })
-        return []
-      })
-      return [{ ...statement, then }]
-    })
-    return { ...root, body }
-  })
-  return [...roots, ...lifted]
-}
+import { cssDeclarationsRecord } from '#ir'
 
 function accessibleGameDescription(example: ExtensionExample): string {
   const descriptions: Record<string, string> = {
@@ -100,7 +64,7 @@ export function beginnerGameExample(example: ExtensionExample): ExtensionExample
           ...example.ir.behavior.start,
         ],
         events: example.ir.behavior.events,
-        loops: liftBeginnerPeriodicLoops(example.ir.behavior.loops),
+        loops: example.ir.behavior.loops,
       },
     },
   }

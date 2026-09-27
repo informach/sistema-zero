@@ -1,5 +1,6 @@
 import type { CursorPos } from '../../application/cursor'
 import type { Comment, ContentStatus, Thread, ThreadStudioMeta } from '../thread/thread'
+import type { ShowcasePublishedArgs } from './members-gateway.port'
 
 export type ContentTransitionOutcome = 'updated' | 'not_found' | 'invalid_state'
 
@@ -29,6 +30,8 @@ export interface CreateThreadInput {
 
 /** Criação de um post de VITRINE (Mural) — auto-publicado pela criança (idempotente). */
 export interface CreateShowcaseThreadInput {
+  /** Persisted atomically with the thread for durable journey notification. Absent on standalone games. */
+  coursePublication?: ShowcasePublishedArgs
   id: string
   channelId: string
   /** Perfil da criança (identidade de DADOS — o `authorId` do thread). */
@@ -72,6 +75,15 @@ export interface CreateCommentInput {
   now: Date
 }
 
+/**
+ * Ordem da listagem de tópicos (filtros do Mural, 09/2026):
+ * - `activity` (padrão): FIXADOS primeiro na página 1, depois última atividade;
+ * - `recent`: data de publicação, mais novos primeiro ("Novidades");
+ * - `plays`: jogadas do link público, mais jogados primeiro ("Mais jogados").
+ * As duas alternativas NÃO puxam os fixados para o topo: a ordem é a promessa do filtro.
+ */
+export type ThreadSort = 'activity' | 'recent' | 'plays'
+
 export interface ListThreadsOpts {
   /** Vê os pendentes DESTE autor além dos visíveis (o autor vê o próprio aguardando). */
   viewerId: string
@@ -81,6 +93,8 @@ export interface ListThreadsOpts {
   limit: number
   /** Só posts do desafio (`m:YYYY-MM`) — prateleira do Mural; ausente = todos. */
   challengeKey?: string | null
+  /** Ordem da página; ausente = `activity` (o comportamento de sempre). */
+  sort?: ThreadSort
 }
 
 export interface ListCommentsOpts {
@@ -140,7 +154,7 @@ export interface ThreadRepository {
     authorAccountId: string | null
     playsCount: number
   }>
-  /** Agregado da carreira: posts de vitrine visíveis do autor + soma das jogadas. */
+  /** Agregado da jornada: posts de vitrine visíveis do autor + soma das jogadas. */
   showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }>
   /**
    * Participação Clube × Mural por autor, agregada EM LOTE no banco (GROUP BY —

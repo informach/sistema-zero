@@ -7,31 +7,48 @@ const SIZES = {
   xl: 'size-28',
 } as const
 
+/** Tamanho da letra da inicial por tamanho do círculo. */
+const INITIAL_TEXT = {
+  sm: 'text-sm',
+  md: 'text-xl',
+  lg: 'text-2xl',
+  xl: 'text-5xl',
+} as const
+
 /**
  * Avatar da criança = a FOTO (snapshot) do personagem 3D montado no `/meu-avatar`.
  * Renderer reusado em TODO lugar (menu, cards, perfil, quarto, perfil público) — mostra
  * só um `<img>` (zero WebGL fora do configurador; avatares aparecem em listas/rankings).
- * Sem foto ainda → personagem padrão (SVG inline, sem asset binário).
+ *
+ * Sem foto ainda: com `name`, a INICIAL no círculo azul da marca (o desenho das
+ * telas-modelo de 11/09/2026, e o par da marca troca de tinta no escuro sozinho); sem
+ * nome, o personagem padrão (SVG inline, sem asset binário).
  */
 export function KidsAvatar({
   photoUrl,
+  name,
   size = 'md',
   className,
   label,
 }: {
   /** URL do snapshot (`avatarPhotoUrl`/`photoUrl` das views). `null`/ausente → default. */
   photoUrl?: string | null
+  /** Nome de quem é o avatar: a inicial vira o avatar enquanto não há foto. */
+  name?: string | null
   size?: keyof typeof SIZES
   className?: string
   /** Texto acessível (ex.: "Avatar de Lia"). */
   label?: string
 }) {
+  const initial = name?.trim().charAt(0).toLocaleUpperCase('pt-BR') ?? ''
+  const showInitial = !photoUrl && initial !== ''
   return (
     <span
       role="img"
       aria-label={label ?? 'Avatar'}
       className={cn(
-        'inline-block shrink-0 overflow-hidden rounded-full bg-(--kids-cyan-tint)',
+        'inline-block shrink-0 overflow-hidden rounded-full',
+        showInitial ? 'kids-marca' : 'bg-(--kids-cyan-tint)',
         SIZES[size],
         className,
       )}
@@ -46,6 +63,13 @@ export function KidsAvatar({
           decoding="async"
           className="size-full object-cover"
         />
+      ) : showInitial ? (
+        <span
+          aria-hidden="true"
+          className={cn('grid size-full place-items-center font-bold', INITIAL_TEXT[size])}
+        >
+          {initial}
+        </span>
       ) : (
         <DefaultAvatar />
       )}

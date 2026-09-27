@@ -7,7 +7,7 @@ import {
   createVectorTilesetAsset,
 } from '../core/project'
 import { clearIdbMock } from '../testing/idbMock'
-import { makeRect } from '../vector/shapes'
+import { makeEllipse, makeRect } from '../vector/shapes'
 import type { StudioPayload } from './studioBridge'
 import { validateStudioPayloadSize } from './studioBridge'
 
@@ -78,6 +78,21 @@ describe('listGalleryForStudio', () => {
     expect(byName.get('heroi')?.thumbDataUrl).toBeNull()
   })
 
+  it('a miniatura enviada ao Studio conserva a máscara geométrica', async () => {
+    const vetor = createVectorBackgroundAsset({ name: 'nave', width: 32, height: 32 })
+    const source = makeEllipse(
+      { x: 8, y: 8 },
+      { x: 24, y: 24 },
+      { fill: '#ffffff', stroke: null, opacity: 1 },
+    )
+    vetor.shapes = [{ ...redRect(), maskId: source.id }, source]
+    await persistAsset(vetor)
+
+    const thumb = (await listGalleryForStudio())[0]?.thumbDataUrl ?? ''
+    expect(thumb).toContain(encodeURIComponent(`pin-mask-${source.id}`))
+    expect(thumb).toContain(encodeURIComponent(`clip-path="url(#pin-mask-${source.id})"`))
+  })
+
   it('cacheia a miniatura por updatedAt (mesmo carimbo = mesma thumb, novo = recomputa)', async () => {
     const vetor = createVectorBackgroundAsset({ name: 'ceu', width: 20, height: 10 })
     vetor.shapes.push(redRect())
@@ -135,12 +150,14 @@ describe('exportAssetForStudio', () => {
     expect(await exportAssetForStudio('nao-existe')).toEqual({ ok: false, reason: 'not-found' })
   })
 
-  it('sem canvas (happy-dom) todo raster falha gracioso → raster-failed', async () => {
+  it('sem canvas, pixel falha e vetor segue em SVG', async () => {
     const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
     const vetor = createVectorBackgroundAsset({ name: 'ceu', width: 20, height: 10 })
     await persistAssets([sprite, vetor])
     expect(await exportAssetForStudio(sprite.id)).toEqual({ ok: false, reason: 'raster-failed' })
-    expect(await exportAssetForStudio(vetor.id)).toEqual({ ok: false, reason: 'raster-failed' })
+    const exported = await exportAssetForStudio(vetor.id)
+    expect(exported.ok).toBe(true)
+    if (exported.ok) expect(exported.asset.dataUrl).toStartWith('data:image/svg+xml')
   })
 
   it('tilemap órfão (tileset apagado) → raster-failed', async () => {

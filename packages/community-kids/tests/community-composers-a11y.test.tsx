@@ -79,6 +79,7 @@ function installFetch() {
           iconUrl: null,
           audience: 'kids',
           locked: false,
+          canInteract: true,
         })
       }
       if (path === '/api/hub/spaces/clube/channels') {
@@ -144,7 +145,20 @@ const ESPERA = { timeout: 5_000 } as const
  * Os dois precisam andar juntos: o do runner cobre o CASO inteiro, o do
  * `findBy` cobre UMA espera dentro dele.
  */
-const TETO_DO_CASO_MS = 30_000
+/**
+ * ⚠️ ACIMA do `ESPERA_EDITOR` de propósito, e isto é sobre DIAGNÓSTICO, não sobre folga.
+ *
+ * Os dois valiam 30 s, então quando o campo não aparecia quem disparava primeiro era o teto do
+ * runner, e a única coisa no log era `timed out after 30000ms` — sem dizer o que faltou. Em
+ * 13/09/2026 este caso caiu assim no CI e passou na re-rodada sem que nada mudasse: ou seja, o
+ * duplo do editor aplica de forma INTERMITENTE no Linux, e o log não permitia distinguir "o
+ * duplo não valeu e o TipTap real nunca nomeou o campo" de "o composer nem abriu".
+ *
+ * Com o teto do caso maior, quem estoura primeiro é o `findBy` da testing-library, que nomeia o
+ * papel e o nome acessível procurados e despeja o DOM. Nada espera mais tempo do que antes — só
+ * a mensagem muda, e é ela que decide qual dos dois consertos é o certo.
+ */
+const TETO_DO_CASO_MS = 45_000
 
 /**
  * ⚠️ Teto SEPARADO e generoso só para o campo do editor, e a razão é honesta:
@@ -181,6 +195,26 @@ describe('nomes acessíveis dos compositores da comunidade', () => {
       // máquina rápida e reprovava no CI (2 de 3 runs em 18/08) — flake por corrida.
       const title = await screen.findByRole('textbox', { name: 'Título da conversa' }, ESPERA)
       expect(title.getAttribute('name')).toBe('threadTitle')
+    },
+    TETO_DO_CASO_MS,
+  )
+
+  test(
+    'a pílula do pé abre o formulário COM o foco no título',
+    async () => {
+      // O formulário abre no TOPO do cartão e a pílula fica no PÉ da lista de conversas:
+      // sem levar o foco (e a tela) até o campo, a criança clicava e, na vista dela, não
+      // acontecia nada (full review de 11/09/2026).
+      render(<KidsSpaceViewClient slug="clube" viewerId="profile-1" />)
+
+      const pilula = await screen.findByRole(
+        'button',
+        { name: 'Escreva uma mensagem para a turma…' },
+        ESPERA,
+      )
+      fireEvent.click(pilula)
+      const title = await screen.findByRole('textbox', { name: 'Título da conversa' }, ESPERA)
+      expect(document.activeElement).toBe(title)
     },
     TETO_DO_CASO_MS,
   )
