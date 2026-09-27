@@ -57,17 +57,22 @@ async function mount(initial: LearningAnswers = {}, participation = false) {
     if (!source) throw new Error('Iframe ausente')
     await act(async () => window.dispatchEvent(new MessageEvent('message', { data, source })))
   }
-  // O compilador do player é assíncrono. O load do placeholder não deixa o
-  // modo de participação pronto para reiniciar; aguarde o documento jogável.
-  const deadline = Date.now() + 3000
-  while (host.querySelector('iframe')?.getAttribute('aria-busy') !== 'false') {
-    if (Date.now() >= deadline) throw new Error('O documento do jogo não ficou pronto.')
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 5))
-    })
+  const ready = async () => {
+    // O player monta primeiro um placeholder e carrega o runtime de forma assíncrona.
+    // O load precisa vir do documento jogável, inclusive depois de reiniciar.
+    const deadline = Date.now() + 3000
+    while (host.querySelector('iframe')?.getAttribute('aria-busy') !== 'false') {
+      if (Date.now() >= deadline) throw new Error('O documento do jogo não ficou pronto.')
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10))
+      })
+    }
+    const frame = host.querySelector('iframe')
+    expect(frame?.getAttribute('aria-busy')).toBe('false')
+    await act(async () => frame?.dispatchEvent(new Event('load')))
+    await message({ type: 'sz:g2d:ready' })
   }
-  await message({ type: 'sz:g2d:ready' })
-  await act(async () => host.querySelector('iframe')?.dispatchEvent(new Event('load')))
+  await ready()
   return {
     get answers() {
       return answers
@@ -80,10 +85,11 @@ async function mount(initial: LearningAnswers = {}, participation = false) {
         b.textContent?.includes('Jogar de novo'),
       )
       if (!button) throw new Error('Botão ausente')
+      expect(button.disabled).toBe(false)
       const oldFrame = host.querySelector('iframe')
       await act(async () => button.click())
       expect(host.querySelector('iframe') === oldFrame).toBe(false)
-      await message({ type: 'sz:g2d:ready' })
+      await ready()
     },
     close: async () => {
       await act(async () => root.unmount())

@@ -5,6 +5,7 @@
     "dockerfilePath": "packages/helpdesk-app/Dockerfile",
     "watchPatterns": [
       "/packages/helpdesk-app/**",
+      "/packages/helpdesk-contracts/**",
       "/packages/ui/**",
       "/packages/core/**",
       "/bun.lock",
