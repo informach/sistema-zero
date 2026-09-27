@@ -6,6 +6,13 @@
 > `scene-display-samples.ts` somente para reservar espaço visual. Trechos históricos abaixo
 > que descrevem demonstração ou pergunta curta não são instruções atuais.
 
+> **Jogo pronto (26/09/2026):** `project-play-activity.tsx` usa o player real do Estúdio,
+> sem editor ou acesso ao projeto da criança. `completion: 'participation'` registra entrada
+> real no iframe; alvos continuam sendo o padrão dos manifestos sem `completion`.
+> O host verifica a janela emissora e reutiliza `projectPlayComplete` do core. Abrir, ampliar
+> e reiniciar não contam como participação; reiniciar após concluir preserva a conclusão.
+> `stage` define a proporção. A mesma implementação atende Kids, Community e prévia do Admin.
+
 > **Experiências ampliadas (23/09/2026):** `scene-workspace.tsx` amplia o mesmo player, sem portal,
 > remount ou Fullscreen API. `ConsoleVisual` e `ConsoleActions` mantêm HUD/cena antes de
 > instrução/controles no DOM. `scene.css` consulta a largura do PRÓPRIO workspace (`52rem`),

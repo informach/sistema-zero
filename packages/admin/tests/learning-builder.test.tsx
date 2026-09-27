@@ -347,6 +347,25 @@ test('⚠️⚠️ "Experimentar a prévia" CORRIGE de verdade: errar recebe rec
 
 const SEM_PERGUNTA = 'sem a pergunta do fim'
 
+test('trocar para jogo e voltar preserva a escolha de não fazer a pergunta final', async () => {
+  const b = await montar(EMPTY_LEARNING)
+  try {
+    await b.marcar(SEM_PERGUNTA)
+    expect(b.value.semPerguntaFinal).toBe(true)
+    await b.clicar('Jogo pronto para jogar')
+    expect(b.value.semPerguntaFinal).toBeUndefined()
+    await b.clicar('Experimentação')
+    expect(b.value.semPerguntaFinal).toBe(true)
+    expect(isInteractiveBlock(b.value)).toBe(true)
+    await b.marcar(SEM_PERGUNTA)
+    await b.clicar('Jogo pronto para jogar')
+    await b.clicar('Experimentação')
+    expect(b.value.semPerguntaFinal).toBeUndefined()
+  } finally {
+    await b.fechar()
+  }
+})
+
 test('⭐⭐ a caixa "sem a pergunta do fim" tira a pergunta de fábrica da experimentação', async () => {
   // Decisão da dona (17/09/2026): a Aula 1 do Corre Dino tem quatro cenas seguidas, cada uma com
   // previsão E pergunta. Até aqui não havia como uma aula dizer "aqui a criança só mexe".

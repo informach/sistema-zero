@@ -1,10 +1,17 @@
 # CLAUDE.md — @sistemazero/admin
 
-> **Contrato vigente das aulas (20/09/2026):** o editor de bloco interativo oferece apenas
-> **Experiência** e **HTML personalizado**. Cena pronta sempre é experimentação conduzida pela
+> **Contrato vigente das aulas (26/09/2026):** o editor de bloco interativo oferece
+> **Jogo pronto para jogar**, **Experimentação** e **HTML personalizado**. Cena pronta é experimentação conduzida pela
 > criança. O palpite e a pergunta final são partes opcionais da experiência; pergunta isolada
 > pertence ao quiz. O roteiro e o editor de demonstração foram removidos. Os detalhes históricos
 > sobre quatro tipos e demonstração abaixo não devem orientar novas edições.
+> `ProjectPlayEditor` importa um snapshot clássico ou edita uma cópia no `StudioEmbed`;
+> aplicar valida antes de substituir o jogo e cancelar preserva o anterior. Novos jogos usam
+> conclusão por participação; alvos continuam configuráveis. A troca de tipo guarda o projeto
+> e as perguntas em memória enquanto o editor permanece aberto. O limite é 1.500.000 caracteres;
+> projetos Pro não são suportados. Manifestos e cadastro manual usam o mesmo contrato.
+> A escolha “sem a pergunta do fim” também volta ao retornar à cena; uma pergunta escrita
+> depois, no HTML, prevalece sobre essa dispensa guardada para evitar campos contraditórios.
 >
 > **Palpite seletivo (21/09/2026):** uma cena nova começa sem palpite. O catálogo oferece um modelo
 > que o autor pode incluir explicitamente quando a hipótese combate uma concepção comum ou prepara

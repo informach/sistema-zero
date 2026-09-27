@@ -115,4 +115,24 @@ describe('autoria de experimentação e HTML', () => {
     expect(trocarTipo(source, 'html').bloco.semPerguntaFinal).toBeUndefined()
     expect(trocarCena(source, 'layers').bloco.semPerguntaFinal).toBe(true)
   })
+
+  test('uma pergunta escrita no HTML prevalece sobre a dispensa guardada da cena', () => {
+    const source: InteractiveBlock = { ...base, semPerguntaFinal: true }
+    let memoria = lembrar({}, source)
+    const html = trocarTipo(source, 'html', memoria).bloco
+    html.checkpoint = {
+      prompt: 'O que aconteceu?',
+      choices: [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+      ],
+      correctChoiceId: 'a',
+      explanation: 'Foi A.',
+    }
+    memoria = lembrar(memoria, html)
+    const volta = trocarTipo(html, 'experimentation', memoria).bloco
+    expect(volta.checkpoint).toEqual(html.checkpoint)
+    expect(volta.semPerguntaFinal).toBeUndefined()
+    expect(isInteractiveBlock(volta)).toBe(true)
+  })
 })

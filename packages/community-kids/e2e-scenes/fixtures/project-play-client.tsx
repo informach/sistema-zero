@@ -1,11 +1,13 @@
 import {
   evaluateLearning,
+  type InteractiveBlock,
   isInteractiveBlock,
   type LearningAnswers,
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
 import { LessonPreviewProvider } from '@sistemazero/member-shell/components/lesson-preview-context'
+import { createEmptyProject } from '@sistemazero/studio/project'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import manifesto from '../../../../docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.manifesto.json'
@@ -17,7 +19,23 @@ if (
   source.content.activity.type !== 'project-play'
 )
   throw new Error('Jogo pronto ausente do manifesto')
-const content = source.content
+const content: InteractiveBlock = structuredClone(source.content)
+if (new URLSearchParams(location.search).get('completion') === 'participation') {
+  const project = createEmptyProject('participation-fixture', 'Jogo clássico de participação')
+  project.mode = 'code'
+  project.files = {
+    'index.html': '<button type="button">Jogar</button>',
+    'style.css': 'button { margin: 24px; padding: 24px; }',
+    'script.js': '',
+  }
+  content.activity = {
+    type: 'project-play',
+    completion: 'participation',
+    project,
+    stage: { width: 640, height: 360 },
+    targets: [],
+  }
+}
 const blockId = source.key
 const root = document.getElementById('root')
 if (!root) throw new Error('Raiz ausente')

@@ -6,8 +6,13 @@
 
 Guia operacional deste package. Leia antes de editar.
 
-> **Contrato vigente das aulas (20/09/2026):** o bloco interativo aceita somente
-> `experimentation` e `html`. As 56 cenas não têm `script` nem executor de demonstração;
+> **Contrato vigente das aulas (26/09/2026):** o bloco interativo aceita
+> `experimentation`, `html` e `project-play`. O jogo pronto usa um snapshot clássico do Estúdio
+> de até 1.500.000 caracteres. `completion: 'participation'` conclui com participação;
+> `'targets'` ou campo ausente exigem todos os alvos. O campo ausente preserva os manifestos
+> antigos. `projectPlayComplete` centraliza a avaliação; essa evidência é do cliente, não uma
+> prova antitrapaça. Projetos Pro, checkpoint e palpite não são aceitos no jogo pronto.
+> As 56 cenas não têm `script` nem executor de demonstração;
 > palpite, pistas e pergunta final continuam anexados à experimentação. Menções a
 > demonstração ou pergunta curta nas notas históricas abaixo não descrevem mais o contrato.
 

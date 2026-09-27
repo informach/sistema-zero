@@ -4,6 +4,13 @@
 > Este arquivo também contém um diário histórico; em caso de conflito, o mapa
 > canônico, o código e os testes atuais prevalecem.
 
+> **Player de jogos de aula (26/09/2026):** `StudioProjectPlayer.onReady` informa o `load`
+> do documento final, nunca do placeholder. O bridge de preview envia `sz:game-interaction`
+> à origem do host uma vez por documento, somente com teclado/toque real (`isTrusted`);
+> Tab, Escape, modificadores, hover e restauração sintética não contam. As pontes opcionais
+> `__szReportGroupClick` e `__szReportGameReady` atendem os jogos por alvos. O jogo exportado
+> continua sem essas pontes do preview; não ampliar o sandbox ou a CSP para esse recurso.
+
 `server-project-checks` (12/09/2026) expõe validação de autoria e avaliação estrutural para
 Members/Admin. Importa apenas contratos puros do catálogo e Core; o teste de bundle rejeita
 Blockly, React e Monaco nessa fronteira. Cores de categorias, nomes de extensões de blocos,

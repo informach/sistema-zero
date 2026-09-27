@@ -1,7 +1,11 @@
 # CLAUDE.md — @sistemazero/members
 
-> **Contrato vigente das aulas (20/09/2026):** rascunho e publicação aceitam somente
-> `experimentation` e `html` como atividades interativas. Perguntas isoladas usam o bloco
+> **Contrato vigente das aulas (26/09/2026):** rascunho e publicação aceitam
+> `experimentation`, `html` e `project-play` como atividades interativas. O DTO preserva o
+> snapshot do jogo, o palco, os alvos e `completion?: 'participation' | 'targets'`;
+> o core valida a combinação e avalia a tentativa. Campo ausente mantém a conclusão por alvos
+> dos manifestos existentes. Participação admite zero alvos, sem exigir Jogo 2D; o modo por
+> alvos exige a extensão e pelo menos um alvo válido. Perguntas isoladas usam o bloco
 > `quiz`. Sessões de cena só têm comandos e avaliação de experimentação; não há migração de
 > demonstrações antigas. Notas históricas abaixo sobre esses formatos não se aplicam.
 

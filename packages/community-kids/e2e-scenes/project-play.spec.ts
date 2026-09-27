@@ -1,5 +1,29 @@
 import { expect, test } from '@playwright/test'
 
+for (const input of ['keyboard', 'pointer'] as const) {
+  test(`participação exige entrada real no jogo clássico: ${input}`, async ({ page }) => {
+    await page.goto('/project-play?completion=participation')
+    const outcome = page.getByRole('status', { name: 'Resultado do jogo' })
+    const restart = page.getByRole('button', { name: 'Jogar de novo' })
+    await expect(restart).toBeEnabled()
+    await page.getByRole('button', { name: 'Ampliar jogo' }).click()
+    await page.keyboard.press('Escape')
+    await restart.click()
+    await expect(restart).toBeEnabled()
+    const game = page.frameLocator('iframe[title="Jogo clássico de participação"]')
+    await expect(game.getByRole('button', { name: 'Jogar', exact: true })).toBeVisible()
+    await expect(outcome).toHaveText('Aguardando descoberta')
+
+    if (input === 'keyboard')
+      await game.getByRole('button', { name: 'Jogar', exact: true }).press('ArrowRight')
+    else await game.getByRole('button', { name: 'Jogar', exact: true }).click()
+    await expect(outcome).toHaveText('Jogo concluído')
+    await restart.click()
+    await expect(restart).toBeEnabled()
+    await expect(outcome).toHaveText('Jogo concluído')
+  })
+}
+
 for (const viewport of [
   { width: 1280, height: 800 },
   { width: 390, height: 844 },

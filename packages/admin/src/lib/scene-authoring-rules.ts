@@ -150,6 +150,7 @@ export interface MemoriaDaAutoria {
   projectPlay?: ProjectPlayActivity
   checkpoint?: InteractiveBlock['checkpoint']
   prediction?: InteractiveBlock['prediction']
+  semPerguntaFinal?: InteractiveBlock['semPerguntaFinal']
 }
 
 /** Guarda o que o bloco atual tem de próprio, sem apagar o que já estava lembrado. */
@@ -158,6 +159,7 @@ export function lembrar(anterior: MemoriaDaAutoria, value: InteractiveBlock): Me
   const nova = { ...anterior }
   if (a.type === 'experimentation') {
     nova.scene = a.scene
+    nova.semPerguntaFinal = value.semPerguntaFinal
     if (a.instructionAudioUrl) nova.instructionAudioUrl = a.instructionAudioUrl
     if (a.vozes) nova.vozes = a.vozes
     if (a.zappySpeech) nova.zappySpeech = a.zappySpeech
@@ -356,6 +358,12 @@ export function trocarTipo(
       )
     : { prediction: undefined, saiu: false }
   if (previsao.saiu) avisos.push(AVISO_DA_PREVISAO)
+  const checkpoint =
+    tipo === 'project-play'
+      ? undefined
+      : perguntaEmBranco(value.checkpoint ?? memoria.checkpoint)
+        ? undefined
+        : (value.checkpoint ?? memoria.checkpoint)
   return {
     bloco: {
       ...value,
@@ -365,13 +373,10 @@ export function trocarTipo(
       ...(!viraCena && cenaDe(a) && value.hints.join('\n') === SCENE_MODELS[scene].hints.join('\n')
         ? { hints: [] }
         : {}),
-      checkpoint:
-        tipo === 'project-play'
-          ? undefined
-          : perguntaEmBranco(value.checkpoint ?? memoria.checkpoint)
-            ? undefined
-            : (value.checkpoint ?? memoria.checkpoint),
-      semPerguntaFinal: viraCena ? value.semPerguntaFinal : undefined,
+      checkpoint,
+      // Uma pergunta escrita depois (por exemplo, no HTML) prevalece sobre a dispensa guardada.
+      semPerguntaFinal:
+        viraCena && !checkpoint ? (value.semPerguntaFinal ?? memoria.semPerguntaFinal) : undefined,
     },
     aviso: avisos.join(' '),
   }
