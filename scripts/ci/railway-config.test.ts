@@ -55,8 +55,12 @@ describe('gate do plano Railway', () => {
       'escopo',
     )
   })
-  test('recusa plano destrutivo e novas posses de recursos', () => {
-    for (const override of [{ destructive: true }, { claim: true }]) {
+  test('aceita a posse padrão do projeto, mas recusa partials e plano destrutivo', () => {
+    expect(validatePinnedPlan({ ...plan(), claim: true }, 'production', tree)).toBe(0)
+    for (const override of [
+      { destructive: true },
+      { changeSet: { changes: [], partial: 'outro' } },
+    ]) {
       expect(() => validatePinnedPlan({ ...plan(), ...override }, 'production', tree)).toThrow(
         'não permitida',
       )

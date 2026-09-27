@@ -43,7 +43,9 @@ export function validatePinnedPlan(plan, environment, tree) {
   if (!plan.configEtag || !plan.changeSetHash || !Array.isArray(plan.changeSet?.changes)) {
     throw new Error('Plano incompleto')
   }
-  if (plan.destructive || plan.claim || plan.changeSet.partial)
+  // A CLI marca claim também para a definição única do projeto, sem mudanças.
+  // Partials nomeadas não fazem parte deste repositório.
+  if (plan.destructive || plan.changeSet.partial)
     throw new Error('Operação não permitida no deploy automático')
   for (const change of plan.changeSet.changes) {
     const name = change.address?.replace(/^service\./, '')
