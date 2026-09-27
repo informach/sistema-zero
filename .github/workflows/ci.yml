@@ -22,9 +22,12 @@ on:
   workflow_dispatch:
     inputs:
       services:
-        description: 'Serviços p/ deploy no staging: "all" ou CSV (ex.: funnel,auth)'
+        description: 'Serviços p/ deploy no staging: "all", "auto" com before_sha, ou CSV'
         required: false
         default: 'all'
+      before_sha:
+        description: 'SHA anterior de staging, obrigatório para services=auto'
+        required: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -63,7 +66,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Verificar barreira de manutenção
-        run: bun test scripts/release
+        run: bun test scripts/release scripts/ci
 
       - name: Auditar dependências da imagem do Studio Pro
         working-directory: packages/studio-runtime
@@ -282,7 +285,7 @@ jobs:
     name: deploy-staging
     needs: [ci, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit]
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/staging')
+    if: github.ref == 'refs/heads/staging' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
     runs-on: ubuntu-latest
     # 50min: o members espera ficar pronto ANTES de disparar admin, community-kids e community (ver
     # DEPOIS_DO_MEMBERS), e cada espera tem teto próprio de 20min.
@@ -318,7 +321,7 @@ jobs:
 
       - name: Calcular serviços afetados e deployar
         env:
-          BEFORE: ${{ github.event.before }}
+          BEFORE: ${{ github.event.inputs.before_sha || github.event.before }}
           FORCED: ${{ github.event.inputs.services }}
         run: |
           set -euo pipefail
@@ -362,7 +365,7 @@ jobs:
             add helpdesk-app
           }
 
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${FORCED:-all}" != 'auto' ]; then
             if [ "${FORCED:-all}" = "all" ]; then add_all; else
               IFS=',' read -ra REQ <<< "$FORCED"
               for s in "${REQ[@]}"; do
@@ -371,6 +374,11 @@ jobs:
               done
             fi
           else
+            if [ "${FORCED:-}" = 'auto' ]; then
+              if [[ ! "$BEFORE" =~ ^[0-9a-f]{40}$ ]] || ! git merge-base --is-ancestor "$BEFORE" "$GITHUB_SHA"; then
+                echo '::error::before_sha deve ser um commit ancestral de staging; nenhum deploy foi disparado'; exit 1
+              fi
+            fi
             # range do push; branch nova/força → deploya tudo (não dá pra saber o diff)
             if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE" 2>/dev/null; then
               echo "range indisponível — deployando tudo"
@@ -383,6 +391,7 @@ jobs:
                 case "$f" in
                   bun.lock|package.json|.dockerignore) add_all ;;
                   railway.json) add payments ;; # o railway.json da RAIZ é do payments
+                  scripts/release/*) add members; add hub; add admin; add community; add community-kids ;;
                   # core é lib COMPARTILHADA: além dos serviços, os 3 apps Next o EMPACOTAM
                   # (admin/community via member-shell+studio; kids direto) — sem eles aqui, o
                   # front servia um core VELHO até alguém deployar na mão.

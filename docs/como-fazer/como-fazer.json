@@ -139,10 +139,7 @@
             "body": "Se você mudou de aparelho, um trabalho que ficou só no navegador pode não aparecer. No Estúdio da aula, você pode [trazer a última versão enviada ao professor](/como-fazer/estudio-recuperar-atividade-enviada)."
           }
         ],
-        "related": [
-          "plataforma-abrir-uma-aula",
-          "estudio-recuperar-atividade-enviada"
-        ]
+        "related": ["plataforma-abrir-uma-aula", "estudio-recuperar-atividade-enviada"]
       }
     },
     {
@@ -183,9 +180,7 @@
             "body": "Se a atividade ocupa a tela toda, use **Reduzir** ou **Voltar à aula**, conforme o botão que aparece. No celular, volte à tela da plataforma para usar a barra de navegação."
           }
         ],
-        "related": [
-          "plataforma-ampliar-a-atividade"
-        ]
+        "related": ["plataforma-ampliar-a-atividade"]
       }
     },
     {
@@ -228,9 +223,7 @@
             "body": "Toque em **Ver conversa** após o envio. Você também pode abrir **Recados do professor**, no sino da plataforma, para ler e responder."
           }
         ],
-        "related": [
-          "plataforma-ler-recados"
-        ]
+        "related": ["plataforma-ler-recados"]
       }
     },
     {
@@ -267,9 +260,7 @@
             "body": "A escolha é guardada sem apertar Salvar. Se aparecer uma falha, toque em **Tentar de novo**. A cor vale para este perfil."
           }
         ],
-        "related": [
-          "plataforma-montar-o-avatar"
-        ]
+        "related": ["plataforma-montar-o-avatar"]
       }
     },
     {
@@ -306,9 +297,7 @@
             "body": "Toque em **Salvar** e espere terminar. Se o botão não estiver liberado, confira se ficou alguma peça bloqueada no visual."
           }
         ],
-        "related": [
-          "plataforma-escolher-a-minha-cor"
-        ]
+        "related": ["plataforma-escolher-a-minha-cor"]
       }
     },
     {
@@ -360,10 +349,7 @@
             "body": "O mural guarda uma cópia daquele momento. Mudar o projeto no editor não muda essa cópia. Na aula, o jogo só pode ser compartilhado uma vez."
           }
         ],
-        "related": [
-          "plataforma-jogar-no-mural",
-          "plataforma-enviar-atividade"
-        ],
+        "related": ["plataforma-jogar-no-mural", "plataforma-enviar-atividade"],
         "toolRef": "estudio-completo"
       }
     },
@@ -408,9 +394,7 @@
             "body": "Abra um curso liberado. No caminho das aulas, as concluídas têm uma marca de confirmação e as bloqueadas têm cadeado. Volte ao mapa para escolher outra trilha."
           }
         ],
-        "related": [
-          "plataforma-abrir-uma-aula"
-        ]
+        "related": ["plataforma-abrir-uma-aula"]
       }
     },
     {
@@ -454,9 +438,7 @@
             "body": "Quando a tela mostrar **Ver exemplo** e **Criar**, toque em **Ver exemplo** para ler a orientação e em **Criar** para fazer a atividade."
           }
         ],
-        "related": [
-          "plataforma-mostrar-o-menu"
-        ]
+        "related": ["plataforma-mostrar-o-menu"]
       }
     },
     {
@@ -500,9 +482,7 @@
             "body": "Se o jogo não funcionar, abra **Mais opções** → **Mostrar** → **Console**. Quando aparecer **Ver o bloco que causou o erro**, toque nele para encontrar o bloco."
           }
         ],
-        "related": [
-          "estudio-salvar-e-reabrir"
-        ],
+        "related": ["estudio-salvar-e-reabrir"],
         "toolRef": "estudio-completo"
       }
     },
@@ -545,10 +525,7 @@
             "body": "O editor abre com os blocos disponíveis. Para criar um jogo 2D, veja [como instalar a extensão Jogo 2D](/como-fazer/estudio-instalar-jogo-2d), quando ela estiver liberada."
           }
         ],
-        "related": [
-          "estudio-instalar-jogo-2d",
-          "estudio-salvar-e-reabrir"
-        ],
+        "related": ["estudio-instalar-jogo-2d", "estudio-salvar-e-reabrir"],
         "toolRef": "estudio-completo"
       }
     },
@@ -592,10 +569,7 @@
             "body": "Na aula, as extensões são preparadas pelo professor e esse menu pode não aparecer. Use os blocos que a atividade já trouxe."
           }
         ],
-        "related": [
-          "estudio-criar-um-projeto",
-          "estudio-materiais-do-jogo"
-        ],
+        "related": ["estudio-criar-um-projeto", "estudio-materiais-do-jogo"],
         "toolRef": "estudio-completo"
       }
     },
@@ -641,10 +615,7 @@
             "body": "Abra a própria aula para continuar. **Salvar** guarda o rascunho no navegador. Para o professor receber uma cópia, use [Enviar para o professor](/como-fazer/plataforma-enviar-atividade)."
           }
         ],
-        "related": [
-          "estudio-baixar-o-projeto",
-          "estudio-recuperar-atividade-enviada"
-        ],
+        "related": ["estudio-baixar-o-projeto", "estudio-recuperar-atividade-enviada"],
         "toolRef": "estudio-completo"
       }
     },
@@ -694,10 +665,7 @@
             "body": "Os modelos ficam em **Modelos 3D**, quando essa opção estiver disponível. Veja [como trazer uma criação do Molda](/como-fazer/molda-usar-no-estudio)."
           }
         ],
-        "related": [
-          "pinta-usar-no-estudio",
-          "molda-usar-no-estudio"
-        ],
+        "related": ["pinta-usar-no-estudio", "molda-usar-no-estudio"],
         "toolRef": "estudio-completo"
       }
     },
@@ -745,9 +713,7 @@
             "body": "**Baixar o código** e **Baixar para publicar** geram arquivos .zip para outros usos. Para reabrir o trabalho no Estúdio, escolha **Baixar o projeto**."
           }
         ],
-        "related": [
-          "estudio-salvar-e-reabrir"
-        ],
+        "related": ["estudio-salvar-e-reabrir"],
         "toolRef": "estudio-completo"
       }
     },
@@ -797,10 +763,7 @@
             "body": "Selecione a camada e use **Apagar esta camada**. Confirme em **Apagar camada**. Tudo o que estiver nela sai do desenho. O desenho precisa manter pelo menos uma camada."
           }
         ],
-        "related": [
-          "pinta-desfazer",
-          "pinta-ferramentas"
-        ],
+        "related": ["pinta-desfazer", "pinta-ferramentas"],
         "toolRef": "pinta"
       }
     },
@@ -855,10 +818,7 @@
             "body": "Enquanto você desenha, o Pinta salva sozinho. Antes de trocar de aparelho, espere **Guardado na sua conta**. Se aparecer um erro, confira a conexão antes de sair."
           }
         ],
-        "related": [
-          "pinta-ferramentas",
-          "pinta-usar-uma-camada"
-        ],
+        "related": ["pinta-ferramentas", "pinta-usar-uma-camada"],
         "toolRef": "pinta"
       }
     },
@@ -910,10 +870,7 @@
             "body": "Feche os materiais e escolha o desenho no campo de imagem do bloco que você está usando. Confira o resultado na pré-visualização."
           }
         ],
-        "related": [
-          "estudio-materiais-do-jogo",
-          "estudio-pre-visualizacao"
-        ],
+        "related": ["estudio-materiais-do-jogo", "estudio-pre-visualizacao"],
         "toolRef": "pinta"
       }
     },
@@ -957,9 +914,7 @@
             "body": "Apagar um desenho inteiro em **Meus desenhos** é diferente de desfazer um traço. A janela pede confirmação, e essa exclusão não pode ser desfeita."
           }
         ],
-        "related": [
-          "pinta-baixar-e-restaurar"
-        ],
+        "related": ["pinta-baixar-e-restaurar"],
         "toolRef": "pinta"
       }
     },
@@ -1008,10 +963,7 @@
             "body": "Use **Desfazer** para voltar uma mudança. Se não conseguir pintar, confira a [camada escolhida](/como-fazer/pinta-usar-uma-camada)."
           }
         ],
-        "related": [
-          "pinta-usar-uma-camada",
-          "pinta-desfazer"
-        ],
+        "related": ["pinta-usar-uma-camada", "pinta-desfazer"],
         "toolRef": "pinta"
       }
     },
@@ -1059,9 +1011,7 @@
             "body": "Ao voltar à lista de planos, encontre o seu e toque em **Continuar**."
           }
         ],
-        "related": [
-          "pensa-etapas-do-metodo"
-        ],
+        "related": ["pensa-etapas-do-metodo"],
         "toolRef": "pensa"
       }
     },
@@ -1118,9 +1068,7 @@
             "body": "Você pode tocar em uma etapa concluída para rever o que planejou. Use o botão de voltar à etapa atual ou ao plano para continuar."
           }
         ],
-        "related": [
-          "pensa-abrir-a-ferramenta-da-tarefa"
-        ],
+        "related": ["pensa-abrir-a-ferramenta-da-tarefa"],
         "toolRef": "pensa"
       }
     },
@@ -1164,9 +1112,7 @@
             "body": "Uma tarefa planejada só abre quando chega a vez dela. Se aparecer **Ferramenta não liberada**, essa ferramenta ainda não está disponível para seu perfil."
           }
         ],
-        "related": [
-          "pensa-concluir-uma-tarefa"
-        ],
+        "related": ["pensa-concluir-uma-tarefa"],
         "toolRef": "pensa"
       }
     },
@@ -1177,13 +1123,7 @@
       "draft": {
         "title": "Como apagar um plano no Pensa",
         "summary": "Apague um plano que você não quer mais usar.",
-        "keywords": [
-          "apagar",
-          "excluir",
-          "remover",
-          "plano",
-          "lixeira"
-        ],
+        "keywords": ["apagar", "excluir", "remover", "plano", "lixeira"],
         "steps": [
           {
             "id": "lista",
@@ -1206,9 +1146,7 @@
             "body": "Toque em **Apagar** para remover o plano. Não dá para desfazer. Use **Cancelar** se quiser manter o plano."
           }
         ],
-        "related": [
-          "pensa-criar-um-plano"
-        ],
+        "related": ["pensa-criar-um-plano"],
         "toolRef": "pensa"
       }
     },
@@ -1219,12 +1157,7 @@
       "draft": {
         "title": "Como encontrar uma ajuda no Como fazer",
         "summary": "Procure o que quer aprender e abra o passo a passo.",
-        "keywords": [
-          "ajuda",
-          "como fazer",
-          "tutorial",
-          "buscar"
-        ],
+        "keywords": ["ajuda", "como fazer", "tutorial", "buscar"],
         "steps": [
           {
             "id": "abrir",
@@ -1247,9 +1180,7 @@
             "body": "Se abriu a ajuda por um link da aula, ela aparece em outra aba. Volte à aba da aula ou use **Voltar para a aula**, quando esse botão aparecer."
           }
         ],
-        "related": [
-          "plataforma-pedir-ajuda"
-        ]
+        "related": ["plataforma-pedir-ajuda"]
       }
     },
     {
@@ -1259,13 +1190,7 @@
       "draft": {
         "title": "Como escolher ou trocar seu perfil",
         "summary": "Entre no seu perfil para encontrar suas aulas e seus trabalhos.",
-        "keywords": [
-          "perfil",
-          "trocar",
-          "criança",
-          "irmão",
-          "avatar"
-        ],
+        "keywords": ["perfil", "trocar", "criança", "irmão", "avatar"],
         "steps": [
           {
             "id": "escolher",
@@ -1283,9 +1208,7 @@
             "body": "Toque em **Trocar de perfil** e escolha o seu na lista. Os trabalhos e o progresso de cada criança ficam separados."
           }
         ],
-        "related": [
-          "plataforma-voltar-para-a-aula"
-        ]
+        "related": ["plataforma-voltar-para-a-aula"]
       }
     },
     {
@@ -1295,14 +1218,7 @@
       "draft": {
         "title": "Como abrir os materiais da aula",
         "summary": "Encontre os arquivos e links que o professor colocou na aula.",
-        "keywords": [
-          "material",
-          "arquivo",
-          "baixar",
-          "download",
-          "anexo",
-          "obrigatório"
-        ],
+        "keywords": ["material", "arquivo", "baixar", "download", "anexo", "obrigatório"],
         "steps": [
           {
             "id": "encontrar",
@@ -1325,9 +1241,7 @@
             "body": "Toque no material que tem um link para abrir outra aba. Depois, volte à aba da aula para continuar. Se o download não começar, confira se o navegador abriu uma nova aba com o arquivo."
           }
         ],
-        "related": [
-          "plataforma-abrir-uma-aula"
-        ]
+        "related": ["plataforma-abrir-uma-aula"]
       }
     },
     {
@@ -1337,13 +1251,7 @@
       "draft": {
         "title": "Como responder o quiz da aula",
         "summary": "Responda às perguntas e confira o resultado antes de seguir.",
-        "keywords": [
-          "quiz",
-          "perguntas",
-          "nota",
-          "respostas",
-          "teste"
-        ],
+        "keywords": ["quiz", "perguntas", "nota", "respostas", "teste"],
         "steps": [
           {
             "id": "responder",
@@ -1371,10 +1279,7 @@
             "body": "Quando aparecer **Quiz concluído**, avance para a próxima seção. Se for a última, use **Concluir aula** depois de terminar as outras atividades pedidas."
           }
         ],
-        "related": [
-          "plataforma-abrir-uma-aula",
-          "plataforma-pedir-ajuda"
-        ]
+        "related": ["plataforma-abrir-uma-aula", "plataforma-pedir-ajuda"]
       }
     },
     {
@@ -1384,14 +1289,7 @@
       "draft": {
         "title": "Como enviar uma atividade feita dentro da aula",
         "summary": "Mande o jogo ou desenho da aula para o professor.",
-        "keywords": [
-          "enviar atividade",
-          "entregar",
-          "professor",
-          "reenviar",
-          "desenho",
-          "jogo"
-        ],
+        "keywords": ["enviar atividade", "entregar", "professor", "reenviar", "desenho", "jogo"],
         "steps": [
           {
             "id": "preparar",
@@ -1433,13 +1331,7 @@
       "draft": {
         "title": "Como enviar um trabalho da galeria para a aula",
         "summary": "Escolha um jogo ou desenho que já guardou para entregar ao professor.",
-        "keywords": [
-          "galeria",
-          "entrega",
-          "missão",
-          "selecionar",
-          "professor"
-        ],
+        "keywords": ["galeria", "entrega", "missão", "selecionar", "professor"],
         "steps": [
           {
             "id": "abrir",
@@ -1467,10 +1359,7 @@
             "body": "Use **Enviar outra versão**, escolha novamente o trabalho e confirme o envio ao professor."
           }
         ],
-        "related": [
-          "plataforma-enviar-atividade",
-          "plataforma-ler-recados"
-        ]
+        "related": ["plataforma-enviar-atividade", "plataforma-ler-recados"]
       }
     },
     {
@@ -1480,13 +1369,7 @@
       "draft": {
         "title": "Como ler e responder aos recados do professor",
         "summary": "Encontre as respostas às suas dúvidas e atividades.",
-        "keywords": [
-          "recados",
-          "resposta",
-          "mensagem",
-          "professor",
-          "sino"
-        ],
+        "keywords": ["recados", "resposta", "mensagem", "professor", "sino"],
         "steps": [
           {
             "id": "sino",
@@ -1509,10 +1392,7 @@
             "body": "Depois de ler a orientação, volte à aula pela Jornada. Se mudou sua atividade e quer que o professor veja, envie a nova versão."
           }
         ],
-        "related": [
-          "plataforma-enviar-atividade",
-          "plataforma-pedir-ajuda"
-        ]
+        "related": ["plataforma-enviar-atividade", "plataforma-pedir-ajuda"]
       }
     },
     {
@@ -1522,13 +1402,7 @@
       "draft": {
         "title": "Como jogar os jogos do mural",
         "summary": "Abra um jogo da comunidade e conheça as criações da turma.",
-        "keywords": [
-          "mural",
-          "jogar",
-          "jogos",
-          "remix",
-          "copiar link"
-        ],
+        "keywords": ["mural", "jogar", "jogos", "remix", "copiar link"],
         "steps": [
           {
             "id": "mural",
@@ -1551,9 +1425,7 @@
             "body": "Se aparecer **Fazer a minha versão** e estiver liberado, toque nele. Uma cópia entra no seu Estúdio para você mudar. O jogo original do criador continua igual."
           }
         ],
-        "related": [
-          "plataforma-publicar-no-mural"
-        ]
+        "related": ["plataforma-publicar-no-mural"]
       }
     },
     {
@@ -1563,13 +1435,7 @@
       "draft": {
         "title": "Como trazer a atividade que você enviou ao professor",
         "summary": "Abra no Estúdio da aula a última versão que você entregou.",
-        "keywords": [
-          "recuperar",
-          "outro computador",
-          "rascunho",
-          "versão enviada",
-          "trazer"
-        ],
+        "keywords": ["recuperar", "outro computador", "rascunho", "versão enviada", "trazer"],
         "steps": [
           {
             "id": "aula",
@@ -1597,10 +1463,7 @@
             "body": "Espere carregar e teste o jogo. Se não houver uma entrega ou aparecer uma falha, leia o aviso. Não envie um projeto vazio por cima do seu trabalho."
           }
         ],
-        "related": [
-          "estudio-baixar-o-projeto",
-          "plataforma-enviar-atividade"
-        ],
+        "related": ["estudio-baixar-o-projeto", "plataforma-enviar-atividade"],
         "toolRef": "estudio-completo"
       }
     },
@@ -1611,13 +1474,7 @@
       "draft": {
         "title": "Como guardar uma cópia dos seus desenhos",
         "summary": "Baixe seus desenhos e traga o arquivo de volta ao Pinta quando precisar.",
-        "keywords": [
-          "backup",
-          "cópia",
-          "baixar tudo",
-          "restaurar",
-          "desenho"
-        ],
+        "keywords": ["backup", "cópia", "baixar tudo", "restaurar", "desenho"],
         "steps": [
           {
             "id": "galeria",
@@ -1640,10 +1497,7 @@
             "body": "Na galeria do Pinta, toque em **Trazer de volta** e escolha o arquivo .zip ou .pinta.json que baixou. Espere a confirmação e confira os desenhos na galeria."
           }
         ],
-        "related": [
-          "pinta-desfazer",
-          "pinta-criar-um-desenho"
-        ],
+        "related": ["pinta-desfazer", "pinta-criar-um-desenho"],
         "toolRef": "pinta"
       }
     },
@@ -1654,13 +1508,7 @@
       "draft": {
         "title": "Como marcar uma tarefa do Pensa como concluída",
         "summary": "Confira o guia, guarde sua criação e termine o cartão da tarefa.",
-        "keywords": [
-          "concluir tarefa",
-          "cartão",
-          "guia",
-          "marcar",
-          "plano"
-        ],
+        "keywords": ["concluir tarefa", "cartão", "guia", "marcar", "plano"],
         "steps": [
           {
             "id": "guia",
@@ -1693,9 +1541,7 @@
             "body": "Espere a confirmação. No Pinta e no Molda, use **Voltar ao plano**. No Estúdio, volte à lista de projetos e abra **Criar** → **Pensa**. Abra seu plano e confira se o cartão ficou **Concluída**."
           }
         ],
-        "related": [
-          "pensa-abrir-a-ferramenta-da-tarefa"
-        ],
+        "related": ["pensa-abrir-a-ferramenta-da-tarefa"],
         "toolRef": "pensa"
       }
     },
@@ -1706,14 +1552,7 @@
       "draft": {
         "title": "Como começar uma criação no Molda",
         "summary": "Escolha um modelo, uma textura ou um céu para criar em 3D.",
-        "keywords": [
-          "Molda",
-          "3D",
-          "modelo",
-          "textura",
-          "céu",
-          "criar"
-        ],
+        "keywords": ["Molda", "3D", "modelo", "textura", "céu", "criar"],
         "steps": [
           {
             "id": "abrir",
@@ -1736,10 +1575,7 @@
             "body": "Escreva um nome como “minha-nave”, sem espaços, e toque em **Criar**. Sua criação abre para você começar."
           }
         ],
-        "related": [
-          "molda-montar-e-pintar",
-          "molda-salvar-e-reabrir"
-        ],
+        "related": ["molda-montar-e-pintar", "molda-salvar-e-reabrir"],
         "toolRef": "molda"
       }
     },
@@ -1750,14 +1586,7 @@
       "draft": {
         "title": "Como montar e pintar um modelo 3D",
         "summary": "Junte peças, mude o tamanho e pinte seu modelo no Molda.",
-        "keywords": [
-          "Molda",
-          "montar",
-          "pintar",
-          "caixa",
-          "mover",
-          "girar"
-        ],
+        "keywords": ["Molda", "montar", "pintar", "caixa", "mover", "girar"],
         "steps": [
           {
             "id": "peca",
@@ -1785,10 +1614,7 @@
             "body": "Use o botão de interrogação **Primeiros passos** na área do modelo. Escolha **Como montar** ou **Como pintar** e avance com **Próxima dica**."
           }
         ],
-        "related": [
-          "molda-salvar-e-reabrir",
-          "molda-usar-no-estudio"
-        ],
+        "related": ["molda-salvar-e-reabrir", "molda-usar-no-estudio"],
         "toolRef": "molda"
       }
     },
@@ -1799,14 +1625,7 @@
       "draft": {
         "title": "Como guardar e reabrir uma criação no Molda",
         "summary": "Saia da oficina com o trabalho guardado e baixe uma cópia.",
-        "keywords": [
-          "Molda",
-          "salvar",
-          "reabrir",
-          "backup",
-          "baixar",
-          "restaurar"
-        ],
+        "keywords": ["Molda", "salvar", "reabrir", "backup", "baixar", "restaurar"],
         "steps": [
           {
             "id": "salvar",
@@ -1834,9 +1653,7 @@
             "body": "Na galeria, use **Trazer de volta** e escolha o .zip ou .molda.json que você baixou do Molda. Espere terminar e confira a criação."
           }
         ],
-        "related": [
-          "molda-criar-uma-criacao"
-        ],
+        "related": ["molda-criar-uma-criacao"],
         "toolRef": "molda"
       }
     },
@@ -1847,14 +1664,7 @@
       "draft": {
         "title": "Como levar uma criação do Molda para o Estúdio",
         "summary": "Traga seu modelo, sua textura ou seu céu para um projeto de jogo.",
-        "keywords": [
-          "Molda",
-          "Estúdio",
-          "modelo 3D",
-          "textura",
-          "céu",
-          "trazer"
-        ],
+        "keywords": ["Molda", "Estúdio", "modelo 3D", "textura", "céu", "trazer"],
         "steps": [
           {
             "id": "guardar",
@@ -1882,10 +1692,7 @@
             "body": "Feche os materiais e escolha o nome da criação no bloco que usa modelo, imagem ou céu. Confira o resultado na pré-visualização. O original continua guardado no Molda."
           }
         ],
-        "related": [
-          "estudio-materiais-do-jogo",
-          "molda-salvar-e-reabrir"
-        ],
+        "related": ["estudio-materiais-do-jogo", "molda-salvar-e-reabrir"],
         "toolRef": "molda"
       }
     }

@@ -18,6 +18,8 @@ staging                      → deploy no AMBIENTE staging do Railway → testa
    │  PR → main              (check `ci` obrigatório no ruleset)
    ▼
 main                         → deploy em PRODUÇÃO
+   │  sincronização automática (fast-forward)
+   └──→ staging              → mesmo commit após a promoção
 ```
 
 Regras práticas:
@@ -25,6 +27,14 @@ Regras práticas:
 - **Merge de `staging` → `main` SEMPRE com merge commit** (`gh pr merge --merge`).
   Squash faria a staging (branch longa) divergir da main e os commits antigos
   reapareceriam no diff do PR seguinte.
+- Após o merge, o workflow **Sincronizar staging** avança staging para o commit
+  de main. Não usa force push. Se staging já contiver main e trabalho mais novo,
+  preserva esse trabalho; se houver divergência, falha sem alterar a branch.
+  Nesse caso, integrar main em staging com merge e resolver os conflitos antes
+  da próxima promoção.
+- Se só o histórico mudou, sem mudança nos arquivos, a sincronização não repete
+  o deploy de staging. Se recebeu código diferente, como um hotfix de produção,
+  dispara o CI com `services=auto` e o SHA anterior de staging.
 - O CI (`.github/workflows/ci.yml`) roda `biome ci` + `bun test` + `typecheck` de
   **todos** os pacotes (bun 1.3.11) e os cenários Playwright focados do Jogo 2D
   e Jogo 2D Avançado em Chromium, em PR para a main e em push na staging.
@@ -97,7 +107,45 @@ put` do lado correspondente (os dois precisam bater, senão 401 a cada 5 min).
 
 ## Deploys
 
-Para a promoção ampla de staging para produção planejada em 27/09/2026, usar o
+### Promoção comum
+
+1. Integrar o trabalho na branch staging e aguardar **todo o workflow CI**,
+   incluindo os testes de navegador e `deploy-staging`.
+2. Conferir a mudança no ambiente staging.
+3. Abrir o PR `staging` → `main`, aguardar todos os checks e usar **Create a merge
+   commit**. Pela CLI: `gh pr create --base main --head staging`, seguido de
+   `gh pr merge --merge <número-do-PR>` após os checks.
+4. O Railway publica automaticamente os serviços afetados em produção. Acompanhar
+   os deployments até `SUCCESS` e conferir os healthchecks do que mudou.
+5. Conferir o workflow **Sincronizar staging**. Ao terminar, sem trabalho novo
+   concorrente, main e staging apontam para o mesmo commit.
+
+Para atualizar a cópia local, com a árvore de trabalho limpa:
+
+```bash
+git fetch origin
+git switch staging
+git pull --ff-only origin staging
+git rev-list --left-right --count origin/main...origin/staging
+git diff --exit-code origin/main origin/staging
+```
+
+Logo após uma promoção completa, a contagem esperada é `0 0` e o diff é vazio.
+Novas funcionalidades fazem staging avançar normalmente até a próxima promoção.
+
+Se o dispatch do CI falhar **depois** de staging avançar, use o SHA `before`
+registrado no log da sincronização para recuperar a publicação:
+`gh workflow run ci.yml --ref staging -f services=auto -f before_sha=<SHA-anterior>`.
+Reexecutar apenas a sincronização não repete um dispatch que já falhou.
+
+### Mudanças que precisam de sequência própria
+
+Conversões de dados e alterações incompatíveis de contrato/banco precisam de
+plano de rollout. O merge comum não executa importações de cursos ou tutoriais,
+conversões de jogos nem publica Workers Cloudflare. Migrações normais continuam
+no preDeploy do serviço; devem ser compatíveis com a versão ainda em execução.
+
+Para consultar a promoção ampla de staging para produção de 27/09/2026, usar o
 [plano completo de promoção](superpowers/plans/2026-09-27-promocao-producao.md), com
 [diagnóstico dos ambientes e dos dados](plans/2026-09-27-promocao-producao-design.md).
 Ele atualiza a ordem das releases, a conversão dos jogos, a preservação dos cursos legados e
@@ -115,22 +163,33 @@ CORS e anexos do Admin. Um merge direto com todos os serviços em paralelo não 
   `watchPatterns` dos `railway.json`; `bun.lock`/`package.json` → todos; `core` →
   backends+funnel+fiscal; `ui` → admin/community/community-kids/funnel;
   `member-shell` → community/community-kids). O mapa já cobre **community-kids** e
-  **fiscal** (ambos em prod desde 06/2026); o **hub** ainda NÃO está no mapa (deploy
-  pendente) e o **studio** é lib interna (somar os consumidores ao mapa quando o bloco
-  estúdio for à prod). Usa o secret `RAILWAY_TOKEN`
+  **fiscal**, **hub**, **referrals**, **marketing** e **marketing-app**. Helpdesk e
+  Helpdesk App usam os IDs das variáveis do repositório. As bibliotecas Studio,
+  Pinta, Pensa, Molda e Helpdesk Contracts acionam seus consumidores; scripts de
+  manutenção acionam Members, Hub e os três apps que os empacotam.
+  Usa o secret `RAILWAY_TOKEN`
   (token de conta do Railway) e espera os healthchecks convergirem. Forçar um
   deploy: `gh workflow run CI --ref staging -f services=all` (ou CSV:
   `-f services=funnel,auth`). *(O trigger nativo do Railway só pode ser armado
   pelo dashboard — por isso o deploy é dirigido pelo CI, o que de quebra gateia
   o deploy no CI verde.)*
-- **Produção**: merge na `main` → **admin, funnel e community** auto-deployam
-  (triggers armados no dashboard; verificado em 11/07/2026); os demais serviços
-  são deployados **manualmente** (GraphQL `serviceInstanceDeployV2` com o sha da
-  main, ou dashboard) — deploy de prod deliberado, por escolha. Atalho que
-  automatiza esse manual (desde 07/2026):
-  `gh workflow run "Deploy produção" --ref staging -f services=all` (ou CSV) —
-  o workflow `deploy-production.yml` resolve o sha da main, deploya pelo mesmo
-  GraphQL e **pula serviço que ainda não estreou em produção** (ex.: hub).
+- **Produção**: merge na `main` → deploy nativo do Railway, conforme os
+  `watchPatterns` de cada serviço. Estão ligados à main: api-gateway, auth,
+  catalog, payments, members, messaging, funnel, admin, community,
+  community-kids, hub, referrals, marketing, marketing-app, helpdesk e
+  helpdesk-app. A configuração foi conferida e corrigida em 27/09/2026:
+  Helpdesk deixou de acompanhar staging em produção; Indicações e Marketing
+  receberam os gatilhos que faltavam. Fiscal permanece fora deste ajuste.
+  Helpdesk, Helpdesk App e Indicações já usam configuração explícita no Railway;
+  seus padrões de arquivos também devem acompanhar mudanças de dependências.
+  Os padrões do Helpdesk foram alinhados com Core e Helpdesk Contracts nesta revisão.
+- **Deploy de produção por ondas ou recuperação**: o workflow manual
+  `deploy-production.yml` exige CSV explícito e o SHA completo de main:
+  `gh workflow run deploy-production.yml --ref main -f services=members -f expected_sha=<SHA-completo>`.
+  Não aceita `all`, não publica serviço sem deployment ativo saudável e confere
+  o SHA efetivamente ativado. Não execute junto de um deploy nativo do mesmo
+  serviço. Em rollout incompatível, siga o runbook para suspender e restaurar
+  os gatilhos durante as ondas.
 - ⚠️ Gotcha de build: o Railway **só passa variáveis ao build do Dockerfile quando
   declaradas como `ARG`** (ver o Dockerfile do funnel — envs `PUBLIC_*`/
   `FUNNEL_PUBLIC_URL` são inlined no `astro build`).

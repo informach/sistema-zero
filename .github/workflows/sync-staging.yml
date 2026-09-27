@@ -1,0 +1,38 @@
+name: Sincronizar staging
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: sync-main-staging
+  cancel-in-progress: false
+
+jobs:
+  sync-staging:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Atualizar staging sem reescrever o histórico
+        id: sync
+        run: node scripts/ci/sync-staging.mjs
+
+      # GITHUB_TOKEN não dispara o evento push de outro workflow. Dispatch
+      # explícito preserva CI + deploy para hotfixes e a primeira sincronização.
+      - name: Validar e publicar mudanças recebidas de main
+        if: steps.sync.outputs.content_changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE_SHA: ${{ steps.sync.outputs.before }}
+        run: gh workflow run ci.yml --ref staging -f services=auto -f before_sha="$BEFORE_SHA"
