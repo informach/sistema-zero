@@ -197,6 +197,17 @@ CORS e anexos do Admin. Um merge direto com todos os serviços em paralelo não 
   declaradas como `ARG`** (ver o Dockerfile do funnel — envs `PUBLIC_*`/
   `FUNNEL_PUBLIC_URL` são inlined no `astro build`).
 
+### Prazo de manutenção da configuração Railway
+
+O Railway mantém a leitura dos arquivos legados `railway.json` nos serviços que
+já os utilizam, mas anunciou o encerramento em **01/12/2026**. A migração para
+`.railway/railway.ts` deve ser planejada antes dessa data, conferindo o plano em
+cada ambiente e preservando variáveis, domínios, volumes e bancos. Não foi feita
+uma migração geral de infraestrutura nesta sincronização. Novos vínculos a
+`railwayConfigFile` já são recusados pela API; os serviços com configuração
+explícita continuam usando suas definições existentes. Referência:
+[migração de Config as Code para IaC](https://docs.railway.com/infrastructure-as-code#migrating-from-config-as-code).
+
 ## Custo do staging
 
 O staging roda 24/7 (≈ dobra o uso do Railway). O recurso nativo de economia
