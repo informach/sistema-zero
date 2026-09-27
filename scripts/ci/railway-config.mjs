@@ -90,6 +90,9 @@ export function runConfig(command, environment, planPath) {
     throw new Error('A configuração precisa estar commitada e limpa')
   const tree = git('rev-parse', 'HEAD:.railway')
   const env = { ...process.env }
+  // O SDK usa `_` como executável para conferir a CLI. No runner ele pode
+  // apontar para bash/node; sem a variável, o SDK resolve railway pelo PATH.
+  delete env._
   // O secret existente é um token de conta, usado como Bearer no deploy legado.
   // A CLI chama esse tipo de credencial de RAILWAY_API_TOKEN.
   if (env.RAILWAY_API_TOKEN) delete env.RAILWAY_TOKEN

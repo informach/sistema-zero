@@ -14,8 +14,8 @@ function read(path: string): string {
 }
 
 describe('host kids', () => {
-  test('railway.json do kids vigia o pacote', () => {
-    expect(read('packages/community-kids/railway.json')).toContain('/packages/molda/**')
+  test('configuração Railway do kids vigia o pacote', () => {
+    expect(read('.railway/services/community-kids.json')).toContain('/packages/molda/**')
   })
 
   test('ci.yml mapeia packages/molda para o deploy do kids', () => {
