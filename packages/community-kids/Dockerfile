@@ -10,6 +10,9 @@ WORKDIR /app
 COPY . .
 RUN bun install --frozen-lockfile
 ENV NODE_ENV=production
+# O verificador TypeScript do monorepo ultrapassa o heap automático de 2 GB
+# em builders de 8 GB. Reservar até 4 GB só no build; o runtime mantém seu padrão.
+ENV NODE_OPTIONS=--max-old-space-size=4096
 # Build PACKAGE-LOCAL com runtime Node (gotcha do monorepo: `--filter` da raiz
 # quebra a resolução do React nos workers de static-export — ver CLAUDE.md).
 RUN cd packages/community-kids && npm run build
