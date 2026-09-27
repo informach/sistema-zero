@@ -78,7 +78,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
       'toque-e-resposta',
       'primeiro-achado',
     ])
-    expect(m.sections[0]?.blockKeys).toEqual(['video-a1-abertura', 'jogo-pronto'])
+    expect(m.sections[0]?.blockKeys).toEqual(['video-a1-abertura', 'ponte-a1-jogo', 'jogo-pronto'])
     expect(m.sections[0]?.completion?.blockIds).toEqual(['video-a1-abertura', 'jogo-pronto'])
     const jogoPronto = m.blocks.find((block) => block.key === 'jogo-pronto')
     expect(jogoPronto?.content?.kind).toBe('interactive')

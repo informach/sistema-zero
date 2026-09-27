@@ -292,13 +292,14 @@ function Activity({
         <h3 id={`${id}-title`} className="font-semibold text-xl">
           {content.title}
         </h3>
-        {player?.renderInstruction ? (
-          player.renderInstruction(content.instructions)
-        ) : (
-          <p className="max-w-prose leading-relaxed text-muted-foreground">
-            {content.instructions}
-          </p>
-        )}
+        {a.type !== 'project-play' &&
+          (player?.renderInstruction ? (
+            player.renderInstruction(content.instructions)
+          ) : (
+            <p className="max-w-prose leading-relaxed text-muted-foreground">
+              {content.instructions}
+            </p>
+          ))}
       </div>
       {a.type === 'project-play' && (
         <ProjectPlayActivityView activity={a} answers={answers} onChange={set} />

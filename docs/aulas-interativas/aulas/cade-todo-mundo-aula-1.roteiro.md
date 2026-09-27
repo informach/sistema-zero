@@ -16,6 +16,8 @@ Apresentar o jogo e a missão de hoje, sem ensinar a experiência ou os blocos. 
 >
 > Hoje eu vou te mostrar como fazer o seu jogo responder ao toque. O jardim e os personagens já vão estar preparados; na próxima aula, a gente completa a contagem dos achados. Quando você encontrar os três personagens neste jogo pronto, aperta Próxima seção, aqui embaixo. Lá eu vou te mostrar um caderno que ajuda quando você esquecer algum passo. Vamos procurar?”
 
+**Zappy abaixo do vídeo, em bloco separado:** “Experimente o jogo pronto! Quando terminar, avance para a próxima seção.” O bloco do jogo não tem fala do Zappy acima dos controles nem orientação adicional no palco. O vídeo explica como jogar; a área jogável mantém o jogo normal e os botões **Jogar de novo** e **Ampliar jogo**.
+
 Não demonstrar **Anterior**, a experiência, a divisória, o Estúdio ou o caderno nesta abertura. Não revelar os três esconderijos, nem a tela de vitória, antes da criança jogar. Não prometer que ela já criou o jogo inteiro: cenário e personagens vêm preparados. O jogo pronto é uma cópia independente do projeto inicial da seção prática.
 
 ## 2. Seu Caderno do Aluno — apoio para construir o jogo (45–60 s)

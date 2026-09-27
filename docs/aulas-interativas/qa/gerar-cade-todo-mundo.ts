@@ -85,6 +85,10 @@ const aula1 = {
       'Vamos procurar!',
       'Apresentar o jogo Cadê Todo Mundo? e apontar o jardim jogável nesta mesma seção, sem revelar os três esconderijos nem a comemoração antes da criança brincar. Convidar a procurar os três personagens tocando ou clicando diretamente no jardim, exatamente como no jogo que vai construir, sem botões de busca. Mostrar Ampliar jogo, Voltar à aula e Jogar de novo. Distinguir o jogo pronto desta abertura do projeto que a criança vai construir: hoje ela cria a primeira reação, depois completa a contagem. Apresentar as seções como pequenas partes da aula, cada uma com um vídeo; mostrar pausa, replay e Próxima seção sem navegar. Não mostrar a experiência, o Estúdio ou o caderno nesta abertura. Alvo: 60–90 segundos.',
     ),
+    dialogue(
+      'ponte-a1-jogo',
+      'Experimente o jogo pronto! Quando terminar, avance para a próxima seção.',
+    ),
     {
       key: 'jogo-pronto',
       content: {
@@ -160,7 +164,7 @@ const aula1 = {
       'Bem-vindo ao jardim',
       'presentation',
       'Conhecer o jogo, encontrar os três personagens e aprender a pausar/rever o vídeo e avançar.',
-      ['video-a1-abertura', 'jogo-pronto'],
+      ['video-a1-abertura', 'ponte-a1-jogo', 'jogo-pronto'],
       ['video-a1-abertura', 'jogo-pronto'],
     ),
     section(
