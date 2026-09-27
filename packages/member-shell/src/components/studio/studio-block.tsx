@@ -20,6 +20,7 @@ import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
 import { dataUrlBase64ToBlob } from '../../lib/data-url'
 import { requestPersistentStorage } from '../../lib/persistent-storage'
+import { resolveStudioLessonSeed } from '../../lib/studio-lesson-seed'
 import { lessonStudioProjectId } from '../../lib/studio-project-id'
 import { isInitialTemplateProject } from '../../lib/studio-template'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
@@ -113,6 +114,13 @@ export function StudioBlockView({
 
   const [StudioLesson, setStudioLesson] = useState<StudioComponent | null>(null)
   const [seed, setSeed] = useState<Project | null>(null)
+  const [seedLoadFailure, setSeedLoadFailure] = useState<{
+    projectId: string
+    attempt: number
+  } | null>(null)
+  const [seedLoadAttempt, setSeedLoadAttempt] = useState(0)
+  const seedLoadFailed =
+    seedLoadFailure?.projectId === projectId && seedLoadFailure.attempt === seedLoadAttempt
   const [studioVersion, setStudioVersion] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(studioState?.submitted ?? false)
@@ -189,11 +197,11 @@ export function StudioBlockView({
 
   const handleRef = useRef<StudioHandle | null>(null)
 
-  // Client-only: carrega o editor e semeia na ordem rascunho LOCAL → carryover da
-  // aula contínua anterior → projeto inicial do admin. Semear DEPOIS do read evita
-  // re-hidratar por cima do WIP.
+  // Só uma fonte AUSENTE permite tentar a próxima. Uma falha de leitura ou de
+  // conversão deve bloquear o editor, sem semear outro projeto por cima do trabalho.
   useEffect(() => {
     let active = true
+    setSeedLoadFailure(null)
     // O rascunho vive no IndexedDB: pede persistência p/ o navegador não despejá-lo
     // (Safari ~7 dias sem visita; pressão de disco). Best-effort, 1× por sessão.
     requestPersistentStorage()
@@ -204,49 +212,40 @@ export function StudioBlockView({
       // namespace caso o Estúdio Completo o tenha trocado numa visita anterior nesta sessão.
       mod.setStudioStorageNamespace('')
       setStudioLesson(() => mod.StudioLesson)
-      // 1) Rascunho LOCAL sempre vence — nunca re-hidratar por cima do WIP.
-      const existing = await mod
-        .createLocalPersistenceAdapter()
-        .load(projectId)
-        .catch(() => null)
+      const readSavedProject = async (source: 'studio-submission' | 'studio-carryover') => {
+        const result = await apiGet<{ project: unknown | null }>(
+          `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/${source}`,
+        )
+        return result?.project ? { ...(result.project as Project), id: projectId } : null
+      }
+      const project = await resolveStudioLessonSeed({
+        local: () => mod.createLocalPersistenceAdapter().load(projectId),
+        submitted:
+          lessonId && studioState?.submitted
+            ? () => readSavedProject('studio-submission')
+            : undefined,
+        carryover:
+          content.chain && lessonId ? () => readSavedProject('studio-carryover') : undefined,
+        initial: { ...(content.initialProject as Project), id: projectId },
+      })
+      if (active) setSeed(project)
+    })().catch(() => {
       if (!active) return
-      if (existing) {
-        setSeed(existing)
-        return
-      }
-      // 2) Sem rascunho local: tenta o ENVIO no banco (save na nuvem) DESTE bloco — só se já
-      //    enviou (`studioState.submitted`). É o que retoma o trabalho num navegador NOVO (o
-      //    rascunho local é por aparelho; o envio é a sincronização entre eles). Lazy + best-effort.
-      if (lessonId && studioState?.submitted) {
-        const mine = await apiGet<{ project: unknown | null }>(
-          `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-submission`,
-        ).catch(() => null)
-        if (!active) return
-        if (mine?.project) {
-          setSeed({ ...(mine.project as Project), id: projectId })
-          return
-        }
-      }
-      // 3) Projeto contínuo (cadeia), sem rascunho/envio: semeia do que o aluno enviou na aula
-      //    contínua anterior. Lazy + best-effort: falha de rede NÃO trava o editor.
-      if (content.chain && lessonId) {
-        const carry = await apiGet<{ project: unknown | null }>(
-          `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-carryover`,
-        ).catch(() => null)
-        if (!active) return
-        if (carry?.project) {
-          // id estável por bloco — o autosave local desta aula grava na chave certa.
-          setSeed({ ...(carry.project as Project), id: projectId })
-          return
-        }
-      }
-      // 4) 1ª da cadeia / nunca enviou / aula independente → template do bloco.
-      setSeed({ ...(content.initialProject as Project), id: projectId })
-    })()
+      setSeed(null)
+      setSeedLoadFailure({ projectId, attempt: seedLoadAttempt })
+    })
     return () => {
       active = false
     }
-  }, [projectId, content.initialProject, content.chain, lessonId, blockId, studioState?.submitted])
+  }, [
+    projectId,
+    content.initialProject,
+    content.chain,
+    lessonId,
+    blockId,
+    studioState?.submitted,
+    seedLoadAttempt,
+  ])
 
   // "Expandir" é uma SOBREPOSIÇÃO em tela cheia por CSS (não a Fullscreen API nativa): a
   // API restringe a pintura à subárvore do elemento, então menus/diálogos PORTALADOS no
@@ -448,7 +447,7 @@ export function StudioBlockView({
     }
   }, [enableShare, lessonId, blockId, projectId, presetTitle, presetDescription, presetCoverUrl])
 
-  const ready = StudioLesson !== null && seed !== null
+  const ready = StudioLesson !== null && seed?.id === projectId && !seedLoadFailed
 
   return (
     <div
@@ -556,6 +555,15 @@ export function StudioBlockView({
             onCloudSync={lessonId ? openSync : undefined}
             blockUnloadWhenDirty={false}
           />
+        ) : seedLoadFailed ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+            <p role="alert" className="text-sm text-muted-foreground">
+              Não conseguimos abrir sua atividade. Seu trabalho não foi substituído.
+            </p>
+            <Button variant="outline" onClick={() => setSeedLoadAttempt((attempt) => attempt + 1)}>
+              Tentar novamente
+            </Button>
+          </div>
         ) : (
           <div className="flex h-full items-center justify-center gap-2 text-sm text-muted-foreground">
             <Spinner /> Carregando o Estúdio...
