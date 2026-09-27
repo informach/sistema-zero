@@ -60,6 +60,7 @@ export default defineRailway((ctx) => {
         // Staging publica pelo CI. O Fiscal mantém seu deploy manual em produção.
         source: github('informach/sistema-zero', {
           ...(rootServices.has(name) ? { rootDirectory: '/' } : {}),
+          ...(!production ? { branch: 'staging' } : {}),
           ...(production && name !== 'fiscal' ? { branch: 'main', checkSuites: true } : {}),
         }),
         build: config.build,

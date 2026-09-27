@@ -19,7 +19,7 @@ feature/minha-coisa          (a partir da staging)
    │  PR → staging           (CI roda no push da staging — canário)
    ▼
 staging                      → deploy no AMBIENTE staging do Railway → testar
-   │  PR → main              (sete checks obrigatórios no ruleset)
+   │  PR → main              (checks de aplicação e infraestrutura)
    ▼
 main                         → deploy em PRODUÇÃO
    │  sincronização automática (fast-forward)
@@ -179,7 +179,9 @@ CORS e anexos do Admin. Um merge direto com todos os serviços em paralelo não 
   (token de conta do Railway) e espera os healthchecks convergirem. Forçar um
   deploy: `gh workflow run CI --ref staging -f services=all` (ou CSV:
   `-f services=funnel,auth`). Em staging, os gatilhos nativos do Railway ficam
-  desligados. Os três remanescentes de Hub e Helpdesk foram removidos em
+  desligados, e a origem dos serviços aponta para a branch staging, inclusive
+  para deployments iniciados pelo apply de uma alteração de configuração.
+  Os três remanescentes de Hub e Helpdesk foram removidos em
   27/09/2026 para evitar deploy duplicado ou anterior à conclusão dos testes.
 - **Produção**: merge na `main` → aplicação do plano IaC salvo no PR → deploy
   nativo do Railway com **Wait for CI**, conforme os

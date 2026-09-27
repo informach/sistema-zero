@@ -7,7 +7,7 @@ Esta pasta substitui os 17 arquivos `packages/*/railway.json`. O formato antigo 
 - `variables.ts`: nomes das variáveis que devem permanecer no Railway. Não contém valores nem credenciais.
 - `package-lock.json`: SDK Railway 3.11.0. A automação fixa a CLI em 5.62.1 e usa Node 24.
 
-O Railway usa `ON_FAILURE` como política padrão de reinício. O importador omite esse padrão; os serviços mantêm três tentativas em `restartPolicyMaxRetries`. Os nomes e tamanhos dos volumes refletem recursos existentes, sem recriação.
+O Railway usa `ON_FAILURE` como política padrão de reinício. O importador omite esse padrão; os serviços mantêm três tentativas em `restartPolicyMaxRetries`. Os nomes e tamanhos dos volumes refletem recursos existentes, sem recriação. Staging tem origem na branch staging, com autodeploy nativo desligado; produção acompanha main.
 
 ## Próximo deploy
 
@@ -23,6 +23,8 @@ O secret `RAILWAY_TOKEN` existente é um token de conta. A CLI o recebe como `RA
 ## Alterar configuração
 
 Edite o JSON do serviço e teste em staging. Mudanças em `.railway/` acionam todos os serviços da aplicação, pois podem alterar configurações compartilhadas. O preDeploy continua executando as migrações antes de iniciar cada serviço. Não volte a criar arquivos `railway.json` nem vínculos `railwayConfigFile`.
+
+O apply do Railway pode iniciar deployments quando altera build ou deploy. Por isso, staging só aplica após os testes, usa sua própria branch como origem e depois confere a publicação do SHA validado. Alterações incompatíveis de infraestrutura ou de contrato precisam de rollout específico por ondas. Na migração inicial, o Fiscal teve apenas sua configuração migrada: o certificado vencido impede seu redeploy, e a validação de staging usa CSV explícito dos outros 16 serviços.
 
 Ao adicionar uma variável pelo painel, inclua seu nome em `variables.ts`, na lista comum ou na lista específica do ambiente. Use `preserve()` para manter seu valor no Railway. Se o nome estiver ausente, o plano mostrará uma exclusão e o gate impedirá a aplicação. Alterar apenas o valor de uma variável preservada não exige editar o repositório.
 
