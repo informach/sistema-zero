@@ -6,8 +6,11 @@
 ## Fluxo de git (desde 06/2026)
 
 A `main` é **protegida por ruleset** no GitHub (`protege-main`): push direto é
-rejeitado, force-push e deleção bloqueados, e **todo merge exige PR com o check
-`ci` verde** (0 aprovações exigidas — time solo; o GitHub não permite aprovar o
+rejeitado, force-push e deleção bloqueados, e **todo merge exige PR com os sete
+checks de CI verdes**: `ci`, `community-kids-e2e`, os três shards
+`studio-e2e-chromium-1/2/3`, `studio-e2e-firefox` e `studio-e2e-webkit`.
+O ruleset permite apenas merge commit em main, sem squash ou rebase
+(0 aprovações exigidas — time solo; o GitHub não permite aprovar o
 próprio PR). A branch **`staging`** é a integração contínua do dia a dia.
 
 ```
@@ -15,7 +18,7 @@ feature/minha-coisa          (a partir da staging)
    │  PR → staging           (CI roda no push da staging — canário)
    ▼
 staging                      → deploy no AMBIENTE staging do Railway → testar
-   │  PR → main              (check `ci` obrigatório no ruleset)
+   │  PR → main              (sete checks obrigatórios no ruleset)
    ▼
 main                         → deploy em PRODUÇÃO
    │  sincronização automática (fast-forward)
@@ -170,9 +173,9 @@ CORS e anexos do Admin. Um merge direto com todos os serviços em paralelo não 
   Usa o secret `RAILWAY_TOKEN`
   (token de conta do Railway) e espera os healthchecks convergirem. Forçar um
   deploy: `gh workflow run CI --ref staging -f services=all` (ou CSV:
-  `-f services=funnel,auth`). *(O trigger nativo do Railway só pode ser armado
-  pelo dashboard — por isso o deploy é dirigido pelo CI, o que de quebra gateia
-  o deploy no CI verde.)*
+  `-f services=funnel,auth`). Em staging, os gatilhos nativos do Railway ficam
+  desligados. Os três remanescentes de Hub e Helpdesk foram removidos em
+  27/09/2026 para evitar deploy duplicado ou anterior à conclusão dos testes.
 - **Produção**: merge na `main` → deploy nativo do Railway, conforme os
   `watchPatterns` de cada serviço. Estão ligados à main: api-gateway, auth,
   catalog, payments, members, messaging, funnel, admin, community,

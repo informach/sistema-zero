@@ -30,6 +30,8 @@ sincronizar as branches e deixar os próximos deploys limitados à promoção.
 - [x] Adicionar `.github/workflows/sync-staging.yml`, com permissões mínimas e dispatch explícito do CI quando o conteúdo mudar.
 - [x] Permitir `services=auto` e `before_sha` no dispatch de `ci.yml`, com validação do intervalo.
 - [x] Corrigir gatilhos Railway de Helpdesk, Indicações e Marketing; conferir os 16 serviços web/API ligados à main.
+- [x] Desligar os três gatilhos nativos remanescentes de staging, mantendo o CI como único disparador.
+- [x] Exigir os sete checks e apenas merge commit no ruleset de main, preservando todas as outras proteções.
 - [x] Atualizar `docs/ambientes-e-fluxo.md` e registrar as exceções ao deploy comum.
 - [ ] Executar `bun test scripts/release scripts/ci`, o validador dos tutoriais e lint; abrir PR e acompanhar todos os checks.
 - [ ] Integrar por merge commit, verificar o workflow de sincronização e os deploys afetados.
