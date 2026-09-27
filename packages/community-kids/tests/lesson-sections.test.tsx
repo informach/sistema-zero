@@ -347,7 +347,7 @@ describe('aula por seções', () => {
     expect(painelDe(container, 'caderno')?.getAttribute('data-panel-id')).toBe('lesson-content')
     expect(
       screen
-        .getByRole('heading', { name: 'Folheie o caderno' })
+        .getByRole('heading', { name: 'Caderno do Aluno' })
         .closest('[data-panel-id]')
         ?.getAttribute('data-panel-id'),
     ).toBe('lesson-tool')
