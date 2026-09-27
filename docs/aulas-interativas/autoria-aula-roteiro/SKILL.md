@@ -1,0 +1,61 @@
+---
+name: aula-roteiro
+description: Escreve e revisa roteiros infantis do Sistema Zero, com tarefa direta, montagem completa e linguagem simples. Use para criar ou adaptar aulas e suas orientações de gravação.
+---
+
+# Roteiros de aula do Sistema Zero
+
+Direção revisada em 27/09/2026 após o ensaio de Cadê Todo Mundo? com duas crianças.
+A criança precisa saber o que fazer agora. Uma fala acolhedora pode ser direta e completa.
+
+## Fontes atuais
+
+- Leia docs/aulas-interativas/BRIEFING.md e ESPEC-ROTEIRO.md.
+- Para uma aula existente, leia o trio de proposta, manifesto e roteiro em
+  docs/aulas-interativas/aulas/. Confira se há gerador em docs/aulas-interativas/qa/.
+- Confira rótulos e comportamento no código. REFERENCIA-PLATAFORMA.md e
+  REFERENCIA-BLOCOS-JOGO-2D.json são apoio.
+- Cadê Todo Mundo? é a primeira aplicação desta revisão. Não copie a voz dos roteiros
+  antigos por hábito. As instruções explícitas do usuário prevalecem.
+
+O formato atual é **{slug}.roteiro.md**, junto de **{slug}.md** e
+**{slug}.manifesto.json**. Não encaminhar este trabalho a roteiro.yaml ou a um pipeline
+studio-aulas sem comprovar que esse formato existe e foi solicitado.
+
+## Como escrever
+
+1. Comece pela tarefa: "Jogue esta versão pronta", "Toque no arbusto", "Faça o jogo contar".
+2. Mantenha o passo a passo completo: caminho da paleta, bloco, encaixe, campo, valor e teste.
+   Não peça para adivinhar uma peça nem use "faça como eu fiz" no lugar da instrução.
+3. Explique a palavra nova brevemente quando ela for necessária. Analogias são opcionais.
+4. Na experiência, diga como executar os testes necessários. Não faça a experiência pela
+   criança nem conte todos os resultados. Pistas ajudam, mas não escondem passos obrigatórios.
+5. Termine com a ação real: Próxima seção, envio com confirmação ou Concluir aula.
+6. Escreva como se falasse com uma pessoa: "você", verbos simples, sem travessões.
+   Não repetir elogios, perguntas retóricas, agenda ou promessas da próxima aula.
+7. Reconheça o que veio preparado e o que a pessoa programou, sem exagerar sua autoria.
+
+## Aula e Como Fazer
+
+O roteiro conserva a montagem do jogo, os comandos da experiência e os encaminhamentos
+necessários para concluir. Pausar, rever, ampliar, alternar abas, usar o leitor do caderno,
+baixar materiais e publicar ficam em docs/como-fazer/como-fazer.json.
+
+Mover um tutorial não significa deixar a criança sem instrução. Confira o destino na
+biblioteca e acrescente o que estiver faltando. Não exigir a leitura de todos os tutoriais
+antes de jogar. Não colocar tour da interface nas notas de gravação do vídeo da aula.
+
+## Entrega e conferência
+
+- Separar cada **Na tela:** da **Narração:** com linha em branco; fala em citação.
+- Preservar seções, experiências e critérios que funcionam quando a revisão é de linguagem.
+- Atualizar proposta, roteiro, manifesto e gerador juntos. Manter identificadores, projetos,
+  mídia anexada e progresso. O molde local plannedVideo não substitui um vídeo publicado.
+- Rodar os validadores de manifesto, roteiro e tutoriais para os arquivos alterados.
+  Usar os testes existentes do curso quando houver manifesto gerado.
+- Ler todas as falas em voz alta e conferir tarefa, passos, teste e saída.
+- Sinalizar a necessidade de nova gravação e ensaio com crianças. Não declarar que a
+  compreensão infantil foi validada só porque os arquivos passaram em testes.
+
+Esta é a cópia versionada da skill local .agents/skills/aula-roteiro/SKILL.md.
+Ao alterar a skill local, atualizar esta cópia para manter as diretrizes disponíveis no projeto.

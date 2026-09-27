@@ -1168,6 +1168,12 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
 
 ### A aula no desenho das telas-modelo (11/09/2026)
 
+**Ampliação dos blocos (27/09/2026):** os títulos de Brinque e Experimente usam `sz-display`
+(Baloo 2). A ampliação conserva badge, título, cartões e controles na mesma árvore, sem
+reiniciar o jogo. Os tokens `--sz-activity-card-*` do cartão da aula também vestem o cartão
+ampliado. A rolagem mantém o cabeçalho da experiência acessível em telas pequenas e com
+fonte aumentada. QA: `e2e-scenes/activity-expansion.spec.ts`, junto das suítes de jogo e cena.
+
 A aula é do member-shell (compartilhada com o adulto), então o kids a veste por CSS a partir dos
 GANCHOS de lá (lista no CLAUDE.md do member-shell, invariante 8). ⚠️ As regras ficam FORA de camada
 no `globals.css` (bloco "A AULA NO DESENHO DAS TELAS-MODELO"): o member-shell pinta com utilitárias,

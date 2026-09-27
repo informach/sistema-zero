@@ -9,6 +9,8 @@
 > **Jogo pronto (26/09/2026):** `project-play-activity.tsx` usa o player real do Estúdio,
 > sem editor ou acesso ao projeto da criança. `completion: 'participation'` registra entrada
 > real no iframe; alvos continuam sendo o padrão dos manifestos sem `completion`.
+> A ampliação leva o bloco inteiro: badge, título, jogo, pistas e retorno de salvamento.
+> `header` e `children` de `ProjectPlayActivityView` mantêm esses elementos na mesma árvore.
 > O host verifica a janela emissora e reutiliza `projectPlayComplete` do core. Abrir, ampliar
 > e reiniciar não contam como participação; reiniciar após concluir preserva a conclusão.
 > `stage` define a proporção. A mesma implementação atende Kids, Community e prévia do Admin.
@@ -17,10 +19,12 @@
 > remount ou Fullscreen API. `ConsoleVisual` e `ConsoleActions` mantêm HUD/cena antes de
 > instrução/controles no DOM. `scene.css` consulta a largura do PRÓPRIO workspace (`52rem`),
 > tanto inline quanto ampliado: arrastar a divisória pode ativar duas colunas sem ampliar.
+> O cartão interno preserva a moldura do bloco ao ampliar e contém o cabeçalho e o console.
 > Com altura de janela abaixo de `34rem`, mantém o fluxo vertical. O console inline limita sua
-> altura pela janela e a bancada rola sem levar o palco junto. A contenção fica na seção, NÃO
-> no slot ancestral, para não limitar o posicionamento fixo da ampliação. Nenhuma troca remonta
-> o player. Reutiliza `useModalA11y` para Escape, foco e trava de rolagem ao ampliar.
+> altura pela janela e a bancada rola sem levar o palco junto. A contenção fica no cartão interno
+> da seção, nunca no slot ancestral, para não limitar o posicionamento fixo da ampliação.
+> Nenhuma troca remonta o player.
+> Reutiliza `useModalA11y` para Escape, foco e trava de rolagem ao ampliar.
 > Palcos simples expõem a proporção real para caber também pela altura; legendas e comparações
 > nunca são cortadas. QA interativo: `bun run --filter @sistemazero/community-kids e2e:scenes`.
 

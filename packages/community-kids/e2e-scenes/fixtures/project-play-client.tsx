@@ -63,15 +63,17 @@ function ProjectPlayFixture() {
           },
         }}
       >
-        <InteractiveLessonBlock
-          block={{
-            id: blockId,
-            kind: 'interactive',
-            sortOrder: 0,
-            content: publicInteractiveBlock(content),
-          }}
-          previewContent={content}
-        />
+        <div className="sz-lesson-block">
+          <InteractiveLessonBlock
+            block={{
+              id: blockId,
+              kind: 'interactive',
+              sortOrder: 0,
+              content: publicInteractiveBlock(content),
+            }}
+            previewContent={content}
+          />
+        </div>
       </LessonPreviewProvider>
       <output aria-label="Resultado do jogo">{outcome}</output>
     </main>

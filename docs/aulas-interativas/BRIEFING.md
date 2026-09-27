@@ -10,6 +10,14 @@
 > interna da experiência é outra função. Quiz fica sozinho em uma seção própria,
 > precedido apenas por uma fala curta do Zappy. Palpite é seletivo, nunca automático.
 
+> **Revisão de linguagem em 27/09/2026, após duas crianças assistirem ao Cadê Todo Mundo?.**
+> A primeira fala diz o que fazer agora. A criança precisa reconhecer a atividade, saber como
+> começar e saber quando terminou. Contexto, analogias, recapitulações e promessas da próxima
+> aula não são etapas obrigatórias da fala. O passo a passo de construção continua completo.
+> Tours de interface ficam no Como Fazer. Esta revisão prevalece sobre orientações anteriores
+> de roteiro, inclusive os moldes externos. Foi aplicada primeiro às nove seções de Cadê Todo
+> Mundo?; os demais cursos ainda precisam de revisão própria.
+
 ## 1. O que estamos fazendo e por quê
 
 Os jogos já gravados do Sistema Zero (Nave Contra Asteroides, Corre Dino e O Jogo do Meu Jeito)
@@ -43,8 +51,8 @@ Onde fica o bloco, em que categoria e subcategoria, onde encaixa, o que escrever
 Aqui a narração conduz do primeiro ao último gesto. A criança **nunca** é mandada descobrir sozinha
 onde está uma peça nem montar sozinha uma mecânica.
 
-Antes do primeiro clique de um vídeo prático, diga qual parte do jogo a criança vai montar e por
-que ela serve. Depois, conduza cada gesto em voz falada: categoria, subcategoria e seção quando
+Comece com uma ação concreta: "Faça um personagem aparecer quando você tocar no esconderijo".
+Depois, conduza cada gesto em voz falada: categoria, subcategoria e seção quando
 existirem, nome exato do bloco, destino do encaixe, campo e valor. Ao pegar outro bloco, repita o
 caminho necessário, mesmo que a categoria já esteja aberta na tela: **"Ainda na categoria Áreas
 do projeto, pega o bloco Enquanto estiver rodando"**, não **"Na mesma categoria, pega o outro"**.
@@ -68,8 +76,9 @@ instrução específica da atividade.
 
 Um conceito abstrato é explicado e em seguida vira algo que a criança vê mudar. A experiência
 **não é uma prova nem uma descoberta sem ensino prévio**: é a metade concreta de uma explicação.
-O vídeo explica a ideia, o motivo e uma analogia compreensível, mas não encena a mesma sequência
-de controles nem antecipa os resultados observáveis que a experiência vai pedir para comparar.
+O vídeo diz o que testar e explica apenas a ideia necessária para executar e entender a tarefa.
+Uma analogia só entra se resolver uma dificuldade real; não é uma etapa obrigatória. A fala
+pode dar a ordem dos testes, sem executá-los pela criança nem antecipar todos os resultados.
 
 Exemplo canônico: a aula explica o que são x e y, e logo depois a criança arrasta um controle de x
 e um de y e vê o sprite mudar de lugar em tempo real. Ela não descobriu a coordenada, ela sentiu a
@@ -87,9 +96,9 @@ criança**, o problema roda antes de a ferramenta aparecer. Exemplos: o rastro n
 faxina; a nave saindo da tela antes do bloco que a segura na borda. Mostre o problema num estado
 em que ele seja realmente visível: sem limpar, o rastro deixa desenhos antigos da nave na tela e
 esconde a saída pela borda. Primeiro resolva o rastro; só então teste a borda sem a solução.
-Na fala, conecte causa e necessidade antes da analogia e da ferramenta: o desenho antigo ficou,
-precisamos apagá-lo para ver só a nave atual, uma lousa mágica ajuda a imaginar o gesto, e então
-entra Limpar a tela.
+Na fala, nomeie o problema visível e a ação: "O desenho antigo ficou. Vamos apagar esse rastro".
+Ensine o bloco Limpar a tela com os passos necessários. A justificativa pedagógica fica nas
+notas de autoria.
 
 Isso pertence ao eixo do Estúdio, não ao do conceito. E vale a regra de honestidade: **conferir se
 a dor reproduz de verdade naquele jogo**. Encenar problema que a gravação não mostra quebra a
@@ -109,15 +118,15 @@ apresentações, o padrão é assistir ao vídeo e experimentar o jogo, sem exig
 por alvos continua disponível para jogos Jogo 2D e permanece nas aulas que já o utilizam, como
 Cadê Todo Mundo?. A moldura não acrescenta controles de jogabilidade ao jogo original.
 
-Na seção de conceito, o vídeo explica a ideia abstrata com exemplos e analogias do universo de quem
-aprende. A experiência, na coluna ao lado, deixa a criança alterar algo e observar o efeito. Nenhum
+Na seção de conceito, o vídeo dá a tarefa e uma explicação curta ligada ao jogo. A experiência
+deixa a criança alterar algo e observar o efeito. Nenhum
 dos dois bloqueia o outro: ambos estão disponíveis desde a abertura. A seção só conclui quando o
 vídeo chega a 90% **e** a experiência é completada.
 
-A instrução da experiência é uma fala breve do Zappy, junto aos controles. Ela propõe **o que
-comparar e observar**, sem prescrever todos os cliques, tempos ou resultados. O passo a passo exato
-fica nas pistas solicitadas; elas precisam guiar até cada meta obrigatória. O texto da instrução
-precisa dar orientação suficiente para começar, sem obrigar a criança a abrir uma pista. A
+A instrução da experiência é uma fala breve do Zappy, junto aos controles. Ela diz **o que fazer
+e observar**. Quando a ordem dos testes for necessária para concluir, ela aparece no vídeo ou
+na instrução inicial. As pistas são ajuda extra, nunca o único lugar com uma ação obrigatória.
+Não contar os resultados que a criança vai observar. A
 descoberta concreta pode confirmar a ideia que o vídeo explicou, mas não deve repetir uma
 demonstração idêntica que ela acabou de assistir.
 O controle da cena também precisa corresponder ao conceito: para comparar o que acontece ao
@@ -197,11 +206,16 @@ Gastar cena com isso é o que produziu o excesso de seções do v6.
 
 Não são molde, são pisos de qualidade:
 
-- **Toda seção começa pelo contexto, não pelo clique nem pelo termo novo.** A primeira fala
-  retoma o que a criança acabou de construir, ver ou descobrir; nomeia o problema ou a pequena
-  conquista que vem agora. Só então entra a analogia, a explicação ou o primeiro caminho de
-  paleta. Em uma seção de teste, diga o que será conferido antes de pedir o primeiro clique.
-  Contexto é uma ligação concreta com o jogo da criança, não uma abertura genérica repetida.
+- **Toda seção começa dizendo o que fazer agora.** "Jogue esta versão pronta", "Toque no arbusto"
+  ou "Faça o jogo contar os personagens". Se uma retomada for necessária, limite-a ao fato que
+  ajuda a executar a tarefa. Não abrir com agenda, teoria ou justificativa para adultos.
+- **O roteiro ensina a tarefa; o Como Fazer ensina a interface.** Pausar, rever, ampliar,
+  redimensionar, alternar abas, baixar materiais e publicar vão para a biblioteca. Na aula
+  permanecem os blocos, encaixes, campos, valores e testes da construção, os comandos da
+  experiência e a ação de saída. "Clique em Próxima seção" é encaminhamento, não um tour.
+- **Direto não significa incompleto.** Não esconder uma etapa em "faça como eu fiz". Dizer
+  o necessário para executar, conferir e terminar. Se o envio pede confirmação, nomear a
+  confirmação. Se há metas obrigatórias, cobrir todas com instruções compreensíveis.
 - **Explique a palavra nova antes de usá-la num caminho da paleta.** Se a criança vai ouvir
   "Sprites" ou "Desenhar o sprite" pela primeira vez, ligue primeiro essa palavra a algo que
   ela já criou ou viu. Não deixe a definição para a seção seguinte nem repita depois que ela
@@ -213,11 +227,9 @@ Não são molde, são pisos de qualidade:
   também a ordem dos blocos; a aparência do cenário sozinha não prova que a limpeza está certa.
   Essa sequência visual é uma decisão de autoria, não uma fala a repetir para a criança: no
   vídeo, apresente cada ação pelo que ela faz no jogo, sem frisar que o fundo ainda é liso.
-- **Abertura apresenta, não cobra observação.** O primeiro vídeo mostra o jogo e anuncia o
-  que a criança vai construir. Não peça “repara”, “confere” ou uma comparação de efeito
-  que ela ainda não produziu; guarde essa observação para o vídeo conceitual, a experiência
-  ou o teste depois da montagem. Uma amostra do resultado pode aparecer como convite,
-  sem exigir análise de detalhes naquele momento.
+- **Abertura apresenta o jogo e manda jogar.** Dizer "vamos construir este jogo", apontar a
+  versão pronta, explicar a brincadeira e dizer quando avançar. Não demonstrar os esconderijos
+  ou resolver o jogo pela criança. O primeiro vídeo não ensina a usar o player ou o Estúdio.
 - **Encaixe não é seção.** Uma sequência de gestos sem conceito novo agrupa na vitória que produz.
 - **Conceito e sua concretização ficam juntos.** São uma ideia, e partir ao meio obriga a criança a
   atravessar uma divisória no meio de um pensamento.
@@ -225,8 +237,8 @@ Não são molde, são pisos de qualidade:
   está misturando ideias e precisa ser redesenhada.
 - **Vídeo não bloqueia atividade.** Vídeo e experiência ou ferramenta aparecem juntos. A conclusão
   exige 90% do vídeo e a conclusão da atividade.
-- **Zappy é intervenção pontual.** Em seção de conceito, a ponte breve sob o vídeo liga a
-  analogia à experiência, e a fala dentro da experiência diz a tarefa concreta perto dos
+- **Zappy é intervenção pontual.** Em seção de conceito, a fala breve sob o vídeo convida a
+  fazer a atividade, e a fala dentro da experiência diz a tarefa concreta perto dos
   controles. São funções diferentes; não repetir o mesmo comando. Fora da experiência, não
   acrescentar uma terceira instrução. Em construção, a fala pode resumir o que o vídeo mostrou
   e convidar a montar, sem recontar o passo a passo.
@@ -246,7 +258,7 @@ e a **seção 2 apresenta o caderno**, antes da primeira atividade. Não é prec
 boas-vindas só para o PDF. O Desafio do Primeiro Jogo já tem uma apresentação própria do caderno;
 nos cursos seguintes, aplicar esta regra na Aula 1.
 
-A seção tem intenção `material`, um vídeo curto que mostra onde o caderno fica e como usá-lo, e um
+A seção tem intenção `material`, um vídeo curto que diz para que consultar o caderno, e um
 bloco `materials` com o download do PDF logo abaixo. Se `bookPreview: true`, o mesmo PDF aparece
 para leitura em livro 3D na coluna de consulta quando houver espaço; em tela estreita fica depois
 do vídeo e do download. O caderno é anexado apenas nesta primeira aula, e as demais podem remeter
@@ -254,15 +266,16 @@ do vídeo e do download. O caderno é anexado apenas nesta primeira aula, e as d
 download fica disponível, mas não é obrigatório para avançar. O arquivo real é vinculado no admin;
 o manifesto declara o bloco com `items: []`. Gravar o vídeo depois de anexar o PDF, mostrando uma
 página verdadeira do caderno. Registrar a seção no relatório, no manifesto e no roteiro da aula.
+Virar páginas, trocar o modo de leitura, baixar e imprimir ficam no Como Fazer. A consulta
+opcional não vira uma tarefa obrigatória para preencher tempo.
 
 ## 6. Regras de língua e de execução (herdadas, obrigatórias)
 
 - Português brasileiro com acentuação correta.
 - **Travessão zero.** Exclamação pontual, 3 a 5 por aula, só nos picos.
 - Linguagem falada, não escrita. Proibido "o objetivo de hoje é este".
-- Na narração, começar pela situação que a criança consegue imaginar ou reconhecer. Se a analogia
-  mudar de contexto, apresentá-lo antes: "Imagina que você quer fazer um desenho no papel" vem
-  antes de falar em papel e lápis. Ligar a analogia ao jogo antes de nomear o termo do Estúdio.
+- Na narração, começar pela tarefa. Explicar uma palavra nova em uma frase simples quando ela
+  for necessária. Usar o próprio jogo como exemplo; analogias são opcionais e curtas.
 - Cada "isso", "essa parte" ou "essas instruções" precisa apontar para algo já mostrado ou dito.
   Evitar definições com dois-pontos, frases telegráficas e enumerações que soam como documento.
   Ler a fala em voz alta e trocar por frases que mantenham o "você" na conversa.
@@ -275,9 +288,9 @@ página verdadeira do caderno. Registrar a seção no relatório, no manifesto e
   primeira menção.
 - Âncora em todo encaixe. Nunca "dentro do Ao iniciar"; sempre "dentro do Ao iniciar, logo acima do
   Ir para a tela".
-- **Nomear a ação real da interface.** Na prévia do Estúdio existem **Reproduzir** e **Atualizar**;
-  para reiniciar um teste, apontar **Atualizar**, não mandar recarregar a página inteira. Não inventar
-  um Play em outra tela nem dizer apenas "roda o jogo" sem mostrar onde agir.
+- **Nomear a ação real da tarefa.** A prévia acompanha as alterações dos blocos automaticamente.
+  Dizer qual ação testar no jogo. Se o teste depende de reiniciar, usar o controle real necessário,
+  sem ensinar os demais controles. O tutorial da prévia fica no Como Fazer.
 - Sem vocabulário de outro jogo (nada de nave e asteroide num curso de dino).
 - Usar o vocabulário canônico: relógio (timer), faxina (culling), medidor, camadas, estados do
   jogo, sorteio, apelido, embrulhar no Se, quadros de invencibilidade, HUD, área de colisão.
@@ -380,8 +393,8 @@ Quando propor uma cena que não existe, entregue:
   criança pode manipular mesmo sem responder
 - **Pergunta final, se houver:** qual interpretação nova ela pede e por que não repete o palpite
 - **Frase de sucesso**
-- **Vídeo de apoio:** ideia abstrata, exemplo próximo da criança e ponte para a experiência,
-  sem narrar os comandos da bancada
+- **Vídeo de apoio:** tarefa concreta, explicação curta necessária e ações suficientes para
+  executar todos os testes, sem fazer a experiência pela criança nem antecipar os resultados
 - **Quais outros cursos e aulas também usariam essa cena**, porque cena que serve um lugar só é cara
 
 ## 10. Princípios de julgamento

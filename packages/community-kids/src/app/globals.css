@@ -1530,10 +1530,13 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   font-weight: 800;
 }
 .sz-lesson-sections .sz-lesson-block {
-  border: 1px solid var(--borda-carta);
-  border-radius: 1.25rem;
+  --sz-activity-card-border: var(--borda-carta);
+  --sz-activity-card-radius: 1.25rem;
+  --sz-activity-card-padding: 1.25rem;
+  border: 1px solid var(--sz-activity-card-border);
+  border-radius: var(--sz-activity-card-radius);
   background: var(--card);
-  padding: 1.25rem;
+  padding: var(--sz-activity-card-padding);
 }
 
 /* O chip dos blocos INTERATIVOS (cena de experimentação e de demonstração, pergunta curta,

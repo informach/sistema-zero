@@ -275,118 +275,122 @@ function Activity({
     void checkRef.current()
   }, [gameComplete, result?.passed])
   const set = (value: LearningAnswers) => change(value)
-  return (
-    /* `sz-lesson-activity` permite ao app estilizar a experiência em HTML. */
-    <section aria-labelledby={`${id}-title`} className="sz-lesson-activity space-y-5">
-      <div className="space-y-2">
-        {/* ⚠️ O chip diz o que FAZER, não se a atividade é obrigatória: isso já tem linha
+  const header = (
+    <div className="space-y-2">
+      {/* ⚠️ O chip diz o que FAZER, não se a atividade é obrigatória: isso já tem linha
             própria logo acima do bloco (`sz-lesson-requirement`, "Atividade obrigatória" ×
             "Atividade concluída"), e o texto antigo daqui era a segunda cópia dela. */}
-        <p
-          className="sz-lesson-chip inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary"
-          data-chip={a.type === 'project-play' ? 'project-play' : 'html'}
-        >
-          <Gamepad2 size={14} aria-hidden />
-          Brinque
-        </p>
-        <h3 id={`${id}-title`} className="font-semibold text-xl">
-          {content.title}
-        </h3>
-        {a.type !== 'project-play' &&
-          (player?.renderInstruction ? (
-            player.renderInstruction(content.instructions)
-          ) : (
-            <p className="max-w-prose leading-relaxed text-muted-foreground">
-              {content.instructions}
-            </p>
-          ))}
-      </div>
-      {a.type === 'project-play' && (
-        <ProjectPlayActivityView activity={a} answers={answers} onChange={set} />
-      )}
-      <fieldset disabled={busy} className="space-y-5">
-        {a.type === 'html' && (
-          <LearningHtml html={a.html} title={content.title} answers={answers} onChange={set} />
-        )}
-        {content.checkpoint && (
-          <fieldset disabled={busy} className="space-y-2 border-t border-border pt-5">
-            <legend className="mb-3 font-medium">{content.checkpoint.prompt}</legend>
-            {content.checkpoint.choices.map((choice) => (
-              <label
-                key={choice.id}
-                className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-border p-3 has-checked:border-primary has-checked:bg-primary/5"
-              >
-                <input
-                  type="radio"
-                  name={`${id}-checkpoint`}
-                  value={choice.id}
-                  checked={answers.checkpoint === choice.id}
-                  onChange={() => set({ ...answers, checkpoint: choice.id })}
-                  className="accent-primary"
-                />
-                {choice.label}
-              </label>
-            ))}
-          </fieldset>
-        )}
-        {content.hints.slice(0, hintsUsed).map((hint) => (
-          <div key={hint}>
-            {player?.renderInstruction ? (
-              player.renderInstruction(hint, 'thinking')
-            ) : (
-              <p className="rounded-xl bg-muted/50 p-4 text-sm leading-relaxed">
-                <Lightbulb className="mr-2 inline size-4 text-primary" />
-                {hint}
-              </p>
-            )}
-          </div>
+      <p
+        className="sz-lesson-chip inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary"
+        data-chip={a.type === 'project-play' ? 'project-play' : 'html'}
+      >
+        <Gamepad2 size={14} aria-hidden />
+        Brinque
+      </p>
+      <h3 id={`${id}-title`} className="sz-display font-semibold text-xl">
+        {content.title}
+      </h3>
+      {a.type !== 'project-play' &&
+        (player?.renderInstruction ? (
+          player.renderInstruction(content.instructions)
+        ) : (
+          <p className="max-w-prose leading-relaxed text-muted-foreground">
+            {content.instructions}
+          </p>
         ))}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {content.hints.length > 0 && (
-            <Button
-              variant="ghost"
-              disabled={busy || hintsUsed >= content.hints.length}
-              onClick={() => change(answers, hintsUsed + 1)}
+    </div>
+  )
+  const body = (
+    <fieldset disabled={busy} className="space-y-5">
+      {a.type === 'html' && (
+        <LearningHtml html={a.html} title={content.title} answers={answers} onChange={set} />
+      )}
+      {content.checkpoint && (
+        <fieldset disabled={busy} className="space-y-2 border-t border-border pt-5">
+          <legend className="mb-3 font-medium">{content.checkpoint.prompt}</legend>
+          {content.checkpoint.choices.map((choice) => (
+            <label
+              key={choice.id}
+              className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-border p-3 has-checked:border-primary has-checked:bg-primary/5"
             >
-              <Lightbulb className="size-4" />
-              {hintsUsed ? 'Outra pista' : 'Quero uma pista'}
-            </Button>
-          )}
-          {a.type !== 'project-play' && (
-            <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
-              {busy ? 'Guardando…' : 'Conferir minha descoberta'}
-            </Button>
-          )}
-          {a.type === 'project-play' && gameComplete && !result?.passed && (
-            <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
-              {busy ? 'Guardando…' : 'Tentar guardar descoberta'}
-            </Button>
+              <input
+                type="radio"
+                name={`${id}-checkpoint`}
+                value={choice.id}
+                checked={answers.checkpoint === choice.id}
+                onChange={() => set({ ...answers, checkpoint: choice.id })}
+                className="accent-primary"
+              />
+              {choice.label}
+            </label>
+          ))}
+        </fieldset>
+      )}
+      {content.hints.slice(0, hintsUsed).map((hint) => (
+        <div key={hint}>
+          {player?.renderInstruction ? (
+            player.renderInstruction(hint, 'thinking')
+          ) : (
+            <p className="rounded-xl bg-muted/50 p-4 text-sm leading-relaxed">
+              <Lightbulb className="mr-2 inline size-4 text-primary" />
+              {hint}
+            </p>
           )}
         </div>
-        {result && (a.type !== 'project-play' || !result.passed) && (
-          <div role="status" className="rounded-xl bg-primary/5 p-4 leading-relaxed">
-            {result.passed && <CheckCircle2 className="mr-2 inline size-5 text-primary" />}
-            {player?.renderInstruction
-              ? player.renderInstruction(
-                  result.feedback,
-                  result.passed ? 'celebrating' : 'thinking',
-                )
-              : result.feedback}
-          </div>
+      ))}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {content.hints.length > 0 && (
+          <Button
+            variant="ghost"
+            disabled={busy || hintsUsed >= content.hints.length}
+            onClick={() => change(answers, hintsUsed + 1)}
+          >
+            <Lightbulb className="size-4" />
+            {hintsUsed ? 'Outra pista' : 'Quero uma pista'}
+          </Button>
         )}
-        {error ? (
-          <p role="alert" className="text-sm text-destructive">
-            {error}{' '}
-            <button type="button" className="underline" onClick={() => persistRef.current()}>
-              Tentar salvar novamente
-            </button>
-          </p>
-        ) : (
-          <p role="status" className="min-h-5 text-xs text-muted-foreground">
-            {status}
-          </p>
+        {a.type !== 'project-play' && (
+          <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
+            {busy ? 'Guardando…' : 'Conferir minha descoberta'}
+          </Button>
         )}
-      </fieldset>
+        {a.type === 'project-play' && gameComplete && !result?.passed && (
+          <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
+            {busy ? 'Guardando…' : 'Tentar guardar descoberta'}
+          </Button>
+        )}
+      </div>
+      {result && (a.type !== 'project-play' || !result.passed) && (
+        <div role="status" className="rounded-xl bg-primary/5 p-4 leading-relaxed">
+          {result.passed && <CheckCircle2 className="mr-2 inline size-5 text-primary" />}
+          {player?.renderInstruction
+            ? player.renderInstruction(result.feedback, result.passed ? 'celebrating' : 'thinking')
+            : result.feedback}
+        </div>
+      )}
+      {error ? (
+        <p role="alert" className="text-sm text-destructive">
+          {error}{' '}
+          <button type="button" className="underline" onClick={() => persistRef.current()}>
+            Tentar salvar novamente
+          </button>
+        </p>
+      ) : (
+        <p role="status" className="min-h-5 text-xs text-muted-foreground">
+          {status}
+        </p>
+      )}
+    </fieldset>
+  )
+  return a.type === 'project-play' ? (
+    <ProjectPlayActivityView activity={a} answers={answers} onChange={set} header={header}>
+      {body}
+    </ProjectPlayActivityView>
+  ) : (
+    /* `sz-lesson-activity` permite ao app estilizar a experiência em HTML. */
+    <section aria-labelledby={`${id}-title`} className="sz-lesson-activity space-y-5">
+      {header}
+      {body}
     </section>
   )
 }

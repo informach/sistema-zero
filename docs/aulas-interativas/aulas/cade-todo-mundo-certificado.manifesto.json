@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-certificado",
-      "plannedVideo": "Título: Você criou seu primeiro jogo!\n\nCelebrar a autoria da criança: toque, reação e contagem. Mostrar como emitir e guardar o certificado. Sem oferta, pitch, chamada para compra ou convite à criança para vender a um responsável. Alvo: 40–55 segundos.\n\nRoteiro falado completo: cade-todo-mundo-certificado.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Você criou seu primeiro jogo!\n\nReconhecer as duas regras que a criança programou. Pedir Pegar meu certificado e, após o download, Concluir aula. Sem tour do PDF ou de pastas; a ajuda fica no Como Fazer. Sem oferta comercial. Regravar a fala. Alvo: 15 a 25 segundos.\n\nRoteiro falado completo: cade-todo-mundo-certificado.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-certificado",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Você fez o jogo responder aos seus toques. Seu certificado está pronto!"
+        "text": "Clique em Pegar meu certificado. Depois clique em Concluir aula."
       }
     },
     {

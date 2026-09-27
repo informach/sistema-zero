@@ -1,26 +1,66 @@
-# Cadê Todo Mundo? — Aula 2: Complete a busca
+# Cadê Todo Mundo? | Aula 2: Complete a busca
 
-## Objetivo
+## Direção da revisão
 
-Retomar o jogo salvo na Aula 1, fazer cada achado somar um ao contador e ver a mensagem de vitória ao chegar a três. Duração alvo: 10–15 minutos. Se o projeto salvo não estiver disponível, o manifesto traz uma cópia de retomada com a reação da Aula 1 pronta; a criança não precisa repetir toda a primeira aula.
+A criança retoma o projeto da Aula 1 e acrescenta a contagem. As quatro seções, a experiência,
+o projeto inicial de retomada, a cadeia de continuidade e os critérios de conclusão permanecem.
+A revisão de 27/09/2026 dá comandos diretos e retira os tutoriais gerais de interface.
 
 ## Sequência
 
-| Seção | Tipo | Vídeo | Ação | Conclusão |
-| --- | --- | --- | --- | --- |
-| Volte ao seu jardim | retomada | 35–45 s | vê o personagem aparecer enquanto Achados continua em zero | 90% do vídeo |
-| Um número que acompanha a busca | conceito e experiência | 45–60 s | observa um único valor atual em descobertas, busca vazia e recomeço | vídeo e experiência |
-| Cada personagem vale um achado | prática | 4–5 min | encaixa Somar 1 em variável achados no mesmo evento, testa três esconderijos e envia; se precisar, volta ao caderno da Aula 1 | vídeo, incremento correto e envio |
-| Sua busca está completa | fechamento | 80–100 s | celebra o jogo e aprende a compartilhar, se quiser, no mesmo Estúdio ao lado | 90% do vídeo; publicação opcional |
+| Seção | Vídeo | O que fazer | Conclusão |
+| --- | --- | --- | --- |
+| Volte ao seu jardim | 15 a 25 s | ver o que falta no contador e avançar | vídeo |
+| Um número que acompanha a busca | 40 a 55 s | testar primeiro achado, segundo achado, espaço vazio e recomeço | vídeo e experiência |
+| Cada personagem vale um achado | 3 a 4 min | encaixar a soma, testar a contagem e enviar | vídeo, incremento correto e envio |
+| Sua busca está completa | 25 a 40 s | reconhecer o resultado, concluir a aula e abrir o certificado | vídeo; publicação opcional |
 
-## Direção pedagógica
+## Orientação por seção
 
-O primeiro vídeo retoma o resultado da Aula 1 e mostra o problema antes da solução: o personagem aparece, mas **Achados** continua em zero. A seção seguinte apresenta a analogia das marquinhas numa folha antes de **contador**; **variável** é o lugar onde o jogo guarda um número que pode mudar. A experiência pergunta o que acontece com Achados ao encontrar alguém, procurar sem achar e começar outra busca. A cena deixa a criança observar 0→1→2, com os passos exatos nas pistas e sem exigir palpite. Um espaço vazio sinalizado por **Procurar aqui** ajuda a iniciar o teste; a frase da situação confirma também os toques que não mudam a contagem. Há um único controle **Recomeçar a busca**, que zera o valor e registra a descoberta. A cena mostra um valor atual, não várias “caixas” ou valores antigos. Só depois vem o vídeo prático, que nomeia a área do projeto, a categoria, o bloco, o encaixe e os dois campos, sem resumir passos que a criança ainda precisa executar. Uma fala curta do Zappy conecta o vídeo à experiência; outra conecta o vídeo prático ao Estúdio.
+### Volte ao seu jardim
 
-O Estúdio continua dentro da aula. Ao testar, lembrar brevemente onde fica a **Pré-visualização**: aba quando o Estúdio está estreito, área do jogo à direita quando há espaço, olhinho se ela estiver escondida. Ela acompanha as mudanças automaticamente; não existe um passo de “iniciar a prévia”. A ação de somar vem **depois** da ação que revela, dentro do mesmo evento. O esconderijo invisível deixa de receber toque, por isso o mesmo personagem não conta duas vezes. A regra de vitória já está preparada no projeto; não atribuir essa programação à criança.
+Começar dizendo que a tarefa é fazer o jogo contar os personagens encontrados. Mostrar um toque
+revelando o personagem enquanto **Achados** continua em zero. Encaminhar para **Próxima seção**.
+A seção só tem vídeo, portanto a fala não pode pedir que a criança manipule um projeto ali.
 
-O Caderno do Aluno fica somente na seção **Seu Caderno do Aluno** da Aula 1. Esta prática apenas lembra onde consultá-lo se surgir dúvida; não há outro bloco nem upload. Depois do teste, o vídeo prático termina no **Enviar para o professor**, que entrega a atividade. O fechamento celebra o que ela programou e só então ensina, como escolha, **Compartilhar > Gerar capa > Publicar > Copiar link de jogar**. O mesmo bloco Estúdio da prática permanece visível ao lado do vídeo final: o manifesto o reutiliza como espaço de trabalho, sem criar um segundo projeto ou pedir que a criança volte de seção. O título e o resumo da publicação vêm do manifesto. A publicação aparece assim que a criança confirma; compartilhar não é condição para concluir a aula. O roteiro ensina a copiar o link público, sem mandar abrir o Mural: o acesso ao espaço pode ser temporário conforme a oferta.
+### Um número que acompanha a busca
 
-## QA
+Pedir que a criança procure no jardim e acompanhe **Achados**. Explicar variável em uma frase
+ligada à contagem, sem analogia das marquinhas e sem lista de conceitos.
 
-Abrir a Aula 2 depois de enviar a Aula 1 e comprovar que a cadeia trouxe o projeto da criança. Testar também a cópia de retomada quando não há projeto salvo; a fala não deve afirmar que a cópia é o arquivo pessoal da criança. Na experiência, verificar o valor 0→1→2, nenhuma soma ao procurar sem encontrar ou tocar de novo no mesmo personagem, retorno a zero pelo único botão **Recomeçar a busca**, pistas, alvos alinhados ao desenho com painel ampliado e janela baixa, controles em tela estreita, nomes dos personagens no leitor de tela e conclusão só após vídeo e metas, sem palpite ou pergunta final. Em ambos os caminhos do Estúdio, conferir a ordem de desenho, a atualização automática da Pré-visualização, o toque nos três esconderijos, a contagem única 1–2–3 e a mensagem final. Conferir a Pré-visualização em larguras estreita e larga, a referência ao caderno da Aula 1, o envio e a conclusão da prática sem voltar ao caderno ou publicar. Na seção final, confirmar que o mesmo projeto e **Compartilhar** estão visíveis na seção de fechamento em tela estreita e larga, sem voltar de seção; **Gerar capa** produz a imagem, **Publicar** cria a publicação imediatamente e **Copiar link de jogar** funciona. Confirmar que a aula conclui com 90% do vídeo final sem publicar. Em teste integrado com uma conta que resgatou o link de embaixador, verificar o acesso ao Mural durante os sete dias do resgate; essa permissão é implementada em outra frente e não vem do manifesto. Também testar que o vídeo não exige a visita ao Mural de quem não tem acesso. O aluno só precisa da extensão Jogo 2D no Estúdio incorporado.
+Orientar os quatro testes que correspondem às metas: primeiro esconderijo, outro esconderijo,
+espaço vazio depois de encontrar alguém e **Recomeçar a busca**. Não executar os testes nem
+antecipar os valores na gravação. A criança observa quando o número muda e quando fica igual.
+Manter um único valor atual, as pistas, o retorno de cada toque e a ausência de palpite ou quiz.
+
+### Cada personagem vale um achado
+
+Ensinar **Programação > Variáveis**, **Somar ___ em variável ___**, dentro do evento do grupo
+**esconderijos**, logo abaixo da ação de visibilidade. Manter **1** e escolher **achados**.
+
+Pedir que teste cada esconderijo: contagem 1, 2, 3 e a mensagem de vitória que já estava
+preparada. Repetir o toque no mesmo lugar deve manter 3, pois o esconderijo invisível não recebe
+outro toque. Se não funcionar, conferir encaixe, ordem, número e variável.
+
+Depois do teste, esperar **Salvo**, usar **Enviar para o professor**, confirmar em **Enviar**,
+esperar o envio terminar e seguir em **Próxima seção**. Não ensinar o layout da Pré-visualização
+ou o compartilhamento. O caderno continua disponível na Aula 1, sem novo upload ou bloco.
+
+### Sua busca está completa
+
+Nomear as duas regras que a criança programou: revelar ao toque e contar os achados. Apontar o
+tutorial **Como publicar seu jogo no mural**, no Como Fazer, para quem quiser compartilhar.
+Não demonstrar janela, capa, publicação ou cópia do link no vídeo da aula.
+
+Terminar com **Concluir aula** e a orientação de abrir **Seu certificado**. O mesmo Estúdio
+permanece nesta seção, sem novo projeto. Publicar e visitar o Mural continuam opcionais.
+
+## Conferência antes de regravar
+
+Conferir a continuidade do projeto enviado e o projeto de retomada quando não há trabalho salvo.
+Não tratar essa cópia como se fosse o arquivo pessoal da criança. Testar as quatro metas da
+experiência, montagem correta, contagem sem repetição, vitória, envio e avanço.
+
+Manter a conclusão sem publicação e sem acesso obrigatório ao Mural. O tutorial de
+compartilhamento deve respeitar a disponibilidade do botão e permitir usar o link público.
+As novas falas precisam ser regravadas antes de substituir os vídeos atuais.

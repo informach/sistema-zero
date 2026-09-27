@@ -1,240 +1,161 @@
 # Especificação do roteiro de gravação
 
-> Contrato para escrever o roteiro de cada aula redesenhada: **o texto que a pessoa lê na frente do
-> microfone**, com o que está na tela em cada momento.
->
-> Destilado de `cursos/MOLDE-ROTEIRO-AULA.md`, de `cursos/REGRA-COMO-CHAMAR-O-ALUNO.md` e das
-> decisões de produto de 19 e 20/09/2026. Onde o molde antigo diverge, esta especificação vence, e
-> as divergências estão marcadas.
+Direção revisada em 27/09/2026 depois do teste de Cadê Todo Mundo? com duas crianças.
+Esta especificação e o BRIEFING.md prevalecem sobre os moldes antigos e os roteiros já gravados.
+A primeira aplicação cobre as nove seções desse curso. Os demais cursos serão revistos depois.
 
-> **Direção vigente desde 21/09/2026:** cada seção tem no máximo um clipe. Em conceito, o clipe
-> explica no abstrato com exemplos próximos e a experiência ao lado concretiza; em construção, o
-> clipe mostra o passo a passo e a ferramenta ao lado recebe a execução. A atividade não espera o
-> vídeo acabar para ser liberada, mas a seção exige os dois para concluir.
+## 1. A primeira fala diz o que fazer
 
-## 1. O que é, e o que não é
+A criança precisa entender a tarefa sem traduzir a intenção do professor.
 
-O manifesto guarda um **briefing** de cada clipe: título, o que mostrar, uma fala de referência e a
-duração alvo. Isso orienta, mas não é o que se lê no microfone.
+- Apresentação: "Vamos construir este jogo. Jogue a versão pronta aqui na aula."
+- Experiência: "Toque no arbusto. Depois ligue a reação e toque de novo."
+- Construção: "Faça cada personagem encontrado somar um em Achados."
+- Material: "Este caderno tem os passos para montar o jogo. Consulte quando precisar."
+- Encerramento: nomear o resultado e dar a próxima ação.
 
-O roteiro é o texto final. Cada clipe do manifesto vira um trecho de roteiro feito de **pares**,
-**sempre nesta ordem e sempre 1 para 1**:
+Não começar por uma lista do que será aprendido, a importância do conceito ou uma promessa da
+próxima aula. O contexto entra somente quando ajuda a executar a tarefa atual. A intenção
+pedagógica e a justificativa ficam na proposta da aula, para o adulto que a prepara.
 
-- `**Na tela:**` é nota de produção, escrita para quem grava. Imperativo, com o caminho completo da
-  paleta e os valores concretos.
-- `**Narração:**` é a fala literal, entre aspas retas, tratando quem assiste por "você". Negrito
-  marca a palavra que o narrador enfatiza.
+## 2. Instruções completas, com palavras simples
 
-Confira a paridade contando os dois antes de entregar.
+Encurtar a fala não permite omitir passos. Na montagem, conduzir a criança até o resultado:
 
-### Os dois ficam em parágrafos separados
+1. Dizer o que ela vai fazer no jogo.
+2. Dar o caminho completo da categoria, subcategoria e seção que existem.
+3. Nomear o bloco como aparece na paleta.
+4. Dizer onde encaixar, com o bloco vizinho ou o espaço vazio de destino.
+5. Dizer qual campo mudar, o valor e o que manter.
+6. Pedir o teste concreto e dizer o resultado esperado da construção.
+7. Dar uma correção curta para o erro mais provável.
+8. Dizer como terminar, incluindo confirmação de envio quando necessária.
 
-Quem grava lê o roteiro de relance, com o microfone aberto. Se a nota de produção e a fala correrem
-no mesmo parágrafo, o olho não acha onde a fala começa e o narrador lê a instrução em voz alta.
+Exemplo: "Abra Programação e depois Variáveis. Pegue Somar 1 em variável. Encaixe dentro de
+Quando clicar ou tocar, logo abaixo do bloco de visibilidade. Deixe o número em 1 e escolha
+achados. Toque em um esconderijo e confira se Achados virou 1."
 
-Por isso o par se escreve assim, **com linha em branco entre os dois** e a fala em citação:
+Nunca trocar essa sequência por "faça como eu fiz", "monte a regra" ou "agora é sua vez" sem
+ensinar a montagem. Mostrar cada gesto com tempo para acompanhar; cortar enrolação não é acelerar
+o arrasto. Repetir o caminho ao pegar outra peça quando isso ajuda a criança a se localizar.
 
-```markdown
-**Na tela:** enquadrar só a caixa do **Ao iniciar**, vazia.
+Conferir rótulos, campos, valores e opções no código da versão usada na gravação. A referência
+REFERENCIA-BLOCOS-JOGO-2D.json é apoio, não substitui o código. O menu de nomes pode mudar com o
+projeto; pedir o nome certo, sem inventar uma posição fixa. Se o campo já está correto, dizer para
+mantê-lo. Bloco de valor substitui o valor já encaixado, não ocupa um buraco imaginário.
 
-**Narração:**
-> "A primeira se chama **Ao iniciar**. Tudo o que estiver dentro dela acontece uma vez só, bem no
-> comecinho, quando o jogo liga."
-```
+## 3. O que vai para o Como Fazer
 
-O `>` marca a fala linha a linha, então ela fica destacada tanto no arquivo cru quanto na tela. A
-nota de produção fica em texto normal, sem citação. Entre um par e o próximo, uma linha em branco.
+A aula ensina a criar o jogo. A biblioteca ensina a usar a plataforma.
 
-### Fecho quando a criação acontece em outra ferramenta
+| Conteúdo | Destino |
+| --- | --- |
+| Pausar o vídeo, voltar um trecho, ampliar e sair da tela cheia | Como Fazer |
+| Arrastar divisória, alternar abas, mostrar a Pré-visualização | Como Fazer |
+| Folhear o caderno, trocar a leitura, baixar e imprimir | Como Fazer |
+| Abrir a janela de compartilhamento, gerar capa, publicar e copiar link | Como Fazer |
+| Escolher um bloco, encaixar, preencher valores e testar a regra | Roteiro da aula |
+| Acionar um controle necessário à experiência | Comando da atividade, sem tour |
+| Enviar a atividade, confirmar o envio, avançar ou concluir | Encaminhamento curto no roteiro |
 
-Nas seções de **O Jogo do Meu Jeito** com `externalTool` e conclusão apenas pelo vídeo, o último
-clipe termina com uma pausa para a pessoa trabalhar e, ao voltar, uma **autoconferência visual**.
-Mostrar o resultado de referência, pedir que ela olhe o próprio desenho ou jogo e nomear um ou dois
-sinais observáveis. O sinal deve ser funcional ou de legibilidade; formato, cores e detalhes que a
-aula deixou livres continuam livres.
+Não retirar a única instrução de que a criança precisa. Quando a dúvida for de interface,
+usar um tutorial com título claro, conferido no código e disponível para aquele perfil.
+Não exigir que a criança leia todos os tutoriais antes de começar.
 
-Escrever a pergunta no par `Na tela` / `Narração` do roteiro. Se houver um erro comum, dar um
-caminho de correção pequeno. O vídeo visto registra o avanço na aula, mas a plataforma não inspeciona
-automaticamente o trabalho feito no Pinta ou no Estúdio completo. A entrega pela galeria, quando
-pedida, é a evidência que o professor pode abrir depois.
+Na fala, "clique em Próxima seção" basta. Não explicar o que é uma seção, todos os botões
+vizinhos e as diferenças entre celular e computador. O rótulo atual é **Próxima seção**,
+mesmo quando a conversa informal usa "sessão".
 
-## 2. A regra número um: caminho completo, sempre
+## 4. Experiências: dar a tarefa, deixar observar
 
-**Nunca pressuponha que a pessoa sabe onde o bloco está.** Toda vez que a narração mandar pegar um
-bloco, ela diz o caminho inteiro, de uma vez:
+Começar pelo que testar. Dizer a ordem quando ela for necessária, sem esconder um passo
+obrigatório nas pistas. A criança pode receber comandos diretos e ainda observar o resultado
+por conta própria.
 
-> "Na categoria **Jogo 2D**, abre **Tempo**, e dentro dela **Quadros e intervalos**. Pega o bloco
-> **A cada quadro do jogo**."
+O vídeo não precisa executar todos os testes e entregar todas as respostas. Na experiência de
+toque, apontar o arbusto e Ligar a reação ao toque, pedir os dois testes e deixar a criança
+comparar. Na experiência de contagem, pedir primeiro achado, segundo achado, espaço vazio e
+recomeço. "Explore e descubra" sozinho não orienta.
 
-A paleta de hoje tem quatro degraus: categoria, subcategoria, seção e bloco. A fonte de verdade é
-`REFERENCIA-BLOCOS-JOGO-2D.json` nesta pasta, com os 285 tipos extraídos do código. **Não escreva
-caminho de memória, consulte.** Cada tipo traz:
+Uma palavra nova recebe uma explicação curta ligada ao jogo. Uma analogia só entra se ajudar
+naquele momento. Não exigir a sequência analogia, definição, justificativa, promessa e tarefa.
+Não acrescentar questionários ou mudar as experiências só para encurtar a fala.
 
-| Chave | O que é, e para que serve na fala |
-|---|---|
-| `familia` e `secao` | os dois degraus do meio do caminho |
-| `rotulo` | a primeira linha do bloco, literal |
-| `linhas` | **todas** as linhas dele. Trinta blocos têm mais de uma, e a segunda costuma ser o campo que a aula ensina: o `Para cada sprite do grupo … que colidir com o sprite …` traz `chamar o sprite de …` na linha 2 |
-| `campos` | cada campo com o **padrão de fábrica**, que é o que sustenta a fala em todo campo, inclusive nos que não mudam |
-| `opcoes` | a lista do menu **na ordem da tela**, para dizer a posição ("o quinto da lista, a barra de espaço") em vez de só o desenho |
+## 5. Falar com quem está fazendo
 
-Onde `opcoes` é nulo, o menu não tem lista fixa no código: a fala então avisa que o item não vem
-escolhido e manda procurar pelo nome, nunca inventa uma posição.
+- Usar "você", verbos simples e frases que soem naturais em voz alta.
+- Ser acolhedor sem repetir "bora", "capricha", "olha só" e parabéns a cada gesto.
+- Evitar perguntas que escondem um pedido. "Teste os dois jeitos" é mais claro que
+  "Como será que essa ideia funciona no nosso jardim?".
+- Cada "aqui" precisa de um apontamento visível. Cada "isso" precisa de um referente claro.
+- Nomear a conquista concreta, com honestidade sobre o que veio preparado.
+- Sem travessões, linguagem comercial ou convite para convencer um responsável.
+- Não chamar quem assiste de "criança" ou "aluno". Falar diretamente com "você".
+- Termos técnicos entram só quando ajudam a tarefa. Não fazer uma lista de vocabulário no fecho.
 
-Regras que vêm junto:
+## 6. Apontamentos e ações reais
 
-- **Pegar bloco é gesto ininterrupto.** O caminho completo sai de uma vez, sem explicação no meio.
-  O conceito vem antes ou depois do gesto, nunca durante.
-- **Rótulo literal do bloco, nunca parafraseado.**
-- **Âncora em todo encaixe.** Nunca "dentro do Ao iniciar"; sempre "dentro do Ao iniciar, logo
-  acima do Criar dinossauro". Quando o lugar é entre dois blocos, nomeie os dois. "Logo abaixo de
-  X" sozinho é inserção disfarçada de anexo, e a pessoa encaixa no fim por instinto.
-- **Fala em todo campo, inclusive nos que não mudam.** "O tamanho já vem 44, deixa assim."
-- **Campo de valor não tem buraco vazio.** Bloco de valor se arrasta por cima do que já está ali.
-- **Menu de escolha nunca vem pronto no item certo.** Diga a posição na lista ("o terceiro da
-  lista"), não só o desenho. Obrigatório quando o erro é silencioso.
-- **Mover bloco é ARRASTAR, nunca copiar**, com a consequência dita: dois jogos rodando ao mesmo
-  tempo.
+Mostrar a atividade enquanto a fala a apresenta. "Aqui está o jogo pronto" funciona se o
+enquadramento realmente o mostra. A ferramenta pode ficar ao lado ou abaixo do vídeo; não gravar
+um tour das duas disposições. Conferir o roteiro nos dois tamanhos de tela.
 
-## 3. Não existe botão de play
+A Pré-visualização do Estúdio acompanha as mudanças automaticamente. Pedir a ação do jogo:
+"Toque em um esconderijo", "clique no jogo e aperte a seta". Não inventar um botão de início nem
+mandar recarregar a página como passo genérico. Um reinício necessário ao teste deve usar o
+controle real e ser conferido antes da gravação.
 
-"Roda o jogo" é instrução proibida: manda procurar um botão que não existe. As três ações reais:
+A ação de saída precisa corresponder à seção: **Próxima seção** entre partes da aula,
+**Concluir aula** na última parte. Se há envio, incluir **Enviar para o professor** e a confirmação
+**Enviar**. Se há certificado, nomear **Pegar meu certificado**. Tours, estados alternativos e
+solução de problemas desses fluxos ficam na biblioteca de ajuda.
 
-- **"olha o seu jogo"** para efeito automático
-- **"clica na área do jogo e aperta X"** para efeito que depende de ação
-- **"recarrega a página"** para voltar ao começo
+## 7. Formato para gravação
 
-⚠️ **Divergência do molde antigo, e ela importa.** O molde traz "olha o seu jogo **aí embaixo**", e
-o campo "Ambiente real: vídeo em cima, estúdio embaixo". Isso nasceu no layout antigo. **Hoje a
-ferramenta fica ao lado acima de 1080 px de largura e embaixo abaixo disso**, então qualquer fala
-que diga onde ela está fica errada em metade dos aparelhos. Tire a direção: "olha o seu jogo".
+Cada aula tem proposta, manifesto e roteiro na pasta aulas/. A proposta explica as escolhas
+para quem prepara a aula; o manifesto define o conteúdo importável; o roteiro contém a fala
+literal. Os três precisam concordar. Se houver gerador do manifesto, atualizar também o gerador.
 
-Posição **dentro** do Estúdio ou do Pinta é estável e pode ser dita: "na coluna da esquerda, onde
-ficam os bloquinhos", "a Prévia, na coluna da direita".
-
-## 4. Como falar
-
-- **Linguagem falada, não escrita.** Proibido "o objetivo de hoje é este". Vira "no fim da aula de
-  hoje o seu dino vai saltar toda vez que você mandar".
-- **Analogias do cotidiano, não de adulto.** O livrinho de folhear para o quadro, a janela do carro
-  para o cenário que rola, o termômetro para os negativos, o saquinho de papelzinho para o sorteio,
-  a lousa mágica para limpar a tela, "se estiver chovendo, leva o guarda-chuva" para o bloco Se.
-- **Nunca chame quem assiste de criança.** A turma vai dos 8 aos 15 e o pré-adolescente recusa o
-  rótulo. Use **criador**, que é a palavra da casa: "os outros criadores", "alguém daqui", "a
-  Comunidade". Para o responsável, "o seu filho".
-- **Linguagem literal.** Muita gente da turma lê ao pé da letra: nada de idiomatismo nem metáfora
-  sem marca. Comparação anunciada ("é tipo", "é como") pode e funciona bem.
-- **"o jogador"** para a ação de jogar, **"você"** para falar com quem assiste.
-- **Travessão zero.** Exclamação pontual, 3 a 5 por aula, só nos picos.
-- **Sem vocabulário de outro jogo.** Nada de nave e asteroide num curso de dino.
-- **Acentuação pt-BR correta.**
-- **Vigiar o vício de sublinhar tudo.** "Guarda essa" e "os criadores usam o tempo todo" perdem
-  força quando aparecem em toda aula.
-
-## 5. O vocabulário travado
-
-Use os termos canônicos: **relógio** (timer), **faxina** (culling), **medidor**, **camadas**,
-**estados do jogo**, **sorteio**, **apelido**, **embrulhar no Se**, **quadros de invencibilidade**,
-**HUD**, **área de colisão**, **caixa de colisão**, **retorno pro jogador**.
-
-⚠️ Rótulos que mudaram e que o material antigo ainda usa: `Ir para a tela` hoje é **`Mudar o estado
-do jogo para`**; `a tela atual é` hoje é **`o estado do jogo é __ ?`**; `Tocar som de pulo` **não
-existe mais** e virou **`Tocar efeito`** com a opção `pulo`.
-
-As áreas do projeto se chamam **Ao iniciar**, **Quando acontecer**, **Enquanto estiver rodando** e
-**Meus moldes**.
-
-## 6. Estrutura do arquivo
-
-Um arquivo por aula, em `aulas/{slug}.roteiro.md`, ao lado do relatório e do manifesto.
+Separar sempre a nota de produção da fala, com uma linha em branco:
 
 ```markdown
-# Roteiro de gravação · {Curso} · {Aula} · {Título}
-
-## Especificações
-- **Formato:** gravação da tela do Estúdio com narração por cima
-- **Duração:** {faixa}, narração pura de cerca de N palavras a **137 palavras por minuto**, que é o
-  ritmo real medido em gravação
-- **Calibração:** o que a pessoa já traz e o que é novo de verdade nesta aula
-- **Conceitos nomeados:** os termos do dicionário que esta aula batiza
-- **Dor desta aula:** o problema que roda antes da ferramenta, e se ele reproduz de verdade
-- **Vitória do dia:** o que fica novo na tela quando a aula termina
-- **Valores:** padrões de fábrica, o que muda e o que fica
-- **Campos livres:** os que ficam a gosto, com o canônico e a faixa oferecida
-- **Nota de produção:** o que conferir na gravação, o que precisa de zoom
-- **O que NÃO entra, e por quê**
-
-## Seção {N}. {Título da seção, igual ao do manifesto}
-
-### Clipe `{chave do bloco}` · {Título do vídeo}
-**Duração alvo:** {faixa} · **Palavras:** {contagem}
-
-**Na tela:** {…}
+**Na tela:** mostrar o jogo pronto e apontar a área jogável. Não revelar os esconderijos.
 
 **Narração:**
-> "{…}"
 
-**Na tela:** {…}
-
-**Narração:**
-> "{…}"
+> “Aqui está o jogo pronto. Toque nos esconderijos até encontrar os três personagens.
+> Quando encontrar todo mundo, clique em Próxima seção.”
 ```
 
-Só as seções que têm clipe entram. Seção sem vídeo não vira trecho de roteiro.
+Cada nota de tela tem sua narração correspondente. Um vídeo pode conter vários pares.
+Instruções para quem grava não são falas da aula. Não usar o campo plannedVideo do manifesto
+como substituto do roteiro completo.
 
-## 7. Padrões de narração que funcionam
+Manter os títulos de seção iguais aos do manifesto. Cadê Todo Mundo? usa um cabeçalho
+"## 1. Título" por vídeo e "## Comemore sua criação" no certificado. Os demais cursos mantêm os
+cabeçalhos "## Seção N. Título" e "### Clipe `chave`" exigidos pelo validador.
 
-**A abertura da aula anuncia os passos numerados e emenda no primeiro**, sem meta-aviso:
+Estimar o tempo pela fala em voz alta, incluindo os gestos, sem acrescentar teoria para atingir
+uma duração mínima. Um convite para jogar pode durar 25 segundos; uma montagem precisa de tempo
+para cada encaixe. Não acelerar a demonstração para caber numa duração arbitrária.
 
-> "A aula de hoje é curtinha e tem quatro passos. Um: montar o medidor. Dois: provocar o problema,
-> pra ele aparecer rápido. Três: a faxina, que é o conserto. E quatro: testar dois ritmos e devolver
-> o relógio. Vamos pro primeiro."
+Nas seções com ferramenta externa, manter a autoconferência visual: pedir que a pessoa compare
+um resultado funcional ou legível. O vídeo assistido não prova sozinho que o trabalho está
+correto. A liberdade de cor e detalhes continua livre.
 
-**Cada parte ancora onde estamos.** "Passo 2 feito. Bora pro terceiro."
+## 8. Conferência antes de gravar
 
-**O fecho recapitula os passos vencidos, nomeia as palavras novas e engancha a aula seguinte.**
+- Nas primeiras frases, fica claro o que fazer, em qual atividade e como começar?
+- Todos os passos necessários aparecem, incluindo confirmação e saída?
+- Quem ouve consegue executar sem adivinhar uma peça, valor ou encaixe?
+- O vídeo evita tours, agendas, recapitulações longas e teoria sem uso imediato?
+- A explicação da palavra nova cabe na tarefa atual?
+- A experiência permite observar, sem esconder ações obrigatórias?
+- A fala corresponde ao projeto, aos controles e aos critérios de conclusão reais?
+- As notas de tela e narrações estão pareadas e a leitura soa natural?
+- Proposta, gerador, manifesto, roteiro e falas do Zappy concordam?
+- Os tutoriais retirados têm destino no Como Fazer?
 
-⚠️ **Não existe exercício de "pausa e tenta".** Nenhuma aula manda descobrir interface ou solução
-sem ensino prévio. Sumiram "descubra sozinho" e a linha que esconde um gabarito. Depois de mostrar
-o processo, uma ponte como "Agora é sua vez de montar" é válida: a criança executa na ferramenta
-disponível na mesma seção. A fala não repete a receita do vídeo nem a instrução da atividade.
-
-O que continua, porque é conteúdo e não cobrança: **demonstração por extremos**, levando o número
-para os dois lados com a narração observando logo depois de cada troca ("põe 2 e olha a tela… agora
-põe 9"), um extremo por vez.
-
-## 8. De onde vem a matéria-prima
-
-Para cada aula, na ordem:
-
-1. **`aulas/{slug}.manifesto.json`** — a estrutura final. Cada bloco com `plannedVideo` é um clipe a
-   roteirizar, e o texto dele traz título, o que mostrar, a fala de referência, a duração alvo e a
-   origem.
-2. **`aulas/{slug}.md`** — o relatório, com a intenção de cada seção e o porquê de cada decisão.
-3. **O roteiro gravado original**, em `cursos/{curso}/roteiros/` ou nas entregas de vídeo do
-   Desafio. **Reaproveite a fala que funciona**: analogias boas, frases que já estão gravadas e
-   continuam certas. O campo `Origem:` de cada `plannedVideo` diz qual trecho é o de partida.
-4. **`REFERENCIA-BLOCOS-JOGO-2D.json`** — para todo caminho e todo rótulo.
-
-⚠️ **Onde a fala original contradiz a plataforma de hoje, a plataforma vence.** Boa parte dos
-clipes tem, no campo `Origem:`, a nota do que precisa ser corrigido na fala herdada.
-
-## 9. Conferência antes de entregar
-
-- `Na tela` e `Narração` pareados 1 para 1, contados.
-- Linha em branco entre a nota de produção e a fala, e a fala inteira em citação (`>`).
-- Todo bloco citado com caminho completo de quatro degraus, conferido no JSON de referência.
-- Todo encaixe com âncora nomeando o vizinho.
-- Nenhuma fala dizendo onde a ferramenta está.
-- Nenhum "roda o jogo".
-- Nenhuma ocorrência da palavra criança falando de quem assiste.
-- Travessão zero.
-- A contagem de palavras bate com a duração alvo a 137 palavras por minuto.
-
-## 10. O trio da aula anda junto
-
-O roteiro é um dos **três arquivos** da aula, ao lado da proposta (`aulas/{slug}.md`) e do manifesto
-(`aulas/{slug}.manifesto.json`). **Mudou num, muda nos três.** Tirar um bloco do manifesto sem tirar
-o clipe do roteiro deixa a gravação com um trecho órfão; corrigir a fala sem corrigir a proposta faz
-o próximo leitor reabrir a decisão já tomada. A lista do que obriga varredura está na seção 9 de
-`ESPEC-MANIFESTO.md`.
+Depois, fazer um ensaio com uma criança sem completar as instruções por fora do vídeo.
+Na abertura, ela deve conseguir dizer qual jogo vai construir e começar a jogar a versão
+pronta. Ao terminar, deve saber como seguir. Os validadores conferem a estrutura; o ensaio
+confere se a fala funciona.

@@ -97,7 +97,10 @@
         "related": [
           "plataforma-voltar-para-a-aula",
           "plataforma-responder-o-quiz",
-          "plataforma-enviar-atividade"
+          "plataforma-enviar-atividade",
+          "plataforma-pausar-e-rever-video",
+          "plataforma-jogar-exemplo-da-aula",
+          "plataforma-pegar-certificado"
         ]
       }
     },
@@ -306,7 +309,7 @@
       "position": 6,
       "draft": {
         "title": "Como publicar seu jogo no mural",
-        "summary": "Prepare o título, o resumo e a capa para mostrar seu jogo.",
+        "summary": "Mostre o jogo da aula ou do Estúdio para outras pessoas jogarem.",
         "keywords": [
           "mural",
           "compartilhar",
@@ -326,12 +329,12 @@
           {
             "id": "compartilhar",
             "title": "Abra Compartilhar",
-            "body": "Toque em **Compartilhar**, quando esse botão estiver disponível. Abre a janela **Compartilhar no Mural dos Criadores**."
+            "body": "Toque em **Compartilhar**, quando esse botão estiver disponível. No Cadê Todo Mundo?, ele fica disponível depois do envio da atividade da Aula 2. Abre a janela **Compartilhar no Mural dos Criadores**."
           },
           {
             "id": "texto",
             "title": "Dê um nome e conte como é",
-            "body": "Preencha **Título** e **Resumo do projeto**. Conte, em uma frase curta, o que a pessoa faz no seu jogo."
+            "body": "Confira **Título** e **Resumo do projeto**. Se já estiverem preenchidos, pode manter ou ajustar. Se estiverem vazios, escreva o nome do jogo e uma frase contando como jogar."
           },
           {
             "id": "capa",
@@ -341,16 +344,25 @@
           {
             "id": "publicar",
             "title": "Publique",
-            "body": "Com título, resumo e capa prontos, toque em **Publicar**. Espere a confirmação e use o botão para ver o jogo no mural ou copiar o link."
+            "body": "Com título, resumo e capa prontos, toque em **Publicar** e espere a confirmação."
+          },
+          {
+            "id": "link",
+            "title": "Copie o link para jogar",
+            "body": "Toque em **Copiar link de jogar** para mostrar seu jogo a alguém. Você pode pedir ajuda a um responsável para mandar o link. Não precisa abrir o mural para usar esse link."
           },
           {
             "id": "copia",
             "title": "Lembre da versão publicada",
             "body": "O mural guarda uma cópia daquele momento. Mudar o projeto no editor não muda essa cópia. Na aula, o jogo só pode ser compartilhado uma vez."
+          },
+          {
+            "id": "opcional",
+            "title": "Compartilhe se quiser",
+            "body": "No Cadê Todo Mundo?, você pode concluir a aula sem publicar o jogo. Enviar para o professor entrega a atividade; compartilhar é uma escolha sua."
           }
         ],
-        "related": ["plataforma-jogar-no-mural", "plataforma-enviar-atividade"],
-        "toolRef": "estudio-completo"
+        "related": ["plataforma-jogar-no-mural", "plataforma-enviar-atividade"]
       }
     },
     {
@@ -1217,13 +1229,35 @@
       "position": 11,
       "draft": {
         "title": "Como abrir os materiais da aula",
-        "summary": "Encontre os arquivos e links que o professor colocou na aula.",
-        "keywords": ["material", "arquivo", "baixar", "download", "anexo", "obrigatório"],
+        "summary": "Leia o caderno na tela ou baixe os materiais quando precisar.",
+        "keywords": [
+          "material",
+          "arquivo",
+          "baixar",
+          "download",
+          "anexo",
+          "obrigatório",
+          "caderno",
+          "livro",
+          "folhear",
+          "páginas",
+          "imprimir"
+        ],
         "steps": [
           {
             "id": "encontrar",
             "title": "Procure os materiais",
             "body": "Abra a aula e a seção indicada pelo professor. Os materiais aparecem junto do conteúdo, no lugar escolhido para aquela atividade."
+          },
+          {
+            "id": "livro",
+            "title": "Leia o caderno na tela",
+            "body": "Se o material aparecer como livro, use as setas de **Próxima página** e **Página anterior** para folhear."
+          },
+          {
+            "id": "paginas",
+            "title": "Escolha outra forma de leitura",
+            "body": "Para ver uma página por vez, toque em **Ler por páginas**. Nesse modo, use **Anterior** e **Próxima**. Os botões **+** e **−** mudam o tamanho da página."
           },
           {
             "id": "baixar",
@@ -1239,6 +1273,11 @@
             "id": "link",
             "title": "Abra os links",
             "body": "Toque no material que tem um link para abrir outra aba. Depois, volte à aba da aula para continuar. Se o download não começar, confira se o navegador abriu uma nova aba com o arquivo."
+          },
+          {
+            "id": "opcional",
+            "title": "Consulte quando precisar",
+            "body": "O Caderno do Aluno do Cadê Todo Mundo? fica na seção **Seu Caderno do Aluno**, na Aula 1. Você pode voltar a ela durante as duas aulas. Não precisa baixar nem imprimir para continuar. Se quiser imprimir, baixe o PDF e peça ajuda a um responsável."
           }
         ],
         "related": ["plataforma-abrir-uma-aula"]
@@ -1694,6 +1733,114 @@
         ],
         "related": ["estudio-materiais-do-jogo", "molda-salvar-e-reabrir"],
         "toolRef": "molda"
+      }
+    },
+    {
+      "slug": "plataforma-pausar-e-rever-video",
+      "collection": "plataforma",
+      "position": 17,
+      "draft": {
+        "title": "Como pausar e rever o vídeo da aula",
+        "summary": "Pare o vídeo para acompanhar um passo ou volte para ouvir de novo.",
+        "keywords": ["pausar", "vídeo", "rever", "voltar vídeo", "ouvir de novo", "play"],
+        "steps": [
+          {
+            "id": "controles",
+            "title": "Mostre os controles do vídeo",
+            "body": "Passe o mouse sobre o vídeo ou toque nele para ver os controles. O desenho dos botões pode mudar de um vídeo para outro."
+          },
+          {
+            "id": "pausar",
+            "title": "Pause quando precisar",
+            "body": "Use o botão de pausa, com duas barrinhas, para parar o vídeo enquanto faz a atividade."
+          },
+          {
+            "id": "voltar",
+            "title": "Volte ao trecho que quer rever",
+            "body": "Na barra de tempo do vídeo, escolha um ponto antes do trecho que você quer ouvir de novo."
+          },
+          {
+            "id": "continuar",
+            "title": "Continue assistindo",
+            "body": "Use o botão de reprodução, com um triângulo, para continuar. Você pode repetir um trecho quantas vezes precisar."
+          }
+        ],
+        "related": ["plataforma-abrir-uma-aula", "plataforma-ampliar-a-atividade"]
+      }
+    },
+    {
+      "slug": "plataforma-jogar-exemplo-da-aula",
+      "collection": "plataforma",
+      "position": 18,
+      "draft": {
+        "title": "Como jogar o exemplo pronto da aula",
+        "summary": "Experimente o jogo pronto antes de construir o seu.",
+        "keywords": ["jogo pronto", "exemplo", "jogar de novo", "ampliar jogo", "Cadê Todo Mundo"],
+        "steps": [
+          {
+            "id": "jogar",
+            "title": "Jogue na própria aula",
+            "body": "Na seção que traz o jogo pronto, siga o convite do vídeo e toque na área do jogo para brincar. No Cadê Todo Mundo?, procure os três personagens escondidos no jardim."
+          },
+          {
+            "id": "ampliar",
+            "title": "Dê mais espaço ao jogo",
+            "body": "Se quiser, toque em **Ampliar jogo**. Use **Voltar à aula** para ver o conteúdo junto de novo."
+          },
+          {
+            "id": "recomecar",
+            "title": "Comece outra partida",
+            "body": "Toque em **Jogar de novo** para recomeçar o exemplo. Essa cópia serve para jogar e não altera o projeto que você está construindo."
+          },
+          {
+            "id": "avancar",
+            "title": "Continue a aula",
+            "body": "Quando terminar o que a seção pede, toque em **Próxima seção**. No Cadê Todo Mundo?, encontre os três personagens e assista ao vídeo para avançar."
+          }
+        ],
+        "related": [
+          "plataforma-abrir-uma-aula",
+          "plataforma-ampliar-a-atividade",
+          "plataforma-pausar-e-rever-video"
+        ]
+      }
+    },
+    {
+      "slug": "plataforma-pegar-certificado",
+      "collection": "plataforma",
+      "position": 19,
+      "draft": {
+        "title": "Como pegar seu certificado",
+        "summary": "Baixe o certificado depois de concluir as aulas do curso.",
+        "keywords": ["certificado", "diploma", "PDF", "baixar certificado", "concluir curso"],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra a aula do certificado",
+            "body": "Conclua as aulas anteriores e abra a aula do certificado no curso. Se aparecer um aviso de que faltam aulas, volte ao caminho do curso e termine o que falta."
+          },
+          {
+            "id": "pegar",
+            "title": "Pegue seu certificado",
+            "body": "Assista ao vídeo e toque em **Pegar meu certificado**. Espere o PDF baixar antes de sair."
+          },
+          {
+            "id": "guardar",
+            "title": "Encontre o arquivo",
+            "body": "Procure o PDF na pasta de downloads do aparelho. Você pode guardar o arquivo e mostrar a quem quiser."
+          },
+          {
+            "id": "concluir",
+            "title": "Conclua a aula",
+            "body": "Depois de assistir ao vídeo e pegar o certificado, toque em **Concluir aula**."
+          },
+          {
+            "id": "novamente",
+            "title": "Baixe outra vez se precisar",
+            "body": "Volte à mesma aula e toque em **Baixar certificado (PDF)**. Você recebe o mesmo certificado, sem precisar fazer o curso de novo."
+          }
+        ],
+        "related": ["plataforma-abrir-uma-aula", "plataforma-baixar-materiais"]
       }
     }
   ]

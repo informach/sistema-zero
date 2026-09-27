@@ -79,11 +79,11 @@ const aula1 = {
     video(
       'video-a1-abertura',
       'Vamos procurar!',
-      'Apresentar o jogo Cadê Todo Mundo? e apontar o jardim jogável nesta mesma seção, sem revelar os três esconderijos nem a comemoração antes da criança brincar. Convidar a procurar os três personagens tocando ou clicando diretamente no jardim, exatamente como no jogo que vai construir, sem botões de busca. Mostrar Ampliar jogo, Voltar à aula e Jogar de novo. Distinguir o jogo pronto desta abertura do projeto que a criança vai construir: hoje ela cria a primeira reação, depois completa a contagem. Apresentar as seções como pequenas partes da aula, cada uma com um vídeo; mostrar pausa, replay e Próxima seção sem navegar. Não mostrar a experiência, o Estúdio ou o caderno nesta abertura. Alvo: 60–90 segundos.',
+      'Dizer que a criança vai construir Cadê Todo Mundo? e pedir que jogue a versão pronta desta seção. Apontar a área jogável, pedir que toque nos esconderijos até encontrar os três personagens e termine em Próxima seção. Não revelar os esconderijos nem explicar controles da plataforma. Pausa, replay, ampliação e reinício ficam no Como Fazer. Regravar a fala. Alvo: 25 a 35 segundos.',
     ),
     dialogue(
       'ponte-a1-jogo',
-      'Experimente o jogo pronto! Quando terminar, avance para a próxima seção.',
+      'Jogue a versão pronta. Encontre os três personagens e clique em Próxima seção.',
     ),
     {
       key: 'jogo-pronto',
@@ -114,7 +114,7 @@ const aula1 = {
     video(
       'video-a1-caderno',
       'Seu Caderno do Aluno',
-      'Na segunda seção, mostrar o PDF real no leitor da seção: capa e página de orientação O que você vai fazer. Não abrir agora as páginas de passos, que antecipariam a descoberta da experiência. Explicar que o Caderno do Aluno reúne todos os passos para construir o jogo e pode ser consultado quando houver dúvida. Mostrar o download abaixo do vídeo e o livro 3D na outra coluna quando houver largura; em tela estreita, o livro fica depois do vídeo. Baixar, ler e imprimir são opcionais. Anexar o PDF uma vez nesta aula antes de gravar. Alvo: 45–60 segundos.',
+      'Mostrar o caderno real e dizer que ele reúne os passos de montagem para consultar quando precisar. Leitura, download e impressão são opcionais. Terminar com Próxima seção. Não ensinar controles do leitor, download ou divisória; esses tutoriais ficam no Como Fazer. Anexar o PDF antes de gravar. Regravar a fala. Alvo: 20 a 30 segundos.',
     ),
     {
       key: 'caderno',
@@ -128,9 +128,9 @@ const aula1 = {
     video(
       'video-a1-toque',
       'Um toque pode chamar uma ação',
-      'Ao chegar à terceira seção, ligar o botão Anterior à consulta do Caderno do Aluno. Apresentar a pergunta sobre como o jardim responde ao toque antes da analogia da campainha; com ela, explicar acontecimento e ação e voltar à pergunta sobre o jardim. Fazer uma ponte explícita para a atividade desta seção antes de mostrar onde fica seu pedido, a divisória em tela larga, Ampliar experiência e Voltar à aula. Em tela estreita, mostrar a atividade abaixo do vídeo. Não executar o teste nem revelar o resultado: a criança investiga na atividade. Alvo: 1,5–2 minutos.',
+      'Pedir diretamente: tocar no arbusto, clicar em Ligar a reação ao toque, tocar novamente e comparar. Explicar toque e reação em uma frase ligada ao jogo. Apontar os alvos sem executar os testes ou antecipar o resultado. Terminar em Próxima seção após os dois testes. Não fazer tour de interface nem analogia da campainha. Regravar a fala. Alvo: 30 a 40 segundos.',
     ),
-    dialogue('ponte-a1-toque', 'Bora testar essa ideia no jardim?'),
+    dialogue('ponte-a1-toque', 'Teste o mesmo toque com a reação desligada e ligada.'),
     {
       key: 'experiencia-toque',
       content: {
@@ -146,11 +146,11 @@ const aula1 = {
     video(
       'video-a1-programar',
       'Faça o primeiro personagem aparecer',
-      'Apresentar o Estúdio dentro da aula como a ferramenta onde blocos viram instruções do jogo; não é preciso abrir outra página. Demonstrar a divisória em tela larga e Expandir/Reduzir ao chegar à prática, sem tour separado. Ensinar onde ver o jogo: no Estúdio estreito, alternar entre as abas Blocos e Pré-visualização; com largura suficiente, mostrar a área do jogo à direita e o olhinho que a exibe ou esconde. Depois mostrar a paleta, a área Quando acontecer já preparada, o bloco Deixar o sprite com 0% de visibilidade e o nome escolhido. Para testar, aguardar a atualização automática da Pré-visualização e tocar num esconderijo, sem exigir Reproduzir ou Atualizar. Repetir cada passo na narração; não presumir familiaridade com blocos. O caderno opcional já foi apresentado na segunda seção e continua disponível para consulta. Alvo: 4–5 minutos.',
+      'Começar pedindo que a criança faça um personagem aparecer ao tocar num esconderijo. Mostrar Quando acontecer, o evento preparado e o significado de escolhido. Ensinar Jogo 2D > Sprites > Aparência, o bloco de visibilidade, o encaixe dentro do evento, escolhido e a troca de 50 para 0. Testar dois esconderijos com a prévia automática e conferir campos e encaixe se não funcionar. Esperar Salvo, usar Enviar para o professor, confirmar em Enviar e terminar em Concluir aula. Sem tour de abas, olhinho, divisória ou expansão. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
     ),
     dialogue(
       'ponte-a1-programar',
-      'O jardim já está montado. Agora você vai criar a reação que faz aparecer o primeiro personagem.',
+      'Monte a regra do toque, teste nos esconderijos e envie seu jogo para o professor.',
     ),
     studio(montarProjetoCadeTodoMundo()),
   ],
@@ -159,7 +159,7 @@ const aula1 = {
       'apresentacao',
       'Bem-vindo ao jardim',
       'presentation',
-      'Conhecer o jogo, encontrar os três personagens e aprender a pausar/rever o vídeo e avançar.',
+      'Jogar a versão pronta e encontrar os três personagens antes de construir o próprio jogo.',
       ['video-a1-abertura', 'ponte-a1-jogo', 'jogo-pronto'],
       ['video-a1-abertura', 'jogo-pronto'],
     ),
@@ -215,14 +215,14 @@ const aula2 = {
     video(
       'video-a2-retomada',
       'Quem você já encontrou?',
-      'Mostrar o jardim com a reação da Aula 1 pronta, vindo do projeto salvo ou da cópia de retomada. Um toque revela um personagem, mas Achados continua em zero. Apresentar a missão de contar as descobertas sem ensinar o bloco ainda. Alvo: 35–45 segundos.',
+      'Começar pela tarefa de fazer o jogo contar os personagens. Mostrar um toque revelando o personagem enquanto Achados fica em zero. Terminar em Próxima seção. Esta seção só tem vídeo; não pedir manipulação de um Estúdio que ainda não aparece. Regravar a fala. Alvo: 15 a 25 segundos.',
     ),
     video(
       'video-a2-variavel',
       'Um número que acompanha a busca',
-      'Explicar Achados com marquinhas de personagens encontrados numa folha: contador é o número que acompanha a busca, variável é o lugar que guarda um valor atual que pode mudar. Não executar a experiência nem mostrar o bloco de somar; deixar a criança testar descoberta, busca sem achado e recomeço. Alvo: 45–60 segundos.',
+      'Pedir que a criança procure os personagens e acompanhe Achados. Explicar variável em uma frase: onde o jogo guarda um valor que pode mudar. Orientar os quatro testes: um esconderijo, outro esconderijo, um espaço vazio e Recomeçar a busca. Apontar sem realizar os testes nem antecipar os resultados. Terminar em Próxima seção. Sem analogia das marquinhas ou tour. Regravar a fala. Alvo: 40 a 55 segundos.',
     ),
-    dialogue('ponte-a2-variavel', 'Agora teste no jardim quando Achados muda e quando fica igual.'),
+    dialogue('ponte-a2-variavel', 'Procure no jardim e acompanhe o número Achados.'),
     {
       key: 'experiencia-achados',
       content: {
@@ -239,17 +239,17 @@ const aula2 = {
     video(
       'video-a2-contagem',
       'Cada descoberta conta',
-      'Retomar a descoberta da experiência e ensinar a regra no projeto real. No Estúdio incorporado, mostrar Programação > Variáveis, encaixar Somar 1 em variável achados dentro do evento, abaixo da reação, e conferir os campos. Mostrar onde fica a Pré-visualização em larguras estreita e larga, aguardar sua atualização automática e tocar nos três esconderijos, sem mandar iniciar o jogo. A mensagem de vitória já estava preparada. Esperar Salvo, clicar em Enviar para o professor e encerrar a prática aí. Se houver dúvida, lembrar que o Caderno do Aluno com os passos está na seção Seu Caderno do Aluno da Aula 1; não dizer que o PDF aparece nesta aula. Não demonstrar Compartilhar nesta seção. Alvo: 4–5 minutos.',
+      'Começar pedindo que cada personagem encontrado some um em Achados. Ensinar Programação > Variáveis, Somar 1 em variável, o encaixe dentro do evento abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a vitória já preparada e a contagem sem repetição; dar correção curta. Esperar Salvo, usar Enviar para o professor, confirmar em Enviar e seguir em Próxima seção. Não ensinar o layout da prévia nem compartilhamento. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
     ),
     dialogue(
       'ponte-a2-contagem',
-      'Você já testou a contagem. Agora ensine o seu jogo a somar cada personagem encontrado.',
+      'Faça o jogo contar os achados. Teste os três esconderijos e envie para o professor.',
     ),
     studio(montarProjetoCadeTodoMundo(true), true),
     video(
       'video-a2-fecho',
       'Sua busca está completa',
-      'Começar celebrando o jardim completo, o contador em 3 e as duas regras que a criança acrescentou; reconhecer que cenário, personagens e comemoração já estavam preparados. Com o mesmo Estúdio da seção prática visível ao lado, ensinar o compartilhamento opcional depois do envio: Compartilhar, resumo pronto, Gerar capa, Publicar e Copiar link de jogar. Distinguir entrega da aula e cópia pública; não mandar abrir o Mural nem prometer acesso permanente a ele. Dizer que a criança pode seguir ao certificado sem publicar ou repetir a publicação. Sem venda. Alvo: 80–100 segundos.',
+      'Nomear brevemente o resultado: esconderijos somem ao toque e o jogo conta três personagens. Compartilhamento é opcional; indicar o tutorial Como publicar seu jogo no mural, na biblioteca Como Fazer. Não abrir a janela de publicação nem ensinar capa ou link. Manter o mesmo Estúdio. Terminar em Concluir aula e orientar a abrir Seu certificado. Sem venda. Regravar a fala. Alvo: 25 a 40 segundos.',
     ),
   ],
   sections: [
@@ -312,11 +312,11 @@ const certificado = {
     video(
       'video-certificado',
       'Você criou seu primeiro jogo!',
-      'Celebrar a autoria da criança: toque, reação e contagem. Mostrar como emitir e guardar o certificado. Sem oferta, pitch, chamada para compra ou convite à criança para vender a um responsável. Alvo: 40–55 segundos.',
+      'Reconhecer as duas regras que a criança programou. Pedir Pegar meu certificado e, após o download, Concluir aula. Sem tour do PDF ou de pastas; a ajuda fica no Como Fazer. Sem oferta comercial. Regravar a fala. Alvo: 15 a 25 segundos.',
     ),
     dialogue(
       'ponte-certificado',
-      'Você fez o jogo responder aos seus toques. Seu certificado está pronto!',
+      'Clique em Pegar meu certificado. Depois clique em Concluir aula.',
     ),
     {
       key: 'certificado',
