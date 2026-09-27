@@ -1,0 +1,1 @@
+DROP TABLE "members"."practice_sessions" CASCADE;
