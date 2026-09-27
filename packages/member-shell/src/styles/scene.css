@@ -323,13 +323,14 @@
 /* Uma árvore, dois layouts. Sem portal nem fullscreen nativo: a cena não reinicia. */
 .sz-scene-workspace-slot,
 .sz-scene-workspace,
+.sz-activity-workspace-card,
 .sz-scene-workspace-body,
 .sz-scene-console-visual,
 .sz-scene-console-actions {
   min-width: 0;
 }
-.sz-scene-workspace {
-  /* No próprio workspace, não no slot: ampliar continua relativo à janela inteira. */
+.sz-scene-workspace-card {
+  /* Dentro da seção fixa, não no slot: ampliar continua relativo à janela inteira. */
   container: scene-workspace / inline-size;
   display: flex;
   flex-direction: column;
@@ -347,10 +348,12 @@
   flex: 1 1 14rem;
   min-width: min(100%, 14rem);
 }
-.sz-scene-workspace--expanded {
+.sz-activity-workspace--expanded {
+  display: flex;
+  flex-direction: column;
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 80;
   height: 100dvh;
   padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right))
     max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
@@ -359,12 +362,40 @@
   overflow: auto;
   overscroll-behavior: contain;
 }
-.sz-scene-workspace--expanded > .sz-scene-workspace-header {
+.sz-activity-workspace--expanded > .sz-activity-workspace-card {
+  flex: 1 0 auto;
+  min-height: 100%;
+  padding: var(--sz-activity-card-padding, 1.25rem);
+  border: 1px solid var(--sz-activity-card-border, var(--color-border));
+  border-radius: var(--sz-activity-card-radius, 1.25rem);
+  background: var(--color-card);
+}
+.sz-scene-workspace--expanded > .sz-scene-workspace-card {
+  /* Altura definida para o palco caber em duas colunas. No empilhado, quem rola
+   * é o cartão inteiro: sua moldura e o cabeçalho continuam acompanhando o conteúdo. */
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.sz-scene-workspace--expanded .sz-scene-workspace-header {
   position: sticky;
   top: env(safe-area-inset-top, 0px);
   z-index: 2;
-  background: var(--color-background);
+  background: var(--color-card);
   padding-block: 0.25rem;
+}
+/* O título pode repetir o da seção inline. Ao ampliar, aquele cabeçalho fica fora da tela. */
+.sz-scene-workspace--expanded .sz-scene-title-repeated {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
 }
 
 /* A divisória muda o PAINEL, não a janela. A mesma régua serve inline e ampliado:

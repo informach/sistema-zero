@@ -1161,9 +1161,7 @@ export function SceneActivityView({
               cabeçalho da seção já disse a mesma frase, ele vira `sr-only`. */}
             <h3
               id={`${id}-title`}
-              className={
-                tituloJaDito(content.title, secao) ? 'sr-only' : 'text-xl font-bold sm:text-2xl'
-              }
+              className={`sz-display text-xl font-bold sm:text-2xl${tituloJaDito(content.title, secao) ? ' sz-scene-title-repeated sr-only' : ''}`}
             >
               {content.title}
             </h3>

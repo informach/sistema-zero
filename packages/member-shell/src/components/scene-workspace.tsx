@@ -29,26 +29,28 @@ export function SceneWorkspace({
         ref={workspaceRef}
         {...(expanded ? { role: 'dialog', 'aria-modal': true, tabIndex: -1 } : {})}
         aria-labelledby={labelledBy}
-        className={`sz-lesson-scene sz-scene-workspace${expanded ? ' sz-scene-workspace--expanded' : ''}`}
+        className={`sz-lesson-scene sz-scene-workspace${expanded ? ' sz-scene-workspace--expanded sz-activity-workspace--expanded' : ''}`}
       >
-        <header className="sz-scene-workspace-header">
-          <div className="sz-scene-workspace-heading space-y-3">{header}</div>
-          <Button
-            variant="outline"
-            className="min-h-11 gap-2 whitespace-normal"
-            aria-expanded={expanded}
-            onClick={(event) => {
-              // WebKit não foca botões ao clicar. O modal deve guardar ESTE gatilho
-              // para o retorno, não o último elemento focado em outro lugar da aula.
-              if (!expanded) event.currentTarget.focus({ preventScroll: true })
-              setInlineHeight(expanded ? null : (workspaceRef.current?.offsetHeight ?? 0))
-            }}
-          >
-            {expanded ? <Minimize2 size={16} aria-hidden /> : <Maximize2 size={16} aria-hidden />}
-            {expanded ? 'Voltar à aula' : 'Ampliar experiência'}
-          </Button>
-        </header>
-        {children}
+        <div className="sz-activity-workspace-card sz-scene-workspace-card">
+          <header className="sz-scene-workspace-header">
+            <div className="sz-scene-workspace-heading space-y-3">{header}</div>
+            <Button
+              variant="outline"
+              className="min-h-11 gap-2 whitespace-normal"
+              aria-expanded={expanded}
+              onClick={(event) => {
+                // WebKit não foca botões ao clicar. O modal deve guardar ESTE gatilho
+                // para o retorno, não o último elemento focado em outro lugar da aula.
+                if (!expanded) event.currentTarget.focus({ preventScroll: true })
+                setInlineHeight(expanded ? null : (workspaceRef.current?.offsetHeight ?? 0))
+              }}
+            >
+              {expanded ? <Minimize2 size={16} aria-hidden /> : <Maximize2 size={16} aria-hidden />}
+              {expanded ? 'Voltar à aula' : 'Ampliar experiência'}
+            </Button>
+          </header>
+          {children}
+        </div>
       </section>
     </div>
   )

@@ -1,13 +1,21 @@
-# Roteiro falado — Cadê Todo Mundo? — Certificado
+# Roteiro falado: Cadê Todo Mundo? | Certificado
 
-## Comemore sua criação — vídeo único (40–55 s)
+Um vídeo. O conteúdo precisa ser regravado antes de substituir o vídeo publicado.
 
-**Na tela:** os três personagens revelados, o contador em 3 e o certificado ainda não emitido. Mostrar o botão real para emitir; depois, um exemplo do PDF salvo. Não mostrar ofertas ou cursos bloqueados.
+## Comemore sua criação
+
+**Duração alvo:** 15 a 25 segundos.
+
+**Na tela:** mostrar o resultado do jogo e o botão **Pegar meu certificado**. Apontar para ele sem fazer um tour do PDF ou da pasta de downloads. Mostrar o botão **Concluir aula** no encerramento.
 
 **Narração:**
 
-> “Você achou todo mundo e criou seu primeiro jogo com blocos! O jardim já estava preparado, mas foi você quem fez o toque abrir os esconderijos e quem fez o jogo contar cada personagem encontrado. Seu certificado registra essa conquista. Toque em ‘Pegar meu certificado’. Quando o PDF baixar, você pode guardá-lo e mostrar a quem quiser. Parabéns pela sua criação!”
+> “Você terminou o Cadê Todo Mundo! Fez os personagens aparecerem e o jogo contar cada achado.
+>
+> Clique em Pegar meu certificado para guardar essa conquista. Quando o certificado baixar, clique em Concluir aula.
+>
+> Parabéns pelo seu jogo!”
 
-**Zappy abaixo do vídeo:** “Você fez o jogo responder aos seus toques. Seu certificado está pronto!”
+**Zappy abaixo do vídeo:** “Clique em Pegar meu certificado. Depois clique em Concluir aula.”
 
-Conferir o rótulo real do botão e a emissão do PDF antes de gravar. Sem fala comercial, venda ou convite para a criança convencer um responsável.
+**Conferência de produção:** a conclusão exige vídeo e certificado. Para quem já emitiu, o botão muda para **Baixar certificado (PDF)**; essa ajuda fica no Como Fazer. Não atribuir à criança o cenário e os personagens preparados. Sem venda, ofertas ou pedido para convencer um responsável.

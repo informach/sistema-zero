@@ -1,4 +1,5 @@
 import { isInteractiveBlock, publicInteractiveBlock } from '@sistemazero/core/learning'
+import { LessonSectionProvider } from '@sistemazero/member-shell/components/lesson-section-context'
 import { SceneActivityView } from '@sistemazero/member-shell/components/scene-activity'
 import { resolveLessonSplit } from '@sistemazero/member-shell/lib/lesson-split'
 import { createRoot } from 'react-dom/client'
@@ -18,12 +19,16 @@ if (!root) throw new Error('Raiz ausente')
 
 const experience = (
   <div className="sz-lesson-block">
-    <SceneActivityView
-      block={{ id: source.key, kind: 'interactive', sortOrder: 0, content }}
-      content={content}
-      activity={content.activity}
-      previewContent={original}
-    />
+    <LessonSectionProvider
+      value={params.has('repeated-title') ? { titulo: content.title, temDialogo: false } : null}
+    >
+      <SceneActivityView
+        block={{ id: source.key, kind: 'interactive', sortOrder: 0, content }}
+        content={content}
+        activity={content.activity}
+        previewContent={original}
+      />
+    </LessonSectionProvider>
   </div>
 )
 const { contentMinimum, toolMinimum } = resolveLessonSplit({

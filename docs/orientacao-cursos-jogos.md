@@ -50,8 +50,8 @@ sai dessa regra está em `comunidade-dos-criadores/entregas/cursos/trilha-cursos
 
 ## 2. O modelo mental: jogo = quadros + estado
 
-Tudo nos cursos deriva de UMA ideia, que deve ser dita explicitamente na primeira aula de
-jogos e repetida sempre:
+Este modelo orienta quem prepara os cursos. Ele entra na fala quando a atividade precisa de
+quadros, desenho ou movimento; não é uma explicação obrigatória na primeira aula de todo curso:
 
 > **Um jogo é um filme cujos quadros são calculados na hora.** Um filme tem os quadros
 > prontos; o jogo olha o estado (posições, teclas, colisões, timers) e **desenha um quadro
@@ -248,6 +248,22 @@ forma), `sz_t3d_object_count` (medidor de vazamento).
 
 ## 6. Metodologia de aula
 
+### 6.0 Linguagem do roteiro, revisada em 27/09/2026
+
+O roteiro infantil começa com a tarefa concreta: jogar, testar, montar ou concluir. A criança
+precisa saber o que fazer agora, com instruções completas. Contexto longo, justificativa
+pedagógica, agenda, recapitulação e gancho para a próxima aula não são etapas obrigatórias.
+Explicar palavras novas brevemente, no momento em que ajudam a tarefa; analogias são opcionais.
+
+O passo a passo de programação conserva categoria, bloco, encaixe, campo, valor e teste. O
+Como Fazer concentra os tutoriais de interface: player, abas, ampliação, materiais e publicação.
+A aula mantém os comandos da atividade e as ações necessárias de envio, confirmação e conclusão.
+Não esconder ações obrigatórias em pistas nem substituir uma montagem por "faça como eu fiz".
+
+Esta direção prevalece sobre os moldes antigos. A especificação de fala está em
+[ESPEC-ROTEIRO.md](aulas-interativas/ESPEC-ROTEIRO.md). Cadê Todo Mundo? é o primeiro curso
+revisto após o ensaio com duas crianças; os demais cursos serão tratados depois.
+
 ### 6.1 Dor → solução (a regra número 1)
 
 **Sempre mostrar o problema rodando ANTES de apresentar a ferramenta.** O erro não é
@@ -364,10 +380,9 @@ cancelou um pedido de produção de exemplos novos.
 
 ### 6.6 Nomear os padrões
 
-Sempre que a aula usa um padrão da seção 4, ela o NOMEIA ("isso se chama cooldown",
-"esses são os quadros de invencibilidade", "isso é culling: limpar quem saiu"). O
-vocabulário profissional é parte do conteúdo — a criança que sobe a escada reencontra as
-mesmas palavras até chegar no three.js cru.
+Nomear o padrão quando ele for conteúdo da tarefa, com uma explicação curta ligada ao efeito
+no jogo. Não recitar o vocabulário interno do projeto inicial nem nomes de padrões que a criança
+não está construindo. Nas etapas seguintes, os termos voltam quando forem usados de novo.
 
 ---
 

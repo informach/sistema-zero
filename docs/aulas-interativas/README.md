@@ -3,7 +3,10 @@
 > **Migração pedagógica em andamento (24/09/2026).** O trio `nave-contra-asteroides-dia-1` foi o piloto
 > da direção vigente: uma ideia por seção, um vídeo no máximo, vídeo e atividade disponíveis juntos
 > e ambos obrigatórios, Zappy pontual, palpite seletivo e quiz isolado. O curso gratuito
-> `cade-todo-mundo` segue essa direção; seus vídeos ainda precisam ser gravados e vinculados.
+> `cade-todo-mundo` segue essa estrutura. Após o teste dos vídeos gravados com duas crianças,
+> as nove seções receberam uma revisão de linguagem em 27/09/2026: tarefa direta, montagem
+> completa e tutoriais de interface no Como Fazer. Os novos roteiros precisam ser regravados.
+> Veja [a revisão e o mapa dos tutoriais](REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md).
 
 Redesenho didático dos cursos de jogos para o formato de seções da plataforma. O jogo de nave dos
 antigos Dias 1 a 5 do Desafio agora é o curso separado **Nave Contra Asteroides**. A introdução e o
@@ -44,7 +47,8 @@ dos anexos no admin e de ensaio no navegador antes de qualquer publicação.
 | `CATALOGO-CENAS.json` | As **59 cenas** que existem hoje, extraídas do código da plataforma, com título, o que manipulam, metas, pistas e roteiro de demonstração |
 | `REFERENCIA-PLATAFORMA.md` | **Onde cada coisa está na plataforma hoje**, lido direto do código, com a fonte citada por linha: o menu da esquerda, o recolhimento dele na aula e na ferramenta, a cor do perfil, as três ações de plataforma, os grupos do menu ⋯ do Estúdio, a lista de projetos e o Pinta. Toda fala que nomeie menu, tela ou botão confere aqui |
 | `REFERENCIA-BLOCOS-JOGO-2D.json` | Os **285 tipos** da paleta do Jogo 2D, extraídos do código: família, seção, todas as linhas do rótulo, cada campo com o padrão de fábrica e a lista de cada menu na ordem da tela |
-| `ESPEC-ROTEIRO.md` | O contrato do roteiro de gravação: o par de nota de produção e fala em parágrafos separados, a regra do caminho completo, o que não existe mais (botão de play, exercício de pausa) e o vocabulário travado |
+| `ESPEC-ROTEIRO.md` | O contrato do roteiro de gravação: tarefa na primeira fala, passo a passo completo, linguagem direta, notas de produção separadas e tutoriais de interface no Como Fazer |
+| `autoria-aula-roteiro/SKILL.md` | Cópia versionada da skill local de roteiro, revisada com a mesma direção de linguagem |
 | `ACHADOS-TRANSVERSAIS.md` | Os defeitos encontrados durante a análise que **não** são redesenho: critérios que reprovam quem faz certo, passo perdido, rótulos vencidos, seções duplicadas, documentação desatualizada |
 | `ESPEC-MANIFESTO.md` | O contrato do `manifesto.json`: schema real do importador, a regra das duas colunas do player, a convenção do título de vídeo e a fila de dependência entre cena e aula |
 | `blocos-*.json` | Identificadores dos blocos de programação usados em cada curso, no formato `{ "blocks": [...] }` |
@@ -58,7 +62,8 @@ referir à pessoa como “a criança” ou “o aluno”.
 
 **Caderno em cada curso:** a primeira aula apresenta o PDF na seção 2, depois do vídeo de abertura
 e antes da primeira atividade. A seção usa um vídeo curto e um bloco de materiais; 90% do vídeo
-conclui a seção, sem exigir download. O PDF é anexado no admin antes de gravar o vídeo. A regra para
+conclui a seção, sem exigir download. O vídeo diz quando consultar; controles de leitura e download
+ficam no Como Fazer. O PDF é anexado no admin antes de gravar o vídeo. A regra para
 os próximos cursos está no `BRIEFING.md`, em “Regras de seção”.
 
 ## Como ler uma análise de aula

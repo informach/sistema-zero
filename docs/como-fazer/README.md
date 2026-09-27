@@ -18,8 +18,9 @@ texto), que abrem em **nova aba** com o botão "Voltar para a aula".
   Os vídeos têm marca d'água (como na aula), mas ninguém conta o que foi visto.
 - **Alimenta o Zappy.** O que está publicado entra na busca do tutor do Estúdio: ele responde ou
   aponta o passo a passo (chip "Passo a passo: … ↗").
-- Os cursos continuam ensinando na hora certa (a Aula 1 do "Cadê Todo Mundo?" é a referência).
-  A biblioteca é para consultar depois, ou quando o tour da aula envelheceu.
+- Os cursos ensinam a tarefa e a montagem do jogo. Tours de interface ficam nesta biblioteca:
+  player, ampliação, abas, materiais e publicação. A aula dá os comandos necessários para agir
+  e terminar, sem exigir que a criança leia todos os tutoriais antes.
 
 ## As regras da escrita
 
@@ -67,6 +68,16 @@ O lote revisado em **27/09/2026** tem **5 coleções e 39 tutoriais**: Plataform
 Estúdio (7), Pinta (6), Pensa (5) e Molda (4). Foram revisados os 24 tutoriais originais
 e acrescentados 15. Veja os fluxos conferidos e a publicação em
 [REVISAO-2026-09-27.md](REVISAO-2026-09-27.md).
+
+A revisão de linguagem de Cadê Todo Mundo? amplia o lote editorial para **42 tutoriais**,
+com três novos de Plataforma: pausar e rever o vídeo, jogar o exemplo da aula e pegar o
+certificado. Materiais e compartilhamento receberam os detalhes retirados dos roteiros.
+Os 42 tutoriais estão publicados em staging e produção. Na atualização de 27/09/2026,
+às 19:48 UTC, foram criados três e atualizados três, preservando os outros 36 e as mídias
+de cada ambiente. Houve backup, comparação com a versão anterior, transação pelo HelpService
+e 44 leituras HTTP 200 por ambiente. Recibos locais: `.cache/activity-*-help-*.json`.
+O mapa está em
+[revisão do curso](../aulas-interativas/REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md).
 `bun docs/como-fazer/validar.ts` roda o **mesmo validador do members** sobre o arquivo e confere
 os slugs cruzados (`related` e links no corpo). Rode antes de importar.
 

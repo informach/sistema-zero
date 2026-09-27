@@ -1,75 +1,91 @@
-# Roteiro falado — Cadê Todo Mundo? — Aula 1
+# Roteiro falado: Cadê Todo Mundo? | Aula 1
 
-Gravar cada seção em **um vídeo único**. As falas entre aspas são a narração. As indicações de tela não são lidas. Conferir a paleta na versão que será publicada antes de gravar. Falar com uma criança que chegou agora, sem presumir que ela conhece blocos ou o Estúdio. Não localizar a experiência “ao lado”: em tela estreita ela fica embaixo.
+Um vídeo por seção. As falas em citação são lidas; as notas de tela são só para quem grava. Aponte para a atividade ao dizer "aqui", sem explicar layouts ou controles da plataforma. O botão atual se chama **Próxima seção**. O conteúdo precisa ser regravado antes de substituir os vídeos publicados.
 
-## 1. Bem-vindo ao jardim — veja e jogue (60–90 s de vídeo)
+## 1. Bem-vindo ao jardim
 
-Apresentar o jogo e a missão de hoje, sem ensinar a experiência ou os blocos. O jogo pronto aparece nesta mesma seção para a criança experimentar; não mostrar os três achados antes dela. Fazer os gestos de navegação com calma e logo convidar a jogar.
+**Duração alvo:** 25 a 35 segundos.
 
-**Na tela:** mostrar o jardim pronto, ainda com os três personagens escondidos. Apontar para o jogo na outra coluna (ou embaixo, numa tela estreita), sem tocar nos esconderijos. Apontar para o vídeo e demonstrar pausa e retorno de alguns segundos. Mostrar **Ampliar jogo** e **Jogar de novo**, sem acioná-los. A busca acontece diretamente no jardim, como no jogo que a criança vai construir; não há botões que revelem onde procurar. Ao final, apontar para **Próxima seção** sem navegar na gravação: ela fica disponível após assistir ao vídeo e encontrar os três personagens.
-
-> “Oi! Hoje você vai começar a criar um jogo chamado Cadê Todo Mundo? Olha este jardim: três personagens se esconderam por aqui. Você consegue encontrar todos eles?
->
-> Antes de começar a busca, deixa eu te mostrar rapidinho como a aula funciona. Ela vem em pequenas partes, que a gente chama de seções. Esta é a primeira, e cada seção tem um vídeo como este. Se quiser ouvir de novo, pode voltar um pedacinho no vídeo. Se precisar de um tempo, aperta pausa. Sem pressa.
->
-> Agora é sua vez de procurar. Este aqui é o jogo pronto, para você brincar antes de construir o seu. Toque ou clique no jardim para procurar os personagens. Se quiser mais espaço, aperta Ampliar jogo. Depois, aperta Voltar à aula para continuar aqui. E, se quiser começar outra busca, é só apertar Jogar de novo.
->
-> Hoje eu vou te mostrar como fazer o seu jogo responder ao toque. O jardim e os personagens já vão estar preparados; na próxima aula, a gente completa a contagem dos achados. Quando você encontrar os três personagens neste jogo pronto, aperta Próxima seção, aqui embaixo. Lá eu vou te mostrar um caderno que ajuda quando você esquecer algum passo. Vamos procurar?”
-
-**Zappy abaixo do vídeo, em bloco separado:** “Experimente o jogo pronto! Quando terminar, avance para a próxima seção.” O bloco do jogo não tem fala do Zappy acima dos controles nem orientação adicional no palco. O vídeo explica como jogar; a área jogável mantém o jogo normal e os botões **Jogar de novo** e **Ampliar jogo**.
-
-Não demonstrar **Anterior**, a experiência, a divisória, o Estúdio ou o caderno nesta abertura. Não revelar os três esconderijos, nem a tela de vitória, antes da criança jogar. Não prometer que ela já criou o jogo inteiro: cenário e personagens vêm preparados. O jogo pronto é uma cópia independente do projeto inicial da seção prática.
-
-## 2. Seu Caderno do Aluno — apoio para construir o jogo (45–60 s)
-
-**Na tela:** mostrar o PDF real no leitor desta seção: a capa, a página de orientação **O que você vai fazer** e o controle para virar páginas. Explicar que as páginas seguintes guardam os passos para construir o jogo, sem abri-las agora para não antecipar a descoberta da experiência. Mostrar o botão de download abaixo do vídeo. Numa tela larga, mostrar o livro à direita e arrastar a divisória uma vez; numa tela estreita, mostrar o livro depois do vídeo e do download. Apontar para **Próxima seção** sem navegar na gravação. Não pedir impressão.
+**Na tela:** mostrar o jogo pronto nesta seção, com os três personagens escondidos. Apontar para a área jogável ao convidar a jogar. Não tocar nos esconderijos nem mostrar os resultados. No fim, apontar para **Próxima seção**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
 
 **Narração:**
 
-> “Este é o seu Caderno do Aluno. Nele estão todos os passos para construir o nosso jogo: os blocos que vamos usar, onde encaixar cada um e o que conferir quando testar. Você não precisa guardar tudo na cabeça.
+> “Oi! Vamos construir o jogo Cadê Todo Mundo? Aqui está a versão pronta para você jogar antes de montar o seu.
 >
-> Se você esquecer um passo ou se o seu jogo ficar diferente do que aparece no vídeo, pode voltar a esta seção e consultar o caderno. Olha só: dá para folhear aqui mesmo na tela. Os passos estão organizados por aula, para você encontrar a parte que está fazendo. Se quiser guardar o PDF ou imprimir com a ajuda de um responsável, o botão Baixar fica embaixo do vídeo. Mas não precisa baixar nem imprimir para continuar.
+> Tem três personagens escondidos no jardim. Toque nos esconderijos até encontrar os três. Assim você vê como o jogo funciona.
 >
-> Agora aperta Próxima seção. Vamos descobrir o que acontece quando você toca no jardim.”
+> Quando encontrar todo mundo, clique em Próxima seção.”
 
-Só o vídeo é necessário para concluir esta seção; assistir a 90% basta. O bloco do PDF permanece disponível, sem exigir download.
+**Zappy abaixo do vídeo:** “Jogue a versão pronta. Encontre os três personagens e clique em Próxima seção.”
 
-## 3. O que um toque faz? — conceito e experiência (1,5–2 min)
+**Conferência de produção:** a seção exige assistir ao vídeo e encontrar os três personagens. A cópia jogável é independente do projeto de construção. Pausa, replay, ampliação e reinício ficam no Como Fazer.
 
-**Na tela:** começar na terceira seção e apontar para **Anterior** sem voltar de fato. Mostrar o jardim parado enquanto apresenta a pergunta da seção. Depois mostrar mão apertando uma campainha e alguém ouvindo o som; usar um desenho simples com `toque` e `ação`. Ao voltar à pergunta sobre o jardim, indicar onde aparece a atividade e onde fica o pedido, sem executá-lo. Numa tela larga, arrastar a divisória entre vídeo e experiência, mostrar **Ampliar experiência** e **Voltar à aula**. Numa tela estreita, mostrar a experiência abaixo do vídeo. Não tocar no arbusto nem ligar a reação durante o vídeo.
+## 2. Seu Caderno do Aluno
+
+**Duração alvo:** 20 a 30 segundos.
+
+**Na tela:** mostrar a capa e a página de orientação do caderno real, sem demonstrar download, impressão, divisória ou controles do leitor. O PDF precisa estar anexado antes da gravação.
 
 **Narração:**
 
-> “Na seção anterior você conheceu o Caderno do Aluno. Se precisar consultá-lo de novo, aperta Anterior, aqui embaixo. Depois é só voltar para cá. O caderno vai ajudar quando montarmos o jogo. Antes de encaixar os blocos, vamos entender o que acontece quando alguém toca num esconderijo.
+> “Este caderno tem os passos para montar o seu jogo. Se esquecer um bloco ou onde encaixar, consulte o caderno aqui.
 >
-> Para pensar nisso, imagina a campainha de uma casa. Você aperta o botão e ela toca. O aperto é o que aconteceu; o som é a resposta. Mas, se a campainha não estiver ligada, você aperta e não escuta nada.
+> Você pode voltar a esta parte da aula quando precisar. Não precisa baixar nem imprimir.
 >
-> No jogo acontece algo parecido. Tocar num esconderijo é um acontecimento. A ação é o que o jogo faz depois desse toque, como mostrar um personagem. Para ter essa resposta, a gente precisa ligar uma ação ao toque. Como será que isso funciona no nosso jardim?
->
-> É isso que você vai investigar na atividade desta seção. Olha: o pedido fica aqui. Se estiver numa tela grande e quiser mais espaço, arrasta esta divisão no meio. Também pode apertar Ampliar experiência para olhar só para a atividade. Para ver a aula de novo, aperta Voltar à aula. Se a sua tela for menor, a atividade aparece embaixo do vídeo. Está tudo na mesma seção.”
+> Agora clique em Próxima seção.”
 
-**Zappy fora da experiência:** “Bora testar essa ideia no jardim?” Ele convida, sem repetir a instrução da cena. A experiência pergunta: “O que muda quando você toca no arbusto com a reação desligada e ligada?”. A pista, se pedida, detalha a ordem. Não contar o resultado dos testes no vídeo. Não há pergunta final depois das duas metas.
+**Conferência de produção:** o caderno é consulta opcional. Só o vídeo é necessário para avançar. O tutorial de materiais ensina a folhear e baixar o PDF.
 
-## 4. Faça alguém aparecer — vídeo prático (4–5 min)
+## 3. O que um toque faz?
 
-**Na tela:** Estúdio incorporado da própria seção, dentro da aula. Mostrar a divisória entre vídeo e Estúdio numa tela larga, arrastá-la uma vez e demonstrar **Expandir/Reduzir**. Em largura estreita, mostrar as abas **Blocos** e **Pré-visualização**, alternando entre elas; em largura suficiente, mostrar a área do jogo à direita dos blocos e o ícone de olho. O jogo começa com os três esconderijos e o contador em zero. Mostrar cada clique, encaixe e teste sem acelerar. Na hora do teste, deixar visível o esconderijo tocado e o personagem revelado.
+**Duração alvo:** 30 a 40 segundos.
+
+**Na tela:** mostrar a experiência começando com a reação desligada. Apontar para o arbusto e para **Ligar a reação ao toque** quando forem citados. Não executar o teste no vídeo nem revelar seu resultado.
 
 **Narração:**
 
-> “Agora você vai colocar essa ideia no seu jogo. Aqui está o Estúdio, dentro da própria aula. É a ferramenta onde a gente encaixa blocos, como peças, para dizer ao jogo o que fazer. Você não precisa abrir outra página. Numa tela grande, pode arrastar esta divisão para deixar o Estúdio maior. Se quiser olhar só para ele, aperta Expandir. Depois, aperta Reduzir para voltar à aula. Vou mostrar cada passo com calma.
+> “Toque no arbusto deste jardim e veja o que acontece.
 >
-> Primeiro, vamos encontrar onde a gente vê o jogo. Esta é a Pré-visualização: é aqui que você pode tocar no jardim e testar o que criou. Se o Estúdio estiver estreito, ela fica nesta aba. Você toca em Pré-visualização para ver o jogo e em Blocos para voltar a montar. Quando há mais espaço, o jogo aparece do lado direito dos blocos. Se você escondeu essa parte, o olhinho mostra de novo. É o espaço que o Estúdio tem que decide se você vê abas ou o jogo ao lado.
+> Agora clique em Ligar a reação ao toque. Toque no mesmo arbusto de novo e compare.
 >
-> Olha o jardim na Pré-visualização: os personagens já estão atrás dos esconderijos. Mas, se você tocar agora, ninguém aparece. Isso acontece porque o toque ainda não tem uma ação ligada a ele. Vamos criar essa reação. Volta para Blocos, se você estiver vendo as abas.
+> O toque é o que você faz. A reação é o que o jogo faz depois. Teste dos dois jeitos para ver a diferença.
 >
-> Na área do projeto chamada Quando acontecer, já tem este bloco grande: ‘Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido’. Sprite é um objeto do jogo; aqui, cada esconderijo é um sprite. O nome `escolhido` quer dizer o esconderijo que você acabou de tocar. É o nome que o jogo vai usar para achar o certo, mesmo que você toque em outro lugar depois.
->
-> Na paleta, abre Jogo 2D. Depois abre Sprites e, dentro de Sprites, Aparência. Pega o bloco ‘Deixar o sprite com ___% de visibilidade’. Arrasta esse bloco para dentro do espaço vazio do ‘Quando clicar ou tocar’. Solta quando aparecer o encaixe. Agora, na listinha do bloco novo, escolhe `escolhido`. Assim a ação vai mudar só o esconderijo tocado. No número, troca 50 por 0. Zero por cento de visibilidade significa que ele fica invisível. O personagem atrás dele, que já estava lá, vai poder aparecer.
->
-> Confere comigo: o bloco novo está dentro de Quando clicar ou tocar; o sprite é `escolhido`; o número é 0. Agora olha o jogo na Pré-visualização. Se ela estiver numa aba, toca nessa aba. O jogo acompanha a mudança que você fez, sem precisar apertar um botão para começar. Espera um instante e toca num esconderijo. Apareceu alguém? Toca em outro e vê se o mesmo bloco funciona de novo. Cada toque escolhe um esconderijo diferente. Hoje o número Achados ainda fica em zero, e está tudo bem: vamos fazer a contagem na próxima aula.
->
-> Espera o Estúdio mostrar Salvo. Depois aperta Enviar para o professor. Pronto: você programou a primeira reação do seu jogo! Se quiser conferir algum passo depois, o Caderno do Aluno continua na seção Seu Caderno do Aluno desta aula.”
+> Quando terminar os dois testes, clique em Próxima seção.”
 
-**Zappy fora do Estúdio:** “O jardim já está montado. Agora você vai criar a reação que faz aparecer o primeiro personagem.” Não fazer o Zappy repetir o caminho da paleta.
+**Zappy abaixo do vídeo:** “Teste o mesmo toque com a reação desligada e ligada.”
 
-**Pontos de gravação:** mostrar a divisória e **Expandir/Reduzir** só nesta seção; não prometer a divisória em tela estreita. Gravar um trecho com o Estúdio estreito, mostrando as abas **Blocos/Pré-visualização**, e outro com largura suficiente, mostrando o jogo à direita e o olhinho. Não dizer que expandir sempre produz o layout lado a lado. Capturar o toque antes/depois de encaixar a regra; aguardar a atualização automática do jogo, sem clicar em **Reproduzir/Atualizar** como requisito. Não filmar Pinta nem Estúdio completo. A seleção `escolhido` só aparece no contexto do evento; manter esse evento aberto durante a gravação. Anexar o PDF real antes de gravar o vídeo da segunda seção.
+**Conferência de produção:** manter as duas metas da experiência, sem palpite nem pergunta final. Dizer como começar não significa contar o resultado. O vídeo não faz os testes pela criança.
+
+## 4. Faça alguém aparecer
+
+**Duração alvo:** 3 a 4 minutos, incluindo os gestos de montagem e teste.
+
+**Na tela:** abrir o Estúdio incorporado com o projeto inicial. Enquadrar a área **Quando acontecer** e o evento do grupo **esconderijos**, ainda vazio. Mostrar cada gesto no ritmo da fala, com pausa suficiente para acompanhar. Não demonstrar abas, divisória, expansão ou olhinho.
+
+**Narração:**
+
+> “Agora faça um personagem aparecer no seu jogo quando você tocar no esconderijo. O jardim e os personagens já estão preparados. Você vai acrescentar a regra do toque.
+>
+> Encontre a área Quando acontecer. Nela já está o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. Cada esconderijo é um sprite, um objeto do jogo. O nome escolhido é o esconderijo que você tocar.
+>
+> Abra Jogo 2D, depois Sprites e depois Aparência. Pegue o bloco Deixar o sprite com 50% de visibilidade.
+>
+> Arraste esse bloco para o espaço vazio dentro de Quando clicar ou tocar. Solte quando aparecer o encaixe.
+>
+> No bloco que você colocou, escolha escolhido na lista de sprites. Troque o número 50 por 0. Com zero de visibilidade, o esconderijo fica invisível e dá para ver o personagem que está atrás.
+>
+> Confira: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0.”
+
+**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e depois em outro. Deixar visíveis o resultado e os blocos. Após o teste, mostrar **Salvo**, abrir **Enviar para o professor**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Concluir aula**.
+
+**Narração:**
+
+> “Agora teste no seu jogo. Toque em um esconderijo e veja se o personagem aparece. Depois toque em outro.
+>
+> Se ninguém aparecer, confira o encaixe dentro de Quando clicar ou tocar, o nome escolhido e o número 0. Corrija o que estiver diferente e teste de novo. Por enquanto, Achados continua em zero.
+>
+> Funcionou? Espere aparecer Salvo. Clique em Enviar para o professor e confirme em Enviar. Quando o envio terminar, clique em Concluir aula.”
+
+**Zappy abaixo do vídeo:** “Monte a regra do toque, teste nos esconderijos e envie seu jogo para o professor.”
+
+**Conferência de produção:** a Pré-visualização atualiza automaticamente. O bloco é Deixar o sprite com ___% de visibilidade; 50 é o valor inicial. A opção escolhido depende do bloco estar dentro do evento preparado. A seção exige vídeo, regra correta e envio. Manter o projeto da criança, sem abrir Pinta ou o Estúdio completo.
