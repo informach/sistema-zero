@@ -80,6 +80,10 @@ const EnvSchema = z
       .default('true')
       .transform((value) => value === 'true'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    KIDS_REFORM_NOTICE_ENABLED: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
   })
   // Sem nenhuma forma de verificar o token, toda sessão seria inválida em silêncio.
   .refine((e) => Boolean(e.JWT_HS256_SECRET || e.JWT_JWKS_URL), {

@@ -14,19 +14,11 @@ import {
 } from './content'
 import { migrateDraftBases } from './drafts'
 import { migrateSectionProgress } from './progress'
-import {
-  hash,
-  type Row,
-  type RowChange,
-  STAGING_PROJECT,
-  type StoredObject,
-  TABLES,
-  type Table,
-} from './railway'
+import { hash, type Row, type RowChange, type StoredObject, TABLES, type Table } from './railway'
+import { assertTarget, type MigrationTarget } from './target'
 
 export interface Corpus {
-  environment: 'staging'
-  project: typeof STAGING_PROJECT
+  target: MigrationTarget
   capturedAt: string
   rows: Record<Table, Row[]>
   objects: StoredObject[]
@@ -36,9 +28,8 @@ export interface ObjectChange {
   after: Omit<StoredObject, 'etag'>
 }
 export interface BatchPlan {
-  version: 1
-  environment: 'staging'
-  project: typeof STAGING_PROJECT
+  version: 2
+  target: MigrationTarget
   sourceHash: string
   createdAt: string
   rows: RowChange[]
@@ -56,12 +47,10 @@ const uuid = (value: unknown): string => {
 }
 
 export async function makePlan(corpus: Corpus): Promise<BatchPlan> {
-  if (corpus.environment !== 'staging' || corpus.project !== STAGING_PROJECT)
-    throw new Error('Este lote só aceita staging')
+  assertTarget(corpus.target)
   const plan: BatchPlan = {
-    version: 1,
-    environment: 'staging',
-    project: STAGING_PROJECT,
+    version: 2,
+    target: structuredClone(corpus.target),
     sourceHash: hash(canonical(corpus)),
     createdAt: corpus.capturedAt,
     rows: [],

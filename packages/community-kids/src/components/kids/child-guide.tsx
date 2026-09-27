@@ -27,6 +27,7 @@ import {
   writeSessionGuideFlag,
 } from '@/lib/guide'
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
+import { useChildOverlayState } from './platform-renovation-notice'
 
 const ChildGuideStartContext = createContext<string | undefined>(undefined)
 
@@ -77,6 +78,8 @@ export function ChildGuide({
   const [avatarDismissed, setAvatarDismissed] = useState(true)
   const [startDismissed, setStartDismissed] = useState(true)
   const [welcomeOpen, setWelcomeOpen] = useState(false)
+  const { noticePending, setGuideOpen } = useChildOverlayState()
+  useEffect(() => () => setGuideOpen(false), [setGuideOpen])
   const focusAfterWelcomeRef = useRef(false)
   const avatarCtaRef = useRef<HTMLAnchorElement>(null)
   const startDismissRef = useRef<HTMLButtonElement>(null)
@@ -86,6 +89,7 @@ export function ChildGuide({
     [hasAvatar, hasCourseActivity, startAvailable],
   )
   useEffect(() => {
+    if (noticePending) return
     setAvatarDismissed(readSessionGuideFlag(childGuideAvatarDismissedKey(profileKey)))
     setStartDismissed(readGuideFlag(childGuideStartDismissedKey(profileKey)))
     // Boas-vindas 1× por perfil neste navegador — e só se houver AÇÃO a guiar.
@@ -99,9 +103,10 @@ export function ChildGuide({
       !readGuideFlag(childGuideWelcomeSeenKey(profileKey))
     ) {
       setWelcomeOpen(true)
+      setGuideOpen(true)
       trackOnboardingEvent({ audience: 'child', action: 'welcome_opened', step: 'welcome' })
     }
-  }, [profileKey, welcomeSteps])
+  }, [profileKey, welcomeSteps, noticePending, setGuideOpen])
 
   const resolvedStep = resolveChildGuideStep({
     hasAvatar,
@@ -110,7 +115,7 @@ export function ChildGuide({
     avatarDismissed,
     startDismissed,
   })
-  const step = welcomeOpen ? null : resolvedStep
+  const step = welcomeOpen || noticePending ? null : resolvedStep
 
   useEffect(() => {
     if (welcomeOpen || !focusAfterWelcomeRef.current) return
@@ -124,6 +129,7 @@ export function ChildGuide({
     writeGuideFlag(childGuideWelcomeSeenKey(profileKey))
     focusAfterWelcomeRef.current = true
     setWelcomeOpen(false)
+    setGuideOpen(false)
     trackOnboardingEvent({ audience: 'child', action, step: 'welcome' })
   }
 
@@ -133,6 +139,7 @@ export function ChildGuide({
     setAvatarDismissed(false)
     setStartDismissed(false)
     setWelcomeOpen(true)
+    setGuideOpen(true)
     trackOnboardingEvent({ audience: 'child', action: 'guide_reopened', step: 'welcome' })
     trackOnboardingEvent({ audience: 'child', action: 'welcome_opened', step: 'welcome' })
   }
@@ -206,7 +213,7 @@ export function ChildGuide({
       ) : null}
       {children}
       <GuideWelcomeDialog
-        open={welcomeOpen}
+        open={welcomeOpen && !noticePending}
         onClose={() => closeWelcome('welcome_dismissed')}
         onContinue={() => closeWelcome('welcome_completed')}
         title={childName ? `Oi, ${childName}! Eu sou o Zappy! 👋` : 'Oi! Eu sou o Zappy! 👋'}

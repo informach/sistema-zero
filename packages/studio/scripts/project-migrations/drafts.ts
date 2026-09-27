@@ -1,4 +1,4 @@
-import { stableJson } from '../../../members/src/domain/shared/stable-json'
+import { publishedLessonRevisions } from '../../../members/src/domain/learning/published-lesson-revisions'
 import { canonical } from './content'
 import { hash, type Row, type RowChange, rowIdentity, type Table } from './railway'
 
@@ -21,7 +21,7 @@ export function promotedRows(
 export function publishedRevisions(
   rows: Record<Table, Row[]>,
   id: unknown,
-): { current: string; previous: string | null } {
+): { current: string; compatible: string[] } {
   const lesson = rows['members.lessons'].find((row) => row.id === id)
   if (!lesson) throw new Error('Metadados da aula ausentes do inventário')
   const structure = rows['members.lesson_structures'].find((row) => row.lesson_id === id)
@@ -47,24 +47,25 @@ export function publishedRevisions(
     url: r.url,
     fileType: r.file_type,
     sizeBytes: r.size_bytes,
+    zappyStudentNotebook: r.zappy_student_notebook,
     sortOrder: r.sort_order,
   }))
-  const snapshot = {
-    title: lesson.title,
-    slug: lesson.slug,
-    estimatedMinutes: lesson.estimated_minutes,
-    blocks,
-    attachments,
-    sections: structure?.sections,
-    supportBlockIds: structure?.support_block_ids,
-  }
-  return {
-    current: hash(stableJson(snapshot)),
-    previous:
-      migration && canonical(structure?.sections) === canonical(migration.migrated_sections)
-        ? hash(stableJson({ ...snapshot, sections: migration.previous_sections }))
-        : null,
-  }
+  return publishedLessonRevisions(
+    {
+      title: lesson.title,
+      slug: lesson.slug,
+      estimatedMinutes: lesson.estimated_minutes,
+      blocks,
+      attachments,
+    },
+    structure?.sections,
+    migration
+      ? {
+          previousSections: migration.previous_sections,
+          migratedSections: migration.migrated_sections,
+        }
+      : undefined,
+  )
 }
 
 export function migrateDraftBases(sources: Record<Table, Row[]>, changes: RowChange[]): void {
@@ -75,7 +76,7 @@ export function migrateDraftBases(sources: Record<Table, Row[]>, changes: RowCha
     if (beforeRevision.current === afterRevision.current) continue
     if (
       draft.published_revision !== beforeRevision.current &&
-      draft.published_revision !== beforeRevision.previous
+      !beforeRevision.compatible.includes(String(draft.published_revision))
     )
       continue
     let change = changes.find(

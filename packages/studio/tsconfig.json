@@ -23,6 +23,13 @@
     "noEmit": true,
     "types": ["bun", "vite/client"]
   },
-  "include": ["src", "playground", "e2e", "test-setup.ts", "playwright.config.ts"],
+  "include": [
+    "src",
+    "playground",
+    "e2e",
+    "scripts/project-migrations",
+    "test-setup.ts",
+    "playwright.config.ts"
+  ],
   "exclude": ["node_modules"]
 }

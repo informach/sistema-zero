@@ -1,136 +1,49 @@
-# Promoção das aulas, materiais e alças para produção
+# Promoção da plataforma para produção
 
-Runbook registrado em 19/09/2026. **Não é autorização para executar o deploy agora.** A promoção
-depende de aprovação explícita, janela de acompanhamento, backup verificável e CI verde. Este
-documento registra o estado medido e a ordem segura; antes de usar, refaça as consultas porque
-`main`, os bancos e os serviços podem ter mudado.
+Atualizado em **27/09/2026**. Este caminho foi mantido para preservar referências. A sequência antiga de 19/09 foi substituída: **não restaurar `0091_sai_o_apoio_das_secoes`** nem truncar o journal do código atual. A preparação detalhada está no [plano de execução](../superpowers/plans/2026-09-27-promocao-producao.md); os dados de partida estão no [diagnóstico](../plans/2026-09-27-promocao-producao-design.md).
 
-## Estado medido em 19/09/2026
+## Estado e correções verificadas em 27/09
 
-- `production`: Members no commit `5734facb`; journal de Members com 76 entradas, último
-  carimbo `1788738340499`, correspondente à `0075_creation-format-version`. Ainda **não** existem
-  `members.lesson_structures` nem `members.lesson_drafts`. Existem 37 aulas, 65 blocos e 7 anexos.
-- `staging`: Members tinha aplicado a `0091` (carimbo `1789814273530`) e já não tinha a coluna
-  `support_block_ids`. Houve 409 falso ao publicar rascunhos antigos porque o hash do publicado
-  ainda incluía o campo removido. Os quatro hashes obsoletos detectados em staging foram
-  reconciliados após conferir o valor antigo exato; os sete rascunhos então ficaram coerentes.
-- O código desta **primeira release** termina seu journal na `0090_bloco_materiais`. A `0091`
-  foi retirada do journal, do SQL e do snapshot desta release porque removê-la durante a troca
-  de pods faria o Members antigo ler uma coluna inexistente. Os artefatos originais estão no
-  commit `77195b9f`, para uma **segunda release**. Staging já aplicou a `0091` anteriormente;
-  reaplicar o mesmo carimbo depois não deve fazer nada naquele banco.
+- Produção continua com Members até a migration `0075`; a candidata tem `0098`. A release A foi preparada a partir de main, com aplicação antiga e migrations `0076`–`0090`. O HEAD atual exige colunas da B e não serve como A apenas retirando entradas do journal.
+- `0091_mysterious_kate_bishop` adiciona a marcação de caderno e remove `support_block_ids`; `0093_ebook_attachment_links` muda o Livro 3D para `attachmentId`. A B só pode entrar depois da A e dentro da janela de transição dos consumidores.
+- O conversor local já aceita produção explicitamente, verifica os destinos e cobre mural, criações, entregas atuais/anteriores, rascunhos/desfazer, grants e configurações. O hash de publicação é compartilhado com Members. Consulte o [operador Studio](../../packages/studio/scripts/project-migrations/README.md).
+- CORS público aplicado no bucket `comunidade-sistema-zero`, com probe instalado. GET e HEAD confirmados nas origens oficiais Kids/Comunidade; uma amostra de arquivo existente também passou pelo CDN sem parâmetro de cache.
+- `R2_UGC_BUCKET=comunidade-sistema-zero-ugc` ativo no Admin. Regra `admin-community-attachments-read` permite GET/HEAD nos domínios oficial e Railway do Admin; a regra de upload dos alunos foi preservada. URLs assinadas verificadas a partir do contêiner Admin: HEAD 200 e GET parcial 206, com a origem correta.
+- Admin redeployado no **mesmo** SHA `5734facb7f97cd04515f0f0c53aa21980b8f821e`, deployment `c94f7607-8de0-4359-af92-1cc70e190247`, para ativar a variável. Nenhum outro serviço foi promovido e nenhum jogo de produção foi convertido.
+- Certificado Fiscal continua vencido. Sua renovação foi excluída desta rodada pelo usuário; não redeployar o Fiscal antes de resolvê-la.
+- Provas do operador: preflight de schema em staging passou; produção em `0075` foi recusada antes da captura. A conferência com candidato `5bdce5eb` foi recusada no Kids de staging, que já avançou para `21321aa0`, enquanto Members ainda estava no candidato informado. Essa guarda funciona: registrar e alinhar os SHAs da onda antes de converter, sem ignorar a divergência.
 
-## Antes de qualquer publicação
+A subida completa foi autorizada, incluindo o trabalho de autoria e o curso adicional Cadê Todo Mundo?. O candidato B inclui o commit de autoria `3bc13008`. A, a barreira de manutenção e o modal estão preparados. O ensaio restaurou o dump de produção em PostgreSQL 18, aplicou A e B com os runners reais, converteu 87 documentos/18 assets (76 linhas e 27 objetos) e verificou recuperação, reaplicação e segunda migração vazia. O backup remoto privado contém o dump validado e 109 objetos (486.601.608 bytes). Dados privados permanecem fora do Git. CI e operações finais de produção continuam como gates, sem confundir ensaio com deploy.
 
-1. Confirmar backup/snapshot recente do Postgres de produção e testar que há um caminho de
-   restauração. Congelar edições de aulas durante a janela de migração e backfill.
-2. Confirmar o SHA de `main`, o check `ci` verde do PR que será integrado e o SHA efetivo de
-   cada serviço no Railway. O
-   workflow `Deploy produção` sempre usa o SHA **atual de `main`**, mesmo se for acionado com
-   `--ref staging`; não pode haver merge novo em `main` durante a sequência.
-   O fluxo documentado em `docs/ambientes-e-fluxo.md` registra **auto-deploy de Admin, Funil e
-   Comunidade ao fazer merge na `main`**. Antes do merge, verificar os gatilhos atuais no Railway
-   e **suspendê-los temporariamente** nesses serviços e em qualquer outro que tenha auto-deploy.
-   Sem isso, os frontends podem subir antes da migração do Members. Registrar quais gatilhos
-   foram suspensos para reativá-los depois do smoke. Se não for possível controlá-los, **parar
-   esta promoção** e definir outro mecanismo de deploy ordenado; não confiar na sorte da corrida.
-3. Confirmar no código promovido que o último item de
-   `packages/members/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json`
-   é **0090**, não 0091. A trava em `migrations-journal.test.ts` protege essa condição.
-4. Consultar novamente `drizzle.members_migrations`, a existência de
-   `members.lesson_structures`/`members.lesson_drafts` e a coluna `support_block_ids`.
-   Se o estado divergir do acima, reavaliar o plano; não assumir que um comando verde implica
-   migração aplicada. O journal do projeto usa o `created_at` como marca d'água.
-5. Verificar os demais serviços e migrations entre a 0075 e a 0090. A diferença de produção
-   para staging é grande; esta lista trata especificamente das aulas e não substitui o review
-   do restante do release.
+## Ordem da janela
 
-## Release A: migrar sem remover a coluna antiga
+1. Fechar o pacote de execução com SHAs de A e B, serviços por onda, CI, duração medida, backups privados de Postgres/R2 e recuperação ensaiada. Reconsultar deployments e journals. Registrar início da janela já autorizada.
+2. Suspender os gatilhos automáticos que possam antecipar serviços; congelar merges em main durante a sequência. O workflow atual resolve main no momento da execução. Usar CSV por onda; nunca `services=all` nesta promoção.
+3. Configurar `RELEASE_MAINTENANCE_MODE=full` em Members, Hub, Admin, Community e Kids; Members também recebe `RELEASE_SCHEMA_STAGE=hold`. Publicar A nesses cinco serviços sem migrar o banco. Conferir a barreira de processo, retirar pods antigos, drenar uploads e fazer backup final. Preservar callbacks e ampliar temporariamente a margem de reenvio das entregas financeiras.
+4. Alterar Members para `RELEASE_SCHEMA_STAGE=apply` e redeployar o mesmo SHA A. Conferir migrations até `0090`, preservação de `support_block_ids` e compatibilidade com os leitores antigos. Os cinco serviços continuam em manutenção até concluir B e a conversão.
+5. Na janela de manutenção completa, aplicar B e publicar os novos consumidores na ordem de dependências definida no plano. Conferir cada SHA, `SUCCESS` e health. Não servir livros transformados ao frontend antigo.
+6. Com schema B e código candidato ativos, executar dry-run/aplicação/verificação do backfill de materiais e conferir as bases dos rascunhos como previsto no plano. O reparo histórico `drafts:rebase-revisions` não faz parte automática desta B; sua montagem de blocos/anexos está defasada para Livro 3D/caderno. Não sobrescrever conflitos reais nem substituir cursos existentes. A publicação adicional de Cadê Todo Mundo? é uma operação separada, por slug, com prévia e validação de assets.
+7. Executar o preflight, capturar o corpus final, gerar plano, simular e conferir tipos/comparações remotas. Só aplicar com relatório sem pendências, backup pronto e SHA completo conferido em Members e Kids. Comandos no [README do conversor](../../packages/studio/scripts/project-migrations/README.md).
+8. Recapturar em diretório novo: a segunda migração deve ficar vazia. Testar os jogos do mural, editar/salvar/remixar, entregas anteriores, aulas legadas, quiz separado, progresso, anexos/PDF e publicação/desfazer no Admin. Testar a autorização de anexos pelo Hub na nova interface; a prova de infraestrutura não substitui esse smoke autenticado.
+9. Conferir o aviso dispensável uma vez por visita e Como fazer. Reabrir somente com os critérios de aceitação do plano atendidos; retomar jobs e gatilhos e acompanhar erros/filas.
 
-1. **Com os auto-deploys relevantes suspensos**, promover para `main` o código testado cujo
-   journal termina na **0090**. Exigir o check `ci` verde no PR para `main` e conferir o SHA do
-   merge. Não acionar o workflow `CI` manualmente em `main`: seu `workflow_dispatch` também
-   aciona `deploy-staging`.
-2. Acionar o workflow de produção **somente para Members**:
+## Revalidação de mídia
 
-   ```powershell
-   gh workflow run "Deploy produção" --ref main -f services=members
-   ```
+Somente leitura, a partir de `packages/admin`:
 
-   O `preDeployCommand` do Members executa `db:migrate`. A 0090 adiciona o tipo `materials`,
-   move os antigos IDs de apoio para a última seção e **preserva** `support_block_ids` para
-   os pods antigos. Conferir no journal do banco o carimbo `1789814248293`, a existência da
-   coluna e o healthcheck `/readyz`. Esperar os pods antigos saírem.
-3. Publicar o `api-gateway` e, depois de saudável, `admin`, `community` e `community-kids`
-   no mesmo SHA de `main`, conforme serviços realmente afetados. Publicar também os demais
-   serviços incluídos na promoção completa, respeitando as dependências e migrations próprias
-   identificadas no review do release. Usar `Deploy produção` com
-   CSV de serviços por etapa; **não usar `services=all` simultaneamente ao Members**, para
-   não criar uma corrida entre APIs, frontends e migrations. Conferir `SUCCESS` e SHA de cada
-   serviço e testar: abrir aula existente, editar/salvar rascunho, publicar aula em rascunho e
-   republicar aula publicada. Nenhum teste deve alterar aula real sem combinação prévia;
-   usar aula de teste/controlada.
-4. No contêiner **novo** do Members, entrar com
-   `railway ssh -e production -s members`, ir a `/app/packages/members` e executar:
+```powershell
+$env:R2_PUBLIC_URL = 'https://cdn.sistemazero.com.br'
+$env:R2_CORS_PROBE_ORIGIN = 'https://kids.sistemazero.com.br'
+bun scripts/r2-cors-public-check.ts
+```
 
-   ```bash
-   bun run materials:backfill
-   # Revisar as contagens e os IDs informados. Só então:
-   bun run materials:backfill -- --apply
-   bun run materials:backfill
-   ```
+Repita com `https://comunidade.sistemazero.com.br`. O script `r2-cors-public.ts` gerencia a regra e o probe; mesmo `--check` escreve um objeto temporário. O script `r2-cors-admin-ugc.ts --origins=https://admin.sistemazero.com.br,https://admin-production-aeb0.up.railway.app` mostra a proposta sem gravar; `--apply` mescla e verifica. Executá-los com credenciais/buckets do destino conferido, sem expor segredos.
 
-   O dry-run final deve ter zero pendências/erros. O script só cria bloco de materiais para
-   aula **publicada** com anexo e sem bloco de materiais; anexo sem seção é erro a investigar,
-   não motivo para inventar uma seção. Confirmar que os 7 anexos conhecidos (ou a nova
-   contagem real) continuam acessíveis, que o bloco de livro 3D cria o material da aula e que
-   o PDF baixado contém a marca d'água do comprador. Se a marca d'água falhar ou o arquivo
-   exceder o limite, o download deve ser bloqueado, nunca entregar o original sem identificação.
-5. Ainda no Members novo, executar a reconciliação de hash. A mudança de hash vem do **código**
-   que deixou de incluir `supportBlockIds`, não depende de a coluna física já ter sido removida:
+A política de CORS não torna o UGC público. As assinaturas e a autorização do Hub continuam obrigatórias. A [documentação do Cloudflare](https://developers.cloudflare.com/r2/buckets/cors/) explica também a propagação e a necessidade de invalidar cache quando objetos já armazenados no CDN mantiverem headers antigos; a prova atual incluiu objeto existente sem cache-busting.
 
-   ```bash
-   bun run drafts:rebase-revisions
-   # Aplicar somente se conflict=0 e missing=0, após revisar o resumo:
-   bun run drafts:rebase-revisions -- --apply
-   bun run drafts:rebase-revisions
-   ```
+## Parada e recuperação
 
-   Esperado: `pending=0`, `conflict=0`, `missing=0`. Com 409 real, `conflict` ou `missing`,
-   parar e analisar o rascunho individualmente; **não sobrescrever seu documento**. O script
-   só muda `published_revision` quando o hash antigo bate exatamente com o publicado atual
-   acrescido do campo removido vazio. Não altera revisão de edição nem publica aula.
-6. Conferir UI das alças em Kids (aula, Estúdio, Pensa, Pinta, Molda, avatar, quarto) e Adulto
-   (lista de aulas), nos dois estados; sem botão duplicado e sem obstruir controles. Conferir
-   teclado, celular/tablet e contraste. Fazer smoke de publicar rascunho no Admin e de ler o
-   conteúdo publicado no Kids/Adulto.
-7. Depois de todos os smokes e da comparação de SHA dos serviços, reativar os gatilhos de
-   auto-deploy suspensos e conferir que continuam apontando para a branch `main`.
-
-## Release B: remover a coluna, só depois da estabilidade da A
-
-1. Confirmar que a Release A está estável, todos os pods antigos do Members saíram, o backfill
-   terminou e os testes de publicação não dão 409 indevido.
-2. Em **novo commit/PR**, restaurar do commit `77195b9f` os três artefatos da 0091: SQL,
-   `meta/0091_snapshot.json` e entrada `0091_sai_o_apoio_das_secoes` do journal, com o
-   **mesmo carimbo `1789814273530`**. Retirar a trava temporária do teste de journal e atualizar
-   estas notas. Não gerar uma nova 0091 com outro carimbo: staging já aplicou a original, e uma
-   segunda migração `DROP COLUMN` não idempotente falharia ali. Não gerar outra migration entre
-   as releases A e B que reutilize o índice 0091.
-3. Rodar testes de migration/CI em staging, confirmar que o Members de staging continua saudável
-   (0091 já aplicada). Verificar novamente os auto-deploys e suspendê-los se puderem disparar
-   antes do Members. Promover o segundo commit para `main` e acionar `Deploy produção` para
-   `members`. Conferir que a coluna saiu em produção, journal chegou a `1789814273530`,
-   `/readyz` responde e as aulas abrem. Testar novamente a publicação pelo Admin; só então
-   reativar os gatilhos suspensos.
-
-## Critérios de parada e recuperação
-
-- Migration não aplicada apesar de `db:migrate` verde, erro de enum/coluna ou healthcheck ruim:
-  **não** avançar para frontends nem para a release B. Conferir journal, logs e schema real.
-- `materials:backfill` com aula sem seção, ou `drafts:rebase-revisions` com conflito: parar a
-  operação respectiva e tratar caso a caso. Não editar dados de rascunho às cegas.
-- O rollback de código **não reverte automaticamente migrations ou backfill**. Preferir correção
-  adiante, preservando a coluna na Release A, e manter o backup até a Release B ser validada.
-- Não publicar em produção apenas porque o deploy de staging passou. A aprovação da promoção,
-  o backup, a sequência de dois releases e os smokes continuam obrigatórios.
+- Schema, SHA, bucket, integridade ou revisão divergente: parar antes de promover. Nenhum erro vira permissão para editar o journal ou ignorar uma fonte ausente.
+- Falha parcial do conversor: preservar corpus/plano e backups; retomar o mesmo lote ou executar `rollback` antes de novas edições. A recuperação conserva IDs e cria revisões novas; recusa trabalho concorrente.
+- Rollback do código não reverte banco nem objetos. Depois da B, o código antigo não é uma recuperação válida sem restauração coordenada e testada dos contratos/dados.
+- Preservar backups fora do Git e do cleanup. Evidências locais desta correção: `.cache/production-readiness-2026-09-27/` (`cors-before-fix.json`, resultados de CORS e `admin-r2-verified.json`). Esses arquivos não substituem o backup durável da janela.

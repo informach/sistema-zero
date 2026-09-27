@@ -31,6 +31,7 @@ import {
 } from '../../../domain/course/lesson-block'
 import { importedLearningId } from '../../../domain/learning/learning-import'
 import { LessonDraftConflictError } from '../../../domain/learning/lesson-draft.errors'
+import { publishedLessonRevisions } from '../../../domain/learning/published-lesson-revisions'
 import type { LessonDraftRepository } from '../../../domain/ports/lesson-draft-repository.port'
 import { stableJson } from '../../../domain/shared/stable-json'
 import {
@@ -61,33 +62,6 @@ const fingerprint = (value: unknown) => createHash('sha256').update(stableJson(v
 async function publishedSnapshot(tx: Transaction, lessonId: string) {
   const lesson = await new DrizzleCourseRepository(tx).findLessonWithContent(lessonId)
   if (!lesson) throw new LessonNotFoundError()
-  // A marcação do caderno informa a base do Zappy, não muda o arquivo entregue ao aluno.
-  // Deixá-la fora da revisão publicada preserva as revisões dos rascunhos criados antes
-  // da nova coluna, sem esconder alterações reais no PDF, no nome ou nos blocos.
-  const attachmentsForRevision = lesson.attachments.map(
-    ({ zappyStudentNotebook: _notebook, ...attachment }) => attachment,
-  )
-  // A revisão publicada anterior guardava a URL do Livro 3D no bloco. Depois da
-  // migração, normalizar o id para a mesma representação lógica mantém o hash das
-  // aulas já publicadas e evita um falso conflito ao reabrir seus rascunhos.
-  const blocksForRevision = (includePreviousNotebookFlag: boolean) =>
-    lesson.blocks.map((block) => {
-      const content = block.content
-      if (content.kind !== 'ebook') return block
-      const attachment = lesson.attachments.find((item) => item.id === content.attachmentId)
-      if (!attachment) return block
-      return {
-        ...block,
-        content: {
-          kind: 'ebook',
-          url: attachment.url,
-          ...(content.title ? { title: content.title } : {}),
-          ...(includePreviousNotebookFlag && attachment.zappyStudentNotebook
-            ? { zappyStudentNotebook: true }
-            : {}),
-        },
-      }
-    })
   const [structure] = await tx
     .select()
     .from(lessonStructures)
@@ -96,33 +70,12 @@ async function publishedSnapshot(tx: Transaction, lessonId: string) {
     .select()
     .from(lessonCriteriaMigrationSnapshots)
     .where(eq(lessonCriteriaMigrationSnapshots.lessonId, lessonId))
-  const revisionBody = (sections: unknown, previousNotebookFlag: boolean) => ({
-    title: lesson.title,
-    slug: lesson.slug,
-    estimatedMinutes: lesson.estimatedMinutes,
-    blocks: blocksForRevision(previousNotebookFlag),
-    attachments: attachmentsForRevision,
-    sections,
-  })
-  const previousSections =
-    migration && stableJson(structure?.sections) === stableJson(migration.migratedSections)
-      ? migration.previousSections
-      : null
-  const currentRevision = fingerprint(revisionBody(structure?.sections, false))
-  const compatibleRevisions = [
-    fingerprint(revisionBody(structure?.sections, true)),
-    ...(previousSections
-      ? [
-          fingerprint(revisionBody(previousSections, false)),
-          fingerprint(revisionBody(previousSections, true)),
-        ]
-      : []),
-  ]
+  const revisions = publishedLessonRevisions(lesson, structure?.sections, migration)
   return {
     lesson,
     structure,
-    compatibleRevisions,
-    revision: currentRevision,
+    compatibleRevisions: revisions.compatible,
+    revision: revisions.current,
   }
 }
 

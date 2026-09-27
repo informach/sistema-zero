@@ -19,6 +19,7 @@ export function Dialog({
   className,
   titleAlign = 'left',
   onBack,
+  closeLabel = 'Fechar',
 }: {
   open: boolean
   onClose: () => void
@@ -31,6 +32,7 @@ export function Dialog({
   titleAlign?: 'left' | 'center'
   /** Presente → renderiza o link "Voltar" no canto esquerdo do header. */
   onBack?: () => void
+  closeLabel?: string
 }) {
   // Gestão de foco do modal (a11y) compartilhada: foca o card ao abrir, prende o Tab,
   // fecha no Esc e devolve o foco ao gatilho — ver `useModalA11y`.
@@ -86,8 +88,8 @@ export function Dialog({
           </div>
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Fechar"
+            className="absolute right-3 top-2 flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label={closeLabel}
           >
             <X className="size-4" />
           </button>

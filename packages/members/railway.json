@@ -9,12 +9,13 @@
       "/packages/pinta/**",
       "/bun.lock",
       "/package.json",
-      "/.dockerignore"
+      "/.dockerignore",
+      "/scripts/release/**"
     ]
   },
   "deploy": {
     "preDeployCommand": "bun run --filter @sistemazero/members db:migrate",
-    "startCommand": "bun run --filter @sistemazero/members start",
+    "startCommand": "bun scripts/release/start.mjs packages/members/src/index.ts",
     "healthcheckPath": "/readyz",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3

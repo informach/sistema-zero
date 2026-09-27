@@ -12,6 +12,7 @@ import {
 } from '@/lib/tools-gain'
 import type { StudentLevelSlug } from '@/lib/types'
 import { LevelUpCelebration } from './level-up-celebration'
+import { useChildOverlayState } from './platform-renovation-notice'
 import { ToolsCelebration } from './tools-celebration'
 
 interface DrawerSnapshotResponse {
@@ -97,8 +98,10 @@ export function CelebrationWatcher({
 }) {
   const [levelUp, setLevelUp] = useState<StudentLevelSlug | null>(null)
   const [toolsGain, setToolsGain] = useState<ToolsGain | null>(null)
+  const { noticePending, guideOpen } = useChildOverlayState()
 
   useEffect(() => {
+    if (noticePending) return
     let cancelled = false
     const controller = new AbortController()
 
@@ -124,7 +127,9 @@ export function CelebrationWatcher({
       cancelled = true
       controller.abort()
     }
-  }, [levelSlug, ownsStudio, profileKey, toolsRevision])
+  }, [levelSlug, ownsStudio, profileKey, toolsRevision, noticePending])
+
+  if (noticePending || guideOpen) return null
 
   if (levelUp) {
     return (

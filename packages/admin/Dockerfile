@@ -32,6 +32,7 @@ COPY --from=build /app/packages/admin/scripts/boot-check.mjs ./packages/admin/bo
 # Cache do otimizador de imagens do Next: a árvore é copiada como root e o
 # processo roda como `node` — sem isso todo next/image loga EACCES em prod.
 RUN mkdir -p packages/admin/.next/cache && chown -R node:node packages/admin/.next
+COPY --from=build /app/scripts/release/start.mjs ./scripts/release/start.mjs
 USER node
 EXPOSE 3005
-CMD ["node", "packages/admin/boot-check.mjs"]
+CMD ["node","scripts/release/start.mjs","packages/admin/boot-check.mjs"]

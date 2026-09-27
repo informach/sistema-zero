@@ -36,6 +36,7 @@ import {
 } from '@/lib/guide'
 import { COMUNIDADE_OFERTA_URL } from '@/lib/links'
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
+import { endRenovationVisits, startRenovationVisit } from '@/lib/platform-renovation-visit'
 import { PROFILE_AGE_ERROR_MESSAGE } from '@/lib/profile-age'
 import { canAddProfile, type ProfileAllowance } from '@/lib/profile-allowance'
 import type { ProfileView } from '@/lib/types'
@@ -199,6 +200,7 @@ export function PerfisClient({
     try {
       const res = await fetch(`/api/profiles/${id}/select`, { method: 'POST' })
       if (res.ok) {
+        startRenovationVisit(id)
         window.location.replace('/') // full reload: o servidor passa a ver a sessão de perfil
         return
       }
@@ -230,6 +232,7 @@ export function PerfisClient({
       })
       if (res.ok) {
         // recarrega como sessão da conta (portão aberto); `?manage=1` já abre a gestão.
+        endRenovationVisits()
         window.location.replace('/perfis?manage=1')
         return
       }

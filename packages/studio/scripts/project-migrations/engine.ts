@@ -6,13 +6,14 @@ import {
   type Row,
   type RowChange,
   rowIdentity,
-  STAGING_PROJECT,
   type StoredObject,
   TABLES,
   type Table,
 } from './railway'
+import { assertTarget, type MigrationTarget } from './target'
 
 export interface BatchAdapter {
+  target: MigrationTarget
   assertCandidate(): Promise<void>
   rows(): Promise<Record<Table, Row[]>>
   objects(refs: Array<Pick<StoredObject, 'bucket' | 'key'>>): Promise<StoredObject[]>
@@ -21,14 +22,10 @@ export interface BatchAdapter {
   progress(message: string): void
 }
 
-function assertPlan(plan: BatchPlan): void {
-  if (
-    plan.version !== 1 ||
-    plan.environment !== 'staging' ||
-    plan.project !== STAGING_PROJECT ||
-    !/^[a-f0-9]{64}$/.test(plan.sourceHash)
-  )
-    throw new Error('Plano de staging inválido')
+function assertPlan(plan: BatchPlan, target: MigrationTarget): void {
+  assertTarget(plan.target, target)
+  if (plan.version !== 2 || !/^[a-f0-9]{64}$/.test(plan.sourceHash))
+    throw new Error('Plano de migração inválido; recapture lotes anteriores ao formato 2')
   if (plan.failures.length)
     throw new Error(`Há ${plan.failures.length} pendências; nenhum dado pode ser promovido`)
 }
@@ -42,7 +39,7 @@ function rowMap(rows: Record<Table, Row[]>): Map<string, Row> {
 const rowId = ({ table, before }: RowChange): string => `${table}:${rowIdentity(table, before)}`
 
 export async function applyPlan(plan: BatchPlan, adapter: BatchAdapter): Promise<void> {
-  assertPlan(plan)
+  assertPlan(plan, adapter.target)
   await adapter.assertCandidate()
   const current = rowMap(await adapter.rows())
   for (const change of plan.rows) {
@@ -103,7 +100,7 @@ export async function applyPlan(plan: BatchPlan, adapter: BatchAdapter): Promise
 
 /** Recuperação também usa CAS. Uma edição posterior nunca é trocada por backup. */
 export async function rollbackPlan(plan: BatchPlan, adapter: BatchAdapter): Promise<void> {
-  assertPlan(plan)
+  assertPlan(plan, adapter.target)
   await adapter.assertCandidate()
   const prefix = `studio-migration-backups/${plan.sourceHash}`
   const receiptKey = `${prefix}/recovery.json.gz`

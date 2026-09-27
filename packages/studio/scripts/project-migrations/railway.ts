@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto'
 import { dirname, join } from 'node:path'
+import { assertTarget, type MigrationTarget, remoteGuard } from './target'
 import { REMOTE_EVALUATE_SOURCE } from './transport'
 
 /** Ferramenta operacional isolada. Não é importada pelo editor nem pelo servidor. */
-export const STAGING_PROJECT = '415d5a1c-5f75-432c-8445-b395d0977ce3'
 const SERVICES = {
   database: 'aa282801-ffba-477c-af6d-394b2f4f9af9',
   objects: 'fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f',
@@ -36,7 +36,7 @@ export const TABLES = {
   'members.lesson_drafts': {
     key: 'lesson_id',
     where: 'true',
-    columns: ['document', 'revision', 'published_revision'],
+    columns: ['document', 'previous_document', 'revision', 'published_revision'],
   },
   'members.lesson_structures': {
     key: 'lesson_id',
@@ -73,7 +73,12 @@ export interface StoredObject {
 export const hash = (value: string | Uint8Array): string =>
   createHash('sha256').update(value).digest('hex')
 
-async function remote<T>(service: keyof typeof SERVICES, source: string): Promise<T> {
+async function remote<T>(
+  target: MigrationTarget,
+  service: keyof typeof SERVICES,
+  source: string,
+): Promise<T> {
+  assertTarget(target)
   // Payload pelo stdin: não passa pelo shell nem pelo limite de argumentos do Windows.
   const evaluate = REMOTE_EVALUATE_SOURCE
   const command =
@@ -89,9 +94,9 @@ async function remote<T>(service: keyof typeof SERVICES, source: string): Promis
       executable,
       'ssh',
       '-p',
-      STAGING_PROJECT,
+      target.project,
       '-e',
-      'staging',
+      target.environmentId,
       '-s',
       SERVICES[service],
       '--',
@@ -111,12 +116,20 @@ async function remote<T>(service: keyof typeof SERVICES, source: string): Promis
   return JSON.parse(line.slice(14)) as T
 }
 
-const guard = `if(process.env.RAILWAY_ENVIRONMENT_NAME!=='staging'||process.env.RAILWAY_PROJECT_ID!==${JSON.stringify(STAGING_PROJECT)})throw Error('Ambiente de migração recusado');`
 const emit = `console.log('__G2D_RESULT__'+JSON.stringify(result));`
-const sqlSetup = `${guard}const postgres=(await import('/app/packages/members/node_modules/postgres/src/index.js')).default;const sql=postgres(process.env.DATABASE_URL,{max:1});`
-const r2Setup = `${guard}if(process.env.R2_UGC_BUCKET!=='testes-ugc'||process.env.R2_PRIVATE_BUCKET!=='testes-privado')throw Error('Buckets de migração recusados');const sdk=require('/app/node_modules/.bun/node_modules/@aws-sdk/client-s3');const client=new sdk.S3Client({region:'auto',endpoint:'https://'+process.env.R2_ACCOUNT_ID+'.r2.cloudflarestorage.com',credentials:{accessKeyId:process.env.R2_ACCESS_KEY_ID,secretAccessKey:process.env.R2_SECRET_ACCESS_KEY}});const buckets={ugc:'testes-ugc',private:'testes-privado'};`
+const sqlSetup = (target: MigrationTarget) =>
+  `${remoteGuard(target)}const postgres=(await import('/app/packages/members/node_modules/postgres/src/index.js')).default;const sql=postgres(process.env.DATABASE_URL,{max:1});`
+const r2Setup = (target: MigrationTarget) =>
+  `${remoteGuard(target, true)}const sdk=require('/app/node_modules/.bun/node_modules/@aws-sdk/client-s3');const client=new sdk.S3Client({region:'auto',endpoint:'https://'+process.env.R2_ACCOUNT_ID+'.r2.cloudflarestorage.com',credentials:{accessKeyId:process.env.R2_ACCESS_KEY_ID,secretAccessKey:process.env.R2_SECRET_ACCESS_KEY}});const buckets=${JSON.stringify(target.buckets)};`
 
-export async function inventoryRows(): Promise<Record<Table, Row[]>> {
+export async function inventoryRows(target: MigrationTarget): Promise<Record<Table, Row[]>> {
+  const required = Object.entries(TABLES).flatMap(([table, info]) =>
+    [...new Set([info.key, ...info.columns, ...('identity' in info ? info.identity : [])])].map(
+      (column) => `${table}.${column}`,
+    ),
+  )
+  required.push('members.lesson_attachments.zappy_student_notebook')
+  const schemaCheck = `const columns=await tx.unsafe("select table_schema||'.'||table_name||'.'||column_name as name from information_schema.columns where table_schema in ('members','hub')");const available=new Set(columns.map(c=>c.name));const missing=${JSON.stringify(required)}.filter(c=>!available.has(c));if(missing.length)throw Error('Schema ainda não está pronto para a conversão. Conclua as migrações da release B antes de capturar: '+missing.join(', '));const [journal]=await tx.unsafe('select exists(select 1 from drizzle.members_migrations where created_at=1790433246068) as ready');if(!journal.ready)throw Error('A release B ainda não registrou a migration 0098; captura recusada');`
   const queries = Object.entries(TABLES)
     .map(
       ([table, info]) =>
@@ -124,34 +137,43 @@ export async function inventoryRows(): Promise<Record<Table, Row[]>> {
     )
     .join('')
   return remote(
+    target,
     'database',
-    `${sqlSetup}let result={};try{await sql.begin('read only',async tx=>{${queries}});${emit}}finally{await sql.end()}`,
+    `${sqlSetup(target)}let result={};try{await sql.begin('read only',async tx=>{${schemaCheck}${queries}});${emit}}finally{await sql.end()}`,
   )
 }
 
-export async function assertStagingCandidate(commit: string): Promise<void> {
+export async function assertCandidate(target: MigrationTarget, commit: string): Promise<void> {
   if (!/^[a-f0-9]{40}$/.test(commit)) throw new Error('Informe o SHA completo da versão candidata')
   for (const service of ['database', 'objects'] as const)
     await remote(
+      target,
       service,
-      `${guard}if(process.env.RAILWAY_GIT_COMMIT_SHA!==${JSON.stringify(commit)})throw Error('A versão candidata ainda não está implantada neste serviço');${service === 'database' ? "const {STUDIO_PROJECT_FORMAT_VERSION}=await import('/app/packages/core/src/studio/index.ts');if(STUDIO_PROJECT_FORMAT_VERSION!==2)throw Error('O serviço ainda aceita o contrato histórico');" : ''}const result={ok:true};${emit}`,
+      `${remoteGuard(target, service === 'objects')}if(process.env.RAILWAY_GIT_COMMIT_SHA!==${JSON.stringify(commit)})throw Error('A versão candidata ainda não está implantada neste serviço');${service === 'database' ? "const {STUDIO_PROJECT_FORMAT_VERSION}=await import('/app/packages/core/src/studio/index.ts');if(STUDIO_PROJECT_FORMAT_VERSION!==2)throw Error('O serviço ainda aceita o contrato histórico');" : ''}const result={ok:true};${emit}`,
     )
 }
 
 export async function readObjects(
+  target: MigrationTarget,
   refs: Array<{ bucket: Bucket; key: string }>,
 ): Promise<StoredObject[]> {
   return remote(
+    target,
     'objects',
-    `${r2Setup}const result=[];for(const ref of ${JSON.stringify(refs)}){try{const o=await client.send(new sdk.GetObjectCommand({Bucket:buckets[ref.bucket],Key:ref.key}));if(o.ContentLength>41943040)throw Error('Objeto acima do limite');result.push({...ref,etag:o.ETag,bytes:Buffer.from(await o.Body.transformToByteArray()).toString('base64')});}catch(e){if(e.$metadata?.httpStatusCode!==404)throw e;}}${emit}`,
+    `${r2Setup(target)}const result=[];for(const ref of ${JSON.stringify(refs)}){try{const o=await client.send(new sdk.GetObjectCommand({Bucket:buckets[ref.bucket],Key:ref.key}));if(o.ContentLength>41943040)throw Error('Objeto acima do limite');result.push({...ref,etag:o.ETag,bytes:Buffer.from(await o.Body.transformToByteArray()).toString('base64')});}catch(e){if(e.$metadata?.httpStatusCode!==404)throw e;}}${emit}`,
   )
 }
 
 /** Backup e novos blobs só podem nascer. Conteúdo existente diferente é conflito. */
-export async function putObject(object: Omit<StoredObject, 'etag'>, etag?: string): Promise<void> {
+export async function putObject(
+  target: MigrationTarget,
+  object: Omit<StoredObject, 'etag'>,
+  etag?: string,
+): Promise<void> {
   await remote(
+    target,
     'objects',
-    `${r2Setup}const x=${JSON.stringify(object)};const bytes=Buffer.from(x.bytes,'base64');let result;try{result=await client.send(new sdk.PutObjectCommand({Bucket:buckets[x.bucket],Key:x.key,Body:bytes,ContentType:x.key.endsWith('.gz')?'application/gzip':'application/json',${etag ? `IfMatch:${JSON.stringify(etag)}` : "IfNoneMatch:'*'"}}));result={ok:true};}catch(e){if(e.$metadata?.httpStatusCode!==412)throw e;const o=await client.send(new sdk.GetObjectCommand({Bucket:buckets[x.bucket],Key:x.key}));if(!Buffer.from(await o.Body.transformToByteArray()).equals(bytes))throw Error('Conflito de objeto: '+x.key);result={ok:true,alreadyApplied:true};}${emit}`,
+    `${r2Setup(target)}const x=${JSON.stringify(object)};const bytes=Buffer.from(x.bytes,'base64');let result;try{result=await client.send(new sdk.PutObjectCommand({Bucket:buckets[x.bucket],Key:x.key,Body:bytes,ContentType:x.key.endsWith('.gz')?'application/gzip':'application/json',${etag ? `IfMatch:${JSON.stringify(etag)}` : "IfNoneMatch:'*'"}}));result={ok:true};}catch(e){if(e.$metadata?.httpStatusCode!==412)throw e;const o=await client.send(new sdk.GetObjectCommand({Bucket:buckets[x.bucket],Key:x.key}));if(!Buffer.from(await o.Body.transformToByteArray()).equals(bytes))throw Error('Conflito de objeto: '+x.key);result={ok:true,alreadyApplied:true};}${emit}`,
   )
 }
 
@@ -162,7 +184,10 @@ export interface RowChange {
 }
 
 /** Ensaia tipos SQL e a comparação exata, em transação explicitamente somente leitura. */
-export async function validateRowChanges(changes: RowChange[]): Promise<number> {
+export async function validateRowChanges(
+  target: MigrationTarget,
+  changes: RowChange[],
+): Promise<number> {
   for (const change of changes) if (!TABLES[change.table]) throw new Error('Tabela inválida')
   const queries = changes
     .map(({ table, before, after }) => {
@@ -174,12 +199,14 @@ export async function validateRowChanges(changes: RowChange[]): Promise<number> 
     })
     .join('')
   return remote(
+    target,
     'database',
-    `${sqlSetup}let result=0;try{await sql.begin('read only',async tx=>{${queries}});${emit}}finally{await sql.end()}`,
+    `${sqlSetup(target)}let result=0;try{await sql.begin('read only',async tx=>{${queries}});${emit}}finally{await sql.end()}`,
   )
 }
 /** Uma transação compara TODAS as colunas, inclusive reservas e edições concorrentes. */
 export async function compareAndSwapRows(
+  target: MigrationTarget,
   changes: RowChange[],
   sources: Record<Table, Row[]>,
 ): Promise<void> {
@@ -253,7 +280,8 @@ export async function compareAndSwapRows(
     )
     .join('')
   await remote(
+    target,
     'database',
-    `${sqlSetup}try{await sql.begin(async tx=>{await tx.unsafe("set local lock_timeout='5s'");await tx.unsafe("select pg_advisory_xact_lock(hashtextextended('studio-document-migration',0))");${locks}${tableLocks}${snapshotChecks}${statements}${quota}});const result={ok:true};${emit}}finally{await sql.end()}`,
+    `${sqlSetup(target)}try{await sql.begin(async tx=>{await tx.unsafe("set local lock_timeout='5s'");await tx.unsafe("select pg_advisory_xact_lock(hashtextextended('studio-document-migration',0))");${locks}${tableLocks}${snapshotChecks}${statements}${quota}});const result={ok:true};${emit}}finally{await sql.end()}`,
   )
 }

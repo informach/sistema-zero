@@ -8,11 +8,12 @@ import {
   hash,
   type Row,
   rowIdentity,
-  STAGING_PROJECT,
   type StoredObject,
   TABLES,
   type Table,
 } from '../../scripts/project-migrations/railway'
+import { simulate } from '../../scripts/project-migrations/simulate'
+import { migrationTarget } from '../../scripts/project-migrations/target'
 import { createEmptyProject } from '../core/project'
 
 function fixture(): Corpus {
@@ -93,8 +94,7 @@ function fixture(): Corpus {
     },
   ]
   return {
-    environment: 'staging',
-    project: STAGING_PROJECT,
+    target: migrationTarget('staging'),
     capturedAt: '2026-09-13T12:00:00Z',
     rows,
     objects,
@@ -107,6 +107,7 @@ function memory(corpus: Corpus) {
   let swaps = 0
   let interrupt = false
   const adapter: BatchAdapter = {
+    target: corpus.target,
     assertCandidate: async () => {},
     rows: async () => structuredClone(rows),
     objects: async (refs) =>
@@ -297,6 +298,9 @@ describe('lote isolado de documentos Studio', () => {
       revision: 'draft-1',
       published_revision: original,
       document: { title: 'Título ainda em edição', blocks: [] },
+      previous_document: {
+        blocks: [{ content: { kind: 'studio', allowBlocks: ['sz_g2d_play_jump'] } }],
+      },
     })
     const plan = await makePlan(corpus)
     expect(plan.failures).toEqual([])
@@ -310,11 +314,17 @@ describe('lote isolado de documentos Studio', () => {
       corpus.rows['members.lesson_drafts'][0]?.document,
     )
     expect(rows['members.courses'][0]?.version).toBe(1)
+    expect(rows['members.lesson_drafts'][0]?.previous_document).toEqual({
+      blocks: [{ content: { kind: 'studio', allowBlocks: ['sz_g2d_play_fx'] } }],
+    })
     await rollbackPlan(plan, state.adapter)
     expect((await state.adapter.rows())['members.lesson_drafts'][0]?.published_revision).toBe(
       original,
     )
     expect((await state.adapter.rows())['members.courses'][0]?.version).toBe(2)
+    expect((await state.adapter.rows())['members.lesson_drafts'][0]?.previous_document).toEqual(
+      corpus.rows['members.lesson_drafts'][0]?.previous_document,
+    )
   })
 
   test('critério de som conserva o efeito exato; relações históricas ambíguas são recusadas', async () => {
@@ -410,11 +420,27 @@ describe('lote isolado de documentos Studio', () => {
     expect(state.objects.size).toBe(corpus.objects.length)
   })
 
-  test('ambiente diferente e upload concorrente são recusados', async () => {
+  test('lote de produção simula interrupção, retomada, idempotência e recuperação com mural', async () => {
     const corpus = fixture()
-    await expect(
-      makePlan({ ...corpus, environment: 'production' } as unknown as Corpus),
-    ).rejects.toThrow('staging')
+    corpus.target = migrationTarget('production')
+    const report = await simulate(corpus)
+    expect(report.source).toBe('production')
+    expect(report.recovery).toBe('passed')
+    expect(report.secondMigration).toBe('empty')
+  })
+
+  test('lote de outro ambiente é recusado antes de escrever na aplicação e na recuperação', async () => {
+    const corpus = fixture()
+    const plan = await makePlan({ ...corpus, target: migrationTarget('production') })
+    const state = memory(corpus)
+    await expect(applyPlan(plan, state.adapter)).rejects.toThrow('Destino')
+    await expect(rollbackPlan(plan, state.adapter)).rejects.toThrow('Destino')
+    expect(state.swaps()).toBe(0)
+    expect(state.objects.size).toBe(corpus.objects.length)
+  })
+
+  test('upload concorrente é recusado', async () => {
+    const corpus = fixture()
     corpus.rows['members.creations'][0]!.pending_revision = 2
     expect((await makePlan(corpus)).failures[0]?.message).toContain('upload reservado')
   })

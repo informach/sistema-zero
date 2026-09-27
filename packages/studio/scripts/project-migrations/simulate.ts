@@ -13,6 +13,7 @@ export async function simulate(corpus: Corpus): Promise<Record<string, unknown>>
   )
   let interrupt = true
   const adapter: BatchAdapter = {
+    target: corpus.target,
     assertCandidate: async () => {},
     rows: async () => structuredClone(rows),
     objects: async (refs) =>
@@ -124,7 +125,8 @@ export async function simulate(corpus: Corpus): Promise<Record<string, unknown>>
       throw new Error('A recuperação alterou o mural')
   return {
     environment: 'offline',
-    source: 'staging',
+    source: corpus.target.environment,
+    target: corpus.target,
     sourceHash: plan.sourceHash,
     documents: plan.documents,
     assets: plan.assets,

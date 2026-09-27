@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
 import { profileMenuSubtitle } from '@/lib/gamification-label'
 import { levelInfo } from '@/lib/level-info'
+import { endRenovationVisits } from '@/lib/platform-renovation-visit'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { getUserDisplayName } from '@/lib/user-display'
 import { AvatarWithAura } from './avatar-with-aura'
@@ -73,6 +74,7 @@ export function UserMenu({
     try {
       await fetch('/api/auth/logout', { method: 'POST' })
     } finally {
+      endRenovationVisits()
       // Navegação de DOCUMENTO: logout muda cookies HttpOnly e `router.replace +
       // router.refresh` corre um contra o outro (vercel/next.js#54766); o full
       // load também descarta o router cache com dados RSC do usuário deslogado.

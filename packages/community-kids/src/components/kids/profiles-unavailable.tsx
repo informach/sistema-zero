@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { KIDS_SCREEN_BAND } from '@/components/kids/kids-screen'
 import { KidsMascot } from '@/components/kids/mascot'
 import { COMUNIDADE_OFERTA_URL } from '@/lib/links'
+import { endRenovationVisits } from '@/lib/platform-renovation-visit'
 import { KidsRecado } from './kids-recado'
 
 /** Logout reutilizável nos estados normais e terminais da grade de perfis. */
@@ -31,6 +32,7 @@ export function ProfileLogoutButton({
     try {
       const response = await fetch('/api/auth/logout', { method: 'POST' })
       if (!response.ok) throw new Error(`logout failed with ${response.status}`)
+      endRenovationVisits()
       window.location.replace('/login')
     } catch {
       toast.error('Não foi possível sair agora. Verifique a conexão e tente novamente.')
