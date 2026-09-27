@@ -36,7 +36,7 @@ const productionDomains: Record<string, Array<{ domain: string; port?: number }>
   community: [{ domain: 'comunidade.sistemazero.com.br', port: 3007 }],
   'community-kids': [{ domain: 'kids.sistemazero.com.br', port: 3008 }],
   funnel: [{ domain: 'sistemazero.com.br', port: 4321 }],
-  'marketing-app': [{ domain: 'marketing.sistemazero.com.br', port: 3012 }],
+  'marketing-app': [{ domain: 'marketing.sistemazero.com.br', port: 8080 }],
   'helpdesk-app': [{ domain: 'atendimento.sistemazero.com.br', port: 3014 }],
 }
 
