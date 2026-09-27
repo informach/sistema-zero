@@ -84,7 +84,7 @@ export function MainContainer({ children }: { children: ReactNode }) {
         // `kids-aula`: gancho da PELE da aula (fundo azul-claro + cartas brancas
         // por cima). A aula é do member-shell, compartilhada com a comunidade
         // adulta, então tudo o que é kids ali entra por CSS a partir daqui.
-        className="kids-aula w-full flex-1 px-4 pt-6 pb-35 md:px-8 md:pt-8 md:pb-27"
+        className="kids-aula w-full flex-1 px-4 pt-6 pb-32.5 md:px-8 md:pt-8 md:pb-24.5"
       >
         {children}
       </main>
