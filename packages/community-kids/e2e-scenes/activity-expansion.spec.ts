@@ -1,5 +1,18 @@
 import { expect, test } from '@playwright/test'
 
+test('o título repetido da seção volta a ser visível ao ampliar a experiência', async ({
+  page,
+}) => {
+  await page.goto('/?repeated-title')
+  const title = page.getByRole('heading', { level: 3 })
+  await expect(title).toHaveCSS('width', '1px')
+  await page.getByRole('button', { name: 'Ampliar experiência' }).click()
+  await expect(title).toHaveCSS('clip-path', 'none')
+  await expect(title).toBeInViewport({ ratio: 1 })
+  await page.getByRole('button', { name: 'Voltar à aula' }).click()
+  await expect(title).toHaveCSS('width', '1px')
+})
+
 for (const activity of [
   { path: '/project-play', expand: 'Ampliar jogo', badge: 'Brinque', body: 'iframe' },
   { path: '/', expand: 'Ampliar experiência', badge: 'Experimente', body: '.sz-scene-console' },
