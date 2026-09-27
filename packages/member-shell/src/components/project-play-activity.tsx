@@ -160,68 +160,71 @@ export function ProjectPlayActivityView({
   if (!project) return <p role="alert">Não foi possível abrir o jogo desta atividade.</p>
 
   return (
-    <section
-      ref={workspace}
-      {...(expanded ? { role: 'dialog', 'aria-modal': true, tabIndex: -1 } : { role: 'region' })}
-      aria-label={expanded ? 'Jogo ampliado' : 'Jogo pronto para brincar'}
-      className={
-        expanded
-          ? 'fixed inset-0 z-80 flex flex-col gap-4 overflow-y-auto bg-background p-4 sm:p-6'
-          : 'space-y-4'
-      }
-    >
-      <div className="flex flex-wrap items-center justify-end gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          className="min-h-11"
-          disabled={!ready && !failed}
-          onClick={restart}
-        >
-          <RotateCcw className="size-4" aria-hidden />
-          Jogar de novo
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          aria-expanded={expanded}
-          onClick={(event) => {
-            event.currentTarget.focus({ preventScroll: true })
-            setExpanded((value) => !value)
-          }}
-          className="min-h-11"
-        >
-          {expanded ? (
-            <Minimize2 className="size-4" aria-hidden />
-          ) : (
-            <Expand className="size-4" aria-hidden />
-          )}
-          {expanded ? 'Voltar à aula' : 'Ampliar jogo'}
-        </Button>
-      </div>
-      <div
-        style={{ aspectRatio: `${activity.stage.width} / ${activity.stage.height}` }}
+    // O espaçamento entre blocos pertence ao wrapper, não à seção fixa ampliada.
+    <div>
+      <section
+        ref={workspace}
+        {...(expanded ? { role: 'dialog', 'aria-modal': true, tabIndex: -1 } : { role: 'region' })}
+        aria-label={expanded ? 'Jogo ampliado' : 'Jogo pronto para brincar'}
         className={
           expanded
-            ? 'mx-auto w-full max-w-3xl shrink-0 overflow-hidden rounded-xl border border-border bg-card [@media(min-height:900px)]:max-w-5xl'
-            : 'w-full overflow-hidden rounded-xl border border-border bg-card'
+            ? 'fixed inset-0 z-80 flex flex-col gap-4 overflow-y-auto bg-background p-4 sm:p-6'
+            : 'space-y-4'
         }
       >
-        <StudioProjectPlayer
-          key={round}
-          ref={iframe}
-          tabIndex={0}
-          project={project}
-          title={project.name}
-          onError={() => setFailed(true)}
-          onReady={() => setReady(true)}
-        />
-      </div>
-      {failed && (
-        <p role="alert">
-          Não foi possível carregar o jogo. Aperte Jogar de novo para tentar novamente.
-        </p>
-      )}
-    </section>
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-11"
+            disabled={!ready && !failed}
+            onClick={restart}
+          >
+            <RotateCcw className="size-4" aria-hidden />
+            Jogar de novo
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            aria-expanded={expanded}
+            onClick={(event) => {
+              event.currentTarget.focus({ preventScroll: true })
+              setExpanded((value) => !value)
+            }}
+            className="min-h-11"
+          >
+            {expanded ? (
+              <Minimize2 className="size-4" aria-hidden />
+            ) : (
+              <Expand className="size-4" aria-hidden />
+            )}
+            {expanded ? 'Voltar à aula' : 'Ampliar jogo'}
+          </Button>
+        </div>
+        <div
+          style={{ aspectRatio: `${activity.stage.width} / ${activity.stage.height}` }}
+          className={
+            expanded
+              ? 'mx-auto w-full max-w-3xl shrink-0 overflow-hidden rounded-xl border border-border bg-card [@media(min-height:900px)]:max-w-5xl'
+              : 'w-full overflow-hidden rounded-xl border border-border bg-card'
+          }
+        >
+          <StudioProjectPlayer
+            key={round}
+            ref={iframe}
+            tabIndex={0}
+            project={project}
+            title={project.name}
+            onError={() => setFailed(true)}
+            onReady={() => setReady(true)}
+          />
+        </div>
+        {failed && (
+          <p role="alert">
+            Não foi possível carregar o jogo. Aperte Jogar de novo para tentar novamente.
+          </p>
+        )}
+      </section>
+    </div>
   )
 }

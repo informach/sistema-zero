@@ -120,7 +120,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
       caderno && 'content' in caderno && caderno.content.kind === 'materials'
         ? caderno.content.title
         : undefined,
-    ).toBe('Caderno do Aluno — Cadê Todo Mundo?')
+    ).toBe('Caderno do Aluno: Cadê Todo Mundo?')
     const experience = m.blocks.find((block) => block.key === 'experiencia-toque')
     expect(experience?.content?.kind).toBe('interactive')
     if (experience?.content?.kind === 'interactive') {

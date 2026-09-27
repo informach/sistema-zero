@@ -30,14 +30,14 @@
             "formatVersion": 2,
             "projectTools": [],
             "id": "demonstracao-cade-todo-mundo",
-            "name": "Cadê Todo Mundo? — jogo pronto",
+            "name": "Cadê Todo Mundo? (jogo pronto)",
             "createdAt": 0,
             "updatedAt": 0,
             "mode": "blocks",
             "files": {
               "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Cadê Todo Mundo?</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
               "style.css": "",
-              "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#c7effb\");\n  let achados = 0;\n  const esconderijos = SZGame2D.createGroup();\n  const coelho = SZGame2D.createSprite({ x: 110, y: 181, w: 54, h: 87, image: \"coelho\" });\n  const arbusto = SZGame2D.createSprite({ x: 60, y: 166, w: 154, h: 116, image: \"arbusto\" });\n  SZGame2D.addToGroup(esconderijos, arbusto);\n  const raposa = SZGame2D.createSprite({ x: 277, y: 184, w: 66, h: 84, image: \"raposa\" });\n  const pedras = SZGame2D.createSprite({ x: 229.5, y: 170, w: 161, h: 112, image: \"pedras\" });\n  SZGame2D.addToGroup(esconderijos, pedras);\n  const coruja = SZGame2D.createSprite({ x: 447, y: 187, w: 72, h: 81, image: \"coruja\" });\n  const flores = SZGame2D.createSprite({ x: 416.5, y: 138, w: 133, h: 144, image: \"flores\" });\n  SZGame2D.addToGroup(esconderijos, flores);\n  // Quando acontecer\n  SZGame2D.onGroupClick(esconderijos, function (escolhido) {\n    SZGame2D.setOpacity(escolhido, 0);\n    achados = achados + 1;\n  }, \"cliqueSprite\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawSprite(ctx, coelho);\n    SZGame2D.drawSprite(ctx, raposa);\n    SZGame2D.drawSprite(ctx, coruja);\n    SZGame2D.drawGroup(ctx, esconderijos);\n    SZGame2D.drawScore(ctx, \"Achados:\", achados, 18, 34, \"#173844\", 24);\n    if (achados >= 3) {\n      SZGame2D.drawLabel(ctx, \"Você achou todo mundo!\", 174, 72, \"#173844\", 27, \"left\");\n    }\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
+              "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#c7effb\");\n  let achados = 0;\n  const esconderijos = SZGame2D.createGroup();\n  const coelho = SZGame2D.createSprite({ x: 110, y: 181, w: 54, h: 87, image: \"coelho\" });\n  const arbusto = SZGame2D.createSprite({ x: 60, y: 166, w: 154, h: 116, image: \"arbusto\" });\n  SZGame2D.addToGroup(esconderijos, arbusto);\n  const raposa = SZGame2D.createSprite({ x: 277, y: 190, w: 66, h: 84, image: \"raposa\" });\n  const pedras = SZGame2D.createSprite({ x: 229.5, y: 185, w: 161, h: 112, image: \"pedras\" });\n  SZGame2D.addToGroup(esconderijos, pedras);\n  const coruja = SZGame2D.createSprite({ x: 447, y: 187, w: 72, h: 81, image: \"coruja\" });\n  const flores = SZGame2D.createSprite({ x: 416.5, y: 138, w: 133, h: 144, image: \"flores\" });\n  SZGame2D.addToGroup(esconderijos, flores);\n  // Quando acontecer\n  SZGame2D.onGroupClick(esconderijos, function (escolhido) {\n    SZGame2D.setOpacity(escolhido, 0);\n    achados = achados + 1;\n  }, \"cliqueSprite\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawSprite(ctx, coelho);\n    SZGame2D.drawSprite(ctx, raposa);\n    SZGame2D.drawSprite(ctx, coruja);\n    SZGame2D.drawGroup(ctx, esconderijos);\n    SZGame2D.drawScore(ctx, \"Achados:\", achados, 18, 34, \"#173844\", 24);\n    if (achados >= 3) {\n      SZGame2D.drawLabel(ctx, \"Você achou todo mundo!\", 174, 72, \"#173844\", 27, \"left\");\n    }\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
             },
             "extraFiles": [],
             "assets": [
@@ -156,7 +156,7 @@
                     "type": "g2d:createImageSprite",
                     "varName": "raposa",
                     "x": 277,
-                    "y": 184,
+                    "y": 190,
                     "w": 66,
                     "h": 84,
                     "image": "raposa"
@@ -165,7 +165,7 @@
                     "type": "g2d:createImageSprite",
                     "varName": "pedras",
                     "x": 229.5,
-                    "y": 170,
+                    "y": 185,
                     "w": 161,
                     "h": 112,
                     "image": "pedras"
@@ -477,7 +477,7 @@
                                                       "shadow": {
                                                         "type": "sz_val_number",
                                                         "fields": {
-                                                          "NUM": 184
+                                                          "NUM": 190
                                                         }
                                                       }
                                                     },
@@ -518,7 +518,7 @@
                                                           "shadow": {
                                                             "type": "sz_val_number",
                                                             "fields": {
-                                                              "NUM": 170
+                                                              "NUM": 185
                                                             }
                                                           }
                                                         },
@@ -917,7 +917,7 @@
               "id": "pedras",
               "label": "nas pedras",
               "x": 229.5,
-              "y": 170,
+              "y": 185,
               "width": 161,
               "height": 112
             },
@@ -941,7 +941,7 @@
       "key": "caderno",
       "content": {
         "kind": "materials",
-        "title": "Caderno do Aluno — Cadê Todo Mundo?",
+        "title": "Caderno do Aluno: Cadê Todo Mundo?",
         "bookPreview": true,
         "items": []
       }
@@ -1031,7 +1031,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Cadê Todo Mundo?</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#c7effb\");\n  let achados = 0;\n  const esconderijos = SZGame2D.createGroup();\n  const coelho = SZGame2D.createSprite({ x: 110, y: 181, w: 54, h: 87, image: \"coelho\" });\n  const arbusto = SZGame2D.createSprite({ x: 60, y: 166, w: 154, h: 116, image: \"arbusto\" });\n  SZGame2D.addToGroup(esconderijos, arbusto);\n  const raposa = SZGame2D.createSprite({ x: 277, y: 184, w: 66, h: 84, image: \"raposa\" });\n  const pedras = SZGame2D.createSprite({ x: 229.5, y: 170, w: 161, h: 112, image: \"pedras\" });\n  SZGame2D.addToGroup(esconderijos, pedras);\n  const coruja = SZGame2D.createSprite({ x: 447, y: 187, w: 72, h: 81, image: \"coruja\" });\n  const flores = SZGame2D.createSprite({ x: 416.5, y: 138, w: 133, h: 144, image: \"flores\" });\n  SZGame2D.addToGroup(esconderijos, flores);\n  // Quando acontecer\n  SZGame2D.onGroupClick(esconderijos, function (escolhido) {\n\n  }, \"cliqueSprite\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawSprite(ctx, coelho);\n    SZGame2D.drawSprite(ctx, raposa);\n    SZGame2D.drawSprite(ctx, coruja);\n    SZGame2D.drawGroup(ctx, esconderijos);\n    SZGame2D.drawScore(ctx, \"Achados:\", achados, 18, 34, \"#173844\", 24);\n    if (achados >= 3) {\n      SZGame2D.drawLabel(ctx, \"Você achou todo mundo!\", 174, 72, \"#173844\", 27, \"left\");\n    }\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#c7effb\");\n  let achados = 0;\n  const esconderijos = SZGame2D.createGroup();\n  const coelho = SZGame2D.createSprite({ x: 110, y: 181, w: 54, h: 87, image: \"coelho\" });\n  const arbusto = SZGame2D.createSprite({ x: 60, y: 166, w: 154, h: 116, image: \"arbusto\" });\n  SZGame2D.addToGroup(esconderijos, arbusto);\n  const raposa = SZGame2D.createSprite({ x: 277, y: 190, w: 66, h: 84, image: \"raposa\" });\n  const pedras = SZGame2D.createSprite({ x: 229.5, y: 185, w: 161, h: 112, image: \"pedras\" });\n  SZGame2D.addToGroup(esconderijos, pedras);\n  const coruja = SZGame2D.createSprite({ x: 447, y: 187, w: 72, h: 81, image: \"coruja\" });\n  const flores = SZGame2D.createSprite({ x: 416.5, y: 138, w: 133, h: 144, image: \"flores\" });\n  SZGame2D.addToGroup(esconderijos, flores);\n  // Quando acontecer\n  SZGame2D.onGroupClick(esconderijos, function (escolhido) {\n\n  }, \"cliqueSprite\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawSprite(ctx, coelho);\n    SZGame2D.drawSprite(ctx, raposa);\n    SZGame2D.drawSprite(ctx, coruja);\n    SZGame2D.drawGroup(ctx, esconderijos);\n    SZGame2D.drawScore(ctx, \"Achados:\", achados, 18, 34, \"#173844\", 24);\n    if (achados >= 3) {\n      SZGame2D.drawLabel(ctx, \"Você achou todo mundo!\", 174, 72, \"#173844\", 27, \"left\");\n    }\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -1150,7 +1150,7 @@
                   "type": "g2d:createImageSprite",
                   "varName": "raposa",
                   "x": 277,
-                  "y": 184,
+                  "y": 190,
                   "w": 66,
                   "h": 84,
                   "image": "raposa"
@@ -1159,7 +1159,7 @@
                   "type": "g2d:createImageSprite",
                   "varName": "pedras",
                   "x": 229.5,
-                  "y": 170,
+                  "y": 185,
                   "w": 161,
                   "h": 112,
                   "image": "pedras"
@@ -1449,7 +1449,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 184
+                                                        "NUM": 190
                                                       }
                                                     }
                                                   },
@@ -1490,7 +1490,7 @@
                                                         "shadow": {
                                                           "type": "sz_val_number",
                                                           "fields": {
-                                                            "NUM": 170
+                                                            "NUM": 185
                                                           }
                                                         }
                                                       },

@@ -1,11 +1,7 @@
 /** Gera apenas os três manifestos derivados deste curso. Não altera catálogo nem outros cursos. */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import {
-  JARDIM_BASE_ESCONDERIJOS,
-  JARDIM_PARES,
-  jardimSpriteRect,
-} from '../../../packages/studio/src/arte/jardim-assets'
+import { JARDIM_PARES, jardimSpriteRect } from '../../../packages/studio/src/arte/jardim-assets'
 import {
   montarProjetoCadeTodoMundo,
   montarProjetoCadeTodoMundoCompleto,
@@ -102,7 +98,7 @@ const aula1 = {
           project: montarProjetoCadeTodoMundoCompleto(),
           stage: { width: 640, height: 360 },
           targets: JARDIM_PARES.map(({ esconderijo, centroX }) => {
-            const { x, y, w, h } = jardimSpriteRect(esconderijo, centroX, JARDIM_BASE_ESCONDERIJOS)
+            const { x, y, w, h } = jardimSpriteRect(esconderijo, centroX)
             return {
               id: esconderijo,
               label: esconderijo === 'arbusto' ? 'no arbusto' : `nas ${esconderijo}`,
@@ -124,7 +120,7 @@ const aula1 = {
       key: 'caderno',
       content: {
         kind: 'materials',
-        title: 'Caderno do Aluno — Cadê Todo Mundo?',
+        title: 'Caderno do Aluno: Cadê Todo Mundo?',
         bookPreview: true,
         items: [],
       },

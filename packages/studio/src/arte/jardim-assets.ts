@@ -25,12 +25,23 @@ export const JARDIM_PARES = [
   { personagem: 'coruja', esconderijo: 'flores', centroX: 483 },
 ] as const
 
-export const JARDIM_BASE_PERSONAGENS = 268
-export const JARDIM_BASE_ESCONDERIJOS = 282
+const JARDIM_SPRITE_Y: Record<JardimSpriteName, number> = {
+  coelho: 181,
+  arbusto: 166,
+  raposa: 190,
+  pedras: 185,
+  coruja: 187,
+  flores: 138,
+}
 
-export function jardimSpriteRect(name: JardimSpriteName, centroX: number, baseY: number) {
+export function jardimSpriteRect(name: JardimSpriteName, centroX: number, baseY?: number) {
   const { width, height } = JARDIM_ASSETS[name]
-  return { x: centroX - width / 2, y: baseY - height, w: width, h: height }
+  return {
+    x: centroX - width / 2,
+    y: baseY === undefined ? JARDIM_SPRITE_Y[name] : baseY - height,
+    w: width,
+    h: height,
+  }
 }
 
 export function jardimSvg(name: JardimAssetName): string {

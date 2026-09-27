@@ -3,10 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   JARDIM_ASSETS,
-  JARDIM_BASE_ESCONDERIJOS,
-  JARDIM_BASE_PERSONAGENS,
   JARDIM_PARES,
-  jardimSpriteRect,
   jardimSvg,
 } from '../../../packages/studio/src/arte/jardim-assets'
 import { sanitizeProjectAssets } from '../../../packages/studio/src/core/project'
@@ -67,20 +64,28 @@ describe('projeto inicial Cadê Todo Mundo?', () => {
   })
 
   test('personagens e esconderijos usam as dimensões e posições da arte nova', () => {
+    const expectedY = {
+      coelho: 181,
+      arbusto: 166,
+      raposa: 190,
+      pedras: 185,
+      coruja: 187,
+      flores: 138,
+    }
     const sprites = IR_CADE_TODO_MUNDO.behavior.start.filter(
       (statement) => statement.type === 'g2d:createImageSprite',
     )
     for (const { personagem, esconderijo, centroX } of JARDIM_PARES) {
-      for (const [name, baseY] of [
-        [personagem, JARDIM_BASE_PERSONAGENS],
-        [esconderijo, JARDIM_BASE_ESCONDERIJOS],
-      ] as const) {
+      for (const name of [personagem, esconderijo]) {
         expect(
           sprites.find(
             (sprite) => sprite.type === 'g2d:createImageSprite' && sprite.varName === name,
           ),
         ).toMatchObject({
-          ...jardimSpriteRect(name, centroX, baseY),
+          x: centroX - JARDIM_ASSETS[name].width / 2,
+          y: expectedY[name],
+          w: JARDIM_ASSETS[name].width,
+          h: JARDIM_ASSETS[name].height,
           image: name,
         })
       }

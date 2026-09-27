@@ -1,7 +1,5 @@
 import {
   JARDIM_ASSETS,
-  JARDIM_BASE_ESCONDERIJOS,
-  JARDIM_BASE_PERSONAGENS,
   JARDIM_PARES,
   type JardimAssetName,
   jardimSpriteRect,
@@ -46,13 +44,13 @@ const criarSprites: JSStatement[] = JARDIM_PARES.flatMap(({ personagem, esconder
   {
     type: 'g2d:createImageSprite',
     varName: personagem,
-    ...jardimSpriteRect(personagem, centroX, JARDIM_BASE_PERSONAGENS),
+    ...jardimSpriteRect(personagem, centroX),
     image: personagem,
   },
   {
     type: 'g2d:createImageSprite',
     varName: esconderijo,
-    ...jardimSpriteRect(esconderijo, centroX, JARDIM_BASE_ESCONDERIJOS),
+    ...jardimSpriteRect(esconderijo, centroX),
     image: esconderijo,
   },
   { type: 'g2d:addToGroup', spriteVar: esconderijo, groupVar: 'esconderijos' },
@@ -171,7 +169,7 @@ export function montarProjetoCadeTodoMundoCompleto(): Project {
   return {
     ...montarProjetoCadeTodoMundo(),
     id: 'demonstracao-cade-todo-mundo',
-    name: 'Cadê Todo Mundo? — jogo pronto',
+    name: 'Cadê Todo Mundo? (jogo pronto)',
     ir,
     blocksState: buildWorkspaceStateFromIR(ir),
     files: generateProjectFiles({ ir, projectName: NOME }),

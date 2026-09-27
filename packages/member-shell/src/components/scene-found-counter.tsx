@@ -1,13 +1,7 @@
 'use client'
 
 import type { SceneAction, SceneState } from '@sistemazero/core/learning/scene'
-import {
-  JARDIM_BASE_ESCONDERIJOS,
-  JARDIM_BASE_PERSONAGENS,
-  JARDIM_PARES,
-  jardimSpriteRect,
-  jardimSvgUrl,
-} from '@sistemazero/studio/arte'
+import { JARDIM_PARES, jardimSpriteRect, jardimSvgUrl } from '@sistemazero/studio/arte'
 import { SceneButton } from './exploration-stage'
 import { SCENE_VIEW, SceneCanvas, Texto } from './scene-canvas'
 
@@ -51,7 +45,7 @@ export function FoundCounterStage({
               </span>
             </button>
             {JARDIM_PARES.map((par, index) => {
-              const cover = jardimSpriteRect(par.esconderijo, par.centroX, JARDIM_BASE_ESCONDERIJOS)
+              const cover = jardimSpriteRect(par.esconderijo, par.centroX)
               const names = ['arbusto', 'pedras', 'flores'] as const
               const visible = foundIds.includes(index)
               return (
@@ -87,8 +81,8 @@ export function FoundCounterStage({
       />
       {JARDIM_PARES.map((par, index) => {
         const visible = foundIds.includes(index)
-        const character = jardimSpriteRect(par.personagem, par.centroX, JARDIM_BASE_PERSONAGENS)
-        const cover = jardimSpriteRect(par.esconderijo, par.centroX, JARDIM_BASE_ESCONDERIJOS)
+        const character = jardimSpriteRect(par.personagem, par.centroX)
+        const cover = jardimSpriteRect(par.esconderijo, par.centroX)
         return visible ? (
           <image
             key={par.personagem}

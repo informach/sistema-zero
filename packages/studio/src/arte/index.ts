@@ -42,8 +42,6 @@ export {
 export type { JardimAssetName, JardimSpriteName } from './jardim-assets'
 export {
   JARDIM_ASSETS,
-  JARDIM_BASE_ESCONDERIJOS,
-  JARDIM_BASE_PERSONAGENS,
   JARDIM_PARES,
   jardimSpriteRect,
   jardimSvg,

@@ -21,10 +21,16 @@ export function MaterialsBookPreview({ content }: { content: MaterialsBlock }) {
   const pdf = firstPdf(content)
   return (
     <div className="sz-lesson-block space-y-3 scroll-mt-6">
-      <h3 className="flex items-center gap-2 font-semibold">
-        <BookOpenText aria-hidden className="size-5" />
-        Folheie o caderno
-      </h3>
+      <div className="space-y-2">
+        <p
+          className="sz-lesson-chip inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary"
+          data-chip="book"
+        >
+          <BookOpenText size={14} aria-hidden />
+          Leia
+        </p>
+        <h3 className="font-semibold text-xl">{content.title ?? 'Caderno do Aluno'}</h3>
+      </div>
       {pdf && player ? (
         <PdfBookView
           pdfUrl={lessonAttachmentUrl(player.courseSlug, player.lessonId, pdf.attachmentId)}

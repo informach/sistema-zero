@@ -1558,6 +1558,11 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   --unit-fg: oklch(1 0 0);
   --unit-bg: var(--unit);
 }
+.sz-lesson-sections .sz-lesson-chip[data-chip="book"] {
+  --unit: var(--kids-cyan);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+}
 
 /* MATERIAIS COMPLEMENTARES. O desenho é UM só no member-shell (`MaterialsBlockView`, que não
    tem cor nenhuma por dentro) e cada app o veste por estes ganchos — a mesma receita da

@@ -27,10 +27,11 @@ for (const input of ['keyboard', 'pointer'] as const) {
 for (const viewport of [
   { width: 1280, height: 800 },
   { width: 390, height: 844 },
+  { width: 844, height: 390 },
 ]) {
   test(`a criança encontra os três personagens tocando o jogo real em ${viewport.width}px`, async ({
     page,
-  }) => {
+  }, info) => {
     await page.setViewportSize(viewport)
     await page.goto('/project-play')
     const restart = page.getByRole('button', { name: 'Jogar de novo' })
@@ -40,7 +41,7 @@ for (const viewport of [
     )
 
     const canvas = page
-      .frameLocator('iframe[title="Cadê Todo Mundo? — jogo pronto"]')
+      .frameLocator('iframe[title="Cadê Todo Mundo? (jogo pronto)"]')
       .locator('canvas')
     await expect(canvas).toBeVisible()
     const clickTarget = async (x: number, y: number) => {
@@ -62,7 +63,16 @@ for (const viewport of [
     )
 
     await page.getByRole('button', { name: 'Ampliar jogo' }).click()
-    await expect(page.getByRole('dialog', { name: 'Jogo ampliado' })).toBeVisible()
+    const expanded = page.getByRole('dialog', { name: 'Jogo ampliado' })
+    await expect(expanded).toBeVisible()
+    const bounds = await expanded.boundingBox()
+    expect(bounds).toEqual({ x: 0, y: 0, ...viewport })
+    expect(
+      await expanded.evaluate((element) =>
+        element.contains(document.elementFromPoint(1, innerHeight - 1)),
+      ),
+    ).toBe(true)
+    await page.screenshot({ path: info.outputPath('jogo-ampliado.png') })
     await page.keyboard.press('Escape')
     await expect(page.getByRole('dialog', { name: 'Jogo ampliado' })).toHaveCount(0)
     await restart.click()

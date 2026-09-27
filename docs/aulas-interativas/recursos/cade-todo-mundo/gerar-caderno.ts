@@ -15,8 +15,6 @@ import { basename, dirname, join, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
   JARDIM_ASSETS,
-  JARDIM_BASE_ESCONDERIJOS,
-  JARDIM_BASE_PERSONAGENS,
   JARDIM_PARES,
   type JardimSpriteName,
   jardimSpriteRect,
@@ -35,21 +33,19 @@ const fontFaces = [
   `@font-face { font-family: 'Baloo 2'; src: url(data:font/woff2;base64,${baloo.base64}) format('woff2'); font-style: normal; font-weight: 400 800; }`,
 ].join('\n')
 
-const item = (name: JardimSpriteName, centroX: number, baseY: number) => {
+const item = (name: JardimSpriteName, centroX: number) => {
   const asset = JARDIM_ASSETS[name]
-  const { x, y } = jardimSpriteRect(name, centroX, baseY)
+  const { x, y } = jardimSpriteRect(name, centroX)
   return `<svg x="${x}" y="${y}" width="${asset.width}" height="${asset.height}" viewBox="${asset.viewBox}">${asset.body}</svg>`
 }
 
 function scene(revealed: boolean) {
-  const characters = JARDIM_PARES.map(({ personagem, centroX }) =>
-    item(personagem, centroX, JARDIM_BASE_PERSONAGENS),
-  ).join('')
+  const characters = JARDIM_PARES.map(({ personagem, centroX }) => item(personagem, centroX)).join(
+    '',
+  )
   const hiding = revealed
     ? ''
-    : JARDIM_PARES.map(({ esconderijo, centroX }) =>
-        item(esconderijo, centroX, JARDIM_BASE_ESCONDERIJOS),
-      ).join('')
+    : JARDIM_PARES.map(({ esconderijo, centroX }) => item(esconderijo, centroX)).join('')
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">${JARDIM_ASSETS.jardim.body}${characters}${hiding}</svg>`
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
 }
