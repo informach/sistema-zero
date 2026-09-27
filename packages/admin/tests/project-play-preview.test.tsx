@@ -57,6 +57,15 @@ async function mount(initial: LearningAnswers = {}, participation = false) {
     if (!source) throw new Error('Iframe ausente')
     await act(async () => window.dispatchEvent(new MessageEvent('message', { data, source })))
   }
+  // O compilador do player é assíncrono. O load do placeholder não deixa o
+  // modo de participação pronto para reiniciar; aguarde o documento jogável.
+  const deadline = Date.now() + 3000
+  while (host.querySelector('iframe')?.getAttribute('aria-busy') !== 'false') {
+    if (Date.now() >= deadline) throw new Error('O documento do jogo não ficou pronto.')
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 5))
+    })
+  }
   await message({ type: 'sz:g2d:ready' })
   await act(async () => host.querySelector('iframe')?.dispatchEvent(new Event('load')))
   return {
