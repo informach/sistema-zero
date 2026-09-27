@@ -61,6 +61,9 @@ jobs:
       - name: Instalar dependências (lockfile congelado)
         run: bun install --frozen-lockfile
 
+      - name: Verificar barreira de manutenção
+        run: bun test scripts/release
+
       - name: Auditar dependências da imagem do Studio Pro
         working-directory: packages/studio-runtime
         run: bun run audit:image

@@ -1,0 +1,1 @@
+ALTER TABLE "members"."lesson_drafts" ADD COLUMN "previous_document" jsonb;

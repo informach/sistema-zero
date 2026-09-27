@@ -3,17 +3,18 @@
 # mecanismo do deploy-staging: GraphQL `serviceInstanceDeployV2` com o sha da
 # MAIN. Segurança: só deploya serviço que JÁ TEM deployment no environment
 # production (nunca "estreia" um serviço sem env configurada — ex.: hub).
-# Uso: gh workflow run "Deploy produção" --ref staging -f services=all
-#      (ou CSV: -f services=funnel,auth)
+# Uso: informar o SHA completo de main e os serviços da onda explicitamente.
 name: Deploy produção
 
 on:
   workflow_dispatch:
     inputs:
       services:
-        description: 'Serviços: "all" (tudo que já roda em produção) ou CSV (ex.: funnel,auth)'
-        required: false
-        default: 'all'
+        description: 'Serviços desta onda, em CSV (ex.: catalog,members)'
+        required: true
+      expected_sha:
+        description: 'SHA completo de main aprovado para esta onda'
+        required: true
 
 concurrency:
   group: deploy-production
@@ -29,6 +30,7 @@ jobs:
       RAILWAY_API: https://backboard.railway.com/graphql/v2
       PROJECT_ID: 415d5a1c-5f75-432c-8445-b395d0977ce3
       FORCED: ${{ github.event.inputs.services }}
+      EXPECTED_SHA: ${{ github.event.inputs.expected_sha }}
       HELPDESK_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_SERVICE_ID }}
       HELPDESK_APP_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_APP_SERVICE_ID }}
     steps:
@@ -36,7 +38,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          gql() { curl -sS -X POST -H "Authorization: Bearer $RAILWAY_TOKEN" -H 'content-type: application/json' -d "$1" "$RAILWAY_API"; }
+          gql() {
+            local result
+            result=$(curl --fail-with-body -sS -X POST -H "Authorization: Bearer $RAILWAY_TOKEN" -H 'content-type: application/json' -d "$1" "$RAILWAY_API")
+            echo "$result" | jq -e '(.errors // [] | length) == 0 and .data != null' >/dev/null || { echo '::error::Railway recusou a operação' >&2; return 1; }
+            echo "$result"
+          }
 
           # ids dos serviços no Railway (não são segredo; espelham o ci.yml)
           declare -A SVC_ID=(
@@ -70,10 +77,13 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/commits/main" | jq -r '.sha')
           if [ -z "$SHA" ] || [ "$SHA" = "null" ]; then echo "::error::não resolvi o sha da main"; exit 1; fi
           echo "sha da main: $SHA"
+          if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]] || [ "$SHA" != "$EXPECTED_SHA" ]; then
+            echo '::error::main difere do SHA aprovado; nenhum deploy foi disparado'; exit 1
+          fi
 
           declare -A WANT=()
-          if [ "${FORCED:-all}" = "all" ]; then
-            for s in "${!SVC_ID[@]}"; do WANT[$s]=1; done
+          if [ -z "$FORCED" ] || [ "$FORCED" = 'all' ]; then
+            echo '::error::selecione os serviços explicitamente por onda'; exit 1
           else
             IFS=',' read -ra REQ <<< "$FORCED"
             for s in "${REQ[@]}"; do
@@ -84,20 +94,26 @@ jobs:
 
           # Gate de segurança: só redeploya quem JÁ tem deployment em produção.
           declare -A DEP=()
+          jq -n --arg sha "$SHA" --arg environment "$ENV_ID" '{expectedSha:$sha,environmentId:$environment,before:{},after:{}}' > production-manifest.json
+          # Validar TODOS os serviços antes da primeira mutação. Um último deployment
+          # SKIPPED não substitui o deployment efetivamente ativo.
           for s in "${!WANT[@]}"; do
-            DQ=$(jq -nc --arg sid "${SVC_ID[$s]}" --arg eid "$ENV_ID" --arg pid "$PROJECT_ID" \
-              '{query:"query($sid:String!,$eid:String!,$pid:String!){deployments(first:1,input:{serviceId:$sid,environmentId:$eid,projectId:$pid}){edges{node{id}}}}",variables:{sid:$sid,eid:$eid,pid:$pid}}')
-            EXISTS=$(gql "$DQ" | jq -r '.data.deployments.edges | length')
-            if [ "$EXISTS" = "0" ]; then
-              echo "  $s: sem deployment em produção — PULADO (serviço ainda não estreou)"
-              continue
-            fi
+            DQ=$(jq -nc --arg sid "${SVC_ID[$s]}" --arg eid "$ENV_ID" \
+              '{query:"query($sid:String!,$eid:String!){serviceInstance(serviceId:$sid,environmentId:$eid){activeDeployments{id status meta}}}",variables:{sid:$sid,eid:$eid}}')
+            BEFORE=$(gql "$DQ" | jq '.data.serviceInstance.activeDeployments')
+            [ "$(echo "$BEFORE" | jq '[.[] | select(.status=="SUCCESS")] | length')" -ge 1 ] || { echo "::error::$s não tem deployment ativo saudável"; exit 1; }
+            jq --arg service "$s" --argjson before "$BEFORE" '.before[$service]=$before' production-manifest.json > manifest.tmp
+            mv manifest.tmp production-manifest.json
+          done
+          for s in "${!WANT[@]}"; do
             BODY=$(jq -nc --arg sid "${SVC_ID[$s]}" --arg eid "$ENV_ID" --arg sha "$SHA" \
               '{query:"mutation($s:String!,$e:String!,$c:String){serviceInstanceDeployV2(serviceId:$s,environmentId:$e,commitSha:$c)}",variables:{s:$sid,e:$eid,c:$sha}}')
             RESP=$(gql "$BODY")
             ID=$(echo "$RESP" | jq -r '.data.serviceInstanceDeployV2 // empty')
             if [ -z "$ID" ]; then echo "::error::deploy de $s falhou ao disparar: $(echo "$RESP" | jq -c '.errors // .')"; exit 1; fi
             DEP[$s]="$ID"
+            jq --arg service "$s" --arg id "$ID" '.after[$service]={id:$id,status:"REQUESTED"}' production-manifest.json > manifest.tmp
+            mv manifest.tmp production-manifest.json
             echo "  $s → deployment $ID"
           done
 
@@ -109,12 +125,17 @@ jobs:
             sleep 20
             PENDING=0; LINE=""
             for s in "${!DEP[@]}"; do
-              Q=$(jq -nc --arg id "${DEP[$s]}" '{query:"query($id:String!){deployment(id:$id){status}}",variables:{id:$id}}')
-              ST=$(gql "$Q" | jq -r '.data.deployment.status // "?"')
+              Q=$(jq -nc --arg id "${DEP[$s]}" '{query:"query($id:String!){deployment(id:$id){id status meta}}",variables:{id:$id}}')
+              CURRENT=$(gql "$Q" | jq '.data.deployment')
+              ST=$(echo "$CURRENT" | jq -r '.status // "?"')
+              jq --arg service "$s" --argjson current "$CURRENT" '.after[$service]=$current' production-manifest.json > manifest.tmp
+              mv manifest.tmp production-manifest.json
               LINE="$LINE $s=$ST"
               case "$ST" in
-                SUCCESS) ;;
-                FAILED|CRASHED|REMOVED) FAIL=1 ;;
+                SUCCESS)
+                  [ "$(echo "$CURRENT" | jq -r '.meta.commitHash')" = "$EXPECTED_SHA" ] || { echo "::error::$s está em SHA divergente"; FAIL=1; }
+                  ;;
+                FAILED|CRASHED|REMOVED|SKIPPED|CANCELED|CANCELLED) FAIL=1 ;;
                 *) PENDING=1 ;;
               esac
             done
@@ -122,4 +143,19 @@ jobs:
             [ "$PENDING" -eq 0 ] && break
           done
           if [ "$FAIL" -eq 1 ] || [ "$PENDING" -eq 1 ]; then echo "::error::deploy de produção não convergiu"; exit 1; fi
+          for s in "${!DEP[@]}"; do
+            Q=$(jq -nc --arg sid "${SVC_ID[$s]}" --arg eid "$ENV_ID" '{query:"query($sid:String!,$eid:String!){serviceInstance(serviceId:$sid,environmentId:$eid){activeDeployments{id status meta}}}",variables:{sid:$sid,eid:$eid}}')
+            ACTIVE=$(gql "$Q" | jq '.data.serviceInstance.activeDeployments')
+            echo "$ACTIVE" | jq -e --arg id "${DEP[$s]}" --arg sha "$EXPECTED_SHA" 'any(.[]; .id==$id and .status=="SUCCESS" and .meta.commitHash==$sha)' >/dev/null || { echo "::error::$s não ativou o deployment esperado"; exit 1; }
+            jq --arg service "$s" --argjson active "$ACTIVE" '.after[$service].activeDeployments=$active' production-manifest.json > manifest.tmp
+            mv manifest.tmp production-manifest.json
+          done
           echo "produção atualizada ✅"
+      - name: Guardar manifesto da onda
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-wave-${{ github.run_id }}
+          path: production-manifest.json
+          if-no-files-found: ignore
+          retention-days: 30

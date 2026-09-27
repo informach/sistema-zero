@@ -12,7 +12,8 @@
       "/packages/ui/**",
       "/bun.lock",
       "/package.json",
-      "/.dockerignore"
+      "/.dockerignore",
+      "/scripts/release/**"
     ]
   },
   "deploy": {

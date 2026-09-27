@@ -533,6 +533,111 @@
       "when": 1788738340499,
       "tag": "0075_creation-format-version",
       "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1788814681805,
+      "tag": "0076_creator_practice",
+      "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1788815876554,
+      "tag": "0077_pensa_molda_destination",
+      "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1788894736523,
+      "tag": "0078_aulas_interativas",
+      "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1788894738267,
+      "tag": "0079_remove_practice",
+      "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "7",
+      "when": 1788894739540,
+      "tag": "0080_backfill_lesson_sections",
+      "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1788911752205,
+      "tag": "0081_special_inertia",
+      "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1789063697703,
+      "tag": "0082_section_progress",
+      "breakpoints": true
+    },
+    {
+      "idx": 83,
+      "version": "7",
+      "when": 1789070492192,
+      "tag": "0083_bloco_dialogo",
+      "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1789177695801,
+      "tag": "0084_kids_recados_evidence",
+      "breakpoints": true
+    },
+    {
+      "idx": 85,
+      "version": "7",
+      "when": 1789177707494,
+      "tag": "0085_explicit_section_criteria",
+      "breakpoints": true
+    },
+    {
+      "idx": 86,
+      "version": "7",
+      "when": 1789225708714,
+      "tag": "0086_round_captain_stacy",
+      "breakpoints": true
+    },
+    {
+      "idx": 87,
+      "version": "7",
+      "when": 1789593444391,
+      "tag": "0087_married_sunfire",
+      "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1789659402727,
+      "tag": "0088_profile_palette",
+      "breakpoints": true
+    },
+    {
+      "idx": 89,
+      "version": "7",
+      "when": 1789729437431,
+      "tag": "0089_lucky_daimon_hellstrom",
+      "breakpoints": true
+    },
+    {
+      "idx": 90,
+      "version": "7",
+      "when": 1789814248293,
+      "tag": "0090_bloco_materiais",
+      "breakpoints": true
     }
   ]
 }

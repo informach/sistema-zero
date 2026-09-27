@@ -37,6 +37,7 @@ COPY --from=build /app/packages/member-shell/scripts/boot-check.mjs ./packages/c
 # Cache do otimizador de imagens do Next: a árvore é copiada como root e o
 # processo roda como `node` — sem isso todo next/image loga EACCES em prod.
 RUN mkdir -p packages/community-kids/.next/cache && chown -R node:node packages/community-kids/.next
+COPY --from=build /app/scripts/release/start.mjs ./scripts/release/start.mjs
 USER node
 EXPOSE 3008
-CMD ["node", "packages/community-kids/boot-check.mjs", "--require-creation-cleanup"]
+CMD ["node","scripts/release/start.mjs","packages/community-kids/boot-check.mjs","--require-creation-cleanup"]

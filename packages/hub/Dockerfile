@@ -19,4 +19,4 @@ EXPOSE 3010
 # Roda como usuário sem privilégios (a imagem oven/bun já provê o usuário `bun`).
 USER bun
 
-CMD ["bun", "run", "--filter", "@sistemazero/hub", "start"]
+CMD ["bun","scripts/release/start.mjs","packages/hub/src/index.ts"]
