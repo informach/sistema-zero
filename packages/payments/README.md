@@ -171,8 +171,9 @@ duplicada.
 
 ## Deploy (Railway)
 
-O deploy usa `Dockerfile` (raiz: `packages/payments/Dockerfile`) + `railway.json`
-(na raiz do repo — os demais serviços têm o seu em `packages/*/railway.json`).
+O deploy usa `packages/payments/Dockerfile` e
+[a configuração IaC do serviço](../../.railway/services/payments.json), aplicada
+por [`.railway/railway.ts`](../../.railway/railway.ts) antes da publicação.
 O healthcheck aponta para **`/readyz`** (readiness: banco respondendo + warm-up
 da Efí concluído) — a réplica nova só recebe tráfego com a Efí quente (sem isso
 o redeploy reintroduzia o 502 do 1º Pix frio). Passo a passo:
@@ -191,7 +192,7 @@ o redeploy reintroduzia o 502 do 1º Pix frio). Passo a passo:
    IP privado do gateway); gateway via domínio público → `TRUST_PROXY=true` +
    `TRUSTED_PROXY_HOPS=1`. As demais alavancas têm defaults seguros e estão
    documentadas no `.env.example`; o boot valida as combinações perigosas.
-3. O `railway.json` roda as migrations no **pre-deploy** (`db:migrate`) e sobe
+3. A configuração Railway roda as migrations no **pre-deploy** (`db:migrate`) e sobe
    com `start`. Gere/commite as migrations antes: `bun run db:generate`.
    ⚠️ **Disciplina de migrations (expand-then-contract):** o pre-deploy roda com
    a réplica ANTIGA ainda servindo tráfego — toda migration precisa ser

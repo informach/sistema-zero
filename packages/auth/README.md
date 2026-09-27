@@ -87,7 +87,7 @@ gateway → messaging; sem URL/segredo o envio é no-op) e `AUTH_INTERNAL_TOKEN`
 
 ## Deploy
 
-Serviço Railway separado via [`railway.json`](./railway.json) (Dockerfile
+Serviço Railway separado via [configuração IaC](../../.railway/services/auth.json) (Dockerfile
 `oven/bun`, build context = raiz do repo, `preDeployCommand = db:migrate`). Defina
 `DATABASE_URL` apontando para o **mesmo Postgres do payments/funnel** (o serviço é
 dono do **schema `auth`**, criado na migration), `JWT_ALG` + chave/segredo,

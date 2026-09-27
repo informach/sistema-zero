@@ -60,13 +60,17 @@ test('templates de indicação prometem o novo curso sem falsificar resgates his
 })
 
 test('deploy da mensageria semeia as novas versões antes dos envios', async () => {
-  const railway = (await Bun.file(new URL('../railway.json', import.meta.url)).json()) as {
-    deploy: { preDeployCommand: string }
+  const railway = (await Bun.file(
+    new URL('../../../.railway/services/messaging.json', import.meta.url),
+  ).json()) as {
+    deploy: { preDeployCommand: string[] }
   }
   const manifest = (await Bun.file(new URL('../package.json', import.meta.url)).json()) as {
     scripts: Record<string, string>
   }
-  expect(railway.deploy.preDeployCommand).toContain('db:deploy')
+  expect(railway.deploy.preDeployCommand).toContain(
+    'bun run --filter @sistemazero/messaging db:deploy',
+  )
   expect(manifest.scripts['db:deploy']).toContain('db:migrate')
   expect(manifest.scripts['db:deploy']).toContain('templates:seed')
 })

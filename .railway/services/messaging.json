@@ -1,5 +1,4 @@
 {
-  "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "DOCKERFILE",
     "dockerfilePath": "packages/messaging/Dockerfile",
@@ -8,14 +7,14 @@
       "/packages/core/**",
       "/bun.lock",
       "/package.json",
-      "/.dockerignore"
+      "/.dockerignore",
+      "/.railway/**"
     ]
   },
   "deploy": {
-    "preDeployCommand": "bun run --filter @sistemazero/messaging db:deploy",
+    "preDeployCommand": ["bun run --filter @sistemazero/messaging db:deploy"],
     "startCommand": "bun run --filter @sistemazero/messaging start",
     "healthcheckPath": "/readyz",
-    "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
 }

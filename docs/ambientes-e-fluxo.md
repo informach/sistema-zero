@@ -9,6 +9,7 @@ A `main` é **protegida por ruleset** no GitHub (`protege-main`): push direto é
 rejeitado, force-push e deleção bloqueados, e **todo merge exige PR com os sete
 checks de CI verdes**: `ci`, `community-kids-e2e`, os três shards
 `studio-e2e-chromium-1/2/3`, `studio-e2e-firefox` e `studio-e2e-webkit`.
+Também exige `railway-config-plan`, que valida o plano de infraestrutura de produção.
 O ruleset permite apenas merge commit em main, sem squash ou rebase
 (0 aprovações exigidas — time solo; o GitHub não permite aprovar o
 próprio PR). A branch **`staging`** é a integração contínua do dia a dia.
@@ -18,7 +19,7 @@ feature/minha-coisa          (a partir da staging)
    │  PR → staging           (CI roda no push da staging — canário)
    ▼
 staging                      → deploy no AMBIENTE staging do Railway → testar
-   │  PR → main              (sete checks obrigatórios no ruleset)
+   │  PR → main              (checks de aplicação e infraestrutura)
    ▼
 main                         → deploy em PRODUÇÃO
    │  sincronização automática (fast-forward)
@@ -118,7 +119,8 @@ put` do lado correspondente (os dois precisam bater, senão 401 a cada 5 min).
 3. Abrir o PR `staging` → `main`, aguardar todos os checks e usar **Create a merge
    commit**. Pela CLI: `gh pr create --base main --head staging`, seguido de
    `gh pr merge --merge <número-do-PR>` após os checks.
-4. O Railway publica automaticamente os serviços afetados em produção. Acompanhar
+4. O workflow de configuração aplica o plano de produção salvo no PR. O Railway
+   aguarda os workflows de main (**Wait for CI**) e publica automaticamente os serviços afetados. Acompanhar
    os deployments até `SUCCESS` e conferir os healthchecks do que mudou.
 5. Conferir o workflow **Sincronizar staging**. Ao terminar, sem trabalho novo
    concorrente, main e staging apontam para o mesmo commit.
@@ -163,29 +165,37 @@ CORS e anexos do Admin. Um merge direto com todos os serviços em paralelo não 
 - **Staging — AUTOMÁTICO via GitHub Actions**: push/merge na branch `staging` roda
   o CI e, **se verde**, o job `deploy-staging` (no próprio `ci.yml`) dispara o
   deploy **só dos serviços afetados pelo diff** (mapa que espelha os
-  `watchPatterns` dos `railway.json`; `bun.lock`/`package.json` → todos; `core` →
+  `watchPatterns` de `.railway/services/*.json`; `.railway/`, `bun.lock` e
+  `package.json` → todos; `core` →
   backends+funnel+fiscal; `ui` → admin/community/community-kids/funnel;
   `member-shell` → community/community-kids). O mapa já cobre **community-kids** e
   **fiscal**, **hub**, **referrals**, **marketing** e **marketing-app**. Helpdesk e
   Helpdesk App usam os IDs das variáveis do repositório. As bibliotecas Studio,
   Pinta, Pensa, Molda e Helpdesk Contracts acionam seus consumidores; scripts de
   manutenção acionam Members, Hub e os três apps que os empacotam.
-  Usa o secret `RAILWAY_TOKEN`
+  Antes dos deployments, aplica o plano de configuração de staging. O secret
+  `RAILWAY_TOKEN` é passado à CLI como `RAILWAY_API_TOKEN`, com projeto e ambiente
+  explícitos. Para publicar as aplicações, usa o mesmo secret `RAILWAY_TOKEN`
   (token de conta do Railway) e espera os healthchecks convergirem. Forçar um
   deploy: `gh workflow run CI --ref staging -f services=all` (ou CSV:
   `-f services=funnel,auth`). Em staging, os gatilhos nativos do Railway ficam
-  desligados. Os três remanescentes de Hub e Helpdesk foram removidos em
+  desligados, e a origem dos serviços aponta para a branch staging, inclusive
+  para deployments iniciados pelo apply de uma alteração de configuração.
+  Os três remanescentes de Hub e Helpdesk foram removidos em
   27/09/2026 para evitar deploy duplicado ou anterior à conclusão dos testes.
-- **Produção**: merge na `main` → deploy nativo do Railway, conforme os
+- **Produção**: merge na `main` → aplicação do plano IaC salvo no PR → deploy
+  nativo do Railway com **Wait for CI**, conforme os
   `watchPatterns` de cada serviço. Estão ligados à main: api-gateway, auth,
   catalog, payments, members, messaging, funnel, admin, community,
   community-kids, hub, referrals, marketing, marketing-app, helpdesk e
   helpdesk-app. A configuração foi conferida e corrigida em 27/09/2026:
   Helpdesk deixou de acompanhar staging em produção; Indicações e Marketing
   receberam os gatilhos que faltavam. Fiscal permanece fora deste ajuste.
-  Helpdesk, Helpdesk App e Indicações já usam configuração explícita no Railway;
-  seus padrões de arquivos também devem acompanhar mudanças de dependências.
-  Os padrões do Helpdesk foram alinhados com Core e Helpdesk Contracts nesta revisão.
+  Todos os 17 serviços da aplicação usam `.railway/railway.ts` e as definições
+  em `.railway/services/`, incluindo o Fiscal sem mudar seu gatilho manual.
+  O workflow `railway-config.yml` aplica o plano exato do PR com
+  o token existente e destino production explícito; não deve ser cancelado. Mudanças de estado remoto
+  ou da árvore de configuração invalidam o plano e interrompem a publicação.
 - **Deploy de produção por ondas ou recuperação**: o workflow manual
   `deploy-production.yml` exige CSV explícito e o SHA completo de main:
   `gh workflow run deploy-production.yml --ref main -f services=members -f expected_sha=<SHA-completo>`.
@@ -197,16 +207,18 @@ CORS e anexos do Admin. Um merge direto com todos os serviços em paralelo não 
   declaradas como `ARG`** (ver o Dockerfile do funnel — envs `PUBLIC_*`/
   `FUNNEL_PUBLIC_URL` são inlined no `astro build`).
 
-### Prazo de manutenção da configuração Railway
+### Configuração Railway em IaC
 
-O Railway mantém a leitura dos arquivos legados `railway.json` nos serviços que
-já os utilizam, mas anunciou o encerramento em **01/12/2026**. A migração para
-`.railway/railway.ts` deve ser planejada antes dessa data, conferindo o plano em
-cada ambiente e preservando variáveis, domínios, volumes e bancos. Não foi feita
-uma migração geral de infraestrutura nesta sincronização. Novos vínculos a
-`railwayConfigFile` já são recusados pela API; os serviços com configuração
-explícita continuam usando suas definições existentes. Referência:
-[migração de Config as Code para IaC](https://docs.railway.com/infrastructure-as-code#migrating-from-config-as-code).
+A migração antecipada do formato que será encerrado em **01/12/2026** usa
+`.railway/railway.ts`. Os arquivos legados e seus vínculos foram removidos,
+preservando comandos de migração, healthchecks e infraestrutura dos ambientes.
+Segredos continuam no Railway; o repositório registra apenas seus nomes com
+`preserve()`. O apply automático recusa exclusões e alterações em variáveis,
+domínios, bancos, volumes e serviços externos.
+
+Consulte [as instruções de infraestrutura](../.railway/README.md) e o
+[plano da migração](superpowers/plans/2026-09-27-railway-iac.md) para manutenção,
+validação e recuperação. Promover staging para main continua sendo o fluxo normal.
 
 ## Custo do staging
 

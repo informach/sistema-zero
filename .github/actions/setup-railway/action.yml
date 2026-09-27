@@ -1,0 +1,17 @@
+name: Preparar Railway IaC
+description: Instala as versões fixas de Node, CLI e SDK da infraestrutura.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+    - name: Instalar SDK pelo lockfile
+      shell: bash
+      run: npm ci --prefix .railway --ignore-scripts --no-audit --no-fund
+    - name: Instalar CLI compatível
+      shell: bash
+      run: npm install -g @railway/cli@5.62.1 --no-audit --no-fund
+    - name: Conferir tipos da configuração
+      shell: bash
+      run: npm run --prefix .railway typecheck

@@ -1,0 +1,15 @@
+{
+  "name": "sistemazero-infrastructure",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit --strict --skipLibCheck --module nodenext --moduleResolution nodenext --target es2022 --allowImportingTsExtensions railway.ts variables.ts"
+  },
+  "dependencies": {
+    "railway": "3.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.0",
+    "typescript": "5.9.3"
+  }
+}

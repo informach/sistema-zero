@@ -25,7 +25,7 @@ describe('conformidade pinta × members', () => {
 
   it('🚨 mudança no Pinta também dispara deploy do consumidor Members', () => {
     const railway = JSON.parse(
-      readFileSync(new URL('../../../members/railway.json', import.meta.url), 'utf8'),
+      readFileSync(new URL('../../../../.railway/services/members.json', import.meta.url), 'utf8'),
     ) as { build: { watchPatterns: string[] } }
     const workflow = readFileSync(
       new URL('../../../../.github/workflows/ci.yml', import.meta.url),
