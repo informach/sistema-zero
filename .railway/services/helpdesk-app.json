@@ -1,20 +1,20 @@
 {
-  "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "DOCKERFILE",
-    "dockerfilePath": "packages/marketing-app/Dockerfile",
+    "dockerfilePath": "packages/helpdesk-app/Dockerfile",
     "watchPatterns": [
-      "/packages/marketing-app/**",
+      "/packages/helpdesk-app/**",
+      "/packages/helpdesk-contracts/**",
       "/packages/ui/**",
       "/packages/core/**",
       "/bun.lock",
       "/package.json",
-      "/.dockerignore"
+      "/.dockerignore",
+      "/.railway/**"
     ]
   },
   "deploy": {
     "healthcheckPath": "/api/healthz",
-    "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
 }

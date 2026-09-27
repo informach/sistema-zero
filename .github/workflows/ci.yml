@@ -10,7 +10,7 @@
 # Push na STAGING também faz o DEPLOY do ambiente staging do Railway (job
 # `deploy-staging`, depois do CI verde) — substitui o trigger nativo do Railway,
 # que só pode ser armado pelo dashboard. Deploya SÓ os serviços afetados pelo
-# diff (espelha os watchPatterns dos railway.json). `workflow_dispatch` permite
+# diff (espelha .railway/services). `workflow_dispatch` permite
 # forçar (`services: all` ou CSV — ex.: "funnel,auth").
 name: CI
 
@@ -319,6 +319,15 @@ jobs:
           R2_PUBLIC_URL: ${{ vars.R2_PUBLIC_URL }}
         run: bun run r2:cors:public:check
 
+      - uses: ./.github/actions/setup-railway
+
+      - name: Aplicar configuração de staging antes dos deployments
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          node scripts/ci/railway-config.mjs plan staging "$RUNNER_TEMP/railway-staging-plan.json"
+          node scripts/ci/railway-config.mjs apply staging "$RUNNER_TEMP/railway-staging-plan.json"
+
       - name: Calcular serviços afetados e deployar
         env:
           BEFORE: ${{ github.event.inputs.before_sha || github.event.before }}
@@ -386,11 +395,11 @@ jobs:
             else
               CHANGED=$(git diff --name-only "$BEFORE" "$GITHUB_SHA")
               echo "arquivos alterados:"; echo "$CHANGED"
-              # espelha os watchPatterns dos railway.json
+              # Espelha os watchPatterns em .railway/services.
               while IFS= read -r f; do
                 case "$f" in
                   bun.lock|package.json|.dockerignore) add_all ;;
-                  railway.json) add payments ;; # o railway.json da RAIZ é do payments
+                  .railway/*) add_all ;;
                   scripts/release/*) add members; add hub; add admin; add community; add community-kids ;;
                   # core é lib COMPARTILHADA: além dos serviços, os 3 apps Next o EMPACOTAM
                   # (admin/community via member-shell+studio; kids direto) — sem eles aqui, o
