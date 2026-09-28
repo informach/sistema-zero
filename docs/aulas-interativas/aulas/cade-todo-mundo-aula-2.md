@@ -5,6 +5,8 @@
 A criança retoma o projeto da Aula 1 e acrescenta a contagem. As quatro seções, a experiência,
 o projeto inicial de retomada, a cadeia de continuidade e os critérios de conclusão permanecem.
 A revisão de 27/09/2026 dá comandos diretos e retira os tutoriais gerais de interface.
+O complemento de 28/09/2026 transforma o fechamento em uma publicação guiada pelo caminho
+mínimo, com ajuda direta no Como fazer e saída em **Concluir aula**.
 
 ## Sequência
 
@@ -13,7 +15,7 @@ A revisão de 27/09/2026 dá comandos diretos e retira os tutoriais gerais de in
 | Volte ao seu jardim | 15 a 25 s | ver o que falta no contador e avançar | vídeo |
 | Um número que acompanha a busca | 40 a 55 s | testar primeiro achado, segundo achado, espaço vazio e recomeço | vídeo e experiência |
 | Cada personagem vale um achado | 3 a 4 min | encaixar a soma, testar a contagem e enviar | vídeo, incremento correto e envio |
-| Sua busca está completa | 25 a 40 s | reconhecer o resultado, concluir a aula e abrir o certificado | vídeo; publicação opcional |
+| Publique seu jogo | 45 a 60 s | manter título e resumo, gerar capa, publicar e concluir a aula | vídeo; publicação orientada, sem bloqueio técnico |
 
 ## Orientação por seção
 
@@ -46,14 +48,21 @@ Depois do teste, esperar **Salvo**, usar **Enviar para o professor**, confirmar 
 esperar o envio terminar e seguir em **Próxima seção**. Não ensinar o layout da Pré-visualização
 ou o compartilhamento. O caderno continua disponível na Aula 1, sem novo upload ou bloco.
 
-### Sua busca está completa
+### Publique seu jogo
 
-Nomear as duas regras que a criança programou: revelar ao toque e contar os achados. Apontar o
-tutorial **Como publicar seu jogo no mural**, no Como Fazer, para quem quiser compartilhar.
-Não demonstrar janela, capa, publicação ou cópia do link no vídeo da aula.
+Começar com a tarefa de publicar o jogo para outras pessoas jogarem. No mesmo Estúdio da prática,
+abrir **Compartilhar**, manter **Título** e **Resumo do projeto** preenchidos, clicar em
+**Gerar capa**, esperar a imagem e conferir. Clicar em **Publicar**, esperar a confirmação
+**Seu jogo está no Mural!**, clicar em **Fechar** e terminar em **Concluir aula**.
 
-Terminar com **Concluir aula** e a orientação de abrir **Seu certificado**. O mesmo Estúdio
-permanece nesta seção, sem novo projeto. Publicar e visitar o Mural continuam opcionais.
+O vídeo ensina só esse caminho. Gerar capa já inclui a imagem, sem download ou upload manual.
+Personalização, envio de outra imagem, cópia do link e solução de problemas ficam no Como fazer.
+Uma ajuda escrita junto ao vídeo apresenta a área de ajuda e liga diretamente ao tutorial
+**Como publicar seu jogo no mural**, sem exigir leitura nem acrescentar um comando à narração.
+
+Preservar a chave **conclusao**, o mesmo projeto e a conclusão pelo vídeo. Publicar é a atividade
+esperada, sem criar bloqueio técnico de conclusão ou acesso obrigatório ao Mural. Não dizer
+“compartilhar é opcional” nem anunciar certificado, próxima seção ou próxima aula na fala.
 
 ## Conferência antes de regravar
 
@@ -61,6 +70,8 @@ Conferir a continuidade do projeto enviado e o projeto de retomada quando não h
 Não tratar essa cópia como se fosse o arquivo pessoal da criança. Testar as quatro metas da
 experiência, montagem correta, contagem sem repetição, vitória, envio e avanço.
 
-Manter a conclusão sem publicação e sem acesso obrigatório ao Mural. O tutorial de
-compartilhamento deve respeitar a disponibilidade do botão e permitir usar o link público.
-As novas falas precisam ser regravadas antes de substituir os vídeos atuais.
+Conferir Compartilhar liberado após o envio, título e resumo preenchidos, capa gerada, publicação,
+confirmação, Fechar e Concluir aula. Manter a conclusão possível sem publicação ou visita ao Mural.
+O tutorial de compartilhamento deve acompanhar a orientação da aula e conservar as alternativas
+de capa e link público. As novas falas precisam ser regravadas antes de substituir os vídeos
+atuais e o caminho precisa de ensaio com crianças.

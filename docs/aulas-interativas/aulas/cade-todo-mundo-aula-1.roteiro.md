@@ -40,11 +40,11 @@ Um vídeo por seção. As falas em citação são lidas; as notas de tela são s
 
 **Duração alvo:** 30 a 40 segundos.
 
-**Na tela:** mostrar a experiência começando com a reação desligada. Apontar para o arbusto e para **Ligar a reação ao toque** quando forem citados. Não executar o teste no vídeo nem revelar seu resultado.
+**Na tela:** mostrar a experiência começando com a reação desligada. Apontar para o jardim da experiência ao dizer **aqui**. Apontar para o arbusto e para **Ligar a reação ao toque** quando forem citados. Não executar o teste no vídeo nem revelar seu resultado.
 
 **Narração:**
 
-> “Toque no arbusto deste jardim e veja o que acontece.
+> “Aqui está uma experiência com o jardim do jogo. Toque no arbusto e veja o que acontece.
 >
 > Agora clique em Ligar a reação ao toque. Toque no mesmo arbusto de novo e compare.
 >
@@ -76,7 +76,7 @@ Um vídeo por seção. As falas em citação são lidas; as notas de tela são s
 >
 > Confira: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0.”
 
-**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e depois em outro. Deixar visíveis o resultado e os blocos. Após o teste, mostrar **Salvo**, abrir **Enviar para o professor**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Concluir aula**.
+**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e depois em outro. Deixar visíveis o resultado e os blocos. Após o teste, clicar em **Verificar esta etapa** e mostrar **Objetivo da etapa cumprido!**. Mostrar **Salvo**, abrir **Enviar para o professor**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Concluir aula**.
 
 **Narração:**
 
@@ -84,8 +84,12 @@ Um vídeo por seção. As falas em citação são lidas; as notas de tela são s
 >
 > Se ninguém aparecer, confira o encaixe dentro de Quando clicar ou tocar, o nome escolhido e o número 0. Corrija o que estiver diferente e teste de novo. Por enquanto, Achados continua em zero.
 >
-> Funcionou? Espere aparecer Salvo. Clique em Enviar para o professor e confirme em Enviar. Quando o envio terminar, clique em Concluir aula.”
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
+>
+> Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Clique em Enviar para o professor e confirme em Enviar.
+>
+> Quando o envio terminar, clique em Concluir aula.”
 
-**Zappy abaixo do vídeo:** “Monte a regra do toque, teste nos esconderijos e envie seu jogo para o professor.”
+**Zappy abaixo do vídeo:** “Monte a regra do toque, teste nos esconderijos e clique em Verificar esta etapa antes de enviar seu jogo para o professor.”
 
-**Conferência de produção:** a Pré-visualização atualiza automaticamente. O bloco é Deixar o sprite com ___% de visibilidade; 50 é o valor inicial. A opção escolhido depende do bloco estar dentro do evento preparado. A seção exige vídeo, regra correta e envio. Manter o projeto da criança, sem abrir Pinta ou o Estúdio completo.
+**Conferência de produção:** a Pré-visualização atualiza automaticamente. O bloco é Deixar o sprite com ___% de visibilidade; 50 é o valor inicial. A opção escolhido depende do bloco estar dentro do evento preparado. A seção exige vídeo, aprovação em **Verificar esta etapa** e envio. A verificação depende desse clique; o envio não a executa automaticamente. Manter o projeto da criança, sem abrir Pinta ou o Estúdio completo.

@@ -256,9 +256,13 @@ pedagógica, agenda, recapitulação e gancho para a próxima aula não são eta
 Explicar palavras novas brevemente, no momento em que ajudam a tarefa; analogias são opcionais.
 
 O passo a passo de programação conserva categoria, bloco, encaixe, campo, valor e teste. O
-Como Fazer concentra os tutoriais de interface: player, abas, ampliação, materiais e publicação.
+Como Fazer concentra os tutoriais de interface: player, abas, ampliação, materiais e alternativas
+de publicação. Quando publicar é a tarefa da seção, a aula ensina o caminho mínimo: manter
+título e resumo prontos, gerar e conferir a capa, publicar, fechar a confirmação e concluir.
 A aula mantém os comandos da atividade e as ações necessárias de envio, confirmação e conclusão.
 Não esconder ações obrigatórias em pistas nem substituir uma montagem por "faça como eu fiz".
+Terminar na ação de saída da seção atual, sem antecipar certificado ou tarefas da próxima aula.
+Apresentar o Como fazer como área de ajuda com link direto, sem exigir a leitura do tutorial.
 
 Esta direção prevalece sobre os moldes antigos. A especificação de fala está em
 [ESPEC-ROTEIRO.md](aulas-interativas/ESPEC-ROTEIRO.md). Cadê Todo Mundo? é o primeiro curso

@@ -17,7 +17,7 @@ acrescenta a reação ao toque. O roteiro mostra exatamente essa autoria.
 | Bem-vindo ao jardim | 25 a 35 s | jogar a versão pronta e encontrar os três personagens | vídeo e três achados |
 | Seu Caderno do Aluno | 20 a 30 s | conhecer o material de consulta e seguir; leitura opcional | vídeo |
 | O que um toque faz? | 30 a 40 s | tocar com a reação desligada, ligar e tocar novamente; comparar | vídeo e duas metas |
-| Faça alguém aparecer | 3 a 4 min | encaixar a visibilidade no evento, testar e enviar | vídeo, regra correta e envio |
+| Faça alguém aparecer | 3 a 4 min | encaixar a visibilidade no evento, testar, verificar a etapa e enviar | vídeo, verificação aprovada e envio |
 
 A duração da prática inclui os gestos, sem acelerar a montagem. Não aumentar os vídeos de
 apresentação para atingir uma duração mínima.
@@ -41,7 +41,8 @@ Apenas este bloco recebe o PDF; a Aula 2 continua usando a mesma referência.
 
 ### O que um toque faz?
 
-Dar os comandos dos dois testes: tocar no arbusto; usar **Ligar a reação ao toque**; tocar
+Apresentar a experiência com o jardim do jogo e apontar para ela ao dizer **aqui**. Em seguida,
+dar os comandos dos dois testes: tocar no arbusto; usar **Ligar a reação ao toque**; tocar
 novamente e comparar. Explicar toque e reação em uma frase ligada ao jogo. Não esconder
 os passos obrigatórios nas pistas nem realizar a experiência pela criança na gravação.
 
@@ -58,8 +59,11 @@ o sprite **escolhido** e o valor **0**.
 A prévia atualiza automaticamente. Pedir o toque em dois esconderijos e conferir a revelação.
 Se não funcionar, conferir encaixe, sprite e valor. **Achados** ainda fica em zero nesta aula.
 
-Após o teste, esperar **Salvo**, usar **Enviar para o professor**, confirmar em **Enviar** e
-aguardar a conclusão do envio antes de **Concluir aula**. O recado ao professor é opcional.
+Após o teste, clicar em **Verificar esta etapa**. Se faltar algo, corrigir os blocos e verificar
+novamente. Quando aparecer **Objetivo da etapa cumprido!**, esperar **Salvo**, usar **Enviar
+para o professor**, confirmar em **Enviar** e aguardar a conclusão do envio antes de **Concluir
+aula**. O recado ao professor é opcional. A verificação exige esse clique; o envio não a
+executa automaticamente.
 
 ## Tutoriais retirados do vídeo
 
@@ -71,7 +75,7 @@ A biblioteca é consulta, sem pré-requisito ou seção extra.
 ## Conferência antes de regravar
 
 Conferir rótulos e encaixes no Estúdio incorporado, largura estreita e larga, atualização da
-prévia, envio e avanço. Manter mouse, toque e teclado nas experiências existentes. Anexar o
+prévia, verificação da etapa, envio e avanço. Manter mouse, toque e teclado nas experiências existentes. Anexar o
 caderno real antes da gravação; não substituir o anexo pela lista vazia do molde editorial.
 
 O ensaio da abertura deve comprovar que a criança reconhece o jogo a construir, começa a jogar

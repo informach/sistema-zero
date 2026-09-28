@@ -53,7 +53,8 @@ A aula ensina a criar o jogo. A biblioteca ensina a usar a plataforma.
 | Pausar o vídeo, voltar um trecho, ampliar e sair da tela cheia | Como Fazer |
 | Arrastar divisória, alternar abas, mostrar a Pré-visualização | Como Fazer |
 | Folhear o caderno, trocar a leitura, baixar e imprimir | Como Fazer |
-| Abrir a janela de compartilhamento, gerar capa, publicar e copiar link | Como Fazer |
+| Caminho mínimo para publicar, quando publicar é a tarefa da seção | Roteiro da aula: Compartilhar, manter título e resumo, Gerar capa, conferir, Publicar e esperar confirmação |
+| Personalizar a publicação, enviar outra capa, copiar link e resolver problemas | Como Fazer |
 | Escolher um bloco, encaixar, preencher valores e testar a regra | Roteiro da aula |
 | Acionar um controle necessário à experiência | Comando da atividade, sem tour |
 | Enviar a atividade, confirmar o envio, avançar ou concluir | Encaminhamento curto no roteiro |
@@ -61,6 +62,8 @@ A aula ensina a criar o jogo. A biblioteca ensina a usar a plataforma.
 Não retirar a única instrução de que a criança precisa. Quando a dúvida for de interface,
 usar um tutorial com título claro, conferido no código e disponível para aquele perfil.
 Não exigir que a criança leia todos os tutoriais antes de começar.
+Na primeira referência ao Como fazer, apresentá-lo como área de ajuda e oferecer um link
+direto ao tutorial, junto à atividade. A ajuda escrita não acrescenta outra tarefa à fala.
 
 Na fala, "clique em Próxima seção" basta. Não explicar o que é uma seção, todos os botões
 vizinhos e as diferenças entre celular e computador. O rótulo atual é **Próxima seção**,
@@ -108,6 +111,11 @@ A ação de saída precisa corresponder à seção: **Próxima seção** entre p
 **Concluir aula** na última parte. Se há envio, incluir **Enviar para o professor** e a confirmação
 **Enviar**. Se há certificado, nomear **Pegar meu certificado**. Tours, estados alternativos e
 solução de problemas desses fluxos ficam na biblioteca de ajuda.
+
+Encerrar a narração na ação de saída da seção atual. Não acrescentar uma instrução para a
+próxima seção ou aula depois de Próxima seção ou Concluir aula. O comando Pegar meu certificado
+pertence à seção do certificado. Na publicação do Kids, esperar **Seu jogo está no Mural!**,
+usar **Fechar** para sair da confirmação e só então orientar **Concluir aula**.
 
 ## 7. Formato para gravação
 

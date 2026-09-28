@@ -941,7 +941,14 @@
     },
     {
       "key": "video-a2-fecho",
-      "plannedVideo": "Título: Sua busca está completa\n\nNomear brevemente o resultado: esconderijos somem ao toque e o jogo conta três personagens. Compartilhamento é opcional; indicar o tutorial Como publicar seu jogo no mural, na biblioteca Como Fazer. Não abrir a janela de publicação nem ensinar capa ou link. Manter o mesmo Estúdio. Terminar em Concluir aula e orientar a abrir Seu certificado. Sem venda. Regravar a fala. Alvo: 25 a 40 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Publique seu jogo\n\nPedir que a criança publique o jogo para outras pessoas jogarem. No mesmo Estúdio da prática, após o envio ao professor, abrir Compartilhar, manter título e resumo preenchidos, clicar em Gerar capa e conferir a imagem. Clicar em Publicar e esperar Seu jogo está no Mural! Clicar em Fechar e terminar em Concluir aula. Não antecipar certificado ou próxima aula, nem apresentar compartilhar como opcional. A publicação não vira bloqueio técnico de conclusão. A ajuda escrita apresenta o Como fazer e abre o tutorial direto, sem exigir leitura. Personalização, upload e cópia do link ficam na biblioteca. Sem venda. Regravar a fala. Alvo: 45 a 60 segundos, incluindo publicação e confirmação.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "ajuda-a2-publicar",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), nossa área de ajuda."
+      }
     }
   ],
   "sections": [
@@ -1005,10 +1012,10 @@
     },
     {
       "key": "conclusao",
-      "title": "Sua busca está completa",
+      "title": "Publique seu jogo",
       "intent": "closing",
-      "objective": "Conferir que os três personagens aparecem, o contador chega a três e a vitória aparece.",
-      "blockKeys": ["video-a2-fecho"],
+      "objective": "Publicar o jogo com título e resumo prontos e capa gerada; fechar a confirmação e concluir a aula.",
+      "blockKeys": ["video-a2-fecho", "ajuda-a2-publicar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

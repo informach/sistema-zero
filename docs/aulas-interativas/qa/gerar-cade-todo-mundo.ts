@@ -128,7 +128,7 @@ const aula1 = {
     video(
       'video-a1-toque',
       'Um toque pode chamar uma ação',
-      'Pedir diretamente: tocar no arbusto, clicar em Ligar a reação ao toque, tocar novamente e comparar. Explicar toque e reação em uma frase ligada ao jogo. Apontar os alvos sem executar os testes ou antecipar o resultado. Terminar em Próxima seção após os dois testes. Não fazer tour de interface nem analogia da campainha. Regravar a fala. Alvo: 30 a 40 segundos.',
+      'Apresentar a experiência com o jardim do jogo e apontar para ela ao dizer aqui. Em seguida, pedir: tocar no arbusto, clicar em Ligar a reação ao toque, tocar novamente e comparar. Explicar toque e reação em uma frase ligada ao jogo. Apontar os alvos sem executar os testes ou antecipar o resultado. Terminar em Próxima seção após os dois testes. Não fazer tour de interface nem analogia da campainha. Regravar a fala. Alvo: 30 a 40 segundos.',
     ),
     dialogue('ponte-a1-toque', 'Teste o mesmo toque com a reação desligada e ligada.'),
     {
@@ -146,11 +146,11 @@ const aula1 = {
     video(
       'video-a1-programar',
       'Faça o primeiro personagem aparecer',
-      'Começar pedindo que a criança faça um personagem aparecer ao tocar num esconderijo. Mostrar Quando acontecer, o evento preparado e o significado de escolhido. Ensinar Jogo 2D > Sprites > Aparência, o bloco de visibilidade, o encaixe dentro do evento, escolhido e a troca de 50 para 0. Testar dois esconderijos com a prévia automática e conferir campos e encaixe se não funcionar. Esperar Salvo, usar Enviar para o professor, confirmar em Enviar e terminar em Concluir aula. Sem tour de abas, olhinho, divisória ou expansão. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
+      'Começar pedindo que a criança faça um personagem aparecer ao tocar num esconderijo. Mostrar Quando acontecer, o evento preparado e o significado de escolhido. Ensinar Jogo 2D > Sprites > Aparência, o bloco de visibilidade, o encaixe dentro do evento, escolhido e a troca de 50 para 0. Testar dois esconderijos com a prévia automática e conferir campos e encaixe se não funcionar. Clicar em Verificar esta etapa; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo da etapa cumprido!, esperar Salvo, usar Enviar para o professor, confirmar em Enviar e terminar em Concluir aula. Sem tour de abas, olhinho, divisória ou expansão. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
     ),
     dialogue(
       'ponte-a1-programar',
-      'Monte a regra do toque, teste nos esconderijos e envie seu jogo para o professor.',
+      'Monte a regra do toque, teste nos esconderijos e clique em Verificar esta etapa antes de enviar seu jogo para o professor.',
     ),
     studio(montarProjetoCadeTodoMundo()),
   ],
@@ -248,9 +248,17 @@ const aula2 = {
     studio(montarProjetoCadeTodoMundo(true), true),
     video(
       'video-a2-fecho',
-      'Sua busca está completa',
-      'Nomear brevemente o resultado: esconderijos somem ao toque e o jogo conta três personagens. Compartilhamento é opcional; indicar o tutorial Como publicar seu jogo no mural, na biblioteca Como Fazer. Não abrir a janela de publicação nem ensinar capa ou link. Manter o mesmo Estúdio. Terminar em Concluir aula e orientar a abrir Seu certificado. Sem venda. Regravar a fala. Alvo: 25 a 40 segundos.',
+      'Publique seu jogo',
+      'Pedir que a criança publique o jogo para outras pessoas jogarem. No mesmo Estúdio da prática, após o envio ao professor, abrir Compartilhar, manter título e resumo preenchidos, clicar em Gerar capa e conferir a imagem. Clicar em Publicar e esperar Seu jogo está no Mural! Clicar em Fechar e terminar em Concluir aula. Não antecipar certificado ou próxima aula, nem apresentar compartilhar como opcional. A publicação não vira bloqueio técnico de conclusão. A ajuda escrita apresenta o Como fazer e abre o tutorial direto, sem exigir leitura. Personalização, upload e cópia do link ficam na biblioteca. Sem venda. Regravar a fala. Alvo: 45 a 60 segundos, incluindo publicação e confirmação.',
     ),
+    {
+      key: 'ajuda-a2-publicar',
+      content: {
+        kind: 'rich_text',
+        markdown:
+          'Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), nossa área de ajuda.',
+      },
+    },
   ],
   sections: [
     section(
@@ -293,10 +301,10 @@ const aula2 = {
     ),
     section(
       'conclusao',
-      'Sua busca está completa',
+      'Publique seu jogo',
       'closing',
-      'Conferir que os três personagens aparecem, o contador chega a três e a vitória aparece.',
-      ['video-a2-fecho'],
+      'Publicar o jogo com título e resumo prontos e capa gerada; fechar a confirmação e concluir a aula.',
+      ['video-a2-fecho', 'ajuda-a2-publicar'],
       ['video-a2-fecho'],
       'projeto',
     ),

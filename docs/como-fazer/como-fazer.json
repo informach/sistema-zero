@@ -334,12 +334,12 @@
           {
             "id": "texto",
             "title": "Dê um nome e conte como é",
-            "body": "Confira **Título** e **Resumo do projeto**. Se já estiverem preenchidos, pode manter ou ajustar. Se estiverem vazios, escreva o nome do jogo e uma frase contando como jogar."
+            "body": "Confira **Título** e **Resumo do projeto**. Na Aula 2 do Cadê Todo Mundo?, deixe os textos que já estão preenchidos. Nos outros projetos, você pode manter ou ajustar os textos prontos. Se estiverem vazios, escreva o nome do jogo e uma frase contando como jogar."
           },
           {
             "id": "capa",
             "title": "Escolha a capa",
-            "body": "Em **Capa do projeto**, toque em **Gerar capa**. Se preferir, use **Enviar uma imagem** e escolha uma imagem PNG ou JPG. Confira a capa antes de seguir."
+            "body": "Em **Capa do projeto**, toque em **Gerar capa** e espere a imagem aparecer. Ela já fica incluída na publicação, sem precisar baixar e enviar um arquivo. Confira a capa antes de seguir. Para usar outra imagem, toque em **Enviar uma imagem** e escolha uma imagem PNG ou JPG."
           },
           {
             "id": "publicar",
@@ -358,8 +358,8 @@
           },
           {
             "id": "opcional",
-            "title": "Compartilhe se quiser",
-            "body": "No Cadê Todo Mundo?, você pode concluir a aula sem publicar o jogo. Enviar para o professor entrega a atividade; compartilhar é uma escolha sua."
+            "title": "Conclua a aula",
+            "body": "Na última seção da Aula 2 do Cadê Todo Mundo?, a tarefa é publicar seu jogo. Quando aparecer **Seu jogo está no Mural!**, toque em **Fechar** e depois em **Concluir aula**."
           }
         ],
         "related": ["plataforma-jogar-no-mural", "plataforma-enviar-atividade"]

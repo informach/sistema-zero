@@ -18,6 +18,12 @@
 > de roteiro, inclusive os moldes externos. Foi aplicada primeiro às nove seções de Cadê Todo
 > Mundo?; os demais cursos ainda precisam de revisão própria.
 
+> **Complemento em 28/09/2026.** Quando publicar é a tarefa da seção, o vídeo ensina o
+> caminho mínimo: Compartilhar, manter título e resumo, Gerar capa, conferir, Publicar,
+> esperar a confirmação, Fechar e Concluir aula. Personalização e alternativas ficam no
+> Como fazer, acessível por ajuda com link direto. A fala termina na ação de saída da seção,
+> sem antecipar certificado ou outra tarefa da próxima seção ou aula.
+
 ## 1. O que estamos fazendo e por quê
 
 Os jogos já gravados do Sistema Zero (Nave Contra Asteroides, Corre Dino e O Jogo do Meu Jeito)
@@ -210,9 +216,15 @@ Não são molde, são pisos de qualidade:
   ou "Faça o jogo contar os personagens". Se uma retomada for necessária, limite-a ao fato que
   ajuda a executar a tarefa. Não abrir com agenda, teoria ou justificativa para adultos.
 - **O roteiro ensina a tarefa; o Como Fazer ensina a interface.** Pausar, rever, ampliar,
-  redimensionar, alternar abas, baixar materiais e publicar vão para a biblioteca. Na aula
-  permanecem os blocos, encaixes, campos, valores e testes da construção, os comandos da
-  experiência e a ação de saída. "Clique em Próxima seção" é encaminhamento, não um tour.
+  redimensionar, alternar abas e baixar materiais vão para a biblioteca. Quando publicar
+  é a tarefa da seção, ensinar na aula o caminho mínimo até a confirmação e a conclusão;
+  personalização, alternativas e solução de problemas continuam no Como fazer. Na aula
+  permanecem também os blocos, encaixes, campos, valores e testes da construção, os comandos
+  da experiência e a ação de saída. "Clique em Próxima seção" é encaminhamento, não um tour.
+- **A saída encerra a tarefa atual.** Terminar em Próxima seção ou Concluir aula, sem
+  acrescentar comandos sobre o que fazer depois. Apresentar o certificado na seção dele.
+  Ao citar o Como fazer pela primeira vez, identificá-lo como área de ajuda e oferecer um
+  link direto ao tutorial necessário, sem exigir uma visita à biblioteca.
 - **Direto não significa incompleto.** Não esconder uma etapa em "faça como eu fiz". Dizer
   o necessário para executar, conferir e terminar. Se o envio pede confirmação, nomear a
   confirmação. Se há metas obrigatórias, cobrir todas com instruções compreensíveis.

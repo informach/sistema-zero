@@ -193,7 +193,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
     const closing = manifesto('aula-2').sections.find((section) => section.key === 'conclusao')
     expect(practice?.workspaceKey).toBe('projeto')
     expect(closing?.workspaceKey).toBe('projeto')
-    expect(closing?.blockKeys).toEqual(['video-a2-fecho'])
+    expect(closing?.blockKeys).toEqual(['video-a2-fecho', 'ajuda-a2-publicar'])
     expect(closing?.completion?.blockIds).toEqual(['video-a2-fecho'])
     expect(
       manifesto('aula-2')
@@ -234,7 +234,9 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
         expect(blocks.filter((b) => b && 'plannedVideo' in b)).toHaveLength(1)
       }
       expect(m.blocks.some((b) => b.content?.kind === 'quiz')).toBe(false)
-      expect(m.blocks.some((b) => b.content?.kind === 'rich_text')).toBe(false)
+      expect(m.blocks.filter((b) => b.content?.kind === 'rich_text').map((b) => b.key)).toEqual(
+        name === 'aula-2' ? ['ajuda-a2-publicar'] : [],
+      )
       expect(
         m.blocks.some(
           (b) => b.content?.kind === 'interactive' && b.content.activity.type === 'question',

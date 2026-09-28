@@ -76,18 +76,30 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 
 **Conferência de produção:** a Pré-visualização atualiza automaticamente. O caminho é Programação > Variáveis, com o bloco Somar ___ em variável ___. O caderno continua na seção Seu Caderno do Aluno da Aula 1. Manter a cadeia do projeto e a regra de vitória preparada. A conclusão exige vídeo, incremento correto e envio.
 
-## 4. Sua busca está completa
+## 4. Publique seu jogo
 
-**Duração alvo:** 25 a 40 segundos.
+**Duração alvo:** 45 a 60 segundos, incluindo publicação e confirmação.
 
-**Na tela:** mostrar o jogo completo e as duas regras acrescentadas nas aulas. Manter o mesmo Estúdio da prática. Não abrir janela de publicação, gerar capa ou copiar link na gravação.
+**Na tela:** manter o mesmo Estúdio da prática, com o projeto já enviado ao professor. Apontar e abrir **Compartilhar**. Mostrar **Título** e **Resumo do projeto** preenchidos, sem editar. Clicar em **Gerar capa**, esperar a imagem e conferir o resultado. Não demonstrar upload, personalização ou cópia do link.
 
 **Narração:**
 
-> “Seu jogo está pronto! Você fez os esconderijos sumirem com o toque e o jogo contar os três personagens.
+> “Agora publique seu jogo para outras pessoas jogarem.
 >
-> Se quiser mostrar seu jogo para alguém, o Como Fazer tem o tutorial Como publicar seu jogo no mural. Compartilhar é opcional.
+> No Estúdio, clique em Compartilhar. O título e o resumo já estão preenchidos. Deixe como estão.
 >
-> Agora clique em Concluir aula. Depois abra Seu certificado, a próxima aula do curso.”
+> Clique em Gerar capa e espere a imagem aparecer. Essa é a imagem que vai apresentar seu jogo.”
 
-**Conferência de produção:** o vídeo basta para concluir esta seção. A publicação e o acesso ao Mural não são exigidos. O tutorial de compartilhamento ensina capa, publicação e link; a aula termina com a criação e a próxima ação. Sem oferta comercial.
+**Na tela:** conferir a capa, clicar em **Publicar** e esperar **Seu jogo está no Mural!**. Apontar e clicar em **Fechar** na confirmação. Apontar **Concluir aula**. Encerrar sem abrir outra aula.
+
+**Narração:**
+
+> “Confira a capa, clique em Publicar e espere a confirmação.
+>
+> Quando aparecer Seu jogo está no Mural, clique em Fechar.
+>
+> Agora clique em Concluir aula.”
+
+**Ajuda escrita junto ao vídeo, fora da narração:** Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), nossa área de ajuda.
+
+**Conferência de produção:** publicar é a tarefa esperada da seção. O vídeo continua sendo o critério técnico de conclusão; publicação e acesso ao Mural não viram bloqueios. O envio da seção anterior libera Compartilhar. Gerar capa já inclui a imagem na publicação, sem download nem upload manual. Conferir título e resumo prontos antes da gravação. A ajuda abre diretamente o tutorial; não exigir sua leitura. Personalização, outras capas, cópia do link e solução de problemas ficam no Como fazer. A fala termina em Concluir aula, sem antecipar certificado ou próxima aula. Sem oferta comercial. Regravar e ensaiar o caminho completo com crianças.
