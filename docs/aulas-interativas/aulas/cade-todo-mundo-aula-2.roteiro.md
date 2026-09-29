@@ -20,11 +20,11 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 
 **Duração alvo:** 40 a 55 segundos.
 
-**Na tela:** mostrar a experiência com **Achados: 0**. Apontar para o número, o jardim e **Recomeçar a busca**, sem realizar os testes ou antecipar os valores encontrados.
+**Na tela:** mostrar a experiência com **Achados: 0**. Apontar para o jardim da experiência ao dizer **aqui**. Apontar para o número, os esconderijos e **Recomeçar a busca** quando forem citados, sem realizar os testes ou antecipar os valores encontrados.
 
 **Narração:**
 
-> “Procure os personagens neste jardim e acompanhe o número Achados.
+> “Aqui está uma experiência com o jardim do jogo. Procure os personagens e acompanhe o número Achados.
 >
 > O jogo guarda essa contagem numa variável chamada achados. Variável é onde o jogo guarda um valor que pode mudar.
 >
@@ -58,7 +58,7 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 >
 > Confira: os dois blocos estão dentro de Quando clicar ou tocar. Primeiro, o esconderijo escolhido fica invisível. Logo abaixo, o jogo soma 1 em achados.”
 
-**Na tela:** mostrar o jardim atualizado e testar os três esconderijos, um por vez. Conferir 1, 2, 3 e **Você achou todo mundo!**. Tocar novamente no mesmo lugar e conferir que a contagem não sobe. Mostrar o envio e sua confirmação. Não demonstrar compartilhamento.
+**Na tela:** mostrar o jardim atualizado e testar os três esconderijos, um por vez. Conferir 1, 2, 3 e **Você achou todo mundo!**. Tocar novamente no mesmo lugar e conferir que a contagem não sobe. Após o teste, clicar em **Verificar esta etapa** e mostrar **Objetivo da etapa cumprido!**. Mostrar **Salvo**, abrir **Enviar para o professor**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Próxima seção**. Não demonstrar compartilhamento.
 
 **Narração:**
 
@@ -70,11 +70,15 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 >
 > Se a contagem não funcionar, confira o bloco de somar: ele precisa estar dentro de Quando clicar ou tocar, logo abaixo do bloco de visibilidade, com o número 1 e a variável achados. Corrija e teste de novo.
 >
-> Espere aparecer Salvo. Clique em Enviar para o professor e confirme em Enviar. Quando o envio terminar, clique em Próxima seção.”
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
+>
+> Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Clique em Enviar para o professor e confirme em Enviar.
+>
+> Quando o envio terminar, clique em Próxima seção.”
 
-**Zappy abaixo do vídeo:** “Faça o jogo contar os achados. Teste os três esconderijos e envie para o professor.”
+**Zappy abaixo do vídeo:** “Faça o jogo contar os achados. Teste os três esconderijos e clique em Verificar esta etapa antes de enviar para o professor.”
 
-**Conferência de produção:** a Pré-visualização atualiza automaticamente. O caminho é Programação > Variáveis, com o bloco Somar ___ em variável ___. O caderno continua na seção Seu Caderno do Aluno da Aula 1. Manter a cadeia do projeto e a regra de vitória preparada. A conclusão exige vídeo, incremento correto e envio.
+**Conferência de produção:** a Pré-visualização atualiza automaticamente. O caminho é Programação > Variáveis, com o bloco Somar ___ em variável ___. O caderno continua na seção Seu Caderno do Aluno da Aula 1. Manter a cadeia do projeto e a regra de vitória preparada. A conclusão exige vídeo, aprovação em **Verificar esta etapa** e envio. A verificação depende desse clique; o envio não a executa automaticamente.
 
 ## 4. Publique seu jogo
 

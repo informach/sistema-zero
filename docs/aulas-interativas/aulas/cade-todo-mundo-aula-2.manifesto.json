@@ -11,7 +11,7 @@
     },
     {
       "key": "video-a2-variavel",
-      "plannedVideo": "Título: Um número que acompanha a busca\n\nPedir que a criança procure os personagens e acompanhe Achados. Explicar variável em uma frase: onde o jogo guarda um valor que pode mudar. Orientar os quatro testes: um esconderijo, outro esconderijo, um espaço vazio e Recomeçar a busca. Apontar sem realizar os testes nem antecipar os resultados. Terminar em Próxima seção. Sem analogia das marquinhas ou tour. Regravar a fala. Alvo: 40 a 55 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Um número que acompanha a busca\n\nApresentar a experiência com o jardim do jogo e apontar para ela ao dizer aqui. Pedir que a criança procure os personagens e acompanhe Achados. Explicar variável em uma frase: onde o jogo guarda um valor que pode mudar. Orientar os quatro testes: um esconderijo, outro esconderijo, um espaço vazio e Recomeçar a busca. Apontar sem realizar os testes nem antecipar os resultados. Terminar em Próxima seção. Sem analogia das marquinhas ou tour. Regravar a fala. Alvo: 40 a 55 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-a2-variavel",
@@ -39,14 +39,14 @@
     },
     {
       "key": "video-a2-contagem",
-      "plannedVideo": "Título: Cada descoberta conta\n\nComeçar pedindo que cada personagem encontrado some um em Achados. Ensinar Programação > Variáveis, Somar 1 em variável, o encaixe dentro do evento abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a vitória já preparada e a contagem sem repetição; dar correção curta. Esperar Salvo, usar Enviar para o professor, confirmar em Enviar e seguir em Próxima seção. Não ensinar o layout da prévia nem compartilhamento. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Cada descoberta conta\n\nComeçar pedindo que cada personagem encontrado some um em Achados. Ensinar Programação > Variáveis, Somar 1 em variável, o encaixe dentro do evento abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a vitória já preparada e a contagem sem repetição; dar correção curta. Clicar em Verificar esta etapa; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo da etapa cumprido!, esperar Salvo, usar Enviar para o professor, confirmar em Enviar e seguir em Próxima seção. A verificação depende desse clique; o envio não a executa automaticamente. Não ensinar o layout da prévia nem compartilhamento. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-a2-contagem",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Faça o jogo contar os achados. Teste os três esconderijos e envie para o professor."
+        "text": "Faça o jogo contar os achados. Teste os três esconderijos e clique em Verificar esta etapa antes de enviar para o professor."
       }
     },
     {

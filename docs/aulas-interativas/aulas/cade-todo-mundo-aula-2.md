@@ -7,6 +7,8 @@ o projeto inicial de retomada, a cadeia de continuidade e os critérios de concl
 A revisão de 27/09/2026 dá comandos diretos e retira os tutoriais gerais de interface.
 O complemento de 28/09/2026 transforma o fechamento em uma publicação guiada pelo caminho
 mínimo, com ajuda direta no Como fazer e saída em **Concluir aula**.
+A revisão de 29/09/2026 aplica os ajustes da Aula 1 já gravada: apresentar a experiência
+antes dos testes e orientar a verificação da etapa antes do envio.
 
 ## Sequência
 
@@ -14,7 +16,7 @@ mínimo, com ajuda direta no Como fazer e saída em **Concluir aula**.
 | --- | --- | --- | --- |
 | Volte ao seu jardim | 15 a 25 s | ver o que falta no contador e avançar | vídeo |
 | Um número que acompanha a busca | 40 a 55 s | testar primeiro achado, segundo achado, espaço vazio e recomeço | vídeo e experiência |
-| Cada personagem vale um achado | 3 a 4 min | encaixar a soma, testar a contagem e enviar | vídeo, incremento correto e envio |
+| Cada personagem vale um achado | 3 a 4 min | encaixar a soma, testar, verificar a etapa e enviar | vídeo, aprovação na verificação e envio |
 | Publique seu jogo | 45 a 60 s | manter título e resumo, gerar capa, publicar e concluir a aula | vídeo; publicação orientada, sem bloqueio técnico |
 
 ## Orientação por seção
@@ -27,8 +29,9 @@ A seção só tem vídeo, portanto a fala não pode pedir que a criança manipul
 
 ### Um número que acompanha a busca
 
-Pedir que a criança procure no jardim e acompanhe **Achados**. Explicar variável em uma frase
-ligada à contagem, sem analogia das marquinhas e sem lista de conceitos.
+Apresentar a experiência com o jardim do jogo e apontar para ela ao dizer **aqui**. Pedir que
+a criança procure no jardim e acompanhe **Achados**. Explicar variável em uma frase ligada à
+contagem, sem analogia das marquinhas e sem lista de conceitos.
 
 Orientar os quatro testes que correspondem às metas: primeiro esconderijo, outro esconderijo,
 espaço vazio depois de encontrar alguém e **Recomeçar a busca**. Não executar os testes nem
@@ -44,9 +47,12 @@ Pedir que teste cada esconderijo: contagem 1, 2, 3 e a mensagem de vitória que 
 preparada. Repetir o toque no mesmo lugar deve manter 3, pois o esconderijo invisível não recebe
 outro toque. Se não funcionar, conferir encaixe, ordem, número e variável.
 
-Depois do teste, esperar **Salvo**, usar **Enviar para o professor**, confirmar em **Enviar**,
-esperar o envio terminar e seguir em **Próxima seção**. Não ensinar o layout da Pré-visualização
-ou o compartilhamento. O caderno continua disponível na Aula 1, sem novo upload ou bloco.
+Depois do teste, clicar em **Verificar esta etapa**. Se faltar algo, corrigir os blocos e
+verificar novamente. Quando aparecer **Objetivo da etapa cumprido!**, esperar **Salvo**, usar
+**Enviar para o professor**, confirmar em **Enviar**, esperar o envio terminar e seguir em
+**Próxima seção**. O recado ao professor é opcional. A verificação exige esse clique; o envio
+não a executa automaticamente. Não ensinar o layout da Pré-visualização ou o compartilhamento.
+O caderno continua disponível na Aula 1, sem novo upload ou bloco.
 
 ### Publique seu jogo
 
@@ -68,7 +74,7 @@ esperada, sem criar bloqueio técnico de conclusão ou acesso obrigatório ao Mu
 
 Conferir a continuidade do projeto enviado e o projeto de retomada quando não há trabalho salvo.
 Não tratar essa cópia como se fosse o arquivo pessoal da criança. Testar as quatro metas da
-experiência, montagem correta, contagem sem repetição, vitória, envio e avanço.
+experiência, montagem correta, contagem sem repetição, vitória, verificação da etapa, envio e avanço.
 
 Conferir Compartilhar liberado após o envio, título e resumo preenchidos, capa gerada, publicação,
 confirmação, Fechar e Concluir aula. Manter a conclusão possível sem publicação ou visita ao Mural.

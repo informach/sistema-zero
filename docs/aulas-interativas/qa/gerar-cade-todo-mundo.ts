@@ -220,7 +220,7 @@ const aula2 = {
     video(
       'video-a2-variavel',
       'Um número que acompanha a busca',
-      'Pedir que a criança procure os personagens e acompanhe Achados. Explicar variável em uma frase: onde o jogo guarda um valor que pode mudar. Orientar os quatro testes: um esconderijo, outro esconderijo, um espaço vazio e Recomeçar a busca. Apontar sem realizar os testes nem antecipar os resultados. Terminar em Próxima seção. Sem analogia das marquinhas ou tour. Regravar a fala. Alvo: 40 a 55 segundos.',
+      'Apresentar a experiência com o jardim do jogo e apontar para ela ao dizer aqui. Pedir que a criança procure os personagens e acompanhe Achados. Explicar variável em uma frase: onde o jogo guarda um valor que pode mudar. Orientar os quatro testes: um esconderijo, outro esconderijo, um espaço vazio e Recomeçar a busca. Apontar sem realizar os testes nem antecipar os resultados. Terminar em Próxima seção. Sem analogia das marquinhas ou tour. Regravar a fala. Alvo: 40 a 55 segundos.',
     ),
     dialogue('ponte-a2-variavel', 'Procure no jardim e acompanhe o número Achados.'),
     {
@@ -239,11 +239,11 @@ const aula2 = {
     video(
       'video-a2-contagem',
       'Cada descoberta conta',
-      'Começar pedindo que cada personagem encontrado some um em Achados. Ensinar Programação > Variáveis, Somar 1 em variável, o encaixe dentro do evento abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a vitória já preparada e a contagem sem repetição; dar correção curta. Esperar Salvo, usar Enviar para o professor, confirmar em Enviar e seguir em Próxima seção. Não ensinar o layout da prévia nem compartilhamento. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
+      'Começar pedindo que cada personagem encontrado some um em Achados. Ensinar Programação > Variáveis, Somar 1 em variável, o encaixe dentro do evento abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a vitória já preparada e a contagem sem repetição; dar correção curta. Clicar em Verificar esta etapa; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo da etapa cumprido!, esperar Salvo, usar Enviar para o professor, confirmar em Enviar e seguir em Próxima seção. A verificação depende desse clique; o envio não a executa automaticamente. Não ensinar o layout da prévia nem compartilhamento. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
     ),
     dialogue(
       'ponte-a2-contagem',
-      'Faça o jogo contar os achados. Teste os três esconderijos e envie para o professor.',
+      'Faça o jogo contar os achados. Teste os três esconderijos e clique em Verificar esta etapa antes de enviar para o professor.',
     ),
     studio(montarProjetoCadeTodoMundo(true), true),
     video(
@@ -320,11 +320,11 @@ const certificado = {
     video(
       'video-certificado',
       'Você criou seu primeiro jogo!',
-      'Reconhecer as duas regras que a criança programou. Pedir Pegar meu certificado e, após o download, Concluir aula. Sem tour do PDF ou de pastas; a ajuda fica no Como Fazer. Sem oferta comercial. Regravar a fala. Alvo: 15 a 25 segundos.',
+      'Reconhecer as duas regras que a criança programou e comemorar antes do encaminhamento. Pedir Pegar meu certificado e, após o download, terminar em Concluir aula, sem acrescentar falas depois da ação de saída. Sem tour do PDF ou de pastas; a ajuda fica no Como Fazer. Sem oferta comercial. Regravar a fala. Alvo: 15 a 25 segundos.',
     ),
     dialogue(
       'ponte-certificado',
-      'Clique em Pegar meu certificado. Depois clique em Concluir aula.',
+      'Clique em Pegar meu certificado. Quando o certificado baixar, clique em Concluir aula.',
     ),
     {
       key: 'certificado',
