@@ -75,7 +75,7 @@ export function validatePinnedPlan(plan, environment, tree) {
   return plan.changeSet.changes.length
 }
 
-export function runConfig(command, environment, planPath) {
+export function runConfig(command, environment, planPath, exec = execFileSync) {
   if (
     !['plan', 'apply'].includes(command) ||
     !planPath ||
@@ -85,7 +85,7 @@ export function runConfig(command, environment, planPath) {
       'Uso: node scripts/ci/railway-config.mjs <plan|apply> <staging|production> <plano.json>',
     )
   }
-  const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim()
+  const git = (...args) => exec('git', args, { encoding: 'utf8' }).trim()
   if (git('status', '--porcelain', '--', '.railway'))
     throw new Error('A configuração precisa estar commitada e limpa')
   const tree = git('rev-parse', 'HEAD:.railway')
@@ -96,7 +96,7 @@ export function runConfig(command, environment, planPath) {
   // O secret existente é um token de conta, usado como Bearer no deploy legado.
   // A CLI chama esse tipo de credencial de RAILWAY_API_TOKEN.
   if (env.RAILWAY_API_TOKEN) delete env.RAILWAY_TOKEN
-  const railway = (...args) => execFileSync('railway', args, { stdio: 'inherit', env })
+  const railway = (...args) => exec('railway', args, { stdio: 'inherit', env })
   railway(
     'link',
     '--project',
@@ -109,7 +109,11 @@ export function runConfig(command, environment, planPath) {
   const changes = validatePinnedPlan(plan, environment, tree)
   console.log(`${environment}: plano validado, ${changes} alterações, árvore ${tree}`)
   if (command === 'apply') {
-    railway('config', 'apply', '--plan', planPath, '--yes')
+    // Na CLI 5.62.1, claim=true ainda envia uma aplicação com changes=[].
+    // O deploy de aplicações não deve reaplicar a posse de toda a infraestrutura.
+    if (changes > 0) railway('config', 'apply', '--plan', planPath, '--yes')
+    else console.log(`${environment}: sem alterações; conferindo o estado remoto sem apply`)
+    // Inclusive no plano vazio: uma divergência surgida depois do plano bloqueia o deploy.
     railway('config', 'plan', '--detailed-exit-code')
   }
 }
