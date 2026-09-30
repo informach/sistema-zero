@@ -252,6 +252,14 @@
   border-radius: 1rem;
   background: var(--color-card);
 }
+/* O rolo da bancada (fala, pista, prancha) dentro do painel das ações: só a pilha, sem cartão
+ * próprio (o padding e o fundo são do painel). */
+.sz-scene-console-rolo {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
 
 /* A FAIXA: a placa do momento à esquerda, o medidor à direita e os ladrilhos embaixo. */
 .sz-scene-faixa {
@@ -262,15 +270,17 @@
   gap: 0.5rem;
   margin-bottom: 0.625rem;
 }
-.sz-scene-momento {
-  /* As medidas da maquete aprovada (30/09): um degrau menor que a `.sz-scene-placa` de antes. */
+.sz-scene-placa.sz-scene-momento {
+  /* ⚠️ Duas classes de propósito: a `.sz-scene-placa` base vem DEPOIS neste arquivo e, com a mesma
+   * especificidade, vencia — o momento saía cinza, sem as medidas nem o verde do kids (full review de
+   * 30/09, A1). As medidas da maquete aprovada: um degrau menor que a `.sz-scene-placa` de antes. */
   padding: 0.3rem 0.75rem;
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   background: var(--sz-scene-momento-fundo);
   color: var(--sz-scene-momento-tinta);
 }
-.sz-scene-momento[data-momento="descobriu"] {
+.sz-scene-placa.sz-scene-momento[data-momento="descobriu"] {
   background: var(--sz-scene-feita-fundo);
   color: var(--sz-scene-feita-tinta);
 }
@@ -305,12 +315,17 @@
   display: grid;
   gap: 0.5rem;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+  /* Um ladrilho de linha inteira (`data-medida="longa"`) não deixa buraco: os curtos preenchem. */
+  grid-auto-flow: dense;
   margin: 0;
 }
 .sz-scene-hud-tile {
   position: relative;
   display: flex;
   flex-direction: column;
+  /* Rótulo em cima e valor embaixo: num rótulo de duas linhas o valor continua alinhado com o dos
+   * vizinhos (a grade estica os ladrilhos da linha à mesma altura). */
+  justify-content: space-between;
   gap: 0.2rem;
   min-width: 0;
   padding: 0.625rem 0.875rem;
@@ -346,6 +361,14 @@
   line-height: 1.1;
   color: var(--color-foreground);
   overflow-wrap: anywhere;
+}
+/* Valor longo (review visual de 30/09): um degrau menor; muito longo, a linha toda. */
+.sz-scene-hud-tile[data-medida] dd {
+  font-size: 1rem;
+  line-height: 1.2;
+}
+.sz-scene-hud-tile[data-medida="longa"] {
+  grid-column: 1 / -1;
 }
 /* A bolinha do par: cinza opaco no tom neutro (a maquete), a cor do par nos outros. */
 .sz-scene-hud-tile dd::before {
@@ -389,6 +412,30 @@
   border: 0;
   border-radius: 0;
   box-shadow: none;
+}
+/* Palco COMPOSTO (`tilemap`, `same-rules-new-skin`, `unique-names`: a raiz é um `div` com o desenho e
+ * um controle dentro): a moldura vai nos desenhos de dentro, como antes de a regra virar "filho
+ * direto" (full review de 30/09, M1). A miniatura da `screen-reader` (`rounded-none border-0`) fica
+ * de fora: ela mora num embrulho com borda própria. */
+.sz-scene-console-mundo > :not(.sz-scene-frame, [data-scene-prediction-preview])
+  .sz-scene-frame:not(.rounded-none) {
+  border: 4px solid var(--sz-scene-bezel);
+  border-radius: 1rem;
+  box-shadow: none;
+}
+/* Palco com LEGENDA ou RODAPÉ (`aim`, `camera`, `velocity`, `contact`…): a moldura vai no DESENHO
+ * e o texto fica fora dela, sobre o cartão (a regra dela: "justa em volta do desenho"; review visual
+ * de 30/09: a faixa cinza com a legenda ficava DENTRO da moldura). O `overflow-hidden` da moldura
+ * fica, para os controles sobrepostos continuarem recortados como antes. */
+.sz-scene-console-mundo > .sz-scene-frame:has(> svg:first-child + :is(svg, p)) {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.sz-scene-console-mundo > .sz-scene-frame:has(> svg:first-child + :is(svg, p)) > svg:first-child {
+  border: 4px solid var(--sz-scene-bezel);
+  border-radius: 1rem;
+  background: var(--color-scene-ground);
 }
 /* O PÉ DO MUNDO: os botões numa linha e, embaixo, a frase do que está acontecendo na largura toda. */
 .sz-scene-mundo-rodape {
@@ -441,6 +488,13 @@
   display: grid;
   gap: 0.625rem;
 }
+/* Bandeja sem controle nenhum (a `tilemap` põe o rádio da letra DENTRO do palco): some, em vez de
+ * um "Sua vez" vazio (review visual de 30/09). */
+.sz-scene-prancha:not(
+  :has(button, input, select, textarea, [role="radio"], [role="switch"], [role="slider"])
+) {
+  display: none;
+}
 .sz-scene-prancha-titulo,
 .sz-scene-descobertas-titulo {
   margin: 0;
@@ -452,6 +506,7 @@
 }
 /* A ação principal do momento sai na largura toda: o gesto sozinho, ou o botão que a bancada marca. */
 .sz-scene-gestos > :only-child,
+.sz-scene-gestos > [data-tom="gesto"],
 .sz-scene-prancha .sz-scene-acao-principal {
   flex: 1 1 100%;
   width: 100%;
@@ -684,6 +739,16 @@
       max-height: max(20rem, calc(100dvh - 14rem));
       overflow-y: auto;
     }
+    /* ⚠️⚠️ Só a BANCADA rola (fala, pista, prancha): a lista de descobertas e o Conferir ficam
+     * sempre à vista. Sem isto, numa bancada alta (`lives`, `score`, `entity-state`) a lista sumia
+     * abaixo da dobra dentro do painel que rolava (review visual de 30/09). O piso de 12rem
+     * garante bancada visível; passou disso, o painel inteiro rola. */
+    .sz-scene-console-actions > .sz-scene-console-rolo {
+      flex: 0 1 auto;
+      min-height: 12rem;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
     /* No ampliado os dois painéis enchem a área útil e cada um rola sozinho. */
     .sz-scene-workspace--expanded .sz-scene-workspace-body,
     .sz-scene-workspace--expanded .sz-scene-workspace-body > fieldset,
@@ -705,7 +770,15 @@
       /* No ampliado os painéis ENCHEM a linha (cada um rola sozinho): o `start` de cima não vale. */
       align-items: stretch;
     }
-    .sz-scene-workspace--expanded .sz-scene-console-visual,
+    /* ⚠️ O mundo NUNCA rola por dentro, nem no ampliado: numa janela de 768px a faixa + o palco + o
+     * pé passam da linha do grid e o rolo cortava Desfazer/Recomeçar e a situação (full review de
+     * 30/09, M2). Ele fica com a altura natural (`align-self: start`) e quem rola é o cartão. */
+    .sz-scene-workspace--expanded .sz-scene-console-visual {
+      max-height: none;
+      min-height: 0;
+      overflow-y: visible;
+      align-self: start;
+    }
     .sz-scene-workspace--expanded .sz-scene-console-actions {
       max-height: none;
       min-height: 0;
@@ -736,11 +809,10 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+/* O corpo e a entrelinha do valor moram no ladrilho (`.sz-scene-hud-tile dd`, as medidas da maquete). */
 .sz-scene-hud-valor {
   font-family: var(--font-display, var(--font-sans));
-  font-size: 1.5rem;
   font-weight: 800;
-  line-height: 1;
 }
 /* A PLACA do começo da faixa: hoje é o MOMENTO da atividade ("Seu palpite", "Sua vez", "Você
  * descobriu"; `.sz-scene-momento`, no bloco do console) e, quando o título da seção já disse o nome

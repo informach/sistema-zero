@@ -106,27 +106,37 @@ export function SceneReadoutBand({
        ⚠️ A faixa NÃO é `aria-hidden`: quem anuncia a mudança é o `role="status"` da frase, mas
        estes números são conteúdo e continuam sendo lidos. */
     <dl className="sz-scene-hud">
-      {rows.map((r) => (
-        <div key={r.label} className="sz-scene-hud-tile" data-tone={r.tone}>
-          <dt className="sz-scene-hud-rotulo">{r.label}</dt>
-          <dd
-            className={`sz-scene-hud-valor tabular-nums ${
-              r.tone === 'a'
-                ? 'text-scene-a'
-                : r.tone === 'b'
-                  ? 'text-scene-b-ink'
-                  : r.tone === 'alert'
-                    ? 'text-scene-alert'
-                    : // ⚠️ O verde do eixo y da `axis-z` (consertos do review da onda B do lote 5).
-                      r.tone === 'leaf'
-                      ? 'text-scene-leaf'
-                      : ''
-            }`}
+      {rows.map((r) => {
+        const texto = escondidos ? '?' : r.value
+        return (
+          <div
+            key={r.label}
+            className="sz-scene-hud-tile"
+            data-tone={r.tone}
+            // Valor longo ("4 quadros por segundo", "tocando · 8 por segundo"): o CSS o põe num degrau
+            // menor e, muito longo, na linha toda (review visual de 30/09: quebrava em 2-3 linhas).
+            data-medida={texto.length > 15 ? 'longa' : texto.length > 10 ? 'media' : undefined}
           >
-            {escondidos ? '?' : r.value}
-          </dd>
-        </div>
-      ))}
+            <dt className="sz-scene-hud-rotulo">{r.label}</dt>
+            <dd
+              className={`sz-scene-hud-valor tabular-nums ${
+                r.tone === 'a'
+                  ? 'text-scene-a'
+                  : r.tone === 'b'
+                    ? 'text-scene-b-ink'
+                    : r.tone === 'alert'
+                      ? 'text-scene-alert'
+                      : // ⚠️ O verde do eixo y da `axis-z` (consertos do review da onda B do lote 5).
+                        r.tone === 'leaf'
+                        ? 'text-scene-leaf'
+                        : ''
+              }`}
+            >
+              {texto}
+            </dd>
+          </div>
+        )
+      })}
     </dl>
   )
   /* A linha de cima da faixa: a placa do momento à esquerda, o medidor à direita; os ladrilhos

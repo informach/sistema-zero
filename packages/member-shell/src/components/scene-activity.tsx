@@ -675,14 +675,28 @@ export function SceneActivityView({
     const alvo = focar === 'pergunta' ? perguntaRef.current : faixaRef.current
     if (!alvo) return
     alvo.focus({ preventScroll: true })
-    // ⚠️⚠️ Rola só o NECESSÁRIO, e só se a pergunta está fora da janela (review do lote 2). Com
+    // ⚠️⚠️ Rola só o NECESSÁRIO (`block: 'nearest'`: parado quando já está à vista). Com
     // `block: 'center'` a tela andava sempre, e o próximo toque de quem tocava em série caía numa
     // OPÇÃO da pergunta, no mesmo ponto da tela (a pergunta também ignora o toque dos primeiros
-    // instantes: `TEMPO_PARA_LER_A_PERGUNTA_MS`).
-    if (!estaNaJanela(alvo))
+    // instantes: `TEMPO_PARA_LER_A_PERGUNTA_MS`). ⚠️ A guarda olha a janela E os ancestrais que
+    // rolam por dentro: a pergunta mora num painel que rola, e a guarda antiga media só a janela —
+    // a pergunta podia estar abaixo da dobra do painel com ela dizendo "à vista" (full review de
+    // 30/09, B2).
+    if (!estaAVista(alvo))
       alvo.scrollIntoView?.({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' })
     setFocar(null)
   })
+  /**
+   * ⚠️ A caixa da pista mora sob o Zappy e o botão que a pede mora na lista de descobertas, mais
+   * abaixo; com o painel das ações rolando por dentro, a caixa nascia fora da área visível (full
+   * review de 30/09, M3). `nearest`: parado quando já está à vista.
+   */
+  const pistaRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const caixa = pistaRef.current
+    if (hint > 0 && caixa && !estaAVista(caixa))
+      caixa.scrollIntoView?.({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' })
+  }, [hint, reduced])
   // O "Continuar ↓" pergunta se a pergunta está à vista (sem observador, ele aparece).
   // biome-ignore lint/correctness/useExhaustiveDependencies: a pergunta nasce com a conclusão
   useEffect(() => {
@@ -908,8 +922,10 @@ export function SceneActivityView({
   const controlesDaExecucao =
     botoesDaCena.length > 0 ? (
       /* Sem caixa própria: o comando executa o que foi montado na bancada. Com UM gesto só, ele
-         sai na largura toda (`.sz-scene-gestos > :only-child`, console v2). */
-      <div className="sz-scene-gestos flex flex-wrap items-center justify-center gap-3">
+         sai na largura toda (`.sz-scene-gestos > :only-child`, console v2); com o relógio junto, o
+         gesto (`data-tom="gesto"`) toma a linha de cima e os botões do relógio ficam à ESQUERDA na
+         de baixo (review visual: "Mais devagar" caía sozinho e centrado). */
+      <div className="sz-scene-gestos flex flex-wrap items-center justify-start gap-3">
         {botoesDaCena}
       </div>
     ) : null
@@ -1185,7 +1201,8 @@ export function SceneActivityView({
    * ⚠️ O nome da cena só volta à placa quando o `<h3>` está `sr-only` (o título da seção já o
    * disse): ali a placa é a única vez em que o nome aparece na tela.
    */
-  const momento = previsaoPendente ? 'palpite' : conclusao || revisita ? 'descobriu' : 'sua-vez'
+  // A faixa não é montada no palpite (desde 21/09), então o momento é só estes dois.
+  const momento = conclusao || revisita ? 'descobriu' : 'sua-vez'
   const hudDaCena = (
     <SceneReadoutBand
       activity={activity}
@@ -1197,11 +1214,7 @@ export function SceneActivityView({
            medidor caía para a linha de baixo (review do console v2, B3). */
         <div className="sz-scene-placas flex flex-wrap items-center gap-2">
           <span className="sz-scene-placa sz-scene-momento" data-momento={momento}>
-            {momento === 'palpite'
-              ? 'Seu palpite'
-              : momento === 'descobriu'
-                ? 'Você descobriu'
-                : 'Sua vez'}
+            {momento === 'descobriu' ? 'Você descobriu' : 'Sua vez'}
           </span>
           {tituloJaDito(content.title, secao) && (
             <span className="sz-scene-placa">{content.title}</span>
@@ -1420,47 +1433,54 @@ export function SceneActivityView({
                     </div>
                   </ConsoleVisual>
                   <ConsoleActions>
-                    <ConsoleFala>{blocoDaInstrucao}</ConsoleFala>
-                    {/* ⭐⭐ A PISTA mora colada na fala do Zappy, e não no pé do bloco.
+                    {/* ⚠️⚠️ Só a BANCADA rola (fala, pista, prancha): a lista de descobertas e o
+                        Conferir ficam sempre à vista. Sem o rolo, numa bancada alta (`lives`, `score`,
+                        `entity-state`) a lista sumia abaixo da dobra dentro do painel que rolava
+                        (review visual de 30/09). */}
+                    <div className="sz-scene-console-rolo">
+                      <ConsoleFala>{blocoDaInstrucao}</ConsoleFala>
+                      {/* ⭐⭐ A PISTA mora colada na fala do Zappy, e não no pé do bloco.
                       Relato dela na maquete: "não consegui ver onde apareceu a pista". Ela
                       nascia depois do rodapé, longe da instrução que a criança acabou de ler e
                       fora do console — quem pede ajuda é justamente quem vai reler a instrução.
                       Aqui ela cai onde os olhos já estão. */}
-                    {hintText && !conclusao && (
-                      /* A escada de três degraus aparece COMO escada, logo abaixo do botão que a pediu e
+                      {hintText && !conclusao && (
+                        /* A escada de três degraus aparece COMO escada, logo abaixo do botão que a pediu e
                          sem empurrar o palco. A caixa some quando a cena conclui. ⚠️ Sem `role="status"`:
                          o texto é recalculado com a cena (o nível 1 cita a situação), e a cada "+100" o
                          leitor ouvia a situação duas vezes. Quem anuncia a pista é o clique. */
-                      <div
-                        data-pista={pistaFeita ? 'feita' : 'aberta'}
-                        className="sz-scene-pista flex gap-3 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3"
-                      >
-                        {pistaFeita ? (
-                          <Check
-                            size={18}
-                            className="mt-0.5 shrink-0 text-success-foreground"
-                            aria-hidden
-                          />
-                        ) : (
-                          <Lightbulb
-                            size={18}
-                            className="mt-0.5 shrink-0 text-amber-700"
-                            aria-hidden
-                          />
-                        )}
-                        <p className="text-sm leading-relaxed">
-                          {!pistaFeita && (
-                            <>
-                              <span className="font-semibold">
-                                Pista {Math.min(hint, hints.length)} de {hints.length}.
-                              </span>{' '}
-                            </>
+                        <div
+                          ref={pistaRef}
+                          data-pista={pistaFeita ? 'feita' : 'aberta'}
+                          className="sz-scene-pista flex gap-3 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3"
+                        >
+                          {pistaFeita ? (
+                            <Check
+                              size={18}
+                              className="mt-0.5 shrink-0 text-success-foreground"
+                              aria-hidden
+                            />
+                          ) : (
+                            <Lightbulb
+                              size={18}
+                              className="mt-0.5 shrink-0 text-amber-700"
+                              aria-hidden
+                            />
                           )}
-                          {hintText}
-                        </p>
-                      </div>
-                    )}
-                    {pranchaDaCena}
+                          <p className="text-sm leading-relaxed">
+                            {!pistaFeita && (
+                              <>
+                                <span className="font-semibold">
+                                  Pista {Math.min(hint, hints.length)} de {hints.length}.
+                                </span>{' '}
+                              </>
+                            )}
+                            {hintText}
+                          </p>
+                        </div>
+                      )}
+                      {pranchaDaCena}
+                    </div>
                     {/* ⭐⭐ O que ela já descobriu, com as ações da descoberta embaixo. A resposta do
                         Conferir mora aqui, ao lado do botão que a pediu (era um parágrafo solto
                         embaixo do console). */}
@@ -1697,11 +1717,21 @@ function mesmoConjunto(a: readonly string[], b: readonly string[]): boolean {
   return a.length === b.length && a.every((x) => b.includes(x))
 }
 
-/** O elemento está inteiro dentro da janela? Sem medida (fora do navegador), está. */
-function estaNaJanela(el: Element): boolean {
+/**
+ * O elemento está inteiro à vista: dentro da janela E dentro de cada ancestral que rola por dentro
+ * (o painel das ações, o rolo da bancada). Sem medida (fora do navegador), está.
+ */
+function estaAVista(el: Element): boolean {
   const r = el.getBoundingClientRect()
   const altura = window.innerHeight || document.documentElement.clientHeight
-  return r.top >= 0 && r.bottom <= altura
+  if (r.top < 0 || r.bottom > altura) return false
+  for (let pai = el.parentElement; pai; pai = pai.parentElement) {
+    if (pai.scrollHeight > pai.clientHeight + 1) {
+      const caixa = pai.getBoundingClientRect()
+      if (r.top < caixa.top || r.bottom > caixa.bottom) return false
+    }
+  }
+  return true
 }
 
 /**

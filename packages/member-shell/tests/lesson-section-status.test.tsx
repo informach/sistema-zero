@@ -27,6 +27,10 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
     })
     expect(markup).toContain('data-state="pronto"')
     expect(markup).toContain('Tudo pronto nesta parte. Pode seguir!')
+    // Na ÚLTIMA seção não há o que seguir: o botão ao lado é "Concluir aula".
+    const ultima = faixa({ items: [], completed: true, ultima: true })
+    expect(ultima).toContain('Tudo pronto nesta parte!')
+    expect(ultima).not.toContain('Pode seguir')
     // Pronta, os itens pendentes não aparecem (o estado vence a lista).
     expect(markup).not.toContain('Veja o vídeo')
     expect(markup).not.toContain('Para seguir:')
@@ -111,6 +115,14 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
     // É um estado, não um pedido: sem "Para seguir:".
     expect(criança).not.toContain('Para seguir:')
     expect(criança).toContain('lucide-wrench')
+
+    // Dois `authoring` com textos diferentes viram UMA frase fora do ensaio (sem "+1").
+    const dois = faixa({
+      items: [autoria, item('authoring', 'Configure os critérios de conclusão desta seção.')],
+      completed: false,
+    })
+    expect(dois.split('Esta parte ainda está sendo preparada').length - 1).toBe(1)
+    expect(dois).not.toContain('sz-lesson-status-mais')
 
     const ensaio = faixa({ items: [autoria], completed: false, preview: true })
     expect(ensaio).toContain('A verificação desta seção precisa ser configurada pelo professor.')

@@ -185,9 +185,9 @@ O botão **Voltar à aula** permanece acessível; Escape também sai. Ampliar e 
 ações posicionadas, contadores, seleção, execução ou descobertas. Redimensionar o painel também não.
 
 Em painel estreito, janela muito baixa ou com zoom alto, as regiões continuam empilhadas.
-Não reduzir fonte nem cortar conteúdo para prometer ausência de rolagem. Palcos simples se
-ajustam à altura disponível sem distorção; comparações com legendas preservam o espaço necessário
-à leitura.
+Não reduzir fonte nem cortar conteúdo para prometer ausência de rolagem. Os painéis do console
+têm altura natural e só o das ações rola quando passa da janela (30/09/2026); comparações com
+legendas preservam o espaço necessário à leitura.
 
 Os cartões arrastáveis se adaptam à largura da bancada, não à largura da janela. Na experiência
 de áreas do projeto, a criança lê **Ações disponíveis**, como no conceito ensinado; "ficha" é só

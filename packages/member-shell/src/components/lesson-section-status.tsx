@@ -66,7 +66,11 @@ function iconeDe(item: SectionPendingItem) {
   return ICONE[item.kind] ?? Flag
 }
 
-const PREPARANDO = 'Esta parte ainda está sendo preparada'
+export const PREPARANDO = 'Esta parte ainda está sendo preparada'
+/** O texto que a CRIANÇA lê: a mensagem de autoria só sai inteira no ensaio (`preview`). */
+export function textoDoItem(item: SectionPendingItem, preview: boolean) {
+  return item.kind === 'authoring' && !preview ? PREPARANDO : item.text
+}
 /**
  * "Para seguir:" só antecede uma AÇÃO da criança. A razão da aula toda (`lesson`), a aula em
  * preparo e a mensagem de autoria são estados, não pedidos (review do lote 2, M4).
@@ -89,7 +93,7 @@ function Item({
   preview: boolean
 }) {
   const Icone = iconeDe(item)
-  const texto = item.kind === 'authoring' && !preview ? PREPARANDO : item.text
+  const texto = textoDoItem(item, preview)
   return (
     <span className="sz-lesson-status-item inline-flex items-center gap-2" data-kind={item.kind}>
       <span className="sz-lesson-status-icone inline-grid shrink-0 place-items-center" aria-hidden>
@@ -109,6 +113,7 @@ export function LessonSectionStatus({
   fallback,
   preview = false,
   className,
+  ultima = false,
 }: {
   /** O que falta na seção ATUAL, tipado pelo members. */
   items: readonly SectionPendingItem[]
@@ -123,13 +128,18 @@ export function LessonSectionStatus({
   preview?: boolean
   /** Só posição (o rodapé fixo centra a faixa na mesma coluna dos botões). */
   className?: string
+  /** A última seção: "Pode seguir!" não faz sentido ao lado de "Concluir aula". */
+  ultima?: boolean
 }) {
   const raiz = `sz-lesson-status text-sm${className ? ` ${className}` : ''}`
   if (completed)
     return (
       <div className={raiz} data-state="pronto" role="status">
         <Item
-          item={{ kind: 'lesson', text: 'Tudo pronto nesta parte. Pode seguir!' }}
+          item={{
+            kind: 'lesson',
+            text: ultima ? 'Tudo pronto nesta parte!' : 'Tudo pronto nesta parte. Pode seguir!',
+          }}
           preview={preview}
         />
       </div>
@@ -139,8 +149,17 @@ export function LessonSectionStatus({
     : fallback
       ? [{ kind: 'lesson', text: typeof fallback === 'string' ? fallback : '' }]
       : []
-  if (!lista.length) return null
-  const [primeiro, ...resto] = lista as [SectionPendingItem, ...SectionPendingItem[]]
+  // ⚠️ Repetidos DEPOIS da troca: dois `authoring` com textos diferentes viravam duas vezes "Esta
+  // parte ainda está sendo preparada" e um "+1" que abria a mesma frase (full review de 30/09, B1).
+  const vistos = new Set<string>()
+  const unicos = lista.filter((item) => {
+    const texto = textoDoItem(item, preview)
+    if (vistos.has(texto)) return false
+    vistos.add(texto)
+    return true
+  })
+  if (!unicos.length) return null
+  const [primeiro, ...resto] = unicos as [SectionPendingItem, ...SectionPendingItem[]]
   // Um `fallback` que não é texto (um `<p>` do player) entra como está, sem ícone.
   if (primeiro.kind === 'lesson' && !primeiro.text && fallback)
     return (

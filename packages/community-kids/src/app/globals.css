@@ -1891,11 +1891,11 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 .sz-lesson-sections .sz-lesson-status[data-state="pronto"] .sz-lesson-status-icone {
   background: var(--success-foreground);
 }
-.sz-lesson-sections .sz-lesson-status-lista > summary {
+.sz-lesson-sections .sz-lesson-status .sz-lesson-status-lista > summary {
   min-height: 2.75rem;
   list-style: none;
 }
-.sz-lesson-sections .sz-lesson-status-lista > summary::-webkit-details-marker {
+.sz-lesson-sections .sz-lesson-status .sz-lesson-status-lista > summary::-webkit-details-marker {
   display: none;
 }
 .sz-lesson-sections .sz-lesson-status-mais {

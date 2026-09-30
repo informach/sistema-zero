@@ -36,7 +36,7 @@ import { InteractiveLessonBlock } from './learning-activity'
 import { LessonGalleryDelivery } from './lesson-gallery-delivery'
 import { LessonPlayerProvider, useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
-import { LessonSectionStatus } from './lesson-section-status'
+import { LessonSectionStatus, textoDoItem } from './lesson-section-status'
 
 function dialogueText(content: unknown): string | null {
   return content !== null &&
@@ -808,6 +808,16 @@ function LessonSectionsContent({
    * aula" estar travado que o player passa em `completionMessage`. No ensaio (`preview`) as
    * mensagens de autoria saem inteiras.
    */
+  /**
+   * ⚠️ A barra "O que falta para concluir" (adulto e ensaio) lia a `action` do
+   * `SECTION_GATE_INCOMPLETE`, que junta as frases CRUAS de `pending`: a mensagem de autoria chegava
+   * ao aluno adulto por ali (full review de 30/09). Os itens tipados passam pela troca da faixa.
+   */
+  const acaoDoRequisito = (r: { sectionId: string | null; action: string; reason: string }) => {
+    if (r.reason !== 'SECTION_GATE_INCOMPLETE') return r.action
+    const itens = state?.sections.find((s) => s.id === r.sectionId)?.pendingItems
+    return itens?.length ? itens.map((item) => textoDoItem(item, preview)).join(' · ') : r.action
+  }
   const secaoAtual = state?.sections.find((s) => s.id === section.id)
   // Aula CONCLUÍDA: toda seção está fechada e o botão já diz "Aula concluída"; a faixa verde em
   // cada parte seria ruído (review do lote 2, B3).
@@ -818,6 +828,7 @@ function LessonSectionsContent({
       fallback={index === sections.length - 1 ? completionMessage : undefined}
       preview={preview}
       className={immersive ? 'mx-auto w-full max-w-7xl' : undefined}
+      ultima={index === sections.length - 1}
     />
   )
   const nextButton = (
@@ -942,7 +953,7 @@ function LessonSectionsContent({
                           {r.title}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {r.complete ? 'Concluído' : r.action}
+                          {r.complete ? 'Concluído' : acaoDoRequisito(r)}
                         </span>
                       </button>
                     ))

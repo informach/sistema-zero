@@ -835,6 +835,10 @@ describe('⭐⭐ a moldura do lote 2: Conferir, a pergunta e a revisita', () => 
       hintsUsed: 2,
     })
     expect(await screen.findByText('Você já descobriu isto.')).toBeTruthy()
+    // Console v2 (30/09): na revisita o momento da faixa já nasce "Você descobriu", sem gesto.
+    const momento = document.querySelector('.sz-scene-momento')
+    expect(momento?.getAttribute('data-momento')).toBe('descobriu')
+    expect(momento?.textContent).toBe('Você descobriu')
     const explicacao = screen.getByText('A EXPLICAÇÃO QUE O SERVIDOR GUARDOU.')
     expect(explicacao.closest('details')?.open).toBe(false)
     expect(explicacao.closest('details')?.textContent).toContain('Ver a explicação')

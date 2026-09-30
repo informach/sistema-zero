@@ -164,6 +164,8 @@ export function SceneButton({
     <Button
       variant={variant}
       {...props}
+      // O tom no DOM: é por ele que o CSS dá ao gesto a linha inteira (`.sz-scene-gestos > [data-tom="gesto"]`).
+      data-tom={fechado ? 'discreta' : tom}
       aria-disabled={fechado || undefined}
       onClick={fechado ? undefined : onClick}
       onPointerDown={fechado ? undefined : onPointerDown}

@@ -25,8 +25,8 @@
 > da seção, nunca no slot ancestral, para não limitar o posicionamento fixo da ampliação.
 > Nenhuma troca remonta o player.
 > Reutiliza `useModalA11y` para Escape, foco e trava de rolagem ao ampliar.
-> Palcos simples expõem a proporção real para caber também pela altura; legendas e comparações
-> nunca são cortadas. QA interativo: `bun run --filter @sistemazero/community-kids e2e:scenes`.
+> Os dois painéis do console têm altura natural e só o das ações rola (§"O CONSOLE v2"); legendas e
+> comparações nunca são cortadas. QA interativo: `bun run --filter @sistemazero/community-kids e2e:scenes`.
 
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Next.js, React, jose, Zod,
@@ -1049,7 +1049,9 @@ que fica verde quando a parte termina.
   `join(' ')` colava uma na outra).
 - ⚠️⚠️ **Mensagem de AUTORIA (`kind: 'authoring'`) é para o professor**, não para a criança: fora
   do ensaio (`preview` falso, ou seja, com `LessonPlayerProvider`) ela vira "Esta parte ainda
-  está sendo preparada.". No ensaio do admin sai inteira.
+  está sendo preparada". No ensaio do admin sai inteira, e a barra "O que falta para concluir" do
+  adulto passa pela MESMA troca (`textoDoItem`): antes ela lia a `action` crua do
+  `SECTION_GATE_INCOMPLETE` e a mensagem do professor chegava ao aluno adulto por ali.
 - **A copy dos requisitos é a voz da CRIANÇA** (decisão dela, vale também no adulto), em
   `core/src/learning/requirements.ts`: "Veja o vídeo até o fim (você já viu 45%)", "Termine o
   experimento", "Jogue o jogo pronto", "Passe no quiz (nota mínima 70%)", "Envie seu projeto para
@@ -1251,8 +1253,10 @@ ajustes dela. Hoje o console é:
   `--sz-scene-feita-*`, `--sz-scene-pendente-*`) em `.sz-lesson-sections .sz-scene-console`; o
   adulto e o ensaio do admin ficam com a queda neutra do `scene.css`.
 - **A placa virou o MOMENTO** (`.sz-scene-momento[data-momento]`): "Sua vez" com a cena aberta,
-  "Você descobriu" depois que ela fecha (`conclusao || revisita`); "Seu palpite" existe no código,
-  mas a faixa não é montada no palpite desde 21/09. O nome da cena volta à placa só com o `<h3>`
+  "Você descobriu" depois que ela fecha (`conclusao || revisita`); o "Seu palpite" saiu do código no
+  full review (a faixa não é montada no palpite desde 21/09). ⚠️ O CSS mira
+  `.sz-scene-placa.sz-scene-momento`: com uma classe só, a `.sz-scene-placa` base (que vem depois
+  no arquivo, mesma especificidade) vencia e o momento saía cinza, sem o verde do kids. O nome da cena volta à placa só com o `<h3>`
   `sr-only` (título repetido).
 - ⚠️⚠️ **Decisões dela em 30/09 que REVOGAM a maquete de 18/09:** (1) a moldura de tela de jogo é do
   PALCO (`.sz-scene-console .sz-scene-frame`: 4px na `--sz-scene-bezel`, cantos de 16px, justa em
@@ -1280,6 +1284,34 @@ ajustes dela. Hoje o console é:
   `align-items: start`: sem isso o painel do mundo era ESTICADO à altura do das ações (~200px de
   branco sob a frase da situação numa bancada longa). No ampliado os dois painéis enchem a área
   útil (`align-items: stretch` de volta) e rolam cada um.
+- **Full review de código (30/09/2026), o que mudou:** (a) o momento com as duas classes (acima);
+  (b) os palcos COMPOSTOS (`tilemap`, `same-rules-new-skin`, `unique-names`) voltaram a ter a
+  moldura nos desenhos de dentro (a regra "filho direto" os tinha deixado sem nenhuma); (c) no
+  AMPLIADO o mundo não rola por dentro (`align-self: start`, `overflow: visible`): a 768px o rolo
+  cortava Desfazer/Recomeçar e a situação; (d) a caixa da pista entra à vista quando o botão (na
+  lista, mais abaixo) a pede (`pistaRef` + `scrollIntoView nearest`); (e) o foco da pergunta rola
+  SEMPRE com `nearest` (a guarda "está na janela?" media só a janela, e a pergunta mora num painel
+  que rola por dentro); (f) `LessonSectionStatus` tira repetidos DEPOIS da troca da autoria e diz
+  "Tudo pronto nesta parte!" na última seção (`ultima`); (g) o adulto e o kids sem avisos novos de
+  especificidade no biome.
+- **Review VISUAL nas 59 cenas (30/09/2026, prints do `tmp/confere-console-v2.tsx`), o que mudou:**
+  (a) ⚠️⚠️ **só a BANCADA rola** — fala, pista e prancha moram no `.sz-scene-console-rolo` (piso de
+  12rem), e a lista de descobertas com Uma pista/Conferir fica FORA dele, sempre à vista; antes, numa
+  bancada alta (`lives`, `score`, `entity-state`) a lista sumia abaixo da dobra dentro do painel que
+  rolava; (b) **bandeja sem controle some** (`.sz-scene-prancha:not(:has(button, input, …))`): a
+  `tilemap` põe o rádio da letra dentro do palco e saía um "Sua vez" vazio; (c) **valor longo no
+  ladrilho** ganha `data-medida="media|longa"` (>12 e >18 caracteres) no `scene-frame.tsx`: degrau
+  menor e, muito longo, a linha toda (13 cenas quebravam em 2-3 linhas: "4 quadros por segundo",
+  "tocando · 8 por segundo"); o ladrilho é `justify-content: space-between` para o valor alinhar
+  quando o rótulo tem duas linhas; (d) **palco com legenda ou rodapé** (`aim`, `camera`, `velocity`,
+  `contact`…): a moldura escura vai no `svg` e o texto fica fora dela, sobre o cartão
+  (`.sz-scene-frame:has(> svg:first-child + :is(svg, p))`); (e) **o gesto toma a linha** e os
+  botões do relógio ficam à esquerda na de baixo (`SceneButton` expõe `data-tom`; `.sz-scene-gestos`
+  é `justify-start`): "Mais devagar" caía sozinho e centrado em `gravity`/`impulse`. ⚠️ Ficou para
+  ela decidir: o cartão do mundo NÃO estica (o cinza do deck aparece sob ele numa bancada alta) e a
+  moldura navy some nas cenas do espaço (o bezel sobre `#0b1020`); e a `aim` desenha o mundo
+  transladado dentro do SVG (moldura dobrada, é a cena). ⚠️ No print ESTÁTICO os botões saem
+  apagados (`ready` é falso sem hidratação): não é defeito.
 - **Review do lote (30/09/2026), o que ele mudou:** (a) ⚠️⚠️ **a pílula "Rodando/Parado" sobre o
   palco SAIU** — ela cobria o texto que ~20 dos 30 palcos com relógio desenham no canto de cima
   ("Pronto para começar", "quadro 0", os corações do `VidaDoJogo`); os dois cantos de cima são zona
@@ -1302,7 +1334,8 @@ ajustes dela. Hoje o console é:
   em `scene-touch-response.test.tsx`.
 - ⚠️ `scene-motor-3d-consertos-5b.test.tsx` e `lesson-scene-design.test.tsx:178` pinam as classes
   `text-scene-a`/`-b-ink`/`-alert`/`-leaf` no `dd` da faixa: elas ficam, e é por elas que o CSS
-  pinta a bolinha (`.sz-scene-hud-tile dd.text-scene-a::before`).
+  pinta a bolinha (`.sz-scene-hud-tile dd.text-scene-a::before`). O medidor marca a bolinha feita
+  com `data-feita` na `.sz-scene-medidor-bolinha` (`lesson-scene-experiencia.test.tsx` lê por ele).
 - ⭐ **O fundo do jardim não cobria o palco** (achado da maquete, defeito de produção): um
   `<image>` de SVG que aponta para OUTRO SVG não manda no encaixe de dentro — o `slice` de fora
   vale só para a caixa dele e a raiz apontada ajustava por "meet", deixando ~13px vazios de cada
@@ -1331,7 +1364,8 @@ Hoje é um bloco só (`scene-console.tsx`), nesta ordem:
 │ ╰──────────────────────────────────────╯  │
 │  o retorno da descoberta                  │
 └───────────────────────────────────────────┘
-   Desfazer · Recomeçar · Uma pista   Conferir   ← o rodapé fica FORA do console
+   Desfazer · Recomeçar · Uma pista   Conferir   ← o rodapé ficava FORA do console (18/09; desde
+                                                   30/09 estão no pé do mundo e na lista de descobertas)
 ```
 
 ⚠️⚠️ **O MATERIAL continua sendo o do APLICATIVO.** Ela viu três propostas na maquete e escolheu o
@@ -1350,7 +1384,9 @@ mudou foi só onde cada peça mora. Quem veste o jogo é o que está DENTRO do p
   load-bearing: sem ela o cartão encostava no mundo, e ela reparou na maquete.
 - **A comparação guardada** ficou FORA do console: ela é um segundo mundo, e dois mundos dentro da mesma
   moldura leem como uma coisa só. O RODAPÉ também: as ferramentas e o "Conferir" são o que a criança
-  faz COM a cena, e dentro da moldura viravam mais uma faixa.
+  faz COM a cena, e dentro da moldura viravam mais uma faixa. ⚠️ Substituído em 30/09 (console v2):
+  a comparação mora no painel das AÇÕES, depois da lista de descobertas; Desfazer/Recomeçar no pé do
+  MUNDO; Uma pista/Conferir na lista.
 - **A "Agora é sua vez" usa o MESMO console** (`scene-sandbox.tsx`), com a fala do Zappy chegando
   pela prop `fala`: ela é a experimentação continuando, então não pode ter outra cara.
 - ⚠️ As três ferramentas do rodapé passaram de `tom="discreta"` (fantasma) para **`tom="ferramenta"`**
@@ -1537,7 +1573,9 @@ acrescenta mais o modelo da cena automaticamente.
   `sceneSetupGoals`, que ignora meta que saiu do catálogo): a escada é UM degrau, tirado da meta que falta
   ("Tente: …"), porque a escada do modelo mandava mexer no eixo que a aula não cobra. Só o player encolhe: o
   members confere `hintsUsed` contra os três do modelo.
-- Rodapé: ferramentas à esquerda, o caminho para a frente à direita (`ml-auto`). ⚠️ Os NOMES acessíveis das
+- ⚠️ Substituído em 30/09 (console v2): não há mais rodapé de ferramentas (Desfazer/Recomeçar no pé
+  do mundo, Uma pista/Conferir na lista de descobertas). Histórico: ferramentas à esquerda, o caminho
+  para a frente à direita (`ml-auto`). ⚠️ Os NOMES acessíveis das
   ferramentas são o contrato dos testes; abaixo de 480px elas ficam só com o ícone (`min-w-11`).
 
 **Conclusão e revisita (`scene-conclusion.tsx`).**
@@ -1710,7 +1748,7 @@ acrescenta mais o modelo da cena automaticamente.
   embaixo do palco. Substituído (16/09/2026): faixa `aria-hidden` → faixa lida, porque escondida tirava de quem
   não enxerga os números que a cena existe para mostrar. 14px, separador por CSS (`after:content`), valores nas
   cores do par (`scene-a`, `scene-b-ink`, `scene-alert`, `scene-leaf`). Desde o console ela é a tira de cima
-  dele e tem dois hóspedes: a `placa` do começo (hoje só o "Seu palpite") e o `valoresEscondidos`, que troca
+  dele e tem dois hóspedes: a `placa` do começo (desde 30/09 o MOMENTO "Sua vez"/"Você descobriu" com o título repetido, em `.sz-scene-placas`) e o `valoresEscondidos`, que troca
   cada valor por "?" no momento do palpite (ver "O CONSOLE").
 - **O medidor de descobertas mora NA LINHA da faixa**, perto de onde o dedo está: `role="meter"` com o nome "N de
   M descobertas", o texto "Descobertas N de M" à vista e `aria-hidden` (o medidor já diz), bolinhas sem `title`
@@ -1734,7 +1772,7 @@ acrescenta mais o modelo da cena automaticamente.
 
 `SCENE_COMPARISONS` (core `catalog.ts`, hoje só `hitbox`) com `sceneShowsComparison(cena)` é a lista ÚNICA: o
 "Guardar este jeito" (`tom="discreta"`) e o destaque `compare` da demonstração no player, e a opção "Comparação" do
-destaque de etapa no admin. A comparação abre logo abaixo dos botões ("Compare: o que você guardou × agora",
+destaque de etapa no admin. A comparação abre no painel das ações, depois da lista de descobertas (desde 30/09; antes logo abaixo dos botões: "Compare: o que você guardou × agora",
 `ExperienceComparison`). ⚠️ O `isSceneScript` aceita `compare` em qualquer cena (roteiro antigo abre); na cena sem
 comparação o destaque não desenha nada. Substituído (16/09/2026): a lista do laboratório repetida no player → a
 lista do core, porque as cópias já tinham divergido. Não confundir com o modo `comparacao` do palco, que mostra dois

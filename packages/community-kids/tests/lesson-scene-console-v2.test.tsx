@@ -78,6 +78,9 @@ describe('o console v2: o momento, as descobertas e o pé do mundo', () => {
     const momento = () => container.querySelector('.sz-scene-momento')
     expect(momento()?.textContent).toBe('Sua vez')
     expect(momento()?.getAttribute('data-momento')).toBe('sua-vez')
+    // ⚠️ As DUAS classes: a `.sz-scene-placa` base vencia a `.sz-scene-momento` (mesma
+    // especificidade, vem depois no CSS) e o momento saía cinza; o CSS mira `.sz-scene-placa.sz-scene-momento`.
+    expect(momento()?.classList.contains('sz-scene-placa')).toBe(true)
 
     // As duas metas, trancadas e neutras: nenhum rótulo de conclusão na tela.
     expect(screen.getAllByText(PENDENTE)).toHaveLength(2)
@@ -124,6 +127,14 @@ describe('o console v2: o momento, as descobertas e o pé do mundo', () => {
       'Sua vez',
     )
 
+    // ⚠️⚠️ Só a BANCADA rola: fala e prancha no `.sz-scene-console-rolo`, a lista de descobertas FORA
+    // dele (review visual de 30/09: numa bancada alta a lista sumia no rolo).
+    const rolo = container.querySelector('.sz-scene-console-rolo') as HTMLElement
+    expect(rolo).not.toBeNull()
+    expect(rolo.contains(container.querySelector('.sz-scene-prancha'))).toBe(true)
+    expect(rolo.contains(container.querySelector('.sz-scene-console-fala'))).toBe(true)
+    expect(rolo.contains(descobertas)).toBe(false)
+
     // A resposta do Conferir sai ao lado do botão que a pediu, dentro da lista de descobertas.
     fireEvent.click(screen.getByRole('button', { name: 'Conferir' }))
     const resposta = await screen.findByText(/^Ainda não\. Tente:/)
@@ -143,5 +154,17 @@ describe('o console v2: o momento, as descobertas e o pé do mundo', () => {
     const tons = ladrilhos.map((l) => l.querySelector('dd')?.className ?? '')
     expect(tons.some((t) => t.includes('text-scene-a'))).toBe(true)
     expect(tons.some((t) => t.includes('text-scene-b-ink'))).toBe(true)
+    // Valores curtos ("0"): sem `data-medida`.
+    for (const ladrilho of ladrilhos) expect(ladrilho.hasAttribute('data-medida')).toBe(false)
+  })
+
+  test('um valor longo na faixa é marcado (`data-medida`) para o CSS não o quebrar em três linhas', async () => {
+    // A `frames` lê "4 quadros por segundo" (21 caracteres): é `longa`; "1 de 2" e "parada" não.
+    const { container } = abrir(bloco({ type: 'experimentation', scene: 'frames' }))
+    await screen.findByRole('meter')
+    const longos = [...container.querySelectorAll('.sz-scene-hud-tile[data-medida="longa"]')]
+    expect(longos.length).toBe(1)
+    expect(longos[0]?.querySelector('dd')?.textContent).toBe('4 quadros por segundo')
+    expect(container.querySelectorAll('.sz-scene-hud-tile:not([data-medida])').length).toBe(2)
   })
 })

@@ -159,7 +159,7 @@ export class SectionProgressionService {
         .filter((r) => !r.complete)
         .map((r) => ({ kind: r.reason, text: r.action }))
       // ⚠️ Mensagem de AUTORIA (`authoring`): é para o professor; a faixa do rodapé a troca por
-      // "Esta parte ainda está sendo preparada." fora do ensaio do admin.
+      // "Esta parte ainda está sendo preparada" fora do ensaio do admin.
       if (
         !structure.legacyLayout &&
         (!criteria ||

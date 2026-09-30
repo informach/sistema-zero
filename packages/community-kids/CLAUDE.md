@@ -1290,7 +1290,8 @@ variáveis em `.sz-lesson-sections .sz-scene-console` (bloco "O CONSOLE v2 da ex
 `globals.css`): deck em `--pen-sup2`, moldura no navy `--menu`, momento no `--kids-verde` do chip
 "Experimente", situação em `--band-amarelo`, descoberta feita em `--band-menta` com
 `--success-foreground`, pendente em `--band-creme`. Decisões dela na maquete: pendente trancada e
-NEUTRA (sem o gesto que falta), moldura no PALCO (revoga o "borda a borda" de 18/09), valores da
+NEUTRA (sem o gesto que falta), moldura no PALCO (revoga o "mundo de borda a borda, reto" da maquete
+de 18/09, no CLAUDE.md do member-shell), valores da
 faixa ESCUROS com a cor do par só na bolinha. Teste: `tests/lesson-scene-console-v2.test.tsx`.
 ⚠️ A maquete aprovada é `tmp/maquete-experiencia.tsx` (fora do git): não apagar enquanto a tela
 não bater com ela. ⚠️ Nesta máquina o Playwright não abre o Chrome; o que funciona é o Chrome

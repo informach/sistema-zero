@@ -49,6 +49,7 @@ describe('palco O toque faz o jogo responder', () => {
     const principal = botaoDe(desligado, 'Ligar a reação ao toque')
     expect(principal).toContain('sz-scene-acao-principal')
     expect(principal).toContain('px-6')
+    expect(principal).toContain('data-tom="gesto"')
     expect(principal).not.toContain('border-primary')
 
     const ligado = renderToStaticMarkup(

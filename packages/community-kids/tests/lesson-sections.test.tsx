@@ -973,6 +973,7 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
     globalThis.fetch = Object.assign(async () => Response.json({ ok: true }), {
       preconnect: () => {},
     })
+    const AUTORIA = 'A verificação desta seção precisa ser configurada pelo professor.'
     const progresso: SectionProgressView = {
       revision: 'structure',
       completed: 0,
@@ -982,14 +983,16 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
         id,
         title: id,
         status: 'available' as const,
-        pending: index === 0 ? ['Veja o vídeo até o fim'] : [],
+        pending: index === 0 ? ['Veja o vídeo até o fim'] : index === 1 ? [AUTORIA] : [],
         pendingItems:
           index === 0
             ? [{ kind: 'VIDEO_GATE_NOT_WATCHED' as const, text: 'Veja o vídeo até o fim' }]
-            : [],
+            : index === 1
+              ? [{ kind: 'authoring' as const, text: AUTORIA }]
+              : [],
       })),
     }
-    const { container } = render(
+    const { container, unmount } = render(
       <LessonPlayerProvider value={player}>
         <LessonSections
           lesson={{ ...lesson, sectionProgress: progresso }}
@@ -1004,6 +1007,10 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
     const rodape = container.querySelector('.sz-lesson-nav-immersive')
     const faixa = () => container.querySelector('.sz-lesson-nav-immersive .sz-lesson-status')
     expect(faixa()).not.toBeNull()
+    // ⚠️ O rodapé fixo publica a própria altura no `<html>` (a página reserva a partir dela).
+    expect(document.documentElement.style.getPropertyValue('--sz-lesson-nav-height')).toMatch(
+      /^\d+px$/,
+    )
     // Dentro do rodapé, ANTES dos botões, e centrada na coluna deles.
     const botoes = rodape?.querySelector('.sz-lesson-nav-inner')
     expect(botoes).not.toBeNull()
@@ -1017,12 +1024,16 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
     expect(faixa()?.textContent).not.toContain('Termine as atividades desta aula')
     expect(faixa()?.querySelector('[data-kind="VIDEO_GATE_NOT_WATCHED"]')).not.toBeNull()
 
-    // A segunda seção não tem item nem é a última: a faixa some.
+    // ⚠️⚠️ A segunda seção tem a mensagem de AUTORIA: com o player de verdade (fora do ensaio) a
+    // criança lê "Esta parte ainda está sendo preparada", nunca "professor" (full review de 30/09:
+    // a troca só era guardada na unidade, não na fiação).
     fireEvent.click(screen.getByRole('button', { name: /Próxima seção/ }))
     await waitFor(() =>
       expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Observar'),
     )
-    expect(faixa()).toBeNull()
+    expect(faixa()?.textContent).toContain('Esta parte ainda está sendo preparada')
+    expect(faixa()?.textContent).not.toContain('professor')
+    expect(faixa()?.textContent).not.toContain('Para seguir:')
 
     // A última, sem item próprio, mostra o fallback da aula (sem "Para seguir:", é um estado).
     fireEvent.click(screen.getByRole('button', { name: /Próxima seção/ }))
@@ -1030,6 +1041,45 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
     expect(faixa()?.textContent).toContain('Termine as atividades desta aula para concluir')
     expect(faixa()?.textContent).not.toContain('Para seguir:')
     expect(faixa()?.querySelector('[data-kind="lesson"]')).not.toBeNull()
+    // Ao desmontar, a variável sai do `<html>` (a página seguinte não herda a reserva).
+    unmount()
+    expect(document.documentElement.style.getPropertyValue('--sz-lesson-nav-height')).toBe('')
+  })
+
+  test('a faixa "o que falta para seguir" também existe no ADULTO (sem a flag `kids`)', () => {
+    globalThis.fetch = Object.assign(async () => Response.json({ ok: true }), {
+      preconnect: () => {},
+    })
+    const progresso: SectionProgressView = {
+      revision: 'structure',
+      completed: 0,
+      total: 3,
+      percent: 0,
+      sections: ['first', 'second', 'third'].map((id, index) => ({
+        id,
+        title: id,
+        status: 'available' as const,
+        pending: index === 0 ? ['Passe no quiz (nota mínima 70%)'] : [],
+        pendingItems:
+          index === 0
+            ? [{ kind: 'QUIZ_GATE_NOT_PASSED' as const, text: 'Passe no quiz (nota mínima 70%)' }]
+            : [],
+      })),
+    }
+    const { container } = render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections
+          lesson={{ ...lesson, sectionProgress: progresso }}
+          lessonTitle="Meu jogo"
+          immersive
+          renderBlocks={() => null}
+        />
+      </LessonPlayerProvider>,
+    )
+    const faixa = container.querySelector('.sz-lesson-nav-immersive .sz-lesson-status')
+    expect(faixa).not.toBeNull()
+    expect(faixa?.textContent).toContain('Passe no quiz (nota mínima 70%)')
+    expect(faixa?.querySelector('[data-kind="QUIZ_GATE_NOT_PASSED"]')).not.toBeNull()
   })
 
   test('trocar de seção leva o FOCO ao cabeçalho, que é a âncora do conteúdo novo', async () => {
