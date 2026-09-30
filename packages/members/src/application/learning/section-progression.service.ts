@@ -174,7 +174,9 @@ export class SectionProgressionService {
       if (criteria?.platformAction)
         missing.push({
           kind: 'platform-action',
-          text: `${PLATFORM_ACTION_LABELS[criteria.platformAction]} e toque em "Verificar minha ação"`,
+          // Os rótulos das ações são infinitivos ("Personalizar o avatar"): a frase os leva sem
+          // conjugar, e o botão citado é o do `SectionPlatformAction` do member-shell.
+          text: `Depois de ${minuscula(PLATFORM_ACTION_LABELS[criteria.platformAction])}, toque em "Verificar minha ação"`,
         })
       if (
         criteria?.projectChecks?.length &&
@@ -184,7 +186,7 @@ export class SectionProgressionService {
       )
         missing.push({
           kind: 'project-check',
-          text: 'Confira o objetivo desta etapa no seu projeto',
+          text: 'Confira o objetivo desta parte no seu projeto',
         })
       missing.push(
         ...issues
@@ -372,4 +374,9 @@ export class SectionProgressionService {
       sectionProgress: await this.read(owner, lesson),
     }
   }
+}
+
+/** "Personalizar o avatar" → "personalizar o avatar", para entrar no meio da frase. */
+function minuscula(texto: string) {
+  return texto.charAt(0).toLowerCase() + texto.slice(1)
 }

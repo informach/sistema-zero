@@ -57,7 +57,8 @@ export function lessonCompletionRequirements(input: {
       sectionId: s.id,
       title: s.title,
       complete: input.completed || s.status === 'completed',
-      action: s.pending.join(' '),
+      // ⚠️ As frases não têm mais ponto final (viram pílula no rodapé): o separador é nosso.
+      action: s.pending.join(' · '),
       reason: 'SECTION_GATE_INCOMPLETE',
     }))
   const requirements: LessonRequirement[] = []

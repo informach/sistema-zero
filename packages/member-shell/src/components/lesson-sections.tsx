@@ -331,6 +331,30 @@ function LessonSectionsContent({
   const player = useLessonPlayer()
   const rehearsal = useLessonPreview()
   const preview = player === null
+  /**
+   * ⚠️⚠️ O rodapé FIXO diz à página quanto ele mede (`--sz-lesson-nav-height`, no `<html>`): com a
+   * faixa "o que falta para seguir" ele cresceu (uma ou duas linhas, o "+N" aberto) e uma reserva
+   * fixa de padding deixava o fim do último cartão para sempre sob o rodapé (review do lote 2).
+   * Cada app reserva `calc(var(--sz-lesson-nav-height) + …)` no `<main>` da aula.
+   */
+  const rodapeRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const rodape = rodapeRef.current
+    if (!immersive || !rodape || typeof ResizeObserver === 'undefined') return
+    const raiz = document.documentElement
+    const publicar = () =>
+      raiz.style.setProperty(
+        '--sz-lesson-nav-height',
+        `${Math.ceil(rodape.getBoundingClientRect().height)}px`,
+      )
+    publicar()
+    const observador = new ResizeObserver(publicar)
+    observador.observe(rodape)
+    return () => {
+      observador.disconnect()
+      raiz.style.removeProperty('--sz-lesson-nav-height')
+    }
+  }, [immersive])
   const sections = useMemo(
     () =>
       lesson.sections?.length &&
@@ -785,7 +809,9 @@ function LessonSectionsContent({
    * mensagens de autoria saem inteiras.
    */
   const secaoAtual = state?.sections.find((s) => s.id === section.id)
-  const statusDaSecao = (
+  // Aula CONCLUÍDA: toda seção está fechada e o botão já diz "Aula concluída"; a faixa verde em
+  // cada parte seria ruído (review do lote 2, B3).
+  const statusDaSecao = lesson.completed ? null : (
     <LessonSectionStatus
       items={secaoAtual?.pendingItems ?? []}
       completed={secaoAtual?.status === 'completed'}
@@ -1175,6 +1201,7 @@ function LessonSectionsContent({
           {/* `sz-lesson-nav`: gancho ESTÁVEL, mesmo espírito do `sz-lesson-toolbar`.
             Sem ele o kids teria de mirar por estrutura ("a div com border-t"). */}
           <div
+            ref={rodapeRef}
             className={cn(
               'sz-lesson-nav border-t border-border',
               immersive

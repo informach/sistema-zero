@@ -73,3 +73,39 @@ describe('rodapé da aula entre os menus abertos', () => {
     expect(adultCss).toContain('right: var(--lesson-outline-width)')
   })
 })
+
+describe('o rodapé fixo diz à página quanto ele mede (30/09/2026)', () => {
+  // ⚠️ Com a faixa "o que falta para seguir" o rodapé passou de ~69px para ~125px (duas linhas ou o
+  // "+N" aberto, mais): uma reserva fixa deixava o fim do último cartão para sempre sob ele.
+  test('o member-shell publica `--sz-lesson-nav-height` e os dois apps reservam a partir dela', () => {
+    const shell = source('../member-shell/src/components/lesson-sections.tsx')
+    const kidsCss = source('src/app/globals.css')
+    const adultCss = source('../community/src/app/globals.css')
+    expect(shell).toMatch(/raiz\.style\.setProperty\(\s*'--sz-lesson-nav-height'/)
+    expect(shell).toContain('new ResizeObserver(publicar)')
+    expect(shell).toContain("raiz.style.removeProperty('--sz-lesson-nav-height')")
+    expect(kidsCss).toContain('.kids-aula:has(.sz-lesson-nav-immersive) {')
+    // O biome quebra o `calc` em linhas: comparar sem os espaços.
+    expect(kidsCss.replace(/\s+/g, ' ')).toContain(
+      'var(--sz-lesson-nav-height, 7rem) + 3.5rem + env(safe-area-inset-bottom) + 1.5rem',
+    )
+    expect(kidsCss).toContain('padding-bottom: calc(var(--sz-lesson-nav-height, 7rem) + 1.5rem);')
+    expect(adultCss).toContain('padding-bottom: calc(var(--sz-lesson-nav-height, 7rem) + 1.5rem);')
+    // A regra do kids fica FORA de camada (é o que a deixa vencer o `pb-40 md:pb-32` do `<main>`):
+    // toda `@layer x {` aberta antes dela já fechou.
+    const antes = kidsCss.slice(0, kidsCss.indexOf('.kids-aula:has(.sz-lesson-nav-immersive) {'))
+    let profundidade = 0
+    let dentroDeLayer = 0
+    for (const linha of antes.split('\n')) {
+      if (/^@layer [a-z]+ \{/.test(linha)) dentroDeLayer = profundidade + 1
+      for (const ch of linha) {
+        if (ch === '{') profundidade++
+        if (ch === '}') {
+          profundidade--
+          if (dentroDeLayer && profundidade < dentroDeLayer) dentroDeLayer = 0
+        }
+      }
+    }
+    expect(dentroDeLayer).toBe(0)
+  })
+})

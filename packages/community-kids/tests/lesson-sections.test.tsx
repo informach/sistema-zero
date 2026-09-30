@@ -969,6 +969,69 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
     expect(barra?.contains(indice)).toBe(false)
   })
 
+  test('a faixa "o que falta para seguir" mora no rodapé fixo, fala da seção ATUAL e só cai no fallback na última', async () => {
+    globalThis.fetch = Object.assign(async () => Response.json({ ok: true }), {
+      preconnect: () => {},
+    })
+    const progresso: SectionProgressView = {
+      revision: 'structure',
+      completed: 0,
+      total: 3,
+      percent: 0,
+      sections: ['first', 'second', 'third'].map((id, index) => ({
+        id,
+        title: id,
+        status: 'available' as const,
+        pending: index === 0 ? ['Veja o vídeo até o fim'] : [],
+        pendingItems:
+          index === 0
+            ? [{ kind: 'VIDEO_GATE_NOT_WATCHED' as const, text: 'Veja o vídeo até o fim' }]
+            : [],
+      })),
+    }
+    const { container } = render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections
+          lesson={{ ...lesson, sectionProgress: progresso }}
+          kids
+          lessonTitle="Meu jogo"
+          immersive
+          renderBlocks={() => null}
+          completionMessage="Termine as atividades desta aula para concluir"
+        />
+      </LessonPlayerProvider>,
+    )
+    const rodape = container.querySelector('.sz-lesson-nav-immersive')
+    const faixa = () => container.querySelector('.sz-lesson-nav-immersive .sz-lesson-status')
+    expect(faixa()).not.toBeNull()
+    // Dentro do rodapé, ANTES dos botões, e centrada na coluna deles.
+    const botoes = rodape?.querySelector('.sz-lesson-nav-inner')
+    expect(botoes).not.toBeNull()
+    expect(
+      faixa()!.compareDocumentPosition(botoes!) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(faixa()?.className).toContain('max-w-7xl')
+    // A seção atual tem item próprio: é ele que aparece, com o prefixo; o fallback da aula, não.
+    expect(faixa()?.textContent).toContain('Para seguir:')
+    expect(faixa()?.textContent).toContain('Veja o vídeo até o fim')
+    expect(faixa()?.textContent).not.toContain('Termine as atividades desta aula')
+    expect(faixa()?.querySelector('[data-kind="VIDEO_GATE_NOT_WATCHED"]')).not.toBeNull()
+
+    // A segunda seção não tem item nem é a última: a faixa some.
+    fireEvent.click(screen.getByRole('button', { name: /Próxima seção/ }))
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Observar'),
+    )
+    expect(faixa()).toBeNull()
+
+    // A última, sem item próprio, mostra o fallback da aula (sem "Para seguir:", é um estado).
+    fireEvent.click(screen.getByRole('button', { name: /Próxima seção/ }))
+    await waitFor(() => expect(faixa()).not.toBeNull())
+    expect(faixa()?.textContent).toContain('Termine as atividades desta aula para concluir')
+    expect(faixa()?.textContent).not.toContain('Para seguir:')
+    expect(faixa()?.querySelector('[data-kind="lesson"]')).not.toBeNull()
+  })
+
   test('trocar de seção leva o FOCO ao cabeçalho, que é a âncora do conteúdo novo', async () => {
     // ⚠️ Sem isto, quem usa teclado ou leitor de tela avança de seção e continua no
     // meio da página anterior: o cabeçalho é o alvo do `focus()` e do scroll.

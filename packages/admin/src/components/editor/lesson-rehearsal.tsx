@@ -67,7 +67,8 @@ export function LessonRehearsal({
   const section = document.sections.find((s) => s.id === sectionId)
   const completed = new Set<string>()
   // Itens TIPADOS (30/09/2026), como o members manda: a faixa "o que falta para seguir" do
-  // rodapé escolhe o ícone pelo `kind`, e o ensaio precisa mostrar ao professor a mesma faixa.
+  // rodapé escolhe o ícone pelo `kind`, e o ensaio mostra ao professor a mesma faixa (com os
+  // textos DO ENSAIO: o ensaio não passa pelo `lessonCompletionRequirements` do members).
   const pending = new Map<string, SectionPendingItem[]>()
   for (const s of document.sections) {
     const missing: SectionPendingItem[] = []

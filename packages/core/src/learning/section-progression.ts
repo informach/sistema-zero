@@ -409,6 +409,16 @@ export function sectionCompletionIssues(
 }
 
 /** Completed milestones survive review. Only the first unfinished section is available. */
+function semRepetidos(itens: readonly SectionPendingItem[]): SectionPendingItem[] {
+  const vistos = new Set<string>()
+  return itens.filter((item) => {
+    const chave = `${item.kind}\u0000${item.text}`
+    if (vistos.has(chave)) return false
+    vistos.add(chave)
+    return true
+  })
+}
+
 export function sectionProgressView(
   revision: string,
   sections: { id: string; title: string }[],
@@ -428,11 +438,15 @@ export function sectionProgressView(
       }
     const status = available ? ('available' as const) : ('locked' as const)
     available = false
+    // ⚠️ Sem repetidos: `lessonCompletionRequirements` cria UM requisito por bloco, e uma seção com
+    // três descobertas obrigatórias virava três "Termine o experimento" (review do lote 2).
     const itens: SectionPendingItem[] =
       status === 'locked'
         ? [{ kind: 'locked', text: 'Conclua a seção anterior' }]
-        : (pending.get(s.id) ?? []).map((item) =>
-            typeof item === 'string' ? { kind: 'other', text: item } : item,
+        : semRepetidos(
+            (pending.get(s.id) ?? []).map((item) =>
+              typeof item === 'string' ? { kind: 'other', text: item } : item,
+            ),
           )
     return {
       id: s.id,

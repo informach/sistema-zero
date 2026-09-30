@@ -337,6 +337,15 @@ describe('section gates across HTTP and persistence', () => {
     ])
     expect(view.blocks.map((b: { id: string }) => b.id)).toEqual([ctx.ids[0]!])
     expect(view.sectionProgress).toMatchObject({ completed: 0, total: 3, percent: 0 })
+    // Os itens TIPADOS (30/09/2026): a razão do requisito na seção aberta, `locked` nas travadas,
+    // e `pending` é o texto dos mesmos itens.
+    expect(view.sectionProgress.sections[0]!.pendingItems).toEqual([
+      { kind: 'LEARNING_GATE_INCOMPLETE', text: 'Termine o experimento' },
+    ])
+    expect(view.sectionProgress.sections[0]!.pending).toEqual(['Termine o experimento'])
+    expect(view.sectionProgress.sections[1]!.pendingItems).toEqual([
+      { kind: 'locked', text: 'Conclua a seção anterior' },
+    ])
     expect(view.sectionProgress.sections.map((s: { status: string }) => s.status)).toEqual([
       'available',
       'locked',

@@ -166,6 +166,27 @@ describe('section progression', () => {
       { kind: 'other', text: 'Solto' },
     ])
     expect(tipado.sections[0]?.pending).toEqual(['Veja o vídeo', 'Solto'])
+    // ⚠️ Sem repetidos: um requisito nasce por bloco, e três descobertas obrigatórias viravam três
+    // "Termine o experimento" na faixa (review do lote 2).
+    const repetido = sectionProgressView(
+      'revision',
+      sections,
+      new Set(),
+      new Map([
+        [
+          'a',
+          [
+            { kind: 'LEARNING_GATE_INCOMPLETE' as const, text: 'Termine o experimento' },
+            { kind: 'LEARNING_GATE_INCOMPLETE' as const, text: 'Termine o experimento' },
+            { kind: 'other' as const, text: 'Termine o experimento' },
+          ],
+        ],
+      ]),
+    )
+    expect(repetido.sections[0]?.pendingItems).toEqual([
+      { kind: 'LEARNING_GATE_INCOMPLETE', text: 'Termine o experimento' },
+      { kind: 'other', text: 'Termine o experimento' },
+    ])
   })
   test('publication rejects missing, foreign and participation-only criteria', () => {
     const section = {

@@ -33,7 +33,7 @@ import type { ReactNode } from 'react'
  * (ajuda ao professor, recados), mas a faixa não as lê.
  *
  * ⚠️⚠️ Mensagem de AUTORIA ("Configure os critérios de conclusão desta seção.") é para o professor,
- * não para a criança: fora do ensaio do admin ela vira "Esta parte ainda está sendo preparada.".
+ * não para a criança: fora do ensaio do admin ela vira "Esta parte ainda está sendo preparada".
  *
  * Só ganchos e utilitárias sóbrias aqui (invariante 8 do CLAUDE.md): o kids veste pelos ganchos
  * `sz-lesson-status`, `sz-lesson-status-item`, `sz-lesson-status-icone`, `sz-lesson-status-lista`,
@@ -66,7 +66,18 @@ function iconeDe(item: SectionPendingItem) {
   return ICONE[item.kind] ?? Flag
 }
 
-const PREPARANDO = 'Esta parte ainda está sendo preparada.'
+const PREPARANDO = 'Esta parte ainda está sendo preparada'
+/**
+ * "Para seguir:" só antecede uma AÇÃO da criança. A razão da aula toda (`lesson`), a aula em
+ * preparo e a mensagem de autoria são estados, não pedidos (review do lote 2, M4).
+ */
+const SEM_PREFIXO: ReadonlySet<SectionPendingKind> = new Set([
+  'lesson',
+  'LESSON_COMING_SOON',
+  'authoring',
+])
+const prefixoDe = (item: SectionPendingItem) =>
+  SEM_PREFIXO.has(item.kind) ? undefined : 'Para seguir:'
 
 function Item({
   item,
@@ -140,13 +151,13 @@ export function LessonSectionStatus({
   return (
     <div className={raiz} data-state="pendente" role="status">
       {resto.length === 0 ? (
-        <Item item={primeiro} prefixo="Para seguir:" preview={preview} />
+        <Item item={primeiro} prefixo={prefixoDe(primeiro)} preview={preview} />
       ) : (
         /* ⚠️ `<details>` nativo: teclado e leitor de graça, e a linha continua sendo UMA linha
            até a criança tocar no "+N". */
         <details className="sz-lesson-status-lista">
-          <summary className="flex cursor-pointer items-center justify-between gap-3">
-            <Item item={primeiro} prefixo="Para seguir:" preview={preview} />
+          <summary className="flex cursor-pointer items-center justify-between gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+            <Item item={primeiro} prefixo={prefixoDe(primeiro)} preview={preview} />
             <span className="sz-lesson-status-mais shrink-0">
               +{resto.length}
               <span className="sr-only"> itens</span>

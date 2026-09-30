@@ -1030,8 +1030,10 @@ que fica verde quando a parte termina.
 - **`lesson-section-status.tsx` (`LessonSectionStatus`)**: `items` (os itens da seção ATUAL),
   `completed`, `fallback` (o `completionMessage` do player, só na última seção e só quando a seção
   não tem itens próprios: aula legada, conta de equipe) e `preview`. Renderiza o primeiro item com
-  o prefixo "Para seguir:" e, com mais de um, um `<details>` nativo com o "+N" que abre os demais
-  (teclado e leitor de graça, 44px de alvo). Pronta: "Tudo pronto nesta parte. Pode seguir!".
+  o prefixo "Para seguir:" (só nas razões que são uma AÇÃO da criança: `lesson`, `LESSON_COMING_SOON`
+  e `authoring` saem sem ele) e, com mais de um, um `<details>` nativo com o "+N" que abre os demais
+  (teclado e leitor de graça; o alvo de 44px do `summary` é do CSS de cada app). Pronta: "Tudo
+  pronto nesta parte. Pode seguir!"; aula CONCLUÍDA não mostra a faixa.
   Só ganchos e utilitárias sóbrias (invariante 8): o kids veste em `--band-creme`/`--band-menta`
   com o ícone num ladrilho da família do bloco; o adulto, sob `.sz-aula-adulto`, com a linha sóbria.
 - **Os itens vêm TIPADOS.** `SectionProgressView.sections[].pendingItems: { kind, text }[]` (core,
@@ -1039,7 +1041,12 @@ que fica verde quando a parte termina.
   `platform-action` | `project-check` | `authoring` | `locked` | `lesson` | `other`. É o `kind` que
   escolhe o ícone (lucide) e a cor. `pending: string[]` continua existindo, DERIVADO dos itens, por
   compatibilidade (ajuda ao professor, recados, o `SECTION_GATE_INCOMPLETE` da barra do topo). O
-  members monta os itens em `section-progression.service.ts`; o ensaio do admin monta os dele.
+  members monta os itens em `section-progression.service.ts` ("Depois de personalizar o avatar,
+  toque em "Verificar minha ação"", "Confira o objetivo desta parte no seu projeto"); o ensaio do
+  admin monta os dele. ⚠️ `sectionProgressView` tira os REPETIDOS (`kind`+`text`): um requisito
+  nasce por bloco, e três descobertas obrigatórias viravam três "Termine o experimento". ⚠️ O
+  `SECTION_GATE_INCOMPLETE` da barra do adulto junta as frases com " · " (sem ponto final, o
+  `join(' ')` colava uma na outra).
 - ⚠️⚠️ **Mensagem de AUTORIA (`kind: 'authoring'`) é para o professor**, não para a criança: fora
   do ensaio (`preview` falso, ou seja, com `LessonPlayerProvider`) ela vira "Esta parte ainda
   está sendo preparada.". No ensaio do admin sai inteira.
@@ -1052,6 +1059,11 @@ que fica verde quando a parte termina.
 - **Onde mora:** dentro do `.sz-lesson-nav` no modo imersivo (acima da `.sz-lesson-nav-inner`,
   centrada na coluna dos botões), e logo acima do cartão do rodapé no ensaio. O bloco
   `sz-lesson-nav-message` e o `<p>` "Quando terminar as atividades…" SAÍRAM.
+- ⚠️⚠️ **O rodapé fixo publica a própria altura** em `--sz-lesson-nav-height` (no `<html>`, por
+  `ResizeObserver`, só no imersivo), e cada app reserva `calc(var(--sz-lesson-nav-height, 7rem) +
+  …)` no `<main>` da aula (kids `.kids-aula:has(.sz-lesson-nav-immersive)`, somando a barra de abas
+  no celular; adulto `.sz-app:has(.sz-aula-adulto) > main`). Com a faixa o rodapé passou de ~69px
+  para ~125px e a reserva fixa (`pb-40`) deixava o fim do último cartão sob ele.
 - Testes: `tests/lesson-section-status.test.tsx` (ícone por `kind`, o "+N", pronto, autoria fora
   do ensaio, `fallback`), `core/tests/section-progression.test.ts` (os itens tipados e a queda
   `other` para texto cru), `members/tests/integration/section-progression.test.ts` (as chaves da

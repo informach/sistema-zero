@@ -1806,7 +1806,25 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 /* ── "O QUE FALTA PARA SEGUIR" (30/09/2026) ────────────────────────────────────
    A faixa de UMA linha acima dos botões do rodapé (`LessonSectionStatus` do member-shell, só
    ganchos): o ícone num ladrilho da família do bloco (as mesmas cores dos chips), o texto em
-   Nunito 800, fundo creme enquanto falta e menta quando a parte termina. */
+   Nunito 700, fundo creme enquanto falta e menta quando a parte termina. */
+/* ⚠️⚠️ A página reserva o que o rodapé fixo MEDE, não um número fixo: com a faixa ele passou de
+   ~69px para ~125px (duas linhas ou o "+N" aberto, mais), e o `pb-40` do `<main>` deixava 21-25px
+   do último cartão para sempre sob o rodapé num celular de 390×660 (review do lote 2). A altura
+   vem do member-shell em `--sz-lesson-nav-height` (ResizeObserver no rodapé); no celular soma a
+   barra de abas (3.5rem) sob a qual o rodapé fica. Fora de camada: vence o `pb-40 md:pb-32`. */
+.kids-aula:has(.sz-lesson-nav-immersive) {
+  padding-bottom: calc(
+    var(--sz-lesson-nav-height, 7rem) +
+    3.5rem +
+    env(safe-area-inset-bottom) +
+    1.5rem
+  );
+}
+@media (min-width: 768px) {
+  .kids-aula:has(.sz-lesson-nav-immersive) {
+    padding-bottom: calc(var(--sz-lesson-nav-height, 7rem) + 1.5rem);
+  }
+}
 .sz-lesson-sections .sz-lesson-status {
   margin-bottom: 0.625rem;
   padding: 0.25rem 0.875rem;

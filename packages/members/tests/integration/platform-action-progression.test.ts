@@ -66,7 +66,25 @@ describe('platform actions as section criteria', () => {
     const ctx = setup('customize-avatar')
     expect(await (await ctx.verify()).json()).toMatchObject({
       passed: false,
-      sectionProgress: { completed: 0 },
+      sectionProgress: {
+        completed: 0,
+        // O item TIPADO da faixa do rodapé (30/09/2026): a ação da plataforma, na voz da criança.
+        sections: [
+          {
+            pendingItems: [
+              {
+                kind: 'platform-action',
+                text: 'Depois de personalizar o avatar, toque em "Verificar minha ação"',
+              },
+            ],
+            pending: ['Depois de personalizar o avatar, toque em "Verificar minha ação"'],
+          },
+          {
+            status: 'locked',
+            pendingItems: [{ kind: 'locked', text: 'Conclua a seção anterior' }],
+          },
+        ],
+      },
     })
     await ctx.avatar.upsertConfig(
       ctx.owner.userId,

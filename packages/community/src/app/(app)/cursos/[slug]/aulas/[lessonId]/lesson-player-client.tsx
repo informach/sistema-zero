@@ -147,7 +147,7 @@ export function LessonPlayer({
     : blockedByLearning
       ? 'Termine as atividades desta aula para concluir'
       : blockedByPinta
-        ? 'Envie seu desenho para o professor para concluir a aula'
+        ? 'Envie seu desenho ao professor para concluir a aula'
         : blockedByComingSoon
           ? 'Esta aula ainda está sendo preparada'
           : blockedByQuiz

@@ -221,7 +221,9 @@
 }
 .sz-app:has(.sz-aula-adulto) > main {
   max-width: none;
-  padding-bottom: 8rem;
+  /* O que o rodapé fixo mede (`--sz-lesson-nav-height`, do member-shell) e não um número fixo:
+     com a faixa "o que falta para seguir" ele cresceu (review do lote 2). */
+  padding-bottom: calc(var(--sz-lesson-nav-height, 7rem) + 1.5rem);
 }
 main:has(.sz-aula-adulto) {
   --lesson-outline-width: min(20rem, 90vw);

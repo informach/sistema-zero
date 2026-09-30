@@ -106,13 +106,15 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
       'A verificação desta seção precisa ser configurada pelo professor.',
     )
     const criança = faixa({ items: [autoria], completed: false })
-    expect(criança).toContain('Esta parte ainda está sendo preparada.')
+    expect(criança).toContain('Esta parte ainda está sendo preparada')
     expect(criança).not.toContain('configurada pelo professor')
+    // É um estado, não um pedido: sem "Para seguir:".
+    expect(criança).not.toContain('Para seguir:')
     expect(criança).toContain('lucide-wrench')
 
     const ensaio = faixa({ items: [autoria], completed: false, preview: true })
     expect(ensaio).toContain('A verificação desta seção precisa ser configurada pelo professor.')
-    expect(ensaio).not.toContain('Esta parte ainda está sendo preparada.')
+    expect(ensaio).not.toContain('Esta parte ainda está sendo preparada')
   })
 
   test('sem itens da seção, o `fallback` do player vira o item da aula; sem nada, nada', () => {
@@ -124,7 +126,14 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
     expect(comFallback).toContain('data-kind="lesson"')
     expect(comFallback).toContain('lucide-flag')
     expect(comFallback).toContain('Termine as atividades desta aula para concluir')
-    expect(comFallback).toContain('Para seguir:')
+    // A razão da aula toda é um estado: sem "Para seguir:" (review do lote 2, M4).
+    expect(comFallback).not.toContain('Para seguir:')
+    expect(
+      faixa({
+        items: [item('LESSON_COMING_SOON', 'Espere a aula ficar pronta')],
+        completed: false,
+      }),
+    ).not.toContain('Para seguir:')
 
     // Um `fallback` que não é texto (um nó do player) entra como está.
     const comNo = faixa({ items: [], completed: false, fallback: <em>Quase lá</em> })
