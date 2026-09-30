@@ -46,6 +46,8 @@ describe('rectCornerFields (o normalizador único)', () => {
 
   it('clampa cada raio à metade do menor lado, e o clamp pode igualar os quatro', () => {
     expect(clampCornerRadii([50, 10, -3, Number.NaN], 100, 20)).toEqual([10, 10, 0, 0])
+    // Lado não finito não pode virar NaN nos quatro (o sanitize checa antes; é a rede).
+    expect(clampCornerRadii([5, 5, 5, 5], Number.NaN, 20)).toEqual([0, 0, 0, 0])
     // 40 e 99 passam dos 10 de teto: os quatro viram 10 e colapsam em `rx`.
     const fields = rectCornerFields([40, 99, 10, 10], 100, 20)
     expect(fields).toEqual({ rx: 10 })
@@ -139,6 +141,15 @@ describe('rectCornerArcs (a geometria que svg/pathNodes/flatten compõem)', () =
     expect(bl.center).toEqual({ x: 10, y: 50 })
     expect(bl.startAngle).toBe(Math.PI / 2)
     expect(tl.center).toEqual({ x: 10, y: 10 })
+    // Os controles das cúbicas, canto a canto: o sinal do kappa em cada eixo é o que decide se
+    // o canto sai redondo ou DENTADO (o `flatten` usa centro/ângulo e não pegaria o erro).
+    const k = 10 * QUARTER_CIRCLE_KAPPA
+    expect(tr.c1).toEqual({ x: 90 + k, y: 0 })
+    expect(tr.c2).toEqual({ x: 100, y: 10 - k })
+    expect(br.c1).toEqual({ x: 100, y: 50 + k })
+    expect(br.c2).toEqual({ x: 90 + k, y: 60 })
+    expect(bl.c1).toEqual({ x: 10 - k, y: 60 })
+    expect(bl.c2).toEqual({ x: 0, y: 50 + k })
     // O fim de cada arco é o começo da aresta que leva ao próximo (sentido horário).
     expect(tl.to).toEqual({ x: 10, y: 0 })
     expect(tr.from).toEqual({ x: 90, y: 0 })

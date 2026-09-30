@@ -52,7 +52,8 @@ function sameCorners(a: RectCornerRadii | undefined, b: RectCornerRadii | undefi
  * lado que dividem (`tl + tr ≤ w`, `tr + br ≤ h`…), então o caminho nunca se cruza.
  */
 export function clampCornerRadii(radii: RectCornerRadii, w: number, h: number): RectCornerRadii {
-  const max = Math.max(0, Math.min(Math.abs(w), Math.abs(h)) / 2)
+  const side = Math.min(Math.abs(w), Math.abs(h))
+  const max = Number.isFinite(side) ? Math.max(0, side / 2) : 0
   const clamp = (r: number) => (Number.isFinite(r) ? Math.min(Math.max(r, 0), max) : 0)
   return [clamp(radii[0]), clamp(radii[1]), clamp(radii[2]), clamp(radii[3])]
 }

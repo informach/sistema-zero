@@ -22,6 +22,7 @@ import {
   VECTOR_FONT_FAMILY_INFO,
 } from '../../vector/model'
 import {
+  ALL_CORNERS,
   maskFromRadii,
   RECT_CORNERS,
   type RectCorner,
@@ -96,15 +97,30 @@ export function VectorPropertiesPanel({
   const cornerMask: RectCornerMask =
     selectedRect && selectedRect.rx > 0 ? maskFromRadii(rectCornerRadii(selectedRect)) : rectCorners
 
+  // Retângulo TRANCADO selecionado: nem a máscara do próximo retângulo arma (a régua do
+  // `freeForStyle`: com a seleção trancada a paleta também não arma a cor da próxima forma). O
+  // `updateSelected` com a identidade só leva ao toast do cadeado, que explica, sem commit.
+  const lockedOnly = selectedRect?.locked === true
+  function armCorners(mask: RectCornerMask): void {
+    if (mask.some((on, i) => on !== rectCorners[i])) setRectCorners(mask)
+  }
+
   function toggleCorner(corner: RectCorner): void {
+    if (lockedOnly) {
+      updateSelected((s) => s)
+      return
+    }
     const mask = toggleCornerMask(cornerMask, corner)
-    setRectCorners(mask)
+    armCorners(mask)
     if (!selectedRect) return
-    // Canto que liga ganha o raio do slider (o maior da forma), os já redondos ficam, o que
-    // desliga vai a zero. Todo reto (`rx` 0) a forma não muda e só a máscara arma: o
-    // `withRectCorners` devolve a mesma referência e o `updateFree` não grava desfazer vazio.
+    // Canto que liga ganha o raio da forma (o maior dela) ou, com tudo reto (`rx` 0), o raio já
+    // armado no slider; os já redondos ficam, o que desliga vai a zero. Sem raio nenhum a forma
+    // não muda e só a máscara arma: o `withRectCorners` devolve a mesma referência e o
+    // `updateFree` não grava desfazer vazio.
     updateSelected((s) =>
-      s.type === 'rect' ? withRectCorners(s, radiiForMask(rectCornerRadii(s), mask, s.rx)) : s,
+      s.type === 'rect'
+        ? withRectCorners(s, radiiForMask(rectCornerRadii(s), mask, s.rx || rectRadius))
+        : s,
     )
   }
   // Na coluna branca as sub-seções empilham coladas (a divisória separa); no cartão, com vão.
@@ -221,11 +237,21 @@ export function VectorPropertiesPanel({
             step={1}
             value={selectedRect ? Math.round(selectedRect.rx) : rectRadius}
             onChange={(event) => {
+              if (lockedOnly) {
+                updateSelected((s) => s)
+                return
+              }
               const radius = Number(event.target.value)
               setRectRadius(radius)
+              // Com os quatro cantos desligados o raio não teria onde cair e o slider ficaria
+              // morto (o polegar voltaria a 0 sem explicação): mexer nele religa os quatro. E a
+              // máscara da FORMA arma o escopo: passar por 0 colapsa os cantos em `rx` (a grade
+              // passa a ler o escopo), e voltar a 1 devolve o mesmo padrão em vez de os quatro.
+              const mask = cornerMask.some(Boolean) ? cornerMask : ALL_CORNERS
+              armCorners(mask)
               if (selectedRect) {
                 updateSelected((s) =>
-                  s.type === 'rect' ? withRectCorners(s, radiiFromMask(cornerMask, radius)) : s,
+                  s.type === 'rect' ? withRectCorners(s, radiiFromMask(mask, radius)) : s,
                 )
               }
             }}
@@ -244,7 +270,6 @@ export function VectorPropertiesPanel({
                     aria-pressed={on}
                     aria-label={label}
                     title={label}
-                    data-corner={corner}
                     onClick={() => toggleCorner(corner)}
                   >
                     <SquareRoundCorner aria-hidden="true" className={`size-5 ${rotate}`} />
