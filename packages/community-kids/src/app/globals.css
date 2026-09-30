@@ -1803,8 +1803,97 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 .sz-lesson-sections .sz-lesson-nav-immersive .sz-lesson-nav-inner {
   gap: 0.5rem;
 }
-.sz-lesson-sections .sz-lesson-nav-immersive .sz-lesson-nav-message {
-  text-align: right;
+/* ── "O QUE FALTA PARA SEGUIR" (30/09/2026) ────────────────────────────────────
+   A faixa de UMA linha acima dos botões do rodapé (`LessonSectionStatus` do member-shell, só
+   ganchos): o ícone num ladrilho da família do bloco (as mesmas cores dos chips), o texto em
+   Nunito 800, fundo creme enquanto falta e menta quando a parte termina. */
+.sz-lesson-sections .sz-lesson-status {
+  margin-bottom: 0.625rem;
+  padding: 0.25rem 0.875rem;
+  border-radius: 1rem;
+  background: var(--band-creme);
+}
+.sz-lesson-sections .sz-lesson-nav-immersive .sz-lesson-status {
+  margin-bottom: 0.5rem;
+}
+.sz-lesson-sections .sz-lesson-status[data-state="pronto"] {
+  background: var(--band-menta);
+}
+.sz-lesson-sections .sz-lesson-status-item {
+  gap: 0.625rem;
+  min-height: 2.5rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--tinta);
+}
+.sz-lesson-sections .sz-lesson-status-item b {
+  font-weight: 800;
+  color: var(--muted-foreground);
+}
+.sz-lesson-sections .sz-lesson-status-icone {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.625rem;
+  background: var(--kids-cyan);
+  color: oklch(1 0 0);
+}
+/* A família do bloco, como nos chips: experimentar e criar no verde, responder e conquistar no
+   laranja; o que espera o professor ou a seção anterior fica no cinza. */
+.sz-lesson-sections .sz-lesson-status-item:is(
+    [data-kind="LEARNING_GATE_INCOMPLETE"],
+    [data-kind="STUDIO_GATE_NOT_SUBMITTED"],
+    [data-kind="STUDIO_GATE_NOT_PASSED"],
+    [data-kind="PINTA_GATE_NOT_SUBMITTED"],
+    [data-kind="project-check"]
+  )
+  .sz-lesson-status-icone {
+  background: var(--kids-verde);
+}
+.sz-lesson-sections
+  .sz-lesson-status-item:is(
+    [data-kind="QUIZ_GATE_NOT_PASSED"],
+    [data-kind="CERTIFICATE_GATE_NOT_ISSUED"],
+    [data-kind="platform-action"]
+  )
+  .sz-lesson-status-icone {
+  background: var(--kids-lime);
+}
+.sz-lesson-sections
+  .sz-lesson-status-item:is(
+    [data-kind="authoring"],
+    [data-kind="locked"],
+    [data-kind="LESSON_COMING_SOON"]
+  )
+  .sz-lesson-status-icone {
+  background: var(--muted-foreground);
+}
+.sz-lesson-sections .sz-lesson-status[data-state="pronto"] .sz-lesson-status-item {
+  color: var(--success-foreground);
+}
+.sz-lesson-sections .sz-lesson-status[data-state="pronto"] .sz-lesson-status-icone {
+  background: var(--success-foreground);
+}
+.sz-lesson-sections .sz-lesson-status-lista > summary {
+  min-height: 2.75rem;
+  list-style: none;
+}
+.sz-lesson-sections .sz-lesson-status-lista > summary::-webkit-details-marker {
+  display: none;
+}
+.sz-lesson-sections .sz-lesson-status-mais {
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  border: 1px solid var(--linha-carta);
+  background: var(--card);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--muted-foreground);
+}
+.sz-lesson-sections .sz-lesson-status-lista[open] .sz-lesson-status-mais {
+  color: var(--pen-acao);
+}
+.sz-lesson-sections .sz-lesson-status-lista > ul {
+  padding-bottom: 0.375rem;
 }
 @media (min-width: 768px) {
   .sz-lesson-sections .sz-lesson-nav-immersive {

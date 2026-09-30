@@ -146,7 +146,26 @@ describe('section progression', () => {
     )
     expect(state.percent).toBeCloseTo(100 / 3)
     expect(state.sections.map((s) => s.status)).toEqual(['completed', 'available', 'locked'])
-    expect(state.sections[2]?.pending).toEqual(['Conclua a seção anterior.'])
+    expect(state.sections[2]?.pending).toEqual(['Conclua a seção anterior'])
+    // Os itens TIPADOS (30/09/2026): a seção travada é `locked`; texto cru vira `other`.
+    expect(state.sections[2]?.pendingItems).toEqual([
+      { kind: 'locked', text: 'Conclua a seção anterior' },
+    ])
+    expect(state.sections[1]?.pendingItems).toEqual([])
+    expect(state.sections[0]?.pendingItems).toEqual([])
+    const tipado = sectionProgressView(
+      'revision',
+      sections,
+      new Set(),
+      new Map([
+        ['a', [{ kind: 'VIDEO_GATE_NOT_WATCHED' as const, text: 'Veja o vídeo' }, 'Solto']],
+      ]),
+    )
+    expect(tipado.sections[0]?.pendingItems).toEqual([
+      { kind: 'VIDEO_GATE_NOT_WATCHED', text: 'Veja o vídeo' },
+      { kind: 'other', text: 'Solto' },
+    ])
+    expect(tipado.sections[0]?.pending).toEqual(['Veja o vídeo', 'Solto'])
   })
   test('publication rejects missing, foreign and participation-only criteria', () => {
     const section = {

@@ -1225,6 +1225,18 @@ adulto. Chips das atividades em cor sólida (Crie/Brinque/Desenhe no
 verde, sem o gradiente) e o quiz sem cartão dentro de cartão (painel `bg-background`; aprovado =
 bloco azul chapado). O fundo da aula ficou liso (a `.kids-field` de pontinhos saiu).
 
+⭐⭐ **E em 30/09/2026 o "o que falta" ganhou uma casa nova: a faixa do RODAPÉ FIXO.** Não é o
+cartão de cima voltando: é UMA linha acima dos botões, com o ícone da razão num ladrilho colorido
+(`LessonSectionStatus` do member-shell, ganchos `sz-lesson-status*`), que diz por que o "Próxima
+seção" está travado e fica verde ("Tudo pronto nesta parte. Pode seguir!") quando a seção fecha.
+Decisão dela entre três lugares. O que muda AQUI é o material, no bloco "O QUE FALTA PARA SEGUIR"
+do `globals.css`: fundo `--band-creme` (pendente) e `--band-menta` (pronto), ladrilho do ícone na
+família do chip (cyan padrão; verde para experimentar/criar/desenhar; laranja para quiz,
+certificado e ação da plataforma; cinza para o que espera o professor ou a seção anterior), Nunito
+700/15px, cantos de 16px, "+N" em pílula. As frases vêm do core na voz da criança (ver o CLAUDE.md
+do member-shell); o `completionMessage` do `lesson-player-client` virou TEXTO na mesma voz e só
+aparece quando a seção não tem itens próprios.
+
 ⭐⭐ **Materiais complementares viraram um BLOCO (19/09/2026).** O `<details>` "Materiais de apoio",
 pregado no pé de toda seção e alheio à ordem que ela monta, e o card "Materiais da aula" no pé da
 página SUMIRAM os dois. Hoje é um bloco (`materials`) com uma lista ordenada de arquivos, imagens,

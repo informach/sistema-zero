@@ -171,7 +171,7 @@ test('external confirmations do not bypass discoveries or unfinished section cri
     expect(button('Próxima seção').disabled).toBe(true)
     await act(async () => button('Simular confirmação da ação externa').click())
     await act(async () => button('Próxima seção').click())
-    expect(container.textContent).toContain('Configure um critério de conclusão na autoria.')
+    expect(container.textContent).toContain('Configure um critério de conclusão na autoria')
   } finally {
     await act(async () => root.unmount())
     container.remove()
@@ -375,9 +375,9 @@ test('rehearsal interleaves two discoveries and two independent goals in one pro
     expect(
       container.querySelector<HTMLInputElement>('input[aria-label="Nome do projeto"]')?.value,
     ).toBe('Dino azul')
-    expect(container.textContent).toContain('Confira o objetivo no projeto desta seção.')
+    expect(container.textContent).toContain('Confira o objetivo no projeto desta seção')
     await click('Conferir repetição')
-    expect(container.textContent).toContain('Confira o objetivo no projeto desta seção.')
+    expect(container.textContent).toContain('Confira o objetivo no projeto desta seção')
     await click('Ensaiar retomada')
     expect(identity).toBe(original)
     expect(

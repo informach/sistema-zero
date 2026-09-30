@@ -331,6 +331,7 @@ describe('section gates across HTTP and persistence', () => {
     expect(Object.keys(view.sectionProgress.sections[2]!).sort()).toEqual([
       'id',
       'pending',
+      'pendingItems',
       'status',
       'title',
     ])

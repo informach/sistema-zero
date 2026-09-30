@@ -132,7 +132,7 @@ describe('lesson completion requirements', () => {
     expect(result[0]).toMatchObject({
       sectionId: 'first',
       complete: false,
-      action: 'Enviar projeto',
+      action: 'Envie seu projeto para o professor',
     })
   })
   test('optional experiments, empty legacy quizzes and video never become completion requirements', () => {

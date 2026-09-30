@@ -33,7 +33,13 @@ interface RequirementBlock {
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-/** Shared by the server's completion command and the lesson UI. No answer keys are needed. */
+/**
+ * Shared by the server's completion command and the lesson UI. No answer keys are needed.
+ *
+ * ⚠️ As `action` são a voz da CRIANÇA (decisão dela, 30/09/2026): frases curtas no imperativo, sem
+ * ponto final (viram uma pílula na faixa do rodapé), sem "90%"/"nota mínima" na frente. Valem
+ * também na comunidade adulta.
+ */
 export function lessonCompletionRequirements(input: {
   blocks: RequirementBlock[]
   sections?: Pick<LessonSection, 'id' | 'title' | 'blockIds'>[]
@@ -119,14 +125,14 @@ export function lessonCompletionRequirements(input: {
         const fraction = videoWatchedFraction(saved?.answers ?? {})
         add(
           'VIDEO_GATE_NOT_WATCHED',
-          `Assista a 90% do vídeo (${Math.floor(fraction * 100)}% assistido)`,
+          `Veja o vídeo até o fim (você já viu ${Math.floor(fraction * 100)}%)`,
           fraction >= VIDEO_WATCH_THRESHOLD,
           'Vídeo da aula',
         )
         break
       }
       case 'coming_soon':
-        add('LESSON_COMING_SOON', 'Aguardar a aula ficar pronta', false, 'Aula em produção')
+        add('LESSON_COMING_SOON', 'Espere a aula ficar pronta', false, 'Aula em produção')
         break
       case 'interactive':
         if (content.required === true)
@@ -134,11 +140,11 @@ export function lessonCompletionRequirements(input: {
             'LEARNING_GATE_INCOMPLETE',
             record(content.activity) && content.activity.type === 'project-play'
               ? content.activity.completion === 'participation'
-                ? 'Experimente jogar'
+                ? 'Jogue o jogo pronto'
                 : content.activity.completion === 'targets'
                   ? 'Complete os alvos do jogo'
                   : 'Encontre todos os personagens no jogo'
-              : 'Conferir a descoberta',
+              : 'Termine o experimento',
             Boolean(
               input.learningProgress?.blocks.some(
                 (p) =>
@@ -156,7 +162,7 @@ export function lessonCompletionRequirements(input: {
         )
           add(
             'QUIZ_GATE_NOT_PASSED',
-            `Atingir a nota mínima (${content.passingScore}%)`,
+            `Passe no quiz (nota mínima ${content.passingScore}%)`,
             block.quizState?.passed === true,
             'Quiz',
           )
@@ -168,7 +174,9 @@ export function lessonCompletionRequirements(input: {
           const submitted = block.studioState?.submitted === true
           add(
             submitted && graded ? 'STUDIO_GATE_NOT_PASSED' : 'STUDIO_GATE_NOT_SUBMITTED',
-            submitted && graded ? 'Atingir a nota mínima do projeto' : 'Enviar projeto',
+            submitted && graded
+              ? 'Alcance a nota mínima do projeto'
+              : 'Envie seu projeto para o professor',
             submitted && (!graded || block.studioState?.passed === true),
             'Projeto no Estúdio',
           )
@@ -178,7 +186,7 @@ export function lessonCompletionRequirements(input: {
         if (content.purpose !== 'experiment')
           add(
             'PINTA_GATE_NOT_SUBMITTED',
-            'Enviar desenho',
+            'Envie seu desenho para o professor',
             block.pintaState?.submitted === true,
             'Desenho no Pinta',
           )
@@ -186,7 +194,7 @@ export function lessonCompletionRequirements(input: {
       case 'certificate':
         add(
           'CERTIFICATE_GATE_NOT_ISSUED',
-          'Emitir certificado',
+          'Pegue seu certificado',
           block.certificateState?.issued === true,
           'Certificado',
         )

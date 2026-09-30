@@ -393,6 +393,8 @@ describe('aula por seções', () => {
       title: id,
       status: index < completed ? 'completed' : index === completed ? 'available' : 'locked',
       pending: index < completed ? [] : ['Conclua a atividade.'],
+      pendingItems:
+        index < completed ? [] : [{ kind: 'other' as const, text: 'Conclua a atividade.' }],
     })),
   })
   test('a barra conta conclusões e o índice não permite abrir seções futuras', () => {
@@ -517,7 +519,7 @@ describe('aula por seções', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
     const summary = screen.getByText('O que falta para concluir · 1')
     fireEvent.click(summary)
-    fireEvent.click(screen.getByRole('button', { name: /Enviar projeto/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Envie seu projeto/ }))
     expect(screen.getByRole('heading', { name: /Preparar/ })).toBeTruthy()
     expect(document.activeElement?.id).toBe('lesson-block-project')
     expect(summary.closest('details')?.open).toBe(false)
@@ -984,6 +986,7 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
         title: id,
         status: 'available' as const,
         pending: [],
+        pendingItems: [],
       })),
     }
     render(

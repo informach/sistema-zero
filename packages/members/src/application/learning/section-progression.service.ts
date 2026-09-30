@@ -9,6 +9,7 @@ import {
   lessonCompletionRequirements,
   PLATFORM_ACTION_LABELS,
   playbackLessonStructure,
+  type SectionPendingItem,
   type SectionProgressRecord,
   type SectionProgressView,
   sectionCompletionIssues,
@@ -111,7 +112,7 @@ export class SectionProgressionService {
       : sectionCompletionIssues(structure.sections, lesson.blocks, {
           purpose: 'playback',
         })
-    const pending = new Map<string, string[]>()
+    const pending = new Map<string, SectionPendingItem[]>()
     const newlyComplete: SectionProgressRecord[] = []
     let reachable = true
     for (const section of structure.sections) {
@@ -137,7 +138,7 @@ export class SectionProgressionService {
           pintaState: { submitted: submissions.has(b.id) },
           certificateState: { issued: certificate !== null },
         }))
-      const missing = lessonCompletionRequirements({
+      const missing: SectionPendingItem[] = lessonCompletionRequirements({
         completed: false,
         blocks,
         learningProgress: learning,
@@ -156,7 +157,9 @@ export class SectionProgressionService {
             : [],
       })
         .filter((r) => !r.complete)
-        .map((r) => r.action)
+        .map((r) => ({ kind: r.reason, text: r.action }))
+      // ⚠️ Mensagem de AUTORIA (`authoring`): é para o professor; a faixa do rodapé a troca por
+      // "Esta parte ainda está sendo preparada." fora do ensaio do admin.
       if (
         !structure.legacyLayout &&
         (!criteria ||
@@ -164,17 +167,30 @@ export class SectionProgressionService {
             !criteria.projectChecks?.length &&
             !criteria.platformAction))
       )
-        missing.push('A verificação desta seção precisa ser configurada pelo professor.')
+        missing.push({
+          kind: 'authoring',
+          text: 'A verificação desta seção precisa ser configurada pelo professor.',
+        })
       if (criteria?.platformAction)
-        missing.push(`${PLATFORM_ACTION_LABELS[criteria.platformAction]} e verificar a ação.`)
+        missing.push({
+          kind: 'platform-action',
+          text: `${PLATFORM_ACTION_LABELS[criteria.platformAction]} e toque em "Verificar minha ação"`,
+        })
       if (
         criteria?.projectChecks?.length &&
         !records.some(
           (r) => r.sectionId === section.id && r.revision === revision && r.projectPassed,
         )
       )
-        missing.push('Verifique o objetivo desta etapa no seu projeto.')
-      missing.push(...issues.filter((i) => i.sectionId === section.id).map((i) => i.message))
+        missing.push({
+          kind: 'project-check',
+          text: 'Confira o objetivo desta etapa no seu projeto',
+        })
+      missing.push(
+        ...issues
+          .filter((i) => i.sectionId === section.id)
+          .map((i) => ({ kind: 'authoring' as const, text: i.message })),
+      )
       pending.set(section.id, missing)
       if (reachable && !missing.length) {
         completed.add(section.id)

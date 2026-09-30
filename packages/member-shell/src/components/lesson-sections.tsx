@@ -36,6 +36,7 @@ import { InteractiveLessonBlock } from './learning-activity'
 import { LessonGalleryDelivery } from './lesson-gallery-delivery'
 import { LessonPlayerProvider, useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
+import { LessonSectionStatus } from './lesson-section-status'
 
 function dialogueText(content: unknown): string | null {
   return content !== null &&
@@ -777,6 +778,22 @@ function LessonSectionsContent({
       Preciso de ajuda
     </Button>
   ) : null
+  /**
+   * A faixa do rodapé: os itens tipados da seção ATUAL (`pendingItems`, do members), o estado
+   * "pronto" quando ela fechou e, sem itens (aula legada, conta de equipe), a razão de o "Concluir
+   * aula" estar travado que o player passa em `completionMessage`. No ensaio (`preview`) as
+   * mensagens de autoria saem inteiras.
+   */
+  const secaoAtual = state?.sections.find((s) => s.id === section.id)
+  const statusDaSecao = (
+    <LessonSectionStatus
+      items={secaoAtual?.pendingItems ?? []}
+      completed={secaoAtual?.status === 'completed'}
+      fallback={index === sections.length - 1 ? completionMessage : undefined}
+      preview={preview}
+      className={immersive ? 'mx-auto w-full max-w-7xl' : undefined}
+    />
+  )
   const nextButton = (
     <Button
       className="sz-lesson-nav-next"
@@ -1151,13 +1168,10 @@ function LessonSectionsContent({
                 )}
             </Panel>
           </PanelGroup>
-          {state?.sections
-            .find((s) => s.id === section.id)
-            ?.pending.map((message) => (
-              <p key={message} className="text-sm text-muted-foreground">
-                {message}
-              </p>
-            ))}
+          {/* ⭐⭐ "O que falta para seguir" (30/09/2026): os `<p>` soltos do que faltava viraram UMA
+            faixa com ícone e estado, ao lado do botão que ela explica. No modo imersivo ela mora
+            DENTRO do rodapé fixo, acima dos botões; no ensaio do admin, logo acima do cartão. */}
+          {!immersive && statusDaSecao}
           {/* `sz-lesson-nav`: gancho ESTÁVEL, mesmo espírito do `sz-lesson-toolbar`.
             Sem ele o kids teria de mirar por estrutura ("a div com border-t"). */}
           <div
@@ -1175,6 +1189,7 @@ function LessonSectionsContent({
                 {navigationError}
               </div>
             ) : null}
+            {immersive && statusDaSecao}
             {immersive ? (
               <div className="sz-lesson-nav-inner mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
@@ -1197,20 +1212,10 @@ function LessonSectionsContent({
                 {nextButton}
               </>
             )}
-            {immersive && index === sections.length - 1 && completionMessage ? (
-              <div className="sz-lesson-nav-message mx-auto w-full max-w-7xl pt-1 text-sm text-muted-foreground">
-                {completionMessage}
-              </div>
-            ) : null}
           </div>
           {!immersive && helpForm}
           {!immersive && helpNotice}
           {!immersive && navigationError}
-          {!immersive && index === sections.length - 1 && !lesson.completed && (
-            <p className="text-center text-sm text-muted-foreground">
-              Quando terminar as atividades e a criação desta aula, use o botão de concluir abaixo.
-            </p>
-          )}
         </div>
       </LessonSectionProvider>
     </LessonPlayerProvider>

@@ -1010,12 +1010,52 @@ O `next-themes` saiu dos dois apps de aluno. A preferência de cor é do PERFIL 
    bolinha da marca, o adulto com a linha sóbria. Travado em `tests/materials-block.test.tsx`),
    `sz-lesson-requirement` +
    `data-done` (a linha "Atividade concluída/obrigatória"), `sz-lesson-nav` e os três botões
-   dele (`sz-lesson-nav-prev|help|next`), e a DIVISÓRIA do lado a lado:
+   dele (`sz-lesson-nav-prev|help|next`), **`sz-lesson-status`** e a família dela (30/09/2026 —
+   `data-state="pronto|pendente"`, `sz-lesson-status-item` + `data-kind`, `-icone`, `-lista`,
+   `-mais`; a faixa "o que falta para seguir", ver a seção própria abaixo), e a DIVISÓRIA do lado a lado:
    **`sz-lesson-split-handle`** (a área de arrasto) + **`sz-lesson-split-grip`** (o fio dentro
    dela). Renomear um deles quebra o desenho em silêncio
    (nenhum teste de lá mira a classe, salvo o do handle); mudar a ESTRUTURA (ex.: o bloco deixar
    de ser irmão logo depois do cabeçalho) também — os dois apps juntam cabeçalho e bloco num
    cartão só pelo seletor de irmão (`.sz-lesson-section-head + .sz-lesson-block`).
+
+## "O que falta para seguir": a faixa do rodapé da aula (30/09/2026)
+
+⭐⭐ Pedido dela: as mensagens do que a criança ainda precisa fazer eram `<p>` soltos no fim do
+conteúdo da seção (um por string de `sectionProgress.sections[i].pending`), mais um
+`completionMessage` do player no pé, sem ícone, sem cartão e sem estado. Decisão dela: UMA faixa
+de uma linha no RODAPÉ FIXO, acima dos botões (é a resposta a "por que o botão está travado?"),
+que fica verde quando a parte termina.
+
+- **`lesson-section-status.tsx` (`LessonSectionStatus`)**: `items` (os itens da seção ATUAL),
+  `completed`, `fallback` (o `completionMessage` do player, só na última seção e só quando a seção
+  não tem itens próprios: aula legada, conta de equipe) e `preview`. Renderiza o primeiro item com
+  o prefixo "Para seguir:" e, com mais de um, um `<details>` nativo com o "+N" que abre os demais
+  (teclado e leitor de graça, 44px de alvo). Pronta: "Tudo pronto nesta parte. Pode seguir!".
+  Só ganchos e utilitárias sóbrias (invariante 8): o kids veste em `--band-creme`/`--band-menta`
+  com o ícone num ladrilho da família do bloco; o adulto, sob `.sz-aula-adulto`, com a linha sóbria.
+- **Os itens vêm TIPADOS.** `SectionProgressView.sections[].pendingItems: { kind, text }[]` (core,
+  `section-progression.ts`), com `kind` = a `LessonRequirementReason` do requisito ou
+  `platform-action` | `project-check` | `authoring` | `locked` | `lesson` | `other`. É o `kind` que
+  escolhe o ícone (lucide) e a cor. `pending: string[]` continua existindo, DERIVADO dos itens, por
+  compatibilidade (ajuda ao professor, recados, o `SECTION_GATE_INCOMPLETE` da barra do topo). O
+  members monta os itens em `section-progression.service.ts`; o ensaio do admin monta os dele.
+- ⚠️⚠️ **Mensagem de AUTORIA (`kind: 'authoring'`) é para o professor**, não para a criança: fora
+  do ensaio (`preview` falso, ou seja, com `LessonPlayerProvider`) ela vira "Esta parte ainda
+  está sendo preparada.". No ensaio do admin sai inteira.
+- **A copy dos requisitos é a voz da CRIANÇA** (decisão dela, vale também no adulto), em
+  `core/src/learning/requirements.ts`: "Veja o vídeo até o fim (você já viu 45%)", "Termine o
+  experimento", "Jogue o jogo pronto", "Passe no quiz (nota mínima 70%)", "Envie seu projeto para
+  o professor", "Alcance a nota mínima do projeto", "Envie seu desenho para o professor", "Pegue seu
+  certificado", "Espere a aula ficar pronta"; sem ponto final (é uma pílula). O `completionMessage`
+  dos dois players virou TEXTO na mesma voz.
+- **Onde mora:** dentro do `.sz-lesson-nav` no modo imersivo (acima da `.sz-lesson-nav-inner`,
+  centrada na coluna dos botões), e logo acima do cartão do rodapé no ensaio. O bloco
+  `sz-lesson-nav-message` e o `<p>` "Quando terminar as atividades…" SAÍRAM.
+- Testes: `tests/lesson-section-status.test.tsx` (ícone por `kind`, o "+N", pronto, autoria fora
+  do ensaio, `fallback`), `core/tests/section-progression.test.ts` (os itens tipados e a queda
+  `other` para texto cru), `members/tests/integration/section-progression.test.ts` (as chaves da
+  seção incluem `pendingItems`).
 
 ## Materiais complementares: o bloco que matou os "materiais de apoio" (19/09/2026)
 
