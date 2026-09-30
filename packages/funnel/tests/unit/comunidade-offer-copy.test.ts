@@ -11,24 +11,16 @@ const offer = readFileSync(
 ).replace(/\s+/g, ' ')
 
 describe('copy comercial da Comunidade dos Criadores', () => {
-  test('explica a realidade tecnológica da infância antes de apresentar a criação', () => {
-    expect(offer).toContain('Seu filho está crescendo em um mundo tecnológico')
-    expect(offer).toContain('A tecnologia já faz parte da infância')
-    expect(offer).toContain('Seu filho já vive em um mundo tecnológico')
-    expect(offer).toContain('Essas partes da infância continuam indispensáveis')
-    expect(offer).toContain('cuidado, curiosidade e repertório')
-    expect(offer).toContain('Academia Americana de Pediatria')
-    expect(offer).toContain('UNICEF')
-    expect(offer).toContain('Sociedade Brasileira de Pediatria')
-    expect(offer).toContain('não cabe apenas em limites de tela')
-    expect(offer).toContain('conhecimentos, habilidades e atitudes')
-    expect(offer).toContain('acompanhamento ativo de adultos')
-    expect(offer).toContain('Essas referências não avaliam nem recomendam o Sistema Zero')
-    expect(offer).toContain('Gostar de jogos não é um problema que a Comunidade tenta corrigir')
-    expect(offer).toContain('Digital-Ecosystems-Children-and-Adolescents-Policy')
-    expect(offer).not.toContain('Mais tempo de tela não é a solução')
-    expect(offer).not.toContain('Vamos começar pelo que preocupa você')
-    expect(offer).not.toContain('uma alternativa concreta para uma parte desse tempo')
+  test('apresenta criação guiada como promessa e telas e IA como apoio', () => {
+    const hero = offer.match(/<h1>(.*?)<\/h1>/)?.[1]?.replace(/<[^>]+>/g, '')
+    expect(hero).toContain('transformar as próprias ideias em jogos')
+    expect(hero).not.toMatch(/tela|hiperfoco|inteligência artificial/i)
+    expect(offer).toContain('Os primeiros projetos são guiados')
+    expect(offer).toContain('elementos preparados para a criança começar')
+    expect(offer).toContain('Uma parte do tempo de tela que vocês já permitem')
+    expect(offer).toContain('A Comunidade também usa IA como apoio')
+    expect(offer).toContain('Rafael, Débora e André já testaram a plataforma')
+    expect(offer).not.toContain('Seu filho está crescendo em um mundo tecnológico')
   })
 
   test('vende continuidade depois do primeiro jogo', () => {
@@ -105,11 +97,13 @@ describe('copy comercial da Comunidade dos Criadores', () => {
     const checkout = source('pages', '[audience]', '[produto]', 'checkout.astro')
     const thanks = source('pages', '[audience]', '[produto]', 'obrigado.astro')
 
-    expect(precheckout).toContain('A Comunidade está a um passo de começar')
-    expect(precheckout).toContain('você escolhe o plano e revisa o valor e a renovação')
-    expect(checkout).toContain('Escolha como a criação vai começar na sua família')
-    expect(checkout).toContain('Depois, você cria o perfil da criança dentro da plataforma')
-    expect(thanks).toContain('Assinatura confirmada. Agora vamos preparar o primeiro acesso.')
-    expect(thanks).toContain('Criar perfil e abrir a Comunidade')
+    expect(precheckout).toContain(
+      'Seu filho começa com projetos guiados para aprender a criar jogos',
+    )
+    expect(precheckout).toContain('revisar o plano, o valor e a renovação')
+    expect(checkout).toContain('Um caminho para seu filho começar a criar jogos')
+    expect(checkout).toContain('Após a aprovação, você cria até 2 perfis de criança')
+    expect(thanks).toContain('Assinatura confirmada. Vamos começar o primeiro projeto?')
+    expect(thanks).toContain('Abrir a Comunidade e começar')
   })
 })

@@ -50,12 +50,11 @@ describe('registro do funil Comunidade dos Criadores', () => {
     expect(o.passos.map((p) => p.titulo)).toContain('Mostre a Jornada do Criador')
   })
 
-  test('metadados apresentam tecnologia como contexto e criação como possibilidade', () => {
+  test('metadados mantêm a promessa de desenvolver ideias criando jogos', () => {
     const f = COMUNIDADE_DOS_CRIADORES
-    expect(f.content.landing.h1).toContain('mundo tecnológico')
-    expect(f.content.landing.h1).toContain('transformar ideias em jogos')
-    expect(f.seoTitle).toContain('Tecnologia para criar jogos')
-    expect(f.seoDescription).toContain('criarem e publicarem jogos')
+    expect(f.content.landing.h1).toContain('transformar as próprias ideias em jogos')
+    expect(f.seoTitle).toContain('Ideias que viram jogos')
+    expect(f.seoDescription).toContain('Projetos guiados')
     expect(f.seoDescription).not.toContain('parte do tempo digital')
   })
 
