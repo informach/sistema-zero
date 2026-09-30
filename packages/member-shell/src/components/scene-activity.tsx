@@ -13,7 +13,6 @@ import {
   evaluateExperimentation,
   falaDaInstrucao,
   falasDaCena,
-  isSceneAction,
   oncePreset,
   onceRunFinished,
   openScene,
@@ -50,8 +49,6 @@ import {
   Lightbulb,
   RotateCcw,
   Undo2,
-  Volume2,
-  VolumeX,
 } from 'lucide-react'
 import {
   type ComponentProps,
@@ -1039,18 +1036,12 @@ export function SceneActivityView({
                 ? 'Guardando…'
                 : '')
   /**
-   * ⚠️⚠️ "Ligar som" só nas cenas que FAZEM som (a régua do core), e fora de qualquer `fieldset`:
-   * num conflito de gravação ele morria junto com a cena. Sem `aria-pressed` (lote 2): o rótulo já
-   * diz a próxima ação, e as duas camadas diziam coisas diferentes ("Silenciar, botão, pressionado").
+   * ⚠️⚠️ O som só existe nas cenas que FAZEM som (a régua do core, `sceneEmitsSound`), e nelas ele
+   * é uma CHAVE da bancada (`SomDaBancada`), não um botão avulso: o "Ligar som" discreto do rodapé
+   * que existia até 30/09/2026 nunca renderizava (só nascia com `somDaCena`, e aí a bancada já o
+   * tinha). Sem `aria-pressed` na chave (lote 2): o rótulo já diz a próxima ação.
    */
-  /** Na cena do som, ele é uma chave da bancada (`SomDaBancada`). */
   const somNaBancada = somDaCena
-  const botaoDeSom = somDaCena ? (
-    <SceneButton tom="discreta" onClick={() => void enableSound()}>
-      {muted ? <VolumeX size={16} aria-hidden /> : <Volume2 size={16} aria-hidden />}
-      {muted ? 'Ligar som' : 'Silenciar'}
-    </SceneButton>
-  ) : null
   /**
    * ⭐⭐ Console v2 (30/09/2026): as ferramentas deixaram a barra solta embaixo do console e cada
    * uma foi morar perto do que ela mexe. Desfazer e Recomeçar ficam no PÉ DO MUNDO (mexem no
@@ -1167,8 +1158,6 @@ export function SceneActivityView({
         Conferir
       </SceneButton>
     ))
-  /** A pílula "Rodando"/"Parado" no canto do mundo: só nas cenas com relógio (a régua do core). */
-  const temRelogio = m !== 'frames' && isSceneAction({ type: 'advance', seconds: 0.2 }, m)
 
   /**
    * A fala do Zappy com a instrução.
@@ -1204,7 +1193,9 @@ export function SceneActivityView({
       relogioAndando={running && ready && !conflict}
       valoresEscondidos={previsaoPendente}
       placa={
-        <>
+        /* ⚠️ UMA peça, mesmo com o título repetido: a faixa é `space-between` e com três filhos o
+           medidor caía para a linha de baixo (review do console v2, B3). */
+        <div className="sz-scene-placas flex flex-wrap items-center gap-2">
           <span className="sz-scene-placa sz-scene-momento" data-momento={momento}>
             {momento === 'palpite'
               ? 'Seu palpite'
@@ -1215,7 +1206,7 @@ export function SceneActivityView({
           {tituloJaDito(content.title, secao) && (
             <span className="sz-scene-placa">{content.title}</span>
           )}
-        </>
+        </div>
       }
     >
       {!previsaoPendente && (
@@ -1340,7 +1331,7 @@ export function SceneActivityView({
               <ConsoleFala>
                 <PalpitePergunta prediction={palpite} renderDialogue={renderDialogue} />
               </ConsoleFala>
-              <div className="px-3.5 pb-3">
+              <div>
                 <PalpiteOpcoes
                   prediction={palpite}
                   escolha={prediction}
@@ -1376,17 +1367,6 @@ export function SceneActivityView({
                       <RelogioDaArteProvider value={tempoDaArte}>
                         <ExplorationStage activity={activity} state={visto} dispatch={dispatch} />
                       </RelogioDaArteProvider>
-                      {/* A pílula do relógio: `aria-hidden` (quem anuncia o tempo é a frase da
-                          situação), no canto de cima, fora do caminho do gesto. */}
-                      {temRelogio && (
-                        <span
-                          className="sz-scene-relogio"
-                          aria-hidden
-                          data-andando={running || undefined}
-                        >
-                          {running ? 'Rodando' : 'Parado'}
-                        </span>
-                      )}
                       {/* ⚠️⚠️ Os avisos SOBREPOSTOS ao pé do palco (full review de experiência, M2), sem
                         lugar reservado no fluxo: ver `AvisosDaCena`. */}
                       {(avisoDescoberta || palpiteNaHora) && (
@@ -1489,7 +1469,6 @@ export function SceneActivityView({
                       resposta={conferiu && !conclusao ? conferiu : ''}
                     >
                       {umaPista}
-                      {somNaBancada ? null : botaoDeSom}
                       {conferirOuContinuar}
                     </SceneDescobertas>
                     {/* ⚠️⚠️ O palpite CONGELADO mora DENTRO do console, depois da área de ação:

@@ -2,7 +2,7 @@
 
 import type { SceneGoalProgress } from '@sistemazero/core/learning/scene'
 import { Check, Lock } from 'lucide-react'
-import { type ReactNode, useId } from 'react'
+import { Children, type ReactNode, useId } from 'react'
 
 /**
  * "O que você já descobriu": a lista das metas da atividade, no console v2 (30/09/2026).
@@ -42,18 +42,31 @@ export function SceneDescobertas({
             O que você já descobriu
           </h4>
           <ol>
-            {goals.map((g) => (
+            {goals.map((g, i) => (
               <li key={g.id} className="sz-scene-descoberta" data-feita={g.complete || undefined}>
                 <span className="sz-scene-descoberta-icone" aria-hidden>
                   {g.complete ? <Check size={14} /> : <Lock size={13} />}
                 </span>
-                <span>{g.complete ? g.label : 'Ainda tem uma descoberta aqui.'}</span>
+                <span>
+                  {/* O número só para o leitor: sem ele, três pendentes eram três "Ainda tem uma
+                      descoberta aqui." iguais na lista lida (review do console v2, B4). */}
+                  <span className="sr-only">
+                    {g.complete
+                      ? `Descoberta ${i + 1}, feita: `
+                      : `Descoberta ${i + 1}, trancada. `}
+                  </span>
+                  {g.complete ? g.label : 'Ainda tem uma descoberta aqui.'}
+                </span>
               </li>
             ))}
           </ol>
         </>
       )}
-      {children ? <div className="sz-scene-descobertas-acoes">{children}</div> : null}
+      {/* ⚠️ `children` é um ARRAY (de `null`/`false` depois de concluir), e array é truthy:
+          contar os filhos de verdade, senão sobra uma linha vazia com o respiro de cima. */}
+      {Children.toArray(children).length > 0 ? (
+        <div className="sz-scene-descobertas-acoes">{children}</div>
+      ) : null}
       <p
         className={
           resposta

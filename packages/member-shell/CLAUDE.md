@@ -1255,15 +1255,39 @@ ajustes dela. Hoje o console é:
   `tests/scene-experience-layout.test.tsx`: faixa → mundo → situação → fala → pista → prancha →
   descobertas → palpite/conclusão.
 - **Cada ferramenta mora perto do que ela mexe:** Desfazer e Recomeçar no pé do mundo; Uma pista,
-  o som e Conferir/Continuar na lista de descobertas, junto da resposta do Conferir (era um
+  e Conferir/Continuar na lista de descobertas, junto da resposta do Conferir (era um
   parágrafo solto embaixo do console). Os NOMES acessíveis não mudaram.
 - **A ação principal do momento sai na largura toda:** o gesto sozinho (`.sz-scene-gestos >
   :only-child`) ou o botão que a bancada marca com `sz-scene-acao-principal` (hoje o "Ligar a
   reação ao toque", que passou a `tom="gesto"` enquanto a reação está desligada).
 - **Duas colunas** (`@container scene-workspace (min-width: 52rem)`): altura NATURAL, 1,15 : 1. O
-  painel do mundo nunca rola; o das ações rola sozinho acima de `max(36rem, 100dvh − 14rem)`.
+  painel do mundo nunca rola; o das ações rola sozinho acima de `max(20rem, 100dvh − 14rem)`.
   ⚠️ Sem o teto de 40rem de antes: com altura natural ele fazia a coluna rolar por dentro mesmo com
-  a tela sobrando. No ampliado os dois painéis enchem a área útil e rolam cada um.
+  a tela sobrando. ⚠️ E o piso é 20rem (era 36rem): num notebook de 768px o piso maior passava da
+  janela e a página rolava para mostrar o fim de um painel que já rolava por dentro. A grade tem
+  `align-items: start`: sem isso o painel do mundo era ESTICADO à altura do das ações (~200px de
+  branco sob a frase da situação numa bancada longa). No ampliado os dois painéis enchem a área
+  útil (`align-items: stretch` de volta) e rolam cada um.
+- **Review do lote (30/09/2026), o que ele mudou:** (a) ⚠️⚠️ **a pílula "Rodando/Parado" sobre o
+  palco SAIU** — ela cobria o texto que ~20 dos 30 palcos com relógio desenham no canto de cima
+  ("Pronto para começar", "quadro 0", os corações do `VidaDoJogo`); os dois cantos de cima são zona
+  de HUD dos palcos e o ▶ já diz "Parar/Soltar o tempo"; ela também não estava em nenhum quadro da
+  maquete aprovada; (b) **a moldura escura é só do filho DIRETO do mundo**
+  (`.sz-scene-console-mundo > .sz-scene-frame`): a regra por descendente alcançava o `.sz-scene-frame`
+  DENTRO do retrato do palpite (moldura dobrada de 8px com meias-luas), a miniatura da `screen-reader`
+  e os dois lados da comparação, e a utilitária `[&_.sz-scene-frame]:border-0` do retrato perde para
+  a regra sem camada; (c) os ladrilhos e o momento ficaram nas MEDIDAS da maquete (rótulo
+  .6875rem/800, valor 1.25rem/1.1, momento .75rem com `.3rem .75rem`; a bolinha neutra é o
+  `muted-foreground` opaco); (d) os dois-pontos entre rótulo e valor voltaram, SÓ para o leitor de
+  tela, via `dt::after` visualmente escondido (o Chrome expõe o conteúdo gerado; um `<span>` dentro
+  do `dt` quebraria os testes que acham o `dt` pelo `textContent` exato); (e) as duas placas da
+  faixa vão numa peça só (`.sz-scene-placas`): com três filhos no `space-between` o medidor caía de
+  linha quando o título é repetido; (f) `SceneDescobertas`: cada item ganhou "Descoberta N, feita/
+  trancada" `sr-only` e a linha de ações só existe com uma ação de verdade (`Children.toArray`, porque
+  um array de `null` é truthy); (g) código morto apagado: o botão de som avulso (só existe na cena
+  do som, onde é chave da bancada), `sz-scene-frame--fit`/`--sz-scene-aspect`/`proporcao` do canvas
+  e o `data-momento="palpite"` do CSS. Testes: `scene-descobertas.test.tsx` (novo) e a ação principal
+  em `scene-touch-response.test.tsx`.
 - ⚠️ `scene-motor-3d-consertos-5b.test.tsx` e `lesson-scene-design.test.tsx:178` pinam as classes
   `text-scene-a`/`-b-ink`/`-alert`/`-leaf` no `dd` da faixa: elas ficam, e é por elas que o CSS
   pinta a bolinha (`.sz-scene-hud-tile dd.text-scene-a::before`).

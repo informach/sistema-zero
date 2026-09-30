@@ -263,12 +263,12 @@
   margin-bottom: 0.625rem;
 }
 .sz-scene-momento {
+  /* As medidas da maquete aprovada (30/09): um degrau menor que a `.sz-scene-placa` de antes. */
+  padding: 0.3rem 0.75rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   background: var(--sz-scene-momento-fundo);
   color: var(--sz-scene-momento-tinta);
-}
-.sz-scene-momento[data-momento="palpite"] {
-  background: color-mix(in oklab, var(--color-primary) 12%, transparent);
-  color: var(--color-primary);
 }
 .sz-scene-momento[data-momento="descobriu"] {
   background: var(--sz-scene-feita-fundo);
@@ -319,41 +319,54 @@
   background: var(--sz-scene-apoio);
 }
 .sz-scene-hud-tile dt {
+  position: relative;
   margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 800;
   color: var(--color-muted-foreground);
+}
+/* Os dois-pontos SÓ para o leitor de tela (o Chrome expõe o conteúdo gerado na árvore de
+ * acessibilidade): sem eles a leitura corrida emendava rótulo e valor ("o Dino nos bastidores
+ * ainda não desenho desligado"). Visualmente escondidos, porque o ladrilho já separa os dois. */
+.sz-scene-hud-tile dt::after {
+  content: ":";
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .sz-scene-hud-tile dd {
   margin: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 1.25rem;
+  line-height: 1.1;
   color: var(--color-foreground);
   overflow-wrap: anywhere;
 }
+/* A bolinha do par: cinza opaco no tom neutro (a maquete), a cor do par nos outros. */
 .sz-scene-hud-tile dd::before {
   content: "";
   flex: none;
   width: 0.625rem;
   height: 0.625rem;
   border-radius: 9999px;
-  background: currentColor;
-  opacity: 0.35;
+  background: var(--color-muted-foreground);
 }
 .sz-scene-hud-tile dd.text-scene-a::before {
   background: var(--color-scene-a);
-  opacity: 1;
 }
 .sz-scene-hud-tile dd.text-scene-b-ink::before {
   background: var(--color-scene-b-ink);
-  opacity: 1;
 }
 .sz-scene-hud-tile dd.text-scene-alert::before {
   background: var(--color-scene-alert);
-  opacity: 1;
 }
 .sz-scene-hud-tile dd.text-scene-leaf::before {
   background: var(--color-scene-leaf);
-  opacity: 1;
 }
 
 /* O MUNDO: a moldura escura de tela de jogo é do PRÓPRIO palco, justa em volta do desenho (decisão
@@ -363,40 +376,19 @@
 .sz-scene-console-mundo {
   position: relative;
 }
-.sz-scene-console .sz-scene-frame,
-.sz-scene-console [data-scene-prediction-preview] {
+/* ⚠️ Só o filho DIRETO do mundo leva a moldura (review do console v2, M1): a regra antiga alcançava
+ * o `.sz-scene-frame` DENTRO do retrato do palpite (moldura dobrada de 8px com meias-luas nos
+ * cantos), a miniatura da `screen-reader` e os dois lados da comparação. */
+.sz-scene-console-mundo > .sz-scene-frame,
+.sz-scene-console-mundo > [data-scene-prediction-preview] {
   border: 4px solid var(--sz-scene-bezel);
   border-radius: 1rem;
   box-shadow: none;
 }
-.sz-scene-relogio {
-  position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.2rem 0.625rem;
-  border-radius: 9999px;
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  background: color-mix(in oklab, var(--sz-scene-bezel) 85%, transparent);
-  color: #fff;
-  pointer-events: none;
-}
-.sz-scene-relogio::before {
-  content: "";
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 9999px;
-  background: currentColor;
-  opacity: 0.5;
-}
-.sz-scene-relogio[data-andando]::before {
-  background: #4ade80;
-  opacity: 1;
+.sz-scene-console-mundo > [data-scene-prediction-preview] .sz-scene-frame {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 /* O PÉ DO MUNDO: os botões numa linha e, embaixo, a frase do que está acontecendo na largura toda. */
 .sz-scene-mundo-rodape {
@@ -672,11 +664,16 @@
     .sz-scene-console {
       grid-template-columns: minmax(0, 1.15fr) minmax(24rem, 1fr);
       grid-template-rows: auto;
+      /* ⚠️ Sem isto o painel do mundo é ESTICADO à altura do painel das ações: ~200px de branco
+       * vazio sob a frase da situação numa bancada longa (review do console v2, M3). */
+      align-items: start;
     }
     /* O painel do MUNDO nunca rola: o que ele tem é limitado (faixa, palco, pé). O painel das AÇÕES
      * rola sozinho quando passa da janela (a bancada longa não leva o palco junto); numa janela
      * alta ele só tem a altura natural. ⚠️ Sem o teto de 40rem de antes: com altura natural ele
-     * fazia a coluna rolar por dentro mesmo com a tela sobrando (visto no print de 30/09). */
+     * fazia a coluna rolar por dentro mesmo com a tela sobrando (visto no print de 30/09). ⚠️ E o
+     * piso é 20rem, não 36rem: num notebook de 768px o piso maior passava da janela e a página
+     * rolava para mostrar o fim de um painel que já rolava por dentro (review, M2). */
     .sz-scene-console-visual,
     .sz-scene-console-actions {
       overscroll-behavior: contain;
@@ -684,7 +681,7 @@
       scrollbar-gutter: stable both-edges;
     }
     .sz-scene-console-actions {
-      max-height: max(36rem, calc(100dvh - 14rem));
+      max-height: max(20rem, calc(100dvh - 14rem));
       overflow-y: auto;
     }
     /* No ampliado os dois painéis enchem a área útil e cada um rola sozinho. */
@@ -705,6 +702,8 @@
       flex: 1;
       min-height: 0;
       grid-template-rows: minmax(0, 1fr);
+      /* No ampliado os painéis ENCHEM a linha (cada um rola sozinho): o `start` de cima não vale. */
+      align-items: stretch;
     }
     .sz-scene-workspace--expanded .sz-scene-console-visual,
     .sz-scene-workspace--expanded .sz-scene-console-actions {
