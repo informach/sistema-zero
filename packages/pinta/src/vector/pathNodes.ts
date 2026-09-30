@@ -22,6 +22,7 @@ import {
   type Vec2,
   type VectorShape,
 } from './model'
+import { QUARTER_CIRCLE_KAPPA, rectCornerArcs } from './rectCorners'
 import { catmullRomToPath, simplifyRDP } from './smoothing'
 
 /** Um nó: a âncora sobre a curva e, quando há curva, as alças ABSOLUTAS. */
@@ -67,9 +68,6 @@ function hasAnyCurve(ep: EditablePath): boolean {
 
 // ── Modelo → nós ────────────────────────────────────────────────────────────
 
-/** Aproxima um quarto de círculo com uma cúbica, como no traçado SVG usual. */
-const QUARTER_CIRCLE_CONTROL = (4 * (Math.SQRT2 - 1)) / 3
-
 /**
  * `null` quando a forma não se edita por pontos (texto/figura) ou quando o
  * `d` sai do nosso dialeto. ⚠️ Vários sub-caminhos (mais de um `M`) também dão
@@ -78,39 +76,32 @@ const QUARTER_CIRCLE_CONTROL = (4 * (Math.SQRT2 - 1)) / 3
 export function toEditablePath(shape: VectorShape): EditablePath | null {
   switch (shape.type) {
     case 'rect': {
-      const { x, y, w, h } = shape
+      const { w, h } = shape
       if (w <= 0 || h <= 0) return null
-      const radius = Math.max(0, Math.min(shape.rx, w / 2, h / 2))
-      if (radius === 0)
-        return {
-          closed: true,
-          nodes: [
-            { p: { x, y } },
-            { p: { x: x + w, y } },
-            { p: { x: x + w, y: y + h } },
-            { p: { x, y: y + h } },
-          ],
+      // Um nó por canto reto; dois (com as alças do quarto de círculo) por canto redondo, no
+      // sentido horário. Começa na SAÍDA do canto de cima-esquerda e fecha nele: com os quatro
+      // redondos sai exatamente a lista de 8 de sempre; com os quatro retos, as 4 quinas.
+      const [tl, tr, br, bl] = rectCornerArcs(shape)
+      const nodes: PathNode[] =
+        tl.radius > 0 ? [{ p: copy(tl.to), in: copy(tl.c2) }] : [{ p: copy(tl.point) }]
+      for (const arc of [tr, br, bl]) {
+        if (arc.radius > 0) {
+          nodes.push(
+            { p: copy(arc.from), out: copy(arc.c1) },
+            { p: copy(arc.to), in: copy(arc.c2) },
+          )
+        } else {
+          nodes.push({ p: copy(arc.point) })
         }
-      const control = radius * QUARTER_CIRCLE_CONTROL
-      return {
-        closed: true,
-        nodes: [
-          { p: { x: x + radius, y }, in: { x: x + radius - control, y } },
-          { p: { x: x + w - radius, y }, out: { x: x + w - radius + control, y } },
-          { p: { x: x + w, y: y + radius }, in: { x: x + w, y: y + radius - control } },
-          { p: { x: x + w, y: y + h - radius }, out: { x: x + w, y: y + h - radius + control } },
-          { p: { x: x + w - radius, y: y + h }, in: { x: x + w - radius + control, y: y + h } },
-          { p: { x: x + radius, y: y + h }, out: { x: x + radius - control, y: y + h } },
-          { p: { x, y: y + h - radius }, in: { x, y: y + h - radius + control } },
-          { p: { x, y: y + radius }, out: { x, y: y + radius - control } },
-        ],
       }
+      if (tl.radius > 0) nodes.push({ p: copy(tl.from), out: copy(tl.c1) })
+      return { closed: true, nodes }
     }
     case 'ellipse': {
       const { cx, cy, rx, ry } = shape
       if (rx <= 0 || ry <= 0) return null
-      const horizontal = rx * QUARTER_CIRCLE_CONTROL
-      const vertical = ry * QUARTER_CIRCLE_CONTROL
+      const horizontal = rx * QUARTER_CIRCLE_KAPPA
+      const vertical = ry * QUARTER_CIRCLE_KAPPA
       return {
         closed: true,
         nodes: [

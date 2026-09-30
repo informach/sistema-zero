@@ -8,6 +8,7 @@
 import { parsePathD, rotatePoint, rotationPivotOf } from './geometry'
 import type { Vec2, VectorShape } from './model'
 import type { Poly, Ring } from './polygonClip'
+import { rectCornerArcs } from './rectCorners'
 
 /**
  * Erro máximo entre a curva de verdade e a polilinha, em unidades do desenho.
@@ -95,33 +96,22 @@ function cleanRing(points: Vec2[]): Ring | null {
 }
 
 function rectRing(shape: Extract<VectorShape, { type: 'rect' }>, tolerance: number): Vec2[] {
-  const x = Math.min(shape.x, shape.x + shape.w)
-  const y = Math.min(shape.y, shape.y + shape.h)
-  const w = Math.abs(shape.w)
-  const h = Math.abs(shape.h)
-  const r = Math.min(Math.max(shape.rx, 0), Math.min(w, h) / 2)
-  if (r <= 0) {
-    return [
-      { x, y },
-      { x: x + w, y },
-      { x: x + w, y: y + h },
-      { x, y: y + h },
-    ]
-  }
-  // Quatro quartos de círculo nos cantos, na MESMA ordem do canto reto (o
-  // sentido tem que bater, senão a área sai com o sinal trocado).
-  const steps = arcSegments(r, Math.PI / 2, tolerance)
-  const cantos: Array<{ cx: number; cy: number; from: number }> = [
-    { cx: x + w - r, cy: y + r, from: -Math.PI / 2 },
-    { cx: x + w - r, cy: y + h - r, from: 0 },
-    { cx: x + r, cy: y + h - r, from: Math.PI / 2 },
-    { cx: x + r, cy: y + r, from: Math.PI },
-  ]
+  // Um arco por canto redondo (com o raio DELE) e a quina por canto reto, no sentido horário a
+  // partir de cima-esquerda (o sentido tem que bater com o do retângulo reto, senão a área sai
+  // com o sinal trocado). Os centros e ângulos vêm do `rectCorners.ts`, a mesma fonte do `d`.
   const points: Vec2[] = []
-  for (const canto of cantos) {
+  for (const arc of rectCornerArcs(shape)) {
+    if (arc.radius <= 0) {
+      points.push({ x: arc.point.x, y: arc.point.y })
+      continue
+    }
+    const steps = arcSegments(arc.radius, Math.PI / 2, tolerance)
     for (let i = 0; i <= steps; i += 1) {
-      const ang = canto.from + (Math.PI / 2) * (i / steps)
-      points.push({ x: canto.cx + Math.cos(ang) * r, y: canto.cy + Math.sin(ang) * r })
+      const ang = arc.startAngle + (Math.PI / 2) * (i / steps)
+      points.push({
+        x: arc.center.x + Math.cos(ang) * arc.radius,
+        y: arc.center.y + Math.sin(ang) * arc.radius,
+      })
     }
   }
   return points

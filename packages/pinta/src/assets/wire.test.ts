@@ -54,6 +54,21 @@ function fixtures(): PintaAsset[] {
     rotation: 0,
     locked: true,
   })
+  // Retângulo com cantos DIFERENTES, já canônico (`rx` = o maior): a chave atravessa o wire.
+  livre.shapes.push({
+    id: 'shape-cantos',
+    type: 'rect',
+    x: 40,
+    y: 2,
+    w: 30,
+    h: 20,
+    rx: 4,
+    corners: [4, 0, 4, 0],
+    fill: '#78dc52',
+    stroke: null,
+    opacity: 1,
+    rotation: 0,
+  })
 
   return [
     sprite,

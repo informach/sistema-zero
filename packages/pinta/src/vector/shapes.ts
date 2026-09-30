@@ -11,6 +11,7 @@ import type {
   VectorStroke,
   VectorTextAlign,
 } from './model'
+import { ALL_CORNERS, type RectCornerMask, radiiFromMask, rectCornerFields } from './rectCorners'
 
 export interface ShapeStyle {
   fill: VectorFill
@@ -33,7 +34,17 @@ const base = (style: ShapeStyle) => ({
   rotation: 0,
 })
 
-export function makeRect(a: Vec2, b: Vec2, style: ShapeStyle, radius = 0): VectorShape {
+/**
+ * `radius` vale para os cantos LIGADOS em `corners` (todos, por padrão); canto desligado
+ * nasce reto. Sem o 5º argumento a saída é a de sempre: só `rx`, sem a chave `corners`.
+ */
+export function makeRect(
+  a: Vec2,
+  b: Vec2,
+  style: ShapeStyle,
+  radius = 0,
+  corners: RectCornerMask = ALL_CORNERS,
+): VectorShape {
   const w = Math.abs(b.x - a.x)
   const h = Math.abs(b.y - a.y)
   return {
@@ -44,8 +55,8 @@ export function makeRect(a: Vec2, b: Vec2, style: ShapeStyle, radius = 0): Vecto
     w,
     h,
     // Raio clampado à metade do menor lado (acima disso o SVG "capa" sozinho,
-    // mas o número guardado ficaria mentiroso).
-    rx: Math.max(Math.min(radius, Math.min(w, h) / 2), 0),
+    // mas o número guardado ficaria mentiroso). Iguais → só `rx`; diferentes → `corners`.
+    ...rectCornerFields(radiiFromMask(corners, radius), w, h),
   }
 }
 

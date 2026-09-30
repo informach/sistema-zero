@@ -331,3 +331,23 @@ describe('buildAnimatedVectorSvg — segurança e limites', () => {
     expect(result.bytes).toBeGreaterThan(MODULE_ANIMATED_SVG_MAX_BYTES)
   })
 })
+
+describe('cantos por canto caem no discreto (30/09/2026)', () => {
+  it('um rect que ganha `corners` numa pose não interpola: o <path> não tem x/y/width/height/rx', () => {
+    const result = success([
+      [rect('a', 'corpo', 0)],
+      [rect('b', 'corpo', 20, { corners: [1, 0, 0, 0] } as Partial<VectorShape>)],
+    ])
+    expect(result.smoothedTracks).toBe(0)
+    expect(result.discreteTracks).toBeGreaterThanOrEqual(1)
+    expect(result.svg).not.toContain('attributeName="x"')
+    expect(result.svg).toContain('attributeName="visibility"')
+    expect(result.svg).toContain('<path')
+  })
+
+  it('o par uniforme rx 1 → rx 3 continua suave', () => {
+    const result = success([[rect('a', 'corpo', 0)], [rect('b', 'corpo', 20, { rx: 3 })]])
+    expect(result.smoothedTracks).toBe(1)
+    expect(result.svg).toContain('attributeName="rx"')
+  })
+})

@@ -161,15 +161,24 @@ function animatedGeometryAttrs(shape: VectorShape): string[] {
   }
 }
 
+/**
+ * Retângulo com cantos DIFERENTES sai como `<path>`, e o `smoothMarkup` interpola
+ * `x/y/width/height/rx`, que um caminho não tem: essa trilha cai no discreto.
+ */
+function smoothable(shape: VectorShape): boolean {
+  return SMOOTH_TYPES.has(shape.type) && !(shape.type === 'rect' && shape.corners !== undefined)
+}
+
 function canSmooth(shapes: Array<VectorShape | undefined>, poses: Pose[]): shapes is VectorShape[] {
   const first = shapes[0]
-  if (!first?.motionId || !SMOOTH_TYPES.has(first.type)) return false
+  if (!first?.motionId || !smoothable(first)) return false
   const style = smoothStyleSignature(first)
   return shapes.every((shape, poseIndex) => {
     if (
       !shape ||
       shape.motionId !== first.motionId ||
       shape.type !== first.type ||
+      !smoothable(shape) ||
       smoothStyleSignature(shape) !== style
     ) {
       return false

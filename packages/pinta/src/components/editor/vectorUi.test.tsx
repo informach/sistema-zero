@@ -4890,3 +4890,163 @@ describe('régua e guias: os consertos do full review (26/09/2026)', () => {
     expect(guideLine(guide).getAttribute('stroke-width')).toBe('1')
   })
 })
+
+describe('Shift redimensiona sem esticar (30/09/2026)', () => {
+  it('alça de canto com Shift mantém a proporção; soltar o Shift no meio volta ao livre', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [80, 80])
+    await waitFor(() => expect(stage.querySelector('rect[data-handle="se"]')).toBeTruthy())
+    const se = stage.querySelector('rect[data-handle="se"]') as SVGRectElement
+    fireEvent.pointerDown(se, { isPrimary: true, pointerId: 2, clientX: 80, clientY: 80 })
+    // Âncora (16,16), início (80,80), ponteiro (144,96): a projeção na diagonal dá 1,625, ou
+    // seja 64 × 1,625 = 104 nos DOIS eixos (o livre daria 128 × 80).
+    fireEvent.pointerMove(stage, { pointerId: 2, clientX: 144, clientY: 96, shiftKey: true })
+    await waitFor(() => {
+      const rect = stage.querySelector('rect[fill="#78dc52"]')
+      expect(rect?.getAttribute('width')).toBe('104')
+      expect(rect?.getAttribute('height')).toBe('104')
+    })
+    // O Shift é lido VIVO: o próximo movimento sem ele volta a escalar cada eixo pelo seu.
+    fireEvent.pointerMove(stage, { pointerId: 2, clientX: 144, clientY: 96 })
+    await waitFor(() => {
+      const rect = stage.querySelector('rect[fill="#78dc52"]')
+      expect(rect?.getAttribute('width')).toBe('128')
+      expect(rect?.getAttribute('height')).toBe('80')
+    })
+    fireEvent.pointerUp(stage, { pointerId: 2 })
+  })
+
+  it('alça de lado com Shift leva o mesmo fator aos dois eixos, em torno do lado oposto', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [80, 80])
+    await waitFor(() => expect(stage.querySelector('rect[data-handle="e"]')).toBeTruthy())
+    const east = stage.querySelector('rect[data-handle="e"]') as SVGRectElement
+    fireEvent.pointerDown(east, { isPrimary: true, pointerId: 2, clientX: 80, clientY: 48 })
+    // Âncora (16,48): fx = (144 − 16) / (80 − 16) = 2 → largura E altura dobram.
+    fireEvent.pointerMove(stage, { pointerId: 2, clientX: 144, clientY: 60, shiftKey: true })
+    await waitFor(() => {
+      const rect = stage.querySelector('rect[fill="#78dc52"]')
+      expect(rect?.getAttribute('width')).toBe('128')
+      expect(rect?.getAttribute('height')).toBe('128')
+      expect(rect?.getAttribute('y')).toBe('-16')
+    })
+    fireEvent.pointerUp(stage, { pointerId: 2 })
+  })
+})
+
+describe('quais cantos ficam redondos (30/09/2026)', () => {
+  const curvas = (d: string | null | undefined): number => (d?.match(/ C /g) ?? []).length
+  const slider = (): HTMLInputElement =>
+    document.querySelector('input[name="vector-rect-radius"]') as HTMLInputElement
+
+  it('desligar um canto vira <path> com três cúbicas; religar volta ao <rect rx>; um toque = UM desfazer', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [80, 80])
+    await waitFor(() => expect(slider()).toBeTruthy())
+    fireEvent.change(slider(), { target: { value: '8' } })
+    await waitFor(() =>
+      expect(stage.querySelector('rect[fill="#78dc52"]')?.getAttribute('rx')).toBe('8'),
+    )
+    const bl = screen.getByRole('button', { name: COPY.vector.cornerBottomLeft })
+    expect(bl.getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(bl)
+    await waitFor(() => {
+      const path = stage.querySelector('path[fill="#78dc52"]')
+      expect(path).toBeTruthy()
+      expect(curvas(path?.getAttribute('d'))).toBe(3)
+    })
+    expect(stage.querySelector('rect[fill="#78dc52"]')).toBeNull()
+    expect(
+      screen
+        .getByRole('button', { name: COPY.vector.cornerBottomLeft })
+        .getAttribute('aria-pressed'),
+    ).toBe('false')
+    // Os outros três seguem ligados.
+    expect(
+      screen.getByRole('button', { name: COPY.vector.cornerTopRight }).getAttribute('aria-pressed'),
+    ).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.cornerBottomLeft }))
+    await waitFor(() =>
+      expect(stage.querySelector('rect[fill="#78dc52"]')?.getAttribute('rx')).toBe('8'),
+    )
+    // Um toque = uma entrada: UM desfazer devolve o caminho de três cúbicas.
+    fireEvent.click(screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLElement)
+    await waitFor(() =>
+      expect(curvas(stage.querySelector('path[fill="#78dc52"]')?.getAttribute('d'))).toBe(3),
+    )
+  })
+
+  it('retângulo todo reto selecionado: o toque só ARMA a grade (sem desfazer vazio) e o slider aplica nos ligados', async () => {
+    const stage = await openWithShapes([
+      {
+        id: 'reto',
+        type: 'rect',
+        x: 40,
+        y: 40,
+        w: 100,
+        h: 100,
+        rx: 0,
+        fill: '#78dc52',
+        stroke: null,
+        opacity: 1,
+        rotation: 0,
+      },
+    ])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const rect = stage.querySelector('rect[fill="#78dc52"]') as Element
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 90, clientY: 90 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 1, clientX: 90, clientY: 90 })
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: COPY.vector.cornerTopRight })).toBeTruthy(),
+    )
+    const undo = screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLButtonElement
+    expect(undo.disabled).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.cornerTopRight }))
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole('button', { name: COPY.vector.cornerTopRight })
+          .getAttribute('aria-pressed'),
+      ).toBe('false'),
+    )
+    expect(undo.disabled).toBe(true)
+    expect(stage.querySelector('rect[fill="#78dc52"]')?.getAttribute('rx')).toBeNull()
+    fireEvent.change(slider(), { target: { value: '12' } })
+    await waitFor(() =>
+      expect(curvas(stage.querySelector('path[fill="#78dc52"]')?.getAttribute('d'))).toBe(3),
+    )
+    expect(undo.disabled).toBe(false)
+  })
+
+  it('a escolha vale para o PRÓXIMO retângulo: dois cantos desligados nascem retos', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    await waitFor(() => expect(slider()).toBeTruthy())
+    // Sem seleção, o slider e a grade armam o próximo retângulo.
+    fireEvent.change(slider(), { target: { value: '8' } })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.cornerBottomLeft }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.cornerBottomRight }))
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole('button', { name: COPY.vector.cornerBottomRight })
+          .getAttribute('aria-pressed'),
+      ).toBe('false'),
+    )
+    drawRect(stage, [16, 16], [80, 80])
+    await waitFor(() => {
+      const path = stage.querySelector('path[fill="#78dc52"]')
+      expect(path).toBeTruthy()
+      expect(curvas(path?.getAttribute('d'))).toBe(2)
+      // Começa na saída do canto de cima-esquerda (redondo, raio 8).
+      expect(path?.getAttribute('d')?.startsWith('M 24 16 ')).toBe(true)
+    })
+  })
+})

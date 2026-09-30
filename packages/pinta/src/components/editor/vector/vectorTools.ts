@@ -450,3 +450,47 @@ export function constrainPoint(tool: VectorTool, start: Vec2, current: Vec2): Ve
   const size = Math.max(Math.abs(dx), Math.abs(dy))
   return { x: start.x + (dx < 0 ? -size : size), y: start.y + (dy < 0 ? -size : size) }
 }
+
+/** As oito alças da caixa da seleção: quatro cantos e quatro lados. */
+export type ResizeHandleId = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
+
+/**
+ * Os fatores de escala de um arrasto de alça, em torno da âncora (o canto ou o meio do lado
+ * OPOSTO). `start` é onde a alça estava no `pointerdown` e `point` onde o ponteiro está agora.
+ *
+ * Livre (o de sempre): canto escala os dois eixos, cada um pelo seu; lado escala só o eixo dele.
+ *
+ * Proporcional (Shift segurado, 30/09/2026, pedido dela: "ao redimensionar pressionando Shift,
+ * redimensionar proporcionalmente"): um fator só para os dois eixos. Num canto ele é a
+ * PROJEÇÃO do ponteiro na diagonal âncora→início (o ponteiro "anda" pela diagonal, sem tremer
+ * entre um eixo e outro; numa seleção não quadrada isso NÃO é a média dos dois fatores). Num
+ * lado é o fator do eixo arrastado, aplicado aos dois.
+ *
+ * Devolve fatores CRUS (negativo, NaN): quem clampa é o `clampFactor` do `scaleShape`, como
+ * sempre (mínimo 0,05, nunca vira do avesso). `|início − âncora| = 0` devolve 1.
+ */
+export function resizeFactors(
+  handle: ResizeHandleId,
+  anchor: Vec2,
+  start: Vec2,
+  point: Vec2,
+  proportional: boolean,
+): { fx: number; fy: number } {
+  const dx = start.x - anchor.x
+  const dy = start.y - anchor.y
+  const isCorner = handle.length === 2
+  const horizontal = handle === 'e' || handle === 'w'
+  const fx = dx === 0 ? 1 : (point.x - anchor.x) / dx
+  const fy = dy === 0 ? 1 : (point.y - anchor.y) / dy
+  if (!proportional) {
+    return { fx: isCorner || horizontal ? fx : 1, fy: isCorner || !horizontal ? fy : 1 }
+  }
+  if (isCorner) {
+    const len2 = dx * dx + dy * dy
+    if (len2 === 0) return { fx: 1, fy: 1 }
+    const f = ((point.x - anchor.x) * dx + (point.y - anchor.y) * dy) / len2
+    return { fx: f, fy: f }
+  }
+  const f = horizontal ? fx : fy
+  return { fx: f, fy: f }
+}
