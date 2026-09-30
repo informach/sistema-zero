@@ -543,19 +543,20 @@ const seeds = [
     key: 'challenge-completed',
     channel: 'email' as const,
     name: 'Desafio: concluído (e-mail)',
-    subject: 'O primeiro jogo ficou pronto! E agora?',
+    subject: 'O primeiro jogo ficou pronto. E agora?',
     variables: ['nome', 'link'],
     body: emailLayout({
-      preheader: 'Celebre a conquista e conheça o próximo caminho de criação.',
-      title: 'Primeiro jogo concluído! 🏆',
+      preheader: 'Celebre a conquista e conheça o caminho que vem depois do primeiro jogo.',
+      title: 'O primeiro jogo ficou pronto 🏆',
       content: [
         p(
-          'Olá, {{nome}}! A criança concluiu o Desafio do Primeiro Jogo. Vale celebrar: ela transformou uma ideia em um projeto próprio, etapa por etapa.',
+          'Olá, {{nome}}. A criança concluiu o Desafio do Primeiro Jogo: montou as regras, testou e publicou um jogo com link. Vale celebrar, e vale jogar com a família hoje.',
         ),
         p(
-          'Se quiser continuar criando com novos projetos, ferramentas e acompanhamento, conheça a Comunidade do Criador.',
+          'O que costuma acontecer depois é a pergunta "e agora?". A Comunidade dos Criadores é a resposta: novos cursos, uma pessoa lendo o que ela envia e um posto novo a cada projeto concluído. O progresso continua de onde parou.',
         ),
-        ctaButton('Conhecer a Comunidade', '{{link}}'),
+        p('Conheça os planos e as condições na página, sem compromisso.'),
+        ctaButton('Ver o caminho depois do primeiro jogo', '{{link}}'),
         fallbackLink('{{link}}'),
       ].join('\n'),
       footerNote:
@@ -576,7 +577,7 @@ const seeds = [
           'Olá, {{nome}}! O acesso ao Desafio do Primeiro Jogo terminou em <strong>{{data}}</strong>.',
         ),
         p(
-          'O progresso e os projetos continuam guardados na conta. Para seguir criando e voltar a acessar esse conteúdo, conheça a Comunidade do Criador.',
+          'O progresso e os projetos continuam guardados na conta. Para seguir criando e voltar a acessar esse conteúdo, conheça a Comunidade dos Criadores.',
         ),
         ctaButton('Conhecer a Comunidade', '{{link}}'),
         fallbackLink('{{link}}'),

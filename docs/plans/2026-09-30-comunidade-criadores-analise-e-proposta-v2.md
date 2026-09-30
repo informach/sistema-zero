@@ -1,6 +1,6 @@
 # Comunidade dos Criadores: análise profunda da oferta e proposta de argumentação (v2)
 
-Data: 30/09/2026. Status: proposta para aprovação. Substitui, se aprovada, a argumentação de `2026-09-29-comunidade-criadores-argumentacao-proposta.md` implementada em 30/09.
+Data: 30/09/2026. Status: aprovada e implementada em 30/09/2026 (copy dos 15 blocos, variante pós-Desafio, testes de guarda reescritos, e as correções 1 a 4 da seção 11). Substitui a argumentação de `2026-09-29-comunidade-criadores-argumentacao-proposta.md`. Pendências que dependem de decisão ou material: seção 12 (prova a produzir), item 3 da seção 11 (lembrete de renovação para o cartão; até lá a copy não promete aviso), itens 5 a 10 da seção 11, e a confirmação de quem responde nos Recados e em quanto tempo.
 
 Cadernos de pesquisa desta análise, no mesmo diretório:
 - `2026-09-30-comunidade-criadores-pesquisa-avatares.md` (dados brasileiros 2024–2026, linguagem de pais, segmentos, quem decide, sazonalidade)

@@ -50,12 +50,26 @@ describe('registro do funil Comunidade dos Criadores', () => {
     expect(o.passos.map((p) => p.titulo)).toContain('Mostre a Jornada do Criador')
   })
 
-  test('metadados mantêm a promessa de desenvolver ideias criando jogos', () => {
+  test('metadados espelham o hero: ele já joga, aqui ele aprende a criar', () => {
     const f = COMUNIDADE_DOS_CRIADORES
-    expect(f.content.landing.h1).toContain('transformar as próprias ideias em jogos')
-    expect(f.seoTitle).toContain('Ideias que viram jogos')
-    expect(f.seoDescription).toContain('Projetos guiados')
+    expect(f.content.landing.h1).toContain('Aqui ele aprende a criar os próprios jogos')
+    expect(f.seoTitle).toContain('Seu filho já joga')
+    expect(f.seoTitle).not.toMatch(/—|·/)
+    expect(f.seoDescription).toContain('aulas guiadas')
     expect(f.seoDescription).not.toContain('parte do tempo digital')
+    // Preço é dinâmico no catálogo: nunca fixo em metadado estático.
+    expect(f.seoDescription).not.toContain('R$')
+  })
+
+  test('obrigado não promete aviso prévio de renovação (só existe para o anual à vista)', () => {
+    const o = COMUNIDADE_DOS_CRIADORES.content.obrigado
+    const texto = [
+      o.intro ?? '',
+      ...o.entrega,
+      ...o.passos.map((p) => `${p.titulo} ${p.texto}`),
+    ].join(' ')
+    expect(texto).not.toMatch(/aviso por e-mail/i)
+    expect(texto).toContain('cancelar quando quiser')
   })
 
   test('checkout de assinatura mantém a copy pública sem travessão', () => {

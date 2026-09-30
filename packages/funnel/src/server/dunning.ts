@@ -30,7 +30,7 @@ export function makeSendChargeFailed(
       const baseUrl = lead.funnel?.startsWith('kids/')
         ? (deps.kidsCommunityUrl ?? deps.communityUrl)
         : deps.communityUrl
-      const variables = { nome: firstName, link: `${baseUrl}/compras` }
+      const variables = { nome: firstName, link: `${baseUrl}/perfis` }
 
       const res = await deps.gateway.sendMessage(
         {

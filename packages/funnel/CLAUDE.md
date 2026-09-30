@@ -212,6 +212,21 @@ página levam `data-checkout-oferta` com o slug de cada oferta. Registrado DEPOI
 (capa do checkout = `checkout-capa.webp`, arte "Corre, Dino!"; hero/ilustras começaram como cópias
 dos assets do Desafio — a arte nova substitui por cima com os MESMOS nomes). A página bio da raiz
 (`/`) tem o 3º botão (verde) apontando pra oferta.
+**Copy v2 da Comunidade (30/09/2026 — `docs/plans/2026-09-30-comunidade-criadores-analise-e-proposta-v2.md`):**
+tese "Ele já joga. Aqui ele aprende a criar os próprios jogos, e continua", em 15 blocos (hero →
+confiança → dor com causa → alavanca → saídas que falham → o que ele vai fazer → mecanismo → primeiras
+crianças → comparação → para quem é → objeções → planos → quem faz → FAQ → fechamento). A rota lê
+**`?origem=desafio`** (e-mail `challenge-completed` do members, vídeo do certificado, telas do app) e
+o body troca o hero pela variante de continuidade e omite os blocos de dor e de saídas (os dois
+`<h1>` existem no fonte; o padrão vem primeiro). Âncoras de preço são DERIVADAS do preço vivo
+(`diaLabel`, `porCriancaLabel`); nenhum preço de terceiro fixo na copy. ⚠️ A página NÃO promete
+"aviso por e-mail antes de toda renovação": o `renewal-reminder` só existe para o anual à vista; o
+cartão recorrente não recebe aviso (a copy diz "renovação controlada pela sua área"). Guardas:
+`tests/unit/comunidade-offer-copy.test.ts` (tese, mecanismo, objeções, Light Copy no markup, sem ★,
+sem promessa de aviso, sem `fica tudo liberado`) e `comunidade-funnel.test.ts` (metadados sem preço).
+Os termos kids (`content/legal-kids.ts`) cobrem os DOIS produtos (Desafio: compra única; Comunidade:
+assinatura recorrente no cartão ou anual à vista, cancelamento sem multa, carência, garantia só na
+1ª contratação, Mural de visitante após o fim).
 
 **Admin por funil (`/admin`):** seletor de funil no topo filtra as 3 abas. `adminLeads/adminFunnel/
 adminPerfis` aceitam `?funnel=` (repo filtra por `leads.funnel`; `eventCounts` junta ao lead).

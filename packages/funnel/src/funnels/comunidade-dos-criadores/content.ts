@@ -16,9 +16,9 @@ export const COMUNIDADE_PRODUTO: FunnelCopy = {
 
 // Exigida pelo tipo FunnelContent; a /quiz deste funil é 404 (steps.quiz=false).
 export const COMUNIDADE_LANDING: FunnelLanding = {
-  h1: 'Seu filho pode aprender a transformar as próprias ideias em jogos.',
+  h1: 'Seu filho já joga. Aqui ele aprende a criar os próprios jogos.',
   subtitulo:
-    'Projetos guiados para começar, espaço para fazer escolhas e orientação pelos Recados. Seu filho aprende a montar, testar e entender como fazer o jogo funcionar.',
+    'Crianças de 9 a 14 anos transformam as próprias ideias em jogos de verdade: aulas guiadas, uma pessoa acompanhando o que elas enviam e um link para a família jogar. Terminou o primeiro, a Jornada do Criador mostra o próximo.',
   tempo: '',
 }
 
@@ -29,8 +29,10 @@ export const COMUNIDADE_LANDING: FunnelLanding = {
 export const COMUNIDADE_PRECO_FALLBACK = { mensalCents: 9_700, anualCents: 79_700 } as const
 
 // Conteúdo da /obrigado (entrega + primeiros passos), em linguagem para os pais.
-// Diferença pro Desafio: é ASSINATURA — o texto avisa do aviso prévio de renovação
-// e aponta o cancelamento na área do responsável.
+// Diferença pro Desafio: é ASSINATURA — o texto aponta o controle da renovação e
+// o cancelamento na área do responsável. ⚠️ Não prometer "aviso antes de toda
+// renovação": o lembrete só existe para o anual à vista (renewal-reminder); o
+// cartão recorrente não recebe aviso prévio.
 export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
   intro:
     'O primeiro projeto vem com orientação para seu filho começar a montar, testar e experimentar as próprias ideias.',
@@ -38,7 +40,7 @@ export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
     'Desafio do Primeiro Jogo e cursos com projetos guiados para começar e continuar criando',
     'Estúdio, Pinta, Pensa e Molda, liberados conforme a Jornada do Criador',
     'Clube dos Criadores e Mural para publicar e compartilhar os jogos',
-    'Orientação do professor pelas atividades enviadas e pelos Recados',
+    'Uma pessoa lendo as atividades enviadas e respondendo pelos Recados',
     'Jornada do Criador, desafios, conquistas e Mundo do Criador',
     'Até 2 perfis de criança, cada um com seu próprio progresso',
   ],
@@ -66,7 +68,7 @@ export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
     {
       titulo: 'Acompanhe pela área do responsável',
       texto:
-        'Perfis e assinatura ficam na sua área. Por ali, você também controla a próxima renovação. Antes de renovar, enviamos um aviso por e-mail.',
+        'Perfis e assinatura ficam na sua área. Por ali, você também controla a próxima renovação e pode cancelar quando quiser; o acesso continua até o fim do período já pago.',
     },
   ],
 }

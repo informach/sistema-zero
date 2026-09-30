@@ -1,13 +1,25 @@
 ---
 // Página de vendas da "Comunidade dos Criadores" (funil kids, ASSINATURA
 // mensal/anual). Layout PRÓPRIO alinhado à paleta Pen da Comunidade Kids
-// (chão azul-acinzentado, ação azul, Baloo 2/Nunito e relevo 3D), estrutura 8D em
-// 19 blocos. O CSS sob medida vive no `<style>` escopado abaixo, sob `.cdc`
-// (tokens no wrapper, não no :root). Os CTAs de compra levam `data-checkout-cta`
-// → PreCheckoutModal; os CTAs de PLANO levam também `data-checkout-oferta`
-// (slug da oferta mensal/anual) → o modal anexa `?oferta=` e o checkout
-// pré-seleciona o plano. Copy segue o Light Copy (sem travessão, sem "!",
-// sem "Não é X. É Y.", depoimentos reais, bônus ancorados).
+// (chão azul-acinzentado, ação azul, Baloo 2/Nunito e relevo 3D). O CSS sob
+// medida vive no `<style>` escopado abaixo, sob `.cdc` (tokens no wrapper, não
+// no :root). Os CTAs de compra levam `data-checkout-cta` → PreCheckoutModal; os
+// CTAs de PLANO levam também `data-checkout-oferta` (slug da oferta mensal/anual)
+// → o modal anexa `?oferta=` e o checkout pré-seleciona o plano.
+//
+// Argumentação (30/09, v2 — docs/plans/2026-09-30-comunidade-criadores-analise-e-proposta-v2.md):
+// "Ele já joga. Aqui ele aprende a criar os próprios jogos, e continua." Quinze
+// blocos: hero → confiança → a dor com a causa → a alavanca → por que as saídas
+// comuns não pegam → o que ele vai fazer → o mecanismo (por que continua) → as
+// primeiras crianças → comparação com o gratuito e com a escola → para quem é →
+// objeções → planos e valor → quem faz → FAQ → fechamento. `origem="desafio"`
+// (e-mail de conclusão do Desafio, vídeo do certificado, telas do app) troca o
+// hero pela variante de continuidade e omite os blocos de dor e de saídas.
+// Copy segue o Light Copy (sem travessão, sem "!", sem "Não é X. É Y.", sem
+// "mesmo que"/"sem precisar", tese com causa, depoimentos reais sem estrela) e
+// não promete nada acima do catálogo: o que ainda vem é dito como "conforme
+// entra". ⚠️ Não prometer "aviso por e-mail antes de toda renovação": o lembrete
+// só existe para o anual à vista; o cartão recorrente não recebe aviso prévio.
 import { COMUNIDADE_PRECO_FALLBACK } from '../../../funnels/comunidade-dos-criadores/content'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
@@ -34,9 +46,12 @@ interface Props {
   ofertaUrl: string
   /** Planos da assinatura (principal + irmã do alternador). null = catálogo fora. */
   plans: OfferPlans | null
+  /** `'desafio'` = chegou pela conclusão do Desafio (hero de continuidade). */
+  origem?: 'desafio' | null
 }
-const { f, productName, priceReais, imagesBase, ofertaUrl, plans } = Astro.props
+const { f, productName, priceReais, imagesBase, ofertaUrl, plans, origem = null } = Astro.props
 
+const posDesafio = origem === 'desafio'
 const description = f.seoDescription
 const img = (file: string) => `${imagesBase}/${file}`
 
@@ -60,6 +75,9 @@ const anualLabel = formatBRLFromCents(anualCents) // "R$ 797"
 const anualPorMesLabel = formatBRLFromCents2(Math.round(anualCents / 12)) // "R$ 66,42"
 const anualAncoraLabel = formatBRLFromCents(mensalCents * 12) // "R$ 1.164"
 const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 367"
+// Âncoras honestas derivadas do preço vivo (nunca fixas na copy).
+const diaLabel = formatBRLFromCents2(Math.round(mensalCents / 30)) // "R$ 3,23"
+const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 48,50"
 ---
 
 <BaseLayout
@@ -93,10 +111,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
       </div>
     </header>
 
-    <!-- ===== BLOCO 01 · HERO ===== -->
+    <!-- ===== BLOCO 01 · HERO (promessa + mecanismo em uma linha + prova mínima) ===== -->
     <section class="hero sec">
-      {/* Deco só do lado da ARTE: a estrela que ficava à esquerda caía em cima
-          da headline e atrapalhava a leitura (feedback da usuária). */}
       <svg
         class="deco float slow rev"
         style="top:22%;right:6%;width:34px"
@@ -112,48 +128,85 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
       </div>
       <div class="wrap">
         <div class="grid">
-          <div class="hero-copy">
-            <span class="eyebrow"
-              >Para crianças de 9 a 14 anos<br />que gostam de jogos e tecnologia</span
-            >
-            <h1>
-              Seu filho pode aprender a
-              <span class="hl">transformar as próprias ideias em jogos.</span>
-            </h1>
-            <p class="lead">
-              Ele começa com projetos guiados e aprende a fazer escolhas, testar o que montou e
-              descobrir como fazer seu jogo funcionar. As aulas mostram por onde começar, e o
-              professor orienta pelas atividades enviadas e pelos Recados.
-            </p>
-            <ul class="hero-bullets">
-              <li>
-                <span class="tick"><span class="material-symbols-rounded">check</span></span>Cursos e
-                projetos para começar mesmo sem saber programar
-              </li>
-              <li>
-                <span class="tick"><span class="material-symbols-rounded">check</span></span>Ele
-                aprende criando algo que pode jogar, explicar e compartilhar
-              </li>
-              <li>
-                <span class="tick"><span class="material-symbols-rounded">check</span></span>A cada
-                conquista, a Jornada do Criador mostra o próximo passo
-              </li>
-            </ul>
-            <div class="hero-cta">
-              <a href="#planos" class="btn big">
-                <span class="material-symbols-rounded">rocket_launch</span>Quero ver meu filho criando
-              </a>
-            </div>
-            <div class="seals">
-              <span><span class="material-symbols-rounded">check_circle</span>Acesso após aprovação</span>
-              <span
-                ><span class="material-symbols-rounded">check_circle</span>Garantia de 7 dias</span
-              >
-              <span
-                ><span class="material-symbols-rounded">check_circle</span>Cancele quando quiser</span
-              >
-            </div>
-          </div>
+          {
+            !posDesafio ? (
+              <div class="hero-copy">
+                <span class="eyebrow">
+                  Para crianças de 9 a 14 anos<br />que gostam de jogos e tecnologia
+                </span>
+                <h1>
+                  Seu filho já joga. <span class="hl">Aqui ele aprende a criar os próprios jogos.</span>
+                </h1>
+                <p class="lead">
+                  Na Comunidade dos Criadores, crianças de 9 a 14 anos transformam as próprias ideias
+                  em jogos de verdade. As aulas guiam uma etapa por vez, uma pessoa de verdade
+                  acompanha o que elas enviam, e cada jogo publicado ganha um link para a família
+                  jogar. Terminou o primeiro, a Jornada do Criador mostra o próximo.
+                </p>
+                <ul class="hero-bullets">
+                  <li>
+                    <span class="tick"><span class="material-symbols-rounded">check</span></span>Na
+                    primeira semana, um jogo publicado com link, feito por ele
+                  </li>
+                  <li>
+                    <span class="tick"><span class="material-symbols-rounded">check</span></span>Cada
+                    atividade enviada é lida por uma pessoa, que responde dentro da plataforma
+                  </li>
+                  <li>
+                    <span class="tick"><span class="material-symbols-rounded">check</span></span>
+                    {mensalLabel} por mês para até duas crianças, sem fidelidade, com 7 dias de garantia
+                  </li>
+                </ul>
+                <div class="hero-cta">
+                  <a href="#planos" class="btn big">
+                    <span class="material-symbols-rounded">rocket_launch</span>Quero ver meu filho criando
+                  </a>
+                </div>
+                <div class="seals">
+                  <span><span class="material-symbols-rounded">check_circle</span>Acesso após aprovação</span>
+                  <span><span class="material-symbols-rounded">check_circle</span>Garantia de 7 dias</span>
+                  <span><span class="material-symbols-rounded">check_circle</span>Cancele quando quiser</span>
+                </div>
+              </div>
+            ) : (
+              <div class="hero-copy">
+                <span class="eyebrow">Para quem já publicou o primeiro jogo</span>
+                <h1>
+                  O primeiro jogo ficou pronto. <span class="hl">Agora vem o caminho inteiro.</span>
+                </h1>
+                <p class="lead">
+                  Seu filho já provou que consegue montar, testar e publicar. A Comunidade dos
+                  Criadores é a continuação: novos cursos, a Jornada do Criador, uma pessoa lendo o
+                  que ele envia e o Mural para cada jogo novo. O progresso do Desafio continua de onde
+                  parou.
+                </p>
+                <ul class="hero-bullets">
+                  <li>
+                    <span class="tick"><span class="material-symbols-rounded">check</span></span>Ele
+                    segue do ponto em que está, sem refazer nada
+                  </li>
+                  <li>
+                    <span class="tick"><span class="material-symbols-rounded">check</span></span>Cada
+                    curso concluído sobe um posto e libera o próximo
+                  </li>
+                  <li>
+                    <span class="tick"><span class="material-symbols-rounded">check</span></span>Até 2
+                    perfis, 7 dias de garantia, cancele quando quiser
+                  </li>
+                </ul>
+                <div class="hero-cta">
+                  <a href="#planos" class="btn big">
+                    <span class="material-symbols-rounded">rocket_launch</span>Quero que ele continue criando
+                  </a>
+                </div>
+                <div class="seals">
+                  <span><span class="material-symbols-rounded">check_circle</span>Acesso após aprovação</span>
+                  <span><span class="material-symbols-rounded">check_circle</span>Garantia de 7 dias</span>
+                  <span><span class="material-symbols-rounded">check_circle</span>Cancele quando quiser</span>
+                </div>
+              </div>
+            )
+          }
           <figure class="art hero-art">
             <div class="glow"></div>
             <img
@@ -181,111 +234,95 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </div>
           <div class="bubble">
             Oi, sou o Zappy. Aqui você começa com um jogo e libera novos projetos e ferramentas
-            conforme a sua jornada avança. Quando publicar, pode mandar o link para a família
-            inteira jogar. Chama seu pai, sua mãe ou seu responsável para conhecer com você.
+            conforme avança. Quando publicar, pode mandar o link para a família inteira jogar.
+            Chama seu pai, sua mãe ou seu responsável para ver isto com você.
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== FAIXA DE CONFIANÇA ===== -->
+    <!-- ===== BLOCO 02 · FAIXA DE CONFIANÇA (três fatos verificáveis) ===== -->
     <section class="stats-band">
       <div class="wrap">
         <div class="stats">
           <div class="stat">
+            <span class="material-symbols-rounded">family_star</span>
+            <div class="l">Feito por dois desenvolvedores<br />que começaram com o próprio filho</div>
+          </div>
+          <div class="stat">
             <span class="material-symbols-rounded">verified_user</span>
-            <div class="l">Comunidade moderada<br />por gente de verdade</div>
+            <div class="l">Conta da criança vinculada ao responsável,<br />Clube moderado, sem chat aberto</div>
           </div>
           <div class="stat">
             <span class="material-symbols-rounded">devices</span>
-            <div class="l">Abre no navegador,<br />sem instalar nada</div>
-          </div>
-          <div class="stat">
-            <span class="material-symbols-rounded">family_star</span>
-            <div class="l">Criado por uma família<br />que começou com os filhos</div>
+            <div class="l">Abre no navegador, sem instalar nada,<br />sem contrato de fidelidade</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== BLOCO 02 · DOR ===== -->
-    <section class="sec" id="dor">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Uma ideia que ele pode fazer acontecer</span>
-          <h2 class="reveal">
-            Por trás de um jogo funcionando, há decisões que seu filho pode aprender a tomar.
-          </h2>
-        </div>
-        <div class="feat">
-          <figure class="art reveal">
-            <img
-              src={img('ilustra-dor.webp')}
-              alt="Ilustração de uma criança concentrada em um jogo no computador"
-              width="1000"
-              height="577"
-              loading="lazy"
-            />
-          </figure>
-          <div class="feat-txt">
-            <p>
-              Seu filho já imaginou uma fase diferente ou um personagem com um poder que ainda
-              não existe no jogo? Essa curiosidade pode ser o começo de uma criação.
-            </p>
-            <p>
-              Para a ideia funcionar, ele precisa decidir o que acontece primeiro, montar uma
-              regra e testar. Às vezes, o resultado sai diferente do que esperava. É uma chance
-              de investigar e tentar outro caminho, com ajuda quando precisar.
-            </p>
-            <p>
-              E quando funciona, há algo concreto para mostrar: um jogo que ele ajudou a construir
-              e escolhas que consegue explicar. Você pode jogar junto e perguntar como ele fez.
-            </p>
-          </div>
-        </div>
-        <div class="tese reveal">
-          Ver o próprio jogo funcionando dá sentido às tentativas. No caminho até ele, seu filho
-          tem oportunidades de pensar, fazer escolhas e descobrir o que consegue construir.
-        </div>
-        <div class="evidence reveal">
-          <p>
-            Imagine uma pequena mudança no jogo: seu filho quer que o personagem corra mais rápido.
-            Esse experimento pode começar assim:
-          </p>
-          <div class="evidence-links">
-            <div>
-              <strong>Ele faz uma previsão</strong>
-              <span>
-                Escolhe uma nova velocidade e pensa no que vai acontecer quando o jogo começar.
-              </span>
+    {
+      !posDesafio && (
+        <section class="sec" id="dor">
+          {/* ===== BLOCO 03 · A DOR COM A CAUSA ===== */}
+          <div class="wrap">
+            <div class="center">
+              <span class="eyebrow">O que você vê da porta do quarto</span>
+              <h2 class="reveal">
+                Ele passa horas dentro do jogo.<br />Quando desliga, <span class="hl">não sobra nada que seja dele.</span>
+              </h2>
             </div>
-            <div>
-              <strong>Coloca a ideia à prova</strong>
-              <span>
-                Roda o jogo e observa. O personagem ficou rápido demais? Ainda dá tempo de desviar?
-              </span>
+            <div class="feat">
+              <figure class="art reveal">
+                <img
+                  src={img('ilustra-dor.webp')}
+                  alt="Ilustração de uma criança concentrada em um jogo no computador"
+                  width="1000"
+                  height="577"
+                  loading="lazy"
+                />
+              </figure>
+              <div class="feat-txt">
+                <p>
+                  Você já parou na porta do quarto e ficou olhando seu filho jogar. O corpo inclinado
+                  para a frente, os olhos fixos na tela, uma concentração que você gostaria de ver na
+                  hora da lição. Ali dentro ele domina um mundo inteiro.
+                </p>
+                <p>
+                  O que pesa vem depois. O jogo acaba, o computador desliga e o dia termina como
+                  começou. Ele conhece cada canto de um mundo que outra pessoa construiu, e nada
+                  daquilo tem o nome dele.
+                </p>
+                <p>
+                  Isso acontece por um motivo simples. O jogo foi feito para ser jogado até o fim, com
+                  fases, recompensas e um próximo desafio sempre pronto. Construir é outra atividade,
+                  e o jogo não abre essa porta. Ele oferece o que foi decidido por outra pessoa. O
+                  que ele não oferece é a chance de decidir uma regra, testar e ver a própria ideia
+                  funcionando.
+                </p>
+                <p>
+                  Limitar as horas continua importante, e a família continua no comando disso. Só
+                  que o limite muda a quantidade. O que acontece dentro das horas que ficam é outra
+                  decisão, e é dela que esta página trata.
+                </p>
+              </div>
             </div>
-            <div>
-              <strong>Decide o que ajustar</strong>
-              <span>
-                Experimenta outro valor e compara. Agora tem uma razão para explicar a escolha.
-              </span>
+            <div class="tese reveal">
+              A pergunta que vale a pena fazer é o que seu filho está aprendendo a fazer com o tempo
+              de tela que ele já tem.
             </div>
           </div>
-          <small>
-            Um exemplo de como uma mudança pequena pode abrir espaço para raciocinar durante a criação.
-          </small>
-        </div>
-      </div>
-    </section>
+        </section>
+      )
+    }
 
-    <!-- ===== BLOCO 03 · A VIRADA DE CHAVE ===== -->
+    <!-- ===== BLOCO 04 · A ALAVANCA (o interesse como porta de entrada) ===== -->
     <section class="sec sec-amar" id="virada">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">O começo vem com ajuda</span>
+          <span class="eyebrow">O interesse já existe</span>
           <h2 class="reveal">
-            Ele pode gostar de jogos e ainda não saber<br /><span class="hl2">como criar o primeiro.</span>
+            O mesmo interesse que te preocupa é a melhor porta de entrada<br />para ele <span class="hl2">aprender a criar.</span>
           </h2>
         </div>
         <div class="feat feat-rev">
@@ -300,222 +337,357 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </figure>
           <div class="feat-txt">
             <p>
-              Os primeiros projetos são guiados. As aulas apresentam os comandos e mostram a
-              montagem por etapas, com elementos preparados para a criança começar.
+              Criança que ama jogos quer entender como um jogo é feito. Ela já imaginou uma fase
+              diferente, um personagem com um poder novo, uma regra que mudaria tudo. Essa vontade é
+              o ponto de partida, e ela não precisa ser inventada por um curso.
             </p>
             <p>
-              Conforme entende o que montou, ela experimenta mudanças e faz novas escolhas.
-              Pode alterar uma regra, testar uma dificuldade diferente e observar o resultado.
-              As possibilidades aumentam junto com o que aprende.
+              Para uma ideia dessas virar um jogo que funciona, ela precisa decidir o que acontece
+              primeiro, montar a regra, testar, ver dar errado, corrigir e terminar. É exatamente o
+              tipo de pensamento que você gostaria de ver, e ele aparece porque a criança quer chegar
+              ao final do próprio jogo.
+            </p>
+            <p>
+              Foi assim com o André, nosso filho. Aos 7 anos, quase todo o interesse dele terminava no
+              jogar. Quando começamos a criar jogos juntos, ele passou a nos chamar para testar as
+              regras dele e a explicar cada escolha. Hoje, aos 12, é ele quem dá voz ao Zappy dentro
+              da plataforma. A história inteira está mais abaixo.
             </p>
             <div class="tese">
-              Primeiro, um passo que ela consegue acompanhar. Depois, mais espaço para colocar
-              as próprias ideias no jogo.
+              Quando a criança escolhe o que criar e vê que consegue, a vontade de continuar vem de
+              dentro. É isso que uma atividade imposta não consegue produzir.
             </div>
-            <p style="margin-top:16px;">
-              Você ajuda no primeiro acesso e combina os momentos de uso. As aulas apresentam
-              o caminho técnico, e a criança pode pedir orientação pelos Recados.
-            </p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== BLOCO 04 · PALIATIVO ===== -->
-    <section class="sec" id="paliativo">
+    {
+      !posDesafio && (
+        <section class="sec" id="saidas">
+          {/* ===== BLOCO 05 · POR QUE AS SAÍDAS COMUNS NÃO PEGAM ===== */}
+          <div class="wrap">
+            <div class="center">
+              <span class="eyebrow">Você provavelmente já tentou</span>
+              <h2 class="reveal">Três saídas comuns, e o ponto em que cada uma falha</h2>
+            </div>
+            <div class="pal">
+              <div class="pal-item reveal">
+                <span class="xi"><span class="material-symbols-rounded">timer</span></span>
+                <div>
+                  <h4>Limitar o tempo</h4>
+                  <p>
+                    Diminui as horas e costuma render briga. O que acontece dentro do jogo continua
+                    igual, e ele volta para o mesmo lugar assim que pode. O limite é necessário;
+                    sozinho, ele não muda o que a criança faz.
+                  </p>
+                </div>
+              </div>
+              <div class="pal-item reveal">
+                <span class="xi"><span class="material-symbols-rounded">sports_soccer</span></span>
+                <div>
+                  <h4>Empurrar outro hobby</h4>
+                  <p>
+                    Esporte, música, um curso escolhido pelos pais. Quando a atividade não parte do
+                    interesse da criança, ela vai de má vontade, aguenta um ou dois meses e larga. As
+                    pesquisas sobre abandono em esporte e música apontam sempre os mesmos motivos:
+                    deixou de ser divertido, ela não se sente capaz, não vê progresso.
+                  </p>
+                </div>
+              </div>
+              <div class="pal-item reveal">
+                <span class="xi"><span class="material-symbols-rounded">construction</span></span>
+                <div>
+                  <h4>Deixar solto no Roblox Studio, no Scratch ou no YouTube</h4>
+                  <p>
+                    A ferramenta é boa e é gratuita. O que falta é um caminho na ordem certa, alguém
+                    que olhe o que ela fez quando trava e um lugar seguro para mostrar. Muita criança
+                    para nos cenários e nos personagens e volta a só jogar.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="tese reveal">
+              O que faz o interesse virar criação é a soma de três coisas: um caminho, uma pessoa e um
+              lugar para mostrar. É isso que a Comunidade organiza.
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    <!-- ===== BLOCO 06 · O QUE ELE VAI FAZER (promessa concreta no tempo) ===== -->
+    <section class="sec sec-tint" id="pratica">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">O primeiro jogo é só o começo</span>
+          <span class="eyebrow">Como fica na prática</span>
           <h2 class="reveal">
-            Depois da primeira criação, a criança precisa<br />saber <span class="hl2"
-              >o que fazer em seguida.</span
-            >
+            Na primeira semana, o primeiro jogo publicado.<br />Depois, <span class="hl">um projeto de cada vez.</span>
           </h2>
         </div>
-        <div class="pal">
-          <div class="pal-item reveal">
-            <span class="xi"><span class="material-symbols-rounded">sports_esports</span></span>
+        <div class="evidence reveal">
+          <p>O caminho, do primeiro acesso em diante:</p>
+          <div class="evidence-links">
             <div>
-              <h4>O primeiro jogo mostra que é possível</h4>
-              <p>
-                A criança deixa de imaginar e vê uma criação própria funcionando. Essa primeira
-                entrega torna o próximo projeto mais fácil de visualizar.
-              </p>
+              <strong>Primeira semana</strong>
+              <span>
+                O Desafio do Primeiro Jogo. Em aulas guiadas de uma etapa por vez, ele monta as
+                regras de um jogo com cenário e personagens já preparados, publica com link e QR code
+                e manda para a família jogar.
+              </span>
+            </div>
+            <div>
+              <strong>Primeiro mês</strong>
+              <span>
+                Os cursos seguintes. Ele altera regras, cria a própria versão de um jogo e envia as
+                atividades para revisão. Cada curso concluído e publicado sobe um posto na Jornada do
+                Criador.
+              </span>
+            </div>
+            <div>
+              <strong>Depois</strong>
+              <span>
+                Novos cursos e ferramentas abrem conforme ele avança, de Faísca até Lenda. A
+                plataforma está em lançamento: os cursos de hoje e todos os que entrarem fazem parte
+                da assinatura, e a Jornada mostra o que vem em seguida.
+              </span>
             </div>
           </div>
-          <div class="pal-item reveal">
-            <span class="xi"><span class="material-symbols-rounded">route</span></span>
+        </div>
+        <div class="evidence reveal">
+          <p>
+            Uma mudança pequena, para você ver o que acontece dentro de uma aula: ele quer que o
+            personagem corra mais rápido.
+          </p>
+          <div class="evidence-links">
             <div>
-              <h4>Uma sequência ajuda a continuar</h4>
-              <p>
-                Em vez de terminar um curso e ficar sem saber para onde ir, ela encontra outro
-                projeto com dificuldade compatível com o que já aprendeu.
-              </p>
+              <strong>Ele faz uma previsão</strong>
+              <span>Escolhe uma nova velocidade e pensa no que vai acontecer quando o jogo começar.</span>
+            </div>
+            <div>
+              <strong>Coloca a ideia à prova</strong>
+              <span>Roda o jogo e observa. O personagem ficou rápido demais? Ainda dá tempo de desviar?</span>
+            </div>
+            <div>
+              <strong>Decide o que ajustar</strong>
+              <span>Experimenta outro valor e compara. Agora tem uma razão para explicar a escolha.</span>
             </div>
           </div>
-          <div class="pal-item reveal">
-            <span class="xi"><span class="material-symbols-rounded">military_tech</span></span>
-            <div>
-              <h4>A Jornada organiza a continuidade</h4>
-              <p>
-                Cursos, projetos, ferramentas e conquistas aparecem em uma ordem clara. A criança
-                enxerga o que concluiu e qual é o próximo passo.
-              </p>
-            </div>
-          </div>
+          <small>
+            É esse ciclo, previsão, teste e ajuste, que se repete em cada projeto. Os primeiros projetos
+            são guiados, com elementos preparados para a criança começar; a autoria cresce nas escolhas
+            e nas versões seguintes.
+          </small>
+        </div>
+        <div class="center" style="margin-top:40px;">
+          <h3 style="font-size:clamp(1.2rem,2.4vw,1.5rem);">O que você vai ver e ouvir em casa</h3>
+        </div>
+        <div style="max-width:720px;margin:20px auto 0;">
+          <ul class="hero-bullets">
+            <li>
+              <span class="tick"><span class="material-symbols-rounded">check</span></span>Um link no
+              grupo da família e o contador de jogadas subindo.
+            </li>
+            <li>
+              <span class="tick"><span class="material-symbols-rounded">check</span></span>Ele
+              explicando por que a regra é assim e o que muda se trocar.
+            </li>
+            <li>
+              <span class="tick"><span class="material-symbols-rounded">check</span></span>Uma
+              tentativa que deu errado e a seguinte que deu certo.
+            </li>
+            <li>
+              <span class="tick"><span class="material-symbols-rounded">check</span></span>Uma dúvida
+              enviada e a resposta de uma pessoa dentro da plataforma.
+            </li>
+          </ul>
         </div>
         <div class="tese reveal">
-          A Comunidade organiza um percurso para que seu filho continue experimentando depois
-          do primeiro jogo. Você encontra as aulas e a orientação no mesmo lugar.
+          Pergunte o que ele mudou e peça para mostrar no jogo. A explicação dele é a sua janela para
+          o que ele está entendendo.
         </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 05 · PROVA SOCIAL 1 (crianças reais) ===== -->
-    <section class="sec sec-verde" id="prova">
-      <div class="wrap center">
-        <span class="eyebrow">Projetos que podem ser vistos e jogados</span>
-        <h2 class="reveal">Quando a ideia sai da cabeça<br />e começa a <span class="hl">funcionar</span></h2>
-        <p class="sub">
-          Rafael, Débora e André já testaram a plataforma. Veja o que contaram sobre as primeiras criações.
-        </p>
-        <div class="depo-grid">
-          <div class="depo reveal">
-            <div class="stars">★★★★★</div>
-            <p class="quote">
-              "Fiz uma nave que atira nos asteroides e marca ponto. No fim eu peguei o link e mandei
-              pro meu amigo jogar."
-            </p>
-            <div class="who">
-              <span class="av"
-                ><img
-                  src={img('depo-rafael.webp')}
-                  alt="Rafael"
-                  width="160"
-                  height="160"
-                  loading="lazy"
-                /></span
-              >
-              <span class="who-name">Rafael<small>criou e publicou o próprio jogo</small></span>
-            </div>
+        <!-- fala da Debinha pra criança -->
+        <div class="kid rosa reveal">
+          <div class="char">
+            <figure class="art">
+              <img
+                src={img('debinha-fala.webp')}
+                alt="Debinha, personagem da Comunidade dos Criadores"
+                width="360"
+                height="640"
+                loading="lazy"
+              />
+            </figure>
+            <span class="name">Debinha</span>
           </div>
-          <div class="depo reveal">
-            <div class="stars">★★★★★</div>
-            <p class="quote">
-              "Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No terceiro dia
-              chamei a minha mãe pra ver o meu jogo."
-            </p>
-            <div class="who">
-              <span class="av"
-                ><img
-                  src={img('depo-debora.webp')}
-                  alt="Débora"
-                  width="160"
-                  height="160"
-                  loading="lazy"
-                /></span
-              >
-              <span class="who-name">Débora<small>criou e publicou o próprio jogo</small></span>
-            </div>
-          </div>
-          <div class="depo reveal">
-            <div class="stars">★★★★★</div>
-            <p class="quote">
-              "Eu já jogava um monte, agora eu faço os meus jogos. Esse foi o primeiro e já quero
-              fazer um maior."
-            </p>
-            <div class="who">
-              <span class="av"
-                ><img
-                  src={img('depo-andre.webp')}
-                  alt="André"
-                  width="160"
-                  height="160"
-                  loading="lazy"
-                /></span
-              >
-              <span class="who-name">André<small>filho dos criadores da plataforma</small></span>
-            </div>
+          <div class="bubble">
+            O melhor momento é mandar o link do seu jogo no grupo da família e ficar espiando o
+            contador de jogadas subir. Cada nova jogada mostra que alguém abriu uma criação sua.
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== BLOCO 06 · CTA INTERMEDIÁRIO ===== -->
-    <section class="sec sec-slim">
-      <div class="wrap">
-        <div class="ctaband reveal">
-          <h3>O primeiro jogo pode ser uma conquista. A Comunidade mostra o caminho depois dele.</h3>
-          <a href="#metodo" class="btn big">
-            <span class="material-symbols-rounded">visibility</span>Quero conhecer por dentro
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 07 · MÉTODO Z.E.R.O. + JORNADA ===== -->
-    <section class="sec sec-tint" id="metodo">
+    <!-- ===== BLOCO 07 · COMO A COMUNIDADE SUSTENTA A CONTINUIDADE (mecanismo) ===== -->
+    <section class="sec" id="metodo">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">Como a continuidade funciona</span>
+          <span class="eyebrow">Por que ele continua depois do primeiro jogo</span>
           <h2 class="reveal">
-            Um projeto de cada vez, com etapas que ajudam<br />a criança a <span class="hl"
-              >tirar a ideia do papel.</span
-            >
+            Um caminho, uma pessoa e um lugar para mostrar,<br /><span class="hl2">no mesmo acesso</span>
           </h2>
           <p class="sub">
-              Nos primeiros cursos, as aulas guiam a montagem. Conforme avança, seu filho também
-              encontra o Método Z.E.R.O. para organizar os próprios projetos, da ideia à publicação.
+            Cada parte abaixo responde a um motivo pelo qual as crianças largam: falta de próximo
+            passo, falta de alguém que olhe, falta de público.
           </p>
+        </div>
+        <div class="cards">
+          <div class="card reveal">
+            <figure class="shot">
+              <img
+                src={img('print-jornada.webp')}
+                alt="Mapa da Jornada do Criador, de Faísca a Lenda, com o posto atual destacado"
+                width="1280"
+                height="720"
+                loading="lazy"
+              />
+            </figure>
+            <h3>A Jornada do Criador</h3>
+            <p>
+              Oito postos, de Faísca a Lenda, como as faixas do judô. Cada curso concluído e publicado
+              faz a Jornada andar e libera o próximo curso e a ferramenta certa para aquele momento.
+              A criança sempre sabe onde está e o que vem depois.
+            </p>
+          </div>
+          <div class="card reveal">
+            <figure class="shot">
+              <img
+                src={img('print-aula.webp')}
+                alt="Aula prática da Comunidade com etapas guiadas, blocos do Estúdio e jogo funcionando ao lado"
+                width="1280"
+                height="720"
+                loading="lazy"
+              />
+            </figure>
+            <h3>As aulas</h3>
+            <p>
+              Explicação e prática na mesma tela. Ele aprende uma ideia, monta no Estúdio, o editor
+              de jogos por blocos, dentro da própria aula, e vê o resultado no jogo.
+            </p>
+          </div>
+          <div class="card reveal">
+            <figure class="shot">
+              <img
+                src={img('print-recados.webp')}
+                alt="Caixa de Recados com devolutivas do professor sobre aulas, entregas e jogos publicados"
+                width="1280"
+                height="720"
+                loading="lazy"
+              />
+            </figure>
+            <h3>Os Recados</h3>
+            <p>
+              A caixa de mensagens da criança com o professor. As atividades enviadas são lidas por
+              uma pessoa da equipe, que responde ali dentro e conversa com ela sobre o projeto.
+            </p>
+          </div>
+          <div class="card reveal">
+            <figure class="shot">
+              <img
+                src={img('print-mural.webp')}
+                alt="Mural dos Criadores com jogos da turma, contador de jogadas e botões para jogar e compartilhar"
+                width="1280"
+                height="720"
+                loading="lazy"
+              />
+            </figure>
+            <h3>O Mural dos Criadores</h3>
+            <p>
+              A vitrine dos jogos publicados. Cada um ganha link e QR code, tem contador de jogadas e
+              o botão de fazer a própria versão.
+            </p>
+          </div>
+          <div class="card reveal">
+            <figure class="shot">
+              <img
+                src={img('print-clube.webp')}
+                alt="Clube dos Criadores com canais, conversas da turma e aviso de acompanhamento do professor"
+                width="1280"
+                height="720"
+                loading="lazy"
+              />
+            </figure>
+            <h3>O Clube dos Criadores</h3>
+            <p>
+              O espaço da turma, só para crianças da faixa atendida. As conversas passam por moderação
+              antes de aparecer. Ele mostra o que fez e vê o que os outros estão criando.
+            </p>
+          </div>
+          <div class="card reveal">
+            <figure class="shot">
+              <img
+                src={img('print-oficina.webp')}
+                alt="Oficina de criação com Estúdio e Pinta liberados e Pensa e Molda incluídos nos próximos postos"
+                width="1280"
+                height="720"
+                loading="lazy"
+              />
+            </figure>
+            <h3>A oficina</h3>
+            <p>
+              Estúdio para montar, Pinta para desenhar em 2D, Pensa para planejar e Molda para
+              modelar em 3D. Cada uma abre no posto em que a criança já consegue aproveitar: Estúdio e
+              Pinta em Construtor, Pensa em Inventor, Molda em Explorador de Mundos.
+            </p>
+          </div>
+          <div class="card card-wide reveal">
+            <figure class="shot">
+              <img
+                src={img('print-espaco.webp')}
+                alt="Meu Espaço com avatar, posto atual, sequência, experiência, jogos e conquistas da criança"
+                width="1280"
+                height="720"
+                loading="lazy"
+              />
+            </figure>
+            <h3>Meu Espaço e o Desafio do Mês</h3>
+            <p>
+              Avatar, quarto, sequência e conquistas guardam a história dele na plataforma. Todo mês,
+              o Desafio do Mês traz um tema novo com uma prateleira própria no Mural.
+            </p>
+          </div>
+        </div>
+
+        <div class="center" style="margin-top:52px;">
+          <h2 class="reveal" style="font-size:clamp(1.4rem,2.8vw,2rem);">
+            Nos projetos mais livres, o <span class="hl">Método Z.E.R.O.</span>
+          </h2>
         </div>
         <div class="zero">
           <div class="zstep z1 reveal">
             <div class="zl">Z</div>
             <h4>Zerar a Bagunça</h4>
-            <p>
-                A criança organiza o que quer criar na Carta da Ideia. O Pensa, liberado no posto
-                de Inventor, ajuda nessa etapa com o Zappy.
-            </p>
+            <p>A criança organiza o que quer criar na Carta da Ideia, com a ajuda do Pensa e do Zappy.</p>
           </div>
           <div class="zstep z2 reveal">
             <div class="zl">E</div>
             <h4>Enxergar o Jogo</h4>
-            <p>
-                Ela escolhe nome, cores e aparência. Desenhar as telas ajuda a visualizar o que
-                quer construir antes de montar cada parte.
-            </p>
+            <p>Ela escolhe nome, cores e aparência e desenha as telas antes de montar cada parte.</p>
           </div>
           <div class="zstep z3 reveal">
             <div class="zl">R</div>
             <h4>Rodar as Missões</h4>
-            <p>
-                A ideia vira missões menores. A criança constrói uma parte por vez e pode enviar
-                suas atividades para receber orientação do professor.
-            </p>
+            <p>A ideia vira missões menores. Uma parte de cada vez, com atividades enviadas para revisão.</p>
           </div>
           <div class="zstep z4 reveal">
             <div class="zl">O</div>
             <h4>O Grande Lançamento</h4>
-            <p>
-              Caça aos bugs, um toque final e a publicação com link de verdade pra mandar pra
-              família. Uma vitória que fica.
-            </p>
+            <p>Caça aos bugs, um toque final e a publicação com link de verdade para mandar para a família.</p>
           </div>
         </div>
         <div class="zloop reveal">
-          Terminou o O, volta pro Z com um jogo mais ambicioso. O ciclo é o mesmo, o desafio é que
+          Terminou o O, volta ao Z com um jogo mais ambicioso. O ciclo é o mesmo, o desafio é que
           cresce.
-        </div>
-
-        <div class="center" style="margin-top:52px;">
-          <h2 class="reveal" style="font-size:clamp(1.4rem,2.8vw,2rem);">
-            E acima do método, uma escada para subir: a <span class="hl2">Jornada do Criador</span>
-          </h2>
-          <p class="sub">
-            O Z.E.R.O. organiza o projeto. A Jornada organiza o caminho inteiro: cursos concluídos e
-            projetos publicados registram o avanço, como as faixas do judô. Cada novo posto libera
-            cursos e ferramentas que combinam com o que a criança já aprendeu.
-          </p>
         </div>
         <div class="journey reveal">
           <span class="lvl-pill" style="--c:var(--sz-community-field)"
@@ -544,8 +716,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           >
         </div>
         <div class="tese reveal">
-          Toda a plataforma faz parte da assinatura. A liberação gradual não esconde uma compra
-          extra. Ela apresenta os recursos em uma ordem que acompanha o avanço da criança.
+          Tudo isso faz parte da assinatura, sem nenhuma compra extra por dentro. A liberação segue a
+          Jornada do Criador para cada coisa chegar quando ele consegue usar, e a plataforma cresce
+          com os cursos que entram.
         </div>
         <!-- fala do Dedé pra criança -->
         <div class="kid verde reveal">
@@ -562,234 +735,152 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             <span class="name">Dedé</span>
           </div>
           <div class="bubble">
-            Cada aventura que você conclui e cada projeto que publica fazem a sua jornada andar.
-            Eu comecei na Faísca e agora tô batalhando pra chegar em Mestre dos Jogos. Qual nome
-            você vai dar pro seu primeiro jogo?
+            Cada aventura que você conclui e cada projeto que publica fazem a sua Jornada andar. Eu
+            comecei na Faísca e agora tô batalhando pra chegar em Mestre dos Jogos. Qual nome você
+            vai dar pro seu primeiro jogo?
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== BLOCO 08 · O QUE DESENVOLVE (DECORADOS) ===== -->
-    <section class="sec sec-rosa" id="desenvolve">
-      <div class="wrap">
-        <div class="center">
-        <span class="eyebrow">O que acontece durante um projeto</span>
-        <h2 class="reveal">
-          Quando um jogo ganha forma, seu filho põe<br /><span class="hl">muitas escolhas em prática.</span>
-        </h2>
+    <!-- ===== BLOCO 08 · AS PRIMEIRAS CRIANÇAS (prova, sem estrelas) ===== -->
+    <section class="sec sec-verde" id="prova">
+      <div class="wrap center">
+        <span class="eyebrow">Quem já testou</span>
+        <h2 class="reveal">Três crianças, <span class="hl">três primeiros jogos</span></h2>
         <p class="sub">
-          São ações que aparecem quando a criança decide, testa possibilidades e entende a relação
-          entre cada comando e o resultado na tela.
-          </p>
-        </div>
-        <div class="dev">
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--azul)">
-              <span class="material-symbols-rounded">account_tree</span>
-            </div>
-            <h4>Entender o que cada escolha muda</h4>
-            <p>
-              Relacionar cada comando ao que acontece no jogo e investigar por que algo não
-              funcionou como esperado.
+          Rafael, Débora e André testaram a plataforma antes do lançamento. As falas são deles.
+        </p>
+        <div class="depo-grid">
+          <div class="depo reveal">
+            <p class="quote">
+              "Fiz uma nave que atira nos asteroides e marca ponto. No fim eu peguei o link e mandei
+              pro meu amigo jogar."
             </p>
-          </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--verde)">
-              <span class="material-symbols-rounded">restart_alt</span>
+            <div class="who">
+              <span class="av"
+                ><img src={img('depo-rafael.webp')} alt="Rafael" width="160" height="160" loading="lazy" /></span
+              >
+              <span class="who-name">Rafael<small>publicou o primeiro jogo</small></span>
             </div>
-            <h4>Testar e ajustar</h4>
-            <p>
-              Testar uma ideia, observar o resultado, fazer ajustes e tentar novamente quando
-              alguma parte não funciona.
-            </p>
           </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--laranja)">
-              <span class="material-symbols-rounded">checklist</span>
+          <div class="depo reveal">
+            <p class="quote">
+              "Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No terceiro dia
+              chamei a minha mãe pra ver o meu jogo."
+            </p>
+            <div class="who">
+              <span class="av"
+                ><img src={img('depo-debora.webp')} alt="Débora" width="160" height="160" loading="lazy" /></span
+              >
+              <span class="who-name">Débora<small>publicou o primeiro jogo</small></span>
             </div>
-            <h4>Organizar a ideia em etapas</h4>
-            <p>
-              Dividir uma ideia em etapas e decidir o que precisa ser construído primeiro para o
-              projeto avançar.
-            </p>
           </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--rosa)">
-              <span class="material-symbols-rounded">stars</span>
+          <div class="depo reveal">
+            <p class="quote">
+              "Eu já jogava um monte, agora eu faço os meus jogos. Esse foi o primeiro e já quero
+              fazer um maior."
+            </p>
+            <div class="who">
+              <span class="av"
+                ><img src={img('depo-andre.webp')} alt="André" width="160" height="160" loading="lazy" /></span
+              >
+              <span class="who-name">André<small>filho dos criadores da plataforma</small></span>
             </div>
-            <h4>Fazer escolhas próprias</h4>
-            <p>
-              Escolher regras, personagens e desafios, explicar as próprias decisões e apresentar
-              algo que foi criado por ele.
-            </p>
           </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--roxo)">
-              <span class="material-symbols-rounded">flag</span>
-            </div>
-            <h4>Levar a ideia até uma versão jogável</h4>
-            <p>
-              Acompanhar uma sequência de etapas e continuar ajustando o projeto até chegar a uma
-              versão que possa ser publicada.
-            </p>
-          </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--ciano)">
-              <span class="material-symbols-rounded">rocket_launch</span>
-            </div>
-            <h4>Usar ferramentas para criar</h4>
-            <p>
-              Usar ferramentas digitais para construir, testar e compartilhar, em vez de apenas
-              navegar por experiências prontas.
-            </p>
-          </div>
-        </div>
-        <div class="tese reveal">
-          Pergunte o que ele mudou e peça para mostrar no jogo. Uma explicação sobre a própria
-          escolha ajuda você a acompanhar o que ele está entendendo.
         </div>
       </div>
     </section>
 
-    <!-- ===== BLOCO 09 · POR DENTRO DA PLATAFORMA ===== -->
-    <section class="sec" id="plataforma">
+    <!-- ===== CTA INTERMEDIÁRIO ===== -->
+    <section class="sec sec-slim">
+      <div class="wrap">
+        <div class="ctaband reveal">
+          <h3>O primeiro jogo chega na primeira semana. O caminho depois dele é o que a assinatura organiza.</h3>
+          <a href="#planos" class="btn big">
+            <span class="material-symbols-rounded">visibility</span>Ver os planos e o que está incluído
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== BLOCO 09 · POR QUE AQUI E NÃO O GRATUITO OU A ESCOLA ===== -->
+    <section class="sec sec-tint" id="comparacao">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">Uma olhada por dentro</span>
-          <h2 class="reveal">Um lugar que cresce junto com <span class="hl2">o seu filho</span></h2>
-          <p class="sub">
-            Toda a plataforma está incluída na assinatura. A liberação acontece conforme a
-            Jornada do Criador, para a criança aprender primeiro, conquistar o próximo posto e
-            abrir novas possibilidades sem nenhuma compra extra por dentro.
-          </p>
+          <span class="eyebrow">Comparando com o que existe</span>
+          <h2 class="reveal">
+            O que muda entre a ferramenta gratuita,<br />a escola de programação e <span class="hl">a Comunidade</span>
+          </h2>
         </div>
-        <div class="cards">
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-jornada.webp')}
-                alt="Mapa da Jornada do Criador, de Faísca a Lenda, com o posto atual destacado"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>A Jornada organiza cada conquista</h3>
-            <p>
-              A criança enxerga onde está, o que já conquistou e qual é o próximo passo. Os cursos e
-              as ferramentas abrem conforme ela avança de Faísca até Lenda.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-aula.webp')}
-                alt="Aula prática da Comunidade com etapas guiadas, blocos do Estúdio e jogo funcionando ao lado"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>Cursos que viram projetos</h3>
-            <p>
-              A explicação e a prática ficam juntas. A criança aprende uma ideia, monta no Estúdio
-              dentro da aula e vê o resultado aparecer no próprio jogo.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-oficina.webp')}
-                alt="Oficina de criação com Estúdio e Pinta liberados e Pensa e Molda incluídos nos próximos postos"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>Quatro ferramentas, uma oficina completa</h3>
-            <p>
-              Estúdio, Pinta, Pensa e Molda estão incluídos. Ela planeja, desenha, modela e constrói,
-              com cada oficina liberada no momento certo da jornada.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-mural.webp')}
-                alt="Mural dos Criadores com jogos da turma, contador de jogadas e botões para jogar e compartilhar"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>Um jogo para mostrar à família</h3>
-            <p>
-              Cada jogo publicado ganha um endereço para jogar e compartilhar. Você pode abrir
-              o link com seu filho e conhecer as regras que ele montou.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-clube.webp')}
-                alt="Clube dos Criadores com canais, conversas da turma e aviso de acompanhamento do professor"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>O Clube dos Criadores</h3>
-            <p>
-              Um espaço moderado onde ela conversa com outras crianças que criam, compartilha
-              ideias, tira dúvidas e mostra o que fez.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-recados.webp')}
-                alt="Caixa de Recados com devolutivas do professor sobre aulas, entregas e jogos publicados"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>Os Recados, com o professor</h3>
-            <p>
-              As atividades enviadas podem ser revisadas pelo professor, que orienta a criança
-              dentro da plataforma e conversa com ela sobre o projeto.
-            </p>
-          </div>
-          <div class="card card-wide reveal">
-            <figure class="shot">
-              <img
-                src={img('print-espaco.webp')}
-                alt="Meu Espaço com avatar, posto atual, sequência, experiência, jogos e conquistas da criança"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>Um espaço com a cara dela</h3>
-            <p>
-              Avatar, quarto, sequência e conquistas guardam a história da criança e mostram o que
-              ela já construiu ao longo da jornada.
-            </p>
-          </div>
+        <div class="cmp-scroll reveal">
+          <table class="cmp-table">
+            <thead>
+              <tr>
+                <th scope="col"><span class="sr">Critério</span></th>
+                <th scope="col">Ferramenta gratuita<small>Scratch, Roblox Studio, YouTube</small></th>
+                <th scope="col">Escola de programação<small>presencial ou ao vivo</small></th>
+                <th scope="col" class="us">Comunidade dos Criadores</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Caminho na ordem certa</th>
+                <td>Não</td>
+                <td>Sim</td>
+                <td class="us">Sim</td>
+              </tr>
+              <tr>
+                <th scope="row">Alguém olha o que a criança fez</th>
+                <td>Não</td>
+                <td>Sim, uma aula por semana</td>
+                <td class="us">Sim, em cada atividade enviada</td>
+              </tr>
+              <tr>
+                <th scope="row">Jogo publicado com link para a família</th>
+                <td>Depende, em comunidade aberta</td>
+                <td>Raramente</td>
+                <td class="us">Sim, com link e QR code</td>
+              </tr>
+              <tr>
+                <th scope="row">Turma</th>
+                <td>Comunidade aberta, muitas vezes em inglês</td>
+                <td>Turma de 6 a 8</td>
+                <td class="us">Clube moderado, em português, só da faixa etária</td>
+              </tr>
+              <tr>
+                <th scope="row">Horário</th>
+                <td>Livre</td>
+                <td>Fixo, uma vez por semana</td>
+                <td class="us">Livre, no ritmo dela</td>
+              </tr>
+              <tr>
+                <th scope="row">Contrato</th>
+                <td>Nenhum</td>
+                <td>Semestral ou anual</td>
+                <td class="us">Nenhum. Cancele quando quiser</td>
+              </tr>
+              <tr>
+                <th scope="row">Preço</th>
+                <td>R$ 0</td>
+                <td>Não fica na página: aula experimental e proposta</td>
+                <td class="us">{mensalLabel} por mês, para até duas crianças</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
         <div class="tese reveal">
-          A jornada mostra o que está disponível agora e o que vem depois. Cursos e ferramentas
-          fazem parte da assinatura, com liberações conforme o avanço da criança.
+          Se a sua família aprende bem com material gratuito, siga por ele. A Comunidade existe para
+          quem quer o caminho pronto, uma pessoa acompanhando e um lugar seguro para mostrar.
         </div>
       </div>
     </section>
 
     <!-- ===== BLOCO 10 · PARA QUEM É ===== -->
-    <section class="sec sec-tint" id="paraquem">
+    <section class="sec" id="paraquem">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">Honestidade antes da assinatura</span>
+          <span class="eyebrow">Antes de assinar</span>
           <h2 class="reveal">Veja se a Comunidade combina com o seu filho</h2>
         </div>
         <div class="two">
@@ -852,215 +943,148 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
       </div>
     </section>
 
-    <!-- ===== BLOCO 11 · ENTREGÁVEIS ===== -->
-    <section class="sec" id="entrega">
+    <!-- ===== BLOCO 11 · OBJEÇÕES (na ordem do medo) ===== -->
+    <section class="sec sec-rosa" id="objecoes">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">O que está incluído</span>
-          <h2 class="reveal">Tudo que faz parte da assinatura</h2>
-          <p class="sub">
-            Toda a plataforma está incluída na assinatura, sem nenhuma compra extra por dentro. A
-            liberação acontece conforme a Jornada do Criador, para cada conquista chegar no momento
-            certo.
-          </p>
+          <span class="eyebrow">Antes de decidir</span>
+          <h2 class="reveal">As seis dúvidas que costumam <span class="hl">aparecer aqui</span></h2>
         </div>
-        <div class="cards">
-          <div class="card reveal">
-            <div class="ci" style="background:var(--rosa)">
+        <div class="dev">
+          <div class="dev-item reveal">
+            <div class="di" style="background:var(--azul)">
+              <span class="material-symbols-rounded">route</span>
+            </div>
+            <h4>Se ele começar e largar</h4>
+            <p>
+              A Jornada do Criador foi desenhada para isso: cada curso termina com um jogo publicado,
+              uma pessoa responde o que ele envia, e todo mês entra um tema novo. Se preferir conhecer
+              o ritmo antes de escolher o ano, comece pelo mensal. Nos primeiros 7 dias há reembolso.
+              Depois, você cancela pela sua área quando quiser, e os jogos publicados continuam
+              acessíveis no Mural.
+            </p>
+          </div>
+          <div class="dev-item reveal">
+            <div class="di" style="background:var(--verde)">
+              <span class="material-symbols-rounded">schedule</span>
+            </div>
+            <h4>Sobre o tempo de tela</h4>
+            <p>
+              Uma parte do tempo de tela que vocês já permitem pode virar um momento de criação, com
+              começo e fim combinados. A Sociedade Brasileira de Pediatria e a Academia Americana de
+              Pediatria distinguem o que a criança faz na tela, e não só quanto tempo passa nela. A
+              família continua definindo os limites, e a Comunidade cabe dentro deles.
+            </p>
+          </div>
+          <div class="dev-item reveal">
+            <div class="di" style="background:var(--laranja)">
+              <span class="material-symbols-rounded">family_restroom</span>
+            </div>
+            <h4>Seu papel cabe em três gestos</h4>
+            <p>
+              Ajudar no primeiro acesso, combinar o horário e pedir para ele mostrar o que fez. As
+              aulas apresentam os comandos, e as dúvidas do projeto vão para os Recados. Três
+              perguntas bastam para acompanhar: por que você escolheu essa regra, como resolveu essa
+              parte, o que quer tentar agora.
+            </p>
+          </div>
+          <div class="dev-item reveal">
+            <div class="di" style="background:var(--roxo)">
+              <span class="material-symbols-rounded">shield</span>
+            </div>
+            <h4>Sobre segurança</h4>
+            <p>
+              A conta da criança é vinculada à sua. O Clube é só para crianças da faixa atendida, e
+              cada mensagem passa por moderação antes de aparecer. O perfil público começa desligado.
+              Não existe chat aberto nem compra dentro da plataforma. É o desenho que o ECA Digital,
+              em vigor desde março de 2026, pede às plataformas usadas por crianças.
+            </p>
+          </div>
+          <div class="dev-item reveal">
+            <div class="di" style="background:var(--ciano)">
               <span class="material-symbols-rounded">smart_toy</span>
             </div>
-            <h3>Desafio do Primeiro Jogo e todos os cursos</h3>
+            <h4>Sobre a inteligência artificial</h4>
             <p>
-              O primeiro projeto e as trilhas seguintes, do início aos projetos mais avançados. Os
-              cursos atuais e os novos estão incluídos, e a jornada mostra qual é o próximo a ser
-              liberado.
+              A IA já escreve código, e vai escrever cada vez mais. Quem entende como um jogo é feito
+              consegue pedir a coisa certa, ler o que a IA devolve e perceber quando está errado. Na
+              plataforma, o Zappy explica e dá pistas, e nunca monta pelo aluno. Um estudo com quase
+              mil alunos, publicado na PNAS em 2025, mostra o motivo: quando a IA entrega a resposta,
+              o aluno rende menos depois; quando há orientação de professor, isso não acontece.
             </p>
           </div>
-          <div class="card reveal">
-            <div class="ci" style="background:var(--verde)">
-              <span class="material-symbols-rounded">public</span>
+          <div class="dev-item reveal">
+            <div class="di" style="background:var(--rosa)">
+              <span class="material-symbols-rounded">school</span>
             </div>
-            <h3>Mural dos Criadores</h3>
+            <h4>Sem aula ao vivo, ele aprende de verdade</h4>
             <p>
-              A vitrine onde cada jogo é publicado com link próprio e QR code. O jogo do seu filho
-              ganha um endereço no mundo pra mandar pros avós e pros amigos.
+              A aula ao vivo prende a criança a um horário e a um professor que pode trocar. Aqui ela
+              segue no próprio ritmo, e o que ela envia é lido por uma pessoa que responde dentro da
+              plataforma. A explicação, a prática e o teste acontecem no mesmo projeto.
             </p>
           </div>
-          <div class="card reveal">
-            <div class="ci" style="background:var(--azul)">
-              <span class="material-symbols-rounded">groups</span>
-            </div>
-            <h3>Clube dos Criadores</h3>
-            <p>
-              O espaço moderado em que a criança conversa sobre ideias, projetos e dificuldades
-              com outros criadores da faixa etária atendida.
-            </p>
-          </div>
-          <div class="card reveal">
-            <div class="ci" style="background:var(--laranja)">
-              <span class="material-symbols-rounded">supervisor_account</span>
-            </div>
-            <h3>Acompanhamento do professor</h3>
-            <p>
-              As atividades enviadas podem ser revisadas pelo professor, que responde pelos Recados
-              e orienta a criança sobre o projeto.
-            </p>
-          </div>
-          <div class="card reveal">
-            <div class="ci" style="background:var(--roxo)">
-              <span class="material-symbols-rounded">military_tech</span>
-            </div>
-            <h3>Jornada do Criador e conquistas</h3>
-            <p>
-              O caminho completo, de Faísca a Lenda, com oito postos, conquistas e missões que
-              mostram o avanço e liberam novas possibilidades na hora certa.
-            </p>
-          </div>
-          <div class="card destaque reveal">
-            <div class="ci" style="background:var(--verde)">
-              <span class="material-symbols-rounded">workspace_premium</span>
-            </div>
-            <h3>Até 2 perfis de criança</h3>
-            <p>
-              Uma assinatura inclui toda a plataforma para até 2 perfis na mesma conta. Tem
-              irmãos? Cada um cria os próprios jogos e abre cursos e ferramentas no ritmo da
-              própria jornada.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 12 · BÔNUS ===== -->
-    <section class="sec sec-verde" id="bonus">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Mais motivos para continuar criando</span>
-          <h2 class="reveal">Três experiências que mantêm<br /><span class="hl">a jornada em movimento</span></h2>
-          <p class="sub">
-            Elas fazem parte da assinatura e oferecem novas formas de criar, participar e registrar
-            as conquistas.
-          </p>
-        </div>
-        <div class="cards">
-          <div class="card bonus reveal">
-            <span class="bonus-tag">Experiência 1</span>
-            <div class="ci" style="background:var(--rosa)">
-              <span class="material-symbols-rounded">palette</span>
-            </div>
-            <h3>Kit de Criação Livre</h3>
-            <p>
-              Estúdio, Pinta, Pensa e Molda: as quatro ferramentas para planejar, desenhar em 2D,
-              modelar em 3D e construir o jogo da própria cabeça. Todas estão incluídas, e cada uma
-              abre no posto da jornada em que a criança já consegue aproveitar o que ela oferece.
-            </p>
-            <p class="anchor-note">
-              Estúdio e Pinta chegam no posto de Construtor, Pensa no posto de Inventor e Molda no
-              posto de Explorador de Mundos.
-            </p>
-          </div>
-          <div class="card bonus reveal">
-            <span class="bonus-tag">Experiência 2</span>
-            <div class="ci" style="background:var(--laranja)">
-              <span class="material-symbols-rounded">calendar_month</span>
-            </div>
-            <h3>Desafio do Mês</h3>
-            <p>
-              Um novo tema convida a comunidade a experimentar ideias e publicar criações em uma
-              prateleira própria no Mural.
-            </p>
-          </div>
-          <div class="card bonus reveal">
-            <span class="bonus-tag">Experiência 3</span>
-            <div class="ci" style="background:var(--roxo)">
-              <span class="material-symbols-rounded">bedroom_child</span>
-            </div>
-            <h3>Mundo do Criador</h3>
-            <p>
-              Avatar e quarto virtual em 3D guardam os troféus e as conquistas da criança em um
-              espaço que registra a história dela na plataforma.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="sec" id="rotina">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Uma atividade que cabe nos combinados da família</span>
-          <h2 class="reveal">Reserve um espaço para <span class="hl2">criar e experimentar.</span></h2>
-          <p class="sub">
-            Uma parte do tempo de tela que vocês já permitem pode virar um momento de criação.
-            Combinar quando começar e quando parar ajuda a preservar o descanso e as outras brincadeiras.
-          </p>
         </div>
         <div class="tese reveal">
-          Uma etapa por vez: abrir o projeto, testar uma mudança e mostrar o que aconteceu.
-          Você pode acompanhar com uma pergunta simples: “Como você fez isso funcionar?”
+          Cada resposta acima descreve algo que existe hoje na plataforma. O que ainda está por vir
+          aparece como "em breve", e não como promessa.
         </div>
       </div>
     </section>
 
-    <section class="sec sec-amar" id="inteligencia-artificial">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">E se a inteligência artificial já escreve código?</span>
-          <h2 class="reveal">Entender o que está criando <span class="hl2">continua fazendo parte.</span></h2>
-          <p class="sub">
-            A IA pode explicar um comando, sugerir uma ideia e ajudar a investigar um erro.
-            Seu filho também precisa experimentar, fazer escolhas e conferir se o resultado
-            funciona como imaginou.
-          </p>
-        </div>
-        <div class="tese reveal">
-          A Comunidade também usa IA como apoio. Nas aulas, a criança monta e testa os projetos:
-          há espaço para perguntar, compreender uma regra e experimentar outra possibilidade.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 13 · QUANTO VALE + PLANOS ===== -->
+    <!-- ===== BLOCO 12 · PLANOS E VALOR ===== -->
     <section class="sec sec-tint" id="valor">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">Escolha como sua família quer começar</span>
+          <span class="eyebrow">Quanto custa e o que está incluído</span>
           <h2 class="reveal">
-            A Comunidade completa, com opção<br />mensal ou <span class="hl">anual.</span>
+            {mensalLabel} por mês. {diaLabel} por dia,<br />para <span class="hl">até duas crianças.</span>
           </h2>
           <p class="sub">
-            Nos dois planos, a criança recebe a mesma plataforma, os mesmos cursos e as mesmas
-            ferramentas. O que muda é o período e a forma de pagamento.
+            Uma escola de programação cobra por uma aula semanal, com matrícula, material e contrato
+            de fidelidade, e raramente coloca o preço na página. Aqui o acesso é diário, no ritmo da
+            criança, com uma pessoa acompanhando, sem contrato, e o preço está aqui.
           </p>
         </div>
-        <div class="compare">
-          <div class="cmp reveal">
-            <div class="cmp-t">Cursos e projetos</div>
-            <div class="cmp-v">Incluídos</div>
-            <div class="cmp-u">liberados conforme a jornada</div>
-          </div>
-          <div class="cmp reveal">
-            <div class="cmp-t">Ferramentas de criação</div>
-            <div class="cmp-v">4 oficinas</div>
-            <div class="cmp-u">sem compra extra</div>
-          </div>
-          <div class="cmp reveal">
-            <div class="cmp-t">Perfis de criança</div>
-            <div class="cmp-v">Até 2</div>
-            <div class="cmp-u">cada um com seu progresso</div>
-          </div>
+        <div style="max-width:760px;margin:30px auto 0;">
+          <ul class="hero-bullets">
+            <li>
+              <span class="tick"><span class="material-symbols-rounded">check</span></span>Todos os
+              cursos de hoje e os que entrarem, liberados pela Jornada do Criador, a começar pelo
+              Desafio do Primeiro Jogo
+            </li>
+            <li>
+              <span class="tick"><span class="material-symbols-rounded">check</span></span>Revisão das
+              atividades enviadas e resposta nos Recados
+            </li>
+            <li>
+              <span class="tick"><span class="material-symbols-rounded">check</span></span>Mural com
+              link e QR code para cada jogo publicado
+            </li>
+            <li>
+              <span class="tick"><span class="material-symbols-rounded">check</span></span>Clube dos
+              Criadores, moderado, e o Desafio do Mês
+            </li>
+            <li>
+              <span class="tick"><span class="material-symbols-rounded">check</span></span>Estúdio,
+              Pinta, Pensa e Molda, cada um no posto certo
+            </li>
+            <li>
+              <span class="tick"><span class="material-symbols-rounded">check</span></span>Até 2
+              perfis de criança, cada um com o próprio progresso ({porCriancaLabel} por criança com
+              dois perfis)
+            </li>
+          </ul>
         </div>
-        <p class="between reveal">
-          Você encontra o percurso preparado, as ferramentas e os canais de orientação em uma
-          assinatura. Seu filho tem por onde começar, e a família não precisa montar uma sequência
-          de aulas por conta própria.
-        </p>
 
         <div class="plans" id="planos">
           <div class="plan reveal">
             <h4>Mensal</h4>
             <div class="now">{mensalLabel}<small>/mês</small></div>
-            <div class="cond">Para conhecer o ritmo da plataforma. Renovação automática no cartão.</div>
+            <div class="cond">
+              Para conhecer o ritmo da plataforma. Renovação automática no cartão. Cancele quando
+              quiser pela sua área; o acesso vale até o fim do período pago.
+            </div>
             <button
               type="button"
               class="btn plan-btn"
@@ -1076,7 +1100,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             <div class="from">12 meses no mensal sairiam por <s>{anualAncoraLabel}</s></div>
             <div class="now">{anualLabel}<small>/ano</small></div>
             <div class="permonth">equivale a {anualPorMesLabel} por mês</div>
-            <div class="cond">12 meses de acesso. Renovação anual automática no cartão.</div>
+            <div class="cond">12 meses de acesso. Pix à vista ou renovação anual automática no cartão.</div>
             <button
               type="button"
               class="btn plan-btn"
@@ -1088,159 +1112,17 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </div>
         </div>
         <p class="plans-mini reveal">
-          Garantia de 7 dias · Aviso por e-mail antes de toda renovação · Até 2 perfis de criança
+          Garantia de 7 dias · Renovação controlada pela sua área de responsável · Até 2 perfis de criança
         </p>
         <div class="tese reveal">
-          A criança pode começar pelo Desafio do Primeiro Jogo e seguir para novos projetos no
-          próprio ritmo. O papel da família continua importante para organizar os momentos de uso,
-          acompanhar o começo e celebrar o que foi criado.
+          Por que {mensalLabel}: porque cada atividade enviada é lida por uma pessoa e o caminho
+          inteiro já está pronto. O preço fica aqui na página, sem aula experimental de venda e sem
+          proposta por WhatsApp.
         </div>
       </div>
     </section>
 
-    <!-- ===== BLOCO 14 · O QUE MUDA NUMA CASA (argumento) ===== -->
-    <section class="sec sec-verde" id="mudanca">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Uma conquista que vocês podem acompanhar juntos</span>
-          <h2 class="reveal">
-            Ele mostra o jogo.<br />Você conhece <span class="hl">as ideias por trás dele.</span>
-          </h2>
-        </div>
-        {/* Quando existirem depoimentos REAIS de pais (com resultado + prazo), esta
-            banda de argumento pode ser trocada por 3 cards .depo, no mesmo molde
-            da prova social 1. Sem depoimento real, argumento vale mais que
-            depoimento inventado. */}
-        <div class="shifts">
-          <div class="shift reveal">
-            <span class="material-symbols-rounded">swap_horiz</span>
-            <h4>“Por que você escolheu essa regra?”</h4>
-            <p>
-              Peça para seu filho mostrar uma escolha. Pode ser a velocidade do personagem ou
-              o que acontece quando ele ganha um ponto.
-            </p>
-          </div>
-          <div class="shift reveal">
-            <span class="material-symbols-rounded">flag_check</span>
-            <h4>“Como você resolveu essa parte?”</h4>
-            <p>
-              Uma tentativa que deu errado pode render uma boa conversa. Ele pode contar o que
-              testou, onde pediu ajuda e o que decidiu mudar.
-            </p>
-          </div>
-          <div class="shift reveal">
-            <span class="material-symbols-rounded">videogame_asset</span>
-            <h4>“O que você quer tentar agora?”</h4>
-            <p>
-              Depois de jogar juntos, ouça a próxima ideia. A jornada ajuda a encontrar novas
-              aulas e projetos para continuar experimentando.
-            </p>
-          </div>
-        </div>
-        <div class="tese reveal">
-          Você não precisa conhecer os comandos para se interessar pela criação. Dar espaço
-          para ele explicar já faz parte desse encontro.
-        </div>
-        <!-- fala da Debinha pra criança -->
-        <div class="kid rosa reveal">
-          <div class="char">
-            <figure class="art">
-              <img
-                src={img('debinha-fala.webp')}
-                alt="Debinha, personagem da Comunidade dos Criadores"
-                width="360"
-                height="640"
-                loading="lazy"
-              />
-            </figure>
-            <span class="name">Debinha</span>
-          </div>
-          <div class="bubble">
-            O melhor momento é mandar o link do seu jogo no grupo da família e ficar espiando o
-            contador de jogadas subir. Cada nova jogada mostra que alguém abriu uma criação sua.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 15 · SUPORTE ===== -->
-    <section class="sec" id="suporte">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Orientação durante a jornada</span>
-          <h2 class="reveal">Você pode acompanhar<br /><span class="hl2"
-              >sem saber programar.</span
-            ></h2>
-          <p class="sub">
-            A criança segue os projetos no ritmo dela e conta com canais de acompanhamento dentro
-            da própria plataforma.
-          </p>
-        </div>
-        <div class="feat feat-rev">
-          <figure class="art shot-feat reveal">
-            <img
-              src={img('print-recados.webp')}
-              alt="Os Recados: o canal onde o professor responde a criança dentro da plataforma"
-              width="1280"
-              height="720"
-              loading="lazy"
-            />
-          </figure>
-          <div class="feat-txt">
-            <p>
-              <strong>O professor acompanha as atividades enviadas.</strong> Ele pode revisar o que a
-              criança fez e responder pelos Recados, conversando sobre aquele projeto.
-            </p>
-            <p>
-              <strong>O Clube aproxima quem também cria.</strong> No espaço moderado, a criança pode
-              conversar sobre ideias, mostrar o que fez e trocar experiências com outros criadores.
-            </p>
-            <p>
-              <strong>O responsável tem uma área própria.</strong> Perfis e assinatura ficam separados
-              da experiência da criança, inclusive o controle da próxima renovação.
-            </p>
-          </div>
-        </div>
-        <div class="tese reveal">
-          Seu papel é ajudar no primeiro acesso, combinar os momentos de uso e ouvir o que seu
-          filho está criando. Para as dúvidas do projeto, ele encontra orientação pelos Recados.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 16 · GARANTIA ===== -->
-    <section class="sec sec-verde" id="garantia">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Conheça antes de decidir continuar</span>
-          <h2 class="reveal">Sua família tem <span class="hl">7 dias de garantia.</span></h2>
-        </div>
-        <div class="seal-box reveal">
-          <div class="seal-badge">
-            <span class="material-symbols-rounded">shield</span>
-            <b>7</b>
-            <span>dias de garantia</span>
-          </div>
-          <div>
-            <p>
-              <strong>Conheça a plataforma por 7 dias.</strong> Crie o perfil da criança, abra o
-              primeiro percurso e observe como a experiência entra na rotina da sua família.
-            </p>
-            <p>
-              <strong>Se não fizer sentido neste momento,</strong> solicite o reembolso dentro do
-              prazo da garantia. Depois desse período, você pode desativar a próxima renovação pelo
-              painel do responsável. Também enviamos um aviso antes de renovar.
-            </p>
-          </div>
-        </div>
-        <div class="tese reveal">
-          A garantia permite conhecer o caminho por dentro. A continuidade deve ser uma decisão
-          consciente da família, com as condições da assinatura apresentadas antes do pagamento.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 17 · AUTORIDADE ===== -->
+    <!-- ===== BLOCO 13 · QUEM FAZ ===== -->
     <section class="sec auth" id="autoridade">
       <div class="wrap">
         <div class="center">
@@ -1289,13 +1171,14 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             <p>
               Foi dessa experiência que nasceu a Comunidade dos Criadores: um lugar em português,
               pensado para ajudar outras crianças a começar, continuar e compartilhar o que criam.
+              Hoje o André tem 12 anos e é a voz do Zappy nas aulas.
             </p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== BLOCO 18 · FAQ ===== -->
+    <!-- ===== BLOCO 14 · FAQ ===== -->
     <section class="sec sec-tint" id="faq">
       <div class="wrap center">
         <span class="eyebrow">Ainda está decidindo?</span>
@@ -1306,10 +1189,10 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               >E se meu filho começar e perder o interesse?<span class="material-symbols-rounded">add</span></summary
             >
             <div class="a">
-              Nenhuma plataforma pode garantir o interesse de toda criança. Aqui, a continuidade é
-              apoiada por projetos com entregas visíveis, pela Jornada do Criador e pela liberação
-              de novas possibilidades conforme ela avança. Se preferir conhecer o ritmo antes de
-              escolher o ano, comece pelo plano mensal.
+              A Jornada do Criador foi feita para segurar a continuidade: cada curso termina com um
+              jogo publicado, uma pessoa responde o que ele envia e todo mês entra um tema novo. Se
+              quiser conhecer o ritmo antes de escolher o ano, comece pelo mensal. Nos primeiros 7
+              dias há reembolso; depois, você cancela pela sua área quando quiser.
             </div>
           </details>
           <details class="faq">
@@ -1338,67 +1221,6 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </details>
           <details class="faq">
             <summary
-              >Se está tudo incluído, por que algumas ferramentas aparecem fechadas?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Porque a Jornada organiza a ordem de liberação. Estúdio e Pinta chegam no posto de
-              Construtor, Pensa no posto de Inventor e Molda no posto de Explorador de Mundos. Não
-              existe compra extra para liberar essas ferramentas.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >O Scratch é gratuito. Por que assinar a Comunidade?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Dá para aprender muito com ferramentas e materiais gratuitos. Aqui, a assinatura
-              reúne uma sequência de aulas e projetos, ferramentas próprias e orientação pelos
-              Recados. É uma opção para a família que quer esse caminho preparado, com um próximo
-              passo para a criança e um lugar para pedir ajuda.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Como faço pra cancelar se não der certo?<span class="material-symbols-rounded"
-                >add</span
-              ></summary
-            >
-            <div class="a">
-              Nos primeiros 7 dias, você pode solicitar o reembolso conforme as condições da
-              garantia. Depois disso, pode desativar a próxima renovação pelo painel do responsável.
-              Também enviamos um aviso por e-mail antes de renovar.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Sem aula ao vivo com professor na frente, meu filho aprende de verdade?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              A criança segue cursos e projetos no ritmo dela. As atividades enviadas podem ser
-              revisadas pelo professor, que orienta pelos Recados. A experiência combina explicação,
-              prática e testes dentro do próprio projeto.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >É seguro meu filho conversar com outras crianças ali dentro?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              O Clube dos Criadores é moderado e atende crianças de 9 a 14 anos. O perfil público
-              começa desligado, e o responsável administra os perfis e a assinatura pela área da
-              família. A plataforma segue regras específicas de proteção de dados de crianças.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
               >Meu filho tem 9 anos. É cedo demais?<span class="material-symbols-rounded">add</span
               ></summary
             >
@@ -1417,6 +1239,65 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               Sim. Você pode ajudar no primeiro acesso, combinar a rotina e pedir que seu filho
               mostre o que fez. As aulas apresentam os comandos, e as dúvidas do projeto podem
               ser enviadas pelos Recados. Você não precisa preparar ou ensinar as aulas.
+            </div>
+          </details>
+          <details class="faq">
+            <summary
+              >É seguro meu filho conversar com outras crianças ali dentro?<span
+                class="material-symbols-rounded">add</span
+              ></summary
+            >
+            <div class="a">
+              Sim. O Clube é só para crianças da faixa atendida e cada mensagem passa por moderação
+              antes de aparecer. O perfil público começa desligado, e você administra os perfis pela
+              sua área. A plataforma segue o ECA Digital e as regras de proteção de dados de crianças.
+            </div>
+          </details>
+          <details class="faq">
+            <summary
+              >O Scratch é gratuito. Por que assinar a Comunidade?<span
+                class="material-symbols-rounded">add</span
+              ></summary
+            >
+            <div class="a">
+              Dá para aprender muito com o Scratch. O que a Comunidade acrescenta é o caminho na ordem
+              certa, uma pessoa que lê o que a criança envia e um lugar moderado para publicar e
+              mostrar. Se a sua família avança bem sozinha com o gratuito, siga por ele.
+            </div>
+          </details>
+          <details class="faq">
+            <summary
+              >A inteligência artificial já escreve código. Ainda vale a pena?<span
+                class="material-symbols-rounded">add</span
+              ></summary
+            >
+            <div class="a">
+              Vale mais. Quem entende como um jogo é feito consegue pedir a coisa certa à IA e
+              perceber quando ela erra. Aqui o Zappy explica e dá pistas, e nunca monta pelo aluno.
+            </div>
+          </details>
+          <details class="faq">
+            <summary
+              >Sem aula ao vivo com professor na frente, meu filho aprende de verdade?<span
+                class="material-symbols-rounded">add</span
+              ></summary
+            >
+            <div class="a">
+              Ele segue no próprio ritmo, e o que envia é lido por uma pessoa que responde nos
+              Recados. Explicação, prática e teste acontecem no mesmo projeto, sem horário fixo e sem
+              professor que troca.
+            </div>
+          </details>
+          <details class="faq">
+            <summary
+              >Se está tudo incluído, por que algumas ferramentas aparecem fechadas?<span
+                class="material-symbols-rounded">add</span
+              ></summary
+            >
+            <div class="a">
+              Porque a Jornada do Criador organiza a ordem de liberação. Estúdio e Pinta chegam no
+              posto de Construtor, Pensa no posto de Inventor e Molda no posto de Explorador de
+              Mundos. Não existe compra extra para liberar essas ferramentas.
             </div>
           </details>
           <details class="faq">
@@ -1441,6 +1322,18 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </details>
           <details class="faq">
             <summary
+              >Como faço para cancelar se não der certo?<span class="material-symbols-rounded"
+                >add</span
+              ></summary
+            >
+            <div class="a">
+              Nos primeiros 7 dias, peça o reembolso. Depois, desative a próxima renovação pela sua
+              área de responsável; o acesso continua até o fim do período já pago, e os jogos
+              publicados seguem acessíveis no Mural.
+            </div>
+          </details>
+          <details class="faq">
+            <summary
               >Preciso instalar ou comprar algum programa?<span class="material-symbols-rounded"
                 >add</span
               ></summary
@@ -1449,19 +1342,28 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               Tudo abre no navegador. Um computador com internet e o seu filho por perto bastam.
             </div>
           </details>
+          <details class="faq">
+            <summary
+              >A escola vai cobrar isso?<span class="material-symbols-rounded">add</span></summary
+            >
+            <div class="a">
+              A partir de 2026, computação passa a ser obrigatória nas redes públicas e privadas, com
+              três eixos definidos pelo Conselho Nacional de Educação. A pesquisa oficial mais recente
+              reconhece uma distância considerável entre a norma e a sala de aula. A Comunidade não
+              substitui a escola; ela dá à criança um lugar para praticar o que a norma pede.
+            </div>
+          </details>
         </div>
       </div>
     </section>
 
-    <!-- ===== BLOCO 19 · OFERTA FINAL ===== -->
+    <!-- ===== BLOCO 15 · O QUE FICA (fechamento) ===== -->
     <section class="sec final" id="final">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">Um caminho para continuar criando</span>
+          <span class="eyebrow">O que fica</span>
           <h2 class="reveal">
-            O primeiro jogo mostra que ele consegue.<br />A Comunidade mostra <span class="hl"
-              >o que ele pode criar depois.</span
-            >
+            O dia em que ele te chama para jogar<br />um jogo que <span class="hl">ele mesmo fez.</span>
           </h2>
         </div>
         <div class="final-grid">
@@ -1476,53 +1378,38 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </figure>
           <div class="feat-txt">
             <p>
-              Imagine seu filho chamando você para jogar uma fase que ajudou a construir e
-              contando por que mudou uma regra. Na Comunidade, ele encontra um caminho para
-              começar a criar e ganhar espaço para as próprias ideias, projeto por projeto.
+              Imagine seu filho mandando um link no grupo da família, explicando a regra que
+              inventou e olhando o contador de jogadas subir. Esse dia costuma chegar na primeira
+              semana. O que a Comunidade oferece é o caminho que vem depois dele: um projeto de cada
+              vez, com alguém acompanhando, até ele estar criando coisas que hoje só imagina.
             </p>
             <p class="final-list-title">A partir do dia em que entra, a assinatura inclui:</p>
             <ul class="final-list">
               <li>
-                <span class="material-symbols-rounded">check_circle</span>O Desafio do Primeiro Jogo
-                para começar pelo primeiro projeto
+                <span class="material-symbols-rounded">check_circle</span>Todos os cursos, de hoje e
+                os que entrarem, a começar pelo Desafio do Primeiro Jogo
               </li>
               <li>
-                <span class="material-symbols-rounded">check_circle</span>Todos os cursos atuais e
-                os novos que entrarem, liberados conforme ele avança na jornada
+                <span class="material-symbols-rounded">check_circle</span>Uma pessoa lendo o que ele
+                envia e respondendo nos Recados
+              </li>
+              <li>
+                <span class="material-symbols-rounded">check_circle</span>Um link para cada jogo
+                publicado no Mural
               </li>
               <li>
                 <span class="material-symbols-rounded">check_circle</span>O Clube dos Criadores,
-                espaço moderado para crianças da faixa etária atendida
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>O Mural, com link próprio
-                pra cada jogo que ele publicar
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>O acompanhamento de um
-                professor de verdade
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>A Jornada do Criador, de
-                Faísca a Lenda, com todo o sistema de conquistas
+                moderado, e o Desafio do Mês
               </li>
               <li>
                 <span class="material-symbols-rounded">check_circle</span>Estúdio, Pinta, Pensa e
-                Molda, incluídos e liberados no momento certo da jornada
+                Molda, liberados pela Jornada do Criador
               </li>
               <li>
-                <span class="material-symbols-rounded">check_circle</span>O Desafio do Mês, sempre
-                com uma missão nova esperando
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>O Mundo do Criador, a casa
-                dele ali dentro
+                <span class="material-symbols-rounded">check_circle</span>Até 2 perfis de criança e 7
+                dias de garantia
               </li>
             </ul>
-            <p>
-              O primeiro jogo é uma conquista. A Comunidade é o caminho que vem depois, com 7 dias
-              de garantia e aviso antes de cada renovação.
-            </p>
           </div>
         </div>
         <div class="final-cta reveal">
@@ -1536,8 +1423,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </p>
         </div>
         <div class="tese reveal">
-          O próximo passo pode ser pequeno: abrir a primeira aula juntos e experimentar.
-          A partir daí, seu filho tem um caminho para continuar criando.
+          O próximo passo é pequeno: abrir a primeira aula com ele nesta semana.
         </div>
         <p class="terms">
           Ao assinar, você concorda com os <a href="/kids/termos">termos de uso</a> e a <a
@@ -3122,5 +3008,75 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     .cdc .sec {
       padding: 54px 0;
     }
+  }
+
+  /* ===== comparação: ferramenta gratuita × escola × Comunidade (bloco 9) ===== */
+  .cdc .cmp-scroll {
+    max-width: 1050px;
+    margin: 34px auto 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cdc .cmp-table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+    border: 2px solid var(--borda);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra-sm);
+    overflow: hidden;
+    font-size: 0.95rem;
+    text-align: left;
+  }
+  .cdc .cmp-table th,
+  .cdc .cmp-table td {
+    padding: 14px 16px;
+    border-bottom: 2px solid var(--borda);
+    vertical-align: top;
+    line-height: 1.4;
+  }
+  .cdc .cmp-table thead th {
+    font-family: var(--head);
+    font-weight: 700;
+    color: var(--tinta);
+    background: var(--ceu);
+  }
+  .cdc .cmp-table thead th small {
+    display: block;
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--tinta-suave);
+  }
+  .cdc .cmp-table tbody th {
+    font-weight: 700;
+    color: var(--tinta);
+    width: 26%;
+  }
+  .cdc .cmp-table td {
+    color: var(--tinta-suave);
+    font-weight: 600;
+  }
+  .cdc .cmp-table .us {
+    background: color-mix(in srgb, var(--azul) 8%, white);
+    color: var(--tinta);
+    font-weight: 700;
+  }
+  .cdc .cmp-table thead th.us {
+    color: var(--azul);
+  }
+  .cdc .cmp-table tbody tr:last-child th,
+  .cdc .cmp-table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+  .cdc .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 </style>
