@@ -216,9 +216,12 @@ dos assets do Desafio — a arte nova substitui por cima com os MESMOS nomes). A
 tese "Ele já joga. Aqui ele aprende a criar os próprios jogos, e continua", em 15 blocos (hero →
 confiança → dor com causa → alavanca → saídas que falham → o que ele vai fazer → mecanismo → primeiras
 crianças → comparação → para quem é → objeções → planos → quem faz → FAQ → fechamento). A rota lê
-**`?origem=desafio`** (e-mail `challenge-completed` do members, vídeo do certificado, telas do app) e
-o body troca o hero pela variante de continuidade e omite os blocos de dor e de saídas (os dois
-`<h1>` existem no fonte; o padrão vem primeiro). Âncoras de preço são DERIVADAS do preço vivo
+**`?origem=desafio`** (hoje só o e-mail `challenge-completed` do members envia; o vídeo do
+certificado pode usar o mesmo parâmetro; as telas do app NÃO, porque não sabem se o Desafio foi
+concluído) e o body troca o hero pela variante de continuidade e omite os blocos de dor e de saídas
+(os dois `<h1>` existem no fonte; o padrão vem primeiro). A copy nunca diz que um curso concluído
+"sobe um posto": cada curso concluído e publicado preenche uma POSIÇÃO; o posto sobe quando as
+posições da etapa se completam (`docs/jornada-do-criador.md`). Âncoras de preço são DERIVADAS do preço vivo
 (`diaLabel`, `porCriancaLabel`); nenhum preço de terceiro fixo na copy. ⚠️ A página NÃO promete
 "aviso por e-mail antes de toda renovação": o `renewal-reminder` só existe para o anual à vista; o
 cartão recorrente não recebe aviso (a copy diz "renovação controlada pela sua área"). Guardas:

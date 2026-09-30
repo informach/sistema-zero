@@ -13,8 +13,10 @@
 // comuns não pegam → o que ele vai fazer → o mecanismo (por que continua) → as
 // primeiras crianças → comparação com o gratuito e com a escola → para quem é →
 // objeções → planos e valor → quem faz → FAQ → fechamento. `origem="desafio"`
-// (e-mail de conclusão do Desafio, vídeo do certificado, telas do app) troca o
-// hero pela variante de continuidade e omite os blocos de dor e de saídas.
+// (hoje só o e-mail `challenge-completed` do members envia; o vídeo do
+// certificado pode usar o mesmo parâmetro; as telas do app NÃO, porque não sabem
+// se o Desafio foi concluído) troca o hero pela variante de continuidade e omite
+// os blocos de dor e de saídas.
 // Copy segue o Light Copy (sem travessão, sem "!", sem "Não é X. É Y.", sem
 // "mesmo que"/"sem precisar", tese com causa, depoimentos reais sem estrela) e
 // não promete nada acima do catálogo: o que ainda vem é dito como "conforme
@@ -128,85 +130,85 @@ const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 
       </div>
       <div class="wrap">
         <div class="grid">
-          {
-            !posDesafio ? (
-              <div class="hero-copy">
-                <span class="eyebrow">
-                  Para crianças de 9 a 14 anos<br />que gostam de jogos e tecnologia
-                </span>
-                <h1>
-                  Seu filho já joga. <span class="hl">Aqui ele aprende a criar os próprios jogos.</span>
-                </h1>
-                <p class="lead">
-                  Na Comunidade dos Criadores, crianças de 9 a 14 anos transformam as próprias ideias
-                  em jogos de verdade. As aulas guiam uma etapa por vez, uma pessoa de verdade
-                  acompanha o que elas enviam, e cada jogo publicado ganha um link para a família
-                  jogar. Terminou o primeiro, a Jornada do Criador mostra o próximo.
-                </p>
-                <ul class="hero-bullets">
-                  <li>
-                    <span class="tick"><span class="material-symbols-rounded">check</span></span>Na
-                    primeira semana, um jogo publicado com link, feito por ele
-                  </li>
-                  <li>
-                    <span class="tick"><span class="material-symbols-rounded">check</span></span>Cada
-                    atividade enviada é lida por uma pessoa, que responde dentro da plataforma
-                  </li>
-                  <li>
-                    <span class="tick"><span class="material-symbols-rounded">check</span></span>
-                    {mensalLabel} por mês para até duas crianças, sem fidelidade, com 7 dias de garantia
-                  </li>
-                </ul>
-                <div class="hero-cta">
-                  <a href="#planos" class="btn big">
-                    <span class="material-symbols-rounded">rocket_launch</span>Quero ver meu filho criando
-                  </a>
-                </div>
-                <div class="seals">
-                  <span><span class="material-symbols-rounded">check_circle</span>Acesso após aprovação</span>
-                  <span><span class="material-symbols-rounded">check_circle</span>Garantia de 7 dias</span>
-                  <span><span class="material-symbols-rounded">check_circle</span>Cancele quando quiser</span>
-                </div>
-              </div>
-            ) : (
-              <div class="hero-copy">
-                <span class="eyebrow">Para quem já publicou o primeiro jogo</span>
-                <h1>
-                  O primeiro jogo ficou pronto. <span class="hl">Agora vem o caminho inteiro.</span>
-                </h1>
-                <p class="lead">
-                  Seu filho já provou que consegue montar, testar e publicar. A Comunidade dos
-                  Criadores é a continuação: novos cursos, a Jornada do Criador, uma pessoa lendo o
-                  que ele envia e o Mural para cada jogo novo. O progresso do Desafio continua de onde
-                  parou.
-                </p>
-                <ul class="hero-bullets">
-                  <li>
-                    <span class="tick"><span class="material-symbols-rounded">check</span></span>Ele
-                    segue do ponto em que está, sem refazer nada
-                  </li>
-                  <li>
-                    <span class="tick"><span class="material-symbols-rounded">check</span></span>Cada
-                    curso concluído sobe um posto e libera o próximo
-                  </li>
-                  <li>
-                    <span class="tick"><span class="material-symbols-rounded">check</span></span>Até 2
-                    perfis, 7 dias de garantia, cancele quando quiser
-                  </li>
-                </ul>
-                <div class="hero-cta">
-                  <a href="#planos" class="btn big">
-                    <span class="material-symbols-rounded">rocket_launch</span>Quero que ele continue criando
-                  </a>
-                </div>
-                <div class="seals">
-                  <span><span class="material-symbols-rounded">check_circle</span>Acesso após aprovação</span>
-                  <span><span class="material-symbols-rounded">check_circle</span>Garantia de 7 dias</span>
-                  <span><span class="material-symbols-rounded">check_circle</span>Cancele quando quiser</span>
-                </div>
-              </div>
-            )
-          }
+          <div class="hero-copy">
+            {
+              !posDesafio ? (
+                <>
+                  <span class="eyebrow">
+                    Para crianças de 9 a 14 anos<br />que gostam de jogos e tecnologia
+                  </span>
+                  <h1>
+                    Seu filho já joga. <span class="hl">Aqui ele aprende a criar os próprios jogos.</span>
+                  </h1>
+                  <p class="lead">
+                    Na Comunidade dos Criadores, crianças de 9 a 14 anos transformam as próprias
+                    ideias em jogos de verdade. As aulas guiam uma etapa por vez, uma pessoa de
+                    verdade acompanha o que elas enviam, e cada jogo publicado ganha um link para a
+                    família jogar. Terminou o primeiro, a Jornada do Criador mostra o próximo.
+                  </p>
+                  <ul class="hero-bullets">
+                    <li>
+                      <span class="tick"><span class="material-symbols-rounded">check</span></span>Na
+                      primeira semana, um jogo publicado com link, feito por ele
+                    </li>
+                    <li>
+                      <span class="tick"><span class="material-symbols-rounded">check</span></span>
+                      Cada atividade enviada é lida por uma pessoa, que responde dentro da plataforma
+                    </li>
+                    <li>
+                      <span class="tick"><span class="material-symbols-rounded">check</span></span>
+                      {mensalLabel} por mês para até duas crianças, sem fidelidade, com 7 dias de
+                      garantia
+                    </li>
+                  </ul>
+                  <div class="hero-cta">
+                    <a href="#planos" class="btn big">
+                      <span class="material-symbols-rounded">rocket_launch</span>Quero ver meu filho
+                      criando
+                    </a>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span class="eyebrow">Para quem já publicou o primeiro jogo</span>
+                  <h1>
+                    O primeiro jogo ficou pronto. <span class="hl">Agora vem o caminho inteiro.</span>
+                  </h1>
+                  <p class="lead">
+                    Seu filho já provou que consegue montar, testar e chegar ao fim de um projeto. A
+                    Comunidade dos Criadores é a continuação: novos cursos, a Jornada do Criador, uma
+                    pessoa lendo o que ele envia e o Mural para cada jogo novo. O progresso do Desafio
+                    continua de onde parou.
+                  </p>
+                  <ul class="hero-bullets">
+                    <li>
+                      <span class="tick"><span class="material-symbols-rounded">check</span></span>Ele
+                      segue do ponto em que está, sem refazer nada
+                    </li>
+                    <li>
+                      <span class="tick"><span class="material-symbols-rounded">check</span></span>
+                      Cada curso concluído e publicado preenche uma posição na Jornada do Criador
+                    </li>
+                    <li>
+                      <span class="tick"><span class="material-symbols-rounded">check</span></span>Até
+                      2 perfis, 7 dias de garantia, cancele quando quiser
+                    </li>
+                  </ul>
+                  <div class="hero-cta">
+                    <a href="#planos" class="btn big">
+                      <span class="material-symbols-rounded">rocket_launch</span>Quero que ele
+                      continue criando
+                    </a>
+                  </div>
+                </>
+              )
+            }
+            <div class="seals">
+              <span><span class="material-symbols-rounded">check_circle</span>Acesso após aprovação</span>
+              <span><span class="material-symbols-rounded">check_circle</span>Garantia de 7 dias</span>
+              <span><span class="material-symbols-rounded">check_circle</span>Cancele quando quiser</span>
+            </div>
+          </div>
           <figure class="art hero-art">
             <div class="glow"></div>
             <img
@@ -440,16 +442,17 @@ const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 
               <strong>Primeiro mês</strong>
               <span>
                 Os cursos seguintes. Ele altera regras, cria a própria versão de um jogo e envia as
-                atividades para revisão. Cada curso concluído e publicado sobe um posto na Jornada do
-                Criador.
+                atividades para revisão. Cada curso concluído e publicado preenche uma posição na
+                Jornada do Criador.
               </span>
             </div>
             <div>
               <strong>Depois</strong>
               <span>
-                Novos cursos e ferramentas abrem conforme ele avança, de Faísca até Lenda. A
-                plataforma está em lançamento: os cursos de hoje e todos os que entrarem fazem parte
-                da assinatura, e a Jornada mostra o que vem em seguida.
+                Quando as posições de um posto se completam, ele sobe de posto, e novos cursos e
+                ferramentas abrem, de Faísca até Lenda. A plataforma está em lançamento: os cursos
+                de hoje e todos os que entrarem fazem parte da assinatura, e a Jornada mostra o que
+                vem em seguida.
               </span>
             </div>
           </div>
@@ -555,8 +558,8 @@ const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 
             <h3>A Jornada do Criador</h3>
             <p>
               Oito postos, de Faísca a Lenda, como as faixas do judô. Cada curso concluído e publicado
-              faz a Jornada andar e libera o próximo curso e a ferramenta certa para aquele momento.
-              A criança sempre sabe onde está e o que vem depois.
+              preenche uma posição. Quando as posições de um posto se completam, ele sobe de posto, e
+              novos cursos e ferramentas abrem. A criança sempre sabe onde está e o que vem depois.
             </p>
           </div>
           <div class="card reveal">
@@ -845,7 +848,7 @@ const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 
               <tr>
                 <th scope="row">Turma</th>
                 <td>Comunidade aberta, muitas vezes em inglês</td>
-                <td>Turma de 6 a 8</td>
+                <td>Turma, em geral de 6 a 8</td>
                 <td class="us">Clube moderado, em português, só da faixa etária</td>
               </tr>
               <tr>
@@ -857,7 +860,7 @@ const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 
               <tr>
                 <th scope="row">Contrato</th>
                 <td>Nenhum</td>
-                <td>Semestral ou anual</td>
+                <td>Em geral semestral ou anual</td>
                 <td class="us">Nenhum. Cancele quando quiser</td>
               </tr>
               <tr>
@@ -1041,8 +1044,8 @@ const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 
             {mensalLabel} por mês. {diaLabel} por dia,<br />para <span class="hl">até duas crianças.</span>
           </h2>
           <p class="sub">
-            Uma escola de programação cobra por uma aula semanal, com matrícula, material e contrato
-            de fidelidade, e raramente coloca o preço na página. Aqui o acesso é diário, no ritmo da
+            Uma escola de programação costuma cobrar por uma aula semanal, com matrícula, material e
+            contrato de fidelidade, e raramente coloca o preço na página. Aqui o acesso é diário, no ritmo da
             criança, com uma pessoa acompanhando, sem contrato, e o preço está aqui.
           </p>
         </div>
@@ -1482,12 +1485,6 @@ const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 
 </script>
 
 <style>
-  /* ===== Comunidade dos Criadores — CSS sob medida, alinhado à paleta Pen
-     da Comunidade Kids (chão frio, ação azul, Baloo 2/Nunito e relevo 3D).
-     Escopado pelo Astro a
-     este componente + prefixado por `.cdc` (tokens no wrapper, não no :root).
-     Os ícones self-hosted são carregados pelo BaseLayout. ===== */
-
   /* ===== Paleta Pen da plataforma Kids + base ===== */
   .cdc {
     --azul: var(--sz-community-action);
@@ -1673,13 +1670,6 @@ const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 
     .cdc .evidence-links {
       grid-template-columns: 1fr;
     }
-  }
-  .cdc .between {
-    max-width: 720px;
-    margin: 24px auto 0;
-    text-align: center;
-    color: var(--tinta-suave);
-    font-weight: 600;
   }
 
   /* ===== botões 3D da plataforma Kids ===== */
@@ -2120,11 +2110,6 @@ const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 
     flex-direction: column;
     gap: 12px;
   }
-  .cdc .depo .stars {
-    color: var(--amarelo);
-    letter-spacing: 3px;
-    font-size: 1.05rem;
-  }
   .cdc .depo .quote {
     font-weight: 700;
     color: var(--tinta);
@@ -2339,19 +2324,6 @@ const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 
     color: var(--tinta-suave);
     font-weight: 600;
   }
-  .cdc .card .ci {
-    width: 54px;
-    height: 54px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    margin-bottom: 14px;
-  }
-  .cdc .card .ci .material-symbols-rounded {
-    font-size: 28px;
-  }
   .cdc .card.destaque {
     background: var(--superficie);
     border-color: color-mix(in srgb, var(--azul) 45%, var(--borda));
@@ -2388,69 +2360,6 @@ const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 
     padding: 8px;
     border: 2px solid var(--borda);
     box-shadow: var(--sombra);
-  }
-  .cdc .shot-feat img {
-    width: 100%;
-    height: auto;
-    border-radius: 12px;
-    display: block;
-  }
-  .cdc .shot-slot {
-    border-radius: 16px;
-    min-height: 150px;
-    background: var(--superficie);
-    border: 2px dashed var(--campo);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 18px;
-    color: var(--tinta-suave);
-    margin-bottom: 14px;
-  }
-  .cdc .shot-slot .material-symbols-rounded {
-    font-size: 38px;
-    margin-bottom: 6px;
-  }
-  .cdc .shot-slot .slot-t {
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 0.98rem;
-  }
-  .cdc .shot-slot .slot-d {
-    font-size: 0.84rem;
-    margin-top: 4px;
-    max-width: 300px;
-    line-height: 1.4;
-  }
-  .cdc .shot-slot.tall {
-    min-height: 320px;
-    margin-bottom: 0;
-  }
-  .cdc .card.bonus {
-    padding-top: 34px;
-  }
-  .cdc .bonus-tag {
-    position: absolute;
-    top: -12px;
-    left: 20px;
-    background: var(--amarelo);
-    color: var(--tinta);
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 0.8rem;
-    padding: 4px 14px;
-    border-radius: 40px;
-    box-shadow: var(--sombra-sm);
-  }
-  .cdc .anchor-note {
-    margin-top: 10px;
-    font-weight: 700;
-    color: var(--tinta);
-  }
-  .cdc .anchor-note s {
-    color: var(--tinta-suave);
   }
   @media (max-width: 860px) {
     .cdc .cards {
@@ -2524,44 +2433,6 @@ const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 
   }
   @media (max-width: 860px) {
     .cdc .two {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== comparativo de valor ===== */
-  .cdc .compare {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    max-width: 900px;
-    margin: 34px auto 0;
-  }
-  .cdc .cmp {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 20px;
-    box-shadow: var(--sombra-sm);
-    border: 2px solid var(--borda);
-    text-align: center;
-  }
-  .cdc .cmp-t {
-    font-weight: 700;
-    color: var(--tinta-suave);
-    font-size: 0.95rem;
-    margin-bottom: 6px;
-  }
-  .cdc .cmp-v {
-    font-family: var(--head);
-    font-weight: 800;
-    font-size: 1.22rem;
-  }
-  .cdc .cmp-u {
-    font-size: 0.82rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  @media (max-width: 720px) {
-    .cdc .compare {
       grid-template-columns: 1fr;
     }
   }
@@ -2667,101 +2538,6 @@ const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 
     /* no mobile o ANUAL (destaque) vem primeiro */
     .cdc .plan.destaque {
       order: -1;
-    }
-  }
-
-  /* ===== o que muda numa casa ===== */
-  .cdc .shifts {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    max-width: 1050px;
-    margin: 34px auto 0;
-    text-align: left;
-  }
-  .cdc .shift {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 24px;
-    box-shadow: var(--sombra);
-    border: 2px solid var(--borda);
-  }
-  .cdc .shift .material-symbols-rounded {
-    font-size: 30px;
-    color: var(--azul);
-    margin-bottom: 10px;
-  }
-  .cdc .shift h4 {
-    font-size: 1.1rem;
-    margin-bottom: 6px;
-  }
-  .cdc .shift p {
-    font-size: 0.96rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  @media (max-width: 860px) {
-    .cdc .shifts {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== garantia ===== */
-  .cdc .seal-box {
-    max-width: 760px;
-    margin: 34px auto 0;
-    background: #fff;
-    border-radius: var(--raio);
-    box-shadow: var(--sombra);
-    border: 2px solid var(--borda);
-    padding: 32px;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 28px;
-    align-items: center;
-    text-align: left;
-  }
-  .cdc .seal-box p {
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  .cdc .seal-box p + p {
-    margin-top: 12px;
-  }
-  .cdc .seal-box strong {
-    color: var(--tinta);
-  }
-  .cdc .seal-badge {
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    background: var(--superficie);
-    border: 4px dashed var(--verde);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: var(--verde);
-    font-family: var(--head);
-    text-align: center;
-    flex-shrink: 0;
-  }
-  .cdc .seal-badge b {
-    font-size: 2.1rem;
-    line-height: 1;
-  }
-  .cdc .seal-badge span {
-    font-size: 0.84rem;
-    font-weight: 700;
-  }
-  .cdc .seal-badge .material-symbols-rounded {
-    font-size: 26px;
-  }
-  @media (max-width: 640px) {
-    .cdc .seal-box {
-      grid-template-columns: 1fr;
-      justify-items: center;
-      text-align: center;
     }
   }
 

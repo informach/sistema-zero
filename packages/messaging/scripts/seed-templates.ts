@@ -550,10 +550,10 @@ const seeds = [
       title: 'O primeiro jogo ficou pronto 🏆',
       content: [
         p(
-          'Olá, {{nome}}. A criança concluiu o Desafio do Primeiro Jogo: montou as regras, testou e publicou um jogo com link. Vale celebrar, e vale jogar com a família hoje.',
+          'Olá, {{nome}}. A criança concluiu o Desafio do Primeiro Jogo: montou as regras, testou e chegou ao fim do projeto. Vale celebrar. Se o jogo já está publicado no Mural, vale jogar com a família hoje.',
         ),
         p(
-          'O que costuma acontecer depois é a pergunta "e agora?". A Comunidade dos Criadores é a resposta: novos cursos, uma pessoa lendo o que ela envia e um posto novo a cada projeto concluído. O progresso continua de onde parou.',
+          'O que costuma acontecer depois é a pergunta "e agora?". A Comunidade dos Criadores é a resposta: novos cursos, uma pessoa lendo o que ela envia e a Jornada do Criador andando a cada projeto concluído e publicado. O progresso continua de onde parou.',
         ),
         p('Conheça os planos e as condições na página, sem compromisso.'),
         ctaButton('Ver o caminho depois do primeiro jogo', '{{link}}'),

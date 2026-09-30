@@ -222,7 +222,7 @@ export const TERMOS_KIDS: LegalDoc = {
       paragrafos: [
         `O Responsável pode solicitar o reembolso integral em até 7 (sete) dias corridos a contar da compra, conforme o art. 49 do Código de Defesa do Consumidor, por qualquer motivo. Basta enviar a solicitação para ${EMPRESA.email} informando o e-mail usado na compra.`,
         'Confirmada a solicitação dentro do prazo, o valor é estornado pelo mesmo meio de pagamento e o acesso à área de membros é encerrado.',
-        `Na ${ASSINATURA}, a garantia de 7 (sete) dias vale para a primeira contratação e é contada a partir do primeiro pagamento aprovado. Para as renovações seguintes, aplica-se o cancelamento descrito na cláusula 7, sem novo prazo de reembolso.`,
+        `Na ${ASSINATURA}, a garantia de 7 (sete) dias vale para cada contratação, contada a partir da compra: a primeira assinatura e, no plano anual pago via Pix, cada nova contratação de 12 (doze) meses. Para os ciclos de renovação automática no cartão, o Responsável pode cancelar a qualquer momento conforme a cláusula 7, e dúvidas sobre uma cobrança de renovação podem ser enviadas para ${EMPRESA.email}.`,
         'O prazo de garantia não aumenta, pausa nem reinicia o período de 30 dias de acesso do Desafio.',
       ],
     },

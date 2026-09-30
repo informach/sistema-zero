@@ -340,8 +340,8 @@ H2: **Na primeira semana, um jogo publicado. Depois, um projeto de cada vez.**
 Linha do tempo (três etapas):
 
 - "Primeira semana: o Desafio do Primeiro Jogo. Em aulas guiadas de uma etapa por vez, ele monta as regras de um jogo com cenário e personagens já preparados, publica com link e QR code e manda para a família jogar."
-- "Primeiro mês: os cursos seguintes. Ele altera regras, cria a própria versão de um jogo e envia as atividades para revisão. Cada curso concluído e publicado sobe um posto na Jornada do Criador."
-- "Depois: novos cursos e ferramentas abrem conforme ele avança, de Faísca até Lenda. A plataforma está em lançamento. Os cursos de hoje e todos os que entrarem fazem parte da assinatura, e a Jornada mostra o que vem em seguida."
+- "Primeiro mês: os cursos seguintes. Ele altera regras, cria a própria versão de um jogo e envia as atividades para revisão. Cada curso concluído e publicado preenche uma posição na Jornada do Criador."
+- "Depois: quando as posições de um posto se completam, ele sobe de posto, e novos cursos e ferramentas abrem, de Faísca até Lenda. A plataforma está em lançamento. Os cursos de hoje e todos os que entrarem fazem parte da assinatura, e a Jornada mostra o que vem em seguida."
 
 Demonstração (mantida da página atual): "Uma mudança pequena: ele quer que o personagem corra mais rápido. Ele faz uma previsão, escolhe uma velocidade e imagina o que vai acontecer. Coloca a ideia à prova, roda o jogo e observa. Decide o que ajustar, testa outro valor e compara. Agora tem uma razão para explicar a escolha."
 
@@ -365,7 +365,7 @@ Sub: "Cada parte abaixo responde a um motivo pelo qual as crianças largam: falt
 
 Cartões com as capturas reais (as sete imagens atuais):
 
-- Jornada do Criador (`print-jornada`): "Oito postos, de Faísca a Lenda, como as faixas do judô. Cada curso concluído e publicado faz a Jornada andar e libera o próximo curso e a ferramenta certa para aquele momento. A criança sempre sabe onde está e o que vem depois."
+- Jornada do Criador (`print-jornada`): "Oito postos, de Faísca a Lenda, como as faixas do judô. Cada curso concluído e publicado preenche uma posição. Quando as posições de um posto se completam, ele sobe de posto, e novos cursos e ferramentas abrem. A criança sempre sabe onde está e o que vem depois."
 - As aulas (`print-aula`): "Explicação e prática na mesma tela. Ele aprende uma ideia, monta no Estúdio, que é o editor de jogos por blocos, dentro da própria aula, e vê o resultado no jogo."
 - Os Recados (`print-recados`): "É a caixa de mensagens da criança com o professor. As atividades enviadas são lidas por uma pessoa, que responde ali dentro e conversa com ela sobre o projeto. [CONFIRMAR e publicar: quem responde e em quanto tempo. Proposta: 'Hoje quem lê e responde somos nós, Helena e Júlio, em até dois dias úteis.']"
 - O Mural dos Criadores (`print-mural`): "A vitrine dos jogos publicados. Cada um ganha link e QR code, tem contador de jogadas e o botão de fazer a própria versão."
@@ -409,9 +409,9 @@ Tabela:
 | Caminho na ordem certa | Não | Sim | Sim |
 | Alguém olha o que a criança fez | Não | Sim, uma aula por semana | Sim, em cada atividade enviada |
 | Jogo publicado com link para a família | Depende, em comunidade aberta | Raramente | Sim, com link e QR code |
-| Turma | Comunidade aberta, muitas vezes em inglês | Turma de 6 a 8 | Clube moderado, em português, só da faixa etária |
+| Turma | Comunidade aberta, muitas vezes em inglês | Turma, em geral de 6 a 8 | Clube moderado, em português, só da faixa etária |
 | Horário | Livre | Fixo, uma vez por semana | Livre, no ritmo dela |
-| Contrato | Nenhum | Semestral ou anual, com multa | Nenhum. Cancele quando quiser |
+| Contrato | Nenhum | Em geral semestral ou anual | Nenhum. Cancele quando quiser |
 | Preço por mês | R$ 0 | [CONFERIR] R$ 250 a 400, mais matrícula e material | R$ 97, para até duas crianças |
 
 Tese: "Se a sua família aprende bem com material gratuito, siga por ele. A Comunidade existe para quem quer o caminho pronto, uma pessoa acompanhando e um lugar seguro para mostrar, por menos da metade de uma escola de programação."
@@ -530,15 +530,15 @@ Barra fixa do celular (mantida): "R$ 97/mês · anual R$ 797 · Assinar".
 
 ### 10.1 Entrada para quem vem do Desafio
 
-Quem chega pelo e-mail de conclusão, pelo vídeo do certificado ou pela tela de produto bloqueado no app já sentiu a dor e já viu o primeiro jogo. Para esse tráfego, a página recebe um parâmetro na URL (proposta: `?origem=desafio`, anexado pelos três pontos de origem) e troca o hero, pula os blocos 3 e 5 e abre em continuidade. O restante é o mesmo.
+Quem chega pelo e-mail de conclusão já sentiu a dor e já viu o primeiro jogo. Para esse tráfego, a página recebe `?origem=desafio` na URL e troca o hero, pula os blocos 3 e 5 e abre em continuidade. O restante é o mesmo. O vídeo do certificado pode usar o mesmo parâmetro. As telas de produto bloqueado do app não devem usá-lo: elas aparecem para qualquer criança sem acesso, inclusive quem nunca fez o Desafio.
 
 Eyebrow: "Para quem já publicou o primeiro jogo"
 
 H1: **O primeiro jogo ficou pronto. Agora vem o caminho inteiro.**
 
-Lead: "Seu filho já provou que consegue montar, testar e publicar. A Comunidade dos Criadores é a continuação: novos cursos, a Jornada do Criador, uma pessoa lendo o que ele envia e o Mural para cada jogo novo. O progresso do Desafio continua de onde parou."
+Lead: "Seu filho já provou que consegue montar, testar e chegar ao fim de um projeto. A Comunidade dos Criadores é a continuação: novos cursos, a Jornada do Criador, uma pessoa lendo o que ele envia e o Mural para cada jogo novo. O progresso do Desafio continua de onde parou."
 
-Bullets: "Ele segue do ponto em que está, sem refazer nada" · "Cada curso concluído sobe um posto e libera o próximo" · "Até 2 perfis, 7 dias de garantia, cancele quando quiser"
+Bullets: "Ele segue do ponto em que está, sem refazer nada" · "Cada curso concluído e publicado preenche uma posição na Jornada do Criador" · "Até 2 perfis, 7 dias de garantia, cancele quando quiser"
 
 CTA: "Quero que ele continue criando"
 
@@ -559,7 +559,7 @@ Em ordem de impacto. Os itens 1 a 4 são correções de bug e independem desta p
 1. **Link e nome nos e-mails do ciclo do Desafio.** Trocar `/kids/comunidade-do-criador/oferta` por `/kids/comunidade-dos-criadores/oferta?origem=desafio` em `send-challenge-lifecycle.service.ts:161` e `send-renewal-reminders.service.ts:186`, corrigir "Comunidade do Criador" para "Comunidade dos Criadores" em `seed-templates.ts:556` e `:579`, e ajustar os testes `renewal-reminder.test.ts:302` e `challenge-lifecycle.test.ts:157`. Reescrever o corpo do e-mail de conclusão como argumento:
 
    Assunto: "O primeiro jogo ficou pronto. E agora?"
-   "Olá, {{nome}}. {{crianca}} concluiu o Desafio do Primeiro Jogo: montou as regras, testou e publicou um jogo com link. Vale celebrar, e vale jogar com a família hoje. O que costuma acontecer depois é a pergunta 'e agora?'. A Comunidade dos Criadores é a resposta: novos cursos, uma pessoa lendo o que ele envia e um posto novo a cada projeto concluído. O progresso continua de onde parou. Conheça os planos e as condições na página, sem compromisso." Botão: "Ver o caminho depois do primeiro jogo".
+   "Olá, {{nome}}. {{crianca}} concluiu o Desafio do Primeiro Jogo: montou as regras, testou e chegou ao fim do projeto. Vale celebrar. Se o jogo já está publicado no Mural, vale jogar com a família hoje. O que costuma acontecer depois é a pergunta 'e agora?'. A Comunidade dos Criadores é a resposta: novos cursos, uma pessoa lendo o que ele envia e a Jornada do Criador andando a cada projeto concluído e publicado. O progresso continua de onde parou. Conheça os planos e as condições na página, sem compromisso." Botão: "Ver o caminho depois do primeiro jogo".
 
 2. **Termos de uso.** Criar a seção da assinatura em `legal-kids.ts` (renovação, cancelamento, garantia, perfis) ou uma página própria; o checkout e o rodapé da Comunidade passam a apontar para ela.
 3. **Aviso de renovação.** Implementar o lembrete para o cartão recorrente (o `renewal-reminder` já existe para o anual via Pix) ou manter a copy sem essa promessa, como na seção 9.

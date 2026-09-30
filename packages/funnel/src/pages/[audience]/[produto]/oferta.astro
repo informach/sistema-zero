@@ -51,8 +51,10 @@ const perfil = Astro.url.searchParams.get('perfil')
 // por-URL segue seguro (mesma classe do `perfil`: grosso, sem dado pessoal).
 const quer = Astro.url.searchParams.get('quer')
 // Origem do tráfego (enum grosso, não-PII; cache por-URL segue seguro). Hoje só
-// a Comunidade a usa: `?origem=desafio` (e-mail de conclusão do Desafio, vídeo do
-// certificado, telas do app) abre a página na variante de continuidade.
+// a Comunidade a usa: `?origem=desafio` abre a página na variante de continuidade.
+// Quem envia: o e-mail `challenge-completed` do members. O vídeo do certificado
+// pode usar o mesmo parâmetro; as telas do app kids NÃO (não sabem se o Desafio
+// foi concluído).
 const origem = Astro.url.searchParams.get('origem') === 'desafio' ? 'desafio' : null
 const ofertaUrl = new URL(`${f.basePath}/oferta`, Astro.site ?? Astro.url).toString()
 
