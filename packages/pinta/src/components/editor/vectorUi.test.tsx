@@ -5024,6 +5024,171 @@ describe('quais cantos ficam redondos (30/09/2026)', () => {
     expect(undo.disabled).toBe(false)
   })
 
+  it('com os quatro cantos desligados, mexer no slider religa os quatro (o slider nunca fica morto)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [80, 80])
+    await waitFor(() => expect(slider()).toBeTruthy())
+    fireEvent.change(slider(), { target: { value: '8' } })
+    await waitFor(() =>
+      expect(stage.querySelector('rect[fill="#78dc52"]')?.getAttribute('rx')).toBe('8'),
+    )
+    for (const label of [
+      COPY.vector.cornerTopLeft,
+      COPY.vector.cornerTopRight,
+      COPY.vector.cornerBottomLeft,
+      COPY.vector.cornerBottomRight,
+    ]) {
+      fireEvent.click(screen.getByRole('button', { name: label }))
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: label }).getAttribute('aria-pressed')).toBe(
+          'false',
+        ),
+      )
+    }
+    // Os quatro retos: volta a ser um <rect> sem raio, e o slider mostra 0.
+    await waitFor(() => {
+      const rect = stage.querySelector('rect[fill="#78dc52"]')
+      expect(rect).toBeTruthy()
+      expect(rect?.getAttribute('rx')).toBeNull()
+    })
+    expect(slider().value).toBe('0')
+    fireEvent.change(slider(), { target: { value: '6' } })
+    await waitFor(() =>
+      expect(stage.querySelector('rect[fill="#78dc52"]')?.getAttribute('rx')).toBe('6'),
+    )
+    expect(
+      screen.getByRole('button', { name: COPY.vector.cornerTopLeft }).getAttribute('aria-pressed'),
+    ).toBe('true')
+    expect(
+      screen
+        .getByRole('button', { name: COPY.vector.cornerBottomRight })
+        .getAttribute('aria-pressed'),
+    ).toBe('true')
+  })
+
+  it('retângulo TRANCADO: o toque só leva ao toast do cadeado e não arma a máscara do próximo', async () => {
+    const stage = await openWithShapes([
+      {
+        id: 'trancado',
+        type: 'rect',
+        x: 40,
+        y: 40,
+        w: 100,
+        h: 100,
+        rx: 8,
+        fill: '#78dc52',
+        stroke: null,
+        opacity: 1,
+        rotation: 0,
+        locked: true,
+      },
+    ])
+    // A trancada só é selecionável pela linha do painel Camadas (o palco a atravessa).
+    fireEvent.click(
+      screen.getByRole('button', { name: `Selecionar: ${COPY.vector.shapeNames.rect}` }),
+    )
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: COPY.vector.cornerBottomLeft })).toBeTruthy(),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.cornerBottomLeft }))
+    await waitFor(() => expect(screen.getByText(COPY.layers.lockedShapeWarning)).toBeTruthy())
+    expect(
+      screen
+        .getByRole('button', { name: COPY.vector.cornerBottomLeft })
+        .getAttribute('aria-pressed'),
+    ).toBe('true')
+    expect(stage.querySelector('rect[fill="#78dc52"]')?.getAttribute('rx')).toBe('8')
+    // Soltar a seleção e desenhar outro: os QUATRO cantos redondos, porque a máscara não armou.
+    fireEvent.keyDown(document.body, { key: 'Escape' })
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    await waitFor(() => expect(slider()).toBeTruthy())
+    fireEvent.change(slider(), { target: { value: '8' } })
+    drawRect(stage, [200, 200], [280, 280])
+    await waitFor(() => {
+      const rects = stage.querySelectorAll('rect[fill="#78dc52"]')
+      expect(rects.length).toBe(2)
+      expect(rects[1]?.getAttribute('rx')).toBe('8')
+    })
+    expect(stage.querySelector('path[fill="#78dc52"]')).toBeNull()
+  })
+
+  it('passar o slider por zero e voltar devolve o MESMO padrão de cantos (o escopo guarda a máscara da forma)', async () => {
+    const stage = await openWithShapes([
+      {
+        id: 'dois-cantos',
+        type: 'rect',
+        x: 40,
+        y: 40,
+        w: 100,
+        h: 100,
+        rx: 12,
+        corners: [12, 0, 12, 0],
+        fill: '#78dc52',
+        stroke: null,
+        opacity: 1,
+        rotation: 0,
+      },
+    ])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const path = stage.querySelector('path[fill="#78dc52"]') as Element
+    fireEvent.pointerDown(path, { isPrimary: true, pointerId: 1, clientX: 90, clientY: 90 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 1, clientX: 90, clientY: 90 })
+    await waitFor(() => expect(slider()).toBeTruthy())
+    expect(
+      screen.getByRole('button', { name: COPY.vector.cornerTopRight }).getAttribute('aria-pressed'),
+    ).toBe('false')
+    fireEvent.change(slider(), { target: { value: '0' } })
+    await waitFor(() => {
+      const rect = stage.querySelector('rect[fill="#78dc52"]')
+      expect(rect).toBeTruthy()
+      expect(rect?.getAttribute('rx')).toBeNull()
+    })
+    // Com tudo reto a grade lê o escopo, que ficou com a máscara da forma: tr segue desligado.
+    expect(
+      screen.getByRole('button', { name: COPY.vector.cornerTopRight }).getAttribute('aria-pressed'),
+    ).toBe('false')
+    fireEvent.change(slider(), { target: { value: '1' } })
+    await waitFor(() =>
+      expect(curvas(stage.querySelector('path[fill="#78dc52"]')?.getAttribute('d'))).toBe(2),
+    )
+    // Anti-vácuo: sem o escopo armado pela forma, voltar a 1 daria os QUATRO redondos (<rect rx>).
+    expect(stage.querySelector('rect[fill="#78dc52"]')).toBeNull()
+  })
+
+  it('num retângulo todo reto, religar um canto usa o raio já armado no slider (a grade e a forma batem)', async () => {
+    const stage = await openWithShapes([
+      {
+        id: 'reto',
+        type: 'rect',
+        x: 40,
+        y: 40,
+        w: 100,
+        h: 100,
+        rx: 0,
+        fill: '#78dc52',
+        stroke: null,
+        opacity: 1,
+        rotation: 0,
+      },
+    ])
+    // Arma o raio 8 sem seleção (ferramenta Retângulo), depois seleciona o retângulo reto.
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    await waitFor(() => expect(slider()).toBeTruthy())
+    fireEvent.change(slider(), { target: { value: '8' } })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const rect = stage.querySelector('rect[fill="#78dc52"]') as Element
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 90, clientY: 90 })
+    fireEvent.pointerUp(stage, { isPrimary: true, pointerId: 1, clientX: 90, clientY: 90 })
+    await waitFor(() => expect(slider().value).toBe('0'))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.cornerBottomLeft }))
+    await waitFor(() =>
+      expect(curvas(stage.querySelector('path[fill="#78dc52"]')?.getAttribute('d'))).toBe(3),
+    )
+    expect(slider().value).toBe('8')
+  })
+
   it('a escolha vale para o PRÓXIMO retângulo: dois cantos desligados nascem retos', async () => {
     await openVectorEditor()
     const stage = measureStage()

@@ -537,6 +537,20 @@ describe('retângulo com cantos DIFERENTES sai como <path> (30/09/2026)', () => 
     )
   })
 
+  it('cada canto sozinho sai com os controles CERTOS (trocar o sinal do kappa dentaria o canto)', () => {
+    // Table-driven: o `d` exato de cada canto redondo sozinho, com o de cima-esquerda RETO
+    // (o fecho pelo `Z`, sem `L` de volta). Sem estas strings, uma mutação no sinal de `k` em
+    // tr/br/bl passava em toda a suíte: os outros testes só contavam os `C`.
+    const cases: Array<[readonly [number, number, number, number], string]> = [
+      [[0, 4, 0, 0], 'M 0 0 L 26 0 C 28.21 0 30 1.79 30 4 L 30 20 L 0 20 Z'],
+      [[0, 0, 4, 0], 'M 0 0 L 30 0 L 30 16 C 30 18.21 28.21 20 26 20 L 0 20 Z'],
+      [[0, 0, 0, 4], 'M 0 0 L 30 0 L 30 20 L 4 20 C 1.79 20 0 18.21 0 16 Z'],
+    ]
+    for (const [corners, d] of cases) {
+      expect(shapeToMarkup({ ...mixed, corners })).toBe(`<path d="${d}" fill="#78dc52"/>`)
+    }
+  })
+
   it('a cena React e a serialização string emitem o MESMO caminho', () => {
     const rendered = renderToStaticMarkup(
       createElement(VectorFrameSvg, { width: 30, height: 20, shapes: [mixed] }),
