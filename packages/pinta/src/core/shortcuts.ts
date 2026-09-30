@@ -176,6 +176,15 @@ export const SHORTCUT_CATALOG = [
     editors: VECTOR,
     bound: false,
   },
+  // Só na ajuda: o Shift é lido pelo próprio gesto da alça (`resizeFactors`), sem listener.
+  {
+    id: 'resizeProportional',
+    combo: 'Shift+Arrastar',
+    label: S.resizeProportional,
+    section: 'select',
+    editors: VECTOR,
+    bound: false,
+  },
   // ── Organizar (vetor) ──────────────────────────────────────────────────
   { id: 'group', combo: 'Ctrl+G', label: S.group, section: 'arrange', editors: VECTOR },
   { id: 'ungroup', combo: 'Ctrl+Shift+G', label: S.ungroup, section: 'arrange', editors: VECTOR },

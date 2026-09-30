@@ -227,3 +227,39 @@ describe('⭐⭐ a rotação é ASSADA, com o pivô do render', () => {
     expect(ok(shape)[0]?.[0]?.y).toBeCloseTo(10, 6)
   })
 })
+
+describe('cantos por canto no anel (30/09/2026)', () => {
+  it('um canto redondo: caixa exata, sentido positivo, e só UM quarto da área do uniforme sai', () => {
+    const one = ok({
+      ...base,
+      type: 'rect',
+      x: 0,
+      y: 0,
+      w: 100,
+      h: 60,
+      rx: 10,
+      corners: [10, 0, 0, 0],
+    })
+    const ring = one[0] ?? []
+    const xs = ring.map((p) => p.x)
+    const ys = ring.map((p) => p.y)
+    expect(Math.min(...xs)).toBeCloseTo(0, 6)
+    expect(Math.max(...xs)).toBeCloseTo(100, 6)
+    expect(Math.min(...ys)).toBeCloseTo(0, 6)
+    expect(Math.max(...ys)).toBeCloseTo(60, 6)
+    const area = signedArea(ring)
+    const all = signedArea(
+      ok({ ...base, type: 'rect', x: 0, y: 0, w: 100, h: 60, rx: 10 })[0] ?? [],
+    )
+    expect(area).toBeGreaterThan(0)
+    expect(area).toBeLessThan(6000)
+    // Anti-vácuo: um canto cortado tira exatamente um quarto do que os quatro tiram.
+    expect(area).toBeGreaterThan(all)
+    expect(6000 - area).toBeCloseTo((6000 - all) / 4, 6)
+    // As três quinas retas continuam no anel, e a de cima-esquerda não.
+    expect(ring).toContainEqual({ x: 100, y: 0 })
+    expect(ring).toContainEqual({ x: 100, y: 60 })
+    expect(ring).toContainEqual({ x: 0, y: 60 })
+    expect(ring).not.toContainEqual({ x: 0, y: 0 })
+  })
+})

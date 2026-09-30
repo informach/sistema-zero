@@ -101,6 +101,9 @@ export {
   SquareCheckBig,
   SquareDashed,
   SquarePen,
+  // O quadrado com UM canto redondo (o de cima-direita): girado por classe, é cada um dos
+  // quatro botões da grade "Quais cantos ficam redondos" do retângulo.
+  SquareRoundCorner,
   // Os quatro glifos do pathfinder (dois quadrados sobrepostos), na MESMA
   // linguagem visual do Illustrator. Existem no lucide, então nada de desenhar
   // à mão nem de afrouxar o tipo do ToolButton.

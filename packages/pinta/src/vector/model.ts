@@ -5,6 +5,8 @@
  * Os shapes são serializáveis (structured clone + JSON) e renderizam 1:1 como
  * elementos SVG reais, tanto no editor quanto no export.
  */
+import { type RectCornerRadii, rectCornerFields } from './rectCorners'
+
 export interface Vec2 {
   x: number
   y: number
@@ -84,7 +86,26 @@ export function gradientId(shapeId: string, prefix = ''): string {
 
 export type VectorShape = VectorShapeBase &
   (
-    | { type: 'rect'; x: number; y: number; w: number; h: number; rx: number }
+    | {
+        type: 'rect'
+        x: number
+        y: number
+        w: number
+        h: number
+        /**
+         * Raio dos cantos. Com `corners` presente é o MAIOR deles: um leitor antigo, que só
+         * conhece `rx`, arredonda os quatro com ele (degradação aceita, nunca forma sumida).
+         */
+        rx: number
+        /**
+         * Raio POR CANTO, horário a partir de cima-esquerda (tl, tr, br, bl), a ordem do
+         * `border-radius` do CSS. AUSENTE = os quatro iguais a `rx`. Presente SÓ quando
+         * diferem (o sanitize e o normalizador de `rectCorners.ts` garantem). Tupla imutável:
+         * sempre SUBSTITUÍDA, nunca mutada (o clone raso de `animation/frames.ts` compartilha
+         * o array entre quadros duplicados). Leia sempre por `rectCornerRadii`.
+         */
+        corners?: RectCornerRadii
+      }
     | { type: 'ellipse'; cx: number; cy: number; rx: number; ry: number }
     | { type: 'line'; x1: number; y1: number; x2: number; y2: number }
     | { type: 'polygon'; points: Vec2[] }
@@ -320,9 +341,25 @@ export function sanitizeVectorShape(raw: unknown): VectorShape | null {
   }
 
   switch (s.type) {
-    case 'rect':
+    case 'rect': {
       if (![s.x, s.y, s.w, s.h, s.rx].every(isFiniteNumber)) return null
-      return { ...base, type: 'rect', x: s.x, y: s.y, w: s.w, h: s.h, rx: s.rx } as VectorShape
+      // `corners` válido = quatro números finitos; ele é a fonte da verdade (o `rx` de
+      // entrada é recalculado e os quatro iguais colapsam em `rx` só). Qualquer outra coisa
+      // descarta SÓ o campo: o retângulo fica, com o `rx` cru (byte a byte, como o legado).
+      const corners =
+        Array.isArray(s.corners) && s.corners.length === 4 && s.corners.every(isFiniteNumber)
+          ? rectCornerFields(s.corners as unknown as RectCornerRadii, s.w as number, s.h as number)
+          : null
+      return {
+        ...base,
+        type: 'rect',
+        x: s.x,
+        y: s.y,
+        w: s.w,
+        h: s.h,
+        ...(corners ?? { rx: s.rx }),
+      } as VectorShape
+    }
     case 'ellipse':
       if (![s.cx, s.cy, s.rx, s.ry].every(isFiniteNumber)) return null
       return { ...base, type: 'ellipse', cx: s.cx, cy: s.cy, rx: s.rx, ry: s.ry } as VectorShape

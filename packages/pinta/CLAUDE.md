@@ -3226,6 +3226,76 @@ dos campos.
 renderiza INLINE dentro da `.pin-work`) deixaram de ser selecionáveis. Só `input`/`textarea` e
 `contenteditable` voltam.
 
+## Shift redimensiona sem esticar + quais cantos ficam redondos (30/09/2026)
+
+Dois pedidos dela no editor de VETOR: "ao redimensionar um item e pressionar Shift, redimensionar
+proporcionalmente" e "ao arredondar os cantos, em vez de só arredondar todos, poder escolher qual
+canto arredondar". Decisão dela para o segundo (AskUserQuestion): **um raio só + quatro botões em
+grade 2x2 no MESMO painel** (canto ligado usa o raio do slider, desligado fica reto), e não um raio
+por canto.
+
+### Shift nas alças (`resizeFactors`, `components/editor/vector/vectorTools.ts`)
+
+- O `shiftKey` sempre chegou ao gesto (`StagePointer` o carrega), mas o ramo `resize` do
+  `VectorStage` nunca o lia. A conta dos fatores virou o helper PURO
+  `resizeFactors(handle, anchor, start, point, proportional)`, e o palco o chama com
+  `event.shiftKey` lido VIVO a cada `pointermove` (do evento do React ou do `pointermove` nativo do
+  `document`): apertar ou soltar o Shift no meio do arrasto troca o modo no próximo movimento, sem
+  estado acumulado, porque os fatores são sempre recalculados sobre a `base` do gesto. Ordem: grade
+  PRIMEIRO, Shift depois (a mesma do desenho de formas).
+- **Canto** com Shift: UM fator, a PROJEÇÃO do ponteiro na diagonal âncora→início
+  (`f = ((P−A)·(S−A)) / |S−A|²`). Numa seleção não quadrada isso NÃO é a média dos dois fatores
+  (anti-vácuo do teste: seleção 2:1 dá 1,7, não 1,25). **Lado** com Shift: o fator do eixo
+  arrastado vale para os dois, em torno do meio do lado oposto (a âncora de sempre).
+- Os fatores saem CRUS; quem clampa segue sendo o `clampFactor` do `scaleShape` (mínimo 0,05,
+  nunca vira do avesso). `|S−A| = 0` devolve 1 e cai no guard de no-op.
+- Herdado, não mexer: forma girada tem as alças dentro do `<g rotate>`, mas a conta é em
+  coordenadas não giradas; o proporcional herda isso.
+- Ajuda: entrada `resizeProportional` (`Shift+Arrastar`, `bound: false`) no catálogo e uma dica
+  rápida do vetor. Testes: `vectorTools.test.ts` (`resizeFactors`) e `vectorUi.test.tsx`
+  §"Shift redimensiona sem esticar" (canto vira 104×104 em vez de 128×80; lado; Shift solto no meio).
+
+### Cantos por canto (`vector/rectCorners.ts`, a fonte ÚNICA)
+
+- **Modelo**: o rect ganhou `corners?: [tl, tr, br, bl]` (horário a partir de cima-esquerda, a
+  ordem do `border-radius`). `rx` continua OBRIGATÓRIO e é o MAIOR raio: um bundle antigo em cache
+  arredonda os quatro com ele (degrada para redondo, nunca descarta a forma). Invariantes do
+  normalizador `rectCornerFields`: raios iguais → só `rx`, sem a chave (todo retângulo que já
+  existe atravessa byte a byte); diferentes → `corners` + `rx = max`; cada raio clampado a
+  `min(w, h) / 2` (o que garante que vizinhos nunca passam do lado). O sanitize aceita `corners`
+  só como 4 números finitos e, se for lixo, descarta SÓ o campo (o retângulo fica, com o `rx` cru).
+  ⚠️ A tupla é imutável: `animation/frames.ts` clona raso e compartilha o array entre quadros
+  duplicados; toda escrita passa por `rectCornerFields`/`withRectCorners`, que criam tupla nova.
+- **Render**: o `<rect>` do SVG só tem um `rx`, então canto não uniforme sai como `<path>` pelo
+  `roundedRectPathD` (`svg.ts`): só M/L/C/Z absolutos (o dialeto do `parsePathD`, sem `A`), um
+  quarto de círculo por cúbica (`QUARTER_CIRCLE_KAPPA`). O `shapeGeometryAttrs` decide pela
+  PRESENÇA da chave, não pelos raios efetivos: o `rx` legado sem clamp continua saindo cru.
+  `VectorFrameSvg` já pega a tag dinamicamente, então palco, miniaturas, máscara (`clipPath`),
+  SVG/PNG/GIF/folha/tileset/tilemap/ZIP/ponte e biblioteca do Estúdio saem certos pelo funil.
+- **Uma geometria, três consumidores**: `rectCornerArcs` devolve os quatro cantos (tangências,
+  controles, centro, ângulo) e `svg.ts`, `pathNodes.ts` (um nó por canto reto, dois por canto
+  redondo; os oito de sempre quando os quatro são redondos) e `flatten.ts` (`rectRing`, agora a
+  partir de cima-esquerda; o reto continua `[tl, tr, br, bl]`) só compõem em cima. O módulo não
+  importa nada de runtime (só tipos): `model.ts` o consome e `geometry.ts` importa valores de
+  `model.ts`; um import de runtime fecharia o ciclo.
+- `scaleShape` encolhe cada canto pelo menor fator e normaliza; `flipShape` TROCA os cantos de
+  lado (h: tl↔tr e bl↔br; v: tl↔bl e tr↔br); `animatedSvg` recusa interpolar rect com `corners`
+  (o `<path>` não tem `x/y/width/height/rx`) e cai no `visibility` discreto. `hitTest.ts` segue
+  ignorando o raio (a folga cobre).
+- **UI** (`VectorPropertiesPanel`): no painel "Cantos arredondados", abaixo do slider, quatro
+  `IconButton` em grade 2x2 (`SquareRoundCorner` do lucide girado por classe; rótulo FIXO +
+  `aria-pressed`, a régua do cadeado das guias). O slider é o raio dos cantos LIGADOS. Com rect
+  redondo selecionado a grade mostra os cantos dele e edita na hora (canto que liga ganha o `rx`,
+  os já redondos ficam, o que desliga vai a zero; cada toque = um desfazer). Com rect todo reto
+  selecionado, ou sem seleção, ela mostra a máscara `rectCorners` do escopo (o PRÓXIMO retângulo;
+  `makeRect` ganhou o 5º parâmetro) e só ARMA: o toque não grava desfazer vazio
+  (`withRectCorners` devolve a mesma referência) e o slider seguinte aplica o raio nos ligados.
+- ⚠️ Testes que consultam `rect[fill=…]` no palco só valem para o retângulo uniforme: com um
+  canto desligado a forma é `path[fill=…]`. Testes: `rectCorners.test.ts`, `model.test.ts`,
+  `svg.test.ts`, `flatten.test.ts`, `pathNodes.test.ts`, `geometry.test.ts`,
+  `animatedSvg.test.ts`, `wire.test.ts` (fixture com `corners`) e `vectorUi.test.tsx` §"quais
+  cantos ficam redondos".
+
 ## Regras não-negociáveis
 
 1. **NUNCA `fetch('data:')`** — bloqueado pelo `connect-src` da CSP do kids. Conversão data

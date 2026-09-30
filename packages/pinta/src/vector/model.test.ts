@@ -339,3 +339,43 @@ describe('a FIGURA (desenho de pixel trazido para o vetor)', () => {
     expect(sanitizeVectorShape(pix)).toEqual(pix)
   })
 })
+
+describe('sanitizeVectorShape — cantos por canto (`corners`, 30/09/2026)', () => {
+  const rectRaw = { ...base, type: 'rect', x: 0, y: 0, w: 100, h: 60, rx: 0, fill: '#78dc52' }
+
+  it('quatro raios iguais colapsam em `rx`, sem a chave', () => {
+    const shape = sanitizeVectorShape({ ...rectRaw, corners: [3, 3, 3, 3] })
+    expect(shape?.type === 'rect' && shape.rx).toBe(3)
+    expect(shape !== null && 'corners' in shape).toBe(false)
+  })
+
+  it('raios diferentes sobrevivem e o `rx` é recalculado como o MAIOR', () => {
+    const shape = sanitizeVectorShape({ ...rectRaw, rx: 99, corners: [4, 0, 4, 0] })
+    expect(shape?.type === 'rect' && shape.rx).toBe(4)
+    expect(shape?.type === 'rect' && shape.corners).toEqual([4, 0, 4, 0])
+  })
+
+  it('`corners` inválido descarta SÓ o campo: o retângulo fica, com o `rx` cru', () => {
+    const invalid: unknown[] = [[1, 2, 3], [1, 2, 3, Number.NaN], 'abc', { tl: 1 }, [1, 2, 3, '4']]
+    for (const corners of invalid) {
+      const shape = sanitizeVectorShape({ ...rectRaw, rx: 7, corners })
+      expect(shape?.type).toBe('rect')
+      expect(shape?.type === 'rect' && shape.rx).toBe(7)
+      expect(shape !== null && 'corners' in shape).toBe(false)
+    }
+  })
+
+  it('clampa cada canto à metade do menor lado', () => {
+    const shape = sanitizeVectorShape({ ...rectRaw, w: 10, h: 30, corners: [50, 0, 0, 0] })
+    expect(shape?.type === 'rect' && shape.corners).toEqual([5, 0, 0, 0])
+    expect(shape?.type === 'rect' && shape.rx).toBe(5)
+  })
+
+  it('round-trip: o normalizado atravessa o sanitize igualzinho, com e sem `corners`', () => {
+    const mixed = sanitizeVectorShape({ ...rectRaw, rx: 4, corners: [4, 0, 4, 0] })
+    expect(sanitizeVectorShape(mixed)).toEqual(mixed)
+    const uniform = sanitizeVectorShape({ ...rectRaw, rx: 4 })
+    expect(sanitizeVectorShape(uniform)).toEqual(uniform)
+    expect(uniform !== null && 'corners' in uniform).toBe(false)
+  })
+})

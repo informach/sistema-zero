@@ -504,3 +504,64 @@ describe('markup da FIGURA', () => {
     expect(vectorToSvg(doc)).not.toContain('<image')
   })
 })
+
+describe('retângulo com cantos DIFERENTES sai como <path> (30/09/2026)', () => {
+  const mixed: VectorShape = {
+    ...base,
+    id: 'c1',
+    type: 'rect',
+    x: 0,
+    y: 0,
+    w: 30,
+    h: 20,
+    rx: 4,
+    corners: [4, 0, 0, 0],
+  }
+
+  it('um canto redondo: só M/L/C/Z absolutos, uma cúbica, e o `d` passa no parsePathD', async () => {
+    const d = 'M 4 0 L 30 0 L 30 20 L 0 20 L 0 4 C 0 1.79 1.79 0 4 0 Z'
+    expect(shapeToMarkup(mixed)).toBe(`<path d="${d}" fill="#78dc52"/>`)
+    const { parsePathD } = await import('./geometry')
+    expect(parsePathD(d)).not.toBeNull()
+  })
+
+  it('três cantos redondos = três cúbicas e nenhum <rect>; o uniforme segue <rect rx>', () => {
+    const three: VectorShape = { ...mixed, corners: [4, 4, 4, 0] }
+    const markup = shapeToMarkup(three)
+    expect(markup.startsWith('<path d="M 4 0 ')).toBe(true)
+    expect(markup.match(/ C /g)).toHaveLength(3)
+    expect(markup).not.toContain('<rect')
+    const { corners: _drop, ...uniform } = mixed
+    expect(shapeToMarkup(uniform)).toBe(
+      '<rect x="0" y="0" width="30" height="20" rx="4" fill="#78dc52"/>',
+    )
+  })
+
+  it('a cena React e a serialização string emitem o MESMO caminho', () => {
+    const rendered = renderToStaticMarkup(
+      createElement(VectorFrameSvg, { width: 30, height: 20, shapes: [mixed] }),
+    )
+    const exported = vectorToSvg({ width: 30, height: 20, shapes: [mixed] })
+    const d = 'd="M 4 0 L 30 0 L 30 20 L 0 20 L 0 4 C 0 1.79 1.79 0 4 0 Z"'
+    expect(rendered).toContain(d)
+    expect(exported).toContain(d)
+    expect(rendered).not.toContain('<rect')
+  })
+
+  it('como fonte de máscara, o recorte também é o caminho', () => {
+    const source: VectorShape = { ...mixed, id: 'janela' }
+    const content: VectorShape = {
+      ...base,
+      id: 'rosto',
+      type: 'ellipse',
+      cx: 15,
+      cy: 10,
+      rx: 10,
+      ry: 8,
+      maskId: 'janela',
+    }
+    expect(sceneDefsMarkup([source, content])).toContain(
+      '<clipPath id="pin-mask-janela"><path d="M 4 0 ',
+    )
+  })
+})

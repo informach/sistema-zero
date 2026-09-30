@@ -556,3 +556,31 @@ describe('caixa do texto: várias linhas e âncora', () => {
     expect(espelhado.width).toBe(b.width)
   })
 })
+
+describe('cantos por canto na geometria (30/09/2026)', () => {
+  const mixed: VectorShape = {
+    ...base,
+    type: 'rect',
+    x: 0,
+    y: 0,
+    w: 40,
+    h: 40,
+    rx: 8,
+    corners: [8, 0, 8, 0],
+  }
+
+  it('scaleShape encolhe cada canto pelo MENOR fator e normaliza; o uniforme segue sem a chave', () => {
+    const scaled = scaleShape(mixed, { x: 0, y: 0 }, 0.5, 2)
+    expect(scaled).toMatchObject({ w: 20, h: 80, rx: 4, corners: [4, 0, 4, 0] })
+    const uniform = scaleShape(rect, { x: 10, y: 20 }, 2, 0.5)
+    expect('corners' in uniform).toBe(false)
+  })
+
+  it('flipShape troca os cantos de lado: horizontal tl↔tr e bl↔br, vertical tl↔bl e tr↔br', async () => {
+    const { flipShape } = await import('./geometry')
+    const one: VectorShape = { ...mixed, corners: [8, 0, 0, 0] }
+    expect(flipShape(one, 'h', { x: 20, y: 20 })).toMatchObject({ corners: [0, 8, 0, 0] })
+    expect(flipShape(one, 'v', { x: 20, y: 20 })).toMatchObject({ corners: [0, 0, 0, 8] })
+    expect(flipShape(mixed, 'h', { x: 20, y: 20 })).toMatchObject({ corners: [0, 8, 0, 8] })
+  })
+})
