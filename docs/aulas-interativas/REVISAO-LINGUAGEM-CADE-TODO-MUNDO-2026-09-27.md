@@ -1,5 +1,18 @@
 # Revisão de linguagem: Cadê Todo Mundo?
 
+> **Complemento de 28/09/2026:** o fechamento da Aula 2 foi revisto em
+> [Publicação na última seção](../plans/2026-09-28-cade-todo-mundo-publicacao-na-aula-design.md).
+> A seção agora é **Publique seu jogo**, ensina o caminho mínimo de publicação e termina em
+> **Concluir aula**, sem antecipar certificado. Uma ajuda escrita abre o tutorial direto.
+> O critério técnico de conclusão continua sendo o vídeo. O registro abaixo descreve a
+> revisão de 27/09 e seus resultados; a orientação antiga desse fechamento foi substituída.
+
+> **Correção da Aula 1 em 28/09/2026:** a seção **Faça alguém aparecer** passa a orientar
+> **Verificar esta etapa** após o teste do jogo e antes do envio. A fala espera a confirmação
+> **Objetivo da etapa cumprido!**, orienta corrigir e verificar novamente se faltar algo e
+> termina em **Concluir aula** após confirmar o envio. O clique já era exigido pela plataforma;
+> proposta, roteiro, lembrete do Zappy e gerador foram alinhados, sem alterar critérios.
+
 ## Motivo e escopo
 
 Após assistir à abertura, uma das duas crianças que testaram o curso entendeu apenas que o
@@ -17,7 +30,7 @@ tarefa imediata, instrução completa, explicação curta e saída clara.
 | Aula 1: Bem-vindo ao jardim | Jogue a versão pronta e encontre os três personagens | Próxima seção, após vídeo e três achados |
 | Aula 1: Seu Caderno do Aluno | Consulte o caderno se precisar; leitura opcional | Próxima seção, após vídeo |
 | Aula 1: O que um toque faz? | Toque com a reação desligada, ligue e toque de novo | Próxima seção, após vídeo e dois testes |
-| Aula 1: Faça alguém aparecer | Encaixe a visibilidade no evento, escolha escolhido e use 0 | Teste, envio com confirmação e Concluir aula |
+| Aula 1: Faça alguém aparecer | Encaixe a visibilidade no evento, escolha escolhido e use 0 | Teste, Verificar esta etapa, envio com confirmação e Concluir aula |
 | Aula 2: Volte ao seu jardim | Veja o que falta na contagem | Próxima seção; não pedir uma ferramenta ausente |
 | Aula 2: Um número que acompanha a busca | Teste dois achados, espaço vazio e recomeço | Próxima seção, após vídeo e quatro metas |
 | Aula 2: Cada personagem vale um achado | Encaixe Somar 1 em variável achados abaixo da visibilidade | Teste 1, 2, 3, toque repetido e envio com confirmação |
@@ -51,6 +64,7 @@ completo. Ler ajuda não libera ferramenta ou matrícula.
 - Navegação: packages/member-shell/src/components/lesson-sections.tsx, botão Próxima seção.
 - Conclusão: packages/community-kids/src/app/(app)/cursos/[slug]/aulas/[lessonId]/lesson-player-client.tsx.
 - Envio: packages/member-shell/src/components/studio/studio-block.tsx, janela e confirmação.
+- Verificação da etapa: packages/member-shell/src/components/studio/section-project-check.tsx, botão e confirmação de aprovação.
 - Experiência de toque: scene-lesson-controls.tsx e scene-touch-response.tsx, em member-shell.
 - Experiência de contagem: scene-found-counter.tsx e metas em packages/core/src/learning/scene/catalog.ts.
 - Caderno: pdf-book-view.tsx, ebook-reader.tsx e ebook-book.impl.tsx, em member-shell/components/ebook.

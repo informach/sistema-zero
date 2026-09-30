@@ -16,9 +16,9 @@ export const COMUNIDADE_PRODUTO: FunnelCopy = {
 
 // Exigida pelo tipo FunnelContent; a /quiz deste funil é 404 (steps.quiz=false).
 export const COMUNIDADE_LANDING: FunnelLanding = {
-  h1: 'Seu filho está crescendo em um mundo tecnológico. Na Comunidade, ele aprende a transformar ideias em jogos e projetos próprios.',
+  h1: 'Seu filho pode aprender a transformar as próprias ideias em jogos.',
   subtitulo:
-    'Um caminho online com projetos guiados, ferramentas próprias, acompanhamento de professor e a Jornada do Criador, que mostra o próximo passo.',
+    'Projetos guiados para começar, espaço para fazer escolhas e orientação pelos Recados. Seu filho aprende a montar, testar e entender como fazer o jogo funcionar.',
   tempo: '',
 }
 
@@ -32,12 +32,13 @@ export const COMUNIDADE_PRECO_FALLBACK = { mensalCents: 9_700, anualCents: 79_70
 // Diferença pro Desafio: é ASSINATURA — o texto avisa do aviso prévio de renovação
 // e aponta o cancelamento na área do responsável.
 export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
-  intro: 'A Comunidade já está pronta para receber o primeiro perfil da sua família.',
+  intro:
+    'O primeiro projeto vem com orientação para seu filho começar a montar, testar e experimentar as próprias ideias.',
   entrega: [
-    'Desafio do Primeiro Jogo e todos os cursos da plataforma',
+    'Desafio do Primeiro Jogo e cursos com projetos guiados para começar e continuar criando',
     'Estúdio, Pinta, Pensa e Molda, liberados conforme a Jornada do Criador',
     'Clube dos Criadores e Mural para publicar e compartilhar os jogos',
-    'Acompanhamento do professor pelas atividades e pelos Recados',
+    'Orientação do professor pelas atividades enviadas e pelos Recados',
     'Jornada do Criador, desafios, conquistas e Mundo do Criador',
     'Até 2 perfis de criança, cada um com seu próprio progresso',
   ],
@@ -45,7 +46,7 @@ export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
     {
       titulo: 'Confirme seu acesso no e-mail',
       texto:
-        'Enviamos o link de primeiro acesso para o e-mail da compra. É com ele que você cria a sua senha. Se não chegar em alguns minutos, dê uma olhada no spam ou nas promoções.',
+        'Depois da aprovação do pagamento, as instruções de acesso chegam ao e-mail da compra. No primeiro acesso, você cria sua senha. Se já tem conta, entre com seu acesso habitual. Confira também o spam ou as promoções.',
     },
     {
       titulo: 'Crie o perfil da criança',
@@ -55,7 +56,12 @@ export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
     {
       titulo: 'Mostre a Jornada do Criador',
       texto:
-        'Abra a plataforma junto com seu filho, veja o posto inicial e entre no primeiro curso liberado. A jornada vai mostrar o que vem depois.',
+        'Abra a plataforma com seu filho e escolham o primeiro curso disponível. As aulas guiam a montagem por etapas. A jornada mostra o que vem depois de cada conquista.',
+    },
+    {
+      titulo: 'Combinem um momento para criar',
+      texto:
+        'Reservem uma parte do tempo de tela já combinado para uma etapa do projeto. Depois, peça que ele mostre o que montou e conte o que mudou quando testou. Se surgir uma dúvida, ele pode pedir orientação pelos Recados.',
     },
     {
       titulo: 'Acompanhe pela área do responsável',

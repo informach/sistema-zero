@@ -463,7 +463,7 @@ export default function CardCheckout({
       {scriptBlocked && (
         <p className="rounded-xl border border-red-400/40 bg-red-400/10 px-3 py-2 text-sm text-red-300">
           Detectamos um bloqueador de anúncios (adblock). Ele impede a verificação de segurança da
-          operadora do cartão — desative-o para pagar com cartão, ou pague com Pix.
+          operadora do cartão. Desative-o para pagar com cartão.
         </p>
       )}
       <Field label="Número do cartão" error={errors.number}>

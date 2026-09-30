@@ -20,11 +20,11 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 
 **Duração alvo:** 40 a 55 segundos.
 
-**Na tela:** mostrar a experiência com **Achados: 0**. Apontar para o número, o jardim e **Recomeçar a busca**, sem realizar os testes ou antecipar os valores encontrados.
+**Na tela:** mostrar a experiência com **Achados: 0**. Apontar para o jardim da experiência ao dizer **aqui**. Apontar para o número, os esconderijos e **Recomeçar a busca** quando forem citados, sem realizar os testes ou antecipar os valores encontrados.
 
 **Narração:**
 
-> “Procure os personagens neste jardim e acompanhe o número Achados.
+> “Aqui está uma experiência com o jardim do jogo. Procure os personagens e acompanhe o número Achados.
 >
 > O jogo guarda essa contagem numa variável chamada achados. Variável é onde o jogo guarda um valor que pode mudar.
 >
@@ -58,7 +58,7 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 >
 > Confira: os dois blocos estão dentro de Quando clicar ou tocar. Primeiro, o esconderijo escolhido fica invisível. Logo abaixo, o jogo soma 1 em achados.”
 
-**Na tela:** mostrar o jardim atualizado e testar os três esconderijos, um por vez. Conferir 1, 2, 3 e **Você achou todo mundo!**. Tocar novamente no mesmo lugar e conferir que a contagem não sobe. Mostrar o envio e sua confirmação. Não demonstrar compartilhamento.
+**Na tela:** mostrar o jardim atualizado e testar os três esconderijos, um por vez. Conferir 1, 2, 3 e **Você achou todo mundo!**. Tocar novamente no mesmo lugar e conferir que a contagem não sobe. Após o teste, clicar em **Verificar esta etapa** e mostrar **Objetivo da etapa cumprido!**. Mostrar **Salvo**, abrir **Enviar para o professor**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Próxima seção**. Não demonstrar compartilhamento.
 
 **Narração:**
 
@@ -70,24 +70,40 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 >
 > Se a contagem não funcionar, confira o bloco de somar: ele precisa estar dentro de Quando clicar ou tocar, logo abaixo do bloco de visibilidade, com o número 1 e a variável achados. Corrija e teste de novo.
 >
-> Espere aparecer Salvo. Clique em Enviar para o professor e confirme em Enviar. Quando o envio terminar, clique em Próxima seção.”
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
+>
+> Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Clique em Enviar para o professor e confirme em Enviar.
+>
+> Quando o envio terminar, clique em Próxima seção.”
 
-**Zappy abaixo do vídeo:** “Faça o jogo contar os achados. Teste os três esconderijos e envie para o professor.”
+**Zappy abaixo do vídeo:** “Faça o jogo contar os achados. Teste os três esconderijos e clique em Verificar esta etapa antes de enviar para o professor.”
 
-**Conferência de produção:** a Pré-visualização atualiza automaticamente. O caminho é Programação > Variáveis, com o bloco Somar ___ em variável ___. O caderno continua na seção Seu Caderno do Aluno da Aula 1. Manter a cadeia do projeto e a regra de vitória preparada. A conclusão exige vídeo, incremento correto e envio.
+**Conferência de produção:** a Pré-visualização atualiza automaticamente. O caminho é Programação > Variáveis, com o bloco Somar ___ em variável ___. O caderno continua na seção Seu Caderno do Aluno da Aula 1. Manter a cadeia do projeto e a regra de vitória preparada. A conclusão exige vídeo, aprovação em **Verificar esta etapa** e envio. A verificação depende desse clique; o envio não a executa automaticamente.
 
-## 4. Sua busca está completa
+## 4. Publique seu jogo
 
-**Duração alvo:** 25 a 40 segundos.
+**Duração alvo:** 45 a 60 segundos, incluindo publicação e confirmação.
 
-**Na tela:** mostrar o jogo completo e as duas regras acrescentadas nas aulas. Manter o mesmo Estúdio da prática. Não abrir janela de publicação, gerar capa ou copiar link na gravação.
+**Na tela:** manter o mesmo Estúdio da prática, com o projeto já enviado ao professor. Apontar e abrir **Compartilhar**. Mostrar **Título** e **Resumo do projeto** preenchidos, sem editar. Clicar em **Gerar capa**, esperar a imagem e conferir o resultado. Não demonstrar upload, personalização ou cópia do link.
 
 **Narração:**
 
-> “Seu jogo está pronto! Você fez os esconderijos sumirem com o toque e o jogo contar os três personagens.
+> “Agora publique seu jogo para outras pessoas jogarem.
 >
-> Se quiser mostrar seu jogo para alguém, o Como Fazer tem o tutorial Como publicar seu jogo no mural. Compartilhar é opcional.
+> No Estúdio, clique em Compartilhar. O título e o resumo já estão preenchidos. Deixe como estão.
 >
-> Agora clique em Concluir aula. Depois abra Seu certificado, a próxima aula do curso.”
+> Clique em Gerar capa e espere a imagem aparecer. Essa é a imagem que vai apresentar seu jogo.”
 
-**Conferência de produção:** o vídeo basta para concluir esta seção. A publicação e o acesso ao Mural não são exigidos. O tutorial de compartilhamento ensina capa, publicação e link; a aula termina com a criação e a próxima ação. Sem oferta comercial.
+**Na tela:** conferir a capa, clicar em **Publicar** e esperar **Seu jogo está no Mural!**. Apontar e clicar em **Fechar** na confirmação. Apontar **Concluir aula**. Encerrar sem abrir outra aula.
+
+**Narração:**
+
+> “Confira a capa, clique em Publicar e espere a confirmação.
+>
+> Quando aparecer Seu jogo está no Mural, clique em Fechar.
+>
+> Agora clique em Concluir aula.”
+
+**Ajuda escrita junto ao vídeo, fora da narração:** Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), nossa área de ajuda.
+
+**Conferência de produção:** publicar é a tarefa esperada da seção. O vídeo continua sendo o critério técnico de conclusão; publicação e acesso ao Mural não viram bloqueios. O envio da seção anterior libera Compartilhar. Gerar capa já inclui a imagem na publicação, sem download nem upload manual. Conferir título e resumo prontos antes da gravação. A ajuda abre diretamente o tutorial; não exigir sua leitura. Personalização, outras capas, cópia do link e solução de problemas ficam no Como fazer. A fala termina em Concluir aula, sem antecipar certificado ou próxima aula. Sem oferta comercial. Regravar e ensaiar o caminho completo com crianças.

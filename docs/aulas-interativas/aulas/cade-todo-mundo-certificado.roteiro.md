@@ -12,10 +12,10 @@ Um vídeo. O conteúdo precisa ser regravado antes de substituir o vídeo public
 
 > “Você terminou o Cadê Todo Mundo! Fez os personagens aparecerem e o jogo contar cada achado.
 >
-> Clique em Pegar meu certificado para guardar essa conquista. Quando o certificado baixar, clique em Concluir aula.
+> Parabéns pelo seu jogo!
 >
-> Parabéns pelo seu jogo!”
+> Clique em Pegar meu certificado para guardar essa conquista. Quando o certificado baixar, clique em Concluir aula.”
 
-**Zappy abaixo do vídeo:** “Clique em Pegar meu certificado. Depois clique em Concluir aula.”
+**Zappy abaixo do vídeo:** “Clique em Pegar meu certificado. Quando o certificado baixar, clique em Concluir aula.”
 
 **Conferência de produção:** a conclusão exige vídeo e certificado. Para quem já emitiu, o botão muda para **Baixar certificado (PDF)**; essa ajuda fica no Como Fazer. Não atribuir à criança o cenário e os personagens preparados. Sem venda, ofertas ou pedido para convencer um responsável.

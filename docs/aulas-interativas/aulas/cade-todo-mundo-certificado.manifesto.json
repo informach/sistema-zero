@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-certificado",
-      "plannedVideo": "Título: Você criou seu primeiro jogo!\n\nReconhecer as duas regras que a criança programou. Pedir Pegar meu certificado e, após o download, Concluir aula. Sem tour do PDF ou de pastas; a ajuda fica no Como Fazer. Sem oferta comercial. Regravar a fala. Alvo: 15 a 25 segundos.\n\nRoteiro falado completo: cade-todo-mundo-certificado.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Você criou seu primeiro jogo!\n\nReconhecer as duas regras que a criança programou e comemorar antes do encaminhamento. Pedir Pegar meu certificado e, após o download, terminar em Concluir aula, sem acrescentar falas depois da ação de saída. Sem tour do PDF ou de pastas; a ajuda fica no Como Fazer. Sem oferta comercial. Regravar a fala. Alvo: 15 a 25 segundos.\n\nRoteiro falado completo: cade-todo-mundo-certificado.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-certificado",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Clique em Pegar meu certificado. Depois clique em Concluir aula."
+        "text": "Clique em Pegar meu certificado. Quando o certificado baixar, clique em Concluir aula."
       }
     },
     {

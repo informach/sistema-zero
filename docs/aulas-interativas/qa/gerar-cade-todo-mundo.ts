@@ -128,7 +128,7 @@ const aula1 = {
     video(
       'video-a1-toque',
       'Um toque pode chamar uma ação',
-      'Pedir diretamente: tocar no arbusto, clicar em Ligar a reação ao toque, tocar novamente e comparar. Explicar toque e reação em uma frase ligada ao jogo. Apontar os alvos sem executar os testes ou antecipar o resultado. Terminar em Próxima seção após os dois testes. Não fazer tour de interface nem analogia da campainha. Regravar a fala. Alvo: 30 a 40 segundos.',
+      'Apresentar a experiência com o jardim do jogo e apontar para ela ao dizer aqui. Em seguida, pedir: tocar no arbusto, clicar em Ligar a reação ao toque, tocar novamente e comparar. Explicar toque e reação em uma frase ligada ao jogo. Apontar os alvos sem executar os testes ou antecipar o resultado. Terminar em Próxima seção após os dois testes. Não fazer tour de interface nem analogia da campainha. Regravar a fala. Alvo: 30 a 40 segundos.',
     ),
     dialogue('ponte-a1-toque', 'Teste o mesmo toque com a reação desligada e ligada.'),
     {
@@ -146,11 +146,11 @@ const aula1 = {
     video(
       'video-a1-programar',
       'Faça o primeiro personagem aparecer',
-      'Começar pedindo que a criança faça um personagem aparecer ao tocar num esconderijo. Mostrar Quando acontecer, o evento preparado e o significado de escolhido. Ensinar Jogo 2D > Sprites > Aparência, o bloco de visibilidade, o encaixe dentro do evento, escolhido e a troca de 50 para 0. Testar dois esconderijos com a prévia automática e conferir campos e encaixe se não funcionar. Esperar Salvo, usar Enviar para o professor, confirmar em Enviar e terminar em Concluir aula. Sem tour de abas, olhinho, divisória ou expansão. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
+      'Começar pedindo que a criança faça um personagem aparecer ao tocar num esconderijo. Mostrar Quando acontecer, o evento preparado e o significado de escolhido. Ensinar Jogo 2D > Sprites > Aparência, o bloco de visibilidade, o encaixe dentro do evento, escolhido e a troca de 50 para 0. Testar dois esconderijos com a prévia automática e conferir campos e encaixe se não funcionar. Clicar em Verificar esta etapa; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo da etapa cumprido!, esperar Salvo, usar Enviar para o professor, confirmar em Enviar e terminar em Concluir aula. Sem tour de abas, olhinho, divisória ou expansão. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
     ),
     dialogue(
       'ponte-a1-programar',
-      'Monte a regra do toque, teste nos esconderijos e envie seu jogo para o professor.',
+      'Monte a regra do toque, teste nos esconderijos e clique em Verificar esta etapa antes de enviar seu jogo para o professor.',
     ),
     studio(montarProjetoCadeTodoMundo()),
   ],
@@ -220,7 +220,7 @@ const aula2 = {
     video(
       'video-a2-variavel',
       'Um número que acompanha a busca',
-      'Pedir que a criança procure os personagens e acompanhe Achados. Explicar variável em uma frase: onde o jogo guarda um valor que pode mudar. Orientar os quatro testes: um esconderijo, outro esconderijo, um espaço vazio e Recomeçar a busca. Apontar sem realizar os testes nem antecipar os resultados. Terminar em Próxima seção. Sem analogia das marquinhas ou tour. Regravar a fala. Alvo: 40 a 55 segundos.',
+      'Apresentar a experiência com o jardim do jogo e apontar para ela ao dizer aqui. Pedir que a criança procure os personagens e acompanhe Achados. Explicar variável em uma frase: onde o jogo guarda um valor que pode mudar. Orientar os quatro testes: um esconderijo, outro esconderijo, um espaço vazio e Recomeçar a busca. Apontar sem realizar os testes nem antecipar os resultados. Terminar em Próxima seção. Sem analogia das marquinhas ou tour. Regravar a fala. Alvo: 40 a 55 segundos.',
     ),
     dialogue('ponte-a2-variavel', 'Procure no jardim e acompanhe o número Achados.'),
     {
@@ -239,18 +239,26 @@ const aula2 = {
     video(
       'video-a2-contagem',
       'Cada descoberta conta',
-      'Começar pedindo que cada personagem encontrado some um em Achados. Ensinar Programação > Variáveis, Somar 1 em variável, o encaixe dentro do evento abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a vitória já preparada e a contagem sem repetição; dar correção curta. Esperar Salvo, usar Enviar para o professor, confirmar em Enviar e seguir em Próxima seção. Não ensinar o layout da prévia nem compartilhamento. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
+      'Começar pedindo que cada personagem encontrado some um em Achados. Ensinar Programação > Variáveis, Somar 1 em variável, o encaixe dentro do evento abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a vitória já preparada e a contagem sem repetição; dar correção curta. Clicar em Verificar esta etapa; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo da etapa cumprido!, esperar Salvo, usar Enviar para o professor, confirmar em Enviar e seguir em Próxima seção. A verificação depende desse clique; o envio não a executa automaticamente. Não ensinar o layout da prévia nem compartilhamento. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
     ),
     dialogue(
       'ponte-a2-contagem',
-      'Faça o jogo contar os achados. Teste os três esconderijos e envie para o professor.',
+      'Faça o jogo contar os achados. Teste os três esconderijos e clique em Verificar esta etapa antes de enviar para o professor.',
     ),
     studio(montarProjetoCadeTodoMundo(true), true),
     video(
       'video-a2-fecho',
-      'Sua busca está completa',
-      'Nomear brevemente o resultado: esconderijos somem ao toque e o jogo conta três personagens. Compartilhamento é opcional; indicar o tutorial Como publicar seu jogo no mural, na biblioteca Como Fazer. Não abrir a janela de publicação nem ensinar capa ou link. Manter o mesmo Estúdio. Terminar em Concluir aula e orientar a abrir Seu certificado. Sem venda. Regravar a fala. Alvo: 25 a 40 segundos.',
+      'Publique seu jogo',
+      'Pedir que a criança publique o jogo para outras pessoas jogarem. No mesmo Estúdio da prática, após o envio ao professor, abrir Compartilhar, manter título e resumo preenchidos, clicar em Gerar capa e conferir a imagem. Clicar em Publicar e esperar Seu jogo está no Mural! Clicar em Fechar e terminar em Concluir aula. Não antecipar certificado ou próxima aula, nem apresentar compartilhar como opcional. A publicação não vira bloqueio técnico de conclusão. A ajuda escrita apresenta o Como fazer e abre o tutorial direto, sem exigir leitura. Personalização, upload e cópia do link ficam na biblioteca. Sem venda. Regravar a fala. Alvo: 45 a 60 segundos, incluindo publicação e confirmação.',
     ),
+    {
+      key: 'ajuda-a2-publicar',
+      content: {
+        kind: 'rich_text',
+        markdown:
+          'Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), nossa área de ajuda.',
+      },
+    },
   ],
   sections: [
     section(
@@ -293,10 +301,10 @@ const aula2 = {
     ),
     section(
       'conclusao',
-      'Sua busca está completa',
+      'Publique seu jogo',
       'closing',
-      'Conferir que os três personagens aparecem, o contador chega a três e a vitória aparece.',
-      ['video-a2-fecho'],
+      'Publicar o jogo com título e resumo prontos e capa gerada; fechar a confirmação e concluir a aula.',
+      ['video-a2-fecho', 'ajuda-a2-publicar'],
       ['video-a2-fecho'],
       'projeto',
     ),
@@ -312,11 +320,11 @@ const certificado = {
     video(
       'video-certificado',
       'Você criou seu primeiro jogo!',
-      'Reconhecer as duas regras que a criança programou. Pedir Pegar meu certificado e, após o download, Concluir aula. Sem tour do PDF ou de pastas; a ajuda fica no Como Fazer. Sem oferta comercial. Regravar a fala. Alvo: 15 a 25 segundos.',
+      'Reconhecer as duas regras que a criança programou e comemorar antes do encaminhamento. Pedir Pegar meu certificado e, após o download, terminar em Concluir aula, sem acrescentar falas depois da ação de saída. Sem tour do PDF ou de pastas; a ajuda fica no Como Fazer. Sem oferta comercial. Regravar a fala. Alvo: 15 a 25 segundos.',
     ),
     dialogue(
       'ponte-certificado',
-      'Clique em Pegar meu certificado. Depois clique em Concluir aula.',
+      'Clique em Pegar meu certificado. Quando o certificado baixar, clique em Concluir aula.',
     ),
     {
       key: 'certificado',

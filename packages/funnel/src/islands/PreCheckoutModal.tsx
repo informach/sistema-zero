@@ -185,14 +185,14 @@ export default function PreCheckoutModal({ basePath, funnel, couponCode }: PreCh
                   {isChallenge
                     ? 'O primeiro jogo está a um passo de começar'
                     : isCommunity
-                      ? 'A Comunidade está a um passo de começar'
+                      ? 'Vamos começar o primeiro projeto?'
                       : 'Falta um passo'}
                 </h2>
                 <p className="mt-1 text-sm text-muted">
                   {isChallenge
                     ? 'Confirme os dados do responsável. Na próxima tela, você revisa o valor, aplica o cupom se tiver um e escolhe como pagar.'
                     : isCommunity
-                      ? 'Confirme os dados do responsável. Na próxima tela, você escolhe o plano e revisa o valor e a renovação.'
+                      ? 'Seu filho começa com projetos guiados para aprender a criar jogos. Informe os dados do responsável para revisar o plano, o valor e a renovação na próxima tela.'
                       : isKids
                         ? 'Confirme os dados do responsável para ir ao pagamento seguro.'
                         : 'Confirme seus dados para ir pro pagamento seguro.'}

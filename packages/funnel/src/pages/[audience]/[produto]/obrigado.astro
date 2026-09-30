@@ -58,7 +58,7 @@ const confirmationTitle = approved
   ? isTimedChallenge
     ? 'Pagamento aprovado. Agora o primeiro jogo pode sair do papel.'
     : isCommunity
-      ? 'Assinatura confirmada. Agora vamos preparar o primeiro acesso.'
+      ? 'Assinatura confirmada. Vamos começar o primeiro projeto?'
       : 'Pagamento confirmado!'
   : 'Pagamento ainda aguardando confirmação.'
 ---
@@ -126,7 +126,7 @@ const confirmationTitle = approved
           </div>
           <img
             src={`${f.imagesBase}/${f.checkoutImage ?? 'produto-capa.webp'}`}
-            alt={`Capa do curso ${productName}`}
+            alt={isCommunity ? `Capa da ${productName}` : `Capa do curso ${productName}`}
             width="112"
             height="112"
             class="kids-thanks-product-image relative aspect-square w-24 -rotate-2 rounded-lg border border-line/60 object-cover shadow-xl sm:w-28"
@@ -170,7 +170,7 @@ const confirmationTitle = approved
           isTimedChallenge
             ? 'O primeiro caminho dentro da plataforma'
             : isCommunity
-              ? 'Os primeiros passos da sua família'
+              ? 'Como começar a criar com seu filho'
               : 'Como acessar'
         }
       </h2>
@@ -198,7 +198,7 @@ const confirmationTitle = approved
             {isTimedChallenge
               ? 'Criar acesso e abrir a primeira etapa →'
               : isCommunity
-                ? 'Criar perfil e abrir a Comunidade →'
+                ? 'Abrir a Comunidade e começar →'
                 : 'Ir para a área de membros →'}
           </a>
         )

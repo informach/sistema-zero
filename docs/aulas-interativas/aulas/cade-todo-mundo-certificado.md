@@ -2,6 +2,8 @@
 
 Uma seção com um vídeo curto, uma fala do Zappy e o certificado. A revisão de 27/09/2026 mantém
 essa estrutura e os critérios: assistir ao vídeo e pegar o certificado.
+A revisão de 29/09/2026 segue o encerramento da Aula 1 já gravada: a última fala é a ação
+de saída. A comemoração vem antes de pegar o certificado; a narração termina em **Concluir aula**.
 
 A fala reconhece o que foi programado, pede **Pegar meu certificado** e, após o download,
 **Concluir aula**. Duração alvo de 15 a 25 segundos. Não repetir as duas aulas nem ensinar a

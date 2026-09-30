@@ -12,7 +12,7 @@ import { COMUNIDADE_PRECO_FALLBACK } from '../../../funnels/comunidade-dos-criad
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { formatBRLFromCents } from '../../../lib/money'
+import { formatBRLFromCents, formatBRLFromCents2 } from '../../../lib/money'
 import { funnelOgImage } from '../../../lib/seo'
 import type { OfferPlans } from '../../../server/catalog'
 import Footer from '../../Footer.astro'
@@ -57,7 +57,7 @@ const mensalCents = mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents
 const anualCents = anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents
 const mensalLabel = formatBRLFromCents(mensalCents) // "R$ 97"
 const anualLabel = formatBRLFromCents(anualCents) // "R$ 797"
-const anualPorMesLabel = formatBRLFromCents(Math.round(anualCents / 12)) // "R$ 66"
+const anualPorMesLabel = formatBRLFromCents2(Math.round(anualCents / 12)) // "R$ 66,42"
 const anualAncoraLabel = formatBRLFromCents(mensalCents * 12) // "R$ 1.164"
 const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 367"
 ---
@@ -117,22 +117,22 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               >Para crianças de 9 a 14 anos<br />que gostam de jogos e tecnologia</span
             >
             <h1>
-              Seu filho está crescendo em um mundo tecnológico. Na Comunidade, ele aprende a
-              <span class="hl">transformar ideias em jogos próprios.</span>
+              Seu filho pode aprender a
+              <span class="hl">transformar as próprias ideias em jogos.</span>
             </h1>
             <p class="lead">
-              A Comunidade dos Criadores é um caminho online em que a criança aprende a planejar,
-              construir, testar e publicar jogos, com projetos guiados, ferramentas próprias,
-              acompanhamento de professor e a Jornada do Criador, que mostra qual é o próximo passo.
+              Ele começa com projetos guiados e aprende a fazer escolhas, testar o que montou e
+              descobrir como fazer seu jogo funcionar. As aulas mostram por onde começar, e o
+              professor orienta pelas atividades enviadas e pelos Recados.
             </p>
             <ul class="hero-bullets">
               <li>
                 <span class="tick"><span class="material-symbols-rounded">check</span></span>Cursos e
-                projetos organizados para cada etapa da criança
+                projetos para começar mesmo sem saber programar
               </li>
               <li>
                 <span class="tick"><span class="material-symbols-rounded">check</span></span>Ele
-                cria, publica e compartilha jogos com um link de verdade
+                aprende criando algo que pode jogar, explicar e compartilhar
               </li>
               <li>
                 <span class="tick"><span class="material-symbols-rounded">check</span></span>A cada
@@ -145,7 +145,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               </a>
             </div>
             <div class="seals">
-              <span><span class="material-symbols-rounded">check_circle</span>Acesso na hora</span>
+              <span><span class="material-symbols-rounded">check_circle</span>Acesso após aprovação</span>
               <span
                 ><span class="material-symbols-rounded">check_circle</span>Garantia de 7 dias</span
               >
@@ -202,7 +202,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </div>
           <div class="stat">
             <span class="material-symbols-rounded">family_star</span>
-            <div class="l">Feito por uma família<br />que viveu essa virada</div>
+            <div class="l">Criado por uma família<br />que começou com os filhos</div>
           </div>
         </div>
       </div>
@@ -212,16 +212,16 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec" id="dor">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">A tecnologia já faz parte da infância</span>
+          <span class="eyebrow">Uma ideia que ele pode fazer acontecer</span>
           <h2 class="reveal">
-            Seu filho já vive em um mundo tecnológico. O que ele aprende a fazer nele também importa.
+            Por trás de um jogo funcionando, há decisões que seu filho pode aprender a tomar.
           </h2>
         </div>
         <div class="feat">
           <figure class="art reveal">
             <img
               src={img('ilustra-dor.webp')}
-              alt="Criança concentrada na frente do computador, apenas consumindo um jogo"
+              alt="Ilustração de uma criança concentrada em um jogo no computador"
               width="1000"
               height="577"
               loading="lazy"
@@ -229,70 +229,51 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </figure>
           <div class="feat-txt">
             <p>
-              É natural querer proteger o tempo de dormir bem, brincar, se movimentar e conviver.
-              Essas partes da infância continuam indispensáveis.
+              Seu filho já imaginou uma fase diferente ou um personagem com um poder que ainda
+              não existe no jogo? Essa curiosidade pode ser o começo de uma criação.
             </p>
             <p>
-              Mas a tecnologia já está na escola, nas pesquisas, nas conversas e na diversão. A
-              família ajuda a criança a participar desse mundo com cuidado, curiosidade e repertório.
+              Para a ideia funcionar, ele precisa decidir o que acontece primeiro, montar uma
+              regra e testar. Às vezes, o resultado sai diferente do que esperava. É uma chance
+              de investigar e tentar outro caminho, com ajuda quando precisar.
             </p>
             <p>
-              Além de conhecer jogos criados por outras pessoas, ela pode descobrir como uma ideia
-              ganha regras, personagens, desafios e mundos próprios.
+              E quando funciona, há algo concreto para mostrar: um jogo que ele ajudou a construir
+              e escolhas que consegue explicar. Você pode jogar junto e perguntar como ele fez.
             </p>
           </div>
         </div>
         <div class="tese reveal">
-          Limites continuam nas mãos da família. A Comunidade oferece uma experiência guiada dentro
-          desse mundo: a criança toma decisões, constrói um projeto e entende como ele passa a
-          funcionar.
+          Ver o próprio jogo funcionando dá sentido às tentativas. No caminho até ele, seu filho
+          tem oportunidades de pensar, fazer escolhas e descobrir o que consegue construir.
         </div>
         <div class="evidence reveal">
           <p>
-            Famílias não precisam decidir essa conversa sozinhas. As orientações mais atuais olham
-            para a qualidade da experiência, para o acompanhamento e para o espaço que ela ocupa na
-            rotina da criança.
+            Imagine uma pequena mudança no jogo: seu filho quer que o personagem corra mais rápido.
+            Esse experimento pode começar assim:
           </p>
           <div class="evidence-links">
-            <a
-              href="https://publications.aap.org/pediatrics/article/157/2/e2025075320/206129/Digital-Ecosystems-Children-and-Adolescents-Policy"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <strong>Academia Americana de Pediatria</strong>
+            <div>
+              <strong>Ele faz uma previsão</strong>
               <span>
-                Em 2026, afirma que a relação da criança com a tecnologia não cabe apenas em limites
-                de tela. Conteúdo, contexto e o espaço que ela ocupa ao lado de sono, brincadeira e
-                movimento também contam.
+                Escolhe uma nova velocidade e pensa no que vai acontecer quando o jogo começar.
               </span>
-            </a>
-            <a
-              href="https://www.unicef.org/innocenti/documents/digital-literacy-children-10-things-you-need-know"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <strong>UNICEF</strong>
+            </div>
+            <div>
+              <strong>Coloca a ideia à prova</strong>
               <span>
-                Define alfabetização digital como conhecimentos, habilidades e atitudes para a
-                criança viver com mais segurança e participação em um mundo cada vez mais digital.
+                Roda o jogo e observa. O personagem ficou rápido demais? Ainda dá tempo de desviar?
               </span>
-            </a>
-            <a
-              href="https://www.sbp.com.br/fileadmin/user_upload/21511d-MO_-_UsoSaudavel_TelasTecnolMidias_na_SaudeEscolar.pdf"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <strong>Sociedade Brasileira de Pediatria</strong>
+            </div>
+            <div>
+              <strong>Decide o que ajustar</strong>
               <span>
-                Reconhece benefícios e riscos. Por isso, recomenda conteúdo adequado, regras claras,
-                acompanhamento ativo de adultos e proteção do tempo de interação, brincadeira e
-                movimento.
+                Experimenta outro valor e compara. Agora tem uma razão para explicar a escolha.
               </span>
-            </a>
+            </div>
           </div>
           <small>
-            Essas referências não avaliam nem recomendam o Sistema Zero. Elas ajudam a explicar por
-            que uma experiência digital precisa ser julgada pelo que a criança realmente faz nela.
+            Um exemplo de como uma mudança pequena pode abrir espaço para raciocinar durante a criação.
           </small>
         </div>
       </div>
@@ -302,9 +283,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec sec-amar" id="virada">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">De jogador a criador</span>
+          <span class="eyebrow">O começo vem com ajuda</span>
           <h2 class="reveal">
-            Criar um jogo muda o lugar que ele ocupa<br />dentro da <span class="hl2">tecnologia.</span>
+            Ele pode gostar de jogos e ainda não saber<br /><span class="hl2">como criar o primeiro.</span>
           </h2>
         </div>
         <div class="feat feat-rev">
@@ -319,21 +300,21 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </figure>
           <div class="feat-txt">
             <p>
-              Gostar de jogos não é um problema que a Comunidade tenta corrigir. É a porta de
-              entrada para seu filho descobrir o outro lado dessa experiência digital.
+              Os primeiros projetos são guiados. As aulas apresentam os comandos e mostram a
+              montagem por etapas, com elementos preparados para a criança começar.
             </p>
             <p>
-              Quando cria, ele escolhe uma ideia, organiza as partes, monta comandos, testa o
-              resultado, encontra erros e decide o que precisa mudar. Ele vê que por trás de cada
-              fase, personagem e regra existe alguém que imaginou e construiu aquilo.
+              Conforme entende o que montou, ela experimenta mudanças e faz novas escolhas.
+              Pode alterar uma regra, testar uma dificuldade diferente e observar o resultado.
+              As possibilidades aumentam junto com o que aprende.
             </p>
             <div class="tese">
-              O jogo continua interessante para a criança. Agora existe também algo que é dela: uma
-              criação que pode abrir, jogar, explicar e compartilhar.
+              Primeiro, um passo que ela consegue acompanhar. Depois, mais espaço para colocar
+              as próprias ideias no jogo.
             </div>
             <p style="margin-top:16px;">
-              A Comunidade parte de um interesse que já existe e abre caminho para que ele continue
-              criando, com projetos, ferramentas e novos passos pela frente.
+              Você ajuda no primeiro acesso e combina os momentos de uso. As aulas apresentam
+              o caminho técnico, e a criança pode pedir orientação pelos Recados.
             </p>
           </div>
         </div>
@@ -365,7 +346,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           <div class="pal-item reveal">
             <span class="xi"><span class="material-symbols-rounded">route</span></span>
             <div>
-              <h4>Uma sequência evita a tela em branco</h4>
+              <h4>Uma sequência ajuda a continuar</h4>
               <p>
                 Em vez de terminar um curso e ficar sem saber para onde ir, ela encontra outro
                 projeto com dificuldade compatível com o que já aprendeu.
@@ -384,8 +365,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </div>
         </div>
         <div class="tese reveal">
-          Um curso isolado pode ensinar um projeto. A Comunidade organiza um percurso para que a
-          primeira criação encontre uma próxima etapa.
+          A Comunidade organiza um percurso para que seu filho continue experimentando depois
+          do primeiro jogo. Você encontra as aulas e a orientação no mesmo lugar.
         </div>
       </div>
     </section>
@@ -396,8 +377,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
         <span class="eyebrow">Projetos que podem ser vistos e jogados</span>
         <h2 class="reveal">Quando a ideia sai da cabeça<br />e começa a <span class="hl">funcionar</span></h2>
         <p class="sub">
-          Estes relatos falam de resultados observáveis: montar, testar, publicar e mostrar uma
-          criação própria.
+          Rafael, Débora e André já testaram a plataforma. Veja o que contaram sobre as primeiras criações.
         </p>
         <div class="depo-grid">
           <div class="depo reveal">
@@ -454,7 +434,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
                   loading="lazy"
                 /></span
               >
-              <span class="who-name">André<small>criou e publicou o próprio jogo</small></span>
+              <span class="who-name">André<small>filho dos criadores da plataforma</small></span>
             </div>
           </div>
         </div>
@@ -484,8 +464,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             >
           </h2>
           <p class="sub">
-            O Método Z.E.R.O. organiza cada criação em partes menores, do planejamento à
-            publicação. Assim, a criança não precisa começar diante de uma tela em branco.
+              Nos primeiros cursos, as aulas guiam a montagem. Conforme avança, seu filho também
+              encontra o Método Z.E.R.O. para organizar os próprios projetos, da ideia à publicação.
           </p>
         </div>
         <div class="zero">
@@ -493,24 +473,24 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             <div class="zl">Z</div>
             <h4>Zerar a Bagunça</h4>
             <p>
-              A ideia solta vira a Carta da Ideia do jogo. Conversando com o Zappy, o projeto começa
-              organizado, com começo, meio e fim no papel.
+                A criança organiza o que quer criar na Carta da Ideia. O Pensa, liberado no posto
+                de Inventor, ajuda nessa etapa com o Zappy.
             </p>
           </div>
           <div class="zstep z2 reveal">
             <div class="zl">E</div>
             <h4>Enxergar o Jogo</h4>
             <p>
-              Antes de construir, ela vê: as telas desenhadas, o nome, as cores e o ícone. Ela para
-              de se perder no meio do caminho.
+                Ela escolhe nome, cores e aparência. Desenhar as telas ajuda a visualizar o que
+                quer construir antes de montar cada parte.
             </p>
           </div>
           <div class="zstep z3 reveal">
             <div class="zl">R</div>
             <h4>Rodar as Missões</h4>
             <p>
-              O jogo grande vira missões pequenas, uma de cada vez, com o professor acompanhando o
-              que ela envia.
+                A ideia vira missões menores. A criança constrói uma parte por vez e pode enviar
+                suas atividades para receber orientação do professor.
             </p>
           </div>
           <div class="zstep z4 reveal">
@@ -666,8 +646,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </div>
         </div>
         <div class="tese reveal">
-          Essas habilidades são praticadas dentro dos projetos. A Comunidade não promete mudança
-          automática de notas, comportamento ou desempenho em outras atividades.
+          Pergunte o que ele mudou e peça para mostrar no jogo. Uma explicação sobre a própria
+          escolha ajuda você a acompanhar o que ele está entendendo.
         </div>
       </div>
     </section>
@@ -743,10 +723,10 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
                 loading="lazy"
               />
             </figure>
-            <h3>O Mural transforma projeto em orgulho</h3>
+            <h3>Um jogo para mostrar à família</h3>
             <p>
-              Cada jogo publicado ganha um endereço para jogar e compartilhar. A criança vê as
-              jogadas chegando e percebe que criou algo que existe para outras pessoas.
+              Cada jogo publicado ganha um endereço para jogar e compartilhar. Você pode abrir
+              o link com seu filho e conhecer as regras que ele montou.
             </p>
           </div>
           <div class="card reveal">
@@ -799,9 +779,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </div>
         </div>
         <div class="tese reveal">
-          A progressão não esconde conteúdo e não empurra uma compra nova. Ela dá ordem ao caminho:
-          tudo faz parte da assinatura, e cada recurso chega quando a criança já tem base para usar,
-          criar e sentir que conquistou aquele novo passo.
+          A jornada mostra o que está disponível agora e o que vem depois. Cursos e ferramentas
+          fazem parte da assinatura, com liberações conforme o avanço da criança.
         </div>
       </div>
     </section>
@@ -822,8 +801,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             <ul>
               <li>
                 <span class="mk"><span class="material-symbols-rounded">check</span></span>Seu filho
-                tem de 9 a 14 anos, vive em jogo (Roblox, Minecraft ou outro) e sabe tudo do jogo
-                dele
+                tem de 9 a 14 anos e tem curiosidade de descobrir como criar um jogo
               </li>
               <li>
                 <span class="mk"><span class="material-symbols-rounded">check</span></span>Ele adora
@@ -836,7 +814,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               </li>
               <li>
                 <span class="mk"><span class="material-symbols-rounded">check</span></span>Você
-                gostaria de vê-lo sair de cada semana com algo criado por ele, além das partidas
+                gostaria de acompanhar algo que ele está aprendendo a criar, além das partidas
                 de que já gosta
               </li>
             </ul>
@@ -862,7 +840,7 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               </li>
               <li>
                 <span class="mk"><span class="material-symbols-rounded">close</span></span>Você quer
-                a criança pronta em uma semana (aqui é um percurso de ciclos)
+                aulas ao vivo individuais em horário marcado
               </li>
             </ul>
           </div>
@@ -1007,6 +985,41 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
       </div>
     </section>
 
+    <section class="sec" id="rotina">
+      <div class="wrap">
+        <div class="center">
+          <span class="eyebrow">Uma atividade que cabe nos combinados da família</span>
+          <h2 class="reveal">Reserve um espaço para <span class="hl2">criar e experimentar.</span></h2>
+          <p class="sub">
+            Uma parte do tempo de tela que vocês já permitem pode virar um momento de criação.
+            Combinar quando começar e quando parar ajuda a preservar o descanso e as outras brincadeiras.
+          </p>
+        </div>
+        <div class="tese reveal">
+          Uma etapa por vez: abrir o projeto, testar uma mudança e mostrar o que aconteceu.
+          Você pode acompanhar com uma pergunta simples: “Como você fez isso funcionar?”
+        </div>
+      </div>
+    </section>
+
+    <section class="sec sec-amar" id="inteligencia-artificial">
+      <div class="wrap">
+        <div class="center">
+          <span class="eyebrow">E se a inteligência artificial já escreve código?</span>
+          <h2 class="reveal">Entender o que está criando <span class="hl2">continua fazendo parte.</span></h2>
+          <p class="sub">
+            A IA pode explicar um comando, sugerir uma ideia e ajudar a investigar um erro.
+            Seu filho também precisa experimentar, fazer escolhas e conferir se o resultado
+            funciona como imaginou.
+          </p>
+        </div>
+        <div class="tese reveal">
+          A Comunidade também usa IA como apoio. Nas aulas, a criança monta e testa os projetos:
+          há espaço para perguntar, compreender uma regra e experimentar outra possibilidade.
+        </div>
+      </div>
+    </section>
+
     <!-- ===== BLOCO 13 · QUANTO VALE + PLANOS ===== -->
     <section class="sec sec-tint" id="valor">
       <div class="wrap">
@@ -1038,8 +1051,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </div>
         </div>
         <p class="between reveal">
-          A Comunidade reúne cursos, ferramentas de criação, acompanhamento, Mural, Clube e a
-          Jornada do Criador em uma única assinatura.
+          Você encontra o percurso preparado, as ferramentas e os canais de orientação em uma
+          assinatura. Seu filho tem por onde começar, e a família não precisa montar uma sequência
+          de aulas por conta própria.
         </p>
 
         <div class="plans" id="planos">
@@ -1062,14 +1076,14 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
             <div class="from">12 meses no mensal sairiam por <s>{anualAncoraLabel}</s></div>
             <div class="now">{anualLabel}<small>/ano</small></div>
             <div class="permonth">equivale a {anualPorMesLabel} por mês</div>
-            <div class="cond">Para dar continuidade aos projetos. 12 meses de acesso.</div>
+            <div class="cond">12 meses de acesso. Renovação anual automática no cartão.</div>
             <button
               type="button"
               class="btn plan-btn"
               data-checkout-cta
               data-checkout-oferta={anual?.slug}
             >
-              <span class="material-symbols-rounded">rocket_launch</span>Garantir 1 ano de criação
+              <span class="material-symbols-rounded">rocket_launch</span>Começar no plano anual
             </button>
           </div>
         </div>
@@ -1088,9 +1102,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec sec-verde" id="mudanca">
       <div class="wrap">
         <div class="center">
-          <span class="eyebrow">O que torna a experiência interessante para a criança</span>
+          <span class="eyebrow">Uma conquista que vocês podem acompanhar juntos</span>
           <h2 class="reveal">
-            Ela entra pelo jogo que quer criar<br />e encontra <span class="hl">um caminho para continuar.</span>
+            Ele mostra o jogo.<br />Você conhece <span class="hl">as ideias por trás dele.</span>
           </h2>
         </div>
         {/* Quando existirem depoimentos REAIS de pais (com resultado + prazo), esta
@@ -1100,32 +1114,32 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
         <div class="shifts">
           <div class="shift reveal">
             <span class="material-symbols-rounded">swap_horiz</span>
-            <h4>Um projeto com escolhas próprias</h4>
+            <h4>“Por que você escolheu essa regra?”</h4>
             <p>
-              A criança escolhe regras, personagens e desafios. O resultado carrega decisões que
-              foram tomadas por ela durante a criação.
+              Peça para seu filho mostrar uma escolha. Pode ser a velocidade do personagem ou
+              o que acontece quando ele ganha um ponto.
             </p>
           </div>
           <div class="shift reveal">
             <span class="material-symbols-rounded">flag_check</span>
-            <h4>Uma criação que pode ser compartilhada</h4>
+            <h4>“Como você resolveu essa parte?”</h4>
             <p>
-              Quando publica, ela recebe um link para mostrar o jogo e convidar outras pessoas para
-              experimentar o que construiu.
+              Uma tentativa que deu errado pode render uma boa conversa. Ele pode contar o que
+              testou, onde pediu ajuda e o que decidiu mudar.
             </p>
           </div>
           <div class="shift reveal">
             <span class="material-symbols-rounded">videogame_asset</span>
-            <h4>Um progresso que fica visível</h4>
+            <h4>“O que você quer tentar agora?”</h4>
             <p>
-              Projetos, postos, ferramentas e conquistas registram o caminho percorrido e mostram
-              qual é a próxima possibilidade dentro da plataforma.
+              Depois de jogar juntos, ouça a próxima ideia. A jornada ajuda a encontrar novas
+              aulas e projetos para continuar experimentando.
             </p>
           </div>
         </div>
         <div class="tese reveal">
-          A experiência fala a linguagem dos jogos, mas coloca a criança no papel de quem também
-          planeja, testa, explica e publica.
+          Você não precisa conhecer os comandos para se interessar pela criação. Dar espaço
+          para ele explicar já faz parte desse encontro.
         </div>
         <!-- fala da Debinha pra criança -->
         <div class="kid rosa reveal">
@@ -1154,8 +1168,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
       <div class="wrap">
         <div class="center">
           <span class="eyebrow">Orientação durante a jornada</span>
-          <h2 class="reveal">Autonomia para criar, com adultos responsáveis<br /><span class="hl2"
-              >acompanhando o caminho.</span
+          <h2 class="reveal">Você pode acompanhar<br /><span class="hl2"
+              >sem saber programar.</span
             ></h2>
           <p class="sub">
             A criança segue os projetos no ritmo dela e conta com canais de acompanhamento dentro
@@ -1188,8 +1202,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </div>
         </div>
         <div class="tese reveal">
-          A orientação não substitui a tentativa. Ela ajuda a criança a entender o erro, fazer um
-          novo teste e seguir construindo quando precisa de apoio.
+          Seu papel é ajudar no primeiro acesso, combinar os momentos de uso e ouvir o que seu
+          filho está criando. Para as dúvidas do projeto, ele encontra orientação pelos Recados.
         </div>
       </div>
     </section>
@@ -1285,12 +1299,11 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     <section class="sec sec-tint" id="faq">
       <div class="wrap center">
         <span class="eyebrow">Ainda está decidindo?</span>
-        <h2 class="reveal">Estas dúvidas costumam aparecer antes da assinatura.</h2>
+        <h2 class="reveal">O que você pode querer saber antes de assinar</h2>
         <div class="faq-wrap">
           <details class="faq" open>
             <summary
-              >Meu filho perde o interesse em tudo depois de dois meses. Aqui vai ser diferente por
-              quê?<span class="material-symbols-rounded">add</span></summary
+              >E se meu filho começar e perder o interesse?<span class="material-symbols-rounded">add</span></summary
             >
             <div class="a">
               Nenhuma plataforma pode garantir o interesse de toda criança. Aqui, a continuidade é
@@ -1306,10 +1319,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               ></summary
             >
             <div class="a">
-              Cada família continua definindo horários, limites e momentos sem tecnologia. A
-              Comunidade não substitui essas decisões. Ela oferece uma atividade de criação dentro
-              do universo digital que seu filho já conhece, para construir projetos, testar ideias e
-              publicar o que fez.
+              Vocês podem reservar uma parte do tempo de tela já combinado para os projetos.
+              Escolham uma etapa e um horário para parar, mantendo espaço para descanso,
+              movimento e outras brincadeiras. A família continua definindo os limites.
             </div>
           </details>
           <details class="faq">
@@ -1338,14 +1350,15 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </details>
           <details class="faq">
             <summary
-              >Roblox e Scratch são de graça. Por que eu pagaria por isso?<span
+              >O Scratch é gratuito. Por que assinar a Comunidade?<span
                 class="material-symbols-rounded">add</span
               ></summary
             >
             <div class="a">
-              Ferramentas gratuitas podem ser bons pontos de partida. A assinatura reúne uma
-              sequência de cursos e projetos, ferramentas próprias, acompanhamento, comunidade
-              moderada, publicação dos jogos e uma jornada que organiza o próximo passo.
+              Dá para aprender muito com ferramentas e materiais gratuitos. Aqui, a assinatura
+              reúne uma sequência de aulas e projetos, ferramentas próprias e orientação pelos
+              Recados. É uma opção para a família que quer esse caminho preparado, com um próximo
+              passo para a criança e um lugar para pedir ajuda.
             </div>
           </details>
           <details class="faq">
@@ -1401,9 +1414,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
               ></summary
             >
             <div class="a">
-              Não precisa. O caminho técnico é apresentado para a criança. Seu papel é ajudar a
-              organizar os momentos de uso, acompanhar o primeiro acesso e se interessar pelo que
-              ela criou.
+              Sim. Você pode ajudar no primeiro acesso, combinar a rotina e pedir que seu filho
+              mostre o que fez. As aulas apresentam os comandos, e as dúvidas do projeto podem
+              ser enviadas pelos Recados. Você não precisa preparar ou ensinar as aulas.
             </div>
           </details>
           <details class="faq">
@@ -1463,9 +1476,9 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </figure>
           <div class="feat-txt">
             <p>
-              Seu filho vai crescer em um mundo tecnológico, com tecnologia na escola, nas relações
-              e no trabalho. Na Comunidade, ele encontra projetos, ferramentas e orientação para que
-              uma parte desse contato também vire criação que pode testar, publicar e mostrar.
+              Imagine seu filho chamando você para jogar uma fase que ajudou a construir e
+              contando por que mudou uma regra. Na Comunidade, ele encontra um caminho para
+              começar a criar e ganhar espaço para as próprias ideias, projeto por projeto.
             </p>
             <p class="final-list-title">A partir do dia em que entra, a assinatura inclui:</p>
             <ul class="final-list">
@@ -1523,8 +1536,8 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
           </p>
         </div>
         <div class="tese reveal">
-          Para os pais, a Comunidade oferece uma forma guiada de acompanhar esse interesse. Para a
-          criança, oferece jogos para criar, projetos para publicar e uma jornada para percorrer.
+          O próximo passo pode ser pequeno: abrir a primeira aula juntos e experimentar.
+          A partir daí, seu filho tem um caminho para continuar criando.
         </div>
         <p class="terms">
           Ao assinar, você concorda com os <a href="/kids/termos">termos de uso</a> e a <a
@@ -1748,18 +1761,13 @@ const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 3
     gap: 12px;
     margin-top: 18px;
   }
-  .cdc .evidence-links a {
+  .cdc .evidence-links > div {
     display: grid;
     gap: 4px;
     padding: 14px;
     border: 2px solid var(--borda);
     border-radius: 14px;
     background: var(--ceu);
-    transition: transform 0.12s ease, border-color 0.12s ease;
-  }
-  .cdc .evidence-links a:hover {
-    transform: translateY(-2px);
-    border-color: var(--azul);
   }
   .cdc .evidence-links strong {
     color: var(--azul);
