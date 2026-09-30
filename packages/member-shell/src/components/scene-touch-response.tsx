@@ -50,9 +50,11 @@ export function TouchResponseStage({
         ) : undefined
       }
     >
+      {/* ⚠️⚠️ `cobrir`: o "slice" DESTE `<image>` não alcança a raiz do SVG apontado, que por
+          padrão ajusta por "meet" e deixava ~13 px de beirada vazia de cada lado do palco. */}
       <image
         data-fundo="jardim"
-        href={jardimSvgUrl('jardim')}
+        href={jardimSvgUrl('jardim', { cobrir: true })}
         width="560"
         height="300"
         preserveAspectRatio="xMidYMid slice"

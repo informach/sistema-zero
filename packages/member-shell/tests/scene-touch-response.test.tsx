@@ -27,6 +27,18 @@ describe('palco O toque faz o jogo responder', () => {
     expect(controls).toContain('Desligar a reação ao toque')
   })
 
+  const start = { scene: 'touch-response' } as const
+  test('o fundo do jardim COBRE o palco: a raiz do SVG apontado leva o "slice"', () => {
+    // ⚠️ Anti-vácuo: sem o atributo na RAIZ, o `<image>` de fora ajusta por "meet" e o palco de
+    // 560 × 300 ganha ~13 px de beirada vazia de cada lado (a borda escura do console deixou à vista).
+    const markup = renderToStaticMarkup(<TouchResponseStage state={openScene(start)} />)
+    const fundo = markup.match(/<image data-fundo="jardim" href="([^"]+)"/)
+    expect(fundo).not.toBeNull()
+    expect(decodeURIComponent(fundo![1] ?? '')).toMatch(
+      /^data:image\/svg\+xml;charset=utf-8,<svg [^>]*preserveAspectRatio="xMidYMid slice"/,
+    )
+  })
+
   test('depois do toque, o coelho aparece e o controle mostra como repetir', () => {
     const start = { scene: 'touch-response' } as const
     const state = stepScene(
