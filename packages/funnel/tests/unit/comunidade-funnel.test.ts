@@ -50,10 +50,10 @@ describe('registro do funil Comunidade dos Criadores', () => {
     expect(o.passos.map((p) => p.titulo)).toContain('Mostre a Jornada do Criador')
   })
 
-  test('metadados espelham o hero: ele já joga, aqui ele aprende a criar', () => {
+  test('metadados espelham a promessa de aprender a criar jogos', () => {
     const f = COMUNIDADE_DOS_CRIADORES
-    expect(f.content.landing.h1).toContain('Aqui ele aprende a criar os próprios jogos')
-    expect(f.seoTitle).toContain('Seu filho já joga')
+    expect(f.content.landing.h1).toContain('Seu filho aprende a criar os próprios jogos')
+    expect(f.seoTitle).toContain('Seu filho aprende a criar jogos')
     expect(f.seoTitle).not.toMatch(/—|·/)
     expect(f.seoDescription).toContain('aulas guiadas')
     expect(f.seoDescription).not.toContain('parte do tempo digital')

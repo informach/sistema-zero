@@ -58,7 +58,7 @@ const confirmationTitle = approved
   ? isTimedChallenge
     ? 'Pagamento aprovado. Agora o primeiro jogo pode sair do papel.'
     : isCommunity
-      ? 'Assinatura confirmada. Vamos começar o primeiro projeto?'
+      ? 'Sua assinatura está confirmada.'
       : 'Pagamento confirmado!'
   : 'Pagamento ainda aguardando confirmação.'
 ---
@@ -103,6 +103,8 @@ const confirmationTitle = approved
                 Seu acesso vai até <strong class="text-ink">{formatSaoPauloDateTime(accessEnd)}</strong>.
                 {buyerEmail ? <> Enviamos para <strong class="text-ink">{buyerEmail}</strong> o link para criar sua senha e entrar na área da família.</> : ' O link de acesso foi enviado ao e-mail da compra.'}
               </>
+            ) : isCommunity ? (
+              <>{introObrigado} Se já tem conta, entre com seu acesso habitual. No primeiro acesso, siga as instruções enviadas ao e-mail da compra.</>
             ) : (
               <>{introObrigado} O seu acesso {acessoArtigo} <strong class="text-ink">{productName}</strong> está a caminho do seu e-mail.</>
             )
@@ -170,7 +172,7 @@ const confirmationTitle = approved
           isTimedChallenge
             ? 'O primeiro caminho dentro da plataforma'
             : isCommunity
-              ? 'Como começar a criar com seu filho'
+              ? 'O próximo passo para criar com seu filho'
               : 'Como acessar'
         }
       </h2>
@@ -198,7 +200,7 @@ const confirmationTitle = approved
             {isTimedChallenge
               ? 'Criar acesso e abrir a primeira etapa →'
               : isCommunity
-                ? 'Abrir a Comunidade e começar →'
+                ? 'Entrar na Comunidade →'
                 : 'Ir para a área de membros →'}
           </a>
         )

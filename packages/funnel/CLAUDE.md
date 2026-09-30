@@ -212,21 +212,21 @@ página levam `data-checkout-oferta` com o slug de cada oferta. Registrado DEPOI
 (capa do checkout = `checkout-capa.webp`, arte "Corre, Dino!"; hero/ilustras começaram como cópias
 dos assets do Desafio — a arte nova substitui por cima com os MESMOS nomes). A página bio da raiz
 (`/`) tem o 3º botão (verde) apontando pra oferta.
-**Copy v2 da Comunidade (30/09/2026 — `docs/plans/2026-09-30-comunidade-criadores-analise-e-proposta-v2.md`):**
-tese "Ele já joga. Aqui ele aprende a criar os próprios jogos, e continua", em 15 blocos (hero →
-confiança → dor com causa → alavanca → saídas que falham → o que ele vai fazer → mecanismo → primeiras
-crianças → comparação → para quem é → objeções → planos → quem faz → FAQ → fechamento). A rota lê
-**`?origem=desafio`** (hoje só o e-mail `challenge-completed` do members envia; o vídeo do
-certificado pode usar o mesmo parâmetro; as telas do app NÃO, porque não sabem se o Desafio foi
-concluído) e o body troca o hero pela variante de continuidade e omite os blocos de dor e de saídas
-(os dois `<h1>` existem no fonte; o padrão vem primeiro). A copy nunca diz que um curso concluído
-"sobe um posto": cada curso concluído e publicado preenche uma POSIÇÃO; o posto sobe quando as
-posições da etapa se completam (`docs/jornada-do-criador.md`). Âncoras de preço são DERIVADAS do preço vivo
-(`diaLabel`, `porCriancaLabel`); nenhum preço de terceiro fixo na copy. ⚠️ A página NÃO promete
-"aviso por e-mail antes de toda renovação": o `renewal-reminder` só existe para o anual à vista; o
-cartão recorrente não recebe aviso (a copy diz "renovação controlada pela sua área"). Guardas:
-`tests/unit/comunidade-offer-copy.test.ts` (tese, mecanismo, objeções, Light Copy no markup, sem ★,
-sem promessa de aviso, sem `fica tudo liberado`) e `comunidade-funnel.test.ts` (metadados sem preço).
+**Copy revisada da Comunidade (30/09/2026):** a proposta em
+`docs/plans/2026-09-30-comunidade-copy-leitura-revisada.md` organiza dez seções: promessa,
+argumentação do processo, começo guiado/Estúdio/Pinta, relatos reais, continuidade, família,
+rotina e objeções, assinatura, dúvidas práticas e convite final. A hero promete aprender a
+criar os próprios jogos. CTA principal aponta para `#planos`; link secundário para `#aula`.
+`?origem=desafio` troca a abertura por continuidade, sem presumir conclusão ou publicação.
+As imagens `preview-estudio.webp`, `preview-regra.webp` e `preview-pinta.webp` são ilustrações
+provisórias geradas a pedido do responsável, identificadas na página. O briefing
+`docs/plans/2026-09-30-comunidade-materiais-para-pagina.md` registra prompts e substituições.
+Não prometer revisão de toda atividade, prazo de resposta ou jogo pronto em prazo universal.
+Recados é canal de dúvidas; a progressão e a disponibilidade dos cursos condicionam as ferramentas.
+Preços, equivalência mensal e economia vêm dos planos ao vivo; só mostrar economia positiva.
+Pré-checkout, checkout e obrigado preservam os dados do responsável e a continuidade de quem já
+começou. Guardas: `tests/unit/comunidade-offer-copy.test.ts` (promessas, condições, imagens,
+âncoras e contratos entre etapas) e `comunidade-funnel.test.ts` (registro e metadados sem preço).
 Os termos kids (`content/legal-kids.ts`) cobrem os DOIS produtos (Desafio: compra única; Comunidade:
 assinatura recorrente no cartão ou anual à vista, cancelamento sem multa, carência, garantia só na
 1ª contratação, Mural de visitante após o fim).

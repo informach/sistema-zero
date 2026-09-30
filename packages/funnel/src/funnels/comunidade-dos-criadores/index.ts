@@ -24,9 +24,9 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   // Capa dedicada (card do checkout + og:image + JSON-LD): a arte "Corre, Dino!".
   checkoutImage: 'checkout-capa.webp',
   byline: 'Helena e Júlio · Sistema Zero',
-  seoTitle: 'Comunidade dos Criadores | Seu filho já joga. Aqui ele cria',
+  seoTitle: 'Comunidade dos Criadores | Seu filho aprende a criar jogos',
   seoDescription:
-    'Seu filho já joga. Na Comunidade dos Criadores, crianças de 9 a 14 anos aprendem a criar os próprios jogos: aulas guiadas, uma pessoa acompanhando o que elas enviam e um link para a família jogar. Sem fidelidade, com 7 dias de garantia.',
+    'Seu filho aprende a criar os próprios jogos com aulas guiadas, personagens prontos e desenhos feitos por ele. Para crianças de 9 a 14 anos, com projetos para testar e compartilhar com a família.',
   theme: 'kids',
   // Assinatura: sem o disclaimer de acesso vitalício no rodapé.
   lifetimeAccess: false,

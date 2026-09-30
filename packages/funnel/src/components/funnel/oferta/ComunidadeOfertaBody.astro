@@ -1,27 +1,6 @@
 ---
-// Página de vendas da "Comunidade dos Criadores" (funil kids, ASSINATURA
-// mensal/anual). Layout PRÓPRIO alinhado à paleta Pen da Comunidade Kids
-// (chão azul-acinzentado, ação azul, Baloo 2/Nunito e relevo 3D). O CSS sob
-// medida vive no `<style>` escopado abaixo, sob `.cdc` (tokens no wrapper, não
-// no :root). Os CTAs de compra levam `data-checkout-cta` → PreCheckoutModal; os
-// CTAs de PLANO levam também `data-checkout-oferta` (slug da oferta mensal/anual)
-// → o modal anexa `?oferta=` e o checkout pré-seleciona o plano.
-//
-// Argumentação (30/09, v2 — docs/plans/2026-09-30-comunidade-criadores-analise-e-proposta-v2.md):
-// "Ele já joga. Aqui ele aprende a criar os próprios jogos, e continua." Quinze
-// blocos: hero → confiança → a dor com a causa → a alavanca → por que as saídas
-// comuns não pegam → o que ele vai fazer → o mecanismo (por que continua) → as
-// primeiras crianças → comparação com o gratuito e com a escola → para quem é →
-// objeções → planos e valor → quem faz → FAQ → fechamento. `origem="desafio"`
-// (hoje só o e-mail `challenge-completed` do members envia; o vídeo do
-// certificado pode usar o mesmo parâmetro; as telas do app NÃO, porque não sabem
-// se o Desafio foi concluído) troca o hero pela variante de continuidade e omite
-// os blocos de dor e de saídas.
-// Copy segue o Light Copy (sem travessão, sem "!", sem "Não é X. É Y.", sem
-// "mesmo que"/"sem precisar", tese com causa, depoimentos reais sem estrela) e
-// não promete nada acima do catálogo: o que ainda vem é dito como "conforme
-// entra". ⚠️ Não prometer "aviso por e-mail antes de toda renovação": o lembrete
-// só existe para o anual à vista; o cartão recorrente não recebe aviso prévio.
+// Copy e composição: docs/plans/2026-09-30-comunidade-copy-leitura-revisada.md.
+// Ilustrações provisórias autorizadas, com substituições no briefing de materiais.
 import { COMUNIDADE_PRECO_FALLBACK } from '../../../funnels/comunidade-dos-criadores/content'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
@@ -48,7 +27,7 @@ interface Props {
   ofertaUrl: string
   /** Planos da assinatura (principal + irmã do alternador). null = catálogo fora. */
   plans: OfferPlans | null
-  /** `'desafio'` = chegou pela conclusão do Desafio (hero de continuidade). */
+  /** Origem do link; não comprova conclusão individual do Desafio. */
   origem?: 'desafio' | null
 }
 const { f, productName, priceReais, imagesBase, ofertaUrl, plans, origem = null } = Astro.props
@@ -76,2783 +55,822 @@ const mensalLabel = formatBRLFromCents(mensalCents) // "R$ 97"
 const anualLabel = formatBRLFromCents(anualCents) // "R$ 797"
 const anualPorMesLabel = formatBRLFromCents2(Math.round(anualCents / 12)) // "R$ 66,42"
 const anualAncoraLabel = formatBRLFromCents(mensalCents * 12) // "R$ 1.164"
-const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 367"
-// Âncoras honestas derivadas do preço vivo (nunca fixas na copy).
-const diaLabel = formatBRLFromCents2(Math.round(mensalCents / 30)) // "R$ 3,23"
-const porCriancaLabel = formatBRLFromCents2(Math.round(mensalCents / 2)) // "R$ 48,50"
+const economiaCents = mensalCents * 12 - anualCents
+const economiaLabel = formatBRLFromCents(economiaCents) // "R$ 367"
 ---
+<BaseLayout title={f.seoTitle} description={description} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} htmlClass={f.theme ? `theme-${f.theme}` : undefined}>
+<ProductJsonLd slot="head" name={productName} description={description} price={priceReais} url={ofertaUrl} image={img('checkout-capa.webp')} />
+<link slot="head" rel="preload" as="image" href={img('preview-estudio.webp')} fetchpriority="high" />
+<div class="cdc">
+<a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+<header class="topbar">
+<div class="wrap nav"><a class="brand" href="#conteudo" aria-label="Comunidade dos Criadores, início"><span class="material-symbols-rounded" aria-hidden="true">stadia_controller</span><span>Comunidade<br />dos Criadores</span></a><a class="action compact" href="#planos">Escolher um plano</a>
+</div>
+</header>
+<main id="conteudo">
+<section class="hero section" aria-labelledby="hero-title">
+<div class="wrap hero-grid">
+<div class="hero-copy">
+{!posDesafio ? (<>
+<h1 id="hero-title">Seu filho aprende a criar <span>os próprios jogos</span>
+</h1>
+<p class="lead">
+  Um projeto guiado ajuda seu filho a começar. Ele aprende a montar o jogo por partes e a testar as
+  ideias que quer colocar no próprio jogo.
+</p>
+<ul class="hero-benefits">
+<li>Praticar raciocínio e resolução de problemas ao montar uma regra e testar o resultado.</li>
+<li>Desenhar um personagem ou montar uma fase para o jogo que ele está criando.</li>
+<li>Convidar você para jogar o jogo que ele criou.</li>
+</ul>
+</>) : (<>
+<h1 id="hero-title">Seu filho pode continuar <span>o caminho de criar jogos</span>
+</h1>
+<p class="lead">
+  Projetos guiados e ferramentas de criação para retomar uma etapa ou desenvolver novas versões do
+  que ele já começou.
+</p>
+<ul class="hero-benefits">
+<li>Continuar de onde parou, aproveitando o progresso do perfil.</li>
+<li>Experimentar outras ideias no jogo, com as ferramentas que já liberou.</li>
+<li>Encontrar na Jornada os projetos disponíveis para sua etapa.</li>
+</ul>
+</>)}
+<div class="hero-actions"><a class="action" href="#planos">{posDesafio ? 'Escolher um plano para continuar' : 'Escolher um plano para meu filho'}</a>
+<a class="text-link" href="#aula">Ver uma aula por dentro <span aria-hidden="true">↓</span></a>
+</div>
+<div class="requirements">
+<p>
+  Para crianças de 9 a 14 anos que já conseguem ler e usar mouse e teclado com autonomia.
+</p>
+<p>
+  É necessário um computador com internet.
+</p>
+</div>
+</div>
+<figure class="visual generated">
+  <a href={img('preview-estudio.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem: Ilustração de blocos de comandos ao lado de um jogo de nave">
+    <img src={img('preview-estudio.webp')} alt="Ilustração de blocos de comandos ao lado de um jogo de nave" width="1536" height="1024" loading="eager" decoding="async" fetchpriority="high" />
+  </a>
+  <figcaption><span class="visual-label">Ilustração da experiência</span>Uma ideia ganha regras, personagens e um jogo para experimentar.</figcaption>
+</figure>
+</div>
+</section>
+{!posDesafio ? (<> <section class="section tint" id="aprendizado" aria-labelledby="title-aprendizado">
+<div class="wrap">
+<h2 id="title-aprendizado">O jogo que seu filho te mostra conta só uma parte da história</h2>
+<div class="story-row">
+<div class="prose">
+<p>
+  Essa história pode começar numa conversa que vocês já têm em casa. Se seu filho gosta de jogos,
+  talvez você já tenha ouvido uma ideia dele sobre uma fase: um personagem que poderia ter outro
+  poder, um obstáculo que ele mudaria de lugar ou um final que imaginou diferente. Um comentário
+  desses pode dar a vocês algo para explorar juntos.
+</p>
+<p>
+  Você pode convidar seu filho a escolher uma dessas ideias e imaginar como ela funcionaria. Pense
+  numa nave que atira em asteroides: a nave atiraria o tempo todo ou só quando o jogador apertasse
+  uma tecla? Ao conversar sobre isso, seu filho começa a decidir como seria o jogo que tem em mente.
+</p>
+<p>
+  Daí vem o convite para aprender a construir uma pequena versão desse jogo. Seu filho pode começar
+  com uma montagem guiada, conhecer os comandos e descobrir como fazer a nave atirar ao apertar uma
+  tecla. Entender essa primeira regra dá uma base para montar outras regras do jogo.
+</p>
+<p>
+  Se você procura uma atividade que aproveite esse interesse para aprender, essa passagem faz
+  diferença. Seu filho tem algo que quer ver acontecer na tela e um motivo para descobrir como
+  fazer. O jogo que ele mostra depois carrega a história dessas tentativas.
+</p>
+</div>
+<figure class="visual">
+  <a href={img('ilustra-virada.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem: Personagens ilustrados imaginando uma criação">
+    <img src={img('ilustra-virada.webp')} alt="Personagens ilustrados imaginando uma criação" width="1100" height="630" loading="lazy" decoding="async"  />
+  </a>
+  <figcaption><span class="visual-label">Visão ilustrativa da plataforma</span>Uma ideia sobre o jogo pode virar um convite para aprender a criar.</figcaption>
+</figure>
+</div>
+<div class="story-row reverse">
+<div class="prose">
+<h3>Uma regra pequena já pode te mostrar o que ele está aprendendo</h3>
+<p>
+  Naquele jogo de nave, seu filho pode querer que cada asteroide atingido valha um ponto. Para isso,
+  precisa montar os comandos que fazem o jogo reconhecer o acerto, somar um ponto e mostrar o total.
+  Organizar essa relação exercita o raciocínio lógico: o ponto só deve ser somado quando o tiro
+  acerta o asteroide. Ao testar o jogo, seu filho consegue ver se a regra produziu o resultado que
+  imaginou.
+</p>
+<p>
+  Só que o teste pode trazer uma surpresa: o asteroide desaparece, mas o placar continua em zero. O
+  ponto foi somado? O placar está mostrando o valor certo? Conferir uma parte por vez dá uma direção
+  para a tentativa seguinte. É assim que a resolução de problemas entra no que ele está fazendo:
+  procurar uma causa, testar uma mudança e observar se resolveu.
+</p>
+</div>
+<figure class="visual generated">
+  <a href={img('preview-regra.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem: Ilustração de um acerto no asteroide e da mudança de zero para um ponto">
+    <img src={img('preview-regra.webp')} alt="Ilustração de um acerto no asteroide e da mudança de zero para um ponto" width="1536" height="1024" loading="lazy" decoding="async"  />
+  </a>
+  <figcaption><span class="visual-label">Ilustração da experiência</span>O tiro acerta, o jogo soma um ponto e o placar mostra o total. Exemplo ilustrativo de uma regra.</figcaption>
+</figure>
+</div>
+<div class="argument-close">
+<p>
+  Quando os pontos começam a aparecer, outra ideia pode surgir: deixar a partida mais desafiadora.
+  Seu filho poderia fazer os asteroides andarem mais rápido ou aparecerem com mais frequência.
+  Imaginar essas alternativas trabalha a criatividade. Escolher uma delas e experimentar acrescenta
+  uma pergunta importante: ficou bom de jogar?
+</p>
+<p>
+  Se os asteroides ficarem rápidos demais, seu filho pode reduzir a velocidade e testar a partida de
+  novo. Ao propor uma melhoria, colocá-la no jogo e avaliar como ficou a partida, pratica um jeito
+  de inovar. O teste que deixou o jogo difícil demais também ensina algo sobre o ajuste seguinte.
+  Lidar com o erro ganha uma razão que seu filho entende: continuar trabalhando no jogo que quer
+  fazer funcionar.
+</p>
+<p>
+  Você pode perceber um pedaço desse aprendizado quando seu filho conta que a fase estava difícil,
+  mostra o que mudou e convida você a testar a nova versão do jogo. A conversa parte de uma mudança
+  que ele fez e consegue apontar na tela. O jogo pronto também dá a vocês um motivo para reconhecer
+  o esforço das tentativas anteriores.
+</p>
+</div>
+</div>
+</section> </>) : (<> <section class="section tint" id="continuidade">
+<div class="wrap">
+<h2>Talvez ele já tenha te contado o que mudaria no jogo</h2>
+<div class="story-row">
+<div class="prose">
+<p>
+  Uma regra que seu filho conseguiu montar dá uma base para novas experiências. Ele pode se
+  perguntar o que aconteceria com outra escolha e desenvolver uma nova versão. Quem ainda está
+  montando pode continuar a etapa começada; quem já terminou pode querer usar o que aprendeu em
+  outro projeto.
+</p>
+<p>
+  Se seu filho começou pelo Desafio do Primeiro Jogo, a assinatura permite continuar do ponto em que
+  está. Ele pode concluir as etapas que faltam e conhecer os projetos disponíveis para sua etapa,
+  sem reiniciar o percurso.
+</p>
+</div>
+<figure class="visual generated">
+  <a href={img('preview-regra.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem: Ilustração da mudança de uma regra de pontuação">
+    <img src={img('preview-regra.webp')} alt="Ilustração da mudança de uma regra de pontuação" width="1536" height="1024" loading="lazy" decoding="async"  />
+  </a>
+  <figcaption><span class="visual-label">Ilustração da experiência</span>Mudar uma regra e testar a partida pode abrir uma nova possibilidade para o jogo.</figcaption>
+</figure>
+</div>
+</div>
+</section> </>)}
+<section class="section" id="criacao" aria-labelledby="title-criacao">
+<div class="wrap">
+<h2 id="title-criacao">Se seu filho nunca programou, vamos começar por uma parte do jogo</h2>
+<div id="aula" class="anchor-target">
+<div class="story-row">
+<div class="prose">
+<p>
+  Talvez, ao imaginar seu filho fazendo tudo isso, você se pergunte por onde ele começaria. Ele
+  ainda precisa conhecer os comandos. Por isso, o começo é guiado: uma explicação mostra como montar
+  uma parte do jogo, e ele experimenta aquela tarefa antes de seguir.
+</p>
+<p>
+  Na Comunidade dos Criadores, a explicação e o lugar de montar ficam na mesma aula. Seu filho
+  acompanha o que fazer, monta aquela parte e testa. Assim, você consegue ver como ele começa, e ele
+  tem uma próxima ação para experimentar.
+</p>
+<p>
+  Nas primeiras atividades, ele usa blocos de comandos que encaixa para dizer o que deve acontecer
+  no jogo. O computador executa essas instruções, e ele vê o resultado na tela.
+</p>
+</div>
+<figure class="visual">
+  <a href={img('print-aula.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem: Visão ilustrativa de uma aula com explicação, comandos e resultado">
+    <img src={img('print-aula.webp')} alt="Visão ilustrativa de uma aula com explicação, comandos e resultado" width="1280" height="720" loading="lazy" decoding="async"  />
+  </a>
+  <figcaption><span class="visual-label">Visão ilustrativa da plataforma</span>A explicação e a montagem ficam na mesma aula. Esta imagem representa o formato, não uma gravação de aula.</figcaption>
+</figure>
+</div>
+</div>
+<div class="argument-close">
+<h3>É justo querer saber se ele entendeu o que montou</h3>
+<p>
+  Ver o jogo funcionando pode deixar essa dúvida: quanto ele compreendeu e quanto acompanhou do
+  exemplo? Na primeira montagem, a orientação mostra como usar um comando e onde ele entra. Quando a
+  atividade permite uma alteração, a criança pode comparar o que montou com uma nova versão. Se
+  mudar a regra que dá um ponto, por exemplo, o placar deve responder de outra maneira. Prever essa
+  diferença e conferir o resultado exige relacionar o comando ao que acontece no jogo.
+</p>
+<p>
+  No exemplo ilustrado acima, a mudança aparece no placar. Durante uma atividade que permita alterar
+  a regra, comparar as duas versões do jogo ajuda a entender o efeito da mudança. É o tipo de
+  conversa que vocês podem ter sobre o jogo do seu filho: qual era a ideia, o que ele mudou e o que
+  aconteceu depois. Nas ferramentas que a Jornada já liberou para ele, seu filho também pode voltar
+  ao projeto para experimentar outras versões.
+</p>
+</div>
+<div class="story-row reverse">
+<div class="prose">
+<h3>Se desenhar não é a praia dele, há outro jeito de começar</h3>
+<p>
+  Seu filho pode se interessar pelas regras e não querer desenhar cada personagem antes de começar.
+  Quando chega a hora de escolher o que aparece no jogo, o Estúdio oferece personagens, objetos e
+  cenários prontos para usar.
+</p>
+<p>
+  Assim, seu filho pode concentrar as escolhas no funcionamento do jogo: como o personagem se move,
+  qual objetivo o jogador precisa alcançar e quais regras valem durante a partida. Com o personagem
+  na tela, seu filho tem onde experimentar os comandos que está conhecendo.
+</p>
+<p>
+  Escolher uma nave pronta resolve a aparência do personagem. Seu filho monta, com a orientação da
+  aula, as regras de movimento e as outras ações da nave. Assim, aprende a programar usando um
+  desenho que já está disponível.
+</p>
+</div>
+<figure class="visual generated">
+  <a href={img('preview-estudio.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem: Ilustração de personagens prontos e montagem das regras de um jogo">
+    <img src={img('preview-estudio.webp')} alt="Ilustração de personagens prontos e montagem das regras de um jogo" width="1536" height="1024" loading="lazy" decoding="async"  />
+  </a>
+  <figcaption><span class="visual-label">Ilustração da experiência</span>Com um personagem pronto, seu filho pode se concentrar nas regras do jogo.</figcaption>
+</figure>
+</div>
+<div class="story-row">
+<div class="prose">
+<h3>Aquele desenho que ele te mostra pode virar um personagem do jogo</h3>
+<p>
+  Se você reconhece seu filho na criança que vive inventando criaturas ou desenhando mundos, há
+  outra possibilidade para explorar. Ele pode imaginar um personagem com uma aparência que não
+  encontrou entre os elementos prontos e querer colocá-lo na própria criação.
+</p>
+<p>
+  Para isso, ele encontra o Pinta, uma ferramenta de desenho feita para crianças. Seu filho pode
+  desenhar ali o personagem que imaginou e levá-lo ao Estúdio para usar no jogo. Também pode criar
+  objetos e cenários.
+</p>
+</div>
+<figure class="visual generated">
+  <a href={img('preview-pinta.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem: Ilustração do mesmo desenho de nave no Pinta e dentro do jogo">
+    <img src={img('preview-pinta.webp')} alt="Ilustração do mesmo desenho de nave no Pinta e dentro do jogo" width="1536" height="1024" loading="lazy" decoding="async"  />
+  </a>
+  <figcaption><span class="visual-label">Ilustração da experiência</span>Desenhar o personagem, levá-lo ao Estúdio e experimentar como ele fica na partida.</figcaption>
+</figure>
+</div>
+<div class="argument-close">
+<p>
+  Ao colocar o personagem que desenhou no cenário do jogo, seu filho encontra novas decisões: a cor
+  do personagem permite enxergá-lo sobre o fundo? O personagem ficou grande demais para a fase? Seu
+  filho pode ajustar o desenho no Pinta e testar de novo no jogo. Quando o personagem aparece na
+  partida, ele reconhece o desenho que fez participando da brincadeira.
+</p>
+<p>
+  Seu filho também pode usar um cenário pronto e desenhar apenas o personagem. Quem gosta de
+  desenhar tem espaço para criar a aparência do jogo; quem prefere montar as regras pode usar os
+  desenhos disponíveis.
+</p>
+<p>
+  Nas aulas, a criança usa as ferramentas previstas para aquela atividade. O uso livre do Estúdio e
+  do Pinta é liberado ao alcançar o posto Construtor, depois de concluir o curso obrigatório de
+  entrada e publicar seu projeto.
+</p>
+</div>
 
-<BaseLayout
-  title={f.seoTitle}
-  description={description}
-  ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
-  htmlClass={f.theme ? `theme-${f.theme}` : undefined}
->
-  <ProductJsonLd
-    slot="head"
-    name={productName}
-    description={description}
-    price={priceReais}
-    url={ofertaUrl}
-    image={img('checkout-capa.webp')}
-  />
-  <link slot="head" rel="preload" as="image" href={img('hero.webp')} fetchpriority="high" />
-
-  <div class="cdc">
-    <!-- ===== TOPO FIXO ===== -->
-    <header class="topbar">
-      <div class="wrap nav">
-        <div class="logo">
-          <span class="badge"><span class="material-symbols-rounded">stadia_controller</span></span>
-          Comunidade dos Criadores
-        </div>
-        <div class="price-mini">{mensalLabel}/mês</div>
-        <a href="#planos" class="btn header-cta">
-          <span class="material-symbols-rounded">bolt</span><span class="lbl">Quero assinar</span>
-        </a>
-      </div>
-    </header>
-
-    <!-- ===== BLOCO 01 · HERO (promessa + mecanismo em uma linha + prova mínima) ===== -->
-    <section class="hero sec">
-      <svg
-        class="deco float slow rev"
-        style="top:22%;right:6%;width:34px"
-        viewBox="0 0 24 24"
-        fill="var(--sz-community-pink-light)"
-        aria-hidden="true"
-        ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
-        ></path></svg
-      >
-      <div class="blob" style="width:220px;height:220px;background:var(--sz-community-ground-alt);top:-40px;right:-40px">
-      </div>
-      <div class="blob" style="width:160px;height:160px;background:var(--sz-community-mint);bottom:20px;left:-50px">
-      </div>
-      <div class="wrap">
-        <div class="grid">
-          <div class="hero-copy">
-            {
-              !posDesafio ? (
-                <>
-                  <span class="eyebrow">
-                    Para crianças de 9 a 14 anos<br />que gostam de jogos e tecnologia
-                  </span>
-                  <h1>
-                    Seu filho já joga. <span class="hl">Aqui ele aprende a criar os próprios jogos.</span>
-                  </h1>
-                  <p class="lead">
-                    Na Comunidade dos Criadores, crianças de 9 a 14 anos transformam as próprias
-                    ideias em jogos de verdade. As aulas guiam uma etapa por vez, uma pessoa de
-                    verdade acompanha o que elas enviam, e cada jogo publicado ganha um link para a
-                    família jogar. Terminou o primeiro, a Jornada do Criador mostra o próximo.
-                  </p>
-                  <ul class="hero-bullets">
-                    <li>
-                      <span class="tick"><span class="material-symbols-rounded">check</span></span>Na
-                      primeira semana, um jogo publicado com link, feito por ele
-                    </li>
-                    <li>
-                      <span class="tick"><span class="material-symbols-rounded">check</span></span>
-                      Cada atividade enviada é lida por uma pessoa, que responde dentro da plataforma
-                    </li>
-                    <li>
-                      <span class="tick"><span class="material-symbols-rounded">check</span></span>
-                      {mensalLabel} por mês para até duas crianças, sem fidelidade, com 7 dias de
-                      garantia
-                    </li>
-                  </ul>
-                  <div class="hero-cta">
-                    <a href="#planos" class="btn big">
-                      <span class="material-symbols-rounded">rocket_launch</span>Quero ver meu filho
-                      criando
-                    </a>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <span class="eyebrow">Para quem já publicou o primeiro jogo</span>
-                  <h1>
-                    O primeiro jogo ficou pronto. <span class="hl">Agora vem o caminho inteiro.</span>
-                  </h1>
-                  <p class="lead">
-                    Seu filho já provou que consegue montar, testar e chegar ao fim de um projeto. A
-                    Comunidade dos Criadores é a continuação: novos cursos, a Jornada do Criador, uma
-                    pessoa lendo o que ele envia e o Mural para cada jogo novo. O progresso do Desafio
-                    continua de onde parou.
-                  </p>
-                  <ul class="hero-bullets">
-                    <li>
-                      <span class="tick"><span class="material-symbols-rounded">check</span></span>Ele
-                      segue do ponto em que está, sem refazer nada
-                    </li>
-                    <li>
-                      <span class="tick"><span class="material-symbols-rounded">check</span></span>
-                      Cada curso concluído e publicado preenche uma posição na Jornada do Criador
-                    </li>
-                    <li>
-                      <span class="tick"><span class="material-symbols-rounded">check</span></span>Até
-                      2 perfis, 7 dias de garantia, cancele quando quiser
-                    </li>
-                  </ul>
-                  <div class="hero-cta">
-                    <a href="#planos" class="btn big">
-                      <span class="material-symbols-rounded">rocket_launch</span>Quero que ele
-                      continue criando
-                    </a>
-                  </div>
-                </>
-              )
-            }
-            <div class="seals">
-              <span><span class="material-symbols-rounded">check_circle</span>Acesso após aprovação</span>
-              <span><span class="material-symbols-rounded">check_circle</span>Garantia de 7 dias</span>
-              <span><span class="material-symbols-rounded">check_circle</span>Cancele quando quiser</span>
-            </div>
-          </div>
-          <figure class="art hero-art">
-            <div class="glow"></div>
-            <img
-              src={img('hero.webp')}
-              alt="Criança apontando orgulhosa para o jogo que ela mesma criou, com o vagalume Zappy comemorando ao lado"
-              width="940"
-              height="1366"
-              fetchpriority="high"
-            />
-          </figure>
-        </div>
-        <!-- fala do Zappy pra criança (mesmo registro lúdico do Desafio) -->
-        <div class="kid reveal">
-          <div class="char">
-            <figure class="art">
-              <img
-                src={img('zappy-fala.webp')}
-                alt="Zappy, o vagalume da Comunidade dos Criadores"
-                width="360"
-                height="458"
-                loading="lazy"
-              />
-            </figure>
-            <span class="name">Zappy</span>
-          </div>
-          <div class="bubble">
-            Oi, sou o Zappy. Aqui você começa com um jogo e libera novos projetos e ferramentas
-            conforme avança. Quando publicar, pode mandar o link para a família inteira jogar.
-            Chama seu pai, sua mãe ou seu responsável para ver isto com você.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 02 · FAIXA DE CONFIANÇA (três fatos verificáveis) ===== -->
-    <section class="stats-band">
-      <div class="wrap">
-        <div class="stats">
-          <div class="stat">
-            <span class="material-symbols-rounded">family_star</span>
-            <div class="l">Feito por dois desenvolvedores<br />que começaram com o próprio filho</div>
-          </div>
-          <div class="stat">
-            <span class="material-symbols-rounded">verified_user</span>
-            <div class="l">Conta da criança vinculada ao responsável,<br />Clube moderado, sem chat aberto</div>
-          </div>
-          <div class="stat">
-            <span class="material-symbols-rounded">devices</span>
-            <div class="l">Abre no navegador, sem instalar nada,<br />sem contrato de fidelidade</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    {
-      !posDesafio && (
-        <section class="sec" id="dor">
-          {/* ===== BLOCO 03 · A DOR COM A CAUSA ===== */}
-          <div class="wrap">
-            <div class="center">
-              <span class="eyebrow">O que você vê da porta do quarto</span>
-              <h2 class="reveal">
-                Ele passa horas dentro do jogo.<br />Quando desliga, <span class="hl">não sobra nada que seja dele.</span>
-              </h2>
-            </div>
-            <div class="feat">
-              <figure class="art reveal">
-                <img
-                  src={img('ilustra-dor.webp')}
-                  alt="Ilustração de uma criança concentrada em um jogo no computador"
-                  width="1000"
-                  height="577"
-                  loading="lazy"
-                />
-              </figure>
-              <div class="feat-txt">
-                <p>
-                  Você já parou na porta do quarto e ficou olhando seu filho jogar. O corpo inclinado
-                  para a frente, os olhos fixos na tela, uma concentração que você gostaria de ver na
-                  hora da lição. Ali dentro ele domina um mundo inteiro.
-                </p>
-                <p>
-                  O que pesa vem depois. O jogo acaba, o computador desliga e o dia termina como
-                  começou. Ele conhece cada canto de um mundo que outra pessoa construiu, e nada
-                  daquilo tem o nome dele.
-                </p>
-                <p>
-                  Isso acontece por um motivo simples. O jogo foi feito para ser jogado até o fim, com
-                  fases, recompensas e um próximo desafio sempre pronto. Construir é outra atividade,
-                  e o jogo não abre essa porta. Ele oferece o que foi decidido por outra pessoa. O
-                  que ele não oferece é a chance de decidir uma regra, testar e ver a própria ideia
-                  funcionando.
-                </p>
-                <p>
-                  Limitar as horas continua importante, e a família continua no comando disso. Só
-                  que o limite muda a quantidade. O que acontece dentro das horas que ficam é outra
-                  decisão, e é dela que esta página trata.
-                </p>
-              </div>
-            </div>
-            <div class="tese reveal">
-              A pergunta que vale a pena fazer é o que seu filho está aprendendo a fazer com o tempo
-              de tela que ele já tem.
-            </div>
-          </div>
-        </section>
-      )
-    }
-
-    <!-- ===== BLOCO 04 · A ALAVANCA (o interesse como porta de entrada) ===== -->
-    <section class="sec sec-amar" id="virada">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">O interesse já existe</span>
-          <h2 class="reveal">
-            O mesmo interesse que te preocupa é a melhor porta de entrada<br />para ele <span class="hl2">aprender a criar.</span>
-          </h2>
-        </div>
-        <div class="feat feat-rev">
-          <figure class="art reveal">
-            <img
-              src={img('ilustra-virada.webp')}
-              alt="A mesma criança criando o próprio jogo, com blocos coloridos na tela e o Zappy ao lado"
-              width="1100"
-              height="630"
-              loading="lazy"
-            />
-          </figure>
-          <div class="feat-txt">
-            <p>
-              Criança que ama jogos quer entender como um jogo é feito. Ela já imaginou uma fase
-              diferente, um personagem com um poder novo, uma regra que mudaria tudo. Essa vontade é
-              o ponto de partida, e ela não precisa ser inventada por um curso.
-            </p>
-            <p>
-              Para uma ideia dessas virar um jogo que funciona, ela precisa decidir o que acontece
-              primeiro, montar a regra, testar, ver dar errado, corrigir e terminar. É exatamente o
-              tipo de pensamento que você gostaria de ver, e ele aparece porque a criança quer chegar
-              ao final do próprio jogo.
-            </p>
-            <p>
-              Foi assim com o André, nosso filho. Aos 7 anos, quase todo o interesse dele terminava no
-              jogar. Quando começamos a criar jogos juntos, ele passou a nos chamar para testar as
-              regras dele e a explicar cada escolha. Hoje, aos 12, é ele quem dá voz ao Zappy dentro
-              da plataforma. A história inteira está mais abaixo.
-            </p>
-            <div class="tese">
-              Quando a criança escolhe o que criar e vê que consegue, a vontade de continuar vem de
-              dentro. É isso que uma atividade imposta não consegue produzir.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    {
-      !posDesafio && (
-        <section class="sec" id="saidas">
-          {/* ===== BLOCO 05 · POR QUE AS SAÍDAS COMUNS NÃO PEGAM ===== */}
-          <div class="wrap">
-            <div class="center">
-              <span class="eyebrow">Você provavelmente já tentou</span>
-              <h2 class="reveal">Três saídas comuns, e o ponto em que cada uma falha</h2>
-            </div>
-            <div class="pal">
-              <div class="pal-item reveal">
-                <span class="xi"><span class="material-symbols-rounded">timer</span></span>
-                <div>
-                  <h4>Limitar o tempo</h4>
-                  <p>
-                    Diminui as horas e costuma render briga. O que acontece dentro do jogo continua
-                    igual, e ele volta para o mesmo lugar assim que pode. O limite é necessário;
-                    sozinho, ele não muda o que a criança faz.
-                  </p>
-                </div>
-              </div>
-              <div class="pal-item reveal">
-                <span class="xi"><span class="material-symbols-rounded">sports_soccer</span></span>
-                <div>
-                  <h4>Empurrar outro hobby</h4>
-                  <p>
-                    Esporte, música, um curso escolhido pelos pais. Quando a atividade não parte do
-                    interesse da criança, ela vai de má vontade, aguenta um ou dois meses e larga. As
-                    pesquisas sobre abandono em esporte e música apontam sempre os mesmos motivos:
-                    deixou de ser divertido, ela não se sente capaz, não vê progresso.
-                  </p>
-                </div>
-              </div>
-              <div class="pal-item reveal">
-                <span class="xi"><span class="material-symbols-rounded">construction</span></span>
-                <div>
-                  <h4>Deixar solto no Roblox Studio, no Scratch ou no YouTube</h4>
-                  <p>
-                    A ferramenta é boa e é gratuita. O que falta é um caminho na ordem certa, alguém
-                    que olhe o que ela fez quando trava e um lugar seguro para mostrar. Muita criança
-                    para nos cenários e nos personagens e volta a só jogar.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="tese reveal">
-              O que faz o interesse virar criação é a soma de três coisas: um caminho, uma pessoa e um
-              lugar para mostrar. É isso que a Comunidade organiza.
-            </div>
-          </div>
-        </section>
-      )
-    }
-
-    <!-- ===== BLOCO 06 · O QUE ELE VAI FAZER (promessa concreta no tempo) ===== -->
-    <section class="sec sec-tint" id="pratica">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Como fica na prática</span>
-          <h2 class="reveal">
-            Na primeira semana, o primeiro jogo publicado.<br />Depois, <span class="hl">um projeto de cada vez.</span>
-          </h2>
-        </div>
-        <div class="evidence reveal">
-          <p>O caminho, do primeiro acesso em diante:</p>
-          <div class="evidence-links">
-            <div>
-              <strong>Primeira semana</strong>
-              <span>
-                O Desafio do Primeiro Jogo. Em aulas guiadas de uma etapa por vez, ele monta as
-                regras de um jogo com cenário e personagens já preparados, publica com link e QR code
-                e manda para a família jogar.
-              </span>
-            </div>
-            <div>
-              <strong>Primeiro mês</strong>
-              <span>
-                Os cursos seguintes. Ele altera regras, cria a própria versão de um jogo e envia as
-                atividades para revisão. Cada curso concluído e publicado preenche uma posição na
-                Jornada do Criador.
-              </span>
-            </div>
-            <div>
-              <strong>Depois</strong>
-              <span>
-                Quando as posições de um posto se completam, ele sobe de posto, e novos cursos e
-                ferramentas abrem, de Faísca até Lenda. A plataforma está em lançamento: os cursos
-                de hoje e todos os que entrarem fazem parte da assinatura, e a Jornada mostra o que
-                vem em seguida.
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="evidence reveal">
-          <p>
-            Uma mudança pequena, para você ver o que acontece dentro de uma aula: ele quer que o
-            personagem corra mais rápido.
-          </p>
-          <div class="evidence-links">
-            <div>
-              <strong>Ele faz uma previsão</strong>
-              <span>Escolhe uma nova velocidade e pensa no que vai acontecer quando o jogo começar.</span>
-            </div>
-            <div>
-              <strong>Coloca a ideia à prova</strong>
-              <span>Roda o jogo e observa. O personagem ficou rápido demais? Ainda dá tempo de desviar?</span>
-            </div>
-            <div>
-              <strong>Decide o que ajustar</strong>
-              <span>Experimenta outro valor e compara. Agora tem uma razão para explicar a escolha.</span>
-            </div>
-          </div>
-          <small>
-            É esse ciclo, previsão, teste e ajuste, que se repete em cada projeto. Os primeiros projetos
-            são guiados, com elementos preparados para a criança começar; a autoria cresce nas escolhas
-            e nas versões seguintes.
-          </small>
-        </div>
-        <div class="center" style="margin-top:40px;">
-          <h3 style="font-size:clamp(1.2rem,2.4vw,1.5rem);">O que você vai ver e ouvir em casa</h3>
-        </div>
-        <div style="max-width:720px;margin:20px auto 0;">
-          <ul class="hero-bullets">
-            <li>
-              <span class="tick"><span class="material-symbols-rounded">check</span></span>Um link no
-              grupo da família e o contador de jogadas subindo.
-            </li>
-            <li>
-              <span class="tick"><span class="material-symbols-rounded">check</span></span>Ele
-              explicando por que a regra é assim e o que muda se trocar.
-            </li>
-            <li>
-              <span class="tick"><span class="material-symbols-rounded">check</span></span>Uma
-              tentativa que deu errado e a seguinte que deu certo.
-            </li>
-            <li>
-              <span class="tick"><span class="material-symbols-rounded">check</span></span>Uma dúvida
-              enviada e a resposta de uma pessoa dentro da plataforma.
-            </li>
-          </ul>
-        </div>
-        <div class="tese reveal">
-          Pergunte o que ele mudou e peça para mostrar no jogo. A explicação dele é a sua janela para
-          o que ele está entendendo.
-        </div>
-        <!-- fala da Debinha pra criança -->
-        <div class="kid rosa reveal">
-          <div class="char">
-            <figure class="art">
-              <img
-                src={img('debinha-fala.webp')}
-                alt="Debinha, personagem da Comunidade dos Criadores"
-                width="360"
-                height="640"
-                loading="lazy"
-              />
-            </figure>
-            <span class="name">Debinha</span>
-          </div>
-          <div class="bubble">
-            O melhor momento é mandar o link do seu jogo no grupo da família e ficar espiando o
-            contador de jogadas subir. Cada nova jogada mostra que alguém abriu uma criação sua.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 07 · COMO A COMUNIDADE SUSTENTA A CONTINUIDADE (mecanismo) ===== -->
-    <section class="sec" id="metodo">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Por que ele continua depois do primeiro jogo</span>
-          <h2 class="reveal">
-            Um caminho, uma pessoa e um lugar para mostrar,<br /><span class="hl2">no mesmo acesso</span>
-          </h2>
-          <p class="sub">
-            Cada parte abaixo responde a um motivo pelo qual as crianças largam: falta de próximo
-            passo, falta de alguém que olhe, falta de público.
-          </p>
-        </div>
-        <div class="cards">
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-jornada.webp')}
-                alt="Mapa da Jornada do Criador, de Faísca a Lenda, com o posto atual destacado"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>A Jornada do Criador</h3>
-            <p>
-              Oito postos, de Faísca a Lenda, como as faixas do judô. Cada curso concluído e publicado
-              preenche uma posição. Quando as posições de um posto se completam, ele sobe de posto, e
-              novos cursos e ferramentas abrem. A criança sempre sabe onde está e o que vem depois.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-aula.webp')}
-                alt="Aula prática da Comunidade com etapas guiadas, blocos do Estúdio e jogo funcionando ao lado"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>As aulas</h3>
-            <p>
-              Explicação e prática na mesma tela. Ele aprende uma ideia, monta no Estúdio, o editor
-              de jogos por blocos, dentro da própria aula, e vê o resultado no jogo.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-recados.webp')}
-                alt="Caixa de Recados com devolutivas do professor sobre aulas, entregas e jogos publicados"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>Os Recados</h3>
-            <p>
-              A caixa de mensagens da criança com o professor. As atividades enviadas são lidas por
-              uma pessoa da equipe, que responde ali dentro e conversa com ela sobre o projeto.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-mural.webp')}
-                alt="Mural dos Criadores com jogos da turma, contador de jogadas e botões para jogar e compartilhar"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>O Mural dos Criadores</h3>
-            <p>
-              A vitrine dos jogos publicados. Cada um ganha link e QR code, tem contador de jogadas e
-              o botão de fazer a própria versão.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-clube.webp')}
-                alt="Clube dos Criadores com canais, conversas da turma e aviso de acompanhamento do professor"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>O Clube dos Criadores</h3>
-            <p>
-              O espaço da turma, só para crianças da faixa atendida. As conversas passam por moderação
-              antes de aparecer. Ele mostra o que fez e vê o que os outros estão criando.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-oficina.webp')}
-                alt="Oficina de criação com Estúdio e Pinta liberados e Pensa e Molda incluídos nos próximos postos"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>A oficina</h3>
-            <p>
-              Estúdio para montar, Pinta para desenhar em 2D, Pensa para planejar e Molda para
-              modelar em 3D. Cada uma abre no posto em que a criança já consegue aproveitar: Estúdio e
-              Pinta em Construtor, Pensa em Inventor, Molda em Explorador de Mundos.
-            </p>
-          </div>
-          <div class="card card-wide reveal">
-            <figure class="shot">
-              <img
-                src={img('print-espaco.webp')}
-                alt="Meu Espaço com avatar, posto atual, sequência, experiência, jogos e conquistas da criança"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>Meu Espaço e o Desafio do Mês</h3>
-            <p>
-              Avatar, quarto, sequência e conquistas guardam a história dele na plataforma. Todo mês,
-              o Desafio do Mês traz um tema novo com uma prateleira própria no Mural.
-            </p>
-          </div>
-        </div>
-
-        <div class="center" style="margin-top:52px;">
-          <h2 class="reveal" style="font-size:clamp(1.4rem,2.8vw,2rem);">
-            Nos projetos mais livres, o <span class="hl">Método Z.E.R.O.</span>
-          </h2>
-        </div>
-        <div class="zero">
-          <div class="zstep z1 reveal">
-            <div class="zl">Z</div>
-            <h4>Zerar a Bagunça</h4>
-            <p>A criança organiza o que quer criar na Carta da Ideia, com a ajuda do Pensa e do Zappy.</p>
-          </div>
-          <div class="zstep z2 reveal">
-            <div class="zl">E</div>
-            <h4>Enxergar o Jogo</h4>
-            <p>Ela escolhe nome, cores e aparência e desenha as telas antes de montar cada parte.</p>
-          </div>
-          <div class="zstep z3 reveal">
-            <div class="zl">R</div>
-            <h4>Rodar as Missões</h4>
-            <p>A ideia vira missões menores. Uma parte de cada vez, com atividades enviadas para revisão.</p>
-          </div>
-          <div class="zstep z4 reveal">
-            <div class="zl">O</div>
-            <h4>O Grande Lançamento</h4>
-            <p>Caça aos bugs, um toque final e a publicação com link de verdade para mandar para a família.</p>
-          </div>
-        </div>
-        <div class="zloop reveal">
-          Terminou o O, volta ao Z com um jogo mais ambicioso. O ciclo é o mesmo, o desafio é que
-          cresce.
-        </div>
-        <div class="journey reveal">
-          <span class="lvl-pill" style="--c:var(--sz-community-field)"
-            ><span class="material-symbols-rounded">bolt</span>Faísca</span
-          >
-          <span class="lvl-pill" style="--c:var(--verde)"
-            ><span class="material-symbols-rounded">build</span>Construtor</span
-          >
-          <span class="lvl-pill" style="--c:var(--azul)"
-            ><span class="material-symbols-rounded">lightbulb</span>Inventor</span
-          >
-          <span class="lvl-pill" style="--c:var(--verde)"
-            ><span class="material-symbols-rounded">explore</span>Explorador de Mundos</span
-          >
-          <span class="lvl-pill" style="--c:var(--roxo)"
-            ><span class="material-symbols-rounded">swords</span>Mestre dos Jogos</span
-          >
-          <span class="lvl-pill" style="--c:var(--azul)"
-            ><span class="material-symbols-rounded">castle</span>Arquiteto de Mundos</span
-          >
-          <span class="lvl-pill" style="--c:var(--laranja)"
-            ><span class="material-symbols-rounded">auto_awesome</span>Gênio da Criação</span
-          >
-          <span class="lvl-pill" style="--c:var(--rosa)"
-            ><span class="material-symbols-rounded">military_tech</span>Lenda</span
-          >
-        </div>
-        <div class="tese reveal">
-          Tudo isso faz parte da assinatura, sem nenhuma compra extra por dentro. A liberação segue a
-          Jornada do Criador para cada coisa chegar quando ele consegue usar, e a plataforma cresce
-          com os cursos que entram.
-        </div>
-        <!-- fala do Dedé pra criança -->
-        <div class="kid verde reveal">
-          <div class="char">
-            <figure class="art">
-              <img
-                src={img('dede-fala.webp')}
-                alt="Dedé, personagem da Comunidade dos Criadores"
-                width="360"
-                height="869"
-                loading="lazy"
-              />
-            </figure>
-            <span class="name">Dedé</span>
-          </div>
-          <div class="bubble">
-            Cada aventura que você conclui e cada projeto que publica fazem a sua Jornada andar. Eu
-            comecei na Faísca e agora tô batalhando pra chegar em Mestre dos Jogos. Qual nome você
-            vai dar pro seu primeiro jogo?
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 08 · AS PRIMEIRAS CRIANÇAS (prova, sem estrelas) ===== -->
-    <section class="sec sec-verde" id="prova">
-      <div class="wrap center">
-        <span class="eyebrow">Quem já testou</span>
-        <h2 class="reveal">Três crianças, <span class="hl">três primeiros jogos</span></h2>
-        <p class="sub">
-          Rafael, Débora e André testaram a plataforma antes do lançamento. As falas são deles.
-        </p>
-        <div class="depo-grid">
-          <div class="depo reveal">
-            <p class="quote">
-              "Fiz uma nave que atira nos asteroides e marca ponto. No fim eu peguei o link e mandei
-              pro meu amigo jogar."
-            </p>
-            <div class="who">
-              <span class="av"
-                ><img src={img('depo-rafael.webp')} alt="Rafael" width="160" height="160" loading="lazy" /></span
-              >
-              <span class="who-name">Rafael<small>publicou o primeiro jogo</small></span>
-            </div>
-          </div>
-          <div class="depo reveal">
-            <p class="quote">
-              "Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No terceiro dia
-              chamei a minha mãe pra ver o meu jogo."
-            </p>
-            <div class="who">
-              <span class="av"
-                ><img src={img('depo-debora.webp')} alt="Débora" width="160" height="160" loading="lazy" /></span
-              >
-              <span class="who-name">Débora<small>publicou o primeiro jogo</small></span>
-            </div>
-          </div>
-          <div class="depo reveal">
-            <p class="quote">
-              "Eu já jogava um monte, agora eu faço os meus jogos. Esse foi o primeiro e já quero
-              fazer um maior."
-            </p>
-            <div class="who">
-              <span class="av"
-                ><img src={img('depo-andre.webp')} alt="André" width="160" height="160" loading="lazy" /></span
-              >
-              <span class="who-name">André<small>filho dos criadores da plataforma</small></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== CTA INTERMEDIÁRIO ===== -->
-    <section class="sec sec-slim">
-      <div class="wrap">
-        <div class="ctaband reveal">
-          <h3>O primeiro jogo chega na primeira semana. O caminho depois dele é o que a assinatura organiza.</h3>
-          <a href="#planos" class="btn big">
-            <span class="material-symbols-rounded">visibility</span>Ver os planos e o que está incluído
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 09 · POR QUE AQUI E NÃO O GRATUITO OU A ESCOLA ===== -->
-    <section class="sec sec-tint" id="comparacao">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Comparando com o que existe</span>
-          <h2 class="reveal">
-            O que muda entre a ferramenta gratuita,<br />a escola de programação e <span class="hl">a Comunidade</span>
-          </h2>
-        </div>
-        <div class="cmp-scroll reveal">
-          <table class="cmp-table">
-            <thead>
-              <tr>
-                <th scope="col"><span class="sr">Critério</span></th>
-                <th scope="col">Ferramenta gratuita<small>Scratch, Roblox Studio, YouTube</small></th>
-                <th scope="col">Escola de programação<small>presencial ou ao vivo</small></th>
-                <th scope="col" class="us">Comunidade dos Criadores</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row">Caminho na ordem certa</th>
-                <td>Não</td>
-                <td>Sim</td>
-                <td class="us">Sim</td>
-              </tr>
-              <tr>
-                <th scope="row">Alguém olha o que a criança fez</th>
-                <td>Não</td>
-                <td>Sim, uma aula por semana</td>
-                <td class="us">Sim, em cada atividade enviada</td>
-              </tr>
-              <tr>
-                <th scope="row">Jogo publicado com link para a família</th>
-                <td>Depende, em comunidade aberta</td>
-                <td>Raramente</td>
-                <td class="us">Sim, com link e QR code</td>
-              </tr>
-              <tr>
-                <th scope="row">Turma</th>
-                <td>Comunidade aberta, muitas vezes em inglês</td>
-                <td>Turma, em geral de 6 a 8</td>
-                <td class="us">Clube moderado, em português, só da faixa etária</td>
-              </tr>
-              <tr>
-                <th scope="row">Horário</th>
-                <td>Livre</td>
-                <td>Fixo, uma vez por semana</td>
-                <td class="us">Livre, no ritmo dela</td>
-              </tr>
-              <tr>
-                <th scope="row">Contrato</th>
-                <td>Nenhum</td>
-                <td>Em geral semestral ou anual</td>
-                <td class="us">Nenhum. Cancele quando quiser</td>
-              </tr>
-              <tr>
-                <th scope="row">Preço</th>
-                <td>R$ 0</td>
-                <td>Não fica na página: aula experimental e proposta</td>
-                <td class="us">{mensalLabel} por mês, para até duas crianças</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="tese reveal">
-          Se a sua família aprende bem com material gratuito, siga por ele. A Comunidade existe para
-          quem quer o caminho pronto, uma pessoa acompanhando e um lugar seguro para mostrar.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 10 · PARA QUEM É ===== -->
-    <section class="sec" id="paraquem">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Antes de assinar</span>
-          <h2 class="reveal">Veja se a Comunidade combina com o seu filho</h2>
-        </div>
-        <div class="two">
-          <div class="two-box is reveal">
-            <h3>
-              <span class="mk"><span class="material-symbols-rounded">check</span></span>É pra você
-              se o seu filho se encaixa em pelo menos um destes:
-            </h3>
-            <ul>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">check</span></span>Seu filho
-                tem de 9 a 14 anos e tem curiosidade de descobrir como criar um jogo
-              </li>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">check</span></span>Ele adora
-                mexer no computador e nas telas: testa, configura e desmonta pra ver como funciona
-              </li>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">check</span></span>Ele já
-                cria coisa no computador: desenha em algum programa, faz skin, monta mundo no
-                Minecraft ou mexe em vídeo
-              </li>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">check</span></span>Você
-                gostaria de acompanhar algo que ele está aprendendo a criar, além das partidas
-                de que já gosta
-              </li>
-            </ul>
-          </div>
-          <div class="two-box isnt reveal">
-            <h3>
-              <span class="mk"><span class="material-symbols-rounded">close</span></span>Ainda não é
-              pra você se:
-            </h3>
-            <ul>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">close</span></span>Seu filho
-                tem menos de 9 anos (o percurso pede leitura e mouse já firmes)
-              </li>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">close</span></span>Ele não
-                tem interesse nenhum por jogos, computador ou tecnologia (é daí que o percurso
-                parte)
-              </li>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">close</span></span>Você
-                procura reforço escolar de matemática ou português
-              </li>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">close</span></span>Você quer
-                aulas ao vivo individuais em horário marcado
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="tese reveal">
-          A Comunidade combina melhor com a criança que demonstra interesse por jogos e tecnologia
-          e está pronta para experimentar o papel de quem também cria.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 11 · OBJEÇÕES (na ordem do medo) ===== -->
-    <section class="sec sec-rosa" id="objecoes">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Antes de decidir</span>
-          <h2 class="reveal">As seis dúvidas que costumam <span class="hl">aparecer aqui</span></h2>
-        </div>
-        <div class="dev">
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--azul)">
-              <span class="material-symbols-rounded">route</span>
-            </div>
-            <h4>Se ele começar e largar</h4>
-            <p>
-              A Jornada do Criador foi desenhada para isso: cada curso termina com um jogo publicado,
-              uma pessoa responde o que ele envia, e todo mês entra um tema novo. Se preferir conhecer
-              o ritmo antes de escolher o ano, comece pelo mensal. Nos primeiros 7 dias há reembolso.
-              Depois, você cancela pela sua área quando quiser, e os jogos publicados continuam
-              acessíveis no Mural.
-            </p>
-          </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--verde)">
-              <span class="material-symbols-rounded">schedule</span>
-            </div>
-            <h4>Sobre o tempo de tela</h4>
-            <p>
-              Uma parte do tempo de tela que vocês já permitem pode virar um momento de criação, com
-              começo e fim combinados. A Sociedade Brasileira de Pediatria e a Academia Americana de
-              Pediatria distinguem o que a criança faz na tela, e não só quanto tempo passa nela. A
-              família continua definindo os limites, e a Comunidade cabe dentro deles.
-            </p>
-          </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--laranja)">
-              <span class="material-symbols-rounded">family_restroom</span>
-            </div>
-            <h4>Seu papel cabe em três gestos</h4>
-            <p>
-              Ajudar no primeiro acesso, combinar o horário e pedir para ele mostrar o que fez. As
-              aulas apresentam os comandos, e as dúvidas do projeto vão para os Recados. Três
-              perguntas bastam para acompanhar: por que você escolheu essa regra, como resolveu essa
-              parte, o que quer tentar agora.
-            </p>
-          </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--roxo)">
-              <span class="material-symbols-rounded">shield</span>
-            </div>
-            <h4>Sobre segurança</h4>
-            <p>
-              A conta da criança é vinculada à sua. O Clube é só para crianças da faixa atendida, e
-              cada mensagem passa por moderação antes de aparecer. O perfil público começa desligado.
-              Não existe chat aberto nem compra dentro da plataforma. É o desenho que o ECA Digital,
-              em vigor desde março de 2026, pede às plataformas usadas por crianças.
-            </p>
-          </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--ciano)">
-              <span class="material-symbols-rounded">smart_toy</span>
-            </div>
-            <h4>Sobre a inteligência artificial</h4>
-            <p>
-              A IA já escreve código, e vai escrever cada vez mais. Quem entende como um jogo é feito
-              consegue pedir a coisa certa, ler o que a IA devolve e perceber quando está errado. Na
-              plataforma, o Zappy explica e dá pistas, e nunca monta pelo aluno. Um estudo com quase
-              mil alunos, publicado na PNAS em 2025, mostra o motivo: quando a IA entrega a resposta,
-              o aluno rende menos depois; quando há orientação de professor, isso não acontece.
-            </p>
-          </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--rosa)">
-              <span class="material-symbols-rounded">school</span>
-            </div>
-            <h4>Sem aula ao vivo, ele aprende de verdade</h4>
-            <p>
-              A aula ao vivo prende a criança a um horário e a um professor que pode trocar. Aqui ela
-              segue no próprio ritmo, e o que ela envia é lido por uma pessoa que responde dentro da
-              plataforma. A explicação, a prática e o teste acontecem no mesmo projeto.
-            </p>
-          </div>
-        </div>
-        <div class="tese reveal">
-          Cada resposta acima descreve algo que existe hoje na plataforma. O que ainda está por vir
-          aparece como "em breve", e não como promessa.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 12 · PLANOS E VALOR ===== -->
-    <section class="sec sec-tint" id="valor">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Quanto custa e o que está incluído</span>
-          <h2 class="reveal">
-            {mensalLabel} por mês. {diaLabel} por dia,<br />para <span class="hl">até duas crianças.</span>
-          </h2>
-          <p class="sub">
-            Uma escola de programação costuma cobrar por uma aula semanal, com matrícula, material e
-            contrato de fidelidade, e raramente coloca o preço na página. Aqui o acesso é diário, no ritmo da
-            criança, com uma pessoa acompanhando, sem contrato, e o preço está aqui.
-          </p>
-        </div>
-        <div style="max-width:760px;margin:30px auto 0;">
-          <ul class="hero-bullets">
-            <li>
-              <span class="tick"><span class="material-symbols-rounded">check</span></span>Todos os
-              cursos de hoje e os que entrarem, liberados pela Jornada do Criador, a começar pelo
-              Desafio do Primeiro Jogo
-            </li>
-            <li>
-              <span class="tick"><span class="material-symbols-rounded">check</span></span>Revisão das
-              atividades enviadas e resposta nos Recados
-            </li>
-            <li>
-              <span class="tick"><span class="material-symbols-rounded">check</span></span>Mural com
-              link e QR code para cada jogo publicado
-            </li>
-            <li>
-              <span class="tick"><span class="material-symbols-rounded">check</span></span>Clube dos
-              Criadores, moderado, e o Desafio do Mês
-            </li>
-            <li>
-              <span class="tick"><span class="material-symbols-rounded">check</span></span>Estúdio,
-              Pinta, Pensa e Molda, cada um no posto certo
-            </li>
-            <li>
-              <span class="tick"><span class="material-symbols-rounded">check</span></span>Até 2
-              perfis de criança, cada um com o próprio progresso ({porCriancaLabel} por criança com
-              dois perfis)
-            </li>
-          </ul>
-        </div>
-
-        <div class="plans" id="planos">
-          <div class="plan reveal">
-            <h4>Mensal</h4>
-            <div class="now">{mensalLabel}<small>/mês</small></div>
-            <div class="cond">
-              Para conhecer o ritmo da plataforma. Renovação automática no cartão. Cancele quando
-              quiser pela sua área; o acesso vale até o fim do período pago.
-            </div>
-            <button
-              type="button"
-              class="btn plan-btn"
-              data-checkout-cta
-              data-checkout-oferta={mensal?.slug}
-            >
-              Começar no plano mensal
-            </button>
-          </div>
-          <div class="plan destaque reveal">
-            <span class="plan-badge">Economize {economiaLabel} no ano</span>
-            <h4>Anual</h4>
-            <div class="from">12 meses no mensal sairiam por <s>{anualAncoraLabel}</s></div>
-            <div class="now">{anualLabel}<small>/ano</small></div>
-            <div class="permonth">equivale a {anualPorMesLabel} por mês</div>
-            <div class="cond">12 meses de acesso. Pix à vista ou renovação anual automática no cartão.</div>
-            <button
-              type="button"
-              class="btn plan-btn"
-              data-checkout-cta
-              data-checkout-oferta={anual?.slug}
-            >
-              <span class="material-symbols-rounded">rocket_launch</span>Começar no plano anual
-            </button>
-          </div>
-        </div>
-        <p class="plans-mini reveal">
-          Garantia de 7 dias · Renovação controlada pela sua área de responsável · Até 2 perfis de criança
-        </p>
-        <div class="tese reveal">
-          Por que {mensalLabel}: porque cada atividade enviada é lida por uma pessoa e o caminho
-          inteiro já está pronto. O preço fica aqui na página, sem aula experimental de venda e sem
-          proposta por WhatsApp.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 13 · QUEM FAZ ===== -->
-    <section class="sec auth" id="autoridade">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Quem está por trás</span>
-          <h2 class="reveal">A Comunidade começou com uma pergunta<br /><span class="hl2"
-              >dentro da nossa própria casa.</span
-            ></h2>
-        </div>
-        <div class="grid">
-          <figure class="art reveal">
-            <img
-              src={img('familia-helena-julio-kids.webp')}
-              alt="Helena, Júlio e o filho André criando um jogo juntos"
-              width="880"
-              height="1019"
-              loading="lazy"
-            />
-          </figure>
-          <div class="story">
-            <span class="who-tag"
-              ><span class="material-symbols-rounded">verified</span>Helena e Júlio ·
-              @criecomhelenaejulio</span
-            >
-            <!-- historia-andre:inicio -->
-            <p class="lead-line">
-              A gente é a Helena e o Júlio. Somos desenvolvedores de sistemas, e o Sistema Zero
-              começou com o André, nosso filho.
-            </p>
-            <p>
-              Nós dois somos desenvolvedores de sistemas, formados em Sistemas de Informação, com
-              mais de dez anos de estrada e passagem por lugares como o Banco do Brasil. Programar
-              é o nosso dia a dia.
-            </p>
-            <p>
-              O André é autista nível 1 e tem hiperfoco em jogos. Quando ele tinha 7 anos, quase todo
-              o interesse digital dele terminava no jogar. Como muitas famílias, também estávamos
-              aprendendo a cuidar do equilíbrio. E percebemos que o computador já fazia parte do
-              universo dele. Faltava apresentar uma possibilidade dentro desse interesse.
-            </p>
-            <p>
-              Quando começamos a criar jogos juntos, apareceu uma mudança que dava para observar.
-              Em vez de falar apenas das fases que outras pessoas tinham criado, o André passou a
-              nos chamar para testar suas regras, explicar escolhas e imaginar a próxima versão.
-            </p>
-            <!-- historia-andre:fim -->
-            <p>
-              Foi dessa experiência que nasceu a Comunidade dos Criadores: um lugar em português,
-              pensado para ajudar outras crianças a começar, continuar e compartilhar o que criam.
-              Hoje o André tem 12 anos e é a voz do Zappy nas aulas.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 14 · FAQ ===== -->
-    <section class="sec sec-tint" id="faq">
-      <div class="wrap center">
-        <span class="eyebrow">Ainda está decidindo?</span>
-        <h2 class="reveal">O que você pode querer saber antes de assinar</h2>
-        <div class="faq-wrap">
-          <details class="faq" open>
-            <summary
-              >E se meu filho começar e perder o interesse?<span class="material-symbols-rounded">add</span></summary
-            >
-            <div class="a">
-              A Jornada do Criador foi feita para segurar a continuidade: cada curso termina com um
-              jogo publicado, uma pessoa responde o que ele envia e todo mês entra um tema novo. Se
-              quiser conhecer o ritmo antes de escolher o ano, comece pelo mensal. Nos primeiros 7
-              dias há reembolso; depois, você cancela pela sua área quando quiser.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Meu filho já joga bastante. Como a Comunidade se encaixa na rotina?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Vocês podem reservar uma parte do tempo de tela já combinado para os projetos.
-              Escolham uma etapa e um horário para parar, mantendo espaço para descanso,
-              movimento e outras brincadeiras. A família continua definindo os limites.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Ele nunca fez nada de tecnologia além de jogar. Consegue mesmo?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Os primeiros cursos partem do zero e usam blocos visuais. A criança não precisa
-              conhecer programação, mas precisa conseguir ler e utilizar mouse e teclado com
-              alguma autonomia.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Meu filho tem 9 anos. É cedo demais?<span class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              A partir dos 9 anos, se a criança já lê e usa o mouse com firmeza, ela acompanha o
-              percurso. Os primeiros projetos são mais guiados e apresentam uma etapa por vez.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Eu não entendo nada de tecnologia. Vou conseguir ajudar?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Sim. Você pode ajudar no primeiro acesso, combinar a rotina e pedir que seu filho
-              mostre o que fez. As aulas apresentam os comandos, e as dúvidas do projeto podem
-              ser enviadas pelos Recados. Você não precisa preparar ou ensinar as aulas.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >É seguro meu filho conversar com outras crianças ali dentro?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Sim. O Clube é só para crianças da faixa atendida e cada mensagem passa por moderação
-              antes de aparecer. O perfil público começa desligado, e você administra os perfis pela
-              sua área. A plataforma segue o ECA Digital e as regras de proteção de dados de crianças.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >O Scratch é gratuito. Por que assinar a Comunidade?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Dá para aprender muito com o Scratch. O que a Comunidade acrescenta é o caminho na ordem
-              certa, uma pessoa que lê o que a criança envia e um lugar moderado para publicar e
-              mostrar. Se a sua família avança bem sozinha com o gratuito, siga por ele.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >A inteligência artificial já escreve código. Ainda vale a pena?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Vale mais. Quem entende como um jogo é feito consegue pedir a coisa certa à IA e
-              perceber quando ela erra. Aqui o Zappy explica e dá pistas, e nunca monta pelo aluno.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Sem aula ao vivo com professor na frente, meu filho aprende de verdade?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Ele segue no próprio ritmo, e o que envia é lido por uma pessoa que responde nos
-              Recados. Explicação, prática e teste acontecem no mesmo projeto, sem horário fixo e sem
-              professor que troca.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Se está tudo incluído, por que algumas ferramentas aparecem fechadas?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Porque a Jornada do Criador organiza a ordem de liberação. Estúdio e Pinta chegam no
-              posto de Construtor, Pensa no posto de Inventor e Molda no posto de Explorador de
-              Mundos. Não existe compra extra para liberar essas ferramentas.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Meu filho já fez o Desafio do Primeiro Jogo. Precisa fazer novamente?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Não. O Desafio continua disponível dentro da assinatura, mas a criança pode seguir do
-              ponto em que está e avançar para os próximos cursos e projetos.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Posso cadastrar irmãos?<span class="material-symbols-rounded">add</span></summary
-            >
-            <div class="a">
-              Sim. A assinatura permite até 2 perfis de criança. Cada perfil possui seu próprio
-              progresso, seus projetos e a sua Jornada do Criador.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Como faço para cancelar se não der certo?<span class="material-symbols-rounded"
-                >add</span
-              ></summary
-            >
-            <div class="a">
-              Nos primeiros 7 dias, peça o reembolso. Depois, desative a próxima renovação pela sua
-              área de responsável; o acesso continua até o fim do período já pago, e os jogos
-              publicados seguem acessíveis no Mural.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Preciso instalar ou comprar algum programa?<span class="material-symbols-rounded"
-                >add</span
-              ></summary
-            >
-            <div class="a">
-              Tudo abre no navegador. Um computador com internet e o seu filho por perto bastam.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >A escola vai cobrar isso?<span class="material-symbols-rounded">add</span></summary
-            >
-            <div class="a">
-              A partir de 2026, computação passa a ser obrigatória nas redes públicas e privadas, com
-              três eixos definidos pelo Conselho Nacional de Educação. A pesquisa oficial mais recente
-              reconhece uma distância considerável entre a norma e a sala de aula. A Comunidade não
-              substitui a escola; ela dá à criança um lugar para praticar o que a norma pede.
-            </div>
-          </details>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 15 · O QUE FICA (fechamento) ===== -->
-    <section class="sec final" id="final">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">O que fica</span>
-          <h2 class="reveal">
-            O dia em que ele te chama para jogar<br />um jogo que <span class="hl">ele mesmo fez.</span>
-          </h2>
-        </div>
-        <div class="final-grid">
-          <figure class="art final-art reveal">
-            <img
-              src={img('ilustra-vitoria.webp')}
-              alt="Menino e menina comemorando com um troféu na tela e o Zappy voando entre confetes"
-              width="1000"
-              height="943"
-              loading="lazy"
-            />
-          </figure>
-          <div class="feat-txt">
-            <p>
-              Imagine seu filho mandando um link no grupo da família, explicando a regra que
-              inventou e olhando o contador de jogadas subir. Esse dia costuma chegar na primeira
-              semana. O que a Comunidade oferece é o caminho que vem depois dele: um projeto de cada
-              vez, com alguém acompanhando, até ele estar criando coisas que hoje só imagina.
-            </p>
-            <p class="final-list-title">A partir do dia em que entra, a assinatura inclui:</p>
-            <ul class="final-list">
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>Todos os cursos, de hoje e
-                os que entrarem, a começar pelo Desafio do Primeiro Jogo
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>Uma pessoa lendo o que ele
-                envia e respondendo nos Recados
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>Um link para cada jogo
-                publicado no Mural
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>O Clube dos Criadores,
-                moderado, e o Desafio do Mês
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>Estúdio, Pinta, Pensa e
-                Molda, liberados pela Jornada do Criador
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>Até 2 perfis de criança e 7
-                dias de garantia
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="final-cta reveal">
-          <a href="#planos" class="btn big">
-            <span class="material-symbols-rounded">rocket_launch</span>Quero que meu filho faça parte
-            da Comunidade
-          </a>
-          <p class="price-line">
-            Anual {anualLabel} (equivale a {anualPorMesLabel}/mês) · ou mensal {mensalLabel}/mês ·
-            Garantia de 7 dias
-          </p>
-        </div>
-        <div class="tese reveal">
-          O próximo passo é pequeno: abrir a primeira aula com ele nesta semana.
-        </div>
-        <p class="terms">
-          Ao assinar, você concorda com os <a href="/kids/termos">termos de uso</a> e a <a
-            href="/kids/privacidade">política de privacidade</a
-          >, feitos com atenção especial à proteção de dados de crianças. O acesso da criança é
-          vinculado à sua conta de responsável.
-        </p>
-      </div>
-    </section>
-
-    <!-- ===== BARRA FIXA MOBILE ===== -->
-    <div class="mobar">
-      <div class="p">{mensalLabel}/mês <span class="dias">· anual {anualLabel}</span></div>
-      <a href="#planos" class="btn mobar-btn">
-        <span class="material-symbols-rounded">bolt</span>Assinar
-      </a>
-    </div>
-  </div>
-
-  <!-- Rodapé institucional único dos funis kids (o mesmo do checkout/obrigado). -->
-  <Footer audience={f.audience} vitalicio={f.lifetimeAccess} />
-
-  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} />
+</div>
+</section>
+<section class="section tint" id="relatos" aria-labelledby="title-relatos">
+<div class="wrap">
+<h2 id="title-relatos">A Débora chamou a mãe para ver. O Rafael quis que um amigo jogasse</h2>
+<p class="section-intro">
+  A Débora quis mostrar o jogo para a mãe, e o Rafael enviou o link para um amigo jogar. Os dois,
+  junto com o André, testaram a plataforma antes do lançamento. Estas são as falas deles sobre o que
+  fizeram.
+</p>
+<div class="testimonials">
+<figure class="testimonial"><img src={img('depo-rafael.webp')} alt="Rafael" width="160" height="160" loading="lazy" decoding="async" />
+<blockquote>
+<p class="quote">
+  “Fiz uma nave que atira nos asteroides e marca ponto. No fim eu peguei o link e mandei pro meu
+  amigo jogar.”
+</p>
+</blockquote>
+<figcaption><strong>Rafael</strong><span>Publicou o primeiro jogo</span>
+</figcaption>
+</figure>
+<figure class="testimonial"><img src={img('depo-debora.webp')} alt="Débora" width="160" height="160" loading="lazy" decoding="async" />
+<blockquote>
+<p class="quote">
+  “Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No terceiro dia chamei a
+  minha mãe pra ver o meu jogo.”
+</p>
+</blockquote>
+<figcaption><strong>Débora</strong><span>Publicou o primeiro jogo</span>
+</figcaption>
+</figure>
+<figure class="testimonial"><img src={img('depo-andre.webp')} alt="André" width="160" height="160" loading="lazy" decoding="async" />
+<blockquote>
+<p class="quote">
+  “Eu já jogava um monte, agora eu faço os meus jogos. Esse foi o primeiro e já quero fazer um
+  maior.”
+</p>
+</blockquote>
+<figcaption><strong>André</strong><span>Filho dos criadores da plataforma</span>
+</figcaption>
+</figure>
+</div>
+<div class="section-action"><a class="action" href="#planos">Escolher um plano para meu filho</a>
+</div>
+</div>
+</section>
+<section class="section" id="jornada" aria-labelledby="title-jornada">
+<div class="wrap">
+<h2 id="title-jornada">Seu filho pode querer mudar o jogo logo depois de te mostrar</h2>
+<div class="story-row">
+<div class="prose">
+<p>
+  Ao ver alguém jogando, ele pode ter vontade de mudar o personagem, ajustar a dificuldade ou
+  experimentar outra regra. Nas ferramentas que já liberou, pode voltar ao projeto e trabalhar
+  nessas ideias. A nave que aprendeu a movimentar pode ganhar outra aparência; uma partida pode
+  receber um desafio diferente. O que já construiu vira material para uma nova tentativa.
+</p>
+<p>
+  Para encontrar de onde continuar, seu filho consulta a Jornada do Criador, o mapa dos cursos e das
+  ferramentas que vai liberando. Ali ele vê o ponto em que está e quais etapas estão disponíveis.
+  Pode seguir para outro projeto ou voltar a uma criação nas ferramentas que já tem abertas.
+</p>
+<p>
+  A plataforma está em lançamento. A assinatura dá acesso aos cursos publicados e aos que forem
+  adicionados durante o período contratado. Algumas ferramentas dependem do progresso e da
+  publicação dos cursos necessários para chegar até elas.
+</p>
+</div>
+<figure class="visual">
+  <a href={img('print-jornada.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem: Visão ilustrativa do mapa da Jornada do Criador">
+    <img src={img('print-jornada.webp')} alt="Visão ilustrativa do mapa da Jornada do Criador" width="1280" height="720" loading="lazy" decoding="async"  />
+  </a>
+  <figcaption><span class="visual-label">Visão ilustrativa da plataforma</span>A Jornada organiza as etapas. A liberação depende do progresso e dos cursos publicados.</figcaption>
+</figure>
+</div>
+<div class="support-note"><span class="material-symbols-rounded" aria-hidden="true">chat_bubble</span>
+<div>
+<h3>Se ele travar numa parte, pode contar onde ficou a dúvida</h3>
+<p>
+  Nos Recados, o canal de mensagens com a equipe dentro da plataforma, seu filho pode explicar o que
+  está tentando fazer e onde encontrou dificuldade.
+</p>
+</div>
+</div>
+<div class="story-row reverse">
+<div class="prose">
+<h3>Você pode abrir o jogo dele e entrar na brincadeira</h3>
+<p>
+  Quando seu filho publica o jogo no Mural dos Criadores, recebe um link para compartilhar. Você
+  abre esse link para jogar e pode pedir que seu filho mostre a parte que ele mais gostou de criar.
+  Talvez seja a nave que desenhou; talvez seja a regra que deu trabalho até funcionar. A conversa
+  nasce do jogo que vocês estão experimentando juntos.
+</p>
+</div>
+<figure class="visual">
+  <a href={img('print-mural.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem: Visão ilustrativa de jogos publicados no Mural">
+    <img src={img('print-mural.webp')} alt="Visão ilustrativa de jogos publicados no Mural" width="1280" height="720" loading="lazy" decoding="async"  />
+  </a>
+  <figcaption><span class="visual-label">Visão ilustrativa da plataforma</span>Depois de publicar, seu filho pode compartilhar o link do jogo.</figcaption>
+</figure>
+</div>
+<div class="story-row">
+<div class="prose">
+<h3>Ele pode querer conversar sobre o jogo antes de terminar</h3>
+<p>
+  Às vezes, seu filho quer contar que está tentando fazer uma fase diferente ou mostrar o personagem
+  que acabou de desenhar. No Clube, ele pode publicar essa ideia e conversar sobre a criação. As
+  mensagens são verificadas antes de aparecer para as outras crianças.
+</p>
+<p>
+  Se ele gosta de escolher como é representado, o Meu Espaço permite personalizar seu avatar, o
+  personagem do perfil, e seu quarto virtual. Ali também ficam as conquistas registradas durante o
+  uso. É um lugar que ele pode arrumar do próprio jeito e reconhecer como seu.
+</p>
+</div>
+<figure class="visual">
+  <a href={img('print-clube.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem: Visão ilustrativa do espaço de conversa sobre criações">
+    <img src={img('print-clube.webp')} alt="Visão ilustrativa do espaço de conversa sobre criações" width="1280" height="720" loading="lazy" decoding="async"  />
+  </a>
+  <figcaption><span class="visual-label">Visão ilustrativa da plataforma</span>No Clube, as mensagens passam por moderação antes de aparecer.</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section class="section tint" id="familia" aria-labelledby="title-familia">
+<div class="wrap">
+<h2 id="title-familia">A gente também começou procurando um caminho para o nosso filho</h2>
+<div class="story-row reverse">
+<div class="prose"><!-- historia-andre:inicio -->
+<p>
+  Quando nosso filho André tinha sete anos, estávamos aprendendo a cuidar do equilíbrio na rotina
+  dele. O André é autista nível 1 e tem hiperfoco em jogos. Esse interesse fazia parte da nossa vida
+  em casa, e percebemos uma possibilidade de explorá-lo juntos: começar a criar jogos.
+</p>
+<!-- historia-andre:fim -->
+<p>
+  A gente é a Helena e o Júlio. Somos desenvolvedores de sistemas, formados em Sistemas de
+  Informação, com mais de dez anos de experiência e passagem por lugares como o Banco do Brasil.
+  Programar já fazia parte do nosso trabalho; criar com o André nos permitiu levar essa experiência
+  para uma atividade em família.
+</p>
+<p>
+  Ele passou a nos chamar para testar suas regras, explicar escolhas e imaginar a próxima versão.
+  Foi dessa experiência que nasceu a Comunidade dos Criadores. Hoje, aos 12 anos, o André também é a
+  voz do Zappy nas aulas.
+</p>
+<p>
+  Essa experiência nos levou a preparar um começo guiado para outras crianças, em português, com
+  ferramentas para montar os jogos e um jeito de mostrá-los à família. Foi o que aprendemos em casa
+  que nos fez querer construir esse lugar. Seu filho pode chegar com outros interesses e descobrir
+  nas atividades o que tem vontade de criar.
+</p>
+</div>
+<figure class="family-photo"><img src={img('familia-helena-julio-kids.webp')} alt="Helena, Júlio e seus filhos" width="880" height="1019" loading="lazy" decoding="async" />
+<figcaption>Helena, Júlio e família. A experiência que deu origem à Comunidade.</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section class="section" id="rotina" aria-labelledby="title-rotina">
+<div class="wrap">
+<h2 id="title-rotina">Para funcionar aí na sua casa, essa atividade precisa caber na vida de vocês</h2>
+<div class="section-intro">
+<p>
+  Talvez você tenha gostado da ideia e esteja pensando em como ela entraria numa semana comum. Seu
+  filho pode precisar de companhia no começo, vocês têm horários para cumprir e já existem
+  combinados sobre o computador. Essas questões também fazem parte da escolha.
+</p>
+</div>
+<div class="objections">
+<div class="objection">
+<h3>Você pode estar perto sem assumir o papel de professor</h3>
+<p>
+  Você pode ajudar no acesso, combinar um momento para a atividade e ouvir o que seu filho quer
+  mostrar. A explicação de programação está nas aulas, e as dúvidas podem ser enviadas pelos
+  Recados. Algumas crianças precisam de mais companhia nas primeiras etapas; vocês vão percebendo
+  isso no uso.
+</p>
+</div>
+<div class="objection">
+<h3>Os combinados sobre a tela continuam nas mãos de vocês</h3>
+<p>
+  Vocês podem reservar uma parte do tempo de tela já combinado para criar o jogo. Escolham uma etapa
+  e um horário para parar, mantendo espaço para descanso, movimento e outras brincadeiras. Aprender
+  a criar entra nesses combinados da família; não exige deixar de cuidar deles.
+</p>
+</div>
+<div class="objection">
+<h3>A inteligência artificial pode ajudar. Seu filho ainda tem decisões para aprender a tomar</h3>
+<p>
+  Talvez você se pergunte por que aprender programação se uma inteligência artificial já escreve
+  código. Pense numa regra que seu filho quer para o jogo: o jogador ganha um ponto quando o
+  personagem pega um objeto. Seu filho precisa explicar essa regra à ferramenta. Se a ferramenta
+  gerar um jogo que soma pontos antes de o personagem pegar o objeto, seu filho precisa perceber que
+  o resultado está diferente do que pediu.
+</p>
+<p>
+  Ao montar e testar essas regras, ele pratica justamente esse entendimento. Uma ferramenta pode
+  ajudar a produzir o jogo, e saber como ele funciona dá ao seu filho mais condições de dizer o que
+  quer mudar e conferir o resultado.
+</p>
+</div>
+<div class="objection">
+<h3>Você pode conhecer a atividade com ele antes de assumir um compromisso maior</h3>
+<p>
+  Gostar de jogar pode despertar curiosidade pela criação. Olhar juntos os exemplos da página ajuda
+  a conversar sobre essa outra atividade: ele gostaria de montar uma regra, desenhar um personagem
+  ou experimentar uma ideia? Você pode perguntar qual dessas ideias ele teria vontade de
+  experimentar. Essa conversa ajuda vocês a perceber o interesse antes de contratar.
+</p>
+<p>
+  Para conhecer a rotina de uso, o mensal exige um compromisso inicial menor que o anual. A garantia
+  e as condições de renovação estão junto dos planos abaixo.
+</p>
+</div>
+</div>
+</div>
+</section>
+<section class="section tint" id="assinatura" aria-labelledby="title-assinatura">
+<div class="wrap">
+<h2 id="title-assinatura">Por {mensalLabel} ao mês, você oferece esse caminho de criação ao seu filho</h2>
+<div class="value-story">
+<p>
+  Quando chegar o momento que vocês reservaram para criar, seu filho encontra uma aula para
+  acompanhar e o projeto em que vai trabalhar. Pode montar as regras, testar o jogo e, nas
+  ferramentas liberadas, desenhar e experimentar outras versões. Ao publicar, recebe um link para
+  mostrar o resultado.
+</p>
+<p>
+  É esse conjunto que a assinatura da Comunidade oferece: aulas que mostram o que fazer, ferramentas
+  para criar e um lugar para guardar e publicar os projetos. Você tem por onde começar com ele,
+  acompanha o que está construindo e não precisa preparar as aulas de programação. Se surgir uma
+  dúvida, ele pode enviá-la pelos Recados.
+</p>
+<p>
+  Ferramentas e tutoriais gratuitos também permitem aprender e criar. A escolha pela assinatura faz
+  sentido quando sua família quer esse percurso reunido, com os projetos guiados e os espaços de
+  criação no mesmo ambiente. As aulas de entrada apresentam a criação por partes; a Jornada organiza
+  a continuidade conforme os cursos são publicados.
+</p>
+<p>
+  A assinatura permite até dois perfis de criança, cada um com seu próprio progresso e projetos. Se
+  os dois filhos estão na faixa atendida, podem participar com o mesmo plano e avançar no próprio
+  ritmo.
+</p>
+<p>
+  As aulas não têm horário marcado: vocês escolhem quando acessar e podem retomar a atividade em
+  outro momento. O formato não inclui encontros ao vivo.
+</p>
+</div>
+<div class="plans" id="planos">
+<article class="plan">
+<h3>Plano mensal</h3>
+<p class="price">{mensalLabel}<span>por mês</span>
+</p>
+<p>
+  Renovação automática no cartão. Você pode cancelar a próxima renovação pela sua área, e o acesso
+  continua até o fim do período pago.
+</p><button type="button" class="action" data-checkout-cta data-checkout-oferta={mensal?.slug}>Escolher o plano mensal</button>
+</article>
+<article class="plan annual">{economiaCents > 0 && <p class="saving">
+  Economia de {economiaLabel} em 12 meses
+</p>}<h3>Plano anual</h3>
+<p class="price">{anualLabel}<span>por 12 meses</span>
+</p>
+<p class="equivalent">
+  Equivale a {anualPorMesLabel} por mês.
+</p>{economiaCents > 0 && <p>
+  Comparado a {anualAncoraLabel} por 12 mensalidades.
+</p>}<p>
+  Pix à vista ou cobrança anual recorrente no cartão. No Pix, é necessário contratar novamente após
+  12 meses. No cartão, você pode cancelar a próxima renovação pela sua área.
+</p><button type="button" class="action" data-checkout-cta data-checkout-oferta={anual?.slug}>Escolher o plano anual</button>
+</article>
+</div>
+<div class="guarantee"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span>
+<div>
+<h3>Sete dias para conhecer a experiência</h3>
+<p>Na contratação, você tem sete dias para solicitar o reembolso integral pelo canal indicado nos <a href="/kids/termos" class="text-link">termos da assinatura</a>. Depois desse prazo, o cancelamento da renovação impede as próximas cobranças, e o acesso continua até o fim do período já pago.</p>
+<p>
+  A garantia vale para a contratação inicial e para cada nova contratação anual via Pix. As
+  renovações automáticas no cartão seguem as condições dos termos.
+</p>
+</div>
+</div>
+</div>
+</section>
+<section class="section" id="duvidas" aria-labelledby="title-duvidas">
+<div class="wrap">
+<h2 id="title-duvidas">Sua decisão também depende do que acontece depois da compra</h2>
+<div class="faq">
+<details>
+<summary>As ferramentas ficam todas abertas no primeiro acesso?</summary>
+<div>
+<p>
+  Nas aulas, a criança usa os recursos previstos para a etapa. O uso livre das ferramentas acompanha
+  a Jornada: Estúdio e Pinta no posto Construtor; Pensa, para organizar o projeto, e o assistente de
+  inteligência artificial Zappy no Inventor; Molda, a ferramenta de criação em 3D, no Explorador de
+  Mundos. Algumas liberações dependem de cursos que ainda serão publicados. A assinatura inclui as
+  ferramentas, sem compra adicional para liberá-las.
+</p>
+</div>
+</details>
+<details>
+<summary>Meu filho já fez o Desafio. Ele precisa repetir?</summary>
+<div>
+<p>
+  Ele pode continuar do ponto em que está. Se ainda falta concluir uma etapa ou publicar o projeto
+  necessário para avançar, a Jornada orienta esse próximo passo.
+</p>
+</div>
+</details>
+<details>
+<summary>Posso cadastrar irmãos?</summary>
+<div>
+<p>
+  Sim. A assinatura permite até dois perfis de criança, cada um com seu próprio progresso e seus
+  projetos.
+</p>
+</div>
+</details>
+<details>
+<summary>Preciso instalar algum programa?</summary>
+<div>
+<p>
+  As atividades e ferramentas abrem no navegador do computador. É necessário acesso à internet e uso
+  de mouse e teclado.
+</p>
+</div>
+</details>
+<details>
+<summary>Como funciona a participação no Clube?</summary>
+<div>
+<p>
+  As mensagens passam por moderação antes de aparecer. O perfil público começa desligado, e você
+  administra os perfis pela área do responsável.
+</p>
+</div>
+</details>
+<details>
+<summary>Como faço para cancelar?</summary>
+<div>
+<p>
+  Na área do responsável, em Minhas compras, você pode cancelar a próxima renovação. O acesso
+  continua até o fim do período pago. Para pedir o reembolso dentro da garantia, use o canal
+  indicado nos termos, informando o e-mail da compra.
+</p>
+</div>
+</details>
+<details>
+<summary>A garantia também vale nas renovações?</summary>
+<div>
+<p>
+  Os sete dias valem para a contratação inicial e para cada nova contratação anual paga via Pix. As
+  renovações automáticas no cartão seguem as condições dos termos. Cancelar a próxima renovação
+  impede novas cobranças; solicitar o reembolso de uma contratação dentro da garantia é outro
+  procedimento.
+</p>
+</div>
+</details>
+</div>
+</div>
+</section>
+<section class="section tint" id="convite" aria-labelledby="title-convite">
+<div class="wrap">
+<h2 id="title-convite">Você pode entrar na brincadeira que seu filho aprendeu a criar</h2>
+<div class="story-row">
+<div class="prose">
+<p>
+  Seu filho pode convidar você para jogar o jogo que criou e apontar o personagem que desenhou. Pode
+  mostrar a fase que estava difícil e contar como decidiu ajustá-la. Enquanto vocês experimentam o
+  jogo, surge uma conversa sobre o que ele fez, tentou e conseguiu resolver.
+</p>
+<p>
+  Na Comunidade, essa experiência começa por um projeto guiado e continua nas possibilidades que ele
+  vai aprendendo a usar. Escolha o plano e, no primeiro acesso, abram juntos a atividade de entrada.
+  Se ele já começou pelo Desafio, continuem do ponto em que está.
+</p><a class="action" href="#planos">Escolher um plano para meu filho</a>
+</div>
+<figure class="visual">
+  <a href={img('ilustra-vitoria.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem: Ilustração de uma criança mostrando a sua criação">
+    <img src={img('ilustra-vitoria.webp')} alt="Ilustração de uma criança mostrando a sua criação" width="1000" height="943" loading="lazy" decoding="async"  />
+  </a>
+  <figcaption><span class="visual-label">Visão ilustrativa da plataforma</span>Um jogo para experimentar juntos e uma história de criação para seu filho contar.</figcaption>
+</figure>
+</div>
+</div>
+</section>
+</main>
+</div>
+<Footer audience={f.audience} vitalicio={f.lifetimeAccess} />
+<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} />
 </BaseLayout>
 
-<script>
-  // Scroll reveal (mesmo padrão do DesafioOfertaBody).
-  const obs = new IntersectionObserver(
-    (entries) => {
-      for (const e of entries) {
-        if (e.isIntersecting) {
-          e.target.classList.add('visible')
-          obs.unobserve(e.target)
-        }
-      }
-    },
-    { threshold: 0.14 },
-  )
-  for (const el of Array.from(document.querySelectorAll('.cdc .reveal'))) obs.observe(el)
-
-  // Barra fixa mobile: aparece após a 1ª dobra, some perto dos planos.
-  // ⚠️ `#planos` vive DENTRO de uma section `position: relative` → `offsetTop`
-  // seria o offset LOCAL (pequeno, errado); mede a posição no DOCUMENTO via rect.
-  const mobar = document.querySelector('.cdc .mobar')
-  const planos = document.getElementById('planos')
-  if (mobar) {
-    window.addEventListener('scroll', () => {
-      const y = window.scrollY
-      const showAfter = window.innerHeight * 0.9
-      const hideNear = planos
-        ? planos.getBoundingClientRect().top + y - window.innerHeight
-        : Number.POSITIVE_INFINITY
-      mobar.classList.toggle('visible', y > showAfter && y < hideNear)
-    })
-  }
-</script>
-
 <style>
-  /* ===== Paleta Pen da plataforma Kids + base ===== */
   .cdc {
-    --azul: var(--sz-community-action);
-    --azul-esc: var(--sz-community-action-step);
-    --laranja: var(--sz-community-orange);
-    --laranja-cta: var(--sz-community-action);
-    --rosa: var(--sz-community-pink);
-    --roxo: var(--sz-community-purple);
-    --ciano: var(--sz-community-blue);
-    --verde: var(--sz-community-green);
-    --amarelo: var(--sz-community-yellow);
-    --creme: var(--sz-community-ground);
-    --ceu: var(--sz-community-ground-alt);
-    --superficie: var(--sz-community-surface-2);
-    --menta-bg: var(--sz-community-ground);
-    --rosa-bg: var(--sz-community-ground-alt);
-    --amar-bg: var(--sz-community-ground-alt);
-    --navy: var(--sz-community-menu);
-    --navy-2: var(--sz-community-menu-2);
-    --tinta: var(--sz-community-ink);
-    --tinta-suave: var(--sz-community-ink-muted);
-    --branco: var(--sz-community-card);
-    --borda: var(--sz-community-line);
-    --campo: var(--sz-community-field);
-    --degrau: var(--sz-community-action-step);
-    --degrau-cartao: var(--sz-community-card-step);
-    --sombra: 0 5px 0 var(--degrau-cartao);
-    --sombra-sm: 0 3px 0 var(--degrau-cartao);
-    --raio: 18px;
-    --raio-sm: 16px;
-    --head: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
-    --body: 'Nunito', ui-sans-serif, system-ui, sans-serif;
-    --maxw: 1120px;
-
-    font-family: var(--body);
-    color: var(--tinta);
-    background: var(--creme);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    /* `clip` (e não `hidden`): overflow hidden criaria um scroll container e
-       quebraria o position: sticky da faixa do topo. */
+    --ink: var(--sz-community-ink);
+    --muted: var(--sz-community-ink-muted);
+    --ground: var(--sz-community-ground);
+    --tint: var(--sz-community-ground-alt);
+    --card: var(--sz-community-card);
+    --line: var(--sz-community-line);
+    --action: var(--sz-community-action);
+    color: var(--ink);
+    background: var(--ground);
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.75;
     overflow-x: clip;
   }
-  .cdc h1,
-  .cdc h2,
-  .cdc h3,
-  .cdc h4 {
-    font-family: var(--head);
-    line-height: 1.14;
-    letter-spacing: -0.01em;
+  .cdc *, .cdc *::before, .cdc *::after { box-sizing: border-box; }
+  .cdc h1, .cdc h2, .cdc h3 {
+    font-family: 'Baloo 2', sans-serif;
     font-weight: 700;
-    margin: 0;
+    line-height: 1.16;
+    letter-spacing: -0.025em;
     text-wrap: balance;
-  }
-  .cdc p {
     margin: 0;
   }
-  .cdc img {
-    max-width: 100%;
-    display: block;
-  }
-  .cdc a {
-    text-decoration: none;
-    color: inherit;
-  }
-  .cdc .wrap {
-    width: 100%;
-    max-width: var(--maxw);
-    margin: 0 auto;
-    padding: 0 22px;
-  }
-  .cdc .sec {
-    padding: 74px 0;
-    position: relative;
-    overflow: hidden;
-  }
-  .cdc .sec-slim {
-    padding: 30px 0;
-  }
-  .cdc .sec-tint {
-    background: var(--ceu);
-  }
-  .cdc .sec-verde {
-    background: var(--creme);
-  }
-  .cdc .sec-rosa {
-    background: var(--rosa-bg);
-  }
-  .cdc .sec-amar {
-    background: var(--amar-bg);
-  }
-  .cdc .center {
-    text-align: center;
-  }
-  .cdc .eyebrow {
-    display: inline-block;
-    font-family: var(--head);
-    font-weight: 600;
-    font-size: 0.82rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--azul);
-    background: #fff;
-    border: 2px solid var(--borda);
-    padding: 6px 16px;
-    border-radius: 22px;
-    box-shadow: var(--sombra-sm);
-    margin-bottom: 18px;
-    line-height: 1.45;
-    text-align: center;
-  }
-  .cdc .sec h2 {
-    font-size: clamp(1.66rem, 4.2vw, 2.5rem);
-    font-weight: 700;
-  }
-  .cdc .hl {
-    color: var(--azul);
-  }
-  .cdc .hl2 {
-    color: var(--azul);
-  }
-  .cdc .sub {
-    font-size: clamp(1rem, 2.1vw, 1.16rem);
-    color: var(--tinta-suave);
-    max-width: 680px;
-    margin: 14px auto 0;
-  }
-  .cdc .tese {
-    max-width: 860px;
-    margin: 30px auto 0;
-    background: #fff;
-    border-left: 6px solid var(--amarelo);
-    border-top: 2px solid var(--borda);
-    border-right: 2px solid var(--borda);
-    border-bottom: 2px solid var(--borda);
-    border-radius: 0 var(--raio-sm) var(--raio-sm) 0;
-    padding: 18px 22px;
-    font-weight: 700;
-    box-shadow: var(--sombra-sm);
-  }
-  .cdc .evidence {
-    max-width: 920px;
-    margin: 34px auto 0;
-    padding: 22px;
-    background: #fff;
-    border: 2px solid var(--borda);
-    border-radius: var(--raio);
-    box-shadow: var(--sombra-sm);
-  }
-  .cdc .evidence > p {
-    color: var(--tinta-suave);
-    font-weight: 700;
-  }
-  .cdc .evidence-links {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-top: 18px;
-  }
-  .cdc .evidence-links > div {
-    display: grid;
-    gap: 4px;
-    padding: 14px;
-    border: 2px solid var(--borda);
-    border-radius: 14px;
-    background: var(--ceu);
-  }
-  .cdc .evidence-links strong {
-    color: var(--azul);
-    font-family: var(--head);
-    font-size: 1rem;
-  }
-  .cdc .evidence-links span,
-  .cdc .evidence small {
-    color: var(--tinta-suave);
-    line-height: 1.45;
-  }
-  .cdc .evidence small {
-    display: block;
-    margin-top: 16px;
-  }
-  @media (max-width: 760px) {
-    .cdc .evidence-links {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== botões 3D da plataforma Kids ===== */
-  .cdc .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    cursor: pointer;
-    border: none;
-    font-family: var(--head);
-    font-weight: 600;
-    font-size: 1.08rem;
-    min-height: 48px;
-    color: #fff;
-    background: var(--azul);
-    border-radius: 16px;
-    padding: 16px 30px;
-    box-shadow: 0 6px 0 var(--degrau);
-    transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease;
-    text-align: center;
-    line-height: 1.15;
-  }
-  .cdc .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 7px 0 var(--degrau);
-  }
-  .cdc .btn:active {
-    transform: translateY(4px);
-    box-shadow: 0 2px 0 var(--degrau);
-  }
-  .cdc .btn:focus-visible {
-    outline: 3px solid color-mix(in srgb, var(--azul) 35%, white);
-    outline-offset: 4px;
-  }
-  .cdc .btn .material-symbols-rounded {
-    font-size: 22px;
-  }
-  .cdc .btn.big {
-    font-size: 1.2rem;
-    padding: 20px 38px;
-  }
-
-  /* ===== topo fixo ===== */
-  .cdc .topbar {
-    position: sticky;
-    top: 0;
-    z-index: 40;
-    background: color-mix(in srgb, var(--creme) 92%, transparent);
-    backdrop-filter: blur(10px);
-    border-bottom: 2px solid var(--borda);
-  }
-  .cdc .nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    height: 68px;
-  }
-  .cdc .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 1.06rem;
-    color: var(--navy);
-  }
-  .cdc .logo .badge {
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    background: var(--azul);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    box-shadow: 0 3px 0 var(--degrau);
-    flex-shrink: 0;
-  }
-  .cdc .logo .badge .material-symbols-rounded {
-    font-size: 22px;
-  }
-  .cdc .price-mini {
-    font-family: var(--head);
-    font-weight: 700;
-    color: var(--azul);
-    white-space: nowrap;
-  }
-  .cdc .header-cta {
-    padding: 10px 18px;
-    font-size: 0.98rem;
-    box-shadow: 0 5px 0 var(--degrau);
-    /* compensa a sombra 3D dentro da barra de altura fixa */
-    margin-bottom: 6px;
-  }
-  @media (max-width: 640px) {
-    .cdc .price-mini {
-      display: none;
-    }
-    .cdc .logo {
-      font-size: 0.95rem;
-    }
-    .cdc .header-cta .lbl {
-      display: none;
-    }
-  }
-
-  /* ===== hero ===== */
-  .cdc .hero {
-    background: var(--creme);
-    padding-top: 54px;
-  }
-  .cdc .hero .grid {
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 36px;
-    align-items: center;
-  }
-  .cdc .hero h1 {
-    font-size: clamp(1.9rem, 4.4vw, 2.9rem);
-    letter-spacing: -0.02em;
-    margin-bottom: 16px;
-  }
-  .cdc .hero .lead {
-    font-size: clamp(1.02rem, 2vw, 1.16rem);
-    color: var(--tinta-suave);
-    font-weight: 600;
-    max-width: 560px;
-    margin-bottom: 20px;
-  }
-  .cdc .hero-bullets {
-    list-style: none;
-    display: grid;
-    gap: 12px;
-    margin: 0 0 26px;
-    padding: 0;
-  }
-  .cdc .hero-bullets li {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    font-weight: 700;
-  }
-  .cdc .hero-bullets .tick {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--verde);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 3px 0 color-mix(in srgb, var(--verde) 65%, black);
-    margin-top: 2px;
-  }
-  .cdc .hero-bullets .tick .material-symbols-rounded {
-    font-size: 18px;
-  }
-  .cdc .seals {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 22px;
-    margin-top: 32px;
-    font-weight: 700;
-    color: var(--tinta-suave);
-    font-size: 0.95rem;
-  }
-  .cdc .seals span {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-  }
-  .cdc .seals .material-symbols-rounded {
-    color: var(--verde);
-    font-size: 20px;
-  }
-  .cdc .hero-art {
-    position: relative;
-  }
-  .cdc .hero-art .glow {
-    display: none;
-  }
-  .cdc .hero-art img {
-    position: relative;
-    filter: drop-shadow(0 22px 30px rgba(28, 48, 90, 0.18));
-  }
-  /* Ilustrações são RECORTES (webp transparente, chroma cortado): integram no
-     fundo da página com drop-shadow, como o hero e os balões de fala — NUNCA
-     border-radius/box-shadow (viravam um "cartão com relevo" em volta do PNG
-     transparente; feedback da usuária 13/07). Print/screenshot é a exceção e
-     tem moldura própria (.shot). */
-  .cdc .art img {
-    border-radius: 0;
-  }
-  .cdc .deco {
-    position: absolute;
-    pointer-events: none;
-  }
-  .cdc .float {
-    animation: cdc-float 5s ease-in-out infinite;
-  }
-  .cdc .float.slow {
-    animation-duration: 7s;
-  }
-  .cdc .float.rev {
-    animation-direction: reverse;
-  }
-  @keyframes cdc-float {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-12px);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .cdc .float {
-      animation: none;
-    }
-  }
-  .cdc .blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(2px);
-    opacity: 0.6;
-    pointer-events: none;
-  }
-
-  /* ===== balões dos personagens (mesmo padrão do Desafio) ===== */
-  .cdc .kid {
-    display: flex;
-    align-items: flex-end;
-    gap: 18px;
-    max-width: 720px;
-    margin: 46px auto 0;
-    text-align: left;
-  }
-  .cdc .kid .char {
-    flex-shrink: 0;
-    width: 120px;
-    text-align: center;
-  }
-  .cdc .kid .char img {
-    border-radius: 0;
-    filter: drop-shadow(0 10px 16px rgba(28, 48, 90, 0.2));
-  }
-  .cdc .kid .char .name {
-    display: inline-block;
-    margin-top: 6px;
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 0.88rem;
-    color: #fff;
-    background: var(--azul);
-    padding: 3px 12px;
-    border-radius: 12px;
-  }
-  .cdc .kid.verde .char .name {
-    background: var(--verde);
-  }
-  .cdc .kid.rosa .char .name {
-    background: var(--rosa);
-  }
-  .cdc .kid .bubble {
-    position: relative;
-    background: #fff;
-    border: 2px solid var(--borda);
-    border-radius: var(--raio);
-    padding: 18px 22px;
-    font-weight: 600;
-    box-shadow: var(--sombra-sm);
-    margin-bottom: 26px;
-  }
-  .cdc .kid .bubble::before {
-    content: '';
-    position: absolute;
-    left: -12px;
-    bottom: 24px;
-    width: 22px;
-    height: 22px;
-    background: #fff;
-    border-left: 2px solid var(--borda);
-    border-bottom: 2px solid var(--borda);
-    transform: rotate(45deg);
-    border-radius: 0 0 0 6px;
-  }
-  @media (max-width: 560px) {
-    .cdc .kid {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-    .cdc .kid .bubble::before {
-      display: none;
-    }
-  }
-
-  /* ===== faixa de confiança ===== */
-  .cdc .stats-band {
-    background: var(--navy);
-    color: #fff;
-    padding: 22px 0;
-  }
-  .cdc .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
-  }
-  .cdc .stat {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    text-align: left;
-    min-height: 82px;
-    padding: 14px 18px;
-    background: var(--navy-2);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--raio-sm);
-  }
-  .cdc .stat .material-symbols-rounded {
-    font-size: 30px;
-    color: var(--amarelo);
-    flex-shrink: 0;
-  }
-  .cdc .stat .l {
-    font-weight: 700;
-    font-size: 0.94rem;
-    line-height: 1.35;
-    opacity: 0.94;
-  }
-  @media (max-width: 720px) {
-    .cdc .stats {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-    .cdc .stat {
-      justify-content: flex-start;
-    }
-  }
-
-  /* ===== seções de feature (imagem + texto) ===== */
-  .cdc .feat {
-    display: grid;
-    grid-template-columns: 1fr 1.1fr;
-    gap: 40px;
-    align-items: center;
-    max-width: 1000px;
-    margin: 34px auto 0;
-  }
-  .cdc .feat-rev {
-    grid-template-columns: 1.1fr 1fr;
-  }
-  .cdc .feat-rev > :first-child {
-    order: 2;
-  }
-  .cdc .feat .art img {
-    filter: drop-shadow(0 18px 28px rgba(28, 48, 90, 0.18));
-  }
-  .cdc .feat-txt {
-    display: grid;
-    gap: 14px;
-    font-size: 1.04rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  .cdc .feat-txt strong {
-    color: var(--tinta);
-  }
-  @media (max-width: 860px) {
-    .cdc .feat,
-    .cdc .feat-rev {
-      grid-template-columns: 1fr;
-      gap: 22px;
-    }
-    .cdc .feat-rev > :first-child {
-      order: 0;
-    }
-  }
-
-  /* ===== paliativos ===== */
-  .cdc .pal {
-    display: grid;
-    gap: 16px;
-    max-width: 840px;
-    margin: 34px auto 0;
-  }
-  .cdc .pal-item {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 22px 24px;
-    box-shadow: var(--sombra-sm);
-    border: 2px solid var(--borda);
-    display: flex;
-    gap: 16px;
-  }
-  .cdc .pal-item .xi {
-    flex-shrink: 0;
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--azul) 10%, white);
-    color: var(--azul);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .cdc .pal-item h4 {
-    font-size: 1.1rem;
-    margin-bottom: 5px;
-  }
-  .cdc .pal-item p {
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-
-  /* ===== depoimentos ===== */
-  .cdc .depo-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    max-width: 1050px;
-    margin: 34px auto 0;
-    text-align: left;
-  }
-  .cdc .depo {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 24px;
-    box-shadow: var(--sombra);
-    border: 2px solid var(--borda);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .cdc .depo .quote {
-    font-weight: 700;
-    color: var(--tinta);
-    flex: 1;
-  }
-  .cdc .depo .who {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .cdc .depo .av {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    overflow: hidden;
-    flex-shrink: 0;
-    box-shadow: var(--sombra-sm);
-  }
-  .cdc .depo .av img {
-    border-radius: 50%;
-  }
-  .cdc .depo .who-name {
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 0.98rem;
-    line-height: 1.2;
-  }
-  .cdc .depo .who-name small {
-    display: block;
-    font-family: var(--body);
-    font-weight: 600;
-    color: var(--tinta-suave);
-    font-size: 0.8rem;
-  }
-  @media (max-width: 860px) {
-    .cdc .depo-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== banda CTA ===== */
-  .cdc .ctaband {
-    background: var(--navy);
-    border: 2px solid var(--navy-2);
-    border-radius: var(--raio);
-    padding: 42px 32px;
-    text-align: center;
-    color: #fff;
-    box-shadow: var(--sombra);
-  }
-  .cdc .ctaband h3 {
-    font-size: clamp(1.3rem, 3vw, 1.8rem);
-    margin-bottom: 26px;
-    color: #fff;
-  }
-
-  /* ===== método Z.E.R.O. ===== */
-  .cdc .zero {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
-    max-width: 1050px;
-    margin: 34px auto 0;
-  }
-  .cdc .zstep {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 24px 20px;
-    box-shadow: var(--sombra);
-    border: 2px solid var(--borda);
-    border-top: 6px solid var(--c);
-  }
-  .cdc .zstep .zl {
-    font-family: var(--head);
-    font-weight: 800;
-    font-size: 2.4rem;
-    line-height: 1;
-    color: var(--c);
-  }
-  .cdc .zstep h4 {
-    font-size: 1.08rem;
-    margin: 6px 0 8px;
-  }
-  .cdc .zstep p {
-    font-size: 0.94rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  .cdc .z1 {
-    --c: var(--rosa);
-  }
-  .cdc .z2 {
-    --c: var(--azul);
-  }
-  .cdc .z3 {
-    --c: var(--laranja);
-  }
-  .cdc .z4 {
-    --c: var(--verde);
-  }
-  .cdc .zloop {
-    text-align: center;
-    font-family: var(--head);
-    font-weight: 700;
-    color: var(--roxo);
-    margin-top: 20px;
-  }
-  .cdc .journey {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    max-width: 900px;
-    margin: 22px auto 0;
-  }
-  .cdc .lvl-pill {
-    background: #fff;
-    border-radius: 50px;
-    padding: 10px 20px;
-    font-family: var(--head);
-    font-weight: 700;
-    box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 28%, var(--degrau-cartao));
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    border: 2px solid var(--c);
-    color: var(--c);
-  }
-  .cdc .lvl-pill .material-symbols-rounded {
-    font-size: 20px;
-  }
-  @media (max-width: 860px) {
-    .cdc .zero {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-  @media (max-width: 560px) {
-    .cdc .zero {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== decorados (o que desenvolve) ===== */
-  .cdc .dev {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    max-width: 1050px;
-    margin: 34px auto 0;
-  }
-  .cdc .dev-item {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 24px 22px;
-    box-shadow: var(--sombra-sm);
-    border: 2px solid var(--borda);
-  }
-  .cdc .dev-item .di {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    margin-bottom: 14px;
-  }
-  .cdc .dev-item .di .material-symbols-rounded {
-    font-size: 26px;
-  }
-  .cdc .dev-item h4 {
-    font-size: 1.1rem;
-    margin-bottom: 6px;
-  }
-  .cdc .dev-item p {
-    font-size: 0.96rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  @media (max-width: 860px) {
-    .cdc .dev {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== cards genéricos (plataforma / entregáveis / bônus) ===== */
-  .cdc .cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 22px;
-    max-width: 1050px;
-    margin: 34px auto 0;
-    text-align: left;
-  }
-  .cdc .card {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 24px;
-    box-shadow: var(--sombra);
-    border: 2px solid var(--borda);
-    position: relative;
-  }
-  .cdc .card.card-wide {
-    grid-column: 2;
-  }
-  .cdc .card h3 {
-    font-size: 1.14rem;
-    margin-bottom: 8px;
-  }
-  .cdc .card p {
-    font-size: 0.98rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  .cdc .card.destaque {
-    background: var(--superficie);
-    border-color: color-mix(in srgb, var(--azul) 45%, var(--borda));
-  }
-  .cdc .card .shot {
-    margin: 0 0 14px;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: var(--sombra-sm);
-    /* Print INTEIRO (nada de corte — senão não dá pra ler): a imagem é contida e
-       o vão é preenchido com o azul-céu claro da própria plataforma (#F0F9FF, a
-       cor de fundo dos prints), compondo sem emenda. Altura fixa p/ o grid alinhar. */
-    height: 200px;
-    background: var(--superficie);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--borda);
-    box-shadow: none;
-  }
-  .cdc .card .shot img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    border-radius: 0;
-  }
-  /* Screenshot emoldurado no bloco de feature (Recados no Suporte): moldura branca
-     arredondada + borda fina, imagem inteira (sem corte), sombra do card. */
-  .cdc .shot-feat {
-    background: #fff;
-    border-radius: 18px;
-    padding: 8px;
-    border: 2px solid var(--borda);
-    box-shadow: var(--sombra);
-  }
-  @media (max-width: 860px) {
-    .cdc .cards {
-      grid-template-columns: 1fr;
-    }
-    .cdc .card.card-wide {
-      grid-column: auto;
-    }
-  }
-
-  /* ===== para quem é / não é ===== */
-  .cdc .two {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    max-width: 1000px;
-    margin: 34px auto 0;
-    text-align: left;
-  }
-  .cdc .two-box {
-    background: #fff;
-    border: 2px solid var(--borda);
-    border-radius: var(--raio);
-    padding: 26px;
-    box-shadow: var(--sombra);
-  }
-  .cdc .two-box.is {
-    border-top: 6px solid var(--verde);
-  }
-  .cdc .two-box.isnt {
-    border-top: 6px solid var(--sz-community-red);
-  }
-  .cdc .two-box h3 {
-    font-size: 1.16rem;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .cdc .two-box ul {
-    list-style: none;
-    display: grid;
-    gap: 12px;
-    margin: 0;
-    padding: 0;
-  }
-  .cdc .two-box li {
-    display: flex;
-    gap: 11px;
-    font-weight: 600;
-  }
-  .cdc .two-box .mk {
-    flex-shrink: 0;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    margin-top: 2px;
-  }
-  .cdc .two-box .mk .material-symbols-rounded {
-    font-size: 16px;
-  }
-  .cdc .is .mk {
-    background: var(--verde);
-  }
-  .cdc .isnt .mk {
-    background: var(--sz-community-red);
-  }
-  @media (max-width: 860px) {
-    .cdc .two {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== planos (mensal × anual) ===== */
-  .cdc .plans {
-    display: grid;
-    grid-template-columns: 1fr 1.15fr;
-    gap: 22px;
-    max-width: 820px;
-    margin: 40px auto 0;
-    align-items: stretch;
-    scroll-margin-top: 90px;
-  }
-  .cdc .plan {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 30px 26px;
-    box-shadow: var(--sombra);
-    border: 2px solid var(--borda);
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    position: relative;
-  }
-  .cdc .plan.destaque {
-    border-color: var(--azul);
-    background: var(--superficie);
-  }
-  .cdc .plan h4 {
-    font-size: 1.2rem;
-    color: var(--tinta-suave);
-  }
-  .cdc .plan.destaque h4 {
-    color: var(--azul);
-  }
-  .cdc .plan .from {
-    font-size: 0.9rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  .cdc .plan .now {
-    font-family: var(--head);
-    font-weight: 800;
-    font-size: 2.6rem;
-    line-height: 1;
-    color: var(--navy);
-  }
-  .cdc .plan .now small {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--tinta-suave);
-  }
-  .cdc .plan.destaque .now {
-    color: var(--azul);
-  }
-  .cdc .plan .permonth {
-    font-family: var(--head);
-    font-weight: 700;
-    color: var(--azul);
-  }
-  .cdc .plan .cond {
-    font-size: 0.9rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-    flex: 1;
-  }
-  .cdc .plan .plan-btn {
-    width: 100%;
-    margin-top: 8px;
-    font-size: 1.05rem;
-    padding: 16px 18px;
-    /* respiro pra sombra 3D dentro do card */
-    margin-bottom: 10px;
-  }
-  .cdc .plan-badge {
-    position: absolute;
-    top: -14px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--verde);
-    color: #fff;
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 0.85rem;
-    padding: 5px 16px;
-    border-radius: 40px;
-    box-shadow: var(--sombra-sm);
-    white-space: nowrap;
-  }
-  .cdc .plans-mini {
-    text-align: center;
-    margin-top: 18px;
-    font-weight: 700;
-    color: var(--tinta-suave);
-    font-size: 0.92rem;
-  }
-  @media (max-width: 720px) {
-    .cdc .plans {
-      grid-template-columns: 1fr;
-    }
-    /* no mobile o ANUAL (destaque) vem primeiro */
-    .cdc .plan.destaque {
-      order: -1;
-    }
-  }
-
-  /* ===== autoridade ===== */
-  .cdc .auth .grid {
-    display: grid;
-    grid-template-columns: 0.85fr 1.15fr;
-    gap: 40px;
-    align-items: center;
-    max-width: 1000px;
-    margin: 34px auto 0;
-  }
-  .cdc .auth .art img {
-    filter: drop-shadow(0 18px 28px rgba(28, 48, 90, 0.18));
-  }
-  .cdc .auth .story {
-    display: grid;
-    gap: 13px;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  .cdc .auth .lead-line {
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 1.16rem;
-    color: var(--tinta);
-  }
-  .cdc .who-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: #fff;
-    border: 2px solid var(--borda);
-    color: var(--azul);
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 0.9rem;
-    padding: 6px 14px;
-    border-radius: 40px;
-    box-shadow: var(--sombra-sm);
-    justify-self: start;
-  }
-  .cdc .who-tag .material-symbols-rounded {
-    font-size: 18px;
-  }
-  @media (max-width: 860px) {
-    .cdc .auth .grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== FAQ ===== */
-  .cdc .faq-wrap {
-    max-width: 780px;
-    margin: 34px auto 0;
-    display: grid;
-    gap: 12px;
-    text-align: left;
-  }
-  .cdc .faq {
-    background: #fff;
-    border-radius: var(--raio-sm);
-    box-shadow: var(--sombra-sm);
-    border: 2px solid var(--borda);
-    overflow: hidden;
-  }
-  .cdc .faq summary {
-    list-style: none;
-    cursor: pointer;
-    padding: 18px 22px;
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 1.02rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 14px;
-    min-height: 56px;
-  }
-  .cdc .faq summary:focus-visible {
-    outline: 3px solid color-mix(in srgb, var(--azul) 28%, transparent);
-    outline-offset: -3px;
-  }
-  .cdc .faq summary::-webkit-details-marker {
-    display: none;
-  }
-  .cdc .faq summary .material-symbols-rounded {
-    color: var(--azul);
-    transition: transform 0.2s;
-    flex-shrink: 0;
-  }
-  .cdc .faq[open] summary .material-symbols-rounded {
-    transform: rotate(45deg);
-  }
-  .cdc .faq .a {
-    padding: 0 22px 20px;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-
-  /* ===== oferta final ===== */
-  .cdc .final {
-    background: var(--ceu);
-  }
-  .cdc .final-grid {
-    display: grid;
-    grid-template-columns: 0.8fr 1.2fr;
-    gap: 36px;
-    align-items: center;
-    max-width: 1000px;
-    margin: 34px auto 0;
-  }
-  .cdc .final-art img {
-    margin: 0 auto;
-    filter: drop-shadow(0 18px 26px rgba(28, 48, 90, 0.18));
-  }
-  .cdc .final-list-title {
-    font-weight: 800;
-    color: var(--tinta);
-  }
-  .cdc .final-list {
-    list-style: none;
-    display: grid;
-    gap: 9px;
-    margin: 0;
-    padding: 0;
-  }
-  .cdc .final-list li {
-    display: flex;
-    gap: 10px;
-    font-weight: 700;
-    color: var(--tinta);
-    font-size: 0.99rem;
-  }
-  .cdc .final-list .material-symbols-rounded {
-    color: var(--verde);
-    font-size: 20px;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  .cdc .final-cta {
-    text-align: center;
-    margin-top: 38px;
-  }
-  .cdc .price-line {
-    margin-top: 26px;
-    font-weight: 700;
-    color: var(--tinta-suave);
-  }
-  .cdc .terms {
-    font-size: 0.84rem;
-    color: var(--tinta-suave);
-    max-width: 760px;
-    margin: 26px auto 0;
-    text-align: center;
-  }
-  .cdc .terms a {
-    text-decoration: underline;
-  }
-  @media (max-width: 860px) {
-    .cdc .final-grid {
-      grid-template-columns: 1fr;
-      gap: 22px;
-    }
-    .cdc .final-art img {
-      max-width: 300px;
-    }
-  }
-
-  /* ===== barra fixa mobile ===== */
-  .cdc .mobar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 45;
-    display: none;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    background: rgba(18, 26, 48, 0.97);
-    backdrop-filter: blur(8px);
-    border-top: 2px solid var(--navy-2);
-    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
-    transform: translateY(110%);
-    transition: transform 0.25s ease;
-  }
-  .cdc .mobar.visible {
-    transform: translateY(0);
-  }
-  .cdc .mobar .p {
-    font-family: var(--head);
-    font-weight: 700;
-    color: #fff;
-    font-size: 0.98rem;
-  }
-  .cdc .mobar .dias {
-    color: var(--sz-community-menu-text);
-    font-size: 0.85rem;
-    font-weight: 600;
-  }
-  .cdc .mobar-btn {
-    padding: 12px 22px;
-    font-size: 1rem;
-    box-shadow: 0 5px 0 var(--degrau);
-    margin-bottom: 4px;
-  }
-  @media (max-width: 860px) {
-    .cdc .mobar {
-      display: flex;
-    }
-  }
-
-  /* ===== reveal on scroll ===== */
-  .cdc .reveal {
-    opacity: 0;
-    transform: translateY(22px);
-    transition:
-      opacity 0.55s ease,
-      transform 0.55s ease;
-  }
-  .cdc .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .cdc .reveal {
-      opacity: 1;
-      transform: none;
-      transition: none;
-    }
-  }
-
-  /* ===== hero responsivo ===== */
-  @media (max-width: 860px) {
-    .cdc .hero .grid {
-      grid-template-columns: 1fr;
-      gap: 18px;
-    }
-    .cdc .hero-art img {
-      max-width: 320px;
-      margin: 0 auto;
-    }
-    .cdc .sec {
-      padding: 54px 0;
-    }
-  }
-
-  /* ===== comparação: ferramenta gratuita × escola × Comunidade (bloco 9) ===== */
-  .cdc .cmp-scroll {
-    max-width: 1050px;
-    margin: 34px auto 0;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .cdc .cmp-table {
-    width: 100%;
-    min-width: 720px;
-    border-collapse: separate;
-    border-spacing: 0;
-    background: #fff;
-    border: 2px solid var(--borda);
-    border-radius: var(--raio);
-    box-shadow: var(--sombra-sm);
-    overflow: hidden;
-    font-size: 0.95rem;
-    text-align: left;
-  }
-  .cdc .cmp-table th,
-  .cdc .cmp-table td {
-    padding: 14px 16px;
-    border-bottom: 2px solid var(--borda);
-    vertical-align: top;
-    line-height: 1.4;
-  }
-  .cdc .cmp-table thead th {
-    font-family: var(--head);
-    font-weight: 700;
-    color: var(--tinta);
-    background: var(--ceu);
-  }
-  .cdc .cmp-table thead th small {
-    display: block;
-    font-family: var(--body);
-    font-weight: 600;
-    font-size: 0.8rem;
-    color: var(--tinta-suave);
-  }
-  .cdc .cmp-table tbody th {
-    font-weight: 700;
-    color: var(--tinta);
-    width: 26%;
-  }
-  .cdc .cmp-table td {
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  .cdc .cmp-table .us {
-    background: color-mix(in srgb, var(--azul) 8%, white);
-    color: var(--tinta);
-    font-weight: 700;
-  }
-  .cdc .cmp-table thead th.us {
-    color: var(--azul);
-  }
-  .cdc .cmp-table tbody tr:last-child th,
-  .cdc .cmp-table tbody tr:last-child td {
-    border-bottom: 0;
-  }
-  .cdc .sr {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
+  .cdc h1 { font-size: clamp(2.65rem, 4.6vw, 4.5rem); }
+  .cdc h1 span { color: var(--action); }
+  .cdc h2 { font-size: clamp(2rem, 3.4vw, 3rem); max-width: 850px; margin-bottom: 2.25rem; }
+  .cdc h3 { font-size: clamp(1.5rem, 2.2vw, 1.9rem); margin-bottom: 1rem; }
+  .cdc p { margin: 0 0 1.1rem; }
+  .cdc p:last-child { margin-bottom: 0; }
+  .cdc a { color: inherit; }
+  .cdc img { display: block; max-width: 100%; height: auto; }
+  .cdc figure, .cdc blockquote { margin: 0; }
+  .cdc .wrap { width: min(100% - 3rem, 1160px); margin-inline: auto; }
+  .cdc .section { padding: 5rem 0; }
+  .cdc .tint { background: var(--tint); }
+  .cdc [id] { scroll-margin-top: 110px; }
+  .cdc .topbar { position: sticky; top: 0; z-index: 20; background: var(--card); border-bottom: 1px solid var(--line); }
+  .cdc .nav { display: flex; justify-content: space-between; align-items: center; min-height: 84px; gap: 1.5rem; }
+  .cdc .brand { display: flex; align-items: center; gap: .7rem; text-decoration: none; font-family: 'Baloo 2', sans-serif; font-weight: 700; line-height: 1.05; font-size: 1.15rem; }
+  .cdc .brand .material-symbols-rounded { font-size: 2.25rem; color: var(--action); }
+  .cdc .action { display: inline-flex; align-items: center; justify-content: center; padding: 1rem 1.4rem; border: 0; border-radius: 14px; background: var(--action); color: var(--sz-community-on-action); box-shadow: 0 5px 0 var(--sz-community-action-step); font: 800 1rem/1.35 'Nunito', sans-serif; text-align: center; text-decoration: none; cursor: pointer; transition: background .15s, transform .15s; }
+  .cdc .action:hover { background: var(--sz-community-action-hover); }
+  .cdc .action:active { transform: translateY(2px); }
+  .cdc .compact { padding: .75rem 1.1rem; font-size: .9rem; }
+  .cdc a:focus-visible, .cdc button:focus-visible, .cdc summary:focus-visible { outline: 3px solid var(--action); outline-offset: 6px; }
+  .cdc .text-link { color: var(--action); text-underline-offset: 4px; font-weight: 800; }
+  .cdc .skip-link { position: absolute; transform: translateY(-200%); z-index: 30; padding: 1rem; background: var(--card); }
+  .cdc .skip-link:focus { transform: translateY(0); }
+  .cdc .hero { padding: 3.8rem 0 4.5rem; }
+  .cdc .hero-grid { display: grid; grid-template-columns: 1.02fr 1fr; gap: 3.5rem; align-items: center; }
+  .cdc .lead { font-size: 1.13rem; line-height: 1.7; margin-top: 1.2rem; }
+  .cdc .hero-benefits { list-style: none; padding: 0; margin: 1.4rem 0 1.75rem; display: grid; gap: .9rem; }
+  .cdc .hero-benefits li { position: relative; padding-left: 1.8rem; line-height: 1.5; }
+  .cdc .hero-benefits li::before { content: '✓'; position: absolute; left: 0; color: var(--action); font-weight: 900; }
+  .cdc .hero-actions { display: flex; flex-direction: column; gap: 1.3rem; align-items: flex-start; }
+  .cdc .requirements { font-size: .86rem; line-height: 1.55; margin-top: 1.6rem; color: var(--muted); max-width: 450px; }
+  .cdc .requirements p { margin-bottom: .4rem; }
+  .cdc .visual { min-width: 0; }
+  .cdc .visual > a { display: block; border-radius: 22px; overflow: hidden; background: var(--card); border: 1px solid var(--line); box-shadow: 0 6px 0 var(--sz-community-card-step); }
+  .cdc .visual img { width: 100%; }
+  .cdc figcaption { font-size: .87rem; line-height: 1.5; margin-top: 1rem; color: var(--muted); }
+  .cdc .visual-label { display: block; font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-bottom: .3rem; }
+  .cdc .story-row { display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem; align-items: center; margin-top: 3.4rem; }
+  .cdc h2 + .story-row, .cdc h2 + .anchor-target .story-row { margin-top: 0; }
+  .cdc .story-row.reverse .prose { order: 2; }
+  .cdc .story-row.reverse > figure { order: 1; }
+  .cdc .prose { min-width: 0; }
+  .cdc .prose h3:not(:first-child) { margin-top: 2rem; }
+  .cdc .argument-close { max-width: 820px; margin: 3rem auto 0; padding-left: 1.5rem; border-left: 4px solid var(--sz-community-yellow); }
+  .cdc .section-intro { max-width: 790px; }
+  .cdc .testimonials { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem; margin-top: 2rem; }
+  .cdc .testimonial { background: var(--card); padding: 1.7rem; border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 5px 0 var(--sz-community-card-step); }
+  .cdc .testimonial img { width: 72px; height: 72px; border-radius: 50%; margin-bottom: 1.3rem; }
+  .cdc .testimonial blockquote { font-size: 1.07rem; }
+  .cdc .testimonial figcaption strong, .cdc .testimonial figcaption span { display: block; }
+  .cdc .testimonial figcaption strong { font-size: 1rem; color: var(--ink); }
+  .cdc .section-action { text-align: center; margin-top: 2.5rem; }
+  .cdc .support-note { display: flex; gap: 1.25rem; padding: 1.8rem; border-radius: 20px; background: var(--tint); margin-top: 3rem; }
+  .cdc .support-note > .material-symbols-rounded { color: var(--action); font-size: 2rem; flex-shrink: 0; }
+  .cdc .family-photo img { width: 100%; max-height: 590px; object-fit: cover; border-radius: 24px; }
+  .cdc .objections { display: grid; grid-template-columns: 1fr 1fr; column-gap: 3.5rem; row-gap: 2.75rem; margin-top: 2.5rem; }
+  .cdc .objection { border-top: 3px solid var(--line); padding-top: 1.5rem; }
+  .cdc .value-story { max-width: 800px; }
+  .cdc .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 2.75rem 0; }
+  .cdc .plan { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; padding: 2rem; background: var(--card); border: 2px solid var(--line); border-radius: 24px; box-shadow: 0 5px 0 var(--sz-community-card-step); }
+  .cdc .plan h3, .cdc .plan p { margin: 0; }
+  .cdc .plan .action { width: 100%; margin-top: auto; }
+  .cdc .plan.annual { border-color: var(--action); }
+  .cdc .price { font: 700 3rem/1.1 'Baloo 2', sans-serif; }
+  .cdc .price span { display: block; font: 600 1rem/1.6 'Nunito', sans-serif; color: var(--muted); margin-top: .35rem; }
+  .cdc .saving { background: var(--sz-community-action-light); color: var(--ink); padding: .4rem .8rem; border-radius: 10px; font-size: .85rem; font-weight: 800; }
+  .cdc .equivalent { font-weight: 800; }
+  .cdc .guarantee { display: flex; align-items: flex-start; gap: 1.25rem; max-width: 870px; margin-inline: auto; }
+  .cdc .guarantee > .material-symbols-rounded { font-size: 2.5rem; color: var(--action); }
+  .cdc .guarantee p { font-size: .95rem; }
+  .cdc .faq { max-width: 870px; }
+  .cdc details { border-bottom: 1px solid var(--line); padding: 1.25rem 0; }
+  .cdc summary { cursor: pointer; font-weight: 800; font-size: 1.1rem; padding-right: 1rem; }
+  .cdc details > div { padding-top: 1rem; }
+  .cdc #convite .action { margin-top: 1rem; }
+  @media (max-width: 900px) {
+    .cdc .hero-grid, .cdc .story-row { gap: 2rem; }
+    .cdc .hero-grid { grid-template-columns: 1.1fr 1fr; }
+    .cdc .testimonials { gap: .85rem; }
+    .cdc .testimonial { padding: 1.2rem; }
+  }
+  @media (max-width: 700px) {
+    .cdc { font-size: 1rem; line-height: 1.7; }
+    .cdc .wrap { width: min(100% - 2rem, 540px); }
+    .cdc .nav { min-height: 72px; gap: .6rem; }
+    .cdc .brand { font-size: .95rem; gap: .4rem; }
+    .cdc .brand .material-symbols-rounded { font-size: 1.65rem; }
+    .cdc .compact { font-size: .78rem; padding: .7rem .8rem; }
+    .cdc .section { padding: 3.4rem 0; }
+    .cdc .hero { padding-top: 2.5rem; }
+    .cdc .hero-grid, .cdc .story-row, .cdc .plans, .cdc .objections, .cdc .testimonials { grid-template-columns: 1fr; }
+    .cdc .hero-grid { display: flex; flex-direction: column; gap: 0; align-items: stretch; }
+    .cdc .hero-copy { display: contents; }
+    .cdc .hero-grid h1 { order: 0; }
+    .cdc .hero-grid .lead { order: 1; }
+    .cdc .hero-grid > .visual { order: 2; margin-top: .5rem; }
+    .cdc .hero-grid .hero-benefits { order: 3; }
+    .cdc .hero-grid .hero-actions { order: 4; }
+    .cdc .hero-grid .requirements { order: 5; }
+    .cdc .hero h1 { max-width: 480px; }
+    .cdc .hero-actions .action { width: 100%; }
+    .cdc .hero-actions { align-items: center; }
+    .cdc .lead { font-size: 1.06rem; }
+    .cdc h2 { margin-bottom: 1.6rem; }
+    .cdc .story-row { margin-top: 2.5rem; gap: 1.65rem; }
+    .cdc .story-row.reverse .prose, .cdc .story-row.reverse > figure { order: initial; }
+    .cdc .argument-close { margin-top: 2.2rem; padding-left: 1rem; }
+    .cdc .testimonials { gap: 1.25rem; }
+    .cdc .testimonial { padding: 1.5rem; }
+    .cdc .support-note { padding: 1.2rem; gap: .8rem; }
+    .cdc .family-photo { max-width: 420px; margin-inline: auto; }
+    .cdc .objections { row-gap: 1.75rem; }
+    .cdc .plan { padding: 1.5rem; }
+    .cdc .guarantee { gap: .75rem; }
+    .cdc .guarantee > .material-symbols-rounded { font-size: 1.8rem; }
+    .cdc .visual > a { border-radius: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .cdc .action { transition: none; } }
 </style>
