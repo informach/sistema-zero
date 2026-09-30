@@ -13,6 +13,7 @@ import {
   evaluateExperimentation,
   falaDaInstrucao,
   falasDaCena,
+  isSceneAction,
   oncePreset,
   onceRunFinished,
   openScene,
@@ -45,13 +46,22 @@ import {
   Check,
   Eye,
   FlaskConical,
+  Info,
   Lightbulb,
   RotateCcw,
   Undo2,
   Volume2,
   VolumeX,
 } from 'lucide-react'
-import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import {
+  type ComponentProps,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 import { apiSend } from '../lib/api'
 import {
   hasLessonMediaFocus,
@@ -82,6 +92,7 @@ import {
   ConsoleVisual,
   SceneConsole,
 } from './scene-console'
+import { SceneDescobertas } from './scene-descobertas'
 import { SomDaBancada } from './scene-dino-controls'
 import { sceneDisplaySamples } from './scene-display-samples'
 import { botoesDoMundo, SceneReadoutBand } from './scene-frame'
@@ -899,8 +910,11 @@ export function SceneActivityView({
   ]
   const controlesDaExecucao =
     botoesDaCena.length > 0 ? (
-      /* Sem caixa própria: o comando executa o que foi montado na bancada. */
-      <div className="flex flex-wrap items-center justify-center gap-3">{botoesDaCena}</div>
+      /* Sem caixa própria: o comando executa o que foi montado na bancada. Com UM gesto só, ele
+         sai na largura toda (`.sz-scene-gestos > :only-child`, console v2). */
+      <div className="sz-scene-gestos flex flex-wrap items-center justify-center gap-3">
+        {botoesDaCena}
+      </div>
     ) : null
   /**
    * "Guardar este jeito" DEPOIS das medidas (full review de experiência, B14): na `hitbox` ele era o
@@ -1037,6 +1051,124 @@ export function SceneActivityView({
       {muted ? 'Ligar som' : 'Silenciar'}
     </SceneButton>
   ) : null
+  /**
+   * ⭐⭐ Console v2 (30/09/2026): as ferramentas deixaram a barra solta embaixo do console e cada
+   * uma foi morar perto do que ela mexe. Desfazer e Recomeçar ficam no PÉ DO MUNDO (mexem no
+   * mundo); "Uma pista" e "Conferir"/"Continuar" ficam na lista de descobertas (falam da
+   * descoberta). ⚠️ Os NOMES acessíveis são o contrato dos testes e de quem navega por leitor de
+   * tela; abaixo de 480px a maioria fica só com o ícone.
+   *
+   * ⚠️ Fechados com o palpite pendente, com o motivo do véu (review do lote 2): um "Recomeçar"
+   * antes do palpite contava como gesto e apagava o "trocar". ⚠️ E `min-w-11`: só com o ícone,
+   * abaixo de 480px, mediam 42px de largura.
+   */
+  const desfazer = (
+    <SceneButton
+      tom="ferramenta"
+      className="min-w-11"
+      onClick={() => {
+        setRunning(false)
+        dispatch({ type: 'undo' })
+      }}
+      disabled={bloqueado || !lab.past.length}
+    >
+      <Undo2 size={16} aria-hidden />
+      <span className="max-[30rem]:sr-only">Desfazer</span>
+    </SceneButton>
+  )
+  /* A busca tem seu próprio recomeço, que também registra a descoberta de voltar a zero.
+     Nas outras cenas, o botão geral reinicia o mundo sem apagar o que foi descoberto. */
+  const recomecar =
+    m !== 'found-counter' ? (
+      <SceneButton
+        tom="ferramenta"
+        className="min-w-11"
+        disabled={bloqueado}
+        onClick={() => {
+          setRunning(false)
+          dispatch({ type: 'reset' })
+        }}
+      >
+        <RotateCcw size={16} aria-hidden />
+        {/* Nesta cena o texto continua visível para explicar que a reação será desligada. */}
+        <span
+          className={m === 'once-vs-always' || m === 'touch-response' ? '' : 'max-[30rem]:sr-only'}
+        >
+          {m === 'touch-response'
+            ? 'Recomeçar com a reação desligada'
+            : m === 'once-vs-always'
+              ? 'Voltar ao começo'
+              : 'Recomeçar'}
+        </span>
+      </SceneButton>
+    ) : null
+  /* ⚠️⚠️ "Uma pista" SOME depois de concluir (a caixa da pista já sumia, e o botão virava um
+     clique mudo que ainda CONTAVA pista no relatório do professor) e fica fechado com o palpite
+     pendente: várias pistas respondem o palpite (review do lote 2). */
+  const umaPista = !conclusao ? (
+    <SceneButton
+      tom="ferramenta"
+      className="min-w-11"
+      // ⚠️ Desliga no último degrau: o quarto clique não fazia nada.
+      disabled={bloqueado || hint >= hints.length}
+      onClick={() => {
+        const level = Math.min(hints.length, hint + 1)
+        setHint(level)
+        // ⚠️ Uma caixa de ajuda por vez: a pista toma o lugar da resposta do Conferir.
+        setConferiu('')
+        // ⚠️ A AÇÃO tem três degraus (`SCENE_LIMITS.hint`), mas o editor aceita dez
+        // pistas: a tela mostra todas, e a evidência satura em três.
+        dispatch({
+          type: 'hint',
+          level: Math.min(level, SCENE_LIMITS.hint.max),
+        })
+        // ⚠️ A pista é CONGELADA no clique (full review de experiência, M1) e dita
+        // UMA vez, pela região da moldura: a caixa não é região viva.
+        const passo = passoDaPista(level)
+        setPistaCongelada({ nivel: level, passo })
+        anunciar(`Pista ${level} de ${hints.length}. ${passo.texto}`)
+      }}
+    >
+      <Lightbulb size={16} aria-hidden />
+      <span className="max-[30rem]:sr-only">Uma pista</span>
+    </SceneButton>
+  ) : null
+  const conferirOuContinuar =
+    !revisita &&
+    (conclusao ? (
+      // ⚠️ Só com a pergunta FORA da janela (review do lote 2): com ela logo abaixo, o
+      // único azul da tela focava de novo o mesmo lugar e nada se via.
+      podeContinuar &&
+      !perguntaVisivel && (
+        <SceneButton
+          tom="gesto"
+          // ⚠️ `ml-auto`: numa linha que quebra, o caminho para a frente continua no canto DIREITO.
+          className="ml-auto"
+          disabled={bloqueado}
+          onClick={() => {
+            setFocar('pergunta')
+          }}
+        >
+          Continuar
+          <ArrowDown size={16} aria-hidden />
+        </SceneButton>
+      )
+    ) : (
+      /* ⚠️⚠️ "Conferir", e não "Já descobri": a cena se avalia sozinha e fecha no gesto, então
+         o botão nunca concluía nada. Contorno, porque enquanto a cena espera um gesto o azul
+         cheio é o do gesto. Antes do palpite fica fechado, com o motivo do véu. */
+      <SceneButton
+        tom="ferramenta"
+        className="ml-auto"
+        disabled={bloqueado}
+        onClick={() => setConferiu(respostaDoConferir())}
+      >
+        <Check size={16} aria-hidden />
+        Conferir
+      </SceneButton>
+    ))
+  /** A pílula "Rodando"/"Parado" no canto do mundo: só nas cenas com relógio (a régua do core). */
+  const temRelogio = m !== 'frames' && isSceneAction({ type: 'advance', seconds: 0.2 }, m)
 
   /**
    * A fala do Zappy com a instrução.
@@ -1058,22 +1190,32 @@ export function SceneActivityView({
    * então moram aqui e não em cada ramo: duplicar o JSX faria as duas telas divergirem no
    * primeiro conserto.
    */
+  /**
+   * O MOMENTO da atividade, na placa do começo da faixa (console v2, 30/09/2026): "Seu palpite"
+   * enquanto ela arrisca, "Sua vez" com a cena aberta, "Você descobriu" depois que a cena fecha.
+   * ⚠️ O nome da cena só volta à placa quando o `<h3>` está `sr-only` (o título da seção já o
+   * disse): ali a placa é a única vez em que o nome aparece na tela.
+   */
+  const momento = previsaoPendente ? 'palpite' : conclusao || revisita ? 'descobriu' : 'sua-vez'
   const hudDaCena = (
     <SceneReadoutBand
       activity={activity}
       state={visto}
-      colada
       relogioAndando={running && ready && !conflict}
       valoresEscondidos={previsaoPendente}
       placa={
-        /* ⚠️⚠️ A PLACA fica SEMPRE, e é a maquete que ela aprovou: o NOME da cena no começo da
-              faixa, virando "Seu palpite" no momento de arriscar. Ela diz em que momento da
-              atividade a criança está — e, quando o título da seção já disse o nome (o `<h3>` vira
-              `sr-only`), é a ÚNICA vez que o nome da cena aparece na tela. A primeira implantação a
-              deixou só no palpite, e foi uma das diferenças que ela viu. */
-        <span className={`sz-scene-placa${previsaoPendente ? ' sz-scene-placa--palpite' : ''}`}>
-          {previsaoPendente ? 'Seu palpite' : content.title}
-        </span>
+        <>
+          <span className="sz-scene-placa sz-scene-momento" data-momento={momento}>
+            {momento === 'palpite'
+              ? 'Seu palpite'
+              : momento === 'descobriu'
+                ? 'Você descobriu'
+                : 'Sua vez'}
+          </span>
+          {tituloJaDito(content.title, secao) && (
+            <span className="sz-scene-placa">{content.title}</span>
+          )}
+        </>
       }
     >
       {!previsaoPendente && (
@@ -1082,26 +1224,27 @@ export function SceneActivityView({
              antes do gesto. ⚠️ E nada de medidor no PALPITE: a contagem de descobertas
              começa no primeiro gesto, e ali ainda não houve nenhum. */
         <div
-          className="flex items-center gap-2"
+          className="sz-scene-medidor"
           role="meter"
           aria-valuemin={0}
           aria-valuemax={goals.length}
           aria-valuenow={feitas}
           aria-label={`${feitas} de ${goals.length} descobertas`}
         >
-          <span aria-hidden className="text-sm font-semibold text-muted-foreground">
+          <span aria-hidden>
             Descobertas {feitas} de {goals.length}
           </span>
           {/* ⚠️ A N-ésima bolinha acende com a N-ésima descoberta (full review de
                 experiência, B6): "Descobertas 1 de 2" com a SEGUNDA acesa lia como erro.
-                Qual meta caiu não é assunto do medidor. */}
+                Qual meta caiu não é assunto do medidor. `rounded-full` é contrato de teste. */}
           {goals.map((g, i) => (
             <span
               key={g.id}
               aria-hidden
-              className={`grid size-6 place-items-center rounded-full border ${i < feitas ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-muted'}`}
+              className="sz-scene-medidor-bolinha rounded-full"
+              data-feita={i < feitas || undefined}
             >
-              {i < feitas ? <Check size={14} /> : null}
+              {i < feitas ? <Check size={12} /> : null}
             </span>
           ))}
         </div>
@@ -1110,6 +1253,8 @@ export function SceneActivityView({
   )
   const pranchaDaCena = (
     <ConsolePrancha>
+      {/* Console v2: a bandeja diz o que ela é. É a chamada da imagem que ela aprovou ("SUA VEZ"). */}
+      <p className="sz-scene-prancha-titulo">Sua vez</p>
       {/* Em `once-vs-always`, primeiro se configura a montagem e só depois se executa um passo. */}
       {m !== 'once-vs-always' && controlesDaExecucao}
 
@@ -1217,8 +1362,13 @@ export function SceneActivityView({
                 desfazer, sem recomeçar e sem pista, inclusive ao reabrir a aula. */}
             <fieldset disabled={bloqueado} className="min-w-0 space-y-4">
               <fieldset className="min-w-0 space-y-4">
-                {/* A criança reconhece o mundo antes de receber a ação. A fala e a prancha ficam
-                    juntas na ordem real do documento, inclusive no celular e na leitura assistiva. */}
+                {/* ⭐⭐ O CONSOLE v2 (30/09/2026): dois painéis dentro de um deck. À ESQUERDA, o
+                    mundo com o que ele diz de si — a faixa (momento, medidor, ladrilhos), o palco
+                    na moldura escura de tela de jogo, e o pé do mundo (Desfazer, Recomeçar e a
+                    frase do que está acontecendo). À DIREITA, a conversa e a ação — o Zappy, a
+                    pista, "Sua vez" com a bancada, a lista do que ela já descobriu com Uma pista e
+                    Conferir, e o retorno (palpite, "Agora explique", comparação). A ordem do DOM
+                    é a mesma no celular e na leitura assistiva. Anatomia e porquês no CLAUDE.md. */}
                 <SceneConsole>
                   <ConsoleVisual>
                     {hudDaCena}
@@ -1226,6 +1376,17 @@ export function SceneActivityView({
                       <RelogioDaArteProvider value={tempoDaArte}>
                         <ExplorationStage activity={activity} state={visto} dispatch={dispatch} />
                       </RelogioDaArteProvider>
+                      {/* A pílula do relógio: `aria-hidden` (quem anuncia o tempo é a frase da
+                          situação), no canto de cima, fora do caminho do gesto. */}
+                      {temRelogio && (
+                        <span
+                          className="sz-scene-relogio"
+                          aria-hidden
+                          data-andando={running || undefined}
+                        >
+                          {running ? 'Rodando' : 'Parado'}
+                        </span>
+                      )}
                       {/* ⚠️⚠️ Os avisos SOBREPOSTOS ao pé do palco (full review de experiência, M2), sem
                         lugar reservado no fluxo: ver `AvisosDaCena`. */}
                       {(avisoDescoberta || palpiteNaHora) && (
@@ -1239,6 +1400,44 @@ export function SceneActivityView({
                         />
                       )}
                     </ConsoleMundo>
+                    {/* ⭐⭐ O PÉ DO MUNDO: as ferramentas que mexem no mundo e, embaixo delas, a
+                        frase da SITUAÇÃO — o narrador do mundo, que morava longe dele, no fim da
+                        coluna de ações. Decisão dela (30/09): a frase começa na esquerda e ocupa a
+                        largura toda. */}
+                    <div className="sz-scene-mundo-rodape">
+                      <div className="sz-scene-mundo-ferramentas">
+                        {desfazer}
+                        {recomecar}
+                      </div>
+                      {/* Num lugar reservado, a frase pode passar de uma para duas linhas sem saltar.
+                          ⚠️⚠️ E o MOLDE são as frases que a cena atinge (full review de experiência, M3):
+                          só crescer não bastava, porque a PRIMEIRA vez que a frase passava a duas linhas a
+                          continuação descia 16 px no toque. */}
+                      <LugarReservado
+                        marca="situacao"
+                        className="sz-scene-situacao-lugar"
+                        molde={
+                          <div className="grid" aria-hidden>
+                            {situacoesDaCena.map((frase, i) => (
+                              // biome-ignore lint/suspicious/noArrayIndexKey: cada frase é um lugar fixo do molde
+                              <FraseDaSituacao key={i} className="[grid-area:1/1]">
+                                {frase}
+                              </FraseDaSituacao>
+                            ))}
+                          </div>
+                        }
+                        chave={situacoesDaCena.join('|')}
+                      >
+                        {/* ⚠️ A frase é o narrador: `role="status"`, e com o relógio andando `aria-live="off"`
+                            (seriam vinte frases por segundo); a final é dita uma vez quando ele para. */}
+                        <FraseDaSituacao
+                          role={running ? undefined : 'status'}
+                          aria-live={running ? 'off' : undefined}
+                        >
+                          {sceneSituation(activity.scene, visto, activity.cast)}
+                        </FraseDaSituacao>
+                      </LugarReservado>
+                    </div>
                   </ConsoleVisual>
                   <ConsoleActions>
                     <ConsoleFala>{blocoDaInstrucao}</ConsoleFala>
@@ -1254,9 +1453,7 @@ export function SceneActivityView({
                          leitor ouvia a situação duas vezes. Quem anuncia a pista é o clique. */
                       <div
                         data-pista={pistaFeita ? 'feita' : 'aberta'}
-                        /* ⚠️ `mx`/`mb`: dentro do console ela é irmã da fala, e sem o respiro
-                             encostava nas duas bordas e no mundo logo abaixo. */
-                        className="mx-3.5 mb-2.5 flex gap-3 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3"
+                        className="sz-scene-pista flex gap-3 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3"
                       >
                         {pistaFeita ? (
                           <Check
@@ -1284,6 +1481,17 @@ export function SceneActivityView({
                       </div>
                     )}
                     {pranchaDaCena}
+                    {/* ⭐⭐ O que ela já descobriu, com as ações da descoberta embaixo. A resposta do
+                        Conferir mora aqui, ao lado do botão que a pediu (era um parágrafo solto
+                        embaixo do console). */}
+                    <SceneDescobertas
+                      goals={goals}
+                      resposta={conferiu && !conclusao ? conferiu : ''}
+                    >
+                      {umaPista}
+                      {somNaBancada ? null : botaoDeSom}
+                      {conferirOuContinuar}
+                    </SceneDescobertas>
                     {/* ⚠️⚠️ O palpite CONGELADO mora DENTRO do console, depois da área de ação:
                       ele retoma o que a criança pensou sem separar a instrução dos controles. */}
                     {palpite && !(revisita && !prediction) && (
@@ -1339,33 +1547,6 @@ export function SceneActivityView({
                         />
                       </div>
                     )}
-                    {/* ⚠️ A frase da SITUAÇÃO é o narrador do mundo: descreve o que está na tela agora.
-                      Num lugar reservado, ela pode passar de uma para duas linhas sem saltar. */}
-                    {/* ⚠️⚠️ E o MOLDE são as frases que a cena atinge (full review de experiência, M3):
-                    só crescer não bastava, porque a PRIMEIRA vez que a frase passava a duas linhas a
-                    continuação descia 16 px no toque (o "Avançar 1 quadro" da `draw-loop` no celular). */}
-                    <LugarReservado
-                      marca="situacao"
-                      molde={
-                        <div className="grid" aria-hidden>
-                          {situacoesDaCena.map((frase, i) => (
-                            // biome-ignore lint/suspicious/noArrayIndexKey: cada frase é um lugar fixo do molde
-                            <p key={i} className={`${CLASSE_DA_SITUACAO} [grid-area:1/1]`}>
-                              {frase}
-                            </p>
-                          ))}
-                        </div>
-                      }
-                      chave={situacoesDaCena.join('|')}
-                    >
-                      <p
-                        role={running ? undefined : 'status'}
-                        aria-live={running ? 'off' : undefined}
-                        className={CLASSE_DA_SITUACAO}
-                      >
-                        {sceneSituation(activity.scene, visto, activity.cast)}
-                      </p>
-                    </LugarReservado>
                     {/* A cena NÃO acaba: o mundo segue vivo e a prancha segue aberta. */}
                     {/* A comparação acompanha a bancada; ao ampliar, a cena continua visível. */}
                     {reference && lab.trials.length > 0 && (
@@ -1390,140 +1571,6 @@ export function SceneActivityView({
                 </SceneConsole>
               </fieldset>
             </fieldset>
-            {
-              /* ⭐ A linha de ações: ferramentas à esquerda, o caminho para a frente à direita.
-                   ⚠️ Os NOMES acessíveis das ferramentas são o contrato dos testes e de quem navega
-                   por leitor de tela; abaixo de 480px a maioria fica só com o ícone. Nesta cena,
-                   o texto de Recomeçar continua visível para explicar que a reação será desligada. */
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-1">
-                  {/* ⭐ `tom="ferramenta"` (contorno), e não `discreta` (fantasma): o kids mantém
-                      o fantasma PLANO de propósito, e relato dela na maquete foi que as três liam
-                      como "três textos" — nem parado nem no hover diziam que dá para clicar. O
-                      contorno já existe e já ganha o relevo e o levantar do próprio app. */}
-                  {/* ⚠️ Fechados com o palpite pendente, com o motivo do véu (review do lote 2): um
-                      "Recomeçar" antes do palpite contava como gesto e apagava o "trocar". ⚠️ E
-                      `min-w-11`: só com o ícone, abaixo de 480px, mediam 42px de largura. */}
-                  <SceneButton
-                    tom="ferramenta"
-                    className="min-w-11"
-                    onClick={() => {
-                      setRunning(false)
-                      dispatch({ type: 'undo' })
-                    }}
-                    disabled={bloqueado || !lab.past.length}
-                  >
-                    <Undo2 size={16} aria-hidden />
-                    <span className="max-[30rem]:sr-only">Desfazer</span>
-                  </SceneButton>
-                  {/* A busca tem seu próprio recomeço, que também registra a descoberta de voltar a zero.
-                      Nas outras cenas, o botão geral reinicia o mundo sem apagar o que foi descoberto. */}
-                  {m !== 'found-counter' && (
-                    <SceneButton
-                      tom="ferramenta"
-                      className="min-w-11"
-                      disabled={bloqueado}
-                      onClick={() => {
-                        setRunning(false)
-                        dispatch({ type: 'reset' })
-                      }}
-                    >
-                      <RotateCcw size={16} aria-hidden />
-                      <span
-                        className={
-                          m === 'once-vs-always' || m === 'touch-response'
-                            ? ''
-                            : 'max-[30rem]:sr-only'
-                        }
-                      >
-                        {m === 'touch-response'
-                          ? 'Recomeçar com a reação desligada'
-                          : m === 'once-vs-always'
-                            ? 'Voltar ao começo'
-                            : 'Recomeçar'}
-                      </span>
-                    </SceneButton>
-                  )}
-                  {/* ⚠️⚠️ "Uma pista" SOME depois de concluir (a caixa da pista já sumia, e o botão
-                      virava um clique mudo que ainda CONTAVA pista no relatório do professor) e fica
-                      fechado com o palpite pendente: várias pistas respondem o palpite (review do
-                      lote 2). */}
-                  {!conclusao && (
-                    <SceneButton
-                      tom="ferramenta"
-                      className="min-w-11"
-                      // ⚠️ Desliga no último degrau: o quarto clique não fazia nada.
-                      disabled={bloqueado || hint >= hints.length}
-                      onClick={() => {
-                        const level = Math.min(hints.length, hint + 1)
-                        setHint(level)
-                        // ⚠️ Uma caixa de ajuda por vez: a pista toma o lugar da resposta do Conferir.
-                        setConferiu('')
-                        // ⚠️ A AÇÃO tem três degraus (`SCENE_LIMITS.hint`), mas o editor aceita dez
-                        // pistas: a tela mostra todas, e a evidência satura em três.
-                        dispatch({
-                          type: 'hint',
-                          level: Math.min(level, SCENE_LIMITS.hint.max),
-                        })
-                        // ⚠️ A pista é CONGELADA no clique (full review de experiência, M1) e dita
-                        // UMA vez, pela região da moldura: a caixa não é região viva.
-                        const passo = passoDaPista(level)
-                        setPistaCongelada({ nivel: level, passo })
-                        anunciar(`Pista ${level} de ${hints.length}. ${passo.texto}`)
-                      }}
-                    >
-                      <Lightbulb size={16} aria-hidden />
-                      <span className="max-[30rem]:sr-only">Uma pista</span>
-                    </SceneButton>
-                  )}
-                  {somNaBancada ? null : botaoDeSom}
-                </div>
-                {!revisita &&
-                  (conclusao ? (
-                    // ⚠️ Só com a pergunta FORA da janela (review do lote 2): com ela logo abaixo, o
-                    // único azul da tela focava de novo o mesmo lugar e nada se via.
-                    podeContinuar &&
-                    !perguntaVisivel && (
-                      <SceneButton
-                        tom="gesto"
-                        // ⚠️ `ml-auto`: numa linha que quebra (quatro ferramentas numa coluna
-                        // estreita), o caminho para a frente continua no canto DIREITO.
-                        className="ml-auto"
-                        disabled={bloqueado}
-                        onClick={() => {
-                          setFocar('pergunta')
-                        }}
-                      >
-                        Continuar
-                        <ArrowDown size={16} aria-hidden />
-                      </SceneButton>
-                    )
-                  ) : (
-                    /* ⚠️⚠️ "Conferir", e não "Já descobri": a cena se avalia sozinha e fecha no
-                         gesto, então o botão nunca concluía nada. Contorno, porque enquanto a cena
-                         espera um gesto o azul cheio é o do gesto. Antes do palpite fica fechado,
-                         com o motivo do véu. */
-                    <SceneButton
-                      tom="ferramenta"
-                      className="ml-auto"
-                      disabled={bloqueado}
-                      onClick={() => setConferiu(respostaDoConferir())}
-                    >
-                      <Check size={16} aria-hidden />
-                      Conferir
-                    </SceneButton>
-                  ))}
-              </div>
-            }
-            {/* ⚠️ A região existe SEMPRE: `aria-live` montada junto do texto não é anunciada. */}
-            <p
-              className={
-                conferiu && !conclusao ? 'rounded-2xl bg-primary/5 px-4 py-3 text-sm' : 'sr-only'
-              }
-              aria-live="polite"
-            >
-              {conferiu && !conclusao ? conferiu : ''}
-            </p>
           </>
         )}
         {/* O rodapé só fala de gravação: um problema (com ícone e saída) ou "✓ Guardado". */}
@@ -1573,8 +1620,18 @@ export function SceneActivityView({
   )
 }
 
-/** As classes da frase da situação: a de verdade e as do molde do lugar dela (M3) são as MESMAS. */
-const CLASSE_DA_SITUACAO = 'min-h-6 text-center text-sm font-medium text-muted-foreground'
+/**
+ * A frase da situação como pílula (console v2): o molde do lugar reservado (M3) e a frase à vista
+ * passam pelo MESMO componente, senão a altura reservada não é a da frase.
+ */
+function FraseDaSituacao({ className = '', children, ...props }: ComponentProps<'p'>) {
+  return (
+    <p {...props} className={`sz-scene-situacao ${className}`}>
+      <Info size={16} aria-hidden />
+      <span>{children}</span>
+    </p>
+  )
+}
 
 /**
  * Os avisos que entram no instante do gesto: o selo da descoberta e o palpite retomado.

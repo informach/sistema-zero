@@ -158,13 +158,17 @@ Quando existir, a tela do palpite contém apenas contexto, cena parada, pergunta
 controles não aparecem, nem desativados. A escolha não vale nota e a retomada compara de modo
 neutro: **"Seu palpite: … Ao testar: …"**, sem "acertou" ou "errou".
 
-Na experimentação, a região visual reúne HUD, nome e cena. No painel estreito, logo abaixo da
-cena, uma fala curta do Zappy apresenta a ação; a pista solicitada e os controles vêm em
-seguida. Abaixo do vídeo, outro diálogo curto do Zappy pode fazer a ponte narrativa para a
-experiência, sem repetir a instrução específica. Não acrescentar uma segunda instrução genérica
-embaixo da fala dentro da experiência; os controles têm rótulos próprios, e a ajuda para usá-los
-fica nas pistas ou na descrição acessível. Palpite retomado, conclusão e situação alcançada
-aparecem depois da área de ação.
+Na experimentação (console v2, 30/09/2026), o painel do MUNDO reúne o momento ("Sua vez" /
+"Você descobriu"), o medidor de descobertas, a faixa de estado em ladrilhos, a cena na moldura
+de tela de jogo e, logo abaixo dela, Desfazer, Recomeçar e a frase do que está acontecendo. O
+painel da AÇÃO vem em seguida: a fala curta do Zappy que apresenta a ação, a pista solicitada, a
+bancada sob "Sua vez" (a ação principal do momento em botão cheio), a lista "O que você já
+descobriu" (a descoberta feita mostra a conclusão; a pendente fica trancada e neutra, sem
+entregar o gesto) com Uma pista e Conferir, e por fim o palpite retomado e a conclusão. Abaixo
+do vídeo, outro diálogo curto do Zappy pode fazer a ponte narrativa para a experiência, sem
+repetir a instrução específica. Não acrescentar uma segunda instrução genérica embaixo da fala
+dentro da experiência; os controles têm rótulos próprios, e a ajuda para usá-los fica nas pistas
+ou na descrição acessível.
 A ordem de leitura é a mesma no celular e no layout lado a lado.
 
 ### Layout adaptativo e ampliação da experiência

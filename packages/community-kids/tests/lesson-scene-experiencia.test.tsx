@@ -382,7 +382,8 @@ describe('B6 · a N-ésima bolinha acende com a N-ésima descoberta', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Criar o Dino' }))
     await waitFor(() => expect(screen.getByRole('meter').getAttribute('aria-valuenow')).toBe('1'))
     const bolinhas = [...container.querySelectorAll('[role="meter"] > span.rounded-full')]
-    expect(bolinhas.map((b) => b.className.includes('bg-primary'))).toEqual([true, false])
+    // Console v2 (30/09/2026): a bolinha acesa é marcada por `data-feita` (a cor vem do CSS).
+    expect(bolinhas.map((b) => b.hasAttribute('data-feita'))).toEqual([true, false])
     await act(async () => {})
   })
 })

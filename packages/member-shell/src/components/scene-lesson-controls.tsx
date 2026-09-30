@@ -98,8 +98,11 @@ export function LessonSceneControls({
       )}
       {m === 'touch-response' && (
         <div className="flex flex-wrap gap-2">
+          {/* Console v2 (30/09/2026): ligar a reação É a ação principal deste momento — tom de
+              GESTO e largura cheia (`sz-scene-acao-principal`); ligada, vira a chave "ligado". */}
           <SceneButton
-            tom={state.match.touch ? 'ligado' : 'ferramenta'}
+            tom={state.match.touch ? 'ligado' : 'gesto'}
+            className="sz-scene-acao-principal"
             aria-pressed={state.match.touch}
             onClick={() =>
               dispatch({ type: 'connect', port: 'touch', enabled: !state.match.touch })

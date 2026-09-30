@@ -1147,6 +1147,7 @@ Conferência visual das 45 com os componentes de produção: `bun run galeria:ce
 | `scene-activity.tsx` | O player (`SceneActivityView`): sessão, gravação, palpite, pergunta, rodapé e relógio. Não escreve palco nem peça de bancada. |
 | `scene-prediction.tsx` | O palpite antes de mexer: as três peças do PENDENTE (`PalpiteContexto`, `PalpitePergunta`, `PalpiteOpcoes`, que o console monta) e a linha congelada depois da escolha. |
 | `scene-console.tsx` | ⭐⭐ O CONSOLE: `SceneConsole`, `ConsoleFala`, `ConsoleMundo` e `ConsolePrancha`. Só moldura. |
+| `scene-descobertas.tsx` | ⭐⭐ "O que você já descobriu" (`SceneDescobertas`): a lista das metas, feita com a conclusão, pendente trancada e neutra; as ações da descoberta e a resposta do Conferir moram nela. |
 | `scene-hud.tsx` | ⭐⭐ O PLACAR do jogo dentro do palco: `PlacarDoJogo`, `VidaDoJogo` e `CoracaoDoJogo`. |
 | `scene-conclusion.tsx` | "Você descobriu!", a pergunta "Agora explique" e a faixa da revisita. |
 | `scene-demo-controls.tsx` | A demonstração guiada e a `MontagemTravada`. |
@@ -1169,7 +1170,71 @@ Conferência visual das 45 com os componentes de produção: `bun run galeria:ce
 | `lib/scene-controller.ts` | `SceneController`: sessão local, segmentos e rascunho no IndexedDB. |
 | `styles/scene.css` | A paleta `--color-scene-*`, o teto `max-w-scene`, o mundo espaço e as peças do console (`sz-scene-console*`, `sz-scene-prancha`, `sz-scene-placa`, `sz-scene-hud-*`, `sz-scene-placar-rotulo`) — cada app `@import`a. |
 
-### O CONSOLE: a experiência inteira numa peça só (18/09/2026)
+### O CONSOLE v2: dois painéis num deck (30/09/2026)
+
+⭐⭐ Pedido dela: o bloco de experimento com olho de diretor de arte — "bonito e atrativo, intuitivo,
+com o peso certo em cada área". A imagem que ela mandou (o arbusto e a reação ao toque) foi a
+direção, não o gabarito; a maquete descartável (`community-kids/tmp/maquete-experiencia.tsx`, que
+renderiza os componentes de PRODUÇÃO com o CSS novo por cima) foi aprovada em 30/09 depois de três
+ajustes dela. Hoje o console é:
+
+```
+┌ deck (cinza-claro, 1px) ─────────────────┬──────────────────────────────────────┐
+│ [SUA VEZ]           Descobertas ●○○       │ 🐲 balão do Zappy (Ouvir)            │
+│ ┌1º A DESENHAR┐ ┌2º A DESENHAR┐ ladrilhos │ (pista, quando pedida)               │
+│ ┏━━━━ o mundo, moldura escura de 4px ━━━┓ │ SUA VEZ · gesto cheio · bancada      │
+│ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ │ O QUE VOCÊ JÁ DESCOBRIU              │
+│ [↶ Desfazer] [↺ Recomeçar]               │ ✓ a conclusão · 🔒 trancada e neutra │
+│ ( i  a frase da situação, largura toda ) │ [💡 Uma pista]          [✓ Conferir] │
+│                                          │ palpite congelado · Agora explique   │
+└──────────────────────────────────────────┴──────────────────────────────────────┘
+```
+
+- **Arquivos:** `scene-activity.tsx` (o ramo da experiência, com `desfazer`, `recomecar`, `umaPista`,
+  `conferirOuContinuar` e `FraseDaSituacao` como constantes), `scene-frame.tsx` (a faixa em
+  ladrilhos: `.sz-scene-faixa` com a placa e o medidor, `<dl class="sz-scene-hud">` com um
+  `.sz-scene-hud-tile` por leitura), **`scene-descobertas.tsx`** (`SceneDescobertas`, a lista) e
+  `styles/scene.css` (bloco "O CONSOLE v2"). O kids veste por VARIÁVEIS (`--sz-scene-deck`,
+  `--sz-scene-bezel`, `--sz-scene-apoio`, `--sz-scene-momento-*`, `--sz-scene-situacao-*`,
+  `--sz-scene-feita-*`, `--sz-scene-pendente-*`) em `.sz-lesson-sections .sz-scene-console`; o
+  adulto e o ensaio do admin ficam com a queda neutra do `scene.css`.
+- **A placa virou o MOMENTO** (`.sz-scene-momento[data-momento]`): "Sua vez" com a cena aberta,
+  "Você descobriu" depois que ela fecha (`conclusao || revisita`); "Seu palpite" existe no código,
+  mas a faixa não é montada no palpite desde 21/09. O nome da cena volta à placa só com o `<h3>`
+  `sr-only` (título repetido).
+- ⚠️⚠️ **Decisões dela em 30/09 que REVOGAM a maquete de 18/09:** (1) a moldura de tela de jogo é do
+  PALCO (`.sz-scene-console .sz-scene-frame`: 4px na `--sz-scene-bezel`, cantos de 16px, justa em
+  volta do desenho), e o console perdeu a borda de 4px com o degrau de 6px; (2) a frase da SITUAÇÃO
+  mora sob o mundo, no `.sz-scene-mundo-rodape`, começando na esquerda e na largura toda (era o
+  fim da coluna de ações); (3) os ladrilhos têm o valor ESCURO e a cor do par só na bolinha antes
+  dele ("cada número de uma cor parecia carnaval"); (4) a descoberta pendente fica trancada e
+  NEUTRA ("Ainda tem uma descoberta aqui."), e o `pedido` segue saindo só no Conferir e na pista.
+- ⚠️⚠️ **O `label` de meta pendente NUNCA entra no DOM** (é a conclusão). Travado em
+  `community-kids/tests/lesson-scene-console-v2.test.tsx`, que também pina o momento, a situação
+  dentro do painel do mundo e cada ferramenta perto do que ela mexe; a ORDEM do fonte está em
+  `tests/scene-experience-layout.test.tsx`: faixa → mundo → situação → fala → pista → prancha →
+  descobertas → palpite/conclusão.
+- **Cada ferramenta mora perto do que ela mexe:** Desfazer e Recomeçar no pé do mundo; Uma pista,
+  o som e Conferir/Continuar na lista de descobertas, junto da resposta do Conferir (era um
+  parágrafo solto embaixo do console). Os NOMES acessíveis não mudaram.
+- **A ação principal do momento sai na largura toda:** o gesto sozinho (`.sz-scene-gestos >
+  :only-child`) ou o botão que a bancada marca com `sz-scene-acao-principal` (hoje o "Ligar a
+  reação ao toque", que passou a `tom="gesto"` enquanto a reação está desligada).
+- **Duas colunas** (`@container scene-workspace (min-width: 52rem)`): altura NATURAL, 1,15 : 1. O
+  painel do mundo nunca rola; o das ações rola sozinho acima de `max(36rem, 100dvh − 14rem)`.
+  ⚠️ Sem o teto de 40rem de antes: com altura natural ele fazia a coluna rolar por dentro mesmo com
+  a tela sobrando. No ampliado os dois painéis enchem a área útil e rolam cada um.
+- ⚠️ `scene-motor-3d-consertos-5b.test.tsx` e `lesson-scene-design.test.tsx:178` pinam as classes
+  `text-scene-a`/`-b-ink`/`-alert`/`-leaf` no `dd` da faixa: elas ficam, e é por elas que o CSS
+  pinta a bolinha (`.sz-scene-hud-tile dd.text-scene-a::before`).
+- ⭐ **O fundo do jardim não cobria o palco** (achado da maquete, defeito de produção): um
+  `<image>` de SVG que aponta para OUTRO SVG não manda no encaixe de dentro — o `slice` de fora
+  vale só para a caixa dele e a raiz apontada ajustava por "meet", deixando ~13px vazios de cada
+  lado. `jardimSvgUrl('jardim', { cobrir: true })` (`@sistemazero/studio/arte`) põe o `slice` na
+  raiz; as duas cenas do jardim o pedem e `scene-touch-response.test.tsx`/`scene-found-counter.test.tsx`
+  travam a regressão.
+
+### O CONSOLE de 18/09/2026 (histórico: a arrumação que o v2 acima refinou)
 
 ⭐⭐ Relato dela, depois que as figuras passaram a ser as do Jogo 2D: *"a aparência geral da experiência, e
 isso conta instrução do Zappy, cena e controles da cena, tem que parecer que são uma única unidade e fazem

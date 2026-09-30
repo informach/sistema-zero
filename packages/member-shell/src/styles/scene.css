@@ -184,68 +184,332 @@
   stroke-linejoin: round;
 }
 
-/* ⭐⭐ O CONSOLE (18/09/2026): a experiência numa peça só.
+/* ⭐⭐ O CONSOLE v2 (30/09/2026): dois painéis dentro de um deck.
  *
- * Relato dela: "instrução do Zappy, cena e controles têm que parecer uma unidade só e fazer parte
- * de um jogo". Antes eram quatro retângulos em volta de um desenho de jogo, com raios que nem
- * conversavam. A anatomia e o porquê estão em `components/scene-console.tsx`.
+ * Relato dela (18/09): "instrução do Zappy, cena e controles têm que parecer uma unidade só e fazer
+ * parte de um jogo". Em 30/09 ela pediu o olho de um diretor de arte: peso certo em cada área,
+ * bonito e intuitivo. A anatomia e os porquês estão em `components/scene-activity.tsx` (o ramo da
+ * experiência) e no CLAUDE.md.
  *
- * ⚠️⚠️ O MATERIAL segue sendo o do APLICATIVO (`--card`, `--border`, `--primary`): ela escolheu o
- * meio-termo. O que mudou é a arrumação, não a cor — a regra "cromo é o tema" continua de pé.
+ *   ┌ deck ────────────────────────────────┬───────────────────────────────────┐
+ *   │ [Sua vez]        Descobertas ●●○      │ 🐲 balão do Zappy                 │
+ *   │ ┌ARBUSTO┐ ┌REAÇÃO┐  (ladrilhos)       │ (pista, quando pedida)            │
+ *   │ ┏━━━━━━ o mundo, moldura escura ━━━━┓ │ SUA VEZ · bancada                 │
+ *   │ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ │ O QUE VOCÊ JÁ DESCOBRIU           │
+ *   │ [↶][↺ Recomeçar]                     │ ✓ feita · 🔒 pendente             │
+ *   │ ( i  o que está acontecendo )        │ [Uma pista]        [Conferir]     │
+ *   └──────────────────────────────────────┴───────────────────────────────────┘
+ *
+ * ⚠️⚠️ O MATERIAL entra por VARIÁVEIS com queda neutra: o kids as veste no `globals.css` dele
+ * (`.sz-lesson-sections .sz-scene-console`), a comunidade adulta e o ensaio do admin ficam com a
+ * queda, no material do app de cada um. Nenhuma cor de marca mora aqui.
+ *
+ * ⚠️⚠️ Decisões dela na maquete (30/09/2026), que REVOGAM a maquete de 18/09: a moldura de tela
+ * de jogo é do PALCO (4px, escura, cantos de 16px, justa em volta do desenho) e não do console; o
+ * console perdeu a borda de 4px com o degrau de 6px; a frase da situação mora sob o mundo, na
+ * largura toda, começando na esquerda; os ladrilhos têm o valor ESCURO e a cor do par só na
+ * bolinha ("cada número de uma cor parecia carnaval").
  *
  * ⚠️ Fora de `@layer`: o member-shell pinta com UTILITÁRIAS do Tailwind, e regra dentro de
  * `@layer components` perde para elas (a mesma lição que o `globals.css` do kids já pagou). */
 .sz-scene-console {
   width: 100%;
-  overflow: hidden;
-  border-radius: 1rem;
-  /* ⚠️⚠️ A MOLDURA é de 4px com um DEGRAU de 6px embaixo, e é isso que faz o bloco parecer um
-   * console em vez de mais um retângulo. Era o desenho da maquete que ela aprovou, e a primeira
-   * implantação saiu com `border: 1px` e sombra nenhuma — foi a diferença que ela viu na tela.
-   * É o mesmo relevo do 3D do Brilliant que o kids dá a botão e cartão clicável, na cor da linha
-   * do tema (no jogo a moldura é creme sobre deck escuro; aqui o material é o do aplicativo). */
-  border: 4px solid var(--color-border);
-  box-shadow: 0 6px 0 var(--color-border);
-  background: var(--color-card);
-  /* O degrau ocupa espaço: sem isto ele encosta no que vier embaixo (o rodapé). */
-  margin-bottom: 6px;
+  --sz-scene-deck: color-mix(in oklab, var(--color-foreground) 4%, var(--color-card));
+  --sz-scene-bezel: var(--color-foreground);
+  --sz-scene-apoio: color-mix(in oklab, var(--color-foreground) 5%, var(--color-card));
+  --sz-scene-momento-fundo: color-mix(in oklab, var(--color-primary) 12%, transparent);
+  --sz-scene-momento-tinta: var(--color-primary);
+  --sz-scene-situacao-fundo: color-mix(in oklab, var(--color-foreground) 7%, var(--color-card));
+  --sz-scene-situacao-tinta: var(--color-foreground);
+  --sz-scene-situacao-icone: var(--color-muted-foreground);
+  --sz-scene-feita-fundo: color-mix(
+    in oklab,
+    var(--success-foreground, #096b4a) 12%,
+    var(--color-card)
+  );
+  --sz-scene-feita-tinta: var(--success-foreground, #096b4a);
+  --sz-scene-pendente-fundo: var(--sz-scene-apoio);
+  --sz-scene-pendente-tinta: var(--color-muted-foreground);
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 1.25rem;
+  border: 1px solid var(--color-border);
+  background: var(--sz-scene-deck);
 }
-
 /* O tom da cor de ação no momento do palpite — o mesmo sinal que o cartão azulado dava antes. */
 .sz-scene-console--palpite {
-  background: color-mix(in oklab, var(--color-primary) 4%, var(--color-card));
+  --sz-scene-deck: color-mix(in oklab, var(--color-primary) 5%, var(--color-card));
+}
+/* Os dois painéis: o mundo (visual) e a conversa com a ação (actions). */
+.sz-scene-console-visual,
+.sz-scene-console-actions {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  border-radius: 1rem;
+  background: var(--color-card);
 }
 
-/* ⚠️⚠️ O mundo vai de borda a borda, RETO: quem desenha a moldura é o console. Vale para o palco
- * (`sz-scene-frame`) e para o retrato do palpite (`scene-prediction-preview`), que traz uma
- * moldura própria — no palpite ela virava um cartão arredondado dentro do console, e foi o que ela
- * viu na tela ("na cena ficou um card com borda arredondada; na maquete é reta").
- * (Os dois ganchos seguem com a moldura deles no palco SOLTO: a galeria e a prévia de autoria.) */
-.sz-scene-console .sz-scene-frame,
-.sz-scene-console [data-scene-prediction-preview] {
-  border-radius: 0;
-  border: 0;
+/* A FAIXA: a placa do momento à esquerda, o medidor à direita e os ladrilhos embaixo. */
+.sz-scene-faixa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.625rem;
 }
-
-.sz-scene-console-fala {
+.sz-scene-momento {
+  background: var(--sz-scene-momento-fundo);
+  color: var(--sz-scene-momento-tinta);
+}
+.sz-scene-momento[data-momento="palpite"] {
+  background: color-mix(in oklab, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+}
+.sz-scene-momento[data-momento="descobriu"] {
+  background: var(--sz-scene-feita-fundo);
+  color: var(--sz-scene-feita-tinta);
+}
+.sz-scene-medidor {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.375rem 0.25rem 0.625rem;
+  border-radius: 9999px;
+  background: var(--sz-scene-apoio);
+  color: var(--color-muted-foreground);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.sz-scene-medidor-bolinha {
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  border: 2px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-primary-foreground);
+}
+.sz-scene-medidor-bolinha[data-feita] {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+/* Os LADRILHOS: um por leitura. O valor é escuro; a cor do par mora na bolinha antes dele, e vem
+ * da CLASSE do `dd` (`text-scene-a`…), que é o contrato dos testes. */
+.sz-scene-hud {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+  margin: 0;
+}
+.sz-scene-hud-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
   padding: 0.625rem 0.875rem;
+  border-radius: 0.875rem;
+  overflow: hidden;
+  background: var(--sz-scene-apoio);
 }
-/* A faixa do alto: o respiro da maquete (0,625 × 0,875rem), não o `px-3 py-2` das utilitárias. */
-.sz-scene-console-visual > [data-lugar-reservado="faixa"] > div {
-  padding: 0.625rem 0.875rem;
+.sz-scene-hud-tile dt {
+  margin: 0;
+  color: var(--color-muted-foreground);
 }
-/* ⚠️ O segundo balão do palpite (a pergunta) vem logo DEPOIS do mundo e encostava nele. */
-.sz-scene-console-actions > .sz-scene-console-fala:first-child {
-  padding-top: 0.75rem;
+.sz-scene-hud-tile dd {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-foreground);
+  overflow-wrap: anywhere;
+}
+.sz-scene-hud-tile dd::before {
+  content: "";
+  flex: none;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0.35;
+}
+.sz-scene-hud-tile dd.text-scene-a::before {
+  background: var(--color-scene-a);
+  opacity: 1;
+}
+.sz-scene-hud-tile dd.text-scene-b-ink::before {
+  background: var(--color-scene-b-ink);
+  opacity: 1;
+}
+.sz-scene-hud-tile dd.text-scene-alert::before {
+  background: var(--color-scene-alert);
+  opacity: 1;
+}
+.sz-scene-hud-tile dd.text-scene-leaf::before {
+  background: var(--color-scene-leaf);
+  opacity: 1;
 }
 
+/* O MUNDO: a moldura escura de tela de jogo é do PRÓPRIO palco, justa em volta do desenho (decisão
+ * dela de 30/09, depois de ver a primeira maquete com a borda no contêiner e "margens por dentro").
+ * ⚠️ Vale também para o retrato do palpite. O que rola por cima do mundo (avisos, a pílula do
+ * relógio) precisa do `relative`. */
 .sz-scene-console-mundo {
   position: relative;
 }
+.sz-scene-console .sz-scene-frame,
+.sz-scene-console [data-scene-prediction-preview] {
+  border: 4px solid var(--sz-scene-bezel);
+  border-radius: 1rem;
+  box-shadow: none;
+}
+.sz-scene-relogio {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.2rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: color-mix(in oklab, var(--sz-scene-bezel) 85%, transparent);
+  color: #fff;
+  pointer-events: none;
+}
+.sz-scene-relogio::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0.5;
+}
+.sz-scene-relogio[data-andando]::before {
+  background: #4ade80;
+  opacity: 1;
+}
+/* O PÉ DO MUNDO: os botões numa linha e, embaixo, a frase do que está acontecendo na largura toda. */
+.sz-scene-mundo-rodape {
+  display: grid;
+  gap: 0.625rem;
+}
+.sz-scene-mundo-ferramentas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+.sz-scene-situacao-lugar {
+  min-width: 0;
+}
+.sz-scene-situacao {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.5rem 0.875rem;
+  border-radius: 1rem;
+  background: var(--sz-scene-situacao-fundo);
+  color: var(--sz-scene-situacao-tinta);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: left;
+}
+.sz-scene-situacao > svg {
+  flex: none;
+  margin-top: 0.1rem;
+  color: var(--sz-scene-situacao-icone);
+}
 
-/* A situação vem depois da ação. O respiro preserva a leitura mesmo quando passa a duas linhas. */
-.sz-scene-console-actions > [data-lugar-reservado="situacao"] {
-  padding: 0.5rem 0.875rem 0.375rem;
+/* A COLUNA DAS AÇÕES. */
+.sz-scene-console-fala {
+  padding: 0;
+}
+.sz-scene-pista {
+  margin: 0;
+}
+/* A prancha: a bandeja que segura o gesto e a bancada, com o sobretítulo "Sua vez". */
+.sz-scene-prancha {
+  margin: 0;
+  padding: 0.875rem;
+  border-radius: 1rem;
+  background: var(--sz-scene-apoio);
+  display: grid;
+  gap: 0.625rem;
+}
+.sz-scene-prancha-titulo,
+.sz-scene-descobertas-titulo {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
+/* A ação principal do momento sai na largura toda: o gesto sozinho, ou o botão que a bancada marca. */
+.sz-scene-gestos > :only-child,
+.sz-scene-prancha .sz-scene-acao-principal {
+  flex: 1 1 100%;
+  width: 100%;
+}
+/* "O que você já descobriu": feita em verde, pendente trancada e neutra. */
+.sz-scene-descobertas {
+  display: grid;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+.sz-scene-descobertas ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.sz-scene-descoberta {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.875rem;
+  background: var(--sz-scene-pendente-fundo);
+  color: var(--sz-scene-pendente-tinta);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.sz-scene-descoberta[data-feita] {
+  background: var(--sz-scene-feita-fundo);
+  color: var(--sz-scene-feita-tinta);
+  font-weight: 700;
+}
+.sz-scene-descoberta-icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background: color-mix(in oklab, currentColor 14%, transparent);
+}
+.sz-scene-descobertas-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
 }
 
 /*
@@ -398,51 +662,32 @@
   white-space: normal;
 }
 
-/* A divisória muda o PAINEL, não a janela. A mesma régua serve inline e ampliado:
- * 52rem deixam cerca de 25rem para o palco e pelo menos 26rem para a bancada.
- * Sem altura confortável, preservamos o fluxo vertical, sem reduzir letras ou cortar ações. */
+/* Duas colunas quando o PRÓPRIO painel tem 52rem (a divisória da aula muda o painel, não a
+ * janela): o mundo à esquerda com 1,15 do espaço, a conversa e a ação à direita. Cada painel tem a
+ * altura NATURAL (a imagem que ela aprovou) com um teto pela janela: passou do teto, rola sozinho,
+ * e a bancada longa não leva o palco junto. Sem altura confortável, preservamos o fluxo vertical,
+ * sem reduzir letras ou cortar ações. */
 @media (min-height: 34rem) {
   @container scene-workspace (min-width: 52rem) {
     .sz-scene-console {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(26rem, 0.9fr);
-      grid-template-rows: minmax(0, 1fr);
-      /* Reserva espaço para cabeçalho e navegação da aula. A bancada rola sem levar
-       * o palco junto; um painel largo não vira uma coluna interminável. */
-      height: min(40rem, calc(100dvh - 14rem));
+      grid-template-columns: minmax(0, 1.15fr) minmax(24rem, 1fr);
+      grid-template-rows: auto;
     }
+    /* O painel do MUNDO nunca rola: o que ele tem é limitado (faixa, palco, pé). O painel das AÇÕES
+     * rola sozinho quando passa da janela (a bancada longa não leva o palco junto); numa janela
+     * alta ele só tem a altura natural. ⚠️ Sem o teto de 40rem de antes: com altura natural ele
+     * fazia a coluna rolar por dentro mesmo com a tela sobrando (visto no print de 30/09). */
     .sz-scene-console-visual,
     .sz-scene-console-actions {
-      min-height: 0;
-      overflow-y: auto;
       overscroll-behavior: contain;
       /* A barra reserva a mesma largura dos dois lados: o palco não fica colado à esquerda. */
       scrollbar-gutter: stable both-edges;
     }
     .sz-scene-console-actions {
-      border-left: 2px solid var(--color-border);
+      max-height: max(36rem, calc(100dvh - 14rem));
+      overflow-y: auto;
     }
-    .sz-scene-console-visual {
-      display: flex;
-      flex-direction: column;
-    }
-    .sz-scene-console-visual > :not(.sz-scene-console-mundo) {
-      flex-shrink: 0;
-    }
-    .sz-scene-console-visual > .sz-scene-console-mundo {
-      flex: 1;
-      min-height: 0;
-      container-type: size;
-      overflow: auto;
-    }
-    /* O viewBox informa a proporção real. O observador do palco mantém os rótulos
-     * legíveis. Comparações e legendas conservam a altura natural e podem rolar. */
-    .sz-scene-console-mundo > .sz-scene-frame--fit {
-      width: min(100%, calc(100cqh * var(--sz-scene-aspect)));
-      margin-inline: auto;
-    }
-    /* No ampliado, preencher a área útil SOMENTE quando as colunas estão ativas.
-     * Um segundo limiar de viewport poderia cortar o fluxo empilhado com fontes maiores. */
+    /* No ampliado os dois painéis enchem a área útil e cada um rola sozinho. */
     .sz-scene-workspace--expanded .sz-scene-workspace-body,
     .sz-scene-workspace--expanded .sz-scene-workspace-body > fieldset,
     .sz-scene-workspace--expanded .sz-scene-workspace-body > fieldset > fieldset {
@@ -459,20 +704,17 @@
     .sz-scene-workspace--expanded .sz-scene-console {
       flex: 1;
       min-height: 0;
-      height: auto;
+      grid-template-rows: minmax(0, 1fr);
+    }
+    .sz-scene-workspace--expanded .sz-scene-console-visual,
+    .sz-scene-workspace--expanded .sz-scene-console-actions {
+      max-height: none;
+      min-height: 0;
+      overflow-y: auto;
     }
   }
 }
 
-/* A prancha: a bandeja rebaixada que segura o gesto e a bancada. */
-.sz-scene-prancha {
-  margin: 0 0.625rem 0.625rem;
-  padding: 0.5rem;
-  border-radius: 0.875rem;
-  background: color-mix(in oklab, var(--color-foreground) 5%, transparent);
-  display: grid;
-  gap: 0.5rem;
-}
 /* ⭐ O HUD, no molde do `drawScore` do Jogo 2D (`game-2d/runtime/arcadeKitsHud.ts`): rótulo
  * pequeno em versalete, número GORDO em Baloo, sem caixa branca por cima do mundo. Era a queixa
  * dela: "o placar você fez de um jeito que não tem nada a ver com o estilo do jogo". */
@@ -501,9 +743,9 @@
   font-weight: 800;
   line-height: 1;
 }
-/* A PLACA do começo da faixa. Hoje ela diz só em que momento da atividade a criança está ("Seu
- * palpite", "Antes de assistir"): o nome da cena já é o título do bloco, e repeti-lo aqui seria a
- * terceira vez na mesma tela. A variante base existe para o dia em que houver outro estado. */
+/* A PLACA do começo da faixa: hoje é o MOMENTO da atividade ("Seu palpite", "Sua vez", "Você
+ * descobriu"; `.sz-scene-momento`, no bloco do console) e, quando o título da seção já disse o nome
+ * da cena, o nome também. A variante base é a pílula neutra. */
 .sz-scene-placa {
   font-size: 0.8125rem;
   font-weight: 800;
@@ -514,14 +756,9 @@
   background: color-mix(in oklab, var(--color-foreground) 6%, transparent);
   color: var(--color-muted-foreground);
 }
-.sz-scene-placa--palpite {
-  background: color-mix(in oklab, var(--color-primary) 12%, transparent);
-  color: var(--color-primary);
-}
 
-/* O lugar da CONVERSA: logo abaixo do mundo, dentro do console.
- * É onde o palpite pergunta antes e onde a conclusão responde depois.
- * ⚠️ Margem no TOPO: sem ela o cartão encostava no mundo (ela reparou na maquete). */
+/* O lugar da CONVERSA: o palpite congelado e a conclusão, na coluna das ações. O respiro entre as
+ * peças é o `gap` do painel; a margem antiga somava com ele. */
 .sz-scene-console-conversa {
-  margin: 0.75rem 0.875rem 0.5rem;
+  margin: 0;
 }

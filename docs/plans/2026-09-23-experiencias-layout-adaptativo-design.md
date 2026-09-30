@@ -1,5 +1,9 @@
 # Experiências: layout pela largura do painel
 
+> **Atualizado em 30/09/2026 (console v2):** os dois painéis têm altura NATURAL (a imagem que ela
+> aprovou); só o painel das ações rola, acima de `max(36rem, 100dvh − 14rem)`. O ampliado enche a
+> área útil como antes.
+
 Direção aprovada em 23/09/2026: aproveitar o espaço liberado pela divisória da aula, mantendo a opção **Ampliar experiência**.
 
 ## Comportamento

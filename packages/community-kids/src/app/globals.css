@@ -1567,6 +1567,32 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   --unit-bg: var(--unit);
 }
 
+/* ── O CONSOLE v2 da experiência (30/09/2026) ─────────────────────────────────
+   As peças e a arrumação moram no `scene.css` do member-shell (`sz-scene-console*`,
+   `sz-scene-faixa`, `sz-scene-momento`, `sz-scene-hud-tile`, `sz-scene-situacao`,
+   `sz-scene-prancha`, `sz-scene-descobertas*`), com queda neutra. Aqui entra só o MATERIAL do
+   kids, pelas variáveis que o console lê: o deck no cinza-claro do Pen, a moldura do palco no
+   navy do menu, o momento no verde do chip "Experimente", a situação no amarelo de apoio, a
+   descoberta feita no menta com a tinta de "concluído". Fora de camada como o resto deste bloco
+   (o console é regra sem camada no member-shell, e as variáveis precisam vencê-la). */
+.sz-lesson-sections .sz-scene-console {
+  --sz-scene-deck: var(--pen-sup2);
+  --sz-scene-bezel: var(--menu);
+  --sz-scene-apoio: var(--pen-sup2);
+  --sz-scene-momento-fundo: color-mix(in oklab, var(--kids-verde) 12%, transparent);
+  --sz-scene-momento-tinta: var(--kids-verde);
+  --sz-scene-situacao-fundo: var(--band-amarelo);
+  --sz-scene-situacao-tinta: var(--tinta);
+  --sz-scene-situacao-icone: var(--kids-lime);
+  --sz-scene-feita-fundo: var(--band-menta);
+  --sz-scene-feita-tinta: var(--success-foreground);
+  --sz-scene-pendente-fundo: var(--band-creme);
+  --sz-scene-pendente-tinta: var(--muted-foreground);
+}
+.sz-lesson-sections .sz-scene-console--palpite {
+  --sz-scene-deck: color-mix(in oklab, var(--pen-acao) 6%, var(--pen-sup2));
+}
+
 /* MATERIAIS COMPLEMENTARES. O desenho é UM só no member-shell (`MaterialsBlockView`, que não
    tem cor nenhuma por dentro) e cada app o veste por estes ganchos — a mesma receita da
    invariante 8. Aqui a linha de arquivo ganha o relevo 3D e a bolinha da marca, como o card de

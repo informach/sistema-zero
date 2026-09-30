@@ -1445,7 +1445,11 @@ describe('⭐⭐ consertos do review do lote 2: o que se vê e o que se ouve', (
       servidorQueCorrige(content('gravity'))
       aluno(content('gravity'))
       await palpitar('gravity')
-      const frase = () => document.querySelector('p.min-h-6.text-center') as HTMLElement
+      // Console v2 (30/09/2026): a frase é a pílula no PÉ DO MUNDO, dentro do lugar reservado.
+      const frase = () =>
+        document.querySelector(
+          '[data-lugar-reservado="situacao"] p.sz-scene-situacao',
+        ) as HTMLElement
       expect(frase().getAttribute('role')).toBe('status')
       // ⚠️ Mudou de propósito (lote 5 do Raio-X): "↑ Pular", sem "com toque".
       fireEvent.click(screen.getByRole('button', { name: '↑ Pular' }))
