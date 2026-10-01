@@ -1,0 +1,24 @@
+---
+import { COMUNIDADE_DOS_CRIADORES } from '../../funnels/comunidade-dos-criadores'
+import type { ComunidadePageId } from '../../funnels/comunidade-dos-criadores/oferta/types'
+import type { OfferPageData } from '../../server/offer-page'
+import ComunidadeOfertaBody from './oferta/ComunidadeOfertaBody.astro'
+import DesafioOfertaBody from './oferta/DesafioOfertaBody.astro'
+import NoComandoOfertaBody from './oferta/NoComandoOfertaBody.astro'
+
+interface Props extends OfferPageData {
+  comunidadeProfile?: ComunidadePageId
+}
+const { bodyProps, plans, comunidadeProfile = 'tempo-de-tela' } = Astro.props
+const { f } = bodyProps
+---
+
+{
+  f.content.sales ? (
+    <NoComandoOfertaBody {...bodyProps} />
+  ) : f.key === COMUNIDADE_DOS_CRIADORES.key ? (
+    <ComunidadeOfertaBody {...bodyProps} plans={plans} profile={comunidadeProfile} />
+  ) : (
+    <DesafioOfertaBody {...bodyProps} />
+  )
+}

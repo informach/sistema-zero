@@ -88,6 +88,20 @@ export function createFakeRepo(): FakeRepoState {
       const lead = leads.get(id)
       if (lead) lead.quizAnswers = { ...(lead.quizAnswers ?? {}), ...patch }
     },
+    async saveQuizAnswers(id, expected, next, lastStep, perfil) {
+      const lead = leads.get(id)
+      const canonical = (value: object) =>
+        JSON.stringify(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)))
+      if (!lead || canonical(lead.quizAnswers ?? {}) !== canonical(expected)) return false
+      leads.set(id, {
+        ...lead,
+        quizAnswers: structuredClone(next),
+        lastStep,
+        perfilResultado: perfil,
+        updatedAt: new Date(),
+      })
+      return true
+    },
     async setPayment(id, paymentId, couponCode, snapshot) {
       const lead = leads.get(id)
       if (lead) {

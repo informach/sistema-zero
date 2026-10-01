@@ -1,11 +1,12 @@
 // Conteúdo do funil "Comunidade dos Criadores" (kids, assinatura mensal/anual).
-// A copy da página de vendas (dez seções) vive DENTRO do body próprio
-// (ComunidadeOfertaBody.astro), na mesma convenção do Desafio. Aqui ficam só os
+// As quatro copies vivem em oferta/, renderizadas pelo ComunidadeOfertaBody.
+// Aqui ficam os
 // conteúdos consumidos pelas etapas COMPARTILHADAS (obrigado) + os obrigatórios
 // pelo tipo FunnelContent (copy/landing — este funil não tem quiz, então a
 // landing nunca renderiza; os valores espelham o hero por consistência).
 
 import type { FunnelCopy, FunnelLanding, FunnelObrigado } from '../registry'
+import { PAGE_A } from './oferta/tempo-de-tela'
 
 export const COMUNIDADE_PRODUTO: FunnelCopy = {
   nome: 'Comunidade dos Criadores',
@@ -16,9 +17,8 @@ export const COMUNIDADE_PRODUTO: FunnelCopy = {
 
 // Exigida pelo tipo FunnelContent; a /quiz deste funil é 404 (steps.quiz=false).
 export const COMUNIDADE_LANDING: FunnelLanding = {
-  h1: 'Seu filho aprende a criar os próprios jogos.',
-  subtitulo:
-    'Projetos guiados para crianças de 9 a 14 anos aprenderem a montar regras, testar ideias e criar jogos que podem compartilhar com a família.',
+  h1: PAGE_A.hero.title,
+  subtitulo: PAGE_A.hero.description,
   tempo: '',
 }
 

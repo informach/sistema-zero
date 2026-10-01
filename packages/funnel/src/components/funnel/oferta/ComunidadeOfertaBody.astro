@@ -1,11 +1,26 @@
 ---
-// Copy e composição: docs/plans/2026-09-30-comunidade-copy-leitura-revisada.md.
-// Desenho (30/09/2026, "a oficina do criador"): docs/plans/2026-09-30-comunidade-redesenho-visual.md.
-// As receitas da identidade kids (botão, carta, eyebrow, chip, ladrilho, banda, moldura de tela)
-// vivem em src/styles/kids-oferta.css; aqui fica só o LAYOUT da página, prefixado por `.cdc`.
-// As telas `tela-*.webp` são capturas REAIS do kids em staging (scripts/captura-telas-kids.ts).
+// Quatro perfis e continuidade: docs/marketing/kids/comunidade-dos-criadores/copy/.
+// As receitas visuais ficam em kids-oferta.css; o layout (`.cdc`), em comunidade-oferta.css.
 import '../../../styles/kids-oferta.css'
+import '../../../styles/comunidade-oferta.css'
 import { COMUNIDADE_PRECO_FALLBACK } from '../../../funnels/comunidade-dos-criadores/content'
+import { COMUNIDADE_PAGES } from '../../../funnels/comunidade-dos-criadores/oferta'
+import {
+  ENFASE_NUMA_LINHA,
+  ICONES_DE_DUVIDAS,
+} from '../../../funnels/comunidade-dos-criadores/oferta/arte'
+import { DESTAQUES } from '../../../funnels/comunidade-dos-criadores/oferta/destaques'
+import { FAQ, SHARED_COPY } from '../../../funnels/comunidade-dos-criadores/oferta/shared'
+import type {
+  ComunidadeFaqEntry,
+  ComunidadeOffer,
+  ComunidadePageId,
+} from '../../../funnels/comunidade-dos-criadores/oferta/types'
+import {
+  FAQ_VISUALS,
+  TOUR,
+  visualDe,
+} from '../../../funnels/comunidade-dos-criadores/oferta/visuals'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
@@ -14,35 +29,35 @@ import { funnelOgImage } from '../../../lib/seo'
 import type { OfferPlans } from '../../../server/catalog'
 import Footer from '../../Footer.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+import ComunidadeProsa from './ComunidadeProsa.astro'
+import ComunidadeSection from './ComunidadeSection.astro'
+import ComunidadeVisual from './ComunidadeVisual.astro'
 
 interface Props {
   f: FunnelDef
   productName: string
-  /** "R$ 97,00" (não usado aqui; a página trabalha com os planos). */
   priceLabel: string
-  /** "R$ 97" (fallback de exibição da oferta principal). */
   priceLabelShort: string
-  /** "97.00" (JSON-LD — preço da oferta PRINCIPAL da env). */
   priceReais: string
   imagesBase: string
-  /** Repassados pela rota; esta oferta padrão não os renderiza. */
   perfil: string | null
   quer?: string | null
   ofertaUrl: string
-  /** Planos da assinatura (principal + irmã do alternador). null = catálogo fora. */
   plans: OfferPlans | null
-  /** Origem do link; não comprova conclusão individual do Desafio. */
-  origem?: 'desafio' | null
+  profile?: ComunidadePageId
 }
-const { f, productName, priceReais, imagesBase, ofertaUrl, plans, origem = null } = Astro.props
-
-const posDesafio = origem === 'desafio'
-const description = f.seoDescription
+const { f, productName, imagesBase, ofertaUrl, plans, profile = 'tempo-de-tela' } = Astro.props
+const page = COMUNIDADE_PAGES[profile]
 const img = (file: string) => `${imagesBase}/${file}`
-/** As telas reais têm a versão @2x para telas de alta densidade. */
-const tela2x = (file: string) => `${img(file)} 1x, ${img(file.replace('.webp', '@2x.webp'))} 2x`
-
-// Normaliza mensal/anual por INTERVALO (sem assumir qual é a principal da env).
+const heroVisual = visualDe(page.heroVisual)
+const heroFrame = heroVisual?.frames[0]
+if (!heroVisual || !heroFrame) throw new Error(`Herói sem tela real: ${page.heroVisual}`)
+const heroSrc = img(heroFrame.file)
+const heroSrcset = `${heroSrc} 1x, ${img(heroFrame.retina)} 2x`
+const [titleStart, titleEnd] = page.hero.title.split(page.emphasis)
+const enfaseEm = ENFASE_NUMA_LINHA[page.id]
+// Jornada do Criador: incluído não significa liberado no primeiro acesso.
+// A resolução por intervalo conserva qual oferta é a principal e qual é a irmã.
 const byInterval = (n: number) =>
   plans?.main.intervalMonths === n
     ? plans.main
@@ -51,777 +66,274 @@ const byInterval = (n: number) =>
       : null
 const mensal = byInterval(1)
 const anual = byInterval(12)
-
-// Preços de exibição com fallback PRÓPRIO (o da rota é o do NCI — R$ 37, errado
-// aqui). Catálogo fora do ar → mostra os preços de tabela e os CTAs seguem
-// funcionando sem pré-seleção de plano.
 const mensalCents = mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents
 const anualCents = anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents
-const mensalLabel = formatBRLFromCents(mensalCents) // "R$ 97"
-const anualLabel = formatBRLFromCents(anualCents) // "R$ 797"
-const anualPorMesLabel = formatBRLFromCents2(Math.round(anualCents / 12)) // "R$ 66,42"
-const anualAncoraLabel = formatBRLFromCents(mensalCents * 12) // "R$ 1.164"
-const economiaCents = mensalCents * 12 - anualCents
-const economiaLabel = formatBRLFromCents(economiaCents) // "R$ 367"
-
-/** Os oito postos da Jornada do Criador, na ordem, com a arte que o kids usa no mapa. */
-const jornada = [
-  { slug: 'noob', nome: 'Faísca' },
-  { slug: 'coder', nome: 'Construtor(a)' },
-  { slug: 'hacker', nome: 'Inventor(a)' },
-  { slug: 'explorer', nome: 'Explorador(a) de Mundos' },
-  { slug: 'elite', nome: 'Mestre dos Jogos' },
-  { slug: 'architect', nome: 'Arquiteto(a) de Mundos' },
-  { slug: 'champion', nome: 'Gênio da Criação' },
-  { slug: 'god', nome: 'Lenda' },
+const mensalLabel = formatBRLFromCents(mensalCents)
+const anualLabel = formatBRLFromCents(anualCents)
+const anualPorMesLabel = formatBRLFromCents2(Math.round(anualCents / 12))
+const priceReais = ((plans?.main.priceCents ?? mensalCents) / 100).toFixed(2)
+const offer: ComunidadeOffer = page.offer ?? SHARED_COPY.offer
+const faq: Record<string, ComunidadeFaqEntry> = page.faq ?? FAQ
+const fillPrice = (text: string) =>
+  text
+    .replaceAll('{{preco_mensal}}', mensalLabel)
+    .replaceAll('{{preco_anual}}', anualLabel)
+    .replaceAll('{{equivalente_mensal_anual}}', anualPorMesLabel)
+const benefitIcons = ['extension', 'brush', 'group']
+const benefitColors = ['', 'kof-ladrilho--rosa', 'kof-ladrilho--verde']
+const founder = SHARED_COPY.founder.groups.flatMap((group) => group.paragraphs)
+const closing = page.closing.groups.flatMap((group) => group.paragraphs)
+const faqIcons = ICONES_DE_DUVIDAS[page.id] ?? [
+  'schedule',
+  'school',
+  'build',
+  'devices',
+  'diversity_3',
+  'receipt_long',
 ]
+const faqColors = ['', 'rosa', 'verde', 'roxo', 'laranja', 'amarelo']
+const faqVisuals = (id: string) =>
+  ((page.faqVisuals ?? FAQ_VISUALS)[id] ?? []).filter((visual) => visualDe(visual))
 ---
-<BaseLayout title={f.seoTitle} description={description} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} htmlClass={f.theme ? `theme-${f.theme}` : undefined}>
-<ProductJsonLd slot="head" name={productName} description={description} price={priceReais} url={ofertaUrl} image={img('checkout-capa.webp')} />
-<link slot="head" rel="preload" as="image" href={img('tela-aula.webp')} imagesrcset={tela2x('tela-aula.webp')} fetchpriority="high" />
-<div class="cdc">
-<a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
 
-<!-- ═══════════════ Topo navy ═══════════════ -->
-<header class="topbar">
-<div class="wrap nav">
-<a class="brand" href="#conteudo" aria-label="Comunidade dos Criadores, início"><img class="logo" src={img('logo-kids-escuro.svg')} alt="Sistema Zero Kids" width="279" height="26" decoding="async" /></a>
-<div class="nav-right">
-<p class="nav-preco">Assinatura a partir de <strong>{anualPorMesLabel} por mês</strong></p>
-<a class="kof-btn kof-btn--compacta" href="#planos">Escolher um plano</a>
-</div>
-</div>
-</header>
+<BaseLayout title={page.seoTitle} description={page.description} canonical={ofertaUrl} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} htmlClass="theme-kids">
+  <ProductJsonLd slot="head" name={productName} description={page.description} price={priceReais} url={ofertaUrl} image={img('checkout-capa.webp')} />
+  <link slot="head" rel="preload" as="image" href={heroSrc} imagesrcset={heroSrcset} fetchpriority="high" />
+  <div class="cdc" data-comunidade-profile={profile}>
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+    <header class="topbar">
+      <div class="wrap nav">
+        <a class="brand" href="#conteudo" aria-label="Comunidade dos Criadores, início">
+          <img class="logo" src={img('logo-kids-escuro.svg')} alt="Sistema Zero Kids" width="279" height="26" decoding="async" />
+        </a>
+        <nav class="nav-links" aria-label="Partes da página">
+          <a href="#experiencia">Experiência</a>
+          <a href="#planos">Planos</a>
+          <a href="#duvidas">Dúvidas</a>
+        </nav>
+        <div class="nav-right">
+          <p class="nav-preco">No plano anual, equivalente a<strong>{anualPorMesLabel} por mês</strong></p>
+          <a class="kof-btn kof-btn--compacta" href="#planos">Escolher um plano</a>
+        </div>
+      </div>
+    </header>
+    <main id="conteudo">
+      <section class="hero section" aria-labelledby="hero-title">
+        <div class="wrap hero-grid">
+          <div class="hero-copy">
+            <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">stadia_controller</span>Comunidade dos Criadores · 9 a 14 anos</span>
+            <h1 id="hero-title" class:list={['kof-display', { 'enfase-junta': enfaseEm }]} style={enfaseEm ? `--enfase-em: ${enfaseEm}` : undefined}>{titleStart}<em>{page.emphasis}</em>{titleEnd}</h1>
+            <p class="kof-lead">{page.hero.description}</p>
+            <ul class="hero-benefits">
+              {page.hero.benefits.map((benefit, index) => (
+                <li><span class:list={['kof-ladrilho', benefitColors[index]]} aria-hidden="true"><span class="material-symbols-rounded">{benefitIcons[index]}</span></span><span>{benefit}</span></li>
+              ))}
+            </ul>
+            <div class="hero-actions">
+              <a class="kof-btn kof-btn--grande" href={page.hero.primary.href}>{page.hero.primary.label}</a>
+              <a class="kof-link" href={page.hero.secondary.href}>{page.hero.secondary.label}<span class="material-symbols-rounded" aria-hidden="true">arrow_downward</span></a>
+            </div>
+            <div class="requirements"><span class="kof-selo"><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>{page.hero.requirements}</span></div>
+          </div>
+          <div class="hero-visual">
+            <div class="hero-stage kof-marca">
+              <span class="kof-decor decor-1" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+              <span class="kof-decor kof-decor--rosa decor-2" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+              <span class="kof-decor decor-3" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+              <img class="zappy" src={img('zappy-happy.webp')} alt="" width="300" height="300" loading="eager" decoding="async" />
+              <figure class="hero-figura" data-visual={page.heroVisual}>
+                <a class="quadro-link" href={img(heroFrame.retina)} target="_blank" rel="noopener" data-zoom aria-label={`Ampliar a imagem: ${heroFrame.alt}`}>
+                  <div class="kof-tela kof-tela--sombra">
+                    <div class="kof-tela__barra" aria-hidden="true">
+                      <i></i><i></i><i></i>
+                      <span class="kof-tela__url">{heroFrame.label}</span>
+                      <span class="material-symbols-rounded quadro-lupa">zoom_in</span>
+                    </div>
+                    <img src={heroSrc} srcset={heroSrcset} alt={heroFrame.alt} width={heroFrame.width} height={heroFrame.height} loading="eager" decoding="async" fetchpriority="high" />
+                  </div>
+                </a>
+                <figcaption>{heroVisual.caption}</figcaption>
+              </figure>
+              <span class="kof-chip kof-chip--verde flutua flutua--1"><span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>{page.heroChip}</span>
+              <span class="kof-chip flutua flutua--2"><span class="material-symbols-rounded" aria-hidden="true">group</span>Até dois perfis</span>
+              <img class="dede" src={img('dede-fala.webp')} alt="" width="360" height="869" loading="eager" decoding="async" />
+            </div>
+          </div>
+        </div>
+      </section>
 
-<main id="conteudo">
+      <section class="tour" aria-labelledby="title-tour">
+        <div class="wrap">
+          <h2 id="title-tour" class="tour-titulo kof-sobretitulo">Por dentro da Comunidade</h2>
+          <ul class="tour-faixa">
+            {TOUR.map((frame) => (
+              <li class="tour-item">
+                <a href={img(frame.retina)} target="_blank" rel="noopener" data-zoom aria-label={`Ampliar a imagem: ${frame.alt}`}>
+                  <img src={img(frame.file)} alt={frame.alt} width={frame.width} height={frame.height} loading="lazy" decoding="async" />
+                  <span class="tour-nome">{frame.label}<span class="material-symbols-rounded tour-lupa" aria-hidden="true">zoom_in</span></span>
+                  <span class="tour-resumo">{frame.resumo}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
-<!-- ═══════════════ 01 · Herói ═══════════════ -->
-<section class="hero section" aria-labelledby="hero-title">
-<div class="wrap hero-grid">
-<div class="hero-copy">
-<span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">stadia_controller</span>Comunidade dos Criadores · 9 a 14 anos</span>
-{!posDesafio ? (<>
-<h1 id="hero-title" class="kof-display">Seu filho aprende a criar <em>os próprios jogos</em></h1>
-<p class="kof-lead">
-  Um projeto guiado ajuda seu filho a começar. Ele aprende a montar o jogo por partes e a testar as
-  ideias que quer colocar no próprio jogo.
-</p>
-<ul class="hero-benefits">
-<li><span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">extension</span></span><span>Praticar raciocínio e resolução de problemas ao montar uma regra e testar o resultado.</span></li>
-<li><span class="kof-ladrilho kof-ladrilho--rosa" aria-hidden="true"><span class="material-symbols-rounded">brush</span></span><span>Desenhar um personagem ou montar uma fase para o jogo que ele está criando.</span></li>
-<li><span class="kof-ladrilho kof-ladrilho--verde" aria-hidden="true"><span class="material-symbols-rounded">sports_esports</span></span><span>Convidar você para jogar o jogo que ele criou.</span></li>
-</ul>
-</>) : (<>
-<h1 id="hero-title" class="kof-display">Seu filho pode continuar <em>o caminho de criar jogos</em></h1>
-<p class="kof-lead">
-  Projetos guiados e ferramentas de criação para retomar uma etapa ou desenvolver novas versões do
-  que ele já começou.
-</p>
-<ul class="hero-benefits">
-<li><span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">play_arrow</span></span><span>Continuar de onde parou, aproveitando o progresso do perfil.</span></li>
-<li><span class="kof-ladrilho kof-ladrilho--rosa" aria-hidden="true"><span class="material-symbols-rounded">science</span></span><span>Experimentar outras ideias no jogo, com as ferramentas que já liberou.</span></li>
-<li><span class="kof-ladrilho kof-ladrilho--verde" aria-hidden="true"><span class="material-symbols-rounded">map</span></span><span>Encontrar na Jornada os projetos disponíveis para sua etapa.</span></li>
-</ul>
-</>)}
-<div class="hero-actions">
-<a class="kof-btn kof-btn--grande" href="#planos">{posDesafio ? 'Escolher um plano para continuar' : 'Escolher um plano para meu filho'}</a>
-<a class="kof-link" href="#aula">Ver uma aula por dentro <span class="material-symbols-rounded" aria-hidden="true">arrow_downward</span></a>
-</div>
-<div class="requirements">
-<span class="kof-selo"><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Para crianças de 9 a 14 anos que já conseguem ler e usar mouse e teclado com autonomia.</span>
-<span class="kof-selo"><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>É necessário um computador com internet.</span>
-</div>
-</div>
-<div class="hero-visual">
-<div class="hero-stage kof-marca">
-<span class="kof-decor decor-1" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
-<span class="kof-decor kof-decor--rosa decor-2" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
-<span class="kof-decor decor-3" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
-<img class="zappy" src={img('zappy-happy.webp')} alt="" width="300" height="300" loading="eager" decoding="async" />
-<figure class="kof-tela kof-tela--sombra hero-tela">
-<div class="kof-tela__barra" aria-hidden="true"><i></i><i></i><i></i><span class="kof-tela__url">Uma aula da Comunidade</span></div>
-<img src={img('tela-aula.webp')} srcset={tela2x('tela-aula.webp')} alt="Tela de uma aula da Comunidade: o Zappy explica, a criança testa a regra no jogo e marca o que descobriu" width="1280" height="860" loading="eager" decoding="async" fetchpriority="high" />
-</figure>
-<span class="kof-chip kof-chip--verde flutua flutua--1"><span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>Jogo publicado</span>
-<span class="kof-chip flutua flutua--2"><span class="material-symbols-rounded" aria-hidden="true">group</span>Até dois perfis</span>
-<img class="dede" src={img('dede-fala.webp')} alt="" width="360" height="869" loading="eager" decoding="async" />
-</div>
-</div>
-</div>
-</section>
+      {page.sections.map((section, index) => <ComunidadeSection section={section} imagesBase={imagesBase} index={index} experience={index === 1 && !page.sections.some((item) => item.id === 'experiencia')} />)}
 
-<!-- ═══════════════ 02 · Argumento (ou continuidade, vindo do Desafio) ═══════════════ -->
-{!posDesafio ? (<> <section class="section" id="aprendizado" aria-labelledby="title-aprendizado">
-<div class="wrap">
-<span class="kof-sobretitulo">Como ele aprende</span>
-<h2 id="title-aprendizado" class="kof-display">O jogo que seu filho te mostra conta só uma parte da história</h2>
-<div class="story-row kof-reveal">
-<div class="prose">
-<p>
-  Essa história pode começar numa conversa que vocês já têm em casa. Se seu filho gosta de jogos,
-  talvez você já tenha ouvido uma ideia dele sobre uma fase: um personagem que poderia ter outro
-  poder, um obstáculo que ele mudaria de lugar ou um final que imaginou diferente. Um comentário
-  desses pode dar a vocês algo para explorar juntos.
-</p>
-<p>
-  Você pode convidar seu filho a escolher uma dessas ideias e imaginar como ela funcionaria. Pense
-  numa nave que atira em asteroides: a nave atiraria o tempo todo ou só quando o jogador apertasse
-  uma tecla? Ao conversar sobre isso, seu filho começa a decidir como seria o jogo que tem em mente.
-</p>
-<p>
-  Daí vem o convite para aprender a construir uma pequena versão desse jogo. Seu filho pode começar
-  com uma montagem guiada, conhecer os comandos e descobrir como fazer a nave atirar ao apertar uma
-  tecla. Entender essa primeira regra dá uma base para montar outras regras do jogo.
-</p>
-<p>
-  Se você procura uma atividade que aproveite esse interesse para aprender, essa passagem faz
-  diferença. Seu filho tem algo que quer ver acontecer na tela e um motivo para descobrir como
-  fazer. O jogo que ele mostra depois carrega a história dessas tentativas.
-</p>
-</div>
-<figure class="visual arte">
-  <img src={img('ilustra-virada.webp')} alt="Ilustração de um menino montando os blocos de um jogo numa tela e o Zappy apontando o jogo rodando na outra" width="1100" height="630" loading="lazy" decoding="async" />
-  <figcaption><span class="visual-label">Ilustração</span>Uma ideia sobre o jogo pode virar um convite para aprender a criar.</figcaption>
-</figure>
-</div>
-<div class="story-row reverse kof-reveal">
-<div class="prose">
-<h3 class="kof-display">Uma regra pequena já pode te mostrar o que ele está aprendendo</h3>
-<p>
-  Naquele jogo de nave, seu filho pode querer que cada asteroide atingido valha um ponto. Para isso,
-  precisa montar os comandos que fazem o jogo reconhecer o acerto, somar um ponto e mostrar o total.
-  Organizar essa relação exercita o raciocínio lógico: o ponto só deve ser somado quando o tiro
-  acerta o asteroide. Ao testar o jogo, seu filho consegue ver se a regra produziu o resultado que
-  imaginou.
-</p>
-<p>
-  Só que o teste pode trazer uma surpresa: o asteroide desaparece, mas o placar continua em zero. O
-  ponto foi somado? O placar está mostrando o valor certo? Conferir uma parte por vez dá uma direção
-  para a tentativa seguinte. É assim que a resolução de problemas entra no que ele está fazendo:
-  procurar uma causa, testar uma mudança e observar se resolveu.
-</p>
-</div>
-<figure class="visual generated">
-  <a href={img('preview-regra.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem (abre em nova aba): Ilustração de um acerto no asteroide e da mudança de zero para um ponto">
-    <img src={img('preview-regra.webp')} alt="Ilustração de um acerto no asteroide e da mudança de zero para um ponto" width="1536" height="1024" loading="lazy" decoding="async" />
-  </a>
-  <figcaption><span class="visual-label">Ilustração da experiência</span>O tiro acerta, o jogo soma um ponto e o placar mostra o total. Exemplo ilustrativo de uma regra.</figcaption>
-</figure>
-</div>
-<div class="fecho kof-carta kof-carta--fio kof-reveal">
-<span class="kof-ladrilho kof-ladrilho--amarelo" aria-hidden="true"><span class="material-symbols-rounded">lightbulb</span></span>
-<div>
-<p>
-  Quando os pontos começam a aparecer, outra ideia pode surgir: deixar a partida mais desafiadora.
-  Seu filho poderia fazer os asteroides andarem mais rápido ou aparecerem com mais frequência.
-  Imaginar essas alternativas trabalha a criatividade. Escolher uma delas e experimentar acrescenta
-  uma pergunta importante: ficou bom de jogar?
-</p>
-<p>
-  Se os asteroides ficarem rápidos demais, seu filho pode reduzir a velocidade e testar a partida de
-  novo. Ao propor uma melhoria, colocá-la no jogo e avaliar como ficou a partida, pratica um jeito
-  de inovar. O teste que deixou o jogo difícil demais também ensina algo sobre o ajuste seguinte.
-  Lidar com o erro ganha uma razão que seu filho entende: continuar trabalhando no jogo que quer
-  fazer funcionar.
-</p>
-<p>
-  Você pode perceber um pedaço desse aprendizado quando seu filho conta que a fase estava difícil,
-  mostra o que mudou e convida você a testar a nova versão do jogo. A conversa parte de uma mudança
-  que ele fez e consegue apontar na tela. O jogo pronto também dá a vocês um motivo para reconhecer
-  o esforço das tentativas anteriores.
-</p>
-</div>
-</div>
-</div>
-</section> </>) : (<> <section class="section" id="continuidade" aria-labelledby="title-continuidade">
-<div class="wrap">
-<span class="kof-sobretitulo">Para quem já começou</span>
-<h2 id="title-continuidade" class="kof-display">Talvez ele já tenha te contado o que mudaria no jogo</h2>
-<div class="story-row kof-reveal">
-<div class="prose">
-<p>
-  Uma regra que seu filho conseguiu montar dá uma base para novas experiências. Ele pode se
-  perguntar o que aconteceria com outra escolha e desenvolver uma nova versão. Quem ainda está
-  montando pode continuar a etapa começada; quem já terminou pode querer usar o que aprendeu em
-  outro projeto.
-</p>
-<p>
-  Se seu filho começou pelo Desafio do Primeiro Jogo, a assinatura permite continuar do ponto em que
-  está. Ele pode concluir as etapas que faltam e conhecer os projetos disponíveis para sua etapa,
-  sem reiniciar o percurso.
-</p>
-</div>
-<figure class="visual generated">
-  <a href={img('preview-regra.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem (abre em nova aba): Ilustração da mudança de uma regra de pontuação">
-    <img src={img('preview-regra.webp')} alt="Ilustração da mudança de uma regra de pontuação" width="1536" height="1024" loading="lazy" decoding="async" />
-  </a>
-  <figcaption><span class="visual-label">Ilustração da experiência</span>Mudar uma regra e testar a partida pode abrir uma nova possibilidade para o jogo.</figcaption>
-</figure>
-</div>
-</div>
-</section> </>)}
+      {page.showFounder !== false && <section class="section capitulo fundo-folha cor-rosa" id="origem" aria-labelledby="title-origem">
+        <div class="folha">
+          <div class="wrap origem-grid">
+            <figure class="family-photo kof-reveal">
+              <div class="family-palco kof-marca">
+                <span class="kof-decor decor-1" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+                <span class="kof-decor kof-decor--rosa decor-2" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+                <img src={img('familia-helena-julio-kids.webp')} alt="Helena e Júlio: foto do casal e versão ilustrada dos dois" width="880" height="1019" loading="lazy" decoding="async" />
+              </div>
+              <figcaption>Helena e Júlio. A experiência em família que deu origem à Comunidade.</figcaption>
+            </figure>
+            <div class="origem-texto kof-reveal">
+              <div class="cap-head">
+                <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">favorite</span>Uma experiência em família</span>
+                <h2 id="title-origem" class="kof-display">{SHARED_COPY.founder.title}</h2>
+                <ComunidadeProsa paragraphs={founder.slice(0, 1)} class="cap-lead" />
+              </div>
+              <div class="prosa"><ComunidadeProsa paragraphs={founder.slice(1)} destaques={DESTAQUES.origem} /></div>
+            </div>
+          </div>
+        </div>
+      </section>}
 
-<!-- ═══════════════ 03 · A aula por dentro, o Estúdio e o Pinta ═══════════════ -->
-<section class="section" id="criacao" aria-labelledby="title-criacao">
-<div class="wrap">
-<span class="kof-sobretitulo">A aula por dentro</span>
-<h2 id="title-criacao" class="kof-display">Se seu filho nunca programou, vamos começar por uma parte do jogo</h2>
-<div id="aula" class="anchor-target">
-<div class="story-row kof-reveal">
-<div class="prose">
-<p>
-  Talvez, ao imaginar seu filho fazendo tudo isso, você se pergunte por onde ele começaria. Ele
-  ainda precisa conhecer os comandos. Por isso, o começo é guiado: uma explicação mostra como montar
-  uma parte do jogo, e ele experimenta aquela tarefa antes de seguir.
-</p>
-<p>
-  Na Comunidade dos Criadores, a explicação e o lugar de montar ficam na mesma aula. Seu filho
-  acompanha o que fazer, monta aquela parte e testa. Assim, você consegue ver como ele começa, e ele
-  tem uma próxima ação para experimentar.
-</p>
-<p>
-  Nas primeiras atividades, ele usa blocos de comandos que encaixa para dizer o que deve acontecer
-  no jogo. O computador executa essas instruções, e ele vê o resultado na tela.
-</p>
-</div>
-<figure class="visual tela">
-  <a class="kof-tela" href={img('tela-aula-topo@2x.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem (abre em nova aba): Tela de uma aula, com o vídeo da explicação ao lado do experimento para testar o que o vídeo explicou">
-    <span class="kof-tela__barra" aria-hidden="true"><i></i><i></i><i></i><span class="kof-tela__url">Aula · O que um toque faz?</span></span>
-    <img src={img('tela-aula-topo.webp')} srcset={tela2x('tela-aula-topo.webp')} alt="Tela de uma aula, com o vídeo da explicação ao lado do experimento para testar o que o vídeo explicou" width="1280" height="800" loading="lazy" decoding="async" />
-  </a>
-  <figcaption><span class="visual-label">Tela da plataforma</span>A explicação e o experimento ficam na mesma aula: o vídeo de um lado, a prática do outro.</figcaption>
-</figure>
-</div>
-</div>
-<div class="fecho kof-carta kof-carta--fio kof-reveal">
-<span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">psychology</span></span>
-<div>
-<h3 class="kof-display">É justo querer saber se ele entendeu o que montou</h3>
-<p>
-  Ver o jogo funcionando pode deixar essa dúvida: quanto ele compreendeu e quanto acompanhou do
-  exemplo? Na primeira montagem, a orientação mostra como usar um comando e onde ele entra. Quando a
-  atividade permite uma alteração, a criança pode comparar o que montou com uma nova versão. Se
-  mudar a regra que dá um ponto, por exemplo, o placar deve responder de outra maneira. Prever essa
-  diferença e conferir o resultado exige relacionar o comando ao que acontece no jogo.
-</p>
-<p>
-  No exemplo ilustrado acima, a mudança aparece no placar. Durante uma atividade que permita alterar
-  a regra, comparar as duas versões do jogo ajuda a entender o efeito da mudança. É o tipo de
-  conversa que vocês podem ter sobre o jogo do seu filho: qual era a ideia, o que ele mudou e o que
-  aconteceu depois. Nas ferramentas que a Jornada já liberou para ele, seu filho também pode voltar
-  ao projeto para experimentar outras versões.
-</p>
-</div>
-</div>
-<div class="story-row reverse kof-reveal">
-<div class="prose">
-<h3 class="kof-display">Se desenhar não é a praia dele, há outro jeito de começar</h3>
-<p>
-  Seu filho pode se interessar pelas regras e não querer desenhar cada personagem antes de começar.
-  Quando chega a hora de escolher o que aparece no jogo, o Estúdio oferece personagens, objetos e
-  cenários prontos para usar.
-</p>
-<p>
-  Assim, seu filho pode concentrar as escolhas no funcionamento do jogo: como o personagem se move,
-  qual objetivo o jogador precisa alcançar e quais regras valem durante a partida. Com o personagem
-  na tela, seu filho tem onde experimentar os comandos que está conhecendo.
-</p>
-<p>
-  Escolher uma nave pronta resolve a aparência do personagem. Seu filho monta, com a orientação da
-  aula, as regras de movimento e as outras ações da nave. Assim, aprende a programar usando um
-  desenho que já está disponível.
-</p>
-</div>
-<figure class="visual generated">
-  <a href={img('preview-estudio.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem (abre em nova aba): Ilustração de personagens prontos e montagem das regras de um jogo">
-    <img src={img('preview-estudio.webp')} alt="Ilustração de personagens prontos e montagem das regras de um jogo" width="1536" height="1024" loading="lazy" decoding="async" />
-  </a>
-  <figcaption><span class="visual-label">Ilustração da experiência</span>Com um personagem pronto, seu filho pode se concentrar nas regras do jogo.</figcaption>
-</figure>
-</div>
-<div class="story-row kof-reveal">
-<div class="prose">
-<h3 class="kof-display">Aquele desenho que ele te mostra pode virar um personagem do jogo</h3>
-<p>
-  Se você reconhece seu filho na criança que vive inventando criaturas ou desenhando mundos, há
-  outra possibilidade para explorar. Ele pode imaginar um personagem com uma aparência que não
-  encontrou entre os elementos prontos e querer colocá-lo na própria criação.
-</p>
-<p>
-  Para isso, ele encontra o Pinta, uma ferramenta de desenho feita para crianças. Seu filho pode
-  desenhar ali o personagem que imaginou e levá-lo ao Estúdio para usar no jogo. Também pode criar
-  objetos e cenários.
-</p>
-</div>
-<figure class="visual tela">
-  <a class="kof-tela" href={img('tela-pinta@2x.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem (abre em nova aba): Tela do Pinta com os desenhos guardados na conta da criança, uma nave e um asteroide">
-    <span class="kof-tela__barra" aria-hidden="true"><i></i><i></i><i></i><span class="kof-tela__url">Pinta · Meus desenhos</span></span>
-    <img src={img('tela-pinta.webp')} srcset={tela2x('tela-pinta.webp')} alt="Tela do Pinta com os desenhos guardados na conta da criança, uma nave e um asteroide" width="1280" height="800" loading="lazy" decoding="async" />
-  </a>
-  <figcaption><span class="visual-label">Tela da plataforma</span>Os desenhos ficam guardados na conta e podem ir para o Estúdio.</figcaption>
-</figure>
-</div>
-<div class="fecho kof-carta kof-carta--fio kof-reveal">
-<span class="kof-ladrilho kof-ladrilho--rosa" aria-hidden="true"><span class="material-symbols-rounded">palette</span></span>
-<div>
-<p>
-  Ao colocar o personagem que desenhou no cenário do jogo, seu filho encontra novas decisões: a cor
-  do personagem permite enxergá-lo sobre o fundo? O personagem ficou grande demais para a fase? Seu
-  filho pode ajustar o desenho no Pinta e testar de novo no jogo. Quando o personagem aparece na
-  partida, ele reconhece o desenho que fez participando da brincadeira.
-</p>
-<p>
-  Seu filho também pode usar um cenário pronto e desenhar apenas o personagem. Quem gosta de
-  desenhar tem espaço para criar a aparência do jogo; quem prefere montar as regras pode usar os
-  desenhos disponíveis.
-</p>
-<p>
-  Nas aulas, a criança usa as ferramentas previstas para aquela atividade. O uso livre do Estúdio e
-  do Pinta é liberado ao alcançar o posto Construtor, depois de concluir o curso obrigatório de
-  entrada e publicar seu projeto.
-</p>
-</div>
-</div>
-</div>
-</section>
+      <section class="planos section fundo-alt cor-azul" id="assinatura" aria-labelledby="title-assinatura">
+        <div class="wrap">
+          <div class="cap-head cap-head--centro kof-reveal">
+            <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">workspace_premium</span>Assinatura</span>
+            <h2 id="title-assinatura" class="kof-display">{offer.title}</h2>
+            <ComunidadeProsa paragraphs={offer.paragraphs.slice(0, 1)} class="cap-lead" />
+          </div>
+          <div class="value-story prosa kof-reveal">
+            <ComunidadeProsa paragraphs={offer.paragraphs.slice(1)} destaques={DESTAQUES.assinatura} />
+          </div>
+          <ComunidadeVisual visual="perfis" imagesBase={imagesBase} class="planos-visual" />
+          <div class="plans kof-reveal" id="planos">
+            <article class="plan kof-carta kof-carta--fio">
+              <h3>{offer.monthly.title}</h3>
+              <p class="price">{mensalLabel}<span>por mês</span></p>
+              {offer.monthly.paragraphs.map((paragraph) => <p>{fillPrice(paragraph)}</p>)}
+              <button type="button" class="kof-btn kof-btn--cheia kof-btn--contorno" data-checkout-cta data-checkout-oferta={mensal?.slug}>{offer.monthly.cta}</button>
+            </article>
+            <article class="plan annual kof-marca">
+              <span class="kof-eyebrow saving"><span class="material-symbols-rounded" aria-hidden="true">calendar_month</span>12 meses de acesso</span>
+              <h3>{offer.annual.title}</h3>
+              <p class="price">{anualLabel}<span>por 12 meses</span></p>
+              {offer.annual.paragraphs.map((paragraph) => <p>{fillPrice(paragraph)}</p>)}
+              <button type="button" class="kof-btn kof-btn--cheia kof-btn--inversa" data-checkout-cta data-checkout-oferta={anual?.slug}>{offer.annual.cta}</button>
+            </article>
+          </div>
+          {offer.period && <div class="guarantee guarantee--periodo kof-carta kof-carta--fio kof-reveal">
+            <div class="guarantee-head">
+              <span class="kof-ladrilho kof-ladrilho--grande" aria-hidden="true"><span class="material-symbols-rounded">event_available</span></span>
+              <h3 class="kof-display">{offer.period.title}</h3>
+            </div>
+            <div class="guarantee-texto"><ComunidadeProsa paragraphs={offer.period.paragraphs} /></div>
+          </div>}
+          <div id="garantia" class="guarantee kof-carta kof-carta--fio kof-reveal">
+            <div class="guarantee-head">
+              <span class="kof-ladrilho kof-ladrilho--verde kof-ladrilho--grande" aria-hidden="true"><span class="material-symbols-rounded">verified_user</span></span>
+              <h3 class="kof-display">{offer.guarantee.title}</h3>
+            </div>
+            <div class="guarantee-texto">
+              <ComunidadeProsa paragraphs={offer.guarantee.paragraphs} />
+            </div>
+            <a href="/kids/termos" class="kof-link kof-link--inline">Consultar os termos da assinatura</a>
+          </div>
+          <p id="contratacao" class="checkout-note kof-carta kof-carta--fio">{offer.checkout}</p>
+        </div>
+      </section>
 
-<!-- ═══════════════ 04 · Relatos (banda navy) ═══════════════ -->
-<section class="provas section kof-banda" id="relatos" aria-labelledby="title-relatos">
-<div class="wrap">
-<span class="kof-decor decor-a" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
-<span class="kof-decor kof-decor--rosa decor-b" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
-<div class="provas-head">
-<span class="kof-sobretitulo">Quem testou antes do lançamento</span>
-<h2 id="title-relatos" class="kof-display">A Débora chamou a mãe para ver.<br class="quebra" /> <em>O Rafael quis que um amigo jogasse</em></h2>
-<p class="kof-lead">
-  A Débora quis mostrar o jogo para a mãe, e o Rafael enviou o link para um amigo jogar. Os dois,
-  junto com o André, testaram a plataforma antes do lançamento. Estas são as falas deles sobre o que
-  fizeram.
-</p>
-</div>
-<div class="provas-grid kof-reveal">
-<figure class="criador kof-carta">
-<div class="criador-head"><img src={img('depo-rafael.webp')} alt="" width="160" height="160" loading="lazy" decoding="async" /><div><strong>Rafael</strong><small>Publicou o primeiro jogo</small></div></div>
-<blockquote>
-<p class="quote"><span class="aspas" aria-hidden="true">“</span>Fiz uma nave que atira nos asteroides e marca ponto. No fim eu peguei o link e mandei pro meu amigo jogar.</p>
-</blockquote>
-<span class="kof-chip kof-chip--verde"><span class="material-symbols-rounded" aria-hidden="true">share</span>Mandou o link para um amigo</span>
-</figure>
-<figure class="criador kof-carta">
-<div class="criador-head"><img src={img('depo-debora.webp')} alt="" width="160" height="160" loading="lazy" decoding="async" /><div><strong>Débora</strong><small>Publicou o primeiro jogo</small></div></div>
-<blockquote>
-<p class="quote"><span class="aspas" aria-hidden="true">“</span>Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No terceiro dia chamei a minha mãe pra ver o meu jogo.</p>
-</blockquote>
-<span class="kof-chip kof-chip--rosa"><span class="material-symbols-rounded" aria-hidden="true">favorite</span>Chamou a mãe para ver</span>
-</figure>
-<figure class="criador kof-carta">
-<div class="criador-head"><img src={img('depo-andre.webp')} alt="" width="160" height="160" loading="lazy" decoding="async" /><div><strong>André</strong><small>Filho dos criadores da plataforma</small></div></div>
-<blockquote>
-<p class="quote"><span class="aspas" aria-hidden="true">“</span>Eu já jogava um monte, agora eu faço os meus jogos. Esse foi o primeiro e já quero fazer um maior.</p>
-</blockquote>
-<span class="kof-chip kof-chip--azul"><span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>Já quer fazer um maior</span>
-</figure>
-</div>
-<div class="provas-mural kof-reveal">
-<div>
-<h3 class="kof-display">Os jogos publicados ficam no Mural dos Criadores</h3>
-<p class="kof-lead">Cada jogo publicado ganha um link para mostrar a quem a criança quiser, e aparece no Mural, onde a turma joga e comenta.</p>
-<a class="kof-btn kof-btn--grande kof-btn--sobre-navy" href="#planos">Escolher um plano para meu filho</a>
-</div>
-<figure class="kof-tela">
-<div class="kof-tela__barra" aria-hidden="true"><i></i><i></i><i></i><span class="kof-tela__url">Mural dos Criadores</span></div>
-<img src={img('tela-mural.webp')} srcset={tela2x('tela-mural.webp')} alt="Tela do Mural dos Criadores com os jogos publicados pelas crianças" width="1280" height="800" loading="lazy" decoding="async" />
-</figure>
-</div>
-</div>
-</section>
+      <section class="section" id="duvidas" aria-labelledby="title-duvidas">
+        <div class="wrap">
+          <div class="cap-head kof-reveal cor-roxo">
+            <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">help</span>Na prática, em casa</span>
+            <h2 id="title-duvidas" class="kof-display">{page.faqTitle}</h2>
+            {page.faqLinks && <p class="faq-atalhos">{page.faqLinks.map((link, index) => <>{index > 0 && ' · '}<a class="kof-link kof-link--inline" href={link.href}>{link.label}</a></>)}</p>}
+          </div>
+          <div class="duvidas-grid">
+            <nav class="faq-nav-area" aria-label="Assuntos das perguntas">
+              <ul class="faq-nav">
+                {page.faqGroups.map((group, index) => (
+                  <li>
+                    <a href={`#assunto-${index}`}>
+                      <span class:list={['kof-ladrilho', faqColors[index % faqColors.length] ? `kof-ladrilho--${faqColors[index % faqColors.length]}` : '']} aria-hidden="true"><span class="material-symbols-rounded">{faqIcons[index % faqIcons.length]}</span></span>
+                      <span>{group.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <div class="faq">
+              {page.faqGroups.map((group, index) => (
+                <div class="faq-group" id={`assunto-${index}`}>
+                  <h3 class="kof-display">
+                    <span class:list={['kof-ladrilho', faqColors[index % faqColors.length] ? `kof-ladrilho--${faqColors[index % faqColors.length]}` : '']} aria-hidden="true"><span class="material-symbols-rounded">{faqIcons[index % faqIcons.length]}</span></span>
+                    {group.title}
+                  </h3>
+                  {group.questions.map((id) => {
+                    const answer = faq[id]
+                    if (!answer) throw new Error(`Dúvida sem resposta: ${id}`)
+                    const visuals = faqVisuals(id)
+                    return (
+                      <details class="kof-carta kof-carta--fio" id={`duvida-${id}`}>
+                        <summary>{answer.question}<span class="material-symbols-rounded faq-seta" aria-hidden="true">expand_more</span></summary>
+                        <div class:list={['resposta', { 'resposta--visual': visuals.length > 0 }]}>
+                          <div class="resposta-texto">
+                            <ComunidadeProsa paragraphs={answer.paragraphs} />
+                            {id === 'reembolso' && <a href="/kids/termos" class="kof-link kof-link--inline">Ver o canal e as condições nos termos da assinatura</a>}
+                          </div>
+                          {visuals.length > 0 && (
+                            <div class="resposta-visuais">{visuals.map((visual) => <ComunidadeVisual visual={visual} imagesBase={imagesBase} variant="plana" />)}</div>
+                          )}
+                        </div>
+                      </details>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
-<!-- ═══════════════ 05 · Depois do primeiro jogo: Jornada, Recados, Mural, Clube, Meu Espaço ═══════════════ -->
-<section class="section" id="jornada" aria-labelledby="title-jornada">
-<div class="wrap">
-<span class="kof-sobretitulo">Depois do primeiro jogo</span>
-<h2 id="title-jornada" class="kof-display">Seu filho pode querer mudar o jogo logo depois de te mostrar</h2>
-<ol class="fita kof-reveal" aria-label="Os oito postos da Jornada do Criador">
-{jornada.map((posto, i) => (
-  <li class="fita-posto">
-    <img src={img(`jornada-${posto.slug}.webp`)} alt="" width="512" height="512" loading="lazy" decoding="async" />
-    <span class="fita-num" aria-hidden="true">{i + 1}</span>
-    <span class="fita-nome">{posto.nome}</span>
-  </li>
-))}
-</ol>
-<div class="story-row kof-reveal">
-<div class="prose">
-<p>
-  Ao ver alguém jogando, ele pode ter vontade de mudar o personagem, ajustar a dificuldade ou
-  experimentar outra regra. Nas ferramentas que já liberou, pode voltar ao projeto e trabalhar
-  nessas ideias. A nave que aprendeu a movimentar pode ganhar outra aparência; uma partida pode
-  receber um desafio diferente. O que já construiu vira material para uma nova tentativa.
-</p>
-<p>
-  Para encontrar de onde continuar, seu filho consulta a Jornada do Criador, o mapa dos cursos e das
-  ferramentas que vai liberando. Ali ele vê o ponto em que está e quais etapas estão disponíveis.
-  Pode seguir para outro projeto ou voltar a uma criação nas ferramentas que já tem abertas.
-</p>
-<p>
-  A plataforma está em lançamento. A assinatura dá acesso aos cursos publicados e aos que forem
-  adicionados durante o período contratado. Algumas ferramentas dependem do progresso e da
-  publicação dos cursos necessários para chegar até elas.
-</p>
-</div>
-<figure class="visual tela">
-  <a class="kof-tela" href={img('tela-jornada@2x.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem (abre em nova aba): Tela da Jornada do Criador, com os postos Faísca e Construtor(a) e o marcador Você está aqui">
-    <span class="kof-tela__barra" aria-hidden="true"><i></i><i></i><i></i><span class="kof-tela__url">Jornada do Criador</span></span>
-    <img src={img('tela-jornada.webp')} srcset={tela2x('tela-jornada.webp')} alt="Tela da Jornada do Criador, com os postos Faísca e Construtor(a) e o marcador Você está aqui" width="1280" height="800" loading="lazy" decoding="async" />
-  </a>
-  <figcaption><span class="visual-label">Tela da plataforma</span>A Jornada organiza as etapas. A liberação depende do progresso e dos cursos publicados.</figcaption>
-</figure>
-</div>
-<div class="nota-recados kof-carta kof-carta--fio kof-reveal">
-<span class="kof-ladrilho kof-ladrilho--laranja" aria-hidden="true"><span class="material-symbols-rounded">forum</span></span>
-<div>
-<h3 class="kof-display">Se ele travar numa parte, pode contar onde ficou a dúvida</h3>
-<p>
-  Nos Recados, o canal de mensagens com a equipe dentro da plataforma, seu filho pode explicar o que
-  está tentando fazer e onde encontrou dificuldade.
-</p>
-</div>
-</div>
-<div class="story-row reverse kof-reveal">
-<div class="prose">
-<h3 class="kof-display">Você pode abrir o jogo dele e entrar na brincadeira</h3>
-<p>
-  Quando seu filho publica o jogo no Mural dos Criadores, recebe um link para compartilhar. Você
-  abre esse link para jogar e pode pedir que seu filho mostre a parte que ele mais gostou de criar.
-  Talvez seja a nave que desenhou; talvez seja a regra que deu trabalho até funcionar. A conversa
-  nasce do jogo que vocês estão experimentando juntos.
-</p>
-</div>
-<figure class="visual tela">
-  <a class="kof-tela" href={img('tela-meu-espaco@2x.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem (abre em nova aba): Tela do Meu perfil, com o avatar da criança, o posto na Jornada e a escada de postos">
-    <span class="kof-tela__barra" aria-hidden="true"><i></i><i></i><i></i><span class="kof-tela__url">Meu espaço · Meu perfil</span></span>
-    <img src={img('tela-meu-espaco.webp')} srcset={tela2x('tela-meu-espaco.webp')} alt="Tela do Meu perfil, com o avatar da criança, o posto na Jornada e a escada de postos" width="1280" height="800" loading="lazy" decoding="async" />
-  </a>
-  <figcaption><span class="visual-label">Tela da plataforma</span>O posto na Jornada e o progresso ficam no perfil dele.</figcaption>
-</figure>
-</div>
-<div class="story-row kof-reveal">
-<div class="prose">
-<h3 class="kof-display">Ele pode querer conversar sobre o jogo antes de terminar</h3>
-<p>
-  Às vezes, seu filho quer contar que está tentando fazer uma fase diferente ou mostrar o personagem
-  que acabou de desenhar. No Clube, ele pode publicar essa ideia e conversar sobre a criação. As
-  mensagens são verificadas antes de aparecer para as outras crianças.
-</p>
-<p>
-  Se ele gosta de escolher como é representado, o Meu Espaço permite personalizar seu avatar, o
-  personagem do perfil, e seu quarto virtual. Ali também ficam as conquistas registradas durante o
-  uso. É um lugar que ele pode arrumar do próprio jeito e reconhecer como seu.
-</p>
-</div>
-<figure class="visual tela">
-  <a class="kof-tela" href={img('tela-clube@2x.webp')} target="_blank" rel="noopener" aria-label="Ampliar imagem (abre em nova aba): Tela do Clube dos Criadores, com os canais de conversa e os combinados">
-    <span class="kof-tela__barra" aria-hidden="true"><i></i><i></i><i></i><span class="kof-tela__url">Clube dos Criadores</span></span>
-    <img src={img('tela-clube.webp')} srcset={tela2x('tela-clube.webp')} alt="Tela do Clube dos Criadores, com os canais de conversa e os combinados" width="1280" height="800" loading="lazy" decoding="async" />
-  </a>
-  <figcaption><span class="visual-label">Tela da plataforma</span>No Clube, as mensagens passam por moderação antes de aparecer.</figcaption>
-</figure>
-</div>
-</div>
-</section>
-
-<!-- ═══════════════ 06 · Família ═══════════════ -->
-<section class="section" id="familia" aria-labelledby="title-familia">
-<div class="wrap">
-<span class="kof-sobretitulo">Quem faz a Comunidade</span>
-<h2 id="title-familia" class="kof-display">A gente também começou procurando um caminho para o nosso filho</h2>
-<div class="story-row reverse familia kof-reveal">
-<div class="prose"><!-- historia-andre:inicio -->
-<p>
-  Quando nosso filho André tinha sete anos, estávamos aprendendo a cuidar do equilíbrio na rotina
-  dele. O André é autista nível 1 e tem hiperfoco em jogos. Esse interesse fazia parte da nossa vida
-  em casa, e percebemos uma possibilidade de explorá-lo juntos: começar a criar jogos.
-</p>
-<!-- historia-andre:fim -->
-<p>
-  A gente é a Helena e o Júlio. Somos desenvolvedores de sistemas, formados em Sistemas de
-  Informação, com mais de dez anos de experiência e passagem por lugares como o Banco do Brasil.
-  Programar já fazia parte do nosso trabalho; criar com o André nos permitiu levar essa experiência
-  para uma atividade em família.
-</p>
-<p>
-  Ele passou a nos chamar para testar suas regras, explicar escolhas e imaginar a próxima versão.
-  Foi dessa experiência que nasceu a Comunidade dos Criadores. Hoje, aos 12 anos, o André também é a
-  voz do Zappy nas aulas.
-</p>
-<p>
-  Essa experiência nos levou a preparar um começo guiado para outras crianças, em português, com
-  ferramentas para montar os jogos e um jeito de mostrá-los à família. Foi o que aprendemos em casa
-  que nos fez querer construir esse lugar. Seu filho pode chegar com outros interesses e descobrir
-  nas atividades o que tem vontade de criar.
-</p>
-</div>
-<figure class="family-photo"><img src={img('familia-helena-julio-kids.webp')} alt="Helena e Júlio: a foto do casal e a versão ilustrada dos dois" width="880" height="1019" loading="lazy" decoding="async" />
-<figcaption>Helena e Júlio. A experiência em família que deu origem à Comunidade.</figcaption>
-</figure>
-</div>
-</div>
-</section>
-
-<!-- ═══════════════ 07 · Rotina e objeções ═══════════════ -->
-<section class="section" id="rotina" aria-labelledby="title-rotina">
-<div class="wrap">
-<span class="kof-sobretitulo">Na rotina da família</span>
-<h2 id="title-rotina" class="kof-display">Para funcionar aí na sua casa, essa atividade precisa caber na vida de vocês</h2>
-<p class="section-intro kof-lead">
-  Talvez você tenha gostado da ideia e esteja pensando em como ela entraria numa semana comum. Seu
-  filho pode precisar de companhia no começo, vocês têm horários para cumprir e já existem
-  combinados sobre o computador. Essas questões também fazem parte da escolha.
-</p>
-<div class="objections kof-reveal">
-<div class="objection kof-carta">
-<span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">family_restroom</span></span>
-<h3 class="kof-display">Você pode estar perto sem assumir o papel de professor</h3>
-<p>
-  Você pode ajudar no acesso, combinar um momento para a atividade e ouvir o que seu filho quer
-  mostrar. A explicação de programação está nas aulas, e as dúvidas podem ser enviadas pelos
-  Recados. Algumas crianças precisam de mais companhia nas primeiras etapas; vocês vão percebendo
-  isso no uso.
-</p>
-</div>
-<div class="objection kof-carta">
-<span class="kof-ladrilho kof-ladrilho--laranja" aria-hidden="true"><span class="material-symbols-rounded">schedule</span></span>
-<h3 class="kof-display">Os combinados sobre a tela continuam nas mãos de vocês</h3>
-<p>
-  Vocês podem reservar uma parte do tempo de tela já combinado para criar o jogo. Escolham uma etapa
-  e um horário para parar, mantendo espaço para descanso, movimento e outras brincadeiras. Aprender
-  a criar entra nesses combinados da família; não exige deixar de cuidar deles.
-</p>
-</div>
-<div class="objection kof-carta">
-<span class="kof-ladrilho kof-ladrilho--roxo" aria-hidden="true"><span class="material-symbols-rounded">smart_toy</span></span>
-<h3 class="kof-display">A inteligência artificial pode ajudar. Seu filho ainda tem decisões para aprender a tomar</h3>
-<p>
-  Talvez você se pergunte por que aprender programação se uma inteligência artificial já escreve
-  código. Pense numa regra que seu filho quer para o jogo: o jogador ganha um ponto quando o
-  personagem pega um objeto. Seu filho precisa explicar essa regra à ferramenta. Se a ferramenta
-  gerar um jogo que soma pontos antes de o personagem pegar o objeto, seu filho precisa perceber que
-  o resultado está diferente do que pediu.
-</p>
-<p>
-  Ao montar e testar essas regras, ele pratica justamente esse entendimento. Uma ferramenta pode
-  ajudar a produzir o jogo, e saber como ele funciona dá ao seu filho mais condições de dizer o que
-  quer mudar e conferir o resultado.
-</p>
-</div>
-<div class="objection kof-carta">
-<span class="kof-ladrilho kof-ladrilho--verde" aria-hidden="true"><span class="material-symbols-rounded">handshake</span></span>
-<h3 class="kof-display">Você pode conhecer a atividade com ele antes de assumir um compromisso maior</h3>
-<p>
-  Gostar de jogar pode despertar curiosidade pela criação. Olhar juntos os exemplos da página ajuda
-  a conversar sobre essa outra atividade: ele gostaria de montar uma regra, desenhar um personagem
-  ou experimentar uma ideia? Você pode perguntar qual dessas ideias ele teria vontade de
-  experimentar. Essa conversa ajuda vocês a perceber o interesse antes de contratar.
-</p>
-<p>
-  Para conhecer a rotina de uso, o mensal exige um compromisso inicial menor que o anual. A garantia
-  e as condições de renovação estão junto dos planos abaixo.
-</p>
-</div>
-</div>
-</div>
-</section>
-
-<!-- ═══════════════ 08 · Assinatura e planos ═══════════════ -->
-<section class="planos section alt" id="assinatura" aria-labelledby="title-assinatura">
-<div class="wrap">
-<span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">workspace_premium</span>Assinatura</span>
-<h2 id="title-assinatura" class="kof-display">Por {mensalLabel} ao mês, você oferece esse caminho de criação ao seu filho</h2>
-<div class="planos-grid">
-<div class="value-story kof-reveal">
-<p>
-  Quando chegar o momento que vocês reservaram para criar, seu filho encontra uma aula para
-  acompanhar e o projeto em que vai trabalhar. Pode montar as regras, testar o jogo e, nas
-  ferramentas liberadas, desenhar e experimentar outras versões. Ao publicar, recebe um link para
-  mostrar o resultado.
-</p>
-<p>
-  É esse conjunto que a assinatura da Comunidade oferece: aulas que mostram o que fazer, ferramentas
-  para criar e um lugar para guardar e publicar os projetos. Você tem por onde começar com ele,
-  acompanha o que está construindo e não precisa preparar as aulas de programação. Se surgir uma
-  dúvida, ele pode enviá-la pelos Recados.
-</p>
-<p>
-  Ferramentas e tutoriais gratuitos também permitem aprender e criar. A escolha pela assinatura faz
-  sentido quando sua família quer esse percurso reunido, com os projetos guiados e os espaços de
-  criação no mesmo ambiente. As aulas de entrada apresentam a criação por partes; a Jornada organiza
-  a continuidade conforme os cursos são publicados.
-</p>
-<div class="notas">
-<div class="nota kof-carta kof-carta--fio"><span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">group</span></span><p>
-  A assinatura permite até dois perfis de criança, cada um com seu próprio progresso e projetos. Se
-  os dois filhos estão na faixa atendida, podem participar com o mesmo plano e avançar no próprio
-  ritmo.
-</p></div>
-<div class="nota kof-carta kof-carta--fio"><span class="kof-ladrilho kof-ladrilho--laranja" aria-hidden="true"><span class="material-symbols-rounded">schedule</span></span><p>
-  As aulas não têm horário marcado: vocês escolhem quando acessar e podem retomar a atividade em
-  outro momento. O formato não inclui encontros ao vivo.
-</p></div>
-</div>
-</div>
-<div>
-<div class="plans" id="planos">
-<article class="plan kof-carta kof-carta--fio">
-<h3>Plano mensal</h3>
-<p class="price">{mensalLabel} <span>por mês</span></p>
-<p>
-  Renovação automática no cartão. Você pode cancelar a próxima renovação pela sua área, e o acesso
-  continua até o fim do período pago.
-</p><button type="button" class="kof-btn kof-btn--cheia kof-btn--contorno" data-checkout-cta data-checkout-oferta={mensal?.slug}>Escolher o plano mensal</button>
-</article>
-<article class="plan annual kof-marca">{economiaCents > 0 && <span class="kof-eyebrow saving"><span class="material-symbols-rounded" aria-hidden="true">savings</span>Economia de {economiaLabel} em 12 meses</span>}<h3>Plano anual</h3>
-<p class="price">{anualLabel} <span>por 12 meses</span></p>
-<p class="equivalent">
-  Equivale a {anualPorMesLabel} por mês.
-</p>{economiaCents > 0 && <p>
-  Comparado a {anualAncoraLabel} por 12 mensalidades.
-</p>}<p>
-  Pix à vista ou cobrança anual recorrente no cartão. No Pix, é necessário contratar novamente após
-  12 meses. No cartão, você pode cancelar a próxima renovação pela sua área.
-</p><button type="button" class="kof-btn kof-btn--cheia kof-btn--inversa" data-checkout-cta data-checkout-oferta={anual?.slug}>Escolher o plano anual</button>
-</article>
-</div>
-<div class="guarantee kof-carta kof-carta--fio">
-<span class="kof-ladrilho kof-ladrilho--verde kof-ladrilho--grande" aria-hidden="true"><span class="material-symbols-rounded">verified_user</span></span>
-<div>
-<h3 class="kof-display">Sete dias para conhecer a experiência</h3>
-<p>Na contratação, você tem sete dias para solicitar o reembolso integral pelo canal indicado nos <a href="/kids/termos" class="kof-link kof-link--inline">termos da assinatura</a>. Depois desse prazo, o cancelamento da renovação impede as próximas cobranças, e o acesso continua até o fim do período já pago.</p>
-<p>
-  A garantia vale para a contratação inicial e para cada nova contratação anual via Pix. As
-  renovações automáticas no cartão seguem as condições dos termos.
-</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-
-<!-- ═══════════════ 09 · Dúvidas ═══════════════ -->
-<section class="section" id="duvidas" aria-labelledby="title-duvidas">
-<div class="wrap">
-<span class="kof-sobretitulo">Dúvidas práticas</span>
-<h2 id="title-duvidas" class="kof-display">Sua decisão também depende do que acontece depois da compra</h2>
-<div class="faq kof-reveal">
-<details class="kof-carta">
-<summary>As ferramentas ficam todas abertas no primeiro acesso?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
-<div>
-<p>
-  Nas aulas, a criança usa os recursos previstos para a etapa. O uso livre das ferramentas acompanha
-  a Jornada: Estúdio e Pinta no posto Construtor; Pensa, para organizar o projeto, e o assistente de
-  inteligência artificial Zappy no Inventor; Molda, a ferramenta de criação em 3D, no Explorador de
-  Mundos. Algumas liberações dependem de cursos que ainda serão publicados. A assinatura inclui as
-  ferramentas, sem compra adicional para liberá-las.
-</p>
-</div>
-</details>
-<details class="kof-carta">
-<summary>Meu filho já fez o Desafio. Ele precisa repetir?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
-<div>
-<p>
-  Ele pode continuar do ponto em que está. Se ainda falta concluir uma etapa ou publicar o projeto
-  necessário para avançar, a Jornada orienta esse próximo passo.
-</p>
-</div>
-</details>
-<details class="kof-carta">
-<summary>Posso cadastrar irmãos?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
-<div>
-<p>
-  Sim. A assinatura permite até dois perfis de criança, cada um com seu próprio progresso e seus
-  projetos.
-</p>
-</div>
-</details>
-<details class="kof-carta">
-<summary>Preciso instalar algum programa?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
-<div>
-<p>
-  As atividades e ferramentas abrem no navegador do computador. É necessário acesso à internet e uso
-  de mouse e teclado.
-</p>
-</div>
-</details>
-<details class="kof-carta">
-<summary>Como funciona a participação no Clube?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
-<div>
-<p>
-  As mensagens passam por moderação antes de aparecer. O perfil público começa desligado, e você
-  administra os perfis pela área do responsável.
-</p>
-</div>
-</details>
-<details class="kof-carta">
-<summary>Como faço para cancelar?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
-<div>
-<p>
-  Na área do responsável, em Minhas compras, você pode cancelar a próxima renovação. O acesso
-  continua até o fim do período pago. Para pedir o reembolso dentro da garantia, use o canal
-  indicado nos termos, informando o e-mail da compra.
-</p>
-</div>
-</details>
-<details class="kof-carta">
-<summary>A garantia também vale nas renovações?<span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
-<div>
-<p>
-  Os sete dias valem para a contratação inicial e para cada nova contratação anual paga via Pix. As
-  renovações automáticas no cartão seguem as condições dos termos. Cancelar a próxima renovação
-  impede novas cobranças; solicitar o reembolso de uma contratação dentro da garantia é outro
-  procedimento.
-</p>
-</div>
-</details>
-</div>
-</div>
-</section>
-
-<!-- ═══════════════ 10 · Convite (banda navy) ═══════════════ -->
-<section class="convite section kof-banda" id="convite" aria-labelledby="title-convite">
-<div class="wrap convite-grid">
-<span class="kof-decor decor-a" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
-<span class="kof-decor kof-decor--rosa decor-b" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
-<div class="convite-copy kof-reveal">
-<span class="kof-sobretitulo">Para jogar juntos</span>
-<h2 id="title-convite" class="kof-display">Você pode entrar na brincadeira que seu filho aprendeu a criar</h2>
-<p class="kof-lead">
-  Seu filho pode convidar você para jogar o jogo que criou e apontar o personagem que desenhou. Pode
-  mostrar a fase que estava difícil e contar como decidiu ajustá-la. Enquanto vocês experimentam o
-  jogo, surge uma conversa sobre o que ele fez, tentou e conseguiu resolver.
-</p>
-<p class="kof-lead">
-  Na Comunidade, essa experiência começa por um projeto guiado e continua nas possibilidades que ele
-  vai aprendendo a usar. Escolha o plano e, no primeiro acesso, abram juntos a atividade de entrada.
-  Se ele já começou pelo Desafio, continuem do ponto em que está.
-</p>
-<a class="kof-btn kof-btn--grande kof-btn--sobre-navy" href="#planos">Escolher um plano para meu filho</a>
-</div>
-<figure class="convite-arte kof-reveal">
-  <img src={img('ilustra-vitoria.webp')} alt="Ilustração de duas crianças e o Zappy comemorando diante de um troféu na tela" width="1000" height="943" loading="lazy" decoding="async" />
-  <figcaption>Um jogo para experimentar juntos e uma história de criação para seu filho contar.</figcaption>
-</figure>
-</div>
-</section>
-</main>
-
-<!-- Barra fixa no celular: aparece depois da primeira dobra e some junto dos planos. -->
-<div class="kof-mobar" data-mobar aria-hidden="true">
-<p class="kof-mobar__preco">A partir de <strong>{anualPorMesLabel} por mês</strong></p>
-<a class="kof-btn" href="#planos" tabindex="-1">Escolher um plano</a>
-</div>
-</div>
-<Footer audience={f.audience} vitalicio={f.lifetimeAccess} />
-<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} />
+      <section class="convite section kof-banda" id="convite" aria-labelledby="title-convite">
+        <div class="wrap convite-grid">
+          <span class="kof-decor decor-a" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+          <div class="convite-copy kof-reveal">
+            <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">celebration</span>{page.closing.eyebrow}</span>
+            <h2 id="title-convite" class="kof-display">{page.closing.title}</h2>
+            <ComunidadeProsa paragraphs={closing.slice(0, 1)} class="cap-lead" />
+            <div class="prosa"><ComunidadeProsa paragraphs={closing.slice(1)} destaques={DESTAQUES[`${page.id}:convite`]} /></div>
+            {page.closing.actions.map((action) => <a class="kof-btn kof-btn--grande kof-btn--sobre-navy" href={action.href}>{action.label}</a>)}
+          </div>
+          <figure class="convite-arte kof-reveal">
+            <img src={img('ilustra-vitoria.webp')} alt="Ilustração de duas crianças e o Zappy comemorando uma criação" width="1000" height="943" loading="lazy" decoding="async" />
+            <figcaption>Ilustração da experiência de criar e compartilhar com a família.</figcaption>
+          </figure>
+        </div>
+      </section>
+    </main>
+    <div class="kof-mobar" data-mobar aria-hidden="true">
+      <p class="kof-mobar__preco">No anual, equivalente a<strong>{anualPorMesLabel} por mês</strong></p>
+      <a class="kof-btn" href="#planos" tabindex="-1">Escolher um plano</a>
+    </div>
+    <dialog class="zoom" data-zoom-dialog aria-label="Imagem ampliada">
+      <form method="dialog">
+        <button class="zoom-fechar" aria-label="Fechar a imagem ampliada"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+      </form>
+      <img alt="" decoding="async" />
+    </dialog>
+  </div>
+  <Footer audience={f.audience} vitalicio={f.lifetimeAccess} />
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} continuidade={profile === 'continuar'} />
 </BaseLayout>
 
 <script>
@@ -882,191 +394,36 @@ const jornada = [
     window.addEventListener('scroll', aoRolar, { passive: true })
     aoRolar()
   }
+
+  const abrirDuvida = () => {
+    const id = window.location.hash.slice(1)
+    if (!id.startsWith('duvida-')) return
+    const detail = document.getElementById(id)
+    if (!(detail instanceof HTMLDetailsElement)) return
+    detail.open = true
+    detail.scrollIntoView({ block: 'start' })
+  }
+  abrirDuvida()
+  window.addEventListener('hashchange', abrirDuvida)
+
+  // Ampliar uma tela sem sair da página. Sem JS (ou sem <dialog>) o link abre a imagem em outra aba.
+  const zoom = document.querySelector<HTMLDialogElement>('[data-zoom-dialog]')
+  const zoomImg = zoom?.querySelector('img')
+  if (zoom && zoomImg && typeof zoom.showModal === 'function') {
+    document.addEventListener('click', (event) => {
+      if (event.defaultPrevented || event.button !== 0) return
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      const link = (event.target as Element | null)?.closest<HTMLAnchorElement>('a[data-zoom]')
+      if (!link) return
+      event.preventDefault()
+      zoomImg.src = link.href
+      zoomImg.alt = link.querySelector('img')?.alt ?? ''
+      zoom.showModal()
+    })
+    // O clique fora da imagem (no fundo escuro) fecha.
+    zoom.addEventListener('click', (event) => {
+      if (event.target === zoom) zoom.close()
+    })
+    zoom.addEventListener('close', () => zoomImg.removeAttribute('src'))
+  }
 </script>
-
-<style is:global>
-  /* ── O LAYOUT da oferta da Comunidade (as receitas moram em src/styles/kids-oferta.css) ──
-   * Tudo prefixado por `.cdc`, e com DOIS elos onde colide com `.theme-kids X` do global.css
-   * (o cabeçalho e os títulos). Nada aqui tem cor própria: só os tokens `--kof-*`. */
-  .cdc { font-family: var(--kof-corpo); color: var(--kof-tinta); background: var(--kof-chao); overflow-x: clip; }
-  .cdc .wrap { width: min(100% - 2rem, 72rem); margin-inline: auto; }
-  .cdc .section { padding-block: clamp(3rem, 7vw, 5.5rem); }
-  .cdc .section.alt { background: var(--kof-chao-alt); }
-  .cdc p, .cdc h1, .cdc h2, .cdc h3, .cdc figure { margin: 0; }
-  .cdc img { max-width: 100%; height: auto; }
-  .cdc .section > .wrap > .kof-sobretitulo { display: block; margin-bottom: 0.75rem; }
-  .cdc .section > .wrap > h2 { font-size: clamp(1.75rem, 3.2vw, 2.5rem); max-width: 44rem; margin-bottom: 2rem; }
-  .cdc .section > .wrap > .kof-eyebrow + h2 { margin-top: 1rem; }
-  .cdc .section-intro { max-width: 44rem; margin: -0.75rem 0 2rem; }
-  .cdc .anchor-target { scroll-margin-top: 5.5rem; }
-  .cdc main { scroll-margin-top: 4rem; }
-  .cdc .skip-link { position: absolute; left: 1rem; top: -4rem; z-index: 50; padding: 0.75rem 1rem; border-radius: 9999px; background: var(--kof-acao); color: var(--kof-sobre-acao); font-weight: 800; }
-  .cdc .skip-link:focus { top: 1rem; }
-
-  /* Topo navy (vence o `.theme-kids header` do global.css, que pinta o chão claro com borda) */
-  .cdc .topbar { position: sticky; top: 0; z-index: 30; background: var(--kof-navy); color: var(--kof-carta); border-bottom: 0; }
-  .cdc .nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 4rem; }
-  .cdc .brand { display: inline-flex; align-items: center; min-height: 2.75rem; border-radius: 0.5rem; }
-  .cdc .nav .logo { display: block; width: min(279px, 100%); height: auto; }
-  .cdc .nav-right { display: flex; align-items: center; gap: 1rem; }
-  .cdc .nav-preco { font-size: 0.875rem; font-weight: 700; color: var(--kof-navy-texto); text-align: right; line-height: 1.2; }
-  .cdc .nav-preco strong { display: block; color: var(--kof-carta); font-family: var(--kof-display); font-weight: 800; font-size: 1.125rem; }
-
-  /* Herói */
-  .cdc .hero { position: relative; overflow: clip; }
-  .cdc .hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 3rem; align-items: center; }
-  .cdc .hero h1 { font-size: clamp(2.25rem, 4.4vw, 3.5rem); margin: 1.125rem 0 1rem; }
-  .cdc .hero h1 em { white-space: nowrap; }
-  .cdc .hero .kof-lead { max-width: 34rem; }
-  .cdc .hero-benefits { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; gap: 0.75rem; }
-  .cdc .hero-benefits li { display: flex; gap: 0.875rem; align-items: flex-start; font-size: 1.0625rem; font-weight: 600; line-height: 1.5; max-width: 34rem; }
-  .cdc .hero-benefits .kof-ladrilho { width: 2.25rem; height: 2.25rem; border-radius: 10px; margin-top: 0.05rem; }
-  .cdc .hero-benefits .kof-ladrilho .material-symbols-rounded { font-size: 1.25rem; }
-  .cdc .hero-actions { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: center; margin-top: 1.75rem; }
-  .cdc .requirements { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-top: 1.25rem; }
-  .cdc .hero-visual { position: relative; }
-  .cdc .hero-stage { position: relative; padding: 2.25rem; margin-top: 2rem; }
-  .cdc .hero-tela { margin: 0 5.5rem 0 0; }
-  .cdc .hero-tela img { aspect-ratio: 16 / 10; object-fit: cover; object-position: top; }
-  .cdc .hero-stage .dede { position: absolute; right: -0.5rem; bottom: 0; width: 9.5rem; filter: drop-shadow(0 10px 14px color-mix(in oklab, var(--kof-navy) 35%, transparent)); }
-  .cdc .hero-stage .zappy { position: absolute; top: -2.75rem; left: -1.25rem; width: 5.75rem; filter: drop-shadow(0 8px 12px color-mix(in oklab, var(--kof-navy) 30%, transparent)); }
-  .cdc .flutua { position: absolute; box-shadow: 0 8px 20px color-mix(in oklab, var(--kof-navy) 22%, transparent); }
-  .cdc .flutua--1 { top: -1rem; right: 9.75rem; }
-  .cdc .flutua--2 { bottom: 1.25rem; left: -1rem; }
-  .cdc .decor-1 { top: -1.5rem; right: -1rem; font-size: 2rem; }
-  .cdc .decor-2 { bottom: -1.25rem; left: 46%; font-size: 1.25rem; }
-  .cdc .decor-3 { top: 40%; left: -2.25rem; font-size: 1.5rem; }
-
-  /* Linhas de história: texto + figura */
-  .cdc .story-row { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 2.5rem 3.5rem; align-items: start; margin-bottom: 2.5rem; }
-  .cdc .story-row.reverse > .prose { order: 2; }
-  .cdc .prose { display: grid; gap: 1rem; }
-  .cdc .prose h3 { font-size: clamp(1.25rem, 2vw, 1.5rem); margin-bottom: 0.25rem; }
-  .cdc .prose p, .cdc .fecho p, .cdc .objection p, .cdc .nota-recados p { font-size: 1.0625rem; line-height: 1.65; color: var(--kof-tinta-suave); }
-  .cdc .visual img { display: block; width: 100%; }
-  .cdc .visual.arte img { border-radius: var(--kof-raio-carta); }
-  .cdc .visual.generated img { border-radius: var(--kof-raio-carta); box-shadow: 0 0 0 1px var(--kof-linha); }
-  .cdc .visual.tela > a { display: block; text-decoration: none; color: inherit; }
-  .cdc .visual.tela > a:focus-visible { outline: 3px solid var(--kof-acao); outline-offset: 4px; }
-  .cdc .visual.generated > a { display: block; border-radius: var(--kof-raio-carta); }
-  .cdc figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.75rem; font-size: 0.875rem; font-weight: 600; line-height: 1.5; color: var(--kof-tinta-suave); }
-  .cdc .visual-label { display: inline-flex; align-items: center; min-height: 1.5rem; padding: 0 0.625rem; border-radius: 9999px; background: var(--kof-sup2); box-shadow: 0 0 0 1px var(--kof-linha); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--kof-tinta-suave); }
-  .cdc .fecho, .cdc .nota-recados { display: flex; gap: 1.25rem; align-items: flex-start; max-width: 52rem; padding: 1.5rem 1.75rem; margin-bottom: 2.5rem; }
-  .cdc .fecho > div, .cdc .nota-recados > div { display: grid; gap: 1rem; min-width: 0; }
-  .cdc .fecho h3, .cdc .nota-recados h3 { font-size: 1.25rem; }
-  .cdc .story-row:last-child, .cdc .fecho:last-child { margin-bottom: 0; }
-
-  /* Provas e convite: as bandas navy */
-  .cdc .provas, .cdc .convite { overflow: clip; }
-  .cdc .provas .wrap, .cdc .convite-grid { position: relative; }
-  .cdc .provas-head { max-width: 48rem; }
-  .cdc .provas h2, .cdc .convite h2 { font-size: clamp(1.75rem, 3.2vw, 2.5rem); margin: 0.875rem 0 1rem; }
-  .cdc .provas-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; margin-top: 2.5rem; }
-  .cdc .criador { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-  .cdc .criador-head { display: flex; gap: 0.875rem; align-items: center; }
-  .cdc .criador-head img { width: 64px; height: 64px; border-radius: 9999px; object-fit: cover; box-shadow: 0 0 0 3px var(--kof-amarelo); }
-  .cdc .criador-head strong { display: block; font-family: var(--kof-display); font-weight: 800; font-size: 1.25rem; line-height: 1.1; }
-  .cdc .criador-head small { display: block; margin-top: 0.25rem; font-size: 0.875rem; font-weight: 700; color: var(--kof-tinta-suave); }
-  .cdc .criador blockquote { margin: 0; }
-  .cdc .criador .quote { font-size: 1.0625rem; line-height: 1.55; font-weight: 600; }
-  .cdc .criador .aspas { display: block; font-family: var(--kof-display); font-weight: 800; font-size: 3rem; line-height: 0.5; color: var(--kof-acao); margin-bottom: 0.75rem; }
-  .cdc .criador .kof-chip { align-self: flex-start; min-height: 2rem; font-size: 0.8125rem; padding: 0 0.75rem; }
-  .cdc .provas-mural { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 2.5rem; align-items: center; margin-top: 3rem; }
-  .cdc .provas-mural h3 { font-size: 1.5rem; margin-bottom: 0.75rem; }
-  .cdc .provas-mural .kof-lead { margin-bottom: 1.5rem; }
-  .cdc .decor-a { top: -1.5rem; right: 0; font-size: 1.75rem; }
-  .cdc .decor-b { bottom: -1.5rem; left: -1.5rem; font-size: 1.25rem; }
-  .cdc .convite-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 3rem; align-items: center; }
-  .cdc .convite-copy { display: grid; gap: 1rem; justify-items: start; }
-  .cdc .convite-copy h2 { margin: 0; }
-  .cdc .convite-copy .kof-btn { margin-top: 0.5rem; }
-  .cdc .convite-arte img { display: block; width: min(100%, 30rem); margin-inline: auto; filter: drop-shadow(0 16px 24px color-mix(in oklab, var(--kof-navy) 60%, transparent)); }
-  .cdc .convite-arte figcaption { justify-content: center; text-align: center; color: var(--kof-navy-texto); }
-
-  /* A fita da Jornada: os oito postos */
-  .cdc .fita { list-style: none; margin: 0 0 2.5rem; padding: 1.25rem 1rem; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 0.75rem; border-radius: var(--kof-raio-carta); background: var(--kof-carta); box-shadow: 0 0 0 1px var(--kof-linha); }
-  .cdc .fita-posto { position: relative; display: grid; justify-items: center; gap: 0.5rem; text-align: center; }
-  .cdc .fita-posto img { width: min(100%, 4.5rem); border-radius: 9999px; background: var(--kof-azul-fundo); box-shadow: 0 0 0 2px var(--kof-linha); }
-  .cdc .fita-num { position: absolute; top: -0.25rem; left: 50%; translate: 1.25rem 0; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 9999px; background: var(--kof-amarelo); color: var(--kof-tinta); font-size: 0.75rem; font-weight: 800; }
-  .cdc .fita-nome { font-size: 0.8125rem; font-weight: 800; line-height: 1.25; color: var(--kof-tinta); text-wrap: balance; }
-
-  /* Família */
-  .cdc .family-photo img { display: block; width: min(100%, 26rem); margin-inline: auto; -webkit-mask-image: linear-gradient(to bottom, var(--kof-tinta) 86%, transparent); mask-image: linear-gradient(to bottom, var(--kof-tinta) 86%, transparent); }
-  .cdc .family-photo figcaption { justify-content: center; text-align: center; }
-
-  /* Rotina: as quatro cartas */
-  .cdc .objections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
-  .cdc .objection { padding: 1.75rem; display: grid; gap: 0.875rem; align-content: start; }
-  .cdc .objection h3 { font-size: 1.25rem; }
-
-  /* Planos */
-  .cdc .planos-grid { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 3rem; align-items: start; }
-  .cdc .value-story { display: grid; gap: 1rem; }
-  .cdc .value-story p { font-size: 1.0625rem; line-height: 1.65; color: var(--kof-tinta-suave); }
-  .cdc .notas { display: grid; gap: 0.75rem; margin-top: 0.5rem; }
-  .cdc .nota { display: flex; gap: 0.875rem; align-items: flex-start; padding: 1rem 1.125rem; }
-  .cdc .nota p { font-size: 0.9375rem; line-height: 1.55; color: var(--kof-tinta); font-weight: 600; }
-  .cdc .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start; scroll-margin-top: 5.5rem; }
-  .cdc .plan { position: relative; padding: 1.75rem; display: flex; flex-direction: column; gap: 0.875rem; }
-  .cdc .plan h3 { font-family: var(--kof-display); font-weight: 800; font-size: 1.375rem; }
-  .cdc .plan .price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; font-family: var(--kof-display); font-weight: 800; font-size: 2.75rem; line-height: 1; }
-  .cdc .plan .price span { font-family: var(--kof-corpo); font-weight: 700; font-size: 1rem; color: var(--kof-tinta-suave); }
-  .cdc .plan .equivalent { font-weight: 800; color: var(--kof-tinta); font-size: 1rem; }
-  .cdc .plan p { font-size: 0.9375rem; line-height: 1.55; color: var(--kof-tinta-suave); }
-  .cdc .plan .kof-btn { margin-top: auto; }
-  .cdc .plan .saving { position: absolute; top: -0.9375rem; left: 50%; translate: -50% 0; width: max-content; max-width: calc(100% - 2rem); white-space: normal; text-align: center; line-height: 1.2; padding-block: 0.25rem; }
-  .cdc .plan.annual { padding-top: 2.5rem; }
-  .cdc .plan.annual.kof-marca .price span, .cdc .plan.annual.kof-marca p { color: var(--kof-sobre-acao-suave); }
-  .cdc .plan.annual.kof-marca .equivalent { color: var(--kof-carta); }
-  .cdc .guarantee { display: flex; gap: 1.125rem; align-items: flex-start; padding: 1.5rem; margin-top: 1.25rem; }
-  .cdc .guarantee > div { display: grid; gap: 0.5rem; min-width: 0; }
-  .cdc .guarantee h3 { font-size: 1.25rem; }
-  .cdc .guarantee p { font-size: 0.9375rem; line-height: 1.55; color: var(--kof-tinta-suave); }
-
-  /* Dúvidas */
-  .cdc .faq { display: grid; gap: 0.75rem; max-width: 52rem; }
-  .cdc .faq details { padding: 0 1.5rem; }
-  .cdc .faq summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3.5rem; padding: 0.875rem 0; cursor: pointer; list-style: none; font-family: var(--kof-display); font-weight: 800; font-size: 1.0625rem; line-height: 1.3; }
-  .cdc .faq summary::-webkit-details-marker { display: none; }
-  .cdc .faq summary .material-symbols-rounded { flex: none; color: var(--kof-acao); transition: rotate 0.2s ease; }
-  .cdc .faq details[open] summary .material-symbols-rounded { rotate: 180deg; }
-  .cdc .faq details > div { padding: 0 0 1.25rem; }
-  .cdc .faq details p { font-size: 1rem; line-height: 1.6; color: var(--kof-tinta-suave); }
-
-  /* As telas reais das seções mostram o alto da janela capturada, antes da barra cortada do pé. */
-  .cdc .visual.tela img, .cdc .provas-mural .kof-tela img { aspect-ratio: 16 / 9; object-fit: cover; object-position: top; }
-  /* A barra fixa do celular some quando o rodapé entra na janela: o rodapé não precisa de respiro. */
-  @media (max-width: 760px) {
-    .cdc .nav-right { display: none; }
-  }
-  @media (max-width: 960px) {
-    .cdc .hero-grid, .cdc .story-row, .cdc .planos-grid, .cdc .provas-mural, .cdc .convite-grid { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
-    .cdc .story-row.reverse > .prose { order: 0; }
-    .cdc .provas-grid, .cdc .objections { grid-template-columns: minmax(0, 1fr); }
-    .cdc .quebra { display: none; }
-    .cdc .hero-tela { margin-right: 4rem; }
-    .cdc .hero-stage .dede { width: 7.5rem; }
-  }
-  @media (max-width: 760px) {
-    .cdc .section { padding-block: 2.75rem; }
-    .cdc .plans { grid-template-columns: 1fr; }
-    .cdc .hero-stage { padding: 1.5rem 1.25rem; }
-    .cdc .hero-tela { margin-right: 3rem; }
-    .cdc .hero-stage .dede { width: 6rem; right: -0.25rem; }
-    .cdc .hero-stage .zappy { width: 4.25rem; top: -2rem; left: -0.5rem; }
-    .cdc .flutua--1 { right: 7rem; }
-    .cdc .flutua--2 { left: -0.5rem; }
-    .cdc .decor-3 { display: none; }
-    .cdc .criador-head img { width: 56px; height: 56px; }
-    .cdc .fecho, .cdc .nota-recados, .cdc .guarantee { gap: 0.875rem; padding: 1.25rem; }
-    .cdc .fecho .kof-ladrilho, .cdc .nota-recados .kof-ladrilho, .cdc .guarantee .kof-ladrilho { width: 2.5rem; height: 2.5rem; border-radius: 12px; }
-    .cdc .fecho .kof-ladrilho .material-symbols-rounded, .cdc .nota-recados .kof-ladrilho .material-symbols-rounded, .cdc .guarantee .kof-ladrilho .material-symbols-rounded { font-size: 1.25rem; }
-    .cdc .plan.annual { order: -1; }
-    /* No celular a fita ROLA de lado (8 colunas de 6rem): "Construtor(a)" não cabe em 1/4 da tela
-     * sem quebrar no parêntese. */
-    .cdc .fita { grid-auto-flow: column; grid-auto-columns: 6rem; grid-template-columns: none; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; padding: 1rem 0.75rem; gap: 0.5rem; }
-    .cdc .fita-posto { scroll-snap-align: start; }
-    .cdc .fita-nome { font-size: 0.75rem; }
-    .cdc .objection { padding: 1.25rem; }
-  }
-</style>

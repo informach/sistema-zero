@@ -161,8 +161,8 @@ partir de `SALES`); `DesafioOfertaBody.astro` = layout sob medida alinhado à pl
 personagens, decorações flutuantes), com o CSS bespoke num `<style>` Astro escopado por `.dpj`
 (aliases semânticos no wrapper apontam para `--sz-community-*`, nunca valores repetidos) e ícones
 **Material Symbols self-hosted** (`@fontsource/material-symbols-rounded`; o NCI segue com o
-outlined); `ComunidadeOfertaBody.astro` = desde 30/09/2026 um `<style is:global>` prefixado por `.cdc` (sem o
-escopo do Astro; ver "Redesenho visual da Comunidade"). ⚠️ Astro escopa somando um
+outlined); `ComunidadeOfertaBody.astro` = layout em `src/styles/comunidade-oferta.css`, prefixado por `.cdc`
+(sem o escopo do Astro; ver "Direção de arte das quatro páginas"). ⚠️ Astro escopa somando um
 atributo por elo do seletor: um override tipo `.kid.verde .name` só vence a base `.kid .char .name`
 se incluir os MESMOS elos (`.kid.verde .char .name`). Os CTAs de compra levam `data-checkout-cta` →
 o `PreCheckoutModal` (mesma ilha do NCI) abre o checkout; opcionalmente levam também
@@ -200,9 +200,10 @@ responsável… o perfil da criança você cria depois, na plataforma") e rotula
 criança nasce depois, na área kids).
 
 **Funil kids "Comunidade dos Criadores" (`kids/comunidade-dos-criadores`, ASSINATURA mensal R$ 97 /
-anual R$ 797, 07/2026):** a assinatura da plataforma kids inteira; **SEM quiz** (steps todos false →
-quiz/resultado 404; o funil é oferta → checkout → obrigado). Módulo em
-`src/funnels/comunidade-dos-criadores/` (index/content — sem quiz.ts); `lifetimeAccess: false`
+anual R$ 797, 07/2026):** a assinatura da plataforma kids inteira; **quiz opcional de orientação**
+em `/kids/comunidade-dos-criadores/quiz` (implementado em 01/10/2026). Oferta → checkout → obrigado
+continua acessível diretamente. Módulo em `src/funnels/comunidade-dos-criadores/`, com motor e
+copy do quiz em `quiz/`; `lifetimeAccess: false`
 (rodapé sem o disclaimer de vitalício; copy usa "cancele quando quiser", NUNCA "pagamento
 único"/"vitalício"). A oferta principal da env é a MENSAL (`comunidade-dos-criadores-mensal` no
 catálogo, criada pelo SEED do catalog junto com a irmã anual + o combo); os cards de plano da
@@ -213,25 +214,51 @@ página levam `data-checkout-oferta` com o slug de cada oferta. Registrado DEPOI
 (capa do checkout = `checkout-capa.webp`, arte "Corre, Dino!"; hero/ilustras começaram como cópias
 dos assets do Desafio — a arte nova substitui por cima com os MESMOS nomes). A página bio da raiz
 (`/`) tem o 3º botão (verde) apontando pra oferta.
-**Copy revisada da Comunidade (30/09/2026):** a proposta em
-`docs/plans/2026-09-30-comunidade-copy-leitura-revisada.md` organiza dez seções: promessa,
-argumentação do processo, começo guiado/Estúdio/Pinta, relatos reais, continuidade, família,
-rotina e objeções, assinatura, dúvidas práticas e convite final. A hero promete aprender a
-criar os próprios jogos. CTA principal aponta para `#planos`; link secundário para `#aula`.
-`?origem=desafio` troca a abertura por continuidade, sem presumir conclusão ou publicação.
-As imagens `preview-estudio.webp` e `preview-regra.webp` são ilustrações provisórias geradas a
-pedido do responsável, identificadas na página ("Ilustração da experiência"); o `preview-pinta`
-saiu no redesenho de 30/09 (a tela real do Pinta tomou o lugar). O briefing
-`docs/plans/2026-09-30-comunidade-materiais-para-pagina.md` registra prompts e substituições.
+**Quatro copies da Comunidade (01/10/2026):** a referência vigente está em
+`docs/marketing/kids/comunidade-dos-criadores/copy/`. Conteúdo tipado em
+`src/funnels/comunidade-dos-criadores/oferta/`, com fatos e 40 respostas comuns em `shared.ts`.
+
+A página padrão é `/kids/comunidade-dos-criadores/oferta` (aprendizagem dentro do tempo de tela
+permitido). As variantes usam `/oferta/criacao-de-jogos`, `/oferta/expressao-visual` e
+`/oferta/formacao-tecnologica`. São apresentações do mesmo produto e do mesmo checkout.
+`server/offer-page.ts` resolve os dados comerciais para as rotas; Responses de erro devem
+retornar na ROTA, nunca no componente Astro compartilhado. `OfertaPage.astro` despacha os bodies.
+CTA principal aponta para `#planos`; link secundário para `#experiencia`.
+A página pública `/oferta/continuar` atende famílias que já conhecem a plataforma, sem presumir
+conclusão: copy e 50 respostas em `continuidade.ts`/`continuidade-faq.ts`, com as mesmas telas,
+componentes e estilos dos quatro perfis. É uma etapa de relacionamento, não um quinto avatar.
+O parâmetro antigo de origem foi removido, sem redirecionamento especial. Os convites de assinatura
+no Kids e nos serviços de continuidade/expiração do Members apontam para a nova rota.
+A página E usa `#proximo-passo`, `#experiencia` e `#garantia`, compara os acessos e explica o início
+do período contratado. O pré-checkout lembra de usar o mesmo e-mail do responsável. Seus dados
+sobrescrevem somente a oferta e as respostas desta página; as quatro copies anteriores permanecem.
+Registro e validação: `docs/marketing/kids/comunidade-dos-criadores/implementacao-continuidade.md`.
+As dúvidas têm pesos e ordem próprios, mantendo as mesmas respostas e imagens correspondentes.
 Não prometer revisão de toda atividade, prazo de resposta ou jogo pronto em prazo universal.
 Recados é canal de dúvidas; a progressão e a disponibilidade dos cursos condicionam as ferramentas.
-Preços, equivalência mensal e economia vêm dos planos ao vivo; só mostrar economia positiva.
+Preços e equivalência mensal vêm dos planos ao vivo. O anual informa pagamento anual, com Pix
+sem renovação automática e cartão recorrente. Sem economia comparativa fixa ou relatos novos.
 Pré-checkout, checkout e obrigado preservam os dados do responsável e a continuidade de quem já
-começou. Guardas: `tests/unit/comunidade-offer-copy.test.ts` (promessas, condições, imagens,
-âncoras e contratos entre etapas) e `comunidade-funnel.test.ts` (registro e metadados sem preço).
+começou. Guardas: `tests/unit/comunidade-offer-copy.test.ts` e `comunidade-funnel.test.ts`.
+O manifesto `oferta/visuals.ts` relaciona cada demonstração às suas telas, legenda e texto
+alternativo. **Só telas REAIS (01/10/2026, decisão da dona):** as 28 prévias SVG saíram; o que
+ainda não tem captura fica em `PENDING_VISUALS` e NÃO renderiza (a seção ou a resposta segue só
+com o texto). Ligar uma pendente = capturar e mover a chave para `COMUNIDADE_VISUALS`; os vínculos
+com as quatro páginas e com `FAQ_VISUALS` já existem. Ver "Direção de arte das quatro páginas".
 Os termos kids (`content/legal-kids.ts`) cobrem os DOIS produtos (Desafio: compra única; Comunidade:
-assinatura recorrente no cartão ou anual à vista, cancelamento sem multa, carência, garantia só na
-1ª contratação, Mural de visitante após o fim).
+assinatura recorrente no cartão ou anual à vista, cancelamento sem multa, carência, garantia na
+contratação inicial e em cada nova contratação anual via Pix, Mural de visitante após o fim).
+**Quiz da Comunidade (v2):** oito perguntas-base, QT/QB/QC condicionais, inputs nativos e
+respostas múltiplas em Q3/Q4. `QuizAnswers` aceita `string[]` no JSONB existente, sem migração.
+`FunnelQuiz.applyAnswer/isComplete` validam, limpam ramos inativos e recalculam o perfil. PATCH
+exige revisão e token da sessão, derivados da sessão atual; o cookie HttpOnly continua sendo a
+única origem da propriedade do lead. A gravação compara o JSON anterior atomicamente. Outro
+filho recebe novo lead. Empate/exploração/outra procura mantêm perfil null; destino geral não
+significa avatar A. Resultado SSR em componente próprio, com prints reais e link para uma das
+quatro ofertas; `/oferta/continuar` não é resultado. Feedback é persistido antes de confirmar.
+Metadados `perfilLabels` enumeram os perfis no admin, inclusive para resultados compostos sem
+blocos estáticos em `result.profiles`. Referência: `docs/marketing/kids/comunidade-dos-criadores/quiz/`.
+
 **Redesenho visual da Comunidade (30/09/2026, "a oficina do criador"):** a copy v2 ficou intacta e a
 página ganhou o desenho da plataforma kids: topo navy com a logo kids e o preço, herói com a TELA
 REAL de uma aula num cartão azul (`.kof-marca`) e o Dedé e o Zappy apresentando, eyebrow amarelo,
@@ -247,8 +274,8 @@ sem `data-checkout-cta`: a contagem segue 2). Plano e prints:
   `.kof-tela`, `.kof-decor`, `.kof-reveal`, `.kof-mobar` (só o que a página usa: o balão de
   personagem e o "stat" da banda do Desafio NÃO vieram). O funil recebe da
   plataforma só os TOKENS, nunca as receitas (`.kids-carta`/`.sz-btn-gradient` ficam no kids), por
-  isso elas nascem aqui, por token, sem nenhuma cor própria. O body tem só o LAYOUT, num
-  `<style is:global>` prefixado por `.cdc` (dois elos onde colide com `.theme-kids X` do
+  isso elas nascem aqui, por token, sem nenhuma cor própria. O LAYOUT mora em
+  `src/styles/comunidade-oferta.css`, prefixado por `.cdc` (dois elos onde colide com `.theme-kids X` do
   `global.css`, como o `.cdc .topbar` contra o `.theme-kids header`). Não reaproveitar
   `.btn/.card/.reveal-up` do `global.css` (outro raio, outro peso, animam no load).
   `tests/unit/comunidade-offer-css.test.ts` trava: sem hex/rgb/hsl/oklch, `color-mix` só
@@ -265,9 +292,8 @@ sem `data-checkout-cta`: a contagem segue 2). Plano e prints:
   filtra telas, `KIDS_AULA_PATH` escolhe a aula. Ele esconde o "Pular para o conteúdo" (o CDP deixa
   o foco visível nele), fecha o diálogo que chega depois dos dados (os Combinados do Clube) e
   grava 1x e @2x (`srcset`). Toda imagem passa por revisão humana antes do commit (nomes de outros
-  perfis de teste aparecem no Mural). Os mockups `print-*.webp` com dados fictícios SAÍRAM e o
-  teste de copy proíbe `img('print-`; `preview-regra`/`preview-estudio` seguem como "Ilustração da
-  experiência" (o teste exige a frase).
+  perfis de teste aparecem no Mural). Os antigos `print-*.webp` não são capturas reais, e as
+  prévias SVG de 01/10/2026 foram apagadas no mesmo dia (só tela real entra na página).
 - ⚠️ O dev server local sem Postgres mostra a página, mas o `POST /api/leads` cai e o Astro
   injeta o overlay de erro por cima: para prints via CDP, remova os elementos
   `vite-error-overlay` e `astro-dev-toolbar` antes de fotografar (`tmp/` é gitignorado; o
@@ -275,6 +301,93 @@ sem `data-checkout-cta`: a contagem segue 2). Plano e prints:
   BRANCO (`.kof-marca .kof-btn:focus-visible`): o azul sumia no botão de compra do plano anual.
   A fonte de ícones é a instância estática 400 (sem eixo `FILL`): as estrelas decorativas saem
   vazadas de propósito.
+
+**Direção de arte das quatro páginas (01/10/2026, "capítulos da oficina"):** a copy não mudou uma
+palavra; mudou a composição, e todas as imagens passaram a ser telas reais.
+- **O layout saiu do `<style>` do body** para `src/styles/comunidade-oferta.css` (ainda todo
+  prefixado por `.cdc`; o biome o formata). O body importa as duas folhas e não tem `<style>`
+  (`comunidade-offer-css.test.ts` trava). ⚠️ `<header>` dentro de `.cdc` herda o
+  `.theme-kids header` do `global.css` (fundo e borda): os cabeçalhos de capítulo são `<div>`.
+- **Capítulo** (`ComunidadeSection.astro`, recebe `index`): cor de unidade (`.cor-azul|rosa|verde|
+  roxo|laranja` → `--cor`/`--cor-fundo`), fundo que nunca repete o da vizinha (`.fundo-chao|folha|
+  alt`; `band` = navy) e cabeçalho com chip + título + ABERTURA (o 1º parágrafo do 1º grupo sem
+  subtítulo, em `.cap-lead`). Arranjo por bloco: `lado` (uma tela, texto ao lado, lado alternado),
+  `largo` (tira de telas embaixo, texto em colunas) e `texto` (sem tela; carta quando tem
+  subtítulo). `cards` = três cartas com a tela em cima; `tools` = uma carta larga por ferramenta;
+  `journey` = trilha dos 8 postos com o NOME da ferramenta que cada um libera.
+- **Vínculo imagem × texto** (`section.visuals`): a imagem i acompanha o i-ésimo grupo QUE VIRA
+  BLOCO e o último fica com as que sobrarem; `'a+b'` põe duas no mesmo grupo. Um grupo que é SÓ a
+  abertura (sem subtítulo, um parágrafo) não vira bloco e não recebe imagem. Grupo sem subtítulo
+  com duas ou mais telas REAIS se DIVIDE em dois blocos (texto, tela, texto, tela); com uma só (a
+  outra pendente), o texto fica inteiro ao lado dela, sem parágrafo solto. As pendentes saem
+  DEPOIS do vínculo. Mexer em `visuals`/`heroVisual`/`layout` é decisão de desenho; os textos não
+  se tocam.
+- **Página de continuidade (`continuar`, 01/10/2026):** mesma direção de arte, com três peças
+  próprias. (1) `layout: 'cases'` em `#proximo-passo`: uma carta por SITUAÇÃO (`.situacoes`), com
+  o marco na cor do grupo ligado por uma linha, texto e a tela dela (`only="first"`); na folha
+  branca a carta vira painel na cor do chão. (2) A comparação de acessos
+  (`ComunidadeComparacao.astro`, `group.comparison`) é uma carta por PAR, metade neutra → seta →
+  metade na cor do capítulo, com papéis ARIA de tabela (não é `<table>`: em grid perderia a
+  semântica); no celular o par empilha e o rótulo de cada coluna entra na carta. O CSS mora no
+  layout (`.cdc .comparacao-*`), sem `<style>` no componente. (3) `ENFASE_NUMA_LINHA` em
+  `oferta/arte.ts` (largura da ênfase do título em `em`: o h1 encolhe por `cqi` até a frase azul
+  caber inteira numa linha; antes o equilíbrio de linhas deixava "continuar" sozinho).
+- **`oferta/arte.ts` (o que depende do ASSUNTO, não da posição), nas cinco páginas:**
+  `ICONES_DE_CAPITULO` (chip do capítulo, por id de seção), `ICONES_DE_GRUPO` (ícone de cada
+  subtítulo) e `ICONES_DE_DUVIDAS` (assuntos das dúvidas, por página). Sem entrada vale o ícone
+  pela posição; seção nova com assunto que a posição não acerta ganha uma linha ali.
+- **Revisão das cinco páginas (01/10/2026):** o TEXTO fica ao lado da tela que ele descreve. Ao
+  mexer em `visuals`, confira o par de cada bloco (o grupo sem subtítulo se divide: a 1ª tela vai
+  com a primeira metade dos parágrafos, as demais com a segunda): o parágrafo do Clube estava ao
+  lado do Mural, o do Pensa ao lado da Jornada. NENHUMA demonstração se repete no corpo de uma
+  página (o teste trava; só a D repete `aprendizagem`, de propósito), e duas telas quase iguais
+  não ficam na mesma seção (`pinta` × `animacao`). Seção sem tela real (as três "Você acompanha",
+  enquanto a Área dos pais está pendente) leva `aprendizagem`. Quatro parágrafos em colunas ficam
+  dois a dois (`:has(> p:nth-child(4):last-child)`). Tela única quase quadrada
+  (`.visual--estreita`, os combinados do Clube) fica na coluna menor.
+- **`ComunidadeVisual`**: 1 a 3 telas (`frames`), `mode: 'steps'` numera e põe a seta, `'set'` só
+  agrupa; `variant="plana"` (sem palco) nas cartas e dúvidas; `only="first|last"` nas cartas e
+  ferramentas. Todo quadro abre ampliado (`a[data-zoom]` → `<dialog class="zoom">`; sem JS abre em
+  outra aba). ⚠️ O `<dialog>` precisa de `margin: auto`: o reset do Tailwind zera a margem e ele
+  ia para o canto.
+- **Destaques** (`oferta/destaques.ts` + `destacar.ts` + `ComunidadeProsa.astro`): trechos
+  LITERAIS da copy em `<strong>` (marca-texto amarelo), por id de seção, `<perfil>:convite`,
+  `origem` e `assinatura`. O teste exige que cada trecho exista uma única vez no texto da seção e
+  que o parágrafo, remontado, seja idêntico: editar a copy quebra o destaque em voz alta.
+- **Faixa "Por dentro da Comunidade"** (`TOUR`): dez telas com o nome da área e UMA linha
+  PESSOAL de função, sempre o filho fazendo algo ali ("Onde seu filho monta e testa os jogos",
+  "Onde ele desenha personagens e cenários"). Decisão da dona (01/10/2026): frase que descreve a
+  FERRAMENTA ("Desenhos digitais que podem participar dos projetos") foi recusada como genérica.
+  Sem condição de acesso: a faixa mostra o que existe; quem explica a liberação é o capítulo da
+  Jornada.
+- **Capturas** (`scripts/captura-telas-kids.ts`, reescrito em roteiros): cada roteiro leva a
+  plataforma a um estado e tira 1x e @2x, inteira ou recortada. `KIDS_SO` aceita nome de foto ou
+  de roteiro; `KIDS_CDP_PORT` anexa a um Chrome já logado. ⚠️⚠️ **O token de sessão do kids GIRA**:
+  usar os cookies do arquivo depois que outra sessão já os renovou derruba as DUAS (foi o que
+  aconteceu em 01/10: a 2ª execução com o arquivo invalidou a sessão viva). Um arquivo de cookies
+  serve para UMA execução. ⚠️ A Área dos pais pede a senha e vale 15 min: cookies exportados logo
+  depois de entrar nela + `KIDS_SO=pais`. ⚠️ O cartão do jogo sai CORTADO no meio do QR (inteiro,
+  a câmera o leria e levaria o visitante ao staging). O conteúdo fotografado (plano `ParOuImpar`,
+  a dúvida nos Recados, o cavaleiro `base-3-2` em Materiais do jogo) está no perfil de teste Lipe;
+  os roteiros só leem.
+- **Recaptura de 01/10/2026 à tarde (pedidos da dona):** (1) **os desenhos BONITOS**: o boneco
+  `heroi` foi apagado por ela ("muito simples"); o Pinta mostra o cavaleiro `base-3-2`, o animado
+  `dumb-animation` e o cenário `dumb-scene-2`, e a galeria entra com a busca `base`; o Molda
+  mostra o `player-2` (bonequinho de blocos) e não o carrinho. (2) **Blocos organizados**: antes
+  de fotografar o Estúdio, botão direito numa área vazia › "Organizar blocos", zoom por Ctrl+roda
+  e arrastar o ESPAÇO até o programa ficar no alto (`organizarBlocos`/`zoomDosBlocos`/
+  `enquadrarBlocos`). ⚠️ Arrastar pegando em cima de um bloco DESMONTA o programa (aconteceu; o
+  Ctrl+Z desfez): o ponto de pega é sempre fundo (`vazio()`, pelo elemento sob o ponto, não pela
+  caixa da pilha). (3) **Área dos pais**: `KIDS_PAIS_SENHA_FILE` (arquivo fora do repositório,
+  senha na 1ª linha, nunca impressa) + `KIDS_SO=pais`; saíram `responsavel` (painel cortado ANTES
+  da lista de ferramentas, que na conta de teste diz "Não incluído na conta", + "Para conversar
+  sobre uma criação"), `privacidade`, `conta` e `indicacao`. Seguem pendentes `creditos` (a conta
+  de teste não tem o quadro), `compras` ("Nenhuma compra ainda"), `perfis` (um perfil só) e
+  `conexao`. (4) **Certificado**: a aula final de um curso CONCLUÍDO (`KIDS_CURSO_CONCLUIDO`), com
+  o número do certificado escondido, e o documento (`tela-certificado-modelo` = o
+  `entrega-certificado.webp` da página do Desafio, 760 px, sem @2x de verdade). Os roteiros
+  `aula-estudio`, `pinta`, `estudio`, `molda` e `pais` foram rodados de ponta a ponta com
+  `KIDS_CDP_PORT`; pedir um roteiro pelo nome em `KIDS_SO` tira todas as fotos dele.
 
 **Admin por funil (`/admin`):** seletor de funil no topo filtra as 3 abas. `adminLeads/adminFunnel/
 adminPerfis` aceitam `?funnel=` (repo filtra por `leads.funnel`; `eventCounts` junta ao lead).

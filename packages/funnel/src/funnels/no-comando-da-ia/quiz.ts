@@ -32,7 +32,7 @@ export const NCI_VALUE_SCHEMA = {
   custo_mensal: z.coerce.number().int().min(0).max(2_000_000_000),
 }
 
-const str = (v: string | number | undefined): string | null => (typeof v === 'string' ? v : null)
+const str = (v: unknown): string | null => (typeof v === 'string' ? v : null)
 
 /** Extrai as respostas que pontuam, no formato do motor de perfil (snake_case). */
 function scoringAnswers(a: QuizAnswers): ScoringAnswers {

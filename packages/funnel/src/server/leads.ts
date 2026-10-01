@@ -6,6 +6,8 @@ import { ContactSchema } from '../lib/contact-schema'
 import { json, jsonError, safeJson } from '../lib/http'
 import { sanitizeLeadAttribution } from '../lib/lead-attribution'
 import { getLeadId, leadCookie } from '../lib/lead-session'
+import type { QuizAnswers, QuizAnswerValue } from '../lib/quiz-types'
+import { quizSessionToken } from './quiz-session'
 
 export interface LeadDeps {
   repo: FunnelRepo
@@ -29,7 +31,10 @@ const VENDAS_EVENTS = [
 const PatchBody = z.object({
   // key/eventName são validados contra o quiz do FUNIL do lead, não um enum fixo.
   key: z.string().max(64),
-  value: z.union([z.string(), z.number()]),
+  value: z.union([z.string(), z.number(), z.array(z.string().max(64)).max(8)]),
+  revision: z.number().int().nonnegative().optional(),
+  sessionToken: z.string().length(64).optional(),
+  funnel: z.string().max(100).optional(),
   lastStep: z.string().max(64).optional(),
   eventName: z.string().max(64).optional(),
 })
@@ -47,12 +52,14 @@ const EventBody = z.object({
 })
 
 /** Respostas do quiz (snake_case → valor) — usado pelo resume do quiz na ilha. */
-export function leadAnswers(lead: Lead): Record<string, string | number> {
+export function leadAnswers(lead: Lead): QuizAnswers {
   return lead.quizAnswers ?? {}
 }
 
 /** Corpo opcional do POST /api/leads: o funil de origem (`${audience}/${produto}`). */
-const CreateLeadBody = z.object({ funnel: z.string(), attribution: z.unknown() }).partial()
+const CreateLeadBody = z
+  .object({ funnel: z.string(), attribution: z.unknown(), restartQuiz: z.boolean() })
+  .partial()
 
 /**
  * POST /api/leads — inicia o lead (idempotente se o cookie já aponta p/ um lead).
@@ -65,22 +72,37 @@ export async function createLead(request: Request, deps: LeadDeps): Promise<Resp
   const parsed = CreateLeadBody.safeParse(await safeJson(request))
   const funnel = parsed.success && isFunnelKey(parsed.data.funnel) ? parsed.data.funnel : null
   const attribution = parsed.success ? sanitizeLeadAttribution(parsed.data.attribution) : null
+  const restart = parsed.success && parsed.data.restartQuiz === true
+  if (restart && (!funnel || !getFunnelByKey(funnel)?.content.quiz))
+    return jsonError('Quiz desconhecido.', 400, 'BAD_REQUEST')
   const existing = getLeadId(request)
   if (existing) {
     const lead = await deps.repo.getLead(existing)
     // Lead já PAGO não é reaproveitado: nova compra = novo lead. A /obrigado
     // mantém o cookie para permitir recarregar o comprovante, então este gate é
     // também a fronteira que inicia uma nova jornada com segurança.
-    if (lead && !lead.paidAt && (!funnel || leadBelongsToFunnel(lead.funnel, funnel))) {
+    if (!restart && lead && !lead.paidAt && (!funnel || leadBelongsToFunnel(lead.funnel, funnel))) {
       if (!lead.attribution && attribution) await deps.repo.claimAttribution(lead.id, attribution)
-      return json({ id: lead.id, answers: leadAnswers(lead), lastStep: lead.lastStep }, 200)
+      return json(
+        {
+          id: lead.id,
+          answers: leadAnswers(lead),
+          lastStep: lead.lastStep,
+          sessionToken: quizSessionToken(lead.id),
+        },
+        200,
+      )
     }
   }
   const { id } = await deps.repo.createLead(funnel, attribution)
   await deps.repo.insertEvent(id, 'entrou_landing', 'landing')
-  return json({ id, answers: {}, lastStep: 'entrou_landing' }, 201, {
-    'set-cookie': leadCookie(id, deps.secureCookie),
-  })
+  return json(
+    { id, answers: {}, lastStep: 'entrou_landing', sessionToken: quizSessionToken(id) },
+    201,
+    {
+      'set-cookie': leadCookie(id, deps.secureCookie),
+    },
+  )
 }
 
 /** GET /api/leads — estado do lead do cookie (resume do quiz). */
@@ -93,6 +115,8 @@ export async function getLeadView(request: Request, deps: LeadDeps): Promise<Res
     id: lead.id,
     lastStep: lead.lastStep,
     paid: lead.paidAt != null,
+    funnel: lead.funnel,
+    sessionToken: quizSessionToken(id),
     answers: leadAnswers(lead),
   })
 }
@@ -109,6 +133,13 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
 
   // O quiz do FUNIL do lead define as chaves válidas, a validação e a derivação.
+  if (parsed.data.funnel && !leadBelongsToFunnel(lead.funnel, parsed.data.funnel)) {
+    return jsonError(
+      'A sessão pertence a outro quiz. Retome para continuar.',
+      409,
+      'QUIZ_SESSION_CHANGED',
+    )
+  }
   const quiz = getFunnelByKey(lead.funnel)?.content.quiz
   if (!quiz) return jsonError('Este funil não tem quiz.', 400, 'BAD_REQUEST')
 
@@ -140,7 +171,54 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
   if (!parsedValue.success) return jsonError('Valor inválido para a pergunta.', 400, 'BAD_REQUEST')
 
   // Grava a resposta + chaves derivadas (ex.: custo_mensal) no JSON `quiz_answers`.
-  const answer = parsedValue.data as string | number
+  const answer = parsedValue.data as QuizAnswerValue
+  if (quiz.applyAnswer) {
+    if (lead.paidAt)
+      return jsonError('Inicie uma nova resposta para continuar.', 409, 'ALREADY_PAID')
+    const previous = lead.quizAnswers ?? {}
+    const revision = typeof previous._quiz_revision === 'number' ? previous._quiz_revision : 0
+    if (
+      parsed.data.revision !== revision ||
+      parsed.data.funnel !== lead.funnel ||
+      parsed.data.sessionToken !== quizSessionToken(id)
+    ) {
+      return jsonError(
+        'Suas respostas foram atualizadas. Retome o quiz antes de continuar.',
+        409,
+        'QUIZ_CONFLICT',
+      )
+    }
+    const next = quiz.applyAnswer(previous, key, answer)
+    if (!next) return jsonError('Resposta inválida para este percurso.', 400, 'BAD_REQUEST')
+    const complete = isQuizComplete(quiz, next)
+    const profile = complete ? (quiz.computePerfil?.(next) ?? null) : null
+    const saved = await deps.repo.saveQuizAnswers(id, previous, next, step.lastStep, profile)
+    if (!saved)
+      return jsonError(
+        'Suas respostas foram atualizadas. Retome o quiz antes de continuar.',
+        409,
+        'QUIZ_CONFLICT',
+      )
+    const metadata = { quiz_version: next._quiz_version, revision: next._quiz_revision }
+    if (revision === 0)
+      await deps.repo.insertEvent(id, 'start_quiz', step.lastStep, metadata, `${id}:start_quiz`)
+    await deps.repo.insertEvent(
+      id,
+      step.eventName,
+      step.lastStep,
+      metadata,
+      `${id}:quiz:${next._quiz_revision}`,
+    )
+    if (complete)
+      await deps.repo.insertEvent(
+        id,
+        'complete_quiz',
+        step.lastStep,
+        metadata,
+        `${id}:complete_quiz`,
+      )
+    return json({ ok: true, answers: next, complete })
+  }
   const merged = { ...(lead.quizAnswers ?? {}), [key]: answer }
   const derived = quiz.derive?.(merged) ?? {}
   await deps.repo.mergeQuizAnswers(id, { [key]: answer, ...derived })

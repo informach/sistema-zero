@@ -1,5 +1,7 @@
 ---
+import ComunidadeQuizLayout from '../../../components/funnel/ComunidadeQuizLayout.astro'
 import { getFunnel } from '../../../funnels/registry'
+import ComunidadeQuiz from '../../../islands/ComunidadeQuiz'
 import Quiz from '../../../islands/Quiz'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { funnelOgImage } from '../../../lib/seo'
@@ -29,7 +31,12 @@ const q1Images =
     : []
 ---
 
-<BaseLayout
+{quiz.presentation === 'comunidade' ? (
+  <ComunidadeQuizLayout title="Um ponto de partida para seu filho | Sistema Zero" description={f.seoDescription} imagesBase={f.imagesBase} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}>
+    <ComunidadeQuiz client:load funnel={f.key} basePath={f.basePath} imagesBase={f.imagesBase} />
+    <noscript><p class="wrap cq-panel">Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
+  </ComunidadeQuizLayout>
+) : (<BaseLayout
   title={`Quiz | ${f.productName}`}
   description={f.seoDescription}
   ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
@@ -47,4 +54,4 @@ const q1Images =
     funnel={f.key}
     donePath={donePath}
   />
-</BaseLayout>
+</BaseLayout>)}

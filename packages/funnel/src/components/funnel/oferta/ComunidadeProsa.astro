@@ -1,0 +1,24 @@
+---
+import { comDestaques } from '../../../funnels/comunidade-dos-criadores/oferta/destacar'
+import { comLinks } from '../../../funnels/comunidade-dos-criadores/oferta/links-copy'
+
+interface Props {
+  paragraphs: readonly string[]
+  /** Trechos literais da copy que ganham negrito. */
+  destaques?: readonly string[]
+  class?: string
+}
+
+const { paragraphs, destaques = [], class: classe } = Astro.props
+---
+
+{paragraphs.map((paragraph) => (
+  <p class={classe}>{comLinks(paragraph).map((parte) => parte.href ? (
+    <a class="copy-link" href={parte.href}>{parte.texto}</a>
+  ) : comDestaques(parte.texto, destaques).map((trecho) => (trecho.forte ? <strong>{trecho.texto}</strong> : trecho.texto)))}</p>
+))}
+
+<style>
+  .copy-link { color: inherit; text-decoration: underline; text-underline-offset: 0.2em; overflow-wrap: anywhere; }
+  .copy-link:hover { text-decoration-thickness: 2px; }
+</style>

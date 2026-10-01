@@ -15,9 +15,16 @@ export interface PreCheckoutModalProps {
   funnel: string
   /** Código recebido na oferta; o checkout volta a validá-lo no servidor. */
   couponCode?: string | null
+  /** Convite para continuar usando a conta que a família já conhece. */
+  continuidade?: boolean
 }
 
-export default function PreCheckoutModal({ basePath, funnel, couponCode }: PreCheckoutModalProps) {
+export default function PreCheckoutModal({
+  basePath,
+  funnel,
+  couponCode,
+  continuidade = false,
+}: PreCheckoutModalProps) {
   const [open, setOpen] = useState(false)
   // Oferta ESCOLHIDA no CTA que abriu o modal (`data-checkout-oferta="<slug>"`,
   // opcional — usado pelos funis de assinatura pra pré-selecionar o plano no
@@ -217,8 +224,19 @@ export default function PreCheckoutModal({ basePath, funnel, couponCode }: PreCh
 
             {isKids && (
               <p className="mt-4 rounded-xl border border-cyan/30 bg-cyan/10 px-4 py-3 text-sm text-ink">
-                <strong>Estes dados são do responsável</strong> (mãe, pai ou tutor). O perfil da
-                criança (nome e idade) você cria depois, já dentro da plataforma.
+                {isCommunity && continuidade ? (
+                  <>
+                    <strong>Se sua família já tem conta, use o mesmo e-mail do responsável.</strong>{' '}
+                    Assim, o acesso continua ligado ao perfil que a criança utiliza. Se ainda não
+                    tem conta, informe os dados do responsável e siga as orientações de acesso após
+                    a contratação.
+                  </>
+                ) : (
+                  <>
+                    <strong>Estes dados são do responsável</strong> (mãe, pai ou tutor). O perfil da
+                    criança (nome e idade) você cria depois, já dentro da plataforma.
+                  </>
+                )}
               </p>
             )}
 

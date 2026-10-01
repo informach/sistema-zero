@@ -14,6 +14,19 @@ describe('isRateLimitedGetPath', () => {
     expect(isRateLimitedGetPath('/kids/estudio-completo/oferta')).toBe(true)
   })
 
+  test('as páginas secundárias da Comunidade consultam o mesmo catálogo', () => {
+    for (const profile of [
+      'criacao-de-jogos',
+      'expressao-visual',
+      'formacao-tecnologica',
+      'continuar',
+    ]) {
+      expect(isRateLimitedGetPath(`/kids/comunidade-dos-criadores/oferta/${profile}`)).toBe(true)
+      expect(isRateLimitedGetPath(`/kids/comunidade-dos-criadores/oferta/${profile}/`)).toBe(true)
+    }
+    expect(isRateLimitedGetPath('/kids/comunidade-dos-criadores/oferta/jogos/outro')).toBe(false)
+  })
+
   test('mantem admin e APIs sensiveis no teto de GET', () => {
     expect(isRateLimitedGetPath('/admin')).toBe(true)
     expect(isRateLimitedGetPath('/admin/login')).toBe(true)

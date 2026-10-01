@@ -10,5 +10,8 @@ const RATE_LIMITED_GET = new RegExp(
 )
 
 export function isRateLimitedGetPath(pathname: string): boolean {
-  return RATE_LIMITED_GET.test(pathname)
+  return (
+    RATE_LIMITED_GET.test(pathname) ||
+    /^\/kids\/comunidade-dos-criadores\/oferta\/[^/]+\/?$/.test(pathname)
+  )
 }

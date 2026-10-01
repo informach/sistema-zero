@@ -1,0 +1,1623 @@
+/*
+ * comunidade-oferta.css: o LAYOUT das ofertas da Comunidade dos Criadores (quatro perfis e a
+ * continuidade, 01/10/2026).
+ *
+ * As receitas da identidade moram em `kids-oferta.css` (`.kof-*`). Aqui fica só a composição, tudo
+ * prefixado por `.cdc` e com DOIS elos onde colide com `.theme-kids X` do `global.css` (o cabeçalho
+ * e os títulos). Nenhuma cor própria: só os aliases `--kof-*`.
+ *
+ * A página é uma sequência de CAPÍTULOS com ritmo: cada seção tem a sua cor de unidade (`.cor-*`),
+ * o seu fundo (`.fundo-*`, que nunca repete o da vizinha) e o arranjo que o conteúdo pede
+ * (`.bloco--lado`, `.bloco--largo`, `.bloco--texto`, cartas, ferramentas, trilha).
+ */
+.cdc {
+  font-family: var(--kof-corpo);
+  color: var(--kof-tinta);
+  background: var(--kof-chao);
+  overflow-x: clip;
+}
+.cdc .wrap {
+  width: min(100% - 2rem, 74rem);
+  margin-inline: auto;
+}
+.cdc .section {
+  padding-block: clamp(3.25rem, 7.5vw, 6rem);
+}
+.cdc p,
+.cdc h1,
+.cdc h2,
+.cdc h3,
+.cdc figure {
+  margin: 0;
+}
+.cdc img {
+  max-width: 100%;
+  height: auto;
+}
+.cdc .anchor-target {
+  display: block;
+  scroll-margin-top: 5.5rem;
+}
+.cdc main {
+  scroll-margin-top: 4rem;
+}
+.cdc .skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 50;
+  padding: 0.75rem 1rem;
+  border-radius: 9999px;
+  background: var(--kof-acao);
+  color: var(--kof-sobre-acao);
+  font-weight: 800;
+}
+.cdc .skip-link:focus {
+  top: 1rem;
+}
+
+/* ── Bases que as seções especializam (a tela, a legenda e o link de ampliar) ── */
+.cdc .visual {
+  min-width: 0;
+}
+.cdc figcaption {
+  display: flex;
+  gap: 0.625rem;
+  align-items: stretch;
+  margin-top: 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--kof-tinta-suave);
+}
+.cdc figcaption::before {
+  content: "";
+  flex: none;
+  width: 0.25rem;
+  border-radius: 9999px;
+  background: var(--cor, var(--kof-acao));
+}
+.cdc .quadro-link {
+  display: block;
+  border-radius: var(--kof-raio-tela);
+  color: inherit;
+  text-decoration: none;
+  cursor: zoom-in;
+}
+.cdc .quadro-link:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 4px;
+}
+
+/* ── A cor de unidade de cada capítulo ───────────────────────────────────────── */
+.cdc .cor-azul {
+  --cor: var(--kof-azul);
+  --cor-fundo: var(--kof-azul-fundo);
+}
+.cdc .cor-rosa {
+  --cor: var(--kof-rosa);
+  --cor-fundo: var(--kof-rosa-fundo);
+}
+.cdc .cor-verde {
+  --cor: var(--kof-verde);
+  --cor-fundo: var(--kof-menta);
+}
+.cdc .cor-roxo {
+  --cor: var(--kof-roxo);
+  --cor-fundo: var(--kof-lilas);
+}
+.cdc .cor-laranja {
+  --cor: var(--kof-laranja);
+  --cor-fundo: var(--kof-amarelo-fundo);
+}
+
+/* ── O fundo de cada capítulo: chão, chão-alt, folha branca e a banda navy ───── */
+.cdc .fundo-alt {
+  background: var(--kof-chao-alt);
+}
+.cdc .fundo-folha {
+  padding-block: clamp(0.75rem, 2vw, 1.5rem);
+}
+.cdc .fundo-folha > .folha {
+  width: min(100% - 1.5rem, 84rem);
+  margin-inline: auto;
+  padding-block: clamp(2.75rem, 6vw, 5rem);
+  border-radius: clamp(28px, 4vw, 44px);
+  background: var(--kof-carta);
+  box-shadow: 0 0 0 1px var(--kof-linha);
+}
+.cdc .capitulo {
+  scroll-margin-top: 4.5rem;
+}
+
+/* Topo navy (vence o `.theme-kids header` do global.css, que pinta o chão claro com borda) */
+.cdc .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--kof-navy);
+  color: var(--kof-carta);
+  border-bottom: 0;
+}
+.cdc .nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 4rem;
+}
+.cdc .brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  border-radius: 0.5rem;
+}
+.cdc .nav .logo {
+  display: block;
+  width: min(279px, 100%);
+  height: auto;
+}
+.cdc .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-inline: auto 0.5rem;
+}
+.cdc .nav-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 0.875rem;
+  border-radius: 9999px;
+  color: var(--kof-navy-texto);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.cdc .nav-links a:hover {
+  background: var(--kof-navy-vidro);
+  color: var(--kof-carta);
+}
+.cdc .nav-links a:focus-visible {
+  outline: 2px solid var(--kof-carta);
+  outline-offset: 2px;
+}
+.cdc .nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.cdc .nav-preco {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--kof-navy-texto);
+  text-align: right;
+  line-height: 1.2;
+}
+.cdc .nav-preco strong {
+  display: block;
+  color: var(--kof-carta);
+  font-family: var(--kof-display);
+  font-weight: 800;
+  font-size: 1.125rem;
+}
+
+/* ── Herói ───────────────────────────────────────────────────────────────────── */
+.cdc .hero {
+  position: relative;
+  overflow: clip;
+  padding-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+.cdc .hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+  gap: clamp(2rem, 4vw, 3.5rem);
+  align-items: center;
+}
+.cdc .hero h1 {
+  font-size: clamp(2.25rem, 4.2vw, 3.375rem);
+  margin: 1.125rem 0 1rem;
+}
+.cdc .hero h1 em {
+  white-space: normal;
+}
+/* Ênfase curta inteira numa linha: o título encolhe só até ela caber na coluna (`--enfase-em` é a
+ * largura da frase em em, vinda de `arte.ts`). Sem unidades de contêiner, fica a quebra comum. */
+@supports (width: 1cqi) {
+  .cdc .hero-copy {
+    container-type: inline-size;
+  }
+  .cdc .hero h1.enfase-junta {
+    font-size: min(clamp(2.25rem, 4.2vw, 3.375rem), calc(100cqi / var(--enfase-em)));
+  }
+  .cdc .hero h1.enfase-junta em {
+    white-space: nowrap;
+  }
+}
+.cdc .hero .kof-lead {
+  max-width: 34rem;
+}
+.cdc .hero-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.cdc .hero-benefits li {
+  display: flex;
+  gap: 0.875rem;
+  align-items: flex-start;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.5;
+  max-width: 34rem;
+}
+.cdc .hero-benefits .kof-ladrilho {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  margin-top: 0.05rem;
+}
+.cdc .hero-benefits .kof-ladrilho .material-symbols-rounded {
+  font-size: 1.25rem;
+}
+.cdc .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  margin-top: 1.75rem;
+}
+.cdc .requirements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-top: 1.25rem;
+}
+.cdc .hero-visual {
+  position: relative;
+}
+.cdc .hero-stage {
+  position: relative;
+  padding: clamp(1.25rem, 2.4vw, 2rem);
+  margin-top: 2rem;
+}
+.cdc .hero-figura {
+  margin: 0 4.75rem 0 0;
+}
+.cdc .hero-figura img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top;
+}
+.cdc .hero-figura figcaption {
+  margin: 1rem 3.5rem 0.25rem 0;
+  color: var(--kof-sobre-acao);
+}
+.cdc .hero-figura figcaption::before {
+  background: var(--kof-amarelo);
+}
+.cdc .hero-stage .quadro-link:focus-visible {
+  outline-color: var(--kof-carta);
+}
+.cdc .hero-stage .dede {
+  position: absolute;
+  right: -0.75rem;
+  bottom: 0;
+  width: 8.5rem;
+  filter: drop-shadow(0 10px 14px color-mix(in oklab, var(--kof-navy) 35%, transparent));
+  pointer-events: none;
+}
+.cdc .hero-stage .zappy {
+  position: absolute;
+  top: -2.75rem;
+  left: -1.25rem;
+  z-index: 1;
+  width: 5.75rem;
+  filter: drop-shadow(0 8px 12px color-mix(in oklab, var(--kof-navy) 30%, transparent));
+  pointer-events: none;
+}
+.cdc .flutua {
+  position: absolute;
+  box-shadow: 0 8px 20px color-mix(in oklab, var(--kof-navy) 22%, transparent);
+}
+.cdc .flutua--1 {
+  top: -1.125rem;
+  right: 7.5rem;
+}
+.cdc .flutua--2 {
+  bottom: -1.125rem;
+  left: 1.5rem;
+}
+.cdc .decor-1 {
+  top: -1.5rem;
+  right: -1rem;
+  font-size: 2rem;
+}
+.cdc .decor-2 {
+  bottom: -1.25rem;
+  left: 46%;
+  font-size: 1.25rem;
+}
+.cdc .decor-3 {
+  top: 40%;
+  left: -2.25rem;
+  font-size: 1.5rem;
+}
+
+/* ── A faixa "Por dentro da Comunidade": uma tela de cada área ───────────────── */
+.cdc .tour {
+  padding-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+.cdc .tour-titulo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+.cdc .tour-titulo::before,
+.cdc .tour-titulo::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  border-radius: 9999px;
+  background: var(--kof-linha);
+}
+.cdc .tour-faixa {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem 0.875rem;
+}
+.cdc .tour-item a {
+  display: block;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+  text-decoration: none;
+  box-shadow:
+    0 0 0 2px var(--kof-linha),
+    0 4px 0 2px var(--kof-carta-degrau);
+  translate: 0 0;
+  transition:
+    translate 0.12s ease,
+    box-shadow 0.12s ease;
+}
+.cdc .tour-item a:hover {
+  translate: 0 -2px;
+  box-shadow:
+    0 0 0 2px var(--kof-acao),
+    0 6px 0 2px var(--kof-carta-degrau);
+}
+.cdc .tour-item a:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 3px;
+}
+.cdc .tour-item img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top left;
+  border-bottom: 1px solid var(--kof-linha);
+}
+.cdc .tour-nome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--kof-display);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  line-height: 1.2;
+}
+.cdc .tour-resumo {
+  display: block;
+  padding: 0 0.75rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--kof-tinta-suave);
+}
+.cdc .tour-item a {
+  height: 100%;
+}
+.cdc .tour-nome {
+  padding-bottom: 0.25rem;
+}
+.cdc .tour-lupa {
+  font-size: 1.125rem;
+  color: var(--kof-acao);
+}
+
+/* ── Cabeçalho de capítulo: o chip da cor, o título e a abertura ─────────────── */
+.cdc .cap-head {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  max-width: 50rem;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+.cdc .cap-head h2 {
+  font-size: clamp(1.875rem, 3.6vw, 2.875rem);
+}
+.cdc .cap-head--centro {
+  justify-items: center;
+  margin-inline: auto;
+  text-align: center;
+}
+.cdc .cap-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.25rem;
+  padding: 0.25rem 0.875rem 0.25rem 0.375rem;
+  border-radius: 9999px;
+  background: var(--cor-fundo);
+  color: var(--kof-tinta);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.cdc .cap-chip-icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: 9999px;
+  background: var(--cor);
+  color: var(--kof-sobre-acao);
+  font-size: 1rem;
+}
+.cdc .cap-lead {
+  max-width: 46rem;
+  font-size: clamp(1.1875rem, 1.7vw, 1.375rem);
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--kof-tinta);
+  text-wrap: pretty;
+}
+
+/* ── Leitura: coluna curta, entrelinha folgada e o marca-texto nas frases-chave ─ */
+.cdc .prosa {
+  display: grid;
+  gap: 1.125rem;
+  align-content: start;
+}
+.cdc .prosa p,
+.cdc .resposta-texto p {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--kof-tinta-suave);
+  text-wrap: pretty;
+}
+.cdc .prosa p {
+  max-width: 38rem;
+}
+.cdc .prosa strong {
+  font-weight: 800;
+  color: var(--kof-tinta);
+  background: linear-gradient(
+    transparent 62%,
+    color-mix(in oklab, var(--kof-amarelo) 55%, transparent) 62%
+  );
+}
+.cdc .prosa--colunas {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+  gap: 1.25rem clamp(1.5rem, 3vw, 2.75rem);
+}
+.cdc .prosa--colunas p {
+  max-width: none;
+}
+/* Quatro parágrafos ficam dois a dois: em três colunas o quarto caía sozinho na linha de baixo. */
+.cdc .prosa--colunas:has(> p:nth-child(4):last-child) {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+}
+.cdc .sub-head {
+  display: flex;
+  gap: 0.875rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.cdc .sub-head h3 {
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+}
+
+/* ── Blocos do capítulo ──────────────────────────────────────────────────────── */
+.cdc .bloco {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+.cdc .cap-head + .bloco,
+.cdc .trilha + .bloco {
+  margin-top: 0;
+}
+.cdc .bloco--lado {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: start;
+}
+.cdc .bloco--lado.inverso {
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+}
+.cdc .bloco--lado.inverso > .bloco-texto {
+  order: 2;
+}
+/* Tela quase quadrada: as colunas trocam de peso, senão ela cresce mais que o texto que acompanha. */
+@media (min-width: 961px) {
+  .cdc .bloco--lado:has(.visual--estreita) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+  .cdc .bloco--lado.inverso:has(.visual--estreita) {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+}
+.cdc .bloco--lado .visual--estreita {
+  max-width: 26rem;
+  margin-inline: auto;
+}
+/* Um parágrafo só ao lado da tela fica no meio da altura dela, e não pendurado no alto. */
+.cdc .bloco--lado:has(.prosa > p:only-child) {
+  align-items: center;
+}
+.cdc .bloco--largo {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+}
+.cdc .bloco--largo .bloco-visuais {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+.cdc .bloco--largo .bloco-visuais > .visual {
+  flex: var(--quadros, 1) 1 0;
+}
+.cdc .bloco--texto.kof-carta {
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+}
+.cdc .section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+/* ── Comparação: o que a família já tem → o que a assinatura acrescenta ──────── */
+/* Cada linha é um PAR numa carta só: a metade neutra, a seta na emenda e a metade na cor do
+ * capítulo. Sem grade nem fio de tabela: lê-se de um lado para o outro. */
+.cdc .comparacao {
+  --comparacao-colunas: minmax(0, 5fr) minmax(0, 7fr);
+  --comparacao-respiro: clamp(1.125rem, 2.4vw, 1.75rem);
+  display: grid;
+  gap: 0.75rem;
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+.cdc .comparacao-cabeca,
+.cdc .comparacao-par {
+  display: grid;
+  grid-template-columns: var(--comparacao-colunas);
+}
+.cdc .comparacao-titulo,
+.cdc .comparacao-rotulo {
+  font-family: var(--kof-display);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--kof-tinta-suave);
+}
+.cdc .comparacao-titulo {
+  padding: 0 var(--comparacao-respiro) 0.25rem;
+}
+.cdc .comparacao-titulo--depois,
+.cdc .comparacao-celula--depois .comparacao-rotulo {
+  color: var(--kof-tinta);
+}
+.cdc .comparacao-par {
+  overflow: hidden;
+}
+.cdc .comparacao-celula {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.5rem 0.875rem;
+  align-content: center;
+  align-items: start;
+  padding: var(--comparacao-respiro);
+}
+.cdc .comparacao-celula p {
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--kof-tinta-suave);
+  text-wrap: pretty;
+}
+.cdc .comparacao-rotulo {
+  display: none;
+  grid-column: 1 / -1;
+}
+.cdc .comparacao-marca {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  background: var(--kof-sup2);
+  color: var(--kof-tinta-suave);
+}
+.cdc .comparacao-icone {
+  font-size: 1.125rem;
+}
+.cdc .comparacao-celula--depois {
+  background: var(--cor-fundo);
+}
+.cdc .comparacao-celula--depois p {
+  font-weight: 700;
+  color: var(--kof-tinta);
+}
+.cdc .comparacao-celula--depois .comparacao-marca {
+  background: var(--cor);
+  color: var(--kof-sobre-acao);
+}
+/* A seta na emenda das duas metades (a mesma dos passos de uma sequência de telas). */
+.cdc .comparacao-celula--depois::before {
+  content: "arrow_forward";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background: var(--kof-amarelo);
+  color: var(--kof-tinta);
+  font-family: "Material Symbols Rounded", sans-serif;
+  font-size: 1.125rem;
+  line-height: 1;
+  box-shadow: 0 0 0 3px var(--kof-carta);
+}
+@media (min-width: 761px) {
+  .cdc .comparacao-titulo--depois,
+  .cdc .comparacao-celula--depois {
+    padding-left: calc(var(--comparacao-respiro) + 0.75rem);
+  }
+}
+.cdc .comparacao + .bloco {
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+/* ── Situações: uma carta por ponto do percurso, ligadas pela linha ──────────── */
+.cdc .situacoes {
+  --situacao-respiro: clamp(1.25rem, 3vw, 2.25rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1.25rem;
+}
+.cdc .situacao {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  gap: clamp(0.875rem, 2vw, 1.5rem);
+  align-items: start;
+}
+.cdc .situacao-marco {
+  position: relative;
+  z-index: 1;
+  width: 3.5rem;
+  height: 3.5rem;
+  /* O marco fica na altura do título da carta. */
+  margin-top: calc(var(--situacao-respiro) - 0.75rem);
+  border-radius: 16px;
+  background: var(--cor);
+}
+/* A linha sai do marco e chega ao marco da situação seguinte. */
+.cdc .situacao:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--situacao-respiro) + 2.75rem + 0.375rem);
+  bottom: calc(-0.5rem - var(--situacao-respiro) + 0.375rem);
+  left: calc(1.75rem - 2px);
+  width: 4px;
+  border-radius: 9999px;
+  background: var(--kof-linha);
+}
+.cdc .situacao-carta {
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  gap: clamp(1.5rem, 3vw, 2.75rem);
+  align-items: start;
+  padding: var(--situacao-respiro);
+}
+.cdc .situacao-carta:not(:has(.visual)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+/* Na folha branca a carta branca sumiria: ali ela é um painel na cor do chão. */
+.cdc .fundo-folha .situacao-carta {
+  background: var(--kof-chao);
+  box-shadow: none;
+}
+.cdc .situacao-texto h3 {
+  margin-bottom: 0.875rem;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+}
+
+/* ── A tela: palco da cor do capítulo, janela, tira de passos e legenda ──────── */
+.cdc .capitulo,
+.cdc .carta-interesse,
+.cdc .ferramenta,
+.cdc .situacao {
+  --kof-palco-fundo: var(--cor-fundo);
+}
+.cdc .tira {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: clamp(0.75rem, 1.6vw, 1.25rem);
+  align-items: start;
+}
+.cdc .quadro {
+  position: relative;
+  min-width: 0;
+}
+.cdc .quadro-link .kof-tela {
+  transition: translate 0.15s ease;
+  translate: 0 0;
+}
+.cdc .quadro-link:hover .kof-tela {
+  translate: 0 -3px;
+}
+.cdc .quadro-lupa {
+  margin-left: auto;
+  font-size: 1rem;
+  color: var(--kof-tinta-suave);
+}
+.cdc .kof-tela__url {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cdc .quadro-num {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-right: 0.375rem;
+  border-radius: 9999px;
+  background: var(--kof-acao);
+  color: var(--kof-sobre-acao);
+  font-size: 0.6875rem;
+  font-weight: 800;
+}
+/* Lado a lado, toda tela tem a mesma moldura 16:10; o recorte de um diálogo cabe inteiro nela. */
+.cdc .visual--tira .quadro img,
+.cdc .bloco--largo .quadro img {
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top;
+}
+.cdc .visual--tira .quadro img.quadro-recorte,
+.cdc .bloco--largo .quadro img.quadro-recorte {
+  object-fit: contain;
+  object-position: center;
+  background: var(--kof-sup2);
+}
+/* A seta entre dois passos da mesma sequência. */
+.cdc .visual--passos .quadro + .quadro::before {
+  content: "arrow_forward";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 1;
+  translate: calc(-50% - clamp(0.375rem, 0.8vw, 0.625rem)) -50%;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background: var(--kof-amarelo);
+  color: var(--kof-tinta);
+  font-family: "Material Symbols Rounded", sans-serif;
+  font-size: 1.125rem;
+  line-height: 1;
+  box-shadow: 0 0 0 3px var(--kof-carta);
+}
+@media (min-width: 961px) {
+  .cdc .prosa p,
+  .cdc .resposta-texto p {
+    font-size: 1.125rem;
+  }
+  .cdc .bloco--lado > .bloco-visuais {
+    position: sticky;
+    top: 5.5rem;
+  }
+}
+
+/* ── Cartas de interesse (três colunas, a tela em cima) ──────────────────────── */
+.cdc .cartas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+}
+.cdc .carta-interesse {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.cdc .carta-interesse > .visual {
+  padding: 1rem 1rem 0.875rem;
+  background: var(--cor-fundo);
+}
+.cdc .carta-corpo {
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+  padding: 1.5rem;
+}
+.cdc .carta-interesse .kof-ladrilho,
+.cdc .ferramenta .kof-ladrilho {
+  background: var(--cor);
+}
+.cdc .carta-interesse .prosa p {
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+/* ── Ferramentas (página D): uma carta larga por ferramenta ──────────────────── */
+.cdc .ferramentas {
+  display: grid;
+  gap: 1.25rem;
+}
+.cdc .ferramenta {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: clamp(1.5rem, 3vw, 3rem);
+  align-items: center;
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+}
+.cdc .ferramenta.inverso {
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+}
+.cdc .ferramenta.inverso > .ferramenta-texto {
+  order: 2;
+}
+.cdc .ferramenta:not(:has(.visual)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ── A trilha da Jornada: os oito postos e o que cada um libera ──────────────── */
+.cdc .trilha {
+  list-style: none;
+  margin: 0 0 clamp(2rem, 4vw, 3rem);
+  padding: 1.5rem 1rem 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.5rem;
+  border-radius: var(--kof-raio-carta);
+  background: var(--kof-carta);
+  box-shadow: 0 0 0 1px var(--kof-linha);
+}
+.cdc .trilha-posto {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 0.5rem;
+  text-align: center;
+}
+.cdc .trilha-posto + .trilha-posto::before {
+  content: "";
+  position: absolute;
+  top: 2.125rem;
+  right: calc(50% + 2.5rem);
+  width: calc(100% - 4.5rem);
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--kof-linha);
+}
+.cdc .trilha-foto {
+  position: relative;
+  display: block;
+  width: 4.5rem;
+}
+.cdc .trilha-foto img {
+  display: block;
+  width: 100%;
+  border-radius: 9999px;
+  background: var(--kof-azul-fundo);
+  box-shadow: 0 0 0 3px var(--kof-linha);
+}
+.cdc .trilha-posto--libera .trilha-foto img {
+  box-shadow: 0 0 0 3px var(--kof-acao);
+}
+.cdc .trilha-num {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background: var(--kof-amarelo);
+  color: var(--kof-tinta);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+.cdc .trilha-nome {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--kof-tinta);
+  text-wrap: balance;
+}
+.cdc .trilha-libera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  justify-content: center;
+}
+.cdc .trilha-chip {
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  background: var(--kof-azul-fundo);
+  color: var(--kof-tinta);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+/* Dentro da folha branca a carta e a trilha ganham o chão: branco sobre branco some. */
+.cdc .fundo-folha .kof-carta,
+.cdc .fundo-folha .trilha {
+  background: var(--kof-chao);
+}
+
+/* ── Bandas navy (a experiência reunida e o convite) ─────────────────────────── */
+.cdc .kof-banda {
+  --kof-palco-fundo: var(--kof-navy-vidro);
+  overflow: clip;
+}
+.cdc .kof-banda .cap-head {
+  justify-items: center;
+  margin-inline: auto;
+  text-align: center;
+}
+.cdc .kof-banda .cap-lead {
+  color: var(--kof-carta);
+}
+.cdc .kof-banda .prosa p {
+  color: var(--kof-navy-texto);
+}
+.cdc .kof-banda .prosa strong {
+  color: var(--kof-carta);
+  background: none;
+}
+.cdc .kof-banda figcaption {
+  color: var(--kof-navy-texto);
+}
+.cdc .kof-banda figcaption::before {
+  background: var(--kof-amarelo);
+}
+.cdc .kof-banda .visual--passos .quadro + .quadro::before {
+  box-shadow: 0 0 0 3px var(--kof-navy);
+}
+.cdc .convite-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 3rem;
+  align-items: center;
+}
+.cdc .convite-copy {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+}
+.cdc .convite h2 {
+  font-size: clamp(1.875rem, 3.6vw, 2.875rem);
+}
+.cdc .convite-copy .kof-btn {
+  margin-top: 0.75rem;
+}
+.cdc .convite-arte img {
+  display: block;
+  width: min(100%, 30rem);
+  margin-inline: auto;
+  filter: drop-shadow(0 16px 24px color-mix(in oklab, var(--kof-navy) 60%, transparent));
+}
+.cdc .convite-arte figcaption {
+  justify-content: center;
+  text-align: center;
+}
+.cdc .convite-arte figcaption::before {
+  display: none;
+}
+.cdc .decor-a {
+  top: -1.5rem;
+  right: 0;
+  font-size: 1.75rem;
+}
+
+/* ── Origem: a foto no palco da marca, o texto ao lado ───────────────────────── */
+.cdc .origem-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+}
+.cdc .origem-texto .cap-head {
+  margin-bottom: 1.5rem;
+}
+.cdc .family-palco {
+  position: relative;
+  padding: 1.5rem 1.5rem 0;
+  overflow: visible;
+}
+.cdc .family-palco img {
+  display: block;
+  width: 100%;
+  -webkit-mask-image: linear-gradient(to bottom, var(--kof-tinta) 88%, transparent);
+  mask-image: linear-gradient(to bottom, var(--kof-tinta) 88%, transparent);
+}
+.cdc .family-photo figcaption {
+  justify-content: center;
+  text-align: center;
+}
+.cdc .family-photo figcaption::before {
+  display: none;
+}
+
+/* ── Planos ──────────────────────────────────────────────────────────────────── */
+.cdc .planos .cap-head {
+  margin-bottom: 1.25rem;
+}
+.cdc .value-story {
+  justify-items: center;
+  margin: 0 auto clamp(2rem, 4vw, 3rem);
+  text-align: center;
+}
+.cdc .value-story p {
+  max-width: 46rem;
+}
+.cdc .planos-visual {
+  max-width: 40rem;
+  margin: 0 auto clamp(2rem, 4vw, 3rem);
+}
+.cdc .plans {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  align-items: stretch;
+  max-width: 56rem;
+  margin-inline: auto;
+  scroll-margin-top: 5.5rem;
+}
+.cdc .plan {
+  position: relative;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+.cdc .plan h3 {
+  font-family: var(--kof-display);
+  font-weight: 800;
+  font-size: 1.5rem;
+}
+.cdc .plan .price {
+  color: var(--kof-tinta);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-family: var(--kof-display);
+  font-weight: 800;
+  font-size: clamp(2.5rem, 5vw, 3.25rem);
+  line-height: 1;
+}
+.cdc .plan .price span {
+  font-family: var(--kof-corpo);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--kof-tinta-suave);
+}
+.cdc .plan p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--kof-tinta-suave);
+}
+.cdc .plan .kof-btn {
+  margin-top: auto;
+}
+.cdc .plan .saving {
+  position: absolute;
+  top: -0.9375rem;
+  left: 50%;
+  translate: -50% 0;
+  width: max-content;
+  max-width: calc(100% - 2rem);
+  white-space: normal;
+  text-align: center;
+  line-height: 1.2;
+  padding-block: 0.25rem;
+}
+.cdc .plan.annual {
+  padding-top: 2.75rem;
+}
+.cdc .plan.annual.kof-marca .price span,
+.cdc .plan.annual.kof-marca p {
+  color: var(--kof-sobre-acao-suave);
+}
+.cdc .plan.annual.kof-marca p.price {
+  color: var(--kof-sobre-acao);
+}
+.cdc .guarantee {
+  display: grid;
+  gap: 1rem;
+  max-width: 56rem;
+  margin: 1.5rem auto 0;
+  padding: clamp(1.5rem, 3vw, 2rem);
+}
+.cdc .guarantee-head {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.cdc .guarantee h3 {
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+}
+.cdc .guarantee-texto {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 1rem 1.75rem;
+}
+.cdc .guarantee p {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--kof-tinta-suave);
+}
+.cdc .checkout-note {
+  max-width: 56rem;
+  margin: 1rem auto 0;
+  padding: 1.25rem 1.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--kof-tinta-suave);
+  text-align: center;
+}
+
+/* ── Dúvidas: os assuntos fixos ao lado, as perguntas em cartas ──────────────── */
+.cdc .duvidas-grid {
+  display: grid;
+  grid-template-columns: 17rem minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: start;
+}
+.cdc .faq-nav-area {
+  position: sticky;
+  top: 5.5rem;
+}
+.cdc .faq-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.cdc .faq-nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.25rem;
+  padding: 0.5rem 0.875rem 0.5rem 0.5rem;
+  border-radius: 16px;
+  background: var(--kof-carta);
+  box-shadow: 0 0 0 1px var(--kof-linha);
+  color: var(--kof-tinta);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-decoration: none;
+}
+.cdc .faq-nav a:hover {
+  background: var(--kof-azul-fundo);
+}
+.cdc .faq-nav a:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 3px;
+}
+.cdc .faq-nav .kof-ladrilho,
+.cdc .faq-group h3 .kof-ladrilho {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+}
+.cdc .faq-nav .kof-ladrilho .material-symbols-rounded,
+.cdc .faq-group h3 .kof-ladrilho .material-symbols-rounded {
+  font-size: 1.25rem;
+}
+.cdc .faq {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3rem);
+  min-width: 0;
+}
+.cdc .faq-group {
+  scroll-margin-top: 5.5rem;
+}
+.cdc .faq-group h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+}
+.cdc .faq-group details {
+  margin-bottom: 0.75rem;
+  padding: 0 1.5rem;
+  scroll-margin-top: 5.5rem;
+}
+.cdc .faq summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.75rem;
+  padding: 0.875rem 0;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--kof-display);
+  font-weight: 800;
+  font-size: 1.125rem;
+  line-height: 1.3;
+}
+.cdc .faq summary::-webkit-details-marker {
+  display: none;
+}
+.cdc .faq-seta {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background: var(--kof-azul-fundo);
+  color: var(--kof-acao);
+  transition: rotate 0.2s ease;
+}
+.cdc .faq details[open] .faq-seta {
+  rotate: 180deg;
+}
+.cdc .faq summary:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 4px;
+  border-radius: 0.75rem;
+}
+.cdc .resposta {
+  display: grid;
+  gap: 1.25rem;
+  padding: 0.25rem 0 1.5rem;
+}
+.cdc .resposta-texto {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+.cdc .resposta-texto p {
+  max-width: 42rem;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+.cdc .resposta-visuais {
+  display: grid;
+  gap: 1.25rem;
+  align-content: start;
+}
+/* Dentro da resposta a sequência empilha: em linha as telas ficariam miúdas. */
+.cdc .resposta-visuais .tira {
+  grid-auto-flow: row;
+}
+.cdc .resposta-visuais .quadro + .quadro::before {
+  display: none;
+}
+.cdc .resposta-visuais figcaption {
+  font-size: 0.875rem;
+}
+@media (min-width: 1100px) {
+  .cdc .resposta--visual {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+    gap: 2rem;
+  }
+}
+
+/* ── Ampliar a tela ──────────────────────────────────────────────────────────── */
+/* ⚠️ `margin: auto` é o que centra o <dialog>: o reset do Tailwind zera a margem e ele ia para o canto. */
+.cdc .zoom {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: fit-content;
+  height: fit-content;
+  max-width: min(94vw, 100rem);
+  max-height: 92vh;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: var(--kof-carta);
+  overflow: visible;
+}
+.cdc .zoom::backdrop {
+  background: color-mix(in oklab, var(--kof-navy) 84%, transparent);
+}
+.cdc .zoom img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(94vw, 100rem);
+  max-height: 92vh;
+  border-radius: 16px;
+}
+.cdc .zoom-fechar {
+  position: absolute;
+  top: -0.875rem;
+  right: -0.875rem;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+  cursor: pointer;
+  box-shadow:
+    0 0 0 2px var(--kof-linha),
+    0 4px 0 2px var(--kof-carta-degrau);
+}
+.cdc .zoom-fechar:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 3px;
+}
+
+/* ── Larguras menores ────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .cdc .nav-links {
+    display: none;
+  }
+  .cdc .duvidas-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cdc .faq-nav-area {
+    position: static;
+  }
+  .cdc .faq-nav {
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding: 0.25rem 0.25rem 0.75rem;
+    margin-inline: -0.25rem;
+    scrollbar-width: thin;
+  }
+}
+@media (max-width: 960px) {
+  .cdc .hero-grid,
+  .cdc .bloco--lado,
+  .cdc .bloco--lado.inverso,
+  .cdc .convite-grid,
+  .cdc .origem-grid,
+  .cdc .ferramenta,
+  .cdc .ferramenta.inverso {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+  .cdc .bloco--lado.inverso > .bloco-texto,
+  .cdc .ferramenta.inverso > .ferramenta-texto {
+    order: 0;
+  }
+  .cdc .situacao-carta {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cdc .cartas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cdc .carta-interesse {
+    max-width: 40rem;
+  }
+  .cdc .tour-faixa {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .cdc .family-photo {
+    max-width: 26rem;
+    margin-inline: auto;
+  }
+  .cdc .hero-stage .dede {
+    width: 7.5rem;
+  }
+}
+@media (max-width: 760px) {
+  .cdc .nav-right {
+    display: none;
+  }
+  .cdc .section {
+    padding-block: 2.75rem;
+  }
+  .cdc .fundo-folha {
+    padding-block: 0.5rem;
+  }
+  .cdc .fundo-folha > .folha {
+    width: min(100% - 1rem, 84rem);
+    padding-block: 2.5rem;
+  }
+  .cdc .hero-stage {
+    padding: 1.25rem 1rem;
+  }
+  .cdc .hero-figura {
+    margin-right: 3rem;
+  }
+  .cdc .hero-figura figcaption {
+    margin-right: 2.5rem;
+  }
+  .cdc .hero-stage .dede {
+    width: 5.5rem;
+    right: -0.25rem;
+  }
+  .cdc .hero-stage .zappy {
+    width: 4.25rem;
+    top: -2rem;
+    left: -0.5rem;
+  }
+  .cdc .flutua--1 {
+    right: 5rem;
+  }
+  .cdc .flutua--2 {
+    left: 0.75rem;
+  }
+  .cdc .decor-3 {
+    display: none;
+  }
+  /* No celular a faixa de áreas, a tira de passos e a trilha ROLAM de lado: em pilha ficariam longas
+   * e, em colunas, miúdas demais para ler. */
+  .cdc .tour-faixa {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 62%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    padding: 0.25rem 0.25rem 0.75rem;
+    margin-inline: -0.25rem;
+    scrollbar-width: thin;
+  }
+  .cdc .tour-item {
+    scroll-snap-align: start;
+  }
+  .cdc .bloco--largo .bloco-visuais {
+    flex-direction: column;
+  }
+  .cdc .bloco--largo .bloco-visuais > .visual {
+    flex: none;
+    width: 100%;
+  }
+  .cdc .visual--tira .tira {
+    grid-auto-columns: 86%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+  }
+  .cdc .visual--tira .quadro {
+    scroll-snap-align: center;
+  }
+  .cdc .resposta-visuais .tira {
+    grid-auto-columns: auto;
+    overflow-x: visible;
+  }
+  .cdc .visual--passos .quadro + .quadro::before {
+    display: none;
+  }
+  .cdc .trilha {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 6.25rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    padding: 1.25rem 0.75rem 1rem;
+  }
+  .cdc .trilha-posto {
+    scroll-snap-align: start;
+  }
+  /* No celular o par empilha: o rótulo de cada coluna entra na carta e a seta aponta para baixo. */
+  .cdc .comparacao-cabeca {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .cdc .comparacao-par {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cdc .comparacao-rotulo {
+    display: block;
+  }
+  .cdc .comparacao-celula--depois {
+    padding-top: calc(var(--comparacao-respiro) + 0.75rem);
+  }
+  .cdc .comparacao-celula--depois::before {
+    content: "arrow_downward";
+    top: 0;
+    left: 50%;
+  }
+  /* A linha do percurso sai; o marco vira um selo no canto da carta. */
+  .cdc .situacoes {
+    gap: 2rem;
+  }
+  .cdc .situacao {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cdc .situacao:not(:last-child)::after {
+    display: none;
+  }
+  .cdc .situacao-marco {
+    position: absolute;
+    top: -0.875rem;
+    left: 1rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-top: 0;
+    border-radius: 12px;
+  }
+  .cdc .situacao-carta {
+    padding-top: 2.5rem;
+  }
+  .cdc .plans {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cdc .plan.annual {
+    order: -1;
+  }
+  .cdc .guarantee,
+  .cdc .checkout-note {
+    padding: 1.25rem;
+  }
+  .cdc .faq-group details {
+    padding-inline: 1.125rem;
+  }
+  .cdc .faq summary {
+    font-size: 1.0625rem;
+  }
+  .cdc .carta-corpo {
+    padding: 1.25rem;
+  }
+  .cdc .zoom-fechar {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+}

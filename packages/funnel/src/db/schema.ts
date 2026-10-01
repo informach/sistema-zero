@@ -9,6 +9,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core'
 import type { LeadAttributionV1 } from '../lib/lead-attribution'
+import type { QuizAnswers } from '../lib/quiz-types'
 
 // Este package compartilha o MESMO Postgres do payments, mas é dono do schema
 // `funil` (isolamento por `pgSchema`). O DDL gerado fica todo em `funil.*`.
@@ -33,7 +34,7 @@ export const leads = funil.table(
     // Respostas do quiz em JSON (chave snake_case → valor): GENÉRICO p/ cada funil ter
     // o seu próprio quiz (perguntas diferentes). A validação por chave e o cálculo de
     // derivados (ex.: custo_mensal) + o perfil vivem no módulo do funil (src/funnels).
-    quizAnswers: jsonb('quiz_answers').$type<Record<string, string | number>>(),
+    quizAnswers: jsonb('quiz_answers').$type<QuizAnswers>(),
     // Perfil/diagnóstico vencedor (string por funil), calculado ao concluir o quiz.
     // Mantido como coluna: a aba Perfis do /admin agrega por ele.
     perfilResultado: text('perfil_resultado'),

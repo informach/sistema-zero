@@ -1,6 +1,6 @@
 /**
  * O CSS da oferta da Comunidade só fala por TOKENS (30/09/2026): nenhuma cor própria nas receitas
- * (`src/styles/kids-oferta.css`) nem no layout do body. A paleta muda na fonte canônica
+ * (`src/styles/kids-oferta.css`) nem no layout (`src/styles/comunidade-oferta.css`). A paleta muda na fonte canônica
  * (`packages/ui/src/tokens`) e chega aqui sozinha. O que este teste trava é o que já apodreceu
  * noutros consumidores: hexadecimal solto, `color-mix` fora do `oklab` (em `oklch` um cinza vira
  * rosa), `!important`, e receitas fora do namespace.
@@ -15,10 +15,8 @@ const body = readFileSync(
   join(SRC, 'components', 'funnel', 'oferta', 'ComunidadeOfertaBody.astro'),
   'utf8',
 )
-const layoutCss = body.slice(
-  body.indexOf('<style is:global>') + '<style is:global>'.length,
-  body.indexOf('</style>'),
-)
+// O layout saiu do <style> do body para um arquivo próprio (01/10/2026): continua prefixado por `.cdc`.
+const layoutCss = readFileSync(join(SRC, 'styles', 'comunidade-oferta.css'), 'utf8')
 const semComentarios = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '')
 
 describe('Comunidade: o CSS da oferta só fala por tokens', () => {
@@ -69,6 +67,16 @@ describe('Comunidade: o CSS da oferta só fala por tokens', () => {
 
   test('o body importa as receitas e o layout carrega a Baloo 800 (os títulos são 800)', () => {
     expect(body).toContain("import '../../../styles/kids-oferta.css'")
+    expect(body).toContain("import '../../../styles/comunidade-oferta.css'")
+    expect(body).not.toContain('<style')
+    // A comparação de acessos é desenhada no layout (par de cartas, por token), sem CSS próprio.
+    const comparacao = readFileSync(
+      join(SRC, 'components', 'funnel', 'oferta', 'ComunidadeComparacao.astro'),
+      'utf8',
+    )
+    expect(comparacao).not.toContain('<style')
+    expect(comparacao).toContain('role="table"')
+    expect(layoutCss).toContain('.cdc .comparacao-par')
     expect(readFileSync(join(SRC, 'layouts', 'BaseLayout.astro'), 'utf8')).toContain(
       "import '@fontsource/baloo-2/latin-800.css'",
     )

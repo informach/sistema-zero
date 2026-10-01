@@ -1,6 +1,5 @@
 // Funil "Comunidade dos Criadores" (kids, /kids/comunidade-dos-criadores) — a
-// ASSINATURA da plataforma inteira (mensal R$ 97 / anual R$ 797). SEM quiz: o
-// funil é oferta → checkout → obrigado (quiz/resultado dão 404 pelos steps).
+// ASSINATURA da plataforma inteira, com quiz opcional de orientação familiar.
 // A oferta tem layout PRÓPRIO (ComunidadeOfertaBody) → `content.sales` ausente
 // de propósito; a /oferta despacha pelo body deste funil via `f.key`.
 //
@@ -12,6 +11,10 @@
 
 import type { FunnelDef } from '../registry'
 import { COMUNIDADE_LANDING, COMUNIDADE_OBRIGADO, COMUNIDADE_PRODUTO } from './content'
+import { PAGE_A } from './oferta/tempo-de-tela'
+import { COMMUNITY_QUIZ } from './quiz'
+import { PROFILE_IDS } from './quiz/engine'
+import { PRIMARY_COPY } from './quiz/result-copy'
 
 export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   audience: 'kids',
@@ -24,18 +27,24 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   // Capa dedicada (card do checkout + og:image + JSON-LD): a arte "Corre, Dino!".
   checkoutImage: 'checkout-capa.webp',
   byline: 'Helena e Júlio · Sistema Zero',
-  seoTitle: 'Comunidade dos Criadores | Seu filho aprende a criar jogos',
-  seoDescription:
-    'Seu filho aprende a criar os próprios jogos com aulas guiadas, personagens prontos e desenhos feitos por ele. Para crianças de 9 a 14 anos, com projetos para testar e compartilhar com a família.',
+  seoTitle: PAGE_A.seoTitle,
+  seoDescription: PAGE_A.description,
   theme: 'kids',
   // Assinatura: sem o disclaimer de acesso vitalício no rodapé.
   lifetimeAccess: false,
-  steps: { quiz: false, resultado: false, upsell: false, downsell: false },
+  steps: { quiz: true, resultado: true, upsell: false, downsell: false },
   content: {
     copy: COMUNIDADE_PRODUTO,
     landing: COMUNIDADE_LANDING,
     // sem `sales`: a página de vendas tem layout próprio (ComunidadeOfertaBody.astro).
     obrigado: COMUNIDADE_OBRIGADO,
-    // sem quiz/hero/result: funil sem quiz entra direto na oferta.
+    quiz: COMMUNITY_QUIZ,
+    result: {
+      profiles: {},
+      fecho: '',
+      perfilLabels: Object.fromEntries(
+        Object.entries(PROFILE_IDS).map(([id, slug]) => [slug, PRIMARY_COPY[id]!.title]),
+      ),
+    },
   },
 }

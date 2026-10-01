@@ -1,0 +1,40 @@
+---
+import type { CommunityResult } from '../../funnels/comunidade-dos-criadores/quiz/result'
+import ComunidadeQuizFeedback from '../../islands/ComunidadeQuizFeedback'
+import ComunidadeVisual from './oferta/ComunidadeVisual.astro'
+
+interface Props {
+  result: CommunityResult
+  imagesBase: string
+  basePath: string
+  funnel: string
+  revision: number
+  sessionToken: string
+}
+const { result: r, imagesBase, basePath, funnel, revision, sessionToken } = Astro.props
+---
+<main id="quiz" class="wrap cq-result">
+  <header class="cq-result-head">
+    <span class="cq-badge">Um ponto de partida para vocês</span>
+    <h1 class="kof-display">{r.title}</h1>
+    <p class="cq-note">Esta sugestão parte do que você contou sobre este momento da família. É um convite para experimentar e conversar com seu filho.</p>
+    <div class="cq-prose">{r.reason.map(p => <p class="kof-lead">{p}</p>)}</div>
+  </header>
+  {r.conditions.length > 0 && <section class="cq-panel cq-callout cq-reading cq-result-section" aria-labelledby="requirements-title">
+    <h2 id="requirements-title" class="kof-display">{r.decision.unmet.length ? 'Antes de considerar a Comunidade' : 'O que vale conferir antes de escolher'}</h2>
+    {r.conditions.map(c => <div class="cq-prose"><h3>{c.title}</h3>{c.paragraphs.map(p => <p>{p}</p>)}</div>)}
+  </section>}
+  {r.context.length > 0 && <section class="cq-reading cq-result-section cq-prose"><h2 class="kof-display">O que você contou também importa</h2>{r.context.map(p => <p>{p}</p>)}</section>}
+  <section class="cq-panel cq-activity cq-reading cq-result-section"><span class="cq-badge">Para experimentar em casa</span><h2 class="kof-display">{r.activity.title}</h2>{r.activity.steps && <ol>{r.activity.steps.map(s => <li>{s}</li>)}</ol>}{r.activity.paragraphs.map(p => <p>{p}</p>)}</section>
+  <section class="cq-result-section">
+    <div class="cq-reading cq-prose"><h2 class="kof-display">{r.bridge?.title ?? 'Conheça a criação na Comunidade'}</h2>{r.bridge?.paragraphs.map(p => <p>{p}</p>)}</div>
+    <div class="cq-proof">{r.visuals.map(v => <ComunidadeVisual visual={v} imagesBase={imagesBase} variant="plana" />)}</div>
+    <p class="cq-reading cq-note cq-save-note">Telas reais da plataforma. Elas mostram as ferramentas e a organização das atividades.</p>
+  </section>
+  <section class="cq-result-section"><div class="cq-details">
+    <div class="cq-panel cq-prose"><h2 class="kof-display">{r.support.title}</h2>{r.support.paragraphs.map(p => <p>{p}</p>)}<ComunidadeVisual visual={r.supportVisual} imagesBase={imagesBase} variant="plana" /></div>
+    {r.doubt ? <div class="cq-panel cq-prose"><h2 class="kof-display">{r.doubt.title}</h2>{r.doubt.paragraphs.map(p => <p>{p}</p>)}</div> : <div class="cq-panel cq-prose"><h2 class="kof-display">A experiência ajuda a escolher</h2><p>Converse sobre o que ele gostou de tentar e o que precisou de ajuda para fazer. Vocês podem ajustar o ponto de partida sem transformar essa primeira experiência numa cobrança por resultado.</p></div>}
+  </div></section>
+  <section class="cq-panel cq-result-cta cq-reading cq-result-section"><h2 class="kof-display">Para participar da Comunidade</h2>{r.requirements.map(p => <p>{p}</p>)}<div class="cq-actions"><a class="kof-btn kof-btn--grande" href={r.offerPath} data-quiz-offer>{r.cta}<span aria-hidden="true">→</span></a></div><p class="cq-note">Na próxima página, você encontra as atividades, os recursos e as condições dos planos.</p></section>
+  <ComunidadeQuizFeedback client:load revision={revision} basePath={basePath} funnel={funnel} sessionToken={sessionToken} />
+</main>

@@ -1,10 +1,15 @@
 ---
+import ComunidadeQuizLayout from '../../../components/funnel/ComunidadeQuizLayout.astro'
+import ComunidadeResultado from '../../../components/funnel/ComunidadeResultado.astro'
+import { quizRevision } from '../../../funnels/comunidade-dos-criadores/quiz/engine'
+import { buildCommunityResult } from '../../../funnels/comunidade-dos-criadores/quiz/result'
 import { leadBelongsToFunnel } from '../../../funnels/lead-scope'
 import { getFunnel, isQuizComplete } from '../../../funnels/registry'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { getLeadId } from '../../../lib/lead-session'
 import { funnelOgImage } from '../../../lib/seo'
 import { getDeps } from '../../../server/deps'
+import { quizSessionToken } from '../../../server/quiz-session'
 
 export const prerender = false
 
@@ -31,25 +36,43 @@ if (!leadBelongsToFunnel(lead.funnel, f.key)) return Astro.redirect(`${f.basePat
 const answers = lead.quizAnswers ?? {}
 if (!isQuizComplete(quiz, answers)) return Astro.redirect(`${f.basePath}/quiz`)
 
-await repo.insertEvent(lead.id, 'viu_resultado', 'resultado')
+const communityResult = quiz.presentation === 'comunidade' ? buildCommunityResult(answers) : null
+if (quiz.presentation === 'comunidade' && !communityResult)
+  return Astro.redirect(`${f.basePath}/quiz`)
+
+await repo.insertEvent(
+  lead.id,
+  'viu_resultado',
+  'resultado',
+  communityResult
+    ? {
+        quiz_version: answers._quiz_version,
+        revision: quizRevision(answers),
+        perfil_principal: communityResult.decision.profile,
+        estado: communityResult.decision.state,
+        adequacao: communityResult.decision.adequacy,
+        destino: communityResult.offerPath,
+      }
+    : undefined,
+)
 
 // Perfil: usa o persistido (se válido p/ este funil) ou roda o motor do funil agora
 // e persiste (one-shot). Viaja na URL p/ o hero da oferta.
 const stored =
   lead.perfilResultado && lead.perfilResultado in result.profiles ? lead.perfilResultado : null
 const perfil = stored ?? quiz.computePerfil(answers)
-if (!stored) await repo.updateLead(lead.id, { perfilResultado: perfil })
+if (!communityResult && !stored) await repo.updateLead(lead.id, { perfilResultado: perfil })
 
-const bloco = result.profiles[perfil]
-if (!bloco) return Astro.redirect(`${f.basePath}/quiz`)
+const bloco = perfil ? result.profiles[perfil] : undefined
+if (!communityResult && !bloco) return Astro.redirect(`${f.basePath}/quiz`)
 const rc = (s: string) => (result.renderCorpo ? result.renderCorpo(s, answers) : s)
 // Resultado em blocos (`secoes`) quando o funil os define; senão, corpo corrido (fallback).
 // Seção que resolve vazia (ex.: bloco de custo condicional omitido) é descartada.
-const secoesRender = bloco.secoes
+const secoesRender = bloco?.secoes
   ?.map((s) => ({ rotulo: s.rotulo, texto: rc(s.texto) }))
   .filter((s) => s.texto.length > 0)
 const secoes = secoesRender && secoesRender.length > 0 ? secoesRender : null
-const corpo = bloco.corpo ? rc(bloco.corpo) : null
+const corpo = bloco?.corpo ? rc(bloco.corpo) : null
 const destaque = result.destaque ? rc(result.destaque) : null
 // Segmento enum não-PII do desejo para a oferta retomar; só quando existe (Desafio).
 const querSeg =
@@ -58,7 +81,11 @@ const ofertaHref = `${f.basePath}/oferta?perfil=${perfil}${querSeg}`
 const fecho = rc(result.fecho)
 ---
 
-<BaseLayout
+{communityResult ? (
+  <ComunidadeQuizLayout title="Seu ponto de partida | Sistema Zero" description={f.seoDescription} imagesBase={f.imagesBase} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}>
+    <ComunidadeResultado result={communityResult} imagesBase={f.imagesBase} basePath={f.basePath} funnel={f.key} revision={quizRevision(answers)} sessionToken={quizSessionToken(lead.id)} />
+  </ComunidadeQuizLayout>
+) : bloco && (<BaseLayout
   title={`Seu mapa de criação | ${f.productName}`}
   description={f.seoDescription}
   ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
@@ -145,4 +172,4 @@ const fecho = rc(result.fecho)
       </a>
     </main>
   </div>
-</BaseLayout>
+</BaseLayout>)}

@@ -1,0 +1,24 @@
+---
+import OfertaPage from '../../../../components/funnel/OfertaPage.astro'
+import { isComunidadePage } from '../../../../funnels/comunidade-dos-criadores/oferta'
+import { resolveOfferPage } from '../../../../server/offer-page'
+
+export const prerender = false
+
+const profile = Astro.params.perfilOferta
+if (
+  Astro.params.audience !== 'kids' ||
+  Astro.params.produto !== 'comunidade-dos-criadores' ||
+  !isComunidadePage(profile)
+)
+  return new Response(null, { status: 404 })
+
+if (profile === 'tempo-de-tela') {
+  return Astro.redirect(`/kids/comunidade-dos-criadores/oferta${Astro.url.search}`, 301)
+}
+const page = await resolveOfferPage(Astro.params, Astro.url, Astro.site)
+if (page instanceof Response) return page
+Astro.response.headers.set('cache-control', 'public, max-age=60, stale-while-revalidate=300')
+---
+
+<OfertaPage {...page} comunidadeProfile={profile} />

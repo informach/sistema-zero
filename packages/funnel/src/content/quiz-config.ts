@@ -55,6 +55,17 @@ export interface MultiplaEscolhaStep extends StepBase {
   imagemLayout?: 'fundo' | 'topo'
   opcoes: Opcao[]
 }
+/** Explicit confirmation, with optional multiple/exclusive choices. */
+export interface SelecaoStep extends StepBase {
+  tipo: 'selecao'
+  etapa: 'filho' | 'objetivos' | 'comeco'
+  opcoes: Opcao[]
+  multiple?: boolean
+  maxSelections?: number
+  exclusive?: string[]
+  shuffle?: boolean
+  fixedLast?: string[]
+}
 export interface CalculadoraStep extends StepBase {
   tipo: 'calculadora'
   campo1: { key: string; label: string; unidade: string }
@@ -101,6 +112,7 @@ export interface SimNaoStep extends StepBase {
 }
 
 export type QuizStep =
+  | SelecaoStep
   | MultiplaEscolhaStep
   | CalculadoraStep
   | CalculadoraPrefilledStep

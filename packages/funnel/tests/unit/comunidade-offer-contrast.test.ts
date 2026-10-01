@@ -65,6 +65,15 @@ describe('Comunidade: contraste dos pares novos da oferta', () => {
     ['marca: sobre-ação na ação (texto pequeno do plano anual)', 'over-action', 'action', texto],
     ['botão inverso: ação no branco', 'action', 'card', texto],
     ['botão contorno: tinta no branco', 'ink', 'card', texto],
+    // Redesenho de 01/10/2026: o chip do capítulo, a legenda sobre o fundo da cor e a tira de passos.
+    ['chip do capítulo: tinta no lilás', 'ink', 'lilac', texto],
+    ['legenda da carta: tinta-suave no rosa-fundo', 'ink-muted', 'pink-surface', texto],
+    ['legenda da carta: tinta-suave na menta', 'ink-muted', 'mint', texto],
+    ['legenda da carta: tinta-suave no lilás', 'ink-muted', 'lilac', texto],
+    ['legenda da carta: tinta-suave no amarelo-fundo', 'ink-muted', 'yellow-surface', texto],
+    ['passo da tira: branco na ação', 'on-action', 'action', texto],
+    ['seta da tira: tinta no amarelo', 'ink', 'yellow', grande],
+    ['texto dentro da folha: tinta-suave no chão', 'ink-muted', 'ground', texto],
   ]
   for (const [nome, fg, bg, min] of pares)
     test(`${nome} ≥ ${min}`, () => {
@@ -75,6 +84,9 @@ describe('Comunidade: contraste dos pares novos da oferta', () => {
     const fundo = mixOklab(t('blue'), t('card'), 0.1)
     expect(contrast(t('ink'), fundo)).toBeGreaterThanOrEqual(texto)
     expect(contrast(t('blue'), fundo)).toBeGreaterThanOrEqual(grande)
+    // A legenda da carta azul e a seta das dúvidas ficam sobre o mesmo fundo.
+    expect(contrast(t('ink-muted'), fundo)).toBeGreaterThanOrEqual(texto)
+    expect(contrast(t('action'), fundo)).toBeGreaterThanOrEqual(grande)
   })
 
   test('⚠️ o link azul NÃO passa sobre o chão-alt: a oferta só o usa sobre o chão ou numa carta', () => {
@@ -94,7 +106,7 @@ describe('Comunidade: contraste dos pares novos da oferta', () => {
       'utf8',
     )
     // Na seção de chão-alt (os planos) todo kof-link mora dentro da carta da garantia.
-    const ini = body.indexOf('class="planos section alt"')
+    const ini = body.indexOf('class="planos section fundo-alt')
     const fim = body.indexOf('id="duvidas"')
     expect(ini).toBeGreaterThan(-1)
     expect(fim).toBeGreaterThan(ini)

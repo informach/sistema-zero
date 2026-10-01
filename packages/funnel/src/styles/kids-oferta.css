@@ -438,6 +438,12 @@
   width: 100%;
   height: auto;
 }
+/* ── Palco: o fundo da cor do capítulo onde a tela real se apoia ──────────────── */
+.theme-kids .kof-palco {
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+  border-radius: var(--kof-raio-heroi);
+  background: var(--kof-palco-fundo, var(--kof-azul-fundo));
+}
 /* ── Decorações (as estrelinhas do Desafio): fora do fluxo, sem clique ────────── */
 .theme-kids .kof-decor {
   position: absolute;
