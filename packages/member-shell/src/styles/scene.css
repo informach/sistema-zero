@@ -474,6 +474,12 @@
 .sz-scene-situacao > svg {
   flex: none;
   color: var(--sz-scene-situacao-icone);
+  /* Ajuste ÓPTICO (print dela, 01/10/2026): centrado na caixa da linha o ícone ficava 1px abaixo
+   * do centro da TINTA do texto. A Nunito senta a linha de base baixa na caixa (descendente
+   * grande), e o ícone de 16px, maior que a letra de 14px, sobrava mais embaixo da linha de base
+   * do que em cima das maiúsculas. Medido no print: tinta 668–677, ícone 666–681. Em `em` para
+   * acompanhar o tamanho da letra. */
+  transform: translateY(-0.07em);
 }
 
 /* A COLUNA DAS AÇÕES. */
