@@ -1,7 +1,7 @@
 # Experiências: layout pela largura do painel
 
 > **Atualizado em 30/09/2026 (console v2):** os dois painéis têm altura NATURAL (a imagem que ela
-> aprovou); só o painel das ações rola, acima de `max(20rem, 100dvh − 14rem)`, a grade tem `align-items: start` e a coluna das ações é `minmax(24rem, 1fr)` (era 26rem). O ampliado enche a
+> aprovou); em linha NADA rola por dentro (a página rola; o e2e exige palco e botão inteiros à vista), a grade tem `align-items: start` e a coluna das ações é `minmax(24rem, 1fr)` (era 26rem); no ampliado os painéis enchem e rolam, com o palco encaixando pela altura (`--fit`). O ampliado enche a
 > área útil como antes.
 
 Direção aprovada em 23/09/2026: aproveitar o espaço liberado pela divisória da aula, mantendo a opção **Ampliar experiência**.

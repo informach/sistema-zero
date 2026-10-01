@@ -252,14 +252,6 @@
   border-radius: 1rem;
   background: var(--color-card);
 }
-/* O rolo da bancada (fala, pista, prancha) dentro do painel das ações: só a pilha, sem cartão
- * próprio (o padding e o fundo são do painel). */
-.sz-scene-console-rolo {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
 
 /* A FAIXA: a placa do momento à esquerda, o medidor à direita e os ladrilhos embaixo. */
 .sz-scene-faixa {
@@ -710,10 +702,12 @@
 }
 
 /* Duas colunas quando o PRÓPRIO painel tem 52rem (a divisória da aula muda o painel, não a
- * janela): o mundo à esquerda com 1,15 do espaço, a conversa e a ação à direita. Cada painel tem a
- * altura NATURAL (a imagem que ela aprovou) com um teto pela janela: passou do teto, rola sozinho,
- * e a bancada longa não leva o palco junto. Sem altura confortável, preservamos o fluxo vertical,
- * sem reduzir letras ou cortar ações. */
+ * janela): o mundo à esquerda com 1,15 do espaço, a conversa e a ação à direita. EM LINHA, cada
+ * painel tem a altura NATURAL (a imagem que ela aprovou) e NADA rola por dentro: a página rola. O
+ * e2e das cenas (`scene-workspace.spec.ts`) exige o palco e o botão de executar INTEIROS à vista;
+ * um rolo interno (o teto de 40rem de 18/09, o `max(20rem, 100dvh − 14rem)` e o "só a bancada
+ * rola" da primeira versão do v2) cortava o botão em 35% e o CI caiu. Sem altura confortável
+ * (`min-height: 34rem`), preservamos o fluxo vertical, sem reduzir letras ou cortar ações. */
 @media (min-height: 34rem) {
   @container scene-workspace (min-width: 52rem) {
     .sz-scene-console {
@@ -723,33 +717,17 @@
        * vazio sob a frase da situação numa bancada longa (review do console v2, M3). */
       align-items: start;
     }
-    /* O painel do MUNDO nunca rola: o que ele tem é limitado (faixa, palco, pé). O painel das AÇÕES
-     * rola sozinho quando passa da janela (a bancada longa não leva o palco junto); numa janela
-     * alta ele só tem a altura natural. ⚠️ Sem o teto de 40rem de antes: com altura natural ele
-     * fazia a coluna rolar por dentro mesmo com a tela sobrando (visto no print de 30/09). ⚠️ E o
-     * piso é 20rem, não 36rem: num notebook de 768px o piso maior passava da janela e a página
-     * rolava para mostrar o fim de um painel que já rolava por dentro (review, M2). */
     .sz-scene-console-visual,
     .sz-scene-console-actions {
       overscroll-behavior: contain;
-      /* A barra reserva a mesma largura dos dois lados: o palco não fica colado à esquerda. */
+      /* A barra reserva a mesma largura dos dois lados: o palco não fica colado à esquerda
+       * (o e2e `expectBalancedSceneMargins` lê este valor). */
       scrollbar-gutter: stable both-edges;
     }
-    .sz-scene-console-actions {
-      max-height: max(20rem, calc(100dvh - 14rem));
-      overflow-y: auto;
-    }
-    /* ⚠️⚠️ Só a BANCADA rola (fala, pista, prancha): a lista de descobertas e o Conferir ficam
-     * sempre à vista. Sem isto, numa bancada alta (`lives`, `score`, `entity-state`) a lista sumia
-     * abaixo da dobra dentro do painel que rolava (review visual de 30/09). O piso de 12rem
-     * garante bancada visível; passou disso, o painel inteiro rola. */
-    .sz-scene-console-actions > .sz-scene-console-rolo {
-      flex: 0 1 auto;
-      min-height: 12rem;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-    }
-    /* No ampliado os dois painéis enchem a área útil e cada um rola sozinho. */
+    /* No AMPLIADO (um diálogo fixo) os dois painéis enchem a área útil e cada um rola sozinho; o
+     * mundo é um contêiner de TAMANHO e o palco simples encaixa pela altura (`--fit`), senão a
+     * 1920×600 o desenho passa da linha do grid (e2e "fichas cabem"). ⚠️ `container-type: size`
+     * SÓ aqui: em linha, com altura natural, um contêiner de tamanho colapsaria a zero. */
     .sz-scene-workspace--expanded .sz-scene-workspace-body,
     .sz-scene-workspace--expanded .sz-scene-workspace-body > fieldset,
     .sz-scene-workspace--expanded .sz-scene-workspace-body > fieldset > fieldset {
@@ -767,22 +745,26 @@
       flex: 1;
       min-height: 0;
       grid-template-rows: minmax(0, 1fr);
-      /* No ampliado os painéis ENCHEM a linha (cada um rola sozinho): o `start` de cima não vale. */
       align-items: stretch;
     }
-    /* ⚠️ O mundo NUNCA rola por dentro, nem no ampliado: numa janela de 768px a faixa + o palco + o
-     * pé passam da linha do grid e o rolo cortava Desfazer/Recomeçar e a situação (full review de
-     * 30/09, M2). Ele fica com a altura natural (`align-self: start`) e quem rola é o cartão. */
-    .sz-scene-workspace--expanded .sz-scene-console-visual {
-      max-height: none;
-      min-height: 0;
-      overflow-y: visible;
-      align-self: start;
-    }
+    .sz-scene-workspace--expanded .sz-scene-console-visual,
     .sz-scene-workspace--expanded .sz-scene-console-actions {
       max-height: none;
       min-height: 0;
       overflow-y: auto;
+    }
+    .sz-scene-workspace--expanded .sz-scene-console-visual > :not(.sz-scene-console-mundo) {
+      flex-shrink: 0;
+    }
+    .sz-scene-workspace--expanded .sz-scene-console-visual > .sz-scene-console-mundo {
+      flex: 1;
+      min-height: 0;
+      container-type: size;
+      overflow: auto;
+    }
+    .sz-scene-workspace--expanded .sz-scene-console-mundo > .sz-scene-frame--fit {
+      width: min(100%, calc(100cqh * var(--sz-scene-aspect)));
+      margin-inline: auto;
     }
   }
 }

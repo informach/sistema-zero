@@ -127,14 +127,6 @@ describe('o console v2: o momento, as descobertas e o pé do mundo', () => {
       'Sua vez',
     )
 
-    // ⚠️⚠️ Só a BANCADA rola: fala e prancha no `.sz-scene-console-rolo`, a lista de descobertas FORA
-    // dele (review visual de 30/09: numa bancada alta a lista sumia no rolo).
-    const rolo = container.querySelector('.sz-scene-console-rolo') as HTMLElement
-    expect(rolo).not.toBeNull()
-    expect(rolo.contains(container.querySelector('.sz-scene-prancha'))).toBe(true)
-    expect(rolo.contains(container.querySelector('.sz-scene-console-fala'))).toBe(true)
-    expect(rolo.contains(descobertas)).toBe(false)
-
     // A resposta do Conferir sai ao lado do botão que a pediu, dentro da lista de descobertas.
     fireEvent.click(screen.getByRole('button', { name: 'Conferir' }))
     const resposta = await screen.findByText(/^Ainda não\. Tente:/)

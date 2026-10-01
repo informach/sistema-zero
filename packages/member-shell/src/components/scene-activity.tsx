@@ -1433,54 +1433,48 @@ export function SceneActivityView({
                     </div>
                   </ConsoleVisual>
                   <ConsoleActions>
-                    {/* ⚠️⚠️ Só a BANCADA rola (fala, pista, prancha): a lista de descobertas e o
-                        Conferir ficam sempre à vista. Sem o rolo, numa bancada alta (`lives`, `score`,
-                        `entity-state`) a lista sumia abaixo da dobra dentro do painel que rolava
-                        (review visual de 30/09). */}
-                    <div className="sz-scene-console-rolo">
-                      <ConsoleFala>{blocoDaInstrucao}</ConsoleFala>
-                      {/* ⭐⭐ A PISTA mora colada na fala do Zappy, e não no pé do bloco.
+                    <ConsoleFala>{blocoDaInstrucao}</ConsoleFala>
+                    {/* ⭐⭐ A PISTA mora colada na fala do Zappy, e não no pé do bloco.
                       Relato dela na maquete: "não consegui ver onde apareceu a pista". Ela
                       nascia depois do rodapé, longe da instrução que a criança acabou de ler e
                       fora do console — quem pede ajuda é justamente quem vai reler a instrução.
                       Aqui ela cai onde os olhos já estão. */}
-                      {hintText && !conclusao && (
-                        /* A escada de três degraus aparece COMO escada, logo abaixo do botão que a pediu e
+                    {hintText && !conclusao && (
+                      /* A escada de três degraus aparece COMO escada, logo abaixo do botão que a pediu e
                          sem empurrar o palco. A caixa some quando a cena conclui. ⚠️ Sem `role="status"`:
                          o texto é recalculado com a cena (o nível 1 cita a situação), e a cada "+100" o
                          leitor ouvia a situação duas vezes. Quem anuncia a pista é o clique. */
-                        <div
-                          ref={pistaRef}
-                          data-pista={pistaFeita ? 'feita' : 'aberta'}
-                          className="sz-scene-pista flex gap-3 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3"
-                        >
-                          {pistaFeita ? (
-                            <Check
-                              size={18}
-                              className="mt-0.5 shrink-0 text-success-foreground"
-                              aria-hidden
-                            />
-                          ) : (
-                            <Lightbulb
-                              size={18}
-                              className="mt-0.5 shrink-0 text-amber-700"
-                              aria-hidden
-                            />
+                      <div
+                        ref={pistaRef}
+                        data-pista={pistaFeita ? 'feita' : 'aberta'}
+                        className="sz-scene-pista flex gap-3 rounded-2xl border border-amber-600/30 bg-amber-500/10 px-4 py-3"
+                      >
+                        {pistaFeita ? (
+                          <Check
+                            size={18}
+                            className="mt-0.5 shrink-0 text-success-foreground"
+                            aria-hidden
+                          />
+                        ) : (
+                          <Lightbulb
+                            size={18}
+                            className="mt-0.5 shrink-0 text-amber-700"
+                            aria-hidden
+                          />
+                        )}
+                        <p className="text-sm leading-relaxed">
+                          {!pistaFeita && (
+                            <>
+                              <span className="font-semibold">
+                                Pista {Math.min(hint, hints.length)} de {hints.length}.
+                              </span>{' '}
+                            </>
                           )}
-                          <p className="text-sm leading-relaxed">
-                            {!pistaFeita && (
-                              <>
-                                <span className="font-semibold">
-                                  Pista {Math.min(hint, hints.length)} de {hints.length}.
-                                </span>{' '}
-                              </>
-                            )}
-                            {hintText}
-                          </p>
-                        </div>
-                      )}
-                      {pranchaDaCena}
-                    </div>
+                          {hintText}
+                        </p>
+                      </div>
+                    )}
+                    {pranchaDaCena}
                     {/* ⭐⭐ O que ela já descobriu, com as ações da descoberta embaixo. A resposta do
                         Conferir mora aqui, ao lado do botão que a pediu (era um parágrafo solto
                         embaixo do console). */}

@@ -1276,29 +1276,31 @@ ajustes dela. Hoje o console é:
 - **A ação principal do momento sai na largura toda:** o gesto sozinho (`.sz-scene-gestos >
   :only-child`) ou o botão que a bancada marca com `sz-scene-acao-principal` (hoje o "Ligar a
   reação ao toque", que passou a `tom="gesto"` enquanto a reação está desligada).
-- **Duas colunas** (`@container scene-workspace (min-width: 52rem)`): altura NATURAL, 1,15 : 1. O
-  painel do mundo nunca rola; o das ações rola sozinho acima de `max(20rem, 100dvh − 14rem)`.
-  ⚠️ Sem o teto de 40rem de antes: com altura natural ele fazia a coluna rolar por dentro mesmo com
-  a tela sobrando. ⚠️ E o piso é 20rem (era 36rem): num notebook de 768px o piso maior passava da
-  janela e a página rolava para mostrar o fim de um painel que já rolava por dentro. A grade tem
-  `align-items: start`: sem isso o painel do mundo era ESTICADO à altura do das ações (~200px de
-  branco sob a frase da situação numa bancada longa). No ampliado os dois painéis enchem a área
-  útil (`align-items: stretch` de volta) e rolam cada um.
+- **Duas colunas** (`@container scene-workspace (min-width: 52rem)`): altura NATURAL, 1,15 : 1,
+  `align-items: start` (sem isso o painel do mundo era ESTICADO à altura do das ações). ⚠️⚠️ EM
+  LINHA NADA ROLA POR DENTRO: a página rola. O e2e `scene-workspace.spec.ts` exige o palco e o botão
+  de executar INTEIROS à vista; o teto de 40rem de 18/09, o `max(20rem, 100dvh − 14rem)` e o "só a
+  bancada rola" (rolo interno) da primeira versão do v2 cortavam o botão em 35% e o CI caiu
+  (30/09). No AMPLIADO os dois painéis enchem a área útil e rolam cada um, e o mundo é
+  `container-type: size` com o palco simples encaixando pela altura (`sz-scene-frame--fit`,
+  `width: min(100%, 100cqh × --sz-scene-aspect)`): a 1920×600 o desenho passava da linha do grid.
+  ⚠️ O `--fit` só funciona com o contêiner de tamanho, que SÓ existe no ampliado; medido em linha
+  ele parece morto (o `cqh` cai na janela), e foi assim que o full review o apagou por engano.
 - **Full review de código (30/09/2026), o que mudou:** (a) o momento com as duas classes (acima);
   (b) os palcos COMPOSTOS (`tilemap`, `same-rules-new-skin`, `unique-names`) voltaram a ter a
-  moldura nos desenhos de dentro (a regra "filho direto" os tinha deixado sem nenhuma); (c) no
-  AMPLIADO o mundo não rola por dentro (`align-self: start`, `overflow: visible`): a 768px o rolo
-  cortava Desfazer/Recomeçar e a situação; (d) a caixa da pista entra à vista quando o botão (na
-  lista, mais abaixo) a pede (`pistaRef` + `scrollIntoView nearest`); (e) o foco da pergunta rola
-  SEMPRE com `nearest` (a guarda "está na janela?" media só a janela, e a pergunta mora num painel
-  que rola por dentro); (f) `LessonSectionStatus` tira repetidos DEPOIS da troca da autoria e diz
-  "Tudo pronto nesta parte!" na última seção (`ultima`); (g) o adulto e o kids sem avisos novos de
-  especificidade no biome.
+  moldura nos desenhos de dentro (a regra "filho direto" os tinha deixado sem nenhuma); (c) a
+  caixa da pista entra à vista quando o botão (na lista, mais abaixo) a pede (`pistaRef` +
+  `scrollIntoView nearest`); (d) a guarda de rolagem da pergunta olha também os ancestrais que
+  rolam por dentro (`estaAVista`); (e) `LessonSectionStatus` tira repetidos DEPOIS da troca da
+  autoria e diz "Tudo pronto nesta parte!" na última seção (`ultima`); (f) o adulto e o kids sem
+  avisos novos de especificidade no biome. ⚠️ Dois achados desse review foram REVERTIDOS pelo e2e
+  no mesmo dia: o "mundo não rola no ampliado" (o e2e exige o painel inteiro à vista, e quem
+  encaixa o palco é o `--fit`) e o "código morto" do `--fit` (ver "Duas colunas").
 - **Review VISUAL nas 59 cenas (30/09/2026, prints do `tmp/confere-console-v2.tsx`), o que mudou:**
-  (a) ⚠️⚠️ **só a BANCADA rola** — fala, pista e prancha moram no `.sz-scene-console-rolo` (piso de
-  12rem), e a lista de descobertas com Uma pista/Conferir fica FORA dele, sempre à vista; antes, numa
-  bancada alta (`lives`, `score`, `entity-state`) a lista sumia abaixo da dobra dentro do painel que
-  rolava; (b) **bandeja sem controle some** (`.sz-scene-prancha:not(:has(button, input, …))`): a
+  (a) ⚠️ a lista de descobertas sumia abaixo da dobra dentro do painel que rolava por dentro numa
+  bancada alta (`lives`, `score`, `entity-state`); a resposta final foi tirar TODO rolo interno em
+  linha (a página rola; ver "Duas colunas") — o "só a bancada rola" (`.sz-scene-console-rolo`) durou
+  um commit e caiu no e2e; (b) **bandeja sem controle some** (`.sz-scene-prancha:not(:has(button, input, …))`): a
   `tilemap` põe o rádio da letra dentro do palco e saía um "Sua vez" vazio; (c) **valor longo no
   ladrilho** ganha `data-medida="media|longa"` (>12 e >18 caracteres) no `scene-frame.tsx`: degrau
   menor e, muito longo, a linha toda (13 cenas quebravam em 2-3 linhas: "4 quadros por segundo",

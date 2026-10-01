@@ -240,6 +240,7 @@ function SceneFrame({
   mundo,
   refDaMoldura,
   largura,
+  proporcao,
 }: {
   children: ReactNode
   className?: string
@@ -247,12 +248,22 @@ function SceneFrame({
   refDaMoldura: RefObject<HTMLDivElement | null>
   /** A largura que o palco está usando (a medida, ou a conhecida antes de medir). */
   largura: number
+  /**
+   * A proporção do desenho (largura ÷ altura), para o palco caber pela ALTURA no modo ampliado:
+   * `.sz-scene-workspace--expanded .sz-scene-console-mundo` tem `container-type: size`, e o
+   * `.sz-scene-frame--fit` vira `width: min(100%, 100cqh × proporção)`. ⚠️ Em linha (sem o
+   * `container-type`) o `cqh` cai na janela e a regra não faz nada: foi assim que o full review
+   * de 30/09 a julgou morta e a apagou, e o e2e do ampliado a 1920×600 caiu (o palco passava da
+   * linha do grid). Só palco simples: com legenda, rodapé ou recorte estreito a altura é natural.
+   */
+  proporcao?: number
 }) {
   return (
     <div
       ref={refDaMoldura}
       // ⚠️ `data-largura-do-palco`: a largura com que a letra foi calculada, para os e2e conferirem.
       data-largura-do-palco={Math.round(largura)}
+      style={proporcao ? ({ '--sz-scene-aspect': proporcao } as CSSProperties) : undefined}
       // `sz-scene-frame`: gancho para o PLAYER colar a faixa de estado na mesma moldura (review do
       // lote 2). Sem regra aqui.
       // ⚠️⚠️ `sz-scene-espaco` (Raio-X, lote 3) REDECLARA a paleta inteira da cena para o escuro
@@ -261,6 +272,7 @@ function SceneFrame({
       data-mundo={mundo}
       className={cn(
         'sz-scene-frame overflow-hidden rounded-2xl border border-border bg-scene-ground',
+        proporcao && 'sz-scene-frame--fit',
         // ⚠️⚠️ Pela COR do fundo, nunca por "não tem chão": a `gorilas` tem chão e céu noturno, e
         // com a pergunta antiga a tinta escura da cena ficaria ilegível sobre a cidade à noite.
         cenarioEscuro(mundo) && 'sz-scene-espaco',
@@ -492,7 +504,13 @@ export function SceneCanvas({
   const palco =
     deFabrica.estreito && viewEstreito ? palcoDe(largura, viewEstreito, true) : deFabrica
   return (
-    <SceneFrame className={className} mundo={mundo} refDaMoldura={moldura} largura={largura}>
+    <SceneFrame
+      className={className}
+      mundo={mundo}
+      refDaMoldura={moldura}
+      largura={largura}
+      proporcao={!legenda && !rodape && !viewEstreito ? view.w / view.h : undefined}
+    >
       <svg
         ref={svgRef}
         viewBox={viewBoxDe(palco.view)}
