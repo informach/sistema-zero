@@ -453,9 +453,11 @@
 .sz-scene-situacao-lugar {
   min-width: 0;
 }
+/* Ícone e texto CENTRADOS na vertical (pedido dela, 01/10/2026): a frase de uma linha ficava
+ * colada no alto da pílula, com o ícone solto abaixo dela. */
 .sz-scene-situacao {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.5rem;
   min-height: 2.5rem;
   width: 100%;
@@ -471,7 +473,6 @@
 }
 .sz-scene-situacao > svg {
   flex: none;
-  margin-top: 0.1rem;
   color: var(--sz-scene-situacao-icone);
 }
 
@@ -552,7 +553,8 @@
 }
 .sz-scene-descoberta {
   display: flex;
-  align-items: flex-start;
+  /* O cadeado/check centrado com o texto, também quando a frase tem duas linhas (pedido dela). */
+  align-items: center;
   gap: 0.625rem;
   padding: 0.625rem 0.75rem;
   border-radius: 0.875rem;
