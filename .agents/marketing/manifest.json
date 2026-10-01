@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\tocha\\Documents\\fluxo-criativo",
+  "integratedAt": "2026-10-01",
+  "canonicalSkills": [
+    "marketing-sistema-zero",
+    "pesquisa-mercado",
+    "biblioteca-anuncios",
+    "estrategia-produto",
+    "copy-funil",
+    "revisao-copy",
+    "criativos-anuncios",
+    "conteudo-editorial",
+    "analise-marketing"
+  ],
+  "commands": [
+    "marketing",
+    "pesquisa-mercado",
+    "biblioteca-anuncios",
+    "produto-concepcao",
+    "copy-pagina",
+    "feedback-pagina",
+    "copy-anuncio",
+    "copy-roteiro",
+    "copy-social",
+    "carrossel",
+    "estrategia-funil",
+    "estrategia-lancamento",
+    "lt-quiz",
+    "trafego-analise",
+    "trafego-otimizar",
+    "trafego-escalar",
+    "trafego-criar-campanha"
+  ],
+  "agents": [
+    "pesquisa-mercado",
+    "estrategista-de-produto",
+    "copywriter",
+    "criador-de-campanhas",
+    "analista-marketing",
+    "revisor-marketing"
+  ],
+  "sourceEntryCounts": {
+    "agents": 18,
+    "commands": 113,
+    "hooks": 14,
+    "rules": 3,
+    "skills": 54
+  },
+  "notes": "Metodologia adaptada. Inventário de entradas; referências e assets subordinados não são plugins instalados separadamente."
+}
