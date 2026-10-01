@@ -80,7 +80,7 @@ import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 import { tituloJaDito, useLessonSection } from './lesson-section-context'
 import { RelogioDaArteProvider } from './scene-arte'
-import { SceneConclusion, SceneRevisitBanner } from './scene-conclusion'
+import { SceneConclusion, SceneExplicacao } from './scene-conclusion'
 import {
   ConsoleActions,
   ConsoleFala,
@@ -116,10 +116,12 @@ import { estadoVistoDaCena, relogioDaCena, tempoDeLeitura, useSceneClock } from 
  * O palpite vem antes da descoberta: a criança recebe contexto e uma prévia segura, formula a
  * hipótese e só então a cena completa, os controles e a instrução prática são montados. A escolha
  * pode ser trocada enquanto a criança ainda não fez um gesto na cena.
- * Na revisita, uma faixa "✓ Você já descobriu isto." que fala DELA e nunca do palco.
+ * Na revisita, o console já nasce em "Você descobriu" (a pílula e a lista), e o "Ver a explicação"
+ * fecha o bloco das descobertas; o cartão verde que ficava embaixo do título SAIU em 01/10/2026
+ * (decisão dela: dizia a mesma coisa pela terceira vez).
  *
- * As peças moram em arquivos próprios: `scene-prediction` (o palpite), `scene-conclusion` (a faixa
- * e a pergunta),
+ * As peças moram em arquivos próprios: `scene-prediction` (o palpite), `scene-conclusion` (a
+ * explicação da revisita e a pergunta),
  * `scene-frame` (a faixa de estado e os botões do mundo), `use-scene-clock` e `use-scene-voice`.
  */
 export function SceneActivityView({
@@ -1295,33 +1297,25 @@ export function SceneActivityView({
     <SceneWorkspace
       labelledBy={`${id}-title`}
       header={
-        <>
-          <div>
-            {/* `sz-lesson-chip` + `data-chip`: gancho ESTÁVEL do tema (invariante 8). O rótulo é
+        <div>
+          {/* `sz-lesson-chip` + `data-chip`: gancho ESTÁVEL do tema (invariante 8). O rótulo é
               VERBO, como os demais chips da aula. */}
-            <p
-              className="sz-lesson-chip mb-1 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[.16em] text-primary"
-              data-chip="experimentation"
-            >
-              <FlaskConical size={14} aria-hidden />
-              Experimente
-            </p>
-            {/* ⚠️ O título CONTINUA existindo (é o nome acessível da `<section>`); quando o
+          <p
+            className="sz-lesson-chip mb-1 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[.16em] text-primary"
+            data-chip="experimentation"
+          >
+            <FlaskConical size={14} aria-hidden />
+            Experimente
+          </p>
+          {/* ⚠️ O título CONTINUA existindo (é o nome acessível da `<section>`); quando o
               cabeçalho da seção já disse a mesma frase, ele vira `sr-only`. */}
-            <h3
-              id={`${id}-title`}
-              className={`sz-display text-xl font-bold sm:text-2xl${tituloJaDito(content.title, secao) ? ' sz-scene-title-repeated sr-only' : ''}`}
-            >
-              {content.title}
-            </h3>
-          </div>
-          {revisita && (
-            <SceneRevisitBanner
-              regra={fraseDeSucesso}
-              explicacao={guardado?.verifiedBy === 'server' ? guardado.feedback : undefined}
-            />
-          )}
-        </>
+          <h3
+            id={`${id}-title`}
+            className={`sz-display text-xl font-bold sm:text-2xl${tituloJaDito(content.title, secao) ? ' sz-scene-title-repeated sr-only' : ''}`}
+          >
+            {content.title}
+          </h3>
+        </div>
       }
     >
       <div className="sz-scene-workspace-body space-y-4">
@@ -1481,6 +1475,16 @@ export function SceneActivityView({
                     <SceneDescobertas
                       goals={goals}
                       resposta={conferiu && !conclusao ? conferiu : ''}
+                      explicacao={
+                        revisita ? (
+                          <SceneExplicacao
+                            regra={fraseDeSucesso}
+                            explicacao={
+                              guardado?.verifiedBy === 'server' ? guardado.feedback : undefined
+                            }
+                          />
+                        ) : undefined
+                      }
                     >
                       {umaPista}
                       {conferirOuContinuar}

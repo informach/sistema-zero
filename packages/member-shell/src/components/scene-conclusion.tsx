@@ -17,15 +17,20 @@ import { SceneButton } from './exploration-stage'
  */
 
 /**
- * ⚠️⚠️ A faixa da REVISITA fala DELA, nunca do palco: "Você já descobriu isto." é verdade com o
- * palco vazio, pela metade ou montado, e é por isso que ela sobrevive ao "Recomeçar" e ao F5.
+ * O "Ver a explicação" da REVISITA, no fim do bloco "O que você já descobriu" do console.
+ *
+ * ⭐⭐ Até 30/09 ele vivia num cartão verde embaixo do título ("✓ Você já descobriu isto."), fora
+ * do console. Ela viu que o console já dizia a mesma coisa duas vezes (a pílula "Você descobriu" e
+ * a lista das descobertas) e pediu para tirar o cartão (01/10/2026). O que NÃO podia sumir era a
+ * explicação: na revisita o cartão "Você descobriu!" com a pergunta não aparece, então a regra e o
+ * porquê do professor só existiam ali. Por isso ela desceu para o console, fechada.
  *
  * ⚠️ A explicação guardada VOLTA (fechada): o F5 dizia "Esta pergunta já está resolvida" e o porquê
  * sumia para sempre, mas ele estava no navegador (`saved.result.feedback` é a explicação quando o
  * servidor corrigiu a pergunta). Bloco concluído antes de a pergunta existir não tem explicação a
  * mostrar, e aí fica só a regra da cena.
  */
-export function SceneRevisitBanner({
+export function SceneExplicacao({
   regra,
   explicacao,
 }: {
@@ -35,28 +40,22 @@ export function SceneRevisitBanner({
   explicacao?: string
 }) {
   return (
-    <div className="rounded-2xl bg-success/10 px-4 py-3 text-success-foreground">
-      <p className="flex items-center gap-2 font-semibold">
-        <Check size={18} aria-hidden />
-        Você já descobriu isto.
-      </p>
-      <details className="group mt-1 text-foreground">
-        {/* ⚠️ Com `inline-flex` o `summary` perde o triângulo nativo e vira um texto verde parado
-            (review do lote 2): a seta que gira diz que aquilo abre. */}
-        <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1 text-sm font-semibold text-success-foreground [&::-webkit-details-marker]:hidden">
-          <ChevronDown
-            size={16}
-            aria-hidden
-            className="transition-transform group-open:rotate-180 motion-reduce:transition-none"
-          />
-          Ver a explicação
-        </summary>
-        <p className="mt-1 text-sm leading-relaxed">{regra}</p>
-        {explicacao && explicacao !== regra ? (
-          <p className="mt-2 text-sm leading-relaxed">{explicacao}</p>
-        ) : null}
-      </details>
-    </div>
+    <details className="sz-scene-explicacao group">
+      {/* ⚠️ Com `inline-flex` o `summary` perde o triângulo nativo e vira um texto parado
+          (review do lote 2): a seta que gira diz que aquilo abre. */}
+      <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1 text-sm font-semibold text-primary [&::-webkit-details-marker]:hidden">
+        <ChevronDown
+          size={16}
+          aria-hidden
+          className="transition-transform group-open:rotate-180 motion-reduce:transition-none"
+        />
+        Ver a explicação
+      </summary>
+      <p className="mt-1 text-sm leading-relaxed">{regra}</p>
+      {explicacao && explicacao !== regra ? (
+        <p className="mt-2 text-sm leading-relaxed">{explicacao}</p>
+      ) : null}
+    </details>
   )
 }
 

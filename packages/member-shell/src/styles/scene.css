@@ -432,7 +432,9 @@
 /* O PÉ DO MUNDO: os botões numa linha e, embaixo, a frase do que está acontecendo na largura toda. */
 .sz-scene-mundo-rodape {
   display: grid;
-  gap: 0.625rem;
+  /* 1rem entre os botões do mundo (Desfazer, Recomeçar) e o cartão da situação: com 0,625rem o
+   * cartão parecia grudado nos botões (pedido dela, 01/10/2026). */
+  gap: 1rem;
 }
 .sz-scene-mundo-ferramentas {
   display: flex;
@@ -515,6 +517,15 @@
 .sz-scene-descobertas-acoes > [data-tom] {
   white-space: normal;
   height: auto;
+}
+/* O "Ver a explicação" da revisita: uma linha recolhida no fim do bloco, sem cartão próprio. */
+.sz-scene-explicacao {
+  min-width: 0;
+  padding-top: 0.25rem;
+  border-top: 1px dashed var(--color-border);
+}
+.sz-scene-explicacao > p {
+  color: var(--color-foreground);
 }
 /* "O que você já descobriu": feita em verde, pendente trancada e neutra. */
 .sz-scene-descobertas {
@@ -715,18 +726,23 @@
 }
 
 /* Duas colunas quando o PRÓPRIO painel tem 52rem (a divisória da aula muda o painel, não a
- * janela): o mundo à esquerda com 1,15 do espaço, a conversa e a ação à direita. O painel do
- * mundo tem a altura natural; o das ações rola sozinho acima de um teto relativo à janela (ver
- * abaixo). Sem altura confortável (`min-height: 34rem`), preservamos o fluxo vertical, sem
- * reduzir letras ou cortar ações. */
+ * janela): a CENA à esquerda com tudo o que sobrar, a conversa e a ação à direita numa coluna de
+ * 38% presa entre 22rem e 30rem (decisão dela, 01/10/2026: "a cena é o principal, pode ser maior
+ * que o card dos controles"; antes era 1,15 : 1 e, no painel dividido, o mínimo de 24rem deixava
+ * quase meio a meio). ⚠️ `clamp()` e não `minmax(22rem, 30rem)`: um trilho com máximo FIXO enche
+ * até o máximo antes de o `1fr` receber o resto, e a 1000px a cena voltava a ficar meio a meio.
+ * Medido: 1,6 : 1 a 1000px, 1,7 : 1 a 1366px, 1,2 : 1 no limiar de 52rem. Os dois painéis têm
+ * SEMPRE a mesma altura (`align-items: stretch`, também
+ * decisão dela: "se um cresce o outro cresce"); isso revoga o `align-items: start` do review do
+ * console v2 (M3). O painel do mundo nunca rola; o das ações rola sozinho acima de um teto
+ * relativo à janela (ver abaixo). Sem altura confortável (`min-height: 34rem`), preservamos o
+ * fluxo vertical, sem reduzir letras ou cortar ações. */
 @media (min-height: 34rem) {
   @container scene-workspace (min-width: 52rem) {
     .sz-scene-console {
-      grid-template-columns: minmax(0, 1.15fr) minmax(24rem, 1fr);
+      grid-template-columns: minmax(0, 1fr) clamp(22rem, 38%, 30rem);
       grid-template-rows: auto;
-      /* ⚠️ Sem isto o painel do mundo é ESTICADO à altura do painel das ações: ~200px de branco
-       * vazio sob a frase da situação numa bancada longa (review do console v2, M3). */
-      align-items: start;
+      align-items: stretch;
     }
     .sz-scene-console-visual,
     .sz-scene-console-actions {

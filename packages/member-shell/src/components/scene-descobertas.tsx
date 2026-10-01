@@ -19,15 +19,22 @@ import { Children, type ReactNode, useId } from 'react'
  * Os `children` são a linha de ações da descoberta (Uma pista, o som, Conferir/Continuar), e a
  * `resposta` do Conferir mora aqui, ao lado do botão que a pediu. ⚠️ A região viva existe SEMPRE
  * (sr-only quando vazia): montada junto do texto, ela não é anunciada.
+ *
+ * Na REVISITA, a `explicacao` ("Ver a explicação", fechada) fecha o bloco: é o único lugar em que a
+ * regra e o porquê do professor sobrevivem a um F5 (01/10/2026; antes era um cartão verde embaixo
+ * do título, que repetia o que a pílula e a lista já diziam).
  */
 export function SceneDescobertas({
   goals,
   resposta,
+  explicacao,
   children,
 }: {
   goals: readonly SceneGoalProgress[]
   /** A resposta do "Conferir", já congelada pelo player; vazia quando não há. */
   resposta: string
+  /** O "Ver a explicação" da revisita; ausente na primeira vez. */
+  explicacao?: ReactNode
   children?: ReactNode
 }) {
   const id = useId()
@@ -67,6 +74,7 @@ export function SceneDescobertas({
       {Children.toArray(children).length > 0 ? (
         <div className="sz-scene-descobertas-acoes">{children}</div>
       ) : null}
+      {explicacao}
       <p
         className={
           resposta

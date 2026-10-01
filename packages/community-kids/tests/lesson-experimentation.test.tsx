@@ -834,14 +834,19 @@ describe('⭐⭐ a moldura do lote 2: Conferir, a pergunta e a revisita', () => 
       },
       hintsUsed: 2,
     })
-    expect(await screen.findByText('Você já descobriu isto.')).toBeTruthy()
     // Console v2 (30/09): na revisita o momento da faixa já nasce "Você descobriu", sem gesto.
+    // ⚠️ E NADA fora do console diz isso (01/10): o cartão verde "Você já descobriu isto." que
+    // ficava embaixo do título saiu, porque repetia a pílula e a lista.
+    await screen.findByText('Ver a explicação')
+    expect(screen.queryByText('Você já descobriu isto.')).toBeNull()
     const momento = document.querySelector('.sz-scene-momento')
     expect(momento?.getAttribute('data-momento')).toBe('descobriu')
     expect(momento?.textContent).toBe('Você descobriu')
     const explicacao = screen.getByText('A EXPLICAÇÃO QUE O SERVIDOR GUARDOU.')
     expect(explicacao.closest('details')?.open).toBe(false)
     expect(explicacao.closest('details')?.textContent).toContain('Ver a explicação')
+    // O "Ver a explicação" mora DENTRO do bloco "O que você já descobriu" do console.
+    expect(explicacao.closest('.sz-scene-descobertas')).not.toBeNull()
     // ⚠️ O palpite NÃO tranca a revisita (sem palpite guardado neste perfil) e a pergunta some.
     const criar = await screen.findByRole('button', { name: 'Criar o Dino' })
     await waitFor(() => expect(criar.closest('fieldset[disabled]')).toBeNull())
@@ -857,14 +862,18 @@ describe('⭐⭐ a moldura do lote 2: Conferir, a pergunta e a revisita', () => 
     // no relatório do professor.
     expect(screen.queryByRole('button', { name: 'Uma pista' })).toBeNull()
     expect(screen.queryByText(/Pista \d de 3/)).toBeNull()
-    // Mexer e recomeçar não mudam a faixa: ela é verdade com o palco em qualquer estado.
+    // Mexer e recomeçar não mudam o momento nem a explicação: são verdade com o palco em
+    // qualquer estado.
     fireEvent.click(criar)
     fireEvent.click(screen.getByRole('button', { name: 'Recomeçar' }))
-    expect(screen.getByText('Você já descobriu isto.')).toBeTruthy()
+    expect(document.querySelector('.sz-scene-momento')?.getAttribute('data-momento')).toBe(
+      'descobriu',
+    )
+    expect(screen.getByText('Ver a explicação')).toBeTruthy()
     expect(document.body.textContent).not.toMatch(/Você concluiu|investigação/)
   })
 
-  test('⚠️ revisita de bloco concluído ANTES de a pergunta existir: só a faixa, sem pergunta', async () => {
+  test('⚠️ revisita de bloco concluído ANTES de a pergunta existir: só a regra, sem pergunta', async () => {
     const bloco = content('world')
     servidorQueCorrige(bloco)
     aluno(bloco, {
@@ -876,7 +885,11 @@ describe('⭐⭐ a moldura do lote 2: Conferir, a pergunta e a revisita', () => 
         evidence: 'exploration',
       },
     })
-    expect(await screen.findByText('Você já descobriu isto.')).toBeTruthy()
+    await screen.findByText('Ver a explicação')
+    expect(document.querySelector('.sz-scene-momento')?.getAttribute('data-momento')).toBe(
+      'descobriu',
+    )
+    // O `feedback` de uma correção do CLIENTE não é explicação do professor: só a regra aparece.
     expect(screen.queryByText('Feito.')).toBeNull()
     expect(screen.queryByText('Agora explique')).toBeNull()
   })
@@ -1228,7 +1241,7 @@ describe('⭐⭐ consertos do review do lote 2: o palpite', () => {
       },
     }
     aluno(bloco, aprovado)
-    expect(await screen.findByText('Você já descobriu isto.')).toBeTruthy()
+    await screen.findByText('Ver a explicação')
     expect(screen.queryByText(SCENE_QUESTIONS.world.prediction.prompt) === null).toBe(true)
     cleanup()
     // Com o palpite guardado neste aparelho, a linha curta no passado.

@@ -1203,7 +1203,7 @@ Conferência visual das 45 com os componentes de produção: `bun run galeria:ce
 | `scene-console.tsx` | ⭐⭐ O CONSOLE: `SceneConsole`, `ConsoleFala`, `ConsoleMundo` e `ConsolePrancha`. Só moldura. |
 | `scene-descobertas.tsx` | ⭐⭐ "O que você já descobriu" (`SceneDescobertas`): a lista das metas, feita com a conclusão, pendente trancada e neutra; as ações da descoberta e a resposta do Conferir moram nela. |
 | `scene-hud.tsx` | ⭐⭐ O PLACAR do jogo dentro do palco: `PlacarDoJogo`, `VidaDoJogo` e `CoracaoDoJogo`. |
-| `scene-conclusion.tsx` | "Você descobriu!", a pergunta "Agora explique" e a faixa da revisita. |
+| `scene-conclusion.tsx` | "Você descobriu!", a pergunta "Agora explique" e o "Ver a explicação" da revisita (`SceneExplicacao`, montado no fim do bloco das descobertas). |
 | `scene-demo-controls.tsx` | A demonstração guiada e a `MontagemTravada`. |
 | `scene-sandbox.tsx` | "Agora é sua vez". |
 | `scene-frame.tsx` | A faixa de estado (`SceneReadoutBand`, com a `placa` do começo e o `valoresEscondidos` do palpite) e os botões do mundo (`botoesDoMundo`), iguais no player e na vez. |
@@ -1276,9 +1276,13 @@ ajustes dela. Hoje o console é:
 - **A ação principal do momento sai na largura toda:** o gesto sozinho (`.sz-scene-gestos >
   :only-child`) ou o botão que a bancada marca com `sz-scene-acao-principal` (hoje o "Ligar a
   reação ao toque", que passou a `tom="gesto"` enquanto a reação está desligada).
-- **Duas colunas** (`@container scene-workspace (min-width: 52rem)`): 1,15 : 1, `align-items:
-  start` (sem isso o painel do mundo era ESTICADO à altura do das ações). O painel do mundo tem a
-  altura natural; ⚠️⚠️ **o das ações rola SOZINHO acima de `max(20rem, 100dvh − 14rem)`, e NUNCA
+- **Duas colunas** (`@container scene-workspace (min-width: 52rem)`): a CENA com tudo o que
+  sobrar e a coluna das ações em `clamp(22rem, 38%, 30rem)` (decisão dela, 01/10/2026: "a cena é o
+  principal"; antes 1,15 : 1 com mínimo de 24rem, quase meio a meio no painel dividido; ⚠️ `clamp`
+  e não `minmax(22rem, 30rem)`, porque um trilho com máximo fixo enche até o máximo antes de o
+  `1fr` receber o resto). Os dois painéis têm SEMPRE a mesma altura (`align-items: stretch`,
+  também decisão dela: "se um cresce o outro cresce"; revoga o `start` do review do console v2).
+  O painel do mundo nunca rola; ⚠️⚠️ **o das ações rola SOZINHO acima de `max(20rem, 100dvh − 14rem)`, e NUNCA
   tem um rolo aninhado dentro**. A régua é o e2e `scene-workspace.spec.ts`: a 1366×768 o palco e o
   botão de executar precisam estar INTEIROS à vista ao mesmo tempo, em qualquer fonte. Os dois
   erros de 30/09, cada um de um lado: o rolo "só a bancada rola" (`.sz-scene-console-rolo`) cortava
@@ -1596,9 +1600,13 @@ acrescenta mais o modelo da cena automaticamente.
 **Conclusão e revisita (`scene-conclusion.tsx`).**
 - **Revisita = o resultado guardado CONGELADO no primeiro render** (`guardado`: `saved.result`, ou
   `rehearsal.results` no ensaio do admin): concluir agora não vira revisita no meio do gesto. Na revisita o
-  palpite não tranca, a pergunta não aparece e não há Conferir; a faixa "✓ Você já descobriu isto." fala DELA,
-  nunca do palco (é verdade com o palco vazio, pela metade ou montado), com "Ver a explicação" fechado (a regra
-  e, quando `verifiedBy === 'server'`, o `feedback` guardado).
+  palpite não tranca, a pergunta não aparece e não há Conferir; o console nasce em "Você descobriu" (a pílula
+  do momento e a lista das descobertas), e o "Ver a explicação" fica FECHADO no fim do bloco "O que você já
+  descobriu" (a regra e, quando `verifiedBy === 'server'`, o `feedback` guardado). ⭐ Em 01/10/2026 o cartão
+  verde "✓ Você já descobriu isto." que ficava embaixo do título SAIU (decisão dela: o console já dizia isso
+  duas vezes); o que não podia sair era a explicação, porque na revisita o cartão "Você descobriu!" com a
+  pergunta não aparece e a regra e o porquê só existiam ali. É verdade com o palco vazio, pela metade ou
+  montado: sobrevive ao "Recomeçar" e ao F5.
 - **Ao concluir**, na primeira vez e só depois de GESTO: "✓ Você descobriu!", foco na pergunta (sem pergunta,
   na faixa), anúncio e gravação na hora. A pergunta fica no `legend` focável, com anel de respiro
   (`data-anel-com-respiro`).
