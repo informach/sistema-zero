@@ -478,6 +478,11 @@
   border-radius: 1rem;
   background: var(--sz-scene-apoio);
   display: grid;
+  /* ⚠️ `minmax(0, 1fr)`, nunca a coluna implícita (`auto`, cujo mínimo é o min-content): com uma
+   * fonte mais larga (a DejaVu Sans do Linux do CI) o rótulo sem quebra do botão de executar
+   * ("Coloque uma ação para começar", 256px) alargava a bancada inteira e a 320px a página rolava
+   * de lado (e2e "fichas cabem em 320x568"). Medido com Verdana, que tem a largura parecida. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.625rem;
 }
 /* Bandeja sem controle nenhum (a `tilemap` põe o rádio da letra DENTRO do palco): some, em vez de
@@ -502,6 +507,14 @@
 .sz-scene-prancha .sz-scene-acao-principal {
   flex: 1 1 100%;
   width: 100%;
+}
+/* O rótulo do gesto QUEBRA linha (o `Button` do ui nasce `whitespace-nowrap`): "Testar de novo com
+ * a reação ligada" numa bancada de 192px, ou qualquer rótulo numa fonte mais larga, transbordava o
+ * botão e a página. O `min-h-11` garante o alvo de toque; a altura cresce com o texto. */
+.sz-scene-gestos > [data-tom],
+.sz-scene-descobertas-acoes > [data-tom] {
+  white-space: normal;
+  height: auto;
 }
 /* "O que você já descobriu": feita em verde, pendente trancada e neutra. */
 .sz-scene-descobertas {
@@ -702,12 +715,10 @@
 }
 
 /* Duas colunas quando o PRÓPRIO painel tem 52rem (a divisória da aula muda o painel, não a
- * janela): o mundo à esquerda com 1,15 do espaço, a conversa e a ação à direita. EM LINHA, cada
- * painel tem a altura NATURAL (a imagem que ela aprovou) e NADA rola por dentro: a página rola. O
- * e2e das cenas (`scene-workspace.spec.ts`) exige o palco e o botão de executar INTEIROS à vista;
- * um rolo interno (o teto de 40rem de 18/09, o `max(20rem, 100dvh − 14rem)` e o "só a bancada
- * rola" da primeira versão do v2) cortava o botão em 35% e o CI caiu. Sem altura confortável
- * (`min-height: 34rem`), preservamos o fluxo vertical, sem reduzir letras ou cortar ações. */
+ * janela): o mundo à esquerda com 1,15 do espaço, a conversa e a ação à direita. O painel do
+ * mundo tem a altura natural; o das ações rola sozinho acima de um teto relativo à janela (ver
+ * abaixo). Sem altura confortável (`min-height: 34rem`), preservamos o fluxo vertical, sem
+ * reduzir letras ou cortar ações. */
 @media (min-height: 34rem) {
   @container scene-workspace (min-width: 52rem) {
     .sz-scene-console {
@@ -723,6 +734,17 @@
       /* A barra reserva a mesma largura dos dois lados: o palco não fica colado à esquerda
        * (o e2e `expectBalancedSceneMargins` lê este valor). */
       scrollbar-gutter: stable both-edges;
+    }
+    /* ⚠️⚠️ O painel das ações rola SOZINHO acima deste teto (relativo à janela): o e2e exige o
+     * palco e o botão de executar à vista AO MESMO TEMPO a 1366×768, com qualquer fonte (no
+     * Linux do CI a DejaVu Sans é mais larga que a Segoe UI e a bancada passa da janela). Com a
+     * altura natural a página rolava para alcançar o botão e o palco saía da janela. Numa tela
+     * de 1080px o teto é ~860px e quase nenhuma bancada rola. NUNCA um rolo aninhado dentro
+     * dele: o rolo "só a bancada rola" de 30/09 cortava o botão em 35% (o e2e mede a
+     * interseção com os ancestrais que rolam). */
+    .sz-scene-console-actions {
+      max-height: max(20rem, calc(100dvh - 14rem));
+      overflow-y: auto;
     }
     /* No AMPLIADO (um diálogo fixo) os dois painéis enchem a área útil e cada um rola sozinho; o
      * mundo é um contêiner de TAMANHO e o palco simples encaixa pela altura (`--fit`), senão a

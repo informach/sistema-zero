@@ -1276,16 +1276,29 @@ ajustes dela. Hoje o console é:
 - **A ação principal do momento sai na largura toda:** o gesto sozinho (`.sz-scene-gestos >
   :only-child`) ou o botão que a bancada marca com `sz-scene-acao-principal` (hoje o "Ligar a
   reação ao toque", que passou a `tom="gesto"` enquanto a reação está desligada).
-- **Duas colunas** (`@container scene-workspace (min-width: 52rem)`): altura NATURAL, 1,15 : 1,
-  `align-items: start` (sem isso o painel do mundo era ESTICADO à altura do das ações). ⚠️⚠️ EM
-  LINHA NADA ROLA POR DENTRO: a página rola. O e2e `scene-workspace.spec.ts` exige o palco e o botão
-  de executar INTEIROS à vista; o teto de 40rem de 18/09, o `max(20rem, 100dvh − 14rem)` e o "só a
-  bancada rola" (rolo interno) da primeira versão do v2 cortavam o botão em 35% e o CI caiu
-  (30/09). No AMPLIADO os dois painéis enchem a área útil e rolam cada um, e o mundo é
-  `container-type: size` com o palco simples encaixando pela altura (`sz-scene-frame--fit`,
-  `width: min(100%, 100cqh × --sz-scene-aspect)`): a 1920×600 o desenho passava da linha do grid.
-  ⚠️ O `--fit` só funciona com o contêiner de tamanho, que SÓ existe no ampliado; medido em linha
-  ele parece morto (o `cqh` cai na janela), e foi assim que o full review o apagou por engano.
+- **Duas colunas** (`@container scene-workspace (min-width: 52rem)`): 1,15 : 1, `align-items:
+  start` (sem isso o painel do mundo era ESTICADO à altura do das ações). O painel do mundo tem a
+  altura natural; ⚠️⚠️ **o das ações rola SOZINHO acima de `max(20rem, 100dvh − 14rem)`, e NUNCA
+  tem um rolo aninhado dentro**. A régua é o e2e `scene-workspace.spec.ts`: a 1366×768 o palco e o
+  botão de executar precisam estar INTEIROS à vista ao mesmo tempo, em qualquer fonte. Os dois
+  erros de 30/09, cada um de um lado: o rolo "só a bancada rola" (`.sz-scene-console-rolo`) cortava
+  o botão em 35% (o e2e mede a interseção com os ancestrais que rolam); e a altura NATURAL sem
+  teto passava no Windows e caía no Linux do CI, onde a DejaVu Sans é mais larga que a Segoe UI,
+  a bancada mede 814-829px e a página rolava para alcançar o botão, tirando o palco da janela.
+  Numa tela de 1080px o teto é ~860px e quase nenhuma bancada rola. No AMPLIADO os dois painéis
+  enchem a área útil e rolam cada um, e o mundo é `container-type: size` com o palco simples
+  encaixando pela altura (`sz-scene-frame--fit`, `width: min(100%, 100cqh × --sz-scene-aspect)`):
+  a 1920×600 o desenho passava da linha do grid. ⚠️ O `--fit` só funciona com o contêiner de
+  tamanho, que SÓ existe no ampliado; medido em linha ele parece morto (o `cqh` cai na janela), e
+  foi assim que o full review o apagou por engano.
+- ⚠️ **Fonte larga no CI (Linux)**: a prancha é `grid-template-columns: minmax(0, 1fr)` (a coluna
+  implícita `auto` tem o min-content como mínimo, e o rótulo sem quebra do botão de executar
+  alargava a bancada: a 320px a página rolava de lado) e os gestos (`.sz-scene-gestos >
+  [data-tom]`, idem nas ações da descoberta) QUEBRAM linha (`white-space: normal; height: auto`).
+  Para reproduzir aqui: o spec de diagnóstico injeta `* { font-family: Verdana !important }`
+  (largura parecida com a DejaVu) e rode `bunx playwright test --config
+  playwright.scenes.config.ts` com `SCENE_E2E_PORT` livre (o Playwright RODA nesta máquina para
+  este harness; o que não abre é o `chromium.launch()` avulso num script).
 - **Full review de código (30/09/2026), o que mudou:** (a) o momento com as duas classes (acima);
   (b) os palcos COMPOSTOS (`tilemap`, `same-rules-new-skin`, `unique-names`) voltaram a ter a
   moldura nos desenhos de dentro (a regra "filho direto" os tinha deixado sem nenhuma); (c) a

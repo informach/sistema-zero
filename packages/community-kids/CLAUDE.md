@@ -1294,9 +1294,14 @@ NEUTRA (sem o gesto que falta), moldura no PALCO (revoga o "mundo de borda a bor
 de 18/09, no CLAUDE.md do member-shell), valores da
 faixa ESCUROS com a cor do par só na bolinha. Teste: `tests/lesson-scene-console-v2.test.tsx`.
 ⚠️ A maquete aprovada é `tmp/maquete-experiencia.tsx` (fora do git): não apagar enquanto a tela
-não bater com ela. ⚠️ Nesta máquina o Playwright não abre o Chrome; o que funciona é o Chrome
-instalado por linha de comando (`chrome.exe --headless=new --screenshot=… <url>`) contra o
-harness `bun e2e-scenes/fixtures/serve.ts` (:5198), que compila o CSS UMA vez ao subir.
+não bater com ela. ⚠️ O e2e das cenas RODA nesta máquina pelo runner (`bunx playwright test --config
+playwright.scenes.config.ts`, ~80 s): é a régua do console (palco e botão de executar inteiros à
+vista; a 320px sem rolagem lateral; a 1920×600 o svg inteiro no ampliado) e deve rodar ANTES de
+qualquer review de CSS da cena — em 30/09 dois achados de um full review passaram no Windows e
+caíram no Linux do CI (fonte mais larga). O que NÃO funciona é o `chromium.launch()` avulso num
+script (trava no launch); para prints soltos use o Chrome instalado por linha de comando
+(`chrome.exe --headless=new --screenshot=… <url>`) contra o harness
+`bun e2e-scenes/fixtures/serve.ts` (:5198), que compila o CSS UMA vez ao subir.
 
 ⚠️ **A cena agora divide a tela como o Estúdio, e o teto dela subiu para 680px** — a régua é do
 member-shell (`lib/lesson-split.ts`), com o porquê no CLAUDE.md de lá. O que muda AQUI é o que se
