@@ -633,6 +633,12 @@ export const COPY = {
     playMap: 'Jogar meu mapa',
   },
   vector: {
+    paperLabel: 'Visualizar fundo',
+    paperTransparent: 'Transparente',
+    paperWhite: 'Branco',
+    paperDark: 'Escuro',
+    paperHint:
+      'Só muda a visualização. Áreas vazias continuam transparentes ao exportar; branco pintado continua branco.',
     select: 'Selecionar',
     reshape: 'Editar os pontos',
     pan: 'Mão (arrastar a tela)',

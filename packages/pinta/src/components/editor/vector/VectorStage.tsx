@@ -111,6 +111,7 @@ import { useWheelZoom } from '../useWheelZoom'
 import { useVectorEditor } from './VectorEditorScope'
 import { VectorGradientDialog } from './VectorGradientDialog'
 import { VectorNodeActions } from './VectorNodeActions'
+import { type VectorPaper, VectorPaperPicker, vectorPaperClass } from './VectorPaperPicker'
 import {
   mergeNodeSelection,
   type NodeFrame,
@@ -310,6 +311,7 @@ const HANDLES: Array<{ id: ResizeHandleId; fx: number; fy: number }> = [
 ]
 
 export function VectorStage(): JSX.Element {
+  const [paper, setPaper] = useState<VectorPaper>('transparent')
   const { editor, session } = useEditorStores()
   const { showToast } = useToast()
   const {
@@ -1845,7 +1847,8 @@ export function VectorStage(): JSX.Element {
   const selectionHasCustomPivot = selected.some((shape) => shape.rotationPivot !== undefined)
 
   return (
-    <div className="pin-stage relative flex min-h-0 min-w-0 flex-1">
+    <div className="pin-stage relative flex min-h-0 min-w-0 flex-1 flex-col">
+      <VectorPaperPicker value={paper} onChange={setPaper} />
       {/* As réguas (em cima e à esquerda) embrulham a CÉLULA do palco: as barras flutuantes
           abaixo são absolutas em relação a ela, então nascem abaixo da régua de cima. Na tela
           estreita não há régua: cada px vertical conta e a tira de 24 px é pouco para o dedo. */}
@@ -2025,15 +2028,14 @@ export function VectorStage(): JSX.Element {
           ref={stageRef}
           className="flex min-h-0 min-w-0 flex-1 overflow-auto p-2 [align-items:safe_center] [justify-content:safe_center]"
         >
-          {/* Papel BRANCO fixo (sem xadrez): cor absoluta em qualquer tema; canto
-            RETO para a borda não "comer" o desenho da criança. */}
-          <div className="pin-paper bg-white">
+          {/* O papel só ajuda a enxergar o alfa; não faz parte do SVG exportado. */}
+          <div className={`pin-paper ${vectorPaperClass[paper]}`}>
             <svg
               ref={svgRef}
               width={stageWidth}
               height={stageHeight}
               viewBox={`0 0 ${doc.width} ${doc.height}`}
-              className="block bg-white/60"
+              className="block"
               style={{
                 touchAction: 'none',
                 cursor: stageCursor({
