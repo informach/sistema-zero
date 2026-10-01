@@ -7,6 +7,8 @@ const source = (...parts: string[]) => readFileSync(join(SRC, ...parts), 'utf8')
 const raw = source('components', 'funnel', 'oferta', 'ComunidadeOfertaBody.astro')
 const markup = raw.slice(raw.indexOf('<div class="cdc">'), raw.indexOf('<Footer'))
 const publicText = markup
+  // A fita da Jornada é um `.map` de várias linhas; o resto são expressões curtas.
+  .replace(/\{jornada\.map[\s\S]*?\)\)\}/g, ' ')
   .replace(/\{[^{}<>]*\}/g, ' ')
   .replace(/<[^>]+>/g, ' ')
   .replace(/\s+/g, ' ')
@@ -93,7 +95,45 @@ describe('Comunidade: promessa coerente e condições de contratação', () => {
       ).toBe(true)
     }
     expect(publicText).toContain('Ilustração da experiência')
-    expect(raw).not.toContain("img('print-recados.webp')")
+    // Os mockups com dados fictícios (print-*) saíram em 30/09/2026: a prova é a plataforma de
+    // verdade, capturada em staging com um perfil de teste (scripts/captura-telas-kids.ts).
+    expect(raw).not.toMatch(/img\('print-/)
+    for (const tela of [
+      'tela-aula',
+      'tela-aula-topo',
+      'tela-jornada',
+      'tela-pinta',
+      'tela-mural',
+      'tela-clube',
+      'tela-meu-espaco',
+    ])
+      expect(raw).toContain(`img('${tela}.webp')`)
+    // A fita da Jornada monta o nome por template (`jornada-${slug}`): a prova de existência das
+    // oito artes é explícita, e os slugs são os da escada do core.
+    for (const slug of [
+      'noob',
+      'coder',
+      'hacker',
+      'explorer',
+      'elite',
+      'architect',
+      'champion',
+      'god',
+    ])
+      expect(
+        existsSync(
+          join(SRC, '..', 'public', 'img', 'comunidade-dos-criadores', `jornada-${slug}.webp`),
+        ),
+      ).toBe(true)
+    expect(publicText).toContain('Tela da plataforma')
+    // Uma imagem só disputa a largura de banda do primeiro quadro: a tela real do herói, com o
+    // preload no <head> apontando para o MESMO arquivo.
+    expect(markup.match(/fetchpriority="high"/g)).toHaveLength(1)
+    expect(raw).toContain(`rel="preload" as="image" href={img('tela-aula.webp')}`)
+    expect(markup).toMatch(/<img[^>]+tela-aula\.webp[^>]+fetchpriority="high"/)
+    // A barra fixa do celular leva aos planos (a contagem de 2 `data-checkout-cta` é a do teste de
+    // preços acima).
+    expect(markup).toContain('class="kof-mobar" data-mobar aria-hidden="true"')
   })
 
   test('etapas compartilhadas não prometem começar antes de pagar ou reiniciar progresso', () => {

@@ -161,7 +161,8 @@ partir de `SALES`); `DesafioOfertaBody.astro` = layout sob medida alinhado à pl
 personagens, decorações flutuantes), com o CSS bespoke num `<style>` Astro escopado por `.dpj`
 (aliases semânticos no wrapper apontam para `--sz-community-*`, nunca valores repetidos) e ícones
 **Material Symbols self-hosted** (`@fontsource/material-symbols-rounded`; o NCI segue com o
-outlined); `ComunidadeOfertaBody.astro` = idem, escopado por `.cdc`. ⚠️ Astro escopa somando um
+outlined); `ComunidadeOfertaBody.astro` = desde 30/09/2026 um `<style is:global>` prefixado por `.cdc` (sem o
+escopo do Astro; ver "Redesenho visual da Comunidade"). ⚠️ Astro escopa somando um
 atributo por elo do seletor: um override tipo `.kid.verde .name` só vence a base `.kid .char .name`
 se incluir os MESMOS elos (`.kid.verde .char .name`). Os CTAs de compra levam `data-checkout-cta` →
 o `PreCheckoutModal` (mesma ilha do NCI) abre o checkout; opcionalmente levam também
@@ -218,8 +219,9 @@ argumentação do processo, começo guiado/Estúdio/Pinta, relatos reais, contin
 rotina e objeções, assinatura, dúvidas práticas e convite final. A hero promete aprender a
 criar os próprios jogos. CTA principal aponta para `#planos`; link secundário para `#aula`.
 `?origem=desafio` troca a abertura por continuidade, sem presumir conclusão ou publicação.
-As imagens `preview-estudio.webp`, `preview-regra.webp` e `preview-pinta.webp` são ilustrações
-provisórias geradas a pedido do responsável, identificadas na página. O briefing
+As imagens `preview-estudio.webp` e `preview-regra.webp` são ilustrações provisórias geradas a
+pedido do responsável, identificadas na página ("Ilustração da experiência"); o `preview-pinta`
+saiu no redesenho de 30/09 (a tela real do Pinta tomou o lugar). O briefing
 `docs/plans/2026-09-30-comunidade-materiais-para-pagina.md` registra prompts e substituições.
 Não prometer revisão de toda atividade, prazo de resposta ou jogo pronto em prazo universal.
 Recados é canal de dúvidas; a progressão e a disponibilidade dos cursos condicionam as ferramentas.
@@ -230,6 +232,49 @@ começou. Guardas: `tests/unit/comunidade-offer-copy.test.ts` (promessas, condi�
 Os termos kids (`content/legal-kids.ts`) cobrem os DOIS produtos (Desafio: compra única; Comunidade:
 assinatura recorrente no cartão ou anual à vista, cancelamento sem multa, carência, garantia só na
 1ª contratação, Mural de visitante após o fim).
+**Redesenho visual da Comunidade (30/09/2026, "a oficina do criador"):** a copy v2 ficou intacta e a
+página ganhou o desenho da plataforma kids: topo navy com a logo kids e o preço, herói com a TELA
+REAL de uma aula num cartão azul (`.kof-marca`) e o Dedé e o Zappy apresentando, eyebrow amarelo,
+ladrilhos coloridos nos benefícios, banda navy nos relatos (3 cartas-criador + o Mural real) e no
+convite, a fita dos 8 postos da Jornada (`jornada-<slug>.webp`, copiados do kids), objeções em
+cartas com ladrilho por unidade, o plano anual como o cartão da marca com o selo amarelo de
+economia, FAQ em cartas, reveal ao rolar e a barra fixa do celular (`.kof-mobar`, `href="#planos"`,
+sem `data-checkout-cta`: a contagem segue 2). Plano e prints:
+`docs/plans/2026-09-30-comunidade-redesenho-visual.md`.
+- ⚠️ **As RECEITAS da identidade moram em `src/styles/kids-oferta.css`** (importado pelo body):
+  aliases `--kof-*` que só apontam para `--sz-community-*`, e as classes `.kof-btn`, `.kof-carta`,
+  `.kof-marca`, `.kof-eyebrow`, `.kof-chip`, `.kof-ladrilho`, `.kof-selo`, `.kof-banda`,
+  `.kof-tela`, `.kof-decor`, `.kof-reveal`, `.kof-mobar` (só o que a página usa: o balão de
+  personagem e o "stat" da banda do Desafio NÃO vieram). O funil recebe da
+  plataforma só os TOKENS, nunca as receitas (`.kids-carta`/`.sz-btn-gradient` ficam no kids), por
+  isso elas nascem aqui, por token, sem nenhuma cor própria. O body tem só o LAYOUT, num
+  `<style is:global>` prefixado por `.cdc` (dois elos onde colide com `.theme-kids X` do
+  `global.css`, como o `.cdc .topbar` contra o `.theme-kids header`). Não reaproveitar
+  `.btn/.card/.reveal-up` do `global.css` (outro raio, outro peso, animam no load).
+  `tests/unit/comunidade-offer-css.test.ts` trava: sem hex/rgb/hsl/oklch, `color-mix` só
+  `in oklab`, sem `!important`, namespaces, Baloo 800 no `BaseLayout` (os títulos são 800).
+- ⚠️ **Contraste medido** (`tests/unit/comunidade-offer-contrast.test.ts`, lê a paleta gerada do
+  ui pelo caminho e usa o `contrast()` de lá): o link azul sobre o chão-alt dá 4,27 e REPROVA, então
+  nas seções de chão-alt (planos e dúvidas) todo `.kof-link` mora dentro de uma carta branca; a
+  `.kof-eyebrow` quebra linha abaixo de 760px (com `nowrap` numa coluna `1fr` a pílula vira a
+  largura MÍNIMA da coluna e empurra o herói para fora da margem a 390px).
+- ⚠️ **As telas `tela-*.webp` são capturas REAIS do kids em staging** (perfil de teste), geradas por
+  `scripts/captura-telas-kids.ts` (Chrome instalado em headless + CDP por WebSocket, sem
+  Playwright): `KIDS_COOKIES_FILE` aponta para o Netscape exportado do navegador LOGADO NO PERFIL
+  (o script recusa um caminho dentro do repo e os cookies expiram em poucas horas), `KIDS_SO`
+  filtra telas, `KIDS_AULA_PATH` escolhe a aula. Ele esconde o "Pular para o conteúdo" (o CDP deixa
+  o foco visível nele), fecha o diálogo que chega depois dos dados (os Combinados do Clube) e
+  grava 1x e @2x (`srcset`). Toda imagem passa por revisão humana antes do commit (nomes de outros
+  perfis de teste aparecem no Mural). Os mockups `print-*.webp` com dados fictícios SAÍRAM e o
+  teste de copy proíbe `img('print-`; `preview-regra`/`preview-estudio` seguem como "Ilustração da
+  experiência" (o teste exige a frase).
+- ⚠️ O dev server local sem Postgres mostra a página, mas o `POST /api/leads` cai e o Astro
+  injeta o overlay de erro por cima: para prints via CDP, remova os elementos
+  `vite-error-overlay` e `astro-dev-toolbar` antes de fotografar (`tmp/` é gitignorado; o
+  script fica na sessão). ⚠️ O anel de foco dos botões sobre o azul da marca e sobre o navy é
+  BRANCO (`.kof-marca .kof-btn:focus-visible`): o azul sumia no botão de compra do plano anual.
+  A fonte de ícones é a instância estática 400 (sem eixo `FILL`): as estrelas decorativas saem
+  vazadas de propósito.
 
 **Admin por funil (`/admin`):** seletor de funil no topo filtra as 3 abas. `adminLeads/adminFunnel/
 adminPerfis` aceitam `?funnel=` (repo filtra por `leads.funnel`; `eventCounts` junta ao lead).
