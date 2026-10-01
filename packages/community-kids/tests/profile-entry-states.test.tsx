@@ -34,7 +34,7 @@ describe('estados de entrada da página de perfis', () => {
 
     const cta = screen.getByRole('link', { name: 'Conhecer a Comunidade dos Criadores' })
     expect(cta.getAttribute('href')).toBe(
-      'https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta',
+      'https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta/continuar',
     )
     expect(screen.queryByText('Adicionar')).toBeNull()
     expect(screen.getByRole('button', { name: 'Sair' })).toBeTruthy()

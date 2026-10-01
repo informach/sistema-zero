@@ -159,6 +159,6 @@ function linkFor(
   if (kind === 'not_activated') return `${opts.kidsUrl}/esqueci-senha`
   if (kind === 'not_started') return `${opts.kidsUrl}/perfis`
   if (kind === 'completed')
-    return `${opts.funnelUrl}/kids/comunidade-dos-criadores/oferta?origem=desafio`
+    return `${opts.funnelUrl}/kids/comunidade-dos-criadores/oferta/continuar`
   return `${opts.kidsUrl}/cursos/${encodeURIComponent(courseRef)}`
 }

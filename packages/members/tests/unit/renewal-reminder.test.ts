@@ -299,7 +299,7 @@ describe('SendRenewalRemindersService', () => {
       link: 'https://kids.sistemazero.com.br/cursos/desafio-primeiro-jogo',
     })
     expect(msg.sent[2]?.variables?.link).toBe(
-      'https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta',
+      'https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta/continuar',
     )
     expect(lifecycleSent.size).toBe(3)
     expect(analyticsEvents).toEqual([
