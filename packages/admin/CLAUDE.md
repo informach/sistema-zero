@@ -1485,6 +1485,16 @@ o teste dele, a rota `/api/media/module-illustrations` e a dependência
   exige `Access-Control-Allow-Origin` correto; remove o objeto em seguida. Falha nessa prova deixa o
   deploy vermelho. `--check` não altera a configuração, mas repete a prova pública. O `<img>` de antes
   não fazia CORS; o runtime do Rive faz.
+- **Subir um `.riv` solto ao bucket público** (01/10/2026, o `.riv` do baú da trilha do kids, que
+  não passa pelo Admin): `bun run r2:put:public <arquivo> --prefix=kids/chest` grava em
+  `<prefixo>/<nome>-<sha256>.riv` (chave ENDEREÇADA PELO CONTEÚDO: arquivo novo = objeto novo e
+  URL nova, com `Cache-Control` longo e `immutable`; o script recusa sobrescrever), confere o
+  cabeçalho do `.riv`, e PROVA a leitura pelo `R2_PUBLIC_URL` com o `Origin` do Kids. Imprime a
+  URL, que vai para `NEXT_PUBLIC_KIDS_CHEST_RIVE_URL` do kids (Railway, por ambiente). ⚠️ Sem
+  `s3:ListBucket` o HEAD de chave inexistente volta 403, e o script confere a existência pelo
+  endereço público. ⚠️ O `.env` local pode ter as credenciais do R2 VENCIDAS (rotação de 09/2026):
+  o sintoma é `SignatureDoesNotMatch` até no `r2:cors:public:check`; pegue as vigentes do serviço
+  no Railway (`railway variables --service admin --environment staging --json`) só para a execução.
 - ⚠️ **Testes:** os mocks parciais de `@/server/media`/`@/server/r2` em
   `zappy-backfill` e `hub-route-handlers` passaram a ESPALHAR o módulo real. O
   `mock.module` do bun é global ao run, e manter à mão "a superfície que as outras

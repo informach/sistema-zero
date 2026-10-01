@@ -2045,6 +2045,16 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   SVG existente permanece visível e conclui pelo próprio `animationend` — nunca por `setTimeout`.
   O canvas só esconde o SVG depois de validar a entrada; `StateChange.data` pode ser `string` ou
   `string[]`. A falha depois do claim devolve a transição ao SVG, sem pular a reação da criança.
+  ⭐ **01/10/2026, o arquivo novo dela:** o estado `Closed` ganhou uma animação em LAÇO, e nada
+  mudou no código: a máquina roda com `autoplay: true`, então o baú fechado se mexe sozinho até
+  o `open`. Medido num harness descartável com o runtime real (`@rive-app/canvas` 2.42.1 + o
+  `rive.wasm` do app): 19 quadros distintos em 2,4 s no `Closed`, `open` → `Opening` → `Open`, e
+  em `Open` o quadro para. ⚠️ O arquivo mora no bucket PÚBLICO do R2 (`kids/chest/chest-<sha256>.riv`,
+  chave endereçada pelo conteúdo) e a env de STAGING aponta para ele; PRODUÇÃO NÃO tem a env (o
+  baú de produção segue no SVG). Subir uma versão nova = `bun run r2:put:public <arquivo>
+  --prefix=kids/chest` no admin (ver o CLAUDE.md de lá) e trocar a env no Railway: a URL muda
+  junto com o conteúdo, nunca se sobrescreve a antiga. Com `prefers-reduced-motion` o Rive nem
+  carrega, então o laço respeita a preferência.
 - `streak-widget.tsx` — sidebar (cheio) + `MobileTopbar` (compact): fogo aceso (vermelho
   `--sz-hot`) quando `activeToday` + XP total. O layout busca via `Promise.all` com o avatar.
   **Equipe (passe livre):** quando `coins.unlimited` (members marca p/ superadmin/admin/staff), o

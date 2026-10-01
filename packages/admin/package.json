@@ -12,6 +12,7 @@
     "r2:cors:public:ensure": "bun scripts/r2-cors-public.ts",
     "r2:cors:public:install-probe": "bun scripts/r2-cors-public.ts --install-probe",
     "r2:cors:public:check": "bun scripts/r2-cors-public-check.ts",
+    "r2:put:public": "bun scripts/r2-put-public.ts",
     "check": "biome check .",
     "check:fix": "biome check --write ."
   },
