@@ -1,7 +1,8 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { type ReactNode, type RefObject, useLayoutEffect, useRef } from 'react'
 import { cn } from '../lib/cn'
+import { encaixeDoMundo } from '../lib/scene-encaixe'
 
 /**
  * O CONSOLE: a experiência inteira numa peça só.
@@ -70,9 +71,83 @@ export function ConsoleFala({ children }: { children: ReactNode }) {
   return <div className="sz-scene-console-fala">{children}</div>
 }
 
-/** O miolo do console: o que rola por cima do mundo (avisos) precisa deste `relative`. */
+/**
+ * O miolo do console: o que rola por cima do mundo (avisos) precisa deste `relative`.
+ *
+ * ⭐⭐ E é ele que ENCAIXA o palco pela altura no ampliado (01/10/2026): o mundo nunca rola por
+ * dentro (regra dela: "a cena é o mais importante, tem que estar sempre visível; se for para ter
+ * barra de rolagem, tem que ser no card inteiro"). A conta mora em `lib/scene-encaixe.ts`; aqui só
+ * se mede e se escreve a largura na variável `--sz-scene-encaixe`, que o CSS da moldura lê.
+ */
 export function ConsoleMundo({ children }: { children: ReactNode }) {
-  return <div className="sz-scene-console-mundo">{children}</div>
+  const mundo = useRef<HTMLDivElement>(null)
+  useEncaixeDoMundo(mundo)
+  return (
+    <div ref={mundo} className="sz-scene-console-mundo">
+      {children}
+    </div>
+  )
+}
+
+/**
+ * Mede e escreve `--sz-scene-encaixe` no mundo enquanto o CSS disser que o encaixe vale
+ * (`--sz-scene-encaixe-ativo: 1`, só no ampliado em duas colunas). Fora disso a variável sai e a
+ * moldura volta à largura toda.
+ *
+ * ⚠️ Quem avisa que o encaixe vale é o CSS, não um estado do React: a mesma árvore serve o bloco em
+ * linha e o ampliado (a cena não reinicia ao ampliar), e é a folha de estilo que sabe em que
+ * janela as duas colunas existem.
+ * ⚠️ Observa o mundo (muda ao ampliar e com a janela), o cartão em volta (é dele que se lê o quanto
+ * já está rolando) e a RAIZ do palco (um aviso que entra, um rodapé que quebra linha); a raiz é
+ * trocada pelo React (o retrato do palpite vira o palco), por isso o `MutationObserver` nos filhos.
+ * ⚠️ Sem laço: a variável só é reescrita quando a largura muda mais de 1px, e `fixo` não depende da
+ * largura (o que depende é proporcional e já está na conta), então a segunda medida bate com a
+ * primeira.
+ */
+function useEncaixeDoMundo(ref: RefObject<HTMLDivElement | null>) {
+  useLayoutEffect(() => {
+    const mundo = ref.current
+    if (!mundo || typeof ResizeObserver === 'undefined') return
+    let ultima = Number.NaN
+    const aplicar = () => {
+      const ativo =
+        getComputedStyle(mundo).getPropertyValue('--sz-scene-encaixe-ativo').trim() === '1'
+      const largura = ativo ? encaixeDoMundo(mundo) : null
+      if (largura === null) {
+        if (!Number.isNaN(ultima)) {
+          mundo.style.removeProperty('--sz-scene-encaixe')
+          ultima = Number.NaN
+        }
+        return
+      }
+      if (Math.abs(largura - ultima) <= 1) return
+      ultima = largura
+      mundo.style.setProperty('--sz-scene-encaixe', `${Math.floor(largura)}px`)
+    }
+    const tamanhos = new ResizeObserver(() => aplicar())
+    tamanhos.observe(mundo)
+    if (mundo.parentElement) tamanhos.observe(mundo.parentElement)
+    let raizObservada: Element | null = null
+    const observarRaiz = () => {
+      const raiz = mundo.firstElementChild
+      if (raiz === raizObservada) return
+      if (raizObservada) tamanhos.unobserve(raizObservada)
+      raizObservada = raiz
+      if (raiz) tamanhos.observe(raiz)
+    }
+    observarRaiz()
+    const filhos = new MutationObserver(() => {
+      observarRaiz()
+      aplicar()
+    })
+    filhos.observe(mundo, { childList: true })
+    aplicar()
+    return () => {
+      tamanhos.disconnect()
+      filhos.disconnect()
+      mundo.style.removeProperty('--sz-scene-encaixe')
+    }
+  }, [ref])
 }
 
 /** A prancha só existe quando a experiência já está aberta para interação. */

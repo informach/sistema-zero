@@ -774,10 +774,17 @@
       max-height: max(20rem, calc(100dvh - 14rem));
       overflow-y: auto;
     }
-    /* No AMPLIADO (um diálogo fixo) os dois painéis enchem a área útil e cada um rola sozinho; o
-     * mundo é um contêiner de TAMANHO e o palco simples encaixa pela altura (`--fit`), senão a
-     * 1920×600 o desenho passa da linha do grid (e2e "fichas cabem"). ⚠️ `container-type: size`
-     * SÓ aqui: em linha, com altura natural, um contêiner de tamanho colapsaria a zero. */
+    /* No AMPLIADO (um diálogo fixo) os dois painéis enchem a área útil; o das AÇÕES rola sozinho e
+     * o MUNDO nunca rola por dentro (01/10/2026, regra dela: "a cena é o mais importante, tem que
+     * estar sempre visível; se for para ter barra de rolagem, tem que ser no card inteiro"). O
+     * palco ENCAIXA pela altura: o `ConsoleMundo` mede e escreve `--sz-scene-encaixe`
+     * (`lib/scene-encaixe.ts`: bordas, legenda, rodapé e controles entram na conta) e a moldura
+     * lê. Se mesmo assim não couber (o palco não encolhe: `tilemap`; ou a janela é baixa demais,
+     * piso de 160px no desenho), o mundo cresce com o conteúdo e quem rola é o CARTÃO do mundo
+     * (`.sz-scene-console-visual`), com a cena inteira dentro dele.
+     * ⚠️ A regra antiga (`container-type: size` + `width: 100cqh × proporção`) errava a borda
+     * por 4px (o rolinho que ela viu) e não alcançava palco com legenda, rodapé ou recorte
+     * estreito (até 270px de rolagem na `camadas`). Medido em 56 experiências × 4 janelas. */
     .sz-scene-workspace--expanded .sz-scene-workspace-body,
     .sz-scene-workspace--expanded .sz-scene-workspace-body > fieldset,
     .sz-scene-workspace--expanded .sz-scene-workspace-body > fieldset > fieldset {
@@ -807,14 +814,24 @@
       flex-shrink: 0;
     }
     .sz-scene-workspace--expanded .sz-scene-console-visual > .sz-scene-console-mundo {
-      flex: 1;
-      min-height: 0;
-      container-type: size;
-      overflow: auto;
+      /* ⚠️ Sem `min-height: 0` nem `overflow`: o mundo não encolhe abaixo do conteúdo, e é o
+       * cartão em volta que rola. A variável é o aviso ao `ConsoleMundo` de que o encaixe vale. */
+      flex: 1 1 auto;
+      --sz-scene-encaixe-ativo: 1;
     }
-    .sz-scene-workspace--expanded .sz-scene-console-mundo > .sz-scene-frame--fit {
-      width: min(100%, calc(100cqh * var(--sz-scene-aspect)));
+    .sz-scene-workspace--expanded .sz-scene-console-mundo .sz-scene-frame--fit {
+      width: min(100%, var(--sz-scene-encaixe, 100%));
       margin-inline: auto;
+    }
+    /* O pé do mundo numa linha só: os botões à esquerda e a situação à direita (ideia dela,
+     * 01/10/2026), para sobrar altura ao palco. Em linha a situação segue embaixo, na largura toda. */
+    .sz-scene-workspace--expanded .sz-scene-mundo-rodape {
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: start;
+    }
+    .sz-scene-workspace--expanded .sz-scene-situacao-lugar {
+      justify-self: end;
+      max-width: 100%;
     }
   }
 }

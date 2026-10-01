@@ -1294,7 +1294,13 @@ NEUTRA (sem o gesto que falta), moldura no PALCO (revoga o "mundo de borda a bor
 de 18/09, no CLAUDE.md do member-shell), valores da
 faixa ESCUROS com a cor do par só na bolinha. Teste: `tests/lesson-scene-console-v2.test.tsx`.
 ⚠️ A maquete aprovada é `tmp/maquete-experiencia.tsx` (fora do git): não apagar enquanto a tela
-não bater com ela. ⚠️ O e2e das cenas RODA nesta máquina pelo runner (`bunx playwright test --config
+não bater com ela. ⭐⭐ No AMPLIADO o mundo NUNCA rola por dentro (01/10/2026, relato dela: "a
+cena é o mais importante, tem que estar sempre visível; se for para ter barra de rolagem, tem que
+ser no card inteiro"): o palco encaixa pela altura em todo tipo de cena (conta e medição no
+member-shell, `lib/scene-encaixe.ts`; o CSS daqui não muda nada) e, se não couber, quem rola é o
+cartão do mundo. Um harness descartável em `tmp/diag-cenas/` (serve + spec, fora do git) abre
+QUALQUER experiência dos manifestos por `?aula=<slug>&block=<key>` e mede quem rola no ampliado:
+foi assim que as 56 experiências × 4 janelas foram conferidas. ⚠️ O e2e das cenas RODA nesta máquina pelo runner (`bunx playwright test --config
 playwright.scenes.config.ts`, ~80 s): é a régua do console (palco e botão de executar inteiros à
 vista; a 320px sem rolagem lateral; a 1920×600 o svg inteiro no ampliado) e deve rodar ANTES de
 qualquer review de CSS da cena — em 30/09 dois achados de um full review passaram no Windows e

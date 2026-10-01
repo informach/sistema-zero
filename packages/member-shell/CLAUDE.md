@@ -1290,11 +1290,38 @@ ajustes dela. Hoje o console é:
   teto passava no Windows e caía no Linux do CI, onde a DejaVu Sans é mais larga que a Segoe UI,
   a bancada mede 814-829px e a página rolava para alcançar o botão, tirando o palco da janela.
   Numa tela de 1080px o teto é ~860px e quase nenhuma bancada rola. No AMPLIADO os dois painéis
-  enchem a área útil e rolam cada um, e o mundo é `container-type: size` com o palco simples
-  encaixando pela altura (`sz-scene-frame--fit`, `width: min(100%, 100cqh × --sz-scene-aspect)`):
-  a 1920×600 o desenho passava da linha do grid. ⚠️ O `--fit` só funciona com o contêiner de
-  tamanho, que SÓ existe no ampliado; medido em linha ele parece morto (o `cqh` cai na janela), e
-  foi assim que o full review o apagou por engano.
+  enchem a área útil; o das ações rola sozinho e o MUNDO NUNCA ROLA POR DENTRO (o bullet seguinte).
+- ⭐⭐ **O palco ENCAIXA pela altura no ampliado, em TODO palco (01/10/2026).** Relato dela: *"está
+  dando uma barra de rolagem interna na área da cena... a cena é o mais importante, tem que estar
+  sempre visível. Se for para ter barra de rolagem, tem que ser no card inteiro"*. Medido em 56
+  experiências × 4 janelas: a regra antiga (`container-type: size` + `width: 100cqh × proporção`)
+  errava a borda da moldura por 4px (o rolinho que ela viu, em TODA cena simples) e não alcançava
+  palco com legenda, rodapé ou recorte estreito (altura natural, até 270px de rolagem na `camadas`).
+  Hoje: o `SceneCanvas` declara em TODA moldura a proporção do que escala
+  (`--sz-scene-aspect-desenho` + `sz-scene-frame--fit`: o recorte EM USO, ou a proporção efetiva da
+  comparação), o `ConsoleMundo` MEDE o que não escala (bordas, legenda desenhada, texto do rodapé,
+  títulos, controles de palco composto) e escreve `--sz-scene-encaixe` (`lib/scene-encaixe.ts`,
+  teste `scene-encaixe.test.ts`), e a moldura lê `width: min(100%, var(--sz-scene-encaixe))`. O
+  CSS avisa quando a conta vale (`--sz-scene-encaixe-ativo: 1`, só no ampliado em duas colunas).
+  ⚠️ O mundo perdeu `overflow: auto`, `min-height: 0` e o `container-type`: se o palco não cabe (o
+  `tilemap` recusa o encaixe com `encaixe={false}`, casas de 44px; ou a janela é baixa demais, piso
+  de 160px no desenho), o mundo cresce e quem rola é o CARTÃO do mundo (`.sz-scene-console-visual`),
+  com a cena inteira dentro. ⚠️ A altura disponível é a do mundo DESCONTANDO o que o cartão já rola:
+  sem isso a primeira medida (palco ainda grande) mentiria.
+  ⚠️⚠️ **Dois limites de largura, os dois achados medindo as 56:** (a) a COMPARAÇÃO declara
+  `--sz-scene-largura-minima` = a largura em que os dois lados ainda cabem lado a lado
+  (`ESCALA_ESTREITA` 0,75 × a vista de cada lado), SEMPRE que puder ficar lado a lado — abaixo dela
+  o palco empilha, a altura dobra e a conta espirala (a `world` foi parar em 117px); (b) o palco
+  com RECORTE ESTREITO declara o limiar como mínimo enquanto não está estreito e como
+  `--sz-scene-largura-maxima` enquanto está: o recorte é mais LARGO que o desenho inteiro, então o
+  encaixe o fazia crescer, sair do estreito, ficar mais alto, encolher e voltar, sem fim (a
+  `variable` a 1280×600). O estado em que o palco está é o que fica; se com isso não couber, o
+  cartão rola. E o pé do mundo virou UMA linha no ampliado (botões à esquerda, situação à direita,
+  ideia dela) para sobrar altura ao palco; em linha a situação segue embaixo, na largura toda.
+  Régua: `scene-workspace.spec.ts` ("ampliado: … cabe inteiro", `expectMundoSemRolagem`). Medido
+  depois do conserto (56 × 4 janelas): o mundo nunca rola; o cartão rola só a 1280×600 (piso) e,
+  a 1366×657, na `world` da aula 1 do Corre Dino (comparação + HUD alto, 114px) e na `restart`
+  (HUD de três linhas, 24px).
 - ⚠️ **Fonte larga no CI (Linux)**: a prancha é `grid-template-columns: minmax(0, 1fr)` (a coluna
   implícita `auto` tem o min-content como mínimo, e o rótulo sem quebra do botão de executar
   alargava a bancada: a 320px a página rolava de lado) e os gestos (`.sz-scene-gestos >

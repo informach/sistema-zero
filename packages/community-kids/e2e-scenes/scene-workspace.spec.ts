@@ -45,6 +45,22 @@ async function expectFullyVisible(locator: Locator) {
     .toBe(true)
 }
 
+/**
+ * O mundo do console NUNCA rola por dentro (01/10/2026, regra dela): a cena inteira à vista, ou é o
+ * CARTÃO do mundo (`.sz-scene-console-visual`) que rola. Antes, o encaixe pela altura errava a borda
+ * da moldura por 4px (um rolinho em toda cena simples) e nem alcançava palco com rodapé ou recorte.
+ */
+async function expectMundoSemRolagem(page: Page) {
+  await expect
+    .poll(() =>
+      page.locator('.sz-scene-console-mundo').evaluate((el) => ({
+        rola: el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1,
+        overflow: getComputedStyle(el).overflowY,
+      })),
+    )
+    .toEqual({ rola: false, overflow: 'visible' })
+}
+
 async function expectLayout(page: Page, sideBySide: boolean) {
   await expect
     .poll(() =>
@@ -394,6 +410,7 @@ for (const size of [
     await page.screenshot({ path: info.outputPath('inline.png'), fullPage: true })
     await expand(page).click()
     await fits(page)
+    await expectMundoSemRolagem(page)
     if (size.width >= 960) {
       await expectFullyVisible(page.locator('.sz-scene-console-mundo svg').first())
     }
@@ -406,4 +423,92 @@ for (const size of [
     await expect(close(page)).toBeInViewport({ ratio: 1 })
     await close(page).click()
   })
+}
+
+/* O encaixe pela altura vale para TODO palco (01/10/2026): o simples (`areas`), a COMPARAÇÃO lado a
+ * lado com títulos (`criar-mostrar`, mundo `world`, que começa num palpite) e o que tem recorte
+ * estreito (`camadas`). Antes só o simples encaixava, e errando a borda; os outros ficavam com a
+ * altura natural e o mundo rolava por dentro (até 270px). A 1366×657 (um notebook de 768 com a barra
+ * do navegador) tudo cabe sem rolagem nenhuma; a 1280×600 o desenho bate no piso de 160px (ou a
+ * comparação na largura mínima do lado a lado) e o CARTÃO do mundo pode rolar, mas o mundo por dentro
+ * nunca, e o desenho fica inteiro à vista. */
+const CABE = { cartaoRola: false }
+const CARTAO_ROLA = { cartaoRola: true }
+for (const caso of [
+  {
+    block: 'experiencia-areas',
+    nome: 'palco simples',
+    janelas: [
+      { width: 1366, height: 657, ...CABE },
+      { width: 1280, height: 600, ...CARTAO_ROLA },
+    ],
+  },
+  {
+    // A comparação para na largura mínima do lado a lado (os dois lados legíveis) e, com o HUD
+    // desta cena, só cabe sem rolar numa janela alta; abaixo disso o cartão rola, mas ela não
+    // empilha nem encolhe além do mínimo (medido: antes espiralava até 117px).
+    block: 'experiencia-criar-mostrar',
+    nome: 'comparação lado a lado, depois do palpite',
+    ladoALado: true,
+    janelas: [
+      { width: 1920, height: 937, ...CABE },
+      { width: 1366, height: 657, ...CARTAO_ROLA },
+    ],
+  },
+  {
+    block: 'experiencia-camadas',
+    nome: 'recorte estreito',
+    janelas: [
+      { width: 1366, height: 657, ...CABE },
+      { width: 1280, height: 600, ...CARTAO_ROLA },
+    ],
+  },
+]) {
+  for (const size of caso.janelas) {
+    test(`ampliado: ${caso.nome} cabe inteiro em ${size.width}x${size.height}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(size)
+      await page.goto(`/?block=${caso.block}&width=900`)
+      await expand(page).click()
+      await expectLayout(page, true)
+      // No palpite o mundo mostra o retrato: ele também encaixa. Responder abre o palco de verdade
+      // (o palpite da `world` vem do modelo da cena, não do manifesto: a opção é achada pela estrutura).
+      await expectMundoSemRolagem(page)
+      if (await page.getByTestId('scene-prediction-preview').isVisible()) {
+        await page
+          .locator('fieldset', { hasText: 'Escolha o que você acha' })
+          .locator('button')
+          .first()
+          .click()
+        await expect(page.locator('.sz-scene-mundo-rodape')).toBeVisible()
+      }
+      await expectMundoSemRolagem(page)
+      const desenho = page.locator('.sz-scene-console-mundo svg').first()
+      if (size.cartaoRola) {
+        // O cartão do mundo pode rolar, mas o desenho não é esmagado: fica no piso de 160px (ou a
+        // comparação na largura mínima do lado a lado), inteiro, por dentro de um mundo que não rola.
+        expect(
+          await desenho.evaluate((el) => el.getBoundingClientRect().height),
+        ).toBeGreaterThanOrEqual(150)
+        if (caso.ladoALado) await expect(page.locator('[data-lado-a-lado]')).toBeVisible()
+      } else {
+        await expectFullyVisible(desenho)
+        expect(
+          await page
+            .locator('.sz-scene-console-visual')
+            .evaluate((el) => el.scrollHeight <= el.clientHeight + 1),
+        ).toBe(true)
+      }
+      // O pé do mundo numa linha só: a situação ao lado dos botões, não embaixo deles.
+      const pe = await page.locator('.sz-scene-mundo-rodape').evaluate((el) => {
+        const botoes = el.querySelector('.sz-scene-mundo-ferramentas')?.getBoundingClientRect()
+        const situacao = el.querySelector('.sz-scene-situacao')?.getBoundingClientRect()
+        return botoes && situacao
+          ? { mesmaLinha: situacao.top < botoes.bottom && situacao.left >= botoes.right }
+          : null
+      })
+      expect(pe).toEqual({ mesmaLinha: true })
+    })
+  }
 }
