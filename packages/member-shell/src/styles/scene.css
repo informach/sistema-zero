@@ -241,9 +241,18 @@
 .sz-scene-console--palpite {
   --sz-scene-deck: color-mix(in oklab, var(--color-primary) 5%, var(--color-card));
 }
-/* Os dois painéis: o mundo (visual) e a conversa com a ação (actions). */
+/* Os dois painéis: o mundo (visual) e a conversa com a ação (actions).
+ * ⚠️⚠️ `position: relative` é load-bearing (01/10/2026): os dois rolam no modo de duas colunas,
+ * e um texto só para o leitor (`sr-only`, que é `position: absolute`) dentro deles — "Descoberta
+ * 2, trancada" na lista — toma como bloco contentor o ancestral POSICIONADO mais perto. Sem isto
+ * era o diálogo ampliado (`position: fixed`), e o span, parado onde a lista o deixa (abaixo da
+ * janela), ESTICAVA a área de rolagem do diálogo em vez de a do painel. No Linux do CI, com a
+ * fonte mais larga, o `scrollIntoView` do resultado rolava o diálogo em 51px e o "Voltar à aula"
+ * saía da janela (e2e "fichas cabem em 1366x768, painel 320"). Medido: `scrollHeight` do diálogo
+ * 810 contra 768 de janela, só por causa desse span. */
 .sz-scene-console-visual,
 .sz-scene-console-actions {
+  position: relative;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -659,6 +668,9 @@
 .sz-scene-workspace-card {
   /* Dentro da seção fixa, não no slot: ampliar continua relativo à janela inteira. */
   container: scene-workspace / inline-size;
+  /* O cartão rola no ampliado empilhado: contém os `sr-only` (absolutos) que ficam fora dos dois
+   * painéis, pelo mesmo motivo do `relative` deles. */
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 1rem;

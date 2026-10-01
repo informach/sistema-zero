@@ -1303,6 +1303,15 @@ ajustes dela. Hoje o console é:
   (largura parecida com a DejaVu) e rode `bunx playwright test --config
   playwright.scenes.config.ts` com `SCENE_E2E_PORT` livre (o Playwright RODA nesta máquina para
   este harness; o que não abre é o `chromium.launch()` avulso num script).
+- ⚠️⚠️ **Painel que ROLA é `position: relative`** (`.sz-scene-console-visual`,
+  `.sz-scene-console-actions` e o `.sz-scene-workspace-card`, 01/10/2026). Um `sr-only` é
+  `position: absolute` e toma como bloco contentor o ancestral POSICIONADO mais perto: o
+  "Descoberta 2, trancada." da lista, parado abaixo da janela, esticava a área de rolagem do
+  DIÁLOGO ampliado (`fixed`) em vez de a do painel (medido: `scrollHeight` 810 contra 768 de
+  janela só por causa dele). No Linux do CI, com a lista mais alta, o `scrollIntoView` do
+  resultado rolava o diálogo em 51px e o "Voltar à aula" saía da janela (e2e "fichas cabem em
+  1366x768, painel 320"); no Windows o span cabia e nada rolava, por isso não reproduzia nem com
+  Verdana. `tests/scene-console-bloco-contentor.test.ts` impede a declaração de sumir.
 - **Full review de código (30/09/2026), o que mudou:** (a) o momento com as duas classes (acima);
   (b) os palcos COMPOSTOS (`tilemap`, `same-rules-new-skin`, `unique-names`) voltaram a ter a
   moldura nos desenhos de dentro (a regra "filho direto" os tinha deixado sem nenhuma); (c) a
