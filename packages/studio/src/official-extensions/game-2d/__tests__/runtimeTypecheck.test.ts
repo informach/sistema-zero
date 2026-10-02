@@ -380,7 +380,8 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // (`remember(kind, name)`, 2) e a imagem que ainda não chegou (`picture(name)`, 1).
   // No anfitrião (5): a nitidez por imagem (`smoothing(ctx, img, width)`, 3) e a
   // repintura da cena sem laço (`late(name, redraw)`, 2).
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1337)
+  // 1337 → 1336: `finite` passou a entregar `Number.isFinite` direto ao `every`.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1336)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

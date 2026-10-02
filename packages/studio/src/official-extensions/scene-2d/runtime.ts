@@ -1,5 +1,18 @@
+/**
+ * What ships is the code alone. The comments and the indentation below are for whoever
+ * reads this file; in the preview they were bytes in every document a child opens, and
+ * the document of the largest game has a size budget (e2e/reino-zero-performance).
+ * Safe here because no string in this runtime spans lines.
+ */
+const lean = (source: string): string =>
+  source
+    .split('\n')
+    .map((line) => line.trimStart())
+    .filter((line) => line !== '' && !line.startsWith('//'))
+    .join('\n')
+
 /** Self-contained JS, injected once inside each engine. No dependency on entities/physics. */
-export const sceneTwoDRuntime = `
+export const sceneTwoDSource = `
 /**
  * @param {import('../scene-2d/host').SceneHost} host
  * @returns {import('../scene-2d/contract').SceneTwoDApi & { reset(): void }}
@@ -18,11 +31,12 @@ function createScene2D(host) {
     if (warnings.has(message)) return;
     if (warnings.size < (reserved ? 128 : 64)) { warnings.add(message); host.warn(message); }
   }
-  function finite(values) { return values.every(function (v) { return typeof v === 'number' && Number.isFinite(v); }); }
+  // Number.isFinite is false for anything that is not a number: no typeof needed.
+  function finite(values) { return values.every(Number.isFinite); }
   // Names and ids are text, but a loop counter is the natural id for a child: accept it.
   // Spaces around a name are never meant: the list of names offers it without them.
   function key(value) {
-    if (typeof value === 'number' && Number.isFinite(value)) value = String(value);
+    if (Number.isFinite(value)) value = String(value);
     if (typeof value !== 'string') return '';
     value = value.trim();
     return value.length > 0 && value.length <= 200 ? value : '';
@@ -259,9 +273,8 @@ function createScene2D(host) {
 }
 `
 
-export const basicSceneAdapter =
-  sceneTwoDRuntime +
-  `
+/** What the basic engine (Jogo 2D) lends to the scene. */
+export const basicSceneHost = `
   var _sceneLate = Object.create(null);
   var _sceneVector = new WeakMap();
   var _scene2d = createScene2D({
@@ -297,9 +310,8 @@ export const basicSceneAdapter =
   _registerRuntimeDomain('scene-2d', { reset: _scene2d.reset });
 `
 
-export const advancedSceneAdapter =
-  sceneTwoDRuntime +
-  `
+/** What the advanced engine (Jogo 2D Avançado) lends to the scene. */
+export const advancedSceneHost = `
   var _sceneCamera = { x: 0, y: 0 };
   var _scene2d = createScene2D({
     context: function () { return ctx2d; }, width: function () { return config.w; }, height: function () { return config.h; },
@@ -336,3 +348,12 @@ export const advancedSceneAdapter =
   });
   _registerRuntimeDomain('scene-2d', { resetProject: _scene2d.reset });
 `
+
+// The three literals above stay plain (opened and closed on lines of their own) so
+// that the template guards of both engines can scan them. What the engines
+// inject is derived here, and exported as a list for the same reason.
+const sceneTwoDRuntime = lean(sceneTwoDSource)
+const basicSceneAdapter = [sceneTwoDRuntime, lean(basicSceneHost), ''].join('\n')
+const advancedSceneAdapter = [sceneTwoDRuntime, lean(advancedSceneHost), ''].join('\n')
+
+export { advancedSceneAdapter, basicSceneAdapter, sceneTwoDRuntime }

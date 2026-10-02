@@ -4565,6 +4565,20 @@ defeito grave no motor; o achado mais caro estava FORA do código:
    ao deslizar; a checagem de aula converte o projeto uma vez por projeto (`WeakMap`), não uma
    vez por regra.
 
+9. ⭐⭐ **O primeiro push reprovou no CI por TAMANHO, e o deploy foi pulado.** O
+   `e2e/reino-zero-performance.spec.ts` trava o documento de preview do maior jogo em 790 000
+   bytes; o runtime do Jogo 2D vai inteiro para TODO documento, e o motor da cena (16,5 KB com
+   comentários) o levou a 793 616. O teto não subiu (o próprio teste diz que subir é decisão
+   dela): `scene-2d/runtime.ts` passou a entregar o código sem comentários e sem indentação
+   (`lean`), e o documento mede 789 943. **Sobram 57 bytes**: o próximo acréscimo ao runtime
+   do Jogo 2D bate no teto. ⚠️ Esse teste só roda no e2e do Chromium (terceira fatia do CI) e
+   eu não o tinha rodado localmente: lote que acrescenta runtime ao Jogo 2D roda
+   `bunx playwright test e2e/reino-zero-performance.spec.ts --project=chromium` antes do push.
+   ⚠️ As guardas de template dos dois motores leem `scene-2d/runtime.ts` de jeitos diferentes:
+   a da gk exige que cada literal feche numa linha só com a crase e que venha logo depois de
+   um `export const`. Por isso os três literais são exportados crus e o que os motores
+   injetam é derivado no fim do arquivo, exportado por lista (`export { … }`).
+
 **Fica de fora, registrado:** objeto que se move SOZINHO na direção do jogador pode cruzar sem
 encontro (o encontro compara o intervalo da CÂMERA; está dito no manual e na dica do "mover
 objeto"; consertar pede guardar o z anterior do objeto e desambiguar "movido antes ou depois de

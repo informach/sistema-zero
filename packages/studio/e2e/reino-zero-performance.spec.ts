@@ -77,6 +77,13 @@ test('Reino Zero abre, programa e joga dentro dos orçamentos de desempenho', as
   // ⚠️ Este é o SEGUNDO orçamento que a mesma fatia atravessou (o outro é o do modo Blocos,
   // em `initialBundleBudget.test.ts`). Dois num lote é o sinal de que a inclusão incondicional
   // do runtime do Jogo 2D merece uma decisão de quem é dono dela — não de mais um teto maior.
+  //
+  // ⚠️ 01/10/2026: as camadas e a pista em perspectiva (`scene-2d`) puseram o documento em
+  // 793 616 bytes e o CI reprovou. O teto NÃO subiu: o motor da cena passou a ir ao documento
+  // sem comentários e sem indentação (`lean`, em `scene-2d/runtime.ts`), e o documento mede
+  // 789 943. Sobram 57 bytes. O próximo acréscimo ao runtime do Jogo 2D bate aqui, e aí a
+  // decisão da linha de cima é a única saída honesta: incluir a cena só nos projetos que a
+  // usam, ou enxugar o runtime inteiro do mesmo jeito.
   expect(metrics.srcdocBytes, evidence).toBeLessThanOrEqual(790_000)
   expect(metrics.openMs, evidence).toBeLessThanOrEqual(8_000)
   expect(metrics.maxLongTaskMs, evidence).toBeLessThanOrEqual(2_000)

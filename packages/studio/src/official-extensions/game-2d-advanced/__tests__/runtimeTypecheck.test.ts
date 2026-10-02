@@ -212,7 +212,8 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // 1237 → 1244: a terceira revisão da cena. Na fábrica (4): `warn(message, reserved)`
   // +1, `remember(kind, name)` 2 e `picture(name)` 1. No anfitrião (3): a nitidez por
   // imagem (`smoothing(ctx, img, width)`). Aqui não há `late`: o motor sempre tem laço.
-  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1244)
+  // 1244 → 1243: `finite` passou a entregar `Number.isFinite` direto ao `every`.
+  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1243)
 })
 
 test('as assinaturas centrais mantêm nomes e ordem dos parâmetros do contrato', () => {
