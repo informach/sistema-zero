@@ -17,8 +17,8 @@ import { familyLabel } from '@/lib/studio-family'
  * blocos é o que torna a recompensa legível — "ganhei 💥 Colisões" é uma conquista;
  * "ganhei 6 blocos" não é.
  *
- * Sem nenhuma ferramenta a seção some: quem ainda não conquistou nenhuma usa o Estúdio
- * pelo perfil do nível, e prometer uma lista vazia só desanimaria.
+ * Sem nenhuma ferramenta a seção some: quem ainda não conquistou nenhuma tem o Estúdio livre
+ * trancado (o recado de lá já explica), e prometer uma lista vazia só desanimaria.
  *
  * ⚠️⚠️ AGRUPADO POR FAMÍLIA, e não por acaso. A lista era uma fileira só de pílulas, e isso
  * quebrava de dois jeitos ao mesmo tempo:

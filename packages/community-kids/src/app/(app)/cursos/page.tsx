@@ -12,6 +12,7 @@ import type { StudentLevelSlug } from '@/lib/types'
 import {
   checkStudioAccessReadonly,
   getGamificationReadonly,
+  getStudioUnlocksReadonly,
   listCatalog,
   listMyCourses,
 } from '@/server/members'
@@ -33,17 +34,20 @@ export const dynamic = 'force-dynamic'
  * uma. O mapa continua com os medalhões de verdade (`public/jornada/*.webp`).
  */
 export default async function CatalogPage() {
-  const [{ status, body }, gamification, studioRes, session, mineRes] = await Promise.all([
-    listCatalog(),
-    getGamificationReadonly(),
-    // Posse do Estúdio Completo (produto vendido à parte): só com ela o estado
-    // "em dia" oferece criar um jogo. Best-effort — soluço só esconde o atalho.
-    checkStudioAccessReadonly().catch(() => null),
-    getSession(),
-    // O progresso das aventuras (aulas feitas) mora em "Meus cursos"; o catálogo é vitrine.
-    // Best-effort: sem ele, o cartão cai no "Liberado" + "Acessar curso".
-    listMyCourses().catch(() => null),
-  ])
+  const [{ status, body }, gamification, studioRes, session, mineRes, unlocksRes] =
+    await Promise.all([
+      listCatalog(),
+      getGamificationReadonly(),
+      // Posse do Estúdio Completo (produto vendido à parte): só com ela o estado
+      // "em dia" oferece criar um jogo. Best-effort — soluço só esconde o atalho.
+      checkStudioAccessReadonly().catch(() => null),
+      getSession(),
+      // O progresso das aventuras (aulas feitas) mora em "Meus cursos"; o catálogo é vitrine.
+      // Best-effort: sem ele, o cartão cai no "Liberado" + "Acessar curso".
+      listMyCourses().catch(() => null),
+      // Os blocos conquistados: sem nenhum, o Estúdio livre está trancado e o atalho some.
+      getStudioUnlocksReadonly().catch(() => null),
+    ])
   if (status !== 200) throw new Error('Falha ao carregar o catálogo')
   const courses = body?.courses ?? []
   /**
@@ -55,13 +59,14 @@ export default async function CatalogPage() {
    */
   const level = gamification.status === 200 ? (gamification.body?.level ?? null) : null
   const completionByLevel = tierCompletionByLevel(courses)
-  // ⚠️ POSSE não basta: o Estúdio LIVRE só abre no Construtor (`freeStudio`). Uma Faísca
-  // com o produto comprado e o catálogo vazio cairia em "em dia" → "Criar um jogo meu" →
-  // tela de Estúdio bloqueado pela jornada. Clique morto — por isso o atalho exige as duas.
+  // ⚠️ POSSE não basta: o Estúdio LIVRE só abre no Construtor (`freeStudio`) e com algum
+  // bloco conquistado. Sem isso o "em dia" → "Criar um jogo meu" cairia na tela de Estúdio
+  // trancado. Clique morto: por isso o atalho exige as três (ver `canOpenFreeStudio`).
   const studioOwned = canOpenFreeStudio(
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true,
     level?.slug,
     session?.role,
+    unlocksRes,
   )
 
   if (level) {

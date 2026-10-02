@@ -11,6 +11,7 @@ import {
   checkCreativeToolsAccessReadonly,
   checkPensaAccessReadonly,
   getGamificationReadonly,
+  getStudioUnlocksReadonly,
 } from '@/server/members'
 import { getSession } from '@/server/session'
 
@@ -35,11 +36,12 @@ export default async function PensaPage({
   // Estúdio no MESMO namespace do IndexedDB que o /estudio usa (fase R do Pensa).
   // A posse do PINTA (produto à parte) só liga o "Desenhar no Pinta" das missões:
   // best-effort — soluço na checagem degrada escondendo o botão, nunca trava a página.
-  const [res, toolsRes, gam, session] = await Promise.all([
+  const [res, toolsRes, gam, session, unlocksRes] = await Promise.all([
     checkPensaAccessReadonly(),
     checkCreativeToolsAccessReadonly().catch(() => null),
     getGamificationReadonly().catch(() => null),
     getSession(),
+    getStudioUnlocksReadonly().catch(() => null),
   ])
   // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
   if (res.status !== 200) return <ToolRouteRecado screen={KidsPensaUnavailable} />
@@ -55,6 +57,7 @@ export default async function PensaPage({
       toolsRes?.status === 200 && toolsRes.body?.access?.['estudio-completo'] === true,
     levelSlug: gam?.status === 200 ? gam.body?.level?.slug : undefined,
     role: session?.role,
+    unlocks: unlocksRes,
   })
   return (
     <PensaClient

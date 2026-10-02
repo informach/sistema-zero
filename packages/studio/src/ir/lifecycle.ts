@@ -262,7 +262,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
  * ⭐ **A régua é "molde é a receita que EU escrevo"**, e CARREGAR não é. Trazer
  * um arquivo que já existe (som, folha de quadros, imagem) é preparação de
  * partida e fica em ⚙️ Ao iniciar. Além de ser a distinção mais fácil de ensinar,
- * é o que mantém a área invisível para quem está no Kit essencial: som é o
+ * é o que mantém a área invisível no primeiro degrau (`iniciante-2d`): som é do
  * primeiro degrau, e torná-lo molde faria a área aparecer para todo mundo.
  *
  * ⚠️ Ficam DE FORA de propósito:

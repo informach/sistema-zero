@@ -560,6 +560,14 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       return studioUnlocksReadonlyCached()
     },
 
+    /**
+     * Os mesmos blocos conquistados, para Route Handlers: renova a sessão como as outras
+     * leituras da rota, e por isso pode correr EM PARALELO com elas (o refresh é single-flight).
+     */
+    getStudioUnlocks(): Promise<GatewayResponse<StudioUnlocksView>> {
+      return gw.gatewayFetch('/members/studio/unlocks', { query: { audience } })
+    },
+
     /** Desafio do MÊS (game jam): tema global + `entered` — Server Component. */
     getChallengeReadonly(): Promise<GatewayResponse<ChallengeMeView>> {
       return challengeReadonlyCached()

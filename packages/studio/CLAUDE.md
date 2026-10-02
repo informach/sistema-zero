@@ -1130,7 +1130,7 @@ Nasceu porque o "Ao iniciar" dos jogos da família ficou grande demais. Medido n
 32 exemplos do Jogo 2D (peso = nós da subárvore de `behavior.start`): **42% do
 conteúdo sai** para a área nova, **47% nos dez maiores** (Safári 247→98, Muralha
 71%, Sobrevivente 66%). ⭐ O peso vem do `Desenhar a figura ⟨X⟩ assim:` (15 dos 17
-exemplos com molde), não dos tipos de inimigo. Os jogos do Kit essencial (Pong,
+exemplos com molde), não dos tipos de inimigo. Os jogos do primeiro degrau (o antigo Kit essencial: Pong,
 Dino Run, Pegue a moeda, Sala com paredes) medem **0%**: as crianças clientes não
 são afetadas e a área nem aparece para elas.
 
@@ -1160,7 +1160,7 @@ são afetadas e a área nem aparece para elas.
 - ⭐ **A régua é "molde é a receita que EU escrevo", e CARREGAR não é.** Trazer um
   arquivo que já existe (som, folha de quadros, imagem) é preparação de partida e
   fica no Ao iniciar. Além de ser a distinção mais fácil de ensinar, é o que
-  mantém a área invisível no Kit essencial: som é o PRIMEIRO degrau, e torná-lo
+  mantém a área invisível no primeiro degrau (`iniciante-2d`): som é do PRIMEIRO degrau, e torná-lo
   molde fazia a área aparecer para todo mundo. Pelo mesmo motivo
   `g2d:enemyStateAnim` ficou de fora: ele configura o tipo mas CONSOME a folha.
 - **O encaixe é ESTRITO** (o Blockly recusa um molde no Ao iniciar), com **duas
@@ -1207,8 +1207,8 @@ são afetadas e a área nem aparece para elas.
   oferece algum bloco que PERTENCE a ela. Um número fixo abre o pior buraco
   possível — a criança vê "Desenhar a figura assim:", arrasta, e a área onde ele
   encaixa não existe para ela. Medido na primeira versão: SETE blocos órfãos,
-  incluindo o som do núcleo. Hoje: `iniciante-2d` sem a área (Kit essencial
-  limpo), `iniciante-3d` em diante com ela e os 3 moldes do Jogo 2D.
+  incluindo o som do núcleo. Hoje: `iniciante-2d` sem a área (o primeiro
+  degrau limpo), `iniciante-3d` em diante com ela e os 3 moldes do Jogo 2D.
   ⚠️ Três armadilhas neste detector, todas já pagas: (a) contar quem só CABE na
   área (variável/função) fazia ela aparecer no primeiro degrau, sem nada para pôr
   dentro; (b) o flyout DINÂMICO (Funções/Classes) não tem `contents`, então a

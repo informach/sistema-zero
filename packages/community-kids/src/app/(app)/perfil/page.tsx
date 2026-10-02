@@ -86,7 +86,12 @@ export default async function ProfilePage() {
   // decide se o ATALHO aparece (Faísca com o produto ainda não abre o Estúdio livre).
   const ownsStudio =
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true
-  const studioFree = canOpenFreeStudio(ownsStudio, gamification?.level?.slug, session.role)
+  const studioFree = canOpenFreeStudio(
+    ownsStudio,
+    gamification?.level?.slug,
+    session.role,
+    unlocksRes,
+  )
 
   // "Minhas ferramentas" some sem gaveta nenhuma (ver `MyTools`), então a faixa menta só
   // existe quando há jornada OU ferramenta de verdade para mostrar.

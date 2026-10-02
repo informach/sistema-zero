@@ -1,6 +1,9 @@
 import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import { isStudioZappyAllowed } from '@sistemazero/member-shell/server/zappy-access'
-import { KidsJourneyLockedStudio } from '@/components/kids/kids-journey-locked-studio'
+import {
+  KidsJourneyLockedStudio,
+  KidsStudioWithoutTools,
+} from '@/components/kids/kids-journey-locked-studio'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
@@ -77,7 +80,13 @@ export default async function EstudioPage({
   // livre só começa com algum bloco conquistado. Dentro das aulas o Estúdio segue disponível.
   const gate = studioGate(levelSlug, session?.role, unlocksRes)
   if (gate.kind === 'unavailable') return <ToolRouteRecado screen={KidsStudioUnavailable} />
-  if (gate.kind === 'journey-locked') return <ToolRouteRecado screen={KidsJourneyLockedStudio} />
+  if (gate.kind === 'journey-locked') {
+    return (
+      <ToolRouteRecado
+        screen={gate.reason === 'no-blocks' ? KidsStudioWithoutTools : KidsJourneyLockedStudio}
+      />
+    )
+  }
   const { tier } = gate
   const challengeEligible =
     challengeAccess?.status === 200 &&

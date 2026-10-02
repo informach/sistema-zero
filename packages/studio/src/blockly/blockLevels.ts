@@ -11,7 +11,8 @@ import { resolveProgrammingBlockLevel } from './programmingContract'
  * último" (decisão da usuária 26/07):** iniciante/intermediário criam com os KITS
  * (extensões facilitadoras) + um mínimo de web; o AVANÇADO faz tudo na unha, sem
  * kit (Canvas/HTML/CSS crus).
- * - **Iniciante 2D** = os blocos do Jogo 2D de `INICIANTE_2D_G2D` + kit essencial de lógica +
+ * - **Iniciante 2D** = os blocos do Jogo 2D de `INICIANTE_2D_G2D` + o orçamento iniciante de
+ *   Programação (`programmingContract.ts`) +
  *   **HTML/CSS ESSENCIAL** (título/parágrafo/imagem/
  *   botão/link/lista/caixa + cor de fundo/texto, tamanho de fonte, padding/margem/
  *   borda — o mínimo pra montar uma telinha). As aulas filtram o subconjunto de

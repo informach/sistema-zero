@@ -466,11 +466,11 @@ quando a autora publica uma aula nova, o marco não. **`lib/course-tier.ts`**
 é o helper compartilhado dos apps de aluno (`COURSE_TIERS`/`COURSE_TIER_LABELS`/`courseTierOf` —
 track ausente → `2d`; o admin NÃO importa daqui, duplicação intencional); o filtro `nivel` do
 `use-catalog-filters` usa os degraus de `COURSE_TIERS` (7 desde 14/08, com o `primeiros-passos-2d` na frente; só o KIDS usa a divisão — o filtro `nivel` do adulto não tem UI hoje). **`lib/studio-tier.ts`**: `resolveStudioTier` mapeia os 8
-ranks → degrau de blocos do Estúdio Completo (cada nível libera somente ferramentas já aprendidas;
-**Ponte abre no `champion`/Gênio** e o Pro abre somente no `god`/Lenda + equipe; desconhecido→noob;
-remodelo 26/07 — Mestre/Arquiteto ficaram só-Blocos). `resolveStudioTier` também devolve a allowlist
-acumulada de extensões (o kit `game-3d-advanced` entra já no `architect`/Arquiteto, reclassificado p/
-`intermediario-3d` no studio) e bloqueia projetos antigos ou importados que dependam de uma extensão futura. A matriz completa e o runtime remoto das aulas
+ranks → MODO do Estúdio Completo (`freeStudio` a partir do Construtor; **Ponte abre no
+`champion`/Gênio** e o Pro abre somente no `god`/Lenda + equipe; desconhecido→noob; remodelo 26/07 —
+Mestre/Arquiteto ficaram só-Blocos). Os BLOCOS e as EXTENSÕES não vêm do rank: são os conquistados
+nos cursos (sem reserva desde 02/10/2026, ver "Paleta do Estúdio pelo CURRÍCULO"), e o tier bloqueia
+projetos antigos ou importados que dependam de uma extensão que os cursos ainda não deram. A matriz completa e o runtime remoto das aulas
 estão em `docs/jornada-do-criador.md`. Tudo
 passthrough (os clients não mapeiam) — a APRESENTAÇÃO (aura/insígnia/chip) vive no community-kids;
 aqui é só o tipo.
@@ -488,7 +488,25 @@ quem não tem paleta NÃO pode chegar ao editor: a porta é a página (`studioGa
 o Mural, o Zappy e o Pensa usam; o Zappy e o Pensa NÃO cortam mais pelo nível do posto quando há
 lista (só a equipe, sem lista, usa o nível). Falha ao buscar os blocos é "indisponível" (503 no
 Zappy, recado de tente de novo no kids), nunca "sem blocos". Client `getStudioUnlocksReadonly()`
-(`GET /members/studio/unlocks`) + tipo `StudioUnlocksView`. ⚠️ A derivação bloco→extensão e bloco→gaveta
+(`GET /members/studio/unlocks`, Server Components) e `getStudioUnlocks()` (a mesma leitura COM
+refresh, para Route Handlers: o Zappy a busca em PARALELO com posse e rank) + tipo
+`StudioUnlocksView`.
+**Full review do mesmo dia (02/10/2026), o que ficou de contrato:**
+- O `hasPalette` do `earnedStudioTier` só conta blocos que o `SERVER_BLOCK_CATALOG` CONHECE: um
+  currículo antigo só com ids que saíram do Studio abriria o editor com a caixa vazia. A lista
+  (`allowBlocks`) segue como veio. O `resolveStudioTier` (lib, sem catálogo) conta o tamanho.
+- O manual de uma extensão entra no prompt do Zappy quando ALGUM bloco dela foi conquistado, mas o
+  TRECHO (`textChunks`) que cita pelo rótulo um bloco ainda não conquistado sai inteiro
+  (`citesForbiddenBlock`; rótulos com menos de 8 letras não contam). A redação de ids `sz_*` não
+  alcança nome em prosa. Limite registrado: nome de helper do runtime (`drawTileMap`) não é rótulo e
+  segue no texto.
+- **Decisão: no modo Pro o Zappy continua filtrado pelos blocos conquistados.** O projeto Pro é
+  código (Vite), sem blocos nem extensões, então o catálogo e os manuais quase não pesam ali; a
+  checagem de EXTENSÃO é que não vale para `kind: 'pro'` (o projeto é liberado pelo `tier.pro`).
+- **Decisão: `/estudio/pro/[id]` só checa `tier.pro`**: uma Lenda com zero blocos o abre. É
+  inalcançável na prática (a Lenda concluiu e publicou a jornada inteira, e em produção todo curso
+  tem a lista) e o modo Pro não usa a paleta.
+- `StudioTier.rewardId`/`blockProfileId` SAÍRAM (metadado morto; o core segue com eles). ⚠️ A derivação bloco→extensão e bloco→gaveta
 vive em **`server/studio-unlocks.ts`** (`extensionsForBlocks`/`drawersForBlocks`), NÃO no
 `lib/studio-tier.ts`: ela importa o `SERVER_BLOCK_CATALOG` inteiro e o studio-tier é consumido por
 componentes de CLIENTE (checagem de remix no Mural) — arrastar o catálogo p/ o bundle do navegador
@@ -2353,8 +2371,9 @@ INTEIRA por uma referência ruim. Daí a "resposta genérica" que a usuária rel
 - **Entender o projeto aberto** (`server/zappy-project-outline.ts`, NOVO/puro): `buildProjectOutline`
   monta a árvore por id/parentId com recuo de 2 espaços e rótulos do `SERVER_BLOCK_CATALOG`
   COMPLETO. ⚠️ Tipo desconhecido **NÃO é ecoado** (vira `blocosDesconhecidos: N`) — o `context.blocks`
-  vem do cliente e ecoar texto arbitrário reabriria prompt injection. Bloco acima do tier aparece
-  com `(nível futuro)`: existe no projeto, mas o prompt proíbe recomendá-lo. O `projectData` troca
+  vem do cliente e ecoar texto arbitrário reabriria prompt injection. Bloco que os cursos ainda
+  não deram aparece com `(ainda não liberado)` (era `(nível futuro)` até 02/10/2026): existe no
+  projeto, mas o prompt proíbe recomendá-lo. O `projectData` troca
   `blocks` cru por `{esboco, blocosRelevantes}` e o `contextAllowedByCatalog` parou de filtrar o
   projeto DELA (a redação por tier vale só para o que é RECOMENDADO).
 - **Orçamento de 48KB é contrato** (testes são o freio): ordem de encolhimento `catalog>24 →
@@ -2387,7 +2406,9 @@ INTEIRA por uma referência ruim. Daí a "resposta genérica" que a usuária rel
 
 Ver `../../docs/plans/creator-journey-rollout.md` para ordem de implantação e rollback.
 `server/pensa-capabilities.ts` usa os blocos conquistados e a disponibilidade das ferramentas
-na geração/auditoria, conservando o fallback legado de currículo vazio. Molda é destino de
+na geração/auditoria. Desde 02/10/2026 não há fallback de currículo vazio: sem bloco conquistado o
+Estúdio não é destino (`studioAvailable` exige `tier.hasPalette`), porque a porta do `/estudio`
+estaria trancada e a geração paga sairia com o catálogo vazio. Molda é destino de
 cartões 3D (model/texture/sky); IDs do inventário visual e da criação persistida são distintos.
 Os contratos e schemas do BFF reconhecem `molda`/`molda_asset`.
 A auditoria exige explicitamente a disponibilidade atual de Molda, Pinta e Estúdio;

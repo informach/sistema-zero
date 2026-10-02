@@ -4,6 +4,85 @@ import { _LEVEL_SETS, resolveBlockLevel } from '../blockLevels'
 import { PROGRAMMING_VISIBLE_TYPES } from '../programmingContract'
 
 const KNOWN = new Set(BLOCK_CATALOG.map((e) => e.type))
+
+/**
+ * Os blocos do Jogo 2D no PRIMEIRO degrau, em ordem alfabética: exatamente os do antigo Kit
+ * essencial (conferido contra o `6cafe9e0^`). A lista é LITERAL de propósito: contar não basta,
+ * porque trocar um bloco por outro mantém o número e muda o degrau dos dois.
+ */
+const INICIANTE_2D_G2D_ESPERADO = [
+  'sz_g2d_add_scene_backdrop',
+  'sz_g2d_arrows_x',
+  'sz_g2d_center_x',
+  'sz_g2d_clamp_to_screen',
+  'sz_g2d_clear',
+  'sz_g2d_collect_track_item',
+  'sz_g2d_create_group',
+  'sz_g2d_create_image_sprite',
+  'sz_g2d_create_ship',
+  'sz_g2d_create_sprite',
+  'sz_g2d_create_sprite_track',
+  'sz_g2d_create_text_sprite',
+  'sz_g2d_damage_sprite',
+  'sz_g2d_draw_group',
+  'sz_g2d_draw_score',
+  'sz_g2d_draw_sprite',
+  'sz_g2d_draw_sprite_health',
+  'sz_g2d_every_frames',
+  'sz_g2d_explode',
+  'sz_g2d_health_depleted',
+  'sz_g2d_on_group_click',
+  'sz_g2d_on_group_overlap',
+  'sz_g2d_on_key',
+  'sz_g2d_on_sprite_click',
+  'sz_g2d_on_sprite_group_overlap',
+  'sz_g2d_on_track_encounter',
+  'sz_g2d_on_track_finish',
+  'sz_g2d_play_fx',
+  'sz_g2d_prune_offscreen',
+  'sz_g2d_put_track_sprite',
+  'sz_g2d_put_track_sprite_at',
+  'sz_g2d_random_x',
+  'sz_g2d_remove_from_group',
+  'sz_g2d_repeat_track_sprite',
+  'sz_g2d_restart',
+  'sz_g2d_scale_sprite',
+  'sz_g2d_scale_text_size',
+  'sz_g2d_scene_animation',
+  'sz_g2d_scene_backdrop_motion',
+  'sz_g2d_scene_game_screens',
+  'sz_g2d_scene_is',
+  'sz_g2d_scene_result',
+  'sz_g2d_set_health',
+  'sz_g2d_set_scene',
+  'sz_g2d_set_size',
+  'sz_g2d_set_sprite_data',
+  'sz_g2d_set_sprite_text',
+  'sz_g2d_set_stage_description',
+  'sz_g2d_set_text_box',
+  'sz_g2d_set_text_image',
+  'sz_g2d_set_text_style',
+  'sz_g2d_setup_stage',
+  'sz_g2d_shake',
+  'sz_g2d_shoot_from',
+  'sz_g2d_show_screen',
+  'sz_g2d_spawn_asteroid',
+  'sz_g2d_spawn_asteroid_edge',
+  'sz_g2d_spawn_bullet',
+  'sz_g2d_spawn_text_in_group',
+  'sz_g2d_sprite_data',
+  'sz_g2d_sprite_text',
+  'sz_g2d_sprite_y',
+  'sz_g2d_starfield',
+  'sz_g2d_track_controls',
+  'sz_g2d_track_hud',
+  'sz_g2d_track_hurt',
+  'sz_g2d_track_player',
+  'sz_g2d_track_score',
+  'sz_g2d_track_travel',
+  'sz_g2d_update_each_frame',
+  'sz_g2d_update_group',
+]
 const ALL_SETS = [
   ['INTERMEDIARIO_2D', _LEVEL_SETS.INTERMEDIARIO_2D],
   ['AVANCADO_2D', _LEVEL_SETS.AVANCADO_2D],
@@ -90,11 +169,10 @@ describe('resolveBlockLevel — amostras representativas', () => {
     // aulas curadas por nível: tem que ser decisão, não efeito colateral.
     const game2dTypes = [...KNOWN].filter((type) => type.startsWith('sz_g2d_'))
     expect(game2dTypes.length).toBeGreaterThan(180)
-    const firstStep = game2dTypes.filter((type) => resolveBlockLevel(type) === 'iniciante-2d')
-    expect(firstStep).toHaveLength(71)
-    for (const type of ['sz_g2d_create_sprite', 'sz_g2d_on_key', 'sz_g2d_draw_score']) {
-      expect(firstStep).toContain(type)
-    }
+    const firstStep = game2dTypes
+      .filter((type) => resolveBlockLevel(type) === 'iniciante-2d')
+      .sort()
+    expect(firstStep).toEqual(INICIANTE_2D_G2D_ESPERADO)
     for (const type of game2dTypes.filter((type) => !firstStep.includes(type))) {
       expect(resolveBlockLevel(type), type).toBe('iniciante-3d')
     }

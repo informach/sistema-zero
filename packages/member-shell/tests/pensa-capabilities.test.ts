@@ -61,6 +61,10 @@ describe('capacidades reais do Pensa', () => {
       'customer',
     )
     expect(semNada && availablePlannerCatalog(semNada.tier, '2d').blocks).toEqual([])
+    // …e o Estúdio não entra como destino: a porta do /estudio estaria trancada, e gerar o
+    // plano com o catálogo vazio gastaria a chamada paga para nada.
+    expect(semNada?.studioAvailable).toBe(false)
+    expect(caps.studioAvailable).toBe(true)
   })
   test('o draft do Molda exige capacidade e dimensão 3D; referências ficam intactas', () => {
     const raw = TaskPlanDraftSchema.parse({

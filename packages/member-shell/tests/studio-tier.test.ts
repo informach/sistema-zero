@@ -9,7 +9,7 @@ describe('resolveStudioTier — ferramentas conquistadas', () => {
   test('Faísca usa o Estúdio apenas dentro das aulas', () => {
     const tier = resolveStudioTier('noob', undefined)
     expect(tier.freeStudio).toBe(false)
-    expect(tier.blockProfileId).toBe('lesson-only')
+    expect(tier.hasPalette).toBe(false)
     expect(tier.pro).toBe(false)
   })
 
@@ -55,7 +55,8 @@ describe('resolveStudioTier — ferramentas conquistadas', () => {
 
   test('equipe recebe o perfil máximo; papel comum não recebe bypass', () => {
     for (const role of ['superadmin', 'admin', 'staff']) {
-      expect(resolveStudioTier('noob', role).blockProfileId).toBe('avancado-3d')
+      expect(resolveStudioTier('noob', role).level).toBe('avancado-3d')
+      expect(resolveStudioTier('noob', role).allowBlocks).toBeUndefined()
       expect(resolveStudioTier('noob', role).pro).toBe(true)
     }
     expect(resolveStudioTier('noob', 'member').freeStudio).toBe(false)

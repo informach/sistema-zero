@@ -1048,14 +1048,21 @@ A paleta do Estúdio livre deixou de ser fixa por NÍVEL: cada curso declara os 
 criança tem a UNIÃO dos que **concluiu E publicou no Mural**. O nível segue decidindo o MODO
 (livre/Ponte/Pro). No kids isso aparece em três lugares:
 - **`/estudio`**: a página soma `getStudioUnlocksReadonly()` ao `Promise.all` e decide a porta
-  por **`studioGate`** (`src/server/studio-gate.ts`, sobre o `earnedStudioTier` do member-shell):
-  a lista não chegou → `KidsStudioUnavailable` ("tente de novo"); nível sem Estúdio livre OU
-  nenhum bloco conquistado → `KidsJourneyLockedStudio`; senão abre. ⭐ **Sem reserva desde
-  02/10/2026** (decisão da dona): o Kit essencial do Construtor e a paleta do nível para os outros
-  postos saíram, e sem curso concluído não há bloco. ⚠️ O editor nunca recebe a lista vazia (o
-  Estúdio a leria como "sem restrição"). Em produção todos os cursos têm a lista cadastrada; em
-  staging e no local, nem sempre, e ali o Estúdio pode aparecer trancado. Teste:
-  `tests/studio-gate.test.ts`.
+  por **`studioGate`** (`src/server/studio-gate.ts`, sobre o `earnedStudioTier` do member-shell).
+  A ORDEM é contrato: nível sem Estúdio livre → `KidsJourneyLockedStudio` (Faísca, mesmo se a
+  lista não chegou); EQUIPE → abre (ignora o currículo, mesmo sem a lista); a lista não chegou →
+  `KidsStudioUnavailable` ("tente de novo"); nenhum bloco conquistado → `KidsStudioWithoutTools`
+  ("Suas ferramentas vêm dos cursos": o "Acenda sua Faísca" seria falso para um Construtor);
+  senão abre. ⭐ **Sem reserva desde 02/10/2026** (decisão da dona): o Kit essencial do
+  Construtor e a paleta do nível para os outros postos saíram, e sem curso concluído não há
+  bloco. ⚠️ O editor nunca recebe a lista vazia (o Estúdio a leria como "sem restrição"). Em
+  produção todos os cursos têm a lista cadastrada; em staging e no local, nem sempre, e ali o
+  Estúdio pode aparecer trancado. Teste: `tests/studio-gate.test.ts`.
+  ⭐ **Os ATALHOS para o Estúdio usam a mesma régua** (`canOpenFreeStudio` e
+  `canOpenPensaStudioTask` recebem a resposta dos blocos): posse + `freeStudio` + algum bloco.
+  Mapa, trilha, perfil, ranking, Pensa, Pinta e Molda somam `getStudioUnlocksReadonly()` (com
+  `React.cache`) ao `Promise.all`. Lista que não chegou NÃO esconde o atalho (quem decide é a
+  porta, com o "tente de novo").
 - **`/mural-dos-criadores`**: o mesmo, p/ o remix perguntar "o que você conquistou cobre este jogo?"
   em vez de "seu nível cobre?". Blocos indisponíveis ou nenhum bloco → sem remix naquela visita.
 - **`/perfil` → `my-tools.tsx` (`MyTools`)**: "Minhas ferramentas", as GAVETAS conquistadas

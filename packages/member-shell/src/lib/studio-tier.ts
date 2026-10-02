@@ -1,16 +1,9 @@
-import {
-  creatorJourneyLevel,
-  type JourneyLevelSlug,
-  type JourneyStudioBlockProfileId,
-  type JourneyStudioRewardId,
-} from '@sistemazero/core/journey'
+import { creatorJourneyLevel, type JourneyLevelSlug } from '@sistemazero/core/journey'
 import type { BlockLevel, IDEMode } from '@sistemazero/studio'
 
 /** Capacidades do Estúdio Completo já conquistadas pelo aluno. */
 export interface StudioTier {
   freeStudio: boolean
-  rewardId: JourneyStudioRewardId
-  blockProfileId: JourneyStudioBlockProfileId
   level: BlockLevel
   /**
    * Os blocos que a criança conquistou nos cursos: a paleta inteira dela. Ausente só para a
@@ -158,8 +151,6 @@ export function resolveStudioTier(
   const allowBlocks = privileged ? undefined : (unlocks?.blocks ?? [])
   return {
     freeStudio: reward.freeStudio,
-    rewardId: reward.id,
-    blockProfileId: reward.blockProfileId,
     level: reward.blockLevel,
     ...(allowBlocks ? { allowBlocks } : {}),
     allowedExtensions: privileged ? STAFF_EXTENSIONS : (unlocks?.extensions ?? []),

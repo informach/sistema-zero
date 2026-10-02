@@ -328,7 +328,7 @@ function contextAllowedByCatalog(
 ): ZappyContextInput {
   const allowedTypes = new Set(allowed.map((entry) => entry.type.toLowerCase()))
   // O projeto é DELA: os blocos NÃO são mais filtrados por tier (o esboço marca
-  // "(nível futuro)" e tipo desconhecido nunca é ecoado); a redação por tier
+  // "(ainda não liberado)" e tipo desconhecido nunca é ecoado); a redação por tier
   // segue no erro/código e nas RECOMENDAÇÕES (byType das referências).
   return {
     ...context,
@@ -474,6 +474,38 @@ interface ManualSnippet {
   content: string
 }
 
+const normalizeCitation = (value: string) => value.toLowerCase().replace(/\s+/g, ' ').trim()
+
+/**
+ * Os rótulos dos blocos de cada extensão, como os manuais os citam em prosa ("Descrever o jogo
+ * para leitor de tela"). Rótulo curto demais (menos de 8 letras) fica de fora: casaria com
+ * palavras soltas do texto e cortaria trechos sem citação nenhuma.
+ */
+const MANUAL_CITABLE_LABELS = (() => {
+  const byExtension = new Map<string, { type: string; label: string }[]>()
+  for (const entry of SERVER_BLOCK_CATALOG) {
+    if (!entry.extension) continue
+    const label = normalizeCitation(entry.label)
+    if (label.length < 8) continue
+    const list = byExtension.get(entry.extension) ?? []
+    list.push({ type: entry.type.toLowerCase(), label })
+    byExtension.set(entry.extension, list)
+  }
+  return byExtension
+})()
+
+/** O trecho do manual cita pelo NOME um bloco desta extensão que a criança ainda não tem? */
+function citesForbiddenBlock(
+  content: string,
+  extension: string,
+  allowedTypes: ReadonlySet<string>,
+): boolean {
+  const text = normalizeCitation(content)
+  return (MANUAL_CITABLE_LABELS.get(extension) ?? []).some(
+    (entry) => !allowedTypes.has(entry.type) && text.includes(entry.label),
+  )
+}
+
 function relevantManualSnippets(
   question: string,
   context: ZappyContextInput,
@@ -488,8 +520,11 @@ function relevantManualSnippets(
   const relevantExtensions = new Set(
     catalog.slice(0, 16).flatMap((entry) => (entry.extension ? [entry.extension] : [])),
   )
-  // O manual de uma extensão entra quando ALGUM bloco dela foi conquistado; os ids que ela
-  // ainda não tem saem do texto pelo `redactForbiddenBlockTypes` logo abaixo.
+  // O manual de uma extensão entra quando ALGUM bloco dela foi conquistado. O que ela ainda não
+  // tem sai de duas formas: os ids pelo `redactForbiddenBlockTypes`, e o trecho que cita um bloco
+  // pelo NOME é descartado inteiro (`citesForbiddenBlock`). Trocar o nome no meio da frase a
+  // deixaria sem sentido, e um trecho a menos é melhor do que o Zappy recomendar um bloco que a
+  // paleta dela não tem.
   const extensionManualIsAllowed = (extension: string) =>
     !tier.allowBlocks ||
     SERVER_BLOCK_CATALOG.some(
@@ -501,17 +536,19 @@ function relevantManualSnippets(
       extensionManualIsAllowed(document.extension),
   )
     .flatMap((document) =>
-      textChunks(
-        redactForbiddenBlockTypes(document.content, allowedTypes),
-        MANUAL_SNIPPET_CHARS,
-      ).map((content, index) => {
-        const matches = scoreTokens(terms, tokenizeSearchable(content))
-        return {
-          snippet: { extension: document.extension, title: document.title, content },
-          index,
-          score: matches * 100 + (relevantExtensions.has(document.extension) ? 20 : 0),
-        }
-      }),
+      textChunks(redactForbiddenBlockTypes(document.content, allowedTypes), MANUAL_SNIPPET_CHARS)
+        .filter(
+          (content) =>
+            !tier.allowBlocks || !citesForbiddenBlock(content, document.extension, allowedTypes),
+        )
+        .map((content, index) => {
+          const matches = scoreTokens(terms, tokenizeSearchable(content))
+          return {
+            snippet: { extension: document.extension, title: document.title, content },
+            index,
+            score: matches * 100 + (relevantExtensions.has(document.extension) ? 20 : 0),
+          }
+        }),
     )
     .sort((left, right) => right.score - left.score || left.index - right.index)
     .slice(0, MAX_MANUAL_SNIPPETS)

@@ -5,7 +5,11 @@ import { KidsPintaUnavailable } from '@/components/kids/kids-pinta-unavailable'
 import { PintaClient } from '@/components/kids/pinta-client'
 import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import { canOpenPensaStudioTask } from '@/lib/pensa-capabilities'
-import { checkPintaAccessReadonly, getGamificationReadonly } from '@/server/members'
+import {
+  checkPintaAccessReadonly,
+  getGamificationReadonly,
+  getStudioUnlocksReadonly,
+} from '@/server/members'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -25,10 +29,12 @@ export const dynamic = 'force-dynamic'
 export default async function PintaPage() {
   // `session.id` = o PERFIL ativo (kids) → a galeria do Pinta e a biblioteca
   // "Meus desenhos" do Estúdio usam o MESMO namespace do IndexedDB do /estudio.
-  const [res, session, gam] = await Promise.all([
+  const [res, session, gam, unlocksRes] = await Promise.all([
     checkPintaAccessReadonly(),
     getSession(),
     getGamificationReadonly().catch(() => null),
+    // Só decide o "Levar ao Estúdio": sem bloco conquistado o Estúdio livre está trancado.
+    getStudioUnlocksReadonly().catch(() => null),
   ])
   // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
   if (res.status !== 200) return <ToolRouteRecado screen={KidsPintaUnavailable} />
@@ -42,6 +48,7 @@ export default async function PintaPage() {
     studioProductOwned: res.body?.access?.['estudio-completo'] === true,
     levelSlug: gam?.status === 200 ? gam.body?.level?.slug : undefined,
     role: session?.role,
+    unlocks: unlocksRes,
   })
   return <PintaClient viewerId={session?.id ?? null} studioAvailable={studioAvailable} />
 }

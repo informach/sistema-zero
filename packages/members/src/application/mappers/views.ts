@@ -568,8 +568,9 @@ export function resolveSalesPageUrl(course: Course): string | null {
  * `metadata.studioUnlockBlocks` (jsonb, SEM migração; mesmo padrão do `salesPageUrl`).
  * É o mesmo formato da lista `allowBlocks` da aula, só que no CURSO:
  * a paleta do aluno passa a ser a UNIÃO dos cursos que ele já conquistou, em vez de
- * um conjunto fixo por nível. Lista vazia/ausente = este curso não libera nada (e o
- * aluno segue com o perfil do nível — ver `resolveStudioTier` no member-shell).
+ * um conjunto fixo por nível. Lista vazia/ausente = este curso não libera nada. Sem
+ * reserva desde 02/10/2026: quem não conquistou bloco nenhum tem o Estúdio livre trancado
+ * (`resolveStudioTier`/`earnedStudioTier` no member-shell).
  * Tolerante a lixo: só strings não-vazias entram, e a ordem é preservada sem repetir.
  */
 export function resolveStudioUnlockBlocks(course: Course): string[] {

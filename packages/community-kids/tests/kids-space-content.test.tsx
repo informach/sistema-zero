@@ -321,11 +321,11 @@ describe('KidsSpaceContent — comportamento do boundary de apresentação', () 
       />,
     )
 
-    const botao = screen.getByRole('button', { name: 'Fazer a minha versão' })
-    // As ferramentas vêm dos cursos, não de um nível: o selo não promete "no nível X".
-    expect(botao.getAttribute('title')).toBe(
-      'Conclua mais cursos para ter as ferramentas deste jogo',
-    )
+    // O nome acessível diz que está trancado (o cadeado é só ícone) e por quê. As ferramentas
+    // vêm dos cursos, não de um nível: o selo não promete "no nível X".
+    const botao = screen.getByRole('button', {
+      name: 'Fazer a minha versão (trancado: conclua mais cursos para ter as ferramentas deste jogo)',
+    })
     expect(screen.queryByText(/no nível/)).toBeNull()
     fireEvent.click(botao)
     expect(onRemix).toHaveBeenCalledWith(showcase)

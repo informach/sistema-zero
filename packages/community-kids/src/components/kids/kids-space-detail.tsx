@@ -194,10 +194,16 @@ function PlayLinkActions({
           <button
             type="button"
             onClick={onRemix}
-            title="Conclua mais cursos para ter as ferramentas deste jogo"
             className="sz-btn-gradient sz-btn-suave h-auto min-h-11 w-full gap-2 py-2 text-muted-foreground"
           >
             <Lock className="size-4 shrink-0" aria-hidden /> Fazer a minha versão
+            {/* O cadeado é só ícone: sem este texto, quem usa leitor de tela ouviria um botão igual
+                ao liberado. `title` não serve (não é anunciado com segurança e não aparece no
+                toque); o clique continua vivo e mostra o recado. */}
+            <span className="sr-only">
+              {' '}
+              (trancado: conclua mais cursos para ter as ferramentas deste jogo)
+            </span>
           </button>
         ) : (
           <button
@@ -232,7 +238,7 @@ export function ShowcaseCard({
   viewerId: string
   onOpen: () => void
   onRemix?: ((thread: HubThreadView) => void) | null
-  /** Selo "no nível X" do remix (jogo além do degrau do viewer) — ver `PlayLinkActions`. */
+  /** Cadeado do remix: o jogo usa ferramentas que os cursos ainda não deram — ver `PlayLinkActions`. */
   remixLock?: boolean
 }) {
   const playUrl = playPathFor(thread)
@@ -460,7 +466,7 @@ export function ThreadDetail({
   onReport: (target: 'threads' | 'comments', id: string) => void
   authorLabel: (item: AuthorItem) => ReactNode
   onRemix?: ((thread: HubThreadView) => void) | null
-  /** Selo "no nível X" do remix (jogo além do degrau do viewer) — ver `PlayLinkActions`. */
+  /** Cadeado do remix: o jogo usa ferramentas que os cursos ainda não deram — ver `PlayLinkActions`. */
   remixLock?: boolean
 }) {
   // memo: o corpo do tópico não muda quando um comentário recebe reação.

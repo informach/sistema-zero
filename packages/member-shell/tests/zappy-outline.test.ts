@@ -10,6 +10,7 @@ const { buildBehaviorDigest, buildDraftSummary, buildProjectOutline } = await im
 )
 const { buildStudioZappyPrompt, relevantExampleRecipes } = await import('../src/server/zappy-ai')
 const { resolveStudioTier } = await import('../src/lib/studio-tier')
+const { earnedStudioTier } = await import('../src/server/studio-unlocks')
 const { looksLikeDiagnosisQuestion } = await import('../src/server/zappy-search')
 
 const CATALOG = new Map([
@@ -91,10 +92,11 @@ describe('receitas internas dos exemplos (anônimas, por nível)', () => {
     expect(prompt.system).not.toContain('"name"')
   })
 
-  it('nível iniciante 2D não recebe receita de mundo 3D', () => {
-    // "costeiro" só existe no exemplo world-3d "Coastal World Procedural".
-    const hacker = resolveStudioTier('hacker', 'student')
-    expect(hacker.allowedExtensions).not.toContain('world-3d')
+  it('quem só conquistou blocos do Jogo 2D não recebe receita de mundo 3D', () => {
+    // "costeiro" só existe no exemplo world-3d "Coastal World Procedural". O tier precisa TER
+    // extensão: sem nenhuma, o "não recebe" passaria por vácuo.
+    const hacker = earnedStudioTier('hacker', 'student', ['sz_g2d_setup_stage', 'sz_g2d_on_key'])
+    expect(hacker.allowedExtensions).toEqual(['game-2d'])
     expect(relevantExampleRecipes('costeiro', context, hacker)).toEqual([])
     expect(
       relevantExampleRecipes('costeiro', context, resolveStudioTier('god', 'staff')).length,

@@ -218,12 +218,14 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       if (!parsed.success || parsed.data.projectId !== parsed.data.context.projectId) {
         return error('INVALID_INPUT', 400)
       }
-      // Posse e rank são INDEPENDENTES: em série custavam uma ida inteira de
-      // latência com a criança esperando. A ordem das CHECAGENS abaixo continua a
-      // mesma — só a espera virou uma só.
-      const [studioAccess, gamification] = await Promise.all([
+      // Posse, rank e blocos conquistados são INDEPENDENTES: em série custavam idas inteiras
+      // de latência com a criança esperando. A ordem das CHECAGENS abaixo continua a mesma —
+      // só a espera virou uma só. A equipe tem o passe livre e nem pergunta pelos blocos.
+      const privileged = isPrivilegedRole(user.role)
+      const [studioAccess, gamification, unlocks] = await Promise.all([
         hasStudioAccess(members),
         members.getGamification(),
+        privileged ? null : members.getStudioUnlocks(),
       ])
       if (!studioAccess) return error('FORBIDDEN', 403)
       const safeQuestion = redactZappySensitiveText(parsed.data.question)
@@ -234,12 +236,10 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       // Reusa o rank desta rota para não consultar o members duas vezes.
       if (!isStudioZappyAllowed(user, levelSlug)) return error('ZAPPY_NOT_ENABLED', 403)
       // O tutor oferece os MESMOS blocos que a paleta: os conquistados nos cursos (a equipe
-      // tem o passe livre e não precisa deles). Depois do `getGamification`, que já renovou a
-      // sessão, a leitura sem refresh basta. Falhou: indisponível, nunca "sem blocos".
+      // tem o passe livre e não precisa deles). Falhou: indisponível, nunca "sem blocos".
       let unlockedBlocks: readonly string[] = []
-      if (!isPrivilegedRole(user.role)) {
-        const unlocks = await members.getStudioUnlocksReadonly()
-        if (unlocks.status !== 200 || !unlocks.body) return error('ZAPPY_UNAVAILABLE', 503)
+      if (!privileged) {
+        if (unlocks?.status !== 200 || !unlocks.body) return error('ZAPPY_UNAVAILABLE', 503)
         unlockedBlocks = unlocks.body.blocks
       }
       const tier = earnedStudioTier(levelSlug ?? 'noob', user.role, unlockedBlocks)

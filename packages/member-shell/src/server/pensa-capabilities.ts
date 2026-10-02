@@ -28,6 +28,9 @@ export async function getPensaCapabilities(
     tier,
     moldaAvailable: available('molda'),
     pintaAvailable: available('pinta'),
-    studioAvailable: available('estudio-completo'),
+    // Posse e nível não bastam: sem bloco conquistado o Estúdio livre está trancado, e um plano
+    // com tarefas do Estúdio mandaria a criança para uma porta fechada (e gastaria a geração
+    // paga com um catálogo vazio).
+    studioAvailable: available('estudio-completo') && tier.hasPalette,
   }
 }

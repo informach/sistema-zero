@@ -18,6 +18,7 @@ const {
 const { isStudioZappyAllowed } = await import('../src/server/zappy-access')
 const { resolveStudioTier } = await import('../src/lib/studio-tier')
 const { earnedStudioTier } = await import('../src/server/studio-unlocks')
+const { SERVER_BLOCK_CATALOG } = await import('@sistemazero/studio/server-catalog')
 const { isZappySelfHarmText, redactZappyPii, redactZappySensitiveText } = await import(
   '../src/server/zappy-safety'
 )
@@ -95,7 +96,7 @@ function members(overrides: Record<string, unknown> = {}) {
       body: { access: { 'estudio-completo': true } },
     }),
     getGamification: async () => ({ status: 200, body: { level: { slug: 'god' } } }),
-    getStudioUnlocksReadonly: async () => ({
+    getStudioUnlocks: async () => ({
       status: 200,
       body: { blocks: ['sz_g2d_setup_stage', 'sz_g2d_on_key'] },
     }),
@@ -355,6 +356,40 @@ describe('Zappy do Studio — limites determinísticos', () => {
     expect(prompt.catalog.length).toBeGreaterThan(0)
     expect(prompt.catalog.every((entry) => tier.allowBlocks?.includes(entry.type))).toBe(true)
     expect(prompt.catalog.map((entry) => entry.type)).toContain('sz_g3d_sky_photo')
+  })
+
+  test('o manual não leva ao tutor o NOME de um bloco que a criança ainda não tem', () => {
+    // O manual do Jogo 2D cita "Descrever o jogo para leitor de tela" pelo rótulo, e a redação
+    // de ids `sz_*` não alcança nome em prosa.
+    const citado = SERVER_BLOCK_CATALOG.find(
+      (entry) => entry.label === 'Descrever o jogo para leitor de tela',
+    )
+    if (!citado) throw new Error('o manual do Jogo 2D mudou: escolha outro bloco citado')
+    const perguntar = (blocks: string[]) => {
+      const tier = earnedStudioTier('coder', 'student', blocks)
+      return buildStudioZappyPrompt({
+        question: 'Como faço o leitor de tela descrever o jogo?',
+        context: {
+          projectId: PROJECT_ID,
+          mode: 'blocks',
+          kind: 'classic',
+          blocks: [],
+          installedExtensions: ['game-2d'],
+          selectedBlockId: null,
+          lastError: null,
+        },
+        tier,
+      }).system
+    }
+    // Um trecho do manual do Jogo 2D (JSON no prompt) que cita o bloco pelo nome.
+    const trechoQueCita =
+      /"title":"Manual oficial — Jogo 2D","content":"(?:[^"\\]|\\.)*Descrever o jogo para leitor de tela/
+    const semOBloco = perguntar(['sz_g2d_setup_stage'])
+    expect(semOBloco).not.toContain('Descrever o jogo para leitor de tela')
+    // …mas o manual continua lá: só o trecho que cita o bloco saiu.
+    expect(semOBloco).toContain('"title":"Manual oficial — Jogo 2D"')
+    // Anti-vácuo: com o bloco conquistado, o MESMO trecho do manual entra.
+    expect(perguntar(['sz_g2d_setup_stage', citado.type])).toMatch(trechoQueCita)
   })
 
   test('o maior tier mantém o prompt completo dentro de 48 kB', () => {
@@ -655,7 +690,7 @@ describe('BFF do Zappy', () => {
       session: { getSession: async () => INVENTOR },
       members: members({
         ...inventor,
-        getStudioUnlocksReadonly: async () => ({
+        getStudioUnlocks: async () => ({
           status: 200,
           body: { blocks: ['sz_g2d_setup_stage', 'sz_g3d_sky_photo'] },
         }),
@@ -676,7 +711,7 @@ describe('BFF do Zappy', () => {
       members: members({
         ...inventor,
         zappyReserveQuestion: reserve,
-        getStudioUnlocksReadonly: async () => ({ status: 200, body: { blocks: [] } }),
+        getStudioUnlocks: async () => ({ status: 200, body: { blocks: [] } }),
       }),
     } as never)
     const trancado = await semBlocos.studioZappyMessage.POST(request('Dúvida'))
@@ -689,7 +724,7 @@ describe('BFF do Zappy', () => {
       members: members({
         ...inventor,
         zappyReserveQuestion: reserve,
-        getStudioUnlocksReadonly: async () => ({ status: 502, body: null }),
+        getStudioUnlocks: async () => ({ status: 502, body: null }),
       }),
     } as never)
     expect((await fora.studioZappyMessage.POST(request('Dúvida'))).status).toBe(503)

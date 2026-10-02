@@ -1117,9 +1117,14 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: /Próxima seção/ }))
     await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Observar')
+      const heading = screen.getByRole('heading', { level: 1 })
+      expect(heading.textContent).toContain('Observar')
+      // ⚠️ O foco vem num EFEITO, depois do commit que troca o texto: sob CPU disputada (o CI
+      // roda os pacotes juntos) ele chega um tique depois, e conferir fora do `waitFor` reprovou
+      // em 02/10/2026. Compara por booleano: um `toBe` entre elementos imprime a árvore DOM
+      // inteira na falha (foram 11 milhões de linhas de log e 468 s num teste só).
+      expect(document.activeElement === heading).toBe(true)
     })
-    expect(document.activeElement).toBe(screen.getByRole('heading', { level: 1 }))
   })
 })
 
